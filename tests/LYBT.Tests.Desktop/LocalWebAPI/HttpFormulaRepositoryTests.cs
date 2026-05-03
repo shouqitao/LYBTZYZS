@@ -49,13 +49,22 @@ public class HttpFormulaRepositoryTests : IDisposable
     [Fact]
     public async Task DeleteAsync_Returns_True_On_Success()
     {
+        var id = Guid.NewGuid();
+        string? capturedMethod = null;
+        string? capturedPath = null;
         var handler = new MockHttpMessageHandler((req, ct) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
+        {
+            capturedMethod = req.Method.Method;
+            capturedPath = req.RequestUri?.PathAndQuery;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        });
         using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
         var repo = new HttpFormulaRepository(client, _logger);
 
-        var result = await repo.DeleteAsync(Guid.NewGuid());
+        var result = await repo.DeleteAsync(id);
         result.Should().BeTrue();
+        capturedMethod.Should().Be("DELETE");
+        capturedPath.Should().Contain($"/api/formulas/{id}");
     }
 
     [Fact]
@@ -131,10 +140,12 @@ public class HttpFormulaRepositoryTests : IDisposable
         var json = JsonSerializer.Serialize(detail, Json);
         string? capturedMethod = null;
         string? capturedPath = null;
+        string? capturedBody = null;
         var handler = new MockHttpMessageHandler((req, ct) =>
         {
             capturedMethod = req.Method.Method;
             capturedPath = req.RequestUri?.PathAndQuery;
+            capturedBody = req.Content?.ReadAsStringAsync().GetAwaiter().GetResult();
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json) });
         });
         using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
@@ -147,5 +158,7 @@ public class HttpFormulaRepositoryTests : IDisposable
         result.Name.Should().Be("TestFormula");
         capturedMethod.Should().Be("POST");
         capturedPath.Should().Be("/api/formulas");
+        capturedBody.Should().NotBeNullOrEmpty();
+        capturedBody.Should().Contain("TestFormula");
     }
 }
