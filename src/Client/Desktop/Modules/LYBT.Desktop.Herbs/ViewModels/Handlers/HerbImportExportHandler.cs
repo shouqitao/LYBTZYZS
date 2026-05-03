@@ -59,10 +59,13 @@ public class HerbImportExportHandler : IHerbImportExportHandler
                     return;
                 }
 
+                var useOverwrite = await _masterDetailServices.Dialog.ShowConfirmAsync(
+                    "检测到导入数据中可能包含重复药材。\n\n选择「是」覆盖已有记录\n选择「否」跳过重复记录",
+                    "重复处理策略");
                 var request = new HerbBatchImportInputDto
                 {
                     Herbs = herbs,
-                    Strategy = DuplicateStrategy.Skip
+                    Strategy = useOverwrite ? DuplicateStrategy.Update : DuplicateStrategy.Skip
                 };
                 var result = await _herbService.BatchImportAsync(request);
 
@@ -85,7 +88,7 @@ public class HerbImportExportHandler : IHerbImportExportHandler
         {
             _logger.LogError(ex, "导入药材失败");
             await _masterDetailServices.Dialog.ShowErrorAsync(
-                "导入药材失败，请检查文件格式式后重试", "操作失败");
+                "导入药材失败，请检查文件格式后重试", "操作失败");
             return false;
         }
     }

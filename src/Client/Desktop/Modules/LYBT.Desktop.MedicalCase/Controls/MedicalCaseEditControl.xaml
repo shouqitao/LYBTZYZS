@@ -313,10 +313,10 @@
                             <ComboBox Grid.Column="0"
                                       TabIndex="8"
                                       IsEditable="True"
-                                      Text="{Binding Consultation.PresentIllness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      Text="{Binding Consultation.PresentIllness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                       ItemsSource="{StaticResource PresentIllnessOptions}"
                                       Style="{DynamicResource FilterComboBox}"
-                                      MinHeight="60"
+                                      MinHeight="32"
                                       VerticalContentAlignment="Top"/>
                             <TextBlock Grid.Column="1"
                                        Style="{DynamicResource FieldSuccessIndicatorStyle}"
@@ -538,10 +538,19 @@
                     <TextBlock Text="备注" FontWeight="SemiBold" FontSize="13"
                                Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,4"/>
                     <TextBox TabIndex="15"
+                             x:Name="RemarkTextBox"
                              Text="{Binding Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              Style="{DynamicResource ValidatingTextBoxStyle}"
                              TextWrapping="Wrap" MinHeight="40" AcceptsReturn="True"
                              MaxHeight="120"/>
+                    <TextBlock FontSize="11" HorizontalAlignment="Right" Margin="0,2,0,0"
+                               Foreground="{DynamicResource SecondaryTextBrush}">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0}/1000">
+                                <Binding Path="Text.Length" ElementName="RemarkTextBox" FallbackValue="0"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
                 </StackPanel>
             </Border>
 
