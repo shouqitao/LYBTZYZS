@@ -1,0 +1,21 @@
+{
+	"id": "local-api-env-001",
+	"name": "LocalWebAPI Environment",
+	"values": [
+		{ "key": "base_url", "value": "http://127.0.0.1:5290", "enabled": true },
+		{ "key": "auth_token", "value": "", "enabled": true },
+		{ "key": "admin_user_id", "value": "", "enabled": true },
+		{ "key": "test_patient_id", "value": "", "enabled": true },
+		{ "key": "test_patient_id_2", "value": "", "enabled": true },
+		{ "key": "test_patient_id_3", "value": "", "enabled": true },
+		{ "key": "test_herb_id", "value": "", "enabled": true },
+		{ "key": "test_herb_id_2", "value": "", "enabled": true },
+		{ "key": "test_herb_id_3", "value": "", "enabled": true },
+		{ "key": "test_formula_id", "value": "", "enabled": true },
+		{ "key": "test_formula_id_2", "value": "", "enabled": true },
+		{ "key": "test_medical_case_id", "value": "", "enabled": true },
+		{ "key": "test_medical_case_id_2", "value": "", "enabled": true },
+		{ "key": "test_registration_id", "value": "", "enabled": true },
+		{ "key": "test_registration_id_2", "value": "", "enabled": true }
+	]
+}
