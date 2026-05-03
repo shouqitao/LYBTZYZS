@@ -90,6 +90,27 @@
                 <sys:String>肾精不足证</sys:String>
             </x:Array>
 
+            <!-- 现病史常用术语选项列表 (W3-6) -->
+            <x:Array x:Key="PresentIllnessOptions" Type="sys:String"
+                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
+                <sys:String>头痛3天</sys:String>
+                <sys:String>发热2天</sys:String>
+                <sys:String>咳嗽1周</sys:String>
+                <sys:String>失眠半月</sys:String>
+                <sys:String>胃痛3天</sys:String>
+                <sys:String>腹胀1周</sys:String>
+                <sys:String>腰痛1月</sys:String>
+                <sys:String>乏力1周</sys:String>
+                <sys:String>心悸3天</sys:String>
+                <sys:String>眩晕1周</sys:String>
+                <sys:String>口干1月</sys:String>
+                <sys:String>便秘1周</sys:String>
+                <sys:String>腹泻2天</sys:String>
+                <sys:String>关节疼痛1月</sys:String>
+                <sys:String>咽痛3天</sys:String>
+                <sys:String>鼻塞流涕2天</sys:String>
+            </x:Array>
+
             <!-- 处方用法选项列表 -->
             <x:Array x:Key="PrescriptionUsageOptions" Type="sys:String"
                      xmlns:sys="clr-namespace:System;assembly=mscorlib">
@@ -114,6 +135,7 @@
                 <RowDefinition Height="Auto"/>  <!-- 诊断区 -->
                 <RowDefinition Height="Auto"/>  <!-- 处方决策 -->
                 <RowDefinition Height="*"/>     <!-- 处方区 -->
+                <RowDefinition Height="Auto"/>  <!-- 备注 -->
                 <RowDefinition Height="Auto"/>  <!-- 完整性检查 -->
             </Grid.RowDefinitions>
 
@@ -288,11 +310,14 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox Grid.Column="0"
-                                     TabIndex="8"
-                                     Text="{Binding Consultation.PresentIllness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                     Style="{DynamicResource ValidatingTextBoxStyle}"
-                                     TextWrapping="Wrap" MinHeight="60" AcceptsReturn="True"/>
+                            <ComboBox Grid.Column="0"
+                                      TabIndex="8"
+                                      IsEditable="True"
+                                      Text="{Binding Consultation.PresentIllness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      ItemsSource="{StaticResource PresentIllnessOptions}"
+                                      Style="{DynamicResource FilterComboBox}"
+                                      MinHeight="60"
+                                      VerticalContentAlignment="Top"/>
                             <TextBlock Grid.Column="1"
                                        Style="{DynamicResource FieldSuccessIndicatorStyle}"
                                        Visibility="{Binding Consultation.IsPresentIllnessValid, Converter={x:Static converters:Cvt.BoolToVis}}"/>
@@ -507,8 +532,21 @@
                 </Grid>
             </Border>
 
+            <!-- 备注 - W2-3: 统一 Remark 数据源 -->
+            <Border Grid.Row="6" Style="{StaticResource CompactSectionBorderStyle}" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="备注" FontWeight="SemiBold" FontSize="13"
+                               Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,4"/>
+                    <TextBox TabIndex="15"
+                             Text="{Binding Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{DynamicResource ValidatingTextBoxStyle}"
+                             TextWrapping="Wrap" MinHeight="40" AcceptsReturn="True"
+                             MaxHeight="120"/>
+                </StackPanel>
+            </Border>
+
             <!-- Completeness Check Indicator - Phase 1.4: Dynamic completeness check -->
-            <Border Grid.Row="5" Style="{StaticResource CompactSectionBorderStyle}" Margin="0,12,0,0"
+            <Border Grid.Row="7" Style="{StaticResource CompactSectionBorderStyle}" Margin="0,12,0,0"
                     Background="{DynamicResource SecondaryRegionBrush}">
                 <StackPanel>
                     <TextBlock Text="完整性检查" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,8"
