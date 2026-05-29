@@ -49,7 +49,7 @@ public class SyncService : ISyncService
     {
         if (!ValidateEntityType(entityType, out var errorMessage))
         {
-            return ServiceResult<List<SyncMetadataDto>>.Failure(errorMessage);
+            return ServiceResult<List<SyncMetadataDto>>.Failure(errorMessage!);
         }
 
         var metadata = entityType switch
@@ -70,22 +70,22 @@ public class SyncService : ISyncService
     {
         if (!ValidateEntityType(input.EntityType, out var errorMessage))
         {
-            return ServiceResult<SyncCompareResultDto>.Failure(errorMessage);
+            return ServiceResult<SyncCompareResultDto>.Failure(errorMessage!);
         }
 
         var serverMetadataResult = await GetMetadataAsync(input.EntityType);
         if (!serverMetadataResult.IsSuccess)
         {
-            return ServiceResult<SyncCompareResultDto>.Failure(serverMetadataResult.ErrorMessage);
+            return ServiceResult<SyncCompareResultDto>.Failure(serverMetadataResult.ErrorMessage!);
         }
 
         var serverMetadata = serverMetadataResult.Data;
-        var serverDict = serverMetadata.ToDictionary(m => m.EntityId);
+        var serverDict = serverMetadata!.ToDictionary(m => m.EntityId);
         var localDict = input.LocalEntities.ToDictionary(e => e.EntityId);
 
         var diffs = new List<SyncDiffDto>();
 
-        foreach (var server in serverMetadata)
+        foreach (var server in serverMetadata!)
         {
             if (localDict.TryGetValue(server.EntityId, out var local))
             {
@@ -153,7 +153,7 @@ public class SyncService : ISyncService
     {
         if (!ValidateEntityType(input.EntityType, out var errorMessage))
         {
-            return ServiceResult<SyncUploadResultDto>.Failure(errorMessage);
+            return ServiceResult<SyncUploadResultDto>.Failure(errorMessage!);
         }
 
         var results = new List<SyncUploadItemResult>();
@@ -201,7 +201,7 @@ public class SyncService : ISyncService
     {
         if (!ValidateEntityType(input.EntityType, out var errorMessage))
         {
-            return ServiceResult<SyncDownloadResultDto>.Failure(errorMessage);
+            return ServiceResult<SyncDownloadResultDto>.Failure(errorMessage!);
         }
 
         var entities = new List<string>();
@@ -238,7 +238,7 @@ public class SyncService : ISyncService
     {
         if (!ValidateEntityType(input.EntityType, out var errorMessage))
         {
-            return ServiceResult<SyncDeleteResultDto>.Failure(errorMessage);
+            return ServiceResult<SyncDeleteResultDto>.Failure(errorMessage!);
         }
 
         var successIds = new List<Guid>();

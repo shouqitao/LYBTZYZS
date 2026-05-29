@@ -133,7 +133,9 @@ public class JwtServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData(null)]
+#pragma warning disable xUnit1012
+    [InlineData(null!)]
+#pragma warning restore xUnit1012
     [InlineData("")]
     public void GenerateToken_WithEmptyUserId_ShouldThrowArgumentException(string userId)
     {
@@ -146,7 +148,9 @@ public class JwtServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData(null)]
+#pragma warning disable xUnit1012
+    [InlineData(null!)]
+#pragma warning restore xUnit1012
     [InlineData("")]
     public void GenerateToken_WithEmptyUserName_ShouldThrowArgumentException(string userName)
     {
@@ -284,7 +288,9 @@ public class JwtServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData(null)]
+#pragma warning disable xUnit1012
+    [InlineData(null!)]
+#pragma warning restore xUnit1012
     [InlineData("")]
     public void ValidateToken_WithEmptyToken_ShouldReturnNull(string token)
     {

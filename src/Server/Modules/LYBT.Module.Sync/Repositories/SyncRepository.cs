@@ -32,7 +32,7 @@ internal class SyncRepository : BaseRepository<Herb>, ISyncRepository
         => _context.MedicalCases
             .Include(mc => mc.Consultation)
             .Include(mc => mc.Prescription)
-                .ThenInclude(p => p.Items)
+                .ThenInclude(p => p!.Items)
             .IgnoreQueryFilters()
             .AsNoTracking()
             .ToListAsync(ct);
@@ -52,7 +52,7 @@ internal class SyncRepository : BaseRepository<Herb>, ISyncRepository
         => _context.MedicalCases
             .Include(mc => mc.Consultation)
             .Include(mc => mc.Prescription)
-                .ThenInclude(p => p.Items)
+                .ThenInclude(p => p!.Items)
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(mc => mc.Id == id);
 
@@ -149,7 +149,7 @@ internal class SyncRepository : BaseRepository<Herb>, ISyncRepository
         => _context.MedicalCases
             .Include(mc => mc.Consultation)
             .Include(mc => mc.Prescription)
-                .ThenInclude(p => p.Items)
+                .ThenInclude(p => p!.Items)
             .AsNoTracking()
             .FirstOrDefaultAsync(mc => mc.Id == id, ct);
 
