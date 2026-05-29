@@ -1,0 +1,9 @@
+# Auto-generated migration files
+src/Server/Core/LYBT.Infrastructure/Migrations/
+
+# Files causing scope resolution errors
+src/Shared/LYBT.Shared.Models/Contracts/Common/ValidationResult.cs
+src/Server/Modules/LYBT.Module.MedicalCase/Services/MedicalCaseCommandService.cs
+src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Services/MedicalCaseService.cs
+tests/LYBT.Tests.Desktop/PureLogic/Patients/PatientMasterDetailViewModelTests.cs
+tests/LYBT.Tests.Server/UserJourneys/HerbFormulaManagementJourneyTests.cs
