@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
@@ -6,7 +5,6 @@ using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
@@ -19,43 +17,19 @@ namespace LYBT.Module.Users.Services
     public class UserBatchOperationService : BaseService<User>, IUserBatchOperationService
     {
         private readonly IUserRepository _repository;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ICrossModuleAuthService _authService;
 
         public UserBatchOperationService(
             IUserRepository repository,
             ILogger<UserBatchOperationService> logger,
-            IHttpContextAccessor httpContextAccessor,
             ICrossModuleAuthService authService)
             : base(logger)
         {
             _repository = repository;
-            _httpContextAccessor = httpContextAccessor;
             _authService = authService;
         }
 
         #region 权限检查辅助方法
-
-        /// <summary>
-        /// 获取当前用户角色
-        /// </summary>
-        private UserRole? GetCurrentUserRole()
-        {
-            try
-            {
-                var roleClaim = _httpContextAccessor.HttpContext?.User?
-                    .FindFirst(ClaimTypes.Role)?.Value;
-
-                if (string.IsNullOrEmpty(roleClaim))
-                    return null;
-
-                return Enum.TryParse<UserRole>(roleClaim, out var role) ? role : null;
-            }
-            catch
-            {
-                return null;
-            }
-        }
 
         /// <summary>
         /// 检查当前用户是否可以管理目标用户
@@ -82,9 +56,8 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 检查是否可以删除指定用户（包含最后一个保护）
         /// </summary>
-        private async Task<Result> CanDeleteUserAsync(Guid userId, UserRole targetRole, CancellationToken cancellationToken = default)
+        private async Task<Result> CanDeleteUserAsync(Guid userId, UserRole currentRole, UserRole targetRole, CancellationToken cancellationToken = default)
         {
-            var currentRole = GetCurrentUserRole();
             if (!CanManageUser(currentRole, targetRole))
             {
                 return Result.Failure(GenericErrorCode.Forbidden, "您没有权限删除该用户");
@@ -112,7 +85,7 @@ namespace LYBT.Module.Users.Services
         #endregion
 
         /// <inheritdoc />
-        public async Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid? currentUserId = null, CancellationToken cancellationToken = default)
+        public async Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid? currentUserId, UserRole currentRole, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             // ERR-012: 修复ex.Message暴露
@@ -126,8 +99,6 @@ namespace LYBT.Module.Users.Services
             {
                 return Result<BatchOperationResultDto>.Failure(GenericErrorCode.ValidationFailed, "请至少选择一个用户");
             }
-
-            var currentRole = GetCurrentUserRole();
 
             foreach (var id in ids)
             {
@@ -169,7 +140,7 @@ namespace LYBT.Module.Users.Services
                 }
 
                 // 权限检查
-                var permissionCheck = await CanDeleteUserAsync(id, user.Role, cancellationToken);
+                var permissionCheck = await CanDeleteUserAsync(id, currentRole, user.Role, cancellationToken);
                 if (!permissionCheck.IsSuccess)
                 {
                     result.FailedItems.Add(new BatchOperationFailureItem
@@ -202,7 +173,7 @@ namespace LYBT.Module.Users.Services
         }
 
         /// <inheritdoc />
-        public async Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid? currentUserId = null, CancellationToken cancellationToken = default)
+        public async Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid? currentUserId, UserRole currentRole, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             // ERR-012: 修复ex.Message暴露
@@ -212,7 +183,6 @@ namespace LYBT.Module.Users.Services
                 TotalCount = ids.Count
             };
             var statusText = status == CommonStatus.Enabled ? "启用" : "禁用";
-            var currentRole = GetCurrentUserRole();
 
             foreach (var id in ids)
             {

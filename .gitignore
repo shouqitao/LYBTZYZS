@@ -43,6 +43,9 @@ temp_hash_gen/
 *.local.md
 *.private.*
 
+# WPF designer temporary project files
+*_wpftmp.csproj
+
 # Claude Code临时文件（自动生成的工作目录）
 tmpclaude-*
 

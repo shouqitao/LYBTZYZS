@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using System.Threading;
+﻿using System.Threading;
 using LYBT.Module.Users.Mapping;
 using FluentValidation;
 using LYBT.Entities.Users;
@@ -12,7 +11,6 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Security;
 using LYBT.Shared.Utilities.Text;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
@@ -30,7 +28,6 @@ namespace LYBT.Module.Users.Services
     {
         private readonly IUserRepository _repository;
         private readonly IConfiguration _configuration;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IValidator<UserInputDto> _validator;
         private readonly ICrossModuleAuthService _authService;
         private readonly IUserBatchOperationService _batchService;
@@ -43,7 +40,6 @@ namespace LYBT.Module.Users.Services
             IUserRepository repository,
             ILogger<UserService> logger,
             IConfiguration configuration,
-            IHttpContextAccessor httpContextAccessor,
             IValidator<UserInputDto> validator,
             ICrossModuleAuthService authService,
             IUserBatchOperationService batchService,
@@ -54,7 +50,6 @@ namespace LYBT.Module.Users.Services
         {
             _repository = repository;
             _configuration = configuration;
-            _httpContextAccessor = httpContextAccessor;
             _validator = validator;
             _authService = authService;
             _batchService = batchService;
@@ -64,37 +59,6 @@ namespace LYBT.Module.Users.Services
         }
 
         #region 权限检查辅助方法（Issue #1909）
-
-        /// <summary>
-        /// 获取当前用户角色
-        /// </summary>
-        private UserRole? GetCurrentUserRole()
-        {
-            try
-            {
-                var roleClaim = _httpContextAccessor.HttpContext?.User?
-                    .FindFirst(ClaimTypes.Role)?.Value;
-
-                if (string.IsNullOrEmpty(roleClaim))
-                    return null;
-
-                return Enum.TryParse<UserRole>(roleClaim, out var role) ? role : null;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// S2: 获取当前用户ID
-        /// </summary>
-        private Guid? GetCurrentUserId()
-        {
-            var userIdClaim = _httpContextAccessor.HttpContext?.User?
-                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return !string.IsNullOrEmpty(userIdClaim) && Guid.TryParse(userIdClaim, out var id) ? id : null;
-        }
 
         /// <summary>
         /// 检查当前用户是否可以管理目标用户
@@ -121,10 +85,9 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 检查是否可以删除指定用户（包含最后一个保护）
         /// </summary>
-        private async Task<Result> CanDeleteUserAsync(Guid userId, UserRole targetRole, CancellationToken cancellationToken = default)
+        private async Task<Result> CanDeleteUserAsync(Guid userId, UserRole targetRole, UserRole currentRole, CancellationToken cancellationToken = default)
         {
             // 权限检查
-            var currentRole = GetCurrentUserRole();
             if (!CanManageUser(currentRole, targetRole))
             {
                 return Result.Failure(GenericErrorCode.Forbidden, "您没有权限删除该用户");
@@ -183,7 +146,7 @@ namespace LYBT.Module.Users.Services
         /// 创建用户
         /// Issue #1909: 添加三角色权限控制
         /// </summary>
-        public async Task<Result<UserDetailDto>> CreateAsync(UserInputDto dto, CancellationToken cancellationToken = default)
+        public async Task<Result<UserDetailDto>> CreateAsync(UserInputDto dto, UserRole currentRole, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
 
@@ -197,7 +160,6 @@ namespace LYBT.Module.Users.Services
             }
 
             // Issue #1909: 权限检查 - 不能创建比自己权限高的角色
-            var currentRole = GetCurrentUserRole();
             if (!CanManageUser(currentRole, dto.Role))
             {
                 var roleName = dto.Role == UserRole.SuperAdmin ? "超级管理员" :
@@ -258,7 +220,7 @@ namespace LYBT.Module.Users.Services
         /// 更新用户
         /// Issue #1909: 添加三角色权限控制
         /// </summary>
-        public async Task<Result<UserDetailDto>> UpdateAsync(Guid id, UserInputDto dto, CancellationToken cancellationToken = default)
+        public async Task<Result<UserDetailDto>> UpdateAsync(Guid id, UserInputDto dto, UserRole currentRole, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             var entity = await _repository.GetByIdAsync(id, cancellationToken);
@@ -282,7 +244,6 @@ namespace LYBT.Module.Users.Services
             }
 
             // Issue #1909: 权限检查 - 只能更新有权限管理的用户
-            var currentRole = GetCurrentUserRole();
             if (!CanManageUser(currentRole, entity.Role))
             {
                 _logger.LogWarning("[SVC] User.Update → PermissionDenied - CurrentRole={CurrentRole} UserId={UserId} TargetRole={TargetRole}",
@@ -343,13 +304,12 @@ namespace LYBT.Module.Users.Services
         /// 删除用户（软删除）
         /// Issue #1909: 添加三角色权限控制和最后一个保护
         /// </summary>
-        public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Result> DeleteAsync(Guid id, Guid currentUserId, UserRole currentRole, CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
 
             // S2: 自删除保护
-            var currentUserId = GetCurrentUserId();
-            if (currentUserId.HasValue && currentUserId.Value == id)
+            if (currentUserId == id)
             {
                 _logger.LogWarning("[SVC] User.Delete → SelfDeleteBlocked - UserId={UserId}", id);
                 return Result.Failure(GenericErrorCode.Forbidden, "不能删除自己的账户");
@@ -368,7 +328,7 @@ namespace LYBT.Module.Users.Services
             }
 
             // Issue #1909: 权限检查和保护逻辑
-            var permissionCheck = await CanDeleteUserAsync(id, targetUser.Role, cancellationToken);
+            var permissionCheck = await CanDeleteUserAsync(id, targetUser.Role, currentRole, cancellationToken);
             if (!permissionCheck.IsSuccess)
             {
                 _logger.LogWarning("[SVC] User.Delete → PermissionDenied - UserId={UserId} Reason={Reason}",
@@ -477,21 +437,21 @@ namespace LYBT.Module.Users.Services
 
         #endregion
 
-        public Task<Result<UserDetailDto>> ToggleStatusAsync(Guid id, CancellationToken cancellationToken = default)
-            => _statusService.ToggleStatusAsync(id, cancellationToken);
+        public Task<Result<UserDetailDto>> ToggleStatusAsync(Guid id, UserRole currentRole, CancellationToken cancellationToken = default)
+            => _statusService.ToggleStatusAsync(id, currentRole, cancellationToken);
 
-        public Task<Result<UserDetailDto>> RestoreAsync(Guid id, CancellationToken cancellationToken = default)
-            => _statusService.RestoreAsync(id, cancellationToken);
+        public Task<Result<UserDetailDto>> RestoreAsync(Guid id, UserRole currentRole, CancellationToken cancellationToken = default)
+            => _statusService.RestoreAsync(id, currentRole, cancellationToken);
 
 
         // ========== 批量操作委托给 IUserBatchOperationService ==========
 
         /// <inheritdoc />
-        public Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid? currentUserId = null, CancellationToken cancellationToken = default)
-            => _batchService.BatchDeleteAsync(ids, currentUserId, cancellationToken);
+        public Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid? currentUserId, UserRole currentRole, CancellationToken cancellationToken = default)
+            => _batchService.BatchDeleteAsync(ids, currentUserId, currentRole, cancellationToken);
 
         /// <inheritdoc />
-        public Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid? currentUserId = null, CancellationToken cancellationToken = default)
-            => _batchService.BatchUpdateStatusAsync(ids, status, currentUserId, cancellationToken);
+        public Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid? currentUserId, UserRole currentRole, CancellationToken cancellationToken = default)
+            => _batchService.BatchUpdateStatusAsync(ids, status, currentUserId, currentRole, cancellationToken);
     }
 }

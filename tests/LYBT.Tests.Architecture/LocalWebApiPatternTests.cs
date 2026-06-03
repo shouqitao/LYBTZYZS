@@ -31,6 +31,7 @@ public class LocalWebApiPatternTests
                 "Microsoft.AspNetCore",
                 "Microsoft.EntityFrameworkCore",
                 "Microsoft.Extensions",
+                "Serilog",
                 "System",
                 "System.Threading",
                 "System.Linq",

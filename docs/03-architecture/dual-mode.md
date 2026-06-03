@@ -76,6 +76,23 @@ DI 注册在 `DataSourceRegistrationExtensions.cs` 中完成，根据配置选�
 | Health | 3 | 3 | 100% |
 | **总计** | **~102** | **~102** | **~100%** |
 
+### 本地模式独有端点
+
+部分端点仅在 LocalWebAPI 模式下可用，用于增强离线使用体验：
+
+| 模块 | 端点 | 方法 | 说明 |
+|------|------|------|------|
+| Formulas | /api/formulas/{id}/clone | POST | 克隆验方（含药材组成） |
+| Formulas | /api/formulas/categories | GET | 获取验方分类列表 |
+| Patients | /api/patients/by-id-number/{idNumber} | GET | 按身份证号查询患者 |
+| MedicalCases | /api/medicalcases/pending | GET | 获取待处理医案（无处方） |
+| MedicalCases | /api/medicalcases/by-status/{status} | GET | 按状态查询医案 |
+| Diagnostics | /api/diagnostics/db-info | GET | 数据库连接信息 |
+| Diagnostics | /api/diagnostics/version | GET | 程序集版本信息 |
+| Diagnostics | /api/diagnostics/logs/recent | GET | 最近日志 |
+
+**设计说明**: 这些端点满足本地单用户场景下的便捷需求（如快速克隆验方、身份证号查询、系统诊断），不要求远程模式实现。
+
 ### 限制与排除 (TBD-01)
 
 部分对服务端有强依赖的功能在本地模式下不可用，调用时返回 `501 Not Implemented` 或空结果：

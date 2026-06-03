@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using LYBT.LocalWebAPI.Data;
 using LYBT.LocalWebAPI.Auth;
+using LYBT.Shared.Logging.Management;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.LocalWebAPI;
@@ -21,6 +22,8 @@ public static class LocalWebApiProgram
             options.UseSqlServer(connectionString));
 
         builder.Services.AddControllers();
+
+        builder.Services.AddSingleton<LoggingLevelManager>();
 
         LocalJwtConfig.ConfigureServices(builder.Services);
 

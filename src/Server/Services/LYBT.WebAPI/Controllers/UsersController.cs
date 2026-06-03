@@ -129,7 +129,8 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> Create([FromBody] UserInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            var result = await _userService.CreateAsync(dto);
+            var (_, _, currentRole) = GetOperator();
+            var result = await _userService.CreateAsync(dto, currentRole);
 
             if (result.IsSuccess && result.Data != null)
             {
@@ -154,7 +155,8 @@ namespace LYBT.WebAPI.Controllers
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-            var result = await _userService.UpdateAsync(id, dto);
+            var (_, _, currentRole) = GetOperator();
+            var result = await _userService.UpdateAsync(id, dto, currentRole);
 
             if (result.IsSuccess && result.Data != null)
             {
@@ -177,7 +179,8 @@ namespace LYBT.WebAPI.Controllers
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-            var result = await _userService.DeleteAsync(id);
+            var (currentUserId, _, currentRole) = GetOperator();
+            var result = await _userService.DeleteAsync(id, currentUserId, currentRole);
 
             if (result.IsSuccess)
             {
@@ -271,7 +274,8 @@ namespace LYBT.WebAPI.Controllers
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-            var result = await _userService.ToggleStatusAsync(id);
+            var (_, _, currentRole) = GetOperator();
+            var result = await _userService.ToggleStatusAsync(id, currentRole);
             if (!result.IsSuccess || result.Data == null)
             {
                 return HandleResult(result);
@@ -293,7 +297,8 @@ namespace LYBT.WebAPI.Controllers
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-            var result = await _userService.RestoreAsync(id);
+            var (_, _, currentRole) = GetOperator();
+            var result = await _userService.RestoreAsync(id, currentRole);
             if (!result.IsSuccess || result.Data == null)
             {
                 return HandleResult(result);
@@ -321,15 +326,10 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("请至少选择一个用户");
             }
 
-            // 获取当前用户ID，防止删除自己
-            Guid? currentUserId = null;
-            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (!string.IsNullOrEmpty(userIdClaim) && Guid.TryParse(userIdClaim, out var parsedId))
-            {
-                currentUserId = parsedId;
-            }
+            // 获取当前用户信息，防止删除自己
+            var (currentUserId, _, currentRole) = GetOperator();
 
-            var result = await _userService.BatchDeleteAsync(dto.Ids, currentUserId);
+            var result = await _userService.BatchDeleteAsync(dto.Ids, currentUserId, currentRole);
             if (!result.IsSuccess || result.Data == null)
             {
                 return HandleResult(result);
@@ -355,14 +355,9 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("请至少选择一个用户");
             }
 
-            Guid? currentUserId = null;
-            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (!string.IsNullOrEmpty(userIdClaim) && Guid.TryParse(userIdClaim, out var parsedId))
-            {
-                currentUserId = parsedId;
-            }
+            var (currentUserId, _, currentRole) = GetOperator();
 
-            var result = await _userService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Enabled, currentUserId);
+            var result = await _userService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Enabled, currentUserId, currentRole);
             if (!result.IsSuccess || result.Data == null)
             {
                 return HandleResult(result);
@@ -387,14 +382,9 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("请至少选择一个用户");
             }
 
-            Guid? currentUserId = null;
-            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (!string.IsNullOrEmpty(userIdClaim) && Guid.TryParse(userIdClaim, out var parsedId))
-            {
-                currentUserId = parsedId;
-            }
+            var (currentUserId, _, currentRole) = GetOperator();
 
-            var result = await _userService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Disabled, currentUserId);
+            var result = await _userService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Disabled, currentUserId, currentRole);
             if (!result.IsSuccess || result.Data == null)
             {
                 return HandleResult(result);

@@ -133,7 +133,7 @@ Token 获取方式见 [认证 API](auth.md)。
 | GET | `/patients/import-template` | 下载导入模板 |
 | GET | `/patients/export` | 导出 Excel |
 | POST | `/patients/{id}/restore` | 恢复已删除患者 |
-| PUT | `/patients/{id}/status` | 启用/禁用切换 (AdminOnly, FR-PAT-013) |
+| POST | `/patients/{id}/toggle-status` | 启用/禁用切换 (AdminOnly, FR-PAT-013) |
 | POST | `/patients/batch-delete` | 批量删除 |
 
 ### 药材模块 ([herbs.md](herbs.md)) -- DoctorOrAdmin
@@ -200,6 +200,20 @@ Token 获取方式见 [认证 API](auth.md)。
 | GET | `/medicalcases/{id}/audit-logs` | 审计日志 |
 | GET | `/medicalcases/{id}/consultations` | 诊断记录列表 |
 | GET | `/medicalcases/{id}/prescriptions` | 处方记录列表 |
+| PUT | `/medicalcases/{id}/print-completed` | 记录打印完成 |
+| POST | `/medicalcases/{id}/print-logs` | 添加打印日志 |
+
+### 挂号管理模块 ([registrations.md](registrations.md)) -- PatientAccess
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/registrations` | 创建挂号 (前台模式) |
+| POST | `/registrations/quick-visit` | 医生快速看诊 (DoctorOrAdmin) |
+| GET | `/registrations/{id}` | 挂号详情 |
+| GET | `/registrations` | 挂号列表 (分页) |
+| GET | `/registrations/queue` | 等待队列 |
+| PUT | `/registrations/{id}/start-visit` | 接诊 (DoctorOrAdmin) |
+| PUT | `/registrations/{id}/cancel` | 取消挂号 |
 
 ### 数据同步模块 ([sync.md](sync.md)) -- DoctorOrAdmin
 
@@ -228,6 +242,14 @@ Token 获取方式见 [认证 API](auth.md)。
 | POST | `/diagnostics/logging/debug/enable` | 启用调试模式 |
 | POST | `/diagnostics/logging/debug/disable` | 禁用调试模式 |
 | POST | `/diagnostics/logging/level` | 设置日志级别 |
+
+### 系统配置 -- AdminOnly
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/configuration` | 获取系统配置 |
+| GET | `/configuration/{key}` | 获取单个配置项 |
+| POST | `/configuration/validate` | 验证生产环境配置 |
 
 ## 认证错误码
 
@@ -280,3 +302,4 @@ Token 获取方式见 [认证 API](auth.md)。
 | 2026-02-18 | v1.1 | PRD同步: 患者模块新增 PUT /patients/{id}/status (FR-PAT-013); 端点总数 92->93 |
 | 2026-02-18 | v1.2 | 认证错误码章节补充注释: 标注 4 个设计扩展码 (PasswordExpired/SessionNotFound/SessionExpired/ConcurrentSessionLimit) |
 | 2026-02-22 | v1.3 | MC-D20 同步: 医案端点 `/draft` 重命名为 `/suspend` (Draft→Suspended 状态重命名) |
+| 2026-05-04 | v1.4 | 新增挂号管理模块 (registrations.md, 7 端点); 新增系统配置端点 (3 端点); 医案模块补充打印端点 (2 端点); 患者模块修正 check-reference (GET) 和 toggle-status (POST) 动词 |

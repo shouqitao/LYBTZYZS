@@ -525,6 +525,81 @@
 
 ---
 
+## 打印操作 (MedicalCasePrintController)
+
+### PUT /medicalcases/{id}/print-completed
+
+记录打印完成，更新打印管理字段并写入打印日志。
+
+- **权限**: DoctorOrAdmin
+- T2-X8-04~08: IsPrinted/PrintCount/LastPrintedAt/PrintVersion + PrintLog
+
+**路径参数**:
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| id | Guid | 医案ID |
+
+**请求体** (`PrintCompletedRequest`):
+
+```json
+{
+  "printType": "string",
+  "printerName": "string?"
+}
+```
+
+**成功响应** (200): `MedicalCaseDetailDto` (更新后的医案详情)
+
+**错误场景**:
+
+| 场景 | HTTP | 说明 |
+|------|------|------|
+| 医案不存在 | 404 | 指定ID的医案不存在 |
+
+---
+
+### POST /medicalcases/{id}/print-logs
+
+添加打印日志，记录打印成功或失败。
+
+- **权限**: DoctorOrAdmin
+- T4-S5-02: 支持打印成功/失败日志记录
+
+**路径参数**:
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| id | Guid | 医案ID |
+
+**请求体** (`PrintLogInputDto`):
+
+```json
+{
+  "printType": "string",
+  "isSuccess": true,
+  "printerName": "string?",
+  "errorMessage": "string?"
+}
+```
+
+**成功响应** (200):
+
+```json
+{
+  "success": true,
+  "message": "打印日志记录成功"
+}
+```
+
+**错误场景**:
+
+| 场景 | HTTP | 说明 |
+|------|------|------|
+| 医案不存在 | 404 | 指定ID的医案不存在 |
+
+---
+
 **变更记录**
 
 | 日期 | 版本 | 变更内容 |

@@ -288,6 +288,56 @@ namespace LYBT.LocalWebAPI.Controllers
             return Ok(result);
         }
 
+        // GET /api/formulas/pending-validation (P1: align with Server)
+        [HttpGet("pending-validation")]
+        public async Task<ActionResult<List<Formula>>> GetPendingValidation()
+        {
+            var formulas = await _db.Formulas
+                .AsNoTracking()
+                .Include(f => f.Herbs)
+                .Where(f => !f.IsDeleted
+                    && f.IsShared
+                    && f.ValidationStatus != FormulaValidationStatus.Validated)
+                .ToListAsync();
+            return Ok(formulas);
+        }
+
+        // POST /api/formulas/{formulaId}/herbs/{herbItemId}/validate (P1: align with Server)
+        [HttpPost("{formulaId}/herbs/{herbItemId}/validate")]
+        public async Task<IActionResult> ValidateHerb(
+            Guid formulaId,
+            Guid herbItemId,
+            [FromBody] ValidateFormulaHerbInputDto request)
+        {
+            if (request?.SelectedHerbId == null || request.SelectedHerbId == Guid.Empty)
+                return BadRequest("SelectedHerbId is required.");
+
+            var formula = await _db.Formulas
+                .Include(f => f.Herbs)
+                .FirstOrDefaultAsync(f => f.Id == formulaId && !f.IsDeleted);
+            if (formula == null) return NotFound("验方不存在");
+
+            var herbItem = formula.Herbs?.FirstOrDefault(h => h.Id == herbItemId);
+            if (herbItem == null) return NotFound("药材项不存在");
+
+            var targetHerb = await _db.Herbs.AsNoTracking()
+                .FirstOrDefaultAsync(h => h.Id == request.SelectedHerbId && !h.IsDeleted);
+            if (targetHerb == null) return NotFound("系统药材不存在");
+
+            herbItem.HerbId = request.SelectedHerbId;
+            herbItem.HerbName = targetHerb.Name;
+            herbItem.IsValidated = true;
+
+            // Update formula validation status if all herbs validated
+            if (formula.Herbs != null && formula.Herbs.All(h => h.IsValidated))
+            {
+                formula.ValidationStatus = FormulaValidationStatus.Validated;
+            }
+
+            await _db.SaveChangesAsync();
+            return Ok(new { message = "药材验证成功" });
+        }
+
         // GET /api/formulas/categories
         [HttpGet("categories")]
         public async Task<ActionResult<List<string>>> GetCategories()

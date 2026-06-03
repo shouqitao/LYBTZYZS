@@ -215,5 +215,44 @@ namespace LYBT.LocalWebAPI.Controllers
             await _db.SaveChangesAsync();
             return Ok(result);
         }
+
+        // GET /api/patients/{id}/check-reference
+        [HttpGet("{id}/check-reference")]
+        public async Task<IActionResult> CheckReference(Guid id)
+        {
+            var patient = await _db.Patients.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+            if (patient == null) return NotFound();
+
+            var hasActiveCases = await _db.MedicalCases.AnyAsync(mc => mc.PatientId == id && !mc.IsDeleted);
+
+            return Ok(new
+            {
+                IsReferenced = hasActiveCases,
+                ReferenceCount = hasActiveCases ? await _db.MedicalCases.CountAsync(mc => mc.PatientId == id && !mc.IsDeleted) : 0
+            });
+        }
+
+        // POST /api/patients/batch-check-reference
+        [HttpPost("batch-check-reference")]
+        public async Task<IActionResult> BatchCheckReference([FromBody] BatchDeleteInputDto request)
+        {
+            if (request?.Ids == null || request.Ids.Count == 0)
+                return BadRequest("ids 不能为空");
+
+            var referencedPatients = await _db.MedicalCases
+                .Where(mc => request.Ids.Contains(mc.PatientId) && !mc.IsDeleted)
+                .GroupBy(mc => mc.PatientId)
+                .Select(g => new { PatientId = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            var result = request.Ids.Select(id => new
+            {
+                PatientId = id,
+                IsReferenced = referencedPatients.Any(r => r.PatientId == id),
+                ReferenceCount = referencedPatients.FirstOrDefault(r => r.PatientId == id)?.Count ?? 0
+            }).ToList();
+
+            return Ok(result);
+        }
     }
 }

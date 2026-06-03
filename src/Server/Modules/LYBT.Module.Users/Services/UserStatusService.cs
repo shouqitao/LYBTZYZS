@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Users.Interfaces;
@@ -6,7 +5,6 @@ using LYBT.Module.Users.Mapping;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
@@ -18,24 +16,21 @@ namespace LYBT.Module.Users.Services
         private readonly ILogger<UserStatusService> _logger;
         private readonly ICrossModuleAuthService _authService;
         private readonly LYBT.Module.Registration.Interfaces.IRegistrationRepository _registrationRepository;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly UserMapper _mapper = new();
 
         public UserStatusService(
             IUserRepository repository,
             ILogger<UserStatusService> logger,
             ICrossModuleAuthService authService,
-            LYBT.Module.Registration.Interfaces.IRegistrationRepository registrationRepository,
-            IHttpContextAccessor httpContextAccessor)
+            LYBT.Module.Registration.Interfaces.IRegistrationRepository registrationRepository)
         {
             _repository = repository;
             _logger = logger;
             _authService = authService;
             _registrationRepository = registrationRepository;
-            _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<Result<UserDetailDto>> ToggleStatusAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Result<UserDetailDto>> ToggleStatusAsync(Guid id, UserRole currentRole, CancellationToken cancellationToken = default)
         {
             var entity = await _repository.GetByIdAsync(id, cancellationToken);
             if (entity == null)
@@ -47,7 +42,6 @@ namespace LYBT.Module.Users.Services
                 return Result<UserDetailDto>.Failure(GenericErrorCode.Forbidden, "系统管理员账号不可被禁用");
             }
 
-            var currentRole = GetCurrentUserRole();
             if (!CanManageUser(currentRole, entity.Role))
             {
                 _logger.LogWarning("[SVC] User.ToggleStatus → PermissionDenied - CurrentRole={CurrentRole} UserId={UserId} TargetRole={TargetRole}",
@@ -95,7 +89,7 @@ namespace LYBT.Module.Users.Services
             return Result<UserDetailDto>.Success(dto);
         }
 
-        public async Task<Result<UserDetailDto>> RestoreAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Result<UserDetailDto>> RestoreAsync(Guid id, UserRole currentRole, CancellationToken cancellationToken = default)
         {
             var entity = await _repository.GetByIdIncludingDeletedAsync(id, cancellationToken);
             if (entity == null)
@@ -110,7 +104,6 @@ namespace LYBT.Module.Users.Services
             if (!entity.IsDeleted)
                 return Result<UserDetailDto>.Failure(GenericErrorCode.InvalidRequest, "该用户未被删除，无需恢复");
 
-            var currentRole = GetCurrentUserRole();
             if (!CanManageUser(currentRole, entity.Role))
             {
                 _logger.LogWarning("[SVC] User.Restore → PermissionDenied - CurrentRole={CurrentRole} UserId={UserId} TargetRole={TargetRole}",
@@ -126,24 +119,6 @@ namespace LYBT.Module.Users.Services
 
             _logger.LogInformation("[SVC] User.Restore completed - UserId={UserId} UserName={UserName}", id, entity.UserName);
             return Result<UserDetailDto>.Success(dto);
-        }
-
-        private UserRole? GetCurrentUserRole()
-        {
-            try
-            {
-                var roleClaim = _httpContextAccessor.HttpContext?.User?
-                    .FindFirst(ClaimTypes.Role)?.Value;
-
-                if (string.IsNullOrEmpty(roleClaim))
-                    return null;
-
-                return Enum.TryParse<UserRole>(roleClaim, out var role) ? role : null;
-            }
-            catch
-            {
-                return null;
-            }
         }
 
         private static bool CanManageUser(UserRole? currentUserRole, UserRole? targetUserRole)

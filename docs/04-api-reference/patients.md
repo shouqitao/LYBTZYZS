@@ -183,22 +183,13 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 
 ---
 
-## PUT /patients/{id}/status
+## POST /patients/{id}/toggle-status
 
-切换患者状态 (启用/禁用)。仅限 Admin/SuperAdmin。
+切换患者状态 (启用/禁用)。仅限 Admin/SuperAdmin。无请求体，自动在 Enabled/Disabled 间切换。
 
 > **权限**: `[Authorize(Policy = "AdminOnly")]`
 
 **路径参数**: `id` (Guid)
-
-**请求体** (`PatientStatusInputDto`):
-
-```json
-{
-  "status": "Enabled|Disabled",
-  "reason": "string"               // 禁用原因 (禁用时必填)
-}
-```
 
 **业务规则**:
 1. 仅 Admin/SuperAdmin 可执行状态切换
@@ -216,13 +207,12 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 - 403: 权限不足 (非 Admin)
 - 404: 患者不存在 (ERR-20001)
 - 422: 患者有进行中的医案 (ERR-20005)
-- 400: 无效的状态值 (ERR-20006)
 
 > **交叉引用**: 禁用联动规则见 [medical-cases.md](medical-cases.md) MC-D16; 查询可见性见 patients PRD FR-PAT-002 规则 5 (Receptionist 不可见禁用患者)
 
 ---
 
-## POST /patients/{id}/check-reference
+## GET /patients/{id}/check-reference
 
 检查患者是否被医案引用，用于删除前确认。
 

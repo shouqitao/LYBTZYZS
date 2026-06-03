@@ -225,6 +225,18 @@ namespace LYBT.LocalWebAPI.Controllers
             return Ok(result);
         }
 
+        // GET /api/herbs/export-all (P1: align with Server)
+        [HttpGet("export-all")]
+        public async Task<ActionResult<List<Herb>>> GetAllForExport([FromQuery] string? category = null)
+        {
+            var q = _db.Herbs.AsNoTracking().Where(h => !h.IsDeleted);
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                q = q.Where(h => h.Category == category);
+            }
+            return await q.ToListAsync();
+        }
+
         // GET /api/herbs/categories
         [HttpGet("categories")]
         public async Task<ActionResult<List<string>>> GetCategories()
@@ -235,6 +247,45 @@ namespace LYBT.LocalWebAPI.Controllers
                 .Distinct()
                 .OrderBy(c => c)
                 .ToListAsync();
+        }
+
+        // GET /api/herbs/{id}/check-reference
+        [HttpGet("{id}/check-reference")]
+        public async Task<IActionResult> CheckReference(Guid id)
+        {
+            var herb = await _db.Herbs.AsNoTracking().FirstOrDefaultAsync(h => h.Id == id && !h.IsDeleted);
+            if (herb == null) return NotFound();
+
+            var isReferenced = await _db.PrescriptionItems.AnyAsync(pi => pi.HerbId == id);
+
+            return Ok(new
+            {
+                IsReferenced = isReferenced,
+                ReferenceCount = isReferenced ? await _db.PrescriptionItems.CountAsync(pi => pi.HerbId == id) : 0
+            });
+        }
+
+        // POST /api/herbs/batch-check-reference
+        [HttpPost("batch-check-reference")]
+        public async Task<IActionResult> BatchCheckReference([FromBody] BatchDeleteInputDto request)
+        {
+            if (request?.Ids == null || request.Ids.Count == 0)
+                return BadRequest("ids 不能为空");
+
+            var referencedHerbs = await _db.PrescriptionItems
+                .Where(pi => request.Ids.Contains(pi.HerbId))
+                .GroupBy(pi => pi.HerbId)
+                .Select(g => new { HerbId = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            var result = request.Ids.Select(id => new
+            {
+                HerbId = id,
+                IsReferenced = referencedHerbs.Any(r => r.HerbId == id),
+                ReferenceCount = referencedHerbs.FirstOrDefault(r => r.HerbId == id)?.Count ?? 0
+            }).ToList();
+
+            return Ok(result);
         }
     }
 }
