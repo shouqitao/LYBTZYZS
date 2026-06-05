@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Initialization;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Contracts.Repositories;
@@ -16,7 +17,7 @@ using Prism.Ioc;
 namespace LYBT.Desktop.Shell.Extensions;
 
 /// <summary>
-/// Repository DI 注册 — 远程模式 (Refit API)
+/// Repository DI 注册 — 通过 IApiClient 统一访问
 /// </summary>
 public static class DataSourceRegistrationExtensions
 {
@@ -35,44 +36,32 @@ public static class DataSourceRegistrationExtensions
     {
         containerRegistry.Register<IPatientRepository>(resolver =>
             new PatientRepository(
-                resolver.Resolve<Desktop.Contracts.Api.IPatientApi>(),
-                resolver.Resolve<Desktop.Contracts.Api.ILocalPatientApi>(),
-                resolver.Resolve<IApiRouter>(),
+                resolver.Resolve<IApiClient>(),
                 resolver.Resolve<ILogger<PatientRepository>>()));
 
         containerRegistry.Register<IHerbRepository>(resolver =>
             new HerbRepository(
-                resolver.Resolve<Desktop.Contracts.Api.IHerbApi>(),
-                resolver.Resolve<Desktop.Contracts.Api.ILocalHerbApi>(),
-                resolver.Resolve<IApiRouter>(),
+                resolver.Resolve<IApiClient>(),
                 resolver.Resolve<ILogger<HerbRepository>>()));
 
         containerRegistry.Register<IFormulaRepository>(resolver =>
             new FormulaRepository(
-                resolver.Resolve<Desktop.Contracts.Api.IFormulaApi>(),
-                resolver.Resolve<Desktop.Contracts.Api.ILocalFormulaApi>(),
-                resolver.Resolve<IApiRouter>(),
+                resolver.Resolve<IApiClient>(),
                 resolver.Resolve<ILogger<FormulaRepository>>()));
 
         containerRegistry.Register<IUserRepository>(resolver =>
             new UserRepository(
-                resolver.Resolve<Desktop.Contracts.Api.IUserApi>(),
-                resolver.Resolve<Desktop.Contracts.Api.ILocalUserApi>(),
-                resolver.Resolve<IApiRouter>(),
+                resolver.Resolve<IApiClient>(),
                 resolver.Resolve<ILogger<UserRepository>>()));
 
         containerRegistry.Register<IMedicalCaseRepository>(resolver =>
             new MedicalCaseRepository(
-                resolver.Resolve<Desktop.Contracts.Api.IMedicalCaseApi>(),
-                resolver.Resolve<Desktop.Contracts.Api.ILocalMedicalCaseApi>(),
-                resolver.Resolve<IApiRouter>(),
+                resolver.Resolve<IApiClient>(),
                 resolver.Resolve<ILogger<MedicalCaseRepository>>()));
 
         containerRegistry.Register<IRegistrationRepository>(resolver =>
             new RegistrationRepository(
-                resolver.Resolve<Desktop.Contracts.Api.IRegistrationApi>(),
-                resolver.Resolve<Desktop.Contracts.Api.ILocalRegistrationApi>(),
-                resolver.Resolve<IApiRouter>(),
+                resolver.Resolve<IApiClient>(),
                 resolver.Resolve<ILogger<RegistrationRepository>>()));
     }
 }

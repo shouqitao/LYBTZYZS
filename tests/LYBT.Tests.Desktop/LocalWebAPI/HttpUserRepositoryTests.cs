@@ -1,7 +1,5 @@
-using System.Net;
-using System.Net.Http;
-using System.Text.Json;
 using FluentAssertions;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.LocalWebAPI.Repositories;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
@@ -12,38 +10,47 @@ using NSubstitute;
 namespace LYBT.Tests.Desktop.LocalWebAPI;
 
 /// <summary>
-/// HttpUserRepository unit tests
+/// HttpUserRepository unit tests — verifies delegation to IApiClient.
 /// </summary>
-public class HttpUserRepositoryTests : IDisposable
+public class HttpUserRepositoryTests
 {
-    private readonly HttpClient _mockHttpClient;
+    private readonly IApiClient _mockApiClient;
+    private readonly IApiClientUsers _mockUsers;
     private readonly ILogger<HttpUserRepository> _logger;
     private readonly HttpUserRepository _repo;
-    private static readonly JsonSerializerOptions Json = new() { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = null };
 
     public HttpUserRepositoryTests()
     {
-        var handler = new MockHttpMessageHandler();
-        _mockHttpClient = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
+        _mockApiClient = Substitute.For<IApiClient>();
+        _mockUsers = Substitute.For<IApiClientUsers>();
+        _mockApiClient.Users.Returns(_mockUsers);
         _logger = Substitute.For<ILogger<HttpUserRepository>>();
-        _repo = new HttpUserRepository(_mockHttpClient, _logger);
-    }
-
-    public void Dispose()
-    {
-        _mockHttpClient.Dispose();
-        GC.SuppressFinalize(this);
+        _repo = new HttpUserRepository(_mockApiClient, _logger);
     }
 
     [Fact]
-    public async Task GetByIdAsync_Returns_Null_On_404()
+    public async Task GetByIdAsync_Returns_Data_When_Success()
     {
-        var handler = new MockHttpMessageHandler((req, ct) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound)));
-        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpUserRepository(client, _logger);
+        var id = Guid.NewGuid();
+        var detail = new UserDetailDto { Id = id, UserName = "testuser" };
+        _mockUsers.GetUserByIdAsync(id)
+            .Returns(new ApiResponse<UserDetailDto> { Success = true, Data = detail });
 
-        var result = await repo.GetByIdAsync(Guid.NewGuid());
+        var result = await _repo.GetByIdAsync(id);
+
+        result.Should().NotBeNull();
+        result!.UserName.Should().Be("testuser");
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_Returns_Null_When_No_Data()
+    {
+        var id = Guid.NewGuid();
+        _mockUsers.GetUserByIdAsync(id)
+            .Returns(new ApiResponse<UserDetailDto> { Success = false, Data = null });
+
+        var result = await _repo.GetByIdAsync(id);
+
         result.Should().BeNull();
     }
 
@@ -51,111 +58,96 @@ public class HttpUserRepositoryTests : IDisposable
     public async Task DeleteAsync_Returns_True_On_Success()
     {
         var id = Guid.NewGuid();
-        string? capturedMethod = null;
-        string? capturedPath = null;
-        var handler = new MockHttpMessageHandler((req, ct) =>
-        {
-            capturedMethod = req.Method.Method;
-            capturedPath = req.RequestUri?.PathAndQuery;
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
-        });
-        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpUserRepository(client, _logger);
+        _mockUsers.DeleteUserAsync(id)
+            .Returns(new ApiResponse { Success = true });
 
-        var result = await repo.DeleteAsync(id);
+        var result = await _repo.DeleteAsync(id);
+
         result.Should().BeTrue();
-        capturedMethod.Should().Be("DELETE");
-        capturedPath.Should().Contain($"/api/users/{id}");
+        await _mockUsers.Received(1).DeleteUserAsync(id);
     }
 
     [Fact]
     public async Task SearchAsync_Returns_Empty_On_No_Results()
     {
-        var paged = new PagedResult<UserListDto> { Items = new List<UserListDto>() };
-        var json = JsonSerializer.Serialize(paged, Json);
-        var handler = new MockHttpMessageHandler((req, ct) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json) }));
-        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpUserRepository(client, _logger);
+        _mockUsers.GetUsersAsync(1, 100, "nonexistent")
+            .Returns(new ApiResponse<PagedResult<UserListDto>> { Success = true, Data = new PagedResult<UserListDto> { Items = [] } });
 
-        var result = await repo.SearchAsync("nonexistent");
+        var result = await _repo.SearchAsync("nonexistent");
+
         result.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task ToggleStatusAsync_Returns_Null_On_404()
+    public async Task ToggleStatusAsync_Returns_Null_On_Failure()
     {
-        var handler = new MockHttpMessageHandler((req, ct) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound)));
-        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpUserRepository(client, _logger);
+        var id = Guid.NewGuid();
+        _mockUsers.ToggleStatusAsync(id)
+            .Returns(new ApiResponse<UserDetailDto> { Success = false });
 
-        var result = await repo.ToggleStatusAsync(Guid.NewGuid());
+        var result = await _repo.ToggleStatusAsync(id);
+
         result.Should().BeNull();
     }
 
     [Fact]
-    public async Task RestoreAsync_Returns_Null_On_404()
+    public async Task RestoreAsync_Returns_Null_On_Failure()
     {
-        var handler = new MockHttpMessageHandler((req, ct) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound)));
-        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpUserRepository(client, _logger);
+        var id = Guid.NewGuid();
+        _mockUsers.RestoreAsync(id)
+            .Returns(new ApiResponse<UserDetailDto> { Success = false });
 
-        var result = await repo.RestoreAsync(Guid.NewGuid());
+        var result = await _repo.RestoreAsync(id);
+
         result.Should().BeNull();
     }
 
     [Fact]
-    public async Task ChangePasswordAsync_Returns_Success_On_200()
+    public async Task ChangePasswordAsync_Returns_Success_On_Api_Success()
     {
-        var handler = new MockHttpMessageHandler((req, ct) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
-        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpUserRepository(client, _logger);
+        var userId = Guid.NewGuid();
+        _mockUsers.ChangePasswordAsync(userId, Arg.Any<ChangePasswordRequest>())
+            .Returns(new ApiResponse { Success = true });
 
-        var result = await repo.ChangePasswordAsync(Guid.NewGuid(), new ChangePasswordRequest { OldPassword = "old", NewPassword = "new" });
+        var result = await _repo.ChangePasswordAsync(userId, new ChangePasswordRequest { OldPassword = "old", NewPassword = "new" });
+
         result.IsSuccess.Should().BeTrue();
     }
 
     [Fact]
-    public async Task ChangePasswordAsync_Returns_Failure_On_400()
+    public async Task ChangePasswordAsync_Returns_Failure_On_Api_Failure()
     {
-        var handler = new MockHttpMessageHandler((req, ct) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)));
-        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpUserRepository(client, _logger);
+        var userId = Guid.NewGuid();
+        _mockUsers.ChangePasswordAsync(userId, Arg.Any<ChangePasswordRequest>())
+            .Returns(new ApiResponse { Success = false, Message = "Wrong password" });
 
-        var result = await repo.ChangePasswordAsync(Guid.NewGuid(), new ChangePasswordRequest { OldPassword = "wrong", NewPassword = "new" });
+        var result = await _repo.ChangePasswordAsync(userId, new ChangePasswordRequest { OldPassword = "wrong", NewPassword = "new" });
+
         result.IsSuccess.Should().BeFalse();
     }
 
     [Fact]
-    public async Task CreateAsync_Sends_Post_To_Users()
+    public async Task CreateAsync_Throws_On_Failure()
     {
-        var detail = new UserDetailDto { Id = Guid.NewGuid(), UserName = "testuser", RealName = "Test User" };
-        var json = JsonSerializer.Serialize(detail, Json);
-        string? capturedMethod = null;
-        string? capturedPath = null;
-        string? capturedBody = null;
-        var handler = new MockHttpMessageHandler((req, ct) =>
-        {
-            capturedMethod = req.Method.Method;
-            capturedPath = req.RequestUri?.PathAndQuery;
-            capturedBody = req.Content?.ReadAsStringAsync().GetAwaiter().GetResult();
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json) });
-        });
-        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpUserRepository(client, _logger);
+        _mockUsers.CreateUserAsync(Arg.Any<UserInputDto>())
+            .Returns(new ApiResponse<UserDetailDto> { Success = false, Message = "Create failed" });
 
-        var input = new UserInputDto { UserName = "testuser", RealName = "Test User" };
-        var result = await repo.CreateAsync(input);
+        var input = new UserInputDto { UserName = "testuser" };
+        await _repo.Invoking(r => r.CreateAsync(input))
+            .Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task CreateAsync_Returns_Data_On_Success()
+    {
+        var detail = new UserDetailDto { Id = Guid.NewGuid(), UserName = "testuser" };
+        _mockUsers.CreateUserAsync(Arg.Any<UserInputDto>())
+            .Returns(new ApiResponse<UserDetailDto> { Success = true, Data = detail });
+
+        var input = new UserInputDto { UserName = "testuser" };
+        var result = await _repo.CreateAsync(input);
 
         result.Should().NotBeNull();
         result.UserName.Should().Be("testuser");
-        capturedMethod.Should().Be("POST");
-        capturedPath.Should().Be("/api/users");
-        capturedBody.Should().NotBeNullOrEmpty();
-        capturedBody.Should().Contain("testuser");
     }
 }

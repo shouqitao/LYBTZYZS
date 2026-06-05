@@ -1,4 +1,3 @@
-using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.MedicalCase.Repositories;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -20,8 +19,9 @@ public class MedicalCaseBoundaryTests : IntegrationTestBase
 
     private async Task<MedicalCaseRepository> CreateRepositoryAsync()
     {
-        var (_, api) = await LoginAsDoctorWithApiAsync<IMedicalCaseApi>();
-        return new MedicalCaseRepository(api, null!, new RemoteOnlyApiRouter(), NullLogger<MedicalCaseRepository>.Instance);
+        var client = await LoginAsDoctorAsync();
+        var apiClient = TestApiClient.Create(client);
+        return new MedicalCaseRepository(apiClient, NullLogger<MedicalCaseRepository>.Instance);
     }
 
     [Fact]

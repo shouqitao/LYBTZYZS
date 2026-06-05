@@ -1,4 +1,3 @@
-using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Formula.Repositories;
 using LYBT.Desktop.Herbs.Repositories;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -10,7 +9,7 @@ namespace LYBT.Tests.Integration.Flows;
 
 /// <summary>
 /// Formula CRUD flow integration tests.
-/// Tests the full chain: FormulaRepository -> IFormulaApi -> Server FormulaController -> SQL Server.
+/// Tests the full chain: FormulaRepository -> IApiClient -> Server FormulaController -> SQL Server.
 /// </summary>
 [Collection("Integration")]
 public class FormulaFlowTests : IntegrationTestBase
@@ -19,11 +18,11 @@ public class FormulaFlowTests : IntegrationTestBase
 
     private async Task<(FormulaRepository FormulaDs, HerbRepository HerbDs)> CreateDataSourcesAsync()
     {
-        var (client, formulaApi) = await LoginAsAdminWithApiAsync<IFormulaApi>();
-        var herbApi = Fixture.CreateApi<IHerbApi>(client);
+        var client = await LoginAsAdminAsync();
+        var apiClient = TestApiClient.Create(client);
         return (
-            new FormulaRepository(formulaApi, null!, new RemoteOnlyApiRouter(), NullLogger<FormulaRepository>.Instance),
-            new HerbRepository(herbApi, null!, new RemoteOnlyApiRouter(), NullLogger<HerbRepository>.Instance)
+            new FormulaRepository(apiClient, NullLogger<FormulaRepository>.Instance),
+            new HerbRepository(apiClient, NullLogger<HerbRepository>.Instance)
         );
     }
 

@@ -1,7 +1,6 @@
 using System.Threading;
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Repositories;
-using LYBT.Desktop.Contracts.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
@@ -10,30 +9,21 @@ using Riok.Mapperly.Abstractions;
 namespace LYBT.Desktop.Patients.Repositories;
 
 /// <summary>
-/// Patient repository with dual-path support.
-/// Routes to remote IPatientApi or local ILocalPatientApi based on IApiRouter state.
+/// Patient repository — routes all calls through IApiClient.
 /// </summary>
 public sealed class PatientRepository : IPatientRepository
 {
-    private readonly IPatientApi _api;
-    private readonly ILocalPatientApi _localApi;
-    private readonly IApiRouter _apiRouter;
+    private readonly IApiClient _apiClient;
     private readonly ILogger<PatientRepository> _logger;
     private readonly PatientListToDetailMapper _listMapper = new();
 
     public PatientRepository(
-        IPatientApi api,
-        ILocalPatientApi localApi,
-        IApiRouter apiRouter,
+        IApiClient apiClient,
         ILogger<PatientRepository> logger)
     {
-        _api = api ?? throw new ArgumentNullException(nameof(api));
-        _localApi = localApi ?? throw new ArgumentNullException(nameof(localApi));
-        _apiRouter = apiRouter ?? throw new ArgumentNullException(nameof(apiRouter));
+        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
-
-    private bool IsOffline => _apiRouter.IsOffline;
 
     #region Standard CRUD
 
@@ -41,23 +31,10 @@ public sealed class PatientRepository : IPatientRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogDebug("[REPO:Local] Patient.GetPaged - Page={Page} PageSize={PageSize}", page, pageSize);
-                var patients = await _localApi.GetPatientsAsync(keyword, page, pageSize);
-                return new PagedResult<PatientListDto>
-                {
-                    Items = patients,
-                    TotalCount = patients.Count,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-            }
-
-            _logger.LogDebug("[REPO:Remote] Patient.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword}",
+            _logger.LogDebug("[REPO] Patient.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword}",
                 page, pageSize, keyword);
 
-            var response = await _api.GetPatientsAsync(page, pageSize, keyword);
+            var response = await _apiClient.Patients.GetPatientsAsync(page, pageSize, keyword);
             if (response.Data == null)
                 return new PagedResult<PatientListDto> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize };
 
@@ -71,7 +48,7 @@ public sealed class PatientRepository : IPatientRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Patient.GetPaged failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] Patient.GetPaged failed");
             throw;
         }
     }
@@ -80,19 +57,13 @@ public sealed class PatientRepository : IPatientRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogDebug("[REPO:Local] Patient.GetById - Id={Id}", id);
-                return await _localApi.GetPatientByIdAsync(id);
-            }
-
-            _logger.LogDebug("[REPO:Remote] Patient.GetById - Id={Id}", id);
-            var response = await _api.GetPatientByIdAsync(id);
+            _logger.LogDebug("[REPO] Patient.GetById - Id={Id}", id);
+            var response = await _apiClient.Patients.GetPatientByIdAsync(id);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Patient.GetById failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] Patient.GetById failed - Id={Id}", id);
             throw;
         }
     }
@@ -103,21 +74,15 @@ public sealed class PatientRepository : IPatientRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Patient.Create");
-                return await _localApi.CreatePatientAsync(patient);
-            }
-
-            _logger.LogInformation("[REPO:Remote] Patient.Create");
-            var response = await _api.CreatePatientAsync(patient);
+            _logger.LogInformation("[REPO] Patient.Create");
+            var response = await _apiClient.Patients.CreatePatientAsync(patient);
             if (!response.Success || response.Data == null)
                 throw new InvalidOperationException(response.Message ?? "Create patient failed");
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Patient.Create failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] Patient.Create failed");
             throw;
         }
     }
@@ -130,21 +95,15 @@ public sealed class PatientRepository : IPatientRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Patient.Update - Id={Id}", patient.Id);
-                return await _localApi.UpdatePatientAsync(patient.Id.Value, patient);
-            }
-
-            _logger.LogInformation("[REPO:Remote] Patient.Update - Id={Id}", patient.Id);
-            var response = await _api.UpdatePatientAsync(patient.Id.Value, patient);
+            _logger.LogInformation("[REPO] Patient.Update - Id={Id}", patient.Id);
+            var response = await _apiClient.Patients.UpdatePatientAsync(patient.Id.Value, patient);
             if (!response.Success || response.Data == null)
                 throw new InvalidOperationException(response.Message ?? "Update patient failed");
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Patient.Update failed - Id={Id}", IsOffline ? "Local" : "Remote", patient.Id);
+            _logger.LogError(ex, "[REPO] Patient.Update failed - Id={Id}", patient.Id);
             throw;
         }
     }
@@ -153,20 +112,13 @@ public sealed class PatientRepository : IPatientRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Patient.Delete - Id={Id}", id);
-                await _localApi.DeletePatientAsync(id);
-                return true;
-            }
-
-            _logger.LogInformation("[REPO:Remote] Patient.Delete - Id={Id}", id);
-            var response = await _api.DeletePatientAsync(id);
+            _logger.LogInformation("[REPO] Patient.Delete - Id={Id}", id);
+            var response = await _apiClient.Patients.DeletePatientAsync(id);
             return response.Success;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Patient.Delete failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] Patient.Delete failed - Id={Id}", id);
             return false;
         }
     }
@@ -175,21 +127,15 @@ public sealed class PatientRepository : IPatientRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogDebug("[REPO:Local] Patient.Search - Keyword={Keyword}", keyword);
-                return await _localApi.GetPatientsAsync(keyword, 1, 100);
-            }
-
-            _logger.LogDebug("[REPO:Remote] Patient.Search - Keyword={Keyword}", keyword);
-            var response = await _api.GetPatientsAsync(1, 100, keyword);
+            _logger.LogDebug("[REPO] Patient.Search - Keyword={Keyword}", keyword);
+            var response = await _apiClient.Patients.GetPatientsAsync(1, 100, keyword);
             if (response.Data == null)
                 return [];
             return response.Data.Items.ToList();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Patient.Search failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] Patient.Search failed");
             throw;
         }
     }
@@ -205,21 +151,8 @@ public sealed class PatientRepository : IPatientRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Patient.GetByIdNumber");
-                var patients = await _localApi.GetPatientsAsync(idNumber, 1, 100);
-                foreach (var candidate in patients)
-                {
-                    var detail = await _localApi.GetPatientByIdAsync(candidate.Id);
-                    if (detail?.IdNumber?.Equals(idNumber, StringComparison.OrdinalIgnoreCase) == true)
-                        return detail;
-                }
-                return null;
-            }
-
-            _logger.LogInformation("[REPO:Remote] Patient.GetByIdNumber");
-            var response = await _api.GetPatientsAsync(1, 100, idNumber);
+            _logger.LogInformation("[REPO] Patient.GetByIdNumber");
+            var response = await _apiClient.Patients.GetPatientsAsync(1, 100, idNumber);
             if (response.Data == null)
                 return null;
 
@@ -233,7 +166,7 @@ public sealed class PatientRepository : IPatientRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Patient.GetByIdNumber failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] Patient.GetByIdNumber failed");
             return null;
         }
     }
@@ -246,58 +179,41 @@ public sealed class PatientRepository : IPatientRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Patient.BatchImport - Count={Count}", request.Patients.Count);
-                return await _localApi.BatchImportAsync(request);
-            }
-
-            var response = await _api.BatchImportAsync(request);
+            _logger.LogInformation("[REPO] Patient.BatchImport - Count={Count}", request.Patients.Count);
+            var response = await _apiClient.Patients.BatchImportAsync(request);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Patient.BatchImport failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] Patient.BatchImport failed");
             return null;
         }
     }
 
     public async Task<byte[]?> ExportTemplateAsync(CancellationToken ct = default)
     {
-        if (IsOffline)
-        {
-            _logger.LogWarning("[REPO:Local] Patient.ExportTemplate not supported in offline mode");
-            return null;
-        }
-
         try
         {
-            var response = await _api.ExportTemplateAsync();
+            var response = await _apiClient.Patients.ExportTemplateAsync();
             return response.IsSuccessStatusCode ? await response.Content.ReadAsByteArrayAsync() : null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Patient.ExportTemplate failed");
+            _logger.LogError(ex, "[REPO] Patient.ExportTemplate failed");
             return null;
         }
     }
 
     public async Task<byte[]?> ExportPatientsAsync(string? keyword = null, CancellationToken ct = default)
     {
-        if (IsOffline)
-        {
-            _logger.LogWarning("[REPO:Local] Patient.ExportPatients not supported in offline mode");
-            return null;
-        }
-
         try
         {
-            var response = await _api.ExportPatientsAsync(keyword);
+            var response = await _apiClient.Patients.ExportPatientsAsync(keyword);
             return response.IsSuccessStatusCode ? await response.Content.ReadAsByteArrayAsync() : null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Patient.ExportPatients failed");
+            _logger.LogError(ex, "[REPO] Patient.ExportPatients failed");
             return null;
         }
     }
@@ -310,19 +226,13 @@ public sealed class PatientRepository : IPatientRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Patient.Restore - Id={Id}", id);
-                return await _localApi.RestoreAsync(id);
-            }
-
-            _logger.LogInformation("[REPO:Remote] Patient.Restore - Id={Id}", id);
-            var response = await _api.RestoreAsync(id);
+            _logger.LogInformation("[REPO] Patient.Restore - Id={Id}", id);
+            var response = await _apiClient.Patients.RestoreAsync(id);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Patient.Restore failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] Patient.Restore failed - Id={Id}", id);
             return null;
         }
     }
@@ -331,14 +241,8 @@ public sealed class PatientRepository : IPatientRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Patient.BatchDelete - Count={Count}", ids.Count);
-                return await _localApi.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
-            }
-
-            _logger.LogInformation("[REPO:Remote] Patient.BatchDelete - Count={Count}", ids.Count);
-            var response = await _api.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
+            _logger.LogInformation("[REPO] Patient.BatchDelete - Count={Count}", ids.Count);
+            var response = await _apiClient.Patients.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
             if (!response.Success || response.Data == null)
             {
                 return new BatchOperationResultDto
@@ -353,7 +257,7 @@ public sealed class PatientRepository : IPatientRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Patient.BatchDelete failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] Patient.BatchDelete failed");
             return new BatchOperationResultDto { TotalCount = ids.Count, FailureCount = ids.Count, IsSuccess = false, Message = ex.Message };
         }
     }

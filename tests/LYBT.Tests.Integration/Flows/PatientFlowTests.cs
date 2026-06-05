@@ -1,4 +1,3 @@
-using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Patients.Repositories;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
@@ -9,7 +8,7 @@ namespace LYBT.Tests.Integration.Flows;
 
 /// <summary>
 /// Patient CRUD flow integration tests.
-/// Tests the full chain: PatientRepository -> IPatientApi -> Server PatientController -> SQL Server.
+/// Tests the full chain: PatientRepository -> IApiClient -> Server PatientController -> SQL Server.
 /// </summary>
 [Collection("Integration")]
 public class PatientFlowTests : IntegrationTestBase
@@ -20,8 +19,9 @@ public class PatientFlowTests : IntegrationTestBase
 
     private async Task<PatientRepository> CreateRepositoryAsync()
     {
-        var (_, api) = await LoginAsDoctorWithApiAsync<IPatientApi>();
-        return new PatientRepository(api, null!, new RemoteOnlyApiRouter(), NullLogger<PatientRepository>.Instance);
+        var client = await LoginAsDoctorAsync();
+        var apiClient = TestApiClient.Create(client);
+        return new PatientRepository(apiClient, NullLogger<PatientRepository>.Instance);
     }
 
     /// <summary>

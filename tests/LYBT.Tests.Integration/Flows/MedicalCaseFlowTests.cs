@@ -12,7 +12,7 @@ namespace LYBT.Tests.Integration.Flows;
 
 /// <summary>
 /// MedicalCase lifecycle flow integration tests.
-/// Tests the full chain: MedicalCaseRepository -> IMedicalCaseApi -> Server MedicalCasesController -> SQL Server.
+/// Tests the full chain: MedicalCaseRepository -> IApiClient -> Server MedicalCasesController -> SQL Server.
 /// </summary>
 [Collection("Integration")]
 public class MedicalCaseFlowTests : IntegrationTestBase
@@ -23,11 +23,11 @@ public class MedicalCaseFlowTests : IntegrationTestBase
 
     private async Task<(MedicalCaseRepository CaseDs, PatientRepository PatientDs, HttpClient Client)> CreateDataSourcesAsync()
     {
-        var (client, caseApi) = await LoginAsDoctorWithApiAsync<IMedicalCaseApi>();
-        var patientApi = Fixture.CreateApi<IPatientApi>(client);
+        var client = await LoginAsDoctorAsync();
+        var apiClient = TestApiClient.Create(client);
         return (
-            new MedicalCaseRepository(caseApi, null!, new RemoteOnlyApiRouter(), NullLogger<MedicalCaseRepository>.Instance),
-            new PatientRepository(patientApi, null!, new RemoteOnlyApiRouter(), NullLogger<PatientRepository>.Instance),
+            new MedicalCaseRepository(apiClient, NullLogger<MedicalCaseRepository>.Instance),
+            new PatientRepository(apiClient, NullLogger<PatientRepository>.Instance),
             client
         );
     }

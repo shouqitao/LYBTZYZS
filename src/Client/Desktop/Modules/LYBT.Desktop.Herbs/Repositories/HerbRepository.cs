@@ -1,6 +1,5 @@
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Repositories;
-using LYBT.Desktop.Contracts.Services;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -9,26 +8,18 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Herbs.Repositories;
 
 /// <summary>
-/// 药材仓储 - 通过 Refit IHerbApi 访问 WebAPI。
+/// 药材仓储 — routes all calls through IApiClient.
 /// </summary>
 public sealed class HerbRepository : IHerbRepository
 {
-    private readonly IHerbApi _api;
-    private readonly ILocalHerbApi _localApi;
-    private readonly IApiRouter _apiRouter;
+    private readonly IApiClient _apiClient;
     private readonly ILogger<HerbRepository> _logger;
 
-    private bool IsOffline => _apiRouter.IsOffline;
-
     public HerbRepository(
-        IHerbApi api,
-        ILocalHerbApi localApi,
-        IApiRouter apiRouter,
+        IApiClient apiClient,
         ILogger<HerbRepository> logger)
     {
-        _api = api ?? throw new ArgumentNullException(nameof(api));
-        _localApi = localApi ?? throw new ArgumentNullException(nameof(localApi));
-        _apiRouter = apiRouter ?? throw new ArgumentNullException(nameof(apiRouter));
+        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -38,23 +29,10 @@ public sealed class HerbRepository : IHerbRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogDebug("[REPO:Local] Herb.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword}", page, pageSize, keyword);
-                var herbs = await _localApi.GetHerbsAsync(keyword);
-                return new PagedResult<HerbListDto>
-                {
-                    Items = herbs,
-                    TotalCount = herbs.Count,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-            }
-
-            _logger.LogDebug("[REPO:Remote] Herb.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword} Category={Category}",
+            _logger.LogDebug("[REPO] Herb.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword} Category={Category}",
                 page, pageSize, keyword, category);
 
-            var response = await _api.GetHerbsAsync(page, pageSize, keyword, category);
+            var response = await _apiClient.Herbs.GetHerbsAsync(page, pageSize, keyword, category);
             if (response.Data == null)
                 return new PagedResult<HerbListDto> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize };
 
@@ -68,7 +46,7 @@ public sealed class HerbRepository : IHerbRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Herb.GetPaged failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] Herb.GetPaged failed");
             throw;
         }
     }
@@ -77,19 +55,13 @@ public sealed class HerbRepository : IHerbRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogDebug("[REPO:Local] Herb.GetById - Id={Id}", id);
-                return await _localApi.GetHerbByIdAsync(id);
-            }
-
-            _logger.LogDebug("[REPO:Remote] Herb.GetById - Id={Id}", id);
-            var response = await _api.GetHerbByIdAsync(id);
+            _logger.LogDebug("[REPO] Herb.GetById - Id={Id}", id);
+            var response = await _apiClient.Herbs.GetHerbByIdAsync(id);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Herb.GetById failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] Herb.GetById failed - Id={Id}", id);
             throw;
         }
     }
@@ -100,24 +72,18 @@ public sealed class HerbRepository : IHerbRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Herb.Create - Name={Name}", dto.Name);
-                return await _localApi.CreateHerbAsync(dto);
-            }
+            _logger.LogInformation("[REPO] Herb.Create started - Name={Name}", dto.Name);
 
-            _logger.LogInformation("[REPO:Remote] Herb.Create started - Name={Name}", dto.Name);
-
-            var response = await _api.CreateHerbAsync(dto);
+            var response = await _apiClient.Herbs.CreateHerbAsync(dto);
             if (!response.Success || response.Data == null)
                 throw new InvalidOperationException(response.Message ?? "创建药材失败");
 
-            _logger.LogInformation("[REPO:Remote] Herb.Create completed - Id={Id}", response.Data.Id);
+            _logger.LogInformation("[REPO] Herb.Create completed - Id={Id}", response.Data.Id);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Herb.Create failed - Name={Name}", IsOffline ? "Local" : "Remote", dto.Name);
+            _logger.LogError(ex, "[REPO] Herb.Create failed - Name={Name}", dto.Name);
             throw;
         }
     }
@@ -130,24 +96,18 @@ public sealed class HerbRepository : IHerbRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Herb.Update - Id={Id}", dto.Id);
-                return await _localApi.UpdateHerbAsync(dto.Id.Value, dto);
-            }
+            _logger.LogInformation("[REPO] Herb.Update - Id={Id}", dto.Id);
 
-            _logger.LogInformation("[REPO:Remote] Herb.Update - Id={Id}", dto.Id);
-
-            var response = await _api.UpdateHerbAsync(dto.Id.Value, dto);
+            var response = await _apiClient.Herbs.UpdateHerbAsync(dto.Id.Value, dto);
             if (!response.Success || response.Data == null)
                 throw new InvalidOperationException(response.Message ?? "更新药材失败");
 
-            _logger.LogInformation("[REPO:Remote] Herb.Update completed - Id={Id}", response.Data.Id);
+            _logger.LogInformation("[REPO] Herb.Update completed - Id={Id}", response.Data.Id);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Herb.Update failed - Id={Id}", IsOffline ? "Local" : "Remote", dto.Id);
+            _logger.LogError(ex, "[REPO] Herb.Update failed - Id={Id}", dto.Id);
             throw;
         }
     }
@@ -156,26 +116,19 @@ public sealed class HerbRepository : IHerbRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Herb.Delete - Id={Id}", id);
-                await _localApi.DeleteHerbAsync(id);
-                return true;
-            }
+            _logger.LogInformation("[REPO] Herb.Delete - Id={Id}", id);
 
-            _logger.LogInformation("[REPO:Remote] Herb.Delete - Id={Id}", id);
-
-            var response = await _api.DeleteHerbAsync(id);
+            var response = await _apiClient.Herbs.DeleteHerbAsync(id);
             if (response.Success)
-                _logger.LogInformation("[REPO:Remote] Herb.Delete completed - Id={Id}", id);
+                _logger.LogInformation("[REPO] Herb.Delete completed - Id={Id}", id);
             else
-                _logger.LogWarning("[REPO:Remote] Herb.Delete failed - Id={Id}", id);
+                _logger.LogWarning("[REPO] Herb.Delete failed - Id={Id}", id);
 
             return response.Success;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Herb.Delete failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] Herb.Delete failed - Id={Id}", id);
             return false;
         }
     }
@@ -184,15 +137,9 @@ public sealed class HerbRepository : IHerbRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogDebug("[REPO:Local] Herb.Search - Keyword={Keyword}", keyword);
-                return await _localApi.GetHerbsAsync(keyword);
-            }
+            _logger.LogDebug("[REPO] Herb.Search - Keyword={Keyword}", keyword);
 
-            _logger.LogDebug("[REPO:Remote] Herb.Search - Keyword={Keyword}", keyword);
-
-            var response = await _api.GetHerbsAsync(1, 100, keyword);
+            var response = await _apiClient.Herbs.GetHerbsAsync(1, 100, keyword);
             if (response.Data == null)
                 return [];
 
@@ -200,7 +147,7 @@ public sealed class HerbRepository : IHerbRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Herb.Search failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] Herb.Search failed");
             throw;
         }
     }
@@ -215,88 +162,70 @@ public sealed class HerbRepository : IHerbRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Herb.BatchImport - Count={Count}", request.Herbs.Count);
-                return await _localApi.BatchImportAsync(request);
-            }
+            _logger.LogInformation("[REPO] Herb.BatchImport - Count={Count}", request.Herbs.Count);
 
-            _logger.LogInformation("[REPO:Remote] Herb.BatchImport - Count={Count}", request.Herbs.Count);
-
-            var response = await _api.BatchImportAsync(request);
+            var response = await _apiClient.Herbs.BatchImportAsync(request);
             if (!response.Success || response.Data == null)
             {
-                _logger.LogError("[REPO:Remote] Herb.BatchImport failed: {Message}", response.Message);
+                _logger.LogError("[REPO] Herb.BatchImport failed: {Message}", response.Message);
                 return null;
             }
 
-            _logger.LogInformation("[REPO:Remote] Herb.BatchImport completed - Success={SuccessCount} Failure={FailureCount}",
+            _logger.LogInformation("[REPO] Herb.BatchImport completed - Success={SuccessCount} Failure={FailureCount}",
                 response.Data.SuccessCount, response.Data.FailureCount);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Herb.BatchImport failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] Herb.BatchImport failed");
             return null;
         }
     }
 
     public async Task<byte[]?> ExportTemplateAsync()
     {
-        if (IsOffline)
-        {
-            _logger.LogWarning("[REPO:Local] Herb.ExportTemplate not supported in offline mode");
-            return null;
-        }
-
         try
         {
-            _logger.LogInformation("[REPO:Remote] Herb.ExportTemplate");
+            _logger.LogInformation("[REPO] Herb.ExportTemplate");
 
-            var response = await _api.ExportTemplateAsync();
+            var response = await _apiClient.Herbs.ExportTemplateAsync();
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogError("[REPO:Remote] Herb.ExportTemplate failed: {StatusCode}", response.StatusCode);
+                _logger.LogError("[REPO] Herb.ExportTemplate failed: {StatusCode}", response.StatusCode);
                 return null;
             }
 
             var bytes = await response.Content.ReadAsByteArrayAsync();
-            _logger.LogInformation("[REPO:Remote] Herb.ExportTemplate completed - Size={Size} bytes", bytes.Length);
+            _logger.LogInformation("[REPO] Herb.ExportTemplate completed - Size={Size} bytes", bytes.Length);
             return bytes;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Herb.ExportTemplate failed");
+            _logger.LogError(ex, "[REPO] Herb.ExportTemplate failed");
             return null;
         }
     }
 
     public async Task<byte[]?> ExportHerbsAsync(string? keyword = null)
     {
-        if (IsOffline)
-        {
-            _logger.LogWarning("[REPO:Local] Herb.ExportHerbs not supported in offline mode");
-            return null;
-        }
-
         try
         {
-            _logger.LogInformation("[REPO:Remote] Herb.ExportHerbs - Keyword={Keyword}", keyword ?? "全部");
+            _logger.LogInformation("[REPO] Herb.ExportHerbs - Keyword={Keyword}", keyword ?? "全部");
 
-            var response = await _api.ExportHerbsAsync(keyword);
+            var response = await _apiClient.Herbs.ExportHerbsAsync(keyword);
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogError("[REPO:Remote] Herb.ExportHerbs failed: {StatusCode}", response.StatusCode);
+                _logger.LogError("[REPO] Herb.ExportHerbs failed: {StatusCode}", response.StatusCode);
                 return null;
             }
 
             var bytes = await response.Content.ReadAsByteArrayAsync();
-            _logger.LogInformation("[REPO:Remote] Herb.ExportHerbs completed - Size={Size} bytes", bytes.Length);
+            _logger.LogInformation("[REPO] Herb.ExportHerbs completed - Size={Size} bytes", bytes.Length);
             return bytes;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Herb.ExportHerbs failed");
+            _logger.LogError(ex, "[REPO] Herb.ExportHerbs failed");
             return null;
         }
     }
@@ -309,27 +238,21 @@ public sealed class HerbRepository : IHerbRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Herb.ToggleStatus - Id={Id}", id);
-                return await _localApi.ToggleStatusAsync(id);
-            }
+            _logger.LogInformation("[REPO] Herb.ToggleStatus - Id={Id}", id);
 
-            _logger.LogInformation("[REPO:Remote] Herb.ToggleStatus - Id={Id}", id);
-
-            var response = await _api.ToggleStatusAsync(id);
+            var response = await _apiClient.Herbs.ToggleStatusAsync(id);
             if (!response.Success || response.Data == null)
             {
-                _logger.LogWarning("[REPO:Remote] Herb.ToggleStatus failed: {Message}", response.Message);
+                _logger.LogWarning("[REPO] Herb.ToggleStatus failed: {Message}", response.Message);
                 return null;
             }
 
-            _logger.LogInformation("[REPO:Remote] Herb.ToggleStatus completed - Status={Status}", response.Data.Status);
+            _logger.LogInformation("[REPO] Herb.ToggleStatus completed - Status={Status}", response.Data.Status);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Herb.ToggleStatus failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] Herb.ToggleStatus failed - Id={Id}", id);
             return null;
         }
     }
@@ -338,18 +261,12 @@ public sealed class HerbRepository : IHerbRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Herb.Restore - Id={Id}", id);
-                return await _localApi.RestoreAsync(id);
-            }
+            _logger.LogInformation("[REPO] Herb.Restore - Id={Id}", id);
 
-            _logger.LogInformation("[REPO:Remote] Herb.Restore - Id={Id}", id);
-
-            var response = await _api.RestoreAsync(id);
+            var response = await _apiClient.Herbs.RestoreAsync(id);
             if (!response.Success || response.Data == null)
             {
-                _logger.LogWarning("[REPO:Remote] Herb.Restore failed: {Message}", response.Message);
+                _logger.LogWarning("[REPO] Herb.Restore failed: {Message}", response.Message);
                 return null;
             }
 
@@ -357,7 +274,7 @@ public sealed class HerbRepository : IHerbRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Herb.Restore failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] Herb.Restore failed - Id={Id}", id);
             return null;
         }
     }
@@ -366,15 +283,9 @@ public sealed class HerbRepository : IHerbRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Herb.BatchDelete - Count={Count}", ids.Count);
-                return await _localApi.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
-            }
+            _logger.LogInformation("[REPO] Herb.BatchDelete - Count={Count}", ids.Count);
 
-            _logger.LogInformation("[REPO:Remote] Herb.BatchDelete - Count={Count}", ids.Count);
-
-            var response = await _api.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
+            var response = await _apiClient.Herbs.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
             if (!response.Success || response.Data == null)
             {
                 return new BatchOperationResultDto
@@ -390,7 +301,7 @@ public sealed class HerbRepository : IHerbRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Herb.BatchDelete failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] Herb.BatchDelete failed");
             return new BatchOperationResultDto
             {
                 TotalCount = ids.Count,
@@ -405,28 +316,22 @@ public sealed class HerbRepository : IHerbRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Herb.BatchEnable - Count={Count}", ids.Count);
-                return await _localApi.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids });
-            }
+            _logger.LogInformation("[REPO] Herb.BatchEnable - Count={Count}", ids.Count);
 
-            _logger.LogInformation("[REPO:Remote] Herb.BatchEnable - Count={Count}", ids.Count);
-
-            var response = await _api.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids });
+            var response = await _apiClient.Herbs.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids });
             if (!response.Success || response.Data == null)
             {
-                _logger.LogError("[REPO:Remote] Herb.BatchEnable failed: {Message}", response.Message);
+                _logger.LogError("[REPO] Herb.BatchEnable failed: {Message}", response.Message);
                 return null;
             }
 
-            _logger.LogInformation("[REPO:Remote] Herb.BatchEnable completed - Success={Success} Failure={Failure}",
+            _logger.LogInformation("[REPO] Herb.BatchEnable completed - Success={Success} Failure={Failure}",
                 response.Data.SuccessCount, response.Data.FailureCount);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Herb.BatchEnable failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] Herb.BatchEnable failed");
             return null;
         }
     }
@@ -435,28 +340,22 @@ public sealed class HerbRepository : IHerbRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Herb.BatchDisable - Count={Count}", ids.Count);
-                return await _localApi.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids });
-            }
+            _logger.LogInformation("[REPO] Herb.BatchDisable - Count={Count}", ids.Count);
 
-            _logger.LogInformation("[REPO:Remote] Herb.BatchDisable - Count={Count}", ids.Count);
-
-            var response = await _api.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids });
+            var response = await _apiClient.Herbs.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids });
             if (!response.Success || response.Data == null)
             {
-                _logger.LogError("[REPO:Remote] Herb.BatchDisable failed: {Message}", response.Message);
+                _logger.LogError("[REPO] Herb.BatchDisable failed: {Message}", response.Message);
                 return null;
             }
 
-            _logger.LogInformation("[REPO:Remote] Herb.BatchDisable completed - Success={Success} Failure={Failure}",
+            _logger.LogInformation("[REPO] Herb.BatchDisable completed - Success={Success} Failure={Failure}",
                 response.Data.SuccessCount, response.Data.FailureCount);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Herb.BatchDisable failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] Herb.BatchDisable failed");
             return null;
         }
     }
@@ -469,13 +368,13 @@ public sealed class HerbRepository : IHerbRepository
     {
         try
         {
-            _logger.LogInformation("[REPO:{Mode}] Herb.CreateWithResult - Name={Name}", IsOffline ? "Local" : "Remote", input.Name);
+            _logger.LogInformation("[REPO] Herb.CreateWithResult - Name={Name}", input.Name);
             var result = await CreateAsync(input);
             return (true, result, null);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Herb.CreateWithResult failed - Name={Name}", IsOffline ? "Local" : "Remote", input.Name);
+            _logger.LogError(ex, "[REPO] Herb.CreateWithResult failed - Name={Name}", input.Name);
             return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建中药", ex));
         }
     }
@@ -484,13 +383,13 @@ public sealed class HerbRepository : IHerbRepository
     {
         try
         {
-            _logger.LogInformation("[REPO:{Mode}] Herb.UpdateWithResult - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogInformation("[REPO] Herb.UpdateWithResult - Id={Id}", id);
             var result = await UpdateAsync(input);
             return (true, result, null);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Herb.UpdateWithResult failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] Herb.UpdateWithResult failed - Id={Id}", id);
             return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("更新中药", ex));
         }
     }
@@ -499,7 +398,7 @@ public sealed class HerbRepository : IHerbRepository
     {
         try
         {
-            _logger.LogInformation("[REPO:{Mode}] Herb.DeleteWithResult - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogInformation("[REPO] Herb.DeleteWithResult - Id={Id}", id);
             var result = await DeleteAsync(id);
 
             if (result)
@@ -509,7 +408,7 @@ public sealed class HerbRepository : IHerbRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Herb.DeleteWithResult failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] Herb.DeleteWithResult failed - Id={Id}", id);
             return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除中药", ex));
         }
     }
@@ -518,7 +417,7 @@ public sealed class HerbRepository : IHerbRepository
     {
         try
         {
-            _logger.LogDebug("[REPO:{Mode}] Herb.GetByIdWithResult - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogDebug("[REPO] Herb.GetByIdWithResult - Id={Id}", id);
             var result = await GetByIdAsync(id);
 
             if (result != null)
@@ -528,7 +427,7 @@ public sealed class HerbRepository : IHerbRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Herb.GetByIdWithResult failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] Herb.GetByIdWithResult failed - Id={Id}", id);
             return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("获取中药详情", ex));
         }
     }

@@ -1,6 +1,5 @@
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Repositories;
-using LYBT.Desktop.Contracts.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -9,26 +8,18 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.MedicalCase.Repositories;
 
 /// <summary>
-/// 医案仓储 - 通过 Refit IMedicalCaseApi / ILocalMedicalCaseApi 双路径访问。
+/// 医案仓储 — routes all calls through IApiClient.
 /// </summary>
 public sealed class MedicalCaseRepository : IMedicalCaseRepository
 {
-    private readonly IMedicalCaseApi _api;
-    private readonly ILocalMedicalCaseApi _localApi;
-    private readonly IApiRouter _apiRouter;
+    private readonly IApiClient _apiClient;
     private readonly ILogger<MedicalCaseRepository> _logger;
 
-    private bool IsOffline => _apiRouter.IsOffline;
-
     public MedicalCaseRepository(
-        IMedicalCaseApi api,
-        ILocalMedicalCaseApi localApi,
-        IApiRouter apiRouter,
+        IApiClient apiClient,
         ILogger<MedicalCaseRepository> logger)
     {
-        _api = api ?? throw new ArgumentNullException(nameof(api));
-        _localApi = localApi ?? throw new ArgumentNullException(nameof(localApi));
-        _apiRouter = apiRouter ?? throw new ArgumentNullException(nameof(apiRouter));
+        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -38,24 +29,10 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogDebug("[REPO:Local] MedicalCase.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword}",
-                    page, pageSize, keyword);
-                var items = await _localApi.GetMedicalCasesAsync(patientId: null);
-                return new PagedResult<MedicalCaseListDto>
-                {
-                    Items = items,
-                    TotalCount = items.Count,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-            }
-
-            _logger.LogDebug("[REPO:Remote] MedicalCase.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword}",
+            _logger.LogDebug("[REPO] MedicalCase.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword}",
                 page, pageSize, keyword);
 
-            var response = await _api.GetMedicalCasesAsync(page, pageSize, keyword);
+            var response = await _apiClient.MedicalCases.GetMedicalCasesAsync(page, pageSize, keyword);
             if (response.Data == null)
                 return new PagedResult<MedicalCaseListDto> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize };
 
@@ -69,7 +46,7 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] MedicalCase.GetPaged failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] MedicalCase.GetPaged failed");
             throw;
         }
     }
@@ -78,19 +55,13 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogDebug("[REPO:Local] MedicalCase.GetById - Id={Id}", id);
-                return await _localApi.GetMedicalCaseByIdAsync(id);
-            }
-
-            _logger.LogDebug("[REPO:Remote] MedicalCase.GetById - Id={Id}", id);
-            var response = await _api.GetMedicalCaseByIdAsync(id);
+            _logger.LogDebug("[REPO] MedicalCase.GetById - Id={Id}", id);
+            var response = await _apiClient.MedicalCases.GetMedicalCaseByIdAsync(id);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] MedicalCase.GetById failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] MedicalCase.GetById failed - Id={Id}", id);
             throw;
         }
     }
@@ -101,24 +72,18 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] MedicalCase.Create - PatientId={PatientId}", dto.PatientId);
-                return await _localApi.CreateMedicalCaseAsync(dto);
-            }
+            _logger.LogInformation("[REPO] MedicalCase.Create - PatientId={PatientId}", dto.PatientId);
 
-            _logger.LogInformation("[REPO:Remote] MedicalCase.Create - PatientId={PatientId}", dto.PatientId);
-
-            var response = await _api.CreateMedicalCaseAsync(dto);
+            var response = await _apiClient.MedicalCases.CreateMedicalCaseAsync(dto);
             if (!response.Success || response.Data == null)
                 throw new InvalidOperationException(response.Message ?? "创建医案失败");
 
-            _logger.LogInformation("[REPO:Remote] MedicalCase.Create completed - Id={Id}", response.Data.Id);
+            _logger.LogInformation("[REPO] MedicalCase.Create completed - Id={Id}", response.Data.Id);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] MedicalCase.Create failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] MedicalCase.Create failed");
             throw;
         }
     }
@@ -131,24 +96,18 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] MedicalCase.Update - Id={Id}", dto.Id);
-                return await _localApi.SaveAsync(dto.Id.Value, dto);
-            }
+            _logger.LogInformation("[REPO] MedicalCase.Update - Id={Id}", dto.Id);
 
-            _logger.LogInformation("[REPO:Remote] MedicalCase.Update - Id={Id}", dto.Id);
-
-            var response = await _api.SaveAsync(dto.Id.Value, dto);
+            var response = await _apiClient.MedicalCases.SaveAsync(dto.Id.Value, dto);
             if (!response.Success || response.Data == null)
                 throw new InvalidOperationException(response.Message ?? "更新医案失败");
 
-            _logger.LogInformation("[REPO:Remote] MedicalCase.Update completed - Id={Id}", response.Data.Id);
+            _logger.LogInformation("[REPO] MedicalCase.Update completed - Id={Id}", response.Data.Id);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] MedicalCase.Update failed - Id={Id}", IsOffline ? "Local" : "Remote", dto.Id);
+            _logger.LogError(ex, "[REPO] MedicalCase.Update failed - Id={Id}", dto.Id);
             throw;
         }
     }
@@ -157,26 +116,19 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] MedicalCase.Delete - Id={Id}", id);
-                await _localApi.DeleteMedicalCaseAsync(id);
-                return true;
-            }
+            _logger.LogInformation("[REPO] MedicalCase.Delete - Id={Id}", id);
 
-            _logger.LogInformation("[REPO:Remote] MedicalCase.Delete - Id={Id}", id);
-
-            var response = await _api.DeleteMedicalCaseAsync(id);
+            var response = await _apiClient.MedicalCases.DeleteMedicalCaseAsync(id);
             if (response.Success)
-                _logger.LogInformation("[REPO:Remote] MedicalCase.Delete completed - Id={Id}", id);
+                _logger.LogInformation("[REPO] MedicalCase.Delete completed - Id={Id}", id);
             else
-                _logger.LogWarning("[REPO:Remote] MedicalCase.Delete failed - Id={Id}", id);
+                _logger.LogWarning("[REPO] MedicalCase.Delete failed - Id={Id}", id);
 
             return response.Success;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] MedicalCase.Delete failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] MedicalCase.Delete failed - Id={Id}", id);
             return false;
         }
     }
@@ -195,17 +147,11 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogDebug("[REPO:Local] MedicalCase.Search - PatientName={PatientName} DiagnosisKeyword={DiagnosisKeyword}",
-                    patientName ?? "无", diagnosisKeyword ?? "无");
-                return await _localApi.SearchMedicalCasesAsync(patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
-            }
-
-            _logger.LogDebug("[REPO:Remote] MedicalCase.Search - PatientName={PatientName} DiagnosisKeyword={DiagnosisKeyword}",
+            _logger.LogDebug("[REPO] MedicalCase.Search - PatientName={PatientName} DiagnosisKeyword={DiagnosisKeyword}",
                 patientName ?? "无", diagnosisKeyword ?? "无");
 
-            var response = await _api.SearchMedicalCasesAsync(patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
+            var response = await _apiClient.MedicalCases.SearchMedicalCasesAsync(
+                patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
             return response.Data ?? new PagedResult<MedicalCaseDetailDto>
             {
                 Items = [],
@@ -216,7 +162,7 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] MedicalCase.Search failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] MedicalCase.Search failed");
             throw;
         }
     }
@@ -225,23 +171,9 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogDebug("[REPO:Local] MedicalCase.Query - QueryType={QueryType}", query.QueryType);
-                return await _localApi.QueryMedicalCasesAsync(
-                    query.QueryType,
-                    query.PatientId,
-                    query.DoctorId,
-                    query.Keyword,
-                    query.PageIndex,
-                    query.PageSize,
-                    query.IncludeAllDoctors,
-                    query.Limit);
-            }
+            _logger.LogDebug("[REPO] MedicalCase.Query - QueryType={QueryType}", query.QueryType);
 
-            _logger.LogDebug("[REPO:Remote] MedicalCase.Query - QueryType={QueryType}", query.QueryType);
-
-            var response = await _api.QueryMedicalCasesAsync(
+            var response = await _apiClient.MedicalCases.QueryMedicalCasesAsync(
                 queryType: query.QueryType,
                 patientId: query.PatientId,
                 doctorId: query.DoctorId,
@@ -254,7 +186,7 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] MedicalCase.Query failed - QueryType={QueryType}", IsOffline ? "Local" : "Remote", query.QueryType);
+            _logger.LogError(ex, "[REPO] MedicalCase.Query failed - QueryType={QueryType}", query.QueryType);
             throw;
         }
     }
@@ -270,28 +202,22 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] MedicalCase.CloseCase - Id={Id}", medicalCaseId);
-                return await _localApi.CloseCaseAsync(medicalCaseId);
-            }
+            _logger.LogInformation("[REPO] MedicalCase.CloseCase - Id={Id}", medicalCaseId);
 
-            _logger.LogInformation("[REPO:Remote] MedicalCase.CloseCase - Id={Id}", medicalCaseId);
-
-            var response = await _api.CloseCaseAsync(medicalCaseId);
+            var response = await _apiClient.MedicalCases.CloseCaseAsync(medicalCaseId);
             if (response.Success)
             {
-                _logger.LogInformation("[REPO:Remote] MedicalCase.CloseCase completed - Id={Id}", medicalCaseId);
+                _logger.LogInformation("[REPO] MedicalCase.CloseCase completed - Id={Id}", medicalCaseId);
                 return response.Data;
             }
 
-            _logger.LogWarning("[REPO:Remote] MedicalCase.CloseCase failed - Id={Id}, Message={Message}",
+            _logger.LogWarning("[REPO] MedicalCase.CloseCase failed - Id={Id}, Message={Message}",
                 medicalCaseId, response.Message);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] MedicalCase.CloseCase failed - Id={Id}", IsOffline ? "Local" : "Remote", medicalCaseId);
+            _logger.LogError(ex, "[REPO] MedicalCase.CloseCase failed - Id={Id}", medicalCaseId);
             throw;
         }
     }
@@ -303,30 +229,23 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] MedicalCase.Cancel - Id={Id}", id);
-                await _localApi.CancelMedicalCaseAsync(id, request);
-                return null;
-            }
-
-            _logger.LogInformation("[REPO:Remote] MedicalCase.Cancel - Id={Id}, Reason={Reason}",
+            _logger.LogInformation("[REPO] MedicalCase.Cancel - Id={Id}, Reason={Reason}",
                 id, request?.Reason ?? "无");
 
-            var response = await _api.CancelMedicalCaseAsync(id, request);
-            if (response.IsSuccessStatusCode)
+            var response = await _apiClient.MedicalCases.CancelMedicalCaseAsync(id, request);
+            if (response.Success)
             {
-                _logger.LogInformation("[REPO:Remote] MedicalCase.Cancel completed - Id={Id}", id);
+                _logger.LogInformation("[REPO] MedicalCase.Cancel completed - Id={Id}", id);
                 return null;
             }
 
-            _logger.LogWarning("[REPO:Remote] MedicalCase.Cancel failed - Id={Id}, StatusCode={StatusCode}",
-                id, response.StatusCode);
+            _logger.LogWarning("[REPO] MedicalCase.Cancel failed - Id={Id}, Message={Message}",
+                id, response.Message);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] MedicalCase.Cancel failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] MedicalCase.Cancel failed - Id={Id}", id);
             throw;
         }
     }
@@ -338,28 +257,22 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] MedicalCase.Suspend - Id={Id}", id);
-                return await _localApi.SuspendAsync(id, request);
-            }
+            _logger.LogInformation("[REPO] MedicalCase.Suspend - Id={Id}", id);
 
-            _logger.LogInformation("[REPO:Remote] MedicalCase.Suspend - Id={Id}", id);
-
-            var response = await _api.SuspendAsync(id, request);
+            var response = await _apiClient.MedicalCases.SuspendAsync(id, request);
             if (response.Success)
             {
-                _logger.LogInformation("[REPO:Remote] MedicalCase.Suspend completed - Id={Id}", id);
+                _logger.LogInformation("[REPO] MedicalCase.Suspend completed - Id={Id}", id);
                 return response.Data;
             }
 
-            _logger.LogWarning("[REPO:Remote] MedicalCase.Suspend failed - Id={Id}, Message={Message}",
+            _logger.LogWarning("[REPO] MedicalCase.Suspend failed - Id={Id}, Message={Message}",
                 id, response.Message);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] MedicalCase.Suspend failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] MedicalCase.Suspend failed - Id={Id}", id);
             throw;
         }
     }
@@ -372,29 +285,23 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] MedicalCase.UpdateStatus - Id={Id}, Status={Status}", id, request.Status);
-                return await _localApi.UpdateStatusAsync(id, request);
-            }
-
-            _logger.LogInformation("[REPO:Remote] MedicalCase.UpdateStatus - Id={Id}, Status={Status}",
+            _logger.LogInformation("[REPO] MedicalCase.UpdateStatus - Id={Id}, Status={Status}",
                 id, request.Status);
 
-            var response = await _api.UpdateStatusAsync(id, request);
+            var response = await _apiClient.MedicalCases.UpdateStatusAsync(id, request);
             if (response.Success)
             {
-                _logger.LogInformation("[REPO:Remote] MedicalCase.UpdateStatus completed - Id={Id}", id);
+                _logger.LogInformation("[REPO] MedicalCase.UpdateStatus completed - Id={Id}", id);
                 return response.Data;
             }
 
-            _logger.LogWarning("[REPO:Remote] MedicalCase.UpdateStatus failed - Id={Id}, Message={Message}",
+            _logger.LogWarning("[REPO] MedicalCase.UpdateStatus failed - Id={Id}, Message={Message}",
                 id, response.Message);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] MedicalCase.UpdateStatus failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] MedicalCase.UpdateStatus failed - Id={Id}", id);
             throw;
         }
     }
@@ -410,29 +317,23 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogDebug("[REPO:Local] MedicalCase.GetPermissions - Id={Id}", medicalCaseId);
-                return await _localApi.GetPermissionsAsync(medicalCaseId);
-            }
+            _logger.LogDebug("[REPO] MedicalCase.GetPermissions - Id={Id}", medicalCaseId);
 
-            _logger.LogDebug("[REPO:Remote] MedicalCase.GetPermissions - Id={Id}", medicalCaseId);
-
-            var response = await _api.GetPermissionsAsync(medicalCaseId);
+            var response = await _apiClient.MedicalCases.GetPermissionsAsync(medicalCaseId);
             if (response.Success && response.Data != null)
             {
-                _logger.LogDebug("[REPO:Remote] MedicalCase.GetPermissions completed - Id={Id}, CanEdit={CanEdit}",
+                _logger.LogDebug("[REPO] MedicalCase.GetPermissions completed - Id={Id}, CanEdit={CanEdit}",
                     medicalCaseId, response.Data.CanEdit);
                 return response.Data;
             }
 
-            _logger.LogWarning("[REPO:Remote] MedicalCase.GetPermissions failed - Id={Id}, Message={Message}",
+            _logger.LogWarning("[REPO] MedicalCase.GetPermissions failed - Id={Id}, Message={Message}",
                 medicalCaseId, response.Message);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] MedicalCase.GetPermissions failed - Id={Id}", IsOffline ? "Local" : "Remote", medicalCaseId);
+            _logger.LogError(ex, "[REPO] MedicalCase.GetPermissions failed - Id={Id}", medicalCaseId);
             throw;
         }
     }
@@ -445,26 +346,19 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] MedicalCase.Save - Id={Id}, HasConsultation={HasConsultation}, HasPrescription={HasPrescription}",
-                    medicalCaseId, dto.Consultation != null, dto.Prescription != null);
-                return await _localApi.SaveAsync(medicalCaseId, dto);
-            }
-
-            _logger.LogInformation("[REPO:Remote] MedicalCase.Save - Id={Id}, HasConsultation={HasConsultation}, HasPrescription={HasPrescription}",
+            _logger.LogInformation("[REPO] MedicalCase.Save - Id={Id}, HasConsultation={HasConsultation}, HasPrescription={HasPrescription}",
                 medicalCaseId, dto.Consultation != null, dto.Prescription != null);
 
-            var response = await _api.SaveAsync(medicalCaseId, dto);
+            var response = await _apiClient.MedicalCases.SaveAsync(medicalCaseId, dto);
             if (!response.Success || response.Data == null)
                 throw new InvalidOperationException(response.Message ?? "聚合保存医案失败");
 
-            _logger.LogInformation("[REPO:Remote] MedicalCase.Save completed - Id={Id}", medicalCaseId);
+            _logger.LogInformation("[REPO] MedicalCase.Save completed - Id={Id}", medicalCaseId);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] MedicalCase.Save failed - Id={Id}", IsOffline ? "Local" : "Remote", medicalCaseId);
+            _logger.LogError(ex, "[REPO] MedicalCase.Save failed - Id={Id}", medicalCaseId);
             throw;
         }
     }
@@ -481,30 +375,23 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] MedicalCase.SetPrescriptionFlag - Id={Id}, NeedsPrescription={NeedsPrescription}",
-                    id, request.NeedsPrescription);
-                return await _localApi.SetPrescriptionFlagAsync(id, request);
-            }
-
-            _logger.LogInformation("[REPO:Remote] MedicalCase.SetPrescriptionFlag - Id={Id}, NeedsPrescription={NeedsPrescription}",
+            _logger.LogInformation("[REPO] MedicalCase.SetPrescriptionFlag - Id={Id}, NeedsPrescription={NeedsPrescription}",
                 id, request.NeedsPrescription);
 
-            var response = await _api.SetPrescriptionFlagAsync(id, request);
+            var response = await _apiClient.MedicalCases.SetPrescriptionFlagAsync(id, request);
             if (response.Success)
             {
-                _logger.LogInformation("[REPO:Remote] MedicalCase.SetPrescriptionFlag completed - Id={Id}", id);
+                _logger.LogInformation("[REPO] MedicalCase.SetPrescriptionFlag completed - Id={Id}", id);
                 return response.Data;
             }
 
-            _logger.LogWarning("[REPO:Remote] MedicalCase.SetPrescriptionFlag failed - Id={Id}, Message={Message}",
+            _logger.LogWarning("[REPO] MedicalCase.SetPrescriptionFlag failed - Id={Id}, Message={Message}",
                 id, response.Message);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] MedicalCase.SetPrescriptionFlag failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] MedicalCase.SetPrescriptionFlag failed - Id={Id}", id);
             throw;
         }
     }
@@ -516,28 +403,22 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] MedicalCase.RecordPrintCompleted - Id={Id}", medicalCaseId);
-                return await _localApi.RecordPrintCompletedAsync(medicalCaseId, request);
-            }
+            _logger.LogInformation("[REPO] MedicalCase.RecordPrintCompleted - Id={Id}", medicalCaseId);
 
-            _logger.LogInformation("[REPO:Remote] MedicalCase.RecordPrintCompleted - Id={Id}", medicalCaseId);
-
-            var response = await _api.RecordPrintCompletedAsync(medicalCaseId, request);
+            var response = await _apiClient.MedicalCases.RecordPrintCompletedAsync(medicalCaseId, request);
             if (response.Success)
             {
-                _logger.LogInformation("[REPO:Remote] MedicalCase.RecordPrintCompleted completed - Id={Id}", medicalCaseId);
+                _logger.LogInformation("[REPO] MedicalCase.RecordPrintCompleted completed - Id={Id}", medicalCaseId);
                 return response.Data;
             }
 
-            _logger.LogWarning("[REPO:Remote] MedicalCase.RecordPrintCompleted failed - Id={Id}, Message={Message}",
+            _logger.LogWarning("[REPO] MedicalCase.RecordPrintCompleted failed - Id={Id}, Message={Message}",
                 medicalCaseId, response.Message);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] MedicalCase.RecordPrintCompleted failed - Id={Id}", IsOffline ? "Local" : "Remote", medicalCaseId);
+            _logger.LogError(ex, "[REPO] MedicalCase.RecordPrintCompleted failed - Id={Id}", medicalCaseId);
             throw;
         }
     }
@@ -556,29 +437,23 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] MedicalCase.GetBatchDetails - Count={Count}", ids.Count);
-                return await _localApi.GetBatchDetailsAsync(new BatchDetailQueryDto { Ids = ids });
-            }
-
-            _logger.LogInformation("[REPO:Remote] MedicalCase.GetBatchDetails - Count={Count}", ids.Count);
+            _logger.LogInformation("[REPO] MedicalCase.GetBatchDetails - Count={Count}", ids.Count);
 
             var request = new BatchDetailQueryDto { Ids = ids };
-            var response = await _api.GetBatchDetailsAsync(request);
+            var response = await _apiClient.MedicalCases.GetBatchDetailsAsync(request);
 
             if (response.Success && response.Data != null)
             {
-                _logger.LogInformation("[REPO:Remote] MedicalCase.GetBatchDetails completed - Count={Count}", response.Data.Count);
+                _logger.LogInformation("[REPO] MedicalCase.GetBatchDetails completed - Count={Count}", response.Data.Count);
                 return response.Data;
             }
 
-            _logger.LogWarning("[REPO:Remote] MedicalCase.GetBatchDetails failed - Message={Message}", response.Message);
+            _logger.LogWarning("[REPO] MedicalCase.GetBatchDetails failed - Message={Message}", response.Message);
             return [];
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] MedicalCase.GetBatchDetails failed - Count={Count}", IsOffline ? "Local" : "Remote", ids.Count);
+            _logger.LogError(ex, "[REPO] MedicalCase.GetBatchDetails failed - Count={Count}", ids.Count);
             throw;
         }
     }
@@ -587,15 +462,9 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] MedicalCase.BatchDelete - Count={Count}", ids.Count);
-                return await _localApi.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
-            }
+            _logger.LogInformation("[REPO] MedicalCase.BatchDelete - Count={Count}", ids.Count);
 
-            _logger.LogInformation("[REPO:Remote] MedicalCase.BatchDelete - Count={Count}", ids.Count);
-
-            var response = await _api.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
+            var response = await _apiClient.MedicalCases.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
             if (!response.Success || response.Data == null)
             {
                 return new BatchOperationResultDto
@@ -611,7 +480,7 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] MedicalCase.BatchDelete failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] MedicalCase.BatchDelete failed");
             return new BatchOperationResultDto
             {
                 TotalCount = ids.Count,

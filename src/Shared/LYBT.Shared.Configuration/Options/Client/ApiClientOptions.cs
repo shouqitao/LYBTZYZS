@@ -10,6 +10,11 @@ public sealed class ApiClientOptions
     public const string SectionName = "ApiClient";
 
     /// <summary>
+    /// API 模式: "Remote" (远程WebAPI) 或 "Local" (本地LocalWebAPI)
+    /// </summary>
+    public string ApiMode { get; set; } = "Remote";
+
+    /// <summary>
     /// API 基础地址
     /// </summary>
     [Required]

@@ -1,4 +1,3 @@
-using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Patients.Repositories;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
@@ -21,8 +20,9 @@ public class PatientBoundaryTests : IntegrationTestBase
 
     private async Task<PatientRepository> CreateRepositoryAsync()
     {
-        var (_, api) = await LoginAsDoctorWithApiAsync<IPatientApi>();
-        return new PatientRepository(api, null!, new RemoteOnlyApiRouter(), NullLogger<PatientRepository>.Instance);
+        var client = await LoginAsDoctorAsync();
+        var apiClient = TestApiClient.Create(client);
+        return new PatientRepository(apiClient, NullLogger<PatientRepository>.Instance);
     }
 
     private static PatientInputDto MakePatient(string name, string phoneSuffix)

@@ -1,8 +1,5 @@
-using System.Net;
-using System.Net.Http;
-using System.Text.Json;
 using FluentAssertions;
-using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.LocalWebAPI.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -12,92 +9,122 @@ using NSubstitute;
 namespace LYBT.Tests.Desktop.LocalWebAPI;
 
 /// <summary>
-/// HttpPatientRepository unit tests
+/// HttpPatientRepository unit tests — verifies delegation to IApiClient.
 /// </summary>
-public class HttpPatientRepositoryTests : IDisposable
+public class HttpPatientRepositoryTests
 {
-    private readonly HttpClient _mockHttpClient;
+    private readonly IApiClient _mockApiClient;
+    private readonly IApiClientPatients _mockPatients;
     private readonly ILogger<HttpPatientRepository> _logger;
     private readonly HttpPatientRepository _repo;
-    private static readonly JsonSerializerOptions Json = new() { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = null };
 
     public HttpPatientRepositoryTests()
     {
-        var handler = new MockHttpMessageHandler();
-        _mockHttpClient = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
+        _mockApiClient = Substitute.For<IApiClient>();
+        _mockPatients = Substitute.For<IApiClientPatients>();
+        _mockApiClient.Patients.Returns(_mockPatients);
         _logger = Substitute.For<ILogger<HttpPatientRepository>>();
-        _repo = new HttpPatientRepository(_mockHttpClient, _logger);
-    }
-
-    public void Dispose()
-    {
-        _mockHttpClient.Dispose();
-        GC.SuppressFinalize(this);
+        _repo = new HttpPatientRepository(_mockApiClient, _logger);
     }
 
     [Fact]
-    public async Task GetByIdAsync_Returns_Null_On_404()
+    public async Task GetByIdAsync_Returns_Data_When_Success()
     {
-        var handler = new MockHttpMessageHandler((req, ct) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound)));
-        var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpPatientRepository(client, _logger);
+        var id = Guid.NewGuid();
+        var detail = new PatientDetailDto { Id = id, Name = "TestPatient" };
+        _mockPatients.GetPatientByIdAsync(id)
+            .Returns(new ApiResponse<PatientDetailDto> { Success = true, Data = detail });
 
-        var result = await repo.GetByIdAsync(Guid.NewGuid());
+        var result = await _repo.GetByIdAsync(id);
+
+        result.Should().NotBeNull();
+        result!.Name.Should().Be("TestPatient");
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_Returns_Null_When_No_Data()
+    {
+        var id = Guid.NewGuid();
+        _mockPatients.GetPatientByIdAsync(id)
+            .Returns(new ApiResponse<PatientDetailDto> { Success = false, Data = null });
+
+        var result = await _repo.GetByIdAsync(id);
+
         result.Should().BeNull();
     }
 
     [Fact]
     public async Task DeleteAsync_Returns_True_On_Success()
     {
-        var handler = new MockHttpMessageHandler((req, ct) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
-        var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpPatientRepository(client, _logger);
+        var id = Guid.NewGuid();
+        _mockPatients.DeletePatientAsync(id)
+            .Returns(new ApiResponse { Success = true });
 
-        var result = await repo.DeleteAsync(Guid.NewGuid());
+        var result = await _repo.DeleteAsync(id);
+
         result.Should().BeTrue();
     }
 
     [Fact]
-    public async Task SearchAsync_Returns_Empty_List_On_No_Results()
+    public async Task SearchAsync_Returns_Empty_On_No_Results()
     {
-        var paged = new PagedResult<PatientListDto> { Items = new List<PatientListDto>() };
-        var json = JsonSerializer.Serialize(paged, Json);
-        var handler = new MockHttpMessageHandler((req, ct) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json) }));
-        var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpPatientRepository(client, _logger);
+        _mockPatients.GetPatientsAsync(1, 100, "nonexistent")
+            .Returns(new ApiResponse<PagedResult<PatientListDto>> { Success = true, Data = new PagedResult<PatientListDto> { Items = [] } });
 
-        var result = await repo.SearchAsync("nonexistent");
+        var result = await _repo.SearchAsync("nonexistent");
+
         result.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task Unsupported_Methods_Return_Null()
+    public async Task CreateAsync_Throws_On_Failure()
     {
-        (await _repo.BatchImportAsync(null!)).Should().BeNull();
-        (await _repo.ExportTemplateAsync()).Should().BeNull();
-        (await _repo.ExportPatientsAsync()).Should().BeNull();
-        (await _repo.RestoreAsync(Guid.NewGuid())).Should().BeNull();
-        (await _repo.BatchDeleteAsync([])).Should().BeNull();
-    }
-}
+        _mockPatients.CreatePatientAsync(Arg.Any<PatientInputDto>())
+            .Returns(new ApiResponse<PatientDetailDto> { Success = false, Message = "Create failed" });
 
-/// <summary>
-/// Simple mock HTTP message handler for testing
-/// </summary>
-public class MockHttpMessageHandler : HttpMessageHandler
-{
-    private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> _handler;
-
-    public MockHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>>? handler = null)
-    {
-        _handler = handler ?? ((req, ct) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
+        var input = new PatientInputDto { Name = "TestPatient" };
+        await _repo.Invoking(r => r.CreateAsync(input))
+            .Should().ThrowAsync<InvalidOperationException>();
     }
 
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    [Fact]
+    public async Task CreateAsync_Returns_Data_On_Success()
     {
-        return _handler(request, cancellationToken);
+        var detail = new PatientDetailDto { Id = Guid.NewGuid(), Name = "TestPatient" };
+        _mockPatients.CreatePatientAsync(Arg.Any<PatientInputDto>())
+            .Returns(new ApiResponse<PatientDetailDto> { Success = true, Data = detail });
+
+        var input = new PatientInputDto { Name = "TestPatient" };
+        var result = await _repo.CreateAsync(input);
+
+        result.Should().NotBeNull();
+        result.Name.Should().Be("TestPatient");
+    }
+
+    [Fact]
+    public async Task BatchDeleteAsync_Returns_Data_On_Success()
+    {
+        var ids = new List<Guid> { Guid.NewGuid() };
+        var batchResult = new BatchOperationResultDto { SuccessCount = 1 };
+        _mockPatients.BatchDeleteAsync(Arg.Any<BatchDeleteInputDto>())
+            .Returns(new ApiResponse<BatchOperationResultDto> { Success = true, Data = batchResult });
+
+        var result = await _repo.BatchDeleteAsync(ids);
+
+        result.Should().NotBeNull();
+        result!.SuccessCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task RestoreAsync_Returns_Data_On_Success()
+    {
+        var id = Guid.NewGuid();
+        var detail = new PatientDetailDto { Id = id };
+        _mockPatients.RestoreAsync(id)
+            .Returns(new ApiResponse<PatientDetailDto> { Success = true, Data = detail });
+
+        var result = await _repo.RestoreAsync(id);
+
+        result.Should().NotBeNull();
     }
 }

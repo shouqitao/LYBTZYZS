@@ -1,6 +1,5 @@
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Repositories;
-using LYBT.Desktop.Contracts.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
@@ -8,26 +7,18 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Formula.Repositories;
 
 /// <summary>
-/// 验方仓储 - 通过 Refit IFormulaApi 访问 WebAPI。
+/// 验方仓储 — routes all calls through IApiClient.
 /// </summary>
 public sealed class FormulaRepository : IFormulaRepository
 {
-    private readonly IFormulaApi _api;
-    private readonly ILocalFormulaApi _localApi;
-    private readonly IApiRouter _apiRouter;
+    private readonly IApiClient _apiClient;
     private readonly ILogger<FormulaRepository> _logger;
 
-    private bool IsOffline => _apiRouter.IsOffline;
-
     public FormulaRepository(
-        IFormulaApi api,
-        ILocalFormulaApi localApi,
-        IApiRouter apiRouter,
+        IApiClient apiClient,
         ILogger<FormulaRepository> logger)
     {
-        _api = api ?? throw new ArgumentNullException(nameof(api));
-        _localApi = localApi ?? throw new ArgumentNullException(nameof(localApi));
-        _apiRouter = apiRouter ?? throw new ArgumentNullException(nameof(apiRouter));
+        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -37,23 +28,10 @@ public sealed class FormulaRepository : IFormulaRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogDebug("[REPO:Local] Formula.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword}", page, pageSize, keyword);
-                var formulas = await _localApi.GetFormulasAsync(keyword);
-                return new PagedResult<FormulaListDto>
-                {
-                    Items = formulas,
-                    TotalCount = formulas.Count,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-            }
-
-            _logger.LogDebug("[REPO:Remote] Formula.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword} Category={Category}",
+            _logger.LogDebug("[REPO] Formula.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword} Category={Category}",
                 page, pageSize, keyword, category);
 
-            var response = await _api.GetFormulasAsync(page, pageSize, keyword, category);
+            var response = await _apiClient.Formulas.GetFormulasAsync(page, pageSize, keyword, category);
             if (response.Data == null)
                 return new PagedResult<FormulaListDto> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize };
 
@@ -67,7 +45,7 @@ public sealed class FormulaRepository : IFormulaRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Formula.GetPaged failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] Formula.GetPaged failed");
             throw;
         }
     }
@@ -76,19 +54,13 @@ public sealed class FormulaRepository : IFormulaRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogDebug("[REPO:Local] Formula.GetById - Id={Id}", id);
-                return await _localApi.GetFormulaByIdAsync(id);
-            }
-
-            _logger.LogDebug("[REPO:Remote] Formula.GetById - Id={Id}", id);
-            var response = await _api.GetFormulaByIdAsync(id);
+            _logger.LogDebug("[REPO] Formula.GetById - Id={Id}", id);
+            var response = await _apiClient.Formulas.GetFormulaByIdAsync(id);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Formula.GetById failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] Formula.GetById failed - Id={Id}", id);
             throw;
         }
     }
@@ -99,24 +71,18 @@ public sealed class FormulaRepository : IFormulaRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Formula.Create - Name={Name}", dto.Name);
-                return await _localApi.CreateFormulaAsync(dto);
-            }
+            _logger.LogInformation("[REPO] Formula.Create started - Name={Name}", dto.Name);
 
-            _logger.LogInformation("[REPO:Remote] Formula.Create started - Name={Name}", dto.Name);
-
-            var response = await _api.CreateFormulaAsync(dto);
+            var response = await _apiClient.Formulas.CreateFormulaAsync(dto);
             if (!response.Success || response.Data == null)
                 throw new InvalidOperationException(response.Message ?? "创建验方失败");
 
-            _logger.LogInformation("[REPO:Remote] Formula.Create completed - Id={Id}", response.Data.Id);
+            _logger.LogInformation("[REPO] Formula.Create completed - Id={Id}", response.Data.Id);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Formula.Create failed - Name={Name}", IsOffline ? "Local" : "Remote", dto.Name);
+            _logger.LogError(ex, "[REPO] Formula.Create failed - Name={Name}", dto.Name);
             throw;
         }
     }
@@ -129,24 +95,18 @@ public sealed class FormulaRepository : IFormulaRepository
 
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Formula.Update - Id={Id}", dto.Id);
-                return await _localApi.UpdateFormulaAsync(dto.Id.Value, dto);
-            }
+            _logger.LogInformation("[REPO] Formula.Update - Id={Id}", dto.Id);
 
-            _logger.LogInformation("[REPO:Remote] Formula.Update - Id={Id}", dto.Id);
-
-            var response = await _api.UpdateFormulaAsync(dto.Id.Value, dto);
+            var response = await _apiClient.Formulas.UpdateFormulaAsync(dto.Id.Value, dto);
             if (!response.Success || response.Data == null)
                 throw new InvalidOperationException(response.Message ?? "更新验方失败");
 
-            _logger.LogInformation("[REPO:Remote] Formula.Update completed - Id={Id}", response.Data.Id);
+            _logger.LogInformation("[REPO] Formula.Update completed - Id={Id}", response.Data.Id);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Formula.Update failed - Id={Id}", IsOffline ? "Local" : "Remote", dto.Id);
+            _logger.LogError(ex, "[REPO] Formula.Update failed - Id={Id}", dto.Id);
             throw;
         }
     }
@@ -155,26 +115,19 @@ public sealed class FormulaRepository : IFormulaRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Formula.Delete - Id={Id}", id);
-                await _localApi.DeleteFormulaAsync(id);
-                return true;
-            }
+            _logger.LogInformation("[REPO] Formula.Delete - Id={Id}", id);
 
-            _logger.LogInformation("[REPO:Remote] Formula.Delete - Id={Id}", id);
-
-            var response = await _api.DeleteFormulaAsync(id);
+            var response = await _apiClient.Formulas.DeleteFormulaAsync(id);
             if (response.Success)
-                _logger.LogInformation("[REPO:Remote] Formula.Delete completed - Id={Id}", id);
+                _logger.LogInformation("[REPO] Formula.Delete completed - Id={Id}", id);
             else
-                _logger.LogWarning("[REPO:Remote] Formula.Delete failed - Id={Id}", id);
+                _logger.LogWarning("[REPO] Formula.Delete failed - Id={Id}", id);
 
             return response.Success;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Formula.Delete failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] Formula.Delete failed - Id={Id}", id);
             return false;
         }
     }
@@ -183,14 +136,8 @@ public sealed class FormulaRepository : IFormulaRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogDebug("[REPO:Local] Formula.Search - Keyword={Keyword}", keyword);
-                return await _localApi.GetFormulasAsync(keyword);
-            }
-
-            _logger.LogDebug("[REPO:Remote] Formula.Search - Keyword={Keyword}", keyword);
-            var response = await _api.GetFormulasAsync(1, 100, keyword, null);
+            _logger.LogDebug("[REPO] Formula.Search - Keyword={Keyword}", keyword);
+            var response = await _apiClient.Formulas.GetFormulasAsync(1, 100, keyword, null);
             if (response.Data == null)
                 return [];
 
@@ -198,7 +145,7 @@ public sealed class FormulaRepository : IFormulaRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Formula.Search failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] Formula.Search failed");
             throw;
         }
     }
@@ -211,25 +158,19 @@ public sealed class FormulaRepository : IFormulaRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Formula.Clone - Id={Id}", formulaId);
-                return await _localApi.CloneFormulaAsync(formulaId);
-            }
+            _logger.LogInformation("[REPO] Formula.Clone - Id={Id}", formulaId);
 
-            _logger.LogInformation("[REPO:Remote] Formula.Clone - Id={Id}", formulaId);
-
-            var response = await _api.CloneFormulaAsync(formulaId);
+            var response = await _apiClient.Formulas.CloneFormulaAsync(formulaId);
             if (!response.Success || response.Data == null)
                 throw new InvalidOperationException(response.Message ?? $"克隆验方失败，ID: {formulaId}");
 
-            _logger.LogInformation("[REPO:Remote] Formula.Clone completed - OriginalId={OriginalId} ClonedId={ClonedId}",
+            _logger.LogInformation("[REPO] Formula.Clone completed - OriginalId={OriginalId} ClonedId={ClonedId}",
                 formulaId, response.Data.Id);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Formula.Clone failed - Id={Id}", IsOffline ? "Local" : "Remote", formulaId);
+            _logger.LogError(ex, "[REPO] Formula.Clone failed - Id={Id}", formulaId);
             throw;
         }
     }
@@ -244,27 +185,21 @@ public sealed class FormulaRepository : IFormulaRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Formula.ToggleStatus - Id={Id}", id);
-                return await _localApi.ToggleStatusAsync(id);
-            }
+            _logger.LogInformation("[REPO] Formula.ToggleStatus - Id={Id}", id);
 
-            _logger.LogInformation("[REPO:Remote] Formula.ToggleStatus - Id={Id}", id);
-
-            var response = await _api.ToggleStatusAsync(id);
+            var response = await _apiClient.Formulas.ToggleStatusAsync(id);
             if (!response.Success || response.Data == null)
             {
-                _logger.LogWarning("[REPO:Remote] Formula.ToggleStatus failed: {Message}", response.Message);
+                _logger.LogWarning("[REPO] Formula.ToggleStatus failed: {Message}", response.Message);
                 return null;
             }
 
-            _logger.LogInformation("[REPO:Remote] Formula.ToggleStatus completed - Status={Status}", response.Data.Status);
+            _logger.LogInformation("[REPO] Formula.ToggleStatus completed - Status={Status}", response.Data.Status);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Formula.ToggleStatus failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] Formula.ToggleStatus failed - Id={Id}", id);
             return null;
         }
     }
@@ -273,18 +208,12 @@ public sealed class FormulaRepository : IFormulaRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Formula.Restore - Id={Id}", id);
-                return await _localApi.RestoreAsync(id);
-            }
+            _logger.LogInformation("[REPO] Formula.Restore - Id={Id}", id);
 
-            _logger.LogInformation("[REPO:Remote] Formula.Restore - Id={Id}", id);
-
-            var response = await _api.RestoreAsync(id);
+            var response = await _apiClient.Formulas.RestoreAsync(id);
             if (!response.Success || response.Data == null)
             {
-                _logger.LogWarning("[REPO:Remote] Formula.Restore failed: {Message}", response.Message);
+                _logger.LogWarning("[REPO] Formula.Restore failed: {Message}", response.Message);
                 return null;
             }
 
@@ -292,7 +221,7 @@ public sealed class FormulaRepository : IFormulaRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Formula.Restore failed - Id={Id}", IsOffline ? "Local" : "Remote", id);
+            _logger.LogError(ex, "[REPO] Formula.Restore failed - Id={Id}", id);
             return null;
         }
     }
@@ -301,15 +230,9 @@ public sealed class FormulaRepository : IFormulaRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Formula.BatchDelete - Count={Count}", ids.Count);
-                return await _localApi.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
-            }
+            _logger.LogInformation("[REPO] Formula.BatchDelete - Count={Count}", ids.Count);
 
-            _logger.LogInformation("[REPO:Remote] Formula.BatchDelete - Count={Count}", ids.Count);
-
-            var response = await _api.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
+            var response = await _apiClient.Formulas.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
             if (!response.Success || response.Data == null)
             {
                 return new BatchOperationResultDto
@@ -325,7 +248,7 @@ public sealed class FormulaRepository : IFormulaRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Formula.BatchDelete failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] Formula.BatchDelete failed");
             return new BatchOperationResultDto
             {
                 TotalCount = ids.Count,
@@ -340,18 +263,12 @@ public sealed class FormulaRepository : IFormulaRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Formula.BatchEnable - Count={Count}", ids.Count);
-                return await _localApi.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids });
-            }
+            _logger.LogInformation("[REPO] Formula.BatchEnable - Count={Count}", ids.Count);
 
-            _logger.LogInformation("[REPO:Remote] Formula.BatchEnable - Count={Count}", ids.Count);
-
-            var response = await _api.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids });
+            var response = await _apiClient.Formulas.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids });
             if (!response.Success || response.Data == null)
             {
-                _logger.LogWarning("[REPO:Remote] Formula.BatchEnable failed: {Message}", response.Message);
+                _logger.LogWarning("[REPO] Formula.BatchEnable failed: {Message}", response.Message);
                 return null;
             }
 
@@ -359,7 +276,7 @@ public sealed class FormulaRepository : IFormulaRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Formula.BatchEnable failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] Formula.BatchEnable failed");
             return null;
         }
     }
@@ -368,18 +285,12 @@ public sealed class FormulaRepository : IFormulaRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Formula.BatchDisable - Count={Count}", ids.Count);
-                return await _localApi.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids });
-            }
+            _logger.LogInformation("[REPO] Formula.BatchDisable - Count={Count}", ids.Count);
 
-            _logger.LogInformation("[REPO:Remote] Formula.BatchDisable - Count={Count}", ids.Count);
-
-            var response = await _api.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids });
+            var response = await _apiClient.Formulas.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids });
             if (!response.Success || response.Data == null)
             {
-                _logger.LogWarning("[REPO:Remote] Formula.BatchDisable failed: {Message}", response.Message);
+                _logger.LogWarning("[REPO] Formula.BatchDisable failed: {Message}", response.Message);
                 return null;
             }
 
@@ -387,7 +298,7 @@ public sealed class FormulaRepository : IFormulaRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:{Mode}] Formula.BatchDisable failed", IsOffline ? "Local" : "Remote");
+            _logger.LogError(ex, "[REPO] Formula.BatchDisable failed");
             return null;
         }
     }
@@ -400,88 +311,70 @@ public sealed class FormulaRepository : IFormulaRepository
     {
         try
         {
-            if (IsOffline)
-            {
-                _logger.LogInformation("[REPO:Local] Formula.BatchImport - Count={Count}", request.Formulas.Count);
-                return await _localApi.BatchImportAsync(request);
-            }
+            _logger.LogInformation("[REPO] Formula.BatchImport started");
 
-            _logger.LogInformation("[REPO:Remote] Formula.BatchImport started");
-
-            var response = await _api.BatchImportAsync(request);
+            var response = await _apiClient.Formulas.BatchImportAsync(request);
             if (!response.Success || response.Data == null)
             {
-                _logger.LogWarning("[REPO:Remote] Formula.BatchImport failed: {Message}", response.Message);
+                _logger.LogWarning("[REPO] Formula.BatchImport failed: {Message}", response.Message);
                 return null;
             }
 
-            _logger.LogInformation("[REPO:Remote] Formula.BatchImport completed - Success={Success}, Failed={Failed}",
+            _logger.LogInformation("[REPO] Formula.BatchImport completed - Success={Success}, Failed={Failed}",
                 response.Data.SuccessCount, response.Data.FailureCount);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Formula.BatchImport failed");
+            _logger.LogError(ex, "[REPO] Formula.BatchImport failed");
             return null;
         }
     }
 
     public async Task<byte[]?> ExportFormulasAsync(string? category = null, CancellationToken ct = default)
     {
-        if (IsOffline)
-        {
-            _logger.LogWarning("[REPO:Local] Formula.ExportFormulas not supported in offline mode");
-            return null;
-        }
-
         try
         {
-            _logger.LogInformation("[REPO:Remote] Formula.ExportFormulas - Category={Category}", category);
+            _logger.LogInformation("[REPO] Formula.ExportFormulas - Category={Category}", category);
 
-            var response = await _api.ExportFormulasAsync(category);
+            var response = await _apiClient.Formulas.ExportFormulasAsync(category);
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("[REPO:Remote] Formula.ExportFormulas failed: StatusCode={StatusCode}", response.StatusCode);
+                _logger.LogWarning("[REPO] Formula.ExportFormulas failed: StatusCode={StatusCode}", response.StatusCode);
                 return null;
             }
 
             var data = await response.Content.ReadAsByteArrayAsync(ct);
-            _logger.LogInformation("[REPO:Remote] Formula.ExportFormulas completed - Size={Size} bytes", data.Length);
+            _logger.LogInformation("[REPO] Formula.ExportFormulas completed - Size={Size} bytes", data.Length);
             return data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Formula.ExportFormulas failed");
+            _logger.LogError(ex, "[REPO] Formula.ExportFormulas failed");
             return null;
         }
     }
 
     public async Task<byte[]?> ExportTemplateAsync(CancellationToken ct = default)
     {
-        if (IsOffline)
-        {
-            _logger.LogWarning("[REPO:Local] Formula.ExportTemplate not supported in offline mode");
-            return null;
-        }
-
         try
         {
-            _logger.LogInformation("[REPO:Remote] Formula.ExportTemplate started");
+            _logger.LogInformation("[REPO] Formula.ExportTemplate started");
 
-            var response = await _api.ExportTemplateAsync();
+            var response = await _apiClient.Formulas.ExportTemplateAsync();
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("[REPO:Remote] Formula.ExportTemplate failed: StatusCode={StatusCode}", response.StatusCode);
+                _logger.LogWarning("[REPO] Formula.ExportTemplate failed: StatusCode={StatusCode}", response.StatusCode);
                 return null;
             }
 
             var data = await response.Content.ReadAsByteArrayAsync(ct);
-            _logger.LogInformation("[REPO:Remote] Formula.ExportTemplate completed - Size={Size} bytes", data.Length);
+            _logger.LogInformation("[REPO] Formula.ExportTemplate completed - Size={Size} bytes", data.Length);
             return data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO:Remote] Formula.ExportTemplate failed");
+            _logger.LogError(ex, "[REPO] Formula.ExportTemplate failed");
             return null;
         }
     }

@@ -1,4 +1,3 @@
-using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Herbs.Repositories;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Tests.Integration._Infrastructure;
@@ -8,7 +7,7 @@ namespace LYBT.Tests.Integration.Flows;
 
 /// <summary>
 /// Herb CRUD flow integration tests.
-/// Tests the full chain: HerbRepository -> IHerbApi -> Server HerbController -> SQL Server.
+/// Tests the full chain: HerbRepository -> IApiClient -> Server HerbController -> SQL Server.
 /// </summary>
 [Collection("Integration")]
 public class HerbFlowTests : IntegrationTestBase
@@ -17,8 +16,9 @@ public class HerbFlowTests : IntegrationTestBase
 
     private async Task<HerbRepository> CreateRepositoryAsync()
     {
-        var (_, api) = await LoginAsAdminWithApiAsync<IHerbApi>();
-        return new HerbRepository(api, null!, new RemoteOnlyApiRouter(), NullLogger<HerbRepository>.Instance);
+        var client = await LoginAsAdminAsync();
+        var apiClient = TestApiClient.Create(client);
+        return new HerbRepository(apiClient, NullLogger<HerbRepository>.Instance);
     }
 
     [Fact]

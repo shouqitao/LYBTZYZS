@@ -1,7 +1,5 @@
-using System.Net;
-using System.Net.Http;
-using System.Text.Json;
 using FluentAssertions;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.LocalWebAPI.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -11,38 +9,48 @@ using NSubstitute;
 namespace LYBT.Tests.Desktop.LocalWebAPI;
 
 /// <summary>
-/// HttpFormulaRepository unit tests
+/// HttpFormulaRepository unit tests — verifies delegation to IApiClient.
 /// </summary>
-public class HttpFormulaRepositoryTests : IDisposable
+public class HttpFormulaRepositoryTests
 {
-    private readonly HttpClient _mockHttpClient;
+    private readonly IApiClient _mockApiClient;
+    private readonly IApiClientFormulas _mockFormulas;
     private readonly ILogger<HttpFormulaRepository> _logger;
     private readonly HttpFormulaRepository _repo;
-    private static readonly JsonSerializerOptions Json = new() { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = null };
 
     public HttpFormulaRepositoryTests()
     {
-        var handler = new MockHttpMessageHandler();
-        _mockHttpClient = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
+        _mockApiClient = Substitute.For<IApiClient>();
+        _mockFormulas = Substitute.For<IApiClientFormulas>();
+        _mockApiClient.Formulas.Returns(_mockFormulas);
         _logger = Substitute.For<ILogger<HttpFormulaRepository>>();
-        _repo = new HttpFormulaRepository(_mockHttpClient, _logger);
-    }
-
-    public void Dispose()
-    {
-        _mockHttpClient.Dispose();
-        GC.SuppressFinalize(this);
+        _repo = new HttpFormulaRepository(_mockApiClient, _logger);
     }
 
     [Fact]
-    public async Task GetByIdAsync_Returns_Null_On_404()
+    public async Task GetByIdAsync_Returns_Data_When_Success()
     {
-        var handler = new MockHttpMessageHandler((req, ct) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound)));
-        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpFormulaRepository(client, _logger);
+        var id = Guid.NewGuid();
+        var detail = new FormulaDetailDto { Id = id, Name = "TestFormula" };
+        _mockFormulas.GetFormulaByIdAsync(id)
+            .Returns(new ApiResponse<FormulaDetailDto> { Success = true, Data = detail });
 
-        var result = await repo.GetByIdAsync(Guid.NewGuid());
+        var result = await _repo.GetByIdAsync(id);
+
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(id);
+        result.Name.Should().Be("TestFormula");
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_Returns_Null_When_No_Data()
+    {
+        var id = Guid.NewGuid();
+        _mockFormulas.GetFormulaByIdAsync(id)
+            .Returns(new ApiResponse<FormulaDetailDto> { Success = false, Data = null });
+
+        var result = await _repo.GetByIdAsync(id);
+
         result.Should().BeNull();
     }
 
@@ -50,115 +58,167 @@ public class HttpFormulaRepositoryTests : IDisposable
     public async Task DeleteAsync_Returns_True_On_Success()
     {
         var id = Guid.NewGuid();
-        string? capturedMethod = null;
-        string? capturedPath = null;
-        var handler = new MockHttpMessageHandler((req, ct) =>
-        {
-            capturedMethod = req.Method.Method;
-            capturedPath = req.RequestUri?.PathAndQuery;
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
-        });
-        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpFormulaRepository(client, _logger);
+        _mockFormulas.DeleteFormulaAsync(id)
+            .Returns(new ApiResponse { Success = true });
 
-        var result = await repo.DeleteAsync(id);
+        var result = await _repo.DeleteAsync(id);
+
         result.Should().BeTrue();
-        capturedMethod.Should().Be("DELETE");
-        capturedPath.Should().Contain($"/api/formulas/{id}");
+        await _mockFormulas.Received(1).DeleteFormulaAsync(id);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_Returns_False_On_Failure()
+    {
+        var id = Guid.NewGuid();
+        _mockFormulas.DeleteFormulaAsync(id)
+            .Returns(new ApiResponse { Success = false });
+
+        var result = await _repo.DeleteAsync(id);
+
+        result.Should().BeFalse();
     }
 
     [Fact]
     public async Task SearchAsync_Returns_Empty_On_No_Results()
     {
-        var paged = new PagedResult<FormulaListDto> { Items = new List<FormulaListDto>() };
-        var json = JsonSerializer.Serialize(paged, Json);
-        var handler = new MockHttpMessageHandler((req, ct) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json) }));
-        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpFormulaRepository(client, _logger);
+        _mockFormulas.GetFormulasAsync(1, 100, "nonexistent", null)
+            .Returns(new ApiResponse<PagedResult<FormulaListDto>> { Success = true, Data = new PagedResult<FormulaListDto> { Items = [] } });
 
-        var result = await repo.SearchAsync("nonexistent");
+        var result = await _repo.SearchAsync("nonexistent");
+
         result.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task CloneFormulaAsync_Returns_Null_On_404()
+    public async Task SearchAsync_Returns_Items_On_Success()
     {
-        var handler = new MockHttpMessageHandler((req, ct) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound)));
-        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpFormulaRepository(client, _logger);
+        var items = new List<FormulaListDto> { new() { Id = Guid.NewGuid(), Name = "F1" } };
+        _mockFormulas.GetFormulasAsync(1, 100, "test", null)
+            .Returns(new ApiResponse<PagedResult<FormulaListDto>> { Success = true, Data = new PagedResult<FormulaListDto> { Items = items } });
 
-        var result = await repo.CloneFormulaAsync(Guid.NewGuid());
+        var result = await _repo.SearchAsync("test");
+
+        result.Should().HaveCount(1);
+        result[0].Name.Should().Be("F1");
+    }
+
+    [Fact]
+    public async Task CloneFormulaAsync_Throws_On_Failure()
+    {
+        var id = Guid.NewGuid();
+        _mockFormulas.CloneFormulaAsync(id)
+            .Returns(new ApiResponse<FormulaDetailDto> { Success = false, Message = "Not found" });
+
+        await _repo.Invoking(r => r.CloneFormulaAsync(id))
+            .Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task ToggleStatusAsync_Returns_Null_On_Failure()
+    {
+        var id = Guid.NewGuid();
+        _mockFormulas.ToggleStatusAsync(id)
+            .Returns(new ApiResponse<FormulaDetailDto> { Success = false });
+
+        var result = await _repo.ToggleStatusAsync(id);
+
         result.Should().BeNull();
     }
 
     [Fact]
-    public async Task ToggleStatusAsync_Returns_Null_On_404()
+    public async Task RestoreAsync_Returns_Null_On_Failure()
     {
-        var handler = new MockHttpMessageHandler((req, ct) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound)));
-        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpFormulaRepository(client, _logger);
+        var id = Guid.NewGuid();
+        _mockFormulas.RestoreAsync(id)
+            .Returns(new ApiResponse<FormulaDetailDto> { Success = false });
 
-        var result = await repo.ToggleStatusAsync(Guid.NewGuid());
+        var result = await _repo.RestoreAsync(id);
+
         result.Should().BeNull();
     }
 
     [Fact]
-    public async Task RestoreAsync_Returns_Null_On_404()
+    public async Task BatchDeleteAsync_Returns_Data_On_Success()
     {
-        var handler = new MockHttpMessageHandler((req, ct) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound)));
-        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpFormulaRepository(client, _logger);
+        var ids = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
+        var batchResult = new BatchOperationResultDto { SuccessCount = 2, FailureCount = 0 };
+        _mockFormulas.BatchDeleteAsync(Arg.Any<BatchDeleteInputDto>())
+            .Returns(new ApiResponse<BatchOperationResultDto> { Success = true, Data = batchResult });
 
-        var result = await repo.RestoreAsync(Guid.NewGuid());
-        result.Should().BeNull();
-    }
+        var result = await _repo.BatchDeleteAsync(ids);
 
-    [Fact]
-    public async Task BatchDeleteAsync_Deserializes_Result()
-    {
-        var batchResult = new BatchOperationResultDto { SuccessCount = 3, FailureCount = 1 };
-        var json = JsonSerializer.Serialize(batchResult, Json);
-        var handler = new MockHttpMessageHandler((req, ct) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json) }));
-        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpFormulaRepository(client, _logger);
-
-        var result = await repo.BatchDeleteAsync([Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()]);
         result.Should().NotBeNull();
-        result!.SuccessCount.Should().Be(3);
-        result.FailureCount.Should().Be(1);
+        result!.SuccessCount.Should().Be(2);
     }
 
     [Fact]
-    public async Task CreateAsync_Sends_Post_To_Formulas()
+    public async Task CreateAsync_Throws_On_Failure()
     {
-        var detail = new FormulaDetailDto { Id = Guid.NewGuid(), Name = "TestFormula" };
-        var json = JsonSerializer.Serialize(detail, Json);
-        string? capturedMethod = null;
-        string? capturedPath = null;
-        string? capturedBody = null;
-        var handler = new MockHttpMessageHandler((req, ct) =>
-        {
-            capturedMethod = req.Method.Method;
-            capturedPath = req.RequestUri?.PathAndQuery;
-            capturedBody = req.Content?.ReadAsStringAsync().GetAwaiter().GetResult();
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json) });
-        });
-        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:0") };
-        var repo = new HttpFormulaRepository(client, _logger);
+        _mockFormulas.CreateFormulaAsync(Arg.Any<FormulaInputDto>())
+            .Returns(new ApiResponse<FormulaDetailDto> { Success = false, Message = "Create failed" });
 
         var input = new FormulaInputDto { Name = "TestFormula" };
-        var result = await repo.CreateAsync(input);
+        await _repo.Invoking(r => r.CreateAsync(input))
+            .Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task CreateAsync_Returns_Data_On_Success()
+    {
+        var detail = new FormulaDetailDto { Id = Guid.NewGuid(), Name = "TestFormula" };
+        _mockFormulas.CreateFormulaAsync(Arg.Any<FormulaInputDto>())
+            .Returns(new ApiResponse<FormulaDetailDto> { Success = true, Data = detail });
+
+        var input = new FormulaInputDto { Name = "TestFormula" };
+        var result = await _repo.CreateAsync(input);
 
         result.Should().NotBeNull();
         result.Name.Should().Be("TestFormula");
-        capturedMethod.Should().Be("POST");
-        capturedPath.Should().Be("/api/formulas");
-        capturedBody.Should().NotBeNullOrEmpty();
-        capturedBody.Should().Contain("TestFormula");
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_Returns_Paged_Result()
+    {
+        var items = new List<FormulaListDto> { new() { Id = Guid.NewGuid(), Name = "F1" } };
+        _mockFormulas.GetFormulasAsync(1, 20, null, null)
+            .Returns(new ApiResponse<PagedResult<FormulaListDto>>
+            {
+                Success = true,
+                Data = new PagedResult<FormulaListDto> { Items = items, TotalCount = 1, CurrentPage = 1, PageSize = 20 }
+            });
+
+        var result = await _repo.GetPagedAsync(1, 20);
+
+        result.Items.Should().HaveCount(1);
+        result.TotalCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task BatchEnableAsync_Delegates_To_ApiClient()
+    {
+        var ids = new List<Guid> { Guid.NewGuid() };
+        var batchResult = new BatchOperationResultDto { SuccessCount = 1 };
+        _mockFormulas.BatchEnableAsync(Arg.Any<BatchDeleteInputDto>())
+            .Returns(new ApiResponse<BatchOperationResultDto> { Success = true, Data = batchResult });
+
+        var result = await _repo.BatchEnableAsync(ids);
+
+        result.Should().NotBeNull();
+        result!.SuccessCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task BatchDisableAsync_Delegates_To_ApiClient()
+    {
+        var ids = new List<Guid> { Guid.NewGuid() };
+        var batchResult = new BatchOperationResultDto { SuccessCount = 1 };
+        _mockFormulas.BatchDisableAsync(Arg.Any<BatchDeleteInputDto>())
+            .Returns(new ApiResponse<BatchOperationResultDto> { Success = true, Data = batchResult });
+
+        var result = await _repo.BatchDisableAsync(ids);
+
+        result.Should().NotBeNull();
+        result!.SuccessCount.Should().Be(1);
     }
 }
