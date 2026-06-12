@@ -24,7 +24,7 @@ public class SyncService : ISyncService
     private readonly ISyncApi _syncApi;
     private readonly LocalDbContext _context;
     private readonly ILogger<SyncService> _logger;
-    private readonly FeatureToggleOptions _featureToggleOptions;
+    private readonly IOptionsMonitor<FeatureToggleOptions> _featureToggleOptions;
     private readonly IDesktopCacheManager? _cacheManager;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -37,13 +37,13 @@ public class SyncService : ISyncService
         ISyncApi syncApi,
         LocalDbContext context,
         ILogger<SyncService> logger,
-        IOptions<FeatureToggleOptions> featureToggleOptions,
+        IOptionsMonitor<FeatureToggleOptions> featureToggleOptions,
         IDesktopCacheManager? cacheManager = null)
     {
         _syncApi = syncApi;
         _context = context;
         _logger = logger;
-        _featureToggleOptions = featureToggleOptions.Value;
+        _featureToggleOptions = featureToggleOptions;
         _cacheManager = cacheManager;
     }
 
@@ -157,7 +157,7 @@ public class SyncService : ISyncService
         {
             EntityType = entityType,
             Entities = entities,
-            OverwriteConflicts = _featureToggleOptions.OverwriteConflicts
+            OverwriteConflicts = _featureToggleOptions.CurrentValue.OverwriteConflicts
         };
 
         var response = await _syncApi.UploadAsync(input);

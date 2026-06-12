@@ -15,6 +15,7 @@ sources: ["docs/02-requirements/11-configuration.md"]
 
 ## 实现机制
 - **配置源**：`FeatureToggleOptions` 类，绑定至 `appsettings.json` 中的 `FeatureToggles` 节。
+- **热更新**：Desktop Shell 使用 `IOptionsMonitor<FeatureToggleOptions>` 注册，`appsettings.json` 变更时自动重载（`reloadOnChange: true`），无需重启客户端。
 - **UI 绑定**：ViewModel 暴露只读布尔属性（如 `CanCreateConsultation`），XAML 通过 `BoolToVisibilityConverter` 将其转换为 `Visibility.Collapsed` 或 `Visibility.Visible`。
 - **行为规则**：
   - **隐藏 (Collapsed)**：当开关为 `false` 时，对应的菜单项、工具栏按钮完全隐藏，不占用布局空间。
