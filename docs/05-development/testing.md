@@ -25,7 +25,7 @@ tests/
     PureLogic/                        # 纯逻辑测试 (Entities, Validators, Utilities)
       Entities/, Shared/, WebAPI/     # 无外部依赖的单元测试
 
-  LYBT.Tests.Desktop/                 # Desktop 端全量测试 (net8.0-windows, 715 tests)
+  LYBT.Tests.Desktop/                 # Desktop 端全量测试 (net8.0-windows, ~760 tests)
     _Infrastructure/                  # DesktopFixture (SQLite + 真实 Repository)
     ViewModels/                       # ViewModel 集成测试 (真实 DataSource)
     EndToEnd/                         # 业务流 E2E (Repository -> SQLite)

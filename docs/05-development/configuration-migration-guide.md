@@ -1,13 +1,13 @@
 # LYBT WebAPI 配置体系重构迁移指南
 
-## 📋 背景
+## 背景
 
 本次重构解决了配置体系混乱导致的优先级覆盖问题：
 - **问题**：`.env.development` 和 `appsettings.Development.json` 同时定义连接字符串
 - **影响**：DotNetEnv 加载的环境变量优先级更高，导致 `appsettings.Development.json` 的配置被覆盖
 - **风险**：敏感信息（JWT密钥、密码）被提交到 Git
 
-## 🏗️ 新的配置架构
+## 新的配置架构
 
 ### 职责分离
 
@@ -37,7 +37,7 @@
 
 ---
 
-## 🚀 迁移步骤
+## 迁移步骤
 
 ### 如果你是新开发者
 
@@ -84,7 +84,7 @@
 
 ---
 
-## 🔍 验证配置是否正确加载
+## 验证配置是否正确加载
 
 ### 方法 1：查看启动日志
 
@@ -113,7 +113,7 @@ Console.WriteLine($"连接字符串: {connectionString}");
 
 ---
 
-## ⚠️ 重要注意事项
+## 重要注意事项
 
 ### 1. 不要提交 `.env.development`
 
@@ -153,7 +153,7 @@ PowerShell:
 
 ---
 
-## 🐛 故障排查
+## 故障排查
 
 ### 问题：连接字符串仍指向生产数据库
 
@@ -184,7 +184,7 @@ Remove-Item Env:ConnectionStrings__DefaultConnection
 
 ---
 
-## 📚 相关文件
+## 相关文件
 
 | 文件 | 说明 |
 |-----|------|
@@ -195,10 +195,10 @@ Remove-Item Env:ConnectionStrings__DefaultConnection
 
 ---
 
-## 📝 变更记录
+## 变更记录
 
 | 日期 | 变更 | 作者 |
 |-----|------|------|
-| 2024-XX-XX | 重构配置体系，分离敏感配置与行为配置 | Sisyphus |
-| 2024-XX-XX | 更新 `.gitignore` 阻止 `.env.development` 提交 | Sisyphus |
-| 2024-XX-XX | 清理 `appsettings.Development.json` 中的敏感信息 | Sisyphus |
+| 2026-01-15 | 重构配置体系，分离敏感配置与行为配置 | Sisyphus |
+| 2026-01-15 | 更新 `.gitignore` 阻止 `.env.development` 提交 | Sisyphus |
+| 2026-01-15 | 清理 `appsettings.Development.json` 中的敏感信息 | Sisyphus |

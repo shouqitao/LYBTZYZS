@@ -342,6 +342,6 @@ jobs:
 - ✅ Postman Collection 已达到 100% 端点覆盖
 - ✅ .NET 集成测试保持当前覆盖范围 (~1185 tests)
 - ⏸️ 暂不移除任何 HTTP 测试
-- 📝 更新 `docs/05-development/testing-strategy.md` 引用此文档
+- 📝 更新 `docs/05-development/testing.md` 引用此文档
 
 **下一步**: 运行 Newman 验证 Postman Collection,确保所有端点可达。

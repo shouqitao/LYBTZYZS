@@ -57,7 +57,7 @@ public async Task SaveAsync_WithValidInput_ReturnsMedicalCase()
 | 项目 | 数量 | 说明 |
 |------|------|------|
 | LYBT.Tests.Server | ~1185 | Server 全量测试 (真实 SQL Server + Respawn, 零 mock) |
-| LYBT.Tests.Desktop | ~715 | Desktop 全量测试 (SQLite + 真实 Repository, 最小 WPF mock) |
+| LYBT.Tests.Desktop | ~760 | Desktop 全量测试 (SQLite + 真实 Repository, 最小 WPF mock) |
 | LYBT.Tests.Architecture | ~76 | 架构防护 + AntiMockRules |
 
 ## 参考

@@ -82,6 +82,14 @@ dotnet test tests/LYBT.Tests.Architecture/
 | [编码规范](code-standards.md) | 命名、模式、规范 |
 | [设计模式](patterns.md) | Repository/Service/ViewModel 速查 |
 | [测试指南](testing.md) | 测试策略、项目结构、编写规范 |
+| [开发工作流](workflow.md) | 日常工作流、分支策略 |
+| [性能基线](performance-baseline.md) | 性能指标与基线 |
+| [密码安全管理](security-password-management.md) | 密码策略与安全规范 |
+| [Postman vs .NET 测试策略](postman-vs-dotnet-testing-strategy.md) | 测试工具对比 |
+| [UAT 测试计划](uat-test-plan.md) | 用户验收测试计划 |
+| [配置迁移指南](configuration-migration-guide.md) | 配置文件迁移说明 |
+| [OpenSpec 追踪指南](openspec-tracking-guide.md) | OpenSpec 变更追踪 |
+| [开发标准](standards/) | 编码与测试标准文档 |
 | [运维文档](../06-operations/) | 部署、配置、监控 |
 
 ---
@@ -92,7 +100,7 @@ dotnet test tests/LYBT.Tests.Architecture/
 A: Desktop 相关项目需要 Windows SDK 工作负载。在 Visual Studio Installer 中勾选 ".NET 桌面开发" 工作负载，或使用 `dotnet workload install` 安装。Linux/macOS 下只能编译 Server 项目。
 
 **Q: 不装 SQL Server 能开发吗？**
-A: 可以。Desktop 客户端支持本地模式 (SQLite)，无需 SQL Server。Server 端开发需要 SQL Server，但集成测试使用 SQLite InMemory，也无需装 SQL Server。
+A: 可以。Desktop 客户端支持本地模式 (SQLite)，无需 SQL Server。Server 端开发需要 SQL Server，集成测试使用真实 SQL Server + Respawn (不是 SQLite InMemory)。
 
 **Q: `dotnet test` 部分项目失败**
 A: 常见原因:
