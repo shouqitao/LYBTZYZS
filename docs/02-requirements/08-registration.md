@@ -331,6 +331,32 @@ We believe that **providing a systematic registration and queuing mechanism** fo
 
 ---
 
+### 安全要求
+
+| 要求 | 说明 |
+|------|------|
+| 取消权限 | 仅 Admin+ 或挂号医生可取消进行中挂号 |
+| 挂号审计 | 挂号创建/取消操作记录到 SecurityAuditLog |
+| 并发保护 | 同一患者同日唯一活跃挂号约束 |
+
+## Data Volume (C2)
+
+| 维度 | 估算 |
+|------|------|
+| Registrations | ~3000/yr, 5yr ~15000 |
+| Active today | <20 |
+
+
+### 数据量估算
+
+| 表 | 预估 | 说明 |
+|------|------|------|
+| Registrations | ~3000 条/年 | 每日 10-15 条挂号 |
+| 5 年累积 | ~15,000 条 | 同 MedicalCase 量级 |
+| 当日活跃 | < 20 条 | 队列视图一次性加载 |
+
+---
+
 ## 8. Out of Scope (v1.0 排除项)
 
 | 排除项 | 原因 |

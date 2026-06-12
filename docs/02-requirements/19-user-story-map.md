@@ -1,5 +1,23 @@
 # User Story Map
 
+## Purpose
+用户故事地图是产品功能的全局导航图，将 21 个模块的 User Stories 按业务流程和优先级组织。本文档不是独立 PRD，而是各模块 PRD 中 User Stories 的汇总视图。
+
+## 目标用户
+- 产品负责人: 验证功能覆盖完整性
+- 开发团队: 理解功能间依赖和优先级
+- 测试团队: 规划测试策略和覆盖率
+
+## 成功标准
+1) 所有 138 个 User Stories 均已映射到模块和优先级
+2) 每个核心诊疗流程(挂号→看诊→开方→打印)至少有一条 Must Have 故事
+3) 无孤立故事 (每条故事都关联到模块 PRD)
+
+## Out of Scope
+- 详细验收标准: 见各模块 PRD 的 User Story 章节
+- 技术实现细节: 见 03-architecture/
+- API 契约: 见 04-api-reference/
+
 > **版本**: v1.0
 > **创建日期**: 2026-03-06
 > **框架**: Jeff Patton User Story Mapping
