@@ -107,10 +107,10 @@ v1.0 包含 15 个功能模块、138 个 User Stories (Must 51 + Should 54 + Cou
 
 ### 5.1 系统架构
 
-- **技术栈**: .NET 8 + WPF/Prism (桌面端) + ASP.NET Core (服务端) + EF Core + SQL Server/SQLite
+- **技术栈**: .NET 8 + WPF/Prism (桌面端) + ASP.NET Core (服务端) + EF Core + SQL Server (远程 + LocalDB)
 - **架构模式**: 三层架构 (Controller -> Service -> Repository) + MVVM (View -> ViewModel -> Repository)
 - **核心设计**: MedicalCase 作为唯一聚合根 (DDD)，包含 Consultation (1:1) + Prescription (1:0..1)
-- **双模式**: 远程 (SQL Server) + 本地 (SQLite)，共享 Service/Repository 层
+- **双模式**: 远程 (SQL Server) + 本地 (SQL Server LocalDB)，共享 Service/Repository 层
 
 ### 5.2 核心业务流程
 
@@ -198,7 +198,7 @@ v1.0 包含 15 个功能模块、138 个 User Stories (Must 51 + Should 54 + Cou
 
 ## 7. Requirements Index
 
-### 7.1 User Stories (131 US, 14 模块)
+### 7.1 User Stories (138 US, 15 模块)
 
 | 模块 | 文件 | US 编号范围 | 总数 | Must | Should | Could |
 |------|------|------------|------|------|--------|-------|

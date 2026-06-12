@@ -21,7 +21,7 @@
 
 - 临床工作流观察: 医生开具处方时经常使用固定的经验方组合，手动输入效率低
 - 数据迁移需求: 旧系统 (纸质/Excel) 验方导入后药材名称与系统药材库不匹配
-- 产品需求分析: 处方模块 (MedicalCase) 需要从验方导入药材组成 (FR-MC-016)
+- 产品需求分析: 处方模块 (MedicalCase) 需要从验方导入药材组成 (US-MC-016)
 
 ---
 
@@ -66,7 +66,7 @@
 - **延迟绑定**: 导入的药材名称可暂不关联系统药材库，后续手动验证绑定
 - **验证工作流**: Draft (未验证) -> Validated (全部药材已绑定)，仅 Validated 验方可用于开方
 - **批量操作**: 批量导入 (JSON/Excel)、批量导出 (Excel)、批量删除/启用/禁用
-- **双模式支持**: 远程 (HTTP API) + 本地 (SQLite DataSource)
+- **双模式支持**: 远程 (HTTP API) + 本地 (LocalWebAPI → LocalDB)
 
 **验方生命周期:**
 ```
@@ -237,7 +237,7 @@ We believe that 实现验方模板的数字化管理 (CRUD + 共享 + 延迟绑�
 1. 统一所有权检查
 2. 禁用后开方时不可导入 (验方导入对话框过滤 Status=Enabled)
 3. 支持批量启用/禁用
-4. **处方导入对话框仅展示 ValidationStatus=Validated 且 Status=Enabled 的验方** (MC-D08，见 [medical-cases.md](medical-cases.md) FR-MC-016)
+4. **处方导入对话框仅展示 ValidationStatus=Validated 且 Status=Enabled 的验方** (MC-D08，见 [medical-cases.md](medical-cases.md) US-MC-016)
 
 **Dual Mode:**
 | 模式 | 行为 |
@@ -509,8 +509,8 @@ We believe that 实现验方模板的数字化管理 (CRUD + 共享 + 延迟绑�
 | 编号 | 问题 | 影响范围 | 状态 |
 |------|------|----------|------|
 | FORM-D01 | 本地模式下导入导出的支持方式 | US-FORM-011 ~ 013 | 已确定: 支持。客户端 NPOI 本地处理，不依赖 API |
-| FORM-D02 | 验方导入处方时的价格来源 | FR-MC-016 | 已确定: 验方不含价格。导入处方时根据 HerbId 从药材库获取当前价格，价格计算在处方层完成 |
-| MC-D08 | 处方导入对话框的验方过滤 | US-FORM-006 + FR-MC-016 | 已确定: 仅展示 ValidationStatus=Validated 且 Status=Enabled 的验方。Draft 验方需先完成药材绑定验证 |
+| FORM-D02 | 验方导入处方时的价格来源 | US-MC-016 | 已确定: 验方不含价格。导入处方时根据 HerbId 从药材库获取当前价格，价格计算在处方层完成 |
+| MC-D08 | 处方导入对话框的验方过滤 | US-FORM-006 + US-MC-016 | 已确定: 仅展示 ValidationStatus=Validated 且 Status=Enabled 的验方。Draft 验方需先完成药材绑定验证 |
 
 ### 修订历史
 

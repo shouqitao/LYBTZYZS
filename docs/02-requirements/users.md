@@ -68,7 +68,7 @@
 - **密码管理**: 管理员重置密码 + 用户自助修改密码，强制密码策略
 - **批量操作**: 批量删除/启用/禁用，单事务提交
 - **跨模块联动**: 角色变更/禁用/删除时通过 ICrossModuleAuthService 撤销 Token Family (AUTH-D07)
-- **双模式支持**: 远程 (SQL Server + HTTP API) + 本地 (SQLite)，功能对等
+- **双模式支持**: 远程 (SQL Server + HTTP API) + 本地 (LocalDB)，功能对等
 
 **权限值层级模型 (USER-D04):**
 ```
@@ -144,7 +144,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 | 模式 | 行为 |
 |------|------|
 | 远程 | POST `/api/v1/users`，返回 UserDetailDto (201) |
-| 本地 | LocalUserDataSource，本地 SQLite 存储，功能与远程模式对等 |
+| 本地 | LocalUserRepository，本地 LocalDB 存储，功能与远程模式对等 |
 
 ### US-USER-002: 查看用户列表
 
@@ -167,7 +167,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 | 模式 | 行为 |
 |------|------|
 | 远程 | GET `/api/v1/users?keyword=&role=&status=&page=&pageSize=` |
-| 本地 | LocalUserDataSource，本地 SQLite 存储，功能与远程模式对等 |
+| 本地 | LocalUserRepository，本地 LocalDB 存储，功能与远程模式对等 |
 
 ### US-USER-003: 查看用户详情
 
@@ -187,7 +187,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 | 模式 | 行为 |
 |------|------|
 | 远程 | GET `/api/v1/users/{id}` |
-| 本地 | LocalUserDataSource，本地 SQLite 存储，功能与远程模式对等 |
+| 本地 | LocalUserRepository，本地 LocalDB 存储，功能与远程模式对等 |
 
 ### US-USER-004: 更新用户信息
 
@@ -211,7 +211,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 | 模式 | 行为 |
 |------|------|
 | 远程 | PUT `/api/v1/users/{id}` |
-| 本地 | LocalUserDataSource，本地 SQLite 存储，功能与远程模式对等 |
+| 本地 | LocalUserRepository，本地 LocalDB 存储，功能与远程模式对等 |
 
 ### US-USER-005: 删除用户
 
@@ -236,7 +236,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 | 模式 | 行为 |
 |------|------|
 | 远程 | DELETE `/api/v1/users/{id}` |
-| 本地 | LocalUserDataSource，本地 SQLite 存储，功能与远程模式对等 |
+| 本地 | LocalUserRepository，本地 LocalDB 存储，功能与远程模式对等 |
 
 ### US-USER-006: 恢复已删除用户
 
@@ -256,7 +256,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 | 模式 | 行为 |
 |------|------|
 | 远程 | POST `/api/v1/users/{id}/restore` |
-| 本地 | LocalUserDataSource，本地 SQLite 存储，功能与远程模式对等 |
+| 本地 | LocalUserRepository，本地 LocalDB 存储，功能与远程模式对等 |
 
 ### US-USER-007: 批量删除
 
@@ -277,7 +277,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 | 模式 | 行为 |
 |------|------|
 | 远程 | POST `/api/v1/users/batch-delete` |
-| 本地 | LocalUserDataSource，本地 SQLite 存储，功能与远程模式对等 |
+| 本地 | LocalUserRepository，本地 LocalDB 存储，功能与远程模式对等 |
 
 ### US-USER-008: 管理员重置密码
 
@@ -300,7 +300,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 | 模式 | 行为 |
 |------|------|
 | 远程 | POST `/api/v1/users/{id}/reset-password` |
-| 本地 | LocalUserDataSource，本地 SQLite 存储，功能与远程模式对等 |
+| 本地 | LocalUserRepository，本地 LocalDB 存储，功能与远程模式对等 |
 
 ### US-USER-009: 用户修改密码
 
@@ -322,7 +322,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 | 模式 | 行为 |
 |------|------|
 | 远程 | PUT `/api/v1/users/{id}/change-password` |
-| 本地 | LocalUserDataSource，本地 SQLite 存储，功能与远程模式对等 |
+| 本地 | LocalUserRepository，本地 LocalDB 存储，功能与远程模式对等 |
 
 ### US-USER-010: 修改个人资料
 
@@ -341,7 +341,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 | 模式 | 行为 |
 |------|------|
 | 远程 | PUT `/api/v1/users/{id}/profile` |
-| 本地 | LocalUserDataSource，本地 SQLite 存储，功能与远程模式对等 |
+| 本地 | LocalUserRepository，本地 LocalDB 存储，功能与远程模式对等 |
 
 ### US-USER-011: 启用/禁用用户
 
@@ -365,7 +365,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 | 模式 | 行为 |
 |------|------|
 | 远程 | POST `/api/v1/users/{id}/toggle-status`，批量: POST `/api/v1/users/batch-enable` 或 `/batch-disable` |
-| 本地 | LocalUserDataSource，本地 SQLite 存储，功能与远程模式对等 |
+| 本地 | LocalUserRepository，本地 LocalDB 存储，功能与远程模式对等 |
 
 ### US-USER-012: 获取当前用户
 
@@ -512,7 +512,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 
 | 编号 | 问题 | 影响范围 | 状态 |
 |------|------|----------|------|
-| 1 | 本地模式下用户管理的支持范围 | 所有 US-USER | 已确定: 完整支持。LocalUserDataSource 11/11 方法全覆盖，DI 注册为 IUserDataSource 本地实现 |
+| 1 | 本地模式下用户管理的支持范围 | 所有 US-USER | 已确定: 完整支持。LocalUserRepository 11/11 方法全覆盖，DI 注册为 IUserDataSource 本地实现 |
 | 2 | Receptionist 角色的具体功能边界 | US-USER-001 | 已确定: 患者 CRU (创建/查看/更新，无删除) + 读卡器使用 + 未完成医案简要提示 (时间+医生，不含诊断/处方详情)。不在 AdminOnly 策略中 |
 | ~~USER-D03~~ | ~~最后一个 Admin/SuperAdmin 禁用保护~~ | ~~US-USER-011~~ | **已移除** (USER-D04/D05 替代): sysadmin 固定存在不可被管理，永远可以创建新 Admin，不可能出现"无管理员"状态 |
 | AUTH-D07 | 角色变更即时生效 | US-USER-004 | 已确定: 角色变更时通过 ICrossModuleAuthService.RevokeAllUserTokensAsync() 撤销 Token Family，强制重登录 (见 auth.md AUTH-D07) |

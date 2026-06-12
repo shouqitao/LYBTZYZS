@@ -452,7 +452,7 @@ We believe that 实现以 MedicalCase 为唯一聚合根的电子化医案管理
 8. 删除操作: 记录 IsDeleted=true 变更
 9. 审计记录写入失败不影响主业务流程 (异常隔离)
 
-> **交叉引用**: 安全审计日志 (SecurityAuditLog) 见 [logging.md](logging.md) FR-LOG-002；日志保留策略见 [nfr.md](nfr.md) NFR-SEC-005。
+> **交叉引用**: 安全审计日志 (SecurityAuditLog) 见 [logging.md](logging.md) US-LOG-002；日志保留策略见 [nfr.md](nfr.md) NFR-SEC-005。
 
 **Dual Mode:**
 | 模式 | 行为 |
@@ -949,7 +949,7 @@ We believe that 实现以 MedicalCase 为唯一聚合根的电子化医案管理
 |------|------|----------|------|
 | 1 | 本地模式下审计日志的存储和同步策略 | US-MC-012 | 已确定: 仅实体级审计字段。本地模式为单用户操作，字段级变更审计价值有限 |
 | 2 | 本地模式下医案编号的生成规则 | US-MC-001 | 已确定: MC+yyyyMMdd+3位序号。CaseNumber 为展示用编号 (非唯一约束)，Guid Id 为实际唯一标识。同日本地/远程可能重号，不影响数据完整性 |
-| 3 | 本地模式下跨医案搜索的性能 | US-MC-010 | 已确定: 满足需求。诊所场景 (百~千级) SQLite 性能良好，已应用 AsNoTracking + 分页优化 |
+| 3 | 本地模式下跨医案搜索的性能 | US-MC-010 | 已确定: 满足需求。诊所场景 (百~千级) LocalDB 性能良好，已应用 AsNoTracking + 分页优化 |
 | MC-D04 | 患者删除引用检查 | US-MC-001 + patients.md FR-PAT-005 | 已确定: 有关联医案的患者禁止删除 (422)，仅可禁用 |
 | MC-D05 | 挂起医案自动清理 | US-MC-006 | 已确定: v1.0 不实现。BR-001 卡点 + 用户手动处理 |
 | MC-D06 | DB 唯一索引范围 | US-MC-001 | 已确定: Active + Suspended 唯一索引，接受低概率并发风险 (NFR 1-3 用户) |

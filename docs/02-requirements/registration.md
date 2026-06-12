@@ -153,7 +153,7 @@ We believe that **providing a systematic registration and queuing mechanism** fo
 | 模式 | 行为 |
 |------|------|
 | 远程 | WPF -> HTTP POST /api/registrations -> RegistrationController -> RegistrationService -> SQL Server |
-| 本地 | WPF -> LocalDataSource -> SQLite |
+| 本地 | WPF -> LocalWebAPI (Kestrel) -> LocalDB |
 
 ---
 
@@ -176,7 +176,7 @@ We believe that **providing a systematic registration and queuing mechanism** fo
 | 模式 | 行为 |
 |------|------|
 | 远程 | WPF -> HTTP POST /api/registrations/quick-visit -> RegistrationController -> RegistrationService + MedicalCaseService -> SQL Server |
-| 本地 | WPF -> LocalDataSource -> SQLite (事务: Registration + MedicalCase 同步创建) |
+| 本地 | WPF -> LocalWebAPI (Kestrel) -> LocalDB (事务: Registration + MedicalCase 同步创建) |
 
 ---
 
@@ -198,7 +198,7 @@ We believe that **providing a systematic registration and queuing mechanism** fo
 | 模式 | 行为 |
 |------|------|
 | 远程 | WPF -> HTTP GET /api/registrations/queue -> RegistrationController -> RegistrationService -> SQL Server |
-| 本地 | WPF -> LocalDataSource -> SQLite |
+| 本地 | WPF -> LocalWebAPI (Kestrel) -> LocalDB |
 
 ---
 
@@ -221,7 +221,7 @@ We believe that **providing a systematic registration and queuing mechanism** fo
 | 模式 | 行为 |
 |------|------|
 | 远程 | WPF -> HTTP PUT /api/registrations/{id}/cancel -> RegistrationController -> RegistrationService -> SQL Server |
-| 本地 | WPF -> LocalDataSource -> SQLite |
+| 本地 | WPF -> LocalWebAPI (Kestrel) -> LocalDB |
 
 ---
 
@@ -283,7 +283,7 @@ We believe that **providing a systematic registration and queuing mechanism** fo
 | 模式 | 行为 |
 |------|------|
 | 远程 | WPF -> HTTP GET /api/registrations/history -> RegistrationController -> RegistrationService -> SQL Server |
-| 本地 | WPF -> LocalDataSource -> SQLite |
+| 本地 | WPF -> LocalWebAPI (Kestrel) -> LocalDB |
 
 ---
 

@@ -32,7 +32,7 @@
 | SuperAdmin | 查看系统日志 + 管理日志级别 (通过 DiagnosticsController) |
 | 所有角色 | 操作行为被审计日志自动记录 (被动参与) |
 
-> 日志系统是基础设施层，对业务用户透明。日志级别管理见 [health-diagnostics.md](health-diagnostics.md) FR-SYS-004~007。
+> 日志系统是基础设施层，对业务用户透明。日志级别管理见 [health-diagnostics.md](health-diagnostics.md) US-SYS-004~007。
 
 ---
 
@@ -208,8 +208,8 @@ We believe that 实现 Serilog 结构化日志 + CorrelationId 追踪 + 敏感�
 **Business Rules:**
 1. LoggingLevelManager 持有全局 LoggingLevelSwitch 单例
 2. 默认级别: Information
-3. 调试模式: 临时降低级别 + Timer 自动恢复 (详见 FR-SYS-005/006)
-4. 手动设置: SetLevel 直接修改级别，无自动过期 (详见 FR-SYS-007)
+3. 调试模式: 临时降低级别 + Timer 自动恢复 (详见 US-SYS-005/006)
+4. 手动设置: SetLevel 直接修改级别，无自动过期 (详见 US-SYS-007)
 5. 线程安全: 所有操作使用 lock 保护
 6. 实现 IDisposable: 释放时清理 Timer
 
@@ -330,8 +330,8 @@ We believe that 实现 Serilog 结构化日志 + CorrelationId 追踪 + 敏感�
 | 依赖模块 | 依赖方向 | 说明 |
 |----------|----------|------|
 | auth.md | 日志 ← 认证 | 认证事件触发安全审计日志写入 |
-| health-diagnostics.md | 日志 ← 诊断 | DiagnosticsController 管理日志级别 (FR-SYS-004~007) |
-| medical-cases.md | 交叉引用 | MedicalCaseAuditLog 归属 FR-MC-012，本模块仅引用 |
+| health-diagnostics.md | 日志 ← 诊断 | DiagnosticsController 管理日志级别 (US-SYS-004~007) |
+| medical-cases.md | 交叉引用 | MedicalCaseAuditLog 归属 US-MC-012，本模块仅引用 |
 
 ---
 
@@ -350,7 +350,7 @@ We believe that 实现 Serilog 结构化日志 + CorrelationId 追踪 + 敏感�
 | 审计类型 | 归属文档 | US 编号 | 说明 |
 |----------|---------|---------|------|
 | 安全审计日志 (SecurityAuditLog) | logging.md | US-LOG-002 | 认证事件审计 |
-| 医案变更审计 (MedicalCaseAuditLog) | [medical-cases.md](medical-cases.md) | FR-MC-012 | 医案字段级变更审计 |
+| 医案变更审计 (MedicalCaseAuditLog) | [medical-cases.md](medical-cases.md) | US-MC-012 | 医案字段级变更审计 |
 | API 请求日志 (ApiLoggingFilter) | logging.md | US-LOG-007 | Controller Action 执行日志 |
 
 ---

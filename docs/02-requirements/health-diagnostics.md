@@ -484,14 +484,14 @@ We believe that 提供健康检查端点 + 动态日志级别管理 + 启动诊�
 
 | 职责 | 归属文档 | 说明 |
 |------|---------|------|
-| 日志框架配置 (Serilog) | logging.md | FR-LOG-001 |
-| 安全审计日志记录 | logging.md | FR-LOG-002 |
-| 敏感数据脱敏 | logging.md | FR-LOG-003 |
-| LoggingLevelManager 内部机制 | logging.md | FR-LOG-004 |
+| 日志框架配置 (Serilog) | logging.md | US-LOG-001 |
+| 安全审计日志记录 | logging.md | US-LOG-002 |
+| 敏感数据脱敏 | logging.md | US-LOG-003 |
+| LoggingLevelManager 内部机制 | logging.md | US-LOG-004 |
 | 健康检查 API (/health/*) | health-diagnostics.md | US-SYS-001~003 |
 | 日志级别管理 API (/diagnostics/*) | health-diagnostics.md | US-SYS-004~007 |
 
-> FR-LOG-004 定义 LoggingLevelManager 的内部行为 (线程安全/Timer/Dispose)；US-SYS-004~007 定义通过 DiagnosticsController 暴露的 API 端点。两者是"内部实现"与"外部接口"的关系，不存在功能重叠。
+> US-LOG-004 定义 LoggingLevelManager 的内部行为 (线程安全/Timer/Dispose)；US-SYS-004~007 定义通过 DiagnosticsController 暴露的 API 端点。两者是"内部实现"与"外部接口"的关系，不存在功能重叠。
 
 ---
 

@@ -67,7 +67,7 @@
 - **状态管理**: 启用/禁用切换 (单个 + 批量)，禁用药材开方时不可选
 - **批量操作**: Excel 导入、JSON 批量导入 (最多 10000 条)、Excel/JSON 导出、批量删除
 - **引用安全**: 删除前检查处方/验方引用，有引用则禁止删除并建议使用禁用功能
-- **双模式支持**: 远程 (HTTP API + SQL Server) + 本地 (SQLite + NPOI 本地解析)
+- **双模式支持**: 远程 (HTTP API + SQL Server) + 本地 (LocalWebAPI → LocalDB)
 - **缓存策略**: Desktop 全量预加载到内存 (IHerbCacheService)，开方时 0ms 纯内存过滤
 
 **药材生命周期:**
@@ -159,7 +159,7 @@ We believe that 实现拼音码快速检索 + Excel/JSON 批量导入导出 + �
 1. 支持按名称和拼音码搜索 (keyword)
 2. 支持按分类筛选 (category)
 3. 默认分页: page=1, pageSize=20
-4. 列表缓存: OutputCache("HerbsCache")
+4. 列表缓存: IMemoryCache (HERB-D01)
 5. 默认按名称升序排列
 6. 分页参数验证: page >= 1, pageSize 1-100 (见 [nfr.md](nfr.md) NFR-API-001)
 
@@ -167,7 +167,7 @@ We believe that 实现拼音码快速检索 + Excel/JSON 批量导入导出 + �
 | 模式 | 行为 |
 |------|------|
 | 远程 | GET `/api/v1/herbs?keyword=&category=&page=&pageSize=` |
-| 本地 | 本地 SQLite 查询 |
+| 本地 | 本地 LocalDB 查询 |
 
 ### US-HERB-003: 查看药材详情
 

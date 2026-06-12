@@ -20,7 +20,7 @@
 ### 1.3 证据
 
 - ASP.NET Core Options 模式是 .NET 生态标准配置管理方案，支持强类型绑定、验证和分环境覆盖
-- 系统已有 17 个 Options 类 (12 服务端 + 5 客户端)，参数总计 80+ 项
+- 系统已有 14 个 Options 类 (8 服务端 + 1 共享 + 4 客户端 + 1 WebAPI 专用)，参数总计 80+ 项
 - 生产部署经验: 首次部署因连接字符串缺失导致启动失败
 
 ---
@@ -155,7 +155,7 @@ We believe that 实现强类型 Options 绑定 + DataAnnotation 验证 + 分环�
 | RateLimiting.GlobalLimit.PermitLimit | int | 200 | 1-10000 | 全局请求限制 |
 | RateLimiting.GlobalLimit.WindowSeconds | int | 60 | 1-3600 | 时间窗口 (秒) |
 | RateLimiting.LoginLimit.PermitLimit | int | 5 | 1-10000 | 登录请求限制 |
-| RateLimiting.LoginLimit.InternalPermitLimit | int | 20 | - | 内网登录限制 |
+| RateLimiting.LoginLimit.InternalPermitLimit | int | 20 | - | ~~内网登录限制~~ (内外网统一限流，此字段已废弃) |
 | RateLimiting.ApiLimit.PermitLimit | int | 100 | 1-10000 | API 请求限制 |
 | RateLimiting.ApiLimit.AdminPermitLimit | int | 200 | - | 管理员 API 限制 |
 | RateLimiting.WhitelistedIPs | List | [127.0.0.1, ::1] | - | 白名单 IP |

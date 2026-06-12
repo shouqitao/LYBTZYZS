@@ -153,7 +153,7 @@
 |------|------|------|
 | RTO (恢复时间目标) | 30 分钟 | 从发现故障到恢复服务 |
 | RPO (恢复点目标) | 24 小时 | 最多丢失 1 天的数据 |
-| 降级模式 | 本地模式即时可用 | 服务器故障时切换到 SQLite 本地模式继续工作 |
+| 降级模式 | 本地模式即时可用 | 服务器故障时切换到 SQL Server LocalDB 本地模式继续工作 |
 
 - **恢复优先级**: 本地模式降级 (即时) > 从备份还原 (30min 内) > 重新部署 (1h 内)
 - **验收标准**:
@@ -207,7 +207,7 @@
 | 本地网络 | 内网环境 | 诊所内部局域网，物理安全可控 |
 | 安全响应头 | 全套 | CSP / X-Frame-Options / XSS-Protection / Referrer-Policy |
 
-> **[延期 2026-02-21]** SQLite 字段级加密整体延期实现
+> **[延期 2026-02-21]** LocalDB 字段级加密整体延期实现
 > 原因: 架构影响面大，需独立设计 EF Core Value Converter + DPAPI 密钥管理方案  |  计划: 安全加固 Epic  |  参考: NFR-01
 
 ### NFR-SEC-004: 本地数据加密
@@ -225,9 +225,9 @@
 - **非加密字段**: 姓名、性别、年龄、医案内容等非直接标识信息保持明文，保证查询性能
 - **密钥管理**: 使用 Windows DPAPI (已有 AutoLoginToken 加密基础设施) 保护 AES 密钥
 - **验收标准**:
-  - [ ] SQLite 文件中 IdCardNumber 和 PhoneNumber 字段不可直接读取明文
+  - [ ] LocalDB 中 IdCardNumber 和 PhoneNumber 字段不可直接读取明文
   - [ ] 应用正常运行时，加密/解密对用户透明
-  - [ ] 加密字段不支持 SQLite 层面的 LIKE 搜索 (搜索在解密后的内存中执行)
+  - [ ] 加密字段不支持 LocalDB 层面的 LIKE 搜索 (搜索在解密后的内存中执行)
   - [ ] DPAPI 密钥绑定当前 Windows 用户，更换用户需重新同步数据
 
 > **已确定**: v1.0 采用字段级加密而非整库加密 (SQLCipher)。理由: (1) 仅 2 个字段需保护，整库加密性价比低; (2) DPAPI 密钥管理基础设施已有 (CredentialVault); (3) 不影响非敏感字段的查询性能。
@@ -236,12 +236,12 @@
 
 | 级别 | 定义 | 字段示例 | 所属实体 | 存储保护 | 日志保护 |
 |------|------|---------|---------|---------|---------|
-| L1-高敏感 | 可直接标识个人身份或联系方式 | IdNumber, PhoneNumber | Patient | AES-256 加密存储 (仅 SQLite) | 完全脱敏 / 部分脱敏 |
+| L1-高敏感 | 可直接标识个人身份或联系方式 | IdNumber, PhoneNumber | Patient | AES-256 加密存储 (仅 LocalDB) | 完全脱敏 / 部分脱敏 |
 | L2-一般敏感 (个人) | 个人敏感信息 | Address, AllergyHistory, MedicalHistory | Patient | 明文存储 + 访问控制 | 摘要脱敏 |
 | L2-一般敏感 (医疗) | 医疗诊断信息 | TcmDiagnosis, PresentIllness, TongueDiagnosis, PulseDiagnosis | Consultation | 明文存储 + 访问控制 | 不记录到日志 |
 | L3-普通 | 业务标识信息 | Name, Gender, BirthDate, HerbName | 各实体 | 明文存储 | 正常记录 |
 
-> L1 字段在 SQLite 本地库中加密存储；SQL Server 远程库依靠网络传输加密 (HTTPS) + 数据库访问控制保护，不做字段级加密。
+> L1 字段在 LocalDB 本地库中加密存储；SQL Server 远程库依靠网络传输加密 (HTTPS) + 数据库访问控制保护，不做字段级加密。
 
 #### 日志脱敏规则
 
@@ -259,7 +259,7 @@
 #### 实现路径: EF Core Value Converter
 
 ```
-SQLite DbContext 配置:
+LocalDB DbContext 配置:
   Patient.IdNumber     → EncryptedStringConverter (写入加密 / 读取解密)
   Patient.PhoneNumber  → EncryptedStringConverter (写入加密 / 读取解密)
 
@@ -271,7 +271,7 @@ EncryptedStringConverter:
   IEncryptionKeyProvider.GetKey() → DPAPI 解密存储的 AES 密钥
 ```
 
-- 仅在 SQLite DbContext 中配置 Value Converter，SQL Server DbContext 不加密
+- 仅在 LocalDB DbContext 中配置 Value Converter，SQL Server DbContext 不加密
 - 对 Repository/Service 层完全透明，无需修改业务代码
 - 加密字段在数据库中存储为 Base64 编码的密文字符串
 - 搜索限制: 加密字段仅支持精确匹配 (先加密搜索值再比对) 或内存过滤
@@ -290,14 +290,14 @@ EncryptedStringConverter:
 
 #### 数据迁移策略 (明文 -> 加密)
 
-- **场景**: 已有本地 SQLite 数据库中的 IdCardNumber/PhoneNumber 为明文，升级后需加密
+- **场景**: 已有本地 LocalDB 数据库中的 IdCardNumber/PhoneNumber 为明文，升级后需加密
 - **方式**: EF Core Migration 脚本
 - **流程**:
   1. 读取所有 Patient 记录的 IdCardNumber/PhoneNumber 明文值
   2. 使用 AES-256 加密
   3. 更新回数据库
   4. 验证: 随机抽样解密确认数据完整性
-- **回退**: 保留迁移前的 SQLite 备份文件
+- **回退**: 保留迁移前的 LocalDB 备份文件
 - **验收标准**:
   - [ ] 迁移后所有患者记录的加密字段可正常解密
   - [ ] 迁移过程 < 30 秒 (5000 条患者记录)
@@ -357,7 +357,7 @@ EncryptedStringConverter:
 | Herb | 创建/更新/删除/状态切换 | `herbs` | - |
 | Formula | 创建/更新/删除 | `formulas` | - |
 | MedicalCase | 创建医案 | `medicalcases`, `patients` | 患者 LastVisitTime/VisitCount 更新 |
-| MedicalCase | 聚合保存/暂存草稿 | `medicalcases` | - |
+| MedicalCase | 聚合保存/挂起 | `medicalcases` | - |
 | MedicalCase | 完成医案 | `medicalcases`, `patients` | 患者统计更新 |
 | MedicalCase | 取消医案 | `medicalcases` | - |
 | MedicalCase | 设置处方标记 | `medicalcases` | - |
@@ -446,7 +446,7 @@ EncryptedStringConverter:
 |------|------|------|------|------|
 | NFR-D01 | API 响应时间采用四级分类 (简单/列表/聚合/导入) | 不同操作类型的合理预期不同，统一目标会导致过严或过松 | 2026-02-17 | 已确定 |
 | NFR-D02 | 并发用户目标 1-3 人 | 小型中医诊所典型规模，当前连接池 (20) 已充分冗余 | 2026-02-17 | 已确定 |
-| NFR-D03 | 本地数据采用字段级加密而非整库加密 | 仅 IdCardNumber/PhoneNumber 需保护；DPAPI 基础设施已有；不影响非敏感字段查询性能。原基于 SQLite，迁移 LocalDB 后待重新设计 | 2026-02-17 | 待重新设计 (后续版本) |
+| NFR-D03 | 本地数据采用字段级加密而非整库加密 | 仅 IdCardNumber/PhoneNumber 需保护；DPAPI 基础设施已有；不影响非敏感字段查询性能。迁移 LocalDB 后待重新设计 | 2026-02-17 | 待重新设计 (后续版本) |
 | NFR-D04 | 安全审计日志保留 1 年 | 医疗行业常见合规要求；系统日志 90 天足以满足日常排查需求 | 2026-02-17 | 已确定 |
 | NFR-D05 | RTO=30min, RPO=24h | 诊所场景，本地模式提供即时降级兜底 | 2026-02-17 | 已确定 |
 | NFR-D06 | 数据备份: SQL Server (远程) 日备 30 天 + SQL Server LocalDB (本地) 登录备份 7 天 | 平衡数据安全与存储成本。本地备份 Sprint 5 实现 (BACKUP DATABASE T-SQL) | 2026-02-17 | 已实现 (Sprint 5) |

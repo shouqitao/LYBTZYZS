@@ -173,7 +173,7 @@ We believe that 实现拼音码快速检索 + Excel 批量导入导出 + 引用�
 | 模式 | 行为 |
 |------|------|
 | 远程 | GET `/api/v1/patients?keyword=&page=&pageSize=` |
-| 本地 | 本地 SQLite 查询 |
+| 本地 | 本地 LocalDB 查询 |
 
 ### US-PAT-003: 查看患者详情
 
@@ -395,8 +395,8 @@ We believe that 实现拼音码快速检索 + Excel 批量导入导出 + 引用�
 
 **Business Rules:**
 1. 仅 Admin/SuperAdmin 可执行状态切换
-2. 禁用时: 检查患者是否有 Draft/Active 医案，有则拒绝 (需先完成或取消活跃医案)
-3. 禁用后: 禁止为该患者创建新医案 (见 [medical-cases.md](medical-cases.md) FR-MC-001)
+2. 禁用时: 检查患者是否有 Active/Suspended 医案，有则拒绝 (需先完成或取消活跃医案)
+3. 禁用后: 禁止为该患者创建新医案 (见 [medical-cases.md](medical-cases.md) US-MC-001)
 4. 禁用后: 历史医案可查阅，PatientName 按角色脱敏 -- Admin/SuperAdmin 看完整姓名，Doctor 看掩码 (如 "张*")
 5. 启用后: 所有限制解除，脱敏自动取消
 6. v1.0 主要禁用场景: 患者已故
@@ -429,7 +429,7 @@ We believe that 实现拼音码快速检索 + Excel 批量导入导出 + 引用�
 | 依赖 | 医案模块 (medical-cases.md) | 删除引用检查、禁用后限制新医案创建 | 模块间通过 Service 层接口解耦 |
 | 依赖 | 认证模块 (auth.md) | 角色权限控制 (DoctorOrAdmin/Authenticated) | 统一权限策略 |
 | 依赖 | NFR 规范 (nfr.md) | 分页参数验证 (NFR-API-001)、敏感数据加密 (NFR-SEC-004) | 遵循 NFR 统一规范 |
-| 风险 | 本地 SQLite 加密字段不支持 LIKE 搜索 | L1 敏感字段 (身份证/手机号) 无法在 SQLite 中直接搜索 | 搜索在解密后的内存中执行 |
+| 风险 | 本地 LocalDB 加密字段不支持 LIKE 搜索 | L1 敏感字段 (身份证/手机号) 无法在 LocalDB 中直接搜索 | 搜索在解密后的内存中执行 |
 | 风险 | Excel 导入大文件性能 | 1000 行导入可能耗时较长 | 异步处理 + 进度反馈 |
 | 风险 | 拼音码生成准确性 | 多音字可能导致拼音码不准确 | 支持手动修正拼音码 |
 
@@ -478,7 +478,7 @@ We believe that 实现拼音码快速检索 + Excel 批量导入导出 + 引用�
 
 ### 敏感数据保护
 
-| 字段 | 数据类型 | 掩码模式 | 敏感级别 | SQLite 加密 |
+| 字段 | 数据类型 | 掩码模式 | 敏感级别 | LocalDB 加密 |
 |------|----------|----------|---------|------------|
 | IdNumber | IdentityInfo | 部分掩码 (前3后4) | L1-高敏感 | AES-256 加密存储 |
 | PhoneNumber | ContactInfo | 部分掩码 (前3后4) | L1-高敏感 | AES-256 加密存储 |
@@ -486,7 +486,7 @@ We believe that 实现拼音码快速检索 + Excel 批量导入导出 + 引用�
 | AllergyHistory | MedicalInfo | 哈希掩码 | L2-一般敏感 | 明文 |
 | MedicalHistory | MedicalInfo | 哈希掩码 | L2-一般敏感 | 明文 |
 
-> L1 字段在本地 SQLite 中通过 EF Core Value Converter 透明加密 (AES-256 + DPAPI 密钥保护)。加密字段不支持 SQLite LIKE 搜索，搜索在解密后的内存中执行。详见 nfr.md NFR-SEC-004。
+> L1 字段在本地 LocalDB 中通过 EF Core Value Converter 透明加密 (AES-256 + DPAPI 密钥保护)。加密字段不支持 LIKE 搜索，搜索在解密后的内存中执行。详见 nfr.md NFR-SEC-004。
 
 ---
 
@@ -558,7 +558,7 @@ We believe that 实现拼音码快速检索 + Excel 批量导入导出 + 引用�
 | 2026-02-17 | FR-PAT-005 增加引用检查 (有医案禁止删除) | 数据完整性保障 | MC-D04 |
 | 2026-02-17 | FR-PAT-001 身份证号改必填 + 唯一性检查 | 防重复患者，替代合并功能 | PAT-D03 |
 | 2026-02-17 | Receptionist 改为 CRU 权限 (无删除) | PRD 审查修复 | A2 |
-| 2026-02-18 | 敏感数据保护表增加敏感级别 (L1/L2) 和 SQLite 加密标注 | 信息保护深化 | NFR-SEC-004 |
+| 2026-02-18 | 敏感数据保护表增加敏感级别 (L1/L2) 和 LocalDB 加密标注 | 信息保护深化 | NFR-SEC-004 |
 | 2026-02-18 | 新增 FR-PAT-013 患者状态管理 | 已故患者管理需求 | PAT-D05 |
 | 2026-02-18 | FR-PAT-002 补充分页验证规则 | NFR 对齐 | NFR-API-001 |
 | 2026-02-26 | IPatientDataSource 扩展双模式实现 | Sprint 4 实现 | T4-X2-09~12 |
