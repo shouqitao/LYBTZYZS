@@ -14,9 +14,11 @@
 Exception
  └── AppException                       # 应用基类 (默认 500)
       ├── BusinessException             # 业务规则违反 (400)
-      ├── NotFoundException             # 资源不存在 (404)，含静态工厂方法
-      ├── ValidationException           # 验证失败 (400)，含字段级错误集合
-      └── ConflictException             # 并发/唯一约束冲突 (409)
+      │    ├── ValidationException      # 验证失败 (400)，含字段级错误集合
+      │    ├── NotFoundException        # 资源不存在 (404)，含静态工厂方法
+      │    └── ConflictException        # 并发/唯一约束冲突 (409)
+      ├── UnauthorizedException         # 未认证/未授权 (401)
+      └── ApiException                  # 外部服务异常 (502/503)
 ```
 
 ### AppException 核心属性
