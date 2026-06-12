@@ -1,75 +1,168 @@
 ---
 type: module
-title: 验方管理模块 (Formula Module)
-tags: [module, formula, herb, medical-case]
+title: 验方管理模块
+tags: [module, formula, prescription]
 created: 2026-06-10
-updated: 2026-06-10
+updated: 2026-06-12
 source: docs/02-requirements/formulas.md
 ---
 
 ## 概述
 
-验方管理模块负责中医诊所经验方（验方）的数字化存储、验证和共享。支持延迟绑定机制以承接旧系统迁移数据，通过验证工作流确保药材数据质量，并提供团队内优秀验方的流通机制。该模块为医生开方提供快速复用能力，显著提升诊疗效率。
+验方（经验方）模块管理中医师的常用方剂模板。验方由多味药材组成，可直接导入处方，加速开方流程。本模块的核心特色是**延迟绑定**——导入的药材可先以文字形式保留，管理员后续再逐一绑定到系统药材库。
+
+## 实体结构
+
+### Formula（验方主体）
+
+继承 `BaseEntity`：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `Name` | string(200) | 验方名称 |
+| `Category` | string(50)? | 分类 |
+| `Effect` | string(500)? | 功效 |
+| `Indication` | string(1000)? | 主治 |
+| `Usage` | string(500)? | 用法 |
+| `Property` | string(300)? | 性味归经 |
+| `Remark` | string(500)? | 备注 |
+| `Status` | CommonStatus | 启用/禁用 |
+| `ValidationStatus` | FormulaValidationStatus | Draft/Validated |
+| `FormulaType` | FormulaType | Classic/Experience (默认 Experience) |
+| `IsShared` | bool | 共享标记 |
+| `UserId` | Guid? | 创建者 |
+| `Herbs` | ICollection\<FormulaHerbItem\> | 药材组成（子集合） |
+
+### FormulaHerbItem（药材项，延迟绑定）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `HerbId` | Guid? | **Nullable** — 延迟绑定核心 |
+| `HerbName` | string(100) | 显示名称 |
+| `OriginalHerbName` | string(100)? | 导入原始名称 |
+| `IsValidated` | bool | 是否已绑定系统药材 |
+| `Dosage` | int | 剂量 |
+| `Unit` | string(16) | 单位 (g/ml) |
+| `Usage` | string(200)? | 单味用法 |
+| `ProcessingMethod` | string(100)? | 炮制方法 |
+| `DecocteMethod` | DecocteMethod | 煎煮方式 |
+
+## 延迟绑定机制
+
+```
+导入/创建 → HerbId = null, IsValidated = false (Draft)
+         ↓
+  自动匹配 (名称/拼音 → IHerbCrossModuleService)
+  ├── 匹配成功 → HerbId 填充, IsValidated = true
+  └── 匹配失败 → HerbId = null, 等待管理员手动绑定
+         ↓
+  管理员调用 POST /formulas/{id}/herbs/{itemId}/validate
+         ↓
+  全部药材绑定完成 → ValidationStatus 自动转为 Validated
+```
+
+## 验证工作流
+
+```
+Draft ──(全部药材绑定)──→ Validated
+  │                        │
+  │                        ├── Enabled + Validated → 可导入处方
+  │                        └── Disabled → 不可导入
+  └── 始终不可导入处方
+```
+
+**双门控 (MC-D08)**: 处方导入要求 `ValidationStatus == Validated` **且** `Status == Enabled`。
 
 ## 核心能力
 
 | 能力 | 说明 |
 |------|------|
-| **验方 CRUD** | 创建、查看、编辑、删除经验方模板，包含完整的药材组成管理 |
-| **延迟绑定** | 导入时药材名称可暂不关联系统药材库（`HerbId` 可空），后续手动验证绑定 `OriginalHerbName` |
-| **验证工作流** | Draft（未验证）→ Validated（全部药材已绑定），仅 Validated 验方可用于处方导入 |
-| **共享机制** | 验方标记为共享后，其他医生可查看（只读），促进临床经验在团队内流通 |
-| **批量操作** | 支持 JSON/Excel 批量导入、批量导出 Excel、批量删除/启用/禁用 |
-| **双模式支持** | 远程（HTTP API）+ 本地（SQLite DataSource）两种部署模式 |
+| 验方 CRUD | 创建/查看/更新/软删除/恢复 |
+| 延迟绑定 | 导入时自动匹配，失败项等管理员手动绑定 |
+| 验证管理 | 逐项绑定药材，全部完成后自动转 Validated |
+| 批量操作 | 导入/导出、批量删除、批量启禁用 |
+| 处方导入 | Validated+Enabled 验方可直接导入处方（复制药材列表） |
+| 无定价 | 验方不含价格，导入处方时从药材库实时获取 (FORM-D02) |
 
-## 角色权限
+## API 端点 (15个)
 
-| 角色 | 权限范围 |
-|------|---------|
-| **SuperAdmin** | CRUD 全部验方 |
-| **Admin** | CRUD 全部验方 |
-| **Doctor** | CRUD 自己创建的验方 + 查看共享验方（只读） |
-| **Receptionist** | 无权限 |
+路由前缀 `/api/v1/formulas`，认证: `DoctorOrAdmin`
 
-> 端点受 `DoctorOrAdmin` 策略保护。资源级权限：Doctor 只能查看自己创建的或 `IsShared=true` 的验方。
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | `/formulas` | 分页列表 |
+| GET | `/formulas/{id}` | 详情 (含药材) |
+| POST | `/formulas` | 创建 |
+| PUT | `/formulas/{id}` | 更新 (整体替换 Herbs) |
+| DELETE | `/formulas/{id}` | 软删除 |
+| POST | `/formulas/batch-import` | JSON 批量导入 |
+| GET | `/formulas/export` | Excel 导出 |
+| GET | `/formulas/import-template` | 下载模板 (AllowAnonymous) |
+| GET | `/formulas/pending-validation` | 待验证列表 |
+| POST | `/formulas/{id}/herbs/{itemId}/validate` | 绑定单味药材 |
+| POST | `/formulas/{id}/toggle-status` | 启禁用 |
+| POST | `/formulas/{id}/restore` | 恢复 |
+| POST | `/formulas/batch-delete` | 批量删除 |
+| POST | `/formulas/batch-enable` | 批量启用 |
+| POST | `/formulas/batch-disable` | 批量禁用 |
+
+## 服务端架构
+
+```
+FormulasController (DoctorOrAdmin)
+    │
+    ├── IFormulaService (12 方法)
+    │   ├── CRUD + Search + ValidateHerb + Pending
+    │   ├── Toggle/Restore/BatchDelete/BatchUpdateStatus
+    │   └── 委托 → IFormulaImportExportService (3 方法)
+    │
+    └── IFormulaRepository → FormulaRepository
+        └── GetByIdWithHerbsAsync / GetPagedWithDetailsAsync
+```
+
+Mapper: `FormulaMapper` (Mapperly)。注意 `IsShared ↔ !IsPersonal` 互逆映射需手动处理。
+
+## 验方导入处方流程
+
+```
+医案处方编辑 → 打开 FormulaImportDialog
+  → IFormulaSearchProvider (跨模块接口)
+  → 过滤: Validated + Enabled (MC-D08)
+  → 医生选择验方 → 预览药材组成
+  → 复制到处方 (DialogParameters)
+  → 处方记录来源验方名 (ReferencedFormulas)
+  → 单价从药材库实时获取 (FORM-D02)
+```
 
 ## 关键业务规则
 
-### 验方生命周期
+| 规则 | 说明 |
+|------|------|
+| 至少1味药材 | 创建/更新时验证 |
+| 整体替换 Herbs | 更新使用 Clear()+Add()，无部分更新 (Design Decision 002) |
+| 所有权校验 | Doctor 仅操作自己的验方，Admin 可操作所有 |
+| 无定价 | 价格在处方创建时从药材库解析 |
+| FormulaType 默认 Experience | DTO 无此字段，服务端设置 |
+| 草稿不可导入处方 | 需 Validated + Enabled 双门控 |
 
-```
-创建/导入 → Draft (药材未验证)
-         → 逐个验证药材绑定
-         → 全部验证完成 → Validated
-         → 启用 (Enabled) + 已验证 (Validated) → 可用于处方导入
-         → 禁用 (Disabled) → 处方导入不可见
-         → 软删除 → 可恢复
-```
+## 跨模块关系
 
-### 数据模型要点
+| 方向 | 模块 | 接口 | 用途 |
+|------|------|------|------|
+| 依赖 | Herbs | `IHerbCrossModuleService` | 药材自动匹配 + 验证绑定 + 价格获取 |
+| 桌面依赖 | Herbs | `IHerbSearchProvider` | 药材搜索 UI |
+| 被依赖 | MedicalCase | `IFormulaSearchProvider` | 处方导入验方 |
+| 被依赖 | Sync | `SyncRepository` | 数据同步 |
 
-**Formula（验方实体）**：
-- `ValidationStatus`: 验证状态（Draft/Validated），默认 Draft
-- `IsShared`: 是否共享，默认 false
-- `UserId`: 创建用户 ID，用于资源级权限控制
-- `Category` / `FormulaType`: 方剂分类和类型（Classic/Experience）
+## 错误码
 
-**FormulaHerbItem（验方药材项）**：
-- `HerbId`: 可空外键，支持延迟绑定
-- `OriginalHerbName`: 原始药材名称（导入时保留）
-- `IsValidated`: 是否已验证绑定
-- `DecocteMethod`: 煎法枚举，与医案处方模块保持一致
-
-### 验证规则
-
-- 验方必须至少包含一个药材项
-- 仅 `ValidationStatus=Validated` 且 `Status=Enabled` 的验方可在处方导入时可见
-- 药材验证需逐项绑定到系统药材库的 `Herb` 实体
-- 批量导入时需处理重名验方的合并或跳过策略
+| 范围 | 类别 | 数量 |
+|------|------|------|
+| ERR-601xx | 核心 | 6 |
+| ERR-602xx | 药材验证 | 6 |
+| ERR-603xx | 批量操作 | 5 |
 
 ## 相关链接
 
-- [[formula]] - 验方实体定义和数据字典
-- [[herb]] - 药材库模块，验方延迟绑定的目标数据源
-- [[prescription]] - 处方模块，验方导入的目标使用场景
-- [[medical-case]] - 医案模块，验方通过处方导入参与诊疗流程
+- [`docs/04-api-reference/formulas.md`](../../04-api-reference/formulas.md) — API 端点详细文档
+- [`docs/07-concepts/formula-validation-workflow.md`](../formula-validation-workflow.md) — 验证工作流
