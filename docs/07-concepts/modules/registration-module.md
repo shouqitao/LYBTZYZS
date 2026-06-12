@@ -69,7 +69,8 @@ source: docs/02-requirements/08-registration.md
 - MedicalCase 状态变更时，Registration 状态同步更新：
   - MedicalCase.InProgress → Registration.InProgress
   - MedicalCase.Completed → Registration.Completed
-  - MedicalCase.Cancelled → Registration.Cancelled（前台模式需回退到 Waiting）
+  - MedicalCase.Cancelled → Registration.Waiting (前台模式, 回退到候诊)
+  - MedicalCase.Cancelled → Registration.Cancelled (医生模式, 自动闭环)
 
 ### 业务指标
 

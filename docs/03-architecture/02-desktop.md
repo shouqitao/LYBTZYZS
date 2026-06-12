@@ -55,6 +55,7 @@ graph TB
 | LYBT.Desktop.Models | 客户端模型 | ViewState、Item 模型、事件模型 |
 | LYBT.Desktop.Printing | 打印服务 | MedicalCase 聚合根打印能力 (A5/A4 处方打印模板、打印预览、PDF 导出 QuestPDF) |
 | LYBT.Desktop.Utilities | 工具类库 | 通用辅助方法 |
+| LYBT.Desktop.LocalData | 本地数据访问 (LocalWebAPI HTTP Proxy Repository) | LocalXxxRepository 实现 |
 | LYBT.Desktop.CardReader | 硬件集成 | 身份证读卡器策略模式、多厂商支持 |
 
 **依赖方向**: Shell -> Roles -> Modules -> Infrastructure -> Foundation -> Contracts
@@ -192,7 +193,7 @@ Item 类继承 Prism `BindableBase` (Mapperly 兼容性要求)，使用显式属
 - 简单 ViewModel: <= 200 行
 - 中型 ViewModel: <= 400 行
 - 复杂 ViewModel: <= 600 行 (配合 Components 拆分)
-- 超过 500 行: 必须拆分
+- 超过 600 行: 必须拆分
 
 ## Components 分层模式
 

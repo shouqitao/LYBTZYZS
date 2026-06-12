@@ -15,7 +15,7 @@ sources: ["docs/02-requirements/11-configuration.md"]
 
 ## 实现机制
 - **配置源**：`FeatureToggleOptions` 类，绑定至 `appsettings.json` 中的 `FeatureToggles` 节。
-- **热更新**：Desktop Shell 使用 `IOptionsMonitor<FeatureToggleOptions>` 注册，`appsettings.json` 变更时自动重载（`reloadOnChange: true`），无需重启客户端。
+- **热更新**：Desktop Shell 使用 `IOptionsMonitor<FeatureToggleOptions>` 注册，`appsettings.json` 变更时自动重载（`reloadOnChange: true`），无需重启客户端。（注: 此为 v1.1 规划，v1.0 使用 `IOptions<T>` 冻结快照，修改需重启客户端）
 - **UI 绑定**：ViewModel 暴露只读布尔属性（如 `CanCreateConsultation`），XAML 通过 `BoolToVisibilityConverter` 将其转换为 `Visibility.Collapsed` 或 `Visibility.Visible`。
 - **行为规则**：
   - **隐藏 (Collapsed)**：当开关为 `false` 时，对应的菜单项、工具栏按钮完全隐藏，不占用布局空间。
@@ -55,7 +55,7 @@ v1.0 中功能开关修改需重启 Desktop 客户端。原因：Prism DryIoc �
 | 组件 | 状态 | 说明 |
 |------|------|------|
 | `ConfigurationBuilder.reloadOnChange` | ✅ 已启用 | `appsettings.json` 文件变更时 `IConfiguration` 自动重载 |
-| `IOptionsMonitor<T>` | ❌ 未使用 | BCL 内置，支持 `OnChange` 回调 |
+| `IOptionsMonitor<T>` | ✅ 已实现 (v1.1) | BCL 内置，支持 `OnChange` 回调 |
 | Microsoft DI 注册路径 | ⚠️ 死代码 | `ClientConfigurationExtensions.AddOptions<FeatureToggleOptions>()` 已编写但未被 Prism 容器调用 |
 
 实施步骤：

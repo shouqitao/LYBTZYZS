@@ -9,7 +9,7 @@ source: docs/03-architecture/02-desktop.md
 
 ## 概述
 
-桌面端采用 WPF + Prism 9.0 MVVM 架构，通过 DryIoc 依赖注入容器管理依赖，使用 Prism Region 机制实现模块间导航。项目共 16 个，分为 Shell（应用外壳）、Roles（角色入口）、Modules（业务模块）、Core（基础设施）四层，依赖方向严格单向：Shell → Roles → Modules → Infrastructure → Foundation → Contracts。
+桌面端采用 WPF + Prism 9.0 MVVM 架构，通过 DryIoc 依赖注入容器管理依赖，使用 Prism Region 机制实现模块间导航。项目共 18 个，分为 Shell（应用外壳）、Roles（角色入口）、Modules（业务模块）、Core（基础设施）四层，依赖方向严格单向：Shell → Roles → Modules → Infrastructure → Foundation → Contracts。
 
 ## 核心内容
 
@@ -26,7 +26,7 @@ graph TB
         Clinical["Desktop.Clinical<br>(临床工作台)"]
     end
 
-    subgraph Modules["Modules 层 (业务模块 x8)"]
+    subgraph Modules["Modules 层 (业务模块 x9)"]
         M_Auth["Auth"]
         M_Users["Users"]
         M_Patients["Patients"]
@@ -34,6 +34,7 @@ graph TB
         M_Formula["Formula"]
         M_MC["MedicalCase"]
         M_Reg["Registration"]
+        M_Consultation["Consultation"]
         M_Sync["Sync"]
     end
 
@@ -48,7 +49,7 @@ graph TB
 
     App --> Admin & Clinical
     Admin --> M_Auth & M_Users & M_Patients & M_Herbs & M_Formula
-    Clinical --> M_Auth & M_Patients & M_MC & M_Consultation & M_Herbs & M_Formula
+    Clinical --> M_Auth & M_Patients & M_MC & M_Consultation & M_Herbs & M_Formula & M_Sync
     M_Auth & M_Users & M_Patients & M_Herbs & M_Formula & M_MC & M_Sync & M_Consultation --> Infrastructure
     Infrastructure --> Foundation --> Contracts
     Modules --> Models

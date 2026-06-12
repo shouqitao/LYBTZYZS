@@ -51,7 +51,7 @@ C:\Services\LYBT-releases\         ← Desktop 发布包（独立目录，不会
 dotnet publish src/Server/Services/LYBT.WebAPI -c Release
 
 # 发布为自包含（目标机器无 .NET Runtime 时使用）
-dotnet publish src/Server/Services/LYBT.WebAPI -c Release -r win-x64 --self-contained false
+dotnet publish src/Server/Services/LYBT.WebAPI -c Release -r win-x64 --self-contained true
 ```
 
 ### 目录结构

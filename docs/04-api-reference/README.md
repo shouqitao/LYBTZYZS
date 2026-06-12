@@ -146,7 +146,6 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | POST | `/herbs` | 创建药材 |
 | PUT | `/herbs/{id}` | 更新药材 |
 | DELETE | `/herbs/{id}` | 删除药材 (软删除) |
-| POST | `/herbs/import` | Excel 导入 |
 | GET | `/herbs/import-template` | 下载导入模板 |
 | GET | `/herbs/export` | 导出 Excel |
 | POST | `/herbs/batch-import` | JSON 批量导入 |

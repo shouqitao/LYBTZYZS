@@ -57,6 +57,7 @@ source: docs/02-requirements/07-medical-cases.md
 | Active | 1 | 进行中 (初始状态) | 编辑、挂起、完成、取消 |
 | Suspended | 0 | 已挂起 | 恢复、完成、取消 |
 | Completed | 2 | 已完成 | Doctor: 当天可编辑 (需 EditReason), 隔天 403; Admin/SuperAdmin: 可编辑 (需 EditReason) |
+| Cancelled | - | 已取消 (IsDeleted=true 软删除, 非独立状态值) | - |
 
 > 取消操作统一通过 `IsDeleted=true` 软删除实现。已完成的医案不可取消。
 
@@ -120,12 +121,12 @@ MedicalCaseAuditLog 记录以下信息:
 
 ## 相关链接
 
-- medical-case - 医案实体总览
+- [medical-case-module](medical-case-module.md) - 医案实体总览
 - consultation - 诊断子实体
 - prescription - 处方子实体
-- patient - 患者管理模块
-- herb - 药材管理模块
-- formula - 验方管理模块
+- [patient](patient-module.md) - 患者管理模块
+- [herb](herb-module.md) - 药材管理模块
+- [formula](formula-module.md) - 验方管理模块
 - ADR-001-medicalcase-aggregate-root - MedicalCase 作为唯一聚合根的架构决策
 
 ## 服务端架构

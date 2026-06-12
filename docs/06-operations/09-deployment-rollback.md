@@ -38,14 +38,14 @@ Invoke-RestMethod -Uri "http://localhost:5000/health" -Method Get
 
 # 3. 数据库备份（必需）
 $ts = Get-Date -Format "yyyyMMdd_HHmmss"
-Backup-SqlDatabase -ServerInstance "." -Database "LYBT_DB" -BackupFile "D:\Backup\LYBT_DB_pre_deploy_$ts.bak"
+Backup-SqlDatabase -ServerInstance "." -Database "LYBTDB" -BackupFile "D:\Backup\LYBTDB_pre_deploy_$ts.bak"
 ```
 
 ### 部署步骤
 
 ```powershell
 # 1. 停止服务
-sc stop LYBT-WebAPI
+sc stop LYBT-API
 Start-Sleep -Seconds 5
 
 # 2. 备份当前版本
@@ -65,7 +65,7 @@ Copy-Item "bin\Release\win-x64\publish\*" "C:\Services\LYBT-API\" -Recurse -Forc
 Set-Content "C:\Services\LYBT-API\VERSION" "v1.2.3"
 
 # 5. 启动服务
-sc start LYBT-WebAPI
+sc start LYBT-API
 Start-Sleep -Seconds 10
 
 # 6. 验证
@@ -83,11 +83,11 @@ Invoke-RestMethod -Uri "http://localhost:5000/health/details" -Method Get
 Get-EventLog -LogName Application -Newest 20 | Where-Object { $_.Source -like "*LYBT*" }
 
 # 2. 回滚到前一版本
-sc stop LYBT-WebAPI
+sc stop LYBT-API
 $prevVer = "v1.2.2"  # 前一版本号
 Remove-Item "C:\Services\LYBT-API\*" -Recurse -Force -Exclude VERSION
 Copy-Item "C:\Services\LYBT-releases\$prevVer\*" "C:\Services\LYBT-API\" -Recurse -Force
-sc start LYBT-WebAPI
+sc start LYBT-API
 
 # 3. 验证
 Invoke-RestMethod -Uri "http://localhost:5000/health" -Method Get
@@ -101,10 +101,10 @@ Invoke-RestMethod -Uri "http://localhost:5000/health" -Method Get
 
 ```powershell
 # 1. 停止服务
-sc stop LYBT-WebAPI
+sc stop LYBT-API
 
 # 2. 恢复数据库到部署前备份
-$sqlcmd = "RESTORE DATABASE [LYBT_DB] FROM DISK = N'<部署前备份路径>' WITH REPLACE"
+$sqlcmd = "RESTORE DATABASE [LYBTDB] FROM DISK = N'<部署前备份路径>' WITH REPLACE"
 Invoke-Sqlcmd -Query $sqlcmd -ServerInstance "."
 
 # 3. 回滚应用版本（同场景 1）

@@ -485,32 +485,32 @@
 |--------|--------|------|----------|----------|
 | ERR-30201 | CannotEditCase | 403 | 无权限编辑此医案 | PUT /{id} |
 | ERR-30202 | CannotDeleteCase | 403 | 无权限删除此医案 | DELETE /{id} |
-| ERR-30203 | CannotCancelCase | 403 | 无权限取消此医案 | POST /{id}/cancel |
-| ERR-30204 | CannotDeletePrescription | 403 | 无权限删除处方 | DELETE /{id}/prescription |
+| ERR-30203 | CannotCancelCase | 403 | 无权限取消此医案 | PUT /{id}/cancel |
+| ERR-30204 | CannotDeletePrescription | 403 | 无权限删除处方 | DELETE /{id}/prescription （通过 PUT /{id} 聚合保存触发） |
 | ERR-30205 | CannotSuspend | 403 | 无权限挂起此医案 | PUT /{id}/suspend |
 
 ### 状态转换 (303xx)
 
 | 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
 |--------|--------|------|----------|----------|
-| ERR-30301 | InvalidStatusTransition | 422 | 不允许的状态转换 | POST /{id}/complete, POST /{id}/cancel |
-| ERR-30302 | PrescriptionFlagRequired | 422 | 请先标记是否需要开处方 | POST /{id}/complete (BR-003) |
-| ERR-30303 | PrescriptionRequired | 422 | 处方不存在，无法完成医案 | POST /{id}/complete (BR-003) |
+| ERR-30301 | InvalidStatusTransition | 422 | 不允许的状态转换 | PUT /{id}/close, PUT /{id}/cancel |
+| ERR-30302 | PrescriptionFlagRequired | 422 | 请先标记是否需要开处方 | PUT /{id}/close (BR-003) |
+| ERR-30303 | PrescriptionRequired | 422 | 处方不存在，无法完成医案 | PUT /{id}/close (BR-003) |
 
 ### 处方 (304xx)
 
 | 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
 |--------|--------|------|----------|----------|
-| ERR-30401 | PrescriptionFlagNotSet | 422 | 未标记需要开处方 | POST /{id}/prescription |
-| ERR-30402 | PrescriptionAlreadyExists | 422 | 医案已存在处方 | POST /{id}/prescription |
+| ERR-30401 | PrescriptionFlagNotSet | 422 | 未标记需要开处方 | POST /{id}/prescription （通过 PUT /{id} 聚合保存触发） |
+| ERR-30402 | PrescriptionAlreadyExists | 422 | 医案已存在处方 | POST /{id}/prescription （通过 PUT /{id} 聚合保存触发） |
 | ERR-30403 | PrintedRequiresReason | 422 | 医案已打印，修改需要提供修改原因 | PUT /{id} (MC-D15) |
-| ERR-30404 | PrintedCannotDelete | 422 | 医案已打印，不允许删除处方 | DELETE /{id}/prescription (MC-D15) |
+| ERR-30404 | PrintedCannotDelete | 422 | 医案已打印，不允许删除处方 | DELETE /{id}/prescription （通过 PUT /{id} 聚合保存触发, MC-D15） |
 
 ### 并发和系统 (305xx)
 
 | 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
 |--------|--------|------|----------|----------|
-| ERR-30501 | PrescriptionCreateRetryFailed | 500 | 创建处方失败 | POST /{id}/prescription |
+| ERR-30501 | PrescriptionCreateRetryFailed | 500 | 创建处方失败 | POST /{id}/prescription （通过 PUT /{id} 聚合保存触发） |
 | ERR-30502 | SaveRetryFailed | 500 | 保存失败 | PUT /{id}, PUT /{id}/suspend |
 
 ### 参数验证 (306xx)

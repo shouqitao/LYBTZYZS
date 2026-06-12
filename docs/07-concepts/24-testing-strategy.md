@@ -22,7 +22,7 @@ source: docs/05-development/05-testing.md
 | 层级 | 项目 | 目标框架 | 测试数量 | 职责 |
 |------|------|----------|----------|------|
 | **集成测试** | LYBT.Tests.Server | net8.0 | ~1185 | 真实 HTTP + SQL Server 端到端流程 |
-| **集成测试** | LYBT.Tests.Desktop | net8.0-windows | ~715 | 真实 Repository + SQLite InMemory 数据流 |
+| **集成测试** | LYBT.Tests.Desktop | net8.0-windows | ~760 | 真实 Repository + SQLite InMemory 数据流 |
 | **架构防护** | LYBT.Tests.Architecture | net8.0 | ~76 | 层依赖约束、命名规范、AntiMockRules |
 
 ### 关键原则

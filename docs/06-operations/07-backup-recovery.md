@@ -25,10 +25,10 @@
 
 ```sql
 -- 手动全量备份
-BACKUP DATABASE [LYBT_DB]
-TO DISK = N'D:\Backup\LYBT_DB_full_20260612.bak'
+BACKUP DATABASE [LYBTDB]
+TO DISK = N'D:\Backup\LYBTDB_full_20260612.bak'
 WITH FORMAT, INIT,
-     NAME = N'LYBT_DB-Full Backup',
+     NAME = N'LYBTDB-Full Backup',
      COMPRESSION,
      STATS = 10;
 ```
@@ -43,8 +43,8 @@ GO
 EXEC sp_add_job @job_name = N'LYBT_Daily_Full_Backup';
 EXEC sp_add_jobstep @job_name = N'LYBT_Daily_Full_Backup',
     @command = N'
-      DECLARE @path NVARCHAR(500) = N''D:\Backup\LYBT_DB_full_'' + CONVERT(NVARCHAR(8), GETDATE(), 112) + N''.bak'';
-      BACKUP DATABASE [LYBT_DB] TO DISK = @path WITH COMPRESSION, INIT;
+      DECLARE @path NVARCHAR(500) = N''D:\Backup\LYBTDB_full_'' + CONVERT(NVARCHAR(8), GETDATE(), 112) + N''.bak'';
+      BACKUP DATABASE [LYBTDB] TO DISK = @path WITH COMPRESSION, INIT;
     ';
 EXEC sp_add_schedule @job_name = N'LYBT_Daily_Full_Backup',
     @freq_type = 4, -- Daily
@@ -69,7 +69,7 @@ GO
 
 ```sql
 -- 验证备份文件完整性
-RESTORE VERIFYONLY FROM DISK = N'D:\Backup\LYBT_DB_full_20260612.bak';
+RESTORE VERIFYONLY FROM DISK = N'D:\Backup\LYBTDB_full_20260612.bak';
 ```
 
 ### 5. 配置文件备份
@@ -134,19 +134,19 @@ Copy-Item "$env:APPDATA\LYBT\data\lybt-local.mdf" "$env:APPDATA\LYBT\data\backup
 
 ```
 1. 停止 WebAPI 服务
-   → sc stop LYBT-WebAPI （或 IIS 停止应用池）
+   → sc stop LYBT-API （或 IIS 停止应用池）
 
 2. 确认备份文件可用
    → RESTORE VERIFYONLY FROM DISK = N'<备份路径>'
 
 3. 恢复数据库（覆盖现有）
-   → RESTORE DATABASE [LYBT_DB] FROM DISK = N'<备份路径>' WITH REPLACE
+   → RESTORE DATABASE [LYBTDB] FROM DISK = N'<备份路径>' WITH REPLACE
 
 4. 验证数据完整性
-   → DBCC CHECKDB ([LYBT_DB])
+   → DBCC CHECKDB ([LYBTDB])
 
 5. 启动 WebAPI 服务
-   → sc start LYBT-WebAPI
+   → sc start LYBT-API
 
 6. 验证系统健康
    → GET /api/v1/health/details（应返回 Healthy）
@@ -180,7 +180,7 @@ Copy-Item "$env:APPDATA\LYBT\data\lybt-local.mdf" "$env:APPDATA\LYBT\data\backup
    → 确保 5000/5001 端口可用
 
 2. 恢复数据库
-   → 创建 LYBT_DB 数据库
+   → 创建 LYBTDB 数据库
    → RESTORE DATABASE FROM DISK（见场景 1）
 
 3. 恢复配置文件
@@ -195,7 +195,7 @@ Copy-Item "$env:APPDATA\LYBT\data\lybt-local.mdf" "$env:APPDATA\LYBT\data\backup
    → 复制 C:\Services\LYBT-releases\ 目录
 
 6. 启动并验证
-   → sc start LYBT-WebAPI
+   → sc start LYBT-API
    → GET /api/v1/health/details
    → Desktop 客户端连接测试
 ```

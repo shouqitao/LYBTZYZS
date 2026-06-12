@@ -111,7 +111,7 @@ POST /api/v1/diagnostics/logging/debug/disable
 |------|------|------|------|------|
 | ALT-001 | `/health` 返回 `Unhealthy` 超过 2 分钟 | **严重** | 即时 | 检查 SQL Server 连接、磁盘空间、服务状态 |
 | ALT-002 | 数据库连接失败（`/health/database` 非 200） | **严重** | 即时 | 检查 SQL Server 服务、连接字符串、网络 |
-| ALT-003 | WebAPI 进程崩溃或无响应 | **严重** | 即时 | 查看事件查看器、重启服务 `sc start LYBT-WebAPI` |
+| ALT-003 | WebAPI 进程崩溃或无响应 | **严重** | 即时 | 查看事件查看器、重启服务 `sc start LYBT-API` |
 
 ### 警告告警
 
@@ -144,7 +144,7 @@ Invoke-RestMethod -Uri "http://localhost:5000/health/database" -Method Get
 
 # 3. 最近错误日志
 $query = "SELECT TOP 20 * FROM SystemLogs WHERE Level = 'Error' ORDER BY TimeStamp DESC"
-Invoke-Sqlcmd -Query $query -Database LYBT_DB
+Invoke-Sqlcmd -Query $query -Database LYBTDB
 ```
 
 ### 每周检查（15 分钟）
@@ -154,7 +154,7 @@ Invoke-Sqlcmd -Query $query -Database LYBT_DB
 RESTORE VERIFYONLY FROM DISK = N'<最新备份路径>'
 
 # 2. 数据库完整性
-DBCC CHECKDB ([LYBT_DB])
+DBCC CHECKDB ([LYBTDB])
 
 # 3. 磁盘空间
 Get-PSDrive -Name D | Select-Object Used, Free

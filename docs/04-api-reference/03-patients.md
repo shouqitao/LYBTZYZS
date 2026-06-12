@@ -39,13 +39,13 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 {
   "id": "guid",
   "name": "string",
-  "gender": "Male|Female",
+  "gender": "Unknown|Male|Female",
   "birthDate": "date",
   "age": 30,                    // 自动计算
   "phoneNumber": "string",
-  "idCardNumber": "string",     // 敏感数据
+  "idNumber": "string",         // 敏感数据
   "address": "string",
-  "allergies": "string",
+  "allergyHistory": "string",
   "medicalHistory": "string",
   "remark": "string",
   "createdBy": "guid",
@@ -67,12 +67,12 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 ```json
 {
   "name": "string",
-  "gender": "Male|Female",
+  "gender": "Unknown|Male|Female",
   "birthDate": "date",
   "phoneNumber": "string",
-  "idCardNumber": "string",
+  "idNumber": "string",
   "address": "string",
-  "allergies": "string",
+  "allergyHistory": "string",
   "medicalHistory": "string",
   "remark": "string"
 }

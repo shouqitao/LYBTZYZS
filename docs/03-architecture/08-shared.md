@@ -220,8 +220,8 @@ LYBT.Shared.Primitives/
 | 2xxxx | 患者 (Patients) | PatientNotFound, PatientPhoneDuplicate |
 | 3xxxx | 医案 (MedicalCase) | McActiveCaseExists, McInvalidStatusTransition |
 | 4xxxx | 处方 (Prescriptions) | PrescriptionNotFound |
-| 5xxxx | 草药 (Herbs) | HerbNotFound, HerbNameExists |
-| 6xxxx | 配方 (Formula) | FormulaNotFound, FormulaNoPermission |
+| 5xxxx | 药材 (Herbs) | HerbNotFound, HerbNameExists |
+| 6xxxx | 验方 (Formula) | FormulaNotFound, FormulaNoPermission |
 | 7xxxx | 同步 (Sync) | SyncDataConflict, SyncFailed |
 
 **约束**: 零依赖，不引用任何其他 LYBT 项目。

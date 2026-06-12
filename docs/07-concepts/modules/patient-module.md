@@ -13,7 +13,7 @@ source: docs/02-requirements/04-patients.md
 
 ## 实体字段
 
-`Patient` 继承 `BaseEntity`，22个字段：
+`Patient` 继承 `BaseEntity`，20个字段：
 
 | 字段 | 类型 | 敏感级别 | 说明 |
 |------|------|---------|------|

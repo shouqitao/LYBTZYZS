@@ -40,15 +40,11 @@ Doctor 只能编辑自己创建的药材，Admin 可操作全部。
 {
   "id": "guid",
   "name": "string",
-  "pinyin": "string",
+  "pinYinCode": "string",
   "category": "string",
   "properties": "string",
-  "taste": "string",
-  "meridians": "string",
-  "effects": "string",
-  "dosage": "string",
-  "contraindications": "string",
-  "unitPrice": 0.0,
+  "effect": "string",
+  "price": 0.0,
   "unit": "string",
   "status": "Enabled|Disabled",
   "createdBy": "guid",
@@ -65,7 +61,7 @@ Doctor 只能编辑自己创建的药材，Admin 可操作全部。
 
 创建新药材。
 
-**请求体** (`HerbInputDto`): 含 name, pinyin, category, properties, taste, meridians, effects, dosage, contraindications, unitPrice, unit 等字段。
+**请求体** (`HerbInputDto`): 含 name, pinYinCode, category, properties, effect, price, unit 等字段。
 
 **成功响应** (200): `ApiResponse<HerbDetailDto>`
 

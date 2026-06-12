@@ -45,7 +45,7 @@ Doctor 只能看到自己的和共享的验方，Admin 可操作全部。资源�
   "category": "string",
   "description": "string",
   "source": "string",
-  "effects": "string",
+  "effect": "string",
   "usage": "string",
   "contraindications": "string",
   "status": "Enabled|Disabled",
@@ -53,7 +53,7 @@ Doctor 只能看到自己的和共享的验方，Admin 可操作全部。资源�
   "createdBy": "guid",
   "createdAt": "datetime",
   "updatedAt": "datetime",
-  "herbItems": [
+  "herbs": [
     {
       "id": "guid",
       "herbId": "guid|null",       // null = 延迟绑定
@@ -75,7 +75,7 @@ Doctor 只能看到自己的和共享的验方，Admin 可操作全部。资源�
 
 新增验方。自动设置 `createdBy` 为当前用户 ID。
 
-**请求体** (`FormulaInputDto`): 含 name, category, description, source, effects, usage, contraindications, herbItems 等字段。
+**请求体** (`FormulaInputDto`): 含 name, category, description, source, effect, usage, contraindications, herbs 等字段。
 
 **成功响应** (200): `ApiResponse<FormulaDetailDto>`
 
@@ -117,7 +117,7 @@ JSON 批量导入验方 (Server 端只处理 DTO，Excel 解析由 Client 端负
     {
       "name": "string",
       "category": "string",
-      "herbItems": [...]
+      "herbs": [...]
     }
   ],
   "fileName": "string"   // 原始文件名 (用于日志)
@@ -261,8 +261,8 @@ JSON 批量导入验方 (Server 端只处理 DTO，Excel 解析由 Client 端负
 | 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
 |--------|--------|------|----------|----------|
 | ERR-60201 | HerbItemIdInvalid | 400 | 参数不能为空 | POST /{id}/herbs/{herbItemId}/validate |
-| ERR-60202 | HerbItemNotFound | 200 | 药材项不存在 | POST /{id}/herbs/{herbItemId}/validate |
-| ERR-60204 | SystemHerbNotFound | 200 | 所选药材不存在 | POST /{id}/herbs/{herbItemId}/validate |
+| ERR-60202 | HerbItemNotFound | 404 | 药材项不存在 | POST /{id}/herbs/{herbItemId}/validate |
+| ERR-60204 | SystemHerbNotFound | 404 | 所选药材不存在 | POST /{id}/herbs/{herbItemId}/validate |
 
 ### 批量操作错误 (603xx)
 
