@@ -82,6 +82,7 @@ src/
       LYBT.Module.MedicalCase/
       LYBT.Module.Patients/
       LYBT.Module.Prescriptions/     # 空壳模块(已废弃，保留以兼容系统加载)
+      LYBT.Module.Registration/      # 挂号管理
       LYBT.Module.Sync/
       LYBT.Module.Users/
     Services/

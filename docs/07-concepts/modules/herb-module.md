@@ -125,7 +125,7 @@ DTO 路径细节：
 4. **价格快照**: 处方创建时记录 UnitPrice，后续改价不影响历史处方
 5. **并发策略**: Last-Write-Wins，不强制 RowVersion
 6. **批量限制**: BatchImport max 10000, BatchCheckReference max 100
-7. **错误隔离**: 批量操作逐项 try-catch，单项失败不中止整批
+7. **错误隔离**: 批量操作逐项 try-catch，单项失败不中止整批。遵循 [batch-operation-pattern](../34-batch-operation-pattern.md) 部分成功模型
 
 ## 跨模块关系
 

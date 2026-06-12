@@ -104,7 +104,6 @@ LYBT.Desktop.{Domain}/
 | MedicalCase | Clinical | 医案核心 (含处方、EditModeStateMachine) |
 | Registration | Admin + Clinical | 挂号管理 |
 | Sync | Clinical | 数据同步 (SyncPhase FSM、本地模式) |
-| Registration | Admin + Clinical | 挂号管理 |
 
 ### Registration 模块
 

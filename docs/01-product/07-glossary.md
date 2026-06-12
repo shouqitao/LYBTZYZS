@@ -35,6 +35,8 @@
 | Patient | 患者 | 患者基本信息，含个人信息和就诊历史统计 |
 | PinYinCode | 拼音码 | 中文姓名的拼音首字母，用于快速检索 |
 | Prescription | 处方 | 药材配伍和剂量，MedicalCase 的可选内部实体 (1:0..1) |
+| Registration | 挂号 | 患者就诊登记记录，含候诊队列管理和就诊状态跟踪 |
+| RegistrationStatus | 挂号状态 | Waiting(候诊)/InProgress(就诊中)/Completed(已完成)/Cancelled(已取消) |
 | PrescriptionItem | 处方项 | 处方中的单味药材: 药名、剂量、单价、煎法 |
 | MedicalCasePrintLog | 打印日志 | 记录医案打印历史 (含 PrintType 区分打印类型，v1.0: 处方打印) |
 | RefreshToken | 刷新令牌 | JWT 刷新令牌，支持令牌轮换和重放攻击检测 |
@@ -67,7 +69,7 @@
 
 | 值 | 英文 | 中文 | 说明 |
 |----|------|------|------|
-| 0 | Receptionist | 前台接待 | 仅查看权限 |
+| 0 | Receptionist | 前台接待 | 患者登记、挂号管理 (PatientAccess 策略) |
 | 1 | Doctor | 医生 | 日常诊疗、开方、患者管理 |
 | 10 | Admin | 管理员 | 系统管理、用户管理、全局数据查看 |
 | 100 | SuperAdmin | 超级管理员 | 最高权限，系统初始化专用 |

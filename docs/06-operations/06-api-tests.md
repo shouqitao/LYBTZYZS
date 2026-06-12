@@ -214,8 +214,8 @@ pm.test("Paged result structure", () => {
 
 | 测试编号 | 端点 | 测试用例 | 预期结果 |
 |----------|------|----------|----------|
-| TC-PAT-002-01 | `POST /api/v1/patients/import` | 上传 Excel 文件 | 200, ImportResultDto |
-| TC-PAT-002-02 | `POST /api/v1/patients/import` | 超过 10MB 文件 | 400, 文件过大 |
+| TC-PAT-002-01 | `POST /api/v1/patients/batch-import` | JSON 批量导入 | 200, BatchOperationResultDto |
+| TC-PAT-002-02 | `POST /api/v1/patients/batch-import` | 空列表 | 400 |
 | TC-PAT-002-03 | `GET /api/v1/patients/import-template` | 下载模板 | 200, Excel 文件 |
 | TC-PAT-002-04 | `GET /api/v1/patients/export` | 导出患者 | 200, Excel 文件 |
 
@@ -330,8 +330,8 @@ pm.test("Paged result structure", () => {
 
 | 测试编号 | 端点 | 测试用例 | 预期结果 |
 |----------|------|----------|----------|
-| TC-HERB-003-01 | `POST /api/v1/herbs/import` | 上传 .xlsx 文件 | 200, ImportResultDto |
-| TC-HERB-003-02 | `POST /api/v1/herbs/import` | 非 .xlsx 文件 | 400 |
+| TC-HERB-003-01 | `POST /api/v1/herbs/batch-import` | JSON 批量导入 | 200, BatchOperationResultDto |
+| TC-HERB-003-02 | `POST /api/v1/herbs/batch-import` | 空列表 | 400 |
 | TC-HERB-003-03 | `GET /api/v1/herbs/import-template` | 下载模板 | 200, .xlsx |
 | TC-HERB-003-04 | `GET /api/v1/herbs/export-all` | 导出所有 JSON | 200, JSON 数组 |
 
@@ -541,7 +541,7 @@ pm.test("Response time < 5000ms", () => {
 |----------|------|------|------|
 | TC-ERR-005-01 | 批量删除空列表 | POST /api/v1/users/batch-delete {"Ids":[]} | 400 |
 | TC-ERR-005-02 | 批量导入超限 | POST /api/v1/herbs/batch-import (>10000 条) | 400 |
-| TC-ERR-005-03 | 文件上传超限 | POST /api/v1/patients/import (>10MB) | 400 |
+| TC-ERR-005-03 | 批量导入超限 | POST /api/v1/patients/batch-import (>10000 条) | 400 |
 | TC-ERR-005-04 | 页码为 0 | GET /api/v1/users?page=0&pageSize=20 | 400 或自动修正为 1 |
 | TC-ERR-005-05 | pageSize 为 0 | GET /api/v1/users?page=1&pageSize=0 | 400 或自动修正 |
 
