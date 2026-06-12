@@ -221,6 +221,10 @@ sequenceDiagram
 
 ## 架构决策记录
 
+- [ADR-0002: 双模式架构](decisions/0002-dual-mode-architecture.md) — 远程 + 本地双模式架构演进历史 (原始 SQLite 策略已被 LocalWebAPI 替代)
+
+### 模块级决策
+
 | 编号 | 决策 | 状态 | 说明 |
 |------|------|------|------|
 | SYNC-D01 | MedicalCase 同步范围 | 已确认 | 仅同步 Completed 状态 |

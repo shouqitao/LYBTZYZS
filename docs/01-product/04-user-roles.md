@@ -13,7 +13,7 @@
 | 超级管理员 | SuperAdmin | 100 | 最高权限，系统初始化和诊断专用 |
 | 管理员 | Admin | 10 | 系统管理、用户管理、全局数据查看与编辑 |
 | 医生 | Doctor | 1 | 日常诊疗、开方、患者管理 |
-| 前台接待 | Receptionist | 0 | v1.0 仅查看权限。不在 DoctorOrAdmin/AdminOnly 策略中，无任何写操作权限 |
+| 前台接待 | Receptionist | 0 | 患者登记、挂号管理（通过 PatientAccess 策略） |
 
 ---
 
@@ -23,6 +23,8 @@
 |--------|----------|----------|
 | `AdminOnly` | SuperAdmin, Admin | 用户管理模块 |
 | `DoctorOrAdmin` | SuperAdmin, Admin, Doctor | 大部分业务模块 |
+| `PatientAccess` | SuperAdmin, Admin, Doctor, Receptionist | 患者管理、挂号模块 |
+| `SuperAdminOnly` | SuperAdmin | 用户恢复、密码重置 |
 
 ---
 
@@ -39,6 +41,7 @@
 | 验方管理 | `/api/v1/formulas` | CRUD | CRUD | CRUD (受限) | 禁止 |
 | 医案管理 | `/api/v1/medicalcases` | 查看全部 | CRUD 全部 | CRUD (受限) | 禁止 |
 | 数据同步 | `/api/v1/sync` | 全部 | 全部 | 全部 | 禁止 |
+| 挂号管理 | `/api/v1/registrations` | 全部 | 全部 | 快速接诊/开始就诊 | 创建 + 取消 |
 | 系统诊断 | `/api/v1/diagnostics` | 全部 | 禁止 | 禁止 | 禁止 |
 | 健康检查 | `/api/v1/health` | 详细 | 详细 | 基础 | 基础 |
 
@@ -125,6 +128,7 @@ Desktop 客户端根据角色提供不同的工作区入口:
 |--------|------|----------|
 | Clinical (临床工作区) | Doctor | 患者选择 → 创建医案 → 诊断 → 开方 → 完成 |
 | Management (管理工作区) | Admin | 医案列表 → 查看/编辑医案 → 审计日志 |
+| Reception (接待工作区) | Receptionist | 患者登记/搜索 → 创建挂号 → 取消挂号 |
 
 ### 工作区行为差异
 
@@ -145,3 +149,4 @@ Desktop 客户端根据角色提供不同的工作区入口:
 | 2026-02-11 | v1.1 | 修正 Receptionist 角色描述，从"患者登记、预约管理"改为"仅查看权限" |
 | 2026-02-11 | v1.2 | 修正药材管理 Doctor 权限从"查看"到"查看+创建"，与 herbs.md PRD 对齐 |
 | 2026-06-12 | v1.3 | 修正 Receptionist 患者管理权限从"禁止"到"CRU"，与 clinical-workflow.md 和 personas.md 对齐 |
+| 2026-06-12 | v1.4 | 补充 Registration 权限矩阵行、PatientAccess/SuperAdminOnly 策略、Reception 工作区 |

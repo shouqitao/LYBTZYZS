@@ -786,6 +786,11 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 
 ---
 
+## 架构决策记录
+
+- [ADR-0006: ViewModel 组件化分解模式](decisions/0006-component-decomposition-pattern.md) — 大型 ViewModel 拆分为 Coordinator + Components (CommandHandler/DataManager/Validator)
+- [ADR-0007: ViewModel 组合模式](decisions/0007-viewmodel-composition-pattern.md) — 两棵独立继承树 (CoreViewModelBase vs BindableBase) 的组合策略
+
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |

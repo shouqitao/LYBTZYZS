@@ -470,6 +470,10 @@ Patient 实体的以下字段标记为敏感数据，日志和序列化时脱敏
 - 全局查询过滤器自动排除
 - 使用 `IgnoreQueryFilters()` 查询已删除记录
 
+## 架构决策记录
+
+- [ADR-0001: MedicalCase 聚合根](decisions/0001-medicalcase-aggregate-root.md) — MedicalCase 为唯一充血模型，域方法封装状态变更逻辑
+
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |

@@ -95,7 +95,7 @@ var decrypted = ProtectedData.Unprotect(encryptedBytes, null, DataProtectionScop
 | IsUsed 标记 | 防止 Token 重复使用 | 布尔标志 |
 | UsageCount 计数 | 监控异常使用频率 | 整数计数器 |
 | DPAPI 加密 | Desktop 本地凭据保护 | Windows 原生 API |
-| 单会话登录 | 防止多设备并发 | LastLoginTime + ExpiryTime 校验 |
+| 单会话登录 | 防止多设备并发 | 新登录时撤销该用户所有现有 Token Family |
 
 ## 相关链接
 

@@ -650,6 +650,13 @@ DatabaseStartupDiagnostics 在 Program.cs 启动阶段自动执行:
 
 ---
 
+## 架构决策记录
+
+- [ADR-0001: MedicalCase 聚合根](decisions/0001-medicalcase-aggregate-root.md) — MedicalCase 为唯一充血模型，Consultation/Prescription 为内部实体
+- [ADR-0004: 用户上下文传递模式](decisions/0004-user-context-propagation.md) — 从 HTTP 请求到 Service/Repository 层的用户信息传递方案
+- [ADR-0005: SuperAdmin 归属 Auth 模块](decisions/0005-superadmin-auth-module.md) — SuperAdmin 系统初始化账户的归属与认证流程设计
+- [ADR-0008: Token 安全防御性设计](decisions/0008-token-security-defensive-design.md) — Token Family、轮换机制和重放攻击检测策略
+
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |

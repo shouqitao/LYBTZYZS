@@ -201,6 +201,10 @@ sequenceDiagram
 | Client Role | `LYBT.Desktop.` | LYBT.Desktop.Clinical |
 | Client Shell | `LYBT.Desktop.` | LYBT.Desktop.Shell |
 
+## 架构决策记录
+
+- [ADR-0003: 集成优先测试策略](decisions/0003-integration-first-testing.md) — 真实数据库测试优于 mock 单元测试的 Testing Trophy 策略
+
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
