@@ -61,8 +61,8 @@ C:\LYBTZYZS\                   # 源码目录（服务器上）
 ```json
 {
   "DefaultPasswords": {
-    "SysAdminPassword": "Admin@Qt2026!",
-    "NewUserPassword": "Lybt@2026!"
+    "SysAdminPassword": "<REDACTED>",
+    "NewUserPassword": "<REDACTED>"
   },
   "SystemAdmin": {
     "Email": "admin@lybt.com"

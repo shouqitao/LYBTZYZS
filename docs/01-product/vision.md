@@ -68,101 +68,7 @@ flowchart LR
 
 ## 详细业务流程
 
-### 流程 1: 患者首次就诊
-
-```mermaid
-sequenceDiagram
-    participant R as 前台/医生
-    participant S as 系统
-    participant P as 打印机
-
-    R->>S: 1. 搜索患者 (姓名/拼音码/手机号)
-    S-->>R: 未找到匹配患者
-    R->>S: 2. 创建新患者 (姓名/性别/年龄/手机号)
-    Note over R,S: 可选: 身份证读卡器自动填充
-    S-->>R: 患者创建成功，跳转患者详情
-    R->>S: 3. 点击"创建医案"
-    S-->>R: 进入医案编辑页 (状态: Draft)
-    R->>S: 4. 填写诊断 (现病史/望闻问切/辨证)
-    R->>S: 5. 标记"需要处方"
-    R->>S: 6. 添加药材到处方 (搜索药材/设置剂量/单位)
-    Note over R,S: 可选: 从验方导入药材列表
-    R->>S: 7. 保存医案 (聚合保存: 医案+诊断+处方)
-    S-->>R: 保存成功，弹出"是否打印处方?"
-    R->>S: 8. 确认打印
-    S->>P: 9. 发送打印任务 (A5 模板)
-    S-->>R: 打印完成，记录打印日志
-```
-
-**涉及模块**: 患者管理 (FR-PAT) -> 身份证读卡器 (FR-CARD) -> 医案管理 (FR-MC) -> 药材管理 (FR-HERB) -> 验方管理 (FR-FORM) -> 打印 (FR-PRINT)
-
-### 流程 2: 患者复诊
-
-```mermaid
-sequenceDiagram
-    participant D as 医生
-    participant S as 系统
-
-    D->>S: 1. 搜索并选择患者
-    S-->>D: 显示患者详情 + 历史医案列表
-    D->>S: 2. 查看上次医案 (诊断/处方详情)
-    D->>S: 3. 点击"创建新医案"
-    S-->>D: 进入新医案编辑页
-    D->>S: 4. 填写本次诊断
-    D->>S: 5. 选择"复制历史处方"
-    S-->>D: 从上次医案复制处方到当前医案
-    D->>S: 6. 修改药材/剂量 (根据本次情况调整)
-    D->>S: 7. 保存医案
-    S-->>D: 保存成功，提示打印
-```
-
-**关键点**: 复制历史处方功能 -- 从患者历史医案中选择一个处方，复制其药材列表到当前新医案的处方中，医生可在此基础上增减药材和调整剂量。
-
-### 流程 3: 验方创建与使用
-
-```mermaid
-sequenceDiagram
-    participant D as 医生
-    participant S as 系统
-
-    Note over D,S: 创建验方
-    D->>S: 1. 进入验方管理
-    D->>S: 2. 创建新验方 (名称/描述)
-    D->>S: 3. 添加药材 (搜索/设置默认剂量)
-    Note over D,S: 药材使用延迟绑定 (通过名称匹配)
-    D->>S: 4. 保存验方 (ValidationStatus 流转)
-
-    Note over D,S: 使用验方
-    D->>S: 5. 在医案处方中点击"导入验方"
-    S-->>D: 显示验方列表 (个人 + 共享)
-    D->>S: 6. 选择验方
-    S-->>D: 将验方药材导入处方 (绑定当前价格)
-    D->>S: 7. 可继续调整药材/剂量
-```
-
-### 流程 4: 药材管理
-
-```mermaid
-sequenceDiagram
-    participant A as 管理员
-    participant S as 系统
-
-    Note over A,S: 单条录入
-    A->>S: 1. 进入药材管理
-    A->>S: 2. 新增药材 (名称/拼音码/分类/单位/价格)
-    S-->>A: 自动生成拼音码，检查重名
-
-    Note over A,S: 批量导入
-    A->>S: 3. 选择 Excel/JSON 文件导入
-    S-->>A: 预览导入数据，显示重复处理策略
-    A->>S: 4. 确认导入
-    S-->>A: 导入结果汇总 (成功/跳过/失败)
-
-    Note over A,S: 禁用药材
-    A->>S: 5. 禁用某药材
-    S->>S: 6. 检查处方引用
-    S-->>A: 提示: "该药材已被 N 个处方引用，禁用后历史处方标记'已禁用'"
-```
+> 详细的首诊、复诊、验方创建/使用、药材管理等端到端时序流程，请参阅 [clinical-workflow.md](clinical-workflow.md)。
 
 ---
 
@@ -191,6 +97,9 @@ graph TD
     SHELL -->|区域管理| HERB
     SHELL -->|区域管理| FORM
 
+    REG[挂号管理<br/>Registration] -->|PatientId| PAT
+    REG -->|排队分诊| MC
+
     CARD[读卡器<br/>CardReader] -->|自动填充| PAT
 
     SYS[系统健康] -->|数据库检查| DB[(数据库)]
@@ -215,6 +124,8 @@ graph TD
 | Formula -> Herb | 延迟绑定 | 验方通过药材名称匹配，不存储外键 |
 | Printing -> MedicalCase | 功能依赖 | 打印是 MedicalCase 聚合根能力，需读取医案+处方数据 |
 | Sync -> Patient/Herb/Formula | 同步依赖 | v1.0 三种实体可同步 |
+| Registration -> Patient | 数据依赖 (外键) | 挂号必须关联一个患者 (PatientId) |
+| Registration -> MedicalCase | 功能依赖 | 挂号分诊后创建医案 |
 | Auth -> User | 认证依赖 | 登录验证需要查询用户信息 |
 | CardReader -> Patient | 功能集成 | 读取身份证自动填充患者信息 |
 
@@ -284,7 +195,7 @@ Desktop 客户端使用 Prism IEventAggregator 实现模块间松耦合通信：
 - 完整的中医诊疗流程 (患者登记 -> 创建医案 -> 诊断 -> 处方 -> 打印)
 - 复诊流程 (复制历史处方到新医案)
 - 四层角色权限体系 (SuperAdmin > Admin > Doctor > Receptionist)
-- 本地/远程双模式运行 (SQLite / SQL Server)
+- 本地/远程双模式运行 (SQL Server LocalDB / SQL Server)
 - 基础数据同步 (药材/患者/验方，手动触发)
 - 身份证读卡器集成 (HuaDaHD100，策略模式可扩展)
 - JWT 认证 + AutoLoginToken + 重放攻击检测
@@ -292,7 +203,7 @@ Desktop 客户端使用 Prism IEventAggregator 实现模块间松耦合通信：
 - 系统健康检查 + 运行时诊断
 
 **模块清单**:
-认证(13 FR) | 用户管理(12) | 患者管理(13) | 药材管理(13) | 验方管理(13) | 医案管理(18) | 数据同步(8) | 打印(4) | 身份证读卡器(2) | 系统健康与诊断(9) | 异常处理(8) | 日志与审计(7) | Desktop Shell(7) | 配置参数(4)
+认证(13 FR) | 用户管理(12) | 患者管理(13) | 药材管理(13) | 验方管理(13) | 医案管理(18) | 挂号管理(7) | 数据同步(8) | 打印(4) | 身份证读卡器(2) | 系统健康与诊断(9) | 异常处理(8) | 日志与审计(7) | Desktop Shell(7) | 配置参数(4)
 
 ### v2.0 -- 扩展与集成 (规划中)
 
@@ -303,7 +214,7 @@ Desktop 客户端使用 Prism IEventAggregator 实现模块间松耦合通信：
 | 自动同步提示 | FR-SYNC 决策#4 | NetworkStatusService + 状态栏指示器 |
 | ~~诊所信息配置化~~ | ~~FR-PRINT 决策#2~~ | **Sprint 6 已实现** (clinic-settings.json + reloadOnChange 热更新) |
 | User 数据同步 | FR-SYNC 决策#2 | User 实体加入同步范围 |
-| LocalDB 字段级加密 | NFR-D03 | AES-256 + DPAPI 加密 IdCardNumber/PhoneNumber (原 SQLite 方案需基于 LocalDB 重新设计) |
+| LocalDB 字段级加密 | NFR-D03 | AES-256 + DPAPI 加密 IdCardNumber/PhoneNumber，基于 SQL Server LocalDB 实现 |
 
 ---
 
@@ -316,3 +227,4 @@ Desktop 客户端使用 Prism IEventAggregator 实现模块间松耦合通信：
 | 2026-02-17 | v2.0 | Round 2 深化: 新增详细业务流程 (首诊/复诊/验方/药材)、模块依赖矩阵、跨模块数据规则、Desktop 事件架构 |
 | 2026-02-18 | v2.1 | PRD 全量闭环分析: FR 总数 120->131，模块清单计数同步更新 (PAT+1/MC+1/SYS+2/ERR+3/LOG+3/CFG+1) |
 | 2026-03-09 | v2.2 | v2.0 路线图更新: PDF 处方导出 + 诊所信息配置化 已在 Sprint 6 提前实现; SQLite 字段级加密更新为 LocalDB 重新设计 |
+| 2026-06-12 | v2.3 | 修正术语: SQLite → SQL Server LocalDB; 新增挂号管理模块 (7 FR) 补齐 FR 总数至 138; 移除详细时序图改为交叉引用 clinical-workflow.md |

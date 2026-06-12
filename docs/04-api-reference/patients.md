@@ -4,8 +4,10 @@
 
 ## 概述
 
-患者管理 CRUD、Excel 导入导出、软删除恢复、批量操作。支持 OutputCache (`PatientsCache`)。
+患者管理 CRUD、Excel 导出、软删除恢复、批量操作、引用检查。支持 OutputCache (`PatientsCache`)。
 Doctor 只能编辑自己创建的患者，Admin 可操作全部。
+
+> **注意**: 患者 Excel 导入在客户端 (Desktop) 完成，服务端无 `POST /patients/import` 端点。服务端仅提供 `GET /patients/import-template` 下载模板。
 
 ---
 
@@ -170,6 +172,8 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 
 切换患者状态 (启用/禁用)。无请求体，自动在 Enabled/Disabled 间切换。
 
+> **US-PAT-013**: PRD 原文为 `PUT /{id}/status` (带 body 指定状态)，但代码实现为 `POST /{id}/toggle-status` (自动切换，无 body)。文档以代码为准。
+
 **路径参数**: `id` (Guid)
 
 **业务规则**:
@@ -289,7 +293,7 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 | 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
 |--------|--------|------|----------|----------|
 | ERR-20001 | PatientNotFound | 404 | 患者不存在 | GET/PUT/DELETE /{id}, POST /{id}/restore |
-| ERR-20002 | PatientIdCardExists | 409 | 系统中已存在该身份证 | POST /, PUT /{id}, POST /import |
+| ERR-20002 | PatientIdCardExists | 409 | 系统中已存在该身份证 | POST /, PUT /{id} |
 | ERR-20003 | PatientPhoneExists | 409 | 患者电话已存在 | POST /, PUT /{id} |
 | ERR-20004 | PatientHasReferencedCases | 422 | 该患者有历史医案，无法删除 | DELETE /{id}, POST /batch-delete |
 | ERR-20005 | PatientDisabled | 403 | 患者已被禁用 | 需启用状态的操作 |
@@ -308,13 +312,15 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 
 ### 导入错误 (208xx)
 
+> 以下错误码用于客户端 Excel 导入流程，非服务端端点触发。
+
 | 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
 |--------|--------|------|----------|----------|
-| ERR-20801 | ImportFileEmpty | 400 | 文件不能为空 | POST /import |
-| ERR-20802 | ImportFileFormat | 400 | 仅支持.xlsx格式 | POST /import |
-| ERR-20803 | ImportFileSize | 400 | 文件大小不能超过10MB | POST /import |
-| ERR-20804 | ImportNoWorksheet | 400 | 没有工作表 | POST /import |
-| ERR-20805 | ImportRowExceeded | 400 | 导入数据超过限制 | POST /import |
+| ERR-20801 | ImportFileEmpty | 400 | 文件不能为空 | 客户端导入 |
+| ERR-20802 | ImportFileFormat | 400 | 仅支持.xlsx格式 | 客户端导入 |
+| ERR-20803 | ImportFileSize | 400 | 文件大小不能超过10MB | 客户端导入 |
+| ERR-20804 | ImportNoWorksheet | 400 | 没有工作表 | 客户端导入 |
+| ERR-20805 | ImportRowExceeded | 400 | 导入数据超过限制 | 客户端导入 |
 
 ---
 
@@ -325,4 +331,4 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 | 2026-02-10 | v1.0 | 初始版本，10 个端点 |
 | 2026-02-18 | v1.1 | 新增 PUT /patients/{id}/status 端点 (FR-PAT-013 患者状态管理); 补充错误码 ERR-20005/20006 |
 | 2026-02-18 | v1.2 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-20001~20805)，含核心/业务规则/导入三类 |
-| 2026-02-19 | v1.3 | 新增 check-reference + batch-check-reference 端点定义 (FR-PAT-011/012) |
+| 2026-06-12 | v1.4 | 移除 POST /patients/import (客户端功能); US-PAT-013 改为 toggle-status; 导入错误码标注为客户端触发 |

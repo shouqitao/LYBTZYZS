@@ -22,17 +22,17 @@ sources: ["docs/01-product/clinical-workflow.md"]
 
 ## 核心阶段
 
-1.  **创建医案**：医生选择患者后，系统执行**BR-001碰撞检查**，确保患者没有未完成的医案（Active或Suspended状态）。创建成功后，生成[[medical-case|MedicalCase]]（Active状态）和[[consultation|Consultation]]（1:1共享主键）。
+1.  **创建医案**：医生选择患者后，系统执行**REG-BR-001碰撞检查**，确保患者没有未完成的医案（Active或Suspended状态）。创建成功后，生成[[medical-case|MedicalCase]]（Active状态）和[[consultation|Consultation]]（1:1共享主键）。
 2.  **填写诊断**：医生填写中医辨证（TcmDiagnosis）等诊断信息。中医辨证在医案完成时为必填项。
 3.  **处方决策与开具**：根据`NeedsPrescription`标记决定是否需要处方。处方可通过三种方式获取：验方导入、历史处方复制或手工输入。处方数据存储在[[prescription|Prescription]]和[[prescription-item|PrescriptionItem]]中。
 4.  **聚合保存**：采用[[medical-case|MedicalCase]]作为聚合根，将医案、诊断、处方及其明细进行原子性保存。保存时涉及**打印保护检查（MC-D15）**和**乐观锁（RowVersion）**并发控制。
 5.  **打印**：打印是[[medical-case|MedicalCase]]聚合根的能力。打印后，`IsPrinted`标记为`true`，`PrintCount`递增，并生成[[medical-case-print-log|MedicalCasePrintLog]]记录。
-6.  **完成医案**：执行**BR-003完成校验**，确保诊断、处方标记和处方内容完整。完成后，医案状态变为`Completed`，关联的[[registration|Registration]]状态也同步更新为`Completed`。
+6.  **完成医案**：执行**REG-BR-003完成校验**，确保诊断、处方标记和处方内容完整。完成后，医案状态变为`Completed`，关联的[[registration|Registration]]状态也同步更新为`Completed`。
 
 ## 关键业务规则
 
-- **BR-001 碰撞检查**：创建医案时，检查患者是否有Active或Suspended状态的医案，防止数据冲突。
-- **BR-003 完成校验**：医案完成前必须满足诊断、处方标记和处方内容的完整性要求。
+- **REG-BR-001 碰撞检查**：创建医案时，检查患者是否有Active或Suspended状态的医案，防止数据冲突。
+- **REG-BR-003 完成校验**：医案完成前必须满足诊断、处方标记和处方内容的完整性要求。
 - **打印保护 (MC-D15)**：已打印的医案在修改诊断或处方时，必须提供修改原因（EditReason），保存后`IsPrinted`重置为`false`，`PrintVersion`递增，提示需要重新打印。
 - **重复药材合并策略 (MC-D17)**：导入处方时，处理重复药材的策略（Max, Min, Accumulate, Skip, Replace）。
 
@@ -41,8 +41,8 @@ sources: ["docs/01-product/clinical-workflow.md"]
 [[medical-case|MedicalCase]]具有明确的状态机：`Active` ↔ `Suspended` → `Completed`。取消医案通过软删除（`IsDeleted=true`）实现。
 
 文档详细定义了异常路径的处理流程，包括：
-- **BR-001碰撞处理**：当发现碰撞时，提供“重开现有医案”、“关闭旧的后新建”或“取消操作”三种选择。
-- **BR-002离开界面决策**：根据编辑模式（Clinical/Management）和是否有未保存变更，提供不同的离开选项（挂起、关闭、完成、保存、放弃等）。
+- **REG-BR-001碰撞处理**：当发现碰撞时，提供“重开现有医案”、“关闭旧的后新建”或“取消操作”三种选择。
+- **REG-BR-002离开界面决策**：根据编辑模式（Clinical/Management）和是否有未保存变更，提供不同的离开选项（挂起、关闭、完成、保存、放弃等）。
 - **并发冲突处理**：通过乐观锁（RowVersion）和3次重试机制处理多用户同时编辑的冲突。
 
 ## 跨模块联动
@@ -55,5 +55,5 @@ sources: ["docs/01-product/clinical-workflow.md"]
 ## 相关概念
 
 - [[medical-case]]：作为核心聚合根，承载了临床工作流的主要数据和状态。
-- [[business-rules]]：集中定义了BR-001、BR-003、MC-D15等业务规则。
+- [[business-rules]]：集中定义了REG-BR-001、REG-BR-003、MC-D15等业务规则。
 - [[dual-mode-architecture]]：临床模式（Clinical）和管理模式（Management）决定了UI交互和离开界面时的行为。

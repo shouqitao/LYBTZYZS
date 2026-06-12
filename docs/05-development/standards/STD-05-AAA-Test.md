@@ -16,6 +16,8 @@
 
 ### AAA 模式 (Arrange-Act-Assert)
 
+> **注意**: 以下 NSubstitute 示例仅适用于 Desktop 测试 (`LYBT.Tests.Desktop`)。Server 测试 (`LYBT.Tests.Server`) 使用零 mock 策略——直接使用真实 SQL Server + Respawn，不使用任何 Mock 框架。
+
 ```csharp
 [Fact]
 public async Task SaveAsync_WithValidInput_ReturnsMedicalCase()

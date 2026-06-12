@@ -64,9 +64,9 @@ source: docs/02-requirements/medical-cases.md
 
 | 规则编号 | 名称 | 说明 |
 |----------|------|------|
-| BR-001 | 诊断必填 | 完成医案时 TcmDiagnosis (中医辨证) 为必填字段 |
-| BR-002 | 处方锁定 | 处方打印后修改必须提供 EditReason，PrintVersion 递增 |
-| BR-003 | 隔天锁定 | CompletedAt.Date < Today 的医案对 Doctor 角色只读 (返回 403) |
+| MC-BR-001 | 诊断必填 | 完成医案时 TcmDiagnosis (中医辨证) 为必填字段 |
+| MC-BR-002 | 处方锁定 | 处方打印后修改必须提供 EditReason，PrintVersion 递增 |
+| MC-BR-003 | 隔天锁定 | CompletedAt.Date < Today 的医案对 Doctor 角色只读 (返回 403) |
 
 ### 打印保护机制
 
@@ -127,3 +127,34 @@ MedicalCaseAuditLog 记录以下信息:
 - [[herb]] - 药材管理模块
 - [[formula]] - 验方管理模块
 - [[ADR-001-medicalcase-aggregate-root]] - MedicalCase 作为唯一聚合根的架构决策
+
+## 服务端架构
+
+```
+MedicalCasesController (DoctorOrAdmin / Admin)
+    │
+    ├── IMedicalCaseCommandHandler (CQRS 写操作)
+    │   ├── CreateMedicalCaseCommand
+    │   ├── UpdateMedicalCaseCommand
+    │   └── CompleteMedicalCaseCommand
+    │
+    ├── IMedicalCaseQueryService (CQRS 读操作)
+    │
+    └── IMedicalCaseRepository → MedicalCaseRepository (internal)
+        └── BaseRepository<MedicalCase> → AppDbContext
+```
+
+Mapper: `MedicalCaseMapper` (Mapperly 编译时源生成)
+
+## API 端点
+
+| 方法 | 路由 | 权限 | 说明 |
+|------|------|------|------|
+| GET | `/api/v1/medical-cases` | DoctorOrAdmin | 分页列表 |
+| GET | `/api/v1/medical-cases/{id}` | DoctorOrAdmin | 医案详情 |
+| POST | `/api/v1/medical-cases` | Doctor | 创建医案 |
+| PUT | `/api/v1/medical-cases/{id}` | DoctorOrAdmin | 更新医案 |
+| POST | `/api/v1/medical-cases/{id}/complete` | DoctorOrAdmin | 完成医案 |
+| POST | `/api/v1/medical-cases/{id}/suspend` | Doctor | 挂起 |
+| POST | `/api/v1/medical-cases/{id}/resume` | Doctor | 恢复 |
+| DELETE | `/api/v1/medical-cases/{id}` | DoctorOrAdmin | 取消(软删除) |

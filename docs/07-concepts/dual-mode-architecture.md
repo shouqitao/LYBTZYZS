@@ -110,7 +110,7 @@ graph TB
 ## 相关链接
 
 - [[overview]] - 项目整体概览
-- [[ADR-002-dual-mode-architecture]] / [[4-docs--15-03-architecture--9-decisions--27-0002-dual-mode-architecture--j4fhop|ADR-002: 双模式架构 (远程 + 本地)]] - 架构决策记录
+- [[ADR-002-dual-mode-architecture]] - 架构决策记录
 - [[sync-module|数据同步模块]] - 同步模块详细设计
 - [[auth-module|认证模块]] - 认证模块详细设计
 - [[desktop-shell|Desktop Shell]] - 负责 LocalWebAPI 生命周期管理

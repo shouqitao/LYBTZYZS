@@ -6,10 +6,10 @@
 [Desktop Client (WPF)]
      │
      ├── 远程模式 ──→ [LYBT.WebAPI] ──→ [SQL Server]
-     │                   (Kestrel)
+     │                   (Kestrel :5000/:5001)
      │
-      └── 本地模式 ──→ [SQL Server LocalDB]
-                        (%APPDATA%\LYBT\data\)
+     └── 本地模式 ──→ [LYBT.LocalWebAPI] ──→ [SQLite]
+                         (Kestrel :5000)        (%APPDATA%\LYBT\data\)
 ```
 
 ---
@@ -72,11 +72,15 @@ POST /api/v1/diagnostics/logging/debug/disable
 
 ### 端点
 
-| 端点 | 权限 | 说明 |
-|------|------|------|
-| `GET /api/v1/health` | 匿名 | 基础探活 (返回 `Healthy` + 时间戳) |
-| `GET /api/v1/health/ping` | 匿名 | Ping/Pong |
-| `GET /api/v1/health/details` | 已认证 | 详细检查 (含数据库连接、迁移状态) |
+系统提供两组健康检查端点：
+
+| 端点 | 类型 | 权限 | 说明 |
+|------|------|------|------|
+| `GET /health` | 中间件映射 | 匿名 | ASP.NET Core HealthCheck 中间件（探活、负载均衡） |
+| `GET /health/database` | 中间件映射 | 匿名 | 数据库连接检查 |
+| `GET /api/v1/health` | 控制器 | 匿名 | 业务层健康检查（返回 `Healthy` + 时间戳） |
+| `GET /api/v1/health/ping` | 控制器 | 匿名 | Ping/Pong |
+| `GET /api/v1/health/details` | 控制器 | 已认证 | 详细检查 (含数据库连接、迁移状态) |
 
 ### 响应示例
 

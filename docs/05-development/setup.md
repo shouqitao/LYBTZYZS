@@ -20,7 +20,7 @@
 
 - **版本**: SQL Server 2019+ 或 SQL Server Express (LocalDB)
 - **远程模式必需**: 仅远程模式需要独立 SQL Server
-- **本地模式**: 使用 SQLite，无需安装
+- **本地模式**: 使用 SQL Server LocalDB + 嵌入式 LocalWebAPI (Kestrel)，无需安装独立数据库
 
 ### 4. Git
 
@@ -51,10 +51,11 @@ CREATE DATABASE LYBTDB;
 
 3. 数据库迁移会在应用启动时自动执行 (`EnsureCreatedInDevelopment: true`)。
 
-### 本地模式 (SQLite)
+### 本地模式 (SQL Server LocalDB)
 
-- 无需配置，Desktop 客户端自动创建 `lybt-local.db` 文件
-- 数据存储位置: `%APPDATA%\LYBT\data\`
+- Desktop 客户端启动时自动启动嵌入式 LocalWebAPI (Kestrel)，使用 LocalDB 作为数据库
+- 数据存储位置: `%APPDATA%\LYBT\data\` (LocalDB MDF 文件)
+- LocalDB 随 Visual Studio / SQL Server Express 安装，无需额外配置
 
 ---
 
@@ -72,8 +73,13 @@ CREATE DATABASE LYBTDB;
 | Prism.DryIoc | 9.x | WPF MVVM + DI |
 | Asp.Versioning.Mvc | 8.x | API 版本控制 |
 | Serilog | 4.x | 结构化日志 |
-| NSubstitute | 5.x | 测试 Mock 框架 |
 | ClosedXML | 0.102.x | Excel 导入导出 |
+
+Desktop-only 依赖:
+
+| 包 | 版本 | 用途 |
+|-----|------|------|
+| NSubstitute | 5.x | 测试 Mock 框架 (仅 Desktop 测试使用) |
 
 ---
 

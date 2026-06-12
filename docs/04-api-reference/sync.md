@@ -226,7 +226,6 @@
 |--------|--------|------|----------|----------|
 | ERR-70301 | SyncPatientNotFound | 422 | 患者不存在，请先同步患者 | POST /upload (MedicalCase) |
 | ERR-70302 | SyncHerbNotFound | 422 | 药材不存在，请先同步药材 | POST /upload (MedicalCase) |
-| ERR-70303 | SyncActiveCaseConflict | 409 | 患者已有活跃医案 | POST /upload (MedicalCase) |
 | ERR-70304 | SyncCaseLocked | 422 | 医案已锁定 | POST /upload (MedicalCase) |
 
 ### 删除错误 (704xx)
@@ -259,3 +258,4 @@
 | 2026-02-10 | v1.0 | 初始版本，6 个端点 |
 | 2026-02-18 | v1.1 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-70101~70404)，含通用/上传/MedicalCase/删除四类 |
 | 2026-02-19 | v1.2 | 补充客户端错误码 (ERR-70501~70505)，含 UI 校验/同步失败/依赖检查/患者匹配 |
+| 2026-06-12 | v1.3 | 移除 ERR-70303 SyncActiveCaseConflict (PRD 已删除) |

@@ -78,7 +78,7 @@ Token 获取方式见 [认证 API](auth.md)。
 |--------|------|------|
 | 200 | 成功 | 查询、更新、业务操作成功 |
 | 201 | 已创建 | 资源创建成功 (Users.Create) |
-| 204 | 无内容 | 删除成功 (MedicalCase.Delete) |
+| 204 | 无内容 | 取消成功 (MedicalCase.Cancel) |
 | 400 | 请求错误 | 参数验证失败 |
 | 401 | 未授权 | Token 无效/过期/被撤销 |
 | 403 | 禁止访问 | 权限不足 (非管理员操作他人资源) |
@@ -129,12 +129,13 @@ Token 获取方式见 [认证 API](auth.md)。
 | POST | `/patients` | 新增患者 |
 | PUT | `/patients/{id}` | 更新患者 |
 | DELETE | `/patients/{id}` | 删除患者 (软删除) |
-| POST | `/patients/import` | Excel 导入 |
 | GET | `/patients/import-template` | 下载导入模板 |
 | GET | `/patients/export` | 导出 Excel |
 | POST | `/patients/{id}/restore` | 恢复已删除患者 |
-| POST | `/patients/{id}/toggle-status` | 启用/禁用切换 (AdminOnly, FR-PAT-013) |
+| POST | `/patients/{id}/toggle-status` | 启用/禁用切换 (AdminOnly, US-PAT-013) |
 | POST | `/patients/batch-delete` | 批量删除 |
+| GET | `/patients/{id}/check-reference` | 引用检查 |
+| POST | `/patients/batch-check-reference` | 批量引用检查 |
 
 ### 药材模块 ([herbs.md](herbs.md)) -- DoctorOrAdmin
 
@@ -200,8 +201,8 @@ Token 获取方式见 [认证 API](auth.md)。
 | GET | `/medicalcases/{id}/audit-logs` | 审计日志 |
 | GET | `/medicalcases/{id}/consultations` | 诊断记录列表 |
 | GET | `/medicalcases/{id}/prescriptions` | 处方记录列表 |
-| PUT | `/medicalcases/{id}/print-completed` | 记录打印完成 |
-| POST | `/medicalcases/{id}/print-logs` | 添加打印日志 |
+| PUT | `/medicalcases/{id}/print-completed` | 记录打印完成 (详见 [printing.md](printing.md)) |
+| POST | `/medicalcases/{id}/print-logs` | 添加打印日志 (详见 [printing.md](printing.md)) |
 
 ### 挂号管理模块 ([registrations.md](registrations.md)) -- PatientAccess
 
@@ -303,3 +304,4 @@ Token 获取方式见 [认证 API](auth.md)。
 | 2026-02-18 | v1.2 | 认证错误码章节补充注释: 标注 4 个设计扩展码 (PasswordExpired/SessionNotFound/SessionExpired/ConcurrentSessionLimit) |
 | 2026-02-22 | v1.3 | MC-D20 同步: 医案端点 `/draft` 重命名为 `/suspend` (Draft→Suspended 状态重命名) |
 | 2026-05-04 | v1.4 | 新增挂号管理模块 (registrations.md, 7 端点); 新增系统配置端点 (3 端点); 医案模块补充打印端点 (2 端点); 患者模块修正 check-reference (GET) 和 toggle-status (POST) 动词 |
+| 2026-06-12 | v1.5 | 端点总数更新为 ~106 (14 controllers); 移除 POST /patients/import (客户端功能); US-PAT-013 改为 toggle-status; 打印端点交叉引用 printing.md; 204 状态码修正为 Cancel |

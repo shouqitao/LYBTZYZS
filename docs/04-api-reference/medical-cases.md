@@ -525,71 +525,12 @@
 
 ---
 
-## 打印操作 (MedicalCasePrintController)
+## 打印操作
 
-### PUT /medicalcases/{id}/print-completed
+打印端点已独立到 [printing.md](printing.md)，包含:
 
-记录打印完成，更新打印管理字段并写入打印日志。
-
-- **权限**: DoctorOrAdmin
-- T2-X8-04~08: IsPrinted/PrintCount/LastPrintedAt/PrintVersion + PrintLog
-
-**路径参数**:
-
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| id | Guid | 医案ID |
-
-**请求体** (`PrintCompletedRequest`):
-
-```json
-{
-  "printType": "string",
-  "printerName": "string?"
-}
-```
-
-**成功响应** (200): `ApiResponse<MedicalCaseDetailDto>` (更新后的医案详情)
-
-**错误场景**:
-
-| 场景 | HTTP | 说明 |
-|------|------|------|
-| 医案不存在 | 404 | 指定ID的医案不存在 |
-
----
-
-### POST /medicalcases/{id}/print-logs
-
-添加打印日志，记录打印成功或失败。
-
-- **权限**: DoctorOrAdmin
-- T4-S5-02: 支持打印成功/失败日志记录
-
-**路径参数**:
-
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| id | Guid | 医案ID |
-
-**请求体** (`PrintLogInputDto`):
-
-```json
-{
-  "printType": "string",
-  "isSuccess": true,
-  "printerName": "string?",
-  "errorMessage": "string?"
-}
-```
-
-**成功响应** (200): `ApiResponse<object>`
-
-**错误场景**:
-
-| 场景 | HTTP | 说明 |
-|------|------|------|
-| 医案不存在 | 404 | 指定ID的医案不存在 |
+- `PUT /medicalcases/{id}/print-completed` — 记录打印完成
+- `POST /medicalcases/{id}/print-logs` — 添加打印日志
 
 ---
 
@@ -602,3 +543,4 @@
 | 2026-02-18 | v1.2 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-30101~30607)，含创建/权限/状态/处方/并发/参数六类 |
 | 2026-02-21 | v1.3 | 深度重构同步: PUT /status 移除 Cancelled/Completed 支持 (Completed 需用 /close); PUT /cancel 响应改为 204; 4 个废弃端点已从代码移除; caseStatus 枚举移除 Cancelled; /close 补充统一入口说明; 术语"病案"统一为"医案" |
 | 2026-02-22 | v1.4 | MC-D20 同步: Draft→Suspended 状态重命名; `/draft`→`/suspend` 端点重命名; DraftCaseExists→SuspendedCaseExists; CannotSaveDraft→CannotSuspend |
+| 2026-06-12 | v1.5 | 打印端点移至 printing.md，改为交叉引用 |

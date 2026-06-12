@@ -34,8 +34,8 @@ ViewModel (Prism BindableBase)
   └── 调用 Repository
 
 Repository
-  ├── 远程模式 → HttpClient → WebAPI
-  └── 本地模式 → DataSource → SQLite
+   ├── 远程模式 → HttpClient → LYBT.WebAPI (IIS/Kestrel)
+   └── 本地模式 → HttpClient → LocalWebAPI (嵌入式 Kestrel) → Service → LocalDB
 ```
 
 ---

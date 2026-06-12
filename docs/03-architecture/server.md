@@ -19,6 +19,7 @@ graph TB
         Herbs["Module.Herbs"]
         Formula["Module.Formula"]
         MC["Module.MedicalCase"]
+        Reg["Module.Registration"]
         Sync["Module.Sync"]
     end
 
@@ -27,8 +28,8 @@ graph TB
         Entities["LYBT.Entities<br>(领域实体)"]
     end
 
-    WebAPI --> Auth & Users & Patients & Herbs & Formula & MC & Sync
-    Auth & Users & Patients & Herbs & Formula & MC & Sync --> Infra
+    WebAPI --> Auth & Users & Patients & Herbs & Formula & MC & Reg & Sync
+    Auth & Users & Patients & Herbs & Formula & MC & Reg & Sync --> Infra
     Infra --> Entities
 ```
 
@@ -59,17 +60,7 @@ LYBT.Entities/
   Common/            # BaseEntity, 通用枚举
 ```
 
-**BaseEntity 通用字段**:
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| Id | Guid | 主键 |
-| CreatedAt | DateTime | 创建时间 (UTC) |
-| UpdatedAt | DateTime? | 更新时间 (UTC) |
-| CreatedBy | Guid? | 创建人 |
-| UpdatedBy | Guid? | 更新人 |
-| RowVersion | byte[]? | 并发控制字段 (乐观并发, [Timestamp]) |
-| IsDeleted | bool | 软删除标记 |
+**BaseEntity 通用字段**: Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy, RowVersion, IsDeleted。详见 [data-model.md](data-model.md) 的 BaseEntity 章节。
 
 ### LYBT.Infrastructure
 
@@ -169,6 +160,7 @@ LYBT.Module.{Domain}/
 | Herbs | 传统三层 | - | 药材 CRUD、分类、导入 |
 | Formula | 传统三层 | ICrossModuleService | 验方 CRUD、药材绑定 |
 | MedicalCase | CQRS | IPatientService | 医案核心，状态机管理 |
+| Registration | 传统三层 | - | 挂号管理，队列状态流转 |
 | Sync | 传统三层 | - | 数据同步 |
 
 ### CQRS 模式 (MedicalCase)
@@ -306,20 +298,7 @@ builder.Services.AddPatientsModule();
 
 ## 异常处理
 
-### IExceptionHandler 处理器链
-
-```mermaid
-graph LR
-    Exception["未捕获异常"] --> BEH["BusinessExceptionHandler"]
-    BEH -->|"AppException 子类"| Response400["4xx 响应"]
-    BEH -->|"非业务异常"| SEH["SystemExceptionHandler"]
-    SEH --> Response500["500 响应"]
-```
-
-| 处理器 | 处理类型 | HTTP 状态码 | 日志级别 |
-|--------|----------|-------------|----------|
-| BusinessExceptionHandler | AppException 及子类 | 400/401/404/409 | Warning |
-| SystemExceptionHandler | 所有其他异常 | 500 | Error (含堆栈) |
+异常处理的完整架构详见 [error-handling-architecture.md](error-handling-architecture.md)，包括异常类型体系、IExceptionHandler 处理器链、错误码体系和 CorrelationId 全链路追踪。
 
 ### 错误码体系
 
@@ -337,16 +316,6 @@ graph LR
 | 7xxxx | 数据同步 | 701xx~705xx | ~20 |
 
 > **总计**: 90+ 错误场景。详见各模块 PRD 文档的"错误码"章节和 [error-handling.md](../02-requirements/error-handling.md)。
-
-### 异常类型
-
-| 异常 | HTTP | 说明 |
-|------|------|------|
-| ValidationException | 400 | 输入验证失败 |
-| UnauthorizedException | 401 | 授权失败 |
-| NotFoundException | 404 | 资源未找到 |
-| ConflictException | 409 | 并发冲突 |
-| AppException | 400 | 通用业务异常 |
 
 ## Service 层规范
 
@@ -523,24 +492,7 @@ ApiService GET 缓存 (LRU, 1000 条, 5 分钟过期)。写操作后按模块前
 
 **文本级脱敏**: SensitiveDataMasker 正则匹配文本中的密码、Token、连接字符串、Bearer Token，自动替换。
 
-**脱敏模式**:
-
-| 模式 | 效果 | 示例 |
-|------|------|------|
-| Default | 中间用 * 替代 | `abc***xyz` |
-| Partial | 按类型智能脱敏 | 手机号: `138****1234`; 身份证: `110*******1234` |
-| Full | 完全隐藏 | `[已隐藏]` |
-| Hash | SHA256 短哈希 | `[REDACTED:A1B2C3D4]` |
-
-**敏感数据分级映射**:
-
-| 级别 | 字段示例 | 日志脱敏 |
-|------|---------|---------|
-| L1-高敏感 | IdNumber, PhoneNumber | Partial (保留前3后4) |
-| L2-一般敏感 | Address, TcmDiagnosis | 摘要 / 不记录 |
-| L3-普通 | Name, HerbName | 正常记录 |
-
-**敏感字段名检测**: Password, Token, AccessToken, RefreshToken, Secret, ConnectionString, CreditCard 等 30+ 字段名。URI 查询参数中的 password/token/key/secret 自动替换为 `***`。
+脱敏模式、敏感数据分级映射和字段名检测规则的完整定义详见 [shared.md](shared.md) 的 SensitiveDataAttribute 设计章节。
 
 ### API 请求日志
 

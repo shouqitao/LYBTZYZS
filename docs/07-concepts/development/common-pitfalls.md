@@ -126,5 +126,5 @@ dotnet publish src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj \
 ## 相关链接
 
 - [[build-and-run]] - 构建和运行命令参考
-- [[testing-guide]] - 测试开发指南
+- [[testing-strategy]] - 测试开发指南
 - [[overview]] - 项目概览

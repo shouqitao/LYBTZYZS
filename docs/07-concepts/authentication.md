@@ -11,6 +11,8 @@ source: docs/03-architecture/decisions/0005-superadmin-auth-module.md
 
 系统采用 **JWT Bearer Token** 作为认证机制，SuperAdmin（超级管理员）与普通用户分离存储和路由。Token 安全机制包含 **Token Family**、重放攻击检测、**DPAPI 加密**（Desktop 端凭据）和滑动过期策略。尽管当前部署规模仅 3-5 人，这些"防御性设计"为未来扩展和多诊所云部署预留能力。
 
+> **范围说明**: 本文档聚焦 JWT 认证架构与 Token 安全机制。密码哈希策略详见 [[password-management-strategy|密码管理策略]]；认证模块整体设计详见 [[modules/auth-module|认证模块]]。
+
 ## 核心内容
 
 ### JWT 认证架构
@@ -87,7 +89,7 @@ var decrypted = ProtectedData.Unprotect(encryptedBytes, null, DataProtectionScop
 
 | 措施 | 目的 | 实现 |
 |------|------|------|
-| BCrypt 密码哈希 | 防止明文泄露 | `BCrypt.Net-Next` 库 |
+| BCrypt 密码哈希 | 防止明文泄露 | 通过 `IPasswordService` 抽象 |
 | TokenHash 存储 | AuthSession 不存明文 Token | SHA256 哈希 |
 | FamilyId 追踪 | 精确撤销整族 Token | GUID 族标识 |
 | IsUsed 标记 | 防止 Token 重复使用 | 布尔标志 |

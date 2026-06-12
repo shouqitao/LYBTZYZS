@@ -22,13 +22,13 @@
 
 ---
 
-## 双模式特性
+## 三模式架构
 
-系统支持两种运行模式，手动切换:
+系统支持远程和本地两种运行模式，通过 SwitchingApiClient 手动切换:
 
 | 维度 | 远程模式 | 本地模式 |
 |------|----------|----------|
-| **数据链路** | WPF → HTTP API → Controller → Service → SQL Server | WPF → DataSource → SQLite |
+| **数据链路** | WPF → SwitchingApiClient → Remote WebAPI → Controller → Service → SQL Server | WPF → SwitchingApiClient → LocalWebAPI (Kestrel) → Service → SQL Server LocalDB |
 | **认证方式** | JWT Token (服务端验证) | LocalAuthService (本地验证) |
 | **适用场景** | 诊所内网环境 | 外出诊疗、网络不可用 |
 | **数据同步** | 不需要 | 通过 Sync 模块双向同步 |
@@ -50,7 +50,7 @@
 | **运行时** | .NET 8 |
 | **桌面端** | WPF + Prism 9.0 (MVVM) + HandyControl |
 | **服务端** | ASP.NET Core 8.0 Web API + EF Core 8.0 |
-| **数据库** | SQL Server (远程) / SQLite (本地) |
+| **数据库** | SQL Server (远程) / SQL Server LocalDB (本地) |
 | **测试** | xUnit + NSubstitute + FluentAssertions |
 
 ---
@@ -62,6 +62,9 @@
 | [vision.md](vision.md) | 产品愿景与业务目标 |
 | [glossary.md](glossary.md) | 术语表 (中英文对照) |
 | [user-roles.md](user-roles.md) | 用户角色与权限定义 |
+| [personas.md](personas.md) | 用户画像 (Proto-Personas) |
+| [feature-list.md](feature-list.md) | 功能清单 (场景化) |
+| [jtbd.md](jtbd.md) | Jobs-to-Be-Done 分析 |
 | [clinical-workflow.md](clinical-workflow.md) | 端到端临床工作流 (患者到达->挂号->诊疗->打印->完成) |
 
 ---
@@ -72,6 +75,7 @@
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本 |
 | 2026-02-21 | v1.1 | 新增 clinical-workflow.md (端到端临床工作流) |
+| 2026-06-12 | v1.2 | 修正架构描述: SQLite → SQL Server LocalDB; 双模式 → 三模式架构 (SwitchingApiClient); 补充缺失文件索引 |
 
 ## 开发笔记
 

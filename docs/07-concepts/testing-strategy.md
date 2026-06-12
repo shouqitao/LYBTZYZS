@@ -11,6 +11,8 @@ source: docs/05-development/testing.md
 
 本项目采用 **Testing Trophy** 架构，以真实组件的端到端集成测试为主、纯逻辑单元测试为辅。Server 端实现零 Mock 测试（直接访问 SQL Server + Respawn 隔离），Desktop 端使用 SQLite InMemory + 真实 Repository，确保测试结果贴近生产行为。
 
+> **注意**: Desktop 测试使用 SQLite InMemory；生产本地模式使用 SQL Server LocalDB。两者数据库引擎不同，但共享同一套 Service/Repository 层。
+
 ---
 
 ## 核心内容

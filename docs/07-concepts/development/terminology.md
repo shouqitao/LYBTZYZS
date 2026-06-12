@@ -35,7 +35,7 @@ source: docs/01-product/glossary.md
 | BlacklistedToken | 黑名单令牌 | 被撤销的 JWT 令牌 |
 | Consultation | 诊断 | 中医诊断部分：现病史、舌诊、脉诊、辨证论治。MedicalCase 内部实体 (1:1) |
 | DataSource | 数据源 | Desktop 本地模式的数据访问层 |
-| DecocteMethod | 煎法 | 药材的煎煮方式：默认(Default)、先煎(PreDecoct)、后下(PostDecoct) |
+| DecocteMethod | 煎法 | 药材的煎煮方式：水煎、先煎、后下、包煎、另炖、烊化、冲服（共7种） |
 | Formula | 验方/经验方 | 可复用的处方模板，定义药材组成和剂量，不含价格计算 |
 | FormulaHerbItem | 验方药材项 | 验方中的单味药材及用量，支持延迟绑定（HerbId 可空） |
 | Herb | 药材 | 中药材，包含名称、分类、产地、价格等信息 |
@@ -85,8 +85,8 @@ source: docs/01-product/glossary.md
 
 | 值 | 英文 | 中文 | 说明 |
 |----|------|------|------|
+| 1 | Active | 进行中 | 正在诊疗 (初始状态) |
 | 0 | Suspended | 已挂起 | 医生暂时离开，稍后继续 |
-| 1 | Active | 进行中 | 正在诊疗 |
 | 2 | Completed | 已完成 | 诊疗流程全部完成，锁定编辑 |
 
 > `Cancelled`（原值=3）已移除。取消医案统一通过 `IsDeleted=true` 软删除实现。
@@ -102,9 +102,13 @@ source: docs/01-product/glossary.md
 
 | 值 | 英文 | 中文 |
 |----|------|------|
-| 0 | Default | 默认煎法 |
-| 1 | PreDecoct | 先煎 |
-| 2 | PostDecoct | 后下 |
+| 0 | Normal | 水煎 |
+| 1 | DecocteFirst | 先煎 |
+| 2 | DecocteLater | 后下 |
+| 3 | WrapDecoction | 包煎 |
+| 4 | SeparateDecoction | 另炖 |
+| 5 | MeltIn | 烊化 |
+| 6 | TakeWithDecoction | 冲服 |
 
 ---
 

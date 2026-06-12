@@ -12,7 +12,8 @@
 |--------|------|------|
 | `ConnectionStrings` | 数据库连接 | appsettings.json |
 | `Jwt` | Token 签名密钥、过期时间 | appsettings.json |
-| `PasswordPolicy` | 密码复杂度要求 | appsettings.json |
+| `DefaultPasswords` | 默认密码（生产环境 REDACTED） | appsettings.json |
+| `DesktopUpdate` | Desktop 客户端升级配置 | appsettings.Production.json |
 | `Session` | 会话超时、并发控制 | appsettings.json |
 | `Security.RateLimiting` | 限流策略 | appsettings.json |
 | `Database` | 连接池、重试策略 | appsettings.json |
@@ -31,28 +32,28 @@
     "SecretKey": "...",                      // 生产环境必须更换
     "Issuer": "LYBT.WebAPI",
     "Audience": "LYBT.Client",
-    "AccessTokenExpirationMinutes": 30,      // Access Token 有效期
+    "AccessTokenExpirationMinutes": 480,     // Access Token 有效期（默认 8 小时，Production 覆盖为 30 分钟）
     "RefreshTokenExpirationDays": 7,         // Refresh Token 有效期
-    "ClockSkewSeconds": 300                  // 时钟偏差容忍
+    "ClockSkewSeconds": 30                   // 时钟偏差容忍
   }
 }
 ```
 
 ---
 
-## 密码策略配置
+## 默认密码配置
 
 ```json
 {
-  "PasswordPolicy": {
-    "MinLength": 8,                          // 最小长度
-    "RequireDigit": true,                    // 要求包含数字
-    "RequireLowercase": true,                // 要求包含小写字母
-    "RequireUppercase": true,                // 要求包含大写字母
-    "RequireSpecialChar": true               // 要求包含特殊字符
+  "DefaultPasswords": {
+    "SysAdminPassword": "***",               // 生产环境已 REDACTED
+    "NewUserPassword": "***",                // 生产环境已 REDACTED
+    "ForceChangeOnFirstLogin": true          // 首次登录强制修改密码
   }
 }
 ```
+
+> ⚠️ 生产环境密码通过 `appsettings.Production.json` 或环境变量注入，禁止明文存储。
 
 ---
 
@@ -77,9 +78,24 @@
   "Security": {
     "RateLimiting": {
       "Enabled": true,
-      "GlobalLimit": { "PermitLimit": 200, "WindowSeconds": 60 },
-      "LoginLimit": { "PermitLimit": 5, "WindowSeconds": 60 },
-      "ApiLimit": { "PermitLimit": 100, "WindowSeconds": 60 },
+      "GlobalLimit": {
+        "PermitLimit": 200,
+        "WindowSeconds": 60,
+        "QueueLimit": 0
+      },
+      "LoginLimit": {
+        "PermitLimit": 5,
+        "InternalPermitLimit": 20,
+        "WindowSeconds": 60,
+        "QueueLimit": 0,
+        "InternalQueueLimit": 0
+      },
+      "ApiLimit": {
+        "PermitLimit": 100,
+        "AdminPermitLimit": 200,
+        "WindowSeconds": 60,
+        "QueueLimit": 0
+      },
       "WhitelistedIPs": ["127.0.0.1", "::1"]
     }
   }
@@ -95,8 +111,8 @@
   "Database": {
     "AutoMigrate": false,                    // 生产环境关闭自动迁移
     "ConnectionPool": {
-      "MaxConnections": 20,
-      "MinConnections": 2,
+      "MaxConnections": 100,
+      "MinConnections": 5,
       "ConnectionTimeoutSeconds": 30,
       "CommandTimeoutSeconds": 30
     },
@@ -182,7 +198,7 @@
 
 | 问题 | 原因 | 解决方案 |
 |------|------|---------|
-| JWT Token 立即过期 | `AccessTokenExpirationMinutes` 设置过小 | 生产环境建议 30 分钟，开发环境可设 120 分钟 |
+| JWT Token 立即过期 | `AccessTokenExpirationMinutes` 设置过小 | 默认 480 分钟（8小时），Production 覆盖为 30 分钟 |
 | 登录 5 次后被锁 | `LoginLimit.PermitLimit` 触发限流 | 调整限流配置或将测试 IP 加入 `WhitelistedIPs` |
 | 缓存不生效 | `MemoryCache.Enabled` 为 false | 确认生产配置已启用缓存 |
 | 数据库连接超时 | `ConnectionTimeoutSeconds` 过小或网络延迟 | 检查网络连通性，适当增大超时值 |

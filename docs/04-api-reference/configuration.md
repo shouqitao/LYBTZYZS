@@ -6,6 +6,8 @@
 
 提供系统配置读取与生产环境配置验证功能。仅 Admin 角色可访问。GetConfiguration 返回安全、非敏感的配置项；GetValue 按 key 查询单个配置值；ValidateProduction 验证生产环境配置是否完整合规。
 
+> **注意**: 本模块使用 `[Authorize(Roles = "Admin")]` 基于角色的授权，而非其他模块使用的 `[Authorize(Policy = "...")]` 策略授权。
+
 ---
 
 ## GET /configuration
@@ -14,19 +16,7 @@
 
 - **权限**: Admin
 
-**成功响应** (200):
-
-```json
-{
-  "success": true,
-  "message": "操作成功",
-  "data": {
-    "App:Name": "LYBTZYZS",
-    "App:Version": "1.0.0",
-    "App:Environment": "Production"
-  }
-}
-```
+**成功响应** (200): `ApiResponse<Dictionary<string, string?>>`
 
 **状态码**:
 
@@ -50,15 +40,7 @@
 |------|------|------|
 | key | string | 配置项名称 (如 `App:Name`) |
 
-**成功响应** (200):
-
-```json
-{
-  "success": true,
-  "message": "操作成功",
-  "data": "LYBTZYZS"
-}
-```
+**成功响应** (200): `ApiResponse<string?>`
 
 **参数错误响应** (422):
 
@@ -86,23 +68,9 @@
 
 - **权限**: Admin
 
-**成功响应** (200):
+**成功响应** (200): `ApiResponse<object>`
 
-```json
-{
-  "success": true,
-  "message": "操作成功"
-}
-```
-
-**验证失败响应** (422):
-
-```json
-{
-  "success": false,
-  "message": "缺少必要配置项: ConnectionStrings:DefaultConnection"
-}
-```
+**验证失败响应** (422): `ApiResponse` (message 含缺少的配置项)
 
 **状态码**:
 
@@ -120,3 +88,4 @@
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-06-12 | v1.0 | 初始版本 |
+| 2026-06-12 | v1.1 | 添加 DTO 类型名到响应; 标注使用基于角色授权 (非策略授权) |

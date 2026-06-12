@@ -94,4 +94,5 @@ Port = new Uri(addressFeature.Addresses.First()).Port;
 - [双模式架构](../dual-mode.md)
 - [LocalWebAPI API 端点](./api-endpoints.md)
 - [LocalWebAPI 认证](./authentication.md)
-- [ADR-0009: 嵌入式 LocalWebAPI](../decisions/0009-localwebapi-embedded.md)
+
+> 架构决策详见 [decisions/](../decisions/) 目录。

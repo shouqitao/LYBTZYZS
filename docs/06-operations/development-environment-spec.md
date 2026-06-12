@@ -65,12 +65,13 @@
 | 主机名 | `DESKTOP-JT5FULA` |
 | 系统 | Windows 10 IoT LTSC |
 | 角色 | WPF 桌面客户端开发测试 |
-| SSH | `player` / `123456` |
+| SSH | `<see credentials manager>` |
 | .NET SDK | 8.0.420 |
 | MSBuild | 17.11.48（SDK 内置，**不需 VS Build Tools**） |
 | 运行时 | AspNetCore 8.0.26 / NETCore 8.0.26 / WindowsDesktop 8.0.26 |
 | Git | 2.48.1.windows.1 |
-| 项目路径 | `C:\LYBTZYZS\` |
+| 源码路径 | `C:\LYBTZYZS\` |
+| 部署路径 | `C:\LYBTZYZS\publish\` |
 | 网络 | 可访问 `192.168.190.248:5000`，**无外网** |
 
 > ⚠️ 6 号机无外网，NuGet 包需从内网源获取或预先缓存。VS Build Tools 不需要，SDK 自带 MSBuild + WPF Targeting Pack。
@@ -117,9 +118,9 @@
 # 同步源码到目标机器
 cd ~/repos/LYBTZYZS
 git archive HEAD | gzip > /tmp/lybtzyzs.tar.gz
-sshpass -p '123456' ssh player@192.168.190.6 'mkdir C:\LYBTZYZS 2>nul'
-sshpass -p '123456' scp /tmp/lybtzyzs.tar.gz player@192.168.190.6:C:\Temp\
-sshpass -p '123456' ssh player@192.168.190.6 'tar -xzf C:\Temp\lybtzyzs.tar.gz -C C:\LYBTZYZS'
+sshpass -p '<see credentials manager>' ssh player@192.168.190.6 'mkdir C:\LYBTZYZS 2>nul'
+sshpass -p '<see credentials manager>' scp /tmp/lybtzyzs.tar.gz player@192.168.190.6:C:\Temp\
+sshpass -p '<see credentials manager>' ssh player@192.168.190.6 'tar -xzf C:\Temp\lybtzyzs.tar.gz -C C:\LYBTZYZS'
 ```
 
 ### 4.2 服务器（192.168.190.248）— WebAPI
@@ -128,8 +129,8 @@ sshpass -p '123456' ssh player@192.168.190.6 'tar -xzf C:\Temp\lybtzyzs.tar.gz -
 # 构建
 ssh player@192.168.190.248 'cd C:\LYBTZYZS && dotnet build LYBTZYZS.sln'
 
-# 部署 Server 项目
-ssh player@192.168.190.248 'cd C:\LYBTZYZS && dotnet publish src\Server\LYBT.Server\LYBT.Server.csproj -c Release -o C:\LYBTZYZS\publish'
+# 部署 Server 项目（源码路径）
+ssh player@192.168.190.248 'cd C:\LYBTZYZS && dotnet publish src\Server\Services\LYBT.WebAPI\LYBT.WebAPI.csproj -c Release -o C:\LYBTZYZS\publish'
 
 # 重启（通过 scheduled task）
 ssh player@192.168.190.248 'schtasks /end /tn LYBT-API && schtasks /run /tn LYBT-API'
@@ -142,10 +143,10 @@ curl http://192.168.190.248:5000/health
 
 ```bash
 # 构建 Shell 项目（主入口）
-sshpass -p '123456' ssh player@192.168.190.6 'cd C:\LYBTZYZS && dotnet build src\Client\Desktop\Shell\LYBT.Desktop.Shell.csproj'
+sshpass -p '<see credentials manager>' ssh player@192.168.190.6 'cd C:\LYBTZYZS && dotnet build src\Client\Desktop\Shell\LYBT.Desktop.Shell.csproj'
 
 # 验证输出
-sshpass -p '123456' ssh player@192.168.190.6 'dir C:\LYBTZYZS\src\Client\Desktop\Shell\bin\Debug\net8.0-windows\LYBT.Desktop.Shell.exe'
+sshpass -p '<see credentials manager>' ssh player@192.168.190.6 'dir C:\LYBTZYZS\src\Client\Desktop\Shell\bin\Debug\net8.0-windows\LYBT.Desktop.Shell.exe'
 ```
 
 ---
@@ -192,7 +193,7 @@ Windows 路径:             单引号包裹 + 反斜杠
 
 ```
 项目根:        C:\LYBTZYZS\ (两台 Windows)
-Server 入口:   src/Server/LYBT.Server/LYBT.Server.csproj
+Server 入口:   src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj
 Desktop 入口:  src/Client/Desktop/Shell/LYBT.Desktop.Shell.csproj
 启动脚本:      start-service.bat (Server)
 配置文件:      appsettings.Production.json (Server)

@@ -63,6 +63,8 @@ dotnet --version
 
 ## 方式一：Windows Service 部署（推荐）
 
+> **注意**: `sc.exe` 创建 Windows Service 需要 Windows Server 2016 及以上版本。Server 2012 R2 存在 SCM 30s 超时问题，应使用 `schtasks` 计划任务替代（参见 [webapi-deployment-summary.md](./webapi-deployment-summary.md)）。
+
 ### 1. 自动部署（推荐）
 
 ```powershell
@@ -222,7 +224,7 @@ ALTER ROLE db_owner ADD MEMBER lybt_user;
 GO
 ```
 
-### 4. 数据库迁移
+### 5. 数据库迁移
 
 ```powershell
 # 执行数据库迁移

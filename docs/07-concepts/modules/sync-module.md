@@ -73,8 +73,8 @@ Metadata → Compare → Upload → Download → Delete
 |------|---------|
 | Herb | Name, PinYinCode, Category, Unit, Price, Effect, ... |
 | Patient | Name, IdNumber, PhoneNumber, Address, AllergyHistory, ... |
-| Formula | 公式字段 + Herbs[] (按 HerbId 排序) |
-| MedicalCase | 案例字段 + Consultation + Prescription + Items[] |
+| Formula | 验方字段 + Herbs[] (按 HerbId 排序) |
+| MedicalCase | 医案字段 + Consultation + Prescription + Items[] |
 
 ## 冲突解决策略
 

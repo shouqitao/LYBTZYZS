@@ -94,6 +94,8 @@ EF Core 全局查询过滤器自动排除 `IsDeleted = true` 的记录。
 - Service 层抛出 `BusinessException` 表示业务规则违反
 - 使用 `Result<T>` 模式传递操作结果
 
+> **何时用 `Result<T>` vs `BusinessException`**: `Result<T>` 用于可预期的业务校验失败（如重名、状态不合法），调用方需根据结果分支处理。`BusinessException` 用于不可恢复的规则违反，直接抛出由全局异常处理器统一返回 HTTP 错误响应。优先使用 `Result<T>`；仅在调用方无需特殊处理时才用异常。
+
 ### API 响应
 
 统一使用 `ApiResponse<T>` 包装:
@@ -162,6 +164,8 @@ if (ownershipError != null) return ownershipError;
 ---
 
 ## 常见违规与陷阱
+
+> 完整的常见陷阱清单见 `AGENTS.md` 中的 "Common Pitfalls" 章节。以下列出最关键的几项。
 
 **1. `FindAsync` 与软删除过滤器冲突**
 `FindAsync` 在实体不在 ChangeTracker 中时会应用全局查询过滤器 (`IsDeleted`)，导致查不到已软删除的记录。恢复操作需使用 `IgnoreQueryFilters()`:

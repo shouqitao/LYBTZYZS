@@ -12,7 +12,7 @@
 |------|------|
 | Consultation = 诊断 | 仅指中医诊断部分 (望闻问切、辨证)，**不是**"问诊"或"就诊" |
 | MedicalCase = 医案 | 完整的诊疗记录，**不是**"病历" |
-| Formula = 验方/经验方 | 可复用的处方模板 |
+| Formula = 验方/经验方 | 可复用的处方模板，**不是"公式"** |
 | Prescription = 处方 | 具体的药材配伍和剂量，不等于 Formula |
 
 ---
@@ -27,7 +27,7 @@
 | Consultation | 诊断 | 中医诊断部分: 现病史、舌诊、脉诊、辨证论治。MedicalCase 的内部实体 (1:1) |
 | DataSource | 数据源 | Desktop 本地模式的数据访问层 |
 | DecocteMethod | 煎法 | 药材的煎煮方式: 默认 (Default)、先煎 (PreDecoct)、后下 (PostDecoct) |
-| Formula | 验方/经验方 | 可复用的处方模板，定义药材组成和剂量，不含价格计算 |
+| Formula | 验方/经验方 | 可复用的处方模板，定义药材组成和剂量，不含价格计算 (**不是"公式"**) |
 | FormulaHerbItem | 验方药材项 | 验方中的单味药材及用量，支持延迟绑定 (HerbId 可空) |
 | Herb | 药材 | 中药材，包含名称、分类、产地、价格等信息 |
 | MedicalCase | 医案 | 核心聚合根。一次完整的诊疗记录，包含诊断 (Consultation) 和处方 (Prescription) |
@@ -122,3 +122,4 @@
 | 2026-02-10 | v1.0 | 初始版本，从 openspec/project.md 和实体代码提取 |
 | 2026-02-21 | v1.1 | MedicalCaseStatus 移除 Cancelled=3 (取消统一为软删除); AuditOperationType 移除 Cancel=5 (合并到 SoftDelete) |
 | 2026-03-06 | v1.2 | MedicalCaseStatus Draft=0 更新为 Suspended=0，对齐代码枚举 (MC-D20) |
+| 2026-06-12 | v1.3 | Formula 条目增加"不是公式"显式注释，防止术语混淆 |

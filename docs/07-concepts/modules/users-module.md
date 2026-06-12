@@ -1,8 +1,15 @@
-# Users 模块概述
+---
+type: module
+title: 用户管理模块
+tags: [module, users, rbac, security]
+created: 2026-06-12
+updated: 2026-06-12
+source: docs/02-requirements/users.md
+---
+
+# 用户管理模块
 
 > 用户管理 — RBAC角色体系、密码策略、跨模块令牌撤销
-
----
 
 ## 定位
 
@@ -35,8 +42,6 @@
 - 仅可自助修改密码和个人资料
 - `/users/current` 对 SuperAdmin 返回合成 DTO（`Id=Guid.Empty`）
 
----
-
 ## 核心功能
 
 | 功能 | 服务端方法 | 权限 |
@@ -55,8 +60,6 @@
 | 批量删除 | `BatchDeleteAsync(ids, ...)` | AdminOnly |
 | 批量启禁用 | `BatchUpdateStatusAsync(ids, status, ...)` | AdminOnly |
 
----
-
 ## 实体字段
 
 | 字段 | 类型 | 说明 |
@@ -68,22 +71,18 @@
 | `Email` | string(100)? | `[SensitiveData]` 日志脱敏 |
 | `Role` | UserRole | 默认 Doctor |
 | `Status` | CommonStatus | Enabled/Disabled |
-| `PasswordHash` | string(256) | ASP.NET Identity PasswordHasher |
+| `PasswordHash` | string(256) | 密码哈希 (详见 [[password-management-strategy\|密码管理策略]]) |
 | `FailedLoginCount` | int | 登录失败计数 |
 | `LockoutEnd` | DateTime? | 锁定截止时间 |
 | `MustChangeOnNextLogin` | bool | 管理员重置密码后为 true |
 | `LastLoginTime` | DateTime? | 最后登录时间 |
 
----
-
 ## 密码策略
 
 - 最少8字符，需包含大小写字母、数字、特殊字符
-- 哈希算法: ASP.NET Core Identity `PasswordHasher<User>`
+- 哈希算法: 详见 [[password-management-strategy|密码管理策略]]
 - 管理员重置: 使用配置默认密码或自动生成临时密码
 - 重置后强制下次登录改密 (`MustChangeOnNextLogin = true`)
-
----
 
 ## 业务规则
 
@@ -96,8 +95,6 @@
 | 软删除 | `IsDeleted=true`，可通过 `RestoreAsync` 恢复 |
 | 医生删除 | MedicalCase数据保留（DoctorId不变），管理员手动处理 |
 | 批量操作 | 支持部分失败 (`BatchOperationResultDto`) |
-
----
 
 ## 服务端架构
 
@@ -116,8 +113,6 @@ UsersController (AdminOnly / SuperAdminOnly)
 
 Mapper: `UserMapper` (Mapperly 编译时源生成)
 
----
-
 ## 桌面架构
 
 ```
@@ -130,8 +125,6 @@ AdminWorkspace
           ├── IUserStatusHandler → 启禁用/恢复
           └── IUserImportExportHandler → Excel导入导出
 ```
-
----
 
 ## API 端点
 
@@ -151,8 +144,6 @@ AdminWorkspace
 | POST | `/api/v1/users/batch-delete` | AdminOnly | 批量删除 |
 | POST | `/api/v1/users/batch-enable` | AdminOnly | 批量启用 |
 | POST | `/api/v1/users/batch-disable` | AdminOnly | 批量禁用 |
-
----
 
 ## 跨模块关系
 

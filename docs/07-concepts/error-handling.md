@@ -15,14 +15,7 @@ source: docs/03-architecture/error-handling-architecture.md
 
 ### 异常类型体系
 
-```
-Exception
- └── AppException                       # 应用基类 (默认 HTTP 500)
-      ├── BusinessException             # 业务规则违反 (HTTP 400)
-      ├── NotFoundException             # 资源不存在 (HTTP 404)
-      ├── ValidationException           # 验证失败 (HTTP 400)，含字段级错误
-      └── ConflictException             # 并发/唯一约束冲突 (HTTP 409)
-```
+详见 [[exception-hierarchy|异常类型体系]] 完整定义。
 
 ### NotFoundException 静态工厂
 

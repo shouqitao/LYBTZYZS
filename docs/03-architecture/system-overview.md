@@ -53,7 +53,7 @@ src/
       LYBT.Desktop.Models/           # 客户端模型
       LYBT.Desktop.Printing/         # 打印服务
       LYBT.Desktop.Utilities/        # 工具类库
-      LYBT.Desktop.LocalData/        # 本地数据访问 (SQL Server LocalDB)
+      LYBT.Desktop.LocalData/        # 本地数据访问 (LocalWebAPI HTTP Proxy Repository)
       LYBT.Desktop.CardReader/       # 身份证读卡器硬件集成
     Modules/                         # 业务模块 (8个)
       LYBT.Desktop.Auth/             # 认证

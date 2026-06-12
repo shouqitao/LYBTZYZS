@@ -7,7 +7,7 @@
 | 目录 | 内容 | 文件数 |
 |------|------|--------|
 | `/` | 核心技术概念 | 35 |
-| `modules/` | 业务模块概述 | 8 |
+| `modules/` | 业务模块概述 | 9 |
 | `development/` | 开发指南 | 3 |
 
 ## 核心概念
@@ -59,7 +59,7 @@
 
 ## 模块文档 (modules/)
 
-8 个业务模块概述：Auth、Patient、Herb、Formula、MedicalCase、Registration、Sync、Printing。
+9 个业务模块概述：Auth、Users、Patient、Herb、Formula、MedicalCase、Registration、Sync、Printing。
 
 ## 开发指南 (development/)
 

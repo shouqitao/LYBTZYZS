@@ -42,27 +42,32 @@ OpenSpec 标记用于标注代码中与特定提案/变更相关的临时代码�
 ## 查询方法
 
 ### 统计所有标记
-```bash
-grep -r "// OpenSpec:" src/ --include="*.cs" | wc -l
+```powershell
+(Get-ChildItem -Path src -Recurse -Filter *.cs | Select-String -Pattern "// OpenSpec:" | Measure-Object).Count
 ```
 
 ### 按提案分组统计
-```bash
-grep -r "// OpenSpec:" src/ --include="*.cs" | \
-  sed 's/.*OpenSpec: //' | sed 's/ .*//' | \
-  sort | uniq -c | sort -rn
+```powershell
+Get-ChildItem -Path src -Recurse -Filter *.cs |
+  Select-String -Pattern "// OpenSpec:" |
+  ForEach-Object { if ($_.Line -match 'OpenSpec: (\S+)') { $matches[1] } } |
+  Group-Object | Sort-Object Count -Descending | Format-Table Count, Name
 ```
 
 ### 查找特定提案的所有标记
-```bash
-grep -rn "// OpenSpec: {change-id}" src/ --include="*.cs"
+```powershell
+Get-ChildItem -Path src -Recurse -Filter *.cs |
+  Select-String -Pattern "// OpenSpec: {change-id}"
 ```
 
 ### 按文件统计密度
-```bash
-grep -rc "// OpenSpec:" src/ --include="*.cs" | \
-  grep -v ":0$" | sort -t: -k2 -rn | head -20
-```
+```powershell
+Get-ChildItem -Path src -Recurse -Filter *.cs |
+  Select-String -Pattern "// OpenSpec:" |
+  Group-Object Path |
+  Sort-Object Count -Descending |
+  Select-Object -First 20 |
+  Format-Table Count, Name
 
 ## 清理流程
 
@@ -76,13 +81,18 @@ grep -rc "// OpenSpec:" src/ --include="*.cs" | \
 - 临时方案确认已被正式实现替代
 
 ### 3. 批量清理
-```bash
+```powershell
 # 预览将移除的行
-grep -rn "// OpenSpec: {change-id}" src/ --include="*.cs"
+Get-ChildItem -Path src -Recurse -Filter *.cs |
+  Select-String -Pattern "// OpenSpec: {change-id}"
 
-# 使用 sed 移除整行注释
-grep -rl "// OpenSpec: {change-id}" src/ --include="*.cs" | \
-  xargs sed -i '/\/\/ OpenSpec: {change-id}/d'
+# 移除标记行
+Get-ChildItem -Path src -Recurse -Filter *.cs |
+  Select-String -Pattern "// OpenSpec: {change-id}" |
+  ForEach-Object {
+    $lines = (Get-Content $_.Path) | Where-Object { $_ -notmatch "// OpenSpec: {change-id}" }
+    Set-Content -Path $_.Path -Value $lines
+  }
 ```
 
 ### 4. 验证

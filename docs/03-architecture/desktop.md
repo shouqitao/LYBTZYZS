@@ -24,8 +24,8 @@ graph TB
         M_Herbs["Herbs"]
         M_Formula["Formula"]
         M_MC["MedicalCase"]
+        M_Reg["Registration"]
         M_Sync["Sync"]
-        M_Consultation["Consultation"]
     end
 
     subgraph Core["Core 层 (基础设施)"]
@@ -39,8 +39,8 @@ graph TB
 
     App --> Admin & Clinical
     Admin --> M_Auth & M_Users & M_Patients & M_Herbs & M_Formula
-    Clinical --> M_Auth & M_Patients & M_MC & M_Consultation & M_Herbs & M_Formula
-    M_Auth & M_Users & M_Patients & M_Herbs & M_Formula & M_MC & M_Sync & M_Consultation --> Infrastructure
+    Clinical --> M_Auth & M_Patients & M_MC & M_Reg & M_Herbs & M_Formula & M_Sync
+    M_Auth & M_Users & M_Patients & M_Herbs & M_Formula & M_MC & M_Reg & M_Sync --> Infrastructure
     Infrastructure --> Foundation --> Contracts
     Modules --> Models
 ```
@@ -104,6 +104,21 @@ LYBT.Desktop.{Domain}/
 | MedicalCase | Clinical | 医案核心 (含处方、EditModeStateMachine) |
 | Registration | Admin + Clinical | 挂号管理 |
 | Sync | Clinical | 数据同步 (SyncPhase FSM、本地模式) |
+| Registration | Admin + Clinical | 挂号管理 |
+
+### Registration 模块
+
+标准独立实体模块 (Repository 模式)，提供挂号队列管理功能:
+
+| 组件 | 说明 |
+|------|------|
+| RegistrationModule | Prism 模块注册，DI 注册 Repository + ViewModel + View |
+| IRegistrationRepository | 挂号数据访问接口 |
+| RegistrationRepository | HTTP Proxy 实现 |
+| RegistrationListViewModel | 挂号列表页，支持按状态筛选 |
+| RegistrationViewModel | 挂号详情/新建，集成患者选择和医生指派 |
+
+**交互流程**: 选择患者 → 选择医生 → 创建挂号 (Waiting) → 医生接诊 (InProgress，自动创建 MedicalCase) → 完成 (Completed)
 
 > 注: Desktop 端无独立 Consultation 模块，诊断编辑集成在 MedicalCase 模块内。
 
@@ -127,7 +142,7 @@ LYBT.Desktop.{Domain}/
 
 ### Clinical (临床工作台)
 
-- **包含模块**: Auth, Patients, MedicalCase, Consultation, Herbs, Formula, Sync
+- **包含模块**: Auth, Patients, MedicalCase, Registration, Herbs, Formula, Sync
 - **核心功能**: 诊疗流程、开方、处方打印
 
 ### 视图分离原则 (ARCH-010)
@@ -778,7 +793,7 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 | 2026-02-10 | v1.1 | 新增可复用业务控件、业务弹窗、CardReader 集成章节 |
 | 2026-02-10 | v1.0 | 初始版本，从 client-layer-architecture/desktop-architecture/viewmodel-conventions specs 整合 |
 | 2026-02-18 | v1.2 | 设计补全: UI 全局规范 (UI-D01~D06)、凭证存储 (FR-AUTH-009)、Token 刷新失败 (FR-AUTH-011)、客户端异常处理 (FR-ERR-003/005/008)、错误消息映射 (FR-ERR-006)、错误追踪码 (FR-ERR-007)、菜单结构 (FR-SHELL-005)、Desktop 启动诊断 (FR-SHELL-006)、账户设置 (FR-SHELL-007)、同步 UI (FR-SYNC-007)、模式切换 (FR-SYNC-008)、性能预算 (NFR-PERF-002/003)、UnsavedChangesDialog (BR-002) |
-| 2026-06-12 | v1.3 | 移除过时 SQLite 加密集成章节 (LocalWebAPI 使用 SQL Server，不再有客户端 SQLite) |
 | 2026-02-26 | v1.3 | Sprint3-Batch5a DOC3: Consultation 模块 Server-only 标注; Views/Controls 目录约定; CardReader Core 层定位说明; Core 层新增 LocalData/CardReader |
 | 2026-03-09 | v1.4 | Sprint 4: 新增 EditModeStateMachine 章节 (US-MC-011); 更新 CardReader 降级链 (MatchPatientAsync + PatientMatchType); 更新同步 UI (SyncPhase FSM + SyncResultSummary + 底栏增强); 模块清单补充 Registration; 修正 Consultation 说明 |
 | 2026-03-09 | v1.5 | Sprint 6 同步: Contracts 层 IDataSource→IRepository (6 个); LocalData 层补充 LocalXxxRepository; Printing 层补充 PDF 导出 (QuestPDF) |
+| 2026-06-12 | v1.6 | 架构图修正: 移除不存在的 Consultation 模块，补全 Registration 模块; 变更记录版本号修正 |

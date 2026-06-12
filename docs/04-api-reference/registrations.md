@@ -106,7 +106,7 @@ US-REG-001~006: 创建、查询、接诊、取消等操作。
 |------|------|------|
 | id | Guid | 挂号ID |
 
-**成功响应** (200): `RegistrationDetailDto`
+**成功响应** (200): `ApiResponse<RegistrationDetailDto>`
 
 ---
 
@@ -129,7 +129,7 @@ US-REG-001~006: 创建、查询、接诊、取消等操作。
 | patientId | Guid? | null | 患者ID |
 | doctorId | Guid? | null | 医生ID |
 
-**成功响应** (200): `PagedResult<RegistrationListDto>`
+**成功响应** (200): `ApiResponse<PagedResult<RegistrationListDto>>`
 
 ---
 
@@ -223,3 +223,4 @@ US-REG-001~006: 创建、查询、接诊、取消等操作。
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-05-04 | v1.0 | 初始版本，覆盖 RegistrationsController 全部 7 个端点 |
+| 2026-06-12 | v1.1 | 修正 GET /registrations 和 GET /registrations/{id} 响应类型为 ApiResponse<> |

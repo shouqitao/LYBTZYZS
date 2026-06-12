@@ -28,7 +28,7 @@ Postman Collection 使用以下环境变量：
 
 | 变量名 | 默认值 | 说明 |
 |--------|--------|------|
-| `baseUrl` | `https://localhost:7001` | API 基础地址 |
+| `baseUrl` | `https://localhost:5001` | API 基础地址 |
 | `authToken` | (自动填充) | JWT Bearer Token |
 | `refreshToken` | (自动填充) | 刷新令牌 |
 | `currentUserId` | (自动填充) | 当前登录用户 ID |
@@ -40,7 +40,7 @@ Postman Collection 使用以下环境变量：
 
 ### 前置条件
 
-1. 服务器已启动并运行在 `https://localhost:7001`
+1. 服务器已启动并运行在 `https://localhost:5001`
 2. 数据库已初始化，存在默认管理员账号 `sysadmin`
 3. SSL 证书已配置（开发环境可用自签名证书）
 

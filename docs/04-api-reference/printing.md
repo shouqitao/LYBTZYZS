@@ -18,15 +18,9 @@
 
 ---
 
-## 端点
-
-### 1. 记录打印完成
+## PUT /medicalcases/{id}/print-completed
 
 记录一次成功的打印，更新医案打印状态并创建打印日志。
-
-```
-PUT /api/v1/medicalcases/{id}/print-completed
-```
 
 **认证**: DoctorOrAdmin
 
@@ -66,13 +60,9 @@ PUT /api/v1/medicalcases/{id}/print-completed
 
 ---
 
-### 2. 添加打印日志
+## POST /medicalcases/{id}/print-logs
 
 记录打印成功或失败事件。
-
-```
-POST /api/v1/medicalcases/{id}/print-logs
-```
 
 **认证**: DoctorOrAdmin
 
@@ -182,4 +172,4 @@ POST /api/v1/medicalcases/{id}/print-logs
 
 | 日期 | 变更 |
 |------|------|
-| 2026-06-12 | 初始版本（从 medical-cases.md 独立出来） |
+| 2026-06-12 | 初始版本（从 medical-cases.md 独立出来）; 标题改为路由格式 |

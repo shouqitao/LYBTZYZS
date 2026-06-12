@@ -4,8 +4,10 @@
 
 ## 概述
 
-药材管理 CRUD、分类筛选、Excel/JSON 双模式导入导出、引用检查、状态切换、批量操作。启用 OutputCache (`HerbsCache`)。
+药材管理 CRUD、分类筛选、JSON 批量导入、Excel 导出、引用检查、状态切换、批量操作。启用 OutputCache (`HerbsCache`)。
 Doctor 只能编辑自己创建的药材，Admin 可操作全部。
+
+> **注意**: `POST /herbs/import` (Excel 导入) 为客户端功能，服务端无此端点。服务端提供 `POST /herbs/batch-import` (JSON 批量导入) 和 `GET /herbs/import-template` (下载模板)。
 
 ---
 
@@ -282,3 +284,4 @@ JSON 批量导入药材 (非 Excel，直接 DTO 数组)。
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，17 个端点 |
 | 2026-02-18 | v1.1 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-50101~50305)，含核心/批量/导入三类 |
+| 2026-06-12 | v1.2 | 标注 POST /herbs/import 为客户端功能; 服务端仅提供 batch-import (JSON) 和 import-template |

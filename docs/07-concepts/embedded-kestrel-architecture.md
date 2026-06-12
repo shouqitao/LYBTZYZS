@@ -17,7 +17,7 @@ sources: ["docs/03-architecture/dual-mode.md"]
 ## 核心设计目标
 
 1.  **统一数据访问**：远程和本地模式共用同一套 Repository 接口（通过 [[http-proxy-repository-pattern]] 实现）。
-2.  **简化部署与维护**：使用 SQL Server 保持与远程环境数据结构一致，避免 SQLite 带来的同步转换成本。
+2.  **简化部署与维护**：使用 SQL Server LocalDB 保持与远程环境数据结构和查询行为一致，避免异构数据库带来的兼容性和同步问题。
 3.  **进程内托管**：避免独立进程管理的复杂性，通过 `LocalWebApiHost` 统一管理生命周期。
 
 ## 关键机制
