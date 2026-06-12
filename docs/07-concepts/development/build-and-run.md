@@ -9,7 +9,7 @@ source: docs/05-development/setup.md
 
 ## 概述
 
-本文档说明 LYBTZYZS 项目的开发环境搭建步骤，包括必要工具安装、依赖管理、构建命令和常见问题排查。项目使用 .NET 8 SDK + Central Package Management，支持远程模式 (SQL Server) 和本地模式 (SQLite) 两种运行方式。
+本文档说明 LYBTZYZS 项目的开发环境搭建步骤，包括必要工具安装、依赖管理、构建命令和常见问题排查。项目使用 .NET 8 SDK + Central Package Management，支持远程模式 (SQL Server) 和本地模式 (SQL Server LocalDB) 两种运行方式。
 
 ## 核心内容
 
@@ -41,7 +41,7 @@ CREATE DATABASE LYBTDB;
 }
 ```
 
-**本地模式 (SQLite)** — 无需配置，Desktop 客户端自动创建 `%APPDATA%\LYBT\data\lybt-local.db`。
+**本地模式 (SQL Server LocalDB)** — 无需配置，Desktop 客户端通过 LocalWebAPI 自动初始化 LocalDB 数据库。
 
 ### 依赖管理
 

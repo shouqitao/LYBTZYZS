@@ -9,7 +9,7 @@ sources: ["docs/04-api-reference/sync.md"]
 ---
 # 同步冲突处理
 
-**同步冲突处理 (Sync Conflict Resolution)** 是指在凌隐宝堂系统的双向同步过程中，当同一实体在本地（SQLite）和服务端（SQL Server）同时发生变更且内容不一致时，系统识别、报告并解决这些冲突的机制。
+**同步冲突处理 (Sync Conflict Resolution)** 是指在凌隐宝堂系统的双向同步过程中，当同一实体在本地（SQL Server LocalDB）和服务端（SQL Server）同时发生变更且内容不一致时，系统识别、报告并解决这些冲突的机制。
 
 ## 冲突检测
 

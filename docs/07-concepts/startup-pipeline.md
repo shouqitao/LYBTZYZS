@@ -1,4 +1,4 @@
----
+﻿---
 type: concept
 title: 启动流水线机制
 tags: [startup, reliability, diagnostics]
@@ -31,7 +31,7 @@ sources: ["docs/02-requirements/desktop-shell.md"]
 | 失败场景 | 处理策略 |
 | :--- | :--- |
 | **API 不可达** | 提示“服务器连接失败”，提供“切换到本地模式”按钮，跳过远程初始化步骤。 |
-| **SQLite 初始化失败** | 提示错误详情，提供“重试”或“退出”按钮。 |
+| **LocalDB 初始化失败** | 提示错误详情，提供“重试”或“退出”按钮。 |
 | **配置文件缺失** | 提示“配置文件错误”，显示详细错误信息。 |
 
 ## 状态机

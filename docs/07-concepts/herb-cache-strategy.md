@@ -48,7 +48,7 @@ sources: ["docs/02-requirements/herbs.md"]
 ## 相关决策
 
 *   [[HERB-D01]]：确定采用 Desktop 全量预加载策略，替代服务端的 OutputCache，以适配离线场景。
-*   [[dual-mode-architecture]]：缓存策略在远程和本地模式下均有效，本地模式下直接读取 SQLite 构建缓存。
+*   [[dual-mode-architecture]]：缓存策略在远程和本地模式下均有效，本地模式下通过 LocalWebAPI 读取 SQL Server LocalDB 构建缓存。
 
 ## 参见
 
