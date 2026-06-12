@@ -4,7 +4,7 @@
 # Desktop
 
 ## Purpose
-WPF/Prism.DryIoc desktop application for the LYBTZYZS TCM clinic management system. Implements a modular MVVM architecture with Prism regions for navigation, supporting dual-mode operation (remote SQL Server via HTTP API or local embedded SQLite). Contains core infrastructure libraries, business modules (Auth, Patients, Herbs, Formula, MedicalCase, etc.), role-based workspaces (Admin, Clinical, Receptionist), and the shell entry point.
+WPF/Prism.DryIoc desktop application for the LYBTZYZS TCM clinic management system. Implements a modular MVVM architecture with Prism regions for navigation, supporting dual-mode operation (remote SQL Server via HTTP API or local embedded SQL Server LocalDB). Contains core infrastructure libraries, business modules (Auth, Patients, Herbs, Formula, MedicalCase, etc.), role-based workspaces (Admin, Clinical, Receptionist), and the shell entry point.
 
 ## Key Files
 | File | Description |
@@ -41,7 +41,7 @@ WPF/Prism.DryIoc desktop application for the LYBTZYZS TCM clinic management syst
 - **ViewModel base classes**: `UnifiedViewModelBase`, `UnifiedListViewModelBase<T>`
 - **Repository pattern**: `I{Entity}Repository` for CRUD, `I{Entity}DataManager` for aggregate roots
 - **Navigation**: Prism Region-based navigation between modules
-- **Dual-mode**: Remote (HTTP API) vs Local (SQLite), sharing Service/Repository layer
+- **Dual-mode**: Remote (HTTP API) vs Local (SQL Server LocalDB), sharing Service/Repository layer
 
 ## Dependencies
 

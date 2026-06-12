@@ -7,7 +7,7 @@
 ```
 LYBT.Infrastructure/
 ├── Data/
-│   ├── AppDbContext.cs          # EF Core DbContext (SQL Server + SQLite dual-mode)
+│   ├── AppDbContext.cs          # EF Core DbContext (SQL Server dual-mode: Remote + LocalDB)
 │   └── Configurations/          # 17 IEntityTypeConfiguration implementations
 └── DependencyInjection/
     └── RepositoryServiceCollectionExtensions.cs  # DI wiring
@@ -17,14 +17,14 @@ LYBT.Infrastructure/
 
 | Task | Location | Notes |
 |------|----------|-------|
-| DbContext | `Data/AppDbContext.cs` | Provider-agnostic: SQL Server or SQLite |
+| DbContext | `Data/AppDbContext.cs` | SQL Server (Remote + LocalDB) |
 | Entity configs | `Data/Configurations/` | Fluent API configurations per entity |
 | Repository DI | `DependencyInjection/RepositoryServiceCollectionExtensions.cs` | Register all repositories |
 | BaseRepository | `Data/BaseRepository.cs` | 21 public methods, generic CRUD |
 
 ## CONVENTIONS
 
-- **Provider-agnostic** — DbContext works with SQL Server (remote) or SQLite (local)
+- **Provider-agnostic** — DbContext works with SQL Server (remote) or SQL Server LocalDB (local)
 - **Soft delete** — Global query filter `IsDeleted` on entities; use `IgnoreQueryFilters()` for soft-deleted records
 - **Repository pattern** — `BaseRepository<T>` implements `IRepository<T>`; service layer injects repository interfaces
 - **EntityTypeConfiguration** — Separate config classes per entity in `Data/Configurations/`

@@ -4,7 +4,7 @@
 # Core (Desktop)
 
 ## Purpose
-Core infrastructure libraries for the WPF desktop client. Provides interface contracts, HTTP/security infrastructure, WPF services, client-side UI models, SQLite local-mode data access, printing support, hardware integration, and utility classes. These libraries form the foundation layer that all business modules depend on.
+Core infrastructure libraries for the WPF desktop client. Provides interface contracts, HTTP/security infrastructure, WPF services, client-side UI models, SQL Server LocalDB local-mode data access, printing support, hardware integration, and utility classes. These libraries form the foundation layer that all business modules depend on.
 
 ## Subdirectories
 | Directory | Purpose |
@@ -13,7 +13,7 @@ Core infrastructure libraries for the WPF desktop client. Provides interface con
 | LYBT.Desktop.Foundation/ | Infrastructure layer — HTTP clients, security/auth, configuration, `ConnectionMode` management |
 | LYBT.Desktop.Infrastructure/ | WPF services — Dialog service, Navigation, custom controls, value converters, region behaviors |
 | LYBT.Desktop.Models/ | Client-side UI models — view models helpers, display models, state containers |
-| LYBT.Desktop.LocalData/ | SQLite local-mode — `LocalDbContext`, local repositories for offline/embedded operation |
+| LYBT.Desktop.LocalData/ | SQL Server LocalDB local-mode — `LocalDbContext`, local repositories for offline/embedded operation |
 | LYBT.Desktop.Printing/ | Print service — QuestPDF-based document generation (prescriptions, reports) |
 | LYBT.Desktop.CardReader/ | Hardware integration — ID card reader device support |
 | LYBT.Desktop.Utilities/ | Utility classes — shared helpers and extensions |
@@ -25,11 +25,11 @@ Core infrastructure libraries for the WPF desktop client. Provides interface con
 - `Contracts` defines interfaces only; no implementations.
 - `Foundation` implements HTTP, auth, and config; depends on `Contracts`.
 - `Infrastructure` provides WPF-specific services (dialogs, navigation, converters); depends on `Foundation`.
-- `LocalData` provides the SQLite alternative to the remote HTTP API path.
+- `LocalData` provides the SQL Server LocalDB alternative to the remote HTTP API path.
 - When adding a new interface, place it in `Contracts`; implement it in `Foundation` or `Infrastructure`.
 
 ### Common Patterns
-- **Repository interfaces**: `I{Entity}Repository<T>` in Contracts, implemented in Foundation (HTTP) and LocalData (SQLite)
+- **Repository interfaces**: `I{Entity}Repository<T>` in Contracts, implemented in Foundation (HTTP) and LocalData (SQL Server LocalDB)
 - **Connection mode**: `IConnectionModeService` determines remote vs local at runtime
 - **Refit interfaces**: `IApi` in Contracts defines all HTTP endpoints
 

@@ -5,7 +5,7 @@
 
 ## Purpose
 
-Server-side data synchronization module enabling bidirectional sync between local (Desktop/SQLite) and remote (Server/SQL Server) modes. Supports sync for Herb, Patient, Formula, and MedicalCase entities using checksum-based conflict detection and cross-module service interfaces for data access.
+Server-side data synchronization module enabling bidirectional sync between local (Desktop/SQL Server LocalDB) and remote (Server/SQL Server) modes. Supports sync for Herb, Patient, Formula, and MedicalCase entities using checksum-based conflict detection and cross-module service interfaces for data access.
 
 ## Key Files
 

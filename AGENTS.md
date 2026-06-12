@@ -23,7 +23,7 @@ dotnet test tests/LYBT.Tests.Architecture/  # 76 tests (architecture guards)
 - **3-Layer**: Controller → Service → Repository → DbContext
 - **MVVM**: View (XAML) ← binding → ViewModel → Repository → API
 - **DDD**: MedicalCase is the sole aggregate root (Consultation + Prescription are internal entities)
-- **Dual-Mode**: Remote (SQL Server) + Local (SQLite), shared Service/Repository layer
+- **Dual-Mode**: Remote (SQL Server) + Local (SQL Server LocalDB), shared Service/Repository layer
 
 ## Terminology
 
@@ -52,9 +52,9 @@ dotnet test tests/LYBT.Tests.Architecture/  # 76 tests (architecture guards)
 ```
 docs/
 ├── 01-product/          # Product docs
-├── 02-requirements/     # PRD (9 modules, 92 requirements)
+├── 02-requirements/     # PRD (15 modules, 138 FR)
 ├── 03-architecture/     # Architecture, data model, security, ADR
-├── 04-api-reference/    # 99 API endpoints
+├── 04-api-reference/    # 106 API endpoints
 ├── 05-development/      # Dev guide, coding standards, testing
 └── 06-operations/       # Deployment, config, monitoring
 ```

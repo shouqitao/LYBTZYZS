@@ -4,7 +4,7 @@
 # Client
 
 ## Purpose
-Container for the WPF desktop client application. Currently contains only the Desktop project tree, which implements the full Prism.DryIoc MVVM architecture for the TCM clinic management system. The client supports dual-mode operation (remote HTTP API or local embedded SQLite) and references `Shared.Models` for DTOs.
+Container for the WPF desktop client application. Currently contains only the Desktop project tree, which implements the full Prism.DryIoc MVVM architecture for the TCM clinic management system. The client supports dual-mode operation (remote HTTP API or local embedded SQL Server LocalDB) and references `Shared.Models` for DTOs.
 
 ## Subdirectories
 | Directory | Purpose |
