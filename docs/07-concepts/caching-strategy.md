@@ -72,5 +72,5 @@ sources: ["docs/02-requirements/nfr.md"]
 
 ## 相关链接
 
-- [[herb-cache-strategy]]
-- [[dual-mode-architecture]]
+- [药材缓存策略](herb-cache-strategy.md)
+- [双模式架构](dual-mode-architecture.md)

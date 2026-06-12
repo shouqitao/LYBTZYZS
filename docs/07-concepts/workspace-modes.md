@@ -34,11 +34,11 @@ sources: ["docs/01-product/user-roles.md"]
 
 工作区模式通过角色定制化界面，减少了无关信息的干扰，引导用户专注于其核心任务。临床工作区强调诊疗流程的连贯性，管理工作区则侧重于数据的审查和管理。
 
-> **注意**: 工作区模式定义角色级别的 UI 入口，而 [[clinical-vs-management-mode|临床与管理模式对比]] 定义同一视图内的交互行为差异（编辑/只读、按钮布局等），两者互补。
+> **注意**: 工作区模式定义角色级别的 UI 入口，而[临床与管理模式对比](clinical-vs-management-mode.md)定义同一视图内的交互行为差异（编辑/只读、按钮布局等），两者互补。
 
 ## 相关概念
 
-- [[clinical-workflow]]：工作区模式是临床工作流在前端的具体实现。
-- [[clinical-vs-management-mode]]：同一视图内的交互行为差异。
-- [[user]]：工作区根据用户角色进行分配。
-- [[mvvm-prism]]：工作区的实现依赖于WPF MVVM和Prism的区域导航机制。
+- [clinical-workflow](clinical-workflow.md)：工作区模式是临床工作流在前端的具体实现。
+- [clinical-vs-management-mode](clinical-vs-management-mode.md)：同一视图内的交互行为差异。
+- user：工作区根据用户角色进行分配。
+- [mvvm-prism](mvvm-prism.md)：工作区的实现依赖于WPF MVVM和Prism的区域导航机制。

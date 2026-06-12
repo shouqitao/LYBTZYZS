@@ -520,8 +520,7 @@ We believe that 实现验方模板的数字化管理 (CRUD + 共享 + 延迟绑�
 
 ---
 
-## Change Log
-
+## 变更记录
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 FormulasController + Formula 实体 + formula-copy-flow spec 提取 |

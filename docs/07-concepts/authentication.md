@@ -11,7 +11,7 @@ source: docs/03-architecture/decisions/0005-superadmin-auth-module.md
 
 系统采用 **JWT Bearer Token** 作为认证机制，SuperAdmin（超级管理员）与普通用户分离存储和路由。Token 安全机制包含 **Token Family**、重放攻击检测、**DPAPI 加密**（Desktop 端凭据）和滑动过期策略。尽管当前部署规模仅 3-5 人，这些"防御性设计"为未来扩展和多诊所云部署预留能力。
 
-> **范围说明**: 本文档聚焦 JWT 认证架构与 Token 安全机制。密码哈希策略详见 [[password-management-strategy|密码管理策略]]；认证模块整体设计详见 [[modules/auth-module|认证模块]]。
+> **范围说明**: 本文档聚焦 JWT 认证架构与 Token 安全机制。密码哈希策略详见[密码管理策略](password-management-strategy.md)；认证模块整体设计详见[认证模块](modules/auth-module.md)。
 
 ## 核心内容
 
@@ -99,8 +99,8 @@ var decrypted = ProtectedData.Unprotect(encryptedBytes, null, DataProtectionScop
 
 ## 相关链接
 
-- [[auth-module]] — Auth 模块整体设计
-- [[user]] — 用户实体与角色体系
-- [[ADR-005-superadmin-auth]] — SuperAdmin 归属 Auth 模块的决策
-- [[ADR-008-token-security]] — Token 安全防御性设计的详细论证
-- [[ADR-004-user-context-propagation]] — 用户上下文在调用链中的传递
+- [auth-module](modules/auth-module.md) — Auth 模块整体设计
+- user — 用户实体与角色体系
+- ADR-005-superadmin-auth — SuperAdmin 归属 Auth 模块的决策
+- ADR-008-token-security — Token 安全防御性设计的详细论证
+- ADR-004-user-context-propagation — 用户上下文在调用链中的传递

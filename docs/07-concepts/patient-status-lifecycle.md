@@ -53,7 +53,7 @@ graph TD
 
 ## 相关链接
 
-- [[patient-module]]
-- [[medical-case-module]]
-- [[user-personas]]
-- [[resource-level-permissions]]
+- [患者模块](modules/patient-module.md)
+- [医案模块](modules/medical-case-module.md)
+- user-personas
+- resource-level-permissions

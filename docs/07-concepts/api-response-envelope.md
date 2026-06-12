@@ -64,11 +64,11 @@ sources: ["docs/04-api-reference/README.md", "docs/06-operations/newman-report.h
 * **data**: 业务数据载体，失败时通常为 `null`。
 * **errors**: 错误详情数组或对象，成功时通常为 `null`。
 * **timestamp**: 响应生成的时间戳（ISO 8601 格式）。
-* **requestId**: 唯一请求标识符，用于链路追踪和日志排查，对应 [[correlation-id-tracking]]。
+* **requestId**: 唯一请求标识符，用于链路追踪和日志排查，对应 correlation-id-tracking。
 
 ## 现状与规范差异
 
-系统早期架构文档中曾提及 [[problem-details-rfc7807]] (RFC 7807 Problem Details)。根据 [Newman 测试报告](../../06-operations/newman-report.html) 的分析，当前系统在实际运行中存在**响应格式双轨制**的问题：
+系统早期架构文档中曾提及 problem-details-rfc7807 (RFC 7807 Problem Details)。根据 [Newman 测试报告](../../06-operations/newman-report.html) 的分析，当前系统在实际运行中存在**响应格式双轨制**的问题：
 
 ### 合规路径（自定义信封）
 * **业务响应**：统一使用自定义信封 (`success`/`data`)。例如 Auth 模块（登录、登出、刷新令牌）严格遵循此结构，即使在 401 错误时也返回 `{"success": false, "errors": {...}}`。大多数业务模块（如 Herbs, Formulas）的 200 OK 响应均包含完整信封。

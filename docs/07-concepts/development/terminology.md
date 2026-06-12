@@ -30,7 +30,7 @@ source: docs/01-product/glossary.md
 
 | 英文 | 中文 | 说明 |
 |------|------|------|
-| Aggregate Root | 聚合根 | DDD 概念。本系统中 [[medical-case\|MedicalCase]] 是唯一聚合根 |
+| Aggregate Root | 聚合根 | DDD 概念。本系统中 MedicalCase 是唯一聚合根 |
 | AuthSession | 认证会话 | JWT 登录会话记录 |
 | BlacklistedToken | 黑名单令牌 | 被撤销的 JWT 令牌 |
 | Consultation | 诊断 | 中医诊断部分：现病史、舌诊、脉诊、辨证论治。MedicalCase 内部实体 (1:1) |
@@ -114,8 +114,8 @@ source: docs/01-product/glossary.md
 
 ## 相关链接
 
-- [[overview]]
-- [[medical-case]]
-- [[formula]]
-- [[herb]]
-- [[patient]]
+- overview
+- medical-case
+- formula
+- herb
+- patient

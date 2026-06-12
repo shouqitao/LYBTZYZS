@@ -40,10 +40,10 @@ sources: ["docs/01-product/user-roles.md"]
 
 ## 设计目的
 
-此规则平衡了医生的日常工作灵活性（当天可自由修改）与数据的长期完整性和可追溯性（隔天修改需审计），是[[business-rules]]的核心组成部分。
+此规则平衡了医生的日常工作灵活性（当天可自由修改）与数据的长期完整性和可追溯性（隔天修改需审计），是 business-rules 的核心组成部分。
 
 ## 相关概念
 
-- [[medical-case]]：锁定规则直接作用于医案实体。
-- [[resource-level-permissions]]：锁定规则是资源级权限的关键实现。
-- [[business-rules]]：锁定规则是系统关键业务规则之一。
+- medical-case：锁定规则直接作用于医案实体。
+- resource-level-permissions：锁定规则是资源级权限的关键实现。
+- business-rules：锁定规则是系统关键业务规则之一。

@@ -759,8 +759,7 @@ git commit -m "refactor: Phase 4 - ArchTests merged, empty shell directories cle
 - [ ] Architecture test count unchanged after merge
 - [ ] Empty directories removed
 
-## Change Log
-
+## 变更记录
 | Date | Version | Change |
 |------|---------|--------|
 | 2026-02-23 | v1.0 | Initial plan |

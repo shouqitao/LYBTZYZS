@@ -60,6 +60,6 @@ sources: ["docs/04-api-reference/sync.md"]
 
 ## 相关概念
 
-*   [[sync-module]]: 同步模块概览。
-*   [[medical-case-sync-strategy]]: 医案特有的状态冲突规则。
-*   [[checksum-comparison-strategy]]: 基于校验和的差异检测机制。
+*   [同步模块概览](modules/sync-module.md)：同步模块概览。
+*   医案特有的状态冲突规则（medical-case-sync-strategy，待补充）。
+*   基于校验和的差异检测机制（checksum-comparison-strategy，待补充）。

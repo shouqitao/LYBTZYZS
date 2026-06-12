@@ -521,8 +521,7 @@ We believe that 实现拼音码快速检索 + Excel/JSON 批量导入导出 + �
 
 ---
 
-## Change Log
-
+## 变更记录
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 HerbsController + HerbModel + herb-card-control spec 提取 |

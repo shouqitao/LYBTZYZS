@@ -81,7 +81,7 @@ source: docs/02-requirements/registration.md
 
 ## 相关链接
 
-- [[registration]] - 挂号实体定义和状态枚举
-- [[patient]] - 患者模块，挂号记录的关联主体
-- [[medical-case]] - 医案模块，与挂号记录自动联动创建
-- [[user]] - 用户模块，医生和前台角色的权限来源
+- registration - 挂号实体定义和状态枚举
+- patient - 患者模块，挂号记录的关联主体
+- medical-case - 医案模块，与挂号记录自动联动创建
+- user - 用户模块，医生和前台角色的权限来源

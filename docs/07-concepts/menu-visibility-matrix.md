@@ -10,7 +10,7 @@ sources: ["docs/02-requirements/desktop-shell.md"]
 
 # 菜单可见性矩阵
 
-**菜单可见性矩阵** 是一套根据用户角色（SuperAdmin, Admin, Doctor, Receptionist）动态显示或隐藏菜单项的规则集。它是 Desktop Shell 中 [[menu-manager|MenuManager]] 的核心配置依据，旨在防止越权操作并简化不同角色的工作界面。
+**菜单可见性矩阵** 是一套根据用户角色（SuperAdmin, Admin, Doctor, Receptionist）动态显示或隐藏菜单项的规则集。它是 Desktop Shell 中 MenuManager 的核心配置依据，旨在防止越权操作并简化不同角色的工作界面。
 
 ## 矩阵定义
 
@@ -39,7 +39,7 @@ sources: ["docs/02-requirements/desktop-shell.md"]
 
 ## 本地模式差异
 
-在 [[dual-mode-architecture|本地模式]] 下，部分依赖服务端功能的菜单项（如某些高级同步选项或云端备份）可能会被额外禁用。具体的本地模式禁用列表仍在定义中（见 Open Question OQ-SHELL-03）。
+在 [本地模式](dual-mode-architecture.md) 下，部分依赖服务端功能的菜单项（如某些高级同步选项或云端备份）可能会被额外禁用。具体的本地模式禁用列表仍在定义中（见 Open Question OQ-SHELL-03）。
 
 ## 价值
 
@@ -49,6 +49,6 @@ sources: ["docs/02-requirements/desktop-shell.md"]
 
 ## 相关链接
 
-*   [[desktop-shell]]
-*   [[menu-manager]]
-*   [[workspace-modes]]
+*   desktop-shell（规划中）
+*   menu-manager（规划中）
+*   [工作区模式](workspace-modes.md)

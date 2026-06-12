@@ -217,8 +217,7 @@
 
 ---
 
-**变更记录**
-
+## 变更记录
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 从 README.md 拆分，补充 PasswordPolicy/Session/MemoryCache/Kestrel/SystemAdmin 配置节 |

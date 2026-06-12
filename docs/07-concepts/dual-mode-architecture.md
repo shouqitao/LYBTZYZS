@@ -74,7 +74,7 @@ graph TB
 ```
 
 ### 关键组件说明
-- **LocalWebAPI**: 轻量级 ASP.NET Core 应用，嵌入在 Desktop 客户端进程中或作为子进程运行（由 `[[desktop-shell|Desktop Shell]]` 负责生命周期管理）。提供与远程服务端完全一致的 API 契约，数据持久化至本地 SQL Server LocalDB。
+- **LocalWebAPI**: 轻量级 ASP.NET Core 应用，嵌入在 Desktop 客户端进程中或作为子进程运行（由 Desktop Shell 负责生命周期管理）。提供与远程服务端完全一致的 API 契约，数据持久化至本地 SQL Server LocalDB。
 - **Sync Module**: 负责本地与远程数据同步。网络恢复时触发，上传本地新增/修改数据并拉取服务端更新。
 - **Auth Module**: 本地模式下，`LocalWebAPI` 负责验证用户凭据并颁发本地有效的长效 JWT Token（1年有效期），确保认证流程与远程模式保持一致。
 
@@ -105,13 +105,13 @@ graph TB
 
 ### 安全与数据保护
 - **本地数据存储安全**: 本地模式使用 SQL Server LocalDB。需注意本地数据库文件的物理安全，建议结合操作系统的用户权限控制访问。
-- **敏感数据处理**: 尽管本地模式在局域网或单机运行，仍需遵循 `[[sensitive-data-classification|敏感数据分级与保护]]` 原则。对身份证号、手机号等字段需进行脱敏或加密存储（v1.0 初期主要依赖 OS 权限控制，后续版本将逐步强化应用层加密）。
+- **敏感数据处理**: 尽管本地模式在局域网或单机运行，仍需遵循[敏感数据分级与保护](sensitive-data-classification.md)原则。对身份证号、手机号等字段需进行脱敏或加密存储（v1.0 初期主要依赖 OS 权限控制，后续版本将逐步强化应用层加密）。
 
 ## 相关链接
 
-- [[overview]] - 项目整体概览
-- [[ADR-002-dual-mode-architecture]] - 架构决策记录
-- [[sync-module|数据同步模块]] - 同步模块详细设计
-- [[auth-module|认证模块]] - 认证模块详细设计
-- [[desktop-shell|Desktop Shell]] - 负责 LocalWebAPI 生命周期管理
-- [[sensitive-data-classification|敏感数据分级与保护]] - 数据安全规范
+- 项目整体概览
+- ADR-002-dual-mode-architecture - 架构决策记录
+- [数据同步模块](modules/sync-module.md) - 同步模块详细设计
+- [认证模块](modules/auth-module.md) - 认证模块详细设计
+- Desktop Shell - 负责 LocalWebAPI 生命周期管理
+- [敏感数据分级与保护](sensitive-data-classification.md) - 数据安全规范

@@ -15,19 +15,19 @@ sources: ["docs/01-product/clinical-workflow.md"]
 ## 流程全景
 
 系统支持两种启动诊疗的入口模式：
-1.  **前台挂号模式**：由前台（Receptionist）通过读卡器或手动查询创建患者，并指派医生进行挂号，生成状态为`Waiting`的[[registration|Registration]]记录。
+1.  **前台挂号模式**：由前台（Receptionist）通过读卡器或手动查询创建患者，并指派医生进行挂号，生成状态为`Waiting`的Registration记录。
 2.  **医生直接创建模式**：当没有前台时，医生（Doctor）可直接查询或创建患者，并发起诊疗。
 
-两种模式最终都收敛于医生创建[[medical-case|MedicalCase]]，进入核心诊疗阶段。
+两种模式最终都收敛于医生创建MedicalCase，进入核心诊疗阶段。
 
 ## 核心阶段
 
-1.  **创建医案**：医生选择患者后，系统执行**REG-BR-001碰撞检查**，确保患者没有未完成的医案（Active或Suspended状态）。创建成功后，生成[[medical-case|MedicalCase]]（Active状态）和[[consultation|Consultation]]（1:1共享主键）。
+1.  **创建医案**：医生选择患者后，系统执行**REG-BR-001碰撞检查**，确保患者没有未完成的医案（Active或Suspended状态）。创建成功后，生成MedicalCase（Active状态）和Consultation（1:1共享主键）。
 2.  **填写诊断**：医生填写中医辨证（TcmDiagnosis）等诊断信息。中医辨证在医案完成时为必填项。
-3.  **处方决策与开具**：根据`NeedsPrescription`标记决定是否需要处方。处方可通过三种方式获取：验方导入、历史处方复制或手工输入。处方数据存储在[[prescription|Prescription]]和[[prescription-item|PrescriptionItem]]中。
-4.  **聚合保存**：采用[[medical-case|MedicalCase]]作为聚合根，将医案、诊断、处方及其明细进行原子性保存。保存时涉及**打印保护检查（MC-D15）**和**乐观锁（RowVersion）**并发控制。
-5.  **打印**：打印是[[medical-case|MedicalCase]]聚合根的能力。打印后，`IsPrinted`标记为`true`，`PrintCount`递增，并生成[[medical-case-print-log|MedicalCasePrintLog]]记录。
-6.  **完成医案**：执行**REG-BR-003完成校验**，确保诊断、处方标记和处方内容完整。完成后，医案状态变为`Completed`，关联的[[registration|Registration]]状态也同步更新为`Completed`。
+3.  **处方决策与开具**：根据`NeedsPrescription`标记决定是否需要处方。处方可通过三种方式获取：验方导入、历史处方复制或手工输入。处方数据存储在Prescription和PrescriptionItem中。
+4.  **聚合保存**：采用MedicalCase作为聚合根，将医案、诊断、处方及其明细进行原子性保存。保存时涉及**打印保护检查（MC-D15）**和**乐观锁（RowVersion）**并发控制。
+5.  **打印**：打印是MedicalCase聚合根的能力。打印后，`IsPrinted`标记为`true`，`PrintCount`递增，并生成MedicalCasePrintLog记录。
+6.  **完成医案**：执行**REG-BR-003完成校验**，确保诊断、处方标记和处方内容完整。完成后，医案状态变为`Completed`，关联的Registration状态也同步更新为`Completed`。
 
 ## 关键业务规则
 
@@ -38,7 +38,7 @@ sources: ["docs/01-product/clinical-workflow.md"]
 
 ## 状态机与异常处理
 
-[[medical-case|MedicalCase]]具有明确的状态机：`Active` ↔ `Suspended` → `Completed`。取消医案通过软删除（`IsDeleted=true`）实现。
+MedicalCase具有明确的状态机：`Active` ↔ `Suspended` → `Completed`。取消医案通过软删除（`IsDeleted=true`）实现。
 
 文档详细定义了异常路径的处理流程，包括：
 - **REG-BR-001碰撞处理**：当发现碰撞时，提供“重开现有医案”、“关闭旧的后新建”或“取消操作”三种选择。
@@ -48,12 +48,12 @@ sources: ["docs/01-product/clinical-workflow.md"]
 ## 跨模块联动
 
 临床工作流体现了系统各模块间的紧密联动：
-- **Registration联动**：医案创建、完成、取消会触发[[registration|Registration]]状态的相应变更。
-- **药材禁用联动**：禁用[[herb|Herb]]会影响新建处方、验方导入和历史处方复制。
-- **患者禁用联动**：禁用[[patient|Patient]]会阻止新医案的创建，并影响历史医案的查阅显示。
+- **Registration联动**：医案创建、完成、取消会触发Registration状态的相应变更。
+- **药材禁用联动**：禁用Herb会影响新建处方、验方导入和历史处方复制。
+- **患者禁用联动**：禁用Patient会阻止新医案的创建，并影响历史医案的查阅显示。
 
 ## 相关概念
 
-- [[medical-case]]：作为核心聚合根，承载了临床工作流的主要数据和状态。
-- [[business-rules]]：集中定义了REG-BR-001、REG-BR-003、MC-D15等业务规则。
-- [[dual-mode-architecture]]：临床模式（Clinical）和管理模式（Management）决定了UI交互和离开界面时的行为。
+- medical-case：作为核心聚合根，承载了临床工作流的主要数据和状态。
+- business-rules：集中定义了REG-BR-001、REG-BR-003、MC-D15等业务规则。
+- [dual-mode-architecture](dual-mode-architecture.md)：临床模式（Clinical）和管理模式（Management）决定了UI交互和离开界面时的行为。

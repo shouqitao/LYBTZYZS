@@ -380,8 +380,7 @@ We believe that **providing a systematic registration and queuing mechanism** fo
 
 ---
 
-## Change Log
-
+## 变更记录
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-03-06 | v1.0 | 初始版本: 7 US (6 Must + 1 Should)，双模式设计 |

@@ -47,7 +47,7 @@ if (medicalCase.IsPrinted && HasClinicalChanges(input))
 
 * **PrintVersion**: 持续追踪医案核心内容的变更次数。
 * **MedicalCasePrintLog**: 每次成功打印时，系统会将当前的 `PrintVersion` 及处方快照记录在日志中。
-* **医案审计日志**: 所有打印后的修改行为均会被完整记录在 [[medical-case-audit-log|医案审计日志]] 中，包含：
+* **医案审计日志**: 所有打印后的修改行为均会被完整记录在医案审计日志中，包含：
   * 操作人 ID 与角色
   * 修改时间戳
   * 修改前后的具体值
@@ -62,6 +62,6 @@ if (medicalCase.IsPrinted && HasClinicalChanges(input))
 
 ## 相关规则与参考
 
-* 参见 [[business-rules]] 中的 BR-001 和 BR-003。
-* 与 [[medical-case-locking-rules]] 共同构成医案数据完整性的防线。
-* 相关架构与接口：[[medical-case-api|医案 API 参考]]、[[wpf-printing-architecture|WPF 打印架构]]、[[medical-case-audit-log|医案审计日志]]。
+* 参见 business-rules 中的 BR-001 和 BR-003。
+* 与 [医案锁定规则](medical-case-locking-rules.md) 共同构成医案数据完整性的防线。
+* 相关架构与接口：医案 API 参考、WPF 打印架构、医案审计日志。

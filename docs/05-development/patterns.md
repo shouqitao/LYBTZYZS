@@ -229,8 +229,7 @@ containerRegistry.RegisterForNavigation<PatientListView, PatientListViewModel>()
 
 ---
 
-**变更记录**
-
+## 变更记录
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本 |

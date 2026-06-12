@@ -20,9 +20,9 @@ sources: ["docs/03-architecture/decisions/0003-integration-first-testing.md"]
 ## 实施要点
 
 *   **真实数据库**：使用真实 SQL Server 实例。
-*   **快速重置**：利用 [[respawn]] 等工具在测试间快速重置数据库状态，解决数据隔离问题。
+*   **快速重置**：利用 Respawn 等工具在测试间快速重置数据库状态，解决数据隔离问题。
 *   **真实认证**：通过真实登录接口获取 Token，验证安全链路。
-*   **物理隔离**：通过 [[lybt-tests-architecture]] 中的 [[anti-mock-rule-tests]] 禁止引用 Mock 库，防止策略退化。
+*   **物理隔离**：通过 lybt-tests-architecture 中的 anti-mock-rule-tests 禁止引用 Mock 库，防止策略退化。
 
 ## 优势
 
@@ -37,5 +37,5 @@ sources: ["docs/03-architecture/decisions/0003-integration-first-testing.md"]
 
 ## 参见
 
-*   [[testing-strategy]]
-*   [[lybt-tests-server]]
+*   [测试策略](testing-strategy.md)
+*   lybt-tests-server（待补充）

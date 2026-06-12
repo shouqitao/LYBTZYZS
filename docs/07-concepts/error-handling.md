@@ -15,7 +15,7 @@ source: docs/03-architecture/error-handling-architecture.md
 
 ### 异常类型体系
 
-详见 [[exception-hierarchy|异常类型体系]] 完整定义。
+详见[异常类型体系](exception-hierarchy.md)完整定义。
 
 ### NotFoundException 静态工厂
 
@@ -159,6 +159,6 @@ Desktop                          Server
 
 ## 相关链接
 
-- [[overview]] — 系统架构总览
-- [[medical-case-module]] — 医案模块的业务异常示例
-- [[auth-module]] — 认证相关异常类型（UserNotFound, AuthInvalidCredentials）
+- overview — 系统架构总览
+- [medical-case-module](modules/medical-case-module.md) — 医案模块的业务异常示例
+- [auth-module](modules/auth-module.md) — 认证相关异常类型（UserNotFound, AuthInvalidCredentials）

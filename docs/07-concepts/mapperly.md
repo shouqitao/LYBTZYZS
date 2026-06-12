@@ -20,8 +20,8 @@ Mapperly 是凌隐宝堂中医诊所管理系统中采用的编译时源生成�
 
 ## 在系统中的应用
 
-Mapperly 主要用于 Server 端，在 [[ef-core-data-model]] 定义的实体（Entity）和 API 层使用的数据传输对象（DTO）之间进行映射。这确保了数据在不同层之间传递时的高效和准确转换。
+Mapperly 主要用于 Server 端，在 EF Core 数据模型定义的实体（Entity）和 API 层使用的数据传输对象（DTO）之间进行映射。这确保了数据在不同层之间传递时的高效和准确转换。
 
 ## 相关页面
 
-*   [[ef-core-data-model]] - 包含 BaseEntity 和 Repository 模式，Mapperly 在此数据访问层之上工作。
+*   ef-core-data-model（待补充） - 包含 BaseEntity 和 Repository 模式，Mapperly 在此数据访问层之上工作。

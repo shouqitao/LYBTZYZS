@@ -491,8 +491,7 @@ We believe that 实现基于 WPF FixedDocument 的处方打印 + 打印预览 + 
 
 ---
 
-## Change Log
-
+## 变更记录
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 printing-infrastructure spec + Desktop.Printing 模块 + PrescriptionPrintLog 实体提取 |

@@ -120,13 +120,13 @@ MedicalCaseAuditLog 记录以下信息:
 
 ## 相关链接
 
-- [[medical-case]] - 医案实体总览
-- [[consultation]] - 诊断子实体
-- [[prescription]] - 处方子实体
-- [[patient]] - 患者管理模块
-- [[herb]] - 药材管理模块
-- [[formula]] - 验方管理模块
-- [[ADR-001-medicalcase-aggregate-root]] - MedicalCase 作为唯一聚合根的架构决策
+- medical-case - 医案实体总览
+- consultation - 诊断子实体
+- prescription - 处方子实体
+- patient - 患者管理模块
+- herb - 药材管理模块
+- formula - 验方管理模块
+- ADR-001-medicalcase-aggregate-root - MedicalCase 作为唯一聚合根的架构决策
 
 ## 服务端架构
 

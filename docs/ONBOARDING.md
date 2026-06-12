@@ -222,8 +222,7 @@ gh pr create --title "fix: adjust patient pagination default" --body "描述改�
 
 ---
 
-**变更记录**
-
+## 变更记录
 | 日期 | 变更 |
 |------|------|
 | 2026-06-12 | 初始版本 |

@@ -531,7 +531,7 @@ private static User CreateUser(
 Run: `dotnet test tests/LYBT.Tests.Server/ --no-build`
 Expected: All tests PASS. If sysadmin ID matters (some tests may check Guid.Empty), adjust the ID back.
 
-> **Note**: If any test relies on sysadmin having `Guid.Empty` as ID, revert to `id: Guid.Empty` and keep the fallback `Guid.NewGuid()` only in the `else` branch of the original Upsert. But since post-Respawn the user doesn't exist, we can use any ID.
+> **注意**: If any test relies on sysadmin having `Guid.Empty` as ID, revert to `id: Guid.Empty` and keep the fallback `Guid.NewGuid()` only in the `else` branch of the original Upsert. But since post-Respawn the user doesn't exist, we can use any ID.
 
 ---
 

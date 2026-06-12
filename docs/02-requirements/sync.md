@@ -869,8 +869,7 @@ SyncUploadItemResult: { Success, ErrorMessage, IsConflict }
 
 ---
 
-## Change Log
-
+## 变更记录
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 SyncController + Desktop.Sync + Desktop.LocalData 提取 |

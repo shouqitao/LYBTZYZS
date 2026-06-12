@@ -84,7 +84,7 @@
 ## Data Model (数据模型)
 ## Error Codes (错误码)
 ## Decision Log (决策记录 + 修订历史)
-## Change Log (变更记录)
+## 变更记录
 ```
 
 ---

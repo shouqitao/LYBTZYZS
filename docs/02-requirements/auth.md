@@ -604,8 +604,7 @@ AutoLoginToken → DPAPI Protect (LocalMachine + entropy) → HMAC-SHA256 签名
 
 ---
 
-## Change Log
-
+## 变更记录
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 7 个认证 spec + AuthController 代码提取 |

@@ -528,8 +528,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 
 ---
 
-## Change Log
-
+## 变更记录
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 user-management spec + UsersController 代码提取 |

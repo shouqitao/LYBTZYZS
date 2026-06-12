@@ -58,7 +58,7 @@ sources: ["docs/02-requirements/nfr.md"]
 
 ## 相关链接
 
-- [[data-masking-strategy]]
-- [[card-reader-integration]]
-- [[dpapi-photo-storage]]
-- [[serilog-integration]]
+- data-masking-strategy
+- card-reader-integration
+- dpapi-photo-storage
+- serilog-integration

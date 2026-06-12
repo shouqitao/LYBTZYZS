@@ -12,7 +12,7 @@ sources: ["docs/02-requirements/registration.md"]
 
 ## 概述
 
-**挂号生命周期 (Registration Lifecycle)** 定义了 `Registration` 实体从创建到终结的状态流转规则。其核心特征是**双模式入口**和**与医案状态的强耦合联动**。挂号状态并非独立演变，而是作为诊疗流程的“影子”，反映 [[medical-case|医案]] 的进展。
+**挂号生命周期 (Registration Lifecycle)** 定义了 `Registration` 实体从创建到终结的状态流转规则。其核心特征是**双模式入口**和**与医案状态的强耦合联动**。挂号状态并非独立演变，而是作为诊疗流程的“影子”，反映 [医案](modules/medical-case-module.md) 的进展。
 
 ## 状态定义
 
@@ -55,7 +55,7 @@ stateDiagram-v2
 
 ## 关键业务规则
 
-*   **状态联动 (Auto-Sync)**：`Registration` 的状态变更主要由 `MedicalCase` 的状态变更事件驱动（见 [[business-rules|临床业务规则]] REG-BR-005, REG-BR-006）。
+*   **状态联动 (Auto-Sync)**：`Registration` 的状态变更主要由 `MedicalCase` 的状态变更事件驱动（见 临床业务规则 REG-BR-005, REG-BR-006）。
 *   **取消权限隔离**：
     *   `Source=Receptionist` 的挂号，仅 Receptionist 有权执行最终取消（REG-BR-002）。
     *   `Source=Doctor` 的挂号，由系统自动处理取消，医生无权手动操作挂号状态。
@@ -70,7 +70,7 @@ stateDiagram-v2
 
 ## 相关链接
 
-*   [[registration-module]]
-*   [[medical-case-module]]
-*   [[business-rules]]
-*   [[clinical-workflow]]
+*   [挂号模块](modules/registration-module.md)
+*   [医案模块](modules/medical-case-module.md)
+*   临床业务规则（business-rules，待补充）
+*   [临床工作流](clinical-workflow.md)

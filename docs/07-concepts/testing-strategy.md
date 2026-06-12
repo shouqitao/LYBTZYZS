@@ -99,6 +99,6 @@ public void Patient_Create_WithValidData_ShouldSetDefaults()
 
 ## 相关链接
 
-- [[ADR-003-integration-first-testing]]
-- [[overview]]
-- [[medical-case-module]]
+- ADR-003-integration-first-testing
+- overview
+- [medical-case-module](modules/medical-case-module.md)

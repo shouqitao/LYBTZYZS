@@ -10,7 +10,7 @@ sources: ["docs/02-requirements/formulas.md"]
 
 # 验方验证工作流
 
-**验方验证工作流**定义了 [[formula|验方]] 从创建/导入到可用于临床处方的状态流转过程，旨在确保处方数据的准确性和安全性。
+**验方验证工作流**定义了 [验方](modules/formula-module.md) 从创建/导入到可用于临床处方的状态流转过程，旨在确保处方数据的准确性和安全性。
 
 ## 状态定义
 
@@ -28,7 +28,7 @@ sources: ["docs/02-requirements/formulas.md"]
 
 ## 处方导入约束 (MC-D08)
 
-根据决策 **MC-D08**，在 [[medical-case-module|医案模块]] 开具处方时，验方导入对话框**仅展示**同时满足以下两个条件的验方：
+根据决策 **MC-D08**，在 [医案模块](modules/medical-case-module.md) 开具处方时，验方导入对话框**仅展示**同时满足以下两个条件的验方：
 1.  `ValidationStatus == Validated`
 2.  `Status == Enabled`
 

@@ -40,11 +40,11 @@ sources: ["docs/02-requirements/error-handling.md"]
 
 ## 与服务端处理的集成
 
-当 Service 层抛出这些异常时，`BusinessExceptionHandler` 会捕获它们，并根据异常类型提取 `ErrorCode` 和 `UserMessage`，构建符合 [[problem-details-rfc7807]] 标准的响应对象。未知异常则交由 `SystemExceptionHandler` 处理，记录 Error 级别日志并返回通用的 500 错误。
+当 Service 层抛出这些异常时，`BusinessExceptionHandler` 会捕获它们，并根据异常类型提取 `ErrorCode` 和 `UserMessage`，构建符合 ProblemDetails RFC7807 标准的响应对象。未知异常则交由 `SystemExceptionHandler` 处理，记录 Error 级别日志并返回通用的 500 错误。
 
 ## 相关概念
 
-*   [[error-handling]] - 整体异常处理架构
-*   [[problem-details-rfc7807]] - 错误响应数据结构
-*   [[medical-case-module]] - 医案模块特定异常 (如 `InvalidStatusTransition`)
-*   [[auth-module]] - 认证模块特定异常 (如 `TokenExpired`)
+*   [整体异常处理架构](error-handling.md)
+*   ProblemDetails RFC7807 - 错误响应数据结构
+*   [医案模块](modules/medical-case-module.md) - 医案模块特定异常 (如 `InvalidStatusTransition`)
+*   [认证模块](modules/auth-module.md) - 认证模块特定异常 (如 `TokenExpired`)

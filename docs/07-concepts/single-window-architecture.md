@@ -19,8 +19,8 @@ sources: ["docs/06-operations/dead-code-analysis-frontend.md"]
 LYBTZYZS 桌面客户端已从早期的多窗口模式迁移至单窗口架构。这一演进体现在以下方面：
 
 1.  **登录流程简化**：原有的 `LoginWindow`（独立窗口）已被废弃，取而代之的是在主窗口区域内展示的 `LoginView`。这消除了窗口管理的复杂性，并提供了更流畅的用户体验。
-2.  **统一的宿主框架**：[[desktop-shell|Desktop Shell]] 作为唯一的主窗口，负责加载 Prism 模块、管理 Region 导航以及处理全局生命周期事件。
-3.  **导航一致性**：所有业务模块（如医案、患者、药材）均通过 [[navigation-coordinator|NavigationCoordinator]] 在主窗口的指定 Region 中进行加载和切换。
+2.  **统一的宿主框架**：Desktop Shell 作为唯一的主窗口，负责加载 Prism 模块、管理 Region 导航以及处理全局生命周期事件。
+3.  **导航一致性**：所有业务模块（如医案、患者、药材）均通过 NavigationCoordinator 在主窗口的指定 Region 中进行加载和切换。
 
 ## 优势
 
@@ -34,6 +34,6 @@ LYBTZYZS 桌面客户端已从早期的多窗口模式迁移至单窗口架构�
 
 ## 相关概念
 
-*   [[desktop-shell]]：单窗口架构的物理载体。
-*   [[mvvm-prism]]：支持 Region 导航的技术框架。
-*   [[navigation-coordinator]]：实现单窗口内视图切换的核心协调器。
+*   Desktop Shell：单窗口架构的物理载体。
+*   [MVVM Prism](mvvm-prism.md)：支持 Region 导航的技术框架。
+*   NavigationCoordinator：实现单窗口内视图切换的核心协调器。

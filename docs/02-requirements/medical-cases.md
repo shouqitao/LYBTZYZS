@@ -982,8 +982,7 @@ We believe that 实现以 MedicalCase 为唯一聚合根的电子化医案管理
 
 ---
 
-## Change Log
-
+## 变更记录
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 4 个 spec + MedicalCasesController + 5 个实体提取 |

@@ -44,7 +44,7 @@ sources: ["docs/03-architecture/medicalcase-workspace-current-state.md"]
 
 ## 相关链接
 
-*   [[workspace-modes]]
-*   [[clinical-ui-layout-strategy]]
-*   [[medical-case-module]]
-*   [[business-rules]]
+*   [workspace-modes](workspace-modes.md)
+*   clinical-ui-layout-strategy
+*   [medical-case-module](modules/medical-case-module.md)
+*   business-rules

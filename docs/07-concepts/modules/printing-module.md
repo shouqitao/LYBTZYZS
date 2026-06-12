@@ -73,6 +73,6 @@ MedicalCase (聚合根)
 
 ## 相关链接
 
-- [[medical-case]] - 医案聚合根，包含 IsPrinted/PrintVersion 属性及打印入口
-- [[print-log]] - 打印日志记录，追溯每次打印的版本和内容
-- [[prescription]] - 处方明细数据，打印内容的核心组成部分
+- medical-case - 医案聚合根，包含 IsPrinted/PrintVersion 属性及打印入口
+- print-log - 打印日志记录，追溯每次打印的版本和内容
+- prescription - 处方明细数据，打印内容的核心组成部分

@@ -528,8 +528,7 @@ Unauthenticated -> Authenticating -> Authenticated -> Active -> Expired -> Unaut
 
 ---
 
-## Change Log
-
+## 变更记录
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-11 | v1.0 | 初始版本，从代码实现逆向工程 |

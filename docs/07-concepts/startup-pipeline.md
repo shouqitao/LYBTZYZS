@@ -1,4 +1,4 @@
-﻿---
+---
 type: concept
 title: 启动流水线机制
 tags: [startup, reliability, diagnostics]
@@ -19,10 +19,10 @@ sources: ["docs/02-requirements/desktop-shell.md"]
 ### 关键特性
 
 1.  **有序执行**：步骤通过 `RegisterStep` 注册，按注册顺序依次执行 `ExecuteAsync`。
-2.  **进度报告**：支持 `IProgress<string>` 向 UI（如 [[splash-screen|Splash Screen]]）报告当前步骤名称和状态。
+2.  **进度报告**：支持 `IProgress<string>` 向 UI（如 Splash Screen）报告当前步骤名称和状态。
 3.  **可取消性**：支持 `CancellationToken`，允许用户在启动过程中取消操作。
 4.  **事件驱动**：每步完成触发 `StepCompleted` 事件，流水线状态变更触发 `StateChanged` 事件。
-5.  **诊断集成**：自动与 [[startup-diagnostics|StartupDiagnostics]] 集成，记录每步耗时。
+5.  **诊断集成**：自动与 StartupDiagnostics 集成，记录每步耗时。
 
 ## 降级策略
 
@@ -46,6 +46,6 @@ sources: ["docs/02-requirements/desktop-shell.md"]
 
 ## 相关链接
 
-*   [[desktop-shell]]
-*   [[startup-diagnostics]]
-*   [[splash-screen]]
+*   desktop-shell（规划中）
+*   startup-diagnostics（规划中）
+*   splash-screen（规划中）
