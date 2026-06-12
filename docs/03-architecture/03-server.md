@@ -60,7 +60,7 @@ LYBT.Entities/
   Common/            # BaseEntity, 通用枚举
 ```
 
-**BaseEntity 通用字段**: Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy, RowVersion, IsDeleted。详见 [data-model.md](data-model.md) 的 BaseEntity 章节。
+**BaseEntity 通用字段**: Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy, RowVersion, IsDeleted。详见 [data-model.md](04-data-model.md) 的 BaseEntity 章节。
 
 ### LYBT.Infrastructure
 
@@ -492,7 +492,7 @@ ApiService GET 缓存 (LRU, 1000 条, 5 分钟过期)。写操作后按模块前
 
 **文本级脱敏**: SensitiveDataMasker 正则匹配文本中的密码、Token、连接字符串、Bearer Token，自动替换。
 
-脱敏模式、敏感数据分级映射和字段名检测规则的完整定义详见 [shared.md](shared.md) 的 SensitiveDataAttribute 设计章节。
+脱敏模式、敏感数据分级映射和字段名检测规则的完整定义详见 [shared.md](08-shared.md) 的 SensitiveDataAttribute 设计章节。
 
 ### API 请求日志
 

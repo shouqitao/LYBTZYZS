@@ -20,7 +20,7 @@
 **Step 1:** 在模块索引表 (L26 配置参数行之后) 新增 Registration 行:
 
 ```markdown
-| 挂号管理 | [registration.md](registration.md) | US-REG-001 ~ 007 | 7 |
+| 挂号管理 | [registration.md](../../02-requirements/08-registration.md) | US-REG-001 ~ 007 | 7 |
 ```
 
 **Step 2:** 更新底部统计 (L30):

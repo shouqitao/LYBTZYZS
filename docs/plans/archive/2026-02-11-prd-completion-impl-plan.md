@@ -659,11 +659,11 @@ tests/UnitTests/Server/Modules/ (模块单元测试)
 在现有 9 个模块后追加:
 
 ```markdown
-| 系统健康与诊断 | [health-diagnostics.md](health-diagnostics.md) | FR-SYS-001 ~ 007 | 7 |
-| 异常处理策略 | [error-handling.md](error-handling.md) | FR-ERR-001 ~ 005 | 5 |
-| 日志与审计 | [logging.md](logging.md) | FR-LOG-001 ~ 004 | 4 |
-| Desktop Shell | [desktop-shell.md](desktop-shell.md) | FR-SHELL-001 ~ 007 | 7 |
-| 配置参数 | [configuration.md](configuration.md) | FR-CFG-001 ~ 003 | 3 |
+| 系统健康与诊断 | [health-diagnostics.md](../../02-requirements/15-health-diagnostics.md) | FR-SYS-001 ~ 007 | 7 |
+| 异常处理策略 | [error-handling.md](../../02-requirements/13-error-handling.md) | FR-ERR-001 ~ 005 | 5 |
+| 日志与审计 | [logging.md](../../02-requirements/14-logging.md) | FR-LOG-001 ~ 004 | 4 |
+| Desktop Shell | [desktop-shell.md](../../02-requirements/12-desktop-shell.md) | FR-SHELL-001 ~ 007 | 7 |
+| 配置参数 | [configuration.md](../../02-requirements/11-configuration.md) | FR-CFG-001 ~ 003 | 3 |
 ```
 
 **Step 2: 更新总计**

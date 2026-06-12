@@ -39,7 +39,7 @@ sources: ["docs/02-requirements/12-desktop-shell.md"]
 
 ## 本地模式差异
 
-在 [本地模式](dual-mode-architecture.md) 下，部分依赖服务端功能的菜单项（如某些高级同步选项或云端备份）可能会被额外禁用。具体的本地模式禁用列表仍在定义中（见 Open Question OQ-SHELL-03）。
+在 [本地模式](01-dual-mode-architecture.md) 下，部分依赖服务端功能的菜单项（如某些高级同步选项或云端备份）可能会被额外禁用。具体的本地模式禁用列表仍在定义中（见 Open Question OQ-SHELL-03）。
 
 ## 价值
 
@@ -51,4 +51,4 @@ sources: ["docs/02-requirements/12-desktop-shell.md"]
 
 *   desktop-shell（规划中）
 *   menu-manager（规划中）
-*   [工作区模式](workspace-modes.md)
+*   [工作区模式](04-workspace-modes.md)

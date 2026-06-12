@@ -15,7 +15,7 @@ source: docs/03-architecture/06-error-handling.md
 
 ### 异常类型体系
 
-详见[异常类型体系](exception-hierarchy.md)完整定义。
+详见[异常类型体系](12-exception-hierarchy.md)完整定义。
 
 ### NotFoundException 静态工厂
 

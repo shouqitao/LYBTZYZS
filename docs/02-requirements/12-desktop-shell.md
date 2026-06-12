@@ -500,7 +500,7 @@ Unauthenticated -> Authenticating -> Authenticated -> Active -> Expired -> Unaut
 
 ## Error Codes
 
-> Desktop Shell 为客户端宿主层，不定义独立错误码。启动失败和导航错误通过异常和日志处理，认证相关错误码见 [auth.md](auth.md)。
+> Desktop Shell 为客户端宿主层，不定义独立错误码。启动失败和导航错误通过异常和日志处理，认证相关错误码见 [auth.md](02-auth.md)。
 
 ---
 

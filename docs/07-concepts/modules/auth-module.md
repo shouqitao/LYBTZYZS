@@ -93,6 +93,6 @@ source: docs/02-requirements/02-auth.md
 ## 相关链接
 
 - user - 用户管理模块
-- [authentication](../authentication.md) - 认证架构总览
+- [authentication](../07-authentication.md) - 认证架构总览
 - ADR-005-superadmin-auth - SuperAdmin 认证决策
 - ADR-008-token-security - Token 安全决策

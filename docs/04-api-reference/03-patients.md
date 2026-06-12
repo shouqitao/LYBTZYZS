@@ -193,7 +193,7 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 - 404: 患者不存在 (ERR-20001)
 - 422: 患者有进行中的医案 (ERR-20005)
 
-> **交叉引用**: 禁用联动规则见 [medical-cases.md](medical-cases.md) MC-D16; 查询可见性见 patients PRD FR-PAT-002 规则 5 (Receptionist 不可见禁用患者)
+> **交叉引用**: 禁用联动规则见 [medical-cases.md](06-medical-cases.md) MC-D16; 查询可见性见 patients PRD FR-PAT-002 规则 5 (Receptionist 不可见禁用患者)
 
 ---
 

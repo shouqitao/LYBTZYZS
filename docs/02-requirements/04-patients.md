@@ -167,7 +167,7 @@ We believe that 实现拼音码快速检索 + Excel 批量导入导出 + 引用�
 3. 列表缓存: OutputCache("PatientsCache")
 4. 年龄由 Service 层计算 (基于 BirthDate)
 5. Receptionist 查询自动过滤 Status=Disabled 的患者; Doctor/Admin 可见全部 (含禁用，列表标注状态)
-6. 分页参数验证: page >= 1, pageSize 1-100 (见 [nfr.md](nfr.md) NFR-API-001)
+6. 分页参数验证: page >= 1, pageSize 1-100 (见 [nfr.md](17-nfr.md) NFR-API-001)
 
 **Dual Mode:**
 | 模式 | 行为 |
@@ -226,7 +226,7 @@ We believe that 实现拼音码快速检索 + Excel 批量导入导出 + 引用�
 - [ ] 患者无关联医案 → 软删除成功，默认列表查询不返回该患者
 
 **Business Rules:**
-1. 引用检查: 有关联医案 (任何状态) 的患者禁止删除，返回 422 (MC-D04，见 [medical-cases.md](medical-cases.md))
+1. 引用检查: 有关联医案 (任何状态) 的患者禁止删除，返回 422 (MC-D04，见 [medical-cases.md](07-medical-cases.md))
 2. 无关联医案时执行软删除，数据保留
 3. 统一所有权检查
 4. 自动过滤已删除记录
@@ -396,7 +396,7 @@ We believe that 实现拼音码快速检索 + Excel 批量导入导出 + 引用�
 **Business Rules:**
 1. 仅 Admin/SuperAdmin 可执行状态切换
 2. 禁用时: 检查患者是否有 Active/Suspended 医案，有则拒绝 (需先完成或取消活跃医案)
-3. 禁用后: 禁止为该患者创建新医案 (见 [medical-cases.md](medical-cases.md) US-MC-001)
+3. 禁用后: 禁止为该患者创建新医案 (见 [medical-cases.md](07-medical-cases.md) US-MC-001)
 4. 禁用后: 历史医案可查阅，PatientName 按角色脱敏 -- Admin/SuperAdmin 看完整姓名，Doctor 看掩码 (如 "张*")
 5. 启用后: 所有限制解除，脱敏自动取消
 6. v1.0 主要禁用场景: 患者已故
@@ -514,7 +514,7 @@ We believe that 实现拼音码快速检索 + Excel 批量导入导出 + 引用�
 | ERR-20702 | PatientNotDeleted | 200 | 该患者未被删除，无需恢复 | 恢复未软删除的患者 |
 | ERR-20703 | BatchOperationEmpty | 400 | 请至少选择一个患者 | 批量删除时 ID 列表为空 |
 | ERR-20704 | BatchCheckExceeded | 400 | 批量检查最多支持100条记录 | BatchCheckReference 超过 100 条 |
-| ERR-20705 | InvalidPagination | 400 | 页码和页大小参数无效（页码>0，页大小1-100） | 分页参数校验失败 ([nfr.md](nfr.md) NFR-API-001) |
+| ERR-20705 | InvalidPagination | 400 | 页码和页大小参数无效（页码>0，页大小1-100） | 分页参数校验失败 ([nfr.md](17-nfr.md) NFR-API-001) |
 
 ### 导入错误 (US-PAT-008, 208xx)
 
@@ -549,7 +549,7 @@ We believe that 实现拼音码快速检索 + Excel 批量导入导出 + 引用�
 | PAT-D05 | 禁用场景与原因 | US-PAT-013 | 已确定: v1.0 主要禁用场景为患者已故。"长期未就诊"不作为禁用条件。重复录入由身份证唯一性 (PAT-D03) 防止 |
 | PAT-D06 | 重复患者关系转移 | - | 已确定: 后续版本规划。功能: 将 A2 的医案关系转移到 A1，然后禁用 A2。v1.0 不包含 |
 | PAT-D07 | 本地模式下导入导出的支持方式 | US-PAT-008 ~ 010 | 已确定: 支持。客户端 NPOI 本地读写 Excel，不经过 API |
-| PAT-D08 | 敏感数据加密策略 | 所有敏感字段 | 已确定: v1.0 采用字段级加密 (以 [nfr.md](nfr.md) 为准)。详细方案见"信息保护深化"独立任务 |
+| PAT-D08 | 敏感数据加密策略 | 所有敏感字段 | 已确定: v1.0 采用字段级加密 (以 [nfr.md](17-nfr.md) 为准)。详细方案见"信息保护深化"独立任务 |
 
 ### 修订历史
 

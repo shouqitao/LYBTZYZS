@@ -158,7 +158,7 @@ We believe that 实现验方模板的数字化管理 (CRUD + 共享 + 延迟绑�
 3. Admin 返回全部验方
 4. Doctor 返回自己创建的 + 共享的验方
 5. 列表包含 HerbCount (药材数量)，不显示价格 (经验方不涉及价格)
-6. 分页参数验证: page >= 1, pageSize 1-100 (见 [nfr.md](nfr.md) NFR-API-001)
+6. 分页参数验证: page >= 1, pageSize 1-100 (见 [nfr.md](17-nfr.md) NFR-API-001)
 
 **Dual Mode:**
 | 模式 | 行为 |
@@ -237,7 +237,7 @@ We believe that 实现验方模板的数字化管理 (CRUD + 共享 + 延迟绑�
 1. 统一所有权检查
 2. 禁用后开方时不可导入 (验方导入对话框过滤 Status=Enabled)
 3. 支持批量启用/禁用
-4. **处方导入对话框仅展示 ValidationStatus=Validated 且 Status=Enabled 的验方** (MC-D08，见 [medical-cases.md](medical-cases.md) US-MC-016)
+4. **处方导入对话框仅展示 ValidationStatus=Validated 且 Status=Enabled 的验方** (MC-D08，见 [medical-cases.md](07-medical-cases.md) US-MC-016)
 
 **Dual Mode:**
 | 模式 | 行为 |
@@ -451,7 +451,7 @@ We believe that 实现验方模板的数字化管理 (CRUD + 共享 + 延迟绑�
 | Dosage | int | Required | 剂量 (数值部分，单位由 Unit 指定) |
 | Unit | string(16) | Required | 单位 (克/g/ml/条/粒 等) |
 | ProcessingMethod | string(100)? | - | 炮制方法 |
-| DecocteMethod | DecocteMethod | Default: Normal | 煎法 (定义见 [medical-cases.md](medical-cases.md) DecocteMethod 枚举) |
+| DecocteMethod | DecocteMethod | Default: Normal | 煎法 (定义见 [medical-cases.md](07-medical-cases.md) DecocteMethod 枚举) |
 | Usage | string(200)? | - | 用法 |
 | Remark | string(200)? | - | 备注 |
 

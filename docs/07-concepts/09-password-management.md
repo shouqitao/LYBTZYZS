@@ -11,7 +11,7 @@ sources: ["docs/05-development/06-security-password-management.md"]
 
 ## 概述
 
-密码管理与安全策略定义了凌隐宝堂系统中用户凭证的存储、验证、保护及管理员账户的生命周期管理机制。该策略核心在于通过[认证授权](authentication.md)模块底层的密码哈希算法、可配置的账户锁定机制以及环境感知的管理员自动化运维流程，确保系统在面对暴力破解、时序攻击及内部误操作时的安全性。具体哈希实现详见[用户管理模块](modules/users-module.md)的密码策略章节。
+密码管理与安全策略定义了凌隐宝堂系统中用户凭证的存储、验证、保护及管理员账户的生命周期管理机制。该策略核心在于通过[认证授权](07-authentication.md)模块底层的密码哈希算法、可配置的账户锁定机制以及环境感知的管理员自动化运维流程，确保系统在面对暴力破解、时序攻击及内部误操作时的安全性。具体哈希实现详见[用户管理模块](modules/users-module.md)的密码策略章节。
 
 ## 核心机制
 
@@ -59,7 +59,7 @@ sources: ["docs/05-development/06-security-password-management.md"]
 
 系统将密码逻辑抽象为 `IPasswordService` 接口，而非直接依赖静态方法。
 *   **依赖注入**：`PasswordService` 通过 DI 容器注入。
-*   **Mock 支持**：在单元测试中，可以替换为 Mock 实现，模拟各种密码验证场景（如成功、失败、锁定），而无需实际执行耗时的哈希计算。这符合[测试策略](testing-strategy.md)中关于隔离外部依赖的原则。
+*   **Mock 支持**：在单元测试中，可以替换为 Mock 实现，模拟各种密码验证场景（如成功、失败、锁定），而无需实际执行耗时的哈希计算。这符合[测试策略](24-testing-strategy.md)中关于隔离外部依赖的原则。
 
 ## 配置管理集成
 
@@ -69,7 +69,7 @@ sources: ["docs/05-development/06-security-password-management.md"]
 
 ## 相关链接
 
-- [认证授权](authentication.md)
+- [认证授权](07-authentication.md)
 
 - configuration-management — 配置管理架构
-- [测试策略](testing-strategy.md)
+- [测试策略](24-testing-strategy.md)

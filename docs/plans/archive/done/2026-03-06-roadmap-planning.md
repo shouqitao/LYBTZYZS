@@ -254,7 +254,7 @@ Sprint 9: 剩余 Should Have + 回归测试
 ```markdown
 ### 7.6 发布路线图
 
-- [roadmap.md](roadmap.md) -- v1.0 Sprint 分配 + Release 验收标准
+- [roadmap.md](../../02-requirements/20-roadmap.md) -- v1.0 Sprint 分配 + Release 验收标准
 ```
 
 **Step 2:** 更新 prd.md 变更记录

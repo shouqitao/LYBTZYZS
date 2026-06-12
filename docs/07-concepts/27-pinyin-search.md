@@ -38,11 +38,11 @@ sources: ["docs/02-requirements/04-patients.md"]
 
 ## 与其他模块的对比
 
-虽然 [药材内存缓存策略](herb-cache-strategy.md) 也使用了拼音索引，但药材数据通常全量预加载且无敏感加密限制，搜索效率极高。患者模块因涉及隐私加密和更大的数据潜在体量，其本地搜索实现更为复杂，需特别注意内存占用和解密开销。
+虽然 [药材内存缓存策略](16-herb-cache-strategy.md) 也使用了拼音索引，但药材数据通常全量预加载且无敏感加密限制，搜索效率极高。患者模块因涉及隐私加密和更大的数据潜在体量，其本地搜索实现更为复杂，需特别注意内存占用和解密开销。
 
 ## 相关链接
 
 - [患者模块](modules/patient-module.md)
-- [药材内存缓存策略](herb-cache-strategy.md)
-- [双模式架构](dual-mode-architecture.md)
+- [药材内存缓存策略](16-herb-cache-strategy.md)
+- [双模式架构](01-dual-mode-architecture.md)
 - [敏感数据分级](10-sensitive-data.md)

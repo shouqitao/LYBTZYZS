@@ -175,5 +175,5 @@ Admin/Clinical Workspace
 ## 相关链接
 
 - [`docs/04-api-reference/03-patients.md`](../../04-api-reference/03-patients.md) — API 端点详细文档
-- [`docs/07-concepts/30-patient-status-lifecycle.md`](../patient-status-lifecycle.md) — 生命周期状态图
+- [`docs/07-concepts/30-patient-status-lifecycle.md`](../30-patient-status-lifecycle.md) — 生命周期状态图
 - [`docs/07-concepts/10-sensitive-data.md`](../10-sensitive-data.md) — 敏感数据分级

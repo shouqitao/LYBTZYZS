@@ -91,7 +91,7 @@ Port = new Uri(addressFeature.Addresses.First()).Port;
 
 ## 相关文档
 
-- [双模式架构](../dual-mode.md)
+- [双模式架构](../05-dual-mode.md)
 - [LocalWebAPI API 端点](./api-endpoints.md)
 - [LocalWebAPI 认证](./authentication.md)
 

@@ -130,5 +130,5 @@ scripts\quick-compile.bat         # 快速编译检查
 ## 相关链接
 
 - 概述 — 项目概述和架构
-- [测试策略](testing-strategy.md) — 测试策略和 Testing Trophy 架构
-- [双模式架构](../dual-mode-architecture.md) — 双模式架构 (远程/本地切换)
+- [测试策略](../24-testing-strategy.md) — 测试策略和 Testing Trophy 架构
+- [双模式架构](../01-dual-mode-architecture.md) — 双模式架构 (远程/本地切换)

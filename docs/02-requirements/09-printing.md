@@ -148,7 +148,7 @@ We believe that 实现基于 WPF FixedDocument 的处方打印 + 打印预览 + 
    - 费用信息 (单剂价格、总价、折扣)
    - 签名区 (医生、审核人、调配人)
 4. 打印后 MedicalCase.PrintCount 递增
-5. 打印后 MedicalCase.IsPrinted = true (聚合根级打印保护，见 [medical-cases.md](medical-cases.md) MC-D15)
+5. 打印后 MedicalCase.IsPrinted = true (聚合根级打印保护，见 [medical-cases.md](07-medical-cases.md) MC-D15)
 6. 打印后 MedicalCase.LastPrintedAt 更新
 
 **Dual Mode:**
@@ -426,9 +426,9 @@ We believe that 实现基于 WPF FixedDocument 的处方打印 + 打印预览 + 
 > **[Sprint 4 已实现]** 四诊信息: 打印模板包含望/闻/问/切四诊区域，完整展示现病史、舌诊、脉诊、中医辨证 (T4-S5-07)
 
 > **签名区字段来源**: DoctorName 来自 MedicalCase.DoctorName (创建时快照，保持历史一致性)；Reviewer/Dispenser 为打印时手动填写或留空。
-> **煎法显示**: 药材表格中 DecocteMethod=Normal 不标注；其他煎法在药材名称后追加括号标注 (如 "红参(另炖)")。煎法枚举定义见 [medical-cases.md](medical-cases.md) DecocteMethod。
+> **煎法显示**: 药材表格中 DecocteMethod=Normal 不标注；其他煎法在药材名称后追加括号标注 (如 "红参(另炖)")。煎法枚举定义见 [medical-cases.md](07-medical-cases.md) DecocteMethod。
 
-**费用计算规则** (定义于 [medical-cases.md](medical-cases.md) US-MC-004):
+**费用计算规则** (定义于 [medical-cases.md](07-medical-cases.md) US-MC-004):
 
 | 字段 | 计算公式 | 说明 |
 |------|---------|------|
@@ -473,7 +473,7 @@ We believe that 实现基于 WPF FixedDocument 的处方打印 + 打印预览 + 
 | 编号 | 问题 | 影响范围 | 状态 |
 |------|------|----------|------|
 | PRINT-D01 | PDF 导出功能 | US-PRINT-002 | **已实现 (Sprint 6)**: QuestPDF 2025.4.0; PrescriptionPdfExporter; ExportPdfCommand + MedicalCaseWorkspaceView 导出按钮 |
-| PRINT-D02 | 打印模板配置 (诊所信息来源) | US-PRINT-001 | 已确定: 从 ClinicSettings 配置读取 (Name/Department/Address/Phone)。可配置信息统一从配置文件获取，见 [configuration.md](configuration.md) US-CFG-002 ClinicSettings |
+| PRINT-D02 | 打印模板配置 (诊所信息来源) | US-PRINT-001 | 已确定: 从 ClinicSettings 配置读取 (Name/Department/Address/Phone)。可配置信息统一从配置文件获取，见 [configuration.md](11-configuration.md) US-CFG-002 ClinicSettings |
 | PRINT-D03 | 批量打印 | US-PRINT-001 | 已确定: 已实现。BatchPrintAsync 支持多处方连续打印，默认静默模式 (ShowDialog=false)，返回成功计数 |
 | PRINT-D04 | 排版规格 | US-PRINT-001 | 已确定: 标准中医处方笺格式，宋体为主，A5 上下 10mm 左右 8mm 边距 |
 | PRINT-D05 | 分页规则 | US-PRINT-001 | 已确定: A5 单页最多 12 味药，超出自动分页，第二页标注"续上页" |

@@ -452,7 +452,7 @@ We believe that 实现以 MedicalCase 为唯一聚合根的电子化医案管理
 8. 删除操作: 记录 IsDeleted=true 变更
 9. 审计记录写入失败不影响主业务流程 (异常隔离)
 
-> **交叉引用**: 安全审计日志 (SecurityAuditLog) 见 [logging.md](logging.md) US-LOG-002；日志保留策略见 [nfr.md](nfr.md) NFR-SEC-005。
+> **交叉引用**: 安全审计日志 (SecurityAuditLog) 见 [logging.md](14-logging.md) US-LOG-002；日志保留策略见 [nfr.md](17-nfr.md) NFR-SEC-005。
 
 **Dual Mode:**
 | 模式 | 行为 |
@@ -522,7 +522,7 @@ We believe that 实现以 MedicalCase 为唯一聚合根的电子化医案管理
 2. 打印后修改任何内容 (Consultation 或 Prescription) 需提供 EditReason (MC-D15)
 3. 修改成功后: `MedicalCase.IsPrinted=false`，`MedicalCase.PrintVersion++` (标记需重新打印)
 4. 每次打印记录 MedicalCasePrintLog，含当前 `MedicalCase.PrintVersion` 和 PrintType
-5. 打印模板为 A5 纸张，详见 [printing.md](printing.md)
+5. 打印模板为 A5 纸张，详见 [printing.md](09-printing.md)
 6. v1.0 支持处方打印 (PrintType=Prescription)，打印为 MedicalCase 聚合根的能力
 
 > **[Sprint 4 已实现]** 打印回写: IsPrinted/PrintCount/LastPrintedAt/PrintVersion 字段在打印后由 PrintService 自动更新到 MedicalCase 聚合根 (T2-X8-04~08)
@@ -654,7 +654,7 @@ We believe that 实现以 MedicalCase 为唯一聚合根的电子化医案管理
 | OQ-MC-02 | 禁用患者历史医案的 PatientName 脱敏规则 (Doctor 掩码 "张*") 是否满足合规要求? | 已确定方案 (MC-D16)，待法规确认 |
 | OQ-MC-03 | 重复药材合并策略默认值 (Accumulate) 是否符合临床习惯? | 可通过 appsettings.json 配置切换 (MC-D17)，待临床反馈 |
 | OQ-MC-04 | 历史处方复制时是否需要显示价格变动对比 (当前价格 vs 历史价格)? | MC-D13 已预留预览对比，UI 实现待确认 |
-| OQ-MC-05 | 审计日志保留期限? (永久/按年归档) | 待运维策略确定，见 [nfr.md](nfr.md) NFR-SEC-005 |
+| OQ-MC-05 | 审计日志保留期限? (永久/按年归档) | 待运维策略确定，见 [nfr.md](17-nfr.md) NFR-SEC-005 |
 
 ---
 
@@ -708,7 +708,7 @@ We believe that 实现以 MedicalCase 为唯一聚合根的电子化医案管理
 | Patients | 被 MedicalCase 引用 | 有医案: 禁止删除 (422)，建议禁用; 无医案: 软删除 |
 | Herbs | 被 PrescriptionItem 引用 | 有处方引用: 禁止删除，建议禁用; 无引用: 软删除 |
 | Formulas | 无被引用关系 (导入为复制) | 直接软删除 |
-| Users | 特殊规则 | 保持现有逻辑 (参见 [users.md](users.md)) |
+| Users | 特殊规则 | 保持现有逻辑 (参见 [users.md](03-users.md)) |
 
 ---
 
@@ -732,7 +732,7 @@ We believe that 实现以 MedicalCase 为唯一聚合根的电子化医案管理
 
 | 场景 | 行为 | 决策编号 |
 |------|------|---------|
-| 患者被删除 | 有关联医案的患者禁止删除 (返回 422)，仅可禁用。见 [patients.md](patients.md) FR-PAT-005 | MC-D04 |
+| 患者被删除 | 有关联医案的患者禁止删除 (返回 422)，仅可禁用。见 [patients.md](04-patients.md) FR-PAT-005 | MC-D04 |
 | 挂起积压 | v1.0 不实现自动清理。BR-001 阻止同一患者多个 Active/Suspended，形成天然卡点提醒 | MC-D05 |
 | 并发创建冲突 | 代码层 BR-001 检查 + DB 唯一索引 (Active + Suspended)。NFR 1-3 并发用户，并发风险极低，接受现状 | MC-D06 |
 
@@ -742,7 +742,7 @@ We believe that 实现以 MedicalCase 为唯一聚合根的电子化医案管理
 |------|------|---------|
 | 禁用患者创建医案 | 禁止: 患者选择列表过滤禁用患者; 接口层返回 422 (ERR-30105) 双重保护 | MC-D16 |
 | 禁用患者历史医案查阅 | 允许: 医案列表/搜索 (US-MC-009/010) 包含禁用患者的医案。PatientName 按角色脱敏: Admin/SuperAdmin 完整显示，Doctor 掩码 (如 "张*") | MC-D16 |
-| 有活跃医案的患者禁用 | 禁止禁用，需先完成或取消活跃医案 (见 [patients.md](patients.md) FR-PAT-013) | MC-D16 |
+| 有活跃医案的患者禁用 | 禁止禁用，需先完成或取消活跃医案 (见 [patients.md](04-patients.md) FR-PAT-013) | MC-D16 |
 
 ### 处方与药材联动边界
 
@@ -934,7 +934,7 @@ We believe that 实现以 MedicalCase 为唯一聚合根的电子化医案管理
 | 错误码 | 枚举名 | HTTP | 用户消息 | 触发条件 |
 |--------|--------|------|----------|----------|
 | ERR-30601 | RequestIdMismatch | 400 | (ValidationFail) | request.Id != 路由 id |
-| ERR-30602 | InvalidPagination | 400 | 页码和页大小参数无效（页码>0，页大小1-100） | 分页参数校验失败 ([nfr.md](nfr.md) NFR-API-001) |
+| ERR-30602 | InvalidPagination | 400 | 页码和页大小参数无效（页码>0，页大小1-100） | 分页参数校验失败 ([nfr.md](17-nfr.md) NFR-API-001) |
 | ERR-30603 | BatchQueryExceeded | 400 | 单次最多查询50个医案 | batch-details ids.Count > 50 |
 | ERR-30604 | BatchOperationEmpty | 400 | 请至少选择一个医案 | batch-delete ids 为空 |
 | ERR-30605 | InvalidPatientId | 400 | (BadRequest) | patientId == Guid.Empty |

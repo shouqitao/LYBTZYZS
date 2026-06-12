@@ -50,7 +50,7 @@ sequenceDiagram
 
 ### 性能考量与异常处理
 * **同步调用开销**：跨模块调用通常涉及额外的服务定位和方法调用开销。在高频场景下，应考虑在调用方引入局部缓存，或由提供方提供批量查询接口以减少往返次数。
-* **错误传播**：跨模块调用产生的异常应遵循 [异常类型体系](exception-hierarchy.md)，并在调用方进行适当的捕获和处理，避免底层实现细节泄露。
+* **错误传播**：跨模块调用产生的异常应遵循 [异常类型体系](12-exception-hierarchy.md)，并在调用方进行适当的捕获和处理，避免底层实现细节泄露。
 
 ## Desktop 端：基于 Prism 的导航与事件总线
 在 WPF Desktop 客户端，模块间不共享 ViewModel 引用，主要依赖 Prism 框架提供的导航与事件机制进行解耦交互。
@@ -76,7 +76,7 @@ sequenceDiagram
 * 组件分解
 * 服务端架构
 * 共享层架构
-* [异常类型体系](exception-hierarchy.md)
+* [异常类型体系](12-exception-hierarchy.md)
 * NavigationCoordinator
 * ICrossModuleService
 * ICrossModuleAuthService

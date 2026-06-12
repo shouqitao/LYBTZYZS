@@ -161,7 +161,7 @@ We believe that 实现拼音码快速检索 + Excel/JSON 批量导入导出 + �
 3. 默认分页: page=1, pageSize=20
 4. 列表缓存: IMemoryCache (HERB-D01)
 5. 默认按名称升序排列
-6. 分页参数验证: page >= 1, pageSize 1-100 (见 [nfr.md](nfr.md) NFR-API-001)
+6. 分页参数验证: page >= 1, pageSize 1-100 (见 [nfr.md](17-nfr.md) NFR-API-001)
 
 **Dual Mode:**
 | 模式 | 行为 |
@@ -465,7 +465,7 @@ We believe that 实现拼音码快速检索 + Excel/JSON 批量导入导出 + �
 | ERR-50102 | HerbValidationFailed | 400 | (FluentValidation 错误列表) | 名称/单位/价格等字段验证不通过 |
 | ERR-50103 | HerbNoPermission | 403 | 您没有权限操作此药材，只能操作自己创建的数据 | Doctor 操作他人创建的药材 (Update/Delete/ToggleStatus/Restore) |
 | ERR-50104 | HerbNotDeleted | 200 | 该药材未被删除，无需恢复 | 恢复未软删除的药材 |
-| ERR-50106 | HerbInvalidPagination | 400 | 页码和页大小参数无效（页码>0，页大小1-100） | 分页参数校验失败 ([nfr.md](nfr.md) NFR-API-001) |
+| ERR-50106 | HerbInvalidPagination | 400 | 页码和页大小参数无效（页码>0，页大小1-100） | 分页参数校验失败 ([nfr.md](17-nfr.md) NFR-API-001) |
 
 ### 批量操作错误 (502xx)
 

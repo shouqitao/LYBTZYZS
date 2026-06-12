@@ -117,7 +117,7 @@
 | 小张 (Receptionist) | 患者 (登记/搜索)、读卡器 | 4-6 小时 | 仅查看权限 |
 | SuperAdmin | 系统健康、配置、用户管理 | 极低 | 最高权限 |
 
-详细权限矩阵见 [user-roles.md](user-roles.md)。
+详细权限矩阵见 [user-roles.md](04-user-roles.md)。
 
 ---
 

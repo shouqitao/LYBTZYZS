@@ -757,7 +757,7 @@ flowchart TD
 | 打印管理 PRD | [printing.md](../02-requirements/09-printing.md) | 打印处方笺 |
 | 读卡器 PRD | [card-reader.md](../02-requirements/16-card-reader.md) | 身份证读卡 |
 | 桌面端架构 | [desktop.md](../03-architecture/02-desktop.md) | UI 架构和导航 |
-| 用户角色 | [user-roles.md](user-roles.md) | 角色权限定义 |
+| 用户角色 | [user-roles.md](04-user-roles.md) | 角色权限定义 |
 | 数据模型 | [data-model.md](../03-architecture/04-data-model.md) | 实体关系 |
 
 ---

@@ -147,5 +147,5 @@ DTO 路径细节：
 ## 相关链接
 
 - [`docs/04-api-reference/04-herbs.md`](../../04-api-reference/04-herbs.md) — API 端点详细文档
-- [`docs/07-concepts/16-herb-cache-strategy.md`](../herb-cache-strategy.md) — 缓存策略详情
+- [`docs/07-concepts/16-herb-cache-strategy.md`](../16-herb-cache-strategy.md) — 缓存策略详情
 - [`docs/07-concepts/27-pinyin-search.md`](../27-pinyin-search.md) — 拼音搜索

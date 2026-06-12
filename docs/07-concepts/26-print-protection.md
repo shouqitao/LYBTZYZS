@@ -63,5 +63,5 @@ if (medicalCase.IsPrinted && HasClinicalChanges(input))
 ## 相关规则与参考
 
 * 参见 business-rules 中的 BR-001 和 BR-003。
-* 与 [医案锁定规则](medical-case-locking-rules.md) 共同构成医案数据完整性的防线。
+* 与 [医案锁定规则](31-medical-case-locking-rules.md) 共同构成医案数据完整性的防线。
 * 相关架构与接口：医案 API 参考、WPF 打印架构、医案审计日志。

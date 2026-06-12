@@ -165,4 +165,4 @@ Mapper: `FormulaMapper` (Mapperly)。注意 `IsShared ↔ !IsPersonal` 互逆映
 ## 相关链接
 
 - [`docs/04-api-reference/05-formulas.md`](../../04-api-reference/05-formulas.md) — API 端点详细文档
-- [`docs/07-concepts/28-formula-validation-workflow.md`](../formula-validation-workflow.md) — 验证工作流
+- [`docs/07-concepts/28-formula-validation-workflow.md`](../28-formula-validation-workflow.md) — 验证工作流

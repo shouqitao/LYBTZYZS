@@ -176,7 +176,7 @@ v1.0 包含 15 个功能模块、138 个 User Stories (Must 51 + Should 54 + Cou
 
 ### 6.4 技术指标
 
-详细技术指标见 [nfr.md](nfr.md)。核心摘要:
+详细技术指标见 [nfr.md](17-nfr.md)。核心摘要:
 
 | 指标 | 目标 (P95) | 条件 |
 |------|-----------|------|
@@ -202,30 +202,30 @@ v1.0 包含 15 个功能模块、138 个 User Stories (Must 51 + Should 54 + Cou
 
 | 模块 | 文件 | US 编号范围 | 总数 | Must | Should | Could |
 |------|------|------------|------|------|--------|-------|
-| 认证与会话管理 | [auth.md](auth.md) | US-AUTH-001 ~ 013 | 13 | 8 | 5 | 0 |
-| 用户管理 | [users.md](users.md) | US-USER-001 ~ 012 | 12 | 5 | 5 | 2 |
-| 患者管理 | [patients.md](patients.md) | US-PAT-001 ~ 013 | 13 | 4 | 2 | 7 |
-| 药材管理 | [herbs.md](herbs.md) | US-HERB-001 ~ 013 | 13 | 5 | 4 | 4 |
-| 验方管理 | [formulas.md](formulas.md) | US-FORM-001 ~ 013 | 13 | 6 | 4 | 3 |
-| 医案管理 | [medical-cases.md](medical-cases.md) | US-MC-001 ~ 018 | 18 | 9 | 8 | 1 |
-| 数据同步 | [sync.md](sync.md) | US-SYNC-001 ~ 008 | 8 | 1 | 7 | 0 |
-| 打印 | [printing.md](printing.md) | US-PRINT-001 ~ 004 | 4 | 0 | 3 | 1 |
-| 身份证读卡器 | [card-reader.md](card-reader.md) | US-CARD-001 ~ 002 | 2 | 0 | 2 | 0 |
-| 系统健康与诊断 | [health-diagnostics.md](health-diagnostics.md) | US-SYS-001 ~ 009 | 9 | 0 | 0 | 9 |
-| 异常处理策略 | [error-handling.md](error-handling.md) | US-ERR-001 ~ 008 | 8 | 0 | 6 | 2 |
-| 日志与审计 | [logging.md](logging.md) | US-LOG-001 ~ 007 | 7 | 0 | 4 | 3 |
-| Desktop Shell | [desktop-shell.md](desktop-shell.md) | US-SHELL-001 ~ 007 | 7 | 5 | 1 | 1 |
-| 配置参数 | [configuration.md](configuration.md) | US-CFG-001 ~ 004 | 4 | 2 | 2 | 0 |
-| 挂号管理 | [registration.md](registration.md) | US-REG-001 ~ 007 | 7 | 6 | 1 | 0 |
+| 认证与会话管理 | [auth.md](02-auth.md) | US-AUTH-001 ~ 013 | 13 | 8 | 5 | 0 |
+| 用户管理 | [users.md](03-users.md) | US-USER-001 ~ 012 | 12 | 5 | 5 | 2 |
+| 患者管理 | [patients.md](04-patients.md) | US-PAT-001 ~ 013 | 13 | 4 | 2 | 7 |
+| 药材管理 | [herbs.md](05-herbs.md) | US-HERB-001 ~ 013 | 13 | 5 | 4 | 4 |
+| 验方管理 | [formulas.md](06-formulas.md) | US-FORM-001 ~ 013 | 13 | 6 | 4 | 3 |
+| 医案管理 | [medical-cases.md](07-medical-cases.md) | US-MC-001 ~ 018 | 18 | 9 | 8 | 1 |
+| 数据同步 | [sync.md](10-sync.md) | US-SYNC-001 ~ 008 | 8 | 1 | 7 | 0 |
+| 打印 | [printing.md](09-printing.md) | US-PRINT-001 ~ 004 | 4 | 0 | 3 | 1 |
+| 身份证读卡器 | [card-reader.md](16-card-reader.md) | US-CARD-001 ~ 002 | 2 | 0 | 2 | 0 |
+| 系统健康与诊断 | [health-diagnostics.md](15-health-diagnostics.md) | US-SYS-001 ~ 009 | 9 | 0 | 0 | 9 |
+| 异常处理策略 | [error-handling.md](13-error-handling.md) | US-ERR-001 ~ 008 | 8 | 0 | 6 | 2 |
+| 日志与审计 | [logging.md](14-logging.md) | US-LOG-001 ~ 007 | 7 | 0 | 4 | 3 |
+| Desktop Shell | [desktop-shell.md](12-desktop-shell.md) | US-SHELL-001 ~ 007 | 7 | 5 | 1 | 1 |
+| 配置参数 | [configuration.md](11-configuration.md) | US-CFG-001 ~ 004 | 4 | 2 | 2 | 0 |
+| 挂号管理 | [registration.md](08-registration.md) | US-REG-001 ~ 007 | 7 | 6 | 1 | 0 |
 | **合计** | | | **138** | **51** | **54** | **33** |
 
 ### 7.2 非功能性需求
 
-- [nfr.md](nfr.md) -- 性能/数据量/可用性/安全
+- [nfr.md](17-nfr.md) -- 性能/数据量/可用性/安全
 
 ### 7.3 UI/UX 规范
 
-- [ui-patterns.md](ui-patterns.md) -- 列表/表单/对话框/状态反馈/快捷键/无障碍
+- [ui-patterns.md](18-ui-patterns.md) -- 列表/表单/对话框/状态反馈/快捷键/无障碍
 
 ### 7.4 术语规范
 
@@ -233,11 +233,11 @@ v1.0 包含 15 个功能模块、138 个 User Stories (Must 51 + Should 54 + Cou
 
 ### 7.5 用户故事地图
 
-- [user-story-map.md](user-story-map.md) -- 4 个核心 Narrative 的 Jeff Patton 故事地图 (含 Release Slices + Gap 分析)
+- [user-story-map.md](19-user-story-map.md) -- 4 个核心 Narrative 的 Jeff Patton 故事地图 (含 Release Slices + Gap 分析)
 
 ### 7.6 发布路线图
 
-- [roadmap.md](roadmap.md) -- v1.0 Sprint 分配 + Release 验收标准 (基于 Code-PRD 审计)
+- [roadmap.md](20-roadmap.md) -- v1.0 Sprint 分配 + Release 验收标准 (基于 Code-PRD 审计)
 
 ---
 
@@ -324,7 +324,7 @@ v1.0 包含 15 个功能模块、138 个 User Stories (Must 51 + Should 54 + Cou
 | 用户画像 | [personas.md](../01-product/02-personas.md) | Proto-Persona (3 角色日常时间线、痛点、成功标准) |
 | JTBD 分析 | [jtbd.md](../01-product/03-jtbd.md) | Jobs-to-Be-Done (3 角色 10 个 JTBD + 覆盖度审查) |
 | 临床工作流 | [clinical-workflow.md](../01-product/06-clinical-workflow.md) | 端到端流程 (含异常路径) |
-| 用户故事地图 | [user-story-map.md](user-story-map.md) | Jeff Patton 故事地图 (4 Narrative + Release Slices) |
+| 用户故事地图 | [user-story-map.md](19-user-story-map.md) | Jeff Patton 故事地图 (4 Narrative + Release Slices) |
 | 数据模型 | [data-model.md](../03-architecture/04-data-model.md) | 实体关系定义 |
 | 系统架构 | [system-overview.md](../03-architecture/01-system-overview.md) | 三层架构、模块结构 |
 | Code-PRD 审计 | [审计报告](../plans/archive/2026-02-28-code-vs-prd-full-audit-report.md) | 最近一次全量审计 |

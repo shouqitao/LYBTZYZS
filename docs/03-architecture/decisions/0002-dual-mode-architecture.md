@@ -1,10 +1,10 @@
 # ADR-0002: 双模式架构 (远程 + 本地)
 
-> **⚠️ 已废弃**: 本文档描述的 SQLite 本地模式已被 SQL Server LocalDB + 嵌入式 LocalWebAPI (Kestrel) 替代。原始决策中的策略模式 + ConnectionMode 运行时切换已在 2026-05 架构简化中移除。当前架构详见 [dual-mode.md](../dual-mode.md)。
+> **⚠️ 已废弃**: 本文档描述的 SQLite 本地模式已被 SQL Server LocalDB + 嵌入式 LocalWebAPI (Kestrel) 替代。原始决策中的策略模式 + ConnectionMode 运行时切换已在 2026-05 架构简化中移除。当前架构详见 [dual-mode.md](../05-dual-mode.md)。
 
 **状态**: 已取代 (Superseded)
 **日期**: 2026-02-01
-**取代说明**: 原始决策中的策略模式 + ConnectionMode 运行时切换已在 2026-05 架构简化中移除。当前架构采用 Remote (Refit HTTP) + LocalWebAPI (嵌入式 Kestrel) 双模式，无运行时切换。详见 [dual-mode.md](../dual-mode.md)。
+**取代说明**: 原始决策中的策略模式 + ConnectionMode 运行时切换已在 2026-05 架构简化中移除。当前架构采用 Remote (Refit HTTP) + LocalWebAPI (嵌入式 Kestrel) 双模式，无运行时切换。详见 [dual-mode.md](../05-dual-mode.md)。
 
 ## 背景
 

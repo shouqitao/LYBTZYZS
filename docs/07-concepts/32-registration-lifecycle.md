@@ -73,4 +73,4 @@ stateDiagram-v2
 *   [挂号模块](modules/registration-module.md)
 *   [医案模块](modules/medical-case-module.md)
 *   临床业务规则（business-rules，待补充）
-*   [临床工作流](clinical-workflow.md)
+*   [临床工作流](06-clinical-workflow.md)

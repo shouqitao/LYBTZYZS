@@ -602,7 +602,7 @@ configuration.md 应包含:
 在模块索引表中追加:
 
 ```
-| 身份证读卡器 | [card-reader.md](card-reader.md) | FR-CARD-001 ~ 002 | 2 |
+| 身份证读卡器 | [card-reader.md](../../02-requirements/16-card-reader.md) | FR-CARD-001 ~ 002 | 2 |
 ```
 
 更新总计: `92 → 94`
@@ -613,7 +613,7 @@ configuration.md 应包含:
 
 将原来的内嵌表格行改为:
 ```markdown
-### 健康检查 ([health.md](health.md))
+### 健康检查 ([health.md](../../04-api-reference/11-health.md))
 
 | 方法 | 路径 | 权限 | 说明 |
 |------|------|------|------|
@@ -621,7 +621,7 @@ configuration.md 应包含:
 | GET | `/health/ping` | 匿名 | Ping |
 | GET | `/health/details` | 已认证 | 详细健康检查 (含数据库) |
 
-### 诊断工具 ([diagnostics.md](diagnostics.md)) -- SuperAdmin
+### 诊断工具 ([diagnostics.md](../../04-api-reference/12-diagnostics.md)) -- SuperAdmin
 
 | 方法 | 路径 | 说明 |
 |------|------|------|

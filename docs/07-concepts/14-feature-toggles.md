@@ -32,12 +32,12 @@ sources: ["docs/02-requirements/11-configuration.md"]
 | **CardReader** | Enabled | `false` | 身份证读卡器功能，需硬件支持，默认关闭 |
 
 ## 与工作区模式的区别
-- [工作区模式](workspace-modes.md)：基于用户角色（医生、前台、管理员）的业务逻辑划分，决定用户进入系统后的主界面和可用功能集。
+- [工作区模式](04-workspace-modes.md)：基于用户角色（医生、前台、管理员）的业务逻辑划分，决定用户进入系统后的主界面和可用功能集。
 - **功能开关**：技术层面的全局或环境级开关，用于控制特定功能点的 UI 显隐，通常用于新功能上线前的灰度测试或紧急下线。
 
 ## 关联实体
 - card-reader-integration：`CardReaderEnabled` 开关控制身份证读卡器功能的 UI 入口。
-- [工作区模式](workspace-modes.md)：两者共同作用，决定最终用户看到的界面形态。
+- [工作区模式](04-workspace-modes.md)：两者共同作用，决定最终用户看到的界面形态。
 
 ## 待解决问题
 - **OQ-CFG-01**: 目前功能开关修改需重启 Desktop 客户端才能生效。未来版本（v2.0+）可能考虑实现热更新，以提升运维灵活性。

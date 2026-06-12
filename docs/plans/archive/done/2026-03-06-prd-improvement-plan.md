@@ -632,7 +632,7 @@ MoSCoW 标准定义:
 ```markdown
 | 模块 | 文件 | FR 编号范围 | 功能数 | Must | Should | Could |
 |------|------|------------|--------|------|--------|-------|
-| 认证与会话管理 | [auth.md](auth.md) | FR-AUTH-001~013 | 13 | X | Y | Z |
+| 认证与会话管理 | [auth.md](../../02-requirements/02-auth.md) | FR-AUTH-001~013 | 13 | X | Y | Z |
 | ... | ... | ... | ... | ... | ... | ... |
 ```
 
@@ -641,7 +641,7 @@ MoSCoW 标准定义:
 ```markdown
 ### 7.5 用户故事地图
 
-- [user-story-map.md](user-story-map.md) -- 3 个核心 Narrative 的 Jeff Patton 故事地图
+- [user-story-map.md](../../02-requirements/19-user-story-map.md) -- 3 个核心 Narrative 的 Jeff Patton 故事地图
 ```
 
 ---
@@ -749,7 +749,7 @@ MoSCoW 标准定义:
 ```markdown
 | 用户画像 | [personas.md](../01-product/02-personas.md) | Proto-Persona (3 角色) |
 | JTBD 分析 | [jtbd.md](../01-product/03-jtbd.md) | Jobs-to-Be-Done (10 个 JTBD) |
-| 用户故事地图 | [user-story-map.md](user-story-map.md) | Jeff Patton 故事地图 (3 Narrative) |
+| 用户故事地图 | [user-story-map.md](../../02-requirements/19-user-story-map.md) | Jeff Patton 故事地图 (3 Narrative) |
 ```
 
 ### Task 6.7: 更新变更记录

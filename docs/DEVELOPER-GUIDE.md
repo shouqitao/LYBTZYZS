@@ -23,7 +23,7 @@ dotnet run --project src/Server/Services/LYBT.WebAPI
 dotnet run --project src/Client/Desktop/Shell/LYBT.Desktop.Shell
 ```
 
-详见 → [`05-development/build-and-run.md`](05-development/build-and-run.md)
+详见 → [`05-development/build-and-run.md`](05-development/01-setup.md)
 
 ### 测试
 
@@ -52,9 +52,9 @@ dotnet test tests/LYBT.Tests.Architecture/  # 76 tests (架构守卫)
 
 | 文档 | 说明 | 位置 |
 |------|------|------|
-| 系统架构 | 三层架构 + MVVM + DDD | [`03-architecture/system-architecture.md`](03-architecture/system-architecture.md) |
+| 系统架构 | 三层架构 + MVVM + DDD | [`03-architecture/system-architecture.md`](03-architecture/01-system-overview.md) |
 | 数据模型 | 实体关系与设计 | [`03-architecture/04-data-model.md`](03-architecture/04-data-model.md) |
-| 安全设计 | 认证、授权、数据保护 | [`03-architecture/security.md`](03-architecture/security.md) |
+| 安全设计 | 认证、授权、数据保护 | [`03-architecture/security.md`](03-architecture/07-configuration.md) |
 | 双模式架构 | 远程/本地双数据库 | [`07-concepts/01-dual-mode-architecture.md`](07-concepts/01-dual-mode-architecture.md) |
 | 架构决策记录 | 8项ADR | [`03-architecture/decisions/`](03-architecture/decisions/) |
 
@@ -63,14 +63,14 @@ dotnet test tests/LYBT.Tests.Architecture/  # 76 tests (架构守卫)
 | 文档 | 说明 | 位置 |
 |------|------|------|
 | API 总览 | 100+端点概览 | [`04-api-reference/`](04-api-reference/) |
-| 认证接口 | 登录、令牌、刷新 | [`04-api-reference/auth-api.md`](04-api-reference/auth-api.md) |
+| 认证接口 | 登录、令牌、刷新 | [`04-api-reference/auth-api.md`](04-api-reference/01-auth.md) |
 
 ### 🛠️ 开发指南
 
 | 文档 | 说明 | 位置 |
 |------|------|------|
 | 编码规范 | 命名、格式、分析器规则 | [`05-development/standards/`](05-development/standards/) |
-| 开发流程 | Git工作流、PR规范 | [`05-development/development-guide.md`](05-development/development-guide.md) |
+| 开发流程 | Git工作流、PR规范 | [`05-development/development-guide.md`](05-development/01-setup.md) |
 | 测试策略 | 集成优先、零Mock | [`07-concepts/24-testing-strategy.md`](07-concepts/24-testing-strategy.md) |
 | 常见陷阱 | 已知坑与解决方案 | [`07-concepts/development/common-pitfalls.md`](07-concepts/development/common-pitfalls.md) |
 | 术语表 | 中英文术语对照 | [`07-concepts/development/terminology.md`](07-concepts/development/terminology.md) |

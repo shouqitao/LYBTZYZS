@@ -527,7 +527,7 @@
 
 ## 打印操作
 
-打印端点已独立到 [printing.md](printing.md)，包含:
+打印端点已独立到 [printing.md](08-printing.md)，包含:
 
 - `PUT /medicalcases/{id}/print-completed` — 记录打印完成
 - `POST /medicalcases/{id}/print-logs` — 添加打印日志

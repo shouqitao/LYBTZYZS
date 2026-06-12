@@ -48,10 +48,10 @@ sources: ["docs/02-requirements/05-herbs.md"]
 ## 相关决策
 
 *   HERB-D01：确定采用 Desktop 全量预加载策略，替代服务端的 OutputCache，以适配离线场景。
-*   [双模式架构](dual-mode-architecture.md)：缓存策略在远程和本地模式下均有效，本地模式下通过 LocalWebAPI 读取 SQL Server LocalDB 构建缓存。
+*   [双模式架构](01-dual-mode-architecture.md)：缓存策略在远程和本地模式下均有效，本地模式下通过 LocalWebAPI 读取 SQL Server LocalDB 构建缓存。
 
 ## 参见
 
 *   [药材模块](modules/herb-module.md)
 *   IHerbCacheService（实体/服务占位）
-*   [临床工作流](clinical-workflow.md)
+*   [临床工作流](06-clinical-workflow.md)

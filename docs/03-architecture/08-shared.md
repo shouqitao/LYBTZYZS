@@ -367,7 +367,7 @@ LYBT.Shared.Configuration/
     ClientConfigurationExtensions.cs
 ```
 
-> 详细的配置架构说明 (验证管道、环境分层、热更新策略) 请参见 [configuration.md](configuration.md)。
+> 详细的配置架构说明 (验证管道、环境分层、热更新策略) 请参见 [configuration.md](07-configuration.md)。
 
 **约束**: 引用 Microsoft.Extensions.Options，禁止引用业务逻辑。
 

@@ -53,7 +53,7 @@
 
 ### 3.2 Why Now
 
-认证模块 ([auth.md](auth.md)) 已实现身份验证和会话管理，但"谁能登录"需要用户管理模块来控制。没有用户管理，就无法创建账号、分配角色、禁用离职人员 -- 认证模块是"锁"，用户管理模块是"钥匙管理"。
+认证模块 ([auth.md](02-auth.md)) 已实现身份验证和会话管理，但"谁能登录"需要用户管理模块来控制。没有用户管理，就无法创建账号、分配角色、禁用离职人员 -- 认证模块是"锁"，用户管理模块是"钥匙管理"。
 
 ---
 
@@ -205,7 +205,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 2. 真实姓名变更时自动重新生成拼音码
 3. 权限值检查: operator.PermissionLevel > target.PermissionLevel (USER-D04)
 4. 不能修改 sysadmin (USER-D05: sysadmin 不可被管理)
-5. 角色变更时通过 ICrossModuleAuthService.RevokeAllUserTokensAsync() 撤销该用户 Token Family，强制重登录 (AUTH-D07，见 [auth.md](auth.md))
+5. 角色变更时通过 ICrossModuleAuthService.RevokeAllUserTokensAsync() 撤销该用户 Token Family，强制重登录 (AUTH-D07，见 [auth.md](02-auth.md))
 
 **Dual Mode:**
 | 模式 | 行为 |

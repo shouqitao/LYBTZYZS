@@ -32,7 +32,7 @@
 | SuperAdmin | 查看系统日志 + 管理日志级别 (通过 DiagnosticsController) |
 | 所有角色 | 操作行为被审计日志自动记录 (被动参与) |
 
-> 日志系统是基础设施层，对业务用户透明。日志级别管理见 [health-diagnostics.md](health-diagnostics.md) US-SYS-004~007。
+> 日志系统是基础设施层，对业务用户透明。日志级别管理见 [health-diagnostics.md](15-health-diagnostics.md) US-SYS-004~007。
 
 ---
 
@@ -350,7 +350,7 @@ We believe that 实现 Serilog 结构化日志 + CorrelationId 追踪 + 敏感�
 | 审计类型 | 归属文档 | US 编号 | 说明 |
 |----------|---------|---------|------|
 | 安全审计日志 (SecurityAuditLog) | logging.md | US-LOG-002 | 认证事件审计 |
-| 医案变更审计 (MedicalCaseAuditLog) | [medical-cases.md](medical-cases.md) | US-MC-012 | 医案字段级变更审计 |
+| 医案变更审计 (MedicalCaseAuditLog) | [medical-cases.md](07-medical-cases.md) | US-MC-012 | 医案字段级变更审计 |
 | API 请求日志 (ApiLoggingFilter) | logging.md | US-LOG-007 | Controller Action 执行日志 |
 
 ---

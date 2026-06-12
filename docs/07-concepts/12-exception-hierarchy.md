@@ -44,7 +44,7 @@ sources: ["docs/02-requirements/13-error-handling.md"]
 
 ## 相关概念
 
-*   [整体异常处理架构](error-handling.md)
+*   [整体异常处理架构](11-error-handling.md)
 *   ProblemDetails RFC7807 - 错误响应数据结构
 *   [医案模块](modules/medical-case-module.md) - 医案模块特定异常 (如 `InvalidStatusTransition`)
 *   [认证模块](modules/auth-module.md) - 认证模块特定异常 (如 `TokenExpired`)

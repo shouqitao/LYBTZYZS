@@ -68,7 +68,7 @@ flowchart LR
 
 ## 详细业务流程
 
-> 详细的首诊、复诊、验方创建/使用、药材管理等端到端时序流程，请参阅 [clinical-workflow.md](clinical-workflow.md)。
+> 详细的首诊、复诊、验方创建/使用、药材管理等端到端时序流程，请参阅 [clinical-workflow.md](06-clinical-workflow.md)。
 
 ---
 

@@ -8,7 +8,7 @@
 
 ### 项目概况
 
-凌隐宝堂中医诊所管理系统 (LYBTZYZS) 是基于 .NET 8 的全栈中医诊所管理平台，采用 ASP.NET Core (Server) + WPF/Prism (Desktop) 双端架构，支持远程 (SQL Server) 和本地 (SQLite) 双运行模式。目标架构 (SYNC-D02) 已确认: 共享 Service/Repository 层，仅 DbContext Provider 不同。详见 [dual-mode.md](../03-architecture/05-dual-mode.md)。
+凌隐宝堂中医诊所管理系统 (LYBTZYZS) 是基于 .NET 8 的全栈中医诊所管理平台，采用 ASP.NET Core (Server) + WPF/Prism (Desktop) 双端架构，支持远程 (SQL Server) 和本地 (SQLite) 双运行模式。目标架构 (SYNC-D02) 已确认: 共享 Service/Repository 层，仅 DbContext Provider 不同。详见 [dual-mode.md](../../03-architecture/05-dual-mode.md)。
 
 | 指标 | 数值 |
 |------|------|
@@ -258,7 +258,7 @@ Herbs          ██████
 
 ### 4.5 第四优先级: 双模式架构迁移 (S4)
 
-**目标**: 实施 SYNC-D02，消除 DataSource 双套维护。详见 [dual-mode.md](../03-architecture/05-dual-mode.md)。
+**目标**: 实施 SYNC-D02，消除 DataSource 双套维护。详见 [dual-mode.md](../../03-architecture/05-dual-mode.md)。
 
 | 阶段 | 动作 | 风险 |
 |------|------|------|

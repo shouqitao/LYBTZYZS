@@ -226,7 +226,7 @@
 
 ## 四、角色与权限一览
 
-> 角色定义、授权策略和完整权限矩阵详见 [user-roles.md](user-roles.md)。
+> 角色定义、授权策略和完整权限矩阵详见 [user-roles.md](04-user-roles.md)。
 
 | 角色 | 典型用户 | 权限范围 |
 |------|---------|---------|
@@ -277,7 +277,7 @@
 
 ## 六、术语说明
 
-> 术语定义请参阅 [glossary.md](glossary.md)，角色与权限详见 [user-roles.md](user-roles.md)，产品愿景与路线图详见 [vision.md](vision.md)。
+> 术语定义请参阅 [glossary.md](07-glossary.md)，角色与权限详见 [user-roles.md](04-user-roles.md)，产品愿景与路线图详见 [vision.md](01-vision.md)。
 
 ---
 

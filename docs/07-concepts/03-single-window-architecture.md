@@ -35,5 +35,5 @@ LYBTZYZS 桌面客户端已从早期的多窗口模式迁移至单窗口架构�
 ## 相关概念
 
 *   Desktop Shell：单窗口架构的物理载体。
-*   [MVVM Prism](mvvm-prism.md)：支持 Region 导航的技术框架。
+*   [MVVM Prism](18-mvvm-prism.md)：支持 Region 导航的技术框架。
 *   NavigationCoordinator：实现单窗口内视图切换的核心协调器。
