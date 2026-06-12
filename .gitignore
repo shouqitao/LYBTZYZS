@@ -46,8 +46,8 @@ temp_hash_gen/
 # WPF designer temporary project files
 *_wpftmp.csproj
 
-# Claude Code临时文件（自动生成的工作目录）
-tmpclaude-*
+# OpenCode 临时文件
+tmpopencode-*
 
 # 验证报告和实施总结（临时文件，归档到 docs/reports/ 后删除）
 .verification/
@@ -153,18 +153,9 @@ nul
 *.temp
 .cache/
 
-# Claude Code 工具文件 - 保留本地但不上传
-.claude/
+# AI 工具文件 - 保留本地但不上传
 .opencode/
 .sisyphus/
-!.claude/commands/
-!.claude/core/
-!.claude/modes/
-!.claude/skills/
-!.claude/docs/
-!.claude/reference/
-!.claude/explanation/
-!.claude/guides/
 .gemini/
 .codex/
 .serena/
@@ -290,8 +281,8 @@ update_client_readmes_detailed.py
 .worktrees/
 
 # Ralph-Plan loop
-.claude/ralph-plan-state.local
-.claude/ralph-plan-logs/
+.opencode/ralph-plan-state.local
+.opencode/ralph-plan-logs/
 
 # OMC internal state files (local-only, not for VCS)
 .omc/
@@ -300,3 +291,6 @@ update_client_readmes_detailed.py
 /findings.md
 /progress.md
 /task_plan.md
+
+# WonderPen library database
+docs/docs.wplibrary/
