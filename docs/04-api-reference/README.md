@@ -277,9 +277,10 @@ Token 获取方式见 [认证 API](01-auth.md)。
 
 | 策略 | 角色 | 适用模块 |
 |------|------|----------|
-| AdminOnly | Admin, SuperAdmin | 用户管理 |
+| AdminOnly | Admin, SuperAdmin | 用户管理、系统配置 |
 | DoctorOrAdmin | Doctor, Admin, SuperAdmin | 患者、药材、验方、医案、同步 |
-| SuperAdmin | SuperAdmin | 诊断工具 |
+| PatientAccess | Doctor, Admin, SuperAdmin, Receptionist | 挂号管理 (创建 + 取消挂号) |
+| SuperAdminOnly | SuperAdmin | 诊断工具 |
 
 ## 废弃端点
 

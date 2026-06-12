@@ -26,8 +26,10 @@ tests/
       Entities/, Shared/, WebAPI/     # 无外部依赖的单元测试
 
   LYBT.Tests.Desktop/                 # Desktop 端全量测试 (net8.0-windows, ~760 tests)
-    _Infrastructure/                  # DesktopFixture (SQLite + 真实 Repository)
+    _Infrastructure/                  # DesktopFixture (SQLite InMemory + 真实 Repository)
     ViewModels/                       # ViewModel 集成测试 (真实 DataSource)
+
+> **注意**: Desktop 测试使用 **SQLite InMemory** 作为轻量测试替身。生产环境使用 **SQL Server LocalDB**（非 SQLite）。
     EndToEnd/                         # 业务流 E2E (Repository -> SQLite)
     LocalData/                        # 本地数据层 DataSource 测试
     PureLogic/                        # 纯逻辑 (状态机、事件、模型)

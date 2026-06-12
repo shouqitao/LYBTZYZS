@@ -38,4 +38,4 @@ sources: ["docs/03-architecture/decisions/0003-integration-first-testing.md"]
 ## 参见
 
 *   [测试策略](24-testing-strategy.md)
-*   lybt-tests-server（待补充）
+*   [Server 集成测试](../05-development/05-testing.md) — LYBT.Tests.Server (真实 SQL Server + Respawn)

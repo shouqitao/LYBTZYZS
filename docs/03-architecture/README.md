@@ -12,12 +12,12 @@
 | 后端框架 | ASP.NET Core Web API | 8.0 |
 | ORM | Entity Framework Core | 8.0.20 |
 | 远程数据库 | SQL Server | 2019+ |
-| 本地数据库 | SQL Server (嵌入式 LocalWebAPI) | - |
+| 本地数据库 | SQL Server LocalDB | - |
 | 桌面框架 | WPF | .NET 8 |
 | MVVM 框架 | Prism | 9.0 |
 | DI 容器 | DryIoc (via Prism) | - |
 | UI 控件库 | HandyControl | 3.5.1 |
-| 对象映射 | Riok.Mapperly | 4.1.1 |
+| 对象映射 | Riok.Mapperly | 4.3.1 |
 | 输入验证 | FluentValidation | 12.0 |
 | 认证 | JWT Bearer | - |
 | 密码哈希 | BCrypt.Net-Next | 4.0.3 |
@@ -45,7 +45,7 @@
 1. **单向依赖** -- Server/Shared/Client 之间禁止循环依赖
 2. **聚合根边界** -- MedicalCase 是唯一聚合根，Consultation 和 Prescription 通过它访问
 3. **三层对齐** -- View/ViewModel/Service/Repository 命名保持一致
-4. **贫血模型** -- 实体不包含业务逻辑，逻辑集中在 Service 层
+4. **贫血模型 (MedicalCase 除外)** -- 实体不包含业务逻辑（MedicalCase 例外：含 SoftDelete 等领域方法），逻辑集中在 Service 层
 5. **接口隔离** -- 所有服务通过接口注入，便于测试和替换
 
 ## 变更记录
@@ -53,3 +53,4 @@
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 openspec 规范整合 |
+| 2026-06-12 | v1.1 | Mapperly 4.1.1→4.3.1; LocalDB 描述修正; 贫血模型原则补充 MedicalCase 例外 |

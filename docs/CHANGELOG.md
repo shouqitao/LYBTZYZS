@@ -44,7 +44,7 @@
 
 ### LocalWebAPI (新建)
 - 项目创建: `LYBT.LocalWebAPI`（net8, Library + Web）
-- LocalWebApiDbContext + SQLite种子数据
+- LocalWebApiDbContext + SQL Server LocalDB 种子数据
 - 6个Controller: Patients, Herbs, Formulas, Registrations, MedicalCases, Health
 - JWT认证 + AuthController
 - LocalWebApiHost: Kestrel生命周期管理

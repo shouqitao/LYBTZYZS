@@ -324,9 +324,9 @@ We believe that **providing a systematic registration and queuing mechanism** fo
 
 | 编号 | 问题 | 状态 | 决策 |
 |------|------|------|------|
-| REG-OQ-01 | Registration 是否需要独立的导航页面? | OPEN | 待 UI 设计确认 |
+| REG-OQ-01 | Registration 是否需要独立的导航页面? | OPEN (v1.0 决策) | 待 UI 设计确认 |
 | REG-OQ-02 | 医生模式下是否需要确认对话框? | CLOSED | 不需要，静默创建 (D3) |
-| REG-OQ-03 | Receptionist 是否可以为自己创建挂号? | OPEN | 待确认 |
+| REG-OQ-03 | Receptionist 是否可以为自己创建挂号? | OPEN (v1.0 决策) | 待确认 |
 
 ---
 
