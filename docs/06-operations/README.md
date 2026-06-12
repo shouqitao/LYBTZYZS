@@ -8,8 +8,8 @@
      ├── 远程模式 ──→ [LYBT.WebAPI] ──→ [SQL Server]
      │                   (Kestrel)
      │
-     └── 本地模式 ──→ [SQLite 本地文件]
-                       (%APPDATA%\LYBT\data\)
+      └── 本地模式 ──→ [SQL Server LocalDB]
+                        (%APPDATA%\LYBT\data\)
 ```
 
 ---
@@ -22,9 +22,11 @@
 |------|------|
 | [deployment.md](./deployment.md) | 服务端部署、客户端部署、数据库运维 |
 | [configuration.md](./configuration.md) | 完整配置项说明 (JWT/密码策略/会话/限流/数据库/缓存/Kestrel) |
-| [postman-guide.md](./postman-guide.md) | Postman API 测试工具使用指南 |
-| `LYBTZYZS_API_Collection.json` | Postman Collection v2.1 (102 个端点) |
-| `LYBTZYZS_API_Tests.md` | API 测试用例文档 (120+ 场景) |
+| [development-environment-spec.md](./development-environment-spec.md) | 开发环境规格说明 |
+| [LYBTZYZS_API_Tests.md](./LYBTZYZS_API_Tests.md) | API 测试用例文档 |
+| [webapi-deployment-summary.md](./webapi-deployment-summary.md) | WebAPI 部署摘要 |
+| [WINDOWS-DEPLOYMENT.md](./WINDOWS-DEPLOYMENT.md) | Windows 部署指南 |
+| [archive/](./archive/) | 归档文档 (5 个文件) |
 
 ---
 

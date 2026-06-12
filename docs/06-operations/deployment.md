@@ -74,7 +74,7 @@ WPF Desktop 客户端通过 ClickOnce 或 MSI 分发。
 
 ### 本地模式数据
 
-- SQLite 数据库: `%APPDATA%\LYBT\data\lybt-local.db`
+- SQL Server LocalDB 数据库: `%APPDATA%\LYBT\data\lybt-local.mdf`
 - 日志文件: `%APPDATA%\LYBT\logs\`
 - 配置文件: `%APPDATA%\LYBT\config\`
 
@@ -128,7 +128,7 @@ dotnet ef database update -s src/Server/Services/LYBT.WebAPI
 | 症状 | 可能原因 | 解决方案 |
 |------|---------|---------|
 | 登录后白屏 | API 地址配置错误 | 检查 Desktop 配置中 Server URL 是否正确 |
-| 本地模式数据丢失 | SQLite 文件被删除或损坏 | 检查 `%APPDATA%\LYBT\data\` 目录 |
+| 本地模式数据丢失 | LocalDB 文件被删除或损坏 | 检查 `%APPDATA%\LYBT\data\` 目录 |
 | "Token Expired" 频繁弹出 | 客户端与服务端时钟偏差过大 | 同步系统时间，或调大 `ClockSkewSeconds` |
 
 ### 数据库问题
