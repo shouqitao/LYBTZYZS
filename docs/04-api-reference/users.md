@@ -1,10 +1,10 @@
 # 用户 API
 
-> Controller: `UsersController` | 路由前缀: `/api/v1/users` | 默认权限: `[Authorize(Policy = "AdminOnly")]`
+> Controller: `UsersController` | 路由前缀: `/api/v1/users` | 默认权限: `[Authorize] (类级别，允许所有认证用户; 管理端点用方法级 [Authorize(Policy = "AdminOnly")] 限制)`
 
 ## 概述
 
-用户管理 CRUD、密码管理、状态切换、批量操作。仅限 Admin/SuperAdmin 角色访问。
+用户管理 CRUD、密码管理、状态切换、批量操作。管理端点仅限 Admin/SuperAdmin，自助端点 (current/profile/change-password) 允许所有认证用户。reset-password/restore 需 SuperAdmin。
 
 ---
 
@@ -29,6 +29,8 @@
 ## GET /users/current
 
 获取当前登录用户信息。支持 SuperAdmin 特殊处理 (Id=Guid.Empty)。
+
+> **权限**: `[Authorize]` (所有认证用户, 自助端点)
 
 **成功响应** (200): `ApiResponse<UserDetailDto>`
 
@@ -115,6 +117,8 @@
 
 管理员重置用户密码。
 
+> **权限**: `[Authorize(Policy = "SuperAdminOnly")]`
+
 **路径参数**: `id` (Guid)
 
 **请求体** (`ResetPasswordRequestDto`):
@@ -142,6 +146,8 @@
 
 修改个人资料。
 
+> **权限**: `[Authorize]` (所有认证用户, 自助端点)
+
 **路径参数**: `id` (Guid)
 
 **请求体** (`ChangeProfileDto`):
@@ -162,9 +168,11 @@
 
 用户修改密码。
 
+> **权限**: `[Authorize]` (所有认证用户, 自助端点)
+
 **路径参数**: `id` (Guid)
 
-**请求体** (`ChangePasswordRequest`):
+**请求体** (`Auth.ChangePasswordRequest`):
 
 ```json
 {
@@ -198,8 +206,8 @@
 响应 message 示例: "用户已启用" 或 "用户已禁用"
 
 **错误响应**:
-- 422: 权限不足 -- "您没有权限修改该用户状态"
-- 422: 最后管理员保护 -- "不能禁用最后一个管理员" (USER-D03)
+- 422: 权限不足 -- "您没有权限修改该用户状态" (由 Service 层动态返回，未在 ProducesResponseType 中声明)
+- 422: 最后管理员保护 -- "不能禁用最后一个管理员" (USER-D03, 由 Service 层动态返回)
 - 404: 用户不存在 (ERR-10001)
 
 ---
@@ -207,6 +215,8 @@
 ## POST /users/{id}/restore
 
 恢复已删除的用户。
+
+> **权限**: `[Authorize(Policy = "SuperAdminOnly")]`
 
 **路径参数**: `id` (Guid)
 
@@ -306,3 +316,4 @@
 | 2026-02-18 | v1.1 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-10001~10006, ERR-00003) |
 | 2026-02-19 | v1.2 | toggle-status 端点补充业务规则: USER-D03 最后管理员保护、Token Family 失效、错误响应 |
 | 2026-02-23 | v1.3 | S2-07/08: toggle-status 权限层级说明 + 错误码修正 (422); batch-enable/disable 业务规则 (逐项权限、管理员保护、Token撤销) |
+| 2026-06-12 | v1.4 | 权限标注对齐实际代码: 类级别 [Authorize] + 方法级策略; current/profile/change-password 标注自助端点; reset-password/restore 改为 SuperAdminOnly; toggle-status 422 标注 Service 层动态返回; change-password 请求类型改为 Auth.ChangePasswordRequest |

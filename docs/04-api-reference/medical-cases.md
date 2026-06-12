@@ -1,6 +1,6 @@
 # 医案 API
 
-> Controllers: `MedicalCasesController`, `MedicalCaseWorkflowController`, `MedicalCasePrintController`, `MedicalCaseAuditController` | 路由前缀: `/api/v1/medicalcases` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`
+> Controllers: `MedicalCasesController`, `MedicalCaseProcessingController`, `MedicalCasePrintController`, `MedicalCaseAuditController` | 路由前缀: `/api/v1/medicalcases` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`
 
 ## 概述
 
@@ -16,7 +16,7 @@
 
 创建新医案。
 
-- **权限**: Doctor Only (`[Authorize(Roles = "Doctor")]`)
+- **权限**: `[Authorize(Policy = "DoctorOrAdmin")]`
 - 支持创建时同时包含 Consultation 和 Prescription 数据
 
 **请求体** (`MedicalCaseInputDto`):
@@ -189,7 +189,7 @@
 
 **授权**: 资源级授权 (Delete 操作)
 
-**成功响应** (204): 无内容
+**成功响应** (200): `ApiResponse<bool>`
 
 **错误响应**:
 - 403: 无权删除
@@ -549,7 +549,7 @@
 }
 ```
 
-**成功响应** (200): `MedicalCaseDetailDto` (更新后的医案详情)
+**成功响应** (200): `ApiResponse<MedicalCaseDetailDto>` (更新后的医案详情)
 
 **错误场景**:
 
@@ -583,14 +583,7 @@
 }
 ```
 
-**成功响应** (200):
-
-```json
-{
-  "success": true,
-  "message": "打印日志记录成功"
-}
-```
+**成功响应** (200): `ApiResponse<object>`
 
 **错误场景**:
 

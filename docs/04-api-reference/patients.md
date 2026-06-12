@@ -1,6 +1,6 @@
 # 患者 API
 
-> Controller: `PatientsController` | 路由前缀: `/api/v1/patients` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`
+> Controller: `PatientsController` | 路由前缀: `/api/v1/patients` | 默认权限: `[Authorize(Policy = "PatientAccess")]`
 
 ## 概述
 
@@ -76,7 +76,7 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 }
 ```
 
-**成功响应** (200): `ApiResponse<PatientDetailDto>`
+**成功响应** (201 Created): `ApiResponse<PatientDetailDto>`
 
 ---
 
@@ -106,37 +106,20 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 
 ---
 
-## POST /patients/import
-
-批量导入患者数据 (Excel 文件)。
-
-- **Content-Type**: `multipart/form-data`
-- **文件限制**: 仅 `.xlsx`，最大 10MB
-
-**请求**: `IFormFile file`
-
-**成功响应** (200): `ApiResponse<PatientBatchImportResultDto>`
-
-```json
-{
-  "data": {
-    "successCount": 50,
-    "failureCount": 2,
-    "skippedCount": 1,
-    "errors": [...]
-  }
-}
-```
-
----
-
 ## GET /patients/import-template
 
-下载患者导入 Excel 模板。包含 3 行示例数据。
+下载患者导入 Excel 模板。包含 5 行示例数据。
 
-- **权限**: 匿名 (`[AllowAnonymous]`)
+- **权限**: 继承类级别 `[Authorize(Policy = "PatientAccess")]`
+
+**查询参数**:
+
+| 参数 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `sampleRowCount` | int | 5 | 示例数据行数 |
+
 - **响应类型**: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
-- **文件名**: `患者导入模板_yyyyMMdd.xlsx`
+- **文件名**: `患者导入模板.xlsx`
 
 ---
 
@@ -151,7 +134,7 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 | `keyword` | string? | 筛选条件 |
 
 - **响应类型**: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
-- **文件名**: `患者数据_yyyyMMdd_HHmmss.xlsx`
+- **文件名**: `患者数据.xlsx`
 
 ---
 
@@ -185,9 +168,7 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 
 ## POST /patients/{id}/toggle-status
 
-切换患者状态 (启用/禁用)。仅限 Admin/SuperAdmin。无请求体，自动在 Enabled/Disabled 间切换。
-
-> **权限**: `[Authorize(Policy = "AdminOnly")]`
+切换患者状态 (启用/禁用)。无请求体，自动在 Enabled/Disabled 间切换。
 
 **路径参数**: `id` (Guid)
 

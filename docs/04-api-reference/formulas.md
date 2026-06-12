@@ -101,7 +101,7 @@ Doctor 只能看到自己的和共享的验方，Admin 可操作全部。资源�
 
 **路径参数**: `id` (Guid)
 
-**成功响应** (200): `ApiResponse` ("删除成功")
+**成功响应** (200): `ApiResponse<bool>` ("删除成功")
 
 ---
 
@@ -150,7 +150,7 @@ JSON 批量导入验方 (Server 端只处理 DTO，Excel 解析由 Client 端负
 | `category` | string? | 分类筛选 |
 
 - **响应类型**: Excel 文件
-- **文件名**: `验方数据_[category_]yyyyMMdd_HHmmss.xlsx`
+- **文件名**: `验方数据.xlsx`
 
 ---
 
@@ -158,9 +158,9 @@ JSON 批量导入验方 (Server 端只处理 DTO，Excel 解析由 Client 端负
 
 下载验方导入 Excel 模板。
 
-- **权限**: 匿名 (`[AllowAnonymous]`)
+- **权限**: 继承类级别 `[Authorize(Policy = "DoctorOrAdmin")]`
 - **响应类型**: Excel 文件
-- **文件名**: `验方导入模板_yyyyMMdd.xlsx`
+- **文件名**: `验方导入模板.xlsx`
 
 ---
 
@@ -180,7 +180,13 @@ JSON 批量导入验方 (Server 端只处理 DTO，Excel 解析由 Client 端负
 - `formulaId` (Guid): 验方 ID
 - `herbItemId` (Guid): 药材项 ID
 
-**请求体**: `Guid` (selectedHerbId) -- 系统药材 ID
+**请求体** (`ValidateFormulaHerbInputDto`):
+
+```json
+{
+  "selectedHerbId": "guid"
+}
+```
 
 **成功响应** (200): `ApiResponse` ("药材验证成功")
 

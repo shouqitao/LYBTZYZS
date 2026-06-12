@@ -24,21 +24,26 @@
 }
 ```
 
-**成功响应** (200):
+**成功响应** (200) `LoginResponse`:
 
 ```json
 {
   "success": true,
   "message": "登录成功",
   "data": {
-    "accessToken": "string",        // JWT 访问令牌
-    "refreshToken": "string",       // 刷新令牌
-    "expiresAt": "datetime",        // 过期时间
-    "autoLoginToken": "string",     // 自动登录令牌
-    "userId": "guid",               // 用户 ID
-    "userName": "string",           // 用户名
-    "realName": "string",           // 真实姓名
-    "role": "Doctor|Admin"          // 角色
+    "token": "eyJ...",                       // JWT 访问令牌
+    "user": {                                // 嵌套用户详情
+      "id": "guid",
+      "username": "string",
+      "realName": "string",
+      "role": "Doctor|Admin|SuperAdmin|Receptionist",
+      "status": "Enabled",
+      "isEnabled": true
+    },
+    "refreshToken": "string",                // 刷新令牌
+    "expiresAt": "2026-01-01T00:00:00Z",     // 过期时间
+    "autoLoginToken": "string",              // 自动登录令牌
+    "mustChangePassword": false              // 是否需要修改密码
   }
 }
 ```
@@ -77,7 +82,7 @@
 }
 ```
 
-**成功响应** (200): 同 `/auth/login` 响应格式。
+**成功响应** (200): `LoginResponse` (同 `/auth/login` 响应格式)。
 
 **安全说明**:
 - AutoLoginToken 可被服务端随时撤销
@@ -129,7 +134,7 @@
 }
 ```
 
-**成功响应** (200): 同 `/auth/login` 响应格式。
+**成功响应** (200): `LoginResponse` (同 `/auth/login` 响应格式)。
 
 **错误响应** (401):
 

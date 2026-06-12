@@ -89,20 +89,7 @@ Doctor 只能编辑自己创建的药材，Admin 可操作全部。
 
 **路径参数**: `id` (Guid)
 
-**成功响应** (200): `ApiResponse` ("删除成功")
-
----
-
-## POST /herbs/import
-
-Excel 文件导入药材。
-
-- **Content-Type**: `multipart/form-data`
-- **文件限制**: 仅 `.xlsx`，最大 10MB
-
-**请求**: `IFormFile file`
-
-**成功响应** (200): `ApiResponse<ImportResultDto<HerbDetailDto>>`
+**成功响应** (200): `ApiResponse<bool>` ("删除成功")
 
 ---
 
@@ -117,7 +104,7 @@ Excel 文件导入药材。
 | `category` | string? | 分类筛选 |
 
 - **响应类型**: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
-- **文件名**: `药材数据_[category_]yyyyMMdd_HHmmss.xlsx`
+- **文件名**: `药材数据.xlsx`
 
 ---
 
@@ -125,9 +112,9 @@ Excel 文件导入药材。
 
 下载药材导入 Excel 模板。
 
-- **权限**: 匿名 (`[AllowAnonymous]`)
+- **权限**: 继承类级别 `[Authorize(Policy = "DoctorOrAdmin")]`
 - **响应类型**: Excel 文件
-- **文件名**: `药材导入模板_yyyyMMdd.xlsx`
+- **文件名**: `药材导入模板.xlsx`
 
 ---
 
@@ -275,7 +262,7 @@ JSON 批量导入药材 (非 Excel，直接 DTO 数组)。
 |--------|--------|------|----------|----------|
 | ERR-50101 | HerbNotFound | 404 | 药材不存在 | GET/PUT/DELETE /{id}, POST /{id}/restore |
 | ERR-50102 | HerbValidationFailed | 400 | 验证失败 | POST /, PUT /{id} |
-| ERR-50103 | HerbNoPermission | 403 | 无权限操作此药材 | PUT/DELETE /{id}, PUT /{id}/toggle-status |
+| ERR-50103 | HerbNoPermission | 403 | 无权限操作此药材 | PUT/DELETE /{id}, POST /{id}/toggle-status |
 | ERR-50104 | HerbNotDeleted | 200 | 该药材未被删除 | POST /{id}/restore |
 | ERR-50106 | HerbInvalidPagination | 400 | 分页参数无效 | GET / |
 
@@ -283,19 +270,9 @@ JSON 批量导入药材 (非 Excel，直接 DTO 数组)。
 
 | 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
 |--------|--------|------|----------|----------|
-| ERR-50201 | HerbBatchEmpty | 400 | 请至少选择一个药材 | POST /batch-delete, POST /batch-toggle-status |
+| ERR-50201 | HerbBatchEmpty | 400 | 请至少选择一个药材 | POST /batch-delete, POST /batch-enable, POST /batch-disable |
 | ERR-50202 | HerbBatchImportExceeded | 400 | 批量导入最多10000条 | POST /batch-import |
 | ERR-50203 | HerbBatchCheckExceeded | 400 | 批量检查最多100条 | POST /batch-check-reference |
-
-### 导入错误 (503xx)
-
-| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
-|--------|--------|------|----------|----------|
-| ERR-50301 | HerbImportFileEmpty | 400 | 文件不能为空 | POST /import |
-| ERR-50302 | HerbImportFileFormat | 400 | 仅支持.xlsx格式 | POST /import |
-| ERR-50303 | HerbImportFileSize | 400 | 文件大小不能超过10MB | POST /import |
-| ERR-50304 | HerbImportExcelError | 200 | Excel格式错误 | POST /import |
-| ERR-50305 | HerbImportNoData | 200 | 没有数据行 | POST /import |
 
 ---
 
