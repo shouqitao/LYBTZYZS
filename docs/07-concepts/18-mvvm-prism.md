@@ -33,8 +33,8 @@ graph TB
         M_Herbs["Herbs"]
         M_Formula["Formula"]
         M_MC["MedicalCase"]
+        M_Reg["Registration"]
         M_Sync["Sync"]
-        M_Consultation["Consultation"]
     end
 
     subgraph Core["Core 层 (基础设施)"]

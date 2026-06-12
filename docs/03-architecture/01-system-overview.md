@@ -74,7 +74,7 @@ src/
     Core/                            # 核心层 (2个项目)
       LYBT.Entities/                 # 领域实体 (贫血模型)
       LYBT.Infrastructure/           # 基础设施 (DbContext, Repository基类)
-    Modules/                         # 业务模块 (9个)
+    Modules/                         # 业务模块 (8 active + 2 dormant)
       LYBT.Module.Auth/
       LYBT.Module.Consultation/      # 空壳模块(已废弃，保留以兼容系统加载)
       LYBT.Module.Formula/
