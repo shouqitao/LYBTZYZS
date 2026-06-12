@@ -26,6 +26,7 @@
 | [04-windows-deployment.md](./04-windows-deployment.md) | Windows 部署指南 |
 | [05-development-environment-spec.md](./05-development-environment-spec.md) | 开发环境规格说明 |
 | [06-api-tests.md](./06-api-tests.md) | API 测试用例文档 |
+| [07-backup-recovery.md](./07-backup-recovery.md) | 备份策略、恢复流程、灾难恢复 |
 | [archive/](./archive/) | 归档文档 (5 个文件) |
 
 ---
