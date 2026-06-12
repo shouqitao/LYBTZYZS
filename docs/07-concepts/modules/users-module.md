@@ -4,7 +4,7 @@ title: 用户管理模块
 tags: [module, users, rbac, security]
 created: 2026-06-12
 updated: 2026-06-12
-source: docs/02-requirements/users.md
+source: docs/02-requirements/03-users.md
 ---
 
 # 用户管理模块
@@ -71,7 +71,7 @@ source: docs/02-requirements/users.md
 | `Email` | string(100)? | `[SensitiveData]` 日志脱敏 |
 | `Role` | UserRole | 默认 Doctor |
 | `Status` | CommonStatus | Enabled/Disabled |
-| `PasswordHash` | string(256) | 密码哈希 (详见 [密码管理策略](../password-management-strategy.md)) |
+| `PasswordHash` | string(256) | 密码哈希 (详见 [密码管理策略](../09-password-management.md)) |
 | `FailedLoginCount` | int | 登录失败计数 |
 | `LockoutEnd` | DateTime? | 锁定截止时间 |
 | `MustChangeOnNextLogin` | bool | 管理员重置密码后为 true |
@@ -80,7 +80,7 @@ source: docs/02-requirements/users.md
 ## 密码策略
 
 - 最少8字符，需包含大小写字母、数字、特殊字符
-- 哈希算法: 详见[密码管理策略](../password-management-strategy.md)
+- 哈希算法: 详见[密码管理策略](../09-password-management.md)
 - 管理员重置: 使用配置默认密码或自动生成临时密码
 - 重置后强制下次登录改密 (`MustChangeOnNextLogin = true`)
 

@@ -123,4 +123,4 @@
 ## References
 
 - 设计文档: `docs/plans/2026-03-14-desktop-refactoring-design.md`
-- 双模式架构: `docs/03-architecture/dual-mode.md`
+- 双模式架构: `docs/03-architecture/05-dual-mode.md`

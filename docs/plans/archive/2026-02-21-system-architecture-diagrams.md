@@ -865,7 +865,7 @@ stateDiagram-v2
 
 ### 5.1 临床工作流 (简化版)
 
-详细时序图见 `docs/01-product/clinical-workflow.md` (v2.0)。本图提供简化的端到端流程概览。
+详细时序图见 `docs/01-product/06-clinical-workflow.md` (v2.0)。本图提供简化的端到端流程概览。
 
 > **v2.0 更新**: clinical-workflow.md 已深化补充: Section 六 (异常路径: BR-001 碰撞/BR-002 离开/并发冲突), Section 七 (子流程: 验方导入含重复药材合并/打印保护/编辑模式切换), Section 八 (跨模块联动: 药材禁用/患者禁用)。新增 Registration 独立挂号模块。
 

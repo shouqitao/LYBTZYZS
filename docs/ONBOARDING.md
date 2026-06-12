@@ -136,7 +136,7 @@ dotnet test tests/LYBT.Tests.Architecture/  # ~76 tests
 
 > **测试策略**: 集成优先，零Mock。Server测试用真实SQL Server + Respawn清理。
 
-详见 → [`07-concepts/testing-strategy.md`](07-concepts/testing-strategy.md)
+详见 → [`07-concepts/24-testing-strategy.md`](07-concepts/24-testing-strategy.md)
 
 ---
 

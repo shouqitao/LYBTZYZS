@@ -8,7 +8,7 @@
 
 ## 一、PRD 定义的完整看诊流程
 
-根据 `docs/02-requirements/medical-cases.md` 和 `docs/01-product/clinical-workflow.md`：
+根据 `docs/02-requirements/07-medical-cases.md` 和 `docs/01-product/06-clinical-workflow.md`：
 
 ```
 患者到达 → 查询/创建患者 → 挂号(可选) → 创建医案(Active)
@@ -290,8 +290,8 @@ Management 模式: 默认 ReadOnly → 点击编辑 → Editing
 
 | 文件 | 路径 | 说明 |
 |------|------|------|
-| 医案 PRD | `docs/02-requirements/medical-cases.md` | 18 个 User Stories |
-| 临床工作流 | `docs/01-product/clinical-workflow.md` | 端到端流程 |
+| 医案 PRD | `docs/02-requirements/07-medical-cases.md` | 18 个 User Stories |
+| 临床工作流 | `docs/01-product/06-clinical-workflow.md` | 端到端流程 |
 | 当前 ViewModel | `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/ViewModels/MedicalCaseMasterDetailViewModel.cs` | 327 行 |
 | 当前 EditControl | `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Controls/MedicalCaseEditControl.xaml` | 诊断+处方编辑 |
 | 当前 MasterDetail | `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Controls/MedicalCaseMasterDetailControl.xaml` | 列表+详情容器 |

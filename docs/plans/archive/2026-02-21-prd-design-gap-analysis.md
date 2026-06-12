@@ -251,10 +251,10 @@ sync.md 已覆盖:
 | 编号 | 缺口 | 优先级 | 建议 |
 |------|------|--------|------|
 | DOC-GAP-1 | 缺少模块级技术设计文档 (13/14 模块无独立设计文档) | **P3** | PRD 已技术化, 代码已实现, 补写设计文档 ROI 低。建议维护现有 PRD 质量即可 |
-| ~~DOC-GAP-2~~ | ~~缺少端到端临床工作流图~~ | ~~P2~~ | **已完成**: `docs/01-product/clinical-workflow.md` (v1.0, 2026-02-21) |
+| ~~DOC-GAP-2~~ | ~~缺少端到端临床工作流图~~ | ~~P2~~ | **已完成**: `docs/01-product/06-clinical-workflow.md` (v1.0, 2026-02-21) |
 | DOC-GAP-3 | 缺少外出看诊操作手册 | **P3** | 建议在 `docs/06-operations/` 新增, 待功能上线后编写 |
 | DOC-GAP-4 | 安全事件联动未统一展示 | **P3** | 建议在 auth.md 新增"安全事件联动矩阵"章节 |
-| DOC-GAP-5 | Receptionist 角色无统一工作流 | **P3** | 建议在 `docs/01-product/user-roles.md` 补充各角色工作流 |
+| DOC-GAP-5 | Receptionist 角色无统一工作流 | **P3** | 建议在 `docs/01-product/04-user-roles.md` 补充各角色工作流 |
 
 ### 5.2 PRD 内部一致性问题
 
@@ -341,7 +341,7 @@ sync.md 已覆盖:
 | # | 行动 | 状态 |
 |---|------|------|
 | 1 | 修复 NFR-SEC-001 不活跃超时值 (5->15 分钟) | **已完成** (v1.1) |
-| 2 | 新增端到端临床工作流文档 `docs/01-product/clinical-workflow.md` | **已完成** (v1.1) |
+| 2 | 新增端到端临床工作流文档 `docs/01-product/06-clinical-workflow.md` | **已完成** (v1.1) |
 | 3 | 更新系统功能清单 FR 计数 (120->131) | **已完成** (v1.1) |
 
 ### 代码阶段 (下一步)
@@ -415,7 +415,7 @@ sync.md 已覆盖:
 
 | # | 行动 | 备注 |
 |---|------|------|
-| D1 | 补充 Receptionist 角色完整工作流 | 建议在 `docs/01-product/user-roles.md` 补充 |
+| D1 | 补充 Receptionist 角色完整工作流 | 建议在 `docs/01-product/04-user-roles.md` 补充 |
 | D2 | 补充安全事件联动矩阵 | 建议在 auth.md 新增章节 |
 | D3 | 补充外出看诊操作手册 | 待功能上线后在 `docs/06-operations/` 编写 |
 

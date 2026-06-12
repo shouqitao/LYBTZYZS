@@ -4,7 +4,7 @@ title: 打印管理模块
 tags: [module, printing, medical-case]
 created: 2026-06-10
 updated: 2026-06-10
-source: docs/02-requirements/printing.md
+source: docs/02-requirements/09-printing.md
 ---
 
 ## 概述

@@ -10,19 +10,19 @@
 
 ### Task 1.1: 创建 health-diagnostics.md
 
-- **文件**: `docs/02-requirements/health-diagnostics.md`
+- **文件**: `docs/02-requirements/15-health-diagnostics.md`
 - **内容**: FR-SYS-001~007，完整PRD格式
 - **信息源**:
   - `src/Server/Services/LYBT.WebAPI/Controllers/HealthController.cs` (端点定义)
   - `src/Server/Services/LYBT.WebAPI/Controllers/DiagnosticsController.cs` (端点定义)
-  - `docs/04-api-reference/health.md` (已有API参考)
-  - `docs/04-api-reference/diagnostics.md` (已有API参考)
+  - `docs/04-api-reference/11-health.md` (已有API参考)
+  - `docs/04-api-reference/12-diagnostics.md` (已有API参考)
 - **包含**: 概述、用户角色、7个FR条目(含双模式)、数据模型、错误码、配置参数、决策记录、变更记录
 - **验证**: 与 HealthController/DiagnosticsController 代码逐端点对照
 
 ### Task 1.2: 创建 error-handling.md
 
-- **文件**: `docs/02-requirements/error-handling.md`
+- **文件**: `docs/02-requirements/13-error-handling.md`
 - **内容**: FR-ERR-001~005，完整PRD格式
 - **信息源**:
   - `src/Shared/LYBT.Shared.ExceptionHandling/` 目录下所有文件
@@ -32,7 +32,7 @@
 
 ### Task 1.3: 创建 logging.md
 
-- **文件**: `docs/02-requirements/logging.md`
+- **文件**: `docs/02-requirements/14-logging.md`
 - **内容**: FR-LOG-001~004，完整PRD格式
 - **信息源**:
   - `src/Shared/LYBT.Shared.Logging/` 目录下所有文件
@@ -42,7 +42,7 @@
 
 ### Task 1.4: 创建 desktop-shell.md
 
-- **文件**: `docs/02-requirements/desktop-shell.md`
+- **文件**: `docs/02-requirements/12-desktop-shell.md`
 - **内容**: FR-SHELL-001~007，完整PRD格式
 - **信息源**:
   - `src/Client/Desktop/Shell/` 目录
@@ -52,12 +52,12 @@
 
 ### Task 1.5: 创建 configuration.md
 
-- **文件**: `docs/02-requirements/configuration.md`
+- **文件**: `docs/02-requirements/11-configuration.md`
 - **内容**: FR-CFG-001~003，完整PRD格式
 - **信息源**:
   - `src/Shared/LYBT.Shared.Configuration/` (所有Options类)
   - `src/Server/Services/LYBT.WebAPI/appsettings.json`
-  - `docs/06-operations/configuration.md` (已有运维配置文档)
+  - `docs/06-operations/02-configuration.md` (已有运维配置文档)
 - **包含**: 服务端参数总表、客户端参数总表、环境分层策略、默认值、约束范围
 
 ---
@@ -101,14 +101,14 @@
 
 ### Task 3.2: vision.md 补充版本路线图
 
-- **文件**: `docs/01-product/vision.md`
+- **文件**: `docs/01-product/01-vision.md`
 - **新增章节**: "版本路线图"
   - v1.0 Scope: 120个FR清单
   - v2.0 规划: 汇总各模块 v2.0 条目
 
 ### Task 3.3: user-roles.md 修正 Receptionist
 
-- **文件**: `docs/01-product/user-roles.md`
+- **文件**: `docs/01-product/04-user-roles.md`
 - **修改**: Receptionist 描述从 "患者登记、预约管理" 修正为实际权限
 
 ---

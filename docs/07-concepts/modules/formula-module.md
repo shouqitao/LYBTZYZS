@@ -4,7 +4,7 @@ title: 验方管理模块
 tags: [module, formula, prescription]
 created: 2026-06-10
 updated: 2026-06-12
-source: docs/02-requirements/formulas.md
+source: docs/02-requirements/06-formulas.md
 ---
 
 ## 概述
@@ -164,5 +164,5 @@ Mapper: `FormulaMapper` (Mapperly)。注意 `IsShared ↔ !IsPersonal` 互逆映
 
 ## 相关链接
 
-- [`docs/04-api-reference/formulas.md`](../../04-api-reference/formulas.md) — API 端点详细文档
-- [`docs/07-concepts/formula-validation-workflow.md`](../formula-validation-workflow.md) — 验证工作流
+- [`docs/04-api-reference/05-formulas.md`](../../04-api-reference/05-formulas.md) — API 端点详细文档
+- [`docs/07-concepts/28-formula-validation-workflow.md`](../formula-validation-workflow.md) — 验证工作流

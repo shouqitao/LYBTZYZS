@@ -4,7 +4,7 @@ title: 患者管理模块
 tags: [module, patient, sensitive-data]
 created: 2026-06-10
 updated: 2026-06-12
-source: docs/02-requirements/patients.md
+source: docs/02-requirements/04-patients.md
 ---
 
 ## 概述
@@ -174,6 +174,6 @@ Admin/Clinical Workspace
 
 ## 相关链接
 
-- [`docs/04-api-reference/patients.md`](../../04-api-reference/patients.md) — API 端点详细文档
-- [`docs/07-concepts/patient-status-lifecycle.md`](../patient-status-lifecycle.md) — 生命周期状态图
-- [`docs/07-concepts/sensitive-data-classification.md`](../sensitive-data-classification.md) — 敏感数据分级
+- [`docs/04-api-reference/03-patients.md`](../../04-api-reference/03-patients.md) — API 端点详细文档
+- [`docs/07-concepts/30-patient-status-lifecycle.md`](../patient-status-lifecycle.md) — 生命周期状态图
+- [`docs/07-concepts/10-sensitive-data.md`](../10-sensitive-data.md) — 敏感数据分级

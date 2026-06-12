@@ -676,7 +676,7 @@ dotnet-coverage report coverage.cobertura.xml -f html -o coverage-report
 ### Task 4.3: 文档同步
 
 **Files:**
-- Update: `docs/02-requirements/role-permission-matrix.md` (测试验证状态)
+- Update: `docs/02-requirements/21-role-permission-matrix.md` (测试验证状态)
 - Create: `docs/06-operations/test-coverage-baseline.md`
 
 ---

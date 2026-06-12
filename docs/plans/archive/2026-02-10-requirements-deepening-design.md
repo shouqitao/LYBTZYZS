@@ -420,46 +420,46 @@
 
 ## 回填任务清单 (按文件)
 
-### Task 1: 更新 docs/02-requirements/auth.md
+### Task 1: 更新 docs/02-requirements/02-auth.md
 - FR-AUTH-002 本地模式: "待讨论" → "不支持 (无 Token 机制)"
 - FR-AUTH-006 本地模式: "待讨论" → "不适用 (无会话超时)"
 - 待讨论项表格: 2 项 → 状态改为"已确定"
 - 补充: 本地模式认证差异说明
 
-### Task 2: 更新 docs/02-requirements/users.md
+### Task 2: 更新 docs/02-requirements/03-users.md
 - FR-USER-001~011 本地模式 (11处): "待讨论" → "支持 (LocalUserDataSource)"
 - 待讨论项 #1: "待讨论" → "已确定: 完整支持"
 - 待讨论项 #2 (Receptionist): "待讨论" → "已确定: 仅查看权限"
 
-### Task 3: 更新 docs/02-requirements/patients.md
+### Task 3: 更新 docs/02-requirements/04-patients.md
 - FR-PAT-008 本地模式: "待讨论" → "支持 (客户端 NPOI)"
 - FR-PAT-010 本地模式: "待讨论" → "支持 (客户端 NPOI)"
 - 待讨论项 #1: "待讨论" → "已确定: 客户端本地处理"
 - 待讨论项 #2: "待讨论" → "已确定: v1.0 不加密"
 
-### Task 4: 更新 docs/02-requirements/herbs.md
+### Task 4: 更新 docs/02-requirements/05-herbs.md
 - FR-HERB-009~011 本地模式 (3处): "待讨论" → "支持 (客户端 NPOI/本地 JSON)"
 - 待讨论项 #1: "待讨论" → "已确定: 客户端本地处理"
 - 待讨论项 #2: "待讨论" → "已确定: 不影响 (快照设计)"
 
-### Task 5: 更新 docs/02-requirements/formulas.md
+### Task 5: 更新 docs/02-requirements/06-formulas.md
 - FR-FORM-011~012 本地模式 (2处): "待讨论" → "支持 (客户端 NPOI)"
 - 待讨论项 #1: "待讨论" → "已确定: 客户端本地处理"
 - 待讨论项 #2: "待讨论" → "已确定: 查药材库当前价格"
 
-### Task 6: 更新 docs/02-requirements/medical-cases.md
+### Task 6: 更新 docs/02-requirements/07-medical-cases.md
 - FR-MC-012 本地模式: "待讨论" → "仅实体级审计"
 - 待讨论项 #1: "待讨论" → "已确定: 实体级审计字段"
 - 待讨论项 #2: "待讨论" → "已确定: MC+日期+序号"
 - 待讨论项 #3: "待讨论" → "已确定: 性能满足"
 
-### Task 7: 更新 docs/02-requirements/sync.md
+### Task 7: 更新 docs/02-requirements/10-sync.md
 - 待讨论项 #1: "待讨论" → "已确定: 手动解决"
 - 待讨论项 #2: "待讨论" → "已确定: 见功能矩阵"
 - 待讨论项 #3: "待讨论" → "已确定: v1.0 不支持"
 - 待讨论项 #4: "待讨论" → "已确定: v1.0 不实现"
 
-### Task 8: 更新 docs/02-requirements/printing.md
+### Task 8: 更新 docs/02-requirements/09-printing.md
 - 待讨论项 #1: "待讨论" → "已确定: v1.0 XPS"
 - 待讨论项 #2: "待讨论" → "已确定: v1.0 硬编码"
 - 待讨论项 #3: "待讨论" → "已确定: 已实现"
@@ -467,7 +467,7 @@
 ### Task 9: 更新 docs/02-requirements/README.md
 - 更新待讨论项汇总表
 
-### Task 10: 更新 docs/03-architecture/dual-mode.md
+### Task 10: 更新 docs/03-architecture/05-dual-mode.md
 - TBD-01: "待讨论" → "已确定: 全模块支持"
 - TBD-02: "待讨论" → "已确定: 手动解决"
 - TBD-03: "待扩展" → "v2.0 规划"

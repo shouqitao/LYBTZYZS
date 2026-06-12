@@ -33,7 +33,7 @@ MedicalCaseController was split into 4 new controllers (Epic #1612). The old con
 | `tests/.../ArchTests.cs` | 55 | Code: excludedControllers list |
 | `tests/.../MedicalCaseWorkflowControllerTests.cs` | 398-411 | Code: local DTO copies |
 | `tests/.../MedicalCaseFlowTests.cs` | 14 | Comment only |
-| `docs/04-api-reference/medical-cases.md` | 3 | Doc: controller name |
+| `docs/04-api-reference/06-medical-cases.md` | 3 | Doc: controller name |
 | `src/Server/CLAUDE.md` | 37 | Doc: endpoint table |
 | `src/Server/Services/LYBT.WebAPI/CLAUDE.md` | 448-451 | Doc: internal DTOs |
 | `src/Shared/.../MedicalCaseStatusInputDto.cs` | - | Existing replacement DTO |
@@ -237,14 +237,14 @@ CancellationToken is the **first parameter** with default value.
 
 | # | File | Change |
 |---|------|--------|
-| 5.1 | `docs/04-api-reference/medical-cases.md` line 3 | `Controller: MedicalCaseController` -> `Controllers: MedicalCasesController, MedicalCaseWorkflowController, MedicalCasePrintController, MedicalCaseAuditController` |
-| 5.2 | `docs/04-api-reference/medical-cases.md` line 9 | Remove `MedicalCaseAuthorizationHandler` reference (Authorization/ deleted) |
+| 5.1 | `docs/04-api-reference/06-medical-cases.md` line 3 | `Controller: MedicalCaseController` -> `Controllers: MedicalCasesController, MedicalCaseWorkflowController, MedicalCasePrintController, MedicalCaseAuditController` |
+| 5.2 | `docs/04-api-reference/06-medical-cases.md` line 9 | Remove `MedicalCaseAuthorizationHandler` reference (Authorization/ deleted) |
 | 5.3 | `src/Server/CLAUDE.md` line 37 | Update controller table: split MedicalCaseController row into 4 rows |
 | 5.4 | `src/Server/Services/LYBT.WebAPI/CLAUDE.md` Controllers section | Update MedicalCaseController entry: change to note it's deleted, add 4 new controller entries |
 | 5.5 | `src/Server/Services/LYBT.WebAPI/CLAUDE.md` lines 448-451 | Remove/update internal DTOs table (DTOs moved to Shared) |
 
 **Files modified:**
-- `docs/04-api-reference/medical-cases.md`
+- `docs/04-api-reference/06-medical-cases.md`
 - `src/Server/CLAUDE.md`
 - `src/Server/Services/LYBT.WebAPI/CLAUDE.md`
 
@@ -304,7 +304,7 @@ Each commit is independently buildable and testable.
 | `src/.../MedicalCasesController.cs` | Edit | 2.4 |
 | `src/.../MedicalCasePrintController.cs` | Edit | 2.4 |
 | `src/.../MedicalCaseAuditController.cs` | Edit | 2.4 |
-| `docs/04-api-reference/medical-cases.md` | Edit | 2.5 |
+| `docs/04-api-reference/06-medical-cases.md` | Edit | 2.5 |
 | `src/Server/CLAUDE.md` | Edit | 2.5 |
 | `src/Server/Services/LYBT.WebAPI/CLAUDE.md` | Edit | 2.5 |
 

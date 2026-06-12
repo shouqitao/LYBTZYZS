@@ -251,9 +251,9 @@ Expected: 编译通过
 ## Task 7: 文档更新
 
 **Files:**
-- Modify: `docs/03-architecture/server.md`
+- Modify: `docs/03-architecture/03-server.md`
 - Modify: `docs/04-api-reference/README.md`
-- Modify: `docs/02-requirements/medical-cases.md`
+- Modify: `docs/02-requirements/07-medical-cases.md`
 - Modify: `src/Client/Desktop/Shell/README.md`
 
 **Step 1: 修改 server.md**

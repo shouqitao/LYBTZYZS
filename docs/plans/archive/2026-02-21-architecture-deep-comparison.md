@@ -752,12 +752,12 @@ OpenSpec 1299个标记分布在452个.cs文件中, 代表计划中但尚未完�
 
 | 文件 | 关联维度 |
 |------|---------|
-| `docs/03-architecture/system-overview.md` | D1 |
-| `docs/03-architecture/server.md` | D1, D2 |
-| `docs/03-architecture/desktop.md` | D1, D2 |
-| `docs/03-architecture/data-model.md` | D3 |
-| `docs/03-architecture/shared.md` | D1 |
-| `docs/03-architecture/dual-mode.md` | D1 |
+| `docs/03-architecture/01-system-overview.md` | D1 |
+| `docs/03-architecture/03-server.md` | D1, D2 |
+| `docs/03-architecture/02-desktop.md` | D1, D2 |
+| `docs/03-architecture/04-data-model.md` | D3 |
+| `docs/03-architecture/08-shared.md` | D1 |
+| `docs/03-architecture/05-dual-mode.md` | D1 |
 | `src/Shared/LYBT.Shared.Primitives/ErrorCodes/ErrorCode.cs` | D4, D8 |
 | `src/Shared/LYBT.Shared.Primitives/ErrorCodes/ErrorMessages.cs` | D4, D8 |
 | `src/Shared/LYBT.Shared.ExceptionHandling/Exceptions/Business/BusinessException.cs` | D4 |

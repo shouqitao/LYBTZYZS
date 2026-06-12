@@ -404,7 +404,7 @@ Postman 使用大写资源名:
 ### 长期
 - [ ] 建立自动化对比脚本（Controller → Postman 覆盖率检查）
 - [ ] 集成到 CI/CD pipeline（Newman 自动测试）
-- [ ] 更新 docs/05-development/testing.md（Postman 优先策略）
+- [ ] 更新 docs/05-development/05-testing.md（Postman 优先策略）
 
 ---
 

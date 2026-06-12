@@ -29,14 +29,14 @@
 
 | 文档 | 内容 |
 |------|------|
-| [system-overview.md](system-overview.md) | 系统整体架构图、解决方案结构、依赖方向 |
-| [server.md](server.md) | 服务端三层架构: Controller -> Service -> Repository |
-| [desktop.md](desktop.md) | 桌面端 MVVM + Prism 架构 |
-| [shared.md](shared.md) | 共享层: DTO、工具类、组件 |
-| [dual-mode.md](dual-mode.md) | 双模式架构: 远程 + 本地 |
-| [data-model.md](data-model.md) | 数据模型: 实体关系、字段定义 |
-| [configuration.md](configuration.md) | 配置架构: Options 模式、验证管道、环境分层 |
-| [error-handling-architecture.md](error-handling-architecture.md) | 错误处理架构: 全局异常处理、错误传播、重试策略 |
+| [01-system-overview.md](01-system-overview.md) | 系统整体架构图、解决方案结构、依赖方向 |
+| [02-desktop.md](02-desktop.md) | 桌面端 MVVM + Prism 架构 |
+| [03-server.md](03-server.md) | 服务端三层架构: Controller -> Service -> Repository |
+| [04-data-model.md](04-data-model.md) | 数据模型: 实体关系、字段定义 |
+| [05-dual-mode.md](05-dual-mode.md) | 双模式架构: 远程 + 本地 |
+| [06-error-handling.md](06-error-handling.md) | 错误处理架构: 全局异常处理、错误传播、重试策略 |
+| [07-configuration.md](07-configuration.md) | 配置架构: Options 模式、验证管道、环境分层 |
+| [08-shared.md](08-shared.md) | 共享层: DTO、工具类、组件 |
 | [localwebapi/](localwebapi/) | LocalWebAPI 本地模式架构文档 |
 | [decisions/](decisions/) | 架构决策记录 (ADR) |
 

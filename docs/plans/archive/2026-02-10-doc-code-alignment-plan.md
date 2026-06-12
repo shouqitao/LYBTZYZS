@@ -28,10 +28,10 @@
 
 ---
 
-## Task 1: 创建 docs/02-requirements/card-reader.md
+## Task 1: 创建 docs/02-requirements/16-card-reader.md
 
 **Files:**
-- Create: `docs/02-requirements/card-reader.md`
+- Create: `docs/02-requirements/16-card-reader.md`
 
 **Source:** `src/Client/Desktop/Core/LYBT.Desktop.CardReader/` (ICardReader, IPatientCardReaderIntegration)
 
@@ -164,15 +164,15 @@
 
 **Step 2: 验证**
 
-Run: `grep -c "FR-CARD" docs/02-requirements/card-reader.md`
+Run: `grep -c "FR-CARD" docs/02-requirements/16-card-reader.md`
 Expected: >= 2
 
 ---
 
-## Task 2: 创建 docs/04-api-reference/health.md
+## Task 2: 创建 docs/04-api-reference/11-health.md
 
 **Files:**
-- Create: `docs/04-api-reference/health.md`
+- Create: `docs/04-api-reference/11-health.md`
 
 **Source:** `src/Server/Services/LYBT.WebAPI/Controllers/HealthController.cs`
 
@@ -275,10 +275,10 @@ Ping/Pong 端点，最轻量的探活检查。
 
 ---
 
-## Task 3: 创建 docs/04-api-reference/diagnostics.md
+## Task 3: 创建 docs/04-api-reference/12-diagnostics.md
 
 **Files:**
-- Create: `docs/04-api-reference/diagnostics.md`
+- Create: `docs/04-api-reference/12-diagnostics.md`
 
 **Source:** `src/Server/Services/LYBT.WebAPI/Controllers/DiagnosticsController.cs`, `src/Shared/LYBT.Shared.Logging/Management/LoggingLevelManager.cs`
 
@@ -413,7 +413,7 @@ Ping/Pong 端点，最轻量的探活检查。
 ## Task 4: desktop.md 新增 Controls/Dialogs/CardReader 章节
 
 **Files:**
-- Modify: `docs/03-architecture/desktop.md`
+- Modify: `docs/03-architecture/02-desktop.md`
 
 **Source:** HerbListControlViewModel, HerbItemControlViewModel, FormulaImportDialogViewModel, HistoryCopyDialogViewModel, SyncConflictDialogViewModel, UnsavedChangesDialogViewModel, UnfinishedCaseDialogViewModel, ICardReader, IPatientCardReaderIntegration
 
@@ -538,7 +538,7 @@ PatientMasterDetailViewModel
 | ConnectionStateChanged | 读卡器连接/断开 |
 | CardDetected | 检测到卡片插入 |
 
-需求详见 [card-reader.md](../../02-requirements/card-reader.md)。
+需求详见 [card-reader.md](../../02-requirements/16-card-reader.md)。
 ```
 
 **Step 3: 更新变更记录表**
@@ -554,8 +554,8 @@ PatientMasterDetailViewModel
 
 **Files:**
 - Modify: `docs/06-operations/README.md` (精简为概述+索引)
-- Create: `docs/06-operations/deployment.md` (提取部署内容)
-- Create: `docs/06-operations/configuration.md` (提取配置内容)
+- Create: `docs/06-operations/01-deployment.md` (提取部署内容)
+- Create: `docs/06-operations/02-configuration.md` (提取配置内容)
 
 **Step 1: 创建 deployment.md**
 

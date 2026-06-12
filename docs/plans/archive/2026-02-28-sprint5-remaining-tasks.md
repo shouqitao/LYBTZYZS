@@ -111,9 +111,9 @@ Sprint 5 已完成 5 个 Batch + 文档归档。原计划剩余约 46 项任务�
 
 | # | 编号 | 标题 | 目标文档 |
 |---|------|------|----------|
-| 26 | DOC5-03 | BaseReadRepository 设计说明 | `docs/03-architecture/server.md` |
+| 26 | DOC5-03 | BaseReadRepository 设计说明 | `docs/03-architecture/03-server.md` |
 | 27 | DOC5-04 | Desktop Repository 无基类现状说明 | `docs/05-development/desktop.md` |
-| 28 | DOC5-05 | Sync 模块跨模块引用文档化 | `docs/03-architecture/server.md` |
+| 28 | DOC5-05 | Sync 模块跨模块引用文档化 | `docs/03-architecture/03-server.md` |
 
 **已完成 (不再需要)**:
 - ~~DOC5-01~~: Patient Code 字段 -> data-model.md v1.5 已完整记载

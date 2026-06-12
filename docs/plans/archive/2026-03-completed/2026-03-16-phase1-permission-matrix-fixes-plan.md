@@ -403,7 +403,7 @@ git commit -m "test(permission): add tests for I-2, G-9, G-11 permission matrix 
 ## References
 
 - Design: `docs/plans/2026-03-10-permission-matrix-defect-remediation-design.md`
-- Matrix: `docs/02-requirements/role-permission-matrix.md`
-- PRD MedicalCase: `docs/02-requirements/medical-cases.md`
-- PRD Registration: `docs/02-requirements/registration.md`
+- Matrix: `docs/02-requirements/21-role-permission-matrix.md`
+- PRD MedicalCase: `docs/02-requirements/07-medical-cases.md`
+- PRD Registration: `docs/02-requirements/08-registration.md`
 

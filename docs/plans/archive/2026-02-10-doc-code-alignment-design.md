@@ -58,7 +58,7 @@
 ### D-3: CardReader 需求 + 架构文档
 
 **决策**:
-- 需求层: 创建 `docs/02-requirements/card-reader.md` (FR-CARD-001 ~ FR-CARD-002)
+- 需求层: 创建 `docs/02-requirements/16-card-reader.md` (FR-CARD-001 ~ FR-CARD-002)
 - 架构层: 在 desktop.md 中新增 CardReader 集成章节
 
 **FR 编号**:
@@ -95,12 +95,12 @@ README.md 保留概述和健康检查/日志部分，deployment.md 和 configura
 | 文件 | 内容 | 信息源 |
 |------|------|--------|
 | `docs/02-requirements/entity-audit.md` | EntityAudit 需求 (FR-AUDIT-001~003) | EntityAuditController.cs |
-| `docs/02-requirements/card-reader.md` | CardReader 需求 (FR-CARD-001~002) | LYBT.Desktop.CardReader/ |
+| `docs/02-requirements/16-card-reader.md` | CardReader 需求 (FR-CARD-001~002) | LYBT.Desktop.CardReader/ |
 | `docs/04-api-reference/entity-audit.md` | EntityAudit API 参考 (7端点) | EntityAuditController.cs |
-| `docs/04-api-reference/health.md` | Health API 参考 (3端点) | HealthController.cs |
-| `docs/04-api-reference/diagnostics.md` | Diagnostics API 参考 (4端点) | DiagnosticsController.cs |
-| `docs/06-operations/deployment.md` | 部署指南 (从README.md提取) | 现有 README.md |
-| `docs/06-operations/configuration.md` | 配置参考 (从README.md提取) | 现有 README.md + appsettings.json |
+| `docs/04-api-reference/11-health.md` | Health API 参考 (3端点) | HealthController.cs |
+| `docs/04-api-reference/12-diagnostics.md` | Diagnostics API 参考 (4端点) | DiagnosticsController.cs |
+| `docs/06-operations/01-deployment.md` | 部署指南 (从README.md提取) | 现有 README.md |
+| `docs/06-operations/02-configuration.md` | 配置参考 (从README.md提取) | 现有 README.md + appsettings.json |
 | `docs/plans/2026-02-10-doc-code-alignment-plan.md` | 本次实施计划 | 本设计文档 |
 
 ### 修改文件 (5个)
@@ -108,8 +108,8 @@ README.md 保留概述和健康检查/日志部分，deployment.md 和 configura
 | 文件 | 变更 |
 |------|------|
 | `docs/02-requirements/README.md` | 添加 EntityAudit、CardReader 索引行，更新总计 |
-| `docs/02-requirements/medical-cases.md` | FR-MC-012 添加交叉引用链接 |
-| `docs/03-architecture/desktop.md` | 新增 Controls、Dialogs、CardReader 三个章节 |
+| `docs/02-requirements/07-medical-cases.md` | FR-MC-012 添加交叉引用链接 |
+| `docs/03-architecture/02-desktop.md` | 新增 Controls、Dialogs、CardReader 三个章节 |
 | `docs/04-api-reference/README.md` | 新增3个独立文档链接，更新系统模块索引 |
 | `docs/06-operations/README.md` | 精简为概述+索引，详细内容迁移到子文件 |
 

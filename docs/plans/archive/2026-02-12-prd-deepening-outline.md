@@ -62,7 +62,7 @@
    - 敏感数据传输加密 (当前 HTTPS? 本地网络环境?)
    - v1.0 SQLite 明文的风险评估与接受声明
 
-**预期产出**: 新建 `docs/02-requirements/nfr.md` 或在 README.md 增加 NFR 章节
+**预期产出**: 新建 `docs/02-requirements/17-nfr.md` 或在 README.md 增加 NFR 章节
 
 ---
 
@@ -102,7 +102,7 @@
    - 删除患者时，关联医案如何处理 (引用检查)?
 
 **预期产出**:
-- 更新 `docs/01-product/vision.md` 补充详细业务流程
+- 更新 `docs/01-product/01-vision.md` 补充详细业务流程
 - 新增模块交互章节到架构文档或 README
 
 ---
@@ -142,7 +142,7 @@
    - 模式切换的入口和交互方式
 
 **预期产出**:
-- 新建 `docs/02-requirements/ui-patterns.md` 定义全局 UI 规范
+- 新建 `docs/02-requirements/18-ui-patterns.md` 定义全局 UI 规范
 - 或在各模块 PRD 中补充 UI 章节
 
 ---
@@ -185,7 +185,7 @@
    - 远程 -> 本地: 是否需要先同步?
    - 本地 -> 远程: 认证如何恢复?
 
-**预期产出**: 更新 `docs/02-requirements/sync.md`，补充 DTO/UI/流程章节
+**预期产出**: 更新 `docs/02-requirements/10-sync.md`，补充 DTO/UI/流程章节
 
 ---
 
@@ -222,7 +222,7 @@
    - 启动失败时的降级策略 (直接进入本地模式?)
    - 启动诊断信息的展示方式
 
-**预期产出**: 更新 `docs/02-requirements/desktop-shell.md`
+**预期产出**: 更新 `docs/02-requirements/12-desktop-shell.md`
 
 ---
 
@@ -255,7 +255,7 @@
    - 版本管理: 修改处方后重新打印，版本号如何递增?
    - 打印日志的查询和展示 (在哪个界面查看?)
 
-**预期产出**: 更新 `docs/02-requirements/printing.md`，补充排版规格和内容规则
+**预期产出**: 更新 `docs/02-requirements/09-printing.md`，补充排版规格和内容规则
 
 ---
 
@@ -284,8 +284,8 @@
    - 异常日志的告警机制 (v1.0 范围内? 还是 v2.0?)
 
 **预期产出**:
-- 更新 `docs/02-requirements/logging.md`
-- 更新 `docs/02-requirements/health-diagnostics.md`
+- 更新 `docs/02-requirements/14-logging.md`
+- 更新 `docs/02-requirements/15-health-diagnostics.md`
 - 厘清两者边界
 
 ---
@@ -347,7 +347,7 @@
    - 搜索结果的排序规则 (最近? 相关度?)
    - 高级筛选: 日期范围 / 状态 / 医生?
 
-**预期产出**: 更新 `docs/02-requirements/medical-cases.md`，补充边界条件
+**预期产出**: 更新 `docs/02-requirements/07-medical-cases.md`，补充边界条件
 
 ---
 

@@ -33,8 +33,8 @@ Patient/User/Herb/Formula 等模块使用单一 `I{Entity}Service`，不拆分 C
 
 ## 参考
 
-- 设计模式速查: `docs/05-development/patterns.md` CQRS 分离章节
-- MedicalCase PRD: `docs/02-requirements/medical-cases.md`
+- 设计模式速查: `docs/05-development/04-patterns.md` CQRS 分离章节
+- MedicalCase PRD: `docs/02-requirements/07-medical-cases.md`
 
 ---
 

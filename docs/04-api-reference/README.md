@@ -21,7 +21,7 @@
 Authorization: Bearer {access_token}
 ```
 
-Token 获取方式见 [认证 API](auth.md)。
+Token 获取方式见 [认证 API](01-auth.md)。
 
 ## 通用响应格式
 
@@ -91,7 +91,7 @@ Token 获取方式见 [认证 API](auth.md)。
 
 ## 模块端点索引
 
-### 认证模块 ([auth.md](auth.md))
+### 认证模块 ([01-auth.md](01-auth.md))
 
 | 方法 | 路径 | 权限 | 说明 |
 |------|------|------|------|
@@ -101,7 +101,7 @@ Token 获取方式见 [认证 API](auth.md)。
 | POST | `/auth/refresh` | 匿名 | 刷新 Token |
 | GET | `/auth/validate` | 已认证 | 验证 Token |
 
-### 用户模块 ([users.md](users.md)) -- AdminOnly
+### 用户模块 ([02-users.md](02-users.md)) -- AdminOnly
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -120,7 +120,7 @@ Token 获取方式见 [认证 API](auth.md)。
 | POST | `/users/batch-enable` | 批量启用 |
 | POST | `/users/batch-disable` | 批量禁用 |
 
-### 患者模块 ([patients.md](patients.md)) -- DoctorOrAdmin
+### 患者模块 ([03-patients.md](03-patients.md)) -- DoctorOrAdmin
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -137,7 +137,7 @@ Token 获取方式见 [认证 API](auth.md)。
 | GET | `/patients/{id}/check-reference` | 引用检查 |
 | POST | `/patients/batch-check-reference` | 批量引用检查 |
 
-### 药材模块 ([herbs.md](herbs.md)) -- DoctorOrAdmin
+### 药材模块 ([04-herbs.md](04-herbs.md)) -- DoctorOrAdmin
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -159,7 +159,7 @@ Token 获取方式见 [认证 API](auth.md)。
 | POST | `/herbs/batch-disable` | 批量禁用 |
 | POST | `/herbs/batch-delete` | 批量删除 |
 
-### 验方模块 ([formulas.md](formulas.md)) -- DoctorOrAdmin
+### 验方模块 ([05-formulas.md](05-formulas.md)) -- DoctorOrAdmin
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -179,7 +179,7 @@ Token 获取方式见 [认证 API](auth.md)。
 | POST | `/formulas/batch-enable` | 批量启用 |
 | POST | `/formulas/batch-disable` | 批量禁用 |
 
-### 医案模块 ([medical-cases.md](medical-cases.md)) -- DoctorOrAdmin
+### 医案模块 ([06-medical-cases.md](06-medical-cases.md)) -- DoctorOrAdmin
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -201,10 +201,10 @@ Token 获取方式见 [认证 API](auth.md)。
 | GET | `/medicalcases/{id}/audit-logs` | 审计日志 |
 | GET | `/medicalcases/{id}/consultations` | 诊断记录列表 |
 | GET | `/medicalcases/{id}/prescriptions` | 处方记录列表 |
-| PUT | `/medicalcases/{id}/print-completed` | 记录打印完成 (详见 [printing.md](printing.md)) |
-| POST | `/medicalcases/{id}/print-logs` | 添加打印日志 (详见 [printing.md](printing.md)) |
+| PUT | `/medicalcases/{id}/print-completed` | 记录打印完成 (详见 [08-printing.md](08-printing.md)) |
+| POST | `/medicalcases/{id}/print-logs` | 添加打印日志 (详见 [08-printing.md](08-printing.md)) |
 
-### 挂号管理模块 ([registrations.md](registrations.md)) -- PatientAccess
+### 挂号管理模块 ([07-registrations.md](07-registrations.md)) -- PatientAccess
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -216,7 +216,7 @@ Token 获取方式见 [认证 API](auth.md)。
 | PUT | `/registrations/{id}/start-visit` | 接诊 (DoctorOrAdmin) |
 | PUT | `/registrations/{id}/cancel` | 取消挂号 |
 
-### 数据同步模块 ([sync.md](sync.md)) -- DoctorOrAdmin
+### 数据同步模块 ([09-sync.md](09-sync.md)) -- DoctorOrAdmin
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -227,7 +227,7 @@ Token 获取方式见 [认证 API](auth.md)。
 | POST | `/sync/download` | 下载服务端数据 |
 | POST | `/sync/delete` | 同步删除 |
 
-### 健康检查 ([health.md](health.md))
+### 健康检查 ([11-health.md](11-health.md))
 
 | 方法 | 路径 | 权限 | 说明 |
 |------|------|------|------|
@@ -235,7 +235,7 @@ Token 获取方式见 [认证 API](auth.md)。
 | GET | `/health/ping` | 匿名 | Ping |
 | GET | `/health/details` | 已认证 | 详细健康检查 (含数据库) |
 
-### 诊断工具 ([diagnostics.md](diagnostics.md)) -- SuperAdmin
+### 诊断工具 ([12-diagnostics.md](12-diagnostics.md)) -- SuperAdmin
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -271,7 +271,7 @@ Token 获取方式见 [认证 API](auth.md)。
 | InternalError | 内部错误 | 500 |
 | ServiceUnavailable | 服务不可用 | 503 |
 
-> 其中 PasswordExpired、SessionNotFound、SessionExpired、ConcurrentSessionLimit 为设计扩展 (不在 [auth.md](../02-requirements/auth.md) PRD 中定义)，作为安全防御性措施保留。
+> 其中 PasswordExpired、SessionNotFound、SessionExpired、ConcurrentSessionLimit 为设计扩展 (不在 [auth.md](../02-requirements/02-auth.md) PRD 中定义)，作为安全防御性措施保留。
 
 ## 授权策略
 

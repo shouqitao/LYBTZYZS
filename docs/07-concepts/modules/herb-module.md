@@ -4,7 +4,7 @@ title: 药材管理模块
 tags: [module, herb, prescription]
 created: 2026-06-10
 updated: 2026-06-12
-source: docs/02-requirements/herbs.md
+source: docs/02-requirements/05-herbs.md
 ---
 
 ## 概述
@@ -146,6 +146,6 @@ DTO 路径细节：
 
 ## 相关链接
 
-- [`docs/04-api-reference/herbs.md`](../../04-api-reference/herbs.md) — API 端点详细文档
-- [`docs/07-concepts/herb-cache-strategy.md`](../herb-cache-strategy.md) — 缓存策略详情
-- [`docs/07-concepts/pinyin-search-implementation.md`](../pinyin-search-implementation.md) — 拼音搜索
+- [`docs/04-api-reference/04-herbs.md`](../../04-api-reference/04-herbs.md) — API 端点详细文档
+- [`docs/07-concepts/16-herb-cache-strategy.md`](../herb-cache-strategy.md) — 缓存策略详情
+- [`docs/07-concepts/27-pinyin-search.md`](../27-pinyin-search.md) — 拼音搜索

@@ -67,7 +67,7 @@
 **目标**: 将 prd.md S3 的基础角色扩展为可操作的 Proto-Persona
 **时间**: 1-1.5 小时
 **PM Skill**: `proto-persona`
-**输出文件**: `docs/01-product/personas.md` (新建)
+**输出文件**: `docs/01-product/02-personas.md` (新建)
 
 | Task | 角色 | 补充维度 |
 |------|------|---------|
@@ -96,7 +96,7 @@
 **时间**: 1.5-2 小时
 **PM Skill**: `jobs-to-be-done`
 **数据来源**: clinical-workflow.md (已有详细流程) + vision.md (已有依赖矩阵)
-**输出**: 追加到 `docs/01-product/personas.md` 或独立 `docs/01-product/jtbd.md`
+**输出**: 追加到 `docs/01-product/02-personas.md` 或独立 `docs/01-product/03-jtbd.md`
 
 | Task | JTBD 主体 | 说明 |
 |------|----------|------|
@@ -124,7 +124,7 @@ When [situation], I want to [motivation], so I can [expected outcome].
 **时间**: 2-3 小时
 **PM Skill**: `user-story-mapping` (Jeff Patton 框架)
 **数据来源**: clinical-workflow.md 流程 + Phase 3 JTBD + 现有 131 FR
-**输出文件**: `docs/02-requirements/user-story-map.md` (新建)
+**输出文件**: `docs/02-requirements/19-user-story-map.md` (新建)
 
 #### 故事地图骨架 (基于现有 clinical-workflow)
 
@@ -234,9 +234,9 @@ Phase 6 (顶层 PRD 深化) -- 依赖全部前置 Phase
 |-------|---------|---------|
 | Phase 0 | 无 | data-model.md, server.md, glossary.md, sync.md, medical-cases.md, herbs.md, formulas.md, patients.md, card-reader.md, desktop-shell.md |
 | Phase 1 | 无 | patients.md, herbs.md, formulas.md, auth.md, sync.md, printing.md |
-| Phase 2 | `docs/01-product/personas.md` | prd.md (S3 链接) |
-| Phase 3 | `docs/01-product/jtbd.md` | prd.md (S3 链接) |
-| Phase 4 | `docs/02-requirements/user-story-map.md` | prd.md (S7 链接) |
+| Phase 2 | `docs/01-product/02-personas.md` | prd.md (S3 链接) |
+| Phase 3 | `docs/01-product/03-jtbd.md` | prd.md (S3 链接) |
+| Phase 4 | `docs/02-requirements/19-user-story-map.md` | prd.md (S7 链接) |
 | Phase 5 | 无 | 14 个模块文件 (添加 Priority 列), prd.md (S7 统计) |
 | Phase 6 | 无 | prd.md (S1/S2/S3/S6/S7/S10) |
 

@@ -4,7 +4,7 @@ title: 挂号管理模块 (Registration Module)
 tags: [module, registration, patient, medical-case]
 created: 2026-06-10
 updated: 2026-06-10
-source: docs/02-requirements/registration.md
+source: docs/02-requirements/08-registration.md
 ---
 
 ## 概述

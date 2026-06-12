@@ -31,10 +31,10 @@
 
 ---
 
-## Task 1: 更新 docs/02-requirements/auth.md
+## Task 1: 更新 docs/02-requirements/02-auth.md
 
 **Files:**
-- Modify: `docs/02-requirements/auth.md` (4 处标记)
+- Modify: `docs/02-requirements/02-auth.md` (4 处标记)
 
 **Design Reference:** 设计文档主题 B-1 (自动登录), B-2 (会话超时)
 
@@ -71,22 +71,22 @@
 
 **Step 5: 验证**
 
-运行: `grep -c "待讨论" docs/02-requirements/auth.md`
+运行: `grep -c "待讨论" docs/02-requirements/02-auth.md`
 Expected: 0
 
 **Step 6: Commit**
 
 ```bash
-git add docs/02-requirements/auth.md
+git add docs/02-requirements/02-auth.md
 git commit -m "docs(requirements): auth.md 回填本地模式决策 (B-1, B-2)"
 ```
 
 ---
 
-## Task 2: 更新 docs/02-requirements/users.md
+## Task 2: 更新 docs/02-requirements/03-users.md
 
 **Files:**
-- Modify: `docs/02-requirements/users.md` (14 处标记)
+- Modify: `docs/02-requirements/03-users.md` (14 处标记)
 
 **Design Reference:** 设计文档主题 A-2 (用户管理支持范围), A-3 (Receptionist边界)
 
@@ -119,22 +119,22 @@ git commit -m "docs(requirements): auth.md 回填本地模式决策 (B-1, B-2)"
 
 **Step 4: 验证**
 
-运行: `grep -c "待讨论" docs/02-requirements/users.md`
+运行: `grep -c "待讨论" docs/02-requirements/03-users.md`
 Expected: 0
 
 **Step 5: Commit**
 
 ```bash
-git add docs/02-requirements/users.md
+git add docs/02-requirements/03-users.md
 git commit -m "docs(requirements): users.md 回填本地模式+Receptionist决策 (A-2, A-3)"
 ```
 
 ---
 
-## Task 3: 更新 docs/02-requirements/patients.md
+## Task 3: 更新 docs/02-requirements/04-patients.md
 
 **Files:**
-- Modify: `docs/02-requirements/patients.md` (5 处标记)
+- Modify: `docs/02-requirements/04-patients.md` (5 处标记)
 
 **Design Reference:** 设计文档主题 D-1 (导入导出), D-2 (加密策略)
 
@@ -172,22 +172,22 @@ git commit -m "docs(requirements): users.md 回填本地模式+Receptionist决�
 
 **Step 5: 验证**
 
-运行: `grep -c "待讨论" docs/02-requirements/patients.md`
+运行: `grep -c "待讨论" docs/02-requirements/04-patients.md`
 Expected: 0
 
 **Step 6: Commit**
 
 ```bash
-git add docs/02-requirements/patients.md
+git add docs/02-requirements/04-patients.md
 git commit -m "docs(requirements): patients.md 回填导入导出+加密决策 (D-1, D-2)"
 ```
 
 ---
 
-## Task 4: 更新 docs/02-requirements/herbs.md
+## Task 4: 更新 docs/02-requirements/05-herbs.md
 
 **Files:**
-- Modify: `docs/02-requirements/herbs.md` (6 处标记)
+- Modify: `docs/02-requirements/05-herbs.md` (6 处标记)
 
 **Design Reference:** 设计文档主题 D-1 (导入导出), F-1 (价格影响)
 
@@ -233,22 +233,22 @@ git commit -m "docs(requirements): patients.md 回填导入导出+加密决策 (
 
 **Step 6: 验证**
 
-运行: `grep -c "待讨论" docs/02-requirements/herbs.md`
+运行: `grep -c "待讨论" docs/02-requirements/05-herbs.md`
 Expected: 0
 
 **Step 7: Commit**
 
 ```bash
-git add docs/02-requirements/herbs.md
+git add docs/02-requirements/05-herbs.md
 git commit -m "docs(requirements): herbs.md 回填导入导出+价格快照决策 (D-1, F-1)"
 ```
 
 ---
 
-## Task 5: 更新 docs/02-requirements/formulas.md
+## Task 5: 更新 docs/02-requirements/06-formulas.md
 
 **Files:**
-- Modify: `docs/02-requirements/formulas.md` (5 处标记)
+- Modify: `docs/02-requirements/06-formulas.md` (5 处标记)
 
 **Design Reference:** 设计文档主题 D-1 (导入导出), F-2 (价格计算)
 
@@ -286,22 +286,22 @@ git commit -m "docs(requirements): herbs.md 回填导入导出+价格快照决�
 
 **Step 5: 验证**
 
-运行: `grep -c "待讨论" docs/02-requirements/formulas.md`
+运行: `grep -c "待讨论" docs/02-requirements/06-formulas.md`
 Expected: 0
 
 **Step 6: Commit**
 
 ```bash
-git add docs/02-requirements/formulas.md
+git add docs/02-requirements/06-formulas.md
 git commit -m "docs(requirements): formulas.md 回填导入导出+价格计算决策 (D-1, F-2)"
 ```
 
 ---
 
-## Task 6: 更新 docs/02-requirements/medical-cases.md
+## Task 6: 更新 docs/02-requirements/07-medical-cases.md
 
 **Files:**
-- Modify: `docs/02-requirements/medical-cases.md` (5 处标记)
+- Modify: `docs/02-requirements/07-medical-cases.md` (5 处标记)
 
 **Design Reference:** 设计文档主题 E-1 (审计日志), E-2 (编号冲突), E-3 (搜索性能)
 
@@ -339,22 +339,22 @@ git commit -m "docs(requirements): formulas.md 回填导入导出+价格计算�
 
 **Step 5: 验证**
 
-运行: `grep -c "待讨论" docs/02-requirements/medical-cases.md`
+运行: `grep -c "待讨论" docs/02-requirements/07-medical-cases.md`
 Expected: 0
 
 **Step 6: Commit**
 
 ```bash
-git add docs/02-requirements/medical-cases.md
+git add docs/02-requirements/07-medical-cases.md
 git commit -m "docs(requirements): medical-cases.md 回填审计+编号+搜索决策 (E-1~E-3)"
 ```
 
 ---
 
-## Task 7: 更新 docs/02-requirements/sync.md
+## Task 7: 更新 docs/02-requirements/10-sync.md
 
 **Files:**
-- Modify: `docs/02-requirements/sync.md` (5 处标记)
+- Modify: `docs/02-requirements/10-sync.md` (5 处标记)
 
 **Design Reference:** 设计文档主题 C-1 (冲突解决), C-2 (MedicalCase同步), C-4 (自动提示), C-5 (功能受限)
 
@@ -392,22 +392,22 @@ git commit -m "docs(requirements): medical-cases.md 回填审计+编号+搜索�
 
 **Step 5: 验证**
 
-运行: `grep -c "待讨论" docs/02-requirements/sync.md`
+运行: `grep -c "待讨论" docs/02-requirements/10-sync.md`
 Expected: 0
 
 **Step 6: Commit**
 
 ```bash
-git add docs/02-requirements/sync.md
+git add docs/02-requirements/10-sync.md
 git commit -m "docs(requirements): sync.md 回填冲突解决+同步范围决策 (C-1~C-5)"
 ```
 
 ---
 
-## Task 8: 更新 docs/02-requirements/printing.md
+## Task 8: 更新 docs/02-requirements/09-printing.md
 
 **Files:**
-- Modify: `docs/02-requirements/printing.md` (4 处标记)
+- Modify: `docs/02-requirements/09-printing.md` (4 处标记)
 
 **Design Reference:** 设计文档主题 F-3 (PDF导出), F-4 (模板配置), F-5 (批量打印)
 
@@ -437,13 +437,13 @@ git commit -m "docs(requirements): sync.md 回填冲突解决+同步范围决策
 
 **Step 4: 验证**
 
-运行: `grep -c "待讨论" docs/02-requirements/printing.md`
+运行: `grep -c "待讨论" docs/02-requirements/09-printing.md`
 Expected: 0
 
 **Step 5: Commit**
 
 ```bash
-git add docs/02-requirements/printing.md
+git add docs/02-requirements/09-printing.md
 git commit -m "docs(requirements): printing.md 回填PDF+模板+批量打印决策 (F-3~F-5)"
 ```
 
@@ -486,10 +486,10 @@ git commit -m "docs(requirements): README.md 更新标注说明 (待讨论→已
 
 ---
 
-## Task 10: 更新 docs/03-architecture/dual-mode.md
+## Task 10: 更新 docs/03-architecture/05-dual-mode.md
 
 **Files:**
-- Modify: `docs/03-architecture/dual-mode.md` (6 处标记)
+- Modify: `docs/03-architecture/05-dual-mode.md` (6 处标记)
 
 **Design Reference:** 设计文档主题 A-1 (功能矩阵), C-1 (冲突解决), C-2 (MedicalCase同步), C-3 (User同步), C-5 (功能受限)
 
@@ -535,7 +535,7 @@ git commit -m "docs(requirements): README.md 更新标注说明 (待讨论→已
 
 **Step 6: 验证**
 
-运行: `grep -c "待讨论\|TBD\|待扩展" docs/03-architecture/dual-mode.md`
+运行: `grep -c "待讨论\|TBD\|待扩展" docs/03-architecture/05-dual-mode.md`
 Expected: 0
 
 > **注意**: TBD-01/02/03 是表格中的编号标识符，不是"待讨论"标记。验证时需确认没有 status 列中的 "待讨论" 或 "待扩展" 字样。
@@ -543,7 +543,7 @@ Expected: 0
 **Step 7: Commit**
 
 ```bash
-git add docs/03-architecture/dual-mode.md
+git add docs/03-architecture/05-dual-mode.md
 git commit -m "docs(architecture): dual-mode.md 回填功能矩阵+同步决策 (A-1, C-1~C-5)"
 ```
 

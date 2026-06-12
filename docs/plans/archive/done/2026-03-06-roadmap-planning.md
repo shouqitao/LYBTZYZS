@@ -4,7 +4,7 @@
 
 **Goal:** 基于 MoSCoW 优先级排序 (45 Must / 53 Should / 33 Could) 和代码实现现状，制定 v1.0 Sprint/Release 路线图。
 
-**Architecture:** 文档驱动。通过 Code-PRD 对齐审计确定各 US 实现状态，然后基于依赖关系和优先级分配到 Sprint。产出物为 `docs/02-requirements/roadmap.md`。
+**Architecture:** 文档驱动。通过 Code-PRD 对齐审计确定各 US 实现状态，然后基于依赖关系和优先级分配到 Sprint。产出物为 `docs/02-requirements/20-roadmap.md`。
 
 **Tech Stack:** Markdown 文档，PM Skills 框架 (`roadmap-planning` skill)
 
@@ -80,8 +80,8 @@
 ### Task 2.1: 绘制模块级依赖图
 
 **Files:**
-- Read: `docs/01-product/clinical-workflow.md` Section 四 (跨模块交互矩阵)
-- Read: `docs/02-requirements/user-story-map.md` (Narrative 顺序)
+- Read: `docs/01-product/06-clinical-workflow.md` Section 四 (跨模块交互矩阵)
+- Read: `docs/02-requirements/19-user-story-map.md` (Narrative 顺序)
 
 **Step 1:** 从 clinical-workflow.md 提取模块依赖链:
 
@@ -118,7 +118,7 @@ Auth -> Users -> Patients -> MedicalCase -> Printing
 ### Task 3.1: 定义 Sprint 规划框架
 
 **Files:**
-- Create: `docs/02-requirements/roadmap.md`
+- Create: `docs/02-requirements/20-roadmap.md`
 
 **Step 1:** 创建文件，定义路线图框架:
 
@@ -218,7 +218,7 @@ Sprint 9: 剩余 Should Have + 回归测试
 ### Task 4.1: 定义 Release 验收标准
 
 **Files:**
-- Modify: `docs/02-requirements/roadmap.md`
+- Modify: `docs/02-requirements/20-roadmap.md`
 
 **Step 1:** 为每个 Release 定义 Exit Criteria:
 
@@ -247,7 +247,7 @@ Sprint 9: 剩余 Should Have + 回归测试
 ### Task 4.2: 更新 prd.md 链接
 
 **Files:**
-- Modify: `docs/02-requirements/prd.md`
+- Modify: `docs/02-requirements/01-prd.md`
 
 **Step 1:** 在 S7 Requirements Index 中添加 roadmap 链接:
 

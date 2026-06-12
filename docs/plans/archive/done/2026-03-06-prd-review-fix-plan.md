@@ -44,7 +44,7 @@
 ### Task 1.2: 更新 data-model.md 新增 Registration 实体
 
 **Files:**
-- Modify: `docs/03-architecture/data-model.md`
+- Modify: `docs/03-architecture/04-data-model.md`
 
 **Step 1:** 在 ER 图 mermaid 块中新增 Registration 关系:
 
@@ -96,7 +96,7 @@ Registration -.->|MedicalCaseId| MC
 ### Task 2.1: 补全 registration.md 10 章节结构
 
 **Files:**
-- Modify: `docs/02-requirements/registration.md`
+- Modify: `docs/02-requirements/08-registration.md`
 
 **需补充的章节 (按 PRD Development 标准):**
 
@@ -122,7 +122,7 @@ Registration -.->|MedicalCaseId| MC
 ### Task 3.1: 新增 Registration 到 Narrative 1
 
 **Files:**
-- Modify: `docs/02-requirements/user-story-map.md`
+- Modify: `docs/02-requirements/19-user-story-map.md`
 
 **Step 1:** 在 Narrative 1 Activity 1 (患者登记) 和 Activity 2 (创建医案) 之间插入新 Activity: "挂号分流"
 
@@ -191,7 +191,7 @@ Should Have 合计: 53 -> **54 US**
 ### Task 4.1: 补充 Registration 取消联动描述
 
 **Files:**
-- Modify: `docs/01-product/clinical-workflow.md`
+- Modify: `docs/01-product/06-clinical-workflow.md`
 
 **Step 1:** 在跨模块联动章节 (Section 四或八) 新增 Registration 状态联动说明:
 

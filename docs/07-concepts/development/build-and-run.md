@@ -4,7 +4,7 @@ title: 构建与运行
 tags: [development, setup, build]
 created: 2026-06-10
 updated: 2026-06-10
-source: docs/05-development/setup.md
+source: docs/05-development/01-setup.md
 ---
 
 ## 概述

@@ -4,7 +4,7 @@ title: 术语表
 tags: [terminology, glossary, naming]
 created: 2026-06-10
 updated: 2026-06-10
-source: docs/01-product/glossary.md
+source: docs/01-product/07-glossary.md
 ---
 
 # 术语表

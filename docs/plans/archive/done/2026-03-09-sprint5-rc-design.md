@@ -366,8 +366,8 @@ _ = Task.Run(async () =>
 ### 5.3 文档更新
 
 - `roadmap.md`: 新增 Sprint 5 记录，关闭 CODE-25/CODE-21
-- `docs/03-architecture/dual-mode.md`: 更新本地模式备份说明 (如需)
-- `docs/02-requirements/nfr.md`: 更新 NFR-AVAIL-001 验收标准 checkbox
+- `docs/03-architecture/05-dual-mode.md`: 更新本地模式备份说明 (如需)
+- `docs/02-requirements/17-nfr.md`: 更新 NFR-AVAIL-001 验收标准 checkbox
 
 ---
 

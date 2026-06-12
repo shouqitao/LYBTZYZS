@@ -5,9 +5,9 @@
 > **状态**: 待评审
 > **范围**: 前端 Clinical 模块 + Registration 模块 + MedicalCase 模块的"开始接诊"入口链路
 > **关联文档**:
-> - `docs/01-product/clinical-workflow.md` (端到端临床工作流)
-> - `docs/02-requirements/medical-cases.md` (医案管理 PRD)
-> - `docs/02-requirements/registration.md` (挂号管理 PRD)
+> - `docs/01-product/06-clinical-workflow.md` (端到端临床工作流)
+> - `docs/02-requirements/07-medical-cases.md` (医案管理 PRD)
+> - `docs/02-requirements/08-registration.md` (挂号管理 PRD)
 > - `docs/03-architecture/medicalcase-workspace-current-state.md` (医案工作台当前状态)
 > - `docs/plans/medicalcase-workspace-refactoring-analysis.md` (重构分析)
 

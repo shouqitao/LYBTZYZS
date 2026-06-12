@@ -20,12 +20,12 @@
 
 | 文档 | 内容 |
 |------|------|
-| [deployment.md](./deployment.md) | 服务端部署、客户端部署、数据库运维 |
-| [configuration.md](./configuration.md) | 完整配置项说明 (JWT/密码策略/会话/限流/数据库/缓存/Kestrel) |
-| [development-environment-spec.md](./development-environment-spec.md) | 开发环境规格说明 |
-| [LYBTZYZS_API_Tests.md](./LYBTZYZS_API_Tests.md) | API 测试用例文档 |
-| [webapi-deployment-summary.md](./webapi-deployment-summary.md) | WebAPI 部署摘要 |
-| [WINDOWS-DEPLOYMENT.md](./WINDOWS-DEPLOYMENT.md) | Windows 部署指南 |
+| [01-deployment.md](./01-deployment.md) | 服务端部署、客户端部署、数据库运维 |
+| [02-configuration.md](./02-configuration.md) | 完整配置项说明 (JWT/密码策略/会话/限流/数据库/缓存/Kestrel) |
+| [03-webapi-deployment-summary.md](./03-webapi-deployment-summary.md) | WebAPI 部署摘要 |
+| [04-windows-deployment.md](./04-windows-deployment.md) | Windows 部署指南 |
+| [05-development-environment-spec.md](./05-development-environment-spec.md) | 开发环境规格说明 |
+| [06-api-tests.md](./06-api-tests.md) | API 测试用例文档 |
 | [archive/](./archive/) | 归档文档 (5 个文件) |
 
 ---

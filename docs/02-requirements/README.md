@@ -10,28 +10,28 @@
 
 | 模块 | 文件 | US 编号范围 | User Story 数 |
 |------|------|------------|--------------|
-| 认证与会话管理 | [auth.md](auth.md) | US-AUTH-001 ~ 013 | 13 |
-| 用户管理 | [users.md](users.md) | US-USER-001 ~ 012 | 12 |
-| 患者管理 | [patients.md](patients.md) | US-PAT-001 ~ 013 | 13 |
-| 药材管理 | [herbs.md](herbs.md) | US-HERB-001 ~ 013 | 13 |
-| 验方管理 | [formulas.md](formulas.md) | US-FORM-001 ~ 013 | 13 |
-| 医案管理 | [medical-cases.md](medical-cases.md) | US-MC-001 ~ 018 | 18 |
-| 数据同步 | [sync.md](sync.md) | US-SYNC-001 ~ 008 | 8 |
-| 打印 | [printing.md](printing.md) | US-PRINT-001 ~ 004 | 4 |
-| 身份证读卡器 | [card-reader.md](card-reader.md) | US-CARD-001 ~ 002 | 2 |
-| 系统健康与诊断 | [health-diagnostics.md](health-diagnostics.md) | US-SYS-001 ~ 009 | 9 |
-| 异常处理策略 | [error-handling.md](error-handling.md) | US-ERR-001 ~ 008 | 8 |
-| 日志与审计 | [logging.md](logging.md) | US-LOG-001 ~ 007 | 7 |
-| Desktop Shell | [desktop-shell.md](desktop-shell.md) | US-SHELL-001 ~ 007 | 7 |
-| 配置参数 | [configuration.md](configuration.md) | US-CFG-001 ~ 004 | 4 |
-| 挂号管理 | [registration.md](registration.md) | US-REG-001 ~ 007 | 7 |
-| **非功能性需求** | **[nfr.md](nfr.md)** | **NFR-PERF/DATA/AVAIL/SEC** | **跨模块** |
-| **UI/UX 交互规范** | **[ui-patterns.md](ui-patterns.md)** | **UI-D01~D06** | **跨模块** |
-| **角色权限与数据归属** | **[role-permission-matrix.md](role-permission-matrix.md)** | **-** | **跨模块** |
+| 认证与会话管理 | [02-auth.md](02-auth.md) | US-AUTH-001 ~ 013 | 13 |
+| 用户管理 | [03-users.md](03-users.md) | US-USER-001 ~ 012 | 12 |
+| 患者管理 | [04-patients.md](04-patients.md) | US-PAT-001 ~ 013 | 13 |
+| 药材管理 | [05-herbs.md](05-herbs.md) | US-HERB-001 ~ 013 | 13 |
+| 验方管理 | [06-formulas.md](06-formulas.md) | US-FORM-001 ~ 013 | 13 |
+| 医案管理 | [07-medical-cases.md](07-medical-cases.md) | US-MC-001 ~ 018 | 18 |
+| 挂号管理 | [08-registration.md](08-registration.md) | US-REG-001 ~ 007 | 7 |
+| 打印 | [09-printing.md](09-printing.md) | US-PRINT-001 ~ 004 | 4 |
+| 数据同步 | [10-sync.md](10-sync.md) | US-SYNC-001 ~ 008 | 8 |
+| 配置参数 | [11-configuration.md](11-configuration.md) | US-CFG-001 ~ 004 | 4 |
+| Desktop Shell | [12-desktop-shell.md](12-desktop-shell.md) | US-SHELL-001 ~ 007 | 7 |
+| 异常处理策略 | [13-error-handling.md](13-error-handling.md) | US-ERR-001 ~ 008 | 8 |
+| 日志与审计 | [14-logging.md](14-logging.md) | US-LOG-001 ~ 007 | 7 |
+| 系统健康与诊断 | [15-health-diagnostics.md](15-health-diagnostics.md) | US-SYS-001 ~ 009 | 9 |
+| 身份证读卡器 | [16-card-reader.md](16-card-reader.md) | US-CARD-001 ~ 002 | 2 |
+| **非功能性需求** | **[17-nfr.md](17-nfr.md)** | **NFR-PERF/DATA/AVAIL/SEC** | **跨模块** |
+| **UI/UX 交互规范** | **[18-ui-patterns.md](18-ui-patterns.md)** | **UI-D01~D06** | **跨模块** |
+| **角色权限与数据归属** | **[21-role-permission-matrix.md](21-role-permission-matrix.md)** | **-** | **跨模块** |
 
 > **总计: 138 个 User Stories (15 个模块) + NFR 文档 (性能/数据量/可用性/安全)**
 >
-> **顶层 PRD**: [prd.md](prd.md) -- 产品需求文档总纲 (Executive Summary / Problem Statement / Success Metrics / Out of Scope / Dependencies & Risks)
+> **顶层 PRD**: [01-prd.md](01-prd.md) -- 产品需求文档总纲 (Executive Summary / Problem Statement / Success Metrics / Out of Scope / Dependencies & Risks)
 
 ---
 

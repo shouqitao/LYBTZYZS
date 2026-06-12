@@ -58,15 +58,15 @@
 
 | Controller | 代码端点数 | API文档 | 状态 |
 |-----------|----------|---------|------|
-| AuthController | 7 | `docs/04-api-reference/auth.md` | 已文档化 |
-| UsersController | 14 | `docs/04-api-reference/users.md` | 已文档化 |
-| PatientsController | 10 | `docs/04-api-reference/patients.md` | 已文档化 |
-| HerbsController | 19 | `docs/04-api-reference/herbs.md` | 已文档化 (字段名不一致) |
-| FormulasController | 17 | `docs/04-api-reference/formulas.md` | 已文档化 |
-| MedicalCaseController | 18 | `docs/04-api-reference/medical-cases.md` | 已文档化 |
-| SyncController | 6 | `docs/04-api-reference/sync.md` | 已文档化 |
-| HealthController | 3 | `docs/04-api-reference/health.md` | 已文档化 |
-| DiagnosticsController | 4 | `docs/04-api-reference/diagnostics.md` | 已文档化 |
+| AuthController | 7 | `docs/04-api-reference/01-auth.md` | 已文档化 |
+| UsersController | 14 | `docs/04-api-reference/02-users.md` | 已文档化 |
+| PatientsController | 10 | `docs/04-api-reference/03-patients.md` | 已文档化 |
+| HerbsController | 19 | `docs/04-api-reference/04-herbs.md` | 已文档化 (字段名不一致) |
+| FormulasController | 17 | `docs/04-api-reference/05-formulas.md` | 已文档化 |
+| MedicalCaseController | 18 | `docs/04-api-reference/06-medical-cases.md` | 已文档化 |
+| SyncController | 6 | `docs/04-api-reference/09-sync.md` | 已文档化 |
+| HealthController | 3 | `docs/04-api-reference/11-health.md` | 已文档化 |
+| DiagnosticsController | 4 | `docs/04-api-reference/12-diagnostics.md` | 已文档化 |
 | **合计** | **97** | **9 文档** | **100% 覆盖** |
 
 > **修正说明**: 原统计 82 端点基于文档，精确化后代码实际 97 端点。
@@ -257,39 +257,39 @@
 
 | Class/Interface | 对应 FR/ADR/Doc | 状态 |
 |----------------|----------------|------|
-| `IAuthService` | FR-AUTH-001~005, `docs/04-api-reference/auth.md` | 有文档映射 |
-| `AuthService` | FR-AUTH-001~005, `docs/03-architecture/server.md` | 有文档映射 |
-| `IJwtService` | FR-AUTH-003, `docs/03-architecture/server.md` | 有文档映射 |
+| `IAuthService` | FR-AUTH-001~005, `docs/04-api-reference/01-auth.md` | 有文档映射 |
+| `AuthService` | FR-AUTH-001~005, `docs/03-architecture/03-server.md` | 有文档映射 |
+| `IJwtService` | FR-AUTH-003, `docs/03-architecture/03-server.md` | 有文档映射 |
 | `JwtService` | FR-AUTH-003, ADR-0008 | 有文档映射 |
 | `ITokenRevocationService` | FR-AUTH-004, ADR-0008 | 有文档映射 |
 | `TokenRevocationService` | FR-AUTH-004, ADR-0008 | 有文档映射 |
-| `ISecurityAuditService` | FR-LOG-002, `docs/02-requirements/logging.md` | 有文档映射 |
-| `SecurityAuditService` | FR-LOG-002, `docs/02-requirements/logging.md` | 有文档映射 |
+| `ISecurityAuditService` | FR-LOG-002, `docs/02-requirements/14-logging.md` | 有文档映射 |
+| `SecurityAuditService` | FR-LOG-002, `docs/02-requirements/14-logging.md` | 有文档映射 |
 | `SecurityAuditEvent` | (内部模型) | 可接受无文档 |
 
 #### LYBT.Module.Users (3 public types)
 
 | Class/Interface | 对应 FR/ADR/Doc | 状态 |
 |----------------|----------------|------|
-| `IUserService` | FR-USER-001~012, `docs/04-api-reference/users.md` | 有文档映射 |
-| `UserService` | FR-USER-001~012, `docs/03-architecture/server.md` | 有文档映射 |
-| `IUserRepository` | `docs/03-architecture/server.md` | 有文档映射 |
+| `IUserService` | FR-USER-001~012, `docs/04-api-reference/02-users.md` | 有文档映射 |
+| `UserService` | FR-USER-001~012, `docs/03-architecture/03-server.md` | 有文档映射 |
+| `IUserRepository` | `docs/03-architecture/03-server.md` | 有文档映射 |
 
 #### LYBT.Module.Patients (3 public types)
 
 | Class/Interface | 对应 FR/ADR/Doc | 状态 |
 |----------------|----------------|------|
-| `IPatientService` | FR-PAT-001~013, `docs/04-api-reference/patients.md` | 有文档映射 |
-| `PatientService` | FR-PAT-001~013, `docs/03-architecture/server.md` | 有文档映射 |
-| `IPatientRepository` | `docs/03-architecture/server.md` | 有文档映射 |
+| `IPatientService` | FR-PAT-001~013, `docs/04-api-reference/03-patients.md` | 有文档映射 |
+| `PatientService` | FR-PAT-001~013, `docs/03-architecture/03-server.md` | 有文档映射 |
+| `IPatientRepository` | `docs/03-architecture/03-server.md` | 有文档映射 |
 
 #### LYBT.Module.Herbs (7 public types)
 
 | Class/Interface | 对应 FR/ADR/Doc | 状态 |
 |----------------|----------------|------|
-| `IHerbService` | FR-HERB-001~013, `docs/04-api-reference/herbs.md` | 有文档映射 |
+| `IHerbService` | FR-HERB-001~013, `docs/04-api-reference/04-herbs.md` | 有文档映射 |
 | `HerbService` | FR-HERB-001~013 | 有文档映射 |
-| `IHerbRepository` | `docs/03-architecture/server.md` | 有文档映射 |
+| `IHerbRepository` | `docs/03-architecture/03-server.md` | 有文档映射 |
 | `HerbRepository` | 基础设施 | 有文档映射 |
 | `HerbMapper` (Server) | (Mapper) | 可接受无文档 |
 | `HerbsModule` | (Module注册) | 可接受无文档 |
@@ -299,11 +299,11 @@
 
 | Class/Interface | 对应 FR/ADR/Doc | 状态 |
 |----------------|----------------|------|
-| `IFormulaService` | FR-FORM-001~010, `docs/04-api-reference/formulas.md` | 有文档映射 |
+| `IFormulaService` | FR-FORM-001~010, `docs/04-api-reference/05-formulas.md` | 有文档映射 |
 | `FormulaService` | FR-FORM-001~010 | 有文档映射 |
 | `IFormulaImportExportService` | FR-FORM-011~013 | 有文档映射 |
 | `FormulaImportExportService` | FR-FORM-011~013 | 有文档映射 |
-| `IFormulaRepository` | `docs/03-architecture/server.md` | 有文档映射 |
+| `IFormulaRepository` | `docs/03-architecture/03-server.md` | 有文档映射 |
 
 #### LYBT.Module.MedicalCase (15 public types)
 
@@ -329,7 +329,7 @@
 
 | Class/Interface | 对应 FR/ADR/Doc | 状态 |
 |----------------|----------------|------|
-| `ISyncService` | FR-SYNC-001~006, `docs/04-api-reference/sync.md`, ADR-0002 | 有文档映射 |
+| `ISyncService` | FR-SYNC-001~006, `docs/04-api-reference/09-sync.md`, ADR-0002 | 有文档映射 |
 | `SyncService` | FR-SYNC-001~006, ADR-0002 | 有文档映射 |
 
 ### 3.2 Server Core
@@ -338,21 +338,21 @@
 
 | 类型 | 文档映射 | 状态 |
 |------|---------|------|
-| 14 Entity classes (User, Patient, Herb, Formula, MedicalCase, Consultation, Prescription, PrescriptionItem, FormulaHerbItem, RefreshToken, AuthSession, SecurityAuditLog, SystemLog, MedicalCaseAuditLog) | `docs/03-architecture/data-model.md` | 有文档映射 |
+| 14 Entity classes (User, Patient, Herb, Formula, MedicalCase, Consultation, Prescription, PrescriptionItem, FormulaHerbItem, RefreshToken, AuthSession, SecurityAuditLog, SystemLog, MedicalCaseAuditLog) | `docs/03-architecture/04-data-model.md` | 有文档映射 |
 | `BlacklistedToken`, `AutoLoginToken` | ADR-0008 | 有文档映射 |
 | `PrescriptionPrintLog` | FR-PRINT-004 | 有文档映射 |
-| `IAuditableEntity`, `ISoftDeletable` | `docs/03-architecture/data-model.md` | 有文档映射 |
-| `SensitiveDataAttribute` (2 types) | FR-LOG-003, `docs/02-requirements/logging.md` | 有文档映射 |
+| `IAuditableEntity`, `ISoftDeletable` | `docs/03-architecture/04-data-model.md` | 有文档映射 |
+| `SensitiveDataAttribute` (2 types) | FR-LOG-003, `docs/02-requirements/14-logging.md` | 有文档映射 |
 
 #### LYBT.Infrastructure (86 types, 精确化)
 
 | 类别 | 数量 | 文档映射 | 状态 |
 |------|------|---------|------|
-| `AppDbContext` + `AppDbContextFactory` + `DatabaseInitializationService` | 3 | `docs/03-architecture/data-model.md` | 有文档映射 |
+| `AppDbContext` + `AppDbContextFactory` + `DatabaseInitializationService` | 3 | `docs/03-architecture/04-data-model.md` | 有文档映射 |
 | EF Configuration classes (含 `BaseEntityConfiguration<T>`) | 16 | (EF配置) | 可接受无文档 |
-| `IRepository<T>` + `IReadRepository<T>` | 2 | `docs/03-architecture/server.md` | 有文档映射 |
-| `BaseRepository<T>` + `BaseReadRepository<T>` + `BaseService` + `BaseService<T>` | 4 | `docs/03-architecture/server.md` | 有文档映射 |
-| `BaseApiController` + `ApiErrorCodes` | 2 | `docs/03-architecture/server.md` | 有文档映射 |
+| `IRepository<T>` + `IReadRepository<T>` | 2 | `docs/03-architecture/03-server.md` | 有文档映射 |
+| `BaseRepository<T>` + `BaseReadRepository<T>` + `BaseService` + `BaseService<T>` | 4 | `docs/03-architecture/03-server.md` | 有文档映射 |
+| `BaseApiController` + `ApiErrorCodes` | 2 | `docs/03-architecture/03-server.md` | 有文档映射 |
 | `ProductionConfigurationValidator` (6 types: class + Item + Severity + ErrorType + Error + Exception) | 6 | FR-CFG-004 | 有文档映射 |
 | `DefaultPasswordService` + `DefaultPasswordSummary` | 2 | ADR-0005 | 有文档映射 |
 | `LogCleanupService` + `LogCleanupOptions` | 2 | FR-LOG-005 | 有文档映射 |
@@ -368,14 +368,14 @@
 | 类别 | 数量 | 文档映射 | 状态 |
 |------|------|---------|------|
 | 9 Controllers | 9 | `docs/04-api-reference/*.md` | 有文档映射 |
-| 3 Middleware (`Security/CorrelationId/ClaimsNormalization`) | 3 | `docs/03-architecture/server.md` | 有文档映射 |
+| 3 Middleware (`Security/CorrelationId/ClaimsNormalization`) | 3 | `docs/03-architecture/03-server.md` | 有文档映射 |
 | `ApiLoggingFilter` | 1 | FR-LOG-007 | 有文档映射 |
 | `SecurityAuditCleanupService` | 1 | FR-LOG-006 | 有文档映射 |
 | `SqlServerHealthCheck` | 1 | FR-SYS-001~003 | 有文档映射 |
 | `DatabaseStartupDiagnostics` | 1 | FR-SYS-008 | 有文档映射 |
-| 2 Authorization handlers | 2 | `docs/03-architecture/server.md` | 有文档映射 |
-| `DiagnosticsController` inner types (3) | 3 | `docs/04-api-reference/diagnostics.md` | 有文档映射 |
-| `MedicalCaseController` inner types (3) | 3 | `docs/04-api-reference/medical-cases.md` | 有文档映射 |
+| 2 Authorization handlers | 2 | `docs/03-architecture/03-server.md` | 有文档映射 |
+| `DiagnosticsController` inner types (3) | 3 | `docs/04-api-reference/12-diagnostics.md` | 有文档映射 |
+| `MedicalCaseController` inner types (3) | 3 | `docs/04-api-reference/06-medical-cases.md` | 有文档映射 |
 | README内文档类型 | 12 | (README文档) | 可接受无文档 |
 
 ### 3.3 Desktop Modules 反向追溯摘要 (精确化)
@@ -640,8 +640,8 @@
 | P3-02 | Auth | ValidateToken 不返回剩余有效时间 (PRD 已标注延期 AUTH-16) |
 | P3-03 | Auth | 4 个事件缺失: SessionExpiring/SessionExtended/LogoutStarted/ForcedLogout (已延期 AUTH-10) |
 | P3-04 | Auth | Token 过期记录清理调度未确认 (ADR-0008 要求 CleanupExpiredTokensAsync) |
-| P3-05 | Herbs | `docs/04-api-reference/herbs.md` 字段名与代码不一致 (`pinyin` vs `PinYinCode`) |
-| P3-06 | Formula | `docs/04-api-reference/formulas.md` 字段名与代码不一致 (`effects` vs `Effect`) |
+| P3-05 | Herbs | `docs/04-api-reference/04-herbs.md` 字段名与代码不一致 (`pinyin` vs `PinYinCode`) |
+| P3-06 | Formula | `docs/04-api-reference/05-formulas.md` 字段名与代码不一致 (`effects` vs `Effect`) |
 | P3-07 | Formula | Server FormulaInputDtoValidator Name MaxLength=100，PRD 已修订为 200 |
 | P3-08 | Patients | 导入模板身份证列未标记 "*" 必填标识 |
 | P3-09 | Patients | `CheckReferenceAsync` 查询排除已删除医案 (`!mc.IsDeleted`)，PRD "所有状态" 含义待澄清 |
@@ -843,15 +843,15 @@
 
 | Controller | 端点数 | API 文档 |
 |-----------|--------|---------|
-| AuthController | 5 | `docs/04-api-reference/auth.md` |
-| UsersController | 12 | `docs/04-api-reference/users.md` |
-| PatientsController | 8 | `docs/04-api-reference/patients.md` |
-| HerbsController | 15 | `docs/04-api-reference/herbs.md` |
-| FormulasController | 13 | `docs/04-api-reference/formulas.md` |
-| MedicalCaseController | 17 | `docs/04-api-reference/medical-cases.md` |
-| SyncController | 6 | `docs/04-api-reference/sync.md` |
-| HealthController | 2 | `docs/04-api-reference/health.md` |
-| DiagnosticsController | 4 | `docs/04-api-reference/diagnostics.md` |
+| AuthController | 5 | `docs/04-api-reference/01-auth.md` |
+| UsersController | 12 | `docs/04-api-reference/02-users.md` |
+| PatientsController | 8 | `docs/04-api-reference/03-patients.md` |
+| HerbsController | 15 | `docs/04-api-reference/04-herbs.md` |
+| FormulasController | 13 | `docs/04-api-reference/05-formulas.md` |
+| MedicalCaseController | 17 | `docs/04-api-reference/06-medical-cases.md` |
+| SyncController | 6 | `docs/04-api-reference/09-sync.md` |
+| HealthController | 2 | `docs/04-api-reference/11-health.md` |
+| DiagnosticsController | 4 | `docs/04-api-reference/12-diagnostics.md` |
 
 ---
 

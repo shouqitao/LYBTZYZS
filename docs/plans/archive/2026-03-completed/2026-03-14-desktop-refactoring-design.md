@@ -313,7 +313,7 @@ tests/LYBT.Tests.Desktop/
 
 ### B. 相关文档
 
-- [双模式架构文档](docs/03-architecture/dual-mode.md)
+- [双模式架构文档](docs/03-architecture/05-dual-mode.md)
 - [Testing Trophy 架构](docs/05-development/testing-architecture.md)
 - [Sprint 6 完成总结](docs/06-operations/sprint-6-completion.md)
 

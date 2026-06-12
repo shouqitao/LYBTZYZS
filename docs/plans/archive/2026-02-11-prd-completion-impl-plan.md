@@ -13,11 +13,11 @@
 ## Task 1: 创建 health-diagnostics.md
 
 **Files:**
-- Create: `docs/02-requirements/health-diagnostics.md`
+- Create: `docs/02-requirements/15-health-diagnostics.md`
 - Reference: `src/Server/Services/LYBT.WebAPI/Controllers/HealthController.cs`
 - Reference: `src/Server/Services/LYBT.WebAPI/Controllers/DiagnosticsController.cs`
-- Reference: `docs/04-api-reference/health.md`
-- Reference: `docs/04-api-reference/diagnostics.md`
+- Reference: `docs/04-api-reference/11-health.md`
+- Reference: `docs/04-api-reference/12-diagnostics.md`
 
 **Step 1: 读取 HealthController 和 DiagnosticsController 代码**
 
@@ -29,7 +29,7 @@
 
 **Step 2: 读取已有 API 参考文档**
 
-读取 `docs/04-api-reference/health.md` 和 `docs/04-api-reference/diagnostics.md`，与代码交叉验证。
+读取 `docs/04-api-reference/11-health.md` 和 `docs/04-api-reference/12-diagnostics.md`，与代码交叉验证。
 
 **Step 3: 编写 health-diagnostics.md**
 
@@ -80,7 +80,7 @@
 ## Task 2: 创建 error-handling.md
 
 **Files:**
-- Create: `docs/02-requirements/error-handling.md`
+- Create: `docs/02-requirements/13-error-handling.md`
 - Reference: `src/Shared/LYBT.Shared.ExceptionHandling/` (所有文件)
 - Reference: Server端异常处理中间件
 - Reference: `src/Client/Desktop/Shell/` 中的异常处理
@@ -143,7 +143,7 @@ Grep: "BusinessException" 在 src/ 目录
 ## Task 3: 创建 logging.md
 
 **Files:**
-- Create: `docs/02-requirements/logging.md`
+- Create: `docs/02-requirements/14-logging.md`
 - Reference: `src/Shared/LYBT.Shared.Logging/` (所有文件)
 - Reference: `src/Server/Core/LYBT.Entities/` 中的 SecurityAuditLog 和 SystemLog 实体
 
@@ -204,7 +204,7 @@ Grep: "BusinessException" 在 src/ 目录
 ## Task 4: 创建 desktop-shell.md
 
 **Files:**
-- Create: `docs/02-requirements/desktop-shell.md`
+- Create: `docs/02-requirements/12-desktop-shell.md`
 - Reference: `src/Client/Desktop/Shell/` (App.xaml.cs, Bootstrapper, Services/)
 - Reference: `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/` (导航、对话框)
 - Reference: `src/Client/Desktop/Core/LYBT.Desktop.Foundation/` (基类)
@@ -290,10 +290,10 @@ Desktop Shell 是 WPF 客户端的宿主框架，基于 Prism 模块化架构...
 ## Task 5: 创建 configuration.md
 
 **Files:**
-- Create: `docs/02-requirements/configuration.md`
+- Create: `docs/02-requirements/11-configuration.md`
 - Reference: `src/Shared/LYBT.Shared.Configuration/` (所有 Options 类)
 - Reference: `src/Server/Services/LYBT.WebAPI/appsettings.json`
-- Reference: `docs/06-operations/configuration.md`
+- Reference: `docs/06-operations/02-configuration.md`
 - Reference: 各模块 PRD 中散落的配置参数
 
 **Step 1: 收集所有 Options 类**
@@ -370,7 +370,7 @@ Desktop Shell 是 WPF 客户端的宿主框架，基于 Prism 模块化架构...
 ## Task 6: 补充 users.md 错误码
 
 **Files:**
-- Modify: `docs/02-requirements/users.md`
+- Modify: `docs/02-requirements/03-users.md`
 - Reference: `src/Server/Modules/LYBT.Module.Users/` (Service 层异常)
 
 **Step 1: 搜索 Users 模块错误码**
@@ -402,7 +402,7 @@ Grep: "StatusCode\|BadRequest\|NotFound\|Conflict\|Forbid" in Users Controller
 ## Task 7: 补充 patients.md 错误码
 
 **Files:**
-- Modify: `docs/02-requirements/patients.md`
+- Modify: `docs/02-requirements/04-patients.md`
 - Reference: `src/Server/Modules/LYBT.Module.Patients/` (Service 层异常)
 
 **Step 1: 搜索 Patients 模块错误码**
@@ -430,7 +430,7 @@ Grep: "throw\|Exception\|Error" in src/Server/Modules/LYBT.Module.Patients/
 ## Task 8: 补充 herbs.md 错误码
 
 **Files:**
-- Modify: `docs/02-requirements/herbs.md`
+- Modify: `docs/02-requirements/05-herbs.md`
 - Reference: `src/Server/Modules/LYBT.Module.Herbs/` (Service 层异常)
 
 **Step 1: 搜索 Herbs 模块错误码**
@@ -454,7 +454,7 @@ Grep: "throw\|Exception\|Error" in src/Server/Modules/LYBT.Module.Patients/
 ## Task 9: 补充 formulas.md 错误码
 
 **Files:**
-- Modify: `docs/02-requirements/formulas.md`
+- Modify: `docs/02-requirements/06-formulas.md`
 - Reference: `src/Server/Modules/LYBT.Module.Formula/` (Service 层异常)
 
 **Step 1: 搜索 Formula 模块错误码**
@@ -478,7 +478,7 @@ Grep: "throw\|Exception\|Error" in src/Server/Modules/LYBT.Module.Patients/
 ## Task 10: 补充 medical-cases.md 错误码
 
 **Files:**
-- Modify: `docs/02-requirements/medical-cases.md`
+- Modify: `docs/02-requirements/07-medical-cases.md`
 - Reference: `src/Server/Modules/LYBT.Module.MedicalCase/` (Service 层异常)
 
 **Step 1: 搜索 MedicalCase 模块错误码**
@@ -504,9 +504,9 @@ Grep: "throw\|Exception\|Error" in src/Server/Modules/LYBT.Module.Patients/
 ## Task 11: 补充 sync.md / printing.md / card-reader.md 错误码
 
 **Files:**
-- Modify: `docs/02-requirements/sync.md`
-- Modify: `docs/02-requirements/printing.md`
-- Modify: `docs/02-requirements/card-reader.md`
+- Modify: `docs/02-requirements/10-sync.md`
+- Modify: `docs/02-requirements/09-printing.md`
+- Modify: `docs/02-requirements/16-card-reader.md`
 - Reference: 对应模块代码
 
 **Step 1: 搜索各模块错误码**
@@ -545,15 +545,15 @@ card-reader.md:
 ## Task 12: 细化全部9个PRD的验收标准
 
 **Files:**
-- Modify: `docs/02-requirements/auth.md`
-- Modify: `docs/02-requirements/users.md`
-- Modify: `docs/02-requirements/patients.md`
-- Modify: `docs/02-requirements/herbs.md`
-- Modify: `docs/02-requirements/formulas.md`
-- Modify: `docs/02-requirements/medical-cases.md`
-- Modify: `docs/02-requirements/sync.md`
-- Modify: `docs/02-requirements/printing.md`
-- Modify: `docs/02-requirements/card-reader.md`
+- Modify: `docs/02-requirements/02-auth.md`
+- Modify: `docs/02-requirements/03-users.md`
+- Modify: `docs/02-requirements/04-patients.md`
+- Modify: `docs/02-requirements/05-herbs.md`
+- Modify: `docs/02-requirements/06-formulas.md`
+- Modify: `docs/02-requirements/07-medical-cases.md`
+- Modify: `docs/02-requirements/10-sync.md`
+- Modify: `docs/02-requirements/09-printing.md`
+- Modify: `docs/02-requirements/16-card-reader.md`
 - Reference: `tests/` 目录下对应测试文件
 
 **Step 1: 搜索测试文件映射**
@@ -586,7 +586,7 @@ tests/UnitTests/Server/Modules/ (模块单元测试)
 ## Task 13: vision.md 补充版本路线图
 
 **Files:**
-- Modify: `docs/01-product/vision.md`
+- Modify: `docs/01-product/01-vision.md`
 - Reference: 全部 PRD 中的"决策记录"章节 (v2.0 相关条目)
 
 **Step 1: 收集所有 v2.0 规划条目**
@@ -629,7 +629,7 @@ tests/UnitTests/Server/Modules/ (模块单元测试)
 ## Task 14: user-roles.md 修正 Receptionist
 
 **Files:**
-- Modify: `docs/01-product/user-roles.md`
+- Modify: `docs/01-product/04-user-roles.md`
 
 **Step 1: 修改角色定义表**
 
@@ -698,7 +698,7 @@ Grep: "FR-[A-Z]+-\d{3}" in docs/02-requirements/
 
 **Step 3: 验证角色权限一致性**
 
-对比 `01-product/user-roles.md` 中的权限矩阵与各模块 PRD 中的"用户角色"章节，确保一致。
+对比 `01-product/04-user-roles.md` 中的权限矩阵与各模块 PRD 中的"用户角色"章节，确保一致。
 
 ---
 

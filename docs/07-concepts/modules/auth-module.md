@@ -4,7 +4,7 @@ title: 认证与会话管理模块
 tags: [module, auth, security, jwt]
 created: 2026-06-10
 updated: 2026-06-10
-source: docs/02-requirements/auth.md
+source: docs/02-requirements/02-auth.md
 ---
 
 # 认证与会话管理模块

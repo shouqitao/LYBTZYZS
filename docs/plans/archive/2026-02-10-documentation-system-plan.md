@@ -88,10 +88,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 3: 编写 docs/01-product/vision.md (产品愿景)
+## Task 3: 编写 docs/01-product/01-vision.md (产品愿景)
 
 **Files:**
-- Create: `docs/01-product/vision.md`
+- Create: `docs/01-product/01-vision.md`
 
 **Source:** `openspec/project.md`, 项目 README.md
 
@@ -112,10 +112,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 4: 编写 docs/01-product/glossary.md (术语表)
+## Task 4: 编写 docs/01-product/07-glossary.md (术语表)
 
 **Files:**
-- Create: `docs/01-product/glossary.md`
+- Create: `docs/01-product/07-glossary.md`
 
 **Source:** `openspec/project.md` (术语规范段落), 实体模型定义
 
@@ -150,10 +150,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 5: 编写 docs/01-product/user-roles.md (用户角色)
+## Task 5: 编写 docs/01-product/04-user-roles.md (用户角色)
 
 **Files:**
-- Create: `docs/01-product/user-roles.md`
+- Create: `docs/01-product/04-user-roles.md`
 
 **Source:** `openspec/specs/api-authorization/spec.md`, `openspec/specs/user-management/spec.md`, `src/Server/Core/LYBT.Entities/Users/UserModel.cs` (UserRole 枚举)
 
@@ -210,10 +210,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 7: 编写 docs/02-requirements/auth.md (认证需求)
+## Task 7: 编写 docs/02-requirements/02-auth.md (认证需求)
 
 **Files:**
-- Create: `docs/02-requirements/auth.md`
+- Create: `docs/02-requirements/02-auth.md`
 
 **Source:** `openspec/specs/authentication/spec.md`, `openspec/specs/login-state-machine/spec.md`, `openspec/specs/login-ui/spec.md`, `openspec/specs/login-credential-handling/spec.md`, `openspec/specs/token-management/spec.md`, `openspec/specs/credential-vault/spec.md`, `openspec/specs/auth-events/spec.md`, `src/Server/Services/LYBT.WebAPI/Controllers/AuthController.cs`
 
@@ -237,10 +237,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 8: 编写 docs/02-requirements/users.md (用户管理需求)
+## Task 8: 编写 docs/02-requirements/03-users.md (用户管理需求)
 
 **Files:**
-- Create: `docs/02-requirements/users.md`
+- Create: `docs/02-requirements/03-users.md`
 
 **Source:** `openspec/specs/user-management/spec.md`, `src/Server/Services/LYBT.WebAPI/Controllers/UsersController.cs`, `src/Server/Core/LYBT.Entities/Users/UserModel.cs`
 
@@ -264,10 +264,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 9: 编写 docs/02-requirements/patients.md (患者管理需求)
+## Task 9: 编写 docs/02-requirements/04-patients.md (患者管理需求)
 
 **Files:**
-- Create: `docs/02-requirements/patients.md`
+- Create: `docs/02-requirements/04-patients.md`
 
 **Source:** `src/Server/Services/LYBT.WebAPI/Controllers/PatientsController.cs`, `src/Server/Core/LYBT.Entities/Patients/PatientModel.cs`
 
@@ -278,10 +278,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 10: 编写 docs/02-requirements/herbs.md (药材管理需求)
+## Task 10: 编写 docs/02-requirements/05-herbs.md (药材管理需求)
 
 **Files:**
-- Create: `docs/02-requirements/herbs.md`
+- Create: `docs/02-requirements/05-herbs.md`
 
 **Source:** `src/Server/Services/LYBT.WebAPI/Controllers/HerbsController.cs`, `src/Server/Core/LYBT.Entities/Herbs/HerbModel.cs`, `openspec/specs/herb-card-control/spec.md`
 
@@ -291,10 +291,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 11: 编写 docs/02-requirements/formulas.md (验方管理需求)
+## Task 11: 编写 docs/02-requirements/06-formulas.md (验方管理需求)
 
 **Files:**
-- Create: `docs/02-requirements/formulas.md`
+- Create: `docs/02-requirements/06-formulas.md`
 
 **Source:** `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs`, `src/Server/Core/LYBT.Entities/Formulas/`, `openspec/specs/formula-copy-flow/spec.md`
 
@@ -304,10 +304,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 12: 编写 docs/02-requirements/medical-cases.md (医案管理需求 -- 核心)
+## Task 12: 编写 docs/02-requirements/07-medical-cases.md (医案管理需求 -- 核心)
 
 **Files:**
-- Create: `docs/02-requirements/medical-cases.md`
+- Create: `docs/02-requirements/07-medical-cases.md`
 
 **Source:** `openspec/specs/medicalcase-lifecycle/spec.md`, `openspec/specs/medicalcase-edit-modes/spec.md`, `openspec/specs/medicalcase-ui-layout/spec.md`, `openspec/specs/global-audit/spec.md`, `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs`, `src/Server/Core/LYBT.Entities/MedicalCases/`, `src/Server/Core/LYBT.Entities/Consultations/`, `src/Server/Core/LYBT.Entities/Prescriptions/`
 
@@ -335,10 +335,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 13: 编写 docs/02-requirements/sync.md (数据同步需求)
+## Task 13: 编写 docs/02-requirements/10-sync.md (数据同步需求)
 
 **Files:**
-- Create: `docs/02-requirements/sync.md`
+- Create: `docs/02-requirements/10-sync.md`
 
 **Source:** `src/Server/Services/LYBT.WebAPI/Controllers/SyncController.cs`, `src/Client/Desktop/Modules/LYBT.Desktop.Sync/`, `src/Client/Desktop/Core/LYBT.Desktop.LocalData/`
 
@@ -355,10 +355,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 14: 编写 docs/02-requirements/printing.md (打印需求)
+## Task 14: 编写 docs/02-requirements/09-printing.md (打印需求)
 
 **Files:**
-- Create: `docs/02-requirements/printing.md`
+- Create: `docs/02-requirements/09-printing.md`
 
 **Source:** `openspec/specs/printing-infrastructure/spec.md`, `src/Client/Desktop/Core/LYBT.Desktop.Printing/`
 
@@ -394,10 +394,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 17: 编写 docs/03-architecture/system-overview.md (系统架构图)
+## Task 17: 编写 docs/03-architecture/01-system-overview.md (系统架构图)
 
 **Files:**
-- Create: `docs/03-architecture/system-overview.md`
+- Create: `docs/03-architecture/01-system-overview.md`
 
 **Source:** `openspec/project.md`, `openspec/specs/project-architecture/spec.md`
 
@@ -409,10 +409,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 18: 编写 docs/03-architecture/server.md (服务端架构)
+## Task 18: 编写 docs/03-architecture/03-server.md (服务端架构)
 
 **Files:**
-- Create: `docs/03-architecture/server.md`
+- Create: `docs/03-architecture/03-server.md`
 
 **Source:** `openspec/specs/server-layer-architecture/spec.md`, `openspec/specs/repository-patterns/spec.md`, `openspec/specs/service-conventions/spec.md`, `openspec/specs/error-handling/spec.md`
 
@@ -425,10 +425,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 19: 编写 docs/03-architecture/desktop.md (桌面端架构)
+## Task 19: 编写 docs/03-architecture/02-desktop.md (桌面端架构)
 
 **Files:**
-- Create: `docs/03-architecture/desktop.md`
+- Create: `docs/03-architecture/02-desktop.md`
 
 **Source:** `openspec/specs/client-layer-architecture/spec.md`, `openspec/specs/desktop-architecture/spec.md`, `openspec/specs/viewmodel-conventions/spec.md`
 
@@ -441,10 +441,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 20: 编写 docs/03-architecture/shared.md (共享层架构)
+## Task 20: 编写 docs/03-architecture/08-shared.md (共享层架构)
 
 **Files:**
-- Create: `docs/03-architecture/shared.md`
+- Create: `docs/03-architecture/08-shared.md`
 
 **Source:** `openspec/specs/shared-layer-architecture/spec.md`, `openspec/specs/dto-architecture/spec.md`
 
@@ -455,10 +455,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 21: 编写 docs/03-architecture/dual-mode.md (双模式架构)
+## Task 21: 编写 docs/03-architecture/05-dual-mode.md (双模式架构)
 
 **Files:**
-- Create: `docs/03-architecture/dual-mode.md`
+- Create: `docs/03-architecture/05-dual-mode.md`
 
 **Source:** `src/Client/Desktop/Core/LYBT.Desktop.LocalData/`, `src/Client/Desktop/Modules/LYBT.Desktop.Sync/`
 
@@ -472,10 +472,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 22: 编写 docs/03-architecture/data-model.md (数据模型)
+## Task 22: 编写 docs/03-architecture/04-data-model.md (数据模型)
 
 **Files:**
-- Create: `docs/03-architecture/data-model.md`
+- Create: `docs/03-architecture/04-data-model.md`
 
 **Source:** `src/Server/Core/LYBT.Entities/` (所有实体类)
 
@@ -522,13 +522,13 @@ Expected: 全部目录存在。
 ## Task 25-30: 编写各模块 API 参考 (6个文件)
 
 **Files:**
-- Create: `docs/04-api-reference/auth.md`
-- Create: `docs/04-api-reference/users.md`
-- Create: `docs/04-api-reference/patients.md`
-- Create: `docs/04-api-reference/herbs.md`
-- Create: `docs/04-api-reference/formulas.md`
-- Create: `docs/04-api-reference/medical-cases.md`
-- Create: `docs/04-api-reference/sync.md`
+- Create: `docs/04-api-reference/01-auth.md`
+- Create: `docs/04-api-reference/02-users.md`
+- Create: `docs/04-api-reference/03-patients.md`
+- Create: `docs/04-api-reference/04-herbs.md`
+- Create: `docs/04-api-reference/05-formulas.md`
+- Create: `docs/04-api-reference/06-medical-cases.md`
+- Create: `docs/04-api-reference/09-sync.md`
 
 **Source:** 对应 Controller 文件 + DTO 定义
 
@@ -549,10 +549,10 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 32: 编写 docs/05-development/setup.md (环境搭建)
+## Task 32: 编写 docs/05-development/01-setup.md (环境搭建)
 
 **Files:**
-- Create: `docs/05-development/setup.md`
+- Create: `docs/05-development/01-setup.md`
 
 **Source:** `global.json`, `Directory.Packages.props`, `nuget.config`
 
@@ -560,28 +560,28 @@ Expected: 全部目录存在。
 
 ---
 
-## Task 33: 编写 docs/05-development/code-standards.md (编码规范)
+## Task 33: 编写 docs/05-development/03-code-standards.md (编码规范)
 
 **Files:**
-- Create: `docs/05-development/code-standards.md`
+- Create: `docs/05-development/03-code-standards.md`
 
 **Source:** `.claude/rules/code-standards.md`, `.editorconfig`, `openspec/project.md` (命名规范段)
 
 ---
 
-## Task 34: 编写 docs/05-development/patterns.md (设计模式速查)
+## Task 34: 编写 docs/05-development/04-patterns.md (设计模式速查)
 
 **Files:**
-- Create: `docs/05-development/patterns.md`
+- Create: `docs/05-development/04-patterns.md`
 
 **Source:** `openspec/specs/repository-patterns/spec.md`, `openspec/specs/service-conventions/spec.md`, `openspec/specs/viewmodel-conventions/spec.md`, `openspec/specs/dialog-patterns/spec.md`
 
 ---
 
-## Task 35: 编写 docs/05-development/testing.md (测试指南)
+## Task 35: 编写 docs/05-development/05-testing.md (测试指南)
 
 **Files:**
-- Create: `docs/05-development/testing.md`
+- Create: `docs/05-development/05-testing.md`
 
 **Source:** `docs/plans/2026-02-08-test-restructure-plan.md`, `docs/reference/how-to/quality/test-layer-strategy.md`
 
@@ -593,8 +593,8 @@ Expected: 全部目录存在。
 
 **Files:**
 - Create: `docs/06-operations/README.md`
-- Create: `docs/06-operations/deployment.md`
-- Create: `docs/06-operations/configuration.md`
+- Create: `docs/06-operations/01-deployment.md`
+- Create: `docs/06-operations/02-configuration.md`
 
 **Source:** `src/Server/Services/LYBT.WebAPI/appsettings.json`, `src/Server/Services/LYBT.WebAPI/Program.cs`
 

@@ -790,7 +790,7 @@ public async Task<Result<PagedResult<HerbListDto>>> GetPagedAsync(
 
 **风险等级**: 中 | **前置依赖**: S2-X8 (打印重构) | **就绪度**: 可直接执行
 
-> **设计文档**: [dual-mode.md](../03-architecture/dual-mode.md) SYNC-D01~D04
+> **设计文档**: [dual-mode.md](../03-architecture/05-dual-mode.md) SYNC-D01~D04
 >
 > **SYNC-D02 阶段说明**: S4 的 X2 工作包是"补全现有 DataSource 接口方法"(过渡态维护)，SYNC-D02 目标态"废除 DataSource 层、统一 DbContext Provider"需在 X2 完成后作为独立工作包启动。当前 X2 与 SYNC-D02 最终目标**不矛盾** -- X2 保证本地模式功能完整，SYNC-D02 在功能完整后执行架构简化。
 >

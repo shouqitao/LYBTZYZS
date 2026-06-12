@@ -26,7 +26,7 @@
 ### Task 0.1: 读取 server.md 现状和代码事实
 
 **Files:**
-- Read: `docs/03-architecture/server.md`
+- Read: `docs/03-architecture/03-server.md`
 - Read: `src/Server/LYBT.Server/Domain/Entities/BaseEntity.cs`
 - Read: `src/Server/LYBT.Server/Infrastructure/Repositories/BaseRepository.cs`
 
@@ -49,7 +49,7 @@ grep -r "Module.Consultation\|Module.Prescriptions" src/
 ### Task 0.2: 修复 server.md 5 项审计偏差
 
 **Files:**
-- Modify: `docs/03-architecture/server.md`
+- Modify: `docs/03-architecture/03-server.md`
 
 **Step 1:** 修复 PRD-02: BaseEntity 表格补充 UpdatedBy / RowVersion (对齐代码实际字段)
 
@@ -77,11 +77,11 @@ grep -r "Module.Consultation\|Module.Prescriptions" src/
 ### Task 2.1: 收集 Persona 输入素材
 
 **Files:**
-- Read: `docs/01-product/user-roles.md` (权限矩阵)
-- Read: `docs/01-product/clinical-workflow.md` (工作流，了解角色在各阶段的参与方式)
-- Read: `docs/02-requirements/prd.md:43-70` (S3 现有角色描述)
-- Read: `docs/02-requirements/medical-cases.md:1-60` (医案模块用户痛点，最真实的场景)
-- Read: `docs/02-requirements/patients.md:1-30` (患者模块用户痛点)
+- Read: `docs/01-product/04-user-roles.md` (权限矩阵)
+- Read: `docs/01-product/06-clinical-workflow.md` (工作流，了解角色在各阶段的参与方式)
+- Read: `docs/02-requirements/01-prd.md:43-70` (S3 现有角色描述)
+- Read: `docs/02-requirements/07-medical-cases.md:1-60` (医案模块用户痛点，最真实的场景)
+- Read: `docs/02-requirements/04-patients.md:1-30` (患者模块用户痛点)
 
 **Step 1:** 读取上述文件，提取每个角色的:
 - 具体操作权限 (来自 user-roles.md)
@@ -91,7 +91,7 @@ grep -r "Module.Consultation\|Module.Prescriptions" src/
 ### Task 2.2: 编写 Doctor Proto-Persona
 
 **Files:**
-- Create: `docs/01-product/personas.md`
+- Create: `docs/01-product/02-personas.md`
 
 **Step 1:** 创建文件，写入文档头部和 Doctor Persona
 
@@ -136,7 +136,7 @@ grep -r "Module.Consultation\|Module.Prescriptions" src/
 ### Task 2.3: 编写 Admin + Receptionist Proto-Persona
 
 **Files:**
-- Modify: `docs/01-product/personas.md`
+- Modify: `docs/01-product/02-personas.md`
 
 **Step 1:** 在 Doctor 之后追加 Admin Persona:
 
@@ -203,7 +203,7 @@ grep -r "Module.Consultation\|Module.Prescriptions" src/
 ### Task 2.4: 更新 prd.md S3 链接
 
 **Files:**
-- Modify: `docs/02-requirements/prd.md:43-70`
+- Modify: `docs/02-requirements/01-prd.md:43-70`
 
 **Step 1:** 将 prd.md Section 3 中的内联 Persona 描述替换为简要版 + 链接:
 
@@ -212,11 +212,11 @@ grep -r "Module.Consultation\|Module.Prescriptions" src/
 
 ### 3.1 角色定义
 
-详细权限矩阵见 [user-roles.md](../01-product/user-roles.md)。
+详细权限矩阵见 [user-roles.md](../01-product/04-user-roles.md)。
 
 ### 3.2 核心角色画像
 
-详细 Proto-Persona (含日常时间线、痛点、成功标准) 见 [personas.md](../01-product/personas.md)。
+详细 Proto-Persona (含日常时间线、痛点、成功标准) 见 [personas.md](../01-product/02-personas.md)。
 
 | 角色 | 代表人物 | 使用频率 | 核心需求 |
 |------|---------|---------|---------|
@@ -238,16 +238,16 @@ grep -r "Module.Consultation\|Module.Prescriptions" src/
 ### Task 3.1: 收集 JTBD 输入素材
 
 **Files:**
-- Read: `docs/01-product/clinical-workflow.md` (全文，4 个流程)
-- Read: `docs/01-product/personas.md` (刚创建的 Persona)
-- Read: `docs/01-product/vision.md:15-22` (5 个业务目标)
+- Read: `docs/01-product/06-clinical-workflow.md` (全文，4 个流程)
+- Read: `docs/01-product/02-personas.md` (刚创建的 Persona)
+- Read: `docs/01-product/01-vision.md:15-22` (5 个业务目标)
 
 **Step 1:** 从 clinical-workflow.md 的 4 个流程中提取核心 "situation -> motivation -> outcome" 组合
 
 ### Task 3.2: 编写 JTBD 文档
 
 **Files:**
-- Create: `docs/01-product/jtbd.md`
+- Create: `docs/01-product/03-jtbd.md`
 
 **Step 1:** 创建文件，编写结构化 JTBD。组织方式: 按角色分组，每组 3-5 个 JTBD。
 
@@ -367,7 +367,7 @@ grep -r "Module.Consultation\|Module.Prescriptions" src/
 ### Task 3.3: JTBD vs FR 覆盖度交叉审查
 
 **Files:**
-- Read: `docs/01-product/jtbd.md` (刚创建)
+- Read: `docs/01-product/03-jtbd.md` (刚创建)
 - Read: `docs/02-requirements/README.md` (131 FR 索引)
 
 **Step 1:** 检查正向覆盖 -- 每个 JTBD 是否有 FR 支撑:
@@ -404,9 +404,9 @@ grep -r "Module.Consultation\|Module.Prescriptions" src/
 ### Task 4.1: 定义 Narrative 和 Activities 骨架
 
 **Files:**
-- Read: `docs/01-product/clinical-workflow.md` (4 个核心流程)
-- Read: `docs/01-product/jtbd.md` (10 个 JTBD)
-- Create: `docs/02-requirements/user-story-map.md`
+- Read: `docs/01-product/06-clinical-workflow.md` (4 个核心流程)
+- Read: `docs/01-product/03-jtbd.md` (10 个 JTBD)
+- Create: `docs/02-requirements/19-user-story-map.md`
 
 **Step 1:** 创建文件，定义 3 个核心 Narrative (对应 clinical-workflow.md 的 3 个主要流程):
 
@@ -455,11 +455,11 @@ grep -r "Module.Consultation\|Module.Prescriptions" src/
 ### Task 4.2: 分解 Narrative 1 的 Steps 和 Tasks
 
 **Files:**
-- Modify: `docs/02-requirements/user-story-map.md`
-- Read: `docs/02-requirements/patients.md` (FR-PAT 列表)
-- Read: `docs/02-requirements/medical-cases.md` (FR-MC 列表)
-- Read: `docs/02-requirements/herbs.md` (FR-HERB 列表)
-- Read: `docs/02-requirements/printing.md` (FR-PRINT 列表)
+- Modify: `docs/02-requirements/19-user-story-map.md`
+- Read: `docs/02-requirements/04-patients.md` (FR-PAT 列表)
+- Read: `docs/02-requirements/07-medical-cases.md` (FR-MC 列表)
+- Read: `docs/02-requirements/05-herbs.md` (FR-HERB 列表)
+- Read: `docs/02-requirements/09-printing.md` (FR-PRINT 列表)
 
 **Step 1:** 在 Narrative 1 下逐 Activity 分解:
 
@@ -496,9 +496,9 @@ grep -r "Module.Consultation\|Module.Prescriptions" src/
 ### Task 4.3: 分解 Narrative 2 和 3
 
 **Files:**
-- Modify: `docs/02-requirements/user-story-map.md`
-- Read: `docs/02-requirements/formulas.md` (FR-FORM 列表)
-- Read: `docs/02-requirements/sync.md` (FR-SYNC 列表)
+- Modify: `docs/02-requirements/19-user-story-map.md`
+- Read: `docs/02-requirements/06-formulas.md` (FR-FORM 列表)
+- Read: `docs/02-requirements/10-sync.md` (FR-SYNC 列表)
 
 **Step 1:** 按 Task 4.2 相同格式分解 Narrative 2 (复诊流程)
 
@@ -507,7 +507,7 @@ grep -r "Module.Consultation\|Module.Prescriptions" src/
 ### Task 4.4: 绘制纵向优先级切片线
 
 **Files:**
-- Modify: `docs/02-requirements/user-story-map.md`
+- Modify: `docs/02-requirements/19-user-story-map.md`
 
 **Step 1:** 在文档末尾添加汇总视图:
 
@@ -527,7 +527,7 @@ grep -r "Module.Consultation\|Module.Prescriptions" src/
 ### Task 4.5: Gap 分析
 
 **Files:**
-- Modify: `docs/02-requirements/user-story-map.md`
+- Modify: `docs/02-requirements/19-user-story-map.md`
 
 **Step 1:** 对比故事地图中的所有 Task 与 131 FR:
 - 标记未出现在故事地图中的 FR (基础设施类 FR 不计入)
@@ -557,7 +557,7 @@ grep -r "Module.Consultation\|Module.Prescriptions" src/
 ### Task 5.1: 定义 MoSCoW 排序标准
 
 **Files:**
-- Read: `docs/02-requirements/user-story-map.md` (Release Slices 章节)
+- Read: `docs/02-requirements/19-user-story-map.md` (Release Slices 章节)
 
 **Step 1:** 确认排序标准 (需用户确认):
 
@@ -590,20 +590,20 @@ MoSCoW 标准定义:
 ### Task 5.2: 逐模块标注优先级
 
 **Files:**
-- Modify: `docs/02-requirements/auth.md` (FR-AUTH-001~013 添加 Priority 列)
-- Modify: `docs/02-requirements/users.md` (FR-USER-001~012)
-- Modify: `docs/02-requirements/patients.md` (FR-PAT-001~013)
-- Modify: `docs/02-requirements/herbs.md` (FR-HERB-001~013)
-- Modify: `docs/02-requirements/formulas.md` (FR-FORM-001~013)
-- Modify: `docs/02-requirements/medical-cases.md` (FR-MC-001~018)
-- Modify: `docs/02-requirements/sync.md` (FR-SYNC-001~008)
-- Modify: `docs/02-requirements/printing.md` (FR-PRINT-001~004)
-- Modify: `docs/02-requirements/card-reader.md` (FR-CARD-001~002)
-- Modify: `docs/02-requirements/health-diagnostics.md` (FR-SYS-001~009)
-- Modify: `docs/02-requirements/error-handling.md` (FR-ERR-001~008)
-- Modify: `docs/02-requirements/logging.md` (FR-LOG-001~007)
-- Modify: `docs/02-requirements/desktop-shell.md` (FR-SHELL-001~007)
-- Modify: `docs/02-requirements/configuration.md` (FR-CFG-001~004)
+- Modify: `docs/02-requirements/02-auth.md` (FR-AUTH-001~013 添加 Priority 列)
+- Modify: `docs/02-requirements/03-users.md` (FR-USER-001~012)
+- Modify: `docs/02-requirements/04-patients.md` (FR-PAT-001~013)
+- Modify: `docs/02-requirements/05-herbs.md` (FR-HERB-001~013)
+- Modify: `docs/02-requirements/06-formulas.md` (FR-FORM-001~013)
+- Modify: `docs/02-requirements/07-medical-cases.md` (FR-MC-001~018)
+- Modify: `docs/02-requirements/10-sync.md` (FR-SYNC-001~008)
+- Modify: `docs/02-requirements/09-printing.md` (FR-PRINT-001~004)
+- Modify: `docs/02-requirements/16-card-reader.md` (FR-CARD-001~002)
+- Modify: `docs/02-requirements/15-health-diagnostics.md` (FR-SYS-001~009)
+- Modify: `docs/02-requirements/13-error-handling.md` (FR-ERR-001~008)
+- Modify: `docs/02-requirements/14-logging.md` (FR-LOG-001~007)
+- Modify: `docs/02-requirements/12-desktop-shell.md` (FR-SHELL-001~007)
+- Modify: `docs/02-requirements/11-configuration.md` (FR-CFG-001~004)
 
 **Step 1:** 在每个模块的功能清单表格中新增 `Priority` 列
 
@@ -616,7 +616,7 @@ MoSCoW 标准定义:
 ### Task 5.3: 交叉验证
 
 **Files:**
-- Read: `docs/02-requirements/user-story-map.md` (Release Slices)
+- Read: `docs/02-requirements/19-user-story-map.md` (Release Slices)
 - Read: 14 个模块文件 (刚标注的 Priority)
 
 **Step 1:** 对比故事地图 Must Have 切片与 FR Priority=Must 的一致性
@@ -625,7 +625,7 @@ MoSCoW 标准定义:
 ### Task 5.4: 更新 prd.md 索引统计
 
 **Files:**
-- Modify: `docs/02-requirements/prd.md:167-187` (S7 Requirements Index)
+- Modify: `docs/02-requirements/01-prd.md:167-187` (S7 Requirements Index)
 
 **Step 1:** 在 S7 索引表中增加优先级统计列:
 
@@ -656,8 +656,8 @@ MoSCoW 标准定义:
 ### Task 6.1: 精修 Executive Summary
 
 **Files:**
-- Modify: `docs/02-requirements/prd.md:9-13` (S1)
-- Read: `docs/01-product/jtbd.md` (核心 JTBD)
+- Modify: `docs/02-requirements/01-prd.md:9-13` (S1)
+- Read: `docs/01-product/03-jtbd.md` (核心 JTBD)
 
 **Step 1:** 将 S1 从"我们在做什么"升级为"我们为谁解决什么":
 
@@ -667,7 +667,7 @@ MoSCoW 标准定义:
 ### Task 6.2: 深化 Problem Statement
 
 **Files:**
-- Modify: `docs/02-requirements/prd.md:17-40` (S2)
+- Modify: `docs/02-requirements/01-prd.md:17-40` (S2)
 
 **Step 1:** 在 S2 中添加来自各模块汇总的量化证据:
 
@@ -686,7 +686,7 @@ MoSCoW 标准定义:
 ### Task 6.3: 精修 Success Metrics
 
 **Files:**
-- Modify: `docs/02-requirements/prd.md:134-164` (S6)
+- Modify: `docs/02-requirements/01-prd.md:134-164` (S6)
 
 **Step 1:** 参照 prd-development Phase 6 格式，区分 Primary / Secondary / Guardrail:
 
@@ -709,14 +709,14 @@ MoSCoW 标准定义:
 ### Task 6.4: 添加 JTBD 引用
 
 **Files:**
-- Modify: `docs/02-requirements/prd.md:43-70` (S3 区域)
+- Modify: `docs/02-requirements/01-prd.md:43-70` (S3 区域)
 
 **Step 1:** 在 S3 末尾添加 JTBD 引用:
 
 ```markdown
 ### 3.3 Jobs-to-Be-Done
 
-核心用户任务分析见 [jtbd.md](../01-product/jtbd.md)。3 个角色共 10 个 JTBD，覆盖诊疗、管理、前台三大场景。
+核心用户任务分析见 [jtbd.md](../01-product/03-jtbd.md)。3 个角色共 10 个 JTBD，覆盖诊疗、管理、前台三大场景。
 
 **Top 3 JTBD:**
 1. **JTBD-D01**: 复诊时 5 秒内调出患者历史 (对应 FR-PAT-002, FR-MC-002)
@@ -727,7 +727,7 @@ MoSCoW 标准定义:
 ### Task 6.5: 更新 Open Questions
 
 **Files:**
-- Modify: `docs/02-requirements/prd.md:260-269` (S10)
+- Modify: `docs/02-requirements/01-prd.md:260-269` (S10)
 
 **Step 1:** 更新每个 Open Question 的状态:
 
@@ -742,20 +742,20 @@ MoSCoW 标准定义:
 ### Task 6.6: 更新 prd.md 相关文档表
 
 **Files:**
-- Modify: `docs/02-requirements/prd.md:273-283`
+- Modify: `docs/02-requirements/01-prd.md:273-283`
 
 **Step 1:** 在相关文档表中添加新建的文件:
 
 ```markdown
-| 用户画像 | [personas.md](../01-product/personas.md) | Proto-Persona (3 角色) |
-| JTBD 分析 | [jtbd.md](../01-product/jtbd.md) | Jobs-to-Be-Done (10 个 JTBD) |
+| 用户画像 | [personas.md](../01-product/02-personas.md) | Proto-Persona (3 角色) |
+| JTBD 分析 | [jtbd.md](../01-product/03-jtbd.md) | Jobs-to-Be-Done (10 个 JTBD) |
 | 用户故事地图 | [user-story-map.md](user-story-map.md) | Jeff Patton 故事地图 (3 Narrative) |
 ```
 
 ### Task 6.7: 更新变更记录
 
 **Files:**
-- Modify: `docs/02-requirements/prd.md` (末尾变更记录)
+- Modify: `docs/02-requirements/01-prd.md` (末尾变更记录)
 
 **Step 1:** 追加变更条目:
 

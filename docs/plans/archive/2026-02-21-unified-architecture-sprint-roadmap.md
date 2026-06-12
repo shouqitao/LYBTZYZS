@@ -498,7 +498,7 @@
 
 ### 5.7 架构标准固化: 开发规范 (6项)
 
-将12项正面发现中的6项固化为开发规范，写入 `docs/05-development/patterns.md` + `.claude/rules/code-standards.md`:
+将12项正面发现中的6项固化为开发规范，写入 `docs/05-development/04-patterns.md` + `.claude/rules/code-standards.md`:
 
 | 标准编号 | 正面发现 | 规范条目 | 保护内容 |
 |---------|---------|---------|---------|
@@ -676,7 +676,7 @@
 
 ### 7.2 开发规范 (Sprint 4 写入)
 
-目标: `docs/05-development/patterns.md` + `.claude/rules/code-standards.md`
+目标: `docs/05-development/04-patterns.md` + `.claude/rules/code-standards.md`
 
 | # | 规范名称 | 来源 | 规范内容 |
 |---|---------|------|---------|

@@ -38,7 +38,7 @@
 
 | 决策 | 选择 | 理由 |
 |------|------|------|
-| 顶层 PRD 位置 | `docs/02-requirements/prd.md` | 它是需求层的总纲 |
+| 顶层 PRD 位置 | `docs/02-requirements/01-prd.md` | 它是需求层的总纲 |
 | 定位 | 混合型 (上半商业 + 下半技术) | 需向诊所方展示价值，也需指导开发 |
 | 现有模块文件 | 保留，通过链接引用 | 131 FR 质量高，不重写 |
 | Section 7 | 索引式，不重复 FR | 避免内容重复，链接到各模块文件 |
@@ -49,7 +49,7 @@
 ## 三、顶层 PRD 结构
 
 ```
-docs/02-requirements/prd.md (~250 行)
+docs/02-requirements/01-prd.md (~250 行)
   1. Executive Summary
   2. Problem Statement
   3. Target Users & Personas
@@ -126,18 +126,18 @@ docs/02-requirements/prd.md (~250 行)
 
 | 操作 | 文件 | 说明 |
 |------|------|------|
-| 新建 | `docs/02-requirements/prd.md` | 顶层 PRD |
+| 新建 | `docs/02-requirements/01-prd.md` | 顶层 PRD |
 | 修改 | `docs/02-requirements/README.md` | 添加 prd.md 索引 |
-| 修改 | `docs/01-product/glossary.md` | MedicalCaseStatus 修复 |
-| 修改 | `docs/03-architecture/data-model.md` | PRD-01/05/06 |
-| 修改 | `docs/03-architecture/server.md` | PRD-02/03/04/07/08 |
-| 修改 | `docs/02-requirements/sync.md` | PRD-09 |
-| 修改 | `docs/02-requirements/medical-cases.md` | PRD-10 |
-| 修改 | `docs/02-requirements/herbs.md` | PRD-11 |
-| 修改 | `docs/02-requirements/formulas.md` | PRD-11 |
-| 修改 | `docs/02-requirements/patients.md` | PRD-12 |
-| 修改 | `docs/02-requirements/card-reader.md` | PRD-13/14/15/16 |
-| 修改 | `docs/02-requirements/desktop-shell.md` | PRD-17 |
+| 修改 | `docs/01-product/07-glossary.md` | MedicalCaseStatus 修复 |
+| 修改 | `docs/03-architecture/04-data-model.md` | PRD-01/05/06 |
+| 修改 | `docs/03-architecture/03-server.md` | PRD-02/03/04/07/08 |
+| 修改 | `docs/02-requirements/10-sync.md` | PRD-09 |
+| 修改 | `docs/02-requirements/07-medical-cases.md` | PRD-10 |
+| 修改 | `docs/02-requirements/05-herbs.md` | PRD-11 |
+| 修改 | `docs/02-requirements/06-formulas.md` | PRD-11 |
+| 修改 | `docs/02-requirements/04-patients.md` | PRD-12 |
+| 修改 | `docs/02-requirements/16-card-reader.md` | PRD-13/14/15/16 |
+| 修改 | `docs/02-requirements/12-desktop-shell.md` | PRD-17 |
 
 **总计**: 1 新建 + 12 修改 = 13 个文件
 

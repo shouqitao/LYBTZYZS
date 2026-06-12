@@ -182,7 +182,7 @@ error-handling.md, logging.md, desktop-shell.md, configuration.md
 
 ### Phase 5: 索引更新
 - 更新 docs/02-requirements/README.md (编号体系 FR→US)
-- 更新 docs/02-requirements/prd.md (Requirements Index)
+- 更新 docs/02-requirements/01-prd.md (Requirements Index)
 - 更新 docs/README.md (文件计数、日期)
 
 ---
@@ -215,7 +215,7 @@ error-handling.md, logging.md, desktop-shell.md, configuration.md
 | 文件 | 更新内容 |
 |------|----------|
 | docs/02-requirements/README.md | FR→US 编号体系说明，文件数更新 |
-| docs/02-requirements/prd.md | Section 7 Requirements Index 编号更新 |
+| docs/02-requirements/01-prd.md | Section 7 Requirements Index 编号更新 |
 | docs/README.md | 文件计数、最后更新日期 |
-| docs/02-requirements/nfr.md | 无变更 (非功能性需求不涉及 US 转换) |
-| docs/02-requirements/ui-patterns.md | 无变更 |
+| docs/02-requirements/17-nfr.md | 无变更 (非功能性需求不涉及 US 转换) |
+| docs/02-requirements/18-ui-patterns.md | 无变更 |

@@ -156,7 +156,7 @@ docs/
 | 03-architecture/decisions/0009-localwebapi-embedded.md | ADR: 嵌入式 LocalWebAPI 决策 | 高 |
 | 04-api-reference/localwebapi.md | LocalWebAPI API 端点参考 | 高 |
 | 05-development/localwebapi-guide.md | LocalWebAPI 开发指南 | 高 |
-| 03-architecture/system-overview.md | 更新架构图为三模式 | 高 |
+| 03-architecture/01-system-overview.md | 更新架构图为三模式 | 高 |
 | 03-architecture/decisions/0002-dual-mode-architecture.md | 更新为三模式引用 | 中 |
 
 ### AGENTS.md 处理策略

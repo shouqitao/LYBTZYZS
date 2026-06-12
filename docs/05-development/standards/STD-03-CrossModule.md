@@ -40,8 +40,8 @@ Server 端模块间数据交互，Desktop 端模块间导航与数据共享。
 
 ## 参考
 
-- 编码规范: `docs/05-development/code-standards.md`
-- 设计模式: `docs/05-development/patterns.md`
+- 编码规范: `docs/05-development/03-code-standards.md`
+- 设计模式: `docs/05-development/04-patterns.md`
 
 ---
 

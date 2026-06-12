@@ -4,7 +4,7 @@ title: 数据同步模块
 tags: [module, sync, dual-mode]
 created: 2026-06-10
 updated: 2026-06-12
-source: docs/02-requirements/sync.md
+source: docs/02-requirements/10-sync.md
 ---
 
 ## 概述
@@ -132,5 +132,5 @@ SyncView
 
 ## 相关链接
 
-- [`docs/04-api-reference/sync.md`](../../04-api-reference/sync.md) — API 端点详细文档
-- [`docs/07-concepts/sync-conflict-resolution.md`](../sync-conflict-resolution.md) — 冲突解决详情
+- [`docs/04-api-reference/09-sync.md`](../../04-api-reference/09-sync.md) — API 端点详细文档
+- [`docs/07-concepts/33-sync-conflict-resolution.md`](../sync-conflict-resolution.md) — 冲突解决详情

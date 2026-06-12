@@ -123,33 +123,33 @@
 
 | ID | Batch | 描述 | 目标文件 |
 |----|:---:|------|----------|
-| PRD-01 | 1 | data-model.md: Patient 缺 IdType/EmergencyContact*/DisableReason 字段 | `docs/03-architecture/data-model.md` |
-| PRD-02 | 1 | server.md: BaseEntity 表格不完整 (缺 UpdatedBy/RowVersion) | `docs/03-architecture/server.md:64-73` |
-| PRD-03 | 1 | server.md: BaseRepository 方法列表不准 (CreateAsync vs AddAsync; 缺多方法) | `docs/03-architecture/server.md:119-133` |
-| PRD-04 | 4 | server.md: 模块列表仍含已删除的 Module.Consultation + Module.Prescriptions | `docs/03-architecture/server.md:22-34,164-165` |
+| PRD-01 | 1 | data-model.md: Patient 缺 IdType/EmergencyContact*/DisableReason 字段 | `docs/03-architecture/04-data-model.md` |
+| PRD-02 | 1 | server.md: BaseEntity 表格不完整 (缺 UpdatedBy/RowVersion) | `docs/03-architecture/03-server.md:64-73` |
+| PRD-03 | 1 | server.md: BaseRepository 方法列表不准 (CreateAsync vs AddAsync; 缺多方法) | `docs/03-architecture/03-server.md:119-133` |
+| PRD-04 | 4 | server.md: 模块列表仍含已删除的 Module.Consultation + Module.Prescriptions | `docs/03-architecture/03-server.md:22-34,164-165` |
 
 ### 优先级: MEDIUM
 
 | ID | Batch | 描述 | 目标文件 |
 |----|:---:|------|----------|
-| PRD-05 | 1 | data-model.md: Herb 缺 Remark 字段 | `docs/03-architecture/data-model.md` |
-| PRD-06 | 1 | data-model.md: PrintCount/LastPrintedAt 仍在 Prescription 表 (应在 MedicalCase) | `docs/03-architecture/data-model.md:124-125` |
-| PRD-07 | 1 | server.md: "14 个标准方法" 说法与实际不符 (IRepository 11 个) | `docs/03-architecture/server.md:80` |
-| PRD-08 | 1 | server.md: BaseReadRepository 被列为组件，但主分支不存在 | `docs/03-architecture/server.md:81` |
-| PRD-09 | 4 | SyncMetadataDto: PRD 用 DisplayName，代码用 EntityName | `docs/02-requirements/sync.md` |
-| PRD-10 | 4 | Draft vs Suspended 术语: PRD 修订了但代码未跟进 | `docs/02-requirements/medical-cases.md` |
-| PRD-11 | 3 | Herb/Formula Create 是否也应返回 201? (Patient 已改为 201) | `docs/02-requirements/herbs.md`, `formulas.md` |
-| PRD-12 | 3 | Patient CheckReference HTTP Method: PRD 写 POST, 代码实现 GET | `docs/02-requirements/patients.md` |
+| PRD-05 | 1 | data-model.md: Herb 缺 Remark 字段 | `docs/03-architecture/04-data-model.md` |
+| PRD-06 | 1 | data-model.md: PrintCount/LastPrintedAt 仍在 Prescription 表 (应在 MedicalCase) | `docs/03-architecture/04-data-model.md:124-125` |
+| PRD-07 | 1 | server.md: "14 个标准方法" 说法与实际不符 (IRepository 11 个) | `docs/03-architecture/03-server.md:80` |
+| PRD-08 | 1 | server.md: BaseReadRepository 被列为组件，但主分支不存在 | `docs/03-architecture/03-server.md:81` |
+| PRD-09 | 4 | SyncMetadataDto: PRD 用 DisplayName，代码用 EntityName | `docs/02-requirements/10-sync.md` |
+| PRD-10 | 4 | Draft vs Suspended 术语: PRD 修订了但代码未跟进 | `docs/02-requirements/07-medical-cases.md` |
+| PRD-11 | 3 | Herb/Formula Create 是否也应返回 201? (Patient 已改为 201) | `docs/02-requirements/05-herbs.md`, `formulas.md` |
+| PRD-12 | 3 | Patient CheckReference HTTP Method: PRD 写 POST, 代码实现 GET | `docs/02-requirements/04-patients.md` |
 
 ### 优先级: LOW
 
 | ID | Batch | 描述 | 目标文件 |
 |----|:---:|------|----------|
-| PRD-13 | 7 | card-reader.md CARD-D01: appsettings 配置 vs 代码枚举选择 | `docs/02-requirements/card-reader.md` |
-| PRD-14 | 7 | card-reader.md CARD-D02: DPAPI 照片加密未实现 | `docs/02-requirements/card-reader.md` |
-| PRD-15 | 7 | card-reader.md CARD-D03: 患者去重降级链仅实现精确匹配 | `docs/02-requirements/card-reader.md` |
-| PRD-16 | 7 | card-reader.md FR-CARD-002 规则5: 姓名->RealName 应更新为 Name | `docs/02-requirements/card-reader.md` |
-| PRD-17 | 6 | FR-SHELL-001: 步骤数 PRD "6步" vs 代码实际 5 步 | `docs/02-requirements/desktop-shell.md` |
+| PRD-13 | 7 | card-reader.md CARD-D01: appsettings 配置 vs 代码枚举选择 | `docs/02-requirements/16-card-reader.md` |
+| PRD-14 | 7 | card-reader.md CARD-D02: DPAPI 照片加密未实现 | `docs/02-requirements/16-card-reader.md` |
+| PRD-15 | 7 | card-reader.md CARD-D03: 患者去重降级链仅实现精确匹配 | `docs/02-requirements/16-card-reader.md` |
+| PRD-16 | 7 | card-reader.md FR-CARD-002 规则5: 姓名->RealName 应更新为 Name | `docs/02-requirements/16-card-reader.md` |
+| PRD-17 | 6 | FR-SHELL-001: 步骤数 PRD "6步" vs 代码实际 5 步 | `docs/02-requirements/12-desktop-shell.md` |
 
 ---
 

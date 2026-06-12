@@ -450,7 +450,7 @@ Prescription.Discount 从 decimal(5,4) 对齐到文档 decimal(3,2)。需确认�
 
 **Shared 层文档补全 (S3-DOC)**:
 
-新建 `docs/03-architecture/shared.md`，覆盖:
+新建 `docs/03-architecture/08-shared.md`，覆盖:
 - LYBT.Shared.Foundation (基础类型、BaseEntity)
 - LYBT.Shared.Models (DTO、枚举、错误码)
 - LYBT.Shared.Utilities (扩展方法、CacheExtensions)

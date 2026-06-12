@@ -64,7 +64,7 @@ public async Task SaveAsync_WithValidInput_ReturnsMedicalCase()
 
 ## 参考
 
-- 测试指南: `docs/05-development/testing.md`
+- 测试指南: `docs/05-development/05-testing.md`
 - 架构测试: `tests/LYBT.Tests.Architecture/`
 
 ---

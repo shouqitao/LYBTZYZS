@@ -200,7 +200,7 @@
 2. 生成测试报告 (JSON + HTML)
 3. 更新 `docs/06-operations/postman-guide.md`
 4. 更新 `docs/04-api-reference/README.md`（添加 Registrations 索引）
-5. 更新 `docs/05-development/testing.md`（Postman 优先策略）
+5. 更新 `docs/05-development/05-testing.md`（Postman 优先策略）
 
 **预计耗时**: 1 小时
 

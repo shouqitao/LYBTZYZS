@@ -54,8 +54,8 @@
 
 ## 参考
 
-- 认证 PRD: `docs/02-requirements/auth.md`
-- 用户管理 PRD: `docs/02-requirements/users.md`
+- 认证 PRD: `docs/02-requirements/02-auth.md`
+- 用户管理 PRD: `docs/02-requirements/03-users.md`
 
 ---
 
