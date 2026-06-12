@@ -1,6 +1,6 @@
 # LYBTZYZS - 凌隐宝堂中医诊所管理系统
 
-**.NET 8** | WPF/Prism | ASP.NET Core | EF Core | SQL Server + SQLite dual-mode
+**.NET 8** | WPF/Prism | ASP.NET Core | EF Core | SQL Server (Remote + LocalDB dual-mode)
 
 ---
 
