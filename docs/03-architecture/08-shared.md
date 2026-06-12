@@ -160,7 +160,7 @@ LYBT.Shared.Components/
 
 ### MedicalCaseBusinessRules (计划新增)
 
-> 设计文档: [design-deepening-phase3](../plans/2026-02-22-design-deepening-phase3.md) | [design-issues-solutions](../plans/2026-02-21-design-issues-solutions.md) Issue #4
+> 设计文档: design-deepening-phase3 | design-issues-solutions Issue #4
 
 提取到 Shared 层的纯函数业务规则，供 Server 端和 Local 端共享，解决 Local 模式绕过业务规则的问题:
 

@@ -30,7 +30,7 @@ sources: ["docs/03-architecture/medicalcase-workspace-current-state.md"]
 
 ## 实现现状与差距
 
-根据 [医案工作台当前状态审计](../../03-architecture/medicalcase-workspace-current-state.md)，当前实现存在以下差距：
+根据 医案工作台当前状态审计（待创建），当前实现存在以下差距：
 
 1.  **UI 未完全区分**: `MedicalCaseEditControl` 虽然支持 `WorkspaceMode` 枚举，但 XAML 中未完全根据模式隐藏/显示相应控件（如审计字段在 Compact 模式下仍占用空间或未正确隐藏）。
 2.  **按钮逻辑缺失**: 临床模式所需的底部按钮组（挂起/完成）未在 UI 中集成，导致医生无法通过标准流程结束接诊。

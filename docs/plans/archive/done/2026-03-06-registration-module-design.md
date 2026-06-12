@@ -2,7 +2,7 @@
 
 > **创建日期**: 2026-03-06
 > **状态**: 已确认
-> **PRD**: [registration.md](../02-requirements/08-registration.md)
+> **PRD**: [registration](../../../02-requirements/08-registration.md)
 > **依赖模块**: Auth, Patients, Users, MedicalCase
 
 ---

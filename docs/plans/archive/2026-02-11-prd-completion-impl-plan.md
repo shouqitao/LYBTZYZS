@@ -694,7 +694,7 @@ Grep: "FR-[A-Z]+-\d{3}" in docs/02-requirements/
 
 **Step 2: 检查内部链接**
 
-验证 README.md 中所有 `[xxx.md](xxx.md)` 链接指向存在的文件。
+验证 README.md 中所有 `xxx.md（占位符）` 链接指向存在的文件。
 
 **Step 3: 验证角色权限一致性**
 

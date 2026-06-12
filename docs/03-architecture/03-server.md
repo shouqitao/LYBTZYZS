@@ -321,7 +321,7 @@ builder.Services.AddPatientsModule();
 
 ### BaseService 层次结构 (D2-1)
 
-> 设计文档: [d2-d5-design](../plans/2026-02-22-d2-d5-design-patterns-dependencies.md) | 实施: S5
+> 设计文档: d2-d5-design | 实施: S5
 
 所有 Service 统一继承 BaseService 层次结构:
 
@@ -395,7 +395,7 @@ Validator 原先分散在各业务模块 (`Module.{Entity}/Validators/`) 中，�
 
 ## 事务边界模型
 
-> 设计文档: [design-deepening-phase3](../plans/2026-02-22-design-deepening-phase3.md) 3.3 节
+> 设计文档: design-deepening-phase3 3.3 节
 
 三级事务模型:
 
@@ -454,7 +454,7 @@ Validator 原先分散在各业务模块 (`Module.{Entity}/Validators/`) 中，�
 
 ### Server 端 IMemoryCache (业务层)
 
-> 设计文档: [design-deepening-phase3](../plans/2026-02-22-design-deepening-phase3.md) 3.3 节
+> 设计文档: design-deepening-phase3 3.3 节
 
 用于高频单实体查询，与 OutputCache (HTTP 层) 互补:
 

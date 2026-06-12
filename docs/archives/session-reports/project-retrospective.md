@@ -728,7 +728,7 @@ The Frontend UX Optimization initiative was a **success**, delivering all planne
 ## Appendix: Key Documents
 
 **Planning**:
-- [Original Plan](../plans/frontend-ux-optimization-plan.md)
+- Original Plan（已归档）
 
 **Reports**:
 - [Executive Summary](executive-summary.md)
@@ -737,9 +737,9 @@ The Frontend UX Optimization initiative was a **success**, delivering all planne
 - [Completion Report](frontend-ux-optimization-completion-report.md)
 
 **Deployment & Testing**:
-- [Staging Deployment Guide](../deployment/staging-deployment-guide.md)
-- [Integration Test Checklist](../testing/integration-test-checklist-phase3-2.md)
-- [UAT Plan](../testing/user-acceptance-testing-plan-phase3-4.md)
+- Staging Deployment Guide（已归档）
+- Integration Test Checklist（已归档）
+- UAT Plan（已归档）
 
 ---
 

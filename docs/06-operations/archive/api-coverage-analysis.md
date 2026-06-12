@@ -373,7 +373,7 @@ Postman 使用大写资源名:
 
 **操作**: 在 "模块端点索引" 章节添加:
 ```markdown
-### 挂号模块 ([registrations.md](../07-registrations.md)) -- PatientAccess / DoctorOrAdmin
+### 挂号模块 ([registrations API](../../04-api-reference/07-registrations.md)) -- PatientAccess / DoctorOrAdmin
 
 | 方法 | 路径 | 说明 |
 |------|------|------|

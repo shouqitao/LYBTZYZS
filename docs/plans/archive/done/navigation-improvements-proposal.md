@@ -646,16 +646,16 @@ Navigation improvements represent a significant opportunity to enhance the overa
 ## Appendix: Related Documents
 
 **Parent Initiative**:
-- [Frontend UX Optimization Plan](../plans/frontend-ux-optimization-plan.md)
-- [Frontend UX Optimization Completion Report](../reports/frontend-ux-optimization-completion-report.md)
+- Frontend UX Optimization Plan（已归档）
+- Frontend UX Optimization Completion Report（已归档）
 
 **Architecture**:
-- [ADR-0001: MedicalCase as Aggregate Root](../architecture/ADR-0001.md)
-- [ADR-0002: Dual-Mode Architecture](../architecture/ADR-0002.md)
+- [ADR-0001](../../../03-architecture/decisions/0001-medicalcase-aggregate-root.md)
+- [ADR-0002](../../../03-architecture/decisions/0002-dual-mode-architecture.md)
 
 **Testing**:
-- [Integration Test Checklist](../testing/integration-test-checklist-phase3-2.md)
-- [UAT Plan](../testing/user-acceptance-testing-plan-phase3-4.md)
+- Integration Test Checklist（已归档）
+- UAT Plan（已归档）
 
 ---
 

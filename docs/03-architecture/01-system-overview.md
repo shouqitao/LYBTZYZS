@@ -178,7 +178,7 @@ sequenceDiagram
   - `IHerbCrossModuleService` -- 药材查询 + 引用检查
   - `IUserCrossModuleService` -- 用户查询 + 凭证操作
   - `ICrossModuleAuthService` -- Token 撤销 (独立接口，6 个触发场景)
-- 旧 `ICrossModuleService` 标记 `[Obsolete]`，渐进迁移到域专用接口 (S3 实施，详见 [d2-d5-design](../plans/2026-02-22-d2-d5-design-patterns-dependencies.md))
+- 旧 `ICrossModuleService` 标记 `[Obsolete]`，渐进迁移到域专用接口 (S3 实施，详见 d2-d5-design)
 - 禁止直接注入其他模块的 Repository
 - 返回轻量级 BasicInfo DTO
 

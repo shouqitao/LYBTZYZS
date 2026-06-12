@@ -379,12 +379,12 @@ The Frontend UX Optimization initiative is **implementation complete** and ready
 ## Appendix: Quick Links
 
 ### Internal Documentation
-- [Original Plan](../plans/frontend-ux-optimization-plan.md)
+- Original Plan（已归档）
 - [Implementation Verification](implementation-verification-summary.md)
 - [Completion Report](frontend-ux-optimization-completion-report.md)
-- [Staging Deployment Guide](../deployment/staging-deployment-guide.md)
-- [Integration Tests](../testing/integration-test-checklist-phase3-2.md)
-- [UAT Plan](../testing/user-acceptance-testing-plan-phase3-4.md)
+- Staging Deployment Guide（已归档）
+- Integration Tests（已归档）
+- UAT Plan（已归档）
 
 ### External Resources
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)

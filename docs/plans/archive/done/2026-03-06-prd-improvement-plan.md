@@ -212,11 +212,11 @@ grep -r "Module.Consultation\|Module.Prescriptions" src/
 
 ### 3.1 角色定义
 
-详细权限矩阵见 [user-roles.md](../01-product/04-user-roles.md)。
+详细权限矩阵见 [user-roles](../../../01-product/04-user-roles.md)。
 
 ### 3.2 核心角色画像
 
-详细 Proto-Persona (含日常时间线、痛点、成功标准) 见 [personas.md](../01-product/02-personas.md)。
+详细 Proto-Persona (含日常时间线、痛点、成功标准) 见 [personas](../../../01-product/02-personas.md)。
 
 | 角色 | 代表人物 | 使用频率 | 核心需求 |
 |------|---------|---------|---------|
@@ -632,7 +632,7 @@ MoSCoW 标准定义:
 ```markdown
 | 模块 | 文件 | FR 编号范围 | 功能数 | Must | Should | Could |
 |------|------|------------|--------|------|--------|-------|
-| 认证与会话管理 | [auth.md](../../02-requirements/02-auth.md) | FR-AUTH-001~013 | 13 | X | Y | Z |
+| 认证与会话管理 | [auth](../../../02-requirements/02-auth.md) | FR-AUTH-001~013 | 13 | X | Y | Z |
 | ... | ... | ... | ... | ... | ... | ... |
 ```
 
@@ -641,7 +641,7 @@ MoSCoW 标准定义:
 ```markdown
 ### 7.5 用户故事地图
 
-- [user-story-map.md](../../02-requirements/19-user-story-map.md) -- 3 个核心 Narrative 的 Jeff Patton 故事地图
+- [user-story-map](../../../02-requirements/19-user-story-map.md) -- 3 个核心 Narrative 的 Jeff Patton 故事地图
 ```
 
 ---
@@ -716,7 +716,7 @@ MoSCoW 标准定义:
 ```markdown
 ### 3.3 Jobs-to-Be-Done
 
-核心用户任务分析见 [jtbd.md](../01-product/03-jtbd.md)。3 个角色共 10 个 JTBD，覆盖诊疗、管理、前台三大场景。
+核心用户任务分析见 [jtbd](../../../01-product/03-jtbd.md)。3 个角色共 10 个 JTBD，覆盖诊疗、管理、前台三大场景。
 
 **Top 3 JTBD:**
 1. **JTBD-D01**: 复诊时 5 秒内调出患者历史 (对应 FR-PAT-002, FR-MC-002)
@@ -747,9 +747,9 @@ MoSCoW 标准定义:
 **Step 1:** 在相关文档表中添加新建的文件:
 
 ```markdown
-| 用户画像 | [personas.md](../01-product/02-personas.md) | Proto-Persona (3 角色) |
-| JTBD 分析 | [jtbd.md](../01-product/03-jtbd.md) | Jobs-to-Be-Done (10 个 JTBD) |
-| 用户故事地图 | [user-story-map.md](../../02-requirements/19-user-story-map.md) | Jeff Patton 故事地图 (3 Narrative) |
+| 用户画像 | [personas](../../../01-product/02-personas.md) | Proto-Persona (3 角色) |
+| JTBD 分析 | [jtbd](../../../01-product/03-jtbd.md) | Jobs-to-Be-Done (10 个 JTBD) |
+| 用户故事地图 | [user-story-map](../../../02-requirements/19-user-story-map.md) | Jeff Patton 故事地图 (3 Narrative) |
 ```
 
 ### Task 6.7: 更新变更记录
