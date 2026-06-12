@@ -287,6 +287,21 @@ We believe that **providing a systematic registration and queuing mechanism** fo
 
 ---
 
+## Performance Expectations
+
+| 操作 | 性能目标 | 说明 |
+|------|---------|------|
+| 挂号创建 | < 100ms | 含患者查询 + Registration 写入 |
+| 队列加载 | < 500ms | 含 50 条挂号记录，含患者姓名和等待时长 |
+
+### 并发保护
+
+| 约束 | 规则 | 说明 |
+|------|------|------|
+| PatientId+Date+Status 唯一约束 | 同一患者同一日期只允许一条活跃挂号 (Status=Waiting 或 InProgress) | 防止重复挂号，数据库层唯一索引保障 |
+
+---
+
 ## 8. Out of Scope (v1.0 排除项)
 
 | 排除项 | 原因 |
@@ -332,12 +347,56 @@ We believe that **providing a systematic registration and queuing mechanism** fo
 
 ## Data Model
 
-详见 [data-model.md](../03-architecture/04-data-model.md) Registration 章节。
+### Registration Entity
 
-核心关系:
-- Registration -> Patient: N:1
-- Registration -> User (Doctor): N:1
-- Registration -> MedicalCase: 1:0..1
+| 字段 | 类型 | 约束 | 说明 |
+|------|------|------|------|
+| Id | Guid | PK | 主键 |
+| PatientId | Guid | FK → Patient, Required | 关联患者 (必填) |
+| UserId | Guid | FK → User (Doctor) | 指派医生 |
+| Status | RegistrationStatus | Required | 挂号状态 (见枚举) |
+| RegistrationNumber | string? | MaxLength(50) | 挂号编号 (v1.0 按需生成) |
+| RegistrationTime | DateTime | Default=UtcNow | 挂号时间 |
+| Source | RegistrationSource | Required | 挂号来源: FrontDesk / Doctor |
+| MedicalCaseId | Guid? | FK → MedicalCase, Nullable | 关联医案 (创建时为 null，接诊后关联) |
+| Remark | string? | MaxLength(500) | 备注 |
+| IsDeleted | bool | Default=false | 软删除标记 |
+| CreatedAt | DateTime | Default=UtcNow | 创建时间 |
+| UpdatedAt | DateTime? | | 最后更新时间 |
+| CreatedBy | Guid? | | 创建人 |
+| UpdatedBy | Guid? | | 最后更新人 |
+
+### RegistrationStatus 枚举
+
+| 值 | 说明 |
+|----|------|
+| Waiting | 等待中 — 前台挂号后的初始状态，排队等候医生接诊 |
+| InProgress | 进行中 — 医生已接诊，关联医案已创建 |
+| Completed | 已完成 — 关联医案已完成，挂号闭环 |
+| Cancelled | 已取消 — 前台手动取消或医生模式医案取消自动闭环 |
+
+### RegistrationSource 枚举
+
+| 值 | 说明 |
+|----|------|
+| FrontDesk | 前台挂号 — Receptionist 创建，走排队流程 |
+| Doctor | 医生直接看诊 — Doctor 创建，跳过排队直接 InProgress |
+
+### 约束
+
+- **PatientId Required**: 每条挂号必须关联有效患者
+- **唯一约束**: 同一患者同一天不允许有多个活跃挂号 (Status IN (Waiting, InProgress))，防止重复挂号
+- **索引**:
+  - `IX_Registrations_PatientId` — 按患者查询挂号记录
+  - `IX_Registrations_Status_Date` — 按状态+日期筛选队列 (Status, RegistrationTime)
+
+### 核心关系
+
+- Registration → Patient: N:1 (一个患者可有多次挂号)
+- Registration → User (Doctor): N:1 (一个医生可接多个挂号)
+- Registration → MedicalCase: 1:0..1 (挂号可选关联医案)
+
+> 完整数据模型参见 [data-model.md](../03-architecture/04-data-model.md) Registration 章节。
 
 ---
 

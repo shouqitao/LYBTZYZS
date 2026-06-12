@@ -293,6 +293,29 @@ MatchPatientAsync 返回结果:
 
 ---
 
+## Edge Cases
+
+| 场景 | 预期行为 |
+|------|---------|
+| 部分读取失败 (部分字段为空) | 返回 CardReadResult.Success 但空字段保持 null，UI 对缺失字段回退手动输入 |
+| 芯片数据格式异常 (乱码/截断) | 返回 CardReadResult.Failure(-4)，错误消息 "读卡失败，请重新放置身份证"，用户可重试 |
+| 读卡中途拔卡 | P/Invoke 返回错误码 -5，CardReadError 事件触发，提示 "无卡或卡未放好" |
+| 读卡器驱动未安装 | InitializeAsync 返回失败，自动回退 MockCardReader (DEBUG) 或提示用户安装驱动 |
+| 设备读取过程中断开连接 | ConnectionStateChanged 事件触发 (Disconnected)，当前读卡操作返回 Failure(-1) |
+
+---
+
+## Out of Scope (v1.0)
+
+| 排除项 | 原因 |
+|--------|------|
+| OCR 降级 (摄像头拍照识别) | v1.0 仅支持芯片直读，OCR 准确率不稳定且增加复杂度 |
+| 护照/外国人居留证支持 | CardType 枚举已预留，v1.0 仅支持二代身份证 |
+| 多设备并发读取 | 小型诊所单设备场景，多设备并发需设备锁管理 |
+| 身份证正反面图片采集保存 | v1.0 照片通过 DPAPI 加密存储 (Sprint 6 已实现)，正反面图片采集属扩展需求 |
+
+---
+
 ## Decision Log
 
 | 编号 | 问题 | 影响范围 | 状态 |

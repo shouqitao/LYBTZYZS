@@ -537,6 +537,17 @@ Exception
 
 ---
 
+## Edge Cases (级联故障防护)
+
+| 场景 | 处理策略 |
+|------|---------|
+| BusinessExceptionHandler 自身抛出异常 | 异常未被捕获，ASP.NET Core 中间件管道自动传递给下一个 handler (SystemExceptionHandler)，SystemExceptionHandler 兜底返回 500 + ProblemDetails |
+| Serilog 日志 Sink 不可用 (文件/DB 写入失败) | Serilog SelfLog 捕获 Sink 写入异常；内存缓冲队列暂存日志事件，Sink 恢复后自动重试写入；Console Sink 作为最终兜底始终可用 |
+| SecurityAuditLog DB 写入失败 | 审计写入失败静默捕获 (catch)，递增内存计数器 `AuditWriteFailures`；计数器通过 Health Check 端点暴露供运维监控；失败事件写入 Serilog File Sink 作为降级备份 |
+| 级联错误循环 (handler→logger→handler→...) | 最大重抛次数限制 3 次 (MaxRethrowAttempts=3)；超出后直接返回原始 HTTP 500 空响应体，不经过任何 handler 和 logger，避免无限循环 |
+
+---
+
 ## 变更记录
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|

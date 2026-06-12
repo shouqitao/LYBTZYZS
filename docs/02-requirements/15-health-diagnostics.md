@@ -377,6 +377,8 @@ We believe that 提供健康检查端点 + 动态日志级别管理 + 启动诊�
 | 健康检查端点被滥用 | DDoS 风险，影响服务稳定性 | 匿名端点轻量化 (无 DB 查询)，详细检查需认证 |
 | 诊断端点权限泄露 | 攻击者获取系统内部信息 | 仅 SuperAdmin 可访问诊断端点 |
 | InMemory 数据库测试环境差异 | 迁移检查跳过导致测试覆盖不完整 | InMemory 环境明确跳过迁移检查 (SYS-D03) |
+| 健康检查超时级联故障 | 超时返回 Unhealthy 导致上游系统判定服务不可用，触发不必要的故障转移 | 超时返回 Degraded 而非 Unhealthy，上游系统可继续路由流量 |
+| diagnostics API 依赖 SecurityAuditLog | 审计日志表锁定导致 diagnostics 查询超时或失败 | diagnostics API 对审计日志查询失败返回 Degraded，不抛出 500；启动阶段健康检查返回 Degraded（服务初始化中） |
 
 ---
 

@@ -474,6 +474,17 @@ We believe that 实现 Serilog 结构化日志 + CorrelationId 追踪 + 敏感�
 
 ---
 
+## Edge Cases (日志写入故障)
+
+| 场景 | 处理策略 |
+|------|---------|
+| 磁盘满 (Serilog File Sink IOException) | Serilog File Sink 捕获 IOException，自动切换到 Console-only 模式；文件写入恢复后自动重新启用 |
+| SecurityAuditLog DB 写入失败 | 审计写入失败降级到 Serilog File Sink 作为备份通道；失败记录标记 `AuditFallback=true` 属性以便后续识别 |
+| 日志文件滚动失败 (磁盘 >90% 满) | 自动清理最旧日志文件 (按文件修改时间排序，删除最老的直到磁盘占用 <85%)；清理操作记录到 Console Sink |
+| 高并发日志突发 (大量 Error/Critical) | 速率限制非关键级别日志 (Information/Warning/Debug)；Error/Critical 级别始终放行，不受速率限制；使用 Serilog `PeriodicBatchingSink` 批量写入降低 I/O 压力 |
+
+---
+
 ## 变更记录
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
