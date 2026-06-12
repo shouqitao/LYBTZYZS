@@ -39,6 +39,38 @@ sources: ["docs/02-requirements/11-configuration.md"]
 - card-reader-integration：`CardReaderEnabled` 开关控制身份证读卡器功能的 UI 入口。
 - [工作区模式](04-workspace-modes.md)：两者共同作用，决定最终用户看到的界面形态。
 
+## 热更新方案 (OQ-CFG-01)
+
+### 当前状态
+
+v1.0 中功能开关修改需重启 Desktop 客户端。原因：Prism DryIoc 容器在启动时创建 `Options.Create(snapshot)` 冻结快照，虽然 `ConfigurationBuilder` 已启用 `reloadOnChange: true`（`IConfiguration` 层支持文件变更检测），但下游消费者注入的 `IOptions<T>` 不会更新。
+
+### 热更新实现路径
+
+**推荐方案：`IOptionsMonitor<T>` 替换冻结快照**
+
+已有基础设施：
+
+| 组件 | 状态 | 说明 |
+|------|------|------|
+| `ConfigurationBuilder.reloadOnChange` | ✅ 已启用 | `appsettings.json` 文件变更时 `IConfiguration` 自动重载 |
+| `IOptionsMonitor<T>` | ❌ 未使用 | BCL 内置，支持 `OnChange` 回调 |
+| Microsoft DI 注册路径 | ⚠️ 死代码 | `ClientConfigurationExtensions.AddOptions<FeatureToggleOptions>()` 已编写但未被 Prism 容器调用 |
+
+实施步骤：
+
+1. **切换 DI 注册路径**：从 `PrismConfigurationExtensions.RegisterOptions<FeatureToggleOptions>()`（冻结快照）改为 `ClientConfigurationExtensions` 中的 `services.AddOptions<FeatureToggleOptions>().Bind(...)` 路径
+2. **消费者改用 `IOptionsMonitor<T>`**：当前仅 2 处消费（`SyncService.OverwriteConflicts`、`PrescriptionSettingsService`），改为注入 `IOptionsMonitor<FeatureToggleOptions>` 并通过 `.CurrentValue` 读取
+3. **添加 WPF 通知层**：创建 `FeatureToggleViewModel` 暴露 `INotifyPropertyChanged` 属性，通过 `IOptionsMonitor.OnChange()` 触发属性变更通知，XAML 绑定自动刷新
+
+**前置修复**：JSON 键名绑定问题 — 当前 `"Consultation.Create": false` 点分键不绑定到 `ConsultationCreate` 属性。需改为嵌套对象格式 `"Consultation": { "Create": false }` 或添加 `[JsonPropertyName]` 映射。
+
+### 不采用的方案
+
+| 方案 | 原因 |
+|------|------|
+| FileSystemWatcher | 绕过 Options 模式，与已有 `reloadOnChange` 重复 |
+| 远程 Feature Flag 服务 | 单诊所 Desktop 应用无需远程下发开关 |
+
 ## 待解决问题
-- **OQ-CFG-01**: 目前功能开关修改需重启 Desktop 客户端才能生效。未来版本（v2.0+）可能考虑实现热更新，以提升运维灵活性。
 - **OQ-CFG-02**: 当前无 Web UI 管理界面，需直接修改配置文件。未来可根据运维反馈决定是否增加配置管理 UI。
