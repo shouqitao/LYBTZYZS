@@ -27,6 +27,7 @@
 | [05-development-environment-spec.md](./05-development-environment-spec.md) | 开发环境规格说明 |
 | [06-api-tests.md](./06-api-tests.md) | API 测试用例文档 |
 | [07-backup-recovery.md](./07-backup-recovery.md) | 备份策略、恢复流程、灾难恢复 |
+| [08-monitoring-alerting.md](./08-monitoring-alerting.md) | 监控指标、告警规则、日常巡检 |
 | [archive/](./archive/) | 归档文档 (5 个文件) |
 
 ---
