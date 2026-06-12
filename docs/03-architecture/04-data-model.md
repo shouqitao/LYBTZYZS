@@ -94,7 +94,7 @@ graph TB
 | Consultation | Consultation? | - | 导航属性 (1:1) |
 | Prescription | Prescription? | - | 导航属性 (1:0..1) |
 
-**计算属性**: IsLocked (跨日锁定), IsActive, IsCompleted, HasPrescription (依赖 PrescriptionId.HasValue，Mapper 必须显式设置)
+**计算属性**: IsLocked (`IsCompleted && CompletedAt.Date < Today`), IsActive, IsCompleted, HasPrescription (依赖 PrescriptionId.HasValue，Mapper 必须显式设置)
 
 **DDD 域方法** (聚合根行为):
 

@@ -198,7 +198,7 @@ sequenceDiagram
 | 1 | Herb | Herb | Formula 子项引用 HerbId |
 | 2 | Patient | Patient | MedicalCase 引用 PatientId |
 | 3 | Formula | Formula | 依赖 Herb 已存在 |
-| (未实现) | MedicalCase | MedicalCase | 聚合级，依赖 Patient + Herb |
+| 4 | MedicalCase | MedicalCase | 聚合级，依赖 Patient + Herb；仅同步 Completed 状态 (SYNC-D01) |
 
 ### 支持同步的实体类型
 
@@ -247,6 +247,6 @@ sequenceDiagram
 | 2026-03-08 | v2.1 | LocalDB 迁移: SQLite -> SQL Server |
 | 2026-03-09 | v2.2 | v1.0-rc 状态同步 |
 | 2026-03-09 | v3.0 | **Sprint 6 完成**: SYNC-D02 DataSource 废除 + SYNC-D03 运行时切换已实施 |
-| 2026-07-01 | v4.0 | **LocalWebAPI 覆盖率提升**: 覆盖率从 ~78% 提升至 ~100% |
+| 2026-04-01 | v4.0 | **LocalWebAPI 覆盖率提升**: 覆盖率从 ~78% 提升至 ~100% |
 | 2026-05-01 | v5.0 | **架构简化**: 移除运行时模式切换 (ConnectionMode)、移除遗留 Local 仓储、统一为 Remote + LocalWebAPI 双模式 |
 | 2026-06-08 | v6.0 | **URL 驱动连接切换**: 废弃 ApiMode 枚举，引入 SwitchingApiClient 代理 + IConnectionSettingsService，用户通过 UI 输入 URL 即时切换 |

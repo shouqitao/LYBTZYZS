@@ -61,5 +61,5 @@ sources: ["docs/04-api-reference/09-sync.md"]
 ## 相关概念
 
 *   [同步模块概览](modules/sync-module.md)：同步模块概览。
-*   医案同步因状态机约束需特殊处理：已关闭/已取消的医案不允许覆盖（详见 [医案状态机](30-medical-case-states.md)）。
-*   [校验和机制](31-checksum-architecture.md)：基于 SHA256 的差异检测机制。
+*   医案同步因状态机约束需特殊处理：已关闭/已取消的医案不允许覆盖（详见 [医案锁定规则](31-medical-case-locking-rules.md)）。
+*   校验和机制：基于 SHA256 of JSON-serialized business fields 的差异检测（详见 [同步模块](modules/sync-module.md) Checksum 流程）。

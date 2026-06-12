@@ -24,7 +24,7 @@ graph TB
 
     subgraph Server["Server 层 (ASP.NET Core)"]
         WebAPI["WebAPI (入口)"]
-        Modules_S["业务模块 x9"]
+        Modules_S["业务模块 (8 active + 2 dormant)"]
         Infra["Infrastructure"]
         Entities["Entities"]
         WebAPI --> Modules_S --> Infra --> Entities
@@ -64,9 +64,10 @@ src/
       LYBT.Desktop.Registration/     # 挂号
       LYBT.Desktop.Sync/             # 数据同步 (含 SyncPhase FSM)
       LYBT.Desktop.Users/            # 用户
-    Roles/                           # 角色入口
+    Roles/                           # 角色入口 (3个)
       LYBT.Desktop.Admin/            # 管理员端
       LYBT.Desktop.Clinical/         # 临床端
+      LYBT.Desktop.Receptionist/     # 前台接待端
     Shell/
       LYBT.Desktop.Shell/            # 应用外壳
 

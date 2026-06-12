@@ -44,6 +44,6 @@ sources: ["docs/01-product/04-user-roles.md"]
 
 ## 相关概念
 
-- medical-case：锁定规则直接作用于医案实体。
-- resource-level-permissions：锁定规则是资源级权限的关键实现。
-- business-rules：锁定规则是系统关键业务规则之一。
+- [医案模块](modules/medical-case-module.md) — 锁定规则直接作用于医案实体
+- [用户角色与权限](../01-product/04-user-roles.md) — 锁定规则是资源级权限的关键实现
+- [临床工作流](../01-product/06-clinical-workflow.md) — 锁定规则是系统关键业务规则之一

@@ -55,5 +55,5 @@ graph TD
 
 - [患者模块](modules/patient-module.md)
 - [医案模块](modules/medical-case-module.md)
-- user-personas
-- resource-level-permissions
+- [用户画像](../01-product/02-personas.md)
+- [用户角色与权限](../01-product/04-user-roles.md)

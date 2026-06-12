@@ -109,9 +109,9 @@ graph TB
 
 ## 相关链接
 
-- 项目整体概览
-- ADR-002-dual-mode-architecture - 架构决策记录
-- [数据同步模块](modules/sync-module.md) - 同步模块详细设计
-- [认证模块](modules/auth-module.md) - 认证模块详细设计
-- Desktop Shell - 负责 LocalWebAPI 生命周期管理
-- [敏感数据分级与保护](10-sensitive-data.md) - 数据安全规范
+- [系统架构总览](../03-architecture/01-system-overview.md)
+- [ADR-0002: 双模式架构](../03-architecture/decisions/0002-dual-mode-architecture.md)
+- [数据同步模块](modules/sync-module.md)
+- [认证模块](modules/auth-module.md)
+- [Desktop Shell](../03-architecture/02-desktop.md) — 负责 LocalWebAPI 生命周期管理
+- [敏感数据分级与保护](10-sensitive-data.md)
