@@ -72,11 +72,11 @@ sequenceDiagram
 4. **契约共享**：跨模块接口通常定义在共享层架构中，确保 Server 和 Client 端均可引用统一契约。
 
 ## 相关概念
-* 单向依赖原则
-* 组件分解
-* 服务端架构
-* 共享层架构
+* 单向依赖原则 (规划中)
+* [组件分解](18-mvvm-prism.md)
+* 服务端架构 (规划中)
+* 共享层架构 (规划中)
 * [异常类型体系](12-exception-hierarchy.md)
-* NavigationCoordinator
-* ICrossModuleService
-* ICrossModuleAuthService
+* NavigationCoordinator (规划中)
+* ICrossModuleService (规划中)
+* ICrossModuleAuthService (规划中)

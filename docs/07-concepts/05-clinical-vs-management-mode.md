@@ -45,6 +45,6 @@ sources: ["docs/03-architecture/medicalcase-workspace-current-state.md"]
 ## 相关链接
 
 *   [workspace-modes](04-workspace-modes.md)
-*   clinical-ui-layout-strategy
+*   clinical-ui-layout-strategy (规划中)
 *   [medical-case-module](modules/medical-case-module.md)
-*   business-rules
+*   [业务规则](../01-product/06-clinical-workflow.md)

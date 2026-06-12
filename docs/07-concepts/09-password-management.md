@@ -71,5 +71,5 @@ sources: ["docs/05-development/06-security-password-management.md"]
 
 - [认证授权](07-authentication.md)
 
-- configuration-management — 配置管理架构
+- configuration-management (规划中) — 配置管理架构
 - [测试策略](24-testing-strategy.md)

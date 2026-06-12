@@ -53,10 +53,15 @@
   "id": "guid",
   "userName": "string",
   "realName": "string",
-  "role": "Doctor|Admin",
+  "role": "Unknown|Doctor|Admin|SuperAdmin|Receptionist",
   "email": "string",
   "phoneNumber": "string",
+  "isEnabled": true,
   "status": "Enabled|Disabled",
+  "pinYinCode": "string",
+  "lastLoginTime": "datetime?",
+  "failedLoginCount": 0,
+  "remark": "string",
   "createdAt": "datetime",
   "updatedAt": "datetime"
 }
@@ -316,3 +321,4 @@
 | 2026-02-19 | v1.2 | toggle-status 端点补充业务规则: USER-D03 最后管理员保护、Token Family 失效、错误响应 |
 | 2026-02-23 | v1.3 | S2-07/08: toggle-status 权限层级说明 + 错误码修正 (422); batch-enable/disable 业务规则 (逐项权限、管理员保护、Token撤销) |
 | 2026-06-12 | v1.4 | 权限标注对齐实际代码: 类级别 [Authorize] + 方法级策略; current/profile/change-password 标注自助端点; reset-password/restore 改为 SuperAdminOnly; toggle-status 422 标注 Service 层动态返回; change-password 请求类型改为 Auth.ChangePasswordRequest |
+| 2026-06-12 | v1.5 | UserDetailDto: role 补全 4 角色; 新增 isEnabled/pinYinCode/lastLoginTime/failedLoginCount/remark 字段 |

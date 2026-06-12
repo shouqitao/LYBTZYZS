@@ -39,6 +39,6 @@ sources: ["docs/03-architecture/medicalcase-workspace-ui-optimization-plan.md"]
 
 ## 相关概念
 
-- business-rules：直接对应 BR-003 完成校验规则。
-- prescription-decision-gate：依赖处方决策状态作为校验前提。
-- completeness-check-visualization：该检查器的 UI 表现形式。
+- [业务规则](../01-product/06-clinical-workflow.md)：直接对应 BR-003 完成校验规则。
+- [处方决策门](28-formula-validation-workflow.md)：依赖处方决策状态作为校验前提。
+- completeness-check-visualization (规划中)：该检查器的 UI 表现形式。

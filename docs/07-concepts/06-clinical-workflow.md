@@ -54,6 +54,6 @@ MedicalCase具有明确的状态机：`Active` ↔ `Suspended` → `Completed`�
 
 ## 相关概念
 
-- medical-case：作为核心聚合根，承载了临床工作流的主要数据和状态。
-- business-rules：集中定义了REG-BR-001、REG-BR-003、MC-D15等业务规则。
+- [医案模块](modules/medical-case-module.md)：作为核心聚合根，承载了临床工作流的主要数据和状态。
+- business-rules：集中定义了REG-BR-001、REG-BR-003、MC-D15等业务规则。(自文档)
 - [dual-mode-architecture](01-dual-mode-architecture.md)：临床模式（Clinical）和管理模式（Management）决定了UI交互和离开界面时的行为。

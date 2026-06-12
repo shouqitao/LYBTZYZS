@@ -48,7 +48,10 @@ sources: ["docs/02-requirements/17-nfr.md"]
 | L2 (Diagnosis Fields) | **不记录** | - |
 | L3 | 正常记录 | 原文 |
 
-## 密钥生命周期管理 (规划中)
+## 密钥生命周期管理
+
+#### 现状 (v1.0)
+本地敏感字段（L1/L2）以明文存储，依赖操作系统文件权限保护。DPAPI 仅用于照片加密和密码/令牌存储。
 
 针对 v2.0 的本地加密方案，密钥管理流程如下：
 1.  **生成**：首次启动时自动生成 256-bit 随机 AES 密钥。
@@ -58,7 +61,7 @@ sources: ["docs/02-requirements/17-nfr.md"]
 
 ## 相关链接
 
-- data-masking-strategy
-- card-reader-integration
-- dpapi-photo-storage
-- serilog-integration
+- data-masking-strategy (规划中)
+- card-reader-integration (规划中)
+- dpapi-photo-storage (规划中)
+- serilog-integration (规划中)

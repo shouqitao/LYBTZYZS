@@ -40,5 +40,5 @@ sources: ["docs/01-product/04-user-roles.md"]
 
 - [clinical-workflow](06-clinical-workflow.md)：工作区模式是临床工作流在前端的具体实现。
 - [clinical-vs-management-mode](05-clinical-vs-management-mode.md)：同一视图内的交互行为差异。
-- user：工作区根据用户角色进行分配。
+- [用户模块](modules/users-module.md)：工作区根据用户角色进行分配。
 - [mvvm-prism](18-mvvm-prism.md)：工作区的实现依赖于WPF MVVM和Prism的区域导航机制。

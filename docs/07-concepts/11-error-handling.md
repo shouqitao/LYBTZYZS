@@ -171,6 +171,6 @@ Desktop                          Server
 
 ## 相关链接
 
-- overview — 系统架构总览
+- overview (规划中) — 系统架构总览
 - [medical-case-module](modules/medical-case-module.md) — 医案模块的业务异常示例
 - [auth-module](modules/auth-module.md) — 认证相关异常类型（UserNotFound, AuthInvalidCredentials）

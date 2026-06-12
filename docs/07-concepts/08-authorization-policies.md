@@ -32,5 +32,5 @@ sources: ["docs/01-product/04-user-roles.md"]
 ## 相关概念
 
 - [认证模块](07-authentication.md)：授权策略是认证后进行访问控制的核心组成部分。
-- 用户：策略定义了哪些用户角色可以执行操作。
-- 医案：策略应用于医案管理的API端点，但更细粒度的权限通过资源级检查实现。
+- [用户模块](modules/users-module.md)：策略定义了哪些用户角色可以执行操作。
+- [医案模块](modules/medical-case-module.md)：策略应用于医案管理的API端点，但更细粒度的权限通过资源级检查实现。

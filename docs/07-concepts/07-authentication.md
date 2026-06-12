@@ -100,7 +100,7 @@ var decrypted = ProtectedData.Unprotect(encryptedBytes, null, DataProtectionScop
 ## 相关链接
 
 - [auth-module](modules/auth-module.md) — Auth 模块整体设计
-- user — 用户实体与角色体系
-- ADR-005-superadmin-auth — SuperAdmin 归属 Auth 模块的决策
-- ADR-008-token-security — Token 安全防御性设计的详细论证
-- ADR-004-user-context-propagation — 用户上下文在调用链中的传递
+- [用户模块](modules/users-module.md) — 用户实体与角色体系
+- [ADR-005](../03-architecture/decisions/0005-superadmin-auth-module.md) — SuperAdmin 归属 Auth 模块的决策
+- [ADR-008](../03-architecture/decisions/0008-token-security-defensive-design.md) — Token 安全防御性设计的详细论证
+- [ADR-004](../03-architecture/decisions/0004-user-context-propagation.md) — 用户上下文在调用链中的传递

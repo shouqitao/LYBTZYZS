@@ -25,6 +25,10 @@
 {
   "id": null,                    // null 触发创建
   "patientId": "guid",
+  "userId": "guid",
+  "registrationId": "guid",
+  "editReason": "string",
+  "needsPrescription": true|false|null,
   "remark": "string",
   "consultation": {              // 可选
     "presentIllness": "string",
@@ -543,3 +547,4 @@
 | 2026-02-21 | v1.3 | 深度重构同步: PUT /status 移除 Cancelled/Completed 支持 (Completed 需用 /close); PUT /cancel 响应改为 204; 4 个废弃端点已从代码移除; caseStatus 枚举移除 Cancelled; /close 补充统一入口说明; 术语"病案"统一为"医案" |
 | 2026-02-22 | v1.4 | MC-D20 同步: Draft→Suspended 状态重命名; `/draft`→`/suspend` 端点重命名; DraftCaseExists→SuspendedCaseExists; CannotSaveDraft→CannotSuspend |
 | 2026-06-12 | v1.5 | 打印端点移至 printing.md，改为交叉引用 |
+| 2026-06-12 | v1.6 | MedicalCaseInputDto: 新增 userId/registrationId/editReason/needsPrescription 字段 |

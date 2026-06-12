@@ -45,8 +45,19 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
   "phoneNumber": "string",
   "idNumber": "string",         // 敏感数据
   "address": "string",
+  "maritalStatus": "Unknown|Married|Single|Divorced|Widowed",
+  "idType": "IdCard|Passport|Other",
+  "bloodType": "Unknown|A|B|O|AB",
+  "emergencyContactName": "string",
+  "emergencyContactPhone": "string",
+  "emergencyContactRelation": "string",
   "allergyHistory": "string",
   "medicalHistory": "string",
+  "lastVisitTime": "datetime",
+  "visitCount": 0,
+  "disableReason": "string",
+  "pinYinCode": "string",
+  "status": "Active|Disabled",
   "remark": "string",
   "createdBy": "guid",
   "createdAt": "datetime",
@@ -331,3 +342,4 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 | 2026-02-18 | v1.1 | 新增 PUT /patients/{id}/status 端点 (FR-PAT-013 患者状态管理); 补充错误码 ERR-20005/20006 |
 | 2026-02-18 | v1.2 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-20001~20805)，含核心/业务规则/导入三类 |
 | 2026-06-12 | v1.4 | 移除 POST /patients/import (客户端功能); US-PAT-013 改为 toggle-status; 导入错误码标注为客户端触发 |
+| 2026-06-12 | v1.5 | PatientDetailDto: 新增 maritalStatus/idType/bloodType/emergencyContact*/lastVisitTime/visitCount/disableReason/pinYinCode/status 字段 |

@@ -121,13 +121,12 @@ MedicalCaseAuditLog 记录以下信息:
 
 ## 相关链接
 
-- [medical-case-module](medical-case-module.md) - 医案实体总览
-- consultation - 诊断子实体
-- prescription - 处方子实体
-- [patient](patient-module.md) - 患者管理模块
-- [herb](herb-module.md) - 药材管理模块
-- [formula](formula-module.md) - 验方管理模块
-- ADR-001-medicalcase-aggregate-root - MedicalCase 作为唯一聚合根的架构决策
+- [问诊模块](medical-case-module.md) - 诊断子实体
+- [处方相关](medical-case-module.md) - 处方子实体
+- [患者模块](patient-module.md) - 患者管理模块
+- [药材模块](herb-module.md) - 药材管理模块
+- [验方模块](formula-module.md) - 验方管理模块
+- [ADR-001](../../03-architecture/decisions/0001-medicalcase-aggregate-root.md) - MedicalCase 作为唯一聚合根的架构决策
 
 ## 服务端架构
 

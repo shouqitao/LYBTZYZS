@@ -136,7 +136,7 @@ MedicalCase 模块实现了 6 状态 10 事件的编辑模式状态机 (`EditMod
 
 ## 相关链接
 
-- overview - 项目整体概览
-- ADR-006-component-decomposition - 组件分解决策记录
-- ADR-007-viewmodel-composition - ViewModel 组合决策记录
-- component-decomposition - 组件分解详细设计
+- overview (规划中) - 项目整体概览
+- [ADR-006](../03-architecture/decisions/0006-component-decomposition-pattern.md) - 组件分决定策记录
+- [ADR-007](../03-architecture/decisions/0007-viewmodel-composition-pattern.md) - ViewModel 组合决策记录
+- component-decomposition (规划中) - 组件分解详细设计
