@@ -24,12 +24,14 @@ sources: ["docs/02-requirements/13-error-handling.md"]
 
 | 异常类型 | HTTP 状态码 | 类别 | 说明 | 典型场景 |
 | :--- | :--- | :--- | :--- | :--- |
-| `BusinessException` | 400 | Business | 业务规则违反 | 医案状态转换非法、处方打印保护触发 |
+| `BusinessException` | 400 | Business | 业务规则违反 | 医案状态转换非法 |
 | `NotFoundException` | 404 | Resource | 资源未找到 | 患者ID不存在、医案ID无效 |
 | `ConflictException` | 409 | Concurrency | 并发冲突或重复 | 医案版本冲突、身份证号重复注册 |
 | `ValidationException` | 400 | Validation | 输入验证失败 | 表单字段格式错误、必填项缺失 |
 | `UnauthorizedException` | 401 | Authentication | 身份认证失败 | Token过期、密码错误、账户被锁定 |
 | `ApiException` | Varies | External | 外部服务调用失败 | 同步模块调用远程API失败 |
+
+**注意**: FluentValidation 验证错误通过 `Result<T>.Failure()` → Controller `HandleResult()` → **HTTP 422** 返回（见 [error-handling](11-error-handling.md)），不经过异常处理器链。上表中的 `ValidationException` 指代码中手动抛出的验证异常，非 FluentValidation 自动验证。
 
 ## 静态工厂方法
 

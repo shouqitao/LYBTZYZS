@@ -9,7 +9,7 @@ source: docs/03-architecture/06-error-handling.md
 
 ## 概述
 
-系统采用 **"异常即信号"** 的设计哲学：Service 层通过抛出类型化异常表达业务违规，全局异常处理器链统一捕获并转换为标准化 API 响应。所有请求通过 **CorrelationId** 实现端到端追踪，贯穿 Server 日志、API 响应和 Desktop 客户端，确保问题可追溯。
+系统采用 **Result 单子 + 异常双轨** 的设计哲学：Service 层验证失败通过 `Result<T>.Failure()` 返回（Result 单子模式），Controller 层通过 `HandleResult()` 将其转为 HTTP 422。业务违规（如状态冲突、权限不足）则通过抛出类型化异常表达，由全局异常处理器链统一捕获并转换为标准化 API 响应。所有请求通过 **CorrelationId** 实现端到端追踪，贯穿 Server 日志、API 响应和 Desktop 客户端，确保问题可追溯。
 
 ## 核心内容
 
@@ -27,6 +27,18 @@ throw NotFoundException.MedicalCase(caseId);  // ErrorCode = MedicalCaseNotFound
 throw NotFoundException.Herb(herbId);         // ErrorCode = HerbNotFound (50001)
 ```
 
+### 验证错误处理（Result 单子模式）
+
+Service 层 FluentValidation 验证失败 **不抛异常**，而是返回 `Result<T>.Failure(errors)`：
+
+```csharp
+var validationResult = await _validator.ValidateAsync(dto);
+if (!validationResult.IsValid)
+    return Result<T>.Failure(validationResult.Errors.Select(e => e.ErrorMessage).ToList());
+```
+
+Controller 通过 `HandleResult()` 将无 `ModuleErrorCode` 的失败转为 **HTTP 422 Unprocessable Entity**。详见 [validator-architecture](35-validator-architecture.md)。
+
 ### 全局异常处理器链
 
 注册于 `AddServerExceptionHandling()`，按顺序执行：
@@ -40,7 +52,7 @@ throw NotFoundException.Herb(herbId);         // ErrorCode = HerbNotFound (50001
                                  └─ 不匹配 → 传递下一个
                                                     ↓
                                SystemExceptionHandler (#2, 兜底)
-                                 ├─ 处理 FluentValidation.ValidationException → 400
+                                  ├─ 处理 FluentValidation.ValidationException → 400 (兜底防御，正常流程不触发)
                                  ├─ 处理 UnauthorizedAccessException → 403
                                  ├─ 处理 DbUpdateConcurrencyException → 409
                                  ├─ 处理 TimeoutException → 504
@@ -50,7 +62,7 @@ throw NotFoundException.Herb(herbId);         // ErrorCode = HerbNotFound (50001
 | 异常类型 | HTTP 状态码 | 说明 |
 |----------|-----------|------|
 | `AppException` 及子类 | 按类型映射 | 业务异常（BusinessException=400, NotFound=404, Conflict=409） |
-| `FluentValidation.ValidationException` | 400 | 模型验证失败 |
+| `FluentValidation.ValidationException` | 400 | 兜底防御（正常流程通过 Result<T> 返回 422） |
 | `UnauthorizedAccessException` | 403 | 权限不足 |
 | `DbUpdateConcurrencyException` | 409 | EF Core 乐观并发冲突 |
 | `TimeoutException` | 504 | 服务器超时 |
