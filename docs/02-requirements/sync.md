@@ -243,8 +243,8 @@ We believe that 实现基于 SHA256 差异检测的双向数据同步 (药材/�
 > **[延期 2026-02-21]** 冲突对话框仅展示 Checksum，缺少字段级左右对比 UI
 > 原因: 依赖 SyncConflictDetailDto 实现，与同步基础架构同步推进  |  计划: 同步体系完善 Epic  |  参考: SYNC-03
 
-> **[已修订 2026-02-21]** 简单进度条 MVP 够用，PRD 简化进度 UI 描述 (移除 4 步骤指示器的详细格式要求)
-> 原因: 当前简单进度条满足 MVP 需求，详细步骤指示器为锦上添花  |  参考: SYNC-11
+> **[已修订 2026-02-21]** 简单进度条满足当前需求，PRD 简化进度 UI 描述 (移除 4 步骤指示器的详细格式要求)
+> 原因: 当前简单进度条满足需求，详细步骤指示器为锦上添花  |  参考: SYNC-11
 > [实现状态] 代码实现已接受 (Sprint3)
 
 ### US-SYNC-007: 完整同步工作流
@@ -373,7 +373,7 @@ We believe that 实现基于 SHA256 差异检测的双向数据同步 (药材/�
 | 排除项 | 原因 |
 |--------|------|
 | MedicalCase 同步实现 | 独立 Epic，复杂度极高 (聚合级原子同步+患者去重+编号重分配)，延期至同步体系完善 Epic |
-| 自动同步 / 后台同步 | v1.0 手动触发，v2.0 考虑 NetworkStatusService + 状态栏指示器 |
+| 自动同步 / 后台同步 | v1.0 手动触发，后续版本考虑 NetworkStatusService + 状态栏指示器 |
 | ~~运行时模式切换~~ | **已实现 (Sprint 6, SYNC-D03)**。IConnectionModeProvider + SidebarControl 按钮 + MainWindow 遮罩层 |
 | ChangedFields 变更字段检测 | 复杂度高，当前 Checksum 比对可识别差异存在 |
 | SyncConflictDetailDto 字段级对比 | 依赖同步基础架构完善，当前 Checksum 展示可满足基本冲突识别 |
@@ -842,7 +842,7 @@ SyncUploadItemResult: { Success, ErrorMessage, IsConflict }
 | 1 | 冲突解决策略 | US-SYNC-003, 007 | 已确定: 手动逐条选择 (保留本地 / 使用服务端 / 跳过)。医疗数据需人工确认，不适合自动覆盖 |
 | 2 | 本地模式功能受限范围 | 全部 US-SYNC | 已确定: 同步需网络连接。不可用项: 自动登录 / Token刷新 / 审计日志查询 / User同步。MedicalCase同步已支持 (决策3)。详见 dual-mode.md |
 | 3 | MedicalCase 同步 | US-SYNC-001 | 已确定: 详细设计已完成。聚合级原子同步 (MC+Consultation+Prescription+Items); **仅 Completed 状态同步** (SYNC-D01); 自动强制依赖顺序 (Herb->Patient->MC); 患者 IdCardNumber 去重+PatientId 重映射; CaseNumber/PrescriptionNumber Server 重分配; 打印字段不参与同步; 模式切换前强制无 Active/Suspended 医案。详见 "MedicalCase 同步设计" 章节 |
-| 4 | 自动同步提示 | US-SYNC-007 | 已确定: v1.0 不实现。用户手动进入同步模块触发。v2.0 考虑 NetworkStatusService + 状态栏指示器 |
+| 4 | 自动同步提示 | US-SYNC-007 | 已确定: v1.0 不实现。用户手动进入同步模块触发。后续版本考虑 NetworkStatusService + 状态栏指示器 |
 | 5 | 同步进度 UI | US-SYNC-007 | 已确定: 步骤指示器 (4步) + 当前实体类型 + 进度条。结果汇总按实体类型分组 |
 | 6 | 同步失败恢复策略 | US-SYNC-007 | 已确定: 重新开始。已同步数据通过 Checksum 比对自动跳过不重复 |
 | 7 | 冲突解决 UI | US-SYNC-007 | 已确定: 左右对比布局，差异字段高亮，逐条解决 |
@@ -856,12 +856,12 @@ SyncUploadItemResult: { Success, ErrorMessage, IsConflict }
 | 2026-02-21 | DTO 命名对齐代码 | PRD DTO 定义与代码实现不一致 | SYNC-15 |
 | 2026-02-21 | 字段名对齐代码 | LastModifiedAt vs ModifiedAt 等字段名差异 | SYNC-16 |
 | 2026-02-21 | 枚举/属性名对齐代码 | 统一 PRD 与代码的命名规范 | SYNC-19 |
-| 2026-02-21 | 简化进度 UI 描述 | 简单进度条 MVP 够用，移除 4 步骤指示器详细格式要求 | SYNC-11 |
+| 2026-02-21 | 简化进度 UI 描述 | 简单进度条满足当前需求，移除 4 步骤指示器详细格式要求 | SYNC-11 |
 | 2026-02-21 | MedicalCase 同步延期标注 | 独立 Epic 规划复杂度极高 | SYNC-01 |
 | 2026-02-21 | ChangedFields 延期标注 | 变更检测复杂度高 | SYNC-08 |
 | 2026-02-21 | SyncConflictDetailDto 延期标注 | 依赖同步基础架构完善 | SYNC-02 |
 | 2026-02-21 | 字段级左右对比 UI 延期标注 | 依赖 SyncConflictDetailDto | SYNC-03 |
-| 2026-02-21 | ~~运行时模式切换延期标注~~ | ~~MVP 阶段登录时选择够用~~ **Sprint 6 (2026-03-09) 已实现** | SYNC-04 |
+| 2026-02-21 | ~~运行时模式切换延期标注~~ | ~~当前阶段登录时选择够用~~ **Sprint 6 (2026-03-09) 已实现** | SYNC-04 |
 | 2026-02-21 | ~~切换前未同步变更检查延期标注~~ | ~~依赖运行时模式切换~~ **Sprint 6 (2026-03-09) 已实现** | SYNC-05 |
 | 2026-02-21 | ~~切换失败回退策略延期标注~~ | ~~依赖运行时模式切换~~ **Sprint 6 (2026-03-09) 已实现** | SYNC-13 |
 | 2026-02-21 | SYNC-D01 医案同步仅限 Completed | 数据完整性+冲突极简+业务语义 | SYNC-D01 |

@@ -11,7 +11,7 @@
 
 **横轴 (Backbone)**: Activities 代表用户完成目标的主要活动，从左到右按时间顺序排列。
 **纵轴 (Priority)**: 每个 Activity 下的 Tasks 按 MoSCoW 优先级从上到下排列 (Must > Should > Could)。
-**Release Slices**: 横向切线划分发布版本，Must Have 构成 MVP。
+**Release Slices**: 横向切线划分发布版本，Must Have 构成当前版本核心功能。
 
 ---
 
@@ -312,7 +312,7 @@
 
 ## Release Slices
 
-### Release 1: MVP (Must Have) -- v1.0 核心
+### Release 1: 当前版本 (Must Have) -- v1.0 核心
 
 系统无此功能则不可用的最小功能集。
 
@@ -350,7 +350,7 @@
 
 **Should Have 合计: 54 US**
 
-### Release 3: 锦上添花 (Could Have) -- v1.0 可选 / v2.0
+### Release 3: 锦上添花 (Could Have) -- 后续版本
 
 **患者管理**: US-PAT-006, 007, 008, 009, 010, 011, 012 (7)
 **医案管理**: US-MC-012 (1)
