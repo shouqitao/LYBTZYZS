@@ -113,9 +113,9 @@
 
 ### 文档
 - 产品文档（01-product）
-- PRD 9模块92需求（02-requirements）
+- PRD 15模块138 User Stories（02-requirements）
 - 架构文档 + 8 ADR（03-architecture）
-- API参考 99端点（04-api-reference）
+- API参考 100+端点（04-api-reference）
 - 开发指南 + 编码标准（05-development）
 - 部署运维文档（06-operations）
 

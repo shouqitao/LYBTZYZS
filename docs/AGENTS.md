@@ -5,7 +5,7 @@
 
 ## Purpose
 
-Central documentation hub for the LYBTZYZS TCM clinic management system. Contains ~55 documentation files organized into 6 main sections covering product vision, requirements (PRD), architecture (including 8 ADRs), API reference, development guides, and operations. Also hosts active design/plan documents, code review notes, and training materials.
+Central documentation hub for the LYBTZYZS TCM clinic management system. Contains ~100+ documentation files organized into 7 main sections covering product vision, requirements (PRD), architecture (including 8 ADRs), API reference, development guides, operations, and domain concepts. Also hosts active design/plan documents and training materials.
 
 ## Key Files
 
@@ -21,22 +21,18 @@ Central documentation hub for the LYBTZYZS TCM clinic management system. Contain
 
 | Directory | Purpose |
 |-----------|---------|
-| `01-product/` | Product vision, feature overview, user roles, clinical workflow (5 files) |
-| `02-requirements/` | PRD with 14 modules, 131 User Stories, NFR, UI specifications (17 files) |
-| `03-architecture/` | System architecture, data model, dual-mode design, 8 ADRs, error handling architecture (15 files) |
+| `01-product/` | Product vision, feature overview, user roles, clinical workflow (8 files) |
+| `02-requirements/` | PRD with 15 modules, 138 User Stories, NFR, UI specifications (22 files) |
+| `03-architecture/` | System architecture, data model, dual-mode design, 8 ADRs, error handling, archive/, localwebapi/, decisions/ (25 files) |
 | `03-architecture/decisions/` | Architecture Decision Records (ADR-0001 through ADR-0008) |
 | `03-architecture/localwebapi/` | LocalWebAPI-specific architecture docs |
-| `04-api-reference/` | All API endpoint documentation (10 files) |
-| `05-development/` | Quick start, coding standards, design patterns, testing guides (5 files) |
-| `06-operations/` | Deployment, configuration, monitoring, logging (3 files) |
+| `04-api-reference/` | All API endpoint documentation — printing, sync, health, diagnostics, configuration (13 files) |
+| `05-development/` | Quick start, coding standards, design patterns, testing guides, standards/ (6 STD files), archive/ (12 files) |
+| `06-operations/` | Deployment, configuration, monitoring, logging, archive/ (7 files) |
+| `07-concepts/` | Domain concept documentation — TCM terminology, clinical workflows, system concepts (47 files) |
 | `plans/` | Active and archived design/plan documents (~50 files) |
 | `archives/` | Archived documentation |
-| `code-review/` | Code review notes |
-| `deployment/` | Deployment-specific guides |
-| `planning/` | Planning documents |
 | `requirements/` | Additional requirements docs |
-| `superpowers/` | Superpowers skill documentation |
-| `testing/` | Testing guides and strategies |
 | `training/` | Training materials |
 
 ## For AI Agents

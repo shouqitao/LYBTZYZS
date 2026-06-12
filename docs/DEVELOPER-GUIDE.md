@@ -44,7 +44,7 @@ dotnet test tests/LYBT.Tests.Architecture/  # 76 tests (架构守卫)
 | 文档 | 说明 | 位置 |
 |------|------|------|
 | 产品愿景 | 系统定位、核心价值、用户角色 | [`01-product/`](01-product/) |
-| 功能需求 (PRD) | 9大模块、92项需求 | [`02-requirements/`](02-requirements/) |
+| 功能需求 (PRD) | 15模块、138 User Stories | [`02-requirements/`](02-requirements/) |
 | 用户故事地图 | 核心用户流程 | [`02-requirements/user-story-map.md`](02-requirements/user-story-map.md) |
 | 非功能需求 | 性能、安全、可用性 | [`02-requirements/nfr.md`](02-requirements/nfr.md) |
 
@@ -62,7 +62,7 @@ dotnet test tests/LYBT.Tests.Architecture/  # 76 tests (架构守卫)
 
 | 文档 | 说明 | 位置 |
 |------|------|------|
-| API 总览 | 99个端点概览 | [`04-api-reference/`](04-api-reference/) |
+| API 总览 | 100+端点概览 | [`04-api-reference/`](04-api-reference/) |
 | 认证接口 | 登录、令牌、刷新 | [`04-api-reference/auth-api.md`](04-api-reference/auth-api.md) |
 
 ### 🛠️ 开发指南

@@ -55,7 +55,7 @@
 
 | Release | 范围 | 标准 |
 |---------|------|------|
-| v1.0-alpha | 全部 Must Have (51 US) 实现并通过测试 | MVP 可用 |
+| v1.0-alpha | 全部 Must Have (51 US) 实现并通过测试 | v1 可用 |
 | v1.0-beta | Must + Should (105 US) 实现 | 功能完整 |
 | v1.0-rc | Must + Should + 部分 Could | 生产就绪 |
 
@@ -186,11 +186,11 @@
 | Sprint 3 | W3-W4 | MC + Printing + Herbs + Auth + REG | 0 | 9 | 0 | **COMPLETE** (2026-03-08) |
 | Sprint 4 | W5-W6 | Sync + CardReader + MC | 0 | 5 | 0 | **COMPLETE** (2026-03-09) **v1.0-beta** |
 | Sprint 5 | W7 | Error + Shell + Backup | 0 | 0 | 2+1NFR | **COMPLETE** (2026-03-09) **v1.0-rc** |
-| Sprint 6 | W8 | DataSource 重构 + v2.0 提前 | 0 | 0 | 6 功能 | **COMPLETE** (2026-03-09) |
+| Sprint 6 | W8 | DataSource 重构 + 功能提前 | 0 | 0 | 6 功能 | **COMPLETE** (2026-03-09) |
 
-### Sprint 6: DataSource 重构 + v2.0 功能提前 (6 项) -- COMPLETE (2026-03-09)
+### Sprint 6: DataSource 重构 + 功能提前 (6 项) -- COMPLETE (2026-03-09)
 
-**目标**: 废除 DataSource 抽象层，实现运行时模式切换，同时完成 4 项 v2.0 功能提前
+**目标**: 废除 DataSource 抽象层，实现运行时模式切换，同时完成 4 项功能提前
 
 | 编号 | 内容 | 完成状态 | 实现说明 |
 |------|------|---------|---------|

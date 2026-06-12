@@ -413,12 +413,12 @@ We believe that 实现 JWT 自动登录 + 滑动刷新 + 重放攻击检测 + �
 
 | 排除项 | 原因 |
 |--------|------|
-| OAuth2/OIDC 第三方登录 | 小型诊所无需，v2.0+ 考虑 |
+| OAuth2/OIDC 第三方登录 | 小型诊所无需，后续版本考虑 |
 | 多因素认证 (MFA) | 增加操作复杂度，诊所场景不必要 |
 | 生物识别登录 (指纹/面部) | 硬件依赖，超出 v1.0 范围 |
 | JWT 黑名单机制 | 复杂度高，延迟踢出 (最长 30 分钟) 在诊所场景可接受 (AUTH-D08) |
 | 触摸事件活跃追踪 | WPF 触摸追踪复杂度高，诊所以鼠标键盘为主 |
-| 服务端登出失败重试队列 | 重试队列复杂度高非 MVP 核心，Sprint 后续实现 |
+| 服务端登出失败重试队列 | 重试队列复杂度高非当前优先级，Sprint 后续实现 |
 
 ---
 
@@ -428,7 +428,7 @@ We believe that 实现 JWT 自动登录 + 滑动刷新 + 重放攻击检测 + �
 |------|------|---------|
 | JWT 密钥泄露 | Token 伪造，全系统数据暴露 | DPAPI 加密存储 + 定期密钥轮换 |
 | 本地模式无 Token | 安全级别低于远程模式 | 本地密码验证 + 不活跃超时 + 应用级访问控制 |
-| AccessToken 延迟踢出 | 旧设备在 Token 有效期内 (最长 30 分钟) 仍可操作 | 诊所场景可接受 (AUTH-D08)，v2.0 考虑 JWT 黑名单 |
+| AccessToken 延迟踢出 | 旧设备在 Token 有效期内 (最长 30 分钟) 仍可操作 | 诊所场景可接受 (AUTH-D08)，后续版本考虑 JWT 黑名单 |
 | 凭据文件被拷贝 | 他机上使用拷贝的凭据文件 | DPAPI LocalMachine 绑定机器，跨机器无法解密 |
 | 4 个 PRD 定义事件缺失 | SessionExpiring/SessionExtended/LogoutStarted/ForcedLogout 未实现 | 延期到事件体系 Epic |
 
@@ -440,8 +440,8 @@ We believe that 实现 JWT 自动登录 + 滑动刷新 + 重放攻击检测 + �
 |----|------|------|
 | OQ-AUTH-01 | 密码过期策略是否启用? | 预留设计 (PasswordExpired 错误码已定义)，v1.0 不启用 |
 | OQ-AUTH-02 | validate 端点是否返回剩余有效时间? | 延期。当前返回 valid=true/false，剩余时间 Sprint 后续补充 |
-| OQ-AUTH-03 | "记住密码" 安全警告文案是否上线? | 延期。UI 文案非 MVP 核心，功能本身可用 |
-| OQ-AUTH-04 | v2.0 USB 加密狗认证扩展时机? | ICredentialStore 接口已预留 (AUTH-D11)，待业务需求明确 |
+| OQ-AUTH-03 | "记住密码" 安全警告文案是否上线? | 延期。UI 文案非当前优先级，功能本身可用 |
+| OQ-AUTH-04 | 后续版本 USB 加密狗认证扩展时机? | ICredentialStore 接口已预留 (AUTH-D11)，待业务需求明确 |
 
 ---
 
@@ -527,7 +527,7 @@ We believe that 实现 JWT 自动登录 + 滑动刷新 + 重放攻击检测 + �
 | AUTH-D08 | 延迟踢出 (不引入JWT黑名单) | US-AUTH-001 AUTH-D06 | 已确定: 新设备登录撤销旧Token Family后，旧设备在AccessToken有效期内 (最长30分钟) 仍可操作。诊所场景30分钟延迟可接受 |
 | AUTH-D09 | 踢出提示统一泛化 | US-AUTH-004 AUTH-D06 | 已确定: 客户端收到 TokenRevoked 统一显示 "您的账号已在其他设备登录，请重新登录"，不区分撤销原因。具体原因记录在 SecurityAuditLog |
 | AUTH-D10 | 凭证存储采用 DPAPI LocalMachine + HMAC | US-AUTH-009 | 已确定: DPAPI DataProtectionScope.LocalMachine 加密 + HMAC-SHA256 完整性校验。LocalMachine 作用域不绑定 Windows 用户账号，适合诊所共用电脑场景 |
-| AUTH-D11 | v2.0 预留 USB 加密狗扩展 | US-AUTH-009 | 已确定: 凭证存储抽象为 ICredentialStore 接口。v1.0 实现 LocalFileCredentialStore (DPAPI)，v2.0 可新增 UsbKeyCredentialStore |
+| AUTH-D11 | 后续版本预留 USB 加密狗扩展 | US-AUTH-009 | 已确定: 凭证存储抽象为 ICredentialStore 接口。v1.0 实现 LocalFileCredentialStore (DPAPI)，后续版本可新增 UsbKeyCredentialStore |
 | AUTH-D12 | 并发Token刷新客户端互斥锁 | US-AUTH-003 US-AUTH-011 | 已确定: 客户端使用 SemaphoreSlim(1,1) 保证同一时刻仅一个刷新请求。业界标准 (MSAL/Auth0 SDK/Firebase Auth) |
 
 ### 修订历史
