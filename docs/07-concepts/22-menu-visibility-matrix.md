@@ -39,7 +39,20 @@ sources: ["docs/02-requirements/12-desktop-shell.md"]
 
 ## 本地模式差异
 
-在 [本地模式](01-dual-mode-architecture.md) 下，部分依赖服务端功能的菜单项（如某些高级同步选项或云端备份）可能会被额外禁用。具体的本地模式禁用列表仍在定义中（见 Open Question OQ-SHELL-03）。
+在 [本地模式](01-dual-mode-architecture.md) 下，部分依赖远程服务端的功能在菜单层额外禁用（灰显/不可点击，非隐藏）：
+
+| 菜单项 | 远程模式 | 本地模式 | 原因 |
+| :--- | :---: | :---: | :--- |
+| **数据同步** → 上传 | ✅ | 🔒 | 需要远程 SQL Server |
+| **数据同步** → 下载 | ✅ | 🔒 | 需要远程 SQL Server |
+| **数据同步** → 冲突解决 | ✅ | 🔒 | 无远程数据源 |
+| **系统健康** → 服务端详情 | ✅ | 🔒 | LocalWebAPI 健康检查仍可用，但服务端探活无意义 |
+| **用户管理** → 密码重置邮件 | ✅ | 🔒 | 无邮件服务 |
+| **打印日志查询** (远程) | ✅ | 🔒 | 远程 MedicalPrintLog 不存在 |
+
+**本地模式仍可用**：所有 CRUD 操作（患者/药材/验方/医案/挂号）、本地打印、LocalWebAPI 健康检查、Diagnostics API。
+
+**实现方式**：`MenuManager` 读取 `SwitchingApiClient.IsLocalMode`，对上表中的菜单项设置 `IsEnabled = false` + 显示提示"此功能需要连接远程服务器"。
 
 ## 价值
 
