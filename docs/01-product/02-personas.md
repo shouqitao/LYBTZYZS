@@ -114,7 +114,7 @@
 |---------|------------|------------|---------|
 | 李医生 (Doctor) | 医案、患者、验方、药材 (查看)、打印 | 6-8 小时 | DoctorOrAdmin |
 | 王主任 (Admin) | 药材、用户管理、医案 (审核)、同步 | 1-2 小时 | AdminOnly + DoctorOrAdmin |
-| 小张 (Receptionist) | 患者 (登记/搜索)、读卡器 | 4-6 小时 | 仅查看权限 |
+| 小张 (Receptionist) | 患者 (登记/搜索)、挂号、读卡器 | 4-6 小时 | PatientAccess (创建 + 取消挂号) |
 | SuperAdmin | 系统健康、配置、用户管理 | 极低 | 最高权限 |
 
 详细权限矩阵见 [user-roles.md](04-user-roles.md)。

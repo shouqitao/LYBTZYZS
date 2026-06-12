@@ -66,6 +66,8 @@
 | [05-feature-list.md](05-feature-list.md) | 功能清单 (场景化) |
 | [06-clinical-workflow.md](06-clinical-workflow.md) | 端到端临床工作流 (患者到达->挂号->诊疗->打印->完成) |
 | [07-glossary.md](07-glossary.md) | 术语表 (中英文对照) |
+| [08-value-proposition.md](08-value-proposition.md) | 价值主张 (6-part JTBD 模板) |
+| [09-customer-journey.md](09-customer-journey.md) | 客户旅程图 (部署→初始化→日常→维护) |
 
 ---
 
