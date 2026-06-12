@@ -687,18 +687,14 @@ DatabaseStartupDiagnostics 在 Program.cs 启动阶段自动执行:
 
 | 数据库 | 备份方式 | 频率 | 保留期 |
 |--------|---------|------|--------|
-| SQL Server | SQL Server Agent 自动全量备份 | 每日 | 30 天 |
-| SQLite | Desktop 启动时自动备份 | 每次启动 | 7 天 (最多 7 个备份文件) |
+| SQL Server (远程) | SQL Server Agent 自动全量备份 | 每日 | 30 天 |
+| SQL Server LocalDB (本地 LocalWebAPI) | 标准 SQL Server 备份策略 | 按需 | 按需 |
 
 **SQL Server 备份要点**:
 - 备份文件命名: `LYBTDB_{yyyyMMdd}.bak`
-- 通过 SQL Server Agent 维护计划配置，不在应用代码中实现
+- 远程模式通过 SQL Server Agent 维护计划配置，不在应用代码中实现
+- 本地模式 (LocalWebAPI + SQL Server LocalDB) 使用标准 SQL Server 备份策略，无需手动复制数据库文件
 - 恢复优先级: 本地模式降级 (即时) → 从备份还原 (30min 内，对应 RTO) → 重新部署
-
-**SQLite 备份要点**:
-- Desktop 启动时复制 `.db` 文件到 `{AppData}/LYBT/Backup/lybt_{yyyyMMdd}.db`
-- 后台异步执行，不阻塞用户操作
-- 超过 7 天的备份文件自动删除
 
 ---
 

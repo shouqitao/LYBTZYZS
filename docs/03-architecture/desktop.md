@@ -703,40 +703,6 @@ MedicalCase 冲突展示跨整个聚合 (诊断 + 处方 + 药材明细)，通�
 
 ---
 
-## SQLite 加密集成
-
-> 对应 [NFR-SEC-004](../02-requirements/nfr.md)。
-
-### 架构位置
-
-```
-LocalDbContext (SQLite)
-  └── Patient 实体配置
-       ├── IdNumber     → EncryptedStringConverter (写入加密 / 读取解密)
-       └── PhoneNumber  → EncryptedStringConverter (写入加密 / 读取解密)
-
-EncryptedStringConverter
-  └── IEncryptionKeyProvider.GetKey()
-       └── CredentialVault (DPAPI 解密存储的 AES-256 密钥)
-```
-
-**关键设计**:
-- 仅在 LocalDbContext (SQLite) 中配置 Value Converter，AppDbContext (SQL Server) 不加密
-- 对 Repository/Service 层完全透明，无需修改业务代码
-- 加密字段在数据库中存储为 Base64 编码的密文字符串
-- 搜索限制: 加密字段仅支持精确匹配或内存过滤，不支持 LIKE
-
-### 密钥管理
-
-| 阶段 | 操作 |
-|------|------|
-| 首次启动 | 自动生成 AES-256 密钥 (256-bit 随机)，DPAPI 加密后存入 CredentialVault |
-| 运行时 | IEncryptionKeyProvider 启动时解密一次，内存缓存 |
-| 密钥丢失 | 重新从 Server 同步数据，本地重新加密写入 |
-| 用户切换 | DPAPI 密钥绑定 Windows 用户，换用户需重新同步 |
-
----
-
 ## 性能预算
 
 > 对应 [NFR-PERF-002/003](../02-requirements/nfr.md)。
@@ -811,7 +777,8 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 |------|------|----------|
 | 2026-02-10 | v1.1 | 新增可复用业务控件、业务弹窗、CardReader 集成章节 |
 | 2026-02-10 | v1.0 | 初始版本，从 client-layer-architecture/desktop-architecture/viewmodel-conventions specs 整合 |
-| 2026-02-18 | v1.2 | 设计补全: UI 全局规范 (UI-D01~D06)、凭证存储 (FR-AUTH-009)、Token 刷新失败 (FR-AUTH-011)、客户端异常处理 (FR-ERR-003/005/008)、错误消息映射 (FR-ERR-006)、错误追踪码 (FR-ERR-007)、菜单结构 (FR-SHELL-005)、Desktop 启动诊断 (FR-SHELL-006)、账户设置 (FR-SHELL-007)、同步 UI (FR-SYNC-007)、模式切换 (FR-SYNC-008)、SQLite 加密 (NFR-SEC-004)、性能预算 (NFR-PERF-002/003)、UnsavedChangesDialog (BR-002) |
+| 2026-02-18 | v1.2 | 设计补全: UI 全局规范 (UI-D01~D06)、凭证存储 (FR-AUTH-009)、Token 刷新失败 (FR-AUTH-011)、客户端异常处理 (FR-ERR-003/005/008)、错误消息映射 (FR-ERR-006)、错误追踪码 (FR-ERR-007)、菜单结构 (FR-SHELL-005)、Desktop 启动诊断 (FR-SHELL-006)、账户设置 (FR-SHELL-007)、同步 UI (FR-SYNC-007)、模式切换 (FR-SYNC-008)、性能预算 (NFR-PERF-002/003)、UnsavedChangesDialog (BR-002) |
+| 2026-06-12 | v1.3 | 移除过时 SQLite 加密集成章节 (LocalWebAPI 使用 SQL Server，不再有客户端 SQLite) |
 | 2026-02-26 | v1.3 | Sprint3-Batch5a DOC3: Consultation 模块 Server-only 标注; Views/Controls 目录约定; CardReader Core 层定位说明; Core 层新增 LocalData/CardReader |
 | 2026-03-09 | v1.4 | Sprint 4: 新增 EditModeStateMachine 章节 (US-MC-011); 更新 CardReader 降级链 (MatchPatientAsync + PatientMatchType); 更新同步 UI (SyncPhase FSM + SyncResultSummary + 底栏增强); 模块清单补充 Registration; 修正 Consultation 说明 |
 | 2026-03-09 | v1.5 | Sprint 6 同步: Contracts 层 IDataSource→IRepository (6 个); LocalData 层补充 LocalXxxRepository; Printing 层补充 PDF 导出 (QuestPDF) |

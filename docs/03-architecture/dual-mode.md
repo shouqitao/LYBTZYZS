@@ -1,15 +1,47 @@
-# 双模式架构
+# URL 驱动连接切换架构
 
 ## 概述
 
-系统支持远程模式 (Remote) 和本地模式 (LocalWebAPI) 两种运行模式。
+系统通过 URL 驱动的方式自动选择连接目标，不需要手动选择"模式"。
 
-| 模式 | 数据链路 | 数据库 | 适用场景 |
-|------|----------|--------|----------|
-| **Remote** | Refit HTTP → Server WebAPI | SQL Server (远程) | 多用户联网环境 |
-| **LocalWebAPI** | HTTP → 嵌入式 Kestrel | SQL Server (本地) | 单用户离线 |
+| URL 类型 | 客户端实现 | 目标服务 | 数据库 | 适用场景 |
+|----------|-----------|---------|--------|----------|
+| **非 localhost** | RefitApiClient | Server WebAPI | SQL Server (远程) | 多用户联网环境 |
+| **127.0.0.1 / localhost** | HttpClientApiClient | 嵌入式 Kestrel | SQL Server (本地) | 单用户离线 |
 
-两种模式共享同一套 Repository 接口和 Service 层代码，仅数据访问链路不同。
+用户通过状态栏的"连接设置"弹出面板输入 URL，`SwitchingApiClient` 代理自动路由到对应的底层实现。Repository 层完全无感知。
+
+## URL 驱动切换
+
+```mermaid
+graph TB
+    subgraph UI["UI 层"]
+        StatusBar["状态栏 — 显示当前连接"]
+        Popup["连接设置弹出面板"]
+    end
+
+    subgraph CS["连接配置"]
+        CSService["IConnectionSettingsService<br/>URL 持久化 + IsLocal 判断"]
+    end
+
+    subgraph Proxy["代理层"]
+        Switch["SwitchingApiClient : IApiClient"]
+        Switch -->|"localhost?"| LocalImpl["HttpClientApiClient"]
+        Switch -->|"其他地址"| RemoteImpl["RefitApiClient"]
+    end
+
+    subgraph REPO["Repository 层（不变）"]
+        PatientRepo["PatientRepository"]
+        HerbRepo["HerbRepository"]
+    end
+
+    UI --> CSService
+    CSService --> Switch
+    PatientRepo --> Switch
+    HerbRepo --> Switch
+    LocalImpl --> LocalWebAPI["嵌入式 Kestrel"]
+    RemoteImpl --> ServerAPI["Server WebAPI"]
+```
 
 ## 架构图
 
@@ -46,18 +78,32 @@ graph TB
     IRepo --> HttpRepo
 ```
 
-## Repository 双实现
+## 统一 IApiClient 抽象
 
-| 接口 | 远程实现 (Refit HTTP) | 本地实现 (HTTP Proxy) |
-|------|----------------------|----------------------|
-| IPatientRepository | PatientRepository | HttpPatientRepository |
-| IHerbRepository | HerbRepository | HttpHerbRepository |
-| IFormulaRepository | FormulaRepository | HttpFormulaRepository |
-| IMedicalCaseRepository | MedicalCaseRepository | HttpMedicalCaseRepository |
-| IUserRepository | UserRepository | HttpUserRepository |
-| IRegistrationRepository | RegistrationRepository | HttpRegistrationRepository |
+所有 Repository 依赖统一的 `IApiClient` 接口，不再区分"远程实现"和"本地实现"。`SwitchingApiClient` 代理根据当前 URL 自动路由。
 
-DI 注册在 `DataSourceRegistrationExtensions.cs` 中完成，根据配置选择对应的 Repository 实现。
+| 接口 | IApiClient 子接口 | 说明 |
+|------|------------------|------|
+| IPatientRepository | IApiClient.Patients | CRUD + 批量操作 |
+| IHerbRepository | IApiClient.Herbs | CRUD + 批量操作 + 分类查询 |
+| IFormulaRepository | IApiClient.Formulas | CRUD + 克隆 + 批量操作 + 分类查询 |
+| IMedicalCaseRepository | IApiClient.MedicalCases | CRUD + 状态流转 + 处方 |
+| IUserRepository | IApiClient.Users | CRUD + 密码管理 + 批量操作 |
+| IRegistrationRepository | IApiClient.Registrations | CRUD + 队列管理 |
+
+DI 注册在 `UnifiedApiClientExtensions.cs` 中完成：始终注册 `SwitchingApiClient` 为 `IApiClient` Singleton。
+
+### SwitchingApiClient 代理
+
+```
+SwitchingApiClient : IApiClient
+  ├── _remoteApi (RefitApiClient)     ← 非 localhost 时使用
+  └── _localApi  (HttpClientApiClient) ← localhost/127.0.0.1 时使用
+```
+
+- 每次属性访问（如 `_apiClient.Patients`）实时读取 `IConnectionSettingsService.CurrentUrl`
+- URL 变更时自动重建底层客户端
+- Repository 层零改动
 
 ## 本地模式功能覆盖率
 
@@ -255,7 +301,8 @@ sequenceDiagram
 |------|------|------|------|
 | SYNC-D01 | MedicalCase 同步范围 | 已确认 | 仅同步 Completed 状态 |
 | SYNC-D02 | 统一本地/远程数据路径 | **已实施** | 废除 DataSource 抽象层，使用 Repository 双实现 |
-| SYNC-D03 | 运行时模式切换 | **已移除** | 早期实现运行时切换，后因架构简化移除 |
+| SYNC-D03 | 运行时模式切换 | **已移除** | 被 URL 驱动连接切换替代 (URL-CONN-01) |
+| URL-CONN-01 | URL 驱动连接切换 | **已实施** | SwitchingApiClient 代理 + IConnectionSettingsService，用户通过 UI 输入 URL 即时切换 |
 | SYNC-D04 | 冲突解决策略 | 已确认 | 简单实体 Server Wins; MedicalCase 手动选择 |
 | LOCALWEB-01 | 使用 SQL Server 作为本地数据库 | 已实施 | 与远程模式保持一致，简化数据同步 |
 | LOCALWEB-02 | 嵌入 Kestrel 在 WPF 进程内 | 已实施 | 避免独立进程管理复杂度 |
@@ -274,3 +321,4 @@ sequenceDiagram
 | 2026-03-09 | v3.0 | **Sprint 6 完成**: SYNC-D02 DataSource 废除 + SYNC-D03 运行时切换已实施 |
 | 2026-07-01 | v4.0 | **LocalWebAPI 覆盖率提升**: 覆盖率从 ~78% 提升至 ~100% |
 | 2026-05-01 | v5.0 | **架构简化**: 移除运行时模式切换 (ConnectionMode)、移除遗留 Local 仓储、统一为 Remote + LocalWebAPI 双模式 |
+| 2026-06-08 | v6.0 | **URL 驱动连接切换**: 废弃 ApiMode 枚举，引入 SwitchingApiClient 代理 + IConnectionSettingsService，用户通过 UI 输入 URL 即时切换 |

@@ -99,7 +99,7 @@ src/
 
 tests/                               # 测试 (4 个项目, Testing Trophy 架构)
     LYBT.Tests.Server/               # Server 全量测试 (~1185 tests, 真实 SQL Server + Respawn, 零 mock)
-    LYBT.Tests.Desktop/              # Desktop 全量测试 (~493 tests, SQL Server LocalDB + 真实 Repository)
+    LYBT.Tests.Desktop/              # Desktop 全量测试 (~760 tests, SQLite InMemory + 真实 Repository)
     LYBT.Tests.Architecture/         # 架构防护测试 (76 tests, 含 AntiMockRules)
     LYBT.Tests.Integration/          # 集成测试 (Desktop+Server, WebApplicationFactory)
 docs/                                # 文档

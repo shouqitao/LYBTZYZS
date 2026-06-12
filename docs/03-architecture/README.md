@@ -36,6 +36,8 @@
 | [dual-mode.md](dual-mode.md) | 双模式架构: 远程 + 本地 |
 | [data-model.md](data-model.md) | 数据模型: 实体关系、字段定义 |
 | [configuration.md](configuration.md) | 配置架构: Options 模式、验证管道、环境分层 |
+| [error-handling-architecture.md](error-handling-architecture.md) | 错误处理架构: 全局异常处理、错误传播、重试策略 |
+| [localwebapi/](localwebapi/) | LocalWebAPI 本地模式架构文档 |
 | [decisions/](decisions/) | 架构决策记录 (ADR) |
 
 ## 核心架构原则

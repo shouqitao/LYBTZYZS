@@ -35,7 +35,7 @@
 
 1. **本地模式功能矩阵**: 全模块完整支持 (6 个 LocalDataSource 100% 方法覆盖)
 2. **同步冲突解决**: 手动逐条选择 (SyncConflictDialog)
-3. **MedicalCase 同步**: v1.0 不支持，v2.0 规划
+3. **MedicalCase 同步**: v1.0 不支持，后续版本规划
 4. **User 同步**: v1.0 不支持，初始化时下载
 5. **SQLite 加密**: v1.0 不加密，依赖 OS 权限
 
