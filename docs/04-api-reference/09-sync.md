@@ -4,7 +4,7 @@
 
 ## 概述
 
-基础数据 (Herb/Patient/Formula) 的双向同步 API。用于本地模式 (SQLite) 与远程服务器 (SQL Server) 之间的数据同步。
+基础数据 (Herb/Patient/Formula) 的双向同步 API。用于本地模式 (SQL Server LocalDB) 与远程服务器 (SQL Server) 之间的数据同步。
 同步流程: 获取元数据 -> 比对差异 -> 上传/下载变更。
 
 ---

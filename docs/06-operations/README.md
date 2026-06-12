@@ -8,7 +8,7 @@
      ├── 远程模式 ──→ [LYBT.WebAPI] ──→ [SQL Server]
      │                   (Kestrel :5000/:5001)
      │
-     └── 本地模式 ──→ [LYBT.LocalWebAPI] ──→ [SQLite]
+     └── 本地模式 ──→ [LYBT.LocalWebAPI] ──→ [SQL Server LocalDB]
                          (Kestrel :5000)        (%APPDATA%\LYBT\data\)
 ```
 

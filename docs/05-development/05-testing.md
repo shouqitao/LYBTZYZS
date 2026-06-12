@@ -80,7 +80,7 @@ dotnet test --filter "Namespace~LYBT.Tests.Unit.Entities"
 | 测试对象 | 职责 | 真实组件 |
 |----------|------|----------|
 | API Endpoint | HTTP 全流程、认证、持久化 | Controller -> Service -> Repository -> DB |
-| Data Flow | DI 解析、数据持久化 | DataSource -> DbContext -> SQLite |
+| Data Flow | DI 解析、数据持久化 | Repository -> DbContext -> SQLite InMemory |
 | Cross-Module | 模块间协作、聚合根完整性 | MedicalCase -> Consultation -> Prescription |
 | Authentication | Token 验证、权限检查 | JWT Handler -> Claims -> DB |
 
