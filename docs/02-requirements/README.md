@@ -57,7 +57,7 @@
 | 模式 | 数据链路 |
 |------|----------|
 | **远程** | WPF → HTTP API → Controller → Service → SQL Server |
-| **本地** | WPF → DataSource → SQLite |
+| **本地** | WPF → SwitchingApiClient → LocalWebAPI (Kestrel) → Service → SQL Server LocalDB |
 
 特殊标注:
 - **不支持**: 该 User Story 在本地模式下不可用
