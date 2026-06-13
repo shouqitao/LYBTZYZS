@@ -107,6 +107,52 @@ graph TB
 
 > MedicalCase 是系统中唯一采用充血模型的实体，状态变更逻辑封装在聚合根域方法中，Service 层委托调用。
 
+### MedicalCase 业务生命周期
+
+#### 状态机
+
+```
+MedicalCase:  Suspended ←→ Active → Completed
+              (挂起)       (进行中)   (已完成)
+
+Registration: Waiting → InProgress → Completed
+              (等待)     (接诊中)     (已完成)
+                   └→ Cancelled
+                      (已取消)
+```
+
+**MedicalCase 状态转换 (MedicalCaseBusinessRules.IsValidStatusTransition)**:
+
+| 转换 | 守卫条件 | 实现位置 |
+|------|----------|----------|
+| Create → Suspended | BR-001: 患者无活跃医案 | MedicalCaseCommandService.CreateAsync |
+| Suspended → Active | Registration 在 InProgress | MedicalCaseStateService.UpdateStatusAsync |
+| Active → Suspended | 未完成、未删除 | MedicalCaseStateService.SuspendAsync |
+| Active → Completed | NeedsPrescription 已设置; 若 NeedsPrescription=true 则 Prescription 存在且 Items 非空; TcmDiagnosis 非空 | MedicalCaseStateService.CompleteAsync |
+| Suspended/Active → IsDeleted | 非当天本人取消需 reason; Completed 禁止取消 | MedicalCaseStateService.CancelAsync |
+
+> **注意**: Cancelled 状态已移除 (v1.4)，取消操作统一为 `IsDeleted=true` 软删除。Completed 状态不可逆。
+
+#### Registration 联动
+
+| MedicalCase 操作 | Registration 响应 | 规则 |
+|------------------|-------------------|------|
+| 医案创建 (接诊) | Waiting → InProgress | 医生从队列选中，自动创建 MedicalCase |
+| MedicalCase.Completed | InProgress → Completed | 医案完成时自动跟随 |
+| MedicalCase 取消 (Source=Receptionist) | InProgress → Waiting | 回退到等待，保留 MedicalCaseId 用于恢复 |
+| MedicalCase 取消 (Source=Doctor) | InProgress → Cancelled | 直接取消闭环 |
+
+> 实现: `MedicalCaseStateService.RollbackRegistrationAsync` 在医案取消后自动回退挂号。
+
+#### 打印保护覆盖层
+
+| 机制 | 规则 | 验证位置 |
+|------|------|----------|
+| IsPrinted | false → true，首次打印时设置 | MedicalCasePrintService |
+| PrintVersion | 医案内容修改后自增，标记需重新打印 | MedicalCaseCommandService.SaveAsync |
+| EditReason | IsPrinted=true 时修改 Consultation/Prescription 内容需提供修改原因 (MC-D15) | MedicalCaseServiceHelper.EnsureCanEdit |
+| Delete 保护 | 已打印医案不可删除 | MedicalCaseServiceHelper.EnsureCanEdit |
+
 ### Consultation (诊断)
 
 共享 MedicalCase 主键 (1:1 关系):
@@ -487,3 +533,4 @@ Patient 实体的以下字段标记为敏感数据，日志和序列化时脱敏
 | 2026-02-28 | v1.6 | **PRD 偏差修复**: Patient 补充 IdType/EmergencyContact*/DisableReason 字段 (PRD-01); Herb 补充 Remark 字段 (PRD-05); PrintCount/LastPrintedAt 从 Prescription 移到 MedicalCase (PRD-06) |
 | 2026-03-06 | v1.7 | **Draft->Suspended 对齐**: MedicalCaseStatus 枚举 Draft=0 更新为 Suspended=0 (MC-D20); DDD 域方法 SaveAsDraft() 更新为 Suspend(); BR-001 索引描述更新 |
 | 2026-03-06 | v1.8 | **Registration 实体**: ER 图新增 Registration 关系; 独立实体图新增 Registration; 新增 Registration 实体字段表 + 状态机; 新增 RegistrationSource/RegistrationStatus 枚举 |
+| 2026-06-13 | v1.9 | **MedicalCase 业务生命周期**: 新增状态机转换表 + Registration 联动规则 + 打印保护覆盖层 |

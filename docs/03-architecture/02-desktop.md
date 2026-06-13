@@ -280,6 +280,177 @@ private bool CanSave() => !IsBusy && !HasErrors;
 - **导航确认**: `IConfirmNavigationRequest` (未保存数据提示)
 - **事件通信**: `IEventAggregator` + `EventSubscriptionManager` 自动生命周期管理
 
+## 事件架构
+
+### 事件目录
+
+所有 PubSubEvent 类型按领域组织为静态类内的嵌套类，统一使用 `record` 作为 Payload。
+
+#### AuthEvents (认证事件)
+
+**位置**: `Core/LYBT.Desktop.Foundation/Security/AuthEvents.cs`
+**命名空间**: `LYBT.Desktop.Foundation.Security`
+
+| 事件 | Payload 类型 | 发布者 | 订阅者 |
+|------|-------------|--------|--------|
+| LoginStartedEvent | LoginStartedPayload | AuthenticationService | MainWindowViewModel |
+| LoginSucceededEvent | LoginSucceededPayload | AuthenticationService | MainWindowViewModel |
+| LoginFailedEvent | LoginFailedPayload | AuthenticationService | MainWindowViewModel |
+| LogoutStartedEvent | LogoutStartedPayload | LogoutService | MainWindowViewModel |
+| LogoutCompletedEvent | LogoutCompletedPayload | LogoutService, MainWindowViewModel | MainWindowViewModel |
+| ServerLogoutFailedEvent | ServerLogoutFailedPayload | LogoutService | MainWindowViewModel |
+| PendingLogoutsClearedEvent | PendingLogoutsClearedPayload | LogoutService | MainWindowViewModel |
+| PasswordChangedEvent | PasswordChangedPayload | AccountSettings | MainWindowViewModel |
+| SessionExtendedEvent | SessionExtendedPayload | TokenRefreshHandler | MainWindowViewModel |
+| TokenRefreshSucceededEvent | TokenRefreshSucceededPayload | TokenRefreshHandler | MainWindowViewModel |
+| TokenRefreshFailedEvent | TokenRefreshFailedPayload | TokenRefreshHandler | MainWindowViewModel |
+| SessionExpiredEvent | SessionExpiredPayload | TokenLifecycleService | MainWindowViewModel |
+
+**AuthStateChangedPubSubEvent** (`AuthenticationStateMachine.cs`): `PubSubEvent<AuthStateChangedEventArgs>`，由 AuthenticationStateMachine 在状态转换时发布，用于跨模块认证状态通知。
+
+#### PatientEvents (患者事件)
+
+**位置**: `Core/LYBT.Desktop.Infrastructure/Events/PatientEvents.cs`
+**命名空间**: `LYBT.Desktop.Infrastructure.Events`
+
+| 事件 | Payload 类型 | 发布者 | 订阅者 |
+|------|-------------|--------|--------|
+| CreatedEvent | PatientCreatedPayload | PatientCreateService | PatientSearchCache |
+| UpdatedEvent | PatientUpdatedPayload | PatientEditService | PatientSearchCache |
+| SelectedEvent | PatientSelectedPayload | PatientListViewModel | MedicalCaseWorkspaceViewModel |
+
+#### CaseEvents (医案事件)
+
+**位置**: `Core/LYBT.Desktop.Infrastructure/Events/CaseEvents.cs`
+**命名空间**: `LYBT.Desktop.Infrastructure.Events`
+
+| 事件 | Payload 类型 | 发布者 | 订阅者 |
+|------|-------------|--------|--------|
+| ConsultationCompletedEvent | CaseConsultationCompletedPayload | ConsultationPanel | MedicalCaseWorkspaceViewModel |
+| PrescriptionCompletedEvent | CasePrescriptionCompletedPayload | PrescriptionPanel | MedicalCaseWorkspaceViewModel |
+| WorkspaceChangedEvent | WorkspaceChangedPayload | MedicalCaseWorkspaceViewModel | MainWindowViewModel |
+
+#### SyncEvents (同步事件)
+
+**位置**: `Core/LYBT.Desktop.Contracts/Events/SyncEvents.cs`
+**命名空间**: `LYBT.Desktop.Contracts.Events`
+
+| 事件 | Payload 类型 | 发布者 | 订阅者 |
+|------|-------------|--------|--------|
+| StatusChangedEvent | SyncStatusPayload | SyncViewModel | MainWindowViewModel |
+
+#### CacheEvents (缓存事件)
+
+**位置**: `Core/LYBT.Desktop.Contracts/Events/CacheEvents.cs`
+**命名空间**: `LYBT.Desktop.Contracts.Events`
+
+| 事件 | Payload 类型 | 发布者 | 订阅者 |
+|------|-------------|--------|--------|
+| InvalidatedEvent | CacheInvalidatedPayload | DesktopCacheManager | 各模块缓存 |
+
+**CacheDomain 枚举**: `Patients / MedicalCases / Herbs / Formulas / Users / All`
+
+#### Token 生命周期事件
+
+**位置**: `Core/LYBT.Desktop.Foundation/Security/TokenLifecycleStateChangedEvent.cs`
+**命名空间**: `LYBT.Desktop.Foundation.Security`
+
+| 事件 | Payload 类型 | 发布者 | 订阅者 |
+|------|-------------|--------|--------|
+| TokenLifecycleStateChangedEvent | TokenLifecycleStateChangedEventArgs | TokenLifecycleService | MainWindowViewModel |
+
+**TokenLifecycleState**: `Active / Warning / Expired`。`RequiresUserInteraction` (Warning) 和 `RequiresReLogin` (Expired) 为便捷判断属性。
+
+### EventSubscriptionManager
+
+**位置**: `Core/LYBT.Desktop.Infrastructure/Events/EventSubscriptionManager.cs`
+
+自动管理 Prism `IEventAggregator` 订阅生命周期，防止内存泄漏:
+
+- **自动取消订阅**: Dispose 时清除所有 `SubscriptionToken`，无需手动 Unsubscribe
+- **默认 UI 线程**: `Subscribe<TEvent, TPayload>(handler)` 默认使用 `ThreadOption.UIThread`
+- **keepSubscriberReferenceAlive**: 默认 `false` (弱引用)，仅在需要长生命周期的订阅者时设为 `true`
+- **发布方法**: `Publish<TEvent, TPayload>(payload)` 和 `Publish<TEvent>()` (无参数版本)
+
+**使用模式** (在 ViewModel 中):
+
+```csharp
+// CoreViewModelBase 提供 Events 属性 (lazy-initialized EventSubscriptionManager)
+protected EventSubscriptionManager Events { get; }
+
+// 订阅 (UI线程，弱引用)
+Events.Subscribe<AuthEvents.LoginSucceededEvent, LoginSucceededPayload>(OnLoginSucceeded);
+
+// 订阅 (后台线程，带过滤器)
+Events.Subscribe<CaseEvents.WorkspaceChangedEvent, WorkspaceChangedPayload>(
+    OnWorkspaceChanged, ThreadOption.BackgroundThread, filter: p => p.WorkspaceState == "Editing");
+
+// 发布
+Events.Publish<SyncEvents.StatusChangedEvent, SyncStatusPayload>(new SyncStatusPayload { ... });
+
+// Dispose 时自动清理 (CoreViewModelBase.Dispose 中调用)
+```
+
+### 通信模式选择
+
+| 场景 | 推荐方式 | 说明 |
+|------|----------|------|
+| 跨模块通知 | PubSubEvent | 通过 EventSubscriptionManager 管理生命周期 |
+| 导航到详情页 | Region Navigation | `IRegionManager.RequestNavigate`，参数通过 NavigationParameters |
+| 父子 ViewModel 通信 | Direct method call / Property binding | 同一模块内直接调用，无需事件 |
+| 长时间操作结果 | PubSubEvent + background thread | `ThreadOption.BackgroundThread`，避免阻塞 UI |
+
+---
+
+## 启动管线
+
+### StartupPipeline 步骤序列
+
+**位置**: `Shell/Services/Startup/StartupPipeline.cs`
+
+按 `Order` 属性排序执行的启动步骤序列:
+
+| 序号 | 步骤 | Order | 必需 | 说明 |
+|------|------|:-----:|:----:|------|
+| 1 | ErrorHandlingStartupStep | 10 | **是** | 注册全局异常处理器 (`AppDomain.UnhandledException`, `TaskScheduler.UnobservedTaskException`, `DispatcherUnhandledException`) |
+| 2 | ModuleCoordinatorStartupStep | 20 | 否 | 订阅 Prism `IModuleManager` 加载事件，记录各模块初始化耗时 |
+| 3 | CoreServicesStartupStep | 30 | **是** | 初始化核心基础服务 (API 客户端、缓存、映射配置等)，委托 `IApplicationInitializationService.InitializeCoreServicesAsync` |
+| 4 | ApiHealthCheckStartupStep | 40 | 否 | 后台异步检查 API 可用性 (`_applicationStateService.CheckApiHealthAsync`)，默认超时 10s，**不阻塞启动** |
+| 5 | WarmupStartupStep | 50 | 否 | 预加载常用资源 (药材缓存等)，委托 `IStartupOptimizationService.WarmupApplicationAsync` |
+
+**失败处理策略**:
+
+| 步骤 | 失败行为 | 原因 |
+|------|---------|------|
+| ErrorHandling (必需) | **阻塞启动** | 全局异常处理是安全网，无法跳过 |
+| ModuleCoordinator (可选) | 记录警告，继续 | 仅影响诊断日志，不影响功能 |
+| CoreServices (必需) | **阻塞启动** | 核心服务未初始化则后续功能无法工作 |
+| ApiHealthCheck (可选) | 记录警告，继续 | 后台执行，失败由 HealthCheckCoordinator 重试 |
+| Warmup (可选) | 记录警告，继续 | 仅影响首次使用体验，不影响功能正确性 |
+
+**管道状态机**: `NotStarted → Running → Completed / Failed / Cancelled`
+
+**性能监控**: 每个步骤自动注册 `IPerformanceMonitor` 计时 (`StartupStep_{StepName}`)。
+
+### 条件模块加载
+
+**位置**: `Shell/Services/Bootstrap/ApplicationBootstrapper.cs`
+
+登录成功后通过 `ApplicationBootstrapper.LoadModulesForRoleAsync(userRole)` 根据角色动态加载模块:
+
+| 角色 | 加载模块 | 说明 |
+|------|---------|------|
+| Doctor | AuthModule, PatientsModule, MedicalCaseModule, RegistrationModule, HerbsModule, FormulaModule, SyncModule | 临床全功能 |
+| Admin | AuthModule, UsersModule, PatientsModule, HerbsModule, FormulaModule | 管理全功能 |
+| Receptionist | AuthModule, PatientsModule, RegistrationModule | 患者 CRUD + 挂号 (临床子集) |
+| SuperAdmin | 全部模块 | 系统管理 + 临床 |
+
+**模块加载容错**: 单个模块加载失败记录错误日志但不中断其他模块加载 (graceful degradation)。加载失败的模块相关功能不可用，但不影响已加载模块的正常使用。
+
+**实现**: `RoleRegistry` (`Core/LYBT.Desktop.Infrastructure/Roles/RoleRegistry.cs`) 维护角色到模块列表的映射，通过 `IRoleDefinition.GetAllModules()` 返回模块名列表。
+
+---
+
 ## 可复用业务控件
 
 Modules 层中提取的可复用 UI 组件，采用独立 ViewModel + 事件驱动模式。
@@ -802,3 +973,4 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 | 2026-03-09 | v1.4 | Sprint 4: 新增 EditModeStateMachine 章节 (US-MC-011); 更新 CardReader 降级链 (MatchPatientAsync + PatientMatchType); 更新同步 UI (SyncPhase FSM + SyncResultSummary + 底栏增强); 模块清单补充 Registration; 修正 Consultation 说明 |
 | 2026-03-09 | v1.5 | Sprint 6 同步: Contracts 层 IDataSource→IRepository (6 个); LocalData 层补充 LocalXxxRepository; Printing 层补充 PDF 导出 (QuestPDF) |
 | 2026-06-12 | v1.6 | 架构图修正: 移除不存在的 Consultation 模块，补全 Registration 模块; 变更记录版本号修正 |
+| 2026-06-13 | v1.7 | 新增事件架构章节 (AuthEvents/PatientEvents/CaseEvents/SyncEvents/CacheEvents/TokenLifecycle + EventSubscriptionManager + 通信模式选择); 新增启动管线章节 (5 步骤序列 + 条件模块加载) |

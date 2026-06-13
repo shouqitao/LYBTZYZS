@@ -235,6 +235,15 @@ PUT    /api/{resource}/{id}      # 更新
 DELETE /api/{resource}/{id}      # 删除
 ```
 
+### API 版本策略
+
+- **方式**: URL 段版本控制 (`/api/v1/`)
+- **当前版本**: v1 (v1.x 无破坏性变更计划)
+- **客户端处理**: Desktop `ApiRouter` 为所有请求自动添加 `/api/v1/` 前缀
+- **LocalWebAPI**: 相同 `/api/v1/` 前缀，路由模板与远程 WebAPI 一致
+- **v2 迁移**: 新 URL 段 `/api/v2/`，v1 向后兼容持续维护
+- **版本生命周期**: v(N) 发布后，v(N-1) 废弃期 6 个月
+
 ### 统一响应格式
 
 **成功**:
@@ -670,3 +679,4 @@ DatabaseStartupDiagnostics 在 Program.cs 启动阶段自动执行:
 | 2026-02-23 | v1.6 | 一致性审计: 新增 ICrossModuleService ISP 拆分 (D5-1); 新增 BaseService 层次结构 (D2-1); 新增事务边界模型 L1/L2/L3; 缓存策略补充 IMemoryCache 层 + Tag-based 失效矩阵 |
 | 2026-02-26 | v1.7 | Sprint3-Batch5a DOC3: FormulaService BaseService 继承状态更新 (A3-07); 新增 Validator 架构与迁移章节 (Shared.Validators) |
 | 2026-02-28 | v1.8 | **PRD 偏差修复**: BaseEntity 补充 UpdatedBy/RowVersion 字段 (PRD-02); BaseRepository 方法列表对齐代码 21 个公开方法 (PRD-03); 移除 Module.Consultation/Prescriptions (PRD-04); 移除不存在的 BaseReadRepository/IReadRepository (PRD-07/08) |
+| 2026-06-13 | v1.9 | **API 版本策略**: 新增 API 版本控制章节 — URL 段版本控制、客户端处理、v2 迁移策略、版本生命周期 |

@@ -192,6 +192,58 @@ LYBT.Shared.Logging/
   Extensions/              # DI 扩展方法
 ```
 
+### Serilog 架构
+
+#### 两阶段启动
+
+Serilog 在 Server 和 Desktop 两端均采用两阶段初始化，确保 DI 容器就绪前的启动错误也能被捕获:
+
+1. **CreateBootstrapLogger()** — 最小化配置的引导日志器，在 `Program.cs` 最早期创建，捕获 DI 容器构建前的启动异常 (配置文件缺失、程序集加载失败等)
+2. **DI 构建日志器** — 从 `appsettings.json` 读取完整配置，通过 `logger.ReadFrom.Configuration(hostBuilderContext.Configuration)` 构建，替换引导日志器
+
+```csharp
+// Program.cs 两阶段模式
+Log.Logger = new LoggerConfiguration()
+    .CreateBootstrapLogger();          // 阶段1: 引导日志器
+
+// ... build DI container ...
+
+builder.Host.UseSerilog((context, logger) =>
+    logger.ReadFrom.Configuration(context.Configuration));  // 阶段2: 完整配置
+```
+
+#### Sink 配置
+
+| 端 | Sink | 说明 |
+|----|------|------|
+| Server | Console | 开发调试，结构化 JSON 输出 |
+| Server | File (rolling) | 持久化日志文件 |
+| Server | MSSqlServer | SecurityAuditLog 写入数据库 |
+| Desktop | Console | 开发调试 |
+| Desktop | File (rolling) | 持久化日志文件 |
+
+#### 日志文件布局
+
+| 参数 | 值 |
+|------|-----|
+| 路径 | `logs/lybt-{Date}.log` |
+| 滚动 | 每日 (rolling) |
+| 保留 | 365 天 (可配置) |
+| 输出模板 | `{Timestamp:HH:mm:ss} [{Level:u3}] {SourceContext} | {Message:lj}{NewLine}{Exception}` |
+
+#### 敏感数据脱敏
+
+PatientModel 属性标记 `[SensitiveData]` 特性后，Serilog 析构时通过 `SensitiveDataDestructuringPolicy` 自动脱敏:
+
+| 字段 | 脱敏示例 | MaskingMode |
+|------|----------|-------------|
+| PhoneNumber | `138****1234` | Partial |
+| IdNumber | `310***********1234` | Partial |
+| Address | `[已隐藏]` | Full |
+| AllergyHistory | `[REDACTED:A1B2C3D4]` | Hash |
+
+> 脱敏模式定义见 [SensitiveDataAttribute 设计](#sensitivedataattribute-设计) 章节。
+
 ## LYBT.Shared.Primitives (错误码与基础类型)
 
 ### 职责
@@ -430,6 +482,172 @@ Entity (DataAnnotations)
 
 `LYBT.Shared.Primitives.Validation.ValidationConstants` -- 所有验证常量的唯一来源。
 
+## Mapperly 映射规范
+
+### 概述
+
+基于 **Mapperly 4.3.1** 的编译时 source-generator 映射，零运行时反射。项目内共 23 个 Mapper 类，分布在 Server 和 Client 两端。
+
+| 层 | Mapper 数量 | 位置 |
+|----|------------|------|
+| Server 模块 | 6 | `src/Server/Modules/LYBT.Module.*/Mapping/` |
+| Client LocalData | 6 | `src/Client/Desktop/Core/LYBT.Desktop.LocalData/Mappers/` |
+| Client Desktop 模块 | 10 | `src/Client/Desktop/Modules/LYBT.Desktop.*/Mappers/` |
+| Client 内联 | 1 | `PatientRepository.cs` 内 `PatientListToDetailMapper` |
+
+### 映射约定
+
+#### Mapper 属性配置
+
+```csharp
+// Server 端: Target 策略 (只映射目标属性, 未匹配源不报错)
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+
+// Client LocalData: 默认 Both 策略 (源和目标都必须匹配)
+[Mapper]
+
+// Client Desktop 模块: Target 策略 (与 Server 一致)
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+
+// 特殊: 深度克隆
+[Mapper(UseDeepCloning = true)]
+```
+
+#### 标准方法命名
+
+| 方法 | 签名模式 | 说明 |
+|------|----------|------|
+| `ToListDto` | `Entity → ListDto` | 列表映射 (基础字段) |
+| `ToListDtos` | `List<Entity> → List<ListDto>` | 列表批量映射 |
+| `ToDetailDto` | `Entity → DetailDto` | 详情映射 (全字段) |
+| `ToDetailDtos` | `List<Entity> → List<DetailDto>` | 详情批量映射 |
+| `ToEntity` | `InputDto → Entity` | 创建映射 |
+| `UpdateEntity` | `(InputDto dto, Entity entity) → void` | 更新映射 (映射到已有实例) |
+| `ToEntityFromImport` | `ImportItemDto → Entity` | Excel 导入映射 (忽略更多目标字段) |
+
+#### 常用特性
+
+| 特性 | 用途 |
+|------|------|
+| `[MapperIgnoreSource]` | 忽略源属性 (不参与映射) |
+| `[MapperIgnoreTarget]` | 忽略目标属性 (由 Service 或计算填充) |
+| `[MapProperty]` | 属性重命名映射 |
+| `[UserMapping(Default = false)]` | 手写方法, 禁止自动生成 |
+
+### Server 端映射模式
+
+#### 1. Core 映射: Entity → DTO
+
+每个实体对应一个 Mapper 类, 提供 `ToListDto` / `ToDetailDto` / `ToEntity` / `UpdateEntity` 方法。
+
+**实体 → 列表 DTO**: 仅映射基础字段, 忽略计算字段和导航属性。
+
+**实体 → 详情 DTO**: 映射全部业务字段, 忽略需要 Service 层计算的字段。
+
+**输入 DTO → 实体**: 忽略所有审计字段 (`CreatedAt`/`UpdatedAt`/`CreatedBy`/`UpdatedBy`)、主键 (`Id`)、状态字段和计算字段。
+
+#### 2. Enrich 映射: 聚合根导航属性填充
+
+MedicalCase 是聚合根, 其 `ToDetailDto` 需要 Consultation 和 Prescription 的导航数据。采用 **Core + Enrich** 模式:
+
+```csharp
+// 生成器生成的基础映射 (忽略导航属性)
+public partial MedicalCaseDetailDto ToDetailDto(MedicalCase entity);
+
+// 手写 Enrich 方法, 标记 UserMapping 禁止自动生成
+[UserMapping(Default = false)]
+public MedicalCaseDetailDto MapToMedicalCaseDetailDto(MedicalCase entity)
+{
+    var dto = ToDetailDto(entity);
+    // 填充导航属性: CaseNumber, Diagnosis, Consultation, Prescription
+    dto.ConsultationId = entity.Consultation?.Id;
+    dto.PrescriptionId = entity.Prescription is { IsDeleted: false }
+        ? entity.Prescription.Id : null;
+    // ... 嵌套 DTO 映射
+    return dto;
+}
+```
+
+#### 3. 已知特殊处理
+
+| 实体 | 属性 | 处理方式 |
+|------|------|----------|
+| MedicalCase | `HasPrescription` | 计算属性 (`Prescription != null && !IsDeleted`), Mapper 忽略, Service 显式设置 |
+| Formula | `Indication → Indications` | `MapProperty` 重命名 (单数→复数) |
+| MedicalCase | `Consultation.Id → MedicalCaseId` | `MapProperty` 跨实体 ID 映射 |
+| Formula | `HerbCount`, `TotalPrice` | 计算字段, Mapper 忽略, Service 计算 |
+| Patient | `Age` | 计算属性 (从 BirthDate), Mapper 忽略 |
+
+### Client Desktop 模块映射模式
+
+#### 1. DTO → UI Model (BindableBase)
+
+Desktop 模块的 Mapper 将 DTO 映射为 WPF 绑定用的 ItemModel:
+
+```csharp
+// FormulaMapper: FormulaDetailDto → FormulaItem
+// PatientMapper: PatientDetailDto → PatientItem (带 IsSelected, DisplayText 等 UI 状态)
+```
+
+#### 2. IsShared ↔ IsPersonal 布尔反转 (Formula 模块)
+
+Formula 的 DTO 使用 `IsShared`, 而 UI Model 使用 `IsPersonal`, 语义相反:
+
+```csharp
+// DTO → Item: Mapper 忽略两边属性, 手动反转
+item.IsPersonal = !dto.IsShared;
+
+// Item → DTO: 反向同理
+dto.IsShared = !item.IsPersonal;
+```
+
+此模式出现在 `FormulaMapper`、`FormulaDetailModelMapper`、`FormulaHerbItemMapper` 中, 共 4 处映射方向。
+
+#### 3. DTO → DTO 转换
+
+`PatientListToDetailMapper` 将 `PatientListDto` 映射为 `PatientDetailDto`, 用于客户端仅持有列表数据时构造详情视图。
+
+### Client LocalData 映射模式
+
+LocalData Mapper 映射 LocalDB 实体到共享 DTO, 使用默认 `Both` 策略。MedicalCase 同样采用 **Core + Enrich** 模式:
+
+```csharp
+// 生成器方法 (忽略导航属性)
+public partial MedicalCaseDetailDto ToDetailDtoCore(MedicalCase entity);
+
+// 手写 Enrich 包装
+public MedicalCaseDetailDto ToDetailDto(MedicalCase entity)
+{
+    var dto = ToDetailDtoCore(entity);
+    // 填充 ConsultationId, PrescriptionId, Diagnosis, 嵌套 DTO
+    return dto;
+}
+```
+
+### DI 注册
+
+| 模式 | 适用范围 | 说明 |
+|------|----------|------|
+| `new()` 直接实例化 | 大多数 Mapper | Mapperly 生成无状态代码, 无需 DI |
+| `AddSingleton<T>()` | MedicalCaseMapper (Server) | 已注册但部分 Service 仍用 `new()` |
+
+Server 端 Mapper 使用 `new()` 内联实例化 (UserMapper, PatientMapper, HerbMapper, FormulaMapper, RegistrationMapper)。
+
+Client 端所有 Mapper 均使用 `new()` 内联实例化。
+
+> 注: Mapperly 生成的是无状态 partial class, `new()` 实例化安全且高效, DI 注册非必需。
+
+### 已知陷阱
+
+| 陷阱 | 说明 | 影响文件 |
+|------|------|----------|
+| HasPrescription | 从 `PrescriptionId.HasValue` 计算, Mapper 必须忽略并由 Service 显式设置 | MedicalCaseMapper, LocalMedicalCaseMapper |
+| Boolean 反转 | Formula `IsShared`/`IsPersonal` 语义相反, 必须手写映射 | FormulaMapper (Desktop), FormulaDetailModelMapper |
+| DateTime | 所有 DateTime 存储 UTC, 显示转换在 ViewModel 层 | 全局 |
+| Nullable 引用类型 | Mapperly 尊重可空性标注, 不匹配时需显式处理 | 全局 |
+| Audit 字段 | `CreatedAt`/`UpdatedAt` 等在 `ToEntity`/`UpdateEntity` 中必须忽略 | 所有 Mapper |
+| 未使用 Mapper | Desktop `PatientMapper` (Patients 模块) 未被任何代码实例化 | LYBT.Desktop.Patients/Mappers/ |
+
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
@@ -437,3 +655,5 @@ Entity (DataAnnotations)
 | 2026-02-10 | v1.0 | 初始版本，从 shared-layer-architecture/dto-architecture specs 整合 |
 | 2026-02-23 | v1.1 | 一致性审计: 新增 MedicalCaseBusinessRules 组件文档 (设计来源: design-deepening-phase3 + design-issues-solutions #4) |
 | 2026-02-26 | v1.2 | DOC3-03: 补全 4 个缺失 Shared 项目文档 (Primitives/Validators/ExceptionHandling/Configuration)；DOC3-13: 新增 SensitiveDataAttribute 设计章节 |
+| 2026-06-13 | v1.3 | **Serilog 架构**: 扩展 Logging 章节 — 两阶段启动、Sink 配置、日志文件布局、敏感数据脱敏示例 |
+| 2026-06-13 | v1.4 | 新增 Mapperly 映射规范章节: 23 个 Mapper 类的约定、Server/Client 映射模式、Core+Enrich 模式、已知陷阱 |
