@@ -2,7 +2,7 @@
 
 ## 概述
 
-凌隐宝堂中医诊所管理系统采用 Server/Shared/Client 三层架构。Server 层提供 RESTful API 服务，Client 层为 WPF 桌面应用，Shared 层提供两端共享的 DTO、工具类和组件。系统支持远程 (SQL Server) 和本地 (嵌入式 LocalWebAPI + SQL Server) 双模式运行，详见 [dual-mode.md](05-dual-mode.md)。
+凌隐宝堂中医诊所管理系统采用 Server/Shared/Client 三层架构。Server 层提供 RESTful API 服务，Client 层为 WPF 桌面应用，Shared 层提供两端共享的 DTO、工具类和组件。系统支持**远程模式**（连接 Server WebAPI + 远程 SQL Server）和**本地模式**（嵌入式 LocalWebAPI + 本地 LocalDB）双模式运行，通过 URL 自动切换，业务代码完全复用。详见 [双模式架构](05-dual-mode.md)。
 
 ## 系统架构图
 
@@ -39,6 +39,45 @@ graph TB
     Modules_S --> Models
     Infra --> SQLServer
 ```
+
+### 双模式运行架构
+
+系统支持两种运行模式，通过 URL 自动切换，Repository 层完全无感知：
+
+```mermaid
+graph LR
+    subgraph Desktop["WPF Desktop"]
+        Repo["Repository 层<br/>(统一接口)"]
+        Proxy["SwitchingApiClient<br/>(URL 路由代理)"]
+        Repo --> Proxy
+    end
+
+    subgraph Remote["远程模式 — 多终端联网"]
+        Server["Server WebAPI<br/>(独立进程)"]
+        RemoteDB["SQL Server<br/>(共享)"]
+        Server --> RemoteDB
+    end
+
+    subgraph Local["本地模式 — 单终端离线"]
+        Kestrel["LocalWebAPI<br/>(嵌入式 Kestrel)"]
+        LocalDB["SQL Server LocalDB<br/>(每机独立)"]
+        Kestrel --> LocalDB
+    end
+
+    Proxy -->|"非 localhost"| Server
+    Proxy -->|"localhost"| Kestrel
+```
+
+| 维度 | 远程模式 | 本地模式 |
+|------|----------|----------|
+| **触发条件** | URL 为非 localhost | URL 为 localhost/127.0.0.1 |
+| **API 宿主** | 独立 ASP.NET Core 服务 | WPF 进程内嵌 Kestrel |
+| **数据库** | 远程 SQL Server（共享） | 本地 SQL Server LocalDB |
+| **适用场景** | 多终端联网诊所 | 单终端离线/网络不稳定 |
+| **认证** | 完整 JWT（30min + Refresh） | 简化 JWT（1 年长效） |
+| **业务代码** | 完全相同 | 完全相同 |
+
+**设计要点**: 两端共享相同的 Repository 接口、DTO 契约、实体配置和 EF Core 模型，差异仅在宿主进程和数据库连接。详见 [双模式架构](05-dual-mode.md)。
 
 ## 解决方案结构
 
@@ -217,3 +256,4 @@ sequenceDiagram
 | 2026-03-04 | v1.3 | Testing Trophy 重构: 5+4 项目 -> 3 项目; 辅助测试项目已删除 |
 | 2026-03-09 | v1.4 | Sprint 4: 补充 Registration 模块; Desktop 测试数更新 (482); Integration 测试项目已创建; Consultation Desktop 模块移除 (集成到 MedicalCase) |
 | 2026-03-09 | v1.5 | Sprint 5: SQLite->LocalDB 描述修正 (架构图/目录注释/测试描述); Desktop 测试数更新 (493) |
+| 2026-06-13 | v1.6 | 补充双模式运行架构章节：Mermaid 架构图展示远程/本地两条数据路径 + 对比表 |
