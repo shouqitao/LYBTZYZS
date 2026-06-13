@@ -1,5 +1,7 @@
 # LocalWebAPI API 端点
 
+> **注意**: 本文档的端点覆盖率对比已合并到 [05-dual-mode.md](../05-dual-mode.md) §"端点覆盖率"。此文件保留作为逐端点详细参考。
+
 ## 概述
 
 LocalWebAPI 提供 10 个控制器，共 112 个端点。所有端点位于 `http://127.0.0.1:{dynamicPort}/api/`。

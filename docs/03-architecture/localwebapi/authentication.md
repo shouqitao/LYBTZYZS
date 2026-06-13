@@ -1,5 +1,7 @@
 # LocalWebAPI 认证机制
 
+> **注意**: 本文档的核心内容已合并到 [05-dual-mode.md](../05-dual-mode.md) §"LocalWebAPI 架构 > 本地认证架构"。此文件保留作为详细实现参考。
+
 ## 概述
 
 LocalWebAPI 使用简化的 JWT 认证，适用于本地离线场景。与 Server WebAPI 的完整 JWT + Refresh Token 流程不同，LocalWebAPI 采用一次性 Token 方案。

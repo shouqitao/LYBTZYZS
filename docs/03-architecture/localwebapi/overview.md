@@ -1,5 +1,7 @@
 # LocalWebAPI 架构概览
 
+> **注意**: 本文档的核心内容已合并到 [05-dual-mode.md](../05-dual-mode.md) §"LocalWebAPI 架构"。此文件保留作为详细实现参考。
+
 ## 背景
 
 LocalWebAPI 是在 WPF 桌面进程内嵌入的 ASP.NET Core Kestrel WebAPI 服务器，使用 SQL Server 作为本地数据库。它是系统本地离线模式的实现方案。
