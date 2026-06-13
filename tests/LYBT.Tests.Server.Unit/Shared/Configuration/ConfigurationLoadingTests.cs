@@ -112,7 +112,6 @@ public class ConfigurationLoadingTests
         sessionOptions.WarningBeforeTimeoutMinutes.Should().Be(3);
 
         var featureOptions = serviceProvider.GetRequiredService<IOptions<FeatureToggleOptions>>().Value;
-        featureOptions.ConsultationCreate.Should().BeTrue();
         featureOptions.PrescriptionCreate.Should().BeFalse();
     }
 

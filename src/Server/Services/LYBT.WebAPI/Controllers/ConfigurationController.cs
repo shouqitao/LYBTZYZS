@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Configuration.Services;
+using LYBT.Infrastructure.Constants;
 using System.Threading;
 using LYBT.Infrastructure.Web;
 using Microsoft.AspNetCore.Authorization;
@@ -10,7 +11,7 @@ namespace LYBT.WebAPI.Controllers;
 [ApiController]
 [ApiVersion("1")]
 [Route("api/v{version:apiVersion}/configuration")]
-[Authorize(Roles = "Admin")]
+[Authorize(Policy = PolicyConstants.SuperAdminOnly)]
 public class ConfigurationController : BaseApiController
 {
     private readonly ISystemConfigurationService _configurationService;

@@ -1,6 +1,5 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
-using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.Registration.Interfaces;
@@ -10,6 +9,7 @@ using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Transactions;
 
 namespace LYBT.WebAPI.Controllers;
 
@@ -25,25 +25,18 @@ public class RegistrationsController : BaseApiController
 {
     private readonly IRegistrationService _registrationService;
     private readonly IMedicalCaseCommandService _medicalCaseService;
-    private readonly AppDbContext _dbContext;
 
     public RegistrationsController(
         IRegistrationService registrationService,
         IMedicalCaseCommandService medicalCaseService,
-        AppDbContext dbContext,
         ILogger<RegistrationsController> logger)
         : base(logger)
     {
         _registrationService = registrationService;
         _medicalCaseService = medicalCaseService;
-        _dbContext = dbContext;
     }
 
     /// <summary>
-    /// 创建挂号 (前台模式)
-    /// US-REG-001: Source=Receptionist, Status=Waiting
-    /// </summary>
-
     /// <summary>
     /// 医生快速看诊 (后台静默创建 Registration + MedicalCase)
     /// US-REG-002: Source=Doctor, Status=InProgress, 医生无感知
@@ -67,13 +60,15 @@ public class RegistrationsController : BaseApiController
             Remark = dto.Remark
         };
 
-        using var transaction = await _dbContext.Database.BeginTransactionAsync();
+        using var scope = new TransactionScope(
+            TransactionScopeOption.Required,
+            new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
+            TransactionScopeAsyncFlowOption.Enabled);
         try
         {
             var registrationResult = await _registrationService.CreateAsync(registrationInput);
             if (!registrationResult.IsSuccess || registrationResult.Data is null)
             {
-                await transaction.RollbackAsync();
                 return HandleResult(registrationResult);
             }
 
@@ -94,12 +89,11 @@ public class RegistrationsController : BaseApiController
 
             if (medicalCase == null)
             {
-                await transaction.RollbackAsync();
                 _logger.LogError("快速看诊-医案创建失败: RegistrationId={RegistrationId}", registration.Id);
                 return BusinessFail("医案创建失败，但挂号记录已创建");
             }
 
-            await transaction.CommitAsync();
+            scope.Complete();
 
             _logger.LogInformation(
                 "快速看诊成功: RegistrationId={RegistrationId}, MedicalCaseId={MedicalCaseId}",
@@ -124,7 +118,6 @@ public class RegistrationsController : BaseApiController
         }
         catch
         {
-            await transaction.RollbackAsync();
             throw;
         }
     }
@@ -218,10 +211,6 @@ public class RegistrationsController : BaseApiController
         return Success(result.Data, "接诊成功");
     }
 
-    /// <summary>
-    /// 取消挂号
-    /// US-REG-004: 仅 Receptionist 可操作，仅 Waiting 状态
-    /// </summary>
     /// <summary>
     /// 取消挂号
     /// US-REG-004: 仅 Receptionist 可操作，仅 Waiting 状态

@@ -7,13 +7,6 @@ public sealed class FeatureToggleOptions
 {
     public const string SectionName = "FeatureToggles";
 
-    // Consultation 模块
-    public bool ConsultationCreate { get; set; } = false;
-    public bool ConsultationEdit { get; set; } = false;
-    public bool ConsultationDelete { get; set; } = false;
-    public bool ConsultationViewDetail { get; set; } = true;
-    public bool ConsultationSearch { get; set; } = true;
-
     // Prescription 模块
     public bool PrescriptionCreate { get; set; } = false;
     public bool PrescriptionDelete { get; set; } = false;
