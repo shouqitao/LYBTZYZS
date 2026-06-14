@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +24,15 @@ namespace LYBT.LocalWebAPI.Controllers
         public FormulasController(LocalWebApiDbContext db)
         {
             _db = db;
+        }
+
+        private Guid GetCurrentUserId()
+            => Guid.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : Guid.Empty;
+
+        private bool IsAdmin()
+        {
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            return role == UserRole.Admin.ToString() || role == UserRole.SuperAdmin.ToString();
         }
 
         // GET /api/formulas?keyword=&category=
@@ -68,6 +78,8 @@ namespace LYBT.LocalWebAPI.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var existing = await _db.Formulas.FindAsync(id);
             if (existing == null || existing.IsDeleted) return NotFound();
+            if (!IsAdmin() && existing.UserId != GetCurrentUserId())
+                return Forbid("只能修改自己创建的验方");
             _db.Entry(existing).CurrentValues.SetValues(updated);
             await _db.SaveChangesAsync();
             return Ok(existing);
@@ -79,6 +91,8 @@ namespace LYBT.LocalWebAPI.Controllers
         {
             var existing = await _db.Formulas.FindAsync(id);
             if (existing == null || existing.IsDeleted) return NotFound();
+            if (!IsAdmin() && existing.UserId != GetCurrentUserId())
+                return Forbid("只能删除自己创建的验方");
             existing.IsDeleted = true;
             await _db.SaveChangesAsync();
             return NoContent();
@@ -89,7 +103,11 @@ namespace LYBT.LocalWebAPI.Controllers
         public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto request)
         {
             if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("ids is required.");
-            var formulas = await _db.Formulas.Where(f => request.Ids.Contains(f.Id) && !f.IsDeleted).ToListAsync();
+            var userId = GetCurrentUserId();
+            var isAdmin = IsAdmin();
+            var q = _db.Formulas.Where(f => request.Ids.Contains(f.Id) && !f.IsDeleted);
+            if (!isAdmin) q = q.Where(f => f.UserId == userId);
+            var formulas = await q.ToListAsync();
             foreach (var f in formulas) f.IsDeleted = true;
             await _db.SaveChangesAsync();
             return Ok(new { count = formulas.Count });
@@ -100,7 +118,11 @@ namespace LYBT.LocalWebAPI.Controllers
         public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto request)
         {
             if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("ids is required.");
-            var formulas = await _db.Formulas.Where(f => request.Ids.Contains(f.Id) && !f.IsDeleted).ToListAsync();
+            var userId = GetCurrentUserId();
+            var isAdmin = IsAdmin();
+            var q = _db.Formulas.Where(f => request.Ids.Contains(f.Id) && !f.IsDeleted);
+            if (!isAdmin) q = q.Where(f => f.UserId == userId);
+            var formulas = await q.ToListAsync();
             foreach (var f in formulas) f.Status = CommonStatus.Enabled;
             await _db.SaveChangesAsync();
             return Ok(new { count = formulas.Count });
@@ -111,7 +133,11 @@ namespace LYBT.LocalWebAPI.Controllers
         public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto request)
         {
             if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("ids is required.");
-            var formulas = await _db.Formulas.Where(f => request.Ids.Contains(f.Id) && !f.IsDeleted).ToListAsync();
+            var userId = GetCurrentUserId();
+            var isAdmin = IsAdmin();
+            var q = _db.Formulas.Where(f => request.Ids.Contains(f.Id) && !f.IsDeleted);
+            if (!isAdmin) q = q.Where(f => f.UserId == userId);
+            var formulas = await q.ToListAsync();
             foreach (var f in formulas) f.Status = CommonStatus.Disabled;
             await _db.SaveChangesAsync();
             return Ok(new { count = formulas.Count });
@@ -123,6 +149,8 @@ namespace LYBT.LocalWebAPI.Controllers
         {
             var formula = await _db.Formulas.FindAsync(id);
             if (formula == null || formula.IsDeleted) return NotFound();
+            if (!IsAdmin() && formula.UserId != GetCurrentUserId())
+                return Forbid("只能修改自己创建的验方");
             formula.Status = formula.Status == CommonStatus.Enabled ? CommonStatus.Disabled : CommonStatus.Enabled;
             await _db.SaveChangesAsync();
             return Ok(formula);
@@ -296,8 +324,7 @@ namespace LYBT.LocalWebAPI.Controllers
                 .AsNoTracking()
                 .Include(f => f.Herbs)
                 .Where(f => !f.IsDeleted
-                    && f.IsShared
-                    && f.ValidationStatus != FormulaValidationStatus.Validated)
+                    && f.ValidationStatus == FormulaValidationStatus.Draft)
                 .ToListAsync();
             return Ok(formulas);
         }

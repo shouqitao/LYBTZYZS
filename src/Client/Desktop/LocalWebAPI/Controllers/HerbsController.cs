@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LYBT.LocalWebAPI.Data;
 using LYBT.Entities.Herbs;
+using LYBT.Entities.Formulas;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -91,9 +92,10 @@ namespace LYBT.LocalWebAPI.Controllers
         {
             if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("ids 不能为空");
 
-            var isReferenced = await _db.PrescriptionItems.AnyAsync(pi => request.Ids.Contains(pi.HerbId));
-            if (isReferenced)
-                return Conflict("部分药材被处方引用，无法删除");
+            var prescriptionRef = await _db.PrescriptionItems.AnyAsync(pi => request.Ids.Contains(pi.HerbId));
+            var formulaRef = await _db.Set<FormulaHerbItem>().AnyAsync(fh => fh.HerbId.HasValue && request.Ids.Contains(fh.HerbId.Value));
+            if (prescriptionRef || formulaRef)
+                return Conflict("部分药材被处方或验方引用，无法删除");
 
             var herbs = await _db.Herbs.Where(h => request.Ids.Contains(h.Id) && !h.IsDeleted).ToListAsync();
             foreach (var h in herbs) h.IsDeleted = true;
@@ -256,12 +258,18 @@ namespace LYBT.LocalWebAPI.Controllers
             var herb = await _db.Herbs.AsNoTracking().FirstOrDefaultAsync(h => h.Id == id && !h.IsDeleted);
             if (herb == null) return NotFound();
 
-            var isReferenced = await _db.PrescriptionItems.AnyAsync(pi => pi.HerbId == id);
+            var prescRef = await _db.PrescriptionItems.AnyAsync(pi => pi.HerbId == id);
+            var formulaRef = await _db.Set<FormulaHerbItem>().AnyAsync(fh => fh.HerbId == id);
+            var isReferenced = prescRef || formulaRef;
+            var prescCount = prescRef ? await _db.PrescriptionItems.CountAsync(pi => pi.HerbId == id) : 0;
+            var formulaCount = formulaRef ? await _db.Set<FormulaHerbItem>().CountAsync(fh => fh.HerbId == id) : 0;
 
             return Ok(new
             {
                 IsReferenced = isReferenced,
-                ReferenceCount = isReferenced ? await _db.PrescriptionItems.CountAsync(pi => pi.HerbId == id) : 0
+                ReferenceCount = prescCount + formulaCount,
+                PrescriptionReferenceCount = prescCount,
+                FormulaReferenceCount = formulaCount
             });
         }
 
