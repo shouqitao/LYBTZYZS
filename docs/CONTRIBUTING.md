@@ -154,7 +154,6 @@ dotnet test tests/LYBT.Tests.Architecture/  # 架构守卫
 | [ONBOARDING.md](ONBOARDING.md) | 新人引导 |
 | [DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md) | 开发者总入口 |
 | [05-development/](05-development/) | 编码标准、开发流程 |
-| [07-concepts/](07-concepts/) | 技术概念索引 |
 
 ---
 

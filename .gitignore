@@ -294,3 +294,11 @@ update_client_readmes_detailed.py
 
 # WonderPen library database
 docs/docs.wplibrary/
+
+# Code intelligence tools
+graphify-out/
+.codegraph/
+.envsitter/
+
+# Agents (user-local, not project artifacts)
+.agents/

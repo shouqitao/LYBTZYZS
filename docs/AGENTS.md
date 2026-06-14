@@ -12,10 +12,6 @@ Central documentation hub for the LYBTZYZS TCM clinic management system. Contain
 | File | Description |
 |------|-------------|
 | `README.md` | Documentation index with quick navigation for new developers, API developers, and architects |
-| `api-endpoint-comparison.md` | Comparison of local vs remote API endpoints |
-| `api-endpoint-gap-report.md` | Gap analysis between local and remote API surfaces |
-| `local-api-alignment-plan.md` | Plan for aligning LocalWebAPI with remote WebAPI |
-| `remote-vs-local-api-gap-report.md` | Detailed gap report for dual-mode API parity |
 
 ## Subdirectories
 
@@ -29,10 +25,7 @@ Central documentation hub for the LYBTZYZS TCM clinic management system. Contain
 | `04-api-reference/` | All API endpoint documentation — printing, sync, health, diagnostics, configuration (13 files) |
 | `05-development/` | Quick start, coding standards, design patterns, testing guides, standards/ (6 STD files), archive/ (12 files) |
 | `06-operations/` | Deployment, configuration, monitoring, logging, archive/ (7 files) |
-| `07-concepts/` | Domain concept documentation — TCM terminology, clinical workflows, system concepts (47 files) |
-| `plans/` | Active and archived design/plan documents (~50 files) |
-| `archives/` | Archived documentation |
-| `requirements/` | Additional requirements docs |
+| `plans/` | Active design/plan documents |
 | `training/` | Training materials |
 
 ## For AI Agents

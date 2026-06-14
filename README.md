@@ -140,7 +140,7 @@ dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests"
 
 **禁止**: 三文件跨任务累积增长 (膨胀文件会浪费 PreToolUse hook 读取的 token)
 
-详细同步规则见 @.claude/rules/development-flow.md
+详细同步规则见 `.opencode/rules/development-flow.md`
 
 ---
 
@@ -202,7 +202,7 @@ dotnet test LYBTZYZS.sln --filter "FullyQualifiedName~LYBT.Tests"
 | C# 符号跳转 / 引用查找 | `LSP` tool (csharp-ls 0.22.0，已安装) |
 | 获取当前时间 | `mcp__time__get_current_time(timezone="Asia/Shanghai")` |
 
-详细工具用法见 @.claude/rules/tools.md
+详细工具用法见 `.opencode/rules/tools.md`
 
 ---
 
@@ -240,9 +240,9 @@ docs/
 
 ## 详细规则
 
-@.claude/rules/tools.md
-@.claude/rules/development-flow.md
-@.claude/rules/code-standards.md
+@.opencode/rules/tools.md
+@.opencode/rules/development-flow.md
+@.opencode/rules/code-standards.md
 
 ---
 
