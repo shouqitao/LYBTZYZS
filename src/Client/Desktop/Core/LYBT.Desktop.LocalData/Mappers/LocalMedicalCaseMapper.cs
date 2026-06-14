@@ -12,7 +12,7 @@ namespace LYBT.Desktop.LocalData.Mappers;
 /// LocalData 医案映射器 - Entity <-> DTO 转换
 /// 处理聚合根 (MedicalCase + Consultation + Prescription) 的映射
 /// </summary>
-[Mapper]
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Both)]
 internal partial class LocalMedicalCaseMapper
 {
     #region MedicalCase Entity -> MedicalCaseDetailDto

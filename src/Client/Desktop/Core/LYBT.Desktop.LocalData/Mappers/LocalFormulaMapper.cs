@@ -7,7 +7,7 @@ namespace LYBT.Desktop.LocalData.Mappers;
 /// <summary>
 /// LocalData 验方映射器 - Entity <-> DTO 转换
 /// </summary>
-[Mapper]
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Both)]
 internal partial class LocalFormulaMapper
 {
     #region Formula Entity <-> DTO

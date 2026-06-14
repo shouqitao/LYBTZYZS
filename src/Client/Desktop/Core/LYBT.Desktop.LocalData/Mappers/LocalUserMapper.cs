@@ -7,7 +7,7 @@ namespace LYBT.Desktop.LocalData.Mappers;
 /// <summary>
 /// LocalData 用户映射器 - Entity <-> DTO 转换
 /// </summary>
-[Mapper]
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Both)]
 internal partial class LocalUserMapper
 {
     /// <summary>
