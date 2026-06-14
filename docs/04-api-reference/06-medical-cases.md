@@ -57,7 +57,7 @@
 }
 ```
 
-**成功响应** (200): `ApiResponse<MedicalCaseDetailDto>`
+**成功响应** (201 Created): `ApiResponse<MedicalCaseDetailDto>`
 
 **错误响应**:
 - 404: 患者不存在
@@ -119,9 +119,9 @@
 
 ### PUT /medicalcases/{id}/status
 
-更新医案状态。仅支持 Suspended/Active 状态流转。
+更新医案状态。支持 Suspended/Active 状态流转。
 
-> **重要**: `Completed` 状态不允许通过此端点设置，必须使用 `PUT /{id}/close` (完成医案专用入口)。`Cancelled` 状态已移除，取消操作请使用 `PUT /{id}/cancel` (软删除)。
+> **注意**: 远程模式下 `Completed` 状态会自动委托给 `CompleteAsync` (等同于调用 `/{id}/close`)。本地模式拒绝直接设置 `Completed`，必须使用 `/{id}/close` 端点。`Cancelled` 状态已移除，取消操作请使用 `PUT /{id}/cancel` (软删除)。
 
 **路径参数**: `id` (Guid)
 

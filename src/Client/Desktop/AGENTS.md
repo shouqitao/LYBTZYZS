@@ -28,7 +28,7 @@ WPF/Prism.DryIoc desktop application for the LYBTZYZS TCM clinic management syst
 ### Working In This Directory
 - Dependency direction: `Shell -> Roles -> Modules -> Core(Infrastructure -> Foundation -> Contracts)`
 - Business modules MUST NOT reference each other; cross-module communication via shared services or event aggregation.
-- All ViewModels inherit from `UnifiedViewModelBase` or `UnifiedListViewModelBase<T>`.
+- All ViewModels inherit from `NavigableViewModelBase` or `MasterDetailViewModelBase<TListDto, TDetailModel>`.
 - Data access uses `I{Entity}Repository` for CRUD and `I{Entity}DataManager` for aggregates.
 - Object mapping: Riok.Mapperly (compile-time) + AutoMapper (runtime fallback).
 - Module registration via Prism `IModule` interface in `{Domain}Module.cs`.
@@ -38,7 +38,7 @@ WPF/Prism.DryIoc desktop application for the LYBTZYZS TCM clinic management syst
 - Tests target `net8.0-windows`; cannot mix with Server test projects.
 
 ### Common Patterns
-- **ViewModel base classes**: `UnifiedViewModelBase`, `UnifiedListViewModelBase<T>`
+- **ViewModel base classes**: `NavigableViewModelBase`, `MasterDetailViewModelBase<TListDto, TDetailModel>`
 - **Repository pattern**: `I{Entity}Repository` for CRUD, `I{Entity}DataManager` for aggregate roots
 - **Navigation**: Prism Region-based navigation between modules
 - **Dual-mode**: Remote (HTTP API) vs Local (SQL Server LocalDB), sharing Service/Repository layer

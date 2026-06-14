@@ -4,7 +4,7 @@
 # Modules (Desktop)
 
 ## Purpose
-Business modules for the WPF desktop client. Each module encapsulates a domain area (Auth, Patients, Herbs, Formula, MedicalCase, Registration, Sync, Users) and follows the Prism module pattern with `IModule` registration, region-based navigation, and ViewModels inheriting from `UnifiedViewModelBase`. Modules are strictly isolated — cross-module references are forbidden.
+Business modules for the WPF desktop client. Each module encapsulates a domain area (Auth, Patients, Herbs, Formula, MedicalCase, Registration, Sync, Users) and follows the Prism module pattern with `IModule` registration, region-based navigation, and ViewModels inheriting from `NavigableViewModelBase` or `MasterDetailViewModelBase`. Modules are strictly isolated — cross-module references are forbidden.
 
 ## Subdirectories
 | Directory | Purpose |
@@ -23,14 +23,14 @@ Business modules for the WPF desktop client. Each module encapsulates a domain a
 ### Working In This Directory
 - Each module is a self-contained Prism `IModule` — registered in `{Domain}Module.cs`.
 - Modules MUST NOT reference each other. Cross-module communication goes through shared services or Prism `IEventAggregator`.
-- All ViewModels inherit from `UnifiedViewModelBase` (single entity) or `UnifiedListViewModelBase<T>` (list/grid).
+- All ViewModels inherit from `NavigableViewModelBase` (single entity) or `MasterDetailViewModelBase<TListDto, TDetailModel>` (list/grid).
 - Navigation uses Prism region-based navigation: `_regionManager.RequestNavigate("MainRegion", nameof(SomeView))`.
 - Data access: inject `I{Entity}Repository` for CRUD, `I{Entity}DataManager` for aggregate roots (e.g., `IMedicalCaseDataManager`).
 
 ### Common Patterns
 - **Module registration**: `public class {Domain}Module : IModule { void RegisterTypes(IContainerRegistry) {...} }`
 - **ViewModel lifecycle**: `OnNavigatedTo` / `OnNavigatedFrom` for Prism navigation awareness
-- **List pattern**: `UnifiedListViewModelBase<T>` with built-in paging, filtering, selection
+- **List pattern**: `MasterDetailViewModelBase<TListDto, TDetailModel>` with built-in paging, filtering, selection
 - **Aggregate pattern**: MedicalCase module uses `IMedicalCaseDataManager` to orchestrate Consultation + Prescription
 
 ## Dependencies

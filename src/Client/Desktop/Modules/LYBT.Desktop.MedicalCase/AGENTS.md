@@ -18,12 +18,12 @@ LYBT.Desktop.MedicalCase/
 | Task | Location | Notes |
 |------|----------|-------|
 | Module registration | `MedicalCaseModule.cs` | Prism IModule implementation |
-| ViewModels | `ViewModels/` | UnifiedViewModelBase derivatives |
+| ViewModels | `ViewModels/` | MasterDetailViewModelBase derivatives |
 | Prescription import | `Extensions/PrescriptionImportExtensions.cs` | Import logic |
 
 ## CONVENTIONS
 
-- **ViewModel base** — `UnifiedViewModelBase` / `UnifiedListViewModelBase<T>`
+- **ViewModel base** — `MasterDetailViewModelBase<TListDto, TDetailModel>`
 - **Object mapping** — Riok.Mapperly (compile-time) + AutoMapper (runtime fallback)
 - **Navigation** — Prism Region-based between modules
 - **Data access** — `IMedicalCaseDataManager` for aggregate operations

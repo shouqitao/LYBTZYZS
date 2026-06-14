@@ -7,10 +7,10 @@
 ```
 LYBT.Module.Users/
 ├── Interfaces/          # IUserService, IUserRepository
-├── Services/            # UserService (807 lines)
+├── Services/            # UserService (457 lines), UserQueryService (67), UserPasswordService (132), UserStatusService (140), UserBatchOperationService (281)
 ├── Repositories/        # UserRepository
 ├── Mapping/             # UserMapper (Mapperly)
-├── Validators/          # FluentValidation
+├── Mapping/             # UserMapper (Riok.Mapperly)
 └── UsersModule.cs       # Module registration
 ```
 
@@ -18,7 +18,7 @@ LYBT.Module.Users/
 
 | Task | Location | Notes |
 |------|----------|-------|
-| CRUD + password mgmt | `Services/UserService.cs` | 807 lines |
+| CRUD + password mgmt | `Services/UserService.cs` | 457 lines |
 | Permission control | `Services/UserService.cs` | GetCurrentUserRole, CanManageUser |
 | Username uniqueness | `Repositories/UserRepository.cs` | UsernameExistsAsync |
 | Token revocation | `Services/UserService.cs` | Role change triggers token revoke |

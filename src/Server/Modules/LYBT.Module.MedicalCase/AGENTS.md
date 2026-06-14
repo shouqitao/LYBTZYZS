@@ -7,8 +7,9 @@
 ```
 LYBT.Module.MedicalCase/
 ├── Interfaces/          # 11 interface definitions
-├── Handlers/            # CommandHandler implementations
-├── Services/            # MedicalCaseDataManager
+├── Services/            # 10 files: MedicalCaseCommandService, MedicalCaseQueryService, MedicalCaseStateService, MedicalCaseFacade, MedicalCaseAuditService, MedicalCasePermissionService, MedicalCasePrintService, MedicalCaseReferenceService, MedicalCaseRules, MedicalCaseServiceHelper
+├── Repositories/        # 3 repository files
+├── Mapping/             # MedicalCaseMapper (Riok.Mapperly)
 └── MedicalCaseModule.cs # Module registration
 ```
 
@@ -16,8 +17,11 @@ LYBT.Module.MedicalCase/
 
 | Task | Location | Notes |
 |------|----------|-------|
-| CQRS handlers | `Handlers/` | Command handlers for medical case operations |
-| Data manager | `Services/MedicalCaseDataManager.cs` | Aggregate root operations |
+| Write operations | `Services/MedicalCaseCommandService.cs` | CQRS command side |
+| Read operations | `Services/MedicalCaseQueryService.cs` | CQRS query side |
+| State transitions | `Services/MedicalCaseStateService.cs` | Complete/Cancel/Suspend + Registration linkage |
+| Facade | `Services/MedicalCaseFacade.cs` | Aggregate root operations |
+| Audit | `Services/MedicalCaseAuditService.cs` | 20-field diff tracking |
 | Interfaces | `Interfaces/` | 11 service interfaces |
 
 ## CONVENTIONS

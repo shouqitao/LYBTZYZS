@@ -1,12 +1,12 @@
 # 系统配置 API
 
-> Controller: `ConfigurationController` | 路由前缀: `/api/v1/configuration` | 默认权限: `[Authorize(Roles = "Admin")]`
+> Controller: `ConfigurationController` | 路由前缀: `/api/v1/configuration` | 默认权限: `[Authorize(Policy = PolicyConstants.SuperAdminOnly)]`
 
 ## 概述
 
-提供系统配置读取与生产环境配置验证功能。仅 Admin 角色可访问。GetConfiguration 返回安全、非敏感的配置项；GetValue 按 key 查询单个配置值；ValidateProduction 验证生产环境配置是否完整合规。
+提供系统配置读取与生产环境配置验证功能。仅 SuperAdmin 可访问。GetConfiguration 返回安全、非敏感的配置项；GetValue 按 key 查询单个配置值；ValidateProduction 验证生产环境配置是否完整合规。
 
-> **注意**: 本模块使用 `[Authorize(Roles = "Admin")]` 基于角色的授权，而非其他模块使用的 `[Authorize(Policy = "...")]` 策略授权。
+> **注意**: 本模块使用 `[Authorize(Policy = PolicyConstants.SuperAdminOnly)]` 策略授权（与其他模块一致）。
 
 ---
 

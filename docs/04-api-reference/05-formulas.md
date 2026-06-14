@@ -77,7 +77,7 @@ Doctor 只能看到自己的和共享的验方，Admin 可操作全部。资源�
 
 **请求体** (`FormulaInputDto`): 含 name, category, description, source, effect, usage, contraindications, herbs 等字段。
 
-**成功响应** (200): `ApiResponse<FormulaDetailDto>`
+**成功响应** (201 Created): `ApiResponse<FormulaDetailDto>`
 
 ---
 

@@ -68,10 +68,7 @@ Doctor 只能编辑自己创建的药材，Admin 可操作全部。
 
 **请求体** (`HerbInputDto`): 含 name, pinYinCode, category, properties, effect, price, unit 等字段。
 
-**成功响应** (200): `ApiResponse<HerbDetailDto>`
-
----
-
+**成功响应** (201 Created): `ApiResponse<HerbDetailDto>`
 ## PUT /herbs/{id}
 
 更新药材信息。执行所有权检查。

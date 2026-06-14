@@ -6,8 +6,8 @@
 
 ```
 LYBT.Module.Patients/
-├── Interfaces/          # IPatientService, IPatientServiceOptimized, IPatientRepository
-├── Services/            # PatientService (987 lines)
+├── Interfaces/          # IPatientService, IPatientRepository, IPatientImportExportService
+├── Services/            # PatientService (600 lines), PatientImportExportService (414 lines)
 ├── Repositories/        # PatientRepository
 ├── Mapping/             # PatientMapper (Mapperly)
 └── PatientsModule.cs    # Module registration
@@ -17,20 +17,20 @@ LYBT.Module.Patients/
 
 | Task | Location | Notes |
 |------|----------|-------|
-| CRUD + import/export | `Services/PatientService.cs` | 987 lines, largest in module |
-| Entity-direct mode | `Interfaces/IPatientServiceOptimized.cs` | Performance optimization |
+| CRUD + search | `Services/PatientService.cs` | 600 lines |
+| Import/export | `Services/PatientImportExportService.cs` | 414 lines, Excel import/export |
 | Reference checking | `Services/PatientService.cs` | CheckReferenceAsync (MedicalCases) |
 | Batch import | `Services/PatientService.cs` | EPPlus, HashSet dedup |
 
 ## CONVENTIONS
 
-- **Entity-direct return** — IPatientServiceOptimized avoids DTO mapping overhead
+- **ImportExportService split** — PatientImportExportService handles Excel/JSON import/export separately
 - **Age is computed** — Patient.Age based on BirthDate, Mapperly ignores it, manual copy needed
 - **Cross-module** — IPatientCrossModuleService exposes PatientBasicDto to MedicalCase
 - **Pinyin auto-gen** — CreateAsync/UpdateAsync auto-generate PinYinCode
 
 ## ANTI-PATTERNS
 
-- **Service too large** — 987 lines, consider splitting ImportExport/Reference services
+- **Service split** — PatientService (600 lines) + PatientImportExportService (414 lines)
 - **Direct AppDbContext** — CheckReferenceAsync queries MedicalCases table directly
 - **FindAsync with soft-delete** — Use IgnoreQueryFilters() for Restore operations

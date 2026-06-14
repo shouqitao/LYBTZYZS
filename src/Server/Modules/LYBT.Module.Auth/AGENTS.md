@@ -6,8 +6,9 @@
 
 ```
 LYBT.Module.Auth/
-├── Interfaces/          # IAuthService, IJwtService, ISecurityAuditService, ITokenRevocationService
-├── Services/            # AuthService (845 lines), JwtService, SecurityAuditService, TokenRevocationService
+├── Interfaces/          # IAuthService, IJwtService, ISecurityAuditService, ITokenRevocationService, IAutoLoginService, ITokenManagementService, IAutoLoginTokenRepository, IRefreshTokenRepository, ISecurityAuditRepository
+├── Services/            # AuthService (363 lines), JwtService, SecurityAuditService, TokenRevocationService, AutoLoginService (233 lines), TokenManagementService (286 lines)
+├── Repositories/        # AutoLoginTokenRepository, RefreshTokenRepository, SecurityAuditRepository
 ├── Models/              # SecurityAuditEvent DTO
 └── AuthModule.cs        # Module registration
 ```
@@ -16,7 +17,7 @@ LYBT.Module.Auth/
 
 | Task | Location | Notes |
 |------|----------|-------|
-| Login/logout flow | `Services/AuthService.cs` | Core auth logic, 845 lines |
+| Login/logout flow | `Services/AuthService.cs` | Core auth logic, 363 lines |
 | JWT generation | `Services/JwtService.cs` | Token creation/validation |
 | Token revocation | `Services/TokenRevocationService.cs` | RefreshToken revocation |
 | Security audit | `Services/SecurityAuditService.cs` | Audit logging |
