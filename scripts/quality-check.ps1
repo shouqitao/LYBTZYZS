@@ -41,7 +41,7 @@ function Test-HelperClassLimits {
     Write-Host "📊 检查Helper类行数限制..." -ForegroundColor Yellow
     
     $helperFiles = Get-ChildItem -Path $srcPath -Recurse -Name "*Helper.cs" | Where-Object { 
-        $_ -notlike "*Refactored*" -and $_ -notlike "*Base*" 
+        $_ -notlike "*Base*" 
     }
     
     $violations = @()
@@ -191,32 +191,7 @@ function Test-AutoMapperUsage {
     }
 }
 
-function Test-RefactoredArchitecture {
-    Write-Host "📊 检查重构架构完整性..." -ForegroundColor Yellow
-    
-    $refactoredModules = @("Users", "Patients", "Prescriptions")
-    $missing = @()
-    
-    foreach ($module in $refactoredModules) {
-        $refactoredFile = Get-ChildItem -Path $srcPath -Recurse -Name "*$module*BusinessHelper.Refactored.cs" -ErrorAction SilentlyContinue
-        if (-not $refactoredFile) {
-            $missing += $module
-        }
-    }
-    
-    if ($missing.Count -gt 0) {
-        Write-Host "⚠️  缺少重构文件:" -ForegroundColor Yellow
-        foreach ($m in $missing) {
-            Write-Host "   • ${m}BusinessHelper.Refactored.cs" -ForegroundColor Yellow
-        }
-        
-        $violations = $missing | ForEach-Object {
-            [PSCustomObject]@{
-                File = "${_}BusinessHelper.Refactored.cs"
-                Severity = "LOW"
-                Message = "缺少重构版本文件"
-            }
-        }
+function Test-ProductionReady {
         return $violations
     } else {
         Write-Host "✅ 重构架构文件检查通过" -ForegroundColor Green
@@ -290,7 +265,6 @@ try {
     $allViolations += Test-ServiceClassLimits  
     $allViolations += Test-ControllerClassLimits
     $allViolations += Test-AutoMapperUsage
-    $allViolations += Test-RefactoredArchitecture
     
     Write-Host ""
     

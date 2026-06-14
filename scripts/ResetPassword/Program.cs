@@ -3,7 +3,7 @@ using BCrypt.Net;
 
 /// <summary>
 /// 密码重置工具 - 支持sysadmin和普通用户
-/// Issue #1908: 增强密码重置工具,支持AdminSecrets表的sysadmin账户
+    /// Issue #1909: 统一使用Users表，AdminSecrets已移除
 /// </summary>
 class Program
 {
@@ -210,15 +210,15 @@ class Program
     }
 
     /// <summary>
-    /// 重置SysAdmin密码
+    /// 重置SysAdmin密码 (Issue #1909: AdminSecrets表已移除，统一使用Users表)
     /// </summary>
     static async Task ResetSysAdminPasswordAsync(SqlConnection connection, string passwordHash)
     {
-        // 查询AdminSecrets表
+        // 查询Users表中的SuperAdmin账户
         var queryAdmin = @"
 SELECT Id, PasswordHash
-FROM AdminSecrets
-WHERE Id = '00000000-0000-0000-0000-000000000001'";
+FROM Users
+WHERE Role = 100 AND UserName = 'sysadmin'";
 
         using var cmdQuery = new SqlCommand(queryAdmin, connection);
         using var reader = await cmdQuery.ExecuteReaderAsync();
@@ -237,9 +237,9 @@ WHERE Id = '00000000-0000-0000-0000-000000000001'";
 
             // 更新密码
             var updatePassword = @"
-UPDATE AdminSecrets
+UPDATE Users
 SET PasswordHash = @PasswordHash
-WHERE Id = '00000000-0000-0000-0000-000000000001'";
+WHERE Role = 100 AND UserName = 'sysadmin'";
 
             using var cmdUpdate = new SqlCommand(updatePassword, connection);
             cmdUpdate.Parameters.AddWithValue("@PasswordHash", passwordHash);

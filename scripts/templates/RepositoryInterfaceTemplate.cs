@@ -1,4 +1,4 @@
-using LYBT.Shared.Dtos.{{Entity}};
+using LYBT.Shared.Models.Contracts.{{Entity}};
 
 namespace LYBT.Desktop.{{ModuleName}}.Interfaces;
 

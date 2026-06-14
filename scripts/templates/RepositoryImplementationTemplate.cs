@@ -1,6 +1,6 @@
 using LYBT.Desktop.{{ModuleName}}.Interfaces;
-using LYBT.Shared.ApiInterfaces;
-using LYBT.Shared.Dtos.{{Entity}};
+using LYBT.Desktop.Contracts.ApiClient;
+using LYBT.Shared.Models.Contracts.{{Entity}};
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.{{ModuleName}}.Repositories;

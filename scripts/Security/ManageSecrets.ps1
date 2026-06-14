@@ -76,8 +76,8 @@ function Validate-Secrets {
     $warnings = @()
 
     # Check JWT secret
-    if ($content.JwtOptions -and $content.JwtOptions.Secret) {
-        $secret = $content.JwtOptions.Secret
+    if ($content.Jwt -and $content.Jwt.SecretKey) {
+        $secret = $content.Jwt.SecretKey
         if ($secret.Contains("Development") -or $secret.Contains("Default")) {
             $warnings += "JWT secret contains Development/Default keywords"
         }
@@ -87,8 +87,8 @@ function Validate-Secrets {
     }
 
     # Check admin password
-    if ($content.SysAdminOptions -and $content.SysAdminOptions.DefaultPassword) {
-        $password = $content.SysAdminOptions.DefaultPassword
+    if ($content.DefaultPasswords -and $content.DefaultPasswords.SysAdminPassword) {
+        $password = $content.DefaultPasswords.SysAdminPassword
         if ($password.Length -lt 12) {
             $warnings += "Admin password length less than 12 chars"
         }
@@ -151,16 +151,16 @@ function Clean-DevelopmentSecrets {
             $content = Get-Content $filePath -Raw | ConvertFrom-Json
 
             # Clean JWT secret
-            if ($content.JwtOptions -and $content.JwtOptions.Secret) {
-                if ($content.JwtOptions.Secret.Contains("Development")) {
-                    $content.JwtOptions.Secret = "REPLACE_WITH_ENVIRONMENT_VARIABLE"
+            if ($content.Jwt -and $content.Jwt.SecretKey) {
+                if ($content.Jwt.SecretKey.Contains("Development")) {
+                    $content.Jwt.SecretKey = "REPLACE_WITH_ENVIRONMENT_VARIABLE"
                     Write-ColoredOutput "Cleaned JWT secret in $file" -Color Yellow
                 }
             }
 
             # Clean admin password
-            if ($content.SysAdminOptions -and $content.SysAdminOptions.DefaultPassword) {
-                $content.SysAdminOptions.DefaultPassword = "REPLACE_WITH_ENVIRONMENT_VARIABLE"
+            if ($content.DefaultPasswords -and $content.DefaultPasswords.SysAdminPassword) {
+                $content.DefaultPasswords.SysAdminPassword = "REPLACE_WITH_ENVIRONMENT_VARIABLE"
                 Write-ColoredOutput "Cleaned admin password in $file" -Color Yellow
             }
 
