@@ -1,11 +1,11 @@
 # LYBT.Desktop.Contracts
 
-> Desktop端接口契约层 | Refit API定义 | 服务抽象 | 数据源接口
+> Desktop端接口契约层 | Refit API定义 | 服务抽象 | Repository契约
 
 ## 项目定位
 
 - **层级**: Client Core层
-- **职责**: 定义Desktop端所有抽象接口，包括API客户端契约、服务接口、数据源抽象和事件类型。所有模块通过此层实现依赖倒置
+- **职责**: 定义Desktop端所有抽象接口，包括API客户端契约、服务接口、Repository契约和事件类型。所有模块通过此层实现依赖倒置
 
 ## 目录结构
 
@@ -23,9 +23,13 @@ LYBT.Desktop.Contracts/
 │   ├── CommandResult.cs          # 统一返回类型(含隐式bool转换)
 │   ├── ICommandHandlerBase.cs    # 泛型CRUD接口
 │   └── QueryParams.cs            # 统一查询参数
-├── DataSources/                  # 数据源抽象层(6文件，支持双模式)
-│   ├── IDataSourceBase.cs        # 通用CRUD基础接口
-│   └── I{Module}DataSource.cs    # 各模块数据源(Formula/Herb/MedicalCase/Patient/User)
+├── Repositories/                 # Repository契约(6文件)
+│   ├── IHerbRepository.cs        # 药材仓储
+│   ├── IFormulaRepository.cs     # 验方仓储
+│   ├── IMedicalCaseRepository.cs # 医案仓储(聚合根)
+│   ├── IPatientRepository.cs     # 患者仓储
+│   ├── IRegistrationRepository.cs # 挂号仓储
+│   └── IUserRepository.cs        # 用户仓储
 ├── Events/CacheEvents.cs         # 缓存失效事件
 ├── Models/ImportValidationResult.cs # 导入验证结果
 ├── Roles/                        # 角色体系(2文件)
@@ -67,7 +71,7 @@ LYBT.Desktop.Contracts/
 | Refit框架 | 通过特性标注自动生成HTTP客户端实现 |
 | 类型安全 | 所有API方法使用强类型DTO，编译时检查 |
 | 依赖倒置 | 业务模块依赖此层接口，不直接互相依赖 |
-| 双模式支持 | DataSource抽象层支持Remote/Local两种实现 |
+| 双模式支持 | Repository 契约 + SwitchingApiClient 根据URL路由到远程/本地API |
 | SRP三分离 | MedicalCase拆分为Query/Command/Lifecycle三个接口 |
 
 ## 设计依据
@@ -114,7 +118,7 @@ Desktop 端接口契约层，定义跨模块共享的抽象接口、API 客户�
 | IViewModelServices 聚合接口 | 将 ViewModel 基类所需的 7 个通用服务聚合为 1 个接口，简化构造函数 | - | enhance-viewmodel-architecture |
 | IApplicationTickService 统一定时调度 | 单一 DispatcherTimer 每秒 Tick，替代各组件独立 Timer，减少资源浪费 | AUTH-000 | refactor-token-sliding-expiration |
 | IUserActivityState 分离查询接口 | 从 IUserActivityTracker 提取只读查询接口，供 Foundation 层使用，避免循环依赖 | AUTH-002 | refactor-token-sliding-expiration |
-| DataSource 抽象层 | IDataSourceBase<TDetail, TInput> 统一 CRUD 操作，支持远程/本地双模式切换 | - | SYNC-D02 |
+| Repository 契约层 | IRepository<T> 统一数据访问操作，SwitchingApiClient 根据URL路由远程/本地双模式 | - | SYNC-D02 |
 | CrossModule 搜索接口 | IHerbSearchProvider / IFormulaSearchProvider 解耦模块间编译期依赖 (D5-3) | - | - |
 | IPendingQueueManager 解耦 | 待诊队列管理独立接口，消除 MedicalCase 和 Patients 模块的直接耦合 | - | refactor-medicalcase-workspace |
 | LoginCoordinator 简化 | 移除 rememberCredentials 参数（凭证保存由 ViewModel 处理）、移除 IsAutoLogin、移除 AutoLoginAttemptCount | - | simplify-login-options |
@@ -133,10 +137,6 @@ Desktop 端接口契约层，定义跨模块共享的抽象接口、API 客户�
 | ISessionManager.SetCurrentUser | [COMPAT] 兼容保留 | SetSession (支持 RefreshToken) | 待全面迁移后移除 |
 | ISessionManager.SetUserSession | [COMPAT] 兼容保留 | SetSession 的别名 | 待全面迁移后移除 |
 | ISessionManager.ClearUserSession | [COMPAT] 兼容保留 | ClearSession 的别名 | 待全面迁移后移除 |
-| IUserDataSource 过渡态方法 (T4-X2) | [COMPAT] 兼容保留 | 待 SYNC-D02 完成后统一重构 | SYNC-D02 完成后 |
-| IPatientDataSource 过渡态方法 | [COMPAT] 兼容保留 | 待 SYNC-D02 完成后统一重构 | SYNC-D02 完成后 |
-| IHerbDataSource 过渡态方法 | [COMPAT] 兼容保留 | 待 SYNC-D02 完成后统一重构 | SYNC-D02 完成后 |
-| IFormulaDataSource 过渡态方法 | [COMPAT] 兼容保留 | 待 SYNC-D02 完成后统一重构 | SYNC-D02 完成后 |
 | SessionExpiring 事件 | [DEAD] 已移除 | simplify-auth-architecture: 不再显示即将过期警告 | 已清理 |
 | SessionExpiringEventArgs | [DEAD] 已移除 | simplify-auth-architecture | 已清理 |
 
@@ -148,7 +148,6 @@ Desktop 端接口契约层，定义跨模块共享的抽象接口、API 客户�
 |------|------|----------|
 | GetPendingCasesAsync 与 QueryMedicalCasesAsync 不能互相替代 | 返回 DTO 类型不同: Pending 返回 PendingMedicalCaseDto (含 Type 字段), Query 返回 MedicalCaseListDto (含 CaseStatus 字段) | 保留两个独立端点 (standardize-api-naming) |
 | IMedicalCaseApi 中大量已删除方法的注释 | API 演进过程中删除了重复/Ghost API，注释保留用于追溯 | 不要尝试恢复这些方法，它们的功能已合并到现有方法中 |
-| IDataSourceBase.GetPagedAsync 与具体模块的同名方法签名不同 | 基础接口只有 keyword 参数，Herb/Formula 的 DataSource 重载增加了 category 参数 | 使用具体接口类型而非基础接口调用带 category 的方法 |
 | ICommonDialogService 与 IUserNotificationService 功能重叠 | 历史原因: IUserNotificationService 原名 IErrorHandlingService (Issue #840 重命名), ICommonDialogService 后加入提供更丰富的对话框 | IUserNotificationService 用于简单消息提示, ICommonDialogService 用于需要用户选择的对话框 |
 | ISessionManager.IsLoggedIn 是 IsAuthenticated 的别名 | 兼容性保留，两个属性行为完全一致 | 新代码统一使用 IsAuthenticated |
 | CommandResult<T> 隐式转换为 bool | 使用 `if (result)` 判断成功/失败，但可能被误用为空值检查 | 明确使用 `result.Success` 提高可读性 |
@@ -186,7 +185,7 @@ Desktop 端接口契约层，定义跨模块共享的抽象接口、API 客户�
 | cleanup-patient-dead-code | 删除重复的 PagedResult<T> 和未使用的 IPagedCommandHandler | 已完成 |
 | cleanup-formula-dead-code | 删除 GetPendingValidationFormulasAsync/ValidateFormulaHerbAsync | 已完成 |
 | implement-local-mode | ICurrentUserProvider 接口 | 已完成 |
-| SYNC-D02 | DataSource 过渡态方法 (Herb/Patient/Formula/User)，待双模式完成后统一重构 | 进行中 |
+| SYNC-D02 | Repository 契约层 + SwitchingApiClient 双模式路由，DataSource 抽象层已移除 | 已完成 |
 | enhance-duplicate-herb-dialog | IPrescriptionSettingsService 处方设置 | 已完成 |
 | rationalize-module-architecture | IMedicalCaseQueryService 遵循依赖倒置原则 | 已完成 |
 
@@ -371,94 +370,20 @@ Refit 在编译期自动生成实现类，无需手写实现。
 
 ---
 
-### DataSources/ -- 数据源抽象层 (支持双模式)
+### Repositories/ -- Repository 契约层
 
-每个接口均有 Remote + Local 两个实现 (RemoteXxxDataSource + LocalXxxDataSource)。
+Repository 契约接口，由 Infrastructure 层的 RepositoryBase 实现，通过 SwitchingApiClient 路由到远程或本地 API。
 
-#### IDataSourceBase.cs
+| 接口 | 继承 | 说明 |
+|------|------|------|
+| IUserRepository.cs | IRepository | 用户数据访问 (CRUD/密码管理/批量操作) |
+| IPatientRepository.cs | IRepository | 患者数据访问 (CRUD/搜索/批量操作) |
+| IHerbRepository.cs | IRepository | 药材数据访问 (CRUD/分类/批量操作) |
+| IFormulaRepository.cs | IRepository | 验方数据访问 (CRUD/克隆/批量操作) |
+| IMedicalCaseRepository.cs | IRepository | 医案数据访问 (CRUD/聚合保存/生命周期) |
+| IRegistrationRepository.cs | IRepository | 挂号数据访问 |
 
-通用 CRUD 基础接口 `IDataSourceBase<TDetail, TInput>` (约束: where T : class)。
-
-- `GetByIdAsync(Guid id, CancellationToken) -> Task<TDetail?>`
-- `GetPagedAsync(int page, int pageSize, string? keyword, CancellationToken) -> Task<(List<TDetail>, int Total)>`
-- `CreateAsync(TInput, CancellationToken) -> Task<TDetail>`
-- `UpdateAsync(TInput, CancellationToken) -> Task<TDetail>`
-- `DeleteAsync(Guid id, CancellationToken) -> Task<bool>`
-
-#### IFormulaDataSource.cs
-
-继承 `IDataSourceBase<FormulaDetailDto, FormulaInputDto>`，扩展验方特有操作。
-
-- `CloneAsync(Guid id, ct) -> Task<FormulaDetailDto?>`
-- `ToggleStatusAsync(Guid id, ct) -> Task<bool>`
-- `RestoreAsync(Guid id, ct) -> Task<FormulaDetailDto?>`
-- `GetWithHerbsAsync(Guid id, ct) -> Task<FormulaDetailDto?>`
-- `GetPagedAsync(page, pageSize, keyword?, category?, ct) -> Task<(List<FormulaDetailDto>, int)>` -- 带分类的重载
-- `BatchImportAsync(List<FormulaImportItemDto>, ct) -> Task<BatchOperationResultDto>` -- [COMPAT] SYNC-D02
-- `GetPendingValidationAsync(ct) -> Task<List<FormulaDetailDto>>` -- [COMPAT] SYNC-D02
-- `GetAllForExportAsync(keyword?, ct) -> Task<List<FormulaDetailDto>>` -- [COMPAT] SYNC-D02
-- `ValidateHerbBindingsAsync(Guid formulaId, ct) -> Task<bool>` -- [COMPAT] SYNC-D02
-- `BatchToggleStatusAsync(List<Guid>, bool enable, ct) -> Task<BatchOperationResultDto>` -- [COMPAT] SYNC-D02
-- `BatchDeleteAsync(List<Guid>, ct) -> Task<BatchOperationResultDto>` -- [COMPAT] SYNC-D02
-- `GetImportTemplateColumns() -> string[]` -- [COMPAT] SYNC-D02
-- `GetImportTemplateHerbColumns() -> string[]` -- [COMPAT] SYNC-D02
-
-#### IHerbDataSource.cs
-
-继承 `IDataSourceBase<HerbDetailDto, HerbInputDto>`，扩展药材特有操作。
-
-- `GetPagedAsync(page, pageSize, keyword?, category?, ct) -> Task<(List<HerbDetailDto>, int)>` -- 带分类的重载
-- `ToggleStatusAsync(Guid id, ct) -> Task<bool>`
-- `RestoreAsync(Guid id, ct) -> Task<HerbDetailDto?>`
-- `GetCategoriesAsync(ct) -> Task<List<string>>`
-- `BatchDeleteAsync(List<Guid>, ct) -> Task<BatchOperationResultDto>`
-- `BatchToggleStatusAsync(List<Guid>, bool enable, ct) -> Task<BatchOperationResultDto>` -- [COMPAT] SYNC-D02
-- `BatchImportAsync(List<HerbInputDto>, ct) -> Task<BatchOperationResultDto>` -- [COMPAT] SYNC-D02
-- `GetAllForExportAsync(keyword?, ct) -> Task<List<HerbDetailDto>>` -- [COMPAT] SYNC-D02
-- `HasReferencesAsync(Guid herbId, ct) -> Task<bool>` -- [COMPAT] SYNC-D02
-- `GetImportTemplateColumns() -> string[]` -- [COMPAT] SYNC-D02
-
-#### IMedicalCaseDataSource.cs
-
-继承 `IDataSourceBase<MedicalCaseDetailDto, MedicalCaseInputDto>`，扩展聚合根操作。
-
-- `AddPrintLogAsync(medicalCaseId, isSuccess, printType, printerName?, errorMessage?, ct) -> Task<bool>`
-- `SaveAsync(MedicalCaseInputDto, ct) -> Task<MedicalCaseDetailDto>` -- 聚合保存
-- `CompleteAsync(Guid id, ct) -> Task<bool>`
-- `CancelAsync(Guid id, reason?, ct) -> Task<bool>`
-- `GetWithDetailsAsync(Guid id, ct) -> Task<MedicalCaseDetailDto?>`
-- `QueryAsync(patientId?, userId?, status?, startDate?, endDate?, page, pageSize, ct) -> Task<(List<MedicalCaseDetailDto>, int)>`
-- `GetByPatientIdAsync(Guid patientId, ct) -> Task<List<MedicalCaseDetailDto>>`
-- `BatchDeleteAsync(List<Guid>, ct) -> Task<BatchOperationResultDto>`
-
-#### IPatientDataSource.cs
-
-继承 `IDataSourceBase<PatientDetailDto, PatientInputDto>`，扩展患者特有操作。
-
-- `SearchAsync(string keyword, ct) -> Task<List<PatientDetailDto>>`
-- `GetByIdNumberAsync(string idNumber, ct) -> Task<PatientDetailDto?>`
-- `RestoreAsync(Guid id, ct) -> Task<PatientDetailDto?>`
-- `BatchDeleteAsync(List<Guid>, ct) -> Task<BatchOperationResultDto>`
-- `BatchImportAsync(List<PatientInputDto>, ct) -> Task<BatchOperationResultDto>` -- [COMPAT] SYNC-D02
-- `GetAllForExportAsync(keyword?, ct) -> Task<List<PatientDetailDto>>` -- [COMPAT] SYNC-D02
-- `HasMedicalCasesAsync(Guid patientId, ct) -> Task<bool>` -- [COMPAT] SYNC-D02
-- `BatchCheckReferencesAsync(List<Guid>, ct) -> Task<Dictionary<Guid, bool>>` -- [COMPAT] SYNC-D02
-
-#### IUserDataSource.cs
-
-继承 `IDataSourceBase<UserDetailDto, UserInputDto>`，扩展用户特有操作。
-
-- `GetByUsernameAsync(string username, ct) -> Task<UserDetailDto?>`
-- `ChangePasswordAsync(Guid id, oldHash, newHash, ct) -> Task<bool>`
-- `ToggleStatusAsync(Guid id, ct) -> Task<bool>`
-- `UpdateLastLoginTimeAsync(Guid id, ct) -> Task<bool>`
-- `ResetFailedLoginCountAsync(Guid id, ct) -> Task<bool>`
-- `IncrementFailedLoginCountAsync(Guid id, ct) -> Task<int>`
-- `RestoreAsync(Guid id, ct) -> Task<UserDetailDto?>` -- [COMPAT] SYNC-D02
-- `BatchDeleteAsync(List<Guid>, ct) -> Task<BatchOperationResultDto>` -- [COMPAT] SYNC-D02
-- `ResetPasswordAsync(Guid id, ct) -> Task<ResetPasswordResponseDto>` -- [COMPAT] SYNC-D02
-- `BatchToggleStatusAsync(List<Guid>, bool enable, ct) -> Task<BatchOperationResultDto>` -- [COMPAT] SYNC-D02
-- `GetCurrentUserAsync(ct) -> Task<UserDetailDto?>` -- [COMPAT] SYNC-D02
+> 注: 原 `DataSources/` 目录下的 IDataSourceBase 及 IXxxDataSource 接口已移除，统一替换为 IRepository 模式。
 
 ---
 
@@ -839,13 +764,13 @@ LYBT.Desktop.Contracts/
 |   +-- CommandResult.cs          # 统一返回类型 (含隐式 bool 转换)
 |   +-- ICommandHandlerBase.cs    # 泛型 CRUD + 只读接口
 |   +-- QueryParams.cs            # 统一查询参数 (分页/搜索/排序/过滤)
-+-- DataSources/                  # 数据源抽象层 (支持双模式)
-|   +-- IDataSourceBase.cs        # 通用 CRUD 基础接口
-|   +-- IFormulaDataSource.cs     # 验方数据源 (含克隆/验证/分类)
-|   +-- IHerbDataSource.cs        # 药材数据源 (含分类/引用检查)
-|   +-- IMedicalCaseDataSource.cs # 医案数据源 (含聚合保存/生命周期)
-|   +-- IPatientDataSource.cs     # 患者数据源 (含搜索/引用检查)
-|   +-- IUserDataSource.cs        # 用户数据源 (含密码/状态管理)
++-- Repositories/                 # Repository 契约层
+|   +-- IFormulaRepository.cs     # 验方仓储 (含克隆/验证/分类)
+|   +-- IHerbRepository.cs        # 药材仓储 (含分类/引用检查)
+|   +-- IMedicalCaseRepository.cs # 医案仓储 (含聚合保存/生命周期)
+|   +-- IPatientRepository.cs     # 患者仓储 (含搜索/引用检查)
+|   +-- IRegistrationRepository.cs # 挂号仓储
+|   +-- IUserRepository.cs        # 用户仓储 (含密码/状态管理)
 +-- Events/                       # 事件定义
 |   +-- CacheEvents.cs            # 缓存失效事件 (PubSubEvent + CacheDomain)
 +-- Models/                       # 契约模型
@@ -890,7 +815,7 @@ LYBT.Desktop.Contracts/
 2. **MedicalCase API 精简** (simplify-medicalcase-api + consolidate-medicalcase-queries): 从 20+ 个端点精简到 ~15 个核心端点，删除 Ghost API、重复查询、独立 Prescription CRUD
 3. **MedicalCase 服务 SRP** (refactor-frontend-srp-patterns): 单体服务 -> Query + Command + Lifecycle 三接口
 4. **导航统一** (unify-navigation-architecture): 三个独立导航服务合并为 INavigationCoordinator
-5. **DataSource 抽象层引入**: 为 SYNC-D02 双模式 (远程/本地) 准备的数据访问抽象
+5. **Repository 模式引入**: 为 SYNC-D02 双模式 (远程/本地) 准备的数据访问抽象，DataSource 层已移除，统一使用 IRepository + SwitchingApiClient 路由
 6. **批量操作标准化** (optimize-batch-operations Phase 2): 所有模块统一支持 BatchDelete/BatchEnable/BatchDisable
 7. **Token 过期机制重构** (refactor-token-sliding-expiration): 引入 IApplicationTickService + IUserActivityTracker + IUserActivityState 三层架构
 8. **登录流程简化** (simplify-login-options + simplify-auth-architecture): 移除多余参数和事件，AutoLoginToken 替代密码存储

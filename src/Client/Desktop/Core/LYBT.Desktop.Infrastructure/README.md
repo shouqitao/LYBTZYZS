@@ -411,13 +411,6 @@ LYBT.Desktop.Infrastructure/
 │   ├── StatusToColorConverter.cs            # 状态值 -> Color
 │   ├── StringToVisibilityConverter.cs       # 空字符串=Collapsed, 非空=Visible
 │   └── ZeroToVisibilityConverter.cs         # 0=Visible, 非0=Collapsed (空状态提示)
-├── DataSources/
-│   └── Remote/
-│       ├── RemoteFormulaDataSource.cs   # IFormulaDataSource远程实现
-│       ├── RemoteHerbDataSource.cs      # IHerbDataSource远程实现
-│       ├── RemoteMedicalCaseDataSource.cs # IMedicalCaseDataSource远程实现
-│       ├── RemotePatientDataSource.cs   # IPatientDataSource远程实现
-│       └── RemoteUserDataSource.cs      # IUserDataSource远程实现
 ├── DependencyInjection/
 │   └── ViewModelServicesExtensions.cs   # Prism DI注册扩展
 ├── Events/
@@ -516,107 +509,13 @@ LYBT.Desktop.Infrastructure/
     └── UnfinishedCaseDialog.xaml/.cs    # 未完成医案对话框视图
 ```
 
-### DataSources 方法表
+### Repository 模式
 
-所有 RemoteDataSource 实现 IXxxDataSource 接口，通过 Refit API 访问服务端。每个 DataSource 内含 Mapperly 映射器（ListDto -> DetailDto）。
+原 `DataSources/Remote/` 目录下的 `RemoteFormulaDataSource`、`RemoteHerbDataSource`、`RemoteMedicalCaseDataSource`、`RemotePatientDataSource`、`RemoteUserDataSource` 类已移除。数据访问统一由 **Repository 模式** 处理：
 
-**RemoteFormulaDataSource** (IFormulaDataSource):
-
-| 方法 | 说明 |
-|------|------|
-| `GetByIdAsync(Guid)` | 按ID获取验方详情 |
-| `GetPagedAsync(int, int, string?, string?)` | 分页查询 (支持关键词+分类) |
-| `CreateAsync(FormulaInputDto)` | 创建验方 |
-| `UpdateAsync(FormulaInputDto)` | 更新验方 |
-| `DeleteAsync(Guid)` | 删除验方 |
-| `CloneAsync(Guid)` | 克隆验方 |
-| `ToggleStatusAsync(Guid)` | 切换启用/禁用 |
-| `RestoreAsync(Guid)` | 恢复已删除验方 |
-| `GetWithHerbsAsync(Guid)` | 获取含药材组成的验方 |
-| `BatchDeleteAsync(List<Guid>)` | 批量删除 |
-| `BatchImportAsync(List<FormulaImportItemDto>)` | 批量导入 |
-| `BatchToggleStatusAsync(List<Guid>, bool)` | 批量启用/禁用 |
-| `GetPendingValidationAsync()` | 获取待验证验方 |
-| `GetAllForExportAsync(string?)` | 获取全部用于导出 |
-| `ValidateHerbBindingsAsync(Guid)` | 验证药材绑定 (远程返回true) |
-| `GetImportTemplateColumns()` | 导入模板列定义 (主表) |
-| `GetImportTemplateHerbColumns()` | 导入模板列定义 (药材明细) |
-
-**RemoteHerbDataSource** (IHerbDataSource):
-
-| 方法 | 说明 |
-|------|------|
-| `GetByIdAsync(Guid)` | 按ID获取药材详情 |
-| `GetPagedAsync(int, int, string?, string?)` | 分页查询 (支持关键词+分类) |
-| `CreateAsync(HerbInputDto)` | 创建药材 |
-| `UpdateAsync(HerbInputDto)` | 更新药材 |
-| `DeleteAsync(Guid)` | 删除药材 |
-| `ToggleStatusAsync(Guid)` | 切换启用/禁用 |
-| `RestoreAsync(Guid)` | 恢复已删除药材 |
-| `GetCategoriesAsync()` | 获取药材分类列表 |
-| `BatchDeleteAsync(List<Guid>)` | 批量删除 |
-| `BatchToggleStatusAsync(List<Guid>, bool)` | 批量启用/禁用 |
-| `BatchImportAsync(List<HerbInputDto>)` | 批量导入 (逐个创建) |
-| `GetAllForExportAsync(string?)` | 获取全部用于导出 |
-| `HasReferencesAsync(Guid)` | 检查是否被引用 (远程返回true) |
-| `GetImportTemplateColumns()` | 导入模板列定义 |
-
-**RemoteMedicalCaseDataSource** (IMedicalCaseDataSource):
-
-| 方法 | 说明 |
-|------|------|
-| `GetByIdAsync(Guid)` | 按ID获取医案详情 |
-| `GetPagedAsync(int, int, string?)` | 分页查询 |
-| `CreateAsync(MedicalCaseInputDto)` | 创建医案 |
-| `UpdateAsync(MedicalCaseInputDto)` | 更新医案 |
-| `DeleteAsync(Guid)` | 删除医案 |
-| `SaveAsync(MedicalCaseInputDto)` | 保存医案 (含诊断+处方) |
-| `CompleteAsync(Guid)` | 完成医案 (结案) |
-| `CancelAsync(Guid, string?)` | 取消医案 |
-| `GetWithDetailsAsync(Guid)` | 获取含完整详情的医案 |
-| `QueryAsync(Guid?, Guid?, MedicalCaseStatus?, ...)` | 多条件查询 |
-| `GetByPatientIdAsync(Guid)` | 按患者ID查询医案列表 |
-| `AddPrintLogAsync(Guid, bool, PrintType, ...)` | 添加打印日志 |
-| `BatchDeleteAsync(List<Guid>)` | 批量删除 |
-
-**RemotePatientDataSource** (IPatientDataSource):
-
-| 方法 | 说明 |
-|------|------|
-| `GetByIdAsync(Guid)` | 按ID获取患者详情 |
-| `GetPagedAsync(int, int, string?)` | 分页查询 |
-| `CreateAsync(PatientInputDto)` | 创建患者 |
-| `UpdateAsync(PatientInputDto)` | 更新患者 |
-| `DeleteAsync(Guid)` | 删除患者 |
-| `SearchAsync(string)` | 关键词搜索 |
-| `GetByIdNumberAsync(string)` | 按身份证号查询 (精确匹配) |
-| `RestoreAsync(Guid)` | 恢复已删除患者 |
-| `BatchDeleteAsync(List<Guid>)` | 批量删除 |
-| `BatchImportAsync(List<PatientInputDto>)` | 批量导入 |
-| `GetAllForExportAsync(string?)` | 获取全部用于导出 |
-| `HasMedicalCasesAsync(Guid)` | 检查是否有关联医案 (远程返回true) |
-| `BatchCheckReferencesAsync(List<Guid>)` | 批量检查引用 (远程返回true) |
-
-**RemoteUserDataSource** (IUserDataSource):
-
-| 方法 | 说明 |
-|------|------|
-| `GetByIdAsync(Guid)` | 按ID获取用户详情 |
-| `GetPagedAsync(int, int, string?)` | 分页查询 |
-| `CreateAsync(UserInputDto)` | 创建用户 |
-| `UpdateAsync(UserInputDto)` | 更新用户 |
-| `DeleteAsync(Guid)` | 删除用户 |
-| `GetByUsernameAsync(string)` | 按用户名查询 (精确匹配) |
-| `ChangePasswordAsync(Guid, string, string)` | 修改密码 |
-| `ToggleStatusAsync(Guid)` | 切换启用/禁用 |
-| `UpdateLastLoginTimeAsync(Guid)` | 更新最后登录时间 (远程由服务端处理) |
-| `ResetFailedLoginCountAsync(Guid)` | 重置失败登录次数 (远程由服务端处理) |
-| `IncrementFailedLoginCountAsync(Guid)` | 增加失败登录次数 (远程由服务端处理) |
-| `BatchDeleteAsync(List<Guid>)` | 批量删除 |
-| `RestoreAsync(Guid)` | 恢复已删除用户 |
-| `ResetPasswordAsync(Guid)` | 管理员重置密码 |
-| `BatchToggleStatusAsync(List<Guid>, bool)` | 批量启用/禁用 |
-| `GetCurrentUserAsync()` | 获取当前用户 (远程返回null) |
+- **Repository 基类**: `Repositories/RepositoryBase.cs` — 泛型基类，通过 Refit API 客户端访问数据
+- **Repository 契约**: `LYBT.Desktop.Contracts/Repositories/` 下的 IXxxRepository 接口
+- **双模式路由**: `SwitchingApiClient` 根据连接 URL 自动路由到远程服务器 API 或本地嵌入 LocalWebAPI
 
 ### Services 方法表
 
