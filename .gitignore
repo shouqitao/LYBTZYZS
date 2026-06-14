@@ -132,6 +132,21 @@ pass*-apply-summary*.md
 .worktrees/
 
 # ========================================
+# Compiler XML Documentation (generated)
+# ========================================
+src/**/*.xml
+
+# ========================================
+# Data Protection Keys (runtime generated)
+# ========================================
+**/DataProtection-Keys/
+
+# ========================================
+# Local Tool Config
+# ========================================
+.mcp.json
+
+# ========================================
 # Python Cache (utility scripts)
 # ========================================
 __pycache__/
