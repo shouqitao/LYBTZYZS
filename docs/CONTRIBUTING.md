@@ -143,7 +143,7 @@ dotnet test tests/LYBT.Tests.Architecture/  # 架构守卫
 
 ## 工作流
 
-详见 [`05-development/02-workflow.md`](05-development/02-workflow.md)（OpenSpec + Superpowers + GSD 工具链）。
+详见 [`05-development/03-code-standards.md`](05-development/03-code-standards.md)（编码规范与开发流程）。
 
 ---
 
