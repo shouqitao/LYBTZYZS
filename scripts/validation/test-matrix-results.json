@@ -1,0 +1,35 @@
+{
+  "UnitTests": {
+    "ProjectResults": {},
+    "Status": "Passed",
+    "FailedTests": 0,
+    "TotalTests": 0,
+    "Coverage": {
+      "LineRate": 0.0,
+      "Enabled": {
+        "IsPresent": false
+      },
+      "BranchRate": 0.0
+    },
+    "PassedTests": 0,
+    "Duration": 0.0043285
+  },
+  "StartTime": "2026-06-14T21:10:49.637007+08:00",
+  "EndTime": "2026-06-14T21:10:49.7698411+08:00",
+  "Configuration": "Debug",
+  "Summary": "P3 Record-Only 测试矩阵验证完成\r\n====================================\r\n\r\n执行时间: 2026-06-14 21:10:49 - 2026-06-14 21:10:49\r\n总耗时: 0.13 秒\r\n配置: Debug\r\n\r\n架构测试: Error\r\n- 通过: 0/0\r\n- 耗时: 0 秒\r\n\r\n单元测试: Passed\r\n- 通过: 0/0  \r\n- 耗时: 0 秒\r\n\r\nRecord-Only合规: Compliant\r\n- 智能推荐残留: 0 项\r\n- 条件编译残留: 0 项\r\n- 禁止命名残留: 0 项\r\n\r\n总体状态: FAIL ❌",
+  "RecordOnlyCompliance": {
+    "ConditionCompilationFound": [],
+    "IntelligenceFeaturesFound": [],
+    "Status": "Compliant",
+    "ProhibitedNamingFound": []
+  },
+  "ArchitectureTests": {
+    "FailedTests": 0,
+    "Status": "Error",
+    "Duration": 0,
+    "Details": [],
+    "TotalTests": 0,
+    "PassedTests": 0
+  }
+}

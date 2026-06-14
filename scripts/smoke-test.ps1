@@ -1,4 +1,4 @@
-﻿# 凌隐宝堂中医诊所系统 - 冒烟测试脚本
+# 凌隐宝堂中医诊所系统 - 冒烟测试脚本
 # UltraThink Phase 3 实用化优化 - PowerShell自动化测试
 
 param(
@@ -81,27 +81,29 @@ function Invoke-TestRequest {
     )
     
     try {
-        # 忽略SSL证书错误（开发环境）
-        if (-not ([System.Management.Automation.PSTypeName]'ServerCertificateValidationCallback').Type) {
-            $certCallback = @"
-                using System;
-                using System.Net;
-                using System.Net.Security;
-                using System.Security.Cryptography.X509Certificates;
-                public class ServerCertificateValidationCallback {
-                    public static void Ignore() {
-                        if(ServicePointManager.ServerCertificateValidationCallback == null) {
-                            ServicePointManager.ServerCertificateValidationCallback += 
-                                delegate(Object obj, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors) {
-                                    return true;
-                                };
+        # PowerShell 7+ 内置跳过证书验证
+        if ($PSVersionTable.PSEdition -eq 'Desktop') {
+            if (-not ([System.Management.Automation.PSTypeName]'ServerCertificateValidationCallback').Type) {
+                $certCallback = @"
+                    using System;
+                    using System.Net;
+                    using System.Net.Security;
+                    using System.Security.Cryptography.X509Certificates;
+                    public class ServerCertificateValidationCallback {
+                        public static void Ignore() {
+                            if(ServicePointManager.ServerCertificateValidationCallback == null) {
+                                ServicePointManager.ServerCertificateValidationCallback += 
+                                    delegate(Object obj, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors) {
+                                        return true;
+                                    };
+                            }
                         }
                     }
-                }
 "@
-            Add-Type $certCallback
+                Add-Type $certCallback
+            }
+            [ServerCertificateValidationCallback]::Ignore()
         }
-        [ServerCertificateValidationCallback]::Ignore()
         
         $parameters = @{
             Uri = $Uri

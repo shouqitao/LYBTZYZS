@@ -1,4 +1,4 @@
-﻿# P3 Record-Only Smoke Validation - 测试矩阵验证脚本
+# P3 Record-Only Smoke Validation - 测试矩阵验证脚本
 # 目标：运行架构测试和单元测试，确保系统Record-Only模式合规性
 
 param(
@@ -15,13 +15,11 @@ $ProgressPreference = "SilentlyContinue"
 $PROJECT_ROOT = Split-Path -Path $PSScriptRoot -Parent | Split-Path -Parent
 $RESULTS_LOG = Join-Path $PSScriptRoot "test-matrix-results.json"
 
-# 测试项目路径
-$ARCH_TESTS = Join-Path $PROJECT_ROOT "tests\Architecture\ArchTests.csproj"
+# 测试项目路径 (updated 2026-06-14: 8→3 test projects)
+$ARCH_TESTS = Join-Path $PROJECT_ROOT "tests\LYBT.Tests.Architecture\LYBT.Tests.Architecture.csproj"
 $UNIT_TESTS = @(
-    "tests\Backend\LYBT.Module.Auth.Tests\LYBT.Module.Auth.Tests.csproj",
-    "tests\Backend\LYBT.Module.Users.Tests\LYBT.Module.Users.Tests.csproj",
-    "tests\Backend\LYBT.Module.Patients.Tests\LYBT.Module.Patients.Tests.csproj",
-    "tests\Backend\LYBT.Module.Herbs.Tests\LYBT.Module.Herbs.Tests.csproj"
+    "tests\LYBT.Tests.Server\LYBT.Tests.Server.csproj",
+    "tests\LYBT.Tests.Desktop\LYBT.Tests.Desktop.csproj"
 )
 
 # 测试结果存储
@@ -227,7 +225,7 @@ function Run-UnitTests {
             $totalFailed += $projectFailed
             $totalTests += $projectTotal
             
-            Write-TestLog "$projectName: $projectPassed/$projectTotal 通过" $(if ($projectFailed -eq 0) { "SUCCESS" } else { "ERROR" })
+            Write-TestLog "${projectName}: $projectPassed/$projectTotal passed" $(if ($projectFailed -eq 0) { "SUCCESS" } else { "ERROR" })
         }
         
         $endTime = Get-Date
