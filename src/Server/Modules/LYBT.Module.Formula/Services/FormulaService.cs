@@ -1,4 +1,4 @@
-﻿using LYBT.Module.Formulas.Mapping;
+using LYBT.Module.Formulas.Mapping;
 using LYBT.Entities.Formulas;
 using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Services;
@@ -345,7 +345,7 @@ namespace LYBT.Module.Formulas.Services
         /// <summary>
         /// 批量删除验方
         /// </summary>
-        public async Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
+        public async Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId = default)
         {
             var result = new BatchOperationResultDto
             {
@@ -368,6 +368,20 @@ namespace LYBT.Module.Formulas.Services
                             Id = id,
                             Reason = "方剂不存在"
                         });
+                        continue;
+                    }
+
+                    // S4 FIX: 所有权检查 — 仅创建者或 Admin 可删除
+                    if (operatorId != default && entity.UserId != operatorId)
+                    {
+                        result.FailureCount++;
+                        result.FailedIds.Add(id);
+                        result.FailedItems.Add(new BatchOperationFailureItem
+                        {
+                            Id = id,
+                            Reason = "无权操作他人验方"
+                        });
+                        _logger.LogWarning("[SVC] Formula.BatchDelete → NoPermission - FormulaId={FormulaId} OperatorId={OperatorId} OwnerId={OwnerId}", id, operatorId, entity.UserId);
                         continue;
                     }
 
@@ -403,7 +417,7 @@ namespace LYBT.Module.Formulas.Services
         /// <summary>
         /// 批量更新方剂状态
         /// </summary>
-        public async Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status)
+        public async Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid operatorId = default)
         {
             var result = new BatchOperationResultDto
             {
@@ -427,6 +441,19 @@ namespace LYBT.Module.Formulas.Services
                         {
                             Id = id,
                             Reason = "方剂不存在"
+                        });
+                        continue;
+                    }
+
+                    // S4 FIX: 所有权检查
+                    if (operatorId != default && formula.UserId != operatorId)
+                    {
+                        result.FailureCount++;
+                        result.FailedIds.Add(id);
+                        result.FailedItems.Add(new BatchOperationFailureItem
+                        {
+                            Id = id,
+                            Reason = "无权操作他人验方"
                         });
                         continue;
                     }

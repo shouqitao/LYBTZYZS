@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
@@ -92,13 +92,13 @@ namespace LYBT.Module.Formulas.Interfaces
         /// 批量删除验方
         /// </summary>
         /// <param name="ids">验方ID列表</param>
-        Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids);
+        Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId = default);
 
         /// <summary>
         /// 批量更新方剂状态
         /// </summary>
         /// <param name="ids">方剂ID列表</param>
         /// <param name="status">目标状态</param>
-        Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status);
+        Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid operatorId = default);
     }
 }

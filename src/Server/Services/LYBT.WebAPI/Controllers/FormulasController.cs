@@ -293,7 +293,8 @@ namespace LYBT.WebAPI.Controllers
             if (dto.Ids == null || dto.Ids.Count == 0)
                 return ValidationFail("请至少选择一个方剂");
 
-            var result = await _service.BatchDeleteAsync(dto.Ids);
+            var (operatorId, _, _) = GetOperator();
+            var result = await _service.BatchDeleteAsync(dto.Ids, operatorId);
             if (!result.IsSuccess || result.Data == null)
                 return HandleResult<BatchOperationResultDto>(result);
 
@@ -315,7 +316,8 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("请至少选择一个方剂");
             }
 
-            var result = await _service.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Enabled);
+            var (operatorId, _, _) = GetOperator();
+            var result = await _service.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Enabled, operatorId);
             if (!result.IsSuccess || result.Data == null)
             {
                 return HandleResult<BatchOperationResultDto>(result);
@@ -339,7 +341,8 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("请至少选择一个方剂");
             }
 
-            var result = await _service.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Disabled);
+            var (operatorId, _, _) = GetOperator();
+            var result = await _service.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Disabled, operatorId);
             if (!result.IsSuccess || result.Data == null)
             {
                 return HandleResult<BatchOperationResultDto>(result);

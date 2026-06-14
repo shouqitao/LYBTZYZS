@@ -32,6 +32,18 @@ public class UsersController : ControllerBase
         _db = db;
     }
 
+    private bool IsAdminOrHigher()
+    {
+        var role = User.FindFirst(ClaimTypes.Role)?.Value;
+        return role == UserRole.Admin.ToString() || role == UserRole.SuperAdmin.ToString();
+    }
+
+    private Guid GetCurrentUserId()
+        => Guid.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : Guid.Empty;
+
+    private IActionResult ForbiddenIfNotAdmin()
+        => IsAdminOrHigher() ? null : StatusCode(403, new { Message = "仅管理员可执行此操作" });
+
     // GET /api/users
         [HttpGet]
         public async Task<ActionResult<IEnumerable<object>>> GetAll()
@@ -61,12 +73,13 @@ public class UsersController : ControllerBase
         if (dto == null || string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
             return BadRequest("Invalid user data.");
 
-        // Simple admin authorization check: only Admin can create new users
-        var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
-        if (roleClaim == null || !roleClaim.Equals("Admin", StringComparison.OrdinalIgnoreCase))
-        {
-            return Forbid();
-        }
+        // S2 FIX: 管理员检查 (接受 Admin 或 SuperAdmin)
+        if (!IsAdminOrHigher())
+            return Forbid("仅管理员可创建用户");
+
+        // S2 FIX: 防止权限提升 — 非 SuperAdmin 不可创建 SuperAdmin
+        if (dto.Role == UserRole.SuperAdmin && User.FindFirst(ClaimTypes.Role)?.Value != UserRole.SuperAdmin.ToString())
+            return Forbid("无权创建超级管理员账户");
 
         var exists = await _db.Users.AnyAsync(u => u.UserName == dto.Username && !u.IsDeleted);
         if (exists) return Conflict("Username already exists.");
@@ -92,12 +105,9 @@ public class UsersController : ControllerBase
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
         if (user == null) return NotFound();
 
-        // Admin check for update permissions
-        var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
-        if (roleClaim == null || !roleClaim.Equals("Admin", StringComparison.OrdinalIgnoreCase))
-        {
-            return Forbid();
-        }
+        // S2 FIX: 管理员检查
+        if (!IsAdminOrHigher())
+            return Forbid("仅管理员可修改用户");
 
         if (!string.IsNullOrWhiteSpace(dto.RealName)) user.RealName = dto.RealName;
         if (!string.IsNullOrWhiteSpace(dto.Username)) user.UserName = dto.Username;
@@ -110,6 +120,12 @@ public class UsersController : ControllerBase
         [HttpDelete("{id}")]
         public async Task<IActionResult> SoftDelete([FromRoute] Guid id)
     {
+        // S2 FIX: 管理员检查 + 自我保护
+        if (!IsAdminOrHigher())
+            return Forbid("仅管理员可删除用户");
+        if (GetCurrentUserId() == id)
+            return Forbid("不可删除自己");
+
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
         if (user == null) return NotFound();
         user.IsDeleted = true;
@@ -138,6 +154,9 @@ public class UsersController : ControllerBase
     [HttpPost("{id}/toggle-status")]
     public async Task<ActionResult<object>> ToggleStatus([FromRoute] Guid id)
     {
+        if (!IsAdminOrHigher()) return Forbid("仅管理员可操作");
+        if (GetCurrentUserId() == id) return Forbid("不可禁用自己");
+
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
         if (user == null) return NotFound();
 
@@ -150,6 +169,8 @@ public class UsersController : ControllerBase
     [HttpPost("{id}/restore")]
     public async Task<ActionResult<object>> Restore([FromRoute] Guid id)
     {
+        if (!IsAdminOrHigher()) return Forbid("仅管理员可操作");
+
         var user = await _db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == id && u.IsDeleted);
         if (user == null) return NotFound();
 
@@ -162,9 +183,11 @@ public class UsersController : ControllerBase
     [HttpPost("batch-delete")]
     public async Task<ActionResult<object>> BatchDelete([FromBody] BatchDeleteInputDto request)
     {
+        if (!IsAdminOrHigher()) return Forbid("仅管理员可操作");
+        var currentUserId = GetCurrentUserId();
         if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("No ids provided.");
 
-        var users = await _db.Users.Where(u => request.Ids.Contains(u.Id) && !u.IsDeleted).ToListAsync();
+        var users = await _db.Users.Where(u => request.Ids.Contains(u.Id) && !u.IsDeleted && u.Id != currentUserId).ToListAsync();
         foreach (var u in users) u.IsDeleted = true;
         await _db.SaveChangesAsync();
         return Ok(new { Count = users.Count });
@@ -174,6 +197,7 @@ public class UsersController : ControllerBase
     [HttpPost("batch-enable")]
     public async Task<ActionResult<object>> BatchEnable([FromBody] BatchDeleteInputDto request)
     {
+        if (!IsAdminOrHigher()) return Forbid("仅管理员可操作");
         if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("No ids provided.");
 
         var users = await _db.Users.Where(u => request.Ids.Contains(u.Id) && !u.IsDeleted).ToListAsync();
@@ -186,9 +210,11 @@ public class UsersController : ControllerBase
     [HttpPost("batch-disable")]
     public async Task<ActionResult<object>> BatchDisable([FromBody] BatchDeleteInputDto request)
     {
+        if (!IsAdminOrHigher()) return Forbid("仅管理员可操作");
+        var currentUserId = GetCurrentUserId();
         if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("No ids provided.");
 
-        var users = await _db.Users.Where(u => request.Ids.Contains(u.Id) && !u.IsDeleted).ToListAsync();
+        var users = await _db.Users.Where(u => request.Ids.Contains(u.Id) && !u.IsDeleted && u.Id != currentUserId).ToListAsync();
         foreach (var u in users) u.Status = CommonStatus.Disabled;
         await _db.SaveChangesAsync();
         return Ok(new { Count = users.Count });
@@ -223,10 +249,9 @@ public class UsersController : ControllerBase
     [HttpPost("{id:guid}/reset-password")]
     public async Task<IActionResult> ResetPassword([FromRoute] Guid id, [FromBody] ResetPasswordRequestDto request)
     {
-        // Admin check
-        var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
-        if (roleClaim == null || !roleClaim.Equals("Admin", StringComparison.OrdinalIgnoreCase))
-            return Forbid();
+        // S2 FIX: 管理员检查 (接受 Admin 或 SuperAdmin)
+        if (!IsAdminOrHigher())
+            return Forbid("仅管理员可重置密码");
 
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
         if (user == null) return NotFound();
