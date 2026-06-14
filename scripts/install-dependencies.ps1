@@ -5,8 +5,7 @@ Write-Host "=== 开始安装项目依赖 ===" -ForegroundColor Green
 $modules = @(
     "src/Server/Modules/LYBT.Module.Users/LYBT.Module.Users.csproj",
     "src/Server/Modules/LYBT.Module.Herbs/LYBT.Module.Herbs.csproj",
-    "src/Server/Modules/LYBT.Module.Patients/LYBT.Module.Patients.csproj",
-    "src/Server/Modules/LYBT.Module.Consultation/LYBT.Module.Consultation.csproj"
+    "src/Server/Modules/LYBT.Module.Patients/LYBT.Module.Patients.csproj"
 )
 
 # 为所有模块安装AutoMapper和FluentValidation

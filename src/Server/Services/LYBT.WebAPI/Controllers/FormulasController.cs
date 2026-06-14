@@ -86,7 +86,7 @@ namespace LYBT.WebAPI.Controllers
         /// OpenSpec: implement-formula-copy-flow - 传递当前用户ID用于设置验方所有权
         /// </summary>
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), StatusCodes.Status201Created)]
         public async Task<IActionResult> Create([FromBody] FormulaInputDto dto)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
@@ -99,7 +99,9 @@ namespace LYBT.WebAPI.Controllers
             }
 
             LogOperation("新增验方成功", result.Data, result.Data.Id);
-            return Success(result.Data, "验方创建成功");
+            return CreatedAtAction(nameof(GetById),
+                new { id = result.Data.Id, version = "1" },
+                ApiResponse<FormulaDetailDto>.CreateSuccess(result.Data, "验方创建成功"));
         }
 
         /// <summary>

@@ -239,7 +239,11 @@ public class CustomControlArchTests
             "HerbItemChangedEventArgs",  // D5-3: 从Herbs迁入的事件参数
             "HerbListChangedEventArgs",  // D5-3: 从Herbs迁入的事件参数
             "HerbItemChangeType",        // D5-3: 从Herbs迁入的枚举
-            "HerbListChangeType"         // D5-3: 从Herbs迁入的枚举
+            "HerbListChangeType",        // D5-3: 从Herbs迁入的枚举
+            "BreadcrumbControlViewModel",  // Navigation Controls ViewModel
+            "NavigationHistoryPanelViewModel",  // Navigation Controls ViewModel
+            "NavigationSuggestionsPanelViewModel",  // Navigation Controls ViewModel
+            "BreadcrumbItem"  // BreadcrumbBar data model
         };
 
         var actualViolations = result.FailingTypes?

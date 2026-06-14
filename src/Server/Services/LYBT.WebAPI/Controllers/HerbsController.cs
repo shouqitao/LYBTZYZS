@@ -73,7 +73,7 @@ namespace LYBT.WebAPI.Controllers
         /// 创建新药材
         /// </summary>
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), StatusCodes.Status201Created)]
         public async Task<IActionResult> Create([FromBody] HerbInputDto dto, CancellationToken cancellationToken = default)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
@@ -81,7 +81,9 @@ namespace LYBT.WebAPI.Controllers
             if (result.IsSuccess && result.Data != null)
             {
                 LogOperation("创建药材", result.Data, result.Data.Id);
-                return Success(result.Data, "药材创建成功");
+                return CreatedAtAction(nameof(GetById),
+                    new { id = result.Data.Id, version = "1" },
+                    ApiResponse<HerbDetailDto>.CreateSuccess(result.Data, "药材创建成功"));
             }
 
             return HandleResult(result);

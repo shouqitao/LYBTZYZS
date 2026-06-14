@@ -48,7 +48,7 @@ namespace LYBT.WebAPI.Controllers
         /// <param name="dto">创建请求（Id应为null）</param>
         [HttpPost]
         [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
-        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
@@ -74,7 +74,9 @@ namespace LYBT.WebAPI.Controllers
             // Entity → MedicalCaseDetailDto 映射
             var responseDto = _mapper.MapToMedicalCaseDetailDto(entity);
 
-            return Success(responseDto, "医案创建成功");
+            return CreatedAtAction(nameof(GetById),
+                new { id = responseDto.Id, version = "1" },
+                ApiResponse<MedicalCaseDetailDto>.CreateSuccess(responseDto, "医案创建成功"));
         }
 
         /// <summary>

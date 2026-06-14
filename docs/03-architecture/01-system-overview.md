@@ -114,16 +114,15 @@ src/
     Core/                            # 核心层 (2个项目)
       LYBT.Entities/                 # 领域实体 (贫血模型)
       LYBT.Infrastructure/           # 基础设施 (DbContext, Repository基类)
-    Modules/                         # 业务模块 (8 active + 2 dormant)
+    Modules/                         # 业务模块 (8 active)
       LYBT.Module.Auth/
-      LYBT.Module.Consultation/      # 空壳模块(已废弃，保留以兼容系统加载)
       LYBT.Module.Formula/
       LYBT.Module.Herbs/
       LYBT.Module.MedicalCase/
       LYBT.Module.Patients/
-      LYBT.Module.Prescriptions/     # 空壳模块(已废弃，保留以兼容系统加载)
       LYBT.Module.Registration/      # 挂号管理
       LYBT.Module.Sync/
+      LYBT.Module.Users/
       LYBT.Module.Users/
     Services/
       LYBT.WebAPI/                   # Web API 入口

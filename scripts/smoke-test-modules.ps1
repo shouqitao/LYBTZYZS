@@ -18,8 +18,6 @@ $modules = @(
     @{ Name = "Auth"; Endpoints = @("/api/v1/auth/login", "/api/v1/auth/logout") },
     @{ Name = "Users"; Endpoints = @("/api/v1/users", "/api/v1/users/statistics") },
     @{ Name = "Patients"; Endpoints = @("/api/v1/patients", "/api/v1/patients/search") },
-    @{ Name = "Consultation"; Endpoints = @("/api/v1/consultation", "/api/v1/consultation/statistics") },
-    @{ Name = "Prescriptions"; Endpoints = @("/api/v1/prescriptions", "/api/v1/prescriptions/search") },
     @{ Name = "Herbs"; Endpoints = @("/api/v1/herbs", "/api/v1/herbs/search") },
     @{ Name = "Formula"; Endpoints = @("/api/v1/formulas", "/api/v1/formulas/search") }
 )
