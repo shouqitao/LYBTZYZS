@@ -152,3 +152,6 @@ src/**/*.xml
 __pycache__/
 *.pyc
 *.pyo
+
+# Backup directories (generated at runtime)
+backups/
