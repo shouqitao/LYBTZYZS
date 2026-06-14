@@ -293,9 +293,22 @@ namespace LYBT.LocalWebAPI.Controllers
             var mc = await _db.MedicalCases
                         .Include(m => m.Consultation)
                         .Include(m => m.Prescription)
+                            .ThenInclude(p => p != null ? p.Items : null)
                         .FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
             if (mc == null) return NotFound();
             if (mc.IsCompleted) return BadRequest("Medical case is already completed.");
+
+            // BR-003: 工作流验证
+            if (string.IsNullOrWhiteSpace(mc.Consultation?.TcmDiagnosis))
+                return BadRequest("中医诊断不能为空，请先填写中医诊断");
+            if (mc.NeedsPrescription == true)
+            {
+                if (mc.Prescription == null || mc.Prescription.IsDeleted)
+                    return BadRequest("已标记需要开处方，但处方不存在");
+                if (mc.Prescription.Items == null || !mc.Prescription.Items.Any())
+                    return BadRequest("处方必须包含至少一项药材");
+            }
+
             mc.Complete();
             await _db.SaveChangesAsync();
             return Ok(mc.ToDetailDto());
@@ -322,10 +335,18 @@ namespace LYBT.LocalWebAPI.Controllers
         {
             var mc = await _db.MedicalCases.FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
             if (mc == null) return NotFound();
+
+            // ERR-30306: 已完成的医案不可取消
+            if (mc.IsCompleted)
+                return BadRequest("已完成的医案不可取消");
+
             var reg = await _db.Registrations.FirstOrDefaultAsync(r => r.MedicalCaseId == id);
             if (reg != null)
             {
-                reg.Status = RegistrationStatus.Waiting;
+                // 按 Source 分流: Receptionist→Waiting, Doctor→Cancelled
+                reg.Status = reg.Source == RegistrationSource.Doctor
+                    ? RegistrationStatus.Cancelled
+                    : RegistrationStatus.Waiting;
             }
             mc.SoftDelete();
             await _db.SaveChangesAsync();
@@ -350,6 +371,11 @@ namespace LYBT.LocalWebAPI.Controllers
         {
             var mc = await _db.MedicalCases.FindAsync(id);
             if (mc == null || mc.IsDeleted) return NotFound();
+
+            // BR-006: 禁止通过状态更新完成，必须使用 /close 端点
+            if (request.Status == MedicalCaseStatus.Completed)
+                return BadRequest("请使用 /close 端点完成医案，不支持直接设置状态为 Completed");
+
             mc.CaseStatus = request.Status;
             mc.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
@@ -365,7 +391,6 @@ namespace LYBT.LocalWebAPI.Controllers
             mc.PrintCount++;
             mc.IsPrinted = true;
             mc.LastPrintedAt = DateTime.UtcNow;
-            mc.PrintVersion++;
             mc.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
             return Ok(mc.ToDetailDto());

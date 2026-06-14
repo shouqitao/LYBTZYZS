@@ -131,14 +131,19 @@ namespace LYBT.LocalWebAPI.Controllers
             if (request == null || request.PatientId == Guid.Empty)
                 return BadRequest("患者信息不能为空");
 
+            // 从 JWT 提取当前医生信息
+            var doctorId = Guid.TryParse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var id)
+                ? id : Guid.Empty;
+            var doctorName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? string.Empty;
+
             // Create Registration
             var registration = new Registration
             {
                 Id = Guid.NewGuid(),
                 PatientId = request.PatientId,
                 PatientName = request.PatientName,
-                DoctorId = Guid.Empty,
-                DoctorName = string.Empty,
+                DoctorId = doctorId,
+                DoctorName = doctorName,
                 Source = RegistrationSource.Doctor,
                 Status = RegistrationStatus.InProgress,
                 Remark = request.Remark
@@ -151,8 +156,8 @@ namespace LYBT.LocalWebAPI.Controllers
                 Id = Guid.NewGuid(),
                 PatientId = request.PatientId,
                 PatientName = request.PatientName,
-                UserId = Guid.Empty,
-                DoctorName = string.Empty,
+                UserId = doctorId,
+                DoctorName = doctorName,
                 CaseStatus = MedicalCaseStatus.Active
             };
             _db.MedicalCases.Add(medicalCase);
@@ -166,8 +171,8 @@ namespace LYBT.LocalWebAPI.Controllers
                 MedicalCaseId = medicalCase.Id,
                 PatientId = request.PatientId,
                 PatientName = request.PatientName,
-                DoctorId = Guid.Empty,
-                DoctorName = string.Empty,
+                DoctorId = doctorId,
+                DoctorName = doctorName,
                 CreatedAt = registration.CreatedAt
             });
         }

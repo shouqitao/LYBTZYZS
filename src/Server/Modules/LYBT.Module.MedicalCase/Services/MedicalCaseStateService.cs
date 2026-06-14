@@ -155,6 +155,13 @@ namespace LYBT.Module.MedicalCases.Services
             // 保存
             var result = await _repository.UpdateAsync(medicalCase, cancellationToken);
             await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
+
+            // US-REG-005: 医案完成时联动挂号状态 → Completed
+            if (result != null)
+            {
+                await CompleteRegistrationAsync(medicalCaseId, cancellationToken);
+            }
+
             return result;
         }
 
@@ -347,6 +354,25 @@ namespace LYBT.Module.MedicalCases.Services
                 _logger.LogInformation("[SVC] MedicalCase.Cancel → RegistrationCancelled - RegistrationId={RegistrationId} Source=Doctor Status=Cancelled MedicalCaseId={MedicalCaseId} CaseNumber={CaseNumber}",
                     registration.Id, medicalCaseId, caseNumber);
             }
+        }
+
+        /// <summary>
+        /// US-REG-005: 医案完成后联动挂号状态 → Completed
+        /// </summary>
+        private async Task CompleteRegistrationAsync(Guid medicalCaseId, CancellationToken cancellationToken = default)
+        {
+            var registration = await _registrationRepository.GetByMedicalCaseIdAsync(medicalCaseId, cancellationToken);
+            if (registration == null)
+            {
+                _logger.LogInformation("[SVC] MedicalCase.Complete → NoRegistrationFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return;
+            }
+
+            registration.Status = RegistrationStatus.Completed;
+            registration.UpdatedAt = DateTime.UtcNow;
+            await _registrationRepository.UpdateAsync(registration, cancellationToken);
+            _logger.LogInformation("[SVC] MedicalCase.Complete → RegistrationCompleted - RegistrationId={RegistrationId} MedicalCaseId={MedicalCaseId}",
+                registration.Id, medicalCaseId);
         }
 
         #region Private Helper Methods (委托给 MedicalCaseServiceHelper)

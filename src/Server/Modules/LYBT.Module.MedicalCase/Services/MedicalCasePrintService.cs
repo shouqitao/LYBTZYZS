@@ -53,8 +53,7 @@ namespace LYBT.Module.MedicalCases.Services
             medicalCase.LastPrintedAt = DateTime.UtcNow;
             medicalCase.UpdatedAt = DateTime.UtcNow;
 
-            // T2-X8-10: PrintVersion 递增 (每次打印递增版本号)
-            medicalCase.PrintVersion++;
+            // BR1: PrintVersion 不在打印时递增 — 仅在打印后修改内容时递增 (MedicalCaseCommandService 中处理)
 
             // T2-X8-11 + S4-13: 创建打印日志记录（版本快照）
             var printLog = new MedicalCasePrintLog
