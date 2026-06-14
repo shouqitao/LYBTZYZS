@@ -7,6 +7,7 @@ using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Sync.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Sync;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Sync.Services;
@@ -457,9 +458,57 @@ public class SyncService : ISyncService
             if (medicalCase == null)
                 return new SyncUploadItemResult { Success = false, ErrorMessage = "JSON deserialization failed" };
 
+            // SYNC-D01: 仅 Completed 医案可同步
+            if (medicalCase.CaseStatus != MedicalCaseStatus.Completed)
+                return new SyncUploadItemResult
+                {
+                    EntityId = medicalCase.Id,
+                    Success = false,
+                    ErrorMessage = "仅已完成的医案可同步 (SYNC-D01)"
+                };
+
+            // 引用完整性预检查: 患者必须存在
+            var patient = await _syncRepository.FindPatientAsync(medicalCase.PatientId);
+            if (patient == null)
+                return new SyncUploadItemResult
+                {
+                    EntityId = medicalCase.Id,
+                    Success = false,
+                    ErrorMessage = $"患者 {medicalCase.PatientId} 不存在，请先同步患者数据 (ERR-70301)"
+                };
+
+            // 引用完整性预检查: 处方药材必须存在
+            if (medicalCase.Prescription?.Items != null && medicalCase.Prescription.Items.Any())
+            {
+                var herbIds = medicalCase.Prescription.Items
+                    .Select(i => i.HerbId)
+                    .Distinct()
+                    .ToList();
+                foreach (var herbId in herbIds)
+                {
+                    var herb = await _syncRepository.FindHerbAsync(herbId);
+                    if (herb == null)
+                        return new SyncUploadItemResult
+                        {
+                            EntityId = medicalCase.Id,
+                            Success = false,
+                            ErrorMessage = $"药材 {herbId} 不存在，请先同步药材数据 (ERR-70302)"
+                        };
+                }
+            }
+
             var existing = await _syncRepository.FindMedicalCaseWithIncludesAsync(medicalCase.Id);
             if (existing != null)
             {
+                // ERR-70304: 已完成的锁定医案不可覆盖
+                if (existing.IsLocked)
+                    return new SyncUploadItemResult
+                    {
+                        EntityId = medicalCase.Id,
+                        Success = false,
+                        ErrorMessage = "医案已完成且已锁定，无法通过同步覆盖 (ERR-70304)"
+                    };
+
                 if (!overwriteConflicts)
                     return new SyncUploadItemResult { EntityId = medicalCase.Id, Success = false, IsConflict = true, ErrorMessage = "Server already has this data" };
                 _syncRepository.UpdateMedicalCaseValues(existing, medicalCase);

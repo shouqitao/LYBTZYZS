@@ -5,6 +5,7 @@ using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Sync.Interfaces;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -33,6 +34,7 @@ internal class SyncRepository : BaseRepository<Herb>, ISyncRepository
             .Include(mc => mc.Consultation)
             .Include(mc => mc.Prescription)
                 .ThenInclude(p => p!.Items)
+            .Where(mc => mc.CaseStatus == MedicalCaseStatus.Completed)
             .IgnoreQueryFilters()
             .AsNoTracking()
             .ToListAsync(ct);

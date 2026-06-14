@@ -7,6 +7,7 @@ using LYBT.Entities.Herbs;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Patients;
 using LYBT.Shared.Models.Contracts.Sync;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using LYBT.Desktop.LocalData.Helpers;
 using LYBT.Shared.Configuration.Options.Client;
@@ -385,6 +386,7 @@ public class SyncService : ISyncService
             .Include(mc => mc.Consultation)
             .Include(mc => mc.Prescription)
                 .ThenInclude(p => p.Items)
+            .Where(mc => mc.CaseStatus == MedicalCaseStatus.Completed)
             .IgnoreQueryFilters()
             .AsNoTracking()
             .Select(mc => new LocalMetadata

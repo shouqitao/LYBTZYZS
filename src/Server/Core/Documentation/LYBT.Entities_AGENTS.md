@@ -6,9 +6,9 @@
 
 ```
 LYBT.Entities/
-├── Attributes/          # Custom attributes
-├── Auth/                # AdminSecret, AuthSession
-├── Common/              # BaseEntity, enums (CommonStatus, UserRole, etc.)
+├── Attributes/          # Custom attributes ([SensitiveData], etc.)
+├── Auth/                # AuthSessionModel, AutoLoginToken, RefreshToken, SecurityAuditLog
+├── Common/              # BaseEntity, IAuditableEntity, ISoftDeletable, SystemLog (enums live in Shared.Models/Enums/)
 ├── Consultations/       # ConsultationModel
 ├── Formulas/            # FormulaModel, FormulaHerbItem
 ├── Herbs/               # HerbModel
