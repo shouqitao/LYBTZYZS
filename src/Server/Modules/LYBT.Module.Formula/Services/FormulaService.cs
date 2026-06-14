@@ -163,6 +163,20 @@ namespace LYBT.Module.Formulas.Services
             }
 
             var result = await _repository.UpdateAsync(entity);
+
+            // FLAW-F1 FIX: 药材更新后重新评估 ValidationStatus
+            if (result.ValidationStatus == FormulaValidationStatus.Validated)
+            {
+                var allValidated = result.Herbs.All(h => h.IsValidated);
+                if (!allValidated)
+                {
+                    result.ValidationStatus = FormulaValidationStatus.Draft;
+                    result.UpdatedAt = DateTime.UtcNow;
+                    await _repository.UpdateAsync(result);
+                    _logger.LogInformation("[SVC] Formula.Update → ValidationStatusReset - FormulaId={FormulaId} (未验证药材存在)", id);
+                }
+            }
+
             await _cacheInvalidation.InvalidateAsync("formulas");
             var resultDto = _mapper.ToDetailDto(result);
             return Result<FormulaDetailDto>.Success(resultDto);
@@ -313,7 +327,7 @@ namespace LYBT.Module.Formulas.Services
         /// <summary>
         /// 恢复软删除的验方
         /// </summary>
-        public async Task<Result<FormulaDetailDto>> RestoreAsync(Guid id)
+        public async Task<Result<FormulaDetailDto>> RestoreAsync(Guid id, Guid operatorId = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             // 使用GetByIdIncludingDeletedAsync获取包括已删除的实体
@@ -326,6 +340,13 @@ namespace LYBT.Module.Formulas.Services
             if (!entity.IsDeleted)
             {
                 return Result<FormulaDetailDto>.Failure(GenericErrorCode.InvalidRequest, "该验方未被删除，无需恢复");
+            }
+
+            // FLAW FIX: 所有权检查 — 仅创建者或 Admin 可恢复
+            if (operatorId != default && entity.UserId != operatorId)
+            {
+                _logger.LogWarning("[SVC] Formula.Restore → NoPermission - FormulaId={FormulaId} OperatorId={OperatorId} OwnerId={OwnerId}", id, operatorId, entity.UserId);
+                return Result<FormulaDetailDto>.Failure(GenericErrorCode.Forbidden, "无权恢复他人验方");
             }
 
             // 恢复软删除

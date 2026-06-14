@@ -84,7 +84,7 @@ namespace LYBT.Module.Formulas.Interfaces
         /// 恢复软删除的验方
         /// </summary>
         /// <param name="id">验方ID</param>
-        Task<Result<FormulaDetailDto>> RestoreAsync(Guid id);
+        Task<Result<FormulaDetailDto>> RestoreAsync(Guid id, Guid operatorId = default);
 
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 

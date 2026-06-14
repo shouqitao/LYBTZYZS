@@ -195,16 +195,19 @@ public class CrossModuleService :
         if (idList.Count == 0) return new HashSet<Guid>();
 
         // AD-02: 逐个查询避免 EF Core 8 OPENJSON WITH 语法在低版本 SQL Server 上的兼容性问题
+        // FLAW-C2 FIX: 软删除药材也视为不可用，需过滤
         var disabledIds = new HashSet<Guid>();
         foreach (var herbId in idList)
         {
             var herb = await _context.Herbs
                 .AsNoTracking()
-                .Where(h => h.Id == herbId && !h.IsDeleted)
-                .Select(h => new { h.Id, h.Status })
+                .IgnoreQueryFilters()
+                .Where(h => h.Id == herbId)
+                .Select(h => new { h.Id, h.Status, h.IsDeleted })
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (herb != null && herb.Status == Shared.Models.Enums.CommonStatus.Disabled)
+            // 软删除或已禁用的药材都加入不可用集合
+            if (herb != null && (herb.IsDeleted || herb.Status == Shared.Models.Enums.CommonStatus.Disabled))
             {
                 disabledIds.Add(herb.Id);
             }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -31,6 +32,24 @@ namespace LYBT.LocalWebAPI.Controllers
             _db = db;
         }
 
+        private Guid GetCurrentUserId()
+            => Guid.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : Guid.Empty;
+
+        private bool IsAdminOrHigher()
+        {
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            return role == UserRole.Admin.ToString() || role == UserRole.SuperAdmin.ToString();
+        }
+
+        private bool IsDoctorOrHigher()
+        {
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            return role == UserRole.Doctor.ToString() || role == UserRole.Admin.ToString() || role == UserRole.SuperAdmin.ToString();
+        }
+
+        private Guid? GetDoctorFilter()
+            => IsAdminOrHigher() ? null : GetCurrentUserId();
+
         // GET /api/medicalcases?status=&patientId=&page=&pageSize=&includeAllDoctors=&keyword=
         [HttpGet]
         public async Task<ActionResult<PagedResult<MedicalCaseListDto>>> GetMedicalCases(
@@ -50,6 +69,11 @@ namespace LYBT.LocalWebAPI.Controllers
                 .Include(m => m.Prescription)
                 .AsNoTracking()
                 .Where(m => !m.IsDeleted);
+
+            // S6 FIX: 非管理员仅可见自己的医案 (includeAllDoctors 仅管理员可用)
+            var doctorFilter = includeAllDoctors && IsAdminOrHigher() ? null : GetDoctorFilter();
+            if (doctorFilter.HasValue)
+                q = q.Where(m => m.UserId == doctorFilter.Value);
 
             if (status.HasValue)
                 q = q.Where(m => m.CaseStatus == status.Value);
@@ -89,6 +113,7 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateMedicalCase([FromBody] MedicalCase mc)
         {
+            if (!IsDoctorOrHigher()) return Forbid("仅医生和管理员可创建医案");
             if (!ModelState.IsValid) return BadRequest(ModelState);
             _db.MedicalCases.Add(mc);
             await _db.SaveChangesAsync();
@@ -99,6 +124,7 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMedicalCase(Guid id)
         {
+            if (!IsDoctorOrHigher()) return Forbid("仅医生和管理员可操作");
             var existing = await _db.MedicalCases.FindAsync(id);
             if (existing == null || existing.IsDeleted) return NotFound();
             existing.IsDeleted = true;
@@ -290,6 +316,7 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPut("{id}/close")]
         public async Task<IActionResult> CloseCase(Guid id)
         {
+            if (!IsDoctorOrHigher()) return Forbid("仅医生和管理员可操作");
             var mc = await _db.MedicalCases
                         .Include(m => m.Consultation)
                         .Include(m => m.Prescription)
@@ -318,6 +345,7 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPut("{id}/suspend")]
         public async Task<IActionResult> SuspendCase(Guid id, [FromBody] ConsultationInputDto? request = null)
         {
+            if (!IsDoctorOrHigher()) return Forbid("仅医生和管理员可操作");
             var mc = await _db.MedicalCases
                         .Include(m => m.Consultation)
                         .Include(m => m.Prescription)
@@ -333,6 +361,7 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPut("{id}/cancel")]
         public async Task<IActionResult> CancelCase(Guid id, [FromBody] CancelMedicalCaseRequestDto? request = null)
         {
+            if (!IsDoctorOrHigher()) return Forbid("仅医生和管理员可操作");
             var mc = await _db.MedicalCases.FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
             if (mc == null) return NotFound();
 
@@ -369,6 +398,7 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPut("{id}/status")]
         public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] MedicalCaseStatusInputDto request)
         {
+            if (!IsDoctorOrHigher()) return Forbid("仅医生和管理员可操作");
             var mc = await _db.MedicalCases.FindAsync(id);
             if (mc == null || mc.IsDeleted) return NotFound();
 
@@ -386,6 +416,7 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPut("{id}/print-completed")]
         public async Task<IActionResult> RecordPrintCompleted(Guid id, [FromBody] PrintCompletedRequest request)
         {
+            if (!IsDoctorOrHigher()) return Forbid("仅医生和管理员可操作");
             var mc = await _db.MedicalCases.FindAsync(id);
             if (mc == null || mc.IsDeleted) return NotFound();
             mc.PrintCount++;
@@ -400,6 +431,7 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> SaveAsync(Guid id, [FromBody] MedicalCaseInputDto request)
         {
+            if (!IsDoctorOrHigher()) return Forbid("仅医生和管理员可操作");
             if (!ModelState.IsValid) return BadRequest(ModelState);
             if (request.Id != id) return BadRequest("请求ID与路由ID不一致");
 
@@ -494,6 +526,7 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpPost("batch-delete")]
         public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto request)
         {
+            if (!IsDoctorOrHigher()) return Forbid("仅医生和管理员可操作");
             if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("ID list cannot be empty.");
             var items = await _db.MedicalCases
                 .Where(m => request.Ids.Contains(m.Id) && !m.IsDeleted)

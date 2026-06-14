@@ -269,7 +269,8 @@ namespace LYBT.WebAPI.Controllers
             // 注: Restore不能使用GetEntityWithOwnershipCheckAsync，因为GetByIdAsync
             // 受全局软删除过滤器影响无法找到已删除记录。
             // RestoreAsync内部使用GetByIdIncludingDeletedAsync绕过过滤器。
-            var result = await _service.RestoreAsync(id);
+            var (operatorId, _, _) = GetOperator();
+            var result = await _service.RestoreAsync(id, operatorId);
             if (!result.IsSuccess || result.Data == null)
             {
                 return HandleResult<FormulaDetailDto>(result);
