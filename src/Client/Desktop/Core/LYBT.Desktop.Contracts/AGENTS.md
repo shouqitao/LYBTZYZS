@@ -7,15 +7,24 @@
 ```
 LYBT.Desktop.Contracts/
 ├── Services/          # 31 service interface definitions
-├── Api/               # Refit IApiClient interfaces
-└── Repositories/      # IRepository<T> contracts
+├── Api/               # 15 entity-specific Refit interfaces (IAuthApi, IPatientApi, etc.)
+├── ApiClient/         # IApiClient.cs and HTTP client infrastructure
+├── Repositories/      # IRepository<T> contracts
+├── CommandHandlers/   # Command handler interfaces
+├── Events/            # Event definitions
+├── Initialization/    # Initialization interfaces
+├── Models/            # Contract models
+├── Performance/       # Performance monitoring interfaces
+├── Roles/             # Role definitions
+└── Security/          # Security contracts
 ```
 
 ## WHERE TO LOOK
 
 | Task | Location | Notes |
 |------|----------|-------|
-| API interfaces | `Api/IApiClient.cs` | Refit HTTP API contracts |
+| API interfaces | `ApiClient/IApiClient.cs` | Unified HTTP API client |
+| Entity APIs | `Api/` | 15 Refit interfaces (IAuthApi, IPatientApi, etc.) |
 | Service contracts | `Services/` | 31 service interface definitions |
 | Repository contracts | `Repositories/` | Generic repository interfaces |
 
