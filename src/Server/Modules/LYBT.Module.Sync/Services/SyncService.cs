@@ -8,6 +8,7 @@ using LYBT.Module.Sync.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Sync;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Primitives.ErrorCodes;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Sync.Services;
@@ -484,7 +485,8 @@ public class SyncService : ISyncService
                 {
                     EntityId = medicalCase.Id,
                     Success = false,
-                    ErrorMessage = "仅已完成的医案可同步 (SYNC-D01)"
+                    ErrorMessage = "仅已完成的医案可同步 (SYNC-D01)",
+                    Code = ErrorCode.SyncFailed
                 };
 
             // 引用完整性预检查: 患者必须存在
@@ -494,7 +496,8 @@ public class SyncService : ISyncService
                 {
                     EntityId = medicalCase.Id,
                     Success = false,
-                    ErrorMessage = $"患者 {medicalCase.PatientId} 不存在，请先同步患者数据 (ERR-70301)"
+                    ErrorMessage = $"患者 {medicalCase.PatientId} 不存在，请先同步患者数据 (ERR-70301)",
+                    Code = ErrorCode.SyncPatientNotFound
                 };
 
             // 引用完整性预检查: 处方药材必须存在
@@ -512,7 +515,8 @@ public class SyncService : ISyncService
                         {
                             EntityId = medicalCase.Id,
                             Success = false,
-                            ErrorMessage = $"药材 {herbId} 不存在，请先同步药材数据 (ERR-70302)"
+                            ErrorMessage = $"药材 {herbId} 不存在，请先同步药材数据 (ERR-70302)",
+                            Code = ErrorCode.SyncHerbNotFound
                         };
                 }
             }
@@ -529,7 +533,8 @@ public class SyncService : ISyncService
                     {
                         EntityId = medicalCase.Id,
                         Success = false,
-                        ErrorMessage = "医案已完成且已锁定，无法通过同步覆盖 (ERR-70304)"
+                        ErrorMessage = "医案已完成且已锁定，无法通过同步覆盖 (ERR-70304)",
+                        Code = ErrorCode.SyncCaseLocked
                     };
 
                 if (!overwriteConflicts)

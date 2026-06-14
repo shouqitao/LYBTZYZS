@@ -1,3 +1,5 @@
+using LYBT.Shared.Primitives.ErrorCodes;
+
 namespace LYBT.Shared.Models.Contracts.Sync;
 
 /// <summary>
@@ -19,6 +21,11 @@ public class SyncUploadItemResult
     /// 错误信息（失败时）
     /// </summary>
     public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// 结构化错误码（失败时，客户端可据此做特定处理）
+    /// </summary>
+    public ErrorCode? Code { get; set; }
 
     /// <summary>
     /// 是否为冲突
