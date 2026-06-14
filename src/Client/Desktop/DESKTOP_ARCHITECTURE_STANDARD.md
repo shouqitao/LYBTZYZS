@@ -1905,7 +1905,6 @@ private async Task ImportDataAsync()
 - `docs/architecture/client/unified-design-standard.md` - Client 端统一设计标准
 - `docs/development/standards.md` - 开发标准
 - `docs/development/minimal-practice.md` - Issue 驱动工作法
-- `docs/reports/desktop-deep-analysis-2025-10-12.md` - Desktop 深度分析报告
 
 ### B. 相关 ADR
 

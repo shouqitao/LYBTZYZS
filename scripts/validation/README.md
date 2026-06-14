@@ -1,4 +1,4 @@
-﻿# P3 Record-Only Smoke Validation Scripts
+# P3 Record-Only Smoke Validation Scripts
 
 ## 概述
 
@@ -162,6 +162,4 @@ scripts/validation/
 
 ## 联系信息
 
-- 验证计划: `_reports/2025-09/validation/smoke-plan.md`
-- UI检查清单: `_reports/2025-09/validation/ui-smoke-checklist.md`
 - 脚本问题反馈: 请查看相应的日志文件

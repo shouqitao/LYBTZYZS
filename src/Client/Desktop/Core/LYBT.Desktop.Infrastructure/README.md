@@ -799,7 +799,4 @@ public record DisplayOptions(
 
 ### 详细设计文档
 
-完整的架构设计和任务分解见 OpenSpec:
-- `openspec/changes/unify-control-data-binding/proposal.md` - 完整提案
-- `openspec/changes/unify-control-data-binding/design.md` - 详细设计
-- `openspec/changes/unify-control-data-binding/tasks.md` - 任务分解
+完整的数据绑定模式见本目录的 ViewModel 和 ViewState 实现。

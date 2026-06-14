@@ -143,7 +143,6 @@ tests/                               # 测试 (4 个项目, Testing Trophy 架�
     LYBT.Tests.Architecture/         # 架构防护测试 (76 tests, 含 AntiMockRules)
     LYBT.Tests.Integration/          # 集成测试 (Desktop+Server, WebApplicationFactory)
 docs/                                # 文档
-openspec/                            # OpenSpec 规范 (将废弃)
 ```
 
 **项目总数**: 约 40+ 个项目

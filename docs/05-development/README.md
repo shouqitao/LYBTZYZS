@@ -81,12 +81,10 @@ dotnet test tests/LYBT.Tests.Architecture/
 | 文档 | 内容 |
 |------|------|
 | [环境搭建](01-setup.md) | 详细环境配置步骤 |
-| [开发工作流](02-workflow.md) | 日常工作流、分支策略 |
 | [编码规范](03-code-standards.md) | 命名、模式、规范 |
 | [设计模式](04-patterns.md) | Repository/Service/ViewModel 速查 |
 | [测试指南](05-testing.md) | 测试策略、项目结构、编写规范 |
 | [密码安全管理](06-security-password-management.md) | 密码策略与安全规范 |
-| [OpenSpec 追踪指南](07-openspec-tracking-guide.md) | OpenSpec 变更追踪 |
 | [配置迁移指南](08-configuration-migration-guide.md) | 配置文件迁移说明 |
 | [性能基线](09-performance-baseline.md) | 性能指标与基线 |
 | [UAT 测试计划](10-uat-test-plan.md) | 用户验收测试计划 |

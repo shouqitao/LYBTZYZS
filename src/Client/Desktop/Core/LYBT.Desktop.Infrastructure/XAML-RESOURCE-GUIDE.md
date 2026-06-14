@@ -175,4 +175,3 @@ System.Windows.Data Error: Cannot find element named 'Root'
 ## 参考
 
 - `Infrastructure/CLAUDE.md` - XAML资源加载顺序规则
-- `openspec/changes/cleanup-control-resource-merging/` - 资源清理提案
