@@ -14,6 +14,7 @@ LYBT.Desktop.Formula/
 ├── Repositories/        # FormulaRepository (DataSource abstraction)
 ├── Services/            # FormulaService, FormulaSearchProvider, FormulaValidator
 ├── ViewModels/          # FormulaMasterDetailViewModel, FormulaHerbItemViewModel
+├── Views/               # FormulaMasterDetailView XAML views
 └── FormulaModule.cs     # Prism IModule registration
 ```
 

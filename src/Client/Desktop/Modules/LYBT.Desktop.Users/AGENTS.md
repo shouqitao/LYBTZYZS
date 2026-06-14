@@ -6,16 +6,17 @@
 
 ```
 LYBT.Desktop.Users/
-├── CommandHandlers/     # IUserCommandHandler (dead code, not registered)
 ├── Controls/            # UserMasterDetailControl, UserEditControl, UserViewControl
 ├── Interfaces/          # IUserRepository, IUserService
 ├── Mappers/             # UserMapper (Mapperly)
 ├── Models/              # UserDetailModel, UserItem
-├── Repositories/        # UserRepository (DataSource + optional IUserApi)
+├── Repositories/        # UserRepository
+├── Services/            # User services
 ├── ViewModels/
 │   ├── Components/      # UserService (CRUD operations)
 │   ├── Handlers/        # IUserPasswordHandler, IUserStatusHandler, IUserImportExportHandler
 │   └── UserMasterDetailViewModel.cs
+├── Views/               # UserMasterDetailView XAML views
 └── UsersModule.cs       # Prism IModule registration
 ```
 

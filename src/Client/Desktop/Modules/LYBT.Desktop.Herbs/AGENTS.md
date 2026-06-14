@@ -13,6 +13,7 @@ LYBT.Desktop.Herbs/
 ├── Repositories/        # HerbRepository (DataSource abstraction)
 ├── Services/            # HerbSearchProvider
 ├── ViewModels/          # HerbMasterDetailViewModel
+├── Views/               # HerbMasterDetailView XAML views
 └── HerbsModule.cs       # Prism IModule registration
 ```
 

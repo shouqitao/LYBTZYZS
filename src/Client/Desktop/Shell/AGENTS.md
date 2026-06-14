@@ -9,9 +9,17 @@ Shell/
 ├── App.xaml.cs              # PrismApplication, OnStartup pipeline
 ├── Views/
 │   ├── MainWindow.xaml      # Shell main window with regions
-│   └── SplashScreenWindow   # Startup splash screen
+│   ├── SplashScreenWindow   # Startup splash screen
+│   └── AccountSettingsView  # Account settings dialog
+├── ViewModels/              # MainWindowViewModel, account settings VMs
 ├── Services/
 │   └── Startup/Steps/       # StartupPipeline steps
+├── Controls/                # Shell-level custom controls
+├── Dialogs/                 # Dialog windows
+├── Models/                  # Shell-level models
+├── Resources/               # XAML resources
+├── Styles/                  # Style dictionaries
+├── Assets/                  # Images, icons
 └── Extensions/              # DI registration extensions
 ```
 

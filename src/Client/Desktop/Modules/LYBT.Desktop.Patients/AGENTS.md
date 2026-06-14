@@ -6,14 +6,13 @@
 
 ```
 LYBT.Desktop.Patients/
-├── CommandHandlers/     # IPatientCommandHandler (dead code, not registered)
 ├── Controls/            # PatientMasterDetailControl, PatientEditControl, PatientSelectionControl, PatientViewControl
 ├── Interfaces/          # IPatientRepository, IPatientSearchCache, IPatientService
-├── Mappers/             # PatientMapper (Mapperly)
 ├── Models/              # PatientDetailModel, PatientItem, PatientViewState, Display models
-├── Repositories/        # PatientRepository (DataSource abstraction)
+├── Repositories/        # PatientRepository
 ├── Services/            # PatientService, PatientSearchCache, PatientImportExecutor, PendingQueueManager, etc.
 ├── ViewModels/          # PatientMasterDetailViewModel, Components/ (Validator, Coordinator)
+├── Views/               # PatientMasterDetailView XAML views
 └── PatientsModule.cs    # Prism IModule registration
 ```
 
@@ -37,6 +36,5 @@ LYBT.Desktop.Patients/
 
 ## ANTI-PATTERNS
 
-- **IPatientCommandHandler dead code** — Not registered in DI, actual business via PatientService
 - **PatientViewState dead code** — Defined but no runtime consumers
 - **Cross-module references** — MUST NOT reference other Desktop modules directly

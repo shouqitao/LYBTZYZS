@@ -26,7 +26,7 @@ Identity card reader hardware integration module for the TCM clinic desktop appl
 | `Abstractions/` | Interface definitions (ICardReader, ICardReaderFactory) |
 | `Adapters/` | Vendor-specific reader implementations (HuaDa HD100, Mock) |
 | `Models/` | Data transfer objects (CardReadResult) |
-| `Native/` | Native DLL files (HDstdapi.dll etc.) copied to output at build |
+| `Native/` | P/Invoke wrapper (`HuaDaNativeMethods.cs`); native DLLs resolved at runtime, not checked in |
 | `Services/` | Service layer (CardReaderFactory, CardReaderService) |
 | `Integration/` | Cross-module integration interfaces for Patient module |
 

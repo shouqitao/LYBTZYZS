@@ -6,10 +6,28 @@
 
 ```
 LYBT.Desktop.Infrastructure/
-├── Controls/          # 42 custom WPF controls (largest subdir)
+├── Controls/          # ~20 custom WPF controls (42 files incl. code-behind pairs)
 ├── Converters/        # 22 IValueConverter implementations
-├── Services/          # 21 WPF service implementations
+├── Services/          # 23 WPF service implementations (+ Interfaces/, Notifications/, Toast/)
 ├── Themes/            # 15 theme resource dictionaries
+├── ViewModels/        # MasterDetailViewModelBase, NavigableViewModelBase and derivatives
+├── Views/             # Infrastructure-level views
+├── Navigation/        # NavigationCoordinator, region management
+├── Security/          # Security-related WPF services
+├── Repositories/      # WPF-side repository implementations
+├── Http/              # HTTP infrastructure services
+├── DependencyInjection/ # DI registration extensions
+├── Bootstrapping/     # Application bootstrap helpers
+├── Commands/          # Custom WPF commands
+├── Constants/         # Shared constants
+├── Events/            # Event definitions
+├── Helpers/           # Utility helpers
+├── Interfaces/        # Infrastructure-level interfaces
+├── Logging/           # Logging integration
+├── Models/            # Infrastructure-level models
+├── Performance/       # Performance monitoring
+├── Roles/             # Role-related infrastructure
+├── Windows/           # Custom window implementations
 ├── Extensions/        # Task, Configuration extension methods
 ├── Configuration/     # Configuration helpers
 └── Behaviors/         # Attached behaviors

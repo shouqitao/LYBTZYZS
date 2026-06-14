@@ -6,10 +6,16 @@
 
 ```
 LYBT.Desktop.MedicalCase/
+├── Controls/            # Custom controls (prescription grid, herb selector, etc.)
+├── Dialogs/             # Dialog windows (confirm, reason input, etc.)
+├── Extensions/          # PrescriptionImportExtensions
+├── Interfaces/          # Module-level interfaces
+├── Mappers/             # Entity-to-model mappers
+├── Models/              # Module-specific models
+├── Repositories/        # MedicalCase repository
+├── Services/            # Module-specific services
 ├── ViewModels/          # MedicalCase, Consultation, Prescription ViewModels
 ├── Views/               # XAML views for medical case UI
-├── Services/            # Module-specific services
-├── Extensions/          # PrescriptionImportExtensions
 └── MedicalCaseModule.cs # Prism IModule registration
 ```
 
