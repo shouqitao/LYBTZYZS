@@ -1,64 +1,60 @@
-using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Web;
+using LYBT.LocalWebAPI.Auth;
+using LYBT.Module.Auth.Interfaces;
+using LYBT.Shared.Models.Contracts.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using LYBT.LocalWebAPI.Data;
-using LYBT.LocalWebAPI.Auth;
-using LYBT.Shared.Utilities.Security;
+using LYBT.Infrastructure.Data;
 using System.Security.Claims;
-using LYBT.Entities.Users;
-using LYBT.Shared.Models.Enums;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using LYBT.Shared.Models.Contracts.Auth;
 
 namespace LYBT.LocalWebAPI.Controllers;
 
 /// <summary>
-/// Local authentication controller: login, logout, refresh, validate, auto-login endpoints.
+/// Local authentication controller: uses IAuthService for credential verification
+/// + LocalJwtConfig for simplified local JWT generation (1-year token, no refresh).
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController : BaseApiController
 {
+    private readonly IAuthService _authService;
+    private readonly IAutoLoginService _autoLoginService;
     private readonly AppDbContext _db;
 
-    public AuthController(AppDbContext db)
+    public AuthController(
+        IAuthService authService,
+        IAutoLoginService autoLoginService,
+        AppDbContext db,
+        ILogger<AuthController> logger) : base(logger)
     {
+        _authService = authService;
+        _autoLoginService = autoLoginService;
         _db = db;
     }
+
+    private Guid GetCurrentUserId()
+        => Guid.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : Guid.Empty;
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Password))
-        {
             return Unauthorized();
-        }
 
-        var user = await _db.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.UserName == request.UserName && !u.IsDeleted);
+        // Use Service layer for credential verification (password, status, lockout)
+        var verifyResult = await _authService.VerifyCredentialsAsync(request);
+        if (!verifyResult.IsSuccess)
+            return Unauthorized(new { Message = verifyResult.ErrorMessage });
 
+        // Load user for local JWT generation
+        var userId = Guid.Parse(verifyResult.Data!);
+        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null)
-        {
             return Unauthorized();
-        }
 
-        // S3 FIX: 检查用户状态 — 已禁用用户不可登录
-        if (user.Status != CommonStatus.Enabled)
-        {
-            return Unauthorized(new { Message = "账户已被禁用，请联系管理员" });
-        }
-
-        // Verify password using existing helper
-        if (!PasswordHelper.VerifyPassword(request.Password, user.PasswordHash).IsSuccess)
-        {
-            return Unauthorized();
-        }
-
-        // Generate JWT
+        // Generate local JWT (simplified: 1-year, no refresh token)
         var token = LocalJwtConfig.GenerateToken(user);
-
         return Ok(new
         {
             Token = token,
@@ -68,48 +64,28 @@ public class AuthController : ControllerBase
         });
     }
 
-    /// <summary>
-    /// 登出 — 清除本地会话（本地模式下 token 无状态，返回成功即可）
-    /// </summary>
     [HttpPost("logout")]
     public IActionResult Logout([FromBody] LogoutRequest request)
     {
-        // Local JWT is stateless; client should discard the token.
         return Ok(new { Success = true, Message = "已登出" });
     }
 
-    /// <summary>
-    /// 刷新 JWT token — 本地模式下用当前 token 换取新 token
-    /// </summary>
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
     {
-        // Extract user id from current token claims
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                          ?? User.FindFirst("sub")?.Value;
-
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-        {
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty)
             return Unauthorized(new { Message = "Token 无效或已过期" });
-        }
 
-        var user = await _db.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
-
+        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
         if (user == null)
-        {
             return Unauthorized(new { Message = "用户不存在" });
-        }
 
-        // FIX: 禁用用户不可刷新 token
-        if (user.Status != CommonStatus.Enabled)
-        {
+        // Check user status
+        if (user.Status != LYBT.Shared.Models.Enums.CommonStatus.Enabled)
             return Unauthorized(new { Message = "账户已被禁用" });
-        }
 
         var newToken = LocalJwtConfig.GenerateToken(user);
-
         return Ok(new
         {
             Token = newToken,
@@ -119,34 +95,19 @@ public class AuthController : ControllerBase
         });
     }
 
-    /// <summary>
-    /// 验证当前 token 有效性
-    /// </summary>
     [HttpGet("validate")]
     public async Task<IActionResult> ValidateToken()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                          ?? User.FindFirst("sub")?.Value;
-
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-        {
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty)
             return Ok(new { IsValid = false, Message = "Token 无效" });
-        }
 
-        var user = await _db.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
-
+        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
         if (user == null)
-        {
-            return Ok(new { IsValid = false, Message = "用户不存在或已禁用" });
-        }
+            return Ok(new { IsValid = false, Message = "用户不存在" });
 
-        // FIX: 检查用户状态
-        if (user.Status != CommonStatus.Enabled)
-        {
+        if (user.Status != LYBT.Shared.Models.Enums.CommonStatus.Enabled)
             return Ok(new { IsValid = false, Message = "账户已被禁用" });
-        }
 
         return Ok(new
         {
@@ -157,55 +118,31 @@ public class AuthController : ControllerBase
         });
     }
 
-    /// <summary>
-    /// 自动登录 — 验证 AutoLoginToken 后签发 token
-    /// </summary>
     [HttpPost("auto-login")]
     public async Task<IActionResult> AutoLogin([FromBody] AutoLoginRequest request)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.UserName)
             || string.IsNullOrWhiteSpace(request.AutoLoginToken))
-        {
             return Unauthorized();
-        }
 
-        var user = await _db.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.UserName == request.UserName && !u.IsDeleted);
+        // Use Service layer for auto-login (credential verification + status check)
+        var loginResult = await _authService.LoginWithAutoTokenAsync(request);
+        if (!loginResult.IsSuccess || loginResult.Data == null)
+            return Unauthorized(new { Message = loginResult.ErrorMessage ?? "自动登录失败" });
 
+        // Replace remote JWT with local simplified JWT
+        var loginData = loginResult.Data;
+        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == loginData.User.Id);
         if (user == null)
-        {
             return Unauthorized();
-        }
 
-        // S1 FIX: 检查用户状态
-        if (user.Status != CommonStatus.Enabled)
-        {
-            return Unauthorized(new { Message = "账户已被禁用" });
-        }
-
-        // S1 FIX: 验证 AutoLoginToken — 不再仅凭用户名登录
-            var tokenValid = await _db.AutoLoginTokens
-            .AsNoTracking()
-            .AnyAsync(t => t.UserId == user.Id
-                && t.Token == request.AutoLoginToken
-                && !t.IsRevoked
-                && t.ExpiresAt > System.DateTime.UtcNow);
-
-        if (!tokenValid)
-        {
-            return Unauthorized(new { Message = "自动登录令牌无效或已过期" });
-        }
-
-        var token = LocalJwtConfig.GenerateToken(user);
-
+        var localToken = LocalJwtConfig.GenerateToken(user);
         return Ok(new
         {
-            Token = token,
+            Token = localToken,
             UserId = user.Id,
             Username = user.UserName,
             Role = user.Role
         });
     }
-
 }
