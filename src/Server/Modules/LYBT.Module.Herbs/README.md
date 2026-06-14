@@ -55,7 +55,7 @@ LYBT.Module.Herbs/
 
 ## 设计依据
 
-- Record-Only 模式只管理药材档案信息，不涉及库存管理，符合小型诊所 MVP 定位
+- Record-Only 模式只管理药材档案信息，不涉及库存管理，符合小型诊所定位
 - 拼音首字母检索 (PinyinAbbreviation) 适配中医处方开具时的快速药材选择场景
 - FluentValidation 在 Service 层做输入验证，BaseService 泛型基类复用错误处理逻辑
 - 作为被引用最多的基础数据模块，通过 IHerbCrossModuleService 向 Formula/MedicalCase 暴露只读查询

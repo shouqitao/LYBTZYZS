@@ -375,7 +375,7 @@ END
 IF NOT EXISTS (SELECT 1 FROM SystemConfigurations WHERE ConfigKey = 'System.Version')
 BEGIN
     INSERT INTO SystemConfigurations (ConfigKey, ConfigValue, Description)
-    VALUES ('System.Version', 'v1.0.0-mvp', '系统版本号');
+    VALUES ('System.Version', 'v1.0.0', '系统版本号');
 END
 
 IF NOT EXISTS (SELECT 1 FROM SystemConfigurations WHERE ConfigKey = 'Prescription.PrintFormat')
@@ -450,7 +450,7 @@ INSERT INTO AuditLogs (
     UserId, UserName, Action, EntityType, EntityId, 
     IpAddress, Timestamp, Result
 ) VALUES (
-    NULL, 'System', 'Database.Initialize', 'System', 'MVP_v1.1.0_test_alignment',
+    NULL, 'System', 'Database.Initialize', 'System', 'v1.1.0_test_alignment',
     '127.0.0.1', GETDATE(), 'Success'
 );
 

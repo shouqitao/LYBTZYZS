@@ -227,7 +227,7 @@ Contracts/
 │
 └── Users/
     ├── ChangePasswordDto.cs      # 修改密码 -- UserId/OldPassword/NewPassword/ConfirmPassword
-    ├── ChangeProfileDto.cs       # 修改个人资料 -- RealName/PhoneNumber (MVP 精简版)
+    ├── ChangeProfileDto.cs       # 修改个人资料 -- RealName/PhoneNumber
     ├── ResetPasswordRequestDto.cs # 管理员重置密码请求 -- MustChangeOnNextLogin (密码使用配置默认值)
     ├── ResetPasswordResponseDto.cs # 重置密码响应 -- Success/TemporaryPassword
     ├── UserBatchImportInputDto.cs  # 用户批量导入请求 -- UserInputDto 列表 + Strategy

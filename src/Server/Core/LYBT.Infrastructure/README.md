@@ -313,7 +313,7 @@ LYBT.Infrastructure/
 
 #### Data/Configurations/AuthSessionConfiguration.cs
 - **类**: `AuthSessionConfiguration` : `IEntityTypeConfiguration<AuthSession>`
-- **配置内容**: Status 枚举转 int; MVP 阶段移除多余索引
+- **配置内容**: Status 枚举转 int; 移除多余索引
 
 #### Data/Configurations/AutoLoginTokenConfiguration.cs
 - **类**: `AutoLoginTokenConfiguration` : `IEntityTypeConfiguration<AutoLoginToken>`

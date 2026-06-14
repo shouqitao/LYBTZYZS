@@ -62,7 +62,7 @@ LYBT.Module.Users/
 
 ## 设计依据
 
-- 传统三层架构，用户管理属于标准 CRUD 场景，遵循 MVP 适度设计原则
+- 传统三层架构，用户管理属于标准 CRUD 场景，遵循适度设计原则
 - Admin/Doctor 双角色体系适配中医诊所场景 (管理员 + 出诊医生)
 - ASP.NET Core Identity PasswordHasher 确保密码安全，避免自研哈希算法的风险
 - Create/Update DTO 分离，避免更新操作意外修改敏感字段 (如用户名、密码)
