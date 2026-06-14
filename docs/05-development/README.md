@@ -85,6 +85,7 @@ dotnet test tests/LYBT.Tests.Architecture/
 | [设计模式](04-patterns.md) | Repository/Service/ViewModel 速查 |
 | [测试指南](05-testing.md) | 测试策略、项目结构、编写规范 |
 | [测试编写规范](12-testing-standards.md) | 命名、断言、分层规范 |
+| [根目录文件约定](13-root-files-convention.md) | 配置文件用途和目录结构 |
 | [密码安全管理](06-security-password-management.md) | 密码策略与安全规范 |
 | [配置迁移指南](08-configuration-migration-guide.md) | 配置文件迁移说明 |
 | [性能基线](09-performance-baseline.md) | 性能指标与基线 |
