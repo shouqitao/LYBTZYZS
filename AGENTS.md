@@ -195,7 +195,7 @@ Specific fix or improvement
 - **无注释**: 除非用户要求，不添加代码注释
 - **无 Emoji**: 代码中不使用 Emoji
 - **跨模块禁止**: Server 模块间、Desktop 模块间禁止直接引用
-- **详细规范**: 见 `docs/05-development/13-root-files-convention.md` 和 `.editorconfig`
+- **详细规范**: 见 `.editorconfig`
 - **Role-based module loading** — Desktop loads modules dynamically based on user role
 - **StartupPipeline pattern** — Desktop uses step-based startup (ErrorHandling → ModuleCoordinator → CoreServices → ApiHealthCheck → Warmup)
 - **CQRS for MedicalCase** — Server MedicalCase module uses CommandHandler pattern, not traditional 3-layer
