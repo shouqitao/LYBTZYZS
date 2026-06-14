@@ -1,321 +1,139 @@
-using LYBT.Infrastructure.Data;
-using System;
-using System.Linq;
+using System.Security.Claims;
+using LYBT.Infrastructure.Web;
+using LYBT.Module.Users.Interfaces;
+using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using LYBT.LocalWebAPI.Data;
-using LYBT.Entities.Users;
-using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Utilities.Security;
-using LYBT.Shared.Models.Enums; // for Role enum usage if needed
-using LYBT.Shared.Models.Contracts.Common;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-
-using LYBT.LocalWebAPI.Mappers;
 
 namespace LYBT.LocalWebAPI.Controllers;
 
-/// <summary>
-/// Minimal Users CRUD controller for LocalWebAPI.
-/// </summary>
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class UsersController : ControllerBase
+[Authorize]
+public class UsersController : BaseApiController
 {
-    private readonly AppDbContext _db;
+    private readonly IUserService _userService;
 
-    public UsersController(AppDbContext db)
+    public UsersController(IUserService userService, ILogger<UsersController> logger) : base(logger)
     {
-        _db = db;
-    }
-
-    private bool IsAdminOrHigher()
-    {
-        var role = User.FindFirst(ClaimTypes.Role)?.Value;
-        return role == UserRole.Admin.ToString() || role == UserRole.SuperAdmin.ToString();
+        _userService = userService;
     }
 
     private Guid GetCurrentUserId()
         => Guid.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : Guid.Empty;
 
-    private IActionResult ForbiddenIfNotAdmin()
-        => IsAdminOrHigher() ? null : StatusCode(403, new { Message = "仅管理员可执行此操作" });
+    private UserRole GetCurrentUserRole()
+        => Enum.TryParse<UserRole>(User.FindFirst(ClaimTypes.Role)?.Value, out var role) ? role : UserRole.Receptionist;
 
-    // GET /api/users
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<object>>> GetAll()
+    [HttpGet]
+    public async Task<IActionResult> GetAll([FromQuery] string? keyword = null)
     {
-        var users = await _db.Users
-            .AsNoTracking()
-            .Where(u => !u.IsDeleted)
-            .Select(u => new { Id = u.Id, Username = u.UserName, Role = u.Role })
-            .ToListAsync();
-        return Ok(users);
+        var result = await _userService.SearchAsync(keyword ?? "");
+        return HandleResult(result);
     }
 
-    // GET /api/users/{id}
-        [HttpGet("{id}")]
-        public async Task<ActionResult<object>> GetById([FromRoute] Guid id)
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(Guid id)
     {
-        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
-        if (user == null) return NotFound();
-        return Ok(new { Id = user.Id, Username = user.UserName, Role = user.Role, RealName = user.RealName, Status = user.Status });
+        var result = await _userService.GetByIdAsync(id);
+        return HandleResult(result);
     }
 
-    // POST /api/users
-        [HttpPost]
-        // Admin check is enforced at runtime (not purely by Roles attribute per instructions)
-        public async Task<IActionResult> Create([FromBody] UserCreateDto dto)
-    {
-        if (dto == null || string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
-            return BadRequest("Invalid user data.");
-
-        // S2 FIX: 管理员检查 (接受 Admin 或 SuperAdmin)
-        if (!IsAdminOrHigher())
-            return Forbid("仅管理员可创建用户");
-
-        // S2 FIX: 防止权限提升 — 非 SuperAdmin 不可创建 SuperAdmin
-        if (dto.Role == UserRole.SuperAdmin && User.FindFirst(ClaimTypes.Role)?.Value != UserRole.SuperAdmin.ToString())
-            return Forbid("无权创建超级管理员账户");
-
-        var exists = await _db.Users.AnyAsync(u => u.UserName == dto.Username && !u.IsDeleted);
-        if (exists) return Conflict("Username already exists.");
-
-        var user = new User
-        {
-            UserName = dto.Username,
-            RealName = string.IsNullOrWhiteSpace(dto.RealName) ? dto.Username : dto.RealName,
-            PasswordHash = PasswordHelper.HashPassword(dto.Password, dto.Role),
-            Role = dto.Role,
-            Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled
-        };
-
-        _db.Users.Add(user);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetById), new { id = user.Id }, new { Id = user.Id, Username = user.UserName, Role = user.Role });
-    }
-
-    // PUT /api/users/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UserUpdateDto dto)
-    {
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
-        if (user == null) return NotFound();
-
-        // S2 FIX: 管理员检查
-        if (!IsAdminOrHigher())
-            return Forbid("仅管理员可修改用户");
-
-        if (!string.IsNullOrWhiteSpace(dto.RealName)) user.RealName = dto.RealName;
-        if (!string.IsNullOrWhiteSpace(dto.Username)) user.UserName = dto.Username;
-        if (dto.Role != null) user.Role = dto.Role.Value;
-        await _db.SaveChangesAsync();
-        return NoContent();
-    }
-
-    // DELETE /api/users/{id} - Soft delete
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> SoftDelete([FromRoute] Guid id)
-    {
-        // S2 FIX: 管理员检查 + 自我保护
-        if (!IsAdminOrHigher())
-            return Forbid("仅管理员可删除用户");
-        if (GetCurrentUserId() == id)
-            return Forbid("不可删除自己");
-
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
-        if (user == null) return NotFound();
-        user.IsDeleted = true;
-        await _db.SaveChangesAsync();
-        return NoContent();
-    }
-
-    // PUT /api/users/{id}/change-password
-    [HttpPut("{id:guid}/change-password")]
-    public async Task<IActionResult> ChangePassword([FromRoute] Guid id, [FromBody] ChangePasswordDto dto)
-    {
-        if (dto == null) return BadRequest("Invalid request.");
-
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
-        if (user == null) return NotFound();
-
-        if (!PasswordHelper.VerifyPassword(dto.OldPassword, user.PasswordHash, user.Role).IsSuccess)
-            return BadRequest("Old password is incorrect.");
-
-        user.PasswordHash = PasswordHelper.HashPassword(dto.NewPassword, user.Role);
-        await _db.SaveChangesAsync();
-        return NoContent();
-    }
-
-    // POST /api/users/{id}/toggle-status
-    [HttpPost("{id}/toggle-status")]
-    public async Task<ActionResult<object>> ToggleStatus([FromRoute] Guid id)
-    {
-        if (!IsAdminOrHigher()) return Forbid("仅管理员可操作");
-        if (GetCurrentUserId() == id) return Forbid("不可禁用自己");
-
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
-        if (user == null) return NotFound();
-
-        user.Status = user.Status == CommonStatus.Enabled ? CommonStatus.Disabled : CommonStatus.Enabled;
-        await _db.SaveChangesAsync();
-        return Ok(new { Id = user.Id, Username = user.UserName, Role = user.Role, Status = user.Status });
-    }
-
-    // POST /api/users/{id}/restore
-    [HttpPost("{id}/restore")]
-    public async Task<ActionResult<object>> Restore([FromRoute] Guid id)
-    {
-        if (!IsAdminOrHigher()) return Forbid("仅管理员可操作");
-
-        var user = await _db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == id && u.IsDeleted);
-        if (user == null) return NotFound();
-
-        user.IsDeleted = false;
-        await _db.SaveChangesAsync();
-        return Ok(new { Id = user.Id, Username = user.UserName, Role = user.Role, Status = user.Status });
-    }
-
-    // POST /api/users/batch-delete
-    [HttpPost("batch-delete")]
-    public async Task<ActionResult<object>> BatchDelete([FromBody] BatchDeleteInputDto request)
-    {
-        if (!IsAdminOrHigher()) return Forbid("仅管理员可操作");
-        var currentUserId = GetCurrentUserId();
-        if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("No ids provided.");
-
-        var users = await _db.Users.Where(u => request.Ids.Contains(u.Id) && !u.IsDeleted && u.Id != currentUserId).ToListAsync();
-        foreach (var u in users) u.IsDeleted = true;
-        await _db.SaveChangesAsync();
-        return Ok(new { Count = users.Count });
-    }
-
-    // POST /api/users/batch-enable
-    [HttpPost("batch-enable")]
-    public async Task<ActionResult<object>> BatchEnable([FromBody] BatchDeleteInputDto request)
-    {
-        if (!IsAdminOrHigher()) return Forbid("仅管理员可操作");
-        if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("No ids provided.");
-
-        var users = await _db.Users.Where(u => request.Ids.Contains(u.Id) && !u.IsDeleted).ToListAsync();
-        foreach (var u in users) u.Status = CommonStatus.Enabled;
-        await _db.SaveChangesAsync();
-        return Ok(new { Count = users.Count });
-    }
-
-    // POST /api/users/batch-disable
-    [HttpPost("batch-disable")]
-    public async Task<ActionResult<object>> BatchDisable([FromBody] BatchDeleteInputDto request)
-    {
-        if (!IsAdminOrHigher()) return Forbid("仅管理员可操作");
-        var currentUserId = GetCurrentUserId();
-        if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("No ids provided.");
-
-        var users = await _db.Users.Where(u => request.Ids.Contains(u.Id) && !u.IsDeleted && u.Id != currentUserId).ToListAsync();
-        foreach (var u in users) u.Status = CommonStatus.Disabled;
-        await _db.SaveChangesAsync();
-        return Ok(new { Count = users.Count });
-    }
-
-    // GET /api/users/current
     [HttpGet("current")]
     public async Task<IActionResult> GetCurrentUser()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-            return Unauthorized("无法获取当前用户信息。");
-
-        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
-        if (user == null) return NotFound("用户不存在。");
-
-        return Ok(new UserDetailDto
-        {
-            Id = user.Id,
-            UserName = user.UserName,
-            RealName = user.RealName,
-            Role = user.Role,
-            Email = user.Email,
-            PhoneNumber = user.PhoneNumber,
-            Status = user.Status,
-            CreatedAt = user.CreatedAt,
-            UpdatedAt = user.UpdatedAt
-        });
+        var userId = GetCurrentUserId();
+        var result = await _userService.GetByIdAsync(userId);
+        return HandleResult(result);
     }
 
-    // POST /api/users/{id}/reset-password
-    [HttpPost("{id:guid}/reset-password")]
-    public async Task<IActionResult> ResetPassword([FromRoute] Guid id, [FromBody] ResetPasswordRequestDto request)
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] UserInputDto dto)
     {
-        // S2 FIX: 管理员检查 (接受 Admin 或 SuperAdmin)
-        if (!IsAdminOrHigher())
-            return Forbid("仅管理员可重置密码");
-
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
-        if (user == null) return NotFound();
-
-        var tempPassword = PasswordHelper.GenerateTemporaryPassword();
-        user.PasswordHash = PasswordHelper.HashPassword(tempPassword, user.Role);
-        user.MustChangeOnNextLogin = true;
-        await _db.SaveChangesAsync();
-
-        return Ok(new ResetPasswordResponseDto
-        {
-            Success = true,
-            TemporaryPassword = tempPassword
-        });
+        var result = await _userService.CreateAsync(dto, GetCurrentUserRole());
+        return HandleResult(result, "用户创建成功");
     }
 
-    // PUT /api/users/{id}/profile
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto dto)
+    {
+        var result = await _userService.UpdateAsync(id, dto, GetCurrentUserRole());
+        return HandleResult(result, "用户更新成功");
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var result = await _userService.DeleteAsync(id, GetCurrentUserId(), GetCurrentUserRole());
+        return HandleResult(result, "用户删除成功");
+    }
+
+    [HttpPut("{id:guid}/change-password")]
+    public async Task<IActionResult> ChangePassword(Guid id, [FromBody] ChangePasswordRequest request)
+    {
+        if (id != GetCurrentUserId())
+            return Forbid("只能修改自己的密码");
+        var result = await _userService.ChangePasswordAsync(id, request.OldPassword, request.NewPassword);
+        return HandleResult(result, "密码修改成功");
+    }
+
     [HttpPut("{id:guid}/profile")]
-    public async Task<IActionResult> ChangeProfile([FromRoute] Guid id, [FromBody] ChangeProfileDto dto)
+    public async Task<IActionResult> ChangeProfile(Guid id, [FromBody] ChangeProfileDto dto)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
-
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
-        if (user == null) return NotFound();
-
-        user.RealName = dto.RealName;
-        user.PhoneNumber = dto.PhoneNumber;
-        user.Email = dto.Email;
-        await _db.SaveChangesAsync();
-
-        return Ok(new UserDetailDto
-        {
-            Id = user.Id,
-            UserName = user.UserName,
-            RealName = user.RealName,
-            Role = user.Role,
-            Email = user.Email,
-            PhoneNumber = user.PhoneNumber,
-            Status = user.Status,
-            CreatedAt = user.CreatedAt,
-            UpdatedAt = user.UpdatedAt
-        });
+        if (id != GetCurrentUserId())
+            return Forbid("只能修改自己的个人资料");
+        var result = await _userService.ChangeProfileAsync(id, dto);
+        return HandleResult(result, "个人资料修改成功");
     }
 
-    // DTOs
-    public class ChangePasswordDto
+    [HttpPost("{id}/toggle-status")]
+    public async Task<IActionResult> ToggleStatus(Guid id)
     {
-        public string OldPassword { get; set; } = string.Empty;
-        public string NewPassword { get; set; } = string.Empty;
+        var result = await _userService.ToggleStatusAsync(id, GetCurrentUserRole());
+        return HandleResult(result);
     }
 
-    public class UserCreateDto
+    [HttpPost("{id}/restore")]
+    public async Task<IActionResult> Restore(Guid id)
     {
-        public string Username { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public LYBT.Shared.Models.Enums.UserRole Role { get; set; } = LYBT.Shared.Models.Enums.UserRole.Doctor;
-        public string? RealName { get; set; }
+        var result = await _userService.RestoreAsync(id, GetCurrentUserRole());
+        return HandleResult(result);
     }
 
-    public class UserUpdateDto
+    [HttpPost("batch-delete")]
+    public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto request)
     {
-        public string? Username { get; set; }
-        public string? RealName { get; set; }
-        public LYBT.Shared.Models.Enums.UserRole? Role { get; set; }
+        if (request?.Ids == null || request.Ids.Count == 0)
+            return ValidationFail("ids 不能为空");
+        var result = await _userService.BatchDeleteAsync(request.Ids, GetCurrentUserId(), GetCurrentUserRole());
+        return HandleResult(result);
+    }
+
+    [HttpPost("batch-enable")]
+    public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto request)
+    {
+        if (request?.Ids == null || request.Ids.Count == 0)
+            return ValidationFail("ids 不能为空");
+        var result = await _userService.BatchUpdateStatusAsync(request.Ids, CommonStatus.Enabled, GetCurrentUserId(), GetCurrentUserRole());
+        return HandleResult(result);
+    }
+
+    [HttpPost("batch-disable")]
+    public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto request)
+    {
+        if (request?.Ids == null || request.Ids.Count == 0)
+            return ValidationFail("ids 不能为空");
+        var result = await _userService.BatchUpdateStatusAsync(request.Ids, CommonStatus.Disabled, GetCurrentUserId(), GetCurrentUserRole());
+        return HandleResult(result);
+    }
+
+    [HttpPost("{id:guid}/reset-password")]
+    public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordRequestDto request)
+    {
+        var result = await _userService.ResetPasswordAsync(id, request);
+        return HandleResult(result, "密码重置成功");
     }
 }
