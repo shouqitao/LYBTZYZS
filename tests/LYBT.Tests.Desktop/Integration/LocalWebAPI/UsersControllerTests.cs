@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Contracts.Users;
 using Xunit;
 
 using static LYBT.LocalWebAPI.Controllers.UsersController;
@@ -71,9 +72,9 @@ public class UsersControllerTests : LocalWebApiControllerTestBase
     {
         await AuthenticateAsync();
 
-        var dto = new UserCreateDto
+        var dto = new UserInputDto
         {
-            Username = $"testuser_{Guid.NewGuid():N}",
+            UserName = $"testuser_{Guid.NewGuid():N}",
             Password = "TestPass123",
             Role = UserRole.Doctor,
             RealName = "Test Doctor"
@@ -84,7 +85,7 @@ public class UsersControllerTests : LocalWebApiControllerTestBase
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var json = await response.Content.ReadFromJsonAsync<JsonElement>(Json);
-        json.GetProperty("username").GetString().Should().Be(dto.Username);
+        json.GetProperty("username").GetString().Should().Be(dto.UserName);
         json.GetProperty("role").GetInt32().Should().Be((int)UserRole.Doctor);
     }
 
@@ -93,9 +94,9 @@ public class UsersControllerTests : LocalWebApiControllerTestBase
     {
         await AuthenticateAsync();
 
-        var dto = new UserCreateDto
+        var dto = new UserInputDto
         {
-            Username = "admin",
+            UserName = "admin",
             Password = "AdminPass123",
             Role = UserRole.Admin,
             RealName = "Duplicate Admin"
@@ -113,9 +114,9 @@ public class UsersControllerTests : LocalWebApiControllerTestBase
 
         // Create a user first
         var username = $"toggleuser_{Guid.NewGuid():N}";
-        var dto = new UserCreateDto
+        var dto = new UserInputDto
         {
-            Username = username,
+            UserName = username,
             Password = "TogglePass123",
             Role = UserRole.Doctor,
             RealName = "Toggle User"
