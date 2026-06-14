@@ -191,14 +191,6 @@ function Test-AutoMapperUsage {
     }
 }
 
-function Test-ProductionReady {
-        return $violations
-    } else {
-        Write-Host "✅ 重构架构文件检查通过" -ForegroundColor Green
-        return @()
-    }
-}
-
 function Generate-QualityReport {
     param([array]$AllViolations)
     

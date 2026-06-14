@@ -1,4 +1,4 @@
-$ErrorActionPreference = "Continue"
+﻿$ErrorActionPreference = "Continue"
 $apiDir = "C:\Services\LYBT-API"
 
 Write-Host "Stopping old processes..."

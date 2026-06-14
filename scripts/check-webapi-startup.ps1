@@ -1,4 +1,4 @@
-# WebAPI Startup Environment Check Script
+﻿# WebAPI Startup Environment Check Script
 # Issue: #827
 # Date: 2025-09-30
 

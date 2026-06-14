@@ -1,4 +1,4 @@
-$ErrorActionPreference = "Continue"
+﻿$ErrorActionPreference = "Continue"
 
 Write-Host "=== LYBT API Windows Service Setup ===" -ForegroundColor Cyan
 

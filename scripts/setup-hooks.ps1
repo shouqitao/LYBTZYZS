@@ -1,4 +1,4 @@
-# Sets repository hooks path to use the versioned .githooks directory
+﻿# Sets repository hooks path to use the versioned .githooks directory
 
 param(
   [string]$HooksPath = '.githooks'

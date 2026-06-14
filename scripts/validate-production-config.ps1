@@ -1,4 +1,4 @@
-# Production 配置验证脚本
+﻿# Production 配置验证脚本
 # Issue: Production 配置问题（Phase 1）
 # Date: 2025-09-30
 

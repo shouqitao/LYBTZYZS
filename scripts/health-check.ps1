@@ -1,4 +1,4 @@
-# P4 Release - WebAPI健康检查脚本
+﻿# P4 Release - WebAPI健康检查脚本
 # 功能：全面检查WebAPI服务健康状态，支持详细报告和监控
 
 param(

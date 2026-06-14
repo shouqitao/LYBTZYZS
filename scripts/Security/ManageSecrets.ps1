@@ -1,4 +1,4 @@
-# ManageSecrets.ps1 - Key Management Script
+﻿# ManageSecrets.ps1 - Key Management Script
 # For generating, rotating keys and cleaning development keys
 
 param(

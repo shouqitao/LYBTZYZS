@@ -1,4 +1,4 @@
-# Fix Windows Service timeout and register LYBT-API
+﻿# Fix Windows Service timeout and register LYBT-API
 # Run this on the Windows server
 
 $ErrorActionPreference = "Continue"

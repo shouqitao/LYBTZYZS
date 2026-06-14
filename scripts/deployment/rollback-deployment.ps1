@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     LYBT 部署回滚脚本
 

@@ -1,4 +1,4 @@
-# P3 Record-Only Smoke Validation - 测试矩阵验证脚本
+﻿# P3 Record-Only Smoke Validation - 测试矩阵验证脚本
 # 目标：运行架构测试和单元测试，确保系统Record-Only模式合规性
 
 param(

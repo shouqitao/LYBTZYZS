@@ -1,4 +1,4 @@
-# P4 Release - WebAPI一键启动脚本
+﻿# P4 Release - WebAPI一键启动脚本
 # 功能：自动启动WebAPI服务，支持自包含和框架依赖两种模式
 
 param(

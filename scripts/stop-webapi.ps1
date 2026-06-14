@@ -1,4 +1,4 @@
-# P4 Release - WebAPI停止脚本
+﻿# P4 Release - WebAPI停止脚本
 # 功能：优雅停止WebAPI服务，清理资源
 
 param(

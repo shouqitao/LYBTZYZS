@@ -1,4 +1,4 @@
-# 凌隐宝堂中医诊所系统 - 冒烟测试脚本
+﻿# 凌隐宝堂中医诊所系统 - 冒烟测试脚本
 # UltraThink Phase 3 实用化优化 - PowerShell自动化测试
 
 param(
