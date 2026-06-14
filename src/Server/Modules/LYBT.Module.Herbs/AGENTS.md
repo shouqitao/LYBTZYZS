@@ -6,9 +6,9 @@
 
 ```
 LYBT.Module.Herbs/
-├── Interfaces/          # IHerbService, IHerbRepository
-├── Services/            # HerbService
-├── Repositories/        # HerbRepository
+├── Interfaces/          # IHerbService, IHerbRepository, IHerbImportExportService, IHerbReferenceRepository
+├── Services/            # HerbService, HerbImportExportService
+├── Repositories/        # HerbRepository, HerbReferenceRepository
 ├── Mapping/             # HerbMapper (Mapperly)
 └── HerbsModule.cs       # Module registration
 ```
