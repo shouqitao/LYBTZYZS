@@ -272,6 +272,9 @@ public class SyncService : ISyncService
                 result.FailedCount += uploadResult.ErrorCount;
                 result.Errors.Add($"上传失败 {uploadResult.ErrorCount} 条");
             }
+
+            // 处理服务端返回的重映射/重分配信息
+            await ProcessUploadRemappingsAsync(entityType, uploadResult.Results, ct);
         }
 
         // 2. 处理下载（ServerOnly + 选择使用服务器的冲突）
@@ -628,6 +631,55 @@ public class SyncService : ISyncService
         }
 
         await _context.SaveChangesAsync(ct);
+    }
+
+    #endregion
+
+    #region Post-Upload Remapping
+
+    /// <summary>
+    /// 处理上传后服务端返回的重映射信息
+    /// - Patient: RemappedEntityId → 本地 MedicalCase.PatientId 重写
+    /// - MedicalCase: AssignedCaseNumber/AssignedPrescriptionNumber → 本地编号更新
+    /// </summary>
+    private async Task ProcessUploadRemappingsAsync(
+        string entityType,
+        List<SyncUploadItemResult> results,
+        CancellationToken ct)
+    {
+        if (entityType == "Patient")
+        {
+            foreach (var r in results.Where(r => r.Success && r.RemappedEntityId.HasValue && r.RemappedEntityId != r.EntityId))
+            {
+                var oldId = r.EntityId;
+                var newId = r.RemappedEntityId!.Value;
+                _logger.LogInformation("[SyncService] 患者重映射: {OldId} → {NewId}", oldId, newId);
+
+                var affectedCases = await _context.MedicalCases
+                    .Where(mc => mc.PatientId == oldId)
+                    .ToListAsync(ct);
+                foreach (var mc in affectedCases)
+                    mc.PatientId = newId;
+
+                if (affectedCases.Count > 0)
+                    await _context.SaveChangesAsync(ct);
+            }
+        }
+        else if (entityType == "MedicalCase")
+        {
+            foreach (var r in results.Where(r => r.Success && !string.IsNullOrEmpty(r.AssignedCaseNumber)))
+            {
+                var mc = await _context.MedicalCases.FirstOrDefaultAsync(m => m.Id == r.EntityId, ct);
+                if (mc != null)
+                {
+                    mc.CaseNumber = r.AssignedCaseNumber;
+                    if (!string.IsNullOrEmpty(r.AssignedPrescriptionNumber) && mc.Prescription != null)
+                        mc.Prescription.PrescriptionNumber = r.AssignedPrescriptionNumber;
+                    _logger.LogInformation("[SyncService] 医案编号更新: Id={Id}, CaseNumber={CaseNumber}", r.EntityId, r.AssignedCaseNumber);
+                }
+            }
+            await _context.SaveChangesAsync(ct);
+        }
     }
 
     #endregion

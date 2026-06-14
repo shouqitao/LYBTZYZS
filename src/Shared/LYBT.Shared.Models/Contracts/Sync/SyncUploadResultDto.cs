@@ -6,7 +6,7 @@ namespace LYBT.Shared.Models.Contracts.Sync;
 public class SyncUploadItemResult
 {
     /// <summary>
-    /// 实体ID
+    /// 实体ID (上传时的原始 ID)
     /// </summary>
     public Guid EntityId { get; set; }
 
@@ -24,6 +24,21 @@ public class SyncUploadItemResult
     /// 是否为冲突
     /// </summary>
     public bool IsConflict { get; set; }
+
+    /// <summary>
+    /// 患者去重后的服务端实际 ID (与 EntityId 不同时需客户端重映射)
+    /// </summary>
+    public Guid? RemappedEntityId { get; set; }
+
+    /// <summary>
+    /// 服务端分配的医案编号 (CaseNumber 重分配时返回)
+    /// </summary>
+    public string? AssignedCaseNumber { get; set; }
+
+    /// <summary>
+    /// 服务端分配的处方编号 (PrescriptionNumber 重分配时返回)
+    /// </summary>
+    public string? AssignedPrescriptionNumber { get; set; }
 }
 
 /// <summary>

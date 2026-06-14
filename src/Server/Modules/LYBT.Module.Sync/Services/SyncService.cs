@@ -393,7 +393,27 @@ public class SyncService : ISyncService
             if (patient == null)
                 return new SyncUploadItemResult { Success = false, ErrorMessage = "JSON deserialization failed" };
 
+            // 1. 按 ID 查找
             var existing = await _syncRepository.FindPatientAsync(patient.Id);
+
+            // 2. ID 未找到时，按 IdNumber 去重查找
+            if (existing == null && !string.IsNullOrWhiteSpace(patient.IdNumber))
+            {
+                var byIdNumber = await _syncRepository.FindPatientByIdNumberAsync(patient.IdNumber);
+                if (byIdNumber != null)
+                {
+                    // 服务端已存在同一身份证号的患者 → 重映射
+                    if (overwriteConflicts)
+                        _syncRepository.UpdatePatientValues(byIdNumber, patient);
+                    return new SyncUploadItemResult
+                    {
+                        EntityId = patient.Id,
+                        Success = true,
+                        RemappedEntityId = byIdNumber.Id
+                    };
+                }
+            }
+
             if (existing != null)
             {
                 if (!overwriteConflicts)
@@ -498,6 +518,9 @@ public class SyncService : ISyncService
             }
 
             var existing = await _syncRepository.FindMedicalCaseWithIncludesAsync(medicalCase.Id);
+            string? assignedCaseNumber = null;
+            string? assignedPrescriptionNumber = null;
+
             if (existing != null)
             {
                 // ERR-70304: 已完成的锁定医案不可覆盖
@@ -515,9 +538,30 @@ public class SyncService : ISyncService
             }
             else
             {
+                // 新医案: 服务端重分配编号 (忽略本地编号)
+                var dateStr = DateTime.Today.ToString("yyyyMMdd");
+                var mcPrefix = $"MC{dateStr}";
+                var mcCount = await _syncRepository.CountMedicalCasesByPrefixAsync(mcPrefix);
+                assignedCaseNumber = $"{mcPrefix}{mcCount + 1:D3}";
+                medicalCase.CaseNumber = assignedCaseNumber;
+
+                if (medicalCase.Prescription != null)
+                {
+                    var rxPrefix = $"RX{dateStr}";
+                    var rxCount = await _syncRepository.CountMedicalCasesByPrefixAsync(rxPrefix);
+                    assignedPrescriptionNumber = $"{rxPrefix}{rxCount + 1:D4}";
+                    medicalCase.Prescription.PrescriptionNumber = assignedPrescriptionNumber;
+                }
+
                 _syncRepository.AddMedicalCase(medicalCase);
             }
-            return new SyncUploadItemResult { EntityId = medicalCase.Id, Success = true };
+            return new SyncUploadItemResult
+            {
+                EntityId = medicalCase.Id,
+                Success = true,
+                AssignedCaseNumber = assignedCaseNumber,
+                AssignedPrescriptionNumber = assignedPrescriptionNumber
+            };
         }
         catch (Exception ex)
         {

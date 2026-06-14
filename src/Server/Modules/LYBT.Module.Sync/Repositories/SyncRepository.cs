@@ -47,6 +47,9 @@ internal class SyncRepository : BaseRepository<Herb>, ISyncRepository
     public Task<Patient?> FindPatientAsync(Guid id)
         => _context.Patients.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == id);
 
+    public Task<Patient?> FindPatientByIdNumberAsync(string idNumber)
+        => _context.Patients.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.IdNumber == idNumber);
+
     public Task<Formula?> FindFormulaWithHerbsAsync(Guid id)
         => _context.Formulas.Include(f => f.Herbs).IgnoreQueryFilters().FirstOrDefaultAsync(f => f.Id == id);
 
@@ -191,4 +194,8 @@ internal class SyncRepository : BaseRepository<Herb>, ISyncRepository
 
     public override Task<int> SaveChangesAsync(CancellationToken ct = default)
         => _context.SaveChangesAsync(ct);
+
+    public Task<int> CountMedicalCasesByPrefixAsync(string prefix, CancellationToken ct = default)
+        => _context.MedicalCases.IgnoreQueryFilters()
+            .CountAsync(mc => mc.CaseNumber != null && mc.CaseNumber.StartsWith(prefix), ct);
 }

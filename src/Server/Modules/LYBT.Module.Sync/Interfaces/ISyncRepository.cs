@@ -21,6 +21,7 @@ public interface ISyncRepository
 
     Task<Herb?> FindHerbAsync(Guid id);
     Task<Patient?> FindPatientAsync(Guid id);
+    Task<Patient?> FindPatientByIdNumberAsync(string idNumber);
     Task<Formula?> FindFormulaWithHerbsAsync(Guid id);
     Task<MedicalCase?> FindMedicalCaseWithIncludesAsync(Guid id);
 
@@ -57,4 +58,8 @@ public interface ISyncRepository
     // ── 持久化 ────────────────────────────────────────────────────────────────
 
     Task<int> SaveChangesAsync(CancellationToken ct = default);
+
+    // ── 编号生成辅助 ──────────────────────────────────────────────────────────
+
+    Task<int> CountMedicalCasesByPrefixAsync(string prefix, CancellationToken ct = default);
 }
