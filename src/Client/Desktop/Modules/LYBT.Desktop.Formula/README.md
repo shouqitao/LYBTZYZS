@@ -30,7 +30,7 @@ LYBT.Desktop.Formula/
 │   │   └── FormulaItem.cs                  # 验方列表项 UI 模型 (BindableBase)
 │   └── FormulaDetailModel.cs               # Detail 编辑模型 (ValidatableModelBase)
 ├── Repositories/
-│   └── FormulaRepository.cs                # 仓储实现 (DataSource 抽象层)
+│   └── FormulaRepository.cs                # 仓储实现 (Repository 抽象层)
 ├── Services/
 │   ├── FormulaSearchProvider.cs            # 跨模块搜索提供者 (IFormulaSearchProvider)
 │   ├── FormulaService.cs                   # 业务服务 (保存/复制/删除)
@@ -64,7 +64,7 @@ LYBT.Desktop.Formula/
 
 - Master-Detail 组合模式继承 MasterDetailViewModelBase，聚合 Loading/Pagination/Dialog 等服务
 - Control 复用模式: FormulaMasterDetailControl 由 Admin 和 Clinical 角色台的 FormulaManagementView 嵌入
-- DataSource 抽象层支持 Local(SQLite) / Remote(API) 模式切换
+- Repository 模式支持 Local(SQL Server LocalDB) / Remote(API) 模式切换
 - 跨模块通过 IFormulaSearchProvider 和 IHerbSearchProvider 接口解耦
 - Mapperly 编译时映射替代 AutoMapper，零运行时开销
 
@@ -74,7 +74,7 @@ LYBT.Desktop.Formula/
 - LYBT.Desktop.Foundation (BaseApiRepository/Security)
 - LYBT.Desktop.Infrastructure (MasterDetailControlBase/ViewModelBase/Services)
 - LYBT.Desktop.Models (ValidatableModelBase/HerbItemViewModelBase)
-- LYBT.Desktop.Contracts (IFormulaApi/IFormulaDataSource)
+- LYBT.Desktop.Contracts (IFormulaApi/IFormulaRepository)
 - LYBT.Shared.Models (FormulaListDto/FormulaDetailDto/FormulaInputDto)
 - LYBT.Desktop.Herbs (IHerbSearchProvider)
 - Prism.DryIoc (8.x)
@@ -145,8 +145,8 @@ LYBT.Desktop.Formula/
 
 ### Repositories/
 
-- `FormulaRepository.cs` -- `FormulaRepository : IFormulaRepository`，DataSource抽象层，支持Local/Remote模式
-  - 依赖: IFormulaDataSource + IFormulaApi?(可选，仅Remote批量操作)
+- `FormulaRepository.cs` -- `FormulaRepository : IFormulaRepository`，Repository模式，支持Local/Remote模式
+  - 依赖: IFormulaRepository + IFormulaApi?(可选，仅Remote批量操作)
   - CRUD: GetPagedAsync/GetByIdAsync/CreateAsync/UpdateAsync/DeleteAsync/SearchAsync
   - 专用: CloneFormulaAsync
   - 状态/批量: ToggleStatusAsync/RestoreAsync/BatchDeleteAsync/BatchEnableAsync/BatchDisableAsync
@@ -200,7 +200,7 @@ LYBT.Desktop.Formula/
 - `refactor-admin-workspace` -- Control模式重构
 - `adopt-mapperly-unified-mapping` -- Mapperly映射器
 - `resolve-mapperly-source-generator-conflict` -- BindableBase确保Mapperly兼容
-- `implement-local-mode` -- DataSource抽象层Local/Remote切换
+- `implement-local-mode` -- Repository模式Local/Remote切换
 - `unify-herb-controls-to-herbs-module` -- 统一使用HerbListControl编辑处方
 - `cross-module-decoupling` -- 使用IHerbSearchProvider替代IHerbRepository
 - `cleanup-formula-dead-code` -- 已删除FormulaValidation相关方法
@@ -216,7 +216,7 @@ LYBT.Desktop.Formula/
 ### 架构模式
 - **Master-Detail组合模式**: FormulaMasterDetailViewModel继承MasterDetailViewModelBase，使用IMasterDetailServices聚合Loading/Pagination/Dialog/ErrorHandler/DetailEditor服务
 - **Control复用模式**: FormulaMasterDetailControl继承MasterDetailControlBase，由Admin和Clinical角色台的FormulaManagementView嵌入使用
-- **DataSource抽象层**: Repository通过IFormulaDataSource抽象，支持Local(SQLite)/Remote(API)模式切换
+- **Repository模式**: 支持Local(SQL Server LocalDB)/Remote(API)模式切换
 - **跨模块解耦**: 通过IFormulaSearchProvider和IHerbSearchProvider接口实现模块间通信
 
 ### 双Mapper体系
@@ -229,7 +229,7 @@ FormulaManagementView (角色台)
   -> FormulaMasterDetailControl
     -> FormulaMasterDetailViewModel
       -> IFormulaRepository (FormulaRepository)
-        -> IFormulaDataSource (Local或Remote)
+        -> IFormulaRepository (Local或Remote)
 ```
 
 ---

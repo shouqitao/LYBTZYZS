@@ -33,7 +33,7 @@ LYBT.Desktop.Sync/
 
 ## 设计依据
 
-同步模块是双模式架构的关键 UI 组件。本地模式下数据存储在 SQLite，需要与服务器 SQL Server 进行数据同步。本模块专注于 UI 展示和用户交互，实际同步逻辑委托给 LYBT.Desktop.LocalData 中的 SyncService。
+同步模块是双模式架构的关键 UI 组件。本地模式下数据存储在 SQL Server LocalDB，需要与服务器 SQL Server 进行数据同步。本模块专注于 UI 展示和用户交互，实际同步逻辑委托给 LYBT.Desktop.LocalData 中的 SyncService。
 
 冲突解决采用手动模式，由用户在对话框中选择保留本地版本或服务器版本，确保数据一致性由医生主动确认。
 

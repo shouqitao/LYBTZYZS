@@ -28,7 +28,7 @@ LYBT.Desktop.Users/
 │   │   └── UserItem.cs                     # 列表项 UI 模型 (BindableBase)
 │   └── UserDetailModel.cs                  # Detail 编辑模型 (ValidatableModelBase)
 ├── Repositories/
-│   └── UserRepository.cs                   # 仓储实现 (DataSource + 可选 IUserApi)
+│   └── UserRepository.cs                   # 仓储实现 (Repository + 可选 IUserApi)
 ├── ViewModels/
 │   ├── Components/
 │   │   └── UserService.cs                  # 用户命令操作 (CRUD+查询+状态+密码)
@@ -73,7 +73,7 @@ LYBT.Desktop.Users/
 
 - Handler 组件拆分 (Password/Status/ImportExport) 实现 SRP，避免 ViewModel 职责膨胀
 - MasterDetailControl 复用模式供 Admin 角色台 UserManagementView 嵌入使用
-- Repository 通过 IUserDataSource 支持 Local/Remote，IUserApi 可选注入 (仅 Remote 高级功能)
+- Repository 通过 IUserRepository 支持 Local/Remote，IUserApi 可选注入 (仅 Remote 高级功能)
 - Mapperly 编译时映射替代 AutoMapper，零运行时开销
 
 ## 依赖关系
@@ -82,7 +82,7 @@ LYBT.Desktop.Users/
 - LYBT.Desktop.Foundation (BaseApiRepository/Security)
 - LYBT.Desktop.Infrastructure (MasterDetailControlBase/ViewModelBase/Services)
 - LYBT.Desktop.Models (ValidatableModelBase)
-- LYBT.Desktop.Contracts (IUserApi/IUserDataSource)
+- LYBT.Desktop.Contracts (IUserApi/IUserRepository)
 - LYBT.Desktop.Utilities (ExcelHelper)
 - LYBT.Shared.Models (UserListDto/UserDetailDto/UserInputDto)
 - Prism.DryIoc (8.x)
@@ -119,7 +119,7 @@ UserMasterDetailViewModel (组合模式 ViewModel)
   +-- IUserStatusHandler -> UserStatusHandler (状态切换/恢复)
   +-- IUserImportExportHandler -> UserImportExportHandler (Excel 导入导出)
   |
-IUserRepository -> UserRepository (数据仓储，委托 IUserDataSource / IUserApi)
+IUserRepository -> UserRepository (数据仓储，委托 IUserRepository / IUserApi)
 ```
 
 ### DI 注册 (UsersModule.cs)
@@ -145,7 +145,7 @@ containerRegistry.Register<UserMasterDetailViewModel>();
 | UserItem (BindableBase) 替代直接使用 DTO | Desktop 层与 Shared 层解耦，支持 UI 计算属性 | resolve-mapperly-source-generator-conflict |
 | Mapperly 编译时映射 | 零运行时开销，替代 AutoMapper | adopt-mapperly-unified-mapping |
 | UserDetailModel (ValidatableModelBase) | Detail 区域使用可验证模型，支持 DataAnnotations | refactor-master-detail-layout |
-| UserRepository 双模式 (DataSource + API) | 通过 IUserDataSource 支持 Local/Remote，IUserApi 可选注入 (仅 Remote 高级功能) | - |
+| UserRepository 双模式 (Repository + API) | 通过 IUserRepository 支持 Local/Remote，IUserApi 可选注入 (仅 Remote 高级功能) | - |
 
 ## 代码文件结构
 
@@ -188,7 +188,7 @@ containerRegistry.Register<UserMasterDetailViewModel>();
 
 | 文件 | 类名 | 基类/接口 | 职责 |
 |------|------|-----------|------|
-| UserRepository.cs | UserRepository | IUserRepository | 数据仓储实现，委托 IUserDataSource (Local/Remote) + 可选 IUserApi (Remote 高级功能) |
+| UserRepository.cs | UserRepository | IUserRepository | 数据仓储实现，委托 IUserRepository (Local/Remote) + 可选 IUserApi (Remote 高级功能) |
 
 关键设计: `IUserApi?` 为可选注入，Local 模式下为 null，部分功能 (ChangeProfile/ResetPassword/BatchImport/Restore/BatchEnable/BatchDisable) 仅 Remote 模式可用。
 
@@ -370,7 +370,7 @@ UserName, IsUserNameReadOnly, RealName, PinYinCode, PhoneNumber, Email, Role, Ro
 - LYBT.Desktop.Foundation (BaseApiRepository/Security)
 - LYBT.Desktop.Infrastructure (MasterDetailControlBase/ViewModelBase/Services)
 - LYBT.Desktop.Models (ViewModelBase/ValidatableModelBase)
-- LYBT.Desktop.Contracts (IUserApi/IUserDataSource/ICommandHandlerBase)
+- LYBT.Desktop.Contracts (IUserApi/IUserRepository/ICommandHandlerBase)
 - LYBT.Desktop.Utilities (ExcelHelper)
 - LYBT.Shared.Models (UserListDto/UserDetailDto/UserInputDto/枚举)
 - LYBT.Shared.Primitives (ValidationConstants)

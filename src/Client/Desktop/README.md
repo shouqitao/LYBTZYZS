@@ -20,7 +20,7 @@ Modules 实现业务功能，Roles 提供角色驱动的工作台导航。
 | LYBT.Desktop.Infrastructure | UI组件（自定义控件、样式资源） | 稳定 |
 | LYBT.Desktop.Models | 桌面端视图模型和数据模型 | 稳定 |
 | LYBT.Desktop.Utilities | 通用工具类和扩展方法 | 稳定 |
-| LYBT.Desktop.LocalData | SQLite 本地数据访问 | 稳定 |
+| LYBT.Desktop.LocalData | SQL Server LocalDB 本地数据访问 | 稳定 |
 | LYBT.Desktop.Printing | 打印服务（A4模板、处方打印） | 稳定 |
 | LYBT.Desktop.CardReader | 身份证读卡器集成 | 稳定 |
 | LYBT.Desktop.Auth | 登录界面、权限验证 | 稳定 |

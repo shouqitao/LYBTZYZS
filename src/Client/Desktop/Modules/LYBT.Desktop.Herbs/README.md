@@ -60,14 +60,6 @@ LYBT.Desktop.Herbs/
 | 模糊匹配 | 输入"qi"匹配所有含"芪"的药材 |
 | 实时搜索 | 输入即搜，无需回车 |
 
-## 与Prescriptions集成
-
-| 集成点 | 说明 |
-|--------|------|
-| HerbSelectionDialog | 处方模块调用药材选择对话框 |
-| 药材选择 | 返回选中的HerbDto列表 |
-| 剂量建议 | 提供常用剂量参考 |
-
 ## 设计依据
 
 - 药材作为独立基础数据模块，是验方和处方的底层依赖，独立管理避免与业务流程耦合
@@ -86,7 +78,6 @@ LYBT.Desktop.Herbs/
 
 ### 被依赖
 - LYBT.Desktop.Shell (模块加载)
-- LYBT.Desktop.Prescriptions (药材选择)
 
 ## 更新记录
 
@@ -135,8 +126,8 @@ LYBT.Desktop.Herbs/
 
 ### Repositories/
 
-- `HerbRepository.cs` -- `HerbRepository : IHerbRepository`，DataSource抽象层，支持Local/Remote模式
-  - 依赖: IHerbDataSource + IHerbApi?(可选，仅Remote批量/导入导出)
+- `HerbRepository.cs` -- `HerbRepository : IHerbRepository`，Repository模式，支持Local/Remote模式
+  - 依赖: IHerbApi?(可选，仅Remote批量/导入导出)
   - CRUD: GetPagedAsync/GetByIdAsync/CreateAsync/UpdateAsync/DeleteAsync/SearchAsync
   - 导入导出: BatchImportAsync(Refit.StreamPart)/ExportTemplateAsync/ExportHerbsAsync -- 仅Remote模式支持
   - 状态/批量: ToggleStatusAsync/RestoreAsync/BatchDeleteAsync/BatchEnableAsync/BatchDisableAsync
@@ -178,7 +169,7 @@ LYBT.Desktop.Herbs/
 - `migrate-views-to-role-modules` -- HerbDetailView/HerbDetailViewModel已删除
 - `refactor-viewmodel-composition` -- V2组合模式ViewModel
 - `refactor-admin-workspace` -- Control模式重构
-- `implement-local-mode` -- DataSource抽象层Local/Remote切换
+- `implement-local-mode` -- Repository模式Local/Remote切换
 - `extract-detail-controls` -- HerbEditControl/HerbViewControl提取
 - `refactor-master-detail-layout` -- 详情区域UI优化
 - `refactor-frontend-srp-patterns` -- MasterDetailControlBase基类
@@ -194,7 +185,7 @@ LYBT.Desktop.Herbs/
 - **Master-Detail组合模式**: HerbMasterDetailViewModel继承MasterDetailViewModelBase，使用IMasterDetailServices聚合Loading/Pagination/Dialog/ErrorHandler/DetailEditor服务
 - **Control复用模式**: HerbMasterDetailControl继承MasterDetailControlBase，由Admin和Clinical角色台的HerbManagementView嵌入使用
 - **三控件分离**: HerbMasterDetailControl(主框架) + HerbEditControl(编辑表单) + HerbViewControl(只读预览)
-- **DataSource抽象层**: Repository通过IHerbDataSource抽象，支持Local(SQLite)/Remote(API)模式切换
+- **Repository模式**: 支持Local(SQL Server LocalDB)/Remote(API)模式切换
 - **跨模块解耦**: 通过IHerbSearchProvider接口供Formula和MedicalCase模块使用
 
 ### 包装方法模式

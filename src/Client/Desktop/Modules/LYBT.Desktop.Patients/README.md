@@ -34,7 +34,7 @@ LYBT.Desktop.Patients/
 │   ├── PatientDetailModel.cs               # Detail 编辑模型 (ValidatableModelBase)
 │   └── PatientViewState.cs                 # UI 状态模型 (ObservableObject)
 ├── Repositories/
-│   └── PatientRepository.cs                # 仓储实现 (DataSource 抽象层)
+│   └── PatientRepository.cs                # 仓储实现 (Repository 抽象层)
 ├── Services/
 │   ├── PatientCardReaderIntegration.cs     # 读卡器集成服务
 │   ├── PatientImportDataMapper.cs          # Excel 数据映射器
@@ -73,7 +73,7 @@ LYBT.Desktop.Patients/
 
 ## 设计依据
 
-- Repository 通过 IPatientDataSource 抽象支持 Local/Remote 模式无缝切换
+- Repository 通过 IPatientRepository 抽象支持 Local/Remote 模式无缝切换
 - 组件化架构: ViewModel 功能拆分为 Components 和 Services，避免单一 ViewModel 膨胀
 - 搜索缓存使用 LRU 策略，支持用户隔离和事件驱动失效
 - Mapperly 编译时映射替代运行时 AutoMapper，零运行时开销
@@ -84,7 +84,7 @@ LYBT.Desktop.Patients/
 - LYBT.Desktop.Foundation (BaseApiRepository/Security)
 - LYBT.Desktop.Infrastructure (MasterDetailControlBase/ViewModelBase/Services)
 - LYBT.Desktop.Models (ValidatableModelBase)
-- LYBT.Desktop.Contracts (IPatientApi/IPatientDataSource)
+- LYBT.Desktop.Contracts (IPatientApi/IPatientRepository)
 - LYBT.Shared.Models (PatientListDto/PatientDetailDto/PatientInputDto)
 - Prism.DryIoc (8.x)
 
@@ -106,7 +106,7 @@ LYBT.Desktop.Patients/
 
 ## 架构决策
 
-- Repository 层使用 DataSource 抽象 (IPatientDataSource)，支持 Local/Remote 模式无缝切换
+- Repository 层使用 Repository 抽象 (IPatientRepository)，支持 Local/Remote 模式无缝切换
 - CommandHandler 模式 (IPatientCommandHandler) 存在但未被注册到 DI 容器，实际业务通过 PatientService 处理
 - 组件化架构: ViewModel 功能拆分为 Components (PatientValidator, MedicalCaseStartCoordinator) 和 Services (PatientSearchManager, PendingQueueManager 等)
 - 搜索缓存使用 LRU 策略 (PatientSearchCache)，支持用户隔离和事件驱动失效
@@ -175,7 +175,7 @@ LYBT.Desktop.Patients/
 
 | 文件 | 类 | 说明 |
 |------|-----|------|
-| PatientRepository.cs | `PatientRepository : IPatientRepository` | 仓储实现，依赖 IPatientDataSource (Local/Remote 透明切换) + 可选 IPatientApi (仅 Remote 模式用于批量导入/导出)。标准 CRUD 委托 DataSource，批量导入/导出/模板下载通过 IPatientApi (Remote 专有) |
+| PatientRepository.cs | `PatientRepository : IPatientRepository` | 仓储实现，依赖 IPatientRepository (Local/Remote 透明切换) + 可选 IPatientApi (仅 Remote 模式用于批量导入/导出)。标准 CRUD 委托 Repository，批量导入/导出/模板下载通过 IPatientApi (Remote 专有) |
 
 ### Services/
 

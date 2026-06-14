@@ -56,7 +56,7 @@ Shell采用Prism模块化架构，通过ConfigureModuleCatalog集中注册所有
 - LYBT.Desktop.Infrastructure (HttpClient配置/Token管理/缓存)
 - LYBT.Desktop.Foundation (Result/异常定义/扩展方法)
 - LYBT.Shared.Models (跨端DTO)
-- 业务模块: Auth, Users, Patients, MedicalCase, Consultation, Prescriptions, Herbs, Formula
+- 业务模块: Auth, Users, Patients, MedicalCase, Herbs, Formula, Registration, Sync
 - 工作台: WorkstationCore, Admin, Clinical
 
 ### 被依赖
@@ -112,20 +112,18 @@ Program.Main()
 
 App.xaml.cs中ConfigureModuleCatalog注册顺序:
 
-**业务模块 (8个)**:
+**业务模块 (6个)**:
 1. AuthModule - 认证模块 (优先级最高，必须最先加载)
 2. UsersModule - 用户管理
 3. PatientsModule - 患者管理
 4. MedicalCaseModule - 医案管理
-5. ConsultationModule - 诊疗模块
-6. PrescriptionsModule - 处方管理
-7. HerbsModule - 药材管理
-8. FormulaModule - 验方管理
+5. HerbsModule - 药材管理
+6. FormulaModule - 验方管理
 
 **工作台模块 (3个)**:
-9. WorkstationCoreModule - 核心工作台 (通用布局)
-10. AdminWorkstationModule - 管理员工作台
-11. ClinicalWorkstationModule - 诊疗工作台
+7. WorkstationCoreModule - 核心工作台 (通用布局)
+8. AdminWorkstationModule - 管理员工作台
+9. ClinicalWorkstationModule - 诊疗工作台
 
 **DI注册** (RegisterTypes):
 ```csharp
@@ -288,8 +286,8 @@ App.xaml 资源合并顺序:
 1. `RegisterConfiguration()` - IConfiguration (appsettings.json) + AddLybtClientConfiguration (强类型配置)
 2. `RegisterLogging()` - ILoggerFactory (Serilog) + 约50个具名Logger注册
 3. `RegisterCacheServices()` - IMemoryCache (SizeLimit=1000) + IDesktopCacheManager
-4. `RegisterDataSources()` - 委托给 DataSourceRegistrationExtensions
-5. `RegisterDataSourceLoggers()` - 注册DataSource的Logger
+4. `RegisterRepositories()` - 仓储注册
+5. `RegisterRepositoryLoggers()` - 注册Repository的Logger
 6. `RegisterHttpServices()` - HttpClient链 + 6个Refit API客户端 + ISyncApi
 7. `RegisterFoundationServices()` - 认证、Token、会话、API等基础服务
 8. `RegisterPresentationServices()` - 通知、异常处理、菜单、导航协调器
@@ -370,13 +368,13 @@ Application服务注册:
 - ClinicSettingsOptions -> IOptions\<ClinicSettingsOptions\> + ClinicSettingsOptions (Singleton)
 - PrescriptionOptions -> IOptions\<PrescriptionOptions\> + PrescriptionOptions (Singleton)
 
-#### DataSourceRegistrationExtensions.cs
+#### RepositoryRegistrationExtensions.cs
 
-**DataSourceRegistrationExtensions** (static) - DataSource注册
+**RepositoryRegistrationExtensions** (static) - 仓储注册
 
-`RegisterDataSources(IContainerRegistry)`:
+`RegisterRepositories(IContainerRegistry)`:
 - ICurrentUserProvider -> SessionBasedCurrentUserProvider (Singleton)
-- 5个 Remote{Entity}DataSource (Transient)
+- 5个 {Entity}Repository (Transient)
 
 #### ErrorHandlingServiceExtensions.cs [疑似死代码]
 
@@ -775,4 +773,4 @@ _dialogService.ShowDialog("ConfirmationDialog", parameters, result =>
 | Microsoft.Extensions.Configuration.Json | 9.0.x | JSON配置支持 |
 | Microsoft.Extensions.Logging | 9.0.x | 日志框架 |
 | Microsoft.Extensions.Logging.Debug | 9.0.x | 调试日志 |
-| AutoMapper | 15.0.1 | 对象映射 (DTO <-> ViewModel) |
+| Riok.Mapperly | 4.1.1 | 对象映射 (DTO <-> ViewModel, 编译时生成) |

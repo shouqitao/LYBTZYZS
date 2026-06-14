@@ -83,8 +83,6 @@ LYBT.Desktop.MedicalCase/
 - LYBT.Desktop.Models (ViewModelBase)
 - LYBT.Desktop.Foundation (BaseApiRepository)
 - LYBT.Desktop.Contracts (IMedicalCaseApi/ISaveable/IValidatable)
-- LYBT.Desktop.Consultation (Step1组件)
-- LYBT.Desktop.Prescriptions (Step2组件)
 - LYBT.Shared.Models (MedicalCaseDto)
 - Prism.Core/Prism.DryIoc (8.x)
 
@@ -289,9 +287,9 @@ Mapperly源生成深拷贝映射器，用于变更检测和回滚。
 
 #### MedicalCaseRepository.cs
 
-`IMedicalCaseRepository` 实现，基于 `IMedicalCaseDataSource` 抽象层，支持Local/Remote模式切换。
+`IMedicalCaseRepository` 实现，Repository模式，支持Local/Remote模式切换。
 
-- 标准CRUD通过 `_dataSource` 实现（Local和Remote通用）
+- 标准CRUD通过 Repository 实现（Local和Remote通用）
 - 高级查询（Search, Query, GetPermissions, SetPrescriptionFlag, UpdateStatus, Suspend, RecordPrintCompleted）优先使用 `_api`（Remote模式），本地模式降级处理
 - 批量获取 `GetBatchDetailsAsync`: Remote用API批量请求，Local逐个获取
 
