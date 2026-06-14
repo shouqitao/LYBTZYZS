@@ -187,6 +187,20 @@ Specific fix or improvement
 - **CQRS for MedicalCase** — Server MedicalCase module uses CommandHandler pattern, not traditional 3-layer
 - **Testing Trophy** — Integration-first: real SQL Server, zero mock for Server tests
 
+## CODE STYLE (MUST FOLLOW)
+
+- **语言**: 中文用于业务文档和注释；英文用于技术标识符（类名、变量名、API 路由）
+- **命名**: `PascalCase`（公共成员）、`_camelCase`（私有字段）、`I PascalCase`（接口）
+- **包版本**: 统一在 `Directory.Packages.props` 声明，`.csproj` 中 `<PackageReference />` 不带版本号
+- **无注释**: 除非用户要求，不添加代码注释
+- **无 Emoji**: 代码中不使用 Emoji
+- **跨模块禁止**: Server 模块间、Desktop 模块间禁止直接引用
+- **详细规范**: 见 `docs/05-development/13-root-files-convention.md` 和 `.editorconfig`
+- **Role-based module loading** — Desktop loads modules dynamically based on user role
+- **StartupPipeline pattern** — Desktop uses step-based startup (ErrorHandling → ModuleCoordinator → CoreServices → ApiHealthCheck → Warmup)
+- **CQRS for MedicalCase** — Server MedicalCase module uses CommandHandler pattern, not traditional 3-layer
+- **Testing Trophy** — Integration-first: real SQL Server, zero mock for Server tests
+
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
