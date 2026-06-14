@@ -140,7 +140,7 @@ We believe that 实现验方模板的数字化管理 (CRUD + 共享 + 延迟绑�
 **Dual Mode:**
 | 模式 | 行为 |
 |------|------|
-| 远程 | POST `/api/v1/formulas`，返回 FormulaDetailDto (200) |
+| 远程 | POST `/api/v1/formulas`，返回 FormulaDetailDto (201 Created) |
 | 本地 | DataSource 本地存储 |
 
 ### US-FORM-002: 查看验方列表
@@ -527,7 +527,7 @@ We believe that 实现验方模板的数字化管理 (CRUD + 共享 + 延迟绑�
 | Dosage | int | Required | 剂量 (数值部分，单位由 Unit 指定) |
 | Unit | string(16) | Required | 单位 (克/g/ml/条/粒 等) |
 | ProcessingMethod | string(100)? | - | 炮制方法 |
-| DecocteMethod | DecocteMethod | Default: Normal | 煎法 (定义见 [medical-cases.md](07-medical-cases.md) DecocteMethod 枚举) |
+| DecocteMethod | DecocteMethod | Default: Default | 煎法 (定义见 [medical-cases.md](07-medical-cases.md) DecocteMethod 枚举) |
 | Usage | string(200)? | - | 用法 |
 | Remark | string(200)? | - | 备注 |
 

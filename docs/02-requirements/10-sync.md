@@ -113,7 +113,7 @@ We believe that 实现基于 SHA256 差异检测的双向数据同步 (药材/�
 
 ---
 
-> **[延期 2026-02-21]** MedicalCase 同步完全未实现 (US-SYNC-001 实体类型列表含 MedicalCase，US-SYNC-005 下载含 MedicalCase)
+> **[已实现基础版 2026-06-14]** MedicalCase 同步已有基础实现: `SyncService` 已完整处理 MedicalCase 的 metadata/upload/download/delete。注意: 文档设计的聚合级原子事务、`MedicalCaseSyncDto`、依赖排序、患者去重等高级特性**尚未实现**，当前直接序列化/反序列化 `MedicalCase` 实体。
 > 原因: 独立 Epic 规划复杂度极高，需聚合级原子同步+患者去重+编号重分配等  |  计划: 同步体系完善 Epic  |  参考: SYNC-01
 
 ### US-SYNC-001: 获取可同步实体类型
@@ -416,7 +416,7 @@ We believe that 实现基于 SHA256 差异检测的双向数据同步 (药材/�
 
 | 排除项 | 原因 |
 |--------|------|
-| MedicalCase 同步实现 | 独立 Epic，复杂度极高 (聚合级原子同步+患者去重+编号重分配)，延期至同步体系完善 Epic |
+| ~~MedicalCase 同步实现~~ | **已有基础实现**: metadata/upload/download/delete 均可处理 MedicalCase。聚合级原子事务、DTO 映射、依赖排序等待后续增强 |
 | 自动同步 / 后台同步 | v1.0 手动触发，后续版本考虑 NetworkStatusService + 状态栏指示器 |
 | ~~运行时模式切换~~ | **已实现 (Sprint 6, SYNC-D03)**。IConnectionModeProvider + SidebarControl 按钮 + MainWindow 遮罩层 |
 | ChangedFields 变更字段检测 | 复杂度高，当前 Checksum 比对可识别差异存在 |
@@ -444,7 +444,7 @@ We believe that 实现基于 SHA256 差异检测的双向数据同步 (药材/�
 
 | ID | 问题 | 状态 |
 |----|------|------|
-| OQ-SYNC-01 | MedicalCase 同步 Epic 的排期? | 延期。设计已完成 (v3.0)，实现待排期 |
+| OQ-SYNC-01 | MedicalCase 同步 Epic 的排期? | **已实现基础版**: SyncService 处理 MedicalCase 全流程 (metadata/upload/download/delete)。聚合级增强 (原子事务/DTO映射/依赖排序) 待后续迭代 |
 | OQ-SYNC-02 | 大数据量同步性能阈值? (多少条记录时需要分页) | 待验证。当前无分页，需性能测试确认 |
 | OQ-SYNC-03 | 同步历史记录是否需要持久化? (谁/何时/同步了什么) | 待决策。v1.0 仅显示本次结果汇总，无历史 |
 | OQ-SYNC-04 | 错误码从 ServiceResult 迁移到 Result\<T\> 的时机? | 计划 S5，参考 D2-2 设计 |

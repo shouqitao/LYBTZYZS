@@ -59,7 +59,7 @@
 异常处理模块采用分层架构，服务端和客户端各自承担明确职责:
 
 **服务端 (ASP.NET Core):**
-- **IExceptionHandler 链式处理器**: BusinessExceptionHandler (优先) -> SystemExceptionHandler (兜底)，自动捕获异常并转换为 RFC 7807 ProblemDetails 标准响应
+- **IExceptionHandler 链式处理器**: BusinessExceptionHandler (优先) -> SystemExceptionHandler (兜底)，自动捕获异常并转换为自定义 `ApiResponse` JSON 响应 (非 RFC 7807 ProblemDetails; 框架级错误使用 ASP.NET Core 内置 ProblemDetails)
 - **AppException 类型体系**: 6 种具体异常类型 (Business/NotFound/Conflict/Validation/Unauthorized/Api)，每种对应特定 HTTP 状态码
 - **环境感知**: 开发环境返回 stackTrace，生产环境隐藏技术细节
 
@@ -151,7 +151,8 @@ We believe that 实现统一的分层异常处理体系 (AppException 类型体�
 > so that 客户端可以用统一的解析逻辑处理所有错误响应。
 
 **Acceptance Criteria:**
-- [ ] 所有错误响应 Content-Type -> application/problem+json
+- [ ] 自定义异常处理器返回 `ApiResponse` JSON (Content-Type: application/json)，字段: success/message/errors/requestId
+- [ ] 框架级异常 (如路由不存在) 使用 ASP.NET Core 内置 ProblemDetails
 - [ ] ProblemDetails 包含 type, title, status, detail, instance
 - [ ] ProblemDetails 包含 errorCode, correlationId, traceId, timestamp
 - [ ] 开发环境额外包含 stackTrace

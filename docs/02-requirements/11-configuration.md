@@ -321,25 +321,15 @@ We believe that 实现强类型 Options 绑定 + DataAnnotation 验证 + 分环�
 
 **FeatureToggles (功能开关)**
 
+> **注意**: v1.0 的 FeatureToggleOptions 仅包含以下 2 个属性。早期文档定义的 18 个布尔开关
+> (ConsultationCreate, PrescriptionClone 等) 已废弃，UI 功能可见性由各模块 ViewModel 自行管理。
+
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| ConsultationCreate | bool | false | 创建诊断 (未上线) |
-| ConsultationEdit | bool | false | 编辑诊断 (未上线) |
-| ConsultationDelete | bool | false | 删除诊断 (未上线) |
-| ConsultationViewDetail | bool | true | 查看诊断详情 |
-| ConsultationSearch | bool | true | 搜索诊断 |
-| PrescriptionCreate | bool | false | 创建处方 (未上线) |
-| PrescriptionDelete | bool | false | 删除处方 (未上线) |
-| PrescriptionClone | bool | true | 克隆处方 |
-| PrescriptionExport | bool | true | 导出处方 |
-| PrescriptionViewDetail | bool | true | 查看处方详情 |
-| PrescriptionSearch | bool | true | 搜索处方 |
-| CardReaderEnabled | bool | false | 身份证读卡器 (需硬件支持) |
-| MedicalCaseCreate | bool | true | 创建医案 |
-| MedicalCaseEdit | bool | true | 编辑医案 |
-| MedicalCaseDelete | bool | true | 删除医案 |
-| MedicalCaseViewDetail | bool | true | 查看医案详情 |
-| MedicalCaseSearch | bool | true | 搜索医案 |
+| OverwriteConflicts | bool | false | 同步冲突时是否自动覆盖 |
+| DuplicateHerbMergeStrategy | string | "Max" | 处方导入重复药材合并策略 |
+
+> **变更**: 原 Prescription 配置段已合并入 FeatureToggleOptions。
 
 **ClinicSettings (诊所信息)**
 
@@ -350,46 +340,13 @@ We believe that 实现强类型 Options 绑定 + DataAnnotation 验证 + 分环�
 | Phone | string | "" | - | 电话 |
 | Department | string | "中医科" | - | 科室 |
 
-**Prescription (处方配置)**
-
-| 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| DuplicateHerbMergeStrategy | string | "Max" | 重复药材合并策略 (Max/Sum/First) |
-
 **Dual Mode:**
 | 模式 | 行为 |
 |------|------|
 | 远程 | 客户端 appsettings.json 配置 API 连接参数 |
 | 本地 | ApiClient 配置无效，使用本地数据源 |
 
-#### FeatureToggle UI 行为规则
-
-| 行为 | 规范 |
-|------|------|
-| 菜单项 | 隐藏，不占位 |
-| 工具栏按钮 | 隐藏，不占位 |
-| 快捷键 | 失效，不响应 |
-| API 端点 | 仍然可用 (开关仅控制 UI 层) |
-
-**ViewModel 实现模式**:
-```csharp
-// ViewModel 暴露只读属性
-public bool CanCreateConsultation => _featureToggles.ConsultationCreate;
-
-// XAML 绑定控制可见性
-<Button Visibility="{Binding CanCreateConsultation,
-        Converter={StaticResource BoolToVisibilityConverter}}" />
-```
-
-#### v1.0 功能开关默认状态
-
-| 模块 | 开关 | 默认值 | 说明 |
-|------|------|--------|------|
-| Consultation | Create / Edit / Delete | **false** | 诊断独立 CRUD 未上线，通过医案内操作 |
-| Consultation | ViewDetail / Search | **true** | 医案内查看/搜索诊断信息 |
-| Prescription | Create / Delete | **false** | 处方独立 CRUD 未上线，通过医案内操作 |
-| Prescription | Clone / Export / ViewDetail / Search | **true** | 医案内处方操作 |
-| MedicalCase | Create / Edit / Delete / ViewDetail / Search | **true** | 核心功能全部启用 |
+> FeatureToggle UI 行为规则已废弃。当前 UI 功能可见性由各模块 ViewModel 基于用户角色和业务状态自行管理。
 | CardReader | Enabled | **false** | 需硬件支持，默认关闭 |
 
 ### US-CFG-003: 环境配置管理

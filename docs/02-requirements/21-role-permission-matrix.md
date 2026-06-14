@@ -32,9 +32,9 @@
 | 角色 | 权限值 | 定位 | 数量 |
 |------|--------|------|------|
 | SuperAdmin (sysadmin) | 100 | 系统唯一固定账号，数据库种子预置 | 1 (固定) |
-| Admin | 80 | 诊所管理员，管理用户/数据/配置 | 1-2 |
-| Doctor | 60 | 医生，核心诊疗操作者 | 1-5 |
-| Receptionist | 40 | 前台，患者登记和挂号 | 1-2 |
+| Admin | 10 | 诊所管理员，管理用户/数据/配置 | 1-2 |
+| Doctor | 1 | 医生，核心诊疗操作者 | 1-5 |
+| Receptionist | 0 | 前台，患者登记和挂号 | 1-2 |
 
 > 权限值层级模型 (USER-D04): `operator.PermissionLevel > target.PermissionLevel` -> 允许操作
 

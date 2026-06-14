@@ -141,7 +141,7 @@ We believe that 实现拼音码快速检索 + Excel/JSON 批量导入导出 + �
 **Dual Mode:**
 | 模式 | 行为 |
 |------|------|
-| 远程 | POST `/api/v1/herbs`，返回 HerbDetailDto (200) |
+| 远程 | POST `/api/v1/herbs`，返回 HerbDetailDto (201 Created) |
 | 本地 | DataSource 本地存储 |
 
 ### US-HERB-002: 查看药材列表
@@ -506,7 +506,8 @@ We believe that 实现拼音码快速检索 + Excel/JSON 批量导入导出 + �
 | CostPrice | decimal(18,2)? | - | 成本价 |
 | Effect | string(500)? | - | 功效说明 |
 | Usage | string(500)? | - | 用法用量 |
-| Remark | string(500)? | - | 备注 |
+| Remark | string(1000)? | - | 备注 |
+| Properties | string? | - | 性味 (如:甘、苦、温) |
 | Status | CommonStatus | Default: Enabled | 药材状态 |
 
 > 继承 BaseEntity

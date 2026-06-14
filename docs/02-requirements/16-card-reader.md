@@ -213,7 +213,7 @@ We believe that 集成二代身份证读卡器实现一键刷卡填充 + 患者�
 | ~~照片 DPAPI 加密存储 (IPhotoStorageService)~~ | **已实现 (Sprint 6)**。DpapiPhotoStorageService + 11 tests; 集成到读卡流程 |
 | 服务端读卡 API | 读卡器为纯客户端硬件交互，无服务端组件 |
 | 非身份证类证件支持 | v1.0 仅支持二代身份证，港澳台居住证等待后续扩展 |
-| 自动轮询读卡 | v1.0 用户手动触发读卡，自动轮询检测待后续考虑 |
+| ~~自动轮询读卡~~ | **已实现** (Sprint 6): `CardReaderService.StartAutoRead(intervalMs)` + Timer 轮询 + 重复卡片去重 |
 
 > 注: 患者去重降级链 (模糊匹配) 已于 Sprint 4 实现 (CARD-D03)，不再列为 Out of Scope。
 
@@ -235,7 +235,7 @@ We believe that 集成二代身份证读卡器实现一键刷卡填充 + 患者�
 
 | ID | 问题 | 状态 |
 |----|------|------|
-| OQ-CARD-01 | 是否支持连续刷卡模式 (自动轮询检测卡片)? | 延期。v1.0 用户手动触发，后续根据使用反馈决定 |
+| OQ-CARD-01 | 是否支持连续刷卡模式 (自动轮询检测卡片)? | **已解决**: `CardReaderService.StartAutoRead(intervalMs=500)` + `StopAutoRead()` 已实现，含 Timer 轮询和重复去重 |
 | OQ-CARD-02 | 证件照片功能何时实现 DPAPI 加密存储? | **已实现** (Sprint 6)。DpapiPhotoStorageService + 11 tests; 集成到读卡流程 |
 | OQ-CARD-03 | 患者去重降级链 (模糊匹配) 何时实现? | **已实现** (Sprint 4)。MatchPatientAsync 实现完整降级链 |
 | OQ-CARD-04 | 是否需要支持港澳台居住证等非身份证类型? | 待定。CardType 枚举已预留，需确认业务需求 |

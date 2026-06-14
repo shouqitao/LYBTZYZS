@@ -412,7 +412,7 @@ We believe that **providing a systematic registration and queuing mechanism** fo
 | Status | RegistrationStatus | Required | 挂号状态 (见枚举) |
 | RegistrationNumber | string? | MaxLength(50) | 挂号编号 (v1.0 按需生成) |
 | RegistrationTime | DateTime | Default=UtcNow | 挂号时间 |
-| Source | RegistrationSource | Required | 挂号来源: FrontDesk / Doctor |
+| Source | RegistrationSource | Required | 挂号来源: Receptionist / Doctor |
 | MedicalCaseId | Guid? | FK → MedicalCase, Nullable | 关联医案 (创建时为 null，接诊后关联) |
 | Remark | string? | MaxLength(500) | 备注 |
 | IsDeleted | bool | Default=false | 软删除标记 |
@@ -434,7 +434,7 @@ We believe that **providing a systematic registration and queuing mechanism** fo
 
 | 值 | 说明 |
 |----|------|
-| FrontDesk | 前台挂号 — Receptionist 创建，走排队流程 |
+| Receptionist | 前台挂号 — Receptionist 创建，走排队流程 |
 | Doctor | 医生直接看诊 — Doctor 创建，跳过排队直接 InProgress |
 
 ### 约束

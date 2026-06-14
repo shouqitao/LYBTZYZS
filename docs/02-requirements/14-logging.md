@@ -260,12 +260,12 @@ We believe that 实现 Serilog 结构化日志 + CorrelationId 追踪 + 敏感�
 **Business Rules:**
 1. 后台服务 (BackgroundService)，每日凌晨 3:00 执行
 2. 默认保留天数: **365 天** (可配置，对应 NFR-D04 / NFR-SEC-005)
-3. 配置节: `Lybt:SecurityAudit:Cleanup`
+3. 配置节: `Security:AuditRetentionDays`
 4. 分批删除: 每批 1000 条，避免大事务锁表
 5. 清理失败不影响应用运行 (异常隔离)
 6. 执行日志: 记录清理条数和截止日期
 
-> **注意**: 当前代码硬编码 30 天，需修改为可配置且默认 365 天以匹配 NFR-SEC-005。
+> **已实现**: 审计日志保留期通过 `SecurityOptions.AuditRetentionDays` 配置，默认 365 天，范围 30-3650 天。
 
 **Dual Mode:**
 | 模式 | 行为 |
@@ -372,7 +372,7 @@ We believe that 实现 Serilog 结构化日志 + CorrelationId 追踪 + 敏感�
 |------|------|---------|
 | SQL Server 日志表增长过快 | 磁盘空间耗尽，影响业务数据写入 | LogCleanupService 定期清理 + 分批删除避免锁表 |
 | 脱敏规则遗漏新增敏感字段 | 新字段未脱敏导致隐私泄露 | SensitiveDataAttribute 显式标记 + 文本级正则兜底 |
-| 安全审计日志硬编码 30 天保留期 | 不满足医疗行业 365 天合规要求 | 需修改为可配置且默认 365 天 (已知问题) |
+| ~~安全审计日志硬编码 30 天保留期~~ | ~~不满足医疗行业 365 天合规要求~~ | **已解决**: 可配置保留期，默认 365 天 |
 | 日志清理 BackgroundService 崩溃 | 过期日志无法清理 | 异常隔离 + 清理失败不影响主流程 |
 | Desktop 端日志文件未清理 | 本地磁盘占满 | 文件滚动策略: 按天滚动 + 保留 30 个文件 + 单文件 10MB 限制 |
 
@@ -390,7 +390,7 @@ We believe that 实现 Serilog 结构化日志 + CorrelationId 追踪 + 敏感�
 
 | ID | 问题 | 状态 |
 |----|------|------|
-| OQ-LOG-01 | 安全审计日志保留期从代码硬编码 30 天修改为可配置 365 天的时间节点? | 已识别，待排期 |
+| OQ-LOG-01 | 安全审计日志保留期从代码硬编码 30 天修改为可配置 365 天的时间节点? | **已解决**: `SecurityOptions.AuditRetentionDays` 默认 365 天，范围 30-3650 天 |
 | OQ-LOG-02 | Desktop 端是否需要支持日志上传到 Server 端集中查询? | 延期到 v2.0 评估 |
 | OQ-LOG-03 | 日志清理 BackgroundService 是否需要健康检查集成 (如清理失败 N 次后告警)? | 延期到 v2.0，与异常告警体系一并设计 |
 
@@ -484,7 +484,7 @@ We believe that 实现 Serilog 结构化日志 + CorrelationId 追踪 + 敏感�
 | Lybt:Logging:Cleanup:CleanupIntervalHours | 清理执行间隔 | 24 |
 | Lybt:Logging:Cleanup:InitialDelayMinutes | 启动后延迟执行 | 5 |
 | Lybt:Logging:Cleanup:BatchSize | 每批删除条数 | 1000 |
-| Lybt:SecurityAudit:Cleanup:RetentionDays | 安全审计日志保留天数 | 365 |
+| Security:AuditRetentionDays | 安全审计日志保留天数 | 365 |
 
 ### Desktop 端
 
@@ -509,7 +509,7 @@ We believe that 实现 Serilog 结构化日志 + CorrelationId 追踪 + 敏感�
 | LOG-D01 | CorrelationId 双端统一方案 | US-LOG-001 | 已确定: Server 端从 HttpContext 获取，Desktop 端从 AsyncLocal 获取，Enricher 统一注入 |
 | LOG-D02 | 脱敏策略双重保障 | US-LOG-003 | 已确定: 属性级 (SensitiveDataAttribute) + 文本级 (正则匹配) 双重保障 |
 | LOG-D03 | 审计日志独立存储 | US-LOG-002 | 已确定: SecurityAuditLog 独立表，不与 SystemLog 混合 |
-| LOG-D04 | 安全审计保留 365 天 | US-LOG-006 | 已确定: 代码原硬编码 30 天，需改为可配置且默认 365 天 (对齐 NFR-D04)。医疗行业常见合规要求 |
+| LOG-D04 | 安全审计保留 365 天 | US-LOG-006 | 已实现: 通过 `SecurityOptions.AuditRetentionDays` 配置，默认 365 天 (对齐 NFR-D04)。医疗行业常见合规要求 |
 | LOG-D05 | 系统日志 Error/Fatal 永久保留 | US-LOG-005 | 已确定: LogCleanupService 仅清理 Warning 及以下级别，Error/Fatal 永久保留供事后分析 |
 | LOG-D06 | 异常告警延期到 v2.0 | Out of Scope | 已确定: v1.0 仅保证 Error/Fatal 日志永久保留供查询，不实现主动告警 (邮件/Webhook/桌面通知) |
 | LOG-D07 | 医案审计归属 medical-cases.md | 交叉引用 | 已确定: MedicalCaseAuditLog 归属 FR-MC-012 (业务审计)，logging.md 仅交叉引用 |

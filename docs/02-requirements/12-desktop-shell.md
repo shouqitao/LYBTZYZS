@@ -231,7 +231,7 @@ We believe that 实现基于 Prism 9.0 的统一壳程序 (启动流水线 + 登
 5. Region 管理: ShowLoginDialog / ClearLoginRegion / ClearContentRegion
 6. 导航参数: 通过 IDictionary\<string, object\> 传递
 7. 导航变更事件: NavigationChanged 通知视图切换
-8. 不支持前进导航
+8. 前进导航已实现 (`NavigationCoordinator._forwardStack`)
 9. 登出时清空导航历史
 
 **Dual Mode:**
@@ -445,7 +445,7 @@ We believe that 实现基于 Prism 9.0 的统一壳程序 (启动流水线 + 登
 |--------|------|
 | 多窗口/多标签页 | 增加架构复杂度，诊所单屏场景不需要，后续版本考虑 |
 | 网络状态实时监控 | 状态栏网络指示器延期到后续版本 |
-| 前进导航 | 增加导航复杂度，仅后退已满足需求 |
+| ~~前进导航~~ | **已实现** (`_forwardStack` + `_breadcrumbs` 面包屑导航) |
 | 插件市场/动态模块下载 | 超出 v1.0 范围，模块编译时静态注册 |
 | 最后登录时间/IP 信息显示 | 非当前优先级，Sprint 后续实现 |
 | 触摸屏优化 | 诊所以鼠标键盘为主，触控非优先 |
@@ -552,7 +552,7 @@ Unauthenticated -> Authenticating -> Authenticated -> Active -> Expired -> Unaut
 | SHELL-D03 | 慢步骤阈值 | 3.0 秒，平衡诊断精度和噪声 | 2026-02-11 |
 | SHELL-D04 | 状态栏信息 | 左: 用户名+角色, 中: 运行模式, 右: 版本号。简洁实用 | 2026-02-17 |
 | SHELL-D05 | 启动画面 | 进度报告型: Logo+进度条+当前步骤名称。失败时提供降级/重试选项 | 2026-02-17 |
-| SHELL-D06 | 导航历史 | 仅支持后退 (Alt+左箭头)，不支持前进。历史深度最多 20 条 | 2026-02-17 |
+| SHELL-D06 | 导航历史 | 后退 (Alt+左箭头) + 前进导航均已实现。面包屑导航已实现。历史深度最多 20 条 | 2026-02-17 (2026-06-14 更新) |
 
 ### 修订历史
 

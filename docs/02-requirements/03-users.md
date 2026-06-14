@@ -63,7 +63,7 @@
 
 **核心能力:**
 - **用户 CRUD**: 创建/查看/编辑/软删除/恢复系统用户
-- **权限值层级**: SuperAdmin(100) > Admin(80) > Doctor(60) > Receptionist(40)，高权限管低权限
+- **权限值层级**: SuperAdmin(100) > Admin(10) > Doctor(1) > Receptionist(0)，高权限管低权限
 - **sysadmin 保护**: 系统唯一固定账号，不可被任何人管理 (USER-D05)
 - **密码管理**: 管理员重置密码 + 用户自助修改密码，强制密码策略
 - **批量操作**: 批量删除/启用/禁用，单事务提交
@@ -72,10 +72,13 @@
 
 **权限值层级模型 (USER-D04):**
 ```
-SuperAdmin (100) ─── 可管理 ──→ Admin (80) / Doctor (60) / Receptionist (40)
-Admin (80)       ─── 可管理 ──→ Doctor (60) / Receptionist (40)
-Doctor (60)      ─── 无用户管理权限
-Receptionist (40)─── 无用户管理权限
+SuperAdmin (100) ─── 可管理 ──→ Admin (10) / Doctor (1) / Receptionist (0)
+
+Admin (10)        ─── 可管理 ──→ Doctor (1) / Receptionist (0)
+
+Doctor (1)        ─── 无用户管理权限
+
+Receptionist (0)  ─── 无用户管理权限
 
 统一判断公式: operator.PermissionLevel > target.PermissionLevel → 允许操作
 ```
@@ -136,7 +139,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 1. 用户名唯一，仅允许字母、数字、下划线 (3-32 字符)
 2. 系统保留用户名不可使用: admin, administrator, root, system, superadmin, sysadmin
 3. 不提供密码时使用配置默认密码
-4. 权限值检查: 只能创建权限值低于自己的角色 (USER-D04)。Admin(80) 可创建 Doctor(60)/Receptionist(40)，SuperAdmin(100) 可创建 Admin(80)/Doctor(60)/Receptionist(40)
+4. 权限值检查: 只能创建权限值低于自己的角色 (USER-D04)。Admin(10) 可创建 Doctor(1)/Receptionist(0)，SuperAdmin(100) 可创建 Admin(10)/Doctor(1)/Receptionist(0)
 5. 自动生成拼音码 (PinYinCode) 用于快速搜索
 6. 默认状态为 Enabled，默认角色为 Doctor
 
@@ -205,7 +208,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 2. 真实姓名变更时自动重新生成拼音码
 3. 权限值检查: operator.PermissionLevel > target.PermissionLevel (USER-D04)
 4. 不能修改 sysadmin (USER-D05: sysadmin 不可被管理)
-5. 角色变更时通过 ICrossModuleAuthService.RevokeAllUserTokensAsync() 撤销该用户 Token Family，强制重登录 (AUTH-D07，见 [auth.md](02-auth.md))
+5. 角色变更时通过 ICrossModuleAuthService.RevokeUserTokensAsync() 撤销该用户 Token Family，强制重登录 (AUTH-D07，见 [auth.md](02-auth.md))
 
 **Dual Mode:**
 | 模式 | 行为 |
@@ -228,7 +231,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 2. 不能删除自己 (列表已过滤自己，API 层兜底校验)
 3. 不能删除 sysadmin (USER-D05: sysadmin 不可被管理，列表不可见 + API 层兜底)
 4. 权限值检查: operator.PermissionLevel > target.PermissionLevel (USER-D04)
-5. 删除后通过 ICrossModuleAuthService.RevokeAllUserTokensAsync() 撤销所有 Token Family (AUTH-D07)
+5. 删除后通过 ICrossModuleAuthService.RevokeUserTokensAsync() 撤销所有 Token Family (AUTH-D07)
 6. 记录审计日志
 7. 该医生名下的医案数据保留 (DoctorId 不变)，由管理员手动处理 (USER-D06)
 
@@ -292,7 +295,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 **Business Rules:**
 1. 无需提供旧密码
 2. 使用配置文件中的默认密码或自动生成临时密码
-3. 重置后通过 ICrossModuleAuthService.RevokeAllUserTokensAsync() 撤销所有 Token Family (AUTH-D07)
+3. 重置后通过 ICrossModuleAuthService.RevokeUserTokensAsync() 撤销所有 Token Family (AUTH-D07)
 4. 用户需要重新登录
 5. 可设置 MustChangeOnNextLogin 标记
 
@@ -315,7 +318,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 **Business Rules:**
 1. 验证旧密码正确
 2. 密码策略: 最小 8 位，必须包含大小写字母、数字、特殊字符
-3. 修改后通过 ICrossModuleAuthService.RevokeAllUserTokensAsync() 撤销所有 Token Family (AUTH-D07)
+3. 修改后通过 ICrossModuleAuthService.RevokeUserTokensAsync() 撤销所有 Token Family (AUTH-D07)
 4. 用户需要重新登录
 
 **Dual Mode:**
@@ -331,11 +334,11 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 
 **Acceptance Criteria:**
 - [ ] RealName 变更 → PinYinCode 自动重新生成
-- [ ] 请求体含 UserName/Email 修改 → 忽略
+- [ ] 请求体含 UserName 修改 → 忽略; Email 修改 → 允许 (v1.0 已支持)
 
 **Business Rules:**
 1. 仅可修改 RealName 和 PhoneNumber
-2. UserName、Email 等字段暂不支持自助修改
+2. UserName 不支持自助修改; Email 支持修改 (无验证码)
 
 **Dual Mode:**
 | 模式 | 行为 |
@@ -356,7 +359,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 **Business Rules:**
 1. 不能禁用 sysadmin (USER-D05: sysadmin 不可被管理)
 2. 权限值检查: operator.PermissionLevel > target.PermissionLevel (USER-D04)
-3. 禁用用户时通过 ICrossModuleAuthService.RevokeAllUserTokensAsync() 撤销所有 Token Family
+3. 禁用用户时通过 ICrossModuleAuthService.RevokeUserTokensAsync() 撤销所有 Token Family
 4. 禁用后当前会话立即失效
 5. 禁用用户尝试登录返回 UserDisabled 错误
 6. 支持批量启用/禁用
@@ -487,7 +490,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 | ID | 问题 | 状态 |
 |----|------|------|
 | OQ-USER-01 | 密码过期策略 (MustChangeOnNextLogin) 何时启用? | 预留设计，v1.0 不启用 |
-| OQ-USER-02 | Email 自助修改是否需要验证码机制? | 延期。v1.0 不支持自助修改 Email |
+| OQ-USER-02 | Email 自助修改是否需要验证码机制? | 已解决。v1.0 支持无验证码的 Email 自助修改 |
 | OQ-USER-03 | 本地模式用户数据与远程模式的同步策略? | 延期。v1.0 双模式独立运行 |
 | OQ-USER-04 | 批量操作的最大用户数限制? | 待确定。目前无限制 |
 
@@ -520,9 +523,9 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 | 角色 | 权限值 | 用户管理中可见的用户 | 自助操作 |
 |------|--------|---------------------|---------|
 | SuperAdmin (sysadmin) | 100 | Admin + Doctor + Receptionist (过滤自己) | 修改密码、邮箱等个人资料 |
-| Admin | 80 | Doctor + Receptionist (过滤自己 + sysadmin + 其他Admin) | 修改密码、个人资料 |
-| Doctor | 60 | 无权进入用户管理 | 修改密码、个人资料 |
-| Receptionist | 40 | 无权进入用户管理 | 修改密码、个人资料 |
+| Admin | 10 | Doctor + Receptionist (过滤自己 + sysadmin + 其他Admin) | 修改密码、个人资料 |
+| Doctor | 1 | 无权进入用户管理 | 修改密码、个人资料 |
+| Receptionist | 0 | 无权进入用户管理 | 修改密码、个人资料 |
 
 ### SuperAdmin (sysadmin) 特殊规则 (USER-D05)
 
@@ -581,8 +584,8 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 | 1 | 本地模式下用户管理的支持范围 | 所有 US-USER | 已确定: 完整支持。LocalUserRepository 11/11 方法全覆盖，DI 注册为 IUserDataSource 本地实现 |
 | 2 | Receptionist 角色的具体功能边界 | US-USER-001 | 已确定: 患者 CRU (创建/查看/更新，无删除) + 读卡器使用 + 未完成医案简要提示 (时间+医生，不含诊断/处方详情)。不在 AdminOnly 策略中 |
 | ~~USER-D03~~ | ~~最后一个 Admin/SuperAdmin 禁用保护~~ | ~~US-USER-011~~ | **已移除** (USER-D04/D05 替代): sysadmin 固定存在不可被管理，永远可以创建新 Admin，不可能出现"无管理员"状态 |
-| AUTH-D07 | 角色变更即时生效 | US-USER-004 | 已确定: 角色变更时通过 ICrossModuleAuthService.RevokeAllUserTokensAsync() 撤销 Token Family，强制重登录 (见 auth.md AUTH-D07) |
-| USER-D04 | 权限值层级模型 | 全部 US-USER | 已确定: SuperAdmin=100, Admin=80, Doctor=60, Receptionist=40。统一判断: operator.Level > target.Level -> 允许。用户管理列表只显示权限值严格低于操作者的用户，且过滤自己 |
+| AUTH-D07 | 角色变更即时生效 | US-USER-004 | 已确定: 角色变更时通过 ICrossModuleAuthService.RevokeUserTokensAsync() 撤销 Token Family，强制重登录 (见 auth.md AUTH-D07) |
+| USER-D04 | 权限值层级模型 | 全部 US-USER | 已确定: SuperAdmin=100, Admin=10, Doctor=1, Receptionist=0。统一判断: operator.Level > target.Level -> 允许。用户管理列表只显示权限值严格低于操作者的用户，且过滤自己 |
 | USER-D05 | sysadmin 不可被管理 | US-USER-004/005/007/008/011 | 已确定: sysadmin 是系统唯一固定账号 (数据库种子预置)。不可被任何人修改角色/删除/禁用/重置密码。仅可通过 /profile 和 /change-password 自助修改个人信息。API 层硬规则兜底 |
 | USER-D06 | 医生删除后医案不自动转移 | US-USER-005 + MedicalCase | 已确定: 医生被禁用/删除后其名下医案数据保留 (DoctorId 不变)，由管理员手动处理。医案转移涉及医疗责任归属，不适合系统自动决定 |
 
