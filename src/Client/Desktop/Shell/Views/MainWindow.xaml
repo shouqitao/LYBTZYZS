@@ -136,6 +136,9 @@
             <controls:GlobalStatusBar
                 Grid.Row="1"
                 Grid.ColumnSpan="2"
+                ConnectionUrl="{Binding ConnectionUrl}"
+                IsLocal="{Binding IsLocal}"
+                ConnectCommand="{Binding ConnectCommand}"
                 CurrentUserName="{Binding CurrentUserDisplayName}"
                 IsLoading="{Binding IsSyncing}"
                 LoadingMessage="正在同步..."

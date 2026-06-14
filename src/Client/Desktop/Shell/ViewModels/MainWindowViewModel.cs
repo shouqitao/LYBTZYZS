@@ -35,6 +35,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     private readonly IApiHealthMonitor _apiHealthMonitor;
     private readonly IApiRouter _apiRouter;
+    private readonly IConnectionSettingsService _connectionSettings;
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly IEnhancedNavigationService _enhancedNavigationService;
     private readonly MenuManager _menuManager;
@@ -103,10 +104,34 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
 
     /// <summary>
-    /// 是否处于离线模式（本地API）
+    /// 当前连接地址
     /// </summary>
     [ObservableProperty]
-    private bool _isOfflineMode;
+    private string _connectionUrl = "http://127.0.0.1:5100";
+
+    /// <summary>
+    /// 是否连接本地服务
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsNotLoggedIn))]
+    private bool _isLocal;
+
+    /// <summary>
+    /// 连接地址变更命令（参数为新URL字符串）
+    /// </summary>
+    [RelayCommand]
+    private async Task ConnectAsync(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return;
+        try
+        {
+            await _connectionSettings.SetUrlAsync(url);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "[UI] 连接切换失败: {Url}", url);
+        }
+    }
 
     /// <summary>
     /// poc-drawer-layout: Drawer是否打开
@@ -192,6 +217,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         IUserNotificationService userNotificationService,
         IApiHealthMonitor apiHealthMonitor,
         IApiRouter apiRouter,
+        IConnectionSettingsService connectionSettings,
         INavigationCoordinator navigationCoordinator,
         IEnhancedNavigationService enhancedNavigationService,
         MenuManager menuManager,
@@ -210,6 +236,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
         _apiHealthMonitor = apiHealthMonitor ?? throw new ArgumentNullException(nameof(apiHealthMonitor));
         _apiRouter = apiRouter ?? throw new ArgumentNullException(nameof(apiRouter));
+        _connectionSettings = connectionSettings ?? throw new ArgumentNullException(nameof(connectionSettings));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _enhancedNavigationService = enhancedNavigationService ?? throw new ArgumentNullException(nameof(enhancedNavigationService));
         _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));
@@ -219,6 +246,9 @@ public partial class MainWindowViewModel : CoreViewModelBase
         _tokenLifecycleService = tokenLifecycleService ?? throw new ArgumentNullException(nameof(tokenLifecycleService));
         _tokenStorageService = tokenStorageService ?? throw new ArgumentNullException(nameof(tokenStorageService));
         _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
+
+        ConnectionUrl = _connectionSettings.CurrentUrl;
+        IsLocal = _connectionSettings.IsLocal;
 
         InitializeViewModel();
         InitializeNavigationPanels();
@@ -494,7 +524,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     {
         _apiHealthMonitor.StatusChanged += OnHealthStatusChanged;
         _apiHealthMonitor.StartMonitoringAsync().SafeFireAndForget(ex => Logger.LogError(ex, "启动健康监控失败"));
-        _apiRouter.ModeChanged += OnApiRouterModeChanged;
+        _connectionSettings.UrlChanged += OnConnectionUrlChanged;
     }
 
     /// <summary>
@@ -543,15 +573,15 @@ public partial class MainWindowViewModel : CoreViewModelBase
     }
 
     /// <summary>
-    /// API路由模式变更事件处理
+    /// 连接地址变更事件处理
     /// </summary>
-    private void OnApiRouterModeChanged(object? sender, ApiModeChangedEventArgs e)
+    private void OnConnectionUrlChanged(object? sender, string newUrl)
     {
         Services.UiThreadDispatcher.InvokeAsync(() =>
         {
-            IsOfflineMode = e.NewMode == ApiMode.Local;
-            Logger.LogInformation("[UI] API模式变更: {OldMode} -> {NewMode} (手动={IsManual})",
-                e.OldMode, e.NewMode, e.IsManual);
+            ConnectionUrl = newUrl;
+            IsLocal = _connectionSettings.IsLocal;
+            Logger.LogInformation("[UI] 连接地址变更: {Url}", newUrl);
         });
     }
 
@@ -910,7 +940,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         {
             _apiHealthMonitor.StatusChanged -= OnHealthStatusChanged;
             _apiHealthMonitor.Dispose();
-            _apiRouter.ModeChanged -= OnApiRouterModeChanged;
+            _connectionSettings.UrlChanged -= OnConnectionUrlChanged;
             if (_apiRouter is IDisposable routerDisposable) routerDisposable.Dispose();
         }
         catch (Exception ex) { Logger.LogError(ex, "清理健康监控器失败"); }

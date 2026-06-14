@@ -68,7 +68,8 @@
         </Storyboard>
     </UserControl.Resources>
 
-    <Border
+    <Grid>
+        <Border
         Background="{DynamicResource RegionBrush}"
         BorderBrush="{DynamicResource BorderLightBrush}"
         BorderThickness="0,1,0,0">
@@ -81,6 +82,8 @@
             <!--  状态栏内容  -->
             <Grid Grid.Row="0" Margin="4,0">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <!-- 连接状态 -->
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
@@ -109,22 +112,49 @@
                     <TextBlock Style="{StaticResource StatusTextStyle}" Text="{Binding LoadingMessage, RelativeSource={RelativeSource AncestorType=UserControl}}" />
                 </StackPanel>
 
+                <!--  连接状态（可点击切换）  -->
+                <StackPanel
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    Cursor="Hand"
+                    MouseLeftButtonDown="OnConnectionStatusClick"
+                    ToolTip="点击切换连接地址">
+                    <Ellipse
+                        Width="8"
+                        Height="8"
+                        VerticalAlignment="Center"
+                        Fill="{DynamicResource SuccessBrush}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="11"
+                        Foreground="{DynamicResource SecondaryTextBrush}"
+                        Text="{Binding ConnectionUrl, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="10"
+                        Foreground="{DynamicResource WarningBrush}"
+                        Text="(本地)"
+                        Visibility="{Binding IsLocal, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.BoolToVis}}" />
+                </StackPanel>
+
                 <!--  状态消息  -->
                 <TextBlock
-                    Grid.Column="1"
+                    Grid.Column="2"
                     Style="{StaticResource StatusTextStyle}"
                     Text="{Binding StatusMessage, RelativeSource={RelativeSource AncestorType=UserControl}}" />
 
                 <!--  进度显示  -->
                 <TextBlock
-                    Grid.Column="2"
+                    Grid.Column="3"
                     Style="{StaticResource StatusTextStyle}"
                     Text="{Binding OperationProgress, RelativeSource={RelativeSource AncestorType=UserControl}, StringFormat={}{0}%}"
                     Visibility="{Binding IsLoading, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
                 <!--  当前用户名 - US-SHELL-007 (CODE-21)  -->
                 <TextBlock
-                    Grid.Column="3"
+                    Grid.Column="4"
                     Foreground="{DynamicResource PrimaryTextBrush}"
                     Style="{StaticResource StatusTextStyle}"
                     Text="{Binding CurrentUserName, RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -132,14 +162,14 @@
 
                 <!--  版本号 - US-SHELL-007 (CODE-21)  -->
                 <TextBlock
-                    Grid.Column="4"
+                    Grid.Column="5"
                     Foreground="{DynamicResource ThirdlyTextBrush}"
                     Style="{StaticResource StatusTextStyle}"
                     Text="{Binding AppVersion, RelativeSource={RelativeSource AncestorType=UserControl}, StringFormat=v{0}}" />
 
                 <!--  系统时间  -->
                 <TextBlock
-                    Grid.Column="5"
+                    Grid.Column="6"
                     Foreground="{DynamicResource SecondaryTextBrush}"
                     Style="{StaticResource StatusTextStyle}"
                     Text="{Binding Source={x:Static local:SystemTimeProvider.Instance}, Path=CurrentTime, StringFormat=HH:mm:ss}" />
@@ -153,4 +183,85 @@
                 Value="{Binding OperationProgress, RelativeSource={RelativeSource AncestorType=UserControl}}" />
         </Grid>
     </Border>
+
+    <!--  连接设置弹出面板  -->
+    <Popup
+        x:Name="ConnectionPopup"
+        AllowsTransparency="True"
+        Placement="Top"
+        PopupAnimation="Fade"
+        StaysOpen="False">
+        <Border
+            Background="White"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            Padding="12"
+            Width="280">
+            <Border.Effect>
+                <DropShadowEffect
+                    BlurRadius="8"
+                    Opacity="0.2"
+                    ShadowDepth="2"
+                    Color="Black" />
+            </Border.Effect>
+            <StackPanel>
+                <TextBlock
+                    Margin="0,0,0,8"
+                    FontSize="13"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource PrimaryTextBrush}"
+                    Text="连接设置" />
+                <TextBox
+                    x:Name="UrlInput"
+                    Margin="0,0,0,8"
+                    Padding="6"
+                    FontSize="12"
+                    Text="{Binding ConnectionUrl, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                <Button
+                    Margin="0,0,0,8"
+                    Padding="6,4"
+                    Background="{DynamicResource RegionBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    Click="OnSelectLocalClick"
+                    Content="本地服务 (127.0.0.1)"
+                    Cursor="Hand"
+                    FontSize="12"
+                    Foreground="{DynamicResource PrimaryTextBrush}"
+                    HorizontalAlignment="Stretch" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button
+                        Grid.Column="0"
+                        Padding="6,4"
+                        Background="{DynamicResource SuccessBrush}"
+                        BorderThickness="0"
+                        Click="OnConnectClick"
+                        Content="连接"
+                        Cursor="Hand"
+                        FontSize="12"
+                        Foreground="White"
+                        HorizontalAlignment="Stretch" />
+                    <Button
+                        Grid.Column="2"
+                        Padding="6,4"
+                        Background="{DynamicResource RegionBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        Click="OnCancelClick"
+                        Content="取消"
+                        Cursor="Hand"
+                        FontSize="12"
+                        Foreground="{DynamicResource SecondaryTextBrush}"
+                        HorizontalAlignment="Stretch" />
+                </Grid>
+            </StackPanel>
+        </Border>
+    </Popup>
+    </Grid>
 </UserControl>

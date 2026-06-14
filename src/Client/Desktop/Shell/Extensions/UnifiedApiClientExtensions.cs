@@ -1,48 +1,36 @@
 // ---------------------------------------------------------------------------
-// UnifiedApiClientExtensions — IApiClient registration based on ApiMode
+// UnifiedApiClientExtensions — IApiClient registration with SwitchingApiClient
 // ---------------------------------------------------------------------------
-// Reads ApiMode from appsettings.json and registers either:
-//   - RefitApiClient (Remote mode): reuses existing HttpClient + RefitSettings
-//   - HttpClientApiClient (Local mode): creates IHttpClientFactory with LocalBaseUrl
-//
-// This replaces the scattered IApiClient registration logic and provides a
-// single entry point for the unified API client pipeline.
+// Registers SwitchingApiClient as the singleton IApiClient, which routes to
+// RefitApiClient or HttpClientApiClient based on the current connection URL.
+// Also registers factory delegates for dynamic HttpClient creation.
 // ---------------------------------------------------------------------------
 
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using DryIoc;
 using LYBT.Desktop.Contracts.ApiClient;
+using LYBT.Desktop.Contracts.Security;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Http;
-using LYBT.Shared.Configuration.Options.Client;
+using LYBT.Desktop.Foundation.Security;
+using LYBT.Desktop.Infrastructure.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Prism.Ioc;
 using Refit;
 
 namespace LYBT.Desktop.Shell.Extensions;
 
 /// <summary>
-/// Extension methods for registering <see cref="IApiClient"/> based on ApiMode configuration.
+/// Extension methods for registering <see cref="IApiClient"/>.
 /// </summary>
 public static class UnifiedApiClientExtensions
 {
     /// <summary>
-    /// Registers <see cref="IApiClient"/> as a singleton, selecting the implementation
-    /// based on the <c>ApiClient:ApiMode</c> configuration value.
+    /// Registers <see cref="SwitchingApiClient"/> as the singleton <see cref="IApiClient"/>.
     /// </summary>
-    /// <param name="containerRegistry">The Prism DryIoc container registry.</param>
-    /// <param name="configuration">Application configuration root.</param>
-    /// <remarks>
-    /// <para><b>Remote mode</b> (default): Reuses the existing <see cref="HttpClient"/> (with handler chain:
-    /// HttpClientHandler → TokenRefreshHandler → AuthorizationMessageHandler → LoggingHttpHandler)
-    /// and creates a <see cref="RefitApiClient"/> with Refit serialization settings.</para>
-    /// <para><b>Local mode</b>: Registers a dedicated <see cref="IHttpClientFactory"/> pointing to
-    /// <c>ApiClient:LocalBaseUrl</c> (or <c>OfflineMode:LocalApiBaseUrl</c> as fallback), then creates
-    /// an <see cref="HttpClientApiClient"/> for LocalWebAPI mode.</para>
-    /// <para>Existing per-module Refit registrations (IAuthApi, IPatientApi, etc.) in
-    /// <see cref="HttpServiceRegistrationExtensions.RegisterHttpServices"/> are preserved for
-    /// backward compatibility — they do NOT conflict with this IApiClient registration.</para>
-    /// </remarks>
     public static void AddUnifiedApiClient(
         this IContainerRegistry containerRegistry,
         IConfiguration configuration)
@@ -50,26 +38,13 @@ public static class UnifiedApiClientExtensions
         ArgumentNullException.ThrowIfNull(containerRegistry);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        var apiMode = configuration["ApiClient:ApiMode"] ?? "Remote";
+        var apiOptions = new LYBT.Shared.Configuration.Options.Client.ApiClientOptions();
+        configuration.GetSection(
+            LYBT.Shared.Configuration.Options.Client.ApiClientOptions.SectionName)
+            .Bind(apiOptions);
+        var ignoreSslErrors = apiOptions.IgnoreSslErrors;
+        var timeoutSeconds = apiOptions.TimeoutSeconds;
 
-        if (string.Equals(apiMode, "Local", StringComparison.OrdinalIgnoreCase))
-        {
-            RegisterLocalApiClient(containerRegistry, configuration);
-        }
-        else
-        {
-            RegisterRemoteApiClient(containerRegistry);
-        }
-    }
-
-    /// <summary>
-    /// Registers <see cref="IApiClient"/> backed by <see cref="RefitApiClient"/> (Remote mode).
-    /// Reuses the existing <see cref="HttpClient"/> singleton with the full handler chain.
-    /// </summary>
-    private static void RegisterRemoteApiClient(IContainerRegistry containerRegistry)
-    {
-        // Reuse existing HttpClient singleton (registered in HttpServiceRegistrationExtensions)
-        // with the full handler chain: HttpClientHandler → TokenRefreshHandler → AuthorizationMessageHandler → LoggingHttpHandler
         var refitSettings = new RefitSettings
         {
             ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions
@@ -80,49 +55,61 @@ public static class UnifiedApiClientExtensions
             })
         };
 
-        // Register as deferred factory — HttpClient is a singleton already in the container,
-        // so resolving it at factory invocation time is safe.
+        // DryIoc's IContainerRegistry IS IContainer, allowing resolution at factory time.
+        var container = (IContainer)containerRegistry;
+
+        // Factory for Remote-mode HttpClient with full handler chain
+        Func<string, HttpClient> remoteHttpClientFactory = baseUrl =>
+        {
+            var httpHandler = new HttpClientHandler();
+            if (ignoreSslErrors)
+                httpHandler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+
+            var tokenStorage = container.Resolve<ITokenStorageService>();
+            var credentialVault = container.Resolve<ICredentialVault>();
+
+            var tokenRefreshHandler = new TokenRefreshHandler(
+                tokenStorage, credentialVault, configuration,
+                container.Resolve<ILogger<TokenRefreshHandler>>(),
+                userActivityState: null);
+            tokenRefreshHandler.InnerHandler = httpHandler;
+
+            var authHandler = new AuthorizationMessageHandler(
+                tokenStorage,
+                container.Resolve<ILogger<AuthorizationMessageHandler>>());
+            authHandler.InnerHandler = tokenRefreshHandler;
+
+            var loggingHandler = new LoggingHttpHandler(
+                container.Resolve<ILogger<LoggingHttpHandler>>());
+            loggingHandler.InnerHandler = authHandler;
+
+            return new HttpClient(loggingHandler)
+            {
+                BaseAddress = new Uri(baseUrl),
+                Timeout = TimeSpan.FromSeconds(timeoutSeconds)
+            };
+        };
+
+        // Factory for Local-mode IHttpClientFactory
+        Func<string, IHttpClientFactory> localHttpClientFactory = baseUrl =>
+        {
+            var baseAddress = new Uri(baseUrl);
+            return new LocalWebApiHttpClientFactory(baseAddress);
+        };
+
         containerRegistry.RegisterSingleton<IApiClient>(resolver =>
         {
-            var httpClient = resolver.Resolve<HttpClient>();
-            return new RefitApiClient(httpClient, refitSettings);
+            var connectionSettings = resolver.Resolve<IConnectionSettingsService>();
+            return new SwitchingApiClient(
+                connectionSettings,
+                remoteHttpClientFactory,
+                localHttpClientFactory,
+                refitSettings);
         });
     }
 
     /// <summary>
-    /// Registers <see cref="IApiClient"/> backed by <see cref="HttpClientApiClient"/> (Local mode).
-    /// Ensures <see cref="IHttpClientFactory"/> is available with the local base address
-    /// before registering the API client.
-    /// </summary>
-    /// <remarks>
-    /// Local base URL resolution order:
-    /// <list type="number">
-    ///   <item><c>ApiClient:LocalBaseUrl</c> (new unified config)</item>
-    ///   <item><c>OfflineMode:LocalApiBaseUrl</c> (existing fallback)</item>
-    ///   <item>Default: <c>http://localhost:5100</c></item>
-    /// </list>
-    /// </remarks>
-    private static void RegisterLocalApiClient(
-        IContainerRegistry containerRegistry,
-        IConfiguration configuration)
-    {
-        // Resolve local base URL from config (priority: ApiClient:LocalBaseUrl > OfflineMode:LocalApiBaseUrl > default)
-        var localBaseUrl = configuration["ApiClient:LocalBaseUrl"]
-            ?? configuration["OfflineMode:LocalApiBaseUrl"]
-            ?? "http://localhost:5100";
-
-        var baseAddress = new Uri(localBaseUrl);
-
-        // Register IHttpClientFactory as singleton with the local base address
-        // HttpClientApiClient uses IHttpClientFactory.CreateClient() to get clients
-        containerRegistry.RegisterSingleton<IHttpClientFactory>(() => new LocalWebApiHttpClientFactory(baseAddress));
-
-        containerRegistry.AddHttpClientApiClient();
-    }
-
-    /// <summary>
     /// Minimal <see cref="IHttpClientFactory"/> for LocalWebAPI mode.
-    /// Returns a shared <see cref="HttpClient"/> with the configured base address.
     /// </summary>
     private sealed class LocalWebApiHttpClientFactory : IHttpClientFactory, IDisposable
     {

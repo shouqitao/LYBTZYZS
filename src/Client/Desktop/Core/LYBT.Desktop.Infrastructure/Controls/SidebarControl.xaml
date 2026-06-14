@@ -284,7 +284,7 @@
                             Foreground="{DynamicResource WarningBrush}"
                             Text="Local Mode"
                             ToolTip="Using local API (offline mode)"
-                            Visibility="{Binding IsOfflineMode, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}" />
+                            Visibility="{Binding IsLocal, Converter={x:Static converters:Cvt.BoolToVis}}" />
                         <!--  时间(下): 时间+日期  -->
                         <StackPanel Orientation="Horizontal">
                             <Path

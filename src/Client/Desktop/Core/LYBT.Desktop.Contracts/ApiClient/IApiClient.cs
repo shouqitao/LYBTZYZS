@@ -6,8 +6,8 @@
 //   - RefitApiClient (Remote mode): uses Refit-generated HTTP clients
 //   - HttpClientApiClient (LocalWebAPI mode): uses IHttpClientFactory
 //
-// The active implementation is determined by ApiMode configuration at startup.
-// Mode switching (Remote ↔ Local) is handled internally via IApiRouter.
+// The active implementation is determined by the connection URL at runtime.
+// Mode switching (Remote ↔ Local) is handled internally by SwitchingApiClient.
 // ---------------------------------------------------------------------------
 
 namespace LYBT.Desktop.Contracts.ApiClient;
