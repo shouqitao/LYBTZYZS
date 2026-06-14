@@ -195,8 +195,8 @@ if ($errorItems.Count -gt 0) {
     }
     
     Write-Host "─────────────────────────────────────────────" -ForegroundColor Cyan
-    Write-Host "📖 详细配置指南: docs\deployment\production-setup.md" -ForegroundColor Cyan
-    Write-Host "📖 配置项参考: docs\deployment\environment-variables.md" -ForegroundColor Cyan
+    Write-Host "📖 详细配置指南: docs.06-operations.01-deployment-overview.md" -ForegroundColor Cyan
+    Write-Host "📖 配置项参考: docs.06-operations.03-configuration-guide.md" -ForegroundColor Cyan
     Write-Host ""
 }
 

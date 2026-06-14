@@ -38,7 +38,7 @@
     作者: LYBT开发团队
     版本: 1.0.0
     创建日期: 2025-10-30
-    参考文档: docs/how-to-guides/server/webapi-deployment.md
+    参考文档: docs/06-operations/02-deployment-guide.md
 #>
 
 param(

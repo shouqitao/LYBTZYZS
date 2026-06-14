@@ -146,7 +146,7 @@ function Start-WebAPIService {
     
     # 启动dotnet进程
     try {
-        $processInfo = Start-Process -FilePath "dotnet" -ArgumentList "run --project src/Backend/Services/LYBT.WebAPI --urls `"https://localhost:7001`"" -WindowStyle Hidden -PassThru
+        $processInfo = Start-Process -FilePath "dotnet" -ArgumentList "run --project src/Server/Services/LYBT.WebAPI --urls `"https://localhost:7001`"" -WindowStyle Hidden -PassThru
         
         # 等待服务启动
         $maxWaitTime = 30
