@@ -113,7 +113,8 @@ We believe that 实现基于 SHA256 差异检测的双向数据同步 (药材/�
 
 ---
 
-> **[已实现基础版 2026-06-14]** MedicalCase 同步已有基础实现: `SyncService` 已完整处理 MedicalCase 的 metadata/upload/download/delete。注意: 文档设计的聚合级原子事务、`MedicalCaseSyncDto`、依赖排序、患者去重等高级特性**尚未实现**，当前直接序列化/反序列化 `MedicalCase` 实体。
+> **[P0 已实现 2026-06-14]** MedicalCase 同步 P0 加固完成: SYNC-D01 仅 Completed 医案参与同步 (客户端+服务端过滤)、引用完整性预检查 (患者/药材存在性验证 + ERR-70301/70302)、已完成锁定保护 (ERR-70304)。
+> **[P1 待实现]** MedicalCaseSyncDto 专用 DTO、患者 IdCardNumber 去重 + PatientId 重映射、CaseNumber/PrescriptionNumber 服务端重分配、自动依赖排序 (Herb→Patient→MedicalCase) 待后续迭代。
 > 原因: 独立 Epic 规划复杂度极高，需聚合级原子同步+患者去重+编号重分配等  |  计划: 同步体系完善 Epic  |  参考: SYNC-01
 
 ### US-SYNC-001: 获取可同步实体类型
