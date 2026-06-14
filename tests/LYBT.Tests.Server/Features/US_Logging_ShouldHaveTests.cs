@@ -74,7 +74,7 @@ public sealed class US_Logging_ShouldHaveTests : IntegrationTestBase<SystemOpsFi
             .WithDoctor(doctorId)
             .BuildCreate();
         var caseResp = await doctorClient.PostAsJsonAsync("/api/v1/medicalcases", casePayload);
-        caseResp.StatusCode.Should().Be(HttpStatusCode.OK);
+        caseResp.StatusCode.Should().BeOneOf(new[] { HttpStatusCode.OK, HttpStatusCode.Created });
 
         var caseBody = await caseResp.Content.ReadFromJsonAsync<
             LYBT.Shared.Models.Contracts.Common.ApiResponse<

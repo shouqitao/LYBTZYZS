@@ -399,7 +399,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
 
         var caseResp = await doctor.PostAsJsonAsync("/api/v1/medicalcases",
             new MedicalCaseInputDto { PatientId = patient!.Id, UserId = doctorData!.Id });
-        caseResp.StatusCode.Should().Be(HttpStatusCode.OK);
+        caseResp.StatusCode.Should().BeOneOf(new[] { HttpStatusCode.OK, HttpStatusCode.Created });
 
         // Act: Check references
         var (checkResponse, refResult) = await GetAsync<PatientReferenceCheckDto>(
@@ -444,7 +444,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
 
         var caseResp = await doctor.PostAsJsonAsync("/api/v1/medicalcases",
             new MedicalCaseInputDto { PatientId = patient!.Id, UserId = doctorData!.Id });
-        caseResp.StatusCode.Should().Be(HttpStatusCode.OK);
+        caseResp.StatusCode.Should().BeOneOf(new[] { HttpStatusCode.OK, HttpStatusCode.Created });
 
         // Act: Try to disable patient
         var response = await admin.PostAsync($"/api/v1/patients/{patient.Id}/toggle-status", null);

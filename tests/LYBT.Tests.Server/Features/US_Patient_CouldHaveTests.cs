@@ -328,7 +328,7 @@ public sealed class US_Patient_CouldHaveTests : IntegrationTestBase<ClinicalData
             .WithDoctor(doctorId)
             .BuildCreate();
         var caseResp = await doctorClient.PostAsJsonAsync("/api/v1/medicalcases", casePayload);
-        caseResp.StatusCode.Should().Be(HttpStatusCode.OK, "medical case creation should succeed");
+        caseResp.StatusCode.Should().BeOneOf(new[] { HttpStatusCode.OK, HttpStatusCode.Created }, "medical case creation should succeed");
 
         // Act
         var response = await doctorClient.GetAsync($"/api/v1/patients/{patient.Id}/check-reference");

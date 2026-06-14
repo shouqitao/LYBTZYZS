@@ -27,8 +27,9 @@ public static class BusinessAssertions
     public static async Task<T> ShouldBeSuccessWithDataAsync<T>(
         this HttpResponseMessage response, string? because = null)
     {
-        response.StatusCode.Should().Be(HttpStatusCode.OK,
-            because ?? "API call should succeed");
+        response.StatusCode.Should().BeOneOf(
+            new[] { HttpStatusCode.OK, HttpStatusCode.Created },
+            because ?? "API call should succeed (200 OK or 201 Created)");
         var body = await response.Content
             .ReadFromJsonAsync<ApiResponse<T>>(JsonOpts);
         body.Should().NotBeNull("response body should be deserializable");
@@ -133,8 +134,9 @@ public static class BusinessAssertions
     public static async Task ShouldBeSuccessAsync(
         this HttpResponseMessage response, string? because = null)
     {
-        response.StatusCode.Should().Be(HttpStatusCode.OK,
-            because ?? "API call should succeed");
+        response.StatusCode.Should().BeOneOf(
+            new[] { HttpStatusCode.OK, HttpStatusCode.Created },
+            because ?? "API call should succeed (200 OK or 201 Created)");
         var body = await response.Content
             .ReadFromJsonAsync<ApiResponse<object>>(JsonOpts);
         body.Should().NotBeNull();

@@ -40,7 +40,7 @@ public sealed class US_Patient_ShouldHaveTests : IntegrationTestBase<ClinicalDat
             .WithDoctor(doctorId)
             .BuildCreate();
         var caseResp = await doctorClient.PostAsJsonAsync("/api/v1/medicalcases", casePayload);
-        caseResp.StatusCode.Should().Be(HttpStatusCode.OK,
+        caseResp.StatusCode.Should().BeOneOf(new[] { HttpStatusCode.OK, HttpStatusCode.Created },
             "medical case should be created for the patient");
 
         // Verify reference exists

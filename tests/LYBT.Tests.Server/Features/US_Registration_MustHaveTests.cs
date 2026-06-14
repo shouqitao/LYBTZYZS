@@ -464,8 +464,8 @@ public sealed class US_Registration_MustHaveTests : IntegrationTestBase<Clinical
 
         regAfter.Status.Should().Be(RegistrationStatus.Waiting,
             "G-9: Receptionist registration should rollback to Waiting after MedicalCase cancellation");
-        regAfter.MedicalCaseId.Should().Be(medicalCase.Id,
-            "G-9: MedicalCaseId should be preserved for Receptionist source (for recovery)");
+        regAfter.MedicalCaseId.Should().BeNull(
+            "G-9: MedicalCaseId cleared on rollback to allow subsequent cancellation (D3 FIX)");
         regAfter.Source.Should().Be(RegistrationSource.Receptionist,
             "G-9: Source should remain Receptionist");
     }

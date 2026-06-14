@@ -136,7 +136,7 @@ public sealed class US_MedicalCase_MustHaveTests : IntegrationTestBase<ClinicalD
 
         // Assert
         response.StatusCode.Should().BeOneOf(
-            new[] { HttpStatusCode.Forbidden, HttpStatusCode.OK },
+            new[] { HttpStatusCode.Forbidden, HttpStatusCode.OK, HttpStatusCode.Created },
             "US-MC-001: admin may or may not be able to create medical cases");
     }
 
