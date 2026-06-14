@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using LYBT.Desktop.CardReader.Integration;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
@@ -6,7 +6,6 @@ using LYBT.Desktop.Patients.Controls;
 // OpenSpec: standardize-module-structure - Components已合并到Services
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Contracts.Repositories;
-using LYBT.Desktop.Patients.Mappers;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.Models.Items;
 using LYBT.Desktop.Patients.Repositories;

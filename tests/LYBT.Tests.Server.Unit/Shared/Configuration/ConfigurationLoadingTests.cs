@@ -112,7 +112,7 @@ public class ConfigurationLoadingTests
         sessionOptions.WarningBeforeTimeoutMinutes.Should().Be(3);
 
         var featureOptions = serviceProvider.GetRequiredService<IOptions<FeatureToggleOptions>>().Value;
-        featureOptions.PrescriptionCreate.Should().BeFalse();
+        featureOptions.OverwriteConflicts.Should().BeFalse();
     }
 
     #endregion

@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Consultations;
+using LYBT.Entities.Consultations;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
 using LYBT.Infrastructure.Caching;
@@ -33,7 +33,7 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly IHerbCrossModuleService _herbCrossModule;
         private readonly IMedicalCaseAuditService _auditService;
         private readonly IMedicalCasePermissionService _permissionService;
-        private readonly MedicalCaseMapper _mapper = new();
+        private readonly MedicalCaseMapper _mapper;
         private readonly ICacheInvalidationService _cacheInvalidation;
 
         public MedicalCaseCommandService(
@@ -44,10 +44,12 @@ namespace LYBT.Module.MedicalCases.Services
             IHerbCrossModuleService herbCrossModule,
             IMedicalCaseAuditService auditService,
             IMedicalCasePermissionService permissionService,
+            MedicalCaseMapper mapper,
             ILogger<MedicalCaseCommandService> logger,
             ICacheInvalidationService cacheInvalidation)
             : base(logger)
         {
+            _mapper = mapper;
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _registrationRepository = registrationRepository ?? throw new ArgumentNullException(nameof(registrationRepository));
             _patientCrossModule = patientCrossModule ?? throw new ArgumentNullException(nameof(patientCrossModule));

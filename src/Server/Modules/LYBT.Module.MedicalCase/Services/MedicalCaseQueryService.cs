@@ -21,14 +21,16 @@ namespace LYBT.Module.MedicalCases.Services
     public class MedicalCaseQueryService : BaseService<MedicalCase>, IMedicalCaseQueryService
     {
         private readonly IMedicalCaseRepository _repository;
-        private readonly MedicalCaseMapper _mapper = new();
+        private readonly MedicalCaseMapper _mapper;
 
         public MedicalCaseQueryService(
             IMedicalCaseRepository repository,
+            MedicalCaseMapper mapper,
             ILogger<MedicalCaseQueryService> logger)
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _mapper = mapper;
         }
 
         /// <summary>
