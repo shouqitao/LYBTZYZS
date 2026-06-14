@@ -62,6 +62,7 @@ namespace LYBT.LocalWebAPI.Controllers
         /// GET /api/health/details — 详细健康信息（DB 连接、版本等）
         /// </summary>
         [HttpGet("details")]
+        [Authorize]
         public async Task<IActionResult> GetDetails()
         {
             var dbConnected = false;

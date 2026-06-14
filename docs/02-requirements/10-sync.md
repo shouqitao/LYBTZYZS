@@ -453,7 +453,7 @@ We believe that 实现基于 SHA256 差异检测的双向数据同步 (药材/�
 
 ## 同步 DTO 定义
 
-> **[已修订 2026-02-21]** DTO 命名与代码不一致，PRD 对齐代码命名 (SyncMetadataDto/SyncDiffResultDto/SyncDiffItemDto 等字段名以代码实现为准)
+> **[已修订 2026-06-14]** DTO 命名与代码完全对齐 (SyncMetadataDto/SyncCompareResultDto/SyncDiffDto 等字段名以代码实现为准)
 > 原因: 确保 PRD DTO 定义与代码实现一致，减少开发歧义  |  参考: SYNC-15
 > [实现状态] 代码实现已接受 (Sprint3)
 
@@ -478,27 +478,25 @@ SyncMetadataDto {
 }
 ```
 
-### SyncDiffResultDto (比对结果)
+### SyncCompareResultDto (比对结果)
 
 ```
-SyncDiffResultDto {
-    EntityType: string                    // 实体类型
-    LocalOnlyCount: int                   // 仅本地数量
-    ServerOnlyCount: int                  // 仅服务端数量
-    ModifiedCount: int                    // 冲突数量
-    IdenticalCount: int                   // 一致数量
-    Items: SyncDiffItemDto[]              // 差异项列表
+SyncCompareResultDto {
+    Diffs: List<SyncDiffDto>              // 差异项列表
+    ServerTotalCount: int                 // 服务器端实体总数
+    ComparedAt: DateTime                  // 比对时间 (UTC)
 }
 
-SyncDiffItemDto {
+SyncDiffDto {
+    EntityType: string                    // 实体类型 (Herb/Patient/Formula/MedicalCase)
     EntityId: Guid
-    EntityName: string                    // 实体名称
-    DiffType: string                      // "LocalOnly" | "ServerOnly" | "Modified" | "Identical"
+    DiffType: SyncDiffType                // LocalOnly | ServerOnly | Modified | Identical
+    EntityName: string?                   // 实体名称 (用于 UI 展示)
     LocalChecksum: string?                // 本地 Checksum (LocalOnly 时有值)
     ServerChecksum: string?               // 服务端 Checksum (ServerOnly 时有值)
-    LocalModifiedAt: DateTime?            // 本地修改时间
-    ServerModifiedAt: DateTime?           // 服务端修改时间
-    ChangedFields: string[]?              // 变更字段列表 (Modified 时有值)
+    LocalChangedAt: DateTime?             // 本地修改时间
+    ServerChangedAt: DateTime?            // 服务端修改时间
+    ChangedFields: List<string>?          // 变更字段列表 (Modified 时有值; 当前延期未填充)
 }
 ```
 
@@ -512,23 +510,34 @@ SyncConflictDetailDto {
     LocalVersion: Dictionary<string, string>    // 本地字段值 { "Name": "甘草", "Price": "15.00", ... }
     ServerVersion: Dictionary<string, string>   // 服务端字段值
     ChangedFields: string[]                     // 差异字段列表 (高亮显示)
-    LocalModifiedAt: DateTime
-    ServerModifiedAt: DateTime
+    LocalChangedAt: DateTime
+    ServerChangedAt: DateTime
 }
 ```
 
-### SyncResultDto (同步结果)
+### 同步结果 DTO (分操作独立)
+
+代码中每个同步操作有独立的结果 DTO，而非统一的 SyncResultDto:
 
 ```
-SyncResultDto {
+SyncUploadResultDto {
     EntityType: string
-    UploadedCount: int       // 上传成功数
-    DownloadedCount: int     // 下载成功数
-    SkippedCount: int        // 跳过数
-    FailedCount: int         // 失败数
-    FailedItems: SyncFailedItemDto[]  // 失败详情
+    SuccessCount: int        // 上传成功数
+    ConflictCount: int       // 冲突数
+    Items: List<SyncUploadItemResult>  // 逐项结果
 }
 
+SyncDownloadResultDto {
+    EntityType: string
+    DownloadedCount: int     // 下载成功数
+}
+
+SyncDeleteResultDto {
+    EntityType: string
+    DeletedCount: int        // 删除成功数
+    Rejections: ...          // 删除拒绝项 (引用检查)
+}
+```
 SyncFailedItemDto {
     EntityId: Guid
     EntityName: string
@@ -820,7 +829,26 @@ Server 按 IdCardNumber 检查:
 
 ---
 
+## Data Model
+
+Sync 模块不维护独立的数据表，同步状态通过实体上的审计字段推断:
+
+| 实体 | 同步相关字段 | 说明 |
+|------|-------------|------|
+| Herb | UpdatedAt, Checksum | SHA256(JSON(业务字段))，排除审计字段 |
+| Patient | UpdatedAt, Checksum | 同上，含 IdNumber/PhoneNumber |
+| Formula | UpdatedAt, Checksum | 含 FormulaHerbItems |
+| MedicalCase | UpdatedAt, Checksum | 含聚合根下全部子实体 |
+
+**Checksum 机制**: SHA256 of JSON-serialized business fields (排除 Id/CreatedAt/UpdatedAt/IsDeleted 等审计字段)。客户端和服务端 ChecksumHelper 必须保持一致。
+
+**同步历史**: 当前版本不持久化同步历史记录。每次同步操作通过 SyncViewModel 状态机管理流程。
+
+---
+
 ## Error Codes
+
+> **注意**: 以下错误码已在文档中定义，但代码实现尚未使用结构化错误码。当前 SyncService 通过 `ServiceResult.Failure(errorMessage)` 返回原始字符串错误消息，HTTP 状态码统一返回 200 + IsConflict/IsSuccess 标志。S5 迁移计划 (D2-2) 将统一为结构化错误码。
 
 > 同步模块当前采用 ServiceResult 模式处理错误，计划在 S5 迁移到 Result\<T\> 统一返回类型 (D2-2 设计)。错误码分区: 7xxxx，编号体系: MCCEE (M=模块7, CC=子类别, EE=序号)。服务端和客户端分层处理。
 

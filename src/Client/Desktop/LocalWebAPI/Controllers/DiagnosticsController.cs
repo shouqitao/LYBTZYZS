@@ -18,7 +18,7 @@ namespace LYBT.LocalWebAPI.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[AllowAnonymous]
+[Authorize]
 public class DiagnosticsController : ControllerBase
 {
     private readonly LocalWebApiDbContext _db;

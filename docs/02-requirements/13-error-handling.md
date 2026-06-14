@@ -239,7 +239,8 @@ We believe that 实现统一的分层异常处理体系 (AppException 类型体�
 2. Warning (1): 警告级别，如参数错误 (ArgumentException, InvalidOperationException)
 3. Error (2): 错误级别，如未授权访问 (UnauthorizedAccessException, OutOfMemoryException)
 4. Critical (3): 严重级别，如全局未处理异常 (AppDomain.UnhandledException)
-5. 严重度映射日志级别: Information->LogLevel.Information, Warning->LogLevel.Warning, Error->LogLevel.Error, Critical->LogLevel.Critical
+5. Fatal (4): 致命级别 (仅 LYBT.Shared.Primitives.ErrorSeverity，Desktop ExceptionHandler 不使用)
+6. 严重度映射日志级别: Information->LogLevel.Information, Warning->LogLevel.Warning, Error->LogLevel.Error, Critical->LogLevel.Critical
 
 > **[已修订 2026-02-21]** 错误消息文案要求简化，PRD 不再硬性规定具体文案内容，允许实现自行调整措辞。原因: 文案属过度规范，具体措辞由实现决定。参考: ERR-07。[实现状态] 代码实现已接受 (Sprint3)
 
@@ -537,6 +538,8 @@ Exception
 | External | ApiException | "外部服务错误" |
 | Configuration | (配置异常) | "配置错误" |
 | General | (默认) | "操作失败" |
+| Network | (网络异常) | "网络错误" |
+| Unknown | (未分类) | "未知错误" |
 
 > **[已修订 2026-02-21]** 错误日志格式要求放宽，日志输出格式允许与 PRD 描述存在差异。原因: 现有日志格式可接受，PRD 放宽格式要求。参考: ERR-09。[实现状态] 代码实现已接受 (Sprint3)
 
