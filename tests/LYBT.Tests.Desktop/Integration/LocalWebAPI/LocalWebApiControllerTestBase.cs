@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using LYBT.LocalWebAPI;
+using LYBT.Infrastructure.Data;
 using LYBT.LocalWebAPI.Auth;
 using LYBT.LocalWebAPI.Data;
 using LYBT.Shared.Models.Contracts.Auth;
@@ -50,7 +51,7 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
         builder.Configuration["ConnectionStrings:DefaultConnection"] = _connectionString;
 
         // Register services (same as LocalWebApiProgram.CreateApplication)
-        builder.Services.AddDbContext<LocalWebApiDbContext>(options =>
+        builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(_connectionString));
 
         // Add controllers with explicit assembly so CreateSlimBuilder discovers them
@@ -86,7 +87,7 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
 
         // Ensure database is created and seeded
         using var scope = _app.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<LocalWebApiDbContext>();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await db.Database.EnsureCreatedAsync();
         await LocalWebApiSeedData.SeedAsync(db);
     }
@@ -106,10 +107,10 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", null);
 
         // Delete the test database
-        var options = new DbContextOptionsBuilder<LocalWebApiDbContext>()
+        var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlServer(_connectionString)
             .Options;
-        await using var context = new LocalWebApiDbContext(options);
+        await using var context = new AppDbContext(options);
         await context.Database.EnsureDeletedAsync();
     }
 

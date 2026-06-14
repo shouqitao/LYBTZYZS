@@ -7,6 +7,7 @@ using LYBT.Entities.Patients;
 using LYBT.Entities.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.LocalWebAPI.Auth;
+using LYBT.Infrastructure.Data;
 using LYBT.LocalWebAPI.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -18,26 +19,26 @@ namespace LYBT.Tests.Desktop;
 /// <summary>
 /// LocalWebAPI DbContext tests - SQL Server LocalDB
 /// </summary>
-public class LocalWebApiDbContextTests : IDisposable
+public class AppDbContextTests : IDisposable
 {
     private readonly string _dbName = $"LYBTZYZS_LocalWebApiTests_{Guid.NewGuid():N}";
 
-    private LocalWebApiDbContext CreateContext()
+    private AppDbContext CreateContext()
     {
-        var options = new DbContextOptionsBuilder<LocalWebApiDbContext>()
+        var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlServer($@"Server=(localdb)\MSSQLLocalDB;Database={_dbName};Trusted_Connection=True;TrustServerCertificate=True")
             .Options;
-        var context = new LocalWebApiDbContext(options);
+        var context = new AppDbContext(options);
         context.Database.EnsureCreated();
         return context;
     }
 
     public void Dispose()
     {
-        var options = new DbContextOptionsBuilder<LocalWebApiDbContext>()
+        var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlServer($@"Server=(localdb)\MSSQLLocalDB;Database={_dbName};Trusted_Connection=True;TrustServerCertificate=True")
             .Options;
-        using var context = new LocalWebApiDbContext(options);
+        using var context = new AppDbContext(options);
         context.Database.EnsureDeleted();
     }
 

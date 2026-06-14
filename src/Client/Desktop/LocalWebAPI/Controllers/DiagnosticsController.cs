@@ -1,3 +1,4 @@
+using LYBT.Infrastructure.Data;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -21,10 +22,10 @@ namespace LYBT.LocalWebAPI.Controllers;
 [Authorize]
 public class DiagnosticsController : ControllerBase
 {
-    private readonly LocalWebApiDbContext _db;
+    private readonly AppDbContext _db;
     private readonly LoggingLevelManager _loggingLevelManager;
 
-    public DiagnosticsController(LocalWebApiDbContext db, LoggingLevelManager loggingLevelManager)
+    public DiagnosticsController(AppDbContext db, LoggingLevelManager loggingLevelManager)
     {
         _db = db;
         _loggingLevelManager = loggingLevelManager;

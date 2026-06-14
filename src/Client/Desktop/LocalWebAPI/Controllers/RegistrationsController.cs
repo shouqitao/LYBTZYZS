@@ -1,3 +1,4 @@
+using LYBT.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,9 +21,9 @@ namespace LYBT.LocalWebAPI.Controllers
     [Authorize]
     public class RegistrationsController : ControllerBase
     {
-        private readonly LocalWebApiDbContext _db;
+        private readonly AppDbContext _db;
 
-        public RegistrationsController(LocalWebApiDbContext db)
+        public RegistrationsController(AppDbContext db)
         {
             _db = db;
         }

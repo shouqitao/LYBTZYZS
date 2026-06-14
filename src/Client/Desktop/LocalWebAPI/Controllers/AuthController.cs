@@ -1,3 +1,4 @@
+using LYBT.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LYBT.LocalWebAPI.Data;
@@ -19,9 +20,9 @@ namespace LYBT.LocalWebAPI.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly LocalWebApiDbContext _db;
+    private readonly AppDbContext _db;
 
-    public AuthController(LocalWebApiDbContext db)
+    public AuthController(AppDbContext db)
     {
         _db = db;
     }

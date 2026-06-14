@@ -18,6 +18,15 @@
     <ProjectReference Include="../../../Server/Core/LYBT.Entities/LYBT.Entities.csproj" />
     <ProjectReference Include="../../../Server/Core/LYBT.Infrastructure/LYBT.Infrastructure.csproj" />
     <ProjectReference Include="../../../Shared/LYBT.Shared.Utilities/LYBT.Shared.Utilities.csproj" />
+    <!-- Server modules (unified Service layer — same as Remote WebAPI) -->
+    <ProjectReference Include="../../../Server/Modules/LYBT.Module.Auth/LYBT.Module.Auth.csproj" />
+    <ProjectReference Include="../../../Server/Modules/LYBT.Module.Users/LYBT.Module.Users.csproj" />
+    <ProjectReference Include="../../../Server/Modules/LYBT.Module.Patients/LYBT.Module.Patients.csproj" />
+    <ProjectReference Include="../../../Server/Modules/LYBT.Module.Herbs/LYBT.Module.Herbs.csproj" />
+    <ProjectReference Include="../../../Server/Modules/LYBT.Module.Formula/LYBT.Module.Formula.csproj" />
+    <ProjectReference Include="../../../Server/Modules/LYBT.Module.MedicalCase/LYBT.Module.MedicalCase.csproj" />
+    <ProjectReference Include="../../../Server/Modules/LYBT.Module.Registration/LYBT.Module.Registration.csproj" />
+    <ProjectReference Include="../../../Server/Modules/LYBT.Module.Sync/LYBT.Module.Sync.csproj" />
   </ItemGroup>
 
   <ItemGroup>

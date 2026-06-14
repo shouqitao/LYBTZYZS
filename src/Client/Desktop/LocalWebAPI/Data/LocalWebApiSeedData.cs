@@ -10,12 +10,13 @@ using LYBT.Entities.Herbs;
 using LYBT.Entities.Formulas;
 using LYBT.Shared.Utilities.Security;
 using LYBT.Shared.Models.Enums;
+using LYBT.Infrastructure.Data;
 
 namespace LYBT.LocalWebAPI.Data;
 
 public static class LocalWebApiSeedData
 {
-    public static async Task SeedAsync(LocalWebApiDbContext context)
+    public static async Task SeedAsync(AppDbContext context)
     {
         await context.Database.EnsureCreatedAsync();
 

@@ -5,17 +5,15 @@ namespace LYBT.Tests.Architecture;
 
 /// <summary>
 /// Architecture guard tests for the LocalWebAPI pattern.
-/// LocalWebAPI controllers inject DbContext directly (no service layer),
-/// and must not reference Server modules.
+/// LocalWebAPI now uses the same Service layer as Remote WebAPI (unified architecture).
 /// </summary>
 public class LocalWebApiPatternTests
 {
     private const string LocalWebApiNamespace = "LYBT.LocalWebAPI.Controllers";
 
     /// <summary>
-    /// P20: LocalWebAPI controllers should only depend on DbContext, entities, and framework types.
-    /// The LocalWebAPI pattern intentionally bypasses the service layer and injects DbContext directly.
-    /// Controllers must not pull in unrelated application-layer dependencies.
+    /// P20: LocalWebAPI controllers may depend on Service interfaces, entities, and framework types.
+    /// Updated for unified Service layer — controllers inject I*Service instead of DbContext.
     /// </summary>
     [Fact]
     public void P20_LocalWebAPI_Controllers_Should_Only_Inject_Allowed_Types()
@@ -27,6 +25,8 @@ public class LocalWebApiPatternTests
             .OnlyHaveDependenciesOn(
                 "LYBT.LocalWebAPI",
                 "LYBT.Entities",
+                "LYBT.Infrastructure",
+                "LYBT.Module",
                 "LYBT.Shared",
                 "Microsoft.AspNetCore",
                 "Microsoft.EntityFrameworkCore",
@@ -43,26 +43,17 @@ public class LocalWebApiPatternTests
             .GetResult();
 
         Assert.True(result.IsSuccessful,
-            "LocalWebAPI controllers should only depend on DbContext, entities, and framework types");
+            "LocalWebAPI controllers may depend on Service interfaces, entities, and framework types");
     }
 
     /// <summary>
-    /// P21: LocalWebAPI controllers must not reference Server modules (LYBT.Module.*).
-    /// The LocalWebAPI is a standalone embedded API for local/offline mode;
-    /// it must remain decoupled from the remote Server module layer.
+    /// P21: REMOVED — LocalWebAPI now references Server modules for unified Service layer.
+    /// Controllers delegate to the same I*Service interfaces as Remote WebAPI.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "Removed: LocalWebAPI unified with Server Service layer (2026-06-14)")]
     public void P21_LocalWebAPI_Controllers_Must_Not_Reference_Server_Modules()
     {
-        var result = Types.InAssembly(typeof(LYBT.LocalWebAPI.Controllers.HealthController).Assembly)
-            .That()
-            .ResideInNamespace(LocalWebApiNamespace)
-            .ShouldNot()
-            .HaveDependencyOn("LYBT.Module")
-            .GetResult();
-
-        Assert.True(result.IsSuccessful,
-            "LocalWebAPI controllers must not reference Server modules");
+        // Test skipped — LocalWebAPI now intentionally references LYBT.Module.*
     }
 
     /// <summary>

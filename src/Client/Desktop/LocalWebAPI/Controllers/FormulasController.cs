@@ -1,3 +1,4 @@
+using LYBT.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,9 +20,9 @@ namespace LYBT.LocalWebAPI.Controllers
     [Authorize]
     public class FormulasController : ControllerBase
     {
-        private readonly LocalWebApiDbContext _db;
+        private readonly AppDbContext _db;
 
-        public FormulasController(LocalWebApiDbContext db)
+        public FormulasController(AppDbContext db)
         {
             _db = db;
         }

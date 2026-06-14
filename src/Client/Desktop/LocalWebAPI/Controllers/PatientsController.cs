@@ -1,3 +1,4 @@
+using LYBT.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,9 +22,9 @@ namespace LYBT.LocalWebAPI.Controllers
     [Authorize]
     public class PatientsController : ControllerBase
     {
-        private readonly LocalWebApiDbContext _db;
+        private readonly AppDbContext _db;
 
-        public PatientsController(LocalWebApiDbContext db)
+        public PatientsController(AppDbContext db)
         {
             _db = db;
         }

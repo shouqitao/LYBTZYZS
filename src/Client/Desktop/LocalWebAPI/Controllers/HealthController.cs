@@ -1,3 +1,4 @@
+using LYBT.Infrastructure.Data;
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -12,9 +13,9 @@ namespace LYBT.LocalWebAPI.Controllers
     [AllowAnonymous]
     public class HealthController : ControllerBase
     {
-        private readonly LocalWebApiDbContext _db;
+        private readonly AppDbContext _db;
 
-        public HealthController(LocalWebApiDbContext db)
+        public HealthController(AppDbContext db)
         {
             _db = db;
         }

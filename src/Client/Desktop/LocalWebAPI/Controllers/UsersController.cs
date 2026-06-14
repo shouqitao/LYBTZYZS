@@ -1,3 +1,4 @@
+using LYBT.Infrastructure.Data;
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
@@ -25,9 +26,9 @@ namespace LYBT.LocalWebAPI.Controllers;
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
 {
-    private readonly LocalWebApiDbContext _db;
+    private readonly AppDbContext _db;
 
-    public UsersController(LocalWebApiDbContext db)
+    public UsersController(AppDbContext db)
     {
         _db = db;
     }
