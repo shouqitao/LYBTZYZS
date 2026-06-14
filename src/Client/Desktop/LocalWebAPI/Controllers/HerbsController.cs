@@ -1,315 +1,147 @@
-using LYBT.Infrastructure.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using LYBT.LocalWebAPI.Data;
-using LYBT.Entities.Herbs;
-using LYBT.Entities.Formulas;
-using LYBT.Entities.Prescriptions;
+using LYBT.Infrastructure.Web;
+using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-namespace LYBT.LocalWebAPI.Controllers
+namespace LYBT.LocalWebAPI.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class HerbsController : BaseApiController
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    [Authorize]
-    public class HerbsController : ControllerBase
+    private readonly IHerbService _herbService;
+
+    public HerbsController(IHerbService herbService, ILogger<HerbsController> logger) : base(logger)
     {
-        private readonly AppDbContext _db;
+        _herbService = herbService;
+    }
 
-        public HerbsController(AppDbContext db)
-        {
-            _db = db;
-        }
+    [HttpGet]
+    public async Task<IActionResult> GetList(
+        [FromQuery] string? keyword = null,
+        [FromQuery] string? category = null)
+    {
+        var result = await _herbService.SearchAsync(keyword ?? "", default);
+        return HandleResult(result);
+    }
 
-        // GET /api/herbs?keyword=&category=
-        [HttpGet]
-        public async Task<ActionResult<List<Herb>>> GetHerbs([FromQuery] string keyword, [FromQuery] string? category = null)
-        {
-            var q = _db.Herbs.AsNoTracking().Where(h => !h.IsDeleted);
-            if (!string.IsNullOrWhiteSpace(keyword))
-            {
-                q = q.Where(h => h.Name.Contains(keyword) || (h.PinYinCode != null && h.PinYinCode.Contains(keyword)));
-            }
-            if (!string.IsNullOrWhiteSpace(category))
-            {
-                q = q.Where(h => h.Category == category);
-            }
-            return await q.ToListAsync();
-        }
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var result = await _herbService.GetByIdAsync(id);
+        return HandleResult(result);
+    }
 
-        // GET /api/herbs/{id}
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Herb>> GetHerb(Guid id)
-        {
-            var herb = await _db.Herbs.AsNoTracking().FirstOrDefaultAsync(h => h.Id == id && !h.IsDeleted);
-            if (herb == null) return NotFound();
-            return herb;
-        }
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] HerbInputDto dto)
+    {
+        var result = await _herbService.CreateAsync(dto);
+        return HandleResult(result, "创建成功");
+    }
 
-        // POST /api/herbs
-        [HttpPost]
-        public async Task<IActionResult> CreateHerb([FromBody] Herb herb)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-            _db.Herbs.Add(herb);
-            await _db.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetHerb), new { id = herb.Id }, herb);
-        }
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto dto)
+    {
+        var result = await _herbService.UpdateAsync(id, dto);
+        return HandleResult(result, "更新成功");
+    }
 
-        // PUT /api/herbs/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateHerb(Guid id, [FromBody] Herb updated)
-        {
-            if (id != updated.Id) return BadRequest("ID mismatch between URL and payload.");
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-            var existing = await _db.Herbs.FindAsync(id);
-            if (existing == null || existing.IsDeleted) return NotFound();
-            _db.Entry(existing).CurrentValues.SetValues(updated);
-            await _db.SaveChangesAsync();
-            return Ok(existing);
-        }
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var result = await _herbService.DeleteAsync(id);
+        return HandleResult(result, "删除成功");
+    }
 
-        // DELETE /api/herbs/{id} -> soft delete
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteHerb(Guid id)
-        {
-            var existing = await _db.Herbs.FindAsync(id);
-            if (existing == null || existing.IsDeleted) return NotFound();
-            existing.IsDeleted = true;
-            await _db.SaveChangesAsync();
-            return NoContent();
-        }
+    [HttpPost("batch-delete")]
+    public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto request)
+    {
+        if (request?.Ids == null || request.Ids.Count == 0)
+            return ValidationFail("ids 不能为空");
+        var result = await _herbService.BatchDeleteAsync(request.Ids);
+        return HandleResult(result);
+    }
 
-        // POST /api/herbs/batch-delete
-        [HttpPost("batch-delete")]
-        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto request)
-        {
-            if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("ids 不能为空");
+    [HttpPost("batch-enable")]
+    public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto request)
+    {
+        if (request?.Ids == null || request.Ids.Count == 0)
+            return ValidationFail("ids 不能为空");
+        var result = await _herbService.BatchUpdateStatusAsync(request.Ids, CommonStatus.Enabled);
+        return HandleResult(result);
+    }
 
-            var prescriptionRef = await _db.PrescriptionItems.AnyAsync(pi => request.Ids.Contains(pi.HerbId));
-            var formulaRef = await _db.Set<FormulaHerbItem>().AnyAsync(fh => fh.HerbId.HasValue && request.Ids.Contains(fh.HerbId.Value));
-            if (prescriptionRef || formulaRef)
-                return Conflict("部分药材被处方或验方引用，无法删除");
+    [HttpPost("batch-disable")]
+    public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto request)
+    {
+        if (request?.Ids == null || request.Ids.Count == 0)
+            return ValidationFail("ids 不能为空");
+        var result = await _herbService.BatchUpdateStatusAsync(request.Ids, CommonStatus.Disabled);
+        return HandleResult(result);
+    }
 
-            var herbs = await _db.Herbs.Where(h => request.Ids.Contains(h.Id) && !h.IsDeleted).ToListAsync();
-            foreach (var h in herbs) h.IsDeleted = true;
-            await _db.SaveChangesAsync();
-            return Ok(new { count = herbs.Count });
-        }
+    [HttpPost("{id}/toggle-status")]
+    public async Task<IActionResult> ToggleStatus(Guid id)
+    {
+        var result = await _herbService.ToggleStatusAsync(id);
+        return HandleResult(result);
+    }
 
-        // POST /api/herbs/batch-enable
-        [HttpPost("batch-enable")]
-        public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto request)
-        {
-            if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("ids 不能为空");
+    [HttpPost("{id}/restore")]
+    public async Task<IActionResult> Restore(Guid id)
+    {
+        var result = await _herbService.RestoreAsync(id);
+        return HandleResult(result);
+    }
 
-            var herbs = await _db.Herbs.Where(h => request.Ids.Contains(h.Id) && !h.IsDeleted).ToListAsync();
-            foreach (var h in herbs) h.Status = CommonStatus.Enabled;
-            await _db.SaveChangesAsync();
-            return Ok(new { count = herbs.Count });
-        }
+    [HttpPost("batch-import")]
+    public async Task<IActionResult> BatchImport([FromBody] HerbBatchImportInputDto request)
+    {
+        if (request == null || request.Herbs == null || request.Herbs.Count == 0)
+            return ValidationFail("导入列表不能为空");
+        var result = await _herbService.BatchImportAsync(request.Herbs, request.Strategy);
+        return HandleResult(result);
+    }
 
-        // POST /api/herbs/batch-disable
-        [HttpPost("batch-disable")]
-        public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto request)
-        {
-            if (request?.Ids == null || request.Ids.Count == 0) return BadRequest("ids 不能为空");
+    [HttpGet("export")]
+    public async Task<IActionResult> Export([FromQuery] string? category = null)
+    {
+        var result = await _herbService.GetAllForExportAsync(category);
+        return HandleResult(result);
+    }
 
-            var herbs = await _db.Herbs.Where(h => request.Ids.Contains(h.Id) && !h.IsDeleted).ToListAsync();
-            foreach (var h in herbs) h.Status = CommonStatus.Disabled;
-            await _db.SaveChangesAsync();
-            return Ok(new { count = herbs.Count });
-        }
+    [HttpGet("export-all")]
+    public async Task<IActionResult> ExportAll()
+    {
+        var result = await _herbService.GetAllForExportAsync(null);
+        return HandleResult(result);
+    }
 
-        // POST /api/herbs/{id}/toggle-status
-        [HttpPost("{id}/toggle-status")]
-        public async Task<IActionResult> ToggleStatus(Guid id)
-        {
-            var herb = await _db.Herbs.FindAsync(id);
-            if (herb == null || herb.IsDeleted) return NotFound();
-            herb.Status = herb.Status == CommonStatus.Enabled ? CommonStatus.Disabled : CommonStatus.Enabled;
-            await _db.SaveChangesAsync();
-            return Ok(herb);
-        }
+    [HttpGet("import-template")]
+    [AllowAnonymous]
+    public IActionResult ExportTemplate()
+    {
+        var stream = _herbService.GenerateImportTemplate();
+        return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "herbs-template.xlsx");
+    }
 
-        // POST /api/herbs/{id}/restore
-        [HttpPost("{id}/restore")]
-        public async Task<IActionResult> Restore(Guid id)
-        {
-            var herb = await _db.Herbs.IgnoreQueryFilters().FirstOrDefaultAsync(h => h.Id == id);
-            if (herb == null) return NotFound();
-            herb.IsDeleted = false;
-            await _db.SaveChangesAsync();
-            return Ok(herb);
-        }
+    [HttpGet("{id}/check-reference")]
+    public async Task<IActionResult> CheckReference(Guid id)
+    {
+        var result = await _herbService.CheckReferenceAsync(id);
+        return HandleResult(result);
+    }
 
-        // GET /api/herbs/export
-        [HttpGet("export")]
-        public async Task<ActionResult<List<Herb>>> Export()
-        {
-            return await _db.Herbs.AsNoTracking().Where(h => !h.IsDeleted).ToListAsync();
-        }
-
-        // GET /api/herbs/import-template
-        [HttpGet("import-template")]
-        public IActionResult ExportTemplate()
-        {
-            var template = new[]
-            {
-                new { Name = "", PinYinCode = "", Category = "", Unit = "", Property = "", Effect = "" }
-            };
-            return Ok(template);
-        }
-
-        // POST /api/herbs/batch-import
-        [HttpPost("batch-import")]
-        public async Task<ActionResult<HerbBatchImportResultDto>> Import([FromBody] HerbBatchImportInputDto request)
-        {
-            if (request == null || request.Herbs == null || request.Herbs.Count == 0)
-                return BadRequest("导入列表不能为空");
-
-            var result = new HerbBatchImportResultDto { ImportTime = DateTime.UtcNow, TotalCount = request.Herbs.Count };
-
-            foreach (var dto in request.Herbs)
-            {
-                try
-                {
-                    var entity = new Herb
-                    {
-                        Id = dto.Id ?? Guid.NewGuid(),
-                        Name = dto.Name,
-                        PinYinCode = string.IsNullOrWhiteSpace(dto.PinYinCode) ? dto.Name : dto.PinYinCode,
-                        Category = dto.Category,
-                        Properties = dto.Properties,
-                        Origin = dto.Origin,
-                        Spec = dto.Spec,
-                        Unit = dto.Unit,
-                        Price = dto.Price,
-                        Effect = dto.Effect,
-                        Usage = dto.Usage,
-                        Remark = dto.Remark,
-                        Status = CommonStatus.Enabled
-                    };
-
-                    var existing = dto.Id.HasValue
-                        ? await _db.Herbs.IgnoreQueryFilters().FirstOrDefaultAsync(h => h.Id == dto.Id.Value)
-                        : await _db.Herbs.IgnoreQueryFilters().FirstOrDefaultAsync(h => h.Name == dto.Name);
-
-                    if (existing != null)
-                    {
-                        switch (request.Strategy)
-                        {
-                            case DuplicateStrategy.Skip:
-                                result.SuccessCount++;
-                                continue;
-                            case DuplicateStrategy.Error:
-                                result.FailureCount++;
-                                result.Failures.Add(new HerbImportFailureDto
-                                {
-                                    HerbName = dto.Name,
-                                    Reason = "药材已存在",
-                                    ErrorDetails = new List<string> { $"药材 '{dto.Name}' 已存在 (ID: {existing.Id})，策略为 Error" }
-                                });
-                                continue;
-                        }
-                        _db.Entry(existing).CurrentValues.SetValues(entity);
-                        result.SuccessCount++;
-                        continue;
-                    }
-
-                    _db.Herbs.Add(entity);
-                    result.SuccessCount++;
-                }
-                catch (Exception ex)
-                {
-                    result.FailureCount++;
-                    result.Failures.Add(new HerbImportFailureDto
-                    {
-                        HerbName = dto.Name,
-                        Reason = "导入失败",
-                        ErrorDetails = new List<string> { ex.Message }
-                    });
-                }
-            }
-
-            await _db.SaveChangesAsync();
-            return Ok(result);
-        }
-
-        // GET /api/herbs/export-all (P1: align with Server)
-        [HttpGet("export-all")]
-        public async Task<ActionResult<List<Herb>>> GetAllForExport([FromQuery] string? category = null)
-        {
-            var q = _db.Herbs.AsNoTracking().Where(h => !h.IsDeleted);
-            if (!string.IsNullOrWhiteSpace(category))
-            {
-                q = q.Where(h => h.Category == category);
-            }
-            return await q.ToListAsync();
-        }
-
-        // GET /api/herbs/categories
-        [HttpGet("categories")]
-        public async Task<ActionResult<List<string>>> GetCategories()
-        {
-            return await _db.Herbs.AsNoTracking()
-                .Where(h => !h.IsDeleted && h.Category != null)
-                .Select(h => h.Category!)
-                .Distinct()
-                .OrderBy(c => c)
-                .ToListAsync();
-        }
-
-        // GET /api/herbs/{id}/check-reference
-        [HttpGet("{id}/check-reference")]
-        public async Task<IActionResult> CheckReference(Guid id)
-        {
-            var herb = await _db.Herbs.AsNoTracking().FirstOrDefaultAsync(h => h.Id == id && !h.IsDeleted);
-            if (herb == null) return NotFound();
-
-            var prescRef = await _db.PrescriptionItems.AnyAsync(pi => pi.HerbId == id);
-            var formulaRef = await _db.Set<FormulaHerbItem>().AnyAsync(fh => fh.HerbId == id);
-            var isReferenced = prescRef || formulaRef;
-            var prescCount = prescRef ? await _db.PrescriptionItems.CountAsync(pi => pi.HerbId == id) : 0;
-            var formulaCount = formulaRef ? await _db.Set<FormulaHerbItem>().CountAsync(fh => fh.HerbId == id) : 0;
-
-            return Ok(new
-            {
-                IsReferenced = isReferenced,
-                ReferenceCount = prescCount + formulaCount,
-                PrescriptionReferenceCount = prescCount,
-                FormulaReferenceCount = formulaCount
-            });
-        }
-
-        // POST /api/herbs/batch-check-reference
-        [HttpPost("batch-check-reference")]
-        public async Task<IActionResult> BatchCheckReference([FromBody] BatchDeleteInputDto request)
-        {
-            if (request?.Ids == null || request.Ids.Count == 0)
-                return BadRequest("ids 不能为空");
-
-            var referencedHerbs = await _db.PrescriptionItems
-                .Where(pi => request.Ids.Contains(pi.HerbId))
-                .GroupBy(pi => pi.HerbId)
-                .Select(g => new { HerbId = g.Key, Count = g.Count() })
-                .ToListAsync();
-
-            var result = request.Ids.Select(id => new
-            {
-                HerbId = id,
-                IsReferenced = referencedHerbs.Any(r => r.HerbId == id),
-                ReferenceCount = referencedHerbs.FirstOrDefault(r => r.HerbId == id)?.Count ?? 0
-            }).ToList();
-
-            return Ok(result);
-        }
+    [HttpPost("batch-check-reference")]
+    public async Task<IActionResult> BatchCheckReference([FromBody] BatchDeleteInputDto request)
+    {
+        if (request?.Ids == null || request.Ids.Count == 0)
+            return ValidationFail("ids 不能为空");
+        var result = await _herbService.BatchCheckReferenceAsync(request.Ids);
+        return HandleResult(result);
     }
 }
