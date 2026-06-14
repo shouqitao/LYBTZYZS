@@ -37,7 +37,6 @@ Test projects for the LYBTZYZS solution. Implements a Testing Trophy architectur
 - **Server tests**: Use real SQL Server database with Respawn for clean-state between tests. ZERO mocks.
 - **Desktop tests**: Use SQLite InMemory provider with real Repository implementations.
 - **Architecture tests**: Verify dependency direction rules, naming conventions, and anti-mock policies (e.g., `P10_Services_Should_Not_Directly_Inject_AppDbContext`).
-- **Postman/Newman**: Run via `scripts/run-tests-local.ps1` for API contract testing.
 
 ### Common Patterns
 - **Test fixture**: xUnit class fixtures for database setup/teardown

@@ -41,8 +41,6 @@ Central documentation hub for the LYBTZYZS TCM clinic management system. Contain
 ### Testing Requirements
 
 - No automated tests for documentation. Validate links manually.
-- Use `scripts/docs-code-sync-check.ps1` to verify documentation stays in sync with code.
-- Use `scripts/docs-maintenance-check.ps1` for documentation health checks.
 
 ### Common Patterns
 
@@ -55,7 +53,6 @@ Central documentation hub for the LYBTZYZS TCM clinic management system. Contain
 ### Internal
 
 - References code structure across the entire solution for documentation purposes.
-- `scripts/` -- Documentation maintenance scripts.
 
 ### External
 

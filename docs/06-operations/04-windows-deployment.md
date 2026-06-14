@@ -71,8 +71,10 @@ dotnet --version
 # 以管理员身份运行 PowerShell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
-# 运行部署脚本
-.\deploy\windows\deploy.ps1 -DeployPath "C:\Services\LYBT-API" -Port 5000
+# 手动部署（部署脚本待创建）
+# 1. dotnet publish src/Server/Services/LYBT.WebAPI -c Release -r win-x64 --self-contained false
+# 2. 将产出复制到 C:\Services\LYBT-API\
+# 3. 配置 appsettings.Production.json
 ```
 
 ### 2. 手动部署

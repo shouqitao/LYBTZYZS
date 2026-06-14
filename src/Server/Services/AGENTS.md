@@ -21,7 +21,6 @@ Contains the ASP.NET Core WebAPI entry point project. Configures middleware, dep
 
 ### Testing Requirements
 - Integration tests in `tests/LYBT.Tests.Server/` test against this WebAPI host.
-- Use `scripts/run-webapi.ps1` to start the server for manual testing.
 
 ### Common Patterns
 - **Startup**: Minimal API hosting model with `WebApplication.CreateBuilder`

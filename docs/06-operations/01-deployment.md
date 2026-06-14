@@ -19,8 +19,8 @@
 
 | 方式 | 说明 | 文档 |
 |------|------|------|
-| **Windows Service**（推荐） | 独立进程，开机自启，适合后台服务 | `deploy/windows/deploy.ps1` |
-| IIS | 需要 IIS 环境，图形化管理 | `deploy/iis/deploy.ps1` |
+| **Windows Service**（推荐） | 独立进程，开机自启，适合后台服务 | 待创建部署脚本 |
+| IIS | 需要 IIS 环境，图形化管理 | 待创建部署脚本 |
 
 两种方式均使用 `dotnet publish` 产出部署包，通过对应脚本部署。
 
@@ -57,7 +57,7 @@ dotnet publish src/Server/Services/LYBT.WebAPI -c Release -r win-x64 --self-cont
 ### 目录结构
 
 ```
-deploy/
+publish/
   LYBT.WebAPI.exe          # 主程序
   appsettings.json         # 主配置
   appsettings.Production.json  # 生产环境覆盖

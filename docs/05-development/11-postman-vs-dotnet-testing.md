@@ -258,7 +258,7 @@ public async Task US_USER_004_BatchDelete_PartialFailure_RollsBack()
 ### 推荐流程
 
 ```yaml
-# .github/workflows/ci.yml
+# CI pipeline example (Gitee Go or equivalent)
 jobs:
   unit-tests:
     runs-on: ubuntu-latest

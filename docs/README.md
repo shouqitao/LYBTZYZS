@@ -52,7 +52,7 @@
 | 资源 | 位置 |
 |------|------|
 | 设计/计划文档 | `docs/plans/` |
-| OpenCode 配置 | `AGENTS.md` + `.opencode/` |
+| AI Agent 配置 | `AGENTS.md` (项目根) |
 | 解决方案文件 | `LYBTZYZS.sln` |
 
 ---
