@@ -197,15 +197,30 @@ namespace LYBT.LocalWebAPI.Controllers
                         Status = CommonStatus.Enabled
                     };
 
-                    if (dto.Id.HasValue)
+                    var existing = dto.Id.HasValue
+                        ? await _db.Herbs.IgnoreQueryFilters().FirstOrDefaultAsync(h => h.Id == dto.Id.Value)
+                        : await _db.Herbs.IgnoreQueryFilters().FirstOrDefaultAsync(h => h.Name == dto.Name);
+
+                    if (existing != null)
                     {
-                        var existing = await _db.Herbs.IgnoreQueryFilters().FirstOrDefaultAsync(h => h.Id == dto.Id.Value);
-                        if (existing != null)
+                        switch (request.Strategy)
                         {
-                            _db.Entry(existing).CurrentValues.SetValues(entity);
-                            result.SuccessCount++;
-                            continue;
+                            case DuplicateStrategy.Skip:
+                                result.SuccessCount++;
+                                continue;
+                            case DuplicateStrategy.Error:
+                                result.FailureCount++;
+                                result.Failures.Add(new HerbImportFailureDto
+                                {
+                                    HerbName = dto.Name,
+                                    Reason = "药材已存在",
+                                    ErrorDetails = new List<string> { $"药材 '{dto.Name}' 已存在 (ID: {existing.Id})，策略为 Error" }
+                                });
+                                continue;
                         }
+                        _db.Entry(existing).CurrentValues.SetValues(entity);
+                        result.SuccessCount++;
+                        continue;
                     }
 
                     _db.Herbs.Add(entity);
