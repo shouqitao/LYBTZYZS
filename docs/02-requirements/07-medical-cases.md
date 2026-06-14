@@ -68,7 +68,7 @@
 - **状态机**: Active (进行中) → Suspended (挂起) / Completed (已完成) / Cancelled (软删除)
 - **聚合保存**: 一次性保存 MedicalCase + Consultation + Prescription + Items (粗粒度替换)
 - **打印保护**: 打印后修改需提供 EditReason，自动递增 PrintVersion
-- **审计追踪**: 19 个字段的自动 diff 变更记录
+- **审计追踪**: 20 个字段的自动 diff 变更记录
 - **权限控制**: 基于角色 + 资源所有权 + 时间锁定的细粒度权限
 
 **医案生命周期:**
@@ -117,7 +117,7 @@ stateDiagram-v2
 | 医案创建耗时 | 3-5 分钟 (手写) | < 1 分钟 (电子化) | 操作日志 (创建→首次保存) |
 | 处方计算准确率 | ~95% (手动计算) | 100% (自动计算) | 零计算错误投诉 |
 | 复诊处方录入时间 | 5-10 分钟 (手写) | < 2 分钟 (历史复制/验方导入) | 操作日志 |
-| 审计覆盖率 | 0% (无记录) | 100% (19 字段 diff) | MedicalCaseAuditLog 记录数 |
+| 审计覆盖率 | 0% (无记录) | 100% (20 字段 diff) | MedicalCaseAuditLog 记录数 |
 | 打印保护合规率 | N/A | 100% (打印后修改必须提供理由) | ERR-30403 触发率 = 0 |
 
 ---
@@ -448,7 +448,7 @@ We believe that 实现以 MedicalCase 为唯一聚合根的电子化医案管理
 4. 支持分页查看审计日志
 5. 变更字段和值以 JSON 格式存储 (CamelCase)
 6. 创建操作: 仅记录 NewValues (无 OldValues)
-7. 更新操作: MedicalCaseAuditService 自动比较前后值，仅记录实际变更的字段。覆盖 MedicalCase 顶层字段 + Consultation 4 字段 (PresentIllness/TongueDiagnosis/PulseDiagnosis/TcmDiagnosis) + Prescription 6 字段 + ItemCount，共计 19 个字段
+7. 更新操作: MedicalCaseAuditService 自动比较前后值，仅记录实际变更的字段。覆盖 MedicalCase 顶层字段 + Consultation 4 字段 + Prescription 8 字段 (含 IsDeleted + ItemCount)，共计 20 个字段
 8. 删除操作: 记录 IsDeleted=true 变更
 9. 审计记录写入失败不影响主业务流程 (异常隔离)
 
@@ -556,7 +556,7 @@ We believe that 实现以 MedicalCase 为唯一聚合根的电子化医案管理
 5. 记录引用的验方名称 (ReferencedFormulas)
 6. **已禁用药材 (Status=Disabled) 自动跳过，提示"以下药材已停用，已跳过: xxx"** (MC-D09)
 7. **导入为数据复制，修改处方中的药材不影响原验方** (MC-D12)
-8. **重复药材剂量合并策略 (MC-D17)**: 通过 appsettings.json 配置 `PrescriptionImport.DuplicateHerbStrategy`。五种策略: Max(取最大)/Min(取最小)/Accumulate(累加,默认)/Skip(跳过)/Replace(替换)。合并时仅更新 Dosage，DecocteMethod 和 Unit 保持原值
+8. **重复药材剂量合并策略 (MC-D17)**: 通过 FeatureToggleOptions 配置 `DuplicateHerbMergeStrategy`。策略: Max(取最大,默认)/Min(取最小)/Sum(累加)/Import(使用导入值)/Keep(保留原值)。合并时仅更新 Dosage，DecocteMethod 和 Unit 保持原值
 
 **Dual Mode:**
 | 模式 | 行为 |
@@ -687,7 +687,7 @@ We believe that 实现以 MedicalCase 为唯一聚合根的电子化医案管理
 |----|------|------|
 | OQ-MC-01 | 挂起医案是否需要设置最大挂起时长? (超时自动取消/提醒) | v1.0 不实现自动清理 (MC-D05)，待观察实际使用情况 |
 | OQ-MC-02 | 禁用患者历史医案的 PatientName 脱敏规则 (Doctor 掩码 "张*") 是否满足合规要求? | 已确定方案 (MC-D16)，待法规确认 |
-| OQ-MC-03 | 重复药材合并策略默认值 (Accumulate) 是否符合临床习惯? | 可通过 appsettings.json 配置切换 (MC-D17)，待临床反馈 |
+| OQ-MC-03 | 重复药材合并策略默认值 (Max) 是否符合临床习惯? | 可通过 FeatureToggleOptions 配置切换 (MC-D17)，待临床反馈 |
 | OQ-MC-04 | 历史处方复制时是否需要显示价格变动对比 (当前价格 vs 历史价格)? | MC-D13 已预留预览对比，UI 实现待确认 |
 | OQ-MC-05 | 审计日志保留期限? (永久/按年归档) | 待运维策略确定，见 [nfr.md](17-nfr.md) NFR-SEC-005 |
 
@@ -998,7 +998,7 @@ We believe that 实现以 MedicalCase 为唯一聚合根的电子化医案管理
 | MC-D14 | 处方总价计算公式 | US-MC-004 | 已确定: SingleDosePrice = SUM(Items.Amount); TotalPrice = SingleDosePrice x DosageCount x Discount |
 | MC-D15 | 打印保护策略 | US-MC-005 + US-MC-015 | 已确定: IsPrinted/PrintVersion/PrintCount/LastPrintedAt 全部在 MedicalCase 聚合根上 (Prescription 无打印字段)。打印后修改任何内容 (Consultation/Prescription) 需 EditReason，修改后 MedicalCase.IsPrinted=false + MedicalCase.PrintVersion++。打印日志从 PrescriptionPrintLog 重构为 MedicalCasePrintLog (FK=MedicalCaseId, 新增 PrintType)。per-type 统计从 MedicalCasePrintLog 聚合查询。处方删除始终禁止 (ERR-30404) |
 | MC-D16 | 患者禁用与医案联动 | US-MC-001 + FR-PAT-013 | 已确定: 禁用患者 (主要场景: 已故) 禁止创建新医案 (ERR-30105); 历史医案可查阅但 PatientName 按角色脱敏 (Admin 完整/Doctor 掩码); 有活跃医案时阻止禁用 |
-| MC-D17 | 重复药材剂量合并策略 | US-MC-016 + US-MC-018 | 已确定: 通过 appsettings.json 配置 `PrescriptionImport.DuplicateHerbStrategy`。五种策略: Max(取最大)/Min(取最小)/Accumulate(累加,默认)/Skip(跳过)/Replace(替换)。合并时仅更新 Dosage，DecocteMethod 和 Unit 保持原值 |
+| MC-D17 | 重复药材剂量合并策略 | US-MC-016 + US-MC-018 | 已确定: 通过 FeatureToggleOptions 配置 `DuplicateHerbMergeStrategy`。策略: Max(取最大,默认)/Min(取最小)/Sum(累加)/Import(使用导入值)/Keep(保留原值)。合并时仅更新 Dosage，DecocteMethod 和 Unit 保持原值 |
 | MC-D18 | 崩溃处理策略 | BR-002 | 已确定: Clinical 和 Management 模式统一做变更丢失处理，无自动保存机制。医案保持最后一次成功保存的状态 |
 | MC-D19 | 两种创建医案入口 | US-MC-001 | 已确定: 模式 1 前台挂号→医生从挂号队列选中; 模式 2 医生直接查询患者创建。两种模式在 BR-001 检查后完全收敛 |
 | MC-D20 | Draft→Suspended 状态重命名 | 状态机全局 | 已确定: 移除 Draft 状态，新增 Suspended (挂起) 状态。Draft 的"保存不完整数据"语义由 UI 未保存表单替代; Suspended 承载"工作流暂停"语义 (医生暂时离开)。枚举值 0 从 Draft 重命名为 Suspended，DB 数据无需迁移。API 端点 `/draft` → `/suspend` |

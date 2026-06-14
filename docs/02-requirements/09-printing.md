@@ -258,7 +258,7 @@ We believe that 实现基于 WPF FixedDocument 的处方打印 + 打印预览 + 
 
 | 操作 | 目标 | 说明 |
 |------|------|------|
-| 处方渲染 | < 2s | QuestPDF FixedDocument 生成 |
+| 处方渲染 | < 2s | WPF FixedDocument 打印/预览 + QuestPDF PDF 导出 (两条独立管线) |
 | 打印提交 | < 500ms | 含 PrintLog 写入 |
 
 ### 数据量估算
@@ -488,7 +488,7 @@ We believe that 实现基于 WPF FixedDocument 的处方打印 + 打印预览 + 
 
 ## Error Codes
 
-> 打印模块为纯客户端功能，使用异常抛出 + 日志记录模式。所有日志使用 `[PRINT]` 前缀。
+> 打印模块主要为客户端功能 (WPF FixedDocument + QuestPDF)，但远程模式包含 2 个服务端端点 (PUT /print-completed, POST /print-log) 用于打印日志回写和状态更新。
 
 ### 参数验证错误
 

@@ -191,7 +191,7 @@ v1.0 发布路线图，定义模块开发顺序、里程碑和交付标准。本
 | US-SHELL-007 | Shell | 状态栏用户名/版本号 | Done | GlobalStatusBar DP (CurrentUserName/AppVersion); XAML Grid.Column 3/4; Shell 绑定 CurrentUserDisplayName |
 | NFR-AVAIL-001 | Infrastructure | 本地数据库启动自动备份 | Done | ILocalDbBackupService + LocalDbBackupService; BACKUP DATABASE T-SQL; 7天保留策略; LoginCoordinator fire-and-forget 集成 |
 
-**Sprint 5 完成 = v1.0-rc 达成** (CODE-25/CODE-21 关闭, NFR-AVAIL-001 满足, 1621 tests 全通过)
+**Sprint 5 完成 = v1.0-rc 达成** (CODE-25/CODE-21 关闭, NFR-AVAIL-001 满足, 1621 tests 当时全通过。当前测试总数约 2021)
 
 ---
 
@@ -209,6 +209,11 @@ v1.0 发布路线图，定义模块开发顺序、里程碑和交付标准。本
 ### Sprint 6: DataSource 重构 + 功能提前 (6 项) -- COMPLETE (2026-03-09)
 
 **目标**: 废除 DataSource 抽象层，实现运行时模式切换，同时完成 4 项功能提前
+
+> **架构演进说明 (2026-06-14)**: Sprint 6 的 SYNC-D02/D03 实现了基于 `IConnectionModeProvider` 的模式切换。
+> 后续重构已将其替换为**基于 URL 的连接切换** (`IConnectionSettingsService` + `SwitchingApiClient`)，
+> 通过 URL 变化自动路由 (非 localhost → 远程 WebAPI; localhost → 本地 LocalWebAPI)，
+> 业务代码完全模式无关。以下为 Sprint 6 的历史记录。
 
 | 编号 | 内容 | 完成状态 | 实现说明 |
 |------|------|---------|---------|
@@ -288,7 +293,7 @@ v1.0 发布路线图，定义模块开发顺序、里程碑和交付标准。本
 - [x] 所有 CRITICAL/HIGH 技术债务清零 (Sprint 3/4 完成)
 - [x] Code-PRD 审计 OPEN 项清零 (CODE-25/CODE-21 Sprint 5 关闭)
 - [x] Could Have Backlog 评估处理 (US-ERR-007/US-SHELL-007 完成; NFR-AVAIL-001 实现)
-- [x] 全量测试通过 (Server 1050 + Desktop 493 + Architecture 78 = 1621 tests, 0 failures)
+- [x] 全量测试通过 (当时 Server 1050 + Desktop 493 + Architecture 78 = 1621 tests。当前约 2021 tests)
 - [ ] 用户验收测试 (UAT) -- 待生产部署后执行
 - [ ] 性能指标满足 nfr.md 要求 -- 待实测校准
 
@@ -321,5 +326,5 @@ v1.0 发布路线图，定义模块开发顺序、里程碑和交付标准。本
 | 2026-03-06 | v1.1 | 新增 Registration 模块 (7 US) 纳入 Sprint; Sprint 重编号 (1->2, 2->3, 3->4); 总量 131->138 US |
 | 2026-03-08 | v1.2 | Sprint 3 完成 (9 US); CODE-08/11/22/24/36/37 关闭; 审计项更新状态列 |
 | 2026-03-09 | v1.3 | Sprint 4 完成 (5 US) v1.0-beta 达成; Sprint 5 完成 (2 US + NFR-AVAIL-001) v1.0-rc 达成; CODE-25/CODE-21 关闭; 审计项全部清零 |
-| 2026-03-09 | v1.4 | Sprint 6 完成: SYNC-D02 DataSource 废除 + SYNC-D03 运行时切换 + D1/D2/C2/D3 四项 v2.0 功能; 全部技术债务清零; 1654 tests 全通过 |
+| 2026-03-09 | v1.4 | Sprint 6 完成: SYNC-D02 DataSource 废除 + SYNC-D03 运行时切换 + D1/D2/C2/D3 四项 v2.0 功能; 全部技术债务清零; 1654 tests 当时全通过 (当前约 2021) |
 | 2026-03-09 | v1.5 | Sprint 2 状态修正: 8 US 全部标记 Done + COMPLETE; 审计基线更新为最终状态; 时间线视图 Sprint 2 添加 COMPLETE 标记 |

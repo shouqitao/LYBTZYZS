@@ -243,7 +243,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 
 ### US-USER-006: 恢复已删除用户
 
-> As a Admin/SuperAdmin, I want to 恢复软删除的用户,
+> As a SuperAdmin, I want to 恢复软删除的用户,
 > so that 误删或重新入职的人员可以恢复系统访问。
 
 **Acceptance Criteria:**
@@ -284,7 +284,7 @@ We believe that 实现基于权限值层级的用户管理系统 (CRUD + 批量�
 
 ### US-USER-008: 管理员重置密码
 
-> As a Admin/SuperAdmin, I want to 将用户密码重置为默认密码,
+> As a SuperAdmin, I want to 将用户密码重置为默认密码,
 > so that 忘记密码的用户可以快速恢复登录能力。
 
 **Acceptance Criteria:**

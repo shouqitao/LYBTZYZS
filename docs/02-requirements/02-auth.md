@@ -484,7 +484,7 @@ We believe that 实现 JWT 自动登录 + 滑动刷新 + 重放攻击检测 + �
 | 本地模式无 Token | 安全级别低于远程模式 | 本地密码验证 + 不活跃超时 + 应用级访问控制 |
 | AccessToken 延迟踢出 | 旧设备在 Token 有效期内 (最长 30 分钟) 仍可操作 | 诊所场景可接受 (AUTH-D08)，后续版本考虑 JWT 黑名单 |
 | 凭据文件被拷贝 | 他机上使用拷贝的凭据文件 | DPAPI LocalMachine 绑定机器，跨机器无法解密 |
-| 4 个 PRD 定义事件缺失 | SessionExpiring/SessionExtended/LogoutStarted/ForcedLogout 未实现 | 延期到事件体系 Epic |
+| ~~4 个 PRD 定义事件缺失~~ | SessionExtended/LogoutStarted/ForcedLogout **已实现**; SessionExpiring 已移除 (设计决策) | 已解决 |
 
 ---
 
@@ -501,7 +501,9 @@ We believe that 实现 JWT 自动登录 + 滑动刷新 + 重放攻击检测 + �
 
 ## Data Model
 
-### AuthSession (认证会话)
+### ~~AuthSession (认证会话)~~ — 已移除
+
+> AuthSession 实体已于 2026-02-21 移除 (AUTH-11)，RefreshToken 表已满足会话管理需求。
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
@@ -612,7 +614,7 @@ We believe that 实现 JWT 自动登录 + 滑动刷新 + 重放攻击检测 + �
 8. 设备A: 尝试 AutoLogin → 401 TokenRevoked
 9. 设备A: 显示 "您的账号已在其他设备登录，请重新登录" → 跳转登录页
 
-> 注意: LoginAsync 当前代码未实现步骤3-4 (撤销旧Token Family)，需在实现 AUTH-D06 时补充。
+> 注意: LoginAsync 已实现旧 Token 撤销逻辑 (撤销旧 RefreshToken + AutoLoginToken)。
 
 ### Token 刷新失败分级处理 (US-AUTH-011)
 

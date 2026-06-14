@@ -147,7 +147,7 @@ We believe that 提供健康检查端点 + 动态日志级别管理 + 启动诊�
 > so that 我可以快速判断后端服务是否可达，进行流量分发决策。
 
 **Acceptance Criteria:**
-- [ ] 匿名请求 -> 返回 200 + `{"message":"pong","timestamp":"..."}`
+- [ ] 匿名请求 -> 返回 200 + `{"message":"pong","timestamp":"..."}` (远程); 本地返回 `{"status":"ok","timestamp":"..."}`
 
 **Business Rules:**
 1. 匿名访问

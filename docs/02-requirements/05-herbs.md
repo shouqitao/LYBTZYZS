@@ -357,7 +357,7 @@ We believe that 实现拼音码快速检索 + Excel/JSON 批量导入导出 + �
 
 **Acceptance Criteria:**
 - [ ] GET 请求 → 返回 .xlsx 文件，含正确表头和示例数据
-- [ ] 无需登录即可下载 (AllowAnonymous)
+- [ ] 下载需登录 (当前实现为类级 [Authorize]，文档原标注 AllowAnonymous 未生效)
 
 **Business Rules:**
 1. 允许匿名访问
@@ -366,7 +366,7 @@ We believe that 实现拼音码快速检索 + Excel/JSON 批量导入导出 + �
 **Dual Mode:**
 | 模式 | 行为 |
 |------|------|
-| 远程 | GET `/api/v1/herbs/import-template` (AllowAnonymous) |
+| 远程 | GET `/api/v1/herbs/import-template` (需登录，AllowAnonymous 未实际生效) |
 | 本地 | 内置模板 |
 
 ### US-HERB-013: 检查药材引用
@@ -409,7 +409,7 @@ We believe that 实现拼音码快速检索 + Excel/JSON 批量导入导出 + �
 #### 药材新增/编辑表单
 | 字段 | 控件 | 必填 | 校验规则 |
 |------|------|------|----------|
-| 名称 | TextBox | 是 | 2-20 字符，同分类下唯一 |
+| 名称 | TextBox | 是 | 1-100 字符 (ValidationConstants.NameMaxLength) |
 | 拼音码 | TextBox (自动生成) | 是 | 自动取首字母，可手动修改 |
 | 分类 | ComboBox (21 类中药分类) | 是 | - |
 | 单价 | DecimalUpDown | 是 | >= 0.01，保留两位小数 |
@@ -484,7 +484,7 @@ We believe that 实现拼音码快速检索 + Excel/JSON 批量导入导出 + �
 | ID | 问题 | 状态 |
 |----|------|------|
 | OQ-HERB-01 | 药材分类是否需要支持自定义? 当前为固定枚举 (补血药、补气药等) | 待定。v1.0 使用固定分类，v2.0 考虑自定义分类管理 |
-| OQ-HERB-02 | 药材名称是否需要唯一性约束? | 待定。当前无唯一约束，批量导入通过重复策略处理 |
+| OQ-HERB-02 | 药材名称是否需要唯一性约束? | **已实现**: HerbService.CreateAsync 通过 ExistsByNameAsync 强制名称唯一 |
 | OQ-HERB-03 | 禁用药材是否需要在处方详情页标注 "已禁用" 状态? | 待定。当前仅在开方选择时过滤，历史处方不标注 |
 
 ---
