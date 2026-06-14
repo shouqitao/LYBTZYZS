@@ -604,6 +604,31 @@ namespace LYBT.Module.MedicalCases.Services
             // 权限检查: 确保操作者有权删除此医案
             MedicalCaseServiceHelper.EnsureCanDelete(_permissionService, medicalCase, operatorId, isAdmin, "Delete", _logger);
 
+            // P1 FIX: 已打印的医案不可删除 (ERR-30404 打印保护)
+            if (medicalCase.PrintCount > 0)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.Delete → AlreadyPrinted - MedicalCaseId={MedicalCaseId} PrintCount={PrintCount}", id, medicalCase.PrintCount);
+                throw new BusinessException(EC.McPrintedCannotDelete, "已打印的医案不可删除");
+            }
+
+            // D2 FIX: 删除前回滚关联的挂号记录
+            var registration = await _registrationRepository.GetByMedicalCaseIdAsync(id, cancellationToken);
+            if (registration != null)
+            {
+                if (registration.Source == RegistrationSource.Receptionist)
+                {
+                    registration.Status = RegistrationStatus.Waiting;
+                    registration.MedicalCaseId = null;
+                }
+                else
+                {
+                    registration.Status = RegistrationStatus.Cancelled;
+                }
+                registration.UpdatedAt = DateTime.UtcNow;
+                await _registrationRepository.UpdateAsync(registration, cancellationToken);
+                _logger.LogInformation("[SVC] MedicalCase.Delete → RegistrationRolledBack - RegistrationId={RegistrationId}", registration.Id);
+            }
+
             var result = await _repository.DeleteAsync(id, cancellationToken);
             if (result)
             {

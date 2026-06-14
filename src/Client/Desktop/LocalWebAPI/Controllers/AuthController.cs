@@ -5,6 +5,7 @@ using LYBT.LocalWebAPI.Auth;
 using LYBT.Shared.Utilities.Security;
 using System.Security.Claims;
 using LYBT.Entities.Users;
+using LYBT.Shared.Models.Enums;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using LYBT.Shared.Models.Contracts.Auth;
@@ -40,6 +41,12 @@ public class AuthController : ControllerBase
         if (user == null)
         {
             return Unauthorized();
+        }
+
+        // S3 FIX: 检查用户状态 — 已禁用用户不可登录
+        if (user.Status != CommonStatus.Enabled)
+        {
+            return Unauthorized(new { Message = "账户已被禁用，请联系管理员" });
         }
 
         // Verify password using existing helper
@@ -94,6 +101,12 @@ public class AuthController : ControllerBase
             return Unauthorized(new { Message = "用户不存在" });
         }
 
+        // FIX: 禁用用户不可刷新 token
+        if (user.Status != CommonStatus.Enabled)
+        {
+            return Unauthorized(new { Message = "账户已被禁用" });
+        }
+
         var newToken = LocalJwtConfig.GenerateToken(user);
 
         return Ok(new
@@ -128,6 +141,12 @@ public class AuthController : ControllerBase
             return Ok(new { IsValid = false, Message = "用户不存在或已禁用" });
         }
 
+        // FIX: 检查用户状态
+        if (user.Status != CommonStatus.Enabled)
+        {
+            return Ok(new { IsValid = false, Message = "账户已被禁用" });
+        }
+
         return Ok(new
         {
             IsValid = true,
@@ -138,12 +157,13 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// 自动登录 — 使用已保存的凭据（本地模式下直接验证用户存在性）
+    /// 自动登录 — 验证 AutoLoginToken 后签发 token
     /// </summary>
     [HttpPost("auto-login")]
     public async Task<IActionResult> AutoLogin([FromBody] AutoLoginRequest request)
     {
-        if (request == null || string.IsNullOrWhiteSpace(request.UserName))
+        if (request == null || string.IsNullOrWhiteSpace(request.UserName)
+            || string.IsNullOrWhiteSpace(request.AutoLoginToken))
         {
             return Unauthorized();
         }
@@ -155,6 +175,25 @@ public class AuthController : ControllerBase
         if (user == null)
         {
             return Unauthorized();
+        }
+
+        // S1 FIX: 检查用户状态
+        if (user.Status != CommonStatus.Enabled)
+        {
+            return Unauthorized(new { Message = "账户已被禁用" });
+        }
+
+        // S1 FIX: 验证 AutoLoginToken — 不再仅凭用户名登录
+            var tokenValid = await _db.AutoLoginTokens
+            .AsNoTracking()
+            .AnyAsync(t => t.UserId == user.Id
+                && t.Token == request.AutoLoginToken
+                && !t.IsRevoked
+                && t.ExpiresAt > System.DateTime.UtcNow);
+
+        if (!tokenValid)
+        {
+            return Unauthorized(new { Message = "自动登录令牌无效或已过期" });
         }
 
         var token = LocalJwtConfig.GenerateToken(user);

@@ -223,7 +223,11 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> ChangeProfile(Guid id, [FromBody] ChangeProfileDto dto)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // S5 FIX: 仅允许修改自己的个人资料 (IDOR 防护)
+            var (currentUserId, _, _) = GetOperator();
+            if (id != currentUserId)
+                return Forbid("只能修改自己的个人资料");
+
             if (ValidateGuid(id, "用户ID") is { } error) return error;
 
             var result = await _userService.ChangeProfileAsync(id, dto);
@@ -246,7 +250,11 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> ChangePassword(Guid id, [FromBody] LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
+            // S5 FIX: 仅允许修改自己的密码 (IDOR 防护)
+            var (currentUserId, _, _) = GetOperator();
+            if (id != currentUserId)
+                return Forbid("只能修改自己的密码");
+
             if (ValidateGuid(id, "用户ID") is { } error) return error;
 
             var result = await _userService.ChangePasswordAsync(id, request.OldPassword, request.NewPassword);

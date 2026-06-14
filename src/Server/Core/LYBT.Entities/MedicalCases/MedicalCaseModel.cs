@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Common;
@@ -110,7 +110,7 @@ namespace LYBT.Entities.MedicalCases
         /// 锁定条件：已完成状态 且 非当天（完成或创建）
         /// Suspended/Active状态不受跨日限制，可随时编辑
         /// </summary>
-        public bool IsLocked => IsCompleted && (CompletedAt ?? CreatedAt).Date < DateTime.Today;
+        public bool IsLocked => IsCompleted && CompletedAt.HasValue && CompletedAt.Value.Date < DateTime.UtcNow.Date;
 
         /// <summary>
         /// 是否活跃（可编辑状态）

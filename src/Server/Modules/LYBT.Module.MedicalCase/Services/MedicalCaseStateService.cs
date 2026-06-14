@@ -288,6 +288,13 @@ namespace LYBT.Module.MedicalCases.Services
                 throw new BusinessException(EC.McCompletedCannotCancel, "已完成的医案不可取消");
             }
 
+            // P1 FIX: 已打印的医案不可取消 (保护打印记录来源)
+            if (medicalCase.PrintCount > 0)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.Cancel → AlreadyPrinted - MedicalCaseId={MedicalCaseId} PrintCount={PrintCount}", id, medicalCase.PrintCount);
+                throw new BusinessException(EC.McPrintedCannotDelete, "已打印的医案不可取消");
+            }
+
             // 已软删除的不重复处理
             if (medicalCase.IsDeleted)
             {
@@ -337,8 +344,9 @@ namespace LYBT.Module.MedicalCases.Services
 
             if (registration.Source == RegistrationSource.Receptionist)
             {
-                // 前台挂号: 回退到Waiting，保留MedicalCaseId用于恢复
+                // 前台挂号: 回退到Waiting，清除MedicalCaseId (D3 FIX: 允许后续取消)
                 registration.Status = RegistrationStatus.Waiting;
+                registration.MedicalCaseId = null;
                 registration.UpdatedAt = DateTime.UtcNow;
                 // MedicalCaseId保留不变，用于后续恢复关联
                 await _registrationRepository.UpdateAsync(registration, cancellationToken);

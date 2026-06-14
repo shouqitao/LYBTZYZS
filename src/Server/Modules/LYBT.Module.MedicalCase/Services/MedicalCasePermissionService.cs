@@ -67,8 +67,8 @@ namespace LYBT.Module.MedicalCases.Services
                 // Completed 状态：当天可编辑，跨日后锁定
                 if (medicalCase.IsCompleted)
                 {
-                    var completionDate = (medicalCase.CompletedAt ?? medicalCase.CreatedAt).Date;
-                    var isToday = completionDate == DateTime.Today;
+                    var completionDate = medicalCase.CompletedAt?.Date ?? medicalCase.CreatedAt.Date;
+                    var isToday = completionDate == DateTime.UtcNow.Date;
 
                     if (isToday)
                     {
