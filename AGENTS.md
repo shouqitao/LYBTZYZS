@@ -67,6 +67,47 @@ dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
 - **Testing Trophy** (Integration-first, zero mock for Server tests)
 - **Soft-delete + global query filter** on most entities
 
+## Skill Routing (技能路由)
+
+收到请求时，先检查技能是否匹配。匹配 → invoke 技能，不直接编码。
+
+### 工程纪律（编码前 MUST 触发）
+
+| 场景 | 技能 | 规则 |
+|------|------|------|
+| 新功能/修改行为 | `compose:brainstorm` | 探索意图后再编码 |
+| 有规格的多步骤任务 | `compose:plan` | 碰代码前出计划 |
+| Bug/测试失败/异常 | `compose:debug` | 找到根因再修，禁止跳过到修复 |
+| 实现功能/修复 | `compose:tdd` | 先写测试再写实现 |
+| 声称"完成/修好" | `compose:verify` | 必须有 `dotnet test` 通过的证据 |
+
+### 方向与交付（匹配时触发）
+
+| 场景 | 技能 |
+|------|------|
+| 新想法/"值得做吗" | `office-hours` |
+| 架构/设计评审 | `plan-eng-review` |
+| 策略/范围/"再大胆点" | `plan-ceo-review` |
+| 全自动评审流水线 | `autoplan` |
+| 安全审计/漏洞扫描 | `cso` |
+| 代码审查/diff 检查 | `compose:review` |
+| 合并/集成/PR | `compose:merge` |
+
+### 工作流分级
+
+| 规模 | 必须流程 |
+|------|---------|
+| **小修补** (typo、1-2 行) | 改完 → `dotnet test` → 提交 |
+| **新功能/明确重构** | `brainstorm` → `plan` → TDD 实现 → `verify` → 提交 |
+| **跨模块大改/新架构** | `brainstorm` → `plan` → `plan-eng-review` → `subagent` 并行 → `verify` → `review` → `merge` |
+
+### 核心原则
+
+- **前期思考 > 后期 debug** — 20% 的方案评审决定 80% 的结果
+- **按需裁剪** — 小修小补跳过完整流程，不搞流程内耗
+- **不验证不声称完成** — "应该修好了"不算完成，必须有测试输出作为证据
+- **找不到根因不修 bug** — `compose:debug` 四阶段：调查 → 分析 → 假设 → 实现
+
 <!-- gitnexus:start -->
 GitNexus indexed: **LYBTZYZS** (35341 symbols, 76290 relationships). Run `gitnexus_impact` before editing any symbol. Run `gitnexus_detect_changes()` before committing.
 <!-- gitnexus:end -->
