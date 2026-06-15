@@ -146,5 +146,5 @@ services.AddOptions<JwtOptions>()
 
 ## 相关文档
 
-- [配置需求规格 (PRD)](../02-requirements/11-configuration.md) — Options 类清单、功能需求、决策记录
+- [配置需求规格 (PRD)](../02-requirements/11-platform.md) — Options 类清单、功能需求、决策记录
 - [服务端配置运维指南](../06-operations/02-configuration.md) — Server 端 appsettings.json 配置项详细说明

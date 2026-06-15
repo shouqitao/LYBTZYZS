@@ -4,8 +4,8 @@
 
 | # | 目录 | 内容 | 文件数 |
 |---|------|------|--------|
-| 01 | [产品文档](01-product/) | 产品愿景、用户画像、JTBD、价值主张、客户旅程 | 10 |
-| 02 | [需求文档](02-requirements/) | PRD (15 个模块，138 个 User Stories) + NFR + UI 规范 | 22 |
+| 01 | [产品文档](01-product/) | 产品愿景、用户画像、JTBD、价值主张、客户旅程 | 4 |
+| 02 | [需求文档](02-requirements/) | PRD (10 个模块，136 个 User Stories) + NFR | 12 |
 | 03 | [架构文档](03-architecture/) | 系统架构、数据模型、双模式、ADR (9 条)、LocalWebAPI | 12 |
 | 04 | [API 参考](04-api-reference/) | 全部 API 端点文档 (远程 ~106 + 本地 112) | 13 |
 | 05 | [开发指南](05-development/) | 快速开始、编码规范、设计模式、测试 | 12 |
@@ -25,7 +25,7 @@
 
 1. [产品愿景](01-product/01-vision.md) -- 系统做什么
 2. [功能概览](01-product/README.md) -- 核心功能模块
-3. [临床工作流](01-product/06-clinical-workflow.md) -- 端到端诊疗流程
+3. [产品愿景](01-product/01-vision.md) -- 端到端诊疗流程与临床工作流
 4. [系统架构](03-architecture/01-system-overview.md) -- 整体架构
 
 ### API 开发

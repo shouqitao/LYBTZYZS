@@ -617,13 +617,13 @@ PatientMasterDetailViewModel
 | CardDetected | 检测到卡片插入 |
 | CardReaderIntegrationEventType | 集成结果 (PatientFound/PatientNotFound/PatientCreated/ReadFailed) |
 
-需求详见 [card-reader.md](../02-requirements/16-card-reader.md)。
+需求详见 [platform.md](../02-requirements/11-platform.md)。
 
 ---
 
 ## UI 全局规范
 
-> 对应 [UI-D01~D06](../02-requirements/18-ui-patterns.md)。桌面端所有模块统一遵循以下交互规范。
+> 对应 UI-D01~D06 全局交互规范。桌面端所有模块统一遵循以下交互规范。
 
 ### 搜索行为 (UI-D01)
 
@@ -663,7 +663,7 @@ Clinical (诊疗) / Management (管理) 通过菜单过滤区分。Doctor 默认
 
 ## 凭证存储架构
 
-> 对应 [FR-AUTH-009](../02-requirements/02-auth.md)。
+> 对应 [US-AUTH-009](../02-requirements/02-auth.md)。
 
 ### CredentialVault
 
@@ -685,7 +685,7 @@ Clinical (诊疗) / Management (管理) 通过菜单过滤区分。Doctor 默认
 
 ## Token 刷新失败处理
 
-> 对应 [FR-AUTH-011](../02-requirements/02-auth.md)。
+> 对应 [US-AUTH-011](../02-requirements/02-auth.md)。
 
 分级处理策略:
 
@@ -701,7 +701,7 @@ Clinical (诊疗) / Management (管理) 通过菜单过滤区分。Doctor 默认
 
 ## 客户端异常处理架构
 
-> 对应 [FR-ERR-003/005/008](../02-requirements/13-error-handling.md)。
+> 对应 [US-ERR-003/005/008](../02-requirements/11-platform.md)。
 
 ### DesktopExceptionHandler
 
@@ -710,7 +710,7 @@ Clinical (诊疗) / Management (管理) 通过菜单过滤区分。Doctor 默认
 - `TaskScheduler.UnobservedTaskException` (异步任务未观察异常)
 - `DispatcherUnhandledException` (WPF UI 线程，可选)
 
-### 异常严重度分级 (FR-ERR-005)
+### 异常严重度分级 (US-ERR-005)
 
 | 级别 | 异常类型示例 | 日志级别 | 说明 |
 |------|------------|---------|------|
@@ -719,9 +719,9 @@ Clinical (诊疗) / Management (管理) 通过菜单过滤区分。Doctor 默认
 | Error (2) | UnauthorizedAccessException, OutOfMemoryException | Error | 授权/资源问题 |
 | Critical (3) | AppDomain.UnhandledException | Critical | 全局未处理异常 |
 
-### 异常到通知类型映射 (FR-ERR-008)
+### 异常到通知类型映射 (US-ERR-008)
 
-遵循 [ui-patterns.md](../02-requirements/18-ui-patterns.md) 3.3 节通知规范:
+遵循全局通知规范 3.3 节:
 
 | 异常类型 | 通知方式 | 持续时间 |
 |----------|---------|---------|
@@ -738,7 +738,7 @@ Clinical (诊疗) / Management (管理) 通过菜单过滤区分。Doctor 默认
 
 ## 错误消息映射
 
-> 对应 [FR-ERR-006](../02-requirements/13-error-handling.md)。
+> 对应 [US-ERR-006](../02-requirements/11-platform.md)。
 
 ClientErrorMessageMapper 将 HTTP 状态码和业务错误码映射为中文用户友好消息:
 
@@ -759,7 +759,7 @@ ClientErrorMessageMapper 将 HTTP 状态码和业务错误码映射为中文用�
 
 ## 错误追踪码
 
-> 对应 [FR-ERR-007](../02-requirements/13-error-handling.md)。
+> 对应 [US-ERR-007](../02-requirements/11-platform.md)。
 
 **格式**: 8 位短码 (时间戳低位 + 随机数)，如 `A3F8B2C1`。
 
@@ -774,7 +774,7 @@ ClientErrorMessageMapper 将 HTTP 状态码和业务错误码映射为中文用�
 
 ## 菜单结构
 
-> 对应 [FR-SHELL-005](../02-requirements/12-desktop-shell.md)。
+> 对应 [US-SHELL-005](../02-requirements/11-platform.md)。
 
 ### 完整菜单层级
 
@@ -809,7 +809,7 @@ ClientErrorMessageMapper 将 HTTP 状态码和业务错误码映射为中文用�
 
 ## Desktop 启动诊断
 
-> 对应 [FR-SHELL-006](../02-requirements/12-desktop-shell.md)。
+> 对应 [US-SHELL-006](../02-requirements/11-platform.md)。
 
 StartupDiagnostics 记录 WPF 客户端各启动阶段耗时:
 
@@ -827,7 +827,7 @@ StartupDiagnostics 记录 WPF 客户端各启动阶段耗时:
 
 ## 账户设置
 
-> 对应 [FR-SHELL-007](../02-requirements/12-desktop-shell.md)。
+> 对应 [US-SHELL-007](../02-requirements/11-platform.md)。
 
 AccountSettingsControl 通过 `MenuManager.EditProfileCommand` 进入:
 
@@ -843,7 +843,7 @@ AccountSettingsControl 通过 `MenuManager.EditProfileCommand` 进入:
 
 ## 同步 UI 架构
 
-> 对应 [FR-SYNC-007](../02-requirements/10-sync.md)。
+> 对应 [US-SYNC-007](../02-requirements/10-sync.md)。
 
 ### SyncPhase 状态机 (Sprint 4 实现)
 
@@ -891,7 +891,7 @@ MedicalCase 冲突展示跨整个聚合 (诊断 + 处方 + 药材明细)，通�
 
 ## 性能预算
 
-> 对应 [NFR-PERF-002/003](../02-requirements/17-nfr.md)。
+> 对应 [NFR-PERF-002/003](../02-requirements/12-nfr.md)。
 
 ### 响应时间目标
 
@@ -929,7 +929,7 @@ MedicalCase 冲突展示跨整个聚合 (诊断 + 处方 + 药材明细)，通�
 | 选项 | 行为 | 说明 |
 |------|------|------|
 | **保存** | 提交当前修改 → 保存成功后执行导航 | 主操作按钮 |
-| **挂起医案** | 将当前状态标记为 Suspended → 保存当前数据 → 执行导航 | 医生暂时离开，稍后可继续 (FR-MC-006) |
+| **挂起医案** | 将当前状态标记为 Suspended → 保存当前数据 → 执行导航 | 医生暂时离开，稍后可继续 (US-MC-006) |
 | **放弃修改** | 丢弃所有未保存修改 → 执行导航 | 不可逆操作 |
 | **取消** | 停留在当前页面 | 继续编辑 |
 
@@ -968,7 +968,7 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 |------|------|----------|
 | 2026-02-10 | v1.1 | 新增可复用业务控件、业务弹窗、CardReader 集成章节 |
 | 2026-02-10 | v1.0 | 初始版本，从 client-layer-architecture/desktop-architecture/viewmodel-conventions specs 整合 |
-| 2026-02-18 | v1.2 | 设计补全: UI 全局规范 (UI-D01~D06)、凭证存储 (FR-AUTH-009)、Token 刷新失败 (FR-AUTH-011)、客户端异常处理 (FR-ERR-003/005/008)、错误消息映射 (FR-ERR-006)、错误追踪码 (FR-ERR-007)、菜单结构 (FR-SHELL-005)、Desktop 启动诊断 (FR-SHELL-006)、账户设置 (FR-SHELL-007)、同步 UI (FR-SYNC-007)、模式切换 (FR-SYNC-008)、性能预算 (NFR-PERF-002/003)、UnsavedChangesDialog (BR-002) |
+| 2026-02-18 | v1.2 | 设计补全: UI 全局规范 (UI-D01~D06)、凭证存储 (US-AUTH-009)、Token 刷新失败 (US-AUTH-011)、客户端异常处理 (US-ERR-003/005/008)、错误消息映射 (US-ERR-006)、错误追踪码 (US-ERR-007)、菜单结构 (US-SHELL-005)、Desktop 启动诊断 (US-SHELL-006)、账户设置 (US-SHELL-007)、同步 UI (US-SYNC-007)、模式切换 (US-SYNC-008)、性能预算 (NFR-PERF-002/003)、UnsavedChangesDialog (BR-002) |
 | 2026-02-26 | v1.3 | Sprint3-Batch5a DOC3: Consultation 模块 Server-only 标注; Views/Controls 目录约定; CardReader Core 层定位说明; Core 层新增 LocalData/CardReader |
 | 2026-03-09 | v1.4 | Sprint 4: 新增 EditModeStateMachine 章节 (US-MC-011); 更新 CardReader 降级链 (MatchPatientAsync + PatientMatchType); 更新同步 UI (SyncPhase FSM + SyncResultSummary + 底栏增强); 模块清单补充 Registration; 修正 Consultation 说明 |
 | 2026-03-09 | v1.5 | Sprint 6 同步: Contracts 层 IDataSource→IRepository (6 个); LocalData 层补充 LocalXxxRepository; Printing 层补充 PDF 导出 (QuestPDF) |

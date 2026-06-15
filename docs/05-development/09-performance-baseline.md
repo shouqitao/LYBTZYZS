@@ -2,7 +2,7 @@
 
 ## 概述
 
-本文档记录 v1.0 性能基准测试结果，对齐 `docs/02-requirements/17-nfr.md` 中的 NFR-PERF-001~004 指标。
+本文档记录 v1.0 性能基准测试结果，对齐 `docs/02-requirements/12-nfr.md` 中的 NFR-PERF-001~004 指标。
 
 **测试日期**: 2026-03-10
 **测试环境**: 本地开发机 (Windows 10, SQL Server LocalDB)

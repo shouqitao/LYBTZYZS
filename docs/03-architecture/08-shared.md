@@ -168,7 +168,7 @@ LYBT.Shared.Components/
 |------|------|----------|
 | `CanCreateNewCase(statuses)` | 检查患者是否可新建医案 | BR-001 (单活跃医案约束) |
 | `HasActiveCase(statuses)` | 检查患者是否存在活跃医案 | BR-001 |
-| `IsValidStatusTransition(from, to)` | 状态转换合法性验证 | FR-MC-006~008 状态机矩阵 |
+| `IsValidStatusTransition(from, to)` | 状态转换合法性验证 | US-MC-006~008 状态机矩阵 |
 
 **当前状态**: 待实施 (S5)。Server 端 `MedicalCaseRules` 将简化为 thin wrapper 委托给此类。
 

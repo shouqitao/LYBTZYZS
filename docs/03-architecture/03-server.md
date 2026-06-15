@@ -324,7 +324,7 @@ builder.Services.AddPatientsModule();
 | 6xxxx | 验方管理 | 601xx~603xx | ~17 |
 | 7xxxx | 数据同步 | 701xx~705xx | ~20 |
 
-> **总计**: 90+ 错误场景。详见各模块 PRD 文档的"错误码"章节和 [error-handling.md](../02-requirements/13-error-handling.md)。
+> **总计**: 90+ 错误场景。详见各模块 PRD 文档的"错误码"章节和 [error-handling.md](../02-requirements/11-platform.md)。
 
 ## Service 层规范
 
@@ -445,7 +445,7 @@ Validator 原先分散在各业务模块 (`Module.{Entity}/Validators/`) 中，�
 
 ## 缓存策略
 
-> 详细缓存参数和失效映射见 [nfr.md](../02-requirements/17-nfr.md) 第 5 章。
+> 详细缓存参数和失效映射见 [nfr.md](../02-requirements/12-nfr.md) 第 5 章。
 
 ### Server 端
 
@@ -493,7 +493,7 @@ ApiService GET 缓存 (LRU, 1000 条, 5 分钟过期)。写操作后按模块前
 
 ### 敏感数据脱敏
 
-> 对应 [FR-LOG-003](../02-requirements/14-logging.md)，敏感数据分级标准见 [nfr.md](../02-requirements/17-nfr.md) NFR-SEC-004。
+> 对应 [US-LOG-003](../02-requirements/11-platform.md)，敏感数据分级标准见 [nfr.md](../02-requirements/12-nfr.md) NFR-SEC-004。
 
 通过 SensitiveDataMaskingEnricher (Serilog ILogEventEnricher) 在日志写入前自动脱敏，两层保护:
 
@@ -505,7 +505,7 @@ ApiService GET 缓存 (LRU, 1000 条, 5 分钟过期)。写操作后按模块前
 
 ### API 请求日志
 
-> 对应 [FR-LOG-007](../02-requirements/14-logging.md)。
+> 对应 [US-LOG-007](../02-requirements/11-platform.md)。
 
 ApiLoggingFilter 实现为 IAsyncActionFilter，全局注册，自动记录所有 Controller Action 执行信息:
 
@@ -523,7 +523,7 @@ CorrelationId 从 HttpContext 中间件获取，自动注入到日志上下文�
 
 ### 启动配置验证
 
-> 对应 [FR-CFG-004](../02-requirements/11-configuration.md)。
+> 对应 [US-CFG-004](../02-requirements/11-platform.md)。
 
 ProductionConfigurationValidator 在 `ASPNETCORE_ENVIRONMENT=Production` 时启动验证关键配置项:
 
@@ -542,7 +542,7 @@ ProductionConfigurationValidator 在 `ASPNETCORE_ENVIRONMENT=Production` 时启�
 
 ### 安全审计日志
 
-> 对应 [FR-LOG-002](../02-requirements/14-logging.md)。
+> 对应 [US-LOG-002](../02-requirements/11-platform.md)。
 
 **SecurityAuditLog 表结构**:
 
@@ -566,7 +566,7 @@ ProductionConfigurationValidator 在 `ASPNETCORE_ENVIRONMENT=Production` 时启�
 
 ### 日志清理服务
 
-> 对应 [FR-LOG-005](../02-requirements/14-logging.md)，保留策略见 [nfr.md](../02-requirements/17-nfr.md) NFR-SEC-005。
+> 对应 [US-LOG-005](../02-requirements/11-platform.md)，保留策略见 [nfr.md](../02-requirements/12-nfr.md) NFR-SEC-005。
 
 LogCleanupService 继承 BackgroundService，定期清理过期系统日志:
 
@@ -583,7 +583,7 @@ LogCleanupService 继承 BackgroundService，定期清理过期系统日志:
 
 ### 审计日志清理服务
 
-> 对应 [FR-LOG-006](../02-requirements/14-logging.md)，保留期限 365 天 (NFR-D04)。
+> 对应 [US-LOG-006](../02-requirements/11-platform.md)，保留期限 365 天 (NFR-D04)。
 
 SecurityAuditCleanupService 继承 BackgroundService:
 
@@ -599,7 +599,7 @@ SecurityAuditCleanupService 继承 BackgroundService:
 
 ### Server 启动诊断
 
-> 对应 [FR-SYS-008](../02-requirements/15-health-diagnostics.md)。
+> 对应 [US-SYS-008](../02-requirements/11-platform.md)。
 
 DatabaseStartupDiagnostics 在 Program.cs 启动阶段自动执行:
 
@@ -644,7 +644,7 @@ DatabaseStartupDiagnostics 在 Program.cs 启动阶段自动执行:
 
 ### 备份服务
 
-> 对应 [NFR-AVAIL-001](../02-requirements/17-nfr.md)。
+> 对应 [NFR-AVAIL-001](../02-requirements/12-nfr.md)。
 
 | 数据库 | 备份方式 | 频率 | 保留期 |
 |--------|---------|------|--------|
@@ -672,7 +672,7 @@ DatabaseStartupDiagnostics 在 Program.cs 启动阶段自动执行:
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 server-layer-architecture/repository-patterns/service-conventions/error-handling specs 整合 |
 | 2026-02-18 | v1.1 | PRD同步: 错误码体系更新为 MCCEE 格式 (模块1位+子类别2位+序号2位)，对齐PRD 90+场景; 新增缓存策略章节 (OutputCache + Desktop，引用 nfr.md) |
-| 2026-02-18 | v1.2 | 设计补全: 新增运维与安全章节 -- 敏感数据脱敏 (FR-LOG-003)、API请求日志 (FR-LOG-007)、启动配置验证 (FR-CFG-004)、安全审计日志 (FR-LOG-002)、日志清理服务 (FR-LOG-005)、审计日志清理 (FR-LOG-006)、Server启动诊断 (FR-SYS-008)、Token Family管理 (AUTH-D06/D07)、备份服务 (NFR-AVAIL-001) |
+| 2026-02-18 | v1.2 | 设计补全: 新增运维与安全章节 -- 敏感数据脱敏 (US-LOG-003)、API请求日志 (US-LOG-007)、启动配置验证 (US-CFG-004)、安全审计日志 (US-LOG-002)、日志清理服务 (US-LOG-005)、审计日志清理 (US-LOG-006)、Server启动诊断 (US-SYS-008)、Token Family管理 (AUTH-D06/D07)、备份服务 (NFR-AVAIL-001) |
 | 2026-02-21 | v1.3 | 深度重构同步: LYBT.Entities 补充 MedicalCaseModel 充血模型例外说明; CQRS 方法示例更新为实际方法签名; 新增 MedicalCaseServiceHelper 共享服务 |
 | 2026-02-21 | v1.4 | 模块全面简化: PermissionService 为唯一权限权威，Rules 精简为无状态策略(57行)，ServiceHelper 扩展(重试/权限验证/创建上下文)，ValidationHelper 合并到 Rules |
 | 2026-02-22 | v1.5 | **Phase 4 架构修复设计同步 (A2+A3)**: MedicalCasePrintLog 从 Prescriptions/ 迁移到 MedicalCases/ 目录; Token Family 管理新增 ICrossModuleAuthService 独立接口 (ISP) + 6 个撤销场景表 + 延迟踢出说明 |

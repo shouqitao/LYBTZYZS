@@ -17,8 +17,8 @@ Central documentation hub for the LYBTZYZS TCM clinic management system. Contain
 
 | Directory | Purpose |
 |-----------|---------|
-| `01-product/` | Product vision, feature overview, user roles, clinical workflow (8 files) |
-| `02-requirements/` | PRD with 15 modules, 138 User Stories, NFR, UI specifications (22 files) |
+| `01-product/` | Product vision, feature overview, user roles (4 files) |
+| `02-requirements/` | PRD with 10 modules, 136 User Stories, NFR (12 files) |
 | `03-architecture/` | System architecture, data model, dual-mode design, 8 ADRs, error handling, archive/, localwebapi/, decisions/ (25 files) |
 | `03-architecture/decisions/` | Architecture Decision Records (ADR-0001 through ADR-0008) |
 | `03-architecture/localwebapi/` | LocalWebAPI-specific architecture docs |
