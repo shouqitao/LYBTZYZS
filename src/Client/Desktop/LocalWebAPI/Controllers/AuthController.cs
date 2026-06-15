@@ -36,11 +36,44 @@ public class AuthController : BaseApiController
     private Guid GetCurrentUserId()
         => Guid.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : Guid.Empty;
 
+    private static readonly Dictionary<string, (int Count, DateTime ResetAt)> _loginAttempts = new();
+    private static readonly object _rateLock = new();
+    private const int MaxAttempts = 5;
+    private static readonly TimeSpan RateWindow = TimeSpan.FromMinutes(1);
+
+    private bool CheckRateLimit(string userName)
+    {
+        lock (_rateLock)
+        {
+            if (_loginAttempts.TryGetValue(userName, out var entry))
+            {
+                if (DateTime.UtcNow < entry.ResetAt)
+                {
+                    if (entry.Count >= MaxAttempts)
+                        return false;
+                    _loginAttempts[userName] = (entry.Count + 1, entry.ResetAt);
+                }
+                else
+                {
+                    _loginAttempts[userName] = (1, DateTime.UtcNow.Add(RateWindow));
+                }
+            }
+            else
+            {
+                _loginAttempts[userName] = (1, DateTime.UtcNow.Add(RateWindow));
+            }
+            return true;
+        }
+    }
+
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Password))
             return Unauthorized();
+
+        if (!CheckRateLimit(request.UserName))
+            return StatusCode(429, new { Message = "登录尝试过于频繁，请稍后再试" });
 
         // Use Service layer for credential verification (password, status, lockout)
         var verifyResult = await _authService.VerifyCredentialsAsync(request);

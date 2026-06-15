@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,11 +12,13 @@ using Serilog.Events;
 using LYBT.LocalWebAPI.Data;
 using LYBT.Shared.Logging.Management;
 using LYBT.Shared.Models.Contracts.Diagnostics;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.LocalWebAPI.Controllers;
 
 /// <summary>
 /// Diagnostics controller: database info, version, recent logs, and logging management.
+/// Read endpoints require authentication. Logging management requires Admin+.
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
@@ -124,6 +127,7 @@ public class DiagnosticsController : ControllerBase
     [HttpPost("logging/debug/enable")]
     public IActionResult EnableDebugMode([FromBody] EnableDebugModeRequest? request)
     {
+        if (!IsAdminOrHigher()) return Forbid("仅管理员可调整日志级别");
         var level = request?.Level?.ToLowerInvariant() switch
         {
             "verbose" => LogEventLevel.Verbose,
@@ -152,6 +156,7 @@ public class DiagnosticsController : ControllerBase
     [HttpPost("logging/debug/disable")]
     public IActionResult DisableDebugMode()
     {
+        if (!IsAdminOrHigher()) return Forbid("仅管理员可调整日志级别");
         var result = _loggingLevelManager.DisableDebugMode();
 
         return Ok(new
@@ -166,6 +171,7 @@ public class DiagnosticsController : ControllerBase
     [HttpPost("logging/level")]
     public IActionResult SetLoggingLevel([FromBody] SetLoggingLevelRequest request)
     {
+        if (!IsAdminOrHigher()) return Forbid("仅管理员可调整日志级别");
         if (string.IsNullOrWhiteSpace(request.Level))
         {
             return BadRequest(new { error = "日志级别不能为空" });
@@ -189,5 +195,11 @@ public class DiagnosticsController : ControllerBase
             previousLevel,
             currentLevel = level.ToString()
         });
+    }
+
+    private bool IsAdminOrHigher()
+    {
+        var role = User.FindFirst(ClaimTypes.Role)?.Value;
+        return role == UserRole.Admin.ToString() || role == UserRole.SuperAdmin.ToString();
     }
 }

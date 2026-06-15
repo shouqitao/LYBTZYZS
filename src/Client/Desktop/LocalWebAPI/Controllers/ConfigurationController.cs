@@ -1,5 +1,8 @@
 using System.Collections.Concurrent;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using LYBT.Shared.Models.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.LocalWebAPI.Controllers;
@@ -9,6 +12,7 @@ namespace LYBT.LocalWebAPI.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ConfigurationController : ControllerBase
 {
     // In-memory configuration store (singleton lifetime via static field)
@@ -43,6 +47,10 @@ public class ConfigurationController : ControllerBase
     [HttpPut("{key}")]
     public Task<IActionResult> Set(string key, [FromBody] string value)
     {
+        var role = User.FindFirst(ClaimTypes.Role)?.Value;
+        if (role != UserRole.Admin.ToString() && role != UserRole.SuperAdmin.ToString())
+            return Task.FromResult<IActionResult>(Forbid("仅管理员可修改配置"));
+
         if (string.IsNullOrWhiteSpace(key))
         {
             return Task.FromResult<IActionResult>(BadRequest(new { message = "Key must not be empty." }));
