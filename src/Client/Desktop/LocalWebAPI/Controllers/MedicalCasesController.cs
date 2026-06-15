@@ -63,9 +63,16 @@ public class MedicalCasesController : BaseApiController
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
+        var consultations = await _facade.GetConsultationListAsync(id);
+        var prescriptions = await _facade.GetPrescriptionListAsync(id);
         var mc = await _facade.GetByIdAsync(id);
         if (mc == null) return NotFound();
-        return Success(mc);
+        return Success(new
+        {
+            medicalCase = mc,
+            consultation = consultations.FirstOrDefault(),
+            prescription = prescriptions.FirstOrDefault()
+        });
     }
 
     [HttpGet("search")]

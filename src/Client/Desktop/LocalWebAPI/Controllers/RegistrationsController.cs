@@ -51,20 +51,6 @@ public class RegistrationsController : BaseApiController
         return HandleResult(result, "挂号创建成功");
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] RegistrationInputDto dto)
-    {
-        var result = await _registrationService.CreateAsync(dto);
-        return HandleResult(result, "挂号更新成功");
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
-    {
-        var result = await _registrationService.CancelAsync(id);
-        return HandleResult(result, "挂号取消成功");
-    }
-
     [HttpGet("queue")]
     public async Task<IActionResult> GetQueue([FromQuery] Guid? doctorId = null)
     {
