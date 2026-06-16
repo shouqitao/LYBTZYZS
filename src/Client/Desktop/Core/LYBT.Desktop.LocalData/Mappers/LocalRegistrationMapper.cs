@@ -41,5 +41,6 @@ internal partial class LocalRegistrationMapper
     [MapperIgnoreTarget(nameof(Registration.Id))]
     [MapperIgnoreTarget(nameof(Registration.Status))]
     [MapperIgnoreTarget(nameof(Registration.MedicalCaseId))]
+    [MapperIgnoreTarget(nameof(Registration.QueueNumber))]
     public partial Registration ToEntity(RegistrationInputDto dto);
 }

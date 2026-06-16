@@ -12,6 +12,7 @@ using LYBT.Module.Herbs;
 using LYBT.Module.Formulas;
 using LYBT.Module.MedicalCases;
 using LYBT.Module.Registration;
+using LYBT.Module.Reports;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.LocalWebAPI;
@@ -44,6 +45,7 @@ public static class LocalWebApiProgram
         builder.Services.AddFormulaModule();
         builder.Services.AddMedicalCaseModule();
         builder.Services.AddRegistrationModule();
+        builder.Services.AddReportsModule();
 
         LocalJwtConfig.ConfigureServices(builder.Services);
 

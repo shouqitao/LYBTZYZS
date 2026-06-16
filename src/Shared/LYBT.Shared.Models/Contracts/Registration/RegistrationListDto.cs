@@ -33,6 +33,14 @@ public class RegistrationListDto
     [DisplayName("关联医案")]
     public Guid? MedicalCaseId { get; set; }
 
+    /// <summary>当日顺序号</summary>
+    [DisplayName("排队号")]
+    public int QueueNumber { get; set; }
+
+    /// <summary>挂号费 (元)</summary>
+    [DisplayName("挂号费")]
+    public decimal RegistrationFee { get; set; }
+
     /// <summary>挂号来源</summary>
     [DisplayName("挂号来源")]
     public RegistrationSource Source { get; set; }

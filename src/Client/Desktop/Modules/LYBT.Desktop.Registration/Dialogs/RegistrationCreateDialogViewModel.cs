@@ -45,6 +45,9 @@ public partial class RegistrationCreateDialogViewModel : DialogViewModelBase
     private string? _remark;
 
     [ObservableProperty]
+    private decimal _registrationFee;
+
+    [ObservableProperty]
     private string _statusMessage = string.Empty;
 
     [ObservableProperty]
@@ -99,6 +102,7 @@ public partial class RegistrationCreateDialogViewModel : DialogViewModelBase
                 DoctorId = SelectedDoctor!.Id,
                 DoctorName = SelectedDoctor.RealName,
                 Source = RegistrationSource.Receptionist,
+                RegistrationFee = RegistrationFee,
                 Remark = Remark
             };
 

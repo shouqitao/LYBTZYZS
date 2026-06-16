@@ -36,6 +36,11 @@ public class RegistrationInputDto
     [DisplayName("挂号来源")]
     public RegistrationSource Source { get; set; }
 
+    /// <summary>挂号费 (元)</summary>
+    [Range(0, 999999.99, ErrorMessage = "挂号费不能为负数")]
+    [DisplayName("挂号费")]
+    public decimal RegistrationFee { get; set; }
+
     /// <summary>备注</summary>
     [StringLength(500, ErrorMessage = "备注长度不能超过{1}个字符")]
     [DisplayName("备注")]

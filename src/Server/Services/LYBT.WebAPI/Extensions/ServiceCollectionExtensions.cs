@@ -11,6 +11,7 @@ using LYBT.Module.Herbs;
 using LYBT.Module.MedicalCases;
 using LYBT.Module.Patients;
 using LYBT.Module.Registration;
+using LYBT.Module.Reports;
 using LYBT.Module.Users;
 using LYBT.WebAPI.Filters;
 using Microsoft.AspNetCore.DataProtection;
@@ -102,6 +103,9 @@ public static class ServiceCollectionExtensions
 
         // 7. 病例模块
         services.AddMedicalCaseModule();
+
+        // 8. 报表模块
+        services.AddReportsModule();
 
         return services;
     }

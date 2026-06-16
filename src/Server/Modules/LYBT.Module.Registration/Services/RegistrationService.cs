@@ -70,6 +70,10 @@ public class RegistrationService : BaseService<RegistrationEntity>, IRegistratio
             ? RegistrationStatus.InProgress
             : RegistrationStatus.Waiting;
 
+        var maxQueueNumber = await _repository.GetTodayMaxQueueNumberAsync();
+        entity.QueueNumber = maxQueueNumber + 1;
+        entity.RegistrationFee = dto.RegistrationFee;
+
         await _repository.AddAsync(entity);
         await _repository.SaveChangesAsync();
 
@@ -277,6 +281,7 @@ public class RegistrationService : BaseService<RegistrationEntity>, IRegistratio
         }
 
         // 2. Create Registration (Source=Doctor, Status=InProgress)
+        var maxQueueNumber = await _repository.GetTodayMaxQueueNumberAsync();
         var registration = new RegistrationEntity
         {
             Id = Guid.NewGuid(),
@@ -284,6 +289,7 @@ public class RegistrationService : BaseService<RegistrationEntity>, IRegistratio
             PatientName = patientInfo.Name,
             Source = RegistrationSource.Doctor,
             Status = RegistrationStatus.InProgress,
+            QueueNumber = maxQueueNumber + 1,
             DoctorId = currentUserId,
             Remark = dto.Remark,
             CreatedAt = DateTime.UtcNow,

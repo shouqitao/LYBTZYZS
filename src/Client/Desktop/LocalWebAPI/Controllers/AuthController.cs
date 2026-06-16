@@ -97,29 +97,7 @@ public class AuthController : BaseApiController
         return Ok(new { Success = true, Message = "已登出" });
     }
 
-    [HttpPost("refresh")]
-    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
-    {
-        var userId = GetCurrentUserId();
-        if (userId == Guid.Empty)
-            return Unauthorized(new { Message = "Token 无效或已过期" });
 
-        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
-        if (user == null)
-            return Unauthorized(new { Message = "用户不存在" });
-
-        if (user.Status != LYBT.Shared.Models.Enums.CommonStatus.Enabled)
-            return Unauthorized(new { Message = "账户已被禁用" });
-
-        var newToken = LocalJwtConfig.GenerateToken(user);
-        return Ok(new
-        {
-            Token = newToken,
-            UserId = user.Id,
-            Username = user.UserName,
-            Role = user.Role
-        });
-    }
 
     [HttpGet("validate")]
     public async Task<IActionResult> ValidateToken()

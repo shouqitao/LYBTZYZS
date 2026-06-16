@@ -112,20 +112,7 @@ public class FormulasController : BaseApiController
         return HandleResult(result, "复制成功");
     }
 
-    [HttpGet("export")]
-    public async Task<IActionResult> Export([FromQuery] string? keyword = null)
-    {
-        var result = await _formulaService.SearchAsync(keyword ?? "");
-        return HandleResult(result);
-    }
 
-    [HttpGet("import-template")]
-    [AllowAnonymous]
-    public IActionResult ExportTemplate()
-    {
-        var stream = _importExportService.GenerateImportTemplate();
-        return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "formulas-template.xlsx");
-    }
 
     [HttpPost("batch-import")]
     public async Task<IActionResult> BatchImport([FromBody] List<FormulaImportItemDto> formulas)

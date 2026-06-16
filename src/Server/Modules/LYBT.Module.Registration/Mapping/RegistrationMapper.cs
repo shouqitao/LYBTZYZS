@@ -32,6 +32,7 @@ public partial class RegistrationMapper
     [MapperIgnoreTarget(nameof(RegistrationEntity.Id))]
     [MapperIgnoreTarget(nameof(RegistrationEntity.MedicalCaseId))]
     [MapperIgnoreTarget(nameof(RegistrationEntity.Status))]
+    [MapperIgnoreTarget(nameof(RegistrationEntity.QueueNumber))]
     [MapperIgnoreTarget(nameof(RegistrationEntity.CreatedAt))]
     [MapperIgnoreTarget(nameof(RegistrationEntity.CreatedBy))]
     [MapperIgnoreTarget(nameof(RegistrationEntity.UpdatedAt))]

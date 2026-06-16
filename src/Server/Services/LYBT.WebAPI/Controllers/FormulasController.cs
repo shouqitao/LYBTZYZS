@@ -256,30 +256,6 @@ namespace LYBT.WebAPI.Controllers
 
 
 
-        // ========== Issue #1166 - 导出功能 ==========
 
-        /// <summary>
-        /// 导出验方数据
-        /// US-FORM-010: 导出功能
-        /// </summary>
-        [HttpGet("export")]
-        [ProducesResponseType(typeof(FileContentResult), 200)]
-        public async Task<IActionResult> ExportFormulas([FromQuery] string? category = null)
-        {
-            var stream = await _importExportService.ExportAsync(category);
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "验方数据.xlsx");
-        }
-
-        /// <summary>
-        /// 导出验方导入模板
-        /// US-FORM-011: 导出模板
-        /// </summary>
-        [HttpGet("import-template")]
-        [ProducesResponseType(typeof(FileContentResult), 200)]
-        public IActionResult ExportTemplate()
-        {
-            var stream = _importExportService.GenerateImportTemplate();
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "验方导入模板.xlsx");
-        }
     }
 }

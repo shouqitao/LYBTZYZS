@@ -32,5 +32,11 @@ public class RegistrationConfiguration : BaseEntityConfiguration<Registration>
 
         // 索引: MedicalCaseId (可空，接诊后填入)
         builder.HasIndex(r => r.MedicalCaseId);
+
+        // QueueNumber: 当日顺序号
+        builder.Property(r => r.QueueNumber).IsRequired();
+
+        // RegistrationFee: 挂号费
+        builder.Property(r => r.RegistrationFee).HasColumnType("decimal(10,2)").IsRequired();
     }
 }

@@ -84,20 +84,5 @@ public class HerbsController : BaseApiController
         return HandleResult(result);
     }
 
-    [HttpGet("export")]
-    public async Task<IActionResult> Export([FromQuery] string? category = null)
-    {
-        var result = await _herbService.GetAllForExportAsync(category);
-        return HandleResult(result);
-    }
-
-    [HttpGet("export-all")]
-    public async Task<IActionResult> ExportAll()
-    {
-        var result = await _herbService.GetAllForExportAsync(null);
-        return HandleResult(result);
-    }
-
-
 
 }

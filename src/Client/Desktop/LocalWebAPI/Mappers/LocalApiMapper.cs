@@ -40,12 +40,14 @@ public static class LocalApiMapper
     public static RegistrationListDto ToListDto(this Registration r) => new()
     {
         Id = r.Id, PatientId = r.PatientId, Status = r.Status, Source = r.Source, DoctorId = r.DoctorId, MedicalCaseId = r.MedicalCaseId,
+        QueueNumber = r.QueueNumber, RegistrationFee = r.RegistrationFee,
         CreatedAt = r.CreatedAt
     };
 
     public static RegistrationDetailDto ToDetailDto(this Registration r) => new()
     {
         Id = r.Id, PatientId = r.PatientId, Status = r.Status, Source = r.Source, DoctorId = r.DoctorId, MedicalCaseId = r.MedicalCaseId,
+        QueueNumber = r.QueueNumber, RegistrationFee = r.RegistrationFee,
         CreatedAt = r.CreatedAt
     };
 

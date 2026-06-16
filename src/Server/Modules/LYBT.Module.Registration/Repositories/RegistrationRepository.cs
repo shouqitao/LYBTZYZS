@@ -93,6 +93,15 @@ internal class RegistrationRepository : BaseRepository<RegistrationEntity>, IReg
                              !r.IsDeleted, ct);
     }
 
+    public async Task<int> GetTodayMaxQueueNumberAsync()
+    {
+        var today = DateTime.UtcNow.Date;
+        var max = await _dbSet
+            .Where(r => !r.IsDeleted && r.CreatedAt >= today)
+            .MaxAsync(r => (int?)r.QueueNumber);
+        return max ?? 0;
+    }
+
     /// <summary>
     /// 分页查询挂号记录 (带高级过滤)
     /// US-REG-007: 日期范围、患者、医生过滤

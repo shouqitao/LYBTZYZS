@@ -53,4 +53,10 @@ public interface IRegistrationRepository : IRepository<RegistrationEntity>
     /// </summary>
     /// <param name="doctorId">医生 ID</param>
     Task<int> GetWaitingCountByDoctorAsync(Guid doctorId, CancellationToken ct = default);
+
+    /// <summary>
+    /// 获取今日最大排队号
+    /// 用于创建挂号时自动生成 QueueNumber
+    /// </summary>
+    Task<int> GetTodayMaxQueueNumberAsync();
 }

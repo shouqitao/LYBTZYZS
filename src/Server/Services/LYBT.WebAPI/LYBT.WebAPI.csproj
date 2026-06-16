@@ -84,6 +84,8 @@
 		<ProjectReference Include="..\..\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />
 		<!-- Sprint 2: 挂号模块 -->
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Registration\LYBT.Module.Registration.csproj" />
+		<!-- 报表模块 -->
+		<ProjectReference Include="..\..\Modules\LYBT.Module.Reports\LYBT.Module.Reports.csproj" />
 	</ItemGroup>
 
 </Project>

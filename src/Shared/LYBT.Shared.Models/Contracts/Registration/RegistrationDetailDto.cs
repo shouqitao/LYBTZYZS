@@ -38,6 +38,14 @@ public class RegistrationDetailDto : ICreatorTrackable
     [DisplayName("挂号来源")]
     public RegistrationSource Source { get; set; }
 
+    /// <summary>当日顺序号</summary>
+    [DisplayName("排队号")]
+    public int QueueNumber { get; set; }
+
+    /// <summary>挂号费 (元)</summary>
+    [DisplayName("挂号费")]
+    public decimal RegistrationFee { get; set; }
+
     /// <summary>挂号状态</summary>
     [DisplayName("挂号状态")]
     public RegistrationStatus Status { get; set; }

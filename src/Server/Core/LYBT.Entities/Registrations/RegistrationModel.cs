@@ -59,10 +59,21 @@ namespace LYBT.Entities.Registrations
         [Required]
         public RegistrationStatus Status { get; set; }
 
-        /// <summary>
-        /// 备注
-        /// </summary>
-        [StringLength(500)]
-        public string? Remark { get; set; }
-    }
+    /// <summary>
+    /// 当日顺序号 (创建时自动生成: 当天最大号+1)
+    /// </summary>
+    public int QueueNumber { get; set; }
+
+    /// <summary>
+    /// 挂号费 (元)
+    /// </summary>
+    [Column(TypeName = "decimal(10,2)")]
+    public decimal RegistrationFee { get; set; }
+
+    /// <summary>
+    /// 备注
+    /// </summary>
+    [StringLength(500)]
+    public string? Remark { get; set; }
+}
 }

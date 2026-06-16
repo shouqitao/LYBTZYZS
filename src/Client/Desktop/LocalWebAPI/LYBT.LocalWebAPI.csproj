@@ -26,6 +26,7 @@
     <ProjectReference Include="../../../Server/Modules/LYBT.Module.Formula/LYBT.Module.Formula.csproj" />
     <ProjectReference Include="../../../Server/Modules/LYBT.Module.MedicalCase/LYBT.Module.MedicalCase.csproj" />
     <ProjectReference Include="../../../Server/Modules/LYBT.Module.Registration/LYBT.Module.Registration.csproj" />
+    <ProjectReference Include="../../../Server/Modules/LYBT.Module.Reports/LYBT.Module.Reports.csproj" />
   </ItemGroup>
 
   <ItemGroup>
