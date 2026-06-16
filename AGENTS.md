@@ -12,12 +12,25 @@ dotnet test tests/LYBT.Tests.Desktop/       # Desktop (SQLite InMemory)
 dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
 ```
 
+## Git & Remote
+
+- **Remote**: Gitee (`https://gitee.com/shouqitao/LYBTZYZS.git`) — NOT GitHub
+- **Branch**: `master`
+- **Commit convention**: `feat(模块): 描述` / `fix(模块): 描述` / `docs:` / `refactor:` / `test:`
+
+## Database
+
+- **EF Core Migration**: Latest is `SimplifyDataModel` — run `dotnet ef database update` after pulling
+- **Dual-mode**: Remote = SQL Server | Local = SQL Server LocalDB (NOT SQLite — SQLite is test-only)
+- **Migration command**: `dotnet ef migrations add <Name> --project src/Server/Core/LYBT.Infrastructure --startup-project src/Server/Services/LYBT.WebAPI`
+
 ## Architecture
 
 - **3-Layer**: Controller → Service → Repository → DbContext
 - **MVVM**: View (XAML) ← binding → ViewModel → Repository → API
 - **DDD**: MedicalCase is the sole aggregate root (Consultation + Prescription are internal entities)
 - **Dual-Mode**: Remote (SQL Server) + Local (SQL Server LocalDB), URL-based switching
+- **Modular**: Server modules (`LYBT.Module.*`), Desktop modules (`LYBT.Desktop.*`), role workspaces (Admin/Clinical/Receptionist)
 
 ## Terminology
 
@@ -26,6 +39,7 @@ dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
 | Consultation | 中医诊断 (TCM diagnosis) | "问诊" or "就诊" |
 | MedicalCase | 医案 (medical case) | "病历" |
 | Formula | 验方/经验方 (empirical recipe) | "公式" |
+| HerbRole | 药材角色（君臣佐使） | — |
 
 ## CODE STYLE
 
@@ -49,7 +63,11 @@ dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
 | Server Controllers | `src/Server/Services/LYBT.WebAPI/Controllers/` |
 | Server Modules | `src/Server/Modules/LYBT.Module.*/` |
 | Desktop Modules | `src/Client/Desktop/Modules/LYBT.Desktop.*/` |
+| Desktop Core | `src/Client/Desktop/Core/` (Contracts, Foundation, Infrastructure, LocalData, Printing, CardReader) |
+| Desktop Roles | `src/Client/Desktop/Roles/` (Admin, Clinical, Receptionist workspaces) |
 | Shared Exception | `src/Shared/LYBT.Shared.ExceptionHandling/` |
+| Reports Module | `src/Server/Modules/LYBT.Module.Reports/` + `src/Client/Desktop/Modules/LYBT.Desktop.Reports/` |
+| HerbRole Enum | `src/Shared/LYBT.Shared.Models/Enums/HerbRole.cs` |
 | Docs | `docs/{01-product,02-requirements,03-architecture,04-api-reference,05-development,06-operations}/` |
 
 ## Common Pitfalls
@@ -58,6 +76,11 @@ dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
 - `MedicalCase.HasPrescription` is computed — Mapper must set it explicitly
 - WPF Desktop tests require `net8.0-windows` — cannot mix with Server tests
 - Permission levels: `Receptionist=0, Doctor=1, Admin=10, SuperAdmin=100`
+- Receptionist excluded from `/patients` and `/registrations/queue` (DoctorOrAdmin policy)
+- Admin can access diagnostics and reset passwords (AdminOnly policy)
+- `BaseApiController` requires `ILogger` in constructor — all LocalWebAPI controllers must pass it
+- `PrescriptionItem.HerbId` is `Guid` (non-nullable) — code referencing `.HasValue` will fail compile
+- EF Migration `SimplifyDataModel` dropped 5 tables, 17 columns — run `dotnet ef database update` after pulling
 
 ## Key Patterns
 
@@ -66,6 +89,30 @@ dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
 - **CQRS for MedicalCase** (CommandHandler pattern, not traditional 3-layer)
 - **Testing Trophy** (Integration-first, zero mock for Server tests)
 - **Soft-delete + global query filter** on most entities
+- **SwitchingApiClient** routes localhost → embedded LocalWebAPI, otherwise → Refit remote API
+- **BaseApiController** provides `Success()`, `HandleResult()`, `GetOperator()`, `ValidatePagination()` — all controllers inherit it
+- **ApiResponse<T>** envelope used consistently (Phase 2 API fixes)
+- **RegistrationQueueNumber** auto-generated daily (max+1), **RegistrationFee** input by receptionist
+- **HerbRole** (君臣佐使) on PrescriptionItem for auto-sorting in prescriptions
+
+### Desktop WPF Patterns
+
+- **Prism Region-based navigation** via `NavigationCoordinator` + `IRegionManager`
+- **MasterDetailControlBase** pattern for entity CRUD (Patients/Herbs/Formulas/Users)
+- **CommunityToolkit.Mvvm** `[ObservableProperty]` / `[RelayCommand]` — NOT Prism's `BindableBase` / `DelegateCommand`
+- **Thin Wrapper views** — Role views (Admin/Clinical) embed business module controls as 15-19 line XAML wrappers
+- **Composite ViewModel** — MedicalCaseWorkspaceViewModel composes child VMs (ConsultationEditor, PrescriptionEditor, Commands)
+- **Riok.Mapperly** for compile-time mapping — `.csproj` must NOT include AutoMapper unless fallback needed
+
+### Recent Refactoring (Phase 1-3, 2026-06-16)
+
+Phase 1 removed: sync module (entire), audit logs, print tracking, RestoreAsync, CheckReference, PendingQueue, simplified permissions (4→2 policies), simplified auth (no refresh/auto-login tokens), simplified Patient entity (18→8 fields).
+
+Phase 2 added: RegistrationFee + QueueNumber on Registration, Reports module (3 daily report endpoints), cleaned legacy endpoints.
+
+Phase 3 updated: Registration UI (fee input + queue display), Reports dashboard (3-card UI), cleaned stale UI references (sync/audit).
+
+**Do NOT reference removed features** — code will fail to compile. Tests for removed features have been deleted.
 
 ## Skill Routing (技能路由)
 
@@ -107,6 +154,12 @@ dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
 - **按需裁剪** — 小修小补跳过完整流程，不搞流程内耗
 - **不验证不声称完成** — "应该修好了"不算完成，必须有测试输出作为证据
 - **找不到根因不修 bug** — `compose:debug` 四阶段：调查 → 分析 → 假设 → 实现
+
+## MCP Tools
+
+- **gitnexus**: Code knowledge graph (35341 symbols, 76290 relationships). Run `gitnexus_impact` before editing any symbol. Run `gitnexus_detect_changes()` before committing.
+- **filesystem**: File system access for the project directory
+- **context7**: Library documentation lookup (v3.2.1, stdio)
 
 <!-- gitnexus:start -->
 GitNexus indexed: **LYBTZYZS** (35341 symbols, 76290 relationships). Run `gitnexus_impact` before editing any symbol. Run `gitnexus_detect_changes()` before committing.
