@@ -1,9 +1,11 @@
 using System.Collections.Concurrent;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using LYBT.Infrastructure.Web;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.LocalWebAPI.Controllers;
 
@@ -13,61 +15,66 @@ namespace LYBT.LocalWebAPI.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class ConfigurationController : ControllerBase
+public class ConfigurationController : BaseApiController
 {
     // In-memory configuration store (singleton lifetime via static field)
     private static readonly ConcurrentDictionary<string, string> _store = new();
 
+    public ConfigurationController(ILogger<ConfigurationController> logger)
+        : base(logger)
+    {
+    }
+
     // GET /api/configuration
     [HttpGet]
-    public Task<IActionResult> GetAll()
+    public IActionResult GetAll()
     {
         var items = _store.Select(kv => new { key = kv.Key, value = kv.Value }).ToList();
-        return Task.FromResult<IActionResult>(Ok(new { count = items.Count, items }));
+        return Success(new { count = items.Count, items });
     }
 
     // GET /api/configuration/{key}
     [HttpGet("{key}")]
-    public Task<IActionResult> Get(string key)
+    public IActionResult Get(string key)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
-            return Task.FromResult<IActionResult>(BadRequest(new { message = "Key must not be empty." }));
+            return Error("Key must not be empty.");
         }
 
         if (_store.TryGetValue(key, out var value))
         {
-            return Task.FromResult<IActionResult>(Ok(new { key, value }));
+            return Success(new { key, value });
         }
 
-        return Task.FromResult<IActionResult>(NotFound(new { message = $"Key '{key}' not found." }));
+        return NotFound($"Key '{key}' not found.");
     }
 
     // PUT /api/configuration/{key}
     [HttpPut("{key}")]
-    public Task<IActionResult> Set(string key, [FromBody] string value)
+    public IActionResult Set(string key, [FromBody] string value)
     {
         var role = User.FindFirst(ClaimTypes.Role)?.Value;
         if (role != UserRole.Admin.ToString() && role != UserRole.SuperAdmin.ToString())
-            return Task.FromResult<IActionResult>(Forbid("仅管理员可修改配置"));
+            return Forbid("仅管理员可修改配置");
 
         if (string.IsNullOrWhiteSpace(key))
         {
-            return Task.FromResult<IActionResult>(BadRequest(new { message = "Key must not be empty." }));
+            return Error("Key must not be empty.");
         }
 
         if (value == null)
         {
-            return Task.FromResult<IActionResult>(BadRequest(new { message = "Value must not be null." }));
+            return Error("Value must not be null.");
         }
 
         _store[key] = value;
-        return Task.FromResult<IActionResult>(Ok(new { key, value }));
+        return Success(new { key, value });
     }
 
     // POST /api/configuration/validate
     [HttpPost("validate")]
-    public Task<IActionResult> Validate()
+    public IActionResult Validate()
     {
         var issues = new List<string>();
 
@@ -83,13 +90,13 @@ public class ConfigurationController : ControllerBase
             warnings.Add("No custom configuration entries found. Using defaults.");
         }
 
-        return Task.FromResult<IActionResult>(Ok(new
+        return Success(new
         {
             valid = !issues.Any(),
             issues,
             warnings,
             entryCount = _store.Count,
             timestamp = DateTime.UtcNow
-        }));
+        });
     }
 }

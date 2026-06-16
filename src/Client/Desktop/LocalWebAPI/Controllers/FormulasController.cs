@@ -29,10 +29,20 @@ public class FormulasController : BaseApiController
     private Guid GetCurrentUserId()
         => Guid.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : Guid.Empty;
 
-    [HttpGet]
-    public async Task<IActionResult> GetList([FromQuery] string? keyword = null)
+    private bool IsAdmin()
     {
-        var result = await _formulaService.SearchAsync(keyword ?? "");
+        var role = User.FindFirst(ClaimTypes.Role)?.Value;
+        return role == UserRole.Admin.ToString() || role == UserRole.SuperAdmin.ToString();
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetList(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? keyword = null,
+        [FromQuery] string? category = null)
+    {
+        var result = await _formulaService.GetPagedAsync(page, pageSize, keyword, category, GetCurrentUserId(), IsAdmin());
         return HandleResult(result);
     }
 

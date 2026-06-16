@@ -22,9 +22,12 @@ public class PatientsController : BaseApiController
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetList([FromQuery] string? keyword = null)
+    public async Task<IActionResult> GetList(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? keyword = null)
     {
-        var result = await _patientService.SearchAsync(keyword ?? "");
+        var result = await _patientService.GetPagedAsync(page, pageSize, keyword);
         return HandleResult(result);
     }
 

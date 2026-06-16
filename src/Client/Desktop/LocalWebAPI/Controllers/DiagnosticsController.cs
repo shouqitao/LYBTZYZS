@@ -1,4 +1,5 @@
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Web;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Serilog.Events;
 using LYBT.LocalWebAPI.Data;
 using LYBT.Shared.Logging.Management;
@@ -23,12 +25,13 @@ namespace LYBT.LocalWebAPI.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class DiagnosticsController : ControllerBase
+public class DiagnosticsController : BaseApiController
 {
     private readonly AppDbContext _db;
     private readonly LoggingLevelManager _loggingLevelManager;
 
-    public DiagnosticsController(AppDbContext db, LoggingLevelManager loggingLevelManager)
+    public DiagnosticsController(AppDbContext db, LoggingLevelManager loggingLevelManager, ILogger<DiagnosticsController> logger)
+        : base(logger)
     {
         _db = db;
         _loggingLevelManager = loggingLevelManager;
@@ -50,7 +53,7 @@ public class DiagnosticsController : ControllerBase
 
         var providerName = _db.Database.ProviderName ?? "Unknown";
 
-        return Ok(new
+        return Success(new
         {
             provider = providerName,
             connectionState = canConnect ? "Connected" : "Disconnected",
@@ -68,7 +71,7 @@ public class DiagnosticsController : ControllerBase
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
             ?.InformationalVersion ?? version;
 
-        return Ok(new
+        return Success(new
         {
             assemblyVersion = version,
             informationalVersion,
@@ -102,7 +105,7 @@ public class DiagnosticsController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new { count = logs.Count, items = logs });
+        return Success(new { count = logs.Count, items = logs });
     }
 
     // GET /api/diagnostics/logging/status
@@ -110,7 +113,7 @@ public class DiagnosticsController : ControllerBase
     public IActionResult GetLoggingStatus()
     {
         var status = _loggingLevelManager.GetStatus();
-        return Ok(new
+        return Success(new
         {
             currentLevel = status.CurrentLevel,
             defaultLevel = status.DefaultLevel,
@@ -141,7 +144,7 @@ public class DiagnosticsController : ControllerBase
 
         var result = _loggingLevelManager.EnableDebugMode(level, durationMinutes);
 
-        return Ok(new
+        return Success(new
         {
             message = "调试模式已启用",
             previousLevel = result.PreviousLevel,
@@ -159,7 +162,7 @@ public class DiagnosticsController : ControllerBase
         if (!IsAdminOrHigher()) return Forbid("仅管理员可调整日志级别");
         var result = _loggingLevelManager.DisableDebugMode();
 
-        return Ok(new
+        return Success(new
         {
             message = "调试模式已禁用，已恢复默认日志级别",
             previousLevel = result.PreviousLevel,
@@ -174,7 +177,7 @@ public class DiagnosticsController : ControllerBase
         if (!IsAdminOrHigher()) return Forbid("仅管理员可调整日志级别");
         if (string.IsNullOrWhiteSpace(request.Level))
         {
-            return BadRequest(new { error = "日志级别不能为空" });
+            return Error("日志级别不能为空");
         }
 
         if (!Enum.TryParse<LogEventLevel>(request.Level, ignoreCase: true, out var level))
@@ -189,7 +192,7 @@ public class DiagnosticsController : ControllerBase
         var previousLevel = _loggingLevelManager.GetStatus().CurrentLevel;
         _loggingLevelManager.SetLevel(level);
 
-        return Ok(new
+        return Success(new
         {
             message = "日志级别已更新",
             previousLevel,

@@ -1,8 +1,10 @@
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Web;
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using LYBT.LocalWebAPI.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,11 +13,12 @@ namespace LYBT.LocalWebAPI.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [AllowAnonymous]
-    public class HealthController : ControllerBase
+    public class HealthController : BaseApiController
     {
         private readonly AppDbContext _db;
 
-        public HealthController(AppDbContext db)
+        public HealthController(AppDbContext db, ILogger<HealthController> logger)
+            : base(logger)
         {
             _db = db;
         }
@@ -43,7 +46,7 @@ namespace LYBT.LocalWebAPI.Controllers
                 timestamp = DateTime.UtcNow,
                 database = canConnect ? "Connected" : "Disconnected"
             };
-            return Ok(result);
+            return Success(result);
         }
 
         /// <summary>
@@ -52,7 +55,7 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpGet("ping")]
         public IActionResult Ping()
         {
-            return Ok(new
+            return Success(new
             {
                 status = "ok",
                 timestamp = DateTime.UtcNow
@@ -98,7 +101,7 @@ namespace LYBT.LocalWebAPI.Controllers
                 // ignore
             }
 
-            return Ok(new
+            return Success(new
             {
                 status = dbConnected ? "Healthy" : "Degraded",
                 timestamp = DateTime.UtcNow,

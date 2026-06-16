@@ -22,10 +22,12 @@ public class HerbsController : BaseApiController
 
     [HttpGet]
     public async Task<IActionResult> GetList(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
         [FromQuery] string? keyword = null,
         [FromQuery] string? category = null)
     {
-        var result = await _herbService.SearchAsync(keyword ?? "", default);
+        var result = await _herbService.GetPagedAsync(page, pageSize, keyword, category);
         return HandleResult(result);
     }
 

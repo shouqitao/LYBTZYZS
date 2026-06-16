@@ -228,6 +228,32 @@ namespace LYBT.WebAPI.Controllers
             return Success(result.Message ?? "药材验证成功");
         }
 
+        /// <summary>
+        /// 批量删除验方
+        /// OpenSpec: standardize-api-naming - REQ-API-002 批量操作URL模式
+        /// </summary>
+        [HttpPost("batch-delete")]
+        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
+        {
+            if (dto.Ids == null || dto.Ids.Count == 0)
+            {
+                return ValidationFail("ids 不能为空");
+            }
+
+            var (operatorId, _, _) = GetOperator();
+            var result = await _service.BatchDeleteAsync(dto.Ids, operatorId);
+
+            if (!result.IsSuccess || result.Data == null)
+            {
+                return HandleResult(result);
+            }
+
+            LogOperation("批量删除验方", new { Ids = dto.Ids, Result = result.Data.Message }, null);
+            return Success(result.Data, result.Data.Message);
+        }
+
         // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复端点 ==========
 
         /// <summary>

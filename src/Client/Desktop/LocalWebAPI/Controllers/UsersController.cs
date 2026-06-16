@@ -29,9 +29,12 @@ public class UsersController : BaseApiController
         => Enum.TryParse<UserRole>(User.FindFirst(ClaimTypes.Role)?.Value, out var role) ? role : UserRole.Receptionist;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] string? keyword = null)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? keyword = null)
     {
-        var result = await _userService.SearchAsync(keyword ?? "");
+        var result = await _userService.GetPagedAsync(page, pageSize, keyword);
         return HandleResult(result);
     }
 

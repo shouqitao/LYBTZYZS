@@ -138,6 +138,73 @@ namespace LYBT.WebAPI.Controllers
             return Success(result.Data, result.Data.Message);
         }
 
+        /// <summary>
+        /// 更新药材信息
+        /// </summary>
+        [HttpPut("{id}")]
+        [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto dto, CancellationToken cancellationToken = default)
+        {
+            if (ValidateGuid(id, "药材ID") is { } error) return error;
 
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync<HerbDetailDto>(id, guid => _herbService.GetByIdAsync(guid, cancellationToken), "药材");
+            if (ownershipError != null) return ownershipError;
+
+            var result = await _herbService.UpdateAsync(id, dto, cancellationToken);
+            if (!result.IsSuccess || result.Data == null)
+            {
+                return HandleResult<HerbDetailDto>(result);
+            }
+
+            LogOperation("更新药材", result.Data, result.Data.Id);
+            return Success(result.Data, "药材更新成功");
+        }
+
+        /// <summary>
+        /// 删除药材
+        /// </summary>
+        [HttpDelete("{id}")]
+        [ProducesResponseType(typeof(ApiResponse), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
+        {
+            if (ValidateGuid(id, "药材ID") is { } error) return error;
+
+            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync<HerbDetailDto>(id, guid => _herbService.GetByIdAsync(guid, cancellationToken), "药材");
+            if (ownershipError != null) return ownershipError;
+
+            var result = await _herbService.DeleteAsync(id, cancellationToken);
+            if (!result.IsSuccess)
+            {
+                return HandleResult(result);
+            }
+
+            LogOperation("删除药材", new { Id = id }, id);
+            return Success<object?>(null, "药材删除成功");
+        }
+
+        /// <summary>
+        /// 批量导入药材
+        /// </summary>
+        [HttpPost("batch-import")]
+        [ProducesResponseType(typeof(ApiResponse<HerbBatchImportResultDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        public async Task<IActionResult> BatchImport([FromBody] HerbBatchImportInputDto request, CancellationToken cancellationToken = default)
+        {
+            if (request?.Herbs == null || request.Herbs.Count == 0)
+            {
+                return ValidationFail("导入列表不能为空");
+            }
+
+            var result = await _herbService.BatchImportAsync(request.Herbs, request.Strategy, cancellationToken);
+            if (!result.IsSuccess || result.Data == null)
+            {
+                return HandleResult<HerbBatchImportResultDto>(result);
+            }
+
+            LogOperation("批量导入药材", new { Count = request.Herbs.Count, Strategy = request.Strategy }, null);
+            return Success(result.Data, $"成功导入 {result.Data.SuccessCount} 条药材");
+        }
     }
 }
