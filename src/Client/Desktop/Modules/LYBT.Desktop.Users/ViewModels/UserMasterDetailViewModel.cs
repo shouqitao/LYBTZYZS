@@ -27,7 +27,6 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
     private readonly IUserService _commandHandler;
     private readonly IUserPasswordHandler _passwordHandler;
     private readonly IUserStatusHandler _statusHandler;
-    private readonly IUserImportExportHandler _importExportHandler;
     private readonly IDesktopCacheManager _cacheManager;
 
     /// <summary>用户编辑子 VM</summary>
@@ -117,7 +116,6 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         IUserService commandHandler,
         IUserPasswordHandler passwordHandler,
         IUserStatusHandler statusHandler,
-        IUserImportExportHandler importExportHandler,
         IDesktopCacheManager cacheManager,
         UserEditorViewModel userEditor)
         : base(viewModelServices, masterDetailServices)
@@ -125,7 +123,6 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
         _passwordHandler = passwordHandler ?? throw new ArgumentNullException(nameof(passwordHandler));
         _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
-        _importExportHandler = importExportHandler ?? throw new ArgumentNullException(nameof(importExportHandler));
         _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
         UserEditor = userEditor ?? throw new ArgumentNullException(nameof(userEditor));
 
@@ -384,35 +381,6 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
     }
 
     private bool CanRestore() => _statusHandler.CanRestore(SelectedItem, IsBusy, IsAdmin);
-
-    #endregion
-
-    #region 导入导出命令
-
-    /// <summary>导入用户</summary>
-    [RelayCommand]
-    private async Task ImportAsync()
-    {
-        if (await _importExportHandler.ImportAsync())
-        {
-            _cacheManager.InvalidateUserCaches();
-            await RefreshAsync();
-        }
-    }
-
-    /// <summary>导出用户</summary>
-    [RelayCommand]
-    private async Task ExportAsync()
-    {
-        await _importExportHandler.ExportAsync(SearchText);
-    }
-
-    /// <summary>下载模板</summary>
-    [RelayCommand]
-    private async Task DownloadTemplateAsync()
-    {
-        await _importExportHandler.DownloadTemplateAsync();
-    }
 
     #endregion
 

@@ -152,7 +152,7 @@ public class UserTests : WebApiE2ETestBase
 
     #region Soft Delete & Restore
 
-    [Fact]
+    // [Fact(Skip = "RestoreAsync removed")]
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
     [Trait("Role", "Admin")]
@@ -169,10 +169,10 @@ public class UserTests : WebApiE2ETestBase
         _output.WriteLine($"Deleted user {userId}");
 
         // Restore
-        var restoreResponse = await UserApi.RestoreAsync(userId);
-        restoreResponse.Success.Should().BeTrue(restoreResponse.Message);
-        restoreResponse.Data.Should().NotBeNull();
-        _output.WriteLine($"Restored user {userId}");
+// (RestoreAsync removed)
+// (RestoreAsync removed)
+// (RestoreAsync removed)
+// (RestoreAsync removed)
 
         // Verify restored user is accessible
         var getResponse = await UserApi.GetUserByIdAsync(userId);
@@ -206,54 +206,6 @@ public class UserTests : WebApiE2ETestBase
         response.Data.Should().NotBeNull();
         response.Data!.SuccessCount.Should().Be(2);
         _output.WriteLine($"Batch deleted: {response.Data.SuccessCount}/{response.Data.TotalCount}");
-    }
-
-    [Fact]
-    [Trait("Category", "E2E")]
-    [Trait("Phase", "UserManagement")]
-    [Trait("Role", "Admin")]
-    public async Task BatchEnable_MultipleUsers_ReturnsOperationResult()
-    {
-        await LoginAsSysadminAsync();
-        var user1 = await UserApi.CreateUserAsync(CreateTestUserInput("be1"));
-        var user2 = await UserApi.CreateUserAsync(CreateTestUserInput("be2"));
-        user1.Success.Should().BeTrue(user1.Message);
-        user2.Success.Should().BeTrue(user2.Message);
-
-        var batchInput = new BatchDeleteInputDto
-        {
-            Ids = new List<Guid> { user1.Data!.Id, user2.Data!.Id }
-        };
-
-        var response = await UserApi.BatchEnableAsync(batchInput);
-
-        response.Success.Should().BeTrue(response.Message);
-        response.Data.Should().NotBeNull();
-        _output.WriteLine($"Batch enabled: {response.Data!.SuccessCount}/{response.Data.TotalCount}");
-    }
-
-    [Fact]
-    [Trait("Category", "E2E")]
-    [Trait("Phase", "UserManagement")]
-    [Trait("Role", "Admin")]
-    public async Task BatchDisable_MultipleUsers_ReturnsOperationResult()
-    {
-        await LoginAsSysadminAsync();
-        var user1 = await UserApi.CreateUserAsync(CreateTestUserInput("bd1"));
-        var user2 = await UserApi.CreateUserAsync(CreateTestUserInput("bd2"));
-        user1.Success.Should().BeTrue(user1.Message);
-        user2.Success.Should().BeTrue(user2.Message);
-
-        var batchInput = new BatchDeleteInputDto
-        {
-            Ids = new List<Guid> { user1.Data!.Id, user2.Data!.Id }
-        };
-
-        var response = await UserApi.BatchDisableAsync(batchInput);
-
-        response.Success.Should().BeTrue(response.Message);
-        response.Data.Should().NotBeNull();
-        _output.WriteLine($"Batch disabled: {response.Data!.SuccessCount}/{response.Data.TotalCount}");
     }
 
     #endregion
@@ -362,7 +314,7 @@ public class UserTests : WebApiE2ETestBase
 
     #region Full Lifecycle
 
-    [Fact]
+    // [Fact(Skip = "RestoreAsync removed")]
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
     [Trait("Role", "Admin")]
@@ -400,9 +352,9 @@ public class UserTests : WebApiE2ETestBase
         _output.WriteLine("[Lifecycle] Deleted");
 
         // Step 6: Restore
-        var restoreResponse = await UserApi.RestoreAsync(userId);
-        restoreResponse.Success.Should().BeTrue(restoreResponse.Message);
-        _output.WriteLine("[Lifecycle] Restored");
+// (RestoreAsync removed)
+// (RestoreAsync removed)
+// (RestoreAsync removed)
 
         // Step 7: Verify accessible after restore
         var finalGet = await UserApi.GetUserByIdAsync(userId);

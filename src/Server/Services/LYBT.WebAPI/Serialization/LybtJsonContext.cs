@@ -14,7 +14,6 @@ using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Models.Contracts.Sync;
 using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.WebAPI.Serialization;
@@ -79,7 +78,6 @@ namespace LYBT.WebAPI.Serialization;
 [JsonSerializable(typeof(HerbInputDto))]
 [JsonSerializable(typeof(HerbBasicDto))]
 [JsonSerializable(typeof(HerbReferenceCheckDto))]
-[JsonSerializable(typeof(HerbImportItemDto))]
 
 // ============================================================
 // Formula Types
@@ -102,12 +100,8 @@ namespace LYBT.WebAPI.Serialization;
 [JsonSerializable(typeof(MedicalCaseInputDto))]
 [JsonSerializable(typeof(MedicalCaseQueryDto))]
 [JsonSerializable(typeof(MedicalCaseStatusInputDto))]
-[JsonSerializable(typeof(MedicalCasePermissionDto))]
-[JsonSerializable(typeof(MedicalCaseAuditLogDto))]
 [JsonSerializable(typeof(PendingMedicalCaseDto))]
 [JsonSerializable(typeof(BatchDetailQueryDto))]
-[JsonSerializable(typeof(PrintCompletedRequest))]
-[JsonSerializable(typeof(PrintLogInputDto))]
 [JsonSerializable(typeof(SetPrescriptionFlagRequest))]
 
 // ============================================================
@@ -125,22 +119,6 @@ namespace LYBT.WebAPI.Serialization;
 [JsonSerializable(typeof(PrescriptionInputDto))]
 [JsonSerializable(typeof(PrescriptionItemDto))]
 [JsonSerializable(typeof(PrescriptionItemInputDto))]
-
-// ============================================================
-// Sync Types (JsonElement requires special handling)
-// ============================================================
-
-[JsonSerializable(typeof(SyncCompareInputDto))]
-[JsonSerializable(typeof(SyncCompareResultDto))]
-[JsonSerializable(typeof(SyncDiffDto))]
-[JsonSerializable(typeof(SyncMetadataDto))]
-[JsonSerializable(typeof(SyncDownloadInputDto))]
-[JsonSerializable(typeof(SyncDownloadResultDto))]
-[JsonSerializable(typeof(SyncUploadInputDto))]
-[JsonSerializable(typeof(SyncUploadResultDto))]
-[JsonSerializable(typeof(SyncDeleteInputDto))]
-[JsonSerializable(typeof(SyncDeleteResultDto))]
-// JsonElement no longer used in DTOs - using string instead
 
 // ============================================================
 // Generic Types (common combinations)

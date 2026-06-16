@@ -391,7 +391,7 @@ public class MedicalCaseService : IMedicalCaseService
     private bool IsMedicalCaseChanged() => _currentDetail != null && _originalDetail != null &&
         (_currentDetail.CaseNumber != _originalDetail.CaseNumber ||
          _currentDetail.PatientId != _originalDetail.PatientId || _currentDetail.UserId != _originalDetail.UserId ||
-         _currentDetail.CaseStatus != _originalDetail.CaseStatus || _currentDetail.Remark != _originalDetail.Remark);
+         _currentDetail.CaseStatus != _originalDetail.CaseStatus);
 
     // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
     private bool IsConsultationChanged()
@@ -423,7 +423,7 @@ public class MedicalCaseService : IMedicalCaseService
         target.UserId = source.UserId; target.DoctorName = source.DoctorName;
         target.ConsultationId = source.ConsultationId; target.PrescriptionId = source.PrescriptionId;
         target.CaseStatus = source.CaseStatus;
-        target.Remark = source.Remark; target.UpdatedAt = source.UpdatedAt;
+        target.UpdatedAt = source.UpdatedAt;
     }
 
     #endregion
@@ -463,8 +463,7 @@ public class MedicalCaseService : IMedicalCaseService
                 Id = null,
                 PatientId = patientId,
                 UserId = _sessionManager.CurrentUser.Id,
-                RegistrationId = registrationId,
-                Remark = null
+                RegistrationId = registrationId
             };
 
             // OpenSpec: simplify-desktop-data-layer - 直接使用Repository
@@ -665,7 +664,6 @@ public class MedicalCaseService : IMedicalCaseService
             var aggregateDto = new MedicalCaseInputDto
             {
                 Id = medicalCaseId,
-                Remark = remark,
                 EditReason = editReason,
                 Consultation = consultation,
                 Prescription = prescription

@@ -36,29 +36,6 @@ public interface IMedicalCaseFacade
     /// </summary>
     Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId, bool isAdmin);
 
-    /// <summary>
-    /// 记录打印完成
-    /// </summary>
-    Task<MedicalCase?> RecordPrintCompletedAsync(
-        Guid medicalCaseId,
-        LYBT.Shared.Models.Enums.PrintType printType,
-        Guid printedBy,
-        string printedByName,
-        string? printerName = null);
-
-    /// <summary>
-    /// 添加打印日志（支持成功/失败）
-    /// T4-S5-02
-    /// </summary>
-    Task<bool> AddPrintLogAsync(
-        Guid medicalCaseId,
-        LYBT.Shared.Models.Enums.PrintType printType,
-        bool isSuccess,
-        Guid printedBy,
-        string printedByName,
-        string? printerName = null,
-        string? errorMessage = null);
-
     // ===== 状态操作 (StateService) =====
 
     /// <summary>
@@ -133,16 +110,4 @@ public interface IMedicalCaseFacade
     /// </summary>
     Task<List<MedicalCase>> GetBatchAsync(List<Guid> ids);
 
-    // ===== 权限/审计 =====
-
-    /// <summary>
-    /// 获取用户对医案的权限详情
-    /// </summary>
-    MedicalCasePermissionDto GetPermissions(Guid userId, UserRole role, MedicalCase mc);
-
-    /// <summary>
-    /// 获取医案的审计日志列表（分页）
-    /// </summary>
-    Task<(List<MedicalCaseAuditLog> Logs, int TotalCount)> GetAuditLogsPagedAsync(
-        Guid medicalCaseId, int page = 1, int pageSize = 20);
 }

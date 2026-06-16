@@ -29,18 +29,6 @@ public class PatientListDto
     [DisplayName("手机号码")]
     public string? PhoneNumber { get; set; }
 
-    /// <summary>地址</summary>
-    [DisplayName("地址")]
-    public string? Address { get; set; }
-
-    /// <summary>最后就诊时间</summary>
-    [DisplayName("最后就诊时间")]
-    public DateTime? LastVisitTime { get; set; }
-
-    /// <summary>就诊次数</summary>
-    [DisplayName("就诊次数")]
-    public int VisitCount { get; set; }
-
     /// <summary>拼音码</summary>
     [DisplayName("拼音码")]
     public string? PinYinCode { get; set; }

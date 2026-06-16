@@ -65,8 +65,7 @@ public class RegistrationTests : WebApiE2ETestBase
             PinYinCode = "GHCS",
             IdNumber = GenerateIdNumber(),
             PhoneNumber = GeneratePhoneNumber(),
-            Gender = Gender.Male,
-            Address = "E2E测试地址"
+            Gender = Gender.Male
         };
 
         var response = await PatientApi.CreatePatientAsync(patient);

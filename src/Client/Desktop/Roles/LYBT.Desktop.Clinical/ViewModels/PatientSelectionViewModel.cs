@@ -38,7 +38,6 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly ICardReaderService _cardReaderService;
     private readonly IPatientCardReaderIntegration _patientIntegration;
-    private readonly IPendingQueueManager _pendingQueueManager;
 
     #endregion
 
@@ -113,8 +112,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
         IMedicalCaseService medicalCaseService,
         INavigationCoordinator navigationCoordinator,
         ICardReaderService cardReaderService,
-        IPatientCardReaderIntegration patientIntegration,
-        IPendingQueueManager pendingQueueManager)
+        IPatientCardReaderIntegration patientIntegration)
         : base(services)
     {
         _patientApi = patientApi ?? throw new ArgumentNullException(nameof(patientApi));
@@ -125,7 +123,6 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _cardReaderService = cardReaderService ?? throw new ArgumentNullException(nameof(cardReaderService));
         _patientIntegration = patientIntegration ?? throw new ArgumentNullException(nameof(patientIntegration));
-        _pendingQueueManager = pendingQueueManager ?? throw new ArgumentNullException(nameof(pendingQueueManager));
 
         WorkspaceContext = new PatientSelectionWorkspaceContext();
 
@@ -135,7 +132,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
 
         PendingQueue = new PendingQueueViewModel(
             WorkspaceContext, this, services.LoggerFactory,
-            medicalCaseService, _pendingQueueManager, navigationCoordinator);
+            medicalCaseService, navigationCoordinator);
 
         PendingQueue.SuspendCurrentCase = null;
     }

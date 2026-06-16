@@ -41,7 +41,6 @@ public static class TestDataFactory
             PhoneNumber = phoneNumber ?? $"1380013{8000 + _patientCounter:D4}",
             BirthDate = birthDate ?? DateTime.UtcNow.AddYears(-30),
             IdNumber = idNumber ?? $"11010119900101{_patientCounter:D4}",
-            Address = address ?? $"测试地址{_patientCounter}",
             Status = CommonStatus.Enabled,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow

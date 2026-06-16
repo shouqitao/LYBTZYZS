@@ -47,14 +47,10 @@ namespace LYBT.Desktop.Patients
             containerRegistry.Register<IValidator<PatientInputDto>, PatientInputDtoValidator>();
 
             // Issue #1790: 注册患者导入服务
-            containerRegistry.RegisterSingleton<Services.PatientImportDataMapper>();
-            containerRegistry.Register<Services.PatientImportExecutor>();
 
             // Issue #1790: 注册PatientSelectionViewModel组件化服务
             containerRegistry.Register<PatientSearchManager>();
             containerRegistry.RegisterSingleton<IPatientSearchCache, PatientSearchCache>();  // OpenSpec: refactor-patient-selection - 搜索缓存
-            containerRegistry.Register<UnfinishedCaseHandler>();
-            containerRegistry.Register<IPendingQueueManager, PendingQueueManager>();
 
             // OpenSpec: cleanup-ui-layer Phase 1.2 - 注册医案启动协调器
             containerRegistry.Register<IMedicalCaseStartCoordinator, ViewModels.Components.MedicalCaseStartCoordinator>();
@@ -75,16 +71,14 @@ namespace LYBT.Desktop.Patients
 
             // Handler DI注册
             containerRegistry.Register<ViewModels.Handlers.IPatientStatusHandler, ViewModels.Handlers.PatientStatusHandler>();
-            containerRegistry.Register<ViewModels.Handlers.IPatientImportExportHandler, ViewModels.Handlers.PatientImportExportHandler>();
 
             // OpenSpec: refactor-admin-workspace - Control模式重构
             // PatientMasterDetailControl供角色台View复用，ViewModel在Control内部解析
             containerRegistry.Register<ViewModels.PatientMasterDetailViewModel>();
 
             // OpenSpec: refactor-viewmodel-composition - Child ViewModels
-            // 拆分PatientMasterDetailViewModel的读卡器和导入导出功能
+            // 拆分PatientMasterDetailViewModel的读卡器功能
             containerRegistry.Register<ViewModels.PatientCardReaderViewModel>();
-            containerRegistry.Register<ViewModels.PatientImportExportViewModel>();
 
             // OpenSpec: frontend-architecture-unification - 患者编辑子VM
             containerRegistry.Register<ViewModels.PatientEditorViewModel>();

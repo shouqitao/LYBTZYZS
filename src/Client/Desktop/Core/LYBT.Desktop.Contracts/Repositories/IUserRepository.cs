@@ -66,36 +66,12 @@ public interface IUserRepository
     Task<ServiceResult<ResetPasswordResponseDto>> ResetPasswordAsync(Guid userId, ResetPasswordRequestDto request);
 
     /// <summary>
-    /// 批量导入用户 (Issue #2003 Task 2.10)
-    /// </summary>
-    Task<UserBatchImportResultDto?> BatchImportAsync(UserBatchImportInputDto request);
-
-    #region 状态切换、恢复和批量操作
-
-    /// <summary>
     /// 切换用户状态 (启用/禁用)
     /// </summary>
     Task<UserDetailDto?> ToggleStatusAsync(Guid id);
 
     /// <summary>
-    /// 恢复已删除的用户
-    /// </summary>
-    Task<UserDetailDto?> RestoreAsync(Guid id);
-
-    /// <summary>
     /// 批量删除用户
     /// </summary>
     Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids);
-
-    /// <summary>
-    /// 批量启用用户
-    /// </summary>
-    Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids);
-
-    /// <summary>
-    /// 批量禁用用户
-    /// </summary>
-    Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids);
-
-    #endregion
 }

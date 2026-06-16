@@ -36,17 +36,8 @@ public interface ILocalUserApi
     [Refit.Post("/api/users/{id}/toggle-status")]
     Task<UserDetailDto> ToggleStatusAsync(Guid id);
 
-    [Refit.Post("/api/users/{id}/restore")]
-    Task<UserDetailDto> RestoreAsync(Guid id);
-
     [Refit.Post("/api/users/batch-delete")]
     Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
-
-    [Refit.Post("/api/users/batch-enable")]
-    Task<BatchOperationResultDto> BatchEnableAsync([Refit.Body] BatchDeleteInputDto request);
-
-    [Refit.Post("/api/users/batch-disable")]
-    Task<BatchOperationResultDto> BatchDisableAsync([Refit.Body] BatchDeleteInputDto request);
 
     [Refit.Get("/api/users/current")]
     Task<UserDetailDto> GetCurrentUserAsync();

@@ -62,8 +62,7 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
             PinYinCode = "GZLHZ",
             IdNumber = GenerateIdNumber(),
             Gender = Gender.Male,
-            PhoneNumber = GeneratePhoneNumber(),
-            Address = "工作流测试地址"
+            PhoneNumber = GeneratePhoneNumber()
         };
         var patientResponse = await PatientApi.CreatePatientAsync(patientInput);
         patientResponse.Success.Should().BeTrue(patientResponse.Message);
@@ -125,8 +124,7 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
             PinYinCode = "QXHZ",
             IdNumber = GenerateIdNumber(),
             Gender = Gender.Female,
-            PhoneNumber = GeneratePhoneNumber(),
-            Address = "取消测试地址"
+            PhoneNumber = GeneratePhoneNumber()
         };
         var patientResponse = await PatientApi.CreatePatientAsync(patientInput);
         patientResponse.Success.Should().BeTrue(patientResponse.Message);
@@ -180,8 +178,7 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
             PinYinCode = "WZLCHZ",
             IdNumber = GenerateIdNumber(),
             Gender = Gender.Male,
-            PhoneNumber = GeneratePhoneNumber(),
-            Address = "完整流程测试地址"
+            PhoneNumber = GeneratePhoneNumber()
         };
         var patientResponse = await PatientApi.CreatePatientAsync(patientInput);
         patientResponse.Success.Should().BeTrue(patientResponse.Message);

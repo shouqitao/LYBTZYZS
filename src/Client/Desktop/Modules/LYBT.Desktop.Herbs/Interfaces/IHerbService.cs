@@ -70,24 +70,9 @@ namespace LYBT.Desktop.Herbs.Interfaces
         /// </summary>
         Task<CommandResult<HerbDetailDto>> ToggleStatusAsync(Guid herbId, CancellationToken ct = default);
 
-        /// <summary>
-        /// 恢复已删除药材
-        /// </summary>
-        Task<CommandResult<HerbDetailDto>> RestoreAsync(Guid herbId, CancellationToken ct = default);
-
         #endregion
 
         #region 批量操作
-
-        /// <summary>
-        /// 批量启用药材
-        /// </summary>
-        Task<CommandResult<BatchOperationResultDto>> BatchEnableAsync(List<Guid> herbIds, CancellationToken ct = default);
-
-        /// <summary>
-        /// 批量禁用药材
-        /// </summary>
-        Task<CommandResult<BatchOperationResultDto>> BatchDisableAsync(List<Guid> herbIds, CancellationToken ct = default);
 
         /// <summary>
         /// 批量导入药材

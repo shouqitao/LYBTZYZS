@@ -24,7 +24,6 @@ public class UserMasterDetailViewModelTests
     private readonly IUserService _commandHandler;
     private readonly IUserPasswordHandler _passwordHandler;
     private readonly IUserStatusHandler _statusHandler;
-    private readonly IUserImportExportHandler _importExportHandler;
     private readonly IDesktopCacheManager _cacheManager;
     private readonly UserEditorViewModel _userEditor;
     private readonly ILoggerFactory _loggerFactory;
@@ -92,7 +91,6 @@ public class UserMasterDetailViewModelTests
         _commandHandler = Substitute.For<IUserService>();
         _passwordHandler = Substitute.For<IUserPasswordHandler>();
         _statusHandler = Substitute.For<IUserStatusHandler>();
-        _importExportHandler = Substitute.For<IUserImportExportHandler>();
         _cacheManager = Substitute.For<IDesktopCacheManager>();
         _userEditor = new UserEditorViewModel(_cacheManager);
     }
@@ -105,7 +103,6 @@ public class UserMasterDetailViewModelTests
             _commandHandler,
             _passwordHandler,
             _statusHandler,
-            _importExportHandler,
             _cacheManager,
             _userEditor);
     }
@@ -132,7 +129,6 @@ public class UserMasterDetailViewModelTests
             null!,
             _passwordHandler,
             _statusHandler,
-            _importExportHandler,
             _cacheManager,
             _userEditor);
 
@@ -149,7 +145,6 @@ public class UserMasterDetailViewModelTests
             _commandHandler,
             null!,
             _statusHandler,
-            _importExportHandler,
             _cacheManager,
             _userEditor);
 
@@ -166,28 +161,10 @@ public class UserMasterDetailViewModelTests
             _commandHandler,
             _passwordHandler,
             null!,
-            _importExportHandler,
             _cacheManager,
             _userEditor);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("statusHandler");
-    }
-
-    [Fact]
-    public void Constructor_ThrowsArgumentNullException_WhenImportExportHandlerIsNull()
-    {
-        // Arrange & Act & Assert
-        Action act = () => new UserMasterDetailViewModel(
-            _viewModelServices,
-            _masterDetailServices,
-            _commandHandler,
-            _passwordHandler,
-            _statusHandler,
-            null!,
-            _cacheManager,
-            _userEditor);
-
-        act.Should().Throw<ArgumentNullException>().WithParameterName("importExportHandler");
     }
 
     [Fact]
@@ -200,7 +177,6 @@ public class UserMasterDetailViewModelTests
             _commandHandler,
             _passwordHandler,
             _statusHandler,
-            _importExportHandler,
             null!,
             _userEditor);
 
@@ -217,7 +193,6 @@ public class UserMasterDetailViewModelTests
             _commandHandler,
             _passwordHandler,
             _statusHandler,
-            _importExportHandler,
             _cacheManager,
             null!);
 

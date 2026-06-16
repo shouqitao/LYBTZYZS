@@ -105,30 +105,10 @@ internal sealed class MedicalCaseApiClient : IApiClientMedicalCases
         => _api.UpdateStatusAsync(id, request);
 
     /// <inheritdoc />
-    public Task<ApiResponse<MedicalCasePermissionDto>> GetPermissionsAsync(Guid id)
-        => _api.GetPermissionsAsync(id);
-
-    /// <inheritdoc />
-    public Task<ApiResponse<MedicalCaseAuditLogPagedResultDto>> GetAuditLogsAsync(Guid id, int page = 1, int pageSize = 20)
-        => _api.GetAuditLogsAsync(id, page, pageSize);
-
-    /// <inheritdoc />
     public Task<ApiResponse<MedicalCaseDetailDto>> SaveAsync(Guid id, MedicalCaseInputDto request)
         => _api.SaveAsync(id, request);
 
     /// <inheritdoc />
-    public Task<ApiResponse<MedicalCaseDetailDto>> RecordPrintCompletedAsync(Guid medicalCaseId, PrintCompletedRequest request)
-        => _api.RecordPrintCompletedAsync(medicalCaseId, request);
-
-    /// <inheritdoc />
-    public Task<ApiResponse<object>> AddPrintLogAsync(Guid medicalCaseId, PrintLogInputDto request)
-        => _api.AddPrintLogAsync(medicalCaseId, request);
-
-    /// <inheritdoc />
     public Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request)
         => _api.BatchDeleteAsync(request);
-
-    /// <inheritdoc />
-    public Task<ApiResponse<List<MedicalCaseDetailDto>>> GetBatchDetailsAsync(BatchDetailQueryDto request)
-        => _api.GetBatchDetailsAsync(request);
 }

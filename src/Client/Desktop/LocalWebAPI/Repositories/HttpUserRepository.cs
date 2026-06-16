@@ -113,21 +113,9 @@ public class HttpUserRepository : IUserRepository
         return ServiceResult<ResetPasswordResponseDto>.Failure(response.Message ?? "Reset password failed");
     }
 
-    public async Task<UserBatchImportResultDto?> BatchImportAsync(UserBatchImportInputDto request)
-    {
-        var response = await _apiClient.Users.BatchImportAsync(request);
-        return response.Data;
-    }
-
     public async Task<UserDetailDto?> ToggleStatusAsync(Guid id)
     {
         var response = await _apiClient.Users.ToggleStatusAsync(id);
-        return response.Data;
-    }
-
-    public async Task<UserDetailDto?> RestoreAsync(Guid id)
-    {
-        var response = await _apiClient.Users.RestoreAsync(id);
         return response.Data;
     }
 
@@ -137,15 +125,4 @@ public class HttpUserRepository : IUserRepository
         return response.Data;
     }
 
-    public async Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids)
-    {
-        var response = await _apiClient.Users.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids });
-        return response.Data;
-    }
-
-    public async Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids)
-    {
-        var response = await _apiClient.Users.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids });
-        return response.Data;
-    }
 }

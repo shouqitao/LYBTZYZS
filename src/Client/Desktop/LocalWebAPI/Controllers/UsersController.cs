@@ -96,37 +96,12 @@ public class UsersController : BaseApiController
         return HandleResult(result);
     }
 
-    [HttpPost("{id}/restore")]
-    public async Task<IActionResult> Restore(Guid id)
-    {
-        var result = await _userService.RestoreAsync(id, GetCurrentUserRole());
-        return HandleResult(result);
-    }
-
     [HttpPost("batch-delete")]
     public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto request)
     {
         if (request?.Ids == null || request.Ids.Count == 0)
             return ValidationFail("ids 不能为空");
         var result = await _userService.BatchDeleteAsync(request.Ids, GetCurrentUserId(), GetCurrentUserRole());
-        return HandleResult(result);
-    }
-
-    [HttpPost("batch-enable")]
-    public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto request)
-    {
-        if (request?.Ids == null || request.Ids.Count == 0)
-            return ValidationFail("ids 不能为空");
-        var result = await _userService.BatchUpdateStatusAsync(request.Ids, CommonStatus.Enabled, GetCurrentUserId(), GetCurrentUserRole());
-        return HandleResult(result);
-    }
-
-    [HttpPost("batch-disable")]
-    public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto request)
-    {
-        if (request?.Ids == null || request.Ids.Count == 0)
-            return ValidationFail("ids 不能为空");
-        var result = await _userService.BatchUpdateStatusAsync(request.Ids, CommonStatus.Disabled, GetCurrentUserId(), GetCurrentUserRole());
         return HandleResult(result);
     }
 

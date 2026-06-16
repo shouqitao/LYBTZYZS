@@ -405,23 +405,11 @@ public sealed class HttpClientApiClient : IApiClient,
     Task<ApiResponse<ResetPasswordResponseDto>> IApiClientUsers.ResetPasswordAsync(Guid id, ResetPasswordRequestDto request)
         => PostAndWrapAsync<ResetPasswordResponseDto>($"/api/users/{id}/reset-password", request);
 
-    Task<ApiResponse<UserBatchImportResultDto>> IApiClientUsers.BatchImportAsync(UserBatchImportInputDto request)
-        => PostAndWrapAsync<UserBatchImportResultDto>("/api/users/import", request);
-
     Task<ApiResponse<UserDetailDto>> IApiClientUsers.ToggleStatusAsync(Guid id)
         => PostAndWrapAsync<UserDetailDto>($"/api/users/{id}/toggle-status");
 
-    Task<ApiResponse<UserDetailDto>> IApiClientUsers.RestoreAsync(Guid id)
-        => PostAndWrapAsync<UserDetailDto>($"/api/users/{id}/restore");
-
     Task<ApiResponse<BatchOperationResultDto>> IApiClientUsers.BatchDeleteAsync(BatchDeleteInputDto request)
         => PostAndWrapAsync<BatchOperationResultDto>("/api/users/batch-delete", request);
-
-    Task<ApiResponse<BatchOperationResultDto>> IApiClientUsers.BatchEnableAsync(BatchDeleteInputDto request)
-        => PostAndWrapAsync<BatchOperationResultDto>("/api/users/batch-enable", request);
-
-    Task<ApiResponse<BatchOperationResultDto>> IApiClientUsers.BatchDisableAsync(BatchDeleteInputDto request)
-        => PostAndWrapAsync<BatchOperationResultDto>("/api/users/batch-disable", request);
 
     Task<UserDetailDto> IApiClientUsers.GetCurrentUserAsync()
         => GetRawAsync<UserDetailDto>("/api/users/current");
@@ -470,9 +458,6 @@ public sealed class HttpClientApiClient : IApiClient,
             url += $"?keyword={Uri.EscapeDataString(keyword)}";
         return await GetResponseAsync(url);
     }
-
-    Task<ApiResponse<PatientDetailDto>> IApiClientPatients.RestoreAsync(Guid id)
-        => PostAndWrapAsync<PatientDetailDto>($"/api/patients/{id}/restore");
 
     Task<ApiResponse<BatchOperationResultDto>> IApiClientPatients.BatchDeleteAsync(BatchDeleteInputDto request)
         => PostAndWrapAsync<BatchOperationResultDto>("/api/patients/batch-delete", request);
@@ -530,17 +515,8 @@ public sealed class HttpClientApiClient : IApiClient,
     Task<ApiResponse<HerbDetailDto>> IApiClientHerbs.ToggleStatusAsync(Guid id)
         => PostAndWrapAsync<HerbDetailDto>($"/api/herbs/{id}/toggle-status");
 
-    Task<ApiResponse<HerbDetailDto>> IApiClientHerbs.RestoreAsync(Guid id)
-        => PostAndWrapAsync<HerbDetailDto>($"/api/herbs/{id}/restore");
-
     Task<ApiResponse<BatchOperationResultDto>> IApiClientHerbs.BatchDeleteAsync(BatchDeleteInputDto request)
         => PostAndWrapAsync<BatchOperationResultDto>("/api/herbs/batch-delete", request);
-
-    Task<ApiResponse<BatchOperationResultDto>> IApiClientHerbs.BatchEnableAsync(BatchDeleteInputDto request)
-        => PostAndWrapAsync<BatchOperationResultDto>("/api/herbs/batch-enable", request);
-
-    Task<ApiResponse<BatchOperationResultDto>> IApiClientHerbs.BatchDisableAsync(BatchDeleteInputDto request)
-        => PostAndWrapAsync<BatchOperationResultDto>("/api/herbs/batch-disable", request);
 
     Task<List<string>> IApiClientHerbs.GetCategoriesAsync()
         => GetRawAsync<List<string>>("/api/herbs/categories");
@@ -584,17 +560,8 @@ public sealed class HttpClientApiClient : IApiClient,
     Task<ApiResponse<FormulaDetailDto>> IApiClientFormulas.ToggleStatusAsync(Guid id)
         => PostAndWrapAsync<FormulaDetailDto>($"/api/formulas/{id}/toggle-status");
 
-    Task<ApiResponse<FormulaDetailDto>> IApiClientFormulas.RestoreAsync(Guid id)
-        => PostAndWrapAsync<FormulaDetailDto>($"/api/formulas/{id}/restore");
-
     Task<ApiResponse<BatchOperationResultDto>> IApiClientFormulas.BatchDeleteAsync(BatchDeleteInputDto request)
         => PostAndWrapAsync<BatchOperationResultDto>("/api/formulas/batch-delete", request);
-
-    Task<ApiResponse<BatchOperationResultDto>> IApiClientFormulas.BatchEnableAsync(BatchDeleteInputDto request)
-        => PostAndWrapAsync<BatchOperationResultDto>("/api/formulas/batch-enable", request);
-
-    Task<ApiResponse<BatchOperationResultDto>> IApiClientFormulas.BatchDisableAsync(BatchDeleteInputDto request)
-        => PostAndWrapAsync<BatchOperationResultDto>("/api/formulas/batch-disable", request);
 
     Task<ApiResponse<FormulaBatchImportResultDto>> IApiClientFormulas.BatchImportAsync(FormulaBatchImportInputDto request)
         => PostAndWrapAsync<FormulaBatchImportResultDto>("/api/formulas/batch-import", request);
@@ -683,26 +650,11 @@ public sealed class HttpClientApiClient : IApiClient,
     Task<ApiResponse<MedicalCaseDetailDto>> IApiClientMedicalCases.UpdateStatusAsync(Guid id, MedicalCaseStatusInputDto request)
         => PutAndWrapAsync<MedicalCaseDetailDto>($"/api/medicalcases/{id}/status", request);
 
-    Task<ApiResponse<MedicalCasePermissionDto>> IApiClientMedicalCases.GetPermissionsAsync(Guid id)
-        => GetAndWrapAsync<MedicalCasePermissionDto>($"/api/medicalcases/{id}/permissions");
-
-    Task<ApiResponse<MedicalCaseAuditLogPagedResultDto>> IApiClientMedicalCases.GetAuditLogsAsync(Guid id, int page, int pageSize)
-        => GetAndWrapAsync<MedicalCaseAuditLogPagedResultDto>($"/api/medicalcases/{id}/audit-logs?page={page}&pageSize={pageSize}");
-
     Task<ApiResponse<MedicalCaseDetailDto>> IApiClientMedicalCases.SaveAsync(Guid id, MedicalCaseInputDto request)
         => PutAndWrapAsync<MedicalCaseDetailDto>($"/api/medicalcases/{id}", request);
 
-    Task<ApiResponse<MedicalCaseDetailDto>> IApiClientMedicalCases.RecordPrintCompletedAsync(Guid medicalCaseId, PrintCompletedRequest request)
-        => PutAndWrapAsync<MedicalCaseDetailDto>($"/api/medicalcases/{medicalCaseId}/print-completed", request);
-
-    Task<ApiResponse<object>> IApiClientMedicalCases.AddPrintLogAsync(Guid medicalCaseId, PrintLogInputDto request)
-        => PostAndWrapAsync<object>($"/api/medicalcases/{medicalCaseId}/print-logs", request);
-
     Task<ApiResponse<BatchOperationResultDto>> IApiClientMedicalCases.BatchDeleteAsync(BatchDeleteInputDto request)
         => PostAndWrapAsync<BatchOperationResultDto>("/api/medicalcases/batch-delete", request);
-
-    Task<ApiResponse<List<MedicalCaseDetailDto>>> IApiClientMedicalCases.GetBatchDetailsAsync(BatchDetailQueryDto request)
-        => PostAndWrapAsync<List<MedicalCaseDetailDto>>("/api/medicalcases/batch-details", request);
 
     // ========================================================================
     // IApiClientRegistrations — Registration endpoints (explicit implementation)

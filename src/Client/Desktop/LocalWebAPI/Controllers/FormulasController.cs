@@ -73,35 +73,10 @@ public class FormulasController : BaseApiController
         return HandleResult(result);
     }
 
-    [HttpPost("batch-enable")]
-    public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto request)
-    {
-        if (request?.Ids == null || request.Ids.Count == 0)
-            return ValidationFail("ids 不能为空");
-        var result = await _formulaService.BatchUpdateStatusAsync(request.Ids, CommonStatus.Enabled, GetCurrentUserId());
-        return HandleResult(result);
-    }
-
-    [HttpPost("batch-disable")]
-    public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto request)
-    {
-        if (request?.Ids == null || request.Ids.Count == 0)
-            return ValidationFail("ids 不能为空");
-        var result = await _formulaService.BatchUpdateStatusAsync(request.Ids, CommonStatus.Disabled, GetCurrentUserId());
-        return HandleResult(result);
-    }
-
     [HttpPost("{id}/toggle-status")]
     public async Task<IActionResult> ToggleStatus(Guid id)
     {
         var result = await _formulaService.ToggleStatusAsync(id);
-        return HandleResult(result);
-    }
-
-    [HttpPost("{id}/restore")]
-    public async Task<IActionResult> Restore(Guid id)
-    {
-        var result = await _formulaService.RestoreAsync(id, GetCurrentUserId());
         return HandleResult(result);
     }
 

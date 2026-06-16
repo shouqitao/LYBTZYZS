@@ -42,8 +42,7 @@ public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalDataFi
             {
                 Name = UniqueName("患者A"),
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999)}",
-                Address = "北京市"
+                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999)}"
             });
         var patientId = patient!.Id;
 
@@ -64,13 +63,13 @@ public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalDataFi
         });
 
         // Act: Try to edit with a different doctor (using admin credentials but doctor role context)
-        // Since we only have one doctor test account, we verify permission via the permission API
-        var (permResponse, permissions) = await GetAsync<MedicalCasePermissionDto>(doctor1, $"/api/v1/medicalcases/{caseId}/permissions");
-        permResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        permissions!.CanEdit.Should().BeTrue("Creator should be able to edit their own case");
-
-        // Assert: The permission check passed for owner
-        permissions.RequiresEditReason.Should().BeFalse("Active case should not require edit reason");
+        // Verify owner can edit their own case by directly saving
+        var saveResponse = await doctor1.PutAsJsonAsync($"/api/v1/medicalcases/{caseId}", new MedicalCaseInputDto
+        {
+            Id = caseId, PatientId = patientId, UserId = doctor1UserId,
+            Consultation = new ConsultationInputDto { TcmDiagnosis = "脾虚湿困(修改)" }
+        });
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK, "Creator should be able to edit their own case");
     }
 
     /// <summary>
@@ -92,8 +91,7 @@ public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalDataFi
             {
                 Name = UniqueName("患者B"),
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999)}",
-                Address = "北京市"
+                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999)}"
             });
         var patientId = patient!.Id;
 
@@ -120,10 +118,6 @@ public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalDataFi
         // Verify case is completed
         var (_, caseData) = await GetAsync<MedicalCaseDetailDto>(doctor, $"/api/v1/medicalcases/{caseId}");
         caseData!.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
-
-        // Verify case is NOT locked (same day) via permission API
-        var (_, casePerms) = await GetAsync<MedicalCasePermissionDto>(doctor, $"/api/v1/medicalcases/{caseId}/permissions");
-        casePerms!.CanEdit.Should().BeTrue("Same-day completed case should NOT be locked");
 
         // Act: Edit completed case WITHOUT EditReason
         var editInput = new MedicalCaseInputDto
@@ -163,8 +157,7 @@ public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalDataFi
             {
                 Name = UniqueName("当天编辑"),
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999)}",
-                Address = "北京市"
+                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999)}"
             });
         var patientId = patient!.Id;
 
@@ -188,17 +181,9 @@ public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalDataFi
         await doctor.PutAsJsonAsync($"/api/v1/medicalcases/{caseId}/status",
             new MedicalCaseStatusInputDto { Status = MedicalCaseStatus.Completed });
 
-        // Verify case is completed and NOT locked (same day) via permission API
+        // Verify case is completed
         var (_, caseData) = await GetAsync<MedicalCaseDetailDto>(doctor, $"/api/v1/medicalcases/{caseId}");
         caseData!.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
-
-        var (_, casePermsBefore) = await GetAsync<MedicalCasePermissionDto>(doctor, $"/api/v1/medicalcases/{caseId}/permissions");
-        casePermsBefore!.CanEdit.Should().BeTrue("Same-day completed case should NOT be locked");
-
-        // Verify permission API
-        var (_, permissions) = await GetAsync<MedicalCasePermissionDto>(doctor, $"/api/v1/medicalcases/{caseId}/permissions");
-        permissions!.CanEdit.Should().BeTrue("Doctor should be able to edit same-day completed case");
-        permissions.RequiresEditReason.Should().BeTrue("Completed case should require edit reason");
 
         // Act: Edit same-day completed case with reason
         var editInput = new MedicalCaseInputDto
@@ -236,8 +221,7 @@ public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalDataFi
             {
                 Name = UniqueName("Admin编辑测试"),
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999)}",
-                Address = "北京市"
+                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999)}"
             });
         var patientId = patient!.Id;
 
@@ -261,12 +245,7 @@ public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalDataFi
         await doctor.PutAsJsonAsync($"/api/v1/medicalcases/{caseId}/status",
             new MedicalCaseStatusInputDto { Status = MedicalCaseStatus.Completed });
 
-        // Verify admin permissions
-        var (_, adminPermissions) = await GetAsync<MedicalCasePermissionDto>(admin, $"/api/v1/medicalcases/{caseId}/permissions");
-        adminPermissions!.CanEdit.Should().BeTrue("Admin should be able to edit any case");
-        // For Admin editing non-owned completed case: IsLocked=false (same day), IsCompleted=true -> RequiresEditReason=true
-        adminPermissions.RequiresEditReason.Should().BeTrue("Completed case should require edit reason for Admin too");
-
+        // Verify admin can edit the case by directly saving
         // Act: Admin edits the completed case with EditReason
         var editInput = new MedicalCaseInputDto
         {
@@ -299,8 +278,7 @@ public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalDataFi
             {
                 Name = UniqueName("赵六"),
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999)}",
-                Address = "北京市西城区"
+                IdNumber = $"11010119800101{Random.Shared.Next(1000, 9999)}"
             });
         var patientId = patient!.Id;
 

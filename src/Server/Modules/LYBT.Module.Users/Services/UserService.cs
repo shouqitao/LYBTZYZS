@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using LYBT.Module.Users.Mapping;
 using FluentValidation;
 using LYBT.Entities.Users;
@@ -30,7 +30,6 @@ namespace LYBT.Module.Users.Services
         private readonly IConfiguration _configuration;
         private readonly IValidator<UserInputDto> _validator;
         private readonly ICrossModuleAuthService _authService;
-        private readonly IUserBatchOperationService _batchService;
         private readonly IUserQueryService _queryService;
         private readonly IUserPasswordService _passwordService;
         private readonly IUserStatusService _statusService;
@@ -42,7 +41,6 @@ namespace LYBT.Module.Users.Services
             IConfiguration configuration,
             IValidator<UserInputDto> validator,
             ICrossModuleAuthService authService,
-            IUserBatchOperationService batchService,
             IUserQueryService queryService,
             IUserPasswordService passwordService,
             IUserStatusService statusService)
@@ -52,7 +50,6 @@ namespace LYBT.Module.Users.Services
             _configuration = configuration;
             _validator = validator;
             _authService = authService;
-            _batchService = batchService;
             _queryService = queryService;
             _passwordService = passwordService;
             _statusService = statusService;
@@ -440,18 +437,87 @@ namespace LYBT.Module.Users.Services
         public Task<Result<UserDetailDto>> ToggleStatusAsync(Guid id, UserRole currentRole, CancellationToken cancellationToken = default)
             => _statusService.ToggleStatusAsync(id, currentRole, cancellationToken);
 
-        public Task<Result<UserDetailDto>> RestoreAsync(Guid id, UserRole currentRole, CancellationToken cancellationToken = default)
-            => _statusService.RestoreAsync(id, currentRole, cancellationToken);
 
-
-        // ========== 批量操作委托给 IUserBatchOperationService ==========
+        // ========== 批量操作 ==========
 
         /// <inheritdoc />
-        public Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid? currentUserId, UserRole currentRole, CancellationToken cancellationToken = default)
-            => _batchService.BatchDeleteAsync(ids, currentUserId, currentRole, cancellationToken);
+        public async Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid? currentUserId, UserRole currentRole, CancellationToken cancellationToken = default)
+        {
+            var result = new BatchOperationResultDto
+            {
+                TotalCount = ids.Count
+            };
 
-        /// <inheritdoc />
-        public Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid? currentUserId, UserRole currentRole, CancellationToken cancellationToken = default)
-            => _batchService.BatchUpdateStatusAsync(ids, status, currentUserId, currentRole, cancellationToken);
+            if (ids.Count == 0)
+            {
+                return Result<BatchOperationResultDto>.Failure(GenericErrorCode.ValidationFailed, "请至少选择一个用户");
+            }
+
+            foreach (var id in ids)
+            {
+                if (currentUserId.HasValue && id == currentUserId.Value)
+                {
+                    result.FailedItems.Add(new BatchOperationFailureItem
+                    {
+                        Id = id,
+                        Reason = "不能删除自己"
+                    });
+                    result.FailureCount++;
+                    continue;
+                }
+
+                var user = await _repository.GetByIdAsync(id, cancellationToken);
+                if (user == null)
+                {
+                    result.FailedItems.Add(new BatchOperationFailureItem
+                    {
+                        Id = id,
+                        Reason = "用户不存在"
+                    });
+                    result.FailureCount++;
+                    continue;
+                }
+
+                if (IsSysAdmin(user))
+                {
+                    result.FailedItems.Add(new BatchOperationFailureItem
+                    {
+                        Id = id,
+                        Name = user.UserName,
+                        Reason = "系统管理员账号不可被删除"
+                    });
+                    result.FailureCount++;
+                    continue;
+                }
+
+                var permissionCheck = await CanDeleteUserAsync(id, user.Role, currentRole, cancellationToken);
+                if (!permissionCheck.IsSuccess)
+                {
+                    result.FailedItems.Add(new BatchOperationFailureItem
+                    {
+                        Id = id,
+                        Name = user.UserName,
+                        Reason = permissionCheck.Message ?? "无权限删除"
+                    });
+                    result.FailureCount++;
+                    continue;
+                }
+
+                user.IsDeleted = true;
+                user.UpdatedAt = DateTime.UtcNow;
+                result.SuccessCount++;
+                _logger.LogInformation("[SVC] User.BatchDelete -> ItemMarked - UserId={UserId} UserName={UserName}", id, user.UserName);
+            }
+
+            if (result.SuccessCount > 0)
+            {
+                await _repository.SaveChangesAsync(cancellationToken);
+            }
+
+            _logger.LogInformation("[SVC] User.BatchDelete completed - TotalCount={Total} SuccessCount={Success} FailureCount={Failure}",
+                result.TotalCount, result.SuccessCount, result.FailureCount);
+
+            return Result<BatchOperationResultDto>.Success(result);
+        }
     }
 }

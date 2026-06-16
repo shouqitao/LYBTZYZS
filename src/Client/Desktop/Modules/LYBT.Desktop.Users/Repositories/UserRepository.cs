@@ -292,22 +292,6 @@ public sealed class UserRepository : IUserRepository
         }
     }
 
-    public async Task<UserBatchImportResultDto?> BatchImportAsync(UserBatchImportInputDto request)
-    {
-        try
-        {
-            _logger.LogInformation("[REPO] User.BatchImport");
-            var response = await _apiClient.Users.BatchImportAsync(request);
-            _logger.LogInformation("[REPO] User.BatchImport completed");
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] User.BatchImport failed");
-            return null;
-        }
-    }
-
     #endregion
 
     #region 状态切换、恢复和批量操作
@@ -336,29 +320,6 @@ public sealed class UserRepository : IUserRepository
         }
     }
 
-    public async Task<UserDetailDto?> RestoreAsync(Guid id)
-    {
-        try
-        {
-            _logger.LogInformation("[REPO] User.Restore - Id={Id}", id);
-
-            var response = await _apiClient.Users.RestoreAsync(id);
-            if (!response.Success || response.Data == null)
-            {
-                _logger.LogWarning("[REPO] User.Restore failed: {Message}", response.Message);
-                return null;
-            }
-
-            _logger.LogInformation("[REPO] User.Restore completed - Id={Id}", id);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] User.Restore failed - Id={Id}", id);
-            return null;
-        }
-    }
-
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
     {
         try
@@ -379,54 +340,6 @@ public sealed class UserRepository : IUserRepository
         catch (Exception ex)
         {
             _logger.LogError(ex, "[REPO] User.BatchDelete failed");
-            return null;
-        }
-    }
-
-    public async Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids)
-    {
-        try
-        {
-            _logger.LogInformation("[REPO] User.BatchEnable - Count={Count}", ids.Count);
-
-            var response = await _apiClient.Users.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids });
-            if (!response.Success || response.Data == null)
-            {
-                _logger.LogError("[REPO] User.BatchEnable failed - {Message}", response.Message);
-                return null;
-            }
-
-            _logger.LogInformation("[REPO] User.BatchEnable completed - Success={Success}, Failure={Failure}",
-                response.Data.SuccessCount, response.Data.FailureCount);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] User.BatchEnable failed");
-            return null;
-        }
-    }
-
-    public async Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids)
-    {
-        try
-        {
-            _logger.LogInformation("[REPO] User.BatchDisable - Count={Count}", ids.Count);
-
-            var response = await _apiClient.Users.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids });
-            if (!response.Success || response.Data == null)
-            {
-                _logger.LogError("[REPO] User.BatchDisable failed - {Message}", response.Message);
-                return null;
-            }
-
-            _logger.LogInformation("[REPO] User.BatchDisable completed - Success={Success}, Failure={Failure}",
-                response.Data.SuccessCount, response.Data.FailureCount);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] User.BatchDisable failed");
             return null;
         }
     }

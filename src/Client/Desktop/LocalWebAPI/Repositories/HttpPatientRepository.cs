@@ -88,12 +88,6 @@ public class HttpPatientRepository : IPatientRepository
         return response.Data;
     }
 
-    public async Task<PatientDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default)
-    {
-        var response = await _apiClient.Patients.RestoreAsync(id);
-        return response.Data;
-    }
-
     public async Task<PatientBatchImportResultDto?> BatchImportAsync(PatientBatchImportInputDto request, CancellationToken ct = default)
     {
         var response = await _apiClient.Patients.BatchImportAsync(request);

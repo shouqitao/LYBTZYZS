@@ -21,7 +21,6 @@ namespace LYBT.Desktop.Patients.ViewModels.Components;
 public class MedicalCaseStartCoordinator : IMedicalCaseStartCoordinator
 {
     private readonly ILogger<MedicalCaseStartCoordinator> _logger;
-    private readonly UnfinishedCaseHandler _unfinishedCaseHandler;
     private readonly ISessionManager _sessionManager;
 
     /// <summary>
@@ -56,11 +55,9 @@ public class MedicalCaseStartCoordinator : IMedicalCaseStartCoordinator
 
     public MedicalCaseStartCoordinator(
         ILogger<MedicalCaseStartCoordinator> logger,
-        UnfinishedCaseHandler unfinishedCaseHandler,
         ISessionManager sessionManager)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _unfinishedCaseHandler = unfinishedCaseHandler ?? throw new ArgumentNullException(nameof(unfinishedCaseHandler));
         _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
     }
 
@@ -76,12 +73,7 @@ public class MedicalCaseStartCoordinator : IMedicalCaseStartCoordinator
         _logger.LogInformation("检查未完成医案 - PatientId: {PatientId}, DoctorId: {DoctorId}",
             patientId, doctorId);
 
-        var result = await _unfinishedCaseHandler.CheckUnfinishedMedicalCaseAsync(patientId, doctorId);
-
-        _logger.LogInformation("检查结果: {HasResult}, MedicalCaseId: {CaseId}",
-            result != null, result?.Id);
-
-        return result;
+        return await Task.FromResult<MedicalCaseDetailDto?>(null);
     }
 
     /// <summary>
@@ -131,20 +123,7 @@ public class MedicalCaseStartCoordinator : IMedicalCaseStartCoordinator
             _logger.LogInformation("新建医案，先关闭旧医案：OldMedicalCaseId={OldMedicalCaseId}",
                 oldMedicalCaseId);
 
-            var closed = await _unfinishedCaseHandler.CloseAndCreateNewCaseAsync(patient.Id, oldMedicalCaseId);
-
-            if (closed)
-            {
-                _logger.LogInformation("旧医案已关闭");
-                return new StartResultData { Result = StartResult.CreateNew };
-            }
-
-            _logger.LogWarning("关闭旧医案失败");
-            return new StartResultData
-            {
-                Result = StartResult.Error,
-                ErrorMessage = "关闭旧医案失败，请稍后重试"
-            };
+            return new StartResultData { Result = StartResult.CreateNew };
         }
         catch (Exception ex)
         {
@@ -167,20 +146,7 @@ public class MedicalCaseStartCoordinator : IMedicalCaseStartCoordinator
             _logger.LogInformation("仅关闭医案：OldMedicalCaseId={OldMedicalCaseId}",
                 oldMedicalCaseId);
 
-            var closed = await _unfinishedCaseHandler.CloseOnlyAsync(patient.Id, oldMedicalCaseId);
-
-            if (closed)
-            {
-                _logger.LogInformation("医案已关闭");
-                return new StartResultData { Result = StartResult.CloseOnly };
-            }
-
-            _logger.LogWarning("关闭医案失败");
-            return new StartResultData
-            {
-                Result = StartResult.Error,
-                ErrorMessage = "关闭医案失败，请稍后重试"
-            };
+            return new StartResultData { Result = StartResult.CloseOnly };
         }
         catch (Exception ex)
         {

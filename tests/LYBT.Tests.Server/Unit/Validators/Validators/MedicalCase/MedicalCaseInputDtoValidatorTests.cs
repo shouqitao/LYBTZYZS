@@ -35,7 +35,6 @@ public class MedicalCaseInputDtoValidatorTests
     {
         // Arrange
         var dto = CreateValidMedicalCaseInputDto();
-        dto.Remark = null;
 
         // Act
         var result = _validator.TestValidate(dto);
@@ -112,39 +111,6 @@ public class MedicalCaseInputDtoValidatorTests
 
     #endregion
 
-    #region Remark Validation Tests
-
-    [Fact]
-    public void Validate_WithRemarkTooLong_ShouldFail()
-    {
-        // Arrange
-        var dto = CreateValidMedicalCaseInputDto();
-        dto.Remark = new string('备', ValidationConstants.RemarkMaxLength + 1);
-
-        // Act
-        var result = _validator.TestValidate(dto);
-
-        // Assert
-        result.ShouldHaveValidationErrorFor(x => x.Remark)
-            .WithErrorMessage($"备注长度不能超过{ValidationConstants.RemarkMaxLength}个字符");
-    }
-
-    [Fact]
-    public void Validate_WithRemarkAtMaxLength_ShouldPass()
-    {
-        // Arrange
-        var dto = CreateValidMedicalCaseInputDto();
-        dto.Remark = new string('备', ValidationConstants.RemarkMaxLength);
-
-        // Act
-        var result = _validator.TestValidate(dto);
-
-        // Assert
-        result.ShouldNotHaveValidationErrorFor(x => x.Remark);
-    }
-
-    #endregion
-
     #region Error Message Tests
 
     [Fact]
@@ -175,8 +141,7 @@ public class MedicalCaseInputDtoValidatorTests
         return new MedicalCaseInputDto
         {
             PatientId = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
-            Remark = "初诊"
+            UserId = Guid.NewGuid()
         };
     }
 

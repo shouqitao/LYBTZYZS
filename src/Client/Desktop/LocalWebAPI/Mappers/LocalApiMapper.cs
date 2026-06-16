@@ -14,17 +14,15 @@ public static class LocalApiMapper
     public static PatientListDto ToListDto(this Patient p) => new()
     {
         Id = p.Id, Name = p.Name, Gender = p.Gender, Age = p.Age,
-        PhoneNumber = p.PhoneNumber, Address = p.Address,
-        PinYinCode = p.PinYinCode
+        PhoneNumber = p.PhoneNumber,
+        PinYinCode = p.PinYinCode, Status = p.Status, CreatedAt = p.CreatedAt
     };
 
     public static PatientDetailDto ToDetailDto(this Patient p) => new()
     {
         Id = p.Id, Name = p.Name, Gender = p.Gender, BirthDate = p.BirthDate,
         Age = p.Age, IdNumber = p.IdNumber, PhoneNumber = p.PhoneNumber,
-        Address = p.Address, MaritalStatus = p.MaritalStatus, IdType = p.IdType,
-        BloodType = p.BloodType, AllergyHistory = p.AllergyHistory,
-        MedicalHistory = p.MedicalHistory
+        PinYinCode = p.PinYinCode, Status = p.Status, CreatedAt = p.CreatedAt
     };
 
     public static UserListDto ToListDto(this User u) => new()

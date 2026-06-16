@@ -31,8 +31,6 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly IPatientCrossModuleService _patientCrossModule;
         private readonly IUserCrossModuleService _userCrossModule;
         private readonly IHerbCrossModuleService _herbCrossModule;
-        private readonly IMedicalCaseAuditService _auditService;
-        private readonly IMedicalCasePermissionService _permissionService;
         private readonly MedicalCaseMapper _mapper;
         private readonly ICacheInvalidationService _cacheInvalidation;
 
@@ -42,8 +40,6 @@ namespace LYBT.Module.MedicalCases.Services
             IPatientCrossModuleService patientCrossModule,
             IUserCrossModuleService userCrossModule,
             IHerbCrossModuleService herbCrossModule,
-            IMedicalCaseAuditService auditService,
-            IMedicalCasePermissionService permissionService,
             MedicalCaseMapper mapper,
             ILogger<MedicalCaseCommandService> logger,
             ICacheInvalidationService cacheInvalidation)
@@ -55,8 +51,6 @@ namespace LYBT.Module.MedicalCases.Services
             _patientCrossModule = patientCrossModule ?? throw new ArgumentNullException(nameof(patientCrossModule));
             _userCrossModule = userCrossModule ?? throw new ArgumentNullException(nameof(userCrossModule));
             _herbCrossModule = herbCrossModule ?? throw new ArgumentNullException(nameof(herbCrossModule));
-            _auditService = auditService ?? throw new ArgumentNullException(nameof(auditService));
-            _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
             _cacheInvalidation = cacheInvalidation ?? throw new ArgumentNullException(nameof(cacheInvalidation));
         }
 
@@ -109,7 +103,6 @@ namespace LYBT.Module.MedicalCases.Services
                 NeedsPrescription = request.Prescription?.NeedsPrescription,
                 UserId = doctorId,
                 DoctorName = doctor.RealName,
-                Remark = request.Remark,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -171,16 +164,6 @@ namespace LYBT.Module.MedicalCases.Services
 
             await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
 
-            // 记录创建审计日志
-            await _auditService.LogAsync(
-                before: null,
-                after: result,
-                operatorId: doctorId,
-                operatorName: doctor.RealName,
-                role: doctor.Role,
-                operationType: AuditOperationType.Create,
-                cancellationToken: cancellationToken);
-
             return result;
         }
 
@@ -207,17 +190,8 @@ namespace LYBT.Module.MedicalCases.Services
                 return null;
             }
 
-            // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 保存变更前的状态用于审计
-            var beforeState = CloneMedicalCaseForAudit(medicalCase);
-
             // 权限检查
-            MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, currentUserId, isAdmin, "UpdateConsultation", _logger);
-
-            // S3: 需要修改原因时，验证 editReason 不为空
-            if (_permissionService.RequiresEditReason(medicalCase, currentUserId) && string.IsNullOrWhiteSpace(editReason))
-            {
-                throw new BusinessException(EC.McPrintedRequiresReason, "该医案需要提供修改原因");
-            }
+            MedicalCaseServiceHelper.EnsureCanEdit(medicalCase, currentUserId, isAdmin, "UpdateConsultation", _logger);
 
             // 确保Consultation存在
             if (medicalCase.Consultation == null)
@@ -235,19 +209,9 @@ namespace LYBT.Module.MedicalCases.Services
             consultation.TcmDiagnosis = request.TcmDiagnosis;
             consultation.UpdatedAt = DateTime.UtcNow;
 
-            // CODE-02: 编辑已打印医案时重置 IsPrinted（防御性编程）
-            if (medicalCase.IsPrinted)
-            {
-                medicalCase.IsPrinted = false;
-                medicalCase.PrintVersion++;
-                _logger.LogInformation("[SVC] MedicalCase.UpdateConsultation -> ResetIsPrinted - MedicalCaseId={Id}", medicalCase.Id);
-            }
-
             // 通过聚合根保存（EF Core会跟踪子实体变更）
             var result = await _repository.UpdateAsync(medicalCase, cancellationToken);
             await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
-            // S3-03: 传递 editReason 到审计日志
-            await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin, editReason, cancellationToken);
             return result;
         }
 
@@ -272,11 +236,8 @@ namespace LYBT.Module.MedicalCases.Services
                 return null;
             }
 
-            // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 保存变更前的状态用于审计
-            var beforeState = CloneMedicalCaseForAudit(medicalCase);
-
             // 权限检查
-            MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, currentUserId, isAdmin, "SetPrescriptionFlag", _logger);
+            MedicalCaseServiceHelper.EnsureCanEdit(medicalCase, currentUserId, isAdmin, "SetPrescriptionFlag", _logger);
 
             // 更新NeedsPrescription标志
             // OpenSpec: consultation-field-alignment - 处方标志统一在MedicalCase管理
@@ -292,7 +253,6 @@ namespace LYBT.Module.MedicalCases.Services
             // 保存
             var result = await _repository.UpdateAsync(medicalCase, cancellationToken);
             await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
-            await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin, cancellationToken: cancellationToken);
             return result;
         }
 
@@ -473,17 +433,8 @@ namespace LYBT.Module.MedicalCases.Services
                 return null;
             }
 
-            // S3-03: 保存变更前的状态用于审计
-            var beforeState = CloneMedicalCaseForAudit(medicalCase);
-
             // 权限检查
-            MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, currentUserId, isAdmin, "UpdatePrescription", _logger);
-
-            // S3: 需要修改原因时，验证 editReason 不为空
-            if (_permissionService.RequiresEditReason(medicalCase, currentUserId) && string.IsNullOrWhiteSpace(editReason))
-            {
-                throw new BusinessException(EC.McPrintedRequiresReason, "该医案需要提供修改原因");
-            }
+            MedicalCaseServiceHelper.EnsureCanEdit(medicalCase, currentUserId, isAdmin, "UpdatePrescription", _logger);
 
             // 验证Prescription存在且ID匹配
             if (medicalCase.Prescription == null || medicalCase.Prescription.Id != prescriptionId)
@@ -491,13 +442,6 @@ namespace LYBT.Module.MedicalCases.Services
                 _logger.LogWarning("[SVC] MedicalCase.UpdatePrescription → PrescriptionNotFound - MedicalCaseId={MedicalCaseId} PrescriptionId={PrescriptionId}",
                     medicalCaseId, prescriptionId);
                 return null;
-            }
-
-            // T2-X8-01: 打印保护 -- 已打印的完成态医案禁止修改处方
-            if (medicalCase.IsPrinted && medicalCase.IsCompleted)
-            {
-                _logger.LogWarning("[SVC] MedicalCase.UpdatePrescription → PrintProtected - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw new BusinessException(EC.McPrintedCannotDelete, "医案已打印并完成，不允许修改处方");
             }
 
             // 通过Mapperly更新Prescription子实体（不包含Items）
@@ -515,19 +459,8 @@ namespace LYBT.Module.MedicalCases.Services
                 }
             }
 
-            // CODE-02: 编辑已打印医案时重置 IsPrinted（防御性编程）
-            if (medicalCase.IsPrinted)
-            {
-                medicalCase.IsPrinted = false;
-                medicalCase.PrintVersion++;
-                _logger.LogInformation("[SVC] MedicalCase.UpdatePrescription -> ResetIsPrinted - MedicalCaseId={Id}", medicalCase.Id);
-            }
-
             await _repository.UpdateAsync(medicalCase, cancellationToken);
             await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
-
-            // S3-03: 记录处方更新审计日志 (含 editReason)
-            await LogUpdateAuditAsync(beforeState, medicalCase, currentUserId, isAdmin, editReason, cancellationToken);
 
             return medicalCase.Prescription;
         }
@@ -555,20 +488,13 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             // 权限检查
-            MedicalCaseServiceHelper.EnsureCanDelete(_permissionService, medicalCase, currentUserId, isAdmin, "DeletePrescription", _logger);
+            MedicalCaseServiceHelper.EnsureCanDelete(medicalCase, currentUserId, isAdmin, "DeletePrescription", _logger);
 
             // 验证Prescription存在且ID匹配
             if (medicalCase.Prescription == null || medicalCase.Prescription.Id != prescriptionId)
             {
                 _logger.LogWarning("[SVC] MedicalCase.DeletePrescription → PrescriptionNotFound - PrescriptionId={PrescriptionId}", prescriptionId);
                 return false;
-            }
-
-            // T2-X8-01: 打印保护 -- 已打印的完成态医案禁止删除处方
-            if (medicalCase.IsPrinted && medicalCase.IsCompleted)
-            {
-                _logger.LogWarning("[SVC] MedicalCase.DeletePrescription → PrintProtected - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw new BusinessException(EC.McPrintedCannotDelete, "医案已打印并完成，不允许删除处方");
             }
 
             // 软删除Prescription
@@ -602,14 +528,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             // 权限检查: 确保操作者有权删除此医案
-            MedicalCaseServiceHelper.EnsureCanDelete(_permissionService, medicalCase, operatorId, isAdmin, "Delete", _logger);
-
-            // P1 FIX: 已打印的医案不可删除 (ERR-30404 打印保护)
-            if (medicalCase.PrintCount > 0)
-            {
-                _logger.LogWarning("[SVC] MedicalCase.Delete → AlreadyPrinted - MedicalCaseId={MedicalCaseId} PrintCount={PrintCount}", id, medicalCase.PrintCount);
-                throw new BusinessException(EC.McPrintedCannotDelete, "已打印的医案不可删除");
-            }
+            MedicalCaseServiceHelper.EnsureCanDelete(medicalCase, operatorId, isAdmin, "Delete", _logger);
 
             // D2 FIX: 删除前回滚关联的挂号记录
             var registration = await _registrationRepository.GetByMedicalCaseIdAsync(id, cancellationToken);
@@ -678,17 +597,8 @@ namespace LYBT.Module.MedicalCases.Services
             var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId, cancellationToken)
                 ?? throw ExceptionFactory.MedicalCase.NotFound(medicalCaseId);
 
-            // 保存变更前的状态用于审计
-            var beforeState = CloneMedicalCaseForAudit(medicalCase);
-
             // 权限检查
             ValidateEditPermission(medicalCase, currentUserId, isAdmin);
-
-            // S3-03: 需要修改原因时，验证 editReason 不为空
-            if (_permissionService.RequiresEditReason(medicalCase, currentUserId) && string.IsNullOrWhiteSpace(request.EditReason))
-            {
-                throw new BusinessException(EC.McPrintedRequiresReason, "该医案需要提供修改原因");
-            }
 
             // 更新基础字段
             UpdateMedicalCaseBasicFields(medicalCase, request);
@@ -702,31 +612,13 @@ namespace LYBT.Module.MedicalCases.Services
             // 更新处方
             if (request.Prescription != null)
             {
-                // T2-X8-01: 打印保护 -- 已打印的完成态医案禁止修改处方
-                if (medicalCase.IsPrinted && medicalCase.IsCompleted)
-                {
-                    _logger.LogWarning("[SVC] MedicalCase.Save → PrintProtected - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                    throw new BusinessException(EC.McPrintedCannotDelete, "医案已打印并完成，不允许修改处方");
-                }
-
                 await HandlePrescriptionUpdateAsync(medicalCase, request.Prescription);
             }
 
-            // CODE-02: 编辑已打印医案时重置 IsPrinted
-            if (medicalCase.IsPrinted)
-            {
-                medicalCase.IsPrinted = false;
-                medicalCase.PrintVersion++;
-                _logger.LogInformation("[SVC] MedicalCase.Save -> ResetIsPrinted - MedicalCaseId={Id}", medicalCase.Id);
-            }
-
-            // 保存并审计
+            // 保存
             var result = await _repository.UpdateAsync(medicalCase, cancellationToken);
             await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
             _logger.LogInformation("[SVC] MedicalCase.Save completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-
-            // S3-03: 传递 editReason 到审计日志
-            await LogUpdateAuditAsync(beforeState, result, currentUserId, isAdmin, request.EditReason, cancellationToken);
             return result;
         }
 
@@ -734,17 +626,13 @@ namespace LYBT.Module.MedicalCases.Services
         /// 验证编辑权限 (委托给 ServiceHelper)
         /// </summary>
         private void ValidateEditPermission(MedicalCase medicalCase, Guid currentUserId, bool isAdmin)
-            => MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, currentUserId, isAdmin, "Save", _logger);
+            => MedicalCaseServiceHelper.EnsureCanEdit(medicalCase, currentUserId, isAdmin, "Save", _logger);
 
         /// <summary>
         /// 更新医案基础字段
         /// </summary>
         private static void UpdateMedicalCaseBasicFields(MedicalCase medicalCase, MedicalCaseInputDto request)
         {
-            if (!string.IsNullOrEmpty(request.Remark))
-            {
-                medicalCase.Remark = request.Remark;
-            }
             medicalCase.UpdatedAt = DateTime.UtcNow;
         }
 
@@ -761,24 +649,7 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 记录更新审计日志
-        /// S3-03: 新增 editReason 参数，传递到审计日志
-        /// </summary>
-        private async Task LogUpdateAuditAsync(MedicalCase before, MedicalCase after, Guid currentUserId, bool isAdmin, string? editReason = null, CancellationToken cancellationToken = default)
-        {
-            var operatorInfo = await GetOperatorInfoAsync(currentUserId, isAdmin, cancellationToken);
-            await _auditService.LogAsync(
-                before: before,
-                after: after,
-                operatorId: currentUserId,
-                operatorName: operatorInfo.Name,
-                role: operatorInfo.Role,
-                operationType: AuditOperationType.Update,
-                reason: editReason,
-                cancellationToken: cancellationToken);
-        }
-
-
+        /// 处理处方更新(创建/更新/软删除)
         /// <summary>
         /// 处理处方更新(创建/更新/软删除)
         /// consolidate-code-quality: 从SaveAsync提取，降低圈复杂度
@@ -954,12 +825,6 @@ namespace LYBT.Module.MedicalCases.Services
 
         #region Private Helper Methods
 
-        private static MedicalCase CloneMedicalCaseForAudit(MedicalCase source)
-            => MedicalCaseServiceHelper.CloneMedicalCaseForAudit(source);
-
-        private async Task<(string Name, UserRole Role)> GetOperatorInfoAsync(Guid userId, bool isAdmin, CancellationToken cancellationToken = default)
-            => await MedicalCaseServiceHelper.GetOperatorInfoAsync(_userCrossModule, userId, isAdmin, _logger, cancellationToken);
-
         /// <summary>
         /// 生成医案编号（格式：MC + 年月日 + 序号）
         /// T5-P2-11: 参考 LocalMedicalCaseDataSource.GenerateCaseNumber
@@ -1021,7 +886,7 @@ namespace LYBT.Module.MedicalCases.Services
                     }
 
                     // 权限检查: 确保操作者有权删除此医案
-                    MedicalCaseServiceHelper.EnsureCanDelete(_permissionService, entity, operatorId, isAdmin, "BatchDelete", _logger);
+                    MedicalCaseServiceHelper.EnsureCanDelete(entity, operatorId, isAdmin, "BatchDelete", _logger);
 
                     entity.IsDeleted = true;
                     entity.UpdatedAt = DateTime.UtcNow;

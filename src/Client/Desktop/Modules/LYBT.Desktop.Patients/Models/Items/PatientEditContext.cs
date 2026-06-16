@@ -21,16 +21,7 @@ public class PatientEditContext : ValidatableModelBase
     private Gender _gender = Gender.Unknown;
     private DateTime? _birthDate;
     private string? _idNumber;
-    private int _idType;
-    private int _maritalStatus;
-    private int _bloodType;
     private string? _phoneNumber;
-    private string? _address;
-    private string? _emergencyContactName;
-    private string? _emergencyContactPhone;
-    private string? _emergencyContactRelation;
-    private string? _allergyHistory;
-    private string? _medicalHistory;
     private CommonStatus _status = CommonStatus.Enabled;
 
     /// <summary>患者ID (Guid.Empty 表示新建)</summary>
@@ -98,13 +89,6 @@ public class PatientEditContext : ValidatableModelBase
         }
     }
 
-    /// <summary>证件类型</summary>
-    public int IdType
-    {
-        get => _idType;
-        set => SetProperty(ref _idType, value);
-    }
-
     /// <summary>身份证号</summary>
     [Required(ErrorMessage = "身份证号不能为空")]
     [RegularExpression(@"^[1-9]\d{5}(19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[\dXx]$",
@@ -116,20 +100,6 @@ public class PatientEditContext : ValidatableModelBase
         set => SetPropertyAndValidate(ref _idNumber, value);
     }
 
-    /// <summary>婚姻状况</summary>
-    public int MaritalStatus
-    {
-        get => _maritalStatus;
-        set => SetProperty(ref _maritalStatus, value);
-    }
-
-    /// <summary>血型</summary>
-    public int BloodType
-    {
-        get => _bloodType;
-        set => SetProperty(ref _bloodType, value);
-    }
-
     /// <summary>手机号</summary>
     [Phone(ErrorMessage = "手机号格式不正确")]
     [StringLength(ValidationConstants.PhoneMaxLength, ErrorMessage = "手机号长度不能超过20个字符")]
@@ -137,52 +107,6 @@ public class PatientEditContext : ValidatableModelBase
     {
         get => _phoneNumber;
         set => SetPropertyAndValidate(ref _phoneNumber, value);
-    }
-
-    /// <summary>地址</summary>
-    [Required(ErrorMessage = "地址不能为空")]
-    [StringLength(ValidationConstants.AddressMaxLength, ErrorMessage = "地址长度不能超过200个字符")]
-    public string? Address
-    {
-        get => _address;
-        set => SetPropertyAndValidate(ref _address, value);
-    }
-
-    /// <summary>紧急联系人姓名</summary>
-    public string? EmergencyContactName
-    {
-        get => _emergencyContactName;
-        set => SetProperty(ref _emergencyContactName, value);
-    }
-
-    /// <summary>紧急联系人电话</summary>
-    public string? EmergencyContactPhone
-    {
-        get => _emergencyContactPhone;
-        set => SetProperty(ref _emergencyContactPhone, value);
-    }
-
-    /// <summary>紧急联系人关系</summary>
-    public string? EmergencyContactRelation
-    {
-        get => _emergencyContactRelation;
-        set => SetProperty(ref _emergencyContactRelation, value);
-    }
-
-    /// <summary>过敏史</summary>
-    [StringLength(ValidationConstants.RemarkMaxLength, ErrorMessage = "过敏史长度不能超过1000个字符")]
-    public string? AllergyHistory
-    {
-        get => _allergyHistory;
-        set => SetPropertyAndValidate(ref _allergyHistory, value);
-    }
-
-    /// <summary>病史</summary>
-    [StringLength(ValidationConstants.RemarkMaxLength, ErrorMessage = "病史长度不能超过1000个字符")]
-    public string? MedicalHistory
-    {
-        get => _medicalHistory;
-        set => SetPropertyAndValidate(ref _medicalHistory, value);
     }
 
     /// <summary>状态</summary>

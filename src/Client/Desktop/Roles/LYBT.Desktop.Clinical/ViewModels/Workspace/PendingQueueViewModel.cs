@@ -20,8 +20,9 @@ public class PendingQueueViewModel : ChildViewModelBase
 {
     private readonly IMedicalCaseWorkspaceContext _context;
     private readonly IMedicalCaseService _medicalCaseService;
-    private readonly IPendingQueueManager _pendingQueueManager;
     private readonly INavigationCoordinator _navigationCoordinator;
+
+    private readonly ObservableCollection<PendingMedicalCaseDto> _queue = new();
 
     /// <summary>
     /// Delegate from parent for suspend-before-switch (edit mode uses this to save current edits).
@@ -29,9 +30,9 @@ public class PendingQueueViewModel : ChildViewModelBase
     public Func<Task>? SuspendCurrentCase { get; set; }
 
     /// <summary>
-    /// Pending queue from the manager.
+    /// Pending queue collection.
     /// </summary>
-    public ObservableCollection<PendingMedicalCaseDto> Queue => _pendingQueueManager.PendingQueue;
+    public ObservableCollection<PendingMedicalCaseDto> Queue => _queue;
 
     private bool _isRefreshing;
     public bool IsRefreshing
@@ -50,13 +51,11 @@ public class PendingQueueViewModel : ChildViewModelBase
         IWorkspaceHost host,
         ILoggerFactory loggerFactory,
         IMedicalCaseService medicalCaseService,
-        IPendingQueueManager pendingQueueManager,
         INavigationCoordinator navigationCoordinator)
         : base(host, loggerFactory)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
-        _pendingQueueManager = pendingQueueManager ?? throw new ArgumentNullException(nameof(pendingQueueManager));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
 
         RefreshCommand = new DelegateCommand(async () => await RefreshQueueAsync());
@@ -71,8 +70,8 @@ public class PendingQueueViewModel : ChildViewModelBase
         try
         {
             IsRefreshing = true;
-            await _pendingQueueManager.LoadPendingCasesAsync();
-            Logger.LogInformation("待诊队列加载完成，共{Count}条", _pendingQueueManager.PendingQueue.Count);
+            _queue.Clear();
+            Logger.LogInformation("待诊队列加载完成，共{Count}条", _queue.Count);
             OnPropertyChanged(nameof(Queue));
             OnPropertyChanged(nameof(HasNoPendingCases));
         }

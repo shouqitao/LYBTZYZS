@@ -250,7 +250,6 @@ public class DataIntegrityTests : WebApiE2ETestBase
             Gender = Gender.Male,
             IdNumber = GenerateIdNumber(),
             PhoneNumber = $"139{Interlocked.Increment(ref _counter):D8}",
-            Address = "北京市测试区测试街道1号",
             PinYinCode = $"wzxcs_{suffix}"
         };
 

@@ -70,11 +70,6 @@ namespace LYBT.Desktop.Formula.Interfaces
         /// </summary>
         Task<CommandResult<FormulaDetailDto>> ToggleStatusAsync(Guid formulaId, CancellationToken ct = default);
 
-        /// <summary>
-        /// 恢复已删除的验方
-        /// </summary>
-        Task<CommandResult<FormulaDetailDto>> RestoreAsync(Guid formulaId, CancellationToken ct = default);
-
         #endregion
 
         #region 批量操作
@@ -83,16 +78,6 @@ namespace LYBT.Desktop.Formula.Interfaces
         /// 批量删除验方
         /// </summary>
         Task<CommandResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> formulaIds, CancellationToken ct = default);
-
-        /// <summary>
-        /// 批量启用验方
-        /// </summary>
-        Task<CommandResult<BatchOperationResultDto>> BatchEnableAsync(List<Guid> formulaIds, CancellationToken ct = default);
-
-        /// <summary>
-        /// 批量禁用验方
-        /// </summary>
-        Task<CommandResult<BatchOperationResultDto>> BatchDisableAsync(List<Guid> formulaIds, CancellationToken ct = default);
 
         #endregion
 

@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
@@ -175,29 +175,6 @@ namespace LYBT.Desktop.Contracts.Api
             [Refit.Body] MedicalCaseStatusInputDto request);
 
         /// <summary>
-        /// 获取当前用户对指定医案的权限
-        /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-007)
-        /// </summary>
-        /// <param name="id">医案ID</param>
-        /// <returns>权限详情</returns>
-        [Refit.Get("/api/v1/medicalcases/{id}/permissions")]
-        Task<ApiResponse<MedicalCasePermissionDto>> GetPermissionsAsync(Guid id);
-
-        /// <summary>
-        /// 获取医案审计日志
-        /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
-        /// </summary>
-        /// <param name="id">医案ID</param>
-        /// <param name="page">页码（默认1）</param>
-        /// <param name="pageSize">每页数量（默认20）</param>
-        /// <returns>分页的审计日志列表</returns>
-        [Refit.Get("/api/v1/medicalcases/{id}/audit-logs")]
-        Task<ApiResponse<MedicalCaseAuditLogPagedResultDto>> GetAuditLogsAsync(
-            Guid id,
-            [Refit.Query] int page = 1,
-            [Refit.Query] int pageSize = 20);
-
-        /// <summary>
         /// 聚合保存医案（诊断+处方一次性保存）
         /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.5)
         /// 简化前端保存逻辑，减少API调用次数
@@ -210,24 +187,6 @@ namespace LYBT.Desktop.Contracts.Api
             Guid id,
             [Refit.Body] MedicalCaseInputDto request);
 
-        /// <summary>
-        /// 记录打印完成 -- 回写打印状态
-        /// T2-X8-04~08: 打印后更新 IsPrinted/PrintCount/LastPrintedAt/PrintVersion
-        /// </summary>
-        [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/print-completed")]
-        Task<ApiResponse<MedicalCaseDetailDto>> RecordPrintCompletedAsync(
-            Guid medicalCaseId,
-            [Refit.Body] PrintCompletedRequest request);
-
-        /// <summary>
-        /// 添加打印日志 -- 记录打印成功/失败
-        /// T4-S5-02: 远程打印日志存储
-        /// </summary>
-        [Refit.Post("/api/v1/medicalcases/{medicalCaseId}/print-logs")]
-        Task<ApiResponse<object>> AddPrintLogAsync(
-            Guid medicalCaseId,
-            [Refit.Body] PrintLogInputDto request);
-
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
         /// <summary>
@@ -238,12 +197,5 @@ namespace LYBT.Desktop.Contracts.Api
 
         /// <summary>
         /// 批量获取医案详情（解决N+1查询问题）
-        /// OpenSpec: consolidate-medicalcase-detail-queries
-        /// 用于历史处方选择等需要批量获取详情的场景
-        /// </summary>
-        /// <param name="request">批量查询参数（最多50个ID）</param>
-        /// <returns>医案详情列表</returns>
-        [Refit.Post("/api/v1/medicalcases/batch-details")]
-        Task<ApiResponse<List<MedicalCaseDetailDto>>> GetBatchDetailsAsync([Refit.Body] BatchDetailQueryDto request);
     }
 }

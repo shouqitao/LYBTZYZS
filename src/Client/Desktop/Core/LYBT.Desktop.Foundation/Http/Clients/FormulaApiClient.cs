@@ -59,20 +59,8 @@ internal sealed class FormulaApiClient : IApiClientFormulas
         => _api.ToggleStatusAsync(id);
 
     /// <inheritdoc />
-    public Task<ApiResponse<FormulaDetailDto>> RestoreAsync(Guid id)
-        => _api.RestoreAsync(id);
-
-    /// <inheritdoc />
     public Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request)
         => _api.BatchDeleteAsync(request);
-
-    /// <inheritdoc />
-    public Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request)
-        => _api.BatchEnableAsync(request);
-
-    /// <inheritdoc />
-    public Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request)
-        => _api.BatchDisableAsync(request);
 
     /// <inheritdoc />
     public Task<ApiResponse<FormulaBatchImportResultDto>> BatchImportAsync(FormulaBatchImportInputDto request)

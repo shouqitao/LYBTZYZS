@@ -110,30 +110,6 @@ namespace LYBT.Desktop.Users.Interfaces
         /// </summary>
         Task<CommandResult<UserDetailDto>> ToggleStatusAsync(Guid userId, CancellationToken ct = default);
 
-        /// <summary>
-        /// 恢复已删除用户
-        /// </summary>
-        Task<CommandResult<UserDetailDto>> RestoreAsync(Guid userId, CancellationToken ct = default);
-
-        #endregion
-
-        #region 批量操作
-
-        /// <summary>
-        /// 批量启用用户
-        /// </summary>
-        Task<CommandResult<BatchOperationResultDto>> BatchEnableAsync(List<Guid> userIds, CancellationToken ct = default);
-
-        /// <summary>
-        /// 批量禁用用户
-        /// </summary>
-        Task<CommandResult<BatchOperationResultDto>> BatchDisableAsync(List<Guid> userIds, CancellationToken ct = default);
-
-        /// <summary>
-        /// 批量导入用户
-        /// </summary>
-        Task<CommandResult<UserBatchImportResultDto>> BatchImportAsync(StreamPart file, CancellationToken ct = default);
-
         #endregion
     }
 }

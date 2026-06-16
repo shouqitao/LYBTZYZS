@@ -60,22 +60,10 @@ public interface IMedicalCaseRepository
     Task<MedicalCaseDetailDto?> CloseCaseAsync(Guid medicalCaseId);
 
     /// <summary>
-    /// 获取当前用户对指定医案的权限
-    /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-007)
-    /// </summary>
-    Task<MedicalCasePermissionDto?> GetPermissionsAsync(Guid medicalCaseId);
-
-    /// <summary>
     /// 聚合保存医案 (诊断+处方一次性保存)
     /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.5)
     /// </summary>
     Task<MedicalCaseDetailDto> SaveAsync(Guid medicalCaseId, MedicalCaseInputDto dto);
-
-    /// <summary>
-    /// 批量获取医案详情 (解决 N+1 查询问题，最多 50 个)
-    /// OpenSpec: consolidate-medicalcase-detail-queries
-    /// </summary>
-    Task<List<MedicalCaseDetailDto>> GetBatchDetailsAsync(List<Guid> ids);
 
     /// <summary>
     /// 设置处方标志
@@ -100,12 +88,6 @@ public interface IMedicalCaseRepository
     /// OpenSpec: simplify-desktop-data-layer (Phase 1)
     /// </summary>
     Task<MedicalCaseDetailDto?> SuspendAsync(Guid id, ConsultationInputDto? request);
-
-    /// <summary>
-    /// 记录打印完成 -- 回写打印状态到服务端
-    /// T2-X8-04~08
-    /// </summary>
-    Task<MedicalCaseDetailDto?> RecordPrintCompletedAsync(Guid medicalCaseId, PrintCompletedRequest request);
 
     #region 批量操作
 

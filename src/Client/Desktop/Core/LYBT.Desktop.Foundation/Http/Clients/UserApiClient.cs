@@ -62,29 +62,12 @@ internal sealed class UserApiClient : IApiClientUsers
     public Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequestDto request)
         => _api.ResetPasswordAsync(id, request);
 
-    /// <inheritdoc />
-    public Task<ApiResponse<UserBatchImportResultDto>> BatchImportAsync(UserBatchImportInputDto request)
-        => _api.BatchImportAsync(request);
-
-    /// <inheritdoc />
     public Task<ApiResponse<UserDetailDto>> ToggleStatusAsync(Guid id)
         => _api.ToggleStatusAsync(id);
 
     /// <inheritdoc />
-    public Task<ApiResponse<UserDetailDto>> RestoreAsync(Guid id)
-        => _api.RestoreAsync(id);
-
-    /// <inheritdoc />
     public Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request)
         => _api.BatchDeleteAsync(request);
-
-    /// <inheritdoc />
-    public Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request)
-        => _api.BatchEnableAsync(request);
-
-    /// <inheritdoc />
-    public Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request)
-        => _api.BatchDisableAsync(request);
 
     /// <inheritdoc />
     /// <remarks>Local-only method — not available in remote Refit mode.</remarks>

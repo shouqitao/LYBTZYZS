@@ -47,7 +47,6 @@ namespace LYBT.Desktop.Herbs
 
             // Handler 组件
             containerRegistry.Register<ViewModels.Handlers.IHerbStatusHandler, ViewModels.Handlers.HerbStatusHandler>();
-            containerRegistry.Register<ViewModels.Handlers.IHerbImportExportHandler, ViewModels.Handlers.HerbImportExportHandler>();
 
             // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
             containerRegistry.AddMasterDetailServices<HerbListDto, HerbDetailModel>();

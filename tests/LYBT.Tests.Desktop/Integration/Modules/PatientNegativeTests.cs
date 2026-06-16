@@ -41,7 +41,7 @@ public class PatientNegativeTests : WebApiE2ETestBase
     public async Task CreatePatient_EmptyName_ShouldFail()
     {
         await LoginAsSysadminAsync();
-        var input = new PatientInputDto { Name = "", Gender = Gender.Male, PhoneNumber = "13800138000", Address = "测试地址", IdNumber = GenerateValidIdNumber() };
+        var input = new PatientInputDto { Name = "", Gender = Gender.Male, PhoneNumber = "13800138000", IdNumber = GenerateValidIdNumber() };
 
         try
         {
@@ -65,8 +65,7 @@ public class PatientNegativeTests : WebApiE2ETestBase
             Name = "测试患者",
             Gender = Gender.Male,
             IdNumber = "INVALID_ID_12345",
-            PhoneNumber = "13800138000",
-            Address = "测试地址"
+            PhoneNumber = "13800138000"
         };
 
         try
@@ -91,7 +90,6 @@ public class PatientNegativeTests : WebApiE2ETestBase
             Name = "测试患者",
             Gender = Gender.Male,
             PhoneNumber = "abc123",
-            Address = "测试地址",
             IdNumber = GenerateValidIdNumber()
         };
 

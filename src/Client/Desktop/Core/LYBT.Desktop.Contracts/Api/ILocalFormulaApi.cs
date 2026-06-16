@@ -31,17 +31,8 @@ public interface ILocalFormulaApi
     [Refit.Post("/api/formulas/{id}/toggle-status")]
     Task<FormulaDetailDto> ToggleStatusAsync(Guid id);
 
-    [Refit.Post("/api/formulas/{id}/restore")]
-    Task<FormulaDetailDto> RestoreAsync(Guid id);
-
     [Refit.Post("/api/formulas/batch-delete")]
     Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
-
-    [Refit.Post("/api/formulas/batch-enable")]
-    Task<BatchOperationResultDto> BatchEnableAsync([Refit.Body] BatchDeleteInputDto request);
-
-    [Refit.Post("/api/formulas/batch-disable")]
-    Task<BatchOperationResultDto> BatchDisableAsync([Refit.Body] BatchDeleteInputDto request);
 
     [Refit.Get("/api/formulas/categories")]
     Task<List<string>> GetCategoriesAsync();

@@ -35,7 +35,6 @@ public class MedicalCaseServiceHelperTests
         clone.DoctorName.Should().Be(source.DoctorName);
         clone.CaseStatus.Should().Be(source.CaseStatus);
         clone.CompletedAt.Should().Be(source.CompletedAt);
-        clone.Remark.Should().Be(source.Remark);
         clone.NeedsPrescription.Should().Be(source.NeedsPrescription);
         clone.IsDeleted.Should().Be(source.IsDeleted);
         clone.CreatedAt.Should().Be(source.CreatedAt);
@@ -201,41 +200,52 @@ public class MedicalCaseServiceHelperTests
     #region EnsureCanEdit 测试
 
     [Fact]
-    public void EnsureCanEdit_WithValidPermission_ShouldNotThrow()
+    public void EnsureCanEdit_OwnerWithActiveCase_ShouldNotThrow()
     {
         // Arrange
         var medicalCase = CreateTestMedicalCase();
         var userId = medicalCase.UserId;
         var logger = NullLogger.Instance;
 
-        // 创建一个简单的权限服务 mock
-        var permissionService = new TestPermissionService(canEdit: true, canDelete: true);
-
         // Act
         var act = () => MedicalCaseServiceHelper.EnsureCanEdit(
-            permissionService, medicalCase, userId, false, "TestOperation", logger);
+            medicalCase, userId, false, "TestOperation", logger);
 
         // Assert
         act.Should().NotThrow();
     }
 
     [Fact]
-    public void EnsureCanEdit_WithInvalidPermission_ShouldThrowUnauthorizedAccessException()
+    public void EnsureCanEdit_NonOwner_ShouldThrowUnauthorizedAccessException()
     {
         // Arrange
         var medicalCase = CreateTestMedicalCase();
         var userId = Guid.NewGuid(); // 不同的用户
         var logger = NullLogger.Instance;
 
-        var permissionService = new TestPermissionService(canEdit: false, canDelete: false);
-
         // Act
         var act = () => MedicalCaseServiceHelper.EnsureCanEdit(
-            permissionService, medicalCase, userId, false, "TestOperation", logger);
+            medicalCase, userId, false, "TestOperation", logger);
 
         // Assert
         act.Should().Throw<UnauthorizedAccessException>()
             .WithMessage("*无权限编辑此医案*");
+    }
+
+    [Fact]
+    public void EnsureCanEdit_Admin_ShouldNotThrow()
+    {
+        // Arrange
+        var medicalCase = CreateTestMedicalCase();
+        var userId = Guid.NewGuid();
+        var logger = NullLogger.Instance;
+
+        // Act
+        var act = () => MedicalCaseServiceHelper.EnsureCanEdit(
+            medicalCase, userId, true, "TestOperation", logger);
+
+        // Assert
+        act.Should().NotThrow();
     }
 
     #endregion
@@ -243,40 +253,52 @@ public class MedicalCaseServiceHelperTests
     #region EnsureCanDelete 测试
 
     [Fact]
-    public void EnsureCanDelete_WithValidPermission_ShouldNotThrow()
+    public void EnsureCanDelete_OwnerWithActiveCase_ShouldNotThrow()
     {
         // Arrange
         var medicalCase = CreateTestMedicalCase();
         var userId = medicalCase.UserId;
         var logger = NullLogger.Instance;
 
-        var permissionService = new TestPermissionService(canEdit: true, canDelete: true);
-
         // Act
         var act = () => MedicalCaseServiceHelper.EnsureCanDelete(
-            permissionService, medicalCase, userId, false, "TestOperation", logger);
+            medicalCase, userId, false, "TestOperation", logger);
 
         // Assert
         act.Should().NotThrow();
     }
 
     [Fact]
-    public void EnsureCanDelete_WithInvalidPermission_ShouldThrowUnauthorizedAccessException()
+    public void EnsureCanDelete_NonOwner_ShouldThrowUnauthorizedAccessException()
     {
         // Arrange
         var medicalCase = CreateTestMedicalCase();
         var userId = Guid.NewGuid(); // 不同的用户
         var logger = NullLogger.Instance;
 
-        var permissionService = new TestPermissionService(canEdit: false, canDelete: false);
-
         // Act
         var act = () => MedicalCaseServiceHelper.EnsureCanDelete(
-            permissionService, medicalCase, userId, false, "TestOperation", logger);
+            medicalCase, userId, false, "TestOperation", logger);
 
         // Assert
         act.Should().Throw<UnauthorizedAccessException>()
             .WithMessage("*无权限执行此操作*");
+    }
+
+    [Fact]
+    public void EnsureCanDelete_Admin_ShouldNotThrow()
+    {
+        // Arrange
+        var medicalCase = CreateTestMedicalCase();
+        var userId = Guid.NewGuid();
+        var logger = NullLogger.Instance;
+
+        // Act
+        var act = () => MedicalCaseServiceHelper.EnsureCanDelete(
+            medicalCase, userId, true, "TestOperation", logger);
+
+        // Assert
+        act.Should().NotThrow();
     }
 
     #endregion
@@ -295,7 +317,6 @@ public class MedicalCaseServiceHelperTests
             CaseStatus = MedicalCaseStatus.Active,
             NeedsPrescription = true,
             CompletedAt = null,
-            Remark = "测试医案",
             IsDeleted = false,
             CreatedAt = DateTime.UtcNow.AddDays(-1),
             UpdatedAt = DateTime.UtcNow,
@@ -321,35 +342,6 @@ public class MedicalCaseServiceHelperTests
                 UpdatedAt = DateTime.UtcNow
             }
         };
-    }
-
-    #endregion
-
-    #region 测试辅助类
-
-    /// <summary>
-    /// 简单的权限服务测试实现
-    /// </summary>
-    private class TestPermissionService : LYBT.Module.MedicalCases.Interfaces.IMedicalCasePermissionService
-    {
-        private readonly bool _canEdit;
-        private readonly bool _canDelete;
-
-        public TestPermissionService(bool canEdit, bool canDelete)
-        {
-            _canEdit = canEdit;
-            _canDelete = canDelete;
-        }
-
-        public bool CanEdit(Guid userId, UserRole role, Entities.MedicalCases.MedicalCase medicalCase) => _canEdit;
-        public bool CanEdit(Guid userId, bool isAdmin, Entities.MedicalCases.MedicalCase medicalCase) => _canEdit;
-        public bool CanCreate(Guid userId, UserRole role) => true;
-        public bool CanDelete(Guid userId, UserRole role, Entities.MedicalCases.MedicalCase medicalCase) => _canDelete;
-        public bool CanDelete(Guid userId, bool isAdmin, Entities.MedicalCases.MedicalCase medicalCase) => _canDelete;
-        public bool RequiresEditReason(Entities.MedicalCases.MedicalCase medicalCase) => false;
-        public bool RequiresEditReason(Entities.MedicalCases.MedicalCase medicalCase, Guid currentUserId) => false;
-        public LYBT.Shared.Models.Contracts.MedicalCase.MedicalCasePermissionDto GetPermissions(Guid userId, UserRole role, Entities.MedicalCases.MedicalCase medicalCase)
-            => new() { CanEdit = _canEdit, CanDelete = _canDelete };
     }
 
     #endregion

@@ -257,28 +257,6 @@ public sealed class HerbRepository : IHerbRepository
         }
     }
 
-    public async Task<HerbDetailDto?> RestoreAsync(Guid id)
-    {
-        try
-        {
-            _logger.LogInformation("[REPO] Herb.Restore - Id={Id}", id);
-
-            var response = await _apiClient.Herbs.RestoreAsync(id);
-            if (!response.Success || response.Data == null)
-            {
-                _logger.LogWarning("[REPO] Herb.Restore failed: {Message}", response.Message);
-                return null;
-            }
-
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Herb.Restore failed - Id={Id}", id);
-            return null;
-        }
-    }
-
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
     {
         try
@@ -309,54 +287,6 @@ public sealed class HerbRepository : IHerbRepository
                 IsSuccess = false,
                 Message = ex.Message
             };
-        }
-    }
-
-    public async Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids)
-    {
-        try
-        {
-            _logger.LogInformation("[REPO] Herb.BatchEnable - Count={Count}", ids.Count);
-
-            var response = await _apiClient.Herbs.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids });
-            if (!response.Success || response.Data == null)
-            {
-                _logger.LogError("[REPO] Herb.BatchEnable failed: {Message}", response.Message);
-                return null;
-            }
-
-            _logger.LogInformation("[REPO] Herb.BatchEnable completed - Success={Success} Failure={Failure}",
-                response.Data.SuccessCount, response.Data.FailureCount);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Herb.BatchEnable failed");
-            return null;
-        }
-    }
-
-    public async Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids)
-    {
-        try
-        {
-            _logger.LogInformation("[REPO] Herb.BatchDisable - Count={Count}", ids.Count);
-
-            var response = await _apiClient.Herbs.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids });
-            if (!response.Success || response.Data == null)
-            {
-                _logger.LogError("[REPO] Herb.BatchDisable failed: {Message}", response.Message);
-                return null;
-            }
-
-            _logger.LogInformation("[REPO] Herb.BatchDisable completed - Success={Success} Failure={Failure}",
-                response.Data.SuccessCount, response.Data.FailureCount);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Herb.BatchDisable failed");
-            return null;
         }
     }
 

@@ -50,8 +50,7 @@ public sealed class CrossNarrativeValidationTests : JourneyTestBase<ClinicalData
         {
             Name = UniqueName("禁用患者"), Gender = Gender.Male,
             BirthDate = new DateTime(1990, 5, 20), PhoneNumber = UniquePhone(),
-            IdNumber = $"32010119900520{Random.Shared.Next(1000, 9999)}",
-            Address = "测试地址"
+            IdNumber = $"32010119900520{Random.Shared.Next(1000, 9999)}"
         });
         createPatientResponse.IsSuccessStatusCode.Should().BeTrue(
             $"创建患者应成功, 实际: {createPatientResponse.StatusCode}");
@@ -181,8 +180,7 @@ public sealed class CrossNarrativeValidationTests : JourneyTestBase<ClinicalData
         {
             Name = UniqueName("挂号禁用"), Gender = Gender.Female,
             BirthDate = new DateTime(1985, 3, 15), PhoneNumber = UniquePhone(),
-            IdNumber = $"32010119850315{Random.Shared.Next(1000, 9999)}",
-            Address = "测试地址"
+            IdNumber = $"32010119850315{Random.Shared.Next(1000, 9999)}"
         });
         createResp.IsSuccessStatusCode.Should().BeTrue();
         patient.Should().NotBeNull();
@@ -247,8 +245,7 @@ public sealed class CrossNarrativeValidationTests : JourneyTestBase<ClinicalData
         {
             Name = UniqueName("药材测试"), Gender = Gender.Male,
             BirthDate = new DateTime(1992, 8, 10), PhoneNumber = UniquePhone(),
-            IdNumber = $"32010119920810{Random.Shared.Next(1000, 9999)}",
-            Address = "测试地址"
+            IdNumber = $"32010119920810{Random.Shared.Next(1000, 9999)}"
         });
         patient.Should().NotBeNull();
 
@@ -344,8 +341,7 @@ public sealed class CrossNarrativeValidationTests : JourneyTestBase<ClinicalData
             {
                 Name = UniqueName($"编号{i}"), Gender = Gender.Male,
                 BirthDate = new DateTime(1990, 1, 1), PhoneNumber = UniquePhone(),
-                IdNumber = $"3201011990010{i}{Random.Shared.Next(1000, 9999)}",
-                Address = "测试地址"
+                IdNumber = $"3201011990010{i}{Random.Shared.Next(1000, 9999)}"
             });
             patient.Should().NotBeNull();
 
@@ -393,8 +389,7 @@ public sealed class CrossNarrativeValidationTests : JourneyTestBase<ClinicalData
         {
             Name = UniqueName("打印测试"), Gender = Gender.Male,
             BirthDate = new DateTime(1988, 6, 15), PhoneNumber = UniquePhone(),
-            IdNumber = $"32010119880615{Random.Shared.Next(1000, 9999)}",
-            Address = "测试地址"
+            IdNumber = $"32010119880615{Random.Shared.Next(1000, 9999)}"
         });
         patient.Should().NotBeNull();
 
@@ -424,23 +419,5 @@ public sealed class CrossNarrativeValidationTests : JourneyTestBase<ClinicalData
             $"/api/v1/medicalcases/{medCase.Id}/close", new { });
         completeResp.IsSuccessStatusCode.Should().BeTrue(
             $"Close should succeed, actual: {completeResp.StatusCode}");
-
-        // AD-04 FIXED: print-completed should now work after close (uses FreshAsync)
-        var printResp = await doctor.PutAsJsonAsync(
-            $"/api/v1/medicalcases/{medCase.Id}/print-completed",
-            new PrintCompletedRequest
-            {
-                PrintType = PrintType.Prescription,
-                PrinterName = "TestPrinter"
-            });
-
-        printResp.StatusCode.Should().Be(HttpStatusCode.OK,
-            $"AD-04 FIXED: print-completed should return 200. Actual: {printResp.StatusCode}");
-
-        var printBody = await printResp.Content.ReadFromJsonAsync<ApiResponse<MedicalCaseDetailDto>>(JsonOptions);
-        printBody!.Data.Should().NotBeNull();
-        printBody.Data!.IsPrinted.Should().BeTrue("IsPrinted should be true after print-completed");
-        printBody.Data.PrintCount.Should().Be(1, "PrintCount should be 1 after first print");
-        printBody.Data.PrintVersion.Should().Be(2, "PrintVersion should be 2 after first print (default=1, incremented to 2)");
     }
 }

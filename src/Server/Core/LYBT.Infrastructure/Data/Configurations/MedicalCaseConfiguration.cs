@@ -53,17 +53,5 @@ public class MedicalCaseConfiguration : BaseEntityConfiguration<MedicalCase>
               .HasForeignKey(m => m.UserId)
               .IsRequired()
               .OnDelete(DeleteBehavior.Restrict);
-
-        // ========== 打印管理字段配置 ==========
-        builder.Property(m => m.PrintVersion).HasDefaultValue(1);
-        builder.Property(m => m.PrintCount).HasDefaultValue(0);
-        builder.Property(m => m.IsPrinted).HasDefaultValue(false);
-
-        // PrintLogs 一对多关系 (Cascade 删除)
-        builder.HasMany(m => m.PrintLogs)
-              .WithOne(l => l.MedicalCase)
-              .HasForeignKey(l => l.MedicalCaseId)
-              .IsRequired()
-              .OnDelete(DeleteBehavior.Cascade);
     }
 }

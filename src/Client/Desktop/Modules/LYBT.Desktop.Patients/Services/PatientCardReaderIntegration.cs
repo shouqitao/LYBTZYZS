@@ -57,9 +57,7 @@ public class PatientCardReaderIntegration : IPatientCardReaderIntegration
                 PatientId = patient.Id,
                 Name = patient.Name,
                 IdNumber = patient.IdNumber ?? string.Empty,
-                IsNewlyCreated = false,
-                LastVisitTime = patient.LastVisitTime,
-                VisitCount = patient.VisitCount
+                IsNewlyCreated = false
             };
         }
         catch (Exception ex)
@@ -194,9 +192,7 @@ public class PatientCardReaderIntegration : IPatientCardReaderIntegration
                             PatientId = detail.Id,
                             Name = detail.Name,
                             IdNumber = detail.IdNumber ?? string.Empty,
-                            IsNewlyCreated = false,
-                            LastVisitTime = detail.LastVisitTime,
-                            VisitCount = detail.VisitCount
+                            IsNewlyCreated = false
                         });
                     }
                 }
@@ -260,22 +256,18 @@ public class PatientCardReaderIntegration : IPatientCardReaderIntegration
     /// <summary>
     /// 将读卡结果映射为患者输入DTO
     /// </summary>
-    private static PatientInputDto MapCardResultToPatientInput(CardReadResult cardResult)
-    {
-        return new PatientInputDto
+        private static PatientInputDto MapCardResultToPatientInput(CardReadResult cardResult)
         {
-            Name = cardResult.Name,
-            IdNumber = cardResult.IdNumber,
-            Gender = cardResult.Gender,
-            BirthDate = cardResult.BirthDate,
-            Address = cardResult.Address,
-            // 身份证不包含电话号码，需要后续补充
-            PhoneNumber = null,
-            // 其他可选字段
-            AllergyHistory = null,
-            MedicalHistory = null
-        };
-    }
+            return new PatientInputDto
+            {
+                Name = cardResult.Name,
+                IdNumber = cardResult.IdNumber,
+                Gender = cardResult.Gender,
+                BirthDate = cardResult.BirthDate,
+                // 身份证不包含电话号码，需要后续补充
+                PhoneNumber = null
+            };
+        }
 
     /// <summary>
     /// 根据患者ID获取患者详情

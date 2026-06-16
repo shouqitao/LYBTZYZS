@@ -6,7 +6,6 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Constants;
-using LYBT.Desktop.Contracts.Events;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.Interfaces;
@@ -139,24 +138,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     [ObservableProperty]
     private bool _isDrawerOpen;
 
-    /// <summary>
-    /// 是否正在同步数据
-    /// </summary>
-    [ObservableProperty]
-    private bool _isSyncing;
-
-    /// <summary>
-    /// 同步状态消息
-    /// </summary>
-    [ObservableProperty]
-    private string? _syncStatusMessage;
-
-    /// <summary>
-    /// 上次同步完成时间
-    /// </summary>
-    [ObservableProperty]
-    private DateTime? _lastSyncTime;
-
     #endregion
 
     #region 计算属性
@@ -178,9 +159,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     /// <summary>S6-01: 用户管理菜单可见性 - 委托给 MenuManager</summary>
     public bool IsUserManagementVisible => _menuManager.IsUserManagementVisible;
-
-    /// <summary>S6-02: 同步菜单可见性 - 委托给 MenuManager</summary>
-    public bool IsSyncVisible => _menuManager.IsSyncVisible;
 
     /// <summary>S6-01: 系统设置可见性 - 委托给 MenuManager</summary>
     public bool IsSystemSettingsVisible => _menuManager.IsSystemSettingsVisible;
@@ -538,7 +516,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         Events.Subscribe<AuthEvents.PasswordChangedEvent, PasswordChangedPayload>(OnPasswordChanged);
         Events.Subscribe<TokenLifecycleStateChangedEvent, TokenLifecycleStateChangedEventArgs>(
             args => OnTokenLifecycleStateChangedAsync(args).SafeFireAndForget(ex => Logger.LogError(ex, "Token生命周期事件处理异常")));
-        Events.Subscribe<SyncEvents.StatusChangedEvent, SyncStatusPayload>(OnSyncStatusChanged);
         _navigationCoordinator.SubscribeToRegionCollection();
 
         // 导航架构改进方案 v1.0 — 订阅导航变更事件，更新面包屑和按钮状态
@@ -582,19 +559,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
             ConnectionUrl = newUrl;
             IsLocal = _connectionSettings.IsLocal;
             Logger.LogInformation("[UI] 连接地址变更: {Url}", newUrl);
-        });
-    }
-
-    /// <summary>
-    /// 同步状态变更事件处理
-    /// </summary>
-    private void OnSyncStatusChanged(SyncStatusPayload payload)
-    {
-        Services.UiThreadDispatcher.InvokeAsync(() =>
-        {
-            IsSyncing = payload.IsSyncing;
-            LastSyncTime = payload.LastSyncTime;
-            SyncStatusMessage = payload.StatusMessage;
         });
     }
 
@@ -699,7 +663,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
             // S6-01/S6-02: 刷新菜单可见性
             _menuManager.RefreshMenuVisibility();
             OnPropertyChanged(nameof(IsUserManagementVisible));
-            OnPropertyChanged(nameof(IsSyncVisible));
             OnPropertyChanged(nameof(IsSystemSettingsVisible));
             OnPropertyChanged(nameof(IsPasswordChangeVisible));
 

@@ -20,7 +20,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize(Policy = PolicyConstants.PatientAccess)]
+    [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class PatientsController : BaseApiController
     {
         private readonly IPatientService _service;
@@ -190,31 +190,6 @@ namespace LYBT.WebAPI.Controllers
             return Success(result.Data, $"患者已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
         }
 
-        /// <summary>
-        /// 恢复已删除的患者
-        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
-        /// </summary>
-        [HttpPost("{id:guid}/restore")]
-        [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
-        [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> Restore(Guid id)
-        {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            if (ValidateGuid(id, "患者ID") is { } error) return error;
-
-            // 注: Restore不能使用GetEntityWithOwnershipCheckAsync，因为GetByIdAsync
-            // 受全局软删除过滤器影响无法找到已删除记录。
-            // RestoreAsync内部使用GetByIdIncludingDeletedAsync绕过过滤器。
-            var result = await _service.RestoreAsync(id);
-            if (!result.IsSuccess || result.Data == null)
-            {
-                return HandleResult<PatientDetailDto>(result);
-            }
-
-            LogOperation("恢复患者", null, id);
-            return Success(result.Data, "患者已恢复");
-        }
-
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
         /// <summary>
@@ -241,81 +216,6 @@ namespace LYBT.WebAPI.Controllers
             return Success(result.Data, result.Data.Message);
         }
 
-        /// <summary>
-        /// 检查患者引用关系
-        /// X7: 删除前检查是否有关联医案
-        /// </summary>
-        [HttpGet("{id:guid}/check-reference")]
-        [ProducesResponseType(typeof(ApiResponse<PatientReferenceCheckDto>), 200)]
-        [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> CheckReference(Guid id)
-        {
-            if (ValidateGuid(id, "患者ID") is { } error) return error;
 
-            var result = await _service.CheckReferenceAsync(id);
-            if (!result.IsSuccess || result.Data == null)
-            {
-                return HandleResult<PatientReferenceCheckDto>(result);
-            }
-            return Success(result.Data, "引用检查完成");
-        }
-
-        /// <summary>
-        /// 批量检查患者引用关系
-        /// X7: 批量删除前预检查
-        /// </summary>
-        [HttpPost("batch-check-reference")]
-        [ProducesResponseType(typeof(ApiResponse<List<PatientReferenceCheckDto>>), 200)]
-        [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchCheckReference([FromBody] PatientBatchCheckReferenceInputDto request)
-        {
-            if (request.PatientIds == null || request.PatientIds.Count == 0)
-            {
-                return ValidationFail("患者ID列表不能为空");
-            }
-
-            if (request.PatientIds.Count > 100)
-            {
-                return ValidationFail("批量检查最多支持100条记录");
-            }
-
-            var result = await _service.BatchCheckReferenceAsync(request.PatientIds);
-            if (!result.IsSuccess || result.Data == null)
-            {
-                return HandleResult<List<PatientReferenceCheckDto>>(result);
-            }
-            return Success(result.Data, "批量引用检查完成");
-        }
-
-        // ========== Epic #1934 - 导出功能 ==========
-
-        /// <summary>
-        /// 导出患者导入模板
-        /// US-PAT-010: 导出功能
-        /// </summary>
-        [HttpGet("import-template")]
-        [ProducesResponseType(typeof(FileContentResult), 200)]
-        public async Task<IActionResult> ExportTemplate([FromQuery] int sampleRowCount = 5)
-        {
-            var config = new ExportTemplateDto
-            {
-                IncludeSampleData = sampleRowCount > 0,
-                SampleRowCount = sampleRowCount
-            };
-            var stream = await _service.ExportTemplateAsync(config);
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "患者导入模板.xlsx");
-        }
-
-        /// <summary>
-        /// 导出患者数据
-        /// US-PAT-010: 导出功能
-        /// </summary>
-        [HttpGet("export")]
-        [ProducesResponseType(typeof(FileContentResult), 200)]
-        public async Task<IActionResult> ExportPatients([FromQuery] string? keyword = null)
-        {
-            var stream = await _service.ExportPatientsAsync(keyword);
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "患者数据.xlsx");
-        }
     }
 }

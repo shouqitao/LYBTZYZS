@@ -12,13 +12,6 @@
              xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              x:Name="Root">
 
-    <!--
-        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
-        - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
-        - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
-        - 此控件无本地资源，所有样式来自全局
-    -->
-
     <ScrollViewer VerticalScrollBarVisibility="Auto">
     <StackPanel DataContext="{Binding ElementName=Root}">
         <!-- 基本信息卡片 -->
@@ -36,12 +29,9 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <!-- 第一行：姓名（必填）、拼音码 -->
-                    <!-- OpenSpec: ui-validation-framework - 表单验证 -->
                     <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Style="{DynamicResource FormLabelStyle}">
                             <Run Text="姓名（必填）"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
@@ -109,7 +99,7 @@
                                    Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
-                    <!-- 第四行：手机号码、地址 -->
+                    <!-- 第四行：手机号码 -->
                     <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="手机号码" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="6" Text="{Binding Patient.PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
@@ -120,21 +110,11 @@
                                    Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="3" Grid.Column="2" Margin="0,0,0,20">
-                        <TextBlock Text="地址" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox TabIndex="7" Text="{Binding Patient.Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{DynamicResource ValidatingTextBoxStyle}"
-                                 MinHeight="44"
-                                 Padding="12,10"/>
-                        <TextBlock Text="{Binding ErrorsSource[Address]}"
-                                   Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
-                    </StackPanel>
-
                     <!-- 第五行：状态 -->
                     <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,0,20"
                                 Visibility="{Binding ShowStatus, Converter={x:Static converters:Cvt.BoolToVis}}">
                         <TextBlock Text="状态" Style="{DynamicResource FormLabelStyle}"/>
-                        <ComboBox TabIndex="8" SelectedItem="{Binding Patient.Status, Mode=TwoWay}"
+                        <ComboBox TabIndex="7" SelectedItem="{Binding Patient.Status, Mode=TwoWay}"
                                   ItemsSource="{Binding StatusOptions}"
                                   MinHeight="44"
                                   Padding="12,10">
@@ -145,78 +125,7 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
                     </StackPanel>
-
-                    <!-- 第六行：婚姻状况、血型 -->
-                    <StackPanel Grid.Row="5" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Text="婚姻状况" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox TabIndex="9" Text="{Binding Patient.MaritalStatus, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
-                                 MinHeight="44"
-                                 Padding="12,10"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Row="5" Grid.Column="2" Margin="0,0,0,20">
-                        <TextBlock Text="血型" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox TabIndex="10" Text="{Binding Patient.BloodType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
-                                 MinHeight="44"
-                                 Padding="12,10"/>
-                    </StackPanel>
-
-                    <!-- 第七行：紧急联系人姓名、电话 -->
-                    <StackPanel Grid.Row="6" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Text="紧急联系人" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox TabIndex="11" Text="{Binding Patient.EmergencyContactName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
-                                 MinHeight="44"
-                                 Padding="12,10"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Row="6" Grid.Column="2" Margin="0,0,0,20">
-                        <TextBlock Text="联系人电话" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox TabIndex="12" Text="{Binding Patient.EmergencyContactPhone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
-                                 MinHeight="44"
-                                 Padding="12,10"/>
-                    </StackPanel>
                 </Grid>
-            </controls:InfoCard.Content>
-        </controls:InfoCard>
-
-        <!-- 紧急联系人关系 -->
-        <controls:InfoCard Title="联系人关系">
-            <controls:InfoCard.Content>
-                <TextBox TabIndex="13" Text="{Binding Patient.EmergencyContactRelation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         Style="{DynamicResource EditableTextBoxStyle}"
-                         MinHeight="44"
-                         Padding="12,10"/>
-            </controls:InfoCard.Content>
-        </controls:InfoCard>
-
-        <!-- 健康信息卡片 -->
-        <controls:InfoCard Title="健康信息">
-            <controls:InfoCard.Content>
-                <StackPanel>
-                    <StackPanel Margin="0,0,0,20">
-                        <TextBlock Text="过敏史" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding Patient.AllergyHistory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
-                                 TextWrapping="Wrap"
-                                 AcceptsReturn="True"
-                                 MinHeight="60"
-                                 Padding="12,10"/>
-                    </StackPanel>
-
-                    <StackPanel>
-                        <TextBlock Text="既往病史" Style="{DynamicResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding Patient.MedicalHistory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
-                                 TextWrapping="Wrap"
-                                 AcceptsReturn="True"
-                                 MinHeight="60"
-                                 Padding="12,10"/>
-                    </StackPanel>
-                </StackPanel>
             </controls:InfoCard.Content>
         </controls:InfoCard>
     </StackPanel>

@@ -114,17 +114,4 @@ public class HttpPatientRepositoryTests
         result.Should().NotBeNull();
         result!.SuccessCount.Should().Be(1);
     }
-
-    [Fact]
-    public async Task RestoreAsync_Returns_Data_On_Success()
-    {
-        var id = Guid.NewGuid();
-        var detail = new PatientDetailDto { Id = id };
-        _mockPatients.RestoreAsync(id)
-            .Returns(new ApiResponse<PatientDetailDto> { Success = true, Data = detail });
-
-        var result = await _repo.RestoreAsync(id);
-
-        result.Should().NotBeNull();
-    }
 }

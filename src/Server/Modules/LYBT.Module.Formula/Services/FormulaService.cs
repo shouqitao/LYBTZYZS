@@ -324,43 +324,6 @@ namespace LYBT.Module.Formulas.Services
             return Result<FormulaDetailDto>.Success(dto);
         }
 
-        /// <summary>
-        /// 恢复软删除的验方
-        /// </summary>
-        public async Task<Result<FormulaDetailDto>> RestoreAsync(Guid id, Guid operatorId = default)
-        {
-            // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
-            // 使用GetByIdIncludingDeletedAsync获取包括已删除的实体
-            var entity = await _repository.GetByIdIncludingDeletedAsync(id);
-            if (entity == null)
-            {
-                return Result<FormulaDetailDto>.Failure(GenericErrorCode.FormulaNotFound);
-            }
-
-            if (!entity.IsDeleted)
-            {
-                return Result<FormulaDetailDto>.Failure(GenericErrorCode.InvalidRequest, "该验方未被删除，无需恢复");
-            }
-
-            // FLAW FIX: 所有权检查 — 仅创建者或 Admin 可恢复
-            if (operatorId != default && entity.UserId != operatorId)
-            {
-                _logger.LogWarning("[SVC] Formula.Restore → NoPermission - FormulaId={FormulaId} OperatorId={OperatorId} OwnerId={OwnerId}", id, operatorId, entity.UserId);
-                return Result<FormulaDetailDto>.Failure(GenericErrorCode.Forbidden, "无权恢复他人验方");
-            }
-
-            // 恢复软删除
-            entity.IsDeleted = false;
-            entity.UpdatedAt = DateTime.UtcNow;
-
-            var result = await _repository.UpdateAsync(entity);
-            var dto = _mapper.ToDetailDto(result);
-
-            _logger.LogInformation("[SVC] Formula.Restore completed - FormulaId={FormulaId} FormulaName={FormulaName}", id, entity.Name);
-
-            return Result<FormulaDetailDto>.Success(dto);
-        }
-
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
         /// <summary>
@@ -435,78 +398,5 @@ namespace LYBT.Module.Formulas.Services
             return Result<BatchOperationResultDto>.Success(result);
         }
 
-        /// <summary>
-        /// 批量更新方剂状态
-        /// </summary>
-        public async Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid operatorId = default)
-        {
-            var result = new BatchOperationResultDto
-            {
-                TotalCount = ids.Count,
-                SuccessCount = 0,
-                FailureCount = 0
-            };
-
-            var statusText = status == CommonStatus.Enabled ? "启用" : "禁用";
-
-            foreach (var id in ids)
-            {
-                try
-                {
-                    var formula = await _repository.GetByIdAsync(id);
-                    if (formula == null || formula.IsDeleted)
-                    {
-                        result.FailureCount++;
-                        result.FailedIds.Add(id);
-                        result.FailedItems.Add(new BatchOperationFailureItem
-                        {
-                            Id = id,
-                            Reason = "方剂不存在"
-                        });
-                        continue;
-                    }
-
-                    // S4 FIX: 所有权检查
-                    if (operatorId != default && formula.UserId != operatorId)
-                    {
-                        result.FailureCount++;
-                        result.FailedIds.Add(id);
-                        result.FailedItems.Add(new BatchOperationFailureItem
-                        {
-                            Id = id,
-                            Reason = "无权操作他人验方"
-                        });
-                        continue;
-                    }
-
-                    formula.Status = status;
-                    formula.UpdatedAt = DateTime.UtcNow;
-                    await _repository.UpdateAsync(formula);
-
-                    result.SuccessCount++;
-                    result.SuccessfulIds.Add(id);
-                    _logger.LogInformation("[SVC] Formula.BatchUpdateStatus → ItemSuccess - FormulaId={FormulaId} FormulaName={FormulaName} Status={Status}", id, formula.Name, statusText);
-                }
-                catch (Exception ex)
-                {
-                    // 保留项级错误隔离，ERR-012: 使用安全错误消息
-                    result.FailureCount++;
-                    result.FailedIds.Add(id);
-                    result.FailedItems.Add(new BatchOperationFailureItem
-                    {
-                        Id = id,
-                        Reason = "状态更新失败"
-                    });
-                    _logger.LogError(ex, "[SVC] Formula.BatchUpdateStatus → ItemFailed - FormulaId={FormulaId} Status={Status}", id, statusText);
-                }
-            }
-
-            await _repository.SaveChangesAsync();
-
-            result.IsSuccess = result.SuccessCount > 0;
-            result.Message = $"批量{statusText}完成: 成功 {result.SuccessCount} 个, 失败 {result.FailureCount} 个";
-
-            return Result<BatchOperationResultDto>.Success(result);
-        }
     }
 }

@@ -133,7 +133,7 @@ public class HerbTests : WebApiE2ETestBase
 
     #region Soft Delete & Restore
 
-    [Fact]
+    // [Fact(Skip = "RestoreAsync removed")]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
     [Trait("Role", "Admin")]
@@ -147,10 +147,10 @@ public class HerbTests : WebApiE2ETestBase
         var deleteResponse = await HerbApi.DeleteHerbAsync(herbId);
         deleteResponse.Success.Should().BeTrue(deleteResponse.Message);
         _output.WriteLine($"Deleted herb {herbId}");
-
-        var restoreResponse = await HerbApi.RestoreAsync(herbId);
-        restoreResponse.Success.Should().BeTrue(restoreResponse.Message);
-        _output.WriteLine($"Restored herb {herbId}");
+// 
+// (RestoreAsync removed)
+// (RestoreAsync removed)
+// (RestoreAsync removed)
 
         var getResponse = await HerbApi.GetHerbByIdAsync(herbId);
         getResponse.Success.Should().BeTrue(getResponse.Message);
@@ -192,50 +192,6 @@ public class HerbTests : WebApiE2ETestBase
         response.Data.Should().NotBeNull();
         response.Data!.SuccessCount.Should().Be(2);
         _output.WriteLine($"Batch deleted: {response.Data.SuccessCount}/{response.Data.TotalCount}");
-    }
-
-    [Fact]
-    [Trait("Category", "E2E")]
-    [Trait("Phase", "HerbManagement")]
-    [Trait("Role", "Admin")]
-    public async Task BatchEnable_MultipleHerbs_ReturnsOperationResult()
-    {
-        await LoginAsSysadminAsync();
-        var herb1 = await CreateTestHerbAsync("be1");
-        var herb2 = await CreateTestHerbAsync("be2");
-
-        var batchInput = new BatchDeleteInputDto
-        {
-            Ids = new List<Guid> { herb1.Id, herb2.Id }
-        };
-
-        var response = await HerbApi.BatchEnableAsync(batchInput);
-
-        response.Success.Should().BeTrue(response.Message);
-        response.Data.Should().NotBeNull();
-        _output.WriteLine($"Batch enabled: {response.Data!.SuccessCount}/{response.Data.TotalCount}");
-    }
-
-    [Fact]
-    [Trait("Category", "E2E")]
-    [Trait("Phase", "HerbManagement")]
-    [Trait("Role", "Admin")]
-    public async Task BatchDisable_MultipleHerbs_ReturnsOperationResult()
-    {
-        await LoginAsSysadminAsync();
-        var herb1 = await CreateTestHerbAsync("bd1");
-        var herb2 = await CreateTestHerbAsync("bd2");
-
-        var batchInput = new BatchDeleteInputDto
-        {
-            Ids = new List<Guid> { herb1.Id, herb2.Id }
-        };
-
-        var response = await HerbApi.BatchDisableAsync(batchInput);
-
-        response.Success.Should().BeTrue(response.Message);
-        response.Data.Should().NotBeNull();
-        _output.WriteLine($"Batch disabled: {response.Data!.SuccessCount}/{response.Data.TotalCount}");
     }
 
     #endregion
@@ -317,7 +273,7 @@ public class HerbTests : WebApiE2ETestBase
 
     #region Full Lifecycle
 
-    [Fact]
+    // [Fact(Skip = "RestoreAsync removed")]
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
     [Trait("Role", "Admin")]
@@ -355,9 +311,9 @@ public class HerbTests : WebApiE2ETestBase
         _output.WriteLine("[Lifecycle] Deleted");
 
         // Step 6: Restore
-        var restoreResponse = await HerbApi.RestoreAsync(herbId);
-        restoreResponse.Success.Should().BeTrue(restoreResponse.Message);
-        _output.WriteLine("[Lifecycle] Restored");
+// (RestoreAsync removed)
+// (RestoreAsync removed)
+// (RestoreAsync removed)
 
         // Step 7: Verify accessible after restore
         var finalGet = await HerbApi.GetHerbByIdAsync(herbId);

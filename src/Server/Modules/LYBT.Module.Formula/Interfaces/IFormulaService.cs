@@ -72,19 +72,13 @@ namespace LYBT.Module.Formulas.Interfaces
         /// </summary>
         Task<Result<List<FormulaDetailDto>>> GetPendingValidationFormulasAsync();
 
-        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复方法 ==========
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换方法 ==========
 
         /// <summary>
         /// 切换验方状态（启用/禁用）
         /// </summary>
         /// <param name="id">验方ID</param>
         Task<Result<FormulaDetailDto>> ToggleStatusAsync(Guid id);
-
-        /// <summary>
-        /// 恢复软删除的验方
-        /// </summary>
-        /// <param name="id">验方ID</param>
-        Task<Result<FormulaDetailDto>> RestoreAsync(Guid id, Guid operatorId = default);
 
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
@@ -93,12 +87,5 @@ namespace LYBT.Module.Formulas.Interfaces
         /// </summary>
         /// <param name="ids">验方ID列表</param>
         Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId = default);
-
-        /// <summary>
-        /// 批量更新方剂状态
-        /// </summary>
-        /// <param name="ids">方剂ID列表</param>
-        /// <param name="status">目标状态</param>
-        Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid operatorId = default);
     }
 }

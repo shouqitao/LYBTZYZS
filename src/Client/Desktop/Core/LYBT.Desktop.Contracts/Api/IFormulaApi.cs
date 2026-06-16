@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.Desktop.Contracts.Api
@@ -59,12 +59,6 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Post("/api/v1/formulas/{id}/toggle-status")]
         Task<ApiResponse<FormulaDetailDto>> ToggleStatusAsync(Guid id);
 
-        /// <summary>
-        /// 恢复已删除的验方
-        /// </summary>
-        [Refit.Post("/api/v1/formulas/{id}/restore")]
-        Task<ApiResponse<FormulaDetailDto>> RestoreAsync(Guid id);
-
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
         /// <summary>
@@ -72,18 +66,6 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/formulas/batch-delete")]
         Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
-
-        /// <summary>
-        /// 批量启用验方
-        /// </summary>
-        [Refit.Post("/api/v1/formulas/batch-enable")]
-        Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync([Refit.Body] BatchDeleteInputDto request);
-
-        /// <summary>
-        /// 批量禁用验方
-        /// </summary>
-        [Refit.Post("/api/v1/formulas/batch-disable")]
-        Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync([Refit.Body] BatchDeleteInputDto request);
 
         // ========== OpenSpec: standardize-desktop-api-layer - 导入导出功能 ==========
 

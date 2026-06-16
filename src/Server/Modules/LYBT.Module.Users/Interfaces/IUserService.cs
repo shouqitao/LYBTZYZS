@@ -101,13 +101,6 @@ namespace LYBT.Module.Users.Interfaces
         /// <param name="currentRole">当前操作用户角色</param>
         Task<Result<UserDetailDto>> ToggleStatusAsync(Guid id, UserRole currentRole, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// 恢复软删除的用户
-        /// </summary>
-        /// <param name="id">用户ID</param>
-        /// <param name="currentRole">当前操作用户角色</param>
-        Task<Result<UserDetailDto>> RestoreAsync(Guid id, UserRole currentRole, CancellationToken cancellationToken = default);
-
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
         /// <summary>
@@ -117,14 +110,5 @@ namespace LYBT.Module.Users.Interfaces
         /// <param name="currentUserId">当前操作用户ID（不能删除自己）</param>
         /// <param name="currentRole">当前操作用户角色</param>
         Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid? currentUserId, UserRole currentRole, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// 批量更新用户状态
-        /// </summary>
-        /// <param name="ids">用户ID列表</param>
-        /// <param name="status">目标状态</param>
-        /// <param name="currentUserId">当前操作用户ID（不能修改自己的状态）</param>
-        /// <param name="currentRole">当前操作用户角色</param>
-        Task<Result<BatchOperationResultDto>> BatchUpdateStatusAsync(List<Guid> ids, CommonStatus status, Guid? currentUserId, UserRole currentRole, CancellationToken cancellationToken = default);
     }
 }

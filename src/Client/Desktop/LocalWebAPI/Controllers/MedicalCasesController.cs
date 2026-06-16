@@ -16,17 +16,14 @@ namespace LYBT.LocalWebAPI.Controllers;
 public class MedicalCasesController : BaseApiController
 {
     private readonly IMedicalCaseFacade _facade;
-    private readonly IMedicalCasePermissionService _permissionService;
     private readonly IMedicalCaseQueryService _queryService;
 
     public MedicalCasesController(
         IMedicalCaseFacade facade,
-        IMedicalCasePermissionService permissionService,
         IMedicalCaseQueryService queryService,
         ILogger<MedicalCasesController> logger) : base(logger)
     {
         _facade = facade;
-        _permissionService = permissionService;
         _queryService = queryService;
     }
 
@@ -98,22 +95,6 @@ public class MedicalCasesController : BaseApiController
         return SuccessPaged(result);
     }
 
-    [HttpPost("batch-details")]
-    public async Task<IActionResult> GetBatchDetails([FromBody] List<Guid> ids)
-    {
-        var result = await _facade.GetBatchAsync(ids);
-        return Success(result);
-    }
-
-    [HttpGet("{id}/permissions")]
-    public async Task<IActionResult> GetPermissions(Guid id)
-    {
-        var mc = await _facade.GetByIdAsync(id);
-        if (mc == null) return NotFound();
-        var permissions = _permissionService.GetPermissions(GetCurrentUserId(), GetCurrentUserRole(), mc);
-        return Success(permissions);
-    }
-
     [HttpGet("by-status/{status}")]
     public async Task<IActionResult> GetByStatus(MedicalCaseStatus status)
     {
@@ -147,13 +128,6 @@ public class MedicalCasesController : BaseApiController
     {
         var result = await _facade.GetPrescriptionListAsync(id);
         return Success(result);
-    }
-
-    [HttpGet("{id}/audit-logs")]
-    public async Task<IActionResult> GetAuditLogs(Guid id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
-    {
-        var (logs, totalCount) = await _facade.GetAuditLogsPagedAsync(id, page, pageSize);
-        return Success(new { logs, totalCount, page, pageSize });
     }
 
     // ===================== Command Endpoints =====================
@@ -237,37 +211,9 @@ public class MedicalCasesController : BaseApiController
         if (result == null) return BusinessFail("状态更新失败");
         return Success(result);
     }
-
-    // ===================== Print Endpoints =====================
-
-    [HttpPut("{id}/print-completed")]
-    public async Task<IActionResult> RecordPrintCompleted(Guid id, [FromBody] PrintCompletedRequest request)
-    {
-        var printType = Enum.TryParse<PrintType>(request.PrintType, true, out var pt) ? pt : PrintType.Prescription;
-        var result = await _facade.RecordPrintCompletedAsync(id, printType, request.PrintedBy, request.PrintedByName ?? "", request.PrinterName ?? "");
-        if (result == null) return BusinessFail("打印记录失败");
-        return Success(result);
-    }
-
-    [HttpPost("{id}/print-logs")]
-    public async Task<IActionResult> AddPrintLog(Guid id, [FromBody] PrintCompletedRequest request)
-    {
-        var printType = Enum.TryParse<PrintType>(request.PrintType, true, out var pt) ? pt : PrintType.Prescription;
-        var result = await _facade.AddPrintLogAsync(id, printType, true, request.PrintedBy, request.PrintedByName ?? "", request.PrinterName ?? "");
-        if (result) return Success("打印日志已记录");
-        return BusinessFail("打印日志记录失败");
-    }
 }
 
 public class SetPrescriptionFlagRequest
 {
     public bool NeedsPrescription { get; set; }
-}
-
-public class PrintCompletedRequest
-{
-    public string PrintType { get; set; } = "Prescription";
-    public Guid PrintedBy { get; set; }
-    public string? PrintedByName { get; set; }
-    public string? PrinterName { get; set; }
 }

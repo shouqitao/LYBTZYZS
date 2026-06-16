@@ -73,10 +73,6 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("案例状态")]
         public MedicalCaseStatus CaseStatus { get; set; } = MedicalCaseStatus.Active;
 
-        [DisplayName("备注")]
-        [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
-        public string? Remark { get; set; }
-
         /// <summary>中医诊断信息</summary>
         [DisplayName("诊断")]
         [StringLength(500, ErrorMessage = "诊断信息长度不能超过500个字符")]
@@ -94,24 +90,6 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         public bool IsLocked => CaseStatus == MedicalCaseStatus.Completed &&
                                 CompletedAt.HasValue &&
                                 CompletedAt.Value.Date < DateTime.Today;
-
-        // ========== 打印管理字段 ==========
-
-        /// <summary>当前打印版本号</summary>
-        [DisplayName("打印版本号")]
-        public int PrintVersion { get; set; } = 1;
-
-        /// <summary>最后打印时间</summary>
-        [DisplayName("最后打印时间")]
-        public DateTime? LastPrintedAt { get; set; }
-
-        /// <summary>打印次数</summary>
-        [DisplayName("打印次数")]
-        public int PrintCount { get; set; } = 0;
-
-        /// <summary>是否已打印</summary>
-        [DisplayName("是否已打印")]
-        public bool IsPrinted { get; set; } = false;
 
         // ========== 扩展字段 ==========
 

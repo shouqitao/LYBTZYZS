@@ -6,7 +6,7 @@ namespace LYBT.Shared.Validators.Patients
 {
     /// <summary>
     /// 患者输入DTO验证器
-    /// BR-001: 实现8个验证点，支持批量导入（Epic #1934）
+    /// BR-001: 实现验证点，支持批量导入（Epic #1934）
     /// </summary>
     public class PatientInputDtoValidator : AbstractValidator<PatientInputDto>
     {
@@ -39,40 +39,6 @@ namespace LYBT.Shared.Validators.Patients
                 .NotEmpty().WithMessage("手机号不能为空")
                 .Matches(ValidationConstants.PhoneRegex).WithMessage("手机号格式不正确")
                 .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
-
-            // 7. Address：必填，长度限制
-            RuleFor(x => x.Address)
-                .NotEmpty().WithMessage("地址不能为空")
-                .MaximumLength(ValidationConstants.AddressMaxLength)
-                .WithMessage($"地址长度不能超过{ValidationConstants.AddressMaxLength}个字符");
-
-            // 8. AllergyHistory：长度限制
-            RuleFor(x => x.AllergyHistory)
-                .MaximumLength(ValidationConstants.RemarkMaxLength)
-                .WithMessage($"过敏史长度不能超过{ValidationConstants.RemarkMaxLength}个字符")
-                .When(x => !string.IsNullOrEmpty(x.AllergyHistory));
-
-            // Epic #1934新增：MedicalHistory（既往病史）验证
-            RuleFor(x => x.MedicalHistory)
-                .MaximumLength(ValidationConstants.LongRemarkMaxLength)
-                .WithMessage($"既往病史长度不能超过{ValidationConstants.LongRemarkMaxLength}个字符")
-                .When(x => !string.IsNullOrEmpty(x.MedicalHistory));
-
-            // 紧急联系人信息验证
-            RuleFor(x => x.EmergencyContactName)
-                .MaximumLength(ValidationConstants.NameMaxLength)
-                .WithMessage($"紧急联系人姓名长度不能超过{ValidationConstants.NameMaxLength}个字符")
-                .When(x => !string.IsNullOrEmpty(x.EmergencyContactName));
-
-            RuleFor(x => x.EmergencyContactPhone)
-                .MaximumLength(ValidationConstants.PhoneMaxLength)
-                .WithMessage($"紧急联系人电话长度不能超过{ValidationConstants.PhoneMaxLength}个字符")
-                .When(x => !string.IsNullOrEmpty(x.EmergencyContactPhone));
-
-            RuleFor(x => x.EmergencyContactRelation)
-                .MaximumLength(ValidationConstants.NameMaxLength)
-                .WithMessage($"紧急联系人关系长度不能超过{ValidationConstants.NameMaxLength}个字符")
-                .When(x => !string.IsNullOrEmpty(x.EmergencyContactRelation));
         }
     }
 }

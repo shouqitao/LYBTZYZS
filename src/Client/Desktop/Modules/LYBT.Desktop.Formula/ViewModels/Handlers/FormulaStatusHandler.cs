@@ -29,8 +29,8 @@ public class FormulaStatusHandler : BaseStatusHandler<FormulaListDto>, IFormulaS
     protected override string GetEntityDisplayName(FormulaListDto e) => e.Name;
     protected override CommonStatus GetEntityStatus(FormulaListDto e) => e.Status;
 
-    protected override async Task<object?> ExecuteRestoreAsync(Guid id)
-        => await _formulaRepository.RestoreAsync(id);
+    protected override Task<object?> ExecuteRestoreAsync(Guid id)
+        => Task.FromResult<object?>(null);
 
     protected override async Task<CommonStatus?> ExecuteToggleStatusAsync(Guid id)
     {

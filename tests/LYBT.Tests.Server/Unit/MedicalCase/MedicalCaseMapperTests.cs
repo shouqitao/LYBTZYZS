@@ -122,11 +122,7 @@ public class MedicalCaseMapperTests
         dto.DoctorName.Should().Be(entity.DoctorName);
         dto.CompletedAt.Should().Be(entity.CompletedAt);
         dto.CaseStatus.Should().Be(entity.CaseStatus);
-        dto.Remark.Should().Be(entity.Remark);
         dto.CreatedAt.Should().Be(entity.CreatedAt);
-        dto.PrintVersion.Should().Be(entity.PrintVersion);
-        dto.PrintCount.Should().Be(entity.PrintCount);
-        dto.IsPrinted.Should().Be(entity.IsPrinted);
     }
 
     [Fact]
@@ -580,10 +576,6 @@ public class MedicalCaseMapperTests
             DoctorName = "李医生",
             CaseStatus = MedicalCaseStatus.Active,
             CompletedAt = null,
-            Remark = "测试备注",
-            PrintVersion = 1,
-            PrintCount = 0,
-            IsPrinted = false,
             CreatedAt = DateTime.UtcNow.AddDays(-1),
             UpdatedAt = DateTime.UtcNow
         };
@@ -603,10 +595,6 @@ public class MedicalCaseMapperTests
             CaseNumber = "MC-2025-001",
             CaseStatus = MedicalCaseStatus.Active,
             CompletedAt = null,
-            Remark = "完整测试",
-            PrintVersion = 1,
-            PrintCount = 0,
-            IsPrinted = false,
             CreatedAt = DateTime.UtcNow.AddDays(-1),
             UpdatedAt = DateTime.UtcNow,
             Consultation = new Consultation

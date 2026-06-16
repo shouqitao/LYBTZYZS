@@ -335,39 +335,10 @@ public class CrossModuleService :
     #region 认证服务 (ICrossModuleAuthService)
 
     /// <inheritdoc />
-    /// <remarks>X3: 按 UserId 批量撤销所有未撤销的 RefreshToken</remarks>
-    public async Task RevokeUserTokensAsync(Guid userId, string reason)
+    public Task RevokeUserTokensAsync(Guid userId, string reason)
     {
-        try
-        {
-            var activeTokens = await _context.RefreshTokens
-                .Where(t => t.UserId == userId && !t.IsRevoked)
-                .ToListAsync();
-
-            if (activeTokens.Count == 0)
-            {
-                _logger.LogDebug("[CMQS] RevokeUserTokens → NoActiveTokens - UserId={UserId}", userId);
-                return;
-            }
-
-            foreach (var token in activeTokens)
-            {
-                token.Revoke(reason, "System:CrossModuleRevocation");
-            }
-
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation(
-                "[CMQS] RevokeUserTokens completed - UserId={UserId} RevokedCount={Count} Reason={Reason}",
-                userId, activeTokens.Count, reason);
-        }
-        catch (Exception ex)
-        {
-            // X3 约束: 失败记 Warning 不阻塞主操作
-            _logger.LogWarning(ex,
-                "[CMQS] RevokeUserTokens failed - UserId={UserId} Reason={Reason}", userId, reason);
-        }
+        _logger.LogDebug("[CMQS] RevokeUserTokens → NoOp (RefreshToken system removed) - UserId={UserId}", userId);
+        return Task.CompletedTask;
     }
-
     #endregion
 }

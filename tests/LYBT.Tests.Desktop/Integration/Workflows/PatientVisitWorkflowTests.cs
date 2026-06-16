@@ -37,8 +37,7 @@ public class PatientVisitWorkflowTests : WebApiE2ETestBase
             Gender = Gender.Male,
             IdNumber = GenerateIdNumber(),
             PhoneNumber = GeneratePhoneNumber(),
-            PinYinCode = "WFHZ",
-            Address = "Workflow Test Address"
+            PinYinCode = "WFHZ"
         };
         var patientResponse = await PatientApi.CreatePatientAsync(patientInput);
         var patient = E2EAssertionHelpers.AssertSuccess(patientResponse);
@@ -198,7 +197,6 @@ public class PatientVisitWorkflowTests : WebApiE2ETestBase
             Gender = Gender.Female,
             IdNumber = GenerateIdNumber(),
             PhoneNumber = GeneratePhoneNumber(),
-            Address = "北京市测试区测试街道1号",
             PinYinCode = "WFP"
         };
         var response = await PatientApi.CreatePatientAsync(input);

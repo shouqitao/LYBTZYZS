@@ -204,28 +204,6 @@ public sealed class FormulaRepository : IFormulaRepository
         }
     }
 
-    public async Task<FormulaDetailDto?> RestoreAsync(Guid id)
-    {
-        try
-        {
-            _logger.LogInformation("[REPO] Formula.Restore - Id={Id}", id);
-
-            var response = await _apiClient.Formulas.RestoreAsync(id);
-            if (!response.Success || response.Data == null)
-            {
-                _logger.LogWarning("[REPO] Formula.Restore failed: {Message}", response.Message);
-                return null;
-            }
-
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Formula.Restore failed - Id={Id}", id);
-            return null;
-        }
-    }
-
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
     {
         try
@@ -256,50 +234,6 @@ public sealed class FormulaRepository : IFormulaRepository
                 IsSuccess = false,
                 Message = ex.Message
             };
-        }
-    }
-
-    public async Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids)
-    {
-        try
-        {
-            _logger.LogInformation("[REPO] Formula.BatchEnable - Count={Count}", ids.Count);
-
-            var response = await _apiClient.Formulas.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids });
-            if (!response.Success || response.Data == null)
-            {
-                _logger.LogWarning("[REPO] Formula.BatchEnable failed: {Message}", response.Message);
-                return null;
-            }
-
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Formula.BatchEnable failed");
-            return null;
-        }
-    }
-
-    public async Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids)
-    {
-        try
-        {
-            _logger.LogInformation("[REPO] Formula.BatchDisable - Count={Count}", ids.Count);
-
-            var response = await _apiClient.Formulas.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids });
-            if (!response.Success || response.Data == null)
-            {
-                _logger.LogWarning("[REPO] Formula.BatchDisable failed: {Message}", response.Message);
-                return null;
-            }
-
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Formula.BatchDisable failed");
-            return null;
         }
     }
 

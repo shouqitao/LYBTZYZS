@@ -48,14 +48,8 @@ public interface ILocalMedicalCaseApi
         [Refit.Query] bool includeAllDoctors = false,
         [Refit.Query] int? limit = null);
 
-    [Refit.Post("/api/medicalcases/batch-details")]
-    Task<List<MedicalCaseDetailDto>> GetBatchDetailsAsync([Refit.Body] BatchDetailQueryDto request);
-
     [Refit.Post("/api/medicalcases/batch-delete")]
     Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
-
-    [Refit.Get("/api/medicalcases/{id}/permissions")]
-    Task<MedicalCasePermissionDto> GetPermissionsAsync(Guid id);
 
     [Refit.Put("/api/medicalcases/{id}/close")]
     Task<MedicalCaseDetailDto> CloseCaseAsync(Guid id);
@@ -72,18 +66,6 @@ public interface ILocalMedicalCaseApi
     [Refit.Put("/api/medicalcases/{id}/prescription-flag")]
     Task<MedicalCaseDetailDto> SetPrescriptionFlagAsync(Guid id, [Refit.Body] SetPrescriptionFlagRequest request);
 
-    [Refit.Put("/api/medicalcases/{id}/print-completed")]
-    Task<MedicalCaseDetailDto> RecordPrintCompletedAsync(Guid id, [Refit.Body] PrintCompletedRequest request);
-
     [Refit.Get("/api/medicalcases/pending")]
     Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync([Refit.Query] Guid? patientId = null);
-
-    [Refit.Get("/api/medicalcases/{id}/audit-logs")]
-    Task<MedicalCaseAuditLogPagedResultDto> GetAuditLogsAsync(
-        Guid id,
-        [Refit.Query] int page = 1,
-        [Refit.Query] int pageSize = 20);
-
-    [Refit.Post("/api/medicalcases/{id}/print-logs")]
-    Task<object> AddPrintLogAsync(Guid id, [Refit.Body] PrintLogInputDto request);
 }

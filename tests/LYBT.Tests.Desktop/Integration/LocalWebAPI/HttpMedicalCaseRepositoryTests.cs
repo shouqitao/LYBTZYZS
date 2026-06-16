@@ -82,20 +82,6 @@ public class HttpMedicalCaseRepositoryTests
     }
 
     [Fact]
-    public async Task GetPermissionsAsync_Returns_Data_On_Success()
-    {
-        var id = Guid.NewGuid();
-        var permissions = new MedicalCasePermissionDto { CanEdit = true };
-        _mockMedicalCases.GetPermissionsAsync(id)
-            .Returns(new ApiResponse<MedicalCasePermissionDto> { Success = true, Data = permissions });
-
-        var result = await _repo.GetPermissionsAsync(id);
-
-        result.Should().NotBeNull();
-        result!.CanEdit.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task SetPrescriptionFlagAsync_Returns_Data_On_Success()
     {
         var id = Guid.NewGuid();
@@ -134,37 +120,6 @@ public class HttpMedicalCaseRepositoryTests
         var result = await _repo.SuspendAsync(id, null);
 
         result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task RecordPrintCompletedAsync_Returns_Data_On_Success()
-    {
-        var id = Guid.NewGuid();
-        var detail = new MedicalCaseDetailDto { Id = id };
-        var request = new PrintCompletedRequest();
-        _mockMedicalCases.RecordPrintCompletedAsync(id, request)
-            .Returns(new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = detail });
-
-        var result = await _repo.RecordPrintCompletedAsync(id, request);
-
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task GetBatchDetailsAsync_Returns_List_On_Success()
-    {
-        var ids = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
-        var details = new List<MedicalCaseDetailDto>
-        {
-            new() { Id = ids[0] },
-            new() { Id = ids[1] }
-        };
-        _mockMedicalCases.GetBatchDetailsAsync(Arg.Any<BatchDetailQueryDto>())
-            .Returns(new ApiResponse<List<MedicalCaseDetailDto>> { Success = true, Data = details });
-
-        var result = await _repo.GetBatchDetailsAsync(ids);
-
-        result.Should().HaveCount(2);
     }
 
     [Fact]

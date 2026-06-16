@@ -474,53 +474,6 @@ public sealed class US_MedicalCase_MustHaveTests : IntegrationTestBase<ClinicalD
 
     #endregion
 
-    #region US-MC-007: Print completion flag (BR-003)
-
-    [Fact]
-    public async Task US_MC_007_RecordPrintCompleted_UpdatesPrintFields()
-    {
-        // Arrange - create and complete a case
-        var doctorClient = await LoginAsDoctorAsync();
-        var patientId = await CreatePatientAsync(doctorClient);
-        var caseId = await CreateCompleteCaseAsync(doctorClient, patientId);
-
-        // Act - record print
-        var printPayload = new { PrintType = 0, PrinterName = "TestPrinter" }; // PrintType.Prescription = 0
-        var response = await doctorClient.PutAsJsonAsync(
-            $"/api/v1/medicalcases/{caseId}/print-completed", printPayload);
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK,
-            "US-MC-007: recording print completion should succeed");
-
-        // Verify
-        var getResp = await doctorClient.GetAsync($"/api/v1/medicalcases/{caseId}");
-        var data = await getResp.ShouldBeSuccessWithDataAsync<MedicalCaseDetailDto>();
-        data.IsPrinted.Should().BeTrue("US-MC-007: IsPrinted should be true after print");
-        data.PrintCount.Should().BeGreaterOrEqualTo(1);
-    }
-
-    [Fact]
-    public async Task US_MC_007_PrintActiveCase_ShouldFailOrSucceed()
-    {
-        // Arrange - create case WITHOUT completing (Active state)
-        var doctorClient = await LoginAsDoctorAsync();
-        var patientId = await CreatePatientAsync(doctorClient);
-        var (caseId, _) = await CreateCaseAsync(doctorClient, patientId);
-
-        // Act - try to record print on active (non-completed) case
-        var printPayload = new { PrintType = 0, PrinterName = "TestPrinter" };
-        var response = await doctorClient.PutAsJsonAsync(
-            $"/api/v1/medicalcases/{caseId}/print-completed", printPayload);
-
-        // Assert - BR-003: print may require case completion first
-        response.StatusCode.Should().BeOneOf(
-            new[] { HttpStatusCode.OK, HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity },
-            "US-MC-007/BR-003: print on active case behavior should be documented");
-    }
-
-    #endregion
-
     #region US-MC-009: Single active case per patient (BR-001)
 
     [Fact]

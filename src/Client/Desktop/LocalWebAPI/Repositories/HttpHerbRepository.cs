@@ -91,27 +91,9 @@ public class HttpHerbRepository : IHerbRepository
         return response.Data;
     }
 
-    public async Task<HerbDetailDto?> RestoreAsync(Guid id)
-    {
-        var response = await _apiClient.Herbs.RestoreAsync(id);
-        return response.Data;
-    }
-
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
     {
         var response = await _apiClient.Herbs.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
-        return response.Data;
-    }
-
-    public async Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids)
-    {
-        var response = await _apiClient.Herbs.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids });
-        return response.Data;
-    }
-
-    public async Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids)
-    {
-        var response = await _apiClient.Herbs.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids });
         return response.Data;
     }
 

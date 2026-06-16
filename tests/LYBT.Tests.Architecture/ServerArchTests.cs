@@ -21,8 +21,7 @@ public class ServerArchTests
         Assembly.Load("LYBT.Module.Patients"),
         Assembly.Load("LYBT.Module.MedicalCases"),
         Assembly.Load("LYBT.Module.Herbs"),
-        Assembly.Load("LYBT.Module.Formulas"),
-        Assembly.Load("LYBT.Module.Sync")
+        Assembly.Load("LYBT.Module.Formulas")
     ];
 
     /// <summary>
@@ -369,7 +368,7 @@ public class ServerArchTests
                 !t.FullName?.Contains(".Services.AuthService") == true && // Auth 认证服务被多模块共享使用
                 !t.FullName?.StartsWith("LYBT.Infrastructure.") == true && // 共享 Infrastructure 层 (非模块内部 namespace)
                 !t.FullName?.Contains(".Services.MedicalCase") == true && // MedicalCase 模块内部 Service 间协作
-                !t.FullName?.StartsWith("LYBT.Module.Sync.") == true) // Sync 模块需访问所有模块 Entity (数据同步)
+                !t.FullName?.StartsWith("LYBT.Module.Sync.") == true)
                 .ToList() ?? [];
 
             Assert.True(filteredFailingTypes.Count == 0,
@@ -538,9 +537,8 @@ public class ServerArchTests
                 .NotHaveDependencyOnAny(otherModuleServiceNamespaces)
                 .GetResult();
 
-            // 允许已知的跨模块协作 (Sync模块需要访问所有模块)
+            // 允许已知的跨模块协作
             var failingTypes = result.FailingTypes?
-                .Where(t => !t.FullName?.Contains("Module.Sync") == true)
                 .ToList() ?? [];
 
             Assert.True(failingTypes.Count == 0,
@@ -568,10 +566,9 @@ public class ServerArchTests
 
         foreach (var serviceType in serviceTypes)
         {
-            // 排除基类、Repository（允许注入DbContext）和已知的特殊服务
+            // 排除基类、Repository（允许注入DbContext）
             var isRepository = serviceType.Name.EndsWith("Repository");
             var isBaseClass = serviceType.Name.StartsWith("Base");
-            var isSyncService = serviceType.Name == "SyncService"; // SyncService 使用 ISyncRepository
 
             if (isRepository || isBaseClass)
                 continue;

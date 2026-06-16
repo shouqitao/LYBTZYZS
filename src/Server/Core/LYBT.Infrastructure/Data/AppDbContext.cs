@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using LYBT.Entities.Auth;
 using LYBT.Entities.Common;
 using LYBT.Entities.Consultations;
@@ -41,11 +41,6 @@ namespace LYBT.Infrastructure.Data
 
         // 认证管理
         public DbSet<AuthSession> AuthSessions { get; set; }
-        public DbSet<RefreshToken> RefreshTokens { get; set; }
-        public DbSet<AutoLoginToken> AutoLoginTokens { get; set; } // OpenSpec: refactor-login-authentication
-
-        // 安全审计 - Issue #1869: Token认证安全重构，记录认证相关安全事件
-        public DbSet<SecurityAuditLog> SecurityAuditLogs { get; set; }
 
         // JWT令牌存储 - UltraThink安全优化 P8-01B (已移除过度设计的令牌实体存储)
 
@@ -55,9 +50,6 @@ namespace LYBT.Infrastructure.Data
         // 医疗案例
         public DbSet<MedicalCase> MedicalCases { get; set; }
 
-        // 医案审计日志 - OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
-        public DbSet<MedicalCaseAuditLog> MedicalCaseAuditLogs { get; set; }
-
         // 诊断
         public DbSet<Consultation> Consultations { get; set; }
 
@@ -65,9 +57,6 @@ namespace LYBT.Infrastructure.Data
         public DbSet<Prescription> Prescriptions { get; set; }
 
         public DbSet<PrescriptionItem> PrescriptionItems { get; set; }
-
-        // 医案打印日志 - T2-X8-12: 打印日志从 Prescription 层级迁移到 MedicalCase 层级
-        public DbSet<MedicalCasePrintLog> MedicalCasePrintLogs { get; set; }
 
         // 药材管理
         public DbSet<Herb> Herbs { get; set; }

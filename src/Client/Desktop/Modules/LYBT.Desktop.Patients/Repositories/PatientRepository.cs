@@ -220,22 +220,7 @@ public sealed class PatientRepository : IPatientRepository
 
     #endregion
 
-    #region Restore and batch operations
-
-    public async Task<PatientDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default)
-    {
-        try
-        {
-            _logger.LogInformation("[REPO] Patient.Restore - Id={Id}", id);
-            var response = await _apiClient.Patients.RestoreAsync(id);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Patient.Restore failed - Id={Id}", id);
-            return null;
-        }
-    }
+    #region Batch operations
 
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
@@ -271,15 +256,6 @@ internal partial class PatientListToDetailMapper
 {
     [MapperIgnoreTarget(nameof(PatientDetailDto.BirthDate))]
     [MapperIgnoreTarget(nameof(PatientDetailDto.IdNumber))]
-    [MapperIgnoreTarget(nameof(PatientDetailDto.MaritalStatus))]
-    [MapperIgnoreTarget(nameof(PatientDetailDto.IdType))]
-    [MapperIgnoreTarget(nameof(PatientDetailDto.BloodType))]
-    [MapperIgnoreTarget(nameof(PatientDetailDto.AllergyHistory))]
-    [MapperIgnoreTarget(nameof(PatientDetailDto.MedicalHistory))]
-    [MapperIgnoreTarget(nameof(PatientDetailDto.EmergencyContactName))]
-    [MapperIgnoreTarget(nameof(PatientDetailDto.EmergencyContactPhone))]
-    [MapperIgnoreTarget(nameof(PatientDetailDto.EmergencyContactRelation))]
-    [MapperIgnoreTarget(nameof(PatientDetailDto.DisableReason))]
     [MapperIgnoreTarget(nameof(PatientDetailDto.UpdatedAt))]
     [MapperIgnoreTarget(nameof(PatientDetailDto.CreatedBy))]
     public partial PatientDetailDto ToDetailDto(PatientListDto listDto);

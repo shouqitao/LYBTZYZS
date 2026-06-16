@@ -150,25 +150,6 @@ public interface IApiClientMedicalCases
         MedicalCaseStatusInputDto request);
 
     /// <summary>
-    /// Get current user's permissions for a medical case.
-    /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-007)
-    /// </summary>
-    /// <param name="id">Medical case ID.</param>
-    Task<ApiResponse<MedicalCasePermissionDto>> GetPermissionsAsync(Guid id);
-
-    /// <summary>
-    /// Get medical case audit logs with pagination.
-    /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
-    /// </summary>
-    /// <param name="id">Medical case ID.</param>
-    /// <param name="page">Page number (default 1).</param>
-    /// <param name="pageSize">Page size (default 20).</param>
-    Task<ApiResponse<MedicalCaseAuditLogPagedResultDto>> GetAuditLogsAsync(
-        Guid id,
-        int page = 1,
-        int pageSize = 20);
-
-    /// <summary>
     /// Aggregate save (diagnosis + prescription in one call).
     /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.5)
     /// </summary>
@@ -179,35 +160,9 @@ public interface IApiClientMedicalCases
         MedicalCaseInputDto request);
 
     /// <summary>
-    /// Record print completion — write back print status.
-    /// T2-X8-04~08
-    /// </summary>
-    /// <param name="medicalCaseId">Medical case ID.</param>
-    /// <param name="request">Print completion data.</param>
-    Task<ApiResponse<MedicalCaseDetailDto>> RecordPrintCompletedAsync(
-        Guid medicalCaseId,
-        PrintCompletedRequest request);
-
-    /// <summary>
-    /// Add print log — record print success/failure.
-    /// T4-S5-02
-    /// </summary>
-    /// <param name="medicalCaseId">Medical case ID.</param>
-    /// <param name="request">Print log data.</param>
-    Task<ApiResponse<object>> AddPrintLogAsync(
-        Guid medicalCaseId,
-        PrintLogInputDto request);
-
-    /// <summary>
     /// Batch delete medical cases.
     /// </summary>
     /// <param name="request">Batch delete input with IDs.</param>
     Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request);
 
-    /// <summary>
-    /// Batch get medical case details (solves N+1 query problem).
-    /// OpenSpec: consolidate-medicalcase-detail-queries
-    /// </summary>
-    /// <param name="request">Batch query parameters (max 50 IDs).</param>
-    Task<ApiResponse<List<MedicalCaseDetailDto>>> GetBatchDetailsAsync(BatchDetailQueryDto request);
 }

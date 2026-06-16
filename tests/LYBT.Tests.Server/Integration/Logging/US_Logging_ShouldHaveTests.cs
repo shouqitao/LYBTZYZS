@@ -55,43 +55,6 @@ public sealed class US_Logging_ShouldHaveTests : IntegrationTestBase<SystemOpsFi
 
     #endregion
 
-    #region US-LOG-002: Audit logging via medical case audit logs
-
-    [Fact]
-    public async Task US_LOG_002_MedicalCaseAuditLogs_ReturnsLogs()
-    {
-        // Arrange - create a medical case to generate audit logs
-        var doctorClient = await LoginAsDoctorAsync();
-        var adminClient = await LoginAsAdminAsync();
-
-        var patientPayload = PatientBuilder.Default().WithName("审计日志患者").Build();
-        var patientResp = await doctorClient.PostAsJsonAsync("/api/v1/patients", patientPayload);
-        var patient = await patientResp.ShouldBeCreatedWithDataAsync<PatientDetailDto>();
-
-        var doctorId = await GetDoctorUserIdAsync(adminClient);
-        var casePayload = MedicalCaseBuilder.Default()
-            .ForPatient(patient.Id)
-            .WithDoctor(doctorId)
-            .BuildCreate();
-        var caseResp = await doctorClient.PostAsJsonAsync("/api/v1/medicalcases", casePayload);
-        caseResp.StatusCode.Should().BeOneOf(new[] { HttpStatusCode.OK, HttpStatusCode.Created });
-
-        var caseBody = await caseResp.Content.ReadFromJsonAsync<
-            LYBT.Shared.Models.Contracts.Common.ApiResponse<
-                LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseDetailDto>>(JsonOptions);
-        var caseId = caseBody!.Data!.Id;
-
-        // Act - get audit logs
-        var response = await doctorClient.GetAsync(
-            $"/api/v1/medicalcases/{caseId}/audit-logs?page=1&pageSize=10");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK,
-            "US-LOG-002: audit logs endpoint should return 200");
-    }
-
-    #endregion
-
     #region US-LOG-007: API request logging (via CorrelationId)
 
     [Fact]

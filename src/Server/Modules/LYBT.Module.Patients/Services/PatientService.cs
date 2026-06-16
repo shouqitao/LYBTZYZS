@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Services;
@@ -21,7 +21,6 @@ namespace LYBT.Module.Patients.Services
     /// 包含DTO和Entity两种返回模式
     /// Phase 2: 继承BaseService<Patient>复用统一错误处理和验证逻辑
     /// OpenSpec: adopt-mapperly-unified-mapping - 使用PatientMapper替代AutoMapper
-    /// Import/Export职责已拆分到PatientImportExportService，通过委托调用
     /// </summary>
     public class PatientService : BaseService<Patient>, IPatientService
     {
@@ -29,7 +28,6 @@ namespace LYBT.Module.Patients.Services
         private readonly IValidator<PatientInputDto> _validator;
         private readonly PatientMapper _mapper = new();
         private readonly ICacheInvalidationService _cacheInvalidation;
-        private readonly IPatientImportExportService _importExport;
         private readonly IMedicalCaseCrossModuleService _medicalCaseCrossModuleService;
 
         public PatientService(
@@ -37,14 +35,12 @@ namespace LYBT.Module.Patients.Services
             ILogger<PatientService> logger,
             IValidator<PatientInputDto> validator,
             ICacheInvalidationService cacheInvalidation,
-            IPatientImportExportService importExport,
             IMedicalCaseCrossModuleService medicalCaseCrossModuleService)
             : base(logger)
         {
             _repository = repository;
             _validator = validator;
             _cacheInvalidation = cacheInvalidation;
-            _importExport = importExport;
             _medicalCaseCrossModuleService = medicalCaseCrossModuleService;
         }
 
@@ -220,15 +216,6 @@ namespace LYBT.Module.Patients.Services
 
         public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            // X7: 删除前强制引用检查
-            var refCheck = await CheckReferenceAsync(id);
-            if (refCheck.IsSuccess && refCheck.Data != null && refCheck.Data.HasReferences)
-            {
-                _logger.LogWarning("[SVC] Patient.Delete → HasReferences - PatientId={PatientId} ReferenceCount={Count}",
-                    id, refCheck.Data.ReferenceCount);
-                return Result.Failure(GenericErrorCode.PatientHasActiveCases, $"患者有 {refCheck.Data.ReferenceCount} 条医案记录，无法删除");
-            }
-
             var result = await _repository.DeleteAsync(id);
             if (result)
             {
@@ -236,20 +223,6 @@ namespace LYBT.Module.Patients.Services
             }
             return result ? Result.Success() : Result.Failure(GenericErrorCode.InternalError, "删除失败");
         }
-
-        // ========== Import/Export 职责委托给 IPatientImportExportService ==========
-
-        /// <inheritdoc/>
-        public Task<Result<PatientBatchImportResultDto>> BatchImportAsync(Stream stream, string? fileName = null, CancellationToken cancellationToken = default)
-            => _importExport.BatchImportAsync(stream, fileName, cancellationToken);
-
-        /// <inheritdoc/>
-        public Task<MemoryStream> ExportTemplateAsync(ExportTemplateDto config, CancellationToken cancellationToken = default)
-            => _importExport.ExportTemplateAsync(config, cancellationToken);
-
-        /// <inheritdoc/>
-        public Task<MemoryStream> ExportPatientsAsync(string? keyword = null, CancellationToken cancellationToken = default)
-            => _importExport.ExportPatientsAsync(keyword, cancellationToken);
 
         #region IPatientServiceOptimized 实现 - Entity直接返回方法
 
@@ -383,7 +356,7 @@ namespace LYBT.Module.Patients.Services
 
         #endregion
 
-        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复方法实现 ==========
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换方法实现 ==========
 
         /// <summary>
         /// 切换患者状态（启用/禁用）
@@ -422,32 +395,6 @@ namespace LYBT.Module.Patients.Services
 
             _logger.LogInformation("[SVC] Patient.ToggleStatus completed - PatientId={PatientId} Status={Status}", id, entity.Status);
 
-            return Result<PatientDetailDto>.Success(dto);
-        }
-
-        /// <summary>
-        /// 恢复软删除的患者
-        /// </summary>
-        public async Task<Result<PatientDetailDto>> RestoreAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            // eliminate-service-catch-return: 移除冗余try-catch，保留业务逻辑检查
-            var entity = await _repository.GetByIdIncludingDeletedAsync(id);
-            if (entity == null)
-                return Result<PatientDetailDto>.Failure(GenericErrorCode.PatientNotFound);
-
-            if (!entity.IsDeleted)
-                return Result<PatientDetailDto>.Failure(GenericErrorCode.InvalidPatientStatus, "该患者未被删除，无需恢复");
-
-            entity.IsDeleted = false;
-            entity.UpdatedAt = DateTime.UtcNow;
-
-            var result = await _repository.UpdateAsync(entity);
-            var dto = _mapper.ToDetailDto(result);
-
-            // 确保Age属性正确计算
-            dto.Age = result.Age;
-
-            _logger.LogInformation("[SVC] Patient.Restore completed - PatientId={PatientId} Name={Name}", id, entity.Name);
             return Result<PatientDetailDto>.Success(dto);
         }
 
@@ -528,73 +475,5 @@ namespace LYBT.Module.Patients.Services
             return Result<BatchOperationResultDto>.Success(result);
         }
 
-        // ========== OpenSpec: implement-data-sync - 引用检查 ==========
-
-        /// <summary>
-        /// 检查患者是否被医案引用
-        /// </summary>
-        public async Task<Result<PatientReferenceCheckDto>> CheckReferenceAsync(Guid patientId, CancellationToken cancellationToken = default)
-        {
-            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理
-            var patient = await _repository.GetByIdAsync(patientId);
-            if (patient == null)
-            {
-                return Result<PatientReferenceCheckDto>.Failure(GenericErrorCode.PatientNotFound);
-            }
-
-            // Architecture Fix: 使用IMedicalCaseCrossModuleService替代直接DbContext查询（解决循环依赖）
-            // 查询医案引用计数
-            var referenceCount = await _medicalCaseCrossModuleService.CountMedicalCasesAsync(patientId);
-
-            // 获取最近5条引用记录
-            var recentMedicalCases = await _medicalCaseCrossModuleService.GetRecentMedicalCasesAsync(patientId, 5);
-
-            var hasReferences = referenceCount > 0;
-            var result = new PatientReferenceCheckDto
-            {
-                PatientId = patientId,
-                PatientName = patient.Name,
-                HasReferences = hasReferences,
-                ReferenceCount = referenceCount,
-                CanDelete = !hasReferences, // X7: 有引用不可删除
-                DeleteWarning = hasReferences ? $"该患者已有 {referenceCount} 个医案记录，无法删除" : null,
-                RecentMedicalCases = recentMedicalCases
-            };
-
-            _logger.LogInformation("[SVC] Patient.CheckReference completed - PatientName={PatientName} HasReferences={HasReferences} ReferenceCount={ReferenceCount}",
-                patient.Name, hasReferences, referenceCount);
-
-            return Result<PatientReferenceCheckDto>.Success(result);
-        }
-
-        /// <summary>
-        /// 批量检查患者引用关系
-        /// </summary>
-        public async Task<Result<List<PatientReferenceCheckDto>>> BatchCheckReferenceAsync(List<Guid> patientIds, CancellationToken cancellationToken = default)
-        {
-            // eliminate-service-catch-return: 异常由IExceptionHandler统一处理
-            const int MAX_CHECK_SIZE = 100;
-
-            // 批量检查数量限制
-            if (patientIds.Count > MAX_CHECK_SIZE)
-            {
-                return Result<List<PatientReferenceCheckDto>>.Failure(GenericErrorCode.ValidationFailed, $"批量检查最多支持{MAX_CHECK_SIZE}条记录");
-            }
-
-            var results = new List<PatientReferenceCheckDto>();
-
-            foreach (var patientId in patientIds)
-            {
-                var checkResult = await CheckReferenceAsync(patientId);
-                if (checkResult.IsSuccess && checkResult.Data != null)
-                {
-                    results.Add(checkResult.Data);
-                }
-            }
-
-            _logger.LogInformation("[SVC] Patient.BatchCheckReference completed - Count={Count}", results.Count);
-
-            return Result<List<PatientReferenceCheckDto>>.Success(results);
-        }
     }
 }

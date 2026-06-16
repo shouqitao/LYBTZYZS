@@ -29,7 +29,6 @@ public class PatientMasterDetailViewModelTests
     private readonly IPatientStatusHandler _statusHandler;
     private readonly IDesktopCacheManager _cacheManager;
     private readonly PatientCardReaderViewModel _cardReaderViewModel;
-    private readonly PatientImportExportViewModel _importExportViewModel;
     private readonly PatientEditorViewModel _patientEditor;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<PatientService> _logger;
@@ -106,11 +105,6 @@ public class PatientMasterDetailViewModelTests
             Substitute.For<IPatientCardReaderIntegration>(),
             Substitute.For<ILogger<PatientCardReaderViewModel>>());
 
-        _importExportViewModel = Substitute.For<PatientImportExportViewModel>(
-            _viewModelServices,
-            Substitute.For<IPatientImportExportHandler>(),
-            Substitute.For<ILogger<PatientImportExportViewModel>>());
-
         // PatientEditorViewModel (真实实例，纯逻辑)
         _patientEditor = new PatientEditorViewModel();
     }
@@ -124,7 +118,6 @@ public class PatientMasterDetailViewModelTests
             _statusHandler,
             _cacheManager,
             _cardReaderViewModel,
-            _importExportViewModel,
             _patientEditor);
     }
 
@@ -151,7 +144,6 @@ public class PatientMasterDetailViewModelTests
             _statusHandler,
             _cacheManager,
             _cardReaderViewModel,
-            _importExportViewModel,
             _patientEditor);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("patientService");
@@ -168,7 +160,6 @@ public class PatientMasterDetailViewModelTests
             null!,
             _cacheManager,
             _cardReaderViewModel,
-            _importExportViewModel,
             _patientEditor);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("statusHandler");
@@ -185,7 +176,6 @@ public class PatientMasterDetailViewModelTests
             _statusHandler,
             null!,
             _cardReaderViewModel,
-            _importExportViewModel,
             _patientEditor);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("cacheManager");
@@ -202,27 +192,9 @@ public class PatientMasterDetailViewModelTests
             _statusHandler,
             _cacheManager,
             null!,
-            _importExportViewModel,
             _patientEditor);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("cardReaderViewModel");
-    }
-
-    [Fact]
-    public void Constructor_ThrowsArgumentNullException_WhenImportExportViewModelIsNull()
-    {
-        // Arrange & Act & Assert
-        Action act = () => new PatientMasterDetailViewModel(
-            _viewModelServices,
-            _masterDetailServices,
-            _patientService,
-            _statusHandler,
-            _cacheManager,
-            _cardReaderViewModel,
-            null!,
-            _patientEditor);
-
-        act.Should().Throw<ArgumentNullException>().WithParameterName("importExportViewModel");
     }
 
     [Fact]
@@ -236,7 +208,6 @@ public class PatientMasterDetailViewModelTests
             _statusHandler,
             _cacheManager,
             _cardReaderViewModel,
-            _importExportViewModel,
             null!);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("patientEditor");
@@ -260,7 +231,6 @@ public class PatientMasterDetailViewModelTests
 
         // Assert
         sut.CardReaderViewModel.Should().Be(_cardReaderViewModel);
-        sut.ImportExportViewModel.Should().Be(_importExportViewModel);
         sut.PatientEditor.Should().Be(_patientEditor);
     }
 
@@ -487,7 +457,6 @@ public class PatientMasterDetailViewModelTests
         _patientEditor.Patient.Name = "新患者";
         _patientEditor.Patient.Gender = Gender.Male;
         _patientEditor.Patient.IdNumber = "110101199001011234";
-        _patientEditor.Patient.Address = "测试地址";
 
         var detail = new PatientDetailModel { Id = Guid.Empty, Name = "新患者" };
 
@@ -540,7 +509,6 @@ public class PatientMasterDetailViewModelTests
         _patientEditor.InitializeForNewCase();
         _patientEditor.Patient.Name = "新患者";
         _patientEditor.Patient.IdNumber = "110101199001011234";
-        _patientEditor.Patient.Address = "测试地址";
 
         var detail = new PatientDetailModel { Id = Guid.Empty, Name = "新患者" };
 
@@ -594,9 +562,9 @@ public class PatientMasterDetailViewModelTests
 
     #endregion
 
-    #region RestoreAsync
+    #region RestoreAsync (removed)
 
-    [Fact]
+    [Fact(Skip = "RestoreAsync removed")]
     public async Task RestoreAsync_CallsStatusHandlerAndRefreshes()
     {
         // Arrange
@@ -614,7 +582,7 @@ public class PatientMasterDetailViewModelTests
         _cacheManager.Received(1).InvalidatePatientCaches();
     }
 
-    [Fact]
+    [Fact(Skip = "RestoreAsync removed")]
     public async Task RestoreAsync_DoesNothing_WhenNoSelection()
     {
         // Arrange
@@ -628,7 +596,7 @@ public class PatientMasterDetailViewModelTests
         await _statusHandler.DidNotReceive().RestoreAsync(Arg.Any<PatientListDto>());
     }
 
-    [Fact]
+    [Fact(Skip = "RestoreAsync removed")]
     public async Task RestoreAsync_DoesNotRefresh_WhenRestoreFails()
     {
         // Arrange
@@ -655,67 +623,6 @@ public class PatientMasterDetailViewModelTests
 
         // Act & Assert
         sut.RestoreCommand.CanExecute(null).Should().BeFalse();
-    }
-
-    #endregion
-
-    #region Import/Export/DownloadTemplate
-
-    [Fact]
-    public async Task ImportAsync_DelegatesToImportExportViewModel()
-    {
-        // Arrange
-        var sut = CreateSut();
-        _importExportViewModel.ImportAsync().Returns(Task.FromResult(true));
-
-        // Act
-        await sut.ImportAsync();
-
-        // Assert
-        await _importExportViewModel.Received(1).ImportAsync();
-        _cacheManager.Received(1).InvalidatePatientCaches();
-    }
-
-    [Fact]
-    public async Task ImportAsync_DoesNotRefresh_WhenImportFails()
-    {
-        // Arrange
-        var sut = CreateSut();
-        _importExportViewModel.ImportAsync().Returns(Task.FromResult(false));
-
-        // Act
-        await sut.ImportAsync();
-
-        // Assert
-        await _importExportViewModel.Received(1).ImportAsync();
-        _cacheManager.DidNotReceive().InvalidatePatientCaches();
-    }
-
-    [Fact]
-    public async Task ExportAsync_DelegatesToImportExportViewModel()
-    {
-        // Arrange
-        var sut = CreateSut();
-        _search.SearchText.Returns("搜索关键词");
-
-        // Act
-        await sut.ExportAsync();
-
-        // Assert
-        await _importExportViewModel.Received(1).ExportAsync("搜索关键词");
-    }
-
-    [Fact]
-    public async Task DownloadTemplateAsync_DelegatesToImportExportViewModel()
-    {
-        // Arrange
-        var sut = CreateSut();
-
-        // Act
-        await sut.DownloadTemplateAsync();
-
-        // Assert
-        await _importExportViewModel.Received(1).DownloadTemplateAsync();
     }
 
     #endregion
@@ -797,7 +704,6 @@ public class PatientMasterDetailViewModelTests
             Name = name,
             Gender = Gender.Male,
             PhoneNumber = "13800138000",
-            VisitCount = 0,
             CreatedAt = DateTime.UtcNow
         };
     }
@@ -812,9 +718,7 @@ public class PatientMasterDetailViewModelTests
             Gender = Gender.Male,
             PhoneNumber = "13800138000",
             IdNumber = "110101199001011234",
-            Address = "测试地址",
             Status = CommonStatus.Enabled,
-            VisitCount = 0,
             CreatedAt = DateTime.UtcNow
         };
     }
@@ -927,7 +831,7 @@ public static class PatientMasterDetailViewModelTestExtensions
     }
 
     /// <summary>
-    /// 测试辅助方法：调用私有的 RestoreAsync 方法
+    /// 测试辅助方法：调用私有的 ToggleStatusAsync 方法
     /// </summary>
     public static async Task RestoreAsync(this PatientMasterDetailViewModel vm)
     {

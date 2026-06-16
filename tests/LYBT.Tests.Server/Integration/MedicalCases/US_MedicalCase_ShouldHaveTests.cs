@@ -222,46 +222,6 @@ public sealed class US_MedicalCase_ShouldHaveTests : IntegrationTestBase<Clinica
 
     #endregion
 
-    #region US-MC-014: Permissions/Locking rules
-
-    [Fact]
-    public async Task US_MC_014_GetPermissions_ForNewCase_ReturnsEditable()
-    {
-        // Arrange
-        var doctorClient = await LoginAsDoctorAsync();
-        var patientId = await CreatePatientAsync(doctorClient);
-        var (caseId, _) = await CreateCaseAsync(doctorClient, patientId);
-
-        // Act
-        var response = await doctorClient.GetAsync(
-            $"/api/v1/medicalcases/{caseId}/permissions");
-
-        // Assert
-        var perms = await response.ShouldBeSuccessWithDataAsync<MedicalCasePermissionDto>(
-            "US-MC-014: permissions should be returned for new case");
-        perms.CanEdit.Should().BeTrue("US-MC-014: new case should be editable");
-        perms.CanDelete.Should().BeTrue("US-MC-014: new case should be deletable");
-        perms.RequiresEditReason.Should().BeFalse(
-            "US-MC-014: new case should not require edit reason");
-    }
-
-    [Fact]
-    public async Task US_MC_014_GetPermissions_NonexistentCase_Returns404()
-    {
-        // Arrange
-        var doctorClient = await LoginAsDoctorAsync();
-
-        // Act
-        var response = await doctorClient.GetAsync(
-            $"/api/v1/medicalcases/{Guid.NewGuid()}/permissions");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound,
-            "US-MC-014: non-existent case permissions should return 404");
-    }
-
-    #endregion
-
     #region US-MC-015: Print logging
 
     [Fact]

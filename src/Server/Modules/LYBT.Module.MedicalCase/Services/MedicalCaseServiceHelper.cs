@@ -31,7 +31,6 @@ namespace LYBT.Module.MedicalCases.Services
                 DoctorName = source.DoctorName,
                 CaseStatus = source.CaseStatus,
                 CompletedAt = source.CompletedAt,
-                Remark = source.Remark,
                 NeedsPrescription = source.NeedsPrescription,
                 IsDeleted = source.IsDeleted,
                 CreatedAt = source.CreatedAt,
@@ -194,38 +193,40 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 权限验证 helper: 检查编辑权限，失败时记录日志并抛出异常
+        /// 编辑权限验证: Admin可编辑所有，非Admin只能编辑自己创建的进行中医案
         /// </summary>
         public static void EnsureCanEdit(
-            IMedicalCasePermissionService permissionService,
             MedicalCase medicalCase,
             Guid userId,
             bool isAdmin,
             string operation,
             ILogger logger)
         {
-            if (permissionService.CanEdit(userId, isAdmin, medicalCase)) return;
+            if (isAdmin) return;
+            if (medicalCase.UserId == userId &&
+                medicalCase.CaseStatus != MedicalCaseStatus.Completed)
+                return;
 
-            var reason = isAdmin ? "权限不足" :
-                (medicalCase.UserId != userId ? "非创建医生" : $"医案状态为{medicalCase.CaseStatus}");
-
+            var reason = medicalCase.UserId != userId ? "非创建医生" : $"医案状态为{medicalCase.CaseStatus}";
             logger.LogWarning("[SVC] MedicalCase.{Operation} -> PermissionDenied - MedicalCaseId={MedicalCaseId} UserId={UserId} Reason={Reason}",
                 operation, medicalCase.Id, userId, reason);
             throw new UnauthorizedAccessException($"无权限编辑此医案：{reason}");
         }
 
         /// <summary>
-        /// 删除权限验证 helper
+        /// 删除权限验证: Admin可删除所有，非Admin只能删除自己创建的进行中医案
         /// </summary>
         public static void EnsureCanDelete(
-            IMedicalCasePermissionService permissionService,
             MedicalCase medicalCase,
             Guid userId,
             bool isAdmin,
             string operation,
             ILogger logger)
         {
-            if (permissionService.CanDelete(userId, isAdmin, medicalCase)) return;
+            if (isAdmin) return;
+            if (medicalCase.UserId == userId &&
+                medicalCase.CaseStatus != MedicalCaseStatus.Completed)
+                return;
 
             logger.LogWarning("[SVC] MedicalCase.{Operation} -> PermissionDenied - MedicalCaseId={MedicalCaseId} UserId={UserId}",
                 operation, medicalCase.Id, userId);

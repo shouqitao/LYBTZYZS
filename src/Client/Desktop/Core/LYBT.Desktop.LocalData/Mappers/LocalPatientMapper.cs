@@ -28,8 +28,5 @@ internal partial class LocalPatientMapper
     [MapperIgnoreTarget(nameof(Patient.RowVersion))]
     [MapperIgnoreTarget(nameof(Patient.IsDeleted))]
     [MapperIgnoreTarget(nameof(Patient.Status))]
-    [MapperIgnoreTarget(nameof(Patient.DisableReason))]
-    [MapperIgnoreTarget(nameof(Patient.LastVisitTime))]
-    [MapperIgnoreTarget(nameof(Patient.VisitCount))]
     public partial Patient ToEntity(PatientInputDto dto);
 }

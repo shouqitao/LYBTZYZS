@@ -176,8 +176,7 @@ public sealed class AdminSetupJourneyTests : JourneyTestBase<AuthUsersFixture>
             Gender = Gender.Male,
             BirthDate = new DateTime(1985, 3, 15),
             PhoneNumber = UniquePhone(),
-            IdNumber = $"11010119850315{Random.Shared.Next(1000, 9999)}",
-            Address = "北京市朝阳区"
+            IdNumber = $"11010119850315{Random.Shared.Next(1000, 9999)}"
         };
 
         var (createPatientResponse, patient) = await PostAsync<PatientDetailDto>(admin, "/api/v1/patients", patientInput);

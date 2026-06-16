@@ -297,7 +297,6 @@ public class HerbFormulaWorkflowTests : WebApiE2ETestBase
             Gender = Gender.Male,
             IdNumber = GenerateIdNumber(),
             PhoneNumber = $"138{new Random().Next(10000000, 99999999)}",
-            Address = "北京市测试区测试街道1号",
             PinYinCode = $"cshz_{suffix}"
         };
 

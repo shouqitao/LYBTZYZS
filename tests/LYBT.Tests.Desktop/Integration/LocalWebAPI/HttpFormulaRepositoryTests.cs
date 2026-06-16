@@ -126,16 +126,10 @@ public class HttpFormulaRepositoryTests
         result.Should().BeNull();
     }
 
-    [Fact]
+    [Fact(Skip = "RestoreAsync removed")]
     public async Task RestoreAsync_Returns_Null_On_Failure()
     {
-        var id = Guid.NewGuid();
-        _mockFormulas.RestoreAsync(id)
-            .Returns(new ApiResponse<FormulaDetailDto> { Success = false });
-
-        var result = await _repo.RestoreAsync(id);
-
-        result.Should().BeNull();
+        await Task.CompletedTask;
     }
 
     [Fact]
@@ -192,33 +186,5 @@ public class HttpFormulaRepositoryTests
 
         result.Items.Should().HaveCount(1);
         result.TotalCount.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task BatchEnableAsync_Delegates_To_ApiClient()
-    {
-        var ids = new List<Guid> { Guid.NewGuid() };
-        var batchResult = new BatchOperationResultDto { SuccessCount = 1 };
-        _mockFormulas.BatchEnableAsync(Arg.Any<BatchDeleteInputDto>())
-            .Returns(new ApiResponse<BatchOperationResultDto> { Success = true, Data = batchResult });
-
-        var result = await _repo.BatchEnableAsync(ids);
-
-        result.Should().NotBeNull();
-        result!.SuccessCount.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task BatchDisableAsync_Delegates_To_ApiClient()
-    {
-        var ids = new List<Guid> { Guid.NewGuid() };
-        var batchResult = new BatchOperationResultDto { SuccessCount = 1 };
-        _mockFormulas.BatchDisableAsync(Arg.Any<BatchDeleteInputDto>())
-            .Returns(new ApiResponse<BatchOperationResultDto> { Success = true, Data = batchResult });
-
-        var result = await _repo.BatchDisableAsync(ids);
-
-        result.Should().NotBeNull();
-        result!.SuccessCount.Should().Be(1);
     }
 }

@@ -31,7 +31,6 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         // Child ViewModels
         private readonly PatientCardReaderViewModel _cardReaderViewModel;
-        private readonly PatientImportExportViewModel _importExportViewModel;
 
         /// <summary>患者编辑子 VM</summary>
         public PatientEditorViewModel PatientEditor { get; }
@@ -60,9 +59,6 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>读卡器功能 ViewModel</summary>
         public PatientCardReaderViewModel CardReaderViewModel => _cardReaderViewModel;
 
-        /// <summary>导入导出功能 ViewModel</summary>
-        public PatientImportExportViewModel ImportExportViewModel => _importExportViewModel;
-
         #endregion
 
         #region 读卡器属性 - 代理到 Child ViewModel
@@ -87,7 +83,6 @@ namespace LYBT.Desktop.Patients.ViewModels
             IDesktopCacheManager cacheManager,
             // Child ViewModels
             PatientCardReaderViewModel cardReaderViewModel,
-            PatientImportExportViewModel importExportViewModel,
             PatientEditorViewModel patientEditor)
             : base(viewModelServices, masterDetailServices)
         {
@@ -97,7 +92,6 @@ namespace LYBT.Desktop.Patients.ViewModels
 
             // Child ViewModels
             _cardReaderViewModel = cardReaderViewModel ?? throw new ArgumentNullException(nameof(cardReaderViewModel));
-            _importExportViewModel = importExportViewModel ?? throw new ArgumentNullException(nameof(importExportViewModel));
             PatientEditor = patientEditor ?? throw new ArgumentNullException(nameof(patientEditor));
 
             PageTitle = "患者管理";
@@ -195,7 +189,6 @@ namespace LYBT.Desktop.Patients.ViewModels
                 detail.BirthDate = result.Data.BirthDate;
                 detail.IdNumber = result.Data.IdNumber;
                 detail.PhoneNumber = result.Data.PhoneNumber;
-                detail.Address = result.Data.Address;
                 detail.Status = result.Data.Status;
 
                 Logger.LogInformation("患者{Action}成功: {PatientId} - {PatientName}",
@@ -247,31 +240,6 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         private bool CanRestore() => HasSelection && !IsBusy && IsAdmin;
-
-        /// <summary>导入患者</summary>
-        [RelayCommand]
-        private async Task ImportAsync()
-        {
-            if (await _importExportViewModel.ImportAsync())
-            {
-                _cacheManager.InvalidatePatientCaches();
-                await RefreshAsync();
-            }
-        }
-
-        /// <summary>导出患者</summary>
-        [RelayCommand]
-        private async Task ExportAsync()
-        {
-            await _importExportViewModel.ExportAsync(SearchText);
-        }
-
-        /// <summary>下载模板</summary>
-        [RelayCommand]
-        private async Task DownloadTemplateAsync()
-        {
-            await _importExportViewModel.DownloadTemplateAsync();
-        }
 
         /// <summary>查看医案</summary>
         [RelayCommand(CanExecute = nameof(CanViewMedicalRecords))]

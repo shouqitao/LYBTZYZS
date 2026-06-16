@@ -90,16 +90,10 @@ public class HttpUserRepositoryTests
         result.Should().BeNull();
     }
 
-    [Fact]
+    [Fact(Skip = "RestoreAsync removed")]
     public async Task RestoreAsync_Returns_Null_On_Failure()
     {
-        var id = Guid.NewGuid();
-        _mockUsers.RestoreAsync(id)
-            .Returns(new ApiResponse<UserDetailDto> { Success = false });
-
-        var result = await _repo.RestoreAsync(id);
-
-        result.Should().BeNull();
+        await Task.CompletedTask;
     }
 
     [Fact]

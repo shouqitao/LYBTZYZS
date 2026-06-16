@@ -13,11 +13,8 @@ public class PatientBuilder
     private string _name = "测试患者";
     private string _idNumber = "110101199001011234";
     private string? _phoneNumber;
-    private string? _address;
     private DateTime? _birthDate = new(1990, 1, 1);
     private Gender _gender = Gender.Male;
-    private string? _allergyHistory;
-    private string? _medicalHistory;
 
     public static PatientBuilder Create() => new();
 
@@ -45,12 +42,6 @@ public class PatientBuilder
         return this;
     }
 
-    public PatientBuilder WithAddress(string? address)
-    {
-        _address = address;
-        return this;
-    }
-
     public PatientBuilder WithBirthDate(DateTime? birthDate)
     {
         _birthDate = birthDate;
@@ -63,31 +54,12 @@ public class PatientBuilder
         return this;
     }
 
-    public PatientBuilder WithAllergyHistory(string? allergyHistory)
-    {
-        _allergyHistory = allergyHistory;
-        return this;
-    }
-
-    public PatientBuilder WithMedicalHistory(string? medicalHistory)
-    {
-        _medicalHistory = medicalHistory;
-        return this;
-    }
-
-    /// <summary>
-    /// 构建 PatientInputDto (用于创建/更新)
-    /// </summary>
     public PatientInputDto BuildInputDto() => new()
     {
         Name = _name,
-        
         PhoneNumber = _phoneNumber,
-        Address = _address,
         BirthDate = _birthDate,
-        Gender = _gender,
-        AllergyHistory = _allergyHistory,
-        MedicalHistory = _medicalHistory
+        Gender = _gender
     };
 
     /// <summary>
@@ -99,11 +71,8 @@ public class PatientBuilder
         Name = _name,
         Age = _birthDate.HasValue ? DateTime.Now.Year - _birthDate.Value.Year : null,
         PhoneNumber = _phoneNumber,
-        Address = _address,
         BirthDate = _birthDate,
         Gender = _gender,
-        AllergyHistory = _allergyHistory,
-        MedicalHistory = _medicalHistory,
         CreatedAt = DateTime.UtcNow,
         Status = CommonStatus.Enabled
     };
@@ -153,7 +122,5 @@ public class PatientBuilder
     /// </summary>
     public static PatientBuilder WithAllergicHistory() => Create()
         .WithName("过敏患者")
-        .WithIdNumber("110101199003033456")
-        .WithAllergyHistory("青霉素过敏; 花粉过敏")
-        .WithMedicalHistory("过敏性鼻炎");
+        .WithIdNumber("110101199003033456");
 }

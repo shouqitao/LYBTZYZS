@@ -159,8 +159,7 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
             var result = await _medicalCaseService.AggregateSaveAsync(
                 detail.Id,
                 consultationData,
-                prescriptionData,
-                detail.Remark);
+                prescriptionData);
 
             if (result.Success)
             {

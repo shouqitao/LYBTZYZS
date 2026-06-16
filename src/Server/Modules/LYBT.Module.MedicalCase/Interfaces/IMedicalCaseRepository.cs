@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -105,13 +105,5 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// </summary>
         /// <param name="cancellationToken">取消令牌</param>
         Task<int> CountPrescriptionsByPrefixAsync(string prefix, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// 添加打印日志并保存（AD-04 Fix）
-        /// 通过 DbContext.Add 显式标记 PrintLog 为 Added 状态，
-        /// 避免通过导航属性添加时 EF Core 将有预设 Guid 的新实体错误标记为 Modified。
-        /// </summary>
-        /// <param name="cancellationToken">取消令牌</param>
-        Task<int> AddPrintLogAndSaveAsync(MedicalCasePrintLog printLog, CancellationToken cancellationToken = default);
     }
 }

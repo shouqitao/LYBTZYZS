@@ -63,10 +63,6 @@ internal sealed class PatientApiClient : IApiClientPatients
         => _api.ExportPatientsAsync(keyword);
 
     /// <inheritdoc />
-    public Task<ApiResponse<PatientDetailDto>> RestoreAsync(Guid id)
-        => _api.RestoreAsync(id);
-
-    /// <inheritdoc />
     public Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request)
         => _api.BatchDeleteAsync(request);
 

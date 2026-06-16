@@ -195,7 +195,7 @@ namespace LYBT.WebAPI.Controllers
         /// 管理员重置用户密码
         /// </summary>
         [HttpPost("{id:guid}/reset-password")]
-        [Authorize(Policy = PolicyConstants.SuperAdminOnly)]
+        [Authorize(Policy = PolicyConstants.AdminOnly)]
         [ProducesResponseType(typeof(ApiResponse<ResetPasswordResponseDto>), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordRequestDto request)
@@ -293,29 +293,6 @@ namespace LYBT.WebAPI.Controllers
             return Success(result.Data, $"用户已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
         }
 
-        /// <summary>
-        /// 恢复已删除的用户
-        /// </summary>
-        [HttpPost("{id:guid}/restore")]
-        [Authorize(Policy = PolicyConstants.SuperAdminOnly)]
-        [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
-        [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> Restore(Guid id)
-        {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            if (ValidateGuid(id, "用户ID") is { } error) return error;
-
-            var (_, _, currentRole) = GetOperator();
-            var result = await _userService.RestoreAsync(id, currentRole);
-            if (!result.IsSuccess || result.Data == null)
-            {
-                return HandleResult(result);
-            }
-
-            LogOperation("恢复用户", null, id);
-            return Success(result.Data, "用户已恢复");
-        }
-
 
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
@@ -344,61 +321,6 @@ namespace LYBT.WebAPI.Controllers
             }
 
             LogOperation("批量删除用户", new { Ids = dto.Ids, Result = result.Data.Message }, null);
-            return Success(result.Data, result.Data.Message);
-        }
-
-
-        /// <summary>
-        /// 批量启用用户
-        /// </summary>
-        [HttpPost("batch-enable")]
-        [Authorize(Policy = PolicyConstants.AdminOnly)]
-        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
-        [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto)
-        {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            if (dto.Ids == null || dto.Ids.Count == 0)
-            {
-                return ValidationFail("请至少选择一个用户");
-            }
-
-            var (currentUserId, _, currentRole) = GetOperator();
-
-            var result = await _userService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Enabled, currentUserId, currentRole);
-            if (!result.IsSuccess || result.Data == null)
-            {
-                return HandleResult(result);
-            }
-
-            LogOperation("批量启用用户", new { Ids = dto.Ids, Result = result.Data.Message }, null);
-            return Success(result.Data, result.Data.Message);
-        }
-
-        /// <summary>
-        /// 批量禁用用户
-        /// </summary>
-        [HttpPost("batch-disable")]
-        [Authorize(Policy = PolicyConstants.AdminOnly)]
-        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
-        [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto)
-        {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            if (dto.Ids == null || dto.Ids.Count == 0)
-            {
-                return ValidationFail("请至少选择一个用户");
-            }
-
-            var (currentUserId, _, currentRole) = GetOperator();
-
-            var result = await _userService.BatchUpdateStatusAsync(dto.Ids, CommonStatus.Disabled, currentUserId, currentRole);
-            if (!result.IsSuccess || result.Data == null)
-            {
-                return HandleResult(result);
-            }
-
-            LogOperation("批量禁用用户", new { Ids = dto.Ids, Result = result.Data.Message }, null);
             return Success(result.Data, result.Data.Message);
         }
     }

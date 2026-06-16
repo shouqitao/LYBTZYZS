@@ -81,41 +81,16 @@ public interface IApiClientUsers
     Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequestDto request);
 
     /// <summary>
-    /// Batch import users.
-    /// Issue #2003 Task 2.10
-    /// </summary>
-    /// <param name="request">Batch import input data.</param>
-    Task<ApiResponse<UserBatchImportResultDto>> BatchImportAsync(UserBatchImportInputDto request);
-
-    /// <summary>
     /// Toggle user status (enable/disable).
     /// </summary>
     /// <param name="id">User ID.</param>
     Task<ApiResponse<UserDetailDto>> ToggleStatusAsync(Guid id);
 
     /// <summary>
-    /// Restore a soft-deleted user.
-    /// </summary>
-    /// <param name="id">User ID.</param>
-    Task<ApiResponse<UserDetailDto>> RestoreAsync(Guid id);
-
-    /// <summary>
     /// Batch delete users.
     /// </summary>
     /// <param name="request">Batch delete input with IDs.</param>
     Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request);
-
-    /// <summary>
-    /// Batch enable users.
-    /// </summary>
-    /// <param name="request">Batch operation input with IDs.</param>
-    Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request);
-
-    /// <summary>
-    /// Batch disable users.
-    /// </summary>
-    /// <param name="request">Batch operation input with IDs.</param>
-    Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request);
 
     // ========== Local-only methods ==========
 

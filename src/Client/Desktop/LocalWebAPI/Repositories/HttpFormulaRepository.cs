@@ -81,27 +81,9 @@ public class HttpFormulaRepository : IFormulaRepository
         return response.Data;
     }
 
-    public async Task<FormulaDetailDto?> RestoreAsync(Guid id)
-    {
-        var response = await _apiClient.Formulas.RestoreAsync(id);
-        return response.Data;
-    }
-
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
     {
         var response = await _apiClient.Formulas.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
-        return response.Data;
-    }
-
-    public async Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids)
-    {
-        var response = await _apiClient.Formulas.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids });
-        return response.Data;
-    }
-
-    public async Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids)
-    {
-        var response = await _apiClient.Formulas.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids });
         return response.Data;
     }
 

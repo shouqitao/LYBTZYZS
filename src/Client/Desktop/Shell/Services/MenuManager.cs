@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
@@ -46,9 +46,6 @@ public class MenuManager
     public bool IsUserManagementVisible =>
         _sessionManager.CurrentUser?.Role is UserRole.Admin or UserRole.SuperAdmin;
 
-    /// <summary>S6-01: 同步菜单可见性</summary>
-    public bool IsSyncVisible => true;
-
     /// <summary>S6-01: 系统设置可见性 (仅 Admin/SuperAdmin)</summary>
     public bool IsSystemSettingsVisible =>
         _sessionManager.CurrentUser?.Role is UserRole.Admin or UserRole.SuperAdmin;
@@ -63,10 +60,9 @@ public class MenuManager
     public void RefreshMenuVisibility()
     {
         _logger.LogDebug(
-            "菜单可见性刷新: Role={Role}, UserManagement={UserMgmt}, Sync={Sync}, Settings={Settings}",
+            "菜单可见性刷新: Role={Role}, UserManagement={UserMgmt}, Settings={Settings}",
             _sessionManager.CurrentUser?.Role,
             IsUserManagementVisible,
-            IsSyncVisible,
             IsSystemSettingsVisible);
     }
 

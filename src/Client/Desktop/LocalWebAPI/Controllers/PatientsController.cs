@@ -13,15 +13,12 @@ namespace LYBT.LocalWebAPI.Controllers;
 public class PatientsController : BaseApiController
 {
     private readonly IPatientService _patientService;
-    private readonly IPatientImportExportService _importExportService;
 
     public PatientsController(
         IPatientService patientService,
-        IPatientImportExportService importExportService,
         ILogger<PatientsController> logger) : base(logger)
     {
         _patientService = patientService;
-        _importExportService = importExportService;
     }
 
     [HttpGet]
@@ -81,13 +78,6 @@ public class PatientsController : BaseApiController
         return HandleResult(result);
     }
 
-    [HttpPost("{id}/restore")]
-    public async Task<IActionResult> Restore(Guid id)
-    {
-        var result = await _patientService.RestoreAsync(id);
-        return HandleResult(result);
-    }
-
     [HttpPost("{id}/toggle-status")]
     public async Task<IActionResult> ToggleStatus(Guid id)
     {
@@ -95,44 +85,5 @@ public class PatientsController : BaseApiController
         return HandleResult(result);
     }
 
-    [HttpGet("export")]
-    public async Task<IActionResult> Export([FromQuery] string? keyword = null)
-    {
-        var stream = await _importExportService.ExportPatientsAsync(keyword);
-        return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "patients.xlsx");
-    }
 
-    [HttpGet("import-template")]
-    [AllowAnonymous]
-    public async Task<IActionResult> ExportTemplate()
-    {
-        var stream = await _importExportService.ExportTemplateAsync(new ExportTemplateDto());
-        return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "patients-template.xlsx");
-    }
-
-    [HttpPost("import")]
-    public async Task<IActionResult> Import(IFormFile file)
-    {
-        if (file == null || file.Length == 0)
-            return ValidationFail("请上传文件");
-        using var stream = file.OpenReadStream();
-        var result = await _importExportService.BatchImportAsync(stream, file.FileName);
-        return HandleResult(result);
-    }
-
-    [HttpGet("{id}/check-reference")]
-    public async Task<IActionResult> CheckReference(Guid id)
-    {
-        var result = await _patientService.CheckReferenceAsync(id);
-        return HandleResult(result);
-    }
-
-    [HttpPost("batch-check-reference")]
-    public async Task<IActionResult> BatchCheckReference([FromBody] BatchDeleteInputDto request)
-    {
-        if (request?.Ids == null || request.Ids.Count == 0)
-            return ValidationFail("ids 不能为空");
-        var result = await _patientService.BatchCheckReferenceAsync(request.Ids);
-        return HandleResult(result);
-    }
 }

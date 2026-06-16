@@ -54,25 +54,5 @@ public class PatientDetailDisplayModelTests
         Assert.Equal("张三 | 男 | 45岁", model.Summary);
     }
 
-    [Fact]
-    public void VisitInfo_FormatsCorrectly()
-    {
-        var model = new PatientDetailDisplayModel
-        {
-            VisitCount = 5,
-            LastVisitTime = new DateTime(2026, 1, 15)
-        };
-        Assert.Equal("5次 | 最近: 2026-01-15", model.VisitInfo);
-    }
 
-    [Fact]
-    public void VisitInfo_HandlesNoVisits()
-    {
-        var model = new PatientDetailDisplayModel
-        {
-            VisitCount = 0,
-            LastVisitTime = null
-        };
-        Assert.Equal("0次 | 最近: 无", model.VisitInfo);
-    }
 }

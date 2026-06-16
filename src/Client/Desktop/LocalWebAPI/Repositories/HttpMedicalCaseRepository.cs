@@ -91,26 +91,12 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
         return response.Data;
     }
 
-    public async Task<MedicalCasePermissionDto?> GetPermissionsAsync(Guid medicalCaseId)
-    {
-        var response = await _apiClient.MedicalCases.GetPermissionsAsync(medicalCaseId);
-        return response.Data;
-    }
-
     public async Task<MedicalCaseDetailDto> SaveAsync(Guid medicalCaseId, MedicalCaseInputDto dto)
     {
         var response = await _apiClient.MedicalCases.SaveAsync(medicalCaseId, dto);
         if (!response.Success || response.Data == null)
             throw new InvalidOperationException(response.Message ?? "Aggregate save failed");
         return response.Data;
-    }
-
-    public async Task<List<MedicalCaseDetailDto>> GetBatchDetailsAsync(List<Guid> ids)
-    {
-        var response = await _apiClient.MedicalCases.GetBatchDetailsAsync(new BatchDetailQueryDto { Ids = ids });
-        if (response.Success && response.Data != null)
-            return response.Data;
-        return [];
     }
 
     public async Task<MedicalCaseDetailDto?> SetPrescriptionFlagAsync(Guid id, SetPrescriptionFlagRequest request)
@@ -134,12 +120,6 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
     public async Task<MedicalCaseDetailDto?> SuspendAsync(Guid id, ConsultationInputDto? request)
     {
         var response = await _apiClient.MedicalCases.SuspendAsync(id, request);
-        return response.Data;
-    }
-
-    public async Task<MedicalCaseDetailDto?> RecordPrintCompletedAsync(Guid medicalCaseId, PrintCompletedRequest request)
-    {
-        var response = await _apiClient.MedicalCases.RecordPrintCompletedAsync(medicalCaseId, request);
         return response.Data;
     }
 

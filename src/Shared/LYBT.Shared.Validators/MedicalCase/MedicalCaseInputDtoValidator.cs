@@ -42,12 +42,6 @@ namespace LYBT.Shared.Validators.MedicalCase
 
             // ========== 可选字段验证（有值时验证长度） ==========
 
-            // 备注：可选，有值时验证长度
-            RuleFor(x => x.Remark)
-                .MaximumLength(ValidationConstants.RemarkMaxLength)
-                .WithMessage($"备注长度不能超过{ValidationConstants.RemarkMaxLength}个字符")
-                .When(x => !string.IsNullOrEmpty(x.Remark));
-
             // ========== 嵌套对象验证 ==========
 
             // 处方：可选，有值时验证（含DosageCount > 0）

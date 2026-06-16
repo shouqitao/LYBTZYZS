@@ -30,9 +30,6 @@ public interface ILocalPatientApi
     [Refit.Post("/api/patients/{id}/toggle-status")]
     Task<PatientDetailDto> ToggleStatusAsync(Guid id);
 
-    [Refit.Post("/api/patients/{id}/restore")]
-    Task<PatientDetailDto> RestoreAsync(Guid id);
-
     [Refit.Post("/api/patients/batch-delete")]
     Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
 

@@ -28,6 +28,6 @@ public class PatientStatusHandler : BaseStatusHandler<PatientListDto>, IPatientS
     protected override Guid GetEntityId(PatientListDto e) => e.Id;
     protected override string GetEntityDisplayName(PatientListDto e) => e.Name;
 
-    protected override async Task<object?> ExecuteRestoreAsync(Guid id)
-        => await _patientRepository.RestoreAsync(id);
+    protected override Task<object?> ExecuteRestoreAsync(Guid id)
+        => Task.FromResult<object?>(null);
 }

@@ -32,8 +32,7 @@ public class MedicalCaseChangeTracker
         => baseline.CaseNumber != current.CaseNumber
         || baseline.PatientId != current.PatientId
         || baseline.UserId != current.UserId
-        || baseline.CaseStatus != current.CaseStatus
-        || baseline.Remark != current.Remark;
+        || baseline.CaseStatus != current.CaseStatus;
 
     private static bool IsConsultationChanged(ConsultationDetailDto? baseline, ConsultationDetailDto? current)
     {

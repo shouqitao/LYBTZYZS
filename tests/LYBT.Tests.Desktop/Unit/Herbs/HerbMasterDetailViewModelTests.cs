@@ -26,7 +26,6 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
     private readonly IMasterDetailServices<HerbListDto, HerbDetailModel> _masterDetailServices;
     private readonly IHerbService _herbService;
     private readonly IHerbStatusHandler _statusHandler;
-    private readonly IHerbImportExportHandler _importExportHandler;
     private readonly IDesktopCacheManager _cacheManager;
     private readonly HerbEditorViewModel _herbEditor;
 
@@ -37,10 +36,9 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
             IMasterDetailServices<HerbListDto, HerbDetailModel> masterDetailServices,
             IHerbService herbService,
             IHerbStatusHandler statusHandler,
-            IHerbImportExportHandler importExportHandler,
             IDesktopCacheManager cacheManager,
             HerbEditorViewModel herbEditor)
-            : base(viewModelServices, masterDetailServices, herbService, statusHandler, importExportHandler, cacheManager, herbEditor)
+            : base(viewModelServices, masterDetailServices, herbService, statusHandler, cacheManager, herbEditor)
         {
         }
 
@@ -55,7 +53,6 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
         _masterDetailServices = CreateMasterDetailServicesMock<HerbListDto, HerbDetailModel>();
         _herbService = Substitute.For<IHerbService>();
         _statusHandler = Substitute.For<IHerbStatusHandler>();
-        _importExportHandler = Substitute.For<IHerbImportExportHandler>();
         _cacheManager = Substitute.For<IDesktopCacheManager>();
         _herbEditor = new HerbEditorViewModel();
     }
@@ -67,7 +64,6 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
             _masterDetailServices,
             _herbService,
             _statusHandler,
-            _importExportHandler,
             _cacheManager,
             _herbEditor);
     }
@@ -239,33 +235,5 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
             "分类:补气药",
             Arg.Any<string?>(),
             Arg.Any<System.Threading.CancellationToken>());
-    }
-
-    [Fact]
-    public async Task ImportHerbsCommand_CallsImportHandlerAndRefreshes()
-    {
-        var sut = CreateSut();
-        var pagedResult = new PagedResult<HerbListDto> { Items = new List<HerbListDto>(), TotalCount = 0 };
-
-        _importExportHandler.ImportAsync().Returns(Task.FromResult(true));
-        _herbService.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<System.Threading.CancellationToken>())
-            .Returns(Task.FromResult(new CommandResult<PagedResult<HerbListDto>>(true, pagedResult, null)));
-
-        await sut.ImportHerbsCommand.ExecuteAsync(null);
-
-        await _importExportHandler.Received(1).ImportAsync();
-        await _herbService.Received(1).GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<System.Threading.CancellationToken>());
-        _cacheManager.Received(1).InvalidateHerbCaches();
-    }
-
-    [Fact]
-    public async Task ExportHerbsCommand_PassesSearchTextToHandler()
-    {
-        var sut = CreateSut();
-        sut.SearchText = "黄芪";
-
-        await sut.ExportHerbsCommand.ExecuteAsync(null);
-
-        await _importExportHandler.Received(1).ExportAsync("黄芪");
     }
 }

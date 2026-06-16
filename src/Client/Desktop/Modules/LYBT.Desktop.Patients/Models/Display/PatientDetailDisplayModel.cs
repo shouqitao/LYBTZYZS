@@ -26,21 +26,6 @@ public class PatientDetailDisplayModel
     /// <summary>手机号</summary>
     public string? PhoneNumber { get; set; }
 
-    /// <summary>地址</summary>
-    public string? Address { get; set; }
-
-    /// <summary>就诊次数</summary>
-    public int VisitCount { get; set; }
-
-    /// <summary>最后就诊时间</summary>
-    public DateTime? LastVisitTime { get; set; }
-
-    /// <summary>过敏史</summary>
-    public string? AllergyHistory { get; set; }
-
-    /// <summary>病史</summary>
-    public string? MedicalHistory { get; set; }
-
     #region 格式化属性（用于UI展示）
 
     /// <summary>年龄展示文本</summary>
@@ -56,9 +41,6 @@ public class PatientDetailDisplayModel
 
     /// <summary>基本信息摘要</summary>
     public string Summary => $"{Name} | {GenderDisplay} | {AgeDisplay}";
-
-    /// <summary>就诊信息</summary>
-    public string VisitInfo => $"{VisitCount}次 | 最近: {(LastVisitTime.HasValue ? LastVisitTime.Value.ToString("yyyy-MM-dd") : "无")}";
 
     #endregion
 }

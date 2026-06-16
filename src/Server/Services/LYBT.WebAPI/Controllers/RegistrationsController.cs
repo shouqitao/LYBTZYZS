@@ -20,7 +20,7 @@ namespace LYBT.WebAPI.Controllers;
 [ApiController]
 [ApiVersion("1")]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(Policy = PolicyConstants.PatientAccess)]
+    [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
 public class RegistrationsController : BaseApiController
 {
     private readonly IRegistrationService _registrationService;

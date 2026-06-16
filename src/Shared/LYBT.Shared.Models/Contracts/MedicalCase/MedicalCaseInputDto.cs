@@ -52,12 +52,6 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         public Guid UserId { get; set; }
 
         /// <summary>
-        /// 备注
-        /// </summary>
-        [DisplayName("备注")]
-        public string? Remark { get; set; }
-
-        /// <summary>
         /// 编辑原因（审计用途，非当天本人修改时必填）
         /// OpenSpec: simplify-medicalcase-dataflow - 从MedicalCaseAggregateInputDto迁移
         /// </summary>

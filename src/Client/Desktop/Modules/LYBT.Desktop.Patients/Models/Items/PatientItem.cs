@@ -105,13 +105,6 @@ public class PatientItem : BindableBase
         set => SetProperty(ref _phoneNumber, value);
     }
 
-    private string? _address;
-    public string? Address
-    {
-        get => _address;
-        set => SetProperty(ref _address, value);
-    }
-
     /// <summary>
     /// 身份证号
     /// </summary>
@@ -122,20 +115,6 @@ public class PatientItem : BindableBase
         set => SetProperty(ref _idNumber, value);
     }
 
-    private string? _medicalHistory;
-    public string? MedicalHistory
-    {
-        get => _medicalHistory;
-        set => SetProperty(ref _medicalHistory, value);
-    }
-
-    private string? _allergyHistory;
-    public string? AllergyHistory
-    {
-        get => _allergyHistory;
-        set => SetProperty(ref _allergyHistory, value);
-    }
-
     private DateTime _createdAt;
     public DateTime CreatedAt
     {
@@ -143,29 +122,6 @@ public class PatientItem : BindableBase
         set
         {
             if (SetProperty(ref _createdAt, value))
-            {
-                RaisePropertyChanged(nameof(IsNewPatient));
-            }
-        }
-    }
-
-    /// <summary>
-    /// 最后就诊时间
-    /// </summary>
-    private DateTime? _lastVisitTime;
-    public DateTime? LastVisitTime
-    {
-        get => _lastVisitTime;
-        set => SetProperty(ref _lastVisitTime, value);
-    }
-
-    private int _visitCount;
-    public int VisitCount
-    {
-        get => _visitCount;
-        set
-        {
-            if (SetProperty(ref _visitCount, value))
             {
                 RaisePropertyChanged(nameof(IsNewPatient));
             }
@@ -196,7 +152,7 @@ public class PatientItem : BindableBase
     /// <summary>
     /// 是否为新患者（30天内首次就诊）
     /// </summary>
-    public bool IsNewPatient => CreatedAt > DateTime.Now.AddDays(-30) && VisitCount <= 1;
+    public bool IsNewPatient => CreatedAt > DateTime.Now.AddDays(-30);
 
     #endregion
 
@@ -212,13 +168,8 @@ public class PatientItem : BindableBase
         Gender = dto.Gender;
         BirthDate = dto.BirthDate;
         PhoneNumber = dto.PhoneNumber ?? string.Empty;
-        Address = dto.Address;
         IdNumber = dto.IdNumber;
-        MedicalHistory = dto.MedicalHistory;
-        AllergyHistory = dto.AllergyHistory;
         CreatedAt = dto.CreatedAt;
-        LastVisitTime = dto.LastVisitTime;
-        VisitCount = dto.VisitCount;
     }
 
     #endregion

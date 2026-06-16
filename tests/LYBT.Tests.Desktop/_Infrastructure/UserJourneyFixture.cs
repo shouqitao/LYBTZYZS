@@ -108,7 +108,6 @@ public class UserJourneyFixture : IAsyncLifetime, IDisposable
         context.PrescriptionItems.RemoveRange(context.PrescriptionItems);
         context.Prescriptions.RemoveRange(context.Prescriptions);
         context.Consultations.RemoveRange(context.Consultations);
-        context.MedicalCasePrintLogs.RemoveRange(context.MedicalCasePrintLogs);
         context.MedicalCases.RemoveRange(context.MedicalCases);
         context.FormulaHerbItems.RemoveRange(context.FormulaHerbItems);
         context.Formulas.RemoveRange(context.Formulas);

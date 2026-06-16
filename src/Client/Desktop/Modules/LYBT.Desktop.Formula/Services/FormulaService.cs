@@ -215,26 +215,6 @@ namespace LYBT.Desktop.Formula.Services
             }
         }
 
-        public async Task<CommandResult<FormulaDetailDto>> RestoreAsync(Guid formulaId, CancellationToken ct = default)
-        {
-            try
-            {
-                _logger.LogInformation("[SVC] Formula.Restore started - FormulaId={FormulaId}", formulaId);
-
-                var formula = await _repository.RestoreAsync(formulaId);
-                if (formula == null)
-                    return CommandResult<FormulaDetailDto>.NotFound("验方不存在或未被删除");
-
-                _logger.LogInformation("[SVC] Formula.Restore completed - FormulaId={FormulaId}", formulaId);
-                return CommandResult<FormulaDetailDto>.Succeeded(formula);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Formula.Restore failed - FormulaId={FormulaId}", formulaId);
-                return CommandResult<FormulaDetailDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("恢复验方", ex));
-            }
-        }
-
         #endregion
 
         #region 批量操作
@@ -257,48 +237,6 @@ namespace LYBT.Desktop.Formula.Services
             {
                 _logger.LogError(ex, "[SVC] Formula.BatchDelete failed - Count={Count}", formulaIds.Count);
                 return CommandResult<BatchOperationResultDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("批量删除验方", ex));
-            }
-        }
-
-        public async Task<CommandResult<BatchOperationResultDto>> BatchEnableAsync(List<Guid> formulaIds, CancellationToken ct = default)
-        {
-            try
-            {
-                _logger.LogInformation("[SVC] Formula.BatchEnable started - Count={Count}", formulaIds.Count);
-
-                var result = await _repository.BatchEnableAsync(formulaIds);
-                if (result == null)
-                    return CommandResult<BatchOperationResultDto>.Failed("批量启用验方返回空结果");
-
-                _logger.LogInformation("[SVC] Formula.BatchEnable completed - Success={Success}, Failed={Failed}",
-                    result.SuccessCount, result.FailureCount);
-                return CommandResult<BatchOperationResultDto>.Succeeded(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Formula.BatchEnable failed - Count={Count}", formulaIds.Count);
-                return CommandResult<BatchOperationResultDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("批量启用验方", ex));
-            }
-        }
-
-        public async Task<CommandResult<BatchOperationResultDto>> BatchDisableAsync(List<Guid> formulaIds, CancellationToken ct = default)
-        {
-            try
-            {
-                _logger.LogInformation("[SVC] Formula.BatchDisable started - Count={Count}", formulaIds.Count);
-
-                var result = await _repository.BatchDisableAsync(formulaIds);
-                if (result == null)
-                    return CommandResult<BatchOperationResultDto>.Failed("批量禁用验方返回空结果");
-
-                _logger.LogInformation("[SVC] Formula.BatchDisable completed - Success={Success}, Failed={Failed}",
-                    result.SuccessCount, result.FailureCount);
-                return CommandResult<BatchOperationResultDto>.Succeeded(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Formula.BatchDisable failed - Count={Count}", formulaIds.Count);
-                return CommandResult<BatchOperationResultDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("批量禁用验方", ex));
             }
         }
 

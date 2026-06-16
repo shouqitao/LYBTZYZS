@@ -78,13 +78,6 @@ public interface IApiClientPatients
     Task<HttpResponseMessage> ExportPatientsAsync(string? keyword = null);
 
     /// <summary>
-    /// Restore a soft-deleted patient.
-    /// Note: Patient entity has no Status field, so no ToggleStatus method.
-    /// </summary>
-    /// <param name="id">Patient ID.</param>
-    Task<ApiResponse<PatientDetailDto>> RestoreAsync(Guid id);
-
-    /// <summary>
     /// Batch delete patients.
     /// </summary>
     /// <param name="request">Batch delete input with IDs.</param>

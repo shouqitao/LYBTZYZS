@@ -92,9 +92,6 @@ public class PrescriptionPrintHandler
             var printModel = BuildPrintModel(prescription, currentPatient, consultationData);
             await _printService.PreviewAsync(printModel);
 
-            // T2-X8-04~08: 打印成功后回写状态到服务端
-            await RecordPrintCompletedAsync(medicalCaseId, PrintType.Prescription);
-
             return PrintResult.Success();
         }
         catch (Exception ex)
@@ -185,7 +182,6 @@ public class PrescriptionPrintHandler
             Gender = patient?.Gender.ToString() ?? string.Empty,
             Age = CalculateAge(patient?.BirthDate),
             PatientPhone = patient?.PhoneNumber,
-            PatientAddress = patient?.Address,
 
             // 诊断信息
             TcmDiagnosis = consultation?.TcmDiagnosis,
@@ -250,33 +246,6 @@ public class PrescriptionPrintHandler
         var age = today.Year - birthDate.Value.Year;
         if (birthDate.Value.Date > today.AddYears(-age)) age--;
         return age;
-    }
-
-    /// <summary>
-    /// 打印完成后回写状态到服务端
-    /// T2-X8-04~08: IsPrinted/PrintCount/LastPrintedAt/PrintVersion + PrintLog
-    /// </summary>
-    private async Task RecordPrintCompletedAsync(Guid medicalCaseId, PrintType printType)
-    {
-        try
-        {
-            var request = new PrintCompletedRequest { PrintType = printType };
-            var result = await _repository.RecordPrintCompletedAsync(medicalCaseId, request);
-            if (result != null)
-            {
-                _logger.LogInformation("打印回写成功，MedicalCaseId: {MedicalCaseId}, PrintCount: {PrintCount}",
-                    medicalCaseId, result.PrintCount);
-            }
-            else
-            {
-                _logger.LogWarning("打印回写失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-            }
-        }
-        catch (Exception ex)
-        {
-            // 打印回写失败不应阻止打印预览本身的成功
-            _logger.LogError(ex, "打印回写异常，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-        }
     }
 
     /// <summary>

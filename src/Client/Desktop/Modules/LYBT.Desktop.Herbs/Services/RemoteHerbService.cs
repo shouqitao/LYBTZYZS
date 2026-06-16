@@ -232,80 +232,9 @@ namespace LYBT.Desktop.Herbs.Services
             }
         }
 
-        /// <summary>
-        /// 恢复已删除药材
-        /// </summary>
-        public async Task<CommandResult<HerbDetailDto>> RestoreAsync(Guid herbId, CancellationToken ct = default)
-        {
-            try
-            {
-                _logger.LogInformation("[SVC] Herb.Restore started - HerbId={HerbId}", herbId);
-
-                var herb = await _herbRepository.RestoreAsync(herbId);
-                if (herb == null)
-                    return CommandResult<HerbDetailDto>.NotFound("药材不存在或未被删除");
-
-                _logger.LogInformation("[SVC] Herb.Restore completed - HerbId={HerbId}", herbId);
-                return CommandResult<HerbDetailDto>.Succeeded(herb);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Herb.Restore failed - HerbId={HerbId}", herbId);
-                return CommandResult<HerbDetailDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("恢复药材", ex));
-            }
-        }
-
         #endregion
 
         #region 批量操作
-
-        /// <summary>
-        /// 批量启用药材
-        /// </summary>
-        public async Task<CommandResult<BatchOperationResultDto>> BatchEnableAsync(List<Guid> herbIds, CancellationToken ct = default)
-        {
-            try
-            {
-                _logger.LogInformation("[SVC] Herb.BatchEnable started - Count={Count}", herbIds.Count);
-
-                var result = await _herbRepository.BatchEnableAsync(herbIds);
-                if (result == null)
-                    return CommandResult<BatchOperationResultDto>.Failed("批量启用操作失败");
-
-                _logger.LogInformation("[SVC] Herb.BatchEnable completed - Success={Success}, Failed={Failed}",
-                    result.SuccessCount, result.FailureCount);
-                return CommandResult<BatchOperationResultDto>.Succeeded(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Herb.BatchEnable failed - Count={Count}", herbIds.Count);
-                return CommandResult<BatchOperationResultDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("批量启用药材", ex));
-            }
-        }
-
-        /// <summary>
-        /// 批量禁用药材
-        /// </summary>
-        public async Task<CommandResult<BatchOperationResultDto>> BatchDisableAsync(List<Guid> herbIds, CancellationToken ct = default)
-        {
-            try
-            {
-                _logger.LogInformation("[SVC] Herb.BatchDisable started - Count={Count}", herbIds.Count);
-
-                var result = await _herbRepository.BatchDisableAsync(herbIds);
-                if (result == null)
-                    return CommandResult<BatchOperationResultDto>.Failed("批量禁用操作失败");
-
-                _logger.LogInformation("[SVC] Herb.BatchDisable completed - Success={Success}, Failed={Failed}",
-                    result.SuccessCount, result.FailureCount);
-                return CommandResult<BatchOperationResultDto>.Succeeded(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Herb.BatchDisable failed - Count={Count}", herbIds.Count);
-                return CommandResult<BatchOperationResultDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("批量禁用药材", ex));
-            }
-        }
 
         /// <summary>
         /// 批量导入药材

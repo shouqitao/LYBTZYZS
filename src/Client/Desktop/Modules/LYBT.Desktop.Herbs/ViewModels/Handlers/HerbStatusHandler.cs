@@ -31,11 +31,8 @@ public class HerbStatusHandler : BaseStatusHandler<HerbListDto>, IHerbStatusHand
     protected override string GetEntityDisplayName(HerbListDto e) => e.Name;
     protected override CommonStatus GetEntityStatus(HerbListDto e) => e.Status;
 
-    protected override async Task<object?> ExecuteRestoreAsync(Guid id)
-    {
-        var result = await _herbService.RestoreAsync(id);
-        return result.Success ? result.Data : null;
-    }
+    protected override Task<object?> ExecuteRestoreAsync(Guid id)
+        => Task.FromResult<object?>(null);
 
     protected override async Task<CommonStatus?> ExecuteToggleStatusAsync(Guid id)
     {

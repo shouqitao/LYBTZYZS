@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using LYBT.Infrastructure.DependencyInjection;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Repositories;
@@ -29,7 +29,6 @@ namespace LYBT.Module.Users
             services.AddScoped<IUserQueryService, UserQueryService>();
             services.AddScoped<IUserPasswordService, UserPasswordService>();
             services.AddScoped<IUserStatusService, UserStatusService>();
-            services.AddScoped<IUserBatchOperationService, UserBatchOperationService>();
 
             // 注册验证器 - 自动注册所有Validator
             services.AddValidatorsFromAssemblyContaining<UserInputDtoValidator>();

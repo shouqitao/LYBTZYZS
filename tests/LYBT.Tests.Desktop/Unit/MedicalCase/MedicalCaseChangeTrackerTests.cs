@@ -10,7 +10,6 @@ namespace LYBT.Tests.Desktop;
 public class MedicalCaseChangeTrackerTests
 {
     private static MedicalCaseDetailDto CreateTestDto(
-        string remark = "test",
         string? illness = "headache",
         int dosageCount = 7)
     {
@@ -20,7 +19,6 @@ public class MedicalCaseChangeTrackerTests
             CaseNumber = "MC-001",
             PatientId = Guid.NewGuid(),
             UserId = Guid.NewGuid(),
-            Remark = remark,
             Consultation = new ConsultationDetailDto
             {
                 PresentIllness = illness,
@@ -52,16 +50,6 @@ public class MedicalCaseChangeTrackerTests
         var dto = CreateTestDto();
         tracker.SetBaseline(dto);
         Assert.False(tracker.HasChanges(dto));
-    }
-
-    [Fact]
-    public void HasChanges_detects_remark_change()
-    {
-        var tracker = new MedicalCaseChangeTracker();
-        var dto = CreateTestDto(remark: "original");
-        tracker.SetBaseline(dto);
-        dto.Remark = "modified";
-        Assert.True(tracker.HasChanges(dto));
     }
 
     [Fact]
@@ -100,7 +88,7 @@ public class MedicalCaseChangeTrackerTests
         var tracker = new MedicalCaseChangeTracker();
         var dto = CreateTestDto();
         tracker.SetBaseline(dto);
-        dto.Remark = "changed";
+        dto.CaseNumber = "changed";
         tracker.ClearBaseline();
         Assert.False(tracker.HasChanges(dto));
     }
@@ -109,9 +97,9 @@ public class MedicalCaseChangeTrackerTests
     public void SetBaseline_deep_copies_so_original_mutations_detected()
     {
         var tracker = new MedicalCaseChangeTracker();
-        var dto = CreateTestDto(remark: "original");
+        var dto = CreateTestDto();
         tracker.SetBaseline(dto);
-        dto.Remark = "mutated"; // Mutate after baseline
+        dto.CaseNumber = "mutated"; // Mutate after baseline
         Assert.True(tracker.HasChanges(dto)); // Detected because baseline was deep-copied
     }
 

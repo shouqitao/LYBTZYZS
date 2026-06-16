@@ -28,17 +28,8 @@ public interface ILocalHerbApi
     [Refit.Post("/api/herbs/{id}/toggle-status")]
     Task<HerbDetailDto> ToggleStatusAsync(Guid id);
 
-    [Refit.Post("/api/herbs/{id}/restore")]
-    Task<HerbDetailDto> RestoreAsync(Guid id);
-
     [Refit.Post("/api/herbs/batch-delete")]
     Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
-
-    [Refit.Post("/api/herbs/batch-enable")]
-    Task<BatchOperationResultDto> BatchEnableAsync([Refit.Body] BatchDeleteInputDto request);
-
-    [Refit.Post("/api/herbs/batch-disable")]
-    Task<BatchOperationResultDto> BatchDisableAsync([Refit.Body] BatchDeleteInputDto request);
 
     [Refit.Get("/api/herbs/categories")]
     Task<List<string>> GetCategoriesAsync();

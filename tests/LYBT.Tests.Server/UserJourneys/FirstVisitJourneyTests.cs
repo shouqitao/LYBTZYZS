@@ -61,8 +61,7 @@ public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalDataFixture
             Gender = Gender.Male,
             BirthDate = new DateTime(1990, 1, 1),
             PhoneNumber = UniquePhone(),
-            IdNumber = $"32010119900101{Random.Shared.Next(1000, 9999)}",
-            Address = "南京市鼓楼区"
+            IdNumber = $"32010119900101{Random.Shared.Next(1000, 9999)}"
         };
         var (createPatientResponse, patient) = await PostAsync<PatientDetailDto>(receptionist, "/api/v1/patients", patientInput);
         createPatientResponse.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -203,7 +202,7 @@ public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalDataFixture
         {
             Name = UniqueName("重复"), Gender = Gender.Male,
             BirthDate = new DateTime(1985, 5, 15), PhoneNumber = UniquePhone(),
-            IdNumber = $"32010119850515{Random.Shared.Next(1000, 9999)}", Address = "测试地址"
+            IdNumber = $"32010119850515{Random.Shared.Next(1000, 9999)}"
         });
 
         // Create first Active case
@@ -233,7 +232,7 @@ public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalDataFixture
         {
             Name = UniqueName("空诊断"), Gender = Gender.Female,
             BirthDate = new DateTime(1995, 3, 20), PhoneNumber = UniquePhone(),
-            IdNumber = $"32010119950320{Random.Shared.Next(1000, 9999)}", Address = "测试地址"
+            IdNumber = $"32010119950320{Random.Shared.Next(1000, 9999)}"
         });
 
         // Create case without filling TcmDiagnosis
@@ -265,7 +264,7 @@ public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalDataFixture
         {
             Name = UniqueName("无处方决定"), Gender = Gender.Male,
             BirthDate = new DateTime(1988, 8, 8), PhoneNumber = UniquePhone(),
-            IdNumber = $"32010119880808{Random.Shared.Next(1000, 9999)}", Address = "测试地址"
+            IdNumber = $"32010119880808{Random.Shared.Next(1000, 9999)}"
         });
 
         var (_, createdCase) = await PostAsync<MedicalCaseDetailDto>(doctor, "/api/v1/medicalcases",
@@ -310,7 +309,7 @@ public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalDataFixture
         {
             Name = UniqueName("取消挂号"), Gender = Gender.Male,
             BirthDate = new DateTime(1992, 12, 1), PhoneNumber = UniquePhone(),
-            IdNumber = $"32010119921201{Random.Shared.Next(1000, 9999)}", Address = "测试地址"
+            IdNumber = $"32010119921201{Random.Shared.Next(1000, 9999)}"
         });
 
         // Create registration (Waiting)

@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using LYBT.Desktop.Admin;
 using LYBT.Desktop.Receptionist;
 using LYBT.Desktop.Auth;
@@ -17,7 +17,6 @@ using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Patients;
 // [已删除] using LYBT.Desktop.Prescriptions; - 模块已移除
 using LYBT.Desktop.Registration;
-using LYBT.Desktop.Sync;
 using LYBT.Desktop.Shell.Extensions;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Bootstrap;
@@ -393,9 +392,6 @@ public partial class App : PrismApplication
 
         // OpenSpec: integrate-cardreader-module - 身份证读卡模块
         moduleCatalog.AddModule<CardReaderModule>(InitializationMode.WhenAvailable);
-
-        // OpenSpec: implement-data-sync - 数据同步模块
-        moduleCatalog.AddModule<SyncModule>(InitializationMode.WhenAvailable);
 
         base.ConfigureModuleCatalog(moduleCatalog);
     }

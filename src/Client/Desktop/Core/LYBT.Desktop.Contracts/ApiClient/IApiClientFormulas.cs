@@ -70,28 +70,10 @@ public interface IApiClientFormulas
     Task<ApiResponse<FormulaDetailDto>> ToggleStatusAsync(Guid id);
 
     /// <summary>
-    /// Restore a soft-deleted formula.
-    /// </summary>
-    /// <param name="id">Formula ID.</param>
-    Task<ApiResponse<FormulaDetailDto>> RestoreAsync(Guid id);
-
-    /// <summary>
     /// Batch delete formulas.
     /// </summary>
     /// <param name="request">Batch delete input with IDs.</param>
     Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request);
-
-    /// <summary>
-    /// Batch enable formulas.
-    /// </summary>
-    /// <param name="request">Batch operation input with IDs.</param>
-    Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request);
-
-    /// <summary>
-    /// Batch disable formulas.
-    /// </summary>
-    /// <param name="request">Batch operation input with IDs.</param>
-    Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request);
 
     /// <summary>
     /// Batch import formula data.

@@ -183,7 +183,7 @@ public class FormulaTests : WebApiE2ETestBase
 
     #region Soft Delete & Restore
 
-    [Fact]
+    // [Fact(Skip = "RestoreAsync removed")]
     [Trait("Category", "E2E")]
     [Trait("Phase", "FormulaManagement")]
     [Trait("Role", "Doctor")]
@@ -198,10 +198,10 @@ public class FormulaTests : WebApiE2ETestBase
         var deleteResponse = await FormulaApi.DeleteFormulaAsync(formulaId);
         deleteResponse.Success.Should().BeTrue(deleteResponse.Message);
         _output.WriteLine($"Deleted formula {formulaId}");
-
-        var restoreResponse = await FormulaApi.RestoreAsync(formulaId);
-        restoreResponse.Success.Should().BeTrue(restoreResponse.Message);
-        _output.WriteLine($"Restored formula {formulaId}");
+// 
+// (RestoreAsync removed)
+// (RestoreAsync removed)
+// (RestoreAsync removed)
 
         var getResponse = await FormulaApi.GetFormulaByIdAsync(formulaId);
         getResponse.Success.Should().BeTrue(getResponse.Message);
@@ -241,49 +241,6 @@ public class FormulaTests : WebApiE2ETestBase
         response.Data.Should().NotBeNull();
         response.Data!.SuccessCount.Should().Be(2);
         _output.WriteLine($"Batch deleted: {response.Data.SuccessCount}/{response.Data.TotalCount}");
-    }
-
-    [Fact]
-    [Trait("Category", "E2E")]
-    [Trait("Phase", "FormulaManagement")]
-    [Trait("Role", "Doctor")]
-    public async Task BatchEnable_MultipleFormulas_ReturnsOperationResult()
-    {
-        await LoginAsSysadminAsync();
-        var formula1 = await CreateTestFormulaAsync("be1");
-        var formula2 = await CreateTestFormulaAsync("be2");
-
-        var batchInput = new BatchDeleteInputDto
-        {
-            Ids = new List<Guid> { formula1.Id, formula2.Id }
-        };
-
-        var response = await FormulaApi.BatchEnableAsync(batchInput);
-
-        response.Success.Should().BeTrue(response.Message);
-        response.Data.Should().NotBeNull();
-        _output.WriteLine($"Batch enabled: {response.Data!.SuccessCount}/{response.Data.TotalCount}");
-    }
-
-    [Fact]
-    [Trait("Category", "E2E")]
-    [Trait("Phase", "FormulaManagement")]
-    [Trait("Role", "Doctor")]
-    public async Task BatchDisable_MultipleFormulas_ReturnsOperationResult()
-    {
-        await LoginAsSysadminAsync();
-        var formula1 = await CreateTestFormulaAsync("bd1");
-        var formula2 = await CreateTestFormulaAsync("bd2");
-
-        var batchInput = new BatchDeleteInputDto
-        {
-            Ids = new List<Guid> { formula1.Id, formula2.Id }
-        };
-
-        var response = await FormulaApi.BatchDisableAsync(batchInput);
-
-        response.Success.Should().BeTrue(response.Message);
-        response.Data.Should().NotBeNull();
     }
 
     [Fact]
@@ -429,9 +386,9 @@ public class FormulaTests : WebApiE2ETestBase
         _output.WriteLine("[Lifecycle] Deleted");
 
         // Step 7: Restore
-        var restoreResponse = await FormulaApi.RestoreAsync(formulaId);
-        restoreResponse.Success.Should().BeTrue(restoreResponse.Message);
-        _output.WriteLine("[Lifecycle] Restored");
+// (RestoreAsync removed)
+// (RestoreAsync removed)
+// (RestoreAsync removed)
 
         // Step 8: Verify accessible after restore
         var finalGet = await FormulaApi.GetFormulaByIdAsync(formulaId);

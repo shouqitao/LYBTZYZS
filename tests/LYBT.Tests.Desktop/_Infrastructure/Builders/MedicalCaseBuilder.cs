@@ -14,7 +14,6 @@ public class MedicalCaseBuilder
     private Guid _patientId;
     private Guid _userId;
     private Guid? _registrationId;
-    private string? _remark;
     private ConsultationInputDto? _consultation;
     private PrescriptionInputDto? _prescription;
     private bool? _needsPrescription = true;
@@ -45,12 +44,6 @@ public class MedicalCaseBuilder
         return this;
     }
 
-    public MedicalCaseBuilder WithRemark(string? remark)
-    {
-        _remark = remark;
-        return this;
-    }
-
     public MedicalCaseBuilder WithConsultation(ConsultationInputDto? consultation)
     {
         _consultation = consultation;
@@ -78,7 +71,6 @@ public class MedicalCaseBuilder
         PatientId = _patientId,
         UserId = _userId,
         RegistrationId = _registrationId,
-        Remark = _remark,
         Consultation = _consultation,
         Prescription = _prescription,
         NeedsPrescription = _needsPrescription

@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 namespace LYBT.Desktop.Contracts.Api
 {
@@ -68,13 +68,6 @@ namespace LYBT.Desktop.Contracts.Api
         Task<HttpResponseMessage> ExportPatientsAsync([Refit.Query] string? keyword = null);
 
         // ========== OpenSpec: optimize-module-list-ui - 恢复功能 ==========
-
-        /// <summary>
-        /// 恢复已删除的患者
-        /// 注：患者实体无Status字段，因此无ToggleStatus方法
-        /// </summary>
-        [Refit.Post("/api/v1/patients/{id}/restore")]
-        Task<ApiResponse<PatientDetailDto>> RestoreAsync(Guid id);
 
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 

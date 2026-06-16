@@ -258,7 +258,6 @@ public class RolePermissionBoundaryTests : WebApiE2ETestBase
             Gender = Gender.Male,
             IdNumber = GenerateIdNumber(),
             PinYinCode = $"QXCS{suffix}",
-            Address = "北京市测试区测试街道1号",
             PhoneNumber = $"138{Random.Shared.Next(10000000, 99999999)}"
         };
 

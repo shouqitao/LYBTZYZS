@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FluentValidation.Results;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -176,15 +176,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
                 BirthDate = patient.BirthDate,
                 // Issue #2240: Age不再是PatientInputDto的属性，仅BirthDate为输入
                 IdNumber = patient.IdNumber,
-                PhoneNumber = patient.PhoneNumber,
-                Address = patient.Address,
-                MaritalStatus = patient.MaritalStatus,
-                IdType = patient.IdType,
-                BloodType = patient.BloodType,
-                AllergyHistory = patient.AllergyHistory,
-                EmergencyContactName = patient.EmergencyContactName,
-                EmergencyContactPhone = patient.EmergencyContactPhone,
-                EmergencyContactRelation = patient.EmergencyContactRelation
+                PhoneNumber = patient.PhoneNumber
             };
         }
     }

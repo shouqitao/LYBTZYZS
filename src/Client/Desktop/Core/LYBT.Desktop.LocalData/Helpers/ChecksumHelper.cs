@@ -12,7 +12,7 @@ namespace LYBT.Desktop.LocalData.Helpers;
 /// <summary>
 /// Checksum 计算辅助类（LocalData 版本）
 /// 用于计算实体的 SHA256 哈希值，排除审计字段
-/// 注意：必须与服务器端 LYBT.Module.Sync.Services.ChecksumHelper 保持完全一致
+/// 用于本地数据完整性校验
 /// </summary>
 public static class ChecksumHelper
 {
@@ -64,11 +64,7 @@ public static class ChecksumHelper
             patient.BirthDate,
             patient.IdNumber,
             patient.PhoneNumber,
-            patient.Address,
-            patient.AllergyHistory,
-            patient.MedicalHistory,
             patient.Status,
-            patient.DisableReason,
             patient.IsDeleted
         };
 
@@ -170,7 +166,6 @@ public static class ChecksumHelper
             mc.CaseStatus,
             mc.NeedsPrescription,
             mc.CompletedAt,
-            mc.Remark,
             mc.IsDeleted,
             Consultation = consultation,
             Prescription = prescription

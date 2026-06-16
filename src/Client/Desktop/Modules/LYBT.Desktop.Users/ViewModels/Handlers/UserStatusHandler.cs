@@ -34,8 +34,8 @@ public class UserStatusHandler : BaseStatusHandler<UserListDto>, IUserStatusHand
     protected override Guid GetEntityId(UserListDto e) => e.Id;
     protected override string GetEntityDisplayName(UserListDto e) => e.RealName ?? e.UserName;
 
-    protected override async Task<object?> ExecuteRestoreAsync(Guid id)
-        => await _userRepository.RestoreAsync(id);
+    protected override Task<object?> ExecuteRestoreAsync(Guid id)
+        => Task.FromResult<object?>(null);
 
     /// <inheritdoc/>
     public async Task<bool> ToggleUserStatusAsync(UserListDto user)

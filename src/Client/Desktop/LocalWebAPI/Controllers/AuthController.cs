@@ -19,17 +19,14 @@ namespace LYBT.LocalWebAPI.Controllers;
 public class AuthController : BaseApiController
 {
     private readonly IAuthService _authService;
-    private readonly IAutoLoginService _autoLoginService;
     private readonly AppDbContext _db;
 
     public AuthController(
         IAuthService authService,
-        IAutoLoginService autoLoginService,
         AppDbContext db,
         ILogger<AuthController> logger) : base(logger)
     {
         _authService = authService;
-        _autoLoginService = autoLoginService;
         _db = db;
     }
 
@@ -75,18 +72,15 @@ public class AuthController : BaseApiController
         if (!CheckRateLimit(request.UserName))
             return StatusCode(429, new { Message = "登录尝试过于频繁，请稍后再试" });
 
-        // Use Service layer for credential verification (password, status, lockout)
         var verifyResult = await _authService.VerifyCredentialsAsync(request);
         if (!verifyResult.IsSuccess)
             return Unauthorized(new { Message = verifyResult.ErrorMessage });
 
-        // Load user for local JWT generation
         var userId = Guid.Parse(verifyResult.Data!);
         var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null)
             return Unauthorized();
 
-        // Generate local JWT (simplified: 1-year, no refresh token)
         var token = LocalJwtConfig.GenerateToken(user);
         return Ok(new
         {
@@ -114,7 +108,6 @@ public class AuthController : BaseApiController
         if (user == null)
             return Unauthorized(new { Message = "用户不存在" });
 
-        // Check user status
         if (user.Status != LYBT.Shared.Models.Enums.CommonStatus.Enabled)
             return Unauthorized(new { Message = "账户已被禁用" });
 
@@ -145,34 +138,6 @@ public class AuthController : BaseApiController
         return Ok(new
         {
             IsValid = true,
-            UserId = user.Id,
-            Username = user.UserName,
-            Role = user.Role
-        });
-    }
-
-    [HttpPost("auto-login")]
-    public async Task<IActionResult> AutoLogin([FromBody] AutoLoginRequest request)
-    {
-        if (request == null || string.IsNullOrWhiteSpace(request.UserName)
-            || string.IsNullOrWhiteSpace(request.AutoLoginToken))
-            return Unauthorized();
-
-        // Use Service layer for auto-login (credential verification + status check)
-        var loginResult = await _authService.LoginWithAutoTokenAsync(request);
-        if (!loginResult.IsSuccess || loginResult.Data == null)
-            return Unauthorized(new { Message = loginResult.ErrorMessage ?? "自动登录失败" });
-
-        // Replace remote JWT with local simplified JWT
-        var loginData = loginResult.Data;
-        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == loginData.User.Id);
-        if (user == null)
-            return Unauthorized();
-
-        var localToken = LocalJwtConfig.GenerateToken(user);
-        return Ok(new
-        {
-            Token = localToken,
             UserId = user.Id,
             Username = user.UserName,
             Role = user.Role

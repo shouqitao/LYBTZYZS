@@ -1,4 +1,4 @@
-﻿using LYBT.Infrastructure.DependencyInjection;
+using LYBT.Infrastructure.DependencyInjection;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Services;
@@ -172,9 +172,6 @@ public static class DatabaseServiceCollectionExtensions
         services.AddHealthChecks()
             .AddCheck<LYBT.WebAPI.HealthCheck.SqlServerHealthCheck>("database");
         services.AddHostedService<LYBT.WebAPI.HealthCheck.DatabaseStartupDiagnostics>();
-
-        // Issue #1873: 安全审计日志清理后台服务
-        services.AddHostedService<LYBT.WebAPI.BackgroundServices.SecurityAuditCleanupService>();
 
         // refactor-logging-system: 日志清理后台服务
         services.AddHostedService<LogCleanupService>();

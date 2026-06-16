@@ -308,35 +308,7 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
 
     #endregion
 
-    #region 权限与聚合保存
-
-    public async Task<MedicalCasePermissionDto?> GetPermissionsAsync(Guid medicalCaseId)
-    {
-        if (medicalCaseId == Guid.Empty)
-            throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
-
-        try
-        {
-            _logger.LogDebug("[REPO] MedicalCase.GetPermissions - Id={Id}", medicalCaseId);
-
-            var response = await _apiClient.MedicalCases.GetPermissionsAsync(medicalCaseId);
-            if (response.Success && response.Data != null)
-            {
-                _logger.LogDebug("[REPO] MedicalCase.GetPermissions completed - Id={Id}, CanEdit={CanEdit}",
-                    medicalCaseId, response.Data.CanEdit);
-                return response.Data;
-            }
-
-            _logger.LogWarning("[REPO] MedicalCase.GetPermissions failed - Id={Id}, Message={Message}",
-                medicalCaseId, response.Message);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] MedicalCase.GetPermissions failed - Id={Id}", medicalCaseId);
-            throw;
-        }
-    }
+    #region 聚合保存
 
     public async Task<MedicalCaseDetailDto> SaveAsync(Guid medicalCaseId, MedicalCaseInputDto dto)
     {
@@ -365,7 +337,7 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
 
     #endregion
 
-    #region 处方标志与打印
+    #region 处方标志
 
     public async Task<MedicalCaseDetailDto?> SetPrescriptionFlagAsync(Guid id, SetPrescriptionFlagRequest request)
     {
@@ -396,67 +368,9 @@ public sealed class MedicalCaseRepository : IMedicalCaseRepository
         }
     }
 
-    public async Task<MedicalCaseDetailDto?> RecordPrintCompletedAsync(Guid medicalCaseId, PrintCompletedRequest request)
-    {
-        if (medicalCaseId == Guid.Empty)
-            throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
-
-        try
-        {
-            _logger.LogInformation("[REPO] MedicalCase.RecordPrintCompleted - Id={Id}", medicalCaseId);
-
-            var response = await _apiClient.MedicalCases.RecordPrintCompletedAsync(medicalCaseId, request);
-            if (response.Success)
-            {
-                _logger.LogInformation("[REPO] MedicalCase.RecordPrintCompleted completed - Id={Id}", medicalCaseId);
-                return response.Data;
-            }
-
-            _logger.LogWarning("[REPO] MedicalCase.RecordPrintCompleted failed - Id={Id}, Message={Message}",
-                medicalCaseId, response.Message);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] MedicalCase.RecordPrintCompleted failed - Id={Id}", medicalCaseId);
-            throw;
-        }
-    }
-
     #endregion
 
     #region 批量操作
-
-    public async Task<List<MedicalCaseDetailDto>> GetBatchDetailsAsync(List<Guid> ids)
-    {
-        if (ids == null || ids.Count == 0)
-            return [];
-
-        if (ids.Count > 50)
-            throw new ArgumentException("单次最多查询50个医案", nameof(ids));
-
-        try
-        {
-            _logger.LogInformation("[REPO] MedicalCase.GetBatchDetails - Count={Count}", ids.Count);
-
-            var request = new BatchDetailQueryDto { Ids = ids };
-            var response = await _apiClient.MedicalCases.GetBatchDetailsAsync(request);
-
-            if (response.Success && response.Data != null)
-            {
-                _logger.LogInformation("[REPO] MedicalCase.GetBatchDetails completed - Count={Count}", response.Data.Count);
-                return response.Data;
-            }
-
-            _logger.LogWarning("[REPO] MedicalCase.GetBatchDetails failed - Message={Message}", response.Message);
-            return [];
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] MedicalCase.GetBatchDetails failed - Count={Count}", ids.Count);
-            throw;
-        }
-    }
 
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
     {

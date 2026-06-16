@@ -34,7 +34,6 @@ public class RefitClientContractTests
         methods.Should().Contain(m => m.Name == "UpdatePatientAsync");
         methods.Should().Contain(m => m.Name == "DeletePatientAsync");
         methods.Should().Contain(m => m.Name == "GetPatientsAsync");
-        methods.Should().Contain(m => m.Name == "RestoreAsync");
     }
 
     [Fact]

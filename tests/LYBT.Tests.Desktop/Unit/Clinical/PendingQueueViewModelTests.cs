@@ -23,7 +23,6 @@ public class PendingQueueViewModelTests
     private readonly IWorkspaceHost _host;
     private readonly ILoggerFactory _loggerFactory;
     private readonly IMedicalCaseService _medicalCaseService;
-    private readonly IPendingQueueManager _pendingQueueManager;
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly ObservableCollection<PendingMedicalCaseDto> _emptyQueue;
 
@@ -39,11 +38,9 @@ public class PendingQueueViewModelTests
             .Returns(Task.FromResult(true));
         _host.CommonDialogService.Returns(dialogService);
         _medicalCaseService = Substitute.For<IMedicalCaseService>();
-        _pendingQueueManager = Substitute.For<IPendingQueueManager>();
         _navigationCoordinator = Substitute.For<INavigationCoordinator>();
 
         _emptyQueue = new ObservableCollection<PendingMedicalCaseDto>();
-        _pendingQueueManager.PendingQueue.Returns(_emptyQueue);
         _context.MedicalCaseId.Returns(Guid.Empty);
         _context.State.Returns(new WorkspaceState(EditState: EditState.ReadOnly, CanEdit: false));
     }
@@ -53,7 +50,6 @@ public class PendingQueueViewModelTests
         _host,
         _loggerFactory,
         _medicalCaseService,
-        _pendingQueueManager,
         _navigationCoordinator);
 
     [Fact]

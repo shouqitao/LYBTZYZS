@@ -90,8 +90,6 @@
     <ProjectReference Include="..\Modules\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />
     <!-- PRD: registration.md - 挂号管理模块 -->
     <ProjectReference Include="..\Modules\LYBT.Desktop.Registration\LYBT.Desktop.Registration.csproj" />
-    <!-- OpenSpec: implement-data-sync - 数据同步模块 -->
-    <ProjectReference Include="..\Modules\LYBT.Desktop.Sync\LYBT.Desktop.Sync.csproj" />
     <!-- OpenSpec: integrate-cardreader-module - 身份证读卡模块 (已迁移到Core目录) -->
     <ProjectReference Include="..\Core\LYBT.Desktop.CardReader\LYBT.Desktop.CardReader.csproj" />
   </ItemGroup>

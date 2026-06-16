@@ -45,7 +45,6 @@ public class MedicalCaseNegativeTests : WebApiE2ETestBase
             Gender = Gender.Male,
             PhoneNumber = $"138{Interlocked.Increment(ref _phoneSequence):D8}",
             IdNumber = GenerateValidIdNumber(),
-            Address = "北京市测试区测试街道1号",
             PinYinCode = "FCHZ"
         };
         var response = await PatientApi.CreatePatientAsync(patient);

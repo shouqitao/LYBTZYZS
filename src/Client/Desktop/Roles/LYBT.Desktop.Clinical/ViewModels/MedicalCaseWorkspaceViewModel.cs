@@ -151,7 +151,6 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
             Gender = CurrentPatientGenderDisplay,
             Age = CurrentPatient.Age,
             PhoneNumber = CurrentPatient.PhoneNumber,
-            VisitCount = CurrentPatient.VisitCount,
             RegistrationTime = RegistrationTime
         };
 
@@ -168,17 +167,6 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     {
         get => _currentStep;
         private set => SetProperty(ref _currentStep, value);
-    }
-
-    private string _remark = string.Empty;
-    public string Remark
-    {
-        get => _remark;
-        set
-        {
-            if (SetProperty(ref _remark, value) && _medicalCaseService.CachedMedicalCase != null)
-                _medicalCaseService.CachedMedicalCase.Remark = value;
-        }
     }
 
     private string _editReason = string.Empty;
@@ -271,7 +259,6 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         Commands.GetConsultationItem = () => ConsultationEditor.Consultation;
         Commands.GetPrescriptionItem = () => PrescriptionEditor.Prescription;
         Commands.GetAllHerbs = () => AllHerbs;
-        Commands.GetRemark = () => Remark;
         Commands.GetEditReason = () => EditReason;
         Commands.GetIsPrescriptionEnabled = () => IsPrescriptionEnabled;
 
@@ -514,7 +501,6 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
             var result = await _medicalCaseService.LoadDetailsAsync(MedicalCaseId);
             if (!result.success) return;
             if (result.detail?.Prescription != null) IsPrescriptionEnabled = true;
-            Remark = result.detail?.Remark ?? string.Empty;
             NeedsPrescription = true;
         }
         catch (Exception ex)
@@ -677,7 +663,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
             SetBusy(true, "正在保存...");
             await _medicalCaseService.SaveAndSuspendAsync(
                 MedicalCaseId, ConsultationEditor.GetConsultationData(),
-                PrescriptionEditor.GetPrescriptionData(), Remark);
+                PrescriptionEditor.GetPrescriptionData());
         }
         finally { SetBusy(false); }
     }
@@ -689,7 +675,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
             SetBusy(true, "正在处理...");
             await _medicalCaseService.SaveAndCancelAsync(
                 MedicalCaseId, ConsultationEditor.GetConsultationData(),
-                PrescriptionEditor.GetPrescriptionData(), Remark);
+                PrescriptionEditor.GetPrescriptionData());
         }
         finally { SetBusy(false); }
     }
@@ -710,7 +696,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
             _editStateMachine.Fire(WorkspaceEditEvent.Save, "save-changes");
             var result = await _medicalCaseService.SaveAndSuspendAsync(
                 MedicalCaseId, ConsultationEditor.GetConsultationData(),
-                PrescriptionEditor.GetPrescriptionData(), Remark);
+                PrescriptionEditor.GetPrescriptionData());
 
             if (result.Success)
             {

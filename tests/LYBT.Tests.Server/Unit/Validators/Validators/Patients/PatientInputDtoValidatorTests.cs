@@ -39,8 +39,7 @@ public class PatientInputDtoValidatorTests
         {
             Name = "张三",
             IdNumber = "110101199001011234",
-            PhoneNumber = "13800138000",
-            Address = "北京市朝阳区"
+            PhoneNumber = "13800138000"
         };
 
         // Act
@@ -58,10 +57,7 @@ public class PatientInputDtoValidatorTests
         {
             Name = "张三",
             IdNumber = "110101199001011234",
-            PhoneNumber = "13800138000",
-            Address = "北京市朝阳区",
-            AllergyHistory = null,
-            MedicalHistory = null
+            PhoneNumber = "13800138000"
         };
 
         // Act
@@ -329,69 +325,6 @@ public class PatientInputDtoValidatorTests
 
     #endregion
 
-    #region Length Limit Tests
-
-    [Fact]
-    public void Validate_WithAddressTooLong_ShouldFail()
-    {
-        // Arrange
-        var dto = CreateValidPatientInputDto();
-        dto.Address = new string('北', ValidationConstants.AddressMaxLength + 1);
-
-        // Act
-        var result = _validator.TestValidate(dto);
-
-        // Assert
-        result.ShouldHaveValidationErrorFor(x => x.Address)
-            .WithErrorMessage($"地址长度不能超过{ValidationConstants.AddressMaxLength}个字符");
-    }
-
-    [Fact]
-    public void Validate_WithAllergyHistoryTooLong_ShouldFail()
-    {
-        // Arrange
-        var dto = CreateValidPatientInputDto();
-        dto.AllergyHistory = new string('过', ValidationConstants.RemarkMaxLength + 1);
-
-        // Act
-        var result = _validator.TestValidate(dto);
-
-        // Assert
-        result.ShouldHaveValidationErrorFor(x => x.AllergyHistory)
-            .WithErrorMessage($"过敏史长度不能超过{ValidationConstants.RemarkMaxLength}个字符");
-    }
-
-    [Fact]
-    public void Validate_WithMedicalHistoryTooLong_ShouldFail()
-    {
-        // Arrange
-        var dto = CreateValidPatientInputDto();
-        dto.MedicalHistory = new string('病', ValidationConstants.LongRemarkMaxLength + 1);
-
-        // Act
-        var result = _validator.TestValidate(dto);
-
-        // Assert
-        result.ShouldHaveValidationErrorFor(x => x.MedicalHistory)
-            .WithErrorMessage($"既往病史长度不能超过{ValidationConstants.LongRemarkMaxLength}个字符");
-    }
-
-    [Fact]
-    public void Validate_WithEmergencyContactNameTooLong_ShouldFail()
-    {
-        // Arrange
-        var dto = CreateValidPatientInputDto();
-        dto.EmergencyContactName = new string('李', ValidationConstants.NameMaxLength + 1);
-
-        // Act
-        var result = _validator.TestValidate(dto);
-
-        // Assert
-        result.ShouldHaveValidationErrorFor(x => x.EmergencyContactName);
-    }
-
-    #endregion
-
     #region Error Message Tests
 
     [Fact]
@@ -427,8 +360,7 @@ public class PatientInputDtoValidatorTests
             Gender = Gender.Male,
             BirthDate = DateTime.Today.AddYears(-30),
             PhoneNumber = "13800138000",
-            IdNumber = "110101199001011234",
-            Address = "北京市朝阳区"
+            IdNumber = "110101199001011234"
         };
     }
 

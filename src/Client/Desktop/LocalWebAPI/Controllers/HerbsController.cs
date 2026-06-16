@@ -66,35 +66,12 @@ public class HerbsController : BaseApiController
         return HandleResult(result);
     }
 
-    [HttpPost("batch-enable")]
-    public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto request)
-    {
-        if (request?.Ids == null || request.Ids.Count == 0)
-            return ValidationFail("ids 不能为空");
-        var result = await _herbService.BatchUpdateStatusAsync(request.Ids, CommonStatus.Enabled);
-        return HandleResult(result);
-    }
 
-    [HttpPost("batch-disable")]
-    public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto request)
-    {
-        if (request?.Ids == null || request.Ids.Count == 0)
-            return ValidationFail("ids 不能为空");
-        var result = await _herbService.BatchUpdateStatusAsync(request.Ids, CommonStatus.Disabled);
-        return HandleResult(result);
-    }
 
     [HttpPost("{id}/toggle-status")]
     public async Task<IActionResult> ToggleStatus(Guid id)
     {
         var result = await _herbService.ToggleStatusAsync(id);
-        return HandleResult(result);
-    }
-
-    [HttpPost("{id}/restore")]
-    public async Task<IActionResult> Restore(Guid id)
-    {
-        var result = await _herbService.RestoreAsync(id);
         return HandleResult(result);
     }
 
@@ -121,27 +98,6 @@ public class HerbsController : BaseApiController
         return HandleResult(result);
     }
 
-    [HttpGet("import-template")]
-    [AllowAnonymous]
-    public IActionResult ExportTemplate()
-    {
-        var stream = _herbService.GenerateImportTemplate();
-        return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "herbs-template.xlsx");
-    }
 
-    [HttpGet("{id}/check-reference")]
-    public async Task<IActionResult> CheckReference(Guid id)
-    {
-        var result = await _herbService.CheckReferenceAsync(id);
-        return HandleResult(result);
-    }
 
-    [HttpPost("batch-check-reference")]
-    public async Task<IActionResult> BatchCheckReference([FromBody] BatchDeleteInputDto request)
-    {
-        if (request?.Ids == null || request.Ids.Count == 0)
-            return ValidationFail("ids 不能为空");
-        var result = await _herbService.BatchCheckReferenceAsync(request.Ids);
-        return HandleResult(result);
-    }
 }

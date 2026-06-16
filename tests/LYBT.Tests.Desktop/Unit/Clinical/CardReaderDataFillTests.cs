@@ -65,9 +65,7 @@ public class CardReaderDataFillTests
             Name = name,
             IdNumber = idNumber,
             Gender = Gender.Male,
-            BirthDate = new DateTime(1995, 5, 15),
-            LastVisitTime = lastVisitTime ?? new DateTime(2026, 3, 1),
-            VisitCount = visitCount
+            BirthDate = new DateTime(1995, 5, 15)
         };
     }
 
@@ -150,9 +148,7 @@ public class CardReaderDataFillTests
             {
                 Id = newPatientId,
                 Name = "李四",
-                IdNumber = "320102199505151234",
-                LastVisitTime = null,
-                VisitCount = 0
+                IdNumber = "320102199505151234"
             });
 
         // Act
@@ -212,7 +208,6 @@ public class CardReaderDataFillTests
         capturedInput.IdNumber.Should().Be("440101198812121234");
         capturedInput.Gender.Should().Be(Gender.Female);
         capturedInput.BirthDate.Should().Be(new DateTime(1988, 12, 12));
-        capturedInput.Address.Should().Be("江苏省南京市玄武区中山路1号");
         capturedInput.PhoneNumber.Should().BeNull("身份证不含电话号码");
     }
 

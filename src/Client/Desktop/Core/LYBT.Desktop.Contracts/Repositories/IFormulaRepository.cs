@@ -54,24 +54,9 @@ public interface IFormulaRepository
     Task<FormulaDetailDto?> ToggleStatusAsync(Guid id);
 
     /// <summary>
-    /// 恢复已删除的验方
-    /// </summary>
-    Task<FormulaDetailDto?> RestoreAsync(Guid id);
-
-    /// <summary>
     /// 批量删除验方
     /// </summary>
     Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids);
-
-    /// <summary>
-    /// 批量启用验方
-    /// </summary>
-    Task<BatchOperationResultDto?> BatchEnableAsync(List<Guid> ids);
-
-    /// <summary>
-    /// 批量禁用验方
-    /// </summary>
-    Task<BatchOperationResultDto?> BatchDisableAsync(List<Guid> ids);
 
     #endregion
 

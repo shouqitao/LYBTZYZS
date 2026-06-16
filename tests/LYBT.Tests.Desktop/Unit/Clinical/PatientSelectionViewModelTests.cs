@@ -34,7 +34,6 @@ public class PatientSelectionViewModelTests
     private readonly ICommonDialogService _commonDialogService;
     private readonly ICardReaderService _cardReaderService;
     private readonly IPatientCardReaderIntegration _patientIntegration;
-    private readonly IPendingQueueManager _pendingQueueManager;
 
     public PatientSelectionViewModelTests()
     {
@@ -58,8 +57,6 @@ public class PatientSelectionViewModelTests
         _navigationCoordinator = Substitute.For<INavigationCoordinator>();
         _cardReaderService = Substitute.For<ICardReaderService>();
         _patientIntegration = Substitute.For<IPatientCardReaderIntegration>();
-        _pendingQueueManager = Substitute.For<IPendingQueueManager>();
-        _pendingQueueManager.PendingQueue.Returns(new ObservableCollection<PendingMedicalCaseDto>());
     }
 
     private PatientSelectionViewModel CreateSut() => new(
@@ -69,8 +66,7 @@ public class PatientSelectionViewModelTests
         _medicalCaseService,
         _navigationCoordinator,
         _cardReaderService,
-        _patientIntegration,
-        _pendingQueueManager);
+        _patientIntegration);
 
     private static object? GetProperty(object obj, string name)
         => obj.GetType().GetProperty(name)?.GetValue(obj);

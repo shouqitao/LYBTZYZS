@@ -28,7 +28,6 @@ public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
     protected IHerbApi HerbApi { get; }
     protected IFormulaApi FormulaApi { get; }
     protected IMedicalCaseApi MedicalCaseApi { get; }
-    protected ISyncApi SyncApi { get; }
     protected IRegistrationApi RegistrationApi { get; }
     
     // Token 管理
@@ -70,7 +69,6 @@ public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
         HerbApi = ServiceProvider.GetRequiredService<IHerbApi>();
         FormulaApi = ServiceProvider.GetRequiredService<IFormulaApi>();
         MedicalCaseApi = ServiceProvider.GetRequiredService<IMedicalCaseApi>();
-        SyncApi = ServiceProvider.GetRequiredService<ISyncApi>();
         RegistrationApi = ServiceProvider.GetRequiredService<IRegistrationApi>();
         
         DataTracker = new TestDataTracker(ServiceProvider, Logger);
@@ -305,7 +303,6 @@ public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
         ConfigureClient<IHerbApi>(services, baseUrl, timeoutSeconds, skipSslValidation, refitSettings, true);
         ConfigureClient<IFormulaApi>(services, baseUrl, timeoutSeconds, skipSslValidation, refitSettings, true);
         ConfigureClient<IMedicalCaseApi>(services, baseUrl, timeoutSeconds, skipSslValidation, refitSettings, true);
-        ConfigureClient<ISyncApi>(services, baseUrl, timeoutSeconds, skipSslValidation, refitSettings, true);
         ConfigureClient<IRegistrationApi>(services, baseUrl, timeoutSeconds, skipSslValidation, refitSettings, true);
     }
 

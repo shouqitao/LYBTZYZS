@@ -61,9 +61,6 @@ public class LocalDbContext : DbContext
     /// <summary>处方药材关联表</summary>
     public DbSet<PrescriptionItem> PrescriptionItems => Set<PrescriptionItem>();
 
-    /// <summary>医案打印日志表 - T4-S5-03</summary>
-    public DbSet<MedicalCasePrintLog> MedicalCasePrintLogs => Set<MedicalCasePrintLog>();
-
     /// <summary>挂号表 - Sprint 2</summary>
     public DbSet<Registration> Registrations => Set<Registration>();
 
@@ -133,18 +130,6 @@ public class LocalDbContext : DbContext
             .WithOne()
             .HasForeignKey(i => i.PrescriptionId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        // MedicalCase -> MedicalCasePrintLog (1:N) - T4-S5-03
-        modelBuilder.Entity<MedicalCase>()
-            .HasMany(mc => mc.PrintLogs)
-            .WithOne(pl => pl.MedicalCase!)
-            .HasForeignKey(pl => pl.MedicalCaseId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // MedicalCasePrintLog: PrintType 枚举存储为 int - T4-S5-03
-        modelBuilder.Entity<MedicalCasePrintLog>()
-            .Property(l => l.PrintType)
-            .HasConversion<int>();
     }
 
     /// <summary>

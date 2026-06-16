@@ -1,4 +1,4 @@
-﻿using System.IO.Compression;
+using System.IO.Compression;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
@@ -11,7 +11,6 @@ using LYBT.Module.Herbs;
 using LYBT.Module.MedicalCases;
 using LYBT.Module.Patients;
 using LYBT.Module.Registration;
-using LYBT.Module.Sync;
 using LYBT.Module.Users;
 using LYBT.WebAPI.Filters;
 using Microsoft.AspNetCore.DataProtection;
@@ -103,9 +102,6 @@ public static class ServiceCollectionExtensions
 
         // 7. 病例模块
         services.AddMedicalCaseModule();
-
-        // 8. 同步模块 - OpenSpec: implement-data-sync
-        services.AddSyncModule(configuration);
 
         return services;
     }

@@ -23,16 +23,12 @@ namespace LYBT.Module.MedicalCases.Services
     {
         private readonly IMedicalCaseRepository _repository;
         private readonly IUserCrossModuleService _userCrossModule;
-        private readonly IMedicalCaseAuditService _auditService;
-        private readonly IMedicalCasePermissionService _permissionService;
         private readonly ICacheInvalidationService _cacheInvalidation;
         private readonly IRegistrationRepository _registrationRepository;
 
         public MedicalCaseStateService(
             IMedicalCaseRepository repository,
             IUserCrossModuleService userCrossModule,
-            IMedicalCaseAuditService auditService,
-            IMedicalCasePermissionService permissionService,
             ILogger<MedicalCaseStateService> logger,
             ICacheInvalidationService cacheInvalidation,
             IRegistrationRepository registrationRepository)
@@ -40,8 +36,6 @@ namespace LYBT.Module.MedicalCases.Services
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _userCrossModule = userCrossModule ?? throw new ArgumentNullException(nameof(userCrossModule));
-            _auditService = auditService ?? throw new ArgumentNullException(nameof(auditService));
-            _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
             _cacheInvalidation = cacheInvalidation ?? throw new ArgumentNullException(nameof(cacheInvalidation));
             _registrationRepository = registrationRepository ?? throw new ArgumentNullException(nameof(registrationRepository));
         }
@@ -196,11 +190,8 @@ namespace LYBT.Module.MedicalCases.Services
                 return null;
             }
 
-            // 保存变更前的状态用于审计
-            var beforeState = CloneMedicalCaseForAudit(medicalCase);
-
             // 权限检查
-            MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, operatorId, isAdmin, "Suspend", _logger);
+            MedicalCaseServiceHelper.EnsureCanEdit(medicalCase, operatorId, isAdmin, "Suspend", _logger);
 
             // 业务规则验证：只有Suspended/Active状态可以挂起
             if (medicalCase.CaseStatus == MedicalCaseStatus.Completed)
@@ -230,17 +221,6 @@ namespace LYBT.Module.MedicalCases.Services
             var result = await _repository.UpdateAsync(medicalCase, cancellationToken);
             await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
 
-            // 记录审计日志
-            var operatorInfo = await GetOperatorInfoAsync(operatorId, isAdmin, cancellationToken);
-            await _auditService.LogAsync(
-                before: beforeState,
-                after: result,
-                operatorId: operatorId,
-                operatorName: operatorInfo.Name,
-                role: operatorInfo.Role,
-                operationType: AuditOperationType.Update,
-                cancellationToken: cancellationToken);
-
             return result;
         }
 
@@ -265,11 +245,8 @@ namespace LYBT.Module.MedicalCases.Services
                 return null;
             }
 
-            // 保存变更前的状态用于审计
-            var beforeState = CloneMedicalCaseForAudit(medicalCase);
-
             // 权限检查
-            MedicalCaseServiceHelper.EnsureCanEdit(_permissionService, medicalCase, operatorId, isAdmin, "Cancel", _logger);
+            MedicalCaseServiceHelper.EnsureCanEdit(medicalCase, operatorId, isAdmin, "Cancel", _logger);
 
             // T5-P2-16: 非当天本人取消需原因
             var isSameDay = medicalCase.CreatedAt.Date == DateTime.Today;
@@ -286,13 +263,6 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 _logger.LogWarning("[SVC] MedicalCase.Cancel → AlreadyCompleted - MedicalCaseId={MedicalCaseId}", id);
                 throw new BusinessException(EC.McCompletedCannotCancel, "已完成的医案不可取消");
-            }
-
-            // P1 FIX: 已打印的医案不可取消 (保护打印记录来源)
-            if (medicalCase.PrintCount > 0)
-            {
-                _logger.LogWarning("[SVC] MedicalCase.Cancel → AlreadyPrinted - MedicalCaseId={MedicalCaseId} PrintCount={PrintCount}", id, medicalCase.PrintCount);
-                throw new BusinessException(EC.McPrintedCannotDelete, "已打印的医案不可取消");
             }
 
             // 已软删除的不重复处理
@@ -312,18 +282,6 @@ namespace LYBT.Module.MedicalCases.Services
             await RollbackRegistrationAsync(id, result.CaseNumber ?? "N/A", cancellationToken);
 
             await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
-
-            // 记录审计日志
-            var operatorInfo = await GetOperatorInfoAsync(operatorId, isAdmin, cancellationToken);
-            await _auditService.LogAsync(
-                before: beforeState,
-                after: result,
-                operatorId: operatorId,
-                operatorName: operatorInfo.Name,
-                role: operatorInfo.Role,
-                operationType: AuditOperationType.SoftDelete,
-                reason: reason,
-                cancellationToken: cancellationToken);
 
             return result;
         }
@@ -383,13 +341,7 @@ namespace LYBT.Module.MedicalCases.Services
                 registration.Id, medicalCaseId);
         }
 
-        #region Private Helper Methods (委托给 MedicalCaseServiceHelper)
-
-        private static MedicalCase CloneMedicalCaseForAudit(MedicalCase source)
-            => MedicalCaseServiceHelper.CloneMedicalCaseForAudit(source);
-
-        private async Task<(string Name, UserRole Role)> GetOperatorInfoAsync(Guid userId, bool isAdmin, CancellationToken cancellationToken = default)
-            => await MedicalCaseServiceHelper.GetOperatorInfoAsync(_userCrossModule, userId, isAdmin, _logger, cancellationToken);
+        #region Private Helper Methods
 
         #endregion
     }

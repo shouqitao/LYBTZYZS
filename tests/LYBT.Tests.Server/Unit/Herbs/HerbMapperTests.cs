@@ -356,68 +356,6 @@ public class HerbMapperTests
 
     #endregion
 
-    #region ToEntityFromImport 测试
-
-    [Fact]
-    public void ToEntityFromImport_WithValidDto_ShouldMapBasicProperties()
-    {
-        // Arrange
-        var dto = new HerbImportItemDto
-        {
-            Name = "当归",
-            Unit = "克",
-            Price = 5.50m,
-            Origin = "甘肃",
-            Spec = "特级",
-            Effect = "补血活血",
-            Remark = "贵重药材"
-        };
-
-        // Act
-        var entity = _mapper.ToEntityFromImport(dto);
-
-        // Assert
-        entity.Should().NotBeNull();
-        entity.Name.Should().Be(dto.Name);
-        entity.Unit.Should().Be(dto.Unit);
-        entity.Price.Should().Be(dto.Price);
-        entity.Origin.Should().Be(dto.Origin);
-        entity.Spec.Should().Be(dto.Spec);
-        entity.Effect.Should().Be(dto.Effect);
-    }
-
-    [Fact]
-    public void ToEntityFromImport_ShouldIgnoreManyFields()
-    {
-        // Arrange
-        var dto = new HerbImportItemDto
-        {
-            Name = "当归",
-            Unit = "克",
-            Price = 5.50m
-        };
-
-        // Act
-        var entity = _mapper.ToEntityFromImport(dto);
-
-        // Assert
-        entity.Id.Should().NotBe(Guid.Empty); // Constructor default = Guid.NewGuid()
-        entity.Status.Should().Be(CommonStatus.Enabled); // Constructor default, not mapped
-        entity.Properties.Should().BeNull(); // Ignored
-        entity.Usage.Should().BeNull(); // Ignored
-        entity.PinYinCode.Should().BeNull(); // Ignored
-        entity.CostPrice.Should().BeNull(); // Ignored
-        entity.Category.Should().BeNull(); // Ignored
-        entity.CreatedAt.Should().BeAfter(DateTime.MinValue); // Constructor default = UtcNow
-        entity.CreatedBy.Should().BeNull(); // Ignored
-        entity.UpdatedAt.Should().BeNull(); // Ignored
-        entity.UpdatedBy.Should().BeNull(); // Ignored
-        entity.RowVersion.Should().BeNull(); // Ignored
-        entity.IsDeleted.Should().Be(false); // Ignored (default)
-    }
-
-    #endregion
-
     #region 辅助方法
 
     private static Herb CreateTestHerb(string name = "当归", decimal price = 5.50m)

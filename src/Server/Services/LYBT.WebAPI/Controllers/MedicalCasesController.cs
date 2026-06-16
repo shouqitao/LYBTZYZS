@@ -207,32 +207,6 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 批量获取医案详情（含处方）
-        /// OpenSpec: consolidate-medicalcase-detail-queries
-        /// 解决N+1查询问题，一次请求获取多个医案详情
-        /// </summary>
-        [HttpPost("batch-details")]
-        [ProducesResponseType(typeof(ApiResponse<List<MedicalCaseDetailDto>>), 200)]
-        [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> GetBatchDetails([FromBody] BatchDetailQueryDto dto)
-        {
-            if (dto.Ids == null || dto.Ids.Count == 0)
-            {
-                return ValidationFail("请至少选择一个医案");
-            }
-
-            if (dto.Ids.Count > 50)
-            {
-                return ValidationFail("单次最多查询50个医案");
-            }
-
-            var entities = await _facade.GetBatchAsync(dto.Ids);
-            var dtos = entities.Select(e => _mapper.MapToMedicalCaseDetailDto(e)).ToList();
-
-            return Success(dtos, $"查询成功，共{dtos.Count}条记录");
-        }
-
-        /// <summary>
         /// 获取医案详情
         /// Epic #1612: 使用GetDetailQuery预加载Consultation和Prescription
         /// </summary>

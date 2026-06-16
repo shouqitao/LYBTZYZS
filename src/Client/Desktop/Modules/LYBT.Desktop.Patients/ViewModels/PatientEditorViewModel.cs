@@ -45,7 +45,6 @@ public partial class PatientEditorViewModel : ObservableObject
             BirthDate = dto.BirthDate,
             IdNumber = dto.IdNumber,
             PhoneNumber = dto.PhoneNumber,
-            Address = dto.Address,
             Status = dto.Status
         };
 
@@ -77,8 +76,7 @@ public partial class PatientEditorViewModel : ObservableObject
             Gender = Patient.Gender,
             BirthDate = Patient.BirthDate,
             IdNumber = Patient.IdNumber?.Trim(),
-            PhoneNumber = Patient.PhoneNumber?.Trim(),
-            Address = Patient.Address?.Trim()
+            PhoneNumber = Patient.PhoneNumber?.Trim()
         };
     }
 

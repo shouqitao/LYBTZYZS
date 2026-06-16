@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Infrastructure.Controls
+namespace LYBT.Desktop.Infrastructure.Controls
 {
     /// <summary>
     /// 患者信息展示模型 - 用于PatientInfoCardControl数据绑定
@@ -30,11 +30,6 @@
         /// 联系电话
         /// </summary>
         public string? PhoneNumber { get; set; }
-
-        /// <summary>
-        /// 就诊次数
-        /// </summary>
-        public int VisitCount { get; set; }
 
         /// <summary>
         /// 挂号时间

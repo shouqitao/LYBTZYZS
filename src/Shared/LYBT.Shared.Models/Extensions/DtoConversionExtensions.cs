@@ -25,7 +25,6 @@ public static class DtoConversionExtensions
             PatientId = dto.PatientId,
             UserId = dto.UserId,
             // VisitDate/ConsultationDate已删除，使用CreatedAt代替
-            Remark = dto.Remark,
             Consultation = dto.Consultation?.ToInputDto(),
             Prescription = dto.Prescription?.ToPrescriptionInputDto()
         };

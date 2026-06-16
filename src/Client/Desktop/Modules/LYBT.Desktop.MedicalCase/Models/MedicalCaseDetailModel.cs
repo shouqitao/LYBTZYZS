@@ -24,7 +24,6 @@ public class MedicalCaseDetailModel : ValidatableModelBase
     private string _patientName = string.Empty;
     // ConsultationDate已删除，使用CreatedAt代替
     private MedicalCaseStatus _status = MedicalCaseStatus.Suspended;
-    private string? _remark;
 
     // 诊断摘要（只读）
     private string? _presentIllness;
@@ -73,14 +72,6 @@ public class MedicalCaseDetailModel : ValidatableModelBase
     {
         get => _status;
         set => SetProperty(ref _status, value);
-    }
-
-    /// <summary>备注（可编辑）</summary>
-    [StringLength(ValidationConstants.RemarkMaxLength, ErrorMessage = "备注长度不能超过1000个字符")]
-    public string? Remark
-    {
-        get => _remark;
-        set => SetPropertyAndValidate(ref _remark, value);
     }
 
     #region 诊断摘要（只读）
@@ -241,7 +232,6 @@ public class MedicalCaseDetailModel : ValidatableModelBase
             PatientName = PatientName,
             // ConsultationDate已删除，使用CreatedAt代替
             Status = Status,
-            Remark = Remark,
             PresentIllness = PresentIllness,
             TongueDiagnosis = TongueDiagnosis,
             PulseDiagnosis = PulseDiagnosis,

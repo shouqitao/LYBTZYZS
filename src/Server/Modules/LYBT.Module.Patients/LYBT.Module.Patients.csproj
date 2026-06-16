@@ -13,7 +13,6 @@
 	<ItemGroup>
 		<!-- OpenSpec: adopt-mapperly-unified-mapping - 迁移到Mapperly -->
 		<PackageReference Include="Riok.Mapperly" />
-		<PackageReference Include="EPPlus" />
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design">

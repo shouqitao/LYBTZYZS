@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Patients;
+using LYBT.Entities.Patients;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -46,32 +46,6 @@ namespace LYBT.Module.Patients.Interfaces
         /// </summary>
         Task<Result<List<PatientDetailDto>>> SearchAsync(string keyword, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// 批量导入患者数据 (Epic #1934 FR-001)
-        /// 支持部分成功模式、失败恢复机制（BR-002）
-        /// </summary>
-        /// <param name="stream">Excel文件流</param>
-        /// <param name="fileName">文件名（可选，用于日志记录）</param>
-        /// <param name="cancellationToken">取消令牌</param>
-        /// <returns>批量导入结果，包含成功/失败/跳过数量和详细失败信息</returns>
-        Task<Result<PatientBatchImportResultDto>> BatchImportAsync(Stream stream, string? fileName = null, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// 导出患者导入模板 (Epic #1934 FR-002)
-        /// </summary>
-        /// <param name="config">模板配置（示例数据行数等）</param>
-        /// <param name="cancellationToken">取消令牌</param>
-        /// <returns>Excel模板文件流</returns>
-        Task<MemoryStream> ExportTemplateAsync(ExportTemplateDto config, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// 导出患者数据到Excel (Epic #1934 FR-003)
-        /// </summary>
-        /// <param name="keyword">搜索关键词（可选）</param>
-        /// <param name="cancellationToken">取消令牌</param>
-        /// <returns>Excel文件流</returns>
-        Task<MemoryStream> ExportPatientsAsync(string? keyword = null, CancellationToken cancellationToken = default);
-
         #region Entity直接返回方法 (合并自IPatientServiceOptimized)
 
         /// <summary>
@@ -96,18 +70,12 @@ namespace LYBT.Module.Patients.Interfaces
 
         #endregion
 
-        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复方法 ==========
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换方法 ==========
 
         /// <summary>
         /// 切换患者状态（启用/禁用）
         /// </summary>
         Task<Result<PatientDetailDto>> ToggleStatusAsync(Guid id, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// 恢复软删除的患者
-        /// </summary>
-        /// <param name="id">患者ID</param>
-        Task<Result<PatientDetailDto>> RestoreAsync(Guid id, CancellationToken cancellationToken = default);
 
         // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
 
@@ -116,20 +84,5 @@ namespace LYBT.Module.Patients.Interfaces
         /// </summary>
         Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, CancellationToken cancellationToken = default);
 
-        // ========== OpenSpec: implement-data-sync - 引用检查 ==========
-
-        /// <summary>
-        /// 检查患者是否被医案引用
-        /// </summary>
-        /// <param name="patientId">患者ID</param>
-        /// <returns>引用检查结果</returns>
-        Task<Result<PatientReferenceCheckDto>> CheckReferenceAsync(Guid patientId, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// 批量检查患者引用关系
-        /// </summary>
-        /// <param name="patientIds">患者ID列表</param>
-        /// <returns>引用检查结果列表</returns>
-        Task<Result<List<PatientReferenceCheckDto>>> BatchCheckReferenceAsync(List<Guid> patientIds, CancellationToken cancellationToken = default);
     }
 }

@@ -64,12 +64,7 @@ public interface IPatientRepository
 
     #endregion
 
-    #region 恢复和批量操作
-
-    /// <summary>
-    /// 恢复已删除的患者
-    /// </summary>
-    Task<PatientDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default);
+    #region 批量操作
 
     /// <summary>
     /// 批量删除患者

@@ -63,8 +63,6 @@
                         <DataGridTextColumn Header="性别" Binding="{Binding Gender}" Width="50"/>
                         <DataGridTextColumn Header="年龄" Binding="{Binding Age}" Width="50"/>
                         <DataGridTextColumn Header="电话" Binding="{Binding PhoneNumber}" Width="120"/>
-                        <DataGridTextColumn Header="最近就诊" Binding="{Binding LastVisitTime, StringFormat=yyyy-MM-dd}" Width="100"/>
-                        <DataGridTextColumn Header="就诊次数" Binding="{Binding VisitCount}" Width="70"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
@@ -79,21 +77,9 @@
                 BirthDate="{Binding PatientDetail.BirthDate}"
                 Age="{Binding PatientDetail.Age}"
                 IdNumber="{Binding PatientDetail.IdNumber}"
-                IdType="{Binding PatientDetail.IdType}"
-                MaritalStatus="{Binding PatientDetail.MaritalStatus}"
-                BloodType="{Binding PatientDetail.BloodType}"
                 PhoneNumber="{Binding PatientDetail.PhoneNumber}"
-                Address="{Binding PatientDetail.Address}"
-                EmergencyContactName="{Binding PatientDetail.EmergencyContactName}"
-                EmergencyContactPhone="{Binding PatientDetail.EmergencyContactPhone}"
-                EmergencyContactRelation="{Binding PatientDetail.EmergencyContactRelation}"
-                AllergyHistory="{Binding PatientDetail.AllergyHistory}"
-                MedicalHistory="{Binding PatientDetail.MedicalHistory}"
-                LastVisitTime="{Binding PatientDetail.LastVisitTime}"
-                VisitCount="{Binding PatientDetail.VisitCount}"
                 Status="{Binding PatientDetail.Status}"
                 ShowStatus="False"
-                DisableReason="{Binding PatientDetail.DisableReason}"
                 CreatedAt="{Binding PatientDetail.CreatedAt}"
                 UpdatedAt="{Binding PatientDetail.UpdatedAt}"/>
         </controls:MasterDetailLayout.DetailContent>

@@ -73,22 +73,4 @@ public partial class HerbMapper
     [MapperIgnoreTarget(nameof(Herb.RowVersion))]
     [MapperIgnoreTarget(nameof(Herb.IsDeleted))]
     public partial void UpdateEntity(HerbInputDto dto, Herb entity);
-
-    /// <summary>
-    /// HerbImportItemDto转换为Herb实体（批量导入）
-    /// </summary>
-    [MapperIgnoreTarget(nameof(Herb.Id))]
-    [MapperIgnoreTarget(nameof(Herb.Status))]
-    [MapperIgnoreTarget(nameof(Herb.Properties))]
-    [MapperIgnoreTarget(nameof(Herb.Usage))]
-    [MapperIgnoreTarget(nameof(Herb.PinYinCode))]
-    [MapperIgnoreTarget(nameof(Herb.CostPrice))]
-    [MapperIgnoreTarget(nameof(Herb.Category))]
-    [MapperIgnoreTarget(nameof(Herb.CreatedAt))]
-    [MapperIgnoreTarget(nameof(Herb.CreatedBy))]
-    [MapperIgnoreTarget(nameof(Herb.UpdatedAt))]
-    [MapperIgnoreTarget(nameof(Herb.UpdatedBy))]
-    [MapperIgnoreTarget(nameof(Herb.RowVersion))]
-    [MapperIgnoreTarget(nameof(Herb.IsDeleted))]
-    public partial Herb ToEntityFromImport(HerbImportItemDto dto);
 }

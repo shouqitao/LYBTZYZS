@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
-    /// 认证控制器 - MVP简化版
+    /// 认证控制器 - 简化版
     /// 提供用户登录、登出和密码管理功能
     /// </summary>
     [ApiController]
@@ -21,16 +21,13 @@ namespace LYBT.WebAPI.Controllers
     public class AuthController : BaseApiController
     {
         private readonly IAuthService _authService;
-        private readonly IConfiguration Configuration;
 
         public AuthController(
             IAuthService authService,
-            ILogger<AuthController> logger,
-            IConfiguration configuration)
+            ILogger<AuthController> logger)
             : base(logger)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
-            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
         /// <summary>
@@ -43,7 +40,6 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 401)]
         public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateModel() is { } modelError) return modelError;
 
             if (request == null)
@@ -56,90 +52,27 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("密码不能为空");
 
             var result = await _authService.LoginAsync(request);
-            // Issue #1864: 使用HandleAuthResult根据ErrorCode返回正确HTTP状态码
             return HandleAuthResult(result, "登录成功");
         }
 
         /// <summary>
-        /// 使用AutoLoginToken自动登录
-        /// OpenSpec: refactor-login-authentication (CVT-001)
-        /// </summary>
-        /// <param name="request">自动登录请求 - 包含用户名和AutoLoginToken</param>
-        /// <returns>登录响应 - 包含JWT令牌、用户信息、过期时间、新的AutoLoginToken</returns>
-        /// <remarks>
-        /// <para>功能: 使用本地存储的AutoLoginToken进行自动登录</para>
-        /// <para>安全: AutoLoginToken可被服务端随时撤销，不暴露用户密码</para>
-        /// <para>更新: 成功登录后返回新的AutoLoginToken（Token轮换机制）</para>
-        /// </remarks>
-        [HttpPost("auto-login")]
-        [AllowAnonymous]
-        [EnableRateLimiting("Login")]
-        [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
-        [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 401)]
-        public async Task<IActionResult> AutoLoginAsync([FromBody] AutoLoginRequest request)
-        {
-            if (ValidateModel() is { } modelError) return modelError;
-
-            if (request == null)
-                return ValidationFail("自动登录请求不能为空");
-
-            if (string.IsNullOrWhiteSpace(request.UserName))
-                return ValidationFail("用户名不能为空");
-
-            if (string.IsNullOrWhiteSpace(request.AutoLoginToken))
-                return ValidationFail("AutoLoginToken不能为空");
-
-            var result = await _authService.LoginWithAutoTokenAsync(request);
-            return HandleAuthResult(result, "自动登录成功");
-        }
-
-        /// <summary>
         /// 用户登出
-        /// Issue #1864 AUTH-008: 允许过期Token登出，确保服务端会话被正确清理
-        /// Issue #1864 AUTH-009: Logout后必须重新登录，不支持会话恢复
         /// </summary>
         [HttpPost("logout")]
-        [AllowAnonymous] // Issue #1864: 允许过期Token访问登出端点
+        [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         public async Task<IActionResult> LogoutAsync([FromBody] LogoutRequest request)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateModel() is { } modelError) return modelError;
 
             if (request == null)
                 return ValidationFail("登出请求不能为空");
 
-            // Issue #1864: 登出请求必须提供RefreshToken或用户名
-            // RefreshToken用于精确定位会话，用户名用于审计日志
             if (string.IsNullOrWhiteSpace(request.RefreshToken) && string.IsNullOrWhiteSpace(request.UserName))
                 return ValidationFail("必须提供RefreshToken或用户名");
 
             var result = await _authService.LogoutAsync(request);
             return HandleBoolResult(result, "登出成功");
-        }
-
-        /// <summary>
-        /// 刷新访问令牌
-        /// </summary>
-        [HttpPost("refresh")]
-        [AllowAnonymous]
-        [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
-        [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 401)]
-        public async Task<IActionResult> RefreshTokenAsync([FromBody] RefreshTokenRequest request)
-        {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            if (ValidateModel() is { } modelError) return modelError;
-
-            if (request == null)
-                return ValidationFail("刷新令牌请求不能为空");
-
-            if (string.IsNullOrWhiteSpace(request.RefreshToken))
-                return ValidationFail("RefreshToken不能为空");
-
-            var result = await _authService.RefreshTokenAsync(request.RefreshToken);
-            // Issue #1864: 使用HandleAuthResult根据ErrorCode返回正确HTTP状态码
-            // TokenRevoked/RefreshTokenExpired/RefreshTokenInvalid -> 401
-            return HandleAuthResult(result, "Token刷新成功");
         }
 
         /// <summary>
@@ -150,7 +83,6 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<object>), 401)]
         public async Task<IActionResult> ValidateTokenFromHeaderAsync()
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             var authHeader = Request.Headers.Authorization.FirstOrDefault();
             if (string.IsNullOrWhiteSpace(authHeader))
             {
@@ -183,7 +115,6 @@ namespace LYBT.WebAPI.Controllers
             }
             else
             {
-                // Sprint3-Batch3: 使用统一 ModuleErrorCode
                 var errorCode = result.ModuleErrorCode?.ToFormattedString() ?? "ERR-10202";
                 return Unauthorized(new { valid = false, message = result.ErrorMessage ?? "Token is invalid", errorCode });
             }

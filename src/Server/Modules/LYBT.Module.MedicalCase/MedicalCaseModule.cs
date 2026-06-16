@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.MedicalCases.Mapping;
@@ -25,27 +25,19 @@ namespace LYBT.Module.MedicalCases
         {
             // 仓储层 - 统一实现
             services.AddScoped<IMedicalCaseRepository, MedicalCaseRepository>();
-            services.AddScoped<IMedicalCaseAuditLogRepository, MedicalCaseAuditLogRepository>();
             services.AddScoped<IMedicalCaseReferenceRepository, MedicalCaseReferenceRepository>();
 
-            // 服务层 - Phase 3: CQRS拆分（Command/Query/State/Print分离）
+            // 服务层 - Phase 3: CQRS拆分（Command/Query/State分离）
             services.AddScoped<IMedicalCaseCommandService, MedicalCaseCommandService>();
             services.AddScoped<IMedicalCaseQueryService, MedicalCaseQueryService>();
             services.AddScoped<IMedicalCaseStateService, MedicalCaseStateService>();
-            services.AddScoped<IMedicalCasePrintService, MedicalCasePrintService>();
 
             // Architecture Fix: 注册跨模块查询服务 (Task 1.2)
             services.AddScoped<IMedicalCaseReferenceService, MedicalCaseReferenceService>();
             // Architecture Fix: 注册跨模块服务接口，供Patients模块使用
             services.AddScoped<IMedicalCaseCrossModuleService, MedicalCaseReferenceService>();
 
-            // OpenSpec: refactor-medicalcase-management - 权限服务
-            services.AddScoped<IMedicalCasePermissionService, MedicalCasePermissionService>();
-
-            // OpenSpec: refactor-medicalcase-management - 审计服务 (LIFECYCLE-008)
-            services.AddScoped<IMedicalCaseAuditService, MedicalCaseAuditService>();
-
-            // 门面服务 - 聚合5个CQRS服务，降低Controller依赖数量
+            // 门面服务 - 聚合CQRS服务，降低Controller依赖数量
             services.AddScoped<IMedicalCaseFacade, MedicalCaseFacade>();
 
             // Epic #1961: 注册验证器 - 使用统一的 MedicalCaseInputDtoValidator

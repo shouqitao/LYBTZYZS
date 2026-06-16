@@ -18,24 +18,14 @@ public class MedicalCaseFacade : IMedicalCaseFacade
     private readonly IMedicalCaseCommandService _commandService;
     private readonly IMedicalCaseQueryService _queryService;
     private readonly IMedicalCaseStateService _stateService;
-    private readonly IMedicalCasePermissionService _permissionService;
-    private readonly IMedicalCaseAuditService _auditService;
-    private readonly IMedicalCasePrintService _printService;
-
     public MedicalCaseFacade(
         IMedicalCaseCommandService commandService,
         IMedicalCaseQueryService queryService,
-        IMedicalCaseStateService stateService,
-        IMedicalCasePermissionService permissionService,
-        IMedicalCaseAuditService auditService,
-        IMedicalCasePrintService printService)
+        IMedicalCaseStateService stateService)
     {
         _commandService = commandService;
         _queryService = queryService;
         _stateService = stateService;
-        _permissionService = permissionService;
-        _auditService = auditService;
-        _printService = printService;
     }
 
     // ===== 写操作 - 委托 CommandService =====
@@ -51,25 +41,6 @@ public class MedicalCaseFacade : IMedicalCaseFacade
 
     public Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId, bool isAdmin)
         => _commandService.BatchDeleteAsync(ids, operatorId, isAdmin);
-
-    public Task<MedicalCase?> RecordPrintCompletedAsync(
-        Guid medicalCaseId,
-        LYBT.Shared.Models.Enums.PrintType printType,
-        Guid printedBy,
-        string printedByName,
-        string? printerName = null)
-        => _printService.RecordPrintCompletedAsync(medicalCaseId, printType, printedBy, printedByName, printerName);
-
-    /// <inheritdoc />
-    public Task<bool> AddPrintLogAsync(
-        Guid medicalCaseId,
-        LYBT.Shared.Models.Enums.PrintType printType,
-        bool isSuccess,
-        Guid printedBy,
-        string printedByName,
-        string? printerName = null,
-        string? errorMessage = null)
-        => _printService.AddPrintLogAsync(medicalCaseId, printType, isSuccess, printedBy, printedByName, printerName, errorMessage);
 
     // ===== 状态操作 - 委托 StateService =====
 
@@ -119,14 +90,4 @@ public class MedicalCaseFacade : IMedicalCaseFacade
     public Task<List<MedicalCase>> GetBatchAsync(List<Guid> ids)
         => _queryService.GetBatchAsync(ids);
 
-    // ===== 权限 - 委托 PermissionService =====
-
-    public MedicalCasePermissionDto GetPermissions(Guid userId, UserRole role, MedicalCase mc)
-        => _permissionService.GetPermissions(userId, role, mc);
-
-    // ===== 审计 - 委托 AuditService =====
-
-    public Task<(List<MedicalCaseAuditLog> Logs, int TotalCount)> GetAuditLogsPagedAsync(
-        Guid medicalCaseId, int page = 1, int pageSize = 20)
-        => _auditService.GetLogsPagedAsync(medicalCaseId, page, pageSize);
 }

@@ -329,7 +329,13 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                 // 批量获取详情并按时间排序
                 if (completedWithPrescriptionIds != null && completedWithPrescriptionIds.Count > 0)
                 {
-                    var cases = await _medicalCaseRepository.GetBatchDetailsAsync(completedWithPrescriptionIds);
+                    var cases = new List<MedicalCaseDetailDto>();
+                    foreach (var id in completedWithPrescriptionIds)
+                    {
+                        var detail = await _medicalCaseRepository.GetByIdAsync(id);
+                        if (detail != null)
+                            cases.Add(detail);
+                    }
                     _currentPatientCases = cases.OrderByDescending(c => c.CreatedAt).ToList();
                 }
                 else

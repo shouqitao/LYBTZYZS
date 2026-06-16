@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
@@ -13,7 +13,6 @@
   <ItemGroup>
     <!-- OpenSpec: adopt-mapperly-unified-mapping - 迁移到Mapperly -->
     <PackageReference Include="Riok.Mapperly" />
-    <PackageReference Include="EPPlus" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">

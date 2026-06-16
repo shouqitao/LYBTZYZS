@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using NetArchTest.Rules;
 
 namespace LYBT.Tests.Architecture;
@@ -19,8 +19,7 @@ public class AggregateRootArchTests
         Assembly.Load("LYBT.Module.Patients"),
         Assembly.Load("LYBT.Module.MedicalCases"),
         Assembly.Load("LYBT.Module.Herbs"),
-        Assembly.Load("LYBT.Module.Formulas"),
-        Assembly.Load("LYBT.Module.Sync")
+        Assembly.Load("LYBT.Module.Formulas")
     ];
 
     /// <summary>
@@ -105,9 +104,7 @@ public class AggregateRootArchTests
             "LYBT.Entities.Formula.FormulaHerbItem",     // 值对象：通过Formula管理
             "LYBT.Entities.Formulas.FormulaHerbItem",    // 值对象：通过Formula管理（新命名空间）
             "LYBT.Entities.Common.SystemLog",            // 日志表：只增不删，用于审计
-            "LYBT.Entities.Auth.AuthSession",            // 会话表：过期自动清理
-            "LYBT.Entities.Auth.SecurityAuditLog",       // 安全审计日志：只增不删，永久保留
-            "LYBT.Entities.MedicalCases.MedicalCaseAuditLog" // 医案审计日志：只增不删，永久保留
+            "LYBT.Entities.Auth.AuthSession"            // 会话表：过期自动清理
         };
 
         // 获取所有公共类（排除抽象类和静态类）

@@ -265,8 +265,7 @@ public sealed class HerbFormulaManagementJourneyTests : JourneyTestBase<HerbForm
                 Gender = Gender.Male,
                 BirthDate = new DateTime(1990, 1, 1),
                 PhoneNumber = UniquePhone(),
-                IdNumber = $"32010119900101{idSuffix}",
-                Address = "测试地址"
+                IdNumber = $"32010119900101{idSuffix}"
             });
 
         // Skip if patient creation failed (validation issue)
@@ -860,7 +859,7 @@ public sealed class HerbFormulaManagementJourneyTests : JourneyTestBase<HerbForm
         {
             Name = UniqueName("方剂测试"), Gender = Gender.Male,
             BirthDate = new DateTime(1990, 1, 1), PhoneNumber = UniquePhone(),
-            IdNumber = $"32010119900101{Random.Shared.Next(1000, 9999)}", Address = "测试地址"
+            IdNumber = $"32010119900101{Random.Shared.Next(1000, 9999)}"
         });
 
         var (_, medicalCase) = await PostAsync<MedicalCaseDetailDto>(doctor, "/api/v1/medicalcases",

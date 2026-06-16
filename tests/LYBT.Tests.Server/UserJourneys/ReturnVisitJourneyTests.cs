@@ -52,7 +52,7 @@ public sealed class ReturnVisitJourneyTests : JourneyTestBase<ClinicalDataFixtur
         {
             Name = patientName, Gender = Gender.Female,
             BirthDate = new DateTime(1985, 7, 15), PhoneNumber = UniquePhone(),
-            IdNumber = $"32010119850715{Random.Shared.Next(1000, 9999)}", Address = "测试地址"
+            IdNumber = $"32010119850715{Random.Shared.Next(1000, 9999)}"
         });
         var patientId = patient!.Id;
 
@@ -154,7 +154,7 @@ public sealed class ReturnVisitJourneyTests : JourneyTestBase<ClinicalDataFixtur
         {
             Name = UniqueName("编辑原因"), Gender = Gender.Male,
             BirthDate = new DateTime(1980, 3, 10), PhoneNumber = UniquePhone(),
-            IdNumber = $"32010119800310{Random.Shared.Next(1000, 9999)}", Address = "测试地址"
+            IdNumber = $"32010119800310{Random.Shared.Next(1000, 9999)}"
         });
 
         var (_, createdCase) = await PostAsync<MedicalCaseDetailDto>(doctor, "/api/v1/medicalcases",
@@ -257,7 +257,7 @@ public sealed class ReturnVisitJourneyTests : JourneyTestBase<ClinicalDataFixtur
         {
             Name = UniqueName("G9患者"), Gender = Gender.Female,
             BirthDate = new DateTime(1985, 5, 15), PhoneNumber = UniquePhone(),
-            IdNumber = $"32010119850515{Random.Shared.Next(1000, 9999)}", Address = "测试地址"
+            IdNumber = $"32010119850515{Random.Shared.Next(1000, 9999)}"
         });
         var patientId = patient!.Id;
 
@@ -345,7 +345,7 @@ public sealed class ReturnVisitJourneyTests : JourneyTestBase<ClinicalDataFixtur
         {
             Name = UniqueName("DoctorMode患者"), Gender = Gender.Male,
             BirthDate = new DateTime(1990, 8, 20), PhoneNumber = UniquePhone(),
-            IdNumber = $"32010119900820{Random.Shared.Next(1000, 9999)}", Address = "测试地址"
+            IdNumber = $"32010119900820{Random.Shared.Next(1000, 9999)}"
         });
         var patientId = patient!.Id;
 
@@ -412,7 +412,7 @@ public sealed class ReturnVisitJourneyTests : JourneyTestBase<ClinicalDataFixtur
         {
             Name = patientName, Gender = Gender.Female,
             BirthDate = new DateTime(1982, 3, 10), PhoneNumber = UniquePhone(),
-            IdNumber = $"32010119820310{Random.Shared.Next(1000, 9999)}", Address = "测试地址"
+            IdNumber = $"32010119820310{Random.Shared.Next(1000, 9999)}"
         });
         var patientId = patient!.Id;
 
@@ -562,7 +562,7 @@ public sealed class ReturnVisitJourneyTests : JourneyTestBase<ClinicalDataFixtur
         {
             Name = UniqueName("禁用测试"), Gender = Gender.Male,
             BirthDate = new DateTime(1988, 6, 15), PhoneNumber = UniquePhone(),
-            IdNumber = $"32010119880615{Random.Shared.Next(1000, 9999)}", Address = "测试地址"
+            IdNumber = $"32010119880615{Random.Shared.Next(1000, 9999)}"
         });
         var patientId = patient!.Id;
 

@@ -50,11 +50,10 @@ public sealed class US_Patient_MustHaveTests : IntegrationTestBase<ClinicalDataF
     [Fact]
     public async Task US_PAT_001_CreatePatient_WithAllRequiredFields_Succeeds()
     {
-        // Arrange - Name, IdNumber, Address are required by validator
+        // Arrange - Name, IdNumber are required by validator
         var doctorClient = await LoginAsDoctorAsync();
         var payload = PatientBuilder.Default()
             .WithName("必填字段患者")
-            .WithAddress("上海市浦东新区")
             .Build();
 
         // Act
@@ -64,7 +63,6 @@ public sealed class US_Patient_MustHaveTests : IntegrationTestBase<ClinicalDataF
         var data = await response.ShouldBeCreatedWithDataAsync<PatientDetailDto>(
             "US-PAT-001: patient with all required fields should succeed");
         data.Name.Should().Be("必填字段患者");
-        data.Address.Should().Be("上海市浦东新区");
     }
 
     [Fact]
@@ -97,8 +95,7 @@ public sealed class US_Patient_MustHaveTests : IntegrationTestBase<ClinicalDataF
         {
             Name = "",
             Gender = Gender.Male,
-            IdNumber = "110101199001010001",
-            Address = "测试地址"
+            IdNumber = "110101199001010001"
         };
 
         // Act
@@ -125,8 +122,6 @@ public sealed class US_Patient_MustHaveTests : IntegrationTestBase<ClinicalDataF
         // Act - update
         var updatePayload = PatientBuilder.Default()
             .WithName("已更新患者")
-            .WithAddress("北京市朝阳区")
-            .WithAllergyHistory("青霉素过敏")
             .WithPhone(created.PhoneNumber ?? $"139{Random.Shared.Next(10000000, 99999999)}")
             .Build();
         var response = await doctorClient.PutAsJsonAsync($"/api/v1/patients/{created.Id}", updatePayload);
@@ -135,8 +130,6 @@ public sealed class US_Patient_MustHaveTests : IntegrationTestBase<ClinicalDataF
         var data = await response.ShouldBeSuccessWithDataAsync<PatientDetailDto>(
             "US-PAT-002: update should return modified patient");
         data.Name.Should().Be("已更新患者");
-        data.Address.Should().Be("北京市朝阳区");
-        data.AllergyHistory.Should().Be("青霉素过敏");
         data.Id.Should().Be(created.Id);
     }
 

@@ -25,7 +25,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
     {
         private readonly IHerbService _herbService;
         private readonly IHerbStatusHandler _statusHandler;
-        private readonly IHerbImportExportHandler _importExportHandler;
         private readonly IDesktopCacheManager _cacheManager;
 
         /// <summary>药材编辑子 VM</summary>
@@ -55,14 +54,12 @@ namespace LYBT.Desktop.Herbs.ViewModels
             IMasterDetailServices<HerbListDto, HerbDetailModel> masterDetailServices,
             IHerbService herbService,
             IHerbStatusHandler statusHandler,
-            IHerbImportExportHandler importExportHandler,
             IDesktopCacheManager cacheManager,
             HerbEditorViewModel herbEditor)
             : base(viewModelServices, masterDetailServices)
         {
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
-            _importExportHandler = importExportHandler ?? throw new ArgumentNullException(nameof(importExportHandler));
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
             HerbEditor = herbEditor ?? throw new ArgumentNullException(nameof(herbEditor));
 
@@ -271,24 +268,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
         }
 
         private bool CanRestore() => HasSelection && !IsBusy && IsAdmin;
-
-        /// <summary>导入药材</summary>
-        [RelayCommand]
-        private async Task ImportHerbsAsync()
-        {
-            if (await _importExportHandler.ImportAsync())
-            {
-                _cacheManager.InvalidateHerbCaches();
-                await RefreshAsync();
-            }
-        }
-
-        /// <summary>导出药材</summary>
-        [RelayCommand]
-        private async Task ExportHerbsAsync()
-        {
-            await _importExportHandler.ExportAsync(SearchText);
-        }
 
         /// <summary>按分类搜索</summary>
         [RelayCommand]

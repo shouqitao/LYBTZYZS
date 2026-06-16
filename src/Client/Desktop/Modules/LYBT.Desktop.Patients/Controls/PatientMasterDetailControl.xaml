@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     PatientMasterDetailControl - 患者Master-Detail控件
     OpenSpec: refactor-admin-workspace
     
@@ -167,20 +167,6 @@
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
-
-                        <DataGridTextColumn
-                            Width="*"
-                            Binding="{Binding Address}"
-                            Header="地址">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                    <Setter Property="FontSize" Value="11" />
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
                     </DataGrid.Columns>
 
                     <!--  右键菜单 - ContextMenu需通过PlacementTarget获取DataContext  -->
@@ -303,28 +289,18 @@
                 <patientControls:PatientViewControl
                     Grid.Row="1"
                     Margin="16"
-                    Address="{Binding CurrentDetail.Address}"
                     Age="{Binding CurrentDetail.Age}"
-                    AllergyHistory="{Binding CurrentDetail.AllergyHistory}"
                     BirthDate="{Binding CurrentDetail.BirthDate}"
-                    BloodType="{Binding CurrentDetail.BloodType}"
                     CreatedAt="{Binding CurrentDetail.CreatedAt}"
-                    EmergencyContactName="{Binding CurrentDetail.EmergencyContactName}"
-                    EmergencyContactPhone="{Binding CurrentDetail.EmergencyContactPhone}"
-                    EmergencyContactRelation="{Binding CurrentDetail.EmergencyContactRelation}"
                     Gender="{Binding CurrentDetail.Gender}"
                     IdNumber="{Binding CurrentDetail.IdNumber}"
-                    LastVisitTime="{Binding CurrentDetail.LastVisitTime}"
-                    MaritalStatus="{Binding CurrentDetail.MaritalStatus}"
-                    MedicalHistory="{Binding CurrentDetail.MedicalHistory}"
                     PatientName="{Binding CurrentDetail.Name}"
                     PhoneNumber="{Binding CurrentDetail.PhoneNumber}"
                     PinYinCode="{Binding CurrentDetail.PinYinCode}"
                     ShowStatus="True"
                     Status="{Binding CurrentDetail.Status}"
                     UpdatedAt="{Binding CurrentDetail.UpdatedAt}"
-                    Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}"
-                    VisitCount="{Binding CurrentDetail.VisitCount}" />
+                    Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}" />
 
                 <!--  编辑模式内容  -->
                 <patientControls:PatientEditControl
