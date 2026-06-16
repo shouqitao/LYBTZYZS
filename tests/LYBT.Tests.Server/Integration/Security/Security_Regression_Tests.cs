@@ -10,7 +10,7 @@ namespace LYBT.Tests.Server;
 /// <summary>
 /// Tier 1/2/3 安全修复回归测试
 /// </summary>
-[Collection("ServerCollection")]
+[Collection("ClinicalData")]
 public class Security_Regression_Tests : IntegrationTestBase<ClinicalDataFixture>
 {
     public Security_Regression_Tests(ClinicalDataFixture fixture) : base(fixture) { }

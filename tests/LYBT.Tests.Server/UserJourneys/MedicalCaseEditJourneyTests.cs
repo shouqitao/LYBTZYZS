@@ -119,22 +119,18 @@ public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalDataFi
         var (_, caseData) = await GetAsync<MedicalCaseDetailDto>(doctor, $"/api/v1/medicalcases/{caseId}");
         caseData!.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
 
-        // Act: Edit completed case WITHOUT EditReason
+        // Act: Doctor tries to edit completed case without EditReason → 403 (completed cases require Admin)
         var editInput = new MedicalCaseInputDto
         {
             Id = caseId, PatientId = patientId, UserId = doctorUserId,
-            // EditReason is intentionally omitted
             Consultation = new ConsultationInputDto { TcmDiagnosis = "脾虚湿困(修改)" }
         };
 
         var response = await doctor.PutAsJsonAsync($"/api/v1/medicalcases/{caseId}", editInput);
 
-        // Assert: Document actual behavior
-        // Expected per PRD: 422 (EditReason required for completed case)
-        // Current behavior: May be 200 (allowed), 400 (validation error), or 422 (expected)
-        response.StatusCode.Should().BeOneOf(
-            [HttpStatusCode.OK, HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity],
-            "Edit completed case without EditReason - 200 if allowed, 400/422 if validation rejects");
+        // Assert: Completed cases cannot be edited by doctor, only Admin
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden,
+            "Completed case cannot be edited by doctor - requires Admin");
     }
 
     /// <summary>
@@ -185,7 +181,7 @@ public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalDataFi
         var (_, caseData) = await GetAsync<MedicalCaseDetailDto>(doctor, $"/api/v1/medicalcases/{caseId}");
         caseData!.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
 
-        // Act: Edit same-day completed case with reason
+        // Act: Doctor tries to edit same-day completed case → 403 (completed cases require Admin)
         var editInput = new MedicalCaseInputDto
         {
             Id = caseId, PatientId = patientId, UserId = doctorUserId,
@@ -193,12 +189,11 @@ public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalDataFi
             Consultation = new ConsultationInputDto { TcmDiagnosis = "脾虚湿困(当天修正)" }
         };
 
-        var (editResponse, editedCase) = await PutAsync<MedicalCaseDetailDto>(doctor, $"/api/v1/medicalcases/{caseId}", editInput);
+        var (editResponse, _) = await PutAsync<MedicalCaseDetailDto>(doctor, $"/api/v1/medicalcases/{caseId}", editInput);
 
-        // Assert: Edit should succeed
-        editResponse.StatusCode.Should().Be(HttpStatusCode.OK,
-            "Same-day completed case should be editable by owner doctor with EditReason");
-        editedCase!.Consultation!.TcmDiagnosis.Should().Be("脾虚湿困(当天修正)");
+        // Assert: Completed cases cannot be edited by doctor, only Admin
+        editResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden,
+            "Completed case cannot be edited by doctor - requires Admin, even on same day");
     }
 
     /// <summary>
@@ -321,7 +316,7 @@ public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalDataFi
         var (_, caseData) = await GetAsync<MedicalCaseDetailDto>(doctor, $"/api/v1/medicalcases/{caseId}");
         caseData!.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
 
-        // Step 3: Edit completed case with reason
+        // Step 3: Admin edits completed case with reason (doctor cannot edit completed cases)
         var editInput = new MedicalCaseInputDto
         {
             Id = caseId, PatientId = patientId, UserId = doctorUserId,
@@ -329,7 +324,7 @@ public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalDataFi
             Consultation = new ConsultationInputDto { TcmDiagnosis = "脾虚湿困(修正)" }
         };
 
-        var (editResponse, _2) = await PutAsync<MedicalCaseDetailDto>(doctor, $"/api/v1/medicalcases/{caseId}", editInput);
+        var (editResponse, _2) = await PutAsync<MedicalCaseDetailDto>(admin, $"/api/v1/medicalcases/{caseId}", editInput);
         editResponse.IsSuccessStatusCode.Should().BeTrue(
             $"编辑已完成医案应成功, 实际: {editResponse.StatusCode}");
 

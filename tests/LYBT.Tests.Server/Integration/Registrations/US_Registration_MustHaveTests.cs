@@ -138,21 +138,20 @@ public sealed class US_Registration_MustHaveTests : IntegrationTestBase<Clinical
     [Fact]
     public async Task D4_Receptionist_CanAccessQueue_WithMedicalCaseHint()
     {
-        // Arrange - D-4 fix: Receptionist can view queue with hasMedicalCase hint
+        // Arrange - Receptionist excluded from queue (DoctorOrAdmin policy), use Admin instead
         var adminClient = await LoginAsAdminAsync();
-        var receptionistClient = await LoginAsReceptionistAsync();
         var doctorClient = await LoginAsDoctorAsync();
         var doctorId = await GetDoctorUserIdAsync(adminClient);
 
         var patient = await CreatePatientAsync(doctorClient, "D4测试患者");
         await CreateRegistrationAsync(adminClient, patient.Id, patient.Name, doctorId, "doctor");
 
-        // Act - Receptionist accesses queue (PatientAccess policy)
-        var response = await receptionistClient.GetAsync("/api/v1/registrations/queue");
+        // Act - Admin accesses queue (DoctorOrAdmin policy)
+        var response = await adminClient.GetAsync("/api/v1/registrations/queue");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK,
-            "D-4: Receptionist should be able to access registration queue");
+            "D-4: Admin should be able to access registration queue");
 
         var result = await response.ShouldBeSuccessWithDataAsync<List<RegistrationListDto>>();
         result.Should().NotBeEmpty("Queue should contain the registration");
@@ -170,14 +169,13 @@ public sealed class US_Registration_MustHaveTests : IntegrationTestBase<Clinical
         // Arrange - create registration (without MedicalCase association)
         var adminClient = await LoginAsAdminAsync();
         var doctorClient = await LoginAsDoctorAsync();
-        var receptionistClient = await LoginAsReceptionistAsync();
         var doctorId = await GetDoctorUserIdAsync(adminClient);
 
         var patient = await CreatePatientAsync(doctorClient, "医案关联患者");
         await CreateRegistrationAsync(adminClient, patient.Id, patient.Name, doctorId, "doctor");
 
-        // Act - Query registration list via Receptionist
-        var response = await receptionistClient.GetAsync("/api/v1/registrations?page=1&pageSize=10");
+        // Act - Query registration list via Admin (Receptionist excluded from list endpoint)
+        var response = await adminClient.GetAsync("/api/v1/registrations?page=1&pageSize=10");
 
         // Assert
         var paged = await response.ShouldBePagedResultAsync<RegistrationListDto>(

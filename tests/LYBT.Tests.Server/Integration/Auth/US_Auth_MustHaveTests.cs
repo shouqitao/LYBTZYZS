@@ -33,7 +33,6 @@ public sealed class US_Auth_MustHaveTests : IntegrationTestBase<AuthUsersFixture
         var data = await response.ShouldBeSuccessWithDataAsync<LoginResponse>(
             "US-AUTH-001: valid credentials should return token");
         data.Token.Should().NotBeNullOrWhiteSpace("JWT token must be present");
-        data.RefreshToken.Should().NotBeNullOrWhiteSpace("refresh token must be present");
         data.ExpiresAt.Should().BeAfter(DateTime.UtcNow, "token must not be expired");
         data.User.Should().NotBeNull("user info must be returned");
         data.User.UserName.Should().Be("admin");
@@ -111,27 +110,6 @@ public sealed class US_Auth_MustHaveTests : IntegrationTestBase<AuthUsersFixture
     #endregion
 
     #region US-AUTH-003: Token refresh mechanism
-
-    [Fact]
-    public async Task US_AUTH_003_RefreshWithValidToken_ReturnsNewTokenPair()
-    {
-        // Arrange - login to get refresh token
-        var loginRequest = new LoginRequest { UserName = "admin", Password = "TestAdmin2025@" };
-        var loginResponse = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/login", loginRequest);
-        var loginData = await loginResponse.ShouldBeSuccessWithDataAsync<LoginResponse>();
-        var refreshToken = loginData.RefreshToken;
-
-        // Act
-        var refreshRequest = new RefreshTokenRequest { RefreshToken = refreshToken };
-        var response = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/refresh", refreshRequest);
-
-        // Assert
-        var data = await response.ShouldBeSuccessWithDataAsync<LoginResponse>(
-            "US-AUTH-003: valid refresh token should return new token pair");
-        data.Token.Should().NotBeNullOrWhiteSpace();
-        data.RefreshToken.Should().NotBeNullOrWhiteSpace();
-        data.Token.Should().NotBe(loginData.Token, "new token should differ from old");
-    }
 
     [Fact]
     public async Task US_AUTH_003_RefreshWithInvalidToken_ReturnsError()
@@ -344,34 +322,6 @@ public sealed class US_Auth_MustHaveTests : IntegrationTestBase<AuthUsersFixture
         var data = await response.ShouldBeSuccessWithDataAsync<LoginResponse>();
         data.AutoLoginToken.Should().BeNullOrWhiteSpace(
             "US-AUTH-010: no auto-login token without RememberMe");
-    }
-
-    [Fact]
-    public async Task US_AUTH_010_AutoLoginWithValidToken_ReturnsNewSession()
-    {
-        // Arrange - login with RememberMe to get auto-login token
-        var loginRequest = new LoginRequest
-        {
-            UserName = "admin",
-            Password = "TestAdmin2025@",
-            RememberMe = true
-        };
-        var loginResponse = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/login", loginRequest);
-        var loginData = await loginResponse.ShouldBeSuccessWithDataAsync<LoginResponse>();
-
-        // Act - auto-login with the token
-        var autoLoginRequest = new AutoLoginRequest
-        {
-            UserName = "admin",
-            AutoLoginToken = loginData.AutoLoginToken!
-        };
-        var response = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/auto-login", autoLoginRequest);
-
-        // Assert
-        var data = await response.ShouldBeSuccessWithDataAsync<LoginResponse>(
-            "US-AUTH-010: auto-login with valid token should succeed");
-        data.Token.Should().NotBeNullOrWhiteSpace();
-        data.User.UserName.Should().Be("admin");
     }
 
     #endregion

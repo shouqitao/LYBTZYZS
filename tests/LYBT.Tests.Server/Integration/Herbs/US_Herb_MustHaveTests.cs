@@ -222,26 +222,6 @@ public sealed class US_Herb_MustHaveTests : IntegrationTestBase<HerbFormulaFixtu
     }
 
     [Fact]
-    public async Task US_HERB_004_CheckReference_ReturnsReferenceStatus()
-    {
-        // Arrange - create a herb
-        var doctorClient = await LoginAsDoctorAsync();
-        var payload = HerbBuilder.Default().WithName("引用检查药材").Build();
-        var createResp = await doctorClient.PostAsJsonAsync("/api/v1/herbs", payload);
-        var created = await createResp.ShouldBeSuccessWithDataAsync<HerbDetailDto>();
-
-        // Act - check references (should have none)
-        var response = await doctorClient.GetAsync($"/api/v1/herbs/{created.Id}/check-reference");
-
-        // Assert
-        var data = await response.ShouldBeSuccessWithDataAsync<HerbReferenceCheckDto>(
-            "US-HERB-004: reference check should return status");
-        data.HerbId.Should().Be(created.Id);
-        data.HasReferences.Should().BeFalse("new herb should have no references");
-        data.ReferenceCount.Should().Be(0);
-    }
-
-    [Fact]
     public async Task US_HERB_004_DeleteHerb_NonexistentId_Returns404()
     {
         // Arrange

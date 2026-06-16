@@ -122,16 +122,17 @@ public sealed class US_Config_MustHaveTests : IntegrationTestBase<SystemOpsFixtu
     }
 
     [Fact]
-    public async Task US_CFG_002_Diagnostics_AdminCannotAccess_Returns403()
+    public async Task US_CFG_002_Diagnostics_AdminCanAccess_ReturnsSuccess()
     {
-        // Arrange
+        // Arrange - Diagnostics is AdminOnly (Admin CAN access)
         var adminClient = await LoginAsAdminAsync();
 
         // Act
         var response = await adminClient.GetAsync("/api/v1/diagnostics/logging/status");
 
         // Assert
-        response.ShouldBeForbidden();
+        response.StatusCode.Should().Be(HttpStatusCode.OK,
+            "US-CFG-002: admin should access diagnostics");
     }
 
     [Fact]

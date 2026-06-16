@@ -237,19 +237,22 @@ public sealed class US_User_MustHaveTests : IntegrationTestBase<AuthUsersFixture
     }
 
     [Fact]
-    public async Task US_USER_005_ResetPassword_ByAdmin_Returns403()
+    public async Task US_USER_005_ResetPassword_ByAdmin_ReturnsSuccess()
     {
         // Arrange - get doctor user ID
         var adminClient = await LoginAsAdminAsync();
         var doctorId = await GetDoctorUserIdAsync(adminClient);
 
-        // Act - admin (not sysadmin) tries to reset password
+        // Act - admin can reset password (AdminOnly policy)
         var resetPayload = new ResetPasswordRequestDto { MustChangeOnNextLogin = true };
         var response = await adminClient.PostAsJsonAsync(
             $"/api/v1/users/{doctorId}/reset-password", resetPayload);
 
         // Assert
-        response.ShouldBeForbidden();
+        var data = await response.ShouldBeSuccessWithDataAsync<ResetPasswordResponseDto>(
+            "US-USER-005: admin should reset password successfully");
+        data.Success.Should().BeTrue();
+        data.TemporaryPassword.Should().NotBeNullOrWhiteSpace();
     }
 
     #endregion

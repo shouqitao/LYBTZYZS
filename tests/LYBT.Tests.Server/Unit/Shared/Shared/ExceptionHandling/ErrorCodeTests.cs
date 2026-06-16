@@ -117,6 +117,7 @@ public class ErrorCodeTests
     [InlineData(ErrorCode.HerbBatchImportExceeded, 400)]
     [InlineData(ErrorCode.UnsupportedEntityType, 400)]
     [InlineData(ErrorCode.JsonDeserializeFailed, 400)]
+    [InlineData(ErrorCode.UserNameExists, 400)]
     public void ToHttpStatusCode_ValidationErrors_Returns400(ErrorCode errorCode, int expectedStatus)
     {
         // Act
@@ -169,7 +170,6 @@ public class ErrorCodeTests
 
     [Theory]
     [InlineData(ErrorCode.ConcurrencyConflict, 409)]
-    [InlineData(ErrorCode.UserNameExists, 409)]
     [InlineData(ErrorCode.MedicalCaseVersionConflict, 409)]
     [InlineData(ErrorCode.SyncDataConflict, 409)]
     public void ToHttpStatusCode_ConflictErrors_Returns409(ErrorCode errorCode, int expectedStatus)

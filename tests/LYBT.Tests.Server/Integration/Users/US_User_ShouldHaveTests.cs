@@ -39,9 +39,9 @@ public sealed class US_User_ShouldHaveTests : IntegrationTestBase<AuthUsersFixtu
     }
 
     [Fact]
-    public async Task US_USER_008_Admin_CannotResetPassword_Returns403()
+    public async Task US_USER_008_Admin_CanResetPassword_ReturnsSuccess()
     {
-        // Arrange - reset-password is SuperAdminOnly
+        // Arrange - reset-password is AdminOnly (Admin CAN reset)
         var adminClient = await LoginAsAdminAsync();
         var doctorId = await GetDoctorUserIdAsync(adminClient);
         var request = new ResetPasswordRequestDto { MustChangeOnNextLogin = true };
@@ -50,7 +50,8 @@ public sealed class US_User_ShouldHaveTests : IntegrationTestBase<AuthUsersFixtu
         var response = await adminClient.PostAsJsonAsync($"/api/v1/users/{doctorId}/reset-password", request);
 
         // Assert
-        response.ShouldBeForbidden();
+        response.StatusCode.Should().Be(HttpStatusCode.OK,
+            "US-USER-008: admin should reset doctor password successfully");
     }
 
     #endregion

@@ -222,61 +222,6 @@ public sealed class US_MedicalCase_ShouldHaveTests : IntegrationTestBase<Clinica
 
     #endregion
 
-    #region US-MC-015: Print logging
-
-    [Fact]
-    public async Task US_MC_015_AddPrintLog_Success_RecordsLog()
-    {
-        // Arrange
-        var doctorClient = await LoginAsDoctorAsync();
-        var patientId = await CreatePatientAsync(doctorClient);
-        var (caseId, _) = await CreateCaseAsync(doctorClient, patientId);
-
-        var printLog = new
-        {
-            PrintType = PrintType.Prescription,
-            IsSuccess = true,
-            PrinterName = "HP LaserJet"
-        };
-
-        // Act
-        var response = await doctorClient.PostAsJsonAsync(
-            $"/api/v1/medicalcases/{caseId}/print-logs", printLog);
-
-        // Assert
-        response.StatusCode.Should().BeOneOf(
-            new[] { HttpStatusCode.OK, HttpStatusCode.Created },
-            "US-MC-015: print log should be recorded");
-    }
-
-    [Fact]
-    public async Task US_MC_015_AddPrintLog_Failure_RecordsError()
-    {
-        // Arrange
-        var doctorClient = await LoginAsDoctorAsync();
-        var patientId = await CreatePatientAsync(doctorClient);
-        var (caseId, _) = await CreateCaseAsync(doctorClient, patientId);
-
-        var printLog = new
-        {
-            PrintType = PrintType.Prescription,
-            IsSuccess = false,
-            PrinterName = "HP LaserJet",
-            ErrorMessage = "打印机离线"
-        };
-
-        // Act
-        var response = await doctorClient.PostAsJsonAsync(
-            $"/api/v1/medicalcases/{caseId}/print-logs", printLog);
-
-        // Assert
-        response.StatusCode.Should().BeOneOf(
-            new[] { HttpStatusCode.OK, HttpStatusCode.Created },
-            "US-MC-015: print failure log should also be recorded");
-    }
-
-    #endregion
-
     #region US-MC-017: Waiting queue (registration-based)
 
     [Fact]

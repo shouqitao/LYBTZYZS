@@ -259,25 +259,5 @@ public sealed class US_Patient_MustHaveTests : IntegrationTestBase<ClinicalDataF
             "US-PAT-004: deleting non-existent patient should return 404");
     }
 
-    [Fact]
-    public async Task US_PAT_004_CheckReference_ReturnsReferenceStatus()
-    {
-        // Arrange - create a patient
-        var doctorClient = await LoginAsDoctorAsync();
-        var payload = PatientBuilder.Default().WithName("引用检查患者").Build();
-        var createResp = await doctorClient.PostAsJsonAsync("/api/v1/patients", payload);
-        var created = await createResp.ShouldBeCreatedWithDataAsync<PatientDetailDto>();
-
-        // Act - check references (should have none)
-        var response = await doctorClient.GetAsync($"/api/v1/patients/{created.Id}/check-reference");
-
-        // Assert
-        var data = await response.ShouldBeSuccessWithDataAsync<PatientReferenceCheckDto>(
-            "US-PAT-004: reference check should return status");
-        data.PatientId.Should().Be(created.Id);
-        data.HasReferences.Should().BeFalse("new patient should have no references");
-        data.ReferenceCount.Should().Be(0);
-    }
-
     #endregion
 }

@@ -192,7 +192,7 @@ public sealed class ReturnVisitJourneyTests : JourneyTestBase<ClinicalDataFixtur
             new MedicalCaseStatusInputDto { Status = MedicalCaseStatus.Completed });
         completeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Step 1: Edit completed case without EditReason - should fail
+        // Step 1: Doctor tries to edit completed case without EditReason → 403 (requires Admin)
         var editWithoutReason = new MedicalCaseInputDto
         {
             Id = createdCase.Id, PatientId = patient.Id, UserId = doctorUserId,
@@ -200,27 +200,20 @@ public sealed class ReturnVisitJourneyTests : JourneyTestBase<ClinicalDataFixtur
         };
         var (editFailResponse, _) = await PutAsync<MedicalCaseDetailDto>(
             doctor, $"/api/v1/medicalcases/{createdCase.Id}", editWithoutReason);
-        editFailResponse.IsSuccessStatusCode.Should().BeFalse(
-            "Completed case requires EditReason (RequiresEditReason: IsCompleted)");
-        editFailResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest, "BusinessException returns 400");
-        var (errorMsg, _) = await ReadErrorAsync(editFailResponse);
-        errorMsg.Should().Contain("修改原因", "Error should mention EditReason requirement");
+        editFailResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden,
+            "Completed case cannot be edited by doctor - requires Admin");
 
-        // Step 2: Edit with EditReason - should succeed
+        // Step 2: Doctor tries to edit completed case with EditReason → still 403 (requires Admin)
         var editWithReason = new MedicalCaseInputDto
         {
             Id = createdCase.Id, PatientId = patient.Id, UserId = doctorUserId,
             EditReason = "修正剂量",
             Consultation = new ConsultationInputDto { TcmDiagnosis = "修正后的诊断" }
         };
-        var (editSuccessResponse, _2) = await PutAsync<MedicalCaseDetailDto>(
+        var (editSuccessResponse, _) = await PutAsync<MedicalCaseDetailDto>(
             doctor, $"/api/v1/medicalcases/{createdCase.Id}", editWithReason);
-        editSuccessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        // Verify edit persisted
-        var (_, editedCase) = await GetAsync<MedicalCaseDetailDto>(
-            doctor, $"/api/v1/medicalcases/{createdCase.Id}");
-        editedCase!.Consultation!.TcmDiagnosis.Should().Be("修正后的诊断");
+        editSuccessResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden,
+            "Completed case cannot be edited by doctor even with EditReason - requires Admin");
     }
 
     #region US-REG-006: G-9 Registration Cancel Revert Scenarios

@@ -29,7 +29,7 @@ public class JwtOptionsTests
         options.Audience.Should().Be("LYBT.Client");
         options.AccessTokenExpirationMinutes.Should().Be(30);
         options.RefreshTokenExpirationDays.Should().Be(7);
-        options.ClockSkewSeconds.Should().Be(300);
+        options.ClockSkewSeconds.Should().Be(30);
     }
 
     [Theory]

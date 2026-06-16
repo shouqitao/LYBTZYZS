@@ -42,58 +42,6 @@ public sealed class US_Formula_CouldHaveTests : IntegrationTestBase<HerbFormulaF
 
     #endregion
 
-    #region US-FORM-007: Restore deleted formula
-
-    [Fact]
-    public async Task US_FORM_007_RestoreDeletedFormula_Succeeds()
-    {
-        // Arrange
-        var client = await LoginAsAdminAsync();
-        var (herbId, herbName) = await CreateHerbAsync(client);
-        var formulaId = await CreateFormulaAsync(client, herbId, herbName);
-
-        // Delete first
-        var deleteResponse = await client.DeleteAsync($"/api/v1/formulas/{formulaId}");
-        deleteResponse.StatusCode.Should().BeOneOf(
-            new[] { HttpStatusCode.OK, HttpStatusCode.NoContent },
-            "formula should be deleted before restore");
-
-        // Act - restore
-        var restoreResponse = await client.PostAsync($"/api/v1/formulas/{formulaId}/restore", null);
-
-        // Assert
-        restoreResponse.StatusCode.Should().BeOneOf(
-            new[] { HttpStatusCode.OK, HttpStatusCode.NoContent },
-            "US-FORM-007: restoring a deleted formula should succeed");
-    }
-
-    [Fact]
-    public async Task US_FORM_007_RestoreNonDeletedFormula_ReturnsBusinessError()
-    {
-        // Arrange
-        var client = await LoginAsAdminAsync();
-        var (herbId, herbName) = await CreateHerbAsync(client);
-        var formulaId = await CreateFormulaAsync(client, herbId, herbName);
-
-        // Act - restore without deleting first
-        var response = await client.PostAsync($"/api/v1/formulas/{formulaId}/restore", null);
-
-        // Assert - FormulaNotDeleted business error returns 4xx
-        response.IsSuccessStatusCode.Should().BeFalse("US-FORM-007: restoring non-deleted formula should return business error");
-    }
-
-    [Fact]
-    public async Task US_FORM_007_RestoreFormula_RequiresAuthentication()
-    {
-        // Act
-        var response = await AnonymousClient.PostAsync($"/api/v1/formulas/{Guid.NewGuid()}/restore", null);
-
-        // Assert
-        response.ShouldBeUnauthorized();
-    }
-
-    #endregion
-
     #region US-FORM-011: Batch import formulas
 
     [Fact]

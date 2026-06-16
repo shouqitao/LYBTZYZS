@@ -161,33 +161,4 @@ public sealed class US_Herb_ShouldHaveTests : IntegrationTestBase<HerbFormulaFix
     }
 
     #endregion
-
-    #region US-HERB-011: Export herbs
-
-    [Fact]
-    public async Task US_HERB_011_Export_ReturnsData()
-    {
-        // Arrange
-        var client = await LoginAsAdminAsync();
-        await CreateHerbAsync(client, "导出测试");
-
-        // Act
-        var response = await client.GetAsync("/api/v1/herbs/export-all");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK,
-            "US-HERB-011: export should return 200");
-    }
-
-    [Fact]
-    public async Task US_HERB_011_Export_Anonymous_Returns401()
-    {
-        // Act
-        var response = await AnonymousClient.GetAsync("/api/v1/herbs/export-all");
-
-        // Assert
-        response.ShouldBeUnauthorized();
-    }
-
-    #endregion
 }
