@@ -54,7 +54,7 @@ public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalDataFixture
         var (_, herb2) = await PostAsync<HerbDetailDto>(admin, "/api/v1/herbs",
             new HerbInputDto { Name = UniqueName("当归"), Unit = "克", Price = 0.8m });
 
-        // Step 1: Receptionist creates patient
+        // Step 1: Admin creates patient (Receptionist excluded from Patients endpoint)
         var patientInput = new PatientInputDto
         {
             Name = UniqueName("张三"),
@@ -63,12 +63,12 @@ public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalDataFixture
             PhoneNumber = UniquePhone(),
             IdNumber = $"32010119900101{Random.Shared.Next(1000, 9999)}"
         };
-        var (createPatientResponse, patient) = await PostAsync<PatientDetailDto>(receptionist, "/api/v1/patients", patientInput);
+        var (createPatientResponse, patient) = await PostAsync<PatientDetailDto>(admin, "/api/v1/patients", patientInput);
         createPatientResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var patientId = patient!.Id;
         var patientName = patient.Name;
 
-        // Step 2: Receptionist creates registration and assigns doctor
+        // Step 2: Admin creates registration and assigns doctor (Receptionist excluded from Registrations)
         var regInput = new RegistrationInputDto
         {
             PatientId = patientId,
@@ -77,7 +77,7 @@ public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalDataFixture
             DoctorName = doctorRealName ?? "doctor",
             Source = RegistrationSource.Receptionist
         };
-        var (createRegResponse, registration) = await PostAsync<RegistrationDetailDto>(receptionist, "/api/v1/registrations", regInput);
+        var (createRegResponse, registration) = await PostAsync<RegistrationDetailDto>(admin, "/api/v1/registrations", regInput);
         createRegResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         registration!.Status.Should().Be(RegistrationStatus.Waiting);
         var registrationId = registration.Id;
@@ -95,7 +95,7 @@ public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalDataFixture
 
         // Verify registration status changed to InProgress
         var (regCheckResponse, regDetail) = await GetAsync<RegistrationDetailDto>(
-            receptionist, $"/api/v1/registrations/{registrationId}");
+            admin, $"/api/v1/registrations/{registrationId}");
         regCheckResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         regDetail!.Status.Should().Be(RegistrationStatus.InProgress);
 
@@ -305,15 +305,15 @@ public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalDataFixture
         });
         var receptionist = await LoginAsAsync(receptionistUsername, TestPassword);
 
-        var (_, patient) = await PostAsync<PatientDetailDto>(receptionist, "/api/v1/patients", new PatientInputDto
+        var (_, patient) = await PostAsync<PatientDetailDto>(admin, "/api/v1/patients", new PatientInputDto
         {
             Name = UniqueName("取消挂号"), Gender = Gender.Male,
             BirthDate = new DateTime(1992, 12, 1), PhoneNumber = UniquePhone(),
             IdNumber = $"32010119921201{Random.Shared.Next(1000, 9999)}"
         });
 
-        // Create registration (Waiting)
-        var (_, reg) = await PostAsync<RegistrationDetailDto>(receptionist, "/api/v1/registrations", new RegistrationInputDto
+        // Create registration (Waiting) — Admin (Receptionist excluded from Registrations)
+        var (_, reg) = await PostAsync<RegistrationDetailDto>(admin, "/api/v1/registrations", new RegistrationInputDto
         {
             PatientId = patient!.Id, PatientName = patient.Name,
             DoctorId = doctorData!.Id, DoctorName = "doctor",
@@ -321,13 +321,13 @@ public sealed class FirstVisitJourneyTests : JourneyTestBase<ClinicalDataFixture
         });
 
         // Cancel registration
-        var cancelResponse = await receptionist.PutAsJsonAsync(
+        var cancelResponse = await admin.PutAsJsonAsync(
             $"/api/v1/registrations/{reg!.Id}/cancel", new { });
         cancelResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Verify cancelled status
         var (getResponse, cancelledReg) = await GetAsync<RegistrationDetailDto>(
-            receptionist, $"/api/v1/registrations/{reg.Id}");
+            admin, $"/api/v1/registrations/{reg.Id}");
         getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         cancelledReg!.Status.Should().Be(RegistrationStatus.Cancelled);
     }

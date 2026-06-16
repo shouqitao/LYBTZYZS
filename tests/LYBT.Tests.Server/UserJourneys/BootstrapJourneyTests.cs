@@ -115,9 +115,9 @@ public sealed class BootstrapJourneyTests : JourneyTestBase<AuthUsersFixture>
         });
         doctorCreateUserResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden, "Doctor cannot create users");
 
-        // Receptionist can view patients but cannot view medical cases (DoctorOrAdmin policy)
+        // Receptionist excluded from Patients endpoint
         var recepPatientsResponse = await recepClient.GetAsync("/api/v1/patients");
-        recepPatientsResponse.StatusCode.Should().Be(HttpStatusCode.OK, "Receptionist should view patients");
+        recepPatientsResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden, "Receptionist excluded from Patients");
 
         var recepCasesResponse = await recepClient.GetAsync("/api/v1/medicalcases");
         recepCasesResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden, "Receptionist cannot view cases");

@@ -245,8 +245,8 @@ public sealed class ReturnVisitJourneyTests : JourneyTestBase<ClinicalDataFixtur
         });
         var receptionist = await LoginAsAsync(receptionistUsername, testPassword);
 
-        // Create patient
-        var (_, patient) = await PostAsync<PatientDetailDto>(receptionist, "/api/v1/patients", new PatientInputDto
+        // Create patient (Admin — Receptionist excluded from Patients)
+        var (_, patient) = await PostAsync<PatientDetailDto>(admin, "/api/v1/patients", new PatientInputDto
         {
             Name = UniqueName("G9患者"), Gender = Gender.Female,
             BirthDate = new DateTime(1985, 5, 15), PhoneNumber = UniquePhone(),
@@ -272,10 +272,8 @@ public sealed class ReturnVisitJourneyTests : JourneyTestBase<ClinicalDataFixtur
                 }
             });
 
-        // Step 2: Receptionist creates registration (Source=Receptionist, Status=Waiting)
-        // Note: In actual implementation, Registration doesn't auto-link to MedicalCase via API
-        // The G-9 revert behavior is tested by verifying the service layer behavior
-        var (_, registration) = await PostAsync<RegistrationDetailDto>(receptionist, "/api/v1/registrations",
+        // Step 2: Admin creates registration (Receptionist excluded from Registrations)
+        var (_, registration) = await PostAsync<RegistrationDetailDto>(admin, "/api/v1/registrations",
             new RegistrationInputDto
             {
                 PatientId = patientId,
@@ -295,7 +293,7 @@ public sealed class ReturnVisitJourneyTests : JourneyTestBase<ClinicalDataFixtur
 
         // Verify registration is now InProgress
         var (_, regInProgress) = await GetAsync<RegistrationDetailDto>(
-            receptionist, $"/api/v1/registrations/{registrationId}");
+            admin, $"/api/v1/registrations/{registrationId}");
         regInProgress!.Status.Should().Be(RegistrationStatus.InProgress);
 
         // Step 4: Doctor cancels the MedicalCase (G-9 scenario)

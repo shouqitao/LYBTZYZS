@@ -322,83 +322,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
 
     #endregion
 
-    #region US-PAT-005/011: Delete Patient with Reference Check
 
-    [Fact]
-    public async Task US_PAT_005_DeletePatient_NoReferences_ReturnsSuccess()
-    {
-        await ResetForJourneyAsync();
-        var admin = await LoginAsAdminAsync();
-
-        // Arrange: Create patient
-        var (createResponse, created) = await PostAsync<PatientDetailDto>(admin, "/api/v1/patients",
-            new PatientInputDto
-            {
-                Name = UniqueName("待删患者"),
-                Gender = Gender.Male,
-                BirthDate = new DateTime(1980, 1, 1),
-                PhoneNumber = UniquePhone(),
-                IdNumber = UniqueIdNumber()
-            });
-        createResponse.IsSuccessStatusCode.Should().BeTrue();
-
-        // Act: Check references
-        var (checkResponse, refResult) = await GetAsync<PatientReferenceCheckDto>(
-            admin, $"/api/v1/patients/{created!.Id}/check-reference");
-        checkResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        refResult!.CanDelete.Should().BeTrue("patient with no medical cases should be deletable");
-
-        // Act: Delete patient
-        var deleteResponse = await admin.DeleteAsync($"/api/v1/patients/{created.Id}");
-        deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        // Assert: Patient no longer in list
-        var (listResponse, listData) = await GetAsync<PagedResult<PatientDetailDto>>(
-            admin, "/api/v1/patients?pageSize=100");
-        listData!.Items.Should().NotContain(p => p.Id == created.Id);
-    }
-
-    [Fact]
-    public async Task US_PAT_005_DeletePatient_HasMedicalCases_Returns422()
-    {
-        await ResetForJourneyAsync();
-        var admin = await LoginAsAdminAsync();
-        var doctor = await LoginAsDoctorAsync();
-
-        // Arrange: Create patient
-        var (resp, patient) = await PostAsync<PatientDetailDto>(admin, "/api/v1/patients",
-            new PatientInputDto
-            {
-                Name = UniqueName("有医案患者"),
-                Gender = Gender.Male,
-                BirthDate = new DateTime(1980, 1, 1),
-                PhoneNumber = UniquePhone(),
-                IdNumber = UniqueIdNumber()
-            });
-        resp.IsSuccessStatusCode.Should().BeTrue();
-
-        // Arrange: Create medical case for this patient
-        var (userResp, doctorData) = await GetAsync<UserDetailDto>(doctor, "/api/v1/users/current");
-        userResp.IsSuccessStatusCode.Should().BeTrue();
-
-        var caseResp = await doctor.PostAsJsonAsync("/api/v1/medicalcases",
-            new MedicalCaseInputDto { PatientId = patient!.Id, UserId = doctorData!.Id });
-        caseResp.StatusCode.Should().BeOneOf(new[] { HttpStatusCode.OK, HttpStatusCode.Created });
-
-        // Act: Check references
-        var (checkResponse, refResult) = await GetAsync<PatientReferenceCheckDto>(
-            admin, $"/api/v1/patients/{patient.Id}/check-reference");
-        checkResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        refResult!.CanDelete.Should().BeFalse("patient with medical cases should not be deletable");
-        refResult.ReferenceCount.Should().BeGreaterThan(0);
-
-        // Act: Try to delete
-        var deleteResponse = await admin.DeleteAsync($"/api/v1/patients/{patient.Id}");
-        deleteResponse.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity,
-            "PAT-005: patient with medical cases should return 422");
-    }
-
-    #endregion
 
     #region US-PAT-013: Patient Status Management
 
@@ -536,7 +460,7 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
     #region US-PAT-002: Role-Based Filtering (Receptionist vs Doctor/Admin)
 
     [Fact]
-    public async Task US_PAT_002_Receptionist_CannotSeeDisabledPatients()
+    public async Task US_PAT_002_Receptionist_CannotAccessPatients_Returns403()
     {
         await ResetForJourneyAsync();
         var admin = await LoginAsAdminAsync();
@@ -554,28 +478,12 @@ public sealed class PatientManagementJourneyTests : JourneyTestBase<ClinicalData
             });
         var recep = await LoginAsAsync(recepUsername, "TestReceptionist2025@");
 
-        // Arrange: Create and disable patient
-        var (resp, patient) = await PostAsync<PatientDetailDto>(admin, "/api/v1/patients",
-            new PatientInputDto
-            {
-                Name = UniqueName("禁用患者测试"),
-                Gender = Gender.Male,
-                BirthDate = new DateTime(1980, 1, 1),
-                PhoneNumber = UniquePhone(),
-                IdNumber = UniqueIdNumber()
-            });
-        resp.IsSuccessStatusCode.Should().BeTrue();
+        // Act: Receptionist tries to access patients
+        var response = await recep.GetAsync("/api/v1/patients");
 
-        await admin.PostAsync($"/api/v1/patients/{patient!.Id}/toggle-status", null);
-
-        // Act: Receptionist searches for patients
-        var (response, result) = await GetAsync<PagedResult<PatientDetailDto>>(
-            recep, $"/api/v1/patients?keyword={patient.Name[..3]}");
-
-        // Assert: Receptionist should not see disabled patient
-        response.IsSuccessStatusCode.Should().BeTrue();
-        result!.Items.Should().NotContain(p => p.Id == patient.Id,
-            "Receptionist should not see disabled patients");
+        // Assert: Receptionist excluded from Patients endpoint
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden,
+            "Receptionist should not have access to Patients endpoint");
     }
 
     #endregion

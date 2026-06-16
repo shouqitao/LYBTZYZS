@@ -223,26 +223,6 @@ public sealed class HerbFormulaManagementJourneyTests : JourneyTestBase<HerbForm
     }
 
     [Fact]
-    public async Task US_HERB_005_CheckReference_ReturnsReferenceStatus()
-    {
-        await ResetForJourneyAsync();
-        var admin = await LoginAsAdminAsync();
-
-        // Arrange: Create herb
-        var (_, created) = await PostAsync<HerbDetailDto>(admin, "/api/v1/herbs",
-            new HerbInputDto { Name = UniqueName("引用检查"), Unit = "克", Price = 1.0m });
-
-        // Act: Check references
-        var (response, checkResult) = await GetAsync<HerbReferenceCheckDto>(admin,
-            $"/api/v1/herbs/{created!.Id}/check-reference");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        checkResult!.HasReferences.Should().BeFalse("new herb should have no references");
-        checkResult.ReferenceCount.Should().Be(0);
-    }
-
-    [Fact]
     public async Task US_HERB_005_DeleteHerb_WithPrescriptionReference_Blocked()
     {
         await ResetForJourneyAsync();

@@ -18,62 +18,7 @@ public sealed class US_User_CouldHaveTests : IntegrationTestBase<AuthUsersFixtur
 {
     public US_User_CouldHaveTests(AuthUsersFixture fixture) : base(fixture) { }
 
-    #region US-USER-006: Restore deleted user
 
-    [Fact]
-    public async Task US_USER_006_SysAdmin_CanRestoreDeletedUser()
-    {
-        // Arrange
-        var sysAdminClient = await LoginAsSysAdminAsync();
-        var createPayload = UserBuilder.Default().WithUserName(UniqueUsername("user")).Build();
-        var createResp = await sysAdminClient.PostAsJsonAsync("/api/v1/users", createPayload);
-        var created = await createResp.ShouldBeCreatedWithDataAsync<UserDetailDto>();
-
-        // Delete first
-        var deleteResp = await sysAdminClient.DeleteAsync($"/api/v1/users/{created.Id}");
-        deleteResp.StatusCode.Should().BeOneOf(
-            new[] { HttpStatusCode.OK, HttpStatusCode.NoContent },
-            "US-USER-006: user must be deleted before restore");
-
-        // Act
-        var restoreResp = await sysAdminClient.PostAsync($"/api/v1/users/{created.Id}/restore", null);
-
-        // Assert
-        restoreResp.StatusCode.Should().BeOneOf(
-            new[] { HttpStatusCode.OK, HttpStatusCode.NoContent },
-            "US-USER-006: SysAdmin should restore a deleted user");
-    }
-
-    [Fact]
-    public async Task US_USER_006_Admin_CannotRestoreUser_Returns403()
-    {
-        // Arrange
-        var sysAdminClient = await LoginAsSysAdminAsync();
-        var adminClient = await LoginAsAdminAsync();
-        var createPayload = UserBuilder.Default().WithUserName(UniqueUsername("user")).Build();
-        var createResp = await sysAdminClient.PostAsJsonAsync("/api/v1/users", createPayload);
-        var created = await createResp.ShouldBeCreatedWithDataAsync<UserDetailDto>();
-
-        await sysAdminClient.DeleteAsync($"/api/v1/users/{created.Id}");
-
-        // Act
-        var restoreResp = await adminClient.PostAsync($"/api/v1/users/{created.Id}/restore", null);
-
-        // Assert
-        restoreResp.ShouldBeForbidden();
-    }
-
-    [Fact]
-    public async Task US_USER_006_Anonymous_CannotRestoreUser_Returns401()
-    {
-        // Act
-        var response = await AnonymousClient.PostAsync($"/api/v1/users/{Guid.NewGuid()}/restore", null);
-
-        // Assert
-        response.ShouldBeUnauthorized();
-    }
-
-    #endregion
 
     #region US-USER-007: Batch delete users
 

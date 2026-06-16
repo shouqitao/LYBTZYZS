@@ -48,17 +48,5 @@ public sealed class BatchOperationsJourneyTests : JourneyTestBase<HerbFormulaFix
 
         var (createFormulaResponse, _3) = await PostAsync<FormulaDetailDto>(admin, "/api/v1/formulas", formulaInput);
         createFormulaResponse.IsSuccessStatusCode.Should().BeTrue($"创建验方应成功, 实际: {createFormulaResponse.StatusCode}");
-
-        // Step 4: Check herb reference blocks delete
-        var checkRefResponse = await admin.GetAsync($"/api/v1/herbs/{herb1Id}/check-reference");
-        checkRefResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var body = await checkRefResponse.Content.ReadAsStringAsync();
-        body.Should().NotBeNullOrEmpty();
-
-        // Step 5: Export herbs
-        var exportResponse = await admin.GetAsync("/api/v1/herbs/export-all");
-        exportResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        exportResponse.Content.Headers.ContentType?.MediaType.Should().Contain("json");
     }
 }

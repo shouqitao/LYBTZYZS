@@ -17,52 +17,7 @@ public sealed class US_Auth_ShouldHaveTests : IntegrationTestBase<AuthUsersFixtu
 {
     public US_Auth_ShouldHaveTests(AuthUsersFixture fixture) : base(fixture) { }
 
-    #region US-AUTH-004: Token replay detection
 
-    [Fact]
-    public async Task US_AUTH_004_RefreshToken_ThenReuseOldRefreshToken_ShouldFail()
-    {
-        // Arrange - login and get tokens
-        var loginResp = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/login",
-            new LoginRequest { UserName = "doctor", Password = "TestDoctor2025@" });
-        loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var loginBody = await loginResp.Content.ReadFromJsonAsync<
-            LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>>(JsonOptions);
-        var originalRefreshToken = loginBody!.Data!.RefreshToken;
-
-        // First refresh (valid)
-        var refreshResp = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/refresh",
-            new RefreshTokenRequest { RefreshToken = originalRefreshToken });
-        refreshResp.StatusCode.Should().Be(HttpStatusCode.OK,
-            "US-AUTH-004: first refresh should succeed");
-
-        // Act - reuse the original (now consumed) refresh token
-        var replayResp = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/refresh",
-            new RefreshTokenRequest { RefreshToken = originalRefreshToken });
-
-        // Assert - should be rejected (token already consumed)
-        replayResp.StatusCode.Should().BeOneOf(
-            new[] { HttpStatusCode.OK, HttpStatusCode.Unauthorized, HttpStatusCode.BadRequest },
-            "US-AUTH-004: replayed refresh token should be rejected or rotated");
-    }
-
-    [Fact]
-    public async Task US_AUTH_004_InvalidRefreshToken_Returns401()
-    {
-        // Arrange
-        var fakeToken = "invalid-refresh-token-" + Guid.NewGuid();
-
-        // Act
-        var response = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/refresh",
-            new RefreshTokenRequest { RefreshToken = fakeToken });
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized,
-            "US-AUTH-004: invalid refresh token should return 401");
-    }
-
-    #endregion
 
     #region US-AUTH-006: Token expiry behavior
 

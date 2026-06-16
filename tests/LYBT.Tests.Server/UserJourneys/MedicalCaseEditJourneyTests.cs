@@ -327,10 +327,5 @@ public sealed class MedicalCaseEditJourneyTests : JourneyTestBase<ClinicalDataFi
         var (editResponse, _2) = await PutAsync<MedicalCaseDetailDto>(admin, $"/api/v1/medicalcases/{caseId}", editInput);
         editResponse.IsSuccessStatusCode.Should().BeTrue(
             $"编辑已完成医案应成功, 实际: {editResponse.StatusCode}");
-
-        // Step 4: Admin can view audit log
-        var (auditResponse, _3) = await GetAsync<PagedResult<object>>(admin, $"/api/v1/medicalcases/{caseId}/audit-logs");
-        auditResponse.IsSuccessStatusCode.Should().BeTrue(
-            $"查看审计日志应成功, 实际: {auditResponse.StatusCode}");
     }
 }

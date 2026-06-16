@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http.Json;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Tests.Server.Infrastructure;
 
 namespace LYBT.Tests.Server;
@@ -42,24 +43,33 @@ public class Security_Regression_Tests : IntegrationTestBase<ClinicalDataFixture
     [Fact]
     public async Task Security_FormulaBatchDelete_AsNonOwner_PartialFailure()
     {
-        // Arrange — Admin creates a formula, Doctor tries to delete it
+        // Arrange — Admin creates a formula with herbs, Doctor tries to delete it
         var adminClient = await LoginAsAdminAsync();
         var doctorClient = await LoginAsDoctorAsync();
 
+        var herbResp = await adminClient.PostAsJsonAsync("/api/v1/herbs",
+            new HerbInputDto { Name = UniqueName("安全测试药材"), Unit = "克", Price = 1.0m });
+        var herbBody = await herbResp.Content.ReadFromJsonAsync<ApiResponse<HerbDetailDto>>(JsonOptions);
+        var herb = herbBody!.Data;
+
         var createResponse = await adminClient.PostAsJsonAsync("/api/v1/formulas",
-            new
+            new FormulaInputDto
             {
-                Name = "Security Test Formula",
+                Name = UniqueName("Security Test Formula"),
                 Effect = "Test",
-                Category = "测试",
+                Usage = "水煎服",
                 IsShared = false,
-                Herbs = Array.Empty<object>()
+                Herbs = new List<FormulaHerbItemInputDto>
+                {
+                    new() { HerbId = herb!.Id, HerbName = herb.Name, Dosage = 10, Unit = "克" }
+                }
             });
-        var formula = await createResponse.ShouldBeSuccessWithDataAsync<dynamic>();
+        var formulaBody = await createResponse.Content.ReadFromJsonAsync<ApiResponse<FormulaDetailDto>>(JsonOptions);
+        var formula = formulaBody!.Data!;
 
         // Act — Doctor tries to batch-delete Admin's formula
         var batchResponse = await doctorClient.PostAsJsonAsync("/api/v1/formulas/batch-delete",
-            new BatchDeleteInputDto { Ids = new List<Guid> { ((dynamic)formula).Id } });
+            new BatchDeleteInputDto { Ids = new List<Guid> { formula.Id } });
 
         // Assert
         var result = await batchResponse.ShouldBeSuccessWithDataAsync<BatchOperationResultDto>();
@@ -73,7 +83,6 @@ public class Security_Regression_Tests : IntegrationTestBase<ClinicalDataFixture
     [Fact(Skip = "Requires print workflow test infrastructure — Phase 4")]
     public async Task Security_DeletePrintedCase_ReturnsError()
     {
-        // TODO Phase 4: Implement with proper print workflow test data builder
         await Task.CompletedTask;
     }
 }

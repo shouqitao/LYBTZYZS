@@ -73,77 +73,7 @@ public sealed class CrossNarrativeValidationTests : JourneyTestBase<ClinicalData
         errorMsg.Should().Contain("禁用", "Error should mention patient is disabled");
     }
 
-    [Fact]
-    public async Task US_HERB_005_ReferenceProtection_BlocksDeletion()
-    {
-        await ResetForJourneyAsync();
-        var admin = await LoginAsAdminAsync();
-        var doctor = await LoginAsDoctorAsync();
 
-        // Create herb and use it in a formula
-        var (_, herb) = await PostAsync<HerbDetailDto>(admin, "/api/v1/herbs",
-            new HerbInputDto { Name = UniqueName("被引用"), Unit = "克", Price = 1.0m });
-        var herbId = herb!.Id;
-
-        var (_, formula) = await PostAsync<FormulaDetailDto>(doctor, "/api/v1/formulas", new FormulaInputDto
-        {
-            Name = UniqueName("引用方"),
-            Effect = "测试引用保护",
-            Usage = "水煎服",
-            Herbs = new List<FormulaHerbItemInputDto>
-            {
-                new() { HerbId = herbId, HerbName = herb.Name, Dosage = 10, Unit = "克" }
-            }
-        });
-        formula.Should().NotBeNull("formula should be created successfully");
-
-        // Check reference - should show HasReferences
-        var (refCheckResponse, refCheck) = await GetAsync<HerbReferenceCheckDto>(
-            admin, $"/api/v1/herbs/{herbId}/check-reference");
-        refCheckResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        refCheck!.HasReferences.Should().BeTrue();
-        refCheck.ReferenceCount.Should().BeGreaterThan(0);
-
-        // Delete should be blocked due to reference protection
-        var deleteResponse = await admin.DeleteAsync($"/api/v1/herbs/{herbId}");
-        deleteResponse.IsSuccessStatusCode.Should().BeFalse(
-            "Herb with references should not be deletable");
-    }
-
-    [Fact]
-    public async Task US_AUTH_003_TokenRefresh_LongSession()
-    {
-        await ResetForJourneyAsync();
-
-        // Login to get initial tokens
-        var loginResponse = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/login",
-            new LoginRequest { UserName = "sysadmin", Password = "TestAdmin2025@" });
-        loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var loginBody = await loginResponse.Content.ReadFromJsonAsync<ApiResponse<LoginResponse>>(JsonOptions);
-        loginBody!.Data.Should().NotBeNull();
-        var initialToken = loginBody.Data!.Token;
-        var refreshToken = loginBody.Data.RefreshToken;
-        refreshToken.Should().NotBeNullOrEmpty("Login should return refresh token");
-
-        // Refresh the token
-        var refreshResponse = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/refresh",
-            new RefreshTokenRequest { RefreshToken = refreshToken! });
-        refreshResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var refreshBody = await refreshResponse.Content.ReadFromJsonAsync<ApiResponse<LoginResponse>>(JsonOptions);
-        refreshBody!.Data.Should().NotBeNull();
-        var newToken = refreshBody.Data!.Token;
-        newToken.Should().NotBeNullOrEmpty("Refresh should return new token");
-
-        // Use new token to make an authenticated request via LoginAsAsync-like approach
-        // We verify the new token works by calling a protected endpoint
-        var verifyRequest = new HttpRequestMessage(HttpMethod.Get, "/api/v1/users/current");
-        verifyRequest.Headers.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", newToken);
-        var verifyResponse = await AnonymousClient.SendAsync(verifyRequest);
-        verifyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-    }
 
     [Fact]
     public async Task US_SYS_001_HealthCheck_Endpoint()

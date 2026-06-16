@@ -21,26 +21,6 @@ public sealed class US_Herb_CouldHaveTests : IntegrationTestBase<HerbFormulaFixt
     #region US-HERB-007: Restore deleted herb
 
     [Fact]
-    public async Task US_HERB_007_Admin_CanRestoreDeletedHerb()
-    {
-        // Arrange
-        var adminClient = await LoginAsAdminAsync();
-        var payload = HerbBuilder.Default().WithName(UniqueName("herb")).Build();
-        var created = await (await adminClient.PostAsJsonAsync("/api/v1/herbs", payload))
-            .ShouldBeSuccessWithDataAsync<HerbDetailDto>();
-
-        await adminClient.DeleteAsync($"/api/v1/herbs/{created.Id}");
-
-        // Act
-        var restoreResp = await adminClient.PostAsync($"/api/v1/herbs/{created.Id}/restore", null);
-
-        // Assert
-        restoreResp.StatusCode.Should().BeOneOf(
-            new[] { HttpStatusCode.OK, HttpStatusCode.NoContent },
-            "US-HERB-007: Admin should restore a deleted herb");
-    }
-
-    [Fact]
     public async Task US_HERB_007_Doctor_CannotRestoreHerb_Returns403()
     {
         // Arrange

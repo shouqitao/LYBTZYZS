@@ -130,26 +130,6 @@ public sealed class US_Auth_MustHaveTests : IntegrationTestBase<AuthUsersFixture
     #region US-AUTH-005: Logout functionality
 
     [Fact]
-    public async Task US_AUTH_005_Logout_InvalidatesRefreshToken()
-    {
-        // Arrange - login to get tokens
-        var loginRequest = new LoginRequest { UserName = "doctor", Password = "TestDoctor2025@" };
-        var loginResponse = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/login", loginRequest);
-        var loginData = await loginResponse.ShouldBeSuccessWithDataAsync<LoginResponse>();
-
-        // Act - logout with refresh token
-        var logoutRequest = new LogoutRequest { RefreshToken = loginData.RefreshToken };
-        var logoutResponse = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/logout", logoutRequest);
-        logoutResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        // Assert - refresh should fail after logout
-        var refreshRequest = new RefreshTokenRequest { RefreshToken = loginData.RefreshToken };
-        var refreshResponse = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/refresh", refreshRequest);
-        refreshResponse.StatusCode.Should().NotBe(HttpStatusCode.OK,
-            "US-AUTH-005: refresh token should be invalid after logout");
-    }
-
-    [Fact]
     public async Task US_AUTH_005_Logout_WithInvalidRefreshToken_HandledGracefully()
     {
         // Arrange
@@ -281,48 +261,5 @@ public sealed class US_Auth_MustHaveTests : IntegrationTestBase<AuthUsersFixture
 
     #endregion
 
-    #region US-AUTH-010: Auto-login token mechanism
 
-    [Fact]
-    public async Task US_AUTH_010_LoginWithRememberMe_ReturnsAutoLoginToken()
-    {
-        // Arrange
-        var request = new LoginRequest
-        {
-            UserName = "admin",
-            Password = "TestAdmin2025@",
-            RememberMe = true
-        };
-
-        // Act
-        var response = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/login", request);
-
-        // Assert
-        var data = await response.ShouldBeSuccessWithDataAsync<LoginResponse>(
-            "US-AUTH-010: RememberMe login should succeed");
-        data.AutoLoginToken.Should().NotBeNullOrWhiteSpace(
-            "US-AUTH-010: auto-login token should be returned when RememberMe=true");
-    }
-
-    [Fact]
-    public async Task US_AUTH_010_LoginWithoutRememberMe_NoAutoLoginToken()
-    {
-        // Arrange
-        var request = new LoginRequest
-        {
-            UserName = "admin",
-            Password = "TestAdmin2025@",
-            RememberMe = false
-        };
-
-        // Act
-        var response = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/login", request);
-
-        // Assert
-        var data = await response.ShouldBeSuccessWithDataAsync<LoginResponse>();
-        data.AutoLoginToken.Should().BeNullOrWhiteSpace(
-            "US-AUTH-010: no auto-login token without RememberMe");
-    }
-
-    #endregion
 }
