@@ -37,6 +37,9 @@ public static class ViewNames
     /// <summary>用户管理</summary>
     public const string UserManagement = "UserManagementView";
 
+    /// <summary>统计报表</summary>
+    public const string ReportsHome = "ReportsHomeView";
+
     #endregion
 
     #region 工作台/选择视图
@@ -80,13 +83,6 @@ public static class ViewNames
 
     /// <summary>挂号队列</summary>
     public const string RegistrationList = "RegistrationListView";
-
-    #endregion
-
-    #region 同步视图
-
-    /// <summary>数据同步</summary>
-    public const string Sync = "SyncView";
 
     #endregion
 

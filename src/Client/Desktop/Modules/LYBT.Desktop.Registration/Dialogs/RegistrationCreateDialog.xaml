@@ -134,6 +134,13 @@
                           DisplayMemberPath="RealName"
                           IsEnabled="{Binding IsNotLoading}" />
 
+                <!-- 挂号费 -->
+                <TextBlock Text="挂号费 (元)" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,6" />
+                <TextBox Text="{Binding RegistrationFee, UpdateSourceTrigger=PropertyChanged}"
+                         Padding="10,8"
+                         FontSize="13"
+                         Margin="0,0,0,16" />
+
                 <!-- 备注 -->
                 <TextBlock Text="备注" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,6" />
                 <TextBox Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}"

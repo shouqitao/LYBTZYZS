@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     FormulaMasterDetailControl - 验方Master-Detail控件
     OpenSpec: refactor-admin-workspace
     
@@ -247,7 +247,7 @@
                     Grid.Row="1"
                     Margin="16"
                     Formula="{Binding CurrentDetail}"
-                    ShowAuditInfo="True"
+                    ShowSystemInfo="True"
                     Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}" />
 
                 <!--  编辑模式内容  -->

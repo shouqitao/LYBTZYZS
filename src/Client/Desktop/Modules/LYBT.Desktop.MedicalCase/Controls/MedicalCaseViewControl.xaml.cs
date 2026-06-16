@@ -139,20 +139,20 @@ public partial class MedicalCaseViewControl : UserControl
 
     // OpenSpec: unify-control-data-binding - 已删除向后兼容属性 (MedicalCaseDetail, HasConsultation, HasPrescription)
 
-    #region ShowAuditInfo 依赖属性 - Full模式
+    #region ShowSystemInfo 依赖属性 - Full模式
 
-    public static readonly DependencyProperty ShowAuditInfoProperty =
+    public static readonly DependencyProperty ShowSystemInfoProperty =
         DependencyProperty.Register(
-            nameof(ShowAuditInfo),
+            nameof(ShowSystemInfo),
             typeof(bool),
             typeof(MedicalCaseViewControl),
             new PropertyMetadata(true));
 
-    /// <summary>是否显示审计信息 - Full模式</summary>
-    public bool ShowAuditInfo
+    /// <summary>是否显示系统信息 - Full模式</summary>
+    public bool ShowSystemInfo
     {
-        get => (bool)GetValue(ShowAuditInfoProperty);
-        set => SetValue(ShowAuditInfoProperty, value);
+        get => (bool)GetValue(ShowSystemInfoProperty);
+        set => SetValue(ShowSystemInfoProperty, value);
     }
 
     #endregion

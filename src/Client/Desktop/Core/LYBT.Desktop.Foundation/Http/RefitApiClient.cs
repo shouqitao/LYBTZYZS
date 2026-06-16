@@ -43,6 +43,7 @@ public sealed class RefitApiClient : IApiClient
     private IApiClientFormulas? _formulas;
     private IApiClientMedicalCases? _medicalCases;
     private IApiClientRegistrations? _registrations;
+    private IApiClientReports? _reports;
 
     /// <summary>
     /// Initializes a new instance of <see cref="RefitApiClient"/>.
@@ -88,4 +89,8 @@ public sealed class RefitApiClient : IApiClient
     /// <inheritdoc />
     public IApiClientRegistrations Registrations => _registrations ??= new RegistrationApiClient(
         RestService.For<IRegistrationApi>(_httpClient, _refitSettings));
+
+    /// <inheritdoc />
+    public IApiClientReports Reports => _reports ??= new ReportsApiClient(
+        RestService.For<IReportsApi>(_httpClient, _refitSettings));
 }

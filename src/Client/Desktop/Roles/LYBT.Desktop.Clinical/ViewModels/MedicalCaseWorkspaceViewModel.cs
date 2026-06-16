@@ -634,9 +634,6 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
                 switch (dialogResult.Result)
                 {
                     case ButtonResult.Yes:
-                        var auditReason = await CheckAndGetAuditReasonAsync();
-                        if (auditReason == null) { tcs.SetResult(false); return; }
-                        if (!string.IsNullOrEmpty(auditReason)) EditReason = auditReason;
                         _editStateMachine.Fire(WorkspaceEditEvent.Save, "management-leave-save");
                         await SuspendOnlyAsync();
                         _editStateMachine.Fire(WorkspaceEditEvent.SaveCompleted, "management-leave-save-completed");
@@ -688,10 +685,6 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     {
         try
         {
-            var auditReason = await CheckAndGetAuditReasonAsync();
-            if (auditReason == null) return;
-            if (!string.IsNullOrEmpty(auditReason)) EditReason = auditReason;
-
             SetBusy(true, "正在保存...");
             _editStateMachine.Fire(WorkspaceEditEvent.Save, "save-changes");
             var result = await _medicalCaseService.SaveAndSuspendAsync(
@@ -716,9 +709,6 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         }
         finally { SetBusy(false); }
     }
-
-    private Task<string?> CheckAndGetAuditReasonAsync()
-        => Task.FromResult<string?>(string.Empty); // FUTURE: 医案审计日志查看功能 (US-MC-012)
 
     #endregion
 

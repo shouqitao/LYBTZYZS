@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     MedicalCaseMasterDetailControl - 医案Master-Detail控件
     OpenSpec: refactor-admin-workspace
     
@@ -235,7 +235,7 @@
                     Grid.Row="1"
                     Margin="16"
                     Detail="{Binding CurrentDetail}"
-                    ShowAuditInfo="True"
+                    ShowSystemInfo="True"
                     Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}" />
 
                 <!--  详情内容 - 编辑模式  -->

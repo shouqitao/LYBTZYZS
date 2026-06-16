@@ -34,9 +34,12 @@ public interface IApiClient
     /// <summary>Formula management endpoints (CRUD, clone, import/export, batch operations).</summary>
     IApiClientFormulas Formulas { get; }
 
-    /// <summary>Medical case endpoints (CRUD, status transitions, prescriptions, audit logs).</summary>
+    /// <summary>Medical case endpoints (CRUD, status transitions, prescriptions).</summary>
     IApiClientMedicalCases MedicalCases { get; }
 
     /// <summary>Registration endpoints (CRUD, queue, visit management).</summary>
     IApiClientRegistrations Registrations { get; }
+
+    /// <summary>Report endpoints (daily income, consultations, herb usage).</summary>
+    IApiClientReports Reports { get; }
 }

@@ -1,7 +1,6 @@
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 using LYBT.Desktop.MedicalCase.Controls;
-// OpenSpec: migrate-views-to-role-modules - AuditLogDialog/AuditReasonDialog已删除，审计功能后续单独规划
 using LYBT.Desktop.MedicalCase.Dialogs;
 // SYNC-D02: IMedicalCaseRepository 已迁移到 Contracts.Repositories
 using LYBT.Desktop.Contracts.Repositories;
@@ -46,9 +45,6 @@ namespace LYBT.Desktop.MedicalCase
 
             // OpenSpec: create-printing-module - 处方打印服务已迁移到独立Printing模块
             // [已移除] IPrescriptionPrintService, PrescriptionPrintService
-
-            // OpenSpec: migrate-views-to-role-modules - 审计功能后续单独规划
-            // [已删除] IAuditRequirementChecker, AuditRequirementChecker
 
             // Epic #1773: 注册Component组件
             // OpenSpec: simplify-medicalcase-api - 注册为接口供Consultation模块使用
@@ -115,9 +111,6 @@ namespace LYBT.Desktop.MedicalCase
 
             // OpenSpec: medicalcase-management-ui-refactor (EDITMODE-008) - 未保存修改确认对话框
             containerRegistry.RegisterDialog<UnsavedChangesDialog, UnsavedChangesDialogViewModel>();
-
-            // OpenSpec: migrate-views-to-role-modules - 审计功能将来单独规划，临时移除
-            // [已删除] AuditLogDialog, AuditReasonDialog
 
             // 注册视图用于导航
             // Issue #1549: MedicalCaseEntryView已删除（由MedicalCaseFlowView的4步流程替代）

@@ -13,7 +13,7 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Desktop.Contracts.ApiClient;
 
 /// <summary>
-/// Medical case API sub-interface — CRUD, status transitions, prescriptions, audit logs.
+/// Medical case API sub-interface — CRUD, status transitions, prescriptions.
 /// Largest API interface with 19+ methods.
 /// </summary>
 /// <remarks>

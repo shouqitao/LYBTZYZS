@@ -25,6 +25,7 @@ using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Registration;
+using LYBT.Shared.Models.Contracts.Reports;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 
@@ -47,7 +48,7 @@ namespace LYBT.Desktop.Foundation.Http;
 public sealed class HttpClientApiClient : IApiClient,
     IApiClientAuth, IApiClientUsers, IApiClientPatients,
     IApiClientHerbs, IApiClientFormulas, IApiClientMedicalCases,
-    IApiClientRegistrations
+    IApiClientRegistrations, IApiClientReports
 {
     private readonly IHttpClientFactory _httpClientFactory;
 
@@ -95,6 +96,9 @@ public sealed class HttpClientApiClient : IApiClient,
 
     /// <inheritdoc />
     public IApiClientRegistrations Registrations => this;
+
+    /// <inheritdoc />
+    public IApiClientReports Reports => this;
 
     // ========================================================================
     // Base HTTP helpers (private)
@@ -723,4 +727,17 @@ public sealed class HttpClientApiClient : IApiClient,
         var response = await client.DeleteAsync($"/api/registrations/{id}");
         await EnsureSuccessOrThrowAsync(response);
     }
+
+    // ========================================================================
+    // IApiClientReports — Report endpoints (explicit implementation)
+    // ========================================================================
+
+    Task<ApiResponse<DailyIncomeDto>> IApiClientReports.GetDailyIncomeAsync()
+        => GetAndWrapAsync<DailyIncomeDto>("/api/v1/reports/daily/income");
+
+    Task<ApiResponse<DailyConsultationDto>> IApiClientReports.GetDailyConsultationsAsync()
+        => GetAndWrapAsync<DailyConsultationDto>("/api/v1/reports/daily/consultations");
+
+    Task<ApiResponse<DailyHerbUsageDto>> IApiClientReports.GetDailyHerbUsageAsync()
+        => GetAndWrapAsync<DailyHerbUsageDto>("/api/v1/reports/daily/herbs");
 }

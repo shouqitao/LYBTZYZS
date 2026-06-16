@@ -37,19 +37,19 @@ namespace LYBT.Desktop.Infrastructure.Controls.FormulaView
         }
 
         /// <summary>
-        /// 是否显示审计信息（创建时间、更新时间）
+        /// 是否显示系统信息（创建时间、更新时间）
         /// </summary>
-        public static readonly DependencyProperty ShowAuditInfoProperty =
+        public static readonly DependencyProperty ShowSystemInfoProperty =
             DependencyProperty.Register(
-                nameof(ShowAuditInfo),
+                nameof(ShowSystemInfo),
                 typeof(bool),
                 typeof(FormulaViewControl),
                 new PropertyMetadata(true));
 
-        public bool ShowAuditInfo
+        public bool ShowSystemInfo
         {
-            get => (bool)GetValue(ShowAuditInfoProperty);
-            set => SetValue(ShowAuditInfoProperty, value);
+            get => (bool)GetValue(ShowSystemInfoProperty);
+            set => SetValue(ShowSystemInfoProperty, value);
         }
     }
 }

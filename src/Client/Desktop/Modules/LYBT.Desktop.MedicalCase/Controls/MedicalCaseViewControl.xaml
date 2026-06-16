@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     MedicalCaseViewControl - 医案预览控件
     OpenSpec: refactor-medicalcase-workspace V2
     OpenSpec: refactor-medicalcase-management
@@ -211,7 +211,7 @@
                      系统信息卡片 - Full模式
                      ======================================== -->
                 <controls:InfoCard Title="系统信息" ShowTitle="True" Margin="0,12,0,0"
-                                   Visibility="{Binding ShowAuditInfo, Converter={x:Static converters:Cvt.BoolToVis}}">
+                                   Visibility="{Binding ShowSystemInfo, Converter={x:Static converters:Cvt.BoolToVis}}">
                     <controls:InfoCard.Content>
                         <Grid>
                             <Grid.RowDefinitions>

@@ -142,7 +142,6 @@ Prism模块入口，`[Module(ModuleName = nameof(ClinicalModule))]`。
 - `NavigateToMedicalCaseQuery()` - 导航到医案管理
 - `NavigateToHerbLibrary()` - 导航到药材管理
 - `NavigateToFormulaLibrary()` - 导航到经验方管理
-- `NavigateToSync()` - 导航到数据同步
 - `EditProfile()` - 导航到账户设置(个人资料)
 - `ChangePassword()` - 导航到账户设置(修改密码)，传递 `Tab=Password` 参数
 
