@@ -97,6 +97,29 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbList
 
         private bool CanClearAll() => ValidItemCount > 0;
 
+        /// <summary>
+        /// 按角色排序命令（君→臣→佐→使）
+        /// </summary>
+        [RelayCommand(CanExecute = nameof(CanSortByRole))]
+        private void SortByRole()
+        {
+            var sorted = Items
+                .Where(i => !i.IsEmpty)
+                .OrderBy(i => i.HerbRole)
+                .ToList();
+
+            Items.Clear();
+            foreach (var item in sorted)
+            {
+                Items.Add(item);
+            }
+
+            EnsureSingleEmptySlot();
+            OnListChanged(HerbListChangeType.Sorted);
+        }
+
+        private bool CanSortByRole() => ValidItemCount > 1;
+
         #endregion
 
         #region Public Methods

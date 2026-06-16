@@ -55,6 +55,11 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbItem
         /// <summary>
         /// 数据已清空
         /// </summary>
-        Cleared
+        Cleared,
+
+        /// <summary>
+        /// 药材角色变更
+        /// </summary>
+        RoleChanged
     }
 }

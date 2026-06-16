@@ -43,6 +43,9 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("煎法")]
         public Enums.DecocteMethod DecocteMethod { get; set; } = Enums.DecocteMethod.Default;
 
+        [DisplayName("药材角色")]
+        public Enums.HerbRole Role { get; set; } = Enums.HerbRole.None;
+
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }

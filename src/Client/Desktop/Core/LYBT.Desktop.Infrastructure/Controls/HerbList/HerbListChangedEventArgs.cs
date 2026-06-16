@@ -80,6 +80,11 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbList
         /// <summary>
         /// 批量导入
         /// </summary>
-        BatchImported
+        BatchImported,
+
+        /// <summary>
+        /// 按角色排序
+        /// </summary>
+        Sorted
     }
 }

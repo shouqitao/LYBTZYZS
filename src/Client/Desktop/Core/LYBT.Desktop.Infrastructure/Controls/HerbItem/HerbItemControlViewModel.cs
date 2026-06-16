@@ -4,6 +4,7 @@ using LYBT.Shared.Components;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
+using HerbRole = LYBT.Shared.Models.Enums.HerbRole;
 
 namespace LYBT.Desktop.Infrastructure.Controls.HerbItem
 {
@@ -49,6 +50,7 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbItem
 
         private int _dosage;
         private DecocteMethod _decocteMethod = DecocteMethod.Default;
+        private HerbRole _herbRole = HerbRole.None;
 
         #endregion
 
@@ -88,6 +90,21 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbItem
                 if (SetProperty(ref _decocteMethod, value))
                 {
                     OnItemChanged(HerbItemChangeType.DecocteMethodChanged);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 药材角色（君臣佐使）
+        /// </summary>
+        public HerbRole HerbRole
+        {
+            get => _herbRole;
+            set
+            {
+                if (SetProperty(ref _herbRole, value))
+                {
+                    OnItemChanged(HerbItemChangeType.RoleChanged);
                 }
             }
         }
@@ -161,6 +178,7 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbItem
             Unit = dto.Unit;
             UnitPrice = dto.UnitPrice;
             DecocteMethod = dto.DecocteMethod;
+            HerbRole = dto.Role;
         }
 
         /// <summary>
@@ -175,7 +193,8 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbItem
                 Dosage = Dosage,
                 Unit = Unit,
                 UnitPrice = UnitPrice,
-                DecocteMethod = DecocteMethod
+                DecocteMethod = DecocteMethod,
+                Role = HerbRole
             };
         }
 
