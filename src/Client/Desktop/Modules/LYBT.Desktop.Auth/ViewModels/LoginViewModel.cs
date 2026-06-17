@@ -10,6 +10,7 @@ using LYBT.Desktop.Infrastructure.Extensions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Regions;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Auth.ViewModels
 {
@@ -24,6 +25,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         private readonly IApplicationStateService _applicationStateService;
         private readonly IUsernameStorageService? _usernameStorage;
         private readonly ICredentialVault? _credentialVault;
+        private readonly IDialogService? _dialogService;
         private CancellationTokenSource? _cts;
 
         private string _username = string.Empty;
@@ -175,6 +177,11 @@ namespace LYBT.Desktop.Auth.ViewModels
         public ICommand RetryApiCheckCommand { get; }
 
         /// <summary>
+        /// 打开服务器配置对话框命令
+        /// </summary>
+        public ICommand OpenSettingsCommand { get; }
+
+        /// <summary>
         /// 构造函数
         /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
         /// </summary>
@@ -183,17 +190,20 @@ namespace LYBT.Desktop.Auth.ViewModels
             ILoginCoordinator loginCoordinator,
             IApplicationStateService applicationStateService,
             IUsernameStorageService? usernameStorage = null,
-            ICredentialVault? credentialVault = null)
+            ICredentialVault? credentialVault = null,
+            IDialogService? dialogService = null)
             : base(services)
         {
             _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
             _applicationStateService = applicationStateService ?? throw new ArgumentNullException(nameof(applicationStateService));
             _usernameStorage = usernameStorage;
             _credentialVault = credentialVault;
+            _dialogService = dialogService;
 
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), () => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && !IsLoading);
             CloseApplicationCommand = new DelegateCommand(async () => await ExecuteCloseApplicationAsync());
             RetryApiCheckCommand = new DelegateCommand(async () => await ExecuteRetryApiCheckAsync(), () => ApiStatus == ApiHealthStatus.Unhealthy);
+            OpenSettingsCommand = new DelegateCommand(ExecuteOpenSettings);
 
             _applicationStateService.StatusChanged += OnApiStatusChanged;
 
@@ -387,6 +397,23 @@ namespace LYBT.Desktop.Auth.ViewModels
                 Password = string.Empty;
             }
             finally { StatusMessage = string.Empty; }
+        }
+
+        /// <summary>
+        /// 打开服务器配置对话框
+        /// </summary>
+        private void ExecuteOpenSettings()
+        {
+            if (_dialogService is null)
+            {
+                Logger.LogWarning("[VM] Login.OpenSettings - IDialogService 未注入，无法打开服务器配置");
+                return;
+            }
+
+            _dialogService.ShowDialog(nameof(Views.ServerConfigView), null, result =>
+            {
+                Logger.LogInformation("[VM] Login.OpenSettings - 配置对话框已关闭: {Result}", result.Result);
+            });
         }
 
         /// <summary>

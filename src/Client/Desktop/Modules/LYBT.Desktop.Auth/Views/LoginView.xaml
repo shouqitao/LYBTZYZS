@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
     x:Class="LYBT.Desktop.Auth.Views.LoginView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -506,6 +506,51 @@
                 </Grid>
             </Border>
         </Grid>
+
+        <!--  服务器配置按钮（左下角）  -->
+        <Button
+            Margin="28,0,0,20"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Bottom"
+            Command="{Binding OpenSettingsCommand}"
+            Content="⚙ 设置"
+            Cursor="Hand"
+            FontSize="14"
+            Foreground="{StaticResource LYBTTcmAccentBrush}"
+            Padding="14,8"
+            ToolTip="配置服务器连接地址">
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Setter Property="Background" Value="#33000000" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="BorderBrush" Value="{StaticResource LYBTTcmAccentBrush}" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8">
+                                    <ContentPresenter
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Margin="{TemplateBinding Padding}" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#55110000" />
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter Property="Background" Value="#77110000" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Button.Style>
+        </Button>
 
         <!--  加载遮罩  -->
         <Grid Background="{StaticResource DarkMaskBrush}" Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}">

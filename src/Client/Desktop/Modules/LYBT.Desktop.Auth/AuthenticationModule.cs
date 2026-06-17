@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Auth.ViewModels;
+using LYBT.Desktop.Auth.ViewModels;
 using LYBT.Desktop.Auth.Views;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
@@ -34,6 +34,9 @@ namespace LYBT.Desktop.Auth
 
             // 注册视图用于导航
             containerRegistry.RegisterForNavigation<LoginView>();
+
+            // 服务器配置对话框
+            containerRegistry.RegisterDialog<Views.ServerConfigView, ViewModels.ServerConfigViewModel>();
         }
     }
 }
