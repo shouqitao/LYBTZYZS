@@ -133,14 +133,56 @@
             </Grid>
 
             <!--  状态栏  -->
-            <controls:GlobalStatusBar
+            <DockPanel
                 Grid.Row="1"
                 Grid.ColumnSpan="2"
-                ConnectionUrl="{Binding ConnectionUrl}"
-                IsLocal="{Binding IsLocal}"
-                ConnectCommand="{Binding ConnectCommand}"
-                CurrentUserName="{Binding CurrentUserDisplayName}"
-                StatusMessage="{Binding ApiStatus}" />
+                LastChildFill="True">
+
+                <!--  连接模式徽章 (远程模式=绿色 / 本地模式=橙色)  -->
+                <Border
+                    DockPanel.Dock="Right"
+                    Margin="8,4,8,4"
+                    Padding="10,2"
+                    VerticalAlignment="Stretch"
+                    CornerRadius="4">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="{DynamicResource LightWarningBrush}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource WarningBrush}" />
+                            <Setter Property="BorderThickness" Value="1" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsRemoteMode}" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource LightSuccessBrush}" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource SuccessBrush}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="11"
+                        FontWeight="Medium"
+                        Text="{Binding ConnectionModeDisplay}">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsRemoteMode}" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Border>
+
+                <controls:GlobalStatusBar
+                    ConnectionUrl="{Binding ConnectionUrl}"
+                    IsLocal="{Binding IsLocal}"
+                    ConnectCommand="{Binding ConnectCommand}"
+                    CurrentUserName="{Binding CurrentUserDisplayName}"
+                    StatusMessage="{Binding ApiStatus}" />
+            </DockPanel>
         </Grid>
 
         <!-- Phase 3: NavigationHistoryPanel Overlay -->

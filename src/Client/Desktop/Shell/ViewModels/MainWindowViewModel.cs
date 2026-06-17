@@ -44,6 +44,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private readonly ITokenLifecycleService _tokenLifecycleService;
     private readonly ITokenStorageService _tokenStorageService;
     private readonly ILoginCoordinator _loginCoordinator;
+    private readonly IConnectionModeService _connectionModeService;
 
     /// <summary>
     /// 区域管理器
@@ -114,6 +115,18 @@ public partial class MainWindowViewModel : CoreViewModelBase
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsNotLoggedIn))]
     private bool _isLocal;
+
+    /// <summary>
+    /// 连接模式显示文本 (远程模式/本地模式) - 状态栏模式徽章
+    /// </summary>
+    [ObservableProperty]
+    private string _connectionModeDisplay = string.Empty;
+
+    /// <summary>
+    /// 是否为远程模式 - 用于状态栏颜色编码 (true=绿色, false=橙色)
+    /// </summary>
+    [ObservableProperty]
+    private bool _isRemoteMode;
 
     /// <summary>
     /// 连接地址变更命令（参数为新URL字符串）
@@ -204,7 +217,8 @@ public partial class MainWindowViewModel : CoreViewModelBase
         IUserActivityTracker userActivityTracker,
         ITokenLifecycleService tokenLifecycleService,
         ITokenStorageService tokenStorageService,
-        ILoginCoordinator loginCoordinator)
+        ILoginCoordinator loginCoordinator,
+        IConnectionModeService connectionModeService)
         : base(services)
     {
         RegionManager = services.RegionManager;
@@ -224,9 +238,15 @@ public partial class MainWindowViewModel : CoreViewModelBase
         _tokenLifecycleService = tokenLifecycleService ?? throw new ArgumentNullException(nameof(tokenLifecycleService));
         _tokenStorageService = tokenStorageService ?? throw new ArgumentNullException(nameof(tokenStorageService));
         _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
+        _connectionModeService = connectionModeService ?? throw new ArgumentNullException(nameof(connectionModeService));
 
         ConnectionUrl = _connectionSettings.CurrentUrl;
         IsLocal = _connectionSettings.IsLocal;
+
+        // 初始化连接模式显示
+        ConnectionModeDisplay = _connectionModeService.CurrentModeDisplay;
+        IsRemoteMode = _connectionModeService.IsRemote;
+        _connectionModeService.ModeChanged += OnConnectionModeChanged;
 
         InitializeViewModel();
         InitializeNavigationPanels();
@@ -563,6 +583,19 @@ public partial class MainWindowViewModel : CoreViewModelBase
     }
 
     /// <summary>
+    /// 连接模式变更事件处理 - 更新状态栏模式徽章
+    /// </summary>
+    private void OnConnectionModeChanged(object? sender, ConnectionMode e)
+    {
+        Services.UiThreadDispatcher.InvokeAsync(() =>
+        {
+            ConnectionModeDisplay = _connectionModeService.CurrentModeDisplay;
+            IsRemoteMode = _connectionModeService.IsRemote;
+            Logger.LogInformation("[UI] 连接模式变更: {Mode} ({Display})", e, _connectionModeService.CurrentModeDisplay);
+        });
+    }
+
+    /// <summary>
     /// 导航架构改进方案 v1.0 — 导航状态变更事件处理
     /// 更新面包屑列表和后退/前进按钮状态
     /// </summary>
@@ -875,12 +908,25 @@ public partial class MainWindowViewModel : CoreViewModelBase
         {
             CleanupTickSubscription();
             CleanupHealthMonitor();
+            CleanupConnectionMode();
             UnsubscribeLoginEvent();
             _navigationCoordinator.UnsubscribeFromRegionCollection();
             _tokenLifecycleService.Dispose(); // Issue #1864: 释放Token生命周期服务
         }
         catch (Exception ex) { Logger.LogError(ex, "资源清理异常"); }
         finally { base.OnDisposing(); }
+    }
+
+    /// <summary>
+    /// 清理连接模式服务订阅
+    /// </summary>
+    private void CleanupConnectionMode()
+    {
+        try
+        {
+            _connectionModeService.ModeChanged -= OnConnectionModeChanged;
+        }
+        catch (Exception ex) { Logger.LogError(ex, "清理连接模式服务订阅失败"); }
     }
 
     /// <summary>

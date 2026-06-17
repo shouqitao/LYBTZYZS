@@ -26,6 +26,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         private readonly IUsernameStorageService? _usernameStorage;
         private readonly ICredentialVault? _credentialVault;
         private readonly IDialogService? _dialogService;
+        private readonly IConnectionModeService? _connectionModeService;
         private CancellationTokenSource? _cts;
 
         private string _username = string.Empty;
@@ -38,6 +39,10 @@ namespace LYBT.Desktop.Auth.ViewModels
         private string? _savedUsername;
         private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
         private string _apiStatusMessage = "正在检查连接...";
+
+        // 连接模式显示 (远程模式/本地模式)
+        private string _currentModeDisplay = "检测中...";
+        private bool _isRemoteMode;
 
         public string Username
         {
@@ -162,6 +167,24 @@ namespace LYBT.Desktop.Auth.ViewModels
         public string ApiStatusMessage { get => _apiStatusMessage; set => SetProperty(ref _apiStatusMessage, value); }
         public bool IsApiUnhealthy => ApiStatus == ApiHealthStatus.Unhealthy;
 
+        /// <summary>
+        /// 当前连接模式显示文本 (远程模式/本地模式/检测中...)
+        /// </summary>
+        public string CurrentModeDisplay
+        {
+            get => _currentModeDisplay;
+            set => SetProperty(ref _currentModeDisplay, value);
+        }
+
+        /// <summary>
+        /// 是否为远程模式 - 用于颜色编码 (true=绿色, false=橙色)
+        /// </summary>
+        public bool IsRemoteMode
+        {
+            get => _isRemoteMode;
+            set => SetProperty(ref _isRemoteMode, value);
+        }
+
         public ICommand LoginCommand { get; }
 
         /// <summary>
@@ -191,7 +214,8 @@ namespace LYBT.Desktop.Auth.ViewModels
             IApplicationStateService applicationStateService,
             IUsernameStorageService? usernameStorage = null,
             ICredentialVault? credentialVault = null,
-            IDialogService? dialogService = null)
+            IDialogService? dialogService = null,
+            IConnectionModeService? connectionModeService = null)
             : base(services)
         {
             _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
@@ -199,6 +223,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             _usernameStorage = usernameStorage;
             _credentialVault = credentialVault;
             _dialogService = dialogService;
+            _connectionModeService = connectionModeService;
 
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), () => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && !IsLoading);
             CloseApplicationCommand = new DelegateCommand(async () => await ExecuteCloseApplicationAsync());
@@ -206,6 +231,15 @@ namespace LYBT.Desktop.Auth.ViewModels
             OpenSettingsCommand = new DelegateCommand(ExecuteOpenSettings);
 
             _applicationStateService.StatusChanged += OnApiStatusChanged;
+
+            // 订阅连接模式变更事件
+            if (_connectionModeService != null)
+            {
+                _connectionModeService.ModeChanged += OnConnectionModeChanged;
+                // 初始化当前模式显示
+                CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
+                IsRemoteMode = _connectionModeService.IsRemote;
+            }
 
             // P0-FIX: ErrorMessage/StatusMessage 变更时通知 HasMessage 属性
             PropertyChanged += (s, e) =>
@@ -225,10 +259,62 @@ namespace LYBT.Desktop.Auth.ViewModels
                 await Task.Delay(100, _cts?.Token ?? CancellationToken.None);
                 await LoadSavedCredentialsAsync();
                 await LoadApiStatusFromStateServiceAsync();
+                await DetectConnectionModeAsync();
             }
             catch (OperationCanceledException)
             {
                 // Expected when ViewModel is disposed during initialization
+            }
+        }
+
+        /// <summary>
+        /// 检测最佳连接模式 (远程优先，本地回退) 并更新 UI 显示
+        /// </summary>
+        private async Task DetectConnectionModeAsync()
+        {
+            if (_connectionModeService is null) return;
+
+            try
+            {
+                await Services.UiThreadDispatcher.InvokeAsync(() =>
+                {
+                    CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
+                    IsRemoteMode = _connectionModeService.IsRemote;
+                });
+
+                var mode = await _connectionModeService.DetectBestModeAsync();
+
+                await Services.UiThreadDispatcher.InvokeAsync(() =>
+                {
+                    CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
+                    IsRemoteMode = _connectionModeService.IsRemote;
+                    Logger.LogInformation("[VM] Login.DetectMode - 连接模式: {Mode} ({Display})",
+                        mode, _connectionModeService.CurrentModeDisplay);
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "[VM] Login.DetectMode failed");
+            }
+        }
+
+        /// <summary>
+        /// 连接模式变更事件处理器
+        /// </summary>
+        private void OnConnectionModeChanged(object? sender, ConnectionMode e)
+        {
+            try
+            {
+                if (_connectionModeService is null) return;
+                Services.UiThreadDispatcher.InvokeAsync(() =>
+                {
+                    CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
+                    IsRemoteMode = _connectionModeService.IsRemote;
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "[VM] Login.OnConnectionModeChanged failed");
             }
         }
 
@@ -473,6 +559,11 @@ namespace LYBT.Desktop.Auth.ViewModels
         protected override void OnDisposing()
         {
             _applicationStateService.StatusChanged -= OnApiStatusChanged;
+
+            if (_connectionModeService != null)
+            {
+                _connectionModeService.ModeChanged -= OnConnectionModeChanged;
+            }
 
             if (_cts != null)
             {
