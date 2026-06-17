@@ -157,10 +157,6 @@ Phase 3 updated: Registration UI (fee input + queue display), Reports dashboard 
 
 ## MCP Tools
 
-- **gitnexus**: Code knowledge graph (35341 symbols, 76290 relationships). Run `gitnexus_impact` before editing any symbol. Run `gitnexus_detect_changes()` before committing.
+- **CodeGraph**: Pre-indexed code knowledge graph with auto-sync. Use `codegraph_explore` to answer architecture questions, `codegraph_node` for symbol details, `codegraph_search` to find symbols, `codegraph_callers` for call sites. Auto-syncs on file changes — no manual re-indexing needed.
 - **filesystem**: File system access for the project directory
 - **context7**: Library documentation lookup (v3.2.1, stdio)
-
-<!-- gitnexus:start -->
-GitNexus indexed: **LYBTZYZS** (35341 symbols, 76290 relationships). Run `gitnexus_impact` before editing any symbol. Run `gitnexus_detect_changes()` before committing.
-<!-- gitnexus:end -->
