@@ -1,9 +1,8 @@
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
-using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Security;
 using LYBT.Tests.Server.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,9 +46,6 @@ public sealed class RateLimitingFixture : IAsyncLifetime
 
     /// <summary>Seed user password (matches ServerFixture).</summary>
     public const string SeedPassword = "TestAdmin2025@";
-
-    // Fixed test user ID for predictable seeding
-    private static readonly Guid AdminUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
     public async Task InitializeAsync()
     {
@@ -152,49 +148,35 @@ public sealed class RateLimitingFixture : IAsyncLifetime
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await db.Database.MigrateAsync();
-        await SeedDefaultUser(db);
-    }
 
-    /// <summary>
-    /// Seeds a single admin user. Rate limiting tests only need one loginable user.
-    /// Uses PasswordHelper.HashPassword for production-compatible hashing.
-    /// Uses IgnoreQueryFilters() to handle soft-deleted records (EF Core 8 global filter caveat).
-    /// </summary>
-    private static async Task SeedDefaultUser(AppDbContext db)
-    {
-        var existing = await db.Set<User>()
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(u => u.Id == AdminUserId);
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-        if (existing != null)
+        string[] roles = { "Receptionist", "Doctor", "Admin", "SuperAdmin" };
+        foreach (var role in roles)
         {
-            existing.UserName = "admin";
-            existing.RealName = "系统管理员";
-            existing.Role = UserRole.Admin;
-            existing.Status = CommonStatus.Enabled;
-            existing.IsDeleted = false;
-            existing.PasswordHash = PasswordHelper.HashPassword(SeedPassword, UserRole.Admin);
-            existing.UpdatedAt = DateTime.UtcNow;
-        }
-        else
-        {
-            db.Set<User>().Add(new User
+            if (!await roleManager.RoleExistsAsync(role))
             {
-                Id = AdminUserId,
+                await roleManager.CreateAsync(new IdentityRole<Guid>(role));
+            }
+        }
+
+        var existing = await userManager.FindByNameAsync("admin");
+        if (existing == null)
+        {
+            var user = new ApplicationUser
+            {
                 UserName = "admin",
                 RealName = "系统管理员",
-                Role = UserRole.Admin,
-                Status = CommonStatus.Enabled,
-                PasswordHash = PasswordHelper.HashPassword(SeedPassword, UserRole.Admin),
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                CreatedBy = Guid.Empty,
-                UpdatedBy = Guid.Empty,
-                IsDeleted = false
-            });
+                Email = "admin-test@lybt.com",
+                EmailConfirmed = true
+            };
+            var result = await userManager.CreateAsync(user, SeedPassword);
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(user, "Admin");
+            }
         }
-
-        await db.SaveChangesAsync();
     }
 
     #endregion

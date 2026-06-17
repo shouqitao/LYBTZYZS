@@ -13,6 +13,9 @@ using LYBT.Module.Formulas;
 using LYBT.Module.MedicalCases;
 using LYBT.Module.Registration;
 using LYBT.Module.Reports;
+using LYBT.Module.Users.Services;
+using LYBT.Entities.Users;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.LocalWebAPI;
@@ -47,6 +50,19 @@ public static class LocalWebApiProgram
         builder.Services.AddRegistrationModule();
         builder.Services.AddReportsModule();
 
+        builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+        {
+            options.Password.RequireDigit = true;
+            options.Password.RequiredLength = 6;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireLowercase = true;
+            options.Lockout.MaxFailedAccessAttempts = int.MaxValue;
+            options.Lockout.AllowedForNewUsers = false;
+        })
+        .AddEntityFrameworkStores<AppDbContext>()
+        .AddDefaultTokenProviders();
+
         LocalJwtConfig.ConfigureServices(builder.Services);
 
         var app = builder.Build();
@@ -63,6 +79,7 @@ public static class LocalWebApiProgram
         using var scope = app.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await dbContext.Database.EnsureCreatedAsync();
+        await IdentitySeedData.SeedRolesAndAdminAsync(app.Services);
         await LocalWebApiSeedData.SeedAsync(dbContext);
     }
 

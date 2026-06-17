@@ -11,6 +11,8 @@ using LYBT.Entities.Registrations;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data.Configuration;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Infrastructure.Data
@@ -20,7 +22,7 @@ namespace LYBT.Infrastructure.Data
     /// 统一应用数据库上下文 - 整个项目使用单一数据库LYBTDB
     /// 集成审计字段自动化功能
     /// </summary>
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
     {
         private readonly IHttpContextAccessor? _httpContextAccessor;
 
@@ -35,7 +37,7 @@ namespace LYBT.Infrastructure.Data
         }
 
         // 用户管理
-        public DbSet<User> Users { get; set; }
+        public new DbSet<User> Users { get; set; }
 
         // Issue #1909: AdminSecrets表已移除，超级管理员已统一到Users表（Role=SuperAdmin）
 

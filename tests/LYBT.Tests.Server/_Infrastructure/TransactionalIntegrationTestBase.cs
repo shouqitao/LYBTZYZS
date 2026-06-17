@@ -9,7 +9,7 @@ using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Security;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -199,45 +199,49 @@ public abstract class TransactionalIntegrationTestBase : IAsyncLifetime
 
     private async Task SeedBaseDataAsync()
     {
-        // Check if base data already exists
-        if (DbContext.Set<User>().Any())
+        var roleManager = _factory.Services.CreateScope().ServiceProvider
+            .GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+        var userManager = _factory.Services.CreateScope().ServiceProvider
+            .GetRequiredService<UserManager<ApplicationUser>>();
+
+        string[] roles = { "Receptionist", "Doctor", "Admin", "SuperAdmin" };
+        foreach (var role in roles)
         {
-            return;
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new IdentityRole<Guid>(role));
+            }
         }
 
-        var now = DateTime.UtcNow;
-
-        DbContext.Set<User>().AddRange(
-            CreateUser(Guid.NewGuid(), "sysadmin", "系统管理员",
-                UserRole.SuperAdmin, "admin@lybt.com", "TestAdmin2025@", now),
-            CreateUser(Guid.Parse("00000000-0000-0000-0000-000000000001"), "admin", "测试管理员",
-                UserRole.Admin, "admin-test@lybt.com", "TestAdmin2025@", now),
-            CreateUser(Guid.Parse("00000000-0000-0000-0000-000000000002"), "doctor", "测试医生",
-                UserRole.Doctor, "doctor-test@lybt.com", "TestDoctor2025@", now)
-        );
-
-        await DbContext.SaveChangesAsync();
+        await CreateIdentityUserAsync(userManager, "sysadmin", "系统管理员",
+            "SuperAdmin", "TestAdmin2025@", "admin@lybt.com");
+        await CreateIdentityUserAsync(userManager, "admin", "测试管理员",
+            "Admin", "TestAdmin2025@", "admin-test@lybt.com");
+        await CreateIdentityUserAsync(userManager, "doctor", "测试医生",
+            "Doctor", "TestDoctor2025@", "doctor-test@lybt.com");
     }
 
-    private static User CreateUser(
-        Guid id, string userName, string realName,
-        UserRole role, string email, string password, DateTime now)
+    private static async Task CreateIdentityUserAsync(
+        UserManager<ApplicationUser> userManager,
+        string userName, string realName,
+        string role, string password, string email)
     {
-        return new User
+        var existing = await userManager.FindByNameAsync(userName);
+        if (existing != null) return;
+
+        var user = new ApplicationUser
         {
-            Id = id,
             UserName = userName,
             RealName = realName,
-            Role = role,
             Email = email,
-            Status = CommonStatus.Enabled,
-            PasswordHash = PasswordHelper.HashPassword(password, role),
-            CreatedAt = now,
-            UpdatedAt = now,
-            CreatedBy = Guid.Empty,
-            UpdatedBy = Guid.Empty,
-            IsDeleted = false
+            EmailConfirmed = true
         };
+
+        var result = await userManager.CreateAsync(user, password);
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(user, role);
+        }
     }
 
     #endregion

@@ -8,8 +8,8 @@ using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Security;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -280,42 +280,49 @@ public class ServerFixture : IAsyncLifetime, IDisposable
     private async Task SeedBaseDataAsync()
     {
         using var scope = Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-        db.Set<User>().AddRange(
-            CreateUser(Guid.NewGuid(), "sysadmin", "系统管理员",
-                UserRole.SuperAdmin, "admin@lybt.com", SysAdminPassword),
-            CreateUser(AdminUserId, "admin", "测试管理员",
-                UserRole.Admin, "admin-test@lybt.com", AdminPassword),
-            CreateUser(DoctorUserId, "doctor", "测试医生",
-                UserRole.Doctor, "doctor-test@lybt.com", DoctorPassword),
-            CreateUser(ReceptionistUserId, "receptionist", "测试前台",
-                UserRole.Receptionist, "receptionist-test@lybt.com", ReceptionistPassword)
-        );
+        string[] roles = { "Receptionist", "Doctor", "Admin", "SuperAdmin" };
+        foreach (var role in roles)
+        {
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new IdentityRole<Guid>(role));
+            }
+        }
 
-        await db.SaveChangesAsync();
+        await CreateIdentityUserAsync(userManager, "sysadmin", "系统管理员",
+            "SuperAdmin", SysAdminPassword, "admin@lybt.com");
+        await CreateIdentityUserAsync(userManager, "admin", "测试管理员",
+            "Admin", AdminPassword, "admin-test@lybt.com");
+        await CreateIdentityUserAsync(userManager, "doctor", "测试医生",
+            "Doctor", DoctorPassword, "doctor-test@lybt.com");
+        await CreateIdentityUserAsync(userManager, "receptionist", "测试前台",
+            "Receptionist", ReceptionistPassword, "receptionist-test@lybt.com");
     }
 
-    private static User CreateUser(
-        Guid id, string userName, string realName,
-        UserRole role, string email, string password)
+    private static async Task CreateIdentityUserAsync(
+        UserManager<ApplicationUser> userManager,
+        string userName, string realName,
+        string role, string password, string email)
     {
-        var now = DateTime.UtcNow;
-        return new User
+        var existing = await userManager.FindByNameAsync(userName);
+        if (existing != null) return;
+
+        var user = new ApplicationUser
         {
-            Id = id,
             UserName = userName,
             RealName = realName,
-            Role = role,
             Email = email,
-            Status = CommonStatus.Enabled,
-            PasswordHash = PasswordHelper.HashPassword(password, role),
-            CreatedAt = now,
-            UpdatedAt = now,
-            CreatedBy = Guid.Empty,
-            UpdatedBy = Guid.Empty,
-            IsDeleted = false
+            EmailConfirmed = true
         };
+
+        var result = await userManager.CreateAsync(user, password);
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(user, role);
+        }
     }
 
     private static void RemoveHostedServices(IServiceCollection services)

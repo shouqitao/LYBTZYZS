@@ -1,4 +1,4 @@
-﻿/// <summary>
+/// <summary>
 /// 凌隐宝堂中医诊所诊疗系统 WebAPI 程序入口
 /// UltraThink重构：采用统一服务注入管理，简化代码结构，提高可维护性
 /// UltraThink v2.0 Security: 加载.env文件和环境变量替换支持
@@ -15,8 +15,12 @@ using LYBT.Shared.Utilities.Security;
 using LYBT.WebAPI.Extensions;
 using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Infrastructure.Configuration.Validation;
+using LYBT.Entities.Users;
+using LYBT.Infrastructure.Data;
+using Microsoft.AspNetCore.Identity;
 using Serilog;
 using Serilog.Events;
+using LYBT.Module.Users.Services;
 
 /// <summary>
 /// 凌隐宝堂中医诊所诊疗系统 WebAPI 程序入口
@@ -129,6 +133,19 @@ public class Program
 
             builder.Services.RegisterAllApplicationServices(builder.Configuration, builder.Environment);
 
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 8;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = true;
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+            })
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
+
             // T5-P3-01: 所有环境验证 Critical 配置项
             var configValidator = new LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationValidator(builder.Configuration);
             var criticalMissing = configValidator.ValidateCriticalItems();
@@ -171,6 +188,8 @@ public class Program
                 await app.InitializeAllApplicationServices();
                 await app.DisplayDatabaseStatusAsync();
                 app.DisplayDevelopmentStartupInfo();
+
+                await IdentitySeedData.SeedRolesAndAdminAsync(app.Services);
             }
             catch (Exception ex)
             {

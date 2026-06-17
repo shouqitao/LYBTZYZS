@@ -1,38 +1,43 @@
 using Asp.Versioning;
+using LYBT.Entities.Users;
+using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Auth.Interfaces;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace LYBT.WebAPI.Controllers
 {
-    /// <summary>
-    /// 认证控制器 - 简化版
-    /// 提供用户登录、登出和密码管理功能
-    /// </summary>
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
     public class AuthController : BaseApiController
     {
-        private readonly IAuthService _authService;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IJwtService _jwtService;
 
         public AuthController(
-            IAuthService authService,
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            IJwtService jwtService,
             ILogger<AuthController> logger)
             : base(logger)
         {
-            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _jwtService = jwtService;
         }
 
-        /// <summary>
-        /// 用户登录
-        /// </summary>
         [HttpPost("login")]
         [AllowAnonymous]
         [EnableRateLimiting("Login")]
@@ -51,37 +56,65 @@ namespace LYBT.WebAPI.Controllers
             if (string.IsNullOrWhiteSpace(request.Password))
                 return ValidationFail("密码不能为空");
 
-            var result = await _authService.LoginAsync(request);
-            return HandleAuthResult(result, "登录成功");
+            var user = await _userManager.FindByNameAsync(request.UserName);
+            if (user == null)
+                return Unauthorized(new { message = "用户名或密码错误" });
+
+            var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, true);
+            if (!result.Succeeded)
+                return Unauthorized(new { message = "用户名或密码错误" });
+
+            user.LastLoginAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(user);
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var role = ParseUserRole(roles);
+            string userType = role == UserRole.SuperAdmin ? RoleConstants.SuperAdminUserType : RoleConstants.DefaultUserType;
+
+            var token = _jwtService.GenerateToken(
+                user.Id.ToString(),
+                user.UserName!,
+                role,
+                userType);
+
+            var userDto = new UserDetailDto
+            {
+                Id = user.Id,
+                UserName = user.UserName ?? string.Empty,
+                RealName = user.RealName,
+                Role = role,
+                Status = CommonStatus.Enabled,
+                PhoneNumber = user.PhoneNumber,
+                CreatedAt = DateTime.UtcNow,
+                LastLoginTime = user.LastLoginAt
+            };
+
+            var response = new LoginResponse
+            {
+                Token = token,
+                User = userDto,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(60)
+            };
+
+            _logger.LogInformation("[AUTH] Login completed - UserName={UserName} Role={Role}",
+                request.UserName, role);
+
+            return HandleAuthResult(Result<LoginResponse>.Success(response), "登录成功");
         }
 
-        /// <summary>
-        /// 用户登出
-        /// </summary>
         [HttpPost("logout")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse), 200)]
-        public async Task<IActionResult> LogoutAsync([FromBody] LogoutRequest request)
+        public IActionResult LogoutAsync([FromBody] LogoutRequest request)
         {
-            if (ValidateModel() is { } modelError) return modelError;
-
-            if (request == null)
-                return ValidationFail("登出请求不能为空");
-
-            if (string.IsNullOrWhiteSpace(request.RefreshToken) && string.IsNullOrWhiteSpace(request.UserName))
-                return ValidationFail("必须提供RefreshToken或用户名");
-
-            var result = await _authService.LogoutAsync(request);
-            return HandleBoolResult(result, "登出成功");
+            _logger.LogInformation("[AUTH] Logout - UserName={UserName}", request?.UserName ?? "(unknown)");
+            return Success("登出成功");
         }
 
-        /// <summary>
-        /// 验证Token (GET方法)
-        /// </summary>
         [HttpGet("validate")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 401)]
-        public async Task<IActionResult> ValidateTokenFromHeaderAsync()
+        public IActionResult ValidateTokenFromHeaderAsync()
         {
             var authHeader = Request.Headers.Authorization.FirstOrDefault();
             if (string.IsNullOrWhiteSpace(authHeader))
@@ -100,33 +133,38 @@ namespace LYBT.WebAPI.Controllers
                 return Unauthorized(new { valid = false, message = "Missing token in Authorization header", errorCode = "TokenInvalid" });
             }
 
-            var result = await _authService.ValidateTokenAsync(token);
-
-            if (result.IsSuccess && result.Data == true)
+            var principal = _jwtService.ValidateToken(token);
+            if (principal != null)
             {
-                var sessionInfo = await _authService.GetSessionInfoAsync(token);
                 object response = new
                 {
                     valid = true,
-                    sub = sessionInfo.Data,
+                    sub = new
+                    {
+                        UserId = principal.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
+                        UserName = principal.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value,
+                        Role = principal.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
+                    },
                     message = "Token is valid"
                 };
                 return Success(response, "Token验证成功");
             }
-            else
-            {
-                var errorCode = result.ModuleErrorCode?.ToFormattedString() ?? "ERR-10202";
-                return Unauthorized(new { valid = false, message = result.ErrorMessage ?? "Token is invalid", errorCode });
-            }
+
+            return Unauthorized(new { valid = false, message = "Token is invalid", errorCode = "ERR-10202" });
         }
 
-        /// <summary>
-        /// Auth基础端点 - 返回405 Method Not Allowed
-        /// </summary>
         [HttpGet]
         public IActionResult Get()
         {
             return StatusCode(405, new { message = "Method Not Allowed - Use POST endpoints for authentication" });
+        }
+
+        private static UserRole ParseUserRole(IList<string> roles)
+        {
+            if (roles.Count > 0 && Enum.TryParse<UserRole>(roles[0], ignoreCase: true, out var role))
+                return role;
+
+            return UserRole.Doctor;
         }
     }
 }

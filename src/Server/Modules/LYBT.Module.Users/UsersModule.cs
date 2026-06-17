@@ -26,6 +26,7 @@ namespace LYBT.Module.Users
 
             // 注册服务实现类（统一使用Shared接口）
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IUserManagerService, UserManagerService>();
             services.AddScoped<IUserQueryService, UserQueryService>();
             services.AddScoped<IUserPasswordService, UserPasswordService>();
             services.AddScoped<IUserStatusService, UserStatusService>();
