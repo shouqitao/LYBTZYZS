@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Initialization;
+using LYBT.Desktop.Foundation.Services;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Services;
@@ -29,6 +30,10 @@ public static class DataSourceRegistrationExtensions
         IConfiguration? configuration = null)
     {
         containerRegistry.RegisterSingleton<ICurrentUserProvider, SessionBasedCurrentUserProvider>();
+
+        // Connection mode service — remote/local detection with transparent fallback.
+        containerRegistry.RegisterSingleton<IConnectionModeService, ConnectionModeService>();
+
         RegisterRemoteRepositories(containerRegistry);
     }
 
