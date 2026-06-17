@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Contracts.Services;
@@ -27,7 +28,35 @@ namespace LYBT.Desktop.Auth.ViewModels
         private readonly ICredentialVault? _credentialVault;
         private readonly IDialogService? _dialogService;
         private readonly IConnectionModeService? _connectionModeService;
+        private readonly IConnectionSettingsService? _connectionSettingsService;
         private CancellationTokenSource? _cts;
+
+        /// <summary>
+        /// 首次运行标记文件路径 (%LOCALAPPDATA%\LYBT\Desktop\first_run_done.flag)
+        /// 与 UsernameStorageService 共用目录约定
+        /// </summary>
+        private static readonly string FirstRunMarkerPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "LYBT", "Desktop", "first_run_done.flag");
+
+        private static bool IsFirstRun => !File.Exists(FirstRunMarkerPath);
+
+        private static void MarkFirstRunCompleted()
+        {
+            try
+            {
+                var dir = Path.GetDirectoryName(FirstRunMarkerPath);
+                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+                File.WriteAllText(FirstRunMarkerPath, DateTime.UtcNow.ToString("O"));
+            }
+            catch
+            {
+                // 标记失败不阻塞使用 - 下次启动仍会弹出向导
+            }
+        }
 
         private string _username = string.Empty;
         private string _password = string.Empty;
@@ -215,7 +244,8 @@ namespace LYBT.Desktop.Auth.ViewModels
             IUsernameStorageService? usernameStorage = null,
             ICredentialVault? credentialVault = null,
             IDialogService? dialogService = null,
-            IConnectionModeService? connectionModeService = null)
+            IConnectionModeService? connectionModeService = null,
+            IConnectionSettingsService? connectionSettingsService = null)
             : base(services)
         {
             _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
@@ -224,6 +254,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             _credentialVault = credentialVault;
             _dialogService = dialogService;
             _connectionModeService = connectionModeService;
+            _connectionSettingsService = connectionSettingsService;
 
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), () => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && !IsLoading);
             CloseApplicationCommand = new DelegateCommand(async () => await ExecuteCloseApplicationAsync());
@@ -257,6 +288,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             try
             {
                 await Task.Delay(100, _cts?.Token ?? CancellationToken.None);
+                await MaybeShowFirstRunSetupAsync();
                 await LoadSavedCredentialsAsync();
                 await LoadApiStatusFromStateServiceAsync();
                 await DetectConnectionModeAsync();
@@ -264,6 +296,41 @@ namespace LYBT.Desktop.Auth.ViewModels
             catch (OperationCanceledException)
             {
                 // Expected when ViewModel is disposed during initialization
+            }
+        }
+
+        /// <summary>
+        /// 首次运行检测 - 若标记文件不存在则弹出配置向导
+        /// </summary>
+        private async Task MaybeShowFirstRunSetupAsync()
+        {
+            if (!IsFirstRun)
+            {
+                Logger.LogDebug("[VM] Login.FirstRun - 标记文件已存在，跳过向导");
+                return;
+            }
+
+            if (_dialogService is null)
+            {
+                Logger.LogWarning("[VM] Login.FirstRun - IDialogService 未注入，无法显示首次运行向导");
+                return;
+            }
+
+            try
+            {
+                await Services.UiThreadDispatcher.InvokeAsync(() =>
+                {
+                    Logger.LogInformation("[VM] Login.FirstRun - 显示首次运行配置向导");
+                    _dialogService.ShowDialog(nameof(Views.FirstRunSetupView), null, result =>
+                    {
+                        Logger.LogInformation("[VM] Login.FirstRun - 向导已关闭: {Result}", result.Result);
+                        MarkFirstRunCompleted();
+                    });
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "[VM] Login.FirstRun - 显示向导失败");
             }
         }
 

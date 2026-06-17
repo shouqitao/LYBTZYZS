@@ -37,6 +37,9 @@ namespace LYBT.Desktop.Auth
 
             // 服务器配置对话框
             containerRegistry.RegisterDialog<Views.ServerConfigView, ViewModels.ServerConfigViewModel>();
+
+            // 首次运行配置向导
+            containerRegistry.RegisterDialog<Views.FirstRunSetupView, ViewModels.FirstRunSetupViewModel>();
         }
     }
 }
