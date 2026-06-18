@@ -127,29 +127,29 @@
                                Visibility="{Binding ErrorMessage, Converter={x:Static converters:Cvt.StringToVis}}" />
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0">
-                        <Button Command="{Binding SwitchToLocalCommand}" Content="📱 本地模式"
+                        <Button Command="{Binding SwitchToLocalCommand}" Content="📱 切换到本地"
                                 FontSize="13" Foreground="#8D6E63" Background="Transparent" BorderThickness="0"
                                 Cursor="Hand" Padding="12,6" Margin="0,0,8,0">
                             <Button.Style>
                                 <Style TargetType="Button">
-                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Setter Property="Visibility" Value="Collapsed" />
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsRemoteMode}" Value="False">
-                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        <DataTrigger Binding="{Binding IsRemoteMode}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Button.Style>
                         </Button>
-                        <Button Command="{Binding SwitchToRemoteCommand}" Content="🌐 远程模式"
+                        <Button Command="{Binding SwitchToRemoteCommand}" Content="🌐 切换到远程"
                                 FontSize="13" Foreground="#8D6E63" Background="Transparent" BorderThickness="0"
                                 Cursor="Hand" Padding="12,6">
                             <Button.Style>
                                 <Style TargetType="Button">
-                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Setter Property="Visibility" Value="Collapsed" />
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsRemoteMode}" Value="True">
-                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        <DataTrigger Binding="{Binding IsRemoteMode}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
