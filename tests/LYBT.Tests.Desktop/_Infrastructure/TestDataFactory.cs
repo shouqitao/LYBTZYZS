@@ -50,7 +50,7 @@ public static class TestDataFactory
     /// <summary>
     /// 创建测试用户（医生）
     /// </summary>
-    public static User CreateUser(
+    public static ApplicationUser CreateUser(
         string? userName = null,
         string? realName = null,
         UserRole? role = null,
@@ -59,7 +59,7 @@ public static class TestDataFactory
         _userCounter++;
         var username = userName ?? $"testuser{_userCounter}";
 
-        return new User
+        return new ApplicationUser
         {
             Id = Guid.NewGuid(),
             UserName = username,
@@ -182,7 +182,7 @@ public static class TestDataFactory
     /// <summary>
     /// 异步保存用户到数据库
     /// </summary>
-    public static async Task<User> SaveUserAsync(LocalDbContext context, User? user = null)
+    public static async Task<ApplicationUser> SaveUserAsync(LocalDbContext context, ApplicationUser? user = null)
     {
         user ??= CreateUser();
         context.Users.Add(user);
@@ -263,9 +263,9 @@ public static class TestDataFactory
         };
     }
 
-    private static User CreateUser(Guid id, string realName)
+    private static ApplicationUser CreateUser(Guid id, string realName)
     {
-        return new User
+        return new ApplicationUser
         {
             Id = id,
             UserName = $"user{id:N}",

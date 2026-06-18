@@ -168,7 +168,7 @@ public class DatabaseInitializationService
                 if (config.ForceResetOnStartup && IsDevelopment())
                 {
                     existingSuperAdmin.PasswordHash = PasswordHelper.HashPassword(_defaultPasswordOptions.SysAdminPassword);
-                    existingSuperAdmin.FailedLoginCount = 0;
+                    existingSuperAdmin.AccessFailedCount = 0;
                     existingSuperAdmin.LockoutEnd = null;
                     existingSuperAdmin.Status = CommonStatus.Enabled;
                     existingSuperAdmin.IsDeleted = false;
@@ -211,7 +211,7 @@ public class DatabaseInitializationService
             // 不存在，创建新的SuperAdmin用户
             var defaultPassword = _defaultPasswordOptions.SysAdminPassword;
 
-            var superAdmin = new User
+            var superAdmin = new ApplicationUser
             {
                 Id = Guid.NewGuid(),
                 UserName = config.UserName,

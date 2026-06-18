@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Common;
+using LYBT.Entities.Common;
 using LYBT.Entities.Formulas;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Users;
@@ -32,10 +32,10 @@ namespace LYBT.Infrastructure.Data.Configuration
         /// </summary>
         private static void ApplyGlobalQueryFilters(ModelBuilder modelBuilder)
         {
-            // 为所有实现BaseEntity的类型添加全局过滤器
+            // 为所有实现ISoftDeletable的类型添加全局过滤器（包含 BaseEntity 与 ApplicationUser）
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
-                if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
+                if (typeof(ISoftDeletable).IsAssignableFrom(entityType.ClrType))
                 {
                     var method = typeof(EntityOptimizationExtensions)
                         .GetMethod(nameof(ConfigureGlobalQueryFilter),
@@ -56,7 +56,7 @@ namespace LYBT.Infrastructure.Data.Configuration
         /// 配置全局查询过滤器泛型方法
         /// </summary>
         private static void ConfigureGlobalQueryFilter<TEntity>(ModelBuilder modelBuilder)
-            where TEntity : BaseEntity
+            where TEntity : class, ISoftDeletable
         {
             modelBuilder.Entity<TEntity>().HasQueryFilter(e => !e.IsDeleted);
         }
@@ -81,11 +81,10 @@ namespace LYBT.Infrastructure.Data.Configuration
         /// </summary>
         private static void OptimizeUserEntity(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>(entity =>
+            modelBuilder.Entity<ApplicationUser>(entity =>
             {
-                // 邮箱唯一索引（登录必需）
+                // 邮箱索引（Identity 已配置 Email 唯一约束，这里仅追加查询索引名）
                 entity.HasIndex(u => u.Email)
-                    .IsUnique()
                     .HasDatabaseName("IX_User_Email");
 
                 // 手机号索引（可能用于查询和登录）

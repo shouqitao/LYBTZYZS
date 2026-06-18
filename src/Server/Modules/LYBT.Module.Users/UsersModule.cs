@@ -1,7 +1,5 @@
 using FluentValidation;
-using LYBT.Infrastructure.DependencyInjection;
 using LYBT.Module.Users.Interfaces;
-using LYBT.Module.Users.Repositories;
 using LYBT.Module.Users.Services;
 using LYBT.Shared.Validators.Users;
 using Microsoft.AspNetCore.Builder;
@@ -11,8 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace LYBT.Module.Users
 {
     /// <summary>
-    /// 用户模块服务注册（遵循适度设计原则的简化版本）
-    /// 仅提供小型中医诊所系统所需的基础用户管理功能
+    /// 用户模块服务注册
+    /// 统一基于 Identity 的 ApplicationUser 管理（旧三层的 UserService/UserRepository 已删除）
     /// </summary>
     public static class UsersModule
     {
@@ -21,20 +19,11 @@ namespace LYBT.Module.Users
         /// </summary>
         public static IServiceCollection AddUsersModule(this IServiceCollection services, IConfiguration configuration)
         {
-            // 仅注册必要的核心服务
-            services.AddRepository<IUserRepository, UserRepository>();
-
-            // 注册服务实现类（统一使用Shared接口）
-            services.AddScoped<IUserService, UserService>();
+            // UserManagerService 是 UserManager<T> 的薄包装，供 UsersController 使用
             services.AddScoped<IUserManagerService, UserManagerService>();
-            services.AddScoped<IUserQueryService, UserQueryService>();
-            services.AddScoped<IUserPasswordService, UserPasswordService>();
-            services.AddScoped<IUserStatusService, UserStatusService>();
 
             // 注册验证器 - 自动注册所有Validator
             services.AddValidatorsFromAssemblyContaining<UserInputDtoValidator>();
-
-            // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 
             return services;
         }

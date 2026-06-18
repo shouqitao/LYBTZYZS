@@ -36,9 +36,7 @@ namespace LYBT.Infrastructure.Data
             _httpContextAccessor = httpContextAccessor;
         }
 
-        // 用户管理
-        public new DbSet<User> Users { get; set; }
-
+        // 用户管理 - 使用 IdentityDbContext<ApplicationUser> 提供的 Users DbSet
         // Issue #1909: AdminSecrets表已移除，超级管理员已统一到Users表（Role=SuperAdmin）
 
         // 认证管理
@@ -125,16 +123,17 @@ namespace LYBT.Infrastructure.Data
         /// </summary>
         private void SetAuditFields()
         {
+            // 同时处理 BaseEntity 实体（业务实体）与 ApplicationUser（Identity 实体）
             var entries = ChangeTracker.Entries()
-                .Where(e => e.Entity is BaseEntity &&
-                           (e.State == EntityState.Added || e.State == EntityState.Modified));
+                .Where(e => e.Entity is IAuditableEntity &&
+                            (e.State == EntityState.Added || e.State == EntityState.Modified));
 
             var userId = GetCurrentUserId();
             var timestamp = DateTime.UtcNow;
 
             foreach (var entry in entries)
             {
-                var entity = (BaseEntity)entry.Entity;
+                var entity = (IAuditableEntity)entry.Entity;
 
                 if (entry.State == EntityState.Added)
                 {

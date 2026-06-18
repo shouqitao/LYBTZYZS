@@ -25,13 +25,13 @@ public static class LocalApiMapper
         PinYinCode = p.PinYinCode, Status = p.Status, CreatedAt = p.CreatedAt
     };
 
-    public static UserListDto ToListDto(this User u) => new()
+    public static UserListDto ToListDto(this ApplicationUser u) => new()
     {
         Id = u.Id, UserName = u.UserName, RealName = u.RealName,
         Role = u.Role, Status = u.Status
     };
 
-    public static UserDetailDto ToDetailDto(this User u) => new()
+    public static UserDetailDto ToDetailDto(this ApplicationUser u) => new()
     {
         Id = u.Id, UserName = u.UserName, RealName = u.RealName,
         Role = u.Role, Status = u.Status

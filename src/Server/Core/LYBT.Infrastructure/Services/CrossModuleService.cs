@@ -223,56 +223,62 @@ public class CrossModuleService :
     /// <inheritdoc />
     public async Task<UserBasicDto?> GetUserBasicInfoAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await _context.Users
+        var u = await _context.Users
             .AsNoTracking()
-            .Where(u => u.Id == userId && !u.IsDeleted)
-            .Select(u => new UserBasicDto
-            {
-                Id = u.Id,
-                UserName = u.UserName,
-                RealName = u.RealName,
-                Role = u.Role,
-                Status = u.Status,
-                PhoneNumber = u.PhoneNumber,
-                Email = u.Email,
-                PinYinCode = u.PinYinCode,
-                LastLoginTime = u.LastLoginTime,
-                FailedLoginCount = u.FailedLoginCount,
-                LockoutEnd = u.LockoutEnd,
-                MustChangeOnNextLogin = u.MustChangeOnNextLogin,
-                CreatedAt = u.CreatedAt,
-                UpdatedAt = u.UpdatedAt,
-                Remark = u.Remark
-            })
+            .Where(x => x.Id == userId && !x.IsDeleted)
             .FirstOrDefaultAsync(cancellationToken);
+
+        if (u == null) return null;
+
+        return new UserBasicDto
+        {
+            Id = u.Id,
+            UserName = u.UserName ?? string.Empty,
+            RealName = u.RealName,
+            Role = u.Role,
+            Status = u.Status,
+            PhoneNumber = u.PhoneNumber,
+            Email = u.Email,
+            PinYinCode = u.PinYinCode,
+            LastLoginTime = u.LastLoginAt,
+            FailedLoginCount = u.AccessFailedCount,
+            LockoutEnd = u.LockoutEnd?.UtcDateTime,
+            MustChangeOnNextLogin = u.MustChangeOnNextLogin,
+            CreatedAt = u.CreatedAt,
+            UpdatedAt = u.UpdatedAt,
+            Remark = u.Remark
+        };
     }
 
     /// <inheritdoc />
     public async Task<UserCredentialDto?> GetUserByUsernameAsync(string username, CancellationToken cancellationToken = default)
     {
-        return await _context.Users
+        var u = await _context.Users
             .AsNoTracking()
-            .Where(u => u.UserName == username && !u.IsDeleted)
-            .Select(u => new UserCredentialDto
-            {
-                Id = u.Id,
-                UserName = u.UserName,
-                RealName = u.RealName,
-                Role = u.Role,
-                Status = u.Status,
-                PhoneNumber = u.PhoneNumber,
-                Email = u.Email,
-                PinYinCode = u.PinYinCode,
-                LastLoginTime = u.LastLoginTime,
-                FailedLoginCount = u.FailedLoginCount,
-                LockoutEnd = u.LockoutEnd,
-                MustChangeOnNextLogin = u.MustChangeOnNextLogin,
-                CreatedAt = u.CreatedAt,
-                UpdatedAt = u.UpdatedAt,
-                Remark = u.Remark,
-                PasswordHash = u.PasswordHash
-            })
+            .Where(x => x.UserName == username && !x.IsDeleted)
             .FirstOrDefaultAsync(cancellationToken);
+
+        if (u == null) return null;
+
+        return new UserCredentialDto
+        {
+            Id = u.Id,
+            UserName = u.UserName ?? string.Empty,
+            RealName = u.RealName,
+            Role = u.Role,
+            Status = u.Status,
+            PhoneNumber = u.PhoneNumber,
+            Email = u.Email,
+            PinYinCode = u.PinYinCode,
+            LastLoginTime = u.LastLoginAt,
+            FailedLoginCount = u.AccessFailedCount,
+            LockoutEnd = u.LockoutEnd?.UtcDateTime,
+            MustChangeOnNextLogin = u.MustChangeOnNextLogin,
+            CreatedAt = u.CreatedAt,
+            UpdatedAt = u.UpdatedAt,
+            Remark = u.Remark,
+            PasswordHash = u.PasswordHash ?? string.Empty
+        };
     }
 
     /// <inheritdoc />
@@ -307,8 +313,10 @@ public class CrossModuleService :
             .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
         if (user != null)
         {
-            user.FailedLoginCount = failedLoginCount;
-            user.LockoutEnd = lockoutEnd;
+            user.AccessFailedCount = failedLoginCount;
+            user.LockoutEnd = lockoutEnd.HasValue
+                ? new DateTimeOffset(DateTime.SpecifyKind(lockoutEnd.Value, DateTimeKind.Utc))
+                : (DateTimeOffset?)null;
             await _context.SaveChangesAsync(cancellationToken);
         }
     }
@@ -323,9 +331,9 @@ public class CrossModuleService :
             .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
         if (user != null)
         {
-            user.FailedLoginCount = 0;
+            user.AccessFailedCount = 0;
             user.LockoutEnd = null;
-            user.LastLoginTime = DateTime.UtcNow;
+            user.LastLoginAt = DateTime.UtcNow;
             await _context.SaveChangesAsync(cancellationToken);
         }
     }

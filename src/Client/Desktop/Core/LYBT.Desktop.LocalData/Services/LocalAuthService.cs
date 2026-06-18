@@ -1,6 +1,7 @@
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.LocalData.Context;
 using LYBT.Desktop.LocalData.Mappers;
+using LYBT.Entities.Users;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Security;
@@ -60,8 +61,8 @@ public class LocalAuthService : ILocalAuthService
             return null;
         }
 
-        // 检查账户锁定
-        if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow)
+        // 检查账户锁定（IdentityUser.LockoutEnd 是 DateTimeOffset?）
+        if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow)
         {
             _logger.LogWarning("[LocalAuth] 登录失败 - 账户已锁定至 {LockoutEnd}: {Username}",
                 user.LockoutEnd.Value, username);
@@ -72,13 +73,13 @@ public class LocalAuthService : ILocalAuthService
         var verificationResult = PasswordHelper.VerifyPassword(password, user.PasswordHash, user.Role, _logger);
         if (!verificationResult.IsSuccess)
         {
-            // 增加失败次数
-            user.FailedLoginCount++;
+            // 增加失败次数（IdentityUser.AccessFailedCount）
+            user.AccessFailedCount++;
 
             // 检查是否需要锁定
-            if (user.FailedLoginCount >= MaxFailedLoginCount)
+            if (user.AccessFailedCount >= MaxFailedLoginCount)
             {
-                user.LockoutEnd = DateTime.UtcNow.AddMinutes(LockoutMinutes);
+                user.LockoutEnd = DateTimeOffset.UtcNow.AddMinutes(LockoutMinutes);
                 _logger.LogWarning("[LocalAuth] 账户已锁定 {Minutes} 分钟: {Username}",
                     LockoutMinutes, username);
             }
@@ -86,14 +87,14 @@ public class LocalAuthService : ILocalAuthService
             await _context.SaveChangesAsync(ct);
 
             _logger.LogWarning("[LocalAuth] 登录失败 - 密码错误 (失败次数: {Count}): {Username}",
-                user.FailedLoginCount, username);
+                user.AccessFailedCount, username);
             return null;
         }
 
         // 登录成功，重置失败次数
-        user.FailedLoginCount = 0;
+        user.AccessFailedCount = 0;
         user.LockoutEnd = null;
-        user.LastLoginTime = DateTime.UtcNow;
+        user.LastLoginAt = DateTime.UtcNow;
         await _context.SaveChangesAsync(ct);
 
         _logger.LogInformation("[LocalAuth] 登录成功: {Username} ({RealName})",

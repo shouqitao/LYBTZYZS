@@ -5,40 +5,43 @@ using Riok.Mapperly.Abstractions;
 namespace LYBT.Desktop.LocalData.Mappers;
 
 /// <summary>
-/// LocalData 用户映射器 - Entity <-> DTO 转换
+/// LocalData 用户映射器 - ApplicationUser Entity <-> DTO 转换
 /// </summary>
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Both)]
 internal partial class LocalUserMapper
 {
     /// <summary>
-    /// User Entity -> UserDetailDto
+    /// ApplicationUser Entity -> UserDetailDto
     /// </summary>
-    [MapperIgnoreSource(nameof(User.PasswordHash))]
-    [MapperIgnoreSource(nameof(User.LockoutEnd))]
-    [MapperIgnoreSource(nameof(User.CreatedBy))]
-    [MapperIgnoreSource(nameof(User.UpdatedBy))]
-    [MapperIgnoreSource(nameof(User.RowVersion))]
-    [MapperIgnoreSource(nameof(User.IsDeleted))]
-    [MapperIgnoreSource(nameof(User.MustChangeOnNextLogin))]
+    [MapperIgnoreSource(nameof(ApplicationUser.PasswordHash))]
+    [MapperIgnoreSource(nameof(ApplicationUser.LockoutEnd))]
+    [MapperIgnoreSource(nameof(ApplicationUser.AccessFailedCount))]
+    [MapperIgnoreSource(nameof(ApplicationUser.CreatedBy))]
+    [MapperIgnoreSource(nameof(ApplicationUser.UpdatedBy))]
+    [MapperIgnoreSource(nameof(ApplicationUser.RowVersion))]
+    [MapperIgnoreSource(nameof(ApplicationUser.IsDeleted))]
+    [MapperIgnoreSource(nameof(ApplicationUser.MustChangeOnNextLogin))]
+    [MapProperty(nameof(ApplicationUser.LastLoginAt), nameof(UserDetailDto.LastLoginTime))]
     [MapperIgnoreTarget(nameof(UserDetailDto.IsEnabled))]
-    public partial UserDetailDto ToDetailDto(User entity);
+    public partial UserDetailDto ToDetailDto(ApplicationUser entity);
 
     /// <summary>
-    /// UserInputDto -> User Entity
+    /// UserInputDto -> ApplicationUser Entity
     /// </summary>
     [MapperIgnoreSource(nameof(UserInputDto.Password))]
     [MapperIgnoreSource(nameof(UserInputDto.ConfirmPassword))]
-    [MapperIgnoreTarget(nameof(User.MustChangeOnNextLogin))]
-    [MapperIgnoreTarget(nameof(User.PasswordHash))]
-    [MapperIgnoreTarget(nameof(User.Status))]
-    [MapperIgnoreTarget(nameof(User.FailedLoginCount))]
-    [MapperIgnoreTarget(nameof(User.LockoutEnd))]
-    [MapperIgnoreTarget(nameof(User.LastLoginTime))]
-    [MapperIgnoreTarget(nameof(User.CreatedAt))]
-    [MapperIgnoreTarget(nameof(User.UpdatedAt))]
-    [MapperIgnoreTarget(nameof(User.CreatedBy))]
-    [MapperIgnoreTarget(nameof(User.UpdatedBy))]
-    [MapperIgnoreTarget(nameof(User.RowVersion))]
-    [MapperIgnoreTarget(nameof(User.IsDeleted))]
-    public partial User ToEntity(UserInputDto dto);
+    [MapperIgnoreTarget(nameof(ApplicationUser.MustChangeOnNextLogin))]
+    [MapperIgnoreTarget(nameof(ApplicationUser.PasswordHash))]
+    [MapperIgnoreTarget(nameof(ApplicationUser.AccessFailedCount))]
+    [MapperIgnoreTarget(nameof(ApplicationUser.LockoutEnd))]
+    [MapperIgnoreTarget(nameof(ApplicationUser.LastLoginAt))]
+    [MapperIgnoreTarget(nameof(ApplicationUser.CreatedAt))]
+    [MapperIgnoreTarget(nameof(ApplicationUser.UpdatedAt))]
+    [MapperIgnoreTarget(nameof(ApplicationUser.CreatedBy))]
+    [MapperIgnoreTarget(nameof(ApplicationUser.UpdatedBy))]
+    [MapperIgnoreTarget(nameof(ApplicationUser.RowVersion))]
+    [MapperIgnoreTarget(nameof(ApplicationUser.IsDeleted))]
+    [MapperIgnoreTarget(nameof(ApplicationUser.Status))]
+    [MapperIgnoreTarget(nameof(ApplicationUser.Id))]
+    public partial ApplicationUser ToEntity(UserInputDto dto);
 }

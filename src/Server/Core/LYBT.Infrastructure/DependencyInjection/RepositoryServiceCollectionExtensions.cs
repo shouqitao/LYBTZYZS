@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Infrastructure.DependencyInjection
 {
@@ -53,7 +53,6 @@ namespace LYBT.Infrastructure.DependencyInjection
 
             // 注册核心Repository（如果存在）
             // 这里可以手动添加已知的Repository
-            // services.AddScoped<IUserRepository, UserRepository>();
             // services.AddScoped<IPatientRepository, PatientRepository>();
             // 等等...
 

@@ -47,7 +47,7 @@ public static class SeedData
         }
 
         // 创建管理员账户
-        var admin = new User
+        var admin = new ApplicationUser
         {
             Id = Guid.NewGuid(),
             UserName = DefaultAdminUsername,

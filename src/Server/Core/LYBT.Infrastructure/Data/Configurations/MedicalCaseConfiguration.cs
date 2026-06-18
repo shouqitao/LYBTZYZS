@@ -46,7 +46,7 @@ public class MedicalCaseConfiguration : BaseEntityConfiguration<MedicalCase>
               .OnDelete(DeleteBehavior.Restrict);
 
         // CODE-05/06: MedicalCase -> User FK (DDD 跨聚合 ID 引用，无导航属性)
-        builder.HasOne<User>()
+        builder.HasOne<ApplicationUser>()
               .WithMany()
               .HasForeignKey(m => m.UserId)
               .IsRequired()

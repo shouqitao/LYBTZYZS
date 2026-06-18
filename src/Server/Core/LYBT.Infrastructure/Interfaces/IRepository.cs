@@ -17,10 +17,10 @@ namespace LYBT.Infrastructure.Interfaces;
 ///
 /// 使用示例：
 /// <code>
-/// public interface IUserRepository : IRepository&lt;User&gt;
+/// public interface IPatientRepository : IRepository&lt;Patient&gt;
 /// {
-///     // 保留用户模块特定业务方法
-///     Task&lt;User?&gt; GetByUsernameAsync(string username);
+///     // 保留模块特定业务方法
+///     Task&lt;Patient?&gt; GetByPhoneAsync(string phone);
 /// }
 /// </code>
 /// </remarks>

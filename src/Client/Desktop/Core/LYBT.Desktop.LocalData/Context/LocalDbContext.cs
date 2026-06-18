@@ -36,8 +36,8 @@ public class LocalDbContext : DbContext
     /// <summary>患者表</summary>
     public DbSet<Patient> Patients => Set<Patient>();
 
-    /// <summary>用户表</summary>
-    public DbSet<User> Users => Set<User>();
+        /// <summary>用户表</summary>
+        public DbSet<ApplicationUser> Users => Set<ApplicationUser>();
 
     /// <summary>药材表</summary>
     public DbSet<Herb> Herbs => Set<Herb>();
@@ -95,7 +95,6 @@ public class LocalDbContext : DbContext
             }
         }
     }
-
     /// <summary>
     /// 配置实体关系
     /// </summary>
@@ -144,7 +143,7 @@ public class LocalDbContext : DbContext
             .HasIndex(p => p.IdNumber);
 
         // User: 按用户名查询（登录）
-        modelBuilder.Entity<User>()
+        modelBuilder.Entity<ApplicationUser>()
             .HasIndex(u => u.UserName)
             .IsUnique();
 
@@ -179,7 +178,7 @@ public class LocalDbContext : DbContext
         var userId = _currentUserProvider?.CurrentUserId;
         var now = DateTime.UtcNow;
 
-        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+        foreach (var entry in ChangeTracker.Entries<IAuditableEntity>())
         {
             switch (entry.State)
             {

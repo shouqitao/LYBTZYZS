@@ -132,7 +132,7 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
     public async Task InitializeDatabase_WhenSuperAdminExists_SkipsCreation()
     {
         // Arrange: 预先创建一个SuperAdmin
-        _dbContext.Users.Add(new User
+        _dbContext.Users.Add(new ApplicationUser
         {
             Id = Guid.NewGuid(),
             UserName = "existing_admin",
@@ -165,7 +165,7 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
     public async Task InitializeDatabase_WhenSoftDeletedSuperAdminExists_SkipsCreation()
     {
         // Arrange: 预先创建一个被软删除的SuperAdmin
-        _dbContext.Users.Add(new User
+        _dbContext.Users.Add(new ApplicationUser
         {
             Id = Guid.NewGuid(),
             UserName = "deleted_admin",
@@ -200,7 +200,7 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
     public async Task InitializeDatabase_WhenEmailOccupied_SkipsCreation()
     {
         // Arrange: 创建一个普通用户，占用了管理员邮箱
-        _dbContext.Users.Add(new User
+        _dbContext.Users.Add(new ApplicationUser
         {
             Id = Guid.NewGuid(),
             UserName = "regular_user",
@@ -503,7 +503,7 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
     public async Task EnsureSystemAdminExists_ExistingAdmin_DoesNotResetMustChangeFlag()
     {
         // Arrange
-        _dbContext.Users.Add(new User
+        _dbContext.Users.Add(new ApplicationUser
         {
             Id = Guid.NewGuid(),
             UserName = "existing_admin",
@@ -539,7 +539,7 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
     {
         // Arrange
         var passwordHash = BCrypt.Net.BCrypt.HashPassword("ExistingPass123@");
-        _dbContext.Users.Add(new User
+        _dbContext.Users.Add(new ApplicationUser
         {
             Id = Guid.NewGuid(),
             UserName = "existing_admin",
