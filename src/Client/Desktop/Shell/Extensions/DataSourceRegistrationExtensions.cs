@@ -34,6 +34,9 @@ public static class DataSourceRegistrationExtensions
         // Connection mode service — remote/local detection with transparent fallback.
         containerRegistry.RegisterSingleton<IConnectionModeService, ConnectionModeService>();
 
+        // Embedded LocalWebAPI server — runs Kestrel in-process for local/offline mode.
+        containerRegistry.RegisterSingleton<IEmbeddedLocalWebApiService, Shell.Services.EmbeddedLocalWebApiService>();
+
         RegisterRemoteRepositories(containerRegistry);
     }
 

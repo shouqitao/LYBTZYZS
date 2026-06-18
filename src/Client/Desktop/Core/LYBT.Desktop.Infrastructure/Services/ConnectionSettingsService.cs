@@ -29,7 +29,7 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
         var url = configuration["ApiClient:BaseUrl"];
         if (string.IsNullOrWhiteSpace(url))
         {
-            url = "http://127.0.0.1:5100";
+            url = "http://localhost:5000";
             _logger.LogInformation("[CONNECTION-CFG] No saved URL, defaulting to {Url}", url);
         }
         _currentUrl = url;

@@ -225,11 +225,15 @@ public partial class App : PrismApplication
     private void RegisterStartupSteps()
     {
         // 从DI容器解析并注册所有启动步骤
-        var steps = new[]
+        var steps = new IStartupStep[]
         {
             Container.Resolve<IStartupStep>("ErrorHandling"),
             Container.Resolve<IStartupStep>("ModuleCoordinator"),
             Container.Resolve<IStartupStep>("CoreServices"),
+            // 本地 API 服务 — 嵌入式 Kestrel，用于本地/离线模式
+            new Services.Startup.Steps.LocalWebApiStartupStep(
+                Container.Resolve<LYBT.Desktop.Contracts.Services.IEmbeddedLocalWebApiService>(),
+                Container.Resolve<ILogger<Services.Startup.Steps.LocalWebApiStartupStep>>()),
             // API健康检查 - 直接创建实例以使用特定超时配置（5秒）
             new ApiHealthCheckStartupStep(
                 Container.Resolve<IApplicationStateService>(),
