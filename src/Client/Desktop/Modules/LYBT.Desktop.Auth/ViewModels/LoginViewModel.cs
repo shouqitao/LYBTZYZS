@@ -229,6 +229,10 @@ namespace LYBT.Desktop.Auth.ViewModels
         /// </summary>
         public ICommand OpenSettingsCommand { get; }
 
+        public ICommand SwitchToLocalCommand { get; }
+
+        public ICommand SwitchToRemoteCommand { get; }
+
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -255,6 +259,8 @@ namespace LYBT.Desktop.Auth.ViewModels
             CloseApplicationCommand = new DelegateCommand(async () => await ExecuteCloseApplicationAsync());
             RetryApiCheckCommand = new DelegateCommand(async () => await ExecuteRetryApiCheckAsync(), () => ApiStatus == ApiHealthStatus.Unhealthy);
             OpenSettingsCommand = new DelegateCommand(ExecuteOpenSettings);
+            SwitchToLocalCommand = new DelegateCommand(ExecuteSwitchToLocal);
+            SwitchToRemoteCommand = new DelegateCommand(ExecuteSwitchToRemote);
 
             _applicationStateService.StatusChanged += OnApiStatusChanged;
 
@@ -551,6 +557,55 @@ namespace LYBT.Desktop.Auth.ViewModels
             {
                 Logger.LogInformation("[VM] Login.OpenSettings - 配置对话框已关闭: {Result}", result.Result);
             });
+        }
+
+        /// <summary>切换到本地模式</summary>
+        private void ExecuteSwitchToLocal()
+        {
+            if (_connectionModeService is null || _connectionSettingsService is null) return;
+
+            try
+            {
+                Logger.LogInformation("[VM] Login.SwitchToLocal → localhost:5000");
+                _connectionModeService.SetMode(ConnectionMode.Local);
+
+                CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
+                IsRemoteMode = _connectionModeService.IsRemote;
+                ApiStatusMessage = _connectionModeService.ApiStatusDisplay;
+                ApiStatus = ApiHealthStatus.Healthy;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "[VM] Login.SwitchToLocal failed");
+            }
+        }
+
+        /// <summary>切换到远程模式 — 先打开配置对话框让用户输入远程地址</summary>
+        private void ExecuteSwitchToRemote()
+        {
+            if (_dialogService is null || _connectionSettingsService is null)
+            {
+                Logger.LogWarning("[VM] Login.SwitchToRemote - DI service missing");
+                return;
+            }
+
+            try
+            {
+                _dialogService.ShowDialog(nameof(Views.ServerConfigView), null, result =>
+                {
+                    if (result.Result == ButtonResult.OK && _connectionModeService != null)
+                    {
+                        Logger.LogInformation("[VM] Login.SwitchToRemote - URL saved, updating mode");
+                        CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
+                        IsRemoteMode = _connectionModeService.IsRemote;
+                        ApiStatusMessage = _connectionModeService.ApiStatusDisplay;
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "[VM] Login.SwitchToRemote failed");
+            }
         }
 
         /// <summary>
