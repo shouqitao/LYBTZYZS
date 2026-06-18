@@ -13,6 +13,7 @@ using DryIoc;
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Contracts.Services;
+using Prism.DryIoc;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Http;
@@ -55,8 +56,8 @@ public static class UnifiedApiClientExtensions
             })
         };
 
-        // DryIoc's IContainerRegistry IS IContainer, allowing resolution at factory time.
-        var container = (IContainer)containerRegistry;
+        // Get the underlying DryIoc container via Prism extension method
+        var container = containerRegistry.GetContainer();
 
         // Factory for Remote-mode HttpClient with full handler chain
         Func<string, HttpClient> remoteHttpClientFactory = baseUrl =>
