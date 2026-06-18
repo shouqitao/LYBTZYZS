@@ -32,6 +32,8 @@
     <Color x:Key="DarkInfoColor">#3D5A80</Color>
     <SolidColorBrush x:Key="DarkSuccessBrush" Color="{StaticResource DarkSuccessColor}" />
     <SolidColorBrush x:Key="DarkWarningBrush" Color="{StaticResource DarkWarningColor}" />
+    <SolidColorBrush x:Key="DarkDangerBrush" Color="{StaticResource DarkDangerColor}" />
+    <SolidColorBrush x:Key="DarkInfoBrush" Color="{StaticResource DarkInfoColor}" />
     <Color x:Key="BackgroundColor">#FAFAFA</Color>
     <Color x:Key="SurfaceColor">#FFFFFF</Color>
     <Color x:Key="BorderColor">#E0E0E0</Color>
@@ -68,4 +70,66 @@
     <DropShadowEffect x:Key="SubtleShadow" BlurRadius="4" Direction="270" Opacity="0.08" ShadowDepth="1" Color="#000000" />
 
     <SolidColorBrush x:Key="ProgressBarBrush" Color="{StaticResource PrimaryColor}" />
+    <SolidColorBrush x:Key="AccentOrangeBrush" Color="#E65100" />
+    <SolidColorBrush x:Key="BorderLightBrush" Color="#F0F0F0" />
+    <SolidColorBrush x:Key="BorderMediumBrush" Color="#E0E0E0" />
+    <SolidColorBrush x:Key="DialogBackgroundBrush" Color="{StaticResource SurfaceColor}" />
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource SurfaceColor}" />
+
+    <!-- Common text/box styles for settings forms -->
+    <sys:Double x:Key="FontSizeNormal">14</sys:Double>
+    <Style x:Key="HeaderText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource FontSizeTitle}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+    </Style>
+    <Style x:Key="TitleText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+    </Style>
+    <Style x:Key="LabelText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
+    </Style>
+    <Style x:Key="ContentContainer" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="24,16" />
+        <Setter Property="Margin" Value="0,0,0,16" />
+    </Style>
+    <Style x:Key="BaseTextBox" TargetType="TextBox">
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="Height" Value="34" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style x:Key="TransparentButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Padding" Value="12,6" />
+    </Style>
+
+    <!-- Pagination styles -->
+    <Style x:Key="PaginationCurrentPage" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Margin" Value="2,0" />
+    </Style>
+    <Style x:Key="PaginationPageNumber" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Margin" Value="2,0" />
+    </Style>
 </ResourceDictionary>
