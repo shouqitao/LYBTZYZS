@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Contracts.Services
@@ -80,7 +80,6 @@ namespace LYBT.Desktop.Contracts.Services
         string GetCurrentUserRoleDisplay();
 
         // ==================== 会话事件 ====================
-        // OpenSpec: simplify-auth-architecture - 移除SessionExpiring事件
 
         /// <summary>
         /// 会话已过期事件

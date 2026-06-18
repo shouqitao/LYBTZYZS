@@ -81,7 +81,6 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterInfrastructureLoggers(IContainerRegistry containerRegistry)
         {
             RegisterLogger<MainWindowServicesFacade>(containerRegistry);
-            // [已删除] RegisterLogger<RoleNavigationService> - OpenSpec: unify-navigation-architecture (ADR-7)
             RegisterLogger<ActiveConsultationService>(containerRegistry);
             RegisterLogger<ApplicationTickService>(containerRegistry);
             RegisterLogger<UserActivityTracker>(containerRegistry);
@@ -95,13 +94,12 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<TokenRefreshHandler>(containerRegistry);
             RegisterLogger<LYBT.Desktop.Foundation.Security.AuthenticationService>(containerRegistry);
             RegisterLogger<TokenStorageService>(containerRegistry);
-            RegisterLogger<TokenManager>(containerRegistry); // OpenSpec: refactor-login-authentication
-            RegisterLogger<CredentialVault>(containerRegistry); // OpenSpec: refactor-login-authentication
+            RegisterLogger<TokenManager>(containerRegistry);
+            RegisterLogger<CredentialVault>(containerRegistry);
             RegisterLogger<DpapiPhotoStorageService>(containerRegistry); // C2: 照片加密存储
-            RegisterLogger<LYBT.Desktop.Foundation.Security.AuthenticationStateMachine>(containerRegistry); // OpenSpec: refactor-auth-role-system (Phase 1.1)
-            RegisterLogger<LogoutService>(containerRegistry); // OpenSpec: refactor-login-authentication (Phase 2.3)
+            RegisterLogger<LYBT.Desktop.Foundation.Security.AuthenticationStateMachine>(containerRegistry);
+            RegisterLogger<LogoutService>(containerRegistry);
             RegisterLogger<UsernameStorageService>(containerRegistry);
-            // OpenSpec: remove-secure-credential-storage - SecureCredentialStorage已移除
             RegisterLogger<LocalTokenValidator>(containerRegistry);
             RegisterLogger<ModuleLoadingService>(containerRegistry);
             RegisterLogger<StartupOptimizationService>(containerRegistry);
@@ -117,7 +115,6 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<ApplicationInitializationService>(containerRegistry);
             RegisterLogger<ApplicationBootstrapper>(containerRegistry);
             RegisterLogger<ApplicationStateService>(containerRegistry);
-            // [已删除] RegisterLogger<NavigationManager> - OpenSpec: unify-navigation-architecture (ADR-7)
             RegisterLogger<MenuManager>(containerRegistry);
             RegisterLogger<NavigationCoordinator>(containerRegistry);
 
@@ -164,7 +161,6 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             // [已删除] RegisterLogger<PrescriptionEditorService> - 服务已删除
             RegisterLogger<SystemSettingsService>(containerRegistry);
-            // OpenSpec: create-printing-module - 打印服务Logger
             RegisterLogger<PrescriptionPrintService>(containerRegistry);
         }
 
@@ -172,12 +168,9 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterComponentLoggers(IContainerRegistry containerRegistry)
         {
             RegisterLogger<UserService>(containerRegistry);
-            // OpenSpec: standardize-service-layer - 统一使用Service命名
             RegisterLogger<FormulaService>(containerRegistry);
             RegisterLogger<PatientService>(containerRegistry);
-            // OpenSpec: simplify-desktop-data-layer - HerbService已删除，功能合并到HerbRepository
             RegisterLogger<MedicalCaseService>(containerRegistry);
-            // OpenSpec: cleanup-patient-dead-code - PatientStateManager已删除（死代码）
             RegisterLogger<PatientValidator>(containerRegistry);
             // LOG-012: LoggingHttpHandler日志
             RegisterLogger<LoggingHttpHandler>(containerRegistry);

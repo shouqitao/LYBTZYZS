@@ -7,7 +7,6 @@ namespace LYBT.Desktop.Users.CommandHandlers;
 
 /// <summary>
 /// 用户CommandHandler实现
-/// OpenSpec: unify-desktop-architecture (Phase 2.6)
 /// 封装IUserRepository，提供统一的CRUD操作和错误处理
 /// </summary>
 public class UserCommandHandler : IUserCommandHandler

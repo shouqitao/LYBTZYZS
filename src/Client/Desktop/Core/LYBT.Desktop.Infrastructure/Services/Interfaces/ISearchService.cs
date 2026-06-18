@@ -4,7 +4,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 搜索服务接口
-    /// OpenSpec: refactor-viewmodel-composition
     ///
     /// 提供搜索文本管理、搜索防抖、搜索执行功能
     /// </summary>

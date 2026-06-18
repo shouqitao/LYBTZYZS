@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Foundation.Security
 {
     /// <summary>
     /// 凭据保险库实现 - 安全存储AutoLoginToken
-    /// OpenSpec: refactor-login-authentication (CVT-001, CVT-002)
     ///
     /// 安全特性：
     /// - 使用 DPAPI（DataProtectionScope.CurrentUser）加密
@@ -50,7 +49,7 @@ namespace LYBT.Desktop.Foundation.Security
             _hmacKeySource = SHA256.HashData(Encoding.UTF8.GetBytes(keyMaterial));
         }
 
-        #region 密码存储 (OpenSpec: redesign-login-remember-password)
+        #region 密码存储
 
         /// <summary>
         /// 保存密码（DPAPI加密）
@@ -671,7 +670,6 @@ namespace LYBT.Desktop.Foundation.Security
 
         /// <summary>
         /// 单个用户的Vault条目
-        /// OpenSpec: redesign-login-remember-password - 添加密码存储
         /// </summary>
         private class VaultEntry
         {
@@ -679,8 +677,6 @@ namespace LYBT.Desktop.Foundation.Security
             public string EncryptedAutoLoginToken { get; set; } = string.Empty;
             public string Hmac { get; set; } = string.Empty;
             public DateTime CreatedAt { get; set; }
-
-            // OpenSpec: redesign-login-remember-password - 密码存储字段
             public string EncryptedPassword { get; set; } = string.Empty;
             public string PasswordHmac { get; set; } = string.Empty;
             public DateTime? PasswordSavedAt { get; set; }

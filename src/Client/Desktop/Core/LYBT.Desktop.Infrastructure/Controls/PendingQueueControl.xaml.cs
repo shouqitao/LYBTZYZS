@@ -9,9 +9,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
 {
     /// <summary>
     /// 待诊队列控件 - 从PatientSelectionView提取
-    /// OpenSpec: refactor-medicalcase-workspace
-    /// OpenSpec: optimize-medicalcase-navigation - 添加双击处理
-    /// OpenSpec: redesign-pending-queue - 添加轮询刷新和PatientSelected事件
     /// </summary>
     public partial class PendingQueueControl : UserControl
     {
@@ -25,7 +22,7 @@ namespace LYBT.Desktop.Infrastructure.Controls
             Unloaded += OnUnloaded;
         }
 
-        #region 轮询刷新逻辑 - OpenSpec: redesign-pending-queue
+        #region 轮询刷新逻辑 
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
@@ -80,8 +77,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
 
         /// <summary>
         /// 双击行处理 - 执行SelectCommand并触发PatientSelected事件
-        /// OpenSpec: optimize-medicalcase-navigation
-        /// OpenSpec: redesign-pending-queue - 添加PatientSelected事件触发
         /// </summary>
         private void PendingDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
@@ -243,7 +238,7 @@ namespace LYBT.Desktop.Infrastructure.Controls
 
         #endregion
 
-        #region 自动刷新 - OpenSpec: redesign-pending-queue
+        #region 自动刷新 
 
         /// <summary>
         /// 是否启用自动刷新
@@ -284,7 +279,7 @@ namespace LYBT.Desktop.Infrastructure.Controls
 
         #endregion
 
-        #region 患者选择事件 - OpenSpec: redesign-pending-queue
+        #region 患者选择事件 
 
         /// <summary>
         /// 患者选择事件（双击或回车时触发）

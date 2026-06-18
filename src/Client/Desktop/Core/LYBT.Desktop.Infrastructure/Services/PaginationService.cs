@@ -4,7 +4,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 分页服务实现
-    /// OpenSpec: refactor-viewmodel-composition
     /// </summary>
     public partial class PaginationService : ObservableObject, IPaginationService
     {

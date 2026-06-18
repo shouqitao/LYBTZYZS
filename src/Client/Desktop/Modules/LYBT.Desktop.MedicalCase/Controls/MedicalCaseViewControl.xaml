@@ -1,7 +1,5 @@
 <!--
     MedicalCaseViewControl - 医案预览控件
-    OpenSpec: refactor-medicalcase-workspace V2
-    OpenSpec: refactor-medicalcase-management
 
     支持两种显示模式:
     - Full (默认): MasterDetail右侧详情，完整InfoCard展示
@@ -21,7 +19,7 @@
              x:Name="Root">
 
     <!--
-        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
+        资源加载说明:
         - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
         - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
         - 本地资源 CompactSectionBorderStyle 保留，仅供此控件使用
@@ -252,7 +250,7 @@
                 <RowDefinition Height="Auto"/>  <!-- 底部信息 -->
             </Grid.RowDefinitions>
 
-            <!-- 诊疗信息 - OpenSpec: unify-control-data-binding 布局优化 -->
+            <!-- 诊疗信息-->
             <Border Grid.Row="0" Style="{StaticResource CompactSectionBorderStyle}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Margin="0,0,0,8">
@@ -276,7 +274,7 @@
                 </StackPanel>
             </Border>
 
-            <!-- 处方药材 - OpenSpec: unify-control-data-binding 布局优化 -->
+            <!-- 处方药材-->
             <Border Grid.Row="1" Style="{StaticResource CompactSectionBorderStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -295,7 +293,7 @@
                 </Grid>
             </Border>
 
-            <!-- 底部信息 - OpenSpec: unify-control-data-binding 布局优化 -->
+            <!-- 底部信息-->
             <Border Grid.Row="2" Style="{StaticResource CompactSectionBorderStyle}" Margin="0,12,0,0">
                 <Grid>
                     <Grid.ColumnDefinitions>

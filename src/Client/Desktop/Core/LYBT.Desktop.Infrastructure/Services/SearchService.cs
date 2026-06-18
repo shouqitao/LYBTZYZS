@@ -4,7 +4,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 搜索服务实现
-    /// OpenSpec: refactor-viewmodel-composition
     /// </summary>
     public partial class SearchService : ObservableObject, ISearchService, IDisposable
     {

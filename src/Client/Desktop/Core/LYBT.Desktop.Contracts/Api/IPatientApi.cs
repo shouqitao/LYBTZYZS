@@ -66,11 +66,6 @@ namespace LYBT.Desktop.Contracts.Api
         /// <returns>包含患者数据的Excel文件流</returns>
         [Refit.Get("/api/v1/patients/export")]
         Task<HttpResponseMessage> ExportPatientsAsync([Refit.Query] string? keyword = null);
-
-        // ========== OpenSpec: optimize-module-list-ui - 恢复功能 ==========
-
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
-
         /// <summary>
         /// 批量删除患者
         /// </summary>

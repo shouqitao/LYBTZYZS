@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -162,8 +162,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
             borderFactory.AppendChild(checkBoxFactory);
             cellTemplate.VisualTree = borderFactory;
             checkBoxColumn.CellTemplate = cellTemplate;
-
-            // OpenSpec: optimize-module-list-ui - UI-020 CheckBox列标题和内容垂直水平居中对齐
             // 设置HeaderStyle - 只覆盖对齐和Padding，其他样式继承默认
             var baseHeaderStyle = Application.Current.TryFindResource("BaseDataGridColumnHeader") as Style;
             checkBoxColumn.HeaderStyle = new Style(typeof(DataGridColumnHeader), baseHeaderStyle)

@@ -19,7 +19,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels;
 
 /// <summary>
 /// 医案Master-Detail视图模型（组合模式）
-/// OpenSpec: refactor-viewmodel-composition
 ///
 /// 使用IMasterDetailServices实现组合模式
 /// 注意：医案不支持新建，新建仅通过看诊入口创建
@@ -54,7 +53,6 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
 
     /// <summary>
     /// 构造函数
-    /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
     /// Wave 2: Replace IMedicalCaseRepository with IMedicalCaseService, add child VMs
     /// </summary>
     public MedicalCaseMasterDetailViewModel(

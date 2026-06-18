@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Users.Models.Items;
 /// 用户列表项UI模型 - 用于DataGrid/ListView显示
 /// 替代直接使用UserDetailDto，实现Desktop层与Shared层的解耦
 /// 保持属性名与UserDetailDto一致，确保XAML绑定兼容
-/// OpenSpec: resolve-mapperly-source-generator-conflict - 使用BindableBase确保Mapperly兼容
 /// </summary>
 public class UserItem : BindableBase
 {

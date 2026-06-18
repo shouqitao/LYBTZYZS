@@ -9,8 +9,6 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbItem
 {
     /// <summary>
     /// 单药材编辑控件 - 支持药材检索、剂量输入、煎法选择
-    /// OpenSpec: herb-editor-control-refactoring
-    /// OpenSpec: cross-module-decoupling - 迁移到Infrastructure，解耦模块间编译依赖
     /// </summary>
     public partial class HerbItemControl : UserControl
     {

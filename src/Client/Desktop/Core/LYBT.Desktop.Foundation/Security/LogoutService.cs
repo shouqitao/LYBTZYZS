@@ -10,8 +10,6 @@ namespace LYBT.Desktop.Foundation.Security;
 
 /// <summary>
 /// 可靠登出服务实现
-/// OpenSpec: refactor-login-authentication (Phase 2.3, 3.2)
-/// OpenSpec: unify-event-system (Phase 2.3)
 /// 提供本地登出（立即生效）和服务端登出（可重试）的分离实现
 /// 通过Prism EventAggregator发布登出事件
 /// </summary>

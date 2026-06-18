@@ -11,15 +11,7 @@
              prism:Dialog.WindowStyle="{DynamicResource CustomDialogWindowStyle}"
              d:DesignHeight="650" d:DesignWidth="900"
              d:DataContext="{d:DesignInstance Type=viewmodels:FormulaImportDialogViewModel}">
-
-    <!--
-    OpenSpec: redesign-formula-import-ui
-    重新设计的验方导入弹窗 - 左右双栏布局
-    左栏: 搜索筛选 + 验方卡片列表
-    右栏: 验方详情 + 药材卡片预览
-    -->
-
-    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
+    <!-- 转换器已统一到Infrastructure/Converters.xaml -->
     <UserControl.Resources>
         <!-- 验方卡片样式 -->
         <Style x:Key="FormulaCardStyle" TargetType="Border">
@@ -42,8 +34,6 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-
-        <!-- OpenSpec: extract-detail-controls Task 1.4 - HerbPreviewCardTemplate已移除，改用FormulaViewControl -->
     </UserControl.Resources>
 
     <Grid Width="1100" Height="680">
@@ -200,7 +190,7 @@
                 </Grid>
             </Border>
 
-            <!-- 右栏: 验方详情预览 - OpenSpec: extract-detail-controls Task 1.4 复用FormulaViewControl -->
+            <!-- 右栏: 验方详情预览-->
             <Grid Grid.Column="1" Margin="10,10">
                 <!-- 无选中时的提示 -->
                 <TextBlock Text="请从左侧选择一个经验方"

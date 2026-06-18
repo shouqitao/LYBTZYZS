@@ -10,7 +10,6 @@ namespace LYBT.Desktop.Infrastructure.Behaviors;
 
 /// <summary>
 /// DataGrid选择行为 - 提供checkbox列和SelectedItems同步功能
-/// OpenSpec: refactor-master-detail-layout - 支持批量选择操作
 ///
 /// 使用方式:
 /// <DataGrid behaviors:DataGridSelectionBehavior.ShowCheckBoxColumn="True"

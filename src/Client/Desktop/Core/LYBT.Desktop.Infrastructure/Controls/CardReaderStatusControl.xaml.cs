@@ -6,7 +6,6 @@ namespace LYBT.Desktop.Infrastructure.Controls;
 
 /// <summary>
 /// 读卡器状态控件
-/// OpenSpec: integrate-cardreader-module - 身份证读卡器UI集成
 /// 提供读卡器连接状态显示、手动读卡按钮、自动读卡开关
 /// </summary>
 public partial class CardReaderStatusControl : UserControl

@@ -1,8 +1,7 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
         TCM (中医) 主题配色
-        OpenSpec: migrate-to-handycontrol
         
         基于中医五行理论设计:
         - 木(绿): 生长、肝经、春季 → 主品牌色 PrimaryColor

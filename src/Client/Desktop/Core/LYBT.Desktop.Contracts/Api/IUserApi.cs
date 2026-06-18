@@ -51,7 +51,6 @@ namespace LYBT.Desktop.Contracts.Api
 
         /// <summary>
         /// 修改密码 (Issue #1887-1892)
-        /// OpenSpec: standardize-desktop-api-layer - 返回类型修正
         /// </summary>
         [Refit.Put("/api/v1/users/{id}/change-password")]
         Task<ApiResponse> ChangePasswordAsync(Guid id, [Refit.Body] ChangePasswordRequest request);

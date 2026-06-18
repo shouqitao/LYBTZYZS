@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Contracts.Services;
 
 /// <summary>
 /// 用户活动追踪服务接口
-/// OpenSpec: refactor-token-sliding-expiration (AUTH-001, AUTH-002, AUTH-003)
 /// 追踪用户UI交互活动,检测不活跃状态,触发会话过期事件
 /// </summary>
 public interface IUserActivityTracker
@@ -27,8 +26,6 @@ public interface IUserActivityTracker
     /// </summary>
     bool IsTracking { get; }
 
-    // OpenSpec: simplify-auth-architecture - 移除SessionExpiring事件，不再显示警告
-
     /// <summary>
     /// 会话已过期事件(需要登出)
     /// </summary>
@@ -49,5 +46,3 @@ public interface IUserActivityTracker
     /// </summary>
     void ResetActivity();
 }
-
-// OpenSpec: simplify-auth-architecture - SessionExpiringEventArgs已移除

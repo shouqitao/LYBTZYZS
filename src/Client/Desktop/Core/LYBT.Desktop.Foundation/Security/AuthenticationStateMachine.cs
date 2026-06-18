@@ -6,7 +6,6 @@ namespace LYBT.Desktop.Foundation.Security;
 
 /// <summary>
 /// 统一认证状态机实现
-/// OpenSpec: refactor-auth-role-system (Phase 1.1)
 /// 合并原有 LoginStateMachine 和 LoginFlowState 双状态机架构
 /// 采用转换表驱动的状态机设计，线程安全
 /// </summary>

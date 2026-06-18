@@ -118,7 +118,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
 
         /// <summary>
         /// 统一保存医案（支持创建和更新）
-        /// OpenSpec: simplify-medicalcase-dataflow Phase 2 - 统一SaveAsync
         /// - Id为null时：创建新MedicalCase（含Consultation，可选Prescription）
         /// - Id有值时：更新现有MedicalCase（含Consultation和Prescription）
         /// </summary>
@@ -132,9 +131,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
             Guid currentUserId,
             bool isAdmin = false,
             CancellationToken cancellationToken = default);
-
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
-
         /// <summary>
         /// 批量删除医案
         /// </summary>

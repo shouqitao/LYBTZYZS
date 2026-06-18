@@ -9,7 +9,6 @@ namespace LYBT.Desktop.Users.Controls
 {
     /// <summary>
     /// 用户编辑控件 - 对象DP模式
-    /// OpenSpec: frontend-architecture-unification
     ///
     /// 通过 User 对象DP接收编辑数据，替代原有的扁平字段DP
     /// </summary>
@@ -94,7 +93,6 @@ namespace LYBT.Desktop.Users.Controls
 
         /// <summary>
         /// 验证错误源 - 用于显示验证错误消息
-        /// OpenSpec: ui-validation-framework
         /// </summary>
         public static readonly DependencyProperty ErrorsSourceProperty =
             DependencyProperty.Register(

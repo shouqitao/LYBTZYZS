@@ -8,9 +8,6 @@ namespace LYBT.Desktop.Formula.Controls
 {
     /// <summary>
     /// 验方编辑控件
-    /// OpenSpec: extract-detail-controls Task 1.2
-    /// OpenSpec: unify-herb-controls-to-herbs-module - 统一使用HerbListControl编辑处方
-    /// OpenSpec: frontend-architecture-unification - 对象DP模式
     ///
     /// 可复用的验方编辑控件，通过对象DP绑定
     /// </summary>
@@ -97,7 +94,6 @@ namespace LYBT.Desktop.Formula.Controls
 
         /// <summary>
         /// 验证错误源 - 用于显示验证错误消息
-        /// OpenSpec: ui-validation-framework
         /// </summary>
         public static readonly DependencyProperty ErrorsSourceProperty =
             DependencyProperty.Register(

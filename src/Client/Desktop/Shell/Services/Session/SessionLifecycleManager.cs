@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -45,7 +45,6 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
             .Subscribe(OnTokenLifecycleStateChanged, ThreadOption.UIThread);
 
         // 订阅用户活动事件
-        // OpenSpec: simplify-auth-architecture - 移除SessionExpiring订阅，不再显示过期警告
         _userActivityTracker.SessionExpired += OnUserActivitySessionExpired;
     }
 
@@ -68,7 +67,6 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
         {
             lock (_stateLock)
             {
-                // OpenSpec: simplify-auth-architecture - 移除Expiring状态检查
                 return _currentState == SessionState.Authenticated ||
                        _currentState == SessionState.Refreshing;
             }
@@ -104,8 +102,6 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
 
     /// <inheritdoc />
     public event EventHandler<SessionStateChangedEventArgs>? StateChanged;
-
-    // OpenSpec: simplify-auth-architecture - SessionExpiring事件已移除
 
     /// <inheritdoc />
     public event EventHandler? SessionExpired;
@@ -285,7 +281,6 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
         switch (args.CurrentState)
         {
             case TokenLifecycleState.Warning:
-                // OpenSpec: simplify-auth-architecture - Warning状态直接过期，不再显示警告
                 // 让Token继续自然过期，或在后台静默刷新
                 _logger.LogDebug("Token进入Warning状态，等待自动刷新或过期");
                 break;
@@ -296,7 +291,6 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
                 break;
 
             case TokenLifecycleState.Active:
-                // OpenSpec: simplify-auth-architecture - 移除Expiring状态检查
                 if (CurrentState == SessionState.Refreshing)
                 {
                     TransitionTo(SessionState.Authenticated);
@@ -304,8 +298,6 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
                 break;
         }
     }
-
-    // OpenSpec: simplify-auth-architecture - OnUserActivitySessionExpiring方法已移除
 
     /// <summary>
     /// 用户活动会话已过期处理
@@ -328,7 +320,6 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
         _tokenLifecycleSubscription?.Dispose();
 
         // 取消用户活动事件订阅
-        // OpenSpec: simplify-auth-architecture - SessionExpiring订阅已移除
         _userActivityTracker.SessionExpired -= OnUserActivitySessionExpired;
 
         _disposed = true;

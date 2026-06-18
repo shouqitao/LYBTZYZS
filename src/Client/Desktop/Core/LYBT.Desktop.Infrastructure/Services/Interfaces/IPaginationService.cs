@@ -4,7 +4,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 分页服务接口
-    /// OpenSpec: refactor-viewmodel-composition
     ///
     /// 提供分页状态管理、页面导航功能
     /// </summary>

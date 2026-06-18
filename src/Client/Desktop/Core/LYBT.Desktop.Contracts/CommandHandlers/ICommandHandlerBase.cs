@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Contracts.CommandHandlers;
 
 /// <summary>
 /// CommandHandler基础接口模板
-/// OpenSpec: unify-desktop-architecture (Phase 1.4)
 /// 所有模块的CommandHandler应实现此接口，确保CRUD操作规范一致
 /// </summary>
 /// <typeparam name="TListDto">列表DTO类型</typeparam>
@@ -41,6 +40,4 @@ public interface ICommandHandlerBase<TListDto, TDetailDto, TInputDto>
     /// <returns>删除结果</returns>
     Task<CommandResult<bool>> DeleteAsync(Guid id);
 }
-
-// OpenSpec: cleanup-patient-dead-code - 已删除重复的PagedResult<T>和未使用的IPagedCommandHandler
 // PagedResult<T>统一使用LYBT.Shared.Models.Contracts.Common.PagedResult<T>

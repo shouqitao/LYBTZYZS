@@ -4,7 +4,6 @@ namespace LYBT.Desktop.Infrastructure.Events
 {
     /// <summary>
     /// 事件订阅管理器 - 自动管理Prism事件订阅的生命周期
-    /// OpenSpec: standardize-viewmodel-framework
     /// 
     /// 用途:
     /// - 自动跟踪所有事件订阅

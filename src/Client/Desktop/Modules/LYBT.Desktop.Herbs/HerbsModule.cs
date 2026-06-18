@@ -4,7 +4,6 @@ using LYBT.Desktop.Herbs.Controls;
 using LYBT.Desktop.Herbs.Mappers;
 using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Herbs.Repositories;
-// OpenSpec: simplify-desktop-data-layer - HerbService已删除
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -31,28 +30,16 @@ namespace LYBT.Desktop.Herbs
             ViewModelLocationProvider.Register(typeof(HerbMasterDetailControl).ToString(), typeof(ViewModels.HerbMasterDetailViewModel));
 
             // IHerbRepository 由 Shell DI 注册 (Refit API)
-
-            // OpenSpec: standardize-service-layer - 统一使用Service层
             containerRegistry.Register<IHerbService, Services.RemoteHerbService>();
 
             // D5-3: 跨模块药材搜索提供者，供 MedicalCase 模块使用
             containerRegistry.Register<IHerbSearchProvider, Services.HerbSearchProvider>();
-
-            // OpenSpec: standardize-api-architecture - MappingService已删除，使用直接Mapper实例
-
-            // OpenSpec: simplify-desktop-data-layer - HerbService已删除，功能合并到Repository
-
-            // OpenSpec: migrate-views-to-role-modules - HerbDetailView/HerbDetailViewModel已删除（无调用）
             // Issue #2168: CRUD统一架构 - HerbCreateViewModel已删除
 
             // Handler 组件
             containerRegistry.Register<ViewModels.Handlers.IHerbStatusHandler, ViewModels.Handlers.HerbStatusHandler>();
-
-            // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
             containerRegistry.AddMasterDetailServices<HerbListDto, HerbDetailModel>();
             containerRegistry.Register<ViewModels.HerbMasterDetailViewModel>();
-
-            // OpenSpec: frontend-architecture-unification - 子VM模式
             containerRegistry.Register<ViewModels.HerbEditorViewModel>();
             
             // 注册MasterDetail View用于导航

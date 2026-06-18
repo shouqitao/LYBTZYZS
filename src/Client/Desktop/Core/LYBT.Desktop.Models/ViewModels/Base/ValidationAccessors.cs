@@ -3,7 +3,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
     /// <summary>
     /// 验证错误访问器 - 支持XAML索引器绑定
     /// 使用方式: Errors[PropertyName]
-    /// OpenSpec: ui-validation-framework
     /// </summary>
     public class ValidationErrorsAccessor
     {
@@ -22,7 +21,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
     /// <summary>
     /// 验证错误状态访问器 - 支持XAML索引器绑定
     /// 使用方式: HasErrorsDictionary[PropertyName]
-    /// OpenSpec: ui-validation-framework
     /// </summary>
     public class ValidationHasErrorsAccessor
     {

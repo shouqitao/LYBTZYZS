@@ -28,7 +28,6 @@ public interface IApiClientAuth
 
     /// <summary>
     /// Auto-login using stored AutoLoginToken.
-    /// OpenSpec: refactor-login-authentication (CVT-001)
     /// </summary>
     /// <param name="request">Auto-login request containing username and AutoLoginToken.</param>
     /// <returns>Login response with JWT token, user info, and new AutoLoginToken.</returns>

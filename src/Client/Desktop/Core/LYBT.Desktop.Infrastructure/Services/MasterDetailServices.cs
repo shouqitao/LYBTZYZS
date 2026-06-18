@@ -4,7 +4,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// Master-Detail视图服务组合实现
-    /// OpenSpec: refactor-viewmodel-composition
     /// </summary>
     /// <typeparam name="TListItem">列表项类型</typeparam>
     /// <typeparam name="TDetail">详情模型类型</typeparam>

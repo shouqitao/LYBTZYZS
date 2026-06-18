@@ -12,9 +12,6 @@ namespace LYBT.Desktop.MedicalCase.Models.Items;
 
 /// <summary>
 /// 处方数据Item - 用于UI绑定的处方数据模型
-/// OpenSpec: consolidate-panel-viewmodels - 遵循Entity-DTO-Item模式
-/// OpenSpec: adopt-mapperly-unified-mapping - 使用BindableBase确保Mapperly兼容
-/// OpenSpec: simplify-workspace-architecture - 直接实现IDataProvider和IValidatable
 ///
 /// 遵循Entity-DTO-Item模式：
 /// - Entity: 服务端Prescription实体
@@ -29,7 +26,6 @@ public class PrescriptionItem : BindableBase, IDataProvider, IValidatable, INoti
 
     /// <summary>
     /// 默认用法
-    /// OpenSpec: unify-medicalcase-item-editmodel - 从 PrescriptionEditModel 合并
     /// </summary>
     public const string DefaultUsage = "水煎服，一日一剂，分早晚两次温服";
 
@@ -167,7 +163,6 @@ public class PrescriptionItem : BindableBase, IDataProvider, IValidatable, INoti
     private ObservableCollection<PrescriptionItemDto> _items = new();
     /// <summary>
     /// 处方药材列表
-    /// OpenSpec: unify-control-data-binding - 统一使用PrescriptionItemDto
     /// </summary>
     public ObservableCollection<PrescriptionItemDto> Items
     {
@@ -343,7 +338,6 @@ public class PrescriptionItem : BindableBase, IDataProvider, IValidatable, INoti
 
     /// <summary>
     /// 重置可编辑字段（保留ID和MedicalCaseId）
-    /// OpenSpec: unify-medicalcase-item-editmodel - 从 PrescriptionEditModel 合并
     /// 用于"清空处方"命令，区别于 Clear() 清空所有字段
     /// </summary>
     public void Reset()

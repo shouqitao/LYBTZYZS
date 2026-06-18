@@ -10,8 +10,6 @@ using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
 
-// OpenSpec: unify-navigation-architecture Phase 6 - 整合INavigationCoordinator
-
 namespace LYBT.Desktop.Clinical.ViewModels
 {
     /// <summary>
@@ -20,7 +18,6 @@ namespace LYBT.Desktop.Clinical.ViewModels
     /// Issue #1553: 角色模块化重构 - Clinical模块
     /// Issue #1567: 导航到患者选择视图（新流程：主页 → 患者选择 → 3步看病流程）
     /// Issue #1887-1891: 添加个人资料编辑功能
-    /// OpenSpec: standardize-viewmodel-framework - 迁移到NavigableViewModelBase
     /// </summary>
     public partial class ClinicalHomeViewModel : NavigableViewModelBase
     {
@@ -58,7 +55,6 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         /// <summary>
         /// 构造函数
-        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
         /// </summary>
         public ClinicalHomeViewModel(
             IViewModelServices services,
@@ -103,7 +99,6 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         /// <summary>
         /// 导航到患者管理 - Issue #1827
-        /// OpenSpec: rename-reference-to-management - 使用Clinical角色台管理视图
         /// </summary>
         [RelayCommand]
         private void NavigateToPatientManagement()
@@ -121,7 +116,6 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         /// <summary>
         /// 导航到医案查询 - Issue #1827
-        /// OpenSpec: rename-reference-to-management - 使用Clinical角色台管理视图
         /// </summary>
         [RelayCommand]
         private void NavigateToMedicalCaseQuery()
@@ -139,7 +133,6 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         /// <summary>
         /// 导航到药材库 - Issue #1827
-        /// OpenSpec: rename-reference-to-management - 使用Clinical角色台管理视图
         /// </summary>
         [RelayCommand]
         private void NavigateToHerbLibrary()
@@ -157,7 +150,6 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         /// <summary>
         /// 导航到验方库 - Issue #1827
-        /// OpenSpec: rename-reference-to-management - 使用Clinical角色台管理视图
         /// </summary>
         [RelayCommand]
         private void NavigateToFormulaLibrary()
@@ -193,7 +185,6 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         /// <summary>
         /// 编辑个人资料 (Issue #1887-1891)
-        /// OpenSpec: unify-navigation-architecture (ADR-6) - 合并到AccountSettingsView
         /// </summary>
         [RelayCommand]
         private void EditProfile()
@@ -211,7 +202,6 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         /// <summary>
         /// 修改密码 (Issue #1887-1892)
-        /// OpenSpec: unify-navigation-architecture (ADR-6) - 合并到AccountSettingsView
         /// </summary>
         [RelayCommand]
         private void ChangePassword()

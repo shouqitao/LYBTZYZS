@@ -15,7 +15,6 @@ namespace LYBT.Desktop.LocalData.Context;
 
 /// <summary>
 /// 本地数据库上下文 - SQL Server LocalDB 实现
-/// OpenSpec: implement-local-mode
 /// </summary>
 public class LocalDbContext : DbContext
 {

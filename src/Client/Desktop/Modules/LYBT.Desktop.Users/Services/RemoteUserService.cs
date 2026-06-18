@@ -15,7 +15,6 @@ namespace LYBT.Desktop.Users.Services
     /// <summary>
     /// 用户Remote Service实现
     /// 通过 IUserRepository 调用远程API
-    /// OpenSpec: standardize-service-layer - 统一使用Service命名
     /// </summary>
     public class RemoteUserService : IUserService
     {

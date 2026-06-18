@@ -6,8 +6,6 @@ namespace LYBT.Desktop.Printing.Models
 {
     /// <summary>
     /// 处方打印数据模型 - 基于普通处方模板
-    /// OpenSpec: create-printing-module (从MedicalCase迁移)
-    /// OpenSpec: print-prescription-slip
     /// </summary>
     public class PrescriptionPrintModel
     {
@@ -117,7 +115,6 @@ namespace LYBT.Desktop.Printing.Models
 
     /// <summary>
     /// 处方药材打印数据模型
-    /// OpenSpec: create-printing-module (从MedicalCase迁移)
     /// </summary>
     public class PrescriptionItemPrintModel
     {

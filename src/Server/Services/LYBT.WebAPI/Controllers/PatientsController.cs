@@ -109,7 +109,6 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 更新患者信息
-        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPut("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
@@ -141,7 +140,6 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 删除患者（软删除）
-        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
@@ -165,12 +163,8 @@ namespace LYBT.WebAPI.Controllers
             LogOperation("删除患者成功", null, id);
             return Success(true, "删除成功");
         }
-
-        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复端点 ==========
-
         /// <summary>
         /// 切换患者状态（启用/禁用）
-        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPost("{id:guid}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
@@ -189,9 +183,6 @@ namespace LYBT.WebAPI.Controllers
             LogOperation("切换患者状态", new { NewStatus = result.Data.Status }, id);
             return Success(result.Data, $"患者已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
         }
-
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
-
         /// <summary>
         /// 批量删除患者
         /// </summary>
@@ -215,7 +206,6 @@ namespace LYBT.WebAPI.Controllers
             LogOperation("批量删除患者", new { Ids = dto.Ids, Result = result.Data.Message }, null);
             return Success(result.Data, result.Data.Message);
         }
-
 
     }
 }

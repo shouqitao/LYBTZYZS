@@ -6,7 +6,6 @@ namespace LYBT.Desktop.Infrastructure.Converters;
 /// <summary>
 /// 将布尔值转换为透明度
 /// true -> 1.0, false -> 0.0
-/// OpenSpec: standardize-converter-organization
 /// </summary>
 public class BoolToOpacityConverter : IValueConverter
 {

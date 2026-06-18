@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Infrastructure.Views
 {
     /// <summary>
     /// 详情页容器控件 - 支持查看/编辑模式独立定义
-    /// OpenSpec: refactor-detail-view-container
     /// </summary>
     public partial class BaseDetailContainer : UserControl
     {
@@ -265,7 +264,6 @@ namespace LYBT.Desktop.Infrastructure.Views
 
         /// <summary>
         /// 自定义Footer内容，当设置此属性时，将替代默认的保存/取消按钮
-        /// OpenSpec: unify-medicalcase-view-edit-pattern
         /// </summary>
         public object FooterContent
         {
@@ -284,7 +282,6 @@ namespace LYBT.Desktop.Infrastructure.Views
         /// <summary>
         /// 是否启用内容区域的ScrollViewer，默认为true
         /// 当内容需要使用Height="*"填充可用空间时，应设置为false
-        /// OpenSpec: unify-medicalcase-view-edit-pattern
         /// </summary>
         public bool UseContentScrolling
         {

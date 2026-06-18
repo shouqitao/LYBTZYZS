@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Users.ViewModels
 {
     /// <summary>
     /// 用户编辑子视图模型 - 对象DP模式
-    /// OpenSpec: frontend-architecture-unification
     ///
     /// 封装用户编辑状态，提供初始化、验证、数据提取等功能
     /// 由 UserMasterDetailViewModel 组合使用

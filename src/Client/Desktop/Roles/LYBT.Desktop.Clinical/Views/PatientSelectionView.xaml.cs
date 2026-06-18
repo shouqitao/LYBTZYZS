@@ -5,7 +5,6 @@ namespace LYBT.Desktop.Clinical.Views;
 
 /// <summary>
 /// 患者选择主界面 - Code Behind
-/// OpenSpec: refactor-clinical-workflow
 /// 位于Clinical模块，使用Patients模块的PatientSelectionControl
 /// </summary>
 public partial class PatientSelectionView : UserControl

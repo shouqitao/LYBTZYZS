@@ -7,7 +7,6 @@ namespace LYBT.Desktop.Formula.Models.Items;
 /// 验方列表项UI模型 - 用于DataGrid/ListView显示
 /// 替代直接使用FormulaDetailDto，实现Desktop层与Shared层的解耦
 /// 保持属性名与FormulaDetailDto一致，确保XAML绑定兼容
-/// OpenSpec: resolve-mapperly-source-generator-conflict - 使用BindableBase确保Mapperly兼容
 /// </summary>
 public class FormulaItem : BindableBase
 {
@@ -91,9 +90,7 @@ public class FormulaItem : BindableBase
 
     private string? _indications;
     /// <summary>
-    /// 主治 - OpenSpec: unify-frontend-backend-types Phase 6
-    /// 统一命名为Indications，与DTO保持一致
-    /// </summary>
+    /// 主治</summary>
     public string? Indications
     {
         get => _indications;
@@ -130,9 +127,7 @@ public class FormulaItem : BindableBase
 
     private string? _contraindications;
     /// <summary>
-    /// 禁忌 - OpenSpec: unify-frontend-backend-types Phase 6
-    /// 统一命名为Contraindications，与DTO保持一致
-    /// </summary>
+    /// 禁忌</summary>
     public string? Contraindications
     {
         get => _contraindications;
@@ -147,9 +142,7 @@ public class FormulaItem : BindableBase
 
     private string? _remark;
     /// <summary>
-    /// 注意事项/备注 - OpenSpec: unify-frontend-backend-types Phase 6
-    /// 统一命名为Remark，与DTO保持一致
-    /// </summary>
+    /// 注意事项/备注</summary>
     public string? Remark
     {
         get => _remark;
@@ -158,9 +151,7 @@ public class FormulaItem : BindableBase
 
     private Guid? _createdBy;
     /// <summary>
-    /// 创建者ID - OpenSpec: unify-frontend-backend-types Phase 4
-    /// 统一使用Guid?，与DTO保持一致
-    /// </summary>
+    /// 创建者ID</summary>
     public Guid? CreatedBy
     {
         get => _createdBy;
@@ -201,9 +192,7 @@ public class FormulaItem : BindableBase
 
     private CommonStatus _status = CommonStatus.Enabled;
     /// <summary>
-    /// 状态 - OpenSpec: unify-frontend-backend-types Phase 4
-    /// 统一使用CommonStatus枚举，与DTO保持一致
-    /// </summary>
+    /// 状态</summary>
     public CommonStatus Status
     {
         get => _status;
@@ -220,8 +209,7 @@ public class FormulaItem : BindableBase
     }
 
     /// <summary>
-    /// 是否启用（向后兼容计算属性）- OpenSpec: unify-frontend-backend-types Phase 4
-    /// </summary>
+    /// 是否启用（向后兼容计算属性）</summary>
     public bool IsActive => Status == CommonStatus.Enabled;
 
     private int _usageCount;
@@ -317,8 +305,7 @@ public class FormulaItem : BindableBase
     }
 
     /// <summary>
-    /// 状态显示文本 - OpenSpec: unify-frontend-backend-types Phase 4
-    /// </summary>
+    /// 状态显示文本</summary>
     public string StatusText => Status switch
     {
         CommonStatus.Enabled => "启用",
@@ -327,8 +314,7 @@ public class FormulaItem : BindableBase
     };
 
     /// <summary>
-    /// 状态颜色 - OpenSpec: unify-frontend-backend-types Phase 4
-    /// </summary>
+    /// 状态颜色</summary>
     public string StatusColor => Status switch
     {
         CommonStatus.Enabled => "#4CAF50",
@@ -362,8 +348,7 @@ public class FormulaItem : BindableBase
     public string DisplayText => $"{Name}({TypeText}) - {Category}";
 
     /// <summary>
-    /// 搜索文本 - OpenSpec: unify-frontend-backend-types Phase 6
-    /// </summary>
+    /// 搜索文本</summary>
     public string SearchText => $"{Name} {Pinyin} {Category} {Effect} {Indications}";
 
     /// <summary>
@@ -372,8 +357,7 @@ public class FormulaItem : BindableBase
     public bool IsAvailable => IsActive;
 
     /// <summary>
-    /// 是否有禁忌 - OpenSpec: unify-frontend-backend-types Phase 6
-    /// </summary>
+    /// 是否有禁忌</summary>
     public bool HasContraindication => !string.IsNullOrWhiteSpace(Contraindications);
 
     /// <summary>

@@ -16,9 +16,6 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 {
     /// <summary>
     /// 验方导入弹窗ViewModel - 重新设计版本
-    /// OpenSpec: redesign-formula-import-ui
-    /// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
-    /// OpenSpec: refactor-frontend-srp-patterns - 迁移到DialogViewModelBase
     /// 用于从经验方库搜索选择验方，批量导入药材到处方
     /// </summary>
     public partial class FormulaImportDialogViewModel : DialogViewModelBase
@@ -65,7 +62,6 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
         /// <summary>
         /// 选中验方的详情（用于FormulaViewControl预览）
-        /// OpenSpec: extract-detail-controls Task 1.4
         /// </summary>
         [ObservableProperty]
         private FormulaDetailDto? _selectedFormulaDetail;
@@ -122,7 +118,6 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
         /// <summary>
         /// 构造函数 - 使用IViewModelServices聚合服务
-        /// OpenSpec: refactor-frontend-srp-patterns - 迁移到DialogViewModelBase
         /// </summary>
         public FormulaImportDialogViewModel(
             IViewModelServices services,
@@ -287,7 +282,6 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
         /// <summary>
         /// 加载验方预览（药材详情）
-        /// OpenSpec: extract-detail-controls Task 1.4 - 保存完整detail供FormulaViewControl使用
         /// </summary>
         private void LoadFormulaPreviewAsync() => LoadFormulaPreviewInternalAsync().SafeFireAndForget(ex => Logger.LogError(ex, "加载验方预览失败"));
         private async Task LoadFormulaPreviewInternalAsync()

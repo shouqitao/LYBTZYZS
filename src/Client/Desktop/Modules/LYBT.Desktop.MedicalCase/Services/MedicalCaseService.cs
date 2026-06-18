@@ -59,8 +59,6 @@ public class MedicalCaseService : IMedicalCaseService
     #endregion
 
     #region IDataManager实现
-
-    /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[SVC]前缀
     public async Task InitializeAsync(Guid entityId, CancellationToken ct = default)
     {
         try
@@ -75,8 +73,6 @@ public class MedicalCaseService : IMedicalCaseService
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Initialize failed - MedicalCaseId={MedicalCaseId}", entityId); throw; }
     }
-
-    /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[SVC]前缀
     public virtual async Task<bool> SaveAsync(CancellationToken ct = default)
     {
         if (_currentDetail == null) { _logger.LogWarning("[SVC] MedicalCase.Save → NoData"); return false; }
@@ -85,7 +81,6 @@ public class MedicalCaseService : IMedicalCaseService
         try
         {
             _logger.LogInformation("[SVC] MedicalCase.Save started - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
-            // OpenSpec: simplify-medicalcase-api - 通过聚合保存一次性更新MedicalCase+Consultation+Prescription
             var inputDto = _currentDetail.ToInputDto();
             _logger.LogDebug("[SVC] MedicalCase.Save inputDto - PatientId={PatientId} UserId={UserId}",
                 inputDto.PatientId, inputDto.UserId);
@@ -149,11 +144,7 @@ public class MedicalCaseService : IMedicalCaseService
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.GetByIdSimple failed - MedicalCaseId={MedicalCaseId}", id); return null; }
     }
-
-    // OpenSpec: simplify-desktop-data-layer - UpdateSimpleAsync、CreateAsync已删除
     // ViewModel应直接使用Repository进行CRUD操作
-
-    // OpenSpec: consolidate-medicalcase-detail-queries - GetByIdWithDetailsAsync已删除，使用GetByIdAsync
     public virtual async Task<PagedResult<MedicalCaseListDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null, CancellationToken ct = default)
     {
         try
@@ -166,10 +157,8 @@ public class MedicalCaseService : IMedicalCaseService
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.GetPaged failed - Page={Page}", page); return null; }
     }
 
-
     /// <summary>
     /// 统一查询医案
-    /// OpenSpec: optimize-medicalcase-api
     /// </summary>
     public virtual async Task<PagedResult<MedicalCaseListDto>?> QueryAsync(MedicalCaseQueryDto query, CancellationToken ct = default)
     {
@@ -182,15 +171,11 @@ public class MedicalCaseService : IMedicalCaseService
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Query failed - QueryType={QueryType}", query.QueryType); return null; }
     }
-
-    // OpenSpec: simplify-desktop-data-layer - DeleteAsync(Guid)、SearchAsync已删除
     // ViewModel应直接使用Repository进行这些操作
 
     #endregion
 
     #region 业务命令方法（API-based）
-
-    // OpenSpec: simplify-medicalcase-api - UpdateConsultationAsync已删除
     // 诊断更新通过聚合保存 SaveAsync 处理
 
     public virtual async Task<ApiResponse<MedicalCaseDetailDto>> SetPrescriptionFlagAsync(Guid medicalCaseId, SetPrescriptionFlagRequest request)
@@ -199,8 +184,6 @@ public class MedicalCaseService : IMedicalCaseService
         {
             _logger.LogInformation("[SVC] MedicalCase.SetPrescriptionFlag started - MedicalCaseId={MedicalCaseId} NeedsPrescription={NeedsPrescription}",
                 medicalCaseId, request.NeedsPrescription);
-
-            // OpenSpec: simplify-desktop-data-layer - 改用Repository
             var data = await _repository.SetPrescriptionFlagAsync(medicalCaseId, request);
             
             if (data != null)
@@ -216,8 +199,6 @@ public class MedicalCaseService : IMedicalCaseService
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.SetPrescriptionFlag failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
-
-    // OpenSpec: simplify-medicalcase-api - Ghost APIs已删除
     // - ClearPrescriptionAsync: Server端从未实现
     // - ImportFormulaIntoPrescriptionAsync: Server端从未实现
 
@@ -226,8 +207,6 @@ public class MedicalCaseService : IMedicalCaseService
         try
         {
             _logger.LogInformation("[SVC] MedicalCase.CloseCase started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-
-            // OpenSpec: simplify-desktop-data-layer - 改用Repository
             var data = await _repository.CloseCaseAsync(medicalCaseId);
             
             if (data != null)
@@ -243,8 +222,6 @@ public class MedicalCaseService : IMedicalCaseService
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.CloseCase failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
-
-    // OpenSpec: consolidate-medicalcase-detail-queries - 使用QueryAsync替代废弃的GetUnfinishedCaseByPatientIdAsync
     public virtual async Task<MedicalCaseDetailDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false, CancellationToken ct = default)
     {
         try
@@ -275,8 +252,6 @@ public class MedicalCaseService : IMedicalCaseService
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.GetUnfinishedByPatient failed - PatientId={PatientId}", patientId); throw; }
     }
-
-    // OpenSpec: simplify-medicalcase-api - 独立Prescription CRUD方法已删除
     // - CreatePrescriptionViaApiAsync: 通过SaveAsync创建
     // - UpdatePrescriptionViaApiAsync: 通过SaveAsync更新
     // - DeletePrescriptionViaApiAsync: 通过SaveAsync设置NeedsPrescription=false触发
@@ -286,8 +261,6 @@ public class MedicalCaseService : IMedicalCaseService
         try
         {
             _logger.LogInformation("[SVC] MedicalCase.DeleteViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-
-            // OpenSpec: simplify-desktop-data-layer - 改用Repository
             var success = await _repository.DeleteAsync(medicalCaseId);
             
             if (success)
@@ -304,7 +277,7 @@ public class MedicalCaseService : IMedicalCaseService
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.DeleteViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); return new ApiResponse { Success = false, Message = ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除", ex) }; }
     }
 
-    // ========== SoftDeleteMedicalCaseAsync 已删除（OpenSpec: consolidate-medicalcase-queries Phase 7）==========
+    // ========== SoftDeleteMedicalCaseAsync 已删除==========
     // Server端点DELETE /api/v1/medicalcases/{id}/soft 不存在，使用DeleteMedicalCaseAsync代替
 
     public virtual async Task<ApiResponse<MedicalCaseDetailDto>> UpdateStatusAsync(Guid medicalCaseId, MedicalCaseStatusInputDto request)
@@ -312,8 +285,6 @@ public class MedicalCaseService : IMedicalCaseService
         try
         {
             _logger.LogInformation("[SVC] MedicalCase.UpdateStatus started - MedicalCaseId={MedicalCaseId} Status={Status}", medicalCaseId, request.Status);
-
-            // OpenSpec: simplify-desktop-data-layer - 改用Repository
             var data = await _repository.UpdateStatusAsync(medicalCaseId, request);
             
             if (data != null)
@@ -335,8 +306,6 @@ public class MedicalCaseService : IMedicalCaseService
         try
         {
             _logger.LogInformation("[SVC] MedicalCase.SuspendViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-
-            // OpenSpec: simplify-desktop-data-layer - 改用Repository
             var data = await _repository.SuspendAsync(medicalCaseId, consultationData);
 
             if (data != null)
@@ -358,8 +327,6 @@ public class MedicalCaseService : IMedicalCaseService
         try
         {
             _logger.LogInformation("[SVC] MedicalCase.CancelViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-
-            // OpenSpec: simplify-desktop-data-layer - 改用Repository
             var request = string.IsNullOrEmpty(reason) ? null : new CancelMedicalCaseRequestDto { Reason = reason };
             var data = await _repository.CancelMedicalCaseAsync(medicalCaseId, request);
             
@@ -378,22 +345,16 @@ public class MedicalCaseService : IMedicalCaseService
     }
 
     #endregion
-
-    // OpenSpec: cleanup-medicalcase-dead-code - 聚合根专用方法已删除（0调用，功能由SaveAsync替代）
     // - UpdateConsultation: 直接修改Current.Consultation即可
     // - CreatePrescriptionAsync: 通过SaveAsync创建
     // - UpdatePrescription: 直接修改Current.Prescription即可
     // - DeletePrescriptionAsync: 通过SaveAsync设置NeedsPrescription=false触发
 
     #region 私有方法 - 变更检测
-
-    // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
     private bool IsMedicalCaseChanged() => _currentDetail != null && _originalDetail != null &&
         (_currentDetail.CaseNumber != _originalDetail.CaseNumber ||
          _currentDetail.PatientId != _originalDetail.PatientId || _currentDetail.UserId != _originalDetail.UserId ||
          _currentDetail.CaseStatus != _originalDetail.CaseStatus);
-
-    // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
     private bool IsConsultationChanged()
     {
         if (_currentDetail?.Consultation == null || _originalDetail?.Consultation == null) return false;
@@ -410,11 +371,6 @@ public class MedicalCaseService : IMedicalCaseService
         return c.DosageCount != o.DosageCount || c.Usage != o.Usage ||
                c.Discount != o.Discount || c.Advice != o.Advice || c.Remark != o.Remark;
     }
-
-    // OpenSpec: simplify-desktop-data-layer - Clone方法已迁移到MedicalCaseCloneMapper(Mapperly源生成)
-
-    // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
-    // OpenSpec: refactor-dto-simplification - MedicalCaseDto已删除，统一使用MedicalCaseDetailDto
     private void UpdateMedicalCaseFields(MedicalCaseDetailDto target, MedicalCaseDetailDto source)
     {
         target.CaseNumber = source.CaseNumber;
@@ -432,7 +388,6 @@ public class MedicalCaseService : IMedicalCaseService
 
     /// <summary>
     /// 创建新医案
-    /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
     /// </summary>
     /// <param name="patientId">患者ID</param>
     /// <param name="registrationId">关联挂号ID（可选，从前台挂号创建时传入）</param>
@@ -465,8 +420,6 @@ public class MedicalCaseService : IMedicalCaseService
                 UserId = _sessionManager.CurrentUser.Id,
                 RegistrationId = registrationId
             };
-
-            // OpenSpec: simplify-desktop-data-layer - 直接使用Repository
             var createdDto = await _repository.CreateAsync(createDto);
             if (createdDto == null)
             {
@@ -486,7 +439,6 @@ public class MedicalCaseService : IMedicalCaseService
 
     /// <summary>
     /// 挂起医案
-    /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
     /// </summary>
     public virtual async Task<(bool success, string? errorMessage)> SuspendAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
@@ -513,7 +465,6 @@ public class MedicalCaseService : IMedicalCaseService
 
     /// <summary>
     /// 取消医案
-    /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
     /// </summary>
     public virtual async Task<(bool success, string? errorMessage)> CancelMedicalCaseAsync(Guid medicalCaseId, string? reason = null, CancellationToken ct = default)
     {
@@ -541,7 +492,6 @@ public class MedicalCaseService : IMedicalCaseService
 
     /// <summary>
     /// 完成医案
-    /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
     /// </summary>
     public virtual async Task<(bool success, string? errorMessage)> CompleteMedicalCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
@@ -574,7 +524,6 @@ public class MedicalCaseService : IMedicalCaseService
 
     /// <summary>
     /// 恢复挂起医案为Active状态
-    /// OpenSpec: simplify-medicalcase-module - 合并Handler到Service
     /// </summary>
     public virtual async Task<(bool success, string? errorMessage)> ResumeSuspendedAsync(Guid medicalCaseId, CancellationToken ct = default)
     {

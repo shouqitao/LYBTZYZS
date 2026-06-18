@@ -1,6 +1,5 @@
-﻿<!--
+<!--
     LoadingOverlay - 加载遮罩控件
-    OpenSpec: refactor-master-detail-layout
 
     功能：
     - 半透明遮罩层
@@ -21,7 +20,7 @@
     xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
     x:Name="Root">
 
-    <!--  转换器使用x:Static模式 (OpenSpec: cleanup-control-resource-merging)  -->
+    <!--  转换器使用x:Static模式  -->
 
     <Grid Background="{StaticResource DarkMaskBrush}" Visibility="{Binding IsLoading, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">

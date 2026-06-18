@@ -10,7 +10,6 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
     /// <summary>
     /// 确认对话框视图模型 - Epic #1676 Phase 2 完整实现
     /// 支持可配置标题、消息、图标、按钮文本和删除选项（软删除/物理删除）
-    /// OpenSpec: standardize-viewmodel-framework - 迁移到DialogViewModelBase
     /// </summary>
     public partial class ConfirmationDialogViewModel : DialogViewModelBase
     {
@@ -83,7 +82,6 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 
         /// <summary>
         /// 构造函数
-        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
         /// </summary>
         public ConfirmationDialogViewModel(IViewModelServices services)
             : base(services)

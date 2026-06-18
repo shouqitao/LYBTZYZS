@@ -7,7 +7,6 @@ namespace LYBT.Desktop.Contracts.Services;
 
 /// <summary>
 /// 医案生命周期服务接口 - 跨模块共享
-/// OpenSpec: refactor-frontend-srp-patterns (ADR-1) - SRP职责分离，生命周期职责
 /// 负责医案的初始化、状态流转（暂存、取消、完成、恢复）
 /// </summary>
 public interface IMedicalCaseLifecycleService

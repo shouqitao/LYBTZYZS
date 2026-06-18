@@ -1,7 +1,6 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Patients.Interfaces;
-// OpenSpec: refactor-frontend-srp-patterns - PatientService已迁移到Services命名空间
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
 
@@ -10,7 +9,6 @@ namespace LYBT.Desktop.Patients.Services;
 /// <summary>
 /// 患者搜索管理器 - 负责患者搜索和分页逻辑
 /// Issue #1790: 从PatientSelectionViewModel提取搜索和分页逻辑(~200行)
-/// OpenSpec: refactor-patient-selection Task 1.3 - 集成搜索缓存
 /// </summary>
 public class PatientSearchManager
 {
@@ -77,7 +75,6 @@ public class PatientSearchManager
     /// <summary>
     /// 执行搜索
     /// Issue #1790: 从PatientSelectionViewModel提取
-    /// OpenSpec: refactor-patient-selection Task 1.3 - 优先使用缓存
     /// </summary>
     public async Task<bool> ExecuteSearchAsync(string searchKeyword)
     {
@@ -167,7 +164,6 @@ public class PatientSearchManager
     /// <summary>
     /// 加载当前页
     /// Issue #1790: 从PatientSelectionViewModel提取
-    /// OpenSpec: refactor-patient-selection Task 1.3 - 优先使用缓存
     /// </summary>
     public async Task LoadCurrentPageAsync(string searchKeyword)
     {
@@ -277,7 +273,6 @@ public class PatientSearchManager
 
     /// <summary>
     /// 使缓存失效
-    /// OpenSpec: refactor-patient-selection Task 1.3 - 患者变更时调用
     /// </summary>
     /// <param name="keyword">可选的关键字，为null时清空所有缓存</param>
     public void InvalidateCache(string? keyword = null)
@@ -290,7 +285,6 @@ public class PatientSearchManager
 /// <summary>
 /// 搜索完成事件参数
 /// Issue #1790: 封装事件数据
-/// OpenSpec: refactor-patient-selection Task 1.3 - 添加FromCache属性
 /// </summary>
 public class SearchCompletedEventArgs : EventArgs
 {

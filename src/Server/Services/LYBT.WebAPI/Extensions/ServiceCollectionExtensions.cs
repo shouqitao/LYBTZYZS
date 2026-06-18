@@ -97,8 +97,6 @@ public static class ServiceCollectionExtensions
 
         // 6. 配方模块
         services.AddFormulaModule();
-
-        // OpenSpec: refactor-server-srp-patterns - Consultation/Prescriptions模块已删除
         // 诊断和处方功能已整合到MedicalCase聚合根
 
         // 7. 病例模块
@@ -148,7 +146,6 @@ public static class ServiceCollectionExtensions
 
         services.AddControllers(options =>
             {
-                // OpenSpec: enhance-dataflow-logging - 全局API日志过滤器
                 options.Filters.Add<ApiLoggingFilter>();
             })
             .AddJsonOptions(options =>

@@ -13,7 +13,6 @@ namespace LYBT.Desktop.Herbs.Services
     /// <summary>
     /// 药材Remote Service实现
     /// 通过 IHerbRepository 调用远程API
-    /// OpenSpec: standardize-service-layer - 统一使用Service命名
     /// </summary>
     public class RemoteHerbService : IHerbService
     {

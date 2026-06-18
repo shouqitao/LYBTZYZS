@@ -7,7 +7,6 @@ namespace LYBT.Desktop.Formula.CommandHandlers;
 
 /// <summary>
 /// 方剂CommandHandler实现
-/// OpenSpec: unify-desktop-architecture (Phase 2.6)
 /// 封装IFormulaRepository，提供统一的CRUD操作和错误处理
 /// </summary>
 public class FormulaCommandHandler : IFormulaCommandHandler

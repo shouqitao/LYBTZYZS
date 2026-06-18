@@ -1,9 +1,8 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
         ====================================================================
         Preview Styles - 预览界面统一样式
-        OpenSpec: optimize-preview-layout
         用于所有ViewControl预览组件的布局和样式统一
         ====================================================================
     -->

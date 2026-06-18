@@ -10,9 +10,6 @@ namespace LYBT.Desktop.MedicalCase.Models.Items;
 
 /// <summary>
 /// 诊断数据Item - 用于UI绑定的诊断数据模型
-/// OpenSpec: consolidate-panel-viewmodels - 从Consultation模块迁移到MedicalCase聚合根模块
-/// OpenSpec: adopt-mapperly-unified-mapping - 使用BindableBase确保Mapperly兼容
-/// OpenSpec: simplify-workspace-architecture - 直接实现IDataProvider和IValidatable
 ///
 /// 遵循Entity-DTO-Item模式：
 /// - Entity: 服务端Consultation实体
@@ -134,7 +131,6 @@ public class ConsultationItem : BindableBase, IDataProvider, IValidatable, INoti
     private string? _tcmDiagnosis;
     /// <summary>
     /// 中医诊断（必填）
-    /// OpenSpec: consolidate-panel-viewmodels - 属性名统一为TcmDiagnosis，与DTO和XAML绑定一致
     /// </summary>
     public string? TcmDiagnosis
     {
@@ -226,7 +222,6 @@ public class ConsultationItem : BindableBase, IDataProvider, IValidatable, INoti
 
     /// <summary>
     /// 重置可编辑字段（保留ID）
-    /// OpenSpec: unify-medicalcase-item-editmodel - 从 ConsultationEditModel 合并
     /// </summary>
     public void Reset()
     {

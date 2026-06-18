@@ -2,7 +2,6 @@ namespace LYBT.Desktop.MedicalCase.Models
 {
     /// <summary>
     /// 编辑状态枚举
-    /// OpenSpec: refine-medicalcase-edit-modes - EDITMODE-002
     /// 定义MedicalCaseWorkspaceView的编辑状态
     /// </summary>
     public enum EditState

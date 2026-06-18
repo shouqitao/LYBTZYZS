@@ -17,8 +17,6 @@ namespace LYBT.Desktop.Auth.ViewModels
 {
     /// <summary>
     /// 登录视图模型 - 使用LoginCoordinator编排登录流程
-    /// OpenSpec: refactor-viewmodel-base-classes - 从UnifiedViewModelBase迁移到NavigableViewModelBase
-    /// OpenSpec: remove-secure-credential-storage - 移除废弃的SecureCredentialStorage依赖
     /// </summary>
     public partial class LoginViewModel : NavigableViewModelBase
     {
@@ -60,8 +58,6 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         private string _username = string.Empty;
         private string _password = string.Empty;
-
-        // OpenSpec: simplify-login-options - 记住账号+记住密码
         private bool _rememberUsername;
         private bool _rememberPassword;
         private bool _hasSavedPassword;
@@ -93,7 +89,7 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         public string Password { get => _password; set { SetProperty(ref _password, value); (LoginCommand as DelegateCommand)?.RaiseCanExecuteChanged(); } }
 
-        #region 记住账号+记住密码 (OpenSpec: simplify-login-options)
+        #region 记住账号+记住密码
 
         /// <summary>
         /// 记住账号 - 勾选后保存用户名，下次启动自动填充
@@ -235,7 +231,6 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         /// <summary>
         /// 构造函数
-        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
         /// </summary>
         public LoginViewModel(
             IViewModelServices services,
@@ -388,7 +383,6 @@ namespace LYBT.Desktop.Auth.ViewModels
         public override void OnNavigatedTo(NavigationContext navigationContext)
         {
             base.OnNavigatedTo(navigationContext);
-            // OpenSpec: simplify-login-options - 移除自动登录，用户始终看到登录界面
         }
 
         private async Task LoadApiStatusFromStateServiceAsync()
@@ -406,7 +400,6 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         /// <summary>
         /// 加载已保存的用户名
-        /// OpenSpec: remove-secure-credential-storage - 简化为仅从UsernameStorageService加载
         /// 自动登录功能由LoginCoordinator通过CredentialVault处理
         /// </summary>
         private async Task LoadSavedCredentialsAsync()
@@ -419,7 +412,6 @@ namespace LYBT.Desktop.Auth.ViewModels
                     var isRememberMeEnabled = await _usernameStorage.IsRememberMeEnabledAsync();
                     if (!string.IsNullOrEmpty(savedUsername))
                     {
-                        // OpenSpec: redesign-login-remember-password - 加载已保存的密码
                         string? savedPassword = null;
                         bool hasSavedPassword = false;
                         if (_credentialVault != null)
@@ -437,8 +429,6 @@ namespace LYBT.Desktop.Auth.ViewModels
                             Username = savedUsername;
                             RememberUsername = isRememberMeEnabled;
                             HasSavedPassword = hasSavedPassword;
-
-                            // OpenSpec: redesign-login-remember-password - 填充密码
                             if (!string.IsNullOrEmpty(savedPassword))
                             {
                                 Password = savedPassword;
@@ -460,7 +450,6 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         /// <summary>
         /// API状态变更事件处理器
-        /// OpenSpec: refactor-startup-connection-resilience - 事件驱动UI更新
         /// </summary>
         private void OnApiStatusChanged(object? sender, ApiStatusChangedEventArgs e)
         {
@@ -494,13 +483,10 @@ namespace LYBT.Desktop.Auth.ViewModels
 
                 // 保存密码用于后续存储（登录成功后才保存）
                 var passwordToSave = RememberPassword ? Password : null;
-
-                // OpenSpec: simplify-login-options - 使用LoginCoordinator执行登录（不再传递RememberMe）
                 var result = await _loginCoordinator.LoginAsync(Username, Password);
 
                 if (result.Success)
                 {
-                    // OpenSpec: simplify-login-options - 根据勾选状态保存用户名
                     if (_usernameStorage != null)
                     {
                         if (RememberUsername)
@@ -513,8 +499,6 @@ namespace LYBT.Desktop.Auth.ViewModels
                             await _usernameStorage.ClearUsernameAsync();
                         }
                     }
-
-                    // OpenSpec: redesign-login-remember-password - 保存密码
                     if (_credentialVault != null)
                     {
                         if (!string.IsNullOrEmpty(passwordToSave))
@@ -572,7 +556,6 @@ namespace LYBT.Desktop.Auth.ViewModels
         /// <summary>
         /// 关闭应用程序
         /// remove-titlebar-add-close-button: 使用ICommonDialogService显示确认框后退出程序
-        /// OpenSpec: enhance-viewmodel-architecture - 使用基类CommonDialogService
         /// </summary>
         private async Task ExecuteCloseApplicationAsync()
         {

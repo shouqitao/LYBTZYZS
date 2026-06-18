@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using System.Threading;
 using LYBT.Entities.Common;
 using LYBT.Infrastructure.Data;
@@ -63,7 +63,6 @@ namespace LYBT.Infrastructure.Repositories
         /// </summary>
         public virtual async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
             var entity = await _dbSet
                 .Where(e => e.Id == id && !e.IsDeleted)
                 .SingleOrDefaultAsync(cancellationToken);
@@ -282,10 +281,6 @@ namespace LYBT.Infrastructure.Repositories
         // Issue #1756: 删除GetPagedWithIncludesAsync - 未使用，功能与GetPagedAsync重复
         // 使用GetPagedAsync替代
 
-
-
-
-
         // IRepository GetSingleAsync实现
         async Task<TEntity?> IRepository<TEntity>.GetSingleAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken)
         {
@@ -340,8 +335,6 @@ namespace LYBT.Infrastructure.Repositories
             return await query.CountAsync();
         }
 
-
-
         #endregion
 
         #region 创建操作
@@ -358,8 +351,6 @@ namespace LYBT.Infrastructure.Repositories
 
             await _dbSet.AddAsync(entity, cancellationToken);
             await SaveChangesAsync(cancellationToken);
-
-            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
             _logger.LogDebug("[REPO] {EntityType}.Add({Id})", typeof(TEntity).Name, entity.Id);
 
             return entity;
@@ -382,8 +373,6 @@ namespace LYBT.Infrastructure.Repositories
 
             await _dbSet.AddRangeAsync(entityList, cancellationToken);
             await SaveChangesAsync(cancellationToken);
-
-            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
             _logger.LogDebug("[REPO] {EntityType}.AddRange Count={Count}",
                 typeof(TEntity).Name, entityList.Count);
 
@@ -410,8 +399,6 @@ namespace LYBT.Infrastructure.Repositories
 
             _dbSet.Update(entity);
             await SaveChangesAsync(cancellationToken);
-
-            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
             _logger.LogDebug("[REPO] {EntityType}.Update({Id})", typeof(TEntity).Name, entity.Id);
 
             return entity;
@@ -434,8 +421,6 @@ namespace LYBT.Infrastructure.Repositories
 
             _dbSet.UpdateRange(entityList);
             await SaveChangesAsync();
-
-            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
             _logger.LogDebug("[REPO] {EntityType}.UpdateRange Count={Count}",
                 typeof(TEntity).Name, entityList.Count);
         }
@@ -452,7 +437,6 @@ namespace LYBT.Infrastructure.Repositories
             var entity = await GetByIdAsync(id, cancellationToken);
             if (entity == null)
             {
-                // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
                 _logger.LogWarning("[REPO] {EntityType}.Delete({Id}) → NotFound", typeof(TEntity).Name, id);
                 return false;
             }
@@ -462,13 +446,9 @@ namespace LYBT.Infrastructure.Repositories
 
             _dbSet.Update(entity);
             await SaveChangesAsync(cancellationToken);
-
-            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
             _logger.LogDebug("[REPO] {EntityType}.Delete({Id})", typeof(TEntity).Name, id);
             return true;
         }
-
-
 
         // Issue #1766: 删除显式接口实现DeleteAsync(Guid) - public方法已自动实现接口
 
@@ -484,7 +464,6 @@ namespace LYBT.Infrastructure.Repositories
 
             if (!entities.Any())
             {
-                // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
                 _logger.LogWarning("[REPO] {EntityType}.DeleteRange → NoMatch", typeof(TEntity).Name);
                 return 0;
             }
@@ -497,8 +476,6 @@ namespace LYBT.Infrastructure.Repositories
 
             _dbSet.UpdateRange(entities);
             await SaveChangesAsync();
-
-            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
             _logger.LogDebug("[REPO] {EntityType}.DeleteRange Count={Count}",
                 typeof(TEntity).Name, entities.Count);
 
@@ -540,15 +517,12 @@ namespace LYBT.Infrastructure.Repositories
             var entity = await _dbSet.FindAsync(id);
             if (entity == null)
             {
-                // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
                 _logger.LogWarning("[REPO] {EntityType}.HardDelete({Id}) → NotFound", typeof(TEntity).Name, id);
                 return false;
             }
 
             _dbSet.Remove(entity);
             await SaveChangesAsync();
-
-            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
             _logger.LogDebug("[REPO] {EntityType}.HardDelete({Id})", typeof(TEntity).Name, id);
             return true;
         }

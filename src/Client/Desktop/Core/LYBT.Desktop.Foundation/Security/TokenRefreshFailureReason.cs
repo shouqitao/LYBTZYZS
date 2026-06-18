@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Foundation.Security
 {
     /// <summary>
     /// Token刷新失败原因枚举
-    /// OpenSpec: refactor-login-authentication (Phase 1.4)
     /// 用于分类Token刷新失败的不同场景，以便采取不同的处理策略
     /// </summary>
     public enum TokenRefreshFailureReason

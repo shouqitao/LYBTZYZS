@@ -2,8 +2,6 @@ namespace LYBT.Desktop.Foundation.Security
 {
     /// <summary>
     /// Token刷新处理器接口
-    /// OpenSpec: refactor-login-authentication (Phase 1.4)
-    /// OpenSpec: unify-event-system (Phase 2.1)
     /// 提供主动刷新方法，事件通过IEventAggregator发布
     /// </summary>
     /// <remarks>

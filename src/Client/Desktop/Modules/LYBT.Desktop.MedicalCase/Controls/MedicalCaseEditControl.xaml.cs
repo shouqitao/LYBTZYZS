@@ -10,9 +10,6 @@ namespace LYBT.Desktop.MedicalCase.Controls;
 
 /// <summary>
 /// 医案编辑控件 - 编辑模式（已统一为Compact模式）
-/// OpenSpec: refactor-medicalcase-workspace V2
-/// OpenSpec: refactor-medicalcase-management
-/// OpenSpec: unify-herb-controls-to-herbs-module
 ///
 /// Compact模式: Workspace场景，显示患者信息+诊断+处方+工具栏
 /// </summary>
@@ -81,8 +78,6 @@ public partial class MedicalCaseEditControl : UserControl
 
     /// <summary>
     /// 诊断数据对象 - 强类型绑定
-    /// OpenSpec: unify-control-data-binding
-    /// OpenSpec: unify-medicalcase-item-editmodel - 统一使用 ConsultationItem
     /// 替代原有 PresentIllness, TongueDiagnosis, PulseDiagnosis, TcmDiagnosis 四个分散属性
     /// </summary>
     public static readonly DependencyProperty ConsultationProperty =
@@ -101,8 +96,6 @@ public partial class MedicalCaseEditControl : UserControl
 
     /// <summary>
     /// 处方数据对象 - 强类型绑定
-    /// OpenSpec: unify-control-data-binding
-    /// OpenSpec: unify-medicalcase-item-editmodel - 统一使用 PrescriptionItem
     /// 替代原有 HerbCount, DoseCount, HerbItems, Usage, TotalPrice 等分散属性
     /// </summary>
     public static readonly DependencyProperty PrescriptionProperty =
@@ -240,7 +233,6 @@ public partial class MedicalCaseEditControl : UserControl
 
     /// <summary>
     /// 备注 - 医案聚合根备注字段
-    /// OpenSpec: unify-medicalcase-remark-source
     /// 绑定到 MedicalCaseDetailModel.Remark（聚合根），而非 PrescriptionItem.Remark
     /// </summary>
     public static readonly DependencyProperty RemarkProperty =
@@ -259,7 +251,6 @@ public partial class MedicalCaseEditControl : UserControl
 
     /// <summary>
     /// 验证错误源 - 用于显示验证错误消息
-    /// OpenSpec: ui-validation-framework
     /// </summary>
     public static readonly DependencyProperty ErrorsSourceProperty =
         DependencyProperty.Register(

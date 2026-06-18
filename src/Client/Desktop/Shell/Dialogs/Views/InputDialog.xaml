@@ -11,7 +11,6 @@
 
     <!--
         InputDialog - Prism 输入对话框
-        OpenSpec: fix-missing-dialogs - 系统性设计
 
         用于获取用户输入的对话框。
         重要: Prism DialogService 要求 Dialog 视图必须是 UserControl。

@@ -18,7 +18,7 @@
              d:DesignWidth="450" d:DesignHeight="300">
 
     <!-- Epic #1676 Phase 2: 通用确认对话框，支持删除选项 -->
-    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
+    <!-- 转换器已统一到Infrastructure/Converters.xaml -->
 
     <Grid Margin="20">
         <Grid.RowDefinitions>

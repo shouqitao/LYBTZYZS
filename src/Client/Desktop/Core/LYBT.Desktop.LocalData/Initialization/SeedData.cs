@@ -9,7 +9,6 @@ namespace LYBT.Desktop.LocalData.Initialization;
 
 /// <summary>
 /// 种子数据 - 初始化默认数据
-/// OpenSpec: implement-local-mode
 /// </summary>
 public static class SeedData
 {

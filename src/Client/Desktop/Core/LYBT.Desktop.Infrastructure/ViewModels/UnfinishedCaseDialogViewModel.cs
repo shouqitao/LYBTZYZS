@@ -8,9 +8,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 {
     /// <summary>
     /// 未完成医案对话框ViewModel
-    /// OpenSpec: optimize-medicalcase-navigation - 统一四选项弹窗
-    /// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
-    /// OpenSpec: unify-dialog-to-prism - 迁移到Prism DialogService
     /// 支持4个选项：继续看诊、新建医案、仅关闭、取消
     /// </summary>
     public partial class UnfinishedCaseDialogViewModel : ObservableObject, IDialogAware

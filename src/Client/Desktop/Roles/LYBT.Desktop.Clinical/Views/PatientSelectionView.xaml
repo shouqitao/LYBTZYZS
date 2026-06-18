@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="LYBT.Desktop.Clinical.Views.PatientSelectionView"
+<UserControl x:Class="LYBT.Desktop.Clinical.Views.PatientSelectionView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -15,7 +15,6 @@
     </UserControl.Resources>
 
     <!-- 患者选择视图
-         OpenSpec: refactor-clinical-workflow
          位于Clinical模块，使用Patients模块的PatientSelectionControl
          医案工作台专用 -->
 

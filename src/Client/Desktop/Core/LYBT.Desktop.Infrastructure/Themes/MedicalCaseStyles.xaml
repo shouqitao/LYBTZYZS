@@ -1,8 +1,7 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--
     医案模块共享样式资源字典
-    OpenSpec: refactor-medicalcase-ui, cleanup-ui-layer
 
     设计规范:
     - 颜色/间距: 继承自 Shell/Resources/DesignTokens/Colors.Light.xaml

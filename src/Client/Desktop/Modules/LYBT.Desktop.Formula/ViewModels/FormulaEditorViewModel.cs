@@ -9,7 +9,6 @@ namespace LYBT.Desktop.Formula.ViewModels;
 
 /// <summary>
 /// 子 VM - 验方编辑
-/// OpenSpec: frontend-architecture-unification
 ///
 /// 封装 FormulaEditContext，提供 DTO 初始化和数据提取
 /// 管理药材编辑列表

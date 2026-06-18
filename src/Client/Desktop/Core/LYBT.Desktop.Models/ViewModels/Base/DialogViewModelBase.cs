@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 {
     /// <summary>
     /// 对话框ViewModel基类
-    /// OpenSpec: enhance-viewmodel-architecture
     ///
     /// 继承CoreViewModelBase，实现IDialogAware:
     /// - 对话框参数处理
@@ -82,7 +81,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         /// <summary>
         /// 构造函数 - 使用IViewModelServices聚合服务
-        /// OpenSpec: enhance-viewmodel-architecture
         /// </summary>
         protected DialogViewModelBase(IViewModelServices services)
             : base(services)

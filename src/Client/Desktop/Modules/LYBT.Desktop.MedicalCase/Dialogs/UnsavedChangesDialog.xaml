@@ -9,12 +9,6 @@
              prism:Dialog.WindowStyle="{DynamicResource CustomDialogWindowStyle}"
              d:DesignHeight="200" d:DesignWidth="400"
              d:DataContext="{d:DesignInstance Type=viewmodels:UnsavedChangesDialogViewModel}">
-
-    <!--
-    OpenSpec: medicalcase-management-ui-refactor (EDITMODE-008)
-    未保存修改确认对话框 - Management编辑模式返回时提示
-    -->
-
     <Grid Background="White" MinWidth="380" MinHeight="160">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />

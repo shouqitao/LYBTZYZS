@@ -1,4 +1,3 @@
-// OpenSpec: standardize-module-structure - Components已合并到Services
 using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Formula.Controls;
 using LYBT.Desktop.Formula.Interfaces;
@@ -32,26 +31,14 @@ namespace LYBT.Desktop.Formula
 
             // D5-3: 跨模块验方搜索提供者，供 MedicalCase 模块使用
             containerRegistry.Register<IFormulaSearchProvider, Services.FormulaSearchProvider>();
-
-            // OpenSpec: standardize-api-architecture - MappingService已删除，使用直接Mapper实例
-
-            // OpenSpec: standardize-service-layer - 统一使用Service命名
             containerRegistry.Register<IFormulaService, Services.FormulaService>();
             containerRegistry.Register<Services.FormulaValidator>();
             containerRegistry.RegisterSingleton<Mappers.FormulaDetailModelMapper>();
-
-            // OpenSpec: migrate-views-to-role-modules - FormulaDetailView/FormulaValidationView已删除（无调用）
-            // OpenSpec: migrate-views-to-role-modules - EditFormulaDialog已删除（无调用）
-            // OpenSpec: migrate-views-to-role-modules - FormulaDetailViewModel/FormulaValidationViewModel已删除（无调用）
-
-            // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
             // 注册Formula模块的MasterDetail服务
             containerRegistry.AddMasterDetailServices<FormulaListDto, FormulaDetailModel>();
 
             // Handler DI注册
             containerRegistry.Register<ViewModels.Handlers.IFormulaStatusHandler, ViewModels.Handlers.FormulaStatusHandler>();
-
-            // OpenSpec: refactor-admin-workspace - Control模式重构
             // FormulaMasterDetailControl供角色台View复用，ViewModel在Control内部解析
             containerRegistry.Register<ViewModels.FormulaMasterDetailViewModel>();
 

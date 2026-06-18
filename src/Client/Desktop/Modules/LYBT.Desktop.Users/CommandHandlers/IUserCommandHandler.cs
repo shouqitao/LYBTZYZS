@@ -5,7 +5,6 @@ namespace LYBT.Desktop.Users.CommandHandlers;
 
 /// <summary>
 /// 用户CommandHandler接口
-/// OpenSpec: unify-desktop-architecture (Phase 2.2)
 /// 封装IUserRepository，提供统一的CRUD操作和错误处理
 /// </summary>
 public interface IUserCommandHandler : ICommandHandlerBase<UserListDto, UserDetailDto, UserInputDto>

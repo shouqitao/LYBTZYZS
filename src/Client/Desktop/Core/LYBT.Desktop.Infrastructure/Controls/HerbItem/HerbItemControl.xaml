@@ -11,8 +11,6 @@
     d:DesignHeight="40"
     d:DesignWidth="220"
     mc:Ignorable="d">
-    <!--  OpenSpec: herb-editor-control-refactoring  -->
-    <!--  OpenSpec: cross-module-decoupling - 迁移到Infrastructure  -->
     <UserControl.Resources>
         <ObjectDataProvider
             x:Key="DecocteMethodValues"

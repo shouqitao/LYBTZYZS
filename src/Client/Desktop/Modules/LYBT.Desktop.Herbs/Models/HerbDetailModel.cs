@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Herbs.Models
 {
     /// <summary>
     /// 药材详情模型 - Master-Detail模式使用
-    /// OpenSpec: refactor-master-detail-layout
     ///
     /// 用于在Detail区域展示和编辑药材信息
     /// </summary>

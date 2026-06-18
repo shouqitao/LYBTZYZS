@@ -1,6 +1,5 @@
 <!--
     FormulaMasterDetailControl - 验方Master-Detail控件
-    OpenSpec: refactor-admin-workspace
     
     可复用业务控件，供Admin和Clinical角色台使用
     从FormulaMasterDetailView重构而来
@@ -18,7 +17,7 @@
     prism:ViewModelLocator.AutoWireViewModel="True">
 
     <!--
-        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
+        资源加载说明:
         - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
         - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
         - 此控件无本地资源，所有样式来自全局
@@ -242,7 +241,6 @@
                     SaveCommand="{Binding SaveCommand}" />
 
                 <!--  查看模式内容  -->
-                <!--  OpenSpec: unify-vm-view-binding-patterns - 统一使用CurrentDetail  -->
                 <formulaView:FormulaViewControl
                     Grid.Row="1"
                     Margin="16"
@@ -251,8 +249,6 @@
                     Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}" />
 
                 <!--  编辑模式内容  -->
-                <!--  OpenSpec: unify-herb-controls-to-herbs-module - 使用HerbListControl替代HerbListEditor  -->
-                <!--  OpenSpec: frontend-architecture-unification - 对象DP模式 -->
                 <formulaControls:FormulaEditControl
                     Grid.Row="1"
                     Margin="16"

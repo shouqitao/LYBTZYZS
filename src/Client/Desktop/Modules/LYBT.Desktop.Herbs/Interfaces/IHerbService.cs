@@ -8,8 +8,6 @@ namespace LYBT.Desktop.Herbs.Interfaces
 {
     /// <summary>
     /// 药材Service接口
-    /// OpenSpec: standardize-service-layer - 统一使用Service命名
-    /// OpenSpec: dto-architecture-specification - 统一使用HerbDetailDto
     /// </summary>
     public interface IHerbService
     {
@@ -32,7 +30,6 @@ namespace LYBT.Desktop.Herbs.Interfaces
 
         /// <summary>
         /// 批量删除药材
-        /// OpenSpec: optimize-batch-operations Phase 2
         /// </summary>
         Task<CommandResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> herbIds, CancellationToken ct = default);
 

@@ -2,7 +2,6 @@ namespace LYBT.Desktop.MedicalCase.Models
 {
     /// <summary>
     /// 工作区模式枚举
-    /// OpenSpec: refine-medicalcase-edit-modes - EDITMODE-001
     /// 定义MedicalCaseWorkspaceView的来源模块
     /// </summary>
     public enum WorkspaceMode
@@ -23,7 +22,6 @@ namespace LYBT.Desktop.MedicalCase.Models
 
         /// <summary>
         /// 前台挂号模式 - 前台选择患者挂号
-        /// OpenSpec: refactor-clinical-workflow
         /// </summary>
         Reception = 2
     }

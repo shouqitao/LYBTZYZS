@@ -17,7 +17,6 @@ namespace LYBT.Desktop.Receptionist.ViewModels;
 
 /// <summary>
 /// 前台工作台主页ViewModel
-/// OpenSpec: create-receptionist-workspace
 /// 
 /// 功能：
 /// - 今日挂号统计

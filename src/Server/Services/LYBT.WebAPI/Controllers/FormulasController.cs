@@ -83,14 +83,12 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 新增验方
-        /// OpenSpec: implement-formula-copy-flow - 传递当前用户ID用于设置验方所有权
         /// </summary>
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), StatusCodes.Status201Created)]
         public async Task<IActionResult> Create([FromBody] FormulaInputDto dto)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            // OpenSpec: implement-formula-copy-flow - 获取当前用户ID并传递给服务
             var (operatorId, _, _) = GetOperator();
             var result = await _service.CreateAsync(dto, operatorId);
             if (!result.IsSuccess || result.Data == null)
@@ -106,7 +104,6 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 更新验方
-        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
@@ -129,7 +126,6 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 删除验方
-        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
@@ -153,7 +149,6 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 批量导入验方数据 (Issue #1166, #1758)
         /// 架构原则：Server端只处理结构化DTO，Excel解析由Client端负责
-        /// OpenSpec: standardize-api-naming - REQ-API-002 批量操作URL模式
         /// </summary>
         [HttpPost("batch-import")]
         [ProducesResponseType(typeof(ApiResponse<FormulaBatchImportResultDto>), 200)]
@@ -164,8 +159,6 @@ namespace LYBT.WebAPI.Controllers
             {
                 return ValidationFail("导入数据不能为空");
             }
-
-            // OpenSpec: refactor-server-srp-patterns - 使用独立的导入导出服务
             var result = await _importExportService.ImportFromDataAsync(request.Formulas, request.FileName);
 
             if (!result.IsSuccess || result.Data == null)
@@ -230,7 +223,6 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 批量删除验方
-        /// OpenSpec: standardize-api-naming - REQ-API-002 批量操作URL模式
         /// </summary>
         [HttpPost("batch-delete")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
@@ -253,12 +245,8 @@ namespace LYBT.WebAPI.Controllers
             LogOperation("批量删除验方", new { Ids = dto.Ids, Result = result.Data.Message }, null);
             return Success(result.Data, result.Data.Message);
         }
-
-        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复端点 ==========
-
         /// <summary>
         /// 切换验方状态（启用/禁用）
-        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPost("{id}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
@@ -279,9 +267,6 @@ namespace LYBT.WebAPI.Controllers
             LogOperation("切换验方状态", new { NewStatus = result.Data.Status }, id);
             return Success(result.Data, $"验方已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
         }
-
-
-
 
     }
 }

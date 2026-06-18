@@ -5,7 +5,6 @@ namespace LYBT.Desktop.Contracts.Services;
 
 /// <summary>
 /// 医案命令服务接口 - 跨模块共享
-/// OpenSpec: refactor-frontend-srp-patterns (ADR-1) - SRP职责分离，命令职责
 /// 负责医案的创建、保存、删除等写操作
 /// </summary>
 public interface IMedicalCaseCommandService

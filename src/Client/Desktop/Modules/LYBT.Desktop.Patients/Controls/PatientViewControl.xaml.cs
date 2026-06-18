@@ -1,14 +1,11 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Patients.Controls
 {
     /// <summary>
-    /// 患者预览控件 - OpenSpec: extract-detail-controls Task 3.1
-    /// 独立的患者预览控件，可在PatientDetailView和其他需要展示患者信息的地方复用
-    /// OpenSpec: refactor-master-detail-layout - 详情区域UI优化
-    /// </summary>
+    /// 患者预览控件</summary>
     public partial class PatientViewControl : UserControl
     {
         public PatientViewControl()

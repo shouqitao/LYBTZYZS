@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Contracts.Services;
 
 /// <summary>
 /// 用户活动状态查询接口
-/// OpenSpec: refactor-token-sliding-expiration (AUTH-002)
 /// 供Foundation层查询用户活跃状态，避免循环依赖
 /// </summary>
 public interface IUserActivityState

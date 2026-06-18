@@ -12,7 +12,6 @@ namespace LYBT.Desktop.Patients.Services
     /// <summary>
     /// 患者搜索缓存服务实现
     /// 使用LRU策略，缓存最近搜索结果
-    /// OpenSpec: refactor-frontend-srp-patterns - 添加用户隔离
     /// </summary>
     public class PatientSearchCache : IPatientSearchCache
     {

@@ -4,7 +4,6 @@ namespace LYBT.Desktop.Patients.Models.Display;
 
 /// <summary>
 /// 患者详情展示模型 - 用于只读数据展示
-/// OpenSpec: unify-control-data-binding
 /// </summary>
 public class PatientDetailDisplayModel
 {

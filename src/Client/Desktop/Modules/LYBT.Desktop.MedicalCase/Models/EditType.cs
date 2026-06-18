@@ -2,7 +2,6 @@ namespace LYBT.Desktop.MedicalCase.Models;
 
 /// <summary>
 /// 编辑类型枚举
-/// OpenSpec: controlify-workspace
 /// </summary>
 public enum EditType
 {

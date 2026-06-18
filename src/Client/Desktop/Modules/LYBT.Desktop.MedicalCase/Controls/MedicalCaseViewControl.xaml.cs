@@ -9,8 +9,6 @@ namespace LYBT.Desktop.MedicalCase.Controls;
 
 /// <summary>
 /// 医案预览控件 - 查看模式
-/// OpenSpec: refactor-medicalcase-workspace V2
-/// OpenSpec: refactor-medicalcase-management
 ///
 /// 支持两种显示模式:
 /// - Full (默认): MasterDetail场景，完整的InfoCard布局
@@ -62,7 +60,6 @@ public partial class MedicalCaseViewControl : UserControl
 
     /// <summary>
     /// 诊断数据对象 - 强类型绑定
-    /// OpenSpec: unify-control-data-binding
     /// 替代原有 PresentIllness, TongueDiagnosis, PulseDiagnosis, TcmDiagnosis 四个分散属性
     /// </summary>
     public static readonly DependencyProperty ConsultationProperty =
@@ -81,7 +78,6 @@ public partial class MedicalCaseViewControl : UserControl
 
     /// <summary>
     /// 处方数据对象 - 强类型绑定
-    /// OpenSpec: unify-control-data-binding
     /// 替代原有 HerbItems, DoseCount, Usage, TotalPrice 等分散属性
     /// </summary>
     public static readonly DependencyProperty PrescriptionProperty =
@@ -136,8 +132,6 @@ public partial class MedicalCaseViewControl : UserControl
     }
 
     #endregion
-
-    // OpenSpec: unify-control-data-binding - 已删除向后兼容属性 (MedicalCaseDetail, HasConsultation, HasPrescription)
 
     #region ShowSystemInfo 依赖属性 - Full模式
 

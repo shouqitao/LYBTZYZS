@@ -5,7 +5,7 @@ namespace LYBT.Desktop.Infrastructure.Converters
     /// <summary>
     /// 转换器静态实例提供者
     ///
-    /// 解决WPF资源架构问题 (OpenSpec: cleanup-control-resource-merging):
+    /// 解决WPF资源架构问题:
     /// - Binding.Converter 不是 DependencyProperty，必须使用 StaticResource
     /// - StaticResource 要求资源在 XAML 解析时已存在
     /// - 当控件被加载到 ContentPresenter（如 MasterDetailLayout）时，资源查找路径可能断裂

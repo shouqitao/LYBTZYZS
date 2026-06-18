@@ -9,7 +9,6 @@ namespace LYBT.Infrastructure.Data.Configurations;
 /// <summary>
 /// Consultation 实体 EF Core 配置
 /// 继承 BaseEntityConfiguration 统一审计字段和并发控制
-/// OpenSpec: refactor-server-ddd-aggregates - 移除反向导航配置
 /// </summary>
 public class ConsultationConfiguration : BaseEntityConfiguration<Consultation>
 {

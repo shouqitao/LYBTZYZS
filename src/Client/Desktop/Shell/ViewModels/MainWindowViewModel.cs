@@ -26,7 +26,6 @@ namespace LYBT.Desktop.Shell.ViewModels;
 
 /// <summary>
 /// 主窗口视图模型 - 用户登录状态管理、界面导航控制、键盘快捷键
-/// OpenSpec: standardize-viewmodel-framework - 迁移到CoreViewModelBase
 /// </summary>
 public partial class MainWindowViewModel : CoreViewModelBase
 {
@@ -78,7 +77,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     /// <summary>
     /// 当前登录用户
-    /// OpenSpec: dto-architecture-specification - 统一使用UserDetailDto
     /// </summary>
     [ObservableProperty]
     private UserDetailDto? _currentUser;
@@ -201,7 +199,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     /// <summary>
     /// 构造函数
-    /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
     /// </summary>
     public MainWindowViewModel(
         IViewModelServices services,
@@ -317,18 +314,15 @@ public partial class MainWindowViewModel : CoreViewModelBase
     public ICommand RedoCommand => _menuManager.RedoCommand;
 
     /// <summary>
-    /// 账户设置命令 - OpenSpec: migrate-views-to-role-modules
-    /// </summary>
+    /// 账户设置命令</summary>
     public ICommand EditProfileCommand => _menuManager.EditProfileCommand;
 
     /// <summary>
-    /// 导航到主页命令 - OpenSpec: fix-button-navigation-system
-    /// </summary>
+    /// 导航到主页命令</summary>
     public ICommand NavigateToHomeCommand => _menuManager.NavigateToHomeCommand;
 
     /// <summary>
-    /// 导航到系统设置命令 - OpenSpec: unify-navigation-architecture (ADR-5修正: Sidebar全局入口)
-    /// </summary>
+    /// 导航到系统设置命令</summary>
     public ICommand NavigateToSystemSettingsCommand => _menuManager.NavigateToSystemSettingsCommand;
 
     /// <summary>
@@ -511,7 +505,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     {
         _tickService.Tick += OnTick;
         _tickService.Start();
-        // OpenSpec: simplify-auth-architecture - SessionExpiring订阅已移除
         _userActivityTracker.SessionExpired += OnSessionExpired;
     }
 
@@ -532,7 +525,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     {
         // 订阅LoginCoordinator的登录成功事件（取代EventAggregator的LoginSuccessEvent）
         _loginCoordinator.LoginSucceeded += OnLoginCoordinatorSuccess;
-        // OpenSpec: unify-event-system - 使用AuthEvents聚合类
         Events.Subscribe<AuthEvents.PasswordChangedEvent, PasswordChangedPayload>(OnPasswordChanged);
         Events.Subscribe<TokenLifecycleStateChangedEvent, TokenLifecycleStateChangedEventArgs>(
             args => OnTokenLifecycleStateChangedAsync(args).SafeFireAndForget(ex => Logger.LogError(ex, "Token生命周期事件处理异常")));
@@ -614,8 +606,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
                 Breadcrumbs.Count, CanNavigateBack, CanNavigateForward);
         });
     }
-
-    // OpenSpec: simplify-auth-architecture - OnSessionExpiring方法已移除
 
     /// <summary>
     /// 会话已过期事件处理 - 执行自动登出
@@ -706,7 +696,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// <summary>
     /// 密码修改成功事件处理
     /// </summary>
-    /// <remarks>OpenSpec: unify-event-system - 使用AuthEvents.PasswordChangedEvent</remarks>
     private void OnPasswordChanged(PasswordChangedPayload payload)
     {
         Logger.LogInformation("收到密码修改成功事件 [用户: {UserName}]，导航到登录界面", payload.UserName);
@@ -753,10 +742,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
         try
         {
-            // OpenSpec: simplify-login-options - 使用LoginCoordinator统一处理登出
             await _loginCoordinator.LogoutAsync();
-            
-            // OpenSpec: unify-event-system - 使用AuthEvents聚合类
             EventAggregator.GetEvent<AuthEvents.LogoutCompletedEvent>().Publish(new LogoutCompletedPayload
             {
                 LocalLogoutCompleted = true,
@@ -935,7 +921,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private void CleanupTickSubscription()
     {
         _tickService.Tick -= OnTick;
-        // OpenSpec: simplify-auth-architecture - SessionExpiring订阅已移除
         _userActivityTracker.SessionExpired -= OnSessionExpired;
         _userActivityTracker.StopTracking();
     }

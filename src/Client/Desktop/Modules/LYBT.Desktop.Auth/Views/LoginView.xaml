@@ -200,33 +200,31 @@
                         <!--  连接模式徽章 (远程模式=绿色 / 本地模式=橙色)  -->
                         <Border
                             Margin="0,12,0,0"
-                            Padding="10,3"
+                            Padding="14,5"
                             HorizontalAlignment="Center"
-                            CornerRadius="10">
+                            CornerRadius="12">
                             <Border.Style>
                                 <Style TargetType="Border">
-                                    <Setter Property="Background" Value="{StaticResource LightWarningBrush}" />
-                                    <Setter Property="BorderBrush" Value="{StaticResource LYBTWarningBrush}" />
-                                    <Setter Property="BorderThickness" Value="1" />
+                                    <Setter Property="Background" Value="{StaticResource LYBTWarningBrush}" />
+                                    <Setter Property="BorderThickness" Value="0" />
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsRemoteMode}" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource LightSuccessBrush}" />
-                                            <Setter Property="BorderBrush" Value="{StaticResource LYBTSuccessBrush}" />
+                                            <Setter Property="Background" Value="{StaticResource LYBTSuccessBrush}" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Border.Style>
                             <TextBlock
                                 HorizontalAlignment="Center"
-                                FontSize="11"
-                                FontWeight="Medium"
+                                FontSize="12"
+                                FontWeight="SemiBold"
                                 Text="{Binding CurrentModeDisplay}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="{StaticResource AccentOrangeBrush}" />
+                                        <Setter Property="Foreground" Value="White" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsRemoteMode}" Value="True">
-                                                <Setter Property="Foreground" Value="{StaticResource DarkSuccessBrush}" />
+                                                <Setter Property="Foreground" Value="White" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -357,7 +355,7 @@
                         </PasswordBox>
                     </StackPanel>
 
-                    <!--  登录选项（OpenSpec: simplify-login-options）  -->
+                    <!--  登录选项  -->
                     <StackPanel Grid.Row="6" Orientation="Horizontal">
                         <!--  记住账号  -->
                         <CheckBox
@@ -376,7 +374,7 @@
                             IsChecked="{Binding RememberPassword}" />
                     </StackPanel>
 
-                    <!--  API连接状态Banner (OpenSpec: refactor-startup-connection-resilience)  -->
+                    <!--  API连接状态Banner  -->
                     <!--  三色状态: 绿色Healthy / 蓝色Checking / 橙色Unhealthy  -->
                     <Border
                         Grid.Row="10"
@@ -544,29 +542,27 @@
             </Border>
         </Grid>
 
-        <!--  服务器配置按钮（左下角）  -->
+        <!--  服务器配置按钮（底部居中，避开任务栏）  -->
         <Button
-            Margin="28,0,0,20"
-            HorizontalAlignment="Left"
+            Margin="0,0,0,56"
+            HorizontalAlignment="Center"
             VerticalAlignment="Bottom"
             Command="{Binding OpenSettingsCommand}"
-            Content="⚙ 设置"
+            Content="⚙ 服务器配置"
             Cursor="Hand"
-            FontSize="14"
+            FontSize="13"
             Foreground="{StaticResource LYBTTcmAccentBrush}"
-            Padding="14,8"
-            ToolTip="配置服务器连接地址">
+            Padding="16,8"
+            ToolTip="配置服务器连接地址"
+            Background="Transparent"
+            BorderThickness="0">
             <Button.Style>
                 <Style TargetType="Button">
-                    <Setter Property="Background" Value="#33000000" />
-                    <Setter Property="BorderThickness" Value="1" />
-                    <Setter Property="BorderBrush" Value="{StaticResource LYBTTcmAccentBrush}" />
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="Button">
                                 <Border
                                     Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
                                     CornerRadius="8">
                                     <ContentPresenter
@@ -576,10 +572,10 @@
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#55110000" />
+                                        <Setter Property="Background" Value="#22000000" />
                                     </Trigger>
                                     <Trigger Property="IsPressed" Value="True">
-                                        <Setter Property="Background" Value="#77110000" />
+                                        <Setter Property="Background" Value="#33000000" />
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>

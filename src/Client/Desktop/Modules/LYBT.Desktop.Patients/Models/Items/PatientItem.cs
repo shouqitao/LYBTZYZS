@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Patients.Models.Items;
 /// 患者列表项UI模型 - 用于DataGrid/ListView显示
 /// 替代直接使用PatientDto，实现Desktop层与Shared层的解耦
 /// 保持属性名与PatientDto一致，确保XAML绑定兼容
-/// OpenSpec: resolve-mapperly-source-generator-conflict - 使用BindableBase确保Mapperly兼容
 /// </summary>
 public class PatientItem : BindableBase
 {

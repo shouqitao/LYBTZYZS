@@ -6,7 +6,6 @@ namespace LYBT.Desktop.Infrastructure.Controls;
 
 /// <summary>
 /// 状态徽章控件
-/// OpenSpec: refactor-master-detail-layout - UI优化
 /// 以彩色徽章形式显示状态，替代纯文本状态显示
 /// </summary>
 public partial class StatusBadge : UserControl

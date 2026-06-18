@@ -7,7 +7,6 @@ namespace LYBT.Desktop.Herbs.Controls
 {
     /// <summary>
     /// 药材编辑控件
-    /// OpenSpec: frontend-architecture-unification - 对象DP模式
     ///
     /// 可复用的药材编辑控件，通过对象DP绑定
     /// </summary>
@@ -84,7 +83,6 @@ namespace LYBT.Desktop.Herbs.Controls
 
         /// <summary>
         /// 验证错误源 - 用于显示验证错误消息
-        /// OpenSpec: ui-validation-framework
         /// </summary>
         public static readonly DependencyProperty ErrorsSourceProperty =
             DependencyProperty.Register(

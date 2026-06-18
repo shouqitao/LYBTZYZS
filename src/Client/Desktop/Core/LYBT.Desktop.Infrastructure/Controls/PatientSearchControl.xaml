@@ -1,6 +1,5 @@
-﻿<!--
+<!--
     PatientSearchControl - 患者搜索控件
-    OpenSpec: refactor-medicalcase-workspace
 
     功能：
     - 搜索框（支持姓名/手机号/拼音码搜索）
@@ -32,7 +31,7 @@
              x:Name="Root">
 
     <!--
-        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
+        资源加载说明:
         - Converter使用 x:Static 引用静态实例，绕过资源字典查找
     -->
 

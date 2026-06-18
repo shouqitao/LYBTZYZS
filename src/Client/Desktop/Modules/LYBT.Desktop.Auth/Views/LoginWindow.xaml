@@ -1,4 +1,4 @@
-﻿<Window x:Class="LYBT.Desktop.Auth.Views.LoginWindow"
+<Window x:Class="LYBT.Desktop.Auth.Views.LoginWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
@@ -14,7 +14,6 @@
         SnapsToDevicePixels="True">
 
     <!-- 窗口资源 -->
-    <!-- OpenSpec: cleanup-ui-layer - 移除不存在的主题文件引用，使用全局样式系统 -->
     <Window.Resources>
         <ResourceDictionary>
             <!-- 转换器：统一使用全局资源中的定义 -->

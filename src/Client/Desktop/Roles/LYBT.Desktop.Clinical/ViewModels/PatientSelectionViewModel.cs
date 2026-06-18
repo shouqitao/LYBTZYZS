@@ -17,15 +17,11 @@ using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
 
-// OpenSpec: unify-navigation-architecture Phase 6 - 整合INavigationCoordinator
-
 namespace LYBT.Desktop.Clinical.ViewModels;
 
 /// <summary>
 /// 患者选择ViewModel - 医生工作台专用
 /// 用于医生选择患者并开始看诊
-/// OpenSpec: refactor-clinical-workflow
-/// OpenSpec: standardize-viewmodel-framework - 迁移到NavigableViewModelBase
 /// </summary>
 public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorkspaceHost
 {
@@ -103,7 +99,6 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
 
     /// <summary>
     /// 构造函数
-    /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
     /// </summary>
     public PatientSelectionViewModel(
         IViewModelServices services,
@@ -118,7 +113,6 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
         _patientApi = patientApi ?? throw new ArgumentNullException(nameof(patientApi));
         _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
         _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
-        // OpenSpec: enhance-viewmodel-architecture - 使用基类CommonDialogService替代本地_dialogService
         _dialogService = services.CommonDialogService;
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _cardReaderService = cardReaderService ?? throw new ArgumentNullException(nameof(cardReaderService));
@@ -168,12 +162,11 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
         }
     }
 
-    /// <summary>新建患者 - OpenSpec: migrate-views-to-role-modules</summary>
+    /// <summary>新建患者</summary>
     [RelayCommand]
     private void NewPatient()
     {
         // 导航到患者管理视图，用户可在MasterDetail界面点击"新建"按钮
-        // OpenSpec: unify-navigation-architecture Phase 6 - 使用INavigationCoordinator
         Logger.LogInformation("导航到患者管理视图");
         _navigationCoordinator.NavigateTo(ViewNames.PatientManagement);
     }
@@ -198,15 +191,12 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
             IsError = false;
 
             // 检查该患者是否有进行中的医案（任何待处理状态）
-            // OpenSpec: unify-pending-query-api - 使用patientId参数按患者筛选
             var pendingCases = await _medicalCaseApi.GetPendingCasesAsync(SelectedPatient.Id);
             var existingCase = pendingCases?.Data?.FirstOrDefault();
 
             if (existingCase != null)
             {
                 SetBusyWithMessage(false, null);
-
-                // OpenSpec: unify-case-status - 根据CaseStatus决定处理方式
                 if (existingCase.CaseStatus == MedicalCaseStatus.Suspended)
                 {
                     // 暂存草稿：让用户选择继续或新建
@@ -317,8 +307,6 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
 
     /// <summary>
     /// 处理挂起医案 - 四选项弹窗
-    /// OpenSpec: refactor-clinical-workflow
-    /// OpenSpec: unify-navigation-architecture Phase 6 - 添加MedicalCaseId为空时的错误处理
     /// </summary>
     private async Task HandleSuspendedCaseAsync(PendingMedicalCaseDto suspendedCase)
     {
@@ -367,7 +355,6 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
 
     /// <summary>
     /// 创建新医案并导航
-    /// OpenSpec: simplify-medicalcase-module - 使用MedicalCaseService
     /// </summary>
     private async Task CreateAndNavigateToNewMedicalCaseAsync()
     {
@@ -396,7 +383,6 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
 
     /// <summary>
     /// 导航到医案工作区
-    /// OpenSpec: unify-navigation-architecture Phase 6 - 使用INavigationCoordinator
     /// </summary>
     private void NavigateToMedicalCase(Guid medicalCaseId)
     {

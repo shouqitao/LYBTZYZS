@@ -12,7 +12,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 {
     /// <summary>
     /// 可导航ViewModel基类
-    /// OpenSpec: enhance-viewmodel-architecture
     ///
     /// 继承CoreViewModelBase，添加:
     /// - Prism导航支持 (INavigationAware, IRegionMemberLifetime, IConfirmNavigationRequest)
@@ -121,7 +120,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         /// <summary>
         /// 构造函数 - 使用IViewModelServices聚合服务
-        /// OpenSpec: enhance-viewmodel-architecture
         /// Phase 2.2: 添加IToastService依赖以替代MessageBox通知
         /// </summary>
         /// <param name="services">ViewModel服务聚合</param>
@@ -378,7 +376,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         /// <summary>
         /// 获取主页视图名称
-        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices中的RoleRegistry
         /// </summary>
         protected virtual string GetHomeViewName()
         {

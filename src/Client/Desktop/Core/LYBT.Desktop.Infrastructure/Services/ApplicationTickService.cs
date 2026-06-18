@@ -6,7 +6,6 @@ namespace LYBT.Desktop.Infrastructure.Services;
 
 /// <summary>
 /// 应用级别的统一定时任务调度服务实现
-/// OpenSpec: refactor-token-sliding-expiration (AUTH-000)
 /// 使用单一DispatcherTimer,每秒触发Tick事件
 /// </summary>
 public class ApplicationTickService : IApplicationTickService, IDisposable

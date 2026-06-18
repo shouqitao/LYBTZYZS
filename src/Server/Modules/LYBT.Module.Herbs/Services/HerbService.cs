@@ -19,7 +19,6 @@ namespace LYBT.Module.Herbs.Services
     /// 药材服务 - 简化版，只包含基础CRUD
     /// 同时实现 Module 内部接口和 Shared 跨平台接口
     /// Phase 2: 继承BaseService<Herb>复用统一错误处理和验证逻辑
-    /// OpenSpec: adopt-mapperly-unified-mapping - 使用HerbMapper替代AutoMapper
     /// </summary>
     public class HerbService : BaseService<Herb>, IHerbService
     {
@@ -268,9 +267,6 @@ namespace LYBT.Module.Herbs.Services
 
             return Result<List<HerbDetailDto>>.Success(herbDtos);
         }
-
-        // ========== OpenSpec: optimize-module-list-ui - 状态切换方法实现 ==========
-
         /// <summary>
         /// 切换药材状态（启用/禁用）
         /// </summary>

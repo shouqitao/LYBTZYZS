@@ -18,7 +18,6 @@ namespace LYBT.Desktop.Users.ViewModels;
 
 /// <summary>
 /// 用户Master-Detail视图模型（组合模式）
-/// OpenSpec: refactor-viewmodel-composition
 ///
 /// 使用IMasterDetailServices实现组合模式
 /// </summary>
@@ -108,7 +107,6 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
 
     /// <summary>
     /// 构造函数
-    /// OpenSpec: refactor-frontend-srp-patterns - 使用Handler组件化模式
     /// </summary>
     public UserMasterDetailViewModel(
         IViewModelServices viewModelServices,

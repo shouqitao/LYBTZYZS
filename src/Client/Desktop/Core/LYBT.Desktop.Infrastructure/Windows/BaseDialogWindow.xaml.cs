@@ -6,7 +6,6 @@ namespace LYBT.Desktop.Infrastructure.Windows;
 /// <summary>
 /// 基础对话框窗口
 /// 统一所有Dialog的样式和行为
-/// OpenSpec: unify-dialog-implementation
 /// </summary>
 public partial class BaseDialogWindow : Window, IDialogWindow
 {

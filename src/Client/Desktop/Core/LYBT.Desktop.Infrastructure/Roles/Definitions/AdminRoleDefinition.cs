@@ -33,7 +33,6 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
         public override string Description => "系统管理、用户管理、系统配置";
 
         /// <inheritdoc/>
-        /// <remarks>OpenSpec: unify-navigation-architecture - 使用ViewNames常量</remarks>
         public override string HomeViewName => ViewNames.AdminHome;
 
         /// <inheritdoc/>

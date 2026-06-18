@@ -1,6 +1,5 @@
 <!--
     HerbEditControl - 药材编辑控件
-    OpenSpec: frontend-architecture-unification - 对象DP模式
 
     可复用的药材编辑控件，通过对象DP绑定
 -->
@@ -13,7 +12,7 @@
              x:Name="Root">
 
     <!--
-        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
+        资源加载说明:
         - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
         - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
         - 此控件无本地资源，所有样式来自全局
@@ -42,7 +41,6 @@
                     </Grid.RowDefinitions>
 
                     <!-- 第一行：药材名称、拼音码 -->
-                    <!-- OpenSpec: ui-validation-framework - 添加验证绑定 -->
                     <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Style="{DynamicResource FormLabelStyle}">
                             <Run Text="药材名称"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>

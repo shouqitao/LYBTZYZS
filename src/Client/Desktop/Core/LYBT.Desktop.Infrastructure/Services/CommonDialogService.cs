@@ -9,7 +9,6 @@ namespace LYBT.Desktop.Infrastructure.Services
     /// <summary>
     /// 通用对话框服务实现 - Epic #1934
     /// MVP阶段基于WPF原生对话框的简单实现
-    /// OpenSpec: unify-dialog-to-prism - 统一使用Prism DialogService
     /// </summary>
     public class CommonDialogService : ICommonDialogService
     {
@@ -117,8 +116,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 
         /// <summary>
         /// 显示未完成医案四选项对话框
-        /// OpenSpec: optimize-medicalcase-navigation - 统一四选项弹窗
-        /// OpenSpec: unify-dialog-to-prism - 迁移到Prism DialogService
         /// </summary>
         public Task<UnfinishedCaseChoice> ShowUnfinishedCaseDialogAsync(string patientName)
         {

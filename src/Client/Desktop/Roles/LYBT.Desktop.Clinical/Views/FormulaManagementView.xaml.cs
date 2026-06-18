@@ -4,7 +4,6 @@ namespace LYBT.Desktop.Clinical.Views
 {
     /// <summary>
     /// 经验方管理视图
-    /// OpenSpec: rename-reference-to-management
     ///
     /// 薄包装View，复用业务模块的FormulaMasterDetailControl
     /// View在角色台，Control在业务模块

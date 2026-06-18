@@ -17,7 +17,6 @@ namespace LYBT.Desktop.Printing.Services
 {
     /// <summary>
     /// 处方打印服务实现
-    /// OpenSpec: create-printing-module
     /// 使用FixedDocument + PrintDialog实现打印功能
     /// </summary>
     public class PrescriptionPrintService : IPrintService<PrescriptionPrintModel>

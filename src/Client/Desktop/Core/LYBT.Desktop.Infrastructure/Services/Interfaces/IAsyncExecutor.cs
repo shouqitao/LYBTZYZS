@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 异步执行服务接口
-    /// OpenSpec: refactor-viewmodel-composition
     ///
     /// 提供安全异步执行、重试机制、UI线程调度
     /// </summary>

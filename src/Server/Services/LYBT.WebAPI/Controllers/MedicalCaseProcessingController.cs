@@ -98,7 +98,6 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 挂起医案
-        /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-010)
         /// 挂起医案，设置状态为Suspended，不触发完成验证
         /// 资源级权限由 Service 层 EnsureCanEdit/EnsureCanDelete 统一检查
         /// </summary>

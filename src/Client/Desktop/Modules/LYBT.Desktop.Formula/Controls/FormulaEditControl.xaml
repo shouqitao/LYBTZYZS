@@ -1,8 +1,5 @@
 <!--
     FormulaEditControl - 验方编辑控件
-    OpenSpec: extract-detail-controls Task 1.2
-    OpenSpec: unify-herb-controls-to-herbs-module - 统一使用HerbListControl编辑处方
-    OpenSpec: frontend-architecture-unification - 对象DP模式
 
     可复用的验方编辑控件，从FormulaDetailView中复用
     通过DependencyProperty传递数据，支持双向绑定
@@ -15,7 +12,7 @@
              x:Name="Root">
 
     <!--
-        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
+        资源加载说明:
         - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
         - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
         - 此控件无本地资源，所有样式来自全局
@@ -41,7 +38,6 @@
                     </Grid.RowDefinitions>
 
                     <!-- 第一行：名称（必填）、分类 -->
-                    <!-- OpenSpec: ui-validation-framework - 添加验证框 -->
                     <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Style="{DynamicResource FormLabelStyle}">
                             <Run Text="名称"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
@@ -106,7 +102,6 @@
         </controls:InfoCard>
 
         <!-- 药材组成卡片 - 编辑模式 -->
-        <!-- OpenSpec: unify-herb-controls-to-herbs-module - 使用HerbListControl替代HerbListEditor -->
         <controls:InfoCard Title="{Binding HerbCount, StringFormat=药材组成 (共{0}味)}">
             <controls:InfoCard.Content>
                 <herbList:HerbListControl

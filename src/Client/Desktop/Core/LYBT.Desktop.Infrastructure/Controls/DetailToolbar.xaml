@@ -1,6 +1,5 @@
-﻿<!--
+<!--
     DetailToolbar - 详情工具栏控件
-    OpenSpec: refactor-master-detail-layout
 
     功能：
     - 编辑/保存/取消/删除按钮组
@@ -21,7 +20,7 @@
     x:Name="Root">
 
     <!--
-        资源加载说明 (OpenSpec: migrate-to-handycontrol):
+        资源加载说明:
         - 所有资源通过 App.xaml 全局加载，控件级别不再合并资源字典
         - BasedOn 的 StaticResource 引用通过 Application.Resources 解析
     -->

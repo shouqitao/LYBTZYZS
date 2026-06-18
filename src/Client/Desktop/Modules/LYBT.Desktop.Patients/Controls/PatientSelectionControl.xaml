@@ -9,7 +9,6 @@
              d:DesignHeight="600" d:DesignWidth="1000">
 
     <!-- 患者选择控件
-         OpenSpec: fix-elementname-binding-architecture
 
          架构优化：移除ElementName=Root绑定，改用DataContext透传模式
          预期 DataContext: PatientSelectionViewModel

@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Contracts.Services
+namespace LYBT.Desktop.Contracts.Services
 {
     /// <summary>
     /// 三选项对话框结果
@@ -86,7 +86,6 @@
 
         /// <summary>
         /// 显示未完成医案四选项对话框
-        /// OpenSpec: optimize-medicalcase-navigation
         /// </summary>
         /// <param name="patientName">患者姓名</param>
         /// <returns>用户选择结果</returns>

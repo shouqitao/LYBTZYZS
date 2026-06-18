@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Foundation.Application;
 
 /// <summary>
 /// API状态变更事件参数
-/// OpenSpec: refactor-startup-connection-resilience - 事件驱动状态更新
 /// </summary>
 public class ApiStatusChangedEventArgs : EventArgs
 {

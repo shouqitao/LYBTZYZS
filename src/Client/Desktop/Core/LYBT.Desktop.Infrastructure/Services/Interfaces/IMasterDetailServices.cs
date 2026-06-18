@@ -4,7 +4,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// Master-Detail视图服务组合接口
-    /// OpenSpec: refactor-viewmodel-composition
     ///
     /// 组合Master-Detail视图所需的所有服务：列表服务 + 详情编辑服务
     /// </summary>
@@ -23,7 +22,7 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// <summary>对话框管理服务</summary>
         IDialogManager Dialog { get; }
 
-        /// <summary>导航协调器 (OpenSpec: unify-navigation-architecture ADR-7)</summary>
+        /// <summary>导航协调器</summary>
         INavigationCoordinator Navigation { get; }
 
         // === 便捷属性委托 ===

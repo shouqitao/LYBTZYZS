@@ -14,8 +14,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 {
     /// <summary>
     /// Master-Detail视图ViewModel基类V2（组合模式）
-    /// OpenSpec: refactor-viewmodel-composition
-    /// OpenSpec: enhance-viewmodel-architecture - 添加IViewModelServices参数
     ///
     /// 注意：由于项目依赖顺序(Models → Infrastructure)，无法直接继承CoreViewModelBase
     /// 采用组合模式：保持ObservableObject继承 + IViewModelServices参数获取通用服务
@@ -165,7 +163,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         /// <summary>
         /// 是否应显示详情面板（有选中项或正在编辑/新建时显示）
-        /// OpenSpec: refactor-masterdetail-command-refresh - 修复新建时DetailContent不显示的问题
         /// </summary>
         public bool ShowDetailPanel => HasSelection || IsEditMode;
 
@@ -256,7 +253,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         /// <summary>
         /// 构造函数
-        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
         /// </summary>
         protected MasterDetailViewModelBase(
             IViewModelServices services,
@@ -268,8 +264,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
             // 订阅服务事件以转发属性变更通知
             SubscribeToServiceEvents();
-
-            // OpenSpec: refactor-masterdetail-command-refresh - 初始化时刷新命令状态
             // 初始化时服务状态都是默认值，不会触发PropertyChanged，需要主动刷新
             NotifyCommandsCanExecuteChanged();
         }
@@ -280,7 +274,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             _masterDetailServices.Loading.PropertyChanged += OnLoadingPropertyChanged;
 
             // Pagination变更
-            // OpenSpec: refactor-masterdetail-command-refresh - 修复翻页按钮不生效问题
             _masterDetailServices.Pagination.PropertyChanged += OnPaginationPropertyChanged;
 
             _masterDetailServices.Pagination.PageChanged += OnPaginationPageChanged;
@@ -342,7 +335,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             if (e.PropertyName == nameof(ISelectionService<TListItem>.SelectedItem))
             {
                 NotifyCommandsCanExecuteChanged();
-                // OpenSpec: refactor-masterdetail-command-refresh - 选择变化时刷新ShowDetailPanel
                 OnPropertyChanged(nameof(ShowDetailPanel));
             }
         }
@@ -359,7 +351,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             if (e.PropertyName == nameof(IDetailEditorService<TDetail>.IsEditMode))
             {
                 NotifyCommandsCanExecuteChanged();
-                // OpenSpec: refactor-masterdetail-command-refresh - 编辑模式变化时刷新ShowDetailPanel
                 OnPropertyChanged(nameof(ShowDetailPanel));
             }
 
@@ -573,7 +564,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         /// <summary>
         /// 通知分页命令刷新CanExecute状态
-        /// OpenSpec: refactor-masterdetail-command-refresh - 修复翻页按钮不生效问题
         /// </summary>
         private void NotifyPaginationCommandsCanExecuteChanged()
         {
@@ -667,7 +657,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         /// <summary>
         /// 导航到视图时调用（同步入口）
-        /// OpenSpec: desktop-refactoring - 使用SafeFireAndForget模式替代async void
         /// </summary>
         public virtual void OnNavigatedTo(NavigationContext navigationContext)
         {

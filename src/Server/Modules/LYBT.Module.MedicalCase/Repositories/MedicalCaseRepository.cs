@@ -165,9 +165,7 @@ namespace LYBT.Module.MedicalCases.Repositories
 
         /// <summary>
         /// 根据医生ID获取医案列表（简化版）
-        /// OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
         /// </summary>
-
 
         /// <summary>
         /// 更新医案（Issue #1571 - 级联删除关联数据）
@@ -202,7 +200,6 @@ namespace LYBT.Module.MedicalCases.Repositories
             await SaveChangesAsync(cancellationToken);
             return existingEntity;
         }
-
 
         /// <summary>
         /// 修复Prescription及PrescriptionItems的实体状态
@@ -323,21 +320,15 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// 获取待看诊医案列表（Status=Suspended或Active）
         /// Epic #1583 - Phase 5
         /// Bug Fix: 应包含Suspended和Active两种未完成状态
-        /// OpenSpec: redesign-pending-queue - 正确的状态判定和序号计算
-        /// OpenSpec: unify-pending-query-api - 添加patientId参数支持按患者筛选
         /// </summary>
         public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId, Guid? patientId = null, CancellationToken cancellationToken = default)
         {
             // Epic #2210 Phase 3: 按医生ID过滤，实现多医生数据隔离
             // Bug Fix: 包含Suspended和Active两种未完成状态，挂起后的医案应显示在待诊队列
-            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
-            // OpenSpec: unify-case-status - 直接使用CaseStatus，已移除PendingCaseType枚举
             var query = _dbSet
                 .Where(m => !m.IsDeleted
                     && (m.CaseStatus == MedicalCaseStatus.Suspended || m.CaseStatus == MedicalCaseStatus.Active)
                     && m.UserId == doctorId);
-
-            // OpenSpec: unify-pending-query-api - 按患者筛选
             if (patientId.HasValue)
             {
                 query = query.Where(m => m.PatientId == patientId.Value);
@@ -356,7 +347,6 @@ namespace LYBT.Module.MedicalCases.Repositories
                     PatientId = r.Patient.Id,
                     PatientName = r.Patient.Name,
                     PhoneNumber = r.Patient.PhoneNumber ?? string.Empty,
-                    // OpenSpec: unify-case-status - 直接使用MedicalCaseStatus，移除PendingCaseType映射
                     CaseStatus = r.MedicalCase.CaseStatus,
                     MedicalCaseId = r.MedicalCase.Id,
                     CreatedAt = r.MedicalCase.CreatedAt
@@ -374,8 +364,6 @@ namespace LYBT.Module.MedicalCases.Repositories
                 MedicalCaseId = r.MedicalCaseId,
                 CreatedAt = r.CreatedAt
             }).ToList();
-
-            // OpenSpec: redesign-pending-queue - 添加队列序号（基于查询结果顺序）
             for (int i = 0; i < result.Count; i++)
             {
                 result[i].QueueNumber = i + 1;
@@ -389,12 +377,10 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// <summary>
         /// 获取所有待看诊医案列表（管理员专用）
         /// Bug Fix: 应包含Suspended和Active两种未完成状态
-        /// OpenSpec: redesign-pending-queue - 正确的状态判定和序号计算
         /// </summary>
         public async Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync(CancellationToken cancellationToken = default)
         {
             // Bug Fix: 包含Suspended和Active两种未完成状态
-            // OpenSpec: unify-case-status - 直接使用CaseStatus，已移除PendingCaseType枚举
             // Bug Fix: MaskPhoneNumber无法在EF Core查询中翻译，先查询原始数据再在内存中处理
             var rawData = await _dbSet
                 .Where(m => !m.IsDeleted && (m.CaseStatus == MedicalCaseStatus.Suspended || m.CaseStatus == MedicalCaseStatus.Active))
@@ -409,7 +395,6 @@ namespace LYBT.Module.MedicalCases.Repositories
                     PatientId = r.Patient.Id,
                     PatientName = r.Patient.Name,
                     PhoneNumber = r.Patient.PhoneNumber ?? string.Empty,
-                    // OpenSpec: unify-case-status - 直接使用MedicalCaseStatus，移除PendingCaseType映射
                     CaseStatus = r.MedicalCase.CaseStatus,
                     MedicalCaseId = r.MedicalCase.Id,
                     CreatedAt = r.MedicalCase.CreatedAt
@@ -427,8 +412,6 @@ namespace LYBT.Module.MedicalCases.Repositories
                 MedicalCaseId = r.MedicalCaseId,
                 CreatedAt = r.CreatedAt
             }).ToList();
-
-            // OpenSpec: redesign-pending-queue - 添加队列序号
             for (int i = 0; i < result.Count; i++)
             {
                 result[i].QueueNumber = i + 1;
@@ -523,7 +506,6 @@ namespace LYBT.Module.MedicalCases.Repositories
                 .Where(m => m.PatientId == patientId && m.CaseStatus != MedicalCaseStatus.Completed);
 
             // Epic #2210 Task 3.1.1: Q4医生筛选链 - 仅当doctorId有效时添加筛选条件
-            // OpenSpec: simplify-medicalcase-dataflow - DoctorId→UserId
             if (doctorId != Guid.Empty)
             {
                 _logger?.LogInformation("[诊断] 添加医生ID过滤条件，DoctorId: {DoctorId}", doctorId);
@@ -580,7 +562,6 @@ namespace LYBT.Module.MedicalCases.Repositories
 
         /// <summary>
         /// 批量获取医案详情（包含所有关联数据）
-        /// OpenSpec: consolidate-medicalcase-detail-queries
         /// 使用EF Core的Contains优化为单次数据库查询
         /// </summary>
         /// <param name="ids">医案ID列表</param>

@@ -8,7 +8,6 @@ namespace LYBT.Desktop.MedicalCase.Interfaces;
 /// Edit context for MedicalCase XAML bindings.
 /// Exposes the properties that MedicalCaseEditControl binds to,
 /// decoupling the view from specific ViewModel implementations.
-/// OpenSpec: medicalcase-frontend-unification
 /// </summary>
 public interface IMedicalCaseEditContext
 {

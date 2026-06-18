@@ -1,8 +1,5 @@
 <!--
     PatientViewControl - 患者预览控件
-    OpenSpec: extract-detail-controls Task 3.1
-    OpenSpec: optimize-preview-layout - 优化布局和视觉层次
-    OpenSpec: refactor-master-detail-layout - 详情区域UI优化
 
     独立的患者预览控件，可在PatientDetailView和其他需要展示患者信息的地方复用
     通过DependencyProperty接收数据，支持只读展示

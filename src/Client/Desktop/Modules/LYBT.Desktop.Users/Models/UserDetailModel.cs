@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Users.Models
 {
     /// <summary>
     /// 用户详情模型 - Master-Detail模式使用
-    /// OpenSpec: refactor-master-detail-layout
     ///
     /// 用于在Detail区域展示和编辑用户信息
     /// </summary>

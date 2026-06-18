@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Contracts.Security;
 
 /// <summary>
 /// 统一认证状态枚举
-/// OpenSpec: refactor-auth-role-system (Phase 1.1)
 /// 合并原有LoginState和LoginFlowState，提供完整的认证流程状态
 /// </summary>
 public enum AuthState

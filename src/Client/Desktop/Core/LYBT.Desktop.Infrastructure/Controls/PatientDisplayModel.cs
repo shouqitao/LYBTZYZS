@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
 {
     /// <summary>
     /// 患者信息展示模型 - 用于PatientInfoCardControl数据绑定
-    /// OpenSpec: refactor-medicalcase-workspace
     /// </summary>
     public class PatientDisplayModel
     {

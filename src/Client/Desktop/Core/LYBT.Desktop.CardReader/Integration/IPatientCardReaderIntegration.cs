@@ -33,7 +33,6 @@ public interface IPatientCardReaderIntegration
 
     /// <summary>
     /// 根据患者ID获取患者详情
-    /// OpenSpec: integrate-cardreader-module - 供ViewModel获取完整患者信息
     /// </summary>
     /// <param name="patientId">患者ID</param>
     /// <returns>患者详情DTO（如找到），否则返回null</returns>

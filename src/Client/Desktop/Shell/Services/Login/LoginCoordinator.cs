@@ -16,7 +16,6 @@ namespace LYBT.Desktop.Shell.Services.Login;
 
 /// <summary>
 /// 登录流程协调器实现
-/// OpenSpec: refactor-auth-role-system (Phase 1.1) - 统一 AuthenticationStateMachine
 /// </summary>
 public class LoginCoordinator : ILoginCoordinator
 {

@@ -40,7 +40,6 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 创建新医案
-        /// OpenSpec: simplify-medicalcase-dataflow Phase 2 - 统一使用SaveAsync
         /// - 支持创建时同时包含Consultation和Prescription数据
         /// - Id=null时创建新医案
         /// optimize-api-permissions: Doctor或Admin可以创建新医案
@@ -61,8 +60,6 @@ namespace LYBT.WebAPI.Controllers
 
             // 确保Id为null以触发创建逻辑
             dto.Id = null;
-
-            // OpenSpec: simplify-medicalcase-dataflow - 统一使用SaveAsync
             var entity = await _facade.SaveAsync(dto, doctorId, isAdmin: false);
 
             if (entity == null)
@@ -113,7 +110,6 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 保存医案聚合根（统一保存Consultation和Prescription）
-        /// OpenSpec: refactor-medicalcase-aggregate-crud (PERSIST-001, PERSIST-002)
         /// 在单个事务中同时保存诊断和处方数据
         /// </summary>
         /// <param name="id">医案ID</param>
@@ -157,7 +153,6 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 删除医案（软删除）
-        /// OpenSpec: clarify-cancel-consultation-logic
         /// 使用BaseRepository默认软删除机制（IsDeleted=true）
         /// 资源级权限由 Service 层 EnsureCanEdit/EnsureCanDelete 统一检查
         /// </summary>
@@ -216,7 +211,6 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> GetById(Guid id)
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            // OpenSpec: optimize-medicalcase-api - GetById统一返回完整DetailDto（含Consultation+Prescription）
             var result = await _facade.GetByIdAsync(id);
 
             if (result == null)
@@ -231,10 +225,6 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 查询医案列表（分页）
         /// Epic #1612: 支持按状态、患者ID过滤
-        /// OpenSpec: optimize-module-list-ui - 添加角色过滤，Doctor只能看到自己的医案
-        /// OpenSpec: fix-history-copy-all-patients - 添加includeAllDoctors参数支持历史医案复制
-        /// OpenSpec: refactor-medicalcase-management - 添加keyword搜索参数
-        /// OpenSpec: post-release-cleanup - 统一返回MedicalCaseListDto
         /// </summary>
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<MedicalCaseListDto>>), 200)]
@@ -248,13 +238,8 @@ namespace LYBT.WebAPI.Controllers
         {
             // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidatePagination(page, pageSize) is { } error) return error;
-
-            // OpenSpec: optimize-module-list-ui - 获取当前用户信息用于角色过滤
-            // OpenSpec: fix-history-copy-all-patients - includeAllDoctors=true时跳过医生过滤
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin || includeAllDoctors;
-
-            // OpenSpec: post-release-cleanup - 直接使用GetListDtoAsync返回MedicalCaseListDto
             var result = await _facade.GetListDtoAsync(
                 status, patientId, page, pageSize,
                 currentDoctorId: operatorId,
@@ -266,7 +251,6 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 统一医案查询端点
-        /// OpenSpec: optimize-medicalcase-api - 整合多个查询端点为统一接口
         /// 支持多种查询类型：All(默认分页)、ByPatient(按患者)、Pending(待看诊)、Unfinished(未完成)、Recent(最近)
         /// </summary>
         /// <param name="query">查询参数</param>
@@ -304,7 +288,6 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 跨医案搜索
-        /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-015)
         /// 支持按患者名称、诊断关键词等条件查询
         /// </summary>
         /// <param name="patientName">患者名称（模糊匹配）</param>

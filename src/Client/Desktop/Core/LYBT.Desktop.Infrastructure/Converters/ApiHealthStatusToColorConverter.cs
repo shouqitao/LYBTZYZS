@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
 using LYBT.Desktop.Foundation.HealthCheck;
@@ -7,7 +7,6 @@ namespace LYBT.Desktop.Infrastructure.Converters;
 
 /// <summary>
 /// 将 ApiHealthStatus 转换为对应的颜色
-/// OpenSpec: consolidate-wpf-converters - 统一使用Fluent Design标准色
 /// </summary>
 public class ApiHealthStatusToColorConverter : IValueConverter
 {

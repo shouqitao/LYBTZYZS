@@ -9,8 +9,6 @@ namespace LYBT.Desktop.Formula.Models
 {
     /// <summary>
     /// 验方详情模型 - Master-Detail模式使用
-    /// OpenSpec: refactor-master-detail-layout
-    /// OpenSpec: ui-validation-framework - 添加验证支持
     ///
     /// 用于在Detail区域展示和编辑验方信息
     /// </summary>
@@ -154,9 +152,6 @@ namespace LYBT.Desktop.Formula.Models
                 Herbs = new ObservableCollection<FormulaHerbItemDto>()
             };
         }
-
-
-
 
         /// <summary>克隆模型</summary>
         public FormulaDetailModel Clone()

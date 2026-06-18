@@ -11,8 +11,6 @@ namespace LYBT.Desktop.Formula.Services
 {
     /// <summary>
     /// 配方Service实现
-    /// OpenSpec: standardize-service-layer - 统一使用Service命名
-    /// OpenSpec: cleanup-formula-dead-code - 清理未使用的占位方法和FormulaValidation方法
     /// 使用 CommandResult&lt;T&gt; 统一返回类型，遵循 RemoteUserService 金标准模式
     /// </summary>
     public class FormulaService : IFormulaService

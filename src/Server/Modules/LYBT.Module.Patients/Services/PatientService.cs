@@ -20,7 +20,6 @@ namespace LYBT.Module.Patients.Services
     /// 患者服务 - 统一接口实现
     /// 包含DTO和Entity两种返回模式
     /// Phase 2: 继承BaseService<Patient>复用统一错误处理和验证逻辑
-    /// OpenSpec: adopt-mapperly-unified-mapping - 使用PatientMapper替代AutoMapper
     /// </summary>
     public class PatientService : BaseService<Patient>, IPatientService
     {
@@ -355,9 +354,6 @@ namespace LYBT.Module.Patients.Services
         }
 
         #endregion
-
-        // ========== OpenSpec: optimize-module-list-ui - 状态切换方法实现 ==========
-
         /// <summary>
         /// 切换患者状态（启用/禁用）
         /// </summary>
@@ -397,9 +393,6 @@ namespace LYBT.Module.Patients.Services
 
             return Result<PatientDetailDto>.Success(dto);
         }
-
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
-
         /// <inheritdoc/>
         /// <remarks>
         /// eliminate-service-catch-return: 保留项级错误隔离，修复ERR-012违规

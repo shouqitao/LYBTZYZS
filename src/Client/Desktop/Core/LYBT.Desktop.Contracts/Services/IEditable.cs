@@ -3,7 +3,6 @@ namespace LYBT.Desktop.Contracts.Services;
 /// <summary>
 /// 可编辑对象接口
 /// 用于标记和管理编辑状态，支持未保存变更检测
-/// OpenSpec: navigation-guard-and-editable-interface
 /// </summary>
 public interface IEditable
 {

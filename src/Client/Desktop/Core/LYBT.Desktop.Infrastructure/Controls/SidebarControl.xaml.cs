@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
 {
     /// <summary>
     /// 侧边栏控件
-    /// OpenSpec: refactor-role-navigation
     ///
     /// 功能：
     /// - 展开/收缩切换
@@ -39,7 +38,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
         #region CurrentUser - 当前用户信息
 
         /// <summary>
-        /// OpenSpec: dto-architecture-specification - 统一使用UserDetailDto
         /// </summary>
         public UserDetailDto? CurrentUser
         {
@@ -109,7 +107,7 @@ namespace LYBT.Desktop.Infrastructure.Controls
 
         #endregion
 
-        #region EditProfileCommand - 账户设置命令 (OpenSpec: migrate-views-to-role-modules)
+        #region EditProfileCommand - 账户设置命令
 
         public ICommand? EditProfileCommand
         {
@@ -123,7 +121,7 @@ namespace LYBT.Desktop.Infrastructure.Controls
 
         #endregion
 
-        #region NavigateToSystemSettingsCommand - 系统设置命令 (OpenSpec: unify-navigation-architecture - ADR-5修正)
+        #region NavigateToSystemSettingsCommand - 系统设置命令
 
         public ICommand? NavigateToSystemSettingsCommand
         {

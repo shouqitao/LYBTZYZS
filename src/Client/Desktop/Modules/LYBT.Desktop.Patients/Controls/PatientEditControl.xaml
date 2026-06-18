@@ -1,6 +1,5 @@
 <!--
     PatientEditControl - 患者编辑控件
-    OpenSpec: extract-detail-controls Task 3.2
 
     可复用的患者编辑控件，从PatientDetailView中复用
     通过DependencyProperty传递数据，支持双向绑定

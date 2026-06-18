@@ -7,7 +7,6 @@ namespace LYBT.Desktop.Infrastructure.Services;
 
 /// <summary>
 /// 用户活动追踪服务实现
-/// OpenSpec: refactor-token-sliding-expiration (AUTH-001, AUTH-002, AUTH-003)
 /// 监听用户UI交互,检测不活跃状态,触发会话过期事件
 /// </summary>
 public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDisposable
@@ -26,8 +25,6 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
     private bool _isTracking;
     private bool _disposed;
     private long _lastCheckTickCount;
-
-    // OpenSpec: simplify-auth-architecture - SessionExpiring事件已移除
 
     /// <inheritdoc />
     public event EventHandler? SessionExpired;
@@ -113,7 +110,6 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
 
     /// <inheritdoc />
     /// <remarks>
-    /// OpenSpec: remove-secure-credential-storage - 修复STA线程问题
     /// InputManager.Current需要在UI线程访问，使用Dispatcher确保线程安全
     /// </remarks>
     public void StartTracking()
@@ -156,7 +152,6 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
 
     /// <inheritdoc />
     /// <remarks>
-    /// OpenSpec: remove-secure-credential-storage - 修复STA线程问题
     /// InputManager.Current需要在UI线程访问，使用Dispatcher确保线程安全
     /// </remarks>
     public void StopTracking()
@@ -262,8 +257,6 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
         // 移除警告逻辑 - 静默等待会话过期，避免弹窗打扰用户
         // SessionExpiring事件不再触发，会话直接过期后再提示用户重新登录
     }
-
-    // OpenSpec: simplify-auth-architecture - OnSessionExpiring方法已移除
 
     private void OnSessionExpired()
     {

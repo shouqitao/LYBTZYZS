@@ -1,6 +1,5 @@
-﻿<!--
+<!--
     CardReaderStatusControl - 读卡器状态控件
-    OpenSpec: integrate-cardreader-module - 身份证读卡器UI集成
 
     功能：
     - 显示读卡器连接状态

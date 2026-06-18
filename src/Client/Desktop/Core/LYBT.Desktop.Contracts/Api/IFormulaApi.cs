@@ -47,31 +47,19 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/formulas/{id}/clone")]
         Task<ApiResponse<FormulaDetailDto>> CloneFormulaAsync(Guid id);
-
-        // OpenSpec: cleanup-formula-dead-code - 已删除GetPendingValidationFormulasAsync/ValidateFormulaHerbAsync
-        // 原Issue #1349/#1348为FormulaValidationViewModel设计，该ViewModel已删除（OpenSpec: migrate-views-to-role-modules）
-
-        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复 ==========
-
+        // 原Issue #1349/#1348为FormulaValidationViewModel设计，该ViewModel已删除
         /// <summary>
         /// 切换验方状态（启用/禁用）
         /// </summary>
         [Refit.Post("/api/v1/formulas/{id}/toggle-status")]
         Task<ApiResponse<FormulaDetailDto>> ToggleStatusAsync(Guid id);
-
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
-
         /// <summary>
         /// 批量删除验方
         /// </summary>
         [Refit.Post("/api/v1/formulas/batch-delete")]
         Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
-
-        // ========== OpenSpec: standardize-desktop-api-layer - 导入导出功能 ==========
-
         /// <summary>
         /// 批量导入验方数据
-        /// OpenSpec: standardize-api-naming - REQ-API-002 批量操作URL模式
         /// </summary>
         [Refit.Post("/api/v1/formulas/batch-import")]
         Task<ApiResponse<FormulaBatchImportResultDto>> BatchImportAsync([Refit.Body] FormulaBatchImportInputDto request);

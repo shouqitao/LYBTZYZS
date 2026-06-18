@@ -1,7 +1,6 @@
 // -----------------------------------------------------------------------
 // <copyright file="FormulaHerbItemMapper.cs" company="凌隐宝堂中医诊所">
 //     Copyright (c) 凌隐宝堂中医诊所. All rights reserved.
-//     OpenSpec: adopt-mapperly-unified-mapping
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -20,7 +19,6 @@ namespace LYBT.Desktop.Formula.Mappers;
 /// - FormulaHerbItem → FormulaHerbItemDto (保存到API)
 /// - FormulaHerbItem → FormulaHerbItemInputDto (创建/更新API调用)
 ///
-/// OpenSpec: resolve-mapperly-source-generator-conflict
 /// Item类使用BindableBase+显式属性，确保Mapperly能正确生成映射代码。
 /// </remarks>
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]

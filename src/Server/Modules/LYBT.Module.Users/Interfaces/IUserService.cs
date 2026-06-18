@@ -2,7 +2,6 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
-// OpenSpec: optimize-batch-operations Phase 2
 
 namespace LYBT.Module.Users.Interfaces
 {
@@ -17,7 +16,6 @@ namespace LYBT.Module.Users.Interfaces
 
         /// <summary>
         /// 分页获取用户列表（返回UserListDto，用于列表视图）
-        /// OpenSpec: refactor-dto-simplification - 使用扁平化DTO
         /// </summary>
         /// <param name="page">页码（从1开始）</param>
         /// <param name="pageSize">每页数量</param>
@@ -91,18 +89,12 @@ namespace LYBT.Module.Users.Interfaces
         Task<Result<UserDetailDto>> ChangeProfileAsync(Guid userId, ChangeProfileDto dto, CancellationToken cancellationToken = default);
 
         #endregion
-
-        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复方法 ==========
-
         /// <summary>
         /// 切换用户状态（启用/禁用）
         /// </summary>
         /// <param name="id">用户ID</param>
         /// <param name="currentRole">当前操作用户角色</param>
         Task<Result<UserDetailDto>> ToggleStatusAsync(Guid id, UserRole currentRole, CancellationToken cancellationToken = default);
-
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
-
         /// <summary>
         /// 批量删除用户
         /// </summary>

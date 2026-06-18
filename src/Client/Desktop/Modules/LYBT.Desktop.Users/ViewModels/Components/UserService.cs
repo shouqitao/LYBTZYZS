@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.ExceptionHandling.Mappers;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Users.ViewModels.Components
 {
     /// <summary>
     /// 用户Service - 组件化架构实现
-    /// OpenSpec: standardize-service-layer - 统一使用Service命名
     /// Issue #1785: 负责用户的命令操作（创建、更新、删除、密码管理等）
     /// </summary>
     public class UserService
@@ -26,13 +25,11 @@ namespace LYBT.Desktop.Users.ViewModels.Components
 
         /// <summary>
         /// 创建用户
-        /// OpenSpec: dto-architecture-specification - 统一使用UserDetailDto
         /// </summary>
         public virtual async Task<(bool success, UserDetailDto? user, string? errorMessage)> CreateAsync(UserInputDto createDto)
         {
             try
             {
-                // OpenSpec: enhance-dataflow-logging - LOG-018 统一[SVC]前缀
                 _logger.LogInformation("[SVC] User.Create started - Username={Username}", createDto.UserName);
 
                 var createdUser = await _repository.CreateAsync(createDto);
@@ -96,10 +93,6 @@ namespace LYBT.Desktop.Users.ViewModels.Components
                 return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除用户", ex));
             }
         }
-
-
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
-
         /// <inheritdoc />
         public virtual async Task<(bool success, BatchOperationResultDto? result, string? errorMessage)> BatchDeleteAsync(List<Guid> userIds)
         {
@@ -283,7 +276,6 @@ namespace LYBT.Desktop.Users.ViewModels.Components
 
         /// <summary>
         /// 切换用户状态
-        /// OpenSpec: sync-entity-dto-fields - 状态通过专用API管理
         /// </summary>
         public async Task<(bool success, UserDetailDto? user, string? errorMessage)> ToggleStatusAsync(Guid userId)
         {

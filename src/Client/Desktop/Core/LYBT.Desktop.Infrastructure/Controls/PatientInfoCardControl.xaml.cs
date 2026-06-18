@@ -6,7 +6,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
 {
     /// <summary>
     /// 患者信息卡片控件 - 用于显示患者基本信息
-    /// OpenSpec: refactor-medicalcase-workspace
     /// </summary>
     public partial class PatientInfoCardControl : UserControl
     {

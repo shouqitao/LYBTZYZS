@@ -4,9 +4,6 @@
     重要: Prism DialogService 要求 Dialog 视图必须是 UserControl，
     DialogService 会将其嵌入到 DialogWindow 容器中显示。
     使用 Window 会导致 "Window 不能作为其他 Visual 的子元素" 错误。
-
-    OpenSpec: optimize-medicalcase-navigation - 统一四选项弹窗
-    OpenSpec: unify-dialog-to-prism - 迁移到Prism DialogService
 -->
 <UserControl x:Class="LYBT.Desktop.Infrastructure.Views.UnfinishedCaseDialog"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"

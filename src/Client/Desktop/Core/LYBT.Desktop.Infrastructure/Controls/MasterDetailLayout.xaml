@@ -1,6 +1,5 @@
-﻿<!--
+<!--
     MasterDetailLayout - Master-Detail布局容器控件
-    OpenSpec: refactor-master-detail-layout
 
     功能：
     - 左右分割布局，支持GridSplitter调节
@@ -34,7 +33,7 @@
              x:Name="Root">
 
     <!--
-        资源架构说明 (OpenSpec: migrate-to-handycontrol, 2026-01-22):
+        资源架构说明:
 
         本地样式使用 DynamicResource 引用全局资源（Brush/Color/CornerRadius/Effect）
 

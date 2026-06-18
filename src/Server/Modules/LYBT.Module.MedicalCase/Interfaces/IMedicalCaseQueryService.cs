@@ -25,7 +25,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
 
         /// <summary>
         /// 查询医案列表（分页）
-        /// OpenSpec: optimize-module-list-ui - 添加角色过滤支持
         /// </summary>
         /// <param name="status">医案状态（可选）</param>
         /// <param name="patientId">患者ID（可选）</param>
@@ -48,7 +47,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
 
         /// <summary>
         /// 查询医案列表（分页，返回MedicalCaseListDto，用于列表视图）
-        /// OpenSpec: optimize-entity-data-flow - 增量API方法
         /// </summary>
         /// <param name="status">医案状态（可选）</param>
         /// <param name="patientId">患者ID（可选）</param>
@@ -95,7 +93,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
 
         /// <summary>
         /// 获取待看诊队列（Status = Active的医案患者列表）
-        /// OpenSpec: unify-pending-query-api - 添加patientId参数支持按患者筛选
         /// </summary>
         /// <param name="doctorId">医生ID</param>
         /// <param name="patientId">患者ID（可选）- 传入时仅返回该患者的待看诊医案</param>
@@ -112,7 +109,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
 
         /// <summary>
         /// 跨医案搜索（支持多条件组合查询）
-        /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-015)
         /// </summary>
         /// <param name="patientName">患者姓名关键字（模糊匹配）</param>
         /// <param name="diagnosisKeyword">诊断关键字（搜索TcmDiagnosis）</param>
@@ -133,7 +129,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
 
         /// <summary>
         /// 获取患者最近医案列表
-        /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-016)
         /// 用于处方编辑器历史处方参考
         /// </summary>
         /// <param name="patientId">患者ID</param>
@@ -144,7 +139,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
 
         /// <summary>
         /// 统一查询接口
-        /// OpenSpec: optimize-medicalcase-api - 整合多个查询端点为统一接口
         /// 根据QueryType分发到不同查询逻辑
         /// </summary>
         /// <param name="query">查询参数</param>
@@ -154,7 +148,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
 
         /// <summary>
         /// 批量获取医案详情
-        /// OpenSpec: consolidate-medicalcase-detail-queries
         /// 解决N+1查询问题，一次请求获取多个医案详情（含处方）
         /// </summary>
         /// <param name="ids">医案ID列表（最多50个）</param>

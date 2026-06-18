@@ -4,7 +4,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 加载状态管理服务实现
-    /// OpenSpec: refactor-viewmodel-composition
     /// </summary>
     public partial class LoadingStateManager : ObservableObject, ILoadingStateManager
     {

@@ -41,7 +41,6 @@ namespace LYBT.Desktop.Shell.Extensions
                 catch { /* 启动阶段可能尚未注册 */ }
                 return new TokenRefreshHandler(tokenStorage, credentialVault, configuration, logger, userActivityState);
             });
-            // OpenSpec: refactor-login-authentication (Phase 1.4) - 注册接口
             containerRegistry.Register<ITokenRefreshHandler>(resolver => resolver.Resolve<TokenRefreshHandler>());
 
             // LOG-012: 注册LoggingHttpHandler

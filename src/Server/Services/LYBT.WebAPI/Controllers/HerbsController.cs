@@ -88,12 +88,8 @@ namespace LYBT.WebAPI.Controllers
 
             return HandleResult(result);
         }
-
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
-
         /// <summary>
         /// 切换药材状态（启用/禁用）
-        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPost("{id}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
@@ -114,8 +110,6 @@ namespace LYBT.WebAPI.Controllers
             LogOperation("切换药材状态", new { NewStatus = result.Data.Status }, id);
             return Success(result.Data, $"药材已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
         }
-
-
 
         [HttpPost("batch-delete")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]

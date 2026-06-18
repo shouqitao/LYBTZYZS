@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 列表视图服务组合接口
-    /// OpenSpec: refactor-viewmodel-composition
     ///
     /// 组合列表视图所需的所有服务：加载状态、分页、搜索、选择
     /// </summary>

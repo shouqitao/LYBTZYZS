@@ -34,22 +34,13 @@ namespace LYBT.Desktop.Users
 
             // IUserRepository 由 Shell DI 注册 (Refit API)
 
-            // OpenSpec: standardize-api-architecture - MappingService已删除，使用直接Mapper实例
-
             // Issue #1785: 注册Users模块组件化组件（Epic #1773 Component-Based架构）
-            // OpenSpec: standardize-service-layer - 统一使用Service命名
             containerRegistry.Register<IUserService, Services.RemoteUserService>();
-
-            // OpenSpec: refactor-frontend-srp-patterns - 注册Handler组件
             containerRegistry.Register<IUserPasswordHandler, UserPasswordHandler>();
             containerRegistry.Register<IUserStatusHandler, UserStatusHandler>();
 
-            // OpenSpec: migrate-views-to-role-modules - UserDetailView已删除（无调用）
-
             // Issue #1928: Sprint 2 - ResetPassword迁移为Navigation模式
             // Issue #2167: ResetPasswordView已删除（改用按钮触发直接API调用）
-
-            // OpenSpec: migrate-views-to-role-modules - ChangePasswordView/UserProfileView已迁移到Shell
             // 合并为AccountSettingsView（TabControl形式），由Shell/ViewModels/AccountSettingsViewModel统一管理
 
             // Epic #1926 Sprint 4: Dialog已全部迁移为Navigation模式，以下DI注册已移除：
@@ -57,15 +48,9 @@ namespace LYBT.Desktop.Users
             // - ResetPasswordDialog → 重置密码移至列表操作
             // - UserProfileDialog → UserProfileView
             // - UserFormDialog → UserDetailView（Issue #2168：统一Create/Edit/View模式）
-
-            // OpenSpec: refactor-viewmodel-composition - V2组合模式ViewModel
             // 注册Users模块的MasterDetail服务
             containerRegistry.AddMasterDetailServices<UserListDto, UserDetailModel>();
-
-            // OpenSpec: frontend-architecture-unification - 子VM模式
             containerRegistry.Register<ViewModels.UserEditorViewModel>();
-
-            // OpenSpec: refactor-admin-workspace - Control模式重构
             // UserMasterDetailControl供角色台View复用，ViewModel在Control内部解析
             containerRegistry.Register<ViewModels.UserMasterDetailViewModel>();
             

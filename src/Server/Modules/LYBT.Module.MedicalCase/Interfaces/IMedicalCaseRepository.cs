@@ -42,7 +42,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// 获取待看诊医案列表（Status=Active）
         /// Epic #1583 - Phase 5
         /// Epic #2210 Phase 3: 添加doctorId参数实现多医生数据隔离
-        /// OpenSpec: unify-pending-query-api - 添加patientId参数支持按患者筛选
         /// </summary>
         /// <param name="doctorId">医生ID</param>
         /// <param name="patientId">患者ID（可选）- 传入时仅返回该患者的待看诊医案</param>
@@ -85,7 +84,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
 
         /// <summary>
         /// 批量获取医案详情（包含所有关联数据）
-        /// OpenSpec: consolidate-medicalcase-detail-queries
         /// </summary>
         /// <param name="ids">医案ID列表</param>
         /// <param name="cancellationToken">取消令牌</param>

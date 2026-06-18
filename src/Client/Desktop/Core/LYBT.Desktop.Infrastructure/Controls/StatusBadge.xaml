@@ -1,6 +1,5 @@
-﻿<!--
+<!--
     StatusBadge - 状态徽章控件
-    OpenSpec: refactor-master-detail-layout - UI优化
 
     功能：
     - 以彩色徽章形式显示状态
@@ -18,7 +17,7 @@
     x:Name="Root">
 
     <!--
-        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
+        资源加载说明:
         - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
         - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
         - 仅保留本地定义的徽章颜色资源

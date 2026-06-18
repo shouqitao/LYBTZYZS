@@ -87,8 +87,6 @@ public class PrescriptionPrintHandler
             {
                 return PrintResult.Failed("处方无药材信息，无法打印");
             }
-
-            // OpenSpec: create-printing-module - 组装PrescriptionPrintModel并调用新接口
             var printModel = BuildPrintModel(prescription, currentPatient, consultationData);
             await _printService.PreviewAsync(printModel);
 
@@ -151,7 +149,6 @@ public class PrescriptionPrintHandler
 
     /// <summary>
     /// 构建打印数据模型
-    /// OpenSpec: create-printing-module
     /// T4-S5-10: 自动绑定DoctorName从当前登录用户
     /// T4-S5-11: 包含Discount折扣计算
     /// </summary>

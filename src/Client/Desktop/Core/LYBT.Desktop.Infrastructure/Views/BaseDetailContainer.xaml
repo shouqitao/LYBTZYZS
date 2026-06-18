@@ -1,6 +1,5 @@
-﻿<!--
+<!--
     BaseDetailContainer - 详情页容器控件
-    OpenSpec: refactor-detail-view-container
 
     功能：
     - 容器化架构，支持查看/编辑模式独立定义
@@ -44,7 +43,7 @@
     </UserControl.InputBindings>
 
     <!--
-        资源架构说明 (OpenSpec: cleanup-control-resource-merging, 2026-01-22):
+        资源架构说明:
 
         重要：此控件不再合并资源字典！
 
@@ -310,7 +309,6 @@
         </Grid>
 
         <!-- Row 2: Footer - 底部操作栏（仅编辑模式显示）- 带过渡动画 -->
-        <!-- OpenSpec: unify-medicalcase-view-edit-pattern - 支持FooterContent自定义 -->
         <Grid Grid.Row="2" Margin="40,28,40,28"
               Style="{StaticResource FooterStyle}">
             <Border Background="{DynamicResource SecondaryRegionBrush}"

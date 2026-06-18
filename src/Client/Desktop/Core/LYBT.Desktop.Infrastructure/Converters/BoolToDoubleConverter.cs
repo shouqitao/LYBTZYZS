@@ -6,7 +6,6 @@ namespace LYBT.Desktop.Infrastructure.Converters
 {
     /// <summary>
     /// 布尔值到双精度浮点数转换器
-    /// OpenSpec: refactor-role-navigation
     /// 用于侧边栏宽度等场景
     /// </summary>
     public class BoolToDoubleConverter : MarkupExtension, IValueConverter

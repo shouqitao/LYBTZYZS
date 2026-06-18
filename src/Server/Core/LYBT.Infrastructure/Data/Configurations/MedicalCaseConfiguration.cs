@@ -18,8 +18,6 @@ public class MedicalCaseConfiguration : BaseEntityConfiguration<MedicalCase>
         base.Configure(builder);
 
         builder.ToTable("MedicalCases");
-
-        // OpenSpec: fix-doctorid-to-userid - 统一使用UserId列名
         // 移除旧的DoctorId映射，数据库列名将与属性名一致
         // 需要运行迁移将DoctorId列重命名为UserId
 

@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Formula.Models.Items;
 
 /// <summary>
 /// 验方编辑上下文 - 统一编辑真源
-/// OpenSpec: frontend-architecture-unification
 ///
 /// 替代 FormulaDetailModel 的编辑角色，作为 EditControl 对象 DP 的绑定目标
 /// 所有编辑字段集中于此，支持验证 (ValidatableModelBase)

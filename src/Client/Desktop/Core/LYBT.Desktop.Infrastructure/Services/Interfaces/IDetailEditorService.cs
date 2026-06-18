@@ -4,7 +4,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 详情编辑服务接口
-    /// OpenSpec: refactor-viewmodel-composition
     ///
     /// 提供详情编辑状态管理、原始值备份、变更检测
     /// </summary>

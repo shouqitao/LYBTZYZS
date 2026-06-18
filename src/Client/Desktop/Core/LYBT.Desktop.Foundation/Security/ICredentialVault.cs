@@ -2,8 +2,6 @@ namespace LYBT.Desktop.Foundation.Security
 {
     /// <summary>
     /// 凭据保险库接口 - 安全存储密码和AutoLoginToken
-    /// OpenSpec: refactor-login-authentication (CVT-001, CVT-002)
-    /// OpenSpec: redesign-login-remember-password - 添加密码存储功能
     ///
     /// 设计原则：
     /// 1. 使用DPAPI加密 + HMAC完整性校验
@@ -15,7 +13,7 @@ namespace LYBT.Desktop.Foundation.Security
     /// </summary>
     public interface ICredentialVault
     {
-        #region 密码存储 (OpenSpec: redesign-login-remember-password)
+        #region 密码存储
 
         /// <summary>
         /// 保存密码（DPAPI加密）

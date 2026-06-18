@@ -1,7 +1,6 @@
 <!--
     BaseDialogWindow - 基础对话框窗口
     统一所有Dialog的样式和行为
-    OpenSpec: unify-dialog-implementation
 -->
 <Window x:Class="LYBT.Desktop.Infrastructure.Windows.BaseDialogWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"

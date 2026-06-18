@@ -3,7 +3,6 @@ namespace LYBT.Desktop.Shell.Services.Session;
 /// <summary>
 /// 会话状态枚举
 /// 定义用户会话的各个状态
-/// OpenSpec: simplify-auth-architecture - 移除Expiring状态，简化为4状态
 /// </summary>
 public enum SessionState
 {
@@ -67,7 +66,6 @@ public interface ISessionLifecycleManager
 
     /// <summary>
     /// 会话已过期事件（用于触发重新登录）
-    /// OpenSpec: simplify-auth-architecture - 移除SessionExpiring事件，直接静默过期
     /// </summary>
     event EventHandler? SessionExpired;
 
@@ -134,8 +132,6 @@ public class SessionStateChangedEventArgs : EventArgs
         Timestamp = DateTime.UtcNow;
     }
 }
-
-// OpenSpec: simplify-auth-architecture - SessionExpiringWarningEventArgs已移除，不再显示过期警告
 
 /// <summary>
 /// 会话诊断信息（用于调试和问题排查）

@@ -103,8 +103,6 @@ namespace LYBT.Module.Users.Repositories
                 .FirstOrDefaultAsync(u =>
                     (u.UserName == username || u.Email == username) &&
                     !u.IsDeleted, cancellationToken);
-
-            // OpenSpec: enhance-dataflow-logging - LOG-015 Repository操作日志
             _logger.LogDebug("[REPO] User.GetByUsername({Username}) → {Result}",
                 username, user != null ? "Found" : "NotFound");
 
@@ -125,8 +123,6 @@ namespace LYBT.Module.Users.Repositories
 
         #endregion
 
-        #region OpenSpec: optimize-module-list-ui - 恢复功能支持
-
         /// <summary>
         /// 根据ID获取实体（包括已软删除的）
         /// 使用IgnoreQueryFilters绕过全局软删除过滤器
@@ -138,7 +134,5 @@ namespace LYBT.Module.Users.Repositories
                 .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
         }
-
-        #endregion
     }
 }

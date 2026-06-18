@@ -5,7 +5,6 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
 {
     /// <summary>
     /// 数据提供者接口 - 替代ISaveable
-    /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.1)
     /// </summary>
     /// <remarks>
     /// 设计理念：

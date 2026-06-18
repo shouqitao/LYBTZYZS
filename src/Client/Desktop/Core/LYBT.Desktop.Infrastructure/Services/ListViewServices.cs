@@ -3,7 +3,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 列表视图服务组合实现
-    /// OpenSpec: refactor-viewmodel-composition
     /// </summary>
     /// <typeparam name="T">列表项类型</typeparam>
     public class ListViewServices<T> : IListViewServices<T>, IDisposable where T : class

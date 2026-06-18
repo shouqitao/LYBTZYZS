@@ -7,7 +7,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
 {
     /// <summary>
     /// 患者搜索控件 - 从PatientSelectionView提取
-    /// OpenSpec: refactor-medicalcase-workspace
     /// </summary>
     public partial class PatientSearchControl : UserControl
     {

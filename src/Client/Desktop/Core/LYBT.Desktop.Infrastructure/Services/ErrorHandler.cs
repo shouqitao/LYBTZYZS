@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 错误处理服务实现
-    /// OpenSpec: refactor-viewmodel-composition
     /// </summary>
     public partial class ErrorHandler : ObservableObject, IErrorHandler
     {

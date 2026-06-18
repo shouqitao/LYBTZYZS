@@ -17,7 +17,6 @@ namespace LYBT.Desktop.Infrastructure.Roles
 
         /// <summary>
         /// 默认主页视图（当角色未注册时使用）
-        /// OpenSpec: unify-navigation-architecture - 使用ViewNames常量
         /// </summary>
         private const string DefaultHomeView = ViewNames.ClinicalHome;
 

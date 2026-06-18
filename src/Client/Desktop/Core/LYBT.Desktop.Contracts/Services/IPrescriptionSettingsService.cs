@@ -1,8 +1,7 @@
 namespace LYBT.Desktop.Contracts.Services
 {
     /// <summary>
-    /// 处方设置服务接口 - OpenSpec: enhance-duplicate-herb-dialog
-    /// </summary>
+    /// 处方设置服务接口</summary>
     /// <remarks>
     /// 提供处方相关的配置访问，配置存储在appsettings.json的Prescription节点中。
     /// 后期将开发到系统设置UI中进行动态配置。

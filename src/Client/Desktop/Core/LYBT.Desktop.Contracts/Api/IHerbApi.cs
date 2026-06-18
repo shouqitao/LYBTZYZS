@@ -62,17 +62,11 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Get("/api/v1/herbs/export")]
         Task<HttpResponseMessage> ExportHerbsAsync([Refit.Query] string? keyword = null);
-
-        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复 ==========
-
         /// <summary>
         /// 切换药材状态（启用/禁用）
         /// </summary>
         [Refit.Post("/api/v1/herbs/{id}/toggle-status")]
         Task<ApiResponse<HerbDetailDto>> ToggleStatusAsync(Guid id);
-
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
-
         /// <summary>
         /// 批量删除药材（软删除）
         /// </summary>

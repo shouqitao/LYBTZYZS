@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Infrastructure.Constants;
 
 /// <summary>
 /// 视图名称常量类 - 提供编译时类型安全的视图名称
-/// OpenSpec: unify-navigation-architecture (ADR-2, ADR-6)
 /// 架构决策: 放在Infrastructure层使所有上层（Shell、Roles、Modules）可引用
 /// </summary>
 public static class ViewNames

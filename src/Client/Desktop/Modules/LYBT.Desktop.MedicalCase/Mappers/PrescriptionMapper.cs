@@ -1,7 +1,6 @@
 // -----------------------------------------------------------------------
 // <copyright file="PrescriptionMapper.cs" company="凌隐宝堂中医诊所">
 //     Copyright (c) 凌隐宝堂中医诊所. All rights reserved.
-//     OpenSpec: adopt-mapperly-unified-mapping
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -20,8 +19,6 @@ namespace LYBT.Desktop.MedicalCase.Mappers;
 /// - PrescriptionItem → PrescriptionDetailDto (仅供展示)
 /// - PrescriptionItem → PrescriptionInputDto (保存到API)
 ///
-/// OpenSpec: adopt-mapperly-unified-mapping - PrescriptionItem使用BindableBase，支持Mapperly源生成
-/// OpenSpec: unify-control-data-binding - Items集合统一使用PrescriptionItemDto，类型已一致。
 /// </remarks>
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class PrescriptionMapper
@@ -47,8 +44,8 @@ public partial class PrescriptionMapper
     [MapperIgnoreTarget(nameof(PrescriptionItem.IsValid))]
     [MapperIgnoreTarget(nameof(PrescriptionItem.TotalPrice))]
     [MapperIgnoreTarget(nameof(PrescriptionItem.DisplayText))]
-    [MapperIgnoreTarget(nameof(PrescriptionItem.ValidationEnabled))] // OpenSpec: simplify-workspace-architecture
-    [MapperIgnoreTarget(nameof(PrescriptionItem.ValidationMessage))] // OpenSpec: simplify-workspace-architecture
+    [MapperIgnoreTarget(nameof(PrescriptionItem.ValidationEnabled))]
+    [MapperIgnoreTarget(nameof(PrescriptionItem.ValidationMessage))]
     private partial PrescriptionItem ToItemCore(PrescriptionDetailDto dto);
 
     /// <summary>
@@ -65,8 +62,6 @@ public partial class PrescriptionMapper
         {
             item.Usage = "水煎服，一日一剂，分早晚两次温服";
         }
-
-        // OpenSpec: unify-control-data-binding - 类型统一，直接添加PrescriptionItemDto
         if (dto.Items != null)
         {
             foreach (var prescriptionItem in dto.Items)
@@ -95,8 +90,8 @@ public partial class PrescriptionMapper
     [MapperIgnoreSource(nameof(PrescriptionItem.HasItems))]
     [MapperIgnoreSource(nameof(PrescriptionItem.IsValid))]
     [MapperIgnoreSource(nameof(PrescriptionItem.DisplayText))]
-    [MapperIgnoreSource(nameof(PrescriptionItem.ValidationEnabled))] // OpenSpec: simplify-workspace-architecture
-    [MapperIgnoreSource(nameof(PrescriptionItem.ValidationMessage))] // OpenSpec: simplify-workspace-architecture
+    [MapperIgnoreSource(nameof(PrescriptionItem.ValidationEnabled))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.ValidationMessage))]
     [MapperIgnoreTarget(nameof(PrescriptionDetailDto.Items))]
     private partial PrescriptionDetailDto ToDtoCore(PrescriptionItem item);
 
@@ -108,8 +103,6 @@ public partial class PrescriptionMapper
     public PrescriptionDetailDto ToDto(PrescriptionItem item)
     {
         var dto = ToDtoCore(item);
-
-        // OpenSpec: unify-control-data-binding - 类型统一，直接复制列表
         dto.Items = item.Items?.ToList() ?? new();
 
         return dto;
@@ -145,8 +138,8 @@ public partial class PrescriptionMapper
     [MapperIgnoreSource(nameof(PrescriptionItem.HasItems))]
     [MapperIgnoreSource(nameof(PrescriptionItem.IsValid))]
     [MapperIgnoreSource(nameof(PrescriptionItem.DisplayText))]
-    [MapperIgnoreSource(nameof(PrescriptionItem.ValidationEnabled))] // OpenSpec: simplify-workspace-architecture
-    [MapperIgnoreSource(nameof(PrescriptionItem.ValidationMessage))] // OpenSpec: simplify-workspace-architecture
+    [MapperIgnoreSource(nameof(PrescriptionItem.ValidationEnabled))]
+    [MapperIgnoreSource(nameof(PrescriptionItem.ValidationMessage))]
     [MapperIgnoreTarget(nameof(PrescriptionInputDto.Id))]
     [MapperIgnoreTarget(nameof(PrescriptionInputDto.NeedsPrescription))]
     [MapperIgnoreTarget(nameof(PrescriptionInputDto.TotalPrice))]
@@ -166,8 +159,6 @@ public partial class PrescriptionMapper
         dto.Id = item.Id == Guid.Empty ? null : item.Id;
         dto.NeedsPrescription = item.HasItems;
         dto.TotalPrice = item.TotalPrice;
-
-        // OpenSpec: unify-control-data-binding - 类型统一，直接转换为InputDto
         dto.Items = item.Items?.Select(h => new PrescriptionItemInputDto
         {
             HerbId = h.HerbId,

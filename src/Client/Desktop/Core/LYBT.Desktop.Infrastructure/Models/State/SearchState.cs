@@ -4,7 +4,6 @@ namespace LYBT.Desktop.Infrastructure.Models.State;
 
 /// <summary>
 /// 可复用的搜索状态对象
-/// OpenSpec: unify-control-data-binding
 /// </summary>
 public partial class SearchState : ObservableObject
 {

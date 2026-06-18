@@ -6,8 +6,6 @@ namespace LYBT.Desktop.Patients.Interfaces
 {
     /// <summary>
     /// 患者Service接口
-    /// OpenSpec: standardize-service-layer - 统一使用Service命名
-    /// OpenSpec: cleanup-patient-dead-code - 清理未使用的事件和Command
     /// </summary>
     public interface IPatientService
     {
@@ -34,7 +32,6 @@ namespace LYBT.Desktop.Patients.Interfaces
 
         /// <summary>
         /// 批量删除患者
-        /// OpenSpec: optimize-batch-operations Phase 2 - 返回BatchOperationResultDto
         /// </summary>
         Task<CommandResult<BatchOperationResultDto>> BatchDeletePatientsAsync(IEnumerable<Guid> patientIds, CancellationToken ct = default);
 

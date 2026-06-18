@@ -9,7 +9,6 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 {
     /// <summary>
     /// 输入对话框视图模型
-    /// OpenSpec: fix-missing-dialogs - 系统性设计
     ///
     /// 用于获取用户输入的对话框。
     /// </summary>

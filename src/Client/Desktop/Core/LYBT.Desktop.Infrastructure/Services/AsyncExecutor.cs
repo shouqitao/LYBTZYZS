@@ -6,7 +6,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 异步执行服务实现
-    /// OpenSpec: refactor-viewmodel-composition
     /// </summary>
     public class AsyncExecutor : IAsyncExecutor
     {

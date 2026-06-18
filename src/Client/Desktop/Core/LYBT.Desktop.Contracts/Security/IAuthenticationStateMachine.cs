@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Contracts.Security;
 
 /// <summary>
 /// 统一认证状态机接口
-/// OpenSpec: refactor-auth-role-system (Phase 1.1)
 /// 替代原有的 ILoginStateMachine 和 LoginFlowState 双状态机架构
 /// </summary>
 public interface IAuthenticationStateMachine

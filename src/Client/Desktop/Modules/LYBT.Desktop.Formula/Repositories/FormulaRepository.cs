@@ -175,8 +175,6 @@ public sealed class FormulaRepository : IFormulaRepository
         }
     }
 
-    // OpenSpec: cleanup-formula-dead-code - 已删除 GetPendingValidationFormulasAsync/ValidateFormulaHerbAsync
-
     #endregion
 
     #region 状态切换、恢复和批量操作

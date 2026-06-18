@@ -6,7 +6,6 @@ namespace LYBT.Desktop.Formula.Models.Items;
 /// <summary>
 /// 验方中的药材项
 /// 支持延迟绑定：HerbId可空
-/// OpenSpec: resolve-mapperly-source-generator-conflict - 使用BindableBase确保Mapperly兼容
 /// </summary>
 public class FormulaHerbItem : BindableBase
 {

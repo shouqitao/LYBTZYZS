@@ -4,7 +4,6 @@ namespace LYBT.Desktop.Users.ViewModels.Handlers;
 
 /// <summary>
 /// 用户密码处理接口
-/// OpenSpec: refactor-frontend-srp-patterns - Handler提取模式
 /// </summary>
 public interface IUserPasswordHandler
 {

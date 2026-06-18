@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Herbs.Models.Items;
 
 /// <summary>
 /// 药材编辑上下文 - 统一编辑真源
-/// OpenSpec: frontend-architecture-unification
 ///
 /// 替代 HerbDetailModel 的编辑角色，作为 EditControl 对象 DP 的绑定目标
 /// 所有编辑字段集中于此，支持验证 (ValidatableModelBase)

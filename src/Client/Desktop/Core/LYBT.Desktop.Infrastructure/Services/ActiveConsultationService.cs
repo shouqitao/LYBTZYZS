@@ -5,7 +5,6 @@ namespace LYBT.Desktop.Infrastructure.Services;
 
 /// <summary>
 /// 活跃医案服务实现
-/// OpenSpec: clarify-cancel-consultation-logic
 /// 跟踪当前活跃的医案会话，并在退出登录时协调确认逻辑
 /// </summary>
 public class ActiveConsultationService : IActiveConsultationService

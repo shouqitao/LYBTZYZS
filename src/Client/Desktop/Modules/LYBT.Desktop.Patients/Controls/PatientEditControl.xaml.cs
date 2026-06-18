@@ -9,7 +9,6 @@ namespace LYBT.Desktop.Patients.Controls
 {
     /// <summary>
     /// 患者编辑控件 - 对象 DP 绑定
-    /// OpenSpec: frontend-architecture-unification
     ///
     /// 使用 PatientEditContext 对象 DP 替代扁平 DP
     /// 所有编辑字段通过 Patient 属性访问
@@ -91,7 +90,6 @@ namespace LYBT.Desktop.Patients.Controls
 
         /// <summary>
         /// 验证错误源 - 用于显示验证错误消息
-        /// OpenSpec: ui-validation-framework
         /// </summary>
         public static readonly DependencyProperty ErrorsSourceProperty =
             DependencyProperty.Register(

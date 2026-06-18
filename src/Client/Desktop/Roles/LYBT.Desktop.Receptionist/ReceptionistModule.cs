@@ -6,7 +6,6 @@ namespace LYBT.Desktop.Receptionist;
 /// <summary>
 /// 前台角色模块
 /// 功能：前台工作台主页，患者登记与挂号管理入口
-/// OpenSpec: create-receptionist-workspace
 /// </summary>
 [Module(ModuleName = nameof(ReceptionistModule))]
 [ModuleDependency("PatientsModule")]

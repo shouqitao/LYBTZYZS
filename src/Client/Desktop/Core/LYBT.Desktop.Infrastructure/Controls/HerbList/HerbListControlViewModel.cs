@@ -10,9 +10,6 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbList
 {
     /// <summary>
     /// 药材列表控件内部ViewModel
-    /// OpenSpec: herb-editor-control-refactoring
-    /// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
-    /// OpenSpec: cross-module-decoupling - 迁移到Infrastructure，解耦模块间编译依赖
     /// </summary>
     public partial class HerbListControlViewModel : ObservableObject
     {
@@ -130,8 +127,6 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbList
         public void LoadFromDto(IEnumerable<PrescriptionItemDto> items)
         {
             Items.Clear();
-
-            // OpenSpec: unify-control-data-binding - PrescriptionItemDto无IsEmpty，用HerbId判断
             foreach (var dto in items.Where(i => i.HerbId != Guid.Empty))
             {
                 var vm = CreateItemViewModel();
@@ -164,7 +159,6 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbList
             IEnumerable<PrescriptionItemDto> herbs,
             Func<PrescriptionItemDto, PrescriptionItemDto, Task<bool>>? onDuplicateFound = null)
         {
-            // OpenSpec: unify-control-data-binding - PrescriptionItemDto无IsEmpty，用HerbId判断
             foreach (var herb in herbs.Where(h => h.HerbId != Guid.Empty))
             {
                 var existingIndex = FindHerbIndex(herb.HerbId);
@@ -200,7 +194,6 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbList
         /// </summary>
         public void AddHerbs(IEnumerable<PrescriptionItemDto> herbs)
         {
-            // OpenSpec: unify-control-data-binding - PrescriptionItemDto无IsEmpty，用HerbId判断
             foreach (var herb in herbs.Where(h => h.HerbId != Guid.Empty))
             {
                 var existingIndex = FindHerbIndex(herb.HerbId);
@@ -333,7 +326,6 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbList
         private void AddItem(PrescriptionItemDto dto)
         {
             // 从药材库同步最新信息
-            // OpenSpec: herb-editor-control-refactoring - 导入时使用药材库最新数据
             if (dto.HerbId != Guid.Empty && AllHerbs != null)
             {
                 var herbInfo = AllHerbs.FirstOrDefault(h => h.Id == dto.HerbId);

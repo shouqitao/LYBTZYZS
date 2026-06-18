@@ -112,7 +112,6 @@ namespace LYBT.Module.Users.Services
 
         /// <summary>
         /// 分页获取用户列表（返回UserListDto，用于列表视图）
-        /// OpenSpec: refactor-dto-simplification - 使用扁平化DTO
         /// </summary>
         public Task<Result<PagedResult<UserListDto>>> GetPagedAsync(
             int page = 1,
@@ -436,7 +435,6 @@ namespace LYBT.Module.Users.Services
 
         public Task<Result<UserDetailDto>> ToggleStatusAsync(Guid id, UserRole currentRole, CancellationToken cancellationToken = default)
             => _statusService.ToggleStatusAsync(id, currentRole, cancellationToken);
-
 
         // ========== 批量操作 ==========
 

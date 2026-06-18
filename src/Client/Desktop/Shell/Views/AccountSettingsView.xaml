@@ -6,10 +6,5 @@
              xmlns:controls="clr-namespace:LYBT.Desktop.Shell.Controls"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="500">
-    <!--
-    OpenSpec: migrate-views-to-role-modules - 账户设置视图
-    薄包装模式：View只嵌入Control，不包含业务逻辑
-    合并了原Users模块的ChangePasswordView和UserProfileView
-    -->
     <controls:AccountSettingsControl/>
 </UserControl>

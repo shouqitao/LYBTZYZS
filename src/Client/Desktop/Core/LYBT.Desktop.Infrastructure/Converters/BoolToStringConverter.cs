@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Markup;
 
@@ -6,7 +6,6 @@ namespace LYBT.Desktop.Infrastructure.Converters
 {
     /// <summary>
     /// 布尔值到字符串转换器
-    /// OpenSpec: unify-medicalcase-view-edit-pattern
     /// </summary>
     public class BoolToStringConverter : MarkupExtension, IValueConverter
     {

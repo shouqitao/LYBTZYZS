@@ -16,7 +16,6 @@ namespace LYBT.Module.MedicalCases.Services
     /// 医案查询服务实现 - 读操作
     /// Phase 3: 从MedicalCaseService拆分，遵循CQRS原则
     /// 职责：GetById, GetList, Search等查询操作
-    /// OpenSpec: adopt-mapperly-unified-mapping - 使用MedicalCaseMapper替代AutoMapper
     /// </summary>
     public class MedicalCaseQueryService : BaseService<MedicalCase>, IMedicalCaseQueryService
     {
@@ -166,7 +165,6 @@ namespace LYBT.Module.MedicalCases.Services
         /// <summary>
         /// 获取待看诊队列（Status = Active的医案患者列表）
         /// Epic #2210 Phase 3: P0 Bug修复 - 实现缺失的Service方法
-        /// OpenSpec: unify-pending-query-api - 添加patientId参数支持按患者筛选
         /// </summary>
         public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId, Guid? patientId = null, CancellationToken cancellationToken = default)
         {
@@ -175,7 +173,6 @@ namespace LYBT.Module.MedicalCases.Services
                 doctorId, patientId);
 
             // Epic #2210: 直接委托给Repository，传递doctorId进行数据隔离
-            // OpenSpec: unify-pending-query-api: 传递patientId支持按患者筛选
             var result = await _repository.GetPendingCasesAsync(doctorId, patientId, cancellationToken);
 
             _logger.LogInformation("[SVC] MedicalCase.GetPendingCases completed - DoctorId={DoctorId} PatientId={PatientId} Count={Count}",
@@ -200,10 +197,8 @@ namespace LYBT.Module.MedicalCases.Services
             return result;
         }
 
-
         /// <summary>
         /// 跨医案搜索（支持多条件组合查询）
-        /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-015)
         /// </summary>
         public async Task<PagedResult<MedicalCaseDetailDto>> SearchMedicalCasesAsync(
             string? patientName = null,
@@ -243,7 +238,6 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 获取患者最近医案列表
-        /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-016)
         /// 用于处方编辑器历史处方参考
         /// </summary>
         public async Task<List<MedicalCaseDetailDto>> GetPatientRecentMedicalCasesAsync(Guid patientId, int count = 5, CancellationToken cancellationToken = default)
@@ -277,7 +271,6 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 统一查询接口
-        /// OpenSpec: optimize-medicalcase-api - 整合多个查询端点为统一接口
         /// 根据QueryType分发到不同查询逻辑
         /// </summary>
         public async Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query, CancellationToken cancellationToken = default)
@@ -297,7 +290,6 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 批量获取医案详情
-        /// OpenSpec: consolidate-medicalcase-detail-queries
         /// </summary>
         public async Task<List<MedicalCase>> GetBatchAsync(List<Guid> ids, CancellationToken cancellationToken = default)
         {

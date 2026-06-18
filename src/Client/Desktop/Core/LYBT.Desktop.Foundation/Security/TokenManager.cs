@@ -4,7 +4,6 @@ namespace LYBT.Desktop.Foundation.Security
 {
     /// <summary>
     /// Token管理器实现 - 内存级Token存储
-    /// OpenSpec: refactor-login-authentication (TKM-001, TKM-002)
     /// 
     /// 特点：
     /// 1. 线程安全：使用lock保护并发访问

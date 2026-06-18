@@ -7,7 +7,6 @@ namespace LYBT.Desktop.Infrastructure.Controls;
 
 /// <summary>
 /// MasterDetail控件非泛型基类
-/// OpenSpec: refactor-frontend-srp-patterns Phase 3.3 - 提取控件共享逻辑
 ///
 /// 职责：设置DataContext、Loaded时调用InitializeAsync
 /// 使用非泛型基类以兼容WPF XAML（XAML不支持泛型根元素）

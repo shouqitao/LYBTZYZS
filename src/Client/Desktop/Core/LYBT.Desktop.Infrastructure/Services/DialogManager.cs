@@ -4,8 +4,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 对话框管理服务实现
-    /// OpenSpec: refactor-viewmodel-composition
-    /// OpenSpec: fix-missing-dialogs - 使用统一的 MessageDialog
     ///
     /// 集成Prism IDialogService，使用统一的 MessageDialog 处理所有消息类型
     /// </summary>

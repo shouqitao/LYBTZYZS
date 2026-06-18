@@ -5,7 +5,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
 {
     /// <summary>
     /// 信息卡片控件 - 用于查看模式下的信息分组展示
-    /// OpenSpec: refactor-detail-view-container
     /// </summary>
     public partial class InfoCard : UserControl
     {

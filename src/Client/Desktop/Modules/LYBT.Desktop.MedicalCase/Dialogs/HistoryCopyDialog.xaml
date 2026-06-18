@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="LYBT.Desktop.MedicalCase.Dialogs.HistoryCopyDialog"
+<UserControl x:Class="LYBT.Desktop.MedicalCase.Dialogs.HistoryCopyDialog"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -11,15 +11,7 @@
              prism:Dialog.WindowStyle="{DynamicResource CustomDialogWindowStyle}"
              d:DesignHeight="680" d:DesignWidth="1100"
              d:DataContext="{d:DesignInstance Type=viewmodels:HistoryCopyDialogViewModel}">
-
-    <!--
-    OpenSpec: redesign-history-copy-ui
-    重新设计的历史医案查询弹窗 - 左右双栏布局
-    左栏: 搜索筛选 + 历史医案卡片列表
-    右栏: 医案详情预览 (复用MedicalCaseViewControl)
-    -->
-
-    <!-- 转换器已统一到Infrastructure/Converters.xaml (OpenSpec: consolidate-wpf-converters) -->
+    <!-- 转换器已统一到Infrastructure/Converters.xaml -->
     <UserControl.Resources>
         <!-- 历史医案卡片样式 -->
         <Style x:Key="HistoryCaseCardStyle" TargetType="Border">
@@ -286,7 +278,6 @@
                 </StackPanel>
 
                 <!-- 有选中时显示详情 - 使用MedicalCaseViewControl -->
-                <!-- OpenSpec: unify-control-data-binding - 删除向后兼容属性 -->
                 <ScrollViewer VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled"
                               Visibility="{Binding SelectedCaseDetail, Converter={x:Static converters:Cvt.NullToVis}}">

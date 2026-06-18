@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Infrastructure.Controls;
 
 /// <summary>
 /// 状态徽章类型枚举
-/// OpenSpec: standardize-usercontrol-organization
 /// </summary>
 public enum BadgeType
 {

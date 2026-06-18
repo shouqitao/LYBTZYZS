@@ -30,13 +30,11 @@ namespace LYBT.Desktop.Foundation.Application
 
         /// <summary>
         /// 最后一次错误信息
-        /// OpenSpec: refactor-startup-connection-resilience
         /// </summary>
         string? LastError { get; set; }
 
         /// <summary>
         /// API状态变更事件
-        /// OpenSpec: refactor-startup-connection-resilience - 事件驱动状态更新
         /// </summary>
         event EventHandler<ApiStatusChangedEventArgs>? StatusChanged;
 

@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Patients.Models.Items;
 
 /// <summary>
 /// 患者编辑上下文 - 统一编辑真源 (编辑表单数据模型)
-/// OpenSpec: frontend-architecture-unification
 ///
 /// 替代 PatientDetailModel 的编辑角色，作为 EditControl 对象 DP 的绑定目标
 /// 所有编辑字段集中于此，支持验证 (ValidatableModelBase)

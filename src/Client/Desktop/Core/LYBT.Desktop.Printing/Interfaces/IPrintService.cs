@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Printing.Interfaces
 {
     /// <summary>
     /// 泛型打印服务接口
-    /// OpenSpec: create-printing-module
     /// 提供类型安全的打印、预览、导出操作
     /// </summary>
     /// <typeparam name="TModel">打印数据模型类型</typeparam>

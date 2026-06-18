@@ -4,7 +4,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 错误处理服务接口
-    /// OpenSpec: refactor-viewmodel-composition
     ///
     /// 提供异常处理、错误消息管理、INotifyDataErrorInfo集成
     /// </summary>

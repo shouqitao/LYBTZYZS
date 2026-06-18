@@ -1,6 +1,5 @@
-﻿<!--
+<!--
     PendingQueueControl - 待诊队列控件
-    OpenSpec: refactor-medicalcase-workspace
 
     功能：
     - 显示待诊患者列表
@@ -24,7 +23,7 @@
     xmlns:enums="clr-namespace:LYBT.Shared.Models.Enums;assembly=LYBT.Shared.Models">
 
     <!--
-        资源加载说明 (OpenSpec: migrate-to-handycontrol):
+        资源加载说明:
         - 所有资源通过 App.xaml 全局加载，控件级别不再合并资源字典
         - 待诊状态颜色保留本地定义（控件特有）
     -->
@@ -156,7 +155,6 @@
                 </DataGrid.CellStyle>
 
                 <DataGrid.Columns>
-                    <!--  OpenSpec: redesign-pending-queue - 序号列  -->
                     <DataGridTextColumn
                         Width="40"
                         Binding="{Binding QueueNumber}"
@@ -197,7 +195,7 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <!--  状态 - OpenSpec: optimize-medicalcase-ui - 使用MedicalCaseStatus枚举  -->
+                    <!--  状态-->
                     <DataGridTemplateColumn Width="70" Header="状态">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -247,7 +245,6 @@
                         <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}" />
                         <Setter Property="Margin" Value="0" />
                         <Style.Triggers>
-                            <!--  OpenSpec: optimize-medicalcase-ui - 挂起状态行背景 (Suspended)  -->
                                 <DataTrigger Binding="{Binding CaseStatus}" Value="{x:Static enums:MedicalCaseStatus.Suspended}">
                                  <Setter Property="Background" Value="{StaticResource LightWarningBrush}" />
                                 </DataTrigger>
@@ -265,7 +262,7 @@
                 </DataGrid.RowStyle>
             </DataGrid>
 
-            <!--  开始看诊按钮 - OpenSpec: optimize-medicalcase-navigation  -->
+            <!--  开始看诊按钮-->
             <Button
                 Grid.Row="2"
                 Height="36"

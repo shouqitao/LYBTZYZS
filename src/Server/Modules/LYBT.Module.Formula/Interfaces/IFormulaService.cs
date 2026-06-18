@@ -35,7 +35,6 @@ namespace LYBT.Module.Formulas.Interfaces
 
         /// <summary>
         /// 创建新验方
-        /// OpenSpec: implement-formula-copy-flow - 添加creatorId用于设置验方所有权
         /// </summary>
         /// <param name="dto">验方输入数据</param>
         /// <param name="creatorId">创建者用户ID（用于设置UserId字段）</param>
@@ -56,8 +55,6 @@ namespace LYBT.Module.Formulas.Interfaces
         /// </summary>
         Task<Result<List<FormulaDetailDto>>> SearchAsync(string keyword);
 
-        // OpenSpec: refactor-server-srp-patterns - Import/Export方法已迁移到IFormulaImportExportService
-
         /// <summary>
         /// 验证验方药材 - 手动绑定药材到系统药材库 (Issue #1348)
         /// </summary>
@@ -71,17 +68,11 @@ namespace LYBT.Module.Formulas.Interfaces
         /// 查询所有 ValidationStatus = Draft 的验方，包含未验证的药材项
         /// </summary>
         Task<Result<List<FormulaDetailDto>>> GetPendingValidationFormulasAsync();
-
-        // ========== OpenSpec: optimize-module-list-ui - 状态切换方法 ==========
-
         /// <summary>
         /// 切换验方状态（启用/禁用）
         /// </summary>
         /// <param name="id">验方ID</param>
         Task<Result<FormulaDetailDto>> ToggleStatusAsync(Guid id);
-
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
-
         /// <summary>
         /// 批量删除验方
         /// </summary>

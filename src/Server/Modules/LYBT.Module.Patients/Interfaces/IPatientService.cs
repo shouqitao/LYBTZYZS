@@ -69,16 +69,10 @@ namespace LYBT.Module.Patients.Interfaces
         Task<Result<Patient>> UpdateEntityAsync(Guid id, PatientInputDto dto, CancellationToken cancellationToken = default);
 
         #endregion
-
-        // ========== OpenSpec: optimize-module-list-ui - 状态切换方法 ==========
-
         /// <summary>
         /// 切换患者状态（启用/禁用）
         /// </summary>
         Task<Result<PatientDetailDto>> ToggleStatusAsync(Guid id, CancellationToken cancellationToken = default);
-
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
-
         /// <summary>
         /// 批量删除患者
         /// </summary>

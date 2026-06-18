@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Patients;
+using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
@@ -62,9 +62,6 @@ namespace LYBT.Module.Patients.Interfaces
         /// <param name="keyword">搜索关键词</param>
         /// <param name="status">状态过滤</param>
         Task<PagedResult<Patient>> GetPagedWithStatusFilterAsync(int page, int pageSize, string? keyword, CommonStatus status);
-
-        // ========== OpenSpec: optimize-module-list-ui - 恢复功能支持 ==========
-
         /// <summary>
         /// 根据ID获取实体（包括已软删除的）
         /// 用于Restore操作时获取已删除的实体

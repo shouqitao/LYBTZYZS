@@ -11,7 +11,6 @@ namespace LYBT.Desktop.Patients.Services;
 
 /// <summary>
 /// 患者读卡器集成服务实现
-/// OpenSpec: integrate-cardreader-module - 实现IPatientCardReaderIntegration接口
 /// 职责：将读卡结果与患者模块集成，支持查找和快速创建患者
 /// </summary>
 public class PatientCardReaderIntegration : IPatientCardReaderIntegration
@@ -271,7 +270,6 @@ public class PatientCardReaderIntegration : IPatientCardReaderIntegration
 
     /// <summary>
     /// 根据患者ID获取患者详情
-    /// OpenSpec: integrate-cardreader-module - 供ViewModel获取完整患者信息
     /// </summary>
     public async Task<PatientDetailDto?> GetPatientDetailByIdAsync(Guid patientId)
     {

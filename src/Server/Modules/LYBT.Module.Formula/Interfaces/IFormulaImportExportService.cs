@@ -5,7 +5,6 @@ namespace LYBT.Module.Formulas.Interfaces;
 
 /// <summary>
 /// 验方导入导出服务接口
-/// OpenSpec: refactor-server-srp-patterns - 从FormulaService拆分Import/Export职责
 /// Issue #1166: 验方导入导出功能
 /// </summary>
 public interface IFormulaImportExportService

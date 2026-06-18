@@ -77,7 +77,6 @@ public interface IApiClientFormulas
 
     /// <summary>
     /// Batch import formula data.
-    /// OpenSpec: standardize-api-naming - REQ-API-002 batch URL pattern
     /// </summary>
     /// <param name="request">Batch import input data.</param>
     Task<ApiResponse<FormulaBatchImportResultDto>> BatchImportAsync(FormulaBatchImportInputDto request);

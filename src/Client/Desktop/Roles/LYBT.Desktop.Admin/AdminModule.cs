@@ -1,4 +1,4 @@
-﻿using Prism.Ioc;
+using Prism.Ioc;
 using Prism.Modularity;
 
 namespace LYBT.Desktop.Admin
@@ -24,8 +24,6 @@ namespace LYBT.Desktop.Admin
             // 注册视图用于导航
             containerRegistry.RegisterForNavigation<Views.AdminHomeView>();
             containerRegistry.RegisterForNavigation<Views.SystemSettingsView>();
-
-            // OpenSpec: refactor-admin-workspace - 管理视图（薄包装，复用业务模块Control）
             // View在角色台，Control在业务模块
             containerRegistry.RegisterForNavigation<Views.HerbManagementView>();
             containerRegistry.RegisterForNavigation<Views.FormulaManagementView>();

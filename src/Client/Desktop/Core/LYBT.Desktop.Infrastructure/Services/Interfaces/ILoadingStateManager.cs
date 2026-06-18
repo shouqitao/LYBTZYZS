@@ -4,7 +4,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 加载状态管理服务接口
-    /// OpenSpec: refactor-viewmodel-composition
     ///
     /// 提供加载状态、繁忙状态的统一管理，支持嵌套加载计数和线程安全
     /// </summary>

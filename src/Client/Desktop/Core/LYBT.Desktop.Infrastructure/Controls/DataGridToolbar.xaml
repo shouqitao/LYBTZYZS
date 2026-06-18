@@ -1,6 +1,5 @@
-﻿<!--
+<!--
     DataGridToolbar - 数据列表工具栏控件
-    OpenSpec: refactor-master-detail-layout
 
     功能：
     - 新增/刷新/导出按钮组
@@ -20,7 +19,7 @@
              x:Name="Root">
 
     <!--
-        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
+        资源加载说明:
         - Converter使用 x:Static 引用静态实例，绕过资源字典查找
         - 本地定义的图标 Geometry 资源
     -->

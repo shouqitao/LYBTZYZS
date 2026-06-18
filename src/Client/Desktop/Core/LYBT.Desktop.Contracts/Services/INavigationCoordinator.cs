@@ -4,7 +4,6 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Desktop.Contracts.Services;
 /// <summary>
 /// 导航协调器接口 - 统一导航入口
-/// OpenSpec: unify-navigation-architecture (ADR-3 + ADR-7)
 /// 整合NavigationManager、ViewNavigationService、RoleNavigationService功能
 /// 
 /// 导航架构改进方案 v1.0 — 增加面包屑、前进导航、状态快照
@@ -131,7 +130,6 @@ public interface INavigationCoordinator
 
 /// <summary>
 /// 导航变更事件参数
-/// OpenSpec: unify-navigation-architecture (ADR-7)
 /// </summary>
 public class NavigationChangedEventArgs : EventArgs
 {

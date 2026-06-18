@@ -107,7 +107,7 @@ public class CrossModuleService :
 
     #endregion
 
-    // ========== 医案查询方法已删除（OpenSpec: consolidate-medicalcase-queries）==========
+    // ========== 医案查询方法已删除==========
     // GetMedicalCaseBasicInfoAsync 已删除 - 请使用 MedicalCaseQueryService
     // GetMedicalCasesBasicInfoAsync 已删除 - 请使用 MedicalCaseQueryService
 

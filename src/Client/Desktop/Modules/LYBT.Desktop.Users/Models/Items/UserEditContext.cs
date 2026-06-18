@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Users.Models.Items
 {
     /// <summary>
     /// 用户编辑上下文 - 对象DP模式
-    /// OpenSpec: frontend-architecture-unification
     ///
     /// 强类型编辑模型，承载编辑状态和验证逻辑
     /// 扩展 ValidatableModelBase 提供验证支持

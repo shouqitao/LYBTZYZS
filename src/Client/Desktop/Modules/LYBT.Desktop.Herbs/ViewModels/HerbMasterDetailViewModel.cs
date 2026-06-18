@@ -16,7 +16,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
 {
     /// <summary>
     /// 药材Master-Detail视图模型（组合模式）
-    /// OpenSpec: frontend-architecture-unification - 子VM模式 + 对象DP
     ///
     /// 使用IMasterDetailServices实现组合模式
     /// HerbEditorViewModel子VM封装编辑逻辑
@@ -105,7 +104,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>加载详情数据</summary>
         protected override async Task LoadDetailAsync(HerbListDto item)
         {
-            // OpenSpec: standardize-service-layer - 使用Service替代Repository
             var result = await _herbService.GetByIdAsync(item.Id);
             if (!result.Success || result.Data == null)
             {
@@ -171,8 +169,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
             }
 
             var input = HerbEditor.GetHerbData();
-
-            // OpenSpec: standardize-service-layer - 使用Service替代Repository
             var result = HerbEditor.Herb.Id == Guid.Empty
                 ? await _herbService.CreateAsync(input)
                 : await _herbService.UpdateAsync(input);
@@ -206,7 +202,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>删除项</summary>
         protected override async Task<bool> DeleteItemAsync(HerbListDto item)
         {
-            // OpenSpec: standardize-service-layer - 使用Service替代Repository
             var result = await _herbService.DeleteAsync(item.Id);
             if (!result.Success)
             {

@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
         ====================================================================
@@ -51,7 +51,6 @@
     <!--
         ====================================================================
         Master-Detail分页样式 - 紧凑版大小版
-        OpenSpec: refactor-master-detail-layout - UI优化
         ====================================================================
     -->
     <!--  分页面板容器样式  -->
@@ -149,7 +148,6 @@
     <!--
         ====================================================================
         Detail View Styles - 详情页样式
-        OpenSpec: unify-detail-view-style
         统一各个实体详情页的布局和样式
         ====================================================================
     -->
@@ -251,7 +249,6 @@
     <!--
         ====================================================================
         Detail Panel Styles - 详情面板样式
-        OpenSpec: refactor-master-detail-layout - 右侧面板UI优化
         用于Master-Detail右侧面板各个字段展示
         ====================================================================
     -->

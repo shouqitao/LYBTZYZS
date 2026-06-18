@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
 using Microsoft.Extensions.Logging;
@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Shell.Services.HealthCheck;
 /// <summary>
 /// 健康检查协调器
 /// 负责管理API健康检查的调度和状态，从MainWindowViewModel提取的独立服务
-/// OpenSpec: implement-local-mode - 本地模式下跳过 API 健康检查
 /// </summary>
 public class HealthCheckCoordinator : IHealthCheckCoordinator
 {
@@ -120,8 +119,6 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
             {
                 RaiseStatusChanged(previousStatus, _currentStatus);
             }
-
-            // OpenSpec: refactor-startup-connection-resilience - 同步状态到ApplicationStateService
             SyncToApplicationState(status);
 
             if (status == ApiHealthStatus.Unhealthy)
@@ -140,8 +137,6 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
             {
                 RaiseStatusChanged(previousStatus, _currentStatus);
             }
-
-            // OpenSpec: refactor-startup-connection-resilience - 异常时也同步状态
             SyncToApplicationState(ApiHealthStatus.Unhealthy, ex.Message);
         }
     }
@@ -173,7 +168,6 @@ public class HealthCheckCoordinator : IHealthCheckCoordinator
 
     /// <summary>
     /// 同步健康检查结果到ApplicationStateService
-    /// OpenSpec: refactor-startup-connection-resilience - 状态中枢同步
     /// </summary>
     private void SyncToApplicationState(ApiHealthStatus status, string? errorOverride = null)
     {

@@ -1,9 +1,8 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
         ====================================================================
         Validation Styles - 验证样式系统
-        OpenSpec: ui-validation-framework
         
         提供表单验证相关的UI样式：
         - 必填标识样式
@@ -70,7 +69,6 @@
     <!--
         ValidatingTextBoxStyle 已迁移至 UnifiedComponents.xaml
         以解决资源加载顺序问题（需要在EditableTextBoxStyle之后定义）
-        OpenSpec: ui-validation-framework
     -->
 
     <!--

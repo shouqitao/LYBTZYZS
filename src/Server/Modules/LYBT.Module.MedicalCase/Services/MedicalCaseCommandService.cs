@@ -22,7 +22,6 @@ namespace LYBT.Module.MedicalCases.Services
     /// 医案命令服务实现 - 写操作
     /// Phase 3: 从MedicalCaseService拆分，遵循CQRS原则
     /// 职责：Create, Update, Delete操作
-    /// OpenSpec: adopt-mapperly-unified-mapping - 使用MedicalCaseMapper替代AutoMapper
     /// </summary>
     public class MedicalCaseCommandService : BaseService<MedicalCase>, IMedicalCaseCommandService
     {
@@ -70,7 +69,6 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 从InputDto创建医案（统一SaveAsync的创建分支）
-        /// OpenSpec: simplify-medicalcase-dataflow Phase 2 - 统一创建/更新
         /// </summary>
         /// <param name="request">统一输入DTO</param>
         /// <param name="currentUserId">当前操作用户ID（如果DTO未提供UserId则使用此值）</param>
@@ -108,7 +106,6 @@ namespace LYBT.Module.MedicalCases.Services
             };
 
             // 创建Consultation（聚合根模式：共享主键）
-            // OpenSpec: refactor-server-ddd-aggregates - 移除反向导航，仅使用共享主键关联
             var consultation = new Consultation
             {
                 Id = medicalCase.Id,
@@ -201,7 +198,6 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             // Issue #2231: 手动映射属性以避免EF Core共享主键冲突
-            // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
             var consultation = medicalCase.Consultation;
             consultation.PresentIllness = request.PresentIllness;
             consultation.TongueDiagnosis = request.TongueDiagnosis;
@@ -240,7 +236,6 @@ namespace LYBT.Module.MedicalCases.Services
             MedicalCaseServiceHelper.EnsureCanEdit(medicalCase, currentUserId, isAdmin, "SetPrescriptionFlag", _logger);
 
             // 更新NeedsPrescription标志
-            // OpenSpec: consultation-field-alignment - 处方标志统一在MedicalCase管理
             medicalCase.NeedsPrescription = needsPrescription;
             medicalCase.UpdatedAt = DateTime.UtcNow;
 
@@ -513,7 +508,6 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 删除医案（软删除）
-        /// OpenSpec: clarify-cancel-consultation-logic
         /// 使用BaseRepository默认软删除机制（IsDeleted=true）
         /// </summary>
         public async Task<bool> DeleteAsync(Guid id, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default)
@@ -558,7 +552,6 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 统一保存医案（支持创建和更新）
-        /// OpenSpec: simplify-medicalcase-dataflow Phase 2 - 统一SaveAsync
         /// - Id为null时：创建新MedicalCase
         /// - Id有值时：更新现有MedicalCase
         /// - 在单个事务中同时保存诊断和处方数据
@@ -569,7 +562,6 @@ namespace LYBT.Module.MedicalCases.Services
             bool isAdmin = false,
             CancellationToken cancellationToken = default)
         {
-            // OpenSpec: simplify-medicalcase-dataflow - 统一创建/更新逻辑
             if (!request.Id.HasValue)
             {
                 return await CreateFromInputDtoAsync(request, currentUserId, isAdmin, cancellationToken);
@@ -855,9 +847,6 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         #endregion
-
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
-
         /// <inheritdoc />
         public async Task<LYBT.Shared.Models.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default)
         {

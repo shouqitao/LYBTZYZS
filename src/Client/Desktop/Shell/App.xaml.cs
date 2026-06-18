@@ -44,8 +44,6 @@ public partial class App : PrismApplication
     private IStartupPipeline? _startupPipeline;
     private StartupPerformanceMonitor? _performanceMonitor;
     private SplashScreenWindow? _splashScreen;
-
-    // OpenSpec: implement-single-instance-mode - 单实例模式支持
     private static Mutex? _instanceMutex;
     private const string MutexName = "Global\\LYBTZYZS_Shell_Instance";
     private const string MainWindowTitle = "凌隐宝堂中医诊所管理系统";
@@ -53,7 +51,6 @@ public partial class App : PrismApplication
     /// <summary>应用程序启动入口</summary>
     protected override void OnStartup(StartupEventArgs e)
     {
-        // OpenSpec: implement-single-instance-mode - 单实例检查（必须在任何初始化之前）
         if (!TryAcquireSingleInstance())
         {
             // 尝试激活已有窗口
@@ -94,8 +91,6 @@ public partial class App : PrismApplication
     protected override void OnExit(ExitEventArgs e)
     {
         Log.Information("应用程序退出，开始释放资源");
-
-        // OpenSpec: implement-single-instance-mode - 按依赖顺序释放资源
 
         // 1. 停止定时服务
         SafeDispose(() =>
@@ -162,15 +157,10 @@ public partial class App : PrismApplication
         containerRegistry.RegisterAllServices();
         containerRegistry.Register<MainWindowViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.ConfirmationDialog, Dialogs.ViewModels.ConfirmationDialogViewModel>();
-        // [已删除] ApiConnectionFailedDialog - OpenSpec: refactor-startup-connection-resilience
-        // OpenSpec: fix-missing-dialogs - 统一消息对话框和输入对话框
         containerRegistry.RegisterDialog<Dialogs.Views.MessageDialog, Dialogs.ViewModels.MessageDialogViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.InputDialog, Dialogs.ViewModels.InputDialogViewModel>();
-        // OpenSpec: unify-dialog-to-prism - 统一到Prism DialogService
         containerRegistry.RegisterDialog<LYBT.Desktop.Infrastructure.Views.UnfinishedCaseDialog,
             LYBT.Desktop.Infrastructure.ViewModels.UnfinishedCaseDialogViewModel>();
-
-        // OpenSpec: migrate-views-to-role-modules - 账户设置（合并个人资料+修改密码）
         containerRegistry.Register<ViewModels.AccountSettingsViewModel>();
         containerRegistry.RegisterForNavigation<Views.AccountSettingsView>();
     }
@@ -215,8 +205,6 @@ public partial class App : PrismApplication
             SubscribeToPipelineEvents();
 
             var progress = new Progress<string>(message => _splashScreen?.UpdateStatus(message));
-
-            // OpenSpec: refactor-startup-connection-resilience - 非阻塞启动，API检查已设为非必需
             var result = await _startupPipeline.ExecuteAsync(progress);
 
             if (result.Success)
@@ -234,9 +222,6 @@ public partial class App : PrismApplication
             await HandleInitializationFailureAsync(ex);
         }
     }
-
-    // [已删除] HandleApiConnectionFailureAsync - OpenSpec: refactor-startup-connection-resilience
-    // [已删除] GetApiEndpoint - OpenSpec: refactor-startup-connection-resilience
 
     /// <summary>注册启动步骤到管道</summary>
     private void RegisterStartupSteps()
@@ -352,9 +337,7 @@ public partial class App : PrismApplication
         catch { }
     }
 
-
     /// <summary>安全执行释放操作，捕获异常确保后续清理继续</summary>
-    /// <remarks>OpenSpec: implement-single-instance-mode - 资源释放保护</remarks>
     private static void SafeDispose(Action disposeAction, string resourceName)
     {
         try
@@ -390,8 +373,6 @@ public partial class App : PrismApplication
 
         // PRD: registration.md - 挂号管理模块
         moduleCatalog.AddModule<RegistrationModule>(InitializationMode.WhenAvailable);
-
-        // OpenSpec: integrate-cardreader-module - 身份证读卡模块
         moduleCatalog.AddModule<CardReaderModule>(InitializationMode.WhenAvailable);
 
         // 统计报表模块

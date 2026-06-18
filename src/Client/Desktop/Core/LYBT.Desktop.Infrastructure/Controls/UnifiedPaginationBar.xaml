@@ -8,7 +8,7 @@
              mc:Ignorable="d"
              d:DesignHeight="40" d:DesignWidth="800">
 
-    <!-- 转换器使用x:Static模式 (OpenSpec: cleanup-control-resource-merging) -->
+    <!-- 转换器使用x:Static模式 -->
     <UserControl.Resources>
         <!-- 页大小选项 -->
         <x:Array x:Key="PageSizeOptions" Type="sys:Int32">

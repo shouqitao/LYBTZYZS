@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Patients.Models
 {
     /// <summary>
     /// 患者详情模型 - Master-Detail模式使用
-    /// OpenSpec: refactor-master-detail-layout, ui-validation-framework
     ///
     /// 用于在Detail区域展示和编辑患者信息
     /// </summary>

@@ -54,7 +54,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
 
         /// <summary>
         /// 挂起医案（暂停处理）
-        /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-010)
         /// 业务规则：保存当前数据，设置状态为Suspended，不触发完成验证
         /// </summary>
         /// <param name="id">医案ID</param>
@@ -72,7 +71,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
 
         /// <summary>
         /// 取消医案
-        /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-011)
         /// 业务规则：统一为软删除(IsDeleted=true)，保留审计日志
         /// </summary>
         /// <param name="id">医案ID</param>

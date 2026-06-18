@@ -10,9 +10,6 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbList
 {
     /// <summary>
     /// 药材列表控件 - 管理多个HerbItemControl
-    /// OpenSpec: herb-editor-control-refactoring
-    /// OpenSpec: simplify-workspace-event-architecture - 移除事件，改用属性绑定
-    /// OpenSpec: cross-module-decoupling - 迁移到Infrastructure，解耦模块间编译依赖
     /// </summary>
     public partial class HerbListControl : UserControl
     {
@@ -111,7 +108,6 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbList
 
         /// <summary>
         /// 药材列表（支持TwoWay绑定）
-        /// OpenSpec: simplify-workspace-event-architecture
         /// </summary>
         public static readonly DependencyProperty HerbItemsProperty =
             DependencyProperty.Register(

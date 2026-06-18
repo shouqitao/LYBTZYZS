@@ -5,7 +5,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
 {
     /// <summary>
     /// 加载遮罩控件
-    /// OpenSpec: refactor-master-detail-layout
     ///
     /// 功能：
     /// - 半透明遮罩层

@@ -86,7 +86,6 @@ namespace LYBT.Module.Formulas.Services
         {
             // eliminate-service-catch-return: 移除冗余try-catch，异常由IExceptionHandler统一处理
             // Issue #2014: 手动创建entity（不依赖AutoMapper处理Herbs集合）
-            // OpenSpec: implement-formula-copy-flow - 设置UserId用于所有权过滤
             var entity = new Formula
             {
                 Name = dto.Name,
@@ -100,7 +99,7 @@ namespace LYBT.Module.Formulas.Services
                 IsShared = dto.IsShared,
                 Status = CommonStatus.Enabled,
                 ValidationStatus = FormulaValidationStatus.Draft,
-                UserId = creatorId, // OpenSpec: implement-formula-copy-flow - 设置创建者ID
+                UserId = creatorId,
                 Herbs = dto.Herbs?.Select(h => new FormulaHerbItem
                 {
                     HerbId = h.HerbId,
@@ -208,7 +207,6 @@ namespace LYBT.Module.Formulas.Services
             return result ? Result.Success() : Result.Failure(GenericErrorCode.InternalError, "删除失败");
         }
 
-
         /// <summary>
         /// 验证验方药材 - 手动绑定药材到系统药材库 (Issue #1348)
         /// </summary>
@@ -274,7 +272,6 @@ namespace LYBT.Module.Formulas.Services
             return Result.Success();
         }
 
-
         /// <summary>
         /// 获取待验证的验方列表 (Issue #1349)
         /// 查询所有 ValidationStatus = Draft 的验方，包含未验证的药材项
@@ -292,12 +289,7 @@ namespace LYBT.Module.Formulas.Services
             _logger.LogInformation("[SVC] Formula.GetPendingValidation completed - Count={Count}", formulaDtos.Count);
             return Result<List<FormulaDetailDto>>.Success(formulaDtos);
         }
-
-        // OpenSpec: refactor-server-srp-patterns - Import/Export方法已迁移到FormulaImportExportService
         // 包括：ImportFromDataAsync, ExportAsync, GenerateImportTemplate, TryMatchHerbAsync
-
-        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复方法实现 ==========
-
         /// <summary>
         /// 切换验方状态（启用/禁用）
         /// </summary>
@@ -323,9 +315,6 @@ namespace LYBT.Module.Formulas.Services
 
             return Result<FormulaDetailDto>.Success(dto);
         }
-
-        // ========== OpenSpec: optimize-batch-operations Phase 2 - 批量操作 ==========
-
         /// <summary>
         /// 批量删除验方
         /// </summary>

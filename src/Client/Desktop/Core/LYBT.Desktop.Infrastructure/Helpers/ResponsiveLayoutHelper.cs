@@ -5,7 +5,6 @@ namespace LYBT.Desktop.Infrastructure.Helpers;
 /// <summary>
 /// 响应式布局辅助类
 /// 提供屏幕尺寸检测和断点管理
-/// OpenSpec: responsive-layout-optimization
 /// </summary>
 public static class ResponsiveLayoutHelper
 {

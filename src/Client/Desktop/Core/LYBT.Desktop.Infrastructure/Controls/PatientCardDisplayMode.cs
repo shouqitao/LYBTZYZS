@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
 {
     /// <summary>
     /// 患者信息卡片显示模式
-    /// OpenSpec: refactor-medicalcase-workspace
     /// </summary>
     public enum PatientCardDisplayMode
     {

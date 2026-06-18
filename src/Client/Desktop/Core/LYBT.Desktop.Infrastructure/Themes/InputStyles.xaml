@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
         ====================================================================
@@ -38,7 +38,6 @@
 
     <!--
         可编辑文本框样式 - 支持只读/编辑模式切换
-        OpenSpec: unify-detail-view-style - 用于详情页各个字段
     -->
     <Style x:Key="EditableTextBoxStyle" TargetType="TextBox">
         <Setter Property="Padding" Value="12,10" />
@@ -100,7 +99,6 @@
     <!--
         带验证的TextBox样式 - 继承自EditableTextBoxStyle
         验证失败时显示红色下边框和ToolTip
-        OpenSpec: ui-validation-framework (从ValidationStyles.xaml迁移以解决资源加载顺序问题)
 
         使用方式:
         <TextBox Text="{Binding UserName, ValidatesOnNotifyDataErrors=True}"
@@ -130,9 +128,7 @@
     </Style>
 
     <!--
-        查看模式值显示样式 - OpenSpec: refactor-detail-view-container
-        用于详情页查看模式下的只读值展示，无边框文本
-    -->
+        查看模式值显示样式-->
     <Style x:Key="ValueDisplayStyle" TargetType="TextBlock">
         <Setter Property="Padding" Value="0,10" />
         <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
@@ -143,9 +139,7 @@
     </Style>
 
     <!--
-        标签+值布局样式 - OpenSpec: refactor-detail-view-container
-        用于查看模式下的标签-值对展示
-    -->
+        标签+值布局样式-->
     <Style x:Key="LabelValueStyle" TargetType="StackPanel">
         <Setter Property="Margin" Value="0,0,0,16" />
     </Style>

@@ -44,8 +44,6 @@ public interface IFormulaRepository
     /// </summary>
     Task<FormulaDetailDto> CloneFormulaAsync(Guid formulaId);
 
-    // OpenSpec: cleanup-formula-dead-code - 已删除 GetPendingValidationFormulasAsync/ValidateFormulaHerbAsync
-
     #region 状态切换、恢复和批量操作
 
     /// <summary>

@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Patients;
+using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Patients.Interfaces;
@@ -135,8 +135,6 @@ namespace LYBT.Module.Patients.Repositories
 
         #endregion
 
-        #region OpenSpec: optimize-module-list-ui - 恢复功能支持
-
         /// <summary>
         /// 根据ID获取实体（包括已软删除的）
         /// 使用IgnoreQueryFilters绕过全局软删除过滤器
@@ -148,7 +146,5 @@ namespace LYBT.Module.Patients.Repositories
                 .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
-
-        #endregion
     }
 }

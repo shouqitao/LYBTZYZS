@@ -15,9 +15,6 @@ namespace LYBT.Desktop.Foundation.Http
 {
     /// <summary>
     /// Token自动刷新处理器 - Issue #1838
-    /// OpenSpec: refactor-token-sliding-expiration (AUTH-002)
-    /// OpenSpec: refactor-login-authentication (Phase 1.4, 3.2)
-    /// OpenSpec: unify-event-system (Phase 2.1)
     /// 检测Access Token即将过期时自动调用RefreshToken端点获取新Token
     /// 仅在用户活跃时执行刷新，实现滑动过期机制
     /// 增强：分级处理刷新失败，支持重试和用户友好错误提示
@@ -99,7 +96,6 @@ namespace LYBT.Desktop.Foundation.Http
 
             if (timeUntilExpiry <= _refreshBeforeExpiry)
             {
-                // OpenSpec: refactor-token-sliding-expiration (AUTH-002)
                 // 3. 检查用户活跃状态，仅在用户活跃时刷新Token（滑动过期机制）
                 if (_userActivityState != null && !_userActivityState.IsUserActive)
                 {
@@ -122,8 +118,6 @@ namespace LYBT.Desktop.Foundation.Http
                         if (result.Success)
                         {
                             _logger.LogInformation("Token刷新成功");
-
-                            // OpenSpec: refactor-token-sliding-expiration (AUTH-002)
                             // 刷新成功后重置用户活动计时器
                             _userActivityState?.ResetActivity();
 
@@ -153,7 +147,6 @@ namespace LYBT.Desktop.Foundation.Http
 
         /// <summary>
         /// 主动刷新Token
-        /// OpenSpec: refactor-login-authentication (Phase 1.4)
         /// </summary>
         public async Task<TokenRefreshResult> RefreshTokenAsync()
         {
@@ -176,7 +169,6 @@ namespace LYBT.Desktop.Foundation.Http
 
         /// <summary>
         /// 带重试的Token刷新
-        /// OpenSpec: refactor-login-authentication (Phase 1.4)
         /// </summary>
         private async Task<TokenRefreshResult> RefreshTokenWithRetryAsync(string refreshToken)
         {
@@ -298,7 +290,6 @@ namespace LYBT.Desktop.Foundation.Http
 
         /// <summary>
         /// 处理刷新错误响应
-        /// OpenSpec: refactor-login-authentication (Phase 1.4)
         /// </summary>
         private async Task<TokenRefreshResult> HandleRefreshErrorResponseAsync(HttpResponseMessage response)
         {

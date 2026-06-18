@@ -4,8 +4,7 @@ using Microsoft.Extensions.Configuration;
 namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
-    /// 处方设置服务实现 - OpenSpec: enhance-duplicate-herb-dialog
-    /// </summary>
+    /// 处方设置服务实现</summary>
     /// <remarks>
     /// 从appsettings.json的Prescription节点读取配置。
     /// 同时提供静态访问器供POCO类使用（如DuplicateHerbInfo）。

@@ -4,7 +4,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 详情编辑服务实现
-    /// OpenSpec: refactor-viewmodel-composition
     /// </summary>
     /// <typeparam name="TDetail">详情模型类型</typeparam>
     public partial class DetailEditorService<TDetail> : ObservableObject, IDetailEditorService<TDetail>

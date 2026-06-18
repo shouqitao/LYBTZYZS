@@ -1,7 +1,6 @@
 // -----------------------------------------------------------------------
 // <copyright file="ConsultationMapper.cs" company="凌隐宝堂中医诊所">
 //     Copyright (c) 凌隐宝堂中医诊所. All rights reserved.
-//     OpenSpec: adopt-mapperly-unified-mapping
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -20,7 +19,6 @@ namespace LYBT.Desktop.MedicalCase.Mappers;
 /// - ConsultationItem → ConsultationDetailDto (仅供展示)
 /// - ConsultationItem → ConsultationInputDto (保存到API)
 ///
-/// OpenSpec: adopt-mapperly-unified-mapping - ConsultationItem使用BindableBase，支持Mapperly源生成
 /// </remarks>
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class ConsultationMapper
@@ -41,7 +39,7 @@ public partial class ConsultationMapper
     [MapperIgnoreTarget(nameof(ConsultationItem.IsExpanded))]
     [MapperIgnoreTarget(nameof(ConsultationItem.IsDiagnosisComplete))]
     [MapperIgnoreTarget(nameof(ConsultationItem.DisplayText))]
-    [MapperIgnoreTarget(nameof(ConsultationItem.ValidationMessage))] // OpenSpec: simplify-workspace-architecture - IValidatable实现
+    [MapperIgnoreTarget(nameof(ConsultationItem.ValidationMessage))]
     private partial ConsultationItem ToItemCore(ConsultationDetailDto dto);
 
     /// <summary>
@@ -82,7 +80,7 @@ public partial class ConsultationMapper
     [MapperIgnoreSource(nameof(ConsultationItem.IsExpanded))]
     [MapperIgnoreSource(nameof(ConsultationItem.IsDiagnosisComplete))]
     [MapperIgnoreSource(nameof(ConsultationItem.DisplayText))]
-    [MapperIgnoreSource(nameof(ConsultationItem.ValidationMessage))] // OpenSpec: simplify-workspace-architecture
+    [MapperIgnoreSource(nameof(ConsultationItem.ValidationMessage))]
     [MapperIgnoreTarget(nameof(ConsultationDetailDto.CreatedBy))]
     private partial ConsultationDetailDto ToDtoCore(ConsultationItem item);
 

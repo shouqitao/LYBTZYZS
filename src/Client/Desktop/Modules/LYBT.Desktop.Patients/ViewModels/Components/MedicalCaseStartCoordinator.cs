@@ -10,7 +10,6 @@ namespace LYBT.Desktop.Patients.ViewModels.Components;
 
 /// <summary>
 /// 医案启动协调器 - 处理患者开始看诊的完整流程
-/// OpenSpec: cleanup-ui-layer Phase 1.2
 ///
 /// 职责:
 /// - 检查未完成医案

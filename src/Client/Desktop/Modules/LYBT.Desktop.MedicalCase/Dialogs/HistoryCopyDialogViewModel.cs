@@ -16,9 +16,6 @@ using Prism.Services.Dialogs;
 namespace LYBT.Desktop.MedicalCase.Dialogs
 {
     /// <summary>
-    /// OpenSpec: redesign-history-copy-ui
-    /// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
-    /// OpenSpec: refactor-frontend-srp-patterns - 迁移到DialogViewModelBase
     /// 历史医案复制弹窗ViewModel - 支持左右双栏布局
     /// 用于从历史医案中选择复制药材组合到当前处方
     ///
@@ -87,7 +84,6 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
         /// <summary>
         /// 选中医案的详情（用于右栏MedicalCaseViewControl绑定）
-        /// OpenSpec: unify-control-data-binding - 删除NotifyPropertyChangedFor(SelectedCaseHasConsultation/SelectedCaseHasPrescription)
         /// </summary>
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
@@ -119,8 +115,6 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         #endregion
 
         #region 计算属性
-
-        // OpenSpec: unify-control-data-binding - 删除SelectedCaseHasConsultation/SelectedCaseHasPrescription属性
 
         /// <summary>
         /// 选中医案的处方药材列表（用于复制）
@@ -212,7 +206,6 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
         /// <summary>
         /// 构造函数 - 使用IViewModelServices聚合服务
-        /// OpenSpec: refactor-frontend-srp-patterns - 迁移到DialogViewModelBase
         /// </summary>
         public HistoryCopyDialogViewModel(
             IViewModelServices services,
@@ -310,8 +303,6 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             try
             {
                 StatusMessage = "正在加载历史医案...";
-
-                // OpenSpec: consolidate-medicalcase-detail-queries - 使用QueryAsync替代废弃的GetByPatientIdAsync
                 var query = new MedicalCaseQueryDto
                 {
                     QueryType = MedicalCaseQueryType.ByPatient,
@@ -375,14 +366,12 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                 IsLoading = true;
 
                 // 使用分页循环获取所有医案（参考PrescriptionDataLoader模式）
-                // OpenSpec: refactor-dto-simplification - MedicalCaseDto已删除，统一使用MedicalCaseDetailDto
                 var allItems = new List<MedicalCaseDetailDto>();
                 var currentPage = 1;
                 var pageSize = SystemConstants.MaxPageSize;
 
                 while (true)
                 {
-                    // OpenSpec: fix-history-copy-all-patients - 使用SearchAsync查询所有患者的医案
                     var pagedResult = await _medicalCaseRepository.SearchAsync(
                         patientName: null,
                         diagnosisKeyword: null,

@@ -13,7 +13,6 @@ namespace LYBT.Desktop.Shell.Services;
 
 /// <summary>菜单命令管理器 - 负责快捷键命令、主题切换、帮助设置等功能</summary>
 /// <remarks>
-/// OpenSpec: unify-navigation-architecture - 使用INavigationCoordinator统一导航入口
 /// S6-01: 根据 CurrentUser.Role 控制菜单可见性
 /// </remarks>
 public class MenuManager
@@ -106,13 +105,13 @@ public class MenuManager
     /// <summary>全局重做命令 (Ctrl+Y)</summary>
     public ICommand RedoCommand => _applicationCommands.RedoCommand;
 
-    /// <summary>账户设置命令 - OpenSpec: migrate-views-to-role-modules</summary>
+    /// <summary>账户设置命令</summary>
     public DelegateCommand EditProfileCommand { get; private set; } = null!;
 
-    /// <summary>导航到主页命令 - OpenSpec: fix-button-navigation-system</summary>
+    /// <summary>导航到主页命令</summary>
     public DelegateCommand NavigateToHomeCommand { get; private set; } = null!;
 
-    /// <summary>导航到系统设置命令 - OpenSpec: unify-navigation-architecture (ADR-5修正: Sidebar全局入口)</summary>
+    /// <summary>导航到系统设置命令</summary>
     public DelegateCommand NavigateToSystemSettingsCommand { get; private set; } = null!;
 
     /// <summary>导航后退命令 — 导航架构改进方案 v1.0</summary>
@@ -141,14 +140,8 @@ public class MenuManager
         ShowHelpCommand = new DelegateCommand(ExecuteShowHelp);
         ShowSettingsCommand = new DelegateCommand(ExecuteShowSettings);
         ToggleThemeCommand = new DelegateCommand(async () => await ExecuteToggleThemeAsync().ConfigureAwait(false));
-
-        // OpenSpec: migrate-views-to-role-modules - 账户设置命令
         EditProfileCommand = new DelegateCommand(ExecuteAccountSettings);
-
-        // OpenSpec: fix-button-navigation-system - 导航到主页命令
         NavigateToHomeCommand = new DelegateCommand(ExecuteNavigateToHome);
-
-        // OpenSpec: unify-navigation-architecture (ADR-5修正) - 导航到系统设置命令
         NavigateToSystemSettingsCommand = new DelegateCommand(ExecuteNavigateToSystemSettings);
 
         // 导航架构改进方案 v1.0 — 后退/前进/面包屑命令
@@ -162,24 +155,16 @@ public class MenuManager
 
         _logger.LogDebug("菜单命令系统已初始化");
     }
-
-    /// <summary>OpenSpec: migrate-views-to-role-modules - 账户设置</summary>
-    /// <remarks>OpenSpec: unify-navigation-architecture - 使用INavigationCoordinator</remarks>
     private void ExecuteAccountSettings()
     {
         _logger.LogInformation("导航到账户设置");
         _navigationCoordinator.NavigateTo(ViewNames.AccountSettings);
     }
-
-    /// <summary>OpenSpec: fix-button-navigation-system - 导航到主页</summary>
-    /// <remarks>OpenSpec: unify-navigation-architecture - 使用INavigationCoordinator.NavigateToHome()</remarks>
     private void ExecuteNavigateToHome()
     {
         _logger.LogInformation("导航到主页");
         _navigationCoordinator.NavigateToHome();
     }
-
-    /// <summary>OpenSpec: unify-navigation-architecture (ADR-5修正) - 导航到系统设置</summary>
     /// <remarks>ADR-5修正: 系统设置从HomeView移至Sidebar全局入口，角色自适应内容</remarks>
     private void ExecuteNavigateToSystemSettings()
     {
@@ -244,11 +229,9 @@ public class MenuManager
     }
 
     /// <summary>显示控件示例</summary>
-    /// <remarks>OpenSpec: unify-navigation-architecture - 使用INavigationCoordinator</remarks>
     private void ExecuteShowControlExamples() => _navigationCoordinator.NavigateTo(ViewNames.ControlExamples);
 
     /// <summary>快速添加患者(Ctrl+N)</summary>
-    /// <remarks>OpenSpec: unify-navigation-architecture - 使用INavigationCoordinator</remarks>
     private async Task ExecuteQuickAddPatientAsync()
     {
         try
@@ -260,7 +243,6 @@ public class MenuManager
     }
 
     /// <summary>快速开始看诊(Ctrl+Shift+C)</summary>
-    /// <remarks>OpenSpec: unify-navigation-architecture - 使用INavigationCoordinator</remarks>
     private async Task ExecuteQuickStartMedicalCaseAsync()
     {
         try

@@ -24,8 +24,6 @@ public interface IApiClientMedicalCases
 {
     /// <summary>
     /// Get medical case list with pagination.
-    /// OpenSpec: fix-history-copy-all-patients — added includeAllDoctors parameter.
-    /// OpenSpec: post-release-cleanup — unified return to MedicalCaseListDto.
     /// </summary>
     /// <param name="page">Page number (default 1).</param>
     /// <param name="pageSize">Page size (default 20).</param>
@@ -39,7 +37,6 @@ public interface IApiClientMedicalCases
 
     /// <summary>
     /// Unified medical case query endpoint.
-    /// OpenSpec: optimize-medicalcase-api — consolidates multiple query methods.
     /// </summary>
     /// <param name="queryType">Query type filter.</param>
     /// <param name="patientId">Patient ID (required for ByPatient/Unfinished/Recent).</param>
@@ -67,14 +64,12 @@ public interface IApiClientMedicalCases
 
     /// <summary>
     /// Get pending cases (Status=Draft/Active).
-    /// OpenSpec: unify-pending-query-api — added patientId parameter.
     /// </summary>
     /// <param name="patientId">Patient ID filter (optional).</param>
     Task<ApiResponse<List<PendingMedicalCaseDto>>> GetPendingCasesAsync(Guid? patientId = null);
 
     /// <summary>
     /// Cross-case search with pagination.
-    /// OpenSpec: consolidate-medicalcase-queries (LIFECYCLE-015)
     /// </summary>
     /// <param name="patientName">Patient name filter (optional).</param>
     /// <param name="diagnosisKeyword">Diagnosis keyword filter (optional).</param>
@@ -122,7 +117,6 @@ public interface IApiClientMedicalCases
 
     /// <summary>
     /// Suspend a medical case.
-    /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-010)
     /// </summary>
     /// <param name="id">Medical case ID.</param>
     /// <param name="request">Consultation input data (optional).</param>
@@ -151,7 +145,6 @@ public interface IApiClientMedicalCases
 
     /// <summary>
     /// Aggregate save (diagnosis + prescription in one call).
-    /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.5)
     /// </summary>
     /// <param name="id">Medical case ID.</param>
     /// <param name="request">Unified input DTO with diagnosis and prescription data.</param>

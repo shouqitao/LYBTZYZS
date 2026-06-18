@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Common;
@@ -23,8 +23,6 @@ namespace LYBT.Entities.Consultations
         /// <summary>创建人ID（医生用户ID）</summary>
         // 审计字段（CreatedBy等）继承自BaseEntity
 
-        // 诊断核心字段（精简版 - OpenSpec: refactor-diagnosis-fields）
-
         /// <summary>现病史</summary>
         [StringLength(2000)]
         [DisplayName("现病史")]
@@ -44,13 +42,9 @@ namespace LYBT.Entities.Consultations
         [StringLength(500)]
         [DisplayName("中医辨证")]
         public string? TcmDiagnosis { get; set; }
-
-        // OpenSpec: consultation-field-alignment - PrescriptionEnabled已移除
         // 处方开关统一使用MedicalCase.NeedsPrescription
 
         // RowVersion、IsDeleted等字段继承自BaseEntity
-
-        // 导航属性已移除 - OpenSpec: refactor-server-ddd-aggregates
         // Consultation作为MedicalCase聚合的内部实体，不应有反向导航
         // 需要MedicalCase信息时，通过Id查询或使用Query Service
     }

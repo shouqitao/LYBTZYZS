@@ -15,7 +15,6 @@ using LYBT.Desktop.Infrastructure.Roles;
 using LYBT.Desktop.Infrastructure.Roles.Definitions;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.Services.Notifications;
-// OpenSpec: create-printing-module - 独立打印模块
 using LYBT.Desktop.Printing.Interfaces;
 using LYBT.Desktop.Printing.Models;
 using LYBT.Desktop.Printing.Services;
@@ -58,8 +57,6 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterInfrastructureServices(containerRegistry);
             RegisterCommandServices(containerRegistry);
             RegisterApplicationServices(containerRegistry);
-
-            // OpenSpec: refactor-viewmodel-composition - 注册ViewModel组合服务
             containerRegistry.AddViewModelServices();
         }
 
@@ -94,15 +91,13 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             containerRegistry.RegisterSingleton<IAuthenticationService, AuthenticationService>();
             containerRegistry.RegisterSingleton<ITokenStorageService, TokenStorageService>();
-            containerRegistry.RegisterSingleton<ITokenManager, TokenManager>(); // OpenSpec: refactor-login-authentication
-            containerRegistry.RegisterSingleton<ICredentialVault, CredentialVault>(); // OpenSpec: refactor-login-authentication
+            containerRegistry.RegisterSingleton<ITokenManager, TokenManager>();
+            containerRegistry.RegisterSingleton<ICredentialVault, CredentialVault>();
             containerRegistry.RegisterSingleton<IPhotoStorageService, DpapiPhotoStorageService>(); // C2: 照片 DPAPI 加密存储
-            containerRegistry.RegisterSingleton<IAuthenticationStateMachine, AuthenticationStateMachine>(); // OpenSpec: refactor-auth-role-system (Phase 1.1)
-            containerRegistry.RegisterSingleton<ILogoutService, LogoutService>(); // OpenSpec: refactor-login-authentication (Phase 2.3)
+            containerRegistry.RegisterSingleton<IAuthenticationStateMachine, AuthenticationStateMachine>();
+            containerRegistry.RegisterSingleton<ILogoutService, LogoutService>();
             containerRegistry.RegisterSingleton<ITokenValidator, LocalTokenValidator>();
             containerRegistry.RegisterSingleton<IUsernameStorageService, UsernameStorageService>();
-            // OpenSpec: remove-secure-credential-storage - ISecureCredentialStorage已移除
-            // OpenSpec: refactor-startup-connection-resilience - IConnectionSettingsService已移除
             containerRegistry.RegisterSingleton<ISystemSettingsService, SystemSettingsService>();
             containerRegistry.RegisterSingleton<IApiHealthCheckService, ApiHealthCheckService>();
             containerRegistry.RegisterSingleton<IApiService, ApiService>();
@@ -115,9 +110,7 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             containerRegistry.RegisterSingleton<INotificationService, NotificationService>();
             containerRegistry.RegisterSingleton<IDesktopExceptionHandler, DesktopExceptionHandler>();
-            // [已删除] NavigationManager - OpenSpec: unify-navigation-architecture (ADR-7)
             containerRegistry.RegisterSingleton<MenuManager>();
-            // OpenSpec: unify-navigation-architecture (ADR-3 + ADR-7) - 统一导航入口
             containerRegistry.RegisterSingleton<INavigationCoordinator, NavigationCoordinator>();
         }
 
@@ -144,9 +137,8 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IUserActivityState>(resolver => resolver.Resolve<UserActivityTracker>());
             containerRegistry.RegisterSingleton<IUserNotificationService, UserNotificationService>();
             containerRegistry.RegisterSingleton<IMainWindowServicesFacade, MainWindowServicesFacade>();
-            containerRegistry.RegisterSingleton<IPrescriptionSettingsService, PrescriptionSettingsService>(); // OpenSpec: enhance-duplicate-herb-dialog
-            containerRegistry.RegisterSingleton<IClinicSettingsService, ClinicSettingsService>(); // OpenSpec: print-prescription-slip
-            // [已删除] IRoleNavigationService - OpenSpec: unify-navigation-architecture (ADR-7)
+            containerRegistry.RegisterSingleton<IPrescriptionSettingsService, PrescriptionSettingsService>();
+            containerRegistry.RegisterSingleton<IClinicSettingsService, ClinicSettingsService>();
             containerRegistry.RegisterSingleton<ICommonDialogService, CommonDialogService>();
             // IPrintService<T> 由 PrintingModule 注册，此处不重复
 

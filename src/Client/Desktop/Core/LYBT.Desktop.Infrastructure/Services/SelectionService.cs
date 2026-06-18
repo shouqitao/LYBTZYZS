@@ -5,7 +5,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 选择服务实现
-    /// OpenSpec: refactor-viewmodel-composition
     /// </summary>
     /// <typeparam name="T">列表项类型</typeparam>
     public partial class SelectionService<T> : ObservableObject, ISelectionService<T> where T : class

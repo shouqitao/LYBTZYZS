@@ -1,14 +1,11 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Herbs.Controls
 {
     /// <summary>
-    /// 药材预览控件 - OpenSpec: extract-detail-controls Task 2.1
-    /// 独立的药材预览控件，可在HerbDetailView和其他需要展示药材信息的地方复用
-    /// OpenSpec: refactor-master-detail-layout - 详情区域UI优化
-    /// </summary>
+    /// 药材预览控件</summary>
     public partial class HerbViewControl : UserControl
     {
         public HerbViewControl()

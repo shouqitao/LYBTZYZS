@@ -9,7 +9,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// ViewModel服务聚合实现
-    /// OpenSpec: enhance-viewmodel-architecture
     /// </summary>
     public sealed class ViewModelServices : IViewModelServices
     {

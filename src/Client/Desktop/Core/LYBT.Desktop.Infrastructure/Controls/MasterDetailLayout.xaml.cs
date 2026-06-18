@@ -6,8 +6,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
 {
     /// <summary>
     /// Master-Detail布局容器控件
-    /// OpenSpec: refactor-master-detail-layout
-    /// OpenSpec: responsive-layout-optimization
     ///
     /// 功能：
     /// - 左右分割布局，支持GridSplitter调节

@@ -17,9 +17,6 @@
     WindowStartupLocation="CenterScreen"
     WindowState="Maximized"
     WindowStyle="None">
-
-    <!--  OpenSpec: refactor-role-navigation - 样式已移至SidebarControl  -->
-
     <Window.InputBindings>
         <KeyBinding
             Key="N"
@@ -67,7 +64,6 @@
         </Grid>
 
         <!--  登录后主界面：侧边栏 + 工作区  -->
-        <!--  OpenSpec: refactor-role-navigation - 侧边栏已提取为SidebarControl  -->
         <Grid Visibility="{Binding IsLoggedIn, Converter={x:Static converters:Cvt.BoolToVis}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />

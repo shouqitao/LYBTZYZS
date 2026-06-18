@@ -17,7 +17,6 @@ namespace LYBT.Desktop.Admin.ViewModels
     /// 核心功能：6个功能卡片导航 + 修改密码
     /// Issue #1553: 角色模块化重构 - Admin模块
     /// Issue #1892: 添加系统管理员修改密码功能
-    /// OpenSpec: standardize-viewmodel-framework - 迁移到NavigableViewModelBase
     /// </summary>
     public partial class AdminHomeViewModel : NavigableViewModelBase
     {
@@ -59,7 +58,6 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         /// <summary>
         /// 构造函数
-        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
         /// </summary>
         public AdminHomeViewModel(
             IViewModelServices services,
@@ -82,7 +80,6 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         /// <summary>
         /// 导航到用户管理
-        /// OpenSpec: refactor-admin-workspace - 导航到角色台管理视图
         /// </summary>
         [RelayCommand]
         private void NavigateToUserManagement() => NavigateTo(ViewNames.UserManagement);
@@ -125,7 +122,6 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         /// <summary>
         /// 修改个人信息命令 (Issue #1887-1892)
-        /// OpenSpec: unify-navigation-architecture (ADR-6) - 合并到AccountSettingsView
         /// </summary>
         [RelayCommand]
         private void EditProfile()
@@ -143,7 +139,6 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         /// <summary>
         /// 修改密码命令 (Issue #1887-1892)
-        /// OpenSpec: unify-navigation-architecture (ADR-6) - 合并到AccountSettingsView
         /// </summary>
         [RelayCommand]
         private void ChangePassword()
@@ -166,7 +161,6 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         /// <summary>
         /// 导航到指定视图
-        /// OpenSpec: unify-navigation-architecture Phase 6 - 使用INavigationCoordinator
         /// </summary>
         /// <param name="viewName">视图名称</param>
         private void NavigateTo(string viewName)

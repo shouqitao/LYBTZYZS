@@ -6,7 +6,6 @@ namespace LYBT.Desktop.Infrastructure.Converters
 {
     /// <summary>
     /// API 健康状态到文本转换器
-    /// OpenSpec: refactor-role-navigation
     /// 用于将 ApiHealthStatus 枚举值转换为用户友好的文本
     /// </summary>
     public class ApiHealthStatusToTextConverter : IValueConverter

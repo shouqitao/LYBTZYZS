@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Users;
+using LYBT.Entities.Users;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
@@ -44,9 +44,6 @@ namespace LYBT.Module.Users.Interfaces
         /// Sprint3-X6: 从 Service 内存过滤迁移到 Repository DB 查询
         /// </summary>
         Task<PagedResult<User>> GetPagedAsync(int pageNumber, int pageSize, string? keyword, UserRole? role, CommonStatus? status, CancellationToken cancellationToken = default);
-
-        // ========== OpenSpec: optimize-module-list-ui - 恢复功能支持 ==========
-
         /// <summary>
         /// 根据ID获取实体（包括已软删除的）
         /// 用于Restore操作时获取已删除的实体

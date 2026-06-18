@@ -18,7 +18,6 @@ namespace LYBT.Desktop.Formula.ViewModels
 {
     /// <summary>
     /// 验方Master-Detail视图模型（组合模式）
-    /// OpenSpec: frontend-architecture-unification
     ///
     /// 使用IFormulaService单依赖 + FormulaEditor子VM模式
     /// 所有编辑操作通过FormulaEditor封装
@@ -55,7 +54,6 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         /// <summary>
         /// 构造函数
-        /// OpenSpec: frontend-architecture-unification - Service单依赖 + 子VM组合
         /// </summary>
         public FormulaMasterDetailViewModel(
             IViewModelServices viewModelServices,
@@ -330,8 +328,6 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 Logger.LogDebug("开始加载所有药材列表");
                 _allHerbs.Clear();
-
-                // OpenSpec: cross-module-decoupling - 使用IHerbSearchProvider替代IHerbRepository
                 var herbs = await _herbSearchProvider.GetAllHerbsAsync();
                 foreach (var herb in herbs) _allHerbs.Add(herb);
                 Logger.LogInformation("成功加载 {Count} 个药材", _allHerbs.Count);

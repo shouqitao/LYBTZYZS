@@ -1,6 +1,5 @@
-﻿<!--
+<!--
     PatientInfoCardControl - 患者信息卡片控件
-    OpenSpec: refactor-medicalcase-workspace
 
     功能：
     - 显示患者基本信息（姓名、性别、年龄等）
@@ -22,7 +21,7 @@
              xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters">
 
     <!--
-        资源加载说明 (OpenSpec: migrate-to-handycontrol):
+        资源加载说明:
         - 所有资源通过 App.xaml 全局加载，控件级别不再合并资源字典
         - CardShadow 已在 TCM.Theme.xaml 全局定义
     -->

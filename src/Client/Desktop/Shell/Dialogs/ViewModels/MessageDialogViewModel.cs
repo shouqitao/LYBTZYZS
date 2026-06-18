@@ -24,7 +24,6 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 
     /// <summary>
     /// 统一消息对话框视图模型
-    /// OpenSpec: fix-missing-dialogs - 系统性设计
     ///
     /// 统一处理 Success/Error/Warning/Info 四种消息类型，
     /// 通过 MessageType 参数区分，使用对应的图标和配色。

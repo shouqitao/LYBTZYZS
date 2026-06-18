@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Contracts.CommandHandlers;
 
 /// <summary>
 /// CommandHandler统一返回类型
-/// OpenSpec: unify-desktop-architecture (Phase 1.4)
 /// 所有CommandHandler方法使用此类型返回结果，确保错误处理一致性
 /// </summary>
 /// <typeparam name="T">数据类型</typeparam>

@@ -6,7 +6,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
 {
     /// <summary>
     /// 数据列表工具栏控件
-    /// OpenSpec: refactor-master-detail-layout
     ///
     /// 功能：
     /// - 新增/刷新/导出按钮组

@@ -6,8 +6,6 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 {
     /// <summary>
     /// 未保存修改确认对话框ViewModel
-    /// OpenSpec: medicalcase-management-ui-refactor (EDITMODE-008)
-    /// OpenSpec: standardize-viewmodel-framework - 迁移到CommunityToolkit.Mvvm
     /// 提供三个选项：保存修改、放弃修改、取消
     /// </summary>
     public partial class UnsavedChangesDialogViewModel : ObservableObject, IDialogAware

@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Infrastructure.Models.Options;
 
 /// <summary>
 /// 分页配置选项（不可变）
-/// OpenSpec: unify-control-data-binding
 /// </summary>
 public record PaginationOptions(
     int DefaultPageSize = 20,

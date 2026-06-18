@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Contracts.CommandHandlers;
 
 /// <summary>
 /// CommandHandler查询参数
-/// OpenSpec: unify-desktop-architecture (Phase 1.4)
 /// 统一所有列表查询的参数格式
 /// </summary>
 public record QueryParams

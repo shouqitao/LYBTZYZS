@@ -10,7 +10,6 @@ namespace LYBT.Desktop.Infrastructure.DependencyInjection
 {
     /// <summary>
     /// ViewModel服务DI注册扩展
-    /// OpenSpec: refactor-viewmodel-composition
     ///
     /// 使用Prism.Ioc的IContainerRegistry接口，与Shell层注册模式保持一致
     /// </summary>
@@ -23,7 +22,6 @@ namespace LYBT.Desktop.Infrastructure.DependencyInjection
         /// <returns>容器注册表实例</returns>
         public static IContainerRegistry AddViewModelServices(this IContainerRegistry containerRegistry)
         {
-            // OpenSpec: enhance-viewmodel-architecture - ViewModel服务聚合
             containerRegistry.RegisterSingleton<IViewModelServices, ViewModelServices>();
 
             // UI线程调度器 - Singleton
@@ -31,7 +29,6 @@ namespace LYBT.Desktop.Infrastructure.DependencyInjection
 
             // 共享服务 - Singleton
             containerRegistry.RegisterSingleton<IDialogManager, DialogManager>();
-            // [已删除] IViewNavigationService - OpenSpec: unify-navigation-architecture (ADR-7)
             containerRegistry.RegisterSingleton<IAsyncExecutor, AsyncExecutor>();
 
             // Navigation and Toast services - Singleton

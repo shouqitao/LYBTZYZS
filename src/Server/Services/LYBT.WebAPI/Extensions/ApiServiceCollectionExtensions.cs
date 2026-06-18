@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Configuration.Options.Server;
+using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.ExceptionHandling.Handlers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Primitives.ErrorCodes;
@@ -122,8 +122,6 @@ public static class ApiServiceCollectionExtensions
                 return type.FullName?.Replace(".", string.Empty).Replace("+", string.Empty) ?? type.Name;
             });
         });
-
-        // OpenSpec: adopt-mapperly-unified-mapping - AutoMapper已移除，改用Mapperly编译时映射
         return services;
 
         // 生成 Schema ID 的帮助方法

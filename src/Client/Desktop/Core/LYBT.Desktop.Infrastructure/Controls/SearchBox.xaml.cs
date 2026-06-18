@@ -7,7 +7,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
 {
     /// <summary>
     /// 搜索框控件
-    /// OpenSpec: refactor-master-detail-layout
     ///
     /// 功能：
     /// - 搜索输入框 + 清除按钮 + 搜索按钮

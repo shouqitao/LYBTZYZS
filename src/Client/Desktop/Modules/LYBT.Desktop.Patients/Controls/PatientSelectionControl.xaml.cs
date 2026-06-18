@@ -6,7 +6,6 @@ namespace LYBT.Desktop.Patients.Controls
 {
     /// <summary>
     /// 患者选择控件
-    /// OpenSpec: fix-elementname-binding-architecture
     ///
     /// 可复用的患者选择控件，使用Master-Detail布局
     /// - 左侧：患者列表（工具栏+搜索+列表）
@@ -40,7 +39,6 @@ namespace LYBT.Desktop.Patients.Controls
 
         /// <summary>
         /// 双击处理 - 从DataContext获取SelectedPatient和Command
-        /// OpenSpec: fix-elementname-binding-architecture - 使用DataContext替代DependencyProperty
         /// </summary>
         private void PatientDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {

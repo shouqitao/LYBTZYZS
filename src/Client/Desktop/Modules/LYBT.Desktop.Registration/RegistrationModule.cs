@@ -28,8 +28,6 @@ public class RegistrationModule : IModule
     public void RegisterTypes(IContainerRegistry containerRegistry)
     {
         // IRegistrationRepository 由 Shell DI 注册 (Refit API)
-
-        // OpenSpec: standardize-service-layer - 统一使用Service层
         containerRegistry.Register<IRegistrationService, RemoteRegistrationService>();
 
         // ViewModel

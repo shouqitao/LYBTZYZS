@@ -17,8 +17,6 @@ namespace LYBT.Desktop.Shell.ViewModels
 {
     /// <summary>
     /// 账户设置视图模型 - 合并个人资料和修改密码功能
-    /// OpenSpec: migrate-views-to-role-modules - 从Users模块迁移到Shell
-    /// OpenSpec: standardize-viewmodel-framework - 迁移到CoreViewModelBase
     /// </summary>
     public partial class AccountSettingsViewModel : CoreViewModelBase, INavigationAware
     {
@@ -91,7 +89,6 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         /// <summary>
         /// 构造函数
-        /// OpenSpec: enhance-viewmodel-architecture - 使用IViewModelServices聚合服务
         /// </summary>
         public AccountSettingsViewModel(
             IViewModelServices services,

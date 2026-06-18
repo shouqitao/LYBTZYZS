@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Printing
 {
     /// <summary>
     /// 打印服务模块
-    /// OpenSpec: create-printing-module
     /// 提供独立的打印、预览、导出功能
     /// </summary>
     [Module(ModuleName = nameof(PrintingModule))]

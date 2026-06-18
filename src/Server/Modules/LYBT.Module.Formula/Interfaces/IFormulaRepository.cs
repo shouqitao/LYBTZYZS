@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Formulas;
+using LYBT.Entities.Formulas;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using System.Threading;
@@ -55,9 +55,6 @@ public interface IFormulaRepository : IRepository<Formula>
         /// T5-P2-36: 获取所有验方（包含药材组成），用于导出
         /// </summary>
         Task<List<Formula>> GetAllWithHerbsAsync();
-
-        // ========== OpenSpec: optimize-module-list-ui - 恢复功能支持 ==========
-
         /// <summary>
         /// 根据ID获取实体（包括已软删除的）
         /// 用于Restore操作时获取已删除的实体

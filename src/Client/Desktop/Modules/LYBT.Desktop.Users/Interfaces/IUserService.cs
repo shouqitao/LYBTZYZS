@@ -8,8 +8,6 @@ namespace LYBT.Desktop.Users.Interfaces
 {
     /// <summary>
     /// 用户Service接口
-    /// OpenSpec: standardize-service-layer - 统一使用Service命名
-    /// OpenSpec: dto-architecture-specification - 统一使用UserDetailDto
     /// </summary>
     public interface IUserService
     {
@@ -32,7 +30,6 @@ namespace LYBT.Desktop.Users.Interfaces
 
         /// <summary>
         /// 批量删除用户
-        /// OpenSpec: optimize-batch-operations Phase 2
         /// </summary>
         Task<CommandResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> userIds, CancellationToken ct = default);
 

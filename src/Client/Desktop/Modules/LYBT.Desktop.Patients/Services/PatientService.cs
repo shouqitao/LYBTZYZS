@@ -11,9 +11,6 @@ namespace LYBT.Desktop.Patients.Services
 {
     /// <summary>
     /// 患者Service - 业务逻辑处理
-    /// OpenSpec: standardize-service-layer - 统一使用Service命名
-    /// OpenSpec: refactor-frontend-srp-patterns - 迁移到Services目录
-    /// OpenSpec: cleanup-patient-dead-code - 清理未使用的事件和Command
     /// 负责处理患者相关的业务操作
     /// </summary>
     public class PatientService : IPatientService
@@ -33,7 +30,6 @@ namespace LYBT.Desktop.Patients.Services
 
         /// <summary>
         /// 创建患者
-        /// OpenSpec: enhance-dataflow-logging - LOG-018 统一[SVC]前缀
         /// </summary>
         public async Task<CommandResult<PatientDetailDto>> CreatePatientAsync(PatientInputDto inputDto, CancellationToken ct = default)
         {
@@ -98,7 +94,6 @@ namespace LYBT.Desktop.Patients.Services
 
         /// <summary>
         /// 批量删除患者
-        /// OpenSpec: optimize-batch-operations Phase 2 - 使用单次批量API调用
         /// </summary>
         public async Task<CommandResult<BatchOperationResultDto>> BatchDeletePatientsAsync(IEnumerable<Guid> patientIds, CancellationToken ct = default)
         {
@@ -111,8 +106,6 @@ namespace LYBT.Desktop.Patients.Services
                 {
                     return CommandResult<BatchOperationResultDto>.Failed("没有选择要删除的患者");
                 }
-
-                // OpenSpec: optimize-batch-operations - 使用单次批量API调用替代N+1模式
                 var result = await _patientRepository.BatchDeleteAsync(ids, ct);
                 if (result == null)
                 {
@@ -286,6 +279,4 @@ namespace LYBT.Desktop.Patients.Services
 
         #endregion
     }
-
-    // OpenSpec: cleanup-patient-dead-code - 本地CommandResult<T>已迁移到LYBT.Desktop.Contracts.CommandHandlers
 }

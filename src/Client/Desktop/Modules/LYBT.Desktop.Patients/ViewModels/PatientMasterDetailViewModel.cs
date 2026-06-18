@@ -18,7 +18,6 @@ namespace LYBT.Desktop.Patients.ViewModels
 {
     /// <summary>
     /// 患者Master-Detail视图模型（组合模式）
-    /// OpenSpec: frontend-architecture-unification
     ///
     /// 使用IPatientService单依赖 + PatientEditor子VM模式
     /// 所有编辑操作通过PatientEditor封装
@@ -73,7 +72,6 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         /// <summary>
         /// 构造函数
-        /// OpenSpec: frontend-architecture-unification - Service单依赖 + 子VM组合
         /// </summary>
         public PatientMasterDetailViewModel(
             IViewModelServices viewModelServices,

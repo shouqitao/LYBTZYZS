@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Contracts.Services;
 
 /// <summary>
 /// 活跃医案服务接口
-/// OpenSpec: clarify-cancel-consultation-logic
 /// 用于跟踪当前是否有活跃的医案会话，并在退出登录时处理确认逻辑
 /// </summary>
 public interface IActiveConsultationService
@@ -70,7 +69,6 @@ public class LeaveConsultationResult
 
 /// <summary>
 /// 离开看诊界面的选择
-/// OpenSpec: clarify-cancel-consultation-logic
 /// </summary>
 public enum LeaveConsultationChoice
 {

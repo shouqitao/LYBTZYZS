@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.Api;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
@@ -94,7 +94,6 @@ namespace LYBT.Desktop.Foundation.Security
                 {
                     _logger.LogInformation("Token已过期，跳过服务端登出API调用");
                     await _tokenStorage.ClearAuthenticationAsync();
-                    // OpenSpec: simplify-auth-architecture - 登出时保留AutoLoginToken
                     // 用户主动登出不清除自动登录凭据，只有取消勾选"自动登录"时才清除
                     return ServiceResult.Success("本地登出成功");
                 }
@@ -110,8 +109,6 @@ namespace LYBT.Desktop.Foundation.Security
 
                 // 清除本地 Token（JWT会话Token）
                 await _tokenStorage.ClearAuthenticationAsync();
-                
-                // OpenSpec: simplify-auth-architecture - 登出时保留AutoLoginToken
                 // 用户主动登出不清除自动登录凭据，只有取消勾选"自动登录"时才清除
 
                 if (apiResponse.Success)
@@ -247,7 +244,6 @@ namespace LYBT.Desktop.Foundation.Security
 
         /// <summary>
         /// 使用AutoLoginToken自动登录
-        /// OpenSpec: refactor-login-authentication (CVT-001)
         /// </summary>
         public async Task<ServiceResult<LoginResponse>> LoginWithAutoTokenAsync(AutoLoginRequest request)
         {

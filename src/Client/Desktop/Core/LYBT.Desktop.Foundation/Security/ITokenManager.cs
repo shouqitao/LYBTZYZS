@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Foundation.Security
 {
     /// <summary>
     /// Token管理器接口 - 内存级Token存储
-    /// OpenSpec: refactor-login-authentication (TKM-001, TKM-002)
     /// 
     /// 设计原则：
     /// 1. Token = 会话级数据，仅存储在进程内存中

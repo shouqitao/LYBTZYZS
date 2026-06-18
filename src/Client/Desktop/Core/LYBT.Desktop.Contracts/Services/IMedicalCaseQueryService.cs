@@ -6,8 +6,6 @@ namespace LYBT.Desktop.Contracts.Services;
 
 /// <summary>
 /// 医案查询服务接口 - 跨模块共享
-/// OpenSpec: rationalize-module-architecture - 遵循依赖倒置原则
-/// OpenSpec: refactor-frontend-srp-patterns (ADR-1) - SRP职责分离，查询职责
 /// Patients模块通过此接口查询MedicalCase数据，消除对具体实现的依赖
 /// </summary>
 public interface IMedicalCaseQueryService

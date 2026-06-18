@@ -3,7 +3,6 @@
 
     <!--
         LYBTZYZS 主题入口 - 浅色主题
-        OpenSpec: migrate-to-handycontrol
 
         颜色和字体已迁移到:
         - HandyControl: SkinDefault.xaml + Theme.xaml (基础样式)

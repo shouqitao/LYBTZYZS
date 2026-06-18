@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 {
     /// <summary>
     /// 可验证模型基类 - 为DetailModel提供验证支持
-    /// OpenSpec: ui-validation-framework
     /// 
     /// 提供INotifyDataErrorInfo实现和DataAnnotations验证支持
     /// </summary>

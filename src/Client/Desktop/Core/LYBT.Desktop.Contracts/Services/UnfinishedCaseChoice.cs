@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Contracts.Services
 {
     /// <summary>
     /// 未完成医案对话框用户选择枚举
-    /// OpenSpec: optimize-medicalcase-navigation - 统一四选项弹窗
     /// </summary>
     public enum UnfinishedCaseChoice
     {

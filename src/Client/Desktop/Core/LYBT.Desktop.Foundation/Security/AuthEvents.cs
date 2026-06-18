@@ -6,7 +6,6 @@ namespace LYBT.Desktop.Foundation.Security;
 
 /// <summary>
 /// 认证事件定义
-/// OpenSpec: refactor-login-authentication (Phase 3.1)
 /// 提供跨组件通信的Prism PubSubEvent事件
 /// </summary>
 public static class AuthEvents
@@ -88,8 +87,6 @@ public static class AuthEvents
     /// Token刷新失败事件
     /// </summary>
     public class TokenRefreshFailedEvent : PubSubEvent<TokenRefreshFailedPayload> { }
-
-    // OpenSpec: simplify-auth-architecture - 移除SessionExpiringEvent，不再显示警告
 
     /// <summary>
     /// 会话已过期事件
@@ -378,8 +375,6 @@ public record TokenRefreshFailedPayload
     /// </summary>
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;
 }
-
-// OpenSpec: simplify-auth-architecture - SessionExpiringPayload已移除
 
 /// <summary>
 /// 会话已过期载荷

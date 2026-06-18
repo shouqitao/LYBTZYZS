@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Formulas;
+using LYBT.Entities.Formulas;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Formulas.Interfaces;
@@ -160,8 +160,6 @@ namespace LYBT.Module.Formulas.Repositories
                 .ToListAsync();
         }
 
-        #region OpenSpec: optimize-module-list-ui - 恢复功能支持
-
         /// <summary>
         /// 根据ID获取实体（包括已软删除的）
         /// 使用EF Core FindAsync直接通过主键查询，绕过软删除过滤器
@@ -173,7 +171,5 @@ namespace LYBT.Module.Formulas.Repositories
                 .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
-
-        #endregion
     }
 }

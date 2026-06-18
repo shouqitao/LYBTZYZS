@@ -6,7 +6,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
 {
     /// <summary>
     /// 详情工具栏控件
-    /// OpenSpec: refactor-master-detail-layout
     ///
     /// 功能：
     /// - 编辑/保存/取消/删除按钮组

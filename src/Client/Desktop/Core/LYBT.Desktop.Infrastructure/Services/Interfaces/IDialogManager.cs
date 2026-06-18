@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 对话框管理服务接口
-    /// OpenSpec: refactor-viewmodel-composition
     ///
     /// 提供统一的对话框显示接口，集成Prism IDialogService
     /// </summary>

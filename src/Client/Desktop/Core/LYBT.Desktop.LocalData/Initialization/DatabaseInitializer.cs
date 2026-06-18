@@ -8,7 +8,6 @@ namespace LYBT.Desktop.LocalData.Initialization;
 
 /// <summary>
 /// 数据库初始化器 - 负责创建 SQL Server LocalDB 数据库和初始化数据
-/// OpenSpec: implement-local-mode
 /// Phase 4 Task 4.4: 集成数据库初始化性能监控
 /// </summary>
 public class DatabaseInitializer : IDatabaseInitializer, IDisposable

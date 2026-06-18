@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Contracts.Services
 {
     /// <summary>
     /// ViewModel服务聚合接口
-    /// OpenSpec: enhance-viewmodel-architecture
     ///
     /// 设计原则:
     /// - 聚合ViewModel基类所需的通用服务

@@ -49,9 +49,6 @@ namespace LYBT.Module.Herbs.Interfaces
         /// Sprint3-X6: 从 Service 内存过滤迁移到 Repository DB 查询
         /// </summary>
         Task<PagedResult<Herb>> GetPagedAsync(int pageNumber, int pageSize, string? keyword, string? category);
-
-        // ========== OpenSpec: optimize-module-list-ui - 恢复功能支持 ==========
-
         /// <summary>
         /// 根据ID获取实体（包括已软删除的）
         /// 用于Restore操作时获取已删除的实体

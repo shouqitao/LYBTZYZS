@@ -7,7 +7,6 @@ namespace LYBT.Desktop.Herbs.ViewModels;
 
 /// <summary>
 /// 子 VM - 药材编辑 (编辑真源)
-/// OpenSpec: frontend-architecture-unification
 ///
 /// 封装 HerbEditContext，提供 DTO 初始化和数据提取
 /// 替代手动字段映射和 CopyToXxx 模式

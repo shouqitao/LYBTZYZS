@@ -17,7 +17,6 @@ public interface IMedicalCaseRepository
 
     /// <summary>
     /// 搜索医案 (返回 DetailDto，支持跨医生查询)
-    /// OpenSpec: fix-history-copy-all-patients
     /// </summary>
     Task<PagedResult<MedicalCaseDetailDto>> SearchAsync(
         string? patientName = null,
@@ -34,7 +33,6 @@ public interface IMedicalCaseRepository
 
     /// <summary>
     /// 统一查询医案
-    /// OpenSpec: optimize-medicalcase-api
     /// </summary>
     Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query);
 
@@ -61,31 +59,26 @@ public interface IMedicalCaseRepository
 
     /// <summary>
     /// 聚合保存医案 (诊断+处方一次性保存)
-    /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.5)
     /// </summary>
     Task<MedicalCaseDetailDto> SaveAsync(Guid medicalCaseId, MedicalCaseInputDto dto);
 
     /// <summary>
     /// 设置处方标志
-    /// OpenSpec: simplify-desktop-data-layer (Phase 1)
     /// </summary>
     Task<MedicalCaseDetailDto?> SetPrescriptionFlagAsync(Guid id, SetPrescriptionFlagRequest request);
 
     /// <summary>
     /// 更新医案状态
-    /// OpenSpec: simplify-desktop-data-layer (Phase 1)
     /// </summary>
     Task<MedicalCaseDetailDto?> UpdateStatusAsync(Guid id, MedicalCaseStatusInputDto request);
 
     /// <summary>
     /// 取消医案
-    /// OpenSpec: simplify-desktop-data-layer (Phase 1)
     /// </summary>
     Task<MedicalCaseDetailDto?> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequestDto? request);
 
     /// <summary>
     /// 挂起医案
-    /// OpenSpec: simplify-desktop-data-layer (Phase 1)
     /// </summary>
     Task<MedicalCaseDetailDto?> SuspendAsync(Guid id, ConsultationInputDto? request);
 

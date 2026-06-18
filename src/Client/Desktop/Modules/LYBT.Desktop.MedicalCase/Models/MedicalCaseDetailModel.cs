@@ -11,8 +11,6 @@ namespace LYBT.Desktop.Modules.MedicalCase.Models;
 
 /// <summary>
 /// 医案详情模型 - Master-Detail模式使用
-/// OpenSpec: refactor-medicalcase-management
-/// OpenSpec: ui-validation-framework - 添加验证支持
 ///
 /// 可编辑字段：诊断信息（现病史、舌诊、脉诊、中医诊断）、备注
 /// 只读字段：患者信息、处方信息、系统信息
@@ -141,7 +139,6 @@ public class MedicalCaseDetailModel : ValidatableModelBase
     }
 
     /// <summary>引用验方（验方名称列表，逗号分隔）</summary>
-    /// <remarks>OpenSpec: simplify-medicalcase-dataflow - FormulaSource重命名为ReferencedFormulas</remarks>
     public string? ReferencedFormulas
     {
         get => _referencedFormulas;
@@ -222,7 +219,6 @@ public class MedicalCaseDetailModel : ValidatableModelBase
     #region 工厂方法
 
     /// <summary>克隆模型</summary>
-    /// <remarks>OpenSpec: simplify-medicalcase-dataflow - ConsultationDate删除</remarks>
     public MedicalCaseDetailModel Clone()
     {
         var clone = new MedicalCaseDetailModel

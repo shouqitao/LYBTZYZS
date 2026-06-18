@@ -1,6 +1,5 @@
-﻿<!--
+<!--
     SidebarControl - 侧边栏控件
-    OpenSpec: refactor-role-navigation, migrate-views-to-role-modules, unify-navigation-architecture
 
     功能：
     - 展开/收缩切换
@@ -30,7 +29,7 @@
     x:Name="Root">
 
     <!--
-        资源加载说明 (OpenSpec: cleanup-control-resource-merging):
+        资源加载说明:
         - Converter使用 x:Static 引用静态实例，绕过资源字典查找
         - 本地定义的侧边栏宽度转换器（带特定参数）
     -->
@@ -164,7 +163,7 @@
 
             <!--  菜单项  -->
             <StackPanel Grid.Row="3" Margin="0,8">
-                <!--  返回主页 - OpenSpec: refactor-role-navigation  -->
+                <!--  返回主页-->
                 <Button
                     Command="{Binding NavigateToHomeCommand, ElementName=Root}"
                     Style="{StaticResource SidebarMenuItemStyle}"
@@ -183,7 +182,7 @@
                             Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}" />
                     </StackPanel>
                 </Button>
-                <!--  账户设置 - OpenSpec: migrate-views-to-role-modules - 合并个人资料+修改密码  -->
+                <!--  账户设置-->
                 <Button
                     Command="{Binding EditProfileCommand, ElementName=Root}"
                     Style="{StaticResource SidebarMenuItemStyle}"
@@ -202,7 +201,7 @@
                             Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}" />
                     </StackPanel>
                 </Button>
-                <!--  系统设置 - OpenSpec: unify-navigation-architecture (ADR-5修正: 从HomeView移至Sidebar全局入口)  -->
+                <!--  系统设置-->
                 <Button
                     Command="{Binding NavigateToSystemSettingsCommand, ElementName=Root}"
                     Style="{StaticResource SidebarMenuItemStyle}"

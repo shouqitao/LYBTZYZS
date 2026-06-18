@@ -5,7 +5,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 选择服务接口
-    /// OpenSpec: refactor-viewmodel-composition
     ///
     /// 提供单选、多选状态管理
     /// </summary>

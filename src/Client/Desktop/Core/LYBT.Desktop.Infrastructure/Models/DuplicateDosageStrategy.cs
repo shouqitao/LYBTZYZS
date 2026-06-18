@@ -2,7 +2,6 @@ namespace LYBT.Desktop.Infrastructure.Models
 {
     /// <summary>
     /// 重复药材剂量取值策略
-    /// OpenSpec: herb-editor-control-refactoring
     /// </summary>
     public enum DuplicateDosageStrategy
     {

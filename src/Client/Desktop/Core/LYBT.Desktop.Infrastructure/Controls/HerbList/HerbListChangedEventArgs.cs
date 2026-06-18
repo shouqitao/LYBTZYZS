@@ -4,8 +4,6 @@ namespace LYBT.Desktop.Infrastructure.Controls.HerbList
 {
     /// <summary>
     /// 药材列表变更事件参数
-    /// OpenSpec: herb-editor-control-refactoring
-    /// OpenSpec: cross-module-decoupling - 迁移到Infrastructure，解耦模块间编译依赖
     /// </summary>
     public class HerbListChangedEventArgs : EventArgs
     {

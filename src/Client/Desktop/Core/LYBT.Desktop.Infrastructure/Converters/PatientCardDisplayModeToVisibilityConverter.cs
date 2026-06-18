@@ -8,7 +8,6 @@ namespace LYBT.Desktop.Infrastructure.Converters;
 
 /// <summary>
 /// 患者卡片显示模式到可见性转换器
-/// OpenSpec: refactor-medicalcase-workspace, standardize-converter-organization
 /// </summary>
 public class PatientCardDisplayModeToVisibilityConverter : IValueConverter
 {

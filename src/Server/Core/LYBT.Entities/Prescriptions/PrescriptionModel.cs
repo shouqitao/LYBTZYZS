@@ -8,7 +8,6 @@ namespace LYBT.Entities.Prescriptions
 
     /// <summary>
     /// 处方实体
-    /// OpenSpec: simplify-medicalcase-dataflow
     /// 作为MedicalCase的可选组成部分（1:0..1关系）
     /// </summary>
     [Table("Prescriptions")]
@@ -71,8 +70,6 @@ namespace LYBT.Entities.Prescriptions
         /// </summary>
         [DisplayName("处方项目")]
         public virtual ICollection<PrescriptionItem> Items { get; set; } = new List<PrescriptionItem>();
-
-        // MedicalCase导航属性已移除 - OpenSpec: refactor-server-ddd-aggregates
         // Prescription作为MedicalCase聚合的内部实体，不应有反向导航
         // 需要MedicalCase信息时，通过MedicalCaseId查询或使用Query Service
 

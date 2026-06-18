@@ -1,14 +1,11 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Users.Controls
 {
     /// <summary>
-    /// 用户预览控件 - OpenSpec: extract-detail-controls Task 4.1
-    /// 独立的用户预览控件，可在UserDetailView和其他需要展示用户信息的地方复用
-    /// OpenSpec: refactor-master-detail-layout - 详情区域UI优化
-    /// </summary>
+    /// 用户预览控件</summary>
     public partial class UserViewControl : UserControl
     {
         public UserViewControl()

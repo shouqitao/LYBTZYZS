@@ -3,7 +3,6 @@ namespace LYBT.Desktop.Foundation.Security
     /// <summary>
     /// Token生命周期服务接口
     /// Issue #1864: 客户端Token生命周期管理
-    /// OpenSpec: unify-event-system (Phase 2.4)
     /// </summary>
     /// <remarks>
     /// 职责：

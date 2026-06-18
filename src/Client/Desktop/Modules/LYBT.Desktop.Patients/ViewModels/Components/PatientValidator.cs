@@ -165,7 +165,6 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         /// <summary>
         /// 从患者DTO转换为输入DTO（用于验证）
         /// </summary>
-        // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由服务端管理
         public PatientInputDto ConvertToInputDto(PatientDetailDto patient)
         {
             return new PatientInputDto

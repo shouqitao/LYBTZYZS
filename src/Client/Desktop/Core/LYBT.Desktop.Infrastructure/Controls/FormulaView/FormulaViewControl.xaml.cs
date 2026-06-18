@@ -4,14 +4,7 @@ using System.Windows.Controls;
 namespace LYBT.Desktop.Infrastructure.Controls.FormulaView
 {
     /// <summary>
-    /// 验方预览控件 - OpenSpec: extract-detail-controls Task 1.1
-    /// 独立的验方预览控件，可在FormulaDetailView和FormulaImportDialog中复用
-    /// OpenSpec: unify-vm-view-binding-patterns - 重构为接受object类型（duck-typing）
-    /// OpenSpec: cross-module-decoupling - 迁移到Infrastructure，解耦模块间编译依赖
-    ///
-    /// WPF绑定引擎按属性名解析 -- FormulaDetailModel和FormulaDetailDto属性名一致，运行时均可工作。
-    /// 这是WPF控件的常见模式（DataTemplate duck-typing）。
-    /// </summary>
+    /// 验方预览控件</summary>
     public partial class FormulaViewControl : UserControl
     {
         public FormulaViewControl()

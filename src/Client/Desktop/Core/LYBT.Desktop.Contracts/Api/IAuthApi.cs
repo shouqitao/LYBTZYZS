@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 
@@ -33,7 +33,6 @@ namespace LYBT.Desktop.Contracts.Api
 
         /// <summary>
         /// 使用AutoLoginToken自动登录
-        /// OpenSpec: refactor-login-authentication (CVT-001)
         /// </summary>
         /// <param name="request">自动登录请求 - 包含用户名和AutoLoginToken</param>
         /// <returns>登录响应 - 包含JWT令牌、用户信息、过期时间、新的AutoLoginToken</returns>
@@ -71,7 +70,6 @@ namespace LYBT.Desktop.Contracts.Api
         /// </remarks>
         [Refit.Post("/api/v1/auth/refresh")]
         Task<ApiResponse<LoginResponse>> RefreshTokenAsync([Refit.Body] RefreshTokenRequest request);
-
 
         // Issue #1909: ChangeSysAdminPasswordAsync已移除
         // SuperAdmin密码修改现统一使用IUserApi.ChangePasswordAsync

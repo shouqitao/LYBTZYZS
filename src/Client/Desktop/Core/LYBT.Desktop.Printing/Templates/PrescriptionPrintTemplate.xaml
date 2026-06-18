@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
     x:Class="LYBT.Desktop.Printing.Templates.PrescriptionPrintTemplate"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -11,21 +11,6 @@
                                      IsDesignTimeCreatable=True}"
     Background="White"
     mc:Ignorable="d">
-    <!--
-        OpenSpec: create-printing-module (从MedicalCase迁移)
-        A5纸张尺寸: 148mm x 210mm
-        96 DPI: 1mm = 3.78px
-        宽度: 148 * 3.78 = 559px
-        高度: 210 * 3.78 = 794px
-        T4-S5-05: 页边距改为8mm(30px)全方位
-        内容区宽度: 559 - 30*2 = 499px
-        T4-S5-04: 字体改为SimSun(宋体)
-        T4-S5-06: 添加诊所信息头部
-        T4-S5-07: 四诊(望闻问切)增强
-        T4-S5-08: 添加煎服法和医嘱
-        T4-S5-11: 折扣显示
-    -->
-
     <UserControl.Resources>
         <!--  T4-S5-04: 字体从STKaiti改为SimSun  -->
         <FontFamily x:Key="PrintFont">SimSun, 宋体, Microsoft YaHei</FontFamily>

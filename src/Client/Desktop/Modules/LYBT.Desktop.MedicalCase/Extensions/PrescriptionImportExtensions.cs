@@ -5,8 +5,6 @@ namespace LYBT.Desktop.MedicalCase.Extensions;
 
 /// <summary>
 /// 处方导入扩展方法
-/// OpenSpec: simplify-workspace-architecture - 替代PrescriptionImportHandler
-/// OpenSpec: unify-control-data-binding - 统一使用PrescriptionItemDto
 /// CODE-08: 导入/复制时主动填充当前价格
 /// </summary>
 public static class PrescriptionImportExtensions

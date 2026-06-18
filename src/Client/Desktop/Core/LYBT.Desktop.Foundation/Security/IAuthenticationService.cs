@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 
@@ -63,7 +63,6 @@ namespace LYBT.Desktop.Foundation.Security
 
         /// <summary>
         /// 使用AutoLoginToken自动登录
-        /// OpenSpec: refactor-login-authentication (CVT-001)
         /// </summary>
         /// <param name="request">自动登录请求</param>
         /// <returns>登录响应</returns>

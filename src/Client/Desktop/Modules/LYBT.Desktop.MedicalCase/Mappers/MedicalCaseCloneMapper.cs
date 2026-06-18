@@ -1,7 +1,6 @@
 // -----------------------------------------------------------------------
 // <copyright file="MedicalCaseCloneMapper.cs" company="凌隐宝堂中医诊所">
 //     Copyright (c) 凌隐宝堂中医诊所. All rights reserved.
-//     OpenSpec: simplify-desktop-data-layer - Mapperly克隆映射器
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -16,7 +15,6 @@ namespace LYBT.Desktop.MedicalCase.Mappers;
 /// 医案DTO深拷贝映射器 - Mapperly源生成。
 /// </summary>
 /// <remarks>
-/// OpenSpec: simplify-desktop-data-layer - 替代手写Clone方法
 /// 用于创建DTO的深拷贝副本，支持变更检测和回滚
 /// </remarks>
 [Mapper(UseDeepCloning = true)]

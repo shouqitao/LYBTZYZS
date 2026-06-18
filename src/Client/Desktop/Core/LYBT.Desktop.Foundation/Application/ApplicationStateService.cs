@@ -42,13 +42,11 @@ namespace LYBT.Desktop.Foundation.Application
 
         /// <summary>
         /// 最后一次错误信息
-        /// OpenSpec: refactor-startup-connection-resilience
         /// </summary>
         public string? LastError { get; set; }
 
         /// <summary>
         /// API状态变更事件
-        /// OpenSpec: refactor-startup-connection-resilience - 事件驱动状态更新
         /// </summary>
         public event EventHandler<ApiStatusChangedEventArgs>? StatusChanged;
 
@@ -125,7 +123,6 @@ namespace LYBT.Desktop.Foundation.Application
 
         /// <summary>
         /// 更新状态并触发事件
-        /// OpenSpec: refactor-startup-connection-resilience
         /// </summary>
         private void UpdateState(bool isHealthy, string connectionStatus, string? lastError)
         {

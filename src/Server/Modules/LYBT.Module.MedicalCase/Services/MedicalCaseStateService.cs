@@ -17,7 +17,6 @@ namespace LYBT.Module.MedicalCases.Services
     /// 医案状态服务实现 - 状态管理操作
     /// Phase 3: 从MedicalCaseService拆分，遵循CQRS原则
     /// 职责：UpdateStatus, Complete, CloseCase, Suspend, Cancel等状态流转操作
-    /// OpenSpec: adopt-mapperly-unified-mapping - 移除IMapper依赖（此Service无映射需求）
     /// </summary>
     public class MedicalCaseStateService : BaseService<MedicalCase>, IMedicalCaseStateService
     {
@@ -170,7 +169,6 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 挂起医案（暂停处理）
-        /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-010)
         /// 业务规则：保存当前数据，设置状态为Suspended，不触发完成验证
         /// </summary>
         public async Task<MedicalCase?> SuspendAsync(

@@ -9,7 +9,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 {
     /// <summary>
     /// 核心ViewModel基类 - 提供最小必要功能
-    /// OpenSpec: enhance-viewmodel-architecture
     ///
     /// 设计原则:
     /// - 服务聚合: 使用IViewModelServices简化构造函数
@@ -30,7 +29,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         /// <summary>
         /// ViewModel服务聚合
-        /// OpenSpec: enhance-viewmodel-architecture
         /// </summary>
         protected IViewModelServices Services { get; }
 
@@ -104,7 +102,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         /// <summary>
         /// 构造函数 - 使用IViewModelServices聚合服务
-        /// OpenSpec: enhance-viewmodel-architecture
         /// </summary>
         /// <param name="services">ViewModel服务聚合</param>
         protected CoreViewModelBase(IViewModelServices services)

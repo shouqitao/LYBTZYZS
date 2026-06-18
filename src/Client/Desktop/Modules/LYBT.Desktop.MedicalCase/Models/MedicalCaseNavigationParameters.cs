@@ -4,7 +4,6 @@ namespace LYBT.Desktop.MedicalCase.Models
 {
     /// <summary>
     /// 医案工作区导航参数
-    /// OpenSpec: refine-medicalcase-edit-modes - EDITMODE-001, EDITMODE-002
     /// 用于在导航到MedicalCaseWorkspaceView时传递工作区模式和初始编辑状态
     /// </summary>
     public class MedicalCaseNavigationParameters : NavigationParameters

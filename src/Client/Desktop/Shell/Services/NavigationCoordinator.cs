@@ -12,7 +12,6 @@ namespace LYBT.Desktop.Shell.Services;
 
 /// <summary>
 /// 导航协调器实现 - 统一导航入口
-/// OpenSpec: unify-navigation-architecture (ADR-3 + ADR-7)
 /// 整合NavigationManager、ViewNavigationService、RoleNavigationService功能
 /// </summary>
 public class NavigationCoordinator : INavigationCoordinator
@@ -22,8 +21,6 @@ public class NavigationCoordinator : INavigationCoordinator
     private readonly IRoleRegistry _roleRegistry;
     private readonly ILogger<NavigationCoordinator> _logger;
     private readonly IUserNotificationService? _userNotificationService;
-
-    // OpenSpec: unify-navigation-architecture (ADR-7) - 导航历史管理
     private const int MaxHistorySize = 20;
     private readonly List<string> _navigationHistory = new();
 
@@ -105,7 +102,6 @@ public class NavigationCoordinator : INavigationCoordinator
             {
                 if (result.Result == true)
                 {
-                    // OpenSpec: unify-navigation-architecture (ADR-7) - 记录导航历史
                     if (_navigationHistory.Count >= MaxHistorySize)
                     {
                         _navigationHistory.RemoveAt(0);
@@ -306,13 +302,11 @@ public class NavigationCoordinator : INavigationCoordinator
 
     /// <summary>
     /// 导航历史记录
-    /// OpenSpec: unify-navigation-architecture (ADR-7)
     /// </summary>
     public IReadOnlyList<string> NavigationHistory => _navigationHistory.AsReadOnly();
 
     /// <summary>
     /// 清除导航历史
-    /// OpenSpec: unify-navigation-architecture (ADR-7)
     /// </summary>
     public void ClearHistory()
     {
@@ -322,7 +316,6 @@ public class NavigationCoordinator : INavigationCoordinator
 
     /// <summary>
     /// 导航变更事件
-    /// OpenSpec: unify-navigation-architecture (ADR-7)
     /// </summary>
     public event EventHandler<NavigationChangedEventArgs>? NavigationChanged;
 
@@ -332,7 +325,6 @@ public class NavigationCoordinator : INavigationCoordinator
 
     /// <summary>
     /// 显示登录对话框
-    /// OpenSpec: unify-navigation-architecture (ADR-7)
     /// </summary>
     public void ShowLoginDialog()
     {
@@ -345,7 +337,6 @@ public class NavigationCoordinator : INavigationCoordinator
 
     /// <summary>
     /// 清除登录区域
-    /// OpenSpec: unify-navigation-architecture (ADR-7)
     /// </summary>
     public void ClearLoginRegion()
     {
@@ -358,7 +349,6 @@ public class NavigationCoordinator : INavigationCoordinator
 
     /// <summary>
     /// 清除内容区域
-    /// OpenSpec: unify-navigation-architecture (ADR-7)
     /// </summary>
     public void ClearContentRegion()
     {
@@ -375,7 +365,6 @@ public class NavigationCoordinator : INavigationCoordinator
 
     /// <summary>
     /// 订阅Region集合变化事件（用于导航监控）
-    /// OpenSpec: unify-navigation-architecture (ADR-7)
     /// </summary>
     public void SubscribeToRegionCollection()
     {
@@ -389,7 +378,6 @@ public class NavigationCoordinator : INavigationCoordinator
 
     /// <summary>
     /// 取消Region集合变化事件订阅
-    /// OpenSpec: unify-navigation-architecture (ADR-7)
     /// </summary>
     public void UnsubscribeFromRegionCollection()
     {

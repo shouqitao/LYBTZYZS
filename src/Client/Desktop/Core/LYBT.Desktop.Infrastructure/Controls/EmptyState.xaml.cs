@@ -7,7 +7,6 @@ namespace LYBT.Desktop.Infrastructure.Controls
 {
     /// <summary>
     /// 空状态控件
-    /// OpenSpec: refactor-master-detail-layout
     ///
     /// 功能：
     /// - 显示空状态提示（图标+标题+副标题）
