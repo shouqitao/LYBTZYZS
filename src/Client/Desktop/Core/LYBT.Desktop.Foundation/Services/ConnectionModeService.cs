@@ -1,10 +1,11 @@
 // ---------------------------------------------------------------------------
 // ConnectionModeService — Remote/Local mode detection and transparent fallback
 // ---------------------------------------------------------------------------
-// Wraps IConnectionSettingsService (URL) and IApplicationStateService (health)
-// to expose a mode-oriented view of the connection: probe remote health, fall
-// back to embedded LocalWebAPI when the remote server is unreachable, and keep
-// subscribers in sync via ModeChanged.
+// Wraps IConnectionSettingsService (URL + PreferredMode + RemoteUrl) and
+// IApplicationStateService (health) to expose a mode-oriented view of the
+// connection: probe remote health, fall back to embedded LocalWebAPI when
+// the remote server is unreachable, and keep subscribers in sync via
+// ModeChanged.
 // ---------------------------------------------------------------------------
 
 using System.Net.Http;
@@ -21,9 +22,6 @@ namespace LYBT.Desktop.Foundation.Services;
 /// </summary>
 public sealed class ConnectionModeService : IConnectionModeService, IDisposable
 {
-    /// <summary>LocalWebAPI default base URL (anonymous health endpoint).</summary>
-    private const string LocalBaseUrl = "http://localhost:5100";
-
     /// <summary>Remote WebAPI anonymous health path.</summary>
     private const string RemoteHealthPath = "/api/v1/health";
 
@@ -39,10 +37,12 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     private readonly SemaphoreSlim _detectGate = new(1, 1);
 
     private ConnectionMode _currentMode;
+    private bool _isRemoteAvailable;
 
     /// <summary>
-    /// Build the service. The initial <see cref="CurrentMode"/> is derived from
-    /// the configured URL (local URL → Local, otherwise Remote).
+    /// Build the service. The initial <see cref="CurrentMode"/> is derived
+    /// from <see cref="IConnectionSettingsService.PreferredMode"/> /
+    /// <see cref="IConnectionSettingsService.IsLocal"/>.
     /// </summary>
     public ConnectionModeService(
         IConnectionSettingsService connectionSettings,
@@ -57,7 +57,6 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
             ? ConnectionMode.Local
             : ConnectionMode.Remote;
 
-        // Keep this service's view in sync if the URL is changed elsewhere.
         _connectionSettings.UrlChanged += OnUrlChanged;
     }
 
@@ -71,6 +70,9 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
 
     public bool IsRemote => _currentMode == ConnectionMode.Remote;
     public bool IsLocal => _currentMode == ConnectionMode.Local;
+
+    /// <inheritdoc />
+    public bool IsRemoteAvailable => _isRemoteAvailable;
 
     /// <summary>API status message including mode info.</summary>
     public string ApiStatusDisplay => _currentMode == ConnectionMode.Remote
@@ -86,26 +88,31 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
         await _detectGate.WaitAsync().ConfigureAwait(false);
         try
         {
-            var currentUrl = _connectionSettings.CurrentUrl;
+            var preferred = _connectionSettings.PreferredMode;
 
-            // If current URL is remote → probe it
-            if (!_connectionSettings.IsLocal)
+            if (preferred == "Remote" && !string.IsNullOrEmpty(_connectionSettings.RemoteUrl))
             {
-                if (await TestRemoteConnectionAsync(currentUrl).ConfigureAwait(false))
+                _isRemoteAvailable = await TestRemoteConnectionAsync(_connectionSettings.RemoteUrl).ConfigureAwait(false);
+                if (_isRemoteAvailable)
                 {
-                    _logger.LogInformation("[CONNECTION-MODE] Remote server reachable at {Url} → Remote mode", currentUrl);
+                    _logger.LogInformation("[CONNECTION-MODE] Remote server reachable at {Url} → Remote mode", _connectionSettings.RemoteUrl);
                     ApplyMode(ConnectionMode.Remote);
                     return ConnectionMode.Remote;
                 }
 
-                // Remote unreachable → fall back to local
-                _logger.LogWarning("[CONNECTION-MODE] Remote server unreachable at {Url}, falling back to Local mode", currentUrl);
-                await SwitchUrlAsync(LocalBaseUrl).ConfigureAwait(false);
-                ApplyMode(ConnectionMode.Local);
-                return ConnectionMode.Local;
+                _logger.LogWarning("[CONNECTION-MODE] Remote server unreachable at {Url}, falling back to Local mode", _connectionSettings.RemoteUrl);
             }
 
-            // Current URL is local → stay local (embedded LocalWebAPI is always available)
+            // Check if remote is available (for UI button state) even when we end up in Local mode.
+            if (!string.IsNullOrEmpty(_connectionSettings.RemoteUrl))
+            {
+                _isRemoteAvailable = await TestRemoteConnectionAsync(_connectionSettings.RemoteUrl).ConfigureAwait(false);
+            }
+            else
+            {
+                _isRemoteAvailable = false;
+            }
+
             ApplyMode(ConnectionMode.Local);
             return ConnectionMode.Local;
         }
@@ -113,6 +120,19 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
         {
             _detectGate.Release();
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> CheckRemoteAvailableAsync()
+    {
+        if (string.IsNullOrEmpty(_connectionSettings.RemoteUrl))
+        {
+            _isRemoteAvailable = false;
+            return false;
+        }
+
+        _isRemoteAvailable = await TestRemoteConnectionAsync(_connectionSettings.RemoteUrl).ConfigureAwait(false);
+        return _isRemoteAvailable;
     }
 
     /// <inheritdoc />
@@ -144,7 +164,7 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     /// <inheritdoc />
     public async Task<bool> TestLocalConnectionAsync()
     {
-        var healthUrl = $"{LocalBaseUrl}{LocalHealthPath}";
+        var healthUrl = $"{_connectionSettings.LocalUrl}{LocalHealthPath}";
         try
         {
             using var client = new HttpClient { Timeout = LocalProbeTimeout };
@@ -164,23 +184,21 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
         switch (mode)
         {
             case ConnectionMode.Local:
-                // Drive the URL to the embedded LocalWebAPI; the URL change
-                // propagates back through OnUrlChanged and sets the mode.
-                SwitchUrlFireAndForget(LocalBaseUrl);
+                _ = _connectionSettings.SavePreferredModeAsync("Local");
+                ApplyMode(ConnectionMode.Local);
                 break;
 
             case ConnectionMode.Remote:
-                // Keep the current URL (assumed already remote). If the URL is
-                // currently local we cannot invent a remote address — the caller
-                // is expected to have set one via the login UI first.
-                if (_connectionSettings.IsLocal)
+                if (!string.IsNullOrEmpty(_connectionSettings.RemoteUrl) && _isRemoteAvailable)
+                {
+                    _ = _connectionSettings.SavePreferredModeAsync("Remote");
+                    ApplyMode(ConnectionMode.Remote);
+                }
+                else
                 {
                     _logger.LogWarning(
-                        "[CONNECTION-MODE] SetMode(Remote) called while URL is local ({Url}); "
-                        + "update the connection URL before switching to Remote",
-                        _connectionSettings.CurrentUrl);
+                        "[CONNECTION-MODE] Cannot switch to Remote: no remote URL configured or server unreachable");
                 }
-                ApplyMode(ConnectionMode.Remote);
                 break;
 
             case ConnectionMode.Auto:
@@ -210,40 +228,6 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
         _applicationState.IsApiHealthy = true;
 
         ModeChanged?.Invoke(this, mode);
-    }
-
-    /// <summary>
-    /// Update the connection URL asynchronously. <see cref="IConnectionSettingsService.SetUrlAsync"/>
-    /// assigns its internal URL field synchronously before the first await, so
-    /// <see cref="IConnectionSettingsService.CurrentUrl"/> is consistent immediately
-    /// after this returns; only persistence is deferred.
-    /// </summary>
-    private async Task SwitchUrlAsync(string url)
-    {
-        try
-        {
-            await _connectionSettings.SetUrlAsync(url).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "[CONNECTION-MODE] Failed to switch URL to {Url}", url);
-        }
-    }
-
-    /// <summary>
-    /// Fire-and-forget variant for the synchronous <see cref="SetMode"/> entry point.
-    /// The URL field updates synchronously inside SetUrlAsync before the first await.
-    /// </summary>
-    private async void SwitchUrlFireAndForget(string url)
-    {
-        try
-        {
-            await _connectionSettings.SetUrlAsync(url).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "[CONNECTION-MODE] Failed to switch URL to {Url}", url);
-        }
     }
 
     /// <summary>

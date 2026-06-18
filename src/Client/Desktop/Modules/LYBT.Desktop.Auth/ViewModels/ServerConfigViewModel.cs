@@ -29,6 +29,7 @@ public partial class ServerConfigViewModel : DialogViewModelBase
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SaveOnlyCommand))]
     private string _remoteUrl = string.Empty;
 
     [ObservableProperty]
@@ -69,6 +70,25 @@ public partial class ServerConfigViewModel : DialogViewModelBase
     {
         OnPropertyChanged(nameof(IsNotTesting));
         TestConnectionCommand.NotifyCanExecuteChanged();
+        ConfirmCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>
+    /// IsLoading 变更时同步刷新 SaveOnlyCommand 的 CanExecute
+    /// </summary>
+    protected override void OnIsLoadingChangedCore(bool value)
+    {
+        base.OnIsLoadingChangedCore(value);
+        SaveOnlyCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>
+    /// IsBusy 变更时同步刷新 SaveOnlyCommand 的 CanExecute
+    /// </summary>
+    protected override void OnIsBusyChangedCore(bool value)
+    {
+        base.OnIsBusyChangedCore(value);
+        SaveOnlyCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>
@@ -112,10 +132,13 @@ public partial class ServerConfigViewModel : DialogViewModelBase
     private bool CanTestConnection() => TestStatus != ConnectionTestStatus.Testing;
 
     /// <summary>
-    /// 保存并关闭 - 校验 URL 合法性后持久化到 IConnectionSettingsService
+    /// "保存并启用" - 校验 URL 合法性 + 测试通过后，持久化 URL 并切换到远程模式
     /// </summary>
     protected override bool CanConfirm() =>
-        !string.IsNullOrWhiteSpace(RemoteUrl) && !IsLoading && !IsBusy;
+        !string.IsNullOrWhiteSpace(RemoteUrl)
+        && TestStatus == ConnectionTestStatus.Success
+        && !IsLoading
+        && !IsBusy;
 
     protected override void Confirm()
     {
@@ -124,21 +147,55 @@ public partial class ServerConfigViewModel : DialogViewModelBase
             return;
         }
 
-        SaveAsync().SafeFireAndForget(ex => Logger.LogError(ex, "[SERVER-CONFIG] 保存配置失败"));
+        SaveAndEnableAsync().SafeFireAndForget(ex => Logger.LogError(ex, "[SERVER-CONFIG] 保存并启用失败"));
     }
 
-    private async Task SaveAsync()
+    private async Task SaveAndEnableAsync()
     {
         try
         {
-            SetBusy(true, "正在保存...");
+            SetBusy(true, "正在保存并启用...");
             await _connectionSettingsService.SetUrlAsync(RemoteUrl);
-            Logger.LogInformation("[SERVER-CONFIG] 已保存服务器地址: {Url}", RemoteUrl);
+            _connectionModeService.SetMode(ConnectionMode.Remote);
+            Logger.LogInformation("[SERVER-CONFIG] 已保存并启用远程模式: {Url}", RemoteUrl);
             CloseDialog(ButtonResult.OK);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "[SERVER-CONFIG] 保存配置失败");
+            Logger.LogError(ex, "[SERVER-CONFIG] 保存并启用失败");
+            await Services.UiThreadDispatcher.InvokeAsync(() =>
+            {
+                TestStatusMessage = $"保存失败: {ex.Message}";
+            });
+        }
+        finally
+        {
+            SetBusy(false);
+        }
+    }
+
+    /// <summary>
+    /// "仅保存" - 仅持久化远程 URL，不切换当前模式 (用户可能仍处于本地模式)
+    /// </summary>
+    private bool CanSaveOnly() =>
+        !string.IsNullOrWhiteSpace(RemoteUrl)
+        && _connectionSettingsService.IsValidUrl(RemoteUrl)
+        && !IsLoading
+        && !IsBusy;
+
+    [RelayCommand(CanExecute = nameof(CanSaveOnly))]
+    private async Task SaveOnlyAsync()
+    {
+        try
+        {
+            SetBusy(true, "正在保存...");
+            await _connectionSettingsService.SaveRemoteUrlAsync(RemoteUrl);
+            Logger.LogInformation("[SERVER-CONFIG] 已保存远程地址 (未切换模式): {Url}", RemoteUrl);
+            CloseDialog(ButtonResult.OK);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "[SERVER-CONFIG] 仅保存失败");
             await Services.UiThreadDispatcher.InvokeAsync(() =>
             {
                 TestStatusMessage = $"保存失败: {ex.Message}";

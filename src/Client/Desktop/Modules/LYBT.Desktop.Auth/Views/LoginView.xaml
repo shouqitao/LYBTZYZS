@@ -142,14 +142,18 @@
                             </Button.Style>
                         </Button>
                         <Button Command="{Binding SwitchToRemoteCommand}" Content="🌐 切换到远程"
-                                FontSize="13" Foreground="#8D6E63" Background="Transparent" BorderThickness="0"
+                                FontSize="13" Background="Transparent" BorderThickness="0"
                                 Cursor="Hand" Padding="12,6">
                             <Button.Style>
                                 <Style TargetType="Button">
+                                    <Setter Property="Foreground" Value="#8D6E63" />
                                     <Setter Property="Visibility" Value="Collapsed" />
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsRemoteMode}" Value="False">
                                             <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsRemoteAvailable}" Value="False">
+                                            <Setter Property="Foreground" Value="#AAAAAA" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>

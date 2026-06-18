@@ -49,6 +49,14 @@ public interface IConnectionModeService
     /// <summary>True when the effective mode is <see cref="ConnectionMode.Local"/>.</summary>
     bool IsLocal { get; }
 
+    /// <summary>
+    /// Cached result of the last remote availability probe. Updated by
+    /// <see cref="DetectBestModeAsync"/>, <see cref="SetMode"/> and
+    /// <see cref="CheckRemoteAvailableAsync"/>. Used by the UI to enable or
+    /// disable the "switch to Remote" button.
+    /// </summary>
+    bool IsRemoteAvailable { get; }
+
     /// <summary>API status display text with mode info (e.g., "远程 WebAPI 已连接").</summary>
     string ApiStatusDisplay { get; }
 
@@ -58,6 +66,14 @@ public interface IConnectionModeService
     /// </summary>
     /// <returns>The resolved effective mode (Remote or Local).</returns>
     Task<ConnectionMode> DetectBestModeAsync();
+
+    /// <summary>
+    /// Re-probe the configured remote URL and cache the result in
+    /// <see cref="IsRemoteAvailable"/>. Returns the probe result. No-op when
+    /// no remote URL is configured.
+    /// </summary>
+    /// <returns>True when the remote server is reachable.</returns>
+    Task<bool> CheckRemoteAvailableAsync();
 
     /// <summary>
     /// Test whether the remote WebAPI at <paramref name="url"/> is reachable.

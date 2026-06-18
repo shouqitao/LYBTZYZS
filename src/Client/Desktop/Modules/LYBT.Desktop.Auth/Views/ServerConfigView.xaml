@@ -135,10 +135,38 @@
                 <Button
                     MinWidth="80"
                     Padding="16,8"
-                    Command="{Binding ConfirmCommand}"
+                    Command="{Binding SaveOnlyCommand}"
                     Content="保存"
                     Cursor="Hand"
-                    FontSize="14">
+                    FontSize="14"
+                    ToolTip="仅保存远程地址，不切换当前模式">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                            <Setter Property="BorderThickness" Value="1" />
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource LightPrimaryBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{DynamicResource DisabledTextBrush}" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource DisabledTextBrush}" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button
+                    MinWidth="96"
+                    Margin="12,0,0,0"
+                    Padding="16,8"
+                    Command="{Binding ConfirmCommand}"
+                    Content="保存并启用"
+                    Cursor="Hand"
+                    FontSize="14"
+                    ToolTip="保存远程地址并切换到远程模式 (需先通过测试)">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />

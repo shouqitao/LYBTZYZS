@@ -23,11 +23,26 @@ public interface IConnectionSettingsService
     /// </summary>
     bool IsLocal { get; }
 
+    /// <summary>LocalWebAPI fixed address (always http://localhost:5100).</summary>
+    string LocalUrl { get; }
+
+    /// <summary>Saved remote server URL (persisted in appsettings.json).</summary>
+    string RemoteUrl { get; }
+
+    /// <summary>Last preferred mode: "Local" or "Remote" (persisted).</summary>
+    string PreferredMode { get; }
+
     /// <summary>
     /// Set a new connection URL, persist it, and notify subscribers.
     /// </summary>
     /// <param name="url">The new URL (e.g., "http://192.168.190.248:5000").</param>
     Task SetUrlAsync(string url);
+
+    /// <summary>Save the remote URL to persistent storage.</summary>
+    Task SaveRemoteUrlAsync(string url);
+
+    /// <summary>Save the preferred mode to persistent storage.</summary>
+    Task SavePreferredModeAsync(string mode);
 
     /// <summary>Fires when the connection URL changes. Payload is the new URL.</summary>
     event EventHandler<string>? UrlChanged;

@@ -12,13 +12,20 @@ namespace LYBT.Desktop.Infrastructure.Services;
 
 /// <summary>
 /// Manages the active API connection URL, persists it to appsettings.json,
-/// and notifies subscribers on change.
+/// and notifies subscribers on change. Supports PreferredMode + RemoteUrl
+/// persistence for explicit mode switching.
 /// </summary>
 public sealed class ConnectionSettingsService : IConnectionSettingsService
 {
+    /// <summary>LocalWebAPI fixed address (always http://localhost:5100).</summary>
+    public const string LocalUrlConstant = "http://localhost:5100";
+
     private readonly ILogger<ConnectionSettingsService> _logger;
     private readonly string _settingsFilePath;
+
     private string _currentUrl;
+    private string _remoteUrl;
+    private string _preferredMode;
 
     public ConnectionSettingsService(
         IConfiguration configuration,
@@ -26,23 +33,40 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        var url = configuration["ApiClient:BaseUrl"];
-        if (string.IsNullOrWhiteSpace(url))
+        var baseUrl = configuration["ApiClient:BaseUrl"];
+        if (string.IsNullOrWhiteSpace(baseUrl))
         {
-            url = "http://localhost:5000";
-            _logger.LogInformation("[CONNECTION-CFG] No saved URL, defaulting to {Url}", url);
+            baseUrl = LocalUrlConstant;
+            _logger.LogInformation("[CONNECTION-CFG] No saved BaseUrl, defaulting to {Url}", baseUrl);
         }
-        _currentUrl = url;
+        _currentUrl = baseUrl;
+
+        _remoteUrl = configuration["ApiClient:RemoteUrl"] ?? string.Empty;
+
+        var preferred = configuration["ApiClient:PreferredMode"];
+        _preferredMode = string.IsNullOrWhiteSpace(preferred) ? "Local" : preferred;
 
         _settingsFilePath = Path.Combine(
             Directory.GetCurrentDirectory(), "appsettings.json");
     }
 
     /// <inheritdoc />
-    public string CurrentUrl => _currentUrl;
+    public string LocalUrl => LocalUrlConstant;
 
     /// <inheritdoc />
-    public bool IsLocal => IsLocalUrl(_currentUrl);
+    public string RemoteUrl => _remoteUrl;
+
+    /// <inheritdoc />
+    public string PreferredMode => _preferredMode;
+
+    /// <inheritdoc />
+    public string CurrentUrl =>
+        _preferredMode == "Remote" && !string.IsNullOrEmpty(_remoteUrl)
+            ? _remoteUrl
+            : LocalUrlConstant;
+
+    /// <inheritdoc />
+    public bool IsLocal => _preferredMode != "Remote" || string.IsNullOrEmpty(_remoteUrl);
 
     /// <inheritdoc />
     public event EventHandler<string>? UrlChanged;
@@ -56,17 +80,69 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
         if (!IsValidUrl(url))
             throw new ArgumentException($"Invalid URL format: {url}", nameof(url));
 
-        if (_currentUrl == url)
-            return;
+        var normalized = url.TrimEnd('/');
+
+        if (IsLocalUrl(normalized))
+        {
+            _preferredMode = "Local";
+            await PersistPreferredModeAsync("Local").ConfigureAwait(false);
+        }
+        else
+        {
+            _remoteUrl = normalized;
+            _preferredMode = "Remote";
+            await PersistRemoteUrlAsync(normalized).ConfigureAwait(false);
+            await PersistPreferredModeAsync("Remote").ConfigureAwait(false);
+        }
 
         var oldUrl = _currentUrl;
-        _currentUrl = url;
+        _currentUrl = CurrentUrl;
 
-        _logger.LogInformation("[CONNECTION-CFG] URL changed: {OldUrl} -> {NewUrl}", oldUrl, url);
+        _logger.LogInformation("[CONNECTION-CFG] URL changed: {OldUrl} -> {NewUrl}", oldUrl, _currentUrl);
 
-        await PersistUrlAsync(url);
+        UrlChanged?.Invoke(this, _currentUrl);
+    }
 
-        UrlChanged?.Invoke(this, url);
+    /// <inheritdoc />
+    public async Task SaveRemoteUrlAsync(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            _remoteUrl = string.Empty;
+        }
+        else
+        {
+            if (!IsValidUrl(url))
+                throw new ArgumentException($"Invalid URL format: {url}", nameof(url));
+
+            _remoteUrl = url.TrimEnd('/');
+        }
+
+        await PersistRemoteUrlAsync(_remoteUrl).ConfigureAwait(false);
+
+        var oldUrl = _currentUrl;
+        _currentUrl = CurrentUrl;
+        if (oldUrl != _currentUrl)
+        {
+            UrlChanged?.Invoke(this, _currentUrl);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task SavePreferredModeAsync(string mode)
+    {
+        if (mode != "Local" && mode != "Remote")
+            throw new ArgumentException($"Invalid mode: {mode}. Expected 'Local' or 'Remote'.", nameof(mode));
+
+        _preferredMode = mode;
+        await PersistPreferredModeAsync(mode).ConfigureAwait(false);
+
+        var oldUrl = _currentUrl;
+        _currentUrl = CurrentUrl;
+        if (oldUrl != _currentUrl)
+        {
+            UrlChanged?.Invoke(this, _currentUrl);
+        }
     }
 
     /// <inheritdoc />
@@ -79,7 +155,21 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
             || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
     }
 
-    private async Task PersistUrlAsync(string url)
+    private async Task PersistRemoteUrlAsync(string url)
+    {
+        await PersistSettingAsync("ApiClient", "RemoteUrl", url).ConfigureAwait(false);
+    }
+
+    private async Task PersistPreferredModeAsync(string mode)
+    {
+        await PersistSettingAsync("ApiClient", "PreferredMode", mode).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Persist a single key under a top-level section, creating the section
+    /// if missing. Other keys in the section are preserved.
+    /// </summary>
+    private async Task PersistSettingAsync(string section, string key, string value)
     {
         try
         {
@@ -87,26 +177,24 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
             var root = JsonNode.Parse(json)?.AsObject();
             if (root is null) return;
 
-            if (root.TryGetPropertyValue("ApiClient", out var apiClientNode)
-                && apiClientNode is JsonObject)
+            if (root.TryGetPropertyValue(section, out var sectionNode) && sectionNode is JsonObject sectionObj)
             {
-                ((JsonObject)apiClientNode)["BaseUrl"] = url;
+                sectionObj[key] = value;
             }
             else
             {
-                root["ApiClient"] = JsonNode.Parse(
-                    $"{{\"BaseUrl\": \"{url}\"}}");
+                root[section] = JsonNode.Parse($"{{\"{key}\": \"{value}\"}}");
             }
 
             var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
             await File.WriteAllTextAsync(_settingsFilePath,
                 root.ToJsonString(options));
 
-            _logger.LogDebug("[CONNECTION-CFG] URL persisted");
+            _logger.LogDebug("[CONNECTION-CFG] Persisted {Section}:{Key} = {Value}", section, key, value);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "[CONNECTION-CFG] Failed to persist URL");
+            _logger.LogWarning(ex, "[CONNECTION-CFG] Failed to persist {Section}:{Key}", section, key);
         }
     }
 

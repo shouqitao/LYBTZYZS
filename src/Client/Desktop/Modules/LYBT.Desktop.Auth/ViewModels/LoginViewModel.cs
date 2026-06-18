@@ -68,6 +68,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         // 连接模式显示 (远程模式/本地模式)
         private string _currentModeDisplay = "检测中...";
         private bool _isRemoteMode;
+        private bool _isRemoteAvailable;
 
         public string Username
         {
@@ -210,6 +211,21 @@ namespace LYBT.Desktop.Auth.ViewModels
             set => SetProperty(ref _isRemoteMode, value);
         }
 
+        /// <summary>
+        /// 远程服务是否可用 - 控制"切换到远程"按钮的 CanExecute
+        /// </summary>
+        public bool IsRemoteAvailable
+        {
+            get => _isRemoteAvailable;
+            set
+            {
+                if (SetProperty(ref _isRemoteAvailable, value))
+                {
+                    (SwitchToRemoteCommand as DelegateCommand)?.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
         public ICommand LoginCommand { get; }
 
         /// <summary>
@@ -260,7 +276,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             RetryApiCheckCommand = new DelegateCommand(async () => await ExecuteRetryApiCheckAsync(), () => ApiStatus == ApiHealthStatus.Unhealthy);
             OpenSettingsCommand = new DelegateCommand(ExecuteOpenSettings);
             SwitchToLocalCommand = new DelegateCommand(ExecuteSwitchToLocal);
-            SwitchToRemoteCommand = new DelegateCommand(ExecuteSwitchToRemote);
+            SwitchToRemoteCommand = new DelegateCommand(ExecuteSwitchToRemote, () => IsRemoteAvailable);
 
             _applicationStateService.StatusChanged += OnApiStatusChanged;
 
@@ -271,6 +287,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                 // 初始化当前模式显示
                 CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
                 IsRemoteMode = _connectionModeService.IsRemote;
+                IsRemoteAvailable = _connectionModeService.IsRemoteAvailable;
             }
 
             // P0-FIX: ErrorMessage/StatusMessage 变更时通知 HasMessage 属性
@@ -351,13 +368,15 @@ namespace LYBT.Desktop.Auth.ViewModels
                 });
 
                 var mode = await _connectionModeService.DetectBestModeAsync();
+                var remoteAvailable = await _connectionModeService.CheckRemoteAvailableAsync();
 
                 await Services.UiThreadDispatcher.InvokeAsync(() =>
                 {
+                    IsRemoteAvailable = remoteAvailable;
                     CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
                     IsRemoteMode = _connectionModeService.IsRemote;
-                    Logger.LogInformation("[VM] Login.DetectMode - 连接模式: {Mode} ({Display})",
-                        mode, _connectionModeService.CurrentModeDisplay);
+                    Logger.LogInformation("[VM] Login.DetectMode - 连接模式: {Mode} ({Display}), 远程可用: {RemoteAvailable}",
+                        mode, _connectionModeService.CurrentModeDisplay, remoteAvailable);
                 });
             }
             catch (Exception ex)
@@ -378,6 +397,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                 {
                     CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
                     IsRemoteMode = _connectionModeService.IsRemote;
+                    IsRemoteAvailable = _connectionModeService.IsRemoteAvailable;
                 });
             }
             catch (Exception ex)
@@ -559,20 +579,23 @@ namespace LYBT.Desktop.Auth.ViewModels
             });
         }
 
-        /// <summary>切换到本地模式</summary>
+        /// <summary>切换到本地模式 - 直接切换并持久化</summary>
         private void ExecuteSwitchToLocal()
         {
-            if (_connectionModeService is null || _connectionSettingsService is null) return;
+            if (_connectionModeService is null)
+            {
+                Logger.LogWarning("[VM] Login.SwitchToLocal - IConnectionModeService 未注入");
+                return;
+            }
 
             try
             {
-                Logger.LogInformation("[VM] Login.SwitchToLocal → localhost:5000");
+                Logger.LogInformation("[VM] Login.SwitchToLocal → 本地模式");
                 _connectionModeService.SetMode(ConnectionMode.Local);
 
                 CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
                 IsRemoteMode = _connectionModeService.IsRemote;
                 ApiStatusMessage = _connectionModeService.ApiStatusDisplay;
-                ApiStatus = ApiHealthStatus.Healthy;
             }
             catch (Exception ex)
             {
@@ -580,27 +603,26 @@ namespace LYBT.Desktop.Auth.ViewModels
             }
         }
 
-        /// <summary>切换到远程模式 — 先打开配置对话框让用户输入远程地址</summary>
+        /// <summary>
+        /// 切换到远程模式 - 直接切换（远程可用性已由 CanExecute 校验）
+        /// 远程 URL 由"服务器配置"对话框维护，此处不再弹窗
+        /// </summary>
         private void ExecuteSwitchToRemote()
         {
-            if (_dialogService is null || _connectionSettingsService is null)
+            if (_connectionModeService is null)
             {
-                Logger.LogWarning("[VM] Login.SwitchToRemote - DI service missing");
+                Logger.LogWarning("[VM] Login.SwitchToRemote - IConnectionModeService 未注入");
                 return;
             }
 
             try
             {
-                _dialogService.ShowDialog(nameof(Views.ServerConfigView), null, result =>
-                {
-                    if (result.Result == ButtonResult.OK && _connectionModeService != null)
-                    {
-                        Logger.LogInformation("[VM] Login.SwitchToRemote - URL saved, updating mode");
-                        CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
-                        IsRemoteMode = _connectionModeService.IsRemote;
-                        ApiStatusMessage = _connectionModeService.ApiStatusDisplay;
-                    }
-                });
+                Logger.LogInformation("[VM] Login.SwitchToRemote → 远程模式");
+                _connectionModeService.SetMode(ConnectionMode.Remote);
+
+                CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
+                IsRemoteMode = _connectionModeService.IsRemote;
+                ApiStatusMessage = _connectionModeService.ApiStatusDisplay;
             }
             catch (Exception ex)
             {
