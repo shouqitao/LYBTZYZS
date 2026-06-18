@@ -3,6 +3,7 @@ using System.Windows;
 using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -21,6 +22,7 @@ public class NavigationCoordinator : INavigationCoordinator
     private readonly IRoleRegistry _roleRegistry;
     private readonly ILogger<NavigationCoordinator> _logger;
     private readonly IUserNotificationService? _userNotificationService;
+    private readonly IModuleLoadingService? _moduleLoadingService;
     private const int MaxHistorySize = 20;
     private readonly List<string> _navigationHistory = new();
 
@@ -30,18 +32,40 @@ public class NavigationCoordinator : INavigationCoordinator
     // 导航架构改进方案 v1.0 — 面包屑
     private readonly List<BreadcrumbItem> _breadcrumbs = new();
 
+    /// <summary>
+    /// 视图名 → 业务模块名映射。
+    /// 用于懒加载业务模块（InitializationMode.OnDemand）—— 首次导航到该视图前确保模块已加载。
+    /// 角色工作台 / Auth / 未在此映射中的视图视为已加载（WhenAvailable 或不依赖业务模块）。
+    /// </summary>
+    private static readonly Dictionary<string, string> ViewToModuleMap = new(StringComparer.Ordinal)
+    {
+        { ViewNames.PatientManagement, "PatientsModule" },
+        { ViewNames.PatientSelection, "PatientsModule" },
+        { ViewNames.ClinicalWorkspace, "PatientsModule" },
+        { ViewNames.HerbManagement, "HerbsModule" },
+        { ViewNames.FormulaManagement, "FormulaModule" },
+        { ViewNames.UserManagement, "UsersModule" },
+        { ViewNames.MedicalCaseManagement, "MedicalCaseModule" },
+        { ViewNames.MedicalCaseWorkspace, "MedicalCaseModule" },
+        { ViewNames.MedicalCaseMasterDetail, "MedicalCaseModule" },
+        { ViewNames.RegistrationList, "RegistrationModule" },
+        { ViewNames.ReportsHome, "ReportsModule" },
+    };
+
     public NavigationCoordinator(
         IRegionManager regionManager,
         ISessionManager sessionManager,
         IRoleRegistry roleRegistry,
         ILogger<NavigationCoordinator> logger,
-        IUserNotificationService? userNotificationService = null)
+        IUserNotificationService? userNotificationService = null,
+        IModuleLoadingService? moduleLoadingService = null)
     {
         _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
         _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
         _roleRegistry = roleRegistry ?? throw new ArgumentNullException(nameof(roleRegistry));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _userNotificationService = userNotificationService;
+        _moduleLoadingService = moduleLoadingService;
     }
 
     #region 基础导航 (原有)
@@ -92,6 +116,9 @@ public class NavigationCoordinator : INavigationCoordinator
     {
         try
         {
+            // 懒加载业务模块：首次导航前确保模块已加载
+            EnsureModuleLoaded(viewName);
+
             var fromView = CurrentView;
             _logger.LogInformation("导航到 {ViewName}", viewName);
 
@@ -176,6 +203,34 @@ public class NavigationCoordinator : INavigationCoordinator
             navParams.Add(kvp.Key, kvp.Value);
         }
         return navParams;
+    }
+
+    /// <summary>
+    /// 确保目标视图所属的业务模块已加载（懒加载支持）。
+    /// ModuleLoadingService.LoadModuleAsync 内部将同步 Prism LoadModule 包裹在 Task.Run 中，
+    /// 此处用 GetAwaiter().GetResult() 同步等待 —— 仅在首次导航时触发，后续 IsModuleLoaded 命中即跳过。
+    /// </summary>
+    private void EnsureModuleLoaded(string viewName)
+    {
+        if (_moduleLoadingService == null)
+            return;
+
+        if (!ViewToModuleMap.TryGetValue(viewName, out var moduleName))
+            return;
+
+        if (_moduleLoadingService.IsModuleLoaded(moduleName))
+            return;
+
+        try
+        {
+            _logger.LogDebug("懒加载业务模块: {ModuleName}（触发视图: {ViewName}）", moduleName, viewName);
+            _moduleLoadingService.LoadModuleAsync(moduleName).GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            // 加载失败不阻塞导航 —— RequestNavigate 会给出更具体的错误反馈
+            _logger.LogWarning(ex, "懒加载模块 {ModuleName} 失败，将继续尝试导航", moduleName);
+        }
     }
 
     /// <summary>

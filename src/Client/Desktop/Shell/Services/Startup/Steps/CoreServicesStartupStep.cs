@@ -28,6 +28,10 @@ public class CoreServicesStartupStep : IStartupStep
     public int Order => 30;
 
     /// <inheritdoc />
+    /// <remarks>与 ModuleCoordinatorStartupStep 并行执行（同一 ParallelGroup）</remarks>
+    public string? ParallelGroup => "CoreInit";
+
+    /// <inheritdoc />
     public bool IsRequired => true;
 
     /// <inheritdoc />

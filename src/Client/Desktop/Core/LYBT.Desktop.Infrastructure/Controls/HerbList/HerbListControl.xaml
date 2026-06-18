@@ -30,7 +30,7 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!--  药材列表区域  -->
+            <!--  药材列表区域（启用 UI 虚拟化以优化大量药材渲染）  -->
             <ScrollViewer
                 Grid.Row="0"
                 HorizontalScrollBarVisibility="Disabled"
@@ -38,10 +38,14 @@
                 <ItemsControl
                     x:Name="ItemsHost"
                     ItemContainerStyle="{StaticResource HerbItemStyle}"
-                    ItemsSource="{Binding Items}">
+                    ItemsSource="{Binding Items}"
+                    VirtualizingStackPanel.IsVirtualizing="True"
+                    VirtualizingStackPanel.VirtualizationMode="Recycling">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <UniformGrid x:Name="ItemsGrid" Columns="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=Columns}" />
+                            <VirtualizingStackPanel
+                                IsVirtualizing="True"
+                                VirtualizationMode="Recycling" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>

@@ -356,25 +356,26 @@ public partial class App : PrismApplication
 
         // 核心模块 - 立即加载
         moduleCatalog.AddModule<AuthenticationModule>(InitializationMode.WhenAvailable);
-        moduleCatalog.AddModule<UsersModule>(InitializationMode.WhenAvailable);
+        // UsersModule 列为业务模块，按需加载（由 NavigationCoordinator 在首次导航时触发）
+        moduleCatalog.AddModule<UsersModule>(InitializationMode.OnDemand);
         moduleCatalog.AddModule<ClinicalModule>(InitializationMode.WhenAvailable);
         moduleCatalog.AddModule<AdminModule>(InitializationMode.WhenAvailable);
         moduleCatalog.AddModule<ReceptionistModule>(InitializationMode.WhenAvailable);
 
-        // 业务模块 - 医案流程依赖链
-        moduleCatalog.AddModule<PatientsModule>(InitializationMode.WhenAvailable);
-        moduleCatalog.AddModule<HerbsModule>(InitializationMode.WhenAvailable);
-        moduleCatalog.AddModule<FormulaModule>(InitializationMode.WhenAvailable);
+        // 业务模块 - 按需加载（首次导航到该模块视图时由 NavigationCoordinator 触发）
+        moduleCatalog.AddModule<PatientsModule>(InitializationMode.OnDemand);
+        moduleCatalog.AddModule<HerbsModule>(InitializationMode.OnDemand);
+        moduleCatalog.AddModule<FormulaModule>(InitializationMode.OnDemand);
         // [已删除] ConsultationModule - 功能已迁移到MedicalCase模块的ConsultationItem（Entity→DTO→Item模式）
         // [已删除] PrescriptionsModule - 空壳模块已移除，功能已迁移到MedicalCase
-        moduleCatalog.AddModule<MedicalCaseModule>(InitializationMode.WhenAvailable);
+        moduleCatalog.AddModule<MedicalCaseModule>(InitializationMode.OnDemand);
 
         // PRD: registration.md - 挂号管理模块
-        moduleCatalog.AddModule<RegistrationModule>(InitializationMode.WhenAvailable);
-        moduleCatalog.AddModule<CardReaderModule>(InitializationMode.WhenAvailable);
+        moduleCatalog.AddModule<RegistrationModule>(InitializationMode.OnDemand);
+        moduleCatalog.AddModule<CardReaderModule>(InitializationMode.OnDemand);
 
         // 统计报表模块
-        moduleCatalog.AddModule<ReportsModule>(InitializationMode.WhenAvailable);
+        moduleCatalog.AddModule<ReportsModule>(InitializationMode.OnDemand);
 
         base.ConfigureModuleCatalog(moduleCatalog);
     }

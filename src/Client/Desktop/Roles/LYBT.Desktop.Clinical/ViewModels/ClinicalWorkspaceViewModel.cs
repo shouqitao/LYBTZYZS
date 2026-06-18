@@ -29,6 +29,18 @@ public partial class ClinicalWorkspaceViewModel : NavigableViewModelBase
 
     #endregion 依赖服务
 
+    #region 缓存（5 分钟过期，避免 OnNavigatedTo 重复全量拉取）
+
+    private static readonly TimeSpan CacheTtl = TimeSpan.FromMinutes(5);
+
+    private List<PatientListDto>? _patientListCache;
+    private DateTime _patientListCachedAt;
+    private string? _patientListCacheKeyword;
+
+    private readonly Dictionary<Guid, (List<HistoryItem> Items, DateTime CachedAt)> _patientHistoryCache = new();
+
+    #endregion 缓存（5 分钟过期，避免 OnNavigatedTo 重复全量拉取）
+
     #region 可观察属性
 
     /// <summary>患者列表</summary>
@@ -149,17 +161,33 @@ public partial class ClinicalWorkspaceViewModel : NavigableViewModelBase
     /// <summary>加载患者列表</summary>
     private async Task LoadPatientsAsync()
     {
+        // 命中缓存且未过期 → 直接使用，避免重复全量拉取
+        var keyword = string.IsNullOrWhiteSpace(SearchKeyword) ? null : SearchKeyword;
+        if (_patientListCache != null
+            && (DateTime.UtcNow - _patientListCachedAt) < CacheTtl
+            && string.Equals(_patientListCacheKeyword, keyword, StringComparison.Ordinal))
+        {
+            Patients = new ObservableCollection<PatientListDto>(_patientListCache);
+            PageStatusMessage = $"共 {_patientListCache.Count} 位患者（缓存）";
+            return;
+        }
+
         try
         {
             IsBusy = true;
-            var keyword = string.IsNullOrWhiteSpace(SearchKeyword) ? null : SearchKeyword;
             var result = await _patientService.GetPatientsPagedAsync(page: 1, pageSize: 100, keyword: keyword);
 
             if (result.Success && result.Data != null)
             {
-                Patients = new ObservableCollection<PatientListDto>(result.Data.Items);
+                var items = result.Data.Items.ToList();
+                Patients = new ObservableCollection<PatientListDto>(items);
                 PageStatusMessage = $"共 {result.Data.TotalCount} 位患者";
                 Logger.LogInformation("加载患者列表成功，共 {Count} 条", result.Data.TotalCount);
+
+                // 写入缓存
+                _patientListCache = items;
+                _patientListCachedAt = DateTime.UtcNow;
+                _patientListCacheKeyword = keyword;
             }
             else
             {
@@ -213,11 +241,20 @@ public partial class ClinicalWorkspaceViewModel : NavigableViewModelBase
             return;
         }
 
+        // 命中缓存且未过期 → 直接使用
+        var patientId = SelectedPatient.Id;
+        if (_patientHistoryCache.TryGetValue(patientId, out var entry)
+            && (DateTime.UtcNow - entry.CachedAt) < CacheTtl)
+        {
+            PatientHistory = new ObservableCollection<HistoryItem>(entry.Items);
+            return;
+        }
+
         try
         {
             var query = new MedicalCaseQueryDto
             {
-                PatientId = SelectedPatient.Id,
+                PatientId = patientId,
                 PageIndex = 1,
                 PageSize = 5,
             };
@@ -235,6 +272,9 @@ public partial class ClinicalWorkspaceViewModel : NavigableViewModelBase
                 .ToList();
 
             PatientHistory = new ObservableCollection<HistoryItem>(history);
+
+            // 写入缓存
+            _patientHistoryCache[patientId] = (history, DateTime.UtcNow);
         }
         catch (Exception ex)
         {

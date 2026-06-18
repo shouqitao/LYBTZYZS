@@ -30,6 +30,10 @@ public class ModuleCoordinatorStartupStep : IStartupStep
     public int Order => 20;
 
     /// <inheritdoc />
+    /// <remarks>与 CoreServicesStartupStep 并行执行（同一 ParallelGroup）</remarks>
+    public string? ParallelGroup => "CoreInit";
+
+    /// <inheritdoc />
     public bool IsRequired => false; // 模块协调器失败不应阻塞启动
 
     /// <inheritdoc />

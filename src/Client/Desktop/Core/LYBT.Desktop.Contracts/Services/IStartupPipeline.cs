@@ -16,6 +16,12 @@ public interface IStartupStep
     bool IsRequired { get; }
 
     /// <summary>
+    /// 并行分组标识（默认 null = 顺序执行）。
+    /// 排序后，相邻且 ParallelGroup 相同（非 null）的步骤将以 Task.WhenAll 并行执行。
+    /// </summary>
+    string? ParallelGroup => null;
+
+    /// <summary>
     /// 执行启动步骤
     /// </summary>
     /// <param name="progress">进度报告接口</param>

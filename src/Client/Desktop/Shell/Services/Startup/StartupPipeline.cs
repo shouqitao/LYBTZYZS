@@ -98,7 +98,12 @@ public class StartupPipeline : IStartupPipeline
 
         try
         {
-            foreach (var step in sortedSteps)
+            // 将排序后的步骤序列拆分为"执行单元"：
+            //   - 相邻且 ParallelGroup 相同（非 null）的步骤合并为一个并行单元（Task.WhenAll）
+            //   - 其余步骤各自构成顺序单元
+            var executionUnits = BuildExecutionUnits(sortedSteps);
+
+            foreach (var unit in executionUnits)
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -107,48 +112,67 @@ public class StartupPipeline : IStartupPipeline
                     _totalStopwatch.Stop();
 
                     return StartupPipelineResult.Failed(
-                        step.Name,
+                        unit.Steps[0].Name,
                         "启动过程被取消",
                         _totalStopwatch.Elapsed,
                         new Dictionary<string, StartupStepResult>(_stepResults));
                 }
 
-                progress?.Report($"正在执行: {step.Name}...");
+                progress?.Report(unit.Steps.Count == 1
+                    ? $"正在执行: {unit.Steps[0].Name}..."
+                    : $"正在并行执行: {string.Join(" / ", unit.Steps.Select(s => s.Name))}...");
 
-                var stepResult = await ExecuteStepAsync(step, progress, cancellationToken);
-                _stepResults[step.Name] = stepResult;
+                var unitResults = await ExecuteUnitAsync(unit, progress, cancellationToken);
 
-                _completedSteps++;
+                // 处理单元内每个步骤的结果
+                IStartupStep? failedRequiredStep = null;
+                StartupStepResult? failedRequiredResult = null;
 
-                // 触发步骤完成事件
-                StepCompleted?.Invoke(this, new StartupStepCompletedEventArgs(
-                    step.Name,
-                    step.Order,
-                    stepResult,
-                    _completedSteps,
-                    sortedSteps.Count));
+                for (var i = 0; i < unit.Steps.Count; i++)
+                {
+                    var step = unit.Steps[i];
+                    var stepResult = unitResults[i];
 
-                // 如果必需步骤失败，终止管道
-                if (!stepResult.Success && step.IsRequired)
+                    _stepResults[step.Name] = stepResult;
+                    _completedSteps++;
+
+                    // 触发步骤完成事件
+                    StepCompleted?.Invoke(this, new StartupStepCompletedEventArgs(
+                        step.Name,
+                        step.Order,
+                        stepResult,
+                        _completedSteps,
+                        sortedSteps.Count));
+
+                    // 必需步骤失败 → 记录首个失败步骤，准备终止管道
+                    if (!stepResult.Success && step.IsRequired && failedRequiredStep == null)
+                    {
+                        failedRequiredStep = step;
+                        failedRequiredResult = stepResult;
+                    }
+
+                    // 非必需步骤失败只记录警告
+                    if (!stepResult.Success && !step.IsRequired)
+                    {
+                        _logger.LogWarning("可选步骤 {StepName} 执行失败，继续执行: {ErrorMessage}",
+                            step.Name, stepResult.ErrorMessage);
+                    }
+                }
+
+                // 必需步骤失败 → 终止管道（在事件触发完毕后）
+                if (failedRequiredStep != null)
                 {
                     _logger.LogError("必需步骤 {StepName} 执行失败，终止启动管道: {ErrorMessage}",
-                        step.Name, stepResult.ErrorMessage);
+                        failedRequiredStep.Name, failedRequiredResult!.ErrorMessage);
 
                     TransitionTo(StartupPipelineState.Failed);
                     _totalStopwatch.Stop();
 
                     return StartupPipelineResult.Failed(
-                        step.Name,
-                        stepResult.ErrorMessage ?? "未知错误",
+                        failedRequiredStep.Name,
+                        failedRequiredResult!.ErrorMessage ?? "未知错误",
                         _totalStopwatch.Elapsed,
                         new Dictionary<string, StartupStepResult>(_stepResults));
-                }
-
-                // 非必需步骤失败只记录警告
-                if (!stepResult.Success && !step.IsRequired)
-                {
-                    _logger.LogWarning("可选步骤 {StepName} 执行失败，继续执行: {ErrorMessage}",
-                        step.Name, stepResult.ErrorMessage);
                 }
             }
 
@@ -274,6 +298,74 @@ public class StartupPipeline : IStartupPipeline
             _logger.LogError(ex, "步骤 {StepName} 执行异常", step.Name);
             return StartupStepResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("执行步骤", ex), ex, stepStopwatch.Elapsed);
         }
+    }
+
+    /// <summary>
+    /// 执行单元 —— 一个并行组或单个顺序步骤
+    /// </summary>
+    private async Task<List<StartupStepResult>> ExecuteUnitAsync(
+        ExecutionUnit unit,
+        IProgress<string>? progress,
+        CancellationToken cancellationToken)
+    {
+        if (unit.Steps.Count == 1)
+        {
+            var single = await ExecuteStepAsync(unit.Steps[0], progress, cancellationToken);
+            return new List<StartupStepResult> { single };
+        }
+
+        // 并行执行 —— 保留与 ExecuteStepAsync 相同的监控/异常语义
+        var results = await Task.WhenAll(unit.Steps.Select(step => ExecuteStepAsync(step, progress, cancellationToken)));
+        return results.ToList();
+    }
+
+    /// <summary>
+    /// 将排序后的步骤序列拆分为执行单元：
+    ///   - 相邻且 ParallelGroup 相同（非 null）的步骤合并为一个并行单元
+    ///   - ParallelGroup 为 null 或与前一不同 的步骤各自构成顺序单元
+    /// </summary>
+    private static List<ExecutionUnit> BuildExecutionUnits(IReadOnlyList<IStartupStep> sortedSteps)
+    {
+        var units = new List<ExecutionUnit>();
+        var i = 0;
+        while (i < sortedSteps.Count)
+        {
+            var current = sortedSteps[i];
+            var group = current.ParallelGroup;
+
+            if (string.IsNullOrEmpty(group))
+            {
+                units.Add(new ExecutionUnit(current));
+                i++;
+                continue;
+            }
+
+            // 收集相邻同组步骤
+            var bucket = new List<IStartupStep> { current };
+            var j = i + 1;
+            while (j < sortedSteps.Count
+                   && !string.IsNullOrEmpty(sortedSteps[j].ParallelGroup)
+                   && string.Equals(sortedSteps[j].ParallelGroup, group, StringComparison.Ordinal))
+            {
+                bucket.Add(sortedSteps[j]);
+                j++;
+            }
+
+            units.Add(new ExecutionUnit(bucket));
+            i = j;
+        }
+
+        return units;
+    }
+
+    /// <summary>执行单元 —— 一个并行组或单个顺序步骤</summary>
+    private sealed class ExecutionUnit
+    {
+        public List<IStartupStep> Steps { get; }
+
+        public ExecutionUnit(IStartupStep single) => Steps = new List<IStartupStep> { single };
+
+        public ExecutionUnit(IReadOnlyList<IStartupStep> parallel) => Steps = parallel.ToList();
     }
 
     /// <inheritdoc />
