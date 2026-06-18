@@ -69,11 +69,13 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
         ? "远程模式"
         : "本地模式";
 
-    /// <inheritdoc />
     public bool IsRemote => _currentMode == ConnectionMode.Remote;
-
-    /// <inheritdoc />
     public bool IsLocal => _currentMode == ConnectionMode.Local;
+
+    /// <summary>API status message including mode info.</summary>
+    public string ApiStatusDisplay => _currentMode == ConnectionMode.Remote
+        ? "远程 WebAPI 已连接"
+        : "本地 WebAPI 已连接";
 
     /// <inheritdoc />
     public event EventHandler<ConnectionMode>? ModeChanged;
@@ -81,32 +83,29 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     /// <inheritdoc />
     public async Task<ConnectionMode> DetectBestModeAsync()
     {
-        // Serialize concurrent detections so two callers cannot race the mode flag.
         await _detectGate.WaitAsync().ConfigureAwait(false);
         try
         {
             var currentUrl = _connectionSettings.CurrentUrl;
 
-            // Already pointed at local → nothing to detect.
-            if (_connectionSettings.IsLocal)
+            // If current URL is remote → probe it
+            if (!_connectionSettings.IsLocal)
             {
+                if (await TestRemoteConnectionAsync(currentUrl).ConfigureAwait(false))
+                {
+                    _logger.LogInformation("[CONNECTION-MODE] Remote server reachable at {Url} → Remote mode", currentUrl);
+                    ApplyMode(ConnectionMode.Remote);
+                    return ConnectionMode.Remote;
+                }
+
+                // Remote unreachable → fall back to local
+                _logger.LogWarning("[CONNECTION-MODE] Remote server unreachable at {Url}, falling back to Local mode", currentUrl);
+                await SwitchUrlAsync(LocalBaseUrl).ConfigureAwait(false);
                 ApplyMode(ConnectionMode.Local);
                 return ConnectionMode.Local;
             }
 
-            // Probe the configured remote server.
-            if (await TestRemoteConnectionAsync(currentUrl).ConfigureAwait(false))
-            {
-                _logger.LogInformation(
-                    "[CONNECTION-MODE] Remote server reachable at {Url} → Remote mode", currentUrl);
-                ApplyMode(ConnectionMode.Remote);
-                return ConnectionMode.Remote;
-            }
-
-            // Remote unreachable → transparent fallback to embedded LocalWebAPI.
-            _logger.LogWarning(
-                "[CONNECTION-MODE] Remote server unreachable at {Url}, falling back to Local mode", currentUrl);
-            await SwitchUrlAsync(LocalBaseUrl).ConfigureAwait(false);
+            // Current URL is local → stay local (embedded LocalWebAPI is always available)
             ApplyMode(ConnectionMode.Local);
             return ConnectionMode.Local;
         }

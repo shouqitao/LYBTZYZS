@@ -49,6 +49,9 @@ public interface IConnectionModeService
     /// <summary>True when the effective mode is <see cref="ConnectionMode.Local"/>.</summary>
     bool IsLocal { get; }
 
+    /// <summary>API status display text with mode info (e.g., "远程 WebAPI 已连接").</summary>
+    string ApiStatusDisplay { get; }
+
     /// <summary>
     /// Probe the configured remote URL and select the best mode automatically.
     /// Falls back to Local when the remote server is unreachable.
