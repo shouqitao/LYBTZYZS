@@ -41,7 +41,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private readonly IApplicationTickService _tickService;
     private readonly IUserActivityTracker _userActivityTracker;
     private readonly ITokenLifecycleService _tokenLifecycleService;
-    private readonly ITokenStorageService _tokenStorageService;
     private readonly ILoginCoordinator _loginCoordinator;
     private readonly IConnectionModeService _connectionModeService;
 
@@ -213,7 +212,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         IApplicationTickService tickService,
         IUserActivityTracker userActivityTracker,
         ITokenLifecycleService tokenLifecycleService,
-        ITokenStorageService tokenStorageService,
         ILoginCoordinator loginCoordinator,
         IConnectionModeService connectionModeService)
         : base(services)
@@ -233,7 +231,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         _tickService = tickService ?? throw new ArgumentNullException(nameof(tickService));
         _userActivityTracker = userActivityTracker ?? throw new ArgumentNullException(nameof(userActivityTracker));
         _tokenLifecycleService = tokenLifecycleService ?? throw new ArgumentNullException(nameof(tokenLifecycleService));
-        _tokenStorageService = tokenStorageService ?? throw new ArgumentNullException(nameof(tokenStorageService));
         _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
         _connectionModeService = connectionModeService ?? throw new ArgumentNullException(nameof(connectionModeService));
 
@@ -676,7 +673,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
             _userActivityTracker.StartTracking();
 
             // Issue #1864: 启动Token生命周期监控
-            _ = StartTokenLifecycleMonitoringAsync();
+            _ = _tokenLifecycleService.StartMonitoringFromStorageAsync();
 
             // S6-01/S6-02: 刷新菜单可见性
             _menuManager.RefreshMenuVisibility();
@@ -753,32 +750,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         _navigationCoordinator.ClearHistory();
         _navigationCoordinator.ClearContentRegion();
         _navigationCoordinator.ShowLoginDialog();
-    }
-
-    /// <summary>
-    /// 启动Token生命周期监控
-    /// Issue #1864: 客户端Token生命周期管理
-    /// </summary>
-    private async Task StartTokenLifecycleMonitoringAsync()
-    {
-        try
-        {
-            var loginResponse = await _tokenStorageService.GetLoginResponseAsync();
-
-            if (loginResponse != null && loginResponse.ExpiresAt > DateTime.UtcNow)
-            {
-                _tokenLifecycleService.StartMonitoring(loginResponse.ExpiresAt);
-                Logger.LogInformation("Token生命周期监控已启动 [过期时间: {ExpiresAt}]", loginResponse.ExpiresAt);
-            }
-            else
-            {
-                Logger.LogWarning("无法启动Token生命周期监控：LoginResponse为空或已过期");
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "启动Token生命周期监控时发生异常");
-        }
     }
 
     /// <summary>

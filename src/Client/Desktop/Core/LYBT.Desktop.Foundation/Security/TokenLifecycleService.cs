@@ -105,6 +105,30 @@ namespace LYBT.Desktop.Foundation.Security
         }
 
         /// <summary>
+        /// 从本地存储读取Token信息并启动生命周期监控
+        /// </summary>
+        public async Task StartMonitoringFromStorageAsync()
+        {
+            try
+            {
+                var loginResponse = await _tokenStorage.GetLoginResponseAsync();
+
+                if (loginResponse != null && loginResponse.ExpiresAt > DateTime.UtcNow)
+                {
+                    StartMonitoring(loginResponse.ExpiresAt);
+                }
+                else
+                {
+                    _logger.LogWarning("无法启动Token生命周期监控：LoginResponse为空或已过期");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "启动Token生命周期监控时发生异常");
+            }
+        }
+
+        /// <summary>
         /// 停止生命周期监控
         /// </summary>
         public void StopMonitoring()

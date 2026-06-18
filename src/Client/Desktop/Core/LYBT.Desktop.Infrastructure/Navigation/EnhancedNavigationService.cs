@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -19,20 +18,16 @@ namespace LYBT.Desktop.Infrastructure.Navigation
         private readonly ILogger<EnhancedNavigationService> _logger;
         private readonly IEventAggregator _eventAggregator;
 
-        // Navigation stacks
-        private readonly Stack<NavigationEntry> _history = new();
-        private readonly Stack<NavigationEntry> _forwardStack = new();
-        private NavigationEntry? _currentEntry;
+        // 历史栈和前进栈委托给 NavigationHistoryManager
+        private readonly NavigationHistoryManager _historyManager = new();
 
-        // Observable collections for binding
-        private readonly ObservableCollection<NavigationEntry> _historyCollection = new();
-        private readonly ObservableCollection<NavigationEntry> _forwardCollection = new();
-        private readonly ObservableCollection<BreadcrumbItem> _breadcrumbs = new();
+        // 面包屑委托给 BreadcrumbManager
+        private readonly BreadcrumbManager _breadcrumbManager = new();
 
-        // Read-only observable collections
-        public ReadOnlyObservableCollection<NavigationEntry> History { get; }
-        public ReadOnlyObservableCollection<NavigationEntry> ForwardStack { get; }
-        public ReadOnlyObservableCollection<BreadcrumbItem> Breadcrumbs { get; }
+        // 只读集合对外暴露
+        public ReadOnlyObservableCollection<NavigationEntry> History => _historyManager.History;
+        public ReadOnlyObservableCollection<NavigationEntry> ForwardStack => _historyManager.ForwardStack;
+        public ReadOnlyObservableCollection<BreadcrumbItem> Breadcrumbs => _breadcrumbManager.Items;
 
         // Suggestions cache
         private readonly List<NavigationSuggestion> _cachedSuggestions = new();
@@ -48,11 +43,6 @@ namespace LYBT.Desktop.Infrastructure.Navigation
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
-
-            // Initialize read-only collections
-            History = new ReadOnlyObservableCollection<NavigationEntry>(_historyCollection);
-            ForwardStack = new ReadOnlyObservableCollection<NavigationEntry>(_forwardCollection);
-            Breadcrumbs = new ReadOnlyObservableCollection<BreadcrumbItem>(_breadcrumbs);
 
             // Subscribe to journal events if available
             SubscribeToNavigationEvents();
@@ -76,22 +66,20 @@ namespace LYBT.Desktop.Infrastructure.Navigation
                 var entry = CreateNavigationEntry(uri, viewPath, parameters);
 
                 // Save current state before navigating
-                if (_currentEntry != null)
+                if (_historyManager.CurrentEntry != null)
                 {
-                    _history.Push(_currentEntry);
-                    UpdateHistoryCollection();
+                    _historyManager.PushToHistory(_historyManager.CurrentEntry);
                 }
 
                 // Clear forward stack when navigating to new location
-                _forwardStack.Clear();
-                UpdateForwardCollection();
+                _historyManager.ClearForward();
 
                 // Perform navigation
                 var success = await NavigateToRegionAsync(regionName, viewPath, parameters);
 
                 if (success)
                 {
-                    _currentEntry = entry;
+                    _historyManager.SetCurrent(entry);
                     UpdateBreadcrumbs();
                     OnNavigated(new NavigatedEventArgs { Entry = entry, IsBack = false, IsForward = false });
 
@@ -103,11 +91,7 @@ namespace LYBT.Desktop.Infrastructure.Navigation
                 else
                 {
                     // Rollback history on failure
-                    if (_history.Count > 0)
-                    {
-                        _history.Pop();
-                        UpdateHistoryCollection();
-                    }
+                    _historyManager.RollbackLastHistoryPush();
 
                     OnNavigationFailed(new NavigationFailedEventArgs
                     {
@@ -198,22 +182,20 @@ namespace LYBT.Desktop.Infrastructure.Navigation
                 _logger.LogInformation("Going back in navigation history");
 
                 // Push current entry to forward stack
-                if (_currentEntry != null)
+                if (_historyManager.CurrentEntry != null)
                 {
-                    _forwardStack.Push(_currentEntry);
-                    UpdateForwardCollection();
+                    _historyManager.PushToForward(_historyManager.CurrentEntry);
                 }
 
                 // Pop from history
-                var previousEntry = _history.Pop();
-                UpdateHistoryCollection();
+                var previousEntry = _historyManager.PopFromHistory();
 
                 // Navigate to previous entry
                 var success = await NavigateToEntry(previousEntry, isBack: true);
 
                 if (success)
                 {
-                    _currentEntry = previousEntry;
+                    _historyManager.SetCurrent(previousEntry);
                     UpdateBreadcrumbs();
                     OnNavigated(new NavigatedEventArgs { Entry = previousEntry, IsBack = true, IsForward = false });
                 }
@@ -243,22 +225,20 @@ namespace LYBT.Desktop.Infrastructure.Navigation
                 _logger.LogInformation("Going forward in navigation history");
 
                 // Push current entry to history
-                if (_currentEntry != null)
+                if (_historyManager.CurrentEntry != null)
                 {
-                    _history.Push(_currentEntry);
-                    UpdateHistoryCollection();
+                    _historyManager.PushToHistory(_historyManager.CurrentEntry);
                 }
 
                 // Pop from forward stack
-                var nextEntry = _forwardStack.Pop();
-                UpdateForwardCollection();
+                var nextEntry = _historyManager.PopFromForward();
 
                 // Navigate to next entry
                 var success = await NavigateToEntry(nextEntry, isForward: true);
 
                 if (success)
                 {
-                    _currentEntry = nextEntry;
+                    _historyManager.SetCurrent(nextEntry);
                     UpdateBreadcrumbs();
                     OnNavigated(new NavigatedEventArgs { Entry = nextEntry, IsBack = false, IsForward = true });
                 }
@@ -289,18 +269,14 @@ namespace LYBT.Desktop.Infrastructure.Navigation
         public void ClearHistory()
         {
             _logger.LogInformation("Clearing navigation history");
-            _history.Clear();
-            _forwardStack.Clear();
-            _currentEntry = null;
-            UpdateHistoryCollection();
-            UpdateForwardCollection();
+            _historyManager.ClearAll();
             UpdateBreadcrumbs();
         }
 
         /// <summary>
         /// 当前导航条目
         /// </summary>
-        public NavigationEntry CurrentEntry => _currentEntry ?? new NavigationEntry(
+        public NavigationEntry CurrentEntry => _historyManager.CurrentEntry ?? new NavigationEntry(
                 "/",
                 "Home",
                 new NavigationParameters(),
@@ -310,12 +286,12 @@ namespace LYBT.Desktop.Infrastructure.Navigation
         /// <summary>
         /// 是否可以返回
         /// </summary>
-        public bool CanGoBack => _history.Count > 0;
+        public bool CanGoBack => _historyManager.CanGoBack;
 
         /// <summary>
         /// 是否可以前进
         /// </summary>
-        public bool CanGoForward => _forwardStack.Count > 0;
+        public bool CanGoForward => _historyManager.CanGoForward;
 
         /// <summary>
         /// 获取导航建议
@@ -327,9 +303,9 @@ namespace LYBT.Desktop.Infrastructure.Navigation
             var suggestions = new List<NavigationSuggestion>();
 
             // Context-based suggestions from current entry
-            if (_currentEntry != null)
+            if (_historyManager.CurrentEntry != null)
             {
-                var contextual = GetContextualSuggestions(_currentEntry);
+                var contextual = GetContextualSuggestions(_historyManager.CurrentEntry);
                 suggestions.AddRange(contextual);
             }
 
@@ -492,62 +468,43 @@ namespace LYBT.Desktop.Infrastructure.Navigation
         }
 
         /// <summary>
-        /// 更新面包屑导航
+        /// 更新面包屑导航 - 根据当前条目重建面包屑列表
         /// </summary>
         private void UpdateBreadcrumbs()
         {
-            _breadcrumbs.Clear();
+            var currentEntry = _historyManager.CurrentEntry;
+            if (currentEntry == null)
+            {
+                _breadcrumbManager.Clear();
+                return;
+            }
 
             // Generate breadcrumbs from current URI
-            if (_currentEntry != null)
+            var parts = currentEntry.Uri.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            var accumulatedPath = string.Empty;
+            var newItems = new List<BreadcrumbItem>();
+
+            for (int i = 0; i < parts.Length; i++)
             {
-                var parts = _currentEntry.Uri.Split('/', StringSplitOptions.RemoveEmptyEntries);
-                var accumulatedPath = string.Empty;
+                accumulatedPath += "/" + parts[i];
+                var title = GenerateTitle(accumulatedPath, parts[i]);
+                var isActive = (i == parts.Length - 1);
 
-                for (int i = 0; i < parts.Length; i++)
-                {
-                    accumulatedPath += "/" + parts[i];
-                    var title = GenerateTitle(accumulatedPath, parts[i]);
-                    var isActive = (i == parts.Length - 1);
+                var breadcrumb = new BreadcrumbItem(
+                    title,
+                    accumulatedPath,
+                    isActive,
+                    i,
+                    NavigateCommand: new DelegateCommand(
+                        () => { var _ = NavigateAsync(accumulatedPath); },
+                        () => !isActive
+                    )
+                );
 
-                    var breadcrumb = new BreadcrumbItem(
-                        title,
-                        accumulatedPath,
-                        isActive,
-                        i,
-                        NavigateCommand: new DelegateCommand(
-                            () => { var _ = NavigateAsync(accumulatedPath); },
-                            () => !isActive
-                        )
-                    );
-
-                    _breadcrumbs.Add(breadcrumb);
-                }
+                newItems.Add(breadcrumb);
             }
-        }
 
-        /// <summary>
-        /// 更新历史集合
-        /// </summary>
-        private void UpdateHistoryCollection()
-        {
-            _historyCollection.Clear();
-            foreach (var entry in _history.Reverse())
-            {
-                _historyCollection.Add(entry);
-            }
-        }
-
-        /// <summary>
-        /// 更新前进集合
-        /// </summary>
-        private void UpdateForwardCollection()
-        {
-            _forwardCollection.Clear();
-            foreach (var entry in _forwardStack.Reverse())
-            {
-                _forwardCollection.Add(entry);
-            }
+            _breadcrumbManager.Replace(newItems);
         }
 
         /// <summary>
@@ -593,7 +550,7 @@ namespace LYBT.Desktop.Infrastructure.Navigation
         {
             // Count frequency of URIs in history
             var frequency = new Dictionary<string, int>();
-            foreach (var entry in _history)
+            foreach (var entry in _historyManager.GetHistoryEntries())
             {
                 var baseUri = GetBaseUri(entry.Uri);
                 if (frequency.ContainsKey(baseUri))
@@ -622,7 +579,7 @@ namespace LYBT.Desktop.Infrastructure.Navigation
         /// </summary>
         private List<NavigationSuggestion> GetRecentSuggestions(int count)
         {
-            return _history
+            return _historyManager.GetHistoryEntries()
                 .Take(count)
                 .Select(entry => new NavigationSuggestion(
                     entry.Title,

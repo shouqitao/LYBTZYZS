@@ -33,6 +33,12 @@ namespace LYBT.Desktop.Foundation.Security
         void StartMonitoring(DateTime tokenExpiresAt);
 
         /// <summary>
+        /// 从本地存储读取Token信息并启动生命周期监控
+        /// 协调ITokenStorageService读取、过期校验与StartMonitoring调用
+        /// </summary>
+        Task StartMonitoringFromStorageAsync();
+
+        /// <summary>
         /// 停止生命周期监控
         /// </summary>
         void StopMonitoring();
