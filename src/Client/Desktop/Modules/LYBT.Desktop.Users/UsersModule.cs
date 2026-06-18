@@ -54,8 +54,7 @@ namespace LYBT.Desktop.Users
             // UserMasterDetailControl供角色台View复用，ViewModel在Control内部解析
             containerRegistry.Register<ViewModels.UserMasterDetailViewModel>();
             
-            // 注册MasterDetail View用于导航
-            containerRegistry.RegisterForNavigation<Views.UserMasterDetailView>();
+
         }
     }
 }

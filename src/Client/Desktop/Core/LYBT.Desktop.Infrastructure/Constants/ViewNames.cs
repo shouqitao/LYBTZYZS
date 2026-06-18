@@ -53,18 +53,8 @@ public static class ViewNames
 
     #region MasterDetail视图
 
-    /// <summary>患者主从视图</summary>
-    public const string PatientMasterDetail = "PatientMasterDetailView";
-
     /// <summary>医案主从视图</summary>
     public const string MedicalCaseMasterDetail = "MedicalCaseMasterDetailView";
-
-    #endregion
-
-    #region 列表视图
-
-    /// <summary>医案列表</summary>
-    public const string MedicalCaseList = "MedicalCaseListView";
 
     #endregion
 
@@ -92,10 +82,5 @@ public static class ViewNames
 
     #endregion
 
-    #region 开发工具
 
-    /// <summary>控件示例</summary>
-    public const string ControlExamples = "ControlExamplesView";
-
-    #endregion
 }

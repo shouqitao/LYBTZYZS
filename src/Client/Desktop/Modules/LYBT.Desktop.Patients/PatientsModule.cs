@@ -65,8 +65,7 @@ namespace LYBT.Desktop.Patients
             containerRegistry.Register<ViewModels.PatientCardReaderViewModel>();
             containerRegistry.Register<ViewModels.PatientEditorViewModel>();
             
-            // 注册MasterDetail View用于导航
-            containerRegistry.RegisterForNavigation<Views.PatientMasterDetailView>();
+
         }
     }
 }

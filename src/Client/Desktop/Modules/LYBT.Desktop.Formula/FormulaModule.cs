@@ -32,7 +32,7 @@ namespace LYBT.Desktop.Formula
             // D5-3: 跨模块验方搜索提供者，供 MedicalCase 模块使用
             containerRegistry.Register<IFormulaSearchProvider, Services.FormulaSearchProvider>();
             containerRegistry.Register<IFormulaService, Services.FormulaService>();
-            containerRegistry.Register<Services.FormulaValidator>();
+
             containerRegistry.RegisterSingleton<Mappers.FormulaDetailModelMapper>();
             // 注册Formula模块的MasterDetail服务
             containerRegistry.AddMasterDetailServices<FormulaListDto, FormulaDetailModel>();
@@ -45,8 +45,7 @@ namespace LYBT.Desktop.Formula
             // Epic #1773 Task 4: 注册验方模块组件化组件（Scoped生命周期）
             containerRegistry.Register<ViewModels.FormulaEditorViewModel>();
 
-            // 注册MasterDetail View用于导航
-            containerRegistry.RegisterForNavigation<Views.FormulaMasterDetailView>();
+
         }
     }
 }

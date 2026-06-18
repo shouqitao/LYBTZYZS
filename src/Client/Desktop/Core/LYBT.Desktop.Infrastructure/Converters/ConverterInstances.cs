@@ -57,16 +57,6 @@ namespace LYBT.Desktop.Infrastructure.Converters
         /// </summary>
         public static readonly IValueConverter BoolToDouble = new BoolToDoubleConverter();
 
-        /// <summary>
-        /// Bool -> String (可配置TrueText/FalseText)
-        /// </summary>
-        public static readonly IValueConverter BoolToString = new BoolToStringConverter();
-
-        /// <summary>
-        /// Bool -> Opacity (true=1.0, false=0.5)
-        /// </summary>
-        public static readonly IValueConverter BoolToOpacity = new BoolToOpacityConverter();
-
         // ========== Visibility Converters ==========
 
         /// <summary>
@@ -104,11 +94,6 @@ namespace LYBT.Desktop.Infrastructure.Converters
         public static readonly IValueConverter EnumDesc = new EnumDescriptionConverter();
 
         /// <summary>
-        /// Status -> Color
-        /// </summary>
-        public static readonly IValueConverter StatusToColor = new StatusToColorConverter();
-
-        /// <summary>
         /// ApiHealthStatus -> Color
         /// </summary>
         public static readonly IValueConverter ApiStatusToColor = new ApiHealthStatusToColorConverter();
@@ -125,16 +110,12 @@ namespace LYBT.Desktop.Infrastructure.Converters
         /// </summary>
         public static readonly IValueConverter FirstChar = new FirstCharacterConverter();
 
-        // ========== Domain-specific Converters ==========
+        // ========== Domain-specific Converters ========== ========== ==========
 
         /// <summary>
         /// DecocteMethod -> Visibility (特殊煎法显示控制)
         /// </summary>
         public static readonly IValueConverter DecocteMethodToVis = new DecocteMethodToVisibilityConverter();
 
-        /// <summary>
-        /// PatientCardDisplayMode -> Visibility
-        /// </summary>
-        public static readonly IValueConverter PatientCardModeToVis = new PatientCardDisplayModeToVisibilityConverter();
     }
 }

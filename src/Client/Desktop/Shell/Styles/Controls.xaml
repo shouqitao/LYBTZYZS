@@ -265,14 +265,6 @@
 
     <!--  输入控件样式别名  -->
     <Style
-        x:Key="StandardTextBoxStyle"
-        BasedOn="{StaticResource StandardTextBox}"
-        TargetType="TextBox" />
-    <Style
-        x:Key="SearchTextBoxStyle"
-        BasedOn="{StaticResource SearchTextBox}"
-        TargetType="TextBox" />
-    <Style
         x:Key="FormTextBoxStyle"
         BasedOn="{StaticResource FormTextBox}"
         TargetType="TextBox" />
@@ -280,16 +272,6 @@
         x:Key="FormTextAreaStyle"
         BasedOn="{StaticResource FormTextArea}"
         TargetType="TextBox" />
-    <Style
-        x:Key="StandardComboBoxStyle"
-        BasedOn="{StaticResource StandardComboBox}"
-        TargetType="ComboBox" />
-
-    <!--  DataGrid样式别名  -->
-    <Style
-        x:Key="StandardDataGridStyle"
-        BasedOn="{StaticResource StandardDataGrid}"
-        TargetType="DataGrid" />
 
     <!--  ========== 卡片与容器样式 ==========  -->
 
@@ -367,14 +349,6 @@
     <Style
         x:Key="InfoBarStyle"
         BasedOn="{StaticResource InfoBar}"
-        TargetType="Border" />
-    <Style
-        x:Key="DividerStyle"
-        BasedOn="{StaticResource Divider}"
-        TargetType="Border" />
-    <Style
-        x:Key="CardStyle"
-        BasedOn="{StaticResource Card}"
         TargetType="Border" />
 
 </ResourceDictionary>

@@ -254,11 +254,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     #region 委托命令属性
 
     /// <summary>
-    /// 显示控件示例命令 - 委托给MenuManager
-    /// </summary>
-    public ICommand ShowControlExamplesCommand => _menuManager.ShowControlExamplesCommand;
-
-    /// <summary>
     /// 快速添加患者命令(Ctrl+N) - 委托给MenuManager
     /// </summary>
     public ICommand QuickAddPatientCommand => _menuManager.QuickAddPatientCommand;

@@ -12,8 +12,6 @@
     <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
     <converters:BoolToBrushConverter x:Key="BoolToBrushConverter" />
     <converters:BoolToDoubleConverter x:Key="BoolToDoubleConverter" />
-    <converters:BoolToStringConverter x:Key="BoolToStringConverter" />
-
     <!-- ========== Visibility Converters ========== -->
 
     <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
@@ -23,7 +21,6 @@
     <!-- ========== Enum/Status Converters ========== -->
 
     <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
-    <converters:StatusToColorConverter x:Key="StatusToColorConverter" />
     <converters:ApiHealthStatusToColorConverter x:Key="ApiHealthStatusToColorConverter" />
     <converters:ApiHealthStatusToTextConverter x:Key="ApiHealthStatusToTextConverter" />
 

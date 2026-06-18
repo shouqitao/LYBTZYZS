@@ -1,42 +1,7 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace LYBT.Shared.Models.Enums
 {
-    /// <summary>
-    /// 登录类型枚举（简化版本，仅保留基础功能）
-    /// OpenSpec: unify-enums-to-shared - 移除冗余JsonConverter（已全局配置）
-    /// </summary>
-    public enum LoginType
-    {
-        /// <summary>密码登录</summary>
-        [Description("密码登录")]
-        Password = 0
-        // 移除企业级认证方式：微信、短信、二维码、指纹、人脸识别、双因子认证
-    }
-
-    /// <summary>
-    /// 认证会话状态枚举
-    /// OpenSpec: unify-enums-to-shared - 移除冗余JsonConverter（已全局配置）
-    /// </summary>
-    public enum AuthSessionStatus
-    {
-        /// <summary>活跃状态</summary>
-        [Description("活跃")]
-        Active = 1,
-
-        /// <summary>已过期</summary>
-        [Description("已过期")]
-        Expired = 2,
-
-        /// <summary>已注销</summary>
-        [Description("已注销")]
-        LoggedOut = 3,
-
-        /// <summary>已锁定</summary>
-        [Description("已锁定")]
-        Locked = 4
-    }
-
     /// <summary>
     /// 用户角色枚举 - 四角色体系（SuperAdmin/Admin/Doctor/Receptionist）
     /// Issue #1909: 重构为分层权限体系

@@ -69,9 +69,6 @@ public class MenuManager
 
     #region 命令属性
 
-    /// <summary>显示控件示例命令</summary>
-    public DelegateCommand ShowControlExamplesCommand { get; private set; } = null!;
-
     /// <summary>快速添加患者命令(Ctrl+N)</summary>
     public DelegateCommand QuickAddPatientCommand { get; private set; } = null!;
 
@@ -134,7 +131,6 @@ public class MenuManager
     /// <summary>初始化所有命令</summary>
     private void InitializeCommands()
     {
-        ShowControlExamplesCommand = new DelegateCommand(ExecuteShowControlExamples);
         QuickAddPatientCommand = new DelegateCommand(async () => await ExecuteQuickAddPatientAsync().ConfigureAwait(false));
         QuickStartMedicalCaseCommand = new DelegateCommand(async () => await ExecuteQuickStartMedicalCaseAsync().ConfigureAwait(false));
         ShowHelpCommand = new DelegateCommand(ExecuteShowHelp);
@@ -227,9 +223,6 @@ public class MenuManager
         NavigateBackCommand.RaiseCanExecuteChanged();
         NavigateForwardCommand.RaiseCanExecuteChanged();
     }
-
-    /// <summary>显示控件示例</summary>
-    private void ExecuteShowControlExamples() => _navigationCoordinator.NavigateTo(ViewNames.ControlExamples);
 
     /// <summary>快速添加患者(Ctrl+N)</summary>
     private async Task ExecuteQuickAddPatientAsync()

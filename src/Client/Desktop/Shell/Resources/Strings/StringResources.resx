@@ -86,10 +86,6 @@
   <data name="SwitchingModeDescription" xml:space="preserve">
     <value>请稍候，系统正在重置连接</value>
   </data>
-  <data name="Syncing" xml:space="preserve">
-    <value>正在同步...</value>
-  </data>
-  
   <!-- Auth - LoginView -->
   <data name="ClinicName" xml:space="preserve">
     <value>凌隐宝堂</value>

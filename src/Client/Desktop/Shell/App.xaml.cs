@@ -152,8 +152,6 @@ public partial class App : PrismApplication
         ArgumentNullException.ThrowIfNull(containerRegistry, nameof(containerRegistry));
 
         containerRegistry.RegisterSingleton<IApplicationBootstrapper, ApplicationBootstrapper>();
-        containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.IApplicationInitializationService,
-            LYBT.Desktop.Shell.Services.ApplicationInitializationService>();
         containerRegistry.RegisterAllServices();
         containerRegistry.Register<MainWindowViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.ConfirmationDialog, Dialogs.ViewModels.ConfirmationDialogViewModel>();

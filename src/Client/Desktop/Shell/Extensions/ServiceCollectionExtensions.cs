@@ -136,7 +136,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IUserActivityTracker>(resolver => resolver.Resolve<UserActivityTracker>());
             containerRegistry.RegisterSingleton<IUserActivityState>(resolver => resolver.Resolve<UserActivityTracker>());
             containerRegistry.RegisterSingleton<IUserNotificationService, UserNotificationService>();
-            containerRegistry.RegisterSingleton<IMainWindowServicesFacade, MainWindowServicesFacade>();
+
             containerRegistry.RegisterSingleton<IPrescriptionSettingsService, PrescriptionSettingsService>();
             containerRegistry.RegisterSingleton<IClinicSettingsService, ClinicSettingsService>();
             containerRegistry.RegisterSingleton<ICommonDialogService, CommonDialogService>();

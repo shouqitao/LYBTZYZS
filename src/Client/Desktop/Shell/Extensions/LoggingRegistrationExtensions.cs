@@ -80,7 +80,6 @@ namespace LYBT.Desktop.Shell.Extensions
         /// <summary>注册Infrastructure层Logger</summary>
         private static void RegisterInfrastructureLoggers(IContainerRegistry containerRegistry)
         {
-            RegisterLogger<MainWindowServicesFacade>(containerRegistry);
             RegisterLogger<ActiveConsultationService>(containerRegistry);
             RegisterLogger<ApplicationTickService>(containerRegistry);
             RegisterLogger<UserActivityTracker>(containerRegistry);

@@ -120,41 +120,6 @@ namespace LYBT.Desktop.Admin.ViewModels
         [RelayCommand]
         private void NavigateToReports() => NavigateTo(ViewNames.ReportsHome);
 
-        /// <summary>
-        /// 修改个人信息命令 (Issue #1887-1892)
-        /// </summary>
-        [RelayCommand]
-        private void EditProfile()
-        {
-            try
-            {
-                Logger.LogInformation("导航到账户设置页面(个人资料)");
-                NavigateTo(ViewNames.AccountSettings);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导航到账户设置页面失败");
-            }
-        }
-
-        /// <summary>
-        /// 修改密码命令 (Issue #1887-1892)
-        /// </summary>
-        [RelayCommand]
-        private void ChangePassword()
-        {
-            try
-            {
-                Logger.LogInformation("导航到账户设置页面(修改密码)");
-                var parameters = new Dictionary<string, object> { { "Tab", "Password" } };
-                _navigationCoordinator.NavigateTo(ViewNames.AccountSettings, parameters);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导航到账户设置页面失败");
-            }
-        }
-
         #endregion 命令
 
         #region 辅助方法

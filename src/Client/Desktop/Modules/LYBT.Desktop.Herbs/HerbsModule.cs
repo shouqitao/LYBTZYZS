@@ -42,8 +42,7 @@ namespace LYBT.Desktop.Herbs
             containerRegistry.Register<ViewModels.HerbMasterDetailViewModel>();
             containerRegistry.Register<ViewModels.HerbEditorViewModel>();
             
-            // 注册MasterDetail View用于导航
-            containerRegistry.RegisterForNavigation<Views.HerbMasterDetailView>();
+
         }
     }
 }

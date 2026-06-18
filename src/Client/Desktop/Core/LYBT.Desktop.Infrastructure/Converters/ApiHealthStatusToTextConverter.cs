@@ -2,39 +2,31 @@ using System.Globalization;
 using System.Windows.Data;
 using LYBT.Desktop.Foundation.HealthCheck;
 
-namespace LYBT.Desktop.Infrastructure.Converters
-{
-    /// <summary>
-    /// API 健康状态到文本转换器
-    /// 用于将 ApiHealthStatus 枚举值转换为用户友好的文本
-    /// </summary>
-    public class ApiHealthStatusToTextConverter : IValueConverter
-    {
-        /// <summary>
-        /// 将 ApiHealthStatus 转换为文本
-        /// </summary>
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is not ApiHealthStatus status)
-            {
-                return "未知";
-            }
+namespace LYBT.Desktop.Infrastructure.Converters;
 
+/// <summary>
+/// ApiHealthStatus 枚举转文本
+/// </summary>
+public class ApiHealthStatusToTextConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is ApiHealthStatus status)
+        {
             return status switch
             {
-                ApiHealthStatus.Healthy => "已连接",
-                ApiHealthStatus.Unhealthy => "连接失败",
-                ApiHealthStatus.Checking => "连接中...",
-                _ => "未知"
+                ApiHealthStatus.Healthy => "在线",
+                ApiHealthStatus.Checking => "检测中",
+                ApiHealthStatus.Unhealthy => "离线",
+                _ => status.ToString()
             };
         }
 
-        /// <summary>
-        /// 反向转换（不支持）
-        /// </summary>
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotSupportedException("ApiHealthStatusToTextConverter 不支持反向转换");
-        }
+        return "未知";
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
     }
 }

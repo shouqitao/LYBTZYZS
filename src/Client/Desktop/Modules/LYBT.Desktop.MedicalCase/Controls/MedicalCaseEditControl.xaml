@@ -12,7 +12,6 @@
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
              xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              xmlns:herbList="clr-namespace:LYBT.Desktop.Infrastructure.Controls.HerbList;assembly=LYBT.Desktop.Infrastructure"
-             xmlns:diagnosis="clr-namespace:LYBT.Desktop.Infrastructure.Controls.Diagnosis;assembly=LYBT.Desktop.Infrastructure"
              xmlns:local="clr-namespace:LYBT.Desktop.MedicalCase.Controls"
              x:Name="Root">
 
