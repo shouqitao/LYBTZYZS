@@ -4,8 +4,10 @@ using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using LYBT.Entities.Users;
+using LYBT.Infrastructure.Constants;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 
@@ -45,7 +47,16 @@ public static class LocalJwtConfig
             options.TokenValidationParameters = tokenValidationParameters;
         });
 
-        services.AddAuthorization();
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy(PolicyConstants.AdminOnly, policy =>
+                policy.RequireAuthenticatedUser()
+                      .RequireRole(RoleConstants.SuperAdmin, RoleConstants.Admin));
+
+            options.AddPolicy(PolicyConstants.DoctorOrAdmin, policy =>
+                policy.RequireAuthenticatedUser()
+                      .RequireRole(RoleConstants.SuperAdmin, RoleConstants.Admin, RoleConstants.Doctor));
+        });
     }
 
     /// <summary>

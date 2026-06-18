@@ -33,7 +33,6 @@ using LYBT.Desktop.Shell.Services.Login;
 using LYBT.Desktop.Shell.Services.Session;
 using LYBT.Desktop.Users;
 using LYBT.Desktop.Users.Repositories;
-using LYBT.Desktop.Users.ViewModels.Components;
 using LYBT.Shared.ExceptionHandling.Handlers;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
@@ -166,7 +165,6 @@ namespace LYBT.Desktop.Shell.Extensions
         /// <summary>注册Component层Logger（CommandHandler/DataManager/Validator等）</summary>
         private static void RegisterComponentLoggers(IContainerRegistry containerRegistry)
         {
-            RegisterLogger<UserService>(containerRegistry);
             RegisterLogger<FormulaService>(containerRegistry);
             RegisterLogger<PatientService>(containerRegistry);
             RegisterLogger<MedicalCaseService>(containerRegistry);
