@@ -66,4 +66,6 @@
     <DropShadowEffect x:Key="CardShadow" BlurRadius="12" Direction="270" Opacity="0.12" ShadowDepth="4" Color="#000000" />
     <DropShadowEffect x:Key="FloatingShadow" BlurRadius="16" Direction="270" Opacity="0.16" ShadowDepth="8" Color="#000000" />
     <DropShadowEffect x:Key="SubtleShadow" BlurRadius="4" Direction="270" Opacity="0.08" ShadowDepth="1" Color="#000000" />
+
+    <SolidColorBrush x:Key="ProgressBarBrush" Color="{StaticResource PrimaryColor}" />
 </ResourceDictionary>
