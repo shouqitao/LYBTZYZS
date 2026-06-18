@@ -6,7 +6,9 @@ using LYBT.Infrastructure.Data;
 using LYBT.LocalWebAPI.Auth;
 using LYBT.LocalWebAPI.Data;
 using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Entities.Users;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -68,6 +70,21 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
             options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
         });
 
+        // Register ASP.NET Core Identity (required by AuthController's UserManager/SignInManager)
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+        {
+            options.Password.RequireDigit = true;
+            options.Password.RequiredLength = 6;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireLowercase = true;
+            options.Lockout.MaxFailedAccessAttempts = int.MaxValue;
+            options.Lockout.AllowedForNewUsers = false;
+        })
+        .AddEntityFrameworkStores<AppDbContext>()
+        .AddDefaultTokenProviders();
+
         LocalJwtConfig.ConfigureServices(builder.Services);
 
         _app = builder.Build();
@@ -90,6 +107,22 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await db.Database.EnsureCreatedAsync();
         await LocalWebApiSeedData.SeedAsync(db);
+
+        // Seed Identity admin user matching the business User (same Id + password "admin123")
+        var businessAdmin = await db.Users.FirstAsync(u => u.UserName == "admin");
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        if (await userManager.FindByNameAsync("admin") == null)
+        {
+            var identityAdmin = new ApplicationUser
+            {
+                Id = businessAdmin.Id,
+                UserName = "admin",
+                RealName = "Admin",
+                Email = "admin@test.local",
+                EmailConfirmed = true
+            };
+            await userManager.CreateAsync(identityAdmin, "admin123");
+        }
     }
 
     public async Task DisposeAsync()

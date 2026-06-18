@@ -131,8 +131,10 @@ public class Program
             // 验证默认密码配置（所有环境）
             ValidateDefaultPasswordConfiguration(builder.Configuration, builder.Environment);
 
-            builder.Services.RegisterAllApplicationServices(builder.Configuration, builder.Environment);
-
+            // Issue Fix: AddIdentity MUST be registered BEFORE RegisterAllApplicationServices.
+            // AddIdentity sets cookie auth as default scheme; RegisterAuthenticationServices
+            // (called inside RegisterAllApplicationServices) overrides it with JWT Bearer.
+            // If AddIdentity runs after, it overwrites the JWT default → 302 redirects.
             builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
             {
                 options.Password.RequireDigit = true;
@@ -145,6 +147,8 @@ public class Program
             })
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
+
+            builder.Services.RegisterAllApplicationServices(builder.Configuration, builder.Environment);
 
             // T5-P3-01: 所有环境验证 Critical 配置项
             var configValidator = new LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationValidator(builder.Configuration);
