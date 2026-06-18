@@ -22,7 +22,7 @@ namespace LYBT.Desktop.Foundation.Services;
 public sealed class ConnectionModeService : IConnectionModeService, IDisposable
 {
     /// <summary>LocalWebAPI default base URL (anonymous health endpoint).</summary>
-    private const string LocalBaseUrl = "http://localhost:5000";
+    private const string LocalBaseUrl = "http://localhost:5100";
 
     /// <summary>Remote WebAPI anonymous health path.</summary>
     private const string RemoteHealthPath = "/api/v1/health";
