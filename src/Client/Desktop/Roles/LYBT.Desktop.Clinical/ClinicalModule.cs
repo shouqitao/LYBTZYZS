@@ -28,6 +28,7 @@ namespace LYBT.Desktop.Clinical
             containerRegistry.RegisterForNavigation<Views.ClinicalHomeView>();
             containerRegistry.RegisterForNavigation<Views.PatientSelectionView>();
             containerRegistry.RegisterForNavigation<Views.MedicalCaseWorkspaceView>();
+            containerRegistry.RegisterForNavigation<Views.ClinicalWorkspaceView>();
             // View在角色台，Control在业务模块
             // 权限设计：诊所共享数据-只读参考，医生自创数据-可完整管理
             containerRegistry.RegisterForNavigation<Views.HerbManagementView>();

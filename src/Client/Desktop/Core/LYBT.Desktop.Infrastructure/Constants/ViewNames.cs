@@ -49,6 +49,9 @@ public static class ViewNames
     /// <summary>医案工作台</summary>
     public const string MedicalCaseWorkspace = "MedicalCaseWorkspaceView";
 
+    /// <summary>临床工作台（患者列表+看诊工作区一体化）</summary>
+    public const string ClinicalWorkspace = "ClinicalWorkspaceView";
+
     #endregion
 
     #region MasterDetail视图

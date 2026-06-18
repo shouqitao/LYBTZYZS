@@ -34,7 +34,7 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
         public override string Description => "诊疗、记录、查询等业务操作";
 
         /// <inheritdoc/>
-        public override string HomeViewName => ViewNames.ClinicalHome;
+        public override string HomeViewName => ViewNames.ClinicalWorkspace;
 
         /// <inheritdoc/>
         public override IReadOnlyList<string> RequiredModules => Modules;

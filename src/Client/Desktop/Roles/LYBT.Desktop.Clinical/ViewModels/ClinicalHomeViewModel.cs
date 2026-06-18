@@ -80,16 +80,16 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         /// <summary>
         /// 开始看诊
-        /// Issue #1567 - 导航到患者选择视图（PatientSelectionView）
-        /// 新流程：主页 → 患者选择 → 3步看病流程
+        /// 导航到 ClinicalWorkspaceView（一体化临床工作台）
+        /// 新流程：主页 → 临床工作台（左侧患者选择 + 右侧看诊工作区）
         /// </summary>
         [RelayCommand]
         private void StartMedicalCase()
         {
             try
             {
-                Logger.LogInformation("开始看诊，导航到患者选择视图");
-                _navigationCoordinator.NavigateTo(ViewNames.PatientSelection);
+                Logger.LogInformation("开始看诊，导航到临床工作台");
+                _navigationCoordinator.NavigateTo(ViewNames.ClinicalWorkspace);
             }
             catch (Exception ex)
             {
