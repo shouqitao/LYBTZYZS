@@ -99,8 +99,9 @@ public class LocalJwtConfigTests
     [Fact]
     public void GenerateToken_Produces_Valid_Jwt()
     {
-        var user = new User { Id = Guid.NewGuid(), UserName = "testuser", Role = UserRole.Admin };
-        var token = LocalJwtConfig.GenerateToken(user);
+        var user = new ApplicationUser { Id = Guid.NewGuid(), UserName = "testuser" };
+        var roles = new List<string> { "Admin" };
+        var token = LocalJwtConfig.GenerateToken(user, roles);
 
         token.Should().NotBeNullOrEmpty();
 
@@ -115,8 +116,9 @@ public class LocalJwtConfigTests
     [Fact]
     public void GenerateToken_Contains_Sub_Claim()
     {
-        var user = new User { Id = Guid.NewGuid(), UserName = "testuser", Role = UserRole.Doctor };
-        var token = LocalJwtConfig.GenerateToken(user);
+        var user = new ApplicationUser { Id = Guid.NewGuid(), UserName = "testuser" };
+        var roles = new List<string> { "Doctor" };
+        var token = LocalJwtConfig.GenerateToken(user, roles);
 
         var handler = new JwtSecurityTokenHandler();
         var jwt = handler.ReadJwtToken(token);

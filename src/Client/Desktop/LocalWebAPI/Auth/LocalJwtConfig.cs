@@ -60,16 +60,18 @@ public static class LocalJwtConfig
     }
 
     /// <summary>
-    /// Generate a JWT for the given user.
-    /// Subject: user.Id, Role claim, and 365 days expiry.
+    /// Generate a JWT for the given Identity user.
+    /// Subject: user.Id, Role claim (first Identity role), 365 days expiry.
     /// </summary>
-    public static string GenerateToken(User user)
+    public static string GenerateToken(ApplicationUser user, IList<string> roles)
     {
+        var roleClaim = ParseRoleClaim(roles);
+
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(ClaimTypes.Role, user.Role.ToString()),
+            new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
+            new Claim(ClaimTypes.Role, roleClaim),
             // Include standard JWT subject claim for the user id
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString())
         };
@@ -85,5 +87,12 @@ public static class LocalJwtConfig
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private static string ParseRoleClaim(IList<string> roles)
+    {
+        // Identity roles seeded by IdentitySeedData ("Doctor", "Admin", "SuperAdmin", "Receptionist")
+        // map 1:1 to UserRole enum names and to AuthorizationConstants policy role names.
+        return roles.Count > 0 ? roles[0] : RoleConstants.Doctor;
     }
 }

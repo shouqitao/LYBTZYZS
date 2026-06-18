@@ -1,5 +1,4 @@
 using LYBT.Entities.Users;
-using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Web;
 using LYBT.LocalWebAPI.Auth;
 using LYBT.Shared.Models.Contracts.Auth;
@@ -7,7 +6,6 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace LYBT.LocalWebAPI.Controllers;
@@ -18,27 +16,25 @@ public class AuthController : BaseApiController
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly AppDbContext _db;
 
     public AuthController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        AppDbContext db,
         ILogger<AuthController> logger) : base(logger)
     {
         _userManager = userManager;
         _signInManager = signInManager;
-        _db = db;
     }
 
-    private Guid GetCurrentUserId()
-        => Guid.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : Guid.Empty;
+    private static Guid GetCurrentUserId(ClaimsPrincipal principal)
+        => Guid.TryParse(principal.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : Guid.Empty;
 
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Password))
-            return Unauthorized();
+            return Unauthorized(new { Message = "用户名或密码错误" });
 
         var user = await _userManager.FindByNameAsync(request.UserName);
         if (user == null)
@@ -48,46 +44,62 @@ public class AuthController : BaseApiController
         if (!result.Succeeded)
             return Unauthorized(new { Message = "用户名或密码错误" });
 
-        var businessUser = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == user.Id);
-        if (businessUser == null)
-            return Unauthorized();
+        user.LastLoginAt = DateTime.UtcNow;
+        await _userManager.UpdateAsync(user);
 
-        var token = LocalJwtConfig.GenerateToken(businessUser);
+        var roles = await _userManager.GetRolesAsync(user);
+        var role = ParseUserRole(roles);
+
+        var token = LocalJwtConfig.GenerateToken(user, roles);
+
+        _logger.LogInformation("[AUTH] Local login succeeded - UserName={UserName} Role={Role}",
+            request.UserName, role);
+
         return Ok(new
         {
             Token = token,
-            UserId = businessUser.Id,
-            Username = businessUser.UserName,
-            Role = businessUser.Role
+            UserId = user.Id,
+            Username = user.UserName,
+            Role = role
         });
     }
 
     [HttpPost("logout")]
+    [AllowAnonymous]
     public IActionResult Logout([FromBody] LogoutRequest request)
     {
+        _logger.LogInformation("[AUTH] Local logout - UserName={UserName}", request?.UserName ?? "(unknown)");
         return Ok(new { Success = true, Message = "已登出" });
     }
 
     [HttpGet("validate")]
     public async Task<IActionResult> ValidateToken()
     {
-        var userId = GetCurrentUserId();
+        var userId = GetCurrentUserId(User);
         if (userId == Guid.Empty)
             return Ok(new { IsValid = false, Message = "Token 无效" });
 
-        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
+        var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
             return Ok(new { IsValid = false, Message = "用户不存在" });
 
-        if (user.Status != CommonStatus.Enabled)
-            return Ok(new { IsValid = false, Message = "账户已被禁用" });
+        var roles = await _userManager.GetRolesAsync(user);
+        var role = ParseUserRole(roles);
 
         return Ok(new
         {
             IsValid = true,
             UserId = user.Id,
             Username = user.UserName,
-            Role = user.Role
+            Role = role
         });
+    }
+
+    private static UserRole ParseUserRole(IList<string> roles)
+    {
+        if (roles.Count > 0 && Enum.TryParse<UserRole>(roles[0], ignoreCase: true, out var role))
+            return role;
+
+        return UserRole.Doctor;
     }
 }
