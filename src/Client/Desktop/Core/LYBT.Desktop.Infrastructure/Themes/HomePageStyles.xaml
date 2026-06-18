@@ -1,15 +1,14 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="TCM.Theme.xaml"/>
-    </ResourceDictionary.MergedDictionaries>
 
     <!--
         HomePageStyles.xaml - 首页共享样式
 
         用途: Admin/Clinical首页卡片样式
         从AdminHomeView和ClinicalHomeView提取的公共样式
+
+        颜色资源通过 App.xaml 全局加载 (DesignSystem.xaml)
     -->
 
     <!-- ========================================

@@ -15,8 +15,8 @@
                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
 
-                <!--  2. TCM中医主题覆盖 (覆盖HC颜色，五行配色)  -->
-                <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Themes/TCM.Theme.xaml" />
+                <!--  2. 设计系统 (覆盖HC颜色，统一Token)  -->
+                <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Themes/DesignSystem.xaml" />
 
                 <!--  3. 项目特定设计Token (间距等)  -->
                 <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Themes/Theme.Light.xaml" />
@@ -28,9 +28,6 @@
                 <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Themes/HomePageStyles.xaml" />
 
                 <!--  6. Shell全局样式  -->
-                <ResourceDictionary Source="Resources/Colors.xaml" />
-                <ResourceDictionary Source="Resources/Spacing.xaml" />
-                <ResourceDictionary Source="Resources/LayoutStyles.xaml" />
                 <ResourceDictionary Source="Styles/Typography.xaml" />
                 <ResourceDictionary Source="Styles/Controls.xaml" />
 

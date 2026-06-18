@@ -6,7 +6,7 @@
 
         颜色和字体已迁移到:
         - HandyControl: SkinDefault.xaml + Theme.xaml (基础样式)
-        - TCM.Theme.xaml (中医五行配色覆盖)
+        - DesignSystem.xaml (统一Token: 颜色/字体/间距/圆角/阴影)
 
         此文件仅保留项目特定的间距设计Token
     -->

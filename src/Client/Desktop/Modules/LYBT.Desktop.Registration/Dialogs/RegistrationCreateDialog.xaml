@@ -20,7 +20,7 @@
 
         <!-- 标题栏 -->
         <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}" Padding="20,12">
-            <TextBlock Text="新建挂号" Foreground="{StaticResource LYBTBackgroundBrush}" FontSize="18" FontWeight="Bold" />
+            <TextBlock Text="新建挂号" Foreground="{StaticResource BackgroundBrush}" FontSize="18" FontWeight="Bold" />
         </Border>
 
         <!-- 表单内容 -->
@@ -51,7 +51,7 @@
                 <!-- 搜索中提示 -->
                 <TextBlock Text="{Binding StatusMessage}"
                            FontSize="12"
-                            Foreground="{StaticResource LYBTTextSecondaryBrush}"
+                            Foreground="{StaticResource SecondaryTextBrush}"
                             Margin="0,0,0,4"
                            Visibility="{Binding IsSearchingPatients, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
@@ -64,7 +64,7 @@
                         Visibility="{Binding ShowPatientResults, Converter={x:Static converters:Cvt.BoolToVis}}">
                     <ListBox ItemsSource="{Binding PatientSearchResults}"
                              BorderThickness="0"
-                             Background="{StaticResource LYBTBackgroundBrush}"
+                             Background="{StaticResource BackgroundBrush}"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
@@ -82,12 +82,12 @@
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0">
                                             <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" />
-                                             <TextBlock Text="{Binding PhoneNumber}" FontSize="12" Foreground="{StaticResource LYBTTextSecondaryBrush}" />
+                                             <TextBlock Text="{Binding PhoneNumber}" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}" />
                                         </StackPanel>
                                         <TextBlock Grid.Column="1"
                                                    Text="{Binding Gender, StringFormat=性别: {0}}"
                                                    FontSize="12"
-                                                    Foreground="{StaticResource LYBTTextDisabledBrush}"
+                                                    Foreground="{StaticResource DisabledTextBrush}"
                                                    VerticalAlignment="Center" />
                                     </Grid>
                                 </Button>
@@ -108,7 +108,7 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="已选: " FontSize="13" Foreground="{StaticResource LYBTSuccessBrush}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="0" Text="已选: " FontSize="13" Foreground="{StaticResource SuccessBrush}" VerticalAlignment="Center" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding SelectedPatient.Name, StringFormat={}{0} ({1}), FallbackValue=''}"
                                    FontSize="13"
@@ -154,7 +154,7 @@
                 <!-- 状态消息 -->
                 <TextBlock Text="{Binding StatusMessage}"
                            FontSize="12"
-                           Foreground="{StaticResource LYBTErrorBrush}"
+                           Foreground="{StaticResource DangerBrush}"
                            Margin="0,0,0,8"
                            Visibility="{Binding IsBusy, Converter={x:Static converters:Cvt.InverseBoolToVis}}" />
             </StackPanel>
@@ -173,7 +173,7 @@
         </Grid>
 
         <!-- 按钮栏 -->
-        <Border Grid.Row="2" Background="{StaticResource LYBTSurfaceBrush}" Padding="20,12">
+        <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}" Padding="20,12">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="确认挂号"
                         Command="{Binding ConfirmCommand}"
@@ -181,7 +181,7 @@
                         Padding="12,8"
                         FontSize="14"
                         Background="{DynamicResource PrimaryBrush}"
-                        Foreground="{StaticResource LYBTBackgroundBrush}"
+                        Foreground="{StaticResource BackgroundBrush}"
                         Margin="0,0,12,0" />
                 <Button Content="取消"
                         Command="{Binding CancelCommand}"

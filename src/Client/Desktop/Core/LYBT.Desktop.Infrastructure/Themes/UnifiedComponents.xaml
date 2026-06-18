@@ -2,19 +2,19 @@
 
     <!--
         合并样式资源 - 纯聚合器
-        
+
         颜色资源现在通过 App.xaml 全局加载:
         1. HandyControl SkinDefault.xaml + Theme.xaml (基础颜色)
-        2. TCM.Theme.xaml (中医五行配色覆盖)
-        
+        2. DesignSystem.xaml (统一Token: 颜色/字体/间距/圆角/阴影)
+
         此文件仅合并样式相关资源
-        加载顺序重要: DesignTokens 必须在其他样式文件之前 (字体/间距/圆角/阴影被引用)
+        加载顺序重要: DesignSystem 必须在其他样式文件之前 (字体/间距/圆角/阴影被引用)
     -->
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="../Converters/Converters.xaml" />
         <ResourceDictionary Source="PreviewStyles.xaml" />
         <ResourceDictionary Source="ValidationStyles.xaml" />
-        <ResourceDictionary Source="DesignTokens.xaml" />
+        <ResourceDictionary Source="DesignSystem.xaml" />
         <ResourceDictionary Source="ButtonStyles.xaml" />
         <ResourceDictionary Source="InputStyles.xaml" />
         <ResourceDictionary Source="DataGridStyles.xaml" />

@@ -8,7 +8,7 @@
         WindowStartupLocation="CenterScreen"
         AllowsTransparency="True"
         Background="Transparent">
-    <Border Background="{StaticResource LYBTBackgroundBrush}"
+    <Border Background="{StaticResource BackgroundBrush}"
             BorderBrush="{StaticResource ProgressBarBrush}"
             BorderThickness="2"
             CornerRadius="8">
@@ -51,7 +51,7 @@
 
                 <TextBlock Text="Ling Yin Bao Tang TCM Clinic System"
                             FontSize="14"
-                        Foreground="{StaticResource LYBTTextSecondaryBrush}"
+                        Foreground="{StaticResource SecondaryTextBrush}"
                         HorizontalAlignment="Center"/>
             </StackPanel>
 
@@ -60,7 +60,7 @@
                         Grid.Row="1"
                         Text="正在初始化系统..."
                         FontSize="14"
-                        Foreground="{StaticResource LYBTTextPrimaryBrush}"
+                        Foreground="{StaticResource PrimaryTextBrush}"
                         HorizontalAlignment="Center"
                         Margin="0,20,0,10"/>
 
@@ -78,7 +78,7 @@
                          HorizontalAlignment="Center">
                 <TextBlock Text="版本 1.0.0"
                             FontSize="12"
-                             Foreground="{StaticResource LYBTTextDisabledBrush}"
+                             Foreground="{StaticResource DisabledTextBrush}"
                              HorizontalAlignment="Center"
                              Margin="0,0,0,5"/>
                 <TextBlock Text="© 2025 凌隐宝堂. All rights reserved."
