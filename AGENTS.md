@@ -20,7 +20,7 @@ dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
 
 ## Database
 
-- **EF Core Migration**: Latest is `SimplifyDataModel` — run `dotnet ef database update` after pulling
+- **EF Core Migration**: Latest is `AddIdentityTables` — run `dotnet ef database update` after pulling
 - **Dual-mode**: Remote = SQL Server | Local = SQL Server LocalDB (NOT SQLite — SQLite is test-only)
 - **Migration command**: `dotnet ef migrations add <Name> --project src/Server/Core/LYBT.Infrastructure --startup-project src/Server/Services/LYBT.WebAPI`
 

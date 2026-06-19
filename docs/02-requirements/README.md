@@ -15,10 +15,9 @@
 | [07-medical-cases.md](07-medical-cases.md) | 医案管理（核心聚合根） | 18 | ✅ 已完成 |
 | [08-registration.md](08-registration.md) | 挂号管理 | 7 | ✅ 已完成 |
 | [09-printing.md](09-printing.md) | 处方打印 | 4 | ✅ 已完成 |
-| [10-sync.md](10-sync.md) | 数据同步 | 8 | ✅ 已完成 |
 | [11-platform.md](11-platform.md) | 平台基础设施（Shell/Config/Err/Log/Sys/Card） | 35 | ✅ 已完成 |
 | [12-nfr.md](12-nfr.md) | 非功能需求 | — | ✅ 已完成 |
-| **合计** | | **136** | |
+| **合计** | | **128** | |
 
 ## US 编号体系
 
@@ -34,7 +33,6 @@
 | US-MC | 医案管理 | 07-medical-cases.md |
 | US-REG | 挂号管理 | 08-registration.md |
 | US-PRINT | 处方打印 | 09-printing.md |
-| US-SYNC | 数据同步 | 10-sync.md |
 | US-SHELL | 平台-Shell | 11-platform.md |
 | US-CFG | 平台-配置 | 11-platform.md |
 | US-ERR | 平台-异常处理 | 11-platform.md |
@@ -42,7 +40,7 @@
 | US-SYS | 平台-健康诊断 | 11-platform.md |
 | US-CARD | 平台-读卡器 | 11-platform.md |
 
-## US 总览（136 项）
+## US 总览（128 项）
 
 ### 认证与会话（US-AUTH × 13）
 
@@ -176,19 +174,6 @@
 | US-PRINT-002 | 处方预览 |
 | US-PRINT-003 | 导出处方（XPS/PDF） |
 | US-PRINT-004 | 打印记录回写服务器（成功/失败） |
-
-### 数据同步（US-SYNC × 8）
-
-| US ID | 标题 |
-|-------|------|
-| US-SYNC-001 | 查询支持的同步实体类型 |
-| US-SYNC-002 | 获取实体元数据 |
-| US-SYNC-003 | 对比本地与服务端差异（Checksum） |
-| US-SYNC-004 | 上传本地独有实体 |
-| US-SYNC-005 | 下载服务端独有实体 |
-| US-SYNC-006 | 同步删除（引用检查） |
-| US-SYNC-007 | 冲突解决（逐项 UseLocal/Server/Skip） |
-| US-SYNC-008 | 错误分类与重试（Transient/Conflict/Auth） |
 
 ### 平台基础设施（US-SHELL/CFG/ERR/LOG/SYS/CARD × 35）
 
