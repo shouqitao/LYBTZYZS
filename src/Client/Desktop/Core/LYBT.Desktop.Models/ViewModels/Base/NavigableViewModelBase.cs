@@ -259,54 +259,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         #endregion
 
-        #region 导航参数提取
-
-        /// <summary>
-        /// 获取必需的导航参数
-        /// </summary>
-        /// <typeparam name="T">参数类型</typeparam>
-        /// <param name="context">导航上下文</param>
-        /// <param name="key">参数键</param>
-        /// <returns>参数值</returns>
-        /// <exception cref="ArgumentException">参数不存在时抛出</exception>
-        protected T GetNavigationParameter<T>(NavigationContext context, string key)
-        {
-            if (context.Parameters.TryGetValue(key, out T? value) && value != null)
-            {
-                return value;
-            }
-
-            throw new ArgumentException($"必需的导航参数 '{key}' 不存在或为null", key);
-        }
-
-        /// <summary>
-        /// 获取可选的导航参数
-        /// </summary>
-        /// <typeparam name="T">参数类型</typeparam>
-        /// <param name="context">导航上下文</param>
-        /// <param name="key">参数键</param>
-        /// <param name="defaultValue">默认值</param>
-        /// <returns>参数值或默认值</returns>
-        protected T GetNavigationParameter<T>(NavigationContext context, string key, T defaultValue)
-        {
-            if (context.Parameters.TryGetValue(key, out T? value) && value != null)
-            {
-                return value;
-            }
-
-            return defaultValue;
-        }
-
-        /// <summary>
-        /// 尝试获取导航参数
-        /// </summary>
-        protected bool TryGetNavigationParameter<T>(NavigationContext context, string key, out T? value)
-        {
-            return context.Parameters.TryGetValue(key, out value);
-        }
-
-        #endregion
-
         #region 导航命令
 
         /// <summary>
@@ -346,31 +298,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             {
                 Logger.LogError(ex, "导航失败: {ViewName}", viewName);
                 SetError($"导航失败: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 导航返回
-        /// </summary>
-        protected virtual void NavigateBack(string regionName)
-        {
-            try
-            {
-                var region = RegionManager.Regions[regionName];
-                if (region?.NavigationService?.Journal?.CanGoBack == true)
-                {
-                    region.NavigationService.Journal.GoBack();
-                    Logger.LogDebug("导航回退成功: {RegionName}", regionName);
-                }
-                else
-                {
-                    Logger.LogWarning("无法回退，导航历史为空: {RegionName}", regionName);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导航回退失败");
-                SetError($"导航回退失败: {ex.Message}");
             }
         }
 
@@ -425,22 +352,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         #endregion
 
         #region 辅助方法
-
-        /// <summary>
-        /// 获取当前用户信息
-        /// </summary>
-        protected virtual string GetCurrentUserInfo()
-        {
-            return SessionManager.CurrentUser?.RealName ?? "未知用户";
-        }
-
-        /// <summary>
-        /// 是否已登录
-        /// </summary>
-        protected virtual bool IsUserLoggedIn()
-        {
-            return SessionManager.IsAuthenticated;
-        }
 
         /// <summary>
         /// 标记有未保存的变更

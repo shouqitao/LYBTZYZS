@@ -651,7 +651,6 @@ namespace LYBT.Desktop.Infrastructure.Navigation
         #endregion
 
         #endregion
-        partial void OnAnalyticsInitialized();
     }
 
     #region Navigation Request (for Prism compatibility)
