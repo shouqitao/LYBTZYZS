@@ -23,8 +23,8 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <TextBlock Text="大医精诚" FontFamily="楷体, KaiTi" FontSize="72" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,12">
-                    <TextBlock.Effect><DropShadowEffect BlurRadius="8" Opacity="0.3" ShadowDepth="2" Color="Black" /></TextBlock.Effect>
+                <TextBlock Text="大医精诚" FontFamily="隶书, LiSu, SimLi" FontSize="80" FontWeight="Bold" Foreground="#F5E6C8" Margin="0,0,0,12">
+                    <TextBlock.Effect><DropShadowEffect BlurRadius="12" Opacity="0.4" ShadowDepth="3" Color="Black" /></TextBlock.Effect>
                 </TextBlock>
                 <TextBlock Text="中医药是中华民族的瑰宝" FontSize="24" FontWeight="SemiBold" Foreground="#D7CCC8" Margin="0,0,0,24">
                     <TextBlock.Effect><DropShadowEffect BlurRadius="6" Opacity="0.2" ShadowDepth="1" Color="Black" /></TextBlock.Effect>
