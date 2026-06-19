@@ -119,7 +119,8 @@ public partial class App : PrismApplication
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        _ = _orchestrator!.RunStartupAsync(MainWindow!);
+        _orchestrator ??= Container.Resolve<AppStartupOrchestrator>();
+        _ = _orchestrator.RunStartupAsync(MainWindow!);
     }
 
     /// <summary>配置模块目录 - 基于角色的智能模块加载策略</summary>
