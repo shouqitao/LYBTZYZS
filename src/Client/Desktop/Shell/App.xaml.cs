@@ -4,31 +4,20 @@ using LYBT.Desktop.Receptionist;
 using LYBT.Desktop.Auth;
 using LYBT.Desktop.CardReader;
 using LYBT.Desktop.Clinical;
-using LYBT.Desktop.Contracts.Performance;
-using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Foundation.Application;
-using LYBT.Desktop.Foundation.Security;
-using Microsoft.Extensions.Caching.Memory;
-// [已删除] using LYBT.Desktop.Consultation; - 模块已废弃，功能已迁移到MedicalCase模块
 using LYBT.Desktop.Formula;
 using LYBT.Desktop.Herbs;
 using LYBT.Desktop.Infrastructure.Logging;
 using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Patients;
-// [已删除] using LYBT.Desktop.Prescriptions; - 模块已移除
-using LYBT.Desktop.Reports;
 using LYBT.Desktop.Registration;
+using LYBT.Desktop.Reports;
 using LYBT.Desktop.Shell.Extensions;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Bootstrap;
-using LYBT.Desktop.Shell.Services.Startup.Steps;
 using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Views;
 using LYBT.Desktop.Users;
-using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.Models.Enums;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Prism.DryIoc;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -40,10 +29,7 @@ namespace LYBT.Desktop.Shell;
 /// <summary>应用程序主入口 - WPF应用程序核心启动器，提供智能模块加载和角色驱动初始化</summary>
 public partial class App : PrismApplication
 {
-    private IApplicationBootstrapper? _bootstrapper;
-    private IStartupPipeline? _startupPipeline;
-    private StartupPerformanceMonitor? _performanceMonitor;
-    private SplashScreenWindow? _splashScreen;
+    private AppStartupOrchestrator? _orchestrator;
     private static Mutex? _instanceMutex;
     private const string MutexName = "Global\\LYBTZYZS_Shell_Instance";
     private const string MainWindowTitle = "凌隐宝堂中医诊所管理系统";
@@ -53,22 +39,17 @@ public partial class App : PrismApplication
     {
         if (!TryAcquireSingleInstance())
         {
-            // 尝试激活已有窗口
             NativeMethods.ActivateExistingWindow(MainWindowTitle);
             Shutdown();
             return;
         }
 
-        // 设置控制台编码为UTF-8（必须在Serilog初始化前，否则Console sink无法正确显示中文）
         SetConsoleEncoding();
-
-        // refactor-logging-system: 初始化Serilog日志系统
         DesktopSerilogConfiguration.Initialize();
         Log.Information("应用程序启动");
 
-        _splashScreen = new SplashScreenWindow();
-        _splashScreen.Show();
-        _splashScreen.UpdateStatus("正在初始化应用程序...");
+        _orchestrator = Container.Resolve<AppStartupOrchestrator>();
+        _orchestrator.ShowSplash();
         base.OnStartup(e);
     }
 
@@ -79,7 +60,6 @@ public partial class App : PrismApplication
         _instanceMutex = new Mutex(true, MutexName, out var createdNew);
         if (!createdNew)
         {
-            // 已有实例，释放当前创建的Mutex句柄
             _instanceMutex.Dispose();
             _instanceMutex = null;
             return false;
@@ -90,49 +70,11 @@ public partial class App : PrismApplication
     /// <summary>应用程序退出</summary>
     protected override void OnExit(ExitEventArgs e)
     {
-        Log.Information("应用程序退出，开始释放资源");
-
-        // 1. 停止定时服务
-        SafeDispose(() =>
-        {
-            var tickService = Container.Resolve<IApplicationTickService>();
-            tickService.Stop();
-            (tickService as IDisposable)?.Dispose();
-        }, "ApplicationTickService");
-
-        SafeDispose(() =>
-        {
-            var tokenService = Container.Resolve<ITokenLifecycleService>();
-            tokenService.StopMonitoring();
-            tokenService.Dispose();
-        }, "TokenLifecycleService");
-
-        // 2. 释放用户活动追踪
-        SafeDispose(() =>
-        {
-            var activityTracker = Container.Resolve<IUserActivityTracker>();
-            (activityTracker as IDisposable)?.Dispose();
-        }, "UserActivityTracker");
-
-        // 3. 释放缓存
-        SafeDispose(() =>
-        {
-            var cache = Container.Resolve<IMemoryCache>();
-            cache.Dispose();
-        }, "MemoryCache");
-
-        // 4. 释放Mutex
-        SafeDispose(() =>
-        {
-            _instanceMutex?.ReleaseMutex();
-            _instanceMutex?.Dispose();
-            _instanceMutex = null;
-        }, "InstanceMutex");
-
-        // 5. 关闭日志（最后执行）
-        Log.Information("资源释放完成");
+        Log.Information("应用程序退出");
+        _instanceMutex?.ReleaseMutex();
+        _instanceMutex?.Dispose();
+        _instanceMutex = null;
         DesktopSerilogConfiguration.CloseAndFlush();
-
         base.OnExit(e);
     }
 
@@ -151,6 +93,7 @@ public partial class App : PrismApplication
     {
         ArgumentNullException.ThrowIfNull(containerRegistry, nameof(containerRegistry));
 
+        containerRegistry.RegisterSingleton<AppStartupOrchestrator>();
         containerRegistry.RegisterSingleton<IApplicationBootstrapper, ApplicationBootstrapper>();
         containerRegistry.RegisterAllServices();
         containerRegistry.Register<MainWindowViewModel>();
@@ -175,187 +118,7 @@ public partial class App : PrismApplication
     protected override void OnInitialized()
     {
         base.OnInitialized();
-
-        // Phase 4 Task 4.4: 集成性能监控框架
-        var performanceMonitor = Container.Resolve<IPerformanceMonitor>();
-        performanceMonitor.StartTiming("App_Startup_Total");
-        performanceMonitor.RecordMemoryBaseline("App_Startup_Memory");
-
-        _performanceMonitor = new StartupPerformanceMonitor(Container.Resolve<ILoggerFactory>());
-        _performanceMonitor.StartMonitoring();
-        _performanceMonitor.StartStage("应用初始化");
-
-        _ = InitializeApplicationAsync();
-    }
-
-    /// <summary>异步初始化应用程序（使用启动管道）</summary>
-    /// <remarks>enhance-shell-connection-dialog: 支持API连接失败时的恢复对话框和重试机制</remarks>
-    private async Task InitializeApplicationAsync()
-    {
-        try
-        {
-            // 保留bootstrapper用于角色模块加载
-            _bootstrapper = Container.Resolve<IApplicationBootstrapper>();
-
-            // 使用启动管道执行初始化流程
-            _startupPipeline = Container.Resolve<IStartupPipeline>();
-            RegisterStartupSteps();
-            SubscribeToPipelineEvents();
-
-            var progress = new Progress<string>(message => _splashScreen?.UpdateStatus(message));
-            var result = await _startupPipeline.ExecuteAsync(progress);
-
-            if (result.Success)
-            {
-                await ShowMainWindowAfterInitializationAsync();
-                return;
-            }
-
-            // API健康检查失败不再阻塞启动（IsRequired=false），其他必需步骤失败仍抛异常
-            throw new InvalidOperationException(
-                $"启动步骤 '{result.FailedStepName}' 执行失败: {result.ErrorMessage}");
-        }
-        catch (Exception ex)
-        {
-            await HandleInitializationFailureAsync(ex);
-        }
-    }
-
-    /// <summary>注册启动步骤到管道</summary>
-    private void RegisterStartupSteps()
-    {
-        // 从DI容器解析并注册所有启动步骤
-        var steps = new IStartupStep[]
-        {
-            Container.Resolve<IStartupStep>("ErrorHandling"),
-            Container.Resolve<IStartupStep>("ModuleCoordinator"),
-            Container.Resolve<IStartupStep>("CoreServices"),
-            // 本地 API 服务 — 嵌入式 Kestrel，用于本地/离线模式
-            new Services.Startup.Steps.LocalWebApiStartupStep(
-                Container.Resolve<LYBT.Desktop.Contracts.Services.IEmbeddedLocalWebApiService>(),
-                Container.Resolve<ILogger<Services.Startup.Steps.LocalWebApiStartupStep>>()),
-            // API健康检查 - 直接创建实例以使用特定超时配置（5秒）
-            new ApiHealthCheckStartupStep(
-                Container.Resolve<IApplicationStateService>(),
-                Container.Resolve<ILogger<ApiHealthCheckStartupStep>>(),
-                timeoutSeconds: 5),
-            Container.Resolve<IStartupStep>("Warmup")
-        };
-
-        foreach (var step in steps)
-        {
-            _startupPipeline!.RegisterStep(step);
-        }
-    }
-
-    /// <summary>订阅管道事件</summary>
-    private void SubscribeToPipelineEvents()
-    {
-        _startupPipeline!.StepCompleted += (_, e) =>
-        {
-            _performanceMonitor?.EndStage();
-            if (e.CompletedCount < e.TotalCount)
-            {
-                _performanceMonitor?.StartStage(e.StepName);
-            }
-
-            var logger = Container.Resolve<ILogger<App>>();
-            if (e.Result.Success)
-            {
-                logger.LogInformation("启动步骤 {StepName} 完成，耗时 {Duration}ms",
-                    e.StepName, e.Result.Duration.TotalMilliseconds);
-            }
-            else
-            {
-                logger.LogWarning("启动步骤 {StepName} 失败: {Error}",
-                    e.StepName, e.Result.ErrorMessage);
-            }
-        };
-    }
-
-    /// <summary>完成启动，显示主窗口</summary>
-    private async Task ShowMainWindowAfterInitializationAsync()
-    {
-        await Dispatcher.InvokeAsync(async () =>
-        {
-            _performanceMonitor?.EndStage();
-            _performanceMonitor?.Finish();
-
-            // Phase 4 Task 4.4: 记录启动性能指标并输出报告
-            try
-            {
-                var performanceMonitor = Container.Resolve<IPerformanceMonitor>();
-                performanceMonitor.StopTiming("App_Startup_Total");
-                performanceMonitor.RecordMemoryBaseline("App_Startup_Complete_Memory");
-
-                var report = performanceMonitor.GenerateReport();
-                var logger = Container.Resolve<ILogger<App>>();
-                logger.LogInformation("应用程序启动性能报告:\n{PerformanceReport}", report.GetFormattedReport());
-            }
-            catch (Exception ex)
-            {
-                // 性能监控不应影响正常启动流程
-                var logger = Container.Resolve<ILogger<App>>();
-                logger.LogWarning(ex, "生成性能报告时发生错误");
-            }
-
-            if (_splashScreen != null)
-            {
-                _splashScreen.FadeOut();
-                await Task.Delay(400);
-                _splashScreen.Close();
-                _splashScreen = null;
-            }
-            MainWindow?.Show();
-        });
-    }
-
-    /// <summary>处理初始化失败</summary>
-    private async Task HandleInitializationFailureAsync(Exception ex)
-    {
-        await Dispatcher.InvokeAsync(() =>
-        {
-            _performanceMonitor?.Finish();
-            _splashScreen?.Close();
-
-            var logger = Container.Resolve<ILogger<App>>();
-            logger.LogCritical(ex, "应用初始化失败");
-
-            var errorMessage = BuildInitializationErrorMessage(ex);
-            var result = System.Windows.MessageBox.Show(errorMessage, "凌隐宝堂 - 初始化失败",
-                System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Error);
-
-            if (result == System.Windows.MessageBoxResult.Yes)
-                TryOpenLogFolder();
-
-            Application.Current.Shutdown(1);
-        });
-    }
-
-    /// <summary>构建初始化错误消息</summary>
-    private static string BuildInitializationErrorMessage(Exception ex) =>
-        $"应用初始化失败，无法继续运行。\n\n错误类型：{ex.GetType().Name}\n错误信息：{ex.Message}\n\n" +
-        "可能原因：\n1. WebAPI服务未启动（检查 http://localhost:5001）\n2. 数据库连接失败\n3. 配置文件错误\n\n是否查看详细日志？";
-
-    /// <summary>尝试打开日志文件夹</summary>
-    private static void TryOpenLogFolder()
-    {
-        try { System.Diagnostics.Process.Start("explorer.exe", System.IO.Path.Combine(AppContext.BaseDirectory, "logs")); }
-        catch { }
-    }
-
-    /// <summary>安全执行释放操作，捕获异常确保后续清理继续</summary>
-    private static void SafeDispose(Action disposeAction, string resourceName)
-    {
-        try
-        {
-            disposeAction();
-            Log.Debug("已释放资源: {ResourceName}", resourceName);
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "释放资源失败: {ResourceName}", resourceName);
-        }
+        _ = _orchestrator!.RunStartupAsync(MainWindow!);
     }
 
     /// <summary>配置模块目录 - 基于角色的智能模块加载策略</summary>
@@ -375,8 +138,6 @@ public partial class App : PrismApplication
         moduleCatalog.AddModule<PatientsModule>(InitializationMode.OnDemand);
         moduleCatalog.AddModule<HerbsModule>(InitializationMode.OnDemand);
         moduleCatalog.AddModule<FormulaModule>(InitializationMode.OnDemand);
-        // [已删除] ConsultationModule - 功能已迁移到MedicalCase模块的ConsultationItem（Entity→DTO→Item模式）
-        // [已删除] PrescriptionsModule - 空壳模块已移除，功能已迁移到MedicalCase
         moduleCatalog.AddModule<MedicalCaseModule>(InitializationMode.OnDemand);
 
         // PRD: registration.md - 挂号管理模块
@@ -394,11 +155,9 @@ public partial class App : PrismApplication
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(userRole, nameof(userRole));
 
-        if (_bootstrapper == null)
-            throw new InvalidOperationException("应用程序启动引导服务未初始化");
-
+        var bootstrapper = Container.Resolve<IApplicationBootstrapper>();
         if (Enum.TryParse<UserRole>(userRole, out var role))
-            await _bootstrapper.LoadModulesForRoleAsync(role);
+            await bootstrapper.LoadModulesForRoleAsync(role);
         else
             throw new ArgumentException($"无效的用户角色: {userRole}");
     }
@@ -410,7 +169,6 @@ public partial class App : PrismApplication
         {
             try
             {
-                // 设置控制台代码页为UTF-8 (65001)
                 SetConsoleOutputCP(65001);
                 SetConsoleCP(65001);
                 System.Console.OutputEncoding = System.Text.Encoding.UTF8;
