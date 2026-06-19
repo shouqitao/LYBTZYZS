@@ -1,8 +1,6 @@
-using System.Windows;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Shell.Services.Startup.Steps;
-using LYBT.Desktop.Shell.Views;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
@@ -10,14 +8,12 @@ using Prism.Ioc;
 namespace LYBT.Desktop.Shell.Services;
 
 /// <summary>
-/// 封装启动流程：splash → pipeline → 显示主窗口。
-/// 从 App.xaml.cs 抽取以降低复杂度。
+/// Runs the startup pipeline in the background after the main window is shown.
 /// </summary>
 public class AppStartupOrchestrator
 {
     private readonly IContainerProvider _container;
     private readonly ILogger<AppStartupOrchestrator> _logger;
-    private SplashScreenWindow? _splash;
 
     public AppStartupOrchestrator(IContainerProvider container, ILogger<AppStartupOrchestrator> logger)
     {
@@ -25,14 +21,7 @@ public class AppStartupOrchestrator
         _logger = logger;
     }
 
-    public void ShowSplash()
-    {
-        _splash = new SplashScreenWindow();
-        _splash.Show();
-        _splash.UpdateStatus("正在初始化应用程序...");
-    }
-
-    public async Task RunStartupAsync(Window mainWindow)
+    public async Task RunStartupAsync()
     {
         try
         {
@@ -41,29 +30,25 @@ public class AppStartupOrchestrator
             var pipeline = _container.Resolve<IStartupPipeline>();
             RegisterSteps(pipeline);
 
-            var progress = new Progress<string>(msg => _splash?.UpdateStatus(msg));
-            var result = await pipeline.ExecuteAsync(progress);
+            var result = await pipeline.ExecuteAsync();
 
             if (!result.Success)
             {
-                throw new InvalidOperationException(
-                    $"启动步骤 '{result.FailedStepName}' 执行失败: {result.ErrorMessage}");
+                _logger.LogError("启动步骤 {Step} 失败: {Error}", result.FailedStepName, result.ErrorMessage);
             }
-
-            _logger.LogInformation("启动管道执行完成");
-            await CloseSplashAsync();
-            mainWindow.Show();
+            else
+            {
+                _logger.LogInformation("启动管道执行完成");
+            }
         }
         catch (Exception ex)
         {
             _logger.LogCritical(ex, "应用启动失败");
-            _splash?.Close();
-
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 var message = ClientErrorMessageMapper.GetSafeOperationFailureMessage("启动", ex);
-                MessageBox.Show(message, "启动失败", MessageBoxButton.OK, MessageBoxImage.Error);
-                System.Windows.Application.Current.Shutdown();
+                System.Windows.MessageBox.Show(message, "启动失败",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             });
         }
     }
@@ -81,14 +66,5 @@ public class AppStartupOrchestrator
             _container.Resolve<ILogger<ApiHealthCheckStartupStep>>(),
             timeoutSeconds: 5));
         pipeline.RegisterStep(_container.Resolve<IStartupStep>("Warmup"));
-    }
-
-    private async Task CloseSplashAsync()
-    {
-        if (_splash == null) return;
-        _splash.FadeOut();
-        await Task.Delay(400);
-        _splash.Close();
-        _splash = null;
     }
 }

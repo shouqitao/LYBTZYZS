@@ -49,9 +49,6 @@ public partial class App : PrismApplication
         Log.Information("应用程序启动");
 
         base.OnStartup(e);
-
-        _orchestrator = Container.Resolve<AppStartupOrchestrator>();
-        _orchestrator.ShowSplash();
     }
 
     /// <summary>尝试获取单实例锁</summary>
@@ -85,8 +82,8 @@ public partial class App : PrismApplication
     /// <summary>初始化主窗口</summary>
     protected override void InitializeShell(Window shell)
     {
-        base.InitializeShell(shell);
-        shell.Hide();
+        // Don't hide — MainWindow shows immediately with login screen.
+        // Startup pipeline runs in background via AppStartupOrchestrator.
     }
 
     /// <summary>注册应用程序类型和服务</summary>
@@ -119,8 +116,8 @@ public partial class App : PrismApplication
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        _orchestrator ??= Container.Resolve<AppStartupOrchestrator>();
-        _ = _orchestrator.RunStartupAsync(MainWindow!);
+        MainWindow?.Show();
+        _ = Container.Resolve<AppStartupOrchestrator>().RunStartupAsync();
     }
 
     /// <summary>配置模块目录 - 基于角色的智能模块加载策略</summary>
