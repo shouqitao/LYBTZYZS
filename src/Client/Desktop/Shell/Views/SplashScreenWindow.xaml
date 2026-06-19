@@ -16,15 +16,9 @@
         </Storyboard>
     </Window.Resources>
 
-    <Border CornerRadius="12" ClipToBounds="True">
-        <Border.Background>
-            <ImageBrush ImageSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Images/Backgrounds/img-login-background.jpg"
-                        Stretch="UniformToFill" />
-        </Border.Background>
+    <Border CornerRadius="12" ClipToBounds="True" Background="#3E2723">
 
         <Grid>
-            <Border Background="#60000000" />
-
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Image Source="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Images/logo.png"
                        Width="64" Height="64" Margin="0,0,0,16" HorizontalAlignment="Center" />
