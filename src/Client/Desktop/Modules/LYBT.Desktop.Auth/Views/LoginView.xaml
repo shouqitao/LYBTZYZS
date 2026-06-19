@@ -23,7 +23,7 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <TextBlock Text="凌隐宝堂" FontSize="56" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,12">
+                <TextBlock Text="凌隐宝堂" FontSize="64" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,12">
                     <TextBlock.Effect><DropShadowEffect BlurRadius="8" Opacity="0.3" ShadowDepth="2" Color="Black" /></TextBlock.Effect>
                 </TextBlock>
                 <TextBlock Text="中医诊疗管理系统" FontSize="28" FontWeight="SemiBold" Foreground="#D7CCC8" Margin="0,0,0,24">
@@ -57,15 +57,15 @@
 
                     <TextBlock Text="用户名" FontSize="13" Foreground="#999999" Margin="0,0,0,6" />
 
-                    <TextBox Height="52" Padding="14,0" VerticalContentAlignment="Center"
-                             FontSize="14" Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="1.5"
+                    <TextBox Height="58" Padding="16,0" VerticalContentAlignment="Center"
+                             FontSize="16" Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="1.5"
                              Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
                              Margin="0,0,0,16" AutomationProperties.Name="用户名" />
 
                     <TextBlock Text="密码" FontSize="13" Foreground="#999999" Margin="0,0,0,6" />
 
-                    <PasswordBox x:Name="PasswordBox" Height="52" Padding="14,0" VerticalContentAlignment="Center"
-                                 FontSize="14" Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="1.5"
+                    <PasswordBox x:Name="PasswordBox" Height="58" Padding="16,0" VerticalContentAlignment="Center"
+                                 FontSize="16" Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="1.5"
                                  behaviors:PasswordBoxHelper.BoundPassword="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,0,0,16">
                         <PasswordBox.InputBindings>
@@ -80,7 +80,7 @@
                                   IsChecked="{Binding RememberPassword}" />
                     </StackPanel>
 
-                    <Button Height="54" Command="{Binding LoginCommand}" Content="登 录"
+                    <Button Height="60" Command="{Binding LoginCommand}" Content="登 录"
                             FontSize="16" FontWeight="SemiBold" Foreground="White" Cursor="Hand" Margin="0,0,0,12">
                         <Button.Style>
                             <Style TargetType="Button">
