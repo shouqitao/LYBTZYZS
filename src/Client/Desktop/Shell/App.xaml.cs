@@ -48,9 +48,10 @@ public partial class App : PrismApplication
         DesktopSerilogConfiguration.Initialize();
         Log.Information("应用程序启动");
 
+        base.OnStartup(e);
+
         _orchestrator = Container.Resolve<AppStartupOrchestrator>();
         _orchestrator.ShowSplash();
-        base.OnStartup(e);
     }
 
     /// <summary>尝试获取单实例锁</summary>
