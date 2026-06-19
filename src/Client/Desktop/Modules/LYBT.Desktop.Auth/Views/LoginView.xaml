@@ -23,10 +23,10 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <TextBlock Text="凌隐宝堂" FontSize="48" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,12">
+                <TextBlock Text="大医精诚" FontFamily="楷体, KaiTi" FontSize="56" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,12">
                     <TextBlock.Effect><DropShadowEffect BlurRadius="8" Opacity="0.3" ShadowDepth="2" Color="Black" /></TextBlock.Effect>
                 </TextBlock>
-                <TextBlock Text="中医诊疗管理系统" FontSize="24" FontWeight="SemiBold" Foreground="#D7CCC8" Margin="0,0,0,24">
+                <TextBlock Text="凌隐宝堂中医诊所" FontSize="24" FontWeight="SemiBold" Foreground="#D7CCC8" Margin="0,0,0,24">
                     <TextBlock.Effect><DropShadowEffect BlurRadius="6" Opacity="0.2" ShadowDepth="1" Color="Black" /></TextBlock.Effect>
                 </TextBlock>
                 <TextBlock Text="传承经典 · 数字化诊疗" FontSize="14" Foreground="#BCAAA4" />
