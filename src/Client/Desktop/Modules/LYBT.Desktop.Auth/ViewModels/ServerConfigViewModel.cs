@@ -56,7 +56,7 @@ public partial class ServerConfigViewModel : DialogViewModelBase
     {
         try
         {
-            RemoteUrl = _connectionSettingsService.CurrentUrl ?? string.Empty;
+            RemoteUrl = _connectionSettingsService.RemoteUrl ?? string.Empty;
             TestStatus = ConnectionTestStatus.Idle;
             TestStatusMessage = "尚未测试";
         }
