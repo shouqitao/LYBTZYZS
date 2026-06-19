@@ -276,7 +276,7 @@ public partial class App : PrismApplication
     /// <summary>完成启动，显示主窗口</summary>
     private async Task ShowMainWindowAfterInitializationAsync()
     {
-        await Dispatcher.InvokeAsync(() =>
+        await Dispatcher.InvokeAsync(async () =>
         {
             _performanceMonitor?.EndStage();
             _performanceMonitor?.Finish();
@@ -299,8 +299,13 @@ public partial class App : PrismApplication
                 logger.LogWarning(ex, "生成性能报告时发生错误");
             }
 
-            _splashScreen?.Close();
-            _splashScreen = null;
+            if (_splashScreen != null)
+            {
+                _splashScreen.FadeOut();
+                await Task.Delay(400);
+                _splashScreen.Close();
+                _splashScreen = null;
+            }
             MainWindow?.Show();
         });
     }

@@ -120,6 +120,7 @@
   <ItemGroup Label="Application Resources">
     <Resource Include="Assets\Icons\App\app.ico" />
     <Resource Include="Assets\Images\Backgrounds\img-login-background.jpg" />
+    <Resource Include="Assets\Images\logo.png" />
     <Resource Include="Assets\Fonts\simli.ttf" />
     <!-- UltraThink修复 Issue #856: XAML资源字典需要用Page而非Resource -->
     <!-- Page会编译为.baml并支持StaticResource查找，Resource只嵌入不编译 -->
