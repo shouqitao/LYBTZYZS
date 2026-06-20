@@ -1,380 +1,115 @@
 # 用户管理 (User Management)
 
-> 版本: v2.0 | 日期: 2026-06-15 | 状态: 重建
+> 版本: v3.0 | 日期: 2026-06-20 | 状态: 已重构
 
 ## 模块概述
 
-用户管理模块负责维护诊所系统中所有操作人员的账户、角色与状态。系统采用 4 级权限模型（Receptionist=0、Doctor=1、Admin=10、SuperAdmin=100），通过 4 条授权策略（AdminOnly、DoctorOrAdmin、PatientAccess、SuperAdminOnly）在不同端点上实施差异化访问控制。
-
-模块核心包括：用户分页查询、详情查看、创建、更新（用户名不可变）、删除（软删除、不可删自己）、密码重置（SuperAdmin）、个人资料与密码修改（IDOR 防护）、启用/禁用、恢复软删除用户、批量操作（删除/启用/禁用）。角色变更会触发令牌撤销，确保权限调整即时生效。
-
-## 业务规则
-
-1. **4 级角色层次**：`Receptionist=0`（前台）、`Doctor=1`（医生）、`Admin=10`（管理员）、`SuperAdmin=100`（超级管理员）；高角色隐含低角色权限。
-2. **4 条授权策略**：
-   - `AdminOnly`：仅 Admin 与 SuperAdmin
-   - `DoctorOrAdmin`：医生及以上
-   - `PatientAccess`：包含 Receptionist（前台需访问患者与挂号）
-   - `SuperAdminOnly`：仅 SuperAdmin
-3. **用户名不可变**：`UserName` 在更新时忽略变更，一经创建不可修改。
-4. **IDOR 防护**：个人资料（profile）与密码修改端点校验 `id == currentUserId`，禁止越权操作他人资料。
-5. **不可删除自己**：删除端点校验 `id != currentUserId`，防止误删自身账户导致失锁。
-6. **角色变更触发令牌撤销**：用户角色被修改后，其所有活动令牌立即撤销，强制重新登录以应用新权限。
-7. **批量操作事务语义**：`BatchDelete` 使用单次 SaveChanges（原子）；`BatchUpdateStatus` 使用逐项 UpdateAsync（非原子，允许部分失败）。
-
-## 双模式差异
-
-用户管理在远程与本地模式下行为完全一致，均通过统一的 `IUserService` / `IUserQueryService` / `IUserPasswordService` / `IUserStatusService` / `IUserBatchOperationService` 服务层实现。本地 WebAPI 复用全部服务端模块。
-
-## 用户故事
-
-### US-USER-001: 分页查询用户列表
-
-**角色**: 管理员（Admin 及以上）
-**优先级**: Must
-**状态**: ✅ 已实现
-
-**作为** 管理员，**我想要** 分页查询用户列表并支持关键字筛选，**以便** 高效定位与管理账户。
-
-**验收标准**:
-- [ ] 支持分页参数（pageIndex、pageSize）
-- [ ] 支持按用户名、真实姓名、角色筛选
-- [ ] 返回总数与分页数据
-- [ ] 仅 Admin 及以上角色可访问（`AdminOnly` 策略）
-- [ ] 默认排除已软删除用户
-
-**业务规则**:
-1. 端点受 `AdminOnly` 策略保护
-2. 软删除用户通过全局查询过滤器自动排除
-3. 列表返回的用户资料已脱敏（不含密码哈希）
-
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `UsersController.cs:38` (HttpGet list), `IUserQueryService`
-
----
-
-### US-USER-002: 查看用户详情
-
-**角色**: 管理员（Admin 及以上）
-**优先级**: Must
-**状态**: ✅ 已实现
-
-**作为** 管理员，**我想要** 查看指定用户的完整资料，**以便** 核实账户信息与权限配置。
-
-**验收标准**:
-- [ ] 通过用户 ID 查询
-- [ ] 返回完整用户资料（不含密码哈希）
-- [ ] 不存在的 ID 返回 404
-- [ ] 仅 Admin 及以上角色可访问
-
-**业务规则**:
-1. 端点受 `AdminOnly` 策略保护
-2. 密码哈希等敏感字段永不返回客户端
-
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `UsersController.cs:105` (HttpGet `{id:guid}`), `IUserQueryService`
-
----
-
-### US-USER-003: 查看当前用户资料
-
-**角色**: 所有已登录用户
-**优先级**: Must
-**状态**: ✅ 已实现
-
-**作为** 已登录用户，**我想要** 查看自己的当前资料，**以便** 确认登录身份与个人信息。
-
-**验收标准**:
-- [ ] 无需提供 ID，基于当前令牌提取用户身份
-- [ ] 返回当前用户的完整资料（不含密码哈希）
-- [ ] 令牌无效或过期返回 401
-- [ ] 所有已登录角色均可访问
-
-**业务规则**:
-1. 端点 `/users/current` 从 JWT Claims 提取当前用户 ID
-2. 无需 IDOR 校验（用户只能看自己）
-
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `UsersController.cs:59` (HttpGet `current`), `IUserQueryService`
-
----
-
-### US-USER-004: 创建用户
-
-**角色**: 管理员（Admin 及以上）
-**优先级**: Must
-**状态**: ✅ 已实现
-
-**作为** 管理员，**我想要** 创建新的用户账户并分配角色，**以便** 为新员工开通系统访问权限。
-
-**验收标准**:
-- [ ] 接受用户名、密码、真实姓名、角色等字段
-- [ ] 用户名唯一，重复返回 409
-- [ ] 校验保留用户名清单（见 US-AUTH-011）
-- [ ] 密码满足复杂度要求
-- [ ] 创建成功返回新用户资料（含 ID）
-
-**业务规则**:
-1. 端点受 `AdminOnly` 策略保护
-2. Admin 可创建 Receptionist/Doctor/Admin，不可创建 SuperAdmin（需 `SuperAdminOnly`）
-3. 用户名唯一约束由数据库索引强制
-4. 密码哈希采用 ASP.NET Core 推荐算法
-
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `UsersController.cs:125` (HttpPost create), `IUserService`
-
----
-
-### US-USER-005: 更新用户（用户名不可变）
-
-**角色**: 管理员（Admin 及以上）
-**优先级**: Must
-**状态**: ✅ 已实现
-
-**作为** 管理员，**我想要** 更新用户资料（除用户名外），**以便** 维护最新的员工信息与权限。
-
-**验收标准**:
-- [ ] 接受真实姓名、角色、启用状态等字段
-- [ ] 用户名（UserName）字段被忽略，永不更新
-- [ ] 角色变更后触发该用户令牌撤销
-- [ ] 不存在的 ID 返回 404
-
-**业务规则**:
-1. 用户名一经创建即不可变（业务铁律）
-2. 角色变更触发 `ITokenRevocationService` 撤销该用户所有令牌
-3. 端点受 `AdminOnly` 策略保护
-
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `UsersController.cs:149` (HttpPut `{id:guid}`), `IUserService`, `ITokenRevocationService`
-
----
-
-### US-USER-006: 删除用户（软删除，不可删自己）
-
-**角色**: 管理员（Admin 及以上）
-**优先级**: Must
-**状态**: ✅ 已实现
-
-**作为** 管理员，**我想要** 软删除用户账户（保留审计数据），**以便** 移除离职员工访问权限同时保留历史记录。
-
-**验收标准**:
-- [ ] 通过 ID 软删除（设置 IsDeleted=true）
-- [ ] 校验 `id != currentUserId`，禁止删除自己
-- [ ] 删除后该账户无法登录
-- [ ] 列表查询自动排除已删除用户
-- [ ] 不存在的 ID 返回 404
-
-**业务规则**:
-1. 软删除通过全局查询过滤器（`IsDeleted=false`）自动隐藏
-2. 不可删除自己的规则防止管理员误锁自己
-3. 端点受 `AdminOnly` 策略保护
-
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `UsersController.cs:173` (HttpDelete `{id:guid}`), `IUserService`
-
----
-
-### US-USER-007: 重置用户密码（SuperAdmin）
-
-**角色**: 超级管理员（SuperAdmin）
-**优先级**: Must
-**状态**: ✅ 已实现
-
-**作为** 超级管理员，**我想要** 重置指定用户的密码，**以便** 帮助忘记密码的用户恢复访问。
-
-**验收标准**:
-- [ ] 接受新密码（满足复杂度要求）
-- [ ] 重置后旧密码立即失效
-- [ ] 重置后该用户所有活动令牌撤销，需重新登录
-- [ ] 仅 SuperAdmin 可执行（`SuperAdminOnly` 策略）
-
-**业务规则**:
-1. 端点受 `SuperAdminOnly` 策略保护（普通 Admin 不可重置密码）
-2. 重置触发令牌撤销，强制用户使用新密码重新登录
-3. 新密码同样哈希存储
-
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `UsersController.cs:197` (HttpPost `{id:guid}/reset-password`), `IUserPasswordService`
-
----
-
-### US-USER-008: 修改个人资料（IDOR 防护）
-
-**角色**: 所有已登录用户
-**优先级**: Must
-**状态**: ✅ 已实现
-
-**作为** 已登录用户，**我想要** 修改自己的个人资料，**以便** 维护最新的个人信息。
-
-**验收标准**:
-- [ ] 接受可修改字段（真实姓名等）
-- [ ] 校验 `id == currentUserId`，禁止修改他人资料
-- [ ] 用户名不可通过此端点修改
-- [ ] 越权访问返回 403
-
-**业务规则**:
-1. IDOR（不安全直接对象引用）防护：URL 中的 id 必须等于当前令牌用户 ID
-2. 此端点允许所有已登录角色访问（修改自己的资料）
-3. 用户名字段被忽略（铁律：不可变）
-
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `UsersController.cs:220` (HttpPut `{id:guid}/profile`), `IUserService`
-
----
-
-### US-USER-009: 修改密码（需旧密码）
-
-**角色**: 所有已登录用户
-**优先级**: Must
-**状态**: ✅ 已实现
-
-**作为** 已登录用户，**我想要** 通过验证旧密码后修改自己的密码，**以便** 定期更新密码保障账户安全。
-
-**验收标准**:
-- [ ] 接受旧密码 + 新密码
-- [ ] 旧密码校验失败返回明确错误
-- [ ] 新密码满足复杂度要求
-- [ ] 修改后当前会话令牌撤销，需用新密码重新登录
-- [ ] 校验 `id == currentUserId`（IDOR 防护）
-
-**业务规则**:
-1. 必须提供旧密码以证明操作者身份（防会话劫持后改密码）
-2. 修改成功触发令牌撤销，强制重新登录
-3. IDOR 防护同 US-USER-008
-
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `UsersController.cs:247` (HttpPut `{id:guid}/change-password`), `IUserPasswordService`
-
----
-
-### US-USER-010: 启用/禁用用户
-
-**角色**: 管理员（Admin 及以上）
-**优先级**: Must
-**状态**: ✅ 已实现
-
-**作为** 管理员，**我想要** 启用或禁用用户账户，**以便** 临时暂停员工的系统访问权限（如休假、调岗）。
-
-**验收标准**:
-- [ ] 切换用户的 IsActive 状态
-- [ ] 禁用后该账户无法登录
-- [ ] 禁用/启用操作触发令牌撤销（禁用时撤销所有活动令牌）
-- [ ] 不存在的 ID 返回 404
-
-**业务规则**:
-1. 端点受 `AdminOnly` 策略保护
-2. 禁用与软删除语义不同：禁用保留账户但阻止登录，可随时启用恢复；软删除则视为已移除
-3. 禁用触发令牌撤销，立即终止该用户的活动会话
-
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `UsersController.cs:276` (HttpPost `{id:guid}/toggle-status`), `IUserStatusService`
-
----
-
-### US-USER-011: 恢复软删除用户（SuperAdmin）
-
-**角色**: 超级管理员（SuperAdmin）
-**优先级**: Should
-**状态**: ✅ 已实现
-
-**作为** 超级管理员，**我想要** 恢复被软删除的用户账户，**以便** 在误删或员工复职时还原账户。
-
-**验收标准**:
-- [ ] 通过 ID 恢复（设置 IsDeleted=false）
-- [ ] 恢复后账户可正常登录
-- [ ] 使用 `IgnoreQueryFilters` 查询已软删除记录
-- [ ] 仅 SuperAdmin 可执行
-
-**业务规则**:
-1. 端点受 `SuperAdminOnly` 策略保护
-2. 恢复操作需 `IgnoreQueryFilters()` 绕过全局软删除过滤器定位记录
-3. 恢复不还原关联的审计历史，仅还原账户本身
-
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `UsersController.cs:299` (HttpPost `{id:guid}/restore`), `IUserService`
-
----
-
-### US-USER-012: 批量操作（删除/启用/禁用）
-
-**角色**: 管理员（Admin 及以上）
-**优先级**: Should
-**状态**: ✅ 已实现
-
-**作为** 管理员，**我想要** 批量删除、启用或禁用多个用户，**以便** 高效管理大批量账户变更。
-
-**验收标准**:
-- [ ] 提供批量删除（batch-delete）、批量启用（batch-enable）、批量禁用（batch-disable）端点
-- [ ] 接受用户 ID 列表
-- [ ] 批量删除使用单次 SaveChanges（原子事务）
-- [ ] 批量启用/禁用使用逐项 UpdateAsync（允许部分失败）
-- [ ] 校验批量删除不包含当前登录用户 ID
-
-**业务规则**:
-1. `BatchDelete` 事务语义：全部成功或全部回滚
-2. `BatchUpdateStatus`（启用/禁用）非原子：逐项操作，部分失败时已成功项保留
-3. 端点受 `AdminOnly` 策略保护
-4. 批量删除同样校验不可删自己
-
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `UsersController.cs:325` (batch-delete), `UsersController.cs:354` (batch-enable), `UsersController.cs:381` (batch-disable), `IUserBatchOperationService`
+用户管理模块采用标准 ASP.NET Core Identity 架构。单一用户模型 `ApplicationUser : IdentityUser<Guid>` 同时承载认证（Identity 内置）和业务字段（Role、Status、PinYinCode 等）。Remote 和 Local 两端通过同一套 `IUserManagerService` 接口操作同一数据模型，零重复实现。
+
+## 核心架构
+
+```
+ApplicationUser : IdentityUser<Guid>, IAuditableEntity, ISoftDeletable
+  ├── Identity 字段: UserName, Email, PhoneNumber, PasswordHash, LockoutEnd, AccessFailedCount, SecurityStamp
+  ├── 业务扩展: RealName, Role (UserRole enum), Status (CommonStatus), PinYinCode, Remark
+  ├── 审计字段: CreatedAt, UpdatedAt, CreatedBy, UpdatedBy (via IAuditableEntity)
+  └── 软删除: IsDeleted, RowVersion (via ISoftDeletable)
+
+IUserManagerService → UserManagerService → UserManager<ApplicationUser> (Identity)
+
+Remote: UsersController → IUserManagerService → UserManager → AppDbContext → SQL Server
+Local:  UsersController → IUserManagerService → UserManager → AppDbContext → LocalDB
+```
+
+**双模式差异仅在配置层：**
+| 配置项 | 远程 (Remote) | 本地 (Local) |
+|--------|-------------|-------------|
+| 密码策略 | 8位+大小写+数字+特殊字符 | 6位+小写 |
+| 锁定策略 | 5次失败锁定15分钟 | 无限失败不锁定 |
+| JWT 有效期 | 7天 | 365天 |
+| SecurityStamp | 启用 | 未配置 |
+
+## 权限模型
+
+**4 级角色**：`Receptionist(0)` < `Doctor(1)` < `Admin(10)` < `SuperAdmin(100)`
+
+**2 条授权策略**（Phase 1 从 4 条简化）：
+| 策略 | 允许角色 | 用途 |
+|------|---------|------|
+| `DoctorOrReceptionist` | 所有4角色 | 患者/医案/挂号/药材/验方 |
+| `AdminOrSuperAdmin` | Admin + SuperAdmin | 用户管理/系统设置/报表 |
+
+**控制器层权限控制**（CanManageUser 逻辑）：
+```
+SuperAdmin → 可管理所有角色
+Admin → 可管理 Doctor + Receptionist，不可管理 Admin/SuperAdmin
+Doctor/Receptionist → 不可管理任何角色
+```
+
+## API 端点（11 个，Remote 和 Local 统一）
+
+| 方法 | 路径 | 认证 | 说明 |
+|------|------|------|------|
+| `GET /users` | 分页查询 | AdminOnly | 支持 keyword/role/status 筛选 |
+| `GET /users/current` | 当前用户 | 所有角色 | JWT Claims 提取 userId |
+| `GET /users/{id}` | 用户详情 | AdminOnly | 含角色信息 |
+| `POST /users` | 创建用户 | AdminOnly | 密码默认 Lybt2025@TempPass! |
+| `PUT /users/{id}` | 更新用户 | AdminOnly | UserName 不可改 |
+| `DELETE /users/{id}` | 删除用户 | AdminOnly | 软删除，不可删自己 |
+| `POST /users/{id}/reset-password` | 重置密码 | AdminOnly | 返回临时密码 |
+| `PUT /users/{id}/profile` | 修改资料 | 本人 | IDOR 防护 |
+| `PUT /users/{id}/change-password` | 修改密码 | 本人 | IDOR 防护 |
+| `POST /users/{id}/toggle-status` | 启用/禁用 | AdminOnly | Lockout 机制 |
+| `POST /users/batch-delete` | 批量删除 | AdminOnly | 逐项检查权限 |
+
+## Desktop 端 UI
+
+| 视图 | 角色 | 功能 |
+|------|------|------|
+| UserMasterDetailControl | Admin | 分页列表 + 详情 + 新建/编辑/删除 |
+| UserEditControl | Admin | 表单：用户名、姓名、角色、状态、密码 |
+| UserViewControl | Admin | 只读详情展示 |
+| AccountSettingsControl | 所有用户 | 个人资料编辑 + 密码修改 |
+| SystemSettingsView | SuperAdmin | 系统级配置 |
+
+## 关键业务规则
+
+1. **用户名不可变**：创建后不可修改
+2. **IDOR 防护**：/profile 和 /change-password 验证 `id == currentUserId`
+3. **不可删除自己**：删除端点校验 `id != currentUserId`
+4. **sysadmin 保护**：系统管理员账号不可修改/删除/禁用
+5. **密码默认值**：新用户创建时默认 `Lybt2025@TempPass!`
+6. **角色层级**：Admin 不能创建/修改 SuperAdmin；Doctor/Receptionist 不能管理任何角色
+7. **保留用户名**：admin, administrator, root, system, superadmin, sysadmin
+
+## 数据流
+
+```
+Desktop UI → IUserRepository (HTTP) → SwitchingApiClient
+  ├─ Remote → RefitApiClient → /api/v1/users/*
+  └─ Local  → HttpClientApiClient → /api/users/*
+
+Server/Local → UsersController → IUserManagerService
+  └→ UserManagerService → UserManager<ApplicationUser> → AppDbContext → EF Core → SQL Server/LocalDB
+```
+
+## 文件清单
+
+| 文件 | 层 | 说明 |
+|------|---|------|
+| `ApplicationUser.cs` | Entities | 用户实体（IdentityUser + 业务字段） |
+| `IUserManagerService.cs` | Module.Users | 用户管理服务接口 |
+| `UserManagerService.cs` | Module.Users | UserManager 包装实现 |
+| `UsersController.cs` | WebAPI + LocalWebAPI | 11 个 REST 端点 |
+| `UserManagerServiceTests` | Tests | 服务层测试 |
+| `US_Auth_MustHaveTests` | Tests | 认证必须功能测试 |
+| `US_User_MustHaveTests` | Tests | 用户管理必须功能测试 |
+| `US_User_ShouldHaveTests` | Tests | 用户管理建议功能测试 |
+
+## 变更日志
+
+| 日期 | 变更 | 原因 |
+|------|------|------|
+| 2026-06-20 | 从 v2.0 重写为 v3.0 | 用户模块重构：统一到 Identity，删除 User 实体 |
+| 2026-06-15 | v2.0 重建 | Phase 1 简化后重建 |
+| 2026-06-08 | v1.0 初始 | 初始需求文档 |
