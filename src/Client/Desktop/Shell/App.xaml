@@ -35,7 +35,7 @@
                 <ResourceDictionary Source="Styles/DialogStyles.xaml" />
 
                 <!--  8. 统一转换器资源字典  -->
-                <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Converters/Converters.xaml" />
+                <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Converters/Converters.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <!--  应用级全局样式覆盖  -->
