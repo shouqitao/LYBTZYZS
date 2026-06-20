@@ -79,8 +79,8 @@ public static class LocalWebApiProgram
         using var scope = app.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await dbContext.Database.EnsureCreatedAsync();
-        await IdentitySeedData.SeedRolesAndAdminAsync(app.Services);
-        await LocalWebApiSeedData.SeedAsync(dbContext, app.Services);
+        await IdentitySeedData.SeedRolesAndAdminAsync(scope.ServiceProvider);
+        await LocalWebApiSeedData.SeedAsync(dbContext, scope.ServiceProvider);
     }
 
     public static async Task RunAsync(string[]? args, string connectionString)

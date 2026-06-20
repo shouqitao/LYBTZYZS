@@ -1,10 +1,7 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using LYBT.Entities.Auth;
 using LYBT.Entities.Common;
-using LYBT.Entities.Users;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Herbs;
 using LYBT.Entities.Formulas;
@@ -19,42 +16,8 @@ public static class LocalWebApiSeedData
     {
         await context.Database.EnsureCreatedAsync();
 
-        // sysadmin = 系统运维，IsSysAdmin=true
-        var sysadmin = await context.Users.FirstOrDefaultAsync(u => u.UserName == "sysadmin");
-        if (sysadmin == null)
-        {
-            sysadmin = new ApplicationUser
-            {
-                UserName = "sysadmin",
-                RealName = "系统运维",
-                Email = "sysadmin@lybtzyzs.local",
-                IsSysAdmin = true,
-                Role = UserRole.SuperAdmin,
-                Status = CommonStatus.Enabled,
-            };
-            context.Users.Add(sysadmin);
-        }
-        else if (!sysadmin.IsSysAdmin)
-        {
-            sysadmin.IsSysAdmin = true;
-            context.Users.Update(sysadmin);
-        }
-
-        // admin = 业务管理员，IsSysAdmin=false
-        var admin = await context.Users.FirstOrDefaultAsync(u => u.UserName == "admin");
-        if (admin == null)
-        {
-            admin = new ApplicationUser
-            {
-                UserName = "admin",
-                RealName = "系统管理员",
-                Email = "admin@lybtzyzs.local",
-                IsSysAdmin = false,
-                Role = UserRole.Admin,
-                Status = CommonStatus.Enabled,
-            };
-            context.Users.Add(admin);
-        }
+        // Users are created by IdentitySeedData via UserManager (proper Identity password hashing).
+        // Do NOT create users here — raw EF Core bypasses Identity and creates incompatible password hashes.
 
         if (!await context.Herbs.AnyAsync())
         {
