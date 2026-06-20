@@ -4,29 +4,33 @@
 # Core (Desktop)
 
 ## Purpose
-Core infrastructure libraries for the WPF desktop client. Provides interface contracts, HTTP/security infrastructure, WPF services, client-side UI models, SQL Server LocalDB local-mode data access, printing support, hardware integration, and utility classes. These libraries form the foundation layer that all business modules depend on.
+Core infrastructure libraries for the WPF desktop client. Provides interface contracts, HTTP/security infrastructure, WPF services and controls, client-side UI models, SQL Server LocalDB local-mode data access, printing support, hardware integration, and shared utility types. These libraries form the foundation layer that all business modules depend on.
 
 ## Subdirectories
 | Directory | Purpose |
 |-----------|---------|
-| LYBT.Desktop.Contracts/ | Interface definitions — Refit `IApi`, `IRepository<T>`, `IService`, navigation, dialog contracts |
-| LYBT.Desktop.Foundation/ | Infrastructure layer — HTTP clients, security/auth, configuration, `ConnectionMode` management |
-| LYBT.Desktop.Infrastructure/ | WPF services — Dialog service, Navigation, custom controls, value converters, region behaviors |
-| LYBT.Desktop.Models/ | Client-side UI models — view models helpers, display models, state containers |
-| LYBT.Desktop.LocalData/ | SQL Server LocalDB local-mode — `LocalDbContext`, local repositories for offline/embedded operation |
-| LYBT.Desktop.Printing/ | Print service — QuestPDF-based document generation (prescriptions, reports) |
+| LYBT.Desktop.Contracts/ | Interface definitions + shared DTOs (CommandResult, BreadcrumbItem via Shared) |
+| LYBT.Desktop.Foundation/ | HTTP clients, security/auth, configuration, ExcelHelper |
+| LYBT.Desktop.Infrastructure/ | WPF services — ViewModel base classes, Dialog, Navigation, Behaviors, Services |
+| LYBT.Desktop.Controls/ | WPF presentation — custom controls, themes, converters, helpers |
+| LYBT.Desktop.Shared/ | Non-interface shared types — CommandResult, BreadcrumbItem |
+| LYBT.Desktop.LocalData/ | SQL Server LocalDB local-mode — `LocalDbContext`, local repositories |
+| LYBT.Desktop.Printing/ | Print service — QuestPDF-based document generation |
 | LYBT.Desktop.CardReader/ | Hardware integration — ID card reader device support |
-| LYBT.Desktop.Utilities/ | Utility classes — shared helpers and extensions |
 
 ## For AI Agents
 
 ### Working In This Directory
-- Dependency order within Core: `Contracts <- Foundation <- Infrastructure` (unidirectional).
-- `Contracts` defines interfaces only; no implementations.
-- `Foundation` implements HTTP, auth, and config; depends on `Contracts`.
-- `Infrastructure` provides WPF-specific services (dialogs, navigation, converters); depends on `Foundation`.
+- Dependency order: `Contracts <- Foundation <- Infrastructure <- Controls` (unidirectional).
+- `Shared` has no dependencies (pure DTOs/records).
+- `Contracts` defines interfaces + references Shared for shared types.
+- `Foundation` implements HTTP, auth, config; depends on `Contracts`.
+- `Infrastructure` provides ViewModel base classes, navigation, services; depends on `Foundation` + `Controls`.
+- `Controls` provides WPF presentation assets; depends on `Contracts` + `Shared` + `Foundation` (no Infrastructure dependency).
 - `LocalData` provides the SQL Server LocalDB alternative to the remote HTTP API path.
 - When adding a new interface, place it in `Contracts`; implement it in `Foundation` or `Infrastructure`.
+- WPF controls and converters belong in `Controls`; ViewModel base classes belong in `Infrastructure`.
+- Shared DTOs (used across modules) belong in `Shared`.
 
 ### Common Patterns
 - **Repository interfaces**: `I{Entity}Repository<T>` in Contracts, implemented in Foundation (HTTP) and LocalData (SQL Server LocalDB)

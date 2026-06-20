@@ -58,7 +58,7 @@ Authentication module for the TCM clinic desktop client. Handles user login/logo
 | `LYBT.Desktop.Contracts` | ILoginCoordinator, IApplicationStateService, IUsernameStorageService, ICredentialVault interfaces |
 | `LYBT.Desktop.Foundation` | HealthCheck.ApiHealthStatus, Security.ICredentialVault, Application.IApplicationStateService |
 | `LYBT.Desktop.Infrastructure` | Extensions (SafeFireAndForget), UI thread utilities |
-| `LYBT.Desktop.Models` | NavigableViewModelBase base class |
+| `LYBT.Desktop.Infrastructure` | NavigableViewModelBase base class |
 | `LYBT.Shared.ExceptionHandling` | ClientErrorMessageMapper for safe error messages |
 | `LYBT.Shared.Models` | Shared DTOs |
 

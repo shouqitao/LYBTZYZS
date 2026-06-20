@@ -63,7 +63,7 @@ Patient registration (挂号) module for the TCM clinic desktop client. Manages 
 |------------|---------|
 | `LYBT.Desktop.Contracts` | IRegistrationService, IRegistrationRepository, IRegistrationApi, ILocalRegistrationApi, IApiRouter, INavigationCoordinator, ISessionManager |
 | `LYBT.Desktop.Infrastructure` | ViewNames constants, MedicalCaseNavigationParameters, Extensions |
-| `LYBT.Desktop.Models` | NavigableViewModelBase, DialogViewModelBase base classes |
+| `LYBT.Desktop.Infrastructure` | NavigableViewModelBase, DialogViewModelBase base classes |
 | `LYBT.Desktop.MedicalCase` | WorkspaceMode enum, EditState enum (for navigation parameters) |
 | `LYBT.Desktop.Patients` | IPatientService, IPatientApi (cross-module) |
 | `LYBT.Desktop.Users` | IUserService (cross-module) |

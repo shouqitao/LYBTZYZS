@@ -52,7 +52,7 @@ Receptionist role workspace module for the front desk. Provides the receptionist
 - `LYBT.Desktop.Contracts` -- Interface definitions
 - `LYBT.Desktop.Foundation` -- Infrastructure (HTTP, security, config)
 - `LYBT.Desktop.Infrastructure` -- WPF services (dialog, navigation)
-- `LYBT.Desktop.Models` -- Client UI models
+- `LYBT.Desktop.Infrastructure` -- Client UI models
 - `LYBT.Desktop.CardReader` -- ID card reader integration
 - `LYBT.Desktop.Registration` -- Registration module (views/controls)
 - `LYBT.Desktop.Patients` -- Patients module (views/controls)

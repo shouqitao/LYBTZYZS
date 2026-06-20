@@ -37,7 +37,7 @@ Business modules for the WPF desktop client. Each module encapsulates a domain a
 ## Dependencies
 
 ### Internal
-- [Core/](../Core/AGENTS.md) — `LYBT.Desktop.Contracts`, `LYBT.Desktop.Foundation`, `LYBT.Desktop.Infrastructure`, `LYBT.Desktop.Models`
+- [Core/](../Core/AGENTS.md) — `LYBT.Desktop.Contracts`, `LYBT.Desktop.Foundation`, `LYBT.Desktop.Infrastructure`, `LYBT.Desktop.Infrastructure`
 - [Shared/](../../../../Shared/AGENTS.md) — `LYBT.Shared.Models` (DTOs), `LYBT.Shared.Validators`
 
 ### External
