@@ -8,8 +8,9 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
     /// refactor-auth-role-system Phase 2.1.4
     /// </summary>
     /// <remarks>
-    /// 管理员负责系统管理、用户管理、系统配置
-    /// 可以管理Doctor但不能管理Admin
+    /// Admin = 业务管理员。负责用户管理、药材管理、验方管理、业务配置。
+    /// 不可创建医案（仅 Doctor 可创建）。
+    /// 使用管理主页视图（AdminHomeView）。
     /// </remarks>
     public class AdminRoleDefinition : RoleDefinitionBase
     {
@@ -30,7 +31,7 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
         public override string DisplayName => "管理员";
 
         /// <inheritdoc/>
-        public override string Description => "系统管理、用户管理、系统配置";
+        public override string Description => "业务管理：用户管理、药材/验方管理、业务配置、医案审核";
 
         /// <inheritdoc/>
         public override string HomeViewName => ViewNames.AdminHome;

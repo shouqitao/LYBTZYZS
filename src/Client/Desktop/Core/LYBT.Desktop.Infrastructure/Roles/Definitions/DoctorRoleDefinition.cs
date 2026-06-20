@@ -8,8 +8,9 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
     /// refactor-auth-role-system Phase 2.1.4
     /// </summary>
     /// <remarks>
-    /// 医生负责诊疗、记录、查询等业务操作
-    /// 使用临床主页视图（ClinicalHomeView）
+    /// Doctor = 中医医生。核心业务是看诊，偶尔在看台或特殊情况下代为挂号。
+    /// 使用临床工作台视图（ClinicalWorkspaceView）。
+    /// 加载 RegistrationModule 以支持偶尔挂号功能。
     /// </remarks>
     public class DoctorRoleDefinition : RoleDefinitionBase
     {
@@ -31,7 +32,7 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
         public override string DisplayName => "医生";
 
         /// <inheritdoc/>
-        public override string Description => "诊疗、记录、查询等业务操作";
+        public override string Description => "中医看诊：诊断、处方、打印，偶尔代挂号";
 
         /// <inheritdoc/>
         public override string HomeViewName => ViewNames.ClinicalWorkspace;

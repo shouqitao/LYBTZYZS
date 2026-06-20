@@ -8,8 +8,9 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
     /// refactor-auth-role-system Phase 2.1.4
     /// </summary>
     /// <remarks>
-    /// 超级管理员拥有最高权限，可以管理所有Admin用户
-    /// 与Admin共享同一主页视图（AdminHomeView）
+    /// SuperAdmin = 系统运维。负责平台正常运行，包括部署、配置、诊断、数据库维护。
+    /// 非业务角色，仅在系统需要维护时使用。
+    /// 使用管理主页视图（AdminHomeView）。
     /// </remarks>
     public class SuperAdminRoleDefinition : RoleDefinitionBase
     {
@@ -30,7 +31,7 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
         public override string DisplayName => "超级管理员";
 
         /// <inheritdoc/>
-        public override string Description => "系统最高权限，可管理所有用户和系统配置";
+        public override string Description => "系统运维：平台部署、配置、诊断、数据库维护";
 
         /// <inheritdoc/>
         public override string HomeViewName => ViewNames.AdminHome;

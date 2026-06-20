@@ -8,9 +8,9 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
     /// refactor-auth-role-system Phase 2.2.1/2.3.3
     /// </summary>
     /// <remarks>
-    /// 前台接待负责患者登记、预约管理
-    /// 使用临床主页视图（ClinicalHomeView）
-    /// 仅加载患者管理模块
+    /// Receptionist = 前台。专注患者挂号和相关信息维护。
+    /// 使用前台工作台视图（ReceptionistHomeView）。
+    /// 仅加载 UsersModule + PatientsModule + RegistrationModule（3个模块，最精简）。
     /// </remarks>
     public class ReceptionistRoleDefinition : RoleDefinitionBase
     {
@@ -28,7 +28,7 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
         public override string DisplayName => "前台接待";
 
         /// <inheritdoc/>
-        public override string Description => "患者登记、预约管理";
+        public override string Description => "前台挂号：患者登记、信息维护";
 
         /// <inheritdoc/>
         public override string HomeViewName => ViewNames.ReceptionistHome;
