@@ -46,7 +46,7 @@
 | 业务管理员 | `admin` | `Admin@123456` | Admin | **false** | ✅ |
 | 系统运维 | `sysadmin` | `SysAdmin@2026!` | SuperAdmin | **true** | ❌ |
 
-> ⚠️ admin 和 sysadmin 是**两个独立用户**，不可混淆。sysadmin 独立于角色体系。
+> ⚠️ admin 和 sysadmin 是**两个独立用户**，不可混淆。sysadmin 是信任根——创建第一个 admin，可重置 admin 密码。admin 只能由 sysadmin 创建。
 
 ---
 
