@@ -32,15 +32,21 @@
 
 ### 当前实现状态
 
-代码中仍使用 `UserRole.SuperAdmin(100)` 角色模式。迁移到独立用户模型需要：
-- 删除 `UserRole.SuperAdmin` 枚举值
-- 删除 `SuperAdminRoleDefinition`
-- 在 `ApplicationUser` 中增加 `IsSysAdmin` 布尔字段
-- 修改 `CanManageUser` 逻辑
-- 修改 AuthController 的登录流程
-- 修改种子数据初始化
+已完成（commit `810c06c01`）：
+- `ApplicationUser.IsSysAdmin` 布尔字段
+- `SuperAdminRoleDefinition` 已删除
+- `CanManageUser` 使用 `IsSysAdmin` 判断
+- JWT Claims 包含 `IsSysAdmin=true`
+- 种子数据自动创建 sysadmin（IsSysAdmin=true）
 
-**优先级：中。当前角色模式可工作，独立用户模型是更好的架构但非阻塞。**
+### 默认密码
+
+| 模式 | 用户名 | 默认密码 | 角色 | IsSysAdmin |
+|------|--------|---------|------|-----------|
+| 远程 (Identity) | `admin` | **`Admin@123456`** | SuperAdmin | true |
+| 本地 (LocalWebAPI) | `admin` | `admin123` | Admin | false |
+
+> ⚠️ 本地种子数据仍使用旧 PasswordHelper（非 Identity UserManager），且未设置 IsSysAdmin。后续应统一。
 
 ---
 
