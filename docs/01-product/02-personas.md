@@ -1,18 +1,27 @@
 # 用户画像 (Personas)
 
-> 版本: v3.0 | 日期: 2026-06-20 | 状态: 重构
+> 版本: v3.1 | 日期: 2026-06-20 | 状态: 代码验证
 
-本文件定义凌隐宝堂中医诊所管理系统的四个核心角色。详细权限矩阵见 [`03-users.md`](03-users.md)。
+本文件定义凌隐宝堂中医诊所管理系统的四个核心角色。所有功能映射均经过代码验证。
 
 ---
 
 ## 角色一：SuperAdmin（系统运维）
 
-> **PermissionLevel = 100** | 授权策略：`DoctorOrReceptionist` + `AdminOrSuperAdmin` | 使用频率低
+> **PermissionLevel = 100** | 授权策略：`DoctorOrReceptionist` + `AdminOrSuperAdmin`
 
 ### 定位
 
 负责平台正常运行的技术运维人员。日常不参与业务操作，仅在系统需要维护时介入。
+
+### 代码实现
+
+| 配置项 | 值 | 代码位置 |
+|--------|-----|---------|
+| `UserRole` | `SuperAdmin(100)` | `SuperAdminRoleDefinition.cs:27` |
+| `HomeViewName` | `ViewNames.AdminHome` | `SuperAdminRoleDefinition.cs:36` |
+| `RequiredModules` | UsersModule, PatientsModule, HerbsModule, FormulaModule, MedicalCaseModule | `SuperAdminRoleDefinition.cs:16-23` |
+| 独占端点 | `ConfigurationController`, `DiagnosticsController` | 仅 AdminOnly+SuperAdmin 可访问 |
 
 ### 核心职责
 
@@ -22,19 +31,24 @@
 - 数据库维护（迁移执行与验证）
 - 紧急故障排查
 
-### 独占权限
-
-系统配置查询（`ConfigurationController`）、运行时诊断（`DiagnosticsController`）、日志级别控制、用户密码重置。
-
 ---
 
 ## 角色二：Admin（业务管理员）
 
-> **PermissionLevel = 10** | 授权策略：`DoctorOrReceptionist` + `AdminOrSuperAdmin` | 日均使用 1-2 小时
+> **PermissionLevel = 10** | 授权策略：`DoctorOrReceptionist` + `AdminOrSuperAdmin`
 
 ### 定位
 
 负责中医诊所业务管理的管理员。主要工作是维护业务基础数据和管理用户账号。
+
+### 代码实现
+
+| 配置项 | 值 | 代码位置 |
+|--------|-----|---------|
+| `UserRole` | `Admin(10)` | `AdminRoleDefinition.cs:28` |
+| `HomeViewName` | `ViewNames.AdminHome` | `AdminRoleDefinition.cs:36` |
+| `RequiredModules` | UsersModule, PatientsModule, HerbsModule, FormulaModule, MedicalCaseModule | `AdminRoleDefinition.cs:17-22` |
+| `CanManageUser` 逻辑 | Admin 可管理 Doctor/Receptionist，不可管理 Admin/SuperAdmin | `UsersController.cs` 内联 |
 
 ### 核心职责
 
@@ -42,79 +56,74 @@
 - **药材管理**：药材信息录入与维护、价格更新、批量导入
 - **验方管理**：经验方录入、验证状态管理
 - **医案审核**：查看全局医案，审核异常处方
-- **业务配置**：与中医看诊相关的系统配置（如药材分类、验方模板等）
-
-### 权限边界
-
-- ✅ 用户 CRUD、药材/验方管理、医案查看编辑
-- ✅ 报表查看
-- ❌ **不可创建医案**（仅 Doctor 可创建）
-- ❌ 不可访问系统诊断、配置管理（仅 SuperAdmin）
+- **业务配置**：与中医看诊相关的系统配置
 
 ---
 
 ## 角色三：Doctor（中医医生）
 
-> **PermissionLevel = 1** | 授权策略：`DoctorOrReceptionist` | 日均使用 6-8 小时
+> **PermissionLevel = 1** | 授权策略：`DoctorOrReceptionist`
 
 ### 定位
 
 中医内科主治医师，核心业务是看诊。偶尔在看台或特殊情况下需要代为挂号。
+
+### 代码实现
+
+| 配置项 | 值 | 代码位置 |
+|--------|-----|---------|
+| `UserRole` | `Doctor(1)` | `DoctorRoleDefinition.cs:28` |
+| `HomeViewName` | `ViewNames.ClinicalWorkspace` | `DoctorRoleDefinition.cs:37` |
+| `RequiredModules` | UsersModule, PatientsModule, HerbsModule, FormulaModule, MedicalCaseModule, **RegistrationModule** | `DoctorRoleDefinition.cs:16-24` |
+| 专属 UI | ClinicalWorkspaceView（患者列表+看诊工作区一体化） | `Roles/LYBT.Desktop.Clinical/Views/` |
+| 医案创建权限 | 仅 Doctor 可创建（UsersController.Create 的 CanManageUser 逻辑） | `UsersController.cs:441` |
 
 ### 核心职责
 
 - **看诊**（主要）：望闻问切 → 辨证论治 → 开方 → 打印处方
 - **验方管理**：管理自己创建的经验方
 - **患者管理**：查看和编辑自己负责的患者信息
-- **偶尔挂号**：在前台繁忙或患者特殊情况下，医生可代替前台完成挂号操作
-
-### 权限边界
-
-- ✅ 创建医案、中医诊断、开具处方、验方管理（仅自己的）、查看药材
-- ✅ **偶尔挂号**（DoctorOrReceptionist 策略覆盖）
-- ❌ 不可进行系统配置、用户管理（仅 Admin/SuperAdmin）
-- 医案规则：仅可见本人创建的医案，已完成医案次日锁定编辑
+- **偶尔挂号**：DoctorRoleDefinition 加载了 RegistrationModule，在前台繁忙时可代替挂号
 
 ---
 
 ## 角色四：Receptionist（前台）
 
-> **PermissionLevel = 0** | 授权策略：`DoctorOrReceptionist` | 日均使用 4-6 小时
+> **PermissionLevel = 0** | 授权策略：`DoctorOrReceptionist`
 
 ### 定位
 
 前台接待人员，专注患者挂号和相关信息维护。
 
+### 代码实现
+
+| 配置项 | 值 | 代码位置 |
+|--------|-----|---------|
+| `UserRole` | `Receptionist(0)` | `ReceptionistRoleDefinition.cs:27` |
+| `HomeViewName` | `ViewNames.ReceptionistHome` | `ReceptionistRoleDefinition.cs:34` |
+| `RequiredModules` | **仅 3 个**：UsersModule, PatientsModule, RegistrationModule | `ReceptionistRoleDefinition.cs:18-21` |
+| 专属 UI | ReceptionistHomeView（挂号队列+快捷操作） | `Roles/LYBT.Desktop.Receptionist/Views/` |
+
 ### 核心职责
 
 - **患者挂号**：新患者登记、老患者挂号（刷卡或手动搜索）
-- **患者信息维护**：录入和更新患者基本信息（姓名、身份证、联系方式等）
+- **患者信息维护**：录入和更新患者基本信息
 - **就诊引导**：告知患者就诊流程和注意事项
-
-### 权限边界
-
-- ✅ 患者信息 CRUD（不含删除）、挂号创建与取消、身份证读卡
-- ❌ 不可访问：药材、验方、医案、用户管理、报表、系统配置
-- ❌ 不可创建医案（仅 Doctor）
 
 ---
 
-## 角色与功能映射
+## 代码层差异汇总
 
-| 功能模块 | Doctor | Admin | Receptionist | SuperAdmin |
-|---------|:------:|:-----:|:------------:|:----------:|
-| 患者信息维护 | 查看编辑 | 查看 | **CRUD** | 查看 |
-| 挂号管理 | 偶尔挂号 | 查看 | **CRUD** | 查看 |
-| 医案创建 | **创建** | ❌ | ❌ | ❌ |
-| 医案查看/编辑 | 本人的 | 全部 | ❌ | 全部 |
-| 诊断/处方 | **录入** | ❌ | ❌ | ❌ |
-| 处方打印 | **打印** | ❌ | ❌ | ❌ |
-| 药材管理 | 查看 | **CRUD** | ❌ | 查看 |
-| 验方管理 | **自己的** | **CRUD** | ❌ | 查看 |
-| 用户管理 | ❌ | **CRUD** | ❌ | **CRUD** |
-| 报表 | ❌ | **查看** | ❌ | **查看** |
-| 系统配置 | ❌ | 业务配置 | ❌ | **系统配置** |
-| 诊断工具 | ❌ | ❌ | ❌ | **查看** |
+| 维度 | SuperAdmin | Admin | Doctor | Receptionist |
+|------|-----------|-------|--------|-------------|
+| **模块数** | 5 | 5 | **6** | **3** |
+| **包含 RegistrationModule** | ❌ | ❌ | **✅** | **✅** |
+| **包含 HerbsModule** | ✅ | ✅ | ✅ | ❌ |
+| **包含 FormulaModule** | ✅ | ✅ | ✅ | ❌ |
+| **包含 MedicalCaseModule** | ✅ | ✅ | ✅ | ❌ |
+| **首页视图** | AdminHome | AdminHome | **ClinicalWorkspace** | ReceptionistHome |
+| **授权策略** | 两个 | 两个 | **仅 DoctorOrReceptionist** | **仅 DoctorOrReceptionist** |
+| **CanManageUser** | 可管理所有 | 可管理 Doctor/Receptionist | 不可管理 | 不可管理 |
 
 ---
 
@@ -122,6 +131,6 @@
 
 | 日期 | 变更 | 原因 |
 |------|------|------|
+| 2026-06-20 | v3.1 增加代码实现列 | 用户要求结合代码验证角色定位 |
 | 2026-06-20 | v3.0 重构角色定义 | 明确 SuperAdmin=运维、Admin=业务管理、Doctor=看诊+偶尔挂号、Receptionist=挂号 |
 | 2026-06-15 | v2.0 重建 | Phase 1 简化后重建 |
-| 2026-06-08 | v1.0 初始 | 初始需求文档 |
