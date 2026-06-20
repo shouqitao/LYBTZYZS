@@ -7,7 +7,7 @@ using NPOI.HSSF.Util;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 
-namespace LYBT.Desktop.Utilities.Excel;
+namespace LYBT.Desktop.Foundation.Utilities;
 
 /// <summary>
 /// Excel 导入导出工具类

@@ -27,6 +27,8 @@
 
   <!-- HTTP and Resilience -->
   <ItemGroup Label="HTTP Services">
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="NPOI" />
     <PackageReference Include="Refit" />
     <PackageReference Include="Polly" />
     <PackageReference Include="Polly.Extensions.Http" />
