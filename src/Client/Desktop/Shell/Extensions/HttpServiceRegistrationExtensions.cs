@@ -62,7 +62,23 @@ namespace LYBT.Desktop.Shell.Extensions
                 var loggingHandler = resolver.Resolve<LoggingHttpHandler>();
                 loggingHandler.InnerHandler = authHandler;
 
-                return new HttpClient(loggingHandler) { BaseAddress = new Uri(apiBaseUrl), Timeout = TimeSpan.FromSeconds(30) };
+                var connectionSettings = resolver.Resolve<IConnectionSettingsService>();
+                var initialUrl = connectionSettings.CurrentUrl;
+                var httpClient = new HttpClient(loggingHandler) { BaseAddress = new Uri(initialUrl), Timeout = TimeSpan.FromSeconds(30) };
+
+                connectionSettings.UrlChanged += (sender, newUrl) =>
+                {
+                    try
+                    {
+                        if (Uri.TryCreate(newUrl, UriKind.Absolute, out var newBase))
+                        {
+                            httpClient.BaseAddress = newBase;
+                        }
+                    }
+                    catch { }
+                };
+
+                return httpClient;
             });
 
             // Refit客户端共享HttpClient实例 - 配置JSON序列化以支持枚举字符串转换
