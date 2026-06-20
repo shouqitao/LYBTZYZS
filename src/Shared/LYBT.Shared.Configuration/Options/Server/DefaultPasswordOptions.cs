@@ -17,6 +17,13 @@ public sealed class DefaultPasswordOptions
     public string SysAdminPassword { get; set; } = string.Empty;
 
     /// <summary>
+    /// 业务管理员默认密码
+    /// </summary>
+    [Required(ErrorMessage = "业务管理员默认密码不能为空")]
+    [MinLength(8, ErrorMessage = "业务管理员默认密码长度不能少于8位")]
+    public string AdminPassword { get; set; } = string.Empty;
+
+    /// <summary>
     /// 新用户默认密码
     /// </summary>
     [Required(ErrorMessage = "新用户默认密码不能为空")]

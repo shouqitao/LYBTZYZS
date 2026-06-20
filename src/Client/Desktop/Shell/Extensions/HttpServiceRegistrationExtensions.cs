@@ -46,8 +46,8 @@ namespace LYBT.Desktop.Shell.Extensions
             // LOG-012: 注册LoggingHttpHandler
             containerRegistry.RegisterSingleton<LoggingHttpHandler>();
 
-            // Handler链: HttpClientHandler → TokenRefreshHandler → AuthorizationMessageHandler → LoggingHttpHandler → HttpClient
-            // LOG-012 & LOG-013: LoggingHttpHandler记录请求/响应并添加traceparent header
+            // Handler链: HttpClientHandler → TokenRefreshHandler → AuthorizationMessageHandler → LoggingHttpHandler → BaseUrlDelegatingHandler → HttpClient
+            // BaseUrlDelegatingHandler 每次请求时读取 CurrentUrl，线程安全
             containerRegistry.RegisterSingleton<HttpClient>(resolver =>
             {
                 var httpHandler = new HttpClientHandler();
@@ -58,27 +58,13 @@ namespace LYBT.Desktop.Shell.Extensions
                 tokenRefreshHandler.InnerHandler = httpHandler;
                 var authHandler = resolver.Resolve<AuthorizationMessageHandler>();
                 authHandler.InnerHandler = tokenRefreshHandler;
-                // LOG-012: 添加日志Handler到链中
                 var loggingHandler = resolver.Resolve<LoggingHttpHandler>();
                 loggingHandler.InnerHandler = authHandler;
 
-                var connectionSettings = resolver.Resolve<IConnectionSettingsService>();
-                var initialUrl = connectionSettings.CurrentUrl;
-                var httpClient = new HttpClient(loggingHandler) { BaseAddress = new Uri(initialUrl), Timeout = TimeSpan.FromSeconds(30) };
+                var baseUrlHandler = new BaseUrlDelegatingHandler(resolver.Resolve<IConnectionSettingsService>());
+                baseUrlHandler.InnerHandler = loggingHandler;
 
-                connectionSettings.UrlChanged += (sender, newUrl) =>
-                {
-                    try
-                    {
-                        if (Uri.TryCreate(newUrl, UriKind.Absolute, out var newBase))
-                        {
-                            httpClient.BaseAddress = newBase;
-                        }
-                    }
-                    catch { }
-                };
-
-                return httpClient;
+                return new HttpClient(baseUrlHandler) { BaseAddress = new Uri("http://localhost/"), Timeout = TimeSpan.FromSeconds(30) };
             });
 
             // Refit客户端共享HttpClient实例 - 配置JSON序列化以支持枚举字符串转换

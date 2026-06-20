@@ -47,9 +47,13 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
         Environment.SetEnvironmentVariable("ASPNETCORE_URLS", "http://127.0.0.1:0");
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
 
-        var builder = LocalWebApiProgram.CreateBuilder([]);
+        // Directly build a minimal WebApplication to avoid HTTPS config issues
+        var builder = WebApplication.CreateBuilder(Array.Empty<string>());
 
-        // Override the connection string to use our test-specific database
+        // Force HTTP-only
+        builder.WebHost.UseUrls("http://127.0.0.1:0");
+
+        // Override the connection string
         builder.Configuration["ConnectionStrings:DefaultConnection"] = _connectionString;
 
         // Register services (same as LocalWebApiProgram.CreateApplication)
@@ -93,9 +97,7 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
         _app.UseAuthorization();
         _app.MapControllers();
 
-        // Use port 0 to let the OS assign a random available port
         _app.Urls.Add("http://127.0.0.1:0");
-
         await _app.StartAsync();
 
         // Build a client pointing at the running application

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using LYBT.Entities.Users;
+using LYBT.Shared.Configuration.Options.Server;
 
 namespace LYBT.Module.Users.Services;
 
@@ -10,6 +12,7 @@ public static class IdentitySeedData
     {
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var passwordOptions = serviceProvider.GetRequiredService<IOptions<DefaultPasswordOptions>>().Value;
 
         string[] roles = { "Receptionist", "Doctor", "Admin", "SuperAdmin" };
         foreach (var role in roles)
@@ -20,8 +23,8 @@ public static class IdentitySeedData
             }
         }
 
-        await EnsureUserAsync(userManager, "sysadmin", "系统运维", "sysadmin@lybtzyzs.local", "SysAdmin@2026!", "SuperAdmin", isSysAdmin: true);
-        await EnsureUserAsync(userManager, "admin", "系统管理员", "admin@lybtzyzs.local", "Admin@123456", "Admin", isSysAdmin: false);
+        await EnsureUserAsync(userManager, "sysadmin", "系统运维", "sysadmin@lybtzyzs.local", passwordOptions.SysAdminPassword, "SuperAdmin", isSysAdmin: true);
+        await EnsureUserAsync(userManager, "admin", "系统管理员", "admin@lybtzyzs.local", passwordOptions.AdminPassword, "Admin", isSysAdmin: false);
     }
 
     private static async Task EnsureUserAsync(
