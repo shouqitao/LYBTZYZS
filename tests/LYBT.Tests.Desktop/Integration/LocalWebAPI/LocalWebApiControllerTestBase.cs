@@ -106,23 +106,8 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
         using var scope = _app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await db.Database.EnsureCreatedAsync();
+        await LYBT.Module.Users.Services.IdentitySeedData.SeedRolesAndAdminAsync(scope.ServiceProvider);
         await LocalWebApiSeedData.SeedAsync(db, scope.ServiceProvider);
-
-        // Seed Identity admin user matching the business User (same Id + password "admin123")
-        var businessAdmin = await db.Users.FirstAsync(u => u.UserName == "admin");
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        if (await userManager.FindByNameAsync("admin") == null)
-        {
-            var identityAdmin = new ApplicationUser
-            {
-                Id = businessAdmin.Id,
-                UserName = "admin",
-                RealName = "Admin",
-                Email = "admin@test.local",
-                EmailConfirmed = true
-            };
-            await userManager.CreateAsync(identityAdmin, "admin123");
-        }
     }
 
     public async Task DisposeAsync()
@@ -148,14 +133,14 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
     }
 
     /// <summary>
-    /// Obtains a JWT token by logging in as the seeded admin user (admin/admin123).
+    /// Obtains a JWT token by logging in as the seeded admin user (admin/Admin@123456).
     /// </summary>
     protected async Task<string> GetAdminTokenAsync()
     {
         var request = new LoginRequest
         {
             UserName = "admin",
-            Password = "admin123"
+            Password = "Admin@123456"
         };
 
         var response = await Client.PostAsJsonAsync("/api/auth/login", request);

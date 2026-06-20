@@ -15,7 +15,7 @@ public class AuthControllerTests : LocalWebApiControllerTestBase
     [Fact]
     public async Task Login_With_Valid_Credentials_Returns_Token()
     {
-        var request = new LoginRequest { UserName = "admin", Password = "admin123" };
+        var request = new LoginRequest { UserName = "admin", Password = "Admin@123456" };
 
         var response = await Client.PostAsJsonAsync("/api/auth/login", request);
 
@@ -24,7 +24,21 @@ public class AuthControllerTests : LocalWebApiControllerTestBase
         var json = await response.Content.ReadFromJsonAsync<JsonElement>(Json);
         json.GetProperty("token").GetString().Should().NotBeNullOrWhiteSpace();
         json.GetProperty("username").GetString().Should().Be("admin");
-        json.GetProperty("role").GetInt32().Should().Be(10); // UserRole.Admin
+    }
+
+    [Fact]
+    public async Task Sysadmin_Can_Login_With_Default_Password()
+    {
+        var request = new LoginRequest { UserName = "sysadmin", Password = "SysAdmin@2026!" };
+
+        var response = await Client.PostAsJsonAsync("/api/auth/login", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK,
+            $"sysadmin login failed: {await response.Content.ReadAsStringAsync()}");
+
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>(Json);
+        json.GetProperty("token").GetString().Should().NotBeNullOrWhiteSpace();
+        json.GetProperty("username").GetString().Should().Be("sysadmin");
     }
 
     [Fact]

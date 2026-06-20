@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 using LYBT.Entities.Auth;
 using LYBT.Entities.Common;
 using LYBT.Entities.Users;
@@ -20,9 +19,6 @@ public static class LocalWebApiSeedData
     {
         await context.Database.EnsureCreatedAsync();
 
-        var passwordHasher = serviceProvider?.GetService<IPasswordHasher<ApplicationUser>>()
-            ?? new PasswordHasher<ApplicationUser>();
-
         // sysadmin = 系统运维，IsSysAdmin=true
         var sysadmin = await context.Users.FirstOrDefaultAsync(u => u.UserName == "sysadmin");
         if (sysadmin == null)
@@ -35,23 +31,13 @@ public static class LocalWebApiSeedData
                 IsSysAdmin = true,
                 Role = UserRole.SuperAdmin,
                 Status = CommonStatus.Enabled,
-                PasswordHash = passwordHasher.HashPassword(null!, "SysAdmin@2026!")
             };
             context.Users.Add(sysadmin);
         }
-        else
+        else if (!sysadmin.IsSysAdmin)
         {
-            var verifyResult = passwordHasher.VerifyHashedPassword(null!, sysadmin.PasswordHash ?? "", "SysAdmin@2026!");
-            if (verifyResult == PasswordVerificationResult.Failed)
-            {
-                sysadmin.PasswordHash = passwordHasher.HashPassword(null!, "SysAdmin@2026!");
-                context.Users.Update(sysadmin);
-            }
-            if (!sysadmin.IsSysAdmin)
-            {
-                sysadmin.IsSysAdmin = true;
-                context.Users.Update(sysadmin);
-            }
+            sysadmin.IsSysAdmin = true;
+            context.Users.Update(sysadmin);
         }
 
         // admin = 业务管理员，IsSysAdmin=false
@@ -66,18 +52,8 @@ public static class LocalWebApiSeedData
                 IsSysAdmin = false,
                 Role = UserRole.Admin,
                 Status = CommonStatus.Enabled,
-                PasswordHash = passwordHasher.HashPassword(null!, "Admin@123456")
             };
             context.Users.Add(admin);
-        }
-        else
-        {
-            var verifyResult = passwordHasher.VerifyHashedPassword(null!, admin.PasswordHash ?? "", "Admin@123456");
-            if (verifyResult == PasswordVerificationResult.Failed)
-            {
-                admin.PasswordHash = passwordHasher.HashPassword(null!, "Admin@123456");
-                context.Users.Update(admin);
-            }
         }
 
         if (!await context.Herbs.AnyAsync())
