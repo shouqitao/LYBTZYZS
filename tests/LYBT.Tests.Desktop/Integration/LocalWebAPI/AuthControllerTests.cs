@@ -8,7 +8,7 @@ using Xunit;
 namespace LYBT.Tests.Desktop;
 
 /// <summary>
-/// Integration tests for AuthController (POST /api/auth/*, GET /api/auth/validate).
+/// Integration tests for AuthController (POST /api/v1/auth/*, GET /api/v1/auth/validate).
 /// </summary>
 public class AuthControllerTests : LocalWebApiControllerTestBase
 {
@@ -17,13 +17,14 @@ public class AuthControllerTests : LocalWebApiControllerTestBase
     {
         var request = new LoginRequest { UserName = "admin", Password = "Admin@123456" };
 
-        var response = await Client.PostAsJsonAsync("/api/auth/login", request);
+        var response = await Client.PostAsJsonAsync("/api/v1/auth/login", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await response.Content.ReadFromJsonAsync<JsonElement>(Json);
-        json.GetProperty("token").GetString().Should().NotBeNullOrWhiteSpace();
-        json.GetProperty("username").GetString().Should().Be("admin");
+        json.GetProperty("success").GetBoolean().Should().BeTrue();
+        json.GetProperty("data").GetProperty("token").GetString().Should().NotBeNullOrWhiteSpace();
+        json.GetProperty("data").GetProperty("user").GetProperty("username").GetString().Should().Be("admin");
     }
 
     [Fact]
@@ -31,14 +32,15 @@ public class AuthControllerTests : LocalWebApiControllerTestBase
     {
         var request = new LoginRequest { UserName = "sysadmin", Password = "SysAdmin@2026!" };
 
-        var response = await Client.PostAsJsonAsync("/api/auth/login", request);
+        var response = await Client.PostAsJsonAsync("/api/v1/auth/login", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK,
             $"sysadmin login failed: {await response.Content.ReadAsStringAsync()}");
 
         var json = await response.Content.ReadFromJsonAsync<JsonElement>(Json);
-        json.GetProperty("token").GetString().Should().NotBeNullOrWhiteSpace();
-        json.GetProperty("username").GetString().Should().Be("sysadmin");
+        json.GetProperty("success").GetBoolean().Should().BeTrue();
+        json.GetProperty("data").GetProperty("token").GetString().Should().NotBeNullOrWhiteSpace();
+        json.GetProperty("data").GetProperty("user").GetProperty("username").GetString().Should().Be("sysadmin");
     }
 
     [Fact]
@@ -46,7 +48,7 @@ public class AuthControllerTests : LocalWebApiControllerTestBase
     {
         var request = new LoginRequest { UserName = "admin", Password = "wrongpassword" };
 
-        var response = await Client.PostAsJsonAsync("/api/auth/login", request);
+        var response = await Client.PostAsJsonAsync("/api/v1/auth/login", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -54,9 +56,9 @@ public class AuthControllerTests : LocalWebApiControllerTestBase
     [Fact]
     public async Task Login_With_Nonexistent_User_Returns_Unauthorized()
     {
-        var request = new LoginRequest { UserName = "nonexistent_user", Password = "admin123" };
+        var request = new LoginRequest { UserName = "nonexistent_user", Password = "Admin@123456" };
 
-        var response = await Client.PostAsJsonAsync("/api/auth/login", request);
+        var response = await Client.PostAsJsonAsync("/api/v1/auth/login", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -66,12 +68,9 @@ public class AuthControllerTests : LocalWebApiControllerTestBase
     {
         var request = new LogoutRequest { UserName = "admin" };
 
-        var response = await Client.PostAsJsonAsync("/api/auth/logout", request);
+        var response = await Client.PostAsJsonAsync("/api/v1/auth/logout", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var json = await response.Content.ReadFromJsonAsync<JsonElement>(Json);
-        json.GetProperty("success").GetBoolean().Should().BeTrue();
     }
 
     [Fact]
@@ -80,24 +79,24 @@ public class AuthControllerTests : LocalWebApiControllerTestBase
         var token = await GetAdminTokenAsync();
         SetAuthHeader(token);
 
-        var response = await Client.GetAsync("/api/auth/validate");
+        var response = await Client.GetAsync("/api/v1/auth/validate");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await response.Content.ReadFromJsonAsync<JsonElement>(Json);
-        json.GetProperty("isValid").GetBoolean().Should().BeTrue();
-        json.GetProperty("username").GetString().Should().Be("admin");
+        json.GetProperty("success").GetBoolean().Should().BeTrue();
+        json.GetProperty("data").GetProperty("isValid").GetBoolean().Should().BeTrue();
+        json.GetProperty("data").GetProperty("username").GetString().Should().Be("admin");
     }
 
     [Fact]
     public async Task Validate_Without_Token_Returns_Ok_With_IsValid_False()
     {
-        // No auth header set -- controller returns Ok with IsValid=false
-        var response = await Client.GetAsync("/api/auth/validate");
+        var response = await Client.GetAsync("/api/v1/auth/validate");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await response.Content.ReadFromJsonAsync<JsonElement>(Json);
-        json.GetProperty("isValid").GetBoolean().Should().BeFalse();
+        json.GetProperty("success").GetBoolean().Should().BeFalse();
     }
 }

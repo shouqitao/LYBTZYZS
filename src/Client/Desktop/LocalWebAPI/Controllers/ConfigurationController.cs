@@ -13,7 +13,7 @@ namespace LYBT.LocalWebAPI.Controllers;
 /// Configuration controller: in-memory key/value configuration store.
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Authorize]
 public class ConfigurationController : BaseApiController
 {

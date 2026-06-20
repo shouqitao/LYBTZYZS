@@ -23,7 +23,7 @@ namespace LYBT.LocalWebAPI.Controllers;
 /// Read endpoints require authentication. Logging management requires Admin+.
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Authorize]
 public class DiagnosticsController : BaseApiController
 {

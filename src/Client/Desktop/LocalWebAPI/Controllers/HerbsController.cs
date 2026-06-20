@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LYBT.LocalWebAPI.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Authorize]
 public class HerbsController : BaseApiController
 {

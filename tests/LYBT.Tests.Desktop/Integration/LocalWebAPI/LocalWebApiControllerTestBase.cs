@@ -143,12 +143,12 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
             Password = "Admin@123456"
         };
 
-        var response = await Client.PostAsJsonAsync("/api/auth/login", request);
+        var response = await Client.PostAsJsonAsync("/api/v1/auth/login", request);
 
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
-        return json.GetProperty("token").GetString()!;
+        return json.GetProperty("data").GetProperty("token").GetString()!;
     }
 
     /// <summary>

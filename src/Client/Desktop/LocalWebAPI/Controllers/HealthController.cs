@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace LYBT.LocalWebAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [AllowAnonymous]
     public class HealthController : BaseApiController
     {

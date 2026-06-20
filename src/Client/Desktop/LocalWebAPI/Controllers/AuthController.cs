@@ -2,7 +2,10 @@ using LYBT.Entities.Users;
 using LYBT.Infrastructure.Web;
 using LYBT.LocalWebAPI.Auth;
 using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +14,7 @@ using System.Security.Claims;
 namespace LYBT.LocalWebAPI.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 public class AuthController : BaseApiController
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -55,12 +58,26 @@ public class AuthController : BaseApiController
         _logger.LogInformation("[AUTH] Local login succeeded - UserName={UserName} Role={Role}",
             request.UserName, role);
 
-        return Ok(new
+        var response = new LoginResponse
         {
             Token = token,
-            UserId = user.Id,
-            Username = user.UserName,
-            Role = role
+            User = new UserDetailDto
+            {
+                Id = user.Id,
+                UserName = user.UserName ?? string.Empty,
+                RealName = user.RealName,
+                Role = role,
+                Status = CommonStatus.Enabled,
+                PhoneNumber = user.PhoneNumber,
+            },
+            ExpiresAt = DateTime.UtcNow.AddHours(1)
+        };
+
+        return Ok(new ApiResponse<LoginResponse>
+        {
+            Success = true,
+            Message = "登录成功",
+            Data = response
         });
     }
 
@@ -77,21 +94,34 @@ public class AuthController : BaseApiController
     {
         var userId = GetCurrentUserId(User);
         if (userId == Guid.Empty)
-            return Ok(new { IsValid = false, Message = "Token 无效" });
+            return Ok(new ApiResponse<ValidateTokenResponse>
+            {
+                Success = false,
+                Message = "Token 无效"
+            });
 
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
-            return Ok(new { IsValid = false, Message = "用户不存在" });
+            return Ok(new ApiResponse<ValidateTokenResponse>
+            {
+                Success = false,
+                Message = "用户不存在"
+            });
 
         var roles = await _userManager.GetRolesAsync(user);
         var role = ParseUserRole(roles);
 
-        return Ok(new
+        return Ok(new ApiResponse<ValidateTokenResponse>
         {
-            IsValid = true,
-            UserId = user.Id,
-            Username = user.UserName,
-            Role = role
+            Success = true,
+            Message = "Token 验证成功",
+            Data = new ValidateTokenResponse
+            {
+                IsValid = true,
+                UserId = (int)role,
+                Username = user.UserName,
+                Role = role.ToString(),
+            }
         });
     }
 

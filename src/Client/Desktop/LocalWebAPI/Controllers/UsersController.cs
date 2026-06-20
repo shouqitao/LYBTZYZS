@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 namespace LYBT.LocalWebAPI.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Authorize]
 public class UsersController : BaseApiController
 {
