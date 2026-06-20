@@ -20,6 +20,22 @@ public static class IdentitySeedData
             }
         }
 
+        // sysadmin = 系统运维，IsSysAdmin=true，不可删除
+        var sysadmin = await userManager.FindByNameAsync("sysadmin");
+        if (sysadmin == null)
+        {
+            sysadmin = new ApplicationUser
+            {
+                UserName = "sysadmin",
+                RealName = "系统运维",
+                Email = "sysadmin@lybtzyzs.local",
+                IsSysAdmin = true
+            };
+            await userManager.CreateAsync(sysadmin, "SysAdmin@2026!");
+            await userManager.AddToRoleAsync(sysadmin, "SuperAdmin");
+        }
+
+        // admin = 业务管理员，IsSysAdmin=false，由 sysadmin 创建
         var admin = await userManager.FindByNameAsync("admin");
         if (admin == null)
         {
@@ -28,10 +44,10 @@ public static class IdentitySeedData
                 UserName = "admin",
                 RealName = "系统管理员",
                 Email = "admin@lybtzyzs.local",
-                IsSysAdmin = true
+                IsSysAdmin = false
             };
             await userManager.CreateAsync(admin, "Admin@123456");
-            await userManager.AddToRoleAsync(admin, "SuperAdmin");
+            await userManager.AddToRoleAsync(admin, "Admin");
         }
     }
 }
