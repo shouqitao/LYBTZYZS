@@ -86,7 +86,7 @@ public class AuthController : BaseApiController
     public IActionResult Logout([FromBody] LogoutRequest request)
     {
         _logger.LogInformation("[AUTH] Local logout - UserName={UserName}", request?.UserName ?? "(unknown)");
-        return Ok(new { Success = true, Message = "已登出" });
+        return Ok(new ApiResponse { Success = true, Message = "已登出" });
     }
 
     [HttpGet("validate")]

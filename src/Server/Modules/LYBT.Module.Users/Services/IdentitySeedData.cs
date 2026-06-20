@@ -20,77 +20,56 @@ public static class IdentitySeedData
             }
         }
 
-        // sysadmin = 系统运维，IsSysAdmin=true，不可删除
-        var sysadmin = await userManager.FindByNameAsync("sysadmin");
-        if (sysadmin == null)
+        await EnsureUserAsync(userManager, "sysadmin", "系统运维", "sysadmin@lybtzyzs.local", "SysAdmin@2026!", "SuperAdmin", isSysAdmin: true);
+        await EnsureUserAsync(userManager, "admin", "系统管理员", "admin@lybtzyzs.local", "Admin@123456", "Admin", isSysAdmin: false);
+    }
+
+    private static async Task EnsureUserAsync(
+        UserManager<ApplicationUser> userManager,
+        string userName, string realName, string email,
+        string defaultPassword, string role, bool isSysAdmin)
+    {
+        var user = await userManager.FindByNameAsync(userName);
+
+        if (user == null)
         {
-            sysadmin = new ApplicationUser
+            user = new ApplicationUser
             {
-                UserName = "sysadmin",
-                RealName = "系统运维",
-                Email = "sysadmin@lybtzyzs.local",
-                IsSysAdmin = true
+                UserName = userName,
+                RealName = realName,
+                Email = email,
+                IsSysAdmin = isSysAdmin
             };
-            await userManager.CreateAsync(sysadmin, "SysAdmin@2026!");
-            await userManager.AddToRoleAsync(sysadmin, "SuperAdmin");
-        }
-        else
-        {
-            try
-            {
-                if (!await userManager.CheckPasswordAsync(sysadmin, "SysAdmin@2026!"))
-                {
-                    var token = await userManager.GeneratePasswordResetTokenAsync(sysadmin);
-                    await userManager.ResetPasswordAsync(sysadmin, token, "SysAdmin@2026!");
-                }
-            }
-            catch
-            {
-                var token = await userManager.GeneratePasswordResetTokenAsync(sysadmin);
-                await userManager.ResetPasswordAsync(sysadmin, token, "SysAdmin@2026!");
-            }
-            if (!sysadmin.IsSysAdmin)
-            {
-                sysadmin.IsSysAdmin = true;
-                await userManager.UpdateAsync(sysadmin);
-            }
-            var sysadminRoles = await userManager.GetRolesAsync(sysadmin);
-            if (!sysadminRoles.Contains("SuperAdmin"))
-                await userManager.AddToRoleAsync(sysadmin, "SuperAdmin");
+            await userManager.CreateAsync(user, defaultPassword);
+            await userManager.AddToRoleAsync(user, role);
+            return;
         }
 
-        // admin = 业务管理员，IsSysAdmin=false，由 sysadmin 创建
-        var admin = await userManager.FindByNameAsync("admin");
-        if (admin == null)
-        {
-            admin = new ApplicationUser
-            {
-                UserName = "admin",
-                RealName = "系统管理员",
-                Email = "admin@lybtzyzs.local",
-                IsSysAdmin = false
-            };
-            await userManager.CreateAsync(admin, "Admin@123456");
-            await userManager.AddToRoleAsync(admin, "Admin");
-        }
-        else
+        if (user.LastLoginAt == null)
         {
             try
             {
-                if (!await userManager.CheckPasswordAsync(admin, "Admin@123456"))
+                if (!await userManager.CheckPasswordAsync(user, defaultPassword))
                 {
-                    var token = await userManager.GeneratePasswordResetTokenAsync(admin);
-                    await userManager.ResetPasswordAsync(admin, token, "Admin@123456");
+                    var token = await userManager.GeneratePasswordResetTokenAsync(user);
+                    await userManager.ResetPasswordAsync(user, token, defaultPassword);
                 }
             }
             catch
             {
-                var token = await userManager.GeneratePasswordResetTokenAsync(admin);
-                await userManager.ResetPasswordAsync(admin, token, "Admin@123456");
+                var token = await userManager.GeneratePasswordResetTokenAsync(user);
+                await userManager.ResetPasswordAsync(user, token, defaultPassword);
             }
-            var adminRoles = await userManager.GetRolesAsync(admin);
-            if (!adminRoles.Contains("Admin"))
-                await userManager.AddToRoleAsync(admin, "Admin");
         }
+
+        if (user.IsSysAdmin != isSysAdmin)
+        {
+            user.IsSysAdmin = isSysAdmin;
+            await userManager.UpdateAsync(user);
+        }
+
+        var roles = await userManager.GetRolesAsync(user);
+        if (!roles.Contains(role))
+            await userManager.AddToRoleAsync(user, role);
     }
 }
