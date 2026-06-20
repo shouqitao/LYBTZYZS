@@ -168,7 +168,6 @@ public class DatabaseInitializationService
                 if (config.ForceResetOnStartup && IsDevelopment())
                 {
                     existingSuperAdmin.IsSysAdmin = true;
-                    existingSuperAdmin.PasswordHash = PasswordHelper.HashPassword(_defaultPasswordOptions.SysAdminPassword);
                     existingSuperAdmin.AccessFailedCount = 0;
                     existingSuperAdmin.LockoutEnd = null;
                     existingSuperAdmin.Status = CommonStatus.Enabled;
@@ -190,54 +189,8 @@ public class DatabaseInitializationService
                 return;
             }
 
-            // 检查Email是否已被其他用户占用
-            var emailExists = await _context.Users
-                .IgnoreQueryFilters()
-                .AnyAsync(u => u.Email == config.Email);
-
-            if (emailExists)
-            {
-                _logger.LogWarning(
-                    "系统管理员邮箱 {Email} 已被其他用户占用，跳过创建",
-                    config.Email);
-                return;
-            }
-
-            // 安全警告：首次登录强制改密关闭
-            if (!_defaultPasswordOptions.ForceChangeOnFirstLogin)
-            {
-                _logger.LogWarning("安全警告：ForceChangeOnFirstLogin 已关闭，系统管理员将不会被要求首次登录时修改密码");
-            }
-
-            // 不存在，创建新的SuperAdmin用户
-            var defaultPassword = _defaultPasswordOptions.SysAdminPassword;
-
-            var superAdmin = new ApplicationUser
-            {
-                Id = Guid.NewGuid(),
-                UserName = config.UserName,
-                RealName = config.DisplayName,
-                Email = config.Email,
-                Role = UserRole.SuperAdmin,
-                IsSysAdmin = true,
-                Status = CommonStatus.Enabled,
-                PasswordHash = PasswordHelper.HashPassword(defaultPassword),
-                MustChangeOnNextLogin = _defaultPasswordOptions.ForceChangeOnFirstLogin,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                CreatedBy = Guid.Empty,  // 系统创建
-                UpdatedBy = Guid.Empty,
-                IsDeleted = false
-            };
-
-            _context.Users.Add(superAdmin);
-            await _context.SaveChangesAsync();
-
-            _logger.LogWarning(
-                "系统管理员创建成功。UserName: {UserName}, Email: {Email}, Role: {Role}",
-                superAdmin.UserName,
-                superAdmin.Email,
-                superAdmin.Role);
+            // Issue #2237: 用户创建已迁移到 IdentitySeedData（通过 UserManager 确保密码哈希格式正确）
+            // DatabaseInitializationService 不再直接创建用户，避免 BCrypt/PBKDF2 哈希冲突
         }
         catch (Exception ex)
         {

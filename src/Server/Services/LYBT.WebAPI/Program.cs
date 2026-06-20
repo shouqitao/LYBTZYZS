@@ -193,7 +193,10 @@ public class Program
                 await app.DisplayDatabaseStatusAsync();
                 app.DisplayDevelopmentStartupInfo();
 
-                await IdentitySeedData.SeedRolesAndAdminAsync(app.Services);
+                using (var scope = app.Services.CreateScope())
+                {
+                    await IdentitySeedData.SeedRolesAndAdminAsync(scope.ServiceProvider);
+                }
             }
             catch (Exception ex)
             {

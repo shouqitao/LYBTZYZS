@@ -36,7 +36,15 @@ public static class IdentitySeedData
         }
         else
         {
-            if (!await userManager.CheckPasswordAsync(sysadmin, "SysAdmin@2026!"))
+            try
+            {
+                if (!await userManager.CheckPasswordAsync(sysadmin, "SysAdmin@2026!"))
+                {
+                    var token = await userManager.GeneratePasswordResetTokenAsync(sysadmin);
+                    await userManager.ResetPasswordAsync(sysadmin, token, "SysAdmin@2026!");
+                }
+            }
+            catch
             {
                 var token = await userManager.GeneratePasswordResetTokenAsync(sysadmin);
                 await userManager.ResetPasswordAsync(sysadmin, token, "SysAdmin@2026!");
@@ -67,7 +75,15 @@ public static class IdentitySeedData
         }
         else
         {
-            if (!await userManager.CheckPasswordAsync(admin, "Admin@123456"))
+            try
+            {
+                if (!await userManager.CheckPasswordAsync(admin, "Admin@123456"))
+                {
+                    var token = await userManager.GeneratePasswordResetTokenAsync(admin);
+                    await userManager.ResetPasswordAsync(admin, token, "Admin@123456");
+                }
+            }
+            catch
             {
                 var token = await userManager.GeneratePasswordResetTokenAsync(admin);
                 await userManager.ResetPasswordAsync(admin, token, "Admin@123456");
