@@ -119,36 +119,53 @@ if (user.IsSysAdmin)
 
 ---
 
-## Task 5: 种子数据 — 自动创建 sysadmin
+## Task 5: 种子数据 — 创建 sysadmin + admin 两个独立用户
 
 **Files:**
-- Modify: 种子数据初始化代码（DatabaseInitializationService 或 IdentitySeedData）
+- Modify: `src/Server/Modules/LYBT.Module.Users/Services/IdentitySeedData.cs`
+- Modify: `src/Client/Desktop/LocalWebAPI/Data/LocalWebApiSeedData.cs`
 
-- [ ] **Step 1: 在 Identity 种子中创建 sysadmin 用户**
+> ⚠️ sysadmin 和 admin 是**两个独立用户**，不是同一用户。sysadmin 是信任根，创建 admin，可重置 admin 密码。
+
+- [ ] **Step 1: 修改 IdentitySeedData — 创建两个用户**
 
 ```csharp
-// 检查是否已存在 sysadmin
-var existingAdmin = await userManager.FindByNameAsync("admin");
-if (existingAdmin == null)
+// 1. 创建 sysadmin（系统运维）
+var sysadmin = await userManager.FindByNameAsync("sysadmin");
+if (sysadmin == null)
 {
-    var sysadmin = new ApplicationUser
+    sysadmin = new ApplicationUser
+    {
+        UserName = "sysadmin",
+        RealName = "系统运维",
+        Email = "sysadmin@lybtzyzs.local",
+        IsSysAdmin = true
+    };
+    await userManager.CreateAsync(sysadmin, "SysAdmin@2026!");
+    await userManager.AddToRoleAsync(sysadmin, "SuperAdmin");
+}
+
+// 2. 创建 admin（业务管理员）
+var admin = await userManager.FindByNameAsync("admin");
+if (admin == null)
+{
+    admin = new ApplicationUser
     {
         UserName = "admin",
-        Email = "admin@lybt.com",
         RealName = "系统管理员",
-        IsSysAdmin = true,
-        // ... 其他字段
+        Email = "admin@lybtzyzs.local",
+        IsSysAdmin = false
     };
-    await userManager.CreateAsync(sysadmin, "Lybt2025@Admin!");
-    await userManager.AddToRoleAsync(sysadmin, "Admin");
+    await userManager.CreateAsync(admin, "Admin@123456");
+    await userManager.AddToRoleAsync(admin, "Admin");
 }
 ```
 
-- [ ] **Step 2: 确保 sysadmin 密码策略更严格**
+- [ ] **Step 2: 修改 LocalWebApiSeedData — 同步创建两个用户**
 
-在 `Configure<IdentityOptions>` 中，为 sysadmin 用户设置不同的密码规则（可通过 `IsSysAdmin` 字段在登录时验证）。
+更新本地种子数据，使用 Identity UserManager 而非旧 PasswordHelper。
 
-- [ ] **Step 3: 构建验证**
+- [ ] **Step 3: 构建验证
 
 ---
 
