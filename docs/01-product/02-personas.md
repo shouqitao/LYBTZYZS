@@ -6,22 +6,21 @@
 
 ---
 
-## 角色一：SuperAdmin（系统运维）
+## 角色一：Sysadmin（系统运维 — 独立用户）
 
-> **PermissionLevel = 100** | 授权策略：`DoctorOrReceptionist` + `AdminOrSuperAdmin`
+> **身份：独立用户（非角色）** | 授权：系统运维 | 使用频率低
 
 ### 定位
 
-负责平台正常运行的技术运维人员。日常不参与业务操作，仅在系统需要维护时介入。
+**sysadmin 不是一个角色，而是一个独立的系统用户。** 安装时自动创建，不可删除，独立于角色体系。负责平台正常运行。
 
-### 代码实现
+### 设计要点
 
-| 配置项 | 值 | 代码位置 |
-|--------|-----|---------|
-| `UserRole` | `SuperAdmin(100)` | `SuperAdminRoleDefinition.cs:27` |
-| `HomeViewName` | `ViewNames.AdminHome` | `SuperAdminRoleDefinition.cs:36` |
-| `RequiredModules` | UsersModule, PatientsModule, HerbsModule, FormulaModule, MedicalCaseModule | `SuperAdminRoleDefinition.cs:16-23` |
-| 独占端点 | `ConfigurationController`, `DiagnosticsController` | 仅 AdminOnly+SuperAdmin 可访问 |
+- 安装时自动创建，凭证在部署阶段确定
+- 不可删除、不可禁用
+- 不参与常规角色权限检查（CanManageUser 逻辑跳过 sysadmin）
+- 认证方式：本地模式下自动登录，远程模式下密码登录
+- 存储：独立标记字段（非 Role 枚举），与普通用户隔离
 
 ### 核心职责
 
@@ -30,6 +29,18 @@
 - 运行时诊断（健康检查、日志级别、调试模式）
 - 数据库维护（迁移执行与验证）
 - 紧急故障排查
+
+### 当前实现状态
+
+代码中仍使用 `UserRole.SuperAdmin(100)` 角色模式。迁移到独立用户模型需要：
+- 删除 `UserRole.SuperAdmin` 枚举值
+- 删除 `SuperAdminRoleDefinition`
+- 在 `ApplicationUser` 中增加 `IsSysAdmin` 布尔字段
+- 修改 `CanManageUser` 逻辑
+- 修改 AuthController 的登录流程
+- 修改种子数据初始化
+
+**优先级：中。当前角色模式可工作，独立用户模型是更好的架构但非阻塞。**
 
 ---
 
@@ -112,18 +123,21 @@
 
 ---
 
-## 代码层差异汇总
+## 架构层差异汇总
 
-| 维度 | SuperAdmin | Admin | Doctor | Receptionist |
-|------|-----------|-------|--------|-------------|
-| **模块数** | 5 | 5 | **6** | **3** |
+| 维度 | Sysadmin | Admin | Doctor | Receptionist |
+|------|----------|-------|--------|-------------|
+| **身份类型** | **独立用户** | 角色 | 角色 | 角色 |
+| **模块数** | 5（全量） | 5 | **6** | **3** |
 | **包含 RegistrationModule** | ❌ | ❌ | **✅** | **✅** |
 | **包含 HerbsModule** | ✅ | ✅ | ✅ | ❌ |
 | **包含 FormulaModule** | ✅ | ✅ | ✅ | ❌ |
 | **包含 MedicalCaseModule** | ✅ | ✅ | ✅ | ❌ |
 | **首页视图** | AdminHome | AdminHome | **ClinicalWorkspace** | ReceptionistHome |
-| **授权策略** | 两个 | 两个 | **仅 DoctorOrReceptionist** | **仅 DoctorOrReceptionist** |
-| **CanManageUser** | 可管理所有 | 可管理 Doctor/Receptionist | 不可管理 | 不可管理 |
+| **授权策略** | 跳过角色检查 | DoctorOrReceptionist + AdminOrSuperAdmin | 仅 DoctorOrReceptionist | 仅 DoctorOrReceptionist |
+| **CanManageUser** | 跳过 | 可管理 Doctor/Receptionist | 不可管理 | 不可管理 |
+| **可删除** | ❌ | ✅ | ✅ | ✅ |
+| **可禁用** | ❌ | ✅ | ✅ | ✅ |
 
 ---
 
@@ -131,6 +145,7 @@
 
 | 日期 | 变更 | 原因 |
 |------|------|------|
+| 2026-06-20 | v3.2 Sysadmin 改为独立用户设计 | 行业标准：sysadmin 是用户而非角色 |
 | 2026-06-20 | v3.1 增加代码实现列 | 用户要求结合代码验证角色定位 |
-| 2026-06-20 | v3.0 重构角色定义 | 明确 SuperAdmin=运维、Admin=业务管理、Doctor=看诊+偶尔挂号、Receptionist=挂号 |
+| 2026-06-20 | v3.0 重构角色定义 | 明确各角色定位 |
 | 2026-06-15 | v2.0 重建 | Phase 1 简化后重建 |
