@@ -1,6 +1,6 @@
 using System.Collections.Specialized;
 using System.Windows;
-using LYBT.Desktop.Contracts.Models;
+using LYBT.Desktop.Shared.UI;
 using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Modules;

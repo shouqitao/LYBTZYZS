@@ -333,8 +333,8 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// 当前面包屑列表 — 导航架构改进方案 v1.0
     /// </summary>
     [ObservableProperty]
-    private IReadOnlyList<LYBT.Desktop.Contracts.Models.BreadcrumbItem> _breadcrumbs
-        = Array.Empty<LYBT.Desktop.Contracts.Models.BreadcrumbItem>();
+    private IReadOnlyList<LYBT.Desktop.Shared.UI.BreadcrumbItem> _breadcrumbs
+        = Array.Empty<LYBT.Desktop.Shared.UI.BreadcrumbItem>();
 
     /// <summary>
     /// 导航后退命令属性

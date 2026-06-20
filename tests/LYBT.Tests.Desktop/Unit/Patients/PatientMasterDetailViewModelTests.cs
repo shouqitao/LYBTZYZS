@@ -6,7 +6,7 @@ using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.Services;
 using LYBT.Desktop.Patients.ViewModels;
 using LYBT.Desktop.Patients.ViewModels.Handlers;
-using LYBT.Desktop.Contracts.CommandHandlers;
+using LYBT.Desktop.Shared.Results;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;

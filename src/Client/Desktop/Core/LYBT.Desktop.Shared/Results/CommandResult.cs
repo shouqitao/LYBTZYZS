@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Contracts.CommandHandlers;
+namespace LYBT.Desktop.Shared.Results;
 
 /// <summary>
 /// CommandHandler统一返回类型

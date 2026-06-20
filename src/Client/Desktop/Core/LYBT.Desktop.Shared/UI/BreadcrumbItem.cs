@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Contracts.Models;
+namespace LYBT.Desktop.Shared.UI;
 
 /// <summary>
 /// 面包屑导航项

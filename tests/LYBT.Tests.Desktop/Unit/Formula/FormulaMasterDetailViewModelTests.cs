@@ -144,7 +144,7 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
             TotalCount = 2
         };
 
-        _formulaService.GetPagedAsync(1, 20, string.Empty, Arg.Any<CancellationToken>()).Returns(Task.FromResult(new LYBT.Desktop.Contracts.CommandHandlers.CommandResult<PagedResult<FormulaListDto>>(true, paged, null)));
+        _formulaService.GetPagedAsync(1, 20, string.Empty, Arg.Any<CancellationToken>()).Returns(Task.FromResult(new LYBT.Desktop.Shared.Results.CommandResult<PagedResult<FormulaListDto>>(true, paged, null)));
 
         await sut.InitializeAsync();
 
@@ -190,10 +190,10 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
                 false,
                 Arg.Any<List<FormulaHerbItemInputDto>>(),
                 Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new LYBT.Desktop.Contracts.CommandHandlers.CommandResult<FormulaDetailDto>(true, new FormulaDetailDto { Id = savedId, Name = "新验方" }, null)));
+            .Returns(Task.FromResult(new LYBT.Desktop.Shared.Results.CommandResult<FormulaDetailDto>(true, new FormulaDetailDto { Id = savedId, Name = "新验方" }, null)));
 
         _formulaService.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new LYBT.Desktop.Contracts.CommandHandlers.CommandResult<PagedResult<FormulaListDto>>(true, new PagedResult<FormulaListDto> { Items = new List<FormulaListDto>(), TotalCount = 0 }, null)));
+            .Returns(Task.FromResult(new LYBT.Desktop.Shared.Results.CommandResult<PagedResult<FormulaListDto>>(true, new PagedResult<FormulaListDto> { Items = new List<FormulaListDto>(), TotalCount = 0 }, null)));
 
         await sut.SaveCommand.ExecuteAsync(null);
 
@@ -247,10 +247,10 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
                 Arg.Any<bool>(),
                 Arg.Any<List<FormulaHerbItemInputDto>>(),
                 Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new LYBT.Desktop.Contracts.CommandHandlers.CommandResult<FormulaDetailDto>(true, new FormulaDetailDto { Id = existingId, Name = "旧验方" }, null)));
+            .Returns(Task.FromResult(new LYBT.Desktop.Shared.Results.CommandResult<FormulaDetailDto>(true, new FormulaDetailDto { Id = existingId, Name = "旧验方" }, null)));
 
         _formulaService.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new LYBT.Desktop.Contracts.CommandHandlers.CommandResult<PagedResult<FormulaListDto>>(true, new PagedResult<FormulaListDto> { Items = new List<FormulaListDto>(), TotalCount = 0 }, null)));
+            .Returns(Task.FromResult(new LYBT.Desktop.Shared.Results.CommandResult<PagedResult<FormulaListDto>>(true, new PagedResult<FormulaListDto> { Items = new List<FormulaListDto>(), TotalCount = 0 }, null)));
 
         await sut.SaveCommand.ExecuteAsync(null);
 
@@ -289,9 +289,9 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
         _selection.SelectedItem.Returns(item);
 
         _formulaService.DeleteFormulaAsync(item.Id, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new LYBT.Desktop.Contracts.CommandHandlers.CommandResult<bool>(true, true, null)));
+            .Returns(Task.FromResult(new LYBT.Desktop.Shared.Results.CommandResult<bool>(true, true, null)));
         _formulaService.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new LYBT.Desktop.Contracts.CommandHandlers.CommandResult<PagedResult<FormulaListDto>>(true, new PagedResult<FormulaListDto> { Items = new List<FormulaListDto>(), TotalCount = 0 }, null)));
+            .Returns(Task.FromResult(new LYBT.Desktop.Shared.Results.CommandResult<PagedResult<FormulaListDto>>(true, new PagedResult<FormulaListDto> { Items = new List<FormulaListDto>(), TotalCount = 0 }, null)));
         _dialogManager.ShowConfirmAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(Task.FromResult(true));
 
         await sut.DeleteCommand.ExecuteAsync(null);
@@ -333,7 +333,7 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
         var sut = CreateSut();
         _search.SearchText.Returns("补气");
         _formulaService.GetPagedAsync(1, 20, "补气", Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new LYBT.Desktop.Contracts.CommandHandlers.CommandResult<PagedResult<FormulaListDto>>(true, new PagedResult<FormulaListDto> { Items = new List<FormulaListDto>(), TotalCount = 0 }, null)));
+            .Returns(Task.FromResult(new LYBT.Desktop.Shared.Results.CommandResult<PagedResult<FormulaListDto>>(true, new PagedResult<FormulaListDto> { Items = new List<FormulaListDto>(), TotalCount = 0 }, null)));
 
         await sut.SearchCommand.ExecuteAsync(null);
 
@@ -345,7 +345,7 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
     {
         var sut = CreateSut();
         _formulaService.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), "分类:经典方", Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new LYBT.Desktop.Contracts.CommandHandlers.CommandResult<PagedResult<FormulaListDto>>(true, new PagedResult<FormulaListDto> { Items = new List<FormulaListDto>(), TotalCount = 0 }, null)));
+            .Returns(Task.FromResult(new LYBT.Desktop.Shared.Results.CommandResult<PagedResult<FormulaListDto>>(true, new PagedResult<FormulaListDto> { Items = new List<FormulaListDto>(), TotalCount = 0 }, null)));
 
         await sut.SearchByCategoryCommand.ExecuteAsync("经典方");
 

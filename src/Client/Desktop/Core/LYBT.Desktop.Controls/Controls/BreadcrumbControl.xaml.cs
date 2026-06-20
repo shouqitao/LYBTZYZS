@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using LYBT.Desktop.Contracts.Models;
+using LYBT.Desktop.Shared.UI;
 using LYBT.Desktop.Controls.Converters;
 using Microsoft.Extensions.Logging;
 

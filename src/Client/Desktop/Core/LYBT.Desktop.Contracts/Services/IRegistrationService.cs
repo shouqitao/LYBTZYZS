@@ -1,4 +1,4 @@
-using LYBT.Desktop.Contracts.CommandHandlers;
+using LYBT.Desktop.Shared.Results;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Registration;
 using System.Threading;

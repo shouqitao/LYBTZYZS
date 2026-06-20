@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Enums;
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Clinical.ViewModels.Workspace;
 using LYBT.Desktop.Contracts.Services;
@@ -137,8 +138,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
 
     public string CurrentPatientGenderDisplay => CurrentPatient?.Gender switch
     {
-        Shared.Models.Enums.Gender.Male => "男",
-        Shared.Models.Enums.Gender.Female => "女",
+        Gender.Male => "男",
+        Gender.Female => "女",
         _ => "未知"
     };
 
@@ -420,11 +421,11 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         }
 
         var currentUserRole = SessionManager?.CurrentUser?.Role;
-        var isAdmin = currentUserRole == Shared.Models.Enums.UserRole.Admin
-                   || currentUserRole == Shared.Models.Enums.UserRole.SuperAdmin;
+        var isAdmin = currentUserRole == UserRole.Admin
+                   || currentUserRole == UserRole.SuperAdmin;
         var currentUserId = SessionManager?.CurrentUser?.Id ?? Guid.Empty;
         var isOwner = medicalCase.UserId == currentUserId;
-        var isCompleted = medicalCase.CaseStatus == Shared.Models.Enums.MedicalCaseStatus.Completed;
+        var isCompleted = medicalCase.CaseStatus == MedicalCaseStatus.Completed;
         var preferEditing = initialEditState == EditState.Editing || isHistoricalEdit;
 
         State = State.DetermineFromContext(workspaceMode, isCompleted, isOwner, isAdmin, preferEditing);
@@ -517,11 +518,11 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         if (medicalCase == null) return;
 
         if (State.Mode == WorkspaceMode.Clinical
-            && medicalCase.CaseStatus == Shared.Models.Enums.MedicalCaseStatus.Suspended)
+            && medicalCase.CaseStatus == MedicalCaseStatus.Suspended)
         {
             Logger.LogInformation("[CMD] ResumeSuspended -> MedicalCaseId={MedicalCaseId}", MedicalCaseId);
             var result = await _medicalCaseService.ResumeSuspendedAsync(MedicalCaseId);
-            if (result.success) medicalCase.CaseStatus = Shared.Models.Enums.MedicalCaseStatus.Active;
+            if (result.success) medicalCase.CaseStatus = MedicalCaseStatus.Active;
         }
     }
 

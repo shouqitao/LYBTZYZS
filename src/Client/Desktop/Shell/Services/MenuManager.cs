@@ -1,6 +1,6 @@
 using System.Windows;
 using System.Windows.Input;
-using LYBT.Desktop.Contracts.Models;
+using LYBT.Desktop.Shared.UI;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.Constants;
