@@ -1,5 +1,10 @@
 # Desktop Infrastructure Architecture Cleanup — Implementation Plan
 
+> [!NOTE]
+> This document may not reflect the current implementation.
+> See the final report for up-to-date state:
+> [Final Report](../reports/desktop-architecture-cleanup.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use compose:subagent (recommended) or compose:execute to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Split Infrastructure (18.6K LOC) into Infrastructure (~10K) + Controls (~8.7K), merge Models (1K) into Infrastructure, merge Utilities into Foundation, extract non-interface types from Contracts into Shared.

@@ -1,5 +1,10 @@
 # Desktop 层基础设施重组 — 设计规格
 
+> [!NOTE]
+> This document may not reflect the current implementation.
+> See the final report for up-to-date state:
+> [Final Report](../reports/desktop-architecture-cleanup.md)
+
 > 日期: 2026-06-20
 > 基于: 4 个并行 CodeGraph 子代理分析（依赖图 + Core 深度分析 + 模块/Shell 分析 + DI/XAML/测试质量审计）
 > 方案: A — Infrastructure 拆分 + Models/Utilities 合并 + Contracts 清理
