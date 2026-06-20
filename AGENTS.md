@@ -106,7 +106,7 @@ dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
 
 ### Recent Refactoring (Phase 1-3, 2026-06-16)
 
-Phase 1 removed: sync module (entire), audit logs, print tracking, RestoreAsync, CheckReference, PendingQueue, simplified permissions (4→2 policies), simplified auth (no refresh/auto-login tokens), simplified Patient entity (18→8 fields).
+Phase 1 removed: sync module (entire), audit logs, print tracking, CheckReference, simplified permissions (4→2 policies), simplified auth (no refresh/auto-login tokens), simplified Patient entity (18→8 fields). Note: RestoreAsync and PendingQueue were NOT removed — both are active (`BaseStatusHandler.RestoreAsync`, `PendingQueueManager`, `PendingQueueViewModel`).
 
 Phase 2 added: RegistrationFee + QueueNumber on Registration, Reports module (3 daily report endpoints), cleaned legacy endpoints.
 

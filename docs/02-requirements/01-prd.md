@@ -87,9 +87,8 @@ v1.0 包含 **10 个功能模块、136 个 User Stories**（Must / Should / Coul
 | 6 | 医案管理 (MedicalCases) | 18 | 聚合根。诊断 + 处方 + 打印完整生命周期，CQRS 模式 |
 | 7 | 挂号管理 (Registration) | 7 | 前台排队 + 医生快速就诊，医案联动回写 |
 | 8 | 处方打印 (Printing) | 4 | A5/A4 模板、PDF 导出、打印回写服务器 |
-| 9 | 数据同步 (Sync) | 8 | 本地↔远程双向同步，Checksum 冲突检测，5 阶段工作流 |
 | 10 | 平台基础设施 (Platform) | 35 | Shell + Config + Error + Logging + Health + CardReader |
-| **合计** | | **136** | |
+| **合计** | | **128** | |
 
 ### v2.0 延期范围
 
@@ -132,7 +131,7 @@ v1.0 包含 **10 个功能模块、136 个 User Stories**（Must / Should / Coul
 | 策略 | 允许角色 | 典型端点 |
 |------|---------|---------|
 | `PatientAccess` | Receptionist + Doctor + Admin + SuperAdmin | `/patients`、`/registrations` |
-| `DoctorOrAdmin` | Doctor + Admin + SuperAdmin | `/herbs`、`/formulas`、`/sync` |
+| `DoctorOrAdmin` | Doctor + Admin + SuperAdmin | `/herbs`、`/formulas` |
 | `AdminOnly` | Admin + SuperAdmin | `/users`（CRUD）、`/patients/{id}/status` |
 | `SuperAdminOnly` | SuperAdmin | `/configuration`、`/diagnostics`、`/users/{id}/reset-password`、`/users/{id}/restore` |
 
@@ -168,7 +167,6 @@ v1.0 包含 **10 个功能模块、136 个 User Stories**（Must / Should / Coul
 | **Registration** | 查询队列/历史 | ✓ | ✓*⁴ | ✓ | ✓ |
 | **Registration** | 取消（仅 Waiting） | ✓*⁷ | ✗ | ✗ | ✗ |
 | **Printing** | 打印/预览/导出 | ✗ | ✓ | ✗ | ✗ |
-| **Sync** | 全部操作 | ✗ | ✓ | ✓ | ✓ |
 | **Platform/Config** | 查询/验证配置 | ✗ | ✗ | ✗ | ✓ |
 | **Platform/Health** | 存活探针（/health） | ✓⁸ | ✓⁸ | ✓⁸ | ✓⁸ |
 | **Platform/Health** | 详细检查（/details） | ✓ | ✓ | ✓ | ✓ |
@@ -238,10 +236,9 @@ v1.0 包含 **10 个功能模块、136 个 User Stories**（Must / Should / Coul
 | 医案管理 | [`07-medical-cases.md`](07-medical-cases.md) | 18 | **聚合根** + CQRS + BR-001 单活动医案 |
 | 挂号管理 | [`08-registration.md`](08-registration.md) | 7 | 双 Source 模型 + 原子事务 + 医案联动 |
 | 处方打印 | [`09-printing.md`](09-printing.md) | 4 | A5/A4 模板 + PDF 导出 + 打印回写 |
-| 数据同步 | [`10-sync.md`](10-sync.md) | 8 | Checksum 冲突检测 + 5 阶段工作流 |
 | 平台基础设施 | [`11-platform.md`](11-platform.md) | 35 | Shell + Config + Error + Logging + Health + CardReader |
 | 非功能需求 | [`12-nfr.md`](12-nfr.md) | — | 性能/数据/可用性/安全/可维护性/兼容性 |
-| **合计** | | **136** | |
+| **合计** | | **128** | |
 
 ### 相关文档
 
