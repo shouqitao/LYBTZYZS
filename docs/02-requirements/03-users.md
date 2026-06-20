@@ -46,6 +46,51 @@ Admin → 可管理 Doctor + Receptionist，不可管理 Admin/SuperAdmin
 Doctor/Receptionist → 不可管理任何角色
 ```
 
+## 权限矩阵
+
+### 认证端点 (AuthController)
+
+| 端点 | Receptionist | Doctor | Admin | SuperAdmin | 未登录 |
+|------|:---:|:---:|:---:|:---:|:---:|
+| `POST /auth/login` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `POST /auth/logout` | ✅ | ✅ | ✅ | ✅ | ❌ |
+| `GET /auth/validate` | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+### 用户管理端点 (UsersController)
+
+| 端点 | Receptionist | Doctor | Admin | SuperAdmin | 策略 |
+|------|:---:|:---:|:---:|:---:|------|
+| `GET /users` (分页列表) | ❌ | ❌ | ✅ | ✅ | AdminOnly |
+| `GET /users/current` (当前用户) | ✅ | ✅ | ✅ | ✅ | 仅本人 |
+| `GET /users/{id}` (用户详情) | ❌ | ❌ | ✅ | ✅ | AdminOnly |
+| `POST /users` (创建用户) | ❌ | ❌ | ✅ | ✅ | AdminOnly |
+| `PUT /users/{id}` (更新用户) | ❌ | ❌ | ✅ | ✅ | AdminOnly |
+| `DELETE /users/{id}` (删除用户) | ❌ | ❌ | ✅ | ✅ | AdminOnly |
+| `POST /users/{id}/reset-password` (重置密码) | ❌ | ❌ | ✅ | ✅ | AdminOnly |
+| `PUT /users/{id}/profile` (修改资料) | ✅* | ✅* | ✅* | ✅* | 仅本人 |
+| `PUT /users/{id}/change-password` (修改密码) | ✅* | ✅* | ✅* | ✅* | 仅本人 |
+| `POST /users/{id}/toggle-status` (启用/禁用) | ❌ | ❌ | ✅ | ✅ | AdminOnly |
+| `POST /users/batch-delete` (批量删除) | ❌ | ❌ | ✅ | ✅ | AdminOnly |
+
+> `*` 标注：profile/change-password 仅限本人操作（IDOR 防护：`id == currentUserId`），Admin 也无法修改他人资料。
+
+### 业务端点权限概览
+
+| 模块 | Receptionist | Doctor | Admin | SuperAdmin |
+|------|:---:|:---:|:---:|:---:|
+| 患者管理 | ✅ CRUD | ✅ CRUD | ✅ CRUD | ✅ CRUD |
+| 挂号 | ✅ CRUD | ✅ 查看 | ✅ CRUD | ✅ CRUD |
+| 读卡器 | ✅ | ❌ | ❌ | ❌ |
+| 医案（创建） | ❌ | ✅ | ❌ | ❌ |
+| 医案（查看/编辑） | ❌ | ✅ 自己的 | ✅ 所有 | ✅ 所有 |
+| 药材管理 | ✅ 查看 | ✅ 查看 | ✅ CRUD | ✅ CRUD |
+| 验方管理 | ✅ 查看 | ✅ 查看 | ✅ CRUD | ✅ CRUD |
+| 用户管理 | ❌ | ❌ | ✅ | ✅ |
+| 系统设置 | ❌ | ❌ | ❌ | ✅ |
+| 报表 | ❌ | ❌ | ✅ | ✅ |
+| 系统诊断 | ❌ | ❌ | ❌ | ✅ |
+| 日志级别 | ❌ | ❌ | ❌ | ✅ |
+
 ## API 端点（11 个，Remote 和 Local 统一）
 
 | 方法 | 路径 | 认证 | 说明 |
