@@ -23,6 +23,7 @@ Business modules for the WPF desktop client. Each module encapsulates a domain a
 ### Working In This Directory
 - Each module is a self-contained Prism `IModule` — registered in `{Domain}Module.cs`.
 - Modules MUST NOT reference each other. Cross-module communication goes through shared services or Prism `IEventAggregator`.
+  - **Exception — workflow modules:** a module whose core purpose is to coordinate across domains may depend on other modules' service interfaces. `LYBT.Desktop.Registration` is the sanctioned case: it consumes `IPatientService` (patient search), `IUserService` (doctor list), and `MedicalCase.Models` enums (visit navigation params). This exception is documented in each such module's own AGENTS.md; do not re-flag it without consulting that module's docs.
 - All ViewModels inherit from `NavigableViewModelBase` (single entity) or `MasterDetailViewModelBase<TListDto, TDetailModel>` (list/grid).
 - Navigation uses Prism region-based navigation: `_regionManager.RequestNavigate("MainRegion", nameof(SomeView))`.
 - Data access: inject `I{Entity}Repository` for CRUD, `I{Entity}DataManager` for aggregate roots (e.g., `IMedicalCaseDataManager`).
