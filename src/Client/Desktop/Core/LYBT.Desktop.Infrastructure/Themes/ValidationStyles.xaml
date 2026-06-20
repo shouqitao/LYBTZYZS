@@ -13,7 +13,7 @@
 
     <!--  错误颜色 - 使用主题资源  -->
     <SolidColorBrush x:Key="ValidationErrorBrush" Color="{DynamicResource DangerColor}" />
-    <SolidColorBrush x:Key="ValidationErrorBackgroundBrush" Color="#FFF5F5" />
+    <SolidColorBrush x:Key="ValidationErrorBackgroundBrush" Color="{DynamicResource LightDangerColor}" />
 
     <!--
         必填星号样式 - 用于标签后的必填标识

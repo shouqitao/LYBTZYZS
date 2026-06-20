@@ -4,6 +4,7 @@
         ====================================================================
         Preview Styles - 预览界面统一样式
         用于所有ViewControl预览组件的布局和样式统一
+        颜色统一引用 DesignSystem.xaml 语义 token（2026-06-19 从 Fluent 调色板迁移至 Material/棕色设计系统）
         ====================================================================
     -->
 
@@ -12,7 +13,7 @@
         <Setter Property="FontSize" Value="20" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="FontFamily" Value="Segoe UI Variable, Segoe UI, Microsoft YaHei UI" />
-        <Setter Property="Foreground" Value="#201F1E" />
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
@@ -21,7 +22,7 @@
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="FontFamily" Value="Segoe UI Variable, Segoe UI, Microsoft YaHei UI" />
-        <Setter Property="Foreground" Value="#605E5C" />
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Margin" Value="12,0,0,0" />
     </Style>
@@ -41,20 +42,21 @@
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="FontFamily" Value="Segoe UI Variable, Segoe UI, Microsoft YaHei UI" />
-        <Setter Property="Foreground" Value="#201F1E" />
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
         <Setter Property="Margin" Value="0,8,0,12" />
     </Style>
 
     <!--  预览分隔线样式  -->
     <Style x:Key="PreviewDividerStyle" TargetType="Border">
         <Setter Property="Height" Value="1" />
-        <Setter Property="Background" Value="#E1DFDD" />
+        <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
         <Setter Property="Margin" Value="0,16,0,16" />
     </Style>
 
     <!--
         ====================================================================
         Status Badge Styles - 状态徽章样式
+        颜色语义: Success=绿、Info=青蓝、Warning=金、Default=中性灰、Primary=品牌棕
         ====================================================================
     -->
 
@@ -78,7 +80,7 @@
         x:Key="PreviewBadgeSuccessStyle"
         BasedOn="{StaticResource PreviewBadgeBaseStyle}"
         TargetType="Border">
-        <Setter Property="Background" Value="#107C10" />
+        <Setter Property="Background" Value="{DynamicResource SuccessBrush}" />
     </Style>
 
     <!--  信息状态Badge - 青色  -->
@@ -86,31 +88,31 @@
         x:Key="PreviewBadgeInfoStyle"
         BasedOn="{StaticResource PreviewBadgeBaseStyle}"
         TargetType="Border">
-        <Setter Property="Background" Value="#00B7C3" />
+        <Setter Property="Background" Value="{DynamicResource InfoBrush}" />
     </Style>
 
-    <!--  警告状态Badge - 橙色  -->
+    <!--  警告状态Badge - 金色  -->
     <Style
         x:Key="PreviewBadgeWarningStyle"
         BasedOn="{StaticResource PreviewBadgeBaseStyle}"
         TargetType="Border">
-        <Setter Property="Background" Value="#F7630C" />
+        <Setter Property="Background" Value="{DynamicResource WarningBrush}" />
     </Style>
 
-    <!--  默认状态Badge - 灰色  -->
+    <!--  默认状态Badge - 中性灰  -->
     <Style
         x:Key="PreviewBadgeDefaultStyle"
         BasedOn="{StaticResource PreviewBadgeBaseStyle}"
         TargetType="Border">
-        <Setter Property="Background" Value="#8A8886" />
+        <Setter Property="Background" Value="{DynamicResource DisabledTextBrush}" />
     </Style>
 
-    <!--  主要状态Badge - 蓝色  -->
+    <!--  主要状态Badge - 品牌主色（棕色，与应用主色一致）  -->
     <Style
         x:Key="PreviewBadgePrimaryStyle"
         BasedOn="{StaticResource PreviewBadgeBaseStyle}"
         TargetType="Border">
-        <Setter Property="Background" Value="#0078D4" />
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
     </Style>
 
     <!--
@@ -140,7 +142,7 @@
     <!--  摘要项样式  -->
     <Style x:Key="PreviewSummaryItemStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="13" />
-        <Setter Property="Foreground" Value="#605E5C" />
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
@@ -148,7 +150,7 @@
     <Style x:Key="PreviewSummarySeparatorStyle" TargetType="TextBlock">
         <Setter Property="Text" Value=" | " />
         <Setter Property="FontSize" Value="13" />
-        <Setter Property="Foreground" Value="#C8C6C4" />
+        <Setter Property="Foreground" Value="{DynamicResource DisabledTextBrush}" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
@@ -159,10 +161,10 @@
         ====================================================================
     -->
 
-    <!--  药材标签容器样式 - 淡蓝色背景更醒目  -->
+    <!--  药材标签容器样式 - 淡蓝背景更醒目  -->
     <Style x:Key="HerbTagStyle" TargetType="Border">
-        <Setter Property="Background" Value="#E3F2FD" />
-        <Setter Property="BorderBrush" Value="#90CAF9" />
+        <Setter Property="Background" Value="{DynamicResource LightInfoBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource InfoBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="4" />
         <Setter Property="Padding" Value="8,6" />
@@ -174,21 +176,21 @@
     <Style x:Key="HerbTagNameStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="Medium" />
-        <Setter Property="Foreground" Value="#333333" />
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
     <!--  药材剂量文字样式  -->
     <Style x:Key="HerbTagDosageStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="Foreground" Value="#666666" />
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Margin" Value="4,0,0,0" />
     </Style>
 
     <!--  煎法标签样式 - 非默认煎法时显示  -->
     <Style x:Key="HerbTagDecocteStyle" TargetType="Border">
-        <Setter Property="Background" Value="#FFF3E0" />
+        <Setter Property="Background" Value="{DynamicResource LightWarningBrush}" />
         <Setter Property="CornerRadius" Value="2" />
         <Setter Property="Padding" Value="4,2" />
         <Setter Property="Margin" Value="6,0,0,0" />
@@ -198,7 +200,7 @@
     <!--  煎法文字样式  -->
     <Style x:Key="HerbTagDecocteTextStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="11" />
-        <Setter Property="Foreground" Value="#E65100" />
+        <Setter Property="Foreground" Value="{DynamicResource AccentOrangeBrush}" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
