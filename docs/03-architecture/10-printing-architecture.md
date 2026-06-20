@@ -335,8 +335,8 @@ Desktop 打印成功
 
 | 方法 | 路由 | 授权 | 说明 |
 |------|------|------|------|
-| `PUT` | `/api/v{version}/medicalcases/{id}/print-completed` | DoctorOrAdmin | 记录打印完成，更新打印状态 |
-| `POST` | `/api/v{version}/medicalcases/{id}/print-logs` | DoctorOrAdmin | 记录打印事件（成功/失败） |
+| `PUT` | `/api/v{version}/medicalcases/{id}/print-completed` | DoctorOrReceptionist | 记录打印完成，更新打印状态 |
+| `POST` | `/api/v{version}/medicalcases/{id}/print-logs` | DoctorOrReceptionist | 记录打印事件（成功/失败） |
 
 ### 7.2 PrintCompletedRequest
 

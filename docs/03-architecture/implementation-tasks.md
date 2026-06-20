@@ -25,7 +25,7 @@
 
 ### TASK-02: ConfigurationController 使用字符串角色而非 Policy
 - **文件**: `src/Server/Services/LYBT.WebAPI/Controllers/ConfigurationController.cs:13`
-- **违规**: `[Authorize(Roles = "Admin")]` 应改为 `[Authorize(Policy = PolicyConstants.SuperAdminOnly)]`
+- **违规**: `[Authorize(Roles = "Admin")]` 应改为 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`
 - **修复**: 替换为 Policy 常量，确保只有 SuperAdmin 可修改配置
 - **影响范围**: ConfigurationController 仅
 - **测试**: Configuration 现有测试需更新授权断言
@@ -84,7 +84,7 @@
 - **不一致项**:
   1. `import-template` 端点文档标注 `[AllowAnonymous]` 但代码继承类级 `[Authorize]`
   2. `POST /import` (Excel) 文档中存在但代码只实现 `batch-import` (JSON)
-  3. `toggle-status` 文档标注 AdminOnly 但代码继承更宽泛的类级 Policy
+  3. `toggle-status` 文档标注 AdminOrSuperAdmin 但代码继承更宽泛的类级 Policy
   4. 部分创建端点返回 201 但文档写 200
 - **修复**: 以代码为准更新文档，或以文档为准补全实现
 

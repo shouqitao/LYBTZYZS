@@ -60,17 +60,17 @@ Doctor/Receptionist → 不可管理任何角色
 
 | 端点 | Receptionist | Doctor | Admin | SuperAdmin | 策略 |
 |------|:---:|:---:|:---:|:---:|------|
-| `GET /users` (分页列表) | ❌ | ❌ | ✅ | ✅ | AdminOnly |
+| `GET /users` (分页列表) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
 | `GET /users/current` (当前用户) | ✅ | ✅ | ✅ | ✅ | 仅本人 |
-| `GET /users/{id}` (用户详情) | ❌ | ❌ | ✅ | ✅ | AdminOnly |
-| `POST /users` (创建用户) | ❌ | ❌ | ✅ | ✅ | AdminOnly |
-| `PUT /users/{id}` (更新用户) | ❌ | ❌ | ✅ | ✅ | AdminOnly |
-| `DELETE /users/{id}` (删除用户) | ❌ | ❌ | ✅ | ✅ | AdminOnly |
-| `POST /users/{id}/reset-password` (重置密码) | ❌ | ❌ | ✅ | ✅ | AdminOnly |
+| `GET /users/{id}` (用户详情) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
+| `POST /users` (创建用户) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
+| `PUT /users/{id}` (更新用户) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
+| `DELETE /users/{id}` (删除用户) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
+| `POST /users/{id}/reset-password` (重置密码) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
 | `PUT /users/{id}/profile` (修改资料) | ✅* | ✅* | ✅* | ✅* | 仅本人 |
 | `PUT /users/{id}/change-password` (修改密码) | ✅* | ✅* | ✅* | ✅* | 仅本人 |
-| `POST /users/{id}/toggle-status` (启用/禁用) | ❌ | ❌ | ✅ | ✅ | AdminOnly |
-| `POST /users/batch-delete` (批量删除) | ❌ | ❌ | ✅ | ✅ | AdminOnly |
+| `POST /users/{id}/toggle-status` (启用/禁用) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
+| `POST /users/batch-delete` (批量删除) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
 
 > `*` 标注：profile/change-password 仅限本人操作（IDOR 防护：`id == currentUserId`），Admin 也无法修改他人资料。
 
@@ -95,17 +95,17 @@ Doctor/Receptionist → 不可管理任何角色
 
 | 方法 | 路径 | 认证 | 说明 |
 |------|------|------|------|
-| `GET /users` | 分页查询 | AdminOnly | 支持 keyword/role/status 筛选 |
+| `GET /users` | 分页查询 | AdminOrSuperAdmin | 支持 keyword/role/status 筛选 |
 | `GET /users/current` | 当前用户 | 所有角色 | JWT Claims 提取 userId |
-| `GET /users/{id}` | 用户详情 | AdminOnly | 含角色信息 |
-| `POST /users` | 创建用户 | AdminOnly | 密码默认 Lybt2025@TempPass! |
-| `PUT /users/{id}` | 更新用户 | AdminOnly | UserName 不可改 |
-| `DELETE /users/{id}` | 删除用户 | AdminOnly | 软删除，不可删自己 |
-| `POST /users/{id}/reset-password` | 重置密码 | AdminOnly | 返回临时密码 |
+| `GET /users/{id}` | 用户详情 | AdminOrSuperAdmin | 含角色信息 |
+| `POST /users` | 创建用户 | AdminOrSuperAdmin | 密码默认 Lybt2025@TempPass! |
+| `PUT /users/{id}` | 更新用户 | AdminOrSuperAdmin | UserName 不可改 |
+| `DELETE /users/{id}` | 删除用户 | AdminOrSuperAdmin | 软删除，不可删自己 |
+| `POST /users/{id}/reset-password` | 重置密码 | AdminOrSuperAdmin | 返回临时密码 |
 | `PUT /users/{id}/profile` | 修改资料 | 本人 | IDOR 防护 |
 | `PUT /users/{id}/change-password` | 修改密码 | 本人 | IDOR 防护 |
-| `POST /users/{id}/toggle-status` | 启用/禁用 | AdminOnly | Lockout 机制 |
-| `POST /users/batch-delete` | 批量删除 | AdminOnly | 逐项检查权限 |
+| `POST /users/{id}/toggle-status` | 启用/禁用 | AdminOrSuperAdmin | Lockout 机制 |
+| `POST /users/batch-delete` | 批量删除 | AdminOrSuperAdmin | 逐项检查权限 |
 
 ## Desktop 端 UI
 

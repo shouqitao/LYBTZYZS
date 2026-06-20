@@ -267,7 +267,7 @@ LocalWebAPI 控制器直接返回实体/DTO，**不使用** Server WebAPI 的 `A
 |------|---------------|-------------|
 | 响应包装 | ApiResponse<T> | 直接返回实体 |
 | API 版本 | `/api/v{version}/[controller]` | `/api/[controller]` |
-| 认证策略 | Policy-based (AdminOnly, DoctorOrAdmin) | 简单 [Authorize] + 运行时角色检查 |
+| 认证策略 | Policy-based (DoctorOrReceptionist, AdminOrSuperAdmin) | 简单 [Authorize] + 运行时角色检查 |
 | 分页参数 | page, pageSize, keyword | 各端点参数不同 |
 | 批量操作 | 支持 | 支持（batch-delete/enable/disable/import） |
 | 导入/导出 | Excel | JSON |

@@ -514,9 +514,9 @@ pm.test("Response time < 5000ms", () => {
 
 | 测试编号 | 场景 | 方法 | 预期 |
 |----------|------|------|------|
-| TC-ERR-002-01 | Doctor 访问 AdminOnly 端点 | POST /api/v1/users | 403 |
-| TC-ERR-002-02 | Receptionist 访问 DoctorOrAdmin 端点 | POST /api/v1/medicalcases | 403 |
-| TC-ERR-002-03 | Doctor 访问 SuperAdminOnly 端点 | POST /api/v1/diagnostics/logging/debug/enable | 403 |
+| TC-ERR-002-01 | Doctor 访问 AdminOrSuperAdmin 端点 | POST /api/v1/users | 403 |
+| TC-ERR-002-02 | Receptionist 访问 DoctorOrReceptionist 端点 | POST /api/v1/medicalcases | 403 |
+| TC-ERR-002-03 | Doctor 访问 AdminOrSuperAdmin 端点 | POST /api/v1/diagnostics/logging/debug/enable | 403 |
 
 ### TC-ERR-003: 数据验证错误
 

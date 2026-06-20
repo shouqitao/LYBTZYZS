@@ -10,7 +10,7 @@
 
 ## 业务规则
 
-1. **所有权模型**: Doctor 仅可见自己创建的 + `IsShared=true` 的验方；Admin/SuperAdmin 可见全部。端点受 `DoctorOrAdmin` 策略保护。
+1. **所有权模型**: Doctor 仅可见自己创建的 + `IsShared=true` 的验方；Admin/SuperAdmin 可见全部。端点受 `DoctorOrReceptionist` 策略保护。
 2. **验证状态机**: `Draft ↔ Validated`。新建验方默认 `Draft`；当且仅当所有 `FormulaHerbItem.IsValidated=true` 时晋升 `Validated`。
 3. **药材绑定**: `OriginalHerbName`（自由文本）→ `SelectedHerbId`（系统药材）；`IsValidated` 当且仅当 `HerbId.HasValue`。
 4. **FLAW-F1 修复**: 药材增删改会触发状态重新评估；若任一药材未验证，已为 `Validated` 的验方自动降级回 `Draft`。

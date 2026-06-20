@@ -181,7 +181,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 > 原 4 US，保留 **4 US**：US-CFG-001~004。
 
-配置模块基于 ASP.NET Core Options 模式，提供强类型绑定 + DataAnnotation 验证 + 分环境覆盖 + 生产启动验证。运行时配置查询通过 `ConfigurationController`（`SuperAdminOnly`）暴露。
+配置模块基于 ASP.NET Core Options 模式，提供强类型绑定 + DataAnnotation 验证 + 分环境覆盖 + 生产启动验证。运行时配置查询通过 `ConfigurationController`（`AdminOrSuperAdmin`）暴露。
 
 ### US-CFG-001: 查询所有配置
 
@@ -197,7 +197,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 - [ ] 敏感字段（密钥/密码）不明文返回
 
 **业务规则**:
-1. 端点受 `SuperAdminOnly` 策略保护。
+1. 端点受 `AdminOrSuperAdmin` 策略保护。
 2. 配置节名称通过 `ConfigurationSections` 常量统一管理。
 3. 敏感配置（SecretKey/Password）脱敏展示。
 

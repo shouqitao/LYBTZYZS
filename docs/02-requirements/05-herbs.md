@@ -32,7 +32,7 @@
 
 ### US-HERB-001: 分页查询药材列表
 
-**角色**: 医生/管理员（DoctorOrAdmin 策略）
+**角色**: 医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -46,7 +46,7 @@
 - [ ] 仅 Doctor 及以上角色可访问
 
 **业务规则**:
-1. 端点受 `DoctorOrAdmin` 策略保护（医生与管理员可访问，前台不可）
+1. 端点受 `DoctorOrReceptionist` 策略保护（医生与管理员可访问，前台不可）
 2. 拼音搜索基于 `PinyinAbbreviation` 字段（如 "dg" 匹配 "当归"）
 3. 结果受 OutputCache 缓存（`HerbsCache` 策略）提升查询性能
 
@@ -62,7 +62,7 @@
 
 ### US-HERB-002: 查看药材详情
 
-**角色**: 医生/管理员（DoctorOrAdmin 策略）
+**角色**: 医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -75,7 +75,7 @@
 - [ ] 仅 Doctor 及以上角色可访问
 
 **业务规则**:
-1. 端点受 `DoctorOrAdmin` 策略保护
+1. 端点受 `DoctorOrReceptionist` 策略保护
 2. 药材详情同样受 OutputCache 缓存
 
 **双模式**:
@@ -90,7 +90,7 @@
 
 ### US-HERB-003: 创建药材
 
-**角色**: 医生/管理员（DoctorOrAdmin 策略）
+**角色**: 医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -105,7 +105,7 @@
 **业务规则**:
 1. 拼音由服务自动生成，无需客户端提供
 2. 新药材默认 `IsEnabled=true`、`IsDeleted=false`
-3. 端点受 `DoctorOrAdmin` 策略保护（医生与管理员均可创建）
+3. 端点受 `DoctorOrReceptionist` 策略保护（医生与管理员均可创建）
 
 **双模式**:
 | 模式 | 行为 |
@@ -119,7 +119,7 @@
 
 ### US-HERB-004: 更新药材
 
-**角色**: 医生/管理员（DoctorOrAdmin 策略）
+**角色**: 医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -134,7 +134,7 @@
 **业务规则**:
 1. 更新时重新生成 PinyinAbbreviation（名称可能变更）
 2. 名称唯一约束同样适用于更新
-3. 端点受 `DoctorOrAdmin` 策略保护
+3. 端点受 `DoctorOrReceptionist` 策略保护
 
 **双模式**:
 | 模式 | 行为 |
@@ -148,7 +148,7 @@
 
 ### US-HERB-005: 删除药材（软删除，引用检查）
 
-**角色**: 医生/管理员（DoctorOrAdmin 策略）
+**角色**: 医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -178,7 +178,7 @@
 
 ### US-HERB-006: 批量导入药材（Skip/Update/Error 策略）
 
-**角色**: 医生/管理员（DoctorOrAdmin 策略）
+**角色**: 医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -214,7 +214,7 @@
 
 ### US-HERB-007: 导出全部药材
 
-**角色**: 医生/管理员（DoctorOrAdmin 策略）
+**角色**: 医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Should
 **状态**: ✅ 已实现
 
@@ -228,7 +228,7 @@
 
 **业务规则**:
 1. 导出由 `IHerbImportExportService` 执行（EPPlus）
-2. 端点受 `DoctorOrAdmin` 策略保护
+2. 端点受 `DoctorOrReceptionist` 策略保护
 3. 与 US-HERB-013 的导出端点不同：本端点导出全部，US-HERB-013 支持筛选导出 + 模板下载
 
 **双模式**:
@@ -243,7 +243,7 @@
 
 ### US-HERB-008: 单个引用检查
 
-**角色**: 医生/管理员（DoctorOrAdmin 策略）
+**角色**: 医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -271,7 +271,7 @@
 
 ### US-HERB-009: 批量引用检查
 
-**角色**: 医生/管理员（DoctorOrAdmin 策略）
+**角色**: 医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Should
 **状态**: ✅ 已实现
 
@@ -299,7 +299,7 @@
 
 ### US-HERB-010: 启用/禁用药材
 
-**角色**: 医生/管理员（DoctorOrAdmin 策略）
+**角色**: 医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -327,7 +327,7 @@
 
 ### US-HERB-011: 恢复软删除药材
 
-**角色**: 医生/管理员（DoctorOrAdmin 策略）
+**角色**: 医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Should
 **状态**: ✅ 已实现
 
@@ -355,7 +355,7 @@
 
 ### US-HERB-012: 批量操作（启用/禁用/删除）
 
-**角色**: 医生/管理员（DoctorOrAdmin 策略）
+**角色**: 医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Should
 **状态**: ✅ 已实现
 
@@ -370,7 +370,7 @@
 **业务规则**:
 1. 批量操作采用逐项处理（非原子），允许部分失败
 2. 批量删除每项均执行引用检查（同 US-HERB-005 规则）
-3. 端点受 `DoctorOrAdmin` 策略保护
+3. 端点受 `DoctorOrReceptionist` 策略保护
 
 **双模式**:
 | 模式 | 行为 |
@@ -384,7 +384,7 @@
 
 ### US-HERB-013: 导出 Excel + 下载模板
 
-**角色**: 医生/管理员（DoctorOrAdmin 策略）
+**角色**: 医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Should
 **状态**: ✅ 已实现
 

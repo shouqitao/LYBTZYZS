@@ -228,7 +228,7 @@ public async Task US_USER_004_BatchDelete_PartialFailure_RollsBack()
 ✅ **应该测试**:
 - **Happy Path**: 每个端点的标准成功路径
 - **响应格式**: ApiResponse 结构、分页格式、ProblemDetails
-- **基础权限**: 验证需要的令牌策略 (如 AdminOnly 需要 admin 令牌)
+- **基础权限**: 验证需要的令牌策略 (如 AdminOrSuperAdmin 需要 admin 令牌)
 - **端点可达性**: 确保所有端点至少可访问 (100% 覆盖率)
 
 ❌ **不应测试**:

@@ -1,6 +1,6 @@
 # 药材 API
 
-> Controller: `HerbsController` | 路由前缀: `/api/v1/herbs` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`
+> Controller: `HerbsController` | 路由前缀: `/api/v1/herbs` | 默认权限: `[Authorize(Policy = "DoctorOrReceptionist")]`
 
 ## 概述
 
@@ -112,7 +112,7 @@ Doctor 只能编辑自己创建的药材，Admin 可操作全部。
 
 下载药材导入 Excel 模板。
 
-- **权限**: 继承类级别 `[Authorize(Policy = "DoctorOrAdmin")]`
+- **权限**: 继承类级别 `[Authorize(Policy = "DoctorOrReceptionist")]`
 - **响应类型**: Excel 文件
 - **文件名**: `药材导入模板.xlsx`
 

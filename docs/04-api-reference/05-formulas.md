@@ -1,6 +1,6 @@
 # 验方 API
 
-> Controller: `FormulasController` | 路由前缀: `/api/v1/formulas` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`
+> Controller: `FormulasController` | 路由前缀: `/api/v1/formulas` | 默认权限: `[Authorize(Policy = "DoctorOrReceptionist")]`
 
 ## 概述
 
@@ -158,7 +158,7 @@ JSON 批量导入验方 (Server 端只处理 DTO，Excel 解析由 Client 端负
 
 下载验方导入 Excel 模板。
 
-- **权限**: 继承类级别 `[Authorize(Policy = "DoctorOrAdmin")]`
+- **权限**: 继承类级别 `[Authorize(Policy = "DoctorOrReceptionist")]`
 - **响应类型**: Excel 文件
 - **文件名**: `验方导入模板.xlsx`
 

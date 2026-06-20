@@ -1,6 +1,6 @@
 # 医案 API
 
-> Controllers: `MedicalCasesController`, `MedicalCaseProcessingController`, `MedicalCasePrintController`, `MedicalCaseAuditController` | 路由前缀: `/api/v1/medicalcases` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`
+> Controllers: `MedicalCasesController`, `MedicalCaseProcessingController`, `MedicalCasePrintController`, `MedicalCaseAuditController` | 路由前缀: `/api/v1/medicalcases` | 默认权限: `[Authorize(Policy = "DoctorOrReceptionist")]`
 
 ## 概述
 
@@ -16,7 +16,7 @@
 
 创建新医案。
 
-- **权限**: `[Authorize(Policy = "DoctorOrAdmin")]`
+- **权限**: `[Authorize(Policy = "DoctorOrReceptionist")]`
 - 支持创建时同时包含 Consultation 和 Prescription 数据
 
 **请求体** (`MedicalCaseInputDto`):

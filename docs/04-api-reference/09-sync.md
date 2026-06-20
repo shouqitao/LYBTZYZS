@@ -1,6 +1,6 @@
 # 数据同步 API
 
-> Controller: `SyncController` | 路由前缀: `/api/v1/sync` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`
+> Controller: `SyncController` | 路由前缀: `/api/v1/sync` | 默认权限: `[Authorize(Policy = "DoctorOrReceptionist")]`
 
 ## 概述
 

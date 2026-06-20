@@ -1,6 +1,6 @@
 # 患者 API
 
-> Controller: `PatientsController` | 路由前缀: `/api/v1/patients` | 默认权限: `[Authorize(Policy = "PatientAccess")]`
+> Controller: `PatientsController` | 路由前缀: `/api/v1/patients` | 默认权限: `[Authorize(Policy = "DoctorOrReceptionist")]`
 
 ## 概述
 
@@ -123,7 +123,7 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 
 下载患者导入 Excel 模板。包含 5 行示例数据。
 
-- **权限**: 继承类级别 `[Authorize(Policy = "PatientAccess")]`
+- **权限**: 继承类级别 `[Authorize(Policy = "DoctorOrReceptionist")]`
 
 **查询参数**:
 

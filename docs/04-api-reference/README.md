@@ -101,7 +101,7 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | POST | `/auth/refresh` | 匿名 | 刷新 Token |
 | GET | `/auth/validate` | 已认证 | 验证 Token |
 
-### 用户模块 ([02-users.md](02-users.md)) -- AdminOnly
+### 用户模块 ([02-users.md](02-users.md)) -- AdminOrSuperAdmin
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -120,7 +120,7 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | POST | `/users/batch-enable` | 批量启用 |
 | POST | `/users/batch-disable` | 批量禁用 |
 
-### 患者模块 ([03-patients.md](03-patients.md)) -- DoctorOrAdmin
+### 患者模块 ([03-patients.md](03-patients.md)) -- DoctorOrReceptionist
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -132,12 +132,12 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | GET | `/patients/import-template` | 下载导入模板 |
 | GET | `/patients/export` | 导出 Excel |
 | POST | `/patients/{id}/restore` | 恢复已删除患者 |
-| POST | `/patients/{id}/toggle-status` | 启用/禁用切换 (AdminOnly, US-PAT-013) |
+| POST | `/patients/{id}/toggle-status` | 启用/禁用切换 (AdminOrSuperAdmin, US-PAT-013) |
 | POST | `/patients/batch-delete` | 批量删除 |
 | GET | `/patients/{id}/check-reference` | 引用检查 |
 | POST | `/patients/batch-check-reference` | 批量引用检查 |
 
-### 药材模块 ([04-herbs.md](04-herbs.md)) -- DoctorOrAdmin
+### 药材模块 ([04-herbs.md](04-herbs.md)) -- DoctorOrReceptionist
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -158,7 +158,7 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | POST | `/herbs/batch-disable` | 批量禁用 |
 | POST | `/herbs/batch-delete` | 批量删除 |
 
-### 验方模块 ([05-formulas.md](05-formulas.md)) -- DoctorOrAdmin
+### 验方模块 ([05-formulas.md](05-formulas.md)) -- DoctorOrReceptionist
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -178,7 +178,7 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | POST | `/formulas/batch-enable` | 批量启用 |
 | POST | `/formulas/batch-disable` | 批量禁用 |
 
-### 医案模块 ([06-medical-cases.md](06-medical-cases.md)) -- DoctorOrAdmin
+### 医案模块 ([06-medical-cases.md](06-medical-cases.md)) -- DoctorOrReceptionist
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -203,19 +203,19 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | PUT | `/medicalcases/{id}/print-completed` | 记录打印完成 (详见 [08-printing.md](08-printing.md)) |
 | POST | `/medicalcases/{id}/print-logs` | 添加打印日志 (详见 [08-printing.md](08-printing.md)) |
 
-### 挂号管理模块 ([07-registrations.md](07-registrations.md)) -- PatientAccess
+### 挂号管理模块 ([07-registrations.md](07-registrations.md)) -- DoctorOrReceptionist
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | POST | `/registrations` | 创建挂号 (前台模式) |
-| POST | `/registrations/quick-visit` | 医生快速看诊 (DoctorOrAdmin) |
+| POST | `/registrations/quick-visit` | 医生快速看诊 (DoctorOrReceptionist) |
 | GET | `/registrations/{id}` | 挂号详情 |
 | GET | `/registrations` | 挂号列表 (分页) |
 | GET | `/registrations/queue` | 等待队列 |
-| PUT | `/registrations/{id}/start-visit` | 接诊 (DoctorOrAdmin) |
+| PUT | `/registrations/{id}/start-visit` | 接诊 (DoctorOrReceptionist) |
 | PUT | `/registrations/{id}/cancel` | 取消挂号 |
 
-### 数据同步模块 ([09-sync.md](09-sync.md)) -- DoctorOrAdmin
+### 数据同步模块 ([09-sync.md](09-sync.md)) -- DoctorOrReceptionist
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -234,7 +234,7 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | GET | `/health/ping` | 匿名 | Ping |
 | GET | `/health/details` | 已认证 | 详细健康检查 (含数据库) |
 
-### 诊断工具 ([12-diagnostics.md](12-diagnostics.md)) -- SuperAdmin
+### 诊断工具 ([12-diagnostics.md](12-diagnostics.md)) -- AdminOrSuperAdmin
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -243,7 +243,7 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | POST | `/diagnostics/logging/debug/disable` | 禁用调试模式 |
 | POST | `/diagnostics/logging/level` | 设置日志级别 |
 
-### 系统配置 -- AdminOnly
+### 系统配置 -- AdminOrSuperAdmin
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -276,10 +276,8 @@ Token 获取方式见 [认证 API](01-auth.md)。
 
 | 策略 | 角色 | 适用模块 |
 |------|------|----------|
-| AdminOnly | Admin, SuperAdmin | 用户管理、系统配置 |
-| DoctorOrAdmin | Doctor, Admin, SuperAdmin | 患者、药材、验方、医案、同步 |
-| PatientAccess | Doctor, Admin, SuperAdmin, Receptionist | 挂号管理 (创建 + 取消挂号) |
-| SuperAdminOnly | SuperAdmin | 诊断工具 |
+| AdminOrSuperAdmin | Admin, SuperAdmin | 用户管理、系统配置、诊断工具 |
+| DoctorOrReceptionist | Doctor, Admin, SuperAdmin, Receptionist | 患者、药材、验方、医案、同步、挂号管理 |
 
 ## 废弃端点
 

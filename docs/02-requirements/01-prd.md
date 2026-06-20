@@ -130,10 +130,8 @@ v1.0 包含 **10 个功能模块、136 个 User Stories**（Must / Should / Coul
 
 | 策略 | 允许角色 | 典型端点 |
 |------|---------|---------|
-| `PatientAccess` | Receptionist + Doctor + Admin + SuperAdmin | `/patients`、`/registrations` |
-| `DoctorOrAdmin` | Doctor + Admin + SuperAdmin | `/herbs`、`/formulas` |
-| `AdminOnly` | Admin + SuperAdmin | `/users`（CRUD）、`/patients/{id}/status` |
-| `SuperAdminOnly` | SuperAdmin | `/configuration`、`/diagnostics`、`/users/{id}/reset-password`、`/users/{id}/restore` |
+| `DoctorOrReceptionist` | Receptionist + Doctor + Admin + SuperAdmin | `/patients`、`/registrations`、`/herbs`、`/formulas`、`/medicalcases` |
+| `AdminOrSuperAdmin` | Admin + SuperAdmin | `/users`（CRUD）、`/configuration`、`/diagnostics`、`/patients/{id}/status`、`/users/{id}/reset-password`、`/users/{id}/restore` |
 
 另有 `AllowAnonymous`（登录、登出、健康探针、导入模板下载）与隐式 `Authenticated`（任意已认证用户：当前用户资料、修改密码）。
 

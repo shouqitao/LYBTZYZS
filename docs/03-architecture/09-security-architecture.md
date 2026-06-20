@@ -117,14 +117,12 @@ Desktop                          Server
 
 ## 4. 授权策略
 
-系统定义 4 种基于角色的授权策略，通过 `RequireRole()` 声明式配置：
+系统定义 2 种基于角色的授权策略，通过 `RequireRole()` 声明式配置：
 
 | Policy | 常量 | 满足条件的角色 | 典型用途 |
 |--------|------|--------------|----------|
-| `AdminOnly` | `PolicyConstants.AdminOnly` | SuperAdmin, Admin | 用户管理、药材管理 |
-| `DoctorOrAdmin` | `PolicyConstants.DoctorOrAdmin` | SuperAdmin, Admin, Doctor | 医案 CRUD、处方操作 |
-| `PatientAccess` | `PolicyConstants.PatientAccess` | SuperAdmin, Admin, Doctor, Receptionist | 患者信息访问 |
-| `SuperAdminOnly` | `PolicyConstants.SuperAdminOnly` | SuperAdmin | 系统配置、危险操作 |
+| `DoctorOrReceptionist` | `PolicyConstants.DoctorOrReceptionist` | SuperAdmin, Admin, Doctor, Receptionist | 患者、药材、验方、医案、同步、挂号管理 |
+| `AdminOrSuperAdmin` | `PolicyConstants.AdminOrSuperAdmin` | SuperAdmin, Admin | 用户管理、系统配置、诊断工具 |
 
 角色层次（隐含权限继承）：
 
@@ -137,10 +135,8 @@ SuperAdmin → Admin → Doctor → Receptionist
 ```csharp
 // AuthenticationServiceCollectionExtensions.cs
 options.FallbackPolicy = 要求认证用户;  // 默认所有端点需要认证
-options.AddPolicy("AdminOnly", RequireRole("SuperAdmin", "Admin"));
-options.AddPolicy("DoctorOrAdmin", RequireRole("SuperAdmin", "Admin", "Doctor"));
-options.AddPolicy("PatientAccess", RequireRole("SuperAdmin", "Admin", "Doctor", "Receptionist"));
-options.AddPolicy("SuperAdminOnly", RequireRole("SuperAdmin"));
+options.AddPolicy("DoctorOrReceptionist", RequireRole("SuperAdmin", "Admin", "Doctor", "Receptionist"));
+options.AddPolicy("AdminOrSuperAdmin", RequireRole("SuperAdmin", "Admin"));
 ```
 
 ### 默认安全策略
@@ -242,73 +238,73 @@ NotAuthenticated → Active → Warning → Expired → NotAuthenticated
 | 端点 | Policy | 备注 |
 |------|--------|------|
 | 类级别 | FallbackPolicy (需认证) | 控制器无类级 Policy |
-| `GET /` | AdminOnly | 用户列表 |
-| `GET /{id}` | AdminOnly | 用户详情 |
-| `POST /` | AdminOnly | 创建用户 |
-| `PUT /{id}` | AdminOnly | 更新用户 |
-| `DELETE /{id}` | SuperAdminOnly | 删除用户（仅超管） |
-| `PUT /{id}/password` | AdminOnly | 重置密码 |
-| `PUT /{id}/role` | SuperAdminOnly | 角色变更（仅超管） |
-| `PUT /{id}/status` | AdminOnly | 启用/禁用 |
-| `PUT /{id}/profile` | AdminOnly | 个人信息 |
+| `GET /` | AdminOrSuperAdmin | 用户列表 |
+| `GET /{id}` | AdminOrSuperAdmin | 用户详情 |
+| `POST /` | AdminOrSuperAdmin | 创建用户 |
+| `PUT /{id}` | AdminOrSuperAdmin | 更新用户 |
+| `DELETE /{id}` | AdminOrSuperAdmin | 删除用户 |
+| `PUT /{id}/password` | AdminOrSuperAdmin | 重置密码 |
+| `PUT /{id}/role` | AdminOrSuperAdmin | 角色变更 |
+| `PUT /{id}/status` | AdminOrSuperAdmin | 启用/禁用 |
+| `PUT /{id}/profile` | AdminOrSuperAdmin | 个人信息 |
 
 ### PatientsController (`/api/v1/patients`)
 
 | 端点 | Policy | 备注 |
 |------|--------|------|
 | 类级别 | FallbackPolicy (需认证) | |
-| 所有 CRUD 方法 | PatientAccess | 包含 Receptionist |
+| 所有 CRUD 方法 | DoctorOrReceptionist | 包含 Receptionist |
 
 ### MedicalCasesController (`/api/v1/medicalcases`)
 
 | 端点 | Policy | 备注 |
 |------|--------|------|
 | 类级别 | FallbackPolicy (需认证) | |
-| 所有方法 | DoctorOrAdmin | 医生及以上权限 |
-| 审核相关方法 | DoctorOrAdmin | 医案审核 |
+| 所有方法 | DoctorOrReceptionist | 医生及以上权限 |
+| 审核相关方法 | DoctorOrReceptionist | 医案审核 |
 
 ### MedicalCaseProcessingController (`/api/v1/medicalcase-processing`)
 
 | Policy | 备注 |
 |--------|------|
-| DoctorOrAdmin | 医案处理流程 |
+| DoctorOrReceptionist | 医案处理流程 |
 
 ### MedicalCasePrintController (`/api/v1/medicalcase-print`)
 
 | Policy | 备注 |
 |--------|------|
-| DoctorOrAdmin | 打印处方 |
+| DoctorOrReceptionist | 打印处方 |
 
 ### MedicalCaseAuditController (`/api/v1/medicalcase-audit`)
 
 | Policy | 备注 |
 |--------|------|
-| DoctorOrAdmin | 医案审核 |
+| DoctorOrReceptionist | 医案审核 |
 
 ### HerbsController (`/api/v1/herbs`)
 
 | Policy | 备注 |
 |--------|------|
-| DoctorOrAdmin | 药材管理 |
+| DoctorOrReceptionist | 药材管理 |
 
 ### FormulasController (`/api/v1/formulas`)
 
 | Policy | 备注 |
 |--------|------|
-| DoctorOrAdmin | 验方管理 |
+| DoctorOrReceptionist | 验方管理 |
 
 ### RegistrationsController (`/api/v1/registrations`)
 
 | 端点 | Policy | 备注 |
 |------|--------|------|
-| 类级别 | PatientAccess | 接诊员可访问 |
-| 创建/更新挂号 | DoctorOrAdmin | 需医生权限 |
+| 类级别 | DoctorOrReceptionist | 接诊员可访问 |
+| 创建/更新挂号 | DoctorOrReceptionist | 需医生权限 |
 
 ### SyncController (`/api/v1/sync`)
 
 | Policy | 备注 |
 |--------|------|
-| DoctorOrAdmin | 数据同步 |
+| DoctorOrReceptionist | 数据同步 |
 
 ## 7. 安全考虑
 

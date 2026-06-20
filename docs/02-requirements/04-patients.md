@@ -29,7 +29,7 @@
 
 ### US-PAT-001: 分页查询患者列表
 
-**角色**: 前台/医生/管理员（PatientAccess 策略）
+**角色**: 前台/医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -40,10 +40,10 @@
 - [ ] 支持按姓名、电话、拼音首字母筛选
 - [ ] 返回总数与分页数据
 - [ ] 非管理员仅返回 `IsEnabled=true` 的患者
-- [ ] 所有 PatientAccess 角色均可访问（含 Receptionist）
+- [ ] 所有 DoctorOrReceptionist 角色均可访问（含 Receptionist）
 
 **业务规则**:
-1. 端点受 `PatientAccess` 策略保护（Receptionist/Doctor/Admin/SuperAdmin）
+1. 端点受 `DoctorOrReceptionist` 策略保护（Receptionist/Doctor/Admin/SuperAdmin）
 2. 拼音搜索基于 `PinyinAbbreviation`（如 "dg" 匹配 "张三" 等拼音首字母为 ZS 的患者——注：实际为姓名拼音首字母）
 3. 非管理员可见性由全局查询过滤器 + 角色判断联合实现
 
@@ -59,7 +59,7 @@
 
 ### US-PAT-002: 查看患者详情
 
-**角色**: 前台/医生/管理员（PatientAccess 策略）
+**角色**: 前台/医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -87,7 +87,7 @@
 
 ### US-PAT-003: 创建患者
 
-**角色**: 前台/医生/管理员（PatientAccess 策略）
+**角色**: 前台/医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -118,7 +118,7 @@
 
 ### US-PAT-004: 更新患者
 
-**角色**: 前台/医生/管理员（PatientAccess 策略）
+**角色**: 前台/医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -263,7 +263,7 @@
 
 ### US-PAT-009: 单个引用检查
 
-**角色**: 前台/医生/管理员（PatientAccess 策略）
+**角色**: 前台/医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -277,7 +277,7 @@
 
 **业务规则**:
 1. 引用检查查询 MedicalCase 表中该患者的记录数
-2. 此端点允许所有 PatientAccess 角色查询（前台/医生也需预判）
+2. 此端点允许所有 DoctorOrReceptionist 角色查询（前台/医生也需预判）
 
 **双模式**:
 | 模式 | 行为 |

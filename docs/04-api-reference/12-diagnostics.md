@@ -1,12 +1,12 @@
 # 诊断工具 API
 
-> Controller: `DiagnosticsController` | 路由前缀: `/api/v1/diagnostics` | 默认权限: 远程 `[Authorize(Policy = PolicyConstants.SuperAdminOnly)]`; 本地 `[Authorize]` (任意已登录用户)
+> Controller: `DiagnosticsController` | 路由前缀: `/api/v1/diagnostics` | 默认权限: 远程 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`; 本地 `[Authorize]` (任意已登录用户)
 
 ## 概述
 
 提供运行时日志级别动态调整功能，用于生产环境问题排查。远程模式仅 SuperAdmin 可访问；本地模式任意已登录用户可访问。调试模式有最大时长限制 (120 分钟)，到期自动恢复默认级别。
 
-> **注意**: 远程模块使用 `[Authorize(Policy = PolicyConstants.SuperAdminOnly)]` 策略授权。本地模式使用类级 `[Authorize]`（任意已登录用户）。
+> **注意**: 远程模块使用 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]` 策略授权。本地模式使用类级 `[Authorize]`（任意已登录用户）。
 
 ---
 

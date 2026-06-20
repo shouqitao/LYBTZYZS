@@ -70,7 +70,7 @@
 | **实体模型** | 完全相同 — `src/Server/Core/LYBT.Entities/`，LocalWebApiDbContext 复用所有 `IEntityTypeConfiguration` |
 | **业务规则** | Validators、BusinessRules 完全共享 |
 | **认证机制** | 两端均使用 JWT Bearer Token + 相同 Claims Schema |
-| **授权策略** | 相同的 4 个 Policy（AdminOnly / DoctorOrAdmin / PatientAccess / SuperAdminOnly） |
+| **授权策略** | 相同的 2 个 Policy（DoctorOrReceptionist + AdminOrSuperAdmin） |
 | **EF Core 过滤器** | `IsDeleted` 软删除全局过滤器两端均生效 |
 | **异常处理** | 两端均通过 middleware/handler 统一处理，返回相同 ProblemDetails 格式 |
 
@@ -267,7 +267,7 @@ LocalWebAPI 使用简化版 JWT 认证：
 | AccessToken 有效期 | 30 分钟 | 1 年 |
 | RefreshToken | 支持（Token Family 防重放） | 不支持 |
 | Claims 结构 | 完全相同 | 完全相同 |
-| Authorization Policy | 完全相同（4 个 Policy） | 完全相同 |
+| Authorization Policy | 完全相同（2 个 Policy） | 完全相同 |
 | SecurityAuditLog | 记录 | 不记录 |
 | Rate Limiting | 5次/60s 登录 | 不限制 |
 
@@ -568,12 +568,12 @@ Idle → CheckingDifferences → ReviewingDifferences → ExecutingSync → Comp
 
 | 方法 | 路由 | 用途 | 授权 |
 |------|------|------|------|
-| GET | `/api/v1/sync/entity-types` | 列出支持的实体类型 | `DoctorOrAdmin` |
-| GET | `/api/v1/sync/metadata?entityType=X` | 获取服务端元数据用于比对 | `DoctorOrAdmin` |
-| POST | `/api/v1/sync/compare` | 服务端比对（客户端未使用） | `DoctorOrAdmin` |
-| POST | `/api/v1/sync/upload` | 上传实体到服务端 | `DoctorOrAdmin` |
-| POST | `/api/v1/sync/download` | 从服务端下载实体 | `DoctorOrAdmin` |
-| POST | `/api/v1/sync/delete` | 同步软删除（含引用检查） | `DoctorOrAdmin` |
+| GET | `/api/v1/sync/entity-types` | 列出支持的实体类型 | `DoctorOrReceptionist` |
+| GET | `/api/v1/sync/metadata?entityType=X` | 获取服务端元数据用于比对 | `DoctorOrReceptionist` |
+| POST | `/api/v1/sync/compare` | 服务端比对（客户端未使用） | `DoctorOrReceptionist` |
+| POST | `/api/v1/sync/upload` | 上传实体到服务端 | `DoctorOrReceptionist` |
+| POST | `/api/v1/sync/download` | 从服务端下载实体 | `DoctorOrReceptionist` |
+| POST | `/api/v1/sync/delete` | 同步软删除（含引用检查） | `DoctorOrReceptionist` |
 
 ### MedicalCase 聚合同步
 

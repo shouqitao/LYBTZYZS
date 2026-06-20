@@ -13,7 +13,7 @@
 | 远程控制器 | `MedicalCasePrintController` |
 | 本地控制器 | `MedicalCasesController`（内嵌打印端点） |
 | 服务层 | `MedicalCasePrintService` → `IMedicalCasePrintService` |
-| 认证 | 远程: `[Authorize(Policy = "DoctorOrAdmin")]` / 本地: JWT |
+| 认证 | 远程: `[Authorize(Policy = "DoctorOrReceptionist")]` / 本地: JWT |
 | 打印类型 | `PrintType` 枚举: `Prescription=1`, `Formula=2` |
 
 ---
@@ -22,7 +22,7 @@
 
 记录一次成功的打印，更新医案打印状态并创建打印日志。
 
-**认证**: DoctorOrAdmin
+**认证**: DoctorOrReceptionist
 
 **请求体**:
 
@@ -64,7 +64,7 @@
 
 记录打印成功或失败事件。
 
-**认证**: DoctorOrAdmin
+**认证**: DoctorOrReceptionist
 
 **请求体**:
 

@@ -1,6 +1,6 @@
 # 挂号管理 API
 
-> Controller: `RegistrationsController` | 路由前缀: `/api/v1/registrations` | 默认权限: `[Authorize(Policy = "PatientAccess")]`
+> Controller: `RegistrationsController` | 路由前缀: `/api/v1/registrations` | 默认权限: `[Authorize(Policy = "DoctorOrReceptionist")]`
 
 ## 概述
 
@@ -13,7 +13,7 @@ US-REG-001~006: 创建、查询、接诊、取消等操作。
 
 创建挂号记录 (前台模式)。
 
-- **权限**: PatientAccess (前台/医生/管理员)
+- **权限**: DoctorOrReceptionist (前台/医生/管理员)
 - US-REG-001: Source=Receptionist, Status=Waiting
 
 **请求体** (`RegistrationInputDto`):
@@ -54,7 +54,7 @@ US-REG-001~006: 创建、查询、接诊、取消等操作。
 
 医生快速看诊 (后台静默创建 Registration + MedicalCase)。
 
-- **权限**: DoctorOrAdmin
+- **权限**: DoctorOrReceptionist
 - US-REG-002: Source=Doctor, Status=InProgress, 医生无感知
 - 使用数据库事务，确保 Registration 和 MedicalCase 同时创建或回滚
 
@@ -98,7 +98,7 @@ US-REG-001~006: 创建、查询、接诊、取消等操作。
 
 获取挂号详情。
 
-- **权限**: PatientAccess
+- **权限**: DoctorOrReceptionist
 
 **路径参数**:
 
@@ -114,7 +114,7 @@ US-REG-001~006: 创建、查询、接诊、取消等操作。
 
 分页查询挂号记录。
 
-- **权限**: PatientAccess
+- **权限**: DoctorOrReceptionist
 - US-REG-007: 支持按日期范围、患者、医生过滤
 
 **查询参数**:
@@ -137,7 +137,7 @@ US-REG-001~006: 创建、查询、接诊、取消等操作。
 
 获取等待队列。
 
-- **权限**: PatientAccess
+- **权限**: DoctorOrReceptionist
 - US-REG-003: Waiting 状态，按挂号时间升序
 
 **查询参数**:
@@ -169,7 +169,7 @@ US-REG-001~006: 创建、查询、接诊、取消等操作。
 
 接诊: 从队列选中患者，Registration 状态变更为 InProgress。
 
-- **权限**: DoctorOrAdmin
+- **权限**: DoctorOrReceptionist
 - US-REG-003 验收标准第4条
 
 **路径参数**:
@@ -192,7 +192,7 @@ US-REG-001~006: 创建、查询、接诊、取消等操作。
 
 取消挂号。
 
-- **权限**: PatientAccess
+- **权限**: DoctorOrReceptionist
 - US-REG-004: 仅 Waiting 状态可取消
 
 **路径参数**:
