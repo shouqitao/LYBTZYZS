@@ -176,9 +176,10 @@ namespace LYBT.WebAPI.Controllers
             }
 
             var (_, _, currentRole) = GetOperator();
+            var currentUser = await _userManagerService.FindByIdAsync(GetOperator().OperatorId);
             var targetRole = dto.Role ?? UserRole.Doctor;
 
-            if (!CanManageUser(currentRole, targetRole))
+            if (!CanManageUser(currentRole, targetRole, currentUser?.IsSysAdmin == true))
             {
                 return Forbid("您没有权限创建该角色的用户");
             }
@@ -231,7 +232,7 @@ namespace LYBT.WebAPI.Controllers
                 return NotFound("用户不存在");
             }
 
-            if (string.Equals(user.UserName, "sysadmin", StringComparison.OrdinalIgnoreCase))
+            if (user.IsSysAdmin)
             {
                 return Forbid("系统管理员账号不可被修改");
             }
@@ -259,9 +260,10 @@ namespace LYBT.WebAPI.Controllers
             if (dto.Role.HasValue)
             {
                 var currentRoles = await _userManagerService.GetRolesAsync(user);
-                var (_, _, currentRole) = GetOperator();
+                var (opId, _, currentRole) = GetOperator();
+                var opUser = await _userManagerService.FindByIdAsync(opId);
 
-                if (!CanManageUser(currentRole, dto.Role.Value))
+                if (!CanManageUser(currentRole, dto.Role.Value, opUser?.IsSysAdmin == true))
                 {
                     return Forbid("您没有权限将用户角色修改为该级别");
                 }
@@ -306,14 +308,15 @@ namespace LYBT.WebAPI.Controllers
                 return NotFound("用户不存在");
             }
 
-            if (string.Equals(user.UserName, "sysadmin", StringComparison.OrdinalIgnoreCase))
+            if (user.IsSysAdmin)
             {
                 return Forbid("系统管理员账号不可被删除");
             }
 
             var roles = await _userManagerService.GetRolesAsync(user);
             var userRole = ParseUserRole(roles);
-            if (!CanManageUser(currentRole, userRole))
+            var opUser = await _userManagerService.FindByIdAsync(currentUserId);
+            if (!CanManageUser(currentRole, userRole, opUser?.IsSysAdmin == true))
             {
                 return Forbid("您没有权限删除该用户");
             }
@@ -442,14 +445,16 @@ namespace LYBT.WebAPI.Controllers
                 return NotFound("用户不存在");
             }
 
-            if (string.Equals(user.UserName, "sysadmin", StringComparison.OrdinalIgnoreCase))
+            if (user.IsSysAdmin)
             {
                 return Forbid("系统管理员账号不可被禁用");
             }
 
             var roles = await _userManagerService.GetRolesAsync(user);
             var userRole = ParseUserRole(roles);
-            if (!CanManageUser(currentRole, userRole))
+            var (opId, _, _) = GetOperator();
+            var opUser = await _userManagerService.FindByIdAsync(opId);
+            if (!CanManageUser(currentRole, userRole, opUser?.IsSysAdmin == true))
             {
                 return Forbid("您没有权限切换该用户状态");
             }
@@ -505,7 +510,7 @@ namespace LYBT.WebAPI.Controllers
                     continue;
                 }
 
-                if (string.Equals(user.UserName, "sysadmin", StringComparison.OrdinalIgnoreCase))
+                if (user.IsSysAdmin)
                 {
                     result.FailedItems.Add(new BatchOperationFailureItem { Id = id, Name = user.UserName, Reason = "系统管理员账号不可被删除" });
                     result.FailureCount++;
@@ -514,7 +519,8 @@ namespace LYBT.WebAPI.Controllers
 
                 var roles = await _userManagerService.GetRolesAsync(user);
                 var userRole = ParseUserRole(roles);
-                if (!CanManageUser(currentRole, userRole))
+                var opUser = await _userManagerService.FindByIdAsync(currentUserId);
+                if (!CanManageUser(currentRole, userRole, opUser?.IsSysAdmin == true))
                 {
                     result.FailedItems.Add(new BatchOperationFailureItem { Id = id, Name = user.UserName, Reason = "无权限删除" });
                     result.FailureCount++;
@@ -538,8 +544,10 @@ namespace LYBT.WebAPI.Controllers
             return Success(result, result.Message);
         }
 
-        private static bool CanManageUser(UserRole? currentUserRole, UserRole? targetUserRole)
+        private static bool CanManageUser(UserRole? currentUserRole, UserRole? targetUserRole, bool isSysAdmin = false)
         {
+            if (isSysAdmin) return true;
+
             if (!currentUserRole.HasValue || !targetUserRole.HasValue)
                 return false;
 

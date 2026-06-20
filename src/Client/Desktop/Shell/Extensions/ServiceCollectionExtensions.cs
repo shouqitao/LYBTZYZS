@@ -149,7 +149,6 @@ namespace LYBT.Desktop.Shell.Extensions
                 var registry = new RoleRegistry(logger);
 
                 // 注册内置角色定义 (refactor-auth-role-system Phase 2.3.3)
-                registry.Register(new SuperAdminRoleDefinition());
                 registry.Register(new AdminRoleDefinition());
                 registry.Register(new DoctorRoleDefinition());
                 registry.Register(new ReceptionistRoleDefinition());

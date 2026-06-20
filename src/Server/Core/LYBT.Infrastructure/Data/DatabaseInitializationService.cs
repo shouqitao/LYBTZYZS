@@ -167,6 +167,7 @@ public class DatabaseInitializationService
             {
                 if (config.ForceResetOnStartup && IsDevelopment())
                 {
+                    existingSuperAdmin.IsSysAdmin = true;
                     existingSuperAdmin.PasswordHash = PasswordHelper.HashPassword(_defaultPasswordOptions.SysAdminPassword);
                     existingSuperAdmin.AccessFailedCount = 0;
                     existingSuperAdmin.LockoutEnd = null;
@@ -218,6 +219,7 @@ public class DatabaseInitializationService
                 RealName = config.DisplayName,
                 Email = config.Email,
                 Role = UserRole.SuperAdmin,
+                IsSysAdmin = true,
                 Status = CommonStatus.Enabled,
                 PasswordHash = PasswordHelper.HashPassword(defaultPassword),
                 MustChangeOnNextLogin = _defaultPasswordOptions.ForceChangeOnFirstLogin,

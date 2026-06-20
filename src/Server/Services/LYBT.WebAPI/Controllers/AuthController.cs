@@ -71,11 +71,13 @@ namespace LYBT.WebAPI.Controllers
             var role = ParseUserRole(roles);
             string userType = role == UserRole.SuperAdmin ? RoleConstants.SuperAdminUserType : RoleConstants.DefaultUserType;
 
-            var token = _jwtService.GenerateToken(
-                user.Id.ToString(),
-                user.UserName!,
-                role,
-                userType);
+            var additionalClaims = new Dictionary<string, string>();
+            if (user.IsSysAdmin)
+                additionalClaims["IsSysAdmin"] = "true";
+
+            var token = additionalClaims.Count > 0
+                ? _jwtService.GenerateToken(user.Id.ToString(), user.UserName!, role, additionalClaims, userType)
+                : _jwtService.GenerateToken(user.Id.ToString(), user.UserName!, role, userType);
 
             var userDto = new UserDetailDto
             {

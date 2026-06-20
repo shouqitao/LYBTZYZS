@@ -26,6 +26,10 @@ public class ApplicationUser : IdentityUser<Guid>, IAuditableEntity, ISoftDeleta
     [DisplayName("角色")]
     public UserRole Role { get; set; } = UserRole.Doctor;
 
+    /// <summary>系统管理员标识</summary>
+    [DisplayName("系统管理员")]
+    public bool IsSysAdmin { get; set; } = false;
+
     /// <summary>用户状态</summary>
     [DisplayName("状态")]
     public CommonStatus Status { get; set; } = CommonStatus.Enabled;

@@ -27,7 +27,8 @@ public static class IdentitySeedData
             {
                 UserName = "admin",
                 RealName = "系统管理员",
-                Email = "admin@lybtzyzs.local"
+                Email = "admin@lybtzyzs.local",
+                IsSysAdmin = true
             };
             await userManager.CreateAsync(admin, "Admin@123456");
             await userManager.AddToRoleAsync(admin, "SuperAdmin");

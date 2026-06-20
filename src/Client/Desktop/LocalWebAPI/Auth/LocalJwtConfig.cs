@@ -76,6 +76,9 @@ public static class LocalJwtConfig
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString())
         };
 
+        if (user.IsSysAdmin)
+            claims.Add(new Claim("IsSysAdmin", "true"));
+
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Secret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
