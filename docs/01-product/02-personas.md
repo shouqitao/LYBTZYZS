@@ -8,7 +8,7 @@
 
 ## 主要角色：李医生 (Doctor)
 
-> **PermissionLevel = 1** | 授权策略：`DoctorOrAdmin` | 日均使用 6-8 小时
+> **PermissionLevel = 1** | 授权策略：`DoctorOrReceptionist` | 日均使用 6-8 小时
 
 ### 背景
 
@@ -46,7 +46,7 @@
 
 ## 管理角色：王主任 (Admin)
 
-> **PermissionLevel = 10** | 授权策略：`AdminOnly` + `DoctorOrAdmin` | 日均使用 1-2 小时
+> **PermissionLevel = 10** | 授权策略：`DoctorOrReceptionist` + `AdminOrSuperAdmin` | 日均使用 1-2 小时
 
 ### 背景
 
@@ -84,7 +84,7 @@
 
 ## 前台角色：小张 (Receptionist)
 
-> **PermissionLevel = 0** | 授权策略：`PatientAccess` | 日均使用 4-6 小时
+> **PermissionLevel = 0** | 授权策略：`DoctorOrReceptionist` | 日均使用 4-6 小时
 
 ### 背景
 
@@ -122,7 +122,7 @@
 
 ## 系统角色：超级管理员 (SuperAdmin)
 
-> **PermissionLevel = 100** | 授权策略：`SuperAdminOnly`（诊断/配置专用） | 使用频率极低（月均 1-2 次）
+> **PermissionLevel = 100** | 授权策略：`DoctorOrReceptionist` + `AdminOrSuperAdmin`（诊断/配置专用） | 使用频率极低（月均 1-2 次）
 
 ### 背景
 
@@ -155,9 +155,9 @@
 
 | Persona | 核心使用模块 | 授权策略 | 日均时长 |
 |---------|------------|---------|---------|
-| 李医生 (Doctor) | 医案、患者、验方、药材（查看）、打印 | `DoctorOrAdmin` | 6-8 小时 |
-| 王主任 (Admin) | 药材、用户管理、医案（审核）、同步 | `AdminOnly` + `DoctorOrAdmin` | 1-2 小时 |
-| 小张 (Receptionist) | 患者（登记/搜索）、挂号、读卡器 | `PatientAccess` | 4-6 小时 |
-| SuperAdmin | 系统健康、配置、诊断、用户管理 | `SuperAdminOnly` | 极低 |
+| 李医生 (Doctor) | 医案、患者、验方、药材（查看）、打印 | `DoctorOrReceptionist` | 6-8 小时 |
+| 王主任 (Admin) | 药材、用户管理、医案（审核）、同步 | `DoctorOrReceptionist` + `AdminOrSuperAdmin` | 1-2 小时 |
+| 小张 (Receptionist) | 患者（登记/搜索）、挂号、读卡器 | `DoctorOrReceptionist` | 4-6 小时 |
+| SuperAdmin | 系统健康、配置、诊断、用户管理 | `DoctorOrReceptionist` + `AdminOrSuperAdmin` | 极低 |
 
 > 完整权限矩阵见 [`02-requirements/01-prd.md`](../02-requirements/01-prd.md)。
