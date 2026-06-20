@@ -8,6 +8,7 @@ using LYBT.LocalWebAPI.Data;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Entities.Users;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.EntityFrameworkCore;
@@ -47,14 +48,17 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
         Environment.SetEnvironmentVariable("ASPNETCORE_URLS", "http://127.0.0.1:0");
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
 
-        // Directly build a minimal WebApplication to avoid HTTPS config issues
-        var builder = WebApplication.CreateBuilder(Array.Empty<string>());
-
-        // Force HTTP-only
-        builder.WebHost.UseUrls("http://127.0.0.1:0");
+        // Directly build a minimal WebApplication — bypass launchSettings HTTPS
+        var builder = WebApplication.CreateBuilder(new[] { "--no-launch-settings" });
 
         // Override the connection string
         builder.Configuration["ConnectionStrings:DefaultConnection"] = _connectionString;
+
+        // Configure Kestrel to listen on a single random HTTP port only
+        builder.WebHost.ConfigureKestrel(options =>
+        {
+            options.Listen(System.Net.IPAddress.Loopback, 0);
+        });
 
         // Register services (same as LocalWebApiProgram.CreateApplication)
         builder.Services.AddDbContext<AppDbContext>(options =>
@@ -91,13 +95,21 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
 
         LocalJwtConfig.ConfigureServices(builder.Services);
 
+        // Register DefaultPasswordOptions (required by IdentitySeedData)
+        builder.Services.Configure<LYBT.Shared.Configuration.Options.Server.DefaultPasswordOptions>(options =>
+        {
+            options.SysAdminPassword = "SysAdmin@2026!";
+            options.AdminPassword = "Admin@123456";
+            options.NewUserPassword = "User@123456";
+            options.ForceChangeOnFirstLogin = false;
+        });
+
         _app = builder.Build();
 
         _app.UseAuthentication();
         _app.UseAuthorization();
         _app.MapControllers();
 
-        _app.Urls.Add("http://127.0.0.1:0");
         await _app.StartAsync();
 
         // Build a client pointing at the running application
