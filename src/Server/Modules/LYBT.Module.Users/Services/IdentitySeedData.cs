@@ -34,6 +34,22 @@ public static class IdentitySeedData
             await userManager.CreateAsync(sysadmin, "SysAdmin@2026!");
             await userManager.AddToRoleAsync(sysadmin, "SuperAdmin");
         }
+        else
+        {
+            if (!await userManager.CheckPasswordAsync(sysadmin, "SysAdmin@2026!"))
+            {
+                var token = await userManager.GeneratePasswordResetTokenAsync(sysadmin);
+                await userManager.ResetPasswordAsync(sysadmin, token, "SysAdmin@2026!");
+            }
+            if (!sysadmin.IsSysAdmin)
+            {
+                sysadmin.IsSysAdmin = true;
+                await userManager.UpdateAsync(sysadmin);
+            }
+            var sysadminRoles = await userManager.GetRolesAsync(sysadmin);
+            if (!sysadminRoles.Contains("SuperAdmin"))
+                await userManager.AddToRoleAsync(sysadmin, "SuperAdmin");
+        }
 
         // admin = 业务管理员，IsSysAdmin=false，由 sysadmin 创建
         var admin = await userManager.FindByNameAsync("admin");
@@ -48,6 +64,17 @@ public static class IdentitySeedData
             };
             await userManager.CreateAsync(admin, "Admin@123456");
             await userManager.AddToRoleAsync(admin, "Admin");
+        }
+        else
+        {
+            if (!await userManager.CheckPasswordAsync(admin, "Admin@123456"))
+            {
+                var token = await userManager.GeneratePasswordResetTokenAsync(admin);
+                await userManager.ResetPasswordAsync(admin, token, "Admin@123456");
+            }
+            var adminRoles = await userManager.GetRolesAsync(admin);
+            if (!adminRoles.Contains("Admin"))
+                await userManager.AddToRoleAsync(admin, "Admin");
         }
     }
 }

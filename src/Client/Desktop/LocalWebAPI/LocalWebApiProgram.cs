@@ -80,7 +80,7 @@ public static class LocalWebApiProgram
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await dbContext.Database.EnsureCreatedAsync();
         await IdentitySeedData.SeedRolesAndAdminAsync(app.Services);
-        await LocalWebApiSeedData.SeedAsync(dbContext);
+        await LocalWebApiSeedData.SeedAsync(dbContext, app.Services);
     }
 
     public static async Task RunAsync(string[]? args, string connectionString)

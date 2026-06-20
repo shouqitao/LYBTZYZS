@@ -106,7 +106,7 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
         using var scope = _app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await db.Database.EnsureCreatedAsync();
-        await LocalWebApiSeedData.SeedAsync(db);
+        await LocalWebApiSeedData.SeedAsync(db, scope.ServiceProvider);
 
         // Seed Identity admin user matching the business User (same Id + password "admin123")
         var businessAdmin = await db.Users.FirstAsync(u => u.UserName == "admin");
