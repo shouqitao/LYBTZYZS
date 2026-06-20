@@ -4,7 +4,7 @@
 
 **Goal:** Split Infrastructure (18.6K LOC) into Infrastructure (~10K) + Controls (~8.7K), merge Models (1K) into Infrastructure, merge Utilities into Foundation, extract non-interface types from Contracts into Shared.
 
-**Architecture:** 4 project-level changes: (1) New `LYBT.Desktop.Controls` for WPF presentation assets, (2) New `LYBT.Desktop.Shared` for non-interface shared types, (3) `Models` merged into `Infrastructure`, (4) `Utilities` merged into `Foundation`. Each step is build-verified independently.
+**Architecture:** 4 project-level changes: (1) New `LYBT.Desktop.Controls` for WPF presentation assets, (2) New `LYBT.Desktop.Shared` for non-interface shared types, (3) `Models` merged into `Infrastructure`, (4) `Utilities` merged into `Foundation`. Dependency direction: Controls → Contracts + Shared (no Infrastructure ref). Modules → Infrastructure + Controls. No cycles. Each step is build-verified independently.
 
 **Tech Stack:** C# / .NET 8 / WPF / Prism / CommunityToolkit.Mvvm
 
@@ -165,22 +165,22 @@ dotnet build src/Client/Desktop/Core/LYBT.Desktop.Controls/LYBT.Desktop.Controls
 ```
 Expected: May have errors — controls reference Infrastructure types. Record them.
 
-- [ ] **Step 4: Add Infrastructure reference if needed**
+- [ ] **Step 4: Resolve control base type dependencies**
 
-If controls reference Infrastructure types (e.g., `BaseStatusHandler`, `MasterDetailViewModelBase`), add a temporary reference:
+Controls types (MasterDetailControlBase, HerbItemControl, etc.) may inherit from or reference WPF base types (UserControl, ContentControl) and Prism types — NOT Infrastructure types. Controls depends ONLY on:
+- `LYBT.Desktop.Contracts` (interface definitions)
+- `LYBT.Desktop.Shared` (shared types)
+- `LYBT.Shared.Models` (DTOs)
+- Prism.Core / Prism.Wpf / CommunityToolkit.Mvvm packages
 
-```xml
-<ProjectReference Include="..\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
-```
+If any control type references an Infrastructure type (e.g., MasterDetailViewModelBase), that control should be refactored to depend on an INTERFACE from Contracts instead, or the ViewModel base class reference should be injected via DataContext (WPF pattern). **DO NOT add a Controls → Infrastructure dependency.**
 
-This is intentional — controls depend on Infrastructure for ViewModel base classes. We'll resolve this circular dependency in Task 7 when Models merge into Infrastructure.
-
-- [ ] **Step 5: Verify build after fixes**
+- [ ] **Step 5: Verify build**
 
 ```bash
 dotnet build src/Client/Desktop/Core/LYBT.Desktop.Controls/LYBT.Desktop.Controls.csproj -nologo -clp:ErrorsOnly
 ```
-Expected: 0 errors.
+Expected: 0 errors. If there are Infrastructure-type references, fix them by introducing Contracts interfaces or using DataContext patterns — do NOT add the dependency.
 
 - [ ] **Step 6: Commit**
 
@@ -269,39 +269,7 @@ git commit -m "refactor(controls): migrate Converters from Infrastructure to Con
 
 ---
 
-## Task 6: Add Controls reference to Infrastructure
-
-**Covers:** [S3]
-**Files:**
-- Modify: `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/LYBT.Desktop.Infrastructure.csproj`
-
-- [ ] **Step 1: Add ProjectReference to Controls**
-
-Infrastructure still needs to reference Controls (e.g., for `MasterDetailControlBase` that ViewModels use). Add to `LYBT.Desktop.Infrastructure.csproj`:
-
-```xml
-  <ItemGroup>
-    <ProjectReference Include="..\LYBT.Desktop.Controls\LYBT.Desktop.Controls.csproj" />
-  </ItemGroup>
-```
-
-- [ ] **Step 2: Verify build**
-
-```bash
-dotnet build LYBTZYZS.sln -nologo -clp:ErrorsOnly
-```
-Expected: 0 errors.
-
-- [ ] **Step 3: Commit**
-
-```bash
-git add src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/LYBT.Desktop.Infrastructure.csproj
-git commit -m "refactor(controls): add Infrastructure → Controls dependency"
-```
-
----
-
-## Task 7: Merge Models into Infrastructure
+## Task 6: Merge Models into Infrastructure
 
 **Covers:** [S3, S5]
 **Files:**
@@ -464,6 +432,7 @@ For each type file, move from Contracts to Shared. Create appropriate subdirecto
 - `Shared/Diagnostics/` — PerformanceReport.cs, Metric.cs
 - `Shared/Import/` — ImportValidationResult.cs
 - `Shared/UI/` — BreadcrumbItem.cs
+- `Shared/Events/` — CacheEvents.cs (note: spec says CacheEvents → Infrastructure, but it's a shared event definition used by multiple projects, so Shared is more appropriate)
 
 - [ ] **Step 3: Add Shared ProjectReference to Contracts**
 
@@ -501,12 +470,12 @@ git commit -m "refactor(contracts): extract non-interface types to Shared — ke
 **Files:**
 - Modify: Each business module .csproj (update ProjectReferences)
 
-- [ ] **Step 1: Add Controls reference to modules that use Controls**
+- [ ] **Step 1: Add Controls reference to modules that use Controls types**
 
-Check which modules reference Infrastructure.Controls types (MasterDetailControlBase, etc.). Those modules now need a direct reference to Controls:
+Check which modules reference Infrastructure.Controls types (MasterDetailControlBase, HerbItemControlBase, etc.) using the OLD namespace. Those modules now need a direct reference to Controls:
 
 ```
-rg "LYBT.Desktop.Controls" --include "*.cs" -l src/Client/Desktop/Modules/
+rg "LYBT.Desktop.Infrastructure.Controls" --include "*.cs" -l src/Client/Desktop/Modules/
 ```
 
 For each module that imports Controls types, add to its .csproj:
@@ -515,6 +484,19 @@ For each module that imports Controls types, add to its .csproj:
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Controls\LYBT.Desktop.Controls.csproj" />
   </ItemGroup>
 ```
+
+Also update the using directives in those .cs files:
+```
+rg "using LYBT.Desktop.Infrastructure.Controls" --include "*.cs" src/Client/Desktop/Modules/
+```
+Replace `using LYBT.Desktop.Infrastructure.Controls` → `using LYBT.Desktop.Controls` in matched files.
+
+- [ ] **Step 1b: Also check Role projects**
+
+```
+rg "LYBT.Desktop.Infrastructure.Controls" --include "*.cs" -l src/Client/Desktop/Roles/
+```
+Update Role projects the same way if needed.
 
 - [ ] **Step 2: Remove stale Models references from modules**
 
@@ -553,15 +535,11 @@ git commit -m "refactor(modules): update ProjectReferences for new project layou
   </ItemGroup>
 ```
 
-- [ ] **Step 2: Update App.xaml MergedDictionaries**
+- [ ] **Step 2: Update DI extensions**
 
-Update all theme file paths from `LYBT.Desktop.Infrastructure;component/Themes/` to `LYBT.Desktop.Controls;component/Themes/`.
+Shell's `ServiceCollectionExtensions.cs` registers infrastructure services. Ensure it also registers Controls converters if they need explicit registration (check if any controls use IValueConverter that needs DI).
 
-- [ ] **Step 3: Update DI extensions**
-
-Shell's `ServiceCollectionExtensions.cs` registers infrastructure services. Ensure it also registers Controls services if needed (converters, controls).
-
-- [ ] **Step 4: Verify build**
+- [ ] **Step 3: Verify build**
 
 ```bash
 dotnet build LYBTZYZS.sln -nologo -clp:ErrorsOnly
@@ -643,6 +621,10 @@ Get-ChildItem -Path "src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/" -Dire
 }
 ```
 
+- [ ] **Step 1b: Check for Behaviors directory**
+
+If `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Behaviors/` exists and contains files, move them to `src/Client/Desktop/Core/LYBT.Desktop.Controls/Behaviors/` (per spec [S4]). If empty, it will be cleaned by Step 1.
+
 - [ ] **Step 2: Full solution build**
 
 ```bash
@@ -669,7 +651,7 @@ Expected: Pass count >= pre-refactor baseline (793).
 ```powershell
 Get-ChildItem -Recurse -Include *.cs -Path "src/Client/Desktop/Core/LYBT.Desktop.Infrastructure" | Where-Object { $_.FullName -notmatch '\\(obj|bin)\\' } | ForEach-Object { (Get-Content $_.FullName | Measure-Object -Line).Lines } | Measure-Object -Sum
 ```
-Expected: < 12,000 (down from 18,663).
+Expected: < 10,000 (down from 18,663).
 
 - [ ] **Step 6: Verify Controls project exists independently**
 
