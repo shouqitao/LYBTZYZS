@@ -39,14 +39,14 @@
 - JWT Claims 包含 `IsSysAdmin=true`
 - 种子数据自动创建 sysadmin（IsSysAdmin=true）
 
-### 默认密码
+### 默认用户
 
-| 模式 | 用户名 | 默认密码 | 角色 | IsSysAdmin |
-|------|--------|---------|------|-----------|
-| 远程 (Identity) | `admin` | **`Admin@123456`** | SuperAdmin | true |
-| 本地 (LocalWebAPI) | `admin` | `admin123` | Admin | false |
+| 用户 | 用户名 | 默认密码 | 角色 | IsSysAdmin | 可删除 |
+|------|--------|---------|------|-----------|--------|
+| 业务管理员 | `admin` | `Admin@123456` | Admin | **false** | ✅ |
+| 系统运维 | `sysadmin` | `SysAdmin@2026!` | SuperAdmin | **true** | ❌ |
 
-> ⚠️ 本地种子数据仍使用旧 PasswordHelper（非 Identity UserManager），且未设置 IsSysAdmin。后续应统一。
+> ⚠️ admin 和 sysadmin 是**两个独立用户**，不可混淆。sysadmin 独立于角色体系。
 
 ---
 
