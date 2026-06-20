@@ -6,7 +6,7 @@ using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Shared.ExceptionHandling.Mappers;
-using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Infrastructure.Extensions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;

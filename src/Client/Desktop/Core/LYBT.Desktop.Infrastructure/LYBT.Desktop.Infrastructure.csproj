@@ -69,6 +69,7 @@
 
   <!-- Core Dependencies -->
   <ItemGroup Label="Core Dependencies">
+    <ProjectReference Include="..\LYBT.Desktop.Controls\LYBT.Desktop.Controls.csproj" />
     <ProjectReference Include="..\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />
     <ProjectReference Include="..\LYBT.Desktop.Contracts\LYBT.Desktop.Contracts.csproj" />
   </ItemGroup>

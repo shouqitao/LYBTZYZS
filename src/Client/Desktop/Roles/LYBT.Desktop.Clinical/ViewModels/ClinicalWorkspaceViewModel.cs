@@ -5,7 +5,7 @@ using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.MedicalCase.Models;
-using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;

@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewmodels="clr-namespace:LYBT.Desktop.Registration.Dialogs"
              xmlns:prism="http://prismlibrary.com/"
-             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
              mc:Ignorable="d"
              prism:Dialog.WindowStyle="{DynamicResource CustomDialogWindowStyle}"
              d:DesignHeight="500" d:DesignWidth="500"

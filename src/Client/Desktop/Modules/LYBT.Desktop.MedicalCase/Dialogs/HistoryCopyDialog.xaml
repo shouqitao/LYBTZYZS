@@ -6,7 +6,7 @@
              xmlns:viewmodels="clr-namespace:LYBT.Desktop.MedicalCase.Dialogs"
              xmlns:prism="http://prismlibrary.com/"
              xmlns:medicalCaseControls="clr-namespace:LYBT.Desktop.MedicalCase.Controls"
-             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
              mc:Ignorable="d"
              prism:Dialog.WindowStyle="{DynamicResource CustomDialogWindowStyle}"
              d:DesignHeight="680" d:DesignWidth="1100"

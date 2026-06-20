@@ -1,6 +1,6 @@
 using System.Windows.Input;
 using FluentAssertions;
-using LYBT.Desktop.Infrastructure.Controls;
+using LYBT.Desktop.Controls.Controls;
 using LYBT.Tests.Desktop.Infrastructure;
 using Xunit;
 

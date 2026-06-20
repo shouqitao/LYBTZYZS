@@ -3,7 +3,7 @@ using LYBT.Desktop.CardReader.Integration;
 using LYBT.Desktop.CardReader.Models;
 using LYBT.Desktop.CardReader.Services;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Patients.ViewModels;

@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services.Toast;
-using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Tests.Desktop.Infrastructure;
 using Microsoft.Extensions.Logging;
 using NSubstitute;

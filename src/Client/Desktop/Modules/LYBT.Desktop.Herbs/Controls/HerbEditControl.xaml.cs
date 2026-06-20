@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using LYBT.Desktop.Herbs.Models.Items;
-using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 
 namespace LYBT.Desktop.Herbs.Controls
 {

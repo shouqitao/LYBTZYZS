@@ -13,7 +13,7 @@ using LYBT.Desktop.Infrastructure.Navigation;
 using LYBT.Desktop.Infrastructure.Navigation.Controls;
 using LYBT.Desktop.Infrastructure.Services.Toast;
 using LYBT.Shared.ExceptionHandling.Mappers;
-using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.HealthCheck;
 using LYBT.Shared.Models.Contracts.Users;

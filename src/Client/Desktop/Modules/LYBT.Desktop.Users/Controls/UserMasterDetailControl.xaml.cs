@@ -1,4 +1,4 @@
-using LYBT.Desktop.Infrastructure.Controls;
+using LYBT.Desktop.Controls.Controls;
 
 namespace LYBT.Desktop.Users.Controls
 {

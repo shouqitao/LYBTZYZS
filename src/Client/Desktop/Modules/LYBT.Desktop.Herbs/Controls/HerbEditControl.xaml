@@ -6,8 +6,8 @@
 <UserControl x:Class="LYBT.Desktop.Herbs.Controls.HerbEditControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
-             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:controls="clr-namespace:LYBT.Desktop.Controls.Controls;assembly=LYBT.Desktop.Controls"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
              xmlns:herbsModels="clr-namespace:LYBT.Desktop.Herbs.Models.Items"
              x:Name="Root">
 

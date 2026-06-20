@@ -1,8 +1,9 @@
+using LYBT.Desktop.Controls.Models;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Infrastructure.Navigation;
 using LYBT.Desktop.Infrastructure.Navigation.Controls;
-using LYBT.Desktop.Infrastructure.Converters;
+using LYBT.Desktop.Controls.Converters;
 using Prism.Events;
 using Prism.Regions;
 using NSubstitute;

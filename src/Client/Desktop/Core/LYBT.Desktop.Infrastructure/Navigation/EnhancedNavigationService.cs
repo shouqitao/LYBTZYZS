@@ -1,3 +1,4 @@
+using LYBT.Desktop.Controls.Models;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;

@@ -6,7 +6,7 @@ using LYBT.Desktop.CardReader.Models;
 using LYBT.Desktop.CardReader.Services;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
-using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Contracts.Patients;

@@ -1,3 +1,4 @@
+using LYBT.Desktop.Infrastructure.ViewModels;
 // -----------------------------------------------------------------------
 // <copyright file="MedicalCaseDetailModelMapper.cs" company="凌隐宝堂中医诊所">
 //     Copyright (c) 凌隐宝堂中医诊所. All rights reserved.

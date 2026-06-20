@@ -1,3 +1,4 @@
+using LYBT.Desktop.Controls.Models;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Infrastructure.Navigation;

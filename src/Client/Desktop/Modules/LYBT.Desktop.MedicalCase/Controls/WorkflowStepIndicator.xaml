@@ -1,7 +1,7 @@
 <UserControl x:Class="LYBT.Desktop.MedicalCase.Controls.WorkflowStepIndicator"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
              x:Name="Root">
     <UserControl.Resources>
         <!-- Phase 2.4: 过渡动画 -->

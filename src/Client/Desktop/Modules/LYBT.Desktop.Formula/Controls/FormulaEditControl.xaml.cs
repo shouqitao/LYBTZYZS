@@ -2,7 +2,7 @@ using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
 using LYBT.Desktop.Formula.Models.Items;
-using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 
 namespace LYBT.Desktop.Formula.Controls
 {

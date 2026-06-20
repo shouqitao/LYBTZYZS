@@ -1,5 +1,5 @@
 using System.Windows;
-using LYBT.Desktop.Infrastructure.Converters;
+using LYBT.Desktop.Controls.Converters;
 
 namespace LYBT.Tests.Desktop.Infrastructure;
 

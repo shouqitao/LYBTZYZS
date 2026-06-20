@@ -56,7 +56,6 @@
   <ItemGroup Label="Infrastructure Dependencies">
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="Desktop Core">

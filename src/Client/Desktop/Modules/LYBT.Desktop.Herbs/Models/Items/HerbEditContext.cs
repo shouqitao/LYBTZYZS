@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Primitives.Validation;
 using LYBT.Shared.Utilities.Text;

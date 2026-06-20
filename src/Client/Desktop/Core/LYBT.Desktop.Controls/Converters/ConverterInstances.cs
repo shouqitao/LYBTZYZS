@@ -1,0 +1,121 @@
+using System.Windows.Data;
+
+namespace LYBT.Desktop.Controls.Converters
+{
+    /// <summary>
+    /// 转换器静态实例提供者
+    ///
+    /// 解决WPF资源架构问题:
+    /// - Binding.Converter 不是 DependencyProperty，必须使用 StaticResource
+    /// - StaticResource 要求资源在 XAML 解析时已存在
+    /// - 当控件被加载到 ContentPresenter（如 MasterDetailLayout）时，资源查找路径可能断裂
+    ///
+    /// 解决方案：使用 x:Static 引用静态实例，完全绕过资源字典查找机制
+    ///
+    /// 使用方式:
+    /// <code>
+    /// xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Infrastructure"
+    ///
+    /// Before (问题模式):
+    ///   Converter={StaticResource BooleanToVisibilityConverter}
+    ///
+    /// After (解决方案):
+    ///   Converter={x:Static converters:Cvt.BoolToVis}
+    /// </code>
+    /// </summary>
+    public static class Cvt
+    {
+        // ========== Boolean Converters ==========
+
+        /// <summary>
+        /// Bool -> Visibility (true=Visible, false=Collapsed)
+        /// </summary>
+        public static readonly IValueConverter BoolToVis = new BooleanToVisibilityConverter();
+
+        /// <summary>
+        /// Bool -> Visibility (true=Collapsed, false=Visible)
+        /// </summary>
+        public static readonly IValueConverter InverseBoolToVis = new InverseBooleanToVisibilityConverter();
+
+        /// <summary>
+        /// Bool -> !Bool
+        /// </summary>
+        public static readonly IValueConverter InverseBool = new InverseBooleanConverter();
+
+        /// <summary>
+        /// Bool -> Brush (可配置TrueBrush/FalseBrush)
+        /// </summary>
+        public static readonly IValueConverter BoolToBrush = new BoolToBrushConverter();
+
+        /// <summary>
+        /// Bool -> Color/Brush (支持ConverterParameter="TrueColor|FalseColor")
+        /// </summary>
+        public static readonly IValueConverter BoolToColor = new BoolToColorConverter();
+
+        /// <summary>
+        /// Bool -> Double (可配置TrueValue/FalseValue)
+        /// </summary>
+        public static readonly IValueConverter BoolToDouble = new BoolToDoubleConverter();
+
+        // ========== Visibility Converters ==========
+
+        /// <summary>
+        /// String -> Visibility (null/empty=Collapsed, otherwise=Visible)
+        /// </summary>
+        public static readonly IValueConverter StringToVis = new StringToVisibilityConverter();
+
+        /// <summary>
+        /// Object -> Visibility (null=Collapsed, otherwise=Visible)
+        /// </summary>
+        public static readonly IValueConverter NullToVis = new NullToVisibilityConverter();
+
+        /// <summary>
+        /// Object -> Visibility (null=Visible, otherwise=Collapsed)
+        /// </summary>
+        public static readonly IValueConverter InverseNullToVis = new InverseNullToVisibilityConverter();
+
+        /// <summary>
+        /// Object -> Visibility (null=Collapsed, otherwise=Visible)
+        /// 别名: 与 NullToVis 相同功能，语义更清晰
+        /// </summary>
+        public static readonly IValueConverter NotNullToVis = new NullToVisibilityConverter();
+
+        /// <summary>
+        /// int/long -> Visibility (0=Visible, otherwise=Collapsed)
+        /// 用于显示空状态：当集合为空时显示"无数据"提示
+        /// </summary>
+        public static readonly IValueConverter ZeroToVis = new ZeroToVisibilityConverter();
+
+        // ========== Enum/Status Converters ==========
+
+        /// <summary>
+        /// Enum -> Description属性值
+        /// </summary>
+        public static readonly IValueConverter EnumDesc = new EnumDescriptionConverter();
+
+        /// <summary>
+        /// ApiHealthStatus -> Color
+        /// </summary>
+        public static readonly IValueConverter ApiStatusToColor = new ApiHealthStatusToColorConverter();
+
+        /// <summary>
+        /// ApiHealthStatus -> Text
+        /// </summary>
+        public static readonly IValueConverter ApiStatusToText = new ApiHealthStatusToTextConverter();
+
+        // ========== String Converters ==========
+
+        /// <summary>
+        /// String -> 首字符
+        /// </summary>
+        public static readonly IValueConverter FirstChar = new FirstCharacterConverter();
+
+        // ========== Domain-specific Converters ========== ========== ==========
+
+        /// <summary>
+        /// DecocteMethod -> Visibility (特殊煎法显示控制)
+        /// </summary>
+        public static readonly IValueConverter DecocteMethodToVis = new DecocteMethodToVisibilityConverter();
+
+    }
+}

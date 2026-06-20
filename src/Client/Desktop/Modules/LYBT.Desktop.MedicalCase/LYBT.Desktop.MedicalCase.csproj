@@ -65,7 +65,6 @@
   <ItemGroup Label="Infrastructure Dependencies - 简化三层架构">
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
     <!-- OpenSpec: create-printing-module - 独立打印模块 -->
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Printing\LYBT.Desktop.Printing.csproj" />
   </ItemGroup>

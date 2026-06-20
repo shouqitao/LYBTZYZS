@@ -38,10 +38,10 @@
 
   <ItemGroup>
     <!-- Desktop Core -->
+    <ProjectReference Include="..\..\src\Client\Desktop\Core\LYBT.Desktop.Controls\LYBT.Desktop.Controls.csproj" />
     <ProjectReference Include="..\..\src\Client\Desktop\Core\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />
     <ProjectReference Include="..\..\src\Client\Desktop\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Client\Desktop\Core\LYBT.Desktop.Contracts\LYBT.Desktop.Contracts.csproj" />
-    <ProjectReference Include="..\..\src\Client\Desktop\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
     <ProjectReference Include="..\..\src\Client\Desktop\Core\LYBT.Desktop.CardReader\LYBT.Desktop.CardReader.csproj" />
     <!-- Desktop Modules -->
     <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Auth\LYBT.Desktop.Auth.csproj" />

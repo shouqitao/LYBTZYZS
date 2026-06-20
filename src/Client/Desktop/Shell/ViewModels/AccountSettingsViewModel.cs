@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Constants;
-using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 // SYNC-D02: IUserRepository 迁移到 Contracts.Repositories
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Shared.Models.Contracts.Auth;

@@ -8,7 +8,7 @@ using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.MedicalCase.ViewModels.Components;
 using LYBT.Desktop.MedicalCase.ViewModels.Workspace;
-using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -144,8 +144,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
 
     public DateTime? RegistrationTime => CurrentPatient?.CreatedAt;
 
-    public Infrastructure.Controls.PatientDisplayModel? CurrentPatientDisplayModel =>
-        CurrentPatient == null ? null : new Infrastructure.Controls.PatientDisplayModel
+    public Controls.Controls.PatientDisplayModel? CurrentPatientDisplayModel =>
+        CurrentPatient == null ? null : new Controls.Controls.PatientDisplayModel
         {
             Name = CurrentPatient.Name ?? string.Empty,
             Gender = CurrentPatientGenderDisplay,
