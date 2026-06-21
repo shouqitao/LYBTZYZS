@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
+    <!-- UI Redesign 2026-06-21: emoji → 矢量图标, 本地样式 → 全局 TransparentCardButton -->
     <Grid Background="{DynamicResource RegionBrush}">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             
@@ -60,12 +61,12 @@
                 
                 <!-- 主卡片：新建挂号 -->
                 <Border Margin="12" Style="{StaticResource PrimaryFunctionCardStyle}">
-                    <Button Command="{Binding CreateNewRegistrationCommand}" Style="{StaticResource TransparentButtonStyle}">
+                    <Button Command="{Binding CreateNewRegistrationCommand}" Style="{StaticResource TransparentCardButton}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Margin="0,0,0,16"
-                                       HorizontalAlignment="Center"
-                                       FontSize="64"
-                                       Text="&#x1F4CB;" />
+                            <Path Width="64" Height="64" Margin="0,0,0,16"
+                                  HorizontalAlignment="Center"
+                                  Data="{DynamicResource IconRegistration}"
+                                  Fill="White" Stretch="Uniform" />
                             <TextBlock Margin="0,0,0,8"
                                        HorizontalAlignment="Center"
                                        FontSize="28"
@@ -83,12 +84,12 @@
                 
                 <!-- 主卡片：新建患者 -->
                 <Border Margin="12" Style="{StaticResource PrimaryFunctionCardStyle}">
-                    <Button Command="{Binding CreateNewPatientCommand}" Style="{StaticResource TransparentButtonStyle}">
+                    <Button Command="{Binding CreateNewPatientCommand}" Style="{StaticResource TransparentCardButton}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Margin="0,0,0,16"
-                                       HorizontalAlignment="Center"
-                                       FontSize="64"
-                                       Text="&#x1F464;" />
+                            <Path Width="64" Height="64" Margin="0,0,0,16"
+                                  HorizontalAlignment="Center"
+                                  Data="{DynamicResource IconPatients}"
+                                  Fill="White" Stretch="Uniform" />
                             <TextBlock Margin="0,0,0,8"
                                        HorizontalAlignment="Center"
                                        FontSize="28"
@@ -162,9 +163,9 @@
                 
                 <!-- 辅助卡片1：患者管理 -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
-                    <Button Command="{Binding NavigateToPatientManagementCommand}" Style="{StaticResource TransparentButtonStyle}">
+                    <Button Command="{Binding NavigateToPatientManagementCommand}" Style="{StaticResource TransparentCardButton}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F465;" />
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconPatients}" />
                             <TextBlock Style="{StaticResource CardTitleStyle}" Text="患者管理" />
                         </StackPanel>
                     </Button>
@@ -172,9 +173,9 @@
                 
                 <!-- 辅助卡片2：挂号队列 -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
-                    <Button Command="{Binding NavigateToRegistrationQueueCommand}" Style="{StaticResource TransparentButtonStyle}">
+                    <Button Command="{Binding NavigateToRegistrationQueueCommand}" Style="{StaticResource TransparentCardButton}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F4C8;" />
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconRegistration}" />
                             <TextBlock Style="{StaticResource CardTitleStyle}" Text="挂号队列" />
                         </StackPanel>
                     </Button>
@@ -182,9 +183,9 @@
                 
                 <!-- 辅助卡片3：身份证读卡 -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
-                    <Button Command="{Binding NavigateToCardReaderCommand}" Style="{StaticResource TransparentButtonStyle}">
+                    <Button Command="{Binding NavigateToCardReaderCommand}" Style="{StaticResource TransparentCardButton}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F4B3;" />
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconCard}" />
                             <TextBlock Style="{StaticResource CardTitleStyle}" Text="身份证读卡" />
                         </StackPanel>
                     </Button>
@@ -192,9 +193,9 @@
                 
                 <!-- 辅助卡片4：刷新数据 -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
-                    <Button Command="{Binding RefreshDataCommand}" Style="{StaticResource TransparentButtonStyle}">
+                    <Button Command="{Binding RefreshDataCommand}" Style="{StaticResource TransparentCardButton}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F504;" />
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconRefresh}" />
                             <TextBlock Style="{StaticResource CardTitleStyle}" Text="刷新数据" />
                         </StackPanel>
                     </Button>

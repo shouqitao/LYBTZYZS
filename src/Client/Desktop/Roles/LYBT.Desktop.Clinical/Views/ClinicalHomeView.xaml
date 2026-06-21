@@ -4,26 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:prism="http://prismlibrary.com/"
     prism:ViewModelLocator.AutoWireViewModel="True">
-    <UserControl.Resources>
-        <!--  透明按钮样式（无hover直角覆盖）Clinical专用  -->
-        <Style x:Key="TransparentButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </UserControl.Resources>
 
-    <!--  全屏居中布局  -->
+    <!--  全屏居中布局 (UI Redesign 2026-06-21: emoji → 矢量图标, 本地样式 → 全局)  -->
     <Grid Background="{DynamicResource RegionBrush}">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
 
@@ -47,13 +29,16 @@
 
                 <!--  主卡片：开始接诊  -->
                 <Border Margin="12" Style="{StaticResource PrimaryFunctionCardStyle}">
-                    <Button Command="{Binding StartMedicalCaseCommand}" Style="{StaticResource TransparentButtonStyle}">
+                    <Button Command="{Binding StartMedicalCaseCommand}" Style="{StaticResource TransparentCardButton}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock
+                            <Path
+                                Width="64"
+                                Height="64"
                                 Margin="0,0,0,16"
                                 HorizontalAlignment="Center"
-                                FontSize="64"
-                                Text="&#x1F9D1;&#x200D;&#x2695;&#xFE0F;" />
+                                Data="{DynamicResource IconStethoscope}"
+                                Fill="White"
+                                Stretch="Uniform" />
                             <TextBlock
                                 Margin="0,0,0,8"
                                 HorizontalAlignment="Center"
@@ -125,7 +110,7 @@
                 </Border>
             </StackPanel>
 
-            <!--  下层6个辅助卡片  -->
+            <!--  下层5个辅助卡片  -->
             <StackPanel
                 Margin="0,8,0,0"
                 HorizontalAlignment="Center"
@@ -133,9 +118,9 @@
 
                 <!--  辅助卡片1：患者管理  -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
-                    <Button Command="{Binding NavigateToPatientManagementCommand}" Style="{StaticResource TransparentButtonStyle}">
+                    <Button Command="{Binding NavigateToPatientManagementCommand}" Style="{StaticResource TransparentCardButton}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F464;" />
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconPatients}" />
                             <TextBlock Style="{StaticResource CardTitleStyle}" Text="患者管理" />
                         </StackPanel>
                     </Button>
@@ -143,9 +128,9 @@
 
                 <!--  辅助卡片2：挂号队列  -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
-                    <Button Command="{Binding NavigateToRegistrationQueueCommand}" Style="{StaticResource TransparentButtonStyle}">
+                    <Button Command="{Binding NavigateToRegistrationQueueCommand}" Style="{StaticResource TransparentCardButton}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F4CB;" />
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconRegistration}" />
                             <TextBlock Style="{StaticResource CardTitleStyle}" Text="挂号队列" />
                         </StackPanel>
                     </Button>
@@ -153,9 +138,9 @@
 
                 <!--  辅助卡片3：医案查询  -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
-                    <Button Command="{Binding NavigateToMedicalCaseQueryCommand}" Style="{StaticResource TransparentButtonStyle}">
+                    <Button Command="{Binding NavigateToMedicalCaseQueryCommand}" Style="{StaticResource TransparentCardButton}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F4CB;" />
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconMedicalCase}" />
                             <TextBlock Style="{StaticResource CardTitleStyle}" Text="医案查询" />
                         </StackPanel>
                     </Button>
@@ -163,9 +148,9 @@
 
                 <!--  辅助卡片4：药材库  -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
-                    <Button Command="{Binding NavigateToHerbLibraryCommand}" Style="{StaticResource TransparentButtonStyle}">
+                    <Button Command="{Binding NavigateToHerbLibraryCommand}" Style="{StaticResource TransparentCardButton}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F33F;" />
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconHerbs}" />
                             <TextBlock Style="{StaticResource CardTitleStyle}" Text="药材库" />
                         </StackPanel>
                     </Button>
@@ -173,9 +158,9 @@
 
                 <!--  辅助卡片5：验方库  -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
-                    <Button Command="{Binding NavigateToFormulaLibraryCommand}" Style="{StaticResource TransparentButtonStyle}">
+                    <Button Command="{Binding NavigateToFormulaLibraryCommand}" Style="{StaticResource TransparentCardButton}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F4D6;" />
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconFormula}" />
                             <TextBlock Style="{StaticResource CardTitleStyle}" Text="验方库" />
                         </StackPanel>
                     </Button>

@@ -25,87 +25,80 @@
                 Foreground="{DynamicResource SecondaryTextBrush}"
                 Text="凌隐宝堂中医诊所" />
 
-            <!--  6个功能卡片（3x2网格）居中  -->
+            <!--  7个功能卡片（统一为 Button + Path 矢量图标）居中  -->
             <UniformGrid
                 HorizontalAlignment="Center"
                 Columns="3"
-                Rows="2">
+                Rows="3">
 
                 <!--  卡片1: 用户管理  -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
-                    <Border.InputBindings>
-                        <MouseBinding Command="{Binding NavigateToUserManagementCommand}" Gesture="LeftClick" />
-                    </Border.InputBindings>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F464;" />
-                        <TextBlock Style="{StaticResource CardTitleStyle}" Text="用户管理" />
-                    </StackPanel>
+                    <Button Command="{Binding NavigateToUserManagementCommand}" Style="{StaticResource TransparentCardButton}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconUsers}" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="用户管理" />
+                        </StackPanel>
+                    </Button>
                 </Border>
 
                 <!--  卡片2: 药材管理  -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
-                    <Border.InputBindings>
-                        <MouseBinding Command="{Binding NavigateToHerbManagementCommand}" Gesture="LeftClick" />
-                    </Border.InputBindings>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F33F;" />
-                        <TextBlock Style="{StaticResource CardTitleStyle}" Text="药材管理" />
-                    </StackPanel>
+                    <Button Command="{Binding NavigateToHerbManagementCommand}" Style="{StaticResource TransparentCardButton}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconHerbs}" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="药材管理" />
+                        </StackPanel>
+                    </Button>
                 </Border>
 
                 <!--  卡片3: 患者管理  -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
-                    <Border.InputBindings>
-                        <MouseBinding Command="{Binding NavigateToPatientManagementCommand}" Gesture="LeftClick" />
-                    </Border.InputBindings>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F3E5;" />
-                        <TextBlock Style="{StaticResource CardTitleStyle}" Text="患者管理" />
-                    </StackPanel>
+                    <Button Command="{Binding NavigateToPatientManagementCommand}" Style="{StaticResource TransparentCardButton}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconPatients}" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="患者管理" />
+                        </StackPanel>
+                    </Button>
                 </Border>
 
                 <!--  卡片4: 验方管理  -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
-                    <Border.InputBindings>
-                        <MouseBinding Command="{Binding NavigateToFormulaManagementCommand}" Gesture="LeftClick" />
-                    </Border.InputBindings>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F4CB;" />
-                        <TextBlock Style="{StaticResource CardTitleStyle}" Text="验方管理" />
-                    </StackPanel>
+                    <Button Command="{Binding NavigateToFormulaManagementCommand}" Style="{StaticResource TransparentCardButton}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconFormula}" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="验方管理" />
+                        </StackPanel>
+                    </Button>
                 </Border>
 
                 <!--  卡片5: 医案管理  -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
-                    <Border.InputBindings>
-                        <MouseBinding Command="{Binding NavigateToMedicalCaseManagementCommand}" Gesture="LeftClick" />
-                    </Border.InputBindings>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F4C1;" />
-                        <TextBlock Style="{StaticResource CardTitleStyle}" Text="医案管理" />
-                    </StackPanel>
+                    <Button Command="{Binding NavigateToMedicalCaseManagementCommand}" Style="{StaticResource TransparentCardButton}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconMedicalCase}" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="医案管理" />
+                        </StackPanel>
+                    </Button>
                 </Border>
 
                 <!--  卡片6: 系统设置  -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
-                    <Border.InputBindings>
-                        <MouseBinding Command="{Binding NavigateToSystemSettingsCommand}" Gesture="LeftClick" />
-                    </Border.InputBindings>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x2699;" />
-                        <TextBlock Style="{StaticResource CardTitleStyle}" Text="系统设置" />
-                    </StackPanel>
+                    <Button Command="{Binding NavigateToSystemSettingsCommand}" Style="{StaticResource TransparentCardButton}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconSettings}" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="系统设置" />
+                        </StackPanel>
+                    </Button>
                 </Border>
 
                 <!--  卡片7: 统计报表  -->
                 <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
-                    <Border.InputBindings>
-                        <MouseBinding Command="{Binding NavigateToReportsCommand}" Gesture="LeftClick" />
-                    </Border.InputBindings>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource CardIconStyle}" Text="&#x1F4CA;" />
-                        <TextBlock Style="{StaticResource CardTitleStyle}" Text="统计报表" />
-                    </StackPanel>
+                    <Button Command="{Binding NavigateToReportsCommand}" Style="{StaticResource TransparentCardButton}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconReports}" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="统计报表" />
+                        </StackPanel>
+                    </Button>
                 </Border>
             </UniformGrid>
         </StackPanel>
