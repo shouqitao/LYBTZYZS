@@ -2,6 +2,7 @@ using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Shared.Enums;
 using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Infrastructure.ViewModels

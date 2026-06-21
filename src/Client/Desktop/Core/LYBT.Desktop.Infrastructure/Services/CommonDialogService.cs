@@ -1,4 +1,5 @@
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Shared.Enums;
 using LYBT.Desktop.Infrastructure.Views;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using Microsoft.Win32;

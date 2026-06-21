@@ -1,8 +1,7 @@
-﻿namespace LYBT.Desktop.Contracts.Models
+namespace LYBT.Shared.Models.Contracts.Common
 {
     /// <summary>
     /// 导入验证结果
-    /// Issue #1781 Task 8 Phase 1: 提升到Contracts层（避免循环依赖）
     /// </summary>
     public class ImportValidationResult
     {

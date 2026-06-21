@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LYBT.Desktop.Contracts.Performance
+namespace LYBT.Desktop.Shared.Models
 {
     /// <summary>
     /// 性能报告

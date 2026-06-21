@@ -1,5 +1,6 @@
 using System.Windows;
 using LYBT.Desktop.Contracts.Security;
+using LYBT.Desktop.Shared.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Foundation.Security;

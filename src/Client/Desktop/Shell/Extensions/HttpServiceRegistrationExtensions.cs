@@ -2,7 +2,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using LYBT.Desktop.Contracts.Api;
-using LYBT.Desktop.Contracts.Security;
+using LYBT.Desktop.Shared.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Security;

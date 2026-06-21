@@ -1,6 +1,6 @@
 using Prism.Events;
 
-namespace LYBT.Desktop.Contracts.Events;
+namespace LYBT.Desktop.Shared.Events;
 
 /// <summary>
 /// 缓存失效事件聚合类

@@ -1,4 +1,5 @@
 using LYBT.Desktop.Contracts.Performance;
+using LYBT.Desktop.Shared.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Performance;
 using LYBT.Desktop.Infrastructure.Services;

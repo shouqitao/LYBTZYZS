@@ -1,5 +1,5 @@
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Contracts.Events;
+using LYBT.Desktop.Shared.Events;
 using LYBT.Shared.Utilities.Extensions.ServiceCollection;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;

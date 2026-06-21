@@ -1,6 +1,7 @@
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Security;
+using LYBT.Desktop.Shared.Models;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;

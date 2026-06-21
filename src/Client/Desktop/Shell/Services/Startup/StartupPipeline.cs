@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using LYBT.Desktop.Contracts.Performance;
+using LYBT.Desktop.Shared.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using Microsoft.Extensions.Logging;

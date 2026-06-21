@@ -1,3 +1,5 @@
+using LYBT.Desktop.Shared.Enums;
+
 namespace LYBT.Desktop.Contracts.Services
 {
     /// <summary>

@@ -1,6 +1,7 @@
 using LYBT.Desktop.Admin.Services;
 using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Security;
+using LYBT.Desktop.Shared.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;

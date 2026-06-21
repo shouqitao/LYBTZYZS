@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Patients.Models
+namespace LYBT.Desktop.Patients.Models
 {
 
     /// <summary>
@@ -60,5 +60,5 @@
         public string Message { get; set; } = string.Empty;
     }
 
-    // Issue #1781 Task 8 Phase 1: ImportValidationResult已移至LYBT.Desktop.Contracts.Models
+    // ImportValidationResult location: LYBT.Shared.Models.Contracts.Common
 }

@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts.Initialization;
 using LYBT.Desktop.Contracts.Performance;
+using LYBT.Desktop.Shared.Models;
 using LYBT.Desktop.LocalData.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

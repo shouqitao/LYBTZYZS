@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Contracts.Services
+namespace LYBT.Desktop.Shared.Enums
 {
     /// <summary>
     /// 未完成医案对话框用户选择枚举

@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Contracts.Security;
+namespace LYBT.Desktop.Shared.Models;
 
 /// <summary>
 /// 统一认证状态枚举

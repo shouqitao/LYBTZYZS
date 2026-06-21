@@ -7,5 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Prism.Core" />
   </ItemGroup>
 </Project>

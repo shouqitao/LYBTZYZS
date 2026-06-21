@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-    <Compile Remove="Events\CacheEvents.cs" />
     <Compile Remove="Events\SyncEvents.cs" />
     <Compile Remove="Services\IViewModelServices.cs" />
     <Compile Remove="Services\IUiThreadDispatcher.cs" />
