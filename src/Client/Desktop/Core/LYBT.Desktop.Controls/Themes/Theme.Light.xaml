@@ -4,15 +4,9 @@
     <!--
         LYBTZYZS 主题入口 - 浅色主题
 
-        颜色和字体已迁移到:
-        - HandyControl: SkinDefault.xaml + Theme.xaml (基础样式)
-        - DesignSystem.xaml (统一Token: 颜色/字体/间距/圆角/阴影)
-
-        此文件仅保留项目特定的间距设计Token
+        UI Redesign 2026-06-21:
+        - Spacing.xaml tokens merged into DesignSystem.xaml
+        - 此文件现在为空占位符 (保持 App.xaml 加载链不变)
     -->
-
-    <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/DesignTokens/Spacing.xaml" />
-    </ResourceDictionary.MergedDictionaries>
 
 </ResourceDictionary>

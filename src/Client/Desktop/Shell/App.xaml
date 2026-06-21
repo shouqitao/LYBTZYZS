@@ -40,20 +40,6 @@
                 <!--  8. 统一转换器资源字典  -->
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Converters/Converters.xaml" />
             </ResourceDictionary.MergedDictionaries>
-
-            <!--  应用级全局样式覆盖  -->
-            <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock">
-                <Setter Property="FontFamily" Value="Microsoft YaHei" />
-            </Style>
-
-            <Style BasedOn="{StaticResource {x:Type TextBox}}" TargetType="TextBox">
-                <Setter Property="FontFamily" Value="Microsoft YaHei" />
-                <Setter Property="VerticalContentAlignment" Value="Center" />
-            </Style>
-
-            <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
-                <Setter Property="FontFamily" Value="Microsoft YaHei" />
-            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </prism:PrismApplication>
