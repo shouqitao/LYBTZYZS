@@ -1,7 +1,7 @@
-using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Shared.Enums;
 using Prism.Services.Dialogs;
 
@@ -11,7 +11,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
     /// 未完成医案对话框ViewModel
     /// 支持4个选项：继续看诊、新建医案、仅关闭、取消
     /// </summary>
-    public partial class UnfinishedCaseDialogViewModel : ObservableObject, IDialogAware
+    public partial class UnfinishedCaseDialogViewModel : DialogViewModelBase
     {
         /// <summary>
         /// 患者姓名
@@ -19,11 +19,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Message))]
         private string _patientName = string.Empty;
-
-        /// <summary>
-        /// 对话框标题
-        /// </summary>
-        public string Title => "检测到未完成医案";
 
         /// <summary>
         /// 对话框消息
@@ -35,37 +30,32 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         /// </summary>
         public UnfinishedCaseChoice Result { get; private set; } = UnfinishedCaseChoice.Cancel;
 
-        #region IDialogAware 实现
-
         /// <summary>
-        /// 请求关闭对话框事件
+        /// 构造函数
         /// </summary>
-        public event Action<IDialogResult>? RequestClose;
-
-        public bool CanCloseDialog() => true;
-
-        public void OnDialogClosed()
+        public UnfinishedCaseDialogViewModel(IViewModelServices services)
+            : base(services)
         {
-            // 对话框关闭时的清理工作（如需要）
+            Title = "检测到未完成医案";
         }
 
-        public void OnDialogOpened(IDialogParameters parameters)
+        /// <summary>
+        /// 对话框打开时从参数读取患者姓名
+        /// </summary>
+        protected override void OnDialogOpenedCore(IDialogParameters? parameters)
         {
-            // 从参数获取患者姓名
-            if (parameters.TryGetValue<string>("PatientName", out var patientName))
+            if (parameters != null && parameters.TryGetValue<string>("PatientName", out var patientName))
             {
                 PatientName = patientName;
             }
         }
-
-        #endregion
 
         /// <summary>继续看诊命令</summary>
         [RelayCommand]
         private void Continue()
         {
             Result = UnfinishedCaseChoice.Continue;
-            CloseDialog();
+            CloseWithResult();
         }
 
         /// <summary>新建医案命令</summary>
@@ -73,7 +63,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         private void CreateNew()
         {
             Result = UnfinishedCaseChoice.CloseAndCreate;
-            CloseDialog();
+            CloseWithResult();
         }
 
         /// <summary>仅关闭命令</summary>
@@ -81,27 +71,26 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         private void CloseOnly()
         {
             Result = UnfinishedCaseChoice.CloseOnly;
-            CloseDialog();
-        }
-
-        /// <summary>取消命令</summary>
-        [RelayCommand]
-        private void Cancel()
-        {
-            Result = UnfinishedCaseChoice.Cancel;
-            CloseDialog();
+            CloseWithResult();
         }
 
         /// <summary>
-        /// 关闭对话框并返回结果
+        /// 取消命令 - 重写基类Cancel以携带Result参数
+        /// 注意: 不加[RelayCommand], 复用基类生成的CancelCommand, 通过虚方法分派调用此重写
         /// </summary>
-        private void CloseDialog()
+        protected override void Cancel()
         {
-            var parameters = new DialogParameters
-            {
-                { "Result", Result }
-            };
-            RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+            Result = UnfinishedCaseChoice.Cancel;
+            CloseWithResult();
+        }
+
+        /// <summary>
+        /// 关闭对话框并返回Result参数
+        /// 使用独立名称避免与基类 protected CloseDialog 重载产生歧义
+        /// </summary>
+        private void CloseWithResult()
+        {
+            CloseDialogWithResult("Result", Result, ButtonResult.OK);
         }
     }
 }
