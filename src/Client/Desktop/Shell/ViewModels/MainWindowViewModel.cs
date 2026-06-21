@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -674,7 +675,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         {
             Title = "主页",
             ViewName = definition.HomeViewName,
-            IconKey = (string)Application.Current.FindResource("IconHome"),
+            IconData = (Geometry)Application.Current.FindResource("IconHome"),
             Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(definition.HomeViewName))
         });
 
@@ -702,7 +703,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         {
             Title = title,
             ViewName = viewName,
-            IconKey = (string)Application.Current.FindResource(iconKey),
+            IconData = (Geometry)Application.Current.FindResource(iconKey),
             Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(viewName))
         };
 

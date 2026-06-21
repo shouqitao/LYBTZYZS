@@ -67,7 +67,7 @@
                         <Path
                             Width="20"
                             Height="20"
-                            Data="{Binding IconKey}"
+                            Data="{Binding IconData}"
                             Fill="{DynamicResource SidebarTextBrush}"
                             Stretch="Uniform" />
                         <TextBlock
