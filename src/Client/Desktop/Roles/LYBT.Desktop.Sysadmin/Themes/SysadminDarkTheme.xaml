@@ -1,0 +1,23 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- 运维控制台暗色主题 - 与系统主主题隔离，仅在 SysadminModule 视图内合并 -->
+    <Color x:Key="OpsBackgroundColor">#1a1a2e</Color>
+    <Color x:Key="OpsCardBackgroundColor">#16213e</Color>
+    <Color x:Key="OpsAccentColor">#0f3460</Color>
+    <Color x:Key="OpsTextPrimaryColor">#e0e0e0</Color>
+    <Color x:Key="OpsTextSecondaryColor">#8b8b9e</Color>
+    <Color x:Key="OpsSuccessColor">#4caf50</Color>
+    <Color x:Key="OpsDangerColor">#f44336</Color>
+    <Color x:Key="OpsWarningColor">#ff9800</Color>
+
+    <SolidColorBrush x:Key="OpsBackgroundBrush" Color="{StaticResource OpsBackgroundColor}" />
+    <SolidColorBrush x:Key="OpsCardBackgroundBrush" Color="{StaticResource OpsCardBackgroundColor}" />
+    <SolidColorBrush x:Key="OpsAccentBrush" Color="{StaticResource OpsAccentColor}" />
+    <SolidColorBrush x:Key="OpsTextPrimaryBrush" Color="{StaticResource OpsTextPrimaryColor}" />
+    <SolidColorBrush x:Key="OpsTextSecondaryBrush" Color="{StaticResource OpsTextSecondaryColor}" />
+    <SolidColorBrush x:Key="OpsSuccessBrush" Color="{StaticResource OpsSuccessColor}" />
+    <SolidColorBrush x:Key="OpsDangerBrush" Color="{StaticResource OpsDangerColor}" />
+    <SolidColorBrush x:Key="OpsWarningBrush" Color="{StaticResource OpsWarningColor}" />
+
+</ResourceDictionary>

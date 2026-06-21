@@ -100,6 +100,7 @@
     <ProjectReference Include="..\Roles\LYBT.Desktop.Clinical\LYBT.Desktop.Clinical.csproj" />
     <ProjectReference Include="..\Roles\LYBT.Desktop.Admin\LYBT.Desktop.Admin.csproj" />
     <ProjectReference Include="..\Roles\LYBT.Desktop.Receptionist\LYBT.Desktop.Receptionist.csproj" />
+    <ProjectReference Include="..\Roles\LYBT.Desktop.Sysadmin\LYBT.Desktop.Sysadmin.csproj" />
   </ItemGroup>
 
   <!-- Configuration Files -->

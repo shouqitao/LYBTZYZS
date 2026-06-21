@@ -17,6 +17,9 @@ public static class ViewNames
     /// <summary>前台工作台主页</summary>
     public const string ReceptionistHome = "ReceptionistHomeView";
 
+    /// <summary>系统运维控制台主页</summary>
+    public const string SysadminHome = "SysadminHomeView";
+
     #endregion
 
     #region 管理视图

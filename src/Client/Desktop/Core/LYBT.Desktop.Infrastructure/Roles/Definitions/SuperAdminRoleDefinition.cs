@@ -15,10 +15,7 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
         private static readonly string[] Modules = new[]
         {
             "UsersModule",
-            "PatientsModule",
-            "HerbsModule",
-            "FormulaModule",
-            "MedicalCaseModule"
+            "SysadminModule"
         };
 
         public override UserRole Role => UserRole.SuperAdmin;
@@ -27,7 +24,7 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
 
         public override string Description => "系统运维：平台部署、配置、诊断、数据库维护";
 
-        public override string HomeViewName => ViewNames.AdminHome;
+        public override string HomeViewName => ViewNames.SysadminHome;
 
         public override IReadOnlyList<string> RequiredModules => Modules;
     }

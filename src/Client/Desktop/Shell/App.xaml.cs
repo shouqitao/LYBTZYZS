@@ -16,6 +16,7 @@ using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Bootstrap;
 using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Views;
+using LYBT.Desktop.Sysadmin;
 using LYBT.Desktop.Users;
 using LYBT.Shared.Models.Enums;
 using Prism.DryIoc;
@@ -132,6 +133,7 @@ public partial class App : PrismApplication
         moduleCatalog.AddModule<ClinicalModule>(InitializationMode.WhenAvailable);
         moduleCatalog.AddModule<AdminModule>(InitializationMode.WhenAvailable);
         moduleCatalog.AddModule<ReceptionistModule>(InitializationMode.WhenAvailable);
+        moduleCatalog.AddModule<SysadminModule>(InitializationMode.WhenAvailable);
 
         // 业务模块 - 按需加载（首次导航到该模块视图时由 NavigationCoordinator 触发）
         moduleCatalog.AddModule<PatientsModule>(InitializationMode.OnDemand);
