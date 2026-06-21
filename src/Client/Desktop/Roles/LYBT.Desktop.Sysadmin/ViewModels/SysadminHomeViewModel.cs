@@ -53,6 +53,7 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
     private void StartPolling()
     {
         _pollCts?.Cancel();
+        _pollCts?.Dispose();
         _pollCts = new CancellationTokenSource();
         _ = PollDashboardAsync(_pollCts.Token);
     }
@@ -61,11 +62,12 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
 
     private async Task PollDashboardAsync(CancellationToken ct)
     {
+        var isFirstLoad = true;
         while (!ct.IsCancellationRequested)
         {
             try
             {
-                Dashboard.IsLoading = true;
+                if (isFirstLoad) Dashboard.IsLoading = true;
 
                 var healthResp = await _authApi.HealthCheckAsync();
                 if (healthResp.Success)
@@ -93,7 +95,7 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
             }
             finally
             {
-                Dashboard.IsLoading = false;
+                if (isFirstLoad) { Dashboard.IsLoading = false; isFirstLoad = false; }
             }
 
             try { await Task.Delay(TimeSpan.FromSeconds(30), ct); }
