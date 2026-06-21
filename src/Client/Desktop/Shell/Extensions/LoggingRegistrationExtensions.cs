@@ -26,6 +26,7 @@ using LYBT.Desktop.Registration;
 using LYBT.Desktop.Registration.Repositories;
 using LYBT.Desktop.Patients.ViewModels.Components;
 using LYBT.Desktop.Printing.Services;
+using LYBT.Desktop.Navigation;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Bootstrap;
 using LYBT.Desktop.Shell.Services.HealthCheck;

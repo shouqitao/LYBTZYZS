@@ -70,6 +70,8 @@
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\Core\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />
     <ProjectReference Include="..\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
+    <!-- refactor(phase1): NavigationCoordinator 迁移到独立 Navigation 项目 -->
+    <ProjectReference Include="..\Core\LYBT.Desktop.Navigation\LYBT.Desktop.Navigation.csproj" />
     <!-- OpenSpec: create-printing-module - 独立打印模块 -->
     <ProjectReference Include="..\Core\LYBT.Desktop.Printing\LYBT.Desktop.Printing.csproj" />
     <!-- OpenSpec: implement-local-mode - 本地数据存储层 -->

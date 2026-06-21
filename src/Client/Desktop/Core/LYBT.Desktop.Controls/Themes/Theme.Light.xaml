@@ -12,7 +12,7 @@
     -->
 
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Themes/DesignTokens/Spacing.xaml" />
+        <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/DesignTokens/Spacing.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
 </ResourceDictionary>

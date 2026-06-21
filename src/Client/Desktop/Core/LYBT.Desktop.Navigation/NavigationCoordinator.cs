@@ -9,7 +9,7 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Regions;
 
-namespace LYBT.Desktop.Shell.Services;
+namespace LYBT.Desktop.Navigation;
 
 /// <summary>
 /// 导航协调器实现 - 统一导航入口

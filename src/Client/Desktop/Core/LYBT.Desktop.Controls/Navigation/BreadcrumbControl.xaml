@@ -11,7 +11,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Themes/BreadcrumbStyles.xaml"/>
+                <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/BreadcrumbStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>

@@ -11,7 +11,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Themes/NavigationSuggestionsPanelStyles.xaml"/>
+                <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/NavigationSuggestionsPanelStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <converters:SuggestionTypeColorConverter x:Key="SuggestionTypeColorConverter"/>
             <converters:SuggestionTypeTextConverter x:Key="SuggestionTypeTextConverter"/>

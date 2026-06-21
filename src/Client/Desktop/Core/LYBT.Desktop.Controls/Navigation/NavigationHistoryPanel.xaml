@@ -11,7 +11,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Themes/NavigationHistoryPanelStyles.xaml"/>
+                <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/NavigationHistoryPanelStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Value converter for timestamp formatting -->
