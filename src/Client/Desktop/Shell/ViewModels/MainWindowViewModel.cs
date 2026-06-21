@@ -1,8 +1,10 @@
 using System.Windows;
 using System.Windows.Input;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Constants;
@@ -144,6 +146,12 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// </summary>
     [ObservableProperty]
     private bool _isDrawerOpen;
+
+    /// <summary>
+    /// 侧边栏导航项 - 根据当前用户角色构建 (UI Redesign 2026-06-21)
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<NavigationItem> _navigationItems = new();
 
     #endregion
 
@@ -618,6 +626,9 @@ public partial class MainWindowViewModel : CoreViewModelBase
             OnPropertyChanged(nameof(IsSystemSettingsVisible));
             OnPropertyChanged(nameof(IsPasswordChangeVisible));
 
+            // UI Redesign 2026-06-21: 构建角色自适应侧边栏导航项
+            NavigationItems = BuildNavigationItems(user.Role);
+
             Logger.LogInformation("登录成功UI更新完成 [用户: {Username}]", user.UserName);
         });
     }
@@ -641,6 +652,59 @@ public partial class MainWindowViewModel : CoreViewModelBase
     #endregion
 
     #region 业务逻辑
+
+    /// <summary>
+    /// 根据用户角色构建侧边栏导航项 (UI Redesign 2026-06-21)
+    /// </summary>
+    private ObservableCollection<NavigationItem> BuildNavigationItems(UserRole role)
+    {
+        var definition = Services.RoleRegistry.GetDefinition(role);
+        var items = new ObservableCollection<NavigationItem>();
+
+        if (definition == null)
+        {
+            Logger.LogWarning("无法为角色 {Role} 找到定义，导航项为空", role);
+            return items;
+        }
+
+        var modules = definition.RequiredModules;
+
+        // 主页
+        items.Add(new NavigationItem
+        {
+            Title = "主页",
+            ViewName = definition.HomeViewName,
+            IconKey = (string)Application.Current.FindResource("IconHome"),
+            Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(definition.HomeViewName))
+        });
+
+        if (modules.Contains("PatientsModule"))
+            items.Add(CreateNavItem("患者管理", ViewNames.PatientManagement, "IconPatients"));
+        if (modules.Contains("HerbsModule"))
+            items.Add(CreateNavItem("药材管理", ViewNames.HerbManagement, "IconHerbs"));
+        if (modules.Contains("FormulaModule"))
+            items.Add(CreateNavItem("验方管理", ViewNames.FormulaManagement, "IconFormula"));
+        if (modules.Contains("MedicalCaseModule"))
+            items.Add(CreateNavItem("医案管理", ViewNames.MedicalCaseManagement, "IconMedicalCase"));
+        if (modules.Contains("UsersModule") && role is UserRole.Admin or UserRole.SuperAdmin)
+            items.Add(CreateNavItem("用户管理", ViewNames.UserManagement, "IconUsers"));
+        if (modules.Contains("RegistrationModule"))
+            items.Add(CreateNavItem("挂号管理", ViewNames.RegistrationList, "IconRegistration"));
+        if (definition.GetAllModules().Contains("ReportsModule"))
+            items.Add(CreateNavItem("统计报表", ViewNames.ReportsHome, "IconReports"));
+
+        Logger.LogInformation("已为角色 {Role} 构建 {Count} 个导航项", role, items.Count);
+        return items;
+    }
+
+    private NavigationItem CreateNavItem(string title, string viewName, string iconKey) =>
+        new()
+        {
+            Title = title,
+            ViewName = viewName,
+            IconKey = (string)Application.Current.FindResource(iconKey),
+            Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(viewName))
+        };
 
     /// <summary>
     /// 处理Token已过期
@@ -668,6 +732,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         CurrentUser = null;
         IsLoggedIn = false;
         Title = "凌隐宝堂中医诊所诊疗系统";
+        NavigationItems.Clear(); // UI Redesign: 清空导航项
 
         try
         {

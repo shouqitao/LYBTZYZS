@@ -80,12 +80,15 @@
                 Grid.Row="0"
                 Grid.Column="0"
                 ApiStatus="{Binding ApiStatus}"
+                ConnectionDisplay="{Binding ConnectionModeDisplay}"
                 CurrentTime="{Binding CurrentTime}"
                 CurrentUser="{Binding CurrentUser}"
                 EditProfileCommand="{Binding EditProfileCommand}"
                 IsExpanded="{Binding IsDrawerOpen}"
+                IsRemoteMode="{Binding IsRemoteMode}"
                 LogoutCommand="{Binding LogoutCommand}"
                 NavigateToHomeCommand="{Binding NavigateToHomeCommand}"
+                NavigationItemsSource="{Binding NavigationItems}"
                 ToggleCommand="{Binding ToggleDrawerCommand}" />
 
             <!--  右侧工作区  -->
