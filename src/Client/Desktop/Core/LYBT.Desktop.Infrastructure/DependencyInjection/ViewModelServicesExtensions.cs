@@ -2,7 +2,6 @@ using LYBT.Desktop.Contracts.Performance;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Performance;
 using LYBT.Desktop.Infrastructure.Services;
-using LYBT.Desktop.Infrastructure.Navigation;
 using LYBT.Desktop.Infrastructure.Services.Toast;
 using Prism.Ioc;
 
@@ -31,8 +30,7 @@ namespace LYBT.Desktop.Infrastructure.DependencyInjection
             containerRegistry.RegisterSingleton<IDialogManager, DialogManager>();
             containerRegistry.RegisterSingleton<IAsyncExecutor, AsyncExecutor>();
 
-            // Navigation and Toast services - Singleton
-            containerRegistry.RegisterSingleton<IEnhancedNavigationService, EnhancedNavigationService>();
+            // Toast service - Singleton
             containerRegistry.RegisterSingleton<IToastService, ToastService>();
 
             // 有状态服务 - Transient (每个ViewModel实例独立)

@@ -9,8 +9,6 @@ using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Infrastructure.Navigation;
-using LYBT.Desktop.Infrastructure.Navigation.Controls;
 using LYBT.Desktop.Infrastructure.Services.Toast;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
@@ -35,7 +33,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private readonly IApiRouter _apiRouter;
     private readonly IConnectionSettingsService _connectionSettings;
     private readonly INavigationCoordinator _navigationCoordinator;
-    private readonly IEnhancedNavigationService _enhancedNavigationService;
     private readonly MenuManager _menuManager;
     private readonly IActiveConsultationService _activeConsultationService;
     private readonly IApplicationTickService _tickService;
@@ -176,22 +173,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// <summary>S6-04: 密码修改可见性 - 委托给 MenuManager</summary>
     public bool IsPasswordChangeVisible => _menuManager.IsPasswordChangeVisible;
 
-    /// <summary>Phase 3: NavigationHistoryPanel ViewModel</summary>
-    [ObservableProperty]
-    private NavigationHistoryPanelViewModel? _navigationHistoryPanelViewModel;
-
-    /// <summary>Phase 3: NavigationSuggestionsPanel ViewModel</summary>
-    [ObservableProperty]
-    private NavigationSuggestionsPanelViewModel? _navigationSuggestionsPanelViewModel;
-
-    /// <summary>Phase 3: 是否显示导航历史面板</summary>
-    [ObservableProperty]
-    private bool _showNavigationHistory;
-
-    /// <summary>Phase 3: 是否显示导航建议面板</summary>
-    [ObservableProperty]
-    private bool _showNavigationSuggestions;
-
     #endregion
 
     #region 构造函数
@@ -206,7 +187,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         IApiRouter apiRouter,
         IConnectionSettingsService connectionSettings,
         INavigationCoordinator navigationCoordinator,
-        IEnhancedNavigationService enhancedNavigationService,
         MenuManager menuManager,
         IActiveConsultationService activeConsultationService,
         IApplicationTickService tickService,
@@ -225,7 +205,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         _apiRouter = apiRouter ?? throw new ArgumentNullException(nameof(apiRouter));
         _connectionSettings = connectionSettings ?? throw new ArgumentNullException(nameof(connectionSettings));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
-        _enhancedNavigationService = enhancedNavigationService ?? throw new ArgumentNullException(nameof(enhancedNavigationService));
         _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));
         _activeConsultationService = activeConsultationService ?? throw new ArgumentNullException(nameof(activeConsultationService));
         _tickService = tickService ?? throw new ArgumentNullException(nameof(tickService));
@@ -243,7 +222,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         _connectionModeService.ModeChanged += OnConnectionModeChanged;
 
         InitializeViewModel();
-        InitializeNavigationPanels();
     }
 
     #endregion
@@ -447,47 +425,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         InitializeClock();
         InitializeHealthCheck();
         InitializeEvents();
-    }
-
-    /// <summary>
-    /// Phase 3: 初始化导航面板
-    /// </summary>
-    private void InitializeNavigationPanels()
-    {
-        try
-        {
-            // Create NavigationHistoryPanel ViewModel
-            NavigationHistoryPanelViewModel = new NavigationHistoryPanelViewModel(_enhancedNavigationService);
-
-            // Create NavigationSuggestionsPanel ViewModel
-            NavigationSuggestionsPanelViewModel = new NavigationSuggestionsPanelViewModel(_enhancedNavigationService);
-
-            Logger.LogDebug("导航面板初始化完成");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "初始化导航面板失败");
-        }
-    }
-
-    /// <summary>
-    /// Phase 3: 切换导航历史面板显示
-    /// </summary>
-    [RelayCommand]
-    private void ToggleNavigationHistory()
-    {
-        ShowNavigationHistory = !ShowNavigationHistory;
-        Logger.LogDebug("导航历史面板显示状态: {IsVisible}", ShowNavigationHistory);
-    }
-
-    /// <summary>
-    /// Phase 3: 切换导航建议面板显示
-    /// </summary>
-    [RelayCommand]
-    private void ToggleNavigationSuggestions()
-    {
-        ShowNavigationSuggestions = !ShowNavigationSuggestions;
-        Logger.LogDebug("导航建议面板显示状态: {IsVisible}", ShowNavigationSuggestions);
     }
 
     /// <summary>
