@@ -264,9 +264,24 @@ brainstorm → plan → execute → review → report → merge
 ```
 Contracts ← Foundation ← Infrastructure ← Controls
 Shared (standalone) — referenced by Contracts + Controls
-Modules reference Infrastructure + Controls
-Roles reference Infrastructure + Controls + Modules
+Navigation (new) — references Contracts + Foundation + Infrastructure
+Modules reference Infrastructure + Controls + Navigation
+Roles reference Infrastructure + Controls + Navigation + Modules
 ```
+
+### Desktop 项目清单 (post-refactor 2026-06-21)
+
+| 项目 | 职责 |
+|------|------|
+| `LYBT.Desktop.Infrastructure` | VM 基类 + WPF 服务 + 角色定义 + HTTP + 行为 |
+| `LYBT.Desktop.Navigation` | **新**：NavigationCoordinator + 导航模型 |
+| `LYBT.Desktop.Controls` | WPF 控件 + 转换器 + **主题样式**（Phase 1 从 Infrastructure 迁入） |
+| `LYBT.Desktop.Contracts` | 纯接口（Phase 4 清理后无 DTO/Enum 泄漏） |
+| `LYBT.Desktop.Foundation` | HTTP 客户端 + 安全/JWT + 缓存 |
+| `LYBT.Desktop.Shared` | 纯 DTO/Enum（Phase 4 吸收了 Contracts 迁出的类型） |
+| `LYBT.Desktop.LocalData` | SQL Server LocalDB |
+| `LYBT.Desktop.Printing` | QuestPDF 打印 |
+| `LYBT.Desktop.CardReader` | 读卡器 |
 
 ## Common Pitfalls (CRITICAL — read before coding)
 
