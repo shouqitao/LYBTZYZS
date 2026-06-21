@@ -45,33 +45,6 @@ namespace LYBT.Desktop.Controls.Controls
         public string ConnectionUrl { get => (string)GetValue(ConnectionUrlProperty); set => SetValue(ConnectionUrlProperty, value ?? "http://127.0.0.1:5100"); }
         public bool IsLocal { get => (bool)GetValue(IsLocalProperty); set => SetValue(IsLocalProperty, value); }
         public ICommand ConnectCommand { get => (ICommand)GetValue(ConnectCommandProperty); set => SetValue(ConnectCommandProperty, value); }
-
-        private void OnConnectionStatusClick(object sender, MouseButtonEventArgs e)
-        {
-            ConnectionPopup.IsOpen = !ConnectionPopup.IsOpen;
-        }
-
-        private void OnSelectLocalClick(object sender, RoutedEventArgs e)
-        {
-            UrlInput.Text = "http://127.0.0.1:5100";
-        }
-
-        private void OnConnectClick(object sender, RoutedEventArgs e)
-        {
-            var url = UrlInput.Text?.Trim();
-            if (string.IsNullOrWhiteSpace(url) || ConnectCommand is null)
-                return;
-
-            if (ConnectCommand.CanExecute(url))
-                ConnectCommand.Execute(url);
-
-            ConnectionPopup.IsOpen = false;
-        }
-
-        private void OnCancelClick(object sender, RoutedEventArgs e)
-        {
-            ConnectionPopup.IsOpen = false;
-        }
     }
 
     /// <summary>系统时间提供器</summary>
