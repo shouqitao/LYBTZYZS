@@ -18,7 +18,10 @@
                 <!--  2. 设计系统 (覆盖HC颜色，统一Token)  -->
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/DesignSystem.xaml" />
 
-                <!--  3. 项目特定设计Token (间距等)  -->
+                <!--  3. 矢量图标 Path data  -->
+                <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/Icons.xaml" />
+
+                <!--  4. 项目特定设计Token (间距等)  -->
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/Theme.Light.xaml" />
 
                 <!--  4. UI统一化组件样式  -->
