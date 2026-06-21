@@ -36,7 +36,8 @@ public static class LocalWebApiProgram
 
         builder.Services.AddHttpContextAccessor();
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+            .AddApplicationPart(typeof(LYBT.LocalWebAPI.Controllers.HealthController).Assembly);
 
         builder.Services.AddSingleton<LoggingLevelManager>();
 
