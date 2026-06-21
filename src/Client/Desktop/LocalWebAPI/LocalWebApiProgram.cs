@@ -65,6 +65,11 @@ public static class LocalWebApiProgram
 
         LocalJwtConfig.ConfigureServices(builder.Services);
 
+        // Register DefaultPasswordOptions from configuration (required by IdentitySeedData)
+        builder.Services.AddOptions<LYBT.Shared.Configuration.Options.Server.DefaultPasswordOptions>()
+            .Bind(builder.Configuration.GetSection(LYBT.Shared.Configuration.Options.Server.DefaultPasswordOptions.SectionName))
+            .ValidateDataAnnotations();
+
         var app = builder.Build();
 
         app.UseAuthentication();
