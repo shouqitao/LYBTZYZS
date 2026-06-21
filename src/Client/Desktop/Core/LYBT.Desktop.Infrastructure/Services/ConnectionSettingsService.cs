@@ -47,7 +47,7 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
         _preferredMode = string.IsNullOrWhiteSpace(preferred) ? "Local" : preferred;
 
         _settingsFilePath = Path.Combine(
-            Directory.GetCurrentDirectory(), "appsettings.json");
+            AppContext.BaseDirectory, "appsettings.json");
     }
 
     /// <inheritdoc />
@@ -200,7 +200,9 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
 
     private static bool IsLocalUrl(string url)
     {
-        return url.Contains("127.0.0.1", StringComparison.OrdinalIgnoreCase)
-            || url.Contains("localhost", StringComparison.OrdinalIgnoreCase);
+        // LocalWebAPI runs on port 5100. Any localhost/127.0.0.1 URL on a
+        // different port (e.g., 5000) is a remote WebAPI running locally.
+        return url.Contains("localhost:5100", StringComparison.OrdinalIgnoreCase)
+            || url.Contains("127.0.0.1:5100", StringComparison.OrdinalIgnoreCase);
     }
 }
