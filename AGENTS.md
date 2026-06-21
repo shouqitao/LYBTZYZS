@@ -89,37 +89,106 @@ dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
 
 ## MCP Tools Usage Guide
 
-### CodeGraph (首选代码探索工具)
-- **`codegraph_explore`**: 回答架构问题，一次调用返回相关符号源码 + 调用路径
-- **`codegraph_node`**: 读取单个符号源码 + 调用者，或读取整个文件
-- **`codegraph_search`**: 按名称查找符号
-- **`codegraph_callers`**: 查找调用点
-- **优先级**: CodeGraph > Serena > Grep > Read。先用 CodeGraph 探索，再用 Grep 精确定位
+### 工具选择决策树
 
-### Serena (语义重构工具)
-- **`serena_find_symbol`**: LSP 精确定位符号
-- **`serena_rename_symbol`**: 安全重命名（全代码库）
-- **`serena_find_referencing_symbols`**: 查找引用
-- **`serena_get_diagnostics_for_file`**: 实时编译诊断
-- **首次使用**: 必须 `serena_activate_project(project="LYBTZYZS")`
-- **适用场景**: 重构、精确诊断、LSP 级别的符号操作
+```
+收到任务
+  ├── 理解/探索代码？ → CodeGraph（首选）
+  │     ├── codegraph_explore  "这段代码怎么工作的"
+  │     ├── codegraph_node     "读这个文件/符号的源码"
+  │     ├── codegraph_search   "这个符号在哪定义"
+  │     └── codegraph_callers  "谁调用了这个方法"
+  │
+  ├── 重构/重命名？ → Serena
+  │     ├── serena_find_symbol              LSP 精确定位
+  │     ├── serena_rename_symbol            安全全代码库重命名
+  │     ├── serena_find_referencing_symbols 查找所有引用
+  │     ├── serena_get_diagnostics_for_file 实时编译诊断（不用等 build）
+  │     └── serena_replace_symbol_body      替换方法体（保持签名）
+  │     ⚠️ 首次使用前必须 serena_activate_project(project="LYBTZYZS")
+  │
+  ├── 查框架文档？ → context7
+  │     ├── context7_resolve-library-id     "查 Prism/Refit/EF Core"
+  │     └── context7_query-docs             获取最新 API 文档和示例
+  │
+  ├── 读/写文件？ → filesystem 或内置工具
+  │     └── Read/Write/Edit/Glob/Grep
+  │
+  └── 以上都不适用？ → Grep + Read 兜底
+```
 
-### filesystem (文件系统)
-- 标准 Read/Write/Edit/Glob/Grep 操作
+### CodeGraph vs Serena 选择
 
-### context7 (文档查询)
-- 查询 NuGet 包文档（如 Prism、Refit、EF Core 用法）
+| 场景 | 用 CodeGraph | 用 Serena |
+|------|-------------|----------|
+| 快速理解代码流程 | ✅ `codegraph_explore` |  |
+| 读取文件源码 | ✅ `codegraph_node` | ✅ `serena_read_file` |
+| 安全重命名 | | ✅ `serena_rename_symbol` |
+| 查找引用 | ✅ `codegraph_callers` | ✅ `serena_find_referencing_symbols` |
+| 编译诊断 | | ✅ `serena_get_diagnostics_for_file` |
+| 替换方法体 | | ✅ `serena_replace_symbol_body` |
+| 插入代码到符号前/后 | | ✅ `serena_insert_before/after_symbol` |
 
-### 工具选择优先级
+**原则**: 探索用 CodeGraph（快、全），操作用 Serena（精、安全）。
 
-| 需求 | 首选工具 | 备选 |
-|------|---------|------|
-| "这段代码怎么工作的" | `codegraph_explore` | Read |
-| "谁调用了这个方法" | `codegraph_callers` | Grep |
-| "这个符号在哪定义" | `codegraph_search` | `serena_find_symbol` |
-| "安全重命名" | `serena_rename_symbol` | Edit + Grep |
-| "这个文件有编译错误吗" | `serena_get_diagnostics_for_file` | `dotnet build` |
-| "查 Prism/Refit 用法" | `context7_query-docs` | WebFetch |
+### context7 使用示例
+
+```
+# 查 Prism 模块注册
+context7_resolve-library-id → "Prism" → /prismlibrary/prism
+context7_query-docs → "How to register modules in Prism WPF"
+
+# 查 Refit 接口定义
+context7_resolve-library-id → "Refit" → /reactiveui/refit
+context7_query-docs → "How to define Refit interface with custom headers"
+```
+
+## Skills 技能路由
+
+### 技能选择决策树
+
+```
+收到请求
+  ├── 新功能/新设计？
+  │     ├── "值得做吗"/方向不明确 → office-hours
+  │     ├── 明确要做 → compose:brainstorm → compose:plan → compose:execute
+  │     └── 多模块大改 → compose:brainstorm → compose:plan → plan-eng-review → compose:subagent
+  │
+  ├── Bug/异常/测试失败？ → compose:debug（四阶段：调查→分析→假设→实现）
+  │
+  ├── 声称"完成了"？ → compose:verify（必须有 dotnet build 通过证据）
+  │
+  ├── 代码审查？ → compose:review（dispatch 子代理审查 diff）
+  │
+  ├── 架构/代码理解？ → understand（生成知识图谱）/ understand-chat（问答）
+  │
+  ├── 安全审计？ → cso（OWASP + 依赖扫描 + STRIDE）
+  │
+  ├── 写 PRD/需求文档？ → create-prd
+  │
+  ├── 写用户故事？ → user-stories / job-stories
+  │
+  ├── 优先级排序？ → prioritize-features / prioritization-frameworks
+  │
+  ├── UI/UX 设计？ → ui-ux-pro-max（WPF 注意：只适用颜色/字体/UX 原则，不适用 React/Vue 部分）
+  │
+  ├── 写计划文档？ → compose:plan（代码计划） / writing-plans（通用计划）
+  │
+  └── 小修补（1-2 行）？ → 直接改 → dotnet build → 提交（不需要技能）
+```
+
+### 本项目推荐技能组合
+
+| 场景 | 推荐流程 | 预计耗时 |
+|------|---------|---------|
+| **登录/认证 bug** | `compose:debug` → 查日志 → 定位 → 修 | 15-30 min |
+| **新增 API 端点** | `compose:plan` → `compose:execute` → `compose:review` | 30-60 min |
+| **新增 WPF 页面** | `compose:brainstorm` → `compose:plan` → `compose:subagent` → `compose:review` | 1-2 hours |
+| **数据库 schema 变更** | `compose:plan` → EF Migration → `compose:verify` → `compose:review` | 30-60 min |
+| **安全漏洞排查** | `cso` → 修复 → `compose:review` | 1-2 hours |
+| **理解陌生模块** | `codegraph_explore` → `understand-chat` | 10-20 min |
+| **重命名公共 API** | `serena_rename_symbol` → `dotnet build` → `compose:verify` | 10-15 min |
+| **查框架用法** | `context7_query-docs` → 实现 | 5-10 min |
 
 ## Compose Workflow (开发工作流)
 
@@ -129,11 +198,7 @@ dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
 brainstorm → plan → execute → review → report → merge
 ```
 
-### 技能路由
-
-收到请求时，先检查技能是否匹配。匹配 → invoke 技能，不直接编码。
-
-#### 工程纪律（编码前 MUST 触发）
+### 工程纪律（编码前 MUST 触发）
 
 | 场景 | 技能 | 规则 |
 |------|------|------|
@@ -143,7 +208,7 @@ brainstorm → plan → execute → review → report → merge
 | 实现功能/修复 | `compose:tdd` | 先写测试再写实现 |
 | 声称"完成/修好" | `compose:verify` | 必须有 `dotnet build` 通过的证据 |
 
-#### 方向与交付（匹配时触发）
+### 方向与交付（匹配时触发）
 
 | 场景 | 技能 |
 |------|------|
@@ -155,7 +220,7 @@ brainstorm → plan → execute → review → report → merge
 | 代码审查/diff 检查 | `compose:review` |
 | 合并/集成/PR | `compose:merge` |
 
-#### 工作流分级
+### 工作流分级
 
 | 规模 | 必须流程 |
 |------|---------|
