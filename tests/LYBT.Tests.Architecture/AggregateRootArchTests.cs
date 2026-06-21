@@ -100,6 +100,7 @@ public class AggregateRootArchTests
         var softDeleteExceptions = new HashSet<string>
         {
             "LYBT.Entities.Users.AdminSecretModel",      // 安全敏感：密码哈希不应软删除
+            "LYBT.Entities.Users.ApplicationRole",       // ASP.NET Identity IdentityRole<Guid>，不支持软删除
             "LYBT.Entities.Prescriptions.PrescriptionItem", // 值对象：通过Prescription管理
             "LYBT.Entities.Formula.FormulaHerbItem",     // 值对象：通过Formula管理
             "LYBT.Entities.Formulas.FormulaHerbItem",    // 值对象：通过Formula管理（新命名空间）

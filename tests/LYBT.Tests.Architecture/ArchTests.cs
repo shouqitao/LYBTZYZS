@@ -56,7 +56,9 @@ public class ArchTests
             "MedicalCaseProcessingController",  // 医案工作流控制器
             "MedicalCaseAuditController",       // 医案审计控制器
             "MedicalCasePrintController",       // 医案打印控制器
-            "RegistrationsController"    // 挂号控制器（快速看诊功能）
+            "RegistrationsController",   // 挂号控制器（快速看诊功能）
+            "AuthController",            // LocalWebAPI — UserManager<ApplicationUser>
+            "UsersController"            // LocalWebAPI — UserManager<ApplicationUser>
         };
 
         var result = Types.InAssemblies(Assemblies)
