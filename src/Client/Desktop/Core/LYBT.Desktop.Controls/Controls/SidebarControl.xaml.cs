@@ -1,6 +1,8 @@
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Shared.Models.Contracts.Users;
 
@@ -146,6 +148,48 @@ namespace LYBT.Desktop.Controls.Controls
         public static readonly DependencyProperty LogoutCommandProperty =
             DependencyProperty.Register(nameof(LogoutCommand), typeof(ICommand), typeof(SidebarControl),
                 new PropertyMetadata(null));
+
+        #endregion
+
+        #region NavigationItemsSource - 导航菜单项
+
+        public ObservableCollection<NavigationItem> NavigationItemsSource
+        {
+            get => (ObservableCollection<NavigationItem>)GetValue(NavigationItemsSourceProperty);
+            set => SetValue(NavigationItemsSourceProperty, value);
+        }
+
+        public static readonly DependencyProperty NavigationItemsSourceProperty =
+            DependencyProperty.Register(nameof(NavigationItemsSource), typeof(ObservableCollection<NavigationItem>),
+                typeof(SidebarControl), new PropertyMetadata(null));
+
+        #endregion
+
+        #region ConnectionDisplay - 连接模式显示文字
+
+        public string ConnectionDisplay
+        {
+            get => (string)GetValue(ConnectionDisplayProperty);
+            set => SetValue(ConnectionDisplayProperty, value);
+        }
+
+        public static readonly DependencyProperty ConnectionDisplayProperty =
+            DependencyProperty.Register(nameof(ConnectionDisplay), typeof(string), typeof(SidebarControl),
+                new PropertyMetadata(string.Empty));
+
+        #endregion
+
+        #region IsRemoteMode - 是否远程模式
+
+        public bool IsRemoteMode
+        {
+            get => (bool)GetValue(IsRemoteModeProperty);
+            set => SetValue(IsRemoteModeProperty, value);
+        }
+
+        public static readonly DependencyProperty IsRemoteModeProperty =
+            DependencyProperty.Register(nameof(IsRemoteMode), typeof(bool), typeof(SidebarControl),
+                new PropertyMetadata(false));
 
         #endregion
 
