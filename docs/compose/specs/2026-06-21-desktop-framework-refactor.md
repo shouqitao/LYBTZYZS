@@ -16,8 +16,18 @@ Desktop 层 21 个项目 ~93K LOC 存在 5 个架构问题：
 ## [S3] 约束
 
 - 渐进式：每阶段可独立编译测试
-- 仅 Desktop 层：Server 不动，LocalWebAPI 保留跨层引用
+- 仅 Desktop 层：Server 不动
+- **LocalWebAPI 保持 unified service layer**（远程和本地共享同一套 Service 代码，逻辑不偏离）
 - Prism 模式不变
+
+### LocalWebAPI 决策：Option D — 正式化例外
+
+**不 解耦**。理由：远程和本地 API 逻辑上不应偏离，UI 始终兼容两种模式。解耦会创造两套实现，违反"逻辑不偏离"原则。
+
+措施：
+1. 写 ADR（架构决策记录）记录 unified service layer 的选择理由
+2. P21 架构测试从"跳过"改为"例外审计"（验证引用列表是否匹配 ADR）
+3. LocalWebAPI AGENTS.md 增加依赖图 + 变更协议
 
 ## [S4] Phase 1 — Infrastructure 拆分分析
 
