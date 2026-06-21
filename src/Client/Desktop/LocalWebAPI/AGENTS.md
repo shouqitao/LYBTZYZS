@@ -1,11 +1,41 @@
 <!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-05-04 | Updated: 2026-06-14 -->
+<!-- Generated: 2026-05-04 | Updated: 2026-06-21 -->
 
 # LYBT.LocalWebAPI
 
 ## Purpose
 
 Embedded ASP.NET Core WebAPI that runs inside the Desktop client process for local/offline mode. Uses the **same Service/Repository layer** as Remote WebAPI (unified architecture since 2026-06-14). Controllers delegate to `I*Service` interfaces — zero parallel implementation.
+
+## Architecture Decision
+
+**[ADR-0010](../../../docs/03-architecture/decisions/0010-localwebapi-unified-service-layer.md)**: LocalWebAPI 统一服务层 — 文档化跨层引用例外
+
+LocalWebAPI 是 **Client → Server 唯一的跨层引用路径**。这是有意设计，不是遗漏。
+
+### 依赖图
+
+```
+Desktop Shell
+  → LocalWebAPI (embedded Kestrel, port 5100)
+    → Server/Core/LYBT.Entities        (domain entities)
+    → Server/Core/LYBT.Infrastructure  (AppDbContext, BaseRepository)
+    → Server/Modules/LYBT.Module.Auth     (IAuthService)
+    → Server/Modules/LYBT.Module.Users    (IUserService)
+    → Server/Modules/LYBT.Module.Patients (IPatientService)
+    → Server/Modules/LYBT.Module.Herbs    (IHerbService)
+    → Server/Modules/LYBT.Module.Formulas (IFormulaService)
+    → Server/Modules/LYBT.Module.MedicalCases (IMedicalCaseFacade)
+    → Server/Modules/LYBT.Module.Registration (IRegistrationService)
+    → Server/Modules/LYBT.Module.Reports   (IReportsService)
+```
+
+### 变更协议
+
+如需新增/删除 Server Module 引用：
+1. 更新 ADR-0010 的引用列表
+2. 更新本文件的依赖图
+3. 确保 P21 审计测试通过（`P21_LocalWebAPI_ServerModule_References_Match_ADR0010`）
 
 ## Key Files
 

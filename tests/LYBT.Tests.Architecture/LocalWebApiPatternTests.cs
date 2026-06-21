@@ -47,13 +47,35 @@ public class LocalWebApiPatternTests
     }
 
     /// <summary>
-    /// P21: REMOVED — LocalWebAPI now references Server modules for unified Service layer.
-    /// Controllers delegate to the same I*Service interfaces as Remote WebAPI.
+    /// P21: 例外审计 — LocalWebAPI 引用 Server Modules 是有意设计（ADR-0010）。
+    /// 本测试验证引用列表与 ADR-0010 记录一致。新增 Server Module 引用需先更新 ADR。
     /// </summary>
-    [Fact(Skip = "Removed: LocalWebAPI unified with Server Service layer (2026-06-14)")]
-    public void P21_LocalWebAPI_Controllers_Must_Not_Reference_Server_Modules()
+    [Fact]
+    public void P21_LocalWebAPI_ServerModule_References_Match_ADR0010()
     {
-        // Test skipped — LocalWebAPI now intentionally references LYBT.Module.*
+        var localWebApiAssembly = typeof(LYBT.LocalWebAPI.Controllers.HealthController).Assembly;
+        var referencedServerAssemblies = localWebApiAssembly.GetReferencedAssemblies()
+            .Where(a => a.Name!.StartsWith("LYBT.Module.") || a.Name == "LYBT.Entities" || a.Name == "LYBT.Infrastructure")
+            .Select(a => a.Name!)
+            .OrderBy(n => n)
+            .ToList();
+
+        // ADR-0010 记录的允许引用列表
+        var expectedReferences = new[]
+        {
+            "LYBT.Entities",
+            "LYBT.Infrastructure",
+            "LYBT.Module.Auth",
+            "LYBT.Module.Formulas",
+            "LYBT.Module.Herbs",
+            "LYBT.Module.MedicalCases",
+            "LYBT.Module.Patients",
+            "LYBT.Module.Registration",
+            "LYBT.Module.Reports",
+            "LYBT.Module.Users"
+        }.OrderBy(n => n).ToList();
+
+        Assert.Equal(expectedReferences, referencedServerAssemblies);
     }
 
     /// <summary>
