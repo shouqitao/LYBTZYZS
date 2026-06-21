@@ -8,7 +8,7 @@
 dotnet build LYBTZYZS.sln
 
 dotnet test tests/LYBT.Tests.Server/        # Integration (real SQL Server + Respawn)
-dotnet test tests/LYBT.Tests.Desktop/       # Desktop (SQLite InMemory)
+dotnet test tests/LYBT.Tests.Desktop/       # Desktop (LocalDB, AuthControllerTests 8/8 pass)
 dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
 ```
 
@@ -17,20 +17,33 @@ dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
 - **Remote**: Gitee (`https://gitee.com/shouqitao/LYBTZYZS.git`) — NOT GitHub
 - **Branch**: `master`
 - **Commit convention**: `feat(模块): 描述` / `fix(模块): 描述` / `docs:` / `refactor:` / `test:`
+- **Commit message language**: English preferred (PowerShell encoding issues with Chinese)
 
 ## Database
 
-- **EF Core Migration**: Latest is `AddIdentityTables` — run `dotnet ef database update` after pulling
-- **Dual-mode**: Remote = SQL Server | Local = SQL Server LocalDB (NOT SQLite — SQLite is test-only)
+- **EF Core Migration**: Latest is `AddIsSysAdmin` — run `dotnet ef database update` after pulling
+- **Dual-mode**: Remote = SQL Server (`LYBTDB_Dev`) | Local = LocalDB (`LYBTDesktop`) — NOT SQLite
 - **Migration command**: `dotnet ef migrations add <Name> --project src/Server/Core/LYBT.Infrastructure --startup-project src/Server/Services/LYBT.WebAPI`
+- **EnsureCreatedAsync bypasses migrations**: `DatabaseInitializationService` uses `EnsureCreatedAsync`, not `Migrate()`. Fresh DB works but `__EFMigrationsHistory` stays empty.
+- **Reset DB**: `sqlcmd -S "localhost" -Q "DROP DATABASE IF EXISTS LYBTDB_Dev; CREATE DATABASE LYBTDB_Dev"` then restart WebAPI
+- **Reset LocalDB**: `sqlcmd -S "(localdb)\MSSQLLocalDB" -Q "DROP DATABASE IF EXISTS LYBTDesktop"` then restart Desktop app
 
 ## Architecture
 
 - **3-Layer**: Controller → Service → Repository → DbContext
 - **MVVM**: View (XAML) ← binding → ViewModel → Repository → API
 - **DDD**: MedicalCase is the sole aggregate root (Consultation + Prescription are internal entities)
-- **Dual-Mode**: Remote (SQL Server) + Local (SQL Server LocalDB), URL-based switching
-- **Modular**: Server modules (`LYBT.Module.*`), Desktop modules (`LYBT.Desktop.*`), role workspaces (Admin/Clinical/Receptionist)
+- **Dual-Mode**: Remote (SQL Server port 5000) + Local (LocalDB port 5100), URL-based switching via `BaseUrlDelegatingHandler`
+- **Modular**: Server modules (`LYBT.Module.*`), Desktop modules (`LYBT.Desktop.*`), role workspaces (Admin/Clinical/Receptionist/Sysadmin)
+
+### Sysadmin Architecture (2026-06-20)
+
+- **sysadmin = standalone user, NOT a role**: `ApplicationUser.IsSysAdmin = true`
+- **admin ≠ sysadmin**: Two independent users. sysadmin creates admin, can reset admin passwords.
+- **Default users**: `sysadmin` / `SysAdmin@2026!` (IsSysAdmin=true) | `admin` / `Admin@123456` (IsSysAdmin=false)
+- **Passwords from config**: `DefaultPasswordOptions` (`appsettings.json` → `DefaultPasswords` section)
+- **sysadmin has dedicated UI**: `SysadminModule` — dark dashboard + admin user management + log level control
+- **SuperAdminRoleDefinition**: Maps `UserRole.SuperAdmin` → `SysadminHomeView` + loads `SysadminModule`
 
 ## Terminology
 
@@ -40,10 +53,11 @@ dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
 | MedicalCase | 医案 (medical case) | "病历" |
 | Formula | 验方/经验方 (empirical recipe) | "公式" |
 | HerbRole | 药材角色（君臣佐使） | — |
+| Sysadmin | 系统运维（独立用户） | "超级管理员角色" |
 
 ## CODE STYLE
 
-- **语言**: 中文用于业务文档和注释；英文用于技术标识符
+- **语言**: 中文用于业务文档和注释；英文用于技术标识符和 commit message
 - **命名**: `PascalCase`（公共成员）、`_camelCase`（私有字段）、`I PascalCase`（接口）
 - **包版本**: 统一在 `Directory.Packages.props` 声明，`.csproj` 不带版本号
 - **无注释**: 除非用户要求，不添加代码注释
@@ -63,62 +77,63 @@ dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
 | Server Controllers | `src/Server/Services/LYBT.WebAPI/Controllers/` |
 | Server Modules | `src/Server/Modules/LYBT.Module.*/` |
 | Desktop Modules | `src/Client/Desktop/Modules/LYBT.Desktop.*/` |
-| Desktop Core | `src/Client/Desktop/Core/` (Contracts, Foundation, Infrastructure, LocalData, Printing, CardReader) |
-| Desktop Roles | `src/Client/Desktop/Roles/` (Admin, Clinical, Receptionist workspaces) |
+| Desktop Core | `src/Client/Desktop/Core/` (Contracts, Foundation, Infrastructure, Controls, Shared, LocalData, Printing, CardReader) |
+| Desktop Roles | `src/Client/Desktop/Roles/` (Admin, Clinical, Receptionist, **Sysadmin**) |
 | Shared Exception | `src/Shared/LYBT.Shared.ExceptionHandling/` |
-| Reports Module | `src/Server/Modules/LYBT.Module.Reports/` + `src/Client/Desktop/Modules/LYBT.Desktop.Reports/` |
-| HerbRole Enum | `src/Shared/LYBT.Shared.Models/Enums/HerbRole.cs` |
+| Sysadmin Console | `src/Client/Desktop/Roles/LYBT.Desktop.Sysadmin/` |
+| Seed Data | `src/Server/Modules/LYBT.Module.Users/Services/IdentitySeedData.cs` |
+| Connection Config | `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Services/ConnectionSettingsService.cs` |
+| HTTP Registration | `src/Client/Desktop/Shell/Extensions/HttpServiceRegistrationExtensions.cs` |
+| Role Definitions | `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Roles/Definitions/` |
 | Docs | `docs/{01-product,02-requirements,03-architecture,04-api-reference,05-development,06-operations}/` |
 
-## Common Pitfalls
+## MCP Tools Usage Guide
 
-- `FindAsync` applies global query filters (`IsDeleted`) — use `IgnoreQueryFilters()` for soft-deleted records
-- `MedicalCase.HasPrescription` is computed — Mapper must set it explicitly
-- WPF Desktop tests require `net8.0-windows` — cannot mix with Server tests
-- Permission levels: `Receptionist=0, Doctor=1, Admin=10, SuperAdmin=100`
-- Receptionist excluded from `/patients` and `/registrations/queue` (DoctorOrAdmin policy)
-- Admin can access diagnostics and reset passwords (AdminOnly policy)
-- `BaseApiController` requires `ILogger` in constructor — all LocalWebAPI controllers must pass it
-- `PrescriptionItem.HerbId` is `Guid` (non-nullable) — code referencing `.HasValue` will fail compile
-- EF Migration `SimplifyDataModel` dropped 5 tables, 17 columns — run `dotnet ef database update` after pulling
+### CodeGraph (首选代码探索工具)
+- **`codegraph_explore`**: 回答架构问题，一次调用返回相关符号源码 + 调用路径
+- **`codegraph_node`**: 读取单个符号源码 + 调用者，或读取整个文件
+- **`codegraph_search`**: 按名称查找符号
+- **`codegraph_callers`**: 查找调用点
+- **优先级**: CodeGraph > Serena > Grep > Read。先用 CodeGraph 探索，再用 Grep 精确定位
 
-## Key Patterns
+### Serena (语义重构工具)
+- **`serena_find_symbol`**: LSP 精确定位符号
+- **`serena_rename_symbol`**: 安全重命名（全代码库）
+- **`serena_find_referencing_symbols`**: 查找引用
+- **`serena_get_diagnostics_for_file`**: 实时编译诊断
+- **首次使用**: 必须 `serena_activate_project(project="LYBTZYZS")`
+- **适用场景**: 重构、精确诊断、LSP 级别的符号操作
 
-- **Two-phase Serilog bootstrap** (WebAPI + Desktop)
-- **Role-based module loading** (Desktop loads modules by user role)
-- **CQRS for MedicalCase** (CommandHandler pattern, not traditional 3-layer)
-- **Testing Trophy** (Integration-first, zero mock for Server tests)
-- **Soft-delete + global query filter** on most entities
-- **SwitchingApiClient** routes localhost → embedded LocalWebAPI, otherwise → Refit remote API
-- **BaseApiController** provides `Success()`, `HandleResult()`, `GetOperator()`, `ValidatePagination()` — all controllers inherit it
-- **ApiResponse<T>** envelope used consistently (Phase 2 API fixes)
-- **RegistrationQueueNumber** auto-generated daily (max+1), **RegistrationFee** input by receptionist
-- **HerbRole** (君臣佐使) on PrescriptionItem for auto-sorting in prescriptions
+### filesystem (文件系统)
+- 标准 Read/Write/Edit/Glob/Grep 操作
 
-### Desktop WPF Patterns
+### context7 (文档查询)
+- 查询 NuGet 包文档（如 Prism、Refit、EF Core 用法）
 
-- **Prism Region-based navigation** via `NavigationCoordinator` + `IRegionManager`
-- **MasterDetailControlBase** pattern for entity CRUD (Patients/Herbs/Formulas/Users)
-- **CommunityToolkit.Mvvm** `[ObservableProperty]` / `[RelayCommand]` — NOT Prism's `BindableBase` / `DelegateCommand`
-- **Thin Wrapper views** — Role views (Admin/Clinical) embed business module controls as 15-19 line XAML wrappers
-- **Composite ViewModel** — MedicalCaseWorkspaceViewModel composes child VMs (ConsultationEditor, PrescriptionEditor, Commands)
-- **Riok.Mapperly** for compile-time mapping — `.csproj` must NOT include AutoMapper unless fallback needed
+### 工具选择优先级
 
-### Recent Refactoring (Phase 1-3, 2026-06-16)
+| 需求 | 首选工具 | 备选 |
+|------|---------|------|
+| "这段代码怎么工作的" | `codegraph_explore` | Read |
+| "谁调用了这个方法" | `codegraph_callers` | Grep |
+| "这个符号在哪定义" | `codegraph_search` | `serena_find_symbol` |
+| "安全重命名" | `serena_rename_symbol` | Edit + Grep |
+| "这个文件有编译错误吗" | `serena_get_diagnostics_for_file` | `dotnet build` |
+| "查 Prism/Refit 用法" | `context7_query-docs` | WebFetch |
 
-Phase 1 removed: sync module (entire), audit logs, print tracking, CheckReference, simplified permissions (4→2 policies), simplified auth (no refresh/auto-login tokens), simplified Patient entity (18→8 fields). Note: RestoreAsync and PendingQueue were NOT removed — both are active (`BaseStatusHandler.RestoreAsync`, `PendingQueueManager`, `PendingQueueViewModel`).
+## Compose Workflow (开发工作流)
 
-Phase 2 added: RegistrationFee + QueueNumber on Registration, Reports module (3 daily report endpoints), cleaned legacy endpoints.
+### 标准流程
 
-Phase 3 updated: Registration UI (fee input + queue display), Reports dashboard (3-card UI), cleaned stale UI references (sync/audit).
+```
+brainstorm → plan → execute → review → report → merge
+```
 
-**Do NOT reference removed features** — code will fail to compile. Tests for removed features have been deleted.
-
-## Skill Routing (技能路由)
+### 技能路由
 
 收到请求时，先检查技能是否匹配。匹配 → invoke 技能，不直接编码。
 
-### 工程纪律（编码前 MUST 触发）
+#### 工程纪律（编码前 MUST 触发）
 
 | 场景 | 技能 | 规则 |
 |------|------|------|
@@ -126,9 +141,9 @@ Phase 3 updated: Registration UI (fee input + queue display), Reports dashboard 
 | 有规格的多步骤任务 | `compose:plan` | 碰代码前出计划 |
 | Bug/测试失败/异常 | `compose:debug` | 找到根因再修，禁止跳过到修复 |
 | 实现功能/修复 | `compose:tdd` | 先写测试再写实现 |
-| 声称"完成/修好" | `compose:verify` | 必须有 `dotnet test` 通过的证据 |
+| 声称"完成/修好" | `compose:verify` | 必须有 `dotnet build` 通过的证据 |
 
-### 方向与交付（匹配时触发）
+#### 方向与交付（匹配时触发）
 
 | 场景 | 技能 |
 |------|------|
@@ -140,23 +155,110 @@ Phase 3 updated: Registration UI (fee input + queue display), Reports dashboard 
 | 代码审查/diff 检查 | `compose:review` |
 | 合并/集成/PR | `compose:merge` |
 
-### 工作流分级
+#### 工作流分级
 
 | 规模 | 必须流程 |
 |------|---------|
-| **小修补** (typo、1-2 行) | 改完 → `dotnet test` → 提交 |
-| **新功能/明确重构** | `brainstorm` → `plan` → TDD 实现 → `verify` → 提交 |
+| **小修补** (typo、1-2 行) | 改完 → `dotnet build` → 提交 |
+| **新功能/明确重构** | `brainstorm` → `plan` → TDD 实现 → `verify` → `review` → 提交 |
 | **跨模块大改/新架构** | `brainstorm` → `plan` → `plan-eng-review` → `subagent` 并行 → `verify` → `review` → `merge` |
 
 ### 核心原则
 
 - **前期思考 > 后期 debug** — 20% 的方案评审决定 80% 的结果
 - **按需裁剪** — 小修小补跳过完整流程，不搞流程内耗
-- **不验证不声称完成** — "应该修好了"不算完成，必须有测试输出作为证据
+- **不验证不声称完成** — "应该修好了"不算完成，必须有 build 输出作为证据
 - **找不到根因不修 bug** — `compose:debug` 四阶段：调查 → 分析 → 假设 → 实现
+- **Subagent 优先** — 有 subagent 支持时用 `compose:subagent` 替代 `compose:execute`
 
-## MCP Tools
+## Key Patterns
 
-- **CodeGraph**: Pre-indexed code knowledge graph with auto-sync. Use `codegraph_explore` to answer architecture questions, `codegraph_node` for symbol details, `codegraph_search` to find symbols, `codegraph_callers` for call sites. Auto-syncs on file changes — no manual re-indexing needed.
-- **filesystem**: File system access for the project directory
-- **context7**: Library documentation lookup (v3.2.1, stdio)
+- **Two-phase Serilog bootstrap** (WebAPI + Desktop)
+- **Role-based module loading** (Desktop loads modules by user role via `SuperAdminRoleDefinition.RequiredModules`)
+- **CQRS for MedicalCase** (CommandHandler pattern, not traditional 3-layer)
+- **Testing Trophy** (Integration-first, zero mock for Server tests)
+- **Soft-delete + global query filter** on most entities
+- **BaseUrlDelegatingHandler**: Thread-safe per-request URL rewriting based on connection mode
+- **SwitchingApiClient** routes localhost:5100 → embedded LocalWebAPI, otherwise → Refit remote API
+- **BaseApiController** provides `Success()`, `HandleResult()`, `GetOperator()`, `ValidatePagination()`
+- **ApiResponse<T>** envelope used consistently — ALL controllers must wrap responses
+- **RegistrationQueueNumber** auto-generated daily (max+1), **RegistrationFee** input by receptionist
+- **HerbRole** (君臣佐使) on PrescriptionItem for auto-sorting in prescriptions
+
+### Desktop WPF Patterns
+
+- **Prism Region-based navigation** via `NavigationCoordinator` + `IRegionManager`
+- **MasterDetailControlBase** pattern for entity CRUD (Patients/Herbs/Formulas/Users)
+- **CommunityToolkit.Mvvm** `[ObservableProperty]` / `[RelayCommand]` — NOT Prism's `BindableBase` / `DelegateCommand`
+- **Thin Wrapper views** — Role views embed business module controls as thin XAML wrappers
+- **Riok.Mapperly** for compile-time mapping — `.csproj` must NOT include AutoMapper unless fallback needed
+- **ViewModelLocator.AutoWireViewModel**: VM 必须在 Module.RegisterTypes 中 `containerRegistry.Register<T>()` 注册
+
+### Desktop Core DAG
+
+```
+Contracts ← Foundation ← Infrastructure ← Controls
+Shared (standalone) — referenced by Contracts + Controls
+Modules reference Infrastructure + Controls
+Roles reference Infrastructure + Controls + Modules
+```
+
+## Common Pitfalls (CRITICAL — read before coding)
+
+### Identity & Auth
+
+- **Scoped service resolution**: `RoleManager`/`UserManager` are SCOPED. NEVER resolve from root provider. Always `using var scope = app.Services.CreateScope()`.
+- **IdentitySeedData password reset**: Only reset when `user.LastLoginAt == null`. Otherwise admin password changes get wiped on restart.
+- **DatabaseInitializationService does NOT create users**: User creation is delegated to `IdentitySeedData` via `UserManager.CreateAsync`. DatabaseInitializationService only runs migrations + status resets.
+- **PasswordHelper (BCrypt) vs Identity (PBKDF2)**: These are INCOMPATIBLE. `SignInManager.CheckPasswordSignInAsync` fails on BCrypt hashes. All password hashing must go through `UserManager`.
+- **AddIdentity ordering**: `AddIdentity()` must run BEFORE JWT `AddAuthentication()` — otherwise cookie scheme overrides JWT.
+
+### LocalWebAPI (Embedded Server)
+
+- **Route prefix MUST be `api/v1/[controller]`**: Desktop Refit client uses `/api/v1/` prefix. All 11 LocalWebAPI controllers must use `[Route("api/v1/[controller]")]`.
+- **Response format MUST be `ApiResponse<T>`**: Desktop Refit client deserializes into `ApiResponse<T>`. Bare `Ok(new { ... })` causes silent deserialization failure → UI stuck.
+- **WebApplication.CreateBuilder (NOT CreateSlimBuilder)**: `CreateSlimBuilder` does NOT load `appsettings.json` in .NET 8. Use `CreateBuilder` for embedded LocalWebAPI.
+- **DefaultPasswordOptions must be explicitly registered**: In `EmbeddedLocalWebApiService.StartAsync`, call `builder.Services.Configure<DefaultPasswordOptions>(...)` BEFORE `CreateApplication`.
+- **AddApplicationPart required**: `builder.Services.AddControllers()` alone won't discover LocalWebAPI controllers from a WPF host. Must `.AddApplicationPart(typeof(HealthController).Assembly)`.
+- **LocalWebApiProgram scope fix**: `InitializeDatabaseAsync` must use `scope.ServiceProvider` (NOT `app.Services`) for `IdentitySeedData`.
+
+### Connection Mode Switching
+
+- **IsLocalUrl matches port 5100 only**: `localhost:5000` is REMOTE (WebAPI running locally). Only `localhost:5100` is LOCAL (embedded LocalWebAPI).
+- **SaveAndEnableAsync must re-probe**: Call `CheckRemoteAvailableAsync()` before `SetMode(Remote)` — stale `_isRemoteAvailable` blocks mode switch.
+- **appsettings.json path**: Use `AppContext.BaseDirectory` (NOT `Directory.GetCurrentDirectory()`) for `ConnectionSettingsService._settingsFilePath`.
+
+### Desktop WPF
+
+- **FindAsync applies global query filters** (`IsDeleted`) — use `IgnoreQueryFilters()` for soft-deleted records
+- **MedicalCase.HasPrescription** is computed — Mapper must set it explicitly
+- **WPF Desktop tests require `net8.0-windows`** — cannot mix with Server tests
+- **PrescriptionItem.HerbId is `Guid`** (non-nullable) — `.HasValue` will fail compile
+- **Refit interface convention**: Do NOT use `using Refit;` in Contracts/Api files — CS0104 ambiguity with `LYBT.Shared.Models.Contracts.Common.ApiResponse<T>`. Use `[Refit.Get]` fully-qualified.
+- **BoolToVis converter**: Use `{x:Static converters:Cvt.BoolToVis}`, NOT `{StaticResource BoolToVis}`
+- **XAML ResourceDictionary pack URI**: Use `Source="/Assembly;component/Path.xaml"` (pack URI), NOT relative `../Path.xaml`
+
+### API & Authorization
+
+- Permission levels: `Receptionist=0, Doctor=1, Admin=10, SuperAdmin=100`
+- 2 authorization policies: `DoctorOrReceptionist` + `AdminOrSuperAdmin`
+- `CanManageUser`: `IsSysAdmin` bypasses all role checks; Admin can only manage Doctor/Receptionist
+- sysadmin account is immutable: cannot be deleted, disabled, or modified via API
+- `BaseApiController` requires `ILogger` in constructor
+
+## Specs & Plans
+
+- Active specs: `docs/compose/specs/` (design documents)
+- Active plans: `docs/compose/plans/` (implementation plans)
+- Reports: `docs/compose/reports/` (completion reports)
+
+## Key Files Reference
+
+| File | Purpose |
+|------|---------|
+| `docs/01-product/02-personas.md` | 用户画像 + 默认密码 + 角色权限矩阵 |
+| `docs/02-requirements/03-users.md` | 用户管理模块设计 + 权限端点矩阵 |
+| `src/Server/Modules/LYBT.Module.Users/Services/IdentitySeedData.cs` | 种子数据（sysadmin + admin 创建） |
+| `src/Client/Desktop/Shell/Services/EmbeddedLocalWebApiService.cs` | 嵌入式 LocalWebAPI 启动 |
+| `src/Client/Desktop/LocalWebAPI/LocalWebApiProgram.cs` | LocalWebAPI 配置 + 初始化 |
+| `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Http/BaseUrlDelegatingHandler.cs` | 线程安全的 HTTP URL 路由 |
