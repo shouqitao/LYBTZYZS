@@ -1,8 +1,11 @@
 using LYBT.Desktop.Contracts.Services;
 using LYBT.LocalWebAPI;
+using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Desktop.Shell.Services;
 
@@ -40,6 +43,15 @@ public sealed class EmbeddedLocalWebApiService : IEmbeddedLocalWebApiService, ID
 
             var builder = LocalWebApiProgram.CreateBuilder();
             builder.WebHost.UseUrls(LocalUrl);
+
+            // Explicitly register DefaultPasswordOptions (configuration binding may fail in WPF context)
+            builder.Services.Configure<DefaultPasswordOptions>(options =>
+            {
+                options.SysAdminPassword = "SysAdmin@2026!";
+                options.AdminPassword = "Admin@123456";
+                options.NewUserPassword = "User@123456";
+                options.ForceChangeOnFirstLogin = false;
+            });
 
             _app = LocalWebApiProgram.CreateApplication(builder, LocalConnectionString);
             await LocalWebApiProgram.InitializeDatabaseAsync(_app);
