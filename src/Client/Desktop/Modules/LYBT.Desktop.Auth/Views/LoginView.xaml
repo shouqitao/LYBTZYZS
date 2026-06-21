@@ -42,8 +42,8 @@
         <!-- 主内容区：品牌 + 登录卡片 -->
         <Grid Margin="60,100,60,40">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="1.3*" />
+                <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
 
             <!-- 左侧品牌区 -->
