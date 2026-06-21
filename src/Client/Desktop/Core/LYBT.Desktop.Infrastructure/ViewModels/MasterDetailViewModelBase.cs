@@ -1,13 +1,12 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.Services;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Prism.Events;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Infrastructure.ViewModels
@@ -15,44 +14,18 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
     /// <summary>
     /// Master-Detail视图ViewModel基类V2（组合模式）
     ///
-    /// 注意：由于项目依赖顺序(Models → Infrastructure)，无法直接继承CoreViewModelBase
-    /// 采用组合模式：保持ObservableObject继承 + IViewModelServices参数获取通用服务
-    /// FUTURE: 重构项目结构，将CoreViewModelBase移到更底层项目 (ARCH-REFACTOR)
+    /// 继承NavigableViewModelBase获得导航、日志、EventAggregator、RegionManager等服务，
+    /// 通过IMasterDetailServices组合获取列表/详情/分页/搜索等Master-Detail专用服务。
+    /// IsLoading/IsBusy/ErrorMessage/HasUnsavedChanges 等属性通过事件订阅从子服务同步到基类。
     /// </summary>
     /// <typeparam name="TListItem">列表项类型</typeparam>
     /// <typeparam name="TDetail">详情模型类型</typeparam>
-    public abstract partial class MasterDetailViewModelBase<TListItem, TDetail> : ObservableObject, INavigationAware, IRegionMemberLifetime, IDisposable, IAsyncInitializable
+    public abstract partial class MasterDetailViewModelBase<TListItem, TDetail>
+        : NavigableViewModelBase, IAsyncInitializable
         where TListItem : class
         where TDetail : class
     {
         private readonly IMasterDetailServices<TListItem, TDetail> _masterDetailServices;
-        private readonly IViewModelServices _viewModelServices;
-        private bool _disposed;
-
-        /// <summary>
-        /// 日志记录器（来自IViewModelServices）
-        /// </summary>
-        protected ILogger Logger { get; }
-
-        /// <summary>
-        /// 事件聚合器（来自IViewModelServices）
-        /// </summary>
-        protected IEventAggregator EventAggregator => _viewModelServices.EventAggregator;
-
-        /// <summary>
-        /// Region管理器（来自IViewModelServices）
-        /// </summary>
-        protected IRegionManager RegionManager => _viewModelServices.RegionManager;
-
-        /// <summary>
-        /// 会话管理器（来自IViewModelServices）
-        /// </summary>
-        protected ISessionManager SessionManager => _viewModelServices.SessionManager;
-
-        /// <summary>
-        /// 通用对话框服务（来自IViewModelServices）
-        /// </summary>
-        protected ICommonDialogService CommonDialogService => _viewModelServices.CommonDialogService;
 
         /// <summary>
         /// Master-Detail服务
@@ -64,23 +37,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         /// </summary>
         public ObservableCollection<TListItem> Items { get; } = new();
 
-        /// <summary>
-        /// 页面标题
-        /// </summary>
-        [ObservableProperty]
-        private string _pageTitle = string.Empty;
-
         #region 委托属性 - Loading
-
-        /// <summary>
-        /// 是否正在加载
-        /// </summary>
-        public bool IsLoading => _masterDetailServices.Loading.IsLoading;
-
-        /// <summary>
-        /// 是否正在执行操作
-        /// </summary>
-        public bool IsBusy => _masterDetailServices.Loading.IsBusy;
 
         /// <summary>
         /// 忙碌提示信息
@@ -181,28 +138,9 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         public bool IsEditMode => _masterDetailServices.DetailEditor.IsEditMode;
 
         /// <summary>
-        /// 是否有未保存的更改
-        /// </summary>
-        public bool HasUnsavedChanges => _masterDetailServices.DetailEditor.HasUnsavedChanges;
-
-        /// <summary>
         /// 是否是新建
         /// </summary>
         public bool IsNew => _masterDetailServices.DetailEditor.IsNew;
-
-        #endregion
-
-        #region 委托属性 - Error
-
-        /// <summary>
-        /// 错误消息
-        /// </summary>
-        public string? ErrorMessage => _masterDetailServices.ErrorHandler.ErrorMessage;
-
-        /// <summary>
-        /// 是否有错误
-        /// </summary>
-        public bool HasError => _masterDetailServices.ErrorHandler.HasErrors;
 
         #endregion
 
@@ -249,7 +187,10 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         #endregion
 
-        public virtual bool KeepAlive => false;
+        /// <summary>
+        /// Master-Detail视图不保持活动状态（每次导航重新创建）
+        /// </summary>
+        public override bool KeepAlive => false;
 
         /// <summary>
         /// 构造函数
@@ -257,16 +198,17 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         protected MasterDetailViewModelBase(
             IViewModelServices services,
             IMasterDetailServices<TListItem, TDetail> masterDetailServices)
+            : base(services)
         {
-            _viewModelServices = services ?? throw new ArgumentNullException(nameof(services));
             _masterDetailServices = masterDetailServices ?? throw new ArgumentNullException(nameof(masterDetailServices));
-            Logger = services.LoggerFactory.CreateLogger(GetType());
 
-            // 订阅服务事件以转发属性变更通知
+            // 订阅服务事件以同步属性变更通知
             SubscribeToServiceEvents();
             // 初始化时服务状态都是默认值，不会触发PropertyChanged，需要主动刷新
             NotifyCommandsCanExecuteChanged();
         }
+
+        #region 服务事件订阅与属性同步
 
         private void SubscribeToServiceEvents()
         {
@@ -295,10 +237,20 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         private void OnLoadingPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            OnPropertyChanged(e.PropertyName);
-            if (e.PropertyName == nameof(ILoadingStateManager.IsBusy))
+            // IsLoading/IsBusy 继承自基类，需要从子服务同步
+            if (e.PropertyName == nameof(ILoadingStateManager.IsLoading))
             {
+                IsLoading = _masterDetailServices.Loading.IsLoading;
+            }
+            else if (e.PropertyName == nameof(ILoadingStateManager.IsBusy))
+            {
+                IsBusy = _masterDetailServices.Loading.IsBusy;
                 NotifyCommandsCanExecuteChanged();
+            }
+            else
+            {
+                // 转发其他属性 (BusyMessage 等)
+                OnPropertyChanged(e.PropertyName);
             }
         }
 
@@ -347,7 +299,17 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         private void OnDetailEditorPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            OnPropertyChanged(e.PropertyName);
+            // HasUnsavedChanges 继承自基类，需要从子服务同步
+            if (e.PropertyName == nameof(IDetailEditorService<TDetail>.HasUnsavedChanges))
+            {
+                HasUnsavedChanges = _masterDetailServices.DetailEditor.HasUnsavedChanges;
+            }
+            else
+            {
+                // 转发其他属性 (CurrentDetail, IsEditMode, IsNew 等)
+                OnPropertyChanged(e.PropertyName);
+            }
+
             if (e.PropertyName == nameof(IDetailEditorService<TDetail>.IsEditMode))
             {
                 NotifyCommandsCanExecuteChanged();
@@ -365,7 +327,15 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         private void OnErrorHandlerPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            OnPropertyChanged(e.PropertyName);
+            // ErrorMessage 继承自基类，需要从子服务同步 (HasError 由基类从 ErrorMessage 计算)
+            if (e.PropertyName == nameof(IErrorHandler.ErrorMessage))
+            {
+                ErrorMessage = _masterDetailServices.ErrorHandler.ErrorMessage ?? string.Empty;
+            }
+            else
+            {
+                OnPropertyChanged(e.PropertyName);
+            }
         }
 
         /// <summary>
@@ -379,6 +349,8 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
                 await LoadDetailAsync(e.NewSelection);
             }
         }
+
+        #endregion
 
         #region 列表命令
 
@@ -634,7 +606,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         #endregion
 
-        #region 初始化
+        #region 初始化与导航
 
         /// <summary>
         /// 初始化ViewModel - 供Control的Loaded事件调用
@@ -647,18 +619,11 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             await LoadListAsync();
         }
 
-        #endregion
-
-        #region INavigationAware
-
-        public virtual bool IsNavigationTarget(NavigationContext navigationContext) => true;
-
-        public virtual void OnNavigatedFrom(NavigationContext navigationContext) { }
-
         /// <summary>
-        /// 导航到视图时调用（同步入口）
+        /// 导航到视图时的核心处理（重写NavigableViewModelBase）
+        /// 每次 导航都加载列表数据
         /// </summary>
-        public virtual void OnNavigatedTo(NavigationContext navigationContext)
+        protected override void OnNavigatedToCore(NavigationContext navigationContext)
         {
             OnNavigatedToAsync(navigationContext).SafeFireAndForget(
                 ex => MasterDetailServices.ErrorHandler.HandleException(ex, $"OnNavigatedTo failed in {GetType().Name}"));
@@ -666,7 +631,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         /// <summary>
         /// 导航到视图时调用的异步实现
-        /// 子类应重写此方法而非OnNavigatedTo
+        /// 子类应重写此方法而非OnNavigatedToCore
         /// </summary>
         /// <param name="navigationContext">导航上下文</param>
         /// <returns>异步任务</returns>
@@ -678,34 +643,21 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         #endregion
 
-        #region IDisposable
+        #region 资源清理
 
-        public void Dispose()
+        protected override void OnDisposing()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+            // 取消订阅服务事件处理器
+            _masterDetailServices.Loading.PropertyChanged -= OnLoadingPropertyChanged;
+            _masterDetailServices.Pagination.PropertyChanged -= OnPaginationPropertyChanged;
+            _masterDetailServices.Pagination.PageChanged -= OnPaginationPageChanged;
+            _masterDetailServices.Search.PropertyChanged -= OnSearchPropertyChanged;
+            _masterDetailServices.Selection.PropertyChanged -= OnSelectionPropertyChanged;
+            _masterDetailServices.Selection.SelectionChanged -= OnSelectionSelectionChanged;
+            _masterDetailServices.DetailEditor.PropertyChanged -= OnDetailEditorPropertyChanged;
+            _masterDetailServices.ErrorHandler.PropertyChanged -= OnErrorHandlerPropertyChanged;
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed) return;
-
-            if (disposing)
-            {
-                // 取消订阅事件处理器
-                _masterDetailServices.Loading.PropertyChanged -= OnLoadingPropertyChanged;
-                _masterDetailServices.Pagination.PropertyChanged -= OnPaginationPropertyChanged;
-                _masterDetailServices.Pagination.PageChanged -= OnPaginationPageChanged;
-                _masterDetailServices.Search.PropertyChanged -= OnSearchPropertyChanged;
-                _masterDetailServices.Selection.PropertyChanged -= OnSelectionPropertyChanged;
-                _masterDetailServices.Selection.SelectionChanged -= OnSelectionSelectionChanged;
-                _masterDetailServices.DetailEditor.PropertyChanged -= OnDetailEditorPropertyChanged;
-                _masterDetailServices.ErrorHandler.PropertyChanged -= OnErrorHandlerPropertyChanged;
-
-                _masterDetailServices.Dispose();
-            }
-
-            _disposed = true;
+            _masterDetailServices.Dispose();
         }
 
         #endregion
