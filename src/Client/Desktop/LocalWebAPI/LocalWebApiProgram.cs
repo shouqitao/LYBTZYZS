@@ -24,7 +24,7 @@ public static class LocalWebApiProgram
 {
     public static WebApplicationBuilder CreateBuilder(string[]? args = null)
     {
-        var builder = WebApplication.CreateSlimBuilder(args ?? []);
+        var builder = WebApplication.CreateBuilder(args ?? []);
         return builder;
     }
 
