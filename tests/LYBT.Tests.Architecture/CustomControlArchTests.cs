@@ -13,15 +13,15 @@ namespace LYBT.Tests.Architecture;
 /// </summary>
 public class CustomControlArchTests
 {
-    private static readonly Assembly InfrastructureAssembly =
-        Assembly.Load("LYBT.Desktop.Infrastructure");
+    private static readonly Assembly ControlsAssembly =
+        Assembly.Load("LYBT.Desktop.Controls");
 
     /// <summary>
     /// 获取所有自定义控件类型
     /// </summary>
     private static IEnumerable<Type> GetCustomControlTypes()
     {
-        return InfrastructureAssembly.GetTypes()
+        return ControlsAssembly.GetTypes()
             .Where(t => t.IsClass &&
                        t.IsPublic &&
                        !t.IsAbstract &&
@@ -209,7 +209,7 @@ public class CustomControlArchTests
     [Fact]
     public void All_Controls_Should_Inherit_From_UserControl()
     {
-        var result = Types.InAssembly(InfrastructureAssembly)
+        var result = Types.InAssembly(ControlsAssembly)
             .That()
             .ResideInNamespaceContaining("Controls")
             .And()
@@ -229,18 +229,28 @@ public class CustomControlArchTests
         // 允许一些辅助类不继承自Control
         var allowedNonControls = new[]
         {
-            "SystemTimeProvider",  // 辅助类
-            "VirtualizedDataGridViewModel",  // ViewModel
-            "BadgeType",  // 徽章类型枚举
-            "PatientCardDisplayMode",  // 患者卡片显示模式枚举
-            "PatientDisplayModel",  // 患者显示模型
-            "HerbItemControlViewModel",  // D5-3: 从Herbs迁入的ViewModel
-            "HerbListControlViewModel",  // D5-3: 从Herbs迁入的ViewModel
-            "HerbItemChangedEventArgs",  // D5-3: 从Herbs迁入的事件参数
-            "HerbListChangedEventArgs",  // D5-3: 从Herbs迁入的事件参数
-            "HerbItemChangeType",        // D5-3: 从Herbs迁入的枚举
-            "HerbListChangeType",        // D5-3: 从Herbs迁入的枚举
-            "BreadcrumbItem"  // BreadcrumbBar data model
+            // Helpers/strategies
+            "DuplicateDosageStrategy", "ScreenSizeCategory", "BindingProxy", "ResponsiveLayoutHelper",
+            // Enums
+            "SuggestionType",
+            // Converters (all live in Controls.Converters)
+            "ApiHealthStatusToColorConverter", "ApiHealthStatusToTextConverter",
+            "BooleanToVisibilityConverter", "BoolToBrushConverter", "BoolToColorConverter",
+            "BoolToDoubleConverter", "DecocteMethodToVisibilityConverter", "EnumDescriptionConverter",
+            "FirstCharacterConverter", "InverseBooleanConverter", "InverseBooleanToVisibilityConverter",
+            "InverseNullToVisibilityConverter", "TimestampFormatConverter", "IconConverter",
+            "SuggestionTypeColorConverter", "SuggestionTypeTextConverter", "NullToVisibilityConverter",
+            "StringToVisibilityConverter", "ZeroToVisibilityConverter", "Cvt",
+            // ViewModels (moved from Infrastructure during architecture cleanup)
+            "VirtualizedDataGridViewModel", "HerbItemControlViewModel", "HerbListControlViewModel",
+            // Event args
+            "HerbItemChangedEventArgs", "HerbListChangedEventArgs",
+            // Enums
+            "HerbItemChangeType", "HerbListChangeType", "BadgeType", "PatientCardDisplayMode",
+            // Models
+            "PatientDisplayModel", "BreadcrumbItem",
+            // Services
+            "SystemTimeProvider"
         };
 
         var actualViolations = result.FailingTypes?
