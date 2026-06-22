@@ -26,12 +26,6 @@ namespace LYBT.Desktop.Controls.Controls
             profileItem.Click += (_, _) => EditProfileCommand?.Execute(null);
             menu.Items.Add(profileItem);
 
-            menu.Items.Add(new Separator { Background = (System.Windows.Media.Brush)FindResource("SidebarDividerBrush") });
-
-            var logoutItem = new MenuItem { Header = "退出登录", Foreground = (System.Windows.Media.Brush)FindResource("DangerBrush"), Padding = new Thickness(16,8,32,8) };
-            logoutItem.Click += (_, _) => LogoutCommand?.Execute(null);
-            menu.Items.Add(logoutItem);
-
             menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
             menu.PlacementTarget = sender as UIElement;
             menu.IsOpen = true;

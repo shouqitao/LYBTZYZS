@@ -148,7 +148,7 @@
                             <Setter.Value>
                                 <ControlTemplate TargetType="Button">
                                     <Border x:Name="UserBorder" Padding="12,12" Background="Transparent">
-                                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
+                                        <ContentPresenter x:Name="ContentHost" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
@@ -158,6 +158,11 @@
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsExpanded, ElementName=Root}" Value="False">
+                                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            </DataTrigger>
+                        </Style.Triggers>
                     </Style>
                 </Button.Style>
                 <Border Padding="12,12">
