@@ -20,7 +20,7 @@
         <KeyBinding Key="C" Command="{Binding QuickStartMedicalCaseCommand}" Modifiers="Ctrl+Shift" />
         <KeyBinding Key="F1" Command="{Binding ShowHelpCommand}" />
         <KeyBinding Key="OemComma" Command="{Binding ShowSettingsCommand}" Modifiers="Ctrl" />
-        <KeyBinding Key="M" Command="{Binding ToggleDrawerCommand}" Modifiers="Ctrl" />
+        <KeyBinding Key="M" Command="{Binding ToggleSidebarCommand}" Modifiers="Ctrl" />
         <KeyBinding Key="Left" Command="{Binding NavigateBackCommand}" Modifiers="Alt" />
         <KeyBinding Key="Right" Command="{Binding NavigateForwardCommand}" Modifiers="Alt" />
         <KeyBinding Key="Home" Command="{Binding NavigateToHomeCommand}" Modifiers="Alt" />
@@ -32,166 +32,154 @@
             <ContentControl prism:RegionManager.RegionName="LoginRegion" />
         </Grid>
 
-        <!-- Post-login Shell (MDIX native) -->
+        <!-- Post-login Shell -->
         <Grid Visibility="{Binding IsLoggedIn, Converter={x:Static converters:Cvt.BoolToVis}}">
-        <materialDesign:DialogHost
-            DialogTheme="Inherit"
-            Identifier="RootDialog">
+            <materialDesign:DialogHost
+                DialogTheme="Inherit"
+                Identifier="RootDialog">
 
-            <materialDesign:DrawerHost
-                    IsLeftDrawerOpen="{Binding IsDrawerOpen, Mode=TwoWay}">
+                <materialDesign:Snackbar Name="MainSnackbar">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding SidebarWidth}" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="32" />
+                        </Grid.RowDefinitions>
 
-                    <!-- Left drawer -->
-                    <materialDesign:DrawerHost.LeftDrawerContent>
-                        <DockPanel MinWidth="280"
-                                   Background="{DynamicResource MaterialDesign.Brush.Surface}">
+                        <!-- Left sidebar -->
+                        <Border Grid.Column="0" Grid.RowSpan="2"
+                                Background="{DynamicResource MaterialDesign.Brush.Primary}">
+                            <DockPanel LastChildFill="False">
 
-                            <!-- Brand row -->
-                            <DockPanel DockPanel.Dock="Top" LastChildFill="False">
-                                <ToggleButton
-                                    DockPanel.Dock="Right"
-                                    IsChecked="{Binding IsDrawerOpen, Mode=TwoWay}"
-                                    Style="{StaticResource MaterialDesignHamburgerToggleButton}" />
-                                <StackPanel Orientation="Horizontal" Margin="16,12">
-                                    <materialDesign:PackIcon Kind="Leaf" Width="24" Height="24"
-                                                             Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
-                                    <TextBlock Margin="12,0,0,0" FontSize="16" FontWeight="Bold"
-                                               Text="凌隐宝堂" />
-                                </StackPanel>
-                            </DockPanel>
-
-                            <!-- Navigation list (flat, no grouping) -->
-                            <ListBox
-                                ItemsSource="{Binding NavigationItems}"
-                                SelectedItem="{Binding SelectedNavItem, Mode=TwoWay}"
-                                Style="{StaticResource MaterialDesignNavigationPrimaryListBox}"
-                                Margin="0,8">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal" Margin="16,10">
-                                            <materialDesign:PackIcon Kind="{Binding IconKind}"
-                                                                     Width="22" Height="22"
-                                                                     VerticalAlignment="Center" />
-                                            <TextBlock Margin="20,0,0,0" FontSize="14"
-                                                       VerticalAlignment="Center"
-                                                       Text="{Binding Title}" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
-
-                            <!-- Separator -->
-                            <Separator DockPanel.Dock="Bottom" Margin="16,0"
-                                       Background="{DynamicResource MaterialDesign.Brush.Outline}" />
-
-                            <!-- User card -->
-                            <StackPanel DockPanel.Dock="Bottom" Margin="16,12">
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                    <Border Width="36" Height="36" CornerRadius="18"
-                                            Background="{StaticResource SidebarAvatarBrush}">
-                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                   FontSize="14" FontWeight="Bold" Foreground="White"
-                                                   Text="{Binding CurrentUserInitial}" />
-                                    </Border>
-                                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                                        <TextBlock FontSize="13" FontWeight="SemiBold"
-                                                   Text="{Binding CurrentUserDisplayName}" />
-                                        <TextBlock FontSize="11" Opacity="0.6"
-                                                   Text="{Binding CurrentUserRoleDisplay}" />
+                                <!-- Top: Logo + hamburger -->
+                                <DockPanel DockPanel.Dock="Top" LastChildFill="False">
+                                    <ToggleButton
+                                        DockPanel.Dock="Right"
+                                        IsChecked="{Binding IsSidebarExpanded}"
+                                        Command="{Binding ToggleSidebarCommand}"
+                                        Style="{StaticResource MaterialDesignHamburgerToggleButton}"
+                                        Foreground="White"
+                                        Margin="0,8,8,0" />
+                                    <StackPanel Orientation="Horizontal" Margin="12,12,0,12"
+                                                HorizontalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="Leaf" Width="24" Height="24"
+                                                                 Foreground="White" />
+                                        <TextBlock Margin="8,0,0,0" FontSize="14" FontWeight="Bold"
+                                                   Foreground="White"
+                                                   Text="凌隐宝堂"
+                                                   Visibility="{Binding DataContext.NavTextVisibility,
+                                                               RelativeSource={RelativeSource AncestorType=Window}}" />
                                     </StackPanel>
-                                </StackPanel>
-                                <Button Command="{Binding LogoutCommand}"
-                                        Style="{StaticResource MaterialDesignFlatButton}"
-                                        HorizontalAlignment="Stretch">
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="Logout" Width="18" Height="18" />
-                                        <TextBlock Margin="12,0,0,0" Text="退出登录" />
-                                    </StackPanel>
-                                </Button>
-                            </StackPanel>
+                                </DockPanel>
 
-                        </DockPanel>
-                    </materialDesign:DrawerHost.LeftDrawerContent>
+                                <Separator DockPanel.Dock="Top"
+                                           Background="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
 
-                    <!-- Main content -->
-                    <DockPanel>
+                                <!-- Navigation list -->
+                                <ListBox
+                                    ItemsSource="{Binding NavigationItems}"
+                                    SelectedItem="{Binding SelectedNavItem, Mode=TwoWay}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Margin="0,8">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal"
+                                                        HorizontalAlignment="Center">
+                                                <materialDesign:PackIcon Kind="{Binding IconKind}"
+                                                                         Width="22" Height="22"
+                                                                         Foreground="White"
+                                                                         VerticalAlignment="Center"
+                                                                         Margin="0,8" />
+                                                <TextBlock Margin="12,0,0,0" FontSize="14"
+                                                           Foreground="White"
+                                                           VerticalAlignment="Center"
+                                                           Text="{Binding Title}"
+                                                           Visibility="{Binding DataContext.NavTextVisibility,
+                                                                       RelativeSource={RelativeSource AncestorType=Window}}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
 
-                        <!-- Top bar -->
-                        <Border DockPanel.Dock="Top" Height="48"
-                                Background="{DynamicResource MaterialDesign.Brush.Surface}"
-                                BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
-                                BorderThickness="0,0,0,1">
-                        <DockPanel>
+                                <!-- Spacer -->
+                                <Border DockPanel.Dock="Bottom" />
 
-                            <TextBlock DockPanel.Dock="Left" Margin="16,0"
-                                       VerticalAlignment="Center"
-                                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                       Text="{Binding CurrentPageTitle}" />
-
-                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
-                                        VerticalAlignment="Center" Margin="0,0,12,0">
-
-                                <ToggleButton IsChecked="{Binding IsDarkMode}"
-                                              Style="{StaticResource MaterialDesignSwitchToggleButton}"
-                                              ToolTip="切换深色模式" />
-
-                                <materialDesign:PackIcon
-                                    Kind="{Binding ApiStatusIcon}"
-                                    Foreground="{Binding ApiStatusColor}"
-                                    Width="20" Height="20" Margin="12,0"
-                                    ToolTip="{Binding ConnectionModeDisplay}" />
-
-                                <Button Style="{StaticResource MaterialDesignFlatButton}" Padding="4">
-                                    <StackPanel Orientation="Horizontal">
+                                <!-- Bottom: User card -->
+                                <StackPanel DockPanel.Dock="Bottom" Margin="0,0,0,8">
+                                    <Separator Margin="8,0"
+                                               Background="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
+                                    <StackPanel Orientation="Horizontal" Margin="12,8"
+                                                HorizontalAlignment="Center">
                                         <Border Width="32" Height="32" CornerRadius="16"
                                                 Background="{StaticResource SidebarAvatarBrush}">
                                             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                       FontSize="13" Foreground="White"
+                                                       FontSize="12" FontWeight="Bold" Foreground="White"
                                                        Text="{Binding CurrentUserInitial}" />
                                         </Border>
-                                        <TextBlock Margin="8,0,0,0" VerticalAlignment="Center"
-                                                   FontSize="13"
-                                                   Text="{Binding CurrentUserDisplayName}" />
-                                        <materialDesign:PackIcon Kind="ChevronDown" Margin="4,0,0,0"
-                                                                 VerticalAlignment="Center" />
+                                        <StackPanel Margin="8,0,0,0" VerticalAlignment="Center"
+                                                    Visibility="{Binding DataContext.NavTextVisibility,
+                                                                RelativeSource={RelativeSource AncestorType=Window}}">
+                                            <TextBlock FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="White"
+                                                       Text="{Binding CurrentUserDisplayName}" />
+                                            <TextBlock FontSize="10" Foreground="White" Opacity="0.7"
+                                                       Text="{Binding CurrentUserRoleDisplay}" />
+                                        </StackPanel>
                                     </StackPanel>
-                                </Button>
-                            </StackPanel>
-                        </DockPanel>
+                                    <Button Command="{Binding LogoutCommand}"
+                                            Style="{StaticResource MaterialDesignFlatButton}"
+                                            HorizontalAlignment="Center"
+                                            Foreground="White"
+                                            Padding="8,4">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="Logout" Width="18" Height="18" />
+                                            <TextBlock Margin="8,0,0,0" Text="退出"
+                                                       Visibility="{Binding DataContext.NavTextVisibility,
+                                                                   RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+
+                            </DockPanel>
                         </Border>
 
-                        <!-- Breadcrumb bar -->
-                        <Border DockPanel.Dock="Top" Padding="16,8"
-                                BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
-                                BorderThickness="0,0,0,1">
-                            <ItemsControl ItemsSource="{Binding Breadcrumbs}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Button Content="{Binding Title}"
-                                                Command="{Binding DataContext.NavigateToBreadcrumbCommand,
-                                                    RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}"
-                                                Style="{StaticResource MaterialDesignFlatButton}" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </Border>
-
-                        <!-- Content region (Prism) -->
-                        <Border Margin="12" CornerRadius="8"
-                                Background="{DynamicResource MaterialDesign.Brush.Surface}">
+                        <!-- Content area -->
+                        <Border Grid.Column="1" Grid.Row="0" Margin="4"
+                                Background="{DynamicResource MaterialDesign.Brush.Surface}"
+                                CornerRadius="4">
                             <ContentControl prism:RegionManager.RegionName="ContentRegion" />
                         </Border>
 
-                    </DockPanel>
+                        <!-- Status bar -->
+                        <Border Grid.Column="1" Grid.Row="1"
+                                Background="{DynamicResource MaterialDesign.Brush.Surface}"
+                                BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
+                                BorderThickness="0,1,0,0">
+                            <DockPanel Margin="12,0">
+                                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal"
+                                            VerticalAlignment="Center">
+                                    <materialDesign:PackIcon
+                                        Kind="{Binding ApiStatusIcon}"
+                                        Foreground="{Binding ApiStatusColor}"
+                                        Width="14" Height="14" />
+                                    <TextBlock Margin="6,0,0,0" FontSize="11"
+                                               Text="{Binding ConnectionModeDisplay}" />
+                                </StackPanel>
+                                <TextBlock DockPanel.Dock="Right"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Center"
+                                           FontSize="11"
+                                           Text="{Binding CurrentTimeDisplay}" />
+                            </DockPanel>
+                        </Border>
 
-                </materialDesign:DrawerHost>
-        </materialDesign:DialogHost>
+                    </Grid>
+                </materialDesign:Snackbar>
+            </materialDesign:DialogHost>
         </Grid>
     </Grid>
 

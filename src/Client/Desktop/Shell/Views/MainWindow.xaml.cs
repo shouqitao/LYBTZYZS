@@ -1,13 +1,16 @@
 using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Shell.ViewModels;
+using MaterialDesignThemes.Wpf;
+using Prism.Ioc;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Shell.Views
 {
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// remove-titlebar-add-close-button: 添加Alt+F4拦截逻辑
-    /// poc-drawer-layout: Drawer通过XAML绑定控制显示
+    /// sidebar-layout: 可折叠左侧边栏 + 内容区 + 状态栏
     /// </summary>
     public partial class MainWindow : Window
     {
@@ -15,9 +18,6 @@ namespace LYBT.Desktop.Shell.Views
         {
             InitializeComponent();
 
-            // UltraThink修复 Issue #856: 在窗口完全加载后才检查登录状态
-            // 原因：构造函数中启动Task.Run可能在Region注册前执行导航
-            // 解决：订阅Loaded事件，确保所有XAML元素和Region已就绪
             Loaded += OnWindowLoaded;
         }
 
@@ -29,6 +29,12 @@ namespace LYBT.Desktop.Shell.Views
         {
             try
             {
+                // Register the Snackbar's MessageQueue in DI so SnackbarService can use it
+                if (MainSnackbar?.MessageQueue is ISnackbarMessageQueue queue)
+                {
+                    ContainerLocator.Current.RegisterInstance(queue);
+                }
+
                 if (DataContext is MainWindowViewModel viewModel)
                 {
                     await viewModel.OnWindowLoadedAsync();
@@ -37,7 +43,6 @@ namespace LYBT.Desktop.Shell.Views
             catch (Exception)
             {
                 // 异常已在ViewModel中记录，此处静默处理避免崩溃
-                // 登录状态检查失败不应阻止窗口加载
             }
         }
 
