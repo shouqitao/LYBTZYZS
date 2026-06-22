@@ -57,10 +57,19 @@
                                 <ToggleButton
                                     DockPanel.Dock="Top"
                                     IsChecked="{Binding IsSidebarExpanded}"
-                                    Style="{StaticResource MaterialDesignHamburgerToggleButton}"
                                     Foreground="White"
-                                    Margin="0,8,8,0"
-                                    HorizontalAlignment="Right" />
+                                    Margin="0,8,8,0">
+                                    <ToggleButton.Style>
+                                        <Style TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignHamburgerToggleButton}">
+                                            <Setter Property="HorizontalAlignment" Value="Center" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSidebarExpanded}" Value="True">
+                                                    <Setter Property="HorizontalAlignment" Value="Right" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ToggleButton.Style>
+                                </ToggleButton>
 
                                 <!-- Logo + brand name -->
                                 <StackPanel DockPanel.Dock="Top"
