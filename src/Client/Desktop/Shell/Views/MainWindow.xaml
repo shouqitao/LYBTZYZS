@@ -20,7 +20,7 @@
         <KeyBinding Key="C" Command="{Binding QuickStartMedicalCaseCommand}" Modifiers="Ctrl+Shift" />
         <KeyBinding Key="F1" Command="{Binding ShowHelpCommand}" />
         <KeyBinding Key="OemComma" Command="{Binding ShowSettingsCommand}" Modifiers="Ctrl" />
-        <KeyBinding Key="M" Command="{Binding ToggleSidebarCommand}" Modifiers="Ctrl" />
+
         <KeyBinding Key="Left" Command="{Binding NavigateBackCommand}" Modifiers="Alt" />
         <KeyBinding Key="Right" Command="{Binding NavigateForwardCommand}" Modifiers="Alt" />
         <KeyBinding Key="Home" Command="{Binding NavigateToHomeCommand}" Modifiers="Alt" />
@@ -58,7 +58,6 @@
                                     <ToggleButton
                                         DockPanel.Dock="Right"
                                         IsChecked="{Binding IsSidebarExpanded}"
-                                        Command="{Binding ToggleSidebarCommand}"
                                         Style="{StaticResource MaterialDesignHamburgerToggleButton}"
                                         Foreground="White"
                                         Margin="0,8,8,0" />

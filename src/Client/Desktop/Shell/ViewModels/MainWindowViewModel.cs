@@ -499,13 +499,11 @@ public partial class MainWindowViewModel : CoreViewModelBase
     }
 
     /// <summary>
-    /// 切换侧边栏展开/折叠命令
+    /// 侧边栏展开/折叠时自动更新宽度
     /// </summary>
-    [RelayCommand]
-    private void ToggleSidebar()
+    partial void OnIsSidebarExpandedChanged(bool value)
     {
-        SidebarWidth = IsSidebarExpanded ? 60 : 280;
-        IsSidebarExpanded = !IsSidebarExpanded;
+        SidebarWidth = value ? 280 : 60;
     }
 
     #endregion
