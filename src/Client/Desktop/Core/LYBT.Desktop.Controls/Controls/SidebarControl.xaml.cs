@@ -138,7 +138,52 @@ namespace LYBT.Desktop.Controls.Controls
 
         #endregion
 
-        #region NavigationItemsSource - 导航菜单项
+        #region HomeNavItems - 主页组导航项
+
+        public ObservableCollection<NavigationItem> HomeNavItems
+        {
+            get => (ObservableCollection<NavigationItem>)GetValue(HomeNavItemsProperty);
+            set => SetValue(HomeNavItemsProperty, value);
+        }
+
+        public static readonly DependencyProperty HomeNavItemsProperty =
+            DependencyProperty.Register(nameof(HomeNavItems), typeof(ObservableCollection<NavigationItem>),
+                typeof(SidebarControl), new PropertyMetadata(null));
+
+        #endregion
+
+        #region BusinessNavItems - 业务组导航项
+
+        public ObservableCollection<NavigationItem> BusinessNavItems
+        {
+            get => (ObservableCollection<NavigationItem>)GetValue(BusinessNavItemsProperty);
+            set => SetValue(BusinessNavItemsProperty, value);
+        }
+
+        public static readonly DependencyProperty BusinessNavItemsProperty =
+            DependencyProperty.Register(nameof(BusinessNavItems), typeof(ObservableCollection<NavigationItem>),
+                typeof(SidebarControl), new PropertyMetadata(null));
+
+        #endregion
+
+        #region AdminNavItems - 管理组导航项
+
+        public ObservableCollection<NavigationItem> AdminNavItems
+        {
+            get => (ObservableCollection<NavigationItem>)GetValue(AdminNavItemsProperty);
+            set => SetValue(AdminNavItemsProperty, value);
+        }
+
+        public static readonly DependencyProperty AdminNavItemsProperty =
+            DependencyProperty.Register(nameof(AdminNavItems), typeof(ObservableCollection<NavigationItem>),
+                typeof(SidebarControl), new PropertyMetadata(null));
+
+        #endregion
+
+        // NOTE: NavigationItemsSource DP is retained as dead code for backward compat.
+        // The new SidebarControl.xaml binds to HomeNavItems/BusinessNavItems/AdminNavItems instead.
+        // Safe to remove in a future cleanup task.
+        #region NavigationItemsSource - 导航菜单项 (DEAD — kept for cleanup later)
 
         public ObservableCollection<NavigationItem> NavigationItemsSource
         {
