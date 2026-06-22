@@ -59,8 +59,8 @@
                                     IsChecked="{Binding IsSidebarExpanded}"
                                     Style="{StaticResource MaterialDesignHamburgerToggleButton}"
                                     Foreground="White"
-                                    Margin="8,8,8,0"
-                                    HorizontalAlignment="Center" />
+                                    Margin="0,8,8,0"
+                                    HorizontalAlignment="Right" />
 
                                 <!-- Logo + brand name -->
                                 <StackPanel DockPanel.Dock="Top"
