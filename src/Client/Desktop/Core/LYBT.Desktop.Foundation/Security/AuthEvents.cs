@@ -95,6 +95,16 @@ public static class AuthEvents
     public class SessionExpiredEvent : PubSubEvent<SessionExpiredPayload> { }
 
     #endregion
+
+    #region 资料更新相关事件
+
+    /// <summary>
+    /// 用户资料更新事件
+    /// 当用户在 AccountSettings 修改资料成功后触发，用于跨 VM 同步 CurrentUser
+    /// </summary>
+    public class ProfileUpdatedEvent : PubSubEvent<ProfileUpdatedPayload> { }
+
+    #endregion
 }
 
 #region 事件载荷定义
@@ -418,6 +428,18 @@ public record PasswordChangedPayload
     /// <summary>
     /// 时间戳
     /// </summary>
+    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
+}
+
+/// <summary>
+/// 用户资料更新载荷
+/// </summary>
+public record ProfileUpdatedPayload
+{
+    /// <summary>更新后的用户完整信息</summary>
+    public required UserDetailDto UpdatedUser { get; init; }
+
+    /// <summary>时间戳</summary>
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;
 }
 

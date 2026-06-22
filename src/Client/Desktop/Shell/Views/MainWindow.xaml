@@ -85,11 +85,13 @@
                 CurrentTime="{Binding CurrentTime}"
                 CurrentUser="{Binding CurrentUser}"
                 EditProfileCommand="{Binding EditProfileCommand}"
+                HomeNavItems="{Binding HomeNavItems}"
+                BusinessNavItems="{Binding BusinessNavItems}"
+                AdminNavItems="{Binding AdminNavItems}"
                 IsExpanded="{Binding IsDrawerOpen}"
                 IsRemoteMode="{Binding IsRemoteMode}"
                 LogoutCommand="{Binding LogoutCommand}"
                 NavigateToHomeCommand="{Binding NavigateToHomeCommand}"
-                NavigationItemsSource="{Binding NavigationItems}"
                 ToggleCommand="{Binding ToggleDrawerCommand}" />
 
             <!--  右侧工作区  -->
