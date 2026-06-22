@@ -96,7 +96,7 @@ public static class AuthEvents
 
     #endregion
 
-    #region 资料更新事件
+    #region 资料更新相关事件
 
     /// <summary>
     /// 用户资料更新事件
@@ -432,6 +432,18 @@ public record PasswordChangedPayload
 }
 
 /// <summary>
+/// 用户资料更新载荷
+/// </summary>
+public record ProfileUpdatedPayload
+{
+    /// <summary>更新后的用户完整信息</summary>
+    public required UserDetailDto UpdatedUser { get; init; }
+
+    /// <summary>时间戳</summary>
+    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
+}
+
+/// <summary>
 /// 会话过期原因
 /// </summary>
 public enum SessionExpiredReason
@@ -458,15 +470,3 @@ public enum SessionExpiredReason
 }
 
 #endregion
-
-/// <summary>
-/// 用户资料更新载荷
-/// </summary>
-public record ProfileUpdatedPayload
-{
-    /// <summary>更新后的用户完整信息</summary>
-    public required UserDetailDto UpdatedUser { get; init; }
-
-    /// <summary>时间戳</summary>
-    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
-}
