@@ -97,12 +97,18 @@
                                                Background="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
                                     <StackPanel Orientation="Horizontal" Margin="12,8"
                                                 HorizontalAlignment="Center">
-                                        <Border Width="32" Height="32" CornerRadius="16"
-                                                Background="{StaticResource SidebarAvatarBrush}">
-                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                       FontSize="12" FontWeight="Bold" Foreground="White"
-                                                       Text="{Binding CurrentUserInitial}" />
-                                        </Border>
+                                        <Button Command="{Binding EditProfileCommand}"
+                                                Style="{StaticResource MaterialDesignFlatButton}"
+                                                Padding="0"
+                                                Width="32" Height="32"
+                                                ToolTip="修改个人信息">
+                                            <Border Width="32" Height="32" CornerRadius="16"
+                                                    Background="{StaticResource SidebarAvatarBrush}">
+                                                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                           FontSize="12" FontWeight="Bold" Foreground="White"
+                                                           Text="{Binding CurrentUserInitial}" />
+                                            </Border>
+                                        </Button>
                                         <StackPanel Margin="8,0,0,0" VerticalAlignment="Center"
                                                     Visibility="{Binding DataContext.NavTextVisibility,
                                                                 RelativeSource={RelativeSource AncestorType=Window}}">
