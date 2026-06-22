@@ -109,6 +109,9 @@ public partial class AccountSettingsViewModel : CoreViewModelBase, INavigationAw
                 if (resp.Data != null)
                 {
                     CurrentUser = resp.Data;
+                    // 发布事件通知 MainWindowViewModel 同步
+                    Services.EventAggregator.GetEvent<AuthEvents.ProfileUpdatedEvent>()
+                        .Publish(new ProfileUpdatedPayload { UpdatedUser = resp.Data });
                 }
                 Services.ToastService.ShowSuccess("个人资料已保存");
                 Logger.LogInformation("用户资料更新成功: {UserName}", CurrentUser.UserName);
