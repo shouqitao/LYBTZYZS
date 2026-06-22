@@ -14,7 +14,7 @@
                 <materialDesign:BundledTheme
                     BaseTheme="Light"
                     PrimaryColor="Brown"
-                    SecondaryColor="Orange" />
+                    SecondaryColor="Amber" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />
 
                 <!--  2. 设计系统 (项目特定令牌) -->
