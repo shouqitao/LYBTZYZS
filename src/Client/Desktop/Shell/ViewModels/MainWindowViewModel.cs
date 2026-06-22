@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -20,6 +21,7 @@ using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.HealthCheck;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using MaterialDesignThemes.Wpf;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
@@ -44,6 +46,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private readonly ITokenLifecycleService _tokenLifecycleService;
     private readonly ILoginCoordinator _loginCoordinator;
     private readonly IConnectionModeService _connectionModeService;
+    private readonly ThemeService _themeService;
 
     /// <summary>
     /// 区域管理器
@@ -79,6 +82,9 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// 当前登录用户
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CurrentUserInitial))]
+    [NotifyPropertyChangedFor(nameof(CurrentUserRoleDisplay))]
+    [NotifyPropertyChangedFor(nameof(CurrentUserDisplayName))]
     private UserDetailDto? _currentUser;
 
     /// <summary>
@@ -99,6 +105,8 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// API健康状态
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ApiStatusIcon))]
+    [NotifyPropertyChangedFor(nameof(ApiStatusColor))]
     private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
 
     /// <summary>
@@ -150,6 +158,18 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private bool _isSidebarExpanded = true;
 
     /// <summary>
+    /// MDIX 抽屉是否展开
+    /// </summary>
+    [ObservableProperty]
+    private bool _isDrawerOpen = true;
+
+    /// <summary>
+    /// 暗色模式开关
+    /// </summary>
+    [ObservableProperty]
+    private bool _isDarkMode;
+
+    /// <summary>
     /// 侧边栏导航项 - 根据当前用户角色构建 (UI Redesign 2026-06-21)
     /// </summary>
     [ObservableProperty]
@@ -166,8 +186,11 @@ public partial class MainWindowViewModel : CoreViewModelBase
         if (value?.ViewName is string viewName && !string.IsNullOrEmpty(viewName))
         {
             _navigationCoordinator.NavigateTo(viewName);
+            IsDrawerOpen = false;
         }
     }
+
+    partial void OnIsDarkModeChanged(bool value) => _themeService.ToggleTheme();
 
     #endregion
 
@@ -215,6 +238,35 @@ public partial class MainWindowViewModel : CoreViewModelBase
         }
     }
 
+    public string CurrentUserInitial =>
+        CurrentUser != null && !string.IsNullOrEmpty(CurrentUser.UserName)
+            ? CurrentUser.UserName[..1].ToUpper()
+            : "?";
+
+    public string CurrentUserRoleDisplay =>
+        CurrentUser?.Role switch
+        {
+            UserRole.SuperAdmin => "超级管理员",
+            UserRole.Admin => "管理员",
+            UserRole.Doctor => "医生",
+            UserRole.Receptionist => "前台",
+            _ => string.Empty
+        };
+
+    public PackIconKind ApiStatusIcon => ApiStatus switch
+    {
+        ApiHealthStatus.Healthy => PackIconKind.Wifi,
+        ApiHealthStatus.Unhealthy => PackIconKind.WifiOff,
+        _ => PackIconKind.WifiStrengthAlertOutline
+    };
+
+    public Brush ApiStatusColor => ApiStatus switch
+    {
+        ApiHealthStatus.Healthy => Brushes.Green,
+        ApiHealthStatus.Unhealthy => Brushes.Orange,
+        _ => Brushes.Gray
+    };
+
     #endregion
 
     #region 构造函数
@@ -235,7 +287,8 @@ public partial class MainWindowViewModel : CoreViewModelBase
         IUserActivityTracker userActivityTracker,
         ITokenLifecycleService tokenLifecycleService,
         ILoginCoordinator loginCoordinator,
-        IConnectionModeService connectionModeService)
+        IConnectionModeService connectionModeService,
+        ThemeService themeService)
         : base(services)
     {
         RegionManager = services.RegionManager;
@@ -254,6 +307,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         _tokenLifecycleService = tokenLifecycleService ?? throw new ArgumentNullException(nameof(tokenLifecycleService));
         _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
         _connectionModeService = connectionModeService ?? throw new ArgumentNullException(nameof(connectionModeService));
+        _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
 
         ConnectionUrl = _connectionSettings.CurrentUrl;
         IsLocal = _connectionSettings.IsLocal;
@@ -433,25 +487,20 @@ public partial class MainWindowViewModel : CoreViewModelBase
     }
 
     /// <summary>
-    /// 切换侧边栏展开命令 (Ctrl+M)
+    /// 切换MDIX抽屉展开命令 (Ctrl+M)
     /// </summary>
     [RelayCommand]
-    private void ToggleSidebar()
-    {
-        IsSidebarExpanded = !IsSidebarExpanded;
-        Logger.LogDebug("Sidebar状态切换: {IsExpanded}", IsSidebarExpanded);
-    }
+    private void ToggleDrawer() => IsDrawerOpen = !IsDrawerOpen;
 
     /// <summary>
-    /// 关闭侧边栏命令 (Escape)
+    /// 关闭抽屉命令 (Escape)
     /// </summary>
     [RelayCommand]
     private void CloseDrawer()
     {
-        if (IsSidebarExpanded)
+        if (IsDrawerOpen)
         {
-            IsSidebarExpanded = false;
-            Logger.LogDebug("Sidebar已关闭");
+            IsDrawerOpen = false;
         }
     }
 
