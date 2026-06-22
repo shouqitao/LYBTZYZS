@@ -90,18 +90,20 @@
     </UserControl.Resources>
 
     <!-- 根 Border：宽度由 IsExpanded 控制，200ms CubicEase 动画 -->
+    <!-- 注意：DP 默认值 IsExpanded=true，所以基础 Width=220（展开态），
+         触发器在 IsExpanded=False 时动画到 56。避免 EnterActions 不在初次加载时触发的问题。 -->
     <Border x:Name="RootBorder" Background="{DynamicResource SidebarBrush}">
         <Border.Style>
             <Style TargetType="Border">
-                <Setter Property="Width" Value="56" />
+                <Setter Property="Width" Value="220" />
                 <Style.Triggers>
-                    <DataTrigger Binding="{Binding IsExpanded, ElementName=Root}" Value="True">
+                    <DataTrigger Binding="{Binding IsExpanded, ElementName=Root}" Value="False">
                         <DataTrigger.EnterActions>
                             <BeginStoryboard>
                                 <Storyboard>
                                     <DoubleAnimation
                                         Storyboard.TargetProperty="Width"
-                                        To="220"
+                                        To="56"
                                         Duration="0:0:0.2"
                                         EasingFunction="{StaticResource CubicEase}" />
                                 </Storyboard>
@@ -112,7 +114,7 @@
                                 <Storyboard>
                                     <DoubleAnimation
                                         Storyboard.TargetProperty="Width"
-                                        To="56"
+                                        To="220"
                                         Duration="0:0:0.2"
                                         EasingFunction="{StaticResource CubicEase}" />
                                 </Storyboard>
