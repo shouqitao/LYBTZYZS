@@ -102,6 +102,12 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private DateTime _currentTime = DateTime.Now;
 
     /// <summary>
+    /// 状态栏时间显示文本
+    /// </summary>
+    [ObservableProperty]
+    private string _currentTimeDisplay = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+    /// <summary>
     /// API健康状态
     /// </summary>
     [ObservableProperty]
@@ -152,16 +158,23 @@ public partial class MainWindowViewModel : CoreViewModelBase
     }
 
     /// <summary>
+    /// 侧边栏宽度 (60=折叠/仅图标, 280=展开/图标+文字)
+    /// </summary>
+    [ObservableProperty]
+    private double _sidebarWidth = 60;
+
+    /// <summary>
     /// 侧边栏是否展开
     /// </summary>
     [ObservableProperty]
-    private bool _isSidebarExpanded = true;
+    [NotifyPropertyChangedFor(nameof(NavTextVisibility))]
+    private bool _isSidebarExpanded = false;
 
     /// <summary>
-    /// MDIX 抽屉是否展开
+    /// 导航文字可见性 - 侧边栏折叠时隐藏文字
     /// </summary>
-    [ObservableProperty]
-    private bool _isDrawerOpen = true;
+    public Visibility NavTextVisibility =>
+        IsSidebarExpanded ? Visibility.Visible : Visibility.Collapsed;
 
     /// <summary>
     /// 暗色模式开关
@@ -186,7 +199,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         if (value?.ViewName is string viewName && !string.IsNullOrEmpty(viewName))
         {
             _navigationCoordinator.NavigateTo(viewName);
-            IsDrawerOpen = false;
         }
     }
 
@@ -487,21 +499,13 @@ public partial class MainWindowViewModel : CoreViewModelBase
     }
 
     /// <summary>
-    /// 切换MDIX抽屉展开命令 (Ctrl+M)
+    /// 切换侧边栏展开/折叠命令
     /// </summary>
     [RelayCommand]
-    private void ToggleDrawer() => IsDrawerOpen = !IsDrawerOpen;
-
-    /// <summary>
-    /// 关闭抽屉命令 (Escape)
-    /// </summary>
-    [RelayCommand]
-    private void CloseDrawer()
+    private void ToggleSidebar()
     {
-        if (IsDrawerOpen)
-        {
-            IsDrawerOpen = false;
-        }
+        SidebarWidth = IsSidebarExpanded ? 60 : 280;
+        IsSidebarExpanded = !IsSidebarExpanded;
     }
 
     #endregion
@@ -565,7 +569,11 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private void OnTick(object? sender, ApplicationTickEventArgs e)
     {
         // UI线程更新时间显示（避免应用关闭时空引用）
-        Services.UiThreadDispatcher.InvokeAsync(() => CurrentTime = DateTime.Now);
+        Services.UiThreadDispatcher.InvokeAsync(() =>
+        {
+            CurrentTime = DateTime.Now;
+            CurrentTimeDisplay = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        });
     }
 
     /// <summary>
