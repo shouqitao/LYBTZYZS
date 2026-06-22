@@ -53,25 +53,27 @@
                                 Background="{DynamicResource MaterialDesign.Brush.Primary}">
                             <DockPanel LastChildFill="False">
 
-                                <!-- Top: Logo + hamburger -->
-                                <DockPanel DockPanel.Dock="Top" LastChildFill="False">
-                                    <ToggleButton
-                                        DockPanel.Dock="Right"
-                                        IsChecked="{Binding IsSidebarExpanded}"
-                                        Style="{StaticResource MaterialDesignHamburgerToggleButton}"
-                                        Foreground="White"
-                                        Margin="0,8,8,0" />
-                                    <StackPanel Orientation="Horizontal" Margin="12,12,0,12"
-                                                HorizontalAlignment="Center">
-                                        <materialDesign:PackIcon Kind="Leaf" Width="24" Height="24"
-                                                                 Foreground="White" />
-                                        <TextBlock Margin="8,0,0,0" FontSize="14" FontWeight="Bold"
-                                                   Foreground="White"
-                                                   Text="凌隐宝堂"
-                                                   Visibility="{Binding DataContext.NavTextVisibility,
-                                                               RelativeSource={RelativeSource AncestorType=Window}}" />
-                                    </StackPanel>
-                                </DockPanel>
+                                <!-- Hamburger button -->
+                                <ToggleButton
+                                    DockPanel.Dock="Top"
+                                    IsChecked="{Binding IsSidebarExpanded}"
+                                    Style="{StaticResource MaterialDesignHamburgerToggleButton}"
+                                    Foreground="White"
+                                    Margin="8,8,8,0"
+                                    HorizontalAlignment="Center" />
+
+                                <!-- Logo + brand name -->
+                                <StackPanel DockPanel.Dock="Top"
+                                            Orientation="Horizontal" Margin="0,8,0,12"
+                                            HorizontalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="Leaf" Width="24" Height="24"
+                                                             Foreground="White" />
+                                    <TextBlock Margin="8,0,0,0" FontSize="14" FontWeight="Bold"
+                                               Foreground="White"
+                                               Text="凌隐宝堂"
+                                               Visibility="{Binding DataContext.NavTextVisibility,
+                                                           RelativeSource={RelativeSource AncestorType=Window}}" />
+                                </StackPanel>
 
                                 <Separator DockPanel.Dock="Top"
                                            Background="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
