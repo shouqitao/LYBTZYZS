@@ -36,6 +36,7 @@
                 <Setter Property="Foreground" Value="{DynamicResource SidebarTextBrush}" />
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="Height" Value="44" />
+                <Setter Property="Padding" Value="16,0" />
                 <Setter Property="Cursor" Value="Hand" />
                 <Setter Property="HorizontalContentAlignment" Value="Left" />
                 <Setter Property="Template">
@@ -43,7 +44,7 @@
                         <ControlTemplate TargetType="Button">
                             <Border
                                 x:Name="ItemBorder"
-                                Padding="16,0"
+                                Padding="{TemplateBinding Padding}"
                                 Background="{TemplateBinding Background}">
                                 <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
                             </Border>
@@ -58,6 +59,7 @@
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding IsExpanded, ElementName=Root}" Value="False">
                         <Setter Property="HorizontalContentAlignment" Value="Center" />
+                        <Setter Property="Padding" Value="0,0" />
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
@@ -168,10 +170,20 @@
                 <Border Padding="12,12">
                     <StackPanel Orientation="Horizontal">
                         <Border
-                            Width="32"
-                            Height="32"
                             Background="{DynamicResource SidebarAvatarBrush}"
                             CornerRadius="16">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Width" Value="32" />
+                                    <Setter Property="Height" Value="32" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsExpanded, ElementName=Root}" Value="False">
+                                            <Setter Property="Width" Value="28" />
+                                            <Setter Property="Height" Value="28" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
                             <TextBlock
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
@@ -213,12 +225,11 @@
             <!--  Row 4: 状态信息(时钟+API+模式) - 仅展开时显示完整信息  -->
             <Border Grid.Row="4" Padding="8,6">
                 <Grid>
-                    <!--  收缩状态: 垂直居中(仅时钟)  -->
+                    <!--  收缩状态: 仅 API 状态指示器  -->
                     <StackPanel HorizontalAlignment="Center" Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.InverseBoolToVis}}">
                         <Border
                             Width="24"
                             Height="24"
-                            Margin="0,0,0,6"
                             HorizontalAlignment="Center"
                             Background="{DynamicResource SidebarBrush}"
                             CornerRadius="12"
@@ -230,20 +241,6 @@
                                 VerticalAlignment="Center"
                                 Fill="{Binding ApiStatus, ElementName=Root, Converter={x:Static converters:Cvt.ApiStatusToColor}}" />
                         </Border>
-                        <StackPanel HorizontalAlignment="Center" ToolTip="当前时间">
-                            <TextBlock
-                                HorizontalAlignment="Center"
-                                FontSize="12"
-                                FontWeight="SemiBold"
-                                Foreground="{DynamicResource SidebarTextBrush}"
-                                Text="{Binding CurrentTime, ElementName=Root, StringFormat=HH:mm}" />
-                            <TextBlock
-                                Margin="0,1,0,0"
-                                HorizontalAlignment="Center"
-                                FontSize="9"
-                                Foreground="{DynamicResource SidebarSecondaryTextBrush}"
-                                Text="{Binding CurrentTime, ElementName=Root, StringFormat=MM-dd}" />
-                        </StackPanel>
                     </StackPanel>
 
                     <!--  展开状态: 水平布局(API+模式+时钟)  -->
