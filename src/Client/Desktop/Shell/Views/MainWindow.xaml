@@ -94,13 +94,8 @@
                                     SelectedItem="{Binding SelectedNavItem, Mode=TwoWay}"
                                     Background="Transparent"
                                     BorderThickness="0"
-                                    Margin="0,8">
-                                    <ListBox.ItemContainerStyle>
-                                        <Style TargetType="ListBoxItem">
-                                            <Setter Property="Padding" Value="0" />
-                                            <Setter Property="Margin" Value="0" />
-                                        </Style>
-                                    </ListBox.ItemContainerStyle>
+                                    Margin="0,8"
+                                    Style="{StaticResource MaterialDesignNavigationPrimaryListBox}">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal"
