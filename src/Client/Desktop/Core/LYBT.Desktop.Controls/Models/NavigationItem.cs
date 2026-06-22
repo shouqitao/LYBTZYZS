@@ -1,5 +1,4 @@
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace LYBT.Desktop.Controls.Models;
 
@@ -10,7 +9,12 @@ public class NavigationItem
 {
     public string Title { get; set; } = string.Empty;
     public string ViewName { get; set; } = string.Empty;
-    public Geometry? IconData { get; set; }
+
+    /// <summary>
+    /// MaterialDesign PackIcon Kind 字符串（如 "Home", "AccountGroup"）
+    /// </summary>
+    public string IconKind { get; set; } = string.Empty;
+
     public bool IsVisible { get; set; } = true;
     public ICommand? Command { get; set; }
 

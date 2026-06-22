@@ -75,6 +75,8 @@
     <PackageVersion Include="Prism.Wpf" Version="8.1.97" />
     <!-- OpenSpec: refactor-viewmodel-composition - MVVM Toolkit源生成器 -->
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <!-- MaterialDesignThemes M2 (replaces HandyControl) -->
+    <PackageVersion Include="MaterialDesignThemes" Version="5.3.2" />
     <!-- HTTP 客户端 -->
     <PackageVersion Include="Refit" Version="8.0.0" />
     <PackageVersion Include="Refit.HttpClientFactory" Version="8.0.0" />

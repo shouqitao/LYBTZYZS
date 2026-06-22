@@ -1,6 +1,7 @@
-using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.Foundation.HealthCheck;
@@ -11,18 +12,6 @@ namespace LYBT.Desktop.Controls.Controls
     public partial class SidebarControl : UserControl
     {
         public SidebarControl() => InitializeComponent();
-
-        private void OnMoreButtonClick(object sender, RoutedEventArgs e)
-        {
-            UserMenuPopup.PlacementTarget = sender as UIElement;
-            UserMenuPopup.IsOpen = true;
-        }
-
-        private void OnCollapsedAvatarClick(object sender, RoutedEventArgs e)
-        {
-            UserMenuPopup.PlacementTarget = sender as UIElement;
-            UserMenuPopup.IsOpen = true;
-        }
 
         #region IsExpanded - 展开/收缩状态
 
@@ -138,61 +127,30 @@ namespace LYBT.Desktop.Controls.Controls
 
         #endregion
 
-        #region HomeNavItems - 主页组导航项
+        #region GroupedNavItems - 分组导航视图
 
-        public ObservableCollection<NavigationItem> HomeNavItems
+        public ICollectionView GroupedNavItems
         {
-            get => (ObservableCollection<NavigationItem>)GetValue(HomeNavItemsProperty);
-            set => SetValue(HomeNavItemsProperty, value);
+            get => (ICollectionView)GetValue(GroupedNavItemsProperty);
+            set => SetValue(GroupedNavItemsProperty, value);
         }
 
-        public static readonly DependencyProperty HomeNavItemsProperty =
-            DependencyProperty.Register(nameof(HomeNavItems), typeof(ObservableCollection<NavigationItem>),
+        public static readonly DependencyProperty GroupedNavItemsProperty =
+            DependencyProperty.Register(nameof(GroupedNavItems), typeof(ICollectionView),
                 typeof(SidebarControl), new PropertyMetadata(null));
 
         #endregion
 
-        #region BusinessNavItems - 业务组导航项
+        #region SelectedNavItem - 当前选中导航项
 
-        public ObservableCollection<NavigationItem> BusinessNavItems
+        public NavigationItem? SelectedNavItem
         {
-            get => (ObservableCollection<NavigationItem>)GetValue(BusinessNavItemsProperty);
-            set => SetValue(BusinessNavItemsProperty, value);
+            get => (NavigationItem?)GetValue(SelectedNavItemProperty);
+            set => SetValue(SelectedNavItemProperty, value);
         }
 
-        public static readonly DependencyProperty BusinessNavItemsProperty =
-            DependencyProperty.Register(nameof(BusinessNavItems), typeof(ObservableCollection<NavigationItem>),
-                typeof(SidebarControl), new PropertyMetadata(null));
-
-        #endregion
-
-        #region AdminNavItems - 管理组导航项
-
-        public ObservableCollection<NavigationItem> AdminNavItems
-        {
-            get => (ObservableCollection<NavigationItem>)GetValue(AdminNavItemsProperty);
-            set => SetValue(AdminNavItemsProperty, value);
-        }
-
-        public static readonly DependencyProperty AdminNavItemsProperty =
-            DependencyProperty.Register(nameof(AdminNavItems), typeof(ObservableCollection<NavigationItem>),
-                typeof(SidebarControl), new PropertyMetadata(null));
-
-        #endregion
-
-        // NOTE: NavigationItemsSource DP is retained as dead code for backward compat.
-        // The new SidebarControl.xaml binds to HomeNavItems/BusinessNavItems/AdminNavItems instead.
-        // Safe to remove in a future cleanup task.
-        #region NavigationItemsSource - 导航菜单项 (DEAD — kept for cleanup later)
-
-        public ObservableCollection<NavigationItem> NavigationItemsSource
-        {
-            get => (ObservableCollection<NavigationItem>)GetValue(NavigationItemsSourceProperty);
-            set => SetValue(NavigationItemsSourceProperty, value);
-        }
-
-        public static readonly DependencyProperty NavigationItemsSourceProperty =
-            DependencyProperty.Register(nameof(NavigationItemsSource), typeof(ObservableCollection<NavigationItem>),
+        public static readonly DependencyProperty SelectedNavItemProperty =
+            DependencyProperty.Register(nameof(SelectedNavItem), typeof(NavigationItem),
                 typeof(SidebarControl), new PropertyMetadata(null));
 
         #endregion
