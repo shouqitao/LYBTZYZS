@@ -503,7 +503,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// </summary>
     partial void OnIsSidebarExpandedChanged(bool value)
     {
-        SidebarWidth = value ? 280 : 60;
+        SidebarWidth = value ? 140 : 60;
     }
 
     #endregion
