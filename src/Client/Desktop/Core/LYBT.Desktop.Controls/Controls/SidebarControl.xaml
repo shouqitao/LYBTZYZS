@@ -149,7 +149,7 @@
                         <Path
                             Width="24"
                             Height="24"
-                            Data="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"
+                            Data="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"
                             Fill="{DynamicResource SidebarTextBrush}"
                             Stretch="Uniform" />
                         <TextBlock
@@ -163,18 +163,17 @@
                     </StackPanel>
                 </Button>
 
-                <!-- 汉堡按钮（右上角小图标，用于折叠/展开） -->
+                <!-- 汉堡按钮（品牌行下方，用于折叠/展开） -->
                 <Button
                     DockPanel.Dock="Top"
                     Height="32"
-                    Margin="0,-44,0,12"
+                    Margin="0,0,0,8"
                     HorizontalAlignment="Right"
                     Background="Transparent"
                     BorderThickness="0"
                     Command="{Binding ToggleCommand, ElementName=Root}"
                     Cursor="Hand"
-                    ToolTip="展开/收缩 (Ctrl+M)"
-                    Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
+                    ToolTip="展开/收缩 (Ctrl+M)">
                     <Path
                         Width="14"
                         Height="14"
