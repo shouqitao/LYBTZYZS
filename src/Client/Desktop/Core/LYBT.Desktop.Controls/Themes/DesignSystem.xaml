@@ -15,7 +15,7 @@
     <SolidColorBrush x:Key="SidebarSecondaryTextBrush" Color="#D7CCC8" />
     <SolidColorBrush x:Key="SidebarHoverBrush" Color="{StaticResource DarkPrimaryColor}" />
     <SolidColorBrush x:Key="SidebarDividerBrush" Color="#6D4C41" />
-    <SolidColorBrush x:Key="SidebarAvatarBrush" Color="{StaticResource DarkPrimaryColor}" />
+    <SolidColorBrush x:Key="SidebarAvatarBrush" Color="#8D6E63" />
     <Color x:Key="AccentColor">#8D6E63</Color>
     <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
     <Color x:Key="SuccessColor">#2E8B57</Color>

@@ -146,7 +146,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// poc-drawer-layout: Drawer是否打开
     /// </summary>
     [ObservableProperty]
-    private bool _isDrawerOpen;
+    private bool _isDrawerOpen = true;
 
     /// <summary>
     /// 侧边栏导航项 - 根据当前用户角色构建 (UI Redesign 2026-06-21)
