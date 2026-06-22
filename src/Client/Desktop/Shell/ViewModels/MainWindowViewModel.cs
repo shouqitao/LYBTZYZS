@@ -464,6 +464,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         // 订阅LoginCoordinator的登录成功事件（取代EventAggregator的LoginSuccessEvent）
         _loginCoordinator.LoginSucceeded += OnLoginCoordinatorSuccess;
         Events.Subscribe<AuthEvents.PasswordChangedEvent, PasswordChangedPayload>(OnPasswordChanged);
+        Events.Subscribe<AuthEvents.ProfileUpdatedEvent, ProfileUpdatedPayload>(OnProfileUpdated);
         Events.Subscribe<TokenLifecycleStateChangedEvent, TokenLifecycleStateChangedEventArgs>(
             args => OnTokenLifecycleStateChangedAsync(args).SafeFireAndForget(ex => Logger.LogError(ex, "Token生命周期事件处理异常")));
         _navigationCoordinator.SubscribeToRegionCollection();
@@ -629,6 +630,9 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
             // UI Redesign 2026-06-21: 构建角色自适应侧边栏导航项
             NavigationItems = BuildNavigationItems(user.Role);
+            OnPropertyChanged(nameof(HomeNavItems));
+            OnPropertyChanged(nameof(BusinessNavItems));
+            OnPropertyChanged(nameof(AdminNavItems));
 
             Logger.LogInformation("登录成功UI更新完成 [用户: {Username}]", user.UserName);
         });
@@ -650,9 +654,39 @@ public partial class MainWindowViewModel : CoreViewModelBase
         });
     }
 
+    /// <summary>
+    /// 用户资料更新事件处理 - 同步 CurrentUser
+    /// </summary>
+    private void OnProfileUpdated(ProfileUpdatedPayload payload)
+    {
+        Services.UiThreadDispatcher.InvokeAsync(() =>
+        {
+            CurrentUser = payload.UpdatedUser;
+            Logger.LogInformation("已同步用户资料更新 [用户: {UserName}]", payload.UpdatedUser.UserName);
+        });
+    }
+
     #endregion
 
     #region 业务逻辑
+
+    /// <summary>
+    /// 主页组导航项（侧边栏分组显示用）
+    /// </summary>
+    public ObservableCollection<NavigationItem> HomeNavItems =>
+        new(NavigationItems.Where(i => i.Group == "主页"));
+
+    /// <summary>
+    /// 业务组导航项
+    /// </summary>
+    public ObservableCollection<NavigationItem> BusinessNavItems =>
+        new(NavigationItems.Where(i => i.Group == "业务"));
+
+    /// <summary>
+    /// 管理组导航项
+    /// </summary>
+    public ObservableCollection<NavigationItem> AdminNavItems =>
+        new(NavigationItems.Where(i => i.Group == "管理"));
 
     /// <summary>
     /// 根据用户角色构建侧边栏导航项 (UI Redesign 2026-06-21)
@@ -670,41 +704,46 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
         var modules = definition.RequiredModules;
 
-        // 主页
+        // 主页组
         items.Add(new NavigationItem
         {
             Title = "主页",
             ViewName = definition.HomeViewName,
             IconData = (Geometry)Application.Current.FindResource("IconHome"),
-            Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(definition.HomeViewName))
+            Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(definition.HomeViewName)),
+            Group = "主页"
         });
 
+        // 业务组
         if (modules.Contains("PatientsModule"))
-            items.Add(CreateNavItem("患者管理", ViewNames.PatientManagement, "IconPatients"));
+            items.Add(CreateNavItem("患者管理", ViewNames.PatientManagement, "IconPatients", "业务"));
         if (modules.Contains("HerbsModule"))
-            items.Add(CreateNavItem("药材管理", ViewNames.HerbManagement, "IconHerbs"));
+            items.Add(CreateNavItem("药材管理", ViewNames.HerbManagement, "IconHerbs", "业务"));
         if (modules.Contains("FormulaModule"))
-            items.Add(CreateNavItem("验方管理", ViewNames.FormulaManagement, "IconFormula"));
+            items.Add(CreateNavItem("验方管理", ViewNames.FormulaManagement, "IconFormula", "业务"));
         if (modules.Contains("MedicalCaseModule"))
-            items.Add(CreateNavItem("医案管理", ViewNames.MedicalCaseManagement, "IconMedicalCase"));
-        if (modules.Contains("UsersModule") && role is UserRole.Admin or UserRole.SuperAdmin)
-            items.Add(CreateNavItem("用户管理", ViewNames.UserManagement, "IconUsers"));
+            items.Add(CreateNavItem("医案管理", ViewNames.MedicalCaseManagement, "IconMedicalCase", "业务"));
         if (modules.Contains("RegistrationModule"))
-            items.Add(CreateNavItem("挂号管理", ViewNames.RegistrationList, "IconRegistration"));
+            items.Add(CreateNavItem("挂号管理", ViewNames.RegistrationList, "IconRegistration", "业务"));
+
+        // 管理组
+        if (modules.Contains("UsersModule") && role is UserRole.Admin or UserRole.SuperAdmin)
+            items.Add(CreateNavItem("用户管理", ViewNames.UserManagement, "IconUsers", "管理"));
         if (definition.GetAllModules().Contains("ReportsModule"))
-            items.Add(CreateNavItem("统计报表", ViewNames.ReportsHome, "IconReports"));
+            items.Add(CreateNavItem("统计报表", ViewNames.ReportsHome, "IconReports", "管理"));
 
         Logger.LogInformation("已为角色 {Role} 构建 {Count} 个导航项", role, items.Count);
         return items;
     }
 
-    private NavigationItem CreateNavItem(string title, string viewName, string iconKey) =>
+    private NavigationItem CreateNavItem(string title, string viewName, string iconKey, string group = "业务") =>
         new()
         {
             Title = title,
             ViewName = viewName,
             IconData = (Geometry)Application.Current.FindResource(iconKey),
-            Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(viewName))
+            Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(viewName)),
+            Group = group
         };
 
     /// <summary>
@@ -734,6 +773,9 @@ public partial class MainWindowViewModel : CoreViewModelBase
         IsLoggedIn = false;
         Title = "凌隐宝堂中医诊所诊疗系统";
         NavigationItems.Clear(); // UI Redesign: 清空导航项
+        OnPropertyChanged(nameof(HomeNavItems));
+        OnPropertyChanged(nameof(BusinessNavItems));
+        OnPropertyChanged(nameof(AdminNavItems));
 
         try
         {
