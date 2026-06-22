@@ -1,382 +1,282 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
-using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
-// SYNC-D02: IUserRepository 迁移到 Contracts.Repositories
-using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Prism.Events;
 using Prism.Regions;
 
-namespace LYBT.Desktop.Shell.ViewModels
+namespace LYBT.Desktop.Shell.ViewModels;
+
+/// <summary>
+/// 账户设置视图模型 - 左右分栏重设计 (2026-06-21)
+/// 个人资料 + 安全设置（修改密码）合并
+/// </summary>
+public partial class AccountSettingsViewModel : CoreViewModelBase, INavigationAware
 {
-    /// <summary>
-    /// 账户设置视图模型 - 合并个人资料和修改密码功能
-    /// </summary>
-    public partial class AccountSettingsViewModel : CoreViewModelBase, INavigationAware
+    private readonly IAuthenticationService _authService;
+    private readonly IUserApi _userApi;
+    private readonly INavigationCoordinator _navigationCoordinator;
+
+    #region Tab 选择
+
+    [ObservableProperty]
+    private bool _isProfileSelected = true;
+
+    [ObservableProperty]
+    private bool _isPasswordSelected;
+
+    #endregion
+
+    #region 当前用户（只读显示）
+
+    [ObservableProperty]
+    private UserDetailDto? _currentUser;
+
+    #endregion
+
+    #region 可编辑字段
+
+    [ObservableProperty]
+    private string _editRealName = string.Empty;
+
+    [ObservableProperty]
+    private string _editPhoneNumber = string.Empty;
+
+    [ObservableProperty]
+    private string _editEmail = string.Empty;
+
+    #endregion
+
+    #region 密码字段
+
+    [ObservableProperty]
+    private string _oldPassword = string.Empty;
+
+    [ObservableProperty]
+    private string _newPassword = string.Empty;
+
+    [ObservableProperty]
+    private string _confirmPassword = string.Empty;
+
+    #endregion
+
+    public AccountSettingsViewModel(
+        IViewModelServices services,
+        IAuthenticationService authService,
+        IUserApi userApi,
+        INavigationCoordinator navigationCoordinator)
+        : base(services)
     {
-        #region 依赖服务
+        _authService = authService;
+        _userApi = userApi;
+        _navigationCoordinator = navigationCoordinator;
+    }
 
-        private readonly IAuthenticationService _authService;
-        private readonly IUserRepository _userRepository;
-        private readonly ISessionManager _sessionManager;
-        private readonly IRegionManager _regionManager;
-        private readonly IUserNotificationService? _userNotificationService;
+    #region 保存个人资料
 
-        #endregion
-
-        #region 个人资料属性
-
-        [ObservableProperty]
-        private string _userName = string.Empty;
-
-        [ObservableProperty]
-        private string _realName = string.Empty;
-
-        [ObservableProperty]
-        private string _phoneNumber = string.Empty;
-
-        /// <summary>邮箱地址 (T5-P3-19)</summary>
-        [ObservableProperty]
-        private string _email = string.Empty;
-
-        [ObservableProperty]
-        private string _role = string.Empty;
-
-        #endregion
-
-        #region 修改密码属性
-
-        [ObservableProperty]
-        private string _oldPassword = string.Empty;
-
-        [ObservableProperty]
-        private string _newPassword = string.Empty;
-
-        [ObservableProperty]
-        private string _confirmPassword = string.Empty;
-
-        #endregion
-
-        #region 验证属性
-
-        [ObservableProperty]
-        private string _validationError = string.Empty;
-
-        [ObservableProperty]
-        private bool _hasValidationError;
-
-        #endregion
-
-        #region Tab选择属性
-
-        /// <summary>个人资料页是否选中</summary>
-        [ObservableProperty]
-        private bool _isProfileSelected = true;
-
-        /// <summary>修改密码页是否选中</summary>
-        [ObservableProperty]
-        private bool _isPasswordSelected;
-
-        #endregion
-
-        #region 构造函数
-
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        public AccountSettingsViewModel(
-            IViewModelServices services,
-            IAuthenticationService authService,
-            IUserRepository userRepository,
-            IUserNotificationService? userNotificationService = null)
-            : base(services)
+    [RelayCommand(CanExecute = nameof(CanSaveProfile))]
+    private async Task SaveProfileAsync()
+    {
+        if (CurrentUser == null)
         {
-            _authService = authService;
-            _userRepository = userRepository;
-            _sessionManager = services.SessionManager;
-            _regionManager = services.RegionManager;
-            _userNotificationService = userNotificationService;
-
-            LoadUserProfile();
+            Services.ToastService.ShowError("未找到当前用户信息");
+            return;
         }
 
-        #endregion
-
-        #region 命令
-
-        /// <summary>
-        /// 保存个人资料
-        /// </summary>
-        [RelayCommand(CanExecute = nameof(CanSaveProfile))]
-        private async Task SaveProfileAsync()
+        if (string.IsNullOrWhiteSpace(EditRealName))
         {
-            try
-            {
-                IsBusy = true;
-                ClearValidationError();
-
-                // 验证必填字段
-                if (string.IsNullOrWhiteSpace(RealName))
-                {
-                    SetValidationError("姓名不能为空");
-                    return;
-                }
-
-                var currentUser = _sessionManager.CurrentUser;
-                if (currentUser == null)
-                {
-                    SetValidationError("未找到当前用户信息");
-                    return;
-                }
-
-                // 构造修改资料DTO
-                var profileDto = new ChangeProfileDto
-                {
-                    RealName = RealName,
-                    PhoneNumber = PhoneNumber,
-                    Email = string.IsNullOrWhiteSpace(Email) ? null : Email
-                };
-
-                // 调用Repository更新用户信息
-                var updatedUser = await _userRepository.ChangeProfileAsync(currentUser.Id, profileDto);
-
-                if (updatedUser != null)
-                {
-                    Logger.LogInformation("用户资料更新成功: {UserName}", UserName);
-                    await NotifySuccessAsync("个人资料已保存");
-
-                    // 刷新本地显示（不需要更新Session，下次登录会自动刷新）
-                    LoadUserProfileFromDto(updatedUser);
-                }
-                else
-                {
-                    SetValidationError("保存失败，请稍后重试");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "保存个人资料失败");
-                SetValidationError($"保存失败: {ex.Message}");
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+            Services.ToastService.ShowWarning("姓名不能为空");
+            return;
         }
 
-        private bool CanSaveProfile() => !IsBusy && !string.IsNullOrWhiteSpace(RealName);
-
-        /// <summary>
-        /// 修改密码
-        /// </summary>
-        [RelayCommand(CanExecute = nameof(CanChangePassword))]
-        private async Task ChangePasswordAsync()
+        try
         {
-            try
+            IsBusy = true;
+            var dto = new ChangeProfileDto
             {
-                IsBusy = true;
-                ClearValidationError();
-
-                // 验证密码
-                if (!ValidatePasswordChange())
-                {
-                    return;
-                }
-
-                var currentUser = _sessionManager.CurrentUser;
-                if (currentUser == null)
-                {
-                    SetValidationError("未找到当前用户信息");
-                    return;
-                }
-
-                // Issue #2262: 改用IUserRepository统一密码修改逻辑
-                // 职责分离：Auth负责认证，User负责用户管理（包括密码修改）
-                var request = new ChangePasswordRequest
-                {
-                    OldPassword = OldPassword,
-                    NewPassword = NewPassword
-                };
-                var result = await _userRepository.ChangePasswordAsync(currentUser.Id, request);
-
-                if (result.IsSuccess)
-                {
-                    Logger.LogInformation("密码修改成功: {UserName}", UserName);
-                    await NotifySuccessAsync("密码修改成功");
-
-                    // 清空密码字段
-                    ClearPasswordFields();
-                }
-                else
-                {
-                    SetValidationError(result.ErrorMessage ?? "密码修改失败，请检查当前密码是否正确");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "修改密码失败");
-                SetValidationError($"修改失败: {ex.Message}");
-            }
-            finally
-            {
-                IsBusy = false;
-            }
-        }
-
-        private bool CanChangePassword() =>
-            !IsBusy &&
-            !string.IsNullOrWhiteSpace(OldPassword) &&
-            !string.IsNullOrWhiteSpace(NewPassword) &&
-            !string.IsNullOrWhiteSpace(ConfirmPassword);
-
-        /// <summary>
-        /// 返回上一页
-        /// </summary>
-        [RelayCommand]
-        private void GoBack()
-        {
-            var journal = _regionManager.Regions[RegionNames.ContentRegion].NavigationService?.Journal;
-            if (journal?.CanGoBack == true)
-            {
-                journal.GoBack();
-            }
-        }
-
-        #endregion
-
-        #region 私有方法
-
-        private void LoadUserProfile()
-        {
-            var currentUser = _sessionManager.CurrentUser;
-            if (currentUser != null)
-            {
-                LoadUserProfileFromDto(currentUser);
-            }
-        }
-
-        private void LoadUserProfileFromDto(UserDetailDto user)
-        {
-            UserName = user.UserName;
-            RealName = user.RealName ?? string.Empty;
-            PhoneNumber = user.PhoneNumber ?? string.Empty;
-            Email = user.Email ?? string.Empty;
-            Role = GetRoleDisplayName(user.Role);
-        }
-
-        private static string GetRoleDisplayName(UserRole role)
-        {
-            return role switch
-            {
-                UserRole.SuperAdmin => "超级管理员",
-                UserRole.Admin => "管理员",
-                UserRole.Doctor => "医生",
-                UserRole.Receptionist => "前台接待",
-                _ => role.ToString()
+                RealName = EditRealName,
+                PhoneNumber = string.IsNullOrWhiteSpace(EditPhoneNumber) ? null : EditPhoneNumber,
+                Email = string.IsNullOrWhiteSpace(EditEmail) ? null : EditEmail
             };
-        }
 
-        private async Task NotifySuccessAsync(string message)
-        {
-            if (_userNotificationService != null)
+            var resp = await _userApi.ChangeProfileAsync(CurrentUser.Id, dto);
+            if (resp.Success)
             {
-                await _userNotificationService.ShowSuccessAsync(message);
-            }
-        }
-
-        private bool ValidatePasswordChange()
-        {
-            if (string.IsNullOrWhiteSpace(OldPassword))
-            {
-                SetValidationError("请输入当前密码");
-                return false;
-            }
-
-            if (string.IsNullOrWhiteSpace(NewPassword))
-            {
-                SetValidationError("请输入新密码");
-                return false;
-            }
-
-            if (NewPassword.Length < 8)
-            {
-                SetValidationError("新密码长度不能少于8位");
-                return false;
-            }
-
-            if (NewPassword != ConfirmPassword)
-            {
-                SetValidationError("两次输入的密码不一致");
-                return false;
-            }
-
-            if (OldPassword == NewPassword)
-            {
-                SetValidationError("新密码不能与当前密码相同");
-                return false;
-            }
-
-            return true;
-        }
-
-        private void ClearPasswordFields()
-        {
-            OldPassword = string.Empty;
-            NewPassword = string.Empty;
-            ConfirmPassword = string.Empty;
-        }
-
-        private void SetValidationError(string error)
-        {
-            ValidationError = error;
-            HasValidationError = true;
-        }
-
-        private void ClearValidationError()
-        {
-            ValidationError = string.Empty;
-            HasValidationError = false;
-        }
-
-        #endregion
-
-        #region INavigationAware
-
-        public void OnNavigatedTo(NavigationContext navigationContext)
-        {
-            // 检查是否指定了默认Tab
-            if (navigationContext.Parameters.ContainsKey("Tab"))
-            {
-                var tab = navigationContext.Parameters.GetValue<string>("Tab");
-                IsPasswordSelected = tab == "Password";
-                IsProfileSelected = !IsPasswordSelected;
+                if (resp.Data != null)
+                {
+                    CurrentUser = resp.Data;
+                }
+                Services.ToastService.ShowSuccess("个人资料已保存");
+                Logger.LogInformation("用户资料更新成功: {UserName}", CurrentUser.UserName);
             }
             else
             {
-                // 默认显示个人资料
-                IsProfileSelected = true;
-                IsPasswordSelected = false;
+                Services.ToastService.ShowError(resp.Message ?? "保存失败");
             }
-
-            LoadUserProfile();
-            ClearValidationError();
-            ClearPasswordFields();
         }
-
-        public bool IsNavigationTarget(NavigationContext navigationContext) => true;
-
-        public void OnNavigatedFrom(NavigationContext navigationContext)
+        catch (Exception ex)
         {
-            // 清理敏感数据
-            ClearPasswordFields();
+            Logger.LogError(ex, "保存个人资料失败");
+            Services.ToastService.ShowError($"保存失败: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private bool CanSaveProfile() => !IsBusy && !string.IsNullOrWhiteSpace(EditRealName);
+
+    #endregion
+
+    #region 修改密码
+
+    [RelayCommand(CanExecute = nameof(CanChangePassword))]
+    private async Task ChangePasswordAsync()
+    {
+        if (CurrentUser == null)
+        {
+            Services.ToastService.ShowError("未找到当前用户信息");
+            return;
         }
 
-        #endregion
+        if (string.IsNullOrWhiteSpace(OldPassword))
+        {
+            Services.ToastService.ShowWarning("请输入当前密码");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(NewPassword))
+        {
+            Services.ToastService.ShowWarning("请输入新密码");
+            return;
+        }
+
+        if (NewPassword.Length < 8)
+        {
+            Services.ToastService.ShowWarning("新密码长度不能少于8位");
+            return;
+        }
+
+        if (NewPassword != ConfirmPassword)
+        {
+            Services.ToastService.ShowWarning("两次输入的密码不一致");
+            return;
+        }
+
+        if (OldPassword == NewPassword)
+        {
+            Services.ToastService.ShowWarning("新密码不能与当前密码相同");
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            var request = new ChangePasswordRequest
+            {
+                OldPassword = OldPassword,
+                NewPassword = NewPassword
+            };
+
+            var resp = await _userApi.ChangePasswordAsync(CurrentUser.Id, request);
+            if (resp.Success)
+            {
+                Services.ToastService.ShowSuccess("密码修改成功");
+                Logger.LogInformation("密码修改成功: {UserName}", CurrentUser.UserName);
+                ClearPasswordFields();
+            }
+            else
+            {
+                Services.ToastService.ShowError(resp.Message ?? "密码修改失败，请检查当前密码是否正确");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "修改密码失败");
+            Services.ToastService.ShowError($"修改失败: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
+
+    private bool CanChangePassword() =>
+        !IsBusy &&
+        !string.IsNullOrWhiteSpace(OldPassword) &&
+        !string.IsNullOrWhiteSpace(NewPassword) &&
+        !string.IsNullOrWhiteSpace(ConfirmPassword);
+
+    #endregion
+
+    #region 返回
+
+    [RelayCommand]
+    private void GoBack() => _navigationCoordinator.NavigateBack();
+
+    #endregion
+
+    #region 加载用户资料
+
+    private async Task LoadUserProfileAsync()
+    {
+        try
+        {
+            var user = await _authService.GetCurrentUserAsync();
+            if (user != null)
+            {
+                CurrentUser = user;
+                EditRealName = user.RealName ?? string.Empty;
+                EditPhoneNumber = user.PhoneNumber ?? string.Empty;
+                EditEmail = user.Email ?? string.Empty;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "加载用户资料失败");
+        }
+    }
+
+    private void ClearPasswordFields()
+    {
+        OldPassword = string.Empty;
+        NewPassword = string.Empty;
+        ConfirmPassword = string.Empty;
+    }
+
+    #endregion
+
+    #region INavigationAware
+
+    public async void OnNavigatedTo(NavigationContext navigationContext)
+    {
+        if (navigationContext.Parameters.ContainsKey("Tab"))
+        {
+            var tab = navigationContext.Parameters.GetValue<string>("Tab");
+            IsPasswordSelected = tab == "Password";
+            IsProfileSelected = !IsPasswordSelected;
+        }
+        else
+        {
+            IsProfileSelected = true;
+            IsPasswordSelected = false;
+        }
+
+        ClearPasswordFields();
+        await LoadUserProfileAsync();
+    }
+
+    public bool IsNavigationTarget(NavigationContext navigationContext) => true;
+
+    public void OnNavigatedFrom(NavigationContext navigationContext)
+    {
+        ClearPasswordFields();
+    }
+
+    #endregion
 }

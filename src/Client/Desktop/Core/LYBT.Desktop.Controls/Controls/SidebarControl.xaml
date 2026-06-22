@@ -127,38 +127,47 @@
                 </StackPanel>
             </Button>
 
-            <!--  Row 1: 用户信息  -->
-            <Border Grid.Row="1" Padding="12,12">
-                <StackPanel Orientation="Horizontal">
-                    <Border
-                        Width="32"
-                        Height="32"
-                        Background="{DynamicResource SidebarAvatarBrush}"
-                        CornerRadius="16">
-                        <TextBlock
-                            HorizontalAlignment="Center"
+            <!--  Row 1: 用户信息 (可点击 → 账户设置)  -->
+            <Button
+                Grid.Row="1"
+                Background="Transparent"
+                BorderThickness="0"
+                Command="{Binding EditProfileCommand, ElementName=Root}"
+                Cursor="Hand"
+                HorizontalContentAlignment="Stretch"
+                ToolTip="个人设置">
+                <Border Padding="12,12">
+                    <StackPanel Orientation="Horizontal">
+                        <Border
+                            Width="32"
+                            Height="32"
+                            Background="{DynamicResource SidebarAvatarBrush}"
+                            CornerRadius="16">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource SidebarTextBrush}"
+                                Text="{Binding CurrentUser.RealName, ElementName=Root, Converter={x:Static converters:Cvt.FirstChar}}" />
+                        </Border>
+                        <StackPanel
+                            Margin="10,0,0,0"
                             VerticalAlignment="Center"
-                            FontSize="14"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource SidebarTextBrush}"
-                            Text="{Binding CurrentUser.RealName, ElementName=Root, Converter={x:Static converters:Cvt.FirstChar}}" />
-                    </Border>
-                    <StackPanel
-                        Margin="10,0,0,0"
-                        VerticalAlignment="Center"
-                        Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
-                        <TextBlock
-                            FontSize="13"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource SidebarTextBrush}"
-                            Text="{Binding CurrentUser.RealName, ElementName=Root}" />
-                        <TextBlock
-                            FontSize="11"
-                            Foreground="{DynamicResource SidebarSecondaryTextBrush}"
-                            Text="{Binding CurrentUser.Role, ElementName=Root, Converter={x:Static converters:Cvt.EnumDesc}}" />
+                            Visibility="{Binding IsExpanded, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
+                            <TextBlock
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource SidebarTextBrush}"
+                                Text="{Binding CurrentUser.RealName, ElementName=Root}" />
+                            <TextBlock
+                                FontSize="11"
+                                Foreground="{DynamicResource SidebarSecondaryTextBrush}"
+                                Text="{Binding CurrentUser.Role, ElementName=Root, Converter={x:Static converters:Cvt.EnumDesc}}" />
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
-            </Border>
+                </Border>
+            </Button>
 
             <!--  Row 2: 分隔线  -->
             <Border
