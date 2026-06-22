@@ -8,20 +8,34 @@ using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Controls.Controls
 {
-    /// <summary>
-    /// 侧边栏控件
-    ///
-    /// 功能：
-    /// - 展开/收缩切换
-    /// - 用户信息显示
-    /// - 返回主页按钮（角色感知导航）
-    /// - 修改个人信息/修改密码
-    /// - 状态信息（网络+时间）
-    /// - 退出登录
-    /// </summary>
     public partial class SidebarControl : UserControl
     {
         public SidebarControl() => InitializeComponent();
+
+        private void OnUserAvatarClick(object sender, RoutedEventArgs e)
+        {
+            var menu = new ContextMenu
+            {
+                Background = (System.Windows.Media.Brush)FindResource("SidebarBrush"),
+                Foreground = (System.Windows.Media.Brush)FindResource("SidebarTextBrush"),
+                BorderBrush = (System.Windows.Media.Brush)FindResource("SidebarDividerBrush"),
+                Padding = new Thickness(0),
+            };
+
+            var profileItem = new MenuItem { Header = "个人资料", Foreground = menu.Foreground, Padding = new Thickness(16,8,32,8) };
+            profileItem.Click += (_, _) => EditProfileCommand?.Execute(null);
+            menu.Items.Add(profileItem);
+
+            menu.Items.Add(new Separator { Background = (System.Windows.Media.Brush)FindResource("SidebarDividerBrush") });
+
+            var logoutItem = new MenuItem { Header = "退出登录", Foreground = (System.Windows.Media.Brush)FindResource("DangerBrush"), Padding = new Thickness(16,8,32,8) };
+            logoutItem.Click += (_, _) => LogoutCommand?.Execute(null);
+            menu.Items.Add(logoutItem);
+
+            menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+            menu.PlacementTarget = sender as UIElement;
+            menu.IsOpen = true;
+        }
 
         #region IsExpanded - 展开/收缩状态
 

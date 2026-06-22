@@ -55,6 +55,11 @@
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsExpanded, ElementName=Root}" Value="False">
+                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    </DataTrigger>
+                </Style.Triggers>
             </Style>
 
             <!--  导航项数据模板  -->
@@ -127,12 +132,13 @@
                 </StackPanel>
             </Button>
 
-            <!--  Row 1: 用户信息 (可点击 → 账户设置)  -->
+            <!--  Row 1: 用户信息 (点击弹出菜单)  -->
             <Button
+                x:Name="UserAvatarButton"
                 Grid.Row="1"
-                Command="{Binding EditProfileCommand, ElementName=Root}"
                 Cursor="Hand"
-                ToolTip="个人设置">
+                ToolTip="个人设置"
+                Click="OnUserAvatarClick">
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="Background" Value="Transparent" />
