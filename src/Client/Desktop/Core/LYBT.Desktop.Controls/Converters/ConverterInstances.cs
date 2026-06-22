@@ -57,6 +57,11 @@ namespace LYBT.Desktop.Controls.Converters
         /// </summary>
         public static readonly IValueConverter BoolToDouble = new BoolToDoubleConverter();
 
+        /// <summary>
+        /// Bool -> Margin/Thickness (true=12,8,0,8 expanded, false=0,8,0,8 collapsed centered)
+        /// </summary>
+        public static readonly IValueConverter BoolToMargin = new BoolToMarginConverter();
+
         // ========== Visibility Converters ==========
 
         /// <summary>
