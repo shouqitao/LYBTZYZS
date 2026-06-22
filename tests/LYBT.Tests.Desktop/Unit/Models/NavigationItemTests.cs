@@ -1,6 +1,7 @@
+using FluentAssertions;
 using LYBT.Desktop.Controls.Models;
 
-namespace LYBT.Tests.Desktop.Models;
+namespace LYBT.Tests.Desktop;
 
 public class NavigationItemTests
 {
@@ -8,7 +9,7 @@ public class NavigationItemTests
     public void New_Instance_DefaultGroup_IsBusiness()
     {
         var item = new NavigationItem();
-        Assert.Equal("业务", item.Group);
+        item.Group.Should().Be("业务");
     }
 
     [Theory]
@@ -18,6 +19,6 @@ public class NavigationItemTests
     public void Group_CanBeSet_ToKnownValues(string group)
     {
         var item = new NavigationItem { Group = group };
-        Assert.Equal(group, item.Group);
+        item.Group.Should().Be(group);
     }
 }
