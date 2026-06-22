@@ -38,8 +38,7 @@
                 DialogTheme="Inherit"
                 Identifier="RootDialog">
 
-                <materialDesign:Snackbar Name="MainSnackbar">
-                    <Grid>
+                        <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="{Binding SidebarWidth}" />
                             <ColumnDefinition Width="*" />
@@ -178,7 +177,6 @@
                         </Border>
 
                     </Grid>
-                </materialDesign:Snackbar>
             </materialDesign:DialogHost>
         </Grid>
     </Grid>

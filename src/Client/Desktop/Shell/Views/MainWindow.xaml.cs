@@ -1,9 +1,6 @@
 using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Shell.ViewModels;
-using MaterialDesignThemes.Wpf;
-using Prism.Ioc;
-using Prism.Regions;
 
 namespace LYBT.Desktop.Shell.Views
 {
@@ -29,12 +26,6 @@ namespace LYBT.Desktop.Shell.Views
         {
             try
             {
-                // Register the Snackbar's MessageQueue in DI so SnackbarService can use it
-                if (MainSnackbar?.MessageQueue is ISnackbarMessageQueue queue)
-                {
-                    ContainerLocator.Current.RegisterInstance(queue);
-                }
-
                 if (DataContext is MainWindowViewModel viewModel)
                 {
                     await viewModel.OnWindowLoadedAsync();
