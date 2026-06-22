@@ -19,6 +19,7 @@ using LYBT.Desktop.Shell.Views;
 using LYBT.Desktop.Sysadmin;
 using LYBT.Desktop.Users;
 using LYBT.Shared.Models.Enums;
+using MaterialDesignThemes.Wpf;
 using Prism.DryIoc;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -103,6 +104,11 @@ public partial class App : PrismApplication
             LYBT.Desktop.Infrastructure.ViewModels.UnfinishedCaseDialogViewModel>();
         containerRegistry.Register<ViewModels.AccountSettingsViewModel>();
         containerRegistry.RegisterForNavigation<Views.AccountSettingsView>();
+
+        containerRegistry.RegisterSingleton<PaletteHelper>();
+        containerRegistry.RegisterSingleton<ThemeService>();
+        containerRegistry.RegisterSingleton<ISnackbarService, SnackbarService>();
+        containerRegistry.RegisterSingleton<IDialogHostService, DialogHostService>();
     }
 
     /// <summary>配置ViewModel定位器</summary>
