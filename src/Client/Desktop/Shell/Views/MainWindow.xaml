@@ -144,24 +144,21 @@
                                     </ListBox.ItemContainerStyle>
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
-                                            <Grid Margin="0,4">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="22" />
-                                                    <ColumnDefinition Width="12" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <materialDesign:PackIcon Kind="{Binding IconKind}"
-                                                                         Width="22" Height="22"
-                                                                         Grid.Column="0"
-                                                                         Foreground="White"
-                                                                         VerticalAlignment="Center" />
-                                                <TextBlock FontSize="14"
-                                                           Grid.Column="2"
-                                                           Foreground="White"
-                                                           VerticalAlignment="Center"
-                                                           Text="{Binding Title}"
-                                                           Visibility="{Binding DataContext.NavTextVisibility,
-                                                                       RelativeSource={RelativeSource AncestorType=Window}}" />
+                                            <Grid>
+                                                <StackPanel Orientation="Horizontal"
+                                                            HorizontalAlignment="Center"
+                                                            Margin="0,4">
+                                                    <materialDesign:PackIcon Kind="{Binding IconKind}"
+                                                                             Width="22" Height="22"
+                                                                             Foreground="White"
+                                                                             VerticalAlignment="Center" />
+                                                    <TextBlock Margin="12,0,0,0" FontSize="14"
+                                                               Foreground="White"
+                                                               VerticalAlignment="Center"
+                                                               Text="{Binding Title}"
+                                                               Visibility="{Binding DataContext.NavTextVisibility,
+                                                                           RelativeSource={RelativeSource AncestorType=Window}}" />
+                                                </StackPanel>
                                             </Grid>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
