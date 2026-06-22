@@ -32,7 +32,7 @@
             Modifiers="Ctrl" />
         <KeyBinding
             Key="M"
-            Command="{Binding ToggleDrawerCommand}"
+            Command="{Binding ToggleSidebarCommand}"
             Modifiers="Ctrl" />
         <!-- 导航架构改进方案 v1.0 — 后退/前进快捷键 -->
         <KeyBinding
@@ -85,14 +85,13 @@
                 CurrentTime="{Binding CurrentTime}"
                 CurrentUser="{Binding CurrentUser}"
                 EditProfileCommand="{Binding EditProfileCommand}"
-                HomeNavItems="{Binding HomeNavItems}"
-                BusinessNavItems="{Binding BusinessNavItems}"
-                AdminNavItems="{Binding AdminNavItems}"
-                IsExpanded="{Binding IsDrawerOpen}"
+                GroupedNavItems="{Binding GroupedNavItems}"
+                SelectedNavItem="{Binding SelectedNavItem, Mode=TwoWay}"
+                IsExpanded="{Binding IsSidebarExpanded}"
                 IsRemoteMode="{Binding IsRemoteMode}"
                 LogoutCommand="{Binding LogoutCommand}"
                 NavigateToHomeCommand="{Binding NavigateToHomeCommand}"
-                ToggleCommand="{Binding ToggleDrawerCommand}" />
+                ToggleCommand="{Binding ToggleSidebarCommand}" />
 
             <!--  右侧工作区  -->
             <Grid
