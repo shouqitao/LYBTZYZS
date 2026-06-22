@@ -75,9 +75,10 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!--  左侧边栏  -->
+            <!--  左侧边栏 (贯穿全高)  -->
             <controls:SidebarControl
                 Grid.Row="0"
+                Grid.RowSpan="2"
                 Grid.Column="0"
                 ApiStatus="{Binding ApiStatus}"
                 ConnectionDisplay="{Binding ConnectionModeDisplay}"
@@ -130,10 +131,10 @@
                 </Border>
             </Grid>
 
-            <!--  状态栏  -->
+            <!--  状态栏 (仅右侧，不横跨侧边栏)  -->
             <DockPanel
                 Grid.Row="1"
-                Grid.ColumnSpan="2"
+                Grid.Column="1"
                 LastChildFill="True">
 
                 <controls:GlobalStatusBar StatusMessage="{Binding ApiStatus}" />
