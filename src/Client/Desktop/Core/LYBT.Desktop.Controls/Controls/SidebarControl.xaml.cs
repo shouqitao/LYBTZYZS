@@ -12,23 +12,16 @@ namespace LYBT.Desktop.Controls.Controls
     {
         public SidebarControl() => InitializeComponent();
 
-        private void OnUserAvatarClick(object sender, RoutedEventArgs e)
+        private void OnMoreButtonClick(object sender, RoutedEventArgs e)
         {
-            var menu = new ContextMenu
-            {
-                Background = (System.Windows.Media.Brush)FindResource("SidebarBrush"),
-                Foreground = (System.Windows.Media.Brush)FindResource("SidebarTextBrush"),
-                BorderBrush = (System.Windows.Media.Brush)FindResource("SidebarDividerBrush"),
-                Padding = new Thickness(0),
-            };
+            UserMenuPopup.PlacementTarget = sender as UIElement;
+            UserMenuPopup.IsOpen = true;
+        }
 
-            var profileItem = new MenuItem { Header = "个人资料", Foreground = menu.Foreground, Padding = new Thickness(16,8,32,8) };
-            profileItem.Click += (_, _) => EditProfileCommand?.Execute(null);
-            menu.Items.Add(profileItem);
-
-            menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-            menu.PlacementTarget = sender as UIElement;
-            menu.IsOpen = true;
+        private void OnCollapsedAvatarClick(object sender, RoutedEventArgs e)
+        {
+            UserMenuPopup.PlacementTarget = sender as UIElement;
+            UserMenuPopup.IsOpen = true;
         }
 
         #region IsExpanded - 展开/收缩状态
@@ -41,7 +34,7 @@ namespace LYBT.Desktop.Controls.Controls
 
         public static readonly DependencyProperty IsExpandedProperty =
             DependencyProperty.Register(nameof(IsExpanded), typeof(bool), typeof(SidebarControl),
-                new PropertyMetadata(false));
+                new PropertyMetadata(true));
 
         #endregion
 
@@ -127,20 +120,6 @@ namespace LYBT.Desktop.Controls.Controls
 
         public static readonly DependencyProperty EditProfileCommandProperty =
             DependencyProperty.Register(nameof(EditProfileCommand), typeof(ICommand), typeof(SidebarControl),
-                new PropertyMetadata(null));
-
-        #endregion
-
-        #region NavigateToSystemSettingsCommand - 系统设置命令
-
-        public ICommand? NavigateToSystemSettingsCommand
-        {
-            get => (ICommand?)GetValue(NavigateToSystemSettingsCommandProperty);
-            set => SetValue(NavigateToSystemSettingsCommandProperty, value);
-        }
-
-        public static readonly DependencyProperty NavigateToSystemSettingsCommandProperty =
-            DependencyProperty.Register(nameof(NavigateToSystemSettingsCommand), typeof(ICommand), typeof(SidebarControl),
                 new PropertyMetadata(null));
 
         #endregion
