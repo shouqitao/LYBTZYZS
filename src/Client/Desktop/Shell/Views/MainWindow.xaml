@@ -51,7 +51,7 @@
                         <!-- Left sidebar -->
                         <Border Grid.Column="0" Grid.RowSpan="2"
                                 Background="{DynamicResource MaterialDesign.Brush.Primary}">
-                            <DockPanel LastChildFill="False">
+                            <DockPanel LastChildFill="True">
 
                                 <!-- Hamburger button -->
                                 <ToggleButton
@@ -88,7 +88,46 @@
                                 <Separator DockPanel.Dock="Top"
                                            Background="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
 
-                                <!-- Navigation list -->
+                                <!-- Spacer (before ListBox to push it down) -->
+                                <Border DockPanel.Dock="Bottom" />
+
+                                <!-- Bottom: User card -->
+                                <StackPanel DockPanel.Dock="Bottom" Margin="0,0,0,8">
+                                    <Separator Margin="8,0"
+                                               Background="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
+                                    <StackPanel Orientation="Horizontal" Margin="12,8"
+                                                HorizontalAlignment="Center">
+                                        <Border Width="32" Height="32" CornerRadius="16"
+                                                Background="{StaticResource SidebarAvatarBrush}">
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                       FontSize="12" FontWeight="Bold" Foreground="White"
+                                                       Text="{Binding CurrentUserInitial}" />
+                                        </Border>
+                                        <StackPanel Margin="8,0,0,0" VerticalAlignment="Center"
+                                                    Visibility="{Binding DataContext.NavTextVisibility,
+                                                                RelativeSource={RelativeSource AncestorType=Window}}">
+                                            <TextBlock FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="White"
+                                                       Text="{Binding CurrentUserDisplayName}" />
+                                            <TextBlock FontSize="10" Foreground="White" Opacity="0.7"
+                                                       Text="{Binding CurrentUserRoleDisplay}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <Button Command="{Binding LogoutCommand}"
+                                            Style="{StaticResource MaterialDesignFlatButton}"
+                                            HorizontalAlignment="Center"
+                                            Foreground="White"
+                                            Padding="8,4">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="Logout" Width="18" Height="18" />
+                                            <TextBlock Margin="8,0,0,0" Text="退出"
+                                                       Visibility="{Binding DataContext.NavTextVisibility,
+                                                                   RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+
+                                <!-- Navigation list (LAST child - fills remaining space) -->
                                 <ListBox
                                     ItemsSource="{Binding NavigationItems}"
                                     SelectedItem="{Binding SelectedNavItem, Mode=TwoWay}"
@@ -127,45 +166,6 @@
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                 </ListBox>
-
-                                <!-- Spacer -->
-                                <Border DockPanel.Dock="Bottom" />
-
-                                <!-- Bottom: User card -->
-                                <StackPanel DockPanel.Dock="Bottom" Margin="0,0,0,8">
-                                    <Separator Margin="8,0"
-                                               Background="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
-                                    <StackPanel Orientation="Horizontal" Margin="12,8"
-                                                HorizontalAlignment="Center">
-                                        <Border Width="32" Height="32" CornerRadius="16"
-                                                Background="{StaticResource SidebarAvatarBrush}">
-                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                       FontSize="12" FontWeight="Bold" Foreground="White"
-                                                       Text="{Binding CurrentUserInitial}" />
-                                        </Border>
-                                        <StackPanel Margin="8,0,0,0" VerticalAlignment="Center"
-                                                    Visibility="{Binding DataContext.NavTextVisibility,
-                                                                RelativeSource={RelativeSource AncestorType=Window}}">
-                                            <TextBlock FontSize="12" FontWeight="SemiBold"
-                                                       Foreground="White"
-                                                       Text="{Binding CurrentUserDisplayName}" />
-                                            <TextBlock FontSize="10" Foreground="White" Opacity="0.7"
-                                                       Text="{Binding CurrentUserRoleDisplay}" />
-                                        </StackPanel>
-                                    </StackPanel>
-                                    <Button Command="{Binding LogoutCommand}"
-                                            Style="{StaticResource MaterialDesignFlatButton}"
-                                            HorizontalAlignment="Center"
-                                            Foreground="White"
-                                            Padding="8,4">
-                                        <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="Logout" Width="18" Height="18" />
-                                            <TextBlock Margin="8,0,0,0" Text="退出"
-                                                       Visibility="{Binding DataContext.NavTextVisibility,
-                                                                   RelativeSource={RelativeSource AncestorType=Window}}" />
-                                        </StackPanel>
-                                    </Button>
-                                </StackPanel>
 
                             </DockPanel>
                         </Border>
