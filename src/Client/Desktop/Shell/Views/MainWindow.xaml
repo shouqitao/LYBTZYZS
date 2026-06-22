@@ -94,8 +94,7 @@
                                     SelectedItem="{Binding SelectedNavItem, Mode=TwoWay}"
                                     Background="Transparent"
                                     BorderThickness="0"
-                                    Margin="0,8"
-                                    HorizontalContentAlignment="Center">
+                                    Margin="0,8">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal"
