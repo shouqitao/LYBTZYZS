@@ -1,5 +1,10 @@
 # Shell 重构设计方案
 
+> [!NOTE]
+> This document may not reflect the current implementation.
+> See the final report for up-to-date state:
+> [Final Report](../reports/shell-materialdesign-refactor.md)
+
 **Date**: 2026-06-22
 **Status**: 已批准
 **Scope**: 登录后 Shell 完整重构，使用 MaterialDesignInXaml + Prism + CommunityToolkit.Mvvm

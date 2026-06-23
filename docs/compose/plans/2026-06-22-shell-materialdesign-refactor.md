@@ -1,5 +1,10 @@
 # Shell Material Design Refactor Plan
 
+> [!NOTE]
+> This document may not reflect the current implementation.
+> See the final report for up-to-date state:
+> [Final Report](../reports/shell-materialdesign-refactor.md)
+
 **Date**: 2026-06-22
 **Scope**: Clean-slate refactor of post-login Shell using MaterialDesignInXaml (MDIX) + Prism + CommunityToolkit.Mvvm
 **Constraint**: LoginView remains unchanged
