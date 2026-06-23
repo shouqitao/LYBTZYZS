@@ -1,8 +1,6 @@
-using System.Windows;
-using System.Windows.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
+using Prism.Ioc;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Shell.Services;
 
@@ -12,11 +10,27 @@ public partial class DialogHostService : IDialogHostService
 
     public async Task<bool> ShowConfirmationAsync(string message, string title = "确认")
     {
-        var vm = new ConfirmationDialogDataContext(message, title);
+        // C2 fix: Resolve the existing ConfirmationDialogViewModel from DI instead of
+        // a hand-rolled DataContext. C4: the VM exposes every property the XAML binds.
+        var vm = ContainerLocator.Container.Resolve<Dialogs.ViewModels.ConfirmationDialogViewModel>();
+        vm.Message = message;
+        vm.Title = title;
+
         var view = new Dialogs.Views.ConfirmationDialog
         {
             DataContext = vm
         };
+
+        // Bridge Prism IDialogAware.RequestClose -> MaterialDesign DialogHost.CloseDialogCommand.
+        // The VM's Confirm/Cancel commands raise RequestClose (Prism dialog semantics), but we are
+        // hosting inside a MaterialDesign DialogHost which closes via CloseDialogCommand routed event.
+        vm.RequestClose += dialogResult =>
+        {
+            var confirmed = dialogResult.Result == ButtonResult.OK;
+            DialogHost.CloseDialogCommand.Execute(confirmed, view);
+        };
+
+        // C3 fix: use the identifier string directly, no FindName/FindDialogHost helper.
         var result = await DialogHost.Show(view, RootDialog);
         return result is true;
     }
@@ -25,45 +39,5 @@ public partial class DialogHostService : IDialogHostService
     {
         var result = await DialogHost.Show(dialogContent, RootDialog);
         return result as T;
-    }
-
-    private sealed partial class ConfirmationDialogDataContext : ObservableObject
-    {
-        [ObservableProperty]
-        private string _message;
-
-        [ObservableProperty]
-        private string _title;
-
-        public string ConfirmButtonText => "确认";
-        public string CancelButtonText => "取消";
-        public string IconSource => "/Assets/Icons/warning.png";
-
-        public ICommand ConfirmCommand { get; }
-        public ICommand CancelCommand { get; }
-
-        public ConfirmationDialogDataContext(string message, string title)
-        {
-            _message = message;
-            _title = title;
-            ConfirmCommand = new RelayCommand(OnConfirm);
-            CancelCommand = new RelayCommand(OnCancel);
-        }
-
-        private static void OnConfirm()
-        {
-            DialogHost.CloseDialogCommand.Execute(true, FindDialogHost());
-        }
-
-        private static void OnCancel()
-        {
-            DialogHost.CloseDialogCommand.Execute(false, FindDialogHost());
-        }
-
-        private static DialogHost? FindDialogHost()
-        {
-            var mainWindow = Application.Current.MainWindow;
-            return mainWindow?.FindName(RootDialog) as DialogHost;
-        }
     }
 }

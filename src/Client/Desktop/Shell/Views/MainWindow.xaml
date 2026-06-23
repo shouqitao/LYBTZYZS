@@ -206,6 +206,13 @@
 
                     </Grid>
             </materialDesign:DialogHost>
+
+            <!-- C1 fix: Snackbar provides ISnackbarMessageQueue for SnackbarService DI resolution -->
+            <materialDesign:Snackbar x:Name="MainSnackbar"
+                                      MessageQueue="{materialDesign:MessageQueue}"
+                                      VerticalAlignment="Bottom"
+                                      HorizontalAlignment="Right"
+                                      Margin="16"/>
         </Grid>
     </Grid>
 
