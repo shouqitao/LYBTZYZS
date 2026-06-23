@@ -7,6 +7,7 @@
     xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
     Style="{StaticResource MaterialDesignWindow}"
     Title="{Binding Title}"
+    WindowStyle="None"
     MinWidth="1024" MinHeight="768"
     WindowState="Maximized"
     prism:ViewModelLocator.AutoWireViewModel="True">
