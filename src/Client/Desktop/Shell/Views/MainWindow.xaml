@@ -100,7 +100,7 @@
                                 <StackPanel DockPanel.Dock="Bottom" Margin="0,0,0,8">
                                     <Separator Margin="8,0"
                                                Background="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
-                                    <ToggleButton Style="{StaticResource MaterialDesignLightDarkToggleButton}"
+                                    <ToggleButton Style="{StaticResource MaterialDesignSwitchToggleButton}"
                                                   IsChecked="{Binding IsDarkMode, Mode=TwoWay}"
                                                   HorizontalAlignment="Center"
                                                   Margin="0,6,0,0"
