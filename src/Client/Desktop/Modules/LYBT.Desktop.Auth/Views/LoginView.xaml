@@ -58,20 +58,20 @@
             </StackPanel>
 
             <!-- 右侧登录卡片 -->
-            <Border Grid.Column="1" Width="440" Padding="40,36" HorizontalAlignment="Center" VerticalAlignment="Center"
-                    Background="#FFFFFF" CornerRadius="12">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="40" Opacity="0.2" ShadowDepth="0" Color="Black" />
-                </Border.Effect>
+            <Grid Grid.Column="1" Width="440" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <!-- 关闭按钮（在卡片外面，不被裁剪） -->
+                <Button Command="{Binding CloseApplicationCommand}"
+                        Width="28" Height="28" HorizontalAlignment="Right" VerticalAlignment="Top"
+                        Margin="0,0,-28,0" Background="Transparent" BorderThickness="0" Cursor="Hand"
+                        Panel.ZIndex="1" ToolTip="退出程序">
+                    <TextBlock Text="✕" FontSize="16" FontWeight="Bold" Foreground="#666666" />
+                </Button>
 
-                <Grid>
-                    <!-- 关闭按钮 -->
-                    <Button Command="{Binding CloseApplicationCommand}"
-                            Width="28" Height="28" HorizontalAlignment="Right" VerticalAlignment="Top"
-                            Margin="0,-28,-28,0" Background="Transparent" BorderThickness="0" Cursor="Hand"
-                            ToolTip="退出程序">
-                        <TextBlock Text="✕" FontSize="16" FontWeight="Bold" Foreground="#000000" />
-                    </Button>
+                <Border Padding="40,36"
+                        Background="#FFFFFF" CornerRadius="12">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="40" Opacity="0.2" ShadowDepth="0" Color="Black" />
+                    </Border.Effect>
 
                     <StackPanel>
                         <!-- 标语 -->
@@ -187,8 +187,8 @@
                                     Foreground="#AAAAAA" HorizontalAlignment="Right" />
                         </Grid>
                     </StackPanel>
-                </Grid>
-            </Border>
+                </Border>
+            </Grid>
         </Grid>
 
         <!-- 加载遮罩 -->
