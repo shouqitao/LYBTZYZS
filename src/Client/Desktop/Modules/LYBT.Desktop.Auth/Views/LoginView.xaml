@@ -186,7 +186,7 @@
                             Margin="0" Background="Transparent" BorderThickness="0" Cursor="Hand"
                             ToolTip="退出程序"
                             Foreground="#999999" FontSize="12" Padding="8,4"
-                            Content="退出" />
+                            Content="X" />
                 </Grid>
             </Border>
         </Grid>
