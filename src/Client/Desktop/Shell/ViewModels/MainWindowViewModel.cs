@@ -202,7 +202,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         }
     }
 
-    partial void OnIsDarkModeChanged(bool value) => _themeService.ToggleTheme();
+    partial void OnIsDarkModeChanged(bool value) => _themeService.ApplyTheme(value);
 
     #endregion
 

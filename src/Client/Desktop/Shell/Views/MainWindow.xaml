@@ -96,6 +96,12 @@
                                 <StackPanel DockPanel.Dock="Bottom" Margin="0,0,0,8">
                                     <Separator Margin="8,0"
                                                Background="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
+                                    <ToggleButton Style="{StaticResource MaterialDesignLightDarkToggleButton}"
+                                                  IsChecked="{Binding IsDarkMode, Mode=TwoWay}"
+                                                  HorizontalAlignment="Center"
+                                                  Margin="0,6,0,0"
+                                                  Foreground="White"
+                                                  ToolTip="切换深色/浅色主题" />
                                     <StackPanel Orientation="Horizontal" Margin="12,8"
                                                 HorizontalAlignment="Center">
                                         <Button Command="{Binding EditProfileCommand}"

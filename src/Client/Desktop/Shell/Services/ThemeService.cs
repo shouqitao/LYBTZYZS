@@ -10,11 +10,21 @@ public partial class ThemeService : ObservableObject
     [ObservableProperty]
     private bool _isDarkMode;
 
+    public ThemeService()
+    {
+        InitializeThemeSync();
+    }
+
     public void ToggleTheme()
     {
-        IsDarkMode = !IsDarkMode;
+        ApplyTheme(!IsDarkMode);
+    }
+
+    public void ApplyTheme(bool isDark)
+    {
+        IsDarkMode = isDark;
         var theme = _paletteHelper.GetTheme();
-        theme.SetBaseTheme(IsDarkMode ? BaseTheme.Dark : BaseTheme.Light);
+        theme.SetBaseTheme(isDark ? BaseTheme.Dark : BaseTheme.Light);
         _paletteHelper.SetTheme(theme);
     }
 
