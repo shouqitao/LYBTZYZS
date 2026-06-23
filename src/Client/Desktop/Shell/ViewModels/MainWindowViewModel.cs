@@ -404,25 +404,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     public ICommand NavigateToSystemSettingsCommand => _menuManager.NavigateToSystemSettingsCommand;
 
     /// <summary>
-    /// 导航后退命令 — 导航架构改进方案 v1.0
-    /// </summary>
-    [ObservableProperty]
-    private bool _canNavigateBack;
-
-    /// <summary>
-    /// 导航前进命令 — 导航架构改进方案 v1.0
-    /// </summary>
-    [ObservableProperty]
-    private bool _canNavigateForward;
-
-    /// <summary>
-    /// 当前面包屑列表 — 导航架构改进方案 v1.0
-    /// </summary>
-    [ObservableProperty]
-    private IReadOnlyList<LYBT.Desktop.Shared.UI.BreadcrumbItem> _breadcrumbs
-        = Array.Empty<LYBT.Desktop.Shared.UI.BreadcrumbItem>();
-
-    /// <summary>
     /// 导航后退命令属性
     /// </summary>
     public ICommand NavigateBackCommand => _menuManager.NavigateBackCommand;
@@ -431,11 +412,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// 导航前进命令属性
     /// </summary>
     public ICommand NavigateForwardCommand => _menuManager.NavigateForwardCommand;
-
-    /// <summary>
-    /// 面包屑跳转命令属性
-    /// </summary>
-    public ICommand NavigateToBreadcrumbCommand => _menuManager.NavigateToBreadcrumbCommand;
 
     /// <summary>
     /// 显示导航历史命令 (Ctrl+Shift+H) — Phase 2-3
@@ -504,6 +480,15 @@ public partial class MainWindowViewModel : CoreViewModelBase
     partial void OnIsSidebarExpandedChanged(bool value)
     {
         SidebarWidth = value ? 140 : 60;
+    }
+
+    /// <summary>
+    /// 切换侧边栏展开/折叠命令 (Ctrl+M)
+    /// </summary>
+    [RelayCommand]
+    private void ToggleSidebar()
+    {
+        IsSidebarExpanded = !IsSidebarExpanded;
     }
 
     #endregion
@@ -616,21 +601,14 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     /// <summary>
     /// 导航架构改进方案 v1.0 — 导航状态变更事件处理
-    /// 更新面包屑列表和后退/前进按钮状态
+    /// 刷新后退/前进按钮命令的可执行状态
     /// </summary>
     private void OnNavigationStateChanged(object? sender, NavigationChangedEventArgs e)
     {
         Services.UiThreadDispatcher.InvokeAsync(() =>
         {
-            Breadcrumbs = _navigationCoordinator.Breadcrumbs;
-            CanNavigateBack = _navigationCoordinator.CanNavigateBack;
-            CanNavigateForward = _navigationCoordinator.CanNavigateForward;
-
             // 刷新命令可执行状态
             _menuManager.RefreshNavigationCanExecute();
-
-            Logger.LogDebug("导航状态已更新: 面包屑{Count}项, 可后退={Back}, 可前进={Forward}",
-                Breadcrumbs.Count, CanNavigateBack, CanNavigateForward);
         });
     }
 
