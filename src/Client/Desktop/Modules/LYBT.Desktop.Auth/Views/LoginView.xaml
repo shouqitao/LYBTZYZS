@@ -180,13 +180,13 @@
                         </Grid>
                     </StackPanel>
 
-                    <!-- 关闭按钮（在 StackPanel 之后，Z-order 最高） -->
+                    <!-- 关闭按钮（退出程序） -->
                     <Button Command="{Binding CloseApplicationCommand}"
-                            Width="28" Height="28" HorizontalAlignment="Right" VerticalAlignment="Top"
+                            HorizontalAlignment="Right" VerticalAlignment="Top"
                             Margin="0" Background="Transparent" BorderThickness="0" Cursor="Hand"
-                            ToolTip="退出程序">
-                        <TextBlock Text="✕" FontSize="16" FontWeight="Bold" Foreground="#666666" />
-                    </Button>
+                            ToolTip="退出程序"
+                            Foreground="#999999" FontSize="12" Padding="8,4"
+                            Content="退出" />
                 </Grid>
             </Border>
         </Grid>
