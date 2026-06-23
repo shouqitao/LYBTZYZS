@@ -96,12 +96,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private bool _isLoggedIn;
 
     /// <summary>
-    /// 当前系统时间
-    /// </summary>
-    [ObservableProperty]
-    private DateTime _currentTime = DateTime.Now;
-
-    /// <summary>
     /// 状态栏时间显示文本
     /// </summary>
     [ObservableProperty]
@@ -158,13 +152,13 @@ public partial class MainWindowViewModel : CoreViewModelBase
     }
 
     /// <summary>
-    /// 侧边栏宽度 (60=折叠/仅图标, 280=展开/图标+文字)
+    /// 侧边栏宽度 (60=折叠/仅图标, 140=展开/图标+文字)
     /// </summary>
     [ObservableProperty]
     private double _sidebarWidth = 60;
 
     /// <summary>
-    /// 侧边栏是否展开
+    /// 侧边栏是否展开 (默认折叠=false，按用户要求侧栏初始收起)
     /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(NavTextVisibility))]
@@ -272,6 +266,8 @@ public partial class MainWindowViewModel : CoreViewModelBase
         _ => PackIconKind.WifiStrengthAlertOutline
     };
 
+    // TODO(M3): 状态色当前使用固定 Brushes，未跟随 Light/Dark 主题。状态图标通常为固定语义色，
+    // 暂可接受；后续若需主题适配，应改为从 ResourceDictionary 解析的主题画笔。
     public Brush ApiStatusColor => ApiStatus switch
     {
         ApiHealthStatus.Healthy => Brushes.Green,
@@ -554,7 +550,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         // UI线程更新时间显示（避免应用关闭时空引用）
         Services.UiThreadDispatcher.InvokeAsync(() =>
         {
-            CurrentTime = DateTime.Now;
             CurrentTimeDisplay = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         });
     }

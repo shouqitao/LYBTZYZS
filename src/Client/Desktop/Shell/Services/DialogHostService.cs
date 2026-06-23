@@ -4,7 +4,7 @@ using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Shell.Services;
 
-public partial class DialogHostService : IDialogHostService
+public class DialogHostService : IDialogHostService
 {
     private const string RootDialog = "RootDialog";
 
