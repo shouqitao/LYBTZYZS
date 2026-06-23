@@ -62,7 +62,7 @@
                 <!-- 关闭按钮（在卡片外面，不被裁剪） -->
                 <Button Command="{Binding CloseApplicationCommand}"
                         Width="28" Height="28" HorizontalAlignment="Right" VerticalAlignment="Top"
-                        Margin="0,0,-28,0" Background="Transparent" BorderThickness="0" Cursor="Hand"
+                        Margin="0,-28,0,0" Background="Transparent" BorderThickness="0" Cursor="Hand"
                         Panel.ZIndex="1" ToolTip="退出程序">
                     <TextBlock Text="✕" FontSize="16" FontWeight="Bold" Foreground="#666666" />
                 </Button>
