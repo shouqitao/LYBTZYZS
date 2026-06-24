@@ -17,8 +17,8 @@ namespace LYBT.Desktop.Infrastructure.Services;
 /// </summary>
 public sealed class ConnectionSettingsService : IConnectionSettingsService
 {
-    /// <summary>LocalWebAPI fixed address (always http://localhost:5100).</summary>
-    public const string LocalUrlConstant = "http://localhost:5100";
+    /// <summary>LocalWebAPI fixed address (always http://localhost:5300).</summary>
+    public const string LocalUrlConstant = "http://localhost:5300";
 
     private readonly ILogger<ConnectionSettingsService> _logger;
     private readonly string _settingsFilePath;
@@ -200,9 +200,9 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
 
     private static bool IsLocalUrl(string url)
     {
-        // LocalWebAPI runs on port 5100. Any localhost/127.0.0.1 URL on a
+        // LocalWebAPI runs on port 5300. Any localhost/127.0.0.1 URL on a
         // different port (e.g., 5000) is a remote WebAPI running locally.
-        return url.Contains("localhost:5100", StringComparison.OrdinalIgnoreCase)
-            || url.Contains("127.0.0.1:5100", StringComparison.OrdinalIgnoreCase);
+        return url.Contains("localhost:5300", StringComparison.OrdinalIgnoreCase)
+            || url.Contains("127.0.0.1:5300", StringComparison.OrdinalIgnoreCase);
     }
 }

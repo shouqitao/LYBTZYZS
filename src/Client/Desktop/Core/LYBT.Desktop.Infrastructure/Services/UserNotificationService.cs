@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using LYBT.Desktop.Contracts.Services;
 
 namespace LYBT.Desktop.Infrastructure.Services

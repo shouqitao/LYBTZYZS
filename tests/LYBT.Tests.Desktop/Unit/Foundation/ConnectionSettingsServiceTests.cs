@@ -58,7 +58,7 @@ public class ConnectionSettingsServiceTests : IDisposable
         config["ApiClient:BaseUrl"].Returns((string?)null);
         var service = new ConnectionSettingsService(config, _logger);
 
-        service.CurrentUrl.Should().Be("http://127.0.0.1:5100");
+        service.CurrentUrl.Should().Be("http://127.0.0.1:5300");
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public class ConnectionSettingsServiceTests : IDisposable
         config["ApiClient:BaseUrl"].Returns(string.Empty);
         var service = new ConnectionSettingsService(config, _logger);
 
-        service.CurrentUrl.Should().Be("http://127.0.0.1:5100");
+        service.CurrentUrl.Should().Be("http://127.0.0.1:5300");
     }
 
     #endregion
@@ -76,8 +76,8 @@ public class ConnectionSettingsServiceTests : IDisposable
     #region IsLocal
 
     [Theory]
-    [InlineData("http://127.0.0.1:5100", true)]
-    [InlineData("http://localhost:5100", true)]
+    [InlineData("http://127.0.0.1:5300", true)]
+    [InlineData("http://localhost:5300", true)]
     [InlineData("http://192.168.1.100:5000", false)]
     [InlineData("http://example.com:8080", false)]
     [InlineData("https://127.0.0.1:5001", true)]
@@ -105,7 +105,7 @@ public class ConnectionSettingsServiceTests : IDisposable
     [InlineData("   ", false)]
     public void IsValidUrl_ShouldValidateCorrectly(string url, bool expected)
     {
-        var config = CreateConfig("http://127.0.0.1:5100");
+        var config = CreateConfig("http://127.0.0.1:5300");
         var service = new ConnectionSettingsService(config, _logger);
 
         service.IsValidUrl(url).Should().Be(expected);
@@ -118,7 +118,7 @@ public class ConnectionSettingsServiceTests : IDisposable
     [Fact]
     public async Task SetUrlAsync_WithValidUrl_ShouldUpdateCurrentUrl()
     {
-        var config = CreateConfig("http://127.0.0.1:5100");
+        var config = CreateConfig("http://127.0.0.1:5300");
         var service = new ConnectionSettingsService(config, _logger);
 
         await service.SetUrlAsync("http://192.168.1.100:5000");
@@ -130,12 +130,12 @@ public class ConnectionSettingsServiceTests : IDisposable
     [Fact]
     public async Task SetUrlAsync_WithSameUrl_ShouldNotFireEvent()
     {
-        var config = CreateConfig("http://127.0.0.1:5100");
+        var config = CreateConfig("http://127.0.0.1:5300");
         var service = new ConnectionSettingsService(config, _logger);
         var fired = false;
         service.UrlChanged += (_, _) => fired = true;
 
-        await service.SetUrlAsync("http://127.0.0.1:5100");
+        await service.SetUrlAsync("http://127.0.0.1:5300");
 
         fired.Should().BeFalse();
     }
@@ -143,7 +143,7 @@ public class ConnectionSettingsServiceTests : IDisposable
     [Fact]
     public async Task SetUrlAsync_WithDifferentUrl_ShouldFireEvent()
     {
-        var config = CreateConfig("http://127.0.0.1:5100");
+        var config = CreateConfig("http://127.0.0.1:5300");
         var service = new ConnectionSettingsService(config, _logger);
         var receivedUrl = string.Empty;
         service.UrlChanged += (_, url) => receivedUrl = url;
@@ -156,7 +156,7 @@ public class ConnectionSettingsServiceTests : IDisposable
     [Fact]
     public async Task SetUrlAsync_WithInvalidUrl_ShouldThrow()
     {
-        var config = CreateConfig("http://127.0.0.1:5100");
+        var config = CreateConfig("http://127.0.0.1:5300");
         var service = new ConnectionSettingsService(config, _logger);
 
         var act = () => service.SetUrlAsync("not-valid");
@@ -166,7 +166,7 @@ public class ConnectionSettingsServiceTests : IDisposable
     [Fact]
     public async Task SetUrlAsync_WithEmptyUrl_ShouldThrow()
     {
-        var config = CreateConfig("http://127.0.0.1:5100");
+        var config = CreateConfig("http://127.0.0.1:5300");
         var service = new ConnectionSettingsService(config, _logger);
 
         var act = () => service.SetUrlAsync("");
@@ -181,7 +181,7 @@ public class ConnectionSettingsServiceTests : IDisposable
     public async Task SetUrlAsync_ShouldPersistToFile()
     {
         // Write initial settings
-        var json = "{\"ApiClient\": {\"BaseUrl\": \"http://127.0.0.1:5100\"}}";
+        var json = "{\"ApiClient\": {\"BaseUrl\": \"http://127.0.0.1:5300\"}}";
         await File.WriteAllTextAsync(_testSettingsPath, json);
 
         // Need a real config to get file path resolution

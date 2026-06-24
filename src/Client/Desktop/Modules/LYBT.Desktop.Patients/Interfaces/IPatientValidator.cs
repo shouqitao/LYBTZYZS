@@ -1,4 +1,4 @@
-﻿using FluentValidation.Results;
+using FluentValidation.Results;
 using LYBT.Shared.Models.Contracts.Patients;
 
 namespace LYBT.Desktop.Patients.Interfaces

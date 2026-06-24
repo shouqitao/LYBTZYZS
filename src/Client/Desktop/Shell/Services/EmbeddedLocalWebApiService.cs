@@ -14,7 +14,7 @@ namespace LYBT.Desktop.Shell.Services;
 /// </summary>
 public sealed class EmbeddedLocalWebApiService : IEmbeddedLocalWebApiService, IDisposable
 {
-    private const string LocalUrl = "http://localhost:5100";
+    private const string LocalUrl = "http://localhost:5300";
     private const string LocalConnectionString =
         "Server=(localdb)\\MSSQLLocalDB;Database=LYBTDesktop;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
 

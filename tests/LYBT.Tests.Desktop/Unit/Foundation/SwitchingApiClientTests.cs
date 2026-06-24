@@ -48,7 +48,7 @@ public class SwitchingApiClientTests
             factory.CreateClient(Arg.Any<string>()).Returns(new HttpClient(
                 new FakeHttpMessageHandler("local"))
             {
-                BaseAddress = new Uri("http://127.0.0.1:5100")
+                BaseAddress = new Uri("http://127.0.0.1:5300")
             });
             return factory;
         };
@@ -62,7 +62,7 @@ public class SwitchingApiClientTests
     public void LocalUrl_ShouldUseHttpClientApiClient()
     {
         var cs = Substitute.For<IConnectionSettingsService>();
-        cs.CurrentUrl.Returns("http://127.0.0.1:5100");
+        cs.CurrentUrl.Returns("http://127.0.0.1:5300");
         cs.IsLocal.Returns(true);
         var client = CreateClient(cs);
 
@@ -91,7 +91,7 @@ public class SwitchingApiClientTests
     public void LocalhostUrl_ShouldTriggerLocalClient()
     {
         var cs = Substitute.For<IConnectionSettingsService>();
-        cs.CurrentUrl.Returns("http://localhost:5100");
+        cs.CurrentUrl.Returns("http://localhost:5300");
         cs.IsLocal.Returns(true);
         var client = CreateClient(cs);
 
@@ -109,7 +109,7 @@ public class SwitchingApiClientTests
     public void UrlChange_ShouldRecreateClient()
     {
         var cs = Substitute.For<IConnectionSettingsService>();
-        cs.CurrentUrl.Returns("http://127.0.0.1:5100", "http://remote:5000");
+        cs.CurrentUrl.Returns("http://127.0.0.1:5300", "http://remote:5000");
         cs.IsLocal.Returns(true, false);
         var client = CreateClient(cs);
 

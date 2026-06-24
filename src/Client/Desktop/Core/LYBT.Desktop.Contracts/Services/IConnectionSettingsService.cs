@@ -23,7 +23,7 @@ public interface IConnectionSettingsService
     /// </summary>
     bool IsLocal { get; }
 
-    /// <summary>LocalWebAPI fixed address (always http://localhost:5100).</summary>
+    /// <summary>LocalWebAPI fixed address (always http://localhost:5300).</summary>
     string LocalUrl { get; }
 
     /// <summary>Saved remote server URL (persisted in appsettings.json).</summary>

@@ -113,7 +113,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// 当前连接地址
     /// </summary>
     [ObservableProperty]
-    private string _connectionUrl = "http://127.0.0.1:5100";
+    private string _connectionUrl = "http://127.0.0.1:5300";
 
     /// <summary>
     /// 是否连接本地服务

@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Foundation.Performance;
+using LYBT.Desktop.Foundation.Performance;
 using LYBT.Shared.ExceptionHandling.Handlers;
 using Microsoft.Extensions.Logging;
 using Prism.Modularity;

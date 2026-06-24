@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Foundation.HealthCheck;
+namespace LYBT.Desktop.Foundation.HealthCheck;
 
 /// <summary>
 /// WebAPI 健康检查服务接口

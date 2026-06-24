@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Contracts.Services
+namespace LYBT.Desktop.Contracts.Services
 {
     /// <summary>
     /// 用户通知服务接口 - UltraThink架构

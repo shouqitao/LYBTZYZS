@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Performance;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using Microsoft.Extensions.Logging;
