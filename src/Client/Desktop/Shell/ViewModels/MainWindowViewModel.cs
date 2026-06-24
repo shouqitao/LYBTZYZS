@@ -46,7 +46,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private readonly ITokenLifecycleService _tokenLifecycleService;
     private readonly ILoginCoordinator _loginCoordinator;
     private readonly IConnectionModeService _connectionModeService;
-    private readonly ThemeService _themeService;
+    private readonly IThemeService _themeService;
 
     /// <summary>
     /// 区域管理器
@@ -296,7 +296,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         ITokenLifecycleService tokenLifecycleService,
         ILoginCoordinator loginCoordinator,
         IConnectionModeService connectionModeService,
-        ThemeService themeService)
+        IThemeService themeService)
         : base(services)
     {
         RegionManager = services.RegionManager;

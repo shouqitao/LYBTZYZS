@@ -3,9 +3,7 @@ using MaterialDesignThemes.Wpf;
 
 namespace LYBT.Desktop.Shell.Services;
 
-// TODO(M5): ThemeService 目前为具体类（仅注入到一个 VM）。若后续需要多消费者或测试替换，
-// 应抽取 IThemeService 接口并在 App.xaml.cs 注册。
-public partial class ThemeService : ObservableObject
+public partial class ThemeService : ObservableObject, IThemeService
 {
     private readonly PaletteHelper _paletteHelper = new();
 

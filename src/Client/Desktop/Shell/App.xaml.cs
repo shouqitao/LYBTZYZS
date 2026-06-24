@@ -105,7 +105,7 @@ public partial class App : PrismApplication
         containerRegistry.Register<ViewModels.AccountSettingsViewModel>();
         containerRegistry.RegisterForNavigation<Views.AccountSettingsView>();
 
-        containerRegistry.RegisterSingleton<ThemeService>();
+        containerRegistry.RegisterSingleton<IThemeService, ThemeService>();
         // Infrastructure registrations: available for future callers, not yet injected anywhere.
         containerRegistry.RegisterSingleton<ISnackbarService, SnackbarService>();
         containerRegistry.RegisterSingleton<IDialogHostService, DialogHostService>();
