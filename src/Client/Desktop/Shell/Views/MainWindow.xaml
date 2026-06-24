@@ -191,7 +191,7 @@
                                 Background="{DynamicResource MaterialDesign.Brush.Surface}"
                                 BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
                                 BorderThickness="0,1,0,0">
-                            <DockPanel Margin="12,0">
+                            <DockPanel Margin="12,0" LastChildFill="False">
                                 <!-- Right: All status info -->
                                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
                                             VerticalAlignment="Center">
