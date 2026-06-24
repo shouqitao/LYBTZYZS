@@ -114,12 +114,16 @@
                                                                    RelativeSource={RelativeSource AncestorType=Window}}" />
                                         </StackPanel>
                                     </Button>
+                                    <Separator Margin="8,4"
+                                               Background="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
                                     <ToggleButton Style="{StaticResource MaterialDesignSwitchToggleButton}"
                                                   IsChecked="{Binding IsDarkMode, Mode=TwoWay}"
                                                   HorizontalAlignment="Center"
                                                   Margin="0,6,0,0"
                                                   Foreground="White"
                                                   ToolTip="切换深色/浅色主题" />
+                                    <Separator Margin="8,4"
+                                               Background="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
                                     <Button Command="{Binding LogoutCommand}"
                                             Style="{StaticResource MaterialDesignFlatButton}"
                                             HorizontalAlignment="Center"
