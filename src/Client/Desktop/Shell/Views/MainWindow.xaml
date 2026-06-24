@@ -96,7 +96,7 @@
                                 <!-- Spacer (before ListBox to push it down) -->
                                 <Border DockPanel.Dock="Bottom" />
 
-                                <!-- Bottom: User card -->
+                                <!-- Bottom: Theme toggle + Logout -->
                                 <StackPanel DockPanel.Dock="Bottom" Margin="0,0,0,8">
                                     <Separator Margin="8,0"
                                                Background="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
@@ -106,35 +106,12 @@
                                                   Margin="0,6,0,0"
                                                   Foreground="White"
                                                   ToolTip="切换深色/浅色主题" />
-                                    <StackPanel Orientation="Horizontal" Margin="12,8"
-                                                HorizontalAlignment="Center">
-                                        <Button Command="{Binding EditProfileCommand}"
-                                                Style="{StaticResource MaterialDesignFlatButton}"
-                                                Padding="0"
-                                                Width="32" Height="32"
-                                                ToolTip="修改个人信息">
-                                            <Border Width="32" Height="32" CornerRadius="16"
-                                                    Background="{StaticResource SidebarAvatarBrush}">
-                                                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                           FontSize="12" FontWeight="Bold" Foreground="White"
-                                                           Text="{Binding CurrentUserInitial}" />
-                                            </Border>
-                                        </Button>
-                                        <StackPanel Margin="8,0,0,0" VerticalAlignment="Center"
-                                                    Visibility="{Binding DataContext.NavTextVisibility,
-                                                                RelativeSource={RelativeSource AncestorType=Window}}">
-                                            <TextBlock FontSize="12" FontWeight="SemiBold"
-                                                       Foreground="White"
-                                                       Text="{Binding CurrentUserDisplayName}" />
-                                            <TextBlock FontSize="10" Foreground="White" Opacity="0.7"
-                                                       Text="{Binding CurrentUserRoleDisplay}" />
-                                        </StackPanel>
-                                    </StackPanel>
                                     <Button Command="{Binding LogoutCommand}"
                                             Style="{StaticResource MaterialDesignFlatButton}"
                                             HorizontalAlignment="Center"
                                             Foreground="White"
-                                            Padding="8,4">
+                                            Padding="8,4"
+                                            Margin="0,4,0,0">
                                         <StackPanel Orientation="Horizontal">
                                             <materialDesign:PackIcon Kind="Logout" Width="18" Height="18" />
                                             <TextBlock Margin="8,0,0,0" Text="退出"
@@ -197,6 +174,7 @@
                                 BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
                                 BorderThickness="0,1,0,0">
                             <DockPanel Margin="12,0">
+                                <!-- Left: Connection status -->
                                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal"
                                             VerticalAlignment="Center">
                                     <materialDesign:PackIcon
@@ -206,11 +184,16 @@
                                     <TextBlock Margin="6,0,0,0" FontSize="11"
                                                Text="{Binding ConnectionModeDisplay}" />
                                 </StackPanel>
-                                <TextBlock DockPanel.Dock="Right"
-                                           HorizontalAlignment="Right"
-                                           VerticalAlignment="Center"
-                                           FontSize="11"
-                                           Text="{Binding CurrentTimeDisplay}" />
+                                <!-- Right: User + Time -->
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
+                                            VerticalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="AccountCircle" Width="14" Height="14"
+                                                             Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" />
+                                    <TextBlock Margin="4,0,16,0" FontSize="11"
+                                               Text="{Binding CurrentUserDisplayName}" />
+                                    <TextBlock FontSize="11"
+                                               Text="{Binding CurrentTimeDisplay}" />
+                                </StackPanel>
                             </DockPanel>
                         </Border>
 
