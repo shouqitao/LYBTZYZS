@@ -192,19 +192,15 @@
                                 BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
                                 BorderThickness="0,1,0,0">
                             <DockPanel Margin="12,0">
-                                <!-- Left: Connection status -->
-                                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal"
+                                <!-- Right: All status info -->
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
                                             VerticalAlignment="Center">
                                     <materialDesign:PackIcon
                                         Kind="{Binding ApiStatusIcon}"
                                         Foreground="{Binding ApiStatusColor}"
                                         Width="14" Height="14" />
-                                    <TextBlock Margin="6,0,0,0" FontSize="11"
+                                    <TextBlock Margin="6,0,16,0" FontSize="11"
                                                Text="{Binding ConnectionModeDisplay}" />
-                                </StackPanel>
-                                <!-- Right: User + Time -->
-                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
-                                            VerticalAlignment="Center">
                                     <materialDesign:PackIcon Kind="AccountCircle" Width="14" Height="14"
                                                              Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" />
                                     <TextBlock Margin="4,0,16,0" FontSize="11"
