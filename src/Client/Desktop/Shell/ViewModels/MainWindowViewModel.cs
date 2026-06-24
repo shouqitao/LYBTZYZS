@@ -772,9 +772,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         if (definition.GetAllModules().Contains("ReportsModule"))
             items.Add(CreateNavItem("统计报表", ViewNames.ReportsHome, "ChartBar", "管理"));
 
-        // 账户设置（所有角色都有）
-        items.Add(CreateNavItem("账户设置", ViewNames.AccountSettings, "AccountEdit", "管理"));
-
         Logger.LogInformation("已为角色 {Role} 构建 {Count} 个导航项", role, items.Count);
         return items;
     }

@@ -96,10 +96,24 @@
                                 <!-- Spacer (before ListBox to push it down) -->
                                 <Border DockPanel.Dock="Bottom" />
 
-                                <!-- Bottom: Theme toggle + Logout -->
+                                <!-- Bottom: Account settings + Theme toggle + Logout -->
                                 <StackPanel DockPanel.Dock="Bottom" Margin="0,0,0,8">
                                     <Separator Margin="8,0"
                                                Background="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
+                                    <Button Command="{Binding EditProfileCommand}"
+                                            Style="{StaticResource MaterialDesignFlatButton}"
+                                            HorizontalAlignment="Center"
+                                            Foreground="White"
+                                            Padding="8,4"
+                                            Margin="0,6,0,0"
+                                            ToolTip="账户设置">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="AccountEdit" Width="18" Height="18" />
+                                            <TextBlock Margin="8,0,0,0" Text="账户"
+                                                       Visibility="{Binding DataContext.NavTextVisibility,
+                                                                   RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        </StackPanel>
+                                    </Button>
                                     <ToggleButton Style="{StaticResource MaterialDesignSwitchToggleButton}"
                                                   IsChecked="{Binding IsDarkMode, Mode=TwoWay}"
                                                   HorizontalAlignment="Center"
