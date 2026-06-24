@@ -8,18 +8,20 @@ plans:
   - docs/compose/plans/2026-06-22-shell-materialdesign-refactor-impl.md
   - docs/compose/plans/2026-06-22-shell-redesign-impl.md
 branch: master
-commits: caf108835..98097ab70
+commits: caf108835..b6d2b33b9
 ---
 
 # Shell MaterialDesignInXaml 重构 — 最终报告
 
 ## What Was Built
 
-登录后 Shell 完全重构为 MaterialDesignInXaml (MDIX) 5.3.2 原生架构。主窗口使用 `WindowStyle="None"` 全屏无边框，左侧为可折叠导航栏（60px 折叠/140px 展开），右侧为 Prism 内容区域，底部为状态栏（连接状态 + 实时时钟）。配色方案为 Brown + Amber（`PrimaryColor="Brown" SecondaryColor="Amber"`），符合中医诊所稳重温暖的调性。
+登录后 Shell 完全重构为 MaterialDesignInXaml (MDIX) 5.3.2 原生架构。主窗口使用 `WindowStyle="None"` 全屏无边框，左侧为可折叠导航栏（60px 折叠/140px 展开），右侧为 Prism 内容区域，底部为右对齐状态栏（连接状态 + 用户名 + 实时时钟）。配色方案为 Brown + Amber（`PrimaryColor="Brown" SecondaryColor="Amber"`），符合中医诊所稳重温暖的调性。
 
 新增 4 个服务：`ThemeService`（Light/Dark 主题切换）、`DialogHostService`（MDIX DialogHost 封装，替代 Prism IDialogService）、`SnackbarService`（MDIX Snackbar 通知）、以及对应的 `IDialogHostService`/`ISnackbarService` 接口。旧的自定义控件 `SidebarControl` 和 `GlobalStatusBar` 已删除（共减少 538 行代码）。
 
 登录界面（LoginView）保持不变，仅将关闭按钮从 "✕" 图标改为 "退出" 文字按钮，并将 "凌隐宝堂中医诊所" 标题合并到左侧品牌区（"大医精诚" 上方）。
+
+侧边栏底部工具区包含三个独立按钮（账户设置、主题切换、退出），用分隔线隔开，与上方导航列表分开。用户信息（头像+名字）已移至底部状态栏右侧。LocalWebAPI 端口从 5100 改为 5300，避免 Hyper-V 保留端口冲突。
 
 ## Architecture
 
@@ -35,10 +37,10 @@ Window (WindowStyle="None", WindowState="Maximized")
                       ├─ Column 0, RowSpan 2: 左侧边栏 (Width={Binding SidebarWidth})
                       │    └─ DockPanel (LastChildFill=True)
                       │         ├─ Top: 汉堡按钮 + Logo + 导航列表
-                      │         ├─ Bottom: 主题切换 + 用户卡 + 退出按钮
+                      │         ├─ Bottom: 账户设置 + 主题切换 + 退出（分隔线隔开）
                       │         └─ Fill: ListBox (MaterialDesignNavigationPrimaryListBox)
                       ├─ Column 1, Row 0: 内容区域 (ContentRegion)
-                      └─ Column 1, Row 1: 状态栏 (连接状态 + 时间)
+                      └─ Column 1, Row 1: 状态栏 (右对齐: 连接状态+用户名+时间)
 ```
 
 ### 关键组件
