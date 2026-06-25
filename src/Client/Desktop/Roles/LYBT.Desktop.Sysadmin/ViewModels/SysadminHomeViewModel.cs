@@ -47,7 +47,7 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
     [RelayCommand]
     private void NavigateToAdminUsers()
     {
-        var parameters = new NavigationParameters
+        var parameters = new Dictionary<string, object?>
         {
             { "DefaultRoleFilter", UserRole.Admin }
         };
