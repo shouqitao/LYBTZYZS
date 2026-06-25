@@ -28,9 +28,9 @@ View (XAML)
   ├── 数据绑定 (Binding)
   └── 命令绑定 (Command)
 
-ViewModel (Prism BindableBase)
-  ├── 属性 (SetProperty)
-  ├── 命令 (DelegateCommand)
+ViewModel (CommunityToolkit.Mvvm)
+  ├── 属性 ([ObservableProperty])
+  ├── 命令 ([RelayCommand])
   └── 调用 Repository
 
 Repository
@@ -131,41 +131,29 @@ public interface IMedicalCaseStateService
 
 ---
 
-## ViewModel 模式 (WPF/Prism)
+## ViewModel 模式 (WPF/CommunityToolkit.Mvvm)
 
 ### 标准 ViewModel 结构
 
 ```csharp
-public class PatientListViewModel : BindableBase, INavigationAware
+// 正确：使用 CoreViewModelBase（Infrastructure 层提供）
+public partial class PatientListViewModel : NavigableViewModelBase
 {
-    private readonly IPatientRepository _repository;
+    private readonly IPatientRepository _patientRepository;
 
-    // 属性
-    private ObservableCollection<PatientDto> _patients;
-    public ObservableCollection<PatientDto> Patients
+    [ObservableProperty]
+    private ObservableCollection<PatientDto> _patients = [];
+
+    [RelayCommand]
+    private async Task LoadPatientsAsync()
     {
-        get => _patients;
-        set => SetProperty(ref _patients, value);
-    }
-
-    // 命令
-    public DelegateCommand RefreshCommand { get; }
-    public DelegateCommand<PatientDto> EditCommand { get; }
-
-    // 构造函数 (DI)
-    public PatientListViewModel(IPatientRepository repository)
-    {
-        _repository = repository;
-        RefreshCommand = new DelegateCommand(async () => await LoadDataAsync());
-    }
-
-    // 导航回调
-    public void OnNavigatedTo(NavigationContext context)
-    {
-        LoadDataAsync().FireAndForget();
+        var result = await _patientRepository.GetPagedAsync(1, 20);
+        Patients = new ObservableCollection<PatientDto>(result.Items);
     }
 }
 ```
+
+> 注意：不使用 Prism 的 `BindableBase`/`DelegateCommand`。ViewModel 基类定义在 `LYBT.Desktop.Infrastructure` 的 `CoreViewModelBase` 和 `NavigableViewModelBase`。
 
 ### 数据绑定模式
 
@@ -225,7 +213,7 @@ containerRegistry.RegisterForNavigation<PatientListView, PatientListViewModel>()
 | 子实体独立 Repository | 通过聚合根 MedicalCaseRepository 操作 | DDD 聚合根边界约束 |
 | Service 返回 null 表示未找到 | throw `NotFoundException` | 统一异常处理，避免调用方遗漏 null 检查 |
 | 在 Service 中使用 `HttpContext` | 通过方法参数传递 userId/isAdmin | Service 层不应依赖 HTTP 上下文 |
-| Desktop 直接绑定 Entity/DTO | 绑定 Observable Model (BindableBase) | Entity/DTO 无 INotifyPropertyChanged |
+| Desktop 直接绑定 Entity/DTO | 绑定 Observable Model ([ObservableProperty]) | Entity/DTO 无 INotifyPropertyChanged |
 
 ---
 
@@ -234,3 +222,4 @@ containerRegistry.RegisterForNavigation<PatientListView, PatientListViewModel>()
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本 |
 | 2026-02-22 | v1.1 | 新增常见反模式表 |
+| 2026-06-25 | v1.2 | 修正 ViewModel 示例: Prism BindableBase → CommunityToolkit.Mvvm CoreViewModelBase |

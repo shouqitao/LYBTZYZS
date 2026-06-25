@@ -69,7 +69,7 @@ View (XAML) ← 数据绑定 → ViewModel → Repository → API/DataSource
 - View 不包含业务逻辑
 - ViewModel 通过 DI 注入 Repository
 - Repository 封装 API 调用或 DataSource 访问
-- 使用 Prism `BindableBase` 和 `DelegateCommand`
+- 使用 CommunityToolkit.Mvvm `[ObservableProperty]` 和 `[RelayCommand]`（不使用 Prism 的 BindableBase/DelegateCommand）
 
 ---
 
@@ -210,3 +210,4 @@ await _repository.UpdateAsync(medicalCase);
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本 |
 | 2026-02-22 | v1.1 | 新增常见违规与陷阱章节 |
+| 2026-06-25 | v1.2 | 修正 MVVM 框架名: Prism → CommunityToolkit.Mvvm |
