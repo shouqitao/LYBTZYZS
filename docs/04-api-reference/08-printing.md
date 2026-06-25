@@ -40,6 +40,29 @@
 
 **响应**: `ApiResponse<MedicalCaseDetailDto>` — 更新后的医案详情
 
+**成功响应** (200):
+
+```json
+{
+  "success": true,
+  "message": "打印记录已更新",
+  "data": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "registrationId": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    "patientName": "张三",
+    "doctorName": "李医生",
+    "consultationDate": "2026-06-25T10:30:00Z",
+    "printVersion": 2,
+    "lastPrintedAt": "2026-06-25T14:20:00Z",
+    "printCount": 2,
+    "isPrinted": true
+  },
+  "errors": null,
+  "timestamp": 1750873200,
+  "requestId": "0HN9A..."
+}
+```
+
 **副作用**:
 
 | 字段 | 变更 |
@@ -57,6 +80,36 @@
 |------|------|------|
 | 更新医案字段 | ✅ | ✅ |
 | 创建打印日志 | ✅ | ❌ |
+
+**curl 示例：**
+
+```bash
+# 登录获取 TOKEN
+TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"userName":"admin","password":"Admin@123456"}' | jq -r '.data.token')
+
+# 记录处方打印完成
+curl -X PUT http://localhost:5000/api/v1/medicalcases/a1b2c3d4-e5f6-7890-abcd-ef1234567890/print-completed \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"printType":1,"printerName":"HP-LaserJet-01"}'
+
+# 记录验方打印完成
+curl -X PUT http://localhost:5000/api/v1/medicalcases/a1b2c3d4-e5f6-7890-abcd-ef1234567890/print-completed \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"printType":2,"printerName":"HP-LaserJet-01"}'
+```
+
+**错误码：**
+
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 401 | 未认证 |
+| 403 | 无打印权限（仅 Receptionist 无权限） |
+| 404 | 医案不存在 |
+| 422 | 医案已被锁定，不允许打印 |
 
 ---
 
@@ -84,7 +137,29 @@
 | `printerName` | string? | 否 | 打印机名称，最大100字符 |
 | `errorMessage` | string? | 否 | 失败原因，最大500字符 |
 
-**响应**: `ApiResponse<object>` — `{"success": true, "message": "打印日志记录成功"}`
+**成功响应** (200) `ApiResponse<object>`:
+
+```json
+{
+  "success": true,
+  "message": "打印日志记录成功",
+  "data": null,
+  "errors": null,
+  "timestamp": 1750873200,
+  "requestId": "0HN9A..."
+}
+```
+
+**失败日志请求体**:
+
+```json
+{
+  "printType": 1,
+  "isSuccess": false,
+  "printerName": "HP-LaserJet-01",
+  "errorMessage": "打印机缺纸，无法完成打印"
+}
+```
 
 **副作用** (`isSuccess=true` 时):
 
@@ -103,6 +178,34 @@
 |------|------|------|
 | 创建打印日志 | ✅ | ❌ (仅返回确认) |
 | 更新医案字段 | ✅ (成功时) | ❌ |
+
+**curl 示例：**
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"userName":"admin","password":"Admin@123456"}' | jq -r '.data.token')
+
+# 记录打印成功
+curl -X POST http://localhost:5000/api/v1/medicalcases/a1b2c3d4-e5f6-7890-abcd-ef1234567890/print-logs \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"printType":1,"isSuccess":true,"printerName":"HP-LaserJet-01"}'
+
+# 记录打印失败
+curl -X POST http://localhost:5000/api/v1/medicalcases/a1b2c3d4-e5f6-7890-abcd-ef1234567890/print-logs \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"printType":1,"isSuccess":false,"printerName":"HP-LaserJet-01","errorMessage":"打印机缺纸"}'
+```
+
+**错误码：**
+
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 401 | 未认证 |
+| 403 | 无打印权限 |
+| 404 | 医案不存在 |
 
 ---
 
@@ -169,6 +272,7 @@
 ---
 
 ## 变更记录
-| 日期 | 变更 |
-|------|------|
-| 2026-06-12 | 初始版本（从 medical-cases.md 独立出来）; 标题改为路由格式 |
+| 日期 | 版本 | 变更内容 |
+|------|------|----------|
+| 2026-06-12 | v1.0 | 初始版本（从 medical-cases.md 独立出来）; 标题改为路由格式 |
+| 2026-06-25 | v1.1 | 补充 curl 示例、成功/失败响应 JSON 示例、错误码表；更新 changelog 格式 |
