@@ -44,6 +44,24 @@ C:\Services\LYBT-releases\         ← Desktop 发布包（独立目录，不会
 
 > **关键设计**：Releases 目录与 WebAPI 部署目录**完全独立**，确保 `dotnet publish` 不会清空历史发布包。
 
+### 环境变量参考
+
+| 变量名 | 默认值 | 说明 |
+|--------|--------|------|
+| `ASPNETCORE_ENVIRONMENT` | `Production` | 运行环境（Development / Staging / Production） |
+| `ASPNETCORE_URLS` | `http://localhost:5000` | 监听地址和端口 |
+| `ConnectionStrings__LYBTDB` | — | SQL Server 连接字符串（覆盖 appsettings） |
+| `ConnectionStrings__LYBTDesktop` | — | LocalDB 连接字符串（Desktop 嵌入式服务） |
+| `Jwt__SecretKey` | — | JWT 签名密钥（≥32 字符，生产环境必须覆盖） |
+| `Jwt__Issuer` | `LYBT.WebAPI` | JWT 签发者 |
+| `Jwt__Audience` | `LYBT.Client` | JWT 受众 |
+| `Jwt__AccessTokenExpirationMinutes` | `480` | Access Token 有效期（分钟） |
+| `DefaultPasswords__SysAdminPassword` | — | sysadmin 默认密码（生产环境必须覆盖） |
+| `DefaultPasswords__NewUserPassword` | — | 新用户默认密码（生产环境必须覆盖） |
+| `DOTNET_ENVIRONMENT` | — | .NET 运行环境（备选） |
+
+> **双下划线约定**：ASP.NET Core 通过 `__`（双下划线）分隔层级来覆盖 JSON 配置节。例如 `ConnectionStrings__LYBTDB` 覆盖 `ConnectionStrings:LYBTDB`。
+
 ### 发布命令
 
 ```bash
@@ -53,6 +71,46 @@ dotnet publish src/Server/Services/LYBT.WebAPI -c Release
 # 发布为自包含（目标机器无 .NET Runtime 时使用）
 dotnet publish src/Server/Services/LYBT.WebAPI -c Release -r win-x64 --self-contained true
 ```
+
+### 部署后健康检查验证
+
+部署完成后，按以下步骤验证系统状态：
+
+```powershell
+# 1. 等待服务完全启动（约 10-15 秒）
+Start-Sleep -Seconds 15
+
+# 2. 基础健康检查
+$health = Invoke-RestMethod -Uri "http://localhost:5000/health" -Method Get
+if ($health.status -ne "Healthy") { throw "Health check failed: $($health.status)" }
+
+# 3. 数据库连接检查
+$dbHealth = Invoke-RestMethod -Uri "http://localhost:5000/health/database" -Method Get
+if ($dbHealth.status -ne "Healthy") { throw "Database unhealthy" }
+
+# 4. 详细状态检查（需认证 Token）
+$token = Invoke-RestMethod -Uri "http://localhost:5000/api/v1/auth/login" `
+    -Method Post -ContentType "application/json" `
+    -Body '{"username":"sysadmin","password":"SysAdmin@2026!"}' | Select-Object -ExpandProperty token
+$headers = @{ Authorization = "Bearer $token" }
+$details = Invoke-RestMethod -Uri "http://localhost:5000/api/v1/health/details" -Headers $headers
+Write-Host "DB Status: $($details.database.status), Duration: $($details.database.duration)ms"
+
+# 5. 验证端口监听
+netstat -ano | findstr ":5000"
+```
+
+### IIS 配置要点
+
+如使用 IIS 作为反向代理（非直接 Kestrel）：
+
+1. **安装 ASP.NET Core Hosting Bundle** — 下载并安装 [.NET 8 Hosting Bundle](https://dotnet.microsoft.com/download/dotnet/8.0)
+2. **创建应用池** — .NET CLR 版本设为"无托管代码"，管道模式设为"集成"
+3. **web.config** — `dotnet publish` 会自动生成，确认 `processPath` 指向 `dotnet.exe` 或发布目录的 `LYBT.WebAPI.exe`
+4. **请求超时** — IIS 默认 2 分钟超时，长操作（如报表导出）需调大 `system.webServer/httpRuntime` 的 `executionTimeout`
+5. **WebSocket** — 如使用 SignalR（未来扩展），需启用 WebSocket 协议
+
+> **注意**：本项目推荐使用 Windows Service 直接运行 Kestrel，IIS 仅作为备选方案。
 
 ### 目录结构
 
@@ -147,3 +205,4 @@ dotnet ef database update -s src/Server/Services/LYBT.WebAPI
 | 2026-02-10 | v1.0 | 从 README.md 拆分，初始版本 |
 | 2026-02-22 | v1.1 | 新增故障排查章节 (服务端/客户端/数据库) |
 | 2026-06-25 | v1.2 | 修正 Desktop 日志路径 %APPDATA%\LYBT → %LOCALAPPDATA%\LYBTZYZS（与代码一致） |
+| 2026-06-25 | v1.3 | 新增环境变量参考表、部署后健康检查验证、IIS 配置要点 |

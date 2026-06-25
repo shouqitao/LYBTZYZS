@@ -81,6 +81,98 @@ Copy-Item "C:\Services\LYBT-API\appsettings.json" "D:\Backup\config\appsettings_
 Copy-Item "C:\Services\LYBT-API\appsettings.Production.json" "D:\Backup\config\appsettings.Production_$timestamp.json"
 ```
 
+### 6. PowerShell 自动备份脚本
+
+创建 `C:\Scripts\lybt-backup.ps1`，由 Windows 任务计划程序每日调用：
+
+```powershell
+# lybt-backup.ps1 — 每日凌晨 2:00 自动执行
+param(
+    [string]$BackupRoot = "D:\Backup",
+    [string]$Database = "LYBTDB",
+    [string]$ServerInstance = ".",
+    [int]$RetentionDays = 7
+)
+
+$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+$dateOnly = Get-Date -Format "yyyyMMdd"
+$backupDir = Join-Path $BackupRoot "database"
+$configDir = Join-Path $BackupRoot "config"
+$logFile = Join-Path $BackupRoot "logs\backup_$dateOnly.log"
+
+# 确保目录存在
+New-Item -ItemType Directory -Force -Path $backupDir, $configDir, (Split-Path $logFile) | Out-Null
+
+function Write-Log {
+    param([string]$Message, [string]$Level = "INFO")
+    $entry = "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] [$Level] $Message"
+    Add-Content -Path $logFile -Value $entry
+    if ($Level -eq "ERROR") { Write-Error $Message } else { Write-Host $entry }
+}
+
+try {
+    # 1. 数据库全量备份
+    $dbBackupFile = Join-Path $backupDir "LYBTDB_full_$timestamp.bak"
+    $sql = "BACKUP DATABASE [$Database] TO DISK = N'$dbBackupFile' WITH FORMAT, INIT, COMPRESSION, STATS = 10"
+    Invoke-Sqlcmd -Query $sql -ServerInstance $ServerInstance -QueryTimeout 300
+    Write-Log "Database backup completed: $dbBackupFile"
+
+    # 2. 备份配置文件
+    $apiDir = "C:\Services\LYBT-API"
+    if (Test-Path "$apiDir\appsettings.json") {
+        Copy-Item "$apiDir\appsettings.json" "$configDir\appsettings_$timestamp.json"
+        Copy-Item "$apiDir\appsettings.Production.json" "$configDir\appsettings.Production_$timestamp.json" -ErrorAction SilentlyContinue
+        Write-Log "Config files backed up"
+    }
+
+    # 3. 清理过期备份
+    $cutoffDate = (Get-Date).AddDays(-$RetentionDays)
+    Get-ChildItem $backupDir -Filter "*.bak" | Where-Object { $_.CreationTime -lt $cutoffDate } | ForEach-Object {
+        Remove-Item $_.FullName -Force
+        Write-Log "Removed expired backup: $($_.Name)"
+    }
+
+    # 4. 验证最新备份完整性
+    $verifySql = "RESTORE VERIFYONLY FROM DISK = N'$dbBackupFile'"
+    Invoke-Sqlcmd -Query $verifySql -ServerInstance $ServerInstance -QueryTimeout 60
+    Write-Log "Backup verification passed"
+
+    Write-Log "Backup job completed successfully"
+} catch {
+    Write-Log "Backup job failed: $($_.Exception.Message)" -Level "ERROR"
+    exit 1
+}
+```
+
+注册每日任务计划：
+
+```powershell
+$action = New-ScheduledTaskAction -Execute "powershell.exe" `
+    -Argument "-ExecutionPolicy Bypass -File C:\Scripts\lybt-backup.ps1"
+$trigger = New-ScheduledTaskTrigger -Daily -At "02:00"
+$settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Hours 2)
+Register-ScheduledTask -TaskName "LYBT Daily Backup" -Action $action -Trigger $trigger `
+    -Settings $settings -User "SYSTEM" -RunLevel Highest
+```
+
+### 7. 异地备份策略
+
+| 层级 | 方式 | 频率 | 保留 |
+|------|------|------|------|
+| 本地 | `D:\Backup\` 目录 | 每日 | 7 天 |
+| 异地 | 网络共享 / NAS | 每周 | 4 周 |
+| 可选 | 云存储（Azure Blob / 阿里 OSS） | 每周 | 30 天 |
+
+```powershell
+# 异地备份脚本 — 将本周全量备份复制到网络共享
+$source = "D:\Backup\database"
+$dest = "\\NAS\LYBT-Backups\database"
+$weekStart = (Get-Date).AddDays(-(Get-Date).DayOfWeek.value__)
+Get-ChildItem $source -Filter "*.bak" | Where-Object { $_.CreationTime -ge $weekStart } | ForEach-Object {
+    Copy-Item $_.FullName $dest -Force
+}
+```
+
 ---
 
 ## 客户端备份
@@ -214,8 +306,41 @@ Copy-Item "$env:APPDATA\LYBT\data\lybt-local.mdf" "$env:APPDATA\LYBT\data\backup
    注意：MedicalCase 目前无恢复端点（系统限制）
 
 2. 通过数据库直接恢复（紧急）
-   → UPDATE Entities SET IsDeleted = 0, UpdatedAt = GETUTCDATE() WHERE Id = '<GUID>'
-   → 需 SuperAdmin 权限，务必记录操作日志
+    → UPDATE Entities SET IsDeleted = 0, UpdatedAt = GETUTCDATE() WHERE Id = '<GUID>'
+    → 需 SuperAdmin 权限，务必记录操作日志
+```
+
+### 恢复后验证清单
+
+恢复操作完成后，按以下清单逐项验证：
+
+```powershell
+# 1. 数据库完整性
+DBCC CHECKDB ([LYBTDB]) WITH NO_INFOMSGS, ALL_ERRORMSGS
+# 期望：无错误输出
+
+# 2. 关键表记录数
+$tables = @("Patients", "Herbs", "Formulas", "MedicalCases", "Users")
+foreach ($t in $tables) {
+    $count = (Invoke-Sqlcmd -Query "SELECT COUNT(*) AS Cnt FROM [$t]" -Database LYBTDB).Cnt
+    Write-Host "$t : $count rows"
+}
+
+# 3. 健康检查
+$health = Invoke-RestMethod -Uri "http://localhost:5000/health/details" -Method Get
+Write-Host "Status: $($health.status)"
+
+# 4. 登录测试
+$login = Invoke-RestMethod -Uri "http://localhost:5000/api/v1/auth/login" `
+    -Method Post -ContentType "application/json" `
+    -Body '{"username":"admin","password":"Admin@123456"}'
+Write-Host "Login: $($login.success)"
+
+# 5. API 功能抽查
+$token = $login.token
+$headers = @{ Authorization = "Bearer $token" }
+$patients = Invoke-RestMethod -Uri "http://localhost:5000/api/v1/patients?page=1&pageSize=5" -Headers $headers
+Write-Host "Patients returned: $($patients.data.Count)"
 ```
 
 ---
@@ -237,3 +362,4 @@ Copy-Item "$env:APPDATA\LYBT\data\lybt-local.mdf" "$env:APPDATA\LYBT\data\backup
 |------|------|----------|
 | 2026-06-12 | v1.0 | 初始版本 |
 | 2026-06-25 | v1.1 | 确认远程备份保留 7 天（与 NFR 一致）；确认 RTO < 1 小时 |
+| 2026-06-25 | v1.2 | 新增 PowerShell 自动备份脚本、异地备份策略、恢复后验证清单 |

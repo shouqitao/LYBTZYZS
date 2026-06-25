@@ -99,6 +99,8 @@ Invoke-RestMethod -Uri "http://localhost:5000/health" -Method Get
 ⚠️ EF Core 不支持自动迁移回退。处理方式：
 ```
 
+**手动迁移回退步骤**：
+
 ```powershell
 # 1. 停止服务
 sc stop LYBT-API
@@ -108,8 +110,25 @@ $sqlcmd = "RESTORE DATABASE [LYBTDB] FROM DISK = N'<部署前备份路径>' WITH
 Invoke-Sqlcmd -Query $sqlcmd -ServerInstance "."
 
 # 3. 回滚应用版本（同场景 1）
+$prevVer = "v1.2.2"
+Remove-Item "C:\Services\LYBT-API\*" -Recurse -Force -Exclude VERSION
+Copy-Item "C:\Services\LYBT-releases\$prevVer\*" "C:\Services\LYBT-API\" -Recurse -Force
+
 # 4. 启动并验证
+sc start LYBT-API
+Invoke-RestMethod -Uri "http://localhost:5000/health" -Method Get
 ```
+
+**数据库迁移回退策略**：
+
+| 策略 | 适用场景 | 操作 |
+|------|----------|------|
+| 恢复备份 | 迁移导致数据丢失或结构损坏 | `RESTORE DATABASE ... WITH REPLACE` |
+| 手动回退脚本 | 需要保留新数据但撤销 schema 变更 | 手动编写 `ALTER TABLE` / `DROP` 语句 |
+| 仅回滚应用 | 迁移本身成功但应用代码有 bug | 恢复前一版本应用，不动数据库 |
+| 跳过迁移 | 迁移无破坏性，可安全留在数据库中 | 应用回滚到前一版本，忽略新迁移 |
+
+> **最佳实践**：迁移前始终创建数据库备份。生产环境禁止使用 `dotnet ef database update` 自动迁移，应通过 SQL 脚本手动执行。
 
 ### 场景 3：功能异常但服务正常
 
@@ -166,8 +185,73 @@ Copy-Item "bin\Release\win-x64\publish\*" "C:\Services\LYBT-releases\v1.2.3\LYBT
 
 ---
 
+## 回滚后验证清单
+
+每次回滚完成后，必须逐项验证以下项目：
+
+```powershell
+# ===== 回滚验证清单 =====
+
+# 1. 服务状态
+$service = Get-Service "LYBT-API" -ErrorAction SilentlyContinue
+if ($service.Status -ne "Running") { Write-Host "FAIL: Service not running" }
+
+# 2. 版本确认
+$currentVer = Get-Content "C:\Services\LYBT-API\VERSION" -ErrorAction SilentlyContinue
+Write-Host "Current version: $currentVer"
+
+# 3. 健康检查
+$health = Invoke-RestMethod -Uri "http://localhost:5000/health" -Method Get -TimeoutSec 10
+if ($health.status -ne "Healthy") { Write-Host "FAIL: Health = $($health.status)" }
+
+# 4. 数据库连接
+$dbHealth = Invoke-RestMethod -Uri "http://localhost:5000/health/database" -Method Get -TimeoutSec 10
+if ($dbHealth.status -ne "Healthy") { Write-Host "FAIL: Database unhealthy" }
+
+# 5. 登录功能
+$login = Invoke-RestMethod -Uri "http://localhost:5000/api/v1/auth/login" `
+    -Method Post -ContentType "application/json" `
+    -Body '{"username":"admin","password":"Admin@123456"}' -TimeoutSec 10
+if (-not $login.success) { Write-Host "FAIL: Login failed" }
+
+# 6. 核心 API 抽查
+$token = $login.token
+$headers = @{ Authorization = "Bearer $token" }
+$patients = Invoke-RestMethod -Uri "http://localhost:5000/api/v1/patients?page=1&pageSize=5" `
+    -Headers $headers -TimeoutSec 10
+Write-Host "Patients API: $($patients.data.Count) records"
+
+$herbs = Invoke-RestMethod -Uri "http://localhost:5000/api/v1/herbs?page=1&pageSize=5" `
+    -Headers $headers -TimeoutSec 10
+Write-Host "Herbs API: $($herbs.data.Count) records"
+
+# 7. 事件日志无新错误
+$recentErrors = Get-EventLog -LogName Application -Newest 10 |
+    Where-Object { $_.Source -like "*LYBT*" -and $_.EntryType -eq "Error" }
+if ($recentErrors.Count -gt 0) { Write-Host "WARN: $($recentErrors.Count) recent errors in Event Log" }
+
+# 8. Desktop 客户端连接测试
+Write-Host "Manual: Verify Desktop client can connect and login"
+```
+
+### 验证通过标准
+
+| 项目 | 通过条件 |
+|------|----------|
+| 服务状态 | Status = Running |
+| 版本号 | 与回滚目标版本一致 |
+| 健康检查 | status = Healthy |
+| 数据库连接 | status = Healthy |
+| 登录功能 | success = true |
+| 核心 API | patients / herbs 正常返回 |
+| 事件日志 | 无新增 Error 条目 |
+| 客户端连接 | Desktop 可正常登录使用 |
+
+---
+
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-06-12 | v1.0 | 初始版本 |
+| 2026-06-25 | v1.1 | 新增数据库迁移回退策略表、回滚后验证清单 |

@@ -131,6 +131,156 @@ POST /api/v1/diagnostics/logging/debug/disable
 
 ---
 
+## 告警升级流程
+
+```
+告警触发
+  │
+  ├─ 严重（ALT-001/002/003）
+  │    ├── 即时通知运维人员（短信/电话）
+  │    ├── 5 分钟内响应
+  │    ├── 15 分钟内定位根因
+  │    ├── 30 分钟内恢复或执行回滚
+  │    └── 升级至项目负责人（超 30 分钟未恢复）
+  │
+  ├─ 警告（ALT-004~007）
+  │    ├── 工作时间通知（即时消息/邮件）
+  │    ├── 2 小时内响应
+  │    └── 24 小时内修复或记录为已知问题
+  │
+  └─ 信息（ALT-008/009）
+       ├── 纳入每日运维汇总
+       └── 48 小时内处理
+```
+
+### 升级联系人
+
+| 级别 | 角色 | 联系方式 |
+|------|------|----------|
+| L1 | 运维工程师 | 手机 / 企业微信 |
+| L2 | 开发负责人 | 手机 / 企业微信 |
+| L3 | 项目经理 | 手机 |
+
+---
+
+## SQL Server 监控查询
+
+### Error/Fatal 日志统计
+
+```sql
+-- 最近 24 小时错误级别分布
+SELECT Level, COUNT(*) AS Count
+FROM SystemLogs
+WHERE TimeStamp >= DATEADD(HOUR, -24, GETUTCDATE())
+GROUP BY Level
+ORDER BY Count DESC;
+
+-- 每小时 Error 趋势（用于发现突增）
+SELECT
+    DATEPART(HOUR, TimeStamp) AS Hour,
+    COUNT(*) AS ErrorCount
+FROM SystemLogs
+WHERE Level IN ('Error', 'Fatal')
+  AND TimeStamp >= DATEADD(HOUR, -24, GETUTCDATE())
+GROUP BY DATEPART(HOUR, TimeStamp)
+ORDER BY Hour;
+```
+
+### 慢查询检测
+
+```sql
+-- 超过 1 秒的慢查询（需启用 Database.Monitoring）
+SELECT
+    TimeStamp,
+    SourceContext,
+    Message,
+    Duration
+FROM SystemLogs
+WHERE Message LIKE '%slow query%'
+  AND TimeStamp >= DATEADD(HOUR, -24, GETUTCDATE())
+ORDER BY TimeStamp DESC;
+
+-- 数据库连接数
+SELECT COUNT(*) AS ActiveConnections
+FROM sys.dm_exec_sessions
+WHERE database_id = DB_ID('LYBTDB');
+```
+
+### 数据库容量监控
+
+```sql
+-- 数据库文件大小
+SELECT
+    name AS FileName,
+    physical_name AS Path,
+    size * 8 / 1024 AS SizeMB,
+    max_size AS MaxSizeMB
+FROM sys.master_files
+WHERE database_id = DB_ID('LYBTDB');
+
+-- 表大小排行
+SELECT
+    t.Name AS TableName,
+    p.Rows AS RowCount,
+    SUM(a.total_pages) * 8 / 1024 AS TotalSpaceMB
+FROM sys.tables t
+INNER JOIN sys.indexes i ON t.object_id = i.object_id
+INNER JOIN sys.partitions p ON i.object_id = p.object_id AND i.index_id = p.index_id
+INNER JOIN sys.allocation_units a ON p.partition_id = a.container_id
+GROUP BY t.Name, p.Rows
+ORDER BY TotalSpaceMB DESC;
+```
+
+---
+
+## 通知渠道配置
+
+### 企业微信 Webhook
+
+```powershell
+# 发送告警到企业微信群
+param(
+    [string]$WebhookUrl = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KEY",
+    [string]$Title,
+    [string]$Content,
+    [string]$Level = "warning"
+)
+
+$emoji = switch ($Level) {
+    "critical" { "🔴" }
+    "warning"  { "🟡" }
+    "info"     { "🟢" }
+}
+
+$body = @{
+    msgtype = "markdown"
+    markdown = @{
+        content = "$emoji **$Title**`n$Content`n> $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+    }
+} | ConvertTo-Json -Depth 3
+
+Invoke-RestMethod -Uri $WebhookUrl -Method Post -ContentType "application/json" -Body $body
+```
+
+### 邮件通知
+
+```powershell
+# SMTP 邮件通知
+$smtpParams = @{
+    From = "lybt-monitor@lybt.com"
+    To = "admin@lybt.com"
+    Subject = "[LYBT] $Level Alert: $Title"
+    Body = $Content
+    SmtpServer = "smtp.lybt.com"
+    Port = 587
+    UseSsl = $true
+    Credential = (Get-Credential)
+}
+Send-MailMessage @smtpParams
+```
+
+---
+
 ## 日常巡检
 
 ### 每日检查（5 分钟）
@@ -208,3 +358,4 @@ Register-ScheduledTask -TaskName "LYBT Health Monitor" -Action $action -Trigger 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-06-12 | v1.0 | 初始版本 |
+| 2026-06-25 | v1.1 | 新增 SQL 监控查询、告警升级流程、通知渠道配置示例 |
