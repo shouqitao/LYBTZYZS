@@ -1,6 +1,7 @@
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Web;
 using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -105,7 +106,7 @@ namespace LYBT.LocalWebAPI.Controllers
             {
                 status = dbConnected ? "Healthy" : "Degraded",
                 timestamp = DateTime.UtcNow,
-                version = "1.0.0-local",
+                version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0",
                 database = new
                 {
                     connected = dbConnected,
