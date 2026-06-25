@@ -37,15 +37,15 @@ public class AuthController : BaseApiController
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Password))
-            return Unauthorized(new { Message = "用户名或密码错误" });
+            return Unauthorized(ApiResponse<object>.CreateFail("用户名或密码错误", new { code = "AuthInvalidCredentials" }));
 
         var user = await _userManager.FindByNameAsync(request.UserName);
         if (user == null)
-            return Unauthorized(new { Message = "用户名或密码错误" });
+            return Unauthorized(ApiResponse<object>.CreateFail("用户名或密码错误", new { code = "AuthInvalidCredentials" }));
 
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, true);
         if (!result.Succeeded)
-            return Unauthorized(new { Message = "用户名或密码错误" });
+            return Unauthorized(ApiResponse<object>.CreateFail("用户名或密码错误", new { code = "AuthInvalidCredentials" }));
 
         user.LastLoginAt = DateTime.UtcNow;
         await _userManager.UpdateAsync(user);

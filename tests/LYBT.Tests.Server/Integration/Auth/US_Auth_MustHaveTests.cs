@@ -80,6 +80,27 @@ public sealed class US_Auth_MustHaveTests : IntegrationTestBase<AuthUsersFixture
 
     #endregion
 
+    #region US-AUTH-001: Login error response format
+
+    [Fact]
+    public async Task US_AUTH_001_InvalidCredentials_ReturnsApiResponseFormat()
+    {
+        // Arrange
+        var request = new LoginRequest { UserName = "nonexistent_user_xyz", Password = "WrongPass1!" };
+
+        // Act
+        var response = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/login", request);
+
+        // Assert - must return ApiResponse envelope, not raw JSON
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        var content = await response.Content.ReadFromJsonAsync<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>>(JsonOptions);
+        content.Should().NotBeNull();
+        content!.Success.Should().BeFalse();
+        content.Message.Should().Contain("用户名或密码错误");
+    }
+
+    #endregion
+
     #region US-AUTH-002: Token-based authentication for API access
 
     [Fact]
