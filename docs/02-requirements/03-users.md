@@ -127,6 +127,19 @@ Doctor/Receptionist → 不可管理任何角色
 6. **角色层级**：Admin 不能创建/修改 SuperAdmin；Doctor/Receptionist 不能管理任何角色
 7. **保留用户名**：admin, administrator, root, system, superadmin, sysadmin
 
+## 边界条件验收标准
+
+### 并发会话处理
+
+- [ ] 同一用户在多个终端同时登录 → 允许（多会话共存，JWT 无状态）
+- [ ] 用户被管理员禁用后 → 已登录会话的 JWT 在到期前仍有效（本地模式无 Lockout 策略，远程模式 LockoutEnd 到期后下次请求拒绝）
+
+### 禁用用户中断操作
+
+- [ ] 用户在操作过程中被管理员禁用 → 当前请求完成处理，后续请求返回 403/401
+- [ ] 已禁用用户调用 `PUT /users/{id}/change-password` → 返回 403（Identity Lockout 机制）
+- [ ] 已禁用用户调用 `PUT /users/{id}/profile` → 返回 403（Identity Lockout 机制）
+
 ## 数据流
 
 ```
@@ -155,6 +168,7 @@ Server/Local → UsersController → IUserManagerService
 
 | 日期 | 变更 | 原因 |
 |------|------|------|
+| 2026-06-25 | 补充边界条件验收标准（并发会话、禁用用户中断操作） | 需求文档验收标准完善 |
 | 2026-06-20 | 从 v2.0 重写为 v3.0 | 用户模块重构：统一到 Identity，删除 User 实体 |
 | 2026-06-15 | v2.0 重建 | Phase 1 简化后重建 |
 | 2026-06-08 | v1.0 初始 | 初始需求文档 |

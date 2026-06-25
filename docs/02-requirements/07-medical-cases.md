@@ -50,6 +50,7 @@
 | 处方存在性 | NeedsPrescription=true 时 Prescription 非 null | 已标记需要开处方，但处方不存在 |
 | 处方药材 | NeedsPrescription=true 时 Items.Count > 0 | 处方至少包含一味药材 |
 | 处方必填字段 | NeedsPrescription=true 时 DosageCount > 0 | 请填写帖数 |
+| 处方帖数上限 | DosageCount ≤ 100 | 帖数不可超过 100（ERR-30307） |
 
 **统一入口**：所有完成操作通过 `CompleteAsync`（含 `skipWorkflowValidation` 参数控制是否跳过三步流程校验）。`UpdateStatusAsync` 拒绝 `Completed` 状态，强制使用 `CompleteAsync`。
 
@@ -151,6 +152,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 - [ ] 患者已有 `Active` 医案 → 返回 422（ERR-30103），提示选择处理方式（BR-001）
 - [ ] 患者已有 `Suspended` 医案 → 返回 422（ERR-30104），提示选择处理方式（BR-001）
 - [ ] 初始状态为 `Active`
+- [ ] 同一患者并发创建医案 → 仅一条成功（BR-001 乐观检查），另一条返回 422
 
 **业务规则**:
 1. PatientId 必填，UserId（医生ID）必填
@@ -162,6 +164,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 7. **患者状态检查**：Patient.Status 必须为 Enabled，禁用患者不可创建医案（ERR-30105）
 8. **BR-001 单活跃医案约束**：同一患者同一时间只能有一个 Active 或 Suspended 医案（见上方 BR-001）
 9. **两种创建入口（MC-D19）**：模式 1 前台挂号→医生从挂号队列选中；模式 2 医生直接查询患者创建。两种模式在 BR-001 检查后完全收敛
+10. **医案号溢出处理**：当 3 位序号达到 999 时，扩展为 4 位序号（MC+yyyyMMdd+0001）
 
 **双模式**:
 | 模式 | 行为 |
@@ -188,6 +191,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 - [ ] `IsPrinted=true` 修改成功后 → `IsPrinted=false`、`PrintVersion++`
 - [ ] Doctor 保存 `UserId≠自己` 的医案 → 返回 403
 - [ ] 乐观锁冲突（DbUpdateConcurrencyException）→ 最多重试 3 次
+- [ ] DosageCount 超过 100 → 返回 422（ERR-30307）
 
 **业务规则**:
 1. **聚合根整体保存**（MedicalCase + Consultation + Prescription + Items）
@@ -745,3 +749,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 - [数据同步](10-sync.md)（MedicalCase 为同步实体之一）
 - [平台基础设施 审计日志](11-platform.md)（SecurityAuditLog）
 - [术语表 MedicalCase = 医案（NOT 病历）](../01-product/03-glossary.md)
+
+## 变更记录
+
+| 日期 | 变更 | 原因 |
+|------|------|------|
+| 2026-06-25 | 补充 DosageCount 上限（ERR-30307）、医案号溢出处理、并发创建/保存边界条件 | 需求文档验收标准完善 |
