@@ -1,10 +1,10 @@
 # 用户 API
 
-> Controller: `UsersController` | 路由前缀: `/api/v1/users` | 默认权限: `[Authorize] (类级别，允许所有认证用户; 管理端点用方法级 [Authorize(Policy = "AdminOrSuperAdmin")] 限制)`
+> Controller: `UsersController` | 路由前缀: `/api/v1/users` | 默认权限: `[Authorize]` (类级别，允许所有认证用户)
 
 ## 概述
 
-用户管理 CRUD、密码管理、状态切换、批量操作。管理端点仅限 Admin/SuperAdmin，自助端点 (current/profile/change-password) 允许所有认证用户。reset-password/restore 需 SuperAdmin。
+用户管理 CRUD、密码管理、状态切换、批量操作。管理端点使用 `[Authorize(Policy = "AdminOnly")]`，自助端点 (`current`/`profile`/`change-password`) 允许所有认证用户。
 
 ---
 
@@ -12,29 +12,148 @@
 
 获取用户列表 (分页)。
 
+> **权限**: `[Authorize(Policy = "AdminOnly")]`
+
 **查询参数**:
 
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | `page` | int | 1 | 页码 |
 | `pageSize` | int | 20 | 每页大小 |
-| `keyword` | string? | null | 搜索关键词 |
-| `role` | UserRole? | null | 角色筛选 (Doctor/Admin) |
+| `keyword` | string? | null | 搜索关键词 (匹配用户名/姓名/邮箱/手机号) |
+| `role` | UserRole? | null | 角色筛选 (Doctor/Admin/Receptionist/SuperAdmin) |
 | `status` | CommonStatus? | null | 状态筛选 (Enabled/Disabled) |
 
+**curl 示例**:
+
+```bash
+# 默认查询
+curl -H "Authorization: Bearer <token>" \
+  http://localhost:5000/api/v1/users
+
+# 按关键词 + 角色筛选
+curl -H "Authorization: Bearer <token>" \
+  "http://localhost:5000/api/v1/users?keyword=张&page=1&pageSize=10&role=Doctor"
+
+# 按状态筛选
+curl -H "Authorization: Bearer <token>" \
+  "http://localhost:5000/api/v1/users?status=Enabled"
+```
+
 **成功响应** (200): `ApiResponse<PagedResult<UserListDto>>`
+
+```json
+{
+  "code": 200,
+  "message": "查询成功",
+  "data": {
+    "items": [
+      {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "userName": "doctor_zhang",
+        "realName": "张医生",
+        "phoneNumber": "13800138001",
+        "role": "Doctor",
+        "status": "Enabled",
+        "lastLoginTime": "2026-06-20T14:30:00Z",
+        "createdAt": "0001-01-01T00:00:00"
+      },
+      {
+        "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+        "userName": "admin_li",
+        "realName": "李管理",
+        "phoneNumber": "13800138002",
+        "role": "Admin",
+        "status": "Enabled",
+        "lastLoginTime": "2026-06-21T09:15:00Z",
+        "createdAt": "0001-01-01T00:00:00"
+      }
+    ],
+    "totalCount": 2,
+    "page": 1,
+    "pageSize": 20,
+    "totalPages": 1
+  }
+}
+```
+
+**错误响应**:
+
+| HTTP | 错误码 | 说明 |
+|------|--------|------|
+| 400 | ERR-00003 | 分页参数验证失败 (page < 1 或 pageSize < 1) |
+| 401 | — | 未登录或 Token 无效 |
 
 ---
 
 ## GET /users/current
 
-获取当前登录用户信息。支持 SuperAdmin 特殊处理 (Id=Guid.Empty)。
+获取当前登录用户信息。SuperAdmin 使用 `Id=Guid.Empty` 特殊处理。
 
-> **权限**: `[Authorize]` (所有认证用户, 自助端点)
+> **权限**: `[Authorize]` (所有认证用户，自助端点)
+
+**curl 示例**:
+
+```bash
+curl -H "Authorization: Bearer <token>" \
+  http://localhost:5000/api/v1/users/current
+```
 
 **成功响应** (200): `ApiResponse<UserDetailDto>`
 
-**错误响应**: 401 (未登录或用户信息无效)
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "userName": "doctor_zhang",
+    "realName": "张医生",
+    "role": "Doctor",
+    "email": "zhang@lybt.com",
+    "phoneNumber": "13800138001",
+    "isEnabled": true,
+    "status": "Enabled",
+    "pinYinCode": "ZS",
+    "lastLoginTime": "2026-06-20T14:30:00Z",
+    "failedLoginCount": 0,
+    "remark": "",
+    "createdAt": "0001-01-01T00:00:00",
+    "updatedAt": null
+  }
+}
+```
+
+**SuperAdmin 响应示例**:
+
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "userName": "sysadmin",
+    "realName": "系统超级管理员",
+    "role": "Admin",
+    "email": "sysadmin@lybt.com",
+    "phoneNumber": null,
+    "isEnabled": true,
+    "status": "Enabled",
+    "pinYinCode": null,
+    "lastLoginTime": null,
+    "failedLoginCount": 0,
+    "remark": null,
+    "createdAt": "0001-01-01T00:00:00",
+    "updatedAt": "2026-06-25T00:00:00Z"
+  }
+}
+```
+
+**错误响应**:
+
+| HTTP | 说明 |
+|------|------|
+| 401 | 未登录或用户信息无效 |
 
 ---
 
@@ -42,32 +161,66 @@
 
 获取单个用户详情。
 
+> **权限**: `[Authorize(Policy = "AdminOnly")]`
+
 **路径参数**: `id` (Guid) -- 用户 ID
+
+**curl 示例**:
+
+```bash
+curl -H "Authorization: Bearer <token>" \
+  http://localhost:5000/api/v1/users/a1b2c3d4-e5f6-7890-abcd-ef1234567890
+```
 
 **成功响应** (200): `ApiResponse<UserDetailDto>`
 
-**UserDetailDto**:
-
 ```json
 {
-  "id": "guid",
-  "userName": "string",
-  "realName": "string",
-  "role": "Unknown|Doctor|Admin|SuperAdmin|Receptionist",
-  "email": "string",
-  "phoneNumber": "string",
-  "isEnabled": true,
-  "status": "Enabled|Disabled",
-  "pinYinCode": "string",
-  "lastLoginTime": "datetime?",
-  "failedLoginCount": 0,
-  "remark": "string",
-  "createdAt": "datetime",
-  "updatedAt": "datetime"
+  "code": 200,
+  "message": "操作成功",
+  "data": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "userName": "doctor_zhang",
+    "realName": "张医生",
+    "role": "Doctor",
+    "email": "zhang@lybt.com",
+    "phoneNumber": "13800138001",
+    "isEnabled": true,
+    "status": "Enabled",
+    "pinYinCode": "ZS",
+    "lastLoginTime": "2026-06-20T14:30:00Z",
+    "failedLoginCount": 0,
+    "remark": "",
+    "createdAt": "0001-01-01T00:00:00",
+    "updatedAt": null
+  }
 }
 ```
 
-**错误响应**: 404 (用户不存在)
+**UserDetailDto 字段说明**:
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | Guid | 用户 ID |
+| `userName` | string | 用户名 |
+| `realName` | string | 真实姓名 |
+| `role` | UserRole | 角色: Unknown/Doctor/Admin/SuperAdmin/Receptionist |
+| `email` | string? | 邮箱 |
+| `phoneNumber` | string? | 手机号码 |
+| `isEnabled` | bool | 是否启用 |
+| `status` | CommonStatus | 状态: Enabled/Disabled |
+| `pinYinCode` | string? | 拼音码 |
+| `lastLoginTime` | DateTime? | 最后登录时间 |
+| `failedLoginCount` | int | 连续失败登录次数 |
+| `remark` | string? | 备注 |
+| `createdAt` | DateTime | 创建时间 |
+| `updatedAt` | DateTime? | 更新时间 |
+
+**错误响应**:
+
+| HTTP | 错误码 | 说明 |
+|------|--------|------|
+| 404 | ERR-10001 | 用户不存在 |
 
 ---
 
@@ -75,145 +228,445 @@
 
 创建新用户。
 
+> **权限**: `[Authorize(Policy = "AdminOnly")]`
+
 **请求体** (`UserInputDto`):
 
 ```json
 {
-  "userName": "string",
-  "realName": "string",
-  "password": "string",
-  "role": "Doctor|Admin",
-  "email": "string",
-  "phoneNumber": "string"
+  "userName": "doctor_wang",
+  "realName": "王医生",
+  "password": "Wang@2026!",
+  "role": "Doctor",
+  "email": "wang@lybt.com",
+  "phoneNumber": "13800138003",
+  "remark": "新入职医生"
 }
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `userName` | string | 是 | 用户名 (3-32 字符，字母/数字/下划线) |
+| `realName` | string | 是 | 真实姓名 |
+| `password` | string | 否 | 密码 (6-128 字符，不传则使用默认密码) |
+| `role` | UserRole | 否 | 角色，默认 Doctor |
+| `email` | string | 否 | 邮箱 |
+| `phoneNumber` | string | 否 | 手机号码 |
+| `remark` | string | 否 | 备注 |
+
+**curl 示例**:
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userName": "doctor_wang",
+    "realName": "王医生",
+    "password": "Wang@2026!",
+    "role": "Doctor",
+    "email": "wang@lybt.com",
+    "phoneNumber": "13800138003"
+  }' \
+  http://localhost:5000/api/v1/users
 ```
 
 **成功响应** (201): `ApiResponse<UserDetailDto>` + `Location` 头
 
-**错误响应**: 400 (创建失败，如用户名重复)
+```json
+{
+  "code": 201,
+  "message": "创建成功",
+  "data": {
+    "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+    "userName": "doctor_wang",
+    "realName": "王医生",
+    "role": "Doctor",
+    "email": "wang@lybt.com",
+    "phoneNumber": "13800138003",
+    "isEnabled": true,
+    "status": "Enabled",
+    "pinYinCode": null,
+    "lastLoginTime": null,
+    "failedLoginCount": 0,
+    "remark": "",
+    "createdAt": "0001-01-01T00:00:00",
+    "updatedAt": null
+  }
+}
+```
+
+**错误响应**:
+
+| HTTP | 错误码 | 说明 |
+|------|--------|------|
+| 400 | ERR-10002 | 用户名已被使用 |
+| 400 | ERR-00003 | 输入数据验证失败 (如用户名含特殊字符) |
+| 400 | — | 用户名为系统保留名 (admin/root/sysadmin 等) |
+| 403 | — | 权限不足 (如 Admin 尝试创建 SuperAdmin) |
 
 ---
 
 ## PUT /users/{id}
 
-更新用户信息。
+更新用户信息。sysadmin 账号不可修改。
 
-**路径参数**: `id` (Guid)
+> **权限**: `[Authorize(Policy = "AdminOnly")]`
 
-**请求体**: `UserInputDto` (同创建)
+**路径参数**: `id` (Guid) -- 用户 ID
+
+**请求体** (`UserInputDto`):
+
+```json
+{
+  "realName": "张医生(已更名)",
+  "email": "zhang_new@lybt.com",
+  "phoneNumber": "13900139001",
+  "role": "Admin",
+  "remark": "晋升为管理员"
+}
+```
+
+**curl 示例**:
+
+```bash
+curl -X PUT \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "realName": "张医生(已更名)",
+    "email": "zhang_new@lybt.com",
+    "role": "Admin"
+  }' \
+  http://localhost:5000/api/v1/users/a1b2c3d4-e5f6-7890-abcd-ef1234567890
+```
 
 **成功响应** (200): `ApiResponse<UserDetailDto>`
+
+```json
+{
+  "code": 200,
+  "message": "用户更新成功",
+  "data": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "userName": "doctor_zhang",
+    "realName": "张医生(已更名)",
+    "role": "Admin",
+    "email": "zhang_new@lybt.com",
+    "phoneNumber": "13800138001",
+    "isEnabled": true,
+    "status": "Enabled",
+    "pinYinCode": null,
+    "lastLoginTime": "2026-06-20T14:30:00Z",
+    "failedLoginCount": 0,
+    "remark": "",
+    "createdAt": "0001-01-01T00:00:00",
+    "updatedAt": null
+  }
+}
+```
+
+**错误响应**:
+
+| HTTP | 错误码 | 说明 |
+|------|--------|------|
+| 404 | ERR-10001 | 用户不存在 |
+| 403 | — | 系统管理员账号不可被修改 |
+| 403 | — | 权限不足 (如 Admin 尝试将用户提升为 SuperAdmin) |
 
 ---
 
 ## DELETE /users/{id}
 
-删除用户 (软删除)。
+删除用户 (软删除)。不能删除自己或 sysadmin。
 
-**路径参数**: `id` (Guid)
+> **权限**: `[Authorize(Policy = "AdminOnly")]`
 
-**成功响应** (200): `ApiResponse` ("删除成功")
+**路径参数**: `id` (Guid) -- 用户 ID
 
-**错误响应**: 404 (用户不存在)
+**curl 示例**:
+
+```bash
+curl -X DELETE \
+  -H "Authorization: Bearer <token>" \
+  http://localhost:5000/api/v1/users/a1b2c3d4-e5f6-7890-abcd-ef1234567890
+```
+
+**成功响应** (200): `ApiResponse`
+
+```json
+{
+  "code": 200,
+  "message": "删除成功",
+  "data": null
+}
+```
+
+**错误响应**:
+
+| HTTP | 错误码 | 说明 |
+|------|--------|------|
+| 404 | ERR-10001 | 用户不存在 |
+| 403 | — | 不能删除自己的账户 |
+| 403 | — | 系统管理员账号不可被删除 |
+| 403 | — | 权限不足 (如 Admin 尝试删除 SuperAdmin) |
 
 ---
 
 ## POST /users/{id}/reset-password
 
-管理员重置用户密码。
+管理员重置用户密码，自动生成临时密码。
 
-> **权限**: `[Authorize(Policy = "AdminOrSuperAdmin")]`
+> **权限**: `[Authorize(Policy = "AdminOnly")]`
 
-**路径参数**: `id` (Guid)
+**路径参数**: `id` (Guid) -- 用户 ID
 
 **请求体** (`ResetPasswordRequestDto`):
 
 ```json
 {
-  "newPassword": "string"   // 可选，不传则自动生成
+  "mustChangeOnNextLogin": true
 }
+```
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `mustChangeOnNextLogin` | bool | true | 是否强制用户下次登录时修改密码 |
+
+**curl 示例**:
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"mustChangeOnNextLogin": true}' \
+  http://localhost:5000/api/v1/users/a1b2c3d4-e5f6-7890-abcd-ef1234567890/reset-password
 ```
 
 **成功响应** (200): `ApiResponse<ResetPasswordResponseDto>`
 
 ```json
 {
+  "code": 200,
+  "message": "密码重置成功",
   "data": {
-    "newPassword": "string",    // 新密码 (自动生成时返回)
-    "message": "string"
+    "success": true,
+    "temporaryPassword": "Lybt2025@TempPass!"
   }
 }
 ```
+
+**错误响应**:
+
+| HTTP | 错误码 | 说明 |
+|------|--------|------|
+| 404 | ERR-10001 | 用户不存在 |
 
 ---
 
 ## PUT /users/{id}/profile
 
-修改个人资料。
+修改个人资料。只能修改自己的资料。
 
-> **权限**: `[Authorize]` (所有认证用户, 自助端点)
+> **权限**: `[Authorize]` (所有认证用户，自助端点)
 
-**路径参数**: `id` (Guid)
+**路径参数**: `id` (Guid) -- 当前用户 ID
 
 **请求体** (`ChangeProfileDto`):
 
 ```json
 {
-  "realName": "string",
-  "phoneNumber": "string",
-  "email": "string"
+  "realName": "张医生",
+  "phoneNumber": "13900139001",
+  "email": "zhang@lybt.com"
 }
 ```
 
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `realName` | string | 是 | 真实姓名 |
+| `phoneNumber` | string | 否 | 电话号码 |
+| `email` | string | 否 | 邮箱 |
+
+**curl 示例**:
+
+```bash
+curl -X PUT \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "realName": "张医生",
+    "phoneNumber": "13900139001",
+    "email": "zhang@lybt.com"
+  }' \
+  http://localhost:5000/api/v1/users/a1b2c3d4-e5f6-7890-abcd-ef1234567890/profile
+```
+
 **成功响应** (200): `ApiResponse<UserDetailDto>`
+
+```json
+{
+  "code": 200,
+  "message": "个人资料修改成功",
+  "data": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "userName": "doctor_zhang",
+    "realName": "张医生",
+    "role": "Doctor",
+    "email": "zhang@lybt.com",
+    "phoneNumber": "13900139001",
+    "isEnabled": true,
+    "status": "Enabled",
+    "pinYinCode": null,
+    "lastLoginTime": "2026-06-20T14:30:00Z",
+    "failedLoginCount": 0,
+    "remark": "",
+    "createdAt": "0001-01-01T00:00:00",
+    "updatedAt": null
+  }
+}
+```
+
+**错误响应**:
+
+| HTTP | 错误码 | 说明 |
+|------|--------|------|
+| 404 | ERR-10001 | 用户不存在 |
+| 403 | — | 只能修改自己的个人资料 |
 
 ---
 
 ## PUT /users/{id}/change-password
 
-用户修改密码。
+用户修改密码。只能修改自己的密码。
 
-> **权限**: `[Authorize]` (所有认证用户, 自助端点)
+> **权限**: `[Authorize]` (所有认证用户，自助端点)
 
-**路径参数**: `id` (Guid)
+**路径参数**: `id` (Guid) -- 当前用户 ID
 
 **请求体** (`Auth.ChangePasswordRequest`):
 
 ```json
 {
-  "oldPassword": "string",   // 必填，旧密码
-  "newPassword": "string"    // 必填，新密码
+  "oldPassword": "OldPass@2026!",
+  "newPassword": "NewPass@2026!"
 }
 ```
 
-**成功响应** (200): `ApiResponse` ("密码修改成功")
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `oldPassword` | string | 是 | 旧密码 |
+| `newPassword` | string | 是 | 新密码 (8-50 字符) |
 
-**错误响应**: 400 (旧密码错误等)
+**curl 示例**:
+
+```bash
+curl -X PUT \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "oldPassword": "OldPass@2026!",
+    "newPassword": "NewPass@2026!"
+  }' \
+  http://localhost:5000/api/v1/users/a1b2c3d4-e5f6-7890-abcd-ef1234567890/change-password
+```
+
+**成功响应** (200): `ApiResponse`
+
+```json
+{
+  "code": 200,
+  "message": "密码修改成功",
+  "data": null
+}
+```
+
+**错误响应**:
+
+| HTTP | 错误码 | 说明 |
+|------|--------|------|
+| 400 | ERR-10004 | 旧密码错误 |
+| 400 | ERR-00003 | 新密码不符合长度要求 (8-50 字符) |
+| 404 | ERR-10001 | 用户不存在 |
+| 403 | — | 只能修改自己的密码 |
 
 ---
 
 ## POST /users/{id}/toggle-status
 
-切换用户状态 (启用/禁用)。
+切换用户状态 (启用/禁用)。sysadmin 不可被禁用。
 
-> **权限**: `[Authorize(Policy = "AdminOrSuperAdmin")]`
+> **权限**: `[Authorize(Policy = "AdminOnly")]`
 
-**路径参数**: `id` (Guid)
+**路径参数**: `id` (Guid) -- 用户 ID
 
-**业务规则**:
-1. **权限检查** (S2): 需要 `CanManageUser` 权限。SuperAdmin 可管理所有角色；Admin 仅可管理 Doctor/Receptionist
-2. **最后管理员保护** (S2-07, USER-D03): 禁用 Admin/SuperAdmin 级别用户时，若活跃管理员 (`Role >= Admin && Enabled`) 仅剩 1 人，拒绝操作
-3. 禁用用户时所有 Token Family 失效 (X3-06, AUTH-D06 复用)
-4. 禁用后当前会话立即失效，尝试登录返回 ERR-10006 (UserDisabled)
+**curl 示例**:
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer <token>" \
+  http://localhost:5000/api/v1/users/a1b2c3d4-e5f6-7890-abcd-ef1234567890/toggle-status
+```
 
 **成功响应** (200): `ApiResponse<UserDetailDto>`
 
-响应 message 示例: "用户已启用" 或 "用户已禁用"
+禁用用户时:
+
+```json
+{
+  "code": 200,
+  "message": "用户已禁用",
+  "data": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "userName": "doctor_zhang",
+    "realName": "张医生",
+    "role": "Doctor",
+    "email": "zhang@lybt.com",
+    "phoneNumber": "13800138001",
+    "isEnabled": false,
+    "status": "Disabled",
+    "pinYinCode": null,
+    "lastLoginTime": "2026-06-20T14:30:00Z",
+    "failedLoginCount": 0,
+    "remark": "",
+    "createdAt": "0001-01-01T00:00:00",
+    "updatedAt": null
+  }
+}
+```
+
+启用用户时:
+
+```json
+{
+  "code": 200,
+  "message": "用户已启用",
+  "data": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "userName": "doctor_zhang",
+    "realName": "张医生",
+    "role": "Doctor",
+    "email": "zhang@lybt.com",
+    "phoneNumber": "13800138001",
+    "isEnabled": true,
+    "status": "Enabled",
+    "pinYinCode": null,
+    "lastLoginTime": "2026-06-20T14:30:00Z",
+    "failedLoginCount": 0,
+    "remark": "",
+    "createdAt": "0001-01-01T00:00:00",
+    "updatedAt": null
+  }
+}
+```
 
 **错误响应**:
-- 422: 权限不足 -- "您没有权限修改该用户状态" (由 Service 层动态返回，未在 ProducesResponseType 中声明)
-- 422: 最后管理员保护 -- "不能禁用最后一个管理员" (USER-D03, 由 Service 层动态返回)
-- 404: 用户不存在 (ERR-10001)
+
+| HTTP | 错误码 | 说明 |
+|------|--------|------|
+| 404 | ERR-10001 | 用户不存在 |
+| 403 | — | 系统管理员账号不可被禁用 |
+| 403 | — | 权限不足 (如 Admin 尝试切换 SuperAdmin 状态) |
 
 ---
 
@@ -221,37 +674,146 @@
 
 恢复已删除的用户。
 
-> **权限**: `[Authorize(Policy = "AdminOrSuperAdmin")]`
+> **权限**: `[Authorize(Policy = "AdminOnly")]`
 
-**路径参数**: `id` (Guid)
+**路径参数**: `id` (Guid) -- 用户 ID
 
-**成功响应** (200): `ApiResponse<UserDetailDto>` ("用户已恢复")
+**curl 示例**:
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer <token>" \
+  http://localhost:5000/api/v1/users/a1b2c3d4-e5f6-7890-abcd-ef1234567890/restore
+```
+
+**成功响应** (200): `ApiResponse<UserDetailDto>`
+
+```json
+{
+  "code": 200,
+  "message": "用户已恢复",
+  "data": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "userName": "doctor_zhang",
+    "realName": "张医生",
+    "role": "Doctor",
+    "email": "zhang@lybt.com",
+    "phoneNumber": "13800138001",
+    "isEnabled": true,
+    "status": "Enabled",
+    "pinYinCode": null,
+    "lastLoginTime": null,
+    "failedLoginCount": 0,
+    "remark": "",
+    "createdAt": "0001-01-01T00:00:00",
+    "updatedAt": null
+  }
+}
+```
+
+**错误响应**:
+
+| HTTP | 错误码 | 说明 |
+|------|--------|------|
+| 404 | ERR-10001 | 用户不存在 |
 
 ---
 
 ## POST /users/batch-delete
 
-批量删除用户。自动排除当前登录用户 (防止删除自己)。
+批量删除用户。自动排除当前登录用户 (防止删除自己) 和 sysadmin。
+
+> **权限**: `[Authorize(Policy = "AdminOnly")]`
 
 **请求体** (`BatchDeleteInputDto`):
 
 ```json
 {
-  "ids": ["guid1", "guid2", ...]   // 至少 1 个
+  "ids": [
+    "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    "00000000-0000-0000-0000-000000000000"
+  ]
 }
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `ids` | Guid[] | 是 | 用户 ID 列表 (至少 1 个) |
+
+**curl 示例**:
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "ids": [
+      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+    ]
+  }' \
+  http://localhost:5000/api/v1/users/batch-delete
 ```
 
 **成功响应** (200): `ApiResponse<BatchOperationResultDto>`
 
+全部成功:
+
 ```json
 {
+  "code": 200,
+  "message": "批量删除完成",
   "data": {
-    "successCount": 3,
+    "totalCount": 2,
+    "successCount": 2,
     "failureCount": 0,
-    "message": "批量删除完成"
+    "skippedCount": 0,
+    "successfulIds": [],
+    "failedIds": [],
+    "errors": [],
+    "failedItems": [],
+    "successRate": 100.0
   }
 }
 ```
+
+部分失败 (含 sysadmin 和自己):
+
+```json
+{
+  "code": 200,
+  "message": "批量删除完成",
+  "data": {
+    "totalCount": 3,
+    "successCount": 1,
+    "failureCount": 2,
+    "skippedCount": 0,
+    "successfulIds": [],
+    "failedIds": [],
+    "errors": [],
+    "failedItems": [
+      {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "name": "admin_current",
+        "reason": "不能删除自己"
+      },
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "name": "sysadmin",
+        "reason": "系统管理员账号不可被删除"
+      }
+    ],
+    "successRate": 33.33
+  }
+}
+```
+
+**错误响应**:
+
+| HTTP | 错误码 | 说明 |
+|------|--------|------|
+| 400 | ERR-00003 | ID 列表为空 |
 
 ---
 
@@ -259,16 +821,64 @@
 
 批量启用用户。
 
-> **权限**: `[Authorize(Policy = "AdminOrSuperAdmin")]`
+> **权限**: `[Authorize(Policy = "AdminOnly")]`
 
-**请求体**: `BatchDeleteInputDto` (同 batch-delete)
+**请求体** (`BatchDeleteInputDto`):
 
-**业务规则** (S2-08):
-1. **自身保护**: 不能启用/禁用当前登录用户
-2. **逐项权限检查**: 每个目标用户都需通过 `CanManageUser` 校验
-3. 部分失败不影响其他项，返回 `BatchOperationResultDto` 汇总结果
+```json
+{
+  "ids": [
+    "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+  ]
+}
+```
+
+**curl 示例**:
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "ids": [
+      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+    ]
+  }' \
+  http://localhost:5000/api/v1/users/batch-enable
+```
 
 **成功响应** (200): `ApiResponse<BatchOperationResultDto>`
+
+```json
+{
+  "code": 200,
+  "message": "批量启用完成",
+  "data": {
+    "totalCount": 2,
+    "successCount": 2,
+    "failureCount": 0,
+    "skippedCount": 0,
+    "successfulIds": [],
+    "failedIds": [],
+    "errors": [],
+    "failedItems": [],
+    "successRate": 100.0
+  }
+}
+```
+
+**业务规则**:
+1. 不能启用/禁用当前登录用户
+2. 每个目标用户都需通过 `CanManageUser` 校验
+3. 部分失败不影响其他项
+
+**错误响应**:
+
+| HTTP | 错误码 | 说明 |
+|------|--------|------|
+| 400 | ERR-00003 | ID 列表为空 |
 
 ---
 
@@ -276,24 +886,80 @@
 
 批量禁用用户。
 
-> **权限**: `[Authorize(Policy = "AdminOrSuperAdmin")]`
+> **权限**: `[Authorize(Policy = "AdminOnly")]`
 
-**请求体**: `BatchDeleteInputDto` (同 batch-delete)
+**请求体** (`BatchDeleteInputDto`):
 
-**业务规则** (S2-08):
-1. **自身保护**: 不能禁用当前登录用户
-2. **逐项权限检查**: 每个目标用户都需通过 `CanManageUser` 校验
-3. **最后管理员保护** (S2-07): 禁用 Admin/SuperAdmin 级别用户时，若活跃管理员仅剩 1 人，该项标记为失败
-4. 禁用成功的用户触发 Token 撤销 (X3-06)
-5. 部分失败不影响其他项，返回 `BatchOperationResultDto` 汇总结果
+```json
+{
+  "ids": [
+    "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+  ]
+}
+```
+
+**curl 示例**:
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "ids": [
+      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+    ]
+  }' \
+  http://localhost:5000/api/v1/users/batch-disable
+```
 
 **成功响应** (200): `ApiResponse<BatchOperationResultDto>`
 
-`BatchOperationResultDto.FailedItems` 可能包含的失败原因:
+部分失败 (含最后管理员保护):
+
+```json
+{
+  "code": 200,
+  "message": "批量禁用完成",
+  "data": {
+    "totalCount": 2,
+    "successCount": 1,
+    "failureCount": 1,
+    "skippedCount": 0,
+    "successfulIds": [],
+    "failedIds": [],
+    "errors": [],
+    "failedItems": [
+      {
+        "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+        "name": "admin_li",
+        "reason": "不能禁用最后一个管理员"
+      }
+    ],
+    "successRate": 50.0
+  }
+}
+```
+
+**业务规则**:
+1. 不能禁用当前登录用户
+2. 每个目标用户都需通过 `CanManageUser` 校验
+3. 禁用 Admin/SuperAdmin 时，若活跃管理员仅剩 1 人，该项标记为失败
+4. 禁用成功的用户触发 Token 撤销
+5. 部分失败不影响其他项
+
+**`FailedItems` 可能的失败原因**:
 - "不能禁用当前登录用户"
 - "无权限禁用该用户"
 - "不能禁用最后一个管理员"
 - "用户不存在"
+
+**错误响应**:
+
+| HTTP | 错误码 | 说明 |
+|------|--------|------|
+| 400 | ERR-00003 | ID 列表为空 |
 
 ---
 
@@ -303,17 +969,48 @@
 
 | 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
 |--------|--------|------|----------|----------|
-| ERR-10001 | UserNotFound | 404 | 用户不存在 | GET/PUT/DELETE /{id}, POST /reset-password, POST /change-password, POST /change-profile, PUT /{id}/toggle-status, POST /{id}/restore |
-| ERR-10002 | UserNameExists | 409 | 用户名已被使用 | POST / |
+| ERR-10001 | UserNotFound | 404 | 用户不存在 | GET/PUT/DELETE /{id}, POST /reset-password, PUT /profile, PUT /change-password, POST /toggle-status, POST /restore |
+| ERR-10002 | UserNameExists | 400 | 用户名已被使用 | POST / |
 | ERR-10003 | EmailExists | 409 | 邮箱已被使用 | POST /, PUT /{id} |
-| ERR-10004 | InvalidPassword | 401 | 用户名或密码错误 | POST /change-password |
-| ERR-10005 | PasswordPolicyViolation | 400 | 密码不符合安全策略 | POST /reset-password, POST /change-password |
+| ERR-10004 | InvalidPassword | 400 | 旧密码错误 | PUT /change-password |
+| ERR-10005 | PasswordPolicyViolation | 400 | 密码不符合安全策略 | POST /reset-password, PUT /change-password |
 | ERR-10006 | UserDisabled | 403 | 用户账号已被禁用 | 登录验证 |
 | ERR-00003 | ValidationFailed | 400 | 输入数据验证失败 | POST /, PUT /{id} |
 
 ---
 
+## 通用响应格式
+
+所有端点返回 `ApiResponse<T>` 信封:
+
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": { ... }
+}
+```
+
+分页查询返回 `ApiResponse<PagedResult<T>>`:
+
+```json
+{
+  "code": 200,
+  "message": "查询成功",
+  "data": {
+    "items": [...],
+    "totalCount": 100,
+    "page": 1,
+    "pageSize": 20,
+    "totalPages": 5
+  }
+}
+```
+
+---
+
 ## 变更记录
+
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，14 个端点 |
@@ -322,3 +1019,4 @@
 | 2026-02-23 | v1.3 | S2-07/08: toggle-status 权限层级说明 + 错误码修正 (422); batch-enable/disable 业务规则 (逐项权限、管理员保护、Token撤销) |
 | 2026-06-12 | v1.4 | 权限标注对齐实际代码: 类级别 [Authorize] + 方法级策略; current/profile/change-password 标注自助端点; reset-password/restore 改为 AdminOrSuperAdmin; toggle-status 422 标注 Service 层动态返回; change-password 请求类型改为 Auth.ChangePasswordRequest |
 | 2026-06-12 | v1.5 | UserDetailDto: role 补全 4 角色; 新增 isEnabled/pinYinCode/lastLoginTime/failedLoginCount/remark 字段 |
+| 2026-06-25 | v1.6 | 补充所有端点完整 curl 命令 + 请求/响应 JSON 示例 + 字段说明表; 权限策略统一为 AdminOnly (对齐实际代码); reset-password 请求体修正为 MustChangeOnNextLogin (对齐 ResetPasswordRequestDto) |
