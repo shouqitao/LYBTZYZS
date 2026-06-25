@@ -221,6 +221,14 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | GET | `/health/ping` | 匿名 | Ping |
 | GET | `/health/details` | 已认证 | 详细健康检查 (含数据库) |
 
+### 报表模块 ([13-reports.md](13-reports.md)) -- DoctorOrAdmin
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/reports/daily/income` | 当日收入汇总 |
+| GET | `/reports/daily/consultations` | 当日问诊统计 |
+| GET | `/reports/daily/herbs` | 当日药材使用排行 |
+
 ### 诊断工具 ([12-diagnostics.md](12-diagnostics.md)) -- AdminOrSuperAdmin
 
 | 方法 | 路径 | 说明 |
@@ -290,3 +298,4 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | 2026-05-04 | v1.4 | 新增挂号管理模块 (registrations.md, 7 端点); 新增系统配置端点 (3 端点); 医案模块补充打印端点 (2 端点); 患者模块修正 check-reference (GET) 和 toggle-status (POST) 动词 |
 | 2026-06-12 | v1.5 | 端点总数更新为 ~106 (14 controllers); 移除 POST /patients/import (客户端功能); US-PAT-013 改为 toggle-status; 打印端点交叉引用 printing.md; 204 状态码修正为 Cancel |
 | 2026-06-25 | v2.0 | 修正药材/验方/患者模块策略为 DoctorOrAdmin; 移除不存在的药材端点 (export, export-all, import-template, check-reference, batch-check-reference, batch-enable, batch-disable, restore); 移除不存在的验方端点 (export, import-template, restore, batch-enable, batch-disable); 所有模块补充完整 JSON 示例和 curl 命令 |
+| 2026-06-25 | v2.1 | 新增报表模块 (13-reports.md, 3 端点); 端点总数更新为 ~109 |
