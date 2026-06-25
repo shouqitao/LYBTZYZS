@@ -142,6 +142,22 @@ graph TB
     RemoteImpl --> ServerAPI["Server WebAPI"]
 ```
 
+## 模式切换流程
+
+```mermaid
+flowchart TD
+    A[用户点击切换模式] --> B{当前模式?}
+    B -->|Remote| C{有未同步数据?}
+    B -->|Local| D[停止 LocalWebAPI]
+    C -->|Yes| E[提示同步数据]
+    C -->|No| F[切换到 Local]
+    D --> F
+    E --> G[执行同步]
+    G --> F
+    F --> H[启动 LocalWebAPI]
+    H --> I[更新 BaseUrlDelegatingHandler]
+```
+
 ## 架构图
 
 ```mermaid
@@ -683,3 +699,4 @@ _context.MedicalCases
 | 2026-06-08 | v6.0 | **URL 驱动连接切换**: 废弃 ApiMode 枚举，引入 SwitchingApiClient 代理 + IConnectionSettingsService，用户通过 UI 输入 URL 即时切换 |
 | 2026-06-13 | v6.1 | **同步协议规范**: 新增 Checksum 算法、元数据模型、序列化格式、实体依赖顺序、错误恢复协议、MedicalCase 聚合同步详细文档 |
 | 2026-06-13 | v7.0 | **设计合理化重构**: 合并 localwebapi/ 3 个文档，新增设计理由章节、WebAPI vs LocalWebAPI 完整对比矩阵、LocalWebAPI 架构详情（Kestrel/认证/DbContext），关联 ADR-0009 |
+| 2026-06-25 | v7.1 | **模式切换流程图**: 新增 Mermaid flowchart 展示 Remote/Local 模式切换流程 |
