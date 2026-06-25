@@ -125,6 +125,18 @@ namespace LYBT.WebAPI.Controllers
             return HandleAuthResult(result, "Token刷新成功");
         }
 
+        [HttpPost("auto-login")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 401)]
+        public IActionResult AutoLoginAsync([FromBody] AutoLoginRequest request)
+        {
+            if (ValidateModel() is { } modelError) return modelError;
+
+            var result = _jwtService.ValidateAutoLoginToken(request.AutoLoginToken);
+            return HandleAuthResult(result, "自动登录成功");
+        }
+
         [HttpGet("validate")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 401)]

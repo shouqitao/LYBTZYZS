@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 namespace LYBT.LocalWebAPI.Controllers;
 
@@ -140,6 +142,75 @@ public class AuthController : BaseApiController
         catch (Exception)
         {
             return Unauthorized(ApiResponse<object>.CreateFail("无效的令牌", new { code = "AuthTokenInvalid" }));
+        }
+    }
+
+    [HttpPost("auto-login")]
+    [AllowAnonymous]
+    public async Task<IActionResult> AutoLogin([FromBody] AutoLoginRequest request)
+    {
+        if (request == null || string.IsNullOrWhiteSpace(request.AutoLoginToken))
+            return Unauthorized(ApiResponse<object>.CreateFail("自动登录令牌不能为空", new { code = "AuthTokenInvalid" }));
+
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("LYBT-LocalWebAPI-Secret-Key-2024-DoNotUseInProduction"));
+
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = key,
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = false,
+                ClockSkew = TimeSpan.FromMinutes(5)
+            };
+
+            var principal = handler.ValidateToken(request.AutoLoginToken, validationParameters, out var securityToken);
+            if (securityToken is not JwtSecurityToken jwtToken)
+                return Unauthorized(ApiResponse<object>.CreateFail("无效的自动登录令牌格式", new { code = "AuthTokenInvalid" }));
+
+            var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<object>.CreateFail("自动登录令牌缺少用户信息", new { code = "AuthTokenInvalid" }));
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return Unauthorized(ApiResponse<object>.CreateFail("用户不存在", new { code = "AuthTokenInvalid" }));
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var token = LocalJwtConfig.GenerateToken(user, roles);
+            var role = ParseUserRole(roles);
+
+            _logger.LogInformation("[AUTH] Local auto-login - UserName={UserName} Role={Role}",
+                user.UserName, role);
+
+            var response = new LoginResponse
+            {
+                Token = token,
+                User = new UserDetailDto
+                {
+                    Id = user.Id,
+                    UserName = user.UserName ?? string.Empty,
+                    RealName = user.RealName,
+                    Role = role,
+                    Status = CommonStatus.Enabled,
+                    PhoneNumber = user.PhoneNumber,
+                },
+                ExpiresAt = DateTime.UtcNow.AddHours(1)
+            };
+
+            return Ok(new ApiResponse<LoginResponse>
+            {
+                Success = true,
+                Message = "自动登录成功",
+                Data = response
+            });
+        }
+        catch (Exception)
+        {
+            return Unauthorized(ApiResponse<object>.CreateFail("自动登录令牌无效", new { code = "AuthTokenInvalid" }));
         }
     }
 

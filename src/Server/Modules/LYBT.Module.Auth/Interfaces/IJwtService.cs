@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Enums;
@@ -43,4 +43,11 @@ public interface IJwtService
     /// <param name="expiredToken">已过期的JWT令牌</param>
     /// <returns>新的登录响应</returns>
     Result<LoginResponse> RefreshToken(string expiredToken);
+
+    /// <summary>
+    /// 验证自动登录令牌 - 接受客户端存储的长生命周期令牌，返回新的登录响应
+    /// </summary>
+    /// <param name="autoLoginToken">自动登录令牌</param>
+    /// <returns>新的登录响应</returns>
+    Result<LoginResponse> ValidateAutoLoginToken(string autoLoginToken);
 }
