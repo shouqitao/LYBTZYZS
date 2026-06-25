@@ -32,7 +32,7 @@
     "SecretKey": "...",                      // 生产环境必须更换
     "Issuer": "LYBT.WebAPI",
     "Audience": "LYBT.Client",
-    "AccessTokenExpirationMinutes": 480,     // Access Token 有效期（默认 8 小时，Production 覆盖为 30 分钟）
+    "AccessTokenExpirationMinutes": 480,     // Access Token 有效期（开发默认 8 小时；Production 覆盖为 30 分钟）
     "RefreshTokenExpirationDays": 7,         // Refresh Token 有效期
     "ClockSkewSeconds": 30                   // 时钟偏差容忍
   }
@@ -222,3 +222,4 @@
 |------|------|----------|
 | 2026-02-10 | v1.0 | 从 README.md 拆分，补充 PasswordPolicy/Session/MemoryCache/Kestrel/SystemAdmin 配置节 |
 | 2026-02-22 | v1.1 | 新增常见配置问题 + 配置变更生效方式表 |
+| 2026-06-25 | v1.2 | 明确 AccessToken 开发默认 8h，Production 覆盖为 30min |

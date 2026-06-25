@@ -75,7 +75,7 @@ WPF Desktop 客户端通过 ClickOnce 或 MSI 分发。
 ### 本地模式数据
 
 - SQL Server LocalDB 数据库: `%APPDATA%\LYBT\data\lybt-local.mdf`
-- 日志文件: `%APPDATA%\LYBT\logs\`
+- 日志文件: `%LOCALAPPDATA%\LYBTZYZS\logs\`
 - 配置文件: `%APPDATA%\LYBT\config\`
 
 ---
@@ -146,3 +146,4 @@ dotnet ef database update -s src/Server/Services/LYBT.WebAPI
 |------|------|----------|
 | 2026-02-10 | v1.0 | 从 README.md 拆分，初始版本 |
 | 2026-02-22 | v1.1 | 新增故障排查章节 (服务端/客户端/数据库) |
+| 2026-06-25 | v1.2 | 修正 Desktop 日志路径 %APPDATA%\LYBT → %LOCALAPPDATA%\LYBTZYZS（与代码一致） |

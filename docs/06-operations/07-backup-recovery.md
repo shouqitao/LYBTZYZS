@@ -236,3 +236,4 @@ Copy-Item "$env:APPDATA\LYBT\data\lybt-local.mdf" "$env:APPDATA\LYBT\data\backup
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-06-12 | v1.0 | 初始版本 |
+| 2026-06-25 | v1.1 | 确认远程备份保留 7 天（与 NFR 一致）；确认 RTO < 1 小时 |
