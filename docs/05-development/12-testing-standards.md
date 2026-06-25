@@ -112,6 +112,62 @@ var sysAdminClient = await LoginAsSysAdminAsync();
 | 单元测试 | `Unit/` | 纯逻辑，无 DB | 验证器、实体方法、映射器 |
 | 端到端 | `UserJourneys/` | 完整业务流程 | 挂号→就诊→处方→打印 |
 
+## 断言 Helper 实现
+
+### ShouldBeSuccessWithDataAsync<T>
+
+```csharp
+public static async Task<T> ShouldBeSuccessWithDataAsync<T>(
+    this HttpResponseMessage response, string? because = null)
+{
+    response.StatusCode.Should().BeOneOf(
+        new[] { HttpStatusCode.OK, HttpStatusCode.Created },
+        because ?? "API call should succeed (200 OK or 201 Created)");
+    var body = await response.Content
+        .ReadFromJsonAsync<ApiResponse<T>>(JsonOpts);
+    body.Should().NotBeNull("response body should be deserializable");
+    body!.Success.Should().BeTrue(because ?? "API should indicate success");
+    body.Data.Should().NotBeNull(because ?? "response should contain data");
+    return body.Data!;
+}
+```
+
+### Builder 模式实现
+
+```csharp
+public sealed class PatientBuilder
+{
+    private string _name = $"测试患者_{Guid.NewGuid():N}"[..12];
+    private string _idNumber = GenerateIdNumber();
+
+    public static PatientBuilder Default() => new();
+
+    public PatientBuilder WithName(string name) { _name = name; return this; }
+    public PatientBuilder WithIdNumber(string idNumber) { _idNumber = idNumber; return this; }
+
+    public PatientInputDto Build() => new()
+    {
+        Name = _name,
+        Gender = Gender.Male,
+        IdNumber = _idNumber
+    };
+}
+
+// 使用
+var patient = PatientBuilder.Default()
+    .WithName("张三")
+    .Build();
+```
+
+### CI 集成
+
+- **Server 测试**: `dotnet test tests/LYBT.Tests.Server/` — 需要 SQL Server 连接
+- **Desktop 测试**: `dotnet test tests/LYBT.Tests.Desktop/` — 需要 LocalDB + Windows
+- **Architecture 测试**: `dotnet test tests/LYBT.Tests.Architecture/` — 跨平台无外部依赖
+- **CI 推荐**: 分开运行 Server 和 Desktop 测试，Desktop 测试使用 Windows Agent
+
+---
+
 ## 运行测试
 
 ```bash
@@ -126,3 +182,10 @@ dotnet test tests/LYBT.Tests.Server/ --filter "FullyQualifiedName~MedicalCase"
 # 按类型
 dotnet test tests/LYBT.Tests.Server/ --filter "FullyQualifiedName~Unit"
 ```
+
+---
+
+## 变更记录
+| 日期 | 版本 | 变更内容 |
+|------|------|----------|
+| 2026-06-25 | v1.1 | 补充 ShouldBeSuccessWithDataAsync 实现、Builder 模式示例、CI 集成指导 |

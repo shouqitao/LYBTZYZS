@@ -30,7 +30,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = PolicyConstants.AdminOnly)]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<UserListDto>>), 200)]
         [ProducesResponseType(400)]
         public async Task<IActionResult> GetList(
@@ -135,7 +135,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         [HttpGet("{id:guid}")]
-        [Authorize(Policy = PolicyConstants.AdminOnly)]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken = default)
@@ -153,7 +153,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = PolicyConstants.AdminOnly)]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 201)]
         [ProducesResponseType(400)]
         public async Task<IActionResult> Create([FromBody] UserInputDto dto, CancellationToken cancellationToken = default)
@@ -219,7 +219,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         [HttpPut("{id:guid}")]
-        [Authorize(Policy = PolicyConstants.AdminOnly)]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto dto)
@@ -289,7 +289,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         [HttpDelete("{id:guid}")]
-        [Authorize(Policy = PolicyConstants.AdminOnly)]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> Delete(Guid id)
@@ -333,7 +333,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         [HttpPost("{id:guid}/reset-password")]
-        [Authorize(Policy = PolicyConstants.AdminOnly)]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<ResetPasswordResponseDto>), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordRequestDto request)
@@ -431,7 +431,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         [HttpPost("{id:guid}/toggle-status")]
-        [Authorize(Policy = PolicyConstants.AdminOnly)]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> ToggleStatus(Guid id)
@@ -477,7 +477,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         [HttpPost("batch-delete")]
-        [Authorize(Policy = PolicyConstants.AdminOnly)]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)

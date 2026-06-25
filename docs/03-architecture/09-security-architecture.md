@@ -23,35 +23,35 @@
 
 ### 2.1 远程模式登录流程
 
-```
-Desktop                          Server (WebAPI)
-  │                                  │
-  │  POST /api/v1/auth/login         │
-  │  { userName, password }          │
-  │ ───────────────────────────────> │
-  │                                  │  1. 验证用户名/密码非空
-  │                                  │  2. 查询用户（IUserCrossModuleService）
-  │                                  │  3. 检查用户状态
-  │                                  │     ├─ 用户不存在 → 401 (AuthInvalidCredentials)
-  │                                  │     ├─ 用户已禁用 → 403 (UserDisabled)
-  │                                  │     └─ 账户已锁定 → 401 (UserLocked)
-  │                                  │  4. BCrypt 验证密码 (WorkFactor=12)
-  │                                  │     ├─ 密码错误 → 累加 FailedLoginCount
-  │                                  │     │   达到阈值 → 锁定账户 15 分钟
-  │                                  │     │   → 401 (AuthInvalidCredentials)
-  │                                  │     └─ 密码正确 → 继续
-  │                                  │  5. 重置 FailedLoginCount
-  │                                  │  6. 撤销旧会话所有 Token
-  │                                  │  7. 生成 JWT AccessToken + RefreshToken
-  │                                  │  8. 记录安全审计日志
-  │  200 { token, refreshToken,      │
-  │        user, expiresAt }         │
-  │ <─────────────────────────────── │
-  │                                  │
-  │  TokenStorageService             │
-  │  .SaveAuthenticationAsync()      │
-  │  （内存存储，进程退出自动清除）     │
-  │                                  │
+```mermaid
+sequenceDiagram
+    participant D as Desktop
+    participant S as Server (WebAPI)
+
+    D->>S: POST /api/v1/auth/login { userName, password }
+
+    Note over S: 1. 验证用户名/密码非空
+    Note over S: 2. 查询用户 (IUserCrossModuleService)
+    Note over S: 3. 检查用户状态
+    alt 用户不存在
+        S-->>D: 401 AuthInvalidCredentials
+    else 用户已禁用
+        S-->>D: 403 UserDisabled
+    else 账户已锁定
+        S-->>D: 401 UserLocked
+    else BCrypt 验证密码 (WorkFactor=12)
+        alt 密码错误
+            Note over S: 累加 FailedLoginCount<br/>达到阈值 → 锁定 15 分钟
+            S-->>D: 401 AuthInvalidCredentials
+        else 密码正确
+            Note over S: 5. 重置 FailedLoginCount
+            Note over S: 6. 撤销旧会话所有 Token
+            Note over S: 7. 生成 JWT AccessToken + RefreshToken
+            Note over S: 8. 记录安全审计日志
+            S-->>D: 200 { token, refreshToken, user, expiresAt }
+            Note over D: TokenStorageService.SaveAuthenticationAsync()<br/>（内存存储，进程退出自动清除）
+        end
+    end
 ```
 
 关键安全约束：
@@ -78,22 +78,25 @@ Desktop                          Server (WebAPI)
 
 #### Refresh Token 轮换流程
 
-```
-Desktop                          Server
-  │  POST /api/v1/auth/refresh      │
-  │  { refreshToken }               │
-  │ ───────────────────────────────>│
-  │                                 │  1. 查询 RefreshToken 记录
-  │                                 │  2. 检查 IsUsed → 重放攻击检测
-  │                                 │     ├─ IsUsed=true → 撤销整个 Family
-  │                                 │     │   → 401 "检测到安全威胁"
-  │                                 │     └─ IsUsed=false → 继续
-  │                                 │  3. 验证有效性 (IsRevoked/IsDeleted/Expired)
-  │                                 │  4. 标记旧 Token 为 IsUsed
-  │                                 │  5. 生成新 AccessToken + RefreshToken
-  │                                 │  6. 新 Token 继承 FamilyId
-  │  200 { newToken, newRefresh }   │
-  │ <───────────────────────────────│
+```mermaid
+sequenceDiagram
+    participant D as Desktop
+    participant S as Server
+
+    D->>S: POST /api/v1/auth/refresh { refreshToken }
+
+    Note over S: 1. 查询 RefreshToken 记录
+    Note over S: 2. 检查 IsUsed → 重放攻击检测
+    alt IsUsed=true (重放攻击)
+        Note over S: 撤销整个 Family
+        S-->>D: 401 "检测到安全威胁"
+    else IsUsed=false
+        Note over S: 3. 验证有效性 (IsRevoked/IsDeleted/Expired)
+        Note over S: 4. 标记旧 Token 为 IsUsed
+        Note over S: 5. 生成新 AccessToken + RefreshToken
+        Note over S: 6. 新 Token 继承 FamilyId
+        S-->>D: 200 { newToken, newRefresh }
+    end
 ```
 
 #### Token Family 机制
@@ -151,31 +154,41 @@ options.AddPolicy("AdminOrSuperAdmin", RequireRole("SuperAdmin", "Admin"));
 
 ### 状态定义
 
-```
-Idle ──StartLogin──> Authenticating ──CredentialsValidated──> LoadingProfile
-  │                                                    │
-  └──StartAutoLogin──> ValidatingToken ──TokenValidated─┘
-                                                          │
-                                             ProfileLoaded│
-                                                          ▼
-                              LoadingModules ──ModulesLoaded──> Navigating
-                                                                    │
-                                                        NavigationCompleted│
-                                                                    ▼
-                                                              Authenticated
-                                                            ╱    │     ╲
-                                          StartLogout     ╱  SessionExpire StartTokenRefresh
-                                                 ╲      ╱        │            ╲
-                                                  LoggingOut      │       RefreshingToken
-                                                      │           │            │
-                                              LogoutSuccess      │     TokenRefreshSuccess
-                                                  │              │            │
-                                                  ▼              ▼            ▼
-                                                Idle       SessionExpired  Authenticated
-                                                             ╱    ╲
-                                                StartLogin ╱      ╲StartAutoLogin
-                                                          ▼
-                                                  (回到认证流程)
+```mermaid
+stateDiagram-v2
+    [*] --> Idle
+
+    Idle --> Authenticating: StartLogin
+    Idle --> ValidatingToken: StartAutoLogin
+
+    Authenticating --> LoadingProfile: CredentialsValidated
+    Authenticating --> Failed: LoginFailure
+
+    ValidatingToken --> LoadingProfile: TokenValidated
+    ValidatingToken --> Failed: LoginFailure
+
+    LoadingProfile --> LoadingModules: ProfileLoaded
+    LoadingProfile --> Failed: LoginFailure
+
+    LoadingModules --> Navigating: ModulesLoaded
+    LoadingModules --> Failed: LoginFailure
+
+    Navigating --> Authenticated: NavigationCompleted
+    Navigating --> Failed: LoginFailure
+
+    Authenticated --> LoggingOut: StartLogout
+    Authenticated --> SessionExpired: SessionExpire
+    Authenticated --> RefreshingToken: StartTokenRefresh
+
+    RefreshingToken --> Authenticated: TokenRefreshSuccess
+
+    LoggingOut --> Idle: LogoutSuccess
+
+    Failed --> Authenticating: StartLogin
+    Failed --> ValidatingToken: StartAutoLogin
+
+    SessionExpired --> Authenticating: StartLogin
+    SessionExpired --> ValidatingToken: StartAutoLogin
 ```
 
 ### AuthState 枚举
@@ -198,10 +211,14 @@ Idle ──StartLogin──> Authenticating ──CredentialsValidated──> Lo
 
 `TokenLifecycleService` 独立管理 Token 过期监控：
 
-```
-NotAuthenticated → Active → Warning → Expired → NotAuthenticated
-                     ↑         │
-                     └─刷新成功─┘
+```mermaid
+stateDiagram-v2
+    [*] --> NotAuthenticated
+    NotAuthenticated --> Active: 登录成功
+    Active --> Warning: 剩余 < 5 分钟
+    Warning --> Active: 刷新成功
+    Warning --> Expired: 过期时间已过
+    Expired --> NotAuthentication
 ```
 
 | 状态 | 描述 | 触发条件 |
@@ -401,3 +418,4 @@ NotAuthenticated → Active → Warning → Expired → NotAuthenticated
 | 日期 | 版本 | 描述 | 作者 |
 |------|------|------|------|
 | 2026-06-13 | 1.0 | 初始创建：完整安全架构文档 | AI |
+| 2026-06-25 | 1.1 | **Mermaid 图表替换**: 登录流程、Token 轮换流程 ASCII 时序图替换为 Mermaid sequence diagram; 认证状态机、Token 生命周期 ASCII 图替换为 Mermaid state diagram | AI |

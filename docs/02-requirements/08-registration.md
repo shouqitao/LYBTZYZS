@@ -289,6 +289,20 @@
 
 ---
 
+## 边界条件验收标准
+
+### InProgress 状态取消
+
+- [ ] Status=InProgress 的挂号不可直接取消（REG-BR-001），需先取消关联医案
+- [ ] 医生模式（Source=Doctor）InProgress 挂号 → 取消医案后 Registration 自动变为 Cancelled（US-REG-007 闭环）
+- [ ] 前台模式（Source=Receptionist）InProgress 挂号 → 取消医案后 Registration 回退为 Waiting（US-REG-007）
+
+### 同日重复挂号
+
+- [ ] 同一患者同一天由前台创建第二条 Waiting 挂号 → 返回 422（PatientId+Date+Status 唯一约束）
+- [ ] 同一患者同一天已有 Waiting 挂号，医生 QuickVisit → 返回 422（唯一约束冲突），提示先处理已有挂号
+- [ ] 同一患者同一天已有 Cancelled 挂号，再次创建 Waiting 挂号 → 允许（Cancelled 不参与唯一约束）
+
 ## 交叉引用
 
 - [医案管理 BR-001 单活跃医案约束](07-medical-cases.md)（QuickVisit 受此约束）
@@ -297,3 +311,9 @@
 - [患者管理](04-patients.md)（挂号依赖患者存在）
 - [用户管理](03-users.md)（医生列表 Role=Doctor）
 - [术语表 Registration = 挂号](../01-product/03-glossary.md)
+
+## 变更记录
+
+| 日期 | 变更 | 原因 |
+|------|------|------|
+| 2026-06-25 | 补充 InProgress 取消、同日重复挂号边界条件验收标准 | 需求文档验收标准完善 |

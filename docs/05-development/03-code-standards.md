@@ -69,11 +69,115 @@ View (XAML) ← 数据绑定 → ViewModel → Repository → API/DataSource
 - View 不包含业务逻辑
 - ViewModel 通过 DI 注入 Repository
 - Repository 封装 API 调用或 DataSource 访问
-- 使用 Prism `BindableBase` 和 `DelegateCommand`
+- 使用 CommunityToolkit.Mvvm `[ObservableProperty]` 和 `[RelayCommand]`（不使用 Prism 的 BindableBase/DelegateCommand）
 
 ---
 
 ## 编码原则
+
+### Repository 模式
+
+继承 `BaseRepository<T>` 并实现模板方法：
+
+```csharp
+public class PatientRepository : BaseRepository<Patient>, IPatientRepository
+{
+    public PatientRepository(AppDbContext context, ILogger<PatientRepository> logger)
+        : base(context, logger) { }
+
+    // 覆盖关键字过滤 (模板方法)
+    protected override IQueryable<Patient> ApplyKeywordFilter(IQueryable<Patient> query, string keyword)
+    {
+        return query.Where(e =>
+            e.Name.Contains(keyword) ||
+            e.PhoneNumber!.Contains(keyword));
+    }
+
+    // 自定义查询: 按名字精确查找
+    public async Task<Patient?> FindByNameAsync(string name)
+    {
+        return await _dbSet
+            .Where(e => !e.IsDeleted && e.Name == name)
+            .FirstOrDefaultAsync();
+    }
+}
+```
+
+`BaseRepository<T>` 提供标准 CRUD: `GetByIdAsync`, `GetPagedAsync`, `AddAsync`, `UpdateAsync`, `DeleteAsync`, `RestoreAsync`。
+
+### Service 层与 ServiceResult<T>
+
+```csharp
+public class PatientService : IPatientService
+{
+    private readonly IPatientRepository _repository;
+
+    public async Task<ServiceResult<PatientDetailDto>> CreateAsync(PatientInputDto dto)
+    {
+        // 业务验证
+        if (await _repository.ExistsByNameAsync(dto.Name))
+            return ServiceResult<PatientDetailDto>.Failure("患者已存在");
+
+        // 创建实体
+        var entity = new Patient
+        {
+            Name = dto.Name,
+            Gender = dto.Gender,
+            IdNumber = dto.IdNumber
+        };
+        await _repository.AddAsync(entity);
+
+        // 返回结果
+        var detail = MapToDetailDto(entity);
+        return ServiceResult<PatientDetailDto>.Success(detail);
+    }
+}
+```
+
+### Mapperly 编译时映射
+
+使用 `Riok.Mapperly` 生成编译时映射代码（非反射）：
+
+```csharp
+using Riok.Mapperly.Abstractions;
+
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class PatientMapper
+{
+    [MapperIgnoreSource(nameof(PatientDetailDto.CreatedBy))]
+    public partial PatientDetailModel ToModel(PatientDetailDto dto);
+
+    [MapperIgnoreTarget(nameof(PatientDetailDto.Id))]
+    public partial PatientDetailDto ToDto(PatientDetailModel model);
+}
+```
+
+### FluentValidation 验证器
+
+在 `LYBT.Shared.Validators` 中定义，Server 和 Desktop 共享：
+
+```csharp
+using FluentValidation;
+using LYBT.Shared.Models.Contracts.Patients;
+
+public class PatientInputDtoValidator : AbstractValidator<PatientInputDto>
+{
+    public PatientInputDtoValidator()
+    {
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("姓名不能为空")
+            .MaximumLength(50).WithMessage("姓名长度不能超过50个字符");
+
+        RuleFor(x => x.IdNumber)
+            .NotEmpty().WithMessage("身份证号不能为空")
+            .Matches(@"^\d{17}[\dXx]$").WithMessage("身份证号格式不正确");
+
+        RuleFor(x => x.PhoneNumber)
+            .NotEmpty().WithMessage("手机号不能为空")
+            .Matches(@"^1[3-9]\d{9}$").WithMessage("手机号格式不正确");
+    }
+}
+```
 
 ### 软删除
 
@@ -210,3 +314,5 @@ await _repository.UpdateAsync(medicalCase);
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本 |
 | 2026-02-22 | v1.1 | 新增常见违规与陷阱章节 |
+| 2026-06-25 | v1.2 | 修正 MVVM 框架名: Prism → CommunityToolkit.Mvvm |
+| 2026-06-25 | v1.3 | 补充 Repository、ServiceResult、Mapperly、FluentValidation 代码示例 |

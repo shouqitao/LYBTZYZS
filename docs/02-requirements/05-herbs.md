@@ -43,10 +43,10 @@
 - [ ] 支持按名称、拼音首字母（PinyinAbbreviation）筛选
 - [ ] 支持按 Category（分类）筛选
 - [ ] 返回总数与分页数据
-- [ ] 仅 Doctor 及以上角色可访问
+- [ ] Receptionist 可查看药材列表（只读）；Doctor 可创建/编辑药材
 
 **业务规则**:
-1. 端点受 `DoctorOrReceptionist` 策略保护（医生与管理员可访问，前台不可）
+1. 端点受 `DoctorOrReceptionist` 策略保护（Receptionist 可查询，Doctor/Admin/SuperAdmin 可查询+编辑）
 2. 拼音搜索基于 `PinyinAbbreviation` 字段（如 "dg" 匹配 "当归"）
 3. 结果受 OutputCache 缓存（`HerbsCache` 策略）提升查询性能
 
@@ -162,7 +162,7 @@
 - [ ] 不存在的 ID 返回 404
 
 **业务规则**:
-1. 引用检查：查询 Prescription 表是否存在引用该药材的处方项
+1. 引用检查：查询 PrescriptionItem 表（PrescriptionItem.HerbId）是否存在引用该药材的处方项
 2. 被引用的药材不可删除（保护已开处方完整性），返回 422
 3. 软删除通过全局查询过滤器自动隐藏
 
@@ -408,3 +408,20 @@
 | 本地 | 完全一致（通过统一 Service 层） |
 
 **实现参考**: `HerbsController.cs:386` (HttpGet `export`), `HerbsController.cs:398` (HttpGet `import-template`), `IHerbImportExportService`
+
+---
+
+## 边界条件验收标准
+
+### 历史处方中的禁用药材
+
+- [ ] 药材被禁用后，已开具的历史处方仍可正常查看和打印（药材数据快照，不随当前状态变化）
+- [ ] 验方导入处方时，已禁用药材自动跳过并提示"以下药材已停用，已跳过: xxx"（MC-D09）
+- [ ] 禁用的药材不出现在新建处方的药材选择列表中（DoctorOrReceptionist 策略下可查看但不可选择）
+
+## 变更记录
+
+| 日期 | 变更 | 原因 |
+|------|------|------|
+| 2026-06-25 | 修正引用检查实体名（PrescriptionItem）、补充边界条件验收标准 | 需求文档验收标准完善 |
+| 2026-06-25 | 修正药材查询权限描述：Receptionist 可查看（只读），与 DoctorOrReceptionist 策略一致 | 跨文档矛盾修复 |

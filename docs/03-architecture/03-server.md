@@ -33,6 +33,27 @@ graph TB
     Infra --> Entities
 ```
 
+## 请求生命周期
+
+```mermaid
+sequenceDiagram
+    participant C as 客户端
+    participant Ctrl as Controller
+    participant Svc as Service
+    participant Repo as Repository
+    participant DB as DbContext
+
+    C->>Ctrl: HTTP Request
+    Ctrl->>Ctrl: [Authorize] + Model Validation
+    Ctrl->>Svc: 业务方法
+    Svc->>Repo: 查询/命令
+    Repo->>DB: LINQ/EF Core
+    DB-->>Repo: 结果
+    Repo-->>Svc: Entity/DTO
+    Svc-->>Ctrl: Result<T>
+    Ctrl-->>C: ApiResponse<T>
+```
+
 ## Core 层
 
 ### LYBT.Entities
@@ -680,3 +701,4 @@ DatabaseStartupDiagnostics 在 Program.cs 启动阶段自动执行:
 | 2026-02-26 | v1.7 | Sprint3-Batch5a DOC3: FormulaService BaseService 继承状态更新 (A3-07); 新增 Validator 架构与迁移章节 (Shared.Validators) |
 | 2026-02-28 | v1.8 | **PRD 偏差修复**: BaseEntity 补充 UpdatedBy/RowVersion 字段 (PRD-02); BaseRepository 方法列表对齐代码 21 个公开方法 (PRD-03); 移除 Module.Consultation/Prescriptions (PRD-04); 移除不存在的 BaseReadRepository/IReadRepository (PRD-07/08) |
 | 2026-06-13 | v1.9 | **API 版本策略**: 新增 API 版本控制章节 — URL 段版本控制、客户端处理、v2 迁移策略、版本生命周期 |
+| 2026-06-25 | v2.0 | **请求生命周期时序图**: 新增 Mermaid sequence diagram 展示 Controller → Service → Repository → DbContext 请求链路 |

@@ -22,6 +22,19 @@
 | MedicalCasePrintController | `LYBT.WebAPI/Controllers/` | 打印 API 端点（2 个） |
 | MedicalCasePrintLog | `LYBT.Entities/MedicalCases/` | 打印日志实体 |
 
+## 渲染管线
+
+```mermaid
+flowchart LR
+    A[MedicalCase] --> B[PrintDataPreparer]
+    B --> C[ConsultationPrintData]
+    B --> D[PrescriptionPrintData]
+    C --> E[XAML Template / QuestPDF]
+    D --> E
+    E --> F[PrintDocument]
+    F --> G[PrintDialog / PrintQueue]
+```
+
 ## 2. 打印模板体系
 
 系统提供 4 套 XAML 模板，按纸张尺寸（A5/A4）和页面角色（首页/续页）正交组合。所有模板绑定到 `PrescriptionPrintModel` 作为 `DataContext`，使用宋体（SimSun）字体。
@@ -92,16 +105,15 @@
 
 分页流程：
 
-```
-PrescriptionPrintService.BuildFixedDocument()
-  │
-  ├─ Items.Count <= limit → 单页文档（首页模板）
-  │
-  └─ Items.Count > limit → BuildMultiPageDocument()
-       │
-       ├─ 第 1 页: 首页模板，显示首页数量的药材
-       ├─ 第 2~N 页: 续页模板，每页显示续页数量的药材
-       └─ 最后一页: 调用 SetAsLastPage() 显示签名/费用
+```mermaid
+flowchart TD
+    A[BuildFixedDocument] --> B{Items.Count <= limit?}
+    B -->|Yes| C[单页文档 - 首页模板]
+    B -->|No| D[BuildMultiPageDocument]
+    D --> E[第 1 页: 首页模板]
+    D --> F[第 2~N 页: 续页模板]
+    D --> G[最后一页: SetAsLastPage]
+    G --> H[显示签名/费用]
 ```
 
 每页通过 `CloneModelWithItems()` 深拷贝模型并替换药材列表，保持各页数据独立。
@@ -112,31 +124,24 @@ PrescriptionPrintService.BuildFixedDocument()
 
 ### 3.1 数据流
 
-```
-PrescriptionPrintHandler.PrintPreviewAsync()
-  │
-  ├─ 1. 数据获取
-  │   ├─ 缓存优先: _medicalCaseService.CachedPrescription
-  │   └─ 回退: IDataProvider 构建处方明细
-  │
-  ├─ 2. 验证（CODE-24）
-  │   ├─ 处方为空 → PrintResult.Failed
-  │   └─ 药材项为空/null → PrintResult.Failed
-  │
-  ├─ 3. BuildPrintModel() 数据映射
-  │   ├─ 医师姓名 ← ISessionManager.CurrentUser.RealName
-  │   ├─ 诊所信息 ← IClinicSettingsService.GetSettings()（支持热重载）
-  │   ├─ 折扣 ← Prescription.Discount（默认 1.0）
-  │   ├─ IsDraft ← CaseStatus != Completed
-  │   ├─ MedicineFee = SingleDosePrice × DosageCount
-  │   ├─ TotalPrice = MedicineFee × Discount（四舍六入五成双）
-  │   └─ 药材项映射: HerbName + Dosage + Unit + DecocteMethod
-  │
-  ├─ 4. 渲染
-  │   └─ _printService.PreviewAsync(printModel)
-  │
-  └─ 5. 状态回写
-      └─ RecordPrintCompletedAsync()（失败不阻塞打印预览）
+```mermaid
+flowchart TD
+    A[PrintPreviewAsync] --> B[1. 数据获取]
+    B --> B1[缓存优先: CachedPrescription]
+    B --> B2[回退: IDataProvider]
+    B1 --> C[2. 验证 - CODE-24]
+    B2 --> C
+    C -->|处方为空| C1[PrintResult.Failed]
+    C -->|药材项为空| C1
+    C -->|通过| D[3. BuildPrintModel]
+    D --> D1[医师姓名]
+    D --> D2[诊所信息]
+    D --> D3[费用计算]
+    D --> D4[药材项映射]
+    D --> E[4. 渲染]
+    E --> E1[PreviewAsync]
+    E --> F[5. 状态回写]
+    F --> F1[RecordPrintCompletedAsync]
 ```
 
 ### 3.2 PrescriptionPrintModel 数据结构
@@ -175,17 +180,16 @@ PrescriptionPrintHandler.PrintPreviewAsync()
 
 ### 4.1 PDF 导出管线
 
-```
-PrescriptionPrintHandler.ExportPdfAsync()
-  │
-  ├─ 数据准备（同打印流程）
-  ├─ SaveFileDialog（PDF 筛选器）
-  └─ PrescriptionPdfExporter.Export(model, filePath)
-       │
-       ├─ QuestPDF.Settings.License = Community
-       ├─ 字体: Microsoft YaHei（微软雅黑）
-       ├─ 页面: A5 尺寸
-       └─ 生成 PDF → 写入文件
+```mermaid
+flowchart LR
+    A[ExportPdfAsync] --> B[数据准备]
+    B --> C[SaveFileDialog]
+    C --> D[PrescriptionPdfExporter.Export]
+    D --> E[QuestPDF.Settings.License = Community]
+    D --> F[字体: Microsoft YaHei]
+    D --> G[页面: A5 尺寸]
+    D --> H[生成 PDF]
+    H --> I[写入文件]
 ```
 
 ### 4.2 QuestPDF 渲染引擎
@@ -231,32 +235,29 @@ QuestPDF 渲染草稿水印：72pt 粗体「草稿」文字，旋转 -35°，颜
 
 ### 5.2 状态流转
 
-```
-           创建
-             │
-             ▼
-         ┌────────┐
-         │ Draft  │  IsPrinted=false, PrintVersion=1
-         │(未打印) │
-         └────┬───┘
-              │ 首次打印成功
-              ▼
-         ┌────────┐
-         │Printed │  IsPrinted=true, PrintVersion=2, PrintCount=1
-         │(已打印) │
-         └────┬───┘
-              │ 修改内容（需填写 EditReason）
-              ▼
-         ┌────────┐
-         │Edited  │  IsPrinted=false, PrintVersion=3
-         │(已修改) │  EditReason 必填
-         └────┬───┘
-              │ 重新打印
-              ▼
-         ┌────────┐
-         │Re-     │  IsPrinted=true, PrintVersion=4, PrintCount=2
-         │printed │
-         └────────┘
+```mermaid
+stateDiagram-v2
+    [*] --> Draft
+    Draft --> Printed: 首次打印成功
+    Printed --> Edited: 修改内容 (需 EditReason)
+    Edited --> Reprinted: 重新打印
+
+    note right of Draft
+        IsPrinted=false, PrintVersion=1
+    end note
+
+    note right of Printed
+        IsPrinted=true, PrintVersion=2, PrintCount=1
+    end note
+
+    note right of Edited
+        IsPrinted=false, PrintVersion=3
+        EditReason 必填
+    end note
+
+    note right of Reprinted
+        IsPrinted=true, PrintVersion=4, PrintCount=2
+    end note
 ```
 
 ### 5.3 保护规则
@@ -302,24 +303,20 @@ QuestPDF 渲染草稿水印：72pt 粗体「草稿」文字，旋转 -35°，颜
 
 ### 6.3 日志写入流程
 
-```
-Desktop 打印成功
-  │
-  ├─ PrescriptionPrintHandler.RecordPrintCompletedAsync()
-  │   │
-  │   └─ IMedicalCaseRepository.RecordPrintCompletedAsync()
-  │       │
-  │       └─ PUT /api/v1/medicalcases/{id}/print-completed
-  │           │
-  │           └─ MedicalCasePrintController
-  │               │
-  │               └─ MedicalCasePrintService.RecordPrintCompletedAsync()
-  │                   │
-  │                   ├─ GetByIdWithDetailsFreshAsync()（获取最新 RowVersion）
-  │                   ├─ IsPrinted = true, PrintCount++, PrintVersion++
-  │                   ├─ LastPrintedAt = UtcNow
-  │                   ├─ 创建 MedicalCasePrintLog
-  │                   └─ AddPrintLogAndSaveAsync()（显式 DbContext.Add）
+```mermaid
+sequenceDiagram
+    participant D as Desktop
+    participant Ctrl as MedicalCasePrintController
+    participant Svc as MedicalCasePrintService
+    participant DB as DbContext
+
+    D->>Ctrl: PUT /api/v1/medicalcases/{id}/print-completed
+    Ctrl->>Svc: RecordPrintCompletedAsync()
+    Svc->>DB: GetByIdWithDetailsFreshAsync()
+    Svc->>Svc: IsPrinted=true, PrintCount++, PrintVersion++
+    Svc->>Svc: LastPrintedAt=UtcNow
+    Svc->>Svc: 创建 MedicalCasePrintLog
+    Svc->>DB: AddPrintLogAndSaveAsync() (显式 DbContext.Add)
 ```
 
 ### 6.4 AD-04 并发修复
@@ -407,3 +404,4 @@ Desktop 打印成功
 | 日期 | 版本 | 描述 | 作者 |
 |------|------|------|------|
 | 2026-06-13 | 1.0 | 初始创建：完整打印架构文档 | AI |
+| 2026-06-25 | 1.1 | **Mermaid 图表增强**: 新增渲染管线流程图; 分页流程、数据流、PDF 导出管线、打印保护状态流转、日志写入流程 ASCII 图替换为 Mermaid 图表 | AI |

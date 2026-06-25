@@ -174,6 +174,93 @@ var vm = fixture.CreateViewModel<PatientServiceTests>();
 
 ---
 
+## 完整集成测试示例
+
+### Server 集成测试 (WebApplicationFactory + 真实 HTTP)
+
+```csharp
+[Collection("ClinicalData")]
+public class PatientIntegrationTests : IntegrationTestBase<ClinicalDataFixture>
+{
+    public PatientIntegrationTests(ClinicalDataFixture fixture) : base(fixture) { }
+
+    [Fact]
+    public async Task CreatePatient_AsDoctor_ShouldReturn201()
+    {
+        // Arrange — 真实 HTTP 客户端 + 真实 SQL Server
+        var client = await LoginAsDoctorAsync();
+        var dto = PatientBuilder.Default()
+            .WithName(UniqueName("患者"))
+            .WithPhone(UniquePhone())
+            .Build();
+
+        // Act — 真实 HTTP 请求
+        var response = await client.PostAsJsonAsync("/api/v1/patients", dto);
+
+        // Assert — 使用 BusinessAssertions 辅助方法
+        var created = await response.ShouldBeCreatedWithDataAsync<PatientDetailDto>();
+        created.Name.Should().StartWith("患者");
+    }
+
+    [Fact]
+    public async Task GetPagedPatients_ShouldReturnPagedResult()
+    {
+        var client = await LoginAsDoctorAsync();
+        var response = await client.GetAsync("/api/v1/patients?page=1&pageSize=10");
+        var result = await response.ShouldBePagedResultAsync<PatientListDto>();
+        result.Items.Should().NotBeNull();
+    }
+}
+```
+
+### Desktop 集成测试 (LocalDB + 真实 Repository)
+
+```csharp
+[Collection("UserJourney")]
+public class PatientEndToEndTests : IClassFixture<UserJourneyFixture>
+{
+    private readonly UserJourneyFixture _fixture;
+
+    public PatientEndToEndTests(UserJourneyFixture fixture) => _fixture = fixture;
+
+    [Fact]
+    public async Task CreateAndRetrievePatient_ShouldWork()
+    {
+        // 使用 SQL Server LocalDB (与生产环境一致)
+        using var scope = _fixture.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IPatientRepository>();
+
+        var patient = new Patient { Name = "测试患者", IdNumber = "110101198001010011" };
+        var created = await repository.CreateAsync(patient);
+
+        var fetched = await repository.GetByIdAsync(created.Id);
+        fetched.Should().NotBeNull();
+        fetched!.Name.Should().Be("测试患者");
+    }
+}
+```
+
+### Respawn 使用示例
+
+Server 测试通过 Respawn 在每个测试前重置数据库：
+
+```csharp
+// ServerFixture.InitializeAsync 中初始化
+_respawner = await Respawner.CreateAsync(connection, new RespawnerOptions
+{
+    DbAdapter = DbAdapter.SqlServer,
+    SchemasToInclude = ["dbo"],
+    TablesToIgnore = [new Respawn.Graph.Table("__EFMigrationsHistory")]
+});
+
+// IntegrationTestBase.InitializeAsync 中调用
+await Fixture.ResetAsync();  // 按外键拓扑序 DELETE + 重新 seed
+```
+
+Respawn 按外键依赖顺序删除数据，比 `DELETE FROM` 更安全。Desktop 测试使用 SQLite InMemory 每测试独立连接实现隔离。
+
+---
+
 ## 常见测试问题
 
 **Q: Desktop 测试在 CI/Linux 上失败**
@@ -196,3 +283,4 @@ A: 架构测试 (`LYBT.Tests.Architecture`) 强制检查层间依赖方向和 mo
 | 2026-02-10 | v1.0 | 初始版本 |
 | 2026-02-22 | v1.1 | 新增常见测试问题 (FAQ) 章节 |
 | 2026-03-04 | v2.0 | Testing Trophy 重构: 5 项目 -> 3 项目, Server 零 mock, Respawn 隔离 |
+| 2026-06-25 | v2.1 | 补充 Server/Desktop 集成测试完整示例和 Respawn 使用说明 |

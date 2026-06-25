@@ -21,6 +21,109 @@
 | `Kestrel` | Web 服务器端口和限制 | appsettings.json |
 | `SystemAdmin` | 系统管理员初始化 | appsettings.json |
 | `Serilog` | 日志级别、输出目标 | appsettings.json |
+| `FeatureToggles` | 功能开关 | appsettings.json |
+| `ClinicSettings` | 诊所业务参数 | appsettings.json |
+
+---
+
+## 环境变量覆盖机制
+
+ASP.NET Core 支持通过环境变量覆盖 JSON 配置节，使用 `__`（双下划线）作为层级分隔符：
+
+| JSON 配置路径 | 环境变量名 |
+|---------------|-----------|
+| `ConnectionStrings:LYBTDB` | `ConnectionStrings__LYBTDB` |
+| `Jwt:SecretKey` | `Jwt__SecretKey` |
+| `Jwt:AccessTokenExpirationMinutes` | `Jwt__AccessTokenExpirationMinutes` |
+| `DefaultPasswords:SysAdminPassword` | `DefaultPasswords__SysAdminPassword` |
+| `Database:AutoMigrate` | `Database__AutoMigrate` |
+| `Serilog:MinimumLevel:Default` | `Serilog__MinimumLevel__Default` |
+
+**生产环境建议**：敏感信息（连接字符串、密钥、密码）通过环境变量或 Azure Key Vault 注入，不要写入配置文件。
+
+```bash
+# Windows 命令行设置环境变量（重启生效）
+setx ConnectionStrings__LYBTDB "Server=.;Database=LYBTDB_Dev;Trusted_Connection=True;TrustServerCertificate=true"
+setx Jwt__SecretKey "YourSecureSecretKeyAtLeast32CharactersLong"
+
+# PowerShell 临时设置（当前会话有效）
+$env:ConnectionStrings__LYBTDB = "Server=.;Database=LYBTDB_Dev;Trusted_Connection=True;TrustServerCertificate=true"
+$env:Jwt__SecretKey = "YourSecureSecretKeyAtLeast32CharactersLong"
+```
+
+---
+
+## 连接字符串
+
+```json
+{
+  "ConnectionStrings": {
+    "LYBTDB": "Server=.;Database=LYBTDB_Dev;Trusted_Connection=True;TrustServerCertificate=true;Encrypt=true",
+    "LYBTDesktop": "Server=(localdb)\\MSSQLLocalDB;Database=LYBTDesktop;Integrated Security=true"
+  }
+}
+```
+
+| 参数 | 说明 |
+|------|------|
+| `Server` | SQL Server 实例名（`.` = 本地默认实例） |
+| `Database` | 数据库名 |
+| `Trusted_Connection` | Windows 身份验证 |
+| `TrustServerCertificate` | 跳过证书验证（开发环境） |
+| `Encrypt` | 启用加密（生产环境必须 `true`） |
+| `Connection Timeout` | 连接超时秒数（默认 15） |
+
+---
+
+## 功能开关
+
+```json
+{
+  "FeatureToggles": {
+    "EnableDesktopAutoUpdate": true,
+    "EnableRegistrationQueue": true,
+    "EnableOfflineMode": true,
+    "EnablePrintPrescription": true,
+    "EnableSyncService": true,
+    "EnableDebugDiagnostics": false
+  }
+}
+```
+
+| 开关 | 默认值 | 说明 |
+|------|--------|------|
+| `EnableDesktopAutoUpdate` | `true` | Desktop 客户端自动升级 |
+| `EnableRegistrationQueue` | `true` | 挂号排队号自动编号 |
+| `EnableOfflineMode` | `true` | Desktop 离线模式支持 |
+| `EnablePrintPrescription` | `true` | 处方打印功能 |
+| `EnableSyncService` | `true` | 远程同步服务 |
+| `EnableDebugDiagnostics` | `false` | 诊断端点（生产环境关闭） |
+
+---
+
+## 诊所业务参数
+
+```json
+{
+  "ClinicSettings": {
+    "ClinicName": "凌隐宝堂中医诊所",
+    "BusinessHours": "08:30-17:30",
+    "MaxDailyRegistrations": 100,
+    "DefaultRegistrationFee": 0,
+    "PrescriptionPageSize": 16,
+    "HerbRoleOrder": ["君", "臣", "佐", "使"]
+  }
+}
+```
+
+| 参数 | 说明 |
+|------|------|
+| `ClinicName` | 诊所名称（用于打印输出） |
+| `BusinessHours` | 营业时间（展示用） |
+| `MaxDailyRegistrations` | 每日最大挂号数 |
+| `DefaultRegistrationFee` | 默认挂号费 |
+| `PrescriptionPageSize` | 处方单每页药材数 |
+| `HerbRoleOrder` | 药材角色排序（君→臣→佐→使） |
 
 ---
 
@@ -32,7 +135,7 @@
     "SecretKey": "...",                      // 生产环境必须更换
     "Issuer": "LYBT.WebAPI",
     "Audience": "LYBT.Client",
-    "AccessTokenExpirationMinutes": 480,     // Access Token 有效期（默认 8 小时，Production 覆盖为 30 分钟）
+    "AccessTokenExpirationMinutes": 480,     // Access Token 有效期（开发默认 8 小时；Production 覆盖为 30 分钟）
     "RefreshTokenExpirationDays": 7,         // Refresh Token 有效期
     "ClockSkewSeconds": 30                   // 时钟偏差容忍
   }
@@ -222,3 +325,5 @@
 |------|------|----------|
 | 2026-02-10 | v1.0 | 从 README.md 拆分，补充 PasswordPolicy/Session/MemoryCache/Kestrel/SystemAdmin 配置节 |
 | 2026-02-22 | v1.1 | 新增常见配置问题 + 配置变更生效方式表 |
+| 2026-06-25 | v1.2 | 明确 AccessToken 开发默认 8h，Production 覆盖为 30min |
+| 2026-06-25 | v1.3 | 新增环境变量覆盖机制、ConnectionStrings 示例、FeatureToggles、ClinicSettings 配置节 |

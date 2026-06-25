@@ -235,7 +235,7 @@ LocalWebAPI 提供 10 个控制器，共 112 个端点。所有端点位于 `htt
 
 ## 响应格式
 
-LocalWebAPI 控制器直接返回实体/DTO，**不使用** Server WebAPI 的 `ApiResponse<T>` 包装。
+> LocalWebAPI 控制器统一使用 `ApiResponse<T>` 包装响应，与远程 WebAPI 保持一致。Desktop Refit 客户端反序列化为 `ApiResponse<T>`，裸响应会导致 UI 卡死。
 
 **成功:**
 ```json
@@ -265,7 +265,7 @@ LocalWebAPI 控制器直接返回实体/DTO，**不使用** Server WebAPI 的 `A
 
 | 特性 | Server WebAPI | LocalWebAPI |
 |------|---------------|-------------|
-| 响应包装 | ApiResponse<T> | 直接返回实体 |
+| 响应包装 | ApiResponse<T> | ApiResponse<T> |
 | API 版本 | `/api/v{version}/[controller]` | `/api/[controller]` |
 | 认证策略 | Policy-based (DoctorOrReceptionist, AdminOrSuperAdmin) | 简单 [Authorize] + 运行时角色检查 |
 | 分页参数 | page, pageSize, keyword | 各端点参数不同 |
@@ -280,3 +280,4 @@ LocalWebAPI 控制器直接返回实体/DTO，**不使用** Server WebAPI 的 `A
 |------|------|------|
 | 2026-06-12 | 全面更新 | 从实际代码重新生成全部端点文档；端点数从 ~41 更正为 112；新增 Auth (5), Health (3), Diagnostics (7), Configuration (4) 控制器端点；Users/Patients/Herbs/Formulas/Registrations/MedicalCases 控制器补充批量操作、导入导出、状态管理等遗漏端点 |
 | 2026-04-26 | 初始版本 | 首次创建 LocalWebAPI 端点文档 |
+| 2026-06-25 | 修正响应格式说明 | LocalWebAPI 统一使用 ApiResponse<T> 包装响应，与远程 WebAPI 保持一致 |

@@ -1,9 +1,13 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Configuration.Options.Common;
+using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Primitives.ErrorCodes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -211,6 +215,162 @@ public class JwtService : IJwtService
         {
             // 验证失败，返回null
             return null;
+        }
+    }
+
+    /// <summary>
+    /// 刷新JWT令牌 - 接受过期但签名有效的令牌，返回新的登录响应
+    /// </summary>
+    public Result<LoginResponse> RefreshToken(string expiredToken)
+    {
+        if (string.IsNullOrEmpty(expiredToken))
+            return Result<LoginResponse>.Failure(ErrorCode.AuthTokenInvalid, "令牌不能为空");
+
+        try
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
+
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = key,
+                ValidateIssuer = true,
+                ValidIssuer = _jwtOptions.Issuer,
+                ValidateAudience = true,
+                ValidAudience = _jwtOptions.Audience,
+                ValidateLifetime = false,
+                ClockSkew = TimeSpan.FromSeconds(_jwtOptions.ClockSkewSeconds)
+            };
+
+            var principal = _tokenHandler.ValidateToken(expiredToken, validationParameters, out var securityToken);
+            if (securityToken is not JwtSecurityToken jwtToken)
+                return Result<LoginResponse>.Failure(ErrorCode.AuthTokenInvalid, "无效的令牌格式");
+
+            var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userName = principal.FindFirst(ClaimTypes.Name)?.Value;
+            var roleStr = principal.FindFirst(ClaimTypes.Role)?.Value;
+            var userType = principal.FindFirst("user_type")?.Value ?? "user";
+
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(roleStr))
+                return Result<LoginResponse>.Failure(ErrorCode.AuthTokenInvalid, "令牌缺少必要的声明信息");
+
+            if (!Enum.TryParse<UserRole>(roleStr, ignoreCase: true, out var role))
+                role = UserRole.Doctor;
+
+            var additionalClaims = new Dictionary<string, string>();
+            var isSysAdminClaim = principal.FindFirst("IsSysAdmin");
+            if (isSysAdminClaim != null)
+                additionalClaims["IsSysAdmin"] = isSysAdminClaim.Value;
+
+            var newToken = additionalClaims.Count > 0
+                ? GenerateToken(userId, userName, role, additionalClaims, userType)
+                : GenerateToken(userId, userName, role, userType);
+
+            var response = new LoginResponse
+            {
+                Token = newToken,
+                User = new UserDetailDto
+                {
+                    Id = Guid.TryParse(userId, out var uid) ? uid : Guid.Empty,
+                    UserName = userName,
+                    Role = role,
+                    Status = CommonStatus.Enabled,
+                    CreatedAt = DateTime.UtcNow
+                },
+                ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtOptions.AccessTokenExpirationMinutes)
+            };
+
+            return Result<LoginResponse>.Success(response);
+        }
+        catch (SecurityTokenExpiredException)
+        {
+            return Result<LoginResponse>.Failure(ErrorCode.AuthAccessTokenExpired, "令牌已过期，请重新登录");
+        }
+        catch (SecurityTokenException)
+        {
+            return Result<LoginResponse>.Failure(ErrorCode.AuthTokenInvalid, "无效的令牌");
+        }
+        catch
+        {
+            return Result<LoginResponse>.Failure(ErrorCode.AuthTokenInvalid, "令牌刷新失败");
+        }
+    }
+
+    /// <summary>
+    /// 验证自动登录令牌 - 接受客户端存储的长生命周期令牌，返回新的登录响应
+    /// </summary>
+    public Result<LoginResponse> ValidateAutoLoginToken(string autoLoginToken)
+    {
+        if (string.IsNullOrEmpty(autoLoginToken))
+            return Result<LoginResponse>.Failure(ErrorCode.AuthTokenInvalid, "自动登录令牌不能为空");
+
+        try
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
+
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = key,
+                ValidateIssuer = true,
+                ValidIssuer = _jwtOptions.Issuer,
+                ValidateAudience = true,
+                ValidAudience = _jwtOptions.Audience,
+                ValidateLifetime = false,
+                ClockSkew = TimeSpan.FromSeconds(_jwtOptions.ClockSkewSeconds)
+            };
+
+            var principal = _tokenHandler.ValidateToken(autoLoginToken, validationParameters, out var securityToken);
+            if (securityToken is not JwtSecurityToken jwtToken)
+                return Result<LoginResponse>.Failure(ErrorCode.AuthTokenInvalid, "无效的自动登录令牌格式");
+
+            var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userName = principal.FindFirst(ClaimTypes.Name)?.Value;
+            var roleStr = principal.FindFirst(ClaimTypes.Role)?.Value;
+            var userType = principal.FindFirst("user_type")?.Value ?? "user";
+
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(roleStr))
+                return Result<LoginResponse>.Failure(ErrorCode.AuthTokenInvalid, "自动登录令牌缺少必要的声明信息");
+
+            if (!Enum.TryParse<UserRole>(roleStr, ignoreCase: true, out var role))
+                role = UserRole.Doctor;
+
+            var additionalClaims = new Dictionary<string, string>();
+            var isSysAdminClaim = principal.FindFirst("IsSysAdmin");
+            if (isSysAdminClaim != null)
+                additionalClaims["IsSysAdmin"] = isSysAdminClaim.Value;
+
+            var newToken = additionalClaims.Count > 0
+                ? GenerateToken(userId, userName, role, additionalClaims, userType)
+                : GenerateToken(userId, userName, role, userType);
+
+            var response = new LoginResponse
+            {
+                Token = newToken,
+                User = new UserDetailDto
+                {
+                    Id = Guid.TryParse(userId, out var uid) ? uid : Guid.Empty,
+                    UserName = userName,
+                    Role = role,
+                    Status = CommonStatus.Enabled,
+                    CreatedAt = DateTime.UtcNow
+                },
+                ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtOptions.AccessTokenExpirationMinutes)
+            };
+
+            return Result<LoginResponse>.Success(response);
+        }
+        catch (SecurityTokenExpiredException)
+        {
+            return Result<LoginResponse>.Failure(ErrorCode.AuthTokenInvalid, "自动登录令牌已过期");
+        }
+        catch (SecurityTokenException)
+        {
+            return Result<LoginResponse>.Failure(ErrorCode.AuthTokenInvalid, "无效的自动登录令牌");
+        }
+        catch
+        {
+            return Result<LoginResponse>.Failure(ErrorCode.AuthTokenInvalid, "自动登录令牌验证失败");
         }
     }
 }

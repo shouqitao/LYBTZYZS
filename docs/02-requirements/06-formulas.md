@@ -420,8 +420,27 @@ stateDiagram-v2
 
 ---
 
+## 边界条件验收标准
+
+### 并发编辑验方
+
+- [ ] 两个管理员同时编辑同一验方 → 后提交者覆盖先提交者（Last Write Wins），乐观锁冲突时返回 409
+- [ ] 一人正在验证药材，另一人同时更新验方药材列表 → 药材列表替换后触发状态重新评估（FLAW-F1），最终状态取决于最后一次操作
+
+### Draft→Validated 晋升边界
+
+- [ ] 验证最后一味药材后自动晋升为 Validated → 但若同时有药材被禁用（Status=Disabled）→ 晋升成功但导入处方时该药材被跳过（MC-D09）
+- [ ] 验方已为 Validated，管理员禁用其中一味药材 → 该验方不自动降级（禁用≠未验证），但导入处方时该药材被跳过
+- [ ] 验方已为 Validated，管理员删除其中一味药材 → 触发 FLAW-F1 降级回 Draft（药材数减少导致未验证）
+
 ## 交叉引用
 
 - [医案管理 US-MC-016 验方导入到处方](07-medical-cases.md)（MC-D08 过滤条件：仅 `Validated` 且 `Enabled` 验方可导入）
 - [药材管理](05-herbs.md)（跨模块查询 `ICrossModuleService.GetHerbBasicInfoAsync`）
 - [术语表 Formula = 验方/经验方（NOT 公式）](../01-product/03-glossary.md)
+
+## 变更记录
+
+| 日期 | 变更 | 原因 |
+|------|------|------|
+| 2026-06-25 | 补充并发编辑、Draft→Validated 晋升边界条件验收标准 | 需求文档验收标准完善 |

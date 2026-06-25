@@ -16,7 +16,7 @@ namespace LYBT.WebAPI.Controllers;
 [ApiController]
 [ApiVersion("1")]
 [Route("api/v{version:apiVersion}/diagnostics")]
-[Authorize(Policy = PolicyConstants.AdminOnly)]  // 仅超级管理员可访问
+[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]  // 仅超级管理员可访问
 public class DiagnosticsController : BaseApiController
 {
     private readonly LoggingLevelManager _loggingLevelManager;

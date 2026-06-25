@@ -20,7 +20,7 @@ MedicalCase 是系统唯一的 DDD 聚合根:
 
 ### Server 端
 - MedicalCaseRepository 负责聚合整体的 CRUD
-- ConsultationRepository 仅提供只读查询 (BaseReadRepository)
+- ConsultationRepository 仅提供只读查询（通过 `IMedicalCaseQueryService` 的查询方法访问，无独立 Repository 实体）
 - 无独立的 PrescriptionRepository
 
 ### Desktop 端
@@ -47,3 +47,4 @@ MedicalCase 是系统唯一的 DDD 聚合根:
 | 2025-12-15 | 废弃独立 Repository 接口 |
 | 2026-01-05 | Desktop.Prescriptions 模块移除，功能迁入 MedicalCase |
 | 2026-02-21 | MedicalCaseModel 从贫血模型演进为充血模型: 新增 `Complete()`, `SaveAsDraft()`, `SoftDelete()`, `UpdateConsultation()` 域方法; 移除 `Cancelled` 枚举值 (取消=软删除); 新增 MedicalCaseServiceHelper 提取共享代码 |
+| 2026-06-25 | 修正 ADR-0001: 更新 BaseReadRepository 引用为当前实际查询接口 |

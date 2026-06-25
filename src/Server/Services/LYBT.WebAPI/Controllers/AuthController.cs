@@ -58,11 +58,11 @@ namespace LYBT.WebAPI.Controllers
 
             var user = await _userManager.FindByNameAsync(request.UserName);
             if (user == null)
-                return Unauthorized(new { message = "用户名或密码错误" });
+                return HandleAuthResult(Result<LoginResponse>.Failure(ErrorCode.AuthInvalidCredentials, "用户名或密码错误"), "登录失败");
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, true);
             if (!result.Succeeded)
-                return Unauthorized(new { message = "用户名或密码错误" });
+                return HandleAuthResult(Result<LoginResponse>.Failure(ErrorCode.AuthInvalidCredentials, "用户名或密码错误"), "登录失败");
 
             user.LastLoginAt = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
@@ -113,6 +113,30 @@ namespace LYBT.WebAPI.Controllers
             return Success("登出成功");
         }
 
+        [HttpPost("refresh")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 401)]
+        public IActionResult RefreshTokenAsync([FromBody] RefreshTokenRequest request)
+        {
+            if (ValidateModel() is { } modelError) return modelError;
+
+            var result = _jwtService.RefreshToken(request.RefreshToken);
+            return HandleAuthResult(result, "Token刷新成功");
+        }
+
+        [HttpPost("auto-login")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 401)]
+        public IActionResult AutoLoginAsync([FromBody] AutoLoginRequest request)
+        {
+            if (ValidateModel() is { } modelError) return modelError;
+
+            var result = _jwtService.ValidateAutoLoginToken(request.AutoLoginToken);
+            return HandleAuthResult(result, "自动登录成功");
+        }
+
         [HttpGet("validate")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 401)]
@@ -121,18 +145,18 @@ namespace LYBT.WebAPI.Controllers
             var authHeader = Request.Headers.Authorization.FirstOrDefault();
             if (string.IsNullOrWhiteSpace(authHeader))
             {
-                return Unauthorized(new { valid = false, message = "Missing Authorization header", errorCode = "TokenInvalid" });
+                return Unauthorized(ApiResponse<object>.CreateFail("Missing Authorization header", new { code = "TokenInvalid" }));
             }
 
             if (!authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             {
-                return Unauthorized(new { valid = false, message = "Invalid Authorization header format", errorCode = "TokenInvalid" });
+                return Unauthorized(ApiResponse<object>.CreateFail("Invalid Authorization header format", new { code = "TokenInvalid" }));
             }
 
             var token = authHeader.Substring("Bearer ".Length).Trim();
             if (string.IsNullOrWhiteSpace(token))
             {
-                return Unauthorized(new { valid = false, message = "Missing token in Authorization header", errorCode = "TokenInvalid" });
+                return Unauthorized(ApiResponse<object>.CreateFail("Missing token in Authorization header", new { code = "TokenInvalid" }));
             }
 
             var principal = _jwtService.ValidateToken(token);
@@ -152,7 +176,7 @@ namespace LYBT.WebAPI.Controllers
                 return Success(response, "Token验证成功");
             }
 
-            return Unauthorized(new { valid = false, message = "Token is invalid", errorCode = "ERR-10202" });
+            return Unauthorized(ApiResponse<object>.CreateFail("Token is invalid", new { code = "ERR-10202" }));
         }
 
         [HttpGet]

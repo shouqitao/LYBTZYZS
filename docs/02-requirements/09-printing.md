@@ -141,9 +141,28 @@
 
 ---
 
+## 边界条件验收标准
+
+### 无打印机安装
+
+- [ ] 客户端未安装打印机 → `ShowDialog=true` 时系统打印对话框无可用打印机，用户可取消；`ShowDialog=false` 时静默打印失败，记录 `MedicalCasePrintLog.IsSuccess=false`（ErrorMessage 含"无可用打印机"）
+- [ ] 导出 PDF/XPS 不依赖打印机安装 → 正常导出
+
+### 过期打印版本
+
+- [ ] 打印后医生修改处方内容（IsPrinted=true → 修改 → IsPrinted=false, PrintVersion++）→ 前台持有的旧打印版本与电子记录不一致，系统提示"处方已修改，请重新打印"
+- [ ] 打印版本（PrintVersion）与当前 MedicalCase.PrintVersion 不一致 → 日志记录版本差异（PrintVersionSnapshot vs CurrentPrintVersion）
+- [ ] 同一医案多次打印 → PrintCount 递增，每次打印生成独立 MedicalCasePrintLog 记录
+
 ## 依赖
 
 | 依赖 | 说明 |
 |------|------|
 | [07-medical-cases.md](07-medical-cases.md) | `IsPrinted`/`PrintVersion`/`PrintCount`/`LastPrintedAt` 字段；编辑保护规则 |
 | [11-platform.md](11-platform.md#configuration) | `ClinicSettings`（诊所名称/科别/地址/电话） |
+
+## 变更记录
+
+| 日期 | 变更 | 原因 |
+|------|------|------|
+| 2026-06-25 | 补充无打印机、过期打印版本边界条件验收标准 | 需求文档验收标准完善 |

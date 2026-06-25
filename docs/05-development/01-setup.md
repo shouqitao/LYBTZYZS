@@ -1,5 +1,15 @@
 # 环境搭建
 
+## 获取代码
+
+```bash
+git clone https://gitee.com/shouqitao/LYBTZYZS.git
+cd LYBTZYZS
+git checkout master
+```
+
+---
+
 ## 必要工具
 
 ### 1. .NET SDK
@@ -21,6 +31,7 @@
 - **版本**: SQL Server 2019+ 或 SQL Server Express (LocalDB)
 - **远程模式必需**: 仅远程模式需要独立 SQL Server
 - **本地模式**: 使用 SQL Server LocalDB + 嵌入式 LocalWebAPI (Kestrel)，无需安装独立数据库
+- **LocalDB 验证**: `sqllocaldb info` 查看已安装的 LocalDB 实例，`sqllocaldb start MSSQLLocalDB` 启动
 
 ### 4. Git
 
@@ -56,6 +67,14 @@ CREATE DATABASE LYBTDB;
 - Desktop 客户端启动时自动启动嵌入式 LocalWebAPI (Kestrel)，使用 LocalDB 作为数据库
 - 数据存储位置: `%APPDATA%\LYBT\data\` (LocalDB MDF 文件)
 - LocalDB 随 Visual Studio / SQL Server Express 安装，无需额外配置
+
+### 端口说明
+
+| 端口 | 用途 | 说明 |
+|------|------|------|
+| 5000 | WebAPI HTTP | 远程模式服务端 |
+| 5001 | WebAPI HTTPS | 远程模式服务端 (SSL) |
+| 5300 | LocalWebAPI | 嵌入式本地模式 (Desktop 启动) |
 
 ---
 
@@ -94,8 +113,13 @@ dotnet run
 ```
 
 默认管理员账号:
-- 用户名: `sysadmin`
-- 密码: 见 `appsettings.json` > `DefaultPasswords.SysAdminPassword`
+
+| 用户名 | 密码 | 角色 |
+|--------|------|------|
+| `sysadmin` | `SysAdmin@2026!` | 系统运维 (IsSysAdmin=true) |
+| `admin` | `Admin@123456` | 管理员 (IsSysAdmin=false) |
+
+密码可在 `appsettings.json` > `DefaultPasswords` 中修改。
 
 ### 客户端
 
@@ -115,6 +139,10 @@ dotnet run
 | 数据库连接失败 | 检查 SQL Server 服务运行状态和连接字符串 |
 | Desktop 启动白屏 | 检查 WebAPI 是否运行 (远程模式需要) |
 | 测试运行失败 | `dotnet restore` 后重试；Desktop 测试需 Windows |
+| 端口被占用 (5000/5001/5300) | `netstat -ano | findstr :5000` 查找占用进程并终止 |
+| LocalDB 未运行 | `sqllocaldb start MSSQLLocalDB` 或重启 Visual Studio |
+| Desktop 模块加载失败 | 确认所有 Desktop 项目编译成功，检查 `dotnet build` 输出 |
+| `EnsureCreatedAsync` 后表为空 | 正常行为: `EnsureCreatedAsync` 跳过 migrations，直接建表 |
 
 ---
 
@@ -122,3 +150,4 @@ dotnet run
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本 |
+| 2026-06-25 | v1.1 | 补充 Git clone URL、默认密码、端口说明、LocalDB 验证、常见问题 |

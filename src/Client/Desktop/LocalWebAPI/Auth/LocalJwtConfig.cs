@@ -56,6 +56,14 @@ public static class LocalJwtConfig
             options.AddPolicy(PolicyConstants.DoctorOrAdmin, policy =>
                 policy.RequireAuthenticatedUser()
                       .RequireRole(RoleConstants.SuperAdmin, RoleConstants.Admin, RoleConstants.Doctor));
+
+            options.AddPolicy(PolicyConstants.AdminOrSuperAdmin, policy =>
+                policy.RequireAuthenticatedUser()
+                      .RequireRole(RoleConstants.Admin, RoleConstants.SuperAdmin));
+
+            options.AddPolicy(PolicyConstants.DoctorOrReceptionist, policy =>
+                policy.RequireAuthenticatedUser()
+                      .RequireRole(RoleConstants.Doctor, RoleConstants.Receptionist));
         });
     }
 

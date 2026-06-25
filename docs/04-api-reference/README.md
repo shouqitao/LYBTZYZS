@@ -120,7 +120,7 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | POST | `/users/batch-enable` | 批量启用 |
 | POST | `/users/batch-disable` | 批量禁用 |
 
-### 患者模块 ([03-patients.md](03-patients.md)) -- DoctorOrReceptionist
+### 患者模块 ([03-patients.md](03-patients.md)) -- DoctorOrAdmin
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -137,28 +137,20 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | GET | `/patients/{id}/check-reference` | 引用检查 |
 | POST | `/patients/batch-check-reference` | 批量引用检查 |
 
-### 药材模块 ([04-herbs.md](04-herbs.md)) -- DoctorOrReceptionist
+### 药材模块 ([04-herbs.md](04-herbs.md)) -- DoctorOrAdmin
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/herbs` | 药材列表 (分页) |
+| GET | `/herbs` | 药材列表 (分页, OutputCache) |
 | GET | `/herbs/{id}` | 药材详情 |
 | POST | `/herbs` | 创建药材 |
 | PUT | `/herbs/{id}` | 更新药材 |
 | DELETE | `/herbs/{id}` | 删除药材 (软删除) |
-| GET | `/herbs/import-template` | 下载导入模板 |
-| GET | `/herbs/export` | 导出 Excel |
-| POST | `/herbs/batch-import` | JSON 批量导入 |
-| GET | `/herbs/export-all` | 导出全部 (JSON) |
-| GET | `/herbs/{id}/check-reference` | 引用检查 |
-| POST | `/herbs/batch-check-reference` | 批量引用检查 |
 | POST | `/herbs/{id}/toggle-status` | 启用/禁用切换 |
-| POST | `/herbs/{id}/restore` | 恢复已删除药材 |
-| POST | `/herbs/batch-enable` | 批量启用 |
-| POST | `/herbs/batch-disable` | 批量禁用 |
+| POST | `/herbs/batch-import` | JSON 批量导入 |
 | POST | `/herbs/batch-delete` | 批量删除 |
 
-### 验方模块 ([05-formulas.md](05-formulas.md)) -- DoctorOrReceptionist
+### 验方模块 ([05-formulas.md](05-formulas.md)) -- DoctorOrAdmin
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -168,15 +160,10 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | PUT | `/formulas/{id}` | 更新验方 |
 | DELETE | `/formulas/{id}` | 删除验方 (软删除) |
 | POST | `/formulas/batch-import` | JSON 批量导入 |
-| GET | `/formulas/export` | 导出 Excel |
-| GET | `/formulas/import-template` | 下载导入模板 |
 | GET | `/formulas/pending-validation` | 待校验验方列表 |
 | POST | `/formulas/{formulaId}/herbs/{herbItemId}/validate` | 验证药材绑定 |
 | POST | `/formulas/{id}/toggle-status` | 启用/禁用切换 |
-| POST | `/formulas/{id}/restore` | 恢复已删除验方 |
 | POST | `/formulas/batch-delete` | 批量删除 |
-| POST | `/formulas/batch-enable` | 批量启用 |
-| POST | `/formulas/batch-disable` | 批量禁用 |
 
 ### 医案模块 ([06-medical-cases.md](06-medical-cases.md)) -- DoctorOrReceptionist
 
@@ -233,6 +220,14 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | GET | `/health` | 匿名 | 基础健康检查 |
 | GET | `/health/ping` | 匿名 | Ping |
 | GET | `/health/details` | 已认证 | 详细健康检查 (含数据库) |
+
+### 报表模块 ([13-reports.md](13-reports.md)) -- DoctorOrAdmin
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/reports/daily/income` | 当日收入汇总 |
+| GET | `/reports/daily/consultations` | 当日问诊统计 |
+| GET | `/reports/daily/herbs` | 当日药材使用排行 |
 
 ### 诊断工具 ([12-diagnostics.md](12-diagnostics.md)) -- AdminOrSuperAdmin
 
@@ -302,3 +297,5 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | 2026-02-22 | v1.3 | MC-D20 同步: 医案端点 `/draft` 重命名为 `/suspend` (Draft→Suspended 状态重命名) |
 | 2026-05-04 | v1.4 | 新增挂号管理模块 (registrations.md, 7 端点); 新增系统配置端点 (3 端点); 医案模块补充打印端点 (2 端点); 患者模块修正 check-reference (GET) 和 toggle-status (POST) 动词 |
 | 2026-06-12 | v1.5 | 端点总数更新为 ~106 (14 controllers); 移除 POST /patients/import (客户端功能); US-PAT-013 改为 toggle-status; 打印端点交叉引用 printing.md; 204 状态码修正为 Cancel |
+| 2026-06-25 | v2.0 | 修正药材/验方/患者模块策略为 DoctorOrAdmin; 移除不存在的药材端点 (export, export-all, import-template, check-reference, batch-check-reference, batch-enable, batch-disable, restore); 移除不存在的验方端点 (export, import-template, restore, batch-enable, batch-disable); 所有模块补充完整 JSON 示例和 curl 命令 |
+| 2026-06-25 | v2.1 | 新增报表模块 (13-reports.md, 3 端点); 端点总数更新为 ~109 |

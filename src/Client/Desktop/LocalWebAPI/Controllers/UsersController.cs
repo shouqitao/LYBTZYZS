@@ -28,7 +28,7 @@ public class UsersController : BaseApiController
     }
 
     [HttpGet]
-    [Authorize(Policy = PolicyConstants.AdminOnly)]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<UserListDto>>), 200)]
     [ProducesResponseType(400)]
     public async Task<IActionResult> GetList(
@@ -133,7 +133,7 @@ public class UsersController : BaseApiController
     }
 
     [HttpGet("{id:guid}")]
-    [Authorize(Policy = PolicyConstants.AdminOnly)]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken = default)
@@ -151,7 +151,7 @@ public class UsersController : BaseApiController
     }
 
     [HttpPost]
-    [Authorize(Policy = PolicyConstants.AdminOnly)]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 201)]
     [ProducesResponseType(400)]
     public async Task<IActionResult> Create([FromBody] UserInputDto dto, CancellationToken cancellationToken = default)
@@ -216,7 +216,7 @@ public class UsersController : BaseApiController
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Policy = PolicyConstants.AdminOnly)]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto dto)
@@ -285,7 +285,7 @@ public class UsersController : BaseApiController
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Policy = PolicyConstants.AdminOnly)]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [ProducesResponseType(typeof(ApiResponse), 200)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> Delete(Guid id)
@@ -328,7 +328,7 @@ public class UsersController : BaseApiController
     }
 
     [HttpPost("{id:guid}/reset-password")]
-    [Authorize(Policy = PolicyConstants.AdminOnly)]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [ProducesResponseType(typeof(ApiResponse<ResetPasswordResponseDto>), 200)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordRequestDto request)
@@ -426,7 +426,7 @@ public class UsersController : BaseApiController
     }
 
     [HttpPost("{id:guid}/toggle-status")]
-    [Authorize(Policy = PolicyConstants.AdminOnly)]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
     public async Task<IActionResult> ToggleStatus(Guid id)
@@ -470,7 +470,7 @@ public class UsersController : BaseApiController
     }
 
     [HttpPost("batch-delete")]
-    [Authorize(Policy = PolicyConstants.AdminOnly)]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
     public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
