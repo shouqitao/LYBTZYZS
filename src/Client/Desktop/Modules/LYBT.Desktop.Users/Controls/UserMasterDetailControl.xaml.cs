@@ -1,4 +1,5 @@
 using LYBT.Desktop.Controls.Controls;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Users.Controls
 {
@@ -13,6 +14,17 @@ namespace LYBT.Desktop.Users.Controls
         {
             InitializeComponent();
             InitializeAsyncSupport();
+        }
+
+        /// <summary>
+        /// 设置默认角色过滤（供 Sysadmin 角色台调用）
+        /// </summary>
+        public void SetDefaultRoleFilter(UserRole role)
+        {
+            if (DataContext is ViewModels.UserMasterDetailViewModel vm)
+            {
+                vm.SelectedRoleFilter = role;
+            }
         }
     }
 }
