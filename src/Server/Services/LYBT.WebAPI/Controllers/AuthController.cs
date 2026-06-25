@@ -113,6 +113,18 @@ namespace LYBT.WebAPI.Controllers
             return Success("登出成功");
         }
 
+        [HttpPost("refresh")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 401)]
+        public IActionResult RefreshTokenAsync([FromBody] RefreshTokenRequest request)
+        {
+            if (ValidateModel() is { } modelError) return modelError;
+
+            var result = _jwtService.RefreshToken(request.RefreshToken);
+            return HandleAuthResult(result, "Token刷新成功");
+        }
+
         [HttpGet("validate")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 401)]

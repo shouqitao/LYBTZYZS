@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Web;
 using LYBT.LocalWebAPI.Auth;
@@ -87,6 +88,59 @@ public class AuthController : BaseApiController
     {
         _logger.LogInformation("[AUTH] Local logout - UserName={UserName}", request?.UserName ?? "(unknown)");
         return Ok(new ApiResponse { Success = true, Message = "已登出" });
+    }
+
+    [HttpPost("refresh")]
+    [AllowAnonymous]
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+    {
+        if (request == null || string.IsNullOrWhiteSpace(request.RefreshToken))
+            return Unauthorized(ApiResponse<object>.CreateFail("令牌不能为空", new { code = "AuthTokenInvalid" }));
+
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(request.RefreshToken);
+            var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<object>.CreateFail("无效的令牌", new { code = "AuthTokenInvalid" }));
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return Unauthorized(ApiResponse<object>.CreateFail("用户不存在", new { code = "AuthTokenInvalid" }));
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var token = LocalJwtConfig.GenerateToken(user, roles);
+            var role = ParseUserRole(roles);
+
+            _logger.LogInformation("[AUTH] Local token refresh - UserName={UserName}", user.UserName);
+
+            var response = new LoginResponse
+            {
+                Token = token,
+                User = new UserDetailDto
+                {
+                    Id = user.Id,
+                    UserName = user.UserName ?? string.Empty,
+                    RealName = user.RealName,
+                    Role = role,
+                    Status = CommonStatus.Enabled,
+                    PhoneNumber = user.PhoneNumber,
+                },
+                ExpiresAt = DateTime.UtcNow.AddHours(1)
+            };
+
+            return Ok(new ApiResponse<LoginResponse>
+            {
+                Success = true,
+                Message = "Token刷新成功",
+                Data = response
+            });
+        }
+        catch (Exception)
+        {
+            return Unauthorized(ApiResponse<object>.CreateFail("无效的令牌", new { code = "AuthTokenInvalid" }));
+        }
     }
 
     [HttpGet("validate")]

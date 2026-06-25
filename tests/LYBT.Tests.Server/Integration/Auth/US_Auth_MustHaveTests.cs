@@ -146,6 +146,42 @@ public sealed class US_Auth_MustHaveTests : IntegrationTestBase<AuthUsersFixture
             "US-AUTH-003: invalid refresh token should not succeed");
     }
 
+    [Fact]
+    public async Task US_AUTH_003_RefreshWithValidToken_ReturnsNewToken()
+    {
+        // Arrange - login to get a valid token
+        var loginRequest = new LoginRequest { UserName = "admin", Password = "TestAdmin2025@" };
+        var loginResp = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/login", loginRequest);
+        var loginData = await loginResp.ShouldBeSuccessWithDataAsync<LoginResponse>();
+        var oldToken = loginData.Token;
+
+        // Act - refresh the token
+        var refreshRequest = new RefreshTokenRequest { RefreshToken = oldToken };
+        var response = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/refresh", refreshRequest);
+
+        // Assert
+        var data = await response.ShouldBeSuccessWithDataAsync<LoginResponse>(
+            "US-AUTH-003: valid token refresh should return new token");
+        data.Token.Should().NotBeNullOrWhiteSpace("refreshed token must be present");
+        data.Token.Should().NotBe(oldToken, "refreshed token must be different from original");
+        data.User.Should().NotBeNull("user info must be returned");
+        data.User.UserName.Should().Be("admin");
+    }
+
+    [Fact]
+    public async Task US_AUTH_003_RefreshWithEmptyToken_Returns401()
+    {
+        // Arrange
+        var request = new RefreshTokenRequest { RefreshToken = "" };
+
+        // Act
+        var response = await AnonymousClient.PostAsJsonAsync("/api/v1/auth/refresh", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized,
+            "US-AUTH-003: empty refresh token should return 401");
+    }
+
     #endregion
 
     #region US-AUTH-005: Logout functionality
