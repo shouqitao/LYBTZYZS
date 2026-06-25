@@ -3,9 +3,12 @@ using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Sysadmin.Models;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Sysadmin.ViewModels;
 
@@ -16,6 +19,9 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
 {
     private readonly IAuthApi _authApi;
     private readonly INavigationCoordinator _navigationCoordinator;
+    private readonly IConnectionModeService _connectionModeService;
+    private readonly IConnectionSettingsService _connectionSettings;
+    private readonly IClinicSettingsService _clinicSettings;
     private CancellationTokenSource? _pollCts;
 
     [ObservableProperty]
@@ -24,16 +30,32 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
     public SysadminHomeViewModel(
         IViewModelServices services,
         IAuthApi authApi,
-        INavigationCoordinator navigationCoordinator)
+        INavigationCoordinator navigationCoordinator,
+        IConnectionModeService connectionModeService,
+        IConnectionSettingsService connectionSettings,
+        IClinicSettingsService clinicSettings)
         : base(services)
     {
         _authApi = authApi;
         _navigationCoordinator = navigationCoordinator;
+        _connectionModeService = connectionModeService;
+        _connectionSettings = connectionSettings;
+        _clinicSettings = clinicSettings;
         PageTitle = "运维控制台";
     }
 
     [RelayCommand]
-    private void NavigateToAdminUsers() => _navigationCoordinator.NavigateTo("AdminUserManagementView");
+    private void NavigateToAdminUsers()
+    {
+        var parameters = new NavigationParameters
+        {
+            { "DefaultRoleFilter", UserRole.Admin }
+        };
+        _navigationCoordinator.NavigateTo("AdminUserManagementView", parameters);
+    }
+
+    [RelayCommand]
+    private void NavigateToClinicSettings() => _navigationCoordinator.NavigateTo("SystemSettingsView");
 
     [RelayCommand]
     private void NavigateToLogLevel() => _navigationCoordinator.NavigateTo("LogLevelControlView");
@@ -83,9 +105,25 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
                     Dashboard.ApiStatus.Status = "异常";
                 }
 
+                Dashboard.ConnectionMode.Value = _connectionModeService.CurrentModeDisplay;
+                Dashboard.ConnectionMode.IsHealthy = true;
+                Dashboard.ConnectionMode.Status = _connectionSettings.CurrentUrl;
+
+                if (healthResp.Success)
+                {
+                    Dashboard.DbStatus.Value = "连接正常";
+                    Dashboard.DbStatus.IsHealthy = true;
+                    Dashboard.DbStatus.Status = "正常";
+                }
+                else
+                {
+                    Dashboard.DbStatus.Value = "连接异常";
+                    Dashboard.DbStatus.IsHealthy = false;
+                    Dashboard.DbStatus.Status = "异常";
+                }
+
                 Dashboard.SystemInfo.Value = $"v{SystemConstants.ApplicationVersion}";
-                Dashboard.LoginCount.Value = "--";
-                Dashboard.DbStatus.Value = "连接正常";
+                Dashboard.SystemInfo.Status = _clinicSettings.ClinicName;
             }
             catch (Exception ex)
             {

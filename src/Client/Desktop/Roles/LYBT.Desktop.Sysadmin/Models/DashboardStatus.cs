@@ -32,7 +32,7 @@ public partial class DashboardStatus : ObservableObject
     private StatusCard _dbStatus = new() { Title = "数据库", Value = "检测中..." };
 
     [ObservableProperty]
-    private StatusCard _loginCount = new() { Title = "今日登录", Value = "--" };
+    private StatusCard _connectionMode = new() { Title = "连接模式", Value = "检测中..." };
 
     [ObservableProperty]
     private StatusCard _systemInfo = new() { Title = "系统信息", Value = "加载中..." };
