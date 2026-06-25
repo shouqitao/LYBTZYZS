@@ -193,6 +193,144 @@ containerRegistry.RegisterForNavigation<PatientListView, PatientListViewModel>()
 
 ## 常用工具类
 
+---
+
+## Desktop 模式详解
+
+### DelegatingHandler 模式 (BaseUrlDelegatingHandler)
+
+每次请求时根据 `ConnectionSettings.CurrentUrl` 重写 URI，线程安全：
+
+```csharp
+public sealed class BaseUrlDelegatingHandler : DelegatingHandler
+{
+    private readonly IConnectionSettingsService _connectionSettings;
+
+    public BaseUrlDelegatingHandler(IConnectionSettingsService connectionSettings)
+    {
+        _connectionSettings = connectionSettings;
+    }
+
+    protected override async Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        if (request.RequestUri != null)
+        {
+            var currentUrl = _connectionSettings.CurrentUrl;
+            if (Uri.TryCreate(currentUrl, UriKind.Absolute, out var baseUri))
+            {
+                request.RequestUri = new Uri(baseUri, request.RequestUri.PathAndQuery);
+            }
+        }
+        return await base.SendAsync(request, cancellationToken);
+    }
+}
+```
+
+Handler 链: `HttpClientHandler → TokenRefreshHandler → AuthorizationMessageHandler → LoggingHttpHandler → BaseUrlDelegatingHandler → HttpClient`
+
+### SwitchingApiClient 代理模式
+
+根据 URL 自动路由到 Remote (Refit) 或 Local (HttpClient) 实现：
+
+```csharp
+public sealed class SwitchingApiClient : IApiClient, IDisposable
+{
+    private readonly IConnectionSettingsService _connectionSettings;
+    private IApiClient? _current;
+    private string? _currentUrl;
+    private readonly object _lock = new();
+
+    private IApiClient Current
+    {
+        get
+        {
+            lock (_lock)
+            {
+                var url = _connectionSettings.CurrentUrl;
+                if (_current is null || _currentUrl != url)
+                {
+                    var oldClient = _current as IDisposable;
+                    _current = _connectionSettings.IsLocal
+                        ? new HttpClientApiClient(_localHttpClientFactory(url))
+                        : new RefitApiClient(_remoteHttpClientFactory(url), _refitSettings);
+                    _currentUrl = url;
+                    oldClient?.Dispose();
+                }
+                return _current;
+            }
+        }
+    }
+
+    // 属性委托 — Repository 层完全无感知
+    public IApiClientAuth Auth => Current.Auth;
+    public IApiClientPatients Patients => Current.Patients;
+    // ...
+}
+```
+
+### ISP 拆分接口模式 (跨模块服务)
+
+大接口拆分为多个职责接口，按需注入：
+
+```csharp
+// 替代单一大接口
+public interface IPatientService
+{
+    Task<PatientDetailDto?> GetByIdAsync(Guid id);
+    Task<PagedResult<PatientListDto>> GetPagedAsync(int page, int pageSize);
+}
+
+// ISP 拆分后
+public interface IPatientQueryService
+{
+    Task<PatientDetailDto?> GetByIdAsync(Guid id);
+    Task<PagedResult<PatientListDto>> GetPagedAsync(int page, int pageSize);
+}
+
+public interface IPatientCommandService
+{
+    Task<PatientDetailDto> CreateAsync(PatientInputDto dto);
+    Task<bool> UpdateAsync(Guid id, PatientInputDto dto);
+    Task<bool> DeleteAsync(Guid id);
+}
+```
+
+### MasterDetailControlBase 模式
+
+Desktop 列表-详情控件的基础 ViewModel：
+
+```csharp
+public abstract partial class MasterDetailViewModelBase<TListItem, TDetail>
+    : NavigableViewModelBase where TListItem : class where TDetail : class
+{
+    [ObservableProperty]
+    private ObservableCollection<TListItem> _items = [];
+
+    [ObservableProperty]
+    private TListItem? _selectedItem;
+
+    [ObservableProperty]
+    private TDetail? _detailItem;
+
+    [ObservableProperty]
+    private bool _isLoading;
+
+    [RelayCommand]
+    protected virtual async Task LoadItemsAsync() { /* 分页加载 */ }
+
+    [RelayCommand]
+    protected virtual async Task SaveAsync() { /* 保存详情 */ }
+
+    [RelayCommand]
+    protected virtual async Task DeleteAsync() { /* 删除选中项 */ }
+}
+```
+
+---
+
+## 常用工具类
+
 | 类 | 用途 | 位置 |
 |----|------|------|
 | `ApiResponse<T>` | 统一 API 响应格式 | Shared.Models |
@@ -223,3 +361,4 @@ containerRegistry.RegisterForNavigation<PatientListView, PatientListViewModel>()
 | 2026-02-10 | v1.0 | 初始版本 |
 | 2026-02-22 | v1.1 | 新增常见反模式表 |
 | 2026-06-25 | v1.2 | 修正 ViewModel 示例: Prism BindableBase → CommunityToolkit.Mvvm CoreViewModelBase |
+| 2026-06-25 | v1.3 | 补充 BaseUrlDelegatingHandler、SwitchingApiClient、ISP 拆分、MasterDetailControlBase 模式 |
