@@ -11,7 +11,7 @@ namespace LYBT.WebAPI.Controllers;
 [ApiController]
 [ApiVersion("1")]
 [Route("api/v{version:apiVersion}/configuration")]
-[Authorize(Policy = PolicyConstants.AdminOnly)]
+[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
 public class ConfigurationController : BaseApiController
 {
     private readonly ISystemConfigurationService _configurationService;
