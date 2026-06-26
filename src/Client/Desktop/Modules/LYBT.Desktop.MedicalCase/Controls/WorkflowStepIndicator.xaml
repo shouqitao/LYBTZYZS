@@ -57,8 +57,8 @@
 
         <!-- 待完成步骤样式 -->
         <Style x:Key="PendingStepStyle" TargetType="Border" BasedOn="{StaticResource StepContainerStyle}">
-            <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBorderBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}"/>
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
@@ -123,7 +123,7 @@
                             Visibility="{Binding IsLast, Converter={x:Static converters:Cvt.InverseBoolToVis}}">
                         <Border.Style>
                             <Style TargetType="Border">
-                                <Setter Property="Background" Value="{DynamicResource SecondaryBorderBrush}"/>
+                                <Setter Property="Background" Value="{DynamicResource MaterialDesignOutline}"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsCompleted}" Value="True">
                                         <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>

@@ -25,8 +25,8 @@
         <ResourceDictionary>
             <!-- Compact模式区域边框样式 -->
             <Style x:Key="CompactSectionBorderStyle" TargetType="Border">
-                <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBorderBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}"/>
                 <Setter Property="BorderThickness" Value="1"/>
                 <Setter Property="CornerRadius" Value="8"/>
                 <Setter Property="Padding" Value="16,12"/>
@@ -142,7 +142,7 @@
                                         HorizontalAlignment="Left"/>
 
             <!-- 患者信息行 (Compact模式) -->
-            <Border Grid.Row="1" Background="{DynamicResource SecondaryRegionBrush}"
+            <Border Grid.Row="1" Background="{DynamicResource MaterialDesignBody}"
                     CornerRadius="8" Padding="16,12" Margin="0,0,0,12">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -266,7 +266,7 @@
 
                 <!-- 闻诊 - 暂未实现 -->
                 <Border Style="{StaticResource CompactSectionBorderStyle}" Margin="0,0,0,12"
-                        Background="{DynamicResource SecondaryRegionBrush}" Opacity="0.6">
+                        Background="{DynamicResource MaterialDesignBody}" Opacity="0.6">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -380,7 +380,7 @@
 
             <!-- P2-2: 处方决策引导 - 增强视觉提示 -->
             <Border Grid.Row="4" Style="{StaticResource CompactSectionBorderStyle}" Margin="0,0,0,16"
-                    Background="{DynamicResource SecondaryRegionBrush}">
+                    Background="{DynamicResource MaterialDesignBody}">
                 <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -467,7 +467,7 @@
 
                     <!-- 底部信息栏 -->
                     <Border Grid.Row="1"
-                            Background="{DynamicResource RegionBrush}"
+                            Background="{DynamicResource MaterialDesignPaper}"
                             CornerRadius="6"
                             Padding="12,8"
                             Margin="0,12,0,0">
@@ -552,7 +552,7 @@
 
             <!-- Completeness Check Indicator - Phase 1.4: Dynamic completeness check -->
             <Border Grid.Row="7" Style="{StaticResource CompactSectionBorderStyle}" Margin="0,12,0,0"
-                    Background="{DynamicResource SecondaryRegionBrush}">
+                    Background="{DynamicResource MaterialDesignBody}">
                 <StackPanel>
                     <TextBlock Text="完整性检查" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,8"
                                Foreground="{DynamicResource PrimaryTextBrush}"/>

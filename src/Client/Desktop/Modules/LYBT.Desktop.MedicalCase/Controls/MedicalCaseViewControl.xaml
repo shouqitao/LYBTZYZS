@@ -28,8 +28,8 @@
         <ResourceDictionary>
             <!-- Compact模式区域边框样式 -->
             <Style x:Key="CompactSectionBorderStyle" TargetType="Border">
-                <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBorderBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}"/>
                 <Setter Property="BorderThickness" Value="1"/>
                 <Setter Property="CornerRadius" Value="8"/>
                 <Setter Property="Padding" Value="16,12"/>
@@ -187,7 +187,7 @@
 
                             <!-- 无处方提示 -->
                             <TextBlock Text="暂无处方药材"
-                                       Foreground="{DynamicResource ThirdlyTextBrush}"
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}"
                                        FontStyle="Italic"
                                        Visibility="{Binding Detail.HasPrescriptionItems, Converter={x:Static converters:Cvt.InverseBoolToVis}}"/>
                         </StackPanel>
