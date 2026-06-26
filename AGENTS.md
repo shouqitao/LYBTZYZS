@@ -173,6 +173,7 @@ brainstorm → plan → execute → review → report → merge
 | Bug/测试失败/异常 | `compose:debug` | 找到根因再修，禁止跳过到修复 |
 | 实现功能/修复 | `compose:tdd` | 先写测试再写实现 |
 | 声称"完成/修好" | `compose:verify` | 必须有 `dotnet build` 通过的证据 |
+| **执行 Plan** | `compose:execute` / `compose:subagent` | **必须经用户确认后才能执行** |
 
 ### 工作流分级
 
