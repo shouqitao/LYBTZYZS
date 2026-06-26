@@ -92,22 +92,6 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
                 if (isFirstLoad) Dashboard.IsLoading = true;
 
                 var healthResp = await _authApi.HealthCheckAsync();
-                if (healthResp.Success)
-                {
-                    Dashboard.ApiStatus.Value = "在线";
-                    Dashboard.ApiStatus.IsHealthy = true;
-                    Dashboard.ApiStatus.Status = "正常";
-                }
-                else
-                {
-                    Dashboard.ApiStatus.Value = "离线";
-                    Dashboard.ApiStatus.IsHealthy = false;
-                    Dashboard.ApiStatus.Status = "异常";
-                }
-
-                Dashboard.ConnectionMode.Value = _connectionModeService.CurrentModeDisplay;
-                Dashboard.ConnectionMode.IsHealthy = true;
-                Dashboard.ConnectionMode.Status = _connectionSettings.CurrentUrl;
 
                 if (healthResp.Success)
                 {
@@ -128,8 +112,6 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
             catch (Exception ex)
             {
                 Logger.LogError(ex, "[SYSADMIN] Dashboard poll failed");
-                Dashboard.ApiStatus.Value = "不可达";
-                Dashboard.ApiStatus.IsHealthy = false;
             }
             finally
             {

@@ -21,18 +21,12 @@ public partial class StatusCard : ObservableObject
 }
 
 /// <summary>
-/// 仪表盘聚合状态 - 聚合 4 个状态卡片供视图绑定
+/// 仪表盘聚合状态 - 聚合状态卡片供视图绑定
 /// </summary>
 public partial class DashboardStatus : ObservableObject
 {
     [ObservableProperty]
-    private StatusCard _apiStatus = new() { Title = "API 状态", Value = "检测中..." };
-
-    [ObservableProperty]
     private StatusCard _dbStatus = new() { Title = "数据库", Value = "检测中..." };
-
-    [ObservableProperty]
-    private StatusCard _connectionMode = new() { Title = "连接模式", Value = "检测中..." };
 
     [ObservableProperty]
     private StatusCard _systemInfo = new() { Title = "系统信息", Value = "加载中..." };
