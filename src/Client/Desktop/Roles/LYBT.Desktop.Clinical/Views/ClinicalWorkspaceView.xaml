@@ -25,7 +25,7 @@
           Column 1: GridSplitter
           Column 2: 看诊工作区（患者信息条 + 空状态提示 + 操作按钮）  -->
 
-    <Grid Background="{DynamicResource RegionBrush}">
+    <Grid Background="{DynamicResource MaterialDesignPaper}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="320" MinWidth="240" MaxWidth="600"/>
             <ColumnDefinition Width="Auto"/>
@@ -34,7 +34,7 @@
 
         <!--  Column 0: 患者选择列表  -->
         <Border Grid.Column="0"
-                Background="{DynamicResource SecondaryRegionBrush}"
+                Background="{DynamicResource MaterialDesignBody}"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,0,1,0">
             <patientControls:PatientSelectionControl
@@ -62,7 +62,7 @@
             <!--  Row 0: 患者信息条（仅患者已选时显示）  -->
             <Border Grid.Row="0"
                     Padding="16,10"
-                    Background="{DynamicResource PrimaryRegionBrush}"
+                    Background="{DynamicResource MaterialDesignBrush Primary}"
                     BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="0,0,0,1"
                     Visibility="{Binding SelectedPatient, Converter={x:Static converters:Cvt.NotNullToVis}}">
@@ -137,7 +137,7 @@
             <!--  Row 3: 操作按钮区（仅患者已选时显示）  -->
             <Border Grid.Row="3"
                     Padding="16,12"
-                    Background="{DynamicResource SecondaryRegionBrush}"
+                    Background="{DynamicResource MaterialDesignBody}"
                     BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="0,1,0,0"
                     Visibility="{Binding SelectedPatient, Converter={x:Static converters:Cvt.NotNullToVis}}">

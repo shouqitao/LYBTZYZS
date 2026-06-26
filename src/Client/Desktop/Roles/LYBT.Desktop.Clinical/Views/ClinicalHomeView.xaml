@@ -6,7 +6,7 @@
     prism:ViewModelLocator.AutoWireViewModel="True">
 
     <!--  全屏居中布局 (UI Redesign 2026-06-21: emoji → 矢量图标, 本地样式 → 全局)  -->
-    <Grid Background="{DynamicResource RegionBrush}">
+    <Grid Background="{DynamicResource MaterialDesignPaper}">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
 
             <!--  标题区域  -->
