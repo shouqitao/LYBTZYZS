@@ -3,7 +3,7 @@
     <!--
         ====================================================================
         Pagination Styles - 分页样式
-        依赖: DesignTokens.xaml (FontSizeBody, PrimaryFontFamily, RadiusSM)
+        依赖: DesignTokens.xaml (FontSizeMD, PrimaryFontFamily, RadiusSM)
         ====================================================================
     -->
     <Style x:Key="PaginationControlButton" TargetType="Button">
@@ -13,7 +13,7 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="12,6" />
         <Setter Property="MinWidth" Value="36" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Template">
@@ -161,7 +161,7 @@
 
     <!--  详情页标题样式 - 白色粗体大字  -->
     <Style x:Key="DetailViewTitleStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource FontSizeSubtitle}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeXL}" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
         <Setter Property="Foreground" Value="White" />
@@ -174,7 +174,7 @@
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="Padding" Value="16,8" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="VerticalAlignment" Value="Center" />
@@ -231,7 +231,7 @@
 
     <!--  表单标签样式 - 小号灰色标签  -->
     <Style x:Key="FormLabelStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource FontSizeCaption}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeXS}" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
         <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
@@ -240,7 +240,7 @@
 
     <!--  表单值样式 - 标准正文大小  -->
     <Style x:Key="FormValueStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
         <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
         <Setter Property="TextWrapping" Value="Wrap" />
@@ -288,7 +288,7 @@
 
     <!--  加载提示文字样式  -->
     <Style x:Key="LoadingTextStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="HorizontalAlignment" Value="Center" />

@@ -3,14 +3,14 @@
     <!--
         ====================================================================
         TextBox Styles - 文本框样式
-        依赖: DesignTokens.xaml (FontSizeBody, PrimaryFontFamily, RadiusSM)
+        依赖: DesignTokens.xaml (FontSizeMD, PrimaryFontFamily, RadiusSM)
         ====================================================================
     -->
     <Style x:Key="SearchTextBox" TargetType="TextBox">
         <Setter Property="Padding" Value="8,6" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Template">
@@ -44,7 +44,7 @@
         <Setter Property="MinHeight" Value="44" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
         <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
         <Setter Property="Background" Value="White" />
@@ -131,7 +131,7 @@
         查看模式值显示样式-->
     <Style x:Key="ValueDisplayStyle" TargetType="TextBlock">
         <Setter Property="Padding" Value="0,10" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
         <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
         <Setter Property="TextWrapping" Value="Wrap" />
@@ -153,17 +153,17 @@
         <Setter Property="Padding" Value="8,6" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
         <Setter Property="Background" Value="White" />
     </Style>
 
     <!--
         验证错误文本样式 - 用于 FormFieldControl
-        Phase 3: 放在此文件中以确保 DesignTokens.xaml 已加载 (FontSizeCaption)
+        Phase 3: 放在此文件中以确保 DesignTokens.xaml 已加载 (FontSizeXS)
     -->
     <Style x:Key="ValidationErrorTextStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource FontSizeCaption}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeXS}" />
         <Setter Property="Foreground" Value="{StaticResource ValidationErrorBrush}" />
         <Setter Property="Margin" Value="0,2,0,0" />
     </Style>

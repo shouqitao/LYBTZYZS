@@ -53,11 +53,6 @@
     <Color x:Key="ShadowColor">#000000</Color>
     <SolidColorBrush x:Key="ShadowBrush" Color="{StaticResource ShadowColor}" />
     <FontFamily x:Key="PrimaryFontFamily">Segoe UI Variable, Segoe UI, Microsoft YaHei UI</FontFamily>
-    <sys:Double x:Key="FontSizeCaption">12</sys:Double>
-    <sys:Double x:Key="FontSizeBody">14</sys:Double>
-    <sys:Double x:Key="FontSizeSubtitle">20</sys:Double>
-    <sys:Double x:Key="FontSizeTitle">28</sys:Double>
-    <sys:Double x:Key="FontSizeDisplay">40</sys:Double>
     <!-- Unified Spacing Tokens (UI Redesign 2026-06-21 — aliases from Spacing.xaml) -->
     <Thickness x:Key="SpacingXS">4</Thickness>
     <Thickness x:Key="SpacingSM">8</Thickness>
@@ -84,9 +79,8 @@
     <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource SurfaceColor}" />
 
     <!-- Common text/box styles for settings forms -->
-    <sys:Double x:Key="FontSizeNormal">14</sys:Double>
     <Style x:Key="HeaderText" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource FontSizeTitle}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeXXL}" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
     </Style>
@@ -96,7 +90,7 @@
         <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
     </Style>
     <Style x:Key="LabelText" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
         <Setter Property="FontWeight" Value="Medium" />
         <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
     </Style>
@@ -109,7 +103,7 @@
         <Setter Property="Margin" Value="0,0,0,16" />
     </Style>
     <Style x:Key="BaseTextBox" TargetType="TextBox">
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
         <Setter Property="Padding" Value="8,4" />
         <Setter Property="Height" Value="34" />
         <Setter Property="VerticalContentAlignment" Value="Center" />

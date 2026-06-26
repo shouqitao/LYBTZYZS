@@ -258,7 +258,7 @@
                                 Grid.Column="1"
                                 VerticalAlignment="Center"
                                 Content="启用数据库自动备份"
-                                FontSize="{StaticResource FontSizeNormal}"
+                                FontSize="{StaticResource FontSizeMD}"
                                 Foreground="{DynamicResource PrimaryTextBrush}"
                                 IsChecked="{Binding AutoBackupEnabled}" />
                         </Grid>

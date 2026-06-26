@@ -4,7 +4,7 @@
         ====================================================================
         DataGrid Styles - 数据表格样式
         UI优化: 优化行高、内填、行距，增加视觉辨识度
-        依赖: DesignTokens.xaml (FontSizeBody)
+        依赖: DesignTokens.xaml (FontSizeMD)
         ====================================================================
     -->
     <Style x:Key="BaseDataGridStyle" TargetType="DataGrid">
@@ -186,7 +186,7 @@
         <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
         <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
         <Setter Property="Padding" Value="12,8" />
         <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />

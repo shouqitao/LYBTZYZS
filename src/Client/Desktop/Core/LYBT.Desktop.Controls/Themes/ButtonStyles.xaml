@@ -3,7 +3,7 @@
     <!--
         ====================================================================
         Button Styles - 按钮样式
-        依赖: DesignTokens.xaml (FontSizeBody, PrimaryFontFamily, RadiusSM)
+        依赖: DesignTokens.xaml (FontSizeMD, PrimaryFontFamily, RadiusSM)
         ====================================================================
     -->
 
@@ -13,7 +13,7 @@
         <Setter Property="Foreground" Value="White" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="16,8" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Template">
@@ -51,7 +51,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="16,8" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Template">
