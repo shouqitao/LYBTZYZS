@@ -19,7 +19,7 @@
         </x:Array>
     </UserControl.Resources>
 
-    <Border Background="White" Padding="{StaticResource SpacingMD}">
+    <Border Background="{DynamicResource MaterialDesignBody}" Padding="{StaticResource SpacingMD}">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />  <!-- 页大小选择 -->

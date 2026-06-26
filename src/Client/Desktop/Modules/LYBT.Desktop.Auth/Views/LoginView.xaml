@@ -191,7 +191,7 @@
 
         <!-- 加载遮罩 -->
         <Grid Background="#80000000" Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}">
-            <Border Padding="32,24" Background="White" CornerRadius="12"
+            <Border Padding="32,24" Background="{DynamicResource MaterialDesignBody}" CornerRadius="12"
                     HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel>
                     <ProgressBar Width="180" Height="4" IsIndeterminate="True" />

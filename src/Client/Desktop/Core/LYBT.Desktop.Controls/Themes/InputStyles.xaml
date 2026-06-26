@@ -17,7 +17,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
                     <Border
-                        Background="White"
+                        Background="{DynamicResource MaterialDesignBody}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{StaticResource RadiusSM}">

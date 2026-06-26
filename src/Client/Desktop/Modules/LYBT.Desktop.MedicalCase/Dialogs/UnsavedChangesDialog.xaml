@@ -9,7 +9,7 @@
              prism:Dialog.WindowStyle="{DynamicResource CustomDialogWindowStyle}"
              d:DesignHeight="200" d:DesignWidth="400"
              d:DataContext="{d:DesignInstance Type=viewmodels:UnsavedChangesDialogViewModel}">
-    <Grid Background="White" MinWidth="380" MinHeight="160">
+    <Grid Background="{DynamicResource MaterialDesignBody}" MinWidth="380" MinHeight="160">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

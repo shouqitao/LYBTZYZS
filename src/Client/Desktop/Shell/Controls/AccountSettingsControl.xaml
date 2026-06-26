@@ -79,7 +79,7 @@
         <!--  ============ 左侧面板 ============  -->
         <Border
             Grid.Column="0"
-            Background="White"
+            Background="{DynamicResource MaterialDesignBody}"
             BorderBrush="{DynamicResource BorderBrush}"
             BorderThickness="0,0,1,0">
             <Grid>
