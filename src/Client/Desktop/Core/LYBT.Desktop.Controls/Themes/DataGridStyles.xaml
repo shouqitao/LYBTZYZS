@@ -19,13 +19,13 @@
         <Setter Property="SelectionUnit" Value="FullRow" />
         <Setter Property="GridLinesVisibility" Value="None" />
         <Setter Property="HeadersVisibility" Value="Column" />
-        <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBorderBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="RowHeight" Value="42" />
         <Setter Property="FontSize" Value="13" />
         <Setter Property="FontFamily" Value="Microsoft YaHei" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="AlternatingRowBackground" Value="{DynamicResource SecondaryRegionBrush}" />
+        <Setter Property="AlternatingRowBackground" Value="{DynamicResource MaterialDesignBody}" />
         <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
         <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
         <Setter Property="EnableRowVirtualization" Value="True" />
@@ -37,10 +37,10 @@
     <Style x:Key="BaseDataGridRow" TargetType="DataGridRow">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
-        <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBorderBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}" />
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{DynamicResource RegionBrush}" />
+                <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
             </Trigger>
             <Trigger Property="IsSelected" Value="True">
                 <Setter Property="Background" Value="{DynamicResource LightPrimaryBrush}" />
@@ -103,7 +103,7 @@
                     <ControlTemplate.Triggers>
                         <!--  悬停状态  -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource RegionBrush}" />
+                            <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
                         </Trigger>
                         <!--  选中状态 - 左侧主色指示条  -->
                         <Trigger Property="IsSelected" Value="True">
@@ -183,12 +183,12 @@
     </Style>
 
     <Style x:Key="BaseDataGridColumnHeader" TargetType="DataGridColumnHeader">
-        <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
         <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
         <Setter Property="Padding" Value="12,8" />
-        <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBorderBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="VerticalContentAlignment" Value="Center" />

@@ -35,8 +35,8 @@
                             <Setter Property="Background" Value="{DynamicResource DarkPrimaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource ThirdlyTextBrush}" />
+                            <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -67,15 +67,15 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
-                            <Setter Property="BorderBrush" Value="{DynamicResource SecondaryRegionBrush}" />
+                            <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignBody}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="{DynamicResource SecondaryBorderBrush}" />
+                            <Setter Property="Background" Value="{DynamicResource MaterialDesignOutline}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Foreground" Value="{DynamicResource ThirdlyTextBrush}" />
-                            <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBorderBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -108,8 +108,8 @@
                             <Setter Property="Background" Value="{DynamicResource DarkDangerBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource ThirdlyTextBrush}" />
+                            <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -142,8 +142,8 @@
                             <Setter Property="Background" Value="{DynamicResource DarkSuccessBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource ThirdlyTextBrush}" />
+                            <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -176,8 +176,8 @@
                             <Setter Property="Background" Value="{DynamicResource DarkWarningBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource ThirdlyTextBrush}" />
+                            <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -210,8 +210,8 @@
                             <Setter Property="Background" Value="{DynamicResource DarkInfoBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource ThirdlyTextBrush}" />
+                            <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -239,7 +239,7 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Foreground" Value="{DynamicResource SecondaryRegionBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />

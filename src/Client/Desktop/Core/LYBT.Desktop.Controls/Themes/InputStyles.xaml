@@ -28,7 +28,7 @@
                             <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="BorderBrush" Value="{DynamicResource SecondaryRegionBrush}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignBody}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -66,8 +66,8 @@
                     <ControlTemplate.Triggers>
                         <!--  只读模式：浅灰背景，无边框高亮  -->
                         <Trigger Property="IsReadOnly" Value="True">
-                            <Setter TargetName="PART_Border" Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
-                            <Setter TargetName="PART_Border" Property="BorderBrush" Value="{DynamicResource SecondaryBorderBrush}" />
+                            <Setter TargetName="PART_Border" Property="Background" Value="{DynamicResource MaterialDesignBody}" />
+                            <Setter TargetName="PART_Border" Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}" />
                         </Trigger>
                         <!--  编辑模式：聚焦时主色边框  -->
                         <MultiTrigger>
@@ -83,12 +83,12 @@
                                 <Condition Property="IsMouseOver" Value="True" />
                                 <Condition Property="IsReadOnly" Value="False" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="PART_Border" Property="BorderBrush" Value="{DynamicResource SecondaryRegionBrush}" />
+                            <Setter TargetName="PART_Border" Property="BorderBrush" Value="{DynamicResource MaterialDesignBody}" />
                         </MultiTrigger>
                         <!--  禁用状态  -->
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="PART_Border" Property="Background" Value="{DynamicResource SecondaryBorderBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource ThirdlyTextBrush}" />
+                            <Setter TargetName="PART_Border" Property="Background" Value="{DynamicResource MaterialDesignOutline}" />
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
