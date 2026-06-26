@@ -19,7 +19,7 @@
         </x:Array>
     </UserControl.Resources>
 
-    <Border Background="White" Padding="{StaticResource SpacingMedium}">
+    <Border Background="White" Padding="{StaticResource SpacingMD}">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />  <!-- 页大小选择 -->
@@ -32,7 +32,7 @@
             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Text="每页显示"
                            VerticalAlignment="Center"
-                           Margin="{StaticResource SpacingSmall}" />
+                           Margin="{StaticResource SpacingSM}" />
                 <ComboBox ItemsSource="{StaticResource PageSizeOptions}"
                           SelectedItem="{Binding PageSize, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"
                           Style="{StaticResource FilterComboBox}"
@@ -40,13 +40,13 @@
                           VerticalAlignment="Center" />
                 <TextBlock Text="条"
                            VerticalAlignment="Center"
-                           Margin="{StaticResource SpacingSmall}" />
+                           Margin="{StaticResource SpacingSM}" />
             </StackPanel>
 
             <!-- 中间：总记录数 -->
             <TextBlock Grid.Column="2"
                        VerticalAlignment="Center"
-                       Margin="{StaticResource SpacingMedium}">
+                       Margin="{StaticResource SpacingMD}">
                 <Run Text="共" />
                 <Run Text="{Binding TotalCount, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=OneWay}" FontWeight="Medium" />
                 <Run Text="条记录" />
@@ -58,18 +58,18 @@
                 <Button Content="首页"
                         Command="{Binding FirstPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         Style="{StaticResource PaginationControlButton}"
-                        Margin="{StaticResource SpacingSmall}"
+                        Margin="{StaticResource SpacingSM}"
                         Visibility="{Binding FirstPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.NullToVis}}" />
 
                 <!-- 上一页 -->
                 <Button Content="&lt; 上一页"
                         Command="{Binding PreviousPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         Style="{StaticResource PaginationControlButton}"
-                        Margin="{StaticResource SpacingSmall}" />
+                        Margin="{StaticResource SpacingSM}" />
 
                 <!-- 当前页/总页数 -->
                 <Border Style="{StaticResource PaginationCurrentPage}"
-                        Margin="{StaticResource SpacingSmall}">
+                        Margin="{StaticResource SpacingSM}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding CurrentPage, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                    Style="{StaticResource PaginationPageNumber}" />
@@ -84,13 +84,13 @@
                 <Button Content="下一页 &gt;"
                         Command="{Binding NextPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         Style="{StaticResource PaginationControlButton}"
-                        Margin="{StaticResource SpacingSmall}" />
+                        Margin="{StaticResource SpacingSM}" />
 
                 <!-- 末页 -->
                 <Button Content="末页"
                         Command="{Binding LastPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         Style="{StaticResource PaginationControlButton}"
-                        Margin="{StaticResource SpacingSmall}"
+                        Margin="{StaticResource SpacingSM}"
                         Visibility="{Binding LastPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.NullToVis}}" />
             </StackPanel>
         </Grid>

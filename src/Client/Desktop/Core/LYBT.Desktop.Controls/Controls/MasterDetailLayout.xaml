@@ -99,7 +99,7 @@
                  ==================================================================== -->
             <Style x:Key="DetailPanelStyle" TargetType="Border">
                 <Setter Property="Background" Value="{DynamicResource RegionBrush}"/>
-                <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusMedium}"/>
+                <Setter Property="CornerRadius" Value="{DynamicResource RadiusMD}"/>
                 <Setter Property="Margin" Value="8,12,12,12"/>
                 <Setter Property="Effect" Value="{DynamicResource CardShadow}"/>
             </Style>
@@ -118,7 +118,7 @@
                  ==================================================================== -->
             <Style x:Key="EmptyStatePanelStyle" TargetType="Border">
                 <Setter Property="Background" Value="{DynamicResource RegionBrush}"/>
-                <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusMedium}"/>
+                <Setter Property="CornerRadius" Value="{DynamicResource RadiusMD}"/>
                 <Setter Property="Margin" Value="8,12,12,12"/>
             </Style>
         </ResourceDictionary>

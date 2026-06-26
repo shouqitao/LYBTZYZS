@@ -3,7 +3,7 @@
     <!--
         ====================================================================
         TextBox Styles - 文本框样式
-        依赖: DesignTokens.xaml (FontSizeBody, PrimaryFontFamily, CornerRadiusSmall)
+        依赖: DesignTokens.xaml (FontSizeBody, PrimaryFontFamily, RadiusSM)
         ====================================================================
     -->
     <Style x:Key="SearchTextBox" TargetType="TextBox">
@@ -20,7 +20,7 @@
                         Background="White"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{StaticResource CornerRadiusSmall}">
+                        CornerRadius="{StaticResource RadiusSM}">
                         <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" />
                     </Border>
                     <ControlTemplate.Triggers>
@@ -57,7 +57,7 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{StaticResource CornerRadiusSmall}">
+                        CornerRadius="{StaticResource RadiusSM}">
                         <ScrollViewer
                             x:Name="PART_ContentHost"
                             Margin="{TemplateBinding Padding}"

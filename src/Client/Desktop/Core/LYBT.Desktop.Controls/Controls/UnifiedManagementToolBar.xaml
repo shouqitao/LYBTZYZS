@@ -31,13 +31,13 @@
                 <Button Content=" 搜索"
                         Command="{Binding SearchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         Style="{StaticResource SecondaryButton}"
-                        Margin="{StaticResource SpacingSmall}"
+                        Margin="{StaticResource SpacingSM}"
                         VerticalAlignment="Center" />
 
                 <!-- 筛选内容插槽 -->
                 <ContentPresenter Content="{Binding FilterContent, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                   VerticalAlignment="Center"
-                                  Margin="{StaticResource SpacingSmall}" />
+                                  Margin="{StaticResource SpacingSM}" />
             </StackPanel>
 
             <!-- 右侧：操作按钮区 -->

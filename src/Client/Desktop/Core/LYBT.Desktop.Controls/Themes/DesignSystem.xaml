@@ -58,13 +58,6 @@
     <sys:Double x:Key="FontSizeSubtitle">20</sys:Double>
     <sys:Double x:Key="FontSizeTitle">28</sys:Double>
     <sys:Double x:Key="FontSizeDisplay">40</sys:Double>
-    <Thickness x:Key="SpacingXSmall">4</Thickness>
-    <Thickness x:Key="SpacingSmall">8</Thickness>
-    <Thickness x:Key="SpacingMedium">12</Thickness>
-    <Thickness x:Key="SpacingLarge">16</Thickness>
-    <Thickness x:Key="SpacingXLarge">24</Thickness>
-    <Thickness x:Key="SpacingXXLarge">32</Thickness>
-
     <!-- Unified Spacing Tokens (UI Redesign 2026-06-21 — aliases from Spacing.xaml) -->
     <Thickness x:Key="SpacingXS">4</Thickness>
     <Thickness x:Key="SpacingSM">8</Thickness>
@@ -79,9 +72,6 @@
     <CornerRadius x:Key="RadiusMD">8</CornerRadius>
     <CornerRadius x:Key="RadiusLG">12</CornerRadius>
 
-    <CornerRadius x:Key="CornerRadiusSmall">4</CornerRadius>
-    <CornerRadius x:Key="CornerRadiusMedium">8</CornerRadius>
-    <CornerRadius x:Key="CornerRadiusLarge">12</CornerRadius>
     <DropShadowEffect x:Key="CardShadow" BlurRadius="12" Direction="270" Opacity="0.12" ShadowDepth="4" Color="#000000" />
     <DropShadowEffect x:Key="FloatingShadow" BlurRadius="16" Direction="270" Opacity="0.16" ShadowDepth="8" Color="#000000" />
     <DropShadowEffect x:Key="SubtleShadow" BlurRadius="4" Direction="270" Opacity="0.08" ShadowDepth="1" Color="#000000" />

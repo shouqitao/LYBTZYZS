@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     SystemSettingsView - 系统设置视图
     统一规范: 提供保存配置和重置的功能按钮操作
 -->
@@ -34,12 +34,12 @@
                 <!--  返回首页按钮已移除 - 使用导航栏的"首页"按钮统一导航  -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button
-                        Margin="{StaticResource SpacingSmall}"
+                        Margin="{StaticResource SpacingSM}"
                         Command="{Binding SaveCommand}"
                         Content="保存配置"
                         Style="{StaticResource SuccessButton}" />
                     <Button
-                        Margin="{StaticResource SpacingSmall}"
+                        Margin="{StaticResource SpacingSM}"
                         Command="{Binding ResetCommand}"
                         Content="重置"
                         Style="{StaticResource SecondaryButton}" />
@@ -50,7 +50,7 @@
         <!--  设置内容  -->
         <ScrollViewer
             Grid.Row="1"
-            Padding="{StaticResource SpacingLarge}"
+            Padding="{StaticResource SpacingLG}"
             VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <!--  基本设置  -->
@@ -59,7 +59,7 @@
                         <TextBlock Style="{StaticResource TitleText}" Text="基本设置" />
 
                         <!--  系统名称  -->
-                        <Grid Margin="{StaticResource SpacingMedium}">
+                        <Grid Margin="{StaticResource SpacingMD}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -78,7 +78,7 @@
                         </Grid>
 
                         <!--  医院名称  -->
-                        <Grid Margin="{StaticResource SpacingMedium}">
+                        <Grid Margin="{StaticResource SpacingMD}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -97,7 +97,7 @@
                         </Grid>
 
                         <!--  联系电话  -->
-                        <Grid Margin="{StaticResource SpacingMedium}">
+                        <Grid Margin="{StaticResource SpacingMD}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -123,7 +123,7 @@
                         <TextBlock Style="{StaticResource TitleText}" Text="诊所信息" />
 
                         <!--  诊所名称  -->
-                        <Grid Margin="{StaticResource SpacingMedium}">
+                        <Grid Margin="{StaticResource SpacingMD}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -142,7 +142,7 @@
                         </Grid>
 
                         <!--  科室  -->
-                        <Grid Margin="{StaticResource SpacingMedium}">
+                        <Grid Margin="{StaticResource SpacingMD}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -161,7 +161,7 @@
                         </Grid>
 
                         <!--  地址  -->
-                        <Grid Margin="{StaticResource SpacingMedium}">
+                        <Grid Margin="{StaticResource SpacingMD}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -180,7 +180,7 @@
                         </Grid>
 
                         <!--  电话  -->
-                        <Grid Margin="{StaticResource SpacingMedium}">
+                        <Grid Margin="{StaticResource SpacingMD}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -199,7 +199,7 @@
                         </Grid>
 
                         <!--  邮箱  -->
-                        <Grid Margin="{StaticResource SpacingMedium}">
+                        <Grid Margin="{StaticResource SpacingMD}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -218,7 +218,7 @@
                         </Grid>
 
                         <!--  执业许可证号  -->
-                        <Grid Margin="{StaticResource SpacingMedium}">
+                        <Grid Margin="{StaticResource SpacingMD}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -244,7 +244,7 @@
                         <TextBlock Style="{StaticResource TitleText}" Text="数据库配置" />
 
                         <!--  数据库备份  -->
-                        <Grid Margin="{StaticResource SpacingMedium}">
+                        <Grid Margin="{StaticResource SpacingMD}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -264,7 +264,7 @@
                         </Grid>
 
                         <!--  备份路径  -->
-                        <Grid Margin="{StaticResource SpacingMedium}">
+                        <Grid Margin="{StaticResource SpacingMD}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />

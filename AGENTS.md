@@ -2,6 +2,197 @@
 
 **.NET 8** | WPF/Prism | ASP.NET Core | EF Core | SQL Server (Remote + LocalDB dual-mode)
 
+---
+
+## ⚠️ MANDATORY: 使用 MCP 工具和 Skills
+
+**编码前必须读取此节。** 本项目配备了专业的代码探索和操作工具，必须优先使用。
+
+### 为什么必须使用？
+
+1. **CodeGraph** 理解代码关系比 Grep/Read 快 10 倍
+2. **Serena** 重构比手动编辑安全 100 倍（LSP 保证不破坏引用）
+3. **context7** 获取最新框架文档，避免猜测 API
+4. **Sequential Thinking** 分布式思考，复杂问题分解和推理
+5. **Skills** 提供标准化工作流，避免遗漏关键步骤
+
+### 禁止行为
+
+| ❌ 禁止 | ✅ 应该 |
+|---------|---------|
+| 直接用 Grep 搜索代码 | 用 `codegraph_explore` 理解流程 |
+| 手动重命名变量 | 用 `serena_rename_symbol` |
+| 猜测框架 API | 用 `context7_query-docs` 查文档 |
+| 跳过 brainstorm 直接编码 | 先用 `compose:brainstorm` |
+| 跳过 verify 声称完成 | 必须有 `dotnet build` 证据 |
+| **设计方案前不读代码** | **先用 CodeGraph/Serena 阅读现有实现，再做设计** |
+
+---
+
+## MCP 工具决策树
+
+收到任务后，**立即**按此决策树选择工具：
+
+```
+收到任务
+  │
+  ├── 第一步：必须激活 Serena（如果尚未激活）
+  │     serena_activate_project(project="LYBTZYZS")
+  │
+  ├── 理解/探索代码？ → CodeGraph（首选，不用 Read/Grep）
+  │     ├── codegraph_explore  "这段代码怎么工作的"
+  │     ├── codegraph_node     "读这个文件/符号的源码"
+  │     ├── codegraph_search   "这个符号在哪定义"
+  │     └── codegraph_callers  "谁调用了这个方法"
+  │
+  ├── 重构/重命名/编辑符号？ → Serena
+  │     ├── serena_find_symbol              LSP 精确定位
+  │     ├── serena_rename_symbol            安全全代码库重命名
+  │     ├── serena_find_referencing_symbols 查找所有引用
+  │     ├── serena_get_diagnostics_for_file 实时编译诊断
+  │     └── serena_replace_symbol_body      替换方法体
+  │
+  ├── 复杂问题需要分解推理？ → Sequential Thinking
+  │     └── sequentialthinking_sequentialthinking  分步思考，支持分支和修正
+  │
+  ├── 查框架文档？ → context7
+  │     ├── context7_resolve-library-id     "查 Prism/Refit/EF Core"
+  │     └── context7_query-docs             获取最新 API 文档
+  │
+  └── 以上都不适用？ → Read/Write/Edit/Glob/Grep 兜底
+```
+
+### CodeGraph vs Serena 速查表
+
+| 场景 | 用 CodeGraph | 用 Serena | 用 Sequential Thinking |
+|------|-------------|----------|----------------------|
+| 快速理解代码流程 | ✅ `codegraph_explore` |  |  |
+| 读取文件源码 | ✅ `codegraph_node` | ✅ `serena_read_file` |  |
+| 安全重命名 | | ✅ `serena_rename_symbol` |  |
+| 查找引用 | ✅ `codegraph_callers` | ✅ `serena_find_referencing_symbols` |  |
+| 编译诊断 | | ✅ `serena_get_diagnostics_for_file` |  |
+| 替换方法体 | | ✅ `serena_replace_symbol_body` |  |
+| 复杂问题分解 | | | ✅ `sequentialthinking` |
+| 多步骤推理 | | | ✅ `sequentialthinking` |
+
+**原则**: 探索用 CodeGraph（快、全），操作用 Serena（精、安全）。
+
+**设计方案前必须先读代码** — 用 CodeGraph/Serena 阅读现有实现，了解已有功能和模式，避免重复造轮子。
+
+### context7 使用示例
+
+```
+# 查 Prism 模块注册
+context7_resolve-library-id → "Prism" → /prismlibrary/prism
+context7_query-docs → "How to register modules in Prism WPF"
+
+# 查 Refit 接口定义
+context7_resolve-library-id → "Refit" → /reactiveui/refit
+context7_query-docs → "How to define Refit interface with custom headers"
+```
+
+### Sequential Thinking 使用场景
+
+```
+# 复杂架构决策
+"这个功能应该放在哪个模块？考虑依赖关系、测试难度、维护成本"
+
+# 多步骤推理
+"从登录流程追踪到权限验证，再到数据访问的完整链路"
+
+# 问题分解
+"这个 Bug 可能的原因有哪些？按可能性排序，逐个验证"
+
+# 方案对比
+"方案 A 和方案 B 的优劣分析，考虑扩展性、性能、开发成本"
+```
+
+---
+
+## Skills 工作流决策树
+
+**编码前必须触发对应 Skill。** 不同场景使用不同工作流：
+
+```
+收到请求
+  │
+  ├── 新功能/新设计？
+  │     ├── "值得做吗"/方向不明确 → office-hours
+  │     ├── 明确要做 → 先读代码 → compose:brainstorm → compose:plan → compose:execute
+  │     └── 多模块大改 → 先读代码 → compose:brainstorm → compose:plan → plan-eng-review → compose:subagent
+  │
+  ├── Bug/异常/测试失败？ → compose:debug（四阶段：调查→分析→假设→实现）
+  │
+  ├── 声称"完成了"？ → compose:verify（必须有 dotnet build 通过证据）
+  │
+  ├── 代码审查？ → compose:review（dispatch 子代理审查 diff）
+  │
+  ├── 架构/代码理解？ → understand（生成知识图谱）/ understand-chat（问答）
+  │
+  ├── 安全审计？ → cso（OWASP + 依赖扫描 + STRIDE）
+  │
+  ├── 写 PRD/需求文档？ → create-prd
+  │
+  ├── UI/UX 设计？ → ui-ux-pro-max（WPF 注意：只适用颜色/字体/UX 原则）
+  │
+  ├── 写计划文档？ → compose:plan（代码计划） / writing-plans（通用计划）
+  │
+  └── 小修补（1-2 行）？ → 直接改 → dotnet build → 提交（不需要技能）
+```
+
+### 本项目推荐技能组合
+
+| 场景 | 推荐流程 | 预计耗时 |
+|------|---------|---------|
+| **登录/认证 bug** | `compose:debug` → 查日志 → 定位 → 修 | 15-30 min |
+| **新增 API 端点** | `compose:plan` → `compose:execute` → `compose:review` | 30-60 min |
+| **新增 WPF 页面** | `compose:brainstorm` → `compose:plan` → `compose:subagent` → `compose:review` | 1-2 hours |
+| **数据库 schema 变更** | `compose:plan` → EF Migration → `compose:verify` → `compose:review` | 30-60 min |
+| **安全漏洞排查** | `cso` → 修复 → `compose:review` | 1-2 hours |
+| **理解陌生模块** | `codegraph_explore` → `understand-chat` | 10-20 min |
+| **重命名公共 API** | `serena_rename_symbol` → `dotnet build` → `compose:verify` | 10-15 min |
+| **查框架用法** | `context7_query-docs` → 实现 | 5-10 min |
+| **复杂架构决策** | `sequentialthinking` → 分析 → 方案对比 → 实施 | 15-30 min |
+
+---
+
+## Compose Workflow (开发工作流)
+
+### 标准流程
+
+```
+brainstorm → plan → execute → review → report → merge
+```
+
+### 工程纪律（编码前 MUST 触发）
+
+| 场景 | 技能 | 规则 |
+|------|------|------|
+| 新功能/修改行为 | `compose:brainstorm` | 探索意图后再编码 |
+| 有规格的多步骤任务 | `compose:plan` | 碰代码前出计划 |
+| Bug/测试失败/异常 | `compose:debug` | 找到根因再修，禁止跳过到修复 |
+| 实现功能/修复 | `compose:tdd` | 先写测试再写实现 |
+| 声称"完成/修好" | `compose:verify` | 必须有 `dotnet build` 通过的证据 |
+
+### 工作流分级
+
+| 规模 | 必须流程 |
+|------|---------|
+| **小修补** (typo、1-2 行) | 改完 → `dotnet build` → 提交 |
+| **新功能/明确重构** | `brainstorm` → `plan` → TDD 实现 → `verify` → `review` → 提交 |
+| **跨模块大改/新架构** | `brainstorm` → `plan` → `plan-eng-review` → `subagent` 并行 → `verify` → `review` → `merge` |
+
+### 核心原则
+
+- **前期思考 > 后期 debug** — 20% 的方案评审决定 80% 的结果
+- **按需裁剪** — 小修小补跳过完整流程，不搞流程内耗
+- **不验证不声称完成** — "应该修好了"不算完成，必须有 build 输出作为证据
+- **找不到根因不修 bug** — `compose:debug` 四阶段：调查 → 分析 → 假设 → 实现
+- **Subagent 优先** — 有 subagent 支持时用 `compose:subagent` 替代 `compose:execute`
+- **设计方案前先读代码** — 用 CodeGraph/Serena 阅读现有实现，避免重复造轮子
+
+---
+
 ## Build & Test
 
 ```bash
@@ -86,155 +277,6 @@ dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
 | HTTP Registration | `src/Client/Desktop/Shell/Extensions/HttpServiceRegistrationExtensions.cs` |
 | Role Definitions | `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Roles/Definitions/` |
 | Docs | `docs/{01-product,02-requirements,03-architecture,04-api-reference,05-development,06-operations}/` |
-
-## MCP Tools Usage Guide
-
-### 工具选择决策树
-
-```
-收到任务
-  ├── 理解/探索代码？ → CodeGraph（首选）
-  │     ├── codegraph_explore  "这段代码怎么工作的"
-  │     ├── codegraph_node     "读这个文件/符号的源码"
-  │     ├── codegraph_search   "这个符号在哪定义"
-  │     └── codegraph_callers  "谁调用了这个方法"
-  │
-  ├── 重构/重命名？ → Serena
-  │     ├── serena_find_symbol              LSP 精确定位
-  │     ├── serena_rename_symbol            安全全代码库重命名
-  │     ├── serena_find_referencing_symbols 查找所有引用
-  │     ├── serena_get_diagnostics_for_file 实时编译诊断（不用等 build）
-  │     └── serena_replace_symbol_body      替换方法体（保持签名）
-  │     ⚠️ 首次使用前必须 serena_activate_project(project="LYBTZYZS")
-  │
-  ├── 查框架文档？ → context7
-  │     ├── context7_resolve-library-id     "查 Prism/Refit/EF Core"
-  │     └── context7_query-docs             获取最新 API 文档和示例
-  │
-  ├── 读/写文件？ → filesystem 或内置工具
-  │     └── Read/Write/Edit/Glob/Grep
-  │
-  └── 以上都不适用？ → Grep + Read 兜底
-```
-
-### CodeGraph vs Serena 选择
-
-| 场景 | 用 CodeGraph | 用 Serena |
-|------|-------------|----------|
-| 快速理解代码流程 | ✅ `codegraph_explore` |  |
-| 读取文件源码 | ✅ `codegraph_node` | ✅ `serena_read_file` |
-| 安全重命名 | | ✅ `serena_rename_symbol` |
-| 查找引用 | ✅ `codegraph_callers` | ✅ `serena_find_referencing_symbols` |
-| 编译诊断 | | ✅ `serena_get_diagnostics_for_file` |
-| 替换方法体 | | ✅ `serena_replace_symbol_body` |
-| 插入代码到符号前/后 | | ✅ `serena_insert_before/after_symbol` |
-
-**原则**: 探索用 CodeGraph（快、全），操作用 Serena（精、安全）。
-
-### context7 使用示例
-
-```
-# 查 Prism 模块注册
-context7_resolve-library-id → "Prism" → /prismlibrary/prism
-context7_query-docs → "How to register modules in Prism WPF"
-
-# 查 Refit 接口定义
-context7_resolve-library-id → "Refit" → /reactiveui/refit
-context7_query-docs → "How to define Refit interface with custom headers"
-```
-
-## Skills 技能路由
-
-### 技能选择决策树
-
-```
-收到请求
-  ├── 新功能/新设计？
-  │     ├── "值得做吗"/方向不明确 → office-hours
-  │     ├── 明确要做 → compose:brainstorm → compose:plan → compose:execute
-  │     └── 多模块大改 → compose:brainstorm → compose:plan → plan-eng-review → compose:subagent
-  │
-  ├── Bug/异常/测试失败？ → compose:debug（四阶段：调查→分析→假设→实现）
-  │
-  ├── 声称"完成了"？ → compose:verify（必须有 dotnet build 通过证据）
-  │
-  ├── 代码审查？ → compose:review（dispatch 子代理审查 diff）
-  │
-  ├── 架构/代码理解？ → understand（生成知识图谱）/ understand-chat（问答）
-  │
-  ├── 安全审计？ → cso（OWASP + 依赖扫描 + STRIDE）
-  │
-  ├── 写 PRD/需求文档？ → create-prd
-  │
-  ├── 写用户故事？ → user-stories / job-stories
-  │
-  ├── 优先级排序？ → prioritize-features / prioritization-frameworks
-  │
-  ├── UI/UX 设计？ → ui-ux-pro-max（WPF 注意：只适用颜色/字体/UX 原则，不适用 React/Vue 部分）
-  │
-  ├── 写计划文档？ → compose:plan（代码计划） / writing-plans（通用计划）
-  │
-  └── 小修补（1-2 行）？ → 直接改 → dotnet build → 提交（不需要技能）
-```
-
-### 本项目推荐技能组合
-
-| 场景 | 推荐流程 | 预计耗时 |
-|------|---------|---------|
-| **登录/认证 bug** | `compose:debug` → 查日志 → 定位 → 修 | 15-30 min |
-| **新增 API 端点** | `compose:plan` → `compose:execute` → `compose:review` | 30-60 min |
-| **新增 WPF 页面** | `compose:brainstorm` → `compose:plan` → `compose:subagent` → `compose:review` | 1-2 hours |
-| **数据库 schema 变更** | `compose:plan` → EF Migration → `compose:verify` → `compose:review` | 30-60 min |
-| **安全漏洞排查** | `cso` → 修复 → `compose:review` | 1-2 hours |
-| **理解陌生模块** | `codegraph_explore` → `understand-chat` | 10-20 min |
-| **重命名公共 API** | `serena_rename_symbol` → `dotnet build` → `compose:verify` | 10-15 min |
-| **查框架用法** | `context7_query-docs` → 实现 | 5-10 min |
-
-## Compose Workflow (开发工作流)
-
-### 标准流程
-
-```
-brainstorm → plan → execute → review → report → merge
-```
-
-### 工程纪律（编码前 MUST 触发）
-
-| 场景 | 技能 | 规则 |
-|------|------|------|
-| 新功能/修改行为 | `compose:brainstorm` | 探索意图后再编码 |
-| 有规格的多步骤任务 | `compose:plan` | 碰代码前出计划 |
-| Bug/测试失败/异常 | `compose:debug` | 找到根因再修，禁止跳过到修复 |
-| 实现功能/修复 | `compose:tdd` | 先写测试再写实现 |
-| 声称"完成/修好" | `compose:verify` | 必须有 `dotnet build` 通过的证据 |
-
-### 方向与交付（匹配时触发）
-
-| 场景 | 技能 |
-|------|------|
-| 新想法/"值得做吗" | `office-hours` |
-| 架构/设计评审 | `plan-eng-review` |
-| 策略/范围/"再大胆点" | `plan-ceo-review` |
-| 全自动评审流水线 | `autoplan` |
-| 安全审计/漏洞扫描 | `cso` |
-| 代码审查/diff 检查 | `compose:review` |
-| 合并/集成/PR | `compose:merge` |
-
-### 工作流分级
-
-| 规模 | 必须流程 |
-|------|---------|
-| **小修补** (typo、1-2 行) | 改完 → `dotnet build` → 提交 |
-| **新功能/明确重构** | `brainstorm` → `plan` → TDD 实现 → `verify` → `review` → 提交 |
-| **跨模块大改/新架构** | `brainstorm` → `plan` → `plan-eng-review` → `subagent` 并行 → `verify` → `review` → `merge` |
-
-### 核心原则
-
-- **前期思考 > 后期 debug** — 20% 的方案评审决定 80% 的结果
-- **按需裁剪** — 小修小补跳过完整流程，不搞流程内耗
-- **不验证不声称完成** — "应该修好了"不算完成，必须有 build 输出作为证据
-- **找不到根因不修 bug** — `compose:debug` 四阶段：调查 → 分析 → 假设 → 实现
-- **Subagent 优先** — 有 subagent 支持时用 `compose:subagent` 替代 `compose:execute`
 
 ## Key Patterns
 
