@@ -23,23 +23,20 @@
                 <!--  3. 矢量图标 Path data -->
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/Icons.xaml" />
 
-                <!--  4. 项目特定设计 Token -->
-                <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/Theme.Light.xaml" />
-
-                <!--  5. UI 统一化组件样式 -->
+                <!--  4. UI 统一化组件样式 -->
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/UnifiedComponents.xaml" />
 
-                <!--  6. 首页共享样式 -->
+                <!--  5. 首页共享样式 -->
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/HomePageStyles.xaml" />
 
-                <!--  7. Shell 全局样式 -->
+                <!--  6. Shell 全局样式 -->
                 <ResourceDictionary Source="Styles/Typography.xaml" />
                 <ResourceDictionary Source="Styles/Controls.xaml" />
 
-                <!--  8. 对话框窗口样式 -->
+                <!--  7. 对话框窗口样式 -->
                 <ResourceDictionary Source="Styles/DialogStyles.xaml" />
 
-                <!--  9. 统一转换器资源字典 -->
+                <!--  8. 统一转换器资源字典 -->
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Converters/Converters.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

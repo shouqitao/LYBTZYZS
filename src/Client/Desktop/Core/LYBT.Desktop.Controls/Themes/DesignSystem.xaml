@@ -78,22 +78,7 @@
     <SolidColorBrush x:Key="DialogBackgroundBrush" Color="{StaticResource SurfaceColor}" />
     <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource SurfaceColor}" />
 
-    <!-- Common text/box styles for settings forms -->
-    <Style x:Key="HeaderText" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource FontSizeXXL}" />
-        <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
-    </Style>
-    <Style x:Key="TitleText" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="18" />
-        <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
-    </Style>
-    <Style x:Key="LabelText" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
-        <Setter Property="FontWeight" Value="Medium" />
-        <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
-    </Style>
+    <!-- Common box styles for settings forms -->
     <Style x:Key="ContentContainer" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />

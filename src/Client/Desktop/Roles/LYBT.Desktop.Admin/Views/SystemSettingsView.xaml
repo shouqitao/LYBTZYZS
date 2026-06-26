@@ -27,7 +27,7 @@
                 <TextBlock
                     Grid.Column="0"
                     VerticalAlignment="Center"
-                    Style="{StaticResource HeaderText}"
+                    Style="{StaticResource PageTitle}"
                     Text="系统设置" />
 
                 <!--  右侧: 操作按钮  -->
@@ -56,7 +56,7 @@
                 <!--  基本设置  -->
                 <Border Style="{StaticResource ContentContainer}">
                     <StackPanel>
-                        <TextBlock Style="{StaticResource TitleText}" Text="基本设置" />
+                        <TextBlock Style="{StaticResource H2TextBlock}" Text="基本设置" />
 
                         <!--  系统名称  -->
                         <Grid Margin="{StaticResource SpacingMD}">
@@ -67,7 +67,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource LabelText}"
+                                Style="{StaticResource FieldLabel}"
                                 Text="系统名称：" />
                             <TextBox
                                 Grid.Column="1"
@@ -86,7 +86,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource LabelText}"
+                                Style="{StaticResource FieldLabel}"
                                 Text="医院名称：" />
                             <TextBox
                                 Grid.Column="1"
@@ -105,7 +105,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource LabelText}"
+                                Style="{StaticResource FieldLabel}"
                                 Text="联系电话：" />
                             <TextBox
                                 Grid.Column="1"
@@ -120,7 +120,7 @@
                 <!--  D2: 诊所信息配置  -->
                 <Border Style="{StaticResource ContentContainer}">
                     <StackPanel>
-                        <TextBlock Style="{StaticResource TitleText}" Text="诊所信息" />
+                        <TextBlock Style="{StaticResource H2TextBlock}" Text="诊所信息" />
 
                         <!--  诊所名称  -->
                         <Grid Margin="{StaticResource SpacingMD}">
@@ -131,7 +131,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource LabelText}"
+                                Style="{StaticResource FieldLabel}"
                                 Text="诊所名称：" />
                             <TextBox
                                 Grid.Column="1"
@@ -150,7 +150,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource LabelText}"
+                                Style="{StaticResource FieldLabel}"
                                 Text="科室：" />
                             <TextBox
                                 Grid.Column="1"
@@ -169,7 +169,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource LabelText}"
+                                Style="{StaticResource FieldLabel}"
                                 Text="地址：" />
                             <TextBox
                                 Grid.Column="1"
@@ -188,7 +188,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource LabelText}"
+                                Style="{StaticResource FieldLabel}"
                                 Text="电话：" />
                             <TextBox
                                 Grid.Column="1"
@@ -207,7 +207,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource LabelText}"
+                                Style="{StaticResource FieldLabel}"
                                 Text="邮箱：" />
                             <TextBox
                                 Grid.Column="1"
@@ -226,7 +226,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource LabelText}"
+                                Style="{StaticResource FieldLabel}"
                                 Text="许可证号：" />
                             <TextBox
                                 Grid.Column="1"
@@ -241,7 +241,7 @@
                 <!--  数据库配置  -->
                 <Border Style="{StaticResource ContentContainer}">
                     <StackPanel>
-                        <TextBlock Style="{StaticResource TitleText}" Text="数据库配置" />
+                        <TextBlock Style="{StaticResource H2TextBlock}" Text="数据库配置" />
 
                         <!--  数据库备份  -->
                         <Grid Margin="{StaticResource SpacingMD}">
@@ -252,7 +252,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource LabelText}"
+                                Style="{StaticResource FieldLabel}"
                                 Text="自动备份：" />
                             <CheckBox
                                 Grid.Column="1"
@@ -273,7 +273,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource LabelText}"
+                                Style="{StaticResource FieldLabel}"
                                 Text="备份路径：" />
                             <TextBox
                                 Grid.Column="1"
