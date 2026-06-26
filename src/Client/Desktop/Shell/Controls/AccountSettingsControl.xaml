@@ -17,7 +17,7 @@
     d:DesignHeight="800"
     d:DesignWidth="1200"
     prism:ViewModelLocator.AutoWireViewModel="True"
-    Background="{DynamicResource SecondaryRegionBrush}"
+    Background="{DynamicResource MaterialDesignBody}"
     mc:Ignorable="d">
 
     <UserControl.Resources>

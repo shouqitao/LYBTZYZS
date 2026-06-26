@@ -125,7 +125,7 @@
     <!--  提示文本样式  -->
     <Style x:Key="HintText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="{StaticResource FontSizeXS}" />
-        <Setter Property="Foreground" Value="{DynamicResource ThirdlyTextBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}" />
         <Setter Property="FontFamily" Value="{DynamicResource PrimaryFontFamily}" />
     </Style>
 

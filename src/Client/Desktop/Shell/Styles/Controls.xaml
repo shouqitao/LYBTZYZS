@@ -55,8 +55,8 @@
                             <Setter TargetName="border" Property="BorderThickness" Value="2" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource DisabledBackgroundBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource SecondaryRegionBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource MaterialDesignDivider}" />
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
@@ -72,7 +72,7 @@
         <Setter Property="Padding" Value="10,8" />
         <Setter Property="FontSize" Value="13" />
         <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
-        <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="MinHeight" Value="36" />
@@ -103,8 +103,8 @@
                             <Setter TargetName="border" Property="BorderThickness" Value="2" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource RegionBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource ThirdlyTextBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -167,8 +167,8 @@
                             <Setter TargetName="border" Property="BorderThickness" Value="2" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="border" Property="Background" Value="{DynamicResource DisabledBackgroundBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource SecondaryRegionBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource MaterialDesignDivider}" />
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
@@ -206,7 +206,7 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Background" Value="White" />
         <Setter Property="RowBackground" Value="White" />
-        <Setter Property="AlternatingRowBackground" Value="{DynamicResource DataGridAlternatingRowBrush}" />
+        <Setter Property="AlternatingRowBackground" Value="{DynamicResource MaterialDesignBody}" />
         <Setter Property="ColumnHeaderHeight" Value="44" />
         <Setter Property="RowHeight" Value="40" />
         <Setter Property="FontSize" Value="14" />
@@ -277,7 +277,7 @@
 
     <!--  面板卡片样式  -->
     <Style x:Key="PanelCard" TargetType="Border">
-        <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="8" />
@@ -293,7 +293,7 @@
 
     <!--  操作栏样式  -->
     <Style x:Key="ActionBar" TargetType="Border">
-        <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="0,1,0,0" />
         <Setter Property="Height" Value="64" />
@@ -309,14 +309,14 @@
 
     <!--  分隔线样式  -->
     <Style x:Key="Divider" TargetType="Border">
-        <Setter Property="Background" Value="{DynamicResource SecondaryBorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignOutline}" />
         <Setter Property="Height" Value="1" />
         <Setter Property="Margin" Value="0,12" />
     </Style>
 
     <!--  卡片样式 (带阴影)  -->
     <Style x:Key="Card" TargetType="Border">
-        <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="5" />
