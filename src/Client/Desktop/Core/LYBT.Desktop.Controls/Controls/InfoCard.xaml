@@ -14,7 +14,7 @@
     </controls:InfoCard>
 
     注意：
-    - 此控件依赖 App 级别加载的 Design Tokens (SecondaryRegionBrush, PrimaryTextBrush 等)
+    - 此控件依赖 App 级别加载的 Design Tokens (MaterialDesignBody, MaterialDesignForeground 等)
     - 不要在此控件中合并 UnifiedComponents.xaml，避免资源加载顺序问题
 -->
 <UserControl x:Class="LYBT.Desktop.Controls.Controls.InfoCard"
@@ -37,7 +37,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <!-- 使用DynamicResource：SecondaryRegionBrush定义在Shell/DesignTokens/Colors.Light.xaml，通过App级别加载 -->
+    <!-- 使用DynamicResource：MaterialDesignBody定义在Shell/DesignTokens/Colors.Light.xaml，通过App级别加载 -->
     <Border Background="{DynamicResource MaterialDesignBody}"
             CornerRadius="16"
             Padding="40,32"

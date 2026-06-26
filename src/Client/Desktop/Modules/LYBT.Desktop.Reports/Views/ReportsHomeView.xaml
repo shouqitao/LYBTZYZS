@@ -72,7 +72,7 @@
                     Margin="0,0,0,24">
 
                     <!-- Card 1: Daily Income -->
-                    <Border Margin="12" Padding="20" Background="{DynamicResource SecondaryRegionBrush}" CornerRadius="8" MinHeight="180">
+                    <Border Margin="12" Padding="20" Background="{DynamicResource MaterialDesignBody}" CornerRadius="8" MinHeight="180">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock
                                 FontSize="13"
@@ -98,7 +98,7 @@
                     </Border>
 
                     <!-- Card 2: Daily Consultations -->
-                    <Border Margin="12" Padding="20" Background="{DynamicResource SecondaryRegionBrush}" CornerRadius="8" MinHeight="180">
+                    <Border Margin="12" Padding="20" Background="{DynamicResource MaterialDesignBody}" CornerRadius="8" MinHeight="180">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock
                                 FontSize="13"
@@ -127,7 +127,7 @@
                     </Border>
 
                     <!-- Card 3: Daily Herb Usage -->
-                    <Border Margin="12" Padding="20" Background="{DynamicResource SecondaryRegionBrush}" CornerRadius="8" MinHeight="180">
+                    <Border Margin="12" Padding="20" Background="{DynamicResource MaterialDesignBody}" CornerRadius="8" MinHeight="180">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock
                                 FontSize="13"
