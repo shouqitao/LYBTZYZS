@@ -118,6 +118,7 @@ dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
 - **包版本**: 统一在 `Directory.Packages.props`
 - **无注释/无 Emoji**: 除非用户要求
 - **跨模块禁止**: Server/Desktop 模块间禁止直接引用
+- **UI 控件 MDIX 优先**: 用 MDIX 内置样式（Button/TextBox/DataGrid/Card/DialogHost），不自定义 ControlTemplate。间距用 Token（SpacingXS~XXXL），不硬编码。仅在 MDIX 无对应控件时允许自定义
 
 ---
 
