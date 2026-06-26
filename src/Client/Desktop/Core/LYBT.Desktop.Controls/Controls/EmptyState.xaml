@@ -48,7 +48,7 @@
             Margin="0,0,0,20"
             HorizontalAlignment="Center"
             Data="{Binding Icon, TargetNullValue={StaticResource SelectItemIcon}}"
-            Fill="{DynamicResource ThirdlyTextBrush}"
+            Fill="{DynamicResource MaterialDesignBodyLight}"
             Stretch="Uniform" />
 
         <!--  主标题  -->
@@ -67,7 +67,7 @@
             Margin="0,8,0,0"
             HorizontalAlignment="Center"
             FontSize="14"
-            Foreground="{DynamicResource ThirdlyTextBrush}"
+            Foreground="{DynamicResource MaterialDesignBodyLight}"
             Text="{Binding Subtitle}"
             TextWrapping="Wrap"
             Visibility="{Binding Subtitle, Converter={x:Static converters:Cvt.NullToVis}}" />

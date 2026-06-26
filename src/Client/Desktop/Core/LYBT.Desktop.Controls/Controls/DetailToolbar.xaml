@@ -41,7 +41,7 @@
 
     <Border
         Padding="16,12"
-        Background="{DynamicResource SecondaryRegionBrush}"
+        Background="{DynamicResource MaterialDesignBody}"
         BorderBrush="{DynamicResource BorderLightBrush}"
         BorderThickness="0,0,0,1"
         DataContext="{Binding ElementName=Root}">

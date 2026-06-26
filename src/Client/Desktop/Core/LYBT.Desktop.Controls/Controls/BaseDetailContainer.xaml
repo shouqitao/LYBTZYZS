@@ -28,7 +28,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters"
              xmlns:controls="clr-namespace:LYBT.Desktop.Controls.Controls"
-             Background="{DynamicResource RegionBrush}">
+             Background="{DynamicResource MaterialDesignPaper}">
 
     <!-- Phase 2.1: Keyboard Shortcuts -->
     <UserControl.InputBindings>
@@ -233,7 +233,7 @@
                                       Margin="0,0,0,12"
                                       VerticalAlignment="Center"/>
 
-            <Border Background="{DynamicResource SecondaryRegionBrush}"
+            <Border Background="{DynamicResource MaterialDesignBody}"
                     CornerRadius="16"
                     Padding="32,24"
                     Effect="{StaticResource CardShadow}">
@@ -311,7 +311,7 @@
         <!-- Row 2: Footer - 底部操作栏（仅编辑模式显示）- 带过渡动画 -->
         <Grid Grid.Row="2" Margin="40,28,40,28"
               Style="{StaticResource FooterStyle}">
-            <Border Background="{DynamicResource SecondaryRegionBrush}"
+            <Border Background="{DynamicResource MaterialDesignBody}"
                     CornerRadius="16"
                     Padding="32,24"
                     Effect="{StaticResource CardShadow}">

@@ -30,7 +30,7 @@
     </UserControl.Resources>
 
     <!-- 使用DynamicResource：Shell Design Tokens通过App级别加载 -->
-    <Border Background="{DynamicResource SecondaryRegionBrush}"
+    <Border Background="{DynamicResource MaterialDesignBody}"
             CornerRadius="16"
             Padding="24,20"
             Effect="{StaticResource CardShadow}">

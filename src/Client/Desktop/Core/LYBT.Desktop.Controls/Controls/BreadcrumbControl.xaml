@@ -33,7 +33,7 @@
 
     <Border
         Padding="16,8"
-        Background="{DynamicResource RegionBrush}"
+        Background="{DynamicResource MaterialDesignPaper}"
         BorderBrush="{DynamicResource BorderLightBrush}"
         BorderThickness="0,0,0,1">
         <StackPanel Orientation="Horizontal">
@@ -84,7 +84,7 @@
                                 Margin="4,0"
                                 VerticalAlignment="Center"
                                 FontSize="13"
-                                Foreground="{DynamicResource ThirdlyTextBrush}"
+                                Foreground="{DynamicResource MaterialDesignBodyLight}"
                                 Text=">" />
                             <!-- 面包屑项按钮 -->
                             <Button

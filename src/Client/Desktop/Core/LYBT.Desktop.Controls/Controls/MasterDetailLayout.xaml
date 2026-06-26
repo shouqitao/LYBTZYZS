@@ -64,7 +64,7 @@
                                 <!-- 视觉分割线 -->
                                 <Border x:Name="SplitterLine"
                                         Width="1"
-                                        Background="{DynamicResource SecondaryBorderBrush}"
+                                        Background="{DynamicResource MaterialDesignOutline}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Stretch"/>
                                 <!-- 拖动指示器 -->
@@ -98,7 +98,7 @@
                  Detail面板样式 - 浮动卡片效果
                  ==================================================================== -->
             <Style x:Key="DetailPanelStyle" TargetType="Border">
-                <Setter Property="Background" Value="{DynamicResource RegionBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
                 <Setter Property="CornerRadius" Value="{DynamicResource RadiusMD}"/>
                 <Setter Property="Margin" Value="8,12,12,12"/>
                 <Setter Property="Effect" Value="{DynamicResource CardShadow}"/>
@@ -108,8 +108,8 @@
                  Master面板样式 - 简洁列表区域
                  ==================================================================== -->
             <Style x:Key="MasterPanelStyle" TargetType="Border">
-                <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBorderBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}"/>
                 <Setter Property="BorderThickness" Value="0,0,1,0"/>
             </Style>
 
@@ -117,7 +117,7 @@
                  空状态面板样式
                  ==================================================================== -->
             <Style x:Key="EmptyStatePanelStyle" TargetType="Border">
-                <Setter Property="Background" Value="{DynamicResource RegionBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
                 <Setter Property="CornerRadius" Value="{DynamicResource RadiusMD}"/>
                 <Setter Property="Margin" Value="8,12,12,12"/>
             </Style>
@@ -125,7 +125,7 @@
     </UserControl.Resources>
 
     <!-- 主容器 - 使用SurfaceBrush作为整体背景 -->
-    <Border Background="{DynamicResource SecondaryRegionBrush}">
+    <Border Background="{DynamicResource MaterialDesignBody}">
         <!-- 注意：不设置Grid的DataContext，以便内容能继承父级的ViewModel DataContext -->
         <Grid>
             <Grid.RowDefinitions>

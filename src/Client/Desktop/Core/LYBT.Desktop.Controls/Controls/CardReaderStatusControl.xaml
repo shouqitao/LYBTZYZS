@@ -202,7 +202,7 @@
                                             <Setter Property="Background" Value="{DynamicResource DarkPrimaryBrush}" />
                                         </Trigger>
                                         <Trigger Property="IsEnabled" Value="False">
-                                            <Setter Property="Background" Value="{DynamicResource DisabledBackgroundBrush}" />
+                                            <Setter Property="Background" Value="{DynamicResource MaterialDesignDivider}" />
                                             <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}" />
                                         </Trigger>
                                     </ControlTemplate.Triggers>

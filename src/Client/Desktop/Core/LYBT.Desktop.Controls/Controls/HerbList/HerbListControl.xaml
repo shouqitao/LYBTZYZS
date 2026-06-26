@@ -20,7 +20,7 @@
     <Border
         x:Name="LayoutRoot"
         Padding="4"
-        Background="{DynamicResource SecondaryRegionBrush}"
+        Background="{DynamicResource MaterialDesignBody}"
         BorderBrush="{DynamicResource BorderLightBrush}"
         BorderThickness="1"
         CornerRadius="4">

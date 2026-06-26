@@ -34,7 +34,7 @@
                 <TextBlock Text="📋"
                            FontSize="{StaticResource FontSizeDisplay}"
                            HorizontalAlignment="Center"
-                           Foreground="{DynamicResource ThirdlyTextBrush}"
+                            Foreground="{DynamicResource MaterialDesignBodyLight}"
                            Margin="{StaticResource SpacingMD}" />
                 <TextBlock Text="{Binding EmptyStateText, RelativeSource={RelativeSource AncestorType=UserControl}}"
                            FontSize="{StaticResource FontSizeBody}"

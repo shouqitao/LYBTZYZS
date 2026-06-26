@@ -33,7 +33,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Border Background="{DynamicResource SecondaryRegionBrush}"
+    <Border Background="{DynamicResource MaterialDesignBody}"
             BorderBrush="{DynamicResource BorderBrush}"
             BorderThickness="0,0,0,1"
             Padding="12,8">

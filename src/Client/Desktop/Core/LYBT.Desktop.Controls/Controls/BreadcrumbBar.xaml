@@ -38,7 +38,7 @@
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
-                    <Setter Property="Background" Value="{DynamicResource RegionBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
                 </Trigger>
                 <Trigger Property="IsEnabled" Value="False">
                     <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
