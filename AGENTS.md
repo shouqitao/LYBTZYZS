@@ -82,29 +82,15 @@
 ### context7 使用示例
 
 ```
-# 查 Prism 模块注册
 context7_resolve-library-id → "Prism" → /prismlibrary/prism
 context7_query-docs → "How to register modules in Prism WPF"
-
-# 查 Refit 接口定义
-context7_resolve-library-id → "Refit" → /reactiveui/refit
-context7_query-docs → "How to define Refit interface with custom headers"
 ```
 
 ### Sequential Thinking 使用场景
 
 ```
-# 复杂架构决策
-"这个功能应该放在哪个模块？考虑依赖关系、测试难度、维护成本"
-
-# 多步骤推理
-"从登录流程追踪到权限验证，再到数据访问的完整链路"
-
-# 问题分解
-"这个 Bug 可能的原因有哪些？按可能性排序，逐个验证"
-
-# 方案对比
-"方案 A 和方案 B 的优劣分析，考虑扩展性、性能、开发成本"
+# 复杂架构决策 / 多步骤推理 / 问题分解 / 方案对比
+sequentialthinking_sequentialthinking → 分步思考，支持分支和修正
 ```
 
 ---
@@ -191,6 +177,13 @@ brainstorm → plan → execute → review → report → merge
 - **找不到根因不修 bug** — `compose:debug` 四阶段：调查 → 分析 → 假设 → 实现
 - **Subagent 优先** — 有 subagent 支持时用 `compose:subagent` 替代 `compose:execute`
 - **设计方案前先读代码** — 用 CodeGraph/Serena 阅读现有实现，避免重复造轮子
+
+### Karpathy 准则（编码质量）
+
+- **先思考再编码** — 不假设、不隐藏困惑、呈现权衡
+- **简单优先** — 最小代码解决问题，不添加 speculative 功能
+- **外科手术式修改** — 只修改必须的部分，不顺手重构
+- **目标驱动执行** — 定义可验证的成功标准，循环直到验证通过
 
 ---
 
