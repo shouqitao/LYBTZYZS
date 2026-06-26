@@ -4,7 +4,7 @@
         合并样式资源 - 纯聚合器
 
         颜色资源现在通过 App.xaml 全局加载:
-        1. HandyControl SkinDefault.xaml + Theme.xaml (基础颜色)
+        1. Material Design 2 主题 (基础颜色)
         2. DesignSystem.xaml (统一Token: 颜色/字体/间距/圆角/阴影)
 
         此文件仅合并样式相关资源
