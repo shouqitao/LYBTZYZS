@@ -1,9 +1,7 @@
-﻿<!--
-    AccountSettingsControl - 账户设置控件 (Redesign 2026-06-21)
+<!--
+    AccountSettingsControl - 账户设置控件 (MDIX Migration 2026-06-27)
 
-    新布局：左右分栏
-    - 左侧 (260px): 返回按钮 + 头像 + 姓名/角色 + 导航
-    - 右侧: ScrollViewer 内含 个人资料/安全设置 两个 StackPanel（BoolToVis 切换）
+    左右分栏布局，使用 MDIX 原生资源和样式
 -->
 <UserControl
     x:Class="LYBT.Desktop.Shell.Controls.AccountSettingsControl"
@@ -12,63 +10,14 @@
     xmlns:behaviors="clr-namespace:LYBT.Desktop.Infrastructure.Behaviors;assembly=LYBT.Desktop.Infrastructure"
     xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:prism="http://prismlibrary.com/"
     d:DesignHeight="800"
     d:DesignWidth="1200"
     prism:ViewModelLocator.AutoWireViewModel="True"
-    Background="{DynamicResource MaterialDesignBody}"
+    Background="{DynamicResource MaterialDesign.Brush.Background}"
     mc:Ignorable="d">
-
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <!--  导航项样式  -->
-            <Style x:Key="ProfileNavItemStyle" TargetType="RadioButton">
-                <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
-                <Setter Property="FontSize" Value="14" />
-                <Setter Property="Cursor" Value="Hand" />
-                <Setter Property="Padding" Value="12,10" />
-                <Setter Property="Margin" Value="0,2" />
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="RadioButton">
-                            <Border
-                                x:Name="Bd"
-                                Padding="{TemplateBinding Padding}"
-                                Background="Transparent"
-                                CornerRadius="6">
-                                <ContentPresenter />
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BorderLightBrush}" />
-                                </Trigger>
-                                <Trigger Property="IsChecked" Value="True">
-                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource LightPrimaryBrush}" />
-                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
-                                    <Setter Property="FontWeight" Value="SemiBold" />
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-
-            <!--  字段标签样式  -->
-            <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="13" />
-                <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
-                <Setter Property="Margin" Value="0,0,0,6" />
-            </Style>
-
-            <!--  只读字段样式  -->
-            <Style x:Key="ReadOnlyFieldStyle" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="14" />
-                <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
-                <Setter Property="Margin" Value="0,0,0,16" />
-            </Style>
-        </ResourceDictionary>
-    </UserControl.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -79,8 +28,8 @@
         <!--  ============ 左侧面板 ============  -->
         <Border
             Grid.Column="0"
-            Background="{DynamicResource MaterialDesignBody}"
-            BorderBrush="{DynamicResource BorderBrush}"
+            Background="{DynamicResource MaterialDesign.Brush.Surface}"
+            BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
             BorderThickness="0,0,1,0">
             <Grid>
                 <Grid.RowDefinitions>
@@ -93,14 +42,10 @@
                 <Button
                     Grid.Row="0"
                     HorizontalAlignment="Left"
-                    Background="Transparent"
-                    BorderThickness="0"
+                    Style="{StaticResource MaterialDesignFlatButton}"
                     Command="{Binding GoBackCommand}"
                     Content="← 返回"
-                    Cursor="Hand"
-                    FontSize="{StaticResource FontSizeSM}"
-                    Foreground="{DynamicResource SecondaryTextBrush}"
-                    Padding="16,12" />
+                    Margin="8,8,0,0" />
 
                 <!--  头像 + 姓名 + 角色  -->
                 <StackPanel
@@ -108,30 +53,25 @@
                     Margin="0,8,0,24"
                     HorizontalAlignment="Center">
                     <Border
-                        Width="64"
-                        Height="64"
+                        Width="64" Height="64"
                         HorizontalAlignment="Center"
-                        Background="{DynamicResource PrimaryBrush}"
+                        Background="{DynamicResource MaterialDesign.Brush.Primary}"
                         CornerRadius="32">
                         <TextBlock
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            FontSize="{StaticResource FontSizeXXL}"
-                            FontWeight="Bold"
+                            Style="{StaticResource MaterialDesignHeadline5TextBlock}"
                             Foreground="White"
                             Text="{Binding CurrentUser.RealName, Converter={x:Static converters:Cvt.FirstChar}}" />
                     </Border>
                     <TextBlock
                         Margin="0,12,0,4"
                         HorizontalAlignment="Center"
-                        FontSize="{StaticResource FontSizeLG}"
-                        FontWeight="SemiBold"
-                        Foreground="{DynamicResource PrimaryTextBrush}"
+                        Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
                         Text="{Binding CurrentUser.RealName}" />
                     <TextBlock
                         HorizontalAlignment="Center"
-                        FontSize="{StaticResource FontSizeXS}"
-                        Foreground="{DynamicResource SecondaryTextBrush}"
+                        Style="{StaticResource MaterialDesignCaptionTextBlock}"
                         Text="{Binding CurrentUser.Role, Converter={x:Static converters:Cvt.EnumDesc}}" />
                 </StackPanel>
 
@@ -141,143 +81,123 @@
                         Content="个人资料"
                         GroupName="ProfileNav"
                         IsChecked="{Binding IsProfileSelected}"
-                        Style="{StaticResource ProfileNavItemStyle}" />
+                        Style="{StaticResource MaterialDesignTabRadioButton}"
+                        Padding="12,10" Margin="0,2" />
                     <RadioButton
                         Content="安全设置"
                         GroupName="ProfileNav"
                         IsChecked="{Binding IsPasswordSelected}"
-                        Style="{StaticResource ProfileNavItemStyle}" />
+                        Style="{StaticResource MaterialDesignTabRadioButton}"
+                        Padding="12,10" Margin="0,2" />
                 </StackPanel>
             </Grid>
         </Border>
 
         <!--  ============ 右侧内容 ============  -->
         <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
-            <Grid Margin="32,24">
+            <StackPanel Margin="32,24" MaxWidth="600">
+
                 <!--  个人资料  -->
                 <StackPanel Visibility="{Binding IsProfileSelected, Converter={x:Static converters:Cvt.BoolToVis}}">
-                    <TextBlock
-                        Margin="0,0,0,24"
-                        FontSize="22"
-                        FontWeight="Bold"
-                        Foreground="{DynamicResource PrimaryTextBrush}"
-                        Text="个人资料" />
+                    <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                               Text="个人资料" Margin="0,0,0,24" />
 
-                    <TextBlock Style="{StaticResource FieldLabelStyle}" Text="姓名" />
+                    <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                               Text="姓名" Margin="0,0,0,6" />
                     <TextBox
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
                         Margin="0,0,0,16"
-                        Height="40"
-                        FontSize="{StaticResource FontSizeMD}"
                         MaxLength="50"
-                        Padding="12,0"
                         Text="{Binding EditRealName, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <TextBlock Style="{StaticResource FieldLabelStyle}" Text="手机号" />
+                    <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                               Text="手机号" Margin="0,0,0,6" />
                     <TextBox
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
                         Margin="0,0,0,16"
-                        Height="40"
-                        FontSize="{StaticResource FontSizeMD}"
                         MaxLength="20"
-                        Padding="12,0"
                         Text="{Binding EditPhoneNumber, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <TextBlock Style="{StaticResource FieldLabelStyle}" Text="邮箱" />
+                    <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                               Text="邮箱" Margin="0,0,0,6" />
                     <TextBox
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
                         Margin="0,0,0,24"
-                        Height="40"
-                        FontSize="{StaticResource FontSizeMD}"
                         MaxLength="100"
-                        Padding="12,0"
                         Text="{Binding EditEmail, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <Border
-                        Height="1"
-                        Margin="0,0,0,16"
-                        Background="{DynamicResource BorderLightBrush}" />
+                    <Border Height="1" Margin="0,0,0,16"
+                            Background="{DynamicResource MaterialDesign.Brush.Outline}" Opacity="0.3" />
 
-                    <TextBlock Style="{StaticResource FieldLabelStyle}" Text="用户名" />
-                    <TextBlock Style="{StaticResource ReadOnlyFieldStyle}" Text="{Binding CurrentUser.UserName}" />
+                    <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                               Text="用户名" Margin="0,0,0,4" />
+                    <TextBlock Style="{StaticResource MaterialDesignBody1TextBlock}"
+                               Text="{Binding CurrentUser.UserName}" Margin="0,0,0,16" Opacity="0.7" />
 
-                    <TextBlock Style="{StaticResource FieldLabelStyle}" Text="角色" />
-                    <TextBlock Style="{StaticResource ReadOnlyFieldStyle}" Text="{Binding CurrentUser.Role, Converter={x:Static converters:Cvt.EnumDesc}}" />
+                    <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                               Text="角色" Margin="0,0,0,4" />
+                    <TextBlock Style="{StaticResource MaterialDesignBody1TextBlock}"
+                               Text="{Binding CurrentUser.Role, Converter={x:Static converters:Cvt.EnumDesc}}" Margin="0,0,0,16" Opacity="0.7" />
 
-                    <TextBlock Style="{StaticResource FieldLabelStyle}" Text="注册时间" />
-                    <TextBlock Style="{StaticResource ReadOnlyFieldStyle}" Text="{Binding CurrentUser.CreatedAt, StringFormat=yyyy-MM-dd HH:mm}" />
+                    <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                               Text="注册时间" Margin="0,0,0,4" />
+                    <TextBlock Style="{StaticResource MaterialDesignBody1TextBlock}"
+                               Text="{Binding CurrentUser.CreatedAt, StringFormat=yyyy-MM-dd HH:mm}" Margin="0,0,0,16" Opacity="0.7" />
 
-                    <TextBlock Style="{StaticResource FieldLabelStyle}" Text="最后登录" />
-                    <TextBlock Style="{StaticResource ReadOnlyFieldStyle}" Text="{Binding CurrentUser.LastLoginTime, StringFormat=yyyy-MM-dd HH:mm}" />
+                    <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                               Text="最后登录" Margin="0,0,0,4" />
+                    <TextBlock Style="{StaticResource MaterialDesignBody1TextBlock}"
+                               Text="{Binding CurrentUser.LastLoginTime, StringFormat=yyyy-MM-dd HH:mm}" Margin="0,0,0,24" Opacity="0.7" />
 
                     <StackPanel Margin="0,16,0,0" Orientation="Horizontal">
                         <Button
+                            Style="{StaticResource MaterialDesignOutlinedButton}"
                             Margin="0,0,12,0"
-                            Padding="24,10"
-                            Background="{DynamicResource BorderBrush}"
-                            BorderThickness="0"
                             Command="{Binding GoBackCommand}"
-                            Content="取消"
-                            Cursor="Hand"
-                            FontSize="{StaticResource FontSizeMD}"
-                            Foreground="{DynamicResource PrimaryTextBrush}" />
+                            Content="取消" />
                         <Button
-                            Padding="24,10"
-                            Background="{DynamicResource PrimaryBrush}"
-                            BorderThickness="0"
+                            Style="{StaticResource MaterialDesignFlatMidBgButton}"
                             Command="{Binding SaveProfileCommand}"
-                            Content="保存修改"
-                            Cursor="Hand"
-                            FontSize="{StaticResource FontSizeMD}"
-                            Foreground="White" />
+                            Content="保存修改" />
                     </StackPanel>
                 </StackPanel>
 
                 <!--  安全设置  -->
                 <StackPanel Visibility="{Binding IsPasswordSelected, Converter={x:Static converters:Cvt.BoolToVis}}">
-                    <TextBlock
-                        Margin="0,0,0,24"
-                        FontSize="22"
-                        FontWeight="Bold"
-                        Foreground="{DynamicResource PrimaryTextBrush}"
-                        Text="安全设置" />
+                    <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                               Text="安全设置" Margin="0,0,0,24" />
 
-                    <TextBlock Style="{StaticResource FieldLabelStyle}" Text="当前密码" />
+                    <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                               Text="当前密码" Margin="0,0,0,6" />
                     <PasswordBox
                         x:Name="OldPasswordBox"
+                        Style="{StaticResource MaterialDesignOutlinedPasswordBox}"
                         Margin="0,0,0,16"
-                        Height="40"
-                        FontSize="{StaticResource FontSizeMD}"
-                        Padding="12,0"
                         behaviors:PasswordBoxHelper.BoundPassword="{Binding OldPassword, Mode=TwoWay}" />
 
-                    <TextBlock Style="{StaticResource FieldLabelStyle}" Text="新密码 (至少8位)" />
+                    <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                               Text="新密码 (至少8位)" Margin="0,0,0,6" />
                     <PasswordBox
                         x:Name="NewPasswordBox"
+                        Style="{StaticResource MaterialDesignOutlinedPasswordBox}"
                         Margin="0,0,0,16"
-                        Height="40"
-                        FontSize="{StaticResource FontSizeMD}"
-                        Padding="12,0"
                         behaviors:PasswordBoxHelper.BoundPassword="{Binding NewPassword, Mode=TwoWay}" />
 
-                    <TextBlock Style="{StaticResource FieldLabelStyle}" Text="确认新密码" />
+                    <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                               Text="确认新密码" Margin="0,0,0,6" />
                     <PasswordBox
                         x:Name="ConfirmPasswordBox"
+                        Style="{StaticResource MaterialDesignOutlinedPasswordBox}"
                         Margin="0,0,0,24"
-                        Height="40"
-                        FontSize="{StaticResource FontSizeMD}"
-                        Padding="12,0"
                         behaviors:PasswordBoxHelper.BoundPassword="{Binding ConfirmPassword, Mode=TwoWay}" />
 
                     <Button
+                        Style="{StaticResource MaterialDesignFlatMidBgButton}"
                         HorizontalAlignment="Left"
-                        Padding="24,10"
-                        Background="{DynamicResource PrimaryBrush}"
-                        BorderThickness="0"
                         Command="{Binding ChangePasswordCommand}"
-                        Content="确认修改"
-                        Cursor="Hand"
-                        FontSize="{StaticResource FontSizeMD}"
-                        Foreground="White" />
+                        Content="确认修改" />
                 </StackPanel>
-            </Grid>
+            </StackPanel>
         </ScrollViewer>
     </Grid>
 </UserControl>

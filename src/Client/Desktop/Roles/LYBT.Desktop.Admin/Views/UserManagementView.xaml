@@ -8,7 +8,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:userControls="clr-namespace:LYBT.Desktop.Users.Controls;assembly=LYBT.Desktop.Users">
-    <Grid>
+    <Grid Background="{DynamicResource MaterialDesign.Brush.Background}">
         <userControls:UserMasterDetailControl x:Name="UserMasterDetailControl" />
     </Grid>
 </UserControl>
