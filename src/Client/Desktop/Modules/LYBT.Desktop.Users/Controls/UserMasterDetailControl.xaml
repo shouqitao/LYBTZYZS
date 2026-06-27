@@ -12,6 +12,7 @@
     xmlns:behaviors="clr-namespace:LYBT.Desktop.Infrastructure.Behaviors;assembly=LYBT.Desktop.Infrastructure"
     xmlns:controls="clr-namespace:LYBT.Desktop.Controls.Controls;assembly=LYBT.Desktop.Controls"
     xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:prism="http://prismlibrary.com/"
     xmlns:userControls="clr-namespace:LYBT.Desktop.Users.Controls"
     prism:ViewModelLocator.AutoWireViewModel="True">
@@ -47,46 +48,60 @@
                     RefreshCommand="{Binding RefreshCommand}">
                     <controls:DataGridToolbar.AdditionalContent>
                         <StackPanel Orientation="Horizontal">
-                            <!--  常用操作组  -->
+                            <!--  主操作  -->
                             <Button
                                 Margin="8,0,0,0"
                                 Padding="12,6"
                                 Command="{Binding EditCommand}"
-                                Content="编辑"
-                                Style="{StaticResource MaterialDesignOutlinedButton}" />
-                            <Button
-                                Margin="8,0,0,0"
-                                Padding="12,6"
-                                Command="{Binding ResetPasswordCommand}"
-                                Content="重置密码"
-                                Style="{StaticResource MaterialDesignOutlinedButton}" />
-                            <Button
-                                Margin="8,0,0,0"
-                                Padding="12,6"
-                                Command="{Binding ToggleUserStatusCommand}"
-                                Content="切换状态"
-                                Style="{StaticResource MaterialDesignOutlinedButton}" />
-                            <Button
-                                Margin="8,0,0,0"
-                                Padding="12,6"
-                                Command="{Binding RestoreCommand}"
-                                Content="恢复"
-                                Style="{StaticResource MaterialDesignOutlinedButton}" />
-                            <!--  分隔  -->
-                            <Border Width="1" Margin="12,4" Background="{DynamicResource MaterialDesign.Brush.Outline}" Opacity="0.3" />
-                            <!--  批量操作组  -->
-                            <Button
-                                Margin="8,0,0,0"
-                                Padding="12,6"
-                                Command="{Binding ImportCommand}"
-                                Content="导入"
-                                Style="{StaticResource MaterialDesignOutlinedButton}" />
-                            <Button
-                                Margin="8,0,0,0"
-                                Padding="12,6"
-                                Command="{Binding DownloadTemplateCommand}"
-                                Content="模板"
-                                Style="{StaticResource MaterialDesignOutlinedButton}" />
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                ToolTip="编辑">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Pencil" VerticalAlignment="Center" />
+                                    <TextBlock Margin="8,0,0,0" Text="编辑" />
+                                </StackPanel>
+                            </Button>
+                            <!--  次要操作溢出菜单  -->
+                            <Menu Margin="8,0,0,0" Background="Transparent">
+                                <MenuItem>
+                                    <MenuItem.Header>
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="DotsHorizontal" VerticalAlignment="Center" />
+                                            <TextBlock Margin="8,0,0,0" Text="更多" />
+                                        </StackPanel>
+                                    </MenuItem.Header>
+                                    <MenuItem Command="{Binding ResetPasswordCommand}">
+                                        <MenuItem.Icon>
+                                            <materialDesign:PackIcon Kind="Key" />
+                                        </MenuItem.Icon>
+                                        <MenuItem.Header>重置密码</MenuItem.Header>
+                                    </MenuItem>
+                                    <MenuItem Command="{Binding ToggleUserStatusCommand}">
+                                        <MenuItem.Icon>
+                                            <materialDesign:PackIcon Kind="ToggleSwitchOutline" />
+                                        </MenuItem.Icon>
+                                        <MenuItem.Header>切换状态</MenuItem.Header>
+                                    </MenuItem>
+                                    <MenuItem Command="{Binding RestoreCommand}">
+                                        <MenuItem.Icon>
+                                            <materialDesign:PackIcon Kind="Undo" />
+                                        </MenuItem.Icon>
+                                        <MenuItem.Header>恢复</MenuItem.Header>
+                                    </MenuItem>
+                                    <Separator />
+                                    <MenuItem Command="{Binding ImportCommand}">
+                                        <MenuItem.Icon>
+                                            <materialDesign:PackIcon Kind="Import" />
+                                        </MenuItem.Icon>
+                                        <MenuItem.Header>导入</MenuItem.Header>
+                                    </MenuItem>
+                                    <MenuItem Command="{Binding DownloadTemplateCommand}">
+                                        <MenuItem.Icon>
+                                            <materialDesign:PackIcon Kind="FileDocumentOutline" />
+                                        </MenuItem.Icon>
+                                        <MenuItem.Header>模板</MenuItem.Header>
+                                    </MenuItem>
+                                </MenuItem>
+                            </Menu>
                         </StackPanel>
                     </controls:DataGridToolbar.AdditionalContent>
                 </controls:DataGridToolbar>
@@ -112,7 +127,7 @@
                         Orientation="Horizontal">
                         <ComboBox
                             Width="100"
-                            Margin="0,0,8,0"
+                            Margin="8,0,0,0"
                             IsEditable="False"
                             ItemsSource="{Binding RoleOptions}"
                             SelectedItem="{Binding SelectedRoleFilter}"
@@ -126,7 +141,7 @@
                         </ComboBox>
                         <ComboBox
                             Width="100"
-                            Margin="0,0,8,0"
+                            Margin="8,0,0,0"
                             IsEditable="False"
                             ItemsSource="{Binding StatusOptions}"
                             SelectedItem="{Binding SelectedStatusFilter}"
@@ -139,12 +154,13 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
                         <CheckBox
-                            Margin="0,0,8,0"
+                            Margin="8,0,0,0"
                             VerticalAlignment="Center"
                             Content="显示已禁用"
                             IsChecked="{Binding ShowInactiveUsers}"
                             Style="{StaticResource MaterialDesignCheckBox}" />
                         <Button
+                            Margin="8,0,0,0"
                             Padding="8,2"
                             Command="{Binding ClearFiltersCommand}"
                             Content="清除筛选"
@@ -177,43 +193,22 @@
                         <DataGridTextColumn
                             Width="100"
                             Binding="{Binding UserName}"
-                            Header="用户名">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontWeight" Value="SemiBold" />
-                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                    <Setter Property="Padding" Value="8,0" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                            Header="用户名"
+                            ElementStyle="{StaticResource DataGridEmphasisCellStyle}" />
 
                         <!--  真实姓名  -->
                         <DataGridTextColumn
                             Width="80"
                             Binding="{Binding RealName}"
-                            Header="姓名">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                            Header="姓名"
+                            ElementStyle="{StaticResource DataGridTextCellStyle}" />
 
                         <!--  角色  -->
                         <DataGridTextColumn
                             Width="70"
                             Binding="{Binding Role, Converter={x:Static converters:Cvt.EnumDesc}}"
-                            Header="角色">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
-                                    <Setter Property="Opacity" Value="0.7" />
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                            Header="角色"
+                            ElementStyle="{StaticResource DataGridSecondaryCellStyle}" />
 
                         <!--  状态  -->
                         <DataGridTemplateColumn Width="70" Header="状态">
@@ -228,17 +223,8 @@
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding PhoneNumber}"
-                            Header="手机号">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
-                                    <Setter Property="Opacity" Value="0.7" />
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                    <Setter Property="FontFamily" Value="Consolas" />
-                                    <Setter Property="FontSize" Value="12" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                            Header="手机号"
+                            ElementStyle="{StaticResource DataGridMonoCellStyle}" />
                     </DataGrid.Columns>
 
                     <!--  右键菜单 - 分组优化：查看/编辑 | 用户管理 | 危险操作  -->
@@ -247,34 +233,31 @@
                             <!--  查看与编辑组  -->
                             <MenuItem Command="{Binding EditCommand}" Header="编辑">
                                 <MenuItem.Icon>
-                                    <TextBlock FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Text="&#xE70F;" />
+                                    <materialDesign:PackIcon Kind="Pencil" />
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator />
                             <!--  用户管理操作组  -->
                             <MenuItem Command="{Binding ResetPasswordCommand}" Header="重置密码">
                                 <MenuItem.Icon>
-                                    <TextBlock FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Text="&#xE72E;" />
+                                    <materialDesign:PackIcon Kind="Key" />
                                 </MenuItem.Icon>
                             </MenuItem>
                             <MenuItem Command="{Binding ToggleUserStatusCommand}" Header="切换状态">
                                 <MenuItem.Icon>
-                                    <TextBlock FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Text="&#xE8FB;" />
+                                    <materialDesign:PackIcon Kind="ToggleSwitchOutline" />
                                 </MenuItem.Icon>
                             </MenuItem>
                             <MenuItem Command="{Binding RestoreCommand}" Header="恢复用户">
                                 <MenuItem.Icon>
-                                    <TextBlock FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Text="&#xE7A7;" />
+                                    <materialDesign:PackIcon Kind="Undo" />
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator />
                             <!--  危险操作组  -->
                             <MenuItem Command="{Binding DeleteCommand}" Header="删除">
                                 <MenuItem.Icon>
-                                    <TextBlock
-                                        FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                                        Foreground="{DynamicResource MaterialDesign.Brush.Error}"
-                                        Text="&#xE74D;" />
+                                    <materialDesign:PackIcon Kind="Delete" Foreground="{DynamicResource MaterialDesign.Brush.Error}" />
                                 </MenuItem.Icon>
                             </MenuItem>
                         </ContextMenu>
@@ -282,79 +265,17 @@
                 </DataGrid>
 
                 <!--  分页控件  -->
-                <Border Grid.Row="3" Background="{DynamicResource MaterialDesignPaper}" BorderBrush="{DynamicResource MaterialDesignOutline}" BorderThickness="0,1,0,0" Padding="12,8">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Grid.Column="0" Style="{StaticResource MaterialDesignCaptionTextBlock}" VerticalAlignment="Center">
-                            <Run Text="共" />
-                            <Run FontWeight="Medium" Text="{Binding TotalCount, Mode=OneWay}" />
-                            <Run Text="条记录" />
-                        </TextBlock>
-
-                        <StackPanel
-                            Grid.Column="1"
-                            Margin="16,0,0,0"
-                            VerticalAlignment="Center"
-                            Orientation="Horizontal">
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="12"
-                                Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-                                Opacity="0.7"
-                                Text="每页" />
-                            <ComboBox
-                                Width="60"
-                                Margin="6,0"
-                                VerticalAlignment="Center"
-                                IsEditable="False"
-                                ItemsSource="{Binding PageSizes}"
-                                SelectedItem="{Binding PageSize, Mode=TwoWay}"
-                                Style="{StaticResource MaterialDesignOutlinedComboBox}" />
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="12"
-                                Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-                                Opacity="0.7"
-                                Text="条" />
-                        </StackPanel>
-
-                        <StackPanel
-                            Grid.Column="3"
-                            HorizontalAlignment="Right"
-                            Orientation="Horizontal">
-                            <Button
-                                Margin="0,0,4,0"
-                                Command="{Binding GoToFirstPageCommand}"
-                                Content="首页"
-                                Style="{StaticResource MaterialDesignFlatButton}" />
-                            <Button
-                                Margin="0,0,4,0"
-                                Command="{Binding GoToPreviousPageCommand}"
-                                Content="上一页"
-                                Style="{StaticResource MaterialDesignFlatButton}" />
-                            <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="8,0" VerticalAlignment="Center">
-                                <Run Text="{Binding CurrentPage, Mode=OneWay}" />
-                                <Run Text="/" />
-                                <Run Text="{Binding TotalPages, Mode=OneWay}" />
-                            </TextBlock>
-                            <Button
-                                Margin="0,0,4,0"
-                                Command="{Binding GoToNextPageCommand}"
-                                Content="下一页"
-                                Style="{StaticResource MaterialDesignFlatButton}" />
-                            <Button
-                                Command="{Binding GoToLastPageCommand}"
-                                Content="末页"
-                                Style="{StaticResource MaterialDesignFlatButton}" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
+                <controls:UnifiedPaginationBar
+                    Grid.Row="3"
+                    CurrentPage="{Binding CurrentPage}"
+                    TotalPages="{Binding TotalPages}"
+                    PageSize="{Binding PageSize}"
+                    TotalCount="{Binding TotalCount}"
+                    PageSizes="{Binding PageSizes}"
+                    FirstPageCommand="{Binding GoToFirstPageCommand}"
+                    PreviousPageCommand="{Binding GoToPreviousPageCommand}"
+                    NextPageCommand="{Binding GoToNextPageCommand}"
+                    LastPageCommand="{Binding GoToLastPageCommand}" />
 
                 <!--  加载遮罩  -->
                 <controls:LoadingOverlay
@@ -386,34 +307,36 @@
                     IsEditMode="{Binding IsEditMode}"
                     SaveCommand="{Binding SaveCommand}" />
 
-                <!--  查看模式内容  -->
-                <userControls:UserViewControl
+                <!--  详情内容（Transitioner 切换查看/编辑）  -->
+                <materialDesign:Transitioner
                     Grid.Row="1"
-                    Margin="20"
-                    CreatedAt="{Binding CurrentDetail.CreatedAt}"
-                    Email="{Binding CurrentDetail.Email}"
-                    LastLoginTime="{Binding CurrentDetail.LastLoginTime}"
-                    PhoneNumber="{Binding CurrentDetail.PhoneNumber}"
-                    PinYinCode="{Binding CurrentDetail.PinYinCode}"
-                    RealName="{Binding CurrentDetail.RealName}"
-                    Role="{Binding CurrentDetail.Role}"
-                    ShowStatus="True"
-                    Status="{Binding CurrentDetail.Status}"
-                    UpdatedAt="{Binding CurrentDetail.UpdatedAt}"
-                    UserName="{Binding CurrentDetail.UserName}"
-                    Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}" />
-
-                <!--  编辑模式内容  -->
-                <userControls:UserEditControl
-                    Grid.Row="1"
-                    Margin="20"
-                    User="{Binding UserEditor.User}"
-                    ErrorsSource="{Binding UserEditor.User.Errors}"
-                    IsUserNameReadOnly="{Binding IsUserNameReadOnly}"
-                    ShowStatus="True"
-                    RoleOptions="{Binding RoleOptions}"
-                    StatusOptions="{Binding StatusOptions}"
-                    Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}" />
+                    SelectedIndex="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToInt}}">
+                    <materialDesign:TransitionerSlide>
+                        <userControls:UserViewControl
+                            Margin="20"
+                            CreatedAt="{Binding CurrentDetail.CreatedAt}"
+                            Email="{Binding CurrentDetail.Email}"
+                            LastLoginTime="{Binding CurrentDetail.LastLoginTime}"
+                            PhoneNumber="{Binding CurrentDetail.PhoneNumber}"
+                            PinYinCode="{Binding CurrentDetail.PinYinCode}"
+                            RealName="{Binding CurrentDetail.RealName}"
+                            Role="{Binding CurrentDetail.Role}"
+                            ShowStatus="True"
+                            Status="{Binding CurrentDetail.Status}"
+                            UpdatedAt="{Binding CurrentDetail.UpdatedAt}"
+                            UserName="{Binding CurrentDetail.UserName}" />
+                    </materialDesign:TransitionerSlide>
+                    <materialDesign:TransitionerSlide>
+                        <userControls:UserEditControl
+                            Margin="20"
+                            User="{Binding UserEditor.User}"
+                            ErrorsSource="{Binding UserEditor.User.Errors}"
+                            IsUserNameReadOnly="{Binding IsUserNameReadOnly}"
+                            ShowStatus="True"
+                            RoleOptions="{Binding RoleOptions}"
+                            StatusOptions="{Binding StatusOptions}" />
+                    </materialDesign:TransitionerSlide>
+                </materialDesign:Transitioner>
 
                 <!--  详情加载遮罩  -->
                 <controls:LoadingOverlay
