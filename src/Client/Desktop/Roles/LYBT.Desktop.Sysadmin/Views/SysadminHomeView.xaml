@@ -8,7 +8,7 @@
     <materialDesign:DialogHost>
         <ScrollViewer VerticalScrollBarVisibility="Auto"
                       Background="{DynamicResource MaterialDesign.Brush.Background}">
-            <StackPanel Margin="32">
+            <StackPanel Margin="32" MaxWidth="800">
 
                 <!-- 标题区 -->
                 <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}"
@@ -20,13 +20,14 @@
                 <!-- 状态卡片 -->
                 <UniformGrid Columns="2">
 
-                    <!-- 数据库状态卡片 -->
-                    <materialDesign:Card Margin="8" Padding="24"
-                                         UniformCornerRadius="16"
-                                         materialDesign:ElevationAssist.Elevation="Dp2">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <!-- 数据库状态 -->
+                    <materialDesign:Card Margin="0,0,8,0" Padding="32"
+                                         MinHeight="160"
+                                         UniformCornerRadius="12"
+                                         materialDesign:ElevationAssist.Elevation="Dp1">
+                        <StackPanel VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="Database"
-                                                      Width="48" Height="48"
+                                                      Width="40" Height="40"
                                                       HorizontalAlignment="Center"
                                                       Margin="0,0,0,16"
                                                       Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
@@ -36,21 +37,23 @@
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
                                 <materialDesign:PackIcon Kind="CheckCircle"
                                                           Width="16" Height="16"
-                                                          Margin="0,0,4,0"
+                                                          Margin="0,0,6,0" VerticalAlignment="Center"
                                                           Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
                                 <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                           Text="{Binding Dashboard.DbStatus.Value}" />
+                                           Text="{Binding Dashboard.DbStatus.Value}"
+                                           VerticalAlignment="Center" />
                             </StackPanel>
                         </StackPanel>
                     </materialDesign:Card>
 
-                    <!-- 系统信息卡片 -->
-                    <materialDesign:Card Margin="8" Padding="24"
-                                         UniformCornerRadius="16"
-                                         materialDesign:ElevationAssist.Elevation="Dp2">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <!-- 系统信息 -->
+                    <materialDesign:Card Margin="8,0,0,0" Padding="32"
+                                         MinHeight="160"
+                                         UniformCornerRadius="12"
+                                         materialDesign:ElevationAssist.Elevation="Dp1">
+                        <StackPanel VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="InformationOutline"
-                                                      Width="48" Height="48"
+                                                      Width="40" Height="40"
                                                       HorizontalAlignment="Center"
                                                       Margin="0,0,0,16"
                                                       Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />

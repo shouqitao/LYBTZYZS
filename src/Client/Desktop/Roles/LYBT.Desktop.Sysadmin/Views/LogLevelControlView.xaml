@@ -8,47 +8,74 @@
     <materialDesign:DialogHost>
         <ScrollViewer VerticalScrollBarVisibility="Auto"
                       Background="{DynamicResource MaterialDesign.Brush.Background}">
-            <StackPanel Margin="32">
-                <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}"
-                           Text="日志级别控制" Margin="0,0,0,8" />
+            <StackPanel Margin="32" MaxWidth="800">
+
+                <!-- 页面标题 -->
                 <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                           Text="{Binding CurrentLevel}"
-                           Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
-                           Margin="0,0,0,24" />
+                           Text="日志级别控制" Margin="0,0,0,24" />
 
+                <!-- 当前状态卡片 -->
+                <materialDesign:Card Margin="0,0,0,16" Padding="24"
+                                     UniformCornerRadius="12"
+                                     materialDesign:ElevationAssist.Elevation="Dp1">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                   Text="当前级别" Opacity="0.6" />
+                        <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                                   Text="{Binding CurrentLevel}"
+                                   Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
+                                   Margin="0,4,0,0" />
+                    </StackPanel>
+                </materialDesign:Card>
+
+                <!-- 快捷操作卡片 -->
+                <materialDesign:Card Margin="0,0,0,16" Padding="24"
+                                     UniformCornerRadius="12"
+                                     materialDesign:ElevationAssist.Elevation="Dp1">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                                   Text="快捷操作" Margin="0,0,0,16" />
+
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="开启 Debug (60分钟)" Command="{Binding EnableDebugCommand}"
+                                    Style="{StaticResource MaterialDesignFlatMidBgButton}"
+                                    Margin="0,0,8,0" />
+                            <Button Content="关闭 Debug" Command="{Binding DisableDebugCommand}"
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                    Foreground="{DynamicResource MaterialDesign.Brush.Error}" />
+                        </StackPanel>
+                    </StackPanel>
+                </materialDesign:Card>
+
+                <!-- 手动设置卡片 -->
+                <materialDesign:Card Margin="0,0,0,16" Padding="24"
+                                     UniformCornerRadius="12"
+                                     materialDesign:ElevationAssist.Elevation="Dp1">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                                   Text="手动设置级别" Margin="0,0,0,16" />
+
+                        <WrapPanel>
+                            <Button Content="Verbose" Command="{Binding SetLevelCommand}" CommandParameter="Verbose"
+                                    Style="{StaticResource MaterialDesignFlatMidBgButton}" Margin="0,0,8,8" />
+                            <Button Content="Debug" Command="{Binding SetLevelCommand}" CommandParameter="Debug"
+                                    Style="{StaticResource MaterialDesignFlatMidBgButton}" Margin="0,0,8,8" />
+                            <Button Content="Info" Command="{Binding SetLevelCommand}" CommandParameter="Information"
+                                    Style="{StaticResource MaterialDesignFlatMidBgButton}" Margin="0,0,8,8" />
+                            <Button Content="Warning" Command="{Binding SetLevelCommand}" CommandParameter="Warning"
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                    Foreground="{DynamicResource MaterialDesign.Brush.Warning}" Margin="0,0,8,8" />
+                            <Button Content="Error" Command="{Binding SetLevelCommand}" CommandParameter="Error"
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                    Foreground="{DynamicResource MaterialDesign.Brush.Error}" Margin="0,0,0,8" />
+                        </WrapPanel>
+                    </StackPanel>
+                </materialDesign:Card>
+
+                <!-- 状态消息 -->
                 <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
-                           Text="快捷操作" Opacity="0.6" Margin="0,0,0,12" />
-
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                    <Button Content="开启 Debug (60分钟)" Command="{Binding EnableDebugCommand}"
-                            Style="{StaticResource MaterialDesignFlatMidBgButton}"
-                            Margin="0,0,8,0" Padding="16,10" />
-                    <Button Content="关闭 Debug" Command="{Binding DisableDebugCommand}"
-                            Style="{StaticResource MaterialDesignFlatButton}"
-                            Foreground="{DynamicResource MaterialDesign.Brush.Error}"
-                            Padding="16,10" />
-                </StackPanel>
-
-                <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
-                           Text="手动设置级别" Opacity="0.6" Margin="0,16,0,12" />
-
-                <UniformGrid Columns="5" Margin="0,0,0,16">
-                    <Button Content="Verbose" Command="{Binding SetLevelCommand}" CommandParameter="Verbose"
-                            Style="{StaticResource MaterialDesignFlatMidBgButton}" Margin="4" Padding="8,10" />
-                    <Button Content="Debug" Command="{Binding SetLevelCommand}" CommandParameter="Debug"
-                            Style="{StaticResource MaterialDesignFlatMidBgButton}" Margin="4" Padding="8,10" />
-                    <Button Content="Info" Command="{Binding SetLevelCommand}" CommandParameter="Information"
-                            Style="{StaticResource MaterialDesignFlatMidBgButton}" Margin="4" Padding="8,10" />
-                    <Button Content="Warning" Command="{Binding SetLevelCommand}" CommandParameter="Warning"
-                            Style="{StaticResource MaterialDesignFlatButton}"
-                            Foreground="{DynamicResource MaterialDesign.Brush.Warning}" Margin="4" Padding="8,10" />
-                    <Button Content="Error" Command="{Binding SetLevelCommand}" CommandParameter="Error"
-                            Style="{StaticResource MaterialDesignFlatButton}"
-                            Foreground="{DynamicResource MaterialDesign.Brush.Error}" Margin="4" Padding="8,10" />
-                </UniformGrid>
-
-                <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
-                           Text="{Binding StatusMessage}" Opacity="0.6" Margin="0,16,0,0" />
+                           Text="{Binding StatusMessage}" Opacity="0.6"
+                           Margin="0,8,0,0" TextWrapping="Wrap" />
             </StackPanel>
         </ScrollViewer>
     </materialDesign:DialogHost>
