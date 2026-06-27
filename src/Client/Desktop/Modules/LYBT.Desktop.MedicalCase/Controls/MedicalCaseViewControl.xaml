@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     MedicalCaseViewControl - 医案预览控件
 
     支持两种显示模式:
@@ -323,7 +323,7 @@
                     <Button Grid.Column="2"
                             Content="打印"
                             Command="{Binding PrintCommand}"
-                            Style="{DynamicResource PrimaryButton}"
+                            Style="{StaticResource MaterialDesignRaisedButton}"
                             Visibility="{Binding ShowPrintButton, Converter={x:Static converters:Cvt.BoolToVis}}"/>
                 </Grid>
             </Border>

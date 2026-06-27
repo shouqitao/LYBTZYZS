@@ -50,7 +50,7 @@
                         Orientation="Horizontal">
                 <!-- 新增按钮 -->
                 <Button Command="{Binding CreateCommand, ElementName=Root}"
-                        Style="{DynamicResource PrimaryButtonStyle}"
+                        Style="{StaticResource MaterialDesignRaisedButton}"
                         Visibility="{Binding CreateCommand, ElementName=Root, Converter={x:Static converters:Cvt.NullToVis}}"
                         ToolTip="新增"
                         Margin="0,0,8,0">
@@ -68,7 +68,7 @@
 
                 <!-- 刷新按钮 -->
                 <Button Command="{Binding RefreshCommand, ElementName=Root}"
-                        Style="{DynamicResource SecondaryButtonStyle}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
                         Visibility="{Binding RefreshCommand, ElementName=Root, Converter={x:Static converters:Cvt.NullToVis}}"
                         ToolTip="刷新"
                         Margin="0,0,8,0">
@@ -89,7 +89,7 @@
 
                 <!-- 导出按钮 - 放在导入等附加按钮后面 -->
                 <Button Command="{Binding ExportCommand, ElementName=Root}"
-                        Style="{DynamicResource SecondaryButtonStyle}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
                         Visibility="{Binding ExportCommand, ElementName=Root, Converter={x:Static converters:Cvt.NullToVis}}"
                         ToolTip="导出"
                         Margin="4,0,0,0">
@@ -111,7 +111,7 @@
                         Orientation="Horizontal">
                 <!-- 批量删除按钮 -->
                 <Button Command="{Binding BatchDeleteCommand, ElementName=Root}"
-                        Style="{DynamicResource DangerButtonStyle}"
+                        Style="{StaticResource MaterialDesignRaisedButton}" Background="#C75050" Foreground="White" BorderThickness="0"
                         Visibility="{Binding BatchDeleteCommand, ElementName=Root, Converter={x:Static converters:Cvt.NullToVis}}"
                         ToolTip="批量删除">
                     <StackPanel Orientation="Horizontal">

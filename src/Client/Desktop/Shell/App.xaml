@@ -31,7 +31,6 @@
 
                 <!--  6. Shell 全局样式 -->
                 <ResourceDictionary Source="Styles/Typography.xaml" />
-                <ResourceDictionary Source="Styles/Controls.xaml" />
 
                 <!--  7. 对话框窗口样式 -->
                 <ResourceDictionary Source="Styles/DialogStyles.xaml" />

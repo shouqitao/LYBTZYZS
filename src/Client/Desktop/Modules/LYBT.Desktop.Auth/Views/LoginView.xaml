@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
     x:Class="LYBT.Desktop.Auth.Views.LoginView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -145,7 +145,7 @@
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                 <Button Command="{Binding SwitchToLocalCommand}" Content="📱 切换到本地" Foreground="#8D6E63">
                                     <Button.Style>
-                                        <Style TargetType="Button" BasedOn="{StaticResource LinkButtonStyle}">
+                                        <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
                                             <Setter Property="Visibility" Value="Collapsed" />
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsRemoteMode}" Value="True">
@@ -157,7 +157,7 @@
                                 </Button>
                                 <Button Command="{Binding SwitchToRemoteCommand}" Content="🌐 切换到远程" Foreground="#8D6E63">
                                     <Button.Style>
-                                        <Style TargetType="Button" BasedOn="{StaticResource LinkButtonStyle}">
+                                        <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
                                             <Setter Property="Visibility" Value="Collapsed" />
                                             <Setter Property="Foreground" Value="#AAAAAA" />
                                             <Style.Triggers>
@@ -172,7 +172,7 @@
                                     </Button.Style>
                                 </Button>
                             </StackPanel>
-                            <Button Grid.Column="1" Style="{StaticResource LinkButtonStyle}"
+                            <Button Grid.Column="1" Style="{StaticResource MaterialDesignFlatButton}"
                                     Command="{Binding OpenSettingsCommand}" Content="⚙ 配置"
                                     Foreground="#AAAAAA" HorizontalAlignment="Right" />
                         </Grid>

@@ -57,14 +57,14 @@
                 <!-- 首页 -->
                 <Button Content="首页"
                         Command="{Binding FirstPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                        Style="{StaticResource PaginationControlButton}"
+                        Style="{StaticResource MaterialDesignFlatButton}"
                         Margin="{StaticResource SpacingSM}"
                         Visibility="{Binding FirstPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.NullToVis}}" />
 
                 <!-- 上一页 -->
                 <Button Content="&lt; 上一页"
                         Command="{Binding PreviousPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                        Style="{StaticResource PaginationControlButton}"
+                        Style="{StaticResource MaterialDesignFlatButton}"
                         Margin="{StaticResource SpacingSM}" />
 
                 <!-- 当前页/总页数 -->
@@ -83,13 +83,13 @@
                 <!-- 下一页 -->
                 <Button Content="下一页 &gt;"
                         Command="{Binding NextPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                        Style="{StaticResource PaginationControlButton}"
+                        Style="{StaticResource MaterialDesignFlatButton}"
                         Margin="{StaticResource SpacingSM}" />
 
                 <!-- 末页 -->
                 <Button Content="末页"
                         Command="{Binding LastPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                        Style="{StaticResource PaginationControlButton}"
+                        Style="{StaticResource MaterialDesignFlatButton}"
                         Margin="{StaticResource SpacingSM}"
                         Visibility="{Binding LastPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.NullToVis}}" />
             </StackPanel>

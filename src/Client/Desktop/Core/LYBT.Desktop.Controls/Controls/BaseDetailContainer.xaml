@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     BaseDetailContainer - 详情页容器控件
 
     功能：
@@ -247,7 +247,7 @@
                     <!-- 返回按钮 -->
                     <Button Grid.Column="0"
                             Command="{Binding GoBackCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                            Style="{StaticResource SecondaryButton}"
+                            Style="{StaticResource MaterialDesignOutlinedButton}"
                             Content="← 返回"
                             Padding="16,10"
                             VerticalAlignment="Center"/>
@@ -270,7 +270,7 @@
                         <Border Visibility="{Binding ShowEditButton, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.BoolToVis}}">
                             <Button Command="{Binding SwitchToEditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     Visibility="{Binding IsEditMode, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.InverseBoolToVis}}"
-                                    Style="{StaticResource SuccessButton}"
+                                    Style="{StaticResource MaterialDesignRaisedButton}" Background="#2E8B57" Foreground="White" BorderThickness="0"
                                     Content="编辑"
                                     Padding="20,10"
                                     Margin="8,0,0,0"
@@ -321,7 +321,7 @@
                                 Visibility="{Binding FooterContent, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.InverseNullToVis}}">
                         <!-- 取消按钮 -->
                         <Button Command="{Binding CancelCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                Style="{StaticResource SecondaryButton}"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
                                 Content="取消"
                                 Padding="32,12"
                                 FontSize="15"
@@ -329,7 +329,7 @@
 
                         <!-- 保存按钮 -->
                         <Button Command="{Binding SaveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                Style="{StaticResource PrimaryButton}"
+                                Style="{StaticResource MaterialDesignRaisedButton}"
                                 Padding="32,12"
                                 FontSize="15"
                                 MinWidth="120"

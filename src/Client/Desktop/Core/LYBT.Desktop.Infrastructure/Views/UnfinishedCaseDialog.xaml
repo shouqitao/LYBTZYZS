@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     UnfinishedCaseDialog - Prism 未完成医案对话框
 
     重要: Prism DialogService 要求 Dialog 视图必须是 UserControl，
@@ -130,15 +130,15 @@
                    HorizontalAlignment="Center">
             <Button Content="继续看诊"
                    Command="{Binding ContinueCommand}"
-                   Style="{StaticResource PrimaryButtonStyle}"/>
+                   Style="{StaticResource MaterialDesignRaisedButton}"/>
 
             <Button Content="新建医案"
                    Command="{Binding CreateNewCommand}"
-                   Style="{StaticResource SecondaryButtonStyle}"/>
+                   Style="{StaticResource MaterialDesignOutlinedButton}"/>
 
             <Button Content="仅关闭"
                    Command="{Binding CloseOnlyCommand}"
-                   Style="{StaticResource SecondaryButtonStyle}"/>
+                   Style="{StaticResource MaterialDesignOutlinedButton}"/>
 
             <Button Content="取消"
                    Command="{Binding CancelCommand}"

@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     MedicalCaseEditControl - 医案编辑控件（已统一为Compact模式）
 
     Compact模式: Workspace紧凑型显示，诊断+四诊+处方编辑
@@ -168,7 +168,7 @@
                 <!-- 套验方 - 快速应用经典方剂 -->
                 <Button TabIndex="5"
                         Command="{Binding ImportFormulaCommand}"
-                        Style="{DynamicResource SecondaryButton}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
                         Margin="0,0,12,0"
                         ToolTipService.InitialShowDelay="500"
                         ToolTipService.ShowDuration="5000">
@@ -192,7 +192,7 @@
                 <!-- 历史处方 - 复用患者过往处方 -->
                 <Button TabIndex="6"
                         Command="{Binding ImportHistoryCommand}"
-                        Style="{DynamicResource SecondaryButton}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
                         Margin="0,0,12,0"
                         ToolTipService.InitialShowDelay="500"
                         ToolTipService.ShowDuration="5000">
@@ -216,7 +216,7 @@
                 <!-- 清空 - 清空所有药材 -->
                 <Button TabIndex="7"
                         Command="{Binding ClearAllCommand}"
-                        Style="{DynamicResource LinkButtonStyle}"
+                        Style="{StaticResource MaterialDesignFlatButton}"
                         Foreground="{StaticResource ValidationErrorBrush}"
                         ToolTipService.InitialShowDelay="500"
                         ToolTipService.ShowDuration="5000">
@@ -361,7 +361,7 @@
                             <TextBox Grid.Column="0"
                                      TabIndex="11"
                                      Text="{Binding Consultation.TcmDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{DynamicResource ValidatingTextBoxStyle}"
+                                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                      MinHeight="36"/>
                             <TextBlock Grid.Column="1"
                                        Style="{DynamicResource FieldSuccessIndicatorStyle}"
@@ -494,7 +494,7 @@
                                 <TextBlock Text="剂数:" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <TextBox Width="60" TabIndex="12"
                                          Text="{Binding Prescription.DosageCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         Style="{DynamicResource EditableTextBoxStyle}"
+                                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                          MinHeight="28"
                                          Padding="8,4"/>
                                 <TextBlock Text="剂" VerticalAlignment="Center" Margin="4,0,0,0"/>
@@ -536,7 +536,7 @@
                     <TextBox TabIndex="15"
                              x:Name="RemarkTextBox"
                              Text="{Binding Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{DynamicResource ValidatingTextBoxStyle}"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
                              TextWrapping="Wrap" MinHeight="40" AcceptsReturn="True"
                              MaxHeight="120"/>
                     <TextBlock FontSize="{StaticResource FontSizeXS}" HorizontalAlignment="Right" Margin="0,2,0,0"

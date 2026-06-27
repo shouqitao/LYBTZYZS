@@ -36,7 +36,7 @@
                             <Run Text="姓名（必填）"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
                         <TextBox TabIndex="1" Text="{Binding Patient.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{DynamicResource ValidatingTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                         <TextBlock Text="{Binding ErrorsSource[Name]}"
@@ -46,7 +46,7 @@
                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="拼音码（自动生成）" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="2" Text="{Binding Patient.PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"
                                  ToolTip="自动从姓名生成，如有多音字请手动调整"/>
@@ -91,7 +91,7 @@
                     <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="身份证号" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="5" Text="{Binding Patient.IdNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{DynamicResource ValidatingTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                         <TextBlock Text="{Binding ErrorsSource[IdNumber]}"
@@ -102,7 +102,7 @@
                     <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="手机号码" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="6" Text="{Binding Patient.PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{DynamicResource ValidatingTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                         <TextBlock Text="{Binding ErrorsSource[PhoneNumber]}"

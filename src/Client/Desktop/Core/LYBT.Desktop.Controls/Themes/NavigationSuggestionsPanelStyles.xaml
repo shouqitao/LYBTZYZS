@@ -1,6 +1,8 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
+    <!-- TODO: phase 2 - migrate to MDIX. These are structural ListBox templates kept for now. -->
+
     <!--
         ====================================================================
         Navigation Suggestions Panel - Phase 2.1: Navigation Improvements

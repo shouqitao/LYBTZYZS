@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     MedicalCaseWorkspaceView - 医案工作台视图
     Composite ViewModel pattern: bindings route through child VMs
     (ConsultationEditor, PrescriptionEditor, Commands)
@@ -182,7 +182,7 @@
                         VerticalAlignment="Center"
                         IsReadOnly="{Binding State.IsReadOnly}"
                         MaxLength="500"
-                        Style="{DynamicResource EditableTextBoxStyle}"
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
                         Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}"
                         ToolTip="医案备注信息（最多500字）" />
 
@@ -205,7 +205,7 @@
                             MinHeight="36"
                             VerticalAlignment="Center"
                             MaxLength="200"
-                            Style="{DynamicResource EditableTextBoxStyle}"
+                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
                             Text="{Binding EditReason, UpdateSourceTrigger=PropertyChanged}"
                             ToolTip="请输入修改原因（必填）" />
                     </StackPanel>
@@ -221,7 +221,7 @@
                             Margin="0,0,8,0"
                             Command="{Binding Commands.EnterEditModeCommand}"
                             Content="修改医案"
-                            Style="{DynamicResource SuccessButton}"
+                            Style="{StaticResource MaterialDesignRaisedButton}" Background="#2E8B57" Foreground="White" BorderThickness="0"
                             ToolTip="进入编辑模式，可修改诊断和处方内容"
                             Visibility="{Binding State.ShowEditButton, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
@@ -230,7 +230,7 @@
                             Margin="0,0,8,0"
                             Command="{Binding Commands.SuspendCommand}"
                             Content="暂存医案"
-                            Style="{DynamicResource WarningButton}"
+                            Style="{StaticResource MaterialDesignRaisedButton}" Background="#DAA520" Foreground="White" BorderThickness="0"
                             ToolTip="保存当前进度，稍后点击'修改医案'继续编辑"
                             Visibility="{Binding State.ShowSuspendButton, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
@@ -240,7 +240,7 @@
                             Command="{Binding Commands.PrintCommand}"
                             Content="打印处方单"
                             IsEnabled="{Binding State.CanPrint}"
-                            Style="{DynamicResource SecondaryButton}"
+                            Style="{StaticResource MaterialDesignOutlinedButton}"
                             ToolTip="打印当前处方" />
 
                         <!--  D1: 导出PDF按钮  -->
@@ -249,7 +249,7 @@
                             Command="{Binding Commands.ExportPdfCommand}"
                             Content="导出PDF"
                             IsEnabled="{Binding State.CanPrint}"
-                            Style="{DynamicResource SecondaryButton}"
+                            Style="{StaticResource MaterialDesignOutlinedButton}"
                             ToolTip="导出处方笺为PDF文件" />
 
                         <!--  Clinical编辑模式: 完成看诊按钮  -->
@@ -257,7 +257,7 @@
                             Command="{Binding Commands.CompleteCommand}"
                             Content="完成看诊"
                             IsEnabled="{Binding State.CanComplete}"
-                            Style="{DynamicResource SuccessButton}"
+                            Style="{StaticResource MaterialDesignRaisedButton}" Background="#2E8B57" Foreground="White" BorderThickness="0"
                             ToolTip="完成本次看诊并关闭医案"
                             Visibility="{Binding State.ShowCompleteButton, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
@@ -265,7 +265,7 @@
                         <Button
                             Command="{Binding SaveChangesCommand}"
                             Content="保存医案"
-                            Style="{DynamicResource SuccessButton}"
+                            Style="{StaticResource MaterialDesignRaisedButton}" Background="#2E8B57" Foreground="White" BorderThickness="0"
                             ToolTip="保存修改并留在当前界面"
                             Visibility="{Binding State.ShowSaveButton, Converter={x:Static converters:Cvt.BoolToVis}}" />
                     </StackPanel>
@@ -280,27 +280,27 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="暂存医案"
                         Command="{Binding Commands.SuspendCommand}"
-                        Style="{DynamicResource WarningButton}"
+                        Style="{StaticResource MaterialDesignRaisedButton}" Background="#DAA520" Foreground="White" BorderThickness="0"
                         Margin="0,0,8,0"
                         Padding="16,8"/>
                 
                 <Button Content="打印处方笺"
                         Command="{Binding Commands.PrintCommand}"
-                        Style="{DynamicResource SecondaryButton}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
                         IsEnabled="{Binding State.CanPrint}"
                         Margin="0,0,8,0"
                         Padding="16,8"/>
                 
                 <Button Content="导出PDF"
                         Command="{Binding Commands.ExportPdfCommand}"
-                        Style="{DynamicResource SecondaryButton}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
                         IsEnabled="{Binding State.CanPrint}"
                         Margin="0,0,8,0"
                         Padding="16,8"/>
                 
                 <Button Content="完成看诊"
                         Command="{Binding Commands.CompleteCommand}"
-                        Style="{DynamicResource SuccessButton}"
+                        Style="{StaticResource MaterialDesignRaisedButton}" Background="#2E8B57" Foreground="White" BorderThickness="0"
                         IsEnabled="{Binding State.CanComplete}"
                         Padding="16,8"/>
             </StackPanel>

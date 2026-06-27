@@ -40,7 +40,7 @@
                             <Run Text="用户名"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
                         <TextBox TabIndex="1" Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{DynamicResource ValidatingTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  IsReadOnly="{Binding IsUserNameReadOnly, ElementName=Root, Converter={x:Static converters:Cvt.InverseBool}}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -53,7 +53,7 @@
                             <Run Text="真实姓名"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
                         <TextBox TabIndex="2" Text="{Binding RealName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{DynamicResource ValidatingTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                         <TextBlock Text="{Binding ErrorsSource[RealName], ElementName=Root}"
@@ -64,7 +64,7 @@
                     <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="拼音码（可修正）" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="3" Text="{Binding PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"
                                  ToolTip="自动根据真实姓名生成，如有多音字错误可手动修正"/>
@@ -73,7 +73,7 @@
                     <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="手机号码" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="4" Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{DynamicResource ValidatingTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                         <TextBlock Text="{Binding ErrorsSource[PhoneNumber], ElementName=Root}"
@@ -84,7 +84,7 @@
                     <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="邮箱地址" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="5" Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{DynamicResource ValidatingTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                         <TextBlock Text="{Binding ErrorsSource[Email], ElementName=Root}"
@@ -130,7 +130,7 @@
         <controls:InfoCard Title="备注">
             <controls:InfoCard.Content>
                 <TextBox TabIndex="8" Text="{Binding User.Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         Style="{DynamicResource EditableTextBoxStyle}"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
                          TextWrapping="Wrap"
                          AcceptsReturn="True"
                          MinHeight="60"

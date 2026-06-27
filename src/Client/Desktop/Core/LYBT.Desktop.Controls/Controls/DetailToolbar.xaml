@@ -28,7 +28,7 @@
         <!--  危险按钮样式 - BasedOn 通过 Application.Resources 获取  -->
         <Style
             x:Key="DangerButtonStyle"
-            BasedOn="{StaticResource SecondaryButtonStyle}"
+            BasedOn="{StaticResource MaterialDesignOutlinedButton}"
             TargetType="Button">
             <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
             <Style.Triggers>
@@ -68,7 +68,7 @@
                     Padding="16,8"
                     Command="{Binding EditCommand}"
                     Content="编辑"
-                    Style="{DynamicResource PrimaryButtonStyle}"
+                    Style="{StaticResource MaterialDesignRaisedButton}"
                     Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}" />
 
                 <!--  编辑模式 - 保存按钮  -->
@@ -77,7 +77,7 @@
                     Padding="16,8"
                     Command="{Binding SaveCommand}"
                     Content="保存"
-                    Style="{DynamicResource PrimaryButtonStyle}"
+                    Style="{StaticResource MaterialDesignRaisedButton}"
                     Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
                 <!--  编辑模式 - 取消按钮  -->
@@ -86,7 +86,7 @@
                     Padding="16,8"
                     Command="{Binding CancelCommand}"
                     Content="取消"
-                    Style="{DynamicResource SecondaryButtonStyle}"
+                    Style="{StaticResource MaterialDesignOutlinedButton}"
                     Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
                 <!--  删除按钮  -->
@@ -94,7 +94,7 @@
                     Padding="16,8"
                     Command="{Binding DeleteCommand}"
                     Content="删除"
-                    Style="{StaticResource DangerButtonStyle}"
+                    Style="{StaticResource MaterialDesignRaisedButton}" Background="#C75050" Foreground="White" BorderThickness="0"
                     Visibility="{Binding ShowDeleteButton, Converter={x:Static converters:Cvt.BoolToVis}}" />
             </StackPanel>
         </Grid>

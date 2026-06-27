@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     EmptyState - 空状态控件
 
     功能：
@@ -79,7 +79,7 @@
             HorizontalAlignment="Center"
             Command="{Binding ActionCommand}"
             Content="{Binding ActionText}"
-            Style="{DynamicResource PrimaryButtonStyle}"
+            Style="{StaticResource MaterialDesignRaisedButton}"
             Visibility="{Binding ActionCommand, Converter={x:Static converters:Cvt.NullToVis}}" />
     </StackPanel>
 </UserControl>

@@ -19,7 +19,7 @@
                 <TextBox x:Name="SearchBox"
                          Width="280"
                          Text="{Binding SearchText, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
-                         Style="{StaticResource SearchTextBox}"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
                          VerticalAlignment="Center">
                     <!-- Enter键触发搜索 -->
                     <TextBox.InputBindings>
@@ -30,7 +30,7 @@
                 <!-- 搜索按钮 -->
                 <Button Content=" 搜索"
                         Command="{Binding SearchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                        Style="{StaticResource SecondaryButton}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
                         Margin="{StaticResource SpacingSM}"
                         VerticalAlignment="Center" />
 

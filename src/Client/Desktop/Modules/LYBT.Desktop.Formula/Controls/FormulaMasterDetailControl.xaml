@@ -195,12 +195,12 @@
                                 Margin="0,0,4,0"
                                 Command="{Binding GoToFirstPageCommand}"
                                 Content="首页"
-                                Style="{DynamicResource MasterDetailPaginationButtonStyle}" />
+                                Style="{StaticResource MaterialDesignFlatButton}" />
                             <Button
                                 Margin="0,0,4,0"
                                 Command="{Binding GoToPreviousPageCommand}"
                                 Content="上一页"
-                                Style="{DynamicResource MasterDetailPaginationButtonStyle}" />
+                                Style="{StaticResource MaterialDesignFlatButton}" />
                             <TextBlock Style="{DynamicResource MasterDetailPaginationPageStyle}">
                                 <Run Text="{Binding CurrentPage, Mode=OneWay}" />
                                 <Run Text="/" />
@@ -210,11 +210,11 @@
                                 Margin="0,0,4,0"
                                 Command="{Binding GoToNextPageCommand}"
                                 Content="下一页"
-                                Style="{DynamicResource MasterDetailPaginationButtonStyle}" />
+                                Style="{StaticResource MaterialDesignFlatButton}" />
                             <Button
                                 Command="{Binding GoToLastPageCommand}"
                                 Content="末页"
-                                Style="{DynamicResource MasterDetailPaginationButtonStyle}" />
+                                Style="{StaticResource MaterialDesignFlatButton}" />
                         </StackPanel>
                     </Grid>
                 </Border>

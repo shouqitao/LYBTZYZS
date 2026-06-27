@@ -32,7 +32,7 @@
                         <Button Content="{Binding Title}"
                                 Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 CommandParameter="{Binding}"
-                                Style="{DynamicResource BreadcrumbButtonStyle}"
+                                Style="{StaticResource MaterialDesignFlatButton}"
                                 Visibility="{Binding IsActive, Converter={x:Static converters:Cvt.InverseBoolToVis}}"/>
                     </StackPanel>
                 </ContentControl>

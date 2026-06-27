@@ -43,7 +43,7 @@
                             <Run Text="名称"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
                         <TextBox TabIndex="1" Text="{Binding Formula.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{DynamicResource ValidatingTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                         <TextBlock Text="{Binding ErrorsSource[Name]}"
@@ -53,7 +53,7 @@
                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="分类" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="2" Text="{Binding Formula.Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                     </StackPanel>
@@ -62,7 +62,7 @@
                     <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
                         <TextBlock Text="性味归经" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="3" Text="{Binding Formula.Property, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  TextWrapping="Wrap"
                                  MinHeight="60"
                                  Padding="12,10"/>
@@ -72,7 +72,7 @@
                     <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
                         <TextBlock Text="功效" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="4" Text="{Binding Formula.Effect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  TextWrapping="Wrap"
                                  MinHeight="60"
                                  Padding="12,10"/>
@@ -82,7 +82,7 @@
                     <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
                         <TextBlock Text="用法" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="5" Text="{Binding Formula.Usage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  TextWrapping="Wrap"
                                  MinHeight="60"
                                  Padding="12,10"/>
@@ -92,7 +92,7 @@
                     <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,20">
                         <TextBlock Text="备注" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="6" Text="{Binding Formula.Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  TextWrapping="Wrap"
                                  MinHeight="50"
                                  Padding="12,10"/>

@@ -46,7 +46,7 @@
                             <Run Text="药材名称"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
                         <TextBox TabIndex="1" Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{DynamicResource ValidatingTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  IsReadOnly="{Binding IsNameEditable, ElementName=Root, Converter={x:Static converters:Cvt.InverseBool}}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -57,7 +57,7 @@
                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="拼音码（可修正）" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="2" Text="{Binding PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"
                                  ToolTip="自动根据名称生成，如有多音字错误可手动修正"/>
@@ -67,7 +67,7 @@
                     <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="产地" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="3" Text="{Binding Origin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                     </StackPanel>
@@ -75,7 +75,7 @@
                     <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="规格" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="4" Text="{Binding Spec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                     </StackPanel>
@@ -86,7 +86,7 @@
                             <Run Text="单位"/><Run Text=" *" Style="{DynamicResource RequiredIndicatorStyle}"/>
                         </TextBlock>
                         <TextBox TabIndex="5" Text="{Binding Unit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{DynamicResource ValidatingTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                         <TextBlock Text="{Binding ErrorsSource[Unit], ElementName=Root}"
@@ -96,7 +96,7 @@
                     <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="零售价" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="6" Text="{Binding Price, Mode=TwoWay, StringFormat={}{0:0.##}, ValidatesOnNotifyDataErrors=True}"
-                                 Style="{DynamicResource ValidatingTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                         <TextBlock Text="{Binding ErrorsSource[Price], ElementName=Root}"
@@ -107,7 +107,7 @@
                     <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="成本价" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="7" Text="{Binding CostPrice, Mode=TwoWay, StringFormat={}{0:0.##}, TargetNullValue=''}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                     </StackPanel>
@@ -132,7 +132,7 @@
                     <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="分类" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="9" Text="{Binding Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                     </StackPanel>
@@ -140,7 +140,7 @@
                     <StackPanel Grid.Row="4" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="药性" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox TabIndex="10" Text="{Binding Properties, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
                     </StackPanel>
@@ -155,7 +155,7 @@
                     <StackPanel Margin="0,0,0,20">
                         <TextBlock Text="功效" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding Effect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  TextWrapping="Wrap"
                                  AcceptsReturn="True"
                                  MinHeight="80"
@@ -165,7 +165,7 @@
                     <StackPanel Margin="0,0,0,20">
                         <TextBlock Text="用法用量" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding Usage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  TextWrapping="Wrap"
                                  AcceptsReturn="True"
                                  MinHeight="80"
@@ -175,7 +175,7 @@
                     <StackPanel>
                         <TextBlock Text="备注" Style="{DynamicResource FormLabelStyle}"/>
                         <TextBox Text="{Binding Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{DynamicResource EditableTextBoxStyle}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  TextWrapping="Wrap"
                                  AcceptsReturn="True"
                                  MinHeight="60"

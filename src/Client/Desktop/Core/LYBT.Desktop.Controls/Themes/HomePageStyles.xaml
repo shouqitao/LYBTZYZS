@@ -112,26 +112,8 @@
         <Setter Property="Margin" Value="0,0,0,16" />
     </Style>
 
-    <!-- 透明按钮样式 - 卡片内点击容器 (UI Redesign 2026-06-21)
-         统一定义，替代 Clinical/Receptionist 中的本地重复定义 -->
-    <Style x:Key="TransparentCardButton" TargetType="Button">
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Padding" Value="0" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border Background="{TemplateBinding Background}">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
     <!-- ========================================
-         卡片标题样式 (Card Title Style)
+          卡片标题样式 (Card Title Style)
          用于卡片内的标题文字
          ======================================== -->
     <Style x:Key="CardTitleStyle" TargetType="TextBlock">

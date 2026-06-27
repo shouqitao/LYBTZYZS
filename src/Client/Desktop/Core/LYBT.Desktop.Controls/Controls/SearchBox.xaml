@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     SearchBox - 搜索框控件
 
     功能：
@@ -155,7 +155,7 @@
                 Command="{Binding SearchCommand}"
                 Content="搜索"
                 FontSize="{StaticResource FontSizeSM}"
-                Style="{DynamicResource PrimaryButtonStyle}" />
+                Style="{StaticResource MaterialDesignRaisedButton}" />
         </Grid>
     </Border>
 </UserControl>

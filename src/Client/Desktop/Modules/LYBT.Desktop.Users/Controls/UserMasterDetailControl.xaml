@@ -53,25 +53,25 @@
                                 Padding="12,6"
                                 Command="{Binding EditCommand}"
                                 Content="编辑"
-                                Style="{DynamicResource SecondaryButton}" />
+                                Style="{StaticResource MaterialDesignOutlinedButton}" />
                             <Button
                                 Margin="8,0,0,0"
                                 Padding="12,6"
                                 Command="{Binding ResetPasswordCommand}"
                                 Content="重置密码"
-                                Style="{DynamicResource SecondaryButton}" />
+                                Style="{StaticResource MaterialDesignOutlinedButton}" />
                             <Button
                                 Margin="8,0,0,0"
                                 Padding="12,6"
                                 Command="{Binding ToggleUserStatusCommand}"
                                 Content="切换状态"
-                                Style="{DynamicResource SecondaryButton}" />
+                                Style="{StaticResource MaterialDesignOutlinedButton}" />
                             <Button
                                 Margin="8,0,0,0"
                                 Padding="12,6"
                                 Command="{Binding RestoreCommand}"
                                 Content="恢复"
-                                Style="{DynamicResource SecondaryButton}" />
+                                Style="{StaticResource MaterialDesignOutlinedButton}" />
                             <!--  分隔  -->
                             <Border Width="1" Margin="12,4" Background="{DynamicResource MaterialDesign.Brush.Outline}" Opacity="0.3" />
                             <!--  批量操作组  -->
@@ -80,13 +80,13 @@
                                 Padding="12,6"
                                 Command="{Binding ImportCommand}"
                                 Content="导入"
-                                Style="{DynamicResource SecondaryButton}" />
+                                Style="{StaticResource MaterialDesignOutlinedButton}" />
                             <Button
                                 Margin="8,0,0,0"
                                 Padding="12,6"
                                 Command="{Binding DownloadTemplateCommand}"
                                 Content="模板"
-                                Style="{DynamicResource SecondaryButton}" />
+                                Style="{StaticResource MaterialDesignOutlinedButton}" />
                         </StackPanel>
                     </controls:DataGridToolbar.AdditionalContent>
                 </controls:DataGridToolbar>
@@ -148,7 +148,7 @@
                             Padding="8,2"
                             Command="{Binding ClearFiltersCommand}"
                             Content="清除筛选"
-                            Style="{DynamicResource SecondaryButton}" />
+                            Style="{StaticResource MaterialDesignOutlinedButton}" />
                     </StackPanel>
                     <Border Height="1" VerticalAlignment="Bottom" Margin="0,0,0,0" Background="{DynamicResource MaterialDesign.Brush.Outline}" Opacity="0.2" />
                 </Grid>
@@ -332,12 +332,12 @@
                                 Margin="0,0,4,0"
                                 Command="{Binding GoToFirstPageCommand}"
                                 Content="首页"
-                                Style="{DynamicResource MasterDetailPaginationButtonStyle}" />
+                                Style="{StaticResource MaterialDesignFlatButton}" />
                             <Button
                                 Margin="0,0,4,0"
                                 Command="{Binding GoToPreviousPageCommand}"
                                 Content="上一页"
-                                Style="{DynamicResource MasterDetailPaginationButtonStyle}" />
+                                Style="{StaticResource MaterialDesignFlatButton}" />
                             <TextBlock Style="{DynamicResource MasterDetailPaginationPageStyle}">
                                 <Run Text="{Binding CurrentPage, Mode=OneWay}" />
                                 <Run Text="/" />
@@ -347,11 +347,11 @@
                                 Margin="0,0,4,0"
                                 Command="{Binding GoToNextPageCommand}"
                                 Content="下一页"
-                                Style="{DynamicResource MasterDetailPaginationButtonStyle}" />
+                                Style="{StaticResource MaterialDesignFlatButton}" />
                             <Button
                                 Command="{Binding GoToLastPageCommand}"
                                 Content="末页"
-                                Style="{DynamicResource MasterDetailPaginationButtonStyle}" />
+                                Style="{StaticResource MaterialDesignFlatButton}" />
                         </StackPanel>
                     </Grid>
                 </Border>

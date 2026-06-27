@@ -68,26 +68,26 @@
                                 Padding="12,6"
                                 Command="{Binding ImportCommand}"
                                 Content="导入"
-                                Style="{DynamicResource SecondaryButton}" />
+                                Style="{StaticResource MaterialDesignOutlinedButton}" />
                             <Button
                                 Margin="4,0,0,0"
                                 Padding="12,6"
                                 Command="{Binding ExportCommand}"
                                 Content="导出"
-                                Style="{DynamicResource SecondaryButton}" />
+                                Style="{StaticResource MaterialDesignOutlinedButton}" />
                             <Button
                                 Margin="4,0,0,0"
                                 Padding="12,6"
                                 Command="{Binding DownloadTemplateCommand}"
                                 Content="模板"
-                                Style="{DynamicResource SecondaryButton}" />
+                                Style="{StaticResource MaterialDesignOutlinedButton}" />
                             <Button
                                 Margin="8,0,0,0"
                                 Padding="12,6"
                                 Command="{Binding ReadCardCommand}"
                                 Content="刷卡录入"
                                 IsEnabled="{Binding IsCardReaderConnected}"
-                                Style="{DynamicResource SuccessButton}"
+                                Style="{StaticResource MaterialDesignRaisedButton}" Background="#2E8B57" Foreground="White" BorderThickness="0"
                                 ToolTip="使用身份证读卡器快速录入患者信息" />
                         </StackPanel>
                     </controls:DataGridToolbar.AdditionalContent>
@@ -238,12 +238,12 @@
                                 Margin="0,0,4,0"
                                 Command="{Binding GoToFirstPageCommand}"
                                 Content="首页"
-                                Style="{DynamicResource MasterDetailPaginationButtonStyle}" />
+                                Style="{StaticResource MaterialDesignFlatButton}" />
                             <Button
                                 Margin="0,0,4,0"
                                 Command="{Binding GoToPreviousPageCommand}"
                                 Content="上一页"
-                                Style="{DynamicResource MasterDetailPaginationButtonStyle}" />
+                                Style="{StaticResource MaterialDesignFlatButton}" />
                             <TextBlock Style="{DynamicResource MasterDetailPaginationPageStyle}">
                                 <Run Text="{Binding CurrentPage, Mode=OneWay}" />
                                 <Run Text="/" />
@@ -253,11 +253,11 @@
                                 Margin="0,0,4,0"
                                 Command="{Binding GoToNextPageCommand}"
                                 Content="下一页"
-                                Style="{DynamicResource MasterDetailPaginationButtonStyle}" />
+                                Style="{StaticResource MaterialDesignFlatButton}" />
                             <Button
                                 Command="{Binding GoToLastPageCommand}"
                                 Content="末页"
-                                Style="{DynamicResource MasterDetailPaginationButtonStyle}" />
+                                Style="{StaticResource MaterialDesignFlatButton}" />
                         </StackPanel>
                     </Grid>
                 </Border>

@@ -37,12 +37,12 @@
                         Margin="{StaticResource SpacingSM}"
                         Command="{Binding SaveCommand}"
                         Content="保存配置"
-                        Style="{StaticResource SuccessButton}" />
+                        Style="{StaticResource MaterialDesignRaisedButton}" Background="#2E8B57" Foreground="White" BorderThickness="0" />
                     <Button
                         Margin="{StaticResource SpacingSM}"
                         Command="{Binding ResetCommand}"
                         Content="重置"
-                        Style="{StaticResource SecondaryButton}" />
+                        Style="{StaticResource MaterialDesignOutlinedButton}" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -73,7 +73,7 @@
                                 Grid.Column="1"
                                 MaxWidth="400"
                                 HorizontalAlignment="Left"
-                                Style="{StaticResource BaseTextBox}"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                 Text="{Binding SystemName, UpdateSourceTrigger=PropertyChanged}" />
                         </Grid>
 
@@ -92,7 +92,7 @@
                                 Grid.Column="1"
                                 MaxWidth="400"
                                 HorizontalAlignment="Left"
-                                Style="{StaticResource BaseTextBox}"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                 Text="{Binding HospitalName, UpdateSourceTrigger=PropertyChanged}" />
                         </Grid>
 
@@ -111,7 +111,7 @@
                                 Grid.Column="1"
                                 MaxWidth="400"
                                 HorizontalAlignment="Left"
-                                Style="{StaticResource BaseTextBox}"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                 Text="{Binding ContactPhone, UpdateSourceTrigger=PropertyChanged}" />
                         </Grid>
                     </StackPanel>
@@ -137,7 +137,7 @@
                                 Grid.Column="1"
                                 MaxWidth="400"
                                 HorizontalAlignment="Left"
-                                Style="{StaticResource BaseTextBox}"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                 Text="{Binding ClinicName, UpdateSourceTrigger=PropertyChanged}" />
                         </Grid>
 
@@ -156,7 +156,7 @@
                                 Grid.Column="1"
                                 MaxWidth="400"
                                 HorizontalAlignment="Left"
-                                Style="{StaticResource BaseTextBox}"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                 Text="{Binding ClinicDepartment, UpdateSourceTrigger=PropertyChanged}" />
                         </Grid>
 
@@ -175,7 +175,7 @@
                                 Grid.Column="1"
                                 MaxWidth="400"
                                 HorizontalAlignment="Left"
-                                Style="{StaticResource BaseTextBox}"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                 Text="{Binding ClinicAddress, UpdateSourceTrigger=PropertyChanged}" />
                         </Grid>
 
@@ -194,7 +194,7 @@
                                 Grid.Column="1"
                                 MaxWidth="400"
                                 HorizontalAlignment="Left"
-                                Style="{StaticResource BaseTextBox}"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                 Text="{Binding ClinicPhone, UpdateSourceTrigger=PropertyChanged}" />
                         </Grid>
 
@@ -213,7 +213,7 @@
                                 Grid.Column="1"
                                 MaxWidth="400"
                                 HorizontalAlignment="Left"
-                                Style="{StaticResource BaseTextBox}"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                 Text="{Binding ClinicEmail, UpdateSourceTrigger=PropertyChanged}" />
                         </Grid>
 
@@ -232,7 +232,7 @@
                                 Grid.Column="1"
                                 MaxWidth="400"
                                 HorizontalAlignment="Left"
-                                Style="{StaticResource BaseTextBox}"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                 Text="{Binding LicenseNumber, UpdateSourceTrigger=PropertyChanged}" />
                         </Grid>
                     </StackPanel>
@@ -280,13 +280,13 @@
                                 MaxWidth="400"
                                 Margin="0,0,12,0"
                                 HorizontalAlignment="Left"
-                                Style="{StaticResource BaseTextBox}"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                 Text="{Binding BackupPath, UpdateSourceTrigger=PropertyChanged}" />
                             <Button
                                 Grid.Column="2"
                                 Command="{Binding BrowseBackupPathCommand}"
                                 Content="浏览..."
-                                Style="{StaticResource SecondaryButton}" />
+                                Style="{StaticResource MaterialDesignOutlinedButton}" />
                         </Grid>
                     </StackPanel>
                 </Border>
