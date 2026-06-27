@@ -64,7 +64,7 @@
                                 <!-- 视觉分割线 -->
                                 <Border x:Name="SplitterLine"
                                         Width="1"
-                                        Background="{DynamicResource MaterialDesignOutline}"
+                                        Background="{DynamicResource MaterialDesign.Brush.Outline}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Stretch"/>
                                 <!-- 拖动指示器 -->
@@ -109,7 +109,7 @@
                  ==================================================================== -->
             <Style x:Key="MasterPanelStyle" TargetType="Border">
                 <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Outline}"/>
                 <Setter Property="BorderThickness" Value="0,0,1,0"/>
             </Style>
 
