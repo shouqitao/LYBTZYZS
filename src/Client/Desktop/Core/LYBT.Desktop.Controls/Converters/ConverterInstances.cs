@@ -33,6 +33,11 @@ namespace LYBT.Desktop.Controls.Converters
         public static readonly IValueConverter BoolToVis = new BooleanToVisibilityConverter();
 
         /// <summary>
+        /// Bool -> int (false=0, true=1)，用于 Transitioner.SelectedIndex
+        /// </summary>
+        public static readonly IValueConverter BoolToInt = new BoolToIntConverter();
+
+        /// <summary>
         /// Bool -> Visibility (true=Collapsed, false=Visible)
         /// </summary>
         public static readonly IValueConverter InverseBoolToVis = new InverseBooleanToVisibilityConverter();
