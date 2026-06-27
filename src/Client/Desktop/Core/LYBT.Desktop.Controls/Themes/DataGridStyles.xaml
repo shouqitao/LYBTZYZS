@@ -19,4 +19,9 @@
            BasedOn="{StaticResource DataGridTextCellStyle}">
         <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
+    <Style x:Key="DataGridNumericCellStyle" TargetType="TextBlock"
+           BasedOn="{StaticResource DataGridMonoCellStyle}">
+        <Setter Property="TextAlignment" Value="Right" />
+        <Setter Property="Padding" Value="8,0" />
+    </Style>
 </ResourceDictionary>

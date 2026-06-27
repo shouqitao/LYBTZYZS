@@ -128,7 +128,7 @@
                             Width="70"
                             Binding="{Binding Price, StringFormat=N2}"
                             Header="零售价"
-                            ElementStyle="{StaticResource DataGridMonoCellStyle}" />
+                            ElementStyle="{StaticResource DataGridNumericCellStyle}" />
 
                         <!--  状态  -->
                         <DataGridTemplateColumn Width="*" Header="状态">
