@@ -150,6 +150,7 @@
                             Content="清除筛选"
                             Style="{DynamicResource SecondaryButton}" />
                     </StackPanel>
+                    <Border Height="1" VerticalAlignment="Bottom" Margin="0,0,0,0" Background="{DynamicResource MaterialDesign.Brush.Outline}" Opacity="0.2" />
                 </Grid>
 
                 <!--  用户列表  -->
@@ -379,7 +380,7 @@
                 <!--  查看模式内容  -->
                 <userControls:UserViewControl
                     Grid.Row="1"
-                    Margin="16"
+                    Margin="20"
                     CreatedAt="{Binding CurrentDetail.CreatedAt}"
                     Email="{Binding CurrentDetail.Email}"
                     LastLoginTime="{Binding CurrentDetail.LastLoginTime}"
@@ -396,7 +397,7 @@
                 <!--  编辑模式内容  -->
                 <userControls:UserEditControl
                     Grid.Row="1"
-                    Margin="16"
+                    Margin="20"
                     User="{Binding UserEditor.User}"
                     ErrorsSource="{Binding UserEditor.User.Errors}"
                     IsUserNameReadOnly="{Binding IsUserNameReadOnly}"

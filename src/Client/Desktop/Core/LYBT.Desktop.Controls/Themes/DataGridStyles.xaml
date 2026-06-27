@@ -25,7 +25,7 @@
         <Setter Property="FontSize" Value="13" />
         <Setter Property="FontFamily" Value="Microsoft YaHei" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="AlternatingRowBackground" Value="{DynamicResource MaterialDesignPaper}" />
+        <Setter Property="AlternatingRowBackground" Value="Transparent" />
         <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
         <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
         <Setter Property="EnableRowVirtualization" Value="True" />
