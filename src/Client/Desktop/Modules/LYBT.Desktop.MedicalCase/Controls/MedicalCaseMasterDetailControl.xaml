@@ -13,6 +13,7 @@
     xmlns:controls="clr-namespace:LYBT.Desktop.Controls.Controls;assembly=LYBT.Desktop.Controls"
     xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
     xmlns:local="clr-namespace:LYBT.Desktop.MedicalCase.Controls"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:prism="http://prismlibrary.com/"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
@@ -76,43 +77,22 @@
                         <DataGridTextColumn
                             Width="100"
                             Binding="{Binding PatientName}"
-                            Header="患者">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontWeight" Value="SemiBold" />
-                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                    <Setter Property="Padding" Value="8,0" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                            Header="患者"
+                            ElementStyle="{StaticResource DataGridEmphasisCellStyle}" />
 
                         <!--  就诊日期  -->
                         <DataGridTextColumn
                             Width="90"
                             Binding="{Binding CreatedAt, StringFormat=yyyy-MM-dd}"
-                            Header="日期">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}" />
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                            Header="日期"
+                            ElementStyle="{StaticResource DataGridMonoCellStyle}" />
 
                         <!--  中医诊断  -->
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding Diagnosis}"
-                            Header="诊断">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}" />
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                            Header="诊断"
+                            ElementStyle="{StaticResource DataGridSecondaryCellStyle}" />
 
                         <!--  状态  -->
                         <DataGridTemplateColumn Width="70" Header="状态">
@@ -127,86 +107,33 @@
                     <!--  右键菜单 - ContextMenu需通过PlacementTarget获取DataContext  -->
                     <DataGrid.ContextMenu>
                         <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-                            <MenuItem Command="{Binding EditCommand}" Header="查看详情" />
+                            <MenuItem Command="{Binding EditCommand}" Header="查看详情">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="FileSearch" />
+                                </MenuItem.Icon>
+                            </MenuItem>
                             <Separator />
-                            <MenuItem Command="{Binding DeleteCommand}" Header="删除" />
+                            <MenuItem Command="{Binding DeleteCommand}" Header="删除">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="Delete" Foreground="{DynamicResource MaterialDesign.Brush.Error}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
                         </ContextMenu>
                     </DataGrid.ContextMenu>
                 </DataGrid>
 
                 <!--  分页控件  -->
-                <Border Grid.Row="3" Background="{DynamicResource MaterialDesignPaper}" BorderBrush="{DynamicResource MaterialDesignOutline}" BorderThickness="0,1,0,0" Padding="12,8">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <!--  统计信息  -->
-                        <TextBlock Grid.Column="0" Style="{StaticResource MaterialDesignCaptionTextBlock}" VerticalAlignment="Center">
-                            <Run Text="共" />
-                            <Run FontWeight="Medium" Text="{Binding TotalCount, Mode=OneWay}" />
-                            <Run Text="条记录" />
-                        </TextBlock>
-
-                        <!--  每页条数选择  -->
-                        <StackPanel
-                            Grid.Column="1"
-                            Margin="16,0,0,0"
-                            VerticalAlignment="Center"
-                            Orientation="Horizontal">
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="12"
-                                Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
-                                Text="每页" />
-                            <ComboBox
-                                Width="60"
-                                Margin="6,0"
-                                VerticalAlignment="Center"
-                                ItemsSource="{Binding PageSizes}"
-                                SelectedItem="{Binding PageSize, Mode=TwoWay}" />
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="12"
-                                Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
-                                Text="条" />
-                        </StackPanel>
-
-                        <!--  分页按钮  -->
-                        <StackPanel
-                            Grid.Column="3"
-                            HorizontalAlignment="Right"
-                            Orientation="Horizontal">
-                            <Button
-                                Margin="0,0,4,0"
-                                Command="{Binding GoToFirstPageCommand}"
-                                Content="首页"
-                                Style="{StaticResource MaterialDesignFlatButton}" />
-                            <Button
-                                Margin="0,0,4,0"
-                                Command="{Binding GoToPreviousPageCommand}"
-                                Content="上一页"
-                                Style="{StaticResource MaterialDesignFlatButton}" />
-                            <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="8,0" VerticalAlignment="Center">
-                                <Run Text="{Binding CurrentPage, Mode=OneWay}" />
-                                <Run Text="/" />
-                                <Run Text="{Binding TotalPages, Mode=OneWay}" />
-                            </TextBlock>
-                            <Button
-                                Margin="0,0,4,0"
-                                Command="{Binding GoToNextPageCommand}"
-                                Content="下一页"
-                                Style="{StaticResource MaterialDesignFlatButton}" />
-                            <Button
-                                Command="{Binding GoToLastPageCommand}"
-                                Content="末页"
-                                Style="{StaticResource MaterialDesignFlatButton}" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
+                <controls:UnifiedPaginationBar
+                    Grid.Row="3"
+                    CurrentPage="{Binding CurrentPage}"
+                    TotalPages="{Binding TotalPages}"
+                    PageSize="{Binding PageSize}"
+                    TotalCount="{Binding TotalCount}"
+                    PageSizes="{Binding PageSizes}"
+                    FirstPageCommand="{Binding GoToFirstPageCommand}"
+                    PreviousPageCommand="{Binding GoToPreviousPageCommand}"
+                    NextPageCommand="{Binding GoToNextPageCommand}"
+                    LastPageCommand="{Binding GoToLastPageCommand}" />
 
                 <!--  加载遮罩  -->
                 <controls:LoadingOverlay
@@ -238,31 +165,33 @@
                     IsEditMode="{Binding IsEditMode}"
                     SaveCommand="{Binding SaveCommand}" />
 
-                <!--  详情内容 - 查看模式  -->
-                <local:MedicalCaseViewControl
+                <!--  详情内容（Transitioner 切换查看/编辑）  -->
+                <materialDesign:Transitioner
                     Grid.Row="1"
-                    Margin="16"
-                    Detail="{Binding CurrentDetail}"
-                    ShowSystemInfo="True"
-                    Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}" />
-
-                <!--  详情内容 - 编辑模式  -->
-                <local:MedicalCaseEditControl
-                    Grid.Row="1"
-                    Margin="16"
-                    AllHerbs="{Binding AllHerbs}"
-                    Consultation="{Binding Consultation}"
-                    ConsultationDate="{Binding CurrentDetail.ConsultationDate}"
-                    CreatedAt="{Binding CurrentDetail.CreatedAt}"
-                    DoctorName="{Binding CurrentDetail.DoctorName}"
-                    ErrorsSource="{Binding CurrentDetail.Errors}"
-                    FormulaSource="{Binding CurrentDetail.FormulaSource}"
-                    PatientName="{Binding CurrentDetail.PatientName}"
-                    Prescription="{Binding Prescription}"
-                    Remark="{Binding CurrentDetail.Remark, Mode=TwoWay}"
-                    Status="{Binding CurrentDetail.Status}"
-                    UpdatedAt="{Binding CurrentDetail.UpdatedAt}"
-                    Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}" />
+                    SelectedIndex="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToInt}}">
+                    <materialDesign:TransitionerSlide>
+                        <local:MedicalCaseViewControl
+                            Margin="16"
+                            Detail="{Binding CurrentDetail}"
+                            ShowSystemInfo="True" />
+                    </materialDesign:TransitionerSlide>
+                    <materialDesign:TransitionerSlide>
+                        <local:MedicalCaseEditControl
+                            Margin="16"
+                            AllHerbs="{Binding AllHerbs}"
+                            Consultation="{Binding Consultation}"
+                            ConsultationDate="{Binding CurrentDetail.ConsultationDate}"
+                            CreatedAt="{Binding CurrentDetail.CreatedAt}"
+                            DoctorName="{Binding CurrentDetail.DoctorName}"
+                            ErrorsSource="{Binding CurrentDetail.Errors}"
+                            FormulaSource="{Binding CurrentDetail.FormulaSource}"
+                            PatientName="{Binding CurrentDetail.PatientName}"
+                            Prescription="{Binding Prescription}"
+                            Remark="{Binding CurrentDetail.Remark, Mode=TwoWay}"
+                            Status="{Binding CurrentDetail.Status}"
+                            UpdatedAt="{Binding CurrentDetail.UpdatedAt}" />
+                    </materialDesign:TransitionerSlide>
+                </materialDesign:Transitioner>
 
                 <!--  详情加载遮罩  -->
                 <controls:LoadingOverlay
