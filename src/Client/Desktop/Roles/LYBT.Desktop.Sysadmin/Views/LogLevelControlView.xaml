@@ -1,26 +1,23 @@
-﻿<UserControl x:Class="LYBT.Desktop.Sysadmin.Views.LogLevelControlView"
+<UserControl x:Class="LYBT.Desktop.Sysadmin.Views.LogLevelControlView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              prism:ViewModelLocator.AutoWireViewModel="True"
              xmlns:prism="http://prismlibrary.com/">
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/LYBT.Desktop.Sysadmin;component/Themes/SysadminDarkTheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
 
     <materialDesign:DialogHost>
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Background="{DynamicResource MaterialDesignPaper}">
-            <StackPanel Margin="24">
-                <TextBlock Text="日志级别控制" FontSize="{StaticResource FontSizeXL}" FontWeight="Bold"
-                           Foreground="{DynamicResource MaterialDesignBody}" Margin="0,0,0,8" />
-                <TextBlock Text="{Binding CurrentLevel}" FontSize="{StaticResource FontSizeLG}"
-                           Foreground="{StaticResource OpsAccentBrush}" Margin="0,0,0,24" />
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      Background="{DynamicResource MaterialDesign.Brush.Background}">
+            <StackPanel Margin="32">
+                <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                           Text="日志级别控制" Margin="0,0,0,8" />
+                <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                           Text="{Binding CurrentLevel}"
+                           Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
+                           Margin="0,0,0,24" />
 
-                <TextBlock Text="快捷操作" Foreground="{DynamicResource MaterialDesignBodyLight}" FontSize="{StaticResource FontSizeMD}" Margin="0,0,0,12" />
+                <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                           Text="快捷操作" Opacity="0.6" Margin="0,0,0,12" />
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                     <Button Content="开启 Debug (60分钟)" Command="{Binding EnableDebugCommand}"
@@ -28,11 +25,12 @@
                             Margin="0,0,8,0" Padding="16,10" />
                     <Button Content="关闭 Debug" Command="{Binding DisableDebugCommand}"
                             Style="{StaticResource MaterialDesignFlatButton}"
-                            Background="{StaticResource OpsDangerBrush}" Foreground="White"
+                            Foreground="{DynamicResource MaterialDesign.Brush.Error}"
                             Padding="16,10" />
                 </StackPanel>
 
-                <TextBlock Text="手动设置级别" Foreground="{DynamicResource MaterialDesignBodyLight}" FontSize="{StaticResource FontSizeMD}" Margin="0,16,0,12" />
+                <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                           Text="手动设置级别" Opacity="0.6" Margin="0,16,0,12" />
 
                 <UniformGrid Columns="5" Margin="0,0,0,16">
                     <Button Content="Verbose" Command="{Binding SetLevelCommand}" CommandParameter="Verbose"
@@ -43,14 +41,14 @@
                             Style="{StaticResource MaterialDesignFlatMidBgButton}" Margin="4" Padding="8,10" />
                     <Button Content="Warning" Command="{Binding SetLevelCommand}" CommandParameter="Warning"
                             Style="{StaticResource MaterialDesignFlatButton}"
-                            Background="{StaticResource OpsWarningBrush}" Foreground="White" Margin="4" Padding="8,10" />
+                            Foreground="{DynamicResource MaterialDesign.Brush.Warning}" Margin="4" Padding="8,10" />
                     <Button Content="Error" Command="{Binding SetLevelCommand}" CommandParameter="Error"
                             Style="{StaticResource MaterialDesignFlatButton}"
-                            Background="{StaticResource OpsDangerBrush}" Foreground="White" Margin="4" Padding="8,10" />
+                            Foreground="{DynamicResource MaterialDesign.Brush.Error}" Margin="4" Padding="8,10" />
                 </UniformGrid>
 
-                <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource MaterialDesignBodyLight}"
-                           FontSize="{StaticResource FontSizeSM}" Margin="0,16,0,0" />
+                <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                           Text="{Binding StatusMessage}" Opacity="0.6" Margin="0,16,0,0" />
             </StackPanel>
         </ScrollViewer>
     </materialDesign:DialogHost>
