@@ -18,7 +18,7 @@
     <Style x:Key="FunctionCardStyle" TargetType="Border">
         <Setter Property="Width" Value="200" />
         <Setter Property="Height" Value="180" />
-        <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="12" />
@@ -34,7 +34,7 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
+                <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
                 <Setter Property="Effect">
                     <Setter.Value>
@@ -84,7 +84,7 @@
     <Style x:Key="StatsCardStyle" TargetType="Border">
         <Setter Property="Width" Value="200" />
         <Setter Property="Height" Value="200" />
-        <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="12" />

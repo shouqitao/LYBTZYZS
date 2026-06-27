@@ -96,7 +96,7 @@
         </ListBox>
 
         <!-- Loading Indicator -->
-        <Grid Background="{DynamicResource MaterialDesignBody}"
+        <Grid Background="{DynamicResource MaterialDesignPaper}"
               Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}">
             <StackPanel HorizontalAlignment="Center"
                         VerticalAlignment="Center">

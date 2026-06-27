@@ -108,7 +108,7 @@
                  Master面板样式 - 简洁列表区域
                  ==================================================================== -->
             <Style x:Key="MasterPanelStyle" TargetType="Border">
-                <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}"/>
+                <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}"/>
                 <Setter Property="BorderThickness" Value="0,0,1,0"/>
             </Style>
@@ -125,7 +125,7 @@
     </UserControl.Resources>
 
     <!-- 主容器 - 使用SurfaceBrush作为整体背景 -->
-    <Border Background="{DynamicResource MaterialDesignBody}">
+    <Border Background="{DynamicResource MaterialDesignPaper}">
         <!-- 注意：不设置Grid的DataContext，以便内容能继承父级的ViewModel DataContext -->
         <Grid>
             <Grid.RowDefinitions>

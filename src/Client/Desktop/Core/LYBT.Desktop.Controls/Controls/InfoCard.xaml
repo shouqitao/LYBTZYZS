@@ -38,7 +38,7 @@
     </UserControl.Resources>
 
     <!-- 使用DynamicResource：MaterialDesignBody定义在Shell/DesignTokens/Colors.Light.xaml，通过App级别加载 -->
-    <Border Background="{DynamicResource MaterialDesignBody}"
+    <Border Background="{DynamicResource MaterialDesignPaper}"
             CornerRadius="16"
             Padding="40,32"
             Effect="{StaticResource CardShadow}"

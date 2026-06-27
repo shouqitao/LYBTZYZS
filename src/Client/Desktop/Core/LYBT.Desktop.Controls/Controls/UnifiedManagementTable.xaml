@@ -28,7 +28,7 @@
                   AutoGenerateColumns="False" />
 
         <!-- 空状态提示 -->
-        <Border Background="{DynamicResource MaterialDesignBody}"
+        <Border Background="{DynamicResource MaterialDesignPaper}"
                 Visibility="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.InverseNullToVis}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="📋"

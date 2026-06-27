@@ -44,7 +44,7 @@
 
         <!-- 取消按钮样式 -->
         <Style x:Key="CancelButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}"/>
+            <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
             <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -75,7 +75,7 @@
 
         <!-- 选项说明区域 -->
         <Border Grid.Row="1"
-                Background="{DynamicResource MaterialDesignBody}"
+                Background="{DynamicResource MaterialDesignPaper}"
                 Padding="15"
                 CornerRadius="5"
                 BorderBrush="{DynamicResource BorderBrush}"

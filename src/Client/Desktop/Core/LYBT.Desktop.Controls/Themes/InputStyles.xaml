@@ -17,7 +17,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
                     <Border
-                        Background="{DynamicResource MaterialDesignBody}"
+                        Background="{DynamicResource MaterialDesignPaper}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{StaticResource RadiusSM}">
@@ -28,7 +28,7 @@
                             <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignBody}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -47,7 +47,7 @@
         <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
         <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
-        <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Template">
             <Setter.Value>
@@ -66,7 +66,7 @@
                     <ControlTemplate.Triggers>
                         <!--  只读模式：浅灰背景，无边框高亮  -->
                         <Trigger Property="IsReadOnly" Value="True">
-                            <Setter TargetName="PART_Border" Property="Background" Value="{DynamicResource MaterialDesignBody}" />
+                            <Setter TargetName="PART_Border" Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
                             <Setter TargetName="PART_Border" Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}" />
                         </Trigger>
                         <!--  编辑模式：聚焦时主色边框  -->
@@ -83,7 +83,7 @@
                                 <Condition Property="IsMouseOver" Value="True" />
                                 <Condition Property="IsReadOnly" Value="False" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="PART_Border" Property="BorderBrush" Value="{DynamicResource MaterialDesignBody}" />
+                            <Setter TargetName="PART_Border" Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}" />
                         </MultiTrigger>
                         <!--  禁用状态  -->
                         <Trigger Property="IsEnabled" Value="False">
@@ -155,7 +155,7 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
-        <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
     </Style>
 
     <!--
