@@ -1,17 +1,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!--
-        合并样式资源 - 纯聚合器
-
-        颜色资源现在通过 App.xaml 全局加载:
-        1. Material Design 2 主题 (基础颜色)
-        2. DesignSystem.xaml (统一Token: 颜色/字体/间距/圆角/阴影)
-
-        此文件仅合并样式相关资源
-        加载顺序重要: DesignSystem 必须在其他样式文件之前 (字体/间距/圆角/阴影被引用)
-    -->
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Converters/Converters.xaml" />
         <ResourceDictionary Source="PreviewStyles.xaml" />
         <ResourceDictionary Source="ValidationStyles.xaml" />
         <ResourceDictionary Source="InputStyles.xaml" />
