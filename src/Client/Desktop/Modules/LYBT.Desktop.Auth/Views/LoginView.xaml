@@ -7,25 +7,6 @@
     xmlns:prism="http://prismlibrary.com/"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <UserControl.Resources>
-        <Style x:Key="LoginInputStyle" TargetType="Control">
-            <Setter Property="Height" Value="50" />
-            <Setter Property="Padding" Value="14,0" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="FontSize" Value="15" />
-            <Setter Property="Background" Value="#FAFAFA" />
-            <Setter Property="BorderBrush" Value="#E0E0E0" />
-            <Setter Property="BorderThickness" Value="1.5" />
-        </Style>
-        <Style x:Key="LinkButtonStyle" TargetType="Button">
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Padding" Value="8,4" />
-        </Style>
-    </UserControl.Resources>
-
     <Grid>
         <Grid.Background>
             <ImageBrush ImageSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Images/Backgrounds/img-login-background.jpg"
@@ -50,14 +31,14 @@
                            FontSize="210" FontWeight="Bold" Foreground="#F5E6C8" Margin="0,0,0,12">
                     <TextBlock.Effect><DropShadowEffect BlurRadius="12" Opacity="0.4" ShadowDepth="3" Color="Black" /></TextBlock.Effect>
                 </TextBlock>
-                <TextBlock Text="中医药是中华民族的瑰宝" FontSize="24" FontWeight="SemiBold" Foreground="#D7CCC8">
+                <TextBlock Text="中医药是中华民族的瑰宝" FontSize="24" FontWeight="SemiBold" Foreground="{DynamicResource MaterialDesign.Brush.Primary.Light}">
                     <TextBlock.Effect><DropShadowEffect BlurRadius="6" Opacity="0.2" ShadowDepth="1" Color="Black" /></TextBlock.Effect>
                 </TextBlock>
             </StackPanel>
 
             <!-- 右侧登录卡片 -->
             <Border Grid.Column="1" Width="440" Padding="40,36" HorizontalAlignment="Center" VerticalAlignment="Center"
-                    Background="#FFFFFF" CornerRadius="12">
+                    Background="{DynamicResource SurfaceLevel1Brush}" CornerRadius="12">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="40" Opacity="0.2" ShadowDepth="0" Color="Black" />
                 </Border.Effect>
@@ -66,7 +47,7 @@
                     <StackPanel>
                         <!-- 标语 -->
                         <TextBlock Text="传承经典 · 守正创新" FontSize="16" FontWeight="SemiBold"
-                                   Foreground="#8D6E63" HorizontalAlignment="Center" Margin="0,0,0,16" />
+                                   Foreground="{DynamicResource MaterialDesign.Brush.Primary}" HorizontalAlignment="Center" Margin="0,0,0,16" />
 
                         <!-- 模式徽章 -->
                         <Border Padding="12,4" HorizontalAlignment="Center" CornerRadius="10" Margin="0,0,0,24"
@@ -84,14 +65,16 @@
                         </Border>
 
                         <!-- 用户名 -->
-                        <TextBlock Text="用户名" FontSize="13" Foreground="#999999" Margin="0,0,0,6" />
-                        <TextBox Style="{StaticResource LoginInputStyle}"
+                        <TextBlock Text="用户名" FontSize="13" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Opacity="0.6" Margin="0,0,0,6" />
+                        <TextBox Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 Height="50" Padding="14,0" FontSize="15" BorderThickness="1.5"
                                  Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,0,0,16" AutomationProperties.Name="用户名" />
 
                         <!-- 密码 -->
-                        <TextBlock Text="密码" FontSize="13" Foreground="#999999" Margin="0,0,0,6" />
-                        <PasswordBox x:Name="PasswordBox" Style="{StaticResource LoginInputStyle}"
+                        <TextBlock Text="密码" FontSize="13" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Opacity="0.6" Margin="0,0,0,6" />
+                        <PasswordBox x:Name="PasswordBox" Style="{StaticResource MaterialDesignOutlinedPasswordBox}"
+                                     Height="50" Padding="14,0" FontSize="15" BorderThickness="1.5"
                                      behaviors:PasswordBoxHelper.BoundPassword="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Margin="0,0,0,16">
                             <PasswordBox.InputBindings>
@@ -111,17 +94,17 @@
                         <Button Height="52" Command="{Binding LoginCommand}" Content="登 录"
                                 FontSize="16" FontWeight="SemiBold" Foreground="White" Cursor="Hand" Margin="0,0,0,12"
                                 Style="{StaticResource MaterialDesignRaisedButton}"
-                                Background="#5D4037" BorderThickness="0" />
+                                Background="{DynamicResource MaterialDesign.Brush.Primary.Dark}" BorderThickness="0" />
 
                         <!-- 错误消息 -->
-                        <TextBlock Text="{Binding ErrorMessage}" FontSize="12" Foreground="#C75050"
+                        <TextBlock Text="{Binding ErrorMessage}" FontSize="12" Foreground="{DynamicResource ValidationErrorBrush}"
                                    HorizontalAlignment="Center" TextWrapping="Wrap"
                                    Visibility="{Binding ErrorMessage, Converter={x:Static converters:Cvt.StringToVis}}" />
 
                         <!-- 底部按钮栏 -->
                         <Grid Margin="0,12,0,0">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <Button Command="{Binding SwitchToLocalCommand}" Content="📱 切换到本地" Foreground="#8D6E63">
+                                <Button Command="{Binding SwitchToLocalCommand}" Content="切换到本地" Foreground="{DynamicResource MaterialDesign.Brush.Primary}">
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
                                             <Setter Property="Visibility" Value="Collapsed" />
@@ -133,17 +116,17 @@
                                         </Style>
                                     </Button.Style>
                                 </Button>
-                                <Button Command="{Binding SwitchToRemoteCommand}" Content="🌐 切换到远程" Foreground="#8D6E63">
+                                <Button Command="{Binding SwitchToRemoteCommand}" Content="切换到远程" Foreground="{DynamicResource MaterialDesign.Brush.Primary}">
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
                                             <Setter Property="Visibility" Value="Collapsed" />
-                                            <Setter Property="Foreground" Value="#AAAAAA" />
+                                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsRemoteMode}" Value="False">
                                                     <Setter Property="Visibility" Value="Visible" />
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding IsRemoteAvailable}" Value="True">
-                                                    <Setter Property="Foreground" Value="#8D6E63" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -151,8 +134,8 @@
                                 </Button>
                             </StackPanel>
                             <Button Grid.Column="1" Style="{StaticResource MaterialDesignFlatButton}"
-                                    Command="{Binding OpenSettingsCommand}" Content="⚙ 配置"
-                                    Foreground="#AAAAAA" HorizontalAlignment="Right" />
+                                    Command="{Binding OpenSettingsCommand}" Content="配置"
+                                    Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Opacity="0.4" HorizontalAlignment="Right" />
                         </Grid>
                     </StackPanel>
 
@@ -161,7 +144,7 @@
                             HorizontalAlignment="Right" VerticalAlignment="Top"
                             Margin="0" Background="Transparent" BorderThickness="0" Cursor="Hand"
                             ToolTip="退出程序"
-                            Foreground="#999999" FontSize="12" Padding="8,4"
+                            Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Opacity="0.4" FontSize="12" Padding="8,4"
                             Content="X" />
                 </Grid>
             </Border>   
@@ -174,7 +157,7 @@
                 <StackPanel>
                     <ProgressBar Width="180" Height="4" IsIndeterminate="True" />
                     <TextBlock Text="正在登录..." Margin="0,12,0,0" FontSize="13"
-                               HorizontalAlignment="Center" Foreground="#757575" />
+                               HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Opacity="0.6" />
                 </StackPanel>
             </Border>
         </Grid>
