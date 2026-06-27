@@ -21,11 +21,14 @@
                   SelectedItem="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"
                   SelectionMode="Extended"
                   SelectionUnit="FullRow"
-                  Style="{StaticResource BaseDataGridStyle}"
-                  CellStyle="{StaticResource BaseDataGridCell}"
-                  RowStyle="{StaticResource BaseDataGridRow}"
-                  ColumnHeaderStyle="{StaticResource BaseDataGridColumnHeader}"
-                  AutoGenerateColumns="False" />
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  IsReadOnly="True"
+                  GridLinesVisibility="None"
+                  HeadersVisibility="Column"
+                  BorderThickness="0"
+                  Background="Transparent" />
 
         <!-- 空状态提示 -->
         <Border Background="{DynamicResource MaterialDesignPaper}"

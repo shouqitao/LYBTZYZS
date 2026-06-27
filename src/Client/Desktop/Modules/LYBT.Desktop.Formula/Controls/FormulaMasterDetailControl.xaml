@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     FormulaMasterDetailControl - 验方Master-Detail控件
     
     可复用业务控件，供Admin和Clinical角色台使用
@@ -61,12 +61,21 @@
                 <DataGrid
                     Grid.Row="2"
                     Margin="0,0,0,8"
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    IsReadOnly="True"
+                    SelectionMode="Single"
+                    SelectionUnit="FullRow"
+                    GridLinesVisibility="None"
+                    HeadersVisibility="Column"
+                    BorderThickness="0"
+                    Background="Transparent"
                     behaviors:DataGridSelectionBehavior.SelectedItems="{Binding SelectedItems, Mode=OneWay}"
                     behaviors:DataGridSelectionBehavior.ShowCheckBoxColumn="True"
                     ItemsSource="{Binding Items}"
                     RowHeaderWidth="0"
-                    SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-                    Style="{DynamicResource MasterDetailDataGridStyle}">
+                    SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
                     <DataGrid.Columns>
                         <DataGridTextColumn
                             Width="120"

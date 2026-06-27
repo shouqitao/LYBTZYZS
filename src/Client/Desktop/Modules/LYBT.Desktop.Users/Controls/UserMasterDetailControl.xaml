@@ -157,12 +157,21 @@
                 <DataGrid
                     Grid.Row="2"
                     Margin="0,0,0,8"
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    IsReadOnly="True"
+                    SelectionMode="Single"
+                    SelectionUnit="FullRow"
+                    GridLinesVisibility="None"
+                    HeadersVisibility="Column"
+                    BorderThickness="0"
+                    Background="Transparent"
                     behaviors:DataGridSelectionBehavior.SelectedItems="{Binding SelectedItems, Mode=OneWay}"
                     behaviors:DataGridSelectionBehavior.ShowCheckBoxColumn="True"
                     ItemsSource="{Binding Items}"
                     RowHeaderWidth="0"
-                    SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-                    Style="{DynamicResource MasterDetailDataGridStyle}">
+                    SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
                     <DataGrid.Columns>
                         <!--  用户名  -->
                         <DataGridTextColumn

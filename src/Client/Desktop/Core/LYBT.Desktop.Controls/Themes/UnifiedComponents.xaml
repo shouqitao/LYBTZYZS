@@ -17,7 +17,6 @@
         <ResourceDictionary Source="DesignSystem.xaml" />
         <ResourceDictionary Source="ButtonStyles.xaml" />
         <ResourceDictionary Source="InputStyles.xaml" />
-        <ResourceDictionary Source="DataGridStyles.xaml" />
         <ResourceDictionary Source="PanelStyles.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
