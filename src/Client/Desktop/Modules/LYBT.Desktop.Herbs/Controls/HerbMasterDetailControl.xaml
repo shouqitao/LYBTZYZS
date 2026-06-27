@@ -12,6 +12,7 @@
     xmlns:controls="clr-namespace:LYBT.Desktop.Controls.Controls;assembly=LYBT.Desktop.Controls"
     xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
     xmlns:herbControls="clr-namespace:LYBT.Desktop.Herbs.Controls"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:prism="http://prismlibrary.com/"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
@@ -50,12 +51,18 @@
                     RefreshCommand="{Binding RefreshCommand}">
                     <controls:DataGridToolbar.AdditionalContent>
                         <StackPanel Orientation="Horizontal">
+                            <!--  导入（单一次要操作，平铺为Outlined按钮）  -->
                             <Button
-                                Margin="4,0,0,0"
+                                Margin="8,0,0,0"
                                 Padding="12,6"
                                 Command="{Binding ImportHerbsCommand}"
-                                Content="导入"
-                                Style="{StaticResource MaterialDesignOutlinedButton}" />
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                ToolTip="导入药材">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Import" VerticalAlignment="Center" />
+                                    <TextBlock Margin="8,0,0,0" Text="导入" />
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
                     </controls:DataGridToolbar.AdditionalContent>
                 </controls:DataGridToolbar>
@@ -88,72 +95,42 @@
                     RowHeaderWidth="0"
                     SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
                     <DataGrid.Columns>
+                        <!--  名称  -->
                         <DataGridTextColumn
                             Width="100"
                             Binding="{Binding Name}"
-                            Header="名称">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontWeight" Value="SemiBold" />
-                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                    <Setter Property="Padding" Value="8,0" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                            Header="名称"
+                            ElementStyle="{StaticResource DataGridEmphasisCellStyle}" />
 
+                        <!--  拼音码  -->
                         <DataGridTextColumn
                             Width="80"
                             Binding="{Binding PinYinCode}"
-                            Header="拼音码">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}" />
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                    <Setter Property="FontFamily" Value="Consolas" />
-                                    <Setter Property="FontSize" Value="11" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                            Header="拼音码"
+                            ElementStyle="{StaticResource DataGridMonoCellStyle}" />
 
+                        <!--  规格  -->
                         <DataGridTextColumn
                             Width="60"
                             Binding="{Binding Spec}"
-                            Header="规格">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}" />
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                            Header="规格"
+                            ElementStyle="{StaticResource DataGridSecondaryCellStyle}" />
 
+                        <!--  单位  -->
                         <DataGridTextColumn
                             Width="50"
                             Binding="{Binding Unit}"
-                            Header="单位">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}" />
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                            Header="单位"
+                            ElementStyle="{StaticResource DataGridSecondaryCellStyle}" />
 
+                        <!--  零售价  -->
                         <DataGridTextColumn
                             Width="70"
                             Binding="{Binding Price, StringFormat=N2}"
-                            Header="零售价">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                    <Setter Property="TextAlignment" Value="Right" />
-                                    <Setter Property="Padding" Value="0,0,8,0" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                            Header="零售价"
+                            ElementStyle="{StaticResource DataGridMonoCellStyle}" />
 
+                        <!--  状态  -->
                         <DataGridTemplateColumn Width="*" Header="状态">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -163,91 +140,55 @@
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
 
-                    <!--  右键菜单 - ContextMenu需通过PlacementTarget获取DataContext  -->
+                    <!--  右键菜单 - 分组：编辑 | 管理 | 危险操作  -->
                     <DataGrid.ContextMenu>
                         <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-                            <MenuItem Command="{Binding EditCommand}" Header="编辑" />
-                            <MenuItem Command="{Binding CopyHerbCommand}" Header="复制" />
+                            <!--  编辑操作组  -->
+                            <MenuItem Command="{Binding EditCommand}" Header="编辑">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="Pencil" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Command="{Binding CopyHerbCommand}" Header="复制">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="ContentCopy" />
+                                </MenuItem.Icon>
+                            </MenuItem>
                             <Separator />
-                            <MenuItem Command="{Binding ToggleStatusCommand}" Header="切换状态" />
-                            <MenuItem Command="{Binding RestoreCommand}" Header="恢复" />
+                            <!--  管理操作组  -->
+                            <MenuItem Command="{Binding ToggleStatusCommand}" Header="切换状态">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="ToggleSwitchOutline" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Command="{Binding RestoreCommand}" Header="恢复">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="Undo" />
+                                </MenuItem.Icon>
+                            </MenuItem>
                             <Separator />
-                            <MenuItem Command="{Binding DeleteCommand}" Header="删除" />
+                            <!--  危险操作组  -->
+                            <MenuItem Command="{Binding DeleteCommand}" Header="删除">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="Delete" Foreground="{DynamicResource MaterialDesign.Brush.Error}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
                         </ContextMenu>
                     </DataGrid.ContextMenu>
                 </DataGrid>
 
                 <!--  分页控件  -->
-                <Border Grid.Row="3" Background="{DynamicResource MaterialDesignPaper}" BorderBrush="{DynamicResource MaterialDesignOutline}" BorderThickness="0,1,0,0" Padding="12,8">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Grid.Column="0" Style="{StaticResource MaterialDesignCaptionTextBlock}" VerticalAlignment="Center">
-                            <Run Text="共" />
-                            <Run FontWeight="Medium" Text="{Binding TotalCount, Mode=OneWay}" />
-                            <Run Text="条记录" />
-                        </TextBlock>
-
-                        <StackPanel
-                            Grid.Column="1"
-                            Margin="16,0,0,0"
-                            VerticalAlignment="Center"
-                            Orientation="Horizontal">
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="12"
-                                Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
-                                Text="每页" />
-                            <ComboBox
-                                Width="60"
-                                Margin="6,0"
-                                VerticalAlignment="Center"
-                                IsEditable="False"
-                                ItemsSource="{Binding PageSizes}"
-                                SelectedItem="{Binding PageSize, Mode=TwoWay}" />
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="12"
-                                Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
-                                Text="条" />
-                        </StackPanel>
-
-                        <StackPanel
-                            Grid.Column="3"
-                            HorizontalAlignment="Right"
-                            Orientation="Horizontal">
-                            <Button
-                                Margin="0,0,4,0"
-                                Command="{Binding GoToFirstPageCommand}"
-                                Content="首页"
-                                Style="{StaticResource MaterialDesignFlatButton}" />
-                            <Button
-                                Margin="0,0,4,0"
-                                Command="{Binding GoToPreviousPageCommand}"
-                                Content="上一页"
-                                Style="{StaticResource MaterialDesignFlatButton}" />
-                            <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="8,0" VerticalAlignment="Center">
-                                <Run Text="{Binding CurrentPage, Mode=OneWay}" />
-                                <Run Text="/" />
-                                <Run Text="{Binding TotalPages, Mode=OneWay}" />
-                            </TextBlock>
-                            <Button
-                                Margin="0,0,4,0"
-                                Command="{Binding GoToNextPageCommand}"
-                                Content="下一页"
-                                Style="{StaticResource MaterialDesignFlatButton}" />
-                            <Button
-                                Command="{Binding GoToLastPageCommand}"
-                                Content="末页"
-                                Style="{StaticResource MaterialDesignFlatButton}" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
+                <controls:UnifiedPaginationBar
+                    Grid.Row="3"
+                    CurrentPage="{Binding CurrentPage}"
+                    TotalPages="{Binding TotalPages}"
+                    PageSize="{Binding PageSize}"
+                    TotalCount="{Binding TotalCount}"
+                    PageSizes="{Binding PageSizes}"
+                    FirstPageCommand="{Binding GoToFirstPageCommand}"
+                    PreviousPageCommand="{Binding GoToPreviousPageCommand}"
+                    NextPageCommand="{Binding GoToNextPageCommand}"
+                    LastPageCommand="{Binding GoToLastPageCommand}" />
 
                 <!--  加载遮罩  -->
                 <controls:LoadingOverlay
@@ -279,38 +220,40 @@
                     IsEditMode="{Binding IsEditMode}"
                     SaveCommand="{Binding SaveCommand}" />
 
-                <!--  查看模式内容  -->
-                <herbControls:HerbViewControl
+                <!--  详情内容（Transitioner 切换查看/编辑）  -->
+                <materialDesign:Transitioner
                     Grid.Row="1"
-                    Margin="16"
-                    Category="{Binding CurrentDetail.Category}"
-                    CostPrice="{Binding CurrentDetail.CostPrice}"
-                    CreatedAt="{Binding CurrentDetail.CreatedAt}"
-                    HerbEffect="{Binding CurrentDetail.Effect}"
-                    HerbName="{Binding CurrentDetail.Name}"
-                    Origin="{Binding CurrentDetail.Origin}"
-                    PinYinCode="{Binding CurrentDetail.PinYinCode}"
-                    Price="{Binding CurrentDetail.Price}"
-                    Properties="{Binding CurrentDetail.Properties}"
-                    Remark="{Binding CurrentDetail.Remark}"
-                    ShowStatus="True"
-                    Spec="{Binding CurrentDetail.Spec}"
-                    Status="{Binding CurrentDetail.Status}"
-                    Unit="{Binding CurrentDetail.Unit}"
-                    UpdatedAt="{Binding CurrentDetail.UpdatedAt}"
-                    Usage="{Binding CurrentDetail.Usage}"
-                    Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.InverseBoolToVis}}" />
-
-                <!--  编辑模式内容  -->
-                <herbControls:HerbEditControl
-                    Grid.Row="1"
-                    Margin="16"
-                    Herb="{Binding HerbEditor.Herb}"
-                    ErrorsSource="{Binding HerbEditor.Herb.Errors}"
-                    IsNameEditable="{Binding IsNameEditable}"
-                    ShowStatus="True"
-                    StatusOptions="{Binding StatusOptions}"
-                    Visibility="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToVis}}" />
+                    SelectedIndex="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToInt}}">
+                    <materialDesign:TransitionerSlide>
+                        <herbControls:HerbViewControl
+                            Margin="16"
+                            Category="{Binding CurrentDetail.Category}"
+                            CostPrice="{Binding CurrentDetail.CostPrice}"
+                            CreatedAt="{Binding CurrentDetail.CreatedAt}"
+                            HerbEffect="{Binding CurrentDetail.Effect}"
+                            HerbName="{Binding CurrentDetail.Name}"
+                            Origin="{Binding CurrentDetail.Origin}"
+                            PinYinCode="{Binding CurrentDetail.PinYinCode}"
+                            Price="{Binding CurrentDetail.Price}"
+                            Properties="{Binding CurrentDetail.Properties}"
+                            Remark="{Binding CurrentDetail.Remark}"
+                            ShowStatus="True"
+                            Spec="{Binding CurrentDetail.Spec}"
+                            Status="{Binding CurrentDetail.Status}"
+                            Unit="{Binding CurrentDetail.Unit}"
+                            UpdatedAt="{Binding CurrentDetail.UpdatedAt}"
+                            Usage="{Binding CurrentDetail.Usage}" />
+                    </materialDesign:TransitionerSlide>
+                    <materialDesign:TransitionerSlide>
+                        <herbControls:HerbEditControl
+                            Margin="16"
+                            Herb="{Binding HerbEditor.Herb}"
+                            ErrorsSource="{Binding HerbEditor.Herb.Errors}"
+                            IsNameEditable="{Binding IsNameEditable}"
+                            ShowStatus="True"
+                            StatusOptions="{Binding StatusOptions}" />
+                    </materialDesign:TransitionerSlide>
+                </materialDesign:Transitioner>
 
                 <!--  详情加载遮罩  -->
                 <controls:LoadingOverlay
