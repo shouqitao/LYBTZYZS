@@ -165,14 +165,22 @@ Sysadmin 是 MDIX 重构的起点。Admin/Clinical 的 `FunctionCardStyle`、`Ca
 
 ### 3.2 侧边栏导航项更新
 
-在 `BuildNavigationItems` 中为 SuperAdmin 角色添加：
+**设计决策（2026-06-27 修订）：复用 UserManagementView，不创建独立 AdminUserManagementView。**
 
-| 导航项 | ViewName | 图标 | 分组 |
-|--------|----------|------|------|
-| 主页 | SysadminHome | Home | 主页 |
-| 管理员账号 | AdminUserManagementView | AccountTie | 管理 |
-| 诊所信息 | SystemSettingsView | Domain | 管理 |
-| 日志控制 | LogLevelControlView | Tune | 管理 |
+sysadmin 和 admin 共用 `UserManagementView`，通过角色过滤区分：
+- **sysadmin** → UserManagementView + `DefaultRoleFilter=Admin`（管理 Admin 用户）
+- **admin** → UserManagementView（无过滤，管理 Doctor/Receptionist）
+
+在 `BuildNavigationItems` 中：
+
+| 角色 | 导航项 | ViewName | 参数 |
+|------|--------|----------|------|
+| SuperAdmin | 管理员账号 | UserManagementView | `DefaultRoleFilter=Admin` |
+| SuperAdmin | 诊所信息 | SystemSettingsView | — |
+| SuperAdmin | 日志控制 | LogLevelControlView | — |
+| Admin | 用户管理 | UserManagementView | — |
+
+**删除 AdminUserManagementView** — 功能与 UserManagementView 重复，通过导航参数即可实现角色过滤。
 
 ### 3.3 ViewModel 清理
 
@@ -195,8 +203,11 @@ Sysadmin 是 MDIX 重构的起点。Admin/Clinical 的 `FunctionCardStyle`、`Ca
 
 | 操作 | 文件 | 变更 |
 |------|------|------|
-| Modify | `SysadminHomeView.xaml` | 重写：2 张 FunctionCard，移除导航按钮 |
+| Modify | `SysadminHomeView.xaml` | 重写：MDIX Card，移除导航按钮 |
 | Modify | `SysadminHomeViewModel.cs` | 移除导航命令和多余依赖 |
+| Modify | `MainWindowViewModel.cs` BuildNavigationItems | SuperAdmin 用 UserManagementView + 角色过滤参数 |
+| Delete | `AdminUserManagementView.xaml` + `.xaml.cs` | 不再需要，复用 UserManagementView |
+| Modify | `SysadminModule.cs` | 移除 AdminUserManagementView 注册 |
 | Modify | `MainWindowViewModel.cs` BuildNavigationItems | 添加 SuperAdmin 导航项 |
 | Modify | `SysadminModule.cs` | 确认 SystemSettingsView 和 LogLevelControlView 已注册 |
 

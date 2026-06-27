@@ -258,43 +258,74 @@ git commit -m "refactor: clean up SysadminHomeViewModel - remove nav commands an
 
 ---
 
-## Task 3: 更新侧边栏导航项
+## Task 3: 更新侧边栏导航项（复用 UserManagementView）
 
 **Covers:** [S3.2] 侧边栏导航项更新
 
+**设计决策（2026-06-27 修订）：** 不创建独立 AdminUserManagementView，复用 UserManagementView + 角色过滤参数。
+
 **Files:**
-- Modify: `src/Client/Desktop/Shell/ViewModels/MainWindowViewModel.cs` (BuildNavigationItems 方法，约第 734 行)
+- Modify: `src/Client/Desktop/Shell/ViewModels/MainWindowViewModel.cs` (BuildNavigationItems 方法)
 
-- [ ] **Step 1: 在 BuildNavigationItems 中添加 SuperAdmin 导航项**
+- [ ] **Step 1: 修改 BuildNavigationItems**
 
-在现有的"管理组"部分之后，添加 SuperAdmin 专属导航项：
+SuperAdmin 导航到 UserManagementView 并传递 `DefaultRoleFilter=Admin` 参数：
 
 ```csharp
-// Sysadmin 专属组
+// 管理组
+if (modules.Contains("UsersModule") && role is UserRole.Admin or UserRole.SuperAdmin)
+{
+    if (role == UserRole.SuperAdmin)
+    {
+        items.Add(new NavigationItem
+        {
+            Title = "管理员账号",
+            ViewName = ViewNames.UserManagement,
+            IconKind = "AccountTie",
+            Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(ViewNames.UserManagement,
+                new Dictionary<string, object> { { "DefaultRoleFilter", UserRole.Admin } })),
+            Group = "管理"
+        });
+    }
+    else
+    {
+        items.Add(CreateNavItem("用户管理", ViewNames.UserManagement, "AccountTie", "管理"));
+    }
+}
+
+// Sysadmin 专属导航
 if (role == UserRole.SuperAdmin)
 {
-    items.Add(CreateNavItem("管理员账号", "AdminUserManagementView", "AccountTie", "管理"));
     items.Add(CreateNavItem("诊所信息", ViewNames.SystemSettings, "Domain", "管理"));
     items.Add(CreateNavItem("日志控制", "LogLevelControlView", "Tune", "管理"));
 }
 ```
 
-插入位置：在 `if (definition.GetAllModules().Contains("ReportsModule"))` 之后、`Logger.LogInformation` 之前。
+- [ ] **Step 2: 删除 AdminUserManagementView**
 
-- [ ] **Step 2: 确认 ViewNames 中有 SystemSettings 常量**
+```bash
+git rm src/Client/Desktop/Roles/LYBT.Desktop.Sysadmin/Views/AdminUserManagementView.xaml
+git rm src/Client/Desktop/Roles/LYBT.Desktop.Sysadmin/Views/AdminUserManagementView.xaml.cs
+```
 
-检查 `ViewNames` 类是否包含 `SystemSettings` 常量。如果不存在，用字符串 `"SystemSettingsView"`。
+- [ ] **Step 3: 从 SysadminModule 移除注册**
 
-- [ ] **Step 3: 验证编译**
+删除 `containerRegistry.RegisterForNavigation<Views.AdminUserManagementView>();`
+
+- [ ] **Step 4: 确认 UserManagementView 接收导航参数**
+
+检查 `UserManagementView.xaml.cs` 是否实现了 `INavigationAware`，接收 `DefaultRoleFilter` 参数并调用 `UserMasterDetailControl.SetDefaultRoleFilter()`。如果未实现，需要添加。
+
+- [ ] **Step 5: 验证编译**
 
 Run: `dotnet build LYBTZYZS.sln --nologo 2>&1 | Select-Object -Last 5`
 Expected: BUILD SUCCESSFUL
 
-- [ ] **Step 4: 提交**
+- [ ] **Step 6: 提交**
 
 ```bash
-git add src/Client/Desktop/Shell/ViewModels/MainWindowViewModel.cs
-git commit -m "feat: add sysadmin navigation items to sidebar (admin accounts, clinic settings, log control)"
+git add -A
+git commit -m "refactor: reuse UserManagementView with role filter instead of separate AdminUserManagementView"
 ```
 
 ---
