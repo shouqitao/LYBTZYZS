@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     UserMasterDetailControl - 用户Master-Detail控件
     
     可复用业务控件，供Admin角色台使用
@@ -49,40 +49,40 @@
                         <StackPanel Orientation="Horizontal">
                             <!--  常用操作组  -->
                             <Button
-                                Margin="4,0,0,0"
+                                Margin="8,0,0,0"
                                 Padding="12,6"
                                 Command="{Binding EditCommand}"
                                 Content="编辑"
                                 Style="{DynamicResource SecondaryButton}" />
                             <Button
-                                Margin="4,0,0,0"
+                                Margin="8,0,0,0"
                                 Padding="12,6"
                                 Command="{Binding ResetPasswordCommand}"
                                 Content="重置密码"
                                 Style="{DynamicResource SecondaryButton}" />
                             <Button
-                                Margin="4,0,0,0"
+                                Margin="8,0,0,0"
                                 Padding="12,6"
                                 Command="{Binding ToggleUserStatusCommand}"
                                 Content="切换状态"
                                 Style="{DynamicResource SecondaryButton}" />
                             <Button
-                                Margin="4,0,0,0"
+                                Margin="8,0,0,0"
                                 Padding="12,6"
                                 Command="{Binding RestoreCommand}"
                                 Content="恢复"
                                 Style="{DynamicResource SecondaryButton}" />
                             <!--  分隔  -->
-                            <Separator Margin="8,0" Style="{DynamicResource {x:Static ToolBar.SeparatorStyleKey}}" />
+                            <Border Width="1" Margin="12,4" Background="{DynamicResource MaterialDesign.Brush.Outline}" Opacity="0.3" />
                             <!--  批量操作组  -->
                             <Button
-                                Margin="4,0,0,0"
+                                Margin="8,0,0,0"
                                 Padding="12,6"
                                 Command="{Binding ImportCommand}"
                                 Content="导入"
                                 Style="{DynamicResource SecondaryButton}" />
                             <Button
-                                Margin="4,0,0,0"
+                                Margin="8,0,0,0"
                                 Padding="12,6"
                                 Command="{Binding DownloadTemplateCommand}"
                                 Content="模板"
@@ -92,7 +92,7 @@
                 </controls:DataGridToolbar>
 
                 <!--  搜索和筛选  -->
-                <Grid Grid.Row="1" Margin="12,8">
+                <Grid Grid.Row="1" Margin="16,8">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -116,6 +116,7 @@
                             IsEditable="False"
                             ItemsSource="{Binding RoleOptions}"
                             SelectedItem="{Binding SelectedRoleFilter}"
+                            Style="{StaticResource MaterialDesignOutlinedComboBox}"
                             Text="全部角色">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
@@ -129,6 +130,7 @@
                             IsEditable="False"
                             ItemsSource="{Binding StatusOptions}"
                             SelectedItem="{Binding SelectedStatusFilter}"
+                            Style="{StaticResource MaterialDesignOutlinedComboBox}"
                             Text="全部状态">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
@@ -140,7 +142,8 @@
                             Margin="0,0,8,0"
                             VerticalAlignment="Center"
                             Content="显示已禁用"
-                            IsChecked="{Binding ShowInactiveUsers}" />
+                            IsChecked="{Binding ShowInactiveUsers}"
+                            Style="{StaticResource MaterialDesignCheckBox}" />
                         <Button
                             Padding="8,2"
                             Command="{Binding ClearFiltersCommand}"
@@ -168,7 +171,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="FontWeight" Value="SemiBold" />
-                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
                                     <Setter Property="VerticalAlignment" Value="Center" />
                                     <Setter Property="Padding" Value="8,0" />
                                 </Style>
@@ -182,7 +185,7 @@
                             Header="姓名">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
                                     <Setter Property="VerticalAlignment" Value="Center" />
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
@@ -195,7 +198,8 @@
                             Header="角色">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
+                                    <Setter Property="Opacity" Value="0.7" />
                                     <Setter Property="VerticalAlignment" Value="Center" />
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
@@ -217,10 +221,11 @@
                             Header="手机号">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
+                                    <Setter Property="Opacity" Value="0.7" />
                                     <Setter Property="VerticalAlignment" Value="Center" />
                                     <Setter Property="FontFamily" Value="Consolas" />
-                                    <Setter Property="FontSize" Value="11" />
+                                    <Setter Property="FontSize" Value="{StaticResource FontSizeXS}" />
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -258,7 +263,7 @@
                                 <MenuItem.Icon>
                                     <TextBlock
                                         FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                                        Foreground="{DynamicResource ErrorBrush}"
+                                        Foreground="{DynamicResource MaterialDesign.Brush.Error}"
                                         Text="&#xE74D;" />
                                 </MenuItem.Icon>
                             </MenuItem>
@@ -290,7 +295,8 @@
                             <TextBlock
                                 VerticalAlignment="Center"
                                 FontSize="{StaticResource FontSizeXS}"
-                                Foreground="{DynamicResource SecondaryTextBrush}"
+                                Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                                Opacity="0.7"
                                 Text="每页" />
                             <ComboBox
                                 Width="60"
@@ -298,11 +304,13 @@
                                 VerticalAlignment="Center"
                                 IsEditable="False"
                                 ItemsSource="{Binding PageSizes}"
-                                SelectedItem="{Binding PageSize, Mode=TwoWay}" />
+                                SelectedItem="{Binding PageSize, Mode=TwoWay}"
+                                Style="{StaticResource MaterialDesignOutlinedComboBox}" />
                             <TextBlock
                                 VerticalAlignment="Center"
                                 FontSize="{StaticResource FontSizeXS}"
-                                Foreground="{DynamicResource SecondaryTextBrush}"
+                                Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                                Opacity="0.7"
                                 Text="条" />
                         </StackPanel>
 
