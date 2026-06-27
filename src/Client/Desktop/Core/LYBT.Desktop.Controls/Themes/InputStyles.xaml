@@ -47,7 +47,7 @@
         <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
         <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
-        <Setter Property="Background" Value="White" />
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Template">
             <Setter.Value>
@@ -155,7 +155,7 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="FontSize" Value="{StaticResource FontSizeMD}" />
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}" />
-        <Setter Property="Background" Value="White" />
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}" />
     </Style>
 
     <!--
