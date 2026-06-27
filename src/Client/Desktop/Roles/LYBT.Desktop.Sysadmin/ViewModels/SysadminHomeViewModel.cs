@@ -6,21 +6,16 @@ using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Sysadmin.Models;
-using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Prism.Regions;
 
 namespace LYBT.Desktop.Sysadmin.ViewModels;
 
 /// <summary>
-/// 系统运维控制台主页视图模型 - 暗色仪表盘 + 4 状态卡片 + 30秒轮询
+/// 系统运维控制台主页视图模型
 /// </summary>
 public partial class SysadminHomeViewModel : NavigableViewModelBase
 {
     private readonly IAuthApi _authApi;
-    private readonly INavigationCoordinator _navigationCoordinator;
-    private readonly IConnectionModeService _connectionModeService;
-    private readonly IConnectionSettingsService _connectionSettings;
     private readonly IClinicSettingsService _clinicSettings;
     private CancellationTokenSource? _pollCts;
 
@@ -30,35 +25,13 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
     public SysadminHomeViewModel(
         IViewModelServices services,
         IAuthApi authApi,
-        INavigationCoordinator navigationCoordinator,
-        IConnectionModeService connectionModeService,
-        IConnectionSettingsService connectionSettings,
         IClinicSettingsService clinicSettings)
         : base(services)
     {
         _authApi = authApi;
-        _navigationCoordinator = navigationCoordinator;
-        _connectionModeService = connectionModeService;
-        _connectionSettings = connectionSettings;
         _clinicSettings = clinicSettings;
         PageTitle = "运维控制台";
     }
-
-    [RelayCommand]
-    private void NavigateToAdminUsers()
-    {
-        var parameters = new Dictionary<string, object>
-        {
-            { "DefaultRoleFilter", UserRole.Admin }
-        };
-        _navigationCoordinator.NavigateTo("AdminUserManagementView", parameters);
-    }
-
-    [RelayCommand]
-    private void NavigateToClinicSettings() => _navigationCoordinator.NavigateTo("SystemSettingsView");
-
-    [RelayCommand]
-    private void NavigateToLogLevel() => _navigationCoordinator.NavigateTo("LogLevelControlView");
 
     public override void OnNavigatedTo(Prism.Regions.NavigationContext navigationContext)
     {
