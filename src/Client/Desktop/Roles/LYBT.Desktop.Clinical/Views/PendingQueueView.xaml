@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     PendingQueueView - 待诊队列视图
     展示待处理的医案列表，供医生快速切换
 -->
@@ -27,7 +27,7 @@
                 
                 <TextBlock Grid.Column="0"
                            Text="待诊队列" 
-                           FontSize="16" 
+                           FontSize="{StaticResource FontSizeLG}" 
                            FontWeight="SemiBold"
                            Foreground="White" />
                 
@@ -67,14 +67,14 @@
                                             Orientation="Horizontal">
                                     <TextBlock Text="{Binding PatientName}" 
                                                FontWeight="SemiBold"
-                                               FontSize="14"
+                                               FontSize="{StaticResource FontSizeMD}"
                                                Foreground="{DynamicResource PrimaryTextBrush}" />
                                     <Border Background="{DynamicResource InfoBrush}"
                                             CornerRadius="3"
                                             Padding="6,2"
                                             Margin="8,0,0,0">
                                         <TextBlock Text="{Binding CaseStatus}" 
-                                                   FontSize="11"
+                                                   FontSize="{StaticResource FontSizeXS}"
                                                    Foreground="White" />
                                     </Border>
                                 </StackPanel>
@@ -82,7 +82,7 @@
                                 <!-- 就诊时间 -->
                                 <TextBlock Grid.Row="1"
                                            Text="{Binding CreatedAt, StringFormat='就诊时间: {0:yyyy-MM-dd HH:mm}'}"
-                                           FontSize="12"
+                                           FontSize="{StaticResource FontSizeXS}"
                                            Foreground="{DynamicResource SecondaryTextBrush}"
                                            Margin="0,4,0,0" />
                                 

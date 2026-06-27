@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     SearchBox - 搜索框控件
 
     功能：
@@ -100,7 +100,7 @@
                 VerticalAlignment="Center"
                 Background="Transparent"
                 BorderThickness="0"
-                FontSize="14"
+                FontSize="{StaticResource FontSizeMD}"
                 Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                 <TextBox.Style>
                     <Style TargetType="TextBox">
@@ -112,7 +112,7 @@
                                         <VisualBrush AlignmentX="Left" Stretch="None">
                                             <VisualBrush.Visual>
                                                 <TextBlock
-                                                    FontSize="14"
+                                                    FontSize="{StaticResource FontSizeMD}"
                                                     Foreground="{DynamicResource MaterialDesignBodyLight}"
                                                     Text="{Binding Data.Placeholder, Source={StaticResource RootProxy}}" />
                                             </VisualBrush.Visual>
@@ -126,7 +126,7 @@
                                         <VisualBrush AlignmentX="Left" Stretch="None">
                                             <VisualBrush.Visual>
                                                 <TextBlock
-                                                    FontSize="14"
+                                                    FontSize="{StaticResource FontSizeMD}"
                                                     Foreground="{DynamicResource MaterialDesignBodyLight}"
                                                     Text="{Binding Data.Placeholder, Source={StaticResource RootProxy}}" />
                                             </VisualBrush.Visual>
@@ -154,7 +154,7 @@
                 Padding="12,6"
                 Command="{Binding SearchCommand}"
                 Content="搜索"
-                FontSize="13"
+                FontSize="{StaticResource FontSizeSM}"
                 Style="{DynamicResource PrimaryButtonStyle}" />
         </Grid>
     </Border>

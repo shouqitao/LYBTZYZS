@@ -1,4 +1,4 @@
-<UserControl x:Class="LYBT.Desktop.Controls.Navigation.NavigationHistoryPanel"
+﻿<UserControl x:Class="LYBT.Desktop.Controls.Navigation.NavigationHistoryPanel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -26,7 +26,7 @@
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
                    Foreground="{DynamicResource SecondaryTextBrush}"
-                   FontSize="14"
+                   FontSize="{StaticResource FontSizeMD}"
                    Visibility="{Binding HasHistory, Converter={x:Static converters:Cvt.InverseBoolToVis}}"/>
 
         <!-- History List -->
@@ -52,7 +52,7 @@
                             <!-- Icon -->
                             <TextBlock Grid.Column="0"
                                        Text="{Binding DataContext.GetNavigationIcon(Uri), RelativeSource={RelativeSource AncestorType=ListBox, Mode=FindAncestor}, Mode=OneWay, Converter={StaticResource ResourceKey=IconConverter}}"
-                                       FontSize="18"
+                                       FontSize="{StaticResource FontSizeLG}"
                                        Margin="0,0,8,0"
                                        VerticalAlignment="Center"/>
 

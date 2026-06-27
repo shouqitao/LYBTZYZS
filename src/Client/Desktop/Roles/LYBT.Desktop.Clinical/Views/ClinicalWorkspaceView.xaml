@@ -1,4 +1,4 @@
-<UserControl x:Class="LYBT.Desktop.Clinical.Views.ClinicalWorkspaceView"
+﻿<UserControl x:Class="LYBT.Desktop.Clinical.Views.ClinicalWorkspaceView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -67,17 +67,17 @@
                     BorderThickness="0,0,0,1"
                     Visibility="{Binding SelectedPatient, Converter={x:Static converters:Cvt.NotNullToVis}}">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock FontSize="16" FontWeight="Bold"
+                    <TextBlock FontSize="{StaticResource FontSizeLG}" FontWeight="Bold"
                                Foreground="{DynamicResource PrimaryTextBrush}"
                                Text="{Binding SelectedPatient.Name}"
                                VerticalAlignment="Center"/>
                     <TextBlock Margin="16,0,0,0"
-                               FontSize="13"
+                               FontSize="{StaticResource FontSizeSM}"
                                Foreground="{DynamicResource SecondaryTextBrush}"
                                VerticalAlignment="Center"
                                Text="{Binding SelectedPatient.Gender}"/>
                     <TextBlock Margin="16,0,0,0"
-                               FontSize="13"
+                               FontSize="{StaticResource FontSizeSM}"
                                Foreground="{DynamicResource SecondaryTextBrush}"
                                VerticalAlignment="Center"
                                Text="{Binding SelectedPatient.Age, StringFormat={}{0}岁}"/>
@@ -89,13 +89,13 @@
                         Margin="0,40,0,0"
                         HorizontalAlignment="Center"
                         Visibility="{Binding SelectedPatient, Converter={x:Static converters:Cvt.InverseNullToVis}}">
-                <TextBlock FontSize="14"
+                <TextBlock FontSize="{StaticResource FontSizeMD}"
                            FontWeight="Bold"
                            Foreground="{DynamicResource SecondaryTextBrush}"
                            HorizontalAlignment="Center"
                            Text="📋 请从左侧选择患者"/>
                 <TextBlock Margin="0,8,0,0"
-                           FontSize="12"
+                           FontSize="{StaticResource FontSizeXS}"
                            Foreground="{DynamicResource SecondaryTextBrush}"
                            HorizontalAlignment="Center"
                            Text="双击患者或选中后点击「开始看诊」"/>
@@ -116,14 +116,14 @@
                                     CornerRadius="4">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Width="90"
-                                               FontSize="12"
+                                               FontSize="{StaticResource FontSizeXS}"
                                                FontWeight="SemiBold"
                                                Text="{Binding Date, StringFormat=yyyy-MM-dd}"/>
                                     <TextBlock Width="180"
-                                               FontSize="12"
+                                               FontSize="{StaticResource FontSizeXS}"
                                                TextTrimming="CharacterEllipsis"
                                                Text="{Binding Diagnosis}"/>
-                                    <TextBlock FontSize="12"
+                                    <TextBlock FontSize="{StaticResource FontSizeXS}"
                                                Foreground="{DynamicResource SecondaryTextBrush}"
                                                TextTrimming="CharacterEllipsis"
                                                Text="{Binding Summary}"/>

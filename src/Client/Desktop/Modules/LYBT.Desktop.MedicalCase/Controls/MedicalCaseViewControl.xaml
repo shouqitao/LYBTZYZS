@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     MedicalCaseViewControl - 医案预览控件
 
     支持两种显示模式:
@@ -171,7 +171,7 @@
                                                 <TextBlock Text="{Binding Dosage, StringFormat={}{0}g}" Style="{DynamicResource HerbTagDosageStyle}"/>
                                                 <!-- 煎法显示（非默认时显示） -->
                                                 <TextBlock Foreground="{StaticResource AccentOrangeBrush}"
-                                                           FontSize="11"
+                                                           FontSize="{StaticResource FontSizeXS}"
                                                            Margin="4,0,0,0"
                                                            VerticalAlignment="Center"
                                                            Visibility="{Binding DecocteMethod, Converter={x:Static converters:Cvt.DecocteMethodToVis}}">

@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     ConfirmationDialog - Prism 确认对话框
 
     重要: Prism DialogService 要求 Dialog 视图必须是 UserControl，
@@ -34,7 +34,7 @@
 
         <!-- 消息 -->
         <TextBlock Grid.Row="1" Text="{Binding Message}"
-                   TextWrapping="Wrap" FontSize="14"
+                   TextWrapping="Wrap" FontSize="{StaticResource FontSizeMD}"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
                    Margin="0,0,0,15"/>
@@ -45,11 +45,11 @@
             <RadioButton Content="软删除（标记为已删除，可恢复）"
                          IsChecked="{Binding IsSoftDelete}"
                          Margin="0,5"
-                         FontSize="13"/>
+                         FontSize="{StaticResource FontSizeSM}"/>
             <RadioButton Content="物理删除（永久删除，不可恢复）"
                          IsChecked="{Binding IsHardDelete}"
                          Margin="0,5"
-                         FontSize="13"
+                         FontSize="{StaticResource FontSizeSM}"
                           Foreground="{StaticResource ValidationErrorBrush}"/>
         </StackPanel>
 
@@ -61,11 +61,11 @@
                     Command="{Binding ConfirmCommand}"
                     Width="100" Height="32"
                     Margin="0,0,10,0"
-                    FontSize="14"/>
+                    FontSize="{StaticResource FontSizeMD}"/>
             <Button Content="{Binding CancelButtonText}"
                     Command="{Binding CancelCommand}"
                     Width="100" Height="32"
-                    FontSize="14"/>
+                    FontSize="{StaticResource FontSizeMD}"/>
         </StackPanel>
     </Grid>
 </UserControl>

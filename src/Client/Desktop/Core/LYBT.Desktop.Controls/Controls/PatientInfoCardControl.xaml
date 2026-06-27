@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     PatientInfoCardControl - 患者信息卡片控件
 
     功能：
@@ -43,7 +43,7 @@
                         Background="{DynamicResource PrimaryBrush}"
                         Margin="0,0,16,0">
                     <TextBlock Text="{Binding Patient.Name, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.FirstChar}}"
-                               FontSize="20"
+                               FontSize="{StaticResource FontSizeXL}"
                                FontWeight="Bold"
                                Foreground="White"
                                HorizontalAlignment="Center"
@@ -53,16 +53,16 @@
                 <!-- 姓名、性别、年龄 -->
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="{Binding Patient.Name, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                               FontSize="18"
+                               FontSize="{StaticResource FontSizeLG}"
                                FontWeight="SemiBold"
                                Foreground="{DynamicResource PrimaryTextBrush}"/>
                     <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                         <TextBlock Text="{Binding Patient.Gender, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                   FontSize="14"
+                                   FontSize="{StaticResource FontSizeMD}"
                                    Foreground="{DynamicResource SecondaryTextBrush}"
                                    Margin="0,0,12,0"/>
                         <TextBlock Text="{Binding Patient.AgeDisplay, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                   FontSize="14"
+                                   FontSize="{StaticResource FontSizeMD}"
                                    Foreground="{DynamicResource SecondaryTextBrush}"/>
                     </StackPanel>
                 </StackPanel>
@@ -97,11 +97,11 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0"
                                Text="联系电话"
-                               FontSize="14"
+                               FontSize="{StaticResource FontSizeMD}"
                                Foreground="{DynamicResource SecondaryTextBrush}"/>
                     <TextBlock Grid.Column="1"
                                Text="{Binding Patient.PhoneNumber, RelativeSource={RelativeSource AncestorType=UserControl}, TargetNullValue='-'}"
-                               FontSize="14"
+                               FontSize="{StaticResource FontSizeMD}"
                                Foreground="{DynamicResource PrimaryTextBrush}"/>
                 </Grid>
 
@@ -113,11 +113,11 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0"
                                Text="挂号时间"
-                               FontSize="14"
+                               FontSize="{StaticResource FontSizeMD}"
                                Foreground="{DynamicResource SecondaryTextBrush}"/>
                     <TextBlock Grid.Column="1"
                                Text="{Binding Patient.RegistrationTimeDisplay, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                               FontSize="14"
+                               FontSize="{StaticResource FontSizeMD}"
                                Foreground="{DynamicResource PrimaryTextBrush}"/>
                 </Grid>
 
@@ -139,10 +139,10 @@
                     </Grid.Style>
                     <TextBlock Grid.Column="0"
                                Text="就诊次数"
-                               FontSize="14"
+                               FontSize="{StaticResource FontSizeMD}"
                                Foreground="{DynamicResource SecondaryTextBrush}"/>
                     <TextBlock Grid.Column="1"
-                               FontSize="14"
+                               FontSize="{StaticResource FontSizeMD}"
                                Foreground="{DynamicResource PrimaryTextBrush}">
                         <Run Text="{Binding Patient.VisitCount, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                         <Run Text="次"/>

@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="LYBT.Desktop.Registration.Views.RegistrationListView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -27,7 +27,7 @@
         <TextBlock
             Grid.Row="0"
             Margin="0,0,0,16"
-            FontSize="24"
+            FontSize="{StaticResource FontSizeXXL}"
             FontWeight="Bold"
             Text="{Binding PageTitle}" />
 
@@ -116,7 +116,7 @@
             Grid.Row="2"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            FontSize="16"
+            FontSize="{StaticResource FontSizeLG}"
             Foreground="{DynamicResource SecondaryTextBrush}"
             Text="暂无等待中的挂号记录"
             Visibility="{Binding IsQueueEmpty, Converter={x:Static converters:Cvt.BoolToVis}}" />

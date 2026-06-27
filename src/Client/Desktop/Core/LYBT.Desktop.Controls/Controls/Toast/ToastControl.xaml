@@ -1,4 +1,4 @@
-<UserControl x:Class="LYBT.Desktop.Controls.Controls.Toast.ToastControl"
+﻿<UserControl x:Class="LYBT.Desktop.Controls.Controls.Toast.ToastControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Name="Root"
@@ -70,7 +70,7 @@
             <!-- 图标 -->
             <TextBlock x:Name="IconText"
                        Grid.Column="0"
-                       FontSize="18"
+                       FontSize="{StaticResource FontSizeLG}"
                        Margin="0,0,12,0"
                        VerticalAlignment="Center"/>
 
@@ -78,7 +78,7 @@
             <TextBlock x:Name="MessageText"
                        Grid.Column="1"
                        Text="{Binding Message}"
-                       FontSize="14"
+                       FontSize="{StaticResource FontSizeMD}"
                        Foreground="{DynamicResource PrimaryTextBrush}"
                        TextWrapping="Wrap"
                        MaxWidth="400"

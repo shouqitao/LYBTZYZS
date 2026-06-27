@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="LYBT.Desktop.Clinical.Views.ClinicalHomeView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -13,14 +13,14 @@
             <TextBlock
                 Margin="0,0,0,8"
                 HorizontalAlignment="Center"
-                FontSize="28"
+                FontSize="{StaticResource FontSizeXXL}"
                 FontWeight="Bold"
                 Foreground="{DynamicResource PrimaryBrush}"
                 Text="临床工作台" />
             <TextBlock
                 Margin="0,0,0,40"
                 HorizontalAlignment="Center"
-                FontSize="14"
+                FontSize="{StaticResource FontSizeMD}"
                 Foreground="{DynamicResource SecondaryTextBrush}"
                 Text="凌隐宝堂中医诊所" />
 
@@ -42,13 +42,13 @@
                             <TextBlock
                                 Margin="0,0,0,8"
                                 HorizontalAlignment="Center"
-                                FontSize="28"
+                                FontSize="{StaticResource FontSizeXXL}"
                                 FontWeight="Bold"
                                 Foreground="White"
                                 Text="开始接诊" />
                             <TextBlock
                                 HorizontalAlignment="Center"
-                                FontSize="14"
+                                FontSize="{StaticResource FontSizeMD}"
                                 Foreground="White"
                                 Opacity="0.85"
                                 Text="点击进入患者选择" />
@@ -62,7 +62,7 @@
                         <TextBlock
                             Margin="0,0,0,20"
                             HorizontalAlignment="Center"
-                            FontSize="16"
+                            FontSize="{StaticResource FontSizeLG}"
                             FontWeight="Bold"
                             Foreground="{DynamicResource PrimaryTextBrush}"
                             Text="今日统计" />
@@ -81,7 +81,7 @@
                             <TextBlock
                                 Margin="4,0,0,0"
                                 VerticalAlignment="Center"
-                                FontSize="14"
+                                FontSize="{StaticResource FontSizeMD}"
                                 Foreground="{DynamicResource SecondaryTextBrush}"
                                 Text=" 人" />
                         </StackPanel>
@@ -90,19 +90,19 @@
                         <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                             <TextBlock
                                 VerticalAlignment="Center"
-                                FontSize="13"
+                                FontSize="{StaticResource FontSizeSM}"
                                 Foreground="{DynamicResource SecondaryTextBrush}"
                                 Text="待完成医案 " />
                             <TextBlock
                                 VerticalAlignment="Center"
-                                FontSize="20"
+                                FontSize="{StaticResource FontSizeXL}"
                                 FontWeight="SemiBold"
                                 Foreground="{DynamicResource DangerBrush}"
                                 Text="{Binding PendingCaseCount, FallbackValue=0}" />
                             <TextBlock
                                 Margin="4,0,0,0"
                                 VerticalAlignment="Center"
-                                FontSize="13"
+                                FontSize="{StaticResource FontSizeSM}"
                                 Foreground="{DynamicResource SecondaryTextBrush}"
                                 Text=" 份" />
                         </StackPanel>

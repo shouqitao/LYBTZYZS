@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="LYBT.Desktop.Auth.Views.ServerConfigView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -29,7 +29,7 @@
             Padding="20,12"
             Background="{DynamicResource PrimaryBrush}">
             <TextBlock
-                FontSize="18"
+                FontSize="{StaticResource FontSizeLG}"
                 FontWeight="Bold"
                 Foreground="{DynamicResource BackgroundBrush}"
                 Text="服务器配置" />
@@ -44,7 +44,7 @@
             <!--  服务器地址输入  -->
             <TextBlock
                 Margin="0,0,0,6"
-                FontSize="13"
+                FontSize="{StaticResource FontSizeSM}"
                 FontWeight="SemiBold"
                 Foreground="{DynamicResource SecondaryTextBrush}"
                 Text="服务器地址" />
@@ -53,7 +53,7 @@
                 Margin="0,0,0,8"
                 Padding="12,0"
                 VerticalContentAlignment="Center"
-                FontSize="14"
+                FontSize="{StaticResource FontSizeMD}"
                 Text="{Binding RemoteUrl, UpdateSourceTrigger=PropertyChanged}"
                 ToolTip="例如：https://clinic-api.example.com 或 http://192.168.1.10:5000" />
 
@@ -72,7 +72,7 @@
                     Command="{Binding TestConnectionCommand}"
                     Content="测试连接"
                     Cursor="Hand"
-                    FontSize="13"
+                    FontSize="{StaticResource FontSizeSM}"
                     IsEnabled="{Binding IsNotTesting}" />
 
                 <!--  状态文本 (✓ 可用 / ✗ 不可用 / ⏳ 测试中)  -->
@@ -80,7 +80,7 @@
                     Grid.Column="1"
                     Margin="12,0,0,0"
                     VerticalAlignment="Center"
-                    FontSize="13"
+                    FontSize="{StaticResource FontSizeSM}"
                     FontWeight="Medium"
                     Text="{Binding TestStatusMessage}">
                     <TextBlock.Style>
@@ -113,13 +113,13 @@
                 <StackPanel Orientation="Horizontal">
                     <TextBlock
                         VerticalAlignment="Center"
-                        FontSize="13"
+                        FontSize="{StaticResource FontSizeSM}"
                         Foreground="{DynamicResource InfoBrush}"
                         Text="ℹ" />
                     <TextBlock
                         Margin="8,0,0,0"
                         VerticalAlignment="Center"
-                        FontSize="13"
+                        FontSize="{StaticResource FontSizeSM}"
                         Text="本地模式无需配置，直接使用"
                         TextWrapping="Wrap" />
                 </StackPanel>
@@ -138,7 +138,7 @@
                     Command="{Binding SaveOnlyCommand}"
                     Content="保存"
                     Cursor="Hand"
-                    FontSize="14"
+                    FontSize="{StaticResource FontSizeMD}"
                     ToolTip="仅保存远程地址，不切换当前模式">
                     <Button.Style>
                         <Style TargetType="Button">
@@ -165,7 +165,7 @@
                     Command="{Binding ConfirmCommand}"
                     Content="保存并启用"
                     Cursor="Hand"
-                    FontSize="14"
+                    FontSize="{StaticResource FontSizeMD}"
                     ToolTip="保存远程地址并切换到远程模式 (需先通过测试)">
                     <Button.Style>
                         <Style TargetType="Button">
@@ -190,7 +190,7 @@
                     Command="{Binding CancelCommand}"
                     Content="取消"
                     Cursor="Hand"
-                    FontSize="14" />
+                    FontSize="{StaticResource FontSizeMD}" />
             </StackPanel>
         </Border>
 
@@ -208,7 +208,7 @@
                 <TextBlock
                     Margin="0,10,0,0"
                     HorizontalAlignment="Center"
-                    FontSize="13"
+                    FontSize="{StaticResource FontSizeSM}"
                     Foreground="{DynamicResource SecondaryTextBrush}"
                     Text="{Binding StatusMessage}" />
             </StackPanel>

@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     AccountSettingsControl - 账户设置控件 (Redesign 2026-06-21)
 
     新布局：左右分栏
@@ -98,7 +98,7 @@
                     Command="{Binding GoBackCommand}"
                     Content="← 返回"
                     Cursor="Hand"
-                    FontSize="13"
+                    FontSize="{StaticResource FontSizeSM}"
                     Foreground="{DynamicResource SecondaryTextBrush}"
                     Padding="16,12" />
 
@@ -116,7 +116,7 @@
                         <TextBlock
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            FontSize="24"
+                            FontSize="{StaticResource FontSizeXXL}"
                             FontWeight="Bold"
                             Foreground="White"
                             Text="{Binding CurrentUser.RealName, Converter={x:Static converters:Cvt.FirstChar}}" />
@@ -124,13 +124,13 @@
                     <TextBlock
                         Margin="0,12,0,4"
                         HorizontalAlignment="Center"
-                        FontSize="16"
+                        FontSize="{StaticResource FontSizeLG}"
                         FontWeight="SemiBold"
                         Foreground="{DynamicResource PrimaryTextBrush}"
                         Text="{Binding CurrentUser.RealName}" />
                     <TextBlock
                         HorizontalAlignment="Center"
-                        FontSize="12"
+                        FontSize="{StaticResource FontSizeXS}"
                         Foreground="{DynamicResource SecondaryTextBrush}"
                         Text="{Binding CurrentUser.Role, Converter={x:Static converters:Cvt.EnumDesc}}" />
                 </StackPanel>
@@ -167,7 +167,7 @@
                     <TextBox
                         Margin="0,0,0,16"
                         Height="40"
-                        FontSize="14"
+                        FontSize="{StaticResource FontSizeMD}"
                         MaxLength="50"
                         Padding="12,0"
                         Text="{Binding EditRealName, UpdateSourceTrigger=PropertyChanged}" />
@@ -176,7 +176,7 @@
                     <TextBox
                         Margin="0,0,0,16"
                         Height="40"
-                        FontSize="14"
+                        FontSize="{StaticResource FontSizeMD}"
                         MaxLength="20"
                         Padding="12,0"
                         Text="{Binding EditPhoneNumber, UpdateSourceTrigger=PropertyChanged}" />
@@ -185,7 +185,7 @@
                     <TextBox
                         Margin="0,0,0,24"
                         Height="40"
-                        FontSize="14"
+                        FontSize="{StaticResource FontSizeMD}"
                         MaxLength="100"
                         Padding="12,0"
                         Text="{Binding EditEmail, UpdateSourceTrigger=PropertyChanged}" />
@@ -216,7 +216,7 @@
                             Command="{Binding GoBackCommand}"
                             Content="取消"
                             Cursor="Hand"
-                            FontSize="14"
+                            FontSize="{StaticResource FontSizeMD}"
                             Foreground="{DynamicResource PrimaryTextBrush}" />
                         <Button
                             Padding="24,10"
@@ -225,7 +225,7 @@
                             Command="{Binding SaveProfileCommand}"
                             Content="保存修改"
                             Cursor="Hand"
-                            FontSize="14"
+                            FontSize="{StaticResource FontSizeMD}"
                             Foreground="White" />
                     </StackPanel>
                 </StackPanel>
@@ -244,7 +244,7 @@
                         x:Name="OldPasswordBox"
                         Margin="0,0,0,16"
                         Height="40"
-                        FontSize="14"
+                        FontSize="{StaticResource FontSizeMD}"
                         Padding="12,0"
                         behaviors:PasswordBoxHelper.BoundPassword="{Binding OldPassword, Mode=TwoWay}" />
 
@@ -253,7 +253,7 @@
                         x:Name="NewPasswordBox"
                         Margin="0,0,0,16"
                         Height="40"
-                        FontSize="14"
+                        FontSize="{StaticResource FontSizeMD}"
                         Padding="12,0"
                         behaviors:PasswordBoxHelper.BoundPassword="{Binding NewPassword, Mode=TwoWay}" />
 
@@ -262,7 +262,7 @@
                         x:Name="ConfirmPasswordBox"
                         Margin="0,0,0,24"
                         Height="40"
-                        FontSize="14"
+                        FontSize="{StaticResource FontSizeMD}"
                         Padding="12,0"
                         behaviors:PasswordBoxHelper.BoundPassword="{Binding ConfirmPassword, Mode=TwoWay}" />
 
@@ -274,7 +274,7 @@
                         Command="{Binding ChangePasswordCommand}"
                         Content="确认修改"
                         Cursor="Hand"
-                        FontSize="14"
+                        FontSize="{StaticResource FontSizeMD}"
                         Foreground="White" />
                 </StackPanel>
             </Grid>

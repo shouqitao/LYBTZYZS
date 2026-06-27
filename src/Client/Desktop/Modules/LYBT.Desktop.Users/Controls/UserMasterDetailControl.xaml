@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     UserMasterDetailControl - 用户Master-Detail控件
     
     可复用业务控件，供Admin角色台使用
@@ -289,7 +289,7 @@
                             Orientation="Horizontal">
                             <TextBlock
                                 VerticalAlignment="Center"
-                                FontSize="12"
+                                FontSize="{StaticResource FontSizeXS}"
                                 Foreground="{DynamicResource SecondaryTextBrush}"
                                 Text="每页" />
                             <ComboBox
@@ -301,7 +301,7 @@
                                 SelectedItem="{Binding PageSize, Mode=TwoWay}" />
                             <TextBlock
                                 VerticalAlignment="Center"
-                                FontSize="12"
+                                FontSize="{StaticResource FontSizeXS}"
                                 Foreground="{DynamicResource SecondaryTextBrush}"
                                 Text="条" />
                         </StackPanel>

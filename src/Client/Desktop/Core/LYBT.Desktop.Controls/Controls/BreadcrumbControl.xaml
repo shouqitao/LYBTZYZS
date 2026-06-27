@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="LYBT.Desktop.Controls.Controls.BreadcrumbControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -83,7 +83,7 @@
                             <TextBlock
                                 Margin="4,0"
                                 VerticalAlignment="Center"
-                                FontSize="13"
+                                FontSize="{StaticResource FontSizeSM}"
                                 Foreground="{DynamicResource MaterialDesignBodyLight}"
                                 Text=">" />
                             <!-- 面包屑项按钮 -->
@@ -104,7 +104,7 @@
                                 <TextBlock
                                     x:Name="ItemText"
                                     VerticalAlignment="Center"
-                                    FontSize="13"
+                                    FontSize="{StaticResource FontSizeSM}"
                                     Foreground="{DynamicResource SecondaryTextBrush}"
                                     Text="{Binding Title}" />
                             </Button>

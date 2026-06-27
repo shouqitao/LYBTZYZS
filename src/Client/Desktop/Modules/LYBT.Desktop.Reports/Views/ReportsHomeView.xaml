@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="LYBT.Desktop.Reports.Views.ReportsHomeView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -15,14 +15,14 @@
         <StackPanel Grid.Row="0" Margin="24,24,24,0" HorizontalAlignment="Center">
             <TextBlock
                 HorizontalAlignment="Center"
-                FontSize="28"
+                FontSize="{StaticResource FontSizeXXL}"
                 FontWeight="Bold"
                 Foreground="{DynamicResource PrimaryBrush}"
                 Text="统计报表" />
             <TextBlock
                 Margin="0,4,0,0"
                 HorizontalAlignment="Center"
-                FontSize="14"
+                FontSize="{StaticResource FontSizeMD}"
                 Foreground="{DynamicResource SecondaryTextBrush}"
                 Text="凌隐宝堂中医诊所 - 每日数据概览" />
         </StackPanel>
@@ -34,7 +34,7 @@
             VerticalAlignment="Center"
             Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
             <TextBlock
-                FontSize="16"
+                FontSize="{StaticResource FontSizeLG}"
                 Foreground="{DynamicResource SecondaryTextBrush}"
                 Text="正在加载数据..." />
         </StackPanel>
@@ -46,7 +46,7 @@
             VerticalAlignment="Center"
             Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Collapsed}">
             <TextBlock
-                FontSize="16"
+                FontSize="{StaticResource FontSizeLG}"
                 Foreground="{DynamicResource DangerBrush}"
                 Text="{Binding ErrorMessage}" />
             <Button
@@ -75,7 +75,7 @@
                     <Border Margin="12" Padding="20" Background="{DynamicResource MaterialDesignBody}" CornerRadius="8" MinHeight="180">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock
-                                FontSize="13"
+                                FontSize="{StaticResource FontSizeSM}"
                                 FontWeight="SemiBold"
                                 Foreground="{DynamicResource SecondaryTextBrush}"
                                 Text="当日收入" />
@@ -86,11 +86,11 @@
                                 Foreground="{DynamicResource PrimaryBrush}"
                                 Text="{Binding DailyIncome.TotalIncome, StringFormat='¥{0:N2}'}" />
                             <Separator Margin="0,8" Background="{DynamicResource BorderBrush}" />
-                            <TextBlock FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}">
+                            <TextBlock FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource SecondaryTextBrush}">
                                 <Run Text="挂号费: " />
                                 <Run FontWeight="SemiBold" Text="{Binding DailyIncome.RegistrationFeeTotal, StringFormat='¥{0:N2}'}" />
                             </TextBlock>
-                            <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}">
+                            <TextBlock Margin="0,4,0,0" FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource SecondaryTextBrush}">
                                 <Run Text="药品费: " />
                                 <Run FontWeight="SemiBold" Text="{Binding DailyIncome.MedicineFeeTotal, StringFormat='¥{0:N2}'}" />
                             </TextBlock>
@@ -101,7 +101,7 @@
                     <Border Margin="12" Padding="20" Background="{DynamicResource MaterialDesignBody}" CornerRadius="8" MinHeight="180">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock
-                                FontSize="13"
+                                FontSize="{StaticResource FontSizeSM}"
                                 FontWeight="SemiBold"
                                 Foreground="{DynamicResource SecondaryTextBrush}"
                                 Text="当日看诊量" />
@@ -115,7 +115,7 @@
                             <ItemsControl ItemsSource="{Binding DailyConsultations.ByDoctor}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBlock FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}">
+                                        <TextBlock FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource SecondaryTextBrush}">
                                             <Run Text="{Binding DoctorName}" />
                                             <Run Text=": " />
                                             <Run FontWeight="SemiBold" Text="{Binding Count, StringFormat='{}{0}次'}" />
@@ -130,7 +130,7 @@
                     <Border Margin="12" Padding="20" Background="{DynamicResource MaterialDesignBody}" CornerRadius="8" MinHeight="180">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock
-                                FontSize="13"
+                                FontSize="{StaticResource FontSizeSM}"
                                 FontWeight="SemiBold"
                                 Foreground="{DynamicResource SecondaryTextBrush}"
                                 Text="当日药材频次" />
@@ -144,7 +144,7 @@
                             <ItemsControl MaxHeight="120" ItemsSource="{Binding DailyHerbUsage.Items}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBlock FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}">
+                                        <TextBlock FontSize="{StaticResource FontSizeXS}" Foreground="{DynamicResource SecondaryTextBrush}">
                                             <Run Text="{Binding HerbName}" />
                                             <Run Text=" - " />
                                             <Run FontWeight="SemiBold" Text="{Binding UsageCount, StringFormat='{}{0}次'}" />

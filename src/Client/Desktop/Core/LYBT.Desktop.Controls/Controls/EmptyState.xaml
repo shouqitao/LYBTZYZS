@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     EmptyState - 空状态控件
 
     功能：
@@ -55,7 +55,7 @@
         <TextBlock
             MaxWidth="300"
             HorizontalAlignment="Center"
-            FontSize="18"
+            FontSize="{StaticResource FontSizeLG}"
             FontWeight="Medium"
             Foreground="{DynamicResource SecondaryTextBrush}"
             Text="{Binding Title}"
@@ -66,7 +66,7 @@
             MaxWidth="300"
             Margin="0,8,0,0"
             HorizontalAlignment="Center"
-            FontSize="14"
+            FontSize="{StaticResource FontSizeMD}"
             Foreground="{DynamicResource MaterialDesignBodyLight}"
             Text="{Binding Subtitle}"
             TextWrapping="Wrap"

@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     StatusBadge - 状态徽章控件
 
     功能：
@@ -50,7 +50,7 @@
             x:Name="BadgeText"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            FontSize="12"
+            FontSize="{StaticResource FontSizeXS}"
             FontWeight="Medium"
             Foreground="{Binding BadgeForeground, ElementName=Root}"
             Text="{Binding DisplayText, ElementName=Root}" />

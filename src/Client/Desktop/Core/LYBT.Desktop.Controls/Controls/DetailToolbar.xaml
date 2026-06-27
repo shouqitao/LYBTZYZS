@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     DetailToolbar - 详情工具栏控件
 
     功能：
@@ -55,7 +55,7 @@
             <TextBlock
                 Grid.Column="0"
                 VerticalAlignment="Center"
-                FontSize="16"
+                FontSize="{StaticResource FontSizeLG}"
                 FontWeight="SemiBold"
                 Text="{Binding Title}"
                 Visibility="{Binding Title, Converter={x:Static converters:Cvt.NullToVis}}" />

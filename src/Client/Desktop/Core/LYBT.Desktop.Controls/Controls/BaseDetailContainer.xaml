@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     BaseDetailContainer - 详情页容器控件
 
     功能：
@@ -357,7 +357,7 @@
                            HorizontalAlignment="Center"
                            Margin="0,0,0,16"/>
                 <TextBlock Text="{Binding LoadingMessage, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                           FontSize="16"
+                           FontSize="{StaticResource FontSizeLG}"
                            Foreground="White"
                            HorizontalAlignment="Center"/>
             </StackPanel>

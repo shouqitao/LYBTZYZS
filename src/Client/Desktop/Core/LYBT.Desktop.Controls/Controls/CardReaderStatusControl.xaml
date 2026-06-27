@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     CardReaderStatusControl - 读卡器状态控件
 
     功能：
@@ -79,7 +79,7 @@
                 <TextBlock
                     VerticalAlignment="Center"
                     FontFamily="Segoe MDL2 Assets"
-                    FontSize="20"
+                    FontSize="{StaticResource FontSizeXL}"
                     Text="&#xE8EA;">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
@@ -98,7 +98,7 @@
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                 <TextBlock
                     VerticalAlignment="Center"
-                    FontSize="13"
+                    FontSize="{StaticResource FontSizeSM}"
                     Text="{Binding StatusMessage, ElementName=Root, FallbackValue=读卡器未连接}"
                     TextTrimming="CharacterEllipsis">
                     <TextBlock.Style>
@@ -123,7 +123,7 @@
                 <TextBlock
                     Margin="0,0,6,0"
                     VerticalAlignment="Center"
-                    FontSize="12"
+                    FontSize="{StaticResource FontSizeXS}"
                     Foreground="{DynamicResource SecondaryTextBrush}"
                     Text="自动" />
                 <ToggleButton
@@ -216,11 +216,11 @@
                         Margin="0,0,6,0"
                         VerticalAlignment="Center"
                         FontFamily="Segoe MDL2 Assets"
-                        FontSize="14"
+                        FontSize="{StaticResource FontSizeMD}"
                         Text="&#xE8C8;" />
                     <TextBlock
                         VerticalAlignment="Center"
-                        FontSize="13"
+                        FontSize="{StaticResource FontSizeSM}"
                         Text="读卡" />
                 </StackPanel>
             </Button>

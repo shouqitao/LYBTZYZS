@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     LoadingOverlay - 加载遮罩控件
 
     功能：
@@ -42,7 +42,7 @@
             <TextBlock
                 Margin="0,16,0,0"
                 HorizontalAlignment="Center"
-                FontSize="14"
+                FontSize="{StaticResource FontSizeMD}"
                 Foreground="{DynamicResource SecondaryTextBrush}"
                 Text="{Binding LoadingText, ElementName=Root}" />
         </StackPanel>

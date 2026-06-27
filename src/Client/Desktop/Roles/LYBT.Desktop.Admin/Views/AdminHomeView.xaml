@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="LYBT.Desktop.Admin.Views.AdminHomeView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -14,14 +14,14 @@
             <TextBlock
                 Margin="0,0,0,8"
                 HorizontalAlignment="Center"
-                FontSize="28"
+                FontSize="{StaticResource FontSizeXXL}"
                 FontWeight="Bold"
                 Foreground="{DynamicResource PrimaryBrush}"
                 Text="系统管理工作台" />
             <TextBlock
                 Margin="0,0,0,40"
                 HorizontalAlignment="Center"
-                FontSize="14"
+                FontSize="{StaticResource FontSizeMD}"
                 Foreground="{DynamicResource SecondaryTextBrush}"
                 Text="凌隐宝堂中医诊所" />
 

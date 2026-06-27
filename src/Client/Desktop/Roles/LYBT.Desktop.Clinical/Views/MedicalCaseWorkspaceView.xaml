@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     MedicalCaseWorkspaceView - 医案工作台视图
     Composite ViewModel pattern: bindings route through child VMs
     (ConsultationEditor, PrescriptionEditor, Commands)
@@ -45,20 +45,20 @@
                     <!-- 患者信息 -->
                     <TextBlock
                         VerticalAlignment="Center"
-                        FontSize="14"
+                        FontSize="{StaticResource FontSizeMD}"
                         Foreground="{DynamicResource SecondaryTextBrush}"
                         Text="患者：" />
                     <TextBlock
                         Margin="4,0,0,0"
                         VerticalAlignment="Center"
-                        FontSize="14"
+                        FontSize="{StaticResource FontSizeMD}"
                         FontWeight="SemiBold"
                         Foreground="{DynamicResource PrimaryBrush}"
                         Text="{Binding PatientName}" />
                     <TextBlock
                         Margin="12,0,0,0"
                         VerticalAlignment="Center"
-                        FontSize="13"
+                        FontSize="{StaticResource FontSizeSM}"
                         Foreground="{DynamicResource SecondaryTextBrush}"
                         Text="{Binding PatientInfo}" />
 
@@ -75,14 +75,14 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock
                                 VerticalAlignment="Center"
-                                FontSize="12"
+                                FontSize="{StaticResource FontSizeXS}"
                                 Foreground="{DynamicResource SecondaryTextBrush}"
                                 Text="完成度：" />
                             <!-- 诊断完成 -->
                             <TextBlock
                                 Margin="8,0,4,0"
                                 VerticalAlignment="Center"
-                                FontSize="12"
+                                FontSize="{StaticResource FontSizeXS}"
                                 Text="诊断"
                                 Foreground="{DynamicResource SecondaryTextBrush}" />
                             <Ellipse
@@ -97,7 +97,7 @@
                             <TextBlock
                                 Margin="0,0,4,0"
                                 VerticalAlignment="Center"
-                                FontSize="12"
+                                FontSize="{StaticResource FontSizeXS}"
                                 Text="决策"
                                 Foreground="{DynamicResource SecondaryTextBrush}" />
                             <Ellipse
@@ -112,7 +112,7 @@
                             <TextBlock
                                 Margin="0,0,4,0"
                                 VerticalAlignment="Center"
-                                FontSize="12"
+                                FontSize="{StaticResource FontSizeXS}"
                                 Text="处方"
                                 Foreground="{DynamicResource SecondaryTextBrush}"
                                 Visibility="{Binding IsPrescriptionEnabled, Converter={x:Static converters:Cvt.BoolToVis}}" />
@@ -170,7 +170,7 @@
                         Grid.Column="0"
                         Margin="0,0,8,0"
                         VerticalAlignment="Center"
-                        FontSize="13"
+                        FontSize="{StaticResource FontSizeSM}"
                         Foreground="{DynamicResource SecondaryTextBrush}"
                         Text="备注：" />
 
@@ -196,7 +196,7 @@
                         <TextBlock
                             Margin="0,0,8,0"
                             VerticalAlignment="Center"
-                            FontSize="13"
+                            FontSize="{StaticResource FontSizeSM}"
                             FontWeight="Bold"
                             Foreground="{DynamicResource WarningBrush}"
                             Text="修改原因" />
