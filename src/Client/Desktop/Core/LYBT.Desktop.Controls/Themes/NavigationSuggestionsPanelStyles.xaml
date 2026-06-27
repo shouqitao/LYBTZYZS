@@ -20,70 +20,22 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
-                    <Border Background="{TemplateBinding Background}"
+                    <Border x:Name="SuggestionBorder"
+                            Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}"
-                            CornerRadius="4"
-                            x:Name="SuggestionBorder">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- Icon -->
-                            <TextBlock Grid.Column="0"
-                                       Text="🔗"
-                                       FontSize="16"
-                                       Margin="0,0,12,0"
-                                       VerticalAlignment="Center"/>
-
-                            <!-- Content -->
-                            <StackPanel Grid.Column="1">
-                                <TextBlock Text="{Binding Title}"
-                                           FontWeight="SemiBold"
-                                           FontSize="14"
-                                           Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-                                           TextWrapping="Wrap"/>
-
-                                <TextBlock Text="{Binding Reason}"
-                                           FontSize="11"
-                                           Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
-                                           Margin="0,4,0,0"
-                                           TextWrapping="Wrap"
-                                           Opacity="0.8"/>
-                            </StackPanel>
-
-                            <!-- Confidence Indicator -->
-                            <Border Grid.Column="2"
-                                    Background="{DynamicResource Alt2Brush}"
-                                    Padding="6,2"
-                                    CornerRadius="3"
-                                    VerticalAlignment="Center"
-                                    Margin="8,0,0,0">
-                                <TextBlock Text="{Binding Confidence, StringFormat={}{0:P0}}"
-                                           FontSize="10"
-                                           Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
-                                           FontWeight="SemiBold"/>
-                            </Border>
-                        </Grid>
-
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal"/>
-                                <VisualState x:Name="MouseOver">
-                                    <VisualState.Storyboard>
-                                        <ColorAnimation Storyboard.TargetName="SuggestionBorder"
-                                                        Storyboard.TargetProperty="(Border.Background).Color"
-                                                        To="{DynamicResource HoverBackgroundBrush}"
-                                                        Duration="0:0:0.2"/>
-                                    </VisualState.Storyboard>
-                                </VisualState>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
+                            CornerRadius="4">
+                        <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
                     </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="SuggestionBorder" Property="Background" Value="{DynamicResource MaterialDesign.Brush.Surface}"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="SuggestionBorder" Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -146,10 +98,8 @@
                                             Command="{Binding RefreshCommand}"
                                             Padding="8,4"
                                             FontSize="12"
-                                            Background="Transparent"
-                                            BorderThickness="0"
                                             Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
-                                            Cursor="Hand"/>
+                                            Style="{StaticResource MaterialDesignFlatButton}"/>
                                 </Grid>
                             </Border>
 

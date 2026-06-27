@@ -21,35 +21,22 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
-                    <Border Background="{TemplateBinding Background}"
+                    <Border x:Name="HistoryBorder"
+                            Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}"
-                            CornerRadius="4"
-                            x:Name="HistoryBorder">
+                            CornerRadius="4">
                         <ContentPresenter/>
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal"/>
-                                <VisualState x:Name="MouseOver">
-                                    <VisualState.Storyboard>
-                                        <ColorAnimation Storyboard.TargetName="HistoryBorder"
-                                                        Storyboard.TargetProperty="(Border.Background).Color"
-                                                        To="{DynamicResource HoverBackgroundBrush}"
-                                                        Duration="0:0:0.2"/>
-                                    </VisualState.Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="Selected">
-                                    <VisualState.Storyboard>
-                                        <ColorAnimation Storyboard.TargetName="HistoryBorder"
-                                                        Storyboard.TargetProperty="(Border.Background).Color"
-                                                        To="{DynamicResource SelectedBackgroundBrush}"
-                                                        Duration="0:0:0.2"/>
-                                    </VisualState.Storyboard>
-                                </VisualState>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
                     </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="HistoryBorder" Property="Background" Value="{DynamicResource MaterialDesign.Brush.Surface}"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="HistoryBorder" Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -112,10 +99,8 @@
                                             Command="{Binding ClearHistoryCommand}"
                                             Padding="8,4"
                                             FontSize="12"
-                                            Background="Transparent"
-                                            BorderThickness="0"
                                             Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
-                                            Cursor="Hand"/>
+                                            Style="{StaticResource MaterialDesignFlatButton}"/>
                                 </Grid>
                             </Border>
 

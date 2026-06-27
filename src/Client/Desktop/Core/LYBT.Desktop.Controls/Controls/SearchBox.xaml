@@ -30,36 +30,11 @@
             <helpers:BindingProxy x:Key="RootProxy" Data="{Binding ElementName=Root}" />
 
             <!--  清除按钮样式  -->
-            <Style x:Key="ClearButtonStyle" TargetType="Button">
-                <Setter Property="Background" Value="Transparent" />
-                <Setter Property="BorderThickness" Value="0" />
-                <Setter Property="Cursor" Value="Hand" />
+            <Style x:Key="ClearButtonStyle" TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
                 <Setter Property="Width" Value="24" />
                 <Setter Property="Height" Value="24" />
                 <Setter Property="Padding" Value="4" />
                 <Setter Property="VerticalAlignment" Value="Center" />
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" CornerRadius="4">
-                                <Path
-                                    Width="12"
-                                    Height="12"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    Data="M4,4 L12,12 M12,4 L4,12"
-                                    Stretch="Uniform"
-                                    Stroke="{DynamicResource MaterialDesign.Brush.BodyLight}"
-                                    StrokeThickness="1.5" />
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="{DynamicResource HoverBackgroundBrush}" />
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
             </Style>
 
             <!--  搜索图标路径  -->
@@ -145,7 +120,15 @@
                 Command="{Binding ClearCommand}"
                 Style="{StaticResource ClearButtonStyle}"
                 ToolTip="清除搜索"
-                Visibility="{Binding SearchText, Converter={x:Static converters:Cvt.NullToVis}}" />
+                Visibility="{Binding SearchText, Converter={x:Static converters:Cvt.NullToVis}}">
+                <Path
+                    Width="12"
+                    Height="12"
+                    Data="M4,4 L12,12 M12,4 L4,12"
+                    Stretch="Uniform"
+                    Stroke="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                    StrokeThickness="1.5" />
+            </Button>
 
             <!--  搜索按钮  -->
             <Button

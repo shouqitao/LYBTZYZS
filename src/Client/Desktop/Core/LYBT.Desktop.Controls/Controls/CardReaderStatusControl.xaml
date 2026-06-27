@@ -128,49 +128,11 @@
                     Text="自动" />
                 <ToggleButton
                     x:Name="AutoReadToggle"
-                    Width="40"
-                    Height="20"
                     Command="{Binding ToggleAutoReadCommand, ElementName=Root}"
                     Cursor="Hand"
                     IsChecked="{Binding IsAutoReadEnabled, ElementName=Root, Mode=TwoWay}"
-                    IsEnabled="{Binding IsConnected, ElementName=Root}">
-                    <ToggleButton.Template>
-                        <ControlTemplate TargetType="ToggleButton">
-                            <Grid>
-                                <Border
-                                    x:Name="track"
-                                    Width="40"
-                                    Height="20"
-                                    Background="{DynamicResource MaterialDesign.Brush.Outline}"
-                                    CornerRadius="10" />
-                                <Ellipse
-                                    x:Name="thumb"
-                                    Width="16"
-                                    Height="16"
-                                    Margin="2,0,0,0"
-                                    HorizontalAlignment="Left"
-                                    Fill="White">
-                                    <Ellipse.Effect>
-                                        <DropShadowEffect
-                                            BlurRadius="2"
-                                            Opacity="0.3"
-                                            ShadowDepth="1" />
-                                    </Ellipse.Effect>
-                                </Ellipse>
-                            </Grid>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsChecked" Value="True">
-                                    <Setter TargetName="track" Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
-                                    <Setter TargetName="thumb" Property="HorizontalAlignment" Value="Right" />
-                                    <Setter TargetName="thumb" Property="Margin" Value="0,0,2,0" />
-                                </Trigger>
-                                <Trigger Property="IsEnabled" Value="False">
-                                    <Setter TargetName="track" Property="Opacity" Value="0.5" />
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </ToggleButton.Template>
-                </ToggleButton>
+                    IsEnabled="{Binding IsConnected, ElementName=Root}"
+                    Style="{StaticResource MaterialDesignSwitchToggleButton}" />
             </StackPanel>
 
             <!--  手动读卡按钮  -->
@@ -179,38 +141,9 @@
                 Padding="12,6"
                 Command="{Binding ReadCardCommand, ElementName=Root}"
                 Cursor="Hand"
-                IsEnabled="{Binding CanManualRead, ElementName=Root}">
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
-                        <Setter Property="Foreground" Value="White" />
-                        <Setter Property="BorderThickness" Value="0" />
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="Button">
-                                    <Border
-                                        Padding="{TemplateBinding Padding}"
-                                        Background="{TemplateBinding Background}"
-                                        CornerRadius="4">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Dark}" />
-                                        </Trigger>
-                                        <Trigger Property="IsPressed" Value="True">
-                                            <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Dark}" />
-                                        </Trigger>
-                                        <Trigger Property="IsEnabled" Value="False">
-                                            <Setter Property="Background" Value="{DynamicResource MaterialDesignDivider}" />
-                                            <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}" />
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </Button.Style>
+                IsEnabled="{Binding CanManualRead, ElementName=Root}"
+                Style="{StaticResource MaterialDesignRaisedButton}"
+                Background="{DynamicResource MaterialDesign.Brush.Primary}">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock
                         Margin="0,0,6,0"
