@@ -22,7 +22,6 @@ public class SysadminModule : IModule
 
         // 注册视图用于导航
         containerRegistry.RegisterForNavigation<Views.SysadminHomeView>();
-        containerRegistry.RegisterForNavigation<Views.AdminUserManagementView>();
         containerRegistry.RegisterForNavigation<Views.LogLevelControlView>();
     }
 }

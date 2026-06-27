@@ -768,7 +768,25 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
         // 管理组
         if (modules.Contains("UsersModule") && role is UserRole.Admin or UserRole.SuperAdmin)
-            items.Add(CreateNavItem("用户管理", ViewNames.UserManagement, "AccountTie", "管理"));
+        {
+            if (role == UserRole.SuperAdmin)
+            {
+                // sysadmin 管理员账号：复用 UserManagementView，带 Admin 角色过滤
+                items.Add(new NavigationItem
+                {
+                    Title = "管理员账号",
+                    ViewName = ViewNames.UserManagement,
+                    IconKind = "AccountTie",
+                    Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(ViewNames.UserManagement,
+                        new Dictionary<string, object> { { "DefaultRoleFilter", UserRole.Admin } })),
+                    Group = "管理"
+                });
+            }
+            else
+            {
+                items.Add(CreateNavItem("用户管理", ViewNames.UserManagement, "AccountTie", "管理"));
+            }
+        }
         if (definition.GetAllModules().Contains("ReportsModule"))
             items.Add(CreateNavItem("统计报表", ViewNames.ReportsHome, "ChartBar", "管理"));
 
