@@ -29,12 +29,31 @@ API 状态和连接模式已在底部状态栏显示，首页不应重复。
 
 ---
 
-## [S2] 设计约束
+## [S2] 设计原则
+
+**MDIX 原生优先，不依赖旧自定义样式。**
+
+Sysadmin 是 MDIX 重构的起点。Admin/Clinical 的 `FunctionCardStyle`、`CardIconStyle` 等是旧代码遗留，不作为参考。本设计全部使用 MDIX 内置组件和样式。
+
+### MDIX 原生组件选择
+
+| 用途 | MDIX 组件/样式 | 说明 |
+|------|---------------|------|
+| 卡片容器 | `materialDesign:Card` | 自带阴影、圆角、padding |
+| 阴影深度 | `ElevationAssist.Elevation="Dp4"` | MDIX 阴影分级 |
+| 圆角 | `UniformCornerRadius="16"` | MDIX Card 原生属性 |
+| 卡片标题 | `MaterialDesignHeadline6TextBlock` | MDIX 内置文字样式 |
+| 卡片正文 | `MaterialDesignBody2TextBlock` | MDIX 内置文字样式 |
+| 图标 | `materialDesign:PackIcon` | MDIX 矢量图标库 |
+| 按钮 | `MaterialDesignFlatButton` | MDIX 扁平按钮 |
+| 页面背景 | `MaterialDesign.Brush.Background` | MDIX 主题感知背景 |
+| 前景文字 | `MaterialDesign.Brush.Foreground` | MDIX 主题感知文字 |
+
+### 其他约束
 
 - 不修改工具栏和状态栏的现有设计
-- 只修改主页内容区域 + 侧边栏导航项
-- MDIX 优先：用 MDIX 内置样式和 FunctionCardStyle
-- 颜色用 DynamicResource，确保 Dark 主题适配
+- 颜色用 `DynamicResource`，确保 Dark 主题适配
+- 不引入 `FunctionCardStyle`、`HomePageStyles.xaml` 等旧自定义样式
 
 ---
 
@@ -51,80 +70,98 @@ API 状态和连接模式已在底部状态栏显示，首页不应重复。
 - 数据库状态卡片 — 使用 `FunctionCardStyle` + MDIX PackIcon
 - 系统信息卡片 — 使用 `FunctionCardStyle` + MDIX PackIcon
 
-**使用的样式（来自 HomePageStyles.xaml，全局加载）：**
-
-| 样式 | 用途 | 关键属性 |
-|------|------|---------|
-| `FunctionCardStyle` | 卡片容器 Border | 200x180, MaterialDesignBody 背景, 12px 圆角, 阴影, 悬停高亮 |
-| `CardIconStyle` | 卡片图标 Path | 48x48, PrimaryBrush 填充 |
-| `CardTitleStyle` | 卡片标题 TextBlock | 18px SemiBold, PrimaryTextBrush |
-
-**完整 XAML 设计：**
+**完整 XAML（MDIX 原生组件）：**
 
 ```xml
-<materialDesign:DialogHost>
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Background="{DynamicResource MaterialDesignPaper}">
-        <StackPanel Margin="{StaticResource SpacingXL}">
-            <!-- 标题区 -->
-            <TextBlock Text="运维控制台" FontSize="{StaticResource FontSizeXXL}" FontWeight="Bold"
-                       Foreground="{DynamicResource MaterialDesignBody}" Margin="0,0,0,4" />
-            <TextBlock Text="凌隐宝堂中医诊所 · 系统运维" FontSize="{StaticResource FontSizeSM}"
-                       Foreground="{DynamicResource MaterialDesignBodyLight}" Margin="0,0,0,32" />
+<UserControl x:Class="LYBT.Desktop.Sysadmin.Views.SysadminHomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             xmlns:prism="http://prismlibrary.com/">
 
-            <!-- 状态卡片 -->
-            <UniformGrid Columns="2">
-                <!-- 数据库状态 -->
-                <Border Style="{StaticResource FunctionCardStyle}" Margin="{StaticResource SpacingMD}">
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="Database" Width="48" Height="48"
-                                                  Foreground="{DynamicResource PrimaryBrush}"
-                                                  HorizontalAlignment="Center" Margin="0,0,0,16" />
-                        <TextBlock Style="{StaticResource CardTitleStyle}" Text="数据库" />
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
-                            <Ellipse Width="10" Height="10"
-                                     Fill="{Binding Dashboard.DbStatus.IsHealthy, Converter={x:Static converters:Cvt.BoolToBrush}}"
-                                     Margin="0,0,8,0" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding Dashboard.DbStatus.Value}"
-                                       FontSize="{StaticResource FontSizeSM}"
-                                       Foreground="{DynamicResource PrimaryTextBrush}"
-                                       VerticalAlignment="Center" />
+    <materialDesign:DialogHost>
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      Background="{DynamicResource MaterialDesign.Brush.Background}">
+            <StackPanel Margin="32">
+
+                <!-- 标题区 -->
+                <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                           Text="运维控制台" Margin="0,0,0,4" />
+                <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                           Text="凌隐宝堂中医诊所 · 系统运维"
+                           Opacity="0.6" Margin="0,0,0,32" />
+
+                <!-- 状态卡片 -->
+                <UniformGrid Columns="2">
+
+                    <!-- 数据库状态卡片 -->
+                    <materialDesign:Card Margin="8" Padding="24"
+                                         UniformCornerRadius="16"
+                                         materialDesign:ElevationAssist.Elevation="Dp2">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="Database"
+                                                      Width="48" Height="48"
+                                                      HorizontalAlignment="Center"
+                                                      Margin="0,0,0,16"
+                                                      Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+                            <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                       Text="数据库"
+                                       HorizontalAlignment="Center" />
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
+                                <materialDesign:PackIcon Kind="CheckCircle"
+                                                          Width="16" Height="16"
+                                                          Margin="0,0,4,0"
+                                                          Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+                                <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                           Text="{Binding Dashboard.DbStatus.Value}" />
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
-                </Border>
+                    </materialDesign:Card>
 
-                <!-- 系统信息 -->
-                <Border Style="{StaticResource FunctionCardStyle}" Margin="{StaticResource SpacingMD}">
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="InformationOutline" Width="48" Height="48"
-                                                  Foreground="{DynamicResource PrimaryBrush}"
-                                                  HorizontalAlignment="Center" Margin="0,0,0,16" />
-                        <TextBlock Style="{StaticResource CardTitleStyle}" Text="系统信息" />
-                        <TextBlock Text="{Binding Dashboard.SystemInfo.Value}"
-                                   FontSize="{StaticResource FontSizeSM}"
-                                   Foreground="{DynamicResource PrimaryTextBrush}"
-                                   HorizontalAlignment="Center" Margin="0,8,0,0" />
-                        <TextBlock Text="{Binding Dashboard.SystemInfo.Status}"
-                                   FontSize="{StaticResource FontSizeXS}"
-                                   Foreground="{DynamicResource SecondaryTextBrush}"
-                                   HorizontalAlignment="Center" Margin="0,4,0,0"
-                                   TextTrimming="CharacterEllipsis" />
-                    </StackPanel>
-                </Border>
-            </UniformGrid>
-        </StackPanel>
-    </ScrollViewer>
-</materialDesign:DialogHost>
+                    <!-- 系统信息卡片 -->
+                    <materialDesign:Card Margin="8" Padding="24"
+                                         UniformCornerRadius="16"
+                                         materialDesign:ElevationAssist.Elevation="Dp2">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="InformationOutline"
+                                                      Width="48" Height="48"
+                                                      HorizontalAlignment="Center"
+                                                      Margin="0,0,0,16"
+                                                      Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+                            <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                       Text="系统信息"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                       Text="{Binding Dashboard.SystemInfo.Value}"
+                                       HorizontalAlignment="Center" Margin="0,8,0,0" />
+                            <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                       Text="{Binding Dashboard.SystemInfo.Status}"
+                                       HorizontalAlignment="Center" Margin="0,4,0,0"
+                                       Opacity="0.6" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                    </materialDesign:Card>
+
+                </UniformGrid>
+            </StackPanel>
+        </ScrollViewer>
+    </materialDesign:DialogHost>
+</UserControl>
 ```
 
-**样式说明：**
-- `FunctionCardStyle` 自带悬停效果（边框变棕色 + 阴影加深），无需额外编写
-- MDIX `PackIcon` 替代自定义 Geometry，图标用 `Database` 和 `InformationOutline`
-- 状态指示器用 `Ellipse` + BoolToBrush 转换器（绿=正常 / 红=异常）
-- 所有颜色用 `DynamicResource`，确保 Dark 主题自动适配
-- 字号统一用 Token（FontSizeXXL/SM/XS），间距用 Token（SpacingXL/MD）
+**与旧设计的核心区别：**
 
-**需要确认的转换器：**
-- `BoolToBrush` — 如果不存在，用 `BoolToVis` + 两个 Ellipse（绿/红）替代
+| 维度 | 旧设计（Admin/Clinical 参考） | 新设计（MDIX 原生） |
+|------|---------------------------|-------------------|
+| 卡片容器 | `Border` + `FunctionCardStyle` | `materialDesign:Card` |
+| 阴影 | `DropShadowEffect` 硬编码 | `ElevationAssist.Elevation="Dp2"` |
+| 圆角 | `CornerRadius="12"` | `UniformCornerRadius="16"` |
+| 图标 | `Path` + `CardIconStyle` | `materialDesign:PackIcon` |
+| 标题 | `CardTitleStyle` (自定义) | `MaterialDesignHeadline6TextBlock` |
+| 正文 | 硬编码 FontSize | `MaterialDesignBody2TextBlock` |
+| 背景 | `MaterialDesignBody` | `MaterialDesign.Brush.Background` |
+| 文字 | `MaterialDesignBody` | `MaterialDesign.Brush.Foreground` |
+| 资源依赖 | 需要 HomePageStyles.xaml | **零额外依赖** |
 
 ### 3.2 侧边栏导航项更新
 
