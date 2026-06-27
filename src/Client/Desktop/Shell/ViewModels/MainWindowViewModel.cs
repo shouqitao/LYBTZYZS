@@ -771,10 +771,9 @@ public partial class MainWindowViewModel : CoreViewModelBase
         {
             if (role == UserRole.SuperAdmin)
             {
-                // sysadmin 管理员账号：复用 UserManagementView，带 Admin 角色过滤
                 items.Add(new NavigationItem
                 {
-                    Title = "管理员账号",
+                    Title = "用户管理",
                     ViewName = ViewNames.UserManagement,
                     IconKind = "AccountTie",
                     Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(ViewNames.UserManagement,
@@ -793,7 +792,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         // Sysadmin 专属导航
         if (role == UserRole.SuperAdmin)
         {
-            items.Add(CreateNavItem("管理员账号", "AdminUserManagementView", "AccountTie", "管理"));
             items.Add(CreateNavItem("诊所信息", ViewNames.SystemSettings, "Domain", "管理"));
             items.Add(CreateNavItem("日志控制", "LogLevelControlView", "Tune", "管理"));
         }
