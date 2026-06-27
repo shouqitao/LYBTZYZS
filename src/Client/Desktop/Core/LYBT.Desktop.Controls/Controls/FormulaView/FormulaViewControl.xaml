@@ -18,11 +18,40 @@
     x:Name="Root">
 
     <!--
-        资源加载说明:
-        - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
-        - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
-        - 此控件无本地资源，所有样式来自全局
+        本地资源说明:
+        - HerbTag 样式从 PreviewStyles.xaml 内联（全局已移除），供药材标签云使用
+        - Detail 样式改用 MaterialDesign 内置 TextBlock 样式
     -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <!--  药材标签容器样式  -->
+            <Style x:Key="HerbTagStyle" TargetType="Border">
+                <Setter Property="Background" Value="#E0F7FA" />
+                <Setter Property="BorderBrush" Value="#5B8FA8" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="4" />
+                <Setter Property="Padding" Value="8,6" />
+                <Setter Property="Margin" Value="4" />
+                <Setter Property="MinWidth" Value="100" />
+            </Style>
+
+            <!--  药材名称文字样式  -->
+            <Style x:Key="HerbTagNameStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="FontWeight" Value="Medium" />
+                <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+
+            <!--  药材剂量文字样式  -->
+            <Style x:Key="HerbTagDosageStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Margin" Value="4,0,0,0" />
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
 
     <ScrollViewer DataContext="{Binding ElementName=Root}" VerticalScrollBarVisibility="Auto">
         <StackPanel>
@@ -50,38 +79,52 @@
                         <TextBlock
                             Grid.Row="0"
                             Grid.Column="0"
-                            Style="{DynamicResource DetailLabelStyle}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Margin="0,8,8,8"
+                            VerticalAlignment="Center"
                             Text="验方名称" />
                         <TextBlock
                             Grid.Row="0"
                             Grid.Column="1"
                             FontWeight="SemiBold"
-                            Style="{DynamicResource DetailValueStyle}"
+                            Style="{StaticResource MaterialDesignBody2TextBlock}"
+                            Margin="0,8,16,8"
+                            VerticalAlignment="Center"
+                            TextWrapping="Wrap"
                             Text="{Binding Formula.Name}" />
 
                         <!--  分类  -->
                         <TextBlock
                             Grid.Row="0"
                             Grid.Column="2"
-                            Style="{DynamicResource DetailLabelStyle}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Margin="0,8,8,8"
+                            VerticalAlignment="Center"
                             Text="分类" />
                         <TextBlock
                             Grid.Row="0"
                             Grid.Column="3"
-                            Style="{DynamicResource DetailValueStyle}"
+                            Style="{StaticResource MaterialDesignBody2TextBlock}"
+                            Margin="0,8,16,8"
+                            VerticalAlignment="Center"
+                            TextWrapping="Wrap"
                             Text="{Binding Formula.Category, TargetNullValue='-'}" />
 
                         <!--  性味归经  -->
                         <TextBlock
                             Grid.Row="1"
                             Grid.Column="0"
-                            Style="{DynamicResource DetailLabelStyle}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Margin="0,8,8,8"
+                            VerticalAlignment="Center"
                             Text="性味归经" />
                         <TextBlock
                             Grid.Row="1"
                             Grid.Column="1"
                             Grid.ColumnSpan="3"
-                            Style="{DynamicResource DetailValueStyle}"
+                            Style="{StaticResource MaterialDesignBody2TextBlock}"
+                            Margin="0,8,16,8"
+                            VerticalAlignment="Center"
                             Text="{Binding Formula.Property, TargetNullValue='-'}"
                             TextWrapping="Wrap" />
 
@@ -89,12 +132,17 @@
                         <TextBlock
                             Grid.Row="2"
                             Grid.Column="0"
-                            Style="{DynamicResource DetailLabelStyle}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Margin="0,8,8,8"
+                            VerticalAlignment="Center"
                             Text="药材数量" />
                         <TextBlock
                             Grid.Row="2"
                             Grid.Column="1"
-                            Style="{DynamicResource DetailValueStyle}">
+                            Style="{StaticResource MaterialDesignBody2TextBlock}"
+                            Margin="0,8,16,8"
+                            VerticalAlignment="Center"
+                            TextWrapping="Wrap">
                             <Run Text="{Binding Formula.HerbCount, Mode=OneWay}" />
                             <Run Text="味" />
                         </TextBlock>
@@ -103,7 +151,9 @@
                         <TextBlock
                             Grid.Row="2"
                             Grid.Column="2"
-                            Style="{DynamicResource DetailLabelStyle}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Margin="0,8,8,8"
+                            VerticalAlignment="Center"
                             Text="状态" />
                         <controls:StatusBadge
                             Grid.Row="2"
@@ -141,12 +191,15 @@
                             Grid.Row="0"
                             Grid.Column="0"
                             VerticalAlignment="Top"
-                            Style="{DynamicResource DetailLabelStyle}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Margin="0,8,8,8"
                             Text="功效" />
                         <TextBlock
                             Grid.Row="0"
                             Grid.Column="1"
-                            Style="{DynamicResource DetailValueStyle}"
+                            Style="{StaticResource MaterialDesignBody2TextBlock}"
+                            Margin="0,8,16,8"
+                            VerticalAlignment="Center"
                             Text="{Binding Formula.Effect, TargetNullValue='-'}"
                             TextWrapping="Wrap" />
 
@@ -155,12 +208,15 @@
                             Grid.Row="1"
                             Grid.Column="0"
                             VerticalAlignment="Top"
-                            Style="{DynamicResource DetailLabelStyle}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Margin="0,8,8,8"
                             Text="用法" />
                         <TextBlock
                             Grid.Row="1"
                             Grid.Column="1"
-                            Style="{DynamicResource DetailValueStyle}"
+                            Style="{StaticResource MaterialDesignBody2TextBlock}"
+                            Margin="0,8,16,8"
+                            VerticalAlignment="Center"
                             Text="{Binding Formula.Usage, TargetNullValue='-'}"
                             TextWrapping="Wrap" />
 
@@ -169,12 +225,15 @@
                             Grid.Row="2"
                             Grid.Column="0"
                             VerticalAlignment="Top"
-                            Style="{DynamicResource DetailLabelStyle}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Margin="0,8,8,8"
                             Text="备注" />
                         <TextBlock
                             Grid.Row="2"
                             Grid.Column="1"
-                            Style="{DynamicResource DetailValueStyle}"
+                            Style="{StaticResource MaterialDesignBody2TextBlock}"
+                            Margin="0,8,16,8"
+                            VerticalAlignment="Center"
                             Text="{Binding Formula.Remark, TargetNullValue='-'}"
                             TextWrapping="Wrap" />
                     </Grid>
@@ -250,7 +309,9 @@
                         <TextBlock
                             Grid.Row="0"
                             Grid.Column="0"
-                            Style="{DynamicResource DetailLabelStyle}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Margin="0,8,8,8"
+                            VerticalAlignment="Center"
                             Text="是否共享" />
                         <controls:StatusBadge
                             Grid.Row="0"
@@ -263,36 +324,51 @@
                         <TextBlock
                             Grid.Row="0"
                             Grid.Column="2"
-                            Style="{DynamicResource DetailLabelStyle}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Margin="0,8,8,8"
+                            VerticalAlignment="Center"
                             Text="来源" />
                         <TextBlock
                             Grid.Row="0"
                             Grid.Column="3"
-                            Style="{DynamicResource DetailValueStyle}"
+                            Style="{StaticResource MaterialDesignBody2TextBlock}"
+                            Margin="0,8,16,8"
+                            VerticalAlignment="Center"
+                            TextWrapping="Wrap"
                             Text="{Binding Formula.Source, TargetNullValue='-'}" />
 
                         <!--  创建时间  -->
                         <TextBlock
                             Grid.Row="1"
                             Grid.Column="0"
-                            Style="{DynamicResource DetailLabelStyle}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Margin="0,8,8,8"
+                            VerticalAlignment="Center"
                             Text="创建时间" />
                         <TextBlock
                             Grid.Row="1"
                             Grid.Column="1"
-                            Style="{DynamicResource DetailValueStyle}"
+                            Style="{StaticResource MaterialDesignBody2TextBlock}"
+                            Margin="0,8,16,8"
+                            VerticalAlignment="Center"
+                            TextWrapping="Wrap"
                             Text="{Binding Formula.CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}" />
 
                         <!--  更新时间  -->
                         <TextBlock
                             Grid.Row="1"
                             Grid.Column="2"
-                            Style="{DynamicResource DetailLabelStyle}"
+                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                            Margin="0,8,8,8"
+                            VerticalAlignment="Center"
                             Text="更新时间" />
                         <TextBlock
                             Grid.Row="1"
                             Grid.Column="3"
-                            Style="{DynamicResource DetailValueStyle}"
+                            Style="{StaticResource MaterialDesignBody2TextBlock}"
+                            Margin="0,8,16,8"
+                            VerticalAlignment="Center"
+                            TextWrapping="Wrap"
                             Text="{Binding Formula.UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}" />
                     </Grid>
                 </controls:InfoCard.Content>

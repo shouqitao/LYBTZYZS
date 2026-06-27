@@ -20,9 +20,9 @@
 
     <!--
         资源加载说明:
-        - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
-        - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
-        - 本地资源 CompactSectionBorderStyle 保留，仅供此控件使用
+        - Detail 样式改用 MaterialDesign 内置 TextBlock 样式
+        - HerbTag 样式从 PreviewStyles.xaml 内联（全局已移除）
+        - CompactSectionBorderStyle 保留，仅供此控件使用
     -->
     <UserControl.Resources>
         <ResourceDictionary>
@@ -33,6 +33,33 @@
                 <Setter Property="BorderThickness" Value="1"/>
                 <Setter Property="CornerRadius" Value="8"/>
                 <Setter Property="Padding" Value="16,12"/>
+            </Style>
+
+            <!--  药材标签容器样式  -->
+            <Style x:Key="HerbTagStyle" TargetType="Border">
+                <Setter Property="Background" Value="#E0F7FA"/>
+                <Setter Property="BorderBrush" Value="#5B8FA8"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="CornerRadius" Value="4"/>
+                <Setter Property="Padding" Value="8,6"/>
+                <Setter Property="Margin" Value="4"/>
+                <Setter Property="MinWidth" Value="100"/>
+            </Style>
+
+            <!--  药材名称文字样式  -->
+            <Style x:Key="HerbTagNameStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontWeight" Value="Medium"/>
+                <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
+
+            <!--  药材剂量文字样式  -->
+            <Style x:Key="HerbTagDosageStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Margin" Value="4,0,0,0"/>
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -60,19 +87,19 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- 患者姓名 -->
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="患者姓名" Style="{DynamicResource DetailLabelStyle}"/>
-                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Detail.PatientName}" Style="{DynamicResource DetailValueStyle}" FontWeight="SemiBold"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="患者姓名" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Detail.PatientName}" Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap" FontWeight="SemiBold"/>
 
                             <!-- 就诊日期 -->
-                            <TextBlock Grid.Row="0" Grid.Column="2" Text="就诊日期" Style="{DynamicResource DetailLabelStyle}"/>
-                            <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding Detail.ConsultationDate, StringFormat=yyyy-MM-dd}" Style="{DynamicResource DetailValueStyle}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="2" Text="就诊日期" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding Detail.ConsultationDate, StringFormat=yyyy-MM-dd}" Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap"/>
 
                             <!-- 接诊医生 -->
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="接诊医生" Style="{DynamicResource DetailLabelStyle}"/>
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Detail.DoctorName, TargetNullValue='-'}" Style="{DynamicResource DetailValueStyle}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="接诊医生" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Detail.DoctorName, TargetNullValue='-'}" Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap"/>
 
                             <!-- 状态 -->
-                            <TextBlock Grid.Row="1" Grid.Column="2" Text="状态" Style="{DynamicResource DetailLabelStyle}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="2" Text="状态" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
                             <controls:StatusBadge Grid.Row="1" Grid.Column="3"
                                                   Status="{Binding Detail.Status}"
                                                   HorizontalAlignment="Left"
@@ -99,24 +126,24 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- 现病史 -->
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="现病史" Style="{DynamicResource DetailLabelStyle}" VerticalAlignment="Top"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="现病史" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Top"/>
                             <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Detail.PresentIllness, TargetNullValue='-'}"
-                                       Style="{DynamicResource DetailValueStyle}" TextWrapping="Wrap"/>
+                                       Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap"/>
 
                             <!-- 舌诊 -->
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="舌诊" Style="{DynamicResource DetailLabelStyle}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="舌诊" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
                             <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Detail.TongueDiagnosis, TargetNullValue='-'}"
-                                       Style="{DynamicResource DetailValueStyle}"/>
+                                       Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap"/>
 
                             <!-- 脉诊 -->
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="脉诊" Style="{DynamicResource DetailLabelStyle}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="脉诊" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
                             <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Detail.PulseDiagnosis, TargetNullValue='-'}"
-                                       Style="{DynamicResource DetailValueStyle}"/>
+                                       Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap"/>
 
                             <!-- 中医诊断 -->
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="中医诊断" Style="{DynamicResource DetailLabelStyle}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="中医诊断" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
                             <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Detail.TcmDiagnosis, TargetNullValue='-'}"
-                                       Style="{DynamicResource DetailValueStyle}" FontWeight="SemiBold" Foreground="{DynamicResource MaterialDesign.Brush.Primary}"/>
+                                       Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap" FontWeight="SemiBold" Foreground="{DynamicResource MaterialDesign.Brush.Primary}"/>
                         </Grid>
                     </controls:InfoCard.Content>
                 </controls:InfoCard>
@@ -138,21 +165,21 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <TextBlock Grid.Column="0" Text="药味" Style="{DynamicResource DetailLabelStyle}"/>
-                                <TextBlock Grid.Column="1" Style="{DynamicResource DetailValueStyle}">
+                                <TextBlock Grid.Column="0" Text="药味" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap">
                                     <Run Text="{Binding Detail.HerbCount, TargetNullValue=0, Mode=OneWay}"/>
                                     <Run Text="味"/>
                                 </TextBlock>
 
-                                <TextBlock Grid.Column="2" Text="剂数" Style="{DynamicResource DetailLabelStyle}"/>
-                                <TextBlock Grid.Column="3" Style="{DynamicResource DetailValueStyle}">
+                                <TextBlock Grid.Column="2" Text="剂数" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="3" Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap">
                                     <Run Text="{Binding Detail.DoseCount, TargetNullValue=0, Mode=OneWay}"/>
                                     <Run Text="剂"/>
                                 </TextBlock>
 
-                                <TextBlock Grid.Column="4" Text="方源" Style="{DynamicResource DetailLabelStyle}"/>
+                                <TextBlock Grid.Column="4" Text="方源" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
                                 <TextBlock Grid.Column="5" Text="{Binding Detail.FormulaSource, TargetNullValue='无'}"
-                                           Style="{DynamicResource DetailValueStyle}"/>
+                                           Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap"/>
                             </Grid>
 
                             <!-- 药材列表 - 网格布局，一行4列 -->
@@ -200,7 +227,7 @@
                 <controls:InfoCard Title="备注" ShowTitle="True" Margin="0,12,0,0">
                     <controls:InfoCard.Content>
                         <TextBlock Text="{Binding Detail.Remark, TargetNullValue='暂无备注'}"
-                                   Style="{DynamicResource DetailValueStyle}"
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center"
                                    TextWrapping="Wrap"/>
                     </controls:InfoCard.Content>
                 </controls:InfoCard>
@@ -223,16 +250,16 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- 创建时间 -->
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="创建时间" Style="{DynamicResource DetailLabelStyle}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="创建时间" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
                             <TextBlock Grid.Row="0" Grid.Column="1"
                                        Text="{Binding Detail.CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}"
-                                       Style="{DynamicResource DetailValueStyle}"/>
+                                       Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap"/>
 
                             <!-- 更新时间 -->
-                            <TextBlock Grid.Row="0" Grid.Column="2" Text="更新时间" Style="{DynamicResource DetailLabelStyle}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="2" Text="更新时间" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
                             <TextBlock Grid.Row="0" Grid.Column="3"
                                        Text="{Binding Detail.UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}"
-                                       Style="{DynamicResource DetailValueStyle}"/>
+                                       Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap"/>
                         </Grid>
                     </controls:InfoCard.Content>
                 </controls:InfoCard>

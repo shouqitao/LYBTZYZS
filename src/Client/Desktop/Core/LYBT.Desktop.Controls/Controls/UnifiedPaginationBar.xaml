@@ -35,7 +35,7 @@
                            Margin="8" />
                 <ComboBox ItemsSource="{StaticResource PageSizeOptions}"
                           SelectedItem="{Binding PageSize, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"
-                          Style="{StaticResource FilterComboBox}"
+                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
                           Width="80"
                           VerticalAlignment="Center" />
                 <TextBlock Text="条"
@@ -68,15 +68,11 @@
                         Margin="8" />
 
                 <!-- 当前页/总页数 -->
-                <Border Style="{StaticResource PaginationCurrentPage}"
-                        Margin="8">
+                <Border Margin="8">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding CurrentPage, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                   Style="{StaticResource PaginationPageNumber}" />
-                        <TextBlock Text=" / "
-                                   Style="{StaticResource PaginationPageNumber}" />
-                        <TextBlock Text="{Binding TotalPages, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                   Style="{StaticResource PaginationPageNumber}" />
+                        <TextBlock Text="{Binding CurrentPage, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                        <TextBlock Text=" / " />
+                        <TextBlock Text="{Binding TotalPages, RelativeSource={RelativeSource AncestorType=UserControl}}" />
                     </StackPanel>
                 </Border>
 

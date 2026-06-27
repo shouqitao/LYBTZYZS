@@ -8,24 +8,26 @@
              mc:Ignorable="d"
              d:DesignHeight="40" d:DesignWidth="800">
 
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/BreadcrumbStyles.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
-
     <!-- Breadcrumb Control -->
     <ItemsControl ItemsSource="{Binding Items}"
-                  Style="{DynamicResource BreadcrumbControlStyle}">
+                  Background="Transparent"
+                  HorizontalAlignment="Left">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Margin="16,12"/>
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
             <DataTemplate DataType="nav:BreadcrumbItem">
                 <ContentControl Style="{DynamicResource BreadcrumbItemContainerStyle}">
                     <StackPanel Orientation="Horizontal">
                         <!-- Active Breadcrumb (Not clickable) -->
                         <TextBlock Text="{Binding Title}"
-                                   Style="{DynamicResource BreadcrumbTextStyle_Active}"
+                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                   Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                                   FontWeight="SemiBold"
+                                   Padding="8,6"
+                                   VerticalAlignment="Center"
                                    Visibility="{Binding IsActive, Converter={x:Static converters:Cvt.BoolToVis}}"/>
 
                         <!-- Non-Active Breadcrumb (Clickable) -->

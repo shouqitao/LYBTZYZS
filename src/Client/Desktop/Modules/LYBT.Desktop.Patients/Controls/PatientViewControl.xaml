@@ -32,33 +32,33 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- 患者姓名 -->
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="患者姓名" Style="{DynamicResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PatientName}" Style="{DynamicResource DetailValueStyle}" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="患者姓名" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PatientName}" Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap" FontWeight="SemiBold"/>
 
                         <!-- 拼音码 -->
-                        <TextBlock Grid.Row="0" Grid.Column="2" Text="拼音码" Style="{DynamicResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding PinYinCode, TargetNullValue='-'}" Style="{DynamicResource DetailValueStyle}" FontFamily="Consolas"/>
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="拼音码" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding PinYinCode, TargetNullValue='-'}" Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap" FontFamily="Consolas"/>
 
                         <!-- 性别 -->
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="性别" Style="{DynamicResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Gender, Converter={x:Static converters:Cvt.EnumDesc}}" Style="{DynamicResource DetailValueStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="性别" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Gender, Converter={x:Static converters:Cvt.EnumDesc}}" Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap"/>
 
                         <!-- 年龄 -->
-                        <TextBlock Grid.Row="1" Grid.Column="2" Text="年龄" Style="{DynamicResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="3" Style="{DynamicResource DetailValueStyle}">
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="年龄" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="1" Grid.Column="3" Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap">
                             <TextBlock.Text>
                                 <Binding Path="Age" StringFormat="{}{0}岁" TargetNullValue="-"/>
                             </TextBlock.Text>
                         </TextBlock>
 
                         <!-- 出生日期 -->
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="出生日期" Style="{DynamicResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="出生日期" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
                         <TextBlock Grid.Row="2" Grid.Column="1"
                                    Text="{Binding BirthDate, StringFormat={}{0:yyyy-MM-dd}, TargetNullValue='-'}"
-                                   Style="{DynamicResource DetailValueStyle}"/>
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap"/>
 
                         <!-- 状态 -->
-                        <TextBlock Grid.Row="2" Grid.Column="2" Text="状态" Style="{DynamicResource DetailLabelStyle}"
+                        <TextBlock Grid.Row="2" Grid.Column="2" Text="状态" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"
                                    Visibility="{Binding ShowStatus, Converter={x:Static converters:Cvt.BoolToVis}}"/>
                         <controls:StatusBadge Grid.Row="2" Grid.Column="3"
                                                Status="{Binding Status}"
@@ -84,8 +84,8 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- 身份证号 -->
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="身份证号" Style="{DynamicResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding IdNumber, TargetNullValue='-'}" Style="{DynamicResource DetailValueStyle}" FontFamily="Consolas"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="身份证号" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding IdNumber, TargetNullValue='-'}" Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap" FontFamily="Consolas"/>
                     </Grid>
                 </controls:InfoCard.Content>
             </controls:InfoCard>
@@ -105,8 +105,8 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- 手机号码 -->
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="手机号码" Style="{DynamicResource DetailLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PhoneNumber, TargetNullValue='-'}" Style="{DynamicResource DetailValueStyle}" FontFamily="Consolas"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="手机号码" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PhoneNumber, TargetNullValue='-'}" Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap" FontFamily="Consolas"/>
                     </Grid>
                 </controls:InfoCard.Content>
             </controls:InfoCard>
@@ -128,16 +128,16 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- 创建时间 -->
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="创建时间" Style="{DynamicResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="创建时间" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
                         <TextBlock Grid.Row="0" Grid.Column="1"
                                    Text="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}"
-                                   Style="{DynamicResource DetailValueStyle}"/>
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap"/>
 
                         <!-- 更新时间 -->
-                        <TextBlock Grid.Row="0" Grid.Column="2" Text="更新时间" Style="{DynamicResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="更新时间" Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="0,8,8,8" VerticalAlignment="Center"/>
                         <TextBlock Grid.Row="0" Grid.Column="3"
                                    Text="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}"
-                                   Style="{DynamicResource DetailValueStyle}"/>
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}" Margin="0,8,16,8" VerticalAlignment="Center" TextWrapping="Wrap"/>
                     </Grid>
                 </controls:InfoCard.Content>
             </controls:InfoCard>

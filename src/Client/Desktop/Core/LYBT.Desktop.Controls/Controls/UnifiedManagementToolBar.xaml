@@ -6,7 +6,7 @@
              mc:Ignorable="d"
              d:DesignHeight="60" d:DesignWidth="1200">
 
-    <Border Style="{StaticResource ToolBarContainer}">
+    <Border Background="{DynamicResource MaterialDesignPaper}" BorderBrush="{DynamicResource MaterialDesignOutline}" BorderThickness="0,0,0,1" Padding="12">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />      <!-- 搜索+筛选区 -->

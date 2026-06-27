@@ -10,31 +10,26 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!--  1. Material Design 2 主题（替代 HandyControl） -->
                 <materialDesign:BundledTheme
                     BaseTheme="Light"
                     PrimaryColor="Brown"
                     SecondaryColor="Amber" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />
-
-                <!--  2. 矢量图标 Path data -->
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/Icons.xaml" />
-
-                <!--  3. UI 统一化组件样式 -->
-                <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/UnifiedComponents.xaml" />
-
-                <!--  4. 首页共享样式 -->
-                <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/HomePageStyles.xaml" />
-
-                <!--  5. Shell 全局样式 -->
-                <ResourceDictionary Source="Styles/Typography.xaml" />
-
-                <!--  6. 对话框窗口样式 -->
-                <ResourceDictionary Source="Styles/DialogStyles.xaml" />
-
-                <!--  7. 统一转换器资源字典 -->
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Converters/Converters.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <SolidColorBrush x:Key="ValidationErrorBrush" Color="#C75050" />
+            <SolidColorBrush x:Key="ValidationErrorBackgroundBrush" Color="#FDE7E9" />
+
+            <Style x:Key="CustomDialogWindowStyle" TargetType="Window">
+                <Setter Property="WindowStyle" Value="None" />
+                <Setter Property="ResizeMode" Value="NoResize" />
+                <Setter Property="ShowInTaskbar" Value="False" />
+                <Setter Property="SizeToContent" Value="WidthAndHeight" />
+                <Setter Property="Background" Value="White" />
+                <Setter Property="FontFamily" Value="Microsoft YaHei" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </prism:PrismApplication>

@@ -135,7 +135,7 @@
                 </DataGrid>
 
                 <!--  分页控件  -->
-                <Border Grid.Row="3" Style="{DynamicResource MasterDetailPaginationPanelStyle}">
+                <Border Grid.Row="3" Background="{DynamicResource MaterialDesignPaper}" BorderBrush="{DynamicResource MaterialDesignOutline}" BorderThickness="0,1,0,0" Padding="12,8">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -145,7 +145,7 @@
                         </Grid.ColumnDefinitions>
 
                         <!--  统计信息  -->
-                        <TextBlock Grid.Column="0" Style="{DynamicResource MasterDetailPaginationInfoStyle}">
+                        <TextBlock Grid.Column="0" Style="{StaticResource MaterialDesignCaptionTextBlock}" VerticalAlignment="Center">
                             <Run Text="共" />
                             <Run FontWeight="Medium" Text="{Binding TotalCount, Mode=OneWay}" />
                             <Run Text="条记录" />
@@ -190,7 +190,7 @@
                                 Command="{Binding GoToPreviousPageCommand}"
                                 Content="上一页"
                                 Style="{StaticResource MaterialDesignFlatButton}" />
-                            <TextBlock Style="{DynamicResource MasterDetailPaginationPageStyle}">
+                            <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}" Margin="8,0" VerticalAlignment="Center">
                                 <Run Text="{Binding CurrentPage, Mode=OneWay}" />
                                 <Run Text="/" />
                                 <Run Text="{Binding TotalPages, Mode=OneWay}" />

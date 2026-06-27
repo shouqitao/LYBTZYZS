@@ -8,14 +8,7 @@
         Title="{Binding Title}"
         Background="{DynamicResource MaterialDesign.Brush.Paper}"
         WindowStyle="SingleBorderWindow">
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Controls;component/Themes/UnifiedComponents.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </Window.Resources>
-    
+
     <Border Background="{DynamicResource MaterialDesign.Brush.Paper}"
             BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
             BorderThickness="1">

@@ -16,7 +16,7 @@
         </Grid.RowDefinitions>
 
         <!--  工具栏: 提供保存配置和重置  -->
-        <Border Grid.Row="0" Style="{StaticResource ToolBarContainer}">
+        <Border Grid.Row="0" Background="{DynamicResource MaterialDesignPaper}" BorderBrush="{DynamicResource MaterialDesignOutline}" BorderThickness="0,0,0,1" Padding="12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -27,7 +27,7 @@
                 <TextBlock
                     Grid.Column="0"
                     VerticalAlignment="Center"
-                    Style="{StaticResource PageTitle}"
+                    Style="{StaticResource MaterialDesignHeadline5TextBlock}"
                     Text="系统设置" />
 
                 <!--  右侧: 操作按钮  -->
@@ -54,9 +54,9 @@
             VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <!--  基本设置  -->
-                <Border Style="{StaticResource ContentContainer}">
+                <Border Background="{DynamicResource MaterialDesign.Brush.Paper}" BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}" BorderThickness="1" CornerRadius="8" Padding="24,16" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Style="{StaticResource H2TextBlock}" Text="基本设置" />
+                        <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}" Text="基本设置" />
 
                         <!--  系统名称  -->
                         <Grid Margin="12">
@@ -67,7 +67,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource FieldLabel}"
+                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                 Text="系统名称：" />
                             <TextBox
                                 Grid.Column="1"
@@ -86,7 +86,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource FieldLabel}"
+                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                 Text="医院名称：" />
                             <TextBox
                                 Grid.Column="1"
@@ -105,7 +105,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource FieldLabel}"
+                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                 Text="联系电话：" />
                             <TextBox
                                 Grid.Column="1"
@@ -118,9 +118,9 @@
                 </Border>
 
                 <!--  D2: 诊所信息配置  -->
-                <Border Style="{StaticResource ContentContainer}">
+                <Border Background="{DynamicResource MaterialDesign.Brush.Paper}" BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}" BorderThickness="1" CornerRadius="8" Padding="24,16" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Style="{StaticResource H2TextBlock}" Text="诊所信息" />
+                        <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}" Text="诊所信息" />
 
                         <!--  诊所名称  -->
                         <Grid Margin="12">
@@ -131,7 +131,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource FieldLabel}"
+                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                 Text="诊所名称：" />
                             <TextBox
                                 Grid.Column="1"
@@ -150,7 +150,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource FieldLabel}"
+                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                 Text="科室：" />
                             <TextBox
                                 Grid.Column="1"
@@ -169,7 +169,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource FieldLabel}"
+                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                 Text="地址：" />
                             <TextBox
                                 Grid.Column="1"
@@ -188,7 +188,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource FieldLabel}"
+                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                 Text="电话：" />
                             <TextBox
                                 Grid.Column="1"
@@ -207,7 +207,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource FieldLabel}"
+                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                 Text="邮箱：" />
                             <TextBox
                                 Grid.Column="1"
@@ -226,7 +226,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource FieldLabel}"
+                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                 Text="许可证号：" />
                             <TextBox
                                 Grid.Column="1"
@@ -239,9 +239,9 @@
                 </Border>
 
                 <!--  数据库配置  -->
-                <Border Style="{StaticResource ContentContainer}">
+                <Border Background="{DynamicResource MaterialDesign.Brush.Paper}" BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}" BorderThickness="1" CornerRadius="8" Padding="24,16" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Style="{StaticResource H2TextBlock}" Text="数据库配置" />
+                        <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}" Text="数据库配置" />
 
                         <!--  数据库备份  -->
                         <Grid Margin="12">
@@ -252,7 +252,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource FieldLabel}"
+                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                 Text="自动备份：" />
                             <CheckBox
                                 Grid.Column="1"
@@ -273,7 +273,7 @@
                             <TextBlock
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource FieldLabel}"
+                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                 Text="备份路径：" />
                             <TextBox
                                 Grid.Column="1"
