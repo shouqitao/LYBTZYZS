@@ -772,6 +772,14 @@ public partial class MainWindowViewModel : CoreViewModelBase
         if (definition.GetAllModules().Contains("ReportsModule"))
             items.Add(CreateNavItem("统计报表", ViewNames.ReportsHome, "ChartBar", "管理"));
 
+        // Sysadmin 专属导航
+        if (role == UserRole.SuperAdmin)
+        {
+            items.Add(CreateNavItem("管理员账号", "AdminUserManagementView", "AccountTie", "管理"));
+            items.Add(CreateNavItem("诊所信息", ViewNames.SystemSettings, "Domain", "管理"));
+            items.Add(CreateNavItem("日志控制", "LogLevelControlView", "Tune", "管理"));
+        }
+
         Logger.LogInformation("已为角色 {Role} 构建 {Count} 个导航项", role, items.Count);
         return items;
     }
