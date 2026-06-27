@@ -36,7 +36,6 @@
     <Border Background="{DynamicResource MaterialDesignPaper}"
             BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
             BorderThickness="0,0,0,1"
-            Opacity="0.3"
             Padding="12,8">
         <!-- 注意：不设置Grid的DataContext，以便AdditionalContent能继承父级的ViewModel DataContext -->
         <Grid>
