@@ -14,7 +14,6 @@
         <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Converters/Converters.xaml" />
         <ResourceDictionary Source="PreviewStyles.xaml" />
         <ResourceDictionary Source="ValidationStyles.xaml" />
-        <ResourceDictionary Source="DesignSystem.xaml" />
         <ResourceDictionary Source="InputStyles.xaml" />
         <ResourceDictionary Source="PanelStyles.xaml" />
     </ResourceDictionary.MergedDictionaries>

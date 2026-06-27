@@ -59,21 +59,21 @@
     <Style x:Key="HistoryItemTitleStyle" TargetType="TextBlock">
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
         <Setter Property="TextWrapping" Value="NoWrap"/>
     </Style>
 
     <!-- History Item Timestamp Style -->
     <Style x:Key="HistoryItemTimestampStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="11"/>
-        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}"/>
         <Setter Property="Opacity" Value="0.7"/>
     </Style>
 
     <!-- Navigation History Panel Style -->
     <Style x:Key="NavigationHistoryPanelStyle" TargetType="ListBox">
         <Setter Property="Background" Value="White"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Outline}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="ItemContainerStyle" Value="{StaticResource HistoryItemContainerStyle}"/>
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
@@ -93,7 +93,7 @@
                             <!-- Header -->
                             <Border Background="{DynamicResource Alt1Brush}"
                                     Padding="12,8"
-                                    BorderBrush="{DynamicResource BorderBrush}"
+                                    BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
                                     BorderThickness="0,0,0,1">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -105,7 +105,7 @@
                                                Text="导航历史"
                                                FontWeight="SemiBold"
                                                FontSize="14"
-                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                               Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 
                                     <Button Grid.Column="1"
                                             Content="清除"
@@ -114,7 +114,7 @@
                                             FontSize="12"
                                             Background="Transparent"
                                             BorderThickness="0"
-                                            Foreground="{DynamicResource PrimaryBrush}"
+                                            Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
                                             Cursor="Hand"/>
                                 </Grid>
                             </Border>

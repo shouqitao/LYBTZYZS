@@ -45,12 +45,12 @@
                                 <TextBlock Text="{Binding Title}"
                                            FontWeight="SemiBold"
                                            FontSize="14"
-                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                                            TextWrapping="Wrap"/>
 
                                 <TextBlock Text="{Binding Reason}"
                                            FontSize="11"
-                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                                            Margin="0,4,0,0"
                                            TextWrapping="Wrap"
                                            Opacity="0.8"/>
@@ -65,7 +65,7 @@
                                     Margin="8,0,0,0">
                                 <TextBlock Text="{Binding Confidence, StringFormat={}{0:P0}}"
                                            FontSize="10"
-                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                                            FontWeight="SemiBold"/>
                             </Border>
                         </Grid>
@@ -91,7 +91,7 @@
 
     <!-- Suggestion Type Badge Style -->
     <Style x:Key="SuggestionTypeBadgeStyle" TargetType="Border">
-        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary}"/>
         <Setter Property="CornerRadius" Value="3"/>
         <Setter Property="Padding" Value="6,3"/>
         <Setter Property="Margin" Value="0,0,0,8"/>
@@ -107,7 +107,7 @@
     <!-- Navigation Suggestions Panel Style -->
     <Style x:Key="NavigationSuggestionsPanelStyle" TargetType="ListBox">
         <Setter Property="Background" Value="White"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Outline}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="ItemContainerStyle" Value="{StaticResource SuggestionItemContainerStyle}"/>
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
@@ -127,7 +127,7 @@
                             <!-- Header -->
                             <Border Background="{DynamicResource Alt1Brush}"
                                     Padding="12,8"
-                                    BorderBrush="{DynamicResource BorderBrush}"
+                                    BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
                                     BorderThickness="0,0,0,1">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -139,7 +139,7 @@
                                                Text="建议导航"
                                                FontWeight="SemiBold"
                                                FontSize="14"
-                                               Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                               Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 
                                     <Button Grid.Column="1"
                                             Content="刷新"
@@ -148,7 +148,7 @@
                                             FontSize="12"
                                             Background="Transparent"
                                             BorderThickness="0"
-                                            Foreground="{DynamicResource PrimaryBrush}"
+                                            Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
                                             Cursor="Hand"/>
                                 </Grid>
                             </Border>

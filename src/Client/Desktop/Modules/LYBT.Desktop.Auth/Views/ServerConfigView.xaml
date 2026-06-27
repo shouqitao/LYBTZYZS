@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
     x:Class="LYBT.Desktop.Auth.Views.ServerConfigView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -27,11 +27,11 @@
         <Border
             Grid.Row="0"
             Padding="20,12"
-            Background="{DynamicResource PrimaryBrush}">
+            Background="{DynamicResource MaterialDesign.Brush.Primary}">
             <TextBlock
-                FontSize="{StaticResource FontSizeLG}"
+                FontSize="16"
                 FontWeight="Bold"
-                Foreground="{DynamicResource BackgroundBrush}"
+                Foreground="{DynamicResource MaterialDesign.Brush.Background}"
                 Text="服务器配置" />
         </Border>
 
@@ -44,16 +44,16 @@
             <!--  服务器地址输入  -->
             <TextBlock
                 Margin="0,0,0,6"
-                FontSize="{StaticResource FontSizeSM}"
+                FontSize="13"
                 FontWeight="SemiBold"
-                Foreground="{DynamicResource SecondaryTextBrush}"
+                Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                 Text="服务器地址" />
             <TextBox
                 Height="42"
                 Margin="0,0,0,8"
                 Padding="12,0"
                 VerticalContentAlignment="Center"
-                FontSize="{StaticResource FontSizeMD}"
+                FontSize="14"
                 Text="{Binding RemoteUrl, UpdateSourceTrigger=PropertyChanged}"
                 ToolTip="例如：https://clinic-api.example.com 或 http://192.168.1.10:5000" />
 
@@ -72,7 +72,7 @@
                     Command="{Binding TestConnectionCommand}"
                     Content="测试连接"
                     Cursor="Hand"
-                    FontSize="{StaticResource FontSizeSM}"
+                    FontSize="13"
                     IsEnabled="{Binding IsNotTesting}" />
 
                 <!--  状态文本 (✓ 可用 / ✗ 不可用 / ⏳ 测试中)  -->
@@ -80,21 +80,21 @@
                     Grid.Column="1"
                     Margin="12,0,0,0"
                     VerticalAlignment="Center"
-                    FontSize="{StaticResource FontSizeSM}"
+                    FontSize="13"
                     FontWeight="Medium"
                     Text="{Binding TestStatusMessage}">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding TestStatus}" Value="Testing">
-                                    <Setter Property="Foreground" Value="{DynamicResource InfoBrush}" />
+                                    <Setter Property="Foreground" Value="#5B8FA8" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding TestStatus}" Value="Success">
-                                    <Setter Property="Foreground" Value="{DynamicResource DarkSuccessBrush}" />
+                                    <Setter Property="Foreground" Value="#228B22" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding TestStatus}" Value="Failed">
-                                    <Setter Property="Foreground" Value="{DynamicResource AccentOrangeBrush}" />
+                                    <Setter Property="Foreground" Value="#E65100" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -106,20 +106,20 @@
             <Border
                 Margin="0,4,0,0"
                 Padding="14,10"
-                Background="{DynamicResource LightInfoBrush}"
-                BorderBrush="{DynamicResource InfoBrush}"
+                Background="#E0F7FA"
+                BorderBrush="#5B8FA8"
                 BorderThickness="1"
                 CornerRadius="6">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock
                         VerticalAlignment="Center"
-                        FontSize="{StaticResource FontSizeSM}"
-                        Foreground="{DynamicResource InfoBrush}"
+                        FontSize="13"
+                        Foreground="#5B8FA8"
                         Text="ℹ" />
                     <TextBlock
                         Margin="8,0,0,0"
                         VerticalAlignment="Center"
-                        FontSize="{StaticResource FontSizeSM}"
+                        FontSize="13"
                         Text="本地模式无需配置，直接使用"
                         TextWrapping="Wrap" />
                 </StackPanel>
@@ -130,7 +130,7 @@
         <Border
             Grid.Row="2"
             Padding="20,12"
-            Background="{DynamicResource SurfaceBrush}">
+            Background="{DynamicResource MaterialDesign.Brush.Paper}">
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                 <Button
                     MinWidth="80"
@@ -138,21 +138,21 @@
                     Command="{Binding SaveOnlyCommand}"
                     Content="保存"
                     Cursor="Hand"
-                    FontSize="{StaticResource FontSizeMD}"
+                    FontSize="14"
                     ToolTip="仅保存远程地址，不切换当前模式">
                     <Button.Style>
                         <Style TargetType="Button">
-                            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
-                            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                            <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Paper}" />
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
                             <Setter Property="BorderThickness" Value="1" />
                             <Style.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="{DynamicResource LightPrimaryBrush}" />
+                                    <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
-                                    <Setter Property="Foreground" Value="{DynamicResource DisabledTextBrush}" />
-                                    <Setter Property="BorderBrush" Value="{DynamicResource DisabledTextBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.BodyLight}" />
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
@@ -165,19 +165,19 @@
                     Command="{Binding ConfirmCommand}"
                     Content="保存并启用"
                     Cursor="Hand"
-                    FontSize="{StaticResource FontSizeMD}"
+                    FontSize="14"
                     ToolTip="保存远程地址并切换到远程模式 (需先通过测试)">
                     <Button.Style>
                         <Style TargetType="Button">
-                            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource BackgroundBrush}" />
+                            <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Background}" />
                             <Setter Property="BorderThickness" Value="0" />
                             <Style.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="{DynamicResource DarkPrimaryBrush}" />
+                                    <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Dark}" />
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
-                                    <Setter Property="Background" Value="{DynamicResource LightPrimaryBrush}" />
+                                    <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
@@ -190,7 +190,7 @@
                     Command="{Binding CancelCommand}"
                     Content="取消"
                     Cursor="Hand"
-                    FontSize="{StaticResource FontSizeMD}" />
+                    FontSize="14" />
             </StackPanel>
         </Border>
 
@@ -198,7 +198,7 @@
         <Grid
             Grid.Row="0"
             Grid.RowSpan="3"
-            Background="{DynamicResource DarkMaskBrush}"
+            Background="#20000000"
             Visibility="{Binding IsBusy, Converter={x:Static converters:Cvt.BoolToVis}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <ProgressBar
@@ -208,8 +208,8 @@
                 <TextBlock
                     Margin="0,10,0,0"
                     HorizontalAlignment="Center"
-                    FontSize="{StaticResource FontSizeSM}"
-                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    FontSize="13"
+                    Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                     Text="{Binding StatusMessage}" />
             </StackPanel>
         </Grid>

@@ -19,7 +19,7 @@
         <Setter Property="Width" Value="200" />
         <Setter Property="Height" Value="180" />
         <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Outline}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="12" />
         <Setter Property="Cursor" Value="Hand" />
@@ -35,14 +35,14 @@
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
                 <Setter Property="Effect">
                     <Setter.Value>
                         <DropShadowEffect
                             BlurRadius="16"
                             Opacity="0.2"
                             ShadowDepth="4"
-                            Color="{StaticResource PrimaryColor}" />
+                            Color="#5D4037" />
                     </Setter.Value>
                 </Setter>
             </Trigger>
@@ -64,14 +64,14 @@
                     BlurRadius="12"
                     Opacity="0.25"
                     ShadowDepth="3"
-                    Color="{StaticResource PrimaryColor}" />
+                    Color="#5D4037" />
             </Setter.Value>
         </Setter>
         <Setter Property="Background">
             <Setter.Value>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Offset="0" Color="{StaticResource LightPrimaryColor}" />
-                    <GradientStop Offset="1" Color="{StaticResource DarkPrimaryColor}" />
+                    <GradientStop Offset="0" Color="#D7CCC8" />
+                    <GradientStop Offset="1" Color="#4E342E" />
                 </LinearGradientBrush>
             </Setter.Value>
         </Setter>
@@ -85,7 +85,7 @@
         <Setter Property="Width" Value="200" />
         <Setter Property="Height" Value="200" />
         <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Outline}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="12" />
         <Setter Property="Effect">
@@ -107,7 +107,7 @@
         <Setter Property="Width" Value="48" />
         <Setter Property="Height" Value="48" />
         <Setter Property="Stretch" Value="Uniform" />
-        <Setter Property="Fill" Value="{DynamicResource PrimaryBrush}" />
+        <Setter Property="Fill" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="Margin" Value="0,0,0,16" />
     </Style>
@@ -119,7 +119,7 @@
     <Style x:Key="CardTitleStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="18" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
         <Setter Property="HorizontalAlignment" Value="Center" />
     </Style>
 

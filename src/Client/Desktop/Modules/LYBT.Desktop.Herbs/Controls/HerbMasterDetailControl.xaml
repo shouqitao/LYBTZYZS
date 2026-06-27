@@ -95,7 +95,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="FontWeight" Value="SemiBold" />
-                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
                                     <Setter Property="VerticalAlignment" Value="Center" />
                                     <Setter Property="Padding" Value="8,0" />
                                 </Style>
@@ -108,7 +108,7 @@
                             Header="拼音码">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}" />
                                     <Setter Property="VerticalAlignment" Value="Center" />
                                     <Setter Property="FontFamily" Value="Consolas" />
                                     <Setter Property="FontSize" Value="11" />
@@ -122,7 +122,7 @@
                             Header="规格">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}" />
                                     <Setter Property="VerticalAlignment" Value="Center" />
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
@@ -134,7 +134,7 @@
                             Header="单位">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}" />
                                     <Setter Property="VerticalAlignment" Value="Center" />
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
@@ -146,7 +146,7 @@
                             Header="零售价">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
                                     <Setter Property="VerticalAlignment" Value="Center" />
                                     <Setter Property="TextAlignment" Value="Right" />
                                     <Setter Property="Padding" Value="0,0,8,0" />
@@ -200,8 +200,8 @@
                             Orientation="Horizontal">
                             <TextBlock
                                 VerticalAlignment="Center"
-                                FontSize="{StaticResource FontSizeXS}"
-                                Foreground="{DynamicResource SecondaryTextBrush}"
+                                FontSize="12"
+                                Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                                 Text="每页" />
                             <ComboBox
                                 Width="60"
@@ -212,8 +212,8 @@
                                 SelectedItem="{Binding PageSize, Mode=TwoWay}" />
                             <TextBlock
                                 VerticalAlignment="Center"
-                                FontSize="{StaticResource FontSizeXS}"
-                                Foreground="{DynamicResource SecondaryTextBrush}"
+                                FontSize="12"
+                                Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                                 Text="条" />
                         </StackPanel>
 

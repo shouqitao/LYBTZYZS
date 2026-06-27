@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     FormulaViewControl - 验方预览控件
     
     独立的验方预览控件，可在FormulaDetailView和FormulaImportDialog中复用
@@ -208,8 +208,8 @@
                                         <TextBlock
                                             Margin="4,0,0,0"
                                             VerticalAlignment="Center"
-                                            FontSize="{StaticResource FontSizeXS}"
-                                            Foreground="{DynamicResource AccentOrangeBrush}"
+                                            FontSize="12"
+                                            Foreground="#E65100"
                                             Visibility="{Binding DecocteMethod, Converter={x:Static converters:Cvt.DecocteMethodToVis}}">
                                             <TextBlock.Text>
                                                 <Binding Converter="{x:Static converters:Cvt.EnumDesc}" Path="DecocteMethod" />

@@ -19,7 +19,7 @@
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="Margin" Value="0"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -37,11 +37,11 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Primary}"/>
                     <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
                 </Trigger>
                 <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                     <Setter Property="FontWeight" Value="SemiBold"/>
                     <Setter Property="Cursor" Value="Arrow"/>
                 </Trigger>
@@ -53,7 +53,7 @@
             <Setter Property="Text" Value="›"/>
             <Setter Property="Margin" Value="4,0"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Outline}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
     </UserControl.Resources>

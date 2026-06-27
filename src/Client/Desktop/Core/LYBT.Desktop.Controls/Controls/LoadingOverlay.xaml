@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     LoadingOverlay - 加载遮罩控件
 
     功能：
@@ -22,7 +22,7 @@
 
     <!--  转换器使用x:Static模式  -->
 
-    <Grid Background="{StaticResource DarkMaskBrush}" Visibility="{Binding IsLoading, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
+    <Grid Background="#20000000" Visibility="{Binding IsOverlayVisible, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <!--  加载动画  -->
             <ProgressBar
@@ -32,8 +32,8 @@
                 IsIndeterminate="True">
                 <ProgressBar.Style>
                     <Style TargetType="ProgressBar">
-                        <Setter Property="Foreground" Value="{DynamicResource ProgressBarBrush}" />
-                        <Setter Property="Background" Value="{DynamicResource BorderLightBrush}" />
+                        <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
+                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Outline}" />
                     </Style>
                 </ProgressBar.Style>
             </ProgressBar>
@@ -42,8 +42,8 @@
             <TextBlock
                 Margin="0,16,0,0"
                 HorizontalAlignment="Center"
-                FontSize="{StaticResource FontSizeMD}"
-                Foreground="{DynamicResource SecondaryTextBrush}"
+                FontSize="14"
+                Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                 Text="{Binding LoadingText, ElementName=Root}" />
         </StackPanel>
     </Grid>

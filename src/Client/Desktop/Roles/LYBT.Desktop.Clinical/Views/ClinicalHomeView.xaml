@@ -13,15 +13,15 @@
             <TextBlock
                 Margin="0,0,0,8"
                 HorizontalAlignment="Center"
-                FontSize="{StaticResource FontSizeXXL}"
+                FontSize="24"
                 FontWeight="Bold"
-                Foreground="{DynamicResource PrimaryBrush}"
+                Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
                 Text="临床工作台" />
             <TextBlock
                 Margin="0,0,0,40"
                 HorizontalAlignment="Center"
-                FontSize="{StaticResource FontSizeMD}"
-                Foreground="{DynamicResource SecondaryTextBrush}"
+                FontSize="14"
+                Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                 Text="凌隐宝堂中医诊所" />
 
             <!--  上层：主卡片 + 统计卡片  -->
@@ -42,13 +42,13 @@
                             <TextBlock
                                 Margin="0,0,0,8"
                                 HorizontalAlignment="Center"
-                                FontSize="{StaticResource FontSizeXXL}"
+                                FontSize="24"
                                 FontWeight="Bold"
                                 Foreground="White"
                                 Text="开始接诊" />
                             <TextBlock
                                 HorizontalAlignment="Center"
-                                FontSize="{StaticResource FontSizeMD}"
+                                FontSize="14"
                                 Foreground="White"
                                 Opacity="0.85"
                                 Text="点击进入患者选择" />
@@ -62,9 +62,9 @@
                         <TextBlock
                             Margin="0,0,0,20"
                             HorizontalAlignment="Center"
-                            FontSize="{StaticResource FontSizeLG}"
+                            FontSize="16"
                             FontWeight="Bold"
-                            Foreground="{DynamicResource PrimaryTextBrush}"
+                            Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                             Text="今日统计" />
 
                         <!--  今日接诊量  -->
@@ -76,13 +76,13 @@
                                 VerticalAlignment="Center"
                                 FontSize="36"
                                 FontWeight="Bold"
-                                Foreground="{DynamicResource PrimaryBrush}"
+                                Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
                                 Text="{Binding TodayConsultationCount, FallbackValue=0}" />
                             <TextBlock
                                 Margin="4,0,0,0"
                                 VerticalAlignment="Center"
-                                FontSize="{StaticResource FontSizeMD}"
-                                Foreground="{DynamicResource SecondaryTextBrush}"
+                                FontSize="14"
+                                Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                                 Text=" 人" />
                         </StackPanel>
 
@@ -90,20 +90,20 @@
                         <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                             <TextBlock
                                 VerticalAlignment="Center"
-                                FontSize="{StaticResource FontSizeSM}"
-                                Foreground="{DynamicResource SecondaryTextBrush}"
+                                FontSize="13"
+                                Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                                 Text="待完成医案 " />
                             <TextBlock
                                 VerticalAlignment="Center"
-                                FontSize="{StaticResource FontSizeXL}"
+                                FontSize="20"
                                 FontWeight="SemiBold"
-                                Foreground="{DynamicResource DangerBrush}"
+                                Foreground="{DynamicResource MaterialDesign.Brush.Error}"
                                 Text="{Binding PendingCaseCount, FallbackValue=0}" />
                             <TextBlock
                                 Margin="4,0,0,0"
                                 VerticalAlignment="Center"
-                                FontSize="{StaticResource FontSizeSM}"
-                                Foreground="{DynamicResource SecondaryTextBrush}"
+                                FontSize="13"
+                                Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                                 Text=" 份" />
                         </StackPanel>
                     </StackPanel>

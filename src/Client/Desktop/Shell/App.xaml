@@ -17,25 +17,22 @@
                     SecondaryColor="Amber" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />
 
-                <!--  2. 设计系统 (项目特定令牌) -->
-                <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/DesignSystem.xaml" />
-
-                <!--  3. 矢量图标 Path data -->
+                <!--  2. 矢量图标 Path data -->
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/Icons.xaml" />
 
-                <!--  4. UI 统一化组件样式 -->
+                <!--  3. UI 统一化组件样式 -->
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/UnifiedComponents.xaml" />
 
-                <!--  5. 首页共享样式 -->
+                <!--  4. 首页共享样式 -->
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/HomePageStyles.xaml" />
 
-                <!--  6. Shell 全局样式 -->
+                <!--  5. Shell 全局样式 -->
                 <ResourceDictionary Source="Styles/Typography.xaml" />
 
-                <!--  7. 对话框窗口样式 -->
+                <!--  6. 对话框窗口样式 -->
                 <ResourceDictionary Source="Styles/DialogStyles.xaml" />
 
-                <!--  8. 统一转换器资源字典 -->
+                <!--  7. 统一转换器资源字典 -->
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Converters/Converters.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

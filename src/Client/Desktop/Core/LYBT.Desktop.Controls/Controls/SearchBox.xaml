@@ -49,7 +49,7 @@
                                     VerticalAlignment="Center"
                                     Data="M4,4 L12,12 M12,4 L4,12"
                                     Stretch="Uniform"
-                                    Stroke="{DynamicResource SecondaryTextBrush}"
+                                    Stroke="{DynamicResource MaterialDesign.Brush.BodyLight}"
                                     StrokeThickness="1.5" />
                             </Border>
                             <ControlTemplate.Triggers>
@@ -70,7 +70,7 @@
     <Border
         Padding="8,4"
         Background="{DynamicResource MaterialDesignPaper}"
-        BorderBrush="{DynamicResource BorderLightBrush}"
+        BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
         BorderThickness="1"
         CornerRadius="6"
         DataContext="{Binding ElementName=Root}">
@@ -90,7 +90,7 @@
                 Margin="0,0,8,0"
                 VerticalAlignment="Center"
                 Data="{StaticResource SearchIconGeometry}"
-                Fill="{DynamicResource SecondaryTextBrush}"
+                Fill="{DynamicResource MaterialDesign.Brush.BodyLight}"
                 Stretch="Uniform" />
 
             <!--  输入框  -->
@@ -100,11 +100,11 @@
                 VerticalAlignment="Center"
                 Background="Transparent"
                 BorderThickness="0"
-                FontSize="{StaticResource FontSizeMD}"
+                FontSize="14"
                 Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                 <TextBox.Style>
                     <Style TargetType="TextBox">
-                        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+                        <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
                         <Style.Triggers>
                             <Trigger Property="Text" Value="">
                                 <Setter Property="Background">
@@ -112,7 +112,7 @@
                                         <VisualBrush AlignmentX="Left" Stretch="None">
                                             <VisualBrush.Visual>
                                                 <TextBlock
-                                                    FontSize="{StaticResource FontSizeMD}"
+                                                    FontSize="14"
                                                     Foreground="{DynamicResource MaterialDesignBodyLight}"
                                                     Text="{Binding Data.Placeholder, Source={StaticResource RootProxy}}" />
                                             </VisualBrush.Visual>
@@ -126,7 +126,7 @@
                                         <VisualBrush AlignmentX="Left" Stretch="None">
                                             <VisualBrush.Visual>
                                                 <TextBlock
-                                                    FontSize="{StaticResource FontSizeMD}"
+                                                    FontSize="14"
                                                     Foreground="{DynamicResource MaterialDesignBodyLight}"
                                                     Text="{Binding Data.Placeholder, Source={StaticResource RootProxy}}" />
                                             </VisualBrush.Visual>
@@ -154,7 +154,7 @@
                 Padding="12,6"
                 Command="{Binding SearchCommand}"
                 Content="搜索"
-                FontSize="{StaticResource FontSizeSM}"
+                FontSize="13"
                 Style="{StaticResource MaterialDesignRaisedButton}" />
         </Grid>
     </Border>

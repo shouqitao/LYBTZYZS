@@ -14,15 +14,15 @@
             <TextBlock
                 Margin="0,0,0,8"
                 HorizontalAlignment="Center"
-                FontSize="{StaticResource FontSizeXXL}"
+                FontSize="24"
                 FontWeight="Bold"
-                Foreground="{DynamicResource PrimaryBrush}"
+                Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
                 Text="系统管理工作台" />
             <TextBlock
                 Margin="0,0,0,40"
                 HorizontalAlignment="Center"
-                FontSize="{StaticResource FontSizeMD}"
-                Foreground="{DynamicResource SecondaryTextBrush}"
+                FontSize="14"
+                Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                 Text="凌隐宝堂中医诊所" />
 
             <!--  7个功能卡片（统一为 Button + Path 矢量图标）居中  -->

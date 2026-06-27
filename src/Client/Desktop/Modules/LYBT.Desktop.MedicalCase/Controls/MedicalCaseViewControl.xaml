@@ -116,7 +116,7 @@
                             <!-- 中医诊断 -->
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="中医诊断" Style="{DynamicResource DetailLabelStyle}"/>
                             <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Detail.TcmDiagnosis, TargetNullValue='-'}"
-                                       Style="{DynamicResource DetailValueStyle}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}"/>
+                                       Style="{DynamicResource DetailValueStyle}" FontWeight="SemiBold" Foreground="{DynamicResource MaterialDesign.Brush.Primary}"/>
                         </Grid>
                     </controls:InfoCard.Content>
                 </controls:InfoCard>
@@ -170,8 +170,8 @@
                                                 <TextBlock Text="{Binding HerbName}" Style="{DynamicResource HerbTagNameStyle}"/>
                                                 <TextBlock Text="{Binding Dosage, StringFormat={}{0}g}" Style="{DynamicResource HerbTagDosageStyle}"/>
                                                 <!-- 煎法显示（非默认时显示） -->
-                                                <TextBlock Foreground="{StaticResource AccentOrangeBrush}"
-                                                           FontSize="{StaticResource FontSizeXS}"
+                                                <TextBlock Foreground="#E65100"
+                                                           FontSize="12"
                                                            Margin="4,0,0,0"
                                                            VerticalAlignment="Center"
                                                            Visibility="{Binding DecocteMethod, Converter={x:Static converters:Cvt.DecocteMethodToVis}}">
@@ -269,7 +269,7 @@
                     </StackPanel>
                     <TextBlock>
                         <Run Text="中医诊断: " FontWeight="SemiBold"/>
-                        <Run Text="{Binding Consultation.TcmDiagnosis, TargetNullValue='-'}" Foreground="{DynamicResource PrimaryBrush}" FontWeight="SemiBold"/>
+                        <Run Text="{Binding Consultation.TcmDiagnosis, TargetNullValue='-'}" Foreground="{DynamicResource MaterialDesign.Brush.Primary}" FontWeight="SemiBold"/>
                     </TextBlock>
                 </StackPanel>
             </Border>
@@ -315,7 +315,7 @@
                         </TextBlock>
                         <TextBlock Margin="24,0,0,0" VerticalAlignment="Center">
                             <Run Text="总价: "/>
-                            <Run Text="{Binding Prescription.SingleDosePrice, StringFormat='{}{0:F2}元'}" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}"/>
+                            <Run Text="{Binding Prescription.SingleDosePrice, StringFormat='{}{0:F2}元'}" FontWeight="SemiBold" Foreground="#2E8B57"/>
                         </TextBlock>
                     </StackPanel>
 

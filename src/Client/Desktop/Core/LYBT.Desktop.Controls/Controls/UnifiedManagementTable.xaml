@@ -35,13 +35,13 @@
                 Visibility="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.InverseNullToVis}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="📋"
-                           FontSize="{StaticResource FontSizeXXL}"
+                           FontSize="24"
                            HorizontalAlignment="Center"
                              Foreground="{DynamicResource MaterialDesignBodyLight}"
-                           Margin="{StaticResource SpacingMD}" />
+                           Margin="12" />
                 <TextBlock Text="{Binding EmptyStateText, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                           FontSize="{StaticResource FontSizeMD}"
-                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           FontSize="14"
+                           Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                            HorizontalAlignment="Center" />
             </StackPanel>
         </Border>

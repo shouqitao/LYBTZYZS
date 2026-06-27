@@ -71,7 +71,7 @@
                                 <Border x:Name="DragIndicator"
                                         Width="4"
                                         CornerRadius="2"
-                                        Background="{DynamicResource PrimaryBrush}"
+                                        Background="{DynamicResource MaterialDesign.Brush.Primary}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         Height="48"
@@ -79,12 +79,12 @@
                             </Grid>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="SplitterLine" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                    <Setter TargetName="SplitterLine" Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary}"/>
                                     <Setter TargetName="SplitterLine" Property="Width" Value="2"/>
                                     <Setter TargetName="DragIndicator" Property="Opacity" Value="0.3"/>
                                 </Trigger>
                                 <Trigger Property="IsDragging" Value="True">
-                                    <Setter TargetName="SplitterLine" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                    <Setter TargetName="SplitterLine" Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary}"/>
                                     <Setter TargetName="SplitterLine" Property="Width" Value="2"/>
                                     <Setter TargetName="DragIndicator" Property="Opacity" Value="0.6"/>
                                 </Trigger>
@@ -99,9 +99,8 @@
                  ==================================================================== -->
             <Style x:Key="DetailPanelStyle" TargetType="Border">
                 <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
-                <Setter Property="CornerRadius" Value="{DynamicResource RadiusMD}"/>
+                <Setter Property="CornerRadius" Value="8"/>
                 <Setter Property="Margin" Value="8,12,12,12"/>
-                <Setter Property="Effect" Value="{DynamicResource CardShadow}"/>
             </Style>
 
             <!-- ====================================================================
@@ -118,7 +117,7 @@
                  ==================================================================== -->
             <Style x:Key="EmptyStatePanelStyle" TargetType="Border">
                 <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
-                <Setter Property="CornerRadius" Value="{DynamicResource RadiusMD}"/>
+                <Setter Property="CornerRadius" Value="8"/>
                 <Setter Property="Margin" Value="8,12,12,12"/>
             </Style>
         </ResourceDictionary>

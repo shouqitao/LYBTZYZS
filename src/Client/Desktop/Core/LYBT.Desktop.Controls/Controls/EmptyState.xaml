@@ -55,9 +55,9 @@
         <TextBlock
             MaxWidth="300"
             HorizontalAlignment="Center"
-            FontSize="{StaticResource FontSizeLG}"
+            FontSize="16"
             FontWeight="Medium"
-            Foreground="{DynamicResource SecondaryTextBrush}"
+            Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
             Text="{Binding Title}"
             TextWrapping="Wrap" />
 
@@ -66,7 +66,7 @@
             MaxWidth="300"
             Margin="0,8,0,0"
             HorizontalAlignment="Center"
-            FontSize="{StaticResource FontSizeMD}"
+            FontSize="14"
             Foreground="{DynamicResource MaterialDesignBodyLight}"
             Text="{Binding Subtitle}"
             TextWrapping="Wrap"

@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     StatusBadge - 状态徽章控件
 
     功能：
@@ -25,16 +25,16 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <!--  状态徽章颜色 - 使用主题资源  -->
-            <SolidColorBrush x:Key="BadgeSuccessBackground" Color="{DynamicResource LightSuccessColor}" />
-            <SolidColorBrush x:Key="BadgeSuccessForeground" Color="{DynamicResource DarkSuccessColor}" />
-            <SolidColorBrush x:Key="BadgeDangerBackground" Color="{DynamicResource LightDangerColor}" />
-            <SolidColorBrush x:Key="BadgeDangerForeground" Color="{DynamicResource DarkDangerColor}" />
-            <SolidColorBrush x:Key="BadgeWarningBackground" Color="{DynamicResource LightWarningColor}" />
-            <SolidColorBrush x:Key="BadgeWarningForeground" Color="{DynamicResource DarkWarningColor}" />
-            <SolidColorBrush x:Key="BadgeInfoBackground" Color="{DynamicResource LightInfoColor}" />
-            <SolidColorBrush x:Key="BadgeInfoForeground" Color="{DynamicResource DarkInfoColor}" />
+            <SolidColorBrush x:Key="BadgeSuccessBackground" Color="#E8F5E9" />
+            <SolidColorBrush x:Key="BadgeSuccessForeground" Color="#228B22" />
+            <SolidColorBrush x:Key="BadgeDangerBackground" Color="#FDE7E9" />
+            <SolidColorBrush x:Key="BadgeDangerForeground" Color="#A4262C" />
+            <SolidColorBrush x:Key="BadgeWarningBackground" Color="#FFF8E1" />
+            <SolidColorBrush x:Key="BadgeWarningForeground" Color="#B8860B" />
+            <SolidColorBrush x:Key="BadgeInfoBackground" Color="#E0F7FA" />
+            <SolidColorBrush x:Key="BadgeInfoForeground" Color="#3D5A80" />
             <SolidColorBrush x:Key="BadgeNeutralBackground" Color="{DynamicResource SecondaryRegionColor}" />
-            <SolidColorBrush x:Key="BadgeNeutralForeground" Color="{DynamicResource SecondaryTextColor}" />
+            <SolidColorBrush x:Key="BadgeNeutralForeground" Color="#757575" />
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -50,7 +50,7 @@
             x:Name="BadgeText"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            FontSize="{StaticResource FontSizeXS}"
+            FontSize="12"
             FontWeight="Medium"
             Foreground="{Binding BadgeForeground, ElementName=Root}"
             Text="{Binding DisplayText, ElementName=Root}" />

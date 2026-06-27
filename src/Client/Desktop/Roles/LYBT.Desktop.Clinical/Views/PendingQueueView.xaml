@@ -17,7 +17,7 @@
 
         <!-- 标题栏 -->
         <Border Grid.Row="0" 
-                Background="{DynamicResource PrimaryBrush}" 
+                Background="{DynamicResource MaterialDesign.Brush.Primary}" 
                 Padding="12,8">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -27,7 +27,7 @@
                 
                 <TextBlock Grid.Column="0"
                            Text="待诊队列" 
-                           FontSize="{StaticResource FontSizeLG}" 
+                           FontSize="16" 
                            FontWeight="SemiBold"
                            Foreground="White" />
                 
@@ -49,8 +49,8 @@
                           Margin="8">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Background="{DynamicResource CardBackgroundBrush}"
-                                BorderBrush="{DynamicResource BorderBrush}"
+                        <Border Background="{DynamicResource MaterialDesign.Brush.Paper}"
+                                BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
                                 BorderThickness="1"
                                 CornerRadius="4"
                                 Margin="0,4"
@@ -67,14 +67,14 @@
                                             Orientation="Horizontal">
                                     <TextBlock Text="{Binding PatientName}" 
                                                FontWeight="SemiBold"
-                                               FontSize="{StaticResource FontSizeMD}"
-                                               Foreground="{DynamicResource PrimaryTextBrush}" />
-                                    <Border Background="{DynamicResource InfoBrush}"
+                                               FontSize="14"
+                                               Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" />
+                                    <Border Background="#5B8FA8"
                                             CornerRadius="3"
                                             Padding="6,2"
                                             Margin="8,0,0,0">
                                         <TextBlock Text="{Binding CaseStatus}" 
-                                                   FontSize="{StaticResource FontSizeXS}"
+                                                   FontSize="12"
                                                    Foreground="White" />
                                     </Border>
                                 </StackPanel>
@@ -82,8 +82,8 @@
                                 <!-- 就诊时间 -->
                                 <TextBlock Grid.Row="1"
                                            Text="{Binding CreatedAt, StringFormat='就诊时间: {0:yyyy-MM-dd HH:mm}'}"
-                                           FontSize="{StaticResource FontSizeXS}"
-                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                                            Margin="0,4,0,0" />
                                 
                                 <!-- 操作按钮 -->

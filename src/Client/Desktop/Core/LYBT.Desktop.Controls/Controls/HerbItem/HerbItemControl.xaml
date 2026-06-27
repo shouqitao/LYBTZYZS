@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
     x:Class="LYBT.Desktop.Controls.Controls.HerbItem.HerbItemControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -37,7 +37,7 @@
         Margin="2"
         Padding="6,4"
         Background="{DynamicResource MaterialDesignPaper}"
-        BorderBrush="{DynamicResource BorderLightBrush}"
+        BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
         BorderThickness="1"
         CornerRadius="4">
         <!--  右键菜单：编辑模式下可删除药材  -->
@@ -45,12 +45,12 @@
             <ContextMenu x:Name="HerbContextMenu">
                 <MenuItem
                     Click="OnDeleteMenuItemClick"
-                    Foreground="{DynamicResource DangerBrush}"
+                    Foreground="{DynamicResource MaterialDesign.Brush.Error}"
                     Header="删除药材">
                     <MenuItem.Icon>
                         <TextBlock
                             FontWeight="Bold"
-                            Foreground="{DynamicResource DangerBrush}"
+                            Foreground="{DynamicResource MaterialDesign.Brush.Error}"
                             Text="x" />
                     </MenuItem.Icon>
                 </MenuItem>
@@ -76,7 +76,7 @@
                 MinWidth="60"
                 Padding="4,2"
                 VerticalContentAlignment="Center"
-                FontSize="{StaticResource FontSizeSM}"
+                FontSize="13"
                 GotFocus="OnTextBoxGotFocus"
                 IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
                 LostFocus="OnTextBoxLostFocus"
@@ -94,7 +94,7 @@
                 Padding="2"
                 HorizontalContentAlignment="Right"
                 VerticalContentAlignment="Center"
-                FontSize="{StaticResource FontSizeXS}"
+                FontSize="12"
                 GotFocus="OnDosageGotFocus"
                 IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
                 PreviewKeyDown="OnDosageKeyDown"
@@ -110,7 +110,7 @@
                 Padding="4,2"
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center"
-                FontSize="{StaticResource FontSizeXS}"
+                FontSize="12"
                 IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
                 ItemsSource="{Binding Source={StaticResource DecocteMethodValues}}"
                 SelectedItem="{Binding DecocteMethod, Mode=TwoWay}">
@@ -131,7 +131,7 @@
                 Padding="4,2"
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center"
-                FontSize="{StaticResource FontSizeXS}"
+                FontSize="12"
                 IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
                 ItemsSource="{Binding Source={StaticResource HerbRoleValues}}"
                 SelectedItem="{Binding HerbRole, Mode=TwoWay}">
@@ -154,7 +154,7 @@
                     MinWidth="{Binding ActualWidth, Source={x:Reference HerbNameTextBox}}"
                     MaxHeight="200"
                     Background="{DynamicResource MaterialDesignPaper}"
-                    BorderBrush="{DynamicResource BorderLightBrush}"
+                    BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
                     BorderThickness="1">
                     <ListBox
                         x:Name="SuggestionsListBox"

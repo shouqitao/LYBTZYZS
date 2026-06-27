@@ -35,7 +35,7 @@
         <!--  Column 0: 患者选择列表  -->
         <Border Grid.Column="0"
                 Background="{DynamicResource MaterialDesignBody}"
-                BorderBrush="{DynamicResource BorderBrush}"
+                BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
                 BorderThickness="0,0,1,0">
             <patientControls:PatientSelectionControl
                 PatientDoubleClicked="PatientSelectionControl_PatientDoubleClicked"/>
@@ -48,7 +48,7 @@
                       ResizeDirection="Columns"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Background="{DynamicResource BorderBrush}"/>
+                      Background="{DynamicResource MaterialDesign.Brush.Outline}"/>
 
         <!--  Column 2: 看诊工作区  -->
         <Grid Grid.Column="2">
@@ -63,22 +63,22 @@
             <Border Grid.Row="0"
                     Padding="16,10"
                     Background="{DynamicResource MaterialDesignBrush Primary}"
-                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
                     BorderThickness="0,0,0,1"
                     Visibility="{Binding SelectedPatient, Converter={x:Static converters:Cvt.NotNullToVis}}">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock FontSize="{StaticResource FontSizeLG}" FontWeight="Bold"
-                               Foreground="{DynamicResource PrimaryTextBrush}"
+                    <TextBlock FontSize="16" FontWeight="Bold"
+                               Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                                Text="{Binding SelectedPatient.Name}"
                                VerticalAlignment="Center"/>
                     <TextBlock Margin="16,0,0,0"
-                               FontSize="{StaticResource FontSizeSM}"
-                               Foreground="{DynamicResource SecondaryTextBrush}"
+                               FontSize="13"
+                               Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                                VerticalAlignment="Center"
                                Text="{Binding SelectedPatient.Gender}"/>
                     <TextBlock Margin="16,0,0,0"
-                               FontSize="{StaticResource FontSizeSM}"
-                               Foreground="{DynamicResource SecondaryTextBrush}"
+                               FontSize="13"
+                               Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                                VerticalAlignment="Center"
                                Text="{Binding SelectedPatient.Age, StringFormat={}{0}岁}"/>
                 </StackPanel>
@@ -89,14 +89,14 @@
                         Margin="0,40,0,0"
                         HorizontalAlignment="Center"
                         Visibility="{Binding SelectedPatient, Converter={x:Static converters:Cvt.InverseNullToVis}}">
-                <TextBlock FontSize="{StaticResource FontSizeMD}"
+                <TextBlock FontSize="14"
                            FontWeight="Bold"
-                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                            HorizontalAlignment="Center"
                            Text="📋 请从左侧选择患者"/>
                 <TextBlock Margin="0,8,0,0"
-                           FontSize="{StaticResource FontSizeXS}"
-                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           FontSize="12"
+                           Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                            HorizontalAlignment="Center"
                            Text="双击患者或选中后点击「开始看诊」"/>
             </StackPanel>
@@ -112,19 +112,19 @@
                         <DataTemplate>
                             <Border Padding="8,6"
                                     Margin="0,0,0,4"
-                                    Background="{DynamicResource SurfaceBrush}"
+                                    Background="{DynamicResource MaterialDesign.Brush.Paper}"
                                     CornerRadius="4">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Width="90"
-                                               FontSize="{StaticResource FontSizeXS}"
+                                               FontSize="12"
                                                FontWeight="SemiBold"
                                                Text="{Binding Date, StringFormat=yyyy-MM-dd}"/>
                                     <TextBlock Width="180"
-                                               FontSize="{StaticResource FontSizeXS}"
+                                               FontSize="12"
                                                TextTrimming="CharacterEllipsis"
                                                Text="{Binding Diagnosis}"/>
-                                    <TextBlock FontSize="{StaticResource FontSizeXS}"
-                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                    <TextBlock FontSize="12"
+                                               Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                                                TextTrimming="CharacterEllipsis"
                                                Text="{Binding Summary}"/>
                                 </StackPanel>
@@ -138,7 +138,7 @@
             <Border Grid.Row="3"
                     Padding="16,12"
                     Background="{DynamicResource MaterialDesignBody}"
-                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
                     BorderThickness="0,1,0,0"
                     Visibility="{Binding SelectedPatient, Converter={x:Static converters:Cvt.NotNullToVis}}">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">

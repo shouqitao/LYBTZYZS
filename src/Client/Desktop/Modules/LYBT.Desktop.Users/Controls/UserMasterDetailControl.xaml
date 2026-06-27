@@ -235,7 +235,7 @@
                                     <Setter Property="Opacity" Value="0.7" />
                                     <Setter Property="VerticalAlignment" Value="Center" />
                                     <Setter Property="FontFamily" Value="Consolas" />
-                                    <Setter Property="FontSize" Value="{StaticResource FontSizeXS}" />
+                                    <Setter Property="FontSize" Value="12" />
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -304,7 +304,7 @@
                             Orientation="Horizontal">
                             <TextBlock
                                 VerticalAlignment="Center"
-                                FontSize="{StaticResource FontSizeXS}"
+                                FontSize="12"
                                 Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                                 Opacity="0.7"
                                 Text="每页" />
@@ -318,7 +318,7 @@
                                 Style="{StaticResource MaterialDesignOutlinedComboBox}" />
                             <TextBlock
                                 VerticalAlignment="Center"
-                                FontSize="{StaticResource FontSizeXS}"
+                                FontSize="12"
                                 Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                                 Opacity="0.7"
                                 Text="条" />

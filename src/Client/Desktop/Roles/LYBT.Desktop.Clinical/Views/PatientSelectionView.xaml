@@ -28,14 +28,14 @@
         <!-- 顶部标题栏 -->
         <Border Grid.Row="0"
                 Background="{DynamicResource MaterialDesignBody}"
-                BorderBrush="{DynamicResource BorderBrush}"
+                BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
                 BorderThickness="0,0,0,1">
             <Grid Margin="20,0">
                 <TextBlock Text="患者选择"
-                           FontSize="{StaticResource FontSizeXL}"
+                           FontSize="20"
                            FontWeight="Bold"
                            VerticalAlignment="Center"
-                           Foreground="{DynamicResource PrimaryTextBrush}"/>
+                           Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                 <!-- 返回首页按钮已移除 - 使用导航栏的"首页"按钮统一导航 -->
             </Grid>
         </Border>
@@ -50,7 +50,7 @@
 
             <!-- Left Panel: CardReader + PendingQueue -->
             <Border Grid.Column="0" Background="{DynamicResource MaterialDesignBody}"
-                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0"
+                    BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}" BorderThickness="0,0,1,0"
                     Margin="0,0,0,0">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="12">
@@ -63,10 +63,10 @@
                                     <Ellipse Width="8" Height="8" VerticalAlignment="Center" Margin="0,0,6,0">
                                         <Ellipse.Style>
                                             <Style TargetType="Ellipse">
-                                                <Setter Property="Fill" Value="{DynamicResource SecondaryTextBrush}"/>
+                                                <Setter Property="Fill" Value="{DynamicResource MaterialDesign.Brush.BodyLight}"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding CardReader.IsConnected}" Value="True">
-                                                        <Setter Property="Fill" Value="{DynamicResource SuccessBrush}"/>
+                                                        <Setter Property="Fill" Value="#2E8B57"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -101,8 +101,8 @@
                                                     CornerRadius="4" Padding="8" Margin="0,0,0,6">
                                                 <StackPanel>
                                                     <TextBlock Text="{Binding PatientName}" FontWeight="Medium"/>
-                                                    <TextBlock Text="{Binding PhoneMasked}" FontSize="{StaticResource FontSizeXS}"
-                                                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                                    <TextBlock Text="{Binding PhoneMasked}" FontSize="12"
+                                                               Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"/>
                                                     <Button Content="接诊"
                                                             Command="{Binding DataContext.PendingQueue.SelectCommand,
                                                                 RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -117,7 +117,7 @@
                                 <TextBlock Text="暂无待诊患者"
                                            Visibility="{Binding PendingQueue.HasNoPendingCases,
                                                Converter={StaticResource BooleanToVisibilityConverter}}"
-                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                                            HorizontalAlignment="Center" Margin="0,8"/>
                             </StackPanel>
                         </Border>
@@ -133,7 +133,7 @@
 
             <!-- Right Panel: Patient Info -->
             <Border Grid.Column="2" Background="{DynamicResource MaterialDesignBody}"
-                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,0,0">
+                    BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}" BorderThickness="1,0,0,0">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="12">
                         <TextBlock Text="👤 患者信息" FontWeight="Bold" Margin="0,0,0,12"/>
@@ -149,7 +149,7 @@
         <Border Grid.Row="2"
                 Background="{DynamicResource MaterialDesignBody}"
                 Padding="20"
-                BorderBrush="{DynamicResource BorderBrush}"
+                BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
                 BorderThickness="0,1,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -161,14 +161,14 @@
                 <TextBlock Grid.Column="0"
                            Text="{Binding StatusMessage}"
                            VerticalAlignment="Center"
-                           FontSize="{StaticResource FontSizeSM}"
+                           FontSize="13"
                            Margin="0,0,20,0">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsError}" Value="True">
-                                    <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Error}"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>

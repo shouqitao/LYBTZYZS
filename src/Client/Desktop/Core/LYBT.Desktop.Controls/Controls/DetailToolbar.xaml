@@ -30,10 +30,10 @@
             x:Key="DangerButtonStyle"
             BasedOn="{StaticResource MaterialDesignOutlinedButton}"
             TargetType="Button">
-            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Error}" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource LightDangerBrush}" />
+                    <Setter Property="Background" Value="#FDE7E9" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -55,7 +55,7 @@
             <TextBlock
                 Grid.Column="0"
                 VerticalAlignment="Center"
-                FontSize="{StaticResource FontSizeLG}"
+                FontSize="16"
                 FontWeight="SemiBold"
                 Text="{Binding Title}"
                 Visibility="{Binding Title, Converter={x:Static converters:Cvt.NullToVis}}" />

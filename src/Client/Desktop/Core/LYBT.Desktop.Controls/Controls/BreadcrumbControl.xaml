@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
     x:Class="LYBT.Desktop.Controls.Controls.BreadcrumbControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -34,7 +34,7 @@
     <Border
         Padding="16,8"
         Background="{DynamicResource MaterialDesignPaper}"
-        BorderBrush="{DynamicResource BorderLightBrush}"
+        BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
         BorderThickness="0,0,0,1">
         <StackPanel Orientation="Horizontal">
             <!-- 后退按钮 -->
@@ -46,7 +46,7 @@
                     Width="16"
                     Height="16"
                     Data="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
-                    Fill="{DynamicResource PrimaryTextBrush}"
+                    Fill="{DynamicResource MaterialDesign.Brush.Foreground}"
                     Stretch="Uniform" />
             </Button>
 
@@ -60,12 +60,12 @@
                     Width="16"
                     Height="16"
                     Data="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
-                    Fill="{DynamicResource PrimaryTextBrush}"
+                    Fill="{DynamicResource MaterialDesign.Brush.Foreground}"
                     Stretch="Uniform" />
             </Button>
 
             <!-- 分隔线 -->
-            <Border Width="1" Margin="0,2" Background="{DynamicResource BorderLightBrush}" />
+            <Border Width="1" Margin="0,2" Background="{DynamicResource MaterialDesign.Brush.Outline}" />
 
             <!-- 面包屑列表 -->
             <ItemsControl
@@ -83,7 +83,7 @@
                             <TextBlock
                                 Margin="4,0"
                                 VerticalAlignment="Center"
-                                FontSize="{StaticResource FontSizeSM}"
+                                FontSize="13"
                                 Foreground="{DynamicResource MaterialDesignBodyLight}"
                                 Text=">" />
                             <!-- 面包屑项按钮 -->
@@ -96,7 +96,7 @@
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsCurrent}" Value="True">
                                                 <Setter Property="IsEnabled" Value="False" />
-                                                <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+                                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -104,8 +104,8 @@
                                 <TextBlock
                                     x:Name="ItemText"
                                     VerticalAlignment="Center"
-                                    FontSize="{StaticResource FontSizeSM}"
-                                    Foreground="{DynamicResource SecondaryTextBrush}"
+                                    FontSize="13"
+                                    Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                                     Text="{Binding Title}" />
                             </Button>
                         </StackPanel>

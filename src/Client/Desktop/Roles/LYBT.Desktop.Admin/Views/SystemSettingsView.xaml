@@ -9,7 +9,7 @@
     xmlns:prism="http://prismlibrary.com/"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <Grid Background="{DynamicResource RegionBrush}">
+    <Grid Background="{DynamicResource MaterialDesign.Brush.Background}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -34,12 +34,12 @@
                 <!--  返回首页按钮已移除 - 使用导航栏的"首页"按钮统一导航  -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button
-                        Margin="{StaticResource SpacingSM}"
+                        Margin="8"
                         Command="{Binding SaveCommand}"
                         Content="保存配置"
                         Style="{StaticResource MaterialDesignRaisedButton}" Background="#2E8B57" Foreground="White" BorderThickness="0" />
                     <Button
-                        Margin="{StaticResource SpacingSM}"
+                        Margin="8"
                         Command="{Binding ResetCommand}"
                         Content="重置"
                         Style="{StaticResource MaterialDesignOutlinedButton}" />
@@ -50,7 +50,7 @@
         <!--  设置内容  -->
         <ScrollViewer
             Grid.Row="1"
-            Padding="{StaticResource SpacingLG}"
+            Padding="16"
             VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <!--  基本设置  -->
@@ -59,7 +59,7 @@
                         <TextBlock Style="{StaticResource H2TextBlock}" Text="基本设置" />
 
                         <!--  系统名称  -->
-                        <Grid Margin="{StaticResource SpacingMD}">
+                        <Grid Margin="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -78,7 +78,7 @@
                         </Grid>
 
                         <!--  医院名称  -->
-                        <Grid Margin="{StaticResource SpacingMD}">
+                        <Grid Margin="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -97,7 +97,7 @@
                         </Grid>
 
                         <!--  联系电话  -->
-                        <Grid Margin="{StaticResource SpacingMD}">
+                        <Grid Margin="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -123,7 +123,7 @@
                         <TextBlock Style="{StaticResource H2TextBlock}" Text="诊所信息" />
 
                         <!--  诊所名称  -->
-                        <Grid Margin="{StaticResource SpacingMD}">
+                        <Grid Margin="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -142,7 +142,7 @@
                         </Grid>
 
                         <!--  科室  -->
-                        <Grid Margin="{StaticResource SpacingMD}">
+                        <Grid Margin="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -161,7 +161,7 @@
                         </Grid>
 
                         <!--  地址  -->
-                        <Grid Margin="{StaticResource SpacingMD}">
+                        <Grid Margin="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -180,7 +180,7 @@
                         </Grid>
 
                         <!--  电话  -->
-                        <Grid Margin="{StaticResource SpacingMD}">
+                        <Grid Margin="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -199,7 +199,7 @@
                         </Grid>
 
                         <!--  邮箱  -->
-                        <Grid Margin="{StaticResource SpacingMD}">
+                        <Grid Margin="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -218,7 +218,7 @@
                         </Grid>
 
                         <!--  执业许可证号  -->
-                        <Grid Margin="{StaticResource SpacingMD}">
+                        <Grid Margin="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -244,7 +244,7 @@
                         <TextBlock Style="{StaticResource H2TextBlock}" Text="数据库配置" />
 
                         <!--  数据库备份  -->
-                        <Grid Margin="{StaticResource SpacingMD}">
+                        <Grid Margin="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />
@@ -258,13 +258,13 @@
                                 Grid.Column="1"
                                 VerticalAlignment="Center"
                                 Content="启用数据库自动备份"
-                                FontSize="{StaticResource FontSizeMD}"
-                                Foreground="{DynamicResource PrimaryTextBrush}"
+                                FontSize="14"
+                                Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                                 IsChecked="{Binding AutoBackupEnabled}" />
                         </Grid>
 
                         <!--  备份路径  -->
-                        <Grid Margin="{StaticResource SpacingMD}">
+                        <Grid Margin="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="*" />

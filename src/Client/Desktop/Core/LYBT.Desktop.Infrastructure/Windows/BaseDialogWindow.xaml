@@ -6,7 +6,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{Binding Title}"
-        Background="{DynamicResource DialogBackgroundBrush}"
+        Background="{DynamicResource MaterialDesign.Brush.Paper}"
         WindowStyle="SingleBorderWindow">
     <Window.Resources>
         <ResourceDictionary>
@@ -16,8 +16,8 @@
         </ResourceDictionary>
     </Window.Resources>
     
-    <Border Background="{DynamicResource CardBackgroundBrush}"
-            BorderBrush="{DynamicResource BorderBrush}"
+    <Border Background="{DynamicResource MaterialDesign.Brush.Paper}"
+            BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
             BorderThickness="1">
         <ContentControl Content="{Binding}" />
     </Border>

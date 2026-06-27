@@ -21,7 +21,7 @@
         x:Name="LayoutRoot"
         Padding="4"
         Background="{DynamicResource MaterialDesignPaper}"
-        BorderBrush="{DynamicResource BorderLightBrush}"
+        BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
         BorderThickness="1"
         CornerRadius="4">
         <Grid>
@@ -72,31 +72,31 @@
                 <TextBlock
                     Margin="0,0,16,0"
                     VerticalAlignment="Center"
-                    Foreground="{DynamicResource SecondaryTextBrush}">
+                    Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}">
                     <Run Text="共" />
                     <Run
                         FontWeight="SemiBold"
-                        Foreground="{DynamicResource PrimaryBrush}"
+                        Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
                         Text="{Binding ValidItemCount, Mode=OneWay}" />
                     <Run Text="味药材" />
                 </TextBlock>
                 <Button
                     Padding="12,4"
                     Background="Transparent"
-                    BorderBrush="{DynamicResource PrimaryBrush}"
+                    BorderBrush="{DynamicResource MaterialDesign.Brush.Primary}"
                     Command="{Binding SortByRoleCommand}"
                     Content="按角色排序"
                     Cursor="Hand"
-                    Foreground="{DynamicResource PrimaryBrush}" />
+                    Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
                 <Button
                     Margin="8,0,0,0"
                     Padding="12,4"
                     Background="Transparent"
-                    BorderBrush="{DynamicResource DangerBrush}"
+                    BorderBrush="{DynamicResource MaterialDesign.Brush.Error}"
                     Command="{Binding ClearAllCommand}"
                     Content="清空全部"
                     Cursor="Hand"
-                    Foreground="{DynamicResource DangerBrush}" />
+                    Foreground="{DynamicResource MaterialDesign.Brush.Error}" />
             </StackPanel>
         </Grid>
     </Border>

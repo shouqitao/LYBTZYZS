@@ -3,7 +3,7 @@
                     xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters">
 
     <Style x:Key="BreadcrumbTextStyle_Active" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Padding" Value="8,6"/>

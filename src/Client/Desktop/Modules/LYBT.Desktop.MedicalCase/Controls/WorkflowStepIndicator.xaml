@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="LYBT.Desktop.MedicalCase.Controls.WorkflowStepIndicator"
+<UserControl x:Class="LYBT.Desktop.MedicalCase.Controls.WorkflowStepIndicator"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
@@ -42,7 +42,7 @@
 
         <!-- 激活步骤样式 -->
         <Style x:Key="ActiveStepStyle" TargetType="Border" BasedOn="{StaticResource StepContainerStyle}">
-            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary}"/>
             <Style.Triggers>
                 <EventTrigger RoutedEvent="Loaded">
                     <BeginStoryboard Storyboard="{StaticResource StepActivateAnimation}"/>
@@ -52,7 +52,7 @@
 
         <!-- 完成步骤样式 -->
         <Style x:Key="CompletedStepStyle" TargetType="Border" BasedOn="{StaticResource StepContainerStyle}">
-            <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>
+            <Setter Property="Background" Value="#2E8B57"/>
         </Style>
 
         <!-- 待完成步骤样式 -->
@@ -95,7 +95,7 @@
                             <Border Grid.Column="0" 
                                     Width="28" Height="28"
                                     CornerRadius="14"
-                                    Background="{DynamicResource PrimaryBrush}"
+                                    Background="{DynamicResource MaterialDesign.Brush.Primary}"
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center">
                                 <TextBlock Style="{StaticResource StepNumberStyle}"
@@ -107,9 +107,9 @@
                                        Text="{Binding Label}"
                                        Margin="8,0,0,0"
                                        VerticalAlignment="Center"
-                                       FontSize="{StaticResource FontSizeSM}"
+                                       FontSize="13"
                                        FontWeight="Medium"
-                                       Foreground="{DynamicResource PrimaryTextBrush}"/>
+                                       Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                         </Grid>
                     </Border>
 
@@ -126,7 +126,7 @@
                                 <Setter Property="Background" Value="{DynamicResource MaterialDesignOutline}"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsCompleted}" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>
+                                        <Setter Property="Background" Value="#2E8B57"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>

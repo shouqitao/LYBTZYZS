@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     InfoCard - 信息卡片控件
 
     功能：
@@ -47,9 +47,9 @@
             <!-- 卡片标题 -->
             <TextBlock x:Name="TitleBlock"
                        Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                       FontSize="{StaticResource FontSizeLG}"
+                       FontSize="16"
                        FontWeight="SemiBold"
-                       Foreground="{DynamicResource PrimaryTextBrush}"
+                       Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                        Margin="0,0,0,24"
                        Visibility="{Binding ShowTitle, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.BoolToVis}}"/>
 

@@ -1,7 +1,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <SolidColorBrush x:Key="ValidationErrorBrush" Color="{DynamicResource DangerColor}" />
-    <SolidColorBrush x:Key="ValidationErrorBackgroundBrush" Color="{DynamicResource LightDangerColor}" />
+    <SolidColorBrush x:Key="ValidationErrorBrush" Color="#C75050" />
+    <SolidColorBrush x:Key="ValidationErrorBackgroundBrush" Color="#FDE7E9" />
 
     <Style x:Key="RequiredIndicatorStyle" TargetType="Run">
         <Setter Property="Foreground" Value="{StaticResource ValidationErrorBrush}" />
@@ -37,7 +37,7 @@
 
     <Style x:Key="FieldSuccessIndicatorStyle" TargetType="TextBlock">
         <Setter Property="Text" Value="&#x2713;"/>
-        <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
+        <Setter Property="Foreground" Value="#2E8B57"/>
         <Setter Property="FontSize" Value="16"/>
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="Margin" Value="8,0,0,0"/>
@@ -46,7 +46,7 @@
     </Style>
 
     <Style x:Key="ValidatedFieldBorderStyle" TargetType="Border">
-        <Setter Property="BorderBrush" Value="{StaticResource SuccessBrush}"/>
+        <Setter Property="BorderBrush" Value="#2E8B57"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="4"/>
         <Setter Property="Padding" Value="0"/>
