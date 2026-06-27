@@ -34,8 +34,9 @@
     </UserControl.Resources>
 
     <Border Background="{DynamicResource MaterialDesignPaper}"
-            BorderBrush="{DynamicResource BorderBrush}"
+            BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
             BorderThickness="0,0,0,1"
+            Opacity="0.3"
             Padding="12,8">
         <!-- 注意：不设置Grid的DataContext，以便AdditionalContent能继承父级的ViewModel DataContext -->
         <Grid>
@@ -74,7 +75,7 @@
                         Margin="0,0,8,0">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource RefreshIcon}"
-                              Fill="{DynamicResource SecondaryTextBrush}"
+                              Fill="{DynamicResource MaterialDesign.Brush.Foreground}"
                               Width="16" Height="16"
                               Stretch="Uniform"
                               VerticalAlignment="Center"/>
@@ -95,7 +96,7 @@
                         Margin="4,0,0,0">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource ExportIcon}"
-                              Fill="{DynamicResource SecondaryTextBrush}"
+                              Fill="{DynamicResource MaterialDesign.Brush.Foreground}"
                               Width="16" Height="16"
                               Stretch="Uniform"
                               VerticalAlignment="Center"/>

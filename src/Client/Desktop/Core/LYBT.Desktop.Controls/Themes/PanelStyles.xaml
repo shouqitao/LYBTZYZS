@@ -9,7 +9,7 @@
     <Style x:Key="PaginationControlButton" TargetType="Button">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Outline}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="12,6" />
         <Setter Property="MinWidth" Value="36" />
@@ -65,7 +65,7 @@
     <Style x:Key="MasterDetailPaginationButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Outline}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="8,4" />
         <Setter Property="MinWidth" Value="32" />

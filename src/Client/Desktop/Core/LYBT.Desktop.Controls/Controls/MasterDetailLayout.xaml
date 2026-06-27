@@ -38,7 +38,7 @@
         本地样式使用 DynamicResource 引用全局资源（Brush/Color/CornerRadius/Effect）
 
         资源来源：
-        - Brush/Color: App.xaml → HandyControl Theme.xaml + TCM.Theme.xaml
+        - Brush/Color: App.xaml → MDIX + TCM.Theme.xaml
         - CornerRadius/Effect: App.xaml → TCM.Theme.xaml
 
         Converter 使用 x:Static 引用静态实例，无需资源字典。

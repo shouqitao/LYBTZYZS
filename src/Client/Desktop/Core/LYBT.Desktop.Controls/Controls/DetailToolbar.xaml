@@ -1,4 +1,4 @@
-﻿<!--
+<!--
     DetailToolbar - 详情工具栏控件
 
     功能：
@@ -42,7 +42,7 @@
     <Border
         Padding="16,12"
         Background="{DynamicResource MaterialDesignPaper}"
-        BorderBrush="{DynamicResource BorderLightBrush}"
+        BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
         BorderThickness="0,0,0,1"
         DataContext="{Binding ElementName=Root}">
         <Grid>
