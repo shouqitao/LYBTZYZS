@@ -21,6 +21,9 @@ namespace LYBT.Desktop.Controls.Controls
         public int TotalCount { get => (int)GetValue(TotalCountProperty); set => SetValue(TotalCountProperty, value); }
         public static readonly DependencyProperty TotalCountProperty = DependencyProperty.Register(nameof(TotalCount), typeof(int), typeof(UnifiedPaginationBar), new PropertyMetadata(0));
 
+        public System.Collections.IEnumerable PageSizes { get => (System.Collections.IEnumerable)GetValue(PageSizesProperty); set => SetValue(PageSizesProperty, value); }
+        public static readonly DependencyProperty PageSizesProperty = DependencyProperty.Register(nameof(PageSizes), typeof(System.Collections.IEnumerable), typeof(UnifiedPaginationBar), new PropertyMetadata(null));
+
         public ICommand PreviousPageCommand { get => (ICommand)GetValue(PreviousPageCommandProperty); set => SetValue(PreviousPageCommandProperty, value); }
         public static readonly DependencyProperty PreviousPageCommandProperty = DependencyProperty.Register(nameof(PreviousPageCommand), typeof(ICommand), typeof(UnifiedPaginationBar), new PropertyMetadata(null));
 
