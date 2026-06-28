@@ -323,6 +323,62 @@ $env:Jwt__SecretKey = "YourSecureSecretKeyAtLeast32CharactersLong"
 
 ---
 
+## sysadmin 远程配置管理 🧲 v1.0 待实现
+
+> 🚧 **v1.0 待实现**（[ADR-0014](../03-architecture/decisions/0014-sysadmin-config-dual-mode.md)）。sysadmin 在远程模式通过 Configuration API 管理服务端配置，无需登录服务器改文件。
+
+### 服务端配置 API 边界
+
+sysadmin 远程模式通过 Configuration API 修改服务端业务参数，敏感/基础设施配置只读（403）。
+
+**PUT 白名单（业务/运维参数，可改）**：
+- `Session`、`Security.RateLimiting`、`ClinicSettings`、`FeatureToggles`
+- `SystemAdmin.SessionTimeoutMinutes`（仅会话超时；`AutoCreateOnStartup`/`AllowAutoCreateInProduction` 不可改）
+- `MemoryCache`、`Serilog:MinimumLevel`
+
+**PUT 黑名单（敏感/基础设施，返回 403）**：
+- `Jwt.SecretKey`、`Jwt.AccessTokenExpirationMinutes`（Token 策略改需重部署）
+- `ConnectionStrings`、`DefaultPasswords`、`Kestrel`
+- `SystemAdmin.AllowAutoCreateInProduction`、`InitialSetupToken`（生产门控）
+- `Database`（连接池/迁移策略）
+
+GET 端点对敏感字段掩码展示（SecretKey→`***`、连接串→`Server=***`、密码→`***`）。PUT 写回 `appsettings.json` 前备份原文件（`appsettings.json.bak.{timestamp}`）。详见 [配置 API](../04-api-reference/10-configuration.md)。
+
+### 重启机制
+
+配置变更后部分参数需重启生效，sysadmin 通过 `POST /configuration/restart` 触发延迟重启：
+
+1. 改配置 → 提示「需重启生效」
+2. 点「应用并重启」→ 二次确认（显示将重启 + 倒计时）
+3. `POST /configuration/restart` → 延迟 30 秒执行 `IHostApplicationLifetime.StopApplication()`
+4. Windows Service / 进程管理器自动拉起 WebAPI
+5. sysadmin 端轮询健康检查确认恢复
+
+**防护**：权限（SysAdminOnly）；审计（D1 SecurityAuditLog）；限频（每小时 ≤3 次）；优雅（延迟 30 秒给在途请求完成）。
+
+### 双模式配置对象区分矩阵
+
+sysadmin 配置对象在双模式下本质不同——远程管「服务端 + 客户端」两层，本地管「本地全栈」一层：
+
+| 配置对象 | 远程模式 | 本地模式 |
+|---|---|---|
+| 服务端 WebAPI / SQL Server / 公网 | Configuration API（业务可改/敏感只读 + 重启） | 无独立服务端（LocalWebAPI 内嵌） |
+| LocalWebAPI（内嵌） | 不适用 | 归「本地配置」面板（appsettings `OfflineMode`/本地 Jwt） |
+| Desktop 客户端 | 「客户端配置」面板 | 「本地配置」面板（全栈） |
+| 数据库 | 远程 SQL Server（`ConnectionStrings`，只读） | LocalDB（备份恢复 [US-SHELL-013](../02-requirements/11-platform.md)） |
+| 配置中心入口 | SysadminHomeView（两面板） | SysadminHomeView（单面板 + 备份恢复） |
+
+### 安全（公网部署关键）
+
+- **传输**：公网必须 HTTPS（Kestrel Https 端点 + 反向代理 TLS）
+- **认证**：所有 Configuration API 端点 `[Authorize(Policy=SysAdminOnly)]`（新策略，仅 `IsSysAdmin=true`）
+- **审计**：每次 GET/PUT/Restart 写审计日志（D1 SecurityAuditLog：操作人/时间/IP/变更内容 diff）
+- **脱敏**：GET 响应敏感字段掩码
+- **防篡改**：PUT 写回前备份原文件
+- **备份/限频**：备份恢复（US-SHELL-013）；重启每小时 ≤3 次，PUT 每分钟 ≤10 次
+
+---
+
 ## 变更记录
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
@@ -331,3 +387,4 @@ $env:Jwt__SecretKey = "YourSecureSecretKeyAtLeast32CharactersLong"
 | 2026-06-25 | v1.2 | 明确 AccessToken 开发默认 8h，Production 覆盖为 30min |
 | 2026-06-25 | v1.3 | 新增环境变量覆盖机制、ConnectionStrings 示例、FeatureToggles、ClinicSettings 配置节 |
 | 2026-06-28 | v1.4 | ConnectionStrings key 对齐 `DefaultConnection`；DefaultPasswords 如实描述（开发占位明文，生产 DefaultPasswordService 随机生成）；补 N1 数据孤立说明（v1.0 远程/本地不互通） |
+| 2026-06-28 | v1.5 | 新增「sysadmin 远程配置管理」段（服务端 Configuration API 边界 + 延迟重启机制 + 双模式区分矩阵 + 安全，均 🧲 v1.0 待实现，ADR-0014） |

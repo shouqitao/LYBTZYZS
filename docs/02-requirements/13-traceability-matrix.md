@@ -174,7 +174,7 @@
 | US-SHELL-014 | Should | ADR-0008 | — | SecurityAuditLog + Service | SysadminHomeView | A12 | 🧲 v1.0 待实现（D3） |
 | US-SHELL-016 | Could | — | — | 导出/导入 JSON 按钮 | SysadminHomeView | X3.2 | 🧲 v1.0 待实现 |
 | US-SHELL-017 | Must | ADR-0005/0008 | — | SystemAdminOptions + DefaultPasswordService | SystemAdminOptions.cs | — | ✅ 已实现 |
-| US-SHELL-018 | Must | ADR-0006 | — | SysadminHomeView | SysadminHomeView | S3 | 🧲 v1.0 待实现 |
+| US-SHELL-018 | Must | ADR-0006/0014 | — | SysadminHomeView | SysadminHomeView | S3 | 🧲 v1.0 待实现（双模式面板：远程两面板[客户端+服务端 Configuration API]/本地单面板+备份恢复；服务端 Configuration API 依赖 ADR-0014） |
 | US-SHELL-019 | Should | — | — | ICardReaderDiagnostics | ICardReader/ICardReaderFactory | S3 | 🧲 v1.0 待实现 |
 
 > US-SHELL-015 已撤销（并入 US-SHELL-013），不计入总数。
@@ -281,4 +281,5 @@
 |------|------|------|
 | 2026-06-28 | 新增「十五、报表管理」（US-REPORT × 3，均 ✅ 已实现）；合计 139→142（v1.0 138→141） | A7 报表清单设计落地 |
 | 2026-06-28 | US-REG-002 ⚠️→🧲（QuickVisit 待激活：急诊+本地常规）；US-REG-005 D8 注细化；REG/合计统计同步 | R10 spec S8 文档更新 |
+| 2026-06-28 | US-SHELL-018 补「双模式面板 + 服务端 Configuration API 依赖（ADR-0014）」注；关联 ADR 列补 ADR-0014 | sysadmin 配置设计 spec S7 文档更新 |
 | 2026-06-28 | 建立追溯矩阵（138 US × 8 列），整合 D1-D10 决策与 scenario-map 状态 | plan Task 1：追溯基础设施 |

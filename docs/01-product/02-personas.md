@@ -46,7 +46,19 @@
 | | ↳ 使用模式（医生） | 无感——自动检测+自动读卡，全程无 UI | `ICardReaderFactory` | ✅ 已实现 |
 | **系统信息(只读)** | 版本/DB状态/连接状态 | 只读 | `DiagnosticsController` | ✅ API 齐备，UI 待做 |
 
-**不纳入 UI 的配置**（服务器端/安全敏感）：`JwtOptions`(SecretKey)、`SystemAdminOptions`(部署配置)、`DatabaseOptions`(连接串)、`SecurityOptions`(速率限制)、`SessionOptions`(服务端会话)、`LoggingOptions`(日志清理)、`MemoryCacheOptions`(缓存)、`SwaggerOptions`(API文档)。
+**不纳入客户端 UI 的配置**（服务器端基础设施，仅通过服务端 API 在远程模式管理）：`JwtOptions`(SecretKey)、`SystemAdminOptions`(部署配置)、`DatabaseOptions`(连接串)、`SecurityOptions`(速率限制)、`SessionOptions`(服务端会话)、`LoggingOptions`(日志清理)、`MemoryCacheOptions`(缓存)、`SwaggerOptions`(API文档)。
+
+### 双模式配置管理（ADR-0014）
+
+sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局随之区分：
+
+| 模式 | 管理范围 | 面板布局 |
+|------|---------|---------|
+| **远程** | 服务端配置（WebAPI/SQL Server/公网）+ 客户端配置（Desktop） | ① 客户端配置（本机 7 组） ② 服务端配置（调 Configuration API） |
+| **本地** | 本地全栈（LocalWebAPI + LocalDB + Desktop） | ① 本地配置（全栈） ② 备份恢复（US-SHELL-013） |
+
+- **远程模式管服务端配置**：通过服务端 Configuration API（`GET` 脱敏 / `PUT` 业务参数白名单 / 敏感黑名单 403 / `POST` 延迟重启），sysadmin 全远程闭环，无需登录服务器改文件。详见 [ADR-0014](../03-architecture/decisions/0014-sysadmin-config-dual-mode.md)。
+- **本地模式管全栈**：单面板读写本机 appsettings（含 LocalWebAPI 特有的 `OfflineMode`/`LocalApiBaseUrl`/本地 Jwt 等），无独立服务端；备份恢复入口（US-SHELL-013）。
 
 ### 约束
 
@@ -394,6 +406,7 @@
 |------|------|------|
 | 2026-06-28 | Receptionist 双模式注修正：「仅远程模式存在」改为「本地模式由用户配置决定（不强制排除）」 | 2026-06-28 产品澄清（本地全角色支持） |
 | 2026-06-28 | Doctor/Receptionist 角色补双模式工作流注（本地模式直接看诊/无前台） | R10 spec S8 文档更新 |
+| 2026-06-28 | sysadmin 段补「双模式配置管理」（远程管服务端 Configuration API + 延迟重启；本地管全栈单面板 + 备份恢复），修订「不纳入 UI」措辞 | sysadmin 配置设计 spec S7 文档更新（ADR-0014） |
 | 2026-06-28 | 四角色全面重写 + 交叉对比 + 二轮设计验证 | 代码审计 + 设计决策 + 功能闭环 + 权限模型 + 数据一致性 |
 | 2026-06-28 | 二轮验证：交接闭环(8点) + RBAC权限枚举 + 数据一致性策略 | 协作闭环验证 + 设计合理性 |
 | 2026-06-28 | 一轮决策：权限修复/审计补回/知情同意方案A/历史查询v1.0 Must | 交叉对比发现 |

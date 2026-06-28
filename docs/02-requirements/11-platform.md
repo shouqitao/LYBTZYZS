@@ -400,7 +400,20 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 2. `FeatureToggleOptions` 通过 `ConfigurationOptionsMonitor` 支持热更新，无需重启。
 3. 其他配置修改需重启 Desktop 生效（v1.0 限制）。
 4. 密码相关配置（SecretKey/JWT）不可在 UI 中修改。
-5. 服务器端配置（速率限制/锁定/日志保留/缓存/Swagger）不在 Desktop UI 范围。
+5. 服务器端配置：远程模式通过服务端 Configuration API 管理（业务参数可改/敏感只读，见 [ADR-0014](../03-architecture/decisions/0014-sysadmin-config-dual-mode.md)）；本地模式无独立服务端（LocalWebAPI 内嵌，配置归「本地配置」面板）。
+
+### 双模式面板（ADR-0014）
+
+SysadminHomeView 按连接模式区分面板布局——配置对象在双模式下本质不同（远程管「服务端 + 客户端」两层，本地管「本地全栈」一层）：
+
+| 模式 | 面板布局 | 数据源 |
+|------|---------|--------|
+| **远程** | ① 客户端配置（本机 Desktop，上方 7 组配置） ② 服务端配置（调服务端 Configuration API） | ① 客户端 appsettings ② 服务端 `GET /configuration`（脱敏） |
+| **本地** | ① 本地配置（全栈：LocalWebAPI + LocalDB + Desktop） ② 备份恢复（[US-SHELL-013](#us-shell-013-数据库备份恢复含备份状态展示--手动备份)） | 客户端 appsettings（含 `OfflineMode`/`LocalApiBaseUrl`/本地 Jwt 等） |
+
+**服务端配置面板（仅远程）**：展示 GET 全部节（敏感字段掩码）；业务参数行可编辑（`PUT /configuration/{section}`）；敏感行只读标记 🔒；改后提示「重启生效」+「应用并重启」按钮（`POST /configuration/restart`）。该面板依赖 ConfigurationController 扩展（PUT 业务参数白名单/敏感黑名单 403/GET 脱敏/POST 延迟重启），详见 [ADR-0014](../03-architecture/decisions/0014-sysadmin-config-dual-mode.md) 与 [配置 API](../04-api-reference/10-configuration.md)。
+
+**本地配置面板**：客户端 7 组 + LocalWebAPI 特有（`OfflineMode.LocalApiBaseUrl` 5300、本地 Jwt 等，可改）+ 备份恢复入口。本地模式无独立服务端，所有配置直接读写本机 appsettings。
 
 ---
 
