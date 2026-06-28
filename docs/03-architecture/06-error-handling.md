@@ -219,4 +219,15 @@ Desktop                          Server
 
 ---
 
-最后更新: 2026-02-26
+## 与 ADR 的关联
+
+| ADR | 错误处理约束 |
+|-----|-------------|
+| **ADR-0001** 聚合根 | MedicalCase 操作异常应抛出 `BusinessException`（400），禁止抛 `ApiException`（502）；聚合内操作失败需整体回滚 |
+| **ADR-0004** 用户上下文 | `GetOperator()` 失败时抛出 `UnauthorizedException`（401），Service 层不得静默吞异常 |
+| **ADR-0009** 双模式 | 本地模式异常处理与远程一致（统一 Service 层），唯一差异：本地 `ApiException`（502）降级为 `BusinessException`（503） |
+| **ADR-0010** LocalWebAPI | 跨层调用（LocalWebAPI→Server Module）异常通过 HTTP 传播，`HttpClient` 异常映射为 `ApiException`（502） |
+
+---
+
+最后更新: 2026-06-28

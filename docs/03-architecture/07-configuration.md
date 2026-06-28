@@ -6,6 +6,17 @@
 
 配置管道: `appsettings.json` → 环境覆盖 → Options 绑定 → DataAnnotations 验证 → `IValidateOptions<T>` 自定义验证 → `ValidateOnStart` 启动时验证。
 
+## 缓存策略
+
+| 策略 | 约束 |
+|------|------|
+| **粒度** | 仅对只读查询启用缓存（患者列表、药材列表、验方列表） |
+| **TTL** | 默认 5 分钟，可配置 |
+| **失效** | 写操作后主动清除相关缓存（Cache-Aside 模式） |
+| **本地模式** | 不使用 `MemoryCache`（单用户场景，无并发优势） |
+| **远程模式** | `MemoryCache` 启用，`SizeLimit` 100MB，`CompactionPercentage` 0.05 |
+| **禁止缓存项** | 当日统计数据、权限矩阵、用户角色（实时性要求高） |
+
 ## 验证管道
 
 ```mermaid

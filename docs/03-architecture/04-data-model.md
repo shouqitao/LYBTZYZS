@@ -74,6 +74,15 @@ graph TB
 
 ## 实体定义
 
+## 并发控制策略
+
+所有写操作采用**乐观锁**机制：
+
+- **机制**：`RowVersion` 字段（EF Core `IsRowVersion()`），每次更新时自动比较
+- **冲突处理**：`DbUpdateConcurrencyException` → 抛出 `ConflictException`（HTTP 409）→ 客户端重试或提示用户
+- **MedicalCase 聚合根特殊规则**：单活动医案约束（BR-001）+ 乐观锁双重保护
+- **软删除**：`IsDeleted=true` 为逻辑删除，查询时自动过滤（全局查询过滤器）
+
 ### MedicalCase (医案 -- 聚合根)
 
 | 字段 | 类型 | 必填 | 说明 |

@@ -20,6 +20,17 @@
 
 > 测试数为近似值，以最新 `dotnet test` 输出为准；与 [`01-system-overview.md`](../01-system-overview.md) 测试章节保持一致。
 
+### 约束
+
+| 约束 | 值 | 理由 |
+|------|-----|------|
+| Server 测试数量下限 | ≥1100 | 防止测试退化 |
+| Desktop 测试数量下限 | ≥700 | 防止测试退化 |
+| Architecture 测试数量下限 | ≥70 | 防止架构约束松弛 |
+| US 覆盖率 | 每个 US 至少 1 个集成测试 | 确保需求可追溯 |
+| PR 回归门禁 | 新 PR 必须包含 ≥1 个对应 US 的测试 | 质量守门 |
+| CI 必过项 | `dotnet build` + `dotnet test` 三项全部通过 | 合并前必须通过 |
+
 ### 关键原则
 - Server 测试零 mock: 真实 SQL Server + Respawn 每测试重置 + 真实 JWT 登录
 - Desktop 测试最小 mock: 仅限 WPF Runtime 边界接口 (IRegionManager 等)

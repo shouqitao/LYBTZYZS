@@ -43,11 +43,22 @@ Token 安全机制已实现并测试通过，维护成本极低 (仅 DB 字段 +
 
 医疗系统对安全审计有更高要求。Token 重放检测提供了"异常登录行为"的检测能力。
 
-## 后果
+## 实现状态（D3 B+ 方案）
 
-- Token 刷新流程比简单方案多 1 次 DB 写入 (标记 IsUsed + 创建新 Token)
-- 数据库 RefreshTokens 表需定期清理过期记录 (已有 `CleanupExpiredTokensAsync` 实现)
-- 新开发人员需理解 FamilyId 概念 (本 ADR 作为文档入口)
+| 功能 | 状态 | 版本 | 说明 |
+|------|------|------|------|
+| Token 族旋转 | 🧲 v1.0 补回 | v1.0 | 每次刷新生成新 Token，标记旧 Token IsUsed |
+| 登录限流 | 🧲 v1.0 补回 | v1.0 | 5 次/60 秒，IP 固定窗口 |
+| 登出撤销 | 🧲 v1.0 补回 | v1.0 | 登出时撤销该用户所有 RefreshToken |
+| 安全审计日志 | 🧲 v1.0 补回 | v1.0 | 登录/登出/失败事件记录 |
+| FamilyId 重放检测 | v2.0 | v2.0 | 基于 FamilyId 的异常登录检测 |
+| AutoLoginToken 轮换 | v2.0 | v2.0 | 长期 Token 的定期轮换机制 |
+
+## 依赖关系
+
+- **依赖 ADR-0004**（用户上下文传递）：GetOperator() 提取 userId 用于 Token 操作审计
+- **依赖 ADR-0005**（SuperAdmin）：SuperAdmin 和普通用户两种 Token 类型
+- **被依赖于** D1（审计日志）和 D3（安全模型）的实现
 
 ## 关联
 

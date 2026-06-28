@@ -35,9 +35,10 @@ MedicalCase 是系统唯一的 DDD 聚合根:
 ## 演进触发条件
 
 当出现以下情况时可考虑拆分:
-- 业务规则复杂度超出 500 行 Service
+- MedicalCaseService 超过 800 行（当前约 600 行）
+- 咨询/处方需要独立于医案的生命周期（如独立的处方库）
 - 团队规模超过 5 人需要独立开发
-- 性能瓶颈需要读写分离
+- 读写比超过 8:2 且读性能成为瓶颈
 
 ## 变更记录
 
@@ -52,7 +53,12 @@ MedicalCase 是系统唯一的 DDD 聚合根:
 ## 关联 US
 
 - **US-MC-001 ~ US-MC-019**（医案管理全部 19 项，聚合根是其执行基础）
-- US-REG-005 / US-REG-007（挂号-医案联动：开始就诊创建医案、完成/取消自动回写）
-- US-PRINT-001 / US-PRINT-004（打印保护字段挂载在 MedicalCase 聚合根）
-- US-PAT-005 / US-PAT-008 / US-PAT-009 / US-PAT-010（删除引用检查指向 MedicalCase）
-- US-HERB-005 / US-HERB-008 / US-HERB-009（删除引用检查指向 PrescriptionItem）
+- **US-REG-005 / US-REG-007**（挂号-医案联动：开始就诊创建医案、完成/取消自动回写）
+- **US-REG-008**（SignalR 推送：挂号状态变更通过聚合根触发推送）
+- **US-PRINT-001 / US-PRINT-004**（打印保护字段挂载在 MedicalCase 聚合根）
+- **US-PAT-005 / US-PAT-008 / US-PAT-009 / US-PAT-010**（删除引用检查指向 MedicalCase）
+- **US-HERB-005 / US-HERB-008 / US-HERB-009**（删除引用检查指向 PrescriptionItem）
+- **US-REPORT-001/002/003**（报表查询依赖 MedicalCase 聚合数据）
+- **D1**（医案审计日志：聚合根状态变更触发审计记录）
+- **D2**（打印回写：IsPrinted/PrintVersion 字段在聚合根上）
+- **D9**（历史聚合：跨医案查询依赖聚合根数据结构）

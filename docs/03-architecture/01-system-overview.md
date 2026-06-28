@@ -244,8 +244,21 @@ sequenceDiagram
 
 ## 架构决策记录
 
-- [ADR-0003: 集成优先测试策略](decisions/0003-integration-first-testing.md) — 真实数据库测试优于 mock 单元测试的 Testing Trophy 策略
-- [ADR-0013: SignalR 实时推送](decisions/0013-signalr-realtime-push.md) — v1.0 用 SignalR 推送挂号变更到医生工作台（范围决策，细节待专项 spec）
+- [ADR-0001: MedicalCase 聚合根](decisions/0001-medicalcase-aggregate-root.md) — 系统唯一的 DDD 聚合根
+- [ADR-0003: 集成优先测试策略](decisions/0003-integration-first-testing.md) — Testing Trophy 架构
+- [ADR-0008: Token 安全防御性设计](decisions/0008-token-security-defensive-design.md) — Token 族旋转 + 重放检测
+- [ADR-0009: URL 驱动双模式](decisions/0009-url-driven-dual-mode.md) — Remote + LocalWebAPI
+- [ADR-0013: SignalR 实时推送](decisions/0013-signalr-realtime-push.md) — v1.0 远程模式推送
+- [ADR-0014: Sysadmin 配置双模式](decisions/0014-sysadmin-config-dual-mode.md) — 服务端 Configuration API
+
+## API 版本控制策略
+
+| 约束 | 值 | 说明 |
+|------|-----|------|
+| 版本化方式 | URL Path | `/api/v1/` 前缀 |
+| 版本递增 | 重大破坏性变更时 | v1 → v2，保持旧版本兼容期 |
+| 共存策略 | 多版本并行 | 同一请求仅命中一个版本 |
+| 弃用策略 | 标记 `[Obsolete]` + 6 个月过渡期 | 先标记废弃，再移除 |
 
 ## 变更记录
 

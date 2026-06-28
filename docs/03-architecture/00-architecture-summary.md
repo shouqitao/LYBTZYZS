@@ -62,6 +62,17 @@
 | Desktop ↔ LocalDB | 本地模式，无认证 |
 | 用户 ↔ Desktop | 本地登录，密码验证 |
 
+## 性能约束
+
+| 指标 | SLO (P95) | 架构约束 |
+|------|-----------|----------|
+| API 简单查询 | < 500ms | EF Core 查询优化，连接池 ≥10 连接 |
+| API 列表查询 | < 1s | 分页必须（20 条/页），禁止全表扫描 |
+| API 聚合保存 | < 2s | MedicalCase 聚合原子写入，索引覆盖关键查询 |
+| Desktop 启动 | < 5s | 模块懒加载 + 启动管线并行化 |
+| Desktop 页面切换 | < 1s | Region 预加载 + 本地缓存 |
+| SignalR 推送延迟 | < 500ms | WebSocket 优先，降级 SSE/LongPolling |
+
 ## Known Risks / Assumptions
 
 1. **C1 双轨模块加载** — LoginCoordinator 硬编码旁路已确认为 bug，待修复（见 Shell Phase2 Design）
