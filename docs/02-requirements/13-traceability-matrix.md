@@ -3,7 +3,7 @@
 > 版本: v1.0 | 日期: 2026-06-28 | 状态: ✅ 建立（v1.0 范围冻结基线）
 >
 > **用途**：建立「需求 → 设计 → 实现」的双向追溯基础设施。本矩阵是 v1.0 范围冻结、变更影响分析、缺口补全追踪的权威索引。
-> **覆盖**：全部 138 个 User Story（US）+ 13 个 ADR + 5 个业务 Flow + 54 个访谈问题点。
+> **覆盖**：全部 141 个 User Story（US）+ 13 个 ADR + 5 个业务 Flow + 54 个访谈问题点。
 > **数据来源**：各模块 US 正文的「优先级 / 状态 / 实现参考 / 双模式端点」+ `2026-06-28-prd-code-reconciliation.md`（D1-D10 决策）+ `2026-06-28-scenario-functional-map.md`（✅⚠️🔴）+ `2026-06-28-user-expectation-interview.md`。
 
 ## 图例
@@ -234,6 +234,14 @@
 | US-CARD-001 | Should | — | Flow 1 | ICardReaderService（客户端硬件） | ICardReaderService.cs:10 | R3/R4 | ✅ 已实现 |
 | US-CARD-002 | Should | ADR-0001 | Flow 1 | IPatientCardReaderIntegration.MatchPatientAsync | MatchPatientAsync | R5 | ✅ 已实现 |
 
+## 十五、报表管理（US-REPORT × 3）
+
+| US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
+|-------|:---:|------|------|------|------|------|------|
+| US-REPORT-001 | Must | — | — | GET /reports/daily/income | ReportsController.cs:30 | — | ✅ 已实现（端点存在，时间参数待代码扩展） |
+| US-REPORT-002 | Must | — | — | GET /reports/daily/consultations | ReportsController.cs:38 | — | ✅ 已实现（端点存在，时间参数待代码扩展） |
+| US-REPORT-003 | Should | — | — | GET /reports/daily/herbs | ReportsController.cs:46 | — | ✅ 已实现（端点存在，时间参数待代码扩展） |
+
 ---
 
 ## 统计汇总
@@ -254,9 +262,10 @@
 | LOG | 7 | 7 | 0 | 0 | 0 | 0 |
 | SYS | 9 | 9 | 0 | 0 | 0 | 0 |
 | CARD | 2 | 2 | 0 | 0 | 0 | 0 |
-| **合计** | **139** | **99** | **18** | **15** | **6** | **1** |
+| REPORT | 3 | 3 | 0 | 0 | 0 | 0 |
+| **合计** | **142** | **102** | **18** | **15** | **6** | **1** |
 
-> 注：本矩阵列出 **139 行** = 138 个 v1.0 有效 US + 1 个 v2.0 US（US-SHELL-012 自动更新，列出以保完整）。README 的「138」仅计 v1.0 有效 US。
+> 注：本矩阵列出 **142 行** = 141 个 v1.0 有效 US + 1 个 v2.0 US（US-SHELL-012 自动更新，列出以保完整）。README 的「141」仅计 v1.0 有效 US。
 > 🧲v1.0待实现 18 项 = D1-D10 决策补回项 + SignalR/初始化/配置中心等已设计待开发项 + US-REG-002 QuickVisit 待激活；🔴代码待对齐 15 项 = D7 权限错配 + D8 P0 Bug + 端点暴露缺失；⚠️部分实现 6 项；v2.0 1 项 = SHELL-012（Sync 整模块不列入 US 总数）。
 
 ## 反向追溯说明
@@ -270,5 +279,6 @@
 
 | 日期 | 变更 | 原因 |
 |------|------|------|
+| 2026-06-28 | 新增「十五、报表管理」（US-REPORT × 3，均 ✅ 已实现）；合计 139→142（v1.0 138→141） | A7 报表清单设计落地 |
 | 2026-06-28 | US-REG-002 ⚠️→🧲（QuickVisit 待激活：急诊+本地常规）；US-REG-005 D8 注细化；REG/合计统计同步 | R10 spec S8 文档更新 |
 | 2026-06-28 | 建立追溯矩阵（138 US × 8 列），整合 D1-D10 决策与 scenario-map 状态 | plan Task 1：追溯基础设施 |

@@ -4,9 +4,7 @@
 
 ## 概述
 
-提供当日经营数据统计报表，包括收入汇总、问诊统计和药材使用排行。所有端点返回当日实时聚合数据，无请求参数。
-
-> **报表清单（A7 决策）**：v1.0 报表细化清单（日营业额 / 就诊量 / 热门药材 / 医生工作量 / 库存周转等）**待专项讨论后补充对应 US**，本文件仅记录当前已实现的 3 个当日统计端点。
+提供经营数据统计报表（收入 / 就诊 / 药材），支持时间范围查询（日 / 月 / 自定义区间，默认当日）。三个端点各接受可选 `startDate` / `endDate` 查询参数（ISO 日期），缺省时默认当日，向后兼容历史调用。详见需求 [US-REPORT-001~003](../02-requirements/10-reports.md)。
 
 ---
 
@@ -14,18 +12,27 @@
 
 | 方法 | 路径 | 权限 | 说明 |
 |------|------|------|------|
-| GET | `/reports/daily/income` | Doctor, Admin, SuperAdmin | 当日收入汇总 |
-| GET | `/reports/daily/consultations` | Doctor, Admin, SuperAdmin | 当日问诊统计 |
-| GET | `/reports/daily/herbs` | Doctor, Admin, SuperAdmin | 当日药材使用排行 |
+| GET | `/reports/daily/income` | Doctor, Admin, SuperAdmin | 收入汇总（支持时间范围，默认当日） |
+| GET | `/reports/daily/consultations` | Doctor, Admin, SuperAdmin | 问诊统计（支持时间范围，默认当日） |
+| GET | `/reports/daily/herbs` | Doctor, Admin, SuperAdmin | 药材使用排行（支持时间范围，默认当日） |
+
+> **公共查询参数**：三个端点均接受可选 `startDate` / `endDate`（ISO 日期，如 `2026-06-01`），缺省默认当日，向后兼容。区间为闭区间，`startDate > endDate` 返回 400。
 
 ---
 
 ## GET /reports/daily/income
 
-查询当日收入汇总，包括挂号费、药费和总收入。
+查询收入汇总（支持时间范围，默认当日），包括挂号费、药费和总收入。
 
 - **权限**: Doctor / Admin / SuperAdmin
-- **请求参数**: 无
+- **查询参数**:
+
+| 参数 | 类型 | 必填 | 默认 | 说明 |
+|------|------|:---:|------|------|
+| `startDate` | string (ISO date) | 否 | 当日 | 起始日期（含），如 `2026-06-01` |
+| `endDate` | string (ISO date) | 否 | 当日 | 结束日期（含），如 `2026-06-30` |
+
+> 仅传其一时，另一参数默认等于所传值（单日查询）；均不传则查询当日。
 
 **成功响应** (200) `ApiResponse<DailyIncomeDto>`:
 
@@ -48,9 +55,11 @@
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| `totalIncome` | decimal | 当日总收入 (挂号费 + 药费) |
-| `registrationFeeTotal` | decimal | 当日挂号费合计 |
-| `medicineFeeTotal` | decimal | 当日药费合计 |
+| `totalIncome` | decimal | 总收入 (挂号费 + 药费) |
+| `registrationFeeTotal` | decimal | 挂号费合计 |
+| `medicineFeeTotal` | decimal | 药费合计 |
+
+> 字段语义与历史一致，区别仅在统计区间由查询参数决定（默认当日）。
 
 **curl 示例：**
 
@@ -59,7 +68,12 @@ TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"userName":"admin","password":"Admin@123456"}' | jq -r '.data.token')
 
+# 当日（默认）
 curl -X GET http://localhost:5000/api/v1/reports/daily/income \
+  -H "Authorization: Bearer $TOKEN"
+
+# 月度对账（2026 年 6 月）
+curl -X GET "http://localhost:5000/api/v1/reports/daily/income?startDate=2026-06-01&endDate=2026-06-30" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -67,10 +81,10 @@ curl -X GET http://localhost:5000/api/v1/reports/daily/income \
 
 ## GET /reports/daily/consultations
 
-查询当日问诊统计，包括总问诊数和按医生分组的统计。
+查询问诊统计（支持时间范围，默认当日），包括总问诊数和按医生分组的统计。
 
 - **权限**: Doctor / Admin / SuperAdmin
-- **请求参数**: 无
+- **查询参数**: 同 [`/reports/daily/income`](#get-reportsdailyincome)（`startDate` / `endDate`，可选，默认当日）
 
 **成功响应** (200) `ApiResponse<DailyConsultationDto>`:
 
@@ -101,15 +115,16 @@ curl -X GET http://localhost:5000/api/v1/reports/daily/income \
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| `totalCount` | int | 当日问诊总数 |
+| `totalCount` | int | 问诊总数 |
 | `byDoctor` | `DoctorCountDto[]` | 按医生分组的问诊统计 |
 | `byDoctor[].doctorName` | string | 医生姓名 |
-| `byDoctor[].count` | int | 该医生当日问诊数 |
+| `byDoctor[].count` | int | 该医生问诊数 |
 
 **curl 示例：**
 
 ```bash
-curl -X GET http://localhost:5000/api/v1/reports/daily/consultations \
+# 月度统计（2026 年 6 月）
+curl -X GET "http://localhost:5000/api/v1/reports/daily/consultations?startDate=2026-06-01&endDate=2026-06-30" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -117,10 +132,10 @@ curl -X GET http://localhost:5000/api/v1/reports/daily/consultations \
 
 ## GET /reports/daily/herbs
 
-查询当日药材使用排行，按使用次数降序排列。
+查询药材使用排行（支持时间范围，默认当日），按使用次数降序排列。
 
 - **权限**: Doctor / Admin / SuperAdmin
-- **请求参数**: 无
+- **查询参数**: 同 [`/reports/daily/income`](#get-reportsdailyincome)（`startDate` / `endDate`，可选，默认当日）
 
 **成功响应** (200) `ApiResponse<DailyHerbUsageDto>`:
 
@@ -175,7 +190,8 @@ curl -X GET http://localhost:5000/api/v1/reports/daily/consultations \
 **curl 示例：**
 
 ```bash
-curl -X GET http://localhost:5000/api/v1/reports/daily/herbs \
+# 月度排行（2026 年 6 月）
+curl -X GET "http://localhost:5000/api/v1/reports/daily/herbs?startDate=2026-06-01&endDate=2026-06-30" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -185,7 +201,8 @@ curl -X GET http://localhost:5000/api/v1/reports/daily/herbs \
 
 | HTTP 状态码 | 说明 | 场景 |
 |------------|------|------|
-| 200 | 查询成功 | 正常返回当日统计数据 |
+| 200 | 查询成功 | 正常返回统计数据 |
+| 400 | 参数错误 | `startDate > endDate` 或日期格式非法 |
 | 401 | 未认证 | Token 无效/过期/被撤销 |
 | 403 | 禁止访问 | 非 Doctor/Admin/SuperAdmin 角色 |
 | 500 | 服务器错误 | 内部异常 |
@@ -196,5 +213,6 @@ curl -X GET http://localhost:5000/api/v1/reports/daily/herbs \
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-06-28 | v1.1 | 3 端点加时间范围查询参数（`startDate`/`endDate`，默认当日）；概述更新；补 US-REPORT-001~003；错误码加 400 |
 | 2026-06-25 | v1.0 | 初始版本，包含 3 个当日统计端点 |
 | 2026-06-28 | v1.0 | 概述补报表清单待专项讨论说明（A7：日营业额/就诊量/热门药材/医生工作量等 US 待补） | spec S7 弱反映项补全 |

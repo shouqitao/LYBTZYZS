@@ -20,7 +20,7 @@ Central documentation hub for the LYBTZYZS TCM clinic management system. Hosts t
 | Directory | Purpose | Files |
 |-----------|---------|-------|
 | `01-product/` | Product vision, feature overview, user roles | 4 |
-| `02-requirements/` | PRD: 9 v1.0 modules, 138 User Stories, NFR, traceability matrix (Sync is v2.0) | 13 |
+| `02-requirements/` | PRD: 10 v1.0 modules, 141 User Stories, NFR, traceability matrix (Sync is v2.0) | 14 |
 | `03-architecture/` | System architecture, data model, dual-mode design, 13 ADRs (ADR-0001~0013, 0013=SignalR), permissions matrix, business flows, `decisions/`, `archive/`, `localwebapi/` | 31 |
 | `03-architecture/decisions/` | ADR-0001 through ADR-0013 |
 | `03-architecture/localwebapi/` | LocalWebAPI-specific architecture docs |
@@ -47,7 +47,7 @@ Central documentation hub for the LYBTZYZS TCM clinic management system. Hosts t
 
 | Fact | Value |
 |------|-------|
-| v1.0 US total | **138** (AUTH13+USER12+PAT13+HERB13+FORM13+MC19+REG8+PRINT4+Platform43) |
+| v1.0 US total | **141** (AUTH13+USER12+PAT13+HERB13+FORM13+MC19+REG8+PRINT4+REPORT3+Platform43) |
 | v1.0 modules | **9** (Sync is v2.0) |
 | ADR count | **13** (ADR-0001~0013) |
 | LocalWebAPI embedded port | **5300** (`EmbeddedLocalWebApiService.cs:17`) |

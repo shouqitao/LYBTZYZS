@@ -38,10 +38,13 @@
 | [07-medical-cases.md](07-medical-cases.md) | 医案管理（核心聚合根） | 19 | ✅ 已完成 |
 | [08-registration.md](08-registration.md) | 挂号管理 | 8 | ✅ 已完成 |
 | [09-printing.md](09-printing.md) | 处方打印 | 4 | ✅ 已完成 |
+| [10-reports.md](10-reports.md) | 报表管理 | 3 | ✅ 已完成 |
 | [11-platform.md](11-platform.md) | 平台基础设施（Shell/Config/Err/Log/Sys/Card） | 43 | ✅ 已完成 |
 | [12-nfr.md](12-nfr.md) | 非功能需求 | — | ✅ 已完成 |
-| [13-traceability-matrix.md](13-traceability-matrix.md) | 需求追溯矩阵（US→ADR/Flow/API/实现） | 138 | ✅ 已完成 |
-| **合计** | | **138** | |
+| [13-traceability-matrix.md](13-traceability-matrix.md) | 需求追溯矩阵（US→ADR/Flow/API/实现） | 141 | ✅ 已完成 |
+| **合计** | | **141** | |
+
+> 注：报表管理（Reports）为独立 v1.0 需求模块（US-REPORT × 3），原仅存 API 文档，A7 落地后补入需求矩阵。
 
 ## US 编号体系
 
@@ -57,6 +60,7 @@
 | US-MC | 医案管理 | 07-medical-cases.md |
 | US-REG | 挂号管理 | 08-registration.md |
 | US-PRINT | 处方打印 | 09-printing.md |
+| US-REPORT | 报表管理 | 10-reports.md |
 | US-SHELL | 平台-Shell | 11-platform.md |
 | US-CFG | 平台-配置 | 11-platform.md |
 | US-ERR | 平台-异常处理 | 11-platform.md |
@@ -64,7 +68,7 @@
 | US-SYS | 平台-健康诊断 | 11-platform.md |
 | US-CARD | 平台-读卡器 | 11-platform.md |
 
-## US 总览（138 项）
+## US 总览（141 项）
 
 ### 认证与会话（US-AUTH × 13）
 
@@ -202,6 +206,14 @@
 | US-PRINT-002 | 处方预览 |
 | US-PRINT-003 | 导出处方（XPS/PDF） |
 | US-PRINT-004 | 打印记录回写服务器（成功/失败） |
+
+### 报表管理（US-REPORT × 3）
+
+| US ID | 标题 |
+|-------|------|
+| US-REPORT-001 | 查询收入报表（按时间范围，默认当日） |
+| US-REPORT-002 | 查询就诊统计报表（按时间范围，含 byDoctor 工作量） |
+| US-REPORT-003 | 查询药材使用排行（按时间范围） |
 
 ### 平台基础设施（US-SHELL/CFG/ERR/LOG/SYS/CARD × 43）
 
