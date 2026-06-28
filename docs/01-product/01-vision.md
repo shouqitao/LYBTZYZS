@@ -124,7 +124,7 @@
 
 ### v1.0 范围（当前版本）
 
-系统包含以下 9 个模块、共 136 个用户故事（US）：
+系统包含以下 10 个模块、共 141 个用户故事（US）：
 
 | 模块 | US 数 | 核心能力 |
 |------|-------|---------|
@@ -133,9 +133,10 @@
 | 患者管理 (Patients) | 13 | 拼音检索、敏感数据脱敏、身份证读卡集成 |
 | 药材管理 (Herbs) | 13 | 记录式管理、拼音搜索、Excel 批量导入 |
 | 验方管理 (Formulas) | 13 | Draft↔Validated 状态机、药材延迟绑定 |
-| 医案管理 (MedicalCases) | 18 | 核心聚合根、CQRS、BR-001 单活动医案、打印保护 |
-| 挂号管理 (Registration) | 7 | 候诊队列、QuickVisit 原子事务、医案联动 |
+| 医案管理 (MedicalCases) | 19 | 核心聚合根、CQRS、BR-001 单活动医案、打印保护、复用上次处方微调 |
+| 挂号管理 (Registration) | 8 | 候诊队列、QuickVisit 原子事务、医案联动、SignalR 实时推送 |
 | 处方打印 (Printing) | 4 | A5/A4 模板、QuestPDF 导出、打印回写 |
+| 报表管理 (Reports) | 3 | 收入/就诊统计/药材使用排行，按时间范围查询 |
 | 平台基础设施 (Platform) | 43 | Shell/Config/Error/Logging/Health/CardReader（含 SHELL-010~019 中 v1.0 的 8 项） |
 
 详细需求见 [`02-requirements/01-prd.md`](../02-requirements/01-prd.md) 及各模块文档。

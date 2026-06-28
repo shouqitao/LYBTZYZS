@@ -102,7 +102,7 @@ src/
 | 文档 | 内容 |
 |------|------|
 | [产品文档](docs/01-product/) | 愿景、角色画像、术语表 |
-| [需求文档](docs/02-requirements/) | PRD + 9 模块 136 User Stories |
+| [需求文档](docs/02-requirements/) | PRD + 10 模块 141 User Stories |
 | [架构文档](docs/03-architecture/) | 系统架构、数据模型、双模式设计 |
 | [API 参考](docs/04-api-reference/) | 远程 + 本地端点文档 |
 | [开发指南](docs/05-development/) | 编码规范、测试标准 |

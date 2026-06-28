@@ -41,7 +41,7 @@ v1.0 采用 **SignalR** 实现**远程模式**下挂号变更到医生工作台�
 ### 即时影响
 - 新增 [US-REG-008: 医生工作台待诊列表实时更新](../../02-requirements/08-registration.md)，优先级 Must
 - [系统架构总览](../01-system-overview.md) 架构图 WebAPI 侧新增 SignalR Hub 组件
-- v1.0 US 总数 136 → 137，REG 模块 7 → 8
+- v1.0 US 总数 141（含 REG-008 SignalR 推送），REG 模块 8
 - 本地模式（[ADR-0009](0009-url-driven-dual-mode.md)）不涉及推送通道——Registration 在本地按需激活（无前台用户时不显现）；无论队列有无，本地都不部署 SignalR
 
 ### 风险
