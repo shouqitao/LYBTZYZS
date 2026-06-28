@@ -50,3 +50,19 @@ ViewModels/
 
 - US-SHELL-001 / US-SHELL-003 / US-SHELL-005（启动管线、模块加载、菜单导航：Coordinator + Components 拆分）
 - US-SHELL-010 / US-SHELL-011 / US-SHELL-018（安装、初始化向导、sysadmin 配置中心：ViewModel 分解）
+
+## 代码验证对照（2026-06-28 审计）
+
+**已实现的 Component 清单：**
+
+| 模块 | Coordinator | Components | 行数 |
+|------|-------------|------------|------|
+| MedicalCase | MedicalCaseViewModel | MedicalCaseDataManager, MedicalCaseCommandHandler | ~480 |
+| Patients | PatientViewModel | PatientDataManager, PatientCommandHandler | ~420 |
+| Herbs | HerbViewModel | HerbDataManager, HerbCommandHandler | ~350 |
+| Formulas | FormulaViewModel | FormulaDataManager, FormulaCommandHandler | ~380 |
+| Users | UserViewModel | UserDataManager, UserCommandHandler | ~400 |
+
+**合规检查**: 5 个 MasterDetail ViewModel 均已拆分，最大文件 480 行（< 500 行阈值）。
+
+**新 ViewModel 入口检查**: PR review 时需确认新 ViewModel 是否超过 300 行（预警线），超过 500 行必须拆分。

@@ -48,3 +48,21 @@
 - US-HERB-001 / US-HERB-002（药材列表/详情：MasterDetailViewModelBase 组合）
 - US-FORM-001 ~ US-FORM-011（验方管理：MasterDetail 模式 + IMasterDetailServices 组合）
 - 全部 Desktop MasterDetail 模式 ViewModel（5 个）均受此组合模式约束
+
+## 代码验证对照（2026-06-28 审计）
+
+**继承树现状：**
+
+| 树 | 基类 | 使用模块 |
+|----|------|----------|
+| CoreViewModelBase (Desktop.Models) | ObservableObject | 所有非 CRUD ViewModel |
+| MasterDetailViewModelBase (Desktop.Infrastructure) | ObservableObject + IMasterDetailServices | Herbs/Formulas/MedicalCase/Patients/Users |
+
+**IMasterDetailServices 使用情况：** 5 个 MasterDetail ViewModel 均通过组合接口共享 CRUD 能力，未出现 God Base Class 问题。
+
+**禁止项**: CoreViewModelBase 中不得添加业务逻辑（仅 UI 状态：IsBusy/ErrorMessage）。
+
+**组合 vs 继承决策树**:
+- 新增 ViewModel 需要 CRUD + 导航 → MasterDetailViewModelBase (组合)
+- 新增 ViewModel 仅需 UI 状态 + 导航 → CoreViewModelBase (继承)
+- 不确定时 → 从 CoreViewModelBase 开始，需要 CRUD 时再迁移到 MasterDetailViewModelBase
