@@ -4,7 +4,7 @@
 
 **覆盖 US**: US-AUTH-001, US-CARD-001/002, US-PAT-003, US-REG-001/004/005/006/007, US-MC-001/002/003/011, US-PRINT-001/004
 
-> **双模式分野**（见 [R10 spec S2/S3/S4](../compose/specs/2026-06-28-registration-workflow-redesign.md)）：本流程随部署模式分叉为两条链，差异仅在**入口**——远程有挂号/队列前置，本地无。
+> **双模式分野**（见 [R10 spec S2/S3/S4](../compose/specs/2026-06-28-registration-workflow-redesign.md)）：本地模式 = 远程功能完整副本（数据孤立 N1），不做角色强制过滤，差异由用户配置自然调节。默认无前台用户时本地为医生独立链（无挂号前置）；若 Admin 建前台用户则远程挂号链在本地同样可用。
 
 ### 远程链（有前台，挂号驱动）
 
@@ -24,7 +24,9 @@
 
 **急诊/特殊通道**：医生 QuickVisit（US-REG-002）→ 选/建患者 → 原子创建 Registration+MedicalCase → 跳过队列直接看诊。
 
-### 本地链（无前台，医生独立「来一个看一个」）
+### 本地链（远程功能副本；默认医生独立，建前台用户则挂号链可用）
+
+> 本地模式 = 远程功能完整副本（数据孤立 N1），不做角色强制过滤，差异由用户配置自然调节。以下为**默认无前台用户**时的医生独立链。
 
 ```
 1. 医生登录
@@ -37,7 +39,7 @@
 8. 打印回写 → MedicalCaseController.PrintCompleted → IsPrinted=true
 ```
 
-**本地链要素**：无 Registration、无待诊队列、无 SignalR；Registration 模块不激活。
+**本地链要素**：默认无前台用户时无 Registration、无待诊队列；**若 Admin 建前台用户则前台挂号→待诊队列→StartVisit 链同样可用**（本地全角色支持）。本地无 SignalR（即使有前台也用轮询/手动刷新）。Registration 模块按需——无前台用户时不显现，有则可用。
 
 ### 流程一致性约束
 

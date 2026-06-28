@@ -11,7 +11,7 @@
 
 R10 节点（挂号→医生接诊）当前断裂：D8 bug（StartVisit 不创建医案 + 返回 RegistrationId 冒充 MedicalCaseId）+ US-REG-002 QuickVisit 死代码 + 双模式工作流未厘清。本 spec 锁定重设计决策，作为文档更新与后续代码实施的依据。
 
-用户决策（2026-06-28）：医生应能直接挂号+看诊（QuickVisit 应急/本地常规）；流程须一致；**本地模式取消挂号，采用「来一个看一个」**。
+用户决策（2026-06-28）：医生应能直接挂号+看诊（QuickVisit 应急/本地常规）；流程须一致；**本地模式默认医生独立使用（无前台用户时「来一个看一个」），若 Admin 建前台用户则前台挂号也可用**——本地模式不做角色强制过滤，全角色支持，差异由用户配置自然调节（数据孤立 N1，非模式级裁剪）。[2026-06-28 后续澄清，修正早期「取消挂号」过强表述，详见 S3]
 
 ---
 
@@ -31,20 +31,22 @@ R10 节点（挂号→医生接诊）当前断裂：D8 bug（StartVisit 不创�
 
 ---
 
-## [S3] 本地模式工作流（无前台，医生独立）
+## [S3] 本地模式工作流（全角色支持，差异由用户配置决定）
+
+> **修正注（2026-06-28 后续产品澄清）**：本文档早期版本（含 S1 原始措辞）曾表述「本地模式取消挂号」。经产品澄清：本地模式 = 远程功能完整副本（数据孤立 N1），**不做角色强制过滤，全角色支持**；前台功能是否在本地体现取决于 Admin 是否建前台用户。Shell 无需本地特殊角色逻辑——US-SHELL-003 按登录角色加载模块已天然处理（建了前台用户则其登录即见 Registration 模块，未建则不显现）。
 
 ```
-患者到诊 → 医生选/建患者（Patient 模块）→ 直接开医案（MedicalCase）→ 看诊 → 打印
+默认（无前台用户）：患者到诊 → 医生选/建患者（Patient 模块）→ 直接开医案（MedicalCase）→ 看诊 → 打印
+建了前台用户时：   前台挂号(Waiting) → 待诊队列 → 医生 StartVisit 接诊 链同样可用（功能副本）
 ```
 
 **要素**：
-- **取消挂号**：无 Registration 环节（医生看诊时不停下挂号）
-- **无待诊队列**：待诊清单恒空
-- **来一个看一个**：医生直接 Patient→MedicalCase
-- **无 SignalR**：无队列无需推送
-- 本质等同远程的 QuickVisit 急诊模式
+- **默认医生独立使用（无前台用户时）**：来一个看一个，医生直接选/建患者开医案，本质等同远程的 QuickVisit 急诊模式
+- **若 Admin 建了前台用户，前台挂号功能也可用**（本地模式不强制排除任何角色）——前台挂号→待诊队列→StartVisit 链在本地同样有效
+- **无待诊队列（仅在无前台用户时）**：仅医生独立使用则清单恒空；建前台用户后队列生效
+- **无 SignalR**：本地无队列推送需求，即使有前台也用轮询/手动刷新（见 S7、ADR-0013 收敛）
 
-**模式适用性**：Registration 模块在本地模式**不激活**；本地仅用 Patient + MedicalCase 模块。
+**模式适用性**：Registration 模块在本地**按需**——无前台用户时不显现（菜单无入口），有前台用户则可用；本地模式全角色支持，功能由用户配置决定，非模式级裁剪。
 
 ---
 
@@ -95,12 +97,12 @@ R10 节点（挂号→医生接诊）当前断裂：D8 bug（StartVisit 不创�
 
 | 文件 | 更新 |
 |------|------|
-| `docs/02-requirements/08-registration.md` | 加「双模式工作流」段：远程挂号驱动 / 本地取消挂号来一个看一个；US-REG-002 QuickVisit 定位（急诊+本地常规）；US-REG-005 StartVisit 加 D8 修复说明 |
-| `docs/02-requirements/README.md` | REG 总览补注「本地模式不激活 Registration」 |
-| `docs/03-architecture/11-business-flows.md` | Flow 1（首诊）补双模式分野：远程挂号链 / 本地直接看诊链 |
+| `docs/02-requirements/08-registration.md` | 加「双模式工作流」段：远程挂号驱动 / 本地默认医生独立来一个看一个，建前台用户则挂号可用（全角色支持）；US-REG-002 QuickVisit 定位（急诊+本地常规）；US-REG-005 StartVisit 加 D8 修复说明 |
+| `docs/02-requirements/README.md` | REG 总览补注「本地模式按需（无前台用户时不显现）」 |
+| `docs/03-architecture/11-business-flows.md` | Flow 1（首诊）补双模式分野：远程挂号链 / 本地=远程功能副本，默认医生独立链，建前台用户则挂号链也可用 |
 | `docs/03-architecture/decisions/0013-signalr-realtime-push.md` | 收敛：仅远程，本地排除 |
 | `docs/02-requirements/13-traceability-matrix.md` | US-REG-002 状态从「死代码」改「🧲 v1.0 待激活（急诊+本地常规）」；US-REG-005 加 D8 修复注 |
-| `docs/01-product/02-personas.md` | Receptionist 角色补「仅远程模式」注；Doctor 补「本地模式直接看诊」 |
+| `docs/01-product/02-personas.md` | Receptionist 角色补「本地模式由用户配置决定（不强制排除）」注；Doctor 保留「本地模式直接看诊」 |
 
 ---
 
