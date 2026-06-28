@@ -48,7 +48,7 @@ Central documentation hub for the LYBTZYZS TCM clinic management system. Hosts t
 | Fact | Value |
 |------|-------|
 | v1.0 US total | **141** (AUTH13+USER12+PAT13+HERB13+FORM13+MC19+REG8+PRINT4+REPORT3+Platform43) |
-| v1.0 modules | **9** (Sync is v2.0) |
+| v1.0 modules | **10** (Sync is v2.0; Reports is 10th) |
 | ADR count | **14** (ADR-0001~0014) |
 | LocalWebAPI embedded port | **5300** (`EmbeddedLocalWebApiService.cs:17`) |
 | LocalWebAPI standalone debug port | 5290 (not active in embedded mode) |

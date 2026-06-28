@@ -8,7 +8,7 @@
 
 系统采用**双模式架构**（远程 SQL Server + 本地 SQL Server LocalDB），共享统一 Service/Repository 层，确保医生在任何网络条件下都能完成诊疗工作。**v1.0 远程库与本地库数据孤立不互通**（N1 决策），双向同步属 v2.0 规划。`MedicalCase`（医案）作为 DDD 唯一聚合根，聚合 `Consultation`（中医诊断）与 `Prescription`（处方），保证诊疗数据的原子性写入与事务一致性。
 
-v1.0 包含 **9 个功能模块、136 个 User Stories**（Must / Should / Could 三级优先级），目标用户涵盖医生（Doctor）、管理员（Admin）、前台接待（Receptionist）与超级管理员（SuperAdmin）四类角色。详细角色画像与业务背景见 [`../01-product/02-personas.md`](../01-product/02-personas.md)，产品愿景与核心价值见 [`../01-product/01-vision.md`](../01-product/01-vision.md)。
+v1.0 包含 **10 个功能模块、141 个 User Stories**（Must / Should / Could 三级优先级），目标用户涵盖医生（Doctor）、管理员（Admin）、前台接待（Receptionist）与超级管理员（SuperAdmin）四类角色。详细角色画像与业务背景见 [`../01-product/02-personas.md`](../01-product/02-personas.md)，产品愿景与核心价值见 [`../01-product/01-vision.md`](../01-product/01-vision.md)。
 
 ## 问题陈述
 
@@ -75,7 +75,7 @@ v1.0 包含 **9 个功能模块、136 个 User Stories**（Must / Should / Could
 
 ## 范围
 
-### v1.0 范围（9 模块、136 US）
+### v1.0 范围（10 模块、141 US）
 
 | # | 模块 | US 数 | 核心能力 |
 |---|------|-------|---------|
@@ -84,11 +84,12 @@ v1.0 包含 **9 个功能模块、136 个 User Stories**（Must / Should / Could
 | 3 | 患者管理 (Patients) | 13 | 档案 CRUD、拼音码搜索、身份证读卡、导入导出、敏感数据脱敏 |
 | 4 | 药材管理 (Herbs) | 13 | 药材库 CRUD、分类管理、拼音检索、批量导入、引用检查 |
 | 5 | 验方管理 (Formulas) | 13 | 经验方 CRUD、Draft↔Validated 状态机、药材绑定验证、共享机制 |
-| 6 | 医案管理 (MedicalCases) | 18 | 聚合根。诊断 + 处方 + 打印完整生命周期，CQRS 模式 |
-| 7 | 挂号管理 (Registration) | 7 | 前台排队 + 医生快速就诊，医案联动回写 |
+| 6 | 医案管理 (MedicalCases) | 19 | 聚合根。诊断 + 处方 + 打印完整生命周期，CQRS 模式，复用上次处方（D6） |
+| 7 | 挂号管理 (Registration) | 8 | 前台排队 + 医生快速就诊，医案联动回写，SignalR 实时推送（R10） |
 | 8 | 处方打印 (Printing) | 4 | A5/A4 模板、PDF 导出、打印回写服务器 |
-| 9 | 平台基础设施 (Platform) | 43 | Shell + Config + Error + Logging + Health + CardReader（含 SHELL-010~019 中 v1.0 的 8 项） |
-| **合计** | | **136** | |
+| 9 | 报表管理 (Reports) | 3 | 收入/就诊统计/药材使用排行，按时间范围查询（A7） |
+| 10 | 平台基础设施 (Platform) | 43 | Shell + Config + Error + Logging + Health + CardReader（含 SHELL-010~019 中 v1.0 的 8 项） |
+| **合计** | | **141** | |
 
 ### 范围外（系统边界之外，线下流程）
 
@@ -243,12 +244,13 @@ v1.0 包含 **9 个功能模块、136 个 User Stories**（Must / Should / Could
 | 患者管理 | [`04-patients.md`](04-patients.md) | 13 | 拼音码 + 敏感数据脱敏 + 身份证读卡 |
 | 药材管理 | [`05-herbs.md`](05-herbs.md) | 13 | Record-Only + 拼音检索 + 引用检查 |
 | 验方管理 | [`06-formulas.md`](06-formulas.md) | 13 | Draft↔Validated 状态机 + 共享机制 |
-| 医案管理 | [`07-medical-cases.md`](07-medical-cases.md) | 18 | **聚合根** + CQRS + BR-001 单活动医案 |
-| 挂号管理 | [`08-registration.md`](08-registration.md) | 7 | 双 Source 模型 + 原子事务 + 医案联动 |
+| 医案管理 | [`07-medical-cases.md`](07-medical-cases.md) | 19 | **聚合根** + CQRS + BR-001 单活动医案 + 复用处方（D6） |
+| 挂号管理 | [`08-registration.md`](08-registration.md) | 8 | 双 Source 模型 + 原子事务 + 医案联动 + SignalR 实时（R10） |
 | 处方打印 | [`09-printing.md`](09-printing.md) | 4 | A5/A4 模板 + PDF 导出 + 打印回写 |
+| 报表管理 | [`10-reports.md`](10-reports.md) | 3 | 收入/就诊统计/药材排行，按时间范围查询（A7） |
 | 平台基础设施 | [`11-platform.md`](11-platform.md) | 43 | Shell + Config + Error + Logging + Health + CardReader |
 | 非功能需求 | [`12-nfr.md`](12-nfr.md) | — | 性能/数据/可用性/安全/可维护性/兼容性 |
-| **合计** | | **136** | |
+| **合计** | | **141** | |
 
 ### 相关文档
 
@@ -269,3 +271,4 @@ v1.0 包含 **9 个功能模块、136 个 User Stories**（Must / Should / Could
 | 2026-06-15 | v2.0 | 重建：合并原独立权限矩阵文档（448 行）为本文件 §权限矩阵；模块从 15 精简为 10；US 总数 138→136；统一采用 `US-` 编号；WHO/WHY 上下文迁移至 `../01-product/` |
 | 2026-06-25 | v2.1 | 修正 US 总数 136→128（实际计数）；Platform 模块 US 数 37→35 |
 | 2026-06-28 | v2.2 | 文档对齐：US 总数统一 136；Sync 模块移出 v1.0（9 模块）；Platform 35→43（含 SHELL-010~019 中 v1.0 的 8 项）；AccessToken 统一 60 分钟 |
+| 2026-06-28 | v2.3 | 范围修正：消除 G2 范围矛盾，US 总数统一 141（=baseline 136 + MC-019 复用处方[D6] + REG-008 SignalR 推送[R10] + REPORT×3 报表[A7]）；模块 9→10（补报表行）；MC 18→19、REG 7→8；追溯矩阵与 baseline spec 同步对齐 |

@@ -158,7 +158,7 @@
 | US-PRINT-003 | Should | — | — | PrescriptionPdfExporter | PrescriptionPdfExporter | — | ✅ 已实现 |
 | US-PRINT-004 | Must | ADR-0001 | Flow 1/5 | PUT /print-completed + POST /print-log | MedicalCasePrintController.cs:44 | D16 | 🧲 v1.0 待实现（D2：实体已删，回写缺失） |
 
-## 九、平台基础设施 — Shell（US-SHELL × 14，v1.0 有效）
+## 九、平台基础设施 — Shell（US-SHELL ×13 v1.0 + ×1 v2.0，共 14 行）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
 |-------|:---:|------|------|------|------|------|------|
@@ -256,7 +256,7 @@
 | MC | 19 | 12 | 4 | 3 | 0 | 0 |
 | REG | 8 | 3 | 2 | 3 | 0 | 0 |
 | PRINT | 4 | 3 | 1 | 0 | 0 | 0 |
-| Shell | 14 | 5 | 6 | 1 | 1 | 1 |
+| Shell | 13+1 | 5 | 6 | 1 | 1 | 1 |
 | CFG | 4 | 4 | 0 | 0 | 0 | 0 |
 | ERR | 8 | 8 | 0 | 0 | 0 | 0 |
 | LOG | 7 | 7 | 0 | 0 | 0 | 0 |
