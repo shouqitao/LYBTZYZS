@@ -15,14 +15,15 @@
                     PrimaryColor="Brown"
                     SecondaryColor="Amber" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />
+                <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/Surfaces.xaml" />
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/Icons.xaml" />
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/Spacing.xaml" />
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/DataGridStyles.xaml" />
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Converters/Converters.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <SolidColorBrush x:Key="ValidationErrorBrush" Color="#C75050" />
-            <SolidColorBrush x:Key="ValidationErrorBackgroundBrush" Color="#FDE7E9" />
+            <SolidColorBrush x:Key="ValidationErrorBrush" Color="#B00020" />
+            <SolidColorBrush x:Key="ValidationErrorBackgroundBrush" Color="#FCE8E6" />
 
             <Style x:Key="CustomDialogWindowStyle" TargetType="Window">
                 <Setter Property="WindowStyle" Value="None" />
@@ -30,7 +31,7 @@
                 <Setter Property="ShowInTaskbar" Value="False" />
                 <Setter Property="SizeToContent" Value="WidthAndHeight" />
                 <Setter Property="Background" Value="White" />
-                <Setter Property="FontFamily" Value="Microsoft YaHei" />
+                <Setter Property="FontFamily" Value="Microsoft YaHei UI, Microsoft YaHei, Segoe UI" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>

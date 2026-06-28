@@ -270,7 +270,7 @@
                         <Border Visibility="{Binding ShowEditButton, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.BoolToVis}}">
                             <Button Command="{Binding SwitchToEditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     Visibility="{Binding IsEditMode, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.InverseBoolToVis}}"
-                                    Style="{StaticResource MaterialDesignRaisedButton}" Background="#2E8B57" Foreground="White" BorderThickness="0"
+                                    Style="{StaticResource MaterialDesignRaisedButton}" Background="{DynamicResource MaterialDesign.Brush.Primary}" Foreground="White" BorderThickness="0"
                                     Content="编辑"
                                     Padding="20,10"
                                     Margin="8,0,0,0"

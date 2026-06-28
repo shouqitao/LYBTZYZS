@@ -156,28 +156,28 @@
                     <DataGrid.Columns>
                         <!--  姓名  -->
                         <DataGridTextColumn
-                            Width="100"
+                            Width="*" MinWidth="80"
                             Binding="{Binding Name}"
                             Header="姓名"
                             ElementStyle="{StaticResource DataGridEmphasisCellStyle}" />
 
                         <!--  性别  -->
                         <DataGridTextColumn
-                            Width="50"
+                            Width="Auto"
                             Binding="{Binding Gender, Converter={x:Static converters:Cvt.EnumDesc}}"
                             Header="性别"
                             ElementStyle="{StaticResource DataGridSecondaryCellStyle}" />
 
                         <!--  年龄  -->
                         <DataGridTextColumn
-                            Width="50"
+                            Width="Auto"
                             Binding="{Binding Age, StringFormat={}{0}岁}"
                             Header="年龄"
                             ElementStyle="{StaticResource DataGridSecondaryCellStyle}" />
 
                         <!--  手机号  -->
                         <DataGridTextColumn
-                            Width="120"
+                            Width="*" MinWidth="100"
                             Binding="{Binding PhoneNumber}"
                             Header="手机号"
                             ElementStyle="{StaticResource DataGridMonoCellStyle}" />

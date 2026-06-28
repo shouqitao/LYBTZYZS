@@ -92,8 +92,7 @@ public class DatabaseInitializer : IDatabaseInitializer, IDisposable
                 _logger.LogDebug("[LocalData] SQL Server LocalDB 数据库已存在");
             }
 
-            // 始终执行种子数据 - SeedData 内部已处理幂等性
-            await SeedData.SeedAsync(context, _logger, ct);
+            // 用户种子由 IdentitySeedData（通过 UserManager）负责，此处不再重复
         }
         catch (Exception ex)
         {

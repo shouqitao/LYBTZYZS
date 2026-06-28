@@ -97,35 +97,35 @@
                     <DataGrid.Columns>
                         <!--  名称  -->
                         <DataGridTextColumn
-                            Width="100"
+                            Width="*" MinWidth="80"
                             Binding="{Binding Name}"
                             Header="名称"
                             ElementStyle="{StaticResource DataGridEmphasisCellStyle}" />
 
                         <!--  拼音码  -->
                         <DataGridTextColumn
-                            Width="80"
+                            Width="Auto"
                             Binding="{Binding PinYinCode}"
                             Header="拼音码"
                             ElementStyle="{StaticResource DataGridMonoCellStyle}" />
 
                         <!--  规格  -->
                         <DataGridTextColumn
-                            Width="60"
+                            Width="Auto"
                             Binding="{Binding Spec}"
                             Header="规格"
                             ElementStyle="{StaticResource DataGridSecondaryCellStyle}" />
 
                         <!--  单位  -->
                         <DataGridTextColumn
-                            Width="50"
+                            Width="Auto"
                             Binding="{Binding Unit}"
                             Header="单位"
                             ElementStyle="{StaticResource DataGridSecondaryCellStyle}" />
 
                         <!--  零售价  -->
                         <DataGridTextColumn
-                            Width="70"
+                            Width="Auto"
                             Binding="{Binding Price, StringFormat=N2}"
                             Header="零售价"
                             ElementStyle="{StaticResource DataGridNumericCellStyle}" />

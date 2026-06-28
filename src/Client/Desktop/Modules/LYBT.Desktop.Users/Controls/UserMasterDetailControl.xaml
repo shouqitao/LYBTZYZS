@@ -60,48 +60,18 @@
                                     <TextBlock Margin="8,0,0,0" Text="编辑" />
                                 </StackPanel>
                             </Button>
-                            <!--  次要操作溢出菜单  -->
-                            <Menu Margin="8,0,0,0" Background="Transparent">
-                                <MenuItem>
-                                    <MenuItem.Header>
-                                        <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="DotsHorizontal" VerticalAlignment="Center" />
-                                            <TextBlock Margin="8,0,0,0" Text="更多" />
-                                        </StackPanel>
-                                    </MenuItem.Header>
-                                    <MenuItem Command="{Binding ResetPasswordCommand}">
-                                        <MenuItem.Icon>
-                                            <materialDesign:PackIcon Kind="Key" />
-                                        </MenuItem.Icon>
-                                        <MenuItem.Header>重置密码</MenuItem.Header>
-                                    </MenuItem>
-                                    <MenuItem Command="{Binding ToggleUserStatusCommand}">
-                                        <MenuItem.Icon>
-                                            <materialDesign:PackIcon Kind="ToggleSwitchOutline" />
-                                        </MenuItem.Icon>
-                                        <MenuItem.Header>切换状态</MenuItem.Header>
-                                    </MenuItem>
-                                    <MenuItem Command="{Binding RestoreCommand}">
-                                        <MenuItem.Icon>
-                                            <materialDesign:PackIcon Kind="Undo" />
-                                        </MenuItem.Icon>
-                                        <MenuItem.Header>恢复</MenuItem.Header>
-                                    </MenuItem>
+                            <materialDesign:PopupBox
+                                Margin="8,0,0,0"
+                                ToolTip="更多操作">
+                                <StackPanel>
+                                    <Button Command="{Binding ResetPasswordCommand}" Content="重置密码" Padding="16,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
+                                    <Button Command="{Binding ToggleUserStatusCommand}" Content="切换状态" Padding="16,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
+                                    <Button Command="{Binding RestoreCommand}" Content="恢复" Padding="16,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
                                     <Separator />
-                                    <MenuItem Command="{Binding ImportCommand}">
-                                        <MenuItem.Icon>
-                                            <materialDesign:PackIcon Kind="Import" />
-                                        </MenuItem.Icon>
-                                        <MenuItem.Header>导入</MenuItem.Header>
-                                    </MenuItem>
-                                    <MenuItem Command="{Binding DownloadTemplateCommand}">
-                                        <MenuItem.Icon>
-                                            <materialDesign:PackIcon Kind="FileDocumentOutline" />
-                                        </MenuItem.Icon>
-                                        <MenuItem.Header>模板</MenuItem.Header>
-                                    </MenuItem>
-                                </MenuItem>
-                            </Menu>
+                                    <Button Command="{Binding ImportCommand}" Content="导入" Padding="16,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
+                                    <Button Command="{Binding DownloadTemplateCommand}" Content="下载模板" Padding="16,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
+                                </StackPanel>
+                            </materialDesign:PopupBox>
                         </StackPanel>
                     </controls:DataGridToolbar.AdditionalContent>
                 </controls:DataGridToolbar>
@@ -126,7 +96,7 @@
                         Margin="0,8,0,0"
                         Orientation="Horizontal">
                         <ComboBox
-                            Width="100"
+                            MinWidth="120"
                             Margin="8,0,0,0"
                             IsEditable="False"
                             ItemsSource="{Binding RoleOptions}"
@@ -140,7 +110,7 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
                         <ComboBox
-                            Width="100"
+                            MinWidth="120"
                             Margin="8,0,0,0"
                             IsEditable="False"
                             ItemsSource="{Binding StatusOptions}"
@@ -191,27 +161,27 @@
                     <DataGrid.Columns>
                         <!--  用户名  -->
                         <DataGridTextColumn
-                            Width="100"
+                            Width="*" MinWidth="80"
                             Binding="{Binding UserName}"
                             Header="用户名"
                             ElementStyle="{StaticResource DataGridEmphasisCellStyle}" />
 
                         <!--  真实姓名  -->
                         <DataGridTextColumn
-                            Width="80"
+                            Width="*" MinWidth="60"
                             Binding="{Binding RealName}"
                             Header="姓名"
                             ElementStyle="{StaticResource DataGridTextCellStyle}" />
 
                         <!--  角色  -->
                         <DataGridTextColumn
-                            Width="70"
+                            Width="Auto"
                             Binding="{Binding Role, Converter={x:Static converters:Cvt.EnumDesc}}"
                             Header="角色"
                             ElementStyle="{StaticResource DataGridSecondaryCellStyle}" />
 
                         <!--  状态  -->
-                        <DataGridTemplateColumn Width="70" Header="状态">
+                        <DataGridTemplateColumn Width="Auto" Header="状态">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <controls:StatusBadge Status="{Binding Status}" />
@@ -221,7 +191,7 @@
 
                         <!--  手机号  -->
                         <DataGridTextColumn
-                            Width="*"
+                            Width="*" MinWidth="100"
                             Binding="{Binding PhoneNumber}"
                             Header="手机号"
                             ElementStyle="{StaticResource DataGridMonoCellStyle}" />

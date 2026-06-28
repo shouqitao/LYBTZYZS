@@ -155,3 +155,6 @@ __pycache__/
 
 # Backup directories (generated at runtime)
 backups/
+
+# Compose brainstorm sessions
+.compose/

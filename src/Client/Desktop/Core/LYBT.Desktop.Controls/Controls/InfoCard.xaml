@@ -32,17 +32,17 @@
             <DropShadowEffect x:Key="CardShadow"
                               BlurRadius="16"
                               ShadowDepth="2"
-                              Opacity="0.08"
+                              Opacity="0.06"
                               Color="Black"/>
         </ResourceDictionary>
     </UserControl.Resources>
 
     <!-- 使用DynamicResource：MaterialDesignBody定义在Shell/DesignTokens/Colors.Light.xaml，通过App级别加载 -->
     <Border Background="{DynamicResource MaterialDesignPaper}"
-            CornerRadius="16"
-            Padding="40,32"
+            CornerRadius="8"
+            Padding="24,16"
             Effect="{StaticResource CardShadow}"
-            Margin="0,0,0,20">
+            Margin="0,0,0,16">
         <StackPanel>
             <!-- 卡片标题 -->
             <TextBlock x:Name="TitleBlock"

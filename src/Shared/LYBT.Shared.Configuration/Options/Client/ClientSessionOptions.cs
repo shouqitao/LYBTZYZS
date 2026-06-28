@@ -12,8 +12,11 @@ public sealed class ClientSessionOptions
     /// <summary>
     /// 无活动超时时间 (分钟)
     /// </summary>
+    /// <summary>
+    /// 无活动超时时间 (分钟)
+    /// </summary>
     [Range(1, 120)]
-    public int InactivityTimeoutMinutes { get; set; } = 15;
+    public int InactivityTimeoutMinutes { get; set; } = 30;
 
     /// <summary>
     /// 超时前警告时间 (分钟)

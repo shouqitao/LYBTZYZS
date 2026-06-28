@@ -1,0 +1,57 @@
+<!--
+    Surfaces.xaml - 表面色彩层次系统
+
+    定义 4 级 Surface，解决 MDIX Light 主题全白无层次问题。
+    暖灰色底 (#FAF8F5) 让白色面板/卡片明显浮起，同时保持中医温暖质感。
+
+    层次结构：
+    L0 Background  → 页面/容器底色（暖灰）
+    L1 Surface     → 面板/工具栏（纯白）
+    L2 Raised      → 浮起卡片（纯白 + 轻投影）
+    L3 Overlay     → 模态弹窗（纯白 + 重投影）
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ======== Surface 色阶 ======== -->
+
+    <!-- L0: 应用背景（暖灰白，让白色面板浮起） -->
+    <Color x:Key="SurfaceLevel0Color">#FAF8F5</Color>
+    <SolidColorBrush x:Key="SurfaceLevel0Brush" Color="{StaticResource SurfaceLevel0Color}" />
+
+    <!-- L1: 面板表面（纯白） -->
+    <Color x:Key="SurfaceLevel1Color">#FFFFFF</Color>
+    <SolidColorBrush x:Key="SurfaceLevel1Brush" Color="{StaticResource SurfaceLevel1Color}" />
+
+    <!-- L2: 浮起表面（纯白 + 投影，投影在使用处定义） -->
+    <SolidColorBrush x:Key="SurfaceLevel2Brush" Color="#FFFFFF" />
+
+    <!-- L3: 弹窗表面（纯白 + 重投影，投影在使用处定义） -->
+    <SolidColorBrush x:Key="SurfaceLevel3Brush" Color="#FFFFFF" />
+
+    <!-- ======== 覆盖 MDIX 默认背景 Brush ======== -->
+    <!-- MDIX 默认 Background 为白色，覆盖为暖灰以创建层次 -->
+    <SolidColorBrush x:Key="MaterialDesign.Brush.Background" Color="{StaticResource SurfaceLevel0Color}" />
+
+    <!-- ======== 分隔线 ======== -->
+    <SolidColorBrush x:Key="DividerBrush" Color="#E0DCD5" />
+    <SolidColorBrush x:Key="DividerLightBrush" Color="#EDE9E3" />
+
+    <!-- ======== 投影效果 Token ======== -->
+
+    <!-- Elevation 1: 卡片（InfoCard 等浮起元素） -->
+    <DropShadowEffect x:Key="Elevation1"
+                      BlurRadius="8" ShadowDepth="1"
+                      Opacity="0.06" Color="Black" Direction="270" />
+
+    <!-- Elevation 2: 面板（Master/Detail 面板边缘） -->
+    <DropShadowEffect x:Key="Elevation2"
+                      BlurRadius="12" ShadowDepth="2"
+                      Opacity="0.08" Color="Black" Direction="270" />
+
+    <!-- Elevation 3: 弹窗（Dialog） -->
+    <DropShadowEffect x:Key="Elevation3"
+                      BlurRadius="24" ShadowDepth="8"
+                      Opacity="0.12" Color="Black" Direction="270" />
+
+</ResourceDictionary>

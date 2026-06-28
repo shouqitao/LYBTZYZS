@@ -13,7 +13,7 @@
 
     <UserControl.Resources>
         <Style x:Key="ValidationErrorMessageVisibleStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#C75050"/>
+            <Setter Property="Foreground" Value="{DynamicResource ValidationErrorBrush}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Margin" Value="0,4,0,0"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
@@ -29,7 +29,6 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="20"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
@@ -41,9 +40,9 @@
                     </Grid.RowDefinitions>
 
                     <!-- 第一行：姓名（必填）、拼音码 -->
-                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,24,24">
                         <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6">
-                            <Run Text="姓名（必填）"/><Run Text=" *" Foreground="#C75050" FontWeight="Bold"/>
+                            <Run Text="姓名（必填）"/><Run Text=" *" Foreground="{DynamicResource ValidationErrorBrush}" FontWeight="Bold"/>
                         </TextBlock>
                         <TextBox TabIndex="1" Text="{Binding Patient.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -53,7 +52,7 @@
                                    Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,24">
                         <TextBlock Text="拼音码（自动生成）" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox TabIndex="2" Text="{Binding Patient.PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -63,7 +62,7 @@
                     </StackPanel>
 
                     <!-- 第二行：性别、出生日期 -->
-                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,24,24">
                         <TextBlock Text="性别" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <ComboBox TabIndex="3" SelectedItem="{Binding Patient.Gender, Mode=TwoWay}"
                                   ItemsSource="{Binding GenderOptions}"
@@ -77,14 +76,14 @@
                         </ComboBox>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,24">
                         <TextBlock Text="出生日期" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <DatePicker TabIndex="4" SelectedDate="{Binding Patient.BirthDate, Mode=TwoWay}"
                                     MinHeight="44"/>
                     </StackPanel>
 
                     <!-- 第三行：年龄（只读）、身份证号 -->
-                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,24,24">
                         <TextBlock Text="年龄" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox IsReadOnly="True"
                                  Background="{DynamicResource MaterialDesignPaper}"
@@ -98,7 +97,7 @@
                         </TextBox>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,0,24">
                         <TextBlock Text="身份证号" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox TabIndex="5" Text="{Binding Patient.IdNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -109,7 +108,7 @@
                     </StackPanel>
 
                     <!-- 第四行：手机号码 -->
-                    <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,24,24">
                         <TextBlock Text="手机号码" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox TabIndex="6" Text="{Binding Patient.PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -120,7 +119,7 @@
                     </StackPanel>
 
                     <!-- 第五行：状态 -->
-                    <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,0,20"
+                    <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,24,24"
                                 Visibility="{Binding ShowStatus, Converter={x:Static converters:Cvt.BoolToVis}}">
                         <TextBlock Text="状态" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <ComboBox TabIndex="7" SelectedItem="{Binding Patient.Status, Mode=TwoWay}"

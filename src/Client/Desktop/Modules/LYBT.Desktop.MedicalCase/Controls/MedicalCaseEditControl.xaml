@@ -33,7 +33,7 @@
             </Style>
 
             <Style x:Key="ValidationErrorMessageVisibleStyle" TargetType="TextBlock">
-                <Setter Property="Foreground" Value="#C75050"/>
+                <Setter Property="Foreground" Value="{DynamicResource ValidationErrorBrush}"/>
                 <Setter Property="FontSize" Value="12"/>
                 <Setter Property="Margin" Value="0,4,0,0"/>
                 <Setter Property="TextWrapping" Value="Wrap"/>

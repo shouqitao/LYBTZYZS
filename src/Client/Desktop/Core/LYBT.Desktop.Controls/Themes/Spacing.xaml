@@ -6,4 +6,5 @@
     <Thickness x:Key="SpacingL">16</Thickness>
     <Thickness x:Key="SpacingXL">24</Thickness>
     <Thickness x:Key="SpacingXXL">32</Thickness>
+    <Thickness x:Key="SpacingXXXL">40</Thickness>
 </ResourceDictionary>

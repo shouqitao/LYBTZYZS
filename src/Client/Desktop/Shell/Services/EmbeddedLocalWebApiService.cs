@@ -3,9 +3,9 @@ using LYBT.LocalWebAPI;
 using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace LYBT.Desktop.Shell.Services;
 
@@ -19,12 +19,14 @@ public sealed class EmbeddedLocalWebApiService : IEmbeddedLocalWebApiService, ID
         "Server=(localdb)\\MSSQLLocalDB;Database=LYBTDesktop;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
 
     private readonly ILogger<EmbeddedLocalWebApiService> _logger;
+    private readonly IConfiguration _configuration;
     private WebApplication? _app;
     private readonly object _lock = new();
 
-    public EmbeddedLocalWebApiService(ILogger<EmbeddedLocalWebApiService> logger)
+    public EmbeddedLocalWebApiService(ILogger<EmbeddedLocalWebApiService> logger, IConfiguration configuration)
     {
         _logger = logger;
+        _configuration = configuration;
     }
 
     public bool IsRunning => Volatile.Read(ref _app) != null;
@@ -44,13 +46,12 @@ public sealed class EmbeddedLocalWebApiService : IEmbeddedLocalWebApiService, ID
             var builder = LocalWebApiProgram.CreateBuilder();
             builder.WebHost.UseUrls(LocalUrl);
 
-            // Explicitly register DefaultPasswordOptions (configuration binding may fail in WPF context)
             builder.Services.Configure<DefaultPasswordOptions>(options =>
             {
-                options.SysAdminPassword = "SysAdmin@2026!";
-                options.AdminPassword = "Admin@123456";
-                options.NewUserPassword = "User@123456";
-                options.ForceChangeOnFirstLogin = false;
+                options.SysAdminPassword = _configuration["DefaultPasswords:SysAdminPassword"] ?? "SysAdmin@2026!";
+                options.AdminPassword = _configuration["DefaultPasswords:AdminPassword"] ?? "Admin@123456";
+                options.NewUserPassword = _configuration["DefaultPasswords:NewUserPassword"] ?? "User@123456";
+                options.ForceChangeOnFirstLogin = _configuration.GetValue<bool>("DefaultPasswords:ForceChangeOnFirstLogin");
             });
 
             _app = LocalWebApiProgram.CreateApplication(builder, LocalConnectionString);

@@ -19,7 +19,7 @@
 
     <UserControl.Resources>
         <Style x:Key="ValidationErrorMessageVisibleStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#C75050"/>
+            <Setter Property="Foreground" Value="{DynamicResource ValidationErrorBrush}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Margin" Value="0,4,0,0"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
@@ -34,7 +34,6 @@
                 <Grid DataContext="{Binding User}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="20"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
@@ -45,9 +44,9 @@
                     </Grid.RowDefinitions>
 
                     <!-- 第一行：用户名、真实姓名 -->
-                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,24,24">
                         <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6">
-                            <Run Text="用户名"/><Run Text=" *" Foreground="#C75050" FontWeight="Bold"/>
+                            <Run Text="用户名"/><Run Text=" *" Foreground="{DynamicResource ValidationErrorBrush}" FontWeight="Bold"/>
                         </TextBlock>
                         <TextBox TabIndex="1" Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -58,9 +57,9 @@
                                    Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,24">
                         <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6">
-                            <Run Text="真实姓名"/><Run Text=" *" Foreground="#C75050" FontWeight="Bold"/>
+                            <Run Text="真实姓名"/><Run Text=" *" Foreground="{DynamicResource ValidationErrorBrush}" FontWeight="Bold"/>
                         </TextBlock>
                         <TextBox TabIndex="2" Text="{Binding RealName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -71,7 +70,7 @@
                     </StackPanel>
 
                     <!-- 第二行：拼音码、手机号码 -->
-                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,24,24">
                         <TextBlock Text="拼音码（可修正）" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox TabIndex="3" Text="{Binding PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -80,7 +79,7 @@
                                  ToolTip="自动根据真实姓名生成，如有多音字错误可手动修正"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,24">
                         <TextBlock Text="手机号码" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox TabIndex="4" Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -91,7 +90,7 @@
                     </StackPanel>
 
                     <!-- 第三行：邮箱地址、用户角色 -->
-                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,24,24">
                         <TextBlock Text="邮箱地址" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox TabIndex="5" Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -101,9 +100,9 @@
                                    Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,0,24">
                         <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6">
-                            <Run Text="用户角色"/><Run Text=" *" Foreground="#C75050" FontWeight="Bold"/>
+                            <Run Text="用户角色"/><Run Text=" *" Foreground="{DynamicResource ValidationErrorBrush}" FontWeight="Bold"/>
                         </TextBlock>
                         <ComboBox TabIndex="6" SelectedItem="{Binding Role, Mode=TwoWay}"
                                   ItemsSource="{Binding RoleOptions, ElementName=Root}"
@@ -118,7 +117,7 @@
                     </StackPanel>
 
                     <!-- 第四行：账户状态 -->
-                    <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,20"
+                    <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,24,24"
                                 Visibility="{Binding ShowStatus, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
                         <TextBlock Text="账户状态" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <ComboBox TabIndex="7" SelectedItem="{Binding Status, Mode=TwoWay}"

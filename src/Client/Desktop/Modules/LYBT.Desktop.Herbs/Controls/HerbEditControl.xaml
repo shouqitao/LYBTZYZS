@@ -21,7 +21,7 @@
     <UserControl.Resources>
         <ObjectDataProvider x:Key="HerbEditContext" ObjectType="{x:Type herbsModels:HerbEditContext}"/>
         <Style x:Key="ValidationErrorMessageVisibleStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#C75050"/>
+            <Setter Property="Foreground" Value="{DynamicResource ValidationErrorBrush}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Margin" Value="0,4,0,0"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
@@ -36,7 +36,6 @@
                 <Grid DataContext="{Binding Herb}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="20"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
@@ -48,9 +47,9 @@
                     </Grid.RowDefinitions>
 
                     <!-- 第一行：药材名称、拼音码 -->
-                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,24,24">
                         <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6">
-                            <Run Text="药材名称"/><Run Text=" *" Foreground="#C75050" FontWeight="Bold"/>
+                            <Run Text="药材名称"/><Run Text=" *" Foreground="{DynamicResource ValidationErrorBrush}" FontWeight="Bold"/>
                         </TextBlock>
                         <TextBox TabIndex="1" Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -61,7 +60,7 @@
                                    Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,24">
                         <TextBlock Text="拼音码（可修正）" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox TabIndex="2" Text="{Binding PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -71,7 +70,7 @@
                     </StackPanel>
 
                     <!-- 第二行：产地、规格 -->
-                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,24,24">
                         <TextBlock Text="产地" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox TabIndex="3" Text="{Binding Origin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -79,7 +78,7 @@
                                  Padding="12,10"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,24">
                         <TextBlock Text="规格" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox TabIndex="4" Text="{Binding Spec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -88,9 +87,9 @@
                     </StackPanel>
 
                     <!-- 第三行：单位、零售价 -->
-                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,24,24">
                         <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6">
-                            <Run Text="单位"/><Run Text=" *" Foreground="#C75050" FontWeight="Bold"/>
+                            <Run Text="单位"/><Run Text=" *" Foreground="{DynamicResource ValidationErrorBrush}" FontWeight="Bold"/>
                         </TextBlock>
                         <TextBox TabIndex="5" Text="{Binding Unit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -100,7 +99,7 @@
                                    Style="{DynamicResource ValidationErrorMessageVisibleStyle}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,0,24">
                         <TextBlock Text="零售价" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox TabIndex="6" Text="{Binding Price, Mode=TwoWay, StringFormat={}{0:0.##}, ValidatesOnNotifyDataErrors=True}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -111,7 +110,7 @@
                     </StackPanel>
 
                     <!-- 第四行：成本价、状态 -->
-                    <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,24,24">
                         <TextBlock Text="成本价" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox TabIndex="7" Text="{Binding CostPrice, Mode=TwoWay, StringFormat={}{0:0.##}, TargetNullValue=''}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -119,7 +118,7 @@
                                  Padding="12,10"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="3" Grid.Column="2" Margin="0,0,0,20"
+                    <StackPanel Grid.Row="3" Grid.Column="1" Margin="0,0,0,24"
                                 Visibility="{Binding ShowStatus, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
                         <TextBlock Text="状态" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <ComboBox TabIndex="8" SelectedItem="{Binding Status, Mode=TwoWay}"
@@ -136,7 +135,7 @@
                     </StackPanel>
 
                     <!-- 第五行：分类、药性 -->
-                    <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,24,24">
                         <TextBlock Text="分类" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox TabIndex="9" Text="{Binding Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -144,7 +143,7 @@
                                  Padding="12,10"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="4" Grid.Column="2" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="4" Grid.Column="1" Margin="0,0,0,24">
                         <TextBlock Text="药性" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox TabIndex="10" Text="{Binding Properties, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -159,7 +158,7 @@
         <controls:InfoCard Title="功效用法">
             <controls:InfoCard.Content>
                 <StackPanel DataContext="{Binding Herb}">
-                    <StackPanel Margin="0,0,0,20">
+                    <StackPanel Margin="0,0,0,24">
                         <TextBlock Text="功效" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox Text="{Binding Effect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -169,7 +168,7 @@
                                  Padding="12,10"/>
                     </StackPanel>
 
-                    <StackPanel Margin="0,0,0,20">
+                    <StackPanel Margin="0,0,0,24">
                         <TextBlock Text="用法用量" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox Text="{Binding Usage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"

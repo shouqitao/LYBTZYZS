@@ -98,33 +98,34 @@
                  Detail面板样式 - 浮动卡片效果
                  ==================================================================== -->
             <Style x:Key="DetailPanelStyle" TargetType="Border">
-                <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
-                <Setter Property="CornerRadius" Value="8"/>
-                <Setter Property="Margin" Value="8,12,12,12"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="CornerRadius" Value="0"/>
+                <Setter Property="Margin" Value="0"/>
             </Style>
 
             <!-- ====================================================================
                  Master面板样式 - 简洁列表区域
                  ==================================================================== -->
             <Style x:Key="MasterPanelStyle" TargetType="Border">
-                <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Outline}"/>
+                <Setter Property="Background" Value="{DynamicResource SurfaceLevel1Brush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
                 <Setter Property="BorderThickness" Value="0,0,1,0"/>
+                <Setter Property="Effect" Value="{StaticResource Elevation1}"/>
             </Style>
 
             <!-- ====================================================================
                  空状态面板样式
                  ==================================================================== -->
             <Style x:Key="EmptyStatePanelStyle" TargetType="Border">
-                <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
-                <Setter Property="CornerRadius" Value="8"/>
-                <Setter Property="Margin" Value="8,12,12,12"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="CornerRadius" Value="0"/>
+                <Setter Property="Margin" Value="0"/>
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <!-- 主容器 - 使用SurfaceBrush作为整体背景 -->
-    <Border Background="{DynamicResource MaterialDesignPaper}">
+    <!-- 主容器 - L0 暖灰底，让 L1 白色面板浮起 -->
+    <Border Background="{DynamicResource SurfaceLevel0Brush}">
         <!-- 注意：不设置Grid的DataContext，以便内容能继承父级的ViewModel DataContext -->
         <Grid>
             <Grid.RowDefinitions>

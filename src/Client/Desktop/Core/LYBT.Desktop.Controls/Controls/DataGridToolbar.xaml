@@ -111,7 +111,7 @@
                         Orientation="Horizontal">
                 <!-- 批量删除按钮 -->
                 <Button Command="{Binding BatchDeleteCommand, ElementName=Root}"
-                        Style="{StaticResource MaterialDesignRaisedButton}" Background="#C75050" Foreground="White" BorderThickness="0"
+                        Style="{StaticResource MaterialDesignRaisedButton}" Background="{DynamicResource ValidationErrorBrush}" Foreground="White" BorderThickness="0"
                         Visibility="{Binding BatchDeleteCommand, ElementName=Root, Converter={x:Static converters:Cvt.NullToVis}}"
                         ToolTip="批量删除">
                     <StackPanel Orientation="Horizontal">

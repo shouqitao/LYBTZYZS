@@ -75,14 +75,14 @@
                     <DataGrid.Columns>
                         <!--  患者姓名  -->
                         <DataGridTextColumn
-                            Width="100"
+                            Width="*" MinWidth="80"
                             Binding="{Binding PatientName}"
                             Header="患者"
                             ElementStyle="{StaticResource DataGridEmphasisCellStyle}" />
 
                         <!--  就诊日期  -->
                         <DataGridTextColumn
-                            Width="90"
+                            Width="Auto"
                             Binding="{Binding CreatedAt, StringFormat=yyyy-MM-dd}"
                             Header="日期"
                             ElementStyle="{StaticResource DataGridMonoCellStyle}" />
@@ -95,7 +95,7 @@
                             ElementStyle="{StaticResource DataGridSecondaryCellStyle}" />
 
                         <!--  状态  -->
-                        <DataGridTemplateColumn Width="70" Header="状态">
+                        <DataGridTemplateColumn Width="Auto" Header="状态">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <controls:StatusBadge Status="{Binding CaseStatus}" />

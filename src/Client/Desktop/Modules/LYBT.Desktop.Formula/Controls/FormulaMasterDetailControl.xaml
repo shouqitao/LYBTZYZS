@@ -63,35 +63,15 @@
                                     <TextBlock Margin="8,0,0,0" Text="编辑" />
                                 </StackPanel>
                             </Button>
-                            <!--  次要操作溢出菜单  -->
-                            <Menu Margin="8,0,0,0" Background="Transparent">
-                                <MenuItem>
-                                    <MenuItem.Header>
-                                        <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="DotsHorizontal" VerticalAlignment="Center" />
-                                            <TextBlock Margin="8,0,0,0" Text="更多" />
-                                        </StackPanel>
-                                    </MenuItem.Header>
-                                    <MenuItem Command="{Binding CopyFormulaCommand}">
-                                        <MenuItem.Icon>
-                                            <materialDesign:PackIcon Kind="ContentCopy" />
-                                        </MenuItem.Icon>
-                                        <MenuItem.Header>复制</MenuItem.Header>
-                                    </MenuItem>
-                                    <MenuItem Command="{Binding ToggleStatusCommand}">
-                                        <MenuItem.Icon>
-                                            <materialDesign:PackIcon Kind="ToggleSwitchOutline" />
-                                        </MenuItem.Icon>
-                                        <MenuItem.Header>切换状态</MenuItem.Header>
-                                    </MenuItem>
-                                    <MenuItem Command="{Binding RestoreCommand}">
-                                        <MenuItem.Icon>
-                                            <materialDesign:PackIcon Kind="Undo" />
-                                        </MenuItem.Icon>
-                                        <MenuItem.Header>恢复</MenuItem.Header>
-                                    </MenuItem>
-                                </MenuItem>
-                            </Menu>
+                            <materialDesign:PopupBox
+                                Margin="8,0,0,0"
+                                ToolTip="更多操作">
+                                <StackPanel>
+                                    <Button Command="{Binding CopyFormulaCommand}" Content="复制" Padding="16,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
+                                    <Button Command="{Binding ToggleStatusCommand}" Content="切换状态" Padding="16,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
+                                    <Button Command="{Binding RestoreCommand}" Content="恢复" Padding="16,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
+                                </StackPanel>
+                            </materialDesign:PopupBox>
                         </StackPanel>
                     </controls:DataGridToolbar.AdditionalContent>
                 </controls:DataGridToolbar>
@@ -126,26 +106,26 @@
                     <DataGrid.Columns>
                         <!--  名称  -->
                         <DataGridTextColumn
-                            Width="120"
+                            Width="*" MinWidth="100"
                             Binding="{Binding Name}"
                             Header="名称"
                             ElementStyle="{StaticResource DataGridEmphasisCellStyle}" />
 
                         <!--  分类  -->
                         <DataGridTextColumn
-                            Width="80"
+                            Width="Auto"
                             Binding="{Binding Category}"
                             Header="分类"
                             ElementStyle="{StaticResource DataGridSecondaryCellStyle}" />
 
                         <!--  药味数  -->
                         <DataGridTextColumn
-                            Width="50"
+                            Width="Auto"
                             Binding="{Binding HerbCount}"
                             Header="药味"
                             ElementStyle="{StaticResource DataGridSecondaryCellStyle}" />
 
-                        <DataGridTemplateColumn Width="50" Header="共享">
+                        <DataGridTemplateColumn Width="Auto" Header="共享">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <controls:StatusBadge Status="{Binding IsShared}" />
