@@ -22,7 +22,7 @@
 | D9 / US-MC-009 | 处方历史聚合 | A 补回 v1.0 | 🧲 v1.0 待实现 |
 | D10 | 字段级加密 | 拉回 v1.0 | 🧲 v1.0 待实现 |
 | Sync 整模块 | 数据同步（8 US） | v2.0（v1.0 数据孤立 N1） | v2.0 规划 |
-| SHELL-010~019 | Shell 扩展 10 项 | 010/011/013/014/016/017/018/019 = v1.0；012 = v2.0；015 = 撤销并入 013 | 见 11-platform.md |
+| SHELL-010~019 | Shell 扩展 10 项 | 010/011/013/014/016/017/018/019 = v1.0；012 = v2.0；015 = 撤销并入 013 | 见 11a-shell.md |
 | US-SHELL-003 | 模块加载 | A 修复 v1.0 | ⚠️ v1.0 修复 |
 | **范围溯源** | **141 = baseline 136 + MC-019 + REG-008 + REPORT×3** | baseline 冻结后补入 | MC-019[D6] + REG-008[R10] + REPORT×3[A7]，均五要素齐全；模块 9→10（REPORT 独立） | 详见 baseline spec §5 |
 
@@ -40,7 +40,11 @@
 | [08-registration.md](08-registration.md) | 挂号管理 | 8 | ✅ 已完成 |
 | [09-printing.md](09-printing.md) | 处方打印 | 4 | ✅ 已完成 |
 | [10-reports.md](10-reports.md) | 报表管理 | 3 | ✅ 已完成 |
-| [11-platform.md](11-platform.md) | 平台基础设施（Shell/Config/Err/Log/Sys/Card） | 43 | ✅ 已完成 |
+| [11a-shell.md](11a-shell.md) | 平台-Shell（壳程序生命周期） | 15 | ✅ 已完成 |
+| [11b-configuration.md](11b-configuration.md) | 平台-配置管理 | 4 | ✅ 已完成 |
+| [11c-error-handling.md](11c-error-handling.md) | 平台-异常处理 | 8 | ✅ 已完成 |
+| [11d-observability.md](11d-observability.md) | 平台-可观测性（日志+健康诊断） | 16 | ✅ 已完成 |
+| [11e-cardreader.md](11e-cardreader.md) | 平台-读卡器 | 2 | ✅ 已完成 |
 | [12-nfr.md](12-nfr.md) | 非功能需求 | — | ✅ 已完成 |
 | [13-traceability-matrix.md](13-traceability-matrix.md) | 需求追溯矩阵（US→ADR/Flow/API/实现） | 141 | ✅ 已完成 |
 | **合计** | | **141** | |
@@ -62,12 +66,12 @@
 | US-REG | 挂号管理 | 08-registration.md |
 | US-PRINT | 处方打印 | 09-printing.md |
 | US-REPORT | 报表管理 | 10-reports.md |
-| US-SHELL | 平台-Shell | 11-platform.md |
-| US-CFG | 平台-配置 | 11-platform.md |
-| US-ERR | 平台-异常处理 | 11-platform.md |
-| US-LOG | 平台-日志审计 | 11-platform.md |
-| US-SYS | 平台-健康诊断 | 11-platform.md |
-| US-CARD | 平台-读卡器 | 11-platform.md |
+| US-SHELL | 平台-Shell | 11a-shell.md |
+| US-CFG | 平台-配置 | 11b-configuration.md |
+| US-ERR | 平台-异常处理 | 11c-error-handling.md |
+| US-LOG | 平台-日志审计 | 11d-observability.md |
+| US-SYS | 平台-健康诊断 | 11d-observability.md |
+| US-CARD | 平台-读卡器 | 11e-cardreader.md |
 
 ## US 总览（141 项）
 
@@ -217,6 +221,8 @@
 | US-REPORT-003 | 查询药材使用排行（按时间范围） |
 
 ### 平台基础设施（US-SHELL/CFG/ERR/LOG/SYS/CARD × 43）
+
+> 详见 [11a-shell.md](11a-shell.md)、[11b-configuration.md](11b-configuration.md)、[11c-error-handling.md](11c-error-handling.md)、[11d-observability.md](11d-observability.md)、[11e-cardreader.md](11e-cardreader.md)
 
 #### Shell（v1.0 有效 13：原 5 + SHELL-010~019 补充 8；另有 012=v2.0、015=撤销）
 

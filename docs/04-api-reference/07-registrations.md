@@ -40,31 +40,24 @@ US-REG-001~006: 创建、查询、接诊、取消等操作。
 }
 ```
 
-**成功响应** (201 Created): `ApiResponse<RegistrationDetailDto>`
+**成功响应** (201 Created): `RegistrationDetailDto`
 
 ```json
 {
-  "success": true,
-  "message": "挂号创建成功",
-  "data": {
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "patientId": "12345678-abcd-1234-abcd-123456789012",
-    "patientName": "李四",
-    "doctorId": "87654321-dcba-4321-dcba-210987654321",
-    "doctorName": "张医生",
-    "medicalCaseId": null,
-    "source": "Receptionist",
-    "queueNumber": 3,
-    "registrationFee": 20.00,
-    "status": "Waiting",
-    "remark": "初诊患者，腰痛",
-    "createdAt": "2026-06-25T08:30:00Z",
-    "updatedAt": null,
-    "createdBy": "f1234567-abcd-1234-abcd-123456789012"
-  },
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8VABCDEF12345"
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "patientId": "12345678-abcd-1234-abcd-123456789012",
+  "patientName": "李四",
+  "doctorId": "87654321-dcba-4321-dcba-210987654321",
+  "doctorName": "张医生",
+  "medicalCaseId": null,
+  "source": "Receptionist",
+  "queueNumber": 3,
+  "registrationFee": 20.00,
+  "status": "Waiting",
+  "remark": "初诊患者，腰痛",
+  "createdAt": "2026-06-25T08:30:00Z",
+  "updatedAt": null,
+  "createdBy": "f1234567-abcd-1234-abcd-123456789012"
 }
 ```
 
@@ -88,6 +81,7 @@ curl -X POST "http://localhost:5000/api/v1/registrations" \
 
 | HTTP 状态码 | 错误码 | 说明 |
 |------------|--------|------|
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 | 409 | ERR-40102 | 患者已有进行中挂号 |
 
 ---
@@ -116,24 +110,17 @@ curl -X POST "http://localhost:5000/api/v1/registrations" \
 }
 ```
 
-**成功响应** (201 Created): `ApiResponse<QuickVisitResultDto>`
+**成功响应** (201 Created): `QuickVisitResultDto`
 
 ```json
 {
-  "success": true,
-  "message": "快速看诊创建成功",
-  "data": {
-    "registrationId": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-    "medicalCaseId": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-    "patientId": "12345678-abcd-1234-abcd-123456789012",
-    "patientName": "李四",
-    "doctorId": "87654321-dcba-4321-dcba-210987654321",
-    "doctorName": "张医生",
-    "createdAt": "2026-06-25T09:15:00Z"
-  },
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8VABCDEF12345"
+  "registrationId": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  "medicalCaseId": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+  "patientId": "12345678-abcd-1234-abcd-123456789012",
+  "patientName": "李四",
+  "doctorId": "87654321-dcba-4321-dcba-210987654321",
+  "doctorName": "张医生",
+  "createdAt": "2026-06-25T09:15:00Z"
 }
 ```
 
@@ -154,6 +141,7 @@ curl -X POST "http://localhost:5000/api/v1/registrations/quick-visit" \
 
 | HTTP 状态码 | 错误码 | 说明 |
 |------------|--------|------|
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 | 422 | — | 医案创建失败，事务已回滚 |
 
 ---
@@ -166,31 +154,24 @@ curl -X POST "http://localhost:5000/api/v1/registrations/quick-visit" \
 
 **路径参数**: `id` (Guid)
 
-**成功响应** (200): `ApiResponse<RegistrationDetailDto>`
+**成功响应** (200): `RegistrationDetailDto`
 
 ```json
 {
-  "success": true,
-  "message": "获取成功",
-  "data": {
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "patientId": "12345678-abcd-1234-abcd-123456789012",
-    "patientName": "李四",
-    "doctorId": "87654321-dcba-4321-dcba-210987654321",
-    "doctorName": "张医生",
-    "medicalCaseId": null,
-    "source": "Receptionist",
-    "queueNumber": 3,
-    "registrationFee": 20.00,
-    "status": "Waiting",
-    "remark": "初诊患者，腰痛",
-    "createdAt": "2026-06-25T08:30:00Z",
-    "updatedAt": null,
-    "createdBy": "f1234567-abcd-1234-abcd-123456789012"
-  },
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8VABCDEF12345"
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "patientId": "12345678-abcd-1234-abcd-123456789012",
+  "patientName": "李四",
+  "doctorId": "87654321-dcba-4321-dcba-210987654321",
+  "doctorName": "张医生",
+  "medicalCaseId": null,
+  "source": "Receptionist",
+  "queueNumber": 3,
+  "registrationFee": 20.00,
+  "status": "Waiting",
+  "remark": "初诊患者，腰痛",
+  "createdAt": "2026-06-25T08:30:00Z",
+  "updatedAt": null,
+  "createdBy": "f1234567-abcd-1234-abcd-123456789012"
 }
 ```
 
@@ -203,9 +184,7 @@ curl -X GET "http://localhost:5000/api/v1/registrations/a1b2c3d4-e5f6-7890-abcd-
 
 **错误码**:
 
-| HTTP 状态码 | 错误码 | 说明 |
-|------------|--------|------|
-| 404 | ERR-40101 | 挂号不存在 |
+> 通用状态码（401/403/404）见 [README](README.md#通用-http-状态码)。本端点无特有状态码。
 
 ---
 
@@ -228,51 +207,44 @@ curl -X GET "http://localhost:5000/api/v1/registrations/a1b2c3d4-e5f6-7890-abcd-
 | `patientId` | Guid? | null | 患者 ID |
 | `doctorId` | Guid? | null | 医生 ID |
 
-**成功响应** (200): `ApiResponse<PagedResult<RegistrationListDto>>`
+**成功响应** (200): `PagedResult<RegistrationListDto>`
 
 ```json
 {
-  "success": true,
-  "message": "获取成功",
-  "data": {
-    "items": [
-      {
-        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "patientId": "12345678-abcd-1234-abcd-123456789012",
-        "patientName": "李四",
-        "doctorId": "87654321-dcba-4321-dcba-210987654321",
-        "doctorName": "张医生",
-        "medicalCaseId": null,
-        "queueNumber": 3,
-        "registrationFee": 20.00,
-        "source": "Receptionist",
-        "status": "Waiting",
-        "createdAt": "2026-06-25T08:30:00Z",
-        "hasMedicalCase": false
-      },
-      {
-        "id": "d4e5f6a7-b8c9-0123-def0-123456789012",
-        "patientId": "23456789-abcd-1234-abcd-123456789012",
-        "patientName": "王五",
-        "doctorId": "87654321-dcba-4321-dcba-210987654321",
-        "doctorName": "张医生",
-        "medicalCaseId": "e5f6a7b8-c9d0-1234-ef01-234567890123",
-        "queueNumber": 2,
-        "registrationFee": 20.00,
-        "source": "Doctor",
-        "status": "InProgress",
-        "createdAt": "2026-06-25T08:00:00Z",
-        "hasMedicalCase": true
-      }
-    ],
-    "totalCount": 120,
-    "page": 1,
-    "pageSize": 20,
-    "totalPages": 6
-  },
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8VABCDEF12345"
+  "items": [
+    {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "patientId": "12345678-abcd-1234-abcd-123456789012",
+      "patientName": "李四",
+      "doctorId": "87654321-dcba-4321-dcba-210987654321",
+      "doctorName": "张医生",
+      "medicalCaseId": null,
+      "queueNumber": 3,
+      "registrationFee": 20.00,
+      "source": "Receptionist",
+      "status": "Waiting",
+      "createdAt": "2026-06-25T08:30:00Z",
+      "hasMedicalCase": false
+    },
+    {
+      "id": "d4e5f6a7-b8c9-0123-def0-123456789012",
+      "patientId": "23456789-abcd-1234-abcd-123456789012",
+      "patientName": "王五",
+      "doctorId": "87654321-dcba-4321-dcba-210987654321",
+      "doctorName": "张医生",
+      "medicalCaseId": "e5f6a7b8-c9d0-1234-ef01-234567890123",
+      "queueNumber": 2,
+      "registrationFee": 20.00,
+      "source": "Doctor",
+      "status": "InProgress",
+      "createdAt": "2026-06-25T08:00:00Z",
+      "hasMedicalCase": true
+    }
+  ],
+  "totalCount": 120,
+  "page": 1,
+  "pageSize": 20,
+  "totalPages": 6
 }
 ```
 
@@ -311,46 +283,39 @@ curl -X GET "http://localhost:5000/api/v1/registrations?doctorId=87654321-dcba-4
 |------|------|------|
 | `doctorId` | Guid? | 医生 ID（可选，过滤特定医生的队列） |
 
-**成功响应** (200): `ApiResponse<List<RegistrationListDto>>`
+**成功响应** (200): `List<RegistrationListDto>`
 
 ```json
-{
-  "success": true,
-  "message": "获取成功",
-  "data": [
-    {
-      "id": "d4e5f6a7-b8c9-0123-def0-123456789012",
-      "patientId": "23456789-abcd-1234-abcd-123456789012",
-      "patientName": "王五",
-      "doctorId": "87654321-dcba-4321-dcba-210987654321",
-      "doctorName": "张医生",
-      "medicalCaseId": null,
-      "queueNumber": 2,
-      "registrationFee": 20.00,
-      "source": "Receptionist",
-      "status": "Waiting",
-      "createdAt": "2026-06-25T08:00:00Z",
-      "hasMedicalCase": false
-    },
-    {
-      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "patientId": "12345678-abcd-1234-abcd-123456789012",
-      "patientName": "李四",
-      "doctorId": "87654321-dcba-4321-dcba-210987654321",
-      "doctorName": "张医生",
-      "medicalCaseId": null,
-      "queueNumber": 3,
-      "registrationFee": 20.00,
-      "source": "Receptionist",
-      "status": "Waiting",
-      "createdAt": "2026-06-25T08:30:00Z",
-      "hasMedicalCase": false
-    }
-  ],
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8VABCDEF12345"
-}
+[
+  {
+    "id": "d4e5f6a7-b8c9-0123-def0-123456789012",
+    "patientId": "23456789-abcd-1234-abcd-123456789012",
+    "patientName": "王五",
+    "doctorId": "87654321-dcba-4321-dcba-210987654321",
+    "doctorName": "张医生",
+    "medicalCaseId": null,
+    "queueNumber": 2,
+    "registrationFee": 20.00,
+    "source": "Receptionist",
+    "status": "Waiting",
+    "createdAt": "2026-06-25T08:00:00Z",
+    "hasMedicalCase": false
+  },
+  {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "patientId": "12345678-abcd-1234-abcd-123456789012",
+    "patientName": "李四",
+    "doctorId": "87654321-dcba-4321-dcba-210987654321",
+    "doctorName": "张医生",
+    "medicalCaseId": null,
+    "queueNumber": 3,
+    "registrationFee": 20.00,
+    "source": "Receptionist",
+    "status": "Waiting",
+    "createdAt": "2026-06-25T08:30:00Z",
+    "hasMedicalCase": false
+  }
+]
 ```
 
 **curl 示例**:
@@ -376,17 +341,10 @@ curl -X GET "http://localhost:5000/api/v1/registrations/queue?doctorId=87654321-
 
 **路径参数**: `id` (Guid)
 
-**成功响应** (200): `ApiResponse<Guid>`（返回关联的 MedicalCaseId）
+**成功响应** (200): `Guid`（返回关联的 MedicalCaseId）
 
 ```json
-{
-  "success": true,
-  "message": "接诊成功",
-  "data": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8VABCDEF12345"
-}
+"c3d4e5f6-a7b8-9012-cdef-123456789012"
 ```
 
 **curl 示例**:
@@ -400,7 +358,7 @@ curl -X PUT "http://localhost:5000/api/v1/registrations/a1b2c3d4-e5f6-7890-abcd-
 
 | HTTP 状态码 | 错误码 | 说明 |
 |------------|--------|------|
-| 404 | ERR-40101 | 挂号不存在 |
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 | 422 | ERR-40103 | 非 Waiting 状态，不可接诊 |
 
 ---
@@ -414,18 +372,7 @@ curl -X PUT "http://localhost:5000/api/v1/registrations/a1b2c3d4-e5f6-7890-abcd-
 
 **路径参数**: `id` (Guid)
 
-**成功响应** (200): `ApiResponse`
-
-```json
-{
-  "success": true,
-  "message": "挂号已取消",
-  "data": null,
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8VABCDEF12345"
-}
-```
+**成功响应** (200): `ApiResponse`（`data` 为 `null`）
 
 **curl 示例**:
 
@@ -438,7 +385,7 @@ curl -X PUT "http://localhost:5000/api/v1/registrations/a1b2c3d4-e5f6-7890-abcd-
 
 | HTTP 状态码 | 错误码 | 说明 |
 |------------|--------|------|
-| 404 | ERR-40101 | 挂号不存在 |
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 | 422 | ERR-40104 | 非 Waiting 状态，不可取消 |
 
 ---
@@ -463,3 +410,4 @@ curl -X PUT "http://localhost:5000/api/v1/registrations/a1b2c3d4-e5f6-7890-abcd-
 | 2026-06-12 | v1.2 | 新增错误码章节 (ERR-40101~40104) |
 | 2026-06-25 | v2.0 | 全面重写：为全部 7 个端点补充完整请求/响应 JSON 示例、curl 命令、参数表；使用真实 GUID 和中文姓名 |
 | 2026-06-28 | v2.1 | 文档对齐基线：权限策略加 D7 待对齐标注（目标 DoctorOrReceptionist，代码 DoctorOrAdmin，影响 Receptionist 挂号） |
+| 2026-06-28 | vX.Y | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；curl 删除 TOKEN 脚本（见 README）；通用状态码引用 README |

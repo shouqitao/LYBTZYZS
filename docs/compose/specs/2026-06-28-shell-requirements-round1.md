@@ -2,7 +2,7 @@
 
 > **状态**：✅ **已冻结** — Phase② 设计的正式输入
 > **日期**：2026-06-28
-> **来源**：整合 `docs/02-requirements/11-platform.md` + `12-nfr.md` + `docs/01-product/02-personas.md` + `DESIGN.md` v2 + 审查基线 `2026-06-28-shell-audit-baseline.md`
+> **来源**：整合 `docs/02-requirements/11a-shell.md` + `12-nfr.md` + `docs/01-product/02-personas.md` + `DESIGN.md` v2 + 审查基线 `2026-06-28-shell-audit-baseline.md`
 > **用途**：作为 Phase②「Shell 整层设计」的输入。每条需求将成为设计验收标准。
 > **不在范围**：Server 立、各业务模块内部需求（仅取其对 Shell 的约束）。
 > **冻结依据**：Round 1 缺口/冲突通过与用户逐条梳理，全部收敛为确定决策。
@@ -26,7 +26,7 @@ Shell 是 WPF Desktop 客户端宿主，承载 4 类用户的全生命周期交�
 
 ---
 
-## [S2] 功能需求（整合自 `11-platform.md`）
+## [S2] 功能需求（整合自 `11a-shell.md`）
 
 ### [S2.1] FR-01 应用启动与单实例（源自 US-SHELL-001，优先级 Must）
 

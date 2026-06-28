@@ -16,53 +16,35 @@
 
 - **权限**: Admin / SuperAdmin
 
-**成功响应** (200) `ApiResponse<object>`:
+**成功响应** (200) `ApiResponse<object>` — `data`:
 
 ```json
 {
-  "success": true,
-  "message": null,
-  "data": {
-    "currentLevel": "Information",
-    "defaultLevel": "Information",
-    "isDebugModeActive": false,
-    "debugModeStartedAt": null,
-    "debugModeExpiresAt": null,
-    "remainingMinutes": null
-  },
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9N..."
+  "currentLevel": "Information",
+  "defaultLevel": "Information",
+  "isDebugModeActive": false,
+  "debugModeStartedAt": null,
+  "debugModeExpiresAt": null,
+  "remainingMinutes": null
 }
 ```
 
-**调试模式激活时**:
+**调试模式激活时** — `data`:
 
 ```json
 {
-  "success": true,
-  "message": null,
-  "data": {
-    "currentLevel": "Debug",
-    "defaultLevel": "Information",
-    "isDebugModeActive": true,
-    "debugModeStartedAt": "2026-06-25T14:00:00Z",
-    "debugModeExpiresAt": "2026-06-25T14:30:00Z",
-    "remainingMinutes": 30
-  },
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9N..."
+  "currentLevel": "Debug",
+  "defaultLevel": "Information",
+  "isDebugModeActive": true,
+  "debugModeStartedAt": "2026-06-25T14:00:00Z",
+  "debugModeExpiresAt": "2026-06-25T14:30:00Z",
+  "remainingMinutes": 30
 }
 ```
 
 **curl 示例：**
 
 ```bash
-TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"userName":"admin","password":"Admin@123456"}' | jq -r '.data.token')
-
 curl -X GET http://localhost:5000/api/v1/diagnostics/logging/status \
   -H "Authorization: Bearer $TOKEN"
 ```
@@ -89,23 +71,16 @@ curl -X GET http://localhost:5000/api/v1/diagnostics/logging/status \
 | `level` | string | 否 | 目标级别 (Verbose/Debug/Information)，默认 Debug |
 | `durationMinutes` | int | 否 | 持续时间 (1-120分钟)，默认 30，上限 120 |
 
-**成功响应** (200) `ApiResponse<object>`:
+**成功响应** (200) `ApiResponse<object>` — `data`:
 
 ```json
 {
-  "success": true,
-  "message": null,
-  "data": {
-    "message": "调试模式已启用",
-    "previousLevel": "Information",
-    "currentLevel": "Debug",
-    "startedAt": "2026-06-25T14:00:00Z",
-    "expiresAt": "2026-06-25T14:30:00Z",
-    "durationMinutes": 30
-  },
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9P..."
+  "message": "调试模式已启用",
+  "previousLevel": "Information",
+  "currentLevel": "Debug",
+  "startedAt": "2026-06-25T14:00:00Z",
+  "expiresAt": "2026-06-25T14:30:00Z",
+  "durationMinutes": 30
 }
 ```
 
@@ -140,20 +115,13 @@ curl -X POST http://localhost:5000/api/v1/diagnostics/logging/debug/enable \
 - **权限**: Admin / SuperAdmin
 - **请求体**: 无
 
-**成功响应** (200) `ApiResponse<object>`:
+**成功响应** (200) `ApiResponse<object>` — `data`:
 
 ```json
 {
-  "success": true,
-  "message": null,
-  "data": {
-    "message": "调试模式已禁用，已恢复默认日志级别",
-    "previousLevel": "Debug",
-    "currentLevel": "Information"
-  },
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9Q..."
+  "message": "调试模式已禁用，已恢复默认日志级别",
+  "previousLevel": "Debug",
+  "currentLevel": "Information"
 }
 ```
 
@@ -184,37 +152,13 @@ curl -X POST http://localhost:5000/api/v1/diagnostics/logging/debug/disable \
 |------|------|------|------|
 | `level` | string | 是 | 目标级别 (Verbose/Debug/Information/Warning/Error/Fatal) |
 
-**成功响应** (200) `ApiResponse<object>`:
+**成功响应** (200) `ApiResponse<object>` — `data`:
 
 ```json
 {
-  "success": true,
-  "message": null,
-  "data": {
-    "message": "日志级别已更新",
-    "previousLevel": "Information",
-    "currentLevel": "Debug"
-  },
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9R..."
-}
-```
-
-**空级别错误响应** (400):
-
-```json
-{
-  "error": "日志级别不能为空"
-}
-```
-
-**无效级别错误响应** (400):
-
-```json
-{
-  "error": "无效的日志级别",
-  "validLevels": ["Verbose", "Debug", "Information", "Warning", "Error", "Fatal"]
+  "message": "日志级别已更新",
+  "previousLevel": "Information",
+  "currentLevel": "Debug"
 }
 ```
 
@@ -238,12 +182,11 @@ curl -X POST http://localhost:5000/api/v1/diagnostics/logging/level \
 
 ## 错误码
 
-| HTTP 状态码 | 说明 |
-|------------|------|
-| 200 | 操作成功 |
-| 400 | 日志级别为空或无效 |
-| 401 | 未认证 |
-| 403 | 非 Admin/SuperAdmin 角色 |
+| HTTP 状态码 | 错误信息 | 场景 |
+|------------|---------|------|
+| 400 | `日志级别不能为空` | `level` 为空 |
+| 400 | `无效的日志级别` | `level` 非合法枚举值（合法值：Verbose/Debug/Information/Warning/Error/Fatal） |
+| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -254,3 +197,4 @@ curl -X POST http://localhost:5000/api/v1/diagnostics/logging/level \
 | 2026-06-12 | v1.1 | 标注使用基于角色授权 (非策略授权) |
 | 2026-06-25 | v1.2 | 补充全部端点的 curl 示例、`ApiResponse<T>` 信封完整 JSON 示例、无效/空级别错误响应、错误码表 |
 | 2026-06-28 | v1.1 | 文档对齐代码：权限策略 AdminOnly→AdminOrSuperAdmin（对齐 DiagnosticsController.cs:19） |
+| 2026-06-28 | v1.3 | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；通用状态码引用 README |

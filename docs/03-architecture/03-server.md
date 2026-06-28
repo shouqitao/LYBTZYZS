@@ -125,31 +125,9 @@ LYBT.Infrastructure/
     ApiErrorCodes.cs         # 错误码定义
 ```
 
-**BaseRepository 公开方法 (21 个)**:
+**BaseRepository 公开方法 (21 个)**: GetByIdAsync / GetAllAsync / FindAsync(简单+高级) / SelectAsync / GetPagedAsync(模板+高级) / ExistsAsync / CountAsync(有无条件) / AddAsync / AddRangeAsync / UpdateAsync / UpdateRangeAsync / DeleteAsync(软) / DeleteRangeAsync / HardDeleteAsync / GetQueryable / GetNoTrackingQueryable / FromSqlRawAsync / SaveChangesAsync。
 
-| 方法 | 说明 |
-|------|------|
-| `GetByIdAsync(id)` | 按 ID 查询 |
-| `GetAllAsync()` | 查询全部 |
-| `FindAsync(predicate)` | 条件查询 (简单版) |
-| `FindAsync(predicate, orderBy, includes, skip, take)` | 条件查询 (高级版，支持预加载和分页) |
-| `SelectAsync(predicate, selector)` | 投影查询 |
-| `GetPagedAsync(page, size, keyword)` | 分页查询 (模板方法) |
-| `GetPagedAsync(page, size, predicate, orderBy, ascending)` | 高级分页查询 |
-| `ExistsAsync(predicate)` | 存在检查 |
-| `CountAsync()` | 数量统计 (无条件) |
-| `CountAsync(predicate)` | 数量统计 (有条件) |
-| `AddAsync(entity)` | 创建 |
-| `AddRangeAsync(entities)` | 批量创建 |
-| `UpdateAsync(entity)` | 更新 |
-| `UpdateRangeAsync(entities)` | 批量更新 |
-| `DeleteAsync(id)` | 软删除 |
-| `DeleteRangeAsync(predicate)` | 批量软删除 |
-| `HardDeleteAsync(id)` | 物理删除 |
-| `GetQueryable()` | 获取可查询对象 |
-| `GetNoTrackingQueryable()` | 获取不跟踪查询对象 |
-| `FromSqlRawAsync(sql, params)` | 原生 SQL 查询 |
-| `SaveChangesAsync()` | 保存更改 (含 RowVersion 同步) |
+> 完整方法签名见源码 [`BaseRepository.cs`](../../src/Server/Core/LYBT.Infrastructure/Repositories/BaseRepository.cs)。
 
 **分页查询模板方法模式**:
 子类通过覆盖 `ApplyKeywordFilter` 和 `ApplyDefaultOrdering` 提供定制逻辑，不重写 `GetPagedAsync` 本身。
@@ -347,7 +325,7 @@ builder.Services.AddPatientsModule();
 | 6xxxx | 验方管理 | 601xx~603xx | ~17 |
 | 7xxxx | 数据同步 | 701xx~705xx | ~20 |
 
-> **总计**: 90+ 错误场景。详见各模块 PRD 文档的"错误码"章节和 [error-handling.md](../02-requirements/11-platform.md)。
+> **总计**: 90+ 错误场景。详见各模块 PRD 文档的"错误码"章节和 [11c-error-handling.md](../02-requirements/11c-error-handling.md)。
 
 ## Service 层规范
 
@@ -398,24 +376,7 @@ Repository -> Mapper -> Logger -> Validator -> 其他依赖
 
 ### FluentValidation 集成
 
-Create/Update 方法在业务逻辑前调用验证:
-
-```csharp
-var validationResult = await _validator.ValidateAsync(dto);
-if (!validationResult.IsValid)
-    return Result<T>.Failure(validationResult.Errors);
-```
-
-### Validator 架构与迁移
-
-Validator 原先分散在各业务模块 (`Module.{Entity}/Validators/`) 中，存在重复规则和不一致的问题。当前采用分层迁移策略:
-
-| 层级 | 位置 | 职责 | 示例 |
-|------|------|------|------|
-| **共享验证规则** | `Shared.Validators/` | 跨模块通用规则 (手机号、身份证、中文姓名等) | `PhoneNumberValidator`, `IdNumberValidator` |
-| **模块验证器** | `Module.{Entity}/Validators/` | 模块专属业务规则 (引用共享规则) | `PatientInputDtoValidator` |
-
-**迁移原则**: 2 个以上模块共用的验证规则提取到 `Shared.Validators`；仅单模块使用的规则保留在模块内。模块 Validator 通过组合 (`Include()` / `SetValidator()`) 引用共享规则，避免代码重复。
+Create/Update 方法在业务逻辑前调用验证。Validator 架构与共享规则见 [08-shared.md](08-shared.md#lybtsharedvalidators-fluentvalidation-验证器)。
 
 ### 大型 Service 拆分标准
 
@@ -468,177 +429,13 @@ Validator 原先分散在各业务模块 (`Module.{Entity}/Validators/`) 中，�
 
 ## 缓存策略
 
-> 详细缓存参数和失效映射见 [nfr.md](../02-requirements/12-nfr.md) 第 5 章。
-
-### Server 端
-
-采用 ASP.NET Core OutputCache 中间件，按标签分组管理:
-
-| 缓存标签 | 过期时间 | 挂载端点 |
-|----------|---------|---------|
-| `herbs` | 30 分钟 | GET /api/v1/herbs |
-| `formulas` | 2 小时 | GET /api/v1/formulas |
-| `patients` | 30 分钟 | GET /api/v1/patients |
-| `medicalcases` | 20 分钟 | GET /api/v1/medicalcases |
-| `permissions` | 10 分钟 | GET /api/v1/users |
-
-**失效策略** (NFR-D07): 写操作成功后调用 `IOutputCacheStore.EvictByTagAsync(tag)` 主动清除。跨模块失效示例: 创建医案同时清除 `medicalcases` + `patients` (患者 LastVisitTime 更新)。
-
-### Server 端 IMemoryCache (业务层)
-
-> 设计文档: design-deepening-phase3 3.3 节
-
-用于高频单实体查询，与 OutputCache (HTTP 层) 互补:
-
-| 用途 | Key 模式 | 过期策略 | 失效时机 |
-|------|----------|----------|----------|
-| 单实体 GetById | `{entity}:{id}` | 滑动 5 分钟 | Update/Delete 时移除 |
-| 用户权限 | `user-perms:{userId}` | 滑动 10 分钟 | 角色变更时移除 |
-
-**失效矩阵 (Tag-based)**:
-
-| 触发操作 | OutputCache 失效 | IMemoryCache 失效 |
-|----------|-----------------|-------------------|
-| Herb Create/Update/Delete | `herbs` tag | `herb:{id}` |
-| Herb BatchToggle/Import | `herbs` tag | 清空 `herb:*` |
-| Patient Create/Update/Delete | `patients` tag | `patient:{id}` |
-| MedicalCase 任何写操作 | `medicalcases` tag | `medicalcase:{id}` |
-| User Update/ToggleStatus | -- | `user-info:{id}` + `user-perms:{id}` |
-| Sync Upload | 按实体类型清对应 tag | 清空对应 `{entity}:*` |
-
-### Desktop 端
-
-ApiService GET 缓存 (LRU, 1000 条, 5 分钟过期)。写操作后按模块前缀清除相关 GET 缓存 (`RemoveByPrefix`)。
+Server 端采用 ASP.NET Core OutputCache（标签分组）+ IMemoryCache（高频查询+权限），Desktop 端使用 ApiService GET 缓存。完整策略见 [nfr.md 第 5 章](../02-requirements/12-nfr.md)。
 
 ---
 
 ## 运维与安全
 
-### 敏感数据脱敏
-
-> 对应 [US-LOG-003](../02-requirements/11-platform.md)，敏感数据分级标准见 [nfr.md](../02-requirements/12-nfr.md) NFR-SEC-004。
-
-通过 SensitiveDataMaskingEnricher (Serilog ILogEventEnricher) 在日志写入前自动脱敏，两层保护:
-
-**属性级脱敏**: `[SensitiveData(type, mode)]` 标记实体属性，Serilog 析构时通过 SensitiveDataDestructuringPolicy 自动触发。
-
-**文本级脱敏**: SensitiveDataMasker 正则匹配文本中的密码、Token、连接字符串、Bearer Token，自动替换。
-
-脱敏模式、敏感数据分级映射和字段名检测规则的完整定义详见 [shared.md](08-shared.md) 的 SensitiveDataAttribute 设计章节。
-
-### API 请求日志
-
-> 对应 [US-LOG-007](../02-requirements/11-platform.md)。
-
-ApiLoggingFilter 实现为 IAsyncActionFilter，全局注册，自动记录所有 Controller Action 执行信息:
-
-**日志格式**:
-- Action 开始: `[API] >>> {Action} started. CorrelationId={CorrelationId}` (Information)
-- Action 完成: `[API] <<< {Action} completed in {Duration}ms` (Information)
-- Action 异常: `[API] !!! {Action} failed after {Duration}ms` (Error)
-
-**参数记录** (Debug 级别):
-- 敏感字段名自动检测 (SensitiveDataMasker.IsSensitiveFieldName)
-- 复杂对象仅显示类型名 `[{TypeName}]`
-- 字符串值截断至 100 字符
-
-CorrelationId 从 HttpContext 中间件获取，自动注入到日志上下文，保证同一请求的所有日志可关联。
-
-### 启动配置验证
-
-> 对应 [US-CFG-004](../02-requirements/11-platform.md)。
-
-ProductionConfigurationValidator 在 `ASPNETCORE_ENVIRONMENT=Production` 时启动验证关键配置项:
-
-| 配置项 | 级别 | 验证规则 |
-|--------|------|---------|
-| ConnectionStrings:DefaultConnection | **Critical** | 必须非空 |
-| Lybt:Jwt:SecretKey | **Critical** | 必须非空，Base64 解码后 >= 32 字节 |
-| Lybt:DefaultPasswords:SysAdminPassword | Important | 必须非空 |
-| Lybt:DefaultPasswords:NewUserPassword | Important | 必须非空 |
-| Lybt:Business:SystemAdmin:UserName | Important | 必须非空 |
-| Lybt:Business:SystemAdmin:Email | Important | 必须非空，符合 Email 格式 |
-
-**处理策略**: Critical 缺失 → 输出详细错误到控制台 + Fatal 日志 → `Environment.Exit(1)` 阻止启动。Important 缺失 → Warning 日志，允许启动。
-
-**错误输出格式**: 包含配置路径、对应环境变量名、问题描述、修复命令示例。
-
-### 安全审计日志
-
-> 对应 [US-LOG-002](../02-requirements/11-platform.md)。
-
-**SecurityAuditLog 表结构**:
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| Id | Guid (PK) | 主键 |
-| EventType | string(50), Required | Login / Logout / RefreshToken / TokenRevoked / LoginFailed / PasswordChange / UserDisabled |
-| UserId | Guid? | 用户 ID (LoginFailed 可能无已知用户) |
-| UserType | string(50)? | User / SuperAdmin |
-| UserName | string(256)? | 用户名称 |
-| IpAddress | string(50)? | 客户端 IP |
-| UserAgent | string(500)? | 客户端 UA |
-| Success | bool, Required | 操作是否成功 |
-| ErrorMessage | string(500)? | 错误消息 |
-| Metadata | string? | 扩展元数据 (JSON) |
-| CreatedAt | DateTime, Default=UtcNow | 创建时间 |
-
-**写入机制**: IAuditService 接口注入到 AuthService，认证事件触发时调用 `LogAsync(eventType, userId, ...)` 写入。审计日志仅追加，不可修改和删除。
-
-**写入策略**: fire-and-forget 模式，审计写入失败不影响业务操作 (异常隔离)。
-
-### 日志清理服务
-
-> 对应 [US-LOG-005](../02-requirements/11-platform.md)，保留策略见 [nfr.md](../02-requirements/12-nfr.md) NFR-SEC-005。
-
-LogCleanupService 继承 BackgroundService，定期清理过期系统日志:
-
-| 参数 | 默认值 | 配置节 |
-|------|--------|--------|
-| 启动延迟 | 5 分钟 | `Lybt:Logging:Cleanup:InitialDelayMinutes` |
-| 执行周期 | 24 小时 | `Lybt:Logging:Cleanup:CleanupIntervalHours` |
-| 保留天数 | 90 天 | `Lybt:Logging:Cleanup:RetentionDays` |
-| 批量大小 | 1000 条 | `Lybt:Logging:Cleanup:BatchSize` |
-
-**关键规则**: **Error/Fatal 级别日志永久保留**，仅清理 Warning 及以下级别。分批删除 (每批 1000 条，批间延迟 100ms)，使用原生 SQL `DELETE TOP (@batchSize) FROM SystemLogs WHERE ...`，避免锁表。
-
-清理失败不影响应用运行 (异常隔离)。可通过配置 `Enabled=false` 完全禁用。
-
-### 审计日志清理服务
-
-> 对应 [US-LOG-006](../02-requirements/11-platform.md)，保留期限 365 天 (NFR-D04)。
-
-SecurityAuditCleanupService 继承 BackgroundService:
-
-| 参数 | 默认值 | 配置节 |
-|------|--------|--------|
-| 执行时间 | 每日凌晨 3:00 | 固定 |
-| 保留天数 | **365 天** | `Lybt:SecurityAudit:Cleanup:RetentionDays` |
-| 批量大小 | 1000 条 | - |
-
-分批删除，清理失败异常隔离。执行日志记录清理条数和截止日期。
-
-> **注意**: 当前代码硬编码 30 天保留，需修改为可配置且默认 365 天以匹配 NFR-SEC-005。
-
-### Server 启动诊断
-
-> 对应 [US-SYS-008](../02-requirements/11-platform.md)。
-
-DatabaseStartupDiagnostics 在 Program.cs 启动阶段自动执行:
-
-**检查项**:
-1. 数据库连接 (`CanConnectAsync`)
-2. 连接池配置验证
-
-**结果处理**:
-- 连接成功: Information 日志 (数据库名称 + 服务器地址 + 连接耗时)
-- 连接失败: Error 日志 + 故障排查建议列表:
-  - 检查 SQL Server 服务是否启动
-  - 检查连接字符串配置
-  - 检查网络连通性和防火墙
-  - 检查数据库权限
-
-**关键**: 诊断失败**不阻塞应用启动** (降级启动)。与 ProductionConfigurationValidator 的区别: 后者在配置缺失时阻止启动，前者在配置正确但连接失败时允许降级运行。
+> 以下为 Server 层特有的运维能力。通用运维架构（敏感数据脱敏、API 请求日志、启动配置验证、安全审计日志、日志清理、启动诊断）详见 [11d-observability.md](../02-requirements/11d-observability.md)。
 
 ### Token Family 管理
 
@@ -693,15 +490,5 @@ DatabaseStartupDiagnostics 在 Program.cs 启动阶段自动执行:
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
-| 2026-02-10 | v1.0 | 初始版本，从 server-layer-architecture/repository-patterns/service-conventions/error-handling specs 整合 |
-| 2026-02-18 | v1.1 | PRD同步: 错误码体系更新为 MCCEE 格式 (模块1位+子类别2位+序号2位)，对齐PRD 90+场景; 新增缓存策略章节 (OutputCache + Desktop，引用 nfr.md) |
-| 2026-02-18 | v1.2 | 设计补全: 新增运维与安全章节 -- 敏感数据脱敏 (US-LOG-003)、API请求日志 (US-LOG-007)、启动配置验证 (US-CFG-004)、安全审计日志 (US-LOG-002)、日志清理服务 (US-LOG-005)、审计日志清理 (US-LOG-006)、Server启动诊断 (US-SYS-008)、Token Family管理 (AUTH-D06/D07)、备份服务 (NFR-AVAIL-001) |
-| 2026-02-21 | v1.3 | 深度重构同步: LYBT.Entities 补充 MedicalCaseModel 充血模型例外说明; CQRS 方法示例更新为实际方法签名; 新增 MedicalCaseServiceHelper 共享服务 |
-| 2026-02-21 | v1.4 | 模块全面简化: PermissionService 为唯一权限权威，Rules 精简为无状态策略(57行)，ServiceHelper 扩展(重试/权限验证/创建上下文)，ValidationHelper 合并到 Rules |
-| 2026-02-22 | v1.5 | **Phase 4 架构修复设计同步 (A2+A3)**: MedicalCasePrintLog 从 Prescriptions/ 迁移到 MedicalCases/ 目录; Token Family 管理新增 ICrossModuleAuthService 独立接口 (ISP) + 6 个撤销场景表 + 延迟踢出说明 |
-| 2026-02-23 | v1.6 | 一致性审计: 新增 ICrossModuleService ISP 拆分 (D5-1); 新增 BaseService 层次结构 (D2-1); 新增事务边界模型 L1/L2/L3; 缓存策略补充 IMemoryCache 层 + Tag-based 失效矩阵 |
-| 2026-02-26 | v1.7 | Sprint3-Batch5a DOC3: FormulaService BaseService 继承状态更新 (A3-07); 新增 Validator 架构与迁移章节 (Shared.Validators) |
-| 2026-02-28 | v1.8 | **PRD 偏差修复**: BaseEntity 补充 UpdatedBy/RowVersion 字段 (PRD-02); BaseRepository 方法列表对齐代码 21 个公开方法 (PRD-03); 移除 Module.Consultation/Prescriptions (PRD-04); 移除不存在的 BaseReadRepository/IReadRepository (PRD-07/08) |
-| 2026-06-13 | v1.9 | **API 版本策略**: 新增 API 版本控制章节 — URL 段版本控制、客户端处理、v2 迁移策略、版本生命周期 |
-| 2026-06-25 | v2.0 | **请求生命周期时序图**: 新增 Mermaid sequence diagram 展示 Controller → Service → Repository → DbContext 请求链路 |
+| 2026-06-28 | v2.2 | **spec S3 批次2 提炼（707→~530 行）**：BaseRepository 21 方法表改源码链接；缓存策略段（OutputCache/IMemoryCache/失效矩阵）改链接到 nfr.md；Validator 架构改链接到 08-shared.md；US-LOG/CFG/SYS 七段（敏感数据脱敏/API请求日志/启动配置验证/安全审计日志/日志清理/审计清理/Server启动诊断）合并为概览表改链接到 11d-observability.md/11b-configuration.md。变更历史见 git log。 |
 | 2026-06-28 | v2.1 | **N1 + 模块对齐**: 模块清单补 Reports（D9 补回 v1.0）; 架构图 Sync→Reports; Sync 标 🧲 v2.0 |

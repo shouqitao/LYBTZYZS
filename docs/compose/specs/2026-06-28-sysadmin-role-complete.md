@@ -1,7 +1,7 @@
 # Sysadmin 角色完整梳理
 
 > **目的**：把 sysadmin 的全部职责、现状、设计、剩余问题**一次梳理完**，不再遗漏。
-> **信息源**：personas.md + 平台 PRD（11-platform.md:35 US）+ 8 模块审计 + Shell 审计 + 采访答案（S1 + 4 个决策 + N1）+ bootstrap 设计文档。
+> **信息源**：personas.md + 平台 PRD（11a-shell.md/11b-configuration.md/11e-cardreader.md: 43 US）+ 8 模块审计 + Shell 审计 + 采访答案（S1 + 4 个决策 + N1）+ bootstrap 设计文档。
 > **格式**：每个职责条目标注状态（✅已实现/⚠️部分/🔴缺失/📋已设计/❓需决策），底部统一列出仅剩的业务问题。
 
 ---

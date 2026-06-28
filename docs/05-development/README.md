@@ -97,6 +97,8 @@ dotnet test tests/LYBT.Tests.Architecture/
 | [归档文档](archive/) | 历史指南 (add-new-module 等) |
 | [运维文档](../06-operations/) | 部署、配置、监控 |
 
+> 注：`02-*` 编号为历史移除后预留，故 `01-setup` 后直接跳至 `03-code-standards`，属预期跳号。
+
 ---
 
 ## 常见问题

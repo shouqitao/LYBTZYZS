@@ -47,7 +47,7 @@
 | [13-error-handling-flow.md](13-error-handling-flow.md) | 错误处理流程速查（⚠️ 已过期，以 06-error-handling.md 为准） |
 | [implementation-tasks.md](implementation-tasks.md) | v1.0 实现任务清单（缺口与待修复项） |
 | [localwebapi/](localwebapi/) | LocalWebAPI 本地模式架构文档 |
-| [decisions/](decisions/) | 架构决策记录 (ADR-0001 ~ ADR-0012，共 12 条) |
+| [decisions/](decisions/) | 架构决策记录 (ADR-0001 ~ ADR-0014，共 14 条) |
 
 ## 核心架构原则
 

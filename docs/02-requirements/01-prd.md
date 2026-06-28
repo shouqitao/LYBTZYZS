@@ -248,7 +248,7 @@ v1.0 包含 **10 个功能模块、141 个 User Stories**（Must / Should / Coul
 | 挂号管理 | [`08-registration.md`](08-registration.md) | 8 | 双 Source 模型 + 原子事务 + 医案联动 + SignalR 实时（R10） |
 | 处方打印 | [`09-printing.md`](09-printing.md) | 4 | A5/A4 模板 + PDF 导出 + 打印回写 |
 | 报表管理 | [`10-reports.md`](10-reports.md) | 3 | 收入/就诊统计/药材排行，按时间范围查询（A7） |
-| 平台基础设施 | [`11-platform.md`](11-platform.md) | 43 | Shell + Config + Error + Logging + Health + CardReader |
+| 平台基础设施 | [`11a-shell.md`](11a-shell.md) + [`11b-configuration.md`](11b-configuration.md) + [`11c-error-handling.md`](11c-error-handling.md) + [`11d-observability.md`](11d-observability.md) + [`11e-cardreader.md`](11e-cardreader.md) | 43 | Shell + Config + Error + Logging + Health + CardReader |
 | 非功能需求 | [`12-nfr.md`](12-nfr.md) | — | 性能/数据/可用性/安全/可维护性/兼容性 |
 | **合计** | | **141** | |
 

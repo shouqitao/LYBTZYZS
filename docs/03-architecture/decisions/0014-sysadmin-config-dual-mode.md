@@ -14,7 +14,7 @@ sysadmin 在双模式下配置对象本质不同：
 
 小诊所场景无专职运维，sysadmin 需全远程闭环：在 Desktop 配置中心即可查看并修改服务端业务参数，敏感配置（JWT/连接串/密码）只读保护，配置变更后通过 API 延迟重启生效，无需 SSH/RDP 登录服务器。
 
-> 配套：[US-SHELL-017/018](../../02-requirements/11-platform.md)、[06-operations/02-configuration.md](../../06-operations/02-configuration.md)、[ADR-0013](0013-signalr-realtime-push.md)、WebAPI `appsettings.json`。用户决策（2026-06-28）：服务端配置走 API（方案 B）；业务参数可改、敏感只读（方案 A）；重启走 API 延迟重启（方案 A，全远程闭环）。
+> 配套：[US-SHELL-017/018](../../02-requirements/11a-shell.md)、[06-operations/02-configuration.md](../../06-operations/02-configuration.md)、[ADR-0013](0013-signalr-realtime-push.md)、WebAPI `appsettings.json`。用户决策（2026-06-28）：服务端配置走 API（方案 B）；业务参数可改、敏感只读（方案 A）；重启走 API 延迟重启（方案 A，全远程闭环）。
 
 ## 决策
 
@@ -47,7 +47,7 @@ sysadmin 在双模式下配置对象本质不同：
 ### 即时影响
 
 - 新增 [服务端 Configuration API](../../04-api-reference/10-configuration.md) 端点说明（PUT / POST restart / GET 脱敏，均 🧲 v1.0 待实现）。
-- [US-SHELL-018](../../02-requirements/11-platform.md) 补「双模式面板」设计段。
+- [US-SHELL-018](../../02-requirements/11a-shell.md) 补「双模式面板」设计段。
 - [06-operations/02-configuration.md](../../06-operations/02-configuration.md) 补「sysadmin 远程配置管理」段（API 边界 + 重启机制 + 双模式区分矩阵 + 安全）。
 - [02-personas.md](../../01-product/02-personas.md) sysadmin 段补双模式配置管理职责。
 
@@ -59,9 +59,9 @@ sysadmin 在双模式下配置对象本质不同：
 
 ## 交叉引用
 
-- [US-SHELL-017: 生产环境安全门控](../../02-requirements/11-platform.md)（SystemAdminOptions 生产门控，PUT 黑名单含 `AllowAutoCreateInProduction`/`InitialSetupToken`）
-- [US-SHELL-018: sysadmin 配置中心](../../02-requirements/11-platform.md)（双模式面板的直接产物）
-- [US-SHELL-013: 数据库备份恢复](../../02-requirements/11-platform.md)（本地模式面板的备份恢复入口）
+- [US-SHELL-017: 生产环境安全门控](../../02-requirements/11a-shell.md)（SystemAdminOptions 生产门控，PUT 黑名单含 `AllowAutoCreateInProduction`/`InitialSetupToken`）
+- [US-SHELL-018: sysadmin 配置中心](../../02-requirements/11a-shell.md)（双模式面板的直接产物）
+- [US-SHELL-013: 数据库备份恢复](../../02-requirements/11a-shell.md)（本地模式面板的备份恢复入口）
 - [ADR-0002: 双模式架构](0002-dual-mode-architecture.md)
 - [ADR-0009: URL 驱动双模式](0009-url-driven-dual-mode.md)
 - [sysadmin 配置设计 spec](../../compose/specs/2026-06-28-sysadmin-config-design.md)

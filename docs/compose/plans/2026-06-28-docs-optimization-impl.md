@@ -135,7 +135,7 @@
 **Files:**
 - Modify: `docs/02-requirements/07-medical-cases.md`（D7 辨证录入、D8 必填性、D6 复制处方 US）
 - Modify: `docs/02-requirements/05-herbs.md`（D13 剂量单位）
-- Modify: `docs/02-requirements/11-platform.md`（S5 强制本地）
+- Modify: `docs/02-requirements/11a-shell.md`（S5 强制本地）
 - Modify: `docs/01-product/03-glossary.md`（小术语）
 
 **Interfaces:** 补业务规则 + 新 US（D6 复制处方）。
@@ -144,7 +144,7 @@
 - [ ] **Step 2: D8 必填性** — `07-medical-cases.md` BR-003 表格补各字段必填性（主诉/现病史/舌诊/脉诊/辨证 必填；既往史 选填）
 - [ ] **Step 3: D6 复制处方 US** — `07-medical-cases.md` 新增 `### US-MC-019: 复制上次处方微调`（角色 Doctor；优先级 Should；验收：复诊时一键复制患者最近已完成医案的处方、复制后可增删改药材、保存为新医案处方；业务规则：仅复制药材/剂量，价格按当前最新；注意 US-MC-018 是「批量详情」，复制处方独立为 MC-019）。同步更新 `02-requirements/README.md` MC 数 18→19、US 总数→138
 - [ ] **Step 4: D13 剂量单位** — `05-herbs.md` 补业务规则「剂量单位：默认 g（克）；v1.0 不支持单位换算（钱/g 转换）；单位为自由文本字段，Doctor 录入时自定」；glossary 补「剂量单位」术语
-- [ ] **Step 5: S5 强制本地** — `11-platform.md` US-SHELL-007 业务规则补「v1.0 仅支持用户主动切换；运维强制某机器走本地策略属 v2.0（SystemAdminOptions 扩展）」
+- [ ] **Step 5: S5 强制本地** — `11a-shell.md` US-SHELL-007 业务规则补「v1.0 仅支持用户主动切换；运维强制某机器走本地策略属 v2.0（SystemAdminOptions 扩展）」
 - [ ] **Step 6: glossary 小术语** — `03-glossary.md` 补：草稿水印（未完成医案打印叠加「草稿」）、等候时长、quickVisit（医生快速就诊原子事务）
 - [ ] **Step 7: 验证** — `grep "US-MC-019" docs/02-requirements/`；`grep "138" docs/02-requirements/README.md`；`read` 抽查 glossary 新术语
 - [ ] **Step 8: Commit**（询问用户后）

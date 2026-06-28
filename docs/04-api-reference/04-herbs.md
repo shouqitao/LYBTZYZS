@@ -32,55 +32,48 @@ Doctor 只能编辑自己创建的药材，Admin 可操作全部。
 
 ```json
 {
-  "success": true,
-  "message": "获取成功",
-  "data": {
-    "items": [
-      {
-        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "name": "黄芪",
-        "pinYinCode": "HQ",
-        "category": "补气药",
-        "origin": "蒙古黄芪或膜荚黄芪的干燥根",
-        "spec": "统货",
-        "unit": "克",
-        "price": 28.50,
-        "status": "Enabled",
-        "createdAt": "2026-01-10T08:00:00Z"
-      },
-      {
-        "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-        "name": "当归",
-        "pinYinCode": "DG",
-        "category": "补血药",
-        "origin": "当归的干燥根",
-        "spec": "精选",
-        "unit": "克",
-        "price": 45.00,
-        "status": "Enabled",
-        "createdAt": "2026-01-10T08:00:00Z"
-      },
-      {
-        "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-        "name": "金银花",
-        "pinYinCode": "JYH",
-        "category": "清热解毒药",
-        "origin": "忍冬的干燥花蕾",
-        "spec": "特级",
-        "unit": "克",
-        "price": 68.00,
-        "status": "Enabled",
-        "createdAt": "2026-02-15T10:00:00Z"
-      }
-    ],
-    "totalCount": 230,
-    "page": 1,
-    "pageSize": 20,
-    "totalPages": 12
-  },
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8V5K1A2B50"
+  "items": [
+    {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "黄芪",
+      "pinYinCode": "HQ",
+      "category": "补气药",
+      "origin": "蒙古黄芪或膜荚黄芪的干燥根",
+      "spec": "统货",
+      "unit": "克",
+      "price": 28.50,
+      "status": "Enabled",
+      "createdAt": "2026-01-10T08:00:00Z"
+    },
+    {
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "name": "当归",
+      "pinYinCode": "DG",
+      "category": "补血药",
+      "origin": "当归的干燥根",
+      "spec": "精选",
+      "unit": "克",
+      "price": 45.00,
+      "status": "Enabled",
+      "createdAt": "2026-01-10T08:00:00Z"
+    },
+    {
+      "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+      "name": "金银花",
+      "pinYinCode": "JYH",
+      "category": "清热解毒药",
+      "origin": "忍冬的干燥花蕾",
+      "spec": "特级",
+      "unit": "克",
+      "price": 68.00,
+      "status": "Enabled",
+      "createdAt": "2026-02-15T10:00:00Z"
+    }
+  ],
+  "totalCount": 230,
+  "page": 1,
+  "pageSize": 20,
+  "totalPages": 12
 }
 ```
 
@@ -105,7 +98,7 @@ curl -X GET "http://localhost:5000/api/v1/herbs?category=补气药&page=1&pageSi
 | HTTP 状态码 | 说明 |
 |------------|------|
 | 400 | 分页参数无效 (ERR-50106) |
-| 401 | 未认证 |
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -121,47 +114,27 @@ curl -X GET "http://localhost:5000/api/v1/herbs?category=补气药&page=1&pageSi
 
 ```json
 {
-  "success": true,
-  "message": "获取成功",
-  "data": {
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "name": "黄芪",
-    "pinYinCode": "HQ",
-    "category": "补气药",
-    "properties": "甘，微温。归脾、肺经。",
-    "effect": "补气升阳，固表止汗，利水消肿，生津养血，行滞通痹，托毒排脓，敛疮生肌。",
-    "origin": "蒙古黄芪或膜荚黄芪的干燥根",
-    "spec": "统货",
-    "costPrice": 18.00,
-    "price": 28.50,
-    "unit": "克",
-    "usage": "9～30g",
-    "remark": "蜜炙增强补中益气作用",
-    "status": "Enabled",
-    "createdBy": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-    "createdAt": "2026-01-10T08:00:00Z",
-    "updatedAt": "2026-06-15T14:30:00Z"
-  },
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8V5K1A2B51"
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "name": "黄芪",
+  "pinYinCode": "HQ",
+  "category": "补气药",
+  "properties": "甘，微温。归脾、肺经。",
+  "effect": "补气升阳，固表止汗，利水消肿，生津养血，行滞通痹，托毒排脓，敛疮生肌。",
+  "origin": "蒙古黄芪或膜荚黄芪的干燥根",
+  "spec": "统货",
+  "costPrice": 18.00,
+  "price": 28.50,
+  "unit": "克",
+  "usage": "9～30g",
+  "remark": "蜜炙增强补中益气作用",
+  "status": "Enabled",
+  "createdBy": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+  "createdAt": "2026-01-10T08:00:00Z",
+  "updatedAt": "2026-06-15T14:30:00Z"
 }
 ```
 
-**错误响应** (404):
-
-```json
-{
-  "success": false,
-  "message": "药材不存在",
-  "data": null,
-  "errors": {
-    "code": "ERR-50101"
-  },
-  "timestamp": 1750864800,
-  "requestId": "0HN8V5K1A2B52"
-}
-```
+**错误响应** (404): 见错误码表 ERR-50101。
 
 **curl 示例：**
 
@@ -174,8 +147,7 @@ curl -X GET "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123456
 
 | HTTP 状态码 | 说明 |
 |------------|------|
-| 401 | 未认证 |
-| 404 | 药材不存在 (ERR-50101) |
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码)；404 详见 ERR-50101 |
 
 ---
 
@@ -223,51 +195,27 @@ curl -X GET "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123456
 
 ```json
 {
-  "success": true,
-  "message": "创建成功",
-  "data": {
-    "id": "d4e5f6a7-b8c9-0123-def4-567890abcdef",
-    "name": "白术",
-    "pinYinCode": "BZ",
-    "category": "补气药",
-    "properties": "苦、甘，温。归脾、胃经。",
-    "effect": "健脾益气，燥湿利水，止汗，安胎。",
-    "origin": "白术的干燥根茎",
-    "spec": "统货",
-    "costPrice": 20.00,
-    "price": 32.00,
-    "unit": "克",
-    "usage": "6～12g",
-    "remark": null,
-    "status": "Enabled",
-    "createdBy": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-    "createdAt": "2026-06-25T10:00:00Z",
-    "updatedAt": null
-  },
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8V5K1A2B53"
+  "id": "d4e5f6a7-b8c9-0123-def4-567890abcdef",
+  "name": "白术",
+  "pinYinCode": "BZ",
+  "category": "补气药",
+  "properties": "苦、甘，温。归脾、胃经。",
+  "effect": "健脾益气，燥湿利水，止汗，安胎。",
+  "origin": "白术的干燥根茎",
+  "spec": "统货",
+  "costPrice": 20.00,
+  "price": 32.00,
+  "unit": "克",
+  "usage": "6～12g",
+  "remark": null,
+  "status": "Enabled",
+  "createdBy": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+  "createdAt": "2026-06-25T10:00:00Z",
+  "updatedAt": null
 }
 ```
 
-**错误响应** (400 — 验证失败):
-
-```json
-{
-  "success": false,
-  "message": "验证失败",
-  "data": null,
-  "errors": {
-    "code": "ERR-50102",
-    "details": {
-      "name": ["药材名称不能为空"],
-      "price": ["售价必须大于0"]
-    }
-  },
-  "timestamp": 1750864800,
-  "requestId": "0HN8V5K1A2B54"
-}
-```
+**错误响应** (400 — 验证失败): 见错误码表 ERR-50102。
 
 **curl 示例：**
 
@@ -295,7 +243,7 @@ curl -X POST "http://localhost:5000/api/v1/herbs" \
 | HTTP 状态码 | 说明 |
 |------------|------|
 | 400 | 验证失败 (ERR-50102) |
-| 401 | 未认证 |
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -328,20 +276,7 @@ curl -X POST "http://localhost:5000/api/v1/herbs" \
 
 **成功响应** (200): `ApiResponse<HerbDetailDto>` — 返回更新后的完整药材详情。
 
-**错误响应** (403):
-
-```json
-{
-  "success": false,
-  "message": "无权限操作此药材",
-  "data": null,
-  "errors": {
-    "code": "ERR-50103"
-  },
-  "timestamp": 1750864800,
-  "requestId": "0HN8V5K1A2B55"
-}
-```
+**错误响应** (403): 见错误码表 ERR-50103。
 
 **curl 示例：**
 
@@ -370,9 +305,7 @@ curl -X PUT "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123456
 | HTTP 状态码 | 说明 |
 |------------|------|
 | 400 | 验证失败 (ERR-50102) |
-| 401 | 未认证 |
-| 403 | 无权限操作此药材 (ERR-50103) |
-| 404 | 药材不存在 (ERR-50101) |
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码)；403 详见 ERR-50103，404 详见 ERR-50101 |
 
 ---
 
@@ -387,14 +320,7 @@ curl -X PUT "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123456
 **成功响应** (200): `ApiResponse<bool>`
 
 ```json
-{
-  "success": true,
-  "message": "删除成功",
-  "data": true,
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8V5K1A2B56"
-}
+true
 ```
 
 **curl 示例：**
@@ -408,9 +334,7 @@ curl -X DELETE "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123
 
 | HTTP 状态码 | 说明 |
 |------------|------|
-| 401 | 未认证 |
-| 403 | 无权限操作此药材 (ERR-50103) |
-| 404 | 药材不存在 (ERR-50101) |
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码)；403 详见 ERR-50103，404 详见 ERR-50101 |
 
 ---
 
@@ -428,30 +352,23 @@ curl -X DELETE "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123
 
 ```json
 {
-  "success": true,
-  "message": "药材已禁用",
-  "data": {
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "name": "黄芪",
-    "pinYinCode": "HQ",
-    "category": "补气药",
-    "properties": "甘，微温。归脾、肺经。",
-    "effect": "补气升阳，固表止汗，利水消肿，生津养血，行滞通痹，托毒排脓，敛疮生肌。",
-    "origin": "蒙古黄芪或膜荚黄芪的干燥根",
-    "spec": "统货",
-    "costPrice": 18.00,
-    "price": 28.50,
-    "unit": "克",
-    "usage": "9～30g",
-    "remark": "蜜炙增强补中益气作用",
-    "status": "Disabled",
-    "createdBy": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-    "createdAt": "2026-01-10T08:00:00Z",
-    "updatedAt": "2026-06-25T10:00:00Z"
-  },
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8V5K1A2B57"
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "name": "黄芪",
+  "pinYinCode": "HQ",
+  "category": "补气药",
+  "properties": "甘，微温。归脾、肺经。",
+  "effect": "补气升阳，固表止汗，利水消肿，生津养血，行滞通痹，托毒排脓，敛疮生肌。",
+  "origin": "蒙古黄芪或膜荚黄芪的干燥根",
+  "spec": "统货",
+  "costPrice": 18.00,
+  "price": 28.50,
+  "unit": "克",
+  "usage": "9～30g",
+  "remark": "蜜炙增强补中益气作用",
+  "status": "Disabled",
+  "createdBy": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+  "createdAt": "2026-01-10T08:00:00Z",
+  "updatedAt": "2026-06-25T10:00:00Z"
 }
 ```
 
@@ -466,9 +383,7 @@ curl -X POST "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef12345
 
 | HTTP 状态码 | 说明 |
 |------------|------|
-| 401 | 未认证 |
-| 403 | 无权限操作此药材 (ERR-50103) |
-| 404 | 药材不存在 (ERR-50101) |
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码)；403 详见 ERR-50103，404 详见 ERR-50101 |
 
 ---
 
@@ -497,34 +412,14 @@ curl -X POST "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef12345
 
 ```json
 {
-  "success": true,
-  "message": "批量删除完成",
-  "data": {
-    "totalCount": 2,
-    "successCount": 2,
-    "failureCount": 0,
-    "errors": []
-  },
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8V5K1A2B58"
+  "totalCount": 2,
+  "successCount": 2,
+  "failureCount": 0,
+  "errors": []
 }
 ```
 
-**错误响应** (400 — 空列表):
-
-```json
-{
-  "success": false,
-  "message": "请至少选择一个药材",
-  "data": null,
-  "errors": {
-    "code": "ERR-50201"
-  },
-  "timestamp": 1750864800,
-  "requestId": "0HN8V5K1A2B59"
-}
-```
+**错误响应** (400 — 空列表): 见错误码表 ERR-50201。
 
 **curl 示例：**
 
@@ -545,7 +440,7 @@ curl -X POST "http://localhost:5000/api/v1/herbs/batch-delete" \
 | HTTP 状态码 | 说明 |
 |------------|------|
 | 400 | 请至少选择一个药材 (ERR-50201) |
-| 401 | 未认证 |
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -602,34 +497,14 @@ JSON 批量导入药材 (非 Excel，直接 DTO 数组)。
 
 ```json
 {
-  "success": true,
-  "message": "批量导入完成",
-  "data": {
-    "totalCount": 2,
-    "successCount": 2,
-    "failureCount": 0,
-    "skippedCount": 0
-  },
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8V5K1A2B5A"
+  "totalCount": 2,
+  "successCount": 2,
+  "failureCount": 0,
+  "skippedCount": 0
 }
 ```
 
-**错误响应** (400 — 超限):
-
-```json
-{
-  "success": false,
-  "message": "批量导入最多10000条",
-  "data": null,
-  "errors": {
-    "code": "ERR-50202"
-  },
-  "timestamp": 1750864800,
-  "requestId": "0HN8V5K1A2B5B"
-}
-```
+**错误响应** (400 — 超限): 见错误码表 ERR-50202。
 
 **curl 示例：**
 
@@ -676,7 +551,7 @@ curl -X POST "http://localhost:5000/api/v1/herbs/batch-import" \
 |------------|------|
 | 400 | 验证失败 (ERR-50102) |
 | 400 | 批量导入最多10000条 (ERR-50202) |
-| 401 | 未认证 |
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -713,3 +588,4 @@ curl -X POST "http://localhost:5000/api/v1/herbs/batch-import" \
 | 2026-06-12 | v1.3 | HerbDetailDto: 新增 origin/spec/costPrice/usage/remark 字段 |
 | 2026-06-25 | v2.0 | 移除不存在的端点 (export/export-all/import-template/check-reference/batch-check-reference/batch-enable/batch-disable/restore); 补充全部 8 个端点的完整请求/响应 JSON 示例、curl 命令 |
 | 2026-06-28 | v2.1 | 文档对齐基线：权限策略加 D7 待对齐标注（目标 DoctorOrReceptionist，代码 DoctorOrAdmin） |
+| 2026-06-28 | vX.Y | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；curl 删除 TOKEN 脚本（见 README）；通用状态码引用 README |

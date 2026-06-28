@@ -87,23 +87,16 @@ stateDiagram-v2
 - `IsLocked` 是计算属性：`IsCompleted && CompletedAt.Date < Today`，0 点自动生效，无后台任务
 - `Draft` 状态已被移除（MC-D20），由 `Suspended` 承载"工作流暂停"语义
 
-### 权限矩阵
+### 权限矩阵（MC 铁律）
 
-| 操作 | Receptionist (0) | Doctor (1) | Admin (10) | SuperAdmin (100) |
-|------|:---:|:---:|:---:|:---:|
-| **创建医案** | ❌ | ✅ | ❌ **Admin 不可创建** | ❌ |
-| **列表/查询** | ❌ | 仅自己 | 全部 | 全部 |
-| **编辑 Active/Suspended** | ❌ | 仅自己 | 全部 | 全部 |
-| **编辑 Completed（当天）** | ❌ | 仅自己 | 全部 | 全部 |
-| **编辑 Completed（隔天锁定）** | ❌ | ❌ | ✅（需 EditReason） | ✅（需 EditReason） |
-| **取消（当天本人）** | ❌ | ✅ | ✅ | ✅ |
-| **取消（非当天/非本人）** | ❌ | ❌ | ✅（需 EditReason） | ✅（需 EditReason） |
-| **删除/批量删除** | ❌ | 仅自己 | 全部 | 全部 |
-| **强制关闭** | ❌ | ❌ | ✅ | ✅ |
-| **查询权限** | ❌ | ✅ | ✅ | ✅ |
-| **查询审计日志** | ❌ | ✅（仅自己） | ✅（全部） | ✅（全部） |
+> 完整权限矩阵（资源 × 操作 × 角色）见权威文档 [12-permissions-matrix.md](../03-architecture/12-permissions-matrix.md)。
 
-> **关键铁律**：Admin/SuperAdmin **不可创建医案**——只有 Doctor 角色能创建。Admin 仅负责管理和审计。
+**MC 核心铁律**：
+- **创建医案**：仅 Doctor（Admin/SuperAdmin/Receptionist 均 ❌）
+- **编辑 Active/Suspended**：Doctor 仅自己；Admin/SuperAdmin 全部
+- **编辑 Completed（隔天锁定）**：仅 Admin/SuperAdmin（需 EditReason）
+- **删除权限 = 编辑权限**
+- **查询审计日志**：Doctor 仅自己；Admin/SuperAdmin 全部
 
 ### 编辑锁定规则
 
@@ -177,13 +170,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 9. **两种创建入口（MC-D19）**：模式 1 前台挂号→医生从挂号队列选中；模式 2 医生直接查询患者创建。两种模式在 BR-001 检查后完全收敛
 10. **医案号溢出处理**：当 3 位序号达到 999 时，扩展为 4 位序号（MC+yyyyMMdd+0001）
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | POST `/api/v1/medicalcases` |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 远程 `POST /api/v1/medicalcases`；本地一致（统一 Service 层）。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:26`、`src/Shared/LYBT.Shared.Validators/BusinessRules/MedicalCaseBusinessRules.cs:9`
+**实现参考**: `MedicalCasesController.cs:26`、`MedicalCaseBusinessRules.cs:9`
 
 ---
 
@@ -214,13 +203,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 7. **乐观并发控制**：RowVersion + 3 次重试（MC-D10）
 8. **辨证录入（D7 决策）**：主诉 / 现病史 / 舌诊 / 脉诊 / 辨证为 Consultation 的结构化字段（见 [04-data-model](../03-architecture/04-data-model.md) Consultation 实体）；舌象 / 脉象提供常用选项选择器 + 自由文本兜底；v1.0 **不做**智能辅助诊断（如 AI 推荐、证型自动判别）。
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | PUT `/api/v1/medicalcases/{id}` |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 远程 `PUT /api/v1/medicalcases/{id}`；本地一致（统一 Service 层）。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:26`、`src/Server/Modules/LYBT.Module.MedicalCase/Interfaces/IMedicalCaseFacade.cs:15`
+**实现参考**: `MedicalCasesController.cs:26`、`IMedicalCaseFacade.cs:15`
 
 ---
 
@@ -243,13 +228,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 设为 true 时，允许创建/编辑处方
 4. 完成医案时此字段不可为 null（BR-003）
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | PUT `/api/v1/medicalcases/{id}/prescription-flag` |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 远程 `PUT /api/v1/medicalcases/{id}/prescription-flag`；本地一致。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
@@ -272,13 +253,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 包含计算属性
 4. `HasPrescription` 计算：`entity.Prescription != null && !entity.Prescription.IsDeleted`
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/api/v1/medicalcases/{id}` |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 远程 `GET /api/v1/medicalcases/{id}`；本地一致。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
@@ -303,13 +280,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 默认排序：CreatedAt DESC（MC-D11）
 4. 分页参数校验：page ≥ 1，pageSize 1-100
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/api/v1/medicalcases?status=&patientId=&keyword=&page=&pageSize=` |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 远程 `GET /api/v1/medicalcases?status=&patientId=&keyword=&page=&pageSize=`；本地一致。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
@@ -332,13 +305,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. ByPatient 查询：按患者 ID 过滤
 4. Recent 查询：返回最近 N 条（默认 20，最大 50）
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/api/v1/medicalcases/query?type=&...` |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 远程 `GET /api/v1/medicalcases/query?type=&...`；本地一致。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
@@ -363,13 +332,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 4. 返回完整 MedicalCaseDetailDto（含嵌套数据）
 5. 权限过滤：Doctor 仅自己；Admin 全部
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/api/v1/medicalcases/search?patientName=&diagnosisKeyword=&startDate=&endDate=` |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 远程 `GET /api/v1/medicalcases/search?patientName=&diagnosisKeyword=&startDate=&endDate=`；本地一致。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
@@ -379,7 +344,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **优先级**: Should
 **状态**: ⚠️ **v1.0 补回**（D9 决策：实现跨医案的历史聚合查询，约 2-3 人日）
 
-> **与 US-MC-006 的边界**：本故事是**历史聚合查询**——跨医案返回该患者所有已完成医案的 Consultation 列表。US-MC-006 `query?type=` 是**当前医案维度查询**（返回 MedicalCase 集合）。两者不重叠：MC-008 聚合历史诊断，MC-006 查医案集合。
+> **边界**：本故事是**历史聚合查询**（跨医案返回 Consultation 列表）；US-MC-006 是**当前医案维度查询**（返回 MedicalCase 集合）。两者不重叠。
 
 **作为** 医生，**我想要** 查询某患者的所有历史诊断记录，**以便** 复诊时参考既往辨证。
 
@@ -393,13 +358,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 2. 仅返回 `Completed` 状态医案的 Consultation
 3. 按时间 DESC 排序
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/api/v1/medicalcases/{patientId}/consultations` 或通过统一查询 |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 远程 `GET /api/v1/medicalcases/{patientId}/consultations`；本地一致。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
@@ -409,7 +370,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **优先级**: Should
 **状态**: ⚠️ **v1.0 补回**（D9 决策：实现跨医案的历史聚合查询，约 2-3 人日）
 
-> **与 US-MC-006 的边界**：本故事是**历史聚合查询**——跨医案返回该患者所有已完成医案的 Prescription 列表。US-MC-006 `query?type=` 是**当前医案维度查询**。两者不重叠：MC-009 聚合历史处方，MC-006 查医案集合。复制处方动作见 US-MC-019。
+> **边界**：本故事是**历史聚合查询**（跨医案返回 Prescription 列表）；US-MC-006 是**当前医案维度查询**。复制处方动作见 US-MC-019。
 
 **作为** 医生，**我想要** 查询某患者的所有历史处方记录，**以便** 复诊时复制或参考既往处方（复制历史处方见 US-MC-019）。
 
@@ -424,13 +385,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 按时间 DESC 排序
 4. 支持复制操作（见 US-MC-019）
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/api/v1/medicalcases/{patientId}/prescriptions` 或通过统一查询 |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 远程 `GET /api/v1/medicalcases/{patientId}/prescriptions`；本地一致。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
@@ -455,13 +412,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. `UpdateStatusAsync` 拒绝 `Completed` 状态，强制使用 `CompleteAsync`（US-MC-011）
 4. Doctor 仅可操作自己的；Admin 全部
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | PUT `/api/v1/medicalcases/{id}/suspend` 或 `/activate` |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 远程 `PUT /api/v1/medicalcases/{id}/suspend` 或 `/activate`；本地一致。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCaseProcessingController.cs:25`
+**实现参考**: `MedicalCaseProcessingController.cs:25`
 
 ---
 
@@ -476,30 +429,18 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **验收标准**:
 - [ ] 完成医案 → `CaseStatus=Completed`，`CompletedAt` 记录当前时间
 - [ ] `CompletedAt.Date < Today` → `IsLocked=true`（自动锁定）
-- [ ] TcmDiagnosis 为空 → 返回 422（BR-003）
-- [ ] `NeedsPrescription=null` → 返回 422（ERR-30302）
-- [ ] `NeedsPrescription=true` 但无处方 → 返回 422（ERR-30303）
-- [ ] `NeedsPrescription=true` 但 Items.Count=0 → 返回 422
+- [ ] 校验失败场景 → 返回 422，详见 [BR-003 校验表](#br-003医案完成校验规则)
 - [ ] 通过聚合根域方法 `MedicalCase.Complete()` 统一设置
-- [ ] 完成后关联的 Registration 状态自动变为 Completed（US-REG-007）
+- [ ] 完成后关联 Registration 自动 Completed（US-REG-007）
 
 **业务规则**:
-1. 状态设为 `Completed`，通过聚合根域方法 `MedicalCase.Complete()` 统一设置
-2. 记录 `CompletedAt` 时间（域方法内设置）
-3. 完成后当天内可编辑，隔天锁定（IsLocked 计算属性，0 点生效，无后台任务）
-4. 锁定后编辑需要 Admin 权限 + 修改原因
-5. **统一入口**：所有完成操作通过 `CompleteAsync`（含 `skipWorkflowValidation` 参数）
-6. **禁止通过状态更新完成**：`UpdateStatusAsync` 拒绝 `Completed`
-7. **完成校验规则（BR-003）**：见业务规则 BR-003 表格
-8. **Registration 联动**：完成后关联 Registration 自动 Completed（US-REG-007）
+1. 通过 `CompleteAsync` 统一入口（含 `skipWorkflowValidation` 参数），`UpdateStatusAsync` 拒绝 `Completed`
+2. 完成校验规则见 [BR-003](#br-003医案完成校验规则)；完成后当天可编辑，隔天锁定（IsLocked 计算属性）
+3. **Registration 联动**：完成后关联 Registration 自动 Completed（US-REG-007）
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | PUT `/api/v1/medicalcases/{id}/close` |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 远程 `PUT /api/v1/medicalcases/{id}/close`；本地一致（统一 Service 层）。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCaseProcessingController.cs:25`、`src/Shared/LYBT.Shared.Validators/BusinessRules/MedicalCaseBusinessRules.cs:9`
+**实现参考**: `MedicalCaseProcessingController.cs:25`、`MedicalCaseBusinessRules.cs:9`
 
 ---
 
@@ -523,13 +464,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 用于清理异常状态医案（如长期 Suspended 的孤儿医案）
 4. 必须记录操作原因
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | PUT `/api/v1/medicalcases/{id}/close?force=true`（Admin 权限） |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 远程 `PUT /api/v1/medicalcases/{id}/close?force=true`；本地一致。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCaseProcessingController.cs:25`
+**实现参考**: `MedicalCaseProcessingController.cs:25`
 
 ---
 
@@ -555,13 +492,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 4. Doctor 仅可操作自己的；Admin 全部
 5. v1.0 不实现自动清理（MC-D05），BR-001 形成天然卡点提醒
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | PUT `/api/v1/medicalcases/{id}/suspend` |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 远程 `PUT /api/v1/medicalcases/{id}/suspend`；本地一致。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCaseProcessingController.cs:25`
+**实现参考**: `MedicalCaseProcessingController.cs:25`
 
 ---
 
@@ -591,13 +524,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
    - Source=Receptionist：Registration 回退为 Waiting
    - Source=Doctor：Registration 自动变为 Cancelled
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | PUT `/api/v1/medicalcases/{id}/cancel` |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 远程 `PUT /api/v1/medicalcases/{id}/cancel`；本地一致。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCaseProcessingController.cs:25`
+**实现参考**: `MedicalCaseProcessingController.cs:25`
 
 ---
 
@@ -623,13 +552,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 4. 批量删除 IDs 列表非空校验
 5. 已打印医案受打印保护
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | DELETE `/api/v1/medicalcases/{id}` 或 POST `/api/v1/medicalcases/batch-delete` |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 远程 `DELETE /api/v1/medicalcases/{id}` 或 `POST /api/v1/medicalcases/batch-delete`；本地一致。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
@@ -656,13 +581,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 6. 权限查询端点返回 CanEdit/CanDelete/RequiresEditReason/DenialReason
 7. **删除权限 = 编辑权限**
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/api/v1/medicalcases/{id}/permissions` |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 远程 `GET /api/v1/medicalcases/{id}/permissions`；本地一致。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCaseAuditController.cs:23`
+**实现参考**: `MedicalCaseAuditController.cs:23`
 
 ---
 
@@ -692,13 +613,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 8. 删除操作：记录 IsDeleted=true 变更
 9. **审计记录写入失败不影响主业务流程**（异常隔离）
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/api/v1/medicalcases/{id}/audit-logs?page=&pageSize=`（完整字段级审计） |
-| 本地 | 不支持完整审计日志，仅保留实体级审计字段（CreatedAt/UpdatedAt/CreatedBy/UpdatedBy） |
+**双模式**: 远程 `GET /api/v1/medicalcases/{id}/audit-logs`（完整字段级审计）；本地仅实体级审计字段。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCaseAuditController.cs:23`
+**实现参考**: `MedicalCaseAuditController.cs:23`
 
 ---
 
@@ -725,13 +642,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 4. 权限过滤：Doctor 仅自己；Admin 全部
 5. 用于列表场景的批量预加载，避免 N+1 查询
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | POST `/api/v1/medicalcases/batch-details`（请求体含 ids 列表） |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 远程 `POST /api/v1/medicalcases/batch-details`；本地一致。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
@@ -757,13 +670,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 复制是数据快照，修改新处方不影响源医案。
 4. 与 US-MC-018 区分：US-MC-018 是「批量详情查询」（≤50，解决 N+1），复制处方独立为 MC-019。
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 复用 US-MC-009 处方历史聚合接口拉取源处方 |
-| 本地 | 完全一致（通过统一 Service 层） |
+**双模式**: 复用 US-MC-009 处方历史聚合接口；本地一致。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:26`（处方历史见 US-MC-009）
+**实现参考**: `MedicalCasesController.cs:26`（处方历史见 US-MC-009）
 
 ---
 
@@ -796,13 +705,12 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 - [处方打印](09-printing.md)（打印回写 IsPrinted/PrintCount/LastPrintedAt/PrintVersion）
 - [验方管理 US-FORM-011 处方导入过滤](06-formulas.md)（MC-D08）
 - [药材管理](05-herbs.md)（禁用药材跳过 MC-D09）
-- [平台基础设施 审计日志](11-platform.md)（SecurityAuditLog）
+- [平台基础设施 审计日志](11d-observability.md)（SecurityAuditLog）
 - [术语表 MedicalCase = 医案（NOT 病历）](../01-product/03-glossary.md)
 
 ## 变更记录
 
 | 日期 | 变更 | 原因 |
 |------|------|------|
-| 2026-06-25 | 补充 DosageCount 上限（ERR-30307）、医案号溢出处理、并发创建/保存边界条件 | 需求文档验收标准完善 |
-| 2026-06-28 | US-MC-002 补辨证录入（D7）、BR-003 补 Consultation 字段必填性（D8）、新增 US-MC-019 复制上次处方微调（D6） | spec S8 弱反映项补全；MC 数 18→19，合计 137→138 |
-| 2026-06-28 | US-MC-018 加交叉引用注（复制处方见 MC-019）；US-MC-008/009 加与 US-MC-006 边界说明；修正 MC-009 中 MC-018→MC-019 引用 | plan Task 7 边缘 US 修正 |
+| 2026-06-28 | US-MC-011 业务规则压缩（引用 BR-003）；19 个 US 双模式表改一行格式；实现参考路径精简 | spec S3 批次2 提炼 |
+| 2026-06-28 | US-MC-018 加交叉引用注；US-MC-008/009 加与 US-MC-006 边界说明 | plan Task 7 边缘 US 修正 |

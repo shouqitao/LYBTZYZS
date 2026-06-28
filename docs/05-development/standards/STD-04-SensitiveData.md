@@ -43,7 +43,7 @@ public string PhoneNumber { get; set; }
 
 ## 参考
 
-- 日志规范: `docs/02-requirements/11-platform.md`
+- 日志规范: `docs/02-requirements/11d-observability.md`
 - 患者信息脱敏: `docs/02-requirements/04-patients.md`
 
 ---

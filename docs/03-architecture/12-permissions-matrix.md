@@ -52,13 +52,7 @@
 | 系统设置 | 查看/修改 | ❌ | ❌ | ❌ | ✅ | ✅ |
 | 审计日志 | 查看 | ❌ | ❌ | ❌ | ✅ | ✅ |
 
-> **已知 Bug（D7/D8 决策）**：
-> - 挂号创建/取消：当前代码 `DoctorOrAdmin` 挡住 Receptionist → 待修复为 `DoctorOrReceptionist`（目标态见矩阵：Receptionist✅/Doctor✅QuickVisit/Admin✗）
-> - 患者 CRUD：当前代码 `DoctorOrAdmin` 挡住 Receptionist → 待修复为 `DoctorOrReceptionist`
-> - 药材 CRUD：当前代码 `DoctorOrAdmin` → 目标态 Receptionist❌（前台不涉及药材）/Doctor❌（Admin 统一管库）/Admin✅ → Controller 策略待细化
-> - 医案创建：当前代码 `DoctorOrAdmin` 允许 Admin → 目标态 Doctor 唯一、Admin✗（**注**：`PolicyConstants` 当前无 `DoctorOnly`，目标策略待新增；见下文 Authorization Policies）
->
-> 文档保留**目标态**；代码修复由 D7 跟踪（见 [baseline §3](../compose/specs/2026-06-28-docs-reconciliation-baseline.md)）。
+> **已知 Bug（D7/D8 决策）**：挂号/患者/药材/医案创建的当前代码策略与矩阵不一致（详见下方「代码待对齐清单」）。文档保留**目标态**，代码修复由 D7 跟踪。
 
 ## Row-Level Security
 
@@ -77,17 +71,14 @@
 
 | Policy | 常量 | 要求角色 | 用途 |
 |--------|------|----------|------|
-| `DoctorOrReceptionist` | `PolicyConstants.DoctorOrReceptionist` | SuperAdmin / Admin / Doctor / Receptionist | 患者、验方、挂号（**目标态**，见 D7 待对齐） |
+| `DoctorOrReceptionist` | `PolicyConstants.DoctorOrReceptionist` | SuperAdmin / Admin / Doctor / Receptionist | 患者、验方、挂号（**目标态**，D7 待对齐） |
 | `DoctorOrAdmin` | `PolicyConstants.DoctorOrAdmin` | SuperAdmin / Admin / Doctor | **代码当前最常用策略**（挂号/患者/药材/医案创建当前均用此策略） |
 | `AdminOnly` | `PolicyConstants.AdminOnly` | SuperAdmin / Admin | 管理员级操作 |
 | `AdminOrSuperAdmin` | `PolicyConstants.AdminOrSuperAdmin` | SuperAdmin / Admin | 用户管理、系统配置（与 `AdminOnly` 行为等价，命名历史并存） |
-| `DoctorOnly` ⏳ | `PolicyConstants.DoctorOnly`（**待新增**） | Doctor | **目标策略**：医案创建（Doctor 唯一）、处方打印强制。代码当前无此策略，医案创建用 `DoctorOrAdmin`（允许 Admin，⚠️代码待对齐 D7） |
+| `DoctorOnly` ⏳ | `PolicyConstants.DoctorOnly`（**待新增**） | Doctor | **目标策略**：医案创建（Doctor 唯一）、处方打印强制。代码当前无此策略（⚠️ D7 待对齐） |
 | `FallbackPolicy` | （`RequireAuthenticatedUser`） | 任何已登录用户 | 默认策略，所有未显式标注 Policy 的端点 |
 
-> ⚠️ **D7 待对齐**（详见 [baseline §3](../compose/specs/2026-06-28-docs-reconciliation-baseline.md)）：挂号/患者/药材/医案创建的**目标 Policy 为 `DoctorOrReceptionist`/`DoctorOnly`**，代码当前为 `DoctorOrAdmin`。文档保留目标态，代码修复由 D7 跟踪。
-
-> 📌 **`AdminOnly` ≡ `AdminOrSuperAdmin` 合并建议**（审计 S6，2026-06-28）：
-> 两者行为完全等价（均 = Admin + SuperAdmin 角色），命名历史并存。建议 **Phase② 合并**为单一策略（倾向保留 `AdminOrSuperAdmin` 语义更明确），消除冗余。当前代码中两者注册定义相同，暂不阻断功能。
+> 📌 **`AdminOnly` ≡ `AdminOrSuperAdmin` 合并建议**（审计 S6，2026-06-28）：两者行为完全等价，建议 Phase② 合并为单一策略。
 
 ---
 

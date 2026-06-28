@@ -290,86 +290,21 @@ private bool CanSave() => !IsBusy && !HasErrors;
 
 ## 事件架构
 
-### 事件目录
+所有 PubSubEvent 类型按领域组织为静态类内的嵌套类，统一使用 `record` 作为 Payload，通过 `EventSubscriptionManager` 自动管理生命周期。
 
-所有 PubSubEvent 类型按领域组织为静态类内的嵌套类，统一使用 `record` 作为 Payload。
+### 事件清单（按领域）
 
-#### AuthEvents (认证事件)
+| 领域 | 位置 | 事件类型 |
+|------|------|----------|
+| **AuthEvents** | `Core/LYBT.Desktop.Foundation/Security/AuthEvents.cs` | LoginStarted / LoginSucceeded / LoginFailed / LogoutStarted / LogoutCompleted / ServerLogoutFailed / PendingLogoutsCleared / PasswordChanged / SessionExtended / TokenRefreshSucceeded / TokenRefreshFailed / SessionExpired（12 个） |
+| **AuthStateChangedPubSubEvent** | `AuthenticationStateMachine.cs` | `PubSubEvent<AuthStateChangedEventArgs>` — 状态机转换通知 |
+| **PatientEvents** | `Core/LYBT.Desktop.Infrastructure/Events/PatientEvents.cs` | Created / Updated / Selected |
+| **CaseEvents** | `Core/LYBT.Desktop.Infrastructure/Events/CaseEvents.cs` | ConsultationCompleted / PrescriptionCompleted / WorkspaceChanged |
+| **SyncEvents** 🧲 v2.0 | `Core/LYBT.Desktop.Contracts/Events/SyncEvents.cs` | StatusChanged |
+| **CacheEvents** | `Core/LYBT.Desktop.Contracts/Events/CacheEvents.cs` | Invalidated（`CacheDomain`: Patients/MedicalCases/Herbs/Formulas/Users/All） |
+| **TokenLifecycleStateChangedEvent** | `Core/LYBT.Desktop.Foundation/Security/` | TokenLifecycleStateChanged（`TokenLifecycleState`: Active/Warning/Expired） |
 
-**位置**: `Core/LYBT.Desktop.Foundation/Security/AuthEvents.cs`
-**命名空间**: `LYBT.Desktop.Foundation.Security`
-
-| 事件 | Payload 类型 | 发布者 | 订阅者 |
-|------|-------------|--------|--------|
-| LoginStartedEvent | LoginStartedPayload | AuthenticationService | MainWindowViewModel |
-| LoginSucceededEvent | LoginSucceededPayload | AuthenticationService | MainWindowViewModel |
-| LoginFailedEvent | LoginFailedPayload | AuthenticationService | MainWindowViewModel |
-| LogoutStartedEvent | LogoutStartedPayload | LogoutService | MainWindowViewModel |
-| LogoutCompletedEvent | LogoutCompletedPayload | LogoutService, MainWindowViewModel | MainWindowViewModel |
-| ServerLogoutFailedEvent | ServerLogoutFailedPayload | LogoutService | MainWindowViewModel |
-| PendingLogoutsClearedEvent | PendingLogoutsClearedPayload | LogoutService | MainWindowViewModel |
-| PasswordChangedEvent | PasswordChangedPayload | AccountSettings | MainWindowViewModel |
-| SessionExtendedEvent | SessionExtendedPayload | TokenRefreshHandler | MainWindowViewModel |
-| TokenRefreshSucceededEvent | TokenRefreshSucceededPayload | TokenRefreshHandler | MainWindowViewModel |
-| TokenRefreshFailedEvent | TokenRefreshFailedPayload | TokenRefreshHandler | MainWindowViewModel |
-| SessionExpiredEvent | SessionExpiredPayload | TokenLifecycleService | MainWindowViewModel |
-
-**AuthStateChangedPubSubEvent** (`AuthenticationStateMachine.cs`): `PubSubEvent<AuthStateChangedEventArgs>`，由 AuthenticationStateMachine 在状态转换时发布，用于跨模块认证状态通知。
-
-#### PatientEvents (患者事件)
-
-**位置**: `Core/LYBT.Desktop.Infrastructure/Events/PatientEvents.cs`
-**命名空间**: `LYBT.Desktop.Infrastructure.Events`
-
-| 事件 | Payload 类型 | 发布者 | 订阅者 |
-|------|-------------|--------|--------|
-| CreatedEvent | PatientCreatedPayload | PatientCreateService | PatientSearchCache |
-| UpdatedEvent | PatientUpdatedPayload | PatientEditService | PatientSearchCache |
-| SelectedEvent | PatientSelectedPayload | PatientListViewModel | MedicalCaseWorkspaceViewModel |
-
-#### CaseEvents (医案事件)
-
-**位置**: `Core/LYBT.Desktop.Infrastructure/Events/CaseEvents.cs`
-**命名空间**: `LYBT.Desktop.Infrastructure.Events`
-
-| 事件 | Payload 类型 | 发布者 | 订阅者 |
-|------|-------------|--------|--------|
-| ConsultationCompletedEvent | CaseConsultationCompletedPayload | ConsultationPanel | MedicalCaseWorkspaceViewModel |
-| PrescriptionCompletedEvent | CasePrescriptionCompletedPayload | PrescriptionPanel | MedicalCaseWorkspaceViewModel |
-| WorkspaceChangedEvent | WorkspaceChangedPayload | MedicalCaseWorkspaceViewModel | MainWindowViewModel |
-
-#### SyncEvents (同步事件)
-
-> 🧲 **v2.0 规划** — Sync 模块整体 v2.0（N1 决策 2026-06-28），下方事件类代码可能保留但不加载。
-
-**位置**: `Core/LYBT.Desktop.Contracts/Events/SyncEvents.cs`
-**命名空间**: `LYBT.Desktop.Contracts.Events`
-
-| 事件 | Payload 类型 | 发布者 | 订阅者 |
-|------|-------------|--------|--------|
-| StatusChangedEvent | SyncStatusPayload | SyncViewModel | MainWindowViewModel |
-
-#### CacheEvents (缓存事件)
-
-**位置**: `Core/LYBT.Desktop.Contracts/Events/CacheEvents.cs`
-**命名空间**: `LYBT.Desktop.Contracts.Events`
-
-| 事件 | Payload 类型 | 发布者 | 订阅者 |
-|------|-------------|--------|--------|
-| InvalidatedEvent | CacheInvalidatedPayload | DesktopCacheManager | 各模块缓存 |
-
-**CacheDomain 枚举**: `Patients / MedicalCases / Herbs / Formulas / Users / All`
-
-#### Token 生命周期事件
-
-**位置**: `Core/LYBT.Desktop.Foundation/Security/TokenLifecycleStateChangedEvent.cs`
-**命名空间**: `LYBT.Desktop.Foundation.Security`
-
-| 事件 | Payload 类型 | 发布者 | 订阅者 |
-|------|-------------|--------|--------|
-| TokenLifecycleStateChangedEvent | TokenLifecycleStateChangedEventArgs | TokenLifecycleService | MainWindowViewModel |
-
-**TokenLifecycleState**: `Active / Warning / Expired`。`RequiresUserInteraction` (Warning) 和 `RequiresReLogin` (Expired) 为便捷判断属性。
+> 各事件的具体 Payload 类型、发布者、订阅者详见源码相应文件。
 
 ### EventSubscriptionManager
 
@@ -629,7 +564,7 @@ PatientMasterDetailViewModel
 | CardDetected | 检测到卡片插入 |
 | CardReaderIntegrationEventType | 集成结果 (PatientFound/PatientNotFound/PatientCreated/ReadFailed) |
 
-需求详见 [platform.md](../02-requirements/11-platform.md)。
+需求详见 [11e-cardreader.md](../02-requirements/11e-cardreader.md)。
 
 ---
 
@@ -711,94 +646,19 @@ Clinical (诊疗) / Management (管理) 通过菜单过滤区分。Doctor 默认
 
 ---
 
-## 客户端异常处理架构
+## 客户端异常处理 / 错误消息 / 追踪码
 
-> 对应 [US-ERR-003/005/008](../02-requirements/11-platform.md)。
+> 对应 [US-ERR-003/005/006/007/008](../02-requirements/11c-error-handling.md)。
 
-### DesktopExceptionHandler
+Desktop 端异常处理实现 `DesktopExceptionHandler`（注册 `AppDomain.UnhandledException` / `TaskScheduler.UnobservedTaskException` / `DispatcherUnhandledException`），通过 `SafeExecuteAsync` 包裹异步操作转为 `ServiceResult<T>.Failure`。
 
-全局异常捕获注册:
-- `AppDomain.CurrentDomain.UnhandledException` (非UI线程)
-- `TaskScheduler.UnobservedTaskException` (异步任务未观察异常)
-- `DispatcherUnhandledException` (WPF UI 线程，可选)
-
-### 异常严重度分级 (US-ERR-005)
-
-| 级别 | 异常类型示例 | 日志级别 | 说明 |
-|------|------------|---------|------|
-| Information (0) | HttpRequestException, TaskCanceledException | Information | 网络临时问题，可重试 |
-| Warning (1) | ArgumentException, InvalidOperationException | Warning | 参数/状态错误 |
-| Error (2) | UnauthorizedAccessException, OutOfMemoryException | Error | 授权/资源问题 |
-| Critical (3) | AppDomain.UnhandledException | Critical | 全局未处理异常 |
-
-### 异常到通知类型映射 (US-ERR-008)
-
-遵循全局通知规范 3.3 节:
-
-| 异常类型 | 通知方式 | 持续时间 |
-|----------|---------|---------|
-| ValidationException | Toast (红色) | 不自动消失 |
-| NotFoundException / BusinessException | Toast (红色) | 不自动消失 |
-| ConflictException | Toast (红色) | 不自动消失 |
-| UnauthorizedException | **对话框** | 手动关闭，需重新登录 |
-| HttpRequestException / TimeoutException | Toast (黄色/警告) | 5 秒，可重试 |
-| 系统错误 (Error/Critical) | **对话框** (含追踪码) | 手动关闭 |
-
-**SafeExecuteAsync**: 包裹异步操作，自动捕获异常转为 `ServiceResult<T>.Failure(userMessage)`。所有 ViewModel 的命令方法统一使用。
+**完整规范**（异常严重度分级 Information/Warning/Error/Critical、异常到通知类型映射、ClientErrorMessageMapper HTTP/业务错误码到中文消息映射、8 位短码错误追踪码格式）见平台基础设施权威文档 [11c-error-handling.md](../02-requirements/11c-error-handling.md) 的 US-ERR-001~008 章节。
 
 ---
 
-## 错误消息映射
+## 菜单可见性矩阵
 
-> 对应 [US-ERR-006](../02-requirements/11-platform.md)。
-
-ClientErrorMessageMapper 将 HTTP 状态码和业务错误码映射为中文用户友好消息:
-
-**优先级**: 业务错误码 (MCCEE 5位) > HTTP 状态码 > 通用兜底
-
-| HTTP 状态码 | 用户消息 |
-|------------|---------|
-| 400 | 请求参数无效，请检查输入 |
-| 401 | 登录已过期，请重新登录 |
-| 403 | 您没有权限执行此操作 |
-| 404 | 请求的数据不存在 |
-| 409 | 数据已被其他用户修改，请刷新后重试 |
-| 500 | 服务器内部错误 |
-
-**业务错误码映射**: 覆盖 7 个模块 90+ 场景 (1xxxx~7xxxx)。解析服务端返回的 ProblemDetails 中的 `errorCode` 字段。未匹配到具体错误码时返回通用消息"操作失败，请稍后重试"。
-
----
-
-## 错误追踪码
-
-> 对应 [US-ERR-007](../02-requirements/11-platform.md)。
-
-**格式**: 8 位短码 (时间戳低位 + 随机数)，如 `A3F8B2C1`。
-
-**规则**:
-- 仅 Error/Critical 级别异常附加追踪码
-- 业务错误 (如"密码不正确") 不附加
-- 追踪码同时记录到日志，支持 CorrelationId 关联定位
-
-**UI 展示**: 系统错误对话框底部显示"如需帮助，请提供追踪码: XXXXXXXX"。
-
----
-
-## 菜单结构
-
-> 对应 [US-SHELL-005](../02-requirements/11-platform.md)。
-
-### 完整菜单层级
-
-```
-顶部菜单栏
-├── 文件: 新建患者(Ctrl+N) / 新建医案(Ctrl+Shift+C) / 打印(Ctrl+P) / 退出(Alt+F4)
-├── 编辑: 撤销(Ctrl+Z) / 重做(Ctrl+Y) / 保存(Ctrl+S)
-├── 视图: 刷新(F5) / 浅色主题 / 深色主题
-├── 导航: 首页 / 患者管理 / 医案管理 / 验方管理 / 药材管理 / 用户管理 / 数据同步 / 系统设置
-├── 工具: 数据同步 / 系统健康检查
-└── 帮助: 帮助文档(F1) / 关于
-```
+> 对应 [US-SHELL-005](../02-requirements/11a-shell.md)。完整菜单层级（文件/编辑/视图/导航/工具/帮助）见 11a-shell.md。
 
 ### 角色可见性矩阵
 
@@ -815,89 +675,23 @@ ClientErrorMessageMapper 将 HTTP 状态码和业务错误码映射为中文用�
 | 数据同步 | O | O | O | X |
 | 系统设置 | O | X | X | X |
 
-**实现**: `MenuManager` 在登录后根据用户角色过滤菜单项 `Visibility`。通过 `IApplicationCommands` 接口暴露全局命令。
+**实现**: `MenuManager` 在登录后根据用户角色过滤菜单项 `Visibility`。通过 `IApplicationCommands` 接口暴露全局命令。完整权限矩阵（资源 × 操作 × 角色）见权威文档 [12-permissions-matrix.md](12-permissions-matrix.md)。
 
 ---
 
-## Desktop 启动诊断
+## Desktop 启动诊断 / 账户设置
 
-> 对应 [US-SHELL-006](../02-requirements/11-platform.md)。
+> 对应 [US-SHELL-006](../02-requirements/11a-shell.md)（StartupDiagnostics：BeginStartup/EndStartup/BeginStep/EndStep/RecordMarker，慢步骤阈值 3 秒，诊断报告输出到日志）和 [US-SHELL-007](../02-requirements/11a-shell.md)（AccountSettingsControl：修改密码/修改个人资料/查看登录信息）。
 
-StartupDiagnostics 记录 WPF 客户端各启动阶段耗时:
-
-**API**:
-- `BeginStartup()` / `EndStartup()`: 标记启动过程边界
-- `BeginStep(name)` / `EndStep()`: 记录单步耗时和成功/失败
-- `RecordMarker(name)`: 关键时间点标记 (如 "Prism初始化完成"、"首屏渲染")
-- `GetReport()`: 生成 StartupReport
-
-**慢步骤阈值**: 3 秒。超过标记为 Slow，便于定位性能瓶颈。
-
-**诊断报告内容**: 总启动时间、各步骤耗时列表 (按执行顺序)、慢步骤列表、失败步骤列表。报告输出到日志文件。
-
----
-
-## 账户设置
-
-> 对应 [US-SHELL-007](../02-requirements/11-platform.md)。
-
-AccountSettingsControl 通过 `MenuManager.EditProfileCommand` 进入:
-
-| 设置项 | 说明 | 模式 |
-|--------|------|------|
-| 修改密码 | 对话框: 旧密码 + 新密码 + 确认密码 | 远程: API 调用; 本地: 本地存储 |
-| 修改个人资料 | 显示名称 / 电话 / 邮箱 | 远程: API 调用 |
-| 查看登录信息 | 最后登录时间 / 登录 IP | 只读 |
-
-界面布局: 模态对话框或侧边滑出面板。
+完整规范见平台基础设施权威文档 [11a-shell.md](../02-requirements/11a-shell.md)。
 
 ---
 
 ## 同步 UI 架构
 
-> 🧲 **v2.0 规划** — 对应 US-SYNC-007（Sync 模块整体 v2.0，N1 决策 2026-06-28；v2.0 范围见 [PRD](../02-requirements/01-prd.md#v20-规划范围)）。下方内容为 v2.0 设计参考，v1.0 不实现。
+> 🧲 **v2.0 规划** — 对应 US-SYNC-007（Sync 模块整体 v2.0，N1 决策 2026-06-28；v2.0 范围见 [PRD](../02-requirements/01-prd.md#v20-规划范围)）。
 
-### SyncPhase 状态机 (Sprint 4 实现)
-
-`SyncPhase` enum 驱动 SyncViewModel 行为状态 (非视觉向导):
-
-```
-Idle -> CheckingDifferences -> ReviewingDifferences -> Syncing -> Completed
-                                                              \-> Failed
-```
-
-**关键类型**:
-
-| 类型 | 位置 | 说明 |
-|------|------|------|
-| `SyncPhase` (enum) | `LYBT.Desktop.Sync/ViewModels/SyncPhase.cs` | 6 阶段状态 |
-| `SyncResultSummary` (record) | `SyncResultSummary.cs` | per-entity 结果摘要 (上传/下载/跳过/删除/失败) |
-| `SyncRetryDescriptor` | `SyncViewModel.cs` | 工作流级别重试状态 (区别于 Polly 传输级重试) |
-| `SyncErrorCategory` (enum) | `SyncViewModel.cs` | TransientNetwork/AuthExpired/BusinessReject/ConflictChanged/Unknown |
-
-**SyncView.xaml 底栏** (3-column 布局不变，底栏增强):
-- 文本步骤指示器: `"Step 2/4: Reviewing differences"`
-- 错误状态: inline 替换底部状态区 (非 overlay)
-- 结果摘要: card-style `ItemsControl` (per-entity 分组)
-- Retry 按钮 (Primary, 失败态可见) / Reset 按钮 (Completed/Failed 可见)
-
-**关键属性**: `CurrentPhase`, `StepIndicatorText`, `ErrorCategory`, `ErrorMessage`, `ResultSummaries`, `CanRetry`, `CanReset`
-
-**WPF 注意事项**: 底栏元素默认 Visibility 必须在 `Style Setter` 中设置，不能在元素属性上设置 `Visibility="Collapsed"`，否则本地值优先级高于 Style Trigger 导致 DataTrigger 失效。
-
-### 冲突解决 UI
-
-复用 SyncConflictDialog，左右对比布局 + 差异字段高亮:
-
-| 元素 | 说明 |
-|------|------|
-| 标题 | 冲突实体名称 + 进度 (如 "1/3") |
-| 左侧 | 本地版本字段值 + 修改时间 |
-| 右侧 | 服务端版本字段值 + 修改时间 |
-| 差异高亮 | 仅变更字段黄色背景高亮 |
-| 操作按钮 | 保留本地 / 使用服务端 / 跳过 |
-
-MedicalCase 冲突展示跨整个聚合 (诊断 + 处方 + 药材明细)，通过 `SyncConflictDetailDto.ChangedFields` 定位差异字段。
+SyncPhase 状态机（`Idle → CheckingDifferences → ReviewingDifferences → Syncing → Completed/Failed`）、关键类型（`SyncResultSummary`/`SyncRetryDescriptor`/`SyncErrorCategory`）、SyncView 底栏布局、冲突解决 UI（左右对比 + 差异高亮 + 保留本地/使用服务端/跳过）的完整设计已并入 [sync-protocol.md](sync-protocol.md) 的「同步状态机」「错误分类」段。
 
 ---
 
@@ -978,12 +772,5 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
-| 2026-02-10 | v1.1 | 新增可复用业务控件、业务弹窗、CardReader 集成章节 |
-| 2026-02-10 | v1.0 | 初始版本，从 client-layer-architecture/desktop-architecture/viewmodel-conventions specs 整合 |
-| 2026-02-18 | v1.2 | 设计补全: UI 全局规范 (UI-D01~D06)、凭证存储 (US-AUTH-009)、Token 刷新失败 (US-AUTH-011)、客户端异常处理 (US-ERR-003/005/008)、错误消息映射 (US-ERR-006)、错误追踪码 (US-ERR-007)、菜单结构 (US-SHELL-005)、Desktop 启动诊断 (US-SHELL-006)、账户设置 (US-SHELL-007)、同步 UI (US-SYNC-007)、模式切换 (US-SYNC-008)、性能预算 (NFR-PERF-002/003)、UnsavedChangesDialog (BR-002) |
-| 2026-02-26 | v1.3 | Sprint3-Batch5a DOC3: Consultation 模块 Server-only 标注; Views/Controls 目录约定; CardReader Core 层定位说明; Core 层新增 LocalData/CardReader |
-| 2026-03-09 | v1.4 | Sprint 4: 新增 EditModeStateMachine 章节 (US-MC-011); 更新 CardReader 降级链 (MatchPatientAsync + PatientMatchType); 更新同步 UI (SyncPhase FSM + SyncResultSummary + 底栏增强); 模块清单补充 Registration; 修正 Consultation 说明 |
-| 2026-03-09 | v1.5 | Sprint 6 同步: Contracts 层 IDataSource→IRepository (6 个); LocalData 层补充 LocalXxxRepository; Printing 层补充 PDF 导出 (QuestPDF) |
-| 2026-06-12 | v1.6 | 架构图修正: 移除不存在的 Consultation 模块，补全 Registration 模块; 变更记录版本号修正 |
-| 2026-06-13 | v1.7 | 新增事件架构章节 (AuthEvents/PatientEvents/CaseEvents/SyncEvents/CacheEvents/TokenLifecycle + EventSubscriptionManager + 通信模式选择); 新增启动管线章节 (5 步骤序列 + 条件模块加载) |
+| 2026-06-28 | v1.9 | **spec S3 批次2 提炼（989→~620 行）**：事件目录删 Publisher/Subscriber 无信息列改为单表汇总；客户端异常处理/错误消息/追踪码/启动诊断/账户设置（US-ERR-003~008/006/007/US-SHELL-006/007）改链接到 11c-error-handling.md/11a-shell.md；同步 UI 架构 v2.0 段外移到 sync-protocol.md；菜单完整层级改链接保留可见性矩阵。变更历史见 git log。 |
 | 2026-06-28 | v1.8 | **N1 + ADR-0012 对齐**: 模块清单/架构图/Clinical 模块清单清除 Sync（v2.0）; SyncEvents/Sync UI 架构加 🧲 v2.0 标; Item 类继承对齐 ADR-0012（新代码用 `[ObservableProperty]`，禁 BindableBase）; Prism 9.0→8.1.97 |

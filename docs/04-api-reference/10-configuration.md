@@ -6,7 +6,7 @@
 
 提供系统配置读取与生产环境配置验证功能。仅 Admin 和 SuperAdmin 可访问。GetConfiguration 返回安全、非敏感的配置项；GetValue 按 key 查询单个配置值；ValidateProduction 验证生产环境配置是否完整合规。
 
-> **注意**: 本模块使用 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]` 策略授权。
+> **响应信封**：所有响应为 `ApiResponse<T>`，字段定义与通用错误码见 [README](README.md)。下文成功响应示例仅展示 `data` 内容。
 
 ---
 
@@ -20,45 +20,32 @@
 
 ```json
 {
-  "success": true,
-  "message": "配置获取成功",
-  "data": {
-    "App:Name": "凌隐宝堂中医诊所管理系统",
-    "App:Version": "1.0.0",
-    "Jwt:SecretKey": "***",
-    "Jwt:Issuer": "LYBTZYZS",
-    "Jwt:Audience": "LYBTZYZS-Client",
-    "Jwt:ExpireMinutes": "60",
-    "ConnectionStrings:DefaultConnection": "Server=localhost;Database=LYBTDB_Dev;Trusted_Connection=True;",
-    "Logging:LogLevel:Default": "Information",
-    "Logging:LogLevel:Microsoft": "Warning",
-    "DefaultPasswords:Admin": "***",
-    "DefaultPasswords:SysAdmin": "***"
-  },
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9H..."
+  "App:Name": "凌隐宝堂中医诊所管理系统",
+  "App:Version": "1.0.0",
+  "Jwt:SecretKey": "***",
+  "Jwt:Issuer": "LYBTZYZS",
+  "Jwt:Audience": "LYBTZYZS-Client",
+  "Jwt:ExpireMinutes": "60",
+  "ConnectionStrings:DefaultConnection": "Server=localhost;Database=LYBTDB_Dev;Trusted_Connection=True;",
+  "Logging:LogLevel:Default": "Information",
+  "Logging:LogLevel:Microsoft": "Warning",
+  "DefaultPasswords:Admin": "***",
+  "DefaultPasswords:SysAdmin": "***"
 }
 ```
 
 **curl 示例：**
 
 ```bash
-TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"userName":"admin","password":"Admin@123456"}' | jq -r '.data.token')
-
 curl -X GET http://localhost:5000/api/v1/configuration \
   -H "Authorization: Bearer $TOKEN"
 ```
 
 **错误码**:
 
-| HTTP | 说明 |
-|------|------|
-| 200 | 成功返回配置字典 |
-| 401 | 未认证 |
-| 403 | 非 Admin/SuperAdmin 角色 |
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -77,66 +64,28 @@ curl -X GET http://localhost:5000/api/v1/configuration \
 **成功响应** (200): `ApiResponse<string?>`
 
 ```json
-{
-  "success": true,
-  "message": "配置项获取成功",
-  "data": "凌隐宝堂中医诊所管理系统",
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9I..."
-}
+"凌隐宝堂中医诊所管理系统"
 ```
 
-**配置项不存在时**（data 为 null）:
-
-```json
-{
-  "success": true,
-  "message": "配置项获取成功",
-  "data": null,
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9I..."
-}
-```
-
-**参数错误响应** (422):
-
-```json
-{
-  "success": false,
-  "message": "配置项名称不能为空",
-  "data": null,
-  "errors": ["key 不能为空"],
-  "timestamp": 1750873200,
-  "requestId": "0HN9I..."
-}
-```
+配置项不存在时 `data` 为 `null`。
 
 **curl 示例：**
 
 ```bash
-# 获取应用名称
 curl -X GET http://localhost:5000/api/v1/configuration/App%3AName \
   -H "Authorization: Bearer $TOKEN"
 
 # 获取数据库连接字符串
 curl -X GET http://localhost:5000/api/v1/configuration/ConnectionStrings%3ADefaultConnection \
   -H "Authorization: Bearer $TOKEN"
-
-# 获取 JWT 过期时间
-curl -X GET http://localhost:5000/api/v1/configuration/Jwt%3AExpireMinutes \
-  -H "Authorization: Bearer $TOKEN"
 ```
 
 **错误码**:
 
-| HTTP | 说明 |
-|------|------|
-| 200 | 成功返回配置值 (可为 null) |
-| 401 | 未认证 |
-| 403 | 非 Admin/SuperAdmin 角色 |
+| HTTP 状态码 | 说明 |
+|------------|------|
 | 422 | key 为空 |
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -150,50 +99,18 @@ curl -X GET http://localhost:5000/api/v1/configuration/Jwt%3AExpireMinutes \
 
 ```json
 {
-  "success": true,
-  "message": "生产环境配置验证通过",
-  "data": {
-    "isValid": true,
-    "checkedKeys": [
-      "Jwt:SecretKey",
-      "ConnectionStrings:DefaultConnection",
-      "App:Name"
-    ],
-    "missingKeys": [],
-    "warnings": []
-  },
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9J..."
+  "isValid": true,
+  "checkedKeys": [
+    "Jwt:SecretKey",
+    "ConnectionStrings:DefaultConnection",
+    "App:Name"
+  ],
+  "missingKeys": [],
+  "warnings": []
 }
 ```
 
-**验证失败响应** (422):
-
-```json
-{
-  "success": false,
-  "message": "生产环境配置验证失败",
-  "data": {
-    "isValid": false,
-    "checkedKeys": [
-      "Jwt:SecretKey",
-      "ConnectionStrings:DefaultConnection",
-      "App:Name"
-    ],
-    "missingKeys": [
-      "Jwt:SecretKey",
-      "ConnectionStrings:DefaultConnection"
-    ],
-    "warnings": [
-      "默认密码未修改，生产环境请更换"
-    ]
-  },
-  "errors": ["缺少必要的生产环境配置项"],
-  "timestamp": 1750873200,
-  "requestId": "0HN9J..."
-}
-```
+验证失败时返回 422（`data.isValid` 为 `false`，并填充 `missingKeys` / `warnings`）。
 
 **curl 示例：**
 
@@ -204,12 +121,10 @@ curl -X POST http://localhost:5000/api/v1/configuration/validate \
 
 **错误码**:
 
-| HTTP | 说明 |
-|------|------|
-| 200 | 验证通过 |
-| 401 | 未认证 |
-| 403 | 非 Admin/SuperAdmin 角色 |
+| HTTP 状态码 | 说明 |
+|------------|------|
 | 422 | 配置验证失败 |
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -250,28 +165,20 @@ curl -X POST http://localhost:5000/api/v1/configuration/validate \
 
 ```json
 {
-  "success": true,
-  "message": "配置已应用",
-  "data": {
-    "applied": true,
-    "restartRequired": true,
-    "effectiveMode": "restart"
-  },
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9K..."
+  "applied": true,
+  "restartRequired": true,
+  "effectiveMode": "restart"
 }
 ```
 
 **错误码**:
 
-| HTTP | 说明 |
-|------|------|
-| 200 | 写回成功，返回 applied/restartRequired/effectiveMode |
-| 401 | 未认证 |
-| 403 | 非 sysadmin；或节名在黑名单（敏感/基础设施） |
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 403 | 节名在黑名单（敏感/基础设施） |
 | 404 | 节名不存在 |
 | 422 | 请求体校验失败 |
+| 401/400 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -297,26 +204,17 @@ curl -X POST http://localhost:5000/api/v1/configuration/validate \
 
 ```json
 {
-  "success": true,
-  "message": "重启已计划，30 秒后执行",
-  "data": {
-    "scheduledAt": "2026-06-28T10:00:30Z",
-    "delaySeconds": 30
-  },
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9L..."
+  "scheduledAt": "2026-06-28T10:00:30Z",
+  "delaySeconds": 30
 }
 ```
 
 **错误码**:
 
-| HTTP | 说明 |
-|------|------|
-| 200 | 重启已计划 |
-| 401 | 未认证 |
-| 403 | 非 sysadmin |
+| HTTP 状态码 | 说明 |
+|------------|------|
 | 429 | 触发限频（每小时 ≤3 次） |
+| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -342,3 +240,4 @@ GET `/configuration` 与 `/configuration/{section}` 响应中敏感字段将掩�
 | 2026-06-25 | v1.2 | 补充全部端点的 curl 示例、`ApiResponse<T>` 信封完整 JSON 示例、真实配置键值 |
 | 2026-06-28 | v1.1 | 文档对齐代码：权限策略 AdminOnly→AdminOrSuperAdmin（对齐 ConfigurationController.cs:14） |
 | 2026-06-28 | v1.3 | 新增 PUT /configuration/{section}（白/黑名单）、POST /configuration/restart（延迟重启）、GET 脱敏说明（均 🧲 v1.0 待实现，ADR-0014） |
+| 2026-06-28 | v1.4 | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；删除「通用响应格式」节（README 已集中化）；curl 引用 README TOKEN |

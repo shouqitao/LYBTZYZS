@@ -112,7 +112,7 @@ sysadmin 在双模式下配置对象本质不同：远程模式管「服务端(W
 
 | 文件 | 更新 |
 |------|------|
-| `docs/02-requirements/11-platform.md` US-SHELL-018 | 补「双模式面板」段（远程两面板/本地单面板+备份）；补「服务端配置 API」依赖注 |
+| `docs/02-requirements/11a-shell.md` US-SHELL-018 | 补「双模式面板」段（远程两面板/本地单面板+备份）；补「服务端配置 API」依赖注 |
 | `docs/04-api-reference/10-configuration.md` | 补 PUT /configuration/{section}（白/黑名单）、POST /configuration/restart 端点说明（标 🚧 v1.0 待实现） |
 | `docs/06-operations/02-configuration.md` | 补「sysadmin 远程配置管理」段（API 边界 + 重启机制 + 双模式区分矩阵） |
 | `docs/01-product/02-personas.md` sysadmin 段 | 补「远程管服务端配置（API+重启）；本地管全栈」 |

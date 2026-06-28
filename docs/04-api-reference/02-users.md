@@ -6,7 +6,7 @@
 
 用户管理 CRUD、密码管理、状态切换、批量操作。管理端点使用 `[Authorize(Policy = "AdminOrSuperAdmin")]`，自助端点 (`current`/`profile`/`change-password`) 允许所有认证用户。
 
-> **响应信封**：所有响应为 `ApiResponse<T>`，字段为 `success/message/data/errors/timestamp/requestId`（**无 `code` 字段**，基线§6）。下文示例中早期写法出现的 `"success": true` 应理解为 `"success": true`。
+> **响应信封**：所有响应为 `ApiResponse<T>`，字段定义与通用错误码见 [README](README.md)。下文成功响应示例仅展示 `data` 内容。
 
 ---
 
@@ -46,45 +46,41 @@ curl -H "Authorization: Bearer <token>" \
 
 ```json
 {
-  "success": true,
-  "message": "查询成功",
-  "data": {
-    "items": [
-      {
-        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "userName": "doctor_zhang",
-        "realName": "张医生",
-        "phoneNumber": "13800138001",
-        "role": "Doctor",
-        "status": "Enabled",
-        "lastLoginTime": "2026-06-20T14:30:00Z",
-        "createdAt": "0001-01-01T00:00:00"
-      },
-      {
-        "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-        "userName": "admin_li",
-        "realName": "李管理",
-        "phoneNumber": "13800138002",
-        "role": "Admin",
-        "status": "Enabled",
-        "lastLoginTime": "2026-06-21T09:15:00Z",
-        "createdAt": "0001-01-01T00:00:00"
-      }
-    ],
-    "totalCount": 2,
-    "page": 1,
-    "pageSize": 20,
-    "totalPages": 1
-  }
+  "items": [
+    {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "userName": "doctor_zhang",
+      "realName": "张医生",
+      "phoneNumber": "13800138001",
+      "role": "Doctor",
+      "status": "Enabled",
+      "lastLoginTime": "2026-06-20T14:30:00Z",
+      "createdAt": "0001-01-01T00:00:00"
+    },
+    {
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "userName": "admin_li",
+      "realName": "李管理",
+      "phoneNumber": "13800138002",
+      "role": "Admin",
+      "status": "Enabled",
+      "lastLoginTime": "2026-06-21T09:15:00Z",
+      "createdAt": "0001-01-01T00:00:00"
+    }
+  ],
+  "totalCount": 2,
+  "page": 1,
+  "pageSize": 20,
+  "totalPages": 1
 }
 ```
 
-**错误响应**:
+**错误码：**
 
-| HTTP | 错误码 | 说明 |
-|------|--------|------|
-| 400 | ERR-00003 | 分页参数验证失败 (page < 1 或 pageSize < 1) |
-| 401 | — | 未登录或 Token 无效 |
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 400 | 分页参数验证失败 (page < 1 或 pageSize < 1) (ERR-00003) |
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -105,24 +101,20 @@ curl -H "Authorization: Bearer <token>" \
 
 ```json
 {
-  "success": true,
-  "message": "操作成功",
-  "data": {
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "userName": "doctor_zhang",
-    "realName": "张医生",
-    "role": "Doctor",
-    "email": "zhang@lybt.com",
-    "phoneNumber": "13800138001",
-    "isEnabled": true,
-    "status": "Enabled",
-    "pinYinCode": "ZS",
-    "lastLoginTime": "2026-06-20T14:30:00Z",
-    "failedLoginCount": 0,
-    "remark": "",
-    "createdAt": "0001-01-01T00:00:00",
-    "updatedAt": null
-  }
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "userName": "doctor_zhang",
+  "realName": "张医生",
+  "role": "Doctor",
+  "email": "zhang@lybt.com",
+  "phoneNumber": "13800138001",
+  "isEnabled": true,
+  "status": "Enabled",
+  "pinYinCode": "ZS",
+  "lastLoginTime": "2026-06-20T14:30:00Z",
+  "failedLoginCount": 0,
+  "remark": "",
+  "createdAt": "0001-01-01T00:00:00",
+  "updatedAt": null
 }
 ```
 
@@ -130,32 +122,28 @@ curl -H "Authorization: Bearer <token>" \
 
 ```json
 {
-  "success": true,
-  "message": "操作成功",
-  "data": {
-    "id": "00000000-0000-0000-0000-000000000000",
-    "userName": "sysadmin",
-    "realName": "系统超级管理员",
-    "role": "Admin",
-    "email": "sysadmin@lybt.com",
-    "phoneNumber": null,
-    "isEnabled": true,
-    "status": "Enabled",
-    "pinYinCode": null,
-    "lastLoginTime": null,
-    "failedLoginCount": 0,
-    "remark": null,
-    "createdAt": "0001-01-01T00:00:00",
-    "updatedAt": "2026-06-25T00:00:00Z"
-  }
+  "id": "00000000-0000-0000-0000-000000000000",
+  "userName": "sysadmin",
+  "realName": "系统超级管理员",
+  "role": "Admin",
+  "email": "sysadmin@lybt.com",
+  "phoneNumber": null,
+  "isEnabled": true,
+  "status": "Enabled",
+  "pinYinCode": null,
+  "lastLoginTime": null,
+  "failedLoginCount": 0,
+  "remark": null,
+  "createdAt": "0001-01-01T00:00:00",
+  "updatedAt": "2026-06-25T00:00:00Z"
 }
 ```
 
-**错误响应**:
+**错误码：**
 
-| HTTP | 说明 |
-|------|------|
-| 401 | 未登录或用户信息无效 |
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -178,24 +166,20 @@ curl -H "Authorization: Bearer <token>" \
 
 ```json
 {
-  "success": true,
-  "message": "操作成功",
-  "data": {
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "userName": "doctor_zhang",
-    "realName": "张医生",
-    "role": "Doctor",
-    "email": "zhang@lybt.com",
-    "phoneNumber": "13800138001",
-    "isEnabled": true,
-    "status": "Enabled",
-    "pinYinCode": "ZS",
-    "lastLoginTime": "2026-06-20T14:30:00Z",
-    "failedLoginCount": 0,
-    "remark": "",
-    "createdAt": "0001-01-01T00:00:00",
-    "updatedAt": null
-  }
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "userName": "doctor_zhang",
+  "realName": "张医生",
+  "role": "Doctor",
+  "email": "zhang@lybt.com",
+  "phoneNumber": "13800138001",
+  "isEnabled": true,
+  "status": "Enabled",
+  "pinYinCode": "ZS",
+  "lastLoginTime": "2026-06-20T14:30:00Z",
+  "failedLoginCount": 0,
+  "remark": "",
+  "createdAt": "0001-01-01T00:00:00",
+  "updatedAt": null
 }
 ```
 
@@ -218,11 +202,12 @@ curl -H "Authorization: Bearer <token>" \
 | `createdAt` | DateTime | 创建时间 |
 | `updatedAt` | DateTime? | 更新时间 |
 
-**错误响应**:
+**错误码：**
 
-| HTTP | 错误码 | 说明 |
-|------|--------|------|
-| 404 | ERR-10001 | 用户不存在 |
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 404 | 用户不存在 (ERR-10001) |
+| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -277,35 +262,29 @@ curl -X POST \
 
 ```json
 {
-  "success": true,
-  "message": "创建成功",
-  "data": {
-    "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-    "userName": "doctor_wang",
-    "realName": "王医生",
-    "role": "Doctor",
-    "email": "wang@lybt.com",
-    "phoneNumber": "13800138003",
-    "isEnabled": true,
-    "status": "Enabled",
-    "pinYinCode": null,
-    "lastLoginTime": null,
-    "failedLoginCount": 0,
-    "remark": "",
-    "createdAt": "0001-01-01T00:00:00",
-    "updatedAt": null
-  }
+  "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+  "userName": "doctor_wang",
+  "realName": "王医生",
+  "role": "Doctor",
+  "email": "wang@lybt.com",
+  "phoneNumber": "13800138003",
+  "isEnabled": true,
+  "status": "Enabled",
+  "pinYinCode": null,
+  "lastLoginTime": null,
+  "failedLoginCount": 0,
+  "remark": "",
+  "createdAt": "0001-01-01T00:00:00",
+  "updatedAt": null
 }
 ```
 
-**错误响应**:
+**错误码：**
 
-| HTTP | 错误码 | 说明 |
-|------|--------|------|
-| 400 | ERR-10002 | 用户名已被使用 |
-| 400 | ERR-00003 | 输入数据验证失败 (如用户名含特殊字符) |
-| 400 | — | 用户名为系统保留名 (admin/root/sysadmin 等) |
-| 403 | — | 权限不足 (如 Admin 尝试创建 SuperAdmin) |
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 400 | 用户名已被使用 (ERR-10002) / 验证失败 (ERR-00003) / 系统保留名 |
+| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -347,34 +326,30 @@ curl -X PUT \
 
 ```json
 {
-  "success": true,
-  "message": "用户更新成功",
-  "data": {
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "userName": "doctor_zhang",
-    "realName": "张医生(已更名)",
-    "role": "Admin",
-    "email": "zhang_new@lybt.com",
-    "phoneNumber": "13800138001",
-    "isEnabled": true,
-    "status": "Enabled",
-    "pinYinCode": null,
-    "lastLoginTime": "2026-06-20T14:30:00Z",
-    "failedLoginCount": 0,
-    "remark": "",
-    "createdAt": "0001-01-01T00:00:00",
-    "updatedAt": null
-  }
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "userName": "doctor_zhang",
+  "realName": "张医生(已更名)",
+  "role": "Admin",
+  "email": "zhang_new@lybt.com",
+  "phoneNumber": "13800138001",
+  "isEnabled": true,
+  "status": "Enabled",
+  "pinYinCode": null,
+  "lastLoginTime": "2026-06-20T14:30:00Z",
+  "failedLoginCount": 0,
+  "remark": "",
+  "createdAt": "0001-01-01T00:00:00",
+  "updatedAt": null
 }
 ```
 
-**错误响应**:
+**错误码：**
 
-| HTTP | 错误码 | 说明 |
-|------|--------|------|
-| 404 | ERR-10001 | 用户不存在 |
-| 403 | — | 系统管理员账号不可被修改 |
-| 403 | — | 权限不足 (如 Admin 尝试将用户提升为 SuperAdmin) |
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 404 | 用户不存在 (ERR-10001) |
+| 403 | 系统管理员不可修改 / 权限不足 |
+| 401 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -394,24 +369,15 @@ curl -X DELETE \
   http://localhost:5000/api/v1/users/a1b2c3d4-e5f6-7890-abcd-ef1234567890
 ```
 
-**成功响应** (200): `ApiResponse`
+**成功响应** (200): `ApiResponse` — `data: null`
 
-```json
-{
-  "success": true,
-  "message": "删除成功",
-  "data": null
-}
-```
+**错误码：**
 
-**错误响应**:
-
-| HTTP | 错误码 | 说明 |
-|------|--------|------|
-| 404 | ERR-10001 | 用户不存在 |
-| 403 | — | 不能删除自己的账户 |
-| 403 | — | 系统管理员账号不可被删除 |
-| 403 | — | 权限不足 (如 Admin 尝试删除 SuperAdmin) |
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 404 | 用户不存在 (ERR-10001) |
+| 403 | 不能删除自己 / 系统管理员不可删 / 权限不足 |
+| 401 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -450,19 +416,16 @@ curl -X POST \
 ```json
 {
   "success": true,
-  "message": "密码重置成功",
-  "data": {
-    "success": true,
-    "temporaryPassword": "Lybt2025@TempPass!"
-  }
+  "temporaryPassword": "Lybt2025@TempPass!"
 }
 ```
 
-**错误响应**:
+**错误码：**
 
-| HTTP | 错误码 | 说明 |
-|------|--------|------|
-| 404 | ERR-10001 | 用户不存在 |
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 404 | 用户不存在 (ERR-10001) |
+| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -508,33 +471,30 @@ curl -X PUT \
 
 ```json
 {
-  "success": true,
-  "message": "个人资料修改成功",
-  "data": {
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "userName": "doctor_zhang",
-    "realName": "张医生",
-    "role": "Doctor",
-    "email": "zhang@lybt.com",
-    "phoneNumber": "13900139001",
-    "isEnabled": true,
-    "status": "Enabled",
-    "pinYinCode": null,
-    "lastLoginTime": "2026-06-20T14:30:00Z",
-    "failedLoginCount": 0,
-    "remark": "",
-    "createdAt": "0001-01-01T00:00:00",
-    "updatedAt": null
-  }
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "userName": "doctor_zhang",
+  "realName": "张医生",
+  "role": "Doctor",
+  "email": "zhang@lybt.com",
+  "phoneNumber": "13900139001",
+  "isEnabled": true,
+  "status": "Enabled",
+  "pinYinCode": null,
+  "lastLoginTime": "2026-06-20T14:30:00Z",
+  "failedLoginCount": 0,
+  "remark": "",
+  "createdAt": "0001-01-01T00:00:00",
+  "updatedAt": null
 }
 ```
 
-**错误响应**:
+**错误码：**
 
-| HTTP | 错误码 | 说明 |
-|------|--------|------|
-| 404 | ERR-10001 | 用户不存在 |
-| 403 | — | 只能修改自己的个人资料 |
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 404 | 用户不存在 (ERR-10001) |
+| 403 | 只能修改自己的个人资料 |
+| 401 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -573,24 +533,16 @@ curl -X PUT \
   http://localhost:5000/api/v1/users/a1b2c3d4-e5f6-7890-abcd-ef1234567890/change-password
 ```
 
-**成功响应** (200): `ApiResponse`
+**成功响应** (200): `ApiResponse` — `data: null`
 
-```json
-{
-  "success": true,
-  "message": "密码修改成功",
-  "data": null
-}
-```
+**错误码：**
 
-**错误响应**:
-
-| HTTP | 错误码 | 说明 |
-|------|--------|------|
-| 400 | ERR-10004 | 旧密码错误 |
-| 400 | ERR-00003 | 新密码不符合长度要求 (8-50 字符) |
-| 404 | ERR-10001 | 用户不存在 |
-| 403 | — | 只能修改自己的密码 |
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 400 | 旧密码错误 (ERR-10004) / 密码不符合要求 (ERR-10005) |
+| 404 | 用户不存在 (ERR-10001) |
+| 403 | 只能修改自己的密码 |
+| 401 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -610,65 +562,15 @@ curl -X POST \
   http://localhost:5000/api/v1/users/a1b2c3d4-e5f6-7890-abcd-ef1234567890/toggle-status
 ```
 
-**成功响应** (200): `ApiResponse<UserDetailDto>`
+**成功响应** (200): `ApiResponse<UserDetailDto>` — 返回切换后的用户详情（`isEnabled`/`status` 取反）
 
-禁用用户时:
+**错误码：**
 
-```json
-{
-  "success": true,
-  "message": "用户已禁用",
-  "data": {
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "userName": "doctor_zhang",
-    "realName": "张医生",
-    "role": "Doctor",
-    "email": "zhang@lybt.com",
-    "phoneNumber": "13800138001",
-    "isEnabled": false,
-    "status": "Disabled",
-    "pinYinCode": null,
-    "lastLoginTime": "2026-06-20T14:30:00Z",
-    "failedLoginCount": 0,
-    "remark": "",
-    "createdAt": "0001-01-01T00:00:00",
-    "updatedAt": null
-  }
-}
-```
-
-启用用户时:
-
-```json
-{
-  "success": true,
-  "message": "用户已启用",
-  "data": {
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "userName": "doctor_zhang",
-    "realName": "张医生",
-    "role": "Doctor",
-    "email": "zhang@lybt.com",
-    "phoneNumber": "13800138001",
-    "isEnabled": true,
-    "status": "Enabled",
-    "pinYinCode": null,
-    "lastLoginTime": "2026-06-20T14:30:00Z",
-    "failedLoginCount": 0,
-    "remark": "",
-    "createdAt": "0001-01-01T00:00:00",
-    "updatedAt": null
-  }
-}
-```
-
-**错误响应**:
-
-| HTTP | 错误码 | 说明 |
-|------|--------|------|
-| 404 | ERR-10001 | 用户不存在 |
-| 403 | — | 系统管理员账号不可被禁用 |
-| 403 | — | 权限不足 (如 Admin 尝试切换 SuperAdmin 状态) |
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 404 | 用户不存在 (ERR-10001) |
+| 403 | 系统管理员不可禁用 / 权限不足 |
+| 401 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -692,34 +594,12 @@ curl -X POST \
 
 **成功响应** (200): `ApiResponse<UserDetailDto>`
 
-```json
-{
-  "success": true,
-  "message": "用户已恢复",
-  "data": {
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "userName": "doctor_zhang",
-    "realName": "张医生",
-    "role": "Doctor",
-    "email": "zhang@lybt.com",
-    "phoneNumber": "13800138001",
-    "isEnabled": true,
-    "status": "Enabled",
-    "pinYinCode": null,
-    "lastLoginTime": null,
-    "failedLoginCount": 0,
-    "remark": "",
-    "createdAt": "0001-01-01T00:00:00",
-    "updatedAt": null
-  }
-}
-```
+**错误码：**
 
-**错误响应**:
-
-| HTTP | 错误码 | 说明 |
-|------|--------|------|
-| 404 | ERR-10001 | 用户不存在 |
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 404 | 用户不存在 (ERR-10001) |
+| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -735,8 +615,7 @@ curl -X POST \
 {
   "ids": [
     "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-    "00000000-0000-0000-0000-000000000000"
+    "b2c3d4e5-f6a7-8901-bcde-f12345678901"
   ]
 }
 ```
@@ -760,64 +639,14 @@ curl -X POST \
   http://localhost:5000/api/v1/users/batch-delete
 ```
 
-**成功响应** (200): `ApiResponse<BatchOperationResultDto>`
+**成功响应** (200): `ApiResponse<BatchOperationResultDto>` — 部分失败时 `failedItems` 含各失败原因
 
-全部成功:
+**错误码：**
 
-```json
-{
-  "success": true,
-  "message": "批量删除完成",
-  "data": {
-    "totalCount": 2,
-    "successCount": 2,
-    "failureCount": 0,
-    "skippedCount": 0,
-    "successfulIds": [],
-    "failedIds": [],
-    "errors": [],
-    "failedItems": [],
-    "successRate": 100.0
-  }
-}
-```
-
-部分失败 (含 sysadmin 和自己):
-
-```json
-{
-  "success": true,
-  "message": "批量删除完成",
-  "data": {
-    "totalCount": 3,
-    "successCount": 1,
-    "failureCount": 2,
-    "skippedCount": 0,
-    "successfulIds": [],
-    "failedIds": [],
-    "errors": [],
-    "failedItems": [
-      {
-        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "name": "admin_current",
-        "reason": "不能删除自己"
-      },
-      {
-        "id": "00000000-0000-0000-0000-000000000000",
-        "name": "sysadmin",
-        "reason": "系统管理员账号不可被删除"
-      }
-    ],
-    "successRate": 33.33
-  }
-}
-```
-
-**错误响应**:
-
-| HTTP | 错误码 | 说明 |
-|------|--------|------|
-| 400 | ERR-00003 | ID 列表为空 |
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 400 | ID 列表为空 (ERR-00003) |
+| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -857,34 +686,17 @@ curl -X POST \
 
 **成功响应** (200): `ApiResponse<BatchOperationResultDto>`
 
-```json
-{
-  "success": true,
-  "message": "批量启用完成",
-  "data": {
-    "totalCount": 2,
-    "successCount": 2,
-    "failureCount": 0,
-    "skippedCount": 0,
-    "successfulIds": [],
-    "failedIds": [],
-    "errors": [],
-    "failedItems": [],
-    "successRate": 100.0
-  }
-}
-```
-
 **业务规则**:
 1. 不能启用/禁用当前登录用户
 2. 每个目标用户都需通过 `CanManageUser` 校验
 3. 部分失败不影响其他项
 
-**错误响应**:
+**错误码：**
 
-| HTTP | 错误码 | 说明 |
-|------|--------|------|
-| 400 | ERR-00003 | ID 列表为空 |
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 400 | ID 列表为空 (ERR-00003) |
+| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -922,33 +734,7 @@ curl -X POST \
   http://localhost:5000/api/v1/users/batch-disable
 ```
 
-**成功响应** (200): `ApiResponse<BatchOperationResultDto>`
-
-部分失败 (含最后管理员保护):
-
-```json
-{
-  "success": true,
-  "message": "批量禁用完成",
-  "data": {
-    "totalCount": 2,
-    "successCount": 1,
-    "failureCount": 1,
-    "skippedCount": 0,
-    "successfulIds": [],
-    "failedIds": [],
-    "errors": [],
-    "failedItems": [
-      {
-        "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-        "name": "admin_li",
-        "reason": "不能禁用最后一个管理员"
-      }
-    ],
-    "successRate": 50.0
-  }
-}
-```
+**成功响应** (200): `ApiResponse<BatchOperationResultDto>` — 部分失败时 `failedItems` 含各失败原因
 
 **业务规则**:
 1. 不能禁用当前登录用户
@@ -963,11 +749,12 @@ curl -X POST \
 - "不能禁用最后一个管理员"
 - "用户不存在"
 
-**错误响应**:
+**错误码：**
 
-| HTTP | 错误码 | 说明 |
-|------|--------|------|
-| 400 | ERR-00003 | ID 列表为空 |
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 400 | ID 列表为空 (ERR-00003) |
+| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -987,36 +774,6 @@ curl -X POST \
 
 ---
 
-## 通用响应格式
-
-所有端点返回 `ApiResponse<T>` 信封（基线§6，**无 `code` 字段**）:
-
-```json
-{
-  "success": true,
-  "message": "操作成功",
-  "data": { ... }
-}
-```
-
-分页查询返回 `ApiResponse<PagedResult<T>>`（字段 `success/message/data/errors/timestamp/requestId`）:
-
-```json
-{
-  "success": true,
-  "message": "查询成功",
-  "data": {
-    "items": [...],
-    "totalCount": 100,
-    "page": 1,
-    "pageSize": 20,
-    "totalPages": 5
-  }
-}
-```
-
----
-
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
@@ -1029,3 +786,4 @@ curl -X POST \
 | 2026-06-12 | v1.5 | UserDetailDto: role 补全 4 角色; 新增 isEnabled/pinYinCode/lastLoginTime/failedLoginCount/remark 字段 |
 | 2026-06-25 | v1.6 | 补充所有端点完整 curl 命令 + 请求/响应 JSON 示例 + 字段说明表; 权限策略统一为 AdminOnly (对齐实际代码); reset-password 请求体修正为 MustChangeOnNextLogin (对齐 ResetPasswordRequestDto) |
 | 2026-06-28 | v1.7 | 文档对齐基线：权限策略 AdminOnly→AdminOrSuperAdmin（对齐 PolicyConstants）；响应信封 code→success（基线§6）；restore/batch-enable/batch-disable 标 D4 v1.0 待实现 |
+| 2026-06-28 | v1.8 | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；删除「通用响应格式」节（README 已集中化）；curl 引用 README TOKEN |

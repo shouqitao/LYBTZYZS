@@ -40,28 +40,21 @@
 | `printType` | int (PrintType) | 是 | `1`=处方, `2`=验方 |
 | `printerName` | string? | 否 | 打印机名称，最大100字符 |
 
-**响应**: `ApiResponse<MedicalCaseDetailDto>` — 更新后的医案详情
+**响应**: `MedicalCaseDetailDto` — 更新后的医案详情
 
 **成功响应** (200):
 
 ```json
 {
-  "success": true,
-  "message": "打印记录已更新",
-  "data": {
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "registrationId": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-    "patientName": "张三",
-    "doctorName": "李医生",
-    "consultationDate": "2026-06-25T10:30:00Z",
-    "printVersion": 2,
-    "lastPrintedAt": "2026-06-25T14:20:00Z",
-    "printCount": 2,
-    "isPrinted": true
-  },
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9A..."
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "registrationId": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  "patientName": "张三",
+  "doctorName": "李医生",
+  "consultationDate": "2026-06-25T10:30:00Z",
+  "printVersion": 2,
+  "lastPrintedAt": "2026-06-25T14:20:00Z",
+  "printCount": 2,
+  "isPrinted": true
 }
 ```
 
@@ -86,11 +79,6 @@
 **curl 示例：**
 
 ```bash
-# 登录获取 TOKEN
-TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"userName":"admin","password":"Admin@123456"}' | jq -r '.data.token')
-
 # 记录处方打印完成
 curl -X PUT http://localhost:5000/api/v1/medicalcases/a1b2c3d4-e5f6-7890-abcd-ef1234567890/print-completed \
   -H "Authorization: Bearer $TOKEN" \
@@ -108,9 +96,7 @@ curl -X PUT http://localhost:5000/api/v1/medicalcases/a1b2c3d4-e5f6-7890-abcd-ef
 
 | HTTP 状态码 | 说明 |
 |------------|------|
-| 401 | 未认证 |
-| 403 | 无打印权限（仅 Receptionist 无权限） |
-| 404 | 医案不存在 |
+| 401/403/404 | 通用错误码见 [README](README.md#通用-http-状态码) |
 | 422 | 医案已被锁定，不允许打印 |
 
 ---
@@ -139,18 +125,7 @@ curl -X PUT http://localhost:5000/api/v1/medicalcases/a1b2c3d4-e5f6-7890-abcd-ef
 | `printerName` | string? | 否 | 打印机名称，最大100字符 |
 | `errorMessage` | string? | 否 | 失败原因，最大500字符 |
 
-**成功响应** (200) `ApiResponse<object>`:
-
-```json
-{
-  "success": true,
-  "message": "打印日志记录成功",
-  "data": null,
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9A..."
-}
-```
+**成功响应** (200)：`data` 为 `null`（操作确认）。
 
 **失败日志请求体**:
 
@@ -184,10 +159,6 @@ curl -X PUT http://localhost:5000/api/v1/medicalcases/a1b2c3d4-e5f6-7890-abcd-ef
 **curl 示例：**
 
 ```bash
-TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"userName":"admin","password":"Admin@123456"}' | jq -r '.data.token')
-
 # 记录打印成功
 curl -X POST http://localhost:5000/api/v1/medicalcases/a1b2c3d4-e5f6-7890-abcd-ef1234567890/print-logs \
   -H "Authorization: Bearer $TOKEN" \
@@ -203,11 +174,7 @@ curl -X POST http://localhost:5000/api/v1/medicalcases/a1b2c3d4-e5f6-7890-abcd-e
 
 **错误码：**
 
-| HTTP 状态码 | 说明 |
-|------------|------|
-| 401 | 未认证 |
-| 403 | 无打印权限 |
-| 404 | 医案不存在 |
+> 通用状态码（401/403/404）见 [README](README.md#通用-http-状态码)。本端点无特有状态码。
 
 ---
 
@@ -279,3 +246,4 @@ curl -X POST http://localhost:5000/api/v1/medicalcases/a1b2c3d4-e5f6-7890-abcd-e
 | 2026-06-12 | v1.0 | 初始版本（从 medical-cases.md 独立出来）; 标题改为路由格式 |
 | 2026-06-25 | v1.1 | 补充 curl 示例、成功/失败响应 JSON 示例、错误码表；更新 changelog 格式 |
 | 2026-06-28 | v1.1 | 文档对齐基线：顶部加 D2 v1.0 待实现标注（print-completed/print-logs 及打印回写字段/实体代码尚未实现） |
+| 2026-06-28 | vX.Y | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；curl 删除 TOKEN 脚本（见 README）；通用状态码引用 README |

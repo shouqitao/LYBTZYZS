@@ -34,20 +34,13 @@
 
 > 仅传其一时，另一参数默认等于所传值（单日查询）；均不传则查询当日。
 
-**成功响应** (200) `ApiResponse<DailyIncomeDto>`:
+**成功响应** (200) `ApiResponse<DailyIncomeDto>` — `data`:
 
 ```json
 {
-  "success": true,
-  "message": "查询成功",
-  "data": {
-    "totalIncome": 3580.00,
-    "registrationFeeTotal": 1200.00,
-    "medicineFeeTotal": 2380.00
-  },
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9S..."
+  "totalIncome": 3580.00,
+  "registrationFeeTotal": 1200.00,
+  "medicineFeeTotal": 2380.00
 }
 ```
 
@@ -64,10 +57,6 @@
 **curl 示例：**
 
 ```bash
-TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"userName":"admin","password":"Admin@123456"}' | jq -r '.data.token')
-
 # 当日（默认）
 curl -X GET http://localhost:5000/api/v1/reports/daily/income \
   -H "Authorization: Bearer $TOKEN"
@@ -86,28 +75,21 @@ curl -X GET "http://localhost:5000/api/v1/reports/daily/income?startDate=2026-06
 - **权限**: Doctor / Admin / SuperAdmin
 - **查询参数**: 同 [`/reports/daily/income`](#get-reportsdailyincome)（`startDate` / `endDate`，可选，默认当日）
 
-**成功响应** (200) `ApiResponse<DailyConsultationDto>`:
+**成功响应** (200) `ApiResponse<DailyConsultationDto>` — `data`:
 
 ```json
 {
-  "success": true,
-  "message": "查询成功",
-  "data": {
-    "totalCount": 15,
-    "byDoctor": [
-      {
-        "doctorName": "张仲景",
-        "count": 8
-      },
-      {
-        "doctorName": "李时珍",
-        "count": 7
-      }
-    ]
-  },
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9T..."
+  "totalCount": 15,
+  "byDoctor": [
+    {
+      "doctorName": "张仲景",
+      "count": 8
+    },
+    {
+      "doctorName": "李时珍",
+      "count": 7
+    }
+  ]
 }
 ```
 
@@ -137,44 +119,37 @@ curl -X GET "http://localhost:5000/api/v1/reports/daily/consultations?startDate=
 - **权限**: Doctor / Admin / SuperAdmin
 - **查询参数**: 同 [`/reports/daily/income`](#get-reportsdailyincome)（`startDate` / `endDate`，可选，默认当日）
 
-**成功响应** (200) `ApiResponse<DailyHerbUsageDto>`:
+**成功响应** (200) `ApiResponse<DailyHerbUsageDto>` — `data`:
 
 ```json
 {
-  "success": true,
-  "message": "查询成功",
-  "data": {
-    "items": [
-      {
-        "herbName": "黄芪",
-        "usageCount": 12,
-        "totalDosage": 360.00
-      },
-      {
-        "herbName": "当归",
-        "usageCount": 9,
-        "totalDosage": 180.00
-      },
-      {
-        "herbName": "白术",
-        "usageCount": 7,
-        "totalDosage": 210.00
-      },
-      {
-        "herbName": "茯苓",
-        "usageCount": 6,
-        "totalDosage": 180.00
-      },
-      {
-        "herbName": "甘草",
-        "usageCount": 5,
-        "totalDosage": 75.00
-      }
-    ]
-  },
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9U..."
+  "items": [
+    {
+      "herbName": "黄芪",
+      "usageCount": 12,
+      "totalDosage": 360.00
+    },
+    {
+      "herbName": "当归",
+      "usageCount": 9,
+      "totalDosage": 180.00
+    },
+    {
+      "herbName": "白术",
+      "usageCount": 7,
+      "totalDosage": 210.00
+    },
+    {
+      "herbName": "茯苓",
+      "usageCount": 6,
+      "totalDosage": 180.00
+    },
+    {
+      "herbName": "甘草",
+      "usageCount": 5,
+      "totalDosage": 75.00
+    }
+  ]
 }
 ```
 
@@ -201,11 +176,9 @@ curl -X GET "http://localhost:5000/api/v1/reports/daily/herbs?startDate=2026-06-
 
 | HTTP 状态码 | 说明 | 场景 |
 |------------|------|------|
-| 200 | 查询成功 | 正常返回统计数据 |
 | 400 | 参数错误 | `startDate > endDate` 或日期格式非法 |
-| 401 | 未认证 | Token 无效/过期/被撤销 |
-| 403 | 禁止访问 | 非 Doctor/Admin/SuperAdmin 角色 |
 | 500 | 服务器错误 | 内部异常 |
+| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -216,3 +189,4 @@ curl -X GET "http://localhost:5000/api/v1/reports/daily/herbs?startDate=2026-06-
 | 2026-06-28 | v1.1 | 3 端点加时间范围查询参数（`startDate`/`endDate`，默认当日）；概述更新；补 US-REPORT-001~003；错误码加 400 |
 | 2026-06-25 | v1.0 | 初始版本，包含 3 个当日统计端点 |
 | 2026-06-28 | v1.0 | 概述补报表清单待专项讨论说明（A7：日营业额/就诊量/热门药材/医生工作量等 US 待补） | spec S7 弱反映项补全 |
+| 2026-06-28 | v1.2 | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；通用状态码引用 README |

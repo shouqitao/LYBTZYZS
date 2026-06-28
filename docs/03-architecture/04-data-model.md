@@ -109,49 +109,9 @@ graph TB
 
 ### MedicalCase 业务生命周期
 
-#### 状态机
+**状态机**：`Suspended ↔ Active → Completed`（取消 = 软删除 IsDeleted=true，不在枚举中）。
 
-```
-MedicalCase:  Suspended ←→ Active → Completed
-              (挂起)       (进行中)   (已完成)
-
-Registration: Waiting → InProgress → Completed
-              (等待)     (接诊中)     (已完成)
-                   └→ Cancelled
-                      (已取消)
-```
-
-**MedicalCase 状态转换 (MedicalCaseBusinessRules.IsValidStatusTransition)**:
-
-| 转换 | 守卫条件 | 实现位置 |
-|------|----------|----------|
-| Create → Suspended | BR-001: 患者无活跃医案 | MedicalCaseCommandService.CreateAsync |
-| Suspended → Active | Registration 在 InProgress | MedicalCaseStateService.UpdateStatusAsync |
-| Active → Suspended | 未完成、未删除 | MedicalCaseStateService.SuspendAsync |
-| Active → Completed | NeedsPrescription 已设置; 若 NeedsPrescription=true 则 Prescription 存在且 Items 非空; TcmDiagnosis 非空 | MedicalCaseStateService.CompleteAsync |
-| Suspended/Active → IsDeleted | 非当天本人取消需 reason; Completed 禁止取消 | MedicalCaseStateService.CancelAsync |
-
-> **注意**: Cancelled 状态已移除 (v1.4)，取消操作统一为 `IsDeleted=true` 软删除。Completed 状态不可逆。
-
-#### Registration 联动
-
-| MedicalCase 操作 | Registration 响应 | 规则 |
-|------------------|-------------------|------|
-| 医案创建 (接诊) | Waiting → InProgress | 医生从队列选中，自动创建 MedicalCase |
-| MedicalCase.Completed | InProgress → Completed | 医案完成时自动跟随 |
-| MedicalCase 取消 (Source=Receptionist) | InProgress → Waiting | 回退到等待，保留 MedicalCaseId 用于恢复 |
-| MedicalCase 取消 (Source=Doctor) | InProgress → Cancelled | 直接取消闭环 |
-
-> 实现: `MedicalCaseStateService.RollbackRegistrationAsync` 在医案取消后自动回退挂号。
-
-#### 打印保护覆盖层
-
-| 机制 | 规则 | 验证位置 |
-|------|------|----------|
-| IsPrinted | false → true，首次打印时设置 | MedicalCasePrintService |
-| PrintVersion | 医案内容修改后自增，标记需重新打印 | MedicalCaseCommandService.SaveAsync |
-| EditReason | IsPrinted=true 时修改 Consultation/Prescription 内容需提供修改原因 (MC-D15) | MedicalCaseServiceHelper.EnsureCanEdit |
-| Delete 保护 | 已打印医案不可删除 | MedicalCaseServiceHelper.EnsureCanEdit |
+> 完整状态转换矩阵（守卫条件 + 实现位置）、Registration 联动规则、打印保护覆盖层（IsPrinted/PrintVersion/EditReason）见权威文档 [07-medical-cases.md「状态机」「打印保护耦合」](../02-requirements/07-medical-cases.md)。状态枚举值定义见下方 [枚举定义](#枚举定义) 段。
 
 ### Consultation (诊断)
 
@@ -330,65 +290,19 @@ Registration: Waiting → InProgress → Completed
 
 ### RefreshToken (刷新令牌)
 
-> 🧲 **v1.0 待实现（D3 B+ 方案）** — RefreshToken 实体当前**不存在于代码中**（`SimplifyDataModel` 迁移曾移除，`AppDbContext` 无 DbSet）。按 D3 B+ 决策（2026-06-28）：Token 族旋转 + 登出撤销 + 审计日志将在 v1.0 补回；重放检测（FamilyId）延后至 v2.0。下表为**目标设计**，保留作为补回依据。
+> 🧲 **v1.0 待实现（D3 B+ 方案）** — RefreshToken 实体当前**不存在于代码中**（`SimplifyDataModel` 迁移曾移除，`AppDbContext` 无 DbSet）。按 D3 B+ 决策（2026-06-28）：Token 族旋转 + 登出撤销 + 审计日志将在 v1.0 补回；重放检测（FamilyId）延后至 v2.0。完整目标字段定义（Token/UserId/UserType/Jti/ExpiresAt/IsRevoked/FamilyId/IsUsed/UsageCount）见 D3 spec。
 
-| 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| Token | string(512) | 是 | 令牌值 |
-| UserId | Guid | 是 | 用户 ID |
-| UserType | string(50) | 是 | 用户类型 |
-| Jti | string(128) | 是 | JWT ID |
-| ExpiresAt | DateTime | 是 | 过期时间 |
-| IsRevoked | bool | 是 | 是否撤销 |
-| FamilyId | string(128) | 否 | Token 族（重放检测，v2.0） |
-| IsUsed | bool | 是 | 是否已使用 |
-| UsageCount | int | 是 | 使用次数 |
+## 辅助实体概览
 
-## 辅助实体
+以下实体在前述「实体定义」段已有完整字段表，此处仅汇总职责要点：
 
-> 🧲 **以下两个实体当前不存在于代码中**（`SimplifyDataModel` 迁移曾删除，`AppDbContext` 无对应 DbSet）。按 D1（医案审计日志）/ D2（打印保护回写）决策（2026-06-28），二者将在 v1.0 补回。下方描述为**目标设计**，保留作为补回依据。
-
-### MedicalCasePrintLog (打印记录)
-
-MedicalCase 聚合根的内部实体 (继承 BaseEntity)，记录每次打印操作用于合规追溯。
-
-| 字段 | 类型 | 说明 |
+| 实体 | 类型 | 说明 |
 |------|------|------|
-| MedicalCaseId | Guid | 外键 (关联 MedicalCase) |
-| PrintType | PrintType | 打印类型 (处方/验方) |
-| PrintVersion | int | 打印时的医案版本号 |
-| PrintedAt | DateTime | 打印时间 |
-| PrintedBy | Guid? | 打印人 ID |
-| PrintedByName | string(50)? | 打印人姓名 |
-| PrinterName | string(100)? | 打印机名称或 IP |
-| IsSuccess | bool | 打印状态 (默认 true) |
-| ErrorMessage | string(500)? | 失败错误信息 |
-| Remark | string(200)? | 备注 |
-
-**用途**: 已打印医案修改后需提供 EditReason (MC-D15)，打印日志提供变更审计链。
-
-### PrescriptionItem (处方药材项)
-
-Prescription 的子实体，表示处方中的单味药材。不继承 BaseEntity (无软删除、无审计字段)，随处方整体操作。
-
-**关键计算**: `Amount = UnitPrice x Dosage` (计算属性，不持久化)
-
-> 详细字段定义见上方 [PrescriptionItem 章节](#prescriptionitem-处方药材项)。
-
-### FormulaHerbItem (验方药材项)
-
-Formula 的子实体，实现验方与药材的 N:N 关系。支持**延迟绑定**: 导入验方时 `HerbId` 可为 null，通过 `OriginalHerbName` 保留原始名称，后续校验时绑定到系统药材 (`IsValidated=true`)。
-
-> 详细字段定义见上方 [FormulaHerbItem 章节](#formulaherbitem-验方药材项)。
-
-### AuthSession + RefreshToken (会话与令牌)
-
-User 的关联实体，管理用户登录会话和 JWT 刷新令牌:
-
-- **AuthSession**: 记录登录/登出时间、Token 哈希、IP 地址，支持会话撤销 (`IsRevoked`)
-- **RefreshToken** 🧲 **v1.0 待实现（D3 B+）**: 实现 Token 轮换机制，通过 `FamilyId` 检测重放攻击，`IsUsed` + `UsageCount` 防止 Token 重复使用。重放检测延后至 v2.0。
-
-> 详细字段定义见上方 [AuthSession](#authsession-认证会话) 和 [RefreshToken](#refreshtoken-刷新令牌) 章节。
+| **MedicalCasePrintLog** | 聚合根内部实体 | 🧲 v1.0 待实现（D2 决策：打印保护回写）。记录每次打印操作（PrintType/PrintVersion/PrintedAt/PrintedBy/PrinterName/IsSuccess），用于合规追溯。已打印医案修改后需提供 EditReason (MC-D15) |
+| **PrescriptionItem** | Prescription 子实体 | 不继承 BaseEntity（无软删除/审计），随处方整体操作。关键计算：`Amount = UnitPrice × Dosage` |
+| **FormulaHerbItem** | Formula 子实体 | N:N 关系，支持延迟绑定（HerbId 可 null，OriginalHerbName 保留原始名称，IsValidated 标记校验状态） |
+| **AuthSession** | User 关联实体 | 登录/登出时间、Token 哈希、IP 地址，支持会话撤销（IsRevoked） |
+| **RefreshToken** | User 关联实体 | 🧲 v1.0 待实现（D3 B+）。Token 轮换 + 重放检测（FamilyId），重放检测延后至 v2.0 |
 
 ## 枚举定义
 
@@ -529,14 +443,5 @@ Patient 实体的以下字段标记为敏感数据，日志和序列化时脱敏
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
-| 2026-02-10 | v1.0 | 初始版本，从 LYBT.Entities 代码逆向工程 |
-| 2026-02-18 | v1.1 | PRD同步: MedicalCase 新增 IsPrinted 字段 (MC-D15, 从 Prescription 提升到聚合根); Prescription 移除 IsPrinted (打印保护由聚合根统一管理); Patient.Status 补充禁用语义 (PAT-D05) |
-| 2026-02-19 | v1.2 | 设计补全: 索引策略章节 (BR-001 筛选唯一索引 MC-D06); Herb 禁用药材显示规则 (MC-D07); Prescription 价格计算公式 (MC-D14) |
-| 2026-02-21 | v1.3 | 打印层级提升: ER 图和聚合根图 PrescriptionPrintLog->MedicalCasePrintLog (FK 改为 MedicalCase); MedicalCase 新增 PrintVersion; Prescription 移除 PrintVersion (保留 PrintCount/LastPrintedAt) |
-| 2026-02-21 | v1.4 | 深度重构同步: MedicalCaseStatus 移除 Cancelled=3 (取消统一为 IsDeleted=true); MedicalCase 新增 DDD 域方法 (Complete/Suspend/SoftDelete/UpdateConsultation)，从贫血模型演进为充血模型 |
-| 2026-02-26 | v1.5 | DOC3-10: 新增"辅助实体"章节，汇总 MedicalCasePrintLog/PrescriptionItem/FormulaHerbItem/AuthSession+RefreshToken 的职责和设计要点 |
-| 2026-02-28 | v1.6 | **PRD 偏差修复**: Patient 补充 IdType/EmergencyContact*/DisableReason 字段 (PRD-01); Herb 补充 Remark 字段 (PRD-05); PrintCount/LastPrintedAt 从 Prescription 移到 MedicalCase (PRD-06) |
-| 2026-03-06 | v1.7 | **Draft->Suspended 对齐**: MedicalCaseStatus 枚举 Draft=0 更新为 Suspended=0 (MC-D20); DDD 域方法 SaveAsDraft() 更新为 Suspend(); BR-001 索引描述更新 |
-| 2026-03-06 | v1.8 | **Registration 实体**: ER 图新增 Registration 关系; 独立实体图新增 Registration; 新增 Registration 实体字段表 + 状态机; 新增 RegistrationSource/RegistrationStatus 枚举 |
-| 2026-06-13 | v1.9 | **MedicalCase 业务生命周期**: 新增状态机转换表 + Registration 联动规则 + 打印保护覆盖层 |
-| 2026-06-28 | v2.0 | **D1/D2/D3 对齐**: RefreshToken 与 MedicalCasePrintLog 实体表保留但整段标 🧲 v1.0 待实现（D1 审计日志/D2 打印回写/D3 B+ Token 族旋转补回，重放检测 v2.0）; User 实体描述改为 `ApplicationUser : IdentityUser<Guid>` 并补 IsSysAdmin 字段 |
+| 2026-06-28 | v2.1 | **spec S3 批次2 提炼（542→~420 行）**：MedicalCase 业务生命周期状态转换表/Registration 联动/打印保护覆盖层改链接到 07-medical-cases.md（留状态枚举）；辅助实体重复段（MedicalCasePrintLog/PrescriptionItem/FormulaHerbItem/AuthSession+RefreshToken 重复描述）合并为概览表；RefreshToken 字段表（🧲 代码不存在）压成 D3 spec 引用。变更历史见 git log。 |
+| 2026-06-28 | v2.0 | **D1/D2/D3 对齐**: RefreshToken 与 MedicalCasePrintLog 实体表保留但整段标 🧲 v1.0 待实现; User 实体描述改为 `ApplicationUser : IdentityUser<Guid>` 并补 IsSysAdmin 字段 |

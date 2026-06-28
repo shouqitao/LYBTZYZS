@@ -21,9 +21,38 @@
 Authorization: Bearer {access_token}
 ```
 
-Token 获取方式见 [认证 API](01-auth.md)。
+### TOKEN 获取脚本
+
+所有需要认证的端点 curl 示例均假设 `$TOKEN` 环境变量已设置。获取方式：
+
+```bash
+# 标准账号 (admin)
+TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"userName":"admin","password":"Admin@123456"}' | jq -r '.data.token')
+
+# sysadmin 账号
+TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"userName":"sysadmin","password":"SysAdmin@2026!"}' | jq -r '.data.token')
+```
+
+> Token 有效期 60 分钟（`AddMinutes(60)` 硬编码）。完整认证流程见 [认证 API](01-auth.md)。
 
 ## 通用响应格式
+
+### `ApiResponse<T>` 字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `success` | bool | 操作是否成功 |
+| `message` | string | 操作结果消息 |
+| `data` | T? | 响应数据（泛型，失败时为 null） |
+| `errors` | object? | 错误详情（见下方失败模板） |
+| `timestamp` | long | Unix 时间戳（秒） |
+| `requestId` | string | 请求追踪 ID |
+
+> ⚠️ **无 `code` 字段**（基线§6）。响应以 `success` 布尔判断成败。
 
 ### 成功响应
 
@@ -36,16 +65,25 @@ Token 获取方式见 [认证 API](01-auth.md)。
 }
 ```
 
-### 失败响应
+### 失败响应信封模板
+
+所有失败响应统一使用 `ApiResponse` 信封（**少数端点除外**，如 `/auth/login` 验证失败返回裸 JSON）：
 
 ```json
 {
   "success": false,
-  "message": "错误描述",
-  "errors": null,
+  "message": "用户可读的错误描述",
+  "data": null,
+  "errors": {
+    "code": "ERR-XXXXX",
+    "details": ["可选的详细错误信息"]
+  },
+  "timestamp": 1750864800,
   "requestId": "0HN8V..."
 }
 ```
+
+> `errors` 可为 null、字符串数组、或 `{ "code": "ERR-XXXXX" }` 对象。`code` 形式为 `ERR-{5位数字}`，分区见各模块文档末尾错误码表。
 
 ### 分页响应
 
@@ -74,18 +112,20 @@ Token 获取方式见 [认证 API](01-auth.md)。
 
 ## 通用 HTTP 状态码
 
+> **各端点文档只列出该端点特有的状态码**（如 422/409/204），通用码 401/403/404/400 统一参考本表。
+
 | 状态码 | 含义 | 场景 |
 |--------|------|------|
 | 200 | 成功 | 查询、更新、业务操作成功 |
-| 201 | 已创建 | 资源创建成功 (Users.Create) |
-| 204 | 无内容 | 取消成功 (MedicalCase.Cancel) |
+| 201 | 已创建 | 资源创建成功 |
+| 204 | 无内容 | 取消成功（MedicalCase.Cancel）|
 | 400 | 请求错误 | 参数验证失败 |
 | 401 | 未授权 | Token 无效/过期/被撤销 |
-| 403 | 禁止访问 | 权限不足 (非管理员操作他人资源) |
+| 403 | 禁止访问 | 权限不足（非管理员操作他人资源）|
 | 404 | 未找到 | 资源不存在 |
 | 405 | 方法不允许 | 不支持的 HTTP 方法 |
-| 422 | 不可处理 | 业务规则验证失败 (状态流转错误等) |
-| 429 | 请求过多 | 触发限流 (Login 端点) |
+| 422 | 不可处理 | 业务规则验证失败（状态流转错误等）|
+| 429 | 请求过多 | 触发限流（Login 端点）|
 | 500 | 服务器错误 | 内部异常 |
 | 503 | 服务不可用 | 服务端不可用 |
 
@@ -204,6 +244,10 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | PUT | `/registrations/{id}/start-visit` | 接诊 (DoctorOrReceptionist) |
 | PUT | `/registrations/{id}/cancel` | 取消挂号 |
 
+### 打印模块 ([08-printing.md](08-printing.md))
+
+> 打印相关端点（`PUT /medicalcases/{id}/print-completed`、`POST /medicalcases/{id}/print-logs`）挂在 `MedicalCasesController` 下，详见上方「医案模块」末两行。完整打印模板、预览、PDF 导出设计见 [08-printing.md](08-printing.md)。
+
 ### 数据同步模块 ([09-sync.md](09-sync.md)) -- 🔴 v2.0 规划，v1.0 不实现
 
 > 基线§2 N1 决策：v1.0 远程与本地数据孤立，不互通。下列 7 端点均无对应 Controller，保留作 v2.0 设计参考。
@@ -245,7 +289,7 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | POST | `/diagnostics/logging/debug/disable` | 禁用调试模式 |
 | POST | `/diagnostics/logging/level` | 设置日志级别 |
 
-### 系统配置 -- AdminOrSuperAdmin
+### 系统配置 ([10-configuration.md](10-configuration.md)) -- AdminOrSuperAdmin
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -299,3 +343,4 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | 2026-06-25 | v2.0 | 修正药材/验方/患者模块策略为 DoctorOrAdmin; 移除不存在的药材端点 (export, export-all, import-template, check-reference, batch-check-reference, batch-enable, batch-disable, restore); 移除不存在的验方端点 (export, import-template, restore, batch-enable, batch-disable); 所有模块补充完整 JSON 示例和 curl 命令 |
 | 2026-06-25 | v2.1 | 新增报表模块 (13-reports.md, 3 端点); 端点总数更新为 ~109 |
 | 2026-06-28 | v2.2 | 文档对齐基线：端点总数改为「v1.0 已实现约76 + D1-D10 待补回」；删除虚构废弃端点表（5 端点从未存在）；Auth 错误码表精简并标注实现状态；各模块策略标注对齐基线§3（D7）；health 端点澄清（/health/database 仅 Server）；Sync 模块标 v2.0 |
+| 2026-06-28 | v2.3 | 文档结构优化批次1（S2）集中化：新增 TOKEN 获取脚本（标准+sysadmin）、ApiResponse&lt;T&gt; 字段说明表、失败响应信封模板（errors.code 形态）、通用 HTTP 状态码表强化（各端点只保留特有码）。各端点文档去 ApiResponse 外壳只留 data、错误 JSON 合并到错误码表、curl 删除 TOKEN 脚本、通用码引用 README |

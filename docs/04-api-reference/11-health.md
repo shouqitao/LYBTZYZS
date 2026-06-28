@@ -16,19 +16,12 @@
 
 - **权限**: 匿名 (`[AllowAnonymous]`)
 
-**成功响应** (200) `ApiResponse<object>`:
+**成功响应** (200) `ApiResponse<object>` — `data`:
 
 ```json
 {
-  "success": true,
-  "message": null,
-  "data": {
-    "status": "Healthy",
-    "timestamp": "2026-06-25T14:00:00Z"
-  },
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9K..."
+  "status": "Healthy",
+  "timestamp": "2026-06-25T14:00:00Z"
 }
 ```
 
@@ -47,19 +40,12 @@ Ping/Pong 端点，最轻量的探活检查。
 
 - **权限**: 匿名 (`[AllowAnonymous]`)
 
-**成功响应** (200) `ApiResponse<object>`:
+**成功响应** (200) `ApiResponse<object>` — `data`:
 
 ```json
 {
-  "success": true,
-  "message": null,
-  "data": {
-    "message": "pong",
-    "timestamp": "2026-06-25T14:00:00Z"
-  },
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9L..."
+  "message": "pong",
+  "timestamp": "2026-06-25T14:00:00Z"
 }
 ```
 
@@ -78,59 +64,41 @@ curl -X GET http://localhost:5000/api/v1/health/ping
 
 - **权限**: 已认证 (`[Authorize]`)
 
-**成功响应** (200) `ApiResponse<object>`:
+**成功响应** (200) `ApiResponse<object>` — `data`:
 
 ```json
 {
-  "success": true,
-  "message": null,
-  "data": {
+  "status": "Healthy",
+  "timestamp": "2026-06-25T14:00:00Z",
+  "database": {
     "status": "Healthy",
-    "timestamp": "2026-06-25T14:00:00Z",
-    "database": {
-      "status": "Healthy",
-      "duration": 45,
-      "provider": "Microsoft.EntityFrameworkCore.SqlServer",
-      "pendingMigrations": 0,
-      "serverVersion": "Microsoft SQL Server 2022 (RTM-GDR3-GDR3-KB5035432) - 16.0.4135.4"
-    }
-  },
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9M..."
+    "duration": 45,
+    "provider": "Microsoft.EntityFrameworkCore.SqlServer",
+    "pendingMigrations": 0,
+    "serverVersion": "Microsoft SQL Server 2022 (RTM-GDR3-GDR3-KB5035432) - 16.0.4135.4"
+  }
 }
 ```
 
-**降级响应** (503) `ApiResponse<object>`:
+**降级响应** (503) `data`:
 
 ```json
 {
-  "success": true,
-  "message": null,
-  "data": {
+  "status": "Degraded",
+  "timestamp": "2026-06-25T14:00:00Z",
+  "database": {
     "status": "Degraded",
-    "timestamp": "2026-06-25T14:00:00Z",
-    "database": {
-      "status": "Degraded",
-      "duration": 5023,
-      "provider": "Microsoft.EntityFrameworkCore.SqlServer",
-      "pendingMigrations": 2,
-      "serverVersion": null
-    }
-  },
-  "errors": null,
-  "timestamp": 1750873200,
-  "requestId": "0HN9M..."
+    "duration": 5023,
+    "provider": "Microsoft.EntityFrameworkCore.SqlServer",
+    "pendingMigrations": 2,
+    "serverVersion": null
+  }
 }
 ```
 
 **curl 示例：**
 
 ```bash
-TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"userName":"admin","password":"Admin@123456"}' | jq -r '.data.token')
-
 # 需要认证，查看详细健康状态
 curl -X GET http://localhost:5000/api/v1/health/details \
   -H "Authorization: Bearer $TOKEN"
@@ -149,8 +117,8 @@ curl -X GET http://localhost:5000/api/v1/health/details \
 | HTTP 状态码 | 说明 |
 |------------|------|
 | 200 | 健康检查通过 |
-| 401 | 未认证（仅 /health/details） |
 | 503 | 数据库连接异常或超时 |
+| 401 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
 ---
 
@@ -160,3 +128,4 @@ curl -X GET http://localhost:5000/api/v1/health/details \
 | 2026-02-10 | v1.0 | 初始版本 |
 | 2026-06-12 | v1.1 | 标注使用简化响应格式 (非 ApiResponse 信封) |
 | 2026-06-25 | v1.2 | 修正为 `ApiResponse<T>` 信封格式（与源码一致）；补充 curl 示例、完整 JSON 响应、错误码表 |
+| 2026-06-28 | v1.3 | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；通用状态码引用 README |

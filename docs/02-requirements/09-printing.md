@@ -160,7 +160,7 @@
 | 依赖 | 说明 |
 |------|------|
 | [07-medical-cases.md](07-medical-cases.md) | `IsPrinted`/`PrintVersion`/`PrintCount`/`LastPrintedAt` 字段；编辑保护规则 |
-| [11-platform.md](11-platform.md#configuration) | `ClinicSettings`（诊所名称/科别/地址/电话） |
+| [11b-configuration.md](11b-configuration.md) | `ClinicSettings`（诊所名称/科别/地址/电话） |
 
 ## 变更记录
 

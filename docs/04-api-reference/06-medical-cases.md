@@ -119,133 +119,129 @@
 | `prescription` | object? | 否 | 处方信息 (嵌套) |
 | `prescription.items` | array | 是 | 处方项列表 (至少一项) |
 
-**成功响应** (201 Created):
+**成功响应** (201 Created) `ApiResponse<MedicalCaseDetailDto>` — data 部分 (下方为完整 DTO 结构，其他端点引用此处):
 
 ```json
 {
-  "success": true,
-  "message": "医案创建成功",
-  "data": {
-    "id": "12345678-abcd-ef01-2345-678901234567",
+  "id": "12345678-abcd-ef01-2345-678901234567",
+  "createdAt": "2026-06-25T10:30:00Z",
+  "updatedAt": null,
+  "createdBy": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "caseNumber": "MC-20260625-001",
+  "patientId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "patientName": "张三",
+  "patientGender": "Male",
+  "patientAge": 45,
+  "userId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "doctorName": "李医生",
+  "consultationId": "22345678-abcd-ef01-2345-678901234567",
+  "prescriptionId": "32345678-abcd-ef01-2345-678901234567",
+  "completedAt": null,
+  "caseStatus": "Active",
+  "diagnosis": "痰湿蕴肺证",
+  "hasConsultation": true,
+  "hasPrescription": true,
+  "isLocked": false,
+  "presentIllness": "患者近一周反复咳嗽，痰多色白，伴胸闷气短，食欲不振。",
+  "consultation": {
+    "id": "22345678-abcd-ef01-2345-678901234567",
     "createdAt": "2026-06-25T10:30:00Z",
     "updatedAt": null,
     "createdBy": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-    "caseNumber": "MC-20260625-001",
+    "medicalCaseId": "12345678-abcd-ef01-2345-678901234567",
     "patientId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "patientName": "张三",
-    "patientGender": "Male",
-    "patientAge": 45,
     "userId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "patientName": "张三",
     "doctorName": "李医生",
-    "consultationId": "22345678-abcd-ef01-2345-678901234567",
-    "prescriptionId": "32345678-abcd-ef01-2345-678901234567",
-    "completedAt": null,
-    "caseStatus": "Active",
-    "diagnosis": "痰湿蕴肺证",
-    "hasConsultation": true,
-    "hasPrescription": true,
-    "isLocked": false,
     "presentIllness": "患者近一周反复咳嗽，痰多色白，伴胸闷气短，食欲不振。",
-    "consultation": {
-      "id": "22345678-abcd-ef01-2345-678901234567",
-      "createdAt": "2026-06-25T10:30:00Z",
-      "updatedAt": null,
-      "createdBy": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-      "medicalCaseId": "12345678-abcd-ef01-2345-678901234567",
-      "patientId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "userId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-      "patientName": "张三",
-      "doctorName": "李医生",
-      "presentIllness": "患者近一周反复咳嗽，痰多色白，伴胸闷气短，食欲不振。",
-      "tongueDiagnosis": "舌淡红，苔白腻",
-      "pulseDiagnosis": "脉滑",
-      "tcmDiagnosis": "痰湿蕴肺证"
-    },
-    "prescription": {
-      "id": "32345678-abcd-ef01-2345-678901234567",
-      "prescriptionNumber": "RX-20260625-001",
-      "medicalCaseId": "12345678-abcd-ef01-2345-678901234567",
-      "dosageCount": 7,
-      "usage": "每日一剂，水煎服",
-      "advice": "忌食生冷，注意保暖",
-      "referencedFormulas": "二陈汤",
-      "remark": null,
-      "singleDosePrice": 13.40,
-      "totalPrice": 93.80,
-      "totalWeight": 34.0,
-      "discount": 1.0,
-      "status": "Active",
-      "createdAt": "2026-06-25T10:30:00Z",
-      "updatedAt": null,
-      "duplicateWarning": null,
-      "missingDrugWarning": null,
-      "items": [
-        {
-          "id": "42345678-abcd-ef01-2345-678901234567",
-          "herbId": "c1d2e3f4-a5b6-7890-abcd-ef1234567890",
-          "herbName": "半夏",
-          "unit": "g",
-          "unitPrice": 0.50,
-          "dosage": 10,
-          "totalPrice": 35.00,
-          "totalWeight": 70.0,
-          "subtotal": 5.00,
-          "usage": "先煎",
-          "decocteMethod": "Default",
-          "role": "None",
-          "remark": null,
-          "notes": null
-        },
-        {
-          "id": "52345678-abcd-ef01-2345-678901234567",
-          "herbId": "d2e3f4a5-b6c7-8901-abcd-ef2345678901",
-          "herbName": "陈皮",
-          "unit": "g",
-          "unitPrice": 0.30,
-          "dosage": 6,
-          "totalPrice": 12.60,
-          "totalWeight": 42.0,
-          "subtotal": 1.80,
-          "usage": null,
-          "decocteMethod": "Default",
-          "role": "None",
-          "remark": null,
-          "notes": null
-        },
-        {
-          "id": "62345678-abcd-ef01-2345-678901234567",
-          "herbId": "e3f4a5b6-c7d8-9012-abcd-ef3456789012",
-          "herbName": "茯苓",
-          "unit": "g",
-          "unitPrice": 0.40,
-          "dosage": 15,
-          "totalPrice": 42.00,
-          "totalWeight": 105.0,
-          "subtotal": 6.00,
-          "usage": null,
-          "decocteMethod": "Default",
-          "role": "None",
-          "remark": null,
-          "notes": null
-        },
-        {
-          "id": "72345678-abcd-ef01-2345-678901234567",
-          "herbId": "f4a5b6c7-d8e9-0123-abcd-ef4567890123",
-          "herbName": "甘草",
-          "unit": "g",
-          "unitPrice": 0.20,
-          "dosage": 3,
-          "totalPrice": 4.20,
-          "totalWeight": 21.0,
-          "subtotal": 0.60,
-          "usage": null,
-          "decocteMethod": "Default",
-          "role": "None",
-          "remark": null,
-          "notes": null
-        }
-      ]
-    }
+    "tongueDiagnosis": "舌淡红，苔白腻",
+    "pulseDiagnosis": "脉滑",
+    "tcmDiagnosis": "痰湿蕴肺证"
+  },
+  "prescription": {
+    "id": "32345678-abcd-ef01-2345-678901234567",
+    "prescriptionNumber": "RX-20260625-001",
+    "medicalCaseId": "12345678-abcd-ef01-2345-678901234567",
+    "dosageCount": 7,
+    "usage": "每日一剂，水煎服",
+    "advice": "忌食生冷，注意保暖",
+    "referencedFormulas": "二陈汤",
+    "remark": null,
+    "singleDosePrice": 13.40,
+    "totalPrice": 93.80,
+    "totalWeight": 34.0,
+    "discount": 1.0,
+    "status": "Active",
+    "createdAt": "2026-06-25T10:30:00Z",
+    "updatedAt": null,
+    "duplicateWarning": null,
+    "missingDrugWarning": null,
+    "items": [
+      {
+        "id": "42345678-abcd-ef01-2345-678901234567",
+        "herbId": "c1d2e3f4-a5b6-7890-abcd-ef1234567890",
+        "herbName": "半夏",
+        "unit": "g",
+        "unitPrice": 0.50,
+        "dosage": 10,
+        "totalPrice": 35.00,
+        "totalWeight": 70.0,
+        "subtotal": 5.00,
+        "usage": "先煎",
+        "decocteMethod": "Default",
+        "role": "None",
+        "remark": null,
+        "notes": null
+      },
+      {
+        "id": "52345678-abcd-ef01-2345-678901234567",
+        "herbId": "d2e3f4a5-b6c7-8901-abcd-ef2345678901",
+        "herbName": "陈皮",
+        "unit": "g",
+        "unitPrice": 0.30,
+        "dosage": 6,
+        "totalPrice": 12.60,
+        "totalWeight": 42.0,
+        "subtotal": 1.80,
+        "usage": null,
+        "decocteMethod": "Default",
+        "role": "None",
+        "remark": null,
+        "notes": null
+      },
+      {
+        "id": "62345678-abcd-ef01-2345-678901234567",
+        "herbId": "e3f4a5b6-c7d8-9012-abcd-ef3456789012",
+        "herbName": "茯苓",
+        "unit": "g",
+        "unitPrice": 0.40,
+        "dosage": 15,
+        "totalPrice": 42.00,
+        "totalWeight": 105.0,
+        "subtotal": 6.00,
+        "usage": null,
+        "decocteMethod": "Default",
+        "role": "None",
+        "remark": null,
+        "notes": null
+      },
+      {
+        "id": "72345678-abcd-ef01-2345-678901234567",
+        "herbId": "f4a5b6c7-d8e9-0123-abcd-ef4567890123",
+        "herbName": "甘草",
+        "unit": "g",
+        "unitPrice": 0.20,
+        "dosage": 3,
+        "totalPrice": 4.20,
+        "totalWeight": 21.0,
+        "subtotal": 0.60,
+        "usage": null,
+        "decocteMethod": "Default",
+        "role": "None",
+        "remark": null,
+        "notes": null
+      }
+    ]
   }
 }
 ```
@@ -275,14 +271,14 @@ curl -X POST "https://api.example.com/api/v1/medicalcases" \
   }'
 ```
 
-**错误响应**:
+**错误响应** (通用 401/403 见 [README](README.md#通用-http-状态码)):
 
-| HTTP | 错误码 | 说明 | 示例 |
-|------|--------|------|------|
-| 404 | ERR-30101 | 患者不存在 | `{ "success": false, "message": "患者不存在" }` |
-| 422 | ERR-30103 | 该患者已有进行中的医案 (BR-001) | `{ "success": false, "message": "该患者已有进行中的医案" }` |
-| 422 | ERR-30104 | 该患者已有挂起的医案 (BR-001) | `{ "success": false, "message": "该患者已有挂起的医案" }` |
-| 422 | ERR-30105 | 该患者已被禁用 | `{ "success": false, "message": "该患者已被禁用" }` |
+| HTTP | 错误码 | 说明 |
+|------|--------|------|
+| 404 | ERR-30101 | 患者不存在 |
+| 422 | ERR-30103 | 该患者已有进行中的医案 (BR-001) |
+| 422 | ERR-30104 | 该患者已有挂起的医案 (BR-001) |
+| 422 | ERR-30105 | 该患者已被禁用 |
 
 ---
 
@@ -338,13 +334,11 @@ curl -X PUT "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
 
 **成功响应** (200): `ApiResponse<MedicalCaseDetailDto>` -- 结构同 POST 创建响应
 
-**错误响应**:
+**错误响应** (通用 401/403/404 见 [README](README.md#通用-http-状态码)):
 
 | HTTP | 错误码 | 说明 |
 |------|--------|------|
 | 400 | ERR-30601 | 路由 ID 与请求体 `id` 不一致 |
-| 403 | ERR-30201 | 无权编辑此医案 |
-| 404 | ERR-30607 | 医案不存在 |
 | 422 | ERR-30403 | 医案已打印，修改需要提供修改原因 (MC-D15) |
 | 422 | ERR-30404 | 医案已打印，不允许删除处方 (MC-D15) |
 
@@ -375,12 +369,7 @@ curl -X PUT "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
 
 **成功响应** (200): `ApiResponse<MedicalCaseDetailDto>` -- 返回更新后的医案详情
 
-**错误响应**:
-
-| HTTP | 说明 |
-|------|------|
-| 403 | 无权编辑此医案 |
-| 404 | 医案不存在 |
+**错误响应**: 通用 401/403/404 见 [README](README.md#通用-http-状态码)，本端点无专属错误码。
 
 ---
 
@@ -417,7 +406,7 @@ curl -X PUT "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
 
 **成功响应** (200): `ApiResponse<MedicalCaseDetailDto>` -- `caseStatus` 变为目标状态
 
-**错误响应**:
+**错误响应** (通用 401/403/404 见 [README](README.md#通用-http-状态码)):
 
 | HTTP | 说明 |
 |------|------|
@@ -439,18 +428,14 @@ curl -X PUT "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
   -H "Authorization: Bearer <token>"
 ```
 
-**成功响应** (200):
+**成功响应** (200) `ApiResponse<MedicalCaseDetailDto>` — data 部分:
 
 ```json
 {
-  "success": true,
-  "message": "医案已关闭",
-  "data": {
-    "id": "12345678-abcd-ef01-2345-678901234567",
-    "caseStatus": "Completed",
-    "completedAt": "2026-06-25T15:00:00Z",
-    "...": "其他字段同 MedicalCaseDetailDto"
-  }
+  "id": "12345678-abcd-ef01-2345-678901234567",
+  "caseStatus": "Completed",
+  "completedAt": "2026-06-25T15:00:00Z",
+  "...": "其他字段同 MedicalCaseDetailDto (见 POST 创建响应)"
 }
 ```
 
@@ -484,11 +469,10 @@ curl -X PUT "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
 
 **成功响应** (200): `ApiResponse<MedicalCaseDetailDto>` -- `caseStatus` 变为 `Suspended`
 
-**错误响应**:
+**错误响应** (通用 401/403/404 见 [README](README.md#通用-http-状态码)):
 
 | HTTP | 错误码 | 说明 |
 |------|--------|------|
-| 403 | ERR-30205 | 无权限挂起此医案 |
 | 422 | ERR-30502 | 保存失败 (重试后仍失败) |
 
 ---
@@ -518,12 +502,7 @@ curl -X PUT "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
 
 **成功响应** (204): 无内容 (取消操作统一为软删除，不再返回 DTO)
 
-**错误响应**:
-
-| HTTP | 错误码 | 说明 |
-|------|--------|------|
-| 403 | ERR-30203 | 无权限取消此医案 |
-| 404 | ERR-30607 | 医案不存在 |
+**错误响应**: 通用 401/403/404 见 [README](README.md#通用-http-状态码)，本端点无专属错误码。
 
 ---
 
@@ -540,22 +519,9 @@ curl -X DELETE "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2
   -H "Authorization: Bearer <token>"
 ```
 
-**成功响应** (200):
+**成功响应** (200) `ApiResponse<bool>` — data: `true`
 
-```json
-{
-  "success": true,
-  "message": "医案已删除",
-  "data": true
-}
-```
-
-**错误响应**:
-
-| HTTP | 错误码 | 说明 |
-|------|--------|------|
-| 403 | ERR-30202 | 无权限删除此医案 |
-| 404 | ERR-30607 | 医案不存在 |
+**错误响应**: 通用 401/403/404 见 [README](README.md#通用-http-状态码)，本端点无专属错误码。
 
 ---
 
@@ -584,61 +550,53 @@ curl -X POST "https://api.example.com/api/v1/medicalcases/batch-delete" \
   -d '{"ids": ["12345678-abcd-ef01-2345-678901234567", "22345678-abcd-ef01-2345-678901234567"]}'
 ```
 
-**成功响应** (200) (`ApiResponse<BatchOperationResultDto>`):
+**成功响应** (200) `ApiResponse<BatchOperationResultDto>` — data 部分 (全部成功):
 
 ```json
 {
-  "success": true,
+  "isSuccess": true,
   "message": "批量删除完成",
-  "data": {
-    "isSuccess": true,
-    "message": "批量删除完成",
-    "errorCode": null,
-    "operationTime": "2026-06-25T10:30:00Z",
-    "totalCount": 2,
-    "successCount": 2,
-    "failureCount": 0,
-    "skippedCount": 0,
-    "successfulIds": [
-      "12345678-abcd-ef01-2345-678901234567",
-      "22345678-abcd-ef01-2345-678901234567"
-    ],
-    "failedIds": [],
-    "errors": [],
-    "failedItems": [],
-    "successRate": 100.0
-  }
+  "errorCode": null,
+  "operationTime": "2026-06-25T10:30:00Z",
+  "totalCount": 2,
+  "successCount": 2,
+  "failureCount": 0,
+  "skippedCount": 0,
+  "successfulIds": [
+    "12345678-abcd-ef01-2345-678901234567",
+    "22345678-abcd-ef01-2345-678901234567"
+  ],
+  "failedIds": [],
+  "errors": [],
+  "failedItems": [],
+  "successRate": 100.0
 }
 ```
 
-**部分失败响应**:
+**部分失败响应** (data 部分):
 
 ```json
 {
-  "success": true,
-  "message": "批量删除完成",
-  "data": {
-    "isSuccess": true,
-    "message": "批量删除完成，部分失败",
-    "totalCount": 3,
-    "successCount": 2,
-    "failureCount": 1,
-    "skippedCount": 0,
-    "successfulIds": [
-      "12345678-abcd-ef01-2345-678901234567",
-      "22345678-abcd-ef01-2345-678901234567"
-    ],
-    "failedIds": ["32345678-abcd-ef01-2345-678901234567"],
-    "errors": [],
-    "failedItems": [
-      {
-        "id": "32345678-abcd-ef01-2345-678901234567",
-        "name": null,
-        "reason": "无权限删除此医案"
-      }
-    ],
-    "successRate": 66.67
-  }
+  "isSuccess": true,
+  "message": "批量删除完成，部分失败",
+  "totalCount": 3,
+  "successCount": 2,
+  "failureCount": 1,
+  "skippedCount": 0,
+  "successfulIds": [
+    "12345678-abcd-ef01-2345-678901234567",
+    "22345678-abcd-ef01-2345-678901234567"
+  ],
+  "failedIds": ["32345678-abcd-ef01-2345-678901234567"],
+  "errors": [],
+  "failedItems": [
+    {
+      "id": "32345678-abcd-ef01-2345-678901234567",
+      "name": null,
+      "reason": "无权限删除此医案"
+    }
+  ],
+  "successRate": 66.67
 }
 ```
 
@@ -665,90 +623,9 @@ curl -X GET "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
   -H "Authorization: Bearer <token>"
 ```
 
-**成功响应** (200) (`ApiResponse<MedicalCaseDetailDto>`):
+**成功响应** (200) `ApiResponse<MedicalCaseDetailDto>` — 结构同 [POST 创建响应](#post-medicalcases) 的 MedicalCaseDetailDto
 
-```json
-{
-  "success": true,
-  "message": "查询成功",
-  "data": {
-    "id": "12345678-abcd-ef01-2345-678901234567",
-    "createdAt": "2026-06-25T10:30:00Z",
-    "updatedAt": "2026-06-25T11:00:00Z",
-    "createdBy": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-    "caseNumber": "MC-20260625-001",
-    "patientId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "patientName": "张三",
-    "patientGender": "Male",
-    "patientAge": 45,
-    "userId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-    "doctorName": "李医生",
-    "consultationId": "22345678-abcd-ef01-2345-678901234567",
-    "prescriptionId": "32345678-abcd-ef01-2345-678901234567",
-    "completedAt": "2026-06-25T15:00:00Z",
-    "caseStatus": "Completed",
-    "diagnosis": "痰湿蕴肺证",
-    "hasConsultation": true,
-    "hasPrescription": true,
-    "isLocked": true,
-    "presentIllness": "患者近一周反复咳嗽，痰多色白，伴胸闷气短，食欲不振。",
-    "consultation": {
-      "id": "22345678-abcd-ef01-2345-678901234567",
-      "createdAt": "2026-06-25T10:30:00Z",
-      "updatedAt": "2026-06-25T11:00:00Z",
-      "createdBy": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-      "medicalCaseId": "12345678-abcd-ef01-2345-678901234567",
-      "patientId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "userId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-      "patientName": "张三",
-      "doctorName": "李医生",
-      "presentIllness": "患者近一周反复咳嗽，痰多色白，伴胸闷气短，食欲不振。",
-      "tongueDiagnosis": "舌淡红，苔白腻",
-      "pulseDiagnosis": "脉滑",
-      "tcmDiagnosis": "痰湿蕴肺证"
-    },
-    "prescription": {
-      "id": "32345678-abcd-ef01-2345-678901234567",
-      "prescriptionNumber": "RX-20260625-001",
-      "medicalCaseId": "12345678-abcd-ef01-2345-678901234567",
-      "dosageCount": 7,
-      "usage": "每日一剂，水煎服",
-      "advice": "忌食生冷，注意保暖",
-      "referencedFormulas": "二陈汤",
-      "remark": null,
-      "singleDosePrice": 13.40,
-      "totalPrice": 93.80,
-      "totalWeight": 34.0,
-      "discount": 1.0,
-      "status": "Active",
-      "createdAt": "2026-06-25T10:30:00Z",
-      "updatedAt": null,
-      "duplicateWarning": null,
-      "missingDrugWarning": null,
-      "items": [
-        {
-          "id": "42345678-abcd-ef01-2345-678901234567",
-          "herbId": "c1d2e3f4-a5b6-7890-abcd-ef1234567890",
-          "herbName": "半夏",
-          "unit": "g",
-          "unitPrice": 0.50,
-          "dosage": 10,
-          "totalPrice": 35.00,
-          "totalWeight": 70.0,
-          "subtotal": 5.00,
-          "usage": "先煎",
-          "decocteMethod": "Default",
-          "role": "None",
-          "remark": null,
-          "notes": null
-        }
-      ]
-    }
-  }
-}
-```
-
-**错误响应**:
+**错误响应** (通用 401/403 见 [README](README.md#通用-http-状态码)):
 
 | HTTP | 错误码 | 说明 |
 |------|--------|------|
@@ -783,51 +660,47 @@ curl -X GET "https://api.example.com/api/v1/medicalcases?patientId=a1b2c3d4-e5f6
   -H "Authorization: Bearer <token>"
 ```
 
-**成功响应** (200) (`ApiResponse<PagedResult<MedicalCaseListDto>>`):
+**成功响应** (200) `ApiResponse<PagedResult<MedicalCaseListDto>>` — data 部分:
 
 ```json
 {
-  "success": true,
-  "message": "查询成功",
-  "data": {
-    "items": [
-      {
-        "id": "12345678-abcd-ef01-2345-678901234567",
-        "caseNumber": "MC-20260625-001",
-        "patientId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "patientName": "张三",
-        "patientGender": "Male",
-        "patientAge": 45,
-        "userId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-        "doctorName": "李医生",
-        "completedAt": null,
-        "caseStatus": "Active",
-        "diagnosis": "痰湿蕴肺证",
-        "hasConsultation": true,
-        "hasPrescription": true,
-        "createdAt": "2026-06-25T10:30:00Z"
-      },
-      {
-        "id": "22345678-abcd-ef01-2345-678901234567",
-        "caseNumber": "MC-20260625-002",
-        "patientId": "b2c3d4e5-f6a7-8901-abcd-ef2345678901",
-        "patientName": "李四",
-        "patientGender": "Female",
-        "patientAge": 32,
-        "userId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-        "doctorName": "李医生",
-        "completedAt": null,
-        "caseStatus": "Suspended",
-        "diagnosis": "肝郁气滞证",
-        "hasConsultation": true,
-        "hasPrescription": false,
-        "createdAt": "2026-06-25T09:15:00Z"
-      }
-    ],
-    "totalCount": 25,
-    "pageIndex": 1,
-    "pageSize": 10
-  }
+  "items": [
+    {
+      "id": "12345678-abcd-ef01-2345-678901234567",
+      "caseNumber": "MC-20260625-001",
+      "patientId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "patientName": "张三",
+      "patientGender": "Male",
+      "patientAge": 45,
+      "userId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+      "doctorName": "李医生",
+      "completedAt": null,
+      "caseStatus": "Active",
+      "diagnosis": "痰湿蕴肺证",
+      "hasConsultation": true,
+      "hasPrescription": true,
+      "createdAt": "2026-06-25T10:30:00Z"
+    },
+    {
+      "id": "22345678-abcd-ef01-2345-678901234567",
+      "caseNumber": "MC-20260625-002",
+      "patientId": "b2c3d4e5-f6a7-8901-abcd-ef2345678901",
+      "patientName": "李四",
+      "patientGender": "Female",
+      "patientAge": 32,
+      "userId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+      "doctorName": "李医生",
+      "completedAt": null,
+      "caseStatus": "Suspended",
+      "diagnosis": "肝郁气滞证",
+      "hasConsultation": true,
+      "hasPrescription": false,
+      "createdAt": "2026-06-25T09:15:00Z"
+    }
+  ],
+  "totalCount": 25,
+  "pageIndex": 1,
+  "pageSize": 10
 }
 ```
 
@@ -916,31 +789,27 @@ curl -X GET "https://api.example.com/api/v1/medicalcases/search?diagnosisKeyword
   -H "Authorization: Bearer <token>"
 ```
 
-**成功响应** (200) (`ApiResponse<PagedResult<MedicalCaseDetailDto>>`):
+**成功响应** (200) `ApiResponse<PagedResult<MedicalCaseDetailDto>>` — data 部分 (items 中每个元素结构同 [POST 创建响应](#post-medicalcases) 的 MedicalCaseDetailDto):
 
 ```json
 {
-  "success": true,
-  "message": "搜索成功",
-  "data": {
-    "items": [
-      {
-        "id": "12345678-abcd-ef01-2345-678901234567",
-        "caseNumber": "MC-20260625-001",
-        "patientName": "张三",
-        "doctorName": "李医生",
-        "caseStatus": "Completed",
-        "diagnosis": "痰湿蕴肺证",
-        "presentIllness": "患者近一周反复咳嗽，痰多色白",
-        "consultation": { "..." },
-        "prescription": { "..." },
-        "createdAt": "2026-06-25T10:30:00Z"
-      }
-    ],
-    "totalCount": 3,
-    "pageIndex": 1,
-    "pageSize": 20
-  }
+  "items": [
+    {
+      "id": "12345678-abcd-ef01-2345-678901234567",
+      "caseNumber": "MC-20260625-001",
+      "patientName": "张三",
+      "doctorName": "李医生",
+      "caseStatus": "Completed",
+      "diagnosis": "痰湿蕴肺证",
+      "presentIllness": "患者近一周反复咳嗽，痰多色白",
+      "consultation": { "..." },
+      "prescription": { "..." },
+      "createdAt": "2026-06-25T10:30:00Z"
+    }
+  ],
+  "totalCount": 3,
+  "pageIndex": 1,
+  "pageSize": 20
 }
 ```
 
@@ -959,30 +828,26 @@ curl -X GET "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
   -H "Authorization: Bearer <token>"
 ```
 
-**成功响应** (200) (`ApiResponse<List<ConsultationDetailDto>>`):
+**成功响应** (200) `ApiResponse<List<ConsultationDetailDto>>` — data 部分:
 
 ```json
-{
-  "success": true,
-  "message": "查询成功",
-  "data": [
-    {
-      "id": "22345678-abcd-ef01-2345-678901234567",
-      "createdAt": "2026-06-25T10:30:00Z",
-      "updatedAt": null,
-      "createdBy": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-      "medicalCaseId": "12345678-abcd-ef01-2345-678901234567",
-      "patientId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "userId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-      "patientName": "张三",
-      "doctorName": "李医生",
-      "presentIllness": "患者近一周反复咳嗽，痰多色白，伴胸闷气短，食欲不振。",
-      "tongueDiagnosis": "舌淡红，苔白腻",
-      "pulseDiagnosis": "脉滑",
-      "tcmDiagnosis": "痰湿蕴肺证"
-    }
-  ]
-}
+[
+  {
+    "id": "22345678-abcd-ef01-2345-678901234567",
+    "createdAt": "2026-06-25T10:30:00Z",
+    "updatedAt": null,
+    "createdBy": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "medicalCaseId": "12345678-abcd-ef01-2345-678901234567",
+    "patientId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "userId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "patientName": "张三",
+    "doctorName": "李医生",
+    "presentIllness": "患者近一周反复咳嗽，痰多色白，伴胸闷气短，食欲不振。",
+    "tongueDiagnosis": "舌淡红，苔白腻",
+    "pulseDiagnosis": "脉滑",
+    "tcmDiagnosis": "痰湿蕴肺证"
+  }
+]
 ```
 
 ---
@@ -1000,52 +865,48 @@ curl -X GET "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
   -H "Authorization: Bearer <token>"
 ```
 
-**成功响应** (200) (`ApiResponse<List<PrescriptionDetailDto>>`):
+**成功响应** (200) `ApiResponse<List<PrescriptionDetailDto>>` — data 部分:
 
 ```json
-{
-  "success": true,
-  "message": "查询成功",
-  "data": [
-    {
-      "id": "32345678-abcd-ef01-2345-678901234567",
-      "prescriptionNumber": "RX-20260625-001",
-      "medicalCaseId": "12345678-abcd-ef01-2345-678901234567",
-      "dosageCount": 7,
-      "usage": "每日一剂，水煎服",
-      "advice": "忌食生冷，注意保暖",
-      "referencedFormulas": "二陈汤",
-      "remark": null,
-      "singleDosePrice": 13.40,
-      "totalPrice": 93.80,
-      "totalWeight": 34.0,
-      "discount": 1.0,
-      "status": "Active",
-      "createdAt": "2026-06-25T10:30:00Z",
-      "updatedAt": null,
-      "duplicateWarning": null,
-      "missingDrugWarning": null,
-      "items": [
-        {
-          "id": "42345678-abcd-ef01-2345-678901234567",
-          "herbId": "c1d2e3f4-a5b6-7890-abcd-ef1234567890",
-          "herbName": "半夏",
-          "unit": "g",
-          "unitPrice": 0.50,
-          "dosage": 10,
-          "totalPrice": 35.00,
-          "totalWeight": 70.0,
-          "subtotal": 5.00,
-          "usage": "先煎",
-          "decocteMethod": "Default",
-          "role": "None",
-          "remark": null,
-          "notes": null
-        }
-      ]
-    }
-  ]
-}
+[
+  {
+    "id": "32345678-abcd-ef01-2345-678901234567",
+    "prescriptionNumber": "RX-20260625-001",
+    "medicalCaseId": "12345678-abcd-ef01-2345-678901234567",
+    "dosageCount": 7,
+    "usage": "每日一剂，水煎服",
+    "advice": "忌食生冷，注意保暖",
+    "referencedFormulas": "二陈汤",
+    "remark": null,
+    "singleDosePrice": 13.40,
+    "totalPrice": 93.80,
+    "totalWeight": 34.0,
+    "discount": 1.0,
+    "status": "Active",
+    "createdAt": "2026-06-25T10:30:00Z",
+    "updatedAt": null,
+    "duplicateWarning": null,
+    "missingDrugWarning": null,
+    "items": [
+      {
+        "id": "42345678-abcd-ef01-2345-678901234567",
+        "herbId": "c1d2e3f4-a5b6-7890-abcd-ef1234567890",
+        "herbName": "半夏",
+        "unit": "g",
+        "unitPrice": 0.50,
+        "dosage": 10,
+        "totalPrice": 35.00,
+        "totalWeight": 70.0,
+        "subtotal": 5.00,
+        "usage": "先煎",
+        "decocteMethod": "Default",
+        "role": "None",
+        "remark": null,
+        "notes": null
+      }
+    ]
+  }
+]
 ```
 
 ---
@@ -1212,3 +1073,4 @@ curl -X GET "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
 | 2026-06-12 | v1.6 | MedicalCaseInputDto: 新增 userId/registrationId/editReason/needsPrescription 字段 |
 | 2026-06-25 | v2.0 | 补充所有端点完整请求/响应 JSON 示例和 curl 命令; 更新 DTO 字段与代码对齐 (移除 remark 字段, 修正 PrescriptionInputDto 结构); 新增枚举值速查表; 移除不存在的 MedicalCasePrintController/MedicalCaseAuditController 引用 |
 | 2026-06-28 | v2.1 | 文档对齐基线：响应信封 code→success（基线§6）；权限策略加 D7 待对齐标注（目标 DoctorOrReceptionist/创建 Doctor-only，代码 DoctorOrAdmin）；新增「待实现端点」章节标注 batch-details/permissions/audit-logs/print-completed/print-logs（D1 审计/D2 打印回写/D9 历史） |
+| 2026-06-28 | v2.2 | 文档结构优化批次1：3 处 MedicalCaseDetailDto 重复合一；JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；通用状态码引用 README |

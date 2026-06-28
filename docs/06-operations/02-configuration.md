@@ -377,7 +377,7 @@ sysadmin 配置对象在双模式下本质不同——远程管「服务端 + �
 | 服务端 WebAPI / SQL Server / 公网 | Configuration API（业务可改/敏感只读 + 重启） | 无独立服务端（LocalWebAPI 内嵌） |
 | LocalWebAPI（内嵌） | 不适用 | 归「本地配置」面板（appsettings `OfflineMode`/本地 Jwt） |
 | Desktop 客户端 | 「客户端配置」面板 | 「本地配置」面板（全栈） |
-| 数据库 | 远程 SQL Server（`ConnectionStrings`，只读） | LocalDB（备份恢复 [US-SHELL-013](../02-requirements/11-platform.md)） |
+| 数据库 | 远程 SQL Server（`ConnectionStrings`，只读） | LocalDB（备份恢复 [US-SHELL-013](../02-requirements/11a-shell.md)） |
 | 配置中心入口 | SysadminHomeView（两面板） | SysadminHomeView（单面板 + 备份恢复） |
 
 ### 安全（公网部署关键）

@@ -37,7 +37,7 @@ HTTP 请求通过 `X-Correlation-Id` Header 传递关联标识:
 
 ## 参考
 
-- 日志规范: `docs/02-requirements/11-platform.md`
+- 日志规范: `docs/02-requirements/11d-observability.md`
 - 非功能需求: `docs/02-requirements/12-nfr.md`
 
 ---

@@ -37,40 +37,33 @@
 | `deviceId` | string | 否 | 设备 ID |
 | `deviceName` | string | 否 | 设备名称 |
 
-**成功响应** (200) `ApiResponse<LoginResponse>`:
+**成功响应** (200) `ApiResponse<LoginResponse>`（仅 `data`）:
 
 ```json
 {
-  "success": true,
-  "message": "登录成功",
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "user": {
-      "id": "3f2504e0-4f89-11d3-9a0c-0305e82c3301",
-      "username": "admin",
-      "realName": "管理员",
-      "role": "Admin",
-      "status": "Enabled",
-      "isEnabled": true,
-      "phoneNumber": null,
-      "email": null,
-      "lastLoginTime": "2026-06-25T10:00:00Z",
-      "failedLoginCount": 0,
-      "createdAt": "2026-01-01T00:00:00Z",
-      "updatedAt": null
-    },
-    "refreshToken": "dGhpcyBpcyBhIHJlZnJl...",
-    "expiresAt": "2026-06-25T11:00:00Z",
-    "autoLoginToken": null,
-    "mustChangePassword": false
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "3f2504e0-4f89-11d3-9a0c-0305e82c3301",
+    "username": "admin",
+    "realName": "管理员",
+    "role": "Admin",
+    "status": "Enabled",
+    "isEnabled": true,
+    "phoneNumber": null,
+    "email": null,
+    "lastLoginTime": "2026-06-25T10:00:00Z",
+    "failedLoginCount": 0,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "updatedAt": null
   },
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8V..."
+  "refreshToken": "dGhpcyBpcyBhIHJlZnJl...",
+  "expiresAt": "2026-06-25T11:00:00Z",
+  "autoLoginToken": null,
+  "mustChangePassword": false
 }
 ```
 
-**失败响应** (401) — 用户名或密码错误:
+**失败响应** (401) — 用户名或密码错误（原始 JSON，非 ApiResponse 信封）:
 
 ```json
 {
@@ -98,9 +91,10 @@ curl -X POST http://localhost:5000/api/v1/auth/login \
 
 | HTTP 状态码 | 说明 |
 |------------|------|
-| 400 | 参数验证失败（用户名/密码为空） |
-| 401 | 用户名或密码错误 |
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 | 429 | 触发限流策略 `Login` |
+
+> 401 在本端点特指「用户名或密码错误」；400 为参数验证失败（用户名/密码为空）。
 
 ---
 
@@ -145,6 +139,8 @@ curl -X POST http://localhost:5000/api/v1/auth/auto-login \
   -d '{"userName":"admin","autoLoginToken":"aW50ZXJuYWx0b2tlbg..."}'
 ```
 
+> 通用状态码（401/403/404）见 [README](README.md#通用-http-状态码)。本端点无特有状态码。
+
 ---
 
 ## POST /auth/logout
@@ -171,18 +167,7 @@ curl -X POST http://localhost:5000/api/v1/auth/auto-login \
 
 必须提供 `refreshToken` 或 `userName` 中的至少一个。
 
-**成功响应** (200) `ApiResponse`:
-
-```json
-{
-  "success": true,
-  "message": "登出成功",
-  "data": null,
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8V..."
-}
-```
+**成功响应** (200) `ApiResponse`: `data: null`（消息「登出成功」）。
 
 **curl 示例：**
 
@@ -198,11 +183,7 @@ curl -X POST http://localhost:5000/api/v1/auth/logout \
   -d '{"refreshToken":"dGhpcyBpcyBhIHJlZnJl..."}'
 ```
 
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-|------------|------|
-| 200 | 登出成功（始终返回 200） |
+**状态码：** 始终返回 200（登出成功）。
 
 ---
 
@@ -240,7 +221,9 @@ curl -X POST http://localhost:5000/api/v1/auth/refresh \
 
 | HTTP 状态码 | 说明 |
 |------------|------|
-| 401 | Token 已被撤销 / RefreshToken 已过期 / RefreshToken 无效 |
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
+
+> 401 在本端点特指：Token 已被撤销 / RefreshToken 已过期 / RefreshToken 无效。
 
 ---
 
@@ -253,28 +236,21 @@ curl -X POST http://localhost:5000/api/v1/auth/refresh \
 
 **请求参数**: 无（Token 通过请求头传递）
 
-**成功响应** (200) `ApiResponse<object>`:
+**成功响应** (200) `ApiResponse<object>`（仅 `data`）:
 
 ```json
 {
-  "success": true,
-  "message": "Token验证成功",
-  "data": {
-    "valid": true,
-    "sub": {
-      "userId": "3f2504e0-4f89-11d3-9a0c-0305e82c3301",
-      "userName": "admin",
-      "role": "Admin"
-    },
-    "message": "Token is valid"
+  "valid": true,
+  "sub": {
+    "userId": "3f2504e0-4f89-11d3-9a0c-0305e82c3301",
+    "userName": "admin",
+    "role": "Admin"
   },
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8V..."
+  "message": "Token is valid"
 }
 ```
 
-**失败响应** (401) — Token 无效:
+**失败响应** (401) — Token 无效（原始 JSON，非 ApiResponse 信封）:
 
 ```json
 {
@@ -289,12 +265,7 @@ curl -X POST http://localhost:5000/api/v1/auth/refresh \
 **curl 示例：**
 
 ```bash
-# 先登录获取 token
-TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"userName":"admin","password":"Admin@123456"}' | jq -r '.data.token')
-
-# 验证 token
+# 验证 token（TOKEN 获取见 README）
 curl -X GET http://localhost:5000/api/v1/auth/validate \
   -H "Authorization: Bearer $TOKEN"
 ```
@@ -304,13 +275,15 @@ curl -X GET http://localhost:5000/api/v1/auth/validate \
 | HTTP 状态码 | 说明 |
 |------------|------|
 | 200 | Token 验证成功 |
-| 401 | 缺少 Authorization 头 / Token 格式错误 / Token 无效或过期 |
+| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
+
+> 401 在本端点特指：缺少 Authorization 头 / Token 格式错误 / Token 无效或过期。
 
 ---
 
 ## GET /auth
 
-基础端点，返回 405 Method Not Allowed。
+基础端点，返回 405 Method Not Allowed（原始 JSON）:
 
 ```json
 {
@@ -328,27 +301,7 @@ curl -X GET http://localhost:5000/api/v1/auth
 
 ## 响应格式说明
 
-所有成功响应使用统一的 `ApiResponse<T>` 信封：
-
-```json
-{
-  "success": true,
-  "message": "操作消息",
-  "data": { ... },
-  "errors": null,
-  "timestamp": 1750864800,
-  "requestId": "0HN8V..."
-}
-```
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `success` | bool | 是否成功 |
-| `message` | string | 操作结果消息 |
-| `data` | T? | 响应数据（泛型） |
-| `errors` | object? | 错误详情 |
-| `timestamp` | long | Unix 时间戳（秒） |
-| `requestId` | string | 请求追踪 ID |
+> 响应信封格式与字段见 [README](README.md#通用响应格式)。
 
 ---
 
@@ -359,3 +312,4 @@ curl -X GET http://localhost:5000/api/v1/auth
 | 2026-02-10 | v1.0 | 初始版本，5 个端点 |
 | 2026-06-25 | v2.0 | 补充全部端点的请求/响应 JSON 示例、curl 命令、错误码表；修正响应字段与源码一致 |
 | 2026-06-28 | v2.1 | 文档对齐基线：删除 refresh/auto-login「尚未实现」声明（两端点已在 AuthController 实现，:116/:128）；AccessToken 有效期标注 60 分钟（代码 `AddMinutes(60)`）；错误码表已在 README 精简 |
+| 2026-06-28 | v2.2 | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；curl 删除 TOKEN 脚本（见 README）；通用状态码引用 README |
