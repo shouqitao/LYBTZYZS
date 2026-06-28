@@ -4,12 +4,17 @@
 
 **覆盖 US**: US-AUTH-001, US-CARD-001/002, US-PAT-003, US-REG-001/004/005/006/007, US-MC-001/002/003/011, US-PRINT-001/004
 
+> **双模式分野**（见 [R10 spec S2/S3/S4](../compose/specs/2026-06-28-registration-workflow-redesign.md)）：本流程随部署模式分叉为两条链，差异仅在**入口**——远程有挂号/队列前置，本地无。
+
+### 远程链（有前台，挂号驱动）
+
 ```
 1. 前台登录 → Auth.LoginAsync → JWT
 2. 读身份证 → CardReader → 患者信息
 3. 创建挂号 → RegistrationController.Create → 候诊队列
+   （SignalR 推送通知医生，仅远程，见 ADR-0013）
 4. 医生登录 → Auth.LoginAsync → JWT
-5. 开始就诊 → RegistrationController.StartVisit → 创建 MedicalCase
+5. 开始就诊 → RegistrationController.StartVisit → 原子创建 MedicalCase(Active) + Registration(InProgress) + 返回 MedicalCaseId
 6. 望闻问切 → MedicalCaseController.Save → Consultation
 7. 开方 → MedicalCaseController.Save → Prescription
 8. 完成医案 → MedicalCaseController.Complete → Completed
@@ -17,12 +22,33 @@
 10. 打印回写 → MedicalCaseController.PrintCompleted → IsPrinted=true
 ```
 
-**权限检查**：
-- 步骤 3: Receptionist 可创建挂号（D7 修复后）
-- 步骤 6-8: 仅 Doctor 可操作医案
-- 步骤 9-10: Doctor 可打印
+**急诊/特殊通道**：医生 QuickVisit（US-REG-002）→ 选/建患者 → 原子创建 Registration+MedicalCase → 跳过队列直接看诊。
 
-**系统终点**：步骤 9/10（打印处方笺）为系统侧终点。后续付费、发药、库存均为线下流程，**不在系统范围内**（X2.2 系统外）。患者凭打印的处方笺线下付费取药。
+### 本地链（无前台，医生独立「来一个看一个」）
+
+```
+1. 医生登录
+2. 选/建患者 → PatientsController（姓名/拼音码/身份证查询，不存在则新建）
+3. 直接开医案 → MedicalCaseFacade.Create → MedicalCase(Active)（无挂号环节）
+4. 望闻问切 → MedicalCaseController.Save → Consultation
+5. 开方 → MedicalCaseController.Save → Prescription
+6. 完成医案 → MedicalCaseController.Complete → Completed
+7. 打印处方 → PrintService → PDF/纸质
+8. 打印回写 → MedicalCaseController.PrintCompleted → IsPrinted=true
+```
+
+**本地链要素**：无 Registration、无待诊队列、无 SignalR；Registration 模块不激活。
+
+### 流程一致性约束
+
+无论远程（挂号→StartVisit / QuickVisit）还是本地（直接开医案），**医案创建统一经 `MedicalCaseFacade`**：同样的 MedicalCase(Active) 创建逻辑、同样的状态机（Active↔Suspended→Completed）、同样的导航（→医案编辑页）、同样的打印流程（系统终点）。差异仅在入口前置。
+
+**权限检查**：
+- 远程链步骤 3: Receptionist 可创建挂号（D7 修复后）
+- 步骤 6-8(远程)/4-6(本地): 仅 Doctor 可操作医案
+- 打印步骤: Doctor 可打印
+
+**系统终点**：打印处方笺为系统侧终点。后续付费、发药、库存均为线下流程，**不在系统范围内**（X2.2 系统外）。患者凭打印的处方笺线下付费取药。
 
 **信任边界跨越**：
 - Desktop → Server (Refit HTTP)

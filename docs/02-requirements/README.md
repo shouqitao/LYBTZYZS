@@ -181,6 +181,8 @@
 
 ### 挂号管理（US-REG × 8）
 
+> **双模式适用性**：本地模式**不激活** Registration 模块——医生直接 Patient→MedicalCase「来一个看一个」，无挂号、无队列、无 SignalR。挂号/队列/StartVisit 仅远程模式有效。详见 [08-registration.md「双模式工作流」](08-registration.md)。
+
 | US ID | 标题 |
 |-------|------|
 | US-REG-001 | 前台创建挂号（Waiting 排队） |

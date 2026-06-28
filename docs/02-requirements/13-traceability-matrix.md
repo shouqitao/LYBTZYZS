@@ -141,10 +141,10 @@
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
 |-------|:---:|------|------|------|------|------|------|
 | US-REG-001 | Must | ADR-0001 | Flow 1 | POST /Registrations | RegistrationsController.cs:24 | R3/R6/R11 | 🔴 代码待对齐（D7：DoctorOrAdmin 阻断 Receptionist） |
-| US-REG-002 | Must | ADR-0001 | — | POST /Registrations/quick-visit | RegistrationsController.cs:24 | R13 | ⚠️ 部分实现（QuickVisitAsync 死代码） |
+| US-REG-002 | Must | ADR-0001 | — | POST /Registrations/quick-visit | RegistrationsController.cs:24 | R13 | 🧲 v1.0 待激活（急诊通道[远程]+本地常规；当前死代码，见 R10 spec S6） |
 | US-REG-003 | Must | ADR-0010 | — | GET /Registrations/{id} | RegistrationsController.cs:24 | — | ✅ 已实现 |
 | US-REG-004 | Must | ADR-0010 | Flow 1 | GET /Registrations/queue | RegistrationsController.cs:24 | R8/R9 | ✅ 已实现 |
-| US-REG-005 | Must | ADR-0001 | Flow 1 | PUT /Registrations/{id}/start | RegistrationsController.cs:24 | — | 🔴 代码待对齐（D8：未创建 MedicalCase + 返回错 ID） |
+| US-REG-005 | Must | ADR-0001 | Flow 1 | PUT /Registrations/{id}/start | RegistrationsController.cs:24 | — | 🔴 代码待对齐（D8：StartVisit 待原子创建医案[MedicalCase(Active)+Registration(InProgress)+返回 MedicalCaseId]，见 R10 spec S5） |
 | US-REG-006 | Must | ADR-0010 | Flow 1 | PUT /Registrations/{id}/cancel | RegistrationsController.cs:24 | R11 | 🔴 代码待对齐（D7：权限阻断 Receptionist） |
 | US-REG-007 | Must | ADR-0001 | Flow 1 | MedicalCaseService 内部触发 | RegistrationsController.cs:24 | — | ✅ 已实现 |
 | US-REG-008 | Must | ADR-0013 | Flow 1 | SignalR Hub | SignalR Hub（待专项 spec） | R10/X2.1 | 🧲 v1.0 待实现（SignalR 推送） |
@@ -246,7 +246,7 @@
 | HERB | 13 | 7 | 1 | 5 | 0 | 0 |
 | FORM | 13 | 9 | 0 | 2 | 2 | 0 |
 | MC | 19 | 12 | 4 | 3 | 0 | 0 |
-| REG | 8 | 3 | 1 | 3 | 1 | 0 |
+| REG | 8 | 3 | 2 | 3 | 0 | 0 |
 | PRINT | 4 | 3 | 1 | 0 | 0 | 0 |
 | Shell | 14 | 5 | 6 | 1 | 1 | 1 |
 | CFG | 4 | 4 | 0 | 0 | 0 | 0 |
@@ -254,10 +254,10 @@
 | LOG | 7 | 7 | 0 | 0 | 0 | 0 |
 | SYS | 9 | 9 | 0 | 0 | 0 | 0 |
 | CARD | 2 | 2 | 0 | 0 | 0 | 0 |
-| **合计** | **139** | **99** | **17** | **15** | **7** | **1** |
+| **合计** | **139** | **99** | **18** | **15** | **6** | **1** |
 
 > 注：本矩阵列出 **139 行** = 138 个 v1.0 有效 US + 1 个 v2.0 US（US-SHELL-012 自动更新，列出以保完整）。README 的「138」仅计 v1.0 有效 US。
-> 🧲v1.0待实现 17 项 = D1-D10 决策补回项 + SignalR/初始化/配置中心等已设计待开发项；🔴代码待对齐 15 项 = D7 权限错配 + D8 P0 Bug + 端点暴露缺失；⚠️部分实现 7 项；v2.0 1 项 = SHELL-012（Sync 整模块不列入 US 总数）。
+> 🧲v1.0待实现 18 项 = D1-D10 决策补回项 + SignalR/初始化/配置中心等已设计待开发项 + US-REG-002 QuickVisit 待激活；🔴代码待对齐 15 项 = D7 权限错配 + D8 P0 Bug + 端点暴露缺失；⚠️部分实现 6 项；v2.0 1 项 = SHELL-012（Sync 整模块不列入 US 总数）。
 
 ## 反向追溯说明
 
@@ -270,4 +270,5 @@
 
 | 日期 | 变更 | 原因 |
 |------|------|------|
+| 2026-06-28 | US-REG-002 ⚠️→🧲（QuickVisit 待激活：急诊+本地常规）；US-REG-005 D8 注细化；REG/合计统计同步 | R10 spec S8 文档更新 |
 | 2026-06-28 | 建立追溯矩阵（138 US × 8 列），整合 D1-D10 决策与 scenario-map 状态 | plan Task 1：追溯基础设施 |

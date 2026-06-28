@@ -11,6 +11,39 @@
 
 两种模式通过 `Source` 字段区分，医案状态变更时根据 Source 执行不同的联动策略（US-REG-007）。挂号模块确保 100% 就诊可追溯（COUNT(Registration) / COUNT(MedicalCase) = 1.0），为运营报表提供数据基础。
 
+## 双模式工作流
+
+> 详见 [R10 挂号→接诊工作流重设计 spec](../compose/specs/2026-06-28-registration-workflow-redesign.md)（S2/S3/S4）。此处的「双模式」指**部署模式**（远程/本地）下的工作流分野，区别于上文「两源模型」——后者描述同一远程模式内按 `Source` 字段的来源区分。
+
+### 远程模式（有前台，挂号驱动）
+
+```
+前台建档(首诊) + 挂号(Waiting) → 待诊队列
+        ↓ SignalR 推送通知医生（仅远程，见 ADR-0013）
+医生待诊列表 → 选患者 →「开始就诊」StartVisit（US-REG-005）
+        ↓ 原子事务：创建 MedicalCase(Active) + Registration(InProgress) + 返回 MedicalCaseId
+导航医案编辑 → 望闻问切 → 开方 → 打印（系统终点）
+
+急诊/特殊通道：医生 QuickVisit（US-REG-002）→ 选/建患者 → 原子创建 Registration+MedicalCase → 直接看诊
+```
+
+**要素**：前台挂号驱动；待诊队列；SignalR 推送（仅远程）；StartVisit 原子创建医案；QuickVisit 急诊通道并存。
+
+### 本地模式（无前台，医生独立）
+
+```
+患者到诊 → 医生选/建患者（Patient 模块）→ 直接开医案（MedicalCase）→ 看诊 → 打印
+```
+
+**要素**：
+- **取消挂号**：无 Registration 环节（医生看诊时不停下挂号）
+- **无待诊队列**：待诊清单恒空
+- **来一个看一个**：医生直接 Patient→MedicalCase
+- **无 SignalR**：无队列无需推送
+- 本质等同远程的 QuickVisit 急诊模式
+
+**模式适用性**：Registration 模块在本地模式**不激活**；本地仅用 Patient + MedicalCase 模块。
+
 ## 业务规则
 
 ### 两源模型
@@ -105,7 +138,9 @@
 
 **角色**: 医生
 **优先级**: Must
-**状态**: ⚠️ QuickVisitAsync 方法存在但无调用方（死代码），Controller 另有独立实现
+**状态**: 🧲 v1.0 待激活（急诊通道[远程] + 常规模式[本地]；当前 `QuickVisitAsync` Service 方法存在但无调用方＝死代码，见 [R10 spec S6](../compose/specs/2026-06-28-registration-workflow-redesign.md)）
+
+> **定位补注**：QuickVisit 承担双重职能——(1) 远程模式下的**急诊/特殊通道**（前台不在或急症时医生直接接诊）；(2) 本地模式的**常规看诊入口**（本地取消挂号，「来一个看一个」本质即 QuickVisit）。当前为死代码，v1.0 待接线激活（QuickView UI 待实施）。
 
 **作为** 医生，**我想要** 选择患者后直接进入看诊，**以便** 不需要额外的挂号步骤，前台不在时也能快速开始。
 
@@ -200,7 +235,7 @@
 
 **角色**: 医生
 **优先级**: Must
-**状态**: 🔴 未创建 MedicalCase（PRD 要求联动创建），返回 RegistrationId 非 MedicalCaseId
+**状态**: 🔴 代码待对齐（**D8 bug**：StartVisit 不创建医案 + 返回 RegistrationId 冒充 MedicalCaseId → Desktop 导航到空医案。**修复方向**——改为原子事务：`Registration.Status=InProgress` + 创建 `MedicalCase(Active)` 关联 `RegistrationId` + 返回 `MedicalCaseId`；复用 BR-001 单活跃医案约束，碰撞时提示「重开现有医案」。见 [R10 spec S5](../compose/specs/2026-06-28-registration-workflow-redesign.md)）
 
 **作为** 医生，**我想要** 从队列选中患者开始就诊，**以便** 系统自动创建医案并将挂号状态转为进行中。
 
@@ -347,5 +382,6 @@
 
 | 日期 | 变更 | 原因 |
 |------|------|------|
+| 2026-06-28 | 新增「双模式工作流」段（远程挂号驱动/本地取消挂号）；US-REG-002 状态改 🧲 v1.0 待激活+定位补注；US-REG-005 D8 修复方向补注 | R10 spec S8 文档更新 |
 | 2026-06-25 | 补充 InProgress 取消、同日重复挂号边界条件验收标准 | 需求文档验收标准完善 |
 | 2026-06-28 | 补 REG-BR-006 患者侧大屏叫号业务规则（R9：v2.0/按需，v1.0 候诊队列仅前台/医生端） | spec S7 弱反映项补全 |
