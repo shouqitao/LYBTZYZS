@@ -62,6 +62,19 @@ sequenceDiagram
 - **旧会话清理**: 新登录时撤销该用户所有旧 RefreshToken 和 AutoLoginToken
 - **速率限制**: 登录端点基于 IP 固定窗口限流，5 次/60 秒
 
+### 安全基线约束
+
+| 约束 | 值 | 强制 | 说明 |
+|------|-----|:---:|------|
+| Password WorkFactor | 12 | 是 | BCrypt 代价因子，不可降低 |
+| AccessToken 默认过期 | 30 分钟 | 是 | 可配置 5-1440，生产环境建议 ≤60 |
+| RefreshToken 有效期 | 7 天滑动 + 30 天绝对 | 是 | 滑动续期，绝对过期强制重登录 |
+| 登录失败锁定 | 5 次/15 分钟 | 是 | 可配置，生产环境不可禁用 |
+| 登录速率限制 | 5 次/60 秒/IP | 是 | 防暴力破解 |
+| 旧会话清理 | 新登录时 | 是 | 防止 Token 泄漏后持续有效 |
+| DPAPI 加密 | Desktop 端 Token 存储 | 是 | Windows DPAPI 加密本地 Token |
+| HTTPS | 生产环境必须 | 是 | 本地模式可选 HTTP |
+
 ### 2.2 本地模式认证
 
 本地模式 (LocalWebAPI) 使用独立的 JWT 签名密钥，但保持相同的 Claim 结构和策略体系。本地模式通过 `LocalTokenValidator` 在客户端本地验证 Token，无需网络往返。

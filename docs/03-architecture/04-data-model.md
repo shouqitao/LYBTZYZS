@@ -417,6 +417,36 @@ graph TB
 | IX_MedicalCases_UserId | MedicalCases | UserId | 普通索引 | 按医生查询医案 |
 | IX_MedicalCases_PatientId_Active | MedicalCases | PatientId | **筛选唯一索引** | BR-001 同一患者单活跃医案约束 (MC-D06) |
 
+## 实体验证约束
+
+### 必填字段（业务规则强制）
+
+| 实体 | 必填字段 | 验证方式 |
+|------|----------|----------|
+| MedicalCase | PatientId, UserId, CaseStatus | FluentValidation + EF Required |
+| Consultation | ChiefComplaint, MedicalHistory, TongueDiagnosis, PulseDiagnosis, SyndromeDifferentiation | FluentValidation（BR-003） |
+| Prescription | MedicalCaseId, TotalAmount, UnitPrice | FluentValidation |
+| Patient | Name, Gender, Status | FluentValidation |
+| Herb | Name, PinyinCode, Price | FluentValidation |
+| Formula | Name, FormulaType, ValidationStatus | FluentValidation |
+
+### 唯一性约束
+
+| 约束 | 表 | 列 | 说明 |
+|------|-----|-----|------|
+| BR-001 | MedicalCases | PatientId + CaseStatus | 同一患者同时只能有 1 个 Active/Suspended 医案 |
+| 唯一用户名 | Users | UserName | 系统用户唯一 |
+| 身份证去重 | Patients | IdNumber | 同一身份证号不允许重复建档 |
+
+### 格式约束
+
+| 字段 | 格式 | 说明 |
+|------|------|------|
+| IdNumber | 18 位数字 | 身份证号（可选） |
+| PhoneNumber | 11 位数字 | 手机号（可选） |
+| CaseNumber | 日期+序号 | 医案编号（自动/手动） |
+| Email | 有效邮箱格式 | 可选 |
+
 **BR-001 筛选唯一索引** (MC-D06): 仅对 `CaseStatus IN (Active, Suspended)` 的记录建立唯一索引。EF Core 配置:
 
 ```csharp

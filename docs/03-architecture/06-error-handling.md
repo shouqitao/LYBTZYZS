@@ -219,6 +219,20 @@ Desktop                          Server
 
 ---
 
+## 模块级错误处理规范
+
+| 模块 | 常见异常 | 处理方式 | 特殊约束 |
+|------|----------|----------|----------|
+| MedicalCase | 单医案约束违反(BR-001) | ConflictException(409) + 提示用户选择 | 聚合操作需事务回滚 |
+| Registration | 挂号冲突(时段重叠) | ConflictException(409) | 快速挂号(QuickVisit)需原子创建 MC+Reg |
+| Patients | 身份证重复建档 | ConflictException(409) + 返回已有患者 | 比对姓名+身份证号+出生日期 |
+| Herbs | 药材被处方引用 | BusinessException(400) + 返回引用列表 | 删除前必须检查 BR-DEL-001 |
+| Formulas | 验证状态降级 | BusinessException(400) + 自动降级为 Draft | FLAW-F1 规则触发 |
+| Users | sysadmin 保护 | ForbiddenException(403) | 禁止删除/禁用/修改 sysadmin |
+| Auth | 账户锁定 | UnauthorizedException(401) + 锁定时长信息 | 区分"锁定"与"密码错误" |
+
+---
+
 ## 与 ADR 的关联
 
 | ADR | 错误处理约束 |
