@@ -2,10 +2,9 @@ using System.Windows;
 using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Shared.Models;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Foundation.Security;
-using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.ExceptionHandling.Mappers;
+using LYBT.Desktop.Shell.Services.Bootstrap;
 using LYBT.Desktop.Shell.Services.Session;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
@@ -24,7 +23,7 @@ public class LoginCoordinator : ILoginCoordinator
     private readonly IAuthenticationService _authenticationService;
     private readonly ITokenStorageService _tokenStorageService;
     private readonly ISessionLifecycleManager _sessionLifecycleManager;
-    private readonly IModuleLoadingService _moduleLoadingService;
+    private readonly IApplicationBootstrapper _applicationBootstrapper;
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly ISessionManager _sessionManager;
     private readonly ICredentialVault? _credentialVault;
@@ -42,7 +41,7 @@ public class LoginCoordinator : ILoginCoordinator
         IAuthenticationService authenticationService,
         ITokenStorageService tokenStorageService,
         ISessionLifecycleManager sessionLifecycleManager,
-        IModuleLoadingService moduleLoadingService,
+        IApplicationBootstrapper applicationBootstrapper,
         INavigationCoordinator navigationCoordinator,
         ISessionManager sessionManager,
         IAuthenticationStateMachine stateMachine,
@@ -54,7 +53,7 @@ public class LoginCoordinator : ILoginCoordinator
         _authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
         _tokenStorageService = tokenStorageService ?? throw new ArgumentNullException(nameof(tokenStorageService));
         _sessionLifecycleManager = sessionLifecycleManager ?? throw new ArgumentNullException(nameof(sessionLifecycleManager));
-        _moduleLoadingService = moduleLoadingService ?? throw new ArgumentNullException(nameof(moduleLoadingService));
+        _applicationBootstrapper = applicationBootstrapper ?? throw new ArgumentNullException(nameof(applicationBootstrapper));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
         _stateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
@@ -260,22 +259,7 @@ public class LoginCoordinator : ILoginCoordinator
 
     private async Task LoadModulesForUserAsync(UserDetailDto user)
     {
-        bool isAdmin = user.UserName?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true ||
-                       user.Role == UserRole.Admin;
-
-        await _moduleLoadingService.LoadModulesAsync(new[] { "PatientsModule" });
-
-        if (isAdmin)
-        {
-            _logger.LogDebug("管理员登录，加载管理工作台模块");
-            await _moduleLoadingService.LoadModulesAsync(new[]
-            {
-                "UsersModule",
-                "HerbsModule",
-                "FormulaModule",
-                "MedicalCaseModule"
-            });
-        }
+        await _applicationBootstrapper.LoadModulesForRoleAsync(user.Role);
 
         _logger.LogDebug("角色模块加载完成 [角色: {Role}]", user.Role);
     }
