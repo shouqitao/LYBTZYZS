@@ -91,6 +91,8 @@ Token 获取方式见 [认证 API](01-auth.md)。
 
 ## 模块端点索引
 
+> **端点总数说明**：v1.0 已实现约 **76** 个公开端点（Auth 5 + Users 11 + Patients 7 + Herbs 8 + Formulas 10 + MedicalCases 15 + Registrations 7 + Reports 3 + Diagnostics 4 + Configuration 3 + Health 3；Sync 模块整块未实现）。另有 **D1-D10 待补回项**（见各分文档「🚧 v1.0 待实现」标注）属 v1.0 范围但代码尚未落地，文档保留设计。基线 `docs/compose/specs/2026-06-28-docs-reconciliation-baseline.md`。
+
 ### 认证模块 ([01-auth.md](01-auth.md))
 
 | 方法 | 路径 | 权限 | 说明 |
@@ -120,7 +122,7 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | POST | `/users/batch-enable` | 批量启用 |
 | POST | `/users/batch-disable` | 批量禁用 |
 
-### 患者模块 ([03-patients.md](03-patients.md)) -- DoctorOrAdmin
+### 患者模块 ([03-patients.md](03-patients.md)) -- DoctorOrReceptionist ⚠️ 代码当前为 DoctorOrAdmin，待对齐（D7）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -137,7 +139,7 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | GET | `/patients/{id}/check-reference` | 引用检查 |
 | POST | `/patients/batch-check-reference` | 批量引用检查 |
 
-### 药材模块 ([04-herbs.md](04-herbs.md)) -- DoctorOrAdmin
+### 药材模块 ([04-herbs.md](04-herbs.md)) -- DoctorOrReceptionist ⚠️ 代码当前为 DoctorOrAdmin，待对齐（D7）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -150,7 +152,7 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | POST | `/herbs/batch-import` | JSON 批量导入 |
 | POST | `/herbs/batch-delete` | 批量删除 |
 
-### 验方模块 ([05-formulas.md](05-formulas.md)) -- DoctorOrAdmin
+### 验方模块 ([05-formulas.md](05-formulas.md)) -- DoctorOrReceptionist ⚠️ 代码当前为 DoctorOrAdmin，待对齐（D7）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -165,7 +167,7 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | POST | `/formulas/{id}/toggle-status` | 启用/禁用切换 |
 | POST | `/formulas/batch-delete` | 批量删除 |
 
-### 医案模块 ([06-medical-cases.md](06-medical-cases.md)) -- DoctorOrReceptionist
+### 医案模块 ([06-medical-cases.md](06-medical-cases.md)) -- DoctorOrReceptionist（创建端点为 Doctor-only 目标）⚠️ 代码当前为 DoctorOrAdmin，待对齐（D7）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -190,7 +192,7 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | PUT | `/medicalcases/{id}/print-completed` | 记录打印完成 (详见 [08-printing.md](08-printing.md)) |
 | POST | `/medicalcases/{id}/print-logs` | 添加打印日志 (详见 [08-printing.md](08-printing.md)) |
 
-### 挂号管理模块 ([07-registrations.md](07-registrations.md)) -- DoctorOrReceptionist
+### 挂号管理模块 ([07-registrations.md](07-registrations.md)) -- DoctorOrReceptionist ⚠️ 代码当前为 DoctorOrAdmin，待对齐（D7）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -202,7 +204,9 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | PUT | `/registrations/{id}/start-visit` | 接诊 (DoctorOrReceptionist) |
 | PUT | `/registrations/{id}/cancel` | 取消挂号 |
 
-### 数据同步模块 ([09-sync.md](09-sync.md)) -- DoctorOrReceptionist
+### 数据同步模块 ([09-sync.md](09-sync.md)) -- 🔴 v2.0 规划，v1.0 不实现
+
+> 基线§2 N1 决策：v1.0 远程与本地数据孤立，不互通。下列 7 端点均无对应 Controller，保留作 v2.0 设计参考。
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -215,11 +219,14 @@ Token 获取方式见 [认证 API](01-auth.md)。
 
 ### 健康检查 ([11-health.md](11-health.md))
 
+> 端点说明（基线§6）：`/health`、`/health/ping`、`/health/details` 来自 `HealthController`（Server + LocalWebAPI 各一份）。另有 `/health/database` 由中间件层 `MapHealthChecks` 映射，**仅 Server WebAPI 存在**，LocalWebAPI 无此端点。
+
 | 方法 | 路径 | 权限 | 说明 |
 |------|------|------|------|
 | GET | `/health` | 匿名 | 基础健康检查 |
 | GET | `/health/ping` | 匿名 | Ping |
 | GET | `/health/details` | 已认证 | 详细健康检查 (含数据库) |
+| GET | `/health/database` | 匿名 | 中间件层健康检查（仅 Server，LocalWebAPI 无） |
 
 ### 报表模块 ([13-reports.md](13-reports.md)) -- DoctorOrAdmin
 
@@ -248,43 +255,35 @@ Token 获取方式见 [认证 API](01-auth.md)。
 
 ## 认证错误码
 
-| 错误码 | 说明 | HTTP 状态码 |
-|--------|------|-------------|
-| InvalidCredentials | 用户名或密码错误 | 401 |
-| UserNotFound | 用户不存在 | 401 |
-| UserDisabled | 用户已禁用 | 401 |
-| PasswordExpired | 密码已过期 | 401 |
-| TokenExpired | Token 已过期 | 401 |
-| TokenInvalid | Token 无效 | 401 |
-| TokenRevoked | Token 已撤销 | 401 |
-| RefreshTokenExpired | RefreshToken 已过期 | 401 |
-| RefreshTokenInvalid | RefreshToken 无效 | 401 |
-| SessionNotFound | 会话不存在 | 401 |
-| SessionExpired | 会话已过期 | 401 |
-| ConcurrentSessionLimit | 并发会话数超限 | 401 |
-| InternalError | 内部错误 | 500 |
-| ServiceUnavailable | 服务不可用 | 503 |
+> ⚠️ **实现状态说明**：`AuthController` 代码实际仅返回少量错误（主要是 `AuthInvalidCredentials` 凭据错误、Token 校验失败）。下表多数条目为**设计扩展，未在代码中实现返回路径**，作为安全防御性设计与未来扩展保留。详见 [01-auth.md](01-auth.md)。
 
-> 其中 PasswordExpired、SessionNotFound、SessionExpired、ConcurrentSessionLimit 为设计扩展 (不在 [auth.md](../02-requirements/02-auth.md) PRD 中定义)，作为安全防御性措施保留。
+| 错误码 | 说明 | HTTP 状态码 | 实现状态 |
+|--------|------|-------------|----------|
+| InvalidCredentials | 用户名或密码错误 | 401 | ✅ 已实现 |
+| TokenInvalid | Token 无效 | 401 | ✅ 已实现 |
+| TokenExpired | Token 已过期 | 401 | 🚧 设计扩展 |
+| UserDisabled | 用户已禁用 | 401 | 🚧 设计扩展 |
+| UserNotFound | 用户不存在 | 401 | 🚧 设计扩展 |
+| RefreshTokenInvalid | RefreshToken 无效 | 401 | 🚧 设计扩展 |
+| InternalError | 内部错误 | 500 | ✅ 通用兜底 |
+
+> 其余此前列出的码（PasswordExpired / TokenRevoked / RefreshTokenExpired / SessionNotFound / SessionExpired / ConcurrentSessionLimit / ServiceUnavailable）均为设计扩展，代码无对应返回路径。
 
 ## 授权策略
 
-| 策略 | 角色 | 适用模块 |
-|------|------|----------|
-| AdminOrSuperAdmin | Admin, SuperAdmin | 用户管理、系统配置、诊断工具 |
-| DoctorOrReceptionist | Doctor, Admin, SuperAdmin, Receptionist | 患者、药材、验方、医案、同步、挂号管理 |
+> 策略常量定义见 `PolicyConstants.cs`（共 4 项：`AdminOnly`、`DoctorOrAdmin`、`AdminOrSuperAdmin`、`DoctorOrReceptionist`；**无 `DoctorOnly`**）。基线§3：文档保留目标策略，代码不符处加「⚠️ 代码当前为 X，待对齐（D7）」。
+
+| 策略 | 角色 | 适用模块 | 代码现状 |
+|------|------|----------|----------|
+| AdminOrSuperAdmin | Admin, SuperAdmin | 用户管理、系统配置、诊断工具 | ✅ 一致 |
+| DoctorOrReceptionist | Doctor, Admin, SuperAdmin, Receptionist | 患者、药材、验方、挂号管理 | ⚠️ 代码为 DoctorOrAdmin，待对齐（D7） |
+| DoctorOrReceptionist（医案创建为 Doctor-only 目标） | Doctor, Admin, SuperAdmin, Receptionist | 医案 | ⚠️ 代码为 DoctorOrAdmin，待对齐（D7） |
+
+> Sync 模块属 v2.0，不计入 v1.0 策略适用范围。
 
 ## 废弃端点
 
-以下端点已标记 `[Obsolete]`，将在后续版本移除:
-
-| 端点 | 替代方案 |
-|------|----------|
-| `GET /medicalcases/{id}/with-details` | `GET /medicalcases/{id}` |
-| `GET /medicalcases/pending` | `GET /medicalcases/query?queryType=Pending` |
-| `GET /medicalcases/by-patient/{patientId}` | `GET /medicalcases/query?queryType=ByPatient` |
-| `GET /medicalcases/patient/{patientId}/recent` | `GET /medicalcases/query?queryType=Recent` |
-| `GET /medicalcases/patient/{patientId}/unfinished` | `GET /medicalcases/query?queryType=Unfinished` |
+> ⚠️ 此前版本曾列出 5 个 `[Obsolete]` 端点（with-details/pending/by-patient/recent/unfinished）。经代码核对，这些端点**从未存在**于任何 Controller，相关查询能力已由 `GET /medicalcases/query`（统一查询端点，`queryType` 参数）覆盖。原表已删除（基线§7 原则 2）。
 
 ---
 
@@ -299,3 +298,4 @@ Token 获取方式见 [认证 API](01-auth.md)。
 | 2026-06-12 | v1.5 | 端点总数更新为 ~106 (14 controllers); 移除 POST /patients/import (客户端功能); US-PAT-013 改为 toggle-status; 打印端点交叉引用 printing.md; 204 状态码修正为 Cancel |
 | 2026-06-25 | v2.0 | 修正药材/验方/患者模块策略为 DoctorOrAdmin; 移除不存在的药材端点 (export, export-all, import-template, check-reference, batch-check-reference, batch-enable, batch-disable, restore); 移除不存在的验方端点 (export, import-template, restore, batch-enable, batch-disable); 所有模块补充完整 JSON 示例和 curl 命令 |
 | 2026-06-25 | v2.1 | 新增报表模块 (13-reports.md, 3 端点); 端点总数更新为 ~109 |
+| 2026-06-28 | v2.2 | 文档对齐基线：端点总数改为「v1.0 已实现约76 + D1-D10 待补回」；删除虚构废弃端点表（5 端点从未存在）；Auth 错误码表精简并标注实现状态；各模块策略标注对齐基线§3（D7）；health 端点澄清（/health/database 仅 Server）；Sync 模块标 v2.0 |

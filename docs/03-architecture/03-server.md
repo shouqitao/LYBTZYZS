@@ -20,7 +20,7 @@ graph TB
         Formula["Module.Formula"]
         MC["Module.MedicalCase"]
         Reg["Module.Registration"]
-        Sync["Module.Sync"]
+        Reports["Module.Reports"]
     end
 
     subgraph Core["Core 层 (基础设施)"]
@@ -28,8 +28,8 @@ graph TB
         Entities["LYBT.Entities<br>(领域实体)"]
     end
 
-    WebAPI --> Auth & Users & Patients & Herbs & Formula & MC & Reg & Sync
-    Auth & Users & Patients & Herbs & Formula & MC & Reg & Sync --> Infra
+    WebAPI --> Auth & Users & Patients & Herbs & Formula & MC & Reg & Reports
+    Auth & Users & Patients & Herbs & Formula & MC & Reg & Reports --> Infra
     Infra --> Entities
 ```
 
@@ -182,7 +182,9 @@ LYBT.Module.{Domain}/
 | Formula | 传统三层 | ICrossModuleService | 验方 CRUD、药材绑定 |
 | MedicalCase | CQRS | IPatientService | 医案核心，状态机管理 |
 | Registration | 传统三层 | - | 挂号管理，队列状态流转 |
-| Sync | 传统三层 | - | 数据同步 |
+| Reports | 传统三层 | ICrossModuleService | 报表/历史聚合查询（MC-008/009，D9 补回 v1.0） |
+
+> 🧲 **Sync 模块属 v2.0**（N1 决策 2026-06-28）：v1.0 远程与本地数据孤立，`LYBT.Module.Sync` 不在 v1.0 范围。代码可能保留骨架但不在 v1.0 加载。
 
 ### CQRS 模式 (MedicalCase)
 
@@ -702,3 +704,4 @@ DatabaseStartupDiagnostics 在 Program.cs 启动阶段自动执行:
 | 2026-02-28 | v1.8 | **PRD 偏差修复**: BaseEntity 补充 UpdatedBy/RowVersion 字段 (PRD-02); BaseRepository 方法列表对齐代码 21 个公开方法 (PRD-03); 移除 Module.Consultation/Prescriptions (PRD-04); 移除不存在的 BaseReadRepository/IReadRepository (PRD-07/08) |
 | 2026-06-13 | v1.9 | **API 版本策略**: 新增 API 版本控制章节 — URL 段版本控制、客户端处理、v2 迁移策略、版本生命周期 |
 | 2026-06-25 | v2.0 | **请求生命周期时序图**: 新增 Mermaid sequence diagram 展示 Controller → Service → Repository → DbContext 请求链路 |
+| 2026-06-28 | v2.1 | **N1 + 模块对齐**: 模块清单补 Reports（D9 补回 v1.0）; 架构图 Sync→Reports; Sync 标 🧲 v2.0 |

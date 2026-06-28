@@ -4,9 +4,7 @@
 
 ## 概述
 
-LocalWebAPI 提供 10 个控制器，共 112 个端点。所有端点位于 `http://127.0.0.1:{dynamicPort}/api/`。
-
-端口号由 OS 动态分配，通过 `LocalWebApiHost.Port` 获取。
+LocalWebAPI 提供 11 个控制器，共 112 个端点。所有端点位于 `http://localhost:5300/api/`（嵌入模式硬编码端口，见 `EmbeddedLocalWebApiService.cs:17`；独立调试模式 5290，嵌入模式不生效）。
 
 | 控制器 | 路由前缀 | 认证 | 端点数 |
 |--------|----------|------|--------|
@@ -18,6 +16,7 @@ LocalWebAPI 提供 10 个控制器，共 112 个端点。所有端点位于 `htt
 | Formulas | /api/formulas | [Authorize] | 17 |
 | Registrations | /api/registrations | [Authorize] | 9 |
 | MedicalCases | /api/medicalcases | [Authorize] | 22 |
+| Reports | /api/reports | [Authorize] | 3 |
 | Diagnostics | /api/diagnostics | 匿名 | 7 |
 | Configuration | /api/configuration | 无 | 4 |
 

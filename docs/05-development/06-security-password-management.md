@@ -177,6 +177,79 @@ $2a$11$0IviQQSC517yFyWB47YDh.P.mHetOQwFkvgdMtl8UFWn6v4iKKJ8e
 | ForceResetOnStartup 仅限开发 | 防止生产环境意外重置管理员账户 |
 | FixedTimeEquals 令牌比较 | 防止时序攻击泄漏 InitialSetupToken |
 
+## Identity 集成约束（铁律）
+
+> 以下约束源自 ASP.NET Core Identity 集成层，违反将导致运行时错误或安全漏洞。根 `AGENTS.md`「Common Pitfalls」同步。
+
+### 1. DI 注册顺序：`AddIdentity()` 必须在 `AddAuthentication()` 前
+
+`AddIdentity<TUser, TRole>()` 内部会调用 `AddAuthentication()` 并覆盖默认方案配置。若 JWT 的 `AddAuthentication()` 在其后注册，将覆盖 Identity 的默认方案，导致 JWT 持有者认证失效。
+
+```csharp
+// ✅ 正确顺序
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+builder.Services.AddAuthentication(options => { /* JWT Bearer 配置 */ })
+    .AddJwtBearer(/* ... */);
+
+// ❌ 错误顺序 — Identity 会覆盖 JWT 方案
+builder.Services.AddAuthentication(/* JWT */);
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(/* ... */);
+```
+
+### 2. `UserManager<T>` / `RoleManager<T>` 是 **SCOPED** 服务
+
+这两个管理器持有 `DbContext`（Scoped）和 `ILogger`（Singleton）依赖。**禁止从 root provider 直接 resolve**：
+
+```csharp
+// ❌ 错误 — 在 startup 配置阶段、单例服务、事件回调中直接获取
+var userManager = app.Services.GetRequiredService<UserManager<ApplicationUser>>();
+await userManager.CreateAsync(user, password);
+
+// ✅ 正确 — 从 scope 获取
+using var scope = app.Services.CreateScope();
+var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+await userManager.CreateAsync(user, password);
+```
+
+`IdentitySeedData` 等启动初始化器必须使用 `scope.ServiceProvider`（参见 `DatabaseInitializationService`）。
+
+### 3. BCrypt (`PasswordHelper`) 与 PBKDF2 (Identity) 不兼容 — 全部走 `UserManager`
+
+ASP.NET Core Identity 内部使用 PBKDF2 算法哈希密码。本项目 `PasswordHelper` / `BcryptPasswordService` 使用 BCrypt（WorkFactor=11）。**两套哈希不互通**，直接调 `PasswordHelper` 创建/修改密码的用户无法通过 Identity 登录。
+
+```csharp
+// ❌ 错误 — 用 BCrypt 哈希后存库，Identity 验证失败
+user.PasswordHash = _passwordService.HashPassword(password);
+await _userManager.UpdateAsync(user);
+
+// ✅ 正确 — 全部通过 UserManager 处理（内部用 PBKDF2）
+var result = await _userManager.CreateAsync(user, password);
+// 修改密码
+var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+// 或 ChangePasswordAsync / RemovePasswordAsync + AddPasswordAsync
+```
+
+`BcryptPasswordService`（`IPasswordService`）仅用于非 Identity 路径（如 sysadmin 创建脚本的工具校验、`SecureEquals` 防时序比较等），不得作为用户密码落库入口。
+
+### 4. `IdentitySeedData` 仅在 `LastLoginAt == null` 时重置密码
+
+种子数据使用幂等策略：仅在用户**从未登录过**（`LastLoginAt` 为 null）时重置密码到 `DefaultPasswords`。**已登录过的用户密码不会被覆盖**，开发者反复测试登录后重新启动服务不会破坏已设密码。
+
+```csharp
+// IdentitySeedData 简化逻辑
+var existing = await _userManager.FindByNameAsync(userName);
+if (existing?.LastLoginAt == null)
+{
+    await _userManager.RemovePasswordAsync(existing);
+    await _userManager.AddPasswordAsync(existing, configuredPassword);
+    _logger.LogInformation("重置密码 (首次启动): {User}", userName);
+}
+```
+
+如需强制重置，使用 `appsettings.Development.json` 的 `SystemAdmin:ForceResetOnStartup: true`（仅开发环境生效，生产环境始终被忽略）。
+
 ## 相关文档
 
 - [配置架构](../03-architecture/07-configuration.md) — Options 模式与验证管道

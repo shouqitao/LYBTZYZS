@@ -2,22 +2,22 @@
 
 ## 1. 概述
 
-系统采用 JWT Bearer Token 认证机制，结合基于角色的授权策略（4 种 Policy），以及 Token Family 管理实现重放攻击检测。安全架构覆盖 Server（ASP.NET Core WebAPI）和 Client（WPF Desktop）两端，确保认证、授权、Token 生命周期管理的完整性和一致性。
+系统采用 JWT Bearer Token 认证机制，结合基于角色的授权策略（4 种 Policy）。🧲 **Token Family 管理（RefreshToken 族旋转 + 重放检测）属 D3 B+ 方案**：族旋转、登出撤销、审计日志将在 v1.0 补回；重放检测延后至 v2.0。安全架构覆盖 Server（ASP.NET Core WebAPI）和 Client（WPF Desktop）两端，确保认证、授权、Token 生命周期管理的完整性和一致性。
 
 核心安全组件分布：
 
-| 组件 | 位置 | 职责 |
-|------|------|------|
-| AuthenticationServiceCollectionExtensions | `LYBT.WebAPI/Extensions/` | JWT 认证中间件、授权策略注册 |
-| JwtService | `LYBT.Module.Auth/Services/` | JWT Token 生成与验证 |
-| AuthService | `LYBT.Module.Auth/Services/` | 登录/登出/凭据验证 |
-| TokenManagementService | `LYBT.Module.Auth/Services/` | Token 刷新、轮换、Family 撤销 |
-| SecurityAuditService | `LYBT.Module.Auth/Services/` | 安全审计日志 |
-| SecurityHeadersMiddleware | `LYBT.WebAPI/Middleware/` | 安全响应头 |
-| ClaimsNormalizationMiddleware | `LYBT.WebAPI/Middleware/` | Claims 格式标准化 |
-| AuthenticationStateMachine | `LYBT.Desktop.Foundation/Security/` | 桌面端认证状态机 |
-| TokenLifecycleService | `LYBT.Desktop.Foundation/Security/` | 桌面端 Token 生命周期管理 |
-| TokenStorageService | `LYBT.Desktop.Foundation/Security/` | Token 内存安全存储 |
+| 组件 | 位置 | 职责 | 状态 |
+|------|------|------|------|
+| AuthenticationServiceCollectionExtensions | `LYBT.WebAPI/Extensions/` | JWT 认证中间件、授权策略注册 | ✅ |
+| JwtService | `LYBT.Module.Auth/Services/` | JWT Token 生成与验证 | ✅ |
+| AuthService | `LYBT.Module.Auth/Services/` | 登录/登出/凭据验证 | ✅ |
+| TokenManagementService | `LYBT.Module.Auth/Services/` | Token 刷新、轮换、Family 撤销 | 🧲 v1.0 待实现（D3 B+） |
+| SecurityAuditService | `LYBT.Module.Auth/Services/` | 安全审计日志 | 🧲 v1.0 待实现（D3 B+） |
+| SecurityHeadersMiddleware | `LYBT.WebAPI/Middleware/` | 安全响应头 | ✅ |
+| ClaimsNormalizationMiddleware | `LYBT.WebAPI/Middleware/` | Claims 格式标准化 | ✅ |
+| AuthenticationStateMachine | `LYBT.Desktop.Foundation/Security/` | 桌面端认证状态机 | ✅ |
+| TokenLifecycleService | `LYBT.Desktop.Foundation/Security/` | 桌面端 Token 生命周期管理 | ✅ |
+| TokenStorageService | `LYBT.Desktop.Foundation/Security/` | Token 内存安全存储 | ✅ |
 
 ## 2. 认证流程
 
@@ -68,6 +68,8 @@ sequenceDiagram
 
 ### 2.3 Token 生命周期
 
+> 🧲 **本节描述的目标设计中，RefreshToken / AutoLoginToken / Token 族旋转属 D3 B+ 方案**：族旋转 + 登出撤销 + 审计日志将在 v1.0 补回；重放检测（FamilyId）与 AutoLoginToken 延后至 v2.0。当前代码仅签发 AccessToken（无 RefreshToken 实体）。下表为**目标设计**。
+
 系统使用双 Token 机制：
 
 | Token 类型 | 有效期 | 存储 | 用途 |
@@ -77,6 +79,8 @@ sequenceDiagram
 | AutoLoginToken | 长期（可撤销） | Client DPAPI 加密 | 自动登录（RememberMe） |
 
 #### Refresh Token 轮换流程
+
+> 🧲 **v1.0 待实现（D3 B+）** — 流程依赖 RefreshToken 实体与 TokenManagementService，当前均未实现。
 
 ```mermaid
 sequenceDiagram
@@ -101,6 +105,8 @@ sequenceDiagram
 
 #### Token Family 机制
 
+> 🧲 **v2.0 规划** — FamilyId 重放检测属 D3 B+ 方案的 v2.0 部分；v1.0 仅补回 Token 族旋转与撤销。
+
 每次登录创建一个新的 `FamilyId`。同一会话内的所有 RefreshToken 共享 FamilyId。Token 轮换时新 Token 继承 FamilyId。当检测到已使用的 Token 再次被提交（`IsUsed=true`），系统撤销该 FamilyId 下的所有 Token，防止 Token 被盗用。
 
 参见 ADR-0008: `docs/03-architecture/decisions/0008-token-security-defensive-design.md`。
@@ -120,12 +126,16 @@ sequenceDiagram
 
 ## 4. 授权策略
 
-系统定义 2 种基于角色的授权策略，通过 `RequireRole()` 声明式配置：
+系统在 `PolicyConstants`（`src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs`）中定义 4 项授权策略，通过 `RequireRole()` 声明式配置：
 
 | Policy | 常量 | 满足条件的角色 | 典型用途 |
 |--------|------|--------------|----------|
-| `DoctorOrReceptionist` | `PolicyConstants.DoctorOrReceptionist` | SuperAdmin, Admin, Doctor, Receptionist | 患者、药材、验方、医案、同步、挂号管理 |
-| `AdminOrSuperAdmin` | `PolicyConstants.AdminOrSuperAdmin` | SuperAdmin, Admin | 用户管理、系统配置、诊断工具 |
+| `DoctorOrReceptionist` | `PolicyConstants.DoctorOrReceptionist` | SuperAdmin, Admin, Doctor, Receptionist | 患者、药材、验方、挂号（**目标态**，见 §下方 D7 待对齐注） |
+| `DoctorOrAdmin` | `PolicyConstants.DoctorOrAdmin` | SuperAdmin, Admin, Doctor | **代码当前最常用策略**（挂号/患者/药材/医案创建当前均用此策略） |
+| `AdminOnly` | `PolicyConstants.AdminOnly` | SuperAdmin, Admin | 管理员级操作 |
+| `AdminOrSuperAdmin` | `PolicyConstants.AdminOrSuperAdmin` | SuperAdmin, Admin | 用户管理、系统配置、诊断工具（名称与 AdminOnly 行为等价，命名历史并存） |
+
+> ⚠️ **D7 权限对齐待办**（详见 [baseline §3](../compose/specs/2026-06-28-docs-reconciliation-baseline.md)）：以下模块**代码当前为 `DoctorOrAdmin`，待修复为 `DoctorOrReceptionist`** —— 挂号（创建/取消）、患者（CRUD）、药材（CRUD）、医案创建。文档保留目标态 `DoctorOrReceptionist`，代码修复由 D7 跟踪。**代码不存在 `DoctorOnly` 策略**（文档历史版本曾提及，已删除）。
 
 角色层次（隐含权限继承）：
 
@@ -139,7 +149,9 @@ SuperAdmin → Admin → Doctor → Receptionist
 // AuthenticationServiceCollectionExtensions.cs
 options.FallbackPolicy = 要求认证用户;  // 默认所有端点需要认证
 options.AddPolicy("DoctorOrReceptionist", RequireRole("SuperAdmin", "Admin", "Doctor", "Receptionist"));
-options.AddPolicy("AdminOrSuperAdmin", RequireRole("SuperAdmin", "Admin"));
+options.AddPolicy("DoctorOrAdmin",       RequireRole("SuperAdmin", "Admin", "Doctor"));
+options.AddPolicy("AdminOnly",           RequireRole("SuperAdmin", "Admin"));
+options.AddPolicy("AdminOrSuperAdmin",   RequireRole("SuperAdmin", "Admin"));
 ```
 
 ### 默认安全策略
@@ -278,7 +290,6 @@ stateDiagram-v2
 |------|--------|------|
 | 类级别 | FallbackPolicy (需认证) | |
 | 所有方法 | DoctorOrReceptionist | 医生及以上权限 |
-| 审核相关方法 | DoctorOrReceptionist | 医案审核 |
 
 ### MedicalCaseProcessingController (`/api/v1/medicalcase-processing`)
 
@@ -296,7 +307,7 @@ stateDiagram-v2
 
 | Policy | 备注 |
 |--------|------|
-| DoctorOrReceptionist | 医案审核 |
+| DoctorOrReceptionist | 医案审计日志（变更追溯，D1 v1.0 补回） |
 
 ### HerbsController (`/api/v1/herbs`)
 
@@ -319,15 +330,21 @@ stateDiagram-v2
 
 ### SyncController (`/api/v1/sync`)
 
+> 🧲 **v2.0 规划** — Sync 模块整体延期至 v2.0（N1 决策：v1.0 远程与本地数据孤立，不互通）。
+
 | Policy | 备注 |
 |--------|------|
 | DoctorOrReceptionist | 数据同步 |
 
 ## 7. 安全考虑
 
+> **v1.0 实现范围**（D3 决策 2026-06-28）：补 Token 族旋转 + 登录限流 + 登出撤销 + 安全审计日志。重放检测标 v2.0。
+
 ### 7.1 Token 重放检测 (Token Family)
 
-系统通过 Token Family 机制检测 RefreshToken 盗用：
+> 🧲 **v2.0 规划** —— 依赖 RefreshToken 实体的 `FamilyId` / `IsUsed` 字段，当前均未实现。v1.0（D3 B+）仅补回 Token 族旋转 + 登出撤销；重放检测延后至 v2.0。
+
+系统通过 Token Family 机制检测 RefreshToken 盗用（**目标设计**，保留作为补回依据）：
 
 1. 每次登录创建新的 `FamilyId`
 2. Token 轮换时旧 Token 标记 `IsUsed=true`，新 Token 继承 `FamilyId`
@@ -419,3 +436,4 @@ stateDiagram-v2
 |------|------|------|------|
 | 2026-06-13 | 1.0 | 初始创建：完整安全架构文档 | AI |
 | 2026-06-25 | 1.1 | **Mermaid 图表替换**: 登录流程、Token 轮换流程 ASCII 时序图替换为 Mermaid sequence diagram; 认证状态机、Token 生命周期 ASCII 图替换为 Mermaid state diagram | AI |
+| 2026-06-28 | 1.2 | **D3 B+ 对齐**: RefreshToken/TokenManagementService/FamilyId 体系标注 🧲 v1.0 待实现（重放检测 v2.0）; 授权策略对齐 PolicyConstants 实有 4 项（含 DoctorOrAdmin/AdminOnly，无 DoctorOnly）; 加 D7 待对齐注 | AI |

@@ -25,10 +25,10 @@
 
 ```sql
 -- 手动全量备份
-BACKUP DATABASE [LYBTDB]
-TO DISK = N'D:\Backup\LYBTDB_full_20260612.bak'
+BACKUP DATABASE [LYBTDB_Dev]
+TO DISK = N'D:\Backup\LYBTDB_Dev_full_20260612.bak'
 WITH FORMAT, INIT,
-     NAME = N'LYBTDB-Full Backup',
+     NAME = N'LYBTDB_Dev-Full Backup',
      COMPRESSION,
      STATS = 10;
 ```
@@ -43,8 +43,8 @@ GO
 EXEC sp_add_job @job_name = N'LYBT_Daily_Full_Backup';
 EXEC sp_add_jobstep @job_name = N'LYBT_Daily_Full_Backup',
     @command = N'
-      DECLARE @path NVARCHAR(500) = N''D:\Backup\LYBTDB_full_'' + CONVERT(NVARCHAR(8), GETDATE(), 112) + N''.bak'';
-      BACKUP DATABASE [LYBTDB] TO DISK = @path WITH COMPRESSION, INIT;
+      DECLARE @path NVARCHAR(500) = N''D:\Backup\LYBTDB_Dev_full_'' + CONVERT(NVARCHAR(8), GETDATE(), 112) + N''.bak'';
+      BACKUP DATABASE [LYBTDB_Dev] TO DISK = @path WITH COMPRESSION, INIT;
     ';
 EXEC sp_add_schedule @job_name = N'LYBT_Daily_Full_Backup',
     @freq_type = 4, -- Daily
@@ -69,7 +69,7 @@ GO
 
 ```sql
 -- 验证备份文件完整性
-RESTORE VERIFYONLY FROM DISK = N'D:\Backup\LYBTDB_full_20260612.bak';
+RESTORE VERIFYONLY FROM DISK = N'D:\Backup\LYBTDB_Dev_full_20260612.bak';
 ```
 
 ### 5. 配置文件备份
@@ -89,7 +89,7 @@ Copy-Item "C:\Services\LYBT-API\appsettings.Production.json" "D:\Backup\config\a
 # lybt-backup.ps1 — 每日凌晨 2:00 自动执行
 param(
     [string]$BackupRoot = "D:\Backup",
-    [string]$Database = "LYBTDB",
+    [string]$Database = "LYBTDB_Dev",
     [string]$ServerInstance = ".",
     [int]$RetentionDays = 7
 )
@@ -112,7 +112,7 @@ function Write-Log {
 
 try {
     # 1. 数据库全量备份
-    $dbBackupFile = Join-Path $backupDir "LYBTDB_full_$timestamp.bak"
+    $dbBackupFile = Join-Path $backupDir "LYBTDB_Dev_full_$timestamp.bak"
     $sql = "BACKUP DATABASE [$Database] TO DISK = N'$dbBackupFile' WITH FORMAT, INIT, COMPRESSION, STATS = 10"
     Invoke-Sqlcmd -Query $sql -ServerInstance $ServerInstance -QueryTimeout 300
     Write-Log "Database backup completed: $dbBackupFile"
@@ -220,6 +220,8 @@ Copy-Item "$env:APPDATA\LYBT\data\lybt-local.mdf" "$env:APPDATA\LYBT\data\backup
 
 ## 恢复流程
 
+> ⚠️ **服务管理命令适用环境**：下方 `sc stop/start LYBT-API` 适用于 Windows Server 2016+。**Server 2012 R2 禁用 `sc.exe`**（SCM 1053 超时），须改用 `schtasks /end /run /tn LYBT-API`，详见 [03](./03-webapi-deployment-summary.md) / [05](./05-development-environment-spec.md)。
+
 ### 场景 1：服务端数据库恢复
 
 **适用**：数据库损坏、误操作、数据丢失。
@@ -232,10 +234,10 @@ Copy-Item "$env:APPDATA\LYBT\data\lybt-local.mdf" "$env:APPDATA\LYBT\data\backup
    → RESTORE VERIFYONLY FROM DISK = N'<备份路径>'
 
 3. 恢复数据库（覆盖现有）
-   → RESTORE DATABASE [LYBTDB] FROM DISK = N'<备份路径>' WITH REPLACE
+   → RESTORE DATABASE [LYBTDB_Dev] FROM DISK = N'<备份路径>' WITH REPLACE
 
 4. 验证数据完整性
-   → DBCC CHECKDB ([LYBTDB])
+   → DBCC CHECKDB ([LYBTDB_Dev])
 
 5. 启动 WebAPI 服务
    → sc start LYBT-API
@@ -272,7 +274,7 @@ Copy-Item "$env:APPDATA\LYBT\data\lybt-local.mdf" "$env:APPDATA\LYBT\data\backup
    → 确保 5000/5001 端口可用
 
 2. 恢复数据库
-   → 创建 LYBTDB 数据库
+   → 创建 LYBTDB_Dev 数据库
    → RESTORE DATABASE FROM DISK（见场景 1）
 
 3. 恢复配置文件
@@ -316,13 +318,13 @@ Copy-Item "$env:APPDATA\LYBT\data\lybt-local.mdf" "$env:APPDATA\LYBT\data\backup
 
 ```powershell
 # 1. 数据库完整性
-DBCC CHECKDB ([LYBTDB]) WITH NO_INFOMSGS, ALL_ERRORMSGS
+DBCC CHECKDB ([LYBTDB_Dev]) WITH NO_INFOMSGS, ALL_ERRORMSGS
 # 期望：无错误输出
 
 # 2. 关键表记录数
 $tables = @("Patients", "Herbs", "Formulas", "MedicalCases", "Users")
 foreach ($t in $tables) {
-    $count = (Invoke-Sqlcmd -Query "SELECT COUNT(*) AS Cnt FROM [$t]" -Database LYBTDB).Cnt
+    $count = (Invoke-Sqlcmd -Query "SELECT COUNT(*) AS Cnt FROM [$t]" -Database LYBTDB_Dev).Cnt
     Write-Host "$t : $count rows"
 }
 

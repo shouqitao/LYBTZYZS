@@ -41,3 +41,10 @@
 ## 标记
 
 `OpenSpec: refactor-viewmodel-composition` -- 代码中现有标记保持，作为未来重构入口。
+
+## 关联 US
+
+- US-SHELL-005（菜单导航：CoreViewModelBase 继承树）
+- US-HERB-001 / US-HERB-002（药材列表/详情：MasterDetailViewModelBase 组合）
+- US-FORM-001 ~ US-FORM-011（验方管理：MasterDetail 模式 + IMasterDetailServices 组合）
+- 全部 Desktop MasterDetail 模式 ViewModel（5 个）均受此组合模式约束

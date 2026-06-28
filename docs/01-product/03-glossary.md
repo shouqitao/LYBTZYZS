@@ -17,6 +17,14 @@
 | **Formula = 验方** | "验方" / "经验方" | ❌ "公式" | 可复用的处方模板，定义药材组成和剂量 |
 | **Prescription = 处方** | "处方" | ❌ 等同于 Formula | 具体的药材配伍和剂量，是 MedicalCase 的可选内部实体 (1:0..1) |
 
+### 医案责任与审核边界（v1.0 强制）
+
+> **医生负责制**：v1.0 医生对医案内容负全责，**无医案审核环节**。Admin 不审核医案（医案查询见 US-MC-005/006，不可创建/编辑/审核）；Admin 的医案操作仅限状态变更（CaseStatus → Completed），不编辑 Consultation/Prescription 内容。
+>
+> **变更追溯**：医案的关键操作变更追溯由 **MedicalCaseAuditLog（D1 审计日志，v1.0 补回）** 保障，不依赖人工审核。
+>
+> **金额把控**：金额异常发现由 **A7 报表（v1.0）** 承担，非审核看板。
+
 ---
 
 ## 业务术语
@@ -33,14 +41,18 @@
 | Patient | 患者 | 患者基本信息，含个人信息和就诊历史统计 |
 | Registration | 挂号 | 患者就诊登记记录，含候诊队列管理和就诊状态跟踪 |
 | User | 用户 | 系统用户，角色分为前台接待、医生、管理员、超级管理员 |
-| MedicalCaseAuditLog | 医案审计日志 | 记录医案的所有修改历史，含操作人、变更字段（20 字段差异追踪）、修改原因 |
-| MedicalCasePrintLog | 打印日志 | 记录医案打印历史（含 PrintType 区分打印类型） |
-| SecurityAuditLog | 安全审计日志 | 记录认证相关的安全事件（登录、登出、令牌撤销等） |
+| MedicalCaseAuditLog | 医案审计日志 | 记录医案的所有修改历史，含操作人、变更字段（20 字段差异追踪）、修改原因。🚧 v1.0 待实现（D1 补回） |
+| MedicalCasePrintLog | 打印日志 | 记录医案打印历史（含 PrintType 区分打印类型）。🚧 v1.0 待实现（D2 补回） |
+| SecurityAuditLog | 安全审计日志 | 记录认证相关的安全事件（登录、登出、令牌撤销等）。🚧 v1.0 待实现（D3 补回） |
 | AuthSession | 认证会话 | JWT 登录会话记录 |
-| RefreshToken | 刷新令牌 | JWT 刷新令牌，支持令牌轮换和重放攻击检测 |
-| BlacklistedToken | 黑名单令牌 | 被撤销的 JWT 令牌 |
+| RefreshToken | 刷新令牌 | JWT 刷新令牌，支持令牌轮换和重放攻击检测。🚧 v1.0 待实现（D3 补回） |
+| BlacklistedToken | 黑名单令牌 | 被撤销的 JWT 令牌。🚧 v1.0 待实现 |
 | PinYinCode | 拼音码 | 中文姓名/药材名的拼音首字母，用于快速检索 |
 | DecocteMethod | 煎法 | 药材的煎煮方式：默认、先煎 (PreDecoct)、后下 (PostDecoct) |
+| 草稿水印 | 草稿水印 | 未完成医案（CaseStatus != Completed）打印 / 预览 / 导出 PDF 时叠加的"草稿"标识（72pt / -35° 旋转 / 半透明红色），提示该处方非最终版（见 [09-printing.md](../02-requirements/09-printing.md)） |
+| 等候时长 | 等候时长 | 患者从挂号（Status=Waiting）到医生接诊（Status=InProgress）的排队等待时间，候诊队列展示用（见 [08-registration.md](../02-requirements/08-registration.md) US-REG-004） |
+| QuickVisit | 医生快速就诊 | 医生绕过前台挂号，直接查询/创建患者并进入看诊的原子事务（Registration + MedicalCase 同事务创建，见 [08-registration.md](../02-requirements/08-registration.md) US-REG-002） |
+| 剂量单位 | 剂量单位 | 处方中药材的计量单位，默认 g（克）；v1.0 为自由文本不做换算（见 [05-herbs.md](../02-requirements/05-herbs.md) D13） |
 
 ---
 

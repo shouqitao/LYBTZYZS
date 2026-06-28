@@ -50,7 +50,7 @@ C:\Services\LYBT-releases\         ← Desktop 发布包（独立目录，不会
 |--------|--------|------|
 | `ASPNETCORE_ENVIRONMENT` | `Production` | 运行环境（Development / Staging / Production） |
 | `ASPNETCORE_URLS` | `http://localhost:5000` | 监听地址和端口 |
-| `ConnectionStrings__LYBTDB` | — | SQL Server 连接字符串（覆盖 appsettings） |
+| `ConnectionStrings__DefaultConnection` | — | SQL Server 连接字符串（覆盖 appsettings） |
 | `ConnectionStrings__LYBTDesktop` | — | LocalDB 连接字符串（Desktop 嵌入式服务） |
 | `Jwt__SecretKey` | — | JWT 签名密钥（≥32 字符，生产环境必须覆盖） |
 | `Jwt__Issuer` | `LYBT.WebAPI` | JWT 签发者 |
@@ -60,7 +60,7 @@ C:\Services\LYBT-releases\         ← Desktop 发布包（独立目录，不会
 | `DefaultPasswords__NewUserPassword` | — | 新用户默认密码（生产环境必须覆盖） |
 | `DOTNET_ENVIRONMENT` | — | .NET 运行环境（备选） |
 
-> **双下划线约定**：ASP.NET Core 通过 `__`（双下划线）分隔层级来覆盖 JSON 配置节。例如 `ConnectionStrings__LYBTDB` 覆盖 `ConnectionStrings:LYBTDB`。
+> **双下划线约定**：ASP.NET Core 通过 `__`（双下划线）分隔层级来覆盖 JSON 配置节。例如 `ConnectionStrings__DefaultConnection` 覆盖 `ConnectionStrings:DefaultConnection`。
 
 ### 发布命令
 
@@ -132,9 +132,9 @@ WPF Desktop 客户端通过 ClickOnce 或 MSI 分发。
 
 ### 本地模式数据
 
-- SQL Server LocalDB 数据库: `%APPDATA%\LYBT\data\lybt-local.mdf`
+- SQL Server LocalDB 数据库: `%LOCALAPPDATA%\LYBTZYZS\data\lybt-local.mdf`
 - 日志文件: `%LOCALAPPDATA%\LYBTZYZS\logs\`
-- 配置文件: `%APPDATA%\LYBT\config\`
+- 配置文件: `%LOCALAPPDATA%\LYBTZYZS\config\`
 
 ---
 
@@ -186,7 +186,7 @@ dotnet ef database update -s src/Server/Services/LYBT.WebAPI
 | 症状 | 可能原因 | 解决方案 |
 |------|---------|---------|
 | 登录后白屏 | API 地址配置错误 | 检查 Desktop 配置中 Server URL 是否正确 |
-| 本地模式数据丢失 | LocalDB 文件被删除或损坏 | 检查 `%APPDATA%\LYBT\data\` 目录 |
+| 本地模式数据丢失 | LocalDB 文件被删除或损坏 | 检查 `%LOCALAPPDATA%\LYBTZYZS\data\` 目录 |
 | "Token Expired" 频繁弹出 | 客户端与服务端时钟偏差过大 | 同步系统时间，或调大 `ClockSkewSeconds` |
 
 ### 数据库问题

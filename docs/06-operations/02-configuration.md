@@ -12,7 +12,7 @@
 |--------|------|------|
 | `ConnectionStrings` | 数据库连接 | appsettings.json |
 | `Jwt` | Token 签名密钥、过期时间 | appsettings.json |
-| `DefaultPasswords` | 默认密码（生产环境 REDACTED） | appsettings.json |
+| `DefaultPasswords` | 默认密码（开发占位明文，生产由 DefaultPasswordService 随机生成） | appsettings.json |
 | `DesktopUpdate` | Desktop 客户端升级配置 | appsettings.Production.json |
 | `Session` | 会话超时、并发控制 | appsettings.json |
 | `Security.RateLimiting` | 限流策略 | appsettings.json |
@@ -32,7 +32,7 @@ ASP.NET Core 支持通过环境变量覆盖 JSON 配置节，使用 `__`（双�
 
 | JSON 配置路径 | 环境变量名 |
 |---------------|-----------|
-| `ConnectionStrings:LYBTDB` | `ConnectionStrings__LYBTDB` |
+| `ConnectionStrings:DefaultConnection` | `ConnectionStrings__DefaultConnection` |
 | `Jwt:SecretKey` | `Jwt__SecretKey` |
 | `Jwt:AccessTokenExpirationMinutes` | `Jwt__AccessTokenExpirationMinutes` |
 | `DefaultPasswords:SysAdminPassword` | `DefaultPasswords__SysAdminPassword` |
@@ -43,11 +43,11 @@ ASP.NET Core 支持通过环境变量覆盖 JSON 配置节，使用 `__`（双�
 
 ```bash
 # Windows 命令行设置环境变量（重启生效）
-setx ConnectionStrings__LYBTDB "Server=.;Database=LYBTDB_Dev;Trusted_Connection=True;TrustServerCertificate=true"
+setx ConnectionStrings__DefaultConnection "Server=.;Database=LYBTDB_Dev;Trusted_Connection=True;TrustServerCertificate=true"
 setx Jwt__SecretKey "YourSecureSecretKeyAtLeast32CharactersLong"
 
 # PowerShell 临时设置（当前会话有效）
-$env:ConnectionStrings__LYBTDB = "Server=.;Database=LYBTDB_Dev;Trusted_Connection=True;TrustServerCertificate=true"
+$env:ConnectionStrings__DefaultConnection = "Server=.;Database=LYBTDB_Dev;Trusted_Connection=True;TrustServerCertificate=true"
 $env:Jwt__SecretKey = "YourSecureSecretKeyAtLeast32CharactersLong"
 ```
 
@@ -58,11 +58,13 @@ $env:Jwt__SecretKey = "YourSecureSecretKeyAtLeast32CharactersLong"
 ```json
 {
   "ConnectionStrings": {
-    "LYBTDB": "Server=.;Database=LYBTDB_Dev;Trusted_Connection=True;TrustServerCertificate=true;Encrypt=true",
+    "DefaultConnection": "Server=.;Database=LYBTDB_Dev;Trusted_Connection=True;TrustServerCertificate=true;Encrypt=true",
     "LYBTDesktop": "Server=(localdb)\\MSSQLLocalDB;Database=LYBTDesktop;Integrated Security=true"
   }
 }
 ```
+
+> **N1 数据孤立（v1.0 范围）**：v1.0 远程库（`DefaultConnection`）与本地库（`LYBTDesktop`，LocalDB）**数据孤立、不互通**。本地模式定位为「远程故障应急降级」，断网期录入的数据事后手动补录或可丢。双向同步属 **v2.0 规划**，v1.0 不实现。
 
 | 参数 | 说明 |
 |------|------|
@@ -149,14 +151,15 @@ $env:Jwt__SecretKey = "YourSecureSecretKeyAtLeast32CharactersLong"
 ```json
 {
   "DefaultPasswords": {
-    "SysAdminPassword": "***",               // 生产环境已 REDACTED
-    "NewUserPassword": "***",                // 生产环境已 REDACTED
-    "ForceChangeOnFirstLogin": true          // 首次登录强制修改密码
+    "SysAdminPassword": "SysAdmin@2026!",        // 开发占位明文（设计如此）
+    "AdminPassword": "Admin@123456",             // 开发占位明文（设计如此）
+    "NewUserPassword": "User@123456",            // 开发占位明文（设计如此）
+    "ForceChangeOnFirstLogin": true              // 首次登录强制修改密码
   }
 }
 ```
 
-> ⚠️ 生产环境密码通过 `appsettings.Production.json` 或环境变量注入，禁止明文存储。
+> **说明**：`appsettings.json` 中的默认密码为**开发环境占位明文**（设计如此，便于初始化）。生产环境由 `DefaultPasswordService` 随机生成强密码（US-SHELL-017 生产环境安全门控），不沿用此占位值。环境变量覆盖优先级：`DefaultPasswords__SysAdminPassword` 等 > JSON。
 
 ---
 
@@ -327,3 +330,4 @@ $env:Jwt__SecretKey = "YourSecureSecretKeyAtLeast32CharactersLong"
 | 2026-02-22 | v1.1 | 新增常见配置问题 + 配置变更生效方式表 |
 | 2026-06-25 | v1.2 | 明确 AccessToken 开发默认 8h，Production 覆盖为 30min |
 | 2026-06-25 | v1.3 | 新增环境变量覆盖机制、ConnectionStrings 示例、FeatureToggles、ClinicSettings 配置节 |
+| 2026-06-28 | v1.4 | ConnectionStrings key 对齐 `DefaultConnection`；DefaultPasswords 如实描述（开发占位明文，生产 DefaultPasswordService 随机生成）；补 N1 数据孤立说明（v1.0 远程/本地不互通） |

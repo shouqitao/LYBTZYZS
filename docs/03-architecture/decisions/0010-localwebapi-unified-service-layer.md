@@ -48,3 +48,9 @@ LocalWebAPI 引用以下 Server 项目：
 1. 更新本 ADR 的引用列表
 2. 更新 `src/Client/Desktop/LocalWebAPI/AGENTS.md` 依赖图
 3. 确保 P21 审计测试通过
+
+## 关联 US
+
+- US-AUTH-012 / US-AUTH-013（本地简化认证 1 年 JWT、本地登录限流：复用 Auth 模块 Service）
+- 全部业务模块本地模式端点（US-USER/PAT/HERB/FORM/MC/REG）——LocalWebAPI 直接复用 Server 各 Module 的 Service 层，确保双模式行为零差异
+- 详见 ADR 引用列表的 8 个 Server Module（Auth/Users/Patients/Herbs/Formulas/MedicalCases/Registration/Reports）

@@ -6,7 +6,7 @@
 
 提供用户登录、登出、Token 验证功能。登录端点启用限流策略 `Login`。
 
-> **注意**: AutoLoginToken 登录和 RefreshToken 刷新功能已设计 DTO（`AutoLoginRequest`、`RefreshTokenRequest`），但服务端 Controller 尚未实现对应端点。
+> **实现状态**: 全部 5 个端点（login/logout/refresh/auto-login/validate）均已在 `AuthController` 实现。AccessToken 有效期 **60 分钟**（`AddMinutes(60)` 硬编码）。
 
 ---
 
@@ -110,7 +110,7 @@ curl -X POST http://localhost:5000/api/v1/auth/login \
 
 - **权限**: 匿名 (`[AllowAnonymous]`)
 - **限流**: `Login` 策略
-- **状态**: DTO 已设计，服务端 Controller 尚未实现
+- **状态**: ✅ 已实现
 
 **请求体** `AutoLoginRequest`:
 
@@ -211,7 +211,7 @@ curl -X POST http://localhost:5000/api/v1/auth/logout \
 刷新访问令牌（滑动过期）。
 
 - **权限**: 匿名 (`[AllowAnonymous]`)
-- **状态**: DTO 已设计，服务端 Controller 尚未实现
+- **状态**: ✅ 已实现
 
 **请求体** `RefreshTokenRequest`:
 
@@ -358,3 +358,4 @@ curl -X GET http://localhost:5000/api/v1/auth
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，5 个端点 |
 | 2026-06-25 | v2.0 | 补充全部端点的请求/响应 JSON 示例、curl 命令、错误码表；修正响应字段与源码一致 |
+| 2026-06-28 | v2.1 | 文档对齐基线：删除 refresh/auto-login「尚未实现」声明（两端点已在 AuthController 实现，:116/:128）；AccessToken 有效期标注 60 分钟（代码 `AddMinutes(60)`）；错误码表已在 README 精简 |

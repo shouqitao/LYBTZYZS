@@ -5,7 +5,7 @@
 
 ## 合并说明（冗余去除）
 
-原 6 模块合计 37 个 US（Shell 7 + Configuration 4 + Error Handling 8 + Logging 7 + Health 9 + CardReader 2），合并为本文件时去除 2 个与其他 US 完全重叠的冗余项，保留 **35 US**：
+原 6 模块合计 37 个 US（Shell 7 + Configuration 4 + Error Handling 8 + Logging 7 + Health 9 + CardReader 2），合并去除 2 个与其他 US 完全重叠的冗余项后为 35 US；加上 SHELL-010~019 中归属 v1.0 的 8 项（010 安装/011 初始化向导/013 备份恢复/014 安全审计/016 配置导入导出/017 生产门控/018 配置中心/019 读卡器诊断），合计 **43 US**：
 
 | 移除项 | 原因 | 并入 |
 |--------|------|------|
@@ -22,7 +22,7 @@
 
 ## Shell
 
-> 原 7 US（US-SHELL-001~007），合并去除 2 个冗余后保留 **5 US**：US-SHELL-001, 003, 004, 005, 007。
+> 原 7 US（US-SHELL-001~007），合并去除 2 个冗余后 5 US + SHELL-010~019 补充。**v1.0 有效 = 13 US**（原 5 + 补充 8）；另有 US-SHELL-012 = v2.0（不计入 Platform 43），US-SHELL-015 = 撤销（并入 013）。完整列表：001, 003, 004, 005, 007, 010(v1.0), 011(v1.0), 012(v2.0), 013(v1.0, 含原 015), 014(v1.0), ~~015~~(撤销), 016(v1.0), 017(v1.0), 018(v1.0), 019(v1.0)。
 
 Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应用全生命周期：单实例互斥锁（`Global\LYBTZYZS_Shell_Instance`）、启动闪屏、两阶段 Serilog 引导、按角色动态加载模块（`ApplicationBootstrapper.LoadModulesForRoleAsync`）、页面导航与菜单系统。
 
@@ -61,7 +61,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 **角色**: 所有用户
 **优先级**: Must
-**状态**: ✅ 已实现
+**状态**: ⚠️ **v1.0 修复**（C1 决策：删 LoginCoordinator 旁路，统一走 RoleRegistry）
 
 **作为** 用户，**我想要** 登录后系统按我的角色自动加载对应功能模块，**以便** 我直接进入工作台而不需手动配置，且无越权菜单。
 
@@ -166,6 +166,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 2. 本地→远程前置检查：无 Active/Suspended 医案 + 网络连通 + Token 有效（SYNC-D01）。
 3. `SwitchingApiClient` 路由 localhost → 嵌入式 `LocalWebAPI`，否则 → 远程。
 4. 异常捕获返回 `ModeSwitchResult.Failed`，自动回退。
+5. **强制本地策略（S5 决策）**：v1.0 仅支持用户主动切换模式；运维强制某台机器走本地（如断网降级、离线巡诊）属 **v2.0**，需扩展 `SystemAdminOptions` 增加按机器/按用户锁定模式的策略，不在 v1.0 范围。
 
 **双模式**:
 | 模式 | 行为 |
@@ -174,6 +175,273 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 | 本地 | 不适用（切换操作本身） |
 
 **实现参考**: `IConnectionModeProvider.SwitchModeAsync`、`SwitchingApiClient`、`ModeSwitchValidator`
+
+---
+
+### US-SHELL-010: Desktop 安装（Velopack 打包）
+
+**角色**: sysadmin
+**优先级**: Must
+**状态**: 📋 已设计（🧲 v1.0 待实现）
+
+**作为** sysadmin，**我想要** 一键安装 Desktop 应用，**以便** 不需懂 .NET/SQL Server 技术也能完成部署。
+
+**验收标准**:
+- [ ] 提供 `Setup.exe`（Velopack 打包，自包含 .NET 运行时）
+- [ ] 安装到 `%LocalAppData%\LYBT`（免管理员权限）
+- [ ] 安装后自动创建桌面快捷方式
+- [ ] 静默安装支持：`Setup.exe --silent`（用于批量部署）
+
+**业务规则**:
+1. 使用 Velopack 打包，替代手动安装 .NET 8 Runtime。
+2. 更新源（Update Feed）挂载在 WebAPI 服务器提供。
+
+**双模式**:
+| 模式 | 行为 |
+|------|------|
+| 远程 | 安装后指向 WebAPI 地址 |
+| 本地 | 安装后自动切换本地模式（内嵌 LocalWebAPI） |
+
+**实现参考**: `velopack` NuGet + `VelopackApp.Build().Run()` 集成于 `App.xaml.cs`
+
+---
+
+### US-SHELL-011: 首次初始化向导（5 步强制）
+
+**角色**: sysadmin
+**优先级**: Must
+**状态**: 📋 已设计（🧲 v1.0 待实现）
+
+**作为** sysadmin，**我想要** 首次登录后走初始化向导，**以便** 一站式完成系统配置（改密/诊所/模式/admin），不需手动改文件。
+
+**验收标准**:
+- [ ] sysadmin 首次登录后强制进入向导，不可跳过
+- [ ] Step 1: 强制修改默认密码（`ForceChangeOnFirstLogin=true`）
+- [ ] Step 2: 填写诊所信息（名称/科室/地址/电话），驱动处方打印标题
+- [ ] Step 3: 选择远程/本地模式（测试远程连通性或跳过用本地）
+- [ ] Step 4: 创建首个 admin 账号（用户名 + 临时密码）
+- [ ] Step 5: 完成提示"请以 admin 登录继续配置用户/药材" → 注销 sysadmin
+- [ ] 向导未完成，sysadmin 无法进入主界面
+
+**业务规则**:
+1. `IdentitySeedData` 改为只种子 sysadmin（不种子 admin），admin 由 sysadmin 在向导中手动创建。
+2. 默认密码随机生成并显示一次，首登强制改。
+3. JWT 密钥首次启动生成随机密钥（替代硬编码）。
+4. 向导 UI 参考业界最佳实践。
+
+**实现参考**: 扩展现有 `FirstRunSetupViewModel`（Auth 模块），或新建 `InitializationWizard`
+
+---
+
+### US-SHELL-012: Desktop 自动更新（Velopack）
+
+**角色**: 所有用户
+**优先级**: Should
+**状态**: 📋 已设计（v2.0 规划，不在 v1.0 范围）
+
+**作为** 用户，**我想要** Desktop 自动检查更新并一键升级，**以便** 始终使用最新版本而不需手动操作。
+
+**验收标准**:
+- [ ] 启动时自动检查远程更新源（Velopack `CheckForUpdatesAsync`）
+- [ ] 普通更新：提示用户"发现新版本 vX.X"，用户自愿下载安装
+- [ ] 安全更新（标记为 critical）：强制倒计时升级（可被 sysadmin 延迟）
+- [ ] 更新下载支持增量（delta），省带宽
+- [ ] 更新安装后自动重启应用
+- [ ] 更新过程中数据不丢失
+- [ ] 展示 Release Notes（更新说明）
+
+**业务规则**:
+1. 更新源：WebAPI 服务器提供更新包。
+2. sysadmin 可配置：是否允许跳过更新、安全更新强制窗口。
+3. 更新采用 Velopack（替代已维护模式的 Squirrel.Windows）。
+
+**实现参考**: `UpdateManager.CheckForUpdatesAsync()` / `DownloadUpdatesAsync()` / `ApplyUpdatesAndRestart()`
+
+---
+
+### US-SHELL-013: 数据库备份恢复（含备份状态展示 + 手动备份）
+
+**角色**: sysadmin
+**优先级**: Should
+**状态**: ⚠️ 部分实现（备份有，恢复 UI 缺）（🧲 v1.0，原 US-SHELL-015 已并入）
+
+**作为** sysadmin，**我想要** 从备份恢复 LocalDB 数据库，并查看备份状态/手动触发备份，**以便** 系统崩溃后能自助恢复数据、掌握数据保护情况。
+
+**验收标准**:
+- [ ] 显示本地备份文件列表（保留 7 天，含日期/大小）
+- [ ] **备份状态展示**（原 015 并入）：上次备份时间、备份文件数量、总大小
+- [ ] **手动备份按钮**（原 015 并入）：sysadmin 可手动触发备份（不限于登录时自动备份），备份进行中显示进度指示，失败时显示错误原因
+- [ ] 选择备份文件后执行恢复（`RESTORE DATABASE`）
+- [ ] 恢复前弹框确认"将覆盖当前数据库，是否继续"
+- [ ] 恢复完成后提示重启应用
+
+**业务规则**:
+1. LocalDB 备份路径：`%AppData%/LYBTZYZS/Backup/`（已实现）。
+2. 远程 SQL Server 备份依赖 SQL Server Agent（应用层不控制，提供运维手册）。
+3. 恢复操作仅 sysadmin 可执行。
+
+**实现参考**: 现有 `ILocalDbBackupService`（备份）+ 新增恢复 UI
+
+---
+
+### US-SHELL-014: 安全审计日志查看
+
+**角色**: sysadmin
+**优先级**: Should
+**状态**: 🔴 决策补回，待开发（🧲 v1.0 待实现，D3 决策）
+
+**作为** sysadmin，**我想要** 查看登录/登出/密码变更/权限变更等安全事件日志，**以便** 追溯安全事件、满足医疗合规要求。
+
+**验收标准**:
+- [ ] 提供安全事件列表（分页，按时间倒序）
+- [ ] 事件类型：登录成功/失败、登出、密码修改、用户创建/删除/禁用
+- [ ] 每条记录含：时间、用户、操作类型、IP 地址、结果（成功/失败）
+- [ ] 支持按事件类型/用户/时间范围筛选
+- [ ] 保留 365 天（`SecurityOptions.AuditRetentionDays`）
+- [ ] 审计日志仅追加，不可修改/删除
+
+**业务规则**:
+1. `SecurityAuditService` + `SecurityAuditLog` 表（v2.0 迁移已删除，需恢复）。
+2. 覆盖：认证事件（US-LOG-004）、权限变更、操作审计。
+3. 仅 sysadmin 可查看全局审计日志。
+
+**实现参考**: 恢复 `SecurityAuditLog` 实体 + `SecurityAuditService` + SysadminHomeView 面板
+
+---
+
+### ~~US-SHELL-015: 备份状态与手动备份~~（已撤销，并入 US-SHELL-013）
+
+> **撤销决策（2026-06-28）**：本 US 的「备份状态展示 + 手动备份按钮」已并入 US-SHELL-013 数据库备份恢复的验收标准。独立 US 撤销，总览计数不单列。
+
+---
+
+### US-SHELL-016: 配置导出/导入
+
+**角色**: sysadmin
+**优先级**: Could
+**状态**: ❌ 未实现（🧲 v1.0 待实现，3 台客户端分发场景）
+
+**作为** sysadmin，**我想要** 导出和导入系统配置，**以便** 重装后快速恢复配置、多机部署时统一配置。
+
+**验收标准**:
+- [ ] "导出配置"按钮：将 `appsettings.json` + `clinic-settings.json` 打包为 JSON 文件下载
+- [ ] "导入配置"按钮：选择 JSON 文件 → 覆盖当前配置 → 提示重启生效
+- [ ] 导入前校验文件格式，格式错误拒绝
+
+**业务规则**:
+1. 配置文件路径：`appsettings.json` + `clinic-settings.json`。
+2. 导入后需要重启 Desktop 才生效（部分配置不支持热更新）。
+3. 导入时保留当前 `Jwt:SecretKey`（不覆盖安全密钥）。
+
+**实现参考**: SysadminHomeView 新增导入/导出按钮
+
+---
+
+### US-SHELL-017: 生产环境安全门控（SystemAdminOptions）
+
+**角色**: sysadmin / 运维
+**优先级**: Must
+**状态**: ✅ 服务端已实现（v1.0，`SystemAdminOptions` + `DefaultPasswordService`）
+
+**作为** 运维人员，**我想要** 生产环境的 sysadmin 创建受安全门控保护，**以便** 防止默认密码在生产环境裸奔。
+
+**验收标准**:
+- [x] `AutoCreateOnStartup` 控制是否启动时自动创建 sysadmin（默认 `true`）
+- [x] `AllowAutoCreateInProduction` 默认 `false`——生产环境不自动创建 sysadmin（安全默认值）
+- [x] `InitialSetupToken` —— 生产环境创建 sysadmin 需要一次性设置令牌（环境变量提供，不入库）
+- [x] `DefaultPasswordService.GetOrGeneratePassword()` —— 生产环境自动生成随机密码（替代硬编码默认密码）
+- [x] `DefaultPasswordService.ValidateSetupToken()` —— 加密常量时间比较，防时序攻击
+- [x] `ForceChangeOnFirstLogin` —— `DefaultPasswordOptions` 控制首次登录是否强制改密
+
+**业务规则**:
+1. **开发环境**：`AutoCreateOnStartup=true` + `ForceResetOnStartup` 可选（开发时强制重置密码）。
+2. **生产环境**：`AllowAutoCreateInProduction=false` + 需配置 `InitialSetupToken` 环境变量才能创建 sysadmin。
+3. 生产环境默认密码由 `DefaultPasswordService.GetOrGeneratePassword()` 随机生成，不再硬编码。
+4. `SessionTimeoutMinutes` 控制会话超时（默认 240 分钟）。
+5. `SystemAdminOptions` 配置节 `appsettings.json → SystemAdmin`。
+
+**实现参考**: `SystemAdminOptions.cs`（`Shared.Configuration`）、`DefaultPasswordService.cs`（`Infrastructure/Configuration`）、`DatabaseInitializationService.cs:99-113`
+
+---
+
+### US-SHELL-018: sysadmin 配置中心（SysadminHomeView）
+
+**角色**: sysadmin
+**优先级**: Must
+**状态**: ❌ 未实现（🧲 v1.0 待实现）
+
+**作为** sysadmin，**我想要** 在统一的配置面板中管理所有基础配置，**以便** 不需手动改 JSON 文件就能完成系统调整。
+
+**验收标准**:
+- [ ] SysadminHomeView 展示配置中心面板，分组显示所有可配置项
+- [ ] 诊所信息（Name/Address/Phone/Department/LicenseNumber/Email）可编辑保存
+- [ ] 会话设置（InactivityTimeoutMinutes/WarningBeforeTimeoutMinutes/ActivityCheckIntervalSeconds）可编辑
+- [ ] 连接设置（API BaseUrl + 测试连通按钮 + TimeoutSeconds）可编辑
+- [ ] 安全策略（ForceChangeOnFirstLogin / NewUserPassword）可编辑
+- [ ] 功能开关（OverwriteConflicts / DuplicateHerbMergeStrategy）可切换，热更新即时生效
+- [ ] 读卡器参数（UsbPort/ConnectTimeout/ReadTimeout）可编辑（自动检测优先）
+- [ ] 系统信息（版本/DB状态/连接状态）只读展示
+- [ ] 配置保存后：诊所信息/会话/连接/安全策略/读卡器需重启生效；功能开关热更新即时生效
+
+**配置项清单**（7 组 13 项，代码扫描确认无遗漏）:
+
+| 分组 | 配置项 | Options 类 | 生效方式 |
+|------|--------|-----------|---------|
+| 诊所信息 | Name/Address/Phone/Department/LicenseNumber/Email | `ClinicSettingsOptions` | 重启 |
+| 会话设置 | InactivityTimeoutMinutes(1-120)/WarningBeforeTimeoutMinutes(0-10)/ActivityCheckIntervalSeconds(10-120) | `ClientSessionOptions` | 重启 |
+| 连接设置 | BaseUrl + TimeoutSeconds(5-300) | `ApiClientOptions` | 重启 |
+| 安全策略 | ForceChangeOnFirstLogin / NewUserPassword | `DefaultPasswordOptions` | 重启 |
+| 功能开关 | OverwriteConflicts / DuplicateHerbMergeStrategy | `FeatureToggleOptions` | **热更新** |
+| 读卡器管理 | 厂家选择/诊断测试/连接状态/手动参数覆盖 | `ICardReader` + `ICardReaderDiagnostics` | **测试模式 UI**（详见 US-SHELL-019） |
+| 系统信息 | 版本/DB状态/连接状态 | `DiagnosticsController` | 只读 |
+
+**业务规则**:
+1. 配置保存写入 `appsettings.json` + `clinic-settings.json`。
+2. `FeatureToggleOptions` 通过 `ConfigurationOptionsMonitor` 支持热更新，无需重启。
+3. 其他配置修改需重启 Desktop 生效（v1.0 限制）。
+4. 密码相关配置（SecretKey/JWT）不可在 UI 中修改。
+5. 服务器端配置（速率限制/锁定/日志保留/缓存/Swagger）不在 Desktop UI 范围。
+
+---
+
+### US-SHELL-019: 读卡器诊断测试工具（sysadmin）
+
+**角色**: sysadmin
+**优先级**: Should
+**状态**: 📋 已设计（🧲 v1.0 待实现，前台建档入口需自检）
+
+**作为** sysadmin，**我想要** 通过官方 demo 测试功能验证读卡器是否正常工作，**以便** 快速定位硬件问题而不需运行外部测试软件。
+
+**验收标准**:
+- [ ] sysadmin 配置中心提供读卡器诊断面板
+- [ ] 厂家选择：下拉选择已适配厂家（华大 HD100 等），测试时临时切换
+- [ ] 设备探测：发送探测指令，检测设备是否在线，显示连接状态
+- [ ] 读卡测试：读取一张样卡，显示解析结果（姓名/身份证号/性别/出生日期/住址）
+- [ ] 串口测试：验证 USB 通信链路（发送/接收握手数据包）
+- [ ] 固件版本：读取设备固件版本号
+- [ ] 手动参数：USB 端口/连接超时/读取超时可手动覆盖（仅自动检测失败时使用）
+- [ ] 测试通过后，厂家选择持久化到 config，后续自动加载
+- [ ] 医生端完全无感——自动检测走 `ICardReaderFactory.AutoDetectReaderAsync`，匹配到已适配厂家直接使用
+
+**业务规则**:
+1. 读卡器管理分**测试模式**（sysadmin）和**使用模式**（医生）两层。
+2. 测试模式：sysadmin 在配置中心操作，选择厂家、运行诊断、验证设备。
+3. 使用模式：医生端启动时 `ICardReaderFactory.AutoDetectReaderAsync()` 自动匹配厂家，匹配到则静默使用；未匹配到则降级 `MockCardReader`，不阻塞启动。
+4. 诊断测试集成各厂家的官方 demo 功能（华大 HD100 提供 USB 探测/读卡/固件查询等标准指令）。
+5. 厂家扩展：新增读卡器型号时，在 sysadmin UI 中测试兼容性，无需改代码即可验证。
+
+**架构影响**:
+- 新增 `ICardReaderDiagnostics` 接口（厂家诊断能力）
+- `ICardReader` 扩展 `GetDeviceInfo()` 方法
+- sysadmin 配置中心增加读卡器诊断 tab
+
+**双模式**:
+| 模式 | 行为 |
+|------|------|
+| 远程 | 读卡器为本地硬件，与模式无关 |
+| 本地 | 同上 |
+
+**实现参考**: 现有 `ICardReader`/`ICardReaderFactory` + 新增 `ICardReaderDiagnostics` 接口
 
 ---
 
@@ -278,13 +546,13 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 **验收标准**:
 - [ ] `FeatureToggle=false` → 对应功能按钮/菜单项完全隐藏（Collapsed）
 - [ ] `OverwriteConflicts=false` → 同步冲突时不自动覆盖
-- [ ] 客户端配置变更需重启 Desktop 生效
+- [x] `ConfigurationOptionsMonitor` 支持文件变更时自动刷新（热更新），无需重启 Desktop
 
 **业务规则**:
 1. v1.0 `FeatureToggleOptions` 仅含 `OverwriteConflicts` 与 `DuplicateHerbMergeStrategy`（"Max"）。
-2. 早期定义的 18 个布尔开关已废弃，UI 可见性由各模块 ViewModel 按角色/业务状态自管。
+2. 早期定义的 18 个布尔开关已废弃（2026-06-28 清理），UI 可见性由各模块 ViewModel 按角色/业务状态自管。
 3. FeatureToggle 仅控 UI 层，API 端点不受影响。
-4. 仅 Logging 配置支持热更新，其余需重启。
+4. FeatureToggle 通过 `ConfigurationOptionsMonitor<T>` + `OptionsMonitorWrapper<T>`（`PrismConfigurationExtensions.cs`）实现热更新——配置文件保存后自动生效，无需重启。其他配置（JWT/ApiClient/ClinicSettings/CardReader）仍需重启。
 
 **双模式**:
 | 模式 | 行为 |
@@ -292,7 +560,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 | 远程 | 客户端 appsettings.json 配置 API 连接 |
 | 本地 | `ApiClient` 配置无效，使用本地数据源 |
 
-**实现参考**: `FeatureToggleOptions`、`ApiClientOptions`、`ClinicSettingsOptions`
+**实现参考**: `FeatureToggleOptions`、`ConfigurationOptionsMonitor`（`PrismConfigurationExtensions.cs:80`）、`OptionsMonitorWrapper`（`PrismConfigurationExtensions.cs:133`）
 
 ---
 

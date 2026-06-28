@@ -52,7 +52,7 @@
 | 监听 | `0.0.0.0:5000` |
 | 托管方式 | **schtasks**（任务名 `LYBT-API`，开机启动，SYSTEM） |
 | 健康检查 | `curl http://127.0.0.1:5000/health` → `Healthy` |
-| 数据库 | `LYBTDB` on localhost（Windows Authentication） |
+| 数据库 | `LYBTDB_Dev` on localhost（Windows Authentication） |
 | 配置 | `C:\LYBTZYZS\appsettings.Production.json` |
 | 启动脚本 | `C:\LYBTZYZS\start-service.bat` |
 

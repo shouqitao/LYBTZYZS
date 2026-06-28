@@ -13,7 +13,7 @@ Controller (HTTP 入口)
 Service (业务逻辑)
   ├── 业务规则验证
   ├── 调用 Repository
-  └── 返回 Result<T>
+  └── 返回 ServiceResult<T>
 
 Repository (数据访问)
   ├── EF Core 查询
@@ -334,7 +334,7 @@ public abstract partial class MasterDetailViewModelBase<TListItem, TDetail>
 | 类 | 用途 | 位置 |
 |----|------|------|
 | `ApiResponse<T>` | 统一 API 响应格式 | Shared.Models |
-| `Result<T>` | Service 层操作结果 | Shared.Models |
+| `ServiceResult<T>` | Service 层操作结果 | Shared.Models |
 | `PagedResult<T>` | 分页查询结果 | Shared.Models |
 | `BaseEntity` | 实体基类 (Id, CreatedAt, IsDeleted) | Entities |
 | `SensitiveDataMasker` | 日志脱敏 | Shared.Logging |

@@ -248,7 +248,7 @@ public async Task US_USER_004_BatchDelete_PartialFailure_RollsBack()
 
 ❌ **不应测试** (委托给 Unit Tests):
 - 纯业务逻辑 (无数据库交互)
-- DTO 映射 (AutoMapper 单元测试)
+- DTO 映射 (Riok.Mapperly 编译时映射，无运行时逻辑需测)
 - 工具类方法 (PasswordHasher、TokenGenerator 等)
 
 ---

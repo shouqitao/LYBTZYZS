@@ -2,7 +2,7 @@
 
 ## 概述
 
-桌面端采用 WPF + Prism 9.0 MVVM 架构，共 16 个项目，分为 Core (基础设施)、Modules (业务模块)、Roles (角色入口)、Shell (应用外壳) 四层。通过 DryIoc DI 容器管理依赖，使用 Prism Region 机制实现模块间导航。
+桌面端采用 WPF + Prism 8.1.97 MVVM 架构，共 16 个项目，分为 Core (基础设施)、Modules (业务模块)、Roles (角色入口)、Shell (应用外壳) 四层。通过 DryIoc DI 容器管理依赖，使用 Prism Region 机制实现模块间导航。
 
 ## 架构图
 
@@ -25,7 +25,6 @@ graph TB
         M_Formula["Formula"]
         M_MC["MedicalCase"]
         M_Reg["Registration"]
-        M_Sync["Sync"]
     end
 
     subgraph Core["Core 层 (基础设施)"]
@@ -39,8 +38,8 @@ graph TB
 
     App --> Admin & Clinical
     Admin --> M_Auth & M_Users & M_Patients & M_Herbs & M_Formula
-    Clinical --> M_Auth & M_Patients & M_MC & M_Reg & M_Herbs & M_Formula & M_Sync
-    M_Auth & M_Users & M_Patients & M_Herbs & M_Formula & M_MC & M_Reg & M_Sync --> Infrastructure
+    Clinical --> M_Auth & M_Patients & M_MC & M_Reg & M_Herbs & M_Formula
+    M_Auth & M_Users & M_Patients & M_Herbs & M_Formula & M_MC & M_Reg --> Infrastructure
     Infrastructure --> Foundation --> Contracts
     Modules --> Models
 ```
@@ -104,7 +103,8 @@ LYBT.Desktop.{Domain}/
 | Formula | Admin + Clinical | 验方 CRUD、药材绑定 |
 | MedicalCase | Clinical | 医案核心 (含处方、EditModeStateMachine) |
 | Registration | Admin + Clinical | 挂号管理 |
-| Sync | Clinical | 数据同步 (SyncPhase FSM、本地模式) |
+
+> 🧲 **Sync 模块属 v2.0**（N1 决策 2026-06-28）：v1.0 远程与本地数据孤立，Desktop.Sync 模块及其 SyncPhase FSM 延期至 v2.0。下方「同步 UI 架构」章节为 v2.0 设计参考。
 
 ### Registration 模块
 
@@ -142,8 +142,10 @@ LYBT.Desktop.{Domain}/
 
 ### Clinical (临床工作台)
 
-- **包含模块**: Auth, Patients, MedicalCase, Registration, Herbs, Formula, Sync
+- **包含模块**: Auth, Patients, MedicalCase, Registration, Herbs, Formula
 - **核心功能**: 诊疗流程、开方、处方打印
+
+> 🧲 Sync 模块属 v2.0，v1.0 不加载。
 
 ### 视图分离原则 (ARCH-010)
 
@@ -160,8 +162,10 @@ LYBT.Desktop.{Domain}/
 应用入口，负责:
 - 应用启动和初始化 (PrismApplication)
 - 主窗口和 Region 定义
-- 模块加载编排 (ConfigureModuleCatalog)
+- 模块加载编排 (ConfigureModuleCatalog + RoleRegistry 单一真相源)
 - 全局异常处理
+
+> **v1.0 重构**（C1 决策 2026-06-28）：删除 LoginCoordinator 硬编码旁路，统一走 RoleRegistry。
 
 ## ViewModel 基类体系
 
@@ -186,7 +190,11 @@ ObservableObject (CommunityToolkit.Mvvm)
 
 ### Item 类 (列表项模型)
 
-Item 类继承 Prism `BindableBase` (Mapperly 兼容性要求)，使用显式属性定义。
+> 对应 [ADR-0012: CommunityToolkit.Mvvm 采纳](decisions/0012-communitytoolkit-mvvm-adoption.md)。
+
+**新代码**：Item 类继承 `ObservableObject`（CommunityToolkit.Mvvm），使用 `[ObservableProperty]` 源生成器，**禁止使用 Prism `BindableBase`**。
+
+**历史代码**：部分既有 Item 类仍使用 `BindableBase` + 显式属性（Mapperly 兼容性历史原因），允许保留但新代码不得沿用。
 
 ### ViewModel 大小限制
 
@@ -332,6 +340,8 @@ private bool CanSave() => !IsBusy && !HasErrors;
 
 #### SyncEvents (同步事件)
 
+> 🧲 **v2.0 规划** — Sync 模块整体 v2.0（N1 决策 2026-06-28），下方事件类代码可能保留但不加载。
+
 **位置**: `Core/LYBT.Desktop.Contracts/Events/SyncEvents.cs`
 **命名空间**: `LYBT.Desktop.Contracts.Events`
 
@@ -440,10 +450,12 @@ Events.Publish<SyncEvents.StatusChangedEvent, SyncStatusPayload>(new SyncStatusP
 
 | 角色 | 加载模块 | 说明 |
 |------|---------|------|
-| Doctor | AuthModule, PatientsModule, MedicalCaseModule, RegistrationModule, HerbsModule, FormulaModule, SyncModule | 临床全功能 |
+| Doctor | AuthModule, PatientsModule, MedicalCaseModule, RegistrationModule, HerbsModule, FormulaModule | 临床全功能 |
 | Admin | AuthModule, UsersModule, PatientsModule, HerbsModule, FormulaModule | 管理全功能 |
 | Receptionist | AuthModule, PatientsModule, RegistrationModule | 患者 CRUD + 挂号 (临床子集) |
 | SuperAdmin | 全部模块 | 系统管理 + 临床 |
+
+> 🧲 **SyncModule 属 v2.0**（N1 决策）：上表已从 Doctor 角色模块清单中移除 SyncModule。SyncModule 代码仍存在，但 v1.0 不通过 `RoleRegistry` 加载。
 
 **模块加载容错**: 单个模块加载失败记录错误日志但不中断其他模块加载 (graceful degradation)。加载失败的模块相关功能不可用，但不影响已加载模块的正常使用。
 
@@ -843,7 +855,7 @@ AccountSettingsControl 通过 `MenuManager.EditProfileCommand` 进入:
 
 ## 同步 UI 架构
 
-> 对应 [US-SYNC-007](../02-requirements/10-sync.md)。
+> 🧲 **v2.0 规划** — 对应 US-SYNC-007（Sync 模块整体 v2.0，N1 决策 2026-06-28；v2.0 范围见 [PRD](../02-requirements/01-prd.md#v20-规划范围)）。下方内容为 v2.0 设计参考，v1.0 不实现。
 
 ### SyncPhase 状态机 (Sprint 4 实现)
 
@@ -974,3 +986,4 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 | 2026-03-09 | v1.5 | Sprint 6 同步: Contracts 层 IDataSource→IRepository (6 个); LocalData 层补充 LocalXxxRepository; Printing 层补充 PDF 导出 (QuestPDF) |
 | 2026-06-12 | v1.6 | 架构图修正: 移除不存在的 Consultation 模块，补全 Registration 模块; 变更记录版本号修正 |
 | 2026-06-13 | v1.7 | 新增事件架构章节 (AuthEvents/PatientEvents/CaseEvents/SyncEvents/CacheEvents/TokenLifecycle + EventSubscriptionManager + 通信模式选择); 新增启动管线章节 (5 步骤序列 + 条件模块加载) |
+| 2026-06-28 | v1.8 | **N1 + ADR-0012 对齐**: 模块清单/架构图/Clinical 模块清单清除 Sync（v2.0）; SyncEvents/Sync UI 架构加 🧲 v2.0 标; Item 类继承对齐 ADR-0012（新代码用 `[ObservableProperty]`，禁 BindableBase）; Prism 9.0→8.1.97 |

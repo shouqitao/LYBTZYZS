@@ -26,11 +26,9 @@ tests/
       Entities/, Shared/, WebAPI/     # 无外部依赖的单元测试
 
   LYBT.Tests.Desktop/                 # Desktop 端全量测试 (net8.0-windows, ~760 tests)
-    _Infrastructure/                  # DesktopFixture (SQLite InMemory + 真实 Repository)
+    _Infrastructure/                  # DesktopFixture (SQL Server LocalDB + 真实 Repository)
     ViewModels/                       # ViewModel 集成测试 (真实 DataSource)
-
-> **注意**: Desktop 测试使用 **SQLite InMemory** 作为轻量测试替身。生产环境使用 **SQL Server LocalDB**（非 SQLite）。
-    EndToEnd/                         # 业务流 E2E (Repository -> SQLite)
+    EndToEnd/                         # 业务流 E2E (Repository -> LocalDB)
     LocalData/                        # 本地数据层 DataSource 测试
     PureLogic/                        # 纯逻辑 (状态机、事件、模型)
 
@@ -40,7 +38,9 @@ tests/
     AntiMockRuleTests                 # Testing Trophy 防护: Server 零 mock
 ```
 
-**Testing Trophy 原则**: Server 测试使用真实 SQL Server + Respawn (零 mock)，Desktop 测试使用 SQLite InMemory + 真实 Repository (仅 WPF 边界 mock)。
+> **注意**: Desktop 测试使用 **SQL Server LocalDB**（`tests/LYBT.Tests.Desktop` 全部 `UseSqlServer("(localdb)\MSSQLLocalDB...")`），与生产环境一致——**非 SQLite InMemory**。
+
+**Testing Trophy 原则**: Server 测试使用真实 SQL Server + Respawn (零 mock)，Desktop 测试使用 SQL Server LocalDB + 真实 Repository (仅 WPF 边界 mock)。
 
 **平台分离**: Server 测试用 `net8.0` (跨平台)，Desktop 测试用 `net8.0-windows` (WPF)。
 
@@ -82,7 +82,7 @@ dotnet test --filter "Namespace~LYBT.Tests.Unit.Entities"
 | 测试对象 | 职责 | 真实组件 |
 |----------|------|----------|
 | API Endpoint | HTTP 全流程、认证、持久化 | Controller -> Service -> Repository -> DB |
-| Data Flow | DI 解析、数据持久化 | Repository -> DbContext -> SQLite InMemory |
+| Data Flow | DI 解析、数据持久化 | Repository -> DbContext -> SQL Server / LocalDB |
 | Cross-Module | 模块间协作、聚合根完整性 | MedicalCase -> Consultation -> Prescription |
 | Authentication | Token 验证、权限检查 | JWT Handler -> Claims -> DB |
 
@@ -142,8 +142,8 @@ public void Patient_Create_WithValidData_ShouldSetDefaults()
 var response = await Client.PostAsJsonAsync("/api/v1/patients", dto);
 response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-// Desktop 测试 -- 真实 Repository + SQLite (仅 mock WPF 边界)
-var fixture = new DesktopFixture(); // SQLite InMemory + 真实 DataSource
+// Desktop 测试 -- 真实 Repository + SQL Server LocalDB (仅 mock WPF 边界)
+var fixture = new DesktopFixture(); // SQL Server LocalDB + 真实 DataSource
 var vm = fixture.CreateViewModel<PatientServiceTests>();
 ```
 
@@ -257,7 +257,7 @@ _respawner = await Respawner.CreateAsync(connection, new RespawnerOptions
 await Fixture.ResetAsync();  // 按外键拓扑序 DELETE + 重新 seed
 ```
 
-Respawn 按外键依赖顺序删除数据，比 `DELETE FROM` 更安全。Desktop 测试使用 SQLite InMemory 每测试独立连接实现隔离。
+Respawn 按外键依赖顺序删除数据，比 `DELETE FROM` 更安全。Desktop 测试使用 SQL Server LocalDB（每测试独立事务/连接）实现隔离。
 
 ---
 
@@ -267,7 +267,7 @@ Respawn 按外键依赖顺序删除数据，比 `DELETE FROM` 更安全。Deskto
 A: Desktop 测试项目 (`LYBT.Tests.Desktop`) 目标框架为 `net8.0-windows`，仅在 Windows 环境运行。CI 配置应使用 `--filter` 排除或使用 Windows Agent。
 
 **Q: 集成测试数据污染**
-A: Server 测试使用 Respawn 在每个测试前重置数据库 (按外键拓扑序 DELETE)。Desktop 测试使用 SQLite InMemory 每测试独立连接。数据隔离由 IntegrationTestBase/DesktopFixture 自动管理。
+A: Server 测试使用 Respawn 在每个测试前重置数据库 (按外键拓扑序 DELETE)。Desktop 测试使用 SQL Server LocalDB（每测试独立事务/连接）。数据隔离由 IntegrationTestBase/DesktopFixture 自动管理。
 
 **Q: 什么时候用 Mock？**
 A: Testing Trophy 原则 -- Server 测试零 mock (通过 AntiMockRuleTests 架构测试强制)。Desktop 测试仅 mock WPF Runtime 边界接口 (IRegionManager, IDialogService, IModuleManager 等)。Repository/Service/DbContext 必须使用真实组件。

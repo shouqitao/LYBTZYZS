@@ -2,6 +2,8 @@
 
 > 凌隐宝堂中医诊所管理系统 API 测试用例与验证指南
 
+> 📌 **职责说明**：本文档为 Postman 手工 API 测试用例集，侧重端点行为验证与运维验收。与 [05-development/11-postman-vs-dotnet-testing.md](../05-development/11-postman-vs-dotnet-testing.md) 存在职责重叠（后者侧重 Postman vs xUnit 测试策略选型与自动化测试规范）。两者均保留：本文供运维/验收参考，05/11 供开发流程参考。
+
 ## 目录
 
 1. [测试环境准备](#测试环境准备)

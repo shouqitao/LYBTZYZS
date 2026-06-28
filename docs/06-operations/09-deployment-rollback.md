@@ -27,6 +27,8 @@ C:\Services\LYBT-releases\
 
 ## 服务端部署流程
 
+> ⚠️ **服务管理命令适用环境**：下方 `sc.exe` 命令适用于 Windows Server 2016+。**Server 2012 R2 禁用 `sc.exe`**（.NET 8 启动触发 SCM 1053 超时），须改用 `schtasks` 计划任务，详见 [03-webapi-deployment-summary.md](./03-webapi-deployment-summary.md) 与 [05-development-environment-spec.md](./05-development-environment-spec.md)。
+
 ### 前置检查
 
 ```powershell

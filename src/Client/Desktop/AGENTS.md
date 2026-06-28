@@ -17,7 +17,7 @@ WPF/Prism.DryIoc desktop application for the LYBTZYZS TCM clinic management syst
 | Directory | Purpose |
 |-----------|---------|
 | [Core/](Core/AGENTS.md) | Core libraries — Contracts, Foundation, Infrastructure, Models, LocalData, Printing, CardReader, Utilities |
-| [Modules/](Modules/AGENTS.md) | Business modules — Auth, Patients, Herbs, Formula, MedicalCase, Registration, Sync, Users |
+| [Modules/](Modules/AGENTS.md) | Business modules — Auth, Patients, Herbs, Formula, MedicalCase, Registration, Users |
 | [Roles/](Roles/AGENTS.md) | Role-based workspaces — Admin, Clinical, Receptionist |
 | Resources/ | XAML resources — Dictionaries and Strings |
 | Shell/ | PrismApplication entry point (`LYBT.Desktop.Shell`) |
@@ -30,11 +30,11 @@ WPF/Prism.DryIoc desktop application for the LYBTZYZS TCM clinic management syst
 - Business modules MUST NOT reference each other; cross-module communication via shared services or event aggregation.
 - All ViewModels inherit from `NavigableViewModelBase` or `MasterDetailViewModelBase<TListDto, TDetailModel>`.
 - Data access uses `I{Entity}Repository` for CRUD and `I{Entity}DataManager` for aggregates.
-- Object mapping: Riok.Mapperly (compile-time) + AutoMapper (runtime fallback).
+- Object mapping: Riok.Mapperly (compile-time only; AutoMapper is forbidden per root AGENTS.md).
 - Module registration via Prism `IModule` interface in `{Domain}Module.cs`.
 
 ### Testing Requirements
-- `dotnet test tests/LYBT.Tests.Desktop/` — ~760 tests, SQLite InMemory + real Repository
+- `dotnet test tests/LYBT.Tests.Desktop/` — ~760 tests, SQL Server LocalDB + real Repository
 - Tests target `net8.0-windows`; cannot mix with Server test projects.
 
 ### Common Patterns

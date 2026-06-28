@@ -82,7 +82,9 @@ public static string GenerateToken(User user)
 
 ## 种子数据
 
-系统启动时自动创建默认管理员账户：
+系统启动时自动创建默认管理员账户（与 Server 端 `IdentitySeedData` + `appsettings.json:DefaultPasswords` 一致）：
 - 用户名: `admin`
-- 密码: `admin` (BCrypt 哈希)
+- 密码: `Admin@123456` (BCrypt 哈希)
 - 角色: `Admin`
+
+> 另有 `sysadmin / SysAdmin@2026!`（运维独立用户，`IsSysAdmin=true`，非角色）。密码真值以 `appsettings.json:DefaultPasswords` 为准。

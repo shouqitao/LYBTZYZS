@@ -19,7 +19,7 @@ Container for the WPF desktop client application. Currently contains only the De
 - Cross-tier rule: Client references `Shared.Models` for DTOs but MUST NOT reference Server projects.
 
 ### Testing Requirements
-- Desktop tests: `dotnet test tests/LYBT.Tests.Desktop/` (~760 tests, SQLite InMemory + real Repository)
+- Desktop tests: `dotnet test tests/LYBT.Tests.Desktop/` (~760 tests, SQL Server LocalDB + real Repository)
 
 ## Dependencies
 

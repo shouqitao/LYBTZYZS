@@ -1,5 +1,7 @@
 # 打印 API 参考
 
+> 🚧 **v1.0 待实现（D2 打印保护/回写补回，基线§1）**：下列打印端点（`print-completed`/`print-logs`）及相关实体（`IsPrinted`/`PrintVersion`/`PrintCount`/`LastPrintedAt` 字段、`MedicalCasePrintLog`/`PrintLog` 实体）**代码尚未实现**。本文保留作 D2 补回的设计参考。详见 `docs/compose/specs/2026-06-28-docs-reconciliation-baseline.md` §1 D2。
+
 > 医案打印相关端点，隶属 MedicalCasePrintController（远程）和 MedicalCasesController（本地）。
 
 ---
@@ -276,3 +278,4 @@ curl -X POST http://localhost:5000/api/v1/medicalcases/a1b2c3d4-e5f6-7890-abcd-e
 |------|------|----------|
 | 2026-06-12 | v1.0 | 初始版本（从 medical-cases.md 独立出来）; 标题改为路由格式 |
 | 2026-06-25 | v1.1 | 补充 curl 示例、成功/失败响应 JSON 示例、错误码表；更新 changelog 格式 |
+| 2026-06-28 | v1.1 | 文档对齐基线：顶部加 D2 v1.0 待实现标注（print-completed/print-logs 及打印回写字段/实体代码尚未实现） |

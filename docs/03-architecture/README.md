@@ -6,21 +6,23 @@
 
 ## 技术栈
 
+> 版本号以 [`Directory.Packages.props`](../../Directory.Packages.props) 为唯一真相源。
+
 | 组件 | 技术 | 版本 |
 |------|------|------|
-| 运行时 | .NET SDK | 8.0.406 |
+| 运行时 | .NET SDK | 8.0.400 (rollForward: latestMinor) |
 | 后端框架 | ASP.NET Core Web API | 8.0 |
-| ORM | Entity Framework Core | 8.0.20 |
+| ORM | Entity Framework Core | 8.0.26 |
 | 远程数据库 | SQL Server | 2019+ |
 | 本地数据库 | SQL Server LocalDB | - |
 | 桌面框架 | WPF | .NET 8 |
-| MVVM 框架 | Prism | 9.0 |
+| MVVM 框架 | Prism | 8.1.97 |
 | DI 容器 | DryIoc (via Prism) | - |
-| UI 控件库 | HandyControl | 3.5.1 |
+| UI 控件库 | MaterialDesignThemes.XAML | 5.3.2 |
 | 对象映射 | Riok.Mapperly | 4.3.1 |
-| 输入验证 | FluentValidation | 12.0 |
+| 输入验证 | FluentValidation | 12.1.1 |
 | 认证 | JWT Bearer | - |
-| 密码哈希 | BCrypt.Net-Next | 4.0.3 |
+| 密码哈希 | BCrypt.Net-Next | 4.1.0 |
 | 日志 | Serilog | - |
 | 测试框架 | xUnit + NSubstitute + FluentAssertions | - |
 | 包管理 | Central Package Management | - |
@@ -29,16 +31,23 @@
 
 | 文档 | 内容 |
 |------|------|
+| [00-architecture-summary.md](00-architecture-summary.md) | 架构总览速查（产品概览 / 技术栈 / 信任边界 / 已知风险） |
 | [01-system-overview.md](01-system-overview.md) | 系统整体架构图、解决方案结构、依赖方向 |
 | [02-desktop.md](02-desktop.md) | 桌面端 MVVM + Prism 架构 |
 | [03-server.md](03-server.md) | 服务端三层架构: Controller -> Service -> Repository |
 | [04-data-model.md](04-data-model.md) | 数据模型: 实体关系、字段定义 |
 | [05-dual-mode.md](05-dual-mode.md) | 双模式架构: 远程 + 本地 |
-| [06-error-handling.md](06-error-handling.md) | 错误处理架构: 全局异常处理、错误传播、重试策略 |
+| [06-error-handling.md](06-error-handling.md) | 错误处理架构（权威）: 全局异常处理、错误传播、CorrelationId 追踪 |
 | [07-configuration.md](07-configuration.md) | 配置架构: Options 模式、验证管道、环境分层 |
 | [08-shared.md](08-shared.md) | 共享层: DTO、工具类、组件 |
+| [09-security-architecture.md](09-security-architecture.md) | 安全架构: JWT 认证、授权策略、Token 生命周期、安全响应头 |
+| [10-printing-architecture.md](10-printing-architecture.md) | 打印架构: 处方模板、打印预览、PDF 导出 |
+| [11-business-flows.md](11-business-flows.md) | 关键业务流程: 挂号→就诊→诊断→开方→打印 |
+| [12-permissions-matrix.md](12-permissions-matrix.md) | 权限矩阵: 角色 × 资源 × 操作、行级安全、Policy 清单 |
+| [13-error-handling-flow.md](13-error-handling-flow.md) | 错误处理流程速查（⚠️ 已过期，以 06-error-handling.md 为准） |
+| [implementation-tasks.md](implementation-tasks.md) | v1.0 实现任务清单（缺口与待修复项） |
 | [localwebapi/](localwebapi/) | LocalWebAPI 本地模式架构文档 |
-| [decisions/](decisions/) | 架构决策记录 (ADR) |
+| [decisions/](decisions/) | 架构决策记录 (ADR-0001 ~ ADR-0012，共 12 条) |
 
 ## 核心架构原则
 
@@ -54,3 +63,4 @@
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，从 openspec 规范整合 |
 | 2026-06-12 | v1.1 | Mapperly 4.1.1→4.3.1; LocalDB 描述修正; 贫血模型原则补充 MedicalCase 例外 |
+| 2026-06-28 | v1.2 | 技术栈版本对齐 Directory.Packages.props（Prism 8.1.97 / BCrypt 4.1.0 / FluentValidation 12.1.1 / EF Core 8.0.26）; 文档索引补 00/09/10/11/12/13/implementation-tasks; ADR 数量更正为 12 |

@@ -1,6 +1,8 @@
 # 挂号管理 API
 
 > Controller: `RegistrationsController` | 路由前缀: `/api/v1/registrations` | 默认权限: `[Authorize(Policy = "DoctorOrReceptionist")]`
+>
+> ⚠️ **权限待对齐（D7，基线§3）**：文档目标策略为 `DoctorOrReceptionist`（挂号创建/取消需 Receptionist 前台角色，US-REG-001）；代码当前为 `DoctorOrAdmin`（`RegistrationsController.cs:23`），导致 Receptionist 无法挂号，待对齐。
 
 ## 概述
 
@@ -460,3 +462,4 @@ curl -X PUT "http://localhost:5000/api/v1/registrations/a1b2c3d4-e5f6-7890-abcd-
 | 2026-06-12 | v1.1 | 修正 GET /registrations 和 GET /registrations/{id} 响应类型为 ApiResponse<> |
 | 2026-06-12 | v1.2 | 新增错误码章节 (ERR-40101~40104) |
 | 2026-06-25 | v2.0 | 全面重写：为全部 7 个端点补充完整请求/响应 JSON 示例、curl 命令、参数表；使用真实 GUID 和中文姓名 |
+| 2026-06-28 | v2.1 | 文档对齐基线：权限策略加 D7 待对齐标注（目标 DoctorOrReceptionist，代码 DoctorOrAdmin，影响 Receptionist 挂号） |

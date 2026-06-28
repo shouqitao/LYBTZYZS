@@ -17,7 +17,7 @@ LocalWebAPI 是 **Client → Server 唯一的跨层引用路径**。这是有意
 
 ```
 Desktop Shell
-  → LocalWebAPI (embedded Kestrel, port 5100)
+  → LocalWebAPI (embedded Kestrel, port 5300)
     → Server/Core/LYBT.Entities        (domain entities)
     → Server/Core/LYBT.Infrastructure  (AppDbContext, BaseRepository)
     → Server/Modules/LYBT.Module.Auth     (IAuthService)

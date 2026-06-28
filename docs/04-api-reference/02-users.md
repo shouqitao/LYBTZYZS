@@ -4,7 +4,9 @@
 
 ## 概述
 
-用户管理 CRUD、密码管理、状态切换、批量操作。管理端点使用 `[Authorize(Policy = "AdminOnly")]`，自助端点 (`current`/`profile`/`change-password`) 允许所有认证用户。
+用户管理 CRUD、密码管理、状态切换、批量操作。管理端点使用 `[Authorize(Policy = "AdminOrSuperAdmin")]`，自助端点 (`current`/`profile`/`change-password`) 允许所有认证用户。
+
+> **响应信封**：所有响应为 `ApiResponse<T>`，字段为 `success/message/data/errors/timestamp/requestId`（**无 `code` 字段**，基线§6）。下文示例中早期写法出现的 `"success": true` 应理解为 `"success": true`。
 
 ---
 
@@ -12,7 +14,7 @@
 
 获取用户列表 (分页)。
 
-> **权限**: `[Authorize(Policy = "AdminOnly")]`
+> **权限**: `[Authorize(Policy = "AdminOrSuperAdmin")]`
 
 **查询参数**:
 
@@ -44,7 +46,7 @@ curl -H "Authorization: Bearer <token>" \
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "查询成功",
   "data": {
     "items": [
@@ -103,7 +105,7 @@ curl -H "Authorization: Bearer <token>" \
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "操作成功",
   "data": {
     "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -128,7 +130,7 @@ curl -H "Authorization: Bearer <token>" \
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "操作成功",
   "data": {
     "id": "00000000-0000-0000-0000-000000000000",
@@ -161,7 +163,7 @@ curl -H "Authorization: Bearer <token>" \
 
 获取单个用户详情。
 
-> **权限**: `[Authorize(Policy = "AdminOnly")]`
+> **权限**: `[Authorize(Policy = "AdminOrSuperAdmin")]`
 
 **路径参数**: `id` (Guid) -- 用户 ID
 
@@ -176,7 +178,7 @@ curl -H "Authorization: Bearer <token>" \
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "操作成功",
   "data": {
     "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -228,7 +230,7 @@ curl -H "Authorization: Bearer <token>" \
 
 创建新用户。
 
-> **权限**: `[Authorize(Policy = "AdminOnly")]`
+> **权限**: `[Authorize(Policy = "AdminOrSuperAdmin")]`
 
 **请求体** (`UserInputDto`):
 
@@ -275,7 +277,7 @@ curl -X POST \
 
 ```json
 {
-  "code": 201,
+  "success": true,
   "message": "创建成功",
   "data": {
     "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
@@ -311,7 +313,7 @@ curl -X POST \
 
 更新用户信息。sysadmin 账号不可修改。
 
-> **权限**: `[Authorize(Policy = "AdminOnly")]`
+> **权限**: `[Authorize(Policy = "AdminOrSuperAdmin")]`
 
 **路径参数**: `id` (Guid) -- 用户 ID
 
@@ -345,7 +347,7 @@ curl -X PUT \
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "用户更新成功",
   "data": {
     "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -380,7 +382,7 @@ curl -X PUT \
 
 删除用户 (软删除)。不能删除自己或 sysadmin。
 
-> **权限**: `[Authorize(Policy = "AdminOnly")]`
+> **权限**: `[Authorize(Policy = "AdminOrSuperAdmin")]`
 
 **路径参数**: `id` (Guid) -- 用户 ID
 
@@ -396,7 +398,7 @@ curl -X DELETE \
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "删除成功",
   "data": null
 }
@@ -417,7 +419,7 @@ curl -X DELETE \
 
 管理员重置用户密码，自动生成临时密码。
 
-> **权限**: `[Authorize(Policy = "AdminOnly")]`
+> **权限**: `[Authorize(Policy = "AdminOrSuperAdmin")]`
 
 **路径参数**: `id` (Guid) -- 用户 ID
 
@@ -447,7 +449,7 @@ curl -X POST \
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "密码重置成功",
   "data": {
     "success": true,
@@ -506,7 +508,7 @@ curl -X PUT \
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "个人资料修改成功",
   "data": {
     "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -575,7 +577,7 @@ curl -X PUT \
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "密码修改成功",
   "data": null
 }
@@ -596,7 +598,7 @@ curl -X PUT \
 
 切换用户状态 (启用/禁用)。sysadmin 不可被禁用。
 
-> **权限**: `[Authorize(Policy = "AdminOnly")]`
+> **权限**: `[Authorize(Policy = "AdminOrSuperAdmin")]`
 
 **路径参数**: `id` (Guid) -- 用户 ID
 
@@ -614,7 +616,7 @@ curl -X POST \
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "用户已禁用",
   "data": {
     "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -639,7 +641,7 @@ curl -X POST \
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "用户已启用",
   "data": {
     "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -672,9 +674,11 @@ curl -X POST \
 
 ## POST /users/{id}/restore
 
+> 🚧 **v1.0 待实现（D4 Restore 软删除恢复补回，基线§1）**：基础设施已就绪，端点待补。
+
 恢复已删除的用户。
 
-> **权限**: `[Authorize(Policy = "AdminOnly")]`
+> **权限**: `[Authorize(Policy = "AdminOrSuperAdmin")]`
 
 **路径参数**: `id` (Guid) -- 用户 ID
 
@@ -690,7 +694,7 @@ curl -X POST \
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "用户已恢复",
   "data": {
     "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -723,7 +727,7 @@ curl -X POST \
 
 批量删除用户。自动排除当前登录用户 (防止删除自己) 和 sysadmin。
 
-> **权限**: `[Authorize(Policy = "AdminOnly")]`
+> **权限**: `[Authorize(Policy = "AdminOrSuperAdmin")]`
 
 **请求体** (`BatchDeleteInputDto`):
 
@@ -762,7 +766,7 @@ curl -X POST \
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "批量删除完成",
   "data": {
     "totalCount": 2,
@@ -782,7 +786,7 @@ curl -X POST \
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "批量删除完成",
   "data": {
     "totalCount": 3,
@@ -819,9 +823,11 @@ curl -X POST \
 
 ## POST /users/batch-enable
 
+> 🚧 **v1.0 待实现（D4 Restore/批量操作补回，基线§1）**。
+
 批量启用用户。
 
-> **权限**: `[Authorize(Policy = "AdminOnly")]`
+> **权限**: `[Authorize(Policy = "AdminOrSuperAdmin")]`
 
 **请求体** (`BatchDeleteInputDto`):
 
@@ -853,7 +859,7 @@ curl -X POST \
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "批量启用完成",
   "data": {
     "totalCount": 2,
@@ -884,9 +890,11 @@ curl -X POST \
 
 ## POST /users/batch-disable
 
+> 🚧 **v1.0 待实现（D4 Restore/批量操作补回，基线§1）**。
+
 批量禁用用户。
 
-> **权限**: `[Authorize(Policy = "AdminOnly")]`
+> **权限**: `[Authorize(Policy = "AdminOrSuperAdmin")]`
 
 **请求体** (`BatchDeleteInputDto`):
 
@@ -920,7 +928,7 @@ curl -X POST \
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "批量禁用完成",
   "data": {
     "totalCount": 2,
@@ -981,21 +989,21 @@ curl -X POST \
 
 ## 通用响应格式
 
-所有端点返回 `ApiResponse<T>` 信封:
+所有端点返回 `ApiResponse<T>` 信封（基线§6，**无 `code` 字段**）:
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "操作成功",
   "data": { ... }
 }
 ```
 
-分页查询返回 `ApiResponse<PagedResult<T>>`:
+分页查询返回 `ApiResponse<PagedResult<T>>`（字段 `success/message/data/errors/timestamp/requestId`）:
 
 ```json
 {
-  "code": 200,
+  "success": true,
   "message": "查询成功",
   "data": {
     "items": [...],
@@ -1020,3 +1028,4 @@ curl -X POST \
 | 2026-06-12 | v1.4 | 权限标注对齐实际代码: 类级别 [Authorize] + 方法级策略; current/profile/change-password 标注自助端点; reset-password/restore 改为 AdminOrSuperAdmin; toggle-status 422 标注 Service 层动态返回; change-password 请求类型改为 Auth.ChangePasswordRequest |
 | 2026-06-12 | v1.5 | UserDetailDto: role 补全 4 角色; 新增 isEnabled/pinYinCode/lastLoginTime/failedLoginCount/remark 字段 |
 | 2026-06-25 | v1.6 | 补充所有端点完整 curl 命令 + 请求/响应 JSON 示例 + 字段说明表; 权限策略统一为 AdminOnly (对齐实际代码); reset-password 请求体修正为 MustChangeOnNextLogin (对齐 ResetPasswordRequestDto) |
+| 2026-06-28 | v1.7 | 文档对齐基线：权限策略 AdminOnly→AdminOrSuperAdmin（对齐 PolicyConstants）；响应信封 code→success（基线§6）；restore/batch-enable/batch-disable 标 D4 v1.0 待实现 |

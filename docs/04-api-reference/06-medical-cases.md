@@ -1,6 +1,8 @@
 # 医案 API
 
 > Controllers: `MedicalCasesController`, `MedicalCaseProcessingController` | 路由前缀: `/api/v1/medicalcases` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`
+>
+> ⚠️ **权限待对齐（D7，基线§3）**：文档目标策略为 `DoctorOrReceptionist`，医案**创建端点**目标为 Doctor-only（注：`PolicyConstants` 中**无 `DoctorOnly` 常量**，仅有 `AdminOnly/DoctorOrAdmin/AdminOrSuperAdmin/DoctorOrReceptionist` 四项）。代码当前统一为 `DoctorOrAdmin`，待对齐。
 
 ## 概述
 
@@ -8,7 +10,7 @@
 采用 CQRS 原则: Command/Query/State 服务分离。所有写操作通过聚合根统一保存。
 资源级授权通过 `MedicalCaseAuthorizationHandler` 实现。
 
-**所有响应使用统一信封**: `ApiResponse<T>` (`{ "code": 0, "message": "...", "data": T }`)
+**所有响应使用统一信封**: `ApiResponse<T>` (`{ "success": true, "message": "...", "data": T, "errors": null, "timestamp": ..., "requestId": "..." }`，**无 `code` 字段**，基线§6)
 
 ---
 
@@ -121,7 +123,7 @@
 
 ```json
 {
-  "code": 0,
+  "success": true,
   "message": "医案创建成功",
   "data": {
     "id": "12345678-abcd-ef01-2345-678901234567",
@@ -277,10 +279,10 @@ curl -X POST "https://api.example.com/api/v1/medicalcases" \
 
 | HTTP | 错误码 | 说明 | 示例 |
 |------|--------|------|------|
-| 404 | ERR-30101 | 患者不存在 | `{ "code": 30101, "message": "患者不存在" }` |
-| 422 | ERR-30103 | 该患者已有进行中的医案 (BR-001) | `{ "code": 30103, "message": "该患者已有进行中的医案" }` |
-| 422 | ERR-30104 | 该患者已有挂起的医案 (BR-001) | `{ "code": 30104, "message": "该患者已有挂起的医案" }` |
-| 422 | ERR-30105 | 该患者已被禁用 | `{ "code": 30105, "message": "该患者已被禁用" }` |
+| 404 | ERR-30101 | 患者不存在 | `{ "success": false, "message": "患者不存在" }` |
+| 422 | ERR-30103 | 该患者已有进行中的医案 (BR-001) | `{ "success": false, "message": "该患者已有进行中的医案" }` |
+| 422 | ERR-30104 | 该患者已有挂起的医案 (BR-001) | `{ "success": false, "message": "该患者已有挂起的医案" }` |
+| 422 | ERR-30105 | 该患者已被禁用 | `{ "success": false, "message": "该患者已被禁用" }` |
 
 ---
 
@@ -441,7 +443,7 @@ curl -X PUT "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
 
 ```json
 {
-  "code": 0,
+  "success": true,
   "message": "医案已关闭",
   "data": {
     "id": "12345678-abcd-ef01-2345-678901234567",
@@ -542,7 +544,7 @@ curl -X DELETE "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2
 
 ```json
 {
-  "code": 0,
+  "success": true,
   "message": "医案已删除",
   "data": true
 }
@@ -586,7 +588,7 @@ curl -X POST "https://api.example.com/api/v1/medicalcases/batch-delete" \
 
 ```json
 {
-  "code": 0,
+  "success": true,
   "message": "批量删除完成",
   "data": {
     "isSuccess": true,
@@ -613,7 +615,7 @@ curl -X POST "https://api.example.com/api/v1/medicalcases/batch-delete" \
 
 ```json
 {
-  "code": 0,
+  "success": true,
   "message": "批量删除完成",
   "data": {
     "isSuccess": true,
@@ -667,7 +669,7 @@ curl -X GET "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
 
 ```json
 {
-  "code": 0,
+  "success": true,
   "message": "查询成功",
   "data": {
     "id": "12345678-abcd-ef01-2345-678901234567",
@@ -785,7 +787,7 @@ curl -X GET "https://api.example.com/api/v1/medicalcases?patientId=a1b2c3d4-e5f6
 
 ```json
 {
-  "code": 0,
+  "success": true,
   "message": "查询成功",
   "data": {
     "items": [
@@ -918,7 +920,7 @@ curl -X GET "https://api.example.com/api/v1/medicalcases/search?diagnosisKeyword
 
 ```json
 {
-  "code": 0,
+  "success": true,
   "message": "搜索成功",
   "data": {
     "items": [
@@ -961,7 +963,7 @@ curl -X GET "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
 
 ```json
 {
-  "code": 0,
+  "success": true,
   "message": "查询成功",
   "data": [
     {
@@ -1002,7 +1004,7 @@ curl -X GET "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
 
 ```json
 {
-  "code": 0,
+  "success": true,
   "message": "查询成功",
   "data": [
     {
@@ -1150,12 +1152,28 @@ curl -X GET "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
 
 ---
 
+## 🚧 待实现端点（v1.0 范围，D1/D2/D9 补回项）
+
+> 以下端点属 v1.0 设计范围（基线§1），代码尚未实现，文档保留设计。详见 `docs/compose/specs/2026-06-28-docs-reconciliation-baseline.md`。
+
+| 端点 | 说明 | 补回决策 |
+|------|------|----------|
+| `POST /medicalcases/batch-details` | 批量获取医案详情（单次最多 50 个，对应 ERR-30603） | 🚧 v1.0 待实现（**D9** 历史聚合查询补回） |
+| `GET /medicalcases/{id}/permissions` | 获取当前用户对该医案的操作权限 | 🚧 v1.0 待实现（**D9**） |
+| `GET /medicalcases/{id}/audit-logs` | 医案审计日志查询（需 AuditLog 实体 + Service） | 🚧 v1.0 待实现（**D1** 医案审计日志补回，对应 MC-017） |
+| `PUT /medicalcases/{id}/print-completed` | 记录打印完成（IsPrinted/PrintVersion/PrintCount/LastPrintedAt 回写） | 🚧 v1.0 待实现（**D2** 打印保护/回写补回，PRINT-004） |
+| `POST /medicalcases/{id}/print-logs` | 添加打印日志（需 PrintLog 实体） | 🚧 v1.0 待实现（**D2**） |
+
+> **幻影实体说明**：`AuditLog`、`MedicalCasePrintLog` 实体当前**代码中不存在**（`AppDbContext` 无对应 DbSet），属 D1/D2 补回时新建。详见基线§7 原则 2。
+
+---
+
 ## 打印操作
 
 打印端点已独立到 [printing.md](08-printing.md)，包含:
 
-- `PUT /medicalcases/{id}/print-completed` — 记录打印完成
-- `POST /medicalcases/{id}/print-logs` — 添加打印日志
+- `PUT /medicalcases/{id}/print-completed` — 记录打印完成 🚧（D2 待实现）
+- `POST /medicalcases/{id}/print-logs` — 添加打印日志 🚧（D2 待实现）
 
 ---
 
@@ -1193,3 +1211,4 @@ curl -X GET "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
 | 2026-06-12 | v1.5 | 打印端点移至 printing.md，改为交叉引用 |
 | 2026-06-12 | v1.6 | MedicalCaseInputDto: 新增 userId/registrationId/editReason/needsPrescription 字段 |
 | 2026-06-25 | v2.0 | 补充所有端点完整请求/响应 JSON 示例和 curl 命令; 更新 DTO 字段与代码对齐 (移除 remark 字段, 修正 PrescriptionInputDto 结构); 新增枚举值速查表; 移除不存在的 MedicalCasePrintController/MedicalCaseAuditController 引用 |
+| 2026-06-28 | v2.1 | 文档对齐基线：响应信封 code→success（基线§6）；权限策略加 D7 待对齐标注（目标 DoctorOrReceptionist/创建 Doctor-only，代码 DoctorOrAdmin）；新增「待实现端点」章节标注 batch-details/permissions/audit-logs/print-completed/print-logs（D1 审计/D2 打印回写/D9 历史） |

@@ -9,7 +9,7 @@
      │                   (Kestrel :5000/:5001)
      │
      └── 本地模式 ──→ [LYBT.LocalWebAPI] ──→ [SQL Server LocalDB]
-                         (Kestrel :5000)        (%APPDATA%\LYBT\data\)
+                         (Kestrel :5300)        (%LOCALAPPDATA%\LYBTZYZS\data\)
 ```
 
 ---
@@ -29,7 +29,11 @@
 | [07-backup-recovery.md](./07-backup-recovery.md) | 备份策略、恢复流程、灾难恢复 |
 | [08-monitoring-alerting.md](./08-monitoring-alerting.md) | 监控指标、告警规则、日常巡检 |
 | [09-deployment-rollback.md](./09-deployment-rollback.md) | 部署流程、回滚策略、决策矩阵 |
-| [archive/](./archive/) | 归档文档 (5 个文件) |
+| [10-variables-secrets.md](./10-variables-secrets.md) | 配置变量与密钥清单、上线前检查 |
+| [11-variables-value-ranges.md](./11-variables-value-ranges.md) | 变量值域、默认值、取值范围 |
+| [12-deployment-flow.md](./12-deployment-flow.md) | 远程/本地部署流程、更新与回滚步骤 |
+
+> 注：历史归档子目录 `archive/` 已不存在（文件已合并入主目录）。
 
 ---
 
@@ -80,7 +84,7 @@ POST /api/v1/diagnostics/logging/debug/disable
 | 端点 | 类型 | 权限 | 说明 |
 |------|------|------|------|
 | `GET /health` | 中间件映射 | 匿名 | ASP.NET Core HealthCheck 中间件（探活、负载均衡） |
-| `GET /health/database` | 中间件映射 | 匿名 | 数据库连接检查 |
+| `GET /health/database` | 中间件映射 | 匿名 | 数据库连接检查（`MapHealthChecks` 中间件层，**仅 Server WebAPI 提供**，LocalWebAPI 无此端点） |
 | `GET /api/v1/health` | 控制器 | 匿名 | 业务层健康检查（返回 `Healthy` + 时间戳） |
 | `GET /api/v1/health/ping` | 控制器 | 匿名 | Ping/Pong |
 | `GET /api/v1/health/details` | 控制器 | 已认证 | 详细检查 (含数据库连接、迁移状态) |
@@ -107,5 +111,6 @@ POST /api/v1/diagnostics/logging/debug/disable
 ## 变更记录
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-06-28 | v1.2 | 端口统一 5300（LocalWebAPI 嵌入模式）；导航补 10/11/12；/health/database 注明仅 Server；LocalDB 路径改 %LOCALAPPDATA%\LYBTZYZS |
 | 2026-02-10 | v1.1 | 拆分部署和配置内容到独立文档，精简为索引+日志+健康检查 |
 | 2026-02-10 | v1.0 | 初始版本 |

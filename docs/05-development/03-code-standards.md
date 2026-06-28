@@ -105,7 +105,7 @@ public class PatientRepository : BaseRepository<Patient>, IPatientRepository
 
 `BaseRepository<T>` 提供标准 CRUD: `GetByIdAsync`, `GetPagedAsync`, `AddAsync`, `UpdateAsync`, `DeleteAsync`, `RestoreAsync`。
 
-### Service 层与 ServiceResult<T>
+### Service 层与 ServiceResult&lt;T&gt;
 
 ```csharp
 public class PatientService : IPatientService
@@ -196,9 +196,9 @@ EF Core 全局查询过滤器自动排除 `IsDeleted = true` 的记录。
 
 - Controller 不写 try-catch，由全局异常处理器 (`BusinessExceptionHandler` + `SystemExceptionHandler`) 统一处理
 - Service 层抛出 `BusinessException` 表示业务规则违反
-- 使用 `Result<T>` 模式传递操作结果
+- 使用 `ServiceResult<T>` 模式传递操作结果（统一返回类型，禁用裸 `Result<T>` 或 `Tuple`）
 
-> **何时用 `Result<T>` vs `BusinessException`**: `Result<T>` 用于可预期的业务校验失败（如重名、状态不合法），调用方需根据结果分支处理。`BusinessException` 用于不可恢复的规则违反，直接抛出由全局异常处理器统一返回 HTTP 错误响应。优先使用 `Result<T>`；仅在调用方无需特殊处理时才用异常。
+> **何时用 `ServiceResult<T>` vs `BusinessException`**: `ServiceResult<T>` 用于可预期的业务校验失败（如重名、状态不合法），调用方需根据结果分支处理。`BusinessException` 用于不可恢复的规则违反，直接抛出由全局异常处理器统一返回 HTTP 错误响应。优先使用 `ServiceResult<T>`；仅在调用方无需特殊处理时才用异常。
 
 ### API 响应
 

@@ -4,7 +4,7 @@
 # Modules (Desktop)
 
 ## Purpose
-Business modules for the WPF desktop client. Each module encapsulates a domain area (Auth, Patients, Herbs, Formula, MedicalCase, Registration, Sync, Users) and follows the Prism module pattern with `IModule` registration, region-based navigation, and ViewModels inheriting from `NavigableViewModelBase` or `MasterDetailViewModelBase`. Modules are strictly isolated — cross-module references are forbidden.
+Business modules for the WPF desktop client. Each module encapsulates a domain area (Auth, Patients, Herbs, Formula, MedicalCase, Registration, Users). Sync 模块为 v2.0 规划（v1.0 远程/本地数据孤立，见 docs/compose/specs/2026-06-28-docs-reconciliation-baseline.md §2） and follows the Prism module pattern with `IModule` registration, region-based navigation, and ViewModels inheriting from `NavigableViewModelBase` or `MasterDetailViewModelBase`. Modules are strictly isolated — cross-module references are forbidden.
 
 ## Subdirectories
 | Directory | Purpose |

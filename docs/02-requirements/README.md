@@ -1,6 +1,29 @@
 # 需求文档 (02-requirements)
 
-> 版本: v2.0 | 日期: 2026-06-15 | 状态: ✅ 已完成
+> 版本: v2.1 | 日期: 2026-06-28 | 状态: ✅ 已更新（v1.0 范围冻结）
+
+## v1.0 范围决策（2026-06-28）
+
+基于 PRD-代码对账矩阵（D1-D10）+ Sync/N1 + SHELL 扩展判定，以下 US 状态已更新：
+
+| US ID / 决策 | 标题 | 决策 | 状态 |
+|-------|------|------|------|
+| D1 / US-MC-017 | 医案审计日志 | A 补回 v1.0 | 🧲 v1.0 待实现 |
+| D2 / US-PRINT-004 | 打印保护/回写（IsPrinted/PrintVersion/PrintCount/LastPrintedAt） | A 补回 v1.0 | 🧲 v1.0 待实现 |
+| D3 / US-AUTH-006 | 令牌族旋转撤销 | B+ 补回 v1.0（重放检测 v2.0） | 🧲 v1.0 待实现 |
+| D3 / US-AUTH-007 | 安全审计日志 | B+ 补回 v1.0 | 🧲 v1.0 待实现 |
+| D3 / US-AUTH-013 | 本地限流 | B+ 补回 v1.0 | 🧲 v1.0 待实现 |
+| D4 / US-USER-011 等 | Restore 软删除恢复（Users/Patients/Herbs/Formulas） | A 补回 v1.0（基础设施已就绪） | 🧲 v1.0 待实现 |
+| D5 / BR-DEL-001 | 引用检查（Patients 单删 / Herbs） | A 必做 v1.0 | 🧲 v1.0 待实现 |
+| D6 / US-HERB-006 等 | Excel 导入导出（Herbs 补 Excel；Patients 导入 v2.0） | A Herbs 补 v1.0 | 🧲 v1.0 待实现 |
+| D7 | 权限策略错配（Registration/Patients/Herbs/MC） | A 按文档修代码（文档权威） | ⚠️ 代码待对齐 |
+| D8 | P0 数据/安全 Bug（7 个） | A 全修 | ⚠️ 代码待对齐 |
+| D9 / US-MC-008 | 诊断历史聚合 | A 补回 v1.0 | 🧲 v1.0 待实现 |
+| D9 / US-MC-009 | 处方历史聚合 | A 补回 v1.0 | 🧲 v1.0 待实现 |
+| D10 | 字段级加密 | 拉回 v1.0 | 🧲 v1.0 待实现 |
+| Sync 整模块 | 数据同步（8 US） | v2.0（v1.0 数据孤立 N1） | v2.0 规划 |
+| SHELL-010~019 | Shell 扩展 10 项 | 010/011/013/014/016/017/018/019 = v1.0；012 = v2.0；015 = 撤销并入 013 | 见 11-platform.md |
+| US-SHELL-003 | 模块加载 | A 修复 v1.0 | ⚠️ v1.0 修复 |
 
 ## 文件索引
 
@@ -12,12 +35,13 @@
 | [04-patients.md](04-patients.md) | 患者管理 | 13 | ✅ 已完成 |
 | [05-herbs.md](05-herbs.md) | 药材管理 | 13 | ✅ 已完成 |
 | [06-formulas.md](06-formulas.md) | 验方管理 | 13 | ✅ 已完成 |
-| [07-medical-cases.md](07-medical-cases.md) | 医案管理（核心聚合根） | 18 | ✅ 已完成 |
-| [08-registration.md](08-registration.md) | 挂号管理 | 7 | ✅ 已完成 |
+| [07-medical-cases.md](07-medical-cases.md) | 医案管理（核心聚合根） | 19 | ✅ 已完成 |
+| [08-registration.md](08-registration.md) | 挂号管理 | 8 | ✅ 已完成 |
 | [09-printing.md](09-printing.md) | 处方打印 | 4 | ✅ 已完成 |
-| [11-platform.md](11-platform.md) | 平台基础设施（Shell/Config/Err/Log/Sys/Card） | 35 | ✅ 已完成 |
+| [11-platform.md](11-platform.md) | 平台基础设施（Shell/Config/Err/Log/Sys/Card） | 43 | ✅ 已完成 |
 | [12-nfr.md](12-nfr.md) | 非功能需求 | — | ✅ 已完成 |
-| **合计** | | **128** | |
+| [13-traceability-matrix.md](13-traceability-matrix.md) | 需求追溯矩阵（US→ADR/Flow/API/实现） | 138 | ✅ 已完成 |
+| **合计** | | **138** | |
 
 ## US 编号体系
 
@@ -40,7 +64,7 @@
 | US-SYS | 平台-健康诊断 | 11-platform.md |
 | US-CARD | 平台-读卡器 | 11-platform.md |
 
-## US 总览（128 项）
+## US 总览（138 项）
 
 ### 认证与会话（US-AUTH × 13）
 
@@ -131,7 +155,7 @@
 | US-FORM-012 | 恢复软删除验方 |
 | US-FORM-013 | 批量操作 + 导出 + 模板 |
 
-### 医案管理（US-MC × 18，核心聚合根）
+### 医案管理（US-MC × 19，核心聚合根）
 
 | US ID | 标题 |
 |-------|------|
@@ -153,8 +177,9 @@
 | US-MC-016 | 查询医案权限 |
 | US-MC-017 | 查询审计日志（20字段差异） |
 | US-MC-018 | 批量详情查询（≤50，解决 N+1） |
+| US-MC-019 | 复制上次处方微调（D6） |
 
-### 挂号管理（US-REG × 7）
+### 挂号管理（US-REG × 8）
 
 | US ID | 标题 |
 |-------|------|
@@ -165,6 +190,7 @@
 | US-REG-005 | 开始就诊（Waiting→InProgress） |
 | US-REG-006 | 取消挂号（仅 Waiting） |
 | US-REG-007 | 医案联动（完成/取消自动回写） |
+| US-REG-008 | 医生工作台待诊列表实时更新（SignalR） |
 
 ### 处方打印（US-PRINT × 4）
 
@@ -175,9 +201,9 @@
 | US-PRINT-003 | 导出处方（XPS/PDF） |
 | US-PRINT-004 | 打印记录回写服务器（成功/失败） |
 
-### 平台基础设施（US-SHELL/CFG/ERR/LOG/SYS/CARD × 35）
+### 平台基础设施（US-SHELL/CFG/ERR/LOG/SYS/CARD × 43）
 
-#### Shell（5）
+#### Shell（v1.0 有效 13：原 5 + SHELL-010~019 补充 8；另有 012=v2.0、015=撤销）
 
 | US ID | 标题 |
 |-------|------|
@@ -186,6 +212,16 @@
 | US-SHELL-004 | 账户设置（个人资料+密码） |
 | US-SHELL-005 | 菜单导航 |
 | US-SHELL-007 | 双模式连接切换 |
+| US-SHELL-010 | Desktop 安装（Velopack）🧲 v1.0 |
+| US-SHELL-011 | 首次初始化向导 🧲 v1.0 |
+| US-SHELL-012 | Desktop 自动更新（v2.0 规划） |
+| US-SHELL-013 | 数据库备份恢复（含备份状态+手动备份，原 015 并入）🧲 v1.0 |
+| US-SHELL-014 | 安全审计日志查看 🧲 v1.0 |
+| ~~US-SHELL-015~~ | ~~备份状态与手动备份~~（撤销，并入 013） |
+| US-SHELL-016 | 配置导出/导入 🧲 v1.0 |
+| US-SHELL-017 | 生产环境安全门控（v1.0 ✅） |
+| US-SHELL-018 | sysadmin 配置中心 🧲 v1.0 |
+| US-SHELL-019 | 读卡器诊断测试工具 🧲 v1.0 |
 
 #### Configuration（4）
 

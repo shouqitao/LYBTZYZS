@@ -1,12 +1,12 @@
 # 诊断工具 API
 
-> Controller: `DiagnosticsController` | 路由前缀: `/api/v1/diagnostics` | 默认权限: 远程 `[Authorize(Policy = PolicyConstants.AdminOnly)]`; 本地 `[Authorize]` (任意已登录用户)
+> Controller: `DiagnosticsController` | 路由前缀: `/api/v1/diagnostics` | 默认权限: 远程 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`; 本地 `[Authorize]` (任意已登录用户)
 
 ## 概述
 
 提供运行时日志级别动态调整功能，用于生产环境问题排查。远程模式仅 Admin/SuperAdmin 可访问；本地模式任意已登录用户可访问。调试模式有最大时长限制 (120 分钟)，到期自动恢复默认级别。
 
-> **注意**: 远程模块使用 `[Authorize(Policy = PolicyConstants.AdminOnly)]` 策略授权。本地模式使用类级 `[Authorize]`（任意已登录用户）。
+> **注意**: 远程模块使用 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]` 策略授权。本地模式使用类级 `[Authorize]`（任意已登录用户）。
 
 ---
 
@@ -253,3 +253,4 @@ curl -X POST http://localhost:5000/api/v1/diagnostics/logging/level \
 | 2026-02-10 | v1.0 | 初始版本 |
 | 2026-06-12 | v1.1 | 标注使用基于角色授权 (非策略授权) |
 | 2026-06-25 | v1.2 | 补充全部端点的 curl 示例、`ApiResponse<T>` 信封完整 JSON 示例、无效/空级别错误响应、错误码表 |
+| 2026-06-28 | v1.1 | 文档对齐代码：权限策略 AdminOnly→AdminOrSuperAdmin（对齐 DiagnosticsController.cs:19） |

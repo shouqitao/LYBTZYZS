@@ -1,6 +1,8 @@
 # 验方 API
 
 > Controller: `FormulasController` | 路由前缀: `/api/v1/formulas` | 默认权限: `[Authorize(Policy = "DoctorOrReceptionist")]`
+>
+> ⚠️ **权限待对齐（D7，基线§3）**：文档目标策略为 `DoctorOrReceptionist`；代码当前为 `DoctorOrAdmin`，待对齐。
 
 ## 概述
 
@@ -787,3 +789,4 @@ curl -X POST "http://localhost:5000/api/v1/formulas/batch-delete" \
 | 2026-02-10 | v1.0 | 初始版本 |
 | 2026-02-18 | v1.1 | 新增错误码章节 (ERR-60101~60302) |
 | 2026-06-25 | v2.0 | 全面重写：移除不存在的 batch-enable/batch-disable/export/import-template 端点；为全部 10 个端点补充完整请求/响应 JSON 示例、curl 命令、错误码表 |
+| 2026-06-28 | v2.1 | 文档对齐基线：权限策略加 D7 待对齐标注（目标 DoctorOrReceptionist，代码 DoctorOrAdmin） |

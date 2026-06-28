@@ -35,13 +35,13 @@ docs: add developer onboarding guide
 ## 分支策略
 
 ```
-main          ← 稳定分支，PR合并目标
+master        ← 稳定分支，PR合并目标
 ├── feat/xxx  ← 新功能
 ├── fix/xxx   ← Bug修复
 └── refactor/xxx ← 重构
 ```
 
-- 从 `main` 创建分支
+- 从 `master` 创建分支
 - 一个分支一个关注点
 - 完成后创建 PR
 
@@ -120,7 +120,7 @@ gitnexus_detect_changes()           # 确认变更范围
 
 - **集成优先**: 真实数据库，零Mock
 - Server测试: 真实SQL Server + Respawn清理
-- Desktop测试: SQLite InMemory
+- Desktop测试: SQL Server LocalDB
 - 架构测试: 守卫架构规则
 
 ### 覆盖要求
@@ -151,9 +151,8 @@ dotnet test tests/LYBT.Tests.Architecture/  # 架构守卫
 
 | 文档 | 说明 |
 |------|------|
-| [ONBOARDING.md](ONBOARDING.md) | 新人引导 |
-| [DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md) | 开发者总入口 |
 | [05-development/](05-development/) | 编码标准、开发流程 |
+| [01-setup.md](05-development/01-setup.md) | 快速开始（新人上手） |
 
 ---
 

@@ -52,3 +52,10 @@
 | 2026-03-08 | SQLite 迁移至 SQL Server |
 | 2026-03-09 | Sprint 6: 实现运行时切换 (SYNC-D03) |
 | 2026-05-01 | **架构简化**: 移除 ConnectionMode 运行时切换、移除遗留 Local 仓储、统一为 Remote + LocalWebAPI |
+
+## 关联 US
+
+> 本 ADR 已被 [ADR-0009](0009-url-driven-dual-mode.md) 取代；以下关联为历史溯源。
+
+- US-SHELL-007（双模式连接切换，现由 ADR-0009 实现层承载）
+- US-AUTH-009 / US-AUTH-012（本地自动登录 / 本地简化认证，原 SQLite 本地认证已迁移至 LocalWebAPI JWT）

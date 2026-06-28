@@ -14,7 +14,7 @@ git checkout master
 
 ### 1. .NET SDK
 
-- **版本**: 8.0.406+ (由 `global.json` 锁定)
+- **版本**: 8.0.400+ (`global.json` 锁定 `8.0.400` + `rollForward: latestMinor`，实际接受 8.0.4xx)
 - **下载**: https://dotnet.microsoft.com/download/dotnet/8.0
 - **验证**: `dotnet --version` 输出 `8.0.4xx`
 
@@ -47,7 +47,7 @@ git checkout master
 1. 创建数据库:
 
 ```sql
-CREATE DATABASE LYBTDB;
+CREATE DATABASE LYBTDB_Dev;
 ```
 
 2. 配置连接字符串 (`src/Server/Services/LYBT.WebAPI/appsettings.json`):
@@ -55,12 +55,12 @@ CREATE DATABASE LYBTDB;
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=LYBTDB;Trusted_Connection=True;TrustServerCertificate=true;MultipleActiveResultSets=true"
+    "DefaultConnection": "Server=localhost;Database=LYBTDB_Dev;Trusted_Connection=True;TrustServerCertificate=true;MultipleActiveResultSets=true"
   }
 }
 ```
 
-3. 数据库迁移会在应用启动时自动执行 (`EnsureCreatedInDevelopment: true`)。
+3. 数据库迁移会在应用启动时自动执行 (`DatabaseInitializationService` 调用 `MigrateAsync()`，幂等迁移 + 失败重试；InMemory 测试场景才用 `EnsureCreatedAsync`)。
 
 ### 本地模式 (SQL Server LocalDB)
 
@@ -84,15 +84,22 @@ CREATE DATABASE LYBTDB;
 
 所有 NuGet 包版本在根目录 `Directory.Packages.props` 统一管理，各 `.csproj` 只声明包名不声明版本。
 
-核心依赖:
+核心依赖 (版本由 `Directory.Packages.props` 统一管理，以下为当前锁定值):
 
 | 包 | 版本 | 用途 |
 |-----|------|------|
-| Microsoft.EntityFrameworkCore | 8.x | ORM |
-| Prism.DryIoc | 9.x | WPF MVVM + DI |
-| Asp.Versioning.Mvc | 8.x | API 版本控制 |
-| Serilog | 4.x | 结构化日志 |
-| ClosedXML | 0.102.x | Excel 导入导出 |
+| Microsoft.EntityFrameworkCore | 8.0.26 | ORM |
+| Prism.DryIoc / Prism.Wpf / Prism.Core | 8.1.97 | WPF MVVM + DI |
+| CommunityToolkit.Mvvm | 8.4.2 | MVVM 源生成器 (`[ObservableProperty]` / `[RelayCommand]`) |
+| MaterialDesignThemes | 5.3.2 | WPF UI (MDIX) |
+| Asp.Versioning.Mvc | 8.1.1 | API 版本控制 |
+| Serilog | 4.3.1 | 结构化日志 |
+| Riok.Mapperly | 4.3.1 | 编译时对象映射 (非 AutoMapper) |
+| BCrypt.Net-Next | 4.1.0 | 密码哈希 |
+| FluentValidation | 12.1.1 | 输入验证 |
+| EPPlus | 7.7.3 | Excel 导入导出 |
+| NPOI | 2.8.0 | Excel 兼容格式处理 |
+| Refit | 8.0.0 | HTTP 客户端 (Desktop) |
 
 Desktop-only 依赖:
 

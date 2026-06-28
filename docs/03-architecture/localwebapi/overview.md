@@ -31,7 +31,7 @@ src/Client/Desktop/LocalWebAPI/
 ├── LocalWebApiHost.cs               # Kestrel 生命周期管理器
 ├── Auth/
 │   └── LocalJwtConfig.cs            # JWT 认证 (HMAC-SHA256, 1年有效期)
-├── Controllers/                     # 8 个控制器
+├── Controllers/                     # 11 个控制器
 │   ├── AuthController.cs
 │   ├── UsersController.cs
 │   ├── PatientsController.cs
@@ -39,6 +39,9 @@ src/Client/Desktop/LocalWebAPI/
 │   ├── FormulasController.cs
 │   ├── RegistrationsController.cs
 │   ├── MedicalCasesController.cs
+│   ├── ReportsController.cs         # 报表/历史聚合查询
+│   ├── DiagnosticsController.cs     # 本地诊断 (db-info/logs)
+│   ├── ConfigurationController.cs   # 本地配置
 │   └── HealthController.cs
 ├── Data/
 │   ├── LocalWebApiDbContext.cs      # EF Core DbContext (SQL Server)
@@ -57,7 +60,7 @@ src/Client/Desktop/LocalWebAPI/
 ### LocalWebApiHost
 
 Kestrel 生命周期管理器，负责：
-- `StartAsync()`: 构建 WebApplication → 配置动态端口 → 初始化数据库 → 启动 Kestrel → 捕获实际端口
+- `StartAsync()`: 构建 WebApplication → 配置端口（嵌入模式 5300）→ 初始化数据库 → 启动 Kestrel → 捕获实际端口
 - `StopAsync()`: 取消令牌 → 等待运行任务 → 释放资源
 - 线程安全：lock 防止并发 Start/Stop
 - 幂等性：重复 StartAsync 不会重复启动
@@ -77,7 +80,9 @@ SQL Server 数据库上下文：
 
 ### 动态端口发现
 
-使用端口 0 (OS 自动分配)，启动后通过 `IServerAddressesFeature` 获取实际端口：
+> **嵌入模式端口 = 5300**（硬编码常量，见 `EmbeddedLocalWebApiService.cs:17` + `appsettings.json:OfflineMode:LocalApiBaseUrl`）。独立调试模式（仅 `LocalWebAPI/Program.cs:5` 直接运行）使用 5290，嵌入模式不生效。
+
+启动后通过 `IServerAddressesFeature` 确认实际绑定端口：
 ```csharp
 var addressFeature = _app.ServerFeatures.Get<IServerAddressesFeature>();
 Port = new Uri(addressFeature.Addresses.First()).Port;

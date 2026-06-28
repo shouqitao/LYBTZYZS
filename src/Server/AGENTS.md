@@ -4,7 +4,7 @@
 # Server
 
 ## Purpose
-ASP.NET Core WebAPI backend for the LYBTZYZS TCM clinic management system. Implements a three-layer architecture (Controller -> Service -> Repository -> DbContext) with domain entities, EF Core infrastructure, business modules (Auth, Users, Patients, Herbs, Formula, MedicalCase, Registration, Sync), and the API entry point. MedicalCase uses a CQRS pattern with CommandHandler.
+ASP.NET Core WebAPI backend for the LYBTZYZS TCM clinic management system. Implements a three-layer architecture (Controller -> Service -> Repository -> DbContext) with domain entities, EF Core infrastructure, business modules (Auth, Users, Patients, Herbs, Formula, MedicalCase, Registration, Reports（Sync 为 v2.0 规划，v1.0 远程/本地数据孤立）), and the API entry point. MedicalCase uses a CQRS pattern with CommandHandler.
 
 ## Key Files
 | File | Description |
@@ -16,7 +16,7 @@ ASP.NET Core WebAPI backend for the LYBTZYZS TCM clinic management system. Imple
 | Directory | Purpose |
 |-----------|---------|
 | [Core/](Core/AGENTS.md) | Core libraries — domain entities and EF Core infrastructure |
-| [Modules/](Modules/AGENTS.md) | Business modules — Auth, Users, Patients, Herbs, Formula, MedicalCase, Registration, Sync |
+| [Modules/](Modules/AGENTS.md) | Business modules — Auth, Users, Patients, Herbs, Formula, MedicalCase, Registration, Reports（Sync 为 v2.0 规划，v1.0 远程/本地数据孤立） |
 | [Services/](Services/AGENTS.md) | API entry point — ASP.NET Core WebAPI host |
 
 ## For AI Agents

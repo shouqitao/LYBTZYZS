@@ -16,19 +16,21 @@
 
 ## P0 — 架构违规
 
-### TASK-01: RegistrationsController 直接注入 AppDbContext
+### TASK-01: RegistrationsController 直接注入 AppDbContext ✅ 已完成
 - **文件**: `src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs:28`
 - **违规**: 架构规则 P10 — Service 层不得直接注入 AppDbContext
 - **修复**: 提取 RegistrationService，Controller 仅调用 Service
 - **影响范围**: RegistrationsController + 新建 IRegistrationService/RegistrationService
 - **测试**: 现有 Registration 测试应通过（集成测试不依赖内部实现）
+- **状态**: ✅ 已修复（RegistrationService 已提取，Controller 不再直接注入 AppDbContext）
 
-### TASK-02: ConfigurationController 使用字符串角色而非 Policy
+### TASK-02: ConfigurationController 使用字符串角色而非 Policy ✅ 已完成
 - **文件**: `src/Server/Services/LYBT.WebAPI/Controllers/ConfigurationController.cs:13`
 - **违规**: `[Authorize(Roles = "Admin")]` 应改为 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`
 - **修复**: 替换为 Policy 常量，确保只有 SuperAdmin 可修改配置
 - **影响范围**: ConfigurationController 仅
 - **测试**: Configuration 现有测试需更新授权断言
+- **状态**: ✅ 已修复（已切换到 Policy 常量）
 
 ---
 
@@ -120,23 +122,25 @@
 
 ## 工作量估算
 
-| 任务 | 优先级 | 预估工时 | 模块 |
-|------|--------|----------|------|
-| TASK-01 | P0 | 2-3h | Registration |
-| TASK-02 | P0 | 0.5h | Configuration |
-| TASK-03 | P1 | 4-6h | 全局 |
-| TASK-04 | P1 | 2-4h 或文档决策 | MedicalCase |
-| TASK-05 | P1 | 1-2h | Desktop 全局 |
-| TASK-06 | P1 | 1-2h | LocalData |
-| TASK-07 | P2 | 0.5h | Sync |
-| TASK-08 | P2 | 2-3h | API Docs |
-| TASK-09 | P2 | 1h | Desktop |
-| TASK-10 | P2 | 0.5h | Patients |
-| TASK-11 | P3 | 4-8h | Printing |
-| TASK-12 | P3 | 2-3h | Server |
-| TASK-13 | P3 | 1-2h | Logging |
+> TASK-01/02 已完成，下表保留历史估算供参考。
 
-**P0 总计**: ~3h | **P1 总计**: ~8-14h | **P2 总计**: ~4-5h
+| 任务 | 优先级 | 预估工时 | 模块 | 状态 |
+|------|--------|----------|------|------|
+| TASK-01 | P0 | 2-3h | Registration | ✅ 已完成 |
+| TASK-02 | P0 | 0.5h | Configuration | ✅ 已完成 |
+| TASK-03 | P1 | 4-6h | 全局 | 待办 |
+| TASK-04 | P1 | 2-4h 或文档决策 | MedicalCase | 待办 |
+| TASK-05 | P1 | 1-2h | Desktop 全局 | 待办 |
+| TASK-06 | P1 | 1-2h | LocalData | 待办 |
+| TASK-07 | P2 | 0.5h | Sync | 待办 |
+| TASK-08 | P2 | 2-3h | API Docs | 待办 |
+| TASK-09 | P2 | 1h | Desktop | 待办 |
+| TASK-10 | P2 | 0.5h | Patients | 待办 |
+| TASK-11 | P3 | 4-8h | Printing | 待办 |
+| TASK-12 | P3 | 2-3h | Server | 待办 |
+| TASK-13 | P3 | 1-2h | Logging | 待办 |
+
+**P0 总计**: ~3h（✅ 已完成） | **P1 总计**: ~8-14h | **P2 总计**: ~4-5h
 
 ---
 
@@ -145,3 +149,4 @@
 | 日期 | 变更 | 作者 |
 |------|------|------|
 | 2026-06-13 | 初始版本 — 基于 PRD 100% + 架构文档完整评估 | AI Assistant |
+| 2026-06-28 | TASK-01/02 标记已完成（代码已修复，文档对账 2026-06-28） | AI Assistant |

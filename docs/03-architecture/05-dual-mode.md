@@ -1,5 +1,7 @@
 # 双模式架构（Remote WebAPI + LocalWebAPI）
 
+> **N1 决策（2026-06-28，用户确认）**：**v1.0 远程库与本地库数据孤立，不互通**。本地模式定位为"远程故障应急降级"，断网期录入的数据事后手动补录或可丢。**Sync（数据同步）整体延期至 v2.0**，本文档下文「同步架构」「同步协议规范」章节为 v2.0 设计参考，v1.0 不实现。
+
 ## 概述
 
 系统通过 URL 驱动的方式自动选择连接目标，不需要手动选择"模式"。
@@ -7,7 +9,7 @@
 | URL 类型 | 客户端实现 | 目标服务 | 数据库 | 适用场景 |
 |----------|-----------|---------|--------|----------|
 | **非 localhost** | RefitApiClient | Server WebAPI | SQL Server (远程) | 多用户联网环境 |
-| **127.0.0.1 / localhost** | HttpClientApiClient | 嵌入式 Kestrel | SQL Server (本地) | 单用户离线 |
+| **127.0.0.1 / localhost** | HttpClientApiClient | 嵌入式 Kestrel（端口 **5300**，见 `EmbeddedLocalWebApiService.cs:17` + `appsettings.json:OfflineMode:LocalApiBaseUrl`） | SQL Server (本地) | 单用户离线 |
 
 用户通过状态栏的"连接设置"弹出面板输入 URL，`SwitchingApiClient` 代理自动路由到对应的底层实现。Repository 层完全无感知。
 
@@ -70,7 +72,7 @@
 | **实体模型** | 完全相同 — `src/Server/Core/LYBT.Entities/`，LocalWebApiDbContext 复用所有 `IEntityTypeConfiguration` |
 | **业务规则** | Validators、BusinessRules 完全共享 |
 | **认证机制** | 两端均使用 JWT Bearer Token + 相同 Claims Schema |
-| **授权策略** | 相同的 2 个 Policy（DoctorOrReceptionist + AdminOrSuperAdmin） |
+| **授权策略** | 相同的 4 个 Policy（`DoctorOrReceptionist` / `DoctorOrAdmin` / `AdminOnly` / `AdminOrSuperAdmin`，见 `PolicyConstants`） |
 | **EF Core 过滤器** | `IsDeleted` 软删除全局过滤器两端均生效 |
 | **异常处理** | 两端均通过 middleware/handler 统一处理，返回相同 ProblemDetails 格式 |
 
@@ -144,19 +146,23 @@ graph TB
 
 ## 模式切换流程
 
+> 对应 [ADR-0009: URL 驱动双模式架构](decisions/0009-url-driven-dual-mode.md) —— **URL 改即生效，无显式切换动作**。
+
 ```mermaid
 flowchart TD
-    A[用户点击切换模式] --> B{当前模式?}
-    B -->|Remote| C{有未同步数据?}
-    B -->|Local| D[停止 LocalWebAPI]
-    C -->|Yes| E[提示同步数据]
-    C -->|No| F[切换到 Local]
-    D --> F
-    E --> G[执行同步]
-    G --> F
-    F --> H[启动 LocalWebAPI]
-    H --> I[更新 BaseUrlDelegatingHandler]
+    A[用户在连接设置面板修改 URL] --> B[ConnectionSettingsService 持久化新 URL]
+    B --> C[SwitchingApiClient 下次属性访问时读取 CurrentUrl]
+    C --> D{localhost / 127.0.0.1?}
+    D -->|是| E[路由到 HttpClientApiClient → 嵌入式 Kestrel :5300]
+    D -->|否| F[路由到 RefitApiClient → 远程 WebAPI :5000]
+    E --> G[Repository 层零感知，业务继续]
+    F --> G
 ```
+
+**关键特性**（ADR-0009）：
+- **无切换动作**：用户改 URL → 下次 API 调用自动走新目标，无需重启或重新登录
+- **无运行时状态机**：`SwitchingApiClient` 是无状态代理，每次属性访问实时判断
+- **无数据迁移**：v1.0 两库孤立（N1 决策），URL 切换不触发任何数据同步
 
 ## 架构图
 
@@ -231,11 +237,12 @@ SwitchingApiClient : IApiClient
 | Formulas | 15 | 17 | 113% | Local 多 clone, categories |
 | MedicalCases | 20 | 22 | 110% | Local 多 pending, by-status |
 | Registrations | 7 | 9 | 129% | Local 多便捷查询 |
-| Sync | 6 | 0 | — | Local 无 Sync（本地是唯一数据源） |
+| Reports | 3 | 3 | 100% | 历史聚合查询（MC-008/009） |
+| Sync | 6 | 0 | — | 🧲 v2.0（N1 决策，v1.0 两库孤立） |
 | Diagnostics | 4 | 7 | 175% | Local 多 db-info, logs/recent |
 | Configuration | 3 | 4 | 133% | — |
 | Health | 3 | 3 | 100% | — |
-| **总计** | **106** | **112** | **106%** | Local 多 8 个便捷端点，少 6 个 Sync 端点 |
+| **总计** | **~108** | **112** | — | Local 多 8 个便捷端点；Sync v2.0 |
 
 ### 本地模式限制（TBD-01）
 
@@ -283,7 +290,7 @@ LocalWebAPI 使用简化版 JWT 认证：
 | AccessToken 有效期 | 30 分钟 | 1 年 |
 | RefreshToken | 支持（Token Family 防重放） | 不支持 |
 | Claims 结构 | 完全相同 | 完全相同 |
-| Authorization Policy | 完全相同（2 个 Policy） | 完全相同 |
+| Authorization Policy | 完全相同（4 个 Policy） | 完全相同 |
 | SecurityAuditLog | 记录 | 不记录 |
 | Rate Limiting | 5次/60s 登录 | 不限制 |
 
@@ -311,6 +318,8 @@ modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserConfiguration).Assembly)
 ---
 
 ## 同步架构
+
+> 🧲 **v2.0 规划** — 本节及下方「同步协议规范」整体属 v2.0（N1 决策 2026-06-28：v1.0 远程与本地数据孤立）。下方内容为 v2.0 设计参考，v1.0 不实现。
 
 ### 同步流程
 
@@ -700,3 +709,4 @@ _context.MedicalCases
 | 2026-06-13 | v6.1 | **同步协议规范**: 新增 Checksum 算法、元数据模型、序列化格式、实体依赖顺序、错误恢复协议、MedicalCase 聚合同步详细文档 |
 | 2026-06-13 | v7.0 | **设计合理化重构**: 合并 localwebapi/ 3 个文档，新增设计理由章节、WebAPI vs LocalWebAPI 完整对比矩阵、LocalWebAPI 架构详情（Kestrel/认证/DbContext），关联 ADR-0009 |
 | 2026-06-25 | v7.1 | **模式切换流程图**: 新增 Mermaid flowchart 展示 Remote/Local 模式切换流程 |
+| 2026-06-28 | v7.2 | **N1 决策对齐**: 顶部加 N1 横幅（v1.0 远程/本地数据孤立，Sync 属 v2.0）; 端口统一 5300; 模式切换流程图重写为 ADR-0009「URL 改即生效」语义; Policy 数量 2→4 对齐 PolicyConstants |

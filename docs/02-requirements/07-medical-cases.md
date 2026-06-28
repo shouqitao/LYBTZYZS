@@ -54,6 +54,17 @@
 
 **统一入口**：所有完成操作通过 `CompleteAsync`（含 `skipWorkflowValidation` 参数控制是否跳过三步流程校验）。`UpdateStatusAsync` 拒绝 `Completed` 状态，强制使用 `CompleteAsync`。
 
+**Consultation 字段必填性（D8 决策）**：
+
+| 字段 | 必填性 | 说明 |
+|------|--------|------|
+| 主诉 | 必填 | 就诊主因，一句话概括 |
+| 现病史 | 必填 | 病情经过、伴随症状 |
+| 舌诊 | 必填 | 舌象描述（结构化选项 + 自由文本） |
+| 脉诊 | 必填 | 脉象描述（结构化选项 + 自由文本） |
+| 辨证（TcmDiagnosis） | 必填 | 中医辨证结论（BR-003 校验项） |
+| 既往史 | 选填 | 患者既往病史，可空 |
+
 ### 状态机
 
 ```mermaid
@@ -140,7 +151,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生
 **优先级**: Must
-**状态**: ✅ 已实现
+**状态**: ⚠️ 策略 DoctorOrAdmin 允许 Admin 创建，PRD 要求仅 Doctor
 
 **作为** 医生，**我想要** 为患者创建新的诊疗记录（MedicalCase 聚合根），**以便** 我可以开始记录本次诊疗的诊断和处方信息。
 
@@ -201,6 +212,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 5. 记录审计日志（US-MC-017）
 6. **打印保护**：若 `MedicalCase.IsPrinted=true` 且请求包含 Consultation 或 Prescription 内容变更，则 EditReason 必填（ERR-30403）。修改成功后：`MedicalCase.IsPrinted=false`、`MedicalCase.PrintVersion++`（需重新打印）
 7. **乐观并发控制**：RowVersion + 3 次重试（MC-D10）
+8. **辨证录入（D7 决策）**：主诉 / 现病史 / 舌诊 / 脉诊 / 辨证为 Consultation 的结构化字段（见 [04-data-model](../03-architecture/04-data-model.md) Consultation 实体）；舌象 / 脉象提供常用选项选择器 + 自由文本兜底；v1.0 **不做**智能辅助诊断（如 AI 推荐、证型自动判别）。
 
 **双模式**:
 | 模式 | 行为 |
@@ -365,7 +377,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生、管理员
 **优先级**: Should
-**状态**: ✅ 已实现
+**状态**: ⚠️ **v1.0 补回**（D9 决策：实现跨医案的历史聚合查询，约 2-3 人日）
+
+> **与 US-MC-006 的边界**：本故事是**历史聚合查询**——跨医案返回该患者所有已完成医案的 Consultation 列表。US-MC-006 `query?type=` 是**当前医案维度查询**（返回 MedicalCase 集合）。两者不重叠：MC-008 聚合历史诊断，MC-006 查医案集合。
 
 **作为** 医生，**我想要** 查询某患者的所有历史诊断记录，**以便** 复诊时参考既往辨证。
 
@@ -393,9 +407,11 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生、管理员
 **优先级**: Should
-**状态**: ✅ 已实现
+**状态**: ⚠️ **v1.0 补回**（D9 决策：实现跨医案的历史聚合查询，约 2-3 人日）
 
-**作为** 医生，**我想要** 查询某患者的所有历史处方记录，**以便** 复诊时复制或参考既往处方（US-MC-018 复制历史处方）。
+> **与 US-MC-006 的边界**：本故事是**历史聚合查询**——跨医案返回该患者所有已完成医案的 Prescription 列表。US-MC-006 `query?type=` 是**当前医案维度查询**。两者不重叠：MC-009 聚合历史处方，MC-006 查医案集合。复制处方动作见 US-MC-019。
+
+**作为** 医生，**我想要** 查询某患者的所有历史处方记录，**以便** 复诊时复制或参考既往处方（复制历史处方见 US-MC-019）。
 
 **验收标准**:
 - [ ] 按 patientId 查询 → 返回该患者所有已完成医案的 Prescription 列表
@@ -406,7 +422,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 1. 返回 Prescription 摘要（含 Items、DosageCount、TotalPrice）
 2. 仅返回 `Completed` 状态医案的 Prescription
 3. 按时间 DESC 排序
-4. 支持复制操作（US-MC-018）
+4. 支持复制操作（见 US-MC-019）
 
 **双模式**:
 | 模式 | 行为 |
@@ -620,8 +636,8 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 ### US-MC-016: 查询医案权限
 
 **角色**: 医生、管理员
-**优先级**: Must
-**状态**: ✅ 已实现
+**优先级**: Should
+**状态**: 🔴 无端点（PermissionService 不存在）
 
 **作为** 系统，**我想要** 基于角色和资源所有权实施细粒度权限检查，**以便** 医生只能操作自己的医案，管理员可以在提供理由后操作任意医案。
 
@@ -653,8 +669,8 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 ### US-MC-017: 查询审计日志（20字段差异）
 
 **角色**: 管理员
-**优先级**: Should
-**状态**: ✅ 已实现
+**优先级**: Must
+**状态**: ⚠️ **v1.0 补回**（D1 决策：恢复实体 + Audit Service + 字段 diff + 端点，约 3-5 人日）
 
 **作为** 管理员，**我想要** 查看医案的完整变更历史（含字段级 diff），**以便** 出现纠纷时可以追溯每次修改的操作人、时间、原因和具体变更内容。
 
@@ -688,11 +704,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 ### US-MC-018: 批量详情查询（≤50，解决 N+1）
 
-**角色**: 医生、管理员
+**角色**: 管理员
 **优先级**: Should
-**状态**: ✅ 已实现
+**状态**: 🔴 Service 有 GetBatchAsync 但 Controller 无端点暴露
 
 **作为** 医生，**我想要** 批量查询多个医案的详情，**以便** 在列表场景下避免 N+1 查询问题，提升性能。
+
+> **语义澄清**：本故事仅做批量详情查询（≤50，解决 N+1），**不含复制处方**——复制上次处方微调见 US-MC-019。
 
 **验收标准**:
 - [ ] 单次最多查询 50 个医案（IDs.Count > 50 → 返回 400，ERR-30603）
@@ -714,6 +732,38 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 | 本地 | 完全一致（通过统一 Service 层） |
 
 **实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:26`
+
+---
+
+### US-MC-019: 复制上次处方微调
+
+**角色**: 医生
+**优先级**: Should
+**状态**: 📋 已设计（🧲 v1.0 待实现，D6 决策）
+
+**作为** 医生，**我想要** 复诊时一键复制患者最近已完成医案的处方，**以便** 在原方基础上加减药材，避免重新逐味录入。
+
+**验收标准**:
+- [ ] 医案编辑界面提供"复制上次处方"按钮
+- [ ] 点击后拉取该患者最近一条 `Completed` 医案的 Prescription
+- [ ] 复制后处方药材列表（药名 / 剂量 / 单位 / 煎法）填入当前医案编辑区
+- [ ] 复制后可自由增 / 删 / 改药材与剂量
+- [ ] 保存为新医案的处方（不覆盖被复制的源医案）
+- [ ] 患者无已完成医案时按钮禁用并提示"无历史处方可复制"
+
+**业务规则**:
+1. **仅复制药材与剂量**（D6 决策）：药名 / 剂量 / 单位 / 煎法被复制；**价格按当前药材最新单价重新计算**，不复制源处方的旧价。
+2. 源处方限定为同一患者最近一条 `Completed` 医案（非取消/非挂起）。
+3. 复制是数据快照，修改新处方不影响源医案。
+4. 与 US-MC-018 区分：US-MC-018 是「批量详情查询」（≤50，解决 N+1），复制处方独立为 MC-019。
+
+**双模式**:
+| 模式 | 行为 |
+|------|------|
+| 远程 | 复用 US-MC-009 处方历史聚合接口拉取源处方 |
+| 本地 | 完全一致（通过统一 Service 层） |
+
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:26`（处方历史见 US-MC-009）
 
 ---
 
@@ -746,7 +796,6 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 - [处方打印](09-printing.md)（打印回写 IsPrinted/PrintCount/LastPrintedAt/PrintVersion）
 - [验方管理 US-FORM-011 处方导入过滤](06-formulas.md)（MC-D08）
 - [药材管理](05-herbs.md)（禁用药材跳过 MC-D09）
-- [数据同步](10-sync.md)（MedicalCase 为同步实体之一）
 - [平台基础设施 审计日志](11-platform.md)（SecurityAuditLog）
 - [术语表 MedicalCase = 医案（NOT 病历）](../01-product/03-glossary.md)
 
@@ -755,3 +804,5 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 | 日期 | 变更 | 原因 |
 |------|------|------|
 | 2026-06-25 | 补充 DosageCount 上限（ERR-30307）、医案号溢出处理、并发创建/保存边界条件 | 需求文档验收标准完善 |
+| 2026-06-28 | US-MC-002 补辨证录入（D7）、BR-003 补 Consultation 字段必填性（D8）、新增 US-MC-019 复制上次处方微调（D6） | spec S8 弱反映项补全；MC 数 18→19，合计 137→138 |
+| 2026-06-28 | US-MC-018 加交叉引用注（复制处方见 MC-019）；US-MC-008/009 加与 US-MC-006 边界说明；修正 MC-009 中 MC-018→MC-019 引用 | plan Task 7 边缘 US 修正 |

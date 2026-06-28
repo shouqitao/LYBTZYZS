@@ -4,7 +4,7 @@
 # tests
 
 ## Purpose
-Test projects for the LYBTZYZS solution. Implements a Testing Trophy architecture with ~2021+ tests across multiple projects: server integration tests (real SQL Server + Respawn, zero mock), desktop unit/integration tests (SQLite InMemory), architecture guard tests, and API integration tests.
+Test projects for the LYBTZYZS solution. Implements a Testing Trophy architecture with ~2021+ tests across multiple projects: server integration tests (real SQL Server + Respawn, zero mock), desktop unit/integration tests (SQL Server LocalDB), architecture guard tests, and API integration tests.
 
 ## Key Files
 | File | Description |
@@ -17,7 +17,7 @@ Test projects for the LYBTZYZS solution. Implements a Testing Trophy architectur
 | Directory | Purpose |
 |-----------|---------|
 | LYBT.Tests.Server/ | Server integration tests — ~1185 tests, real SQL Server + Respawn reset, zero mock |
-| LYBT.Tests.Desktop/ | Desktop tests — ~760 tests, SQLite InMemory + real Repository pattern |
+| LYBT.Tests.Desktop/ | Desktop tests — ~760 tests, SQL Server LocalDB + real Repository pattern |
 | LYBT.Tests.Architecture/ | Architecture guard tests — ~76 tests enforcing dependency rules, naming conventions, anti-mock policies |
 | LYBT.Tests.Server.Unit/ | Server unit tests (subset) |
 | LYBT.Tests.Integration/ | Integration test infrastructure |
@@ -35,7 +35,7 @@ Test projects for the LYBTZYZS solution. Implements a Testing Trophy architectur
 
 ### Testing Requirements
 - **Server tests**: Use real SQL Server database with Respawn for clean-state between tests. ZERO mocks.
-- **Desktop tests**: Use SQLite InMemory provider with real Repository implementations.
+- **Desktop tests**: Use SQL Server LocalDB provider with real Repository implementations.
 - **Architecture tests**: Verify dependency direction rules, naming conventions, and anti-mock policies (e.g., `P10_Services_Should_Not_Directly_Inject_AppDbContext`).
 
 ### Common Patterns

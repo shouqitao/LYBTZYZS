@@ -45,3 +45,8 @@ ViewModels/
 | 日期 | 变更 |
 |------|------|
 | 2025-12-04 | 初始决策 |
+
+## 关联 US
+
+- US-SHELL-001 / US-SHELL-003 / US-SHELL-005（启动管线、模块加载、菜单导航：Coordinator + Components 拆分）
+- US-SHELL-010 / US-SHELL-011 / US-SHELL-018（安装、初始化向导、sysadmin 配置中心：ViewModel 分解）

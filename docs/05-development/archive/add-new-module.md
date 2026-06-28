@@ -394,7 +394,7 @@ public class NameServiceTests : TestBase
 ```csharp
 public class NameViewModelTests : DesktopTestBase
 {
-    // 使用 SQLite InMemory
+    // 使用 SQL Server LocalDB
     // 测试 ViewModel 逻辑
 }
 ```

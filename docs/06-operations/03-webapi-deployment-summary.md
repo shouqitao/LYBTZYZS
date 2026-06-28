@@ -54,7 +54,7 @@ C:\LYBTZYZS\                   # 源码目录（服务器上）
 
 ### 连接字符串
 - Server: `localhost`
-- 数据库: `LYBTDB`
+- 数据库: `LYBTDB_Dev`
 - 认证: `Trusted_Connection=True`（Windows Authentication）
 
 ### 密码配置

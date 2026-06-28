@@ -167,7 +167,7 @@ Set-ItemProperty -Path IIS:\Sites\LYBT-API -Name "applicationPool" -Value "LYBT-
 [Environment]::SetEnvironmentVariable("JWT_SECRET", "your-secure-jwt-secret-key-min-32-chars-here", "Machine")
 
 # 设置数据库连接字符串（如不使用 Windows 认证）
-[Environment]::SetEnvironmentVariable("LYBT_CONNECTIONSTRING", "Server=localhost;Database=LYBTDB;User Id=sa;Password=YourStrongPassword;TrustServerCertificate=true", "Machine")
+[Environment]::SetEnvironmentVariable("LYBT_CONNECTIONSTRING", "Server=localhost;Database=LYBTDB_Dev;User Id=sa;Password=YourStrongPassword;TrustServerCertificate=true", "Machine")
 
 # 验证设置
 [Environment]::GetEnvironmentVariable("JWT_SECRET", "Machine")
@@ -213,14 +213,14 @@ Set-ItemProperty -Path IIS:\Sites\LYBT-API -Name "applicationPool" -Value "LYBT-
 
 ```sql
 -- 创建数据库
-CREATE DATABASE LYBTDB;
+CREATE DATABASE LYBTDB_Dev;
 GO
 
 -- 创建登录用户（如不使用 Windows 认证）
 CREATE LOGIN lybt_user WITH PASSWORD = 'YourStrongPassword';
 GO
 
-USE LYBTDB;
+USE LYBTDB_Dev;
 CREATE USER lybt_user FOR LOGIN lybt_user;
 ALTER ROLE db_owner ADD MEMBER lybt_user;
 GO
@@ -345,7 +345,7 @@ cd C:\Services\LYBT-API
 ```powershell
 # 测试数据库连接
 dotnet tool install -g dotnet-sqltest
-sqltest -c "Server=localhost;Database=LYBTDB;Trusted_Connection=True"
+sqltest -c "Server=localhost;Database=LYBTDB_Dev;Trusted_Connection=True"
 
 # 检查 SQL Server 服务状态
 Get-Service -Name "MSSQLSERVER"

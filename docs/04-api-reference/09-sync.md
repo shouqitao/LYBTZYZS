@@ -1,6 +1,14 @@
 # 数据同步 API
 
-> Controller: `SyncController` | 路由前缀: `/api/v1/sync` | 默认权限: `[Authorize(Policy = "DoctorOrReceptionist")]`
+> 🔴 **v2.0 规划，v1.0 不实现。**
+>
+> **基线§2 N1 决策（用户 2026-06-28）**：v1.0 远程库与本地库**数据孤立，不互通**。本地模式定位为「远程故障应急降级」，断网期录入的数据事后手动补录或可丢。**无 `SyncController`**，下列 7 端点均无对应实现。
+>
+> 本文内容**保留作 v2.0 同步模块的设计参考**，不代表 v1.0 可用功能。详见 `docs/compose/specs/2026-06-28-docs-reconciliation-baseline.md` §2。
+
+---
+
+> Controller: `SyncController`（🚧 v2.0 规划，当前不存在）| 路由前缀: `/api/v1/sync` | 默认权限: `[Authorize(Policy = "DoctorOrReceptionist")]`
 
 ## 概述
 
@@ -454,7 +462,7 @@ curl -X POST http://localhost:5000/api/v1/sync/delete \
 
 ## 错误码
 
-> 完整错误码定义见 [sync.md PRD](../02-requirements/10-sync.md)。错误码分区: 7xxxx。
+> 完整错误码定义见 [PRD v2.0 规划范围](../02-requirements/01-prd.md#v20-规划范围)。错误码分区: 7xxxx。
 
 ### 服务端通用 (701xx)
 
@@ -512,3 +520,4 @@ curl -X POST http://localhost:5000/api/v1/sync/delete \
 | 2026-02-19 | v1.2 | 补充客户端错误码 (ERR-70501~70505)，含 UI 校验/同步失败/依赖检查/患者匹配 |
 | 2026-06-12 | v1.3 | 移除 ERR-70303 SyncActiveCaseConflict (PRD 已删除) |
 | 2026-06-25 | v1.4 | 补充全部端点的 curl 示例、`ApiResponse<T>` 信封、真实 JSON 响应示例 |
+| 2026-06-28 | v2.0-note | 文档对齐基线：顶部加 v2.0 规划醒目标注（N1 决策：v1.0 远程与本地数据孤立，不互通）；无 SyncController |

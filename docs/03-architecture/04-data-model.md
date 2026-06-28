@@ -228,20 +228,23 @@ Registration: Waiting → InProgress → Completed
 
 ### User (用户)
 
+> **实体类型**: `ApplicationUser : IdentityUser<Guid>`（ASP.NET Core Identity 集成，非简单 POCO；详见 `src/Server/Core/LYBT.Entities/Users/ApplicationUser.cs`）
+
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| UserName | string(50) | 是 | 用户名 |
+| UserName | string(50) | 是 | 用户名（IdentityUser 继承） |
 | RealName | string(50) | 是 | 真实姓名 |
 | PinYinCode | string(50) | 否 | 拼音码 |
 | PhoneNumber | string(20) | 否 | 手机号 |
 | Email | string(100) | 否 | 邮箱 |
 | Role | UserRole | 是 | 角色 (默认 Doctor) |
 | Status | CommonStatus | 是 | 状态 |
-| PasswordHash | string(256) | 是 | BCrypt 密码哈希 |
+| PasswordHash | string(256) | 是 | BCrypt 密码哈希（IdentityUser 基类字段） |
 | FailedLoginCount | int | 是 | 登录失败次数 |
 | LockoutEnd | DateTime? | 否 | 锁定截止时间 |
-| LastLoginTime | DateTime? | 否 | 最后登录时间 |
+| LastLoginTime | DateTime? | 否 | 最后登录时间（用于 IdentitySeedData 重置判断） |
 | Remark | string(500) | 否 | 备注 |
+| IsSysAdmin | bool | 是 | 运维标记（独立用户非角色，默认 false） |
 
 ### Herb (药材)
 
@@ -327,6 +330,8 @@ Registration: Waiting → InProgress → Completed
 
 ### RefreshToken (刷新令牌)
 
+> 🧲 **v1.0 待实现（D3 B+ 方案）** — RefreshToken 实体当前**不存在于代码中**（`SimplifyDataModel` 迁移曾移除，`AppDbContext` 无 DbSet）。按 D3 B+ 决策（2026-06-28）：Token 族旋转 + 登出撤销 + 审计日志将在 v1.0 补回；重放检测（FamilyId）延后至 v2.0。下表为**目标设计**，保留作为补回依据。
+
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | Token | string(512) | 是 | 令牌值 |
@@ -335,13 +340,13 @@ Registration: Waiting → InProgress → Completed
 | Jti | string(128) | 是 | JWT ID |
 | ExpiresAt | DateTime | 是 | 过期时间 |
 | IsRevoked | bool | 是 | 是否撤销 |
-| FamilyId | string(128) | 否 | Token 族 (重放检测) |
+| FamilyId | string(128) | 否 | Token 族（重放检测，v2.0） |
 | IsUsed | bool | 是 | 是否已使用 |
 | UsageCount | int | 是 | 使用次数 |
 
 ## 辅助实体
 
-以下实体不是独立业务概念，而是为主实体提供支撑功能 (关联关系、打印追踪、会话管理等)。
+> 🧲 **以下两个实体当前不存在于代码中**（`SimplifyDataModel` 迁移曾删除，`AppDbContext` 无对应 DbSet）。按 D1（医案审计日志）/ D2（打印保护回写）决策（2026-06-28），二者将在 v1.0 补回。下方描述为**目标设计**，保留作为补回依据。
 
 ### MedicalCasePrintLog (打印记录)
 
@@ -381,7 +386,7 @@ Formula 的子实体，实现验方与药材的 N:N 关系。支持**延迟绑�
 User 的关联实体，管理用户登录会话和 JWT 刷新令牌:
 
 - **AuthSession**: 记录登录/登出时间、Token 哈希、IP 地址，支持会话撤销 (`IsRevoked`)
-- **RefreshToken**: 实现 Token 轮换机制，通过 `FamilyId` 检测重放攻击，`IsUsed` + `UsageCount` 防止 Token 重复使用
+- **RefreshToken** 🧲 **v1.0 待实现（D3 B+）**: 实现 Token 轮换机制，通过 `FamilyId` 检测重放攻击，`IsUsed` + `UsageCount` 防止 Token 重复使用。重放检测延后至 v2.0。
 
 > 详细字段定义见上方 [AuthSession](#authsession-认证会话) 和 [RefreshToken](#refreshtoken-刷新令牌) 章节。
 
@@ -534,3 +539,4 @@ Patient 实体的以下字段标记为敏感数据，日志和序列化时脱敏
 | 2026-03-06 | v1.7 | **Draft->Suspended 对齐**: MedicalCaseStatus 枚举 Draft=0 更新为 Suspended=0 (MC-D20); DDD 域方法 SaveAsDraft() 更新为 Suspend(); BR-001 索引描述更新 |
 | 2026-03-06 | v1.8 | **Registration 实体**: ER 图新增 Registration 关系; 独立实体图新增 Registration; 新增 Registration 实体字段表 + 状态机; 新增 RegistrationSource/RegistrationStatus 枚举 |
 | 2026-06-13 | v1.9 | **MedicalCase 业务生命周期**: 新增状态机转换表 + Registration 联动规则 + 打印保护覆盖层 |
+| 2026-06-28 | v2.0 | **D1/D2/D3 对齐**: RefreshToken 与 MedicalCasePrintLog 实体表保留但整段标 🧲 v1.0 待实现（D1 审计日志/D2 打印回写/D3 B+ Token 族旋转补回，重放检测 v2.0）; User 实体描述改为 `ApplicationUser : IdentityUser<Guid>` 并补 IsSysAdmin 字段 |

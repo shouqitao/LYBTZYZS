@@ -46,3 +46,10 @@ public async Task<Result<PatientDto>> CreateAsync(PatientInputDto dto, Guid user
 | 日期 | 变更 |
 |------|------|
 | 2025-11-01 | 初始决策 |
+
+## 关联 US
+
+- US-AUTH-001 / US-AUTH-005（登录返回 JWT、令牌验证：Controller 提取 userId）
+- US-USER-003 / US-USER-008（当前用户资料 / 修改资料：JWT Claims → userId 传递）
+- US-ERR-004（CorrelationId 端到端追踪，同为上下文传递模式）
+- US-LOG-006（CorrelationId 注入日志）

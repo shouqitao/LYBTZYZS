@@ -32,3 +32,10 @@ SuperAdmin 是系统初始化专用账户，与普通用户 (Admin/Doctor) 有�
 |------|------|
 | 2025-12-01 | 初始决策 |
 | 2025-12-05 | Token 安全重构 |
+
+## 关联 US
+
+- US-AUTH-011（保留用户名拦截：admin/superadmin/sysadmin 等系统保留名）
+- US-USER-001 ~ US-USER-012（用户管理全部 12 项，SuperAdmin/Admin 权限层级与 sysadmin 保护）
+- US-CFG-001 / US-CFG-002（SuperAdmin 配置查询端点）
+- US-SHELL-017（生产环境安全门控：SystemAdminOptions + DefaultPasswordService）

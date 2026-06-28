@@ -46,5 +46,13 @@ MedicalCase 是系统唯一的 DDD 聚合根:
 | 2025-12-04 | 初始决策 |
 | 2025-12-15 | 废弃独立 Repository 接口 |
 | 2026-01-05 | Desktop.Prescriptions 模块移除，功能迁入 MedicalCase |
-| 2026-02-21 | MedicalCaseModel 从贫血模型演进为充血模型: 新增 `Complete()`, `SaveAsDraft()`, `SoftDelete()`, `UpdateConsultation()` 域方法; 移除 `Cancelled` 枚举值 (取消=软删除); 新增 MedicalCaseServiceHelper 提取共享代码 |
+| 2026-02-21 | MedicalCaseModel 从贫血模型演进为充血模型: 新增 `Complete()`, `Suspend()` (原名 `SaveAsDraft()`，MC-D20 重命名), `SoftDelete()`, `UpdateConsultation()` 域方法; 移除 `Cancelled` 枚举值 (取消=软删除); 新增 MedicalCaseServiceHelper 提取共享代码 |
 | 2026-06-25 | 修正 ADR-0001: 更新 BaseReadRepository 引用为当前实际查询接口 |
+
+## 关联 US
+
+- **US-MC-001 ~ US-MC-019**（医案管理全部 19 项，聚合根是其执行基础）
+- US-REG-005 / US-REG-007（挂号-医案联动：开始就诊创建医案、完成/取消自动回写）
+- US-PRINT-001 / US-PRINT-004（打印保护字段挂载在 MedicalCase 聚合根）
+- US-PAT-005 / US-PAT-008 / US-PAT-009 / US-PAT-010（删除引用检查指向 MedicalCase）
+- US-HERB-005 / US-HERB-008 / US-HERB-009（删除引用检查指向 PrescriptionItem）

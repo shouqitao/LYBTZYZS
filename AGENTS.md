@@ -4,187 +4,119 @@
 
 ---
 
-## ⚠️ 收到任务后的第一步
+## 🤝 协作角色（Shell 重构项目，2026-06-28）
 
-**设计方案前必须先读代码。** 用 CodeGraph/Serena 阅读现有实现，避免重复造轮子。
+| | AI（本 agent） | 用户 |
+|---|---|---|
+| **是** | 开发专家：决定技术「怎么实现」，选库/架构自主拍板+说明理由 | 产品负责人：决定业务「要什么」，回答真实工作流与期望 |
+| **不做** | 把技术选择题抛给用户 | 回答技术细节 |
+| **沟通** | 给「现状 + 专家推荐 + 理由」 | 在推荐上确认/否决/调整 |
 
-| ❌ 禁止 | ✅ 应该 |
-|---------|---------|
-| 直接用 Grep/Read 搜索代码 | 用 `codegraph_explore` 理解流程 |
-| 手动重命名变量 | 用 `serena_rename_symbol` |
-| 猜测框架 API | 用 `context7_query-docs` 查文档 |
-| 跳过 brainstorm 直接编码 | 先用 `compose:brainstorm` |
-| 跳过 verify 声称完成 | 必须有 `dotnet build` 证据 |
-| 设计方案前不读代码 | 先用 CodeGraph/Serena 阅读现有实现 |
+问用户只问业务结果（是/否/选项/展开，如「自动更新要不要」）；不问技术题（如「用 Squirrel 还是 AutoUpdater.NET」）。
 
 ---
 
-## 工具选择（按场景）
+## ⚠️ 工作准则（必须遵守）
 
-| 场景 | 工具 | 说明 |
+**设计前先读代码**（用 MCP），**最小改动**，**声称完成必有 `dotnet build` 证据**。
+
+### 工具纪律：MCP 默认首选，积极主动，非"偶尔"
+
+| 场景 | 用 | 禁止/兜底 |
 |------|------|------|
-| 理解代码流程 | `codegraph_explore` | 不用 Read/Grep |
-| 读文件/符号源码 | `codegraph_node` 或 `serena_read_file` | |
-| 重命名/重构 | `serena_rename_symbol` | LSP 保证安全 |
-| 查找引用 | `codegraph_callers` 或 `serena_find_referencing_symbols` | |
-| 编译诊断 | `serena_get_diagnostics_for_file` | 不用等 build |
-| 替换方法体 | `serena_replace_symbol_body` | |
-| 复杂问题分解 | `sequentialthinking` | 分步思考 |
-| 查框架文档 | `context7_resolve-library-id` → `context7_query-docs` | Prism/Refit/EF Core |
-| 以上都不适用 | Read/Write/Edit/Glob/Grep | 兜底 |
+| 理解流程/架构/调用链 | `codegraph_explore` | ❌ Read/Grep |
+| 读文件/符号 + 调用方 | `codegraph_node`(symbol,includeCode) | ❌ 多次 Read |
+| 重命名/重构 | `serena_rename_symbol` | ❌ 手动改 |
+| 查引用/受影响面 | `codegraph_callers` / `serena_find_referencing_symbols` | ❌ Grep |
+| 编译诊断 | `serena_get_diagnostics_for_file` | ❌ 等 build |
+| 替换符号体 | `serena_replace_symbol_body` | — |
+| 查框架文档 | `context7_resolve-library-id`→`query-docs` | ❌ 猜/凭记忆 |
+| 多文件并行深读/审计 | `actor`(并行 explore) | ❌ 串行 Read |
+| 兜底 | Read/Write/Edit/Glob/Grep | 仅当 MCP 不适用 |
 
-**首次使用 Serena 前必须激活：** `serena_activate_project(project="LYBTZYZS")`
+- **前置**：首次用 Serena 前 `serena_activate_project(project="LYBTZYZS")`
+- **自检**：每次要 Read/Grep 前，先问「MCP 能不能更好更快？」能就用
 
----
+### 工程流程
 
-## 工程纪律
-
-| 场景 | 规则 |
+| 场景 | 流程 |
 |------|------|
-| 新功能 | `compose:brainstorm` 探索意图后再编码 |
-| 多步骤任务 | `compose:plan` 碰代码前出计划 |
-| Bug | `compose:debug` 找到根因再修，禁止跳过到修复 |
-| 声称完成 | `compose:verify` 必须有 `dotnet build` 通过证据 |
-| **执行 Plan** | **必须经用户确认后才能执行** |
+| 新功能 | `compose:brainstorm` → `plan`(需用户确认) → 实现 → `verify` → `review` |
+| Bug | `compose:debug` 找根因再修，禁止跳到修复 |
+| 小修补(1-2行) | 改 → `dotnet build` → 提交 |
+| 跨模块大改 | `brainstorm`→`plan`→`plan-eng-review`→`subagent`→`verify`→`review`→`merge` |
 
-### 工作流分级
-
-- **小修补** (1-2 行): 改完 → `dotnet build` → 提交
-- **新功能**: `brainstorm` → `plan` → 实现 → `verify` → `review`
-- **跨模块大改**: `brainstorm` → `plan` → `plan-eng-review` → `subagent` → `verify` → `review` → `merge`
-
-### Karpathy 准则
-
-- **先思考再编码** — 不假设、不隐藏困惑、呈现权衡
-- **简单优先** — 最小代码解决问题，不添加 speculative 功能
-- **外科手术式修改** — 只改必须的部分，不顺手重构
-- **目标驱动执行** — 定义可验证的成功标准，循环直到通过
+**Karpathy**：先思考再编码｜最小代码｜外科手术式修改｜可验证成功标准
 
 ---
 
-## Build & Test
+## 🔧 命令
 
 ```bash
 dotnet build LYBTZYZS.sln
 dotnet test tests/LYBT.Tests.Server/        # Integration (real SQL Server + Respawn)
 dotnet test tests/LYBT.Tests.Desktop/       # Desktop (LocalDB)
 dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
+# Migration:
+dotnet ef migrations add <Name> --project src/Server/Core/LYBT.Infrastructure --startup-project src/Server/Services/LYBT.WebAPI
+# Reset DB:
+sqlcmd -S "localhost" -Q "DROP DATABASE IF EXISTS LYBTDB_Dev; CREATE DATABASE LYBTDB_Dev"  # then restart WebAPI
+sqlcmd -S "(localdb)\MSSQLLocalDB" -Q "DROP DATABASE IF EXISTS LYBTDesktop"               # then restart Desktop
 ```
 
-## Git & Remote
+**Git**: Remote=Gitee(`gitee.com/shouqitao/LYBTZYZS.git`) NOT GitHub｜Branch=`master`｜Commit 英文 `feat/fix/docs/refactor/test(模块): 描述`
 
-- **Remote**: Gitee (`https://gitee.com/shouqitao/LYBTZYZS.git`) — NOT GitHub
-- **Branch**: `master`
-- **Commit**: `feat(模块): 描述` / `fix(模块): 描述` / `docs:` / `refactor:` / `test:`
-- **Commit language**: English (PowerShell encoding issues with Chinese)
-
-## Database
-
-- **Migration**: Latest is `AddIsSysAdmin` — run `dotnet ef database update` after pulling
-- **Dual-mode**: Remote = SQL Server (`LYBTDB_Dev`) | Local = LocalDB (`LYBTDesktop`) — NOT SQLite
-- **Migration cmd**: `dotnet ef migrations add <Name> --project src/Server/Core/LYBT.Infrastructure --startup-project src/Server/Services/LYBT.WebAPI`
-- **EnsureCreatedAsync**: `DatabaseInitializationService` uses `EnsureCreatedAsync`, not `Migrate()`
-- **Reset DB**: `sqlcmd -S "localhost" -Q "DROP DATABASE IF EXISTS LYBTDB_Dev; CREATE DATABASE LYBTDB_Dev"` then restart WebAPI
-- **Reset LocalDB**: `sqlcmd -S "(localdb)\MSSQLLocalDB" -Q "DROP DATABASE IF EXISTS LYBTDesktop"` then restart Desktop
-
-## Architecture
-
-- **3-Layer**: Controller → Service → Repository → DbContext
-- **MVVM**: View (XAML) ← binding → ViewModel → Repository → API
-- **DDD**: MedicalCase is the sole aggregate root
-- **Dual-Mode**: Remote (port 5000) + Local (LocalDB port 5100), URL-based switching via `BaseUrlDelegatingHandler`
-- **Modular**: Server (`LYBT.Module.*`), Desktop (`LYBT.Desktop.*`), Roles (Admin/Clinical/Receptionist/Sysadmin)
-
-### Sysadmin (2026-06-20)
-
-- **sysadmin = standalone user, NOT a role**: `ApplicationUser.IsSysAdmin = true`
-- **Default users**: `sysadmin` / `SysAdmin@2026!` | `admin` / `Admin@123456`
-- **Passwords from config**: `appsettings.json` → `DefaultPasswords` section
-
-## Terminology
-
-| Term | Meaning | Not |
-|------|---------|-----|
-| Consultation | 中医诊断 | "问诊" or "就诊" |
-| MedicalCase | 医案 | "病历" |
-| Formula | 验方/经验方 | "公式" |
-| HerbRole | 药材角色（君臣佐使） | — |
-| Sysadmin | 系统运维（独立用户） | "超级管理员角色" |
-
-## CODE STYLE
-
-- **语言**: 中文业务文档/注释；英文技术标识符/commit
-- **命名**: `PascalCase`（公共）、`_camelCase`（私有）、`I PascalCase`（接口）
-- **包版本**: 统一在 `Directory.Packages.props`
-- **无注释/无 Emoji**: 除非用户要求
-- **跨模块禁止**: Server/Desktop 模块间禁止直接引用
-- **UI 控件 MDIX 优先**: 用 MDIX 内置样式（Button/TextBox/DataGrid/Card/DialogHost），不自定义 ControlTemplate。间距用 Token（SpacingXS~XXXL），不硬编码。仅在 MDIX 无对应控件时允许自定义
+**Database**: Latest migration=`AddIsSysAdmin`｜Remote=`LYBTDB_Dev`(SQL Server)｜Local=`LYBTDesktop`(LocalDB, NOT SQLite)｜`DatabaseInitializationService` 用 `MigrateAsync()`（幂等迁移+重试），InMemory 用 `EnsureCreatedAsync`
 
 ---
 
-## Common Pitfalls (CRITICAL — read before coding)
+## 🏗️ 架构
 
-### Identity & Auth
+- **3-Layer**: Controller→Service→Repository→DbContext
+- **MVVM**: View(XAML)←binding→ViewModel→Repository→API
+- **DDD**: MedicalCase 唯一聚合根
+- **Dual-Mode**: Remote(port 5000)+Local(LocalDB 5300)，URL 路由切换(`SwitchingApiClient`)；WebAPI 有公网部署需求（印证 D3 B+ 安全方案）
+- **Modular**: Server(`LYBT.Module.*`)/Desktop(`LYBT.Desktop.*`)/Roles(Admin/Clinical/Receptionist/Sysadmin)
+- **sysadmin=独立用户非角色**: `ApplicationUser.IsSysAdmin=true`；默认 `sysadmin/SysAdmin@2026!`、`admin/Admin@123456`（密码从 `appsettings.json:DefaultPasswords`）
 
-- `RoleManager`/`UserManager` are SCOPED — NEVER resolve from root provider
-- `IdentitySeedData` password reset: Only when `user.LastLoginAt == null`
-- BCrypt (PasswordHelper) vs PBKDF2 (Identity) are INCOMPATIBLE — all hashing via `UserManager`
-- `AddIdentity()` must run BEFORE JWT `AddAuthentication()`
+**术语**: Consultation=中医诊断｜MedicalCase=医案(非病历)｜Formula=验方｜HerbRole=君臣佐使｜Sysadmin=运维(独立用户)
 
-### LocalWebAPI (Embedded Server)
-
-- Route prefix MUST be `api/v1/[controller]`
-- Response format MUST be `ApiResponse<T>` — bare `Ok()` causes silent deserialization failure
-- Use `WebApplication.CreateBuilder` (NOT `CreateSlimBuilder`)
-- Must `.AddApplicationPart(typeof(HealthController).Assembly)`
-- `InitializeDatabaseAsync` must use `scope.ServiceProvider` (NOT `app.Services`)
-
-### Connection Mode Switching
-
-- `localhost:5100` = LOCAL, `localhost:5000` = REMOTE
-- `SaveAndEnableAsync` must re-probe: Call `CheckRemoteAvailableAsync()` before `SetMode(Remote)`
-- appsettings.json path: Use `AppContext.BaseDirectory`
-
-### Desktop WPF
-
-- `FindAsync` applies global query filters (`IsDeleted`) — use `IgnoreQueryFilters()`
-- `PrescriptionItem.HerbId` is `Guid` (non-nullable) — `.HasValue` fails compile
-- Do NOT use `using Refit;` in Contracts/Api — CS0104 ambiguity. Use `[Refit.Get]`
-- BoolToVis: `{x:Static converters:Cvt.BoolToVis}`, NOT `{StaticResource BoolToVis}`
-- XAML pack URI: `Source="/Assembly;component/Path.xaml"`, NOT relative
-
-### API & Authorization
-
-- Permission: `Receptionist=0, Doctor=1, Admin=10, SuperAdmin=100`
-- Policies: `DoctorOrReceptionist` + `AdminOrSuperAdmin`
-- sysadmin account is immutable: cannot be deleted/disabled/modified
-- `BaseApiController` requires `ILogger` in constructor
+**Code Style**: 中文业务文档/注释，英文标识符/commit｜PascalCase(公共)/_camelCase(私有)/I前缀(接口)｜包版本统一在 `Directory.Packages.props`｜无注释无 Emoji(除非要求)｜模块间禁止直接引用｜UI 用 MDIX 内置样式 + Spacing Token，不自定义 ControlTemplate
 
 ---
 
-## WHERE TO LOOK
+## ⚠️ Common Pitfalls（编码前必读）
+
+**Identity/Auth**: `RoleManager`/`UserManager` 是 SCOPED，禁从 root provider resolve｜`IdentitySeedData` 仅 `LastLoginAt==null` 时重置密码｜BCrypt(PasswordHelper) vs PBKDF2(Identity) 不兼容，全走 `UserManager`｜`AddIdentity()` 必在 JWT `AddAuthentication()` 前
+
+**LocalWebAPI**: 路由前缀必 `api/v1/[controller]`｜响应必 `ApiResponse<T>`(bare `Ok()` 致反序列化静默失败)｜用 `WebApplication.CreateBuilder`(非 CreateSlimBuilder)｜`.AddApplicationPart(typeof(HealthController).Assembly)`｜`InitializeDatabaseAsync` 用 `scope.ServiceProvider`(非 app.Services)
+
+**连接切换**: `localhost:5300`=LOCAL, `localhost:5000`=REMOTE｜`SaveAndEnableAsync` 切远程前必 `CheckRemoteAvailableAsync()`｜appsettings 路径用 `AppContext.BaseDirectory`
+
+**Desktop WPF**: `FindAsync` 套全局过滤(`IsDeleted`)，恢复用 `IgnoreQueryFilters()`｜`PrescriptionItem.HerbId` 是 Guid 非 nullable｜Contracts/Api 禁 `using Refit;`(CS0104)，用 `[Refit.Get]`｜BoolToVis 用 `{x:Static converters:Cvt.BoolToVis}`｜XAML pack URI 用 `Source="/Assembly;component/Path.xaml"`
+
+**API/Auth**: 权限 `Receptionist=0,Doctor=1,Admin=10,SuperAdmin=100`｜策略 `DoctorOrReceptionist`+`AdminOrSuperAdmin`｜sysadmin 不可删/禁/改｜`BaseApiController` 构造需 `ILogger`
+
+---
+
+## 📂 WHERE TO LOOK
 
 | Task | Location |
 |------|----------|
 | WebAPI entry | `src/Server/Services/LYBT.WebAPI/Program.cs` |
 | Desktop entry | `src/Client/Desktop/Shell/App.xaml.cs` |
 | DbContext | `src/Server/Core/LYBT.Infrastructure/Data/AppDbContext.cs` |
-| Entities | `src/Server/Core/LYBT.Entities/` |
-| DTOs | `src/Shared/LYBT.Shared.Models/Contracts/` |
+| Entities / DTOs | `src/Server/Core/LYBT.Entities/` / `src/Shared/LYBT.Shared.Models/Contracts/` |
 | Server Controllers | `src/Server/Services/LYBT.WebAPI/Controllers/` |
-| Desktop Modules | `src/Client/Desktop/Modules/LYBT.Desktop.*/` |
-| Desktop Core | `src/Client/Desktop/Core/` |
-| Desktop Roles | `src/Client/Desktop/Roles/` (Admin, Clinical, Receptionist, **Sysadmin**) |
-| Seed Data | `src/Server/Modules/LYBT.Module.Users/Services/IdentitySeedData.cs` |
-| Role Definitions | `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Roles/Definitions/` |
-| Specs | `docs/compose/specs/` |
-| Plans | `docs/compose/plans/` |
+| Desktop Modules / Core / Roles | `src/Client/Desktop/{Modules,Core,Roles}/` |
+| Seed / Role Definitions | `src/Server/Modules/LYBT.Module.Users/Services/IdentitySeedData.cs` / `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Roles/Definitions/` |
+| Specs / Plans | `docs/compose/{specs,plans}/` |
 
 ## Key Patterns
 
-- **ApiResponse<T>** envelope — ALL controllers must wrap responses
-- **CommunityToolkit.Mvvm** `[ObservableProperty]` / `[RelayCommand]` — NOT Prism's BindableBase/DelegateCommand
-- **Riok.Mapperly** for compile-time mapping — NOT AutoMapper
-- **ViewModelLocator.AutoWireViewModel**: VM 必须在 Module.RegisterTypes 中注册
-- **Soft-delete + global query filter** on most entities
-- **SwitchingApiClient** routes localhost:5100 → embedded LocalWebAPI, otherwise → Refit remote
+- **ApiResponse&lt;T&gt;** 信封 — 所有 controller 必包
+- **CommunityToolkit.Mvvm** `[ObservableProperty]`/`[RelayCommand]` — 非 Prism BindableBase/DelegateCommand
+- **Riok.Mapperly** 编译期映射 — 非 AutoMapper
+- **ViewModelLocator.AutoWireViewModel** — VM 在 Module.RegisterTypes 注册
+- **Soft-delete + 全局查询过滤** 多数实体
+- **SwitchingApiClient** 路由 localhost:5300→内嵌 LocalWebAPI，否则→Refit 远程

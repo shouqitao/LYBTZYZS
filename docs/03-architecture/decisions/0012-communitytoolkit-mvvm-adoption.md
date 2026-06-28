@@ -21,3 +21,7 @@ Accepted
 - 新 ViewModel 必须使用 [ObservableProperty]/[RelayCommand]
 - 禁止使用 Prism 的 BindableBase/DelegateCommand（仅限新代码）
 - 旧代码逐步迁移，不一次性重构
+
+## 关联 US
+
+无直接关联（Desktop ViewModel 基础设施 ADR，`[ObservableProperty]` / `[RelayCommand]` 源生成器影响全部 Desktop 业务模块 ViewModel，不绑定单一 US；Prism 的 DI/导航仍保留）。

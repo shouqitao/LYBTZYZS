@@ -14,9 +14,11 @@
 
 | 层级 | 项目 | 覆盖范围 | Tests |
 |------|------|----------|-------|
-| Server 全量 | LYBT.Tests.Server | 真实 HTTP + SQL Server + Respawn (零 mock) | 1185 |
-| Desktop 全量 | LYBT.Tests.Desktop | SQLite InMemory + 真实 Repository (最小 WPF mock) | 715 |
+| Server 全量 | LYBT.Tests.Server | 真实 HTTP + SQL Server + Respawn (零 mock) | ~1185 |
+| Desktop 全量 | LYBT.Tests.Desktop | SQL Server LocalDB + 真实 Repository (最小 WPF mock) | ~760 |
 | 架构防护 | LYBT.Tests.Architecture | 层依赖 + AntiMockRules | 76 |
+
+> 测试数为近似值，以最新 `dotnet test` 输出为准；与 [`01-system-overview.md`](../01-system-overview.md) 测试章节保持一致。
 
 ### 关键原则
 - Server 测试零 mock: 真实 SQL Server + Respawn 每测试重置 + 真实 JWT 登录
@@ -36,3 +38,7 @@
 |------|------|
 | 2026-02-08 | 初始决策，5 个测试项目结构 |
 | 2026-03-04 | 升级为 Testing Trophy: 5->3 项目, Server 零 mock, Respawn 隔离 |
+
+## 关联 US
+
+无直接关联（测试策略 ADR，影响 `LYBT.Tests.Server` / `LYBT.Tests.Desktop` / `LYBT.Tests.Architecture` 三个测试项目对全部 US 的验证方式，不绑定单一 US）。

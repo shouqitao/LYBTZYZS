@@ -6,7 +6,7 @@
 
 | 工具 | 版本要求 | 用途 |
 |------|----------|------|
-| .NET SDK | 8.0.406+ | 编译运行 |
+| .NET SDK | 8.0.400+ (`global.json` rollForward latestMinor) | 编译运行 |
 | Visual Studio 2022 | 17.8+ | IDE (含 WPF 工作负载) |
 | SQL Server | 2019+ | 远程模式数据库 |
 | Git | 2.30+ | 版本控制 |
@@ -85,12 +85,16 @@ dotnet test tests/LYBT.Tests.Architecture/
 | [设计模式](04-patterns.md) | Repository/Service/ViewModel 速查 |
 | [测试指南](05-testing.md) | 测试策略、项目结构、编写规范 |
 | [测试编写规范](12-testing-standards.md) | 命名、断言、分层规范 |
+| [测试覆盖图](13-test-coverage-map.md) | 测试覆盖矩阵 |
+| [测试用例明细](14-test-cases-detail.md) | 关键测试用例 |
+| [数据库迁移策略](15-migration-strategy.md) | EF Core 迁移与回滚 |
 | [密码安全管理](06-security-password-management.md) | 密码策略与安全规范 |
 | [配置迁移指南](08-configuration-migration-guide.md) | 配置文件迁移说明 |
 | [性能基线](09-performance-baseline.md) | 性能指标与基线 |
 | [UAT 测试计划](10-uat-test-plan.md) | 用户验收测试计划 |
 | [Postman vs .NET 测试策略](11-postman-vs-dotnet-testing.md) | 测试工具对比 |
-| [开发标准](standards/) | 编码与测试标准文档 |
+| [开发标准](standards/) | 编码与测试标准文档 (STD-01~06) |
+| [归档文档](archive/) | 历史指南 (add-new-module 等) |
 | [运维文档](../06-operations/) | 部署、配置、监控 |
 
 ---

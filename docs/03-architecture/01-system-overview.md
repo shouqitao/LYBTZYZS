@@ -24,9 +24,11 @@ graph TB
 
     subgraph Server["Server 层 (ASP.NET Core)"]
         WebAPI["WebAPI (入口)"]
-        Modules_S["业务模块 (8 active + 2 dormant)"]
+        SignalRHub["SignalR Hub<br/>(实时推送, v1.0)"]
+        Modules_S["业务模块 (8 active + Sync v2.0)"]
         Infra["Infrastructure"]
         Entities["Entities"]
+        WebAPI --> SignalRHub
         WebAPI --> Modules_S --> Infra --> Entities
     end
 
@@ -35,6 +37,7 @@ graph TB
     end
 
     Core_C -->|"HTTP API"| WebAPI
+    Core_C -.->|"SignalR 实时推送<br/>(v1.0, 见 ADR-0013)"| SignalRHub
     Modules_C --> Models
     Modules_S --> Models
     Infra --> SQLServer
@@ -94,15 +97,15 @@ src/
       LYBT.Desktop.Utilities/        # 工具类库
       LYBT.Desktop.LocalData/        # 本地数据访问 (LocalWebAPI HTTP Proxy Repository)
       LYBT.Desktop.CardReader/       # 身份证读卡器硬件集成
-    Modules/                         # 业务模块 (8个)
+    Modules/                         # 业务模块 (8 active)
       LYBT.Desktop.Auth/             # 认证
       LYBT.Desktop.Formula/          # 验方
       LYBT.Desktop.Herbs/            # 药材
       LYBT.Desktop.MedicalCase/      # 医案 (含处方+编辑状态机)
       LYBT.Desktop.Patients/         # 患者 (含读卡器集成)
       LYBT.Desktop.Registration/     # 挂号
-      LYBT.Desktop.Sync/             # 数据同步 (含 SyncPhase FSM)
       LYBT.Desktop.Users/            # 用户
+      # LYBT.Desktop.Sync/           # 🧲 v2.0 (N1 决策：v1.0 数据孤立)
     Roles/                           # 角色入口 (3个)
       LYBT.Desktop.Admin/            # 管理员端
       LYBT.Desktop.Clinical/         # 临床端
@@ -121,8 +124,7 @@ src/
       LYBT.Module.MedicalCase/
       LYBT.Module.Patients/
       LYBT.Module.Registration/      # 挂号管理
-      LYBT.Module.Sync/
-      LYBT.Module.Users/
+      LYBT.Module.Reports/           # 报表/历史聚合查询 (MC-008/009, D9 补回 v1.0)
       LYBT.Module.Users/
     Services/
       LYBT.WebAPI/                   # Web API 入口
@@ -139,7 +141,7 @@ src/
 
 tests/                               # 测试 (4 个项目, Testing Trophy 架构)
     LYBT.Tests.Server/               # Server 全量测试 (~1185 tests, 真实 SQL Server + Respawn, 零 mock)
-    LYBT.Tests.Desktop/              # Desktop 全量测试 (~760 tests, SQLite InMemory + 真实 Repository)
+    LYBT.Tests.Desktop/              # Desktop 全量测试 (~760 tests, SQL Server LocalDB + 真实 Repository)
     LYBT.Tests.Architecture/         # 架构防护测试 (76 tests, 含 AntiMockRules)
     LYBT.Tests.Integration/          # 集成测试 (Desktop+Server, WebApplicationFactory)
 docs/                                # 文档
@@ -243,6 +245,7 @@ sequenceDiagram
 ## 架构决策记录
 
 - [ADR-0003: 集成优先测试策略](decisions/0003-integration-first-testing.md) — 真实数据库测试优于 mock 单元测试的 Testing Trophy 策略
+- [ADR-0013: SignalR 实时推送](decisions/0013-signalr-realtime-push.md) — v1.0 用 SignalR 推送挂号变更到医生工作台（范围决策，细节待专项 spec）
 
 ## 变更记录
 
@@ -255,3 +258,4 @@ sequenceDiagram
 | 2026-03-09 | v1.4 | Sprint 4: 补充 Registration 模块; Desktop 测试数更新 (482); Integration 测试项目已创建; Consultation Desktop 模块移除 (集成到 MedicalCase) |
 | 2026-03-09 | v1.5 | Sprint 5: SQLite->LocalDB 描述修正 (架构图/目录注释/测试描述); Desktop 测试数更新 (493) |
 | 2026-06-13 | v1.6 | 补充双模式运行架构章节：Mermaid 架构图展示远程/本地两条数据路径 + 对比表 |
+| 2026-06-28 | v1.7 | **模块清单 + 测试库对齐**: Server 模块清单补 Reports（D9 补回 v1.0），架构图 "8 active + Sync v2.0"; Desktop 模块清单 Sync 标 v2.0; Desktop 测试库描述 SQLite InMemory → SQL Server LocalDB; 测试数对齐 ADR-0003 |

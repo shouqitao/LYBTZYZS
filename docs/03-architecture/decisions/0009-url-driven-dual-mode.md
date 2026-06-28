@@ -123,3 +123,9 @@ Desktop (WPF/Prism)
 1. **Controller 共享**：若 LocalWebAPI Controller 增多，可考虑提取共享业务逻辑到 Shared 项目
 2. **本地密钥外部化**：将固定密钥改为 DPAPI 加密的机器级密钥
 3. **端点对齐自动化**：添加编译时检查确保两端端点覆盖一致
+
+## 关联 US
+
+- US-SHELL-007（双模式连接切换：SwitchingApiClient 路由 localhost → LocalWebAPI）
+- US-AUTH-009 / US-AUTH-012（本地自动登录 / 本地简化认证：1 年 JWT，两端复用中间件管线）
+- 全部业务模块双模式端点（US-AUTH/USER/PAT/HERB/FORM/MC/REG）行为一致由本 ADR 的统一 Service 层保障

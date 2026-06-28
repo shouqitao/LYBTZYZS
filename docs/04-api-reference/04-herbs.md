@@ -1,6 +1,8 @@
 # 药材 API
 
 > Controller: `HerbsController` | 路由前缀: `/api/v1/herbs` | 默认权限: `[Authorize(Policy = "DoctorOrReceptionist")]`
+>
+> ⚠️ **权限待对齐（D7，基线§3）**：文档目标策略为 `DoctorOrReceptionist`；代码当前为 `DoctorOrAdmin`，待对齐。
 
 ## 概述
 
@@ -710,3 +712,4 @@ curl -X POST "http://localhost:5000/api/v1/herbs/batch-import" \
 | 2026-06-12 | v1.2 | 标注 POST /herbs/import 为客户端功能; 服务端仅提供 batch-import (JSON) |
 | 2026-06-12 | v1.3 | HerbDetailDto: 新增 origin/spec/costPrice/usage/remark 字段 |
 | 2026-06-25 | v2.0 | 移除不存在的端点 (export/export-all/import-template/check-reference/batch-check-reference/batch-enable/batch-disable/restore); 补充全部 8 个端点的完整请求/响应 JSON 示例、curl 命令 |
+| 2026-06-28 | v2.1 | 文档对齐基线：权限策略加 D7 待对齐标注（目标 DoctorOrReceptionist，代码 DoctorOrAdmin） |

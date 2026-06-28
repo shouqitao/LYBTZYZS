@@ -57,7 +57,7 @@ Shared.Models (DTO契约) 被 Modules 和 WebAPI 引用
 ```
 
 - **上游**: 为 Desktop 客户端和未来 Web 客户端提供 API
-- **下游**: 连接 SQL Server / SQLite 数据库 (双模式，详见 docs/03-architecture/dual-mode.md)
+- **下游**: 连接 SQL Server（远程 LYBTDB_Dev）/ SQL Server LocalDB（本地 LYBTDesktop，嵌入式 LocalWebAPI port 5300）双模式，详见 docs/03-architecture/05-dual-mode.md
 - **平级**: 依赖 Shared 层的 DTO 和接口定义
 
 ## 快速启动
