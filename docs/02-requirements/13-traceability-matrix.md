@@ -238,9 +238,9 @@
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
 |-------|:---:|------|------|------|------|------|------|
-| US-REPORT-001 | Must | — | — | GET /reports/daily/income | ReportsController.cs:30 | — | ✅ 已实现（端点存在，时间参数待代码扩展） |
-| US-REPORT-002 | Must | — | — | GET /reports/daily/consultations | ReportsController.cs:38 | — | ✅ 已实现（端点存在，时间参数待代码扩展） |
-| US-REPORT-003 | Should | — | — | GET /reports/daily/herbs | ReportsController.cs:46 | — | ✅ 已实现（端点存在，时间参数待代码扩展） |
+| US-REPORT-001 | Must | — | — | GET /reports/daily/income | ReportsController.cs:30 | — | 🚧 v1.0 待实现（时间范围参数 startDate/endDate 代码未实现） |
+| US-REPORT-002 | Must | — | — | GET /reports/daily/consultations | ReportsController.cs:38 | — | 🚧 v1.0 待实现（时间范围参数 startDate/endDate 代码未实现） |
+| US-REPORT-003 | Should | — | — | GET /reports/daily/herbs | ReportsController.cs:46 | — | 🚧 v1.0 待实现（时间范围参数 startDate/endDate 代码未实现） |
 
 ---
 
@@ -262,11 +262,11 @@
 | LOG | 7 | 7 | 0 | 0 | 0 | 0 |
 | SYS | 9 | 9 | 0 | 0 | 0 | 0 |
 | CARD | 2 | 2 | 0 | 0 | 0 | 0 |
-| REPORT | 3 | 3 | 0 | 0 | 0 | 0 |
-| **合计** | **142** | **102** | **18** | **15** | **6** | **1** |
+| REPORT | 3 | 0 | 3 | 0 | 0 | 0 |
+| **合计** | **142** | **99** | **21** | **15** | **6** | **1** |
 
 > 注：本矩阵列出 **142 行** = 141 个 v1.0 有效 US + 1 个 v2.0 US（US-SHELL-012 自动更新，列出以保完整）。README 的「141」仅计 v1.0 有效 US。
-> 🧲v1.0待实现 18 项 = D1-D10 决策补回项 + SignalR/初始化/配置中心等已设计待开发项 + US-REG-002 QuickVisit 待激活；🔴代码待对齐 15 项 = D7 权限错配 + D8 P0 Bug + 端点暴露缺失；⚠️部分实现 6 项；v2.0 1 项 = SHELL-012（Sync 整模块不列入 US 总数）。
+> 🧲v1.0待实现 21 项 = D1-D10 决策补回项 + SignalR/初始化/配置中心等已设计待开发项 + US-REG-002 QuickVisit 待激活 + US-REPORT-001/002/003 时间范围参数待实现（2026-06-28 审计 S1 降级）；🔴代码待对齐 15 项 = D7 权限错配 + D8 P0 Bug + 端点暴露缺失；⚠️部分实现 6 项；v2.0 1 项 = SHELL-012（Sync 整模块不列入 US 总数）。
 
 ## 反向追溯说明
 
@@ -283,3 +283,4 @@
 | 2026-06-28 | US-REG-002 ⚠️→🧲（QuickVisit 待激活：急诊+本地常规）；US-REG-005 D8 注细化；REG/合计统计同步 | R10 spec S8 文档更新 |
 | 2026-06-28 | US-SHELL-018 补「双模式面板 + 服务端 Configuration API 依赖（ADR-0014）」注；关联 ADR 列补 ADR-0014 | sysadmin 配置设计 spec S7 文档更新 |
 | 2026-06-28 | 建立追溯矩阵（138 US × 8 列），整合 D1-D10 决策与 scenario-map 状态 | plan Task 1：追溯基础设施 |
+| 2026-06-28 | US-REPORT-001/002/003 ✅→🚧v1.0待实现（S1 降级）；REPORT 行/合计同步（✅102→99，🧲18→21） | 审计 S1：时间参数代码未实现，状态虚高修正 |

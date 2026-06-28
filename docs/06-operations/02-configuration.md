@@ -284,10 +284,22 @@ $env:Jwt__SecretKey = "YourSecureSecretKeyAtLeast32CharactersLong"
     "Email": "admin@lybt.com",               // 管理员邮箱
     "DisplayName": "系统管理员",               // 显示名称
     "AutoCreateOnStartup": true,             // 启动时自动创建 (不存在时)
+    "AllowAutoCreateInProduction": false,    // 生产环境禁止自动创建 (安全门控)
+    "InitialSetupToken": "",                 // 生产环境一次性令牌 (首次部署 sysadmin 创建用)
     "SessionTimeoutMinutes": 240             // 管理员会话超时 (分钟)
   }
 }
 ```
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `UserName` | `sysadmin` | 管理员用户名 |
+| `Email` | `admin@lybt.com` | 管理员邮箱 |
+| `DisplayName` | `系统管理员` | 显示名称 |
+| `AutoCreateOnStartup` | `true` | 启动时自动创建（不存在时）；生产环境受 `AllowAutoCreateInProduction` 门控 |
+| `AllowAutoCreateInProduction` | `false` | **生产环境安全门控**（US-SHELL-017）：`false` 时生产环境禁止自动创建 sysadmin，必须通过 `InitialSetupToken` 首次部署令牌创建。⚠️ 代码待对齐（审计 K4）：`IdentitySeedData` 当前跳过此字段，直接用明文密码创建 |
+| `InitialSetupToken` | `""`（空） | **生产环境一次性令牌**：首次部署时由运维传入，用于安全创建首个 sysadmin（替代明文密码裸奔）。⚠️ 代码待对齐（审计 K4）：`IdentitySeedData` 当前不读此字段 |
+| `SessionTimeoutMinutes` | `240` | 管理员会话超时（分钟） |
 
 ---
 
@@ -388,3 +400,4 @@ sysadmin 配置对象在双模式下本质不同——远程管「服务端 + �
 | 2026-06-25 | v1.3 | 新增环境变量覆盖机制、ConnectionStrings 示例、FeatureToggles、ClinicSettings 配置节 |
 | 2026-06-28 | v1.4 | ConnectionStrings key 对齐 `DefaultConnection`；DefaultPasswords 如实描述（开发占位明文，生产 DefaultPasswordService 随机生成）；补 N1 数据孤立说明（v1.0 远程/本地不互通） |
 | 2026-06-28 | v1.5 | 新增「sysadmin 远程配置管理」段（服务端 Configuration API 边界 + 延迟重启机制 + 双模式区分矩阵 + 安全，均 🧲 v1.0 待实现，ADR-0014） |
+| 2026-06-28 | v1.6 | SystemAdmin 节补 `AllowAutoCreateInProduction`(默认false)/`InitialSetupToken` 字段 + 参数说明表（审计 S8；SystemAdminOptions.cs 实有，US-SHELL-017 验收列明） |

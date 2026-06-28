@@ -56,9 +56,10 @@
 - Desktop → Server (Refit HTTP)
 - Server → DB (EF Core)
 
----
+**就诊完成→前台反向通知**（审计 I6 标注，2026-06-28）：
+v1.0 **未设计 SignalR 反向推送**（医生→前台方向）。ADR-0013 SignalR 仅覆盖挂号→医生单向通知。前台靠**队列轮询**被动感知：`GetQueue` 返回 `Waiting` 状态患者，患者进入 `InProgress`/`Completed` 后从队列消失，前台据此**被动推断**就诊已开始/完成。反向通知（医生完成/取消→前台实时推送）属 **v2.0 规划**。
 
-## Flow 2: 复诊高效流程（医生）
+---
 
 **覆盖 US**: US-PAT-001, US-HERB-001, US-MC-002/008/009/019, US-PRINT-001
 

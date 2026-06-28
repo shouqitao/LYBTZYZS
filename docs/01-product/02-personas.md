@@ -141,7 +141,7 @@ sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局
 | 职责 | 覆盖模块 | US 达标率 | 实现状态 | 关键问题 |
 |------|---------|:---:|------|------|
 | **用户管理** | Users (12 US) | 8/12 ✅ 3⚠️ 1🔴 | ⚠️ 部分 | 分页筛选 bug（内存过滤导致 TotalCount 错误）、Restore 未实现、CreatedAt 始终 MinValue |
-| **药材管理** | Herbs (13 US) | 3/13 ✅ 3⚠️ **7🔴** | 🔴 严重 | 删除无引用检查（破坏处方完整性）、Excel 导入导出**完全缺失**、批量操作不完整、权限策略错误（`DoctorOrAdmin` 应为 `DoctorOrReceptionist`） |
+| **药材管理** | Herbs (13 US) | 3/13 ✅ 3⚠️ **7🔴** | 🔴 严重 | 删除无引用检查（破坏处方完整性）、Excel 导入导出**完全缺失**、批量操作不完整、权限策略待细化（Admin 统一管库；前台不涉及药材） |
 | **验方管理** | Formulas (13 US) | 7/13 ✅ 3⚠️ 3🔴 | ⚠️ 部分 | GetDetail **无所有权检查**（Admin 能读他人非共享验方→安全缺陷）、Export/Import 端点缺失、Restore 缺失 |
 | **医案管理** | MedicalCases (18 US) | 8/18 ✅ 6⚠️ 4🔴 | ⚠️ 部分 | 审计日志缺失、打印保护缺失、历史聚合缺失。**设计决策**：admin 医案操作 = 状态变更（CaseStatus → Completed），**不编辑 Consultation/Prescription 内容**。**v1.0 医生对医案负责，Admin 不审核医案**（医案查询见 MC-005/006，不可创建/编辑/审核）；医生不可用时管理关闭解除 BR-001；变更追溯由 D1 审计日志（v1.0 补回）保障。代码已符合此边界 |
 | **挂号监控** | Registration (7 US) | 2/7 ✅ 2⚠️ 3🔴 | 🔴 严重 | **权限策略错误**（类级 `DoctorOrAdmin` 挡住 Receptionist 核心职能）、StartVisit 链路断裂、跨模块直接引用 |
@@ -155,21 +155,21 @@ sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局
 | 用户 CRUD | ✗ | ✗ | ✓（仅 Doctor/Receptionist） | ✓ 全部 |
 | 重置密码 | ✗ | ✗ | ✓ | ✓ |
 | 患者管理 | ✓ | ✓ | ✓ | ✓ |
-| 药材查询 | ✗ | ✓ | ✓ | ✓ |
-| 药材写操作 | ✗ | ✓*（仅自己创建） | ✓（全部） | ✓ |
+| 药材查询 | ✗（前台不涉及药材） | ✓ | ✓ | ✓ |
+| 药材写操作 | ✗ | ✗（Admin 统一管库） | ✓（全部） | ✓ |
 | 验方查询 | ✗ | ✓*（仅自己+共享） | ✓（全部） | ✓ |
 | 验方写操作 | ✗ | ✓*（仅自己创建） | ✓（全部） | ✓ |
-| 医案创建 | ✗ | ✓ | ✗ | ✗ |
+| 医案创建 | ✗ | ✓（唯一） | ✗ | ✗ |
 | 医案查看 | ✗ | ✓*（仅自己的） | ✓（全部） | ✓ |
-| 医案完成/关闭 | ✗ | ✓*（仅自己的） | ✓（全部） | ✓ |
+| 医案完成/关闭 | ✗ | ✓*（仅自己的） | ✓（仅状态变更） | ✓ |
 | 挂号创建 | ✓（前台） | ✓（QuickVisit） | ✗ | ✗ |
-| 打印 | ✗ | ✓ | ✗ | ✗ |
+| 打印 | ✗ | ✓（唯一） | ✗ | ✗ |
 
 ### 需要修复的权限问题
 
 | # | 问题 | 严重度 | 代码位置 |
 |---|------|:---:|---------|
-| 1 | Herbs Controller 用 `DoctorOrAdmin` 而非 `DoctorOrReceptionist` → Receptionist 无法查药材 | 🔴 | `HerbsController.cs` |
+| 1 | Herbs Controller 用 `DoctorOrAdmin` → 策略待细化（目标：Admin 统一管库、Doctor❌、Receptionist❌） | 🔴 | `HerbsController.cs` |
 | 2 | Registration Controller 类级 `DoctorOrAdmin` → Receptionist 无法挂号/取消 | 🔴 | `RegistrationsController.cs` |
 | 3 | Formulas `GetDetail` 无所有权检查 → Admin 可读他人非共享验方 | 🟠 | `FormulasService` |
 | 4 | Patients 单删路径无引用检查（BR-DEL-001）→ 可删除被医案引用的患者 | 🔴 | `PatientsService` |
@@ -197,7 +197,7 @@ sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局
 | `HomeViewName` | `ViewNames.ClinicalWorkspace` | `DoctorRoleDefinition.cs:37` |
 | `RequiredModules` | UsersModule, PatientsModule, HerbsModule, FormulaModule, MedicalCaseModule, **RegistrationModule** | `DoctorRoleDefinition.cs:16-24` |
 | 专属 UI | ClinicalWorkspaceView（患者列表+看诊工作区一体化） | `Roles/LYBT.Desktop.Clinical/Views/` |
-| 医案创建权限 | **唯一**能创建医案（`DoctorOrAdmin` 策略，Admin 仅管理关闭） | `MedicalCasesController` |
+| 医案创建权限 | **唯一**能创建医案（目标策略 `DoctorOnly`，`PolicyConstants` 待新增；代码当前 `DoctorOrAdmin` 允许 Admin，⚠️代码待对齐 D7） | `MedicalCasesController` |
 
 ### 核心职责与实现状态
 
@@ -205,9 +205,9 @@ sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局
 |------|---------|:---:|------|------|
 | **临床诊疗（核心）** | MedicalCases (18 US) | 8/18 ✅ 6⚠️ 4🔴 | ⚠️ 部分 | 复诊历史聚合缺失（MC-008/009）、打印回写缺失、BR-001 DB索引漏Suspended、MC-LOCK时区错误、跨模块非事务 |
 | **患者管理** | Patients (13 US) | 4/13 ✅ 4⚠️ 5🔴 | ⚠️ 部分 | 读卡去重第一环落空、引用检查缺失、Restore 缺失、权限策略 `DoctorOrAdmin` 需改 |
-| **药材查询/有限写** | Herbs (13 US) | 3/13 ✅ 3⚠️ 7🔴 | ⚠️ 部分 | 删除无引用检查（破坏处方完整性）、批量操作不完整、Excel 缺失 |
+| **药材查询** | Herbs (13 US) | 3/13 ✅ 3⚠️ 7🔴 | ⚠️ 部分 | 删除无引用检查（破坏处方完整性）、批量操作不完整、Excel 缺失；药材写操作 Doctor❌（Admin 统一管库） |
 | **验方管理** | Formulas (13 US) | 7/13 ✅ 3⚠️ 3🔴 | ⚠️ 部分 | GetDetail 无所有权检查、Export/Import 端点缺失、Restore 缺失 |
-| **偶尔挂号** | Registration (7 US) | 2/7 ✅ 2⚠️ 3🔴 | ⚠️ 部分 | QuickVisit 死代码（Service 方法无调用方）；StartVisit 不创建医案 |
+| **偶尔挂号** | Registration (7 US) | 2/7 ✅ 2⚠️ 3🔴 | ⚠️ 部分 | QuickVisit API 已实现（`RegistrationsController:44-94`），Desktop 接线待激活；StartVisit 不创建医案 |
 | **处方打印** | Printing (4 US) | 1/4 ✅ 2⚠️ 1🔴 | ⚠️ 部分 | 回写缺失（PrintLog 表已删）、PDF 分页逻辑未镜像 XAML 多页、IsDraft 字段未克隆 |
 
 ### 权限边界（医生独有 vs 与其他角色的区别）
@@ -216,10 +216,10 @@ sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局
 |------|--------|-------|---------|
 | 医案创建 | **唯一** | 管理关闭（仅状态） | 不参与 |
 | 医案编辑 | **仅自己的** | 查看全部（不编辑内容） | 不参与 |
-| 药材/验方写操作 | **仅自己创建** | 全部 | 不参与 |
+| 药材/验方写操作 | ✗（药材 Admin 统一管库）/验方✓（仅自己创建） | 全部 | 不参与 |
 | 打印处方 | **唯一** | 不能 | 不能 |
 | 历史查看 | 期望看**自己所有医案历史** | 看所有人（但聚合也缺失） | 不参与 |
-| 挂号 | QuickVisit（仅自己） | 不参与 | 不参与 |
+| 挂号 | QuickVisit（仅自己，急诊+本地常规） | 不参与 | 不参与 |
 
 ### 医生视角的 P0 缺陷
 
@@ -233,10 +233,10 @@ sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局
 ### 设计决策（与 Sysadmin/Admin 协同）
 
 - **医案归属**：Doctor 仅操作自己的医案（`UserId=自己`归属限制）
-- **唯一创建者**：仅 Doctor 能创建医案（`DoctorOrAdmin` 策略限 MC-001）
-- **打印控制**：仅 Doctor 能打印处方（`DoctorOnly` 策略）
-- **验方归属**：Doctor 只能编辑自己创建的验方（`CreatedBy` 归属检查）
-- **QuickVisit**：Doctor 在前台繁忙时可替代挂号（RegistrationModule 在 RequiredModules 中）
+- **唯一创建者**：仅 Doctor 能创建医案（目标策略 `DoctorOnly`，`PolicyConstants` 待新增；代码当前 `DoctorOrAdmin` 允许 Admin，⚠️代码待对齐 D7，限 MC-001）
+- **打印控制**：仅 Doctor 能打印处方（目标策略 `DoctorOnly`，`PolicyConstants` 待新增；当前打印权限未在 Controller 层强制，⚠️代码待补）
+- **验方归属**：Doctor 只能编辑自己创建的验方（`CreatedBy` 归属检查；药材写操作 Doctor❌，Admin 统一管库）
+- **QuickVisit**：Doctor 在前台繁忙时可替代挂号（API 已实现 `RegistrationsController:44-94`，Desktop 接线待激活）
 
 ---
 
@@ -261,21 +261,22 @@ sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局
 
 ### ⚠️ 致命问题：前台角色在当前代码中基本不可用
 
-**三个核心模块全部被 `DoctorOrAdmin` 权限策略阻断**，前台无法执行任何本职工作：
+**三个核心模块被 `DoctorOrAdmin` 权限策略阻断**，前台无法执行本职工作：
 
 | 模块 | PRD 要求策略 | 代码实际策略 | 后果 |
 |------|------------|------------|------|
 | Registration（挂号） | Receptionist 是主体 | **`DoctorOrAdmin`** | 🔴 无法创建/取消挂号 |
 | Patients（患者管理） | `DoctorOrReceptionist`（PRD 已标 TODO） | **`DoctorOrAdmin`** | 🔴 无法管理患者 |
-| Herbs（药材查询） | `DoctorOrReceptionist` | **`DoctorOrAdmin`** | 🔴 无法查药材 |
 
-**根因**：Registration 和 Patients 的 Controller 类级属性用 `DoctorOrAdmin` 而非 `DoctorOrReceptionist`。Herbs 同理。这是系统最严重的权限架构问题——**前台角色在服务端设计层面被完全排除**。v1.0 首要修复项。
+> **注**：药材（Herbs）模块前台**按设计不应访问**（权威决策 2026-06-28：前台不涉及药材），`ReceptionistRoleDefinition.RequiredModules` 不含 HerbsModule，无需修复前台药材入口。
+
+**根因**：Registration 和 Patients 的 Controller 类级属性用 `DoctorOrAdmin` 而非 `DoctorOrReceptionist`。这是系统最严重的权限架构问题——**前台角色在服务端设计层面被完全排除**。v1.0 首要修复项。
 
 ### 核心职责与实现状态
 
 | 职责 | 覆盖模块 | US 达标率 | 实现状态 | 关键问题 |
 |------|---------|:---:|------|------|
-| **挂号管理** | Registration (7 US) | 2/7 ✅ 2⚠️ **3🔴** | 🔴 严重 | 权限阻断前台（001/006）、StartVisit 未创建医案+返回错 ID（005）、QuickVisit 死代码（002） |
+| **挂号管理** | Registration (7 US) | 2/7 ✅ 2⚠️ **3🔴** | 🔴 严重 | 权限阻断前台（001/006）、StartVisit 未创建医案+返回错 ID（005）、QuickVisit Desktop 接线待激活（002，API 已实现） |
 | **患者管理** | Patients (13 US) | 4/13 ✅ 4⚠️ 5🔴 | 🔴 严重 | 权限阻断前台、Restore 缺失、引用检查缺失（单删/批量）、读卡去重数据层缺陷、BR-DEL-001 不一致 |
 | **读卡登记** | CardReader (2 US) | 2/2 ✅ | ✅ 达标 | 读卡+患者去重查找已实现；但 Patients 的 IdNumber 搜索数据层丢弃导致去重第一环落空 |
 
@@ -286,19 +287,20 @@ sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局
 | 创建挂号 | ✅（应可，但**代码阻断**） | ✓ QuickVisit | ✗ | ✗ |
 | 取消挂号 | ✅（应可，但**代码阻断**） | ✗ | ✗ | ✗ |
 | 患者 CRUD | ✅（应可，但**代码阻断**） | ✓ | ✓ | ✓ |
-| 药材查询 | ✅（应可，但**代码阻断**） | ✓ | ✓ | ✓ |
+| 药材查询 | ✗（前台不涉及药材） | ✓ | ✓ | ✓ |
 | 患者删除 | ✗ | ✓ | ✓ | ✓ |
 | 患者启用/禁用 | ✗ | ✗ | ✓ | ✓ |
 
 > 上表标注"代码阻断"的操作，PRD 设计上允许但代码权限策略未放行。
 
-### 需要修复的权限问题（共 3 个，均 P0）
+### 需要修复的权限问题（共 2 个，均 P0）
 
 | # | 问题 | 代码位置 | 修复方案 |
 |---|------|---------|---------|
 | 1 | Registration 类级 `DoctorOrAdmin` | `RegistrationsController.cs` | 改为 `DoctorOrReceptionist`，QuickVisit/Cancel 按操作细分 |
 | 2 | Patients 类级 `DoctorOrAdmin` | `PatientsController.cs:23` | 改为 `DoctorOrReceptionist`（PRD 注释已标 T5-P2-30 TODO） |
-| 3 | Herbs Controller `DoctorOrAdmin` | `HerbsController.cs` | 改为 `DoctorOrReceptionist`（同 Admin 的权限问题） |
+
+> **注**：Herbs Controller 同样用 `DoctorOrAdmin`，但前台按设计不涉及药材，无需为前台开通药材入口；Herbs 策略修复由 Admin 角色权限项跟踪（Admin 统一管库）。
 
 ### 与 sysadmin 交叉点
 
@@ -355,7 +357,7 @@ sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局
 
 #### 角色交接闭环验证
 
-8 个角色间交接点全部验证，**0 个完全闭环**：
+8 个角色间交接点重评（2026-06-28 审计 S3）：**1 闭环 + 3 设计层收敛 + 4 代码待对齐**：
 
 | 交接 | 上游→下游 | 状态 | 关键缺口 |
 |:---:|---------|:---:|---------|
@@ -392,7 +394,7 @@ sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局
 | **包含 HerbsModule** | ✅ | ✅ | ✅ | ❌ |
 | **包含 FormulaModule** | ✅ | ✅ | ✅ | ❌ |
 | **包含 MedicalCaseModule** | ✅ | ✅ | ✅ | ❌ |
-| **首页视图** | AdminHome | AdminHome | **ClinicalWorkspace** | ReceptionistHome |
+| **首页视图** | SysadminHome | AdminHome | **ClinicalWorkspace** | ReceptionistHome |
 | **授权策略** | 跳过角色检查 | DoctorOrReceptionist + AdminOrSuperAdmin | 仅 DoctorOrReceptionist | 仅 DoctorOrReceptionist |
 | **CanManageUser** | 跳过 | 可管理 Doctor/Receptionist | 不可管理 | 不可管理 |
 | **可删除** | ❌ | ✅ | ✅ | ✅ |
@@ -404,6 +406,8 @@ sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局
 
 | 日期 | 变更 | 原因 |
 |------|------|------|
+| 2026-06-28 | 权限矩阵统一（权威决策 2026-06-28）：Admin 矩阵（药材查询 Receptionist❌、药材写 Doctor❌、挂号 Admin✗）、Doctor 权限边界（药材写❌、QuickVisit 急诊+本地常规）、Receptionist 矩阵（药材查询❌）、架构差异表（sysadmin 首页→SysadminHome） | 三文档（personas/matrix/代码）矛盾收敛 |
+| 2026-06-28 | K3 自相矛盾修正：医案创建「唯一+DoctorOrAdmin」→「目标 DoctorOnly（PolicyConstants 待新增，代码 DoctorOrAdmin 待对齐 D7）」；打印同；QuickVisit「死代码」→「API 已实现，Desktop 接线待激活」（S5）；前台权限问题由 3→2（剔除药材） | 审计报告 K3/S5 + 前台不涉及药材决策 |
 | 2026-06-28 | Receptionist 双模式注修正：「仅远程模式存在」改为「本地模式由用户配置决定（不强制排除）」 | 2026-06-28 产品澄清（本地全角色支持） |
 | 2026-06-28 | Doctor/Receptionist 角色补双模式工作流注（本地模式直接看诊/无前台） | R10 spec S8 文档更新 |
 | 2026-06-28 | sysadmin 段补「双模式配置管理」（远程管服务端 Configuration API + 延迟重启；本地管全栈单面板 + 备份恢复），修订「不纳入 UI」措辞 | sysadmin 配置设计 spec S7 文档更新（ADR-0014） |
