@@ -51,6 +51,7 @@ v1.0 采用 **SignalR** 实现**远程模式**下挂号变更到医生工作台�
 ## 交叉引用
 - [US-REG-008: 医生工作台待诊列表实时更新](../../02-requirements/08-registration.md)
 - [US-REG-004: 分页查询挂号 + 查看排队](../../02-requirements/08-registration.md)（降级轮询复用）
+- [Registration 模块设计](../modules/registration.md)（SignalR 推送的完整模块设计文档）
 - [ADR-0002: 双模式架构](0002-dual-mode-architecture.md)
 - [ADR-0009: URL 驱动双模式](0009-url-driven-dual-mode.md)
 - [系统架构总览](../01-system-overview.md)

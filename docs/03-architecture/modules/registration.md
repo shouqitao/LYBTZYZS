@@ -12,6 +12,10 @@ Registration 管理患者挂号、候诊队列、就诊接诊。支持双模式�
 - 上游：Auth（JWT）、Patients（患者查询）
 - 下游：MedicalCase（触发创建）、SignalR（推送通知）
 
+## 命名约定
+
+API 路径使用 kebab-case RESTful 风格（如 `/start-visit`），Service 方法使用 PascalCase（如 `StartVisitAsync`）。同一操作在两个层级的命名映射是一致的。
+
 ## 接口契约
 
 ### Service 接口
