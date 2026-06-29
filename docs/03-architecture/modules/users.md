@@ -23,12 +23,24 @@ Users 管理系统用户：CRUD、四级角色(Receptionist/Doctor/Admin/SuperAd
 | POST /users/{id}/toggle-status | ToggleStatusAsync | AdminOrSuperAdmin | 启用/禁用 |
 | POST /users/{id}/restore | RestoreAsync | AdminOrSuperAdmin | 恢复软删除 |
 
+## 异常处理
+
+| 场景 | 异常 | HTTP | 说明 |
+|------|------|:---:|------|
+| Sysadmin 保护(删/禁/改) | ForbiddenException | 403 | ADR-0005 |
+| 用户名重复 | ConflictException | 409 | 唯一约束 |
+| 密码复杂度不足 | ValidationException | 400 | 含特殊字符/长度要求 |
+| 批量操作超限(>100) | ValidationException | 400 | 批量上限 |
+| IDOR 越权修改他人资料 | ForbiddenException | 403 | PUT /profile 仅自己 |
+| 密码重置权限不足 | ForbiddenException | 403 | 仅 Admin/SuperAdmin |
+
 ## 关键业务规则
 
-| 规则 | 约束 | US |
-|------|------|-----|
-| 四级权限 | Receptionist(0) < Doctor(1) < Admin(10) < SuperAdmin(100) | US-USER-001 |
-| Sysadmin保护 | 禁止删除/禁用/修改sysadmin | ADR-0005 |
-| 密码策略 | BCrypt WorkFactor=12，首登强制改密 | US-USER-009 |
-| 批量操作 | 批量删除/启用/禁用(最多100条) | US-USER-012 |
-| IDOR防护 | 仅修改自己资料(PUT /profile) | US-USER-008 |
+| 规则 | 约束 | US | 状态 |
+|------|------|-----|:---:|
+| 四级权限 | Receptionist(0) < Doctor(1) < Admin(10) < SuperAdmin(100) | US-USER-001 | ✅ |
+| Sysadmin保护 | 禁止删除/禁用/修改sysadmin | ADR-0005 | ✅ |
+| 密码策略 | BCrypt WorkFactor=12，首登强制改密 | US-USER-009 | ✅ |
+| 批量操作 | 批量删除/启用/禁用(最多100条) | US-USER-012 | ✅ |
+| IDOR防护 | 仅修改自己资料(PUT /profile) | US-USER-008 | ✅ |
+| 用户名唯一 | 系统用户唯一(含 sysadmin) | US-USER-005 | ✅ |

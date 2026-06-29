@@ -32,8 +32,18 @@ Patients 管理患者档案全生命周期：CRUD、拼音搜索、身份证读�
 
 ## 异常处理
 
-| 场景 | 异常 | HTTP |
-|------|------|:---:|
-| 身份证重复 | ConflictException(409) | 409 |
-| 删除被引用患者 | BusinessException(400)+返回引用列表 | 400 |
-| 读卡器故障 | 手动录入降级 | - |
+| 场景 | 异常 | HTTP | 说明 |
+|------|------|:---:|------|
+| 身份证重复 | ConflictException | 409 | 比对姓名+IdNumber+BirthDate |
+| 删除被引用患者 | BusinessException | 400 | 返回引用的 MedicalCase 列表 |
+| 读卡器故障 | 无异常 | 200 | 降级为手动录入，卡片数据仍可用于搜索 |
+| 读卡去重首环落空 | 无异常 | 200 | IdNumber 搜索在数据层被丢弃(已知 Bug，D8) |
+
+## 模块交互
+
+| 依赖模块 | 调用签名 | 异常传播 | 场景 |
+|----------|----------|----------|------|
+| CardReader | `ICardReader.ReadCardAsync()` → `CardReadResult` | 读卡失败→降级手动录入 | 身份证读卡 |
+| MedicalCase | `IPatientCrossModuleService.GetPatientMedicalCasesAsync()` | 异常→返回空列表 | 删除引用检查 |
+| Auth | `GetOperator()` | UnauthorizedException(401) | 操作员记录 |
+| Herbs | `IHerbCrossModuleService` | BusinessException(400) | 间接引用(通过 MedicalCase) |

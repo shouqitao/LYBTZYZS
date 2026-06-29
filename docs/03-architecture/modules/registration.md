@@ -59,11 +59,16 @@ stateDiagram-v2
 
 ## 异常处理
 
-| 场景 | 异常 | HTTP |
-|------|------|:---:|
-| StartVisit 不创建医案(D8 bug) | 待修复：原子创建 MC+Reg | - |
-| 挂号冲突 | ConflictException | 409 |
-| QuickVisit 权限 | ForbiddenException | 403 |
+| 场景 | 异常 | HTTP | 修复状态 |
+|------|------|:---:|:---:|
+| StartVisit 不创建医案 | 待修复：原子事务创建 MC(Active)+Reg(InProgress)+返回 MedicalCaseId | - | ⚠️ D8 代码待修 |
+| 挂号冲突 | ConflictException | 409 | ✅ |
+| QuickVisit 权限 | ForbiddenException | 403 | ✅ |
+| 本地模式队列轮询 | 无异常，GetQueue 返回空列表 | 200 | ✅ |
+
+**D8 修复方向**（待代码实施）：`StartVisitAsync` 改为原子事务——先创建 `MedicalCase(Active)`，再更新 `Registration.Status=InProgress`，返回 `MedicalCaseId`（非 RegistrationId）。依赖 BR-001 单活跃约束校验。
+
+**QuickVisit 现状**：`RegistrationsController.QuickVisitAsync`(line 44-94) 已有完整实现（原子创建 Registration+MedicalCase），仅 Desktop 端接线未完成。API 层非死代码，需在 Desktop 层激活调用。
 
 ## 业务规则
 

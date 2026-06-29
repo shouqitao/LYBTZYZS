@@ -77,12 +77,16 @@ stateDiagram-v2
 
 ## 异常处理
 
-| 场景 | 异常类型 | HTTP | 处理 |
-|------|----------|:---:|------|
-| BR-001 违反(单活跃) | ConflictException | 409 | 提示用户选择现有医案 |
-| BR-003 必填校验 | ValidationException | 400 | 返回字段级错误 |
-| 并发冲突 | ConflictException | 409 | RowVersion 乐观锁 |
-| 打印后编辑(需 EditReason) | BusinessException | 400 | 要求提供编辑原因 |
+| 场景 | 异常类型 | HTTP | 处理 | 实现状态 |
+|------|----------|:---:|------|:---:|
+| BR-001 违反(单活跃) | ConflictException | 409 | 提示用户选择现有医案 | ✅ |
+| BR-003 必填校验 | ValidationException | 400 | 返回字段级错误 | ✅ |
+| 并发冲突 | ConflictException | 409 | RowVersion 乐观锁 | ✅ |
+| 打印后编辑(需 EditReason) | BusinessException | 400 | 要求提供编辑原因 | ✅ |
+| 审计日志写入失败 | AuditException | 500 | 业务操作正常完成，审计失败记录到独立日志 | 🧲 v1.0 待实现(D1) |
+| SignalR 推送失败 | 无异常 | 200 | 操作成功但推送失败时静默降级，不影响业务 | ✅ |
+
+**异常传播路径**：MedicalCase 操作异常遵循 `06-error-handling.md` 规范——Service 层抛出 `AppException` 子类 → `BusinessExceptionHandler` 捕获 → 转换为 `ApiResponse` (Warning 日志) → 返回标准错误响应。
 
 ## 业务规则
 

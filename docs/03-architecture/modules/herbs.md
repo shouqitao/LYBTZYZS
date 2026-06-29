@@ -30,8 +30,15 @@ Herbs 管理中药药材库：CRUD、分类管理、拼音检索、批量导入(
 
 ## 异常处理
 
-| 场景 | 异常 | HTTP |
-|------|------|:---:|
-| 删除被引用药材 | BusinessException(400)+返回引用列表 | 400 |
-| Excel格式错误 | ValidationException(400) | 400 |
-| 拼音编码冲突 | BusinessException(400) | 400 |
+| 场景 | 异常 | HTTP | 说明 |
+|------|------|:---:|------|
+| 删除被引用药材 | BusinessException | 400 | 返回引用的 PrescriptionItem 列表 |
+| Excel格式错误 | ValidationException | 400 | 行号+错误描述 |
+| 拼音编码冲突 | BusinessException | 400 | 提示手动指定拼音 |
+
+## 模块交互
+
+| 依赖模块 | 调用签名 | 异常传播 | 场景 |
+|----------|----------|----------|------|
+| MedicalCase | `IHerbCrossModuleService.GetHerbPrescriptionReferencesAsync()` | BusinessException(400)+引用列表 | BR-DEL-001 删除前引用检查 |
+| Auth | `GetOperator()` | UnauthorizedException(401) | 操作员记录 |
