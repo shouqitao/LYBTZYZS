@@ -6,7 +6,6 @@ using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.MedicalCases.Mapping;
-using LYBT.Module.Registration.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -26,7 +25,7 @@ namespace LYBT.Module.MedicalCases.Services
     public class MedicalCaseCommandService : BaseService<MedicalCase>, IMedicalCaseCommandService
     {
         private readonly IMedicalCaseRepository _repository;
-        private readonly IRegistrationRepository _registrationRepository;
+        private readonly IRegistrationCrossModuleService _registrationCrossModule;
         private readonly IPatientCrossModuleService _patientCrossModule;
         private readonly IUserCrossModuleService _userCrossModule;
         private readonly IHerbCrossModuleService _herbCrossModule;
@@ -35,7 +34,7 @@ namespace LYBT.Module.MedicalCases.Services
 
         public MedicalCaseCommandService(
             IMedicalCaseRepository repository,
-            IRegistrationRepository registrationRepository,
+            IRegistrationCrossModuleService registrationCrossModule,
             IPatientCrossModuleService patientCrossModule,
             IUserCrossModuleService userCrossModule,
             IHerbCrossModuleService herbCrossModule,
@@ -46,7 +45,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             _mapper = mapper;
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _registrationRepository = registrationRepository ?? throw new ArgumentNullException(nameof(registrationRepository));
+            _registrationCrossModule = registrationCrossModule ?? throw new ArgumentNullException(nameof(registrationCrossModule));
             _patientCrossModule = patientCrossModule ?? throw new ArgumentNullException(nameof(patientCrossModule));
             _userCrossModule = userCrossModule ?? throw new ArgumentNullException(nameof(userCrossModule));
             _herbCrossModule = herbCrossModule ?? throw new ArgumentNullException(nameof(herbCrossModule));
@@ -144,19 +143,10 @@ namespace LYBT.Module.MedicalCases.Services
             // 如果传入了 RegistrationId，更新关联挂号的 MedicalCaseId
             if (request.RegistrationId.HasValue)
             {
-                var registration = await _registrationRepository.GetByIdAsync(request.RegistrationId.Value, cancellationToken);
-                if (registration != null)
-                {
-                    registration.MedicalCaseId = result.Id;
-                    await _registrationRepository.UpdateAsync(registration, cancellationToken);
-                    _logger.LogInformation("[SVC] MedicalCase.CreateFromInput -> Registration linked - RegistrationId={RegistrationId}, MedicalCaseId={MedicalCaseId}",
-                        registration.Id, result.Id);
-                }
-                else
-                {
-                    _logger.LogWarning("[SVC] MedicalCase.CreateFromInput -> Registration not found - RegistrationId={RegistrationId}",
-                        request.RegistrationId.Value);
-                }
+                await _registrationCrossModule.LinkRegistrationToMedicalCaseAsync(
+                    request.RegistrationId.Value, result.Id, cancellationToken);
+                _logger.LogInformation("[SVC] MedicalCase.CreateFromInput -> Registration linked - RegistrationId={RegistrationId}, MedicalCaseId={MedicalCaseId}",
+                    request.RegistrationId.Value, result.Id);
             }
 
             await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
@@ -525,22 +515,8 @@ namespace LYBT.Module.MedicalCases.Services
             MedicalCaseServiceHelper.EnsureCanDelete(medicalCase, operatorId, isAdmin, "Delete", _logger);
 
             // D2 FIX: 删除前回滚关联的挂号记录
-            var registration = await _registrationRepository.GetByMedicalCaseIdAsync(id, cancellationToken);
-            if (registration != null)
-            {
-                if (registration.Source == RegistrationSource.Receptionist)
-                {
-                    registration.Status = RegistrationStatus.Waiting;
-                    registration.MedicalCaseId = null;
-                }
-                else
-                {
-                    registration.Status = RegistrationStatus.Cancelled;
-                }
-                registration.UpdatedAt = DateTime.UtcNow;
-                await _registrationRepository.UpdateAsync(registration, cancellationToken);
-                _logger.LogInformation("[SVC] MedicalCase.Delete → RegistrationRolledBack - RegistrationId={RegistrationId}", registration.Id);
-            }
+            await _registrationCrossModule.HandleMedicalCaseCancelledAsync(id, cancellationToken);
+            _logger.LogInformation("[SVC] MedicalCase.Delete → RegistrationRolledBack - MedicalCaseId={MedicalCaseId}", id);
 
             var result = await _repository.DeleteAsync(id, cancellationToken);
             if (result)

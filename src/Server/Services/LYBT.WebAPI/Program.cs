@@ -169,7 +169,7 @@ public class Program
             }
 
             // 生产环境: 全量验证（含 Important），失败终止启动
-            if (false && builder.Environment.IsProduction())
+            if (builder.Environment.IsProduction())
             {
                 try
                 {

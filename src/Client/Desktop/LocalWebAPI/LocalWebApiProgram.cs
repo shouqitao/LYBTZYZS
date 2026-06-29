@@ -64,7 +64,7 @@ public static class LocalWebApiProgram
         .AddEntityFrameworkStores<AppDbContext>()
         .AddDefaultTokenProviders();
 
-        LocalJwtConfig.ConfigureServices(builder.Services);
+        LocalJwtConfig.ConfigureServices(builder.Services, builder.Configuration);
 
         // Register DefaultPasswordOptions from configuration (required by IdentitySeedData)
         builder.Services.AddOptions<LYBT.Shared.Configuration.Options.Server.DefaultPasswordOptions>()

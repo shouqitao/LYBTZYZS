@@ -22,19 +22,22 @@ public class MenuManager
     private readonly ILogger<MenuManager> _logger;
     private readonly IUserNotificationService _userNotificationService;
     private readonly IApplicationCommands _applicationCommands;
+    private readonly IThemeService _themeService;
 
     public MenuManager(
         INavigationCoordinator navigationCoordinator,
         ISessionManager sessionManager,
         ILogger<MenuManager> logger,
         IUserNotificationService userNotificationService,
-        IApplicationCommands applicationCommands)
+        IApplicationCommands applicationCommands,
+        IThemeService themeService)
     {
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _userNotificationService = userNotificationService ?? throw new ArgumentNullException(nameof(userNotificationService));
         _applicationCommands = applicationCommands ?? throw new ArgumentNullException(nameof(applicationCommands));
+        _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
 
         InitializeCommands();
     }
@@ -261,21 +264,9 @@ public class MenuManager
     {
         try
         {
-            var isDark = Application.Current.Resources.Contains("IsDarkTheme") &&
-                (bool)Application.Current.Resources["IsDarkTheme"];
-
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                if (isDark)
-                {
-                    ApplyLightTheme();
-                    Application.Current.Resources["IsDarkTheme"] = false;
-                }
-                else
-                {
-                    ApplyDarkTheme();
-                    Application.Current.Resources["IsDarkTheme"] = true;
-                }
+                _themeService.ToggleTheme();
             });
 
             await _userNotificationService.ShowSuccessAsync("主题已切换");
@@ -284,45 +275,5 @@ public class MenuManager
         {
             await _userNotificationService.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("主题切换", ex));
         }
-    }
-
-    /// <summary>应用浅色主题</summary>
-    private void ApplyLightTheme()
-    {
-        var resources = Application.Current.Resources;
-        UpdateThemeColor(resources, "BackgroundColor", "#FFF8F9FA");
-        UpdateThemeColor(resources, "SurfaceColor", "#FFFFFFFF");
-        UpdateThemeColor(resources, "TextPrimaryColor", "#FF1A1A1A");
-    }
-
-    /// <summary>应用深色主题</summary>
-    private void ApplyDarkTheme()
-    {
-        var resources = Application.Current.Resources;
-        UpdateThemeColor(resources, "BackgroundColor", "#FF1E1E1E");
-        UpdateThemeColor(resources, "SurfaceColor", "#FF2D2D2D");
-        UpdateThemeColor(resources, "TextPrimaryColor", "#FFFFFFFF");
-    }
-
-    /// <summary>更新主题颜色</summary>
-    private void UpdateThemeColor(ResourceDictionary resources, string colorKey, string colorValue)
-    {
-        try
-        {
-            var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(colorValue);
-            var brushKey = colorKey.Replace("Color", "Brush");
-
-            if (resources.Contains(colorKey))
-            {
-                resources[colorKey] = color;
-            }
-
-            if (resources.Contains(brushKey))
-            {
-                resources[brushKey] = new System.Windows.Media.SolidColorBrush(color);
-            }
-        }
-        catch
-        { /* 忽略主题更新错误 */ }
     }
 }

@@ -1,3 +1,4 @@
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Module.Registration.Repositories;
 using LYBT.Module.Registration.Services;
@@ -17,6 +18,7 @@ public static class RegistrationModule
     {
         services.AddScoped<IRegistrationRepository, RegistrationRepository>();
         services.AddScoped<IRegistrationService, RegistrationService>();
+        services.AddScoped<IRegistrationCrossModuleService, RegistrationCrossModuleService>();
 
         return services;
     }

@@ -35,9 +35,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
 {
     #region 依赖服务
 
-    private readonly IApiHealthMonitor _apiHealthMonitor;
-    private readonly IApiRouter _apiRouter;
-    private readonly IConnectionSettingsService _connectionSettings;
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly MenuManager _menuManager;
     private readonly IActiveConsultationService _activeConsultationService;
@@ -45,156 +42,45 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private readonly IUserActivityTracker _userActivityTracker;
     private readonly ITokenLifecycleService _tokenLifecycleService;
     private readonly ILoginCoordinator _loginCoordinator;
-    private readonly IConnectionModeService _connectionModeService;
     private readonly IThemeService _themeService;
+    private readonly StatusBarManager _statusBarManager;
+    private readonly NavigationManager _navigationManager;
 
-    /// <summary>
-    /// 区域管理器
-    /// </summary>
     protected IRegionManager RegionManager { get; }
-
-    /// <summary>
-    /// 通用对话框服务
-    /// </summary>
     protected ICommonDialogService? CommonDialogService { get; }
-
-    /// <summary>
-    /// 用户通知服务
-    /// </summary>
     protected IUserNotificationService? UserNotificationService { get; }
-
-    /// <summary>
-    /// Toast消息服务 (Phase 2.2)
-    /// </summary>
     protected IToastService? ToastService { get; }
 
     #endregion
 
     #region 可观察属性
 
-    /// <summary>
-    /// 窗口标题
-    /// </summary>
     [ObservableProperty]
     private string _title = SystemConstants.SystemTitle;
 
-    /// <summary>
-    /// 当前登录用户
-    /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CurrentUserInitial))]
     [NotifyPropertyChangedFor(nameof(CurrentUserRoleDisplay))]
     [NotifyPropertyChangedFor(nameof(CurrentUserDisplayName))]
     private UserDetailDto? _currentUser;
 
-    /// <summary>
-    /// 用户登录状态
-    /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsNotLoggedIn))]
     [NotifyPropertyChangedFor(nameof(CurrentUserDisplayName))]
     private bool _isLoggedIn;
 
-    /// <summary>
-    /// 状态栏时间显示文本
-    /// </summary>
-    [ObservableProperty]
-    private string _currentTimeDisplay = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-
-    /// <summary>
-    /// API健康状态
-    /// </summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ApiStatusIcon))]
-    [NotifyPropertyChangedFor(nameof(ApiStatusColor))]
-    private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
-
-    /// <summary>
-    /// 当前连接地址
-    /// </summary>
-    [ObservableProperty]
-    private string _connectionUrl = "http://127.0.0.1:5300";
-
-    /// <summary>
-    /// 是否连接本地服务
-    /// </summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsNotLoggedIn))]
-    private bool _isLocal;
-
-    /// <summary>
-    /// 连接模式显示文本 (远程模式/本地模式) - 状态栏模式徽章
-    /// </summary>
-    [ObservableProperty]
-    private string _connectionModeDisplay = string.Empty;
-
-    /// <summary>
-    /// 是否为远程模式 - 用于状态栏颜色编码 (true=绿色, false=橙色)
-    /// </summary>
-    [ObservableProperty]
-    private bool _isRemoteMode;
-
-    /// <summary>
-    /// 连接地址变更命令（参数为新URL字符串）
-    /// </summary>
-    [RelayCommand]
-    private async Task ConnectAsync(string url)
-    {
-        if (string.IsNullOrWhiteSpace(url)) return;
-        try
-        {
-            await _connectionSettings.SetUrlAsync(url);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "[UI] 连接切换失败: {Url}", url);
-        }
-    }
-
-    /// <summary>
-    /// 侧边栏宽度 (60=折叠/仅图标, 140=展开/图标+文字)
-    /// </summary>
     [ObservableProperty]
     private double _sidebarWidth = 60;
 
-    /// <summary>
-    /// 侧边栏是否展开 (默认折叠=false，按用户要求侧栏初始收起)
-    /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(NavTextVisibility))]
     private bool _isSidebarExpanded = false;
 
-    /// <summary>
-    /// 导航文字可见性 - 侧边栏折叠时隐藏文字
-    /// </summary>
     public Visibility NavTextVisibility =>
         IsSidebarExpanded ? Visibility.Visible : Visibility.Collapsed;
 
-    /// <summary>
-    /// 暗色模式开关
-    /// </summary>
     [ObservableProperty]
     private bool _isDarkMode;
-
-    /// <summary>
-    /// 侧边栏导航项 - 根据当前用户角色构建 (UI Redesign 2026-06-21)
-    /// </summary>
-    [ObservableProperty]
-    private ObservableCollection<NavigationItem> _navigationItems = new();
-
-    /// <summary>
-    /// 当前选中的导航项 - 双向绑定到 Sidebar ListBox SelectedItem
-    /// </summary>
-    [ObservableProperty]
-    private NavigationItem? _selectedNavItem;
-
-    partial void OnSelectedNavItemChanged(NavigationItem? value)
-    {
-        if (value?.ViewName is string viewName && !string.IsNullOrEmpty(viewName))
-        {
-            _navigationCoordinator.NavigateTo(viewName);
-        }
-    }
 
     partial void OnIsDarkModeChanged(bool value) => _themeService.ApplyTheme(value);
 
@@ -202,46 +88,24 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     #region 计算属性
 
-    /// <summary>
-    /// 是否未登录状态，用于界面绑定
-    /// </summary>
     public bool IsNotLoggedIn => !IsLoggedIn;
 
-    /// <summary>
-    /// 当前用户显示名称 - 状态栏使用
-    /// 优先显示真实姓名，未设置则显示用户名
-    /// US-SHELL-007 (CODE-21)
-    /// </summary>
     public string CurrentUserDisplayName =>
         IsLoggedIn && CurrentUser != null
             ? (string.IsNullOrEmpty(CurrentUser.RealName) ? CurrentUser.UserName : CurrentUser.RealName)
             : string.Empty;
 
-    /// <summary>S6-01: 用户管理菜单可见性 - 委托给 MenuManager</summary>
     public bool IsUserManagementVisible => _menuManager.IsUserManagementVisible;
-
-    /// <summary>S6-01: 系统设置可见性 - 委托给 MenuManager</summary>
     public bool IsSystemSettingsVisible => _menuManager.IsSystemSettingsVisible;
-
-    /// <summary>S6-04: 密码修改可见性 - 委托给 MenuManager</summary>
     public bool IsPasswordChangeVisible => _menuManager.IsPasswordChangeVisible;
 
-    /// <summary>
-    /// 分组后的导航项视图 - 供 Sidebar GroupStyle 绑定
-    /// </summary>
-    private ICollectionView? _groupedNavItems;
+    public ICollectionView GroupedNavItems => _navigationManager.GroupedNavItems;
+    public ObservableCollection<NavigationItem> NavigationItems => _navigationManager.NavigationItems;
 
-    public ICollectionView GroupedNavItems
+    public NavigationItem? SelectedNavItem
     {
-        get
-        {
-            if (_groupedNavItems == null)
-            {
-                _groupedNavItems = CollectionViewSource.GetDefaultView(NavigationItems);
-                _groupedNavItems.GroupDescriptions.Add(new PropertyGroupDescription(nameof(NavigationItem.Group)));
-            }
-            return _groupedNavItems;
-        }
+        get => _navigationManager.SelectedNavItem;
+        set => _navigationManager.SelectedNavItem = value;
     }
 
     public string CurrentUserInitial =>
@@ -259,35 +123,23 @@ public partial class MainWindowViewModel : CoreViewModelBase
             _ => string.Empty
         };
 
-    public PackIconKind ApiStatusIcon => ApiStatus switch
-    {
-        ApiHealthStatus.Healthy => PackIconKind.Wifi,
-        ApiHealthStatus.Unhealthy => PackIconKind.WifiOff,
-        _ => PackIconKind.WifiStrengthAlertOutline
-    };
-
-    // TODO(M3): 状态色当前使用固定 Brushes，未跟随 Light/Dark 主题。状态图标通常为固定语义色，
-    // 暂可接受；后续若需主题适配，应改为从 ResourceDictionary 解析的主题画笔。
-    public Brush ApiStatusColor => ApiStatus switch
-    {
-        ApiHealthStatus.Healthy => Brushes.Green,
-        ApiHealthStatus.Unhealthy => Brushes.Orange,
-        _ => Brushes.Gray
-    };
+    // 状态栏属性委托给 StatusBarManager
+    public ApiHealthStatus ApiStatus => _statusBarManager.ApiStatus;
+    public string ConnectionUrl => _statusBarManager.ConnectionUrl;
+    public bool IsLocal => _statusBarManager.IsLocal;
+    public string ConnectionModeDisplay => _statusBarManager.ConnectionModeDisplay;
+    public bool IsRemoteMode => _statusBarManager.IsRemoteMode;
+    public string CurrentTimeDisplay => _statusBarManager.CurrentTimeDisplay;
+    public PackIconKind ApiStatusIcon => _statusBarManager.ApiStatusIcon;
+    public Brush ApiStatusColor => _statusBarManager.ApiStatusColor;
 
     #endregion
 
     #region 构造函数
 
-    /// <summary>
-    /// 构造函数
-    /// </summary>
     public MainWindowViewModel(
         IViewModelServices services,
         IUserNotificationService userNotificationService,
-        IApiHealthMonitor apiHealthMonitor,
-        IApiRouter apiRouter,
-        IConnectionSettingsService connectionSettings,
         INavigationCoordinator navigationCoordinator,
         MenuManager menuManager,
         IActiveConsultationService activeConsultationService,
@@ -295,8 +147,9 @@ public partial class MainWindowViewModel : CoreViewModelBase
         IUserActivityTracker userActivityTracker,
         ITokenLifecycleService tokenLifecycleService,
         ILoginCoordinator loginCoordinator,
-        IConnectionModeService connectionModeService,
-        IThemeService themeService)
+        IThemeService themeService,
+        StatusBarManager statusBarManager,
+        NavigationManager navigationManager)
         : base(services)
     {
         RegionManager = services.RegionManager;
@@ -304,9 +157,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         ToastService = services.ToastService;
         UserNotificationService = userNotificationService;
 
-        _apiHealthMonitor = apiHealthMonitor ?? throw new ArgumentNullException(nameof(apiHealthMonitor));
-        _apiRouter = apiRouter ?? throw new ArgumentNullException(nameof(apiRouter));
-        _connectionSettings = connectionSettings ?? throw new ArgumentNullException(nameof(connectionSettings));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));
         _activeConsultationService = activeConsultationService ?? throw new ArgumentNullException(nameof(activeConsultationService));
@@ -314,16 +164,9 @@ public partial class MainWindowViewModel : CoreViewModelBase
         _userActivityTracker = userActivityTracker ?? throw new ArgumentNullException(nameof(userActivityTracker));
         _tokenLifecycleService = tokenLifecycleService ?? throw new ArgumentNullException(nameof(tokenLifecycleService));
         _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
-        _connectionModeService = connectionModeService ?? throw new ArgumentNullException(nameof(connectionModeService));
         _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
-
-        ConnectionUrl = _connectionSettings.CurrentUrl;
-        IsLocal = _connectionSettings.IsLocal;
-
-        // 初始化连接模式显示
-        ConnectionModeDisplay = _connectionModeService.CurrentModeDisplay;
-        IsRemoteMode = _connectionModeService.IsRemote;
-        _connectionModeService.ModeChanged += OnConnectionModeChanged;
+        _statusBarManager = statusBarManager ?? throw new ArgumentNullException(nameof(statusBarManager));
+        _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
 
         InitializeViewModel();
     }
@@ -466,8 +309,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     [RelayCommand]
     private async Task RetryHealthCheckAsync()
     {
-        Logger.LogInformation("用户手动触发 API 健康检查");
-        await _apiHealthMonitor.ForceCheckAsync();
+        await _statusBarManager.ForceCheckAsync();
     }
 
     /// <summary>
@@ -491,120 +333,26 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     #region 初始化
 
-    /// <summary>
-    /// 执行完整的ViewModel初始化
-    /// </summary>
     private void InitializeViewModel()
-    {
-        InitializeClock();
-        InitializeHealthCheck();
-        InitializeEvents();
-    }
-
-    /// <summary>
-    /// 初始化时钟计时器
-    /// </summary>
-    private void InitializeClock()
     {
         _tickService.Tick += OnTick;
         _tickService.Start();
         _userActivityTracker.SessionExpired += OnSessionExpired;
-    }
 
-    /// <summary>
-    /// 初始化API健康检查
-    /// </summary>
-    private void InitializeHealthCheck()
-    {
-        _apiHealthMonitor.StatusChanged += OnHealthStatusChanged;
-        _apiHealthMonitor.StartMonitoringAsync().SafeFireAndForget(ex => Logger.LogError(ex, "启动健康监控失败"));
-        _connectionSettings.UrlChanged += OnConnectionUrlChanged;
-    }
-
-    /// <summary>
-    /// 初始化事件订阅
-    /// </summary>
-    private void InitializeEvents()
-    {
-        // 订阅LoginCoordinator的登录成功事件（取代EventAggregator的LoginSuccessEvent）
         _loginCoordinator.LoginSucceeded += OnLoginCoordinatorSuccess;
         Events.Subscribe<AuthEvents.PasswordChangedEvent, PasswordChangedPayload>(OnPasswordChanged);
         Events.Subscribe<AuthEvents.ProfileUpdatedEvent, ProfileUpdatedPayload>(OnProfileUpdated);
         Events.Subscribe<TokenLifecycleStateChangedEvent, TokenLifecycleStateChangedEventArgs>(
             args => OnTokenLifecycleStateChangedAsync(args).SafeFireAndForget(ex => Logger.LogError(ex, "Token生命周期事件处理异常")));
-        _navigationCoordinator.SubscribeToRegionCollection();
-
-        // 导航架构改进方案 v1.0 — 订阅导航变更事件，更新面包屑和按钮状态
-        _navigationCoordinator.NavigationChanged += OnNavigationStateChanged;
     }
 
     #endregion
 
     #region 事件处理
 
-    /// <summary>
-    /// 统一Tick处理 - 时钟更新
-    /// </summary>
     private void OnTick(object? sender, ApplicationTickEventArgs e)
     {
-        // UI线程更新时间显示（避免应用关闭时空引用）
-        Services.UiThreadDispatcher.InvokeAsync(() =>
-        {
-            CurrentTimeDisplay = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-        });
-    }
-
-    /// <summary>
-    /// 健康状态变更事件处理
-    /// </summary>
-    private void OnHealthStatusChanged(object? sender, ApiHealthMonitorChangedEventArgs e)
-    {
-        var apiStatus = e.NewStatus switch
-        {
-            ApiMonitorHealthStatus.Healthy => ApiHealthStatus.Healthy,
-            ApiMonitorHealthStatus.Unhealthy => ApiHealthStatus.Unhealthy,
-            _ => ApiHealthStatus.Checking
-        };
-        Services.UiThreadDispatcher.InvokeAsync(() => ApiStatus = apiStatus);
-    }
-
-    /// <summary>
-    /// 连接地址变更事件处理
-    /// </summary>
-    private void OnConnectionUrlChanged(object? sender, string newUrl)
-    {
-        Services.UiThreadDispatcher.InvokeAsync(() =>
-        {
-            ConnectionUrl = newUrl;
-            IsLocal = _connectionSettings.IsLocal;
-            Logger.LogInformation("[UI] 连接地址变更: {Url}", newUrl);
-        });
-    }
-
-    /// <summary>
-    /// 连接模式变更事件处理 - 更新状态栏模式徽章
-    /// </summary>
-    private void OnConnectionModeChanged(object? sender, ConnectionMode e)
-    {
-        Services.UiThreadDispatcher.InvokeAsync(() =>
-        {
-            ConnectionModeDisplay = _connectionModeService.CurrentModeDisplay;
-            IsRemoteMode = _connectionModeService.IsRemote;
-            Logger.LogInformation("[UI] 连接模式变更: {Mode} ({Display})", e, _connectionModeService.CurrentModeDisplay);
-        });
-    }
-
-    /// <summary>
-    /// 导航架构改进方案 v1.0 — 导航状态变更事件处理
-    /// 刷新后退/前进按钮命令的可执行状态
-    /// </summary>
-    private void OnNavigationStateChanged(object? sender, NavigationChangedEventArgs e)
-    {
-        Services.UiThreadDispatcher.InvokeAsync(() =>
-        {
-            // 刷新命令可执行状态
-            _menuManager.RefreshNavigationCanExecute();
-        });
+        _statusBarManager.UpdateTime();
     }
 
     /// <summary>
@@ -654,43 +402,30 @@ public partial class MainWindowViewModel : CoreViewModelBase
         });
     }
 
-    /// <summary>
-    /// LoginCoordinator登录成功事件处理
-    /// 负责更新UI状态（LoginCoordinator已处理模块加载和导航）
-    /// </summary>
     private void OnLoginCoordinatorSuccess(object? sender, LoginSuccessEventArgs args)
     {
         var user = args.User;
 
         Services.UiThreadDispatcher.InvokeAsync(() =>
         {
-            // 更新UI状态
             IsLoggedIn = true;
             CurrentUser = user;
 
-            // 设置窗口标题
             bool isAdmin = user.UserName?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true
                            || user.Role == UserRole.Admin;
             var userDisplayName = string.IsNullOrEmpty(user.RealName) ? user.UserName : user.RealName;
             Title = $"凌隐宝堂中医诊所诊疗系统 - {userDisplayName} ({(isAdmin ? "管理员" : "医生")})";
 
-            // 清理登录区域
             _navigationCoordinator.ClearLoginRegion();
-
-            // 启动用户活动追踪
             _userActivityTracker.StartTracking();
-
-            // Issue #1864: 启动Token生命周期监控
             _ = _tokenLifecycleService.StartMonitoringFromStorageAsync();
 
-            // S6-01/S6-02: 刷新菜单可见性
             _menuManager.RefreshMenuVisibility();
             OnPropertyChanged(nameof(IsUserManagementVisible));
             OnPropertyChanged(nameof(IsSystemSettingsVisible));
             OnPropertyChanged(nameof(IsPasswordChangeVisible));
 
-            // UI Redesign 2026-06-21: 构建角色自适应侧边栏导航项
-            NavigationItems = BuildNavigationItems(user.Role);
+            _navigationManager.BuildNavigationItems(user.Role);
 
             Logger.LogInformation("登录成功UI更新完成 [用户: {Username}]", user.UserName);
         });
@@ -727,88 +462,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     #endregion
 
     #region 业务逻辑
-
-    /// <summary>
-    /// 根据用户角色构建侧边栏导航项 (UI Redesign 2026-06-21)
-    /// </summary>
-    private ObservableCollection<NavigationItem> BuildNavigationItems(UserRole role)
-    {
-        var definition = Services.RoleRegistry.GetDefinition(role);
-        var items = new ObservableCollection<NavigationItem>();
-
-        if (definition == null)
-        {
-            Logger.LogWarning("无法为角色 {Role} 找到定义，导航项为空", role);
-            return items;
-        }
-
-        var modules = definition.RequiredModules;
-
-        // 主页
-        items.Add(new NavigationItem
-        {
-            Title = "主页",
-            ViewName = definition.HomeViewName,
-            IconKind = "Home",
-            Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(definition.HomeViewName)),
-            Group = "主页"
-        });
-
-        // 业务组
-        if (modules.Contains("PatientsModule"))
-            items.Add(CreateNavItem("患者管理", ViewNames.PatientManagement, "AccountGroup", "业务"));
-        if (modules.Contains("HerbsModule"))
-            items.Add(CreateNavItem("药材管理", ViewNames.HerbManagement, "Leaf", "业务"));
-        if (modules.Contains("FormulaModule"))
-            items.Add(CreateNavItem("验方管理", ViewNames.FormulaManagement, "Notebook", "业务"));
-        if (modules.Contains("MedicalCaseModule"))
-            items.Add(CreateNavItem("医案管理", ViewNames.MedicalCaseManagement, "Folder", "业务"));
-        if (modules.Contains("RegistrationModule"))
-            items.Add(CreateNavItem("挂号管理", ViewNames.RegistrationList, "CalendarClock", "业务"));
-
-        // 管理组
-        if (modules.Contains("UsersModule") && role is UserRole.Admin or UserRole.SuperAdmin)
-        {
-            if (role == UserRole.SuperAdmin)
-            {
-                items.Add(new NavigationItem
-                {
-                    Title = "用户管理",
-                    ViewName = ViewNames.UserManagement,
-                    IconKind = "AccountTie",
-                    Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(ViewNames.UserManagement,
-                        new Dictionary<string, object> { { "DefaultRoleFilter", UserRole.Admin } })),
-                    Group = "管理"
-                });
-            }
-            else
-            {
-                items.Add(CreateNavItem("用户管理", ViewNames.UserManagement, "AccountTie", "管理"));
-            }
-        }
-        if (definition.GetAllModules().Contains("ReportsModule"))
-            items.Add(CreateNavItem("统计报表", ViewNames.ReportsHome, "ChartBar", "管理"));
-
-        // Sysadmin 专属导航
-        if (role == UserRole.SuperAdmin)
-        {
-            items.Add(CreateNavItem("诊所信息", ViewNames.SystemSettings, "Domain", "管理"));
-            items.Add(CreateNavItem("日志控制", "LogLevelControlView", "Tune", "管理"));
-        }
-
-        Logger.LogInformation("已为角色 {Role} 构建 {Count} 个导航项", role, items.Count);
-        return items;
-    }
-
-    private NavigationItem CreateNavItem(string title, string viewName, string iconKind, string group = "业务") =>
-        new()
-        {
-            Title = title,
-            ViewName = viewName,
-            IconKind = iconKind,
-            Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(viewName)),
-            Group = group
-        };
 
     /// <summary>
     /// 处理Token已过期
@@ -957,68 +610,19 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     #region IDisposable
 
-    /// <summary>
-    /// 重写OnDisposing方法，清理资源防止内存泄漏
-    /// </summary>
     protected override void OnDisposing()
     {
         try
         {
-            CleanupTickSubscription();
-            CleanupHealthMonitor();
-            CleanupConnectionMode();
-            UnsubscribeLoginEvent();
-            _navigationCoordinator.UnsubscribeFromRegionCollection();
-            _tokenLifecycleService.Dispose(); // Issue #1864: 释放Token生命周期服务
+            _tickService.Tick -= OnTick;
+            _userActivityTracker.SessionExpired -= OnSessionExpired;
+            _userActivityTracker.StopTracking();
+            _loginCoordinator.LoginSucceeded -= OnLoginCoordinatorSuccess;
+            _statusBarManager.Dispose();
+            _tokenLifecycleService.Dispose();
         }
         catch (Exception ex) { Logger.LogError(ex, "资源清理异常"); }
         finally { base.OnDisposing(); }
-    }
-
-    /// <summary>
-    /// 清理连接模式服务订阅
-    /// </summary>
-    private void CleanupConnectionMode()
-    {
-        try
-        {
-            _connectionModeService.ModeChanged -= OnConnectionModeChanged;
-        }
-        catch (Exception ex) { Logger.LogError(ex, "清理连接模式服务订阅失败"); }
-    }
-
-    /// <summary>
-    /// 清理Tick订阅和用户活动追踪
-    /// </summary>
-    private void CleanupTickSubscription()
-    {
-        _tickService.Tick -= OnTick;
-        _userActivityTracker.SessionExpired -= OnSessionExpired;
-        _userActivityTracker.StopTracking();
-    }
-
-    /// <summary>
-    /// 清理健康检查协调器订阅
-    /// </summary>
-    private void CleanupHealthMonitor()
-    {
-        try
-        {
-            _apiHealthMonitor.StatusChanged -= OnHealthStatusChanged;
-            _apiHealthMonitor.Dispose();
-            _connectionSettings.UrlChanged -= OnConnectionUrlChanged;
-            if (_apiRouter is IDisposable routerDisposable) routerDisposable.Dispose();
-        }
-        catch (Exception ex) { Logger.LogError(ex, "清理健康监控器失败"); }
-    }
-
-    /// <summary>
-    /// 取消登录事件订阅
-    /// </summary>
-    private void UnsubscribeLoginEvent()
-    {
-        try { _loginCoordinator.LoginSucceeded -= OnLoginCoordinatorSuccess; }
-        catch (Exception ex) { Logger.LogError(ex, "取消LoginCoordinator事件订阅失败"); }
     }
 
     #endregion

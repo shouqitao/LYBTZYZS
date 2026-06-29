@@ -3,7 +3,6 @@ using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
-using LYBT.Module.Registration.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.ExceptionHandling.Exceptions;
@@ -23,20 +22,20 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly IMedicalCaseRepository _repository;
         private readonly IUserCrossModuleService _userCrossModule;
         private readonly ICacheInvalidationService _cacheInvalidation;
-        private readonly IRegistrationRepository _registrationRepository;
+        private readonly IRegistrationCrossModuleService _registrationCrossModule;
 
         public MedicalCaseStateService(
             IMedicalCaseRepository repository,
             IUserCrossModuleService userCrossModule,
             ILogger<MedicalCaseStateService> logger,
             ICacheInvalidationService cacheInvalidation,
-            IRegistrationRepository registrationRepository)
+            IRegistrationCrossModuleService registrationCrossModule)
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _userCrossModule = userCrossModule ?? throw new ArgumentNullException(nameof(userCrossModule));
             _cacheInvalidation = cacheInvalidation ?? throw new ArgumentNullException(nameof(cacheInvalidation));
-            _registrationRepository = registrationRepository ?? throw new ArgumentNullException(nameof(registrationRepository));
+            _registrationCrossModule = registrationCrossModule ?? throw new ArgumentNullException(nameof(registrationCrossModule));
         }
 
         /// <summary>
@@ -291,33 +290,9 @@ namespace LYBT.Module.MedicalCases.Services
         /// </summary>
         private async Task RollbackRegistrationAsync(Guid medicalCaseId, string caseNumber, CancellationToken cancellationToken = default)
         {
-            var registration = await _registrationRepository.GetByMedicalCaseIdAsync(medicalCaseId, cancellationToken);
-            if (registration == null)
-            {
-                _logger.LogInformation("[SVC] MedicalCase.Cancel → NoRegistrationFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return;
-            }
-
-            if (registration.Source == RegistrationSource.Receptionist)
-            {
-                // 前台挂号: 回退到Waiting，清除MedicalCaseId (D3 FIX: 允许后续取消)
-                registration.Status = RegistrationStatus.Waiting;
-                registration.MedicalCaseId = null;
-                registration.UpdatedAt = DateTime.UtcNow;
-                // MedicalCaseId保留不变，用于后续恢复关联
-                await _registrationRepository.UpdateAsync(registration, cancellationToken);
-                _logger.LogInformation("[SVC] MedicalCase.Cancel → RegistrationRolledBack - RegistrationId={RegistrationId} Source=Receptionist Status=Waiting MedicalCaseId={MedicalCaseId} CaseNumber={CaseNumber}",
-                    registration.Id, medicalCaseId, caseNumber);
-            }
-            else if (registration.Source == RegistrationSource.Doctor)
-            {
-                // 医生直接看诊: 设置为Cancelled（闭环）
-                registration.Status = RegistrationStatus.Cancelled;
-                registration.UpdatedAt = DateTime.UtcNow;
-                await _registrationRepository.UpdateAsync(registration, cancellationToken);
-                _logger.LogInformation("[SVC] MedicalCase.Cancel → RegistrationCancelled - RegistrationId={RegistrationId} Source=Doctor Status=Cancelled MedicalCaseId={MedicalCaseId} CaseNumber={CaseNumber}",
-                    registration.Id, medicalCaseId, caseNumber);
-            }
+            await _registrationCrossModule.HandleMedicalCaseCancelledAsync(medicalCaseId, cancellationToken);
+            _logger.LogInformation("[SVC] MedicalCase.Cancel → RegistrationRolledBack - MedicalCaseId={MedicalCaseId} CaseNumber={CaseNumber}",
+                medicalCaseId, caseNumber);
         }
 
         /// <summary>
@@ -325,18 +300,9 @@ namespace LYBT.Module.MedicalCases.Services
         /// </summary>
         private async Task CompleteRegistrationAsync(Guid medicalCaseId, CancellationToken cancellationToken = default)
         {
-            var registration = await _registrationRepository.GetByMedicalCaseIdAsync(medicalCaseId, cancellationToken);
-            if (registration == null)
-            {
-                _logger.LogInformation("[SVC] MedicalCase.Complete → NoRegistrationFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return;
-            }
-
-            registration.Status = RegistrationStatus.Completed;
-            registration.UpdatedAt = DateTime.UtcNow;
-            await _registrationRepository.UpdateAsync(registration, cancellationToken);
-            _logger.LogInformation("[SVC] MedicalCase.Complete → RegistrationCompleted - RegistrationId={RegistrationId} MedicalCaseId={MedicalCaseId}",
-                registration.Id, medicalCaseId);
+            await _registrationCrossModule.CompleteByMedicalCaseAsync(medicalCaseId, cancellationToken);
+            _logger.LogInformation("[SVC] MedicalCase.Complete → RegistrationCompleted - MedicalCaseId={MedicalCaseId}",
+                medicalCaseId);
         }
 
         #region Private Helper Methods

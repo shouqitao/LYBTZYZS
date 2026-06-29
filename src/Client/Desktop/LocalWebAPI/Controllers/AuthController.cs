@@ -23,13 +23,17 @@ public class AuthController : BaseApiController
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
 
+    private readonly IConfiguration _configuration;
+    
     public AuthController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
+        IConfiguration configuration,
         ILogger<AuthController> logger) : base(logger)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _configuration = configuration;
     }
 
     private static Guid GetCurrentUserId(ClaimsPrincipal principal)
@@ -155,7 +159,8 @@ public class AuthController : BaseApiController
         try
         {
             var handler = new JwtSecurityTokenHandler();
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("LYBT-LocalWebAPI-Secret-Key-2024-DoNotUseInProduction"));
+            var secretKey = _configuration["LocalJwt:SecretKey"] ?? "LYBT-LocalWebAPI-Secret-Key-2024-DoNotUseInProduction";
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
             var validationParameters = new TokenValidationParameters
             {

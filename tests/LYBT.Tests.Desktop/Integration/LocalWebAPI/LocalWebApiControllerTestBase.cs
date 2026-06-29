@@ -93,7 +93,7 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
         .AddEntityFrameworkStores<AppDbContext>()
         .AddDefaultTokenProviders();
 
-        LocalJwtConfig.ConfigureServices(builder.Services);
+        LocalJwtConfig.ConfigureServices(builder.Services, builder.Configuration);
 
         // Register DefaultPasswordOptions (required by IdentitySeedData)
         builder.Services.Configure<LYBT.Shared.Configuration.Options.Server.DefaultPasswordOptions>(options =>

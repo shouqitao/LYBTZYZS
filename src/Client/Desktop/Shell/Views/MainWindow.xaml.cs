@@ -13,8 +13,12 @@ namespace LYBT.Desktop.Shell.Views
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        private readonly ISnackbarMessageQueue _snackbarMessageQueue;
+        
+        public MainWindow(ISnackbarMessageQueue snackbarMessageQueue)
         {
+            _snackbarMessageQueue = snackbarMessageQueue;
+            
             InitializeComponent();
 
             Loaded += OnWindowLoaded;
@@ -26,18 +30,6 @@ namespace LYBT.Desktop.Shell.Views
         /// </summary>
         private async void OnWindowLoaded(object sender, RoutedEventArgs e)
         {
-            // C1 fix: Register the Snackbar's MessageQueue so ISnackbarService can resolve it
-            // Separate try-catch so Snackbar failure doesn't block login
-            try
-            {
-                if (MainSnackbar?.MessageQueue is ISnackbarMessageQueue queue)
-                {
-                    ((IContainerRegistry)ContainerLocator.Current)
-                        .RegisterInstance(queue);
-                }
-            }
-            catch (Exception) { /* Snackbar registration is non-critical */ }
-
             try
             {
                 if (DataContext is MainWindowViewModel viewModel)

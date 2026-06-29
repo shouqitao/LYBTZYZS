@@ -10,6 +10,7 @@ using LYBT.Entities.Users;
 using LYBT.Infrastructure.Constants;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 
 namespace LYBT.LocalWebAPI.Auth;
 
@@ -19,14 +20,24 @@ namespace LYBT.LocalWebAPI.Auth;
 /// </summary>
 public static class LocalJwtConfig
 {
-    private const string Secret = "LYBT-LocalWebAPI-Secret-Key-2024-DoNotUseInProduction";
+    private const string DefaultSecret = "LYBT-LocalWebAPI-Secret-Key-2024-DoNotUseInProduction";
+    private static string _secret = DefaultSecret;
+    
+    /// <summary>
+    /// 初始化密钥（从配置读取）
+    /// </summary>
+    public static void Initialize(IConfiguration configuration)
+    {
+        _secret = configuration["LocalJwt:SecretKey"] ?? DefaultSecret;
+    }
 
     /// <summary>
     /// Configure JWT authentication/authorization services.
     /// </summary>
-    public static void ConfigureServices(IServiceCollection services)
+    public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
-        var key = Encoding.UTF8.GetBytes(Secret);
+        Initialize(configuration);
+        var key = Encoding.UTF8.GetBytes(_secret);
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = false,
@@ -87,7 +98,7 @@ public static class LocalJwtConfig
         if (user.IsSysAdmin)
             claims.Add(new Claim("IsSysAdmin", "true"));
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Secret));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(

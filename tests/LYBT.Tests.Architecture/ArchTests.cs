@@ -846,4 +846,47 @@ public class ArchTests
     }
 
     #endregion
+
+    #region P07: 模块间引用检查
+
+    /// <summary>
+    /// P07: Server 模块间不得相互引用
+    /// 防止模块耦合，确保模块隔离
+    /// </summary>
+    [Fact]
+    public void P07_ServerModules_Should_Not_Reference_Other_ServerModules()
+    {
+        var moduleAssemblies = new[]
+        {
+            Assembly.Load("LYBT.Module.Auth"),
+            Assembly.Load("LYBT.Module.Users"),
+            Assembly.Load("LYBT.Module.Patients"),
+            Assembly.Load("LYBT.Module.MedicalCases"),
+            Assembly.Load("LYBT.Module.Herbs"),
+            Assembly.Load("LYBT.Module.Formulas"),
+            Assembly.Load("LYBT.Module.Registration"),
+            Assembly.Load("LYBT.Module.Reports"),
+        };
+
+        var violations = new List<string>();
+
+        foreach (var module in moduleAssemblies)
+        {
+            var referencedModules = module.GetReferencedAssemblies()
+                .Where(a => a.Name?.StartsWith("LYBT.Module.") == true 
+                         && a.Name != module.GetName().Name)
+                .Select(a => a.Name)
+                .ToList();
+
+            if (referencedModules.Any())
+            {
+                violations.Add($"{module.GetName().Name} 引用了: {string.Join(", ", referencedModules)}");
+            }
+        }
+
+        Assert.True(violations.Count == 0,
+            $"违反 P-07 规则: Server 模块间不得相互引用\n{string.Join("\n", violations)}");
+    }
+
+    #endregion
 }

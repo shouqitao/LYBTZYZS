@@ -145,21 +145,8 @@ namespace LYBT.Desktop.Shell.Services
                 }
 
                 // 获取已加载的模块信息
-                var loadedModules = _moduleManager.GetType()
-                    .GetProperty("LoadedModules",
-                        System.Reflection.BindingFlags.NonPublic |
-                        System.Reflection.BindingFlags.Instance)
-                    ?.GetValue(_moduleManager);
-
-                if (loadedModules != null)
-                {
-                    _logger.LogInformation("模块协调器初始化完成，已加载模块数 {Count}",
-                        ((IEnumerable<object>)loadedModules).Count());
-                }
-                else
-                {
-                    _logger.LogInformation("模块协调器初始化完成");
-                }
+                var loadedModules = _moduleCatalog.Modules.ToList();
+                _logger.LogInformation("模块协调器初始化完成，已注册模块数 {Count}", loadedModules.Count);
             }
             catch (Exception ex)
             {
