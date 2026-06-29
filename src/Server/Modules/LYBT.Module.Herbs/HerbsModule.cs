@@ -1,4 +1,5 @@
 using FluentValidation;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Repositories;
 using LYBT.Module.Herbs.Services;
@@ -27,7 +28,8 @@ namespace LYBT.Module.Herbs
             // 注册服务实现类（统一使用Shared接口）
             services.AddScoped<IHerbService, HerbService>();
 
-            // services.AddScoped<IHerbCategoryService, HerbCategoryService>();
+            // 注册跨模块服务（替代 CrossModuleService 中的药材查询逻辑）
+            services.AddScoped<IHerbCrossModuleService, HerbCrossModuleService>();
 
             // Epic #1731: 注册Herbs模块Validators
             services.AddValidatorsFromAssemblyContaining<HerbInputDtoValidator>();

@@ -6,6 +6,7 @@ using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Registration;
 using System.Threading;
+using System.Transactions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using RegistrationEntity = LYBT.Entities.Registrations.Registration;
@@ -22,16 +23,19 @@ public class RegistrationService : BaseService<RegistrationEntity>, IRegistratio
 {
     private readonly IRegistrationRepository _repository;
     private readonly IPatientCrossModuleService _patientCrossModule;
+    private readonly IMedicalCaseCrossModuleService _medicalCaseCrossModule;
     private readonly RegistrationMapper _mapper = new();
 
     public RegistrationService(
         IRegistrationRepository repository,
         IPatientCrossModuleService patientCrossModule,
+        IMedicalCaseCrossModuleService medicalCaseCrossModule,
         ILogger<RegistrationService> logger)
         : base(logger)
     {
         _repository = repository;
         _patientCrossModule = patientCrossModule;
+        _medicalCaseCrossModule = medicalCaseCrossModule;
     }
 
     /// <summary>
@@ -271,7 +275,7 @@ public class RegistrationService : BaseService<RegistrationEntity>, IRegistratio
     /// 医生快速看诊 (后台静默创建 Registration + MedicalCase)
     /// US-REG-002: Source=Doctor, Status=InProgress, 医生无感知
     /// </summary>
-    public async Task<Result<QuickVisitResultDto>> QuickVisitAsync(QuickVisitInputDto dto, Guid currentUserId, CancellationToken cancellationToken = default)
+    public async Task<Result<QuickVisitResultDto>> QuickVisitAsync(QuickVisitInputDto dto, Guid currentUserId, string doctorName, CancellationToken cancellationToken = default)
     {
         // 1. Validate patient exists
         var patientInfo = await _patientCrossModule.GetPatientBasicInfoAsync(dto.PatientId);
@@ -279,6 +283,11 @@ public class RegistrationService : BaseService<RegistrationEntity>, IRegistratio
         {
             return Result<QuickVisitResultDto>.Failure(GenericErrorCode.RegistrationNotFound, "患者不存在");
         }
+
+        using var scope = new TransactionScope(
+            TransactionScopeOption.Required,
+            new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
+            TransactionScopeAsyncFlowOption.Enabled);
 
         // 2. Create Registration (Source=Doctor, Status=InProgress)
         var maxQueueNumber = await _repository.GetTodayMaxQueueNumberAsync();
@@ -301,15 +310,34 @@ public class RegistrationService : BaseService<RegistrationEntity>, IRegistratio
         await _repository.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
-            "注册快速看诊创建: Id={RegistrationId}, PatientId={PatientId}, DoctorId={DoctorId}",
+            "快速看诊-挂号创建: Id={RegistrationId}, PatientId={PatientId}, DoctorId={DoctorId}",
             registration.Id, dto.PatientId, currentUserId);
 
-        // 3. Return basic result. MedicalCase will be created by controller/调用方 after Registration creation
+        // 3. Create MedicalCase (关联 RegistrationId)
+        var medicalCaseId = await _medicalCaseCrossModule.CreateQuickVisitMedicalCaseAsync(
+            dto.PatientId, registration.Id, currentUserId, cancellationToken);
+
+        if (medicalCaseId is null)
+        {
+            _logger.LogError("快速看诊-医案创建失败: RegistrationId={RegistrationId}", registration.Id);
+            return Result<QuickVisitResultDto>.Failure("医案创建失败，挂号记录已回滚");
+        }
+
+        scope.Complete();
+
+        _logger.LogInformation(
+            "快速看诊成功: RegistrationId={RegistrationId}, MedicalCaseId={MedicalCaseId}",
+            registration.Id, medicalCaseId.Value);
+
         return Result<QuickVisitResultDto>.Success(new QuickVisitResultDto
         {
             RegistrationId = registration.Id,
+            MedicalCaseId = medicalCaseId.Value,
             PatientId = registration.PatientId,
-            PatientName = registration.PatientName
+            PatientName = registration.PatientName,
+            DoctorId = currentUserId,
+            DoctorName = doctorName,
+            CreatedAt = registration.CreatedAt
         });
     }
 }

@@ -1,4 +1,5 @@
 using FluentValidation;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
@@ -21,19 +22,15 @@ namespace LYBT.Module.Patients
         {
             // 注册仓储
             services.AddScoped<IPatientRepository, PatientRepository>();
-            // services.AddScoped<IMedicalRecordRepository, MedicalRecordRepository>();
 
             // 注册服务实现类（统一使用Shared接口）
             services.AddScoped<IPatientService, PatientService>();
 
-            // services.AddScoped<IMedicalRecordService, MedicalRecordService>();
+            // 注册跨模块服务（替代 CrossModuleService 中的患者查询逻辑）
+            services.AddScoped<IPatientCrossModuleService, PatientCrossModuleService>();
 
             // Epic #1731: 注册Patients模块Validators
             services.AddValidatorsFromAssemblyContaining<PatientInputDtoValidator>();
-
-            // AutoMapper配置已在UnifiedServiceRegistration中集中注册
-
-            // 模块无特殊配置需求（通用配置在appsettings.json）
 
             return services;
         }

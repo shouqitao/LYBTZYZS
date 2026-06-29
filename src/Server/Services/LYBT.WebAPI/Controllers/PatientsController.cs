@@ -103,7 +103,7 @@ namespace LYBT.WebAPI.Controllers
 
             LogOperation("新增患者成功", patientDto, patientEntity.Id);
             return CreatedAtAction(nameof(GetById),
-                new { id = patientEntity.Id, version = "1" },
+                new { id = patientEntity.Id, version = ApiVersionConstants.V1 },
                 ApiResponse<PatientDetailDto>.CreateSuccess(patientDto, "患者创建成功"));
         }
 

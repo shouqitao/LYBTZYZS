@@ -126,16 +126,12 @@ public class DiagnosticsController : BaseApiController
     {
         if (string.IsNullOrWhiteSpace(request.Level))
         {
-            return BadRequest(new { error = "日志级别不能为空" });
+            return ValidationFail("日志级别不能为空");
         }
 
         if (!Enum.TryParse<LogEventLevel>(request.Level, ignoreCase: true, out var level))
         {
-            return BadRequest(new
-            {
-                error = "无效的日志级别",
-                validLevels = Enum.GetNames<LogEventLevel>()
-            });
+            return ValidationFail($"无效的日志级别，有效值: {string.Join(", ", Enum.GetNames<LogEventLevel>())}");
         }
 
         var (operatorId, operatorName, _) = GetOperator();

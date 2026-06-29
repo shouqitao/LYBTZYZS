@@ -182,11 +182,7 @@ public class DiagnosticsController : BaseApiController
 
         if (!Enum.TryParse<LogEventLevel>(request.Level, ignoreCase: true, out var level))
         {
-            return BadRequest(new
-            {
-                error = "无效的日志级别",
-                validLevels = Enum.GetNames<LogEventLevel>()
-            });
+            return ValidationFail($"无效的日志级别，有效值: {string.Join(", ", Enum.GetNames<LogEventLevel>())}");
         }
 
         var previousLevel = _loggingLevelManager.GetStatus().CurrentLevel;

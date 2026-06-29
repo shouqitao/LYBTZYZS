@@ -78,7 +78,9 @@ public class RegistrationsController : BaseApiController
         if (request == null || request.PatientId == Guid.Empty)
             return ValidationFail("患者信息不能为空");
 
-        var result = await _registrationService.QuickVisitAsync(request, GetCurrentUserId());
+        var userId = GetCurrentUserId();
+        var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? string.Empty;
+        var result = await _registrationService.QuickVisitAsync(request, userId, userName);
         return HandleResult(result, "快速看诊创建成功");
     }
 }

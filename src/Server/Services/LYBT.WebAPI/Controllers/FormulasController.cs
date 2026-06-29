@@ -98,7 +98,7 @@ namespace LYBT.WebAPI.Controllers
 
             LogOperation("新增验方成功", result.Data, result.Data.Id);
             return CreatedAtAction(nameof(GetById),
-                new { id = result.Data.Id, version = "1" },
+                new { id = result.Data.Id, version = ApiVersionConstants.V1 },
                 ApiResponse<FormulaDetailDto>.CreateSuccess(result.Data, "验方创建成功"));
         }
 

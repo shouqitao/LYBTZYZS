@@ -29,6 +29,7 @@ namespace LYBT.WebAPI.Serialization;
 [JsonSerializable(typeof(ApiResponse<int>))]
 [JsonSerializable(typeof(ApiResponse<Guid>))]
 [JsonSerializable(typeof(HealthCheckResponse))]
+[JsonSerializable(typeof(HealthStatusDto))]
 [JsonSerializable(typeof(OperationResultDto))]
 [JsonSerializable(typeof(PagedQueryBaseDto))]
 
@@ -138,6 +139,7 @@ namespace LYBT.WebAPI.Serialization;
 [JsonSerializable(typeof(ApiResponse<HerbDetailDto>))]
 [JsonSerializable(typeof(ApiResponse<FormulaDetailDto>))]
 [JsonSerializable(typeof(ApiResponse<HealthCheckResponse>))]
+[JsonSerializable(typeof(ApiResponse<HealthStatusDto>))]
 [JsonSerializable(typeof(ApiResponse<OperationResultDto>))]
 
 // ============================================================

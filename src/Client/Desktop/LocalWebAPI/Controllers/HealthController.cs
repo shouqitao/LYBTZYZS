@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using LYBT.LocalWebAPI.Data;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.LocalWebAPI.Controllers
@@ -41,13 +42,12 @@ namespace LYBT.LocalWebAPI.Controllers
             }
 
             var status = canConnect ? "Healthy" : "Degraded";
-            var result = new
+            return Success(new HealthStatusDto
             {
-                status = status,
-                timestamp = DateTime.UtcNow,
-                database = canConnect ? "Connected" : "Disconnected"
-            };
-            return Success(result);
+                Status = status,
+                Timestamp = DateTime.UtcNow,
+                Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)
+            });
         }
 
         /// <summary>
@@ -56,10 +56,11 @@ namespace LYBT.LocalWebAPI.Controllers
         [HttpGet("ping")]
         public IActionResult Ping()
         {
-            return Success(new
+            return Success(new HealthStatusDto
             {
-                status = "ok",
-                timestamp = DateTime.UtcNow
+                Status = "Pong",
+                Timestamp = DateTime.UtcNow,
+                Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)
             });
         }
 
@@ -102,21 +103,11 @@ namespace LYBT.LocalWebAPI.Controllers
                 // ignore
             }
 
-            return Success(new
+            return Success(new HealthStatusDto
             {
-                status = dbConnected ? "Healthy" : "Degraded",
-                timestamp = DateTime.UtcNow,
-                version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0",
-                database = new
-                {
-                    connected = dbConnected,
-                    provider = dbVersion,
-                    responseMs = dbResponseMs
-                },
-                statistics = new
-                {
-                    totalUsers = userCount
-                }
+                Status = dbConnected ? "Healthy" : "Degraded",
+                Timestamp = DateTime.UtcNow,
+                Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0"
             });
         }
     }

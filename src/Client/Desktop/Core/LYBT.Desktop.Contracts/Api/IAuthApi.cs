@@ -11,7 +11,7 @@ namespace LYBT.Desktop.Contracts.Api
     /// <remarks>
     /// <para>功能范围: JWT身份认证、会话管理、密码操作、健康检查</para>
     /// <para>技术特性: Refit类型安全REST客户端、统一ApiResponse响应格式</para>
-    /// <para>安全特性: JWT Bearer Token认证、8小时过期、Remember Me 30天</para>
+    /// <para>安全特性: JWT Bearer Token认证、可配置令牌过期时间</para>
     /// <para>架构定位: 前端WPF客户端与后端Web API的统一接口契约</para>
     /// </remarks>
     [Description("身份认证API客户端 - JWT认证、会话管理、安全操作")]
@@ -25,7 +25,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// <returns>登录响应 - 包含JWT令牌、用户信息、过期时间</returns>
         /// <remarks>
         /// <para>功能: 验证用户凭据，生成JWT访问令牌和刷新令牌</para>
-        /// <para>令牌: 访问令牌8小时有效期，刷新令牌30天(Remember Me)或1天</para>
+        /// <para>令牌: 访问令牌可配置过期时间(appsettings: AccessTokenExpirationMinutes)，刷新令牌可配置天数(RefreshTokenExpirationDays)</para>
         /// <para>安全: PBKDF2密码哈希验证、失败次数限制、IP地址记录</para>
         /// </remarks>
         [Refit.Post("/api/v1/auth/login")]
@@ -66,7 +66,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// <remarks>
         /// <para>功能: 使用RefreshToken获取新的AccessToken和RefreshToken</para>
         /// <para>安全: Token轮换机制，旧RefreshToken被撤销，新RefreshToken生成</para>
-        /// <para>过期: AccessToken 15分钟，RefreshToken 7天</para>
+        /// <para>过期: AccessToken和RefreshToken过期时间由appsettings配置决定</para>
         /// </remarks>
         [Refit.Post("/api/v1/auth/refresh")]
         Task<ApiResponse<LoginResponse>> RefreshTokenAsync([Refit.Body] RefreshTokenRequest request);

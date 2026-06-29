@@ -1,4 +1,3 @@
-using LYBT.Entities.Users;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Users.Interfaces;
@@ -7,8 +6,6 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Users.Controllers;
@@ -17,21 +14,18 @@ namespace LYBT.Module.Users.Controllers;
 /// 用户管理 Controller 共享基类
 /// 供 WebAPI 和 LocalWebAPI 共享，减少重复代码
 /// </summary>
+using LYBT.Infrastructure.Constants;
+
 [ApiController]
 [Authorize]
 public abstract class BaseUsersController : BaseApiController
 {
-    protected readonly IUserManagerService UserManagerService;
-    protected readonly IConfiguration Configuration;
+    private readonly IUserService _userService;
 
-    protected BaseUsersController(
-        IUserManagerService userManagerService,
-        IConfiguration configuration,
-        ILogger logger)
+    protected BaseUsersController(IUserService userService, ILogger logger)
         : base(logger)
     {
-        UserManagerService = userManagerService ?? throw new ArgumentNullException(nameof(userManagerService));
-        Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _userService = userService ?? throw new ArgumentNullException(nameof(userService));
     }
 
     /// <summary>
@@ -51,51 +45,8 @@ public abstract class BaseUsersController : BaseApiController
     {
         if (ValidatePagination(page, pageSize) is { } error) return error;
 
-        var query = await UserManagerService.GetUsersAsync();
-
-        if (!string.IsNullOrWhiteSpace(keyword))
-        {
-            var kw = keyword.ToLower();
-            query = query.Where(u =>
-                (u.UserName != null && u.UserName.ToLower().Contains(kw)) ||
-                (u.RealName != null && u.RealName.ToLower().Contains(kw)) ||
-                (u.Email != null && u.Email.ToLower().Contains(kw)) ||
-                (u.PhoneNumber != null && u.PhoneNumber.Contains(kw)));
-        }
-
-        var totalCount = await query.CountAsync(cancellationToken);
-        var users = await query
-            .OrderBy(u => u.UserName)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
-
-        var dtos = new List<UserListDto>();
-        foreach (var user in users)
-        {
-            var roles = await UserManagerService.GetRolesAsync(user);
-            var userRole = BaseClaimsHelper.ParseUserRole(roles);
-            var isEnabled = !await UserManagerService.GetLockoutEnabledAsync(user) ||
-                await UserManagerService.GetAccessFailedCountAsync(user) < 5;
-
-            if (role.HasValue && userRole != role.Value) continue;
-            if (status.HasValue && isEnabled != (status.Value == CommonStatus.Enabled)) continue;
-
-            dtos.Add(new UserListDto
-            {
-                Id = user.Id,
-                UserName = user.UserName,
-                RealName = user.RealName,
-                PhoneNumber = user.PhoneNumber,
-                Role = userRole,
-                Status = isEnabled ? CommonStatus.Enabled : CommonStatus.Disabled,
-                LastLoginTime = user.LastLoginAt,
-                CreatedAt = DateTime.MinValue
-            });
-        }
-
-        var pagedResult = new PagedResult<UserListDto>(dtos, totalCount, page, pageSize);
-        return SuccessPaged(pagedResult, "查询成功");
+        var result = await _userService.GetPagedUsersAsync(page, pageSize, keyword, role, status, cancellationToken);
+        return SuccessPaged(result, "查询成功");
     }
 
     /// <summary>
@@ -112,13 +63,12 @@ public abstract class BaseUsersController : BaseApiController
             return Unauthorized("无法获取当前用户信息");
         }
 
-        var user = await UserManagerService.FindByIdAsync(userId);
-        if (user == null)
+        var dto = await _userService.GetCurrentUserAsync(userId, cancellationToken);
+        if (dto == null)
         {
             return NotFound("用户不存在");
         }
 
-        var dto = await MapToDetailDtoAsync(user);
         return Success(dto);
     }
 
@@ -133,13 +83,12 @@ public abstract class BaseUsersController : BaseApiController
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-        var user = await UserManagerService.FindByIdAsync(id);
-        if (user == null)
+        var dto = await _userService.GetUserByIdAsync(id, cancellationToken);
+        if (dto == null)
         {
             return NotFound("用户不存在");
         }
 
-        var dto = await MapToDetailDtoAsync(user);
         return Success(dto);
     }
 
@@ -152,65 +101,20 @@ public abstract class BaseUsersController : BaseApiController
     [ProducesResponseType(400)]
     public virtual async Task<IActionResult> Create([FromBody] UserInputDto dto, CancellationToken cancellationToken = default)
     {
-        if (dto.UserName == null)
-        {
-            return ValidationFail("用户名不能为空");
-        }
-
-        var reservedUsernames = new[] { "admin", "administrator", "root", "system", "superadmin", "sysadmin" };
-        if (reservedUsernames.Any(reserved => string.Equals(dto.UserName, reserved, StringComparison.OrdinalIgnoreCase)))
-        {
-            return Error($"用户名 '{dto.UserName}' 为系统保留用户名，不可使用");
-        }
-
-        var existing = await UserManagerService.FindByNameAsync(dto.UserName);
-        if (existing != null)
-        {
-            return Error($"用户名 '{dto.UserName}' 已存在");
-        }
-
         var (currentUserId, _, currentRole) = GetOperator();
-        var currentUser = await UserManagerService.FindByIdAsync(currentUserId);
-        var targetRole = dto.Role ?? UserRole.Doctor;
+        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
 
-        if (!BaseClaimsHelper.CanManageUser(currentRole, targetRole, currentUser?.IsSysAdmin == true))
+        var (success, user, error) = await _userService.CreateUserAsync(dto, currentUserId, isAdmin, cancellationToken);
+
+        if (!success)
         {
-            return Forbid("您没有权限创建该角色的用户");
+            return Error(error ?? "创建用户失败");
         }
 
-        var appUser = new ApplicationUser
-        {
-            UserName = dto.UserName,
-            RealName = dto.RealName ?? string.Empty,
-            Email = dto.Email,
-            PhoneNumber = dto.PhoneNumber,
-            LastLoginAt = null
-        };
-
-        var password = !string.IsNullOrWhiteSpace(dto.Password)
-            ? dto.Password
-            : Configuration["DefaultPasswords:NewUserPassword"]
-                ?? throw new InvalidOperationException("DefaultPasswords:NewUserPassword 配置缺失，请在 appsettings.json 中配置");
-
-        var result = await UserManagerService.CreateAsync(appUser, password);
-        if (!result.Succeeded)
-        {
-            var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-            return Error($"创建用户失败: {errors}");
-        }
-
-        var roleString = BaseClaimsHelper.MapUserRoleToString(targetRole);
-        var roleResult = await UserManagerService.AddToRoleAsync(appUser, roleString);
-        if (!roleResult.Succeeded)
-        {
-            _logger.LogWarning("用户创建成功但角色分配失败: {Errors}", string.Join("; ", roleResult.Errors.Select(e => e.Description)));
-        }
-
-        LogOperation("创建用户", dto, appUser.Id);
-        var detailDto = await MapToDetailDtoAsync(appUser);
+        LogOperation("创建用户", dto, user!.Id);
         return CreatedAtAction(nameof(GetById),
-            new { id = appUser.Id, version = "1" },
-            ApiResponse<UserDetailDto>.CreateSuccess(detailDto, "创建成功"));
+            new { id = user.Id, version = ApiVersionConstants.V1 },
+            ApiResponse<UserDetailDto>.CreateSuccess(user, "创建成功"));
     }
 
     /// <summary>
@@ -224,66 +128,21 @@ public abstract class BaseUsersController : BaseApiController
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-        var user = await UserManagerService.FindByIdAsync(id);
-        if (user == null)
-        {
-            return NotFound("用户不存在");
-        }
+        var (currentUserId, _, currentRole) = GetOperator();
+        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
 
-        if (user.IsSysAdmin)
-        {
-            return Forbid("系统管理员账号不可被修改");
-        }
+        var (success, user, err) = await _userService.UpdateUserAsync(id, dto, currentUserId, isAdmin);
 
-        if (!string.IsNullOrWhiteSpace(dto.RealName))
+        if (!success)
         {
-            user.RealName = dto.RealName;
-        }
-        if (dto.Email != null)
-        {
-            user.Email = dto.Email;
-        }
-        if (dto.PhoneNumber != null)
-        {
-            user.PhoneNumber = dto.PhoneNumber;
-        }
-
-        var result = await UserManagerService.UpdateAsync(user);
-        if (!result.Succeeded)
-        {
-            var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-            return Error($"更新用户失败: {errors}");
-        }
-
-        if (dto.Role.HasValue)
-        {
-            var currentRoles = await UserManagerService.GetRolesAsync(user);
-            var (opId, _, currentRole) = GetOperator();
-            var opUser = await UserManagerService.FindByIdAsync(opId);
-
-            if (!BaseClaimsHelper.CanManageUser(currentRole, dto.Role.Value, opUser?.IsSysAdmin == true))
-            {
-                return Forbid("您没有权限将用户角色修改为该级别");
-            }
-
-            var newRoleString = BaseClaimsHelper.MapUserRoleToString(dto.Role.Value);
-            foreach (var existingRole in currentRoles)
-            {
-                if (!string.Equals(existingRole, newRoleString, StringComparison.OrdinalIgnoreCase))
-                {
-                    await UserManagerService.RemoveFromRoleAsync(user, existingRole);
-                }
-            }
-
-            if (!await UserManagerService.IsInRoleAsync(user, newRoleString))
-            {
-                await UserManagerService.AddToRoleAsync(user, newRoleString);
-            }
+            if (err == "用户不存在") return NotFound(err);
+            if (err?.StartsWith("您没有权限") == true) return Forbid(err);
+            if (err?.StartsWith("系统管理员") == true) return Forbid(err);
+            return Error(err ?? "更新用户失败");
         }
 
         LogOperation("更新用户", dto, id);
-        var dtoResult = await MapToDetailDtoAsync(user);
-        return Success(dtoResult, "用户更新成功");
+        return Success(user!, "用户更新成功");
     }
 
     /// <summary>
@@ -298,35 +157,17 @@ public abstract class BaseUsersController : BaseApiController
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
         var (currentUserId, _, currentRole) = GetOperator();
-        if (currentUserId == id)
-        {
-            return Forbid("不能删除自己的账户");
-        }
+        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
 
-        var user = await UserManagerService.FindByIdAsync(id);
-        if (user == null)
-        {
-            return NotFound("用户不存在");
-        }
+        var (success, err) = await _userService.DeleteUserAsync(id, currentUserId, isAdmin);
 
-        if (user.IsSysAdmin)
+        if (!success)
         {
-            return Forbid("系统管理员账号不可被删除");
-        }
-
-        var roles = await UserManagerService.GetRolesAsync(user);
-        var userRole = BaseClaimsHelper.ParseUserRole(roles);
-        var opUser = await UserManagerService.FindByIdAsync(currentUserId);
-        if (!BaseClaimsHelper.CanManageUser(currentRole, userRole, opUser?.IsSysAdmin == true))
-        {
-            return Forbid("您没有权限删除该用户");
-        }
-
-        var result = await UserManagerService.DeleteAsync(user);
-        if (!result.Succeeded)
-        {
-            var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-            return Error($"删除用户失败: {errors}");
+            if (err == "用户不存在") return NotFound(err);
+            if (err?.StartsWith("不能删除") == true) return Forbid(err);
+            if (err?.StartsWith("系统管理员") == true) return Forbid(err);
+            if (err?.StartsWith("您没有权限") == true) return Forbid(err);
+            return Error(err ?? "删除用户失败");
         }
 
         LogOperation("删除用户", null, id);
@@ -344,28 +185,19 @@ public abstract class BaseUsersController : BaseApiController
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-        var user = await UserManagerService.FindByIdAsync(id);
-        if (user == null)
-        {
-            return NotFound("用户不存在");
-        }
+        var (success, temporaryPassword, err) = await _userService.ResetPasswordAsync(id);
 
-        var token = await UserManagerService.GeneratePasswordResetTokenAsync(user);
-        var newPassword = Configuration["DefaultPasswords:NewUserPassword"]
-            ?? throw new InvalidOperationException("DefaultPasswords:NewUserPassword 配置缺失，请在 appsettings.json 中配置");
-
-        var result = await UserManagerService.ResetPasswordAsync(user, token, newPassword);
-        if (!result.Succeeded)
+        if (!success)
         {
-            var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-            return Error($"密码重置失败: {errors}");
+            if (err == "用户不存在") return NotFound(err);
+            return Error(err ?? "密码重置失败");
         }
 
         LogOperation("重置用户密码", new { AutoGenerated = true }, id);
         return Success(new ResetPasswordResponseDto
         {
             Success = true,
-            TemporaryPassword = newPassword
+            TemporaryPassword = temporaryPassword
         }, "密码重置成功");
     }
 
@@ -379,34 +211,18 @@ public abstract class BaseUsersController : BaseApiController
     public virtual async Task<IActionResult> ChangeProfile(Guid id, [FromBody] ChangeProfileDto dto)
     {
         var (currentUserId, _, _) = GetOperator();
-        if (id != currentUserId)
-            return Forbid("只能修改自己的个人资料");
 
-        if (ValidateGuid(id, "用户ID") is { } error) return error;
+        var (success, user, err) = await _userService.ChangeProfileAsync(id, dto, currentUserId);
 
-        var user = await UserManagerService.FindByIdAsync(id);
-        if (user == null)
+        if (!success)
         {
-            return NotFound("用户不存在");
-        }
-
-        user.RealName = dto.RealName;
-        user.PhoneNumber = dto.PhoneNumber;
-        if (dto.Email != null)
-        {
-            user.Email = dto.Email;
-        }
-
-        var result = await UserManagerService.UpdateAsync(user);
-        if (!result.Succeeded)
-        {
-            var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-            return Error($"个人资料修改失败: {errors}");
+            if (err?.StartsWith("只能修改") == true) return Forbid(err);
+            if (err == "用户不存在") return NotFound(err);
+            return Error(err ?? "个人资料修改失败");
         }
 
         LogOperation("修改个人资料", new { RealName = dto.RealName, PhoneNumber = dto.PhoneNumber }, id);
-        var detailDto = await MapToDetailDtoAsync(user);
-        return Success(detailDto, "个人资料修改成功");
+        return Success(user!, "个人资料修改成功");
     }
 
     /// <summary>
@@ -419,26 +235,18 @@ public abstract class BaseUsersController : BaseApiController
     public virtual async Task<IActionResult> ChangePassword(Guid id, [FromBody] LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request)
     {
         var (currentUserId, _, _) = GetOperator();
-        if (id != currentUserId)
-            return Forbid("只能修改自己的密码");
 
-        if (ValidateGuid(id, "用户ID") is { } error) return error;
+        var (success, err) = await _userService.ChangePasswordAsync(id, request.OldPassword, request.NewPassword, currentUserId);
 
-        var user = await UserManagerService.FindByIdAsync(id);
-        if (user == null)
+        if (!success)
         {
-            return NotFound("用户不存在");
+            if (err?.StartsWith("只能修改") == true) return Forbid(err);
+            if (err == "用户不存在") return NotFound(err);
+            return Error(err ?? "密码修改失败");
         }
 
-        var result = await UserManagerService.ChangePasswordAsync(user, request.OldPassword, request.NewPassword);
-        if (result.Succeeded)
-        {
-            LogOperation("修改密码", new { UserId = id }, id);
-            return Success("密码修改成功");
-        }
-
-        var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-        return Error($"密码修改失败: {errors}");
+        LogOperation("修改密码", new { UserId = id }, id);
+        return Success("密码修改成功");
     }
 
     /// <summary>
@@ -452,42 +260,21 @@ public abstract class BaseUsersController : BaseApiController
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-        var (_, _, currentRole) = GetOperator();
-        var user = await UserManagerService.FindByIdAsync(id);
-        if (user == null)
+        var (currentUserId, _, currentRole) = GetOperator();
+        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
+
+        var (success, user, err) = await _userService.ToggleUserStatusAsync(id, currentUserId, isAdmin);
+
+        if (!success)
         {
-            return NotFound("用户不存在");
+            if (err == "用户不存在") return NotFound(err);
+            if (err?.StartsWith("系统管理员") == true) return Forbid(err);
+            if (err?.StartsWith("您没有权限") == true) return Forbid(err);
+            return Error(err ?? "切换用户状态失败");
         }
 
-        if (user.IsSysAdmin)
-        {
-            return Forbid("系统管理员账号不可被禁用");
-        }
-
-        var roles = await UserManagerService.GetRolesAsync(user);
-        var userRole = BaseClaimsHelper.ParseUserRole(roles);
-        var (opId, _, _) = GetOperator();
-        var opUser = await UserManagerService.FindByIdAsync(opId);
-        if (!BaseClaimsHelper.CanManageUser(currentRole, userRole, opUser?.IsSysAdmin == true))
-        {
-            return Forbid("您没有权限切换该用户状态");
-        }
-
-        var isLocked = await UserManagerService.GetLockoutEnabledAsync(user);
-        if (isLocked)
-        {
-            await UserManagerService.SetLockoutEnabledAsync(user, false);
-            await UserManagerService.SetLockoutEndDateAsync(user, null);
-        }
-        else
-        {
-            await UserManagerService.SetLockoutEnabledAsync(user, true);
-            await UserManagerService.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
-        }
-
-        LogOperation("切换用户状态", new { NewStatus = isLocked ? CommonStatus.Enabled : CommonStatus.Disabled }, id);
-        var dto = await MapToDetailDtoAsync(user);
-        return Success(dto, $"用户已{(isLocked ? "启用" : "禁用")}");
+        LogOperation("切换用户状态", new { }, id);
+        return Success(user!, "用户状态已切换");
     }
 
     /// <summary>
@@ -505,84 +292,11 @@ public abstract class BaseUsersController : BaseApiController
         }
 
         var (currentUserId, _, currentRole) = GetOperator();
-        var result = new BatchOperationResultDto
-        {
-            TotalCount = dto.Ids.Count
-        };
+        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
 
-        foreach (var id in dto.Ids)
-        {
-            if (id == currentUserId)
-            {
-                result.FailedItems.Add(new BatchOperationFailureItem { Id = id, Reason = "不能删除自己" });
-                result.FailureCount++;
-                continue;
-            }
-
-            var user = await UserManagerService.FindByIdAsync(id);
-            if (user == null)
-            {
-                result.FailedItems.Add(new BatchOperationFailureItem { Id = id, Reason = "用户不存在" });
-                result.FailureCount++;
-                continue;
-            }
-
-            if (user.IsSysAdmin)
-            {
-                result.FailedItems.Add(new BatchOperationFailureItem { Id = id, Name = user.UserName, Reason = "系统管理员账号不可被删除" });
-                result.FailureCount++;
-                continue;
-            }
-
-            var roles = await UserManagerService.GetRolesAsync(user);
-            var userRole = BaseClaimsHelper.ParseUserRole(roles);
-            var opUser = await UserManagerService.FindByIdAsync(currentUserId);
-            if (!BaseClaimsHelper.CanManageUser(currentRole, userRole, opUser?.IsSysAdmin == true))
-            {
-                result.FailedItems.Add(new BatchOperationFailureItem { Id = id, Name = user.UserName, Reason = "无权限删除" });
-                result.FailureCount++;
-                continue;
-            }
-
-            var deleteResult = await UserManagerService.DeleteAsync(user);
-            if (deleteResult.Succeeded)
-            {
-                result.SuccessCount++;
-            }
-            else
-            {
-                var errors = string.Join("; ", deleteResult.Errors.Select(e => e.Description));
-                result.FailedItems.Add(new BatchOperationFailureItem { Id = id, Name = user.UserName, Reason = errors });
-                result.FailureCount++;
-            }
-        }
+        var result = await _userService.BatchDeleteUsersAsync(dto.Ids, currentUserId, isAdmin);
 
         LogOperation("批量删除用户", new { Ids = dto.Ids, Result = result.Message }, null);
         return Success(result, result.Message);
-    }
-
-    /// <summary>
-    /// 将 ApplicationUser 转换为 UserDetailDto
-    /// </summary>
-    protected async Task<UserDetailDto> MapToDetailDtoAsync(ApplicationUser user)
-    {
-        var roles = await UserManagerService.GetRolesAsync(user);
-        var userRole = BaseClaimsHelper.ParseUserRole(roles);
-        var isLocked = await UserManagerService.GetLockoutEnabledAsync(user);
-
-        return new UserDetailDto
-        {
-            Id = user.Id,
-            UserName = user.UserName,
-            RealName = user.RealName,
-            Role = userRole,
-            Status = isLocked ? CommonStatus.Disabled : CommonStatus.Enabled,
-            PhoneNumber = user.PhoneNumber,
-            Email = user.Email,
-            LastLoginTime = user.LastLoginAt,
-            FailedLoginCount = await UserManagerService.GetAccessFailedCountAsync(user),
-            CreatedAt = DateTime.MinValue,
-            UpdatedAt = null
-        };
     }
 }

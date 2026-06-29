@@ -1,15 +1,12 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Transactions;
 
 namespace LYBT.WebAPI.Controllers;
 
@@ -24,16 +21,13 @@ namespace LYBT.WebAPI.Controllers;
 public class RegistrationsController : BaseApiController
 {
     private readonly IRegistrationService _registrationService;
-    private readonly IMedicalCaseCommandService _medicalCaseService;
 
     public RegistrationsController(
         IRegistrationService registrationService,
-        IMedicalCaseCommandService medicalCaseService,
         ILogger<RegistrationsController> logger)
         : base(logger)
     {
         _registrationService = registrationService;
-        _medicalCaseService = medicalCaseService;
     }
 
     /// <summary>
@@ -46,80 +40,18 @@ public class RegistrationsController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<QuickVisitResultDto>), StatusCodes.Status201Created)]
     public async Task<IActionResult> QuickVisit([FromBody] QuickVisitInputDto dto)
     {
-        // 获取当前医生信息
         var (doctorId, doctorName, _) = GetOperator();
 
-        // 1. 创建 Registration (Source=Doctor, Status=InProgress)
-        var registrationInput = new RegistrationInputDto
+        var result = await _registrationService.QuickVisitAsync(dto, doctorId, doctorName);
+        if (!result.IsSuccess || result.Data is null)
         {
-            PatientId = dto.PatientId,
-            PatientName = dto.PatientName,
-            DoctorId = doctorId,
-            DoctorName = doctorName,
-            Source = RegistrationSource.Doctor,
-            Remark = dto.Remark
-        };
-
-        using var scope = new TransactionScope(
-            TransactionScopeOption.Required,
-            new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
-            TransactionScopeAsyncFlowOption.Enabled);
-        try
-        {
-            var registrationResult = await _registrationService.CreateAsync(registrationInput);
-            if (!registrationResult.IsSuccess || registrationResult.Data is null)
-            {
-                return HandleResult(registrationResult);
-            }
-
-            var registration = registrationResult.Data;
-
-            // 2. 创建 MedicalCase (关联 RegistrationId)
-            var medicalCaseInput = new MedicalCaseInputDto
-            {
-                PatientId = dto.PatientId,
-                UserId = doctorId,
-                RegistrationId = registration.Id
-            };
-
-            var medicalCase = await _medicalCaseService.SaveAsync(
-                medicalCaseInput,
-                doctorId,
-                isAdmin: false);
-
-            if (medicalCase == null)
-            {
-                _logger.LogError("快速看诊-医案创建失败: RegistrationId={RegistrationId}", registration.Id);
-                return BusinessFail("医案创建失败，但挂号记录已创建");
-            }
-
-            scope.Complete();
-
-            _logger.LogInformation(
-                "快速看诊成功: RegistrationId={RegistrationId}, MedicalCaseId={MedicalCaseId}",
-                registration.Id, medicalCase.Id);
-
-            // 3. 返回结果
-            var result = new QuickVisitResultDto
-            {
-                RegistrationId = registration.Id,
-                MedicalCaseId = medicalCase.Id,
-                PatientId = dto.PatientId,
-                PatientName = dto.PatientName,
-                DoctorId = doctorId,
-                DoctorName = doctorName,
-                CreatedAt = registration.CreatedAt
-            };
-
-            LogOperation("医生快速看诊", dto, result.RegistrationId);
-            return CreatedAtAction(nameof(GetById),
-                new { id = result.RegistrationId, version = "1" },
-                ApiResponse<QuickVisitResultDto>.CreateSuccess(result, "快速看诊创建成功"));
+            return HandleResult(result);
         }
-        catch
-        {
-            throw;
-        }
+
+        LogOperation("医生快速看诊", dto, result.Data.RegistrationId);
+        return CreatedAtAction(nameof(GetById),
+            new { id = result.Data.RegistrationId, version = ApiVersionConstants.V1 },
+            ApiResponse<QuickVisitResultDto>.CreateSuccess(result.Data, "快速看诊创建成功"));
     }
 
     [HttpPost]
@@ -134,7 +66,7 @@ public class RegistrationsController : BaseApiController
 
         LogOperation("创建挂号", dto, result.Data.Id);
         return CreatedAtAction(nameof(GetById),
-            new { id = result.Data.Id, version = "1" },
+            new { id = result.Data.Id, version = ApiVersionConstants.V1 },
             ApiResponse<RegistrationDetailDto>.CreateSuccess(result.Data, "挂号创建成功"));
     }
 

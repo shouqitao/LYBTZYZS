@@ -69,9 +69,10 @@ public interface IRegistrationService
     /// </summary>
     /// <param name="dto">快速看诊输入</param>
     /// <param name="currentUserId">当前医生ID</param>
+    /// <param name="doctorName">当前医生姓名</param>
     /// <param name="cancellationToken">取消标记</param>
     /// <returns>快速看诊结果，包含 RegistrationId 和 MedicalCaseId</returns>
-    Task<Result<QuickVisitResultDto>> QuickVisitAsync(QuickVisitInputDto dto, Guid currentUserId, CancellationToken cancellationToken = default);
+    Task<Result<QuickVisitResultDto>> QuickVisitAsync(QuickVisitInputDto dto, Guid currentUserId, string doctorName, CancellationToken cancellationToken = default);
 
     Task<Result> HandleMedicalCaseCancelledAsync(Guid medicalCaseId);
 }

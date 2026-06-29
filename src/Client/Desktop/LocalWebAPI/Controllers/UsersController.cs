@@ -10,10 +10,9 @@ namespace LYBT.LocalWebAPI.Controllers;
 public class UsersController : BaseUsersController
 {
     public UsersController(
-        IUserManagerService userManagerService,
-        IConfiguration configuration,
+        IUserService userService,
         ILogger<UsersController> logger)
-        : base(userManagerService, configuration, logger)
+        : base(userService, logger)
     {
     }
 }

@@ -82,7 +82,7 @@ namespace LYBT.WebAPI.Controllers
             {
                 LogOperation("创建药材", result.Data, result.Data.Id);
                 return CreatedAtAction(nameof(GetById),
-                    new { id = result.Data.Id, version = "1" },
+                    new { id = result.Data.Id, version = ApiVersionConstants.V1 },
                     ApiResponse<HerbDetailDto>.CreateSuccess(result.Data, "药材创建成功"));
             }
 

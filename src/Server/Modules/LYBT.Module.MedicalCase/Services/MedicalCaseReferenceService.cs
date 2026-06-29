@@ -1,5 +1,6 @@
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 
 namespace LYBT.Module.MedicalCases.Services
@@ -13,10 +14,14 @@ namespace LYBT.Module.MedicalCases.Services
     public class MedicalCaseReferenceService : IMedicalCaseReferenceService, IMedicalCaseCrossModuleService
     {
         private readonly IMedicalCaseReferenceRepository _referenceRepository;
+        private readonly IMedicalCaseCommandService _commandService;
 
-        public MedicalCaseReferenceService(IMedicalCaseReferenceRepository referenceRepository)
+        public MedicalCaseReferenceService(
+            IMedicalCaseReferenceRepository referenceRepository,
+            IMedicalCaseCommandService commandService)
         {
             _referenceRepository = referenceRepository ?? throw new ArgumentNullException(nameof(referenceRepository));
+            _commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
         }
 
         /// <inheritdoc/>
@@ -35,6 +40,19 @@ namespace LYBT.Module.MedicalCases.Services
         public async Task<List<MedicalCaseReferenceDto>> GetRecentMedicalCasesAsync(Guid patientId, int count, CancellationToken cancellationToken = default)
         {
             return await _referenceRepository.GetRecentAsync(patientId, count, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public async Task<Guid?> CreateQuickVisitMedicalCaseAsync(Guid patientId, Guid registrationId, Guid doctorId, CancellationToken cancellationToken = default)
+        {
+            var input = new MedicalCaseInputDto
+            {
+                PatientId = patientId,
+                UserId = doctorId,
+                RegistrationId = registrationId
+            };
+            var medicalCase = await _commandService.SaveAsync(input, doctorId, isAdmin: false, cancellationToken);
+            return medicalCase?.Id;
         }
     }
 }

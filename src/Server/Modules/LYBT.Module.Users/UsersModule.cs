@@ -1,4 +1,5 @@
 using FluentValidation;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Services;
 using LYBT.Shared.Validators.Users;
@@ -19,8 +20,14 @@ namespace LYBT.Module.Users
         /// </summary>
         public static IServiceCollection AddUsersModule(this IServiceCollection services, IConfiguration configuration)
         {
-            // UserManagerService 是 UserManager<T> 的薄包装，供 UsersController 使用
+            // UserManagerService 是 UserManager<T> 的薄包装，供 UserService 使用
             services.AddScoped<IUserManagerService, UserManagerService>();
+            
+            // UserService: 业务逻辑层，供 Controller 使用
+            services.AddScoped<IUserService, UserService>();
+
+            // 注册跨模块服务（替代 CrossModuleService 中的用户查询逻辑）
+            services.AddScoped<IUserCrossModuleService, UserCrossModuleService>();
 
             // 注册验证器 - 自动注册所有Validator
             services.AddValidatorsFromAssemblyContaining<UserInputDtoValidator>();

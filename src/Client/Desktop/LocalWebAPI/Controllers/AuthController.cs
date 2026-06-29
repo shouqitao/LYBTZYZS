@@ -7,6 +7,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -44,15 +45,15 @@ public class AuthController : BaseApiController
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Password))
-            return Unauthorized(ApiResponse<object>.CreateFail("用户名或密码错误", new { code = "AuthInvalidCredentials" }));
+            return Unauthorized(ApiResponse<object>.CreateFail("用户名或密码错误", new { code = ErrorCode.AuthInvalidCredentials.ToFormattedString() }));
 
         var user = await _userManager.FindByNameAsync(request.UserName);
         if (user == null)
-            return Unauthorized(ApiResponse<object>.CreateFail("用户名或密码错误", new { code = "AuthInvalidCredentials" }));
+            return Unauthorized(ApiResponse<object>.CreateFail("用户名或密码错误", new { code = ErrorCode.AuthInvalidCredentials.ToFormattedString() }));
 
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, true);
         if (!result.Succeeded)
-            return Unauthorized(ApiResponse<object>.CreateFail("用户名或密码错误", new { code = "AuthInvalidCredentials" }));
+            return Unauthorized(ApiResponse<object>.CreateFail("用户名或密码错误", new { code = ErrorCode.AuthInvalidCredentials.ToFormattedString() }));
 
         user.LastLoginAt = DateTime.UtcNow;
         await _userManager.UpdateAsync(user);
@@ -77,7 +78,7 @@ public class AuthController : BaseApiController
                 Status = CommonStatus.Enabled,
                 PhoneNumber = user.PhoneNumber,
             },
-            ExpiresAt = DateTime.UtcNow.AddHours(1)
+            ExpiresAt = DateTime.UtcNow.AddDays(LocalJwtConfig.ExpirationDays)
         };
 
         return Ok(new ApiResponse<LoginResponse>
@@ -101,7 +102,7 @@ public class AuthController : BaseApiController
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.RefreshToken))
-            return Unauthorized(ApiResponse<object>.CreateFail("令牌不能为空", new { code = "AuthTokenInvalid" }));
+            return Unauthorized(ApiResponse<object>.CreateFail("令牌不能为空", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
 
         try
         {
@@ -109,11 +110,11 @@ public class AuthController : BaseApiController
             var jwtToken = handler.ReadJwtToken(request.RefreshToken);
             var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
-                return Unauthorized(ApiResponse<object>.CreateFail("无效的令牌", new { code = "AuthTokenInvalid" }));
+                return Unauthorized(ApiResponse<object>.CreateFail("无效的令牌", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
-                return Unauthorized(ApiResponse<object>.CreateFail("用户不存在", new { code = "AuthTokenInvalid" }));
+                return Unauthorized(ApiResponse<object>.CreateFail("用户不存在", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
 
             var roles = await _userManager.GetRolesAsync(user);
             var token = LocalJwtConfig.GenerateToken(user, roles);
@@ -133,7 +134,7 @@ public class AuthController : BaseApiController
                     Status = CommonStatus.Enabled,
                     PhoneNumber = user.PhoneNumber,
                 },
-                ExpiresAt = DateTime.UtcNow.AddHours(1)
+                ExpiresAt = DateTime.UtcNow.AddDays(LocalJwtConfig.ExpirationDays)
             };
 
             return Ok(new ApiResponse<LoginResponse>
@@ -145,7 +146,7 @@ public class AuthController : BaseApiController
         }
         catch (Exception)
         {
-            return Unauthorized(ApiResponse<object>.CreateFail("无效的令牌", new { code = "AuthTokenInvalid" }));
+            return Unauthorized(ApiResponse<object>.CreateFail("无效的令牌", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
         }
     }
 
@@ -154,7 +155,7 @@ public class AuthController : BaseApiController
     public async Task<IActionResult> AutoLogin([FromBody] AutoLoginRequest request)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.AutoLoginToken))
-            return Unauthorized(ApiResponse<object>.CreateFail("自动登录令牌不能为空", new { code = "AuthTokenInvalid" }));
+            return Unauthorized(ApiResponse<object>.CreateFail("自动登录令牌不能为空", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
 
         try
         {
@@ -174,15 +175,15 @@ public class AuthController : BaseApiController
 
             var principal = handler.ValidateToken(request.AutoLoginToken, validationParameters, out var securityToken);
             if (securityToken is not JwtSecurityToken jwtToken)
-                return Unauthorized(ApiResponse<object>.CreateFail("无效的自动登录令牌格式", new { code = "AuthTokenInvalid" }));
+                return Unauthorized(ApiResponse<object>.CreateFail("无效的自动登录令牌格式", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
 
             var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
-                return Unauthorized(ApiResponse<object>.CreateFail("自动登录令牌缺少用户信息", new { code = "AuthTokenInvalid" }));
+                return Unauthorized(ApiResponse<object>.CreateFail("自动登录令牌缺少用户信息", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
-                return Unauthorized(ApiResponse<object>.CreateFail("用户不存在", new { code = "AuthTokenInvalid" }));
+                return Unauthorized(ApiResponse<object>.CreateFail("用户不存在", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
 
             var roles = await _userManager.GetRolesAsync(user);
             var token = LocalJwtConfig.GenerateToken(user, roles);
@@ -203,7 +204,7 @@ public class AuthController : BaseApiController
                     Status = CommonStatus.Enabled,
                     PhoneNumber = user.PhoneNumber,
                 },
-                ExpiresAt = DateTime.UtcNow.AddHours(1)
+                ExpiresAt = DateTime.UtcNow.AddDays(LocalJwtConfig.ExpirationDays)
             };
 
             return Ok(new ApiResponse<LoginResponse>
@@ -215,7 +216,7 @@ public class AuthController : BaseApiController
         }
         catch (Exception)
         {
-            return Unauthorized(ApiResponse<object>.CreateFail("自动登录令牌无效", new { code = "AuthTokenInvalid" }));
+            return Unauthorized(ApiResponse<object>.CreateFail("自动登录令牌无效", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
         }
     }
 

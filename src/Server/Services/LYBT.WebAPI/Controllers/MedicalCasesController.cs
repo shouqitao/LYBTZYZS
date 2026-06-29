@@ -72,7 +72,7 @@ namespace LYBT.WebAPI.Controllers
             var responseDto = _mapper.MapToMedicalCaseDetailDto(entity);
 
             return CreatedAtAction(nameof(GetById),
-                new { id = responseDto.Id, version = "1" },
+                new { id = responseDto.Id, version = ApiVersionConstants.V1 },
                 ApiResponse<MedicalCaseDetailDto>.CreateSuccess(responseDto, "医案创建成功"));
         }
 

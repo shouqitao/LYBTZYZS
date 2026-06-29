@@ -21,7 +21,13 @@ namespace LYBT.LocalWebAPI.Auth;
 public static class LocalJwtConfig
 {
     private const string DefaultSecret = "LYBT-LocalWebAPI-Secret-Key-2024-DoNotUseInProduction";
+    private const int TokenExpirationDays = 365;
     private static string _secret = DefaultSecret;
+
+    /// <summary>
+    /// 令牌过期时间（天数）
+    /// </summary>
+    public static int ExpirationDays => TokenExpirationDays;
     
     /// <summary>
     /// 初始化密钥（从配置读取）
@@ -104,7 +110,7 @@ public static class LocalJwtConfig
         var token = new JwtSecurityToken(
             claims: claims,
             notBefore: DateTime.UtcNow,
-            expires: DateTime.UtcNow.AddDays(365),
+            expires: DateTime.UtcNow.AddDays(TokenExpirationDays),
             signingCredentials: creds
         );
 

@@ -223,8 +223,9 @@ namespace LYBT.Infrastructure.Web
 
         /// <summary>
         /// 处理Result<T>返回值 - 根据错误码返回正确的HTTP状态码
+        /// useAuthMapping=true时使用泛型ApiResponse<T>并根据状态码选择合适的IActionResult方法(如Unauthorized)
         /// </summary>
-        protected IActionResult HandleResult<T>(Result<T> result, string successMessage = "操作成功")
+        protected IActionResult HandleResult<T>(Result<T> result, string successMessage = "操作成功", bool useAuthMapping = false)
         {
             if (result.IsSuccess)
             {
@@ -233,19 +234,32 @@ namespace LYBT.Infrastructure.Web
 
             var message = result.ErrorMessage ?? "操作失败";
 
-            // 根据ModuleErrorCode返回正确的HTTP状态码
             if (result.ModuleErrorCode.HasValue)
             {
                 var moduleCode = result.ModuleErrorCode.Value;
                 var httpStatus = moduleCode.ToHttpStatusCode();
+
+                if (useAuthMapping)
+                {
+                    var errorResponse = CreateModuleErrorResponse<T>(message, moduleCode);
+                    return httpStatus switch
+                    {
+                        401 => Unauthorized(errorResponse),
+                        403 => StatusCode(403, errorResponse),
+                        404 => base.NotFound(errorResponse),
+                        422 => StatusCode(422, errorResponse),
+                        503 => StatusCode(503, errorResponse),
+                        500 => StatusCode(500, errorResponse),
+                        _ => StatusCode(httpStatus, errorResponse)
+                    };
+                }
+
                 var response = ApiResponse.CreateFail(message);
                 response.RequestId = GetRequestId();
                 response.Errors = new { code = moduleCode.ToFormattedString(), numericCode = (int)moduleCode };
-
                 return StatusCode(httpStatus, response);
             }
 
-            // 无错误码时作为业务失败处理（422）
             return BusinessFail(message);
         }
 
@@ -314,39 +328,11 @@ namespace LYBT.Infrastructure.Web
         }
 
         /// <summary>
-        /// 处理带错误码的Result返回值 - 根据错误码返回正确HTTP状态码
+        /// [已合并到 HandleResult&lt;T&gt;(useAuthMapping: true)]
         /// </summary>
+        [Obsolete("Use HandleResult<T>(result, message, useAuthMapping: true) instead")]
         protected IActionResult HandleAuthResult<T>(Result<T> result, string successMessage = "操作成功")
-        {
-            if (result.IsSuccess)
-            {
-                return Success(result.Data!, successMessage);
-            }
-
-            var message = result.ErrorMessage ?? "操作失败";
-
-            // 统一使用 ModuleErrorCode
-            if (result.ModuleErrorCode.HasValue)
-            {
-                var moduleCode = result.ModuleErrorCode.Value;
-                var httpStatus = moduleCode.ToHttpStatusCode();
-                var errorResponse = CreateModuleErrorResponse<T>(message, moduleCode);
-
-                return httpStatus switch
-                {
-                    401 => Unauthorized(errorResponse),
-                    403 => StatusCode(403, errorResponse),
-                    404 => base.NotFound(errorResponse),
-                    422 => StatusCode(422, errorResponse),
-                    503 => StatusCode(503, errorResponse),
-                    500 => StatusCode(500, errorResponse),
-                    _ => StatusCode(httpStatus, errorResponse)
-                };
-            }
-
-            // 无错误码时作为业务失败处理
-            return BusinessFail(message);
-        }
+            => HandleResult(result, successMessage, useAuthMapping: true);
 
         /// <summary>
         /// 创建统一错误码响应对象

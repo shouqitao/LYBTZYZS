@@ -33,6 +33,13 @@ namespace LYBT.Desktop.Shell.ViewModels;
 /// </summary>
 public partial class MainWindowViewModel : CoreViewModelBase
 {
+    #region 常量
+
+    /// <summary>启动画面渲染等待时间（毫秒）</summary>
+    private const int SplashRenderDelayMs = 500;
+
+    #endregion
+
     #region 依赖服务
 
     private readonly INavigationCoordinator _navigationCoordinator;
@@ -516,8 +523,14 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// </summary>
     private async Task CheckLoginStatusAsync()
     {
-        try { _navigationCoordinator.ShowLoginDialog(); }
-        catch (Exception ex) { await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("初始化登录界面", ex)); _navigationCoordinator.ShowLoginDialog(); }
+        try
+        {
+            _navigationCoordinator.ShowLoginDialog();
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("初始化登录界面", ex));
+        }
     }
 
     #endregion
@@ -529,7 +542,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// </summary>
     public async Task OnWindowLoadedAsync()
     {
-        await Task.Delay(500);
+        await Task.Delay(SplashRenderDelayMs);
         await CheckLoginStatusAsync();
     }
 

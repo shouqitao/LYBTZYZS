@@ -1,4 +1,5 @@
-﻿using Asp.Versioning;
+using System.Reflection;
+using Asp.Versioning;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Models.Contracts.Common;
@@ -33,10 +34,11 @@ public class HealthController : BaseApiController
     [AllowAnonymous]  // 基础健康检查允许匿名访问
     public IActionResult Get()
     {
-        return Success(new
+        return Success(new HealthStatusDto
         {
-            status = "Healthy",
-            timestamp = DateTime.UtcNow
+            Status = "Healthy",
+            Timestamp = DateTime.UtcNow,
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)
         });
     }
 
@@ -48,10 +50,11 @@ public class HealthController : BaseApiController
     [AllowAnonymous]  // Ping端点允许匿名访问
     public IActionResult Ping()
     {
-        return Success(new
+        return Success(new HealthStatusDto
         {
-            message = "pong",
-            timestamp = DateTime.UtcNow
+            Status = "Pong",
+            Timestamp = DateTime.UtcNow,
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)
         });
     }
 
@@ -75,18 +78,11 @@ public class HealthController : BaseApiController
             _ => "Unknown"
         };
 
-        var response = new
+        var response = new HealthStatusDto
         {
-            status = statusString,
-            timestamp = DateTime.UtcNow,
-            database = new
-            {
-                status = statusString,
-                duration = dbCheck.Duration,
-                provider = dbCheck.Provider,
-                pendingMigrations = dbCheck.PendingMigrationCount,
-                serverVersion = dbCheck.ServerVersion
-            }
+            Status = statusString,
+            Timestamp = DateTime.UtcNow,
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)
         };
 
         var statusCode = overallStatus == HealthStatus.Healthy ? 200 : 503;
