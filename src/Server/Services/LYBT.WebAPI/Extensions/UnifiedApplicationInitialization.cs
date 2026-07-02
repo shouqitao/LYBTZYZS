@@ -1,4 +1,4 @@
-﻿namespace LYBT.WebAPI.Extensions;
+namespace LYBT.WebAPI.Extensions;
 
 /// <summary>
 /// 统一应用初始化管理 - UltraThink初始化系统
@@ -270,3 +270,5 @@ public static class UnifiedApplicationInitialization
         return configuration.GetConnectionString(name) ?? string.Empty;
     }
 }
+
+

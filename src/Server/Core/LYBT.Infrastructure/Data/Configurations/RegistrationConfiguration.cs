@@ -40,3 +40,5 @@ public class RegistrationConfiguration : BaseEntityConfiguration<Registration>
         builder.Property(r => r.RegistrationFee).HasColumnType("decimal(10,2)").IsRequired();
     }
 }
+
+

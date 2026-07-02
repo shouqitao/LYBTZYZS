@@ -105,3 +105,5 @@ namespace LYBT.Module.MedicalCases.Interfaces
         Task<int> CountPrescriptionsByPrefixAsync(string prefix, CancellationToken cancellationToken = default);
     }
 }
+
+

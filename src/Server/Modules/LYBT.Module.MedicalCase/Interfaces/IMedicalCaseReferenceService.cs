@@ -9,3 +9,5 @@ namespace LYBT.Module.MedicalCases.Interfaces
         Task<List<MedicalCaseReferenceDto>> GetRecentMedicalCasesAsync(Guid patientId, int count, CancellationToken cancellationToken = default);
     }
 }
+
+

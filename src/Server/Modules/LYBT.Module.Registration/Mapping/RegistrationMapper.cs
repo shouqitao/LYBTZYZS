@@ -41,3 +41,5 @@ public partial class RegistrationMapper
     [MapperIgnoreTarget(nameof(RegistrationEntity.IsDeleted))]
     public partial RegistrationEntity ToEntity(RegistrationInputDto dto);
 }
+
+

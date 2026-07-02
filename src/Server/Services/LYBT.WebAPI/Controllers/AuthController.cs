@@ -1,20 +1,16 @@
 using Asp.Versioning;
-using LYBT.Entities.Users;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
+using LYBT.Module.Auth.Application.Commands;
+using LYBT.Module.Auth.Application.Queries;
 using LYBT.Module.Auth.Interfaces;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Primitives.ErrorCodes;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.Options;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -24,23 +20,17 @@ namespace LYBT.WebAPI.Controllers
     [Authorize]
     public class AuthController : BaseApiController
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly ISender _sender;
         private readonly IJwtService _jwtService;
-        private readonly IOptions<JwtOptions> _jwtOptions;
 
         public AuthController(
-            UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager,
+            ISender sender,
             IJwtService jwtService,
-            IOptions<JwtOptions> jwtOptions,
             ILogger<AuthController> logger)
             : base(logger)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
+            _sender = sender;
             _jwtService = jwtService;
-            _jwtOptions = jwtOptions;
         }
 
         [HttpPost("login")]
@@ -61,59 +51,33 @@ namespace LYBT.WebAPI.Controllers
             if (string.IsNullOrWhiteSpace(request.Password))
                 return ValidationFail("密码不能为空");
 
-            var user = await _userManager.FindByNameAsync(request.UserName);
-            if (user == null)
-                return HandleResult(Result<LoginResponse>.Failure(ErrorCode.AuthInvalidCredentials, "用户名或密码错误"), "登录失败", useAuthMapping: true);
+            var result = await _sender.Send(new LoginCommand(request));
+            if (result.IsSuccess)
+                return Success(result.Value!, "登录成功");
 
-            var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, true);
-            if (!result.Succeeded)
-                return HandleResult(Result<LoginResponse>.Failure(ErrorCode.AuthInvalidCredentials, "用户名或密码错误"), "登录失败", useAuthMapping: true);
-
-            user.LastLoginAt = DateTime.UtcNow;
-            await _userManager.UpdateAsync(user);
-
-            var roles = await _userManager.GetRolesAsync(user);
-            var role = ParseUserRole(roles);
-            string userType = role == UserRole.SuperAdmin ? RoleConstants.SuperAdminUserType : RoleConstants.DefaultUserType;
-
-            var additionalClaims = new Dictionary<string, string>();
-            if (user.IsSysAdmin)
-                additionalClaims["IsSysAdmin"] = "true";
-
-            var token = additionalClaims.Count > 0
-                ? _jwtService.GenerateToken(user.Id.ToString(), user.UserName!, role, additionalClaims, userType)
-                : _jwtService.GenerateToken(user.Id.ToString(), user.UserName!, role, userType);
-
-            var userDto = new UserDetailDto
+            var httpStatus = result.ErrorCode.ToHttpStatusCode();
+            var response = ApiResponse<LoginResponse>.CreateFail(result.Error ?? "登录失败");
+            response.RequestId = GetRequestId();
+            return httpStatus switch
             {
-                Id = user.Id,
-                UserName = user.UserName ?? string.Empty,
-                RealName = user.RealName,
-                Role = role,
-                Status = CommonStatus.Enabled,
-                PhoneNumber = user.PhoneNumber,
-                CreatedAt = DateTime.UtcNow,
-                LastLoginTime = user.LastLoginAt
+                401 => Unauthorized(response),
+                _ => StatusCode(httpStatus, response)
             };
-
-            var response = new LoginResponse
-            {
-                Token = token,
-                User = userDto,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtOptions.Value.AccessTokenExpirationMinutes)
-            };
-
-            _logger.LogInformation("[AUTH] Login completed - UserName={UserName} Role={Role}",
-                request.UserName, role);
-
-            return HandleResult(Result<LoginResponse>.Success(response), "登录成功", useAuthMapping: true);
         }
 
         [HttpPost("logout")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse), 200)]
-        public IActionResult LogoutAsync([FromBody] LogoutRequest request)
+        public async Task<IActionResult> LogoutAsync([FromBody] LogoutRequest request)
         {
+            var result = await _sender.Send(new LogoutCommand(request));
+            if (!result.IsSuccess)
+            {
+                var response = ApiResponse.CreateFail(result.Error ?? "登出失败");
+                response.RequestId = GetRequestId();
+                return StatusCode(result.ErrorCode.ToHttpStatusCode(), response);
+            }
+
             _logger.LogInformation("[AUTH] Logout - UserName={UserName}", request?.UserName ?? "(unknown)");
             return Success("登出成功");
         }
@@ -122,12 +86,22 @@ namespace LYBT.WebAPI.Controllers
         [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 401)]
-        public IActionResult RefreshTokenAsync([FromBody] RefreshTokenRequest request)
+        public async Task<IActionResult> RefreshTokenAsync([FromBody] RefreshTokenRequest request)
         {
             if (ValidateModel() is { } modelError) return modelError;
 
-            var result = _jwtService.RefreshToken(request.RefreshToken);
-            return HandleResult(result, "Token刷新成功", useAuthMapping: true);
+            var result = await _sender.Send(new RefreshTokenCommand(request.RefreshToken));
+            if (result.IsSuccess)
+                return Success(result.Value!, "Token刷新成功");
+
+            var httpStatus = result.ErrorCode.ToHttpStatusCode();
+            var response = ApiResponse<LoginResponse>.CreateFail(result.Error ?? "Token刷新失败");
+            response.RequestId = GetRequestId();
+            return httpStatus switch
+            {
+                401 => Unauthorized(response),
+                _ => StatusCode(httpStatus, response)
+            };
         }
 
         [HttpPost("auto-login")]
@@ -145,7 +119,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("validate")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 401)]
-        public IActionResult ValidateTokenFromHeaderAsync()
+        public async Task<IActionResult> ValidateTokenFromHeaderAsync()
         {
             var authHeader = Request.Headers.Authorization.FirstOrDefault();
             if (string.IsNullOrWhiteSpace(authHeader))
@@ -164,21 +138,25 @@ namespace LYBT.WebAPI.Controllers
                 return Unauthorized(ApiResponse<object>.CreateFail("Missing token in Authorization header", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
             }
 
-            var principal = _jwtService.ValidateToken(token);
-            if (principal != null)
+            var result = await _sender.Send(new ValidateTokenQuery(token));
+            if (result.IsSuccess && result.Value)
             {
-                object response = new
+                var principal = _jwtService.ValidateToken(token);
+                if (principal != null)
                 {
-                    valid = true,
-                    sub = new
+                    object response = new
                     {
-                        UserId = principal.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
-                        UserName = principal.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value,
-                        Role = principal.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
-                    },
-                    message = "Token is valid"
-                };
-                return Success(response, "Token验证成功");
+                        valid = true,
+                        sub = new
+                        {
+                            UserId = principal.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
+                            UserName = principal.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value,
+                            Role = principal.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
+                        },
+                        message = "Token is valid"
+                    };
+                    return Success(response, "Token验证成功");
+                }
             }
 
             return Unauthorized(ApiResponse<object>.CreateFail("Token is invalid", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
@@ -189,13 +167,7 @@ namespace LYBT.WebAPI.Controllers
         {
             return BusinessFail("方法不允许");
         }
-
-        private static UserRole ParseUserRole(IList<string> roles)
-        {
-            if (roles.Count > 0 && Enum.TryParse<UserRole>(roles[0], ignoreCase: true, out var role))
-                return role;
-
-            return UserRole.Doctor;
-        }
     }
 }
+
+

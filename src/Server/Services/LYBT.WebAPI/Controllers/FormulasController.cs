@@ -1,46 +1,34 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.Formulas.Interfaces;
+using LYBT.Module.Formulas.Application.Commands;
+using LYBT.Module.Formulas.Application.Queries;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OutputCaching;
 
 namespace LYBT.WebAPI.Controllers
 {
-    /// <summary>
-    /// 验方管理 API - 基础CRUD功能
-    /// </summary>
-    /// optimize-api-permissions: 验方管理需Doctor或Admin角色
-    /// 资源级授权由Service层所有权检查实现
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class FormulasController : BaseApiController
     {
-        private readonly IFormulaService _service;
-        private readonly IFormulaImportExportService _importExportService;
+        private readonly ISender _sender;
 
         public FormulasController(
-            IFormulaService service, 
-            IFormulaImportExportService importExportService,
+            ISender sender,
             ILogger<FormulasController> logger)
             : base(logger)
         {
-            _service = service;
-            _importExportService = importExportService;
+            _sender = sender;
         }
 
-        /// <summary>
-        /// 获取验方列表 - 支持分页和查询（Issue #1164: 扩展支持分类筛选）
-        /// optimize-api-permissions: 添加角色过滤，Doctor只能看到自己的和共享的验方
-        /// </summary>
         [HttpGet]
-        [OutputCache(PolicyName = "FormulasCache")]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<FormulaListDto>>), 200)]
         public async Task<IActionResult> GetList(
             [FromQuery] int page = 1,
@@ -48,152 +36,130 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] string? keyword = null,
             [FromQuery] string? category = null)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidatePagination(page, pageSize) is { } error) return error;
 
-            // optimize-api-permissions: 获取当前用户信息用于角色过滤
-            var (operatorId, _, operatorRole) = GetOperator();
-            var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
+            var result = await _sender.Send(new GetFormulasQuery(page, pageSize, keyword, category));
+            if (!result.IsSuccess)
+                return BusinessFail(result.Error ?? "查询失败");
 
-            var result = await _service.GetPagedAsync(
-                page, pageSize, keyword, category,
-                currentUserId: operatorId,
-                isAdmin: isAdmin);
-            return HandlePagedResult(result, "查询成功");
+            return SuccessPaged(result.Value!, "查询成功");
         }
 
-        /// <summary>
-        /// 获取验方详情
-        /// </summary>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         public async Task<IActionResult> GetById(Guid id)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "验方ID") is { } error) return error;
 
-            var result = await _service.GetByIdAsync(id);
-            if (!result.IsSuccess || result.Data == null)
+            var result = await _sender.Send(new GetFormulaQuery(id));
+            if (!result.IsSuccess || result.Value == null)
             {
-                return NotFound(result.ErrorMessage ?? "验方不存在");
+                return NotFound(result.Error ?? "验方不存在");
             }
 
-            return Success(result.Data, "查询成功");
+            return Success(result.Value, "查询成功");
         }
 
-        /// <summary>
-        /// 新增验方
-        /// </summary>
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), StatusCodes.Status201Created)]
         public async Task<IActionResult> Create([FromBody] FormulaInputDto dto)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             var (operatorId, _, _) = GetOperator();
-            var result = await _service.CreateAsync(dto, operatorId);
-            if (!result.IsSuccess || result.Data == null)
+            var result = await _sender.Send(new CreateFormulaCommand(dto, operatorId));
+            if (!result.IsSuccess || result.Value == null)
             {
-                return HandleResult(result);
+                return BusinessFail(result.Error ?? "创建失败");
             }
 
-            LogOperation("新增验方成功", result.Data, result.Data.Id);
+            LogOperation("新增验方成功", result.Value, result.Value.Id);
             return CreatedAtAction(nameof(GetById),
-                new { id = result.Data.Id, version = ApiVersionConstants.V1 },
-                ApiResponse<FormulaDetailDto>.CreateSuccess(result.Data, "验方创建成功"));
+                new { id = result.Value.Id, version = ApiVersionConstants.V1 },
+                ApiResponse<FormulaDetailDto>.CreateSuccess(result.Value, "验方创建成功"));
         }
 
-        /// <summary>
-        /// 更新验方
-        /// </summary>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         public async Task<IActionResult> Update(Guid id, [FromBody] FormulaInputDto dto)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            // 使用统一的所有权检查方法
-            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "验方");
-            if (ownershipError != null) return ownershipError;
+            if (ValidateGuid(id, "验方ID") is { } error) return error;
 
-            var result = await _service.UpdateAsync(id, dto);
-            if (!result.IsSuccess || result.Data == null)
+            var getResult = await _sender.Send(new GetFormulaQuery(id));
+            if (!getResult.IsSuccess || getResult.Value == null)
+                return NotFound("验方不存在");
+            if (ValidateOwnership(getResult.Value.CreatedBy, "验方") is { } ownershipError)
+                return ownershipError;
+
+            var (operatorId, _, _) = GetOperator();
+            var result = await _sender.Send(new UpdateFormulaCommand(id, dto, operatorId));
+            if (!result.IsSuccess || result.Value == null)
             {
-                return HandleResult(result);
+                return BusinessFail(result.Error ?? "更新失败");
             }
 
-            LogOperation("更新验方成功", result.Data, id);
-            return Success(result.Data, "验方更新成功");
+            LogOperation("更新验方成功", result.Value, id);
+            return Success(result.Value, "验方更新成功");
         }
 
-        /// <summary>
-        /// 删除验方
-        /// </summary>
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> Delete(Guid id)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            // 使用统一的所有权检查方法
-            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "验方");
-            if (ownershipError != null) return ownershipError;
+            if (ValidateGuid(id, "验方ID") is { } error) return error;
 
-            var result = await _service.DeleteAsync(id);
+            var getResult = await _sender.Send(new GetFormulaQuery(id));
+            if (!getResult.IsSuccess || getResult.Value == null)
+                return NotFound("验方不存在");
+            if (ValidateOwnership(getResult.Value.CreatedBy, "验方") is { } ownershipError)
+                return ownershipError;
+
+            var (operatorId, _, _) = GetOperator();
+            var result = await _sender.Send(new DeleteFormulaCommand(id, operatorId));
             if (!result.IsSuccess)
             {
-                return NotFound("验方不存在");
+                return NotFound(result.Error ?? "验方不存在");
             }
 
             LogOperation("删除验方成功", null, id);
             return Success(true, "删除成功");
         }
 
-        /// <summary>
-        /// 批量导入验方数据 (Issue #1166, #1758)
-        /// 架构原则：Server端只处理结构化DTO，Excel解析由Client端负责
-        /// </summary>
         [HttpPost("batch-import")]
         [ProducesResponseType(typeof(ApiResponse<FormulaBatchImportResultDto>), 200)]
         public async Task<IActionResult> Import([FromBody] FormulaBatchImportInputDto request)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (request == null || request.Formulas == null || !request.Formulas.Any())
             {
                 return ValidationFail("导入数据不能为空");
             }
-            var result = await _importExportService.ImportFromDataAsync(request.Formulas, request.FileName);
 
-            if (!result.IsSuccess || result.Data == null)
+            var result = await _sender.Send(new BatchImportFormulasCommand(request.Formulas, request.FileName));
+
+            if (!result.IsSuccess || result.Value == null)
             {
-                return HandleResult(result);
+                return BusinessFail(result.Error ?? "导入失败");
             }
 
             LogOperation("批量导入验方",
-                new { FileName = request.FileName, TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount },
+                new { FileName = request.FileName, TotalCount = result.Value.TotalCount, SuccessCount = result.Value.SuccessCount },
                 null);
 
-            return Success(result.Data, result.Data.Message);
+            return Success(result.Value, result.Value.Message);
         }
 
-        /// <summary>
-        /// 获取待校验的验方列表 (Issue #1349)
-        /// </summary>
         [HttpGet("pending-validation")]
         [ProducesResponseType(typeof(ApiResponse<List<FormulaDetailDto>>), 200)]
         public async Task<IActionResult> GetPendingValidation()
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            var result = await _service.GetPendingValidationFormulasAsync();
+            var result = await _sender.Send(new GetPendingValidationQuery());
 
-            if (!result.IsSuccess || result.Data == null)
+            if (!result.IsSuccess || result.Value == null)
             {
-                return HandleResult(result);
+                return BusinessFail(result.Error ?? "查询失败");
             }
 
-            return Success(result.Data, $"查询成功，共{result.Data.Count}个待校验验方");
+            return Success(result.Value, $"查询成功，共{result.Value.Count}个待校验验方");
         }
 
-        /// <summary>
-        /// 验证验方药材 - 手动绑定药材到系统药材库 (Issue #1348)
-        /// </summary>
         [HttpPost("{formulaId}/herbs/{herbItemId}/validate")]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(404)]
@@ -202,28 +168,24 @@ namespace LYBT.WebAPI.Controllers
             Guid herbItemId,
             [FromBody] ValidateFormulaHerbInputDto request)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(formulaId, "验方ID") is { } error1) return error1;
             if (ValidateGuid(herbItemId, "药材项ID") is { } error2) return error2;
             if (ValidateGuid(request.SelectedHerbId, "系统药材ID") is { } error3) return error3;
 
-            var result = await _service.ValidateFormulaHerbAsync(formulaId, herbItemId, request.SelectedHerbId);
+            var result = await _sender.Send(new ValidateFormulaHerbCommand(formulaId, herbItemId, request.SelectedHerbId));
 
             if (!result.IsSuccess)
             {
-                return HandleResult(result);
+                return BusinessFail(result.Error ?? "验证失败");
             }
 
             LogOperation("验证验方药材",
                 new { FormulaId = formulaId, HerbItemId = herbItemId, SelectedHerbId = request.SelectedHerbId },
                 formulaId);
 
-            return Success(result.Message ?? "药材验证成功");
+            return Success("药材验证成功");
         }
 
-        /// <summary>
-        /// 批量删除验方
-        /// </summary>
         [HttpPost("batch-delete")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
@@ -235,38 +197,41 @@ namespace LYBT.WebAPI.Controllers
             }
 
             var (operatorId, _, _) = GetOperator();
-            var result = await _service.BatchDeleteAsync(dto.Ids, operatorId);
+            var result = await _sender.Send(new BatchDeleteFormulasCommand(dto.Ids, operatorId));
 
-            if (!result.IsSuccess || result.Data == null)
+            if (!result.IsSuccess || result.Value == null)
             {
-                return HandleResult(result);
+                return BusinessFail(result.Error ?? "批量删除失败");
             }
 
-            LogOperation("批量删除验方", new { Ids = dto.Ids, Result = result.Data.Message }, null);
-            return Success(result.Data, result.Data.Message);
+            LogOperation("批量删除验方", new { Ids = dto.Ids, Result = result.Value.Message }, null);
+            return Success(result.Value, result.Value.Message);
         }
-        /// <summary>
-        /// 切换验方状态（启用/禁用）
-        /// </summary>
+
         [HttpPost("{id}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> ToggleStatus(Guid id)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            // 使用统一的所有权检查方法
-            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "验方");
-            if (ownershipError != null) return ownershipError;
+            if (ValidateGuid(id, "验方ID") is { } error) return error;
 
-            var result = await _service.ToggleStatusAsync(id);
-            if (!result.IsSuccess || result.Data == null)
+            var getResult = await _sender.Send(new GetFormulaQuery(id));
+            if (!getResult.IsSuccess || getResult.Value == null)
+                return NotFound("验方不存在");
+            if (ValidateOwnership(getResult.Value.CreatedBy, "验方") is { } ownershipError)
+                return ownershipError;
+
+            var (operatorId, _, _) = GetOperator();
+            var result = await _sender.Send(new ToggleFormulaStatusCommand(id, operatorId));
+            if (!result.IsSuccess || result.Value == null)
             {
-                return HandleResult<FormulaDetailDto>(result);
+                return BusinessFail(result.Error ?? "切换状态失败");
             }
 
-            LogOperation("切换验方状态", new { NewStatus = result.Data.Status }, id);
-            return Success(result.Data, $"验方已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
+            LogOperation("切换验方状态", new { NewStatus = result.Value.Status }, id);
+            return Success(result.Value, $"验方已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
         }
-
     }
 }
+
+

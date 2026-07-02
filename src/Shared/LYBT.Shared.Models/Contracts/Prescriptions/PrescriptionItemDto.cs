@@ -13,6 +13,10 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("ID")]
         public Guid Id { get; set; }
 
+        /// <summary>处方ID</summary>
+        [DisplayName("处方ID")]
+        public Guid? PrescriptionId { get; set; }
+
         [DisplayName("中药材ID")]
         public Guid HerbId { get; set; }
 

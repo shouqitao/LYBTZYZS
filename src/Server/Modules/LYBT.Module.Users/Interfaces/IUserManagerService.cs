@@ -25,3 +25,5 @@ public interface IUserManagerService
     Task<bool> GetLockoutEnabledAsync(ApplicationUser user);
     Task<int> GetAccessFailedCountAsync(ApplicationUser user);
 }
+
+

@@ -52,6 +52,13 @@ public class MedicalCaseWorkspaceViewModelTests
         _sessionManager = Substitute.For<ISessionManager>();
         _commonDialogService = Substitute.For<ICommonDialogService>();
 
+        // Mock PubSubEvent instances — real PubSubEvent.Subscribe(ThreadOption.UIThread)
+        // requires SynchronizationContext which doesn't exist on xUnit thread pool threads
+        _eventAggregator.GetEvent<CaseEvents.ConsultationCompletedEvent>()
+            .Returns(Substitute.For<CaseEvents.ConsultationCompletedEvent>());
+        _eventAggregator.GetEvent<CaseEvents.PrescriptionCompletedEvent>()
+            .Returns(Substitute.For<CaseEvents.PrescriptionCompletedEvent>());
+
         _viewModelServices = Substitute.For<IViewModelServices>();
         _viewModelServices.LoggerFactory.Returns(_loggerFactory);
         _viewModelServices.EventAggregator.Returns(_eventAggregator);

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -21,6 +21,7 @@
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Validators\LYBT.Shared.Validators.csproj" />
     <!-- 跨模块引用已移除: Herbs -->
+    <ProjectReference Include="..\..\Core\LYBT.SharedKernel\LYBT.SharedKernel.csproj" />
     <!-- 改用 ICrossModuleService 进行跨模块数据访问 -->
   </ItemGroup>
 </Project>

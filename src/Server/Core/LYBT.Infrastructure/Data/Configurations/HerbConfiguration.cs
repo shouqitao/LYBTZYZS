@@ -26,3 +26,5 @@ public class HerbConfiguration : BaseEntityConfiguration<Herb>
         builder.Property(h => h.Status).HasConversion<int>();
     }
 }
+
+

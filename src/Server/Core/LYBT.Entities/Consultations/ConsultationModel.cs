@@ -49,3 +49,5 @@ namespace LYBT.Entities.Consultations
         // 需要MedicalCase信息时，通过Id查询或使用Query Service
     }
 }
+
+

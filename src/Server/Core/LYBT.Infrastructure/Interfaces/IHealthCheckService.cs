@@ -21,3 +21,5 @@ namespace LYBT.Infrastructure.Interfaces
         Task<HealthStatus> GetOverallStatusAsync();
     }
 }
+
+

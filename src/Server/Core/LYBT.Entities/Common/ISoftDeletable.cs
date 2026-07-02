@@ -12,3 +12,5 @@ public interface ISoftDeletable
     /// </summary>
     bool IsDeleted { get; set; }
 }
+
+

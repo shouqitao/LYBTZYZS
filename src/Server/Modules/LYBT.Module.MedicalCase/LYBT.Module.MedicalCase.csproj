@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <!-- OpenSpec: adopt-mapperly-unified-mapping - 迁移到Mapperly -->
+    <PackageReference Include="MediatR" />
     <PackageReference Include="Riok.Mapperly" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />

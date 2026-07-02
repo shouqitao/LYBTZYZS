@@ -83,5 +83,94 @@ namespace LYBT.Entities.Patients
                 return null;
             }
         }
+
+        // ==== 领域方法 ====
+
+        /// <summary>
+        /// 创建新患者。
+        /// </summary>
+        public static Patient Create(
+            string name,
+            Gender gender,
+            DateTime? birthDate = null,
+            string? phoneNumber = null,
+            string? idNumber = null,
+            string? pinYinCode = null,
+            Guid? createdBy = null)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("患者姓名不能为空", nameof(name));
+
+            return new Patient
+            {
+                Id = Guid.NewGuid(),
+                Name = name.Trim(),
+                Gender = gender,
+                BirthDate = birthDate,
+                PhoneNumber = phoneNumber?.Trim(),
+                IdNumber = idNumber?.Trim(),
+                PinYinCode = pinYinCode?.Trim(),
+                Status = CommonStatus.Enabled,
+                CreatedBy = createdBy,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
+
+        /// <summary>
+        /// 更新患者基本信息。
+        /// </summary>
+        public void UpdateProfile(
+            string name,
+            Gender gender,
+            DateTime? birthDate,
+            string? phoneNumber,
+            string? idNumber,
+            string? pinYinCode,
+            Guid updatedBy)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("患者姓名不能为空", nameof(name));
+
+            Name = name.Trim();
+            Gender = gender;
+            BirthDate = birthDate;
+            PhoneNumber = phoneNumber?.Trim();
+            IdNumber = idNumber?.Trim();
+            PinYinCode = pinYinCode?.Trim();
+            UpdatedBy = updatedBy;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// 更改患者状态（启用/禁用）。
+        /// </summary>
+        public void ChangeStatus(CommonStatus newStatus, Guid updatedBy)
+        {
+            Status = newStatus;
+            UpdatedBy = updatedBy;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// 软删除患者。
+        /// </summary>
+        public void SoftDelete(Guid deletedBy)
+        {
+            IsDeleted = true;
+            UpdatedBy = deletedBy;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// 恢复已软删除的患者。
+        /// </summary>
+        public void Restore(Guid restoredBy)
+        {
+            IsDeleted = false;
+            UpdatedBy = restoredBy;
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 }
+
+

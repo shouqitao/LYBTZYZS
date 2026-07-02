@@ -85,3 +85,5 @@ public partial class PatientMapper
     [MapperIgnoreTarget(nameof(Patient.IsDeleted))]
     public partial void UpdateEntityFromDetail(PatientDetailDto dto, Patient entity);
 }
+
+

@@ -83,3 +83,5 @@ internal class ReportRepository : BaseRepository<MedicalCase>, IReportRepository
             .ToListAsync(cancellationToken);
     }
 }
+
+

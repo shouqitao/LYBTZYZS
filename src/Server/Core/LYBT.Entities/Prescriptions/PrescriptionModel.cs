@@ -76,3 +76,5 @@ namespace LYBT.Entities.Prescriptions
         // T2-X8-09: PrintLogs 导航属性已迁移到 MedicalCase.PrintLogs (2026-02-24)
     }
 }
+
+

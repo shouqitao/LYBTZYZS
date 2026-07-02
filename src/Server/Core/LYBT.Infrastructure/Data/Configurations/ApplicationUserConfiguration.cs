@@ -12,3 +12,5 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
         builder.Property(u => u.LastLoginAt).IsRequired(false);
     }
 }
+
+

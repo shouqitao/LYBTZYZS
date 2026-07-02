@@ -1,65 +1,47 @@
-using LYBT.Entities.Formulas;
-using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
-using System.Threading;
-using System.Linq.Expressions;
+using LYBT.Module.Formulas.Domain;
 
-namespace LYBT.Module.Formulas.Interfaces
+namespace LYBT.Module.Formulas.Interfaces;
+
+/// <summary>
+/// 验方仓储接口（DDD） - 封验方数据访问逻辑。
+/// </summary>
+public interface IFormulaRepository
 {
+    /// <summary>
+    /// 根据ID获取验方（含药材组成）。
+    /// </summary>
+    Task<Formula?> GetByIdAsync(Guid id, CancellationToken ct);
 
     /// <summary>
-    /// 验方仓储接口 - 数据层统一化重构
-    /// 继承BaseRepository提供通用CRUD，扩展验方特定业务方法
+    /// 分页查询验方（支持关键字 + 分类筛选）。
+    /// </summary>
+    Task<PagedResult<Formula>> GetPagedAsync(int page, int pageSize, string? keyword, string? category, CancellationToken ct);
+
+    /// <summary>
+    /// 检查验方名称是否已存在。
+    /// </summary>
+    Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// 新增验方。
+    /// </summary>
+    Task AddAsync(Formula formula, CancellationToken ct);
+
+    /// <summary>
+    /// 更新验方。
+    /// </summary>
+    Task UpdateAsync(Formula formula, CancellationToken ct);
+
+    /// <summary>
+    /// 按条件查询验方（含药材组成）。
     /// </summary>
     /// <summary>
-    /// 验方仓储接口 - 简化版，减少冗余权限方法
-    /// 继承BaseRepository提供通用CRUD，扩展验方特定业务方法
+    /// 按条件查询验方（含药材组成）。
     /// </summary>
-public interface IFormulaRepository : IRepository<Formula>
-{
-        /// <summary>
-        /// 获取模板验方列表
-        /// </summary>
-        Task<List<Formula>> GetTemplatesAsync();
-
-        /// <summary>
-        /// 根据ID获取方剂（包含所有药材配伍）
-        /// </summary>
-        Task<Formula> GetByIdWithHerbsAsync(Guid id);
-
-        /// <summary>
-        /// 根据传入的谓词条件，查询并返回包含药材配伍的验方列表
-        /// 该查询需要包括药材且排除软删除，因此使用 GetBaseQuery() 以确保正确的 Include/Where 语义。
-        /// </summary>
-        Task<List<Formula>> FindWithHerbsAsync(Expression<Func<Formula, bool>> predicate, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// 获取分页列表（包含药材配伍信息）
-        /// </summary>
-        Task<PagedResult<Formula>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);
-
-        /// <summary>
-        /// 获取分页列表（包含药材配伍信息 + category/role 筛选，DB 层执行）
-        /// Sprint3-X6: 从 Service 内存过滤迁移到 Repository DB 查询
-        /// </summary>
-        Task<PagedResult<Formula>> GetPagedWithDetailsAsync(
-            int pageNumber, int pageSize, string? keyword,
-            string? category, Guid? userId, bool isAdmin);
-
-        /// <summary>
-        /// 根据用户ID获取方剂列表（包含权限逻辑：自己的+共享的）
-        /// </summary>
-        Task<List<Formula>> GetByUserIdAsync(Guid userId);
-
-        /// <summary>
-        /// T5-P2-36: 获取所有验方（包含药材组成），用于导出
-        /// </summary>
-        Task<List<Formula>> GetAllWithHerbsAsync();
-        /// <summary>
-        /// 根据ID获取实体（包括已软删除的）
-        /// 用于Restore操作时获取已删除的实体
-        /// </summary>
-        /// <param name="id">实体ID</param>
-        Task<Formula?> GetByIdIncludingDeletedAsync(Guid id);
-    }
+    Task<List<Formula>> FindWithHerbsAsync(
+        System.Linq.Expressions.Expression<Func<Formula, bool>> predicate,
+        CancellationToken ct = default);
 }
+
+

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://mimo.xiaomi.com/mimocode/config.json",
+  "mcp": {
+    "tavily": {
+      "type": "local",
+      "command": ["npx", "-y", "tavily-mcp@latest"],
+      "environment": {
+        "TAVILY_API_KEY": "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"
+      }
+    }
+  }
+}

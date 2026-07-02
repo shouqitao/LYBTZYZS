@@ -141,3 +141,5 @@ public interface IRepository<T> where T : class
     /// </summary>
     Task<int> SaveAllChangesAsync(CancellationToken cancellationToken = default);
 }
+
+

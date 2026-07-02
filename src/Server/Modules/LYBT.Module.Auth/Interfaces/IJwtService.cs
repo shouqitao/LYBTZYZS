@@ -51,3 +51,5 @@ public interface IJwtService
     /// <returns>新的登录响应</returns>
     Result<LoginResponse> ValidateAutoLoginToken(string autoLoginToken);
 }
+
+

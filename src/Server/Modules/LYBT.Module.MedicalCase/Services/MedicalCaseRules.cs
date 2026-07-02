@@ -21,3 +21,5 @@ public static class MedicalCaseRules
     public static bool IsValidStatusTransition(MedicalCaseStatus from, MedicalCaseStatus to)
         => MedicalCaseBusinessRules.IsValidStatusTransition(from, to);
 }
+
+

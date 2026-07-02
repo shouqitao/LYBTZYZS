@@ -47,6 +47,7 @@
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.ExceptionHandling\LYBT.Shared.ExceptionHandling.csproj" />
 		<!-- unify-logging-system: 统一日志系统 -->
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Logging\LYBT.Shared.Logging.csproj" />
+		<ProjectReference Include="..\LYBT.SharedKernel\LYBT.SharedKernel.csproj" />
 	</ItemGroup>
 
 </Project>

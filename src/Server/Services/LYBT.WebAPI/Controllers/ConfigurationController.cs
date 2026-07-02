@@ -1,8 +1,8 @@
 using Asp.Versioning;
-using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Infrastructure.Constants;
-using System.Threading;
 using LYBT.Infrastructure.Web;
+using LYBT.WebAPI.Configuration.Commands;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,12 +14,12 @@ namespace LYBT.WebAPI.Controllers;
 [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
 public class ConfigurationController : BaseApiController
 {
-    private readonly ISystemConfigurationService _configurationService;
+    private readonly ISender _sender;
 
-    public ConfigurationController(ISystemConfigurationService configurationService, ILogger<ConfigurationController> logger)
+    public ConfigurationController(ISender sender, ILogger<ConfigurationController> logger)
         : base(logger)
     {
-        _configurationService = configurationService;
+        _sender = sender;
     }
 
     /// <summary>
@@ -28,8 +28,10 @@ public class ConfigurationController : BaseApiController
     [HttpGet]
     public async Task<IActionResult> GetConfiguration(CancellationToken cancellationToken)
     {
-        var result = await _configurationService.GetConfigurationAsync(cancellationToken);
-        return HandleResult(result);
+        var result = await _sender.Send(new GetConfigurationQuery(), cancellationToken);
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "获取配置失败");
+        return Success(result.Value!, "查询成功");
     }
 
     /// <summary>
@@ -38,8 +40,10 @@ public class ConfigurationController : BaseApiController
     [HttpGet("{key}")]
     public async Task<IActionResult> GetValue(string key, CancellationToken cancellationToken)
     {
-        var result = await _configurationService.GetValueAsync(key, cancellationToken);
-        return HandleResult(result);
+        var result = await _sender.Send(new GetValueQuery(key), cancellationToken);
+        if (!result.IsSuccess)
+            return NotFound(result.Error ?? "配置项不存在");
+        return Success(result.Value, "查询成功");
     }
 
     /// <summary>
@@ -48,7 +52,11 @@ public class ConfigurationController : BaseApiController
     [HttpPost("validate")]
     public async Task<IActionResult> ValidateProduction(CancellationToken cancellationToken)
     {
-        var result = await _configurationService.ValidateProductionConfigAsync(cancellationToken);
-        return HandleResult(result);
+        var result = await _sender.Send(new ValidateConfigurationQuery(), cancellationToken);
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "配置验证失败");
+        return Success("配置验证通过");
     }
 }
+
+

@@ -3,6 +3,7 @@ using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Validators.Auth;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,11 +20,23 @@ namespace LYBT.Module.Auth
         /// </summary>
         public static IServiceCollection AddAuthModule(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddSingleton<IJwtService, JwtService>();
-            services.AddScoped<IAuthService, AuthService>();
+            // 注册 DbContext（模块级）
+            services.AddDbContext<Infrastructure.AuthDbContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+
+            // 注册仓储
+            services.AddScoped<Interfaces.IAuthSessionRepository, Infrastructure.AuthSessionRepository>();
+
+            // 注册核心服务
+            services.AddSingleton<Interfaces.IJwtService, Services.JwtService>();
+
+            // 注册 MediatR（Application层）
+            services.AddMediatR(cfg =>
+                cfg.RegisterServicesFromAssembly(typeof(Application.Commands.LoginCommand).Assembly));
 
             // Epic #1731: 注册Auth模块Validators
-            services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<Shared.Validators.Auth.LoginRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<Application.Validators.LoginRequestValidator>();
 
             return services;
         }
@@ -36,3 +49,5 @@ namespace LYBT.Module.Auth
         }
     }
 }
+
+

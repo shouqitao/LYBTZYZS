@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Shared.Models.Enums;
@@ -101,3 +101,5 @@ namespace LYBT.Entities.Formulas
         public DecocteMethod DecocteMethod { get; set; } = DecocteMethod.Default;
     }
 }
+
+

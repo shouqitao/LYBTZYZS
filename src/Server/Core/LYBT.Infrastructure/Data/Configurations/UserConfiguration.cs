@@ -38,3 +38,5 @@ public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
         // Issue #1909: 三角色体系 - SuperAdmin/Admin/Doctor统一存储在Users表
     }
 }
+
+

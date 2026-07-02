@@ -31,4 +31,11 @@ public interface IUserCrossModuleService
     /// T5-P2-01: 重置登录状态 (成功登录后清除锁定，更新 LastLoginTime)
     /// </summary>
     Task ResetLoginStateAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 验证用户密码 (使用 Identity PBKDF2 而非 BCrypt)
+    /// </summary>
+    Task<bool> VerifyPasswordAsync(string username, string password, CancellationToken cancellationToken = default);
 }
+
+

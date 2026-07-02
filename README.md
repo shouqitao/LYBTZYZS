@@ -1,6 +1,6 @@
 # 凌隐宝堂中医诊所管理系统
 
-**.NET 8** | WPF/Prism | ASP.NET Core Identity | EF Core | SQL Server
+**.NET 8** | WPF/Prism | ASP.NET Core Identity | EF Core | SQL Server | MediatR CQRS
 
 面向小型中医诊所（1-3 名医生）的诊疗管理平台，聚焦看诊记录核心流程。
 
@@ -71,6 +71,7 @@ dotnet test tests/LYBT.Tests.Architecture/
 |----|------|
 | Desktop | WPF + Prism.DryIoc (.NET 8) |
 | Server | ASP.NET Core WebAPI + Identity (.NET 8) |
+| CQRS | MediatR (Commands/Queries/Handlers + Domain Events) |
 | ORM | Entity Framework Core 8 |
 | 数据库 | SQL Server 2019+ / LocalDB |
 | 认证 | ASP.NET Core Identity + JWT |
@@ -80,12 +81,25 @@ dotnet test tests/LYBT.Tests.Architecture/
 
 ## 架构
 
+**模块化单体 + MediatR CQRS**：每个业务模块（Patients、Herbs、MedicalCase 等）是自包含的垂直切片，包含 Domain / Application / Infrastructure 三层。模块间通过领域事件（`IDomainEvent`）或 SharedKernel 接口（`ICrossModuleService`）通信，编译时强制隔离。
+
 ```
 src/
 ├── Server/
-│   ├── Core/           # Entities, Infrastructure (DbContext, Identity)
-│   ├── Modules/        # Auth, Users, Patients, Herbs, Formulas, MedicalCase, Registration, Reports
-│   └── Services/       # WebAPI (Controllers, Program.cs)
+│   ├── Core/
+│   │   ├── SharedKernel/    # IDomainEvent, IOutboxService, IAggregateRoot, ICrossModuleService
+│   │   ├── Infrastructure/  # AppDbContext, BaseRepository<T>, migrations
+│   │   └── Entities/        # 共享实体
+│   ├── Modules/
+│   │   ├── LYBT.Module.Patients/
+│   │   │   ├── Domain/      # Patient (IAggregateRoot), Domain Events
+│   │   │   ├── Application/ # Commands/, Queries/, Validators/, Mappers/
+│   │   │   ├── Infrastructure/ # PatientsDbContext, PatientRepository
+│   │   │   └── PatientsModule.cs
+│   │   ├── LYBT.Module.Herbs/   # 同上结构
+│   │   ├── LYBT.Module.MedicalCase/ # DDD 聚合根，CQRS
+│   │   └── ... (Auth, Users, Formula, Registration, Sync, Reports)
+│   └── Services/            # WebAPI (Controllers, Program.cs)
 ├── Client/
 │   └── Desktop/
 │       ├── Core/       # Contracts, Foundation, Infrastructure, LocalData, Printing, CardReader

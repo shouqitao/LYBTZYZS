@@ -14,3 +14,5 @@ namespace LYBT.Infrastructure.Interfaces
         AppDbContext Context { get; }
     }
 }
+
+

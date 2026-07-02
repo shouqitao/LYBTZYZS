@@ -1,4 +1,4 @@
-﻿// This file is used by Code Analysis to maintain SuppressMessage
+// This file is used by Code Analysis to maintain SuppressMessage
 // attributes that are applied to this project.
 // Project-level suppressions either have no target or are given
 // a specific target and scoped to a namespace, type, member, etc.
@@ -13,3 +13,5 @@ using System.Diagnostics.CodeAnalysis;
 
 // 抑制可空引用类型的警告 - 遗留代码兼容性
 [assembly: SuppressMessage("Compiler", "CS8601", Justification = "可空引用赋值 - 遗留代码向可空引用类型迁移过程中的兼容性问题", Scope = "assembly")]
+
+

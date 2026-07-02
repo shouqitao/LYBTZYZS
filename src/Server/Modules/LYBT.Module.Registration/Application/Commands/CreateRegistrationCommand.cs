@@ -1,0 +1,11 @@
+using LYBT.Shared.Models.Contracts.Registration;
+using MediatR;
+
+namespace LYBT.Module.Registration.Application.Commands;
+
+/// <summary>
+/// 创建挂号请求。
+/// </summary>
+public sealed record CreateRegistrationCommand(RegistrationInputDto Input) : IRequest<RegistrationDetailDto>;
+
+

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Entities.Common
@@ -54,3 +54,5 @@ namespace LYBT.Entities.Common
         public bool IsDeleted { get; set; } = false;
     }
 }
+
+

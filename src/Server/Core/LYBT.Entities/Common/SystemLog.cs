@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Entities.Common
 {
@@ -72,3 +72,5 @@ namespace LYBT.Entities.Common
         public string? Properties { get; set; }
     }
 }
+
+

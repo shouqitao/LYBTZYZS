@@ -20,3 +20,5 @@ public static class RoleConstants
     /// </summary>
     public const string DefaultUserType = "user";
 }
+
+

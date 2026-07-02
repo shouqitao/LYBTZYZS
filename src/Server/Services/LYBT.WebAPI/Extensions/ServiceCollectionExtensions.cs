@@ -13,7 +13,10 @@ using LYBT.Module.Patients;
 using LYBT.Module.Registration;
 using LYBT.Module.Reports;
 using LYBT.Module.Users;
+using LYBT.SharedKernel.Events;
+using LYBT.WebAPI.Configuration.Commands;
 using LYBT.WebAPI.Filters;
+using MediatR;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -84,7 +87,7 @@ public static class ServiceCollectionExtensions
 
         // 2. 挂号模块 - Sprint 2
         // 必须在 Users 和 MedicalCase 之前注册，因为 UserService 和 MedicalCaseCommandService 依赖 IRegistrationRepository
-        services.AddRegistrationModule();
+        services.AddRegistrationModule(configuration);
 
         // 3. 用户模块
         services.AddUsersModule(configuration);
@@ -96,14 +99,21 @@ public static class ServiceCollectionExtensions
         services.AddHerbsModule(configuration);
 
         // 6. 配方模块
-        services.AddFormulaModule();
+        services.AddFormulaModule(configuration);
         // 诊断和处方功能已整合到MedicalCase聚合根
 
         // 7. 病例模块
         services.AddMedicalCaseModule();
 
         // 8. 报表模块
-        services.AddReportsModule();
+        services.AddReportsModule(configuration);
+
+        // 9. WebAPI级别 MediatR（Configuration/Diagnostics handlers）
+        services.AddMediatR(cfg =>
+            cfg.RegisterServicesFromAssembly(typeof(GetConfigurationQuery).Assembly));
+
+        // 10. 领域事件分发器（跨模块共享）
+        services.AddScoped<IDomainEventDispatcher, InMemoryDomainEventDispatcher>();
 
         return services;
     }
@@ -271,3 +281,5 @@ public static class ServiceCollectionExtensions
         return services;
     }
 }
+
+

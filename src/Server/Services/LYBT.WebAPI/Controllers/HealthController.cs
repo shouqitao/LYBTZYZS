@@ -89,3 +89,5 @@ public class HealthController : BaseApiController
         return StatusCode(statusCode, ApiResponse<object>.CreateSuccess(response));
     }
 }
+
+

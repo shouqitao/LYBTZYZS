@@ -111,3 +111,5 @@ public interface IMedicalCaseFacade
     Task<List<MedicalCase>> GetBatchAsync(List<Guid> ids);
 
 }
+
+

@@ -1,7 +1,10 @@
 using System.Security.Claims;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.Registration.Interfaces;
+using LYBT.Module.Registration.Application.Commands;
+using LYBT.Module.Registration.Application.Queries;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Registration;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,12 +15,12 @@ namespace LYBT.LocalWebAPI.Controllers;
 [Authorize]
 public class RegistrationsController : BaseApiController
 {
-    private readonly IRegistrationService _registrationService;
+    private readonly ISender _sender;
 
-    public RegistrationsController(IRegistrationService registrationService, ILogger<RegistrationsController> logger)
+    public RegistrationsController(ISender sender, ILogger<RegistrationsController> logger)
         : base(logger)
     {
-        _registrationService = registrationService;
+        _sender = sender;
     }
 
     private Guid GetCurrentUserId()
@@ -33,43 +36,46 @@ public class RegistrationsController : BaseApiController
         [FromQuery] Guid? patientId = null,
         [FromQuery] Guid? doctorId = null)
     {
-        var result = await _registrationService.GetPagedAsync(page, pageSize, keyword, startDate, endDate, patientId, doctorId);
-        return HandleResult(result);
+        var result = await _sender.Send(new GetRegistrationsQuery(page, pageSize, keyword,
+            startDate, endDate, patientId, doctorId));
+        return SuccessPaged(result, "查询成功");
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var result = await _registrationService.GetByIdAsync(id);
-        return HandleResult(result);
+        var result = await _sender.Send(new GetRegistrationQuery(id));
+        if (result == null)
+            return NotFound("挂号不存在");
+        return Success(result, "查询成功");
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] RegistrationInputDto dto)
     {
-        var result = await _registrationService.CreateAsync(dto);
-        return HandleResult(result, "挂号创建成功");
+        var result = await _sender.Send(new CreateRegistrationCommand(dto));
+        return Success(result, "挂号创建成功");
     }
 
     [HttpGet("queue")]
     public async Task<IActionResult> GetQueue([FromQuery] Guid? doctorId = null)
     {
-        var result = await _registrationService.GetWaitingQueueAsync(doctorId);
-        return HandleResult(result);
+        var result = await _sender.Send(new GetWaitingQueueQuery(doctorId));
+        return Success(result, "查询成功");
     }
 
     [HttpPut("{id}/start-visit")]
     public async Task<IActionResult> StartVisit(Guid id)
     {
-        var result = await _registrationService.StartVisitAsync(id);
-        return HandleResult(result, "开始就诊");
+        var result = await _sender.Send(new StartVisitCommand(id));
+        return Success(result, "开始就诊");
     }
 
     [HttpPut("{id}/cancel")]
     public async Task<IActionResult> Cancel(Guid id)
     {
-        var result = await _registrationService.CancelAsync(id);
-        return HandleResult(result, "挂号取消成功");
+        await _sender.Send(new CancelRegistrationCommand(id));
+        return Success("挂号取消成功");
     }
 
     [HttpPost("quick-visit")]
@@ -78,9 +84,10 @@ public class RegistrationsController : BaseApiController
         if (request == null || request.PatientId == Guid.Empty)
             return ValidationFail("患者信息不能为空");
 
-        var userId = GetCurrentUserId();
-        var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? string.Empty;
-        var result = await _registrationService.QuickVisitAsync(request, userId, userName);
-        return HandleResult(result, "快速看诊创建成功");
+        var (doctorId, doctorName, _) = GetOperator();
+        var result = await _sender.Send(new QuickVisitCommand(request, doctorId, doctorName));
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "快速看诊失败");
+        return Success(result.Value, "快速看诊创建成功");
     }
 }

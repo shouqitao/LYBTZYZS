@@ -73,3 +73,5 @@ public partial class HerbMapper
     [MapperIgnoreTarget(nameof(Herb.IsDeleted))]
     public partial void UpdateEntity(HerbInputDto dto, Herb entity);
 }
+
+

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Shared.Models.Enums;
@@ -62,3 +62,5 @@ namespace LYBT.Entities.Auth
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
     }
 }
+
+

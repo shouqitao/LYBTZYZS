@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace LYBT.WebAPI.Extensions;
@@ -206,3 +206,5 @@ public static class EnvironmentAwareHosting
         await app.RunAsync();
     }
 }
+
+

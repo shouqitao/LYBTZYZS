@@ -1,9 +1,11 @@
 using System.Threading;
+using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.DTOs.Users;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -22,11 +24,13 @@ public class CrossModuleService :
     ICrossModuleAuthService
 {
     private readonly AppDbContext _context;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<CrossModuleService> _logger;
 
-    public CrossModuleService(IDbContextAccessor dbAccessor, ILogger<CrossModuleService> logger)
+    public CrossModuleService(IDbContextAccessor dbAccessor, UserManager<ApplicationUser> userManager, ILogger<CrossModuleService> logger)
     {
         _context = dbAccessor.Context;
+        _userManager = userManager;
         _logger = logger;
     }
 
@@ -338,6 +342,15 @@ public class CrossModuleService :
         }
     }
 
+    /// <inheritdoc />
+    public async Task<bool> VerifyPasswordAsync(string username, string password, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByNameAsync(username);
+        if (user == null) return false;
+
+        return await _userManager.CheckPasswordAsync(user, password);
+    }
+
     #endregion
 
     #region 认证服务 (ICrossModuleAuthService)
@@ -350,3 +363,5 @@ public class CrossModuleService :
     }
     #endregion
 }
+
+

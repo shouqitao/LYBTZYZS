@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Common;
+using LYBT.Entities.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -38,3 +38,5 @@ namespace LYBT.Infrastructure.Data.Configurations
         }
     }
 }
+
+

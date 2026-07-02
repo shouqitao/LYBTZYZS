@@ -3,6 +3,8 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<!-- 允许测试项目访问internal类 -->
@@ -13,11 +15,14 @@
 	<ItemGroup>
 		<PackageReference Include="Riok.Mapperly" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" />
+		<PackageReference Include="MediatR" />
+		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
 		<ProjectReference Include="..\..\Core\LYBT.Entities\LYBT.Entities.csproj" />
+		<ProjectReference Include="..\..\Core\LYBT.SharedKernel\LYBT.SharedKernel.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -1,11 +1,13 @@
 using Asp.Versioning;
+using MediatR;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.Patients.Mapping;
-using LYBT.Module.Patients.Interfaces;
+using LYBT.Module.Patients.Application.Commands;
+using LYBT.Module.Patients.Application.Queries;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
+using LYBT.SharedKernel.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -15,21 +17,18 @@ namespace LYBT.WebAPI.Controllers
     /// <summary>
     /// 患者管理 API - 基础CRUD功能
     /// </summary>
-    /// optimize-api-permissions: 患者管理需Doctor或Admin角色
-    /// T5-P2-30: 扩展为PatientAccess策略，包含Receptionist
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
+    [Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
     public class PatientsController : BaseApiController
     {
-        private readonly IPatientService _service;
-        private readonly PatientMapper _mapper = new();
+        private readonly ISender _sender;
 
-        public PatientsController(IPatientService service, ILogger<PatientsController> logger)
+        public PatientsController(ISender sender, ILogger<PatientsController> logger)
             : base(logger)
         {
-            _service = service;
+            _sender = sender;
         }
 
         /// <summary>
@@ -43,20 +42,17 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidatePagination(page, pageSize) is { } error) return error;
 
-            // T5-P2-27: 非Admin角色只看到启用患者
             var isAdmin = User?.IsInRole(RoleConstants.Admin) == true || User?.IsInRole(RoleConstants.SuperAdmin) == true;
-            var filterDisabled = !isAdmin;
 
-            var result = await _service.GetPagedAsync(page, pageSize, keyword, filterDisabled);
-            if (!result.IsSuccess || result.Data == null)
+            var result = await _sender.Send(new GetPatientsQuery(page, pageSize, keyword, FilterDisabled: !isAdmin));
+            if (!result.IsSuccess || result.Value == null)
             {
-                return HandleResult(result);
+                return HandleKernelResult(result);
             }
 
-            return SuccessPaged(result.Data, "查询成功");
+            return SuccessPaged(result.Value, "查询成功");
         }
 
         /// <summary>
@@ -66,20 +62,15 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public async Task<IActionResult> GetById(Guid id)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "患者ID") is { } error) return error;
 
-            var entityResult = await _service.GetByIdEntityAsync(id);
-            if (!entityResult.IsSuccess || entityResult.Data == null)
+            var result = await _sender.Send(new GetPatientQuery(id));
+            if (!result.IsSuccess || result.Value == null)
             {
-                return NotFound(entityResult.ErrorMessage ?? "患者不存在");
+                return NotFound(result.Error ?? "患者不存在");
             }
 
-            var patientEntity = entityResult.Data;
-            var patientDto = _mapper.ToDetailDto(patientEntity);
-            patientDto.Age = patientEntity.Age;
-
-            return Success(patientDto, "查询成功");
+            return Success(result.Value, "查询成功");
         }
 
         /// <summary>
@@ -90,21 +81,17 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), StatusCodes.Status201Created)]
         public async Task<IActionResult> Create([FromBody] PatientInputDto dto)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            var entityResult = await _service.CreateEntityAsync(dto);
-            if (!entityResult.IsSuccess || entityResult.Data == null)
+            var (operatorId, _, _) = GetOperator();
+            var result = await _sender.Send(new CreatePatientCommand(dto, operatorId));
+            if (!result.IsSuccess || result.Value == null)
             {
-                return HandleResult(entityResult);
+                return HandleKernelResult(result);
             }
 
-            var patientEntity = entityResult.Data;
-            var patientDto = _mapper.ToDetailDto(patientEntity);
-            patientDto.Age = patientEntity.Age;
-
-            LogOperation("新增患者成功", patientDto, patientEntity.Id);
+            LogOperation("新增患者成功", result.Value, result.Value.Id);
             return CreatedAtAction(nameof(GetById),
-                new { id = patientEntity.Id, version = ApiVersionConstants.V1 },
-                ApiResponse<PatientDetailDto>.CreateSuccess(patientDto, "患者创建成功"));
+                new { id = result.Value.Id, version = ApiVersionConstants.V1 },
+                ApiResponse<PatientDetailDto>.CreateSuccess(result.Value, "患者创建成功"));
         }
 
         /// <summary>
@@ -114,28 +101,24 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public async Task<IActionResult> Update(Guid id, [FromBody] PatientInputDto dto)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            // 使用统一的所有权检查方法（DTO版本）
-            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync<PatientDetailDto>(
-                id, guid => _service.GetByIdAsync(guid), "患者");
+            if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
+
+            var (ownerDto, ownershipError) = await CheckOwnershipAsync(id);
             if (ownershipError != null) return ownershipError;
 
-            var entityResult = await _service.UpdateEntityAsync(id, dto);
-            if (!entityResult.IsSuccess || entityResult.Data == null)
+            var (operatorId, _, _) = GetOperator();
+            var result = await _sender.Send(new UpdatePatientCommand(id, dto, operatorId));
+            if (!result.IsSuccess || result.Value == null)
             {
-                if (entityResult.ErrorMessage?.Contains("不存在") == true)
+                if (result.Error?.Contains("不存在") == true)
                 {
-                    return NotFound(entityResult.ErrorMessage);
+                    return NotFound(result.Error);
                 }
-                return HandleResult(entityResult);
+                return HandleKernelResult(result);
             }
 
-            var patientEntity = entityResult.Data;
-            var patientDto = _mapper.ToDetailDto(patientEntity);
-            patientDto.Age = patientEntity.Age;
-
-            LogOperation("更新患者成功", patientDto, id);
-            return Success(patientDto, "患者更新成功");
+            LogOperation("更新患者成功", result.Value, id);
+            return Success(result.Value, "患者更新成功");
         }
 
         /// <summary>
@@ -145,24 +128,24 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> Delete(Guid id)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            // 使用统一的所有权检查方法（DTO版本）
-            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync<PatientDetailDto>(
-                id, guid => _service.GetByIdAsync(guid), "患者");
+            if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
+
+            var (ownerDto, ownershipError) = await CheckOwnershipAsync(id);
             if (ownershipError != null) return ownershipError;
 
-            var result = await _service.DeleteAsync(id);
+            var (operatorId, _, _) = GetOperator();
+            var result = await _sender.Send(new DeletePatientCommand(id, operatorId));
             if (!result.IsSuccess)
             {
-                // X7: 区分引用阻塞(422)和不存在(404)
-                                if (result.ErrorMessage?.Contains("医案记录") == true)
-                                    return HandleResult(result);
+                if (result.Error?.Contains("医案记录") == true)
+                    return HandleKernelResult(result);
                 return NotFound("患者不存在");
             }
 
             LogOperation("删除患者成功", null, id);
             return Success(true, "删除成功");
         }
+
         /// <summary>
         /// 切换患者状态（启用/禁用）
         /// </summary>
@@ -171,18 +154,22 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> ToggleStatus(Guid id)
         {
-            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync<PatientDetailDto>(id, guid => _service.GetByIdAsync(guid), "患者");
+            if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
+
+            var (ownerDto, ownershipError) = await CheckOwnershipAsync(id);
             if (ownershipError != null) return ownershipError;
 
-            var result = await _service.ToggleStatusAsync(id);
-            if (!result.IsSuccess || result.Data == null)
+            var (operatorId, _, _) = GetOperator();
+            var result = await _sender.Send(new TogglePatientStatusCommand(id, operatorId));
+            if (!result.IsSuccess || result.Value == null)
             {
-                return HandleResult<PatientDetailDto>(result);
+                return HandleKernelResult(result);
             }
 
-            LogOperation("切换患者状态", new { NewStatus = result.Data.Status }, id);
-            return Success(result.Data, $"患者已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
+            LogOperation("切换患者状态", new { NewStatus = result.Value.Status }, id);
+            return Success(result.Value, $"患者已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
         }
+
         /// <summary>
         /// 批量删除患者
         /// </summary>
@@ -191,21 +178,57 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (dto.Ids == null || dto.Ids.Count == 0)
             {
                 return ValidationFail("请至少选择一个患者");
             }
 
-            var result = await _service.BatchDeleteAsync(dto.Ids);
-            if (!result.IsSuccess || result.Data == null)
+            var (operatorId, _, _) = GetOperator();
+            var result = await _sender.Send(new BatchDeletePatientsCommand(dto.Ids, operatorId));
+            if (!result.IsSuccess || result.Value == null)
             {
-                return HandleResult<BatchOperationResultDto>(result);
+                return HandleKernelResult(result);
             }
 
-            LogOperation("批量删除患者", new { Ids = dto.Ids, Result = result.Data.Message }, null);
-            return Success(result.Data, result.Data.Message);
+            LogOperation("批量删除患者", new { Ids = dto.Ids, Result = result.Value.Message }, null);
+            return Success(result.Value, result.Value.Message);
         }
 
+        /// <summary>
+        /// 通过ISender查询患者并验证所有权
+        /// </summary>
+        private async Task<(PatientDetailDto? dto, IActionResult? error)> CheckOwnershipAsync(Guid id)
+        {
+            var result = await _sender.Send(new GetPatientQuery(id));
+            if (!result.IsSuccess || result.Value == null)
+            {
+                return (null, NotFound("患者不存在"));
+            }
+
+            if (ValidateOwnership(result.Value.CreatedBy, "患者") is { } ownerError)
+            {
+                return (null, ownerError);
+            }
+
+            return (result.Value, null);
+        }
+
+        /// <summary>
+        /// 处理LYBT.SharedKernel.Common.Result → IActionResult
+        /// SharedKernel Result使用.Value/.Error，控制器Helper使用.Data/.ErrorMessage
+        /// </summary>
+        private IActionResult HandleKernelResult<T>(LYBT.SharedKernel.Common.Result<T> result)
+        {
+            var message = result.Error ?? "操作失败";
+            return BusinessFail(message);
+        }
+
+        private IActionResult HandleKernelResult(LYBT.SharedKernel.Common.Result result)
+        {
+            var message = result.Error ?? "操作失败";
+            return BusinessFail(message);
+        }
     }
 }
+
+

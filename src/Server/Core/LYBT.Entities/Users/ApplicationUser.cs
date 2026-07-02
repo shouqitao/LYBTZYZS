@@ -78,4 +78,84 @@ public class ApplicationUser : IdentityUser<Guid>, IAuditableEntity, ISoftDeleta
     [Timestamp]
     [DisplayName("版本")]
     public byte[]? RowVersion { get; set; }
+
+    // ==== 领域方法 ====
+
+    /// <summary>
+    /// 创建新用户。
+    /// </summary>
+    public static ApplicationUser Create(
+        string userName,
+        string realName,
+        UserRole role,
+        string? phoneNumber = null,
+        string? email = null,
+        string? remark = null,
+        Guid? createdBy = null)
+    {
+        if (string.IsNullOrWhiteSpace(userName))
+            throw new ArgumentException("用户名不能为空", nameof(userName));
+        if (userName.Length < 3 || userName.Length > 32)
+            throw new ArgumentException("用户名长度必须在3-32个字符之间", nameof(userName));
+        if (string.IsNullOrWhiteSpace(realName))
+            throw new ArgumentException("真实姓名不能为空", nameof(realName));
+
+        return new ApplicationUser
+        {
+            Id = Guid.NewGuid(),
+            UserName = userName.Trim(),
+            RealName = realName.Trim(),
+            Role = role,
+            PhoneNumber = phoneNumber?.Trim(),
+            Email = email?.Trim(),
+            Remark = remark?.Trim(),
+            Status = CommonStatus.Enabled,
+            CreatedBy = createdBy,
+            CreatedAt = DateTime.UtcNow
+        };
+    }
+
+    /// <summary>
+    /// 更新用户基本信息。
+    /// </summary>
+    public void UpdateProfile(string realName, string? phoneNumber, string? email, string? remark, Guid updatedBy)
+    {
+        if (string.IsNullOrWhiteSpace(realName))
+            throw new ArgumentException("真实姓名不能为空", nameof(realName));
+
+        RealName = realName.Trim();
+        PhoneNumber = phoneNumber?.Trim();
+        Email = email?.Trim();
+        Remark = remark?.Trim();
+        UpdatedBy = updatedBy;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// 更改用户状态（启用/禁用）。sysadmin不可被禁用。
+    /// </summary>
+    public void ChangeStatus(CommonStatus newStatus, Guid updatedBy)
+    {
+        if (IsSysAdmin && newStatus == CommonStatus.Disabled)
+            throw new InvalidOperationException("系统管理员不能被禁用");
+
+        Status = newStatus;
+        UpdatedBy = updatedBy;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// 软删除用户。sysadmin不可被删除。
+    /// </summary>
+    public void SoftDelete(Guid deletedBy)
+    {
+        if (IsSysAdmin)
+            throw new InvalidOperationException("系统管理员不能被删除");
+
+        IsDeleted = true;
+        UpdatedBy = deletedBy;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }
+
+

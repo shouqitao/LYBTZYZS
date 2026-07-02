@@ -114,3 +114,5 @@ public static class SerilogMSSqlServerExtensions
         return options;
     }
 }
+
+

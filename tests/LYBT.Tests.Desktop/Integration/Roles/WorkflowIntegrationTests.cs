@@ -52,10 +52,7 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
         var doctorName = CurrentUser.User.RealName;
         _output.WriteLine($"[Workflow] Using doctor: {doctorName} ({doctorId})");
 
-        // Step 1: Login as Receptionist and create a patient
-        await LoginAsReceptionistAsync();
-
-        // Step 1: Create a patient (as Receptionist/Admin)
+        // Step 1: Create a patient (as Doctor - PatientsController requires DoctorOrAdmin)
         var patientInput = new PatientInputDto
         {
             Name = $"工作流患者_{Guid.NewGuid():N}".Substring(0, 15),
@@ -69,7 +66,10 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
         var patientId = patientResponse.Data!.Id;
         _output.WriteLine($"[Workflow] Created patient: {patientId}");
 
-        // Step 2: Create a registration (as Receptionist)
+        // Step 2: Login as Receptionist and create a registration
+        await LoginAsReceptionistAsync();
+
+        // Step 3: Create a registration (as Receptionist)
         var registrationInput = new RegistrationInputDto
         {
             PatientId = patientId,
@@ -115,9 +115,7 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
         var doctorId = CurrentUser!.User.Id;
         var doctorName = CurrentUser.User.RealName;
 
-        // Step 1: Login as Receptionist and create a patient
-        await LoginAsReceptionistAsync();
-        // Step 1: Create a patient
+        // Step 1: Create a patient (as Doctor - PatientsController requires DoctorOrAdmin)
         var patientInput = new PatientInputDto
         {
             Name = $"取消患者_{Guid.NewGuid():N}".Substring(0, 15),
@@ -130,7 +128,10 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
         patientResponse.Success.Should().BeTrue(patientResponse.Message);
         var patientId = patientResponse.Data!.Id;
 
-        // Step 2: Create a registration
+        // Step 2: Login as Receptionist and create a registration
+        await LoginAsReceptionistAsync();
+
+        // Step 3: Create a registration
         var registrationInput = new RegistrationInputDto
         {
             PatientId = patientId,
@@ -169,9 +170,7 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
         var doctorId = CurrentUser!.User.Id;
         var doctorName = CurrentUser.User.RealName;
 
-        // Step 1: Login as Receptionist and create patient
-        await LoginAsReceptionistAsync();
-        // Step 1: Create patient
+        // Step 1: Create patient (as Doctor - PatientsController requires DoctorOrAdmin)
         var patientInput = new PatientInputDto
         {
             Name = $"完整流程患者_{Guid.NewGuid():N}".Substring(0, 15),
@@ -185,7 +184,10 @@ public class WorkflowIntegrationTests : WebApiE2ETestBase
         var patientId = patientResponse.Data!.Id;
         _output.WriteLine($"[Lifecycle] Created patient: {patientId}");
 
-        // Step 2: Create registration
+        // Step 2: Login as Receptionist and create registration
+        await LoginAsReceptionistAsync();
+
+        // Step 3: Create registration
         var registrationInput = new RegistrationInputDto
         {
             PatientId = patientId,

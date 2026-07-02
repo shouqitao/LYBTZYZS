@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace LYBT.WebAPI.HealthCheck;
 
@@ -114,3 +114,5 @@ public class DatabaseStartupDiagnostics : IHostedService
         return Task.CompletedTask;
     }
 }
+
+

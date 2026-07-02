@@ -126,3 +126,5 @@ public partial class FormulaMapper
     [MapperIgnoreTarget(nameof(Formula.FormulaType))]
     public partial void UpdateEntity(FormulaInputDto dto, Formula entity);
 }
+
+

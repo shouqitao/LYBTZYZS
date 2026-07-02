@@ -1,10 +1,11 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.Registration.Interfaces;
+using LYBT.Module.Registration.Application.Commands;
+using LYBT.Module.Registration.Application.Queries;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Registration;
-using LYBT.Shared.Models.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,20 +18,19 @@ namespace LYBT.WebAPI.Controllers;
 [ApiController]
 [ApiVersion("1")]
 [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
+[Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
 public class RegistrationsController : BaseApiController
 {
-    private readonly IRegistrationService _registrationService;
+    private readonly ISender _sender;
 
     public RegistrationsController(
-        IRegistrationService registrationService,
+        ISender sender,
         ILogger<RegistrationsController> logger)
         : base(logger)
     {
-        _registrationService = registrationService;
+        _sender = sender;
     }
 
-    /// <summary>
     /// <summary>
     /// 医生快速看诊 (后台静默创建 Registration + MedicalCase)
     /// US-REG-002: Source=Doctor, Status=InProgress, 医生无感知
@@ -42,32 +42,28 @@ public class RegistrationsController : BaseApiController
     {
         var (doctorId, doctorName, _) = GetOperator();
 
-        var result = await _registrationService.QuickVisitAsync(dto, doctorId, doctorName);
-        if (!result.IsSuccess || result.Data is null)
+        var result = await _sender.Send(new QuickVisitCommand(dto, doctorId, doctorName));
+        if (!result.IsSuccess || result.Value is null)
         {
-            return HandleResult(result);
+            return BusinessFail(result.Error ?? "快速看诊失败");
         }
 
-        LogOperation("医生快速看诊", dto, result.Data.RegistrationId);
+        LogOperation("医生快速看诊", dto, result.Value.RegistrationId);
         return CreatedAtAction(nameof(GetById),
-            new { id = result.Data.RegistrationId, version = ApiVersionConstants.V1 },
-            ApiResponse<QuickVisitResultDto>.CreateSuccess(result.Data, "快速看诊创建成功"));
+            new { id = result.Value.RegistrationId, version = ApiVersionConstants.V1 },
+            ApiResponse<QuickVisitResultDto>.CreateSuccess(result.Value, "快速看诊创建成功"));
     }
 
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<RegistrationDetailDto>), StatusCodes.Status201Created)]
     public async Task<IActionResult> Create([FromBody] RegistrationInputDto dto)
     {
-        var result = await _registrationService.CreateAsync(dto);
-        if (!result.IsSuccess || result.Data is null)
-        {
-            return HandleResult(result);
-        }
+        var result = await _sender.Send(new CreateRegistrationCommand(dto));
 
-        LogOperation("创建挂号", dto, result.Data.Id);
+        LogOperation("创建挂号", dto, result.Id);
         return CreatedAtAction(nameof(GetById),
-            new { id = result.Data.Id, version = ApiVersionConstants.V1 },
-            ApiResponse<RegistrationDetailDto>.CreateSuccess(result.Data, "挂号创建成功"));
+            new { id = result.Id, version = ApiVersionConstants.V1 },
+            ApiResponse<RegistrationDetailDto>.CreateSuccess(result, "挂号创建成功"));
     }
 
     /// <summary>
@@ -79,8 +75,13 @@ public class RegistrationsController : BaseApiController
     {
         if (ValidateGuid(id, "挂号ID") is { } error) return error;
 
-        var result = await _registrationService.GetByIdAsync(id);
-        return HandleResult(result);
+        var result = await _sender.Send(new GetRegistrationQuery(id));
+        if (result == null)
+        {
+            return NotFound("挂号不存在");
+        }
+
+        return Success(result, "查询成功");
     }
 
     /// <summary>
@@ -100,14 +101,10 @@ public class RegistrationsController : BaseApiController
     {
         if (ValidatePagination(page, pageSize) is { } error) return error;
 
-        var result = await _registrationService.GetPagedAsync(page, pageSize, keyword,
-            startDate, endDate, patientId, doctorId);
-        if (!result.IsSuccess || result.Data is null)
-        {
-            return HandleResult(result);
-        }
+        var result = await _sender.Send(new GetRegistrationsQuery(page, pageSize, keyword,
+            startDate, endDate, patientId, doctorId));
 
-        return SuccessPaged(result.Data, "查询成功");
+        return SuccessPaged(result, "查询成功");
     }
 
     /// <summary>
@@ -118,8 +115,8 @@ public class RegistrationsController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<List<RegistrationListDto>>), 200)]
     public async Task<IActionResult> GetQueue([FromQuery] Guid? doctorId = null)
     {
-        var result = await _registrationService.GetWaitingQueueAsync(doctorId);
-        return HandleResult(result);
+        var result = await _sender.Send(new GetWaitingQueueQuery(doctorId));
+        return Success(result, "查询成功");
     }
 
     /// <summary>
@@ -133,14 +130,10 @@ public class RegistrationsController : BaseApiController
     {
         if (ValidateGuid(id, "挂号ID") is { } error) return error;
 
-        var result = await _registrationService.StartVisitAsync(id);
-        if (!result.IsSuccess)
-        {
-            return HandleResult(result);
-        }
+        var result = await _sender.Send(new StartVisitCommand(id));
 
         LogOperation("接诊", null, id);
-        return Success(result.Data, "接诊成功");
+        return Success(result, "接诊成功");
     }
 
     /// <summary>
@@ -153,14 +146,11 @@ public class RegistrationsController : BaseApiController
     {
         if (ValidateGuid(id, "挂号ID") is { } error) return error;
 
-        var result = await _registrationService.CancelAsync(id);
-        if (!result.IsSuccess)
-        {
-            // 使用 BusinessFail 处理非泛型 Result
-            return HandleResult(result);
-        }
+        await _sender.Send(new CancelRegistrationCommand(id));
 
         LogOperation("取消挂号", null, id);
         return Success("挂号已取消");
     }
 }
+
+

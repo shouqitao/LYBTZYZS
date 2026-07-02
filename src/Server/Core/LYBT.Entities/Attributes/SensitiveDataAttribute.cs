@@ -1,4 +1,4 @@
-﻿namespace LYBT.Entities.Attributes
+namespace LYBT.Entities.Attributes
 {
     /// <summary>
     /// 敏感数据标记特性 - 用于标记需要加密存储和日志脱敏的敏感数据字段
@@ -66,3 +66,5 @@
         Hash
     }
 }
+
+

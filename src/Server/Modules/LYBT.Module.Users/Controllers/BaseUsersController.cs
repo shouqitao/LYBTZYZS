@@ -1,9 +1,11 @@
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.Users.Interfaces;
+using LYBT.Module.Users.Application.Commands;
+using LYBT.Module.Users.Application.Queries;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -20,12 +22,12 @@ using LYBT.Infrastructure.Constants;
 [Authorize]
 public abstract class BaseUsersController : BaseApiController
 {
-    private readonly IUserService _userService;
+    private readonly ISender _sender;
 
-    protected BaseUsersController(IUserService userService, ILogger logger)
+    protected BaseUsersController(ISender sender, ILogger logger)
         : base(logger)
     {
-        _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        _sender = sender ?? throw new ArgumentNullException(nameof(sender));
     }
 
     /// <summary>
@@ -45,8 +47,9 @@ public abstract class BaseUsersController : BaseApiController
     {
         if (ValidatePagination(page, pageSize) is { } error) return error;
 
-        var result = await _userService.GetPagedUsersAsync(page, pageSize, keyword, role, status, cancellationToken);
-        return SuccessPaged(result, "查询成功");
+        var result = await _sender.Send(new GetUsersQuery(page, pageSize, keyword, role, status), cancellationToken);
+        if (!result.IsSuccess) return Error(result.Error ?? "查询失败");
+        return SuccessPaged(result.Value!, "查询成功");
     }
 
     /// <summary>
@@ -58,18 +61,9 @@ public abstract class BaseUsersController : BaseApiController
     public virtual async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken = default)
     {
         var userId = BaseClaimsHelper.GetCurrentUserId(User);
-        if (userId == Guid.Empty)
-        {
-            return Unauthorized("无法获取当前用户信息");
-        }
-
-        var dto = await _userService.GetCurrentUserAsync(userId, cancellationToken);
-        if (dto == null)
-        {
-            return NotFound("用户不存在");
-        }
-
-        return Success(dto);
+        var result = await _sender.Send(new GetCurrentUserQuery(userId), cancellationToken);
+        if (!result.IsSuccess) return NotFound(result.Error ?? "用户不存在");
+        return Success(result.Value!);
     }
 
     /// <summary>
@@ -83,13 +77,9 @@ public abstract class BaseUsersController : BaseApiController
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-        var dto = await _userService.GetUserByIdAsync(id, cancellationToken);
-        if (dto == null)
-        {
-            return NotFound("用户不存在");
-        }
-
-        return Success(dto);
+        var result = await _sender.Send(new GetUserQuery(id), cancellationToken);
+        if (!result.IsSuccess) return NotFound(result.Error ?? "用户不存在");
+        return Success(result.Value!);
     }
 
     /// <summary>
@@ -104,17 +94,17 @@ public abstract class BaseUsersController : BaseApiController
         var (currentUserId, _, currentRole) = GetOperator();
         var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
 
-        var (success, user, error) = await _userService.CreateUserAsync(dto, currentUserId, isAdmin, cancellationToken);
+        var result = await _sender.Send(new CreateUserCommand(dto, currentUserId, isAdmin), cancellationToken);
 
-        if (!success)
+        if (!result.IsSuccess)
         {
-            return Error(error ?? "创建用户失败");
+            return Error(result.Error ?? "创建用户失败");
         }
 
-        LogOperation("创建用户", dto, user!.Id);
+        LogOperation("创建用户", dto, result.Value!.Id);
         return CreatedAtAction(nameof(GetById),
-            new { id = user.Id, version = ApiVersionConstants.V1 },
-            ApiResponse<UserDetailDto>.CreateSuccess(user, "创建成功"));
+            new { id = result.Value.Id, version = ApiVersionConstants.V1 },
+            ApiResponse<UserDetailDto>.CreateSuccess(result.Value, "创建成功"));
     }
 
     /// <summary>
@@ -131,18 +121,18 @@ public abstract class BaseUsersController : BaseApiController
         var (currentUserId, _, currentRole) = GetOperator();
         var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
 
-        var (success, user, err) = await _userService.UpdateUserAsync(id, dto, currentUserId, isAdmin);
+        var result = await _sender.Send(new UpdateUserCommand(id, dto, currentUserId, isAdmin));
 
-        if (!success)
+        if (!result.IsSuccess)
         {
-            if (err == "用户不存在") return NotFound(err);
-            if (err?.StartsWith("您没有权限") == true) return Forbid(err);
-            if (err?.StartsWith("系统管理员") == true) return Forbid(err);
-            return Error(err ?? "更新用户失败");
+            if (result.Error == "用户不存在") return NotFound(result.Error);
+            if (result.Error?.StartsWith("您没有权限") == true) return Forbid(result.Error);
+            if (result.Error?.StartsWith("系统管理员") == true) return Forbid(result.Error);
+            return Error(result.Error ?? "更新用户失败");
         }
 
         LogOperation("更新用户", dto, id);
-        return Success(user!, "用户更新成功");
+        return Success(result.Value!, "用户更新成功");
     }
 
     /// <summary>
@@ -159,15 +149,15 @@ public abstract class BaseUsersController : BaseApiController
         var (currentUserId, _, currentRole) = GetOperator();
         var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
 
-        var (success, err) = await _userService.DeleteUserAsync(id, currentUserId, isAdmin);
+        var result = await _sender.Send(new DeleteUserCommand(id, currentUserId, isAdmin));
 
-        if (!success)
+        if (!result.IsSuccess)
         {
-            if (err == "用户不存在") return NotFound(err);
-            if (err?.StartsWith("不能删除") == true) return Forbid(err);
-            if (err?.StartsWith("系统管理员") == true) return Forbid(err);
-            if (err?.StartsWith("您没有权限") == true) return Forbid(err);
-            return Error(err ?? "删除用户失败");
+            if (result.Error == "用户不存在") return NotFound(result.Error);
+            if (result.Error?.StartsWith("不能删除") == true) return Forbid(result.Error);
+            if (result.Error?.StartsWith("系统管理员") == true) return Forbid(result.Error);
+            if (result.Error?.StartsWith("您没有权限") == true) return Forbid(result.Error);
+            return Error(result.Error ?? "删除用户失败");
         }
 
         LogOperation("删除用户", null, id);
@@ -185,19 +175,19 @@ public abstract class BaseUsersController : BaseApiController
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-        var (success, temporaryPassword, err) = await _userService.ResetPasswordAsync(id);
+        var result = await _sender.Send(new ResetPasswordCommand(id));
 
-        if (!success)
+        if (!result.IsSuccess)
         {
-            if (err == "用户不存在") return NotFound(err);
-            return Error(err ?? "密码重置失败");
+            if (result.Error == "用户不存在") return NotFound(result.Error);
+            return Error(result.Error ?? "密码重置失败");
         }
 
         LogOperation("重置用户密码", new { AutoGenerated = true }, id);
         return Success(new ResetPasswordResponseDto
         {
             Success = true,
-            TemporaryPassword = temporaryPassword
+            TemporaryPassword = result.Value!.TemporaryPassword
         }, "密码重置成功");
     }
 
@@ -212,17 +202,17 @@ public abstract class BaseUsersController : BaseApiController
     {
         var (currentUserId, _, _) = GetOperator();
 
-        var (success, user, err) = await _userService.ChangeProfileAsync(id, dto, currentUserId);
+        var result = await _sender.Send(new ChangeProfileCommand(id, dto, currentUserId));
 
-        if (!success)
+        if (!result.IsSuccess)
         {
-            if (err?.StartsWith("只能修改") == true) return Forbid(err);
-            if (err == "用户不存在") return NotFound(err);
-            return Error(err ?? "个人资料修改失败");
+            if (result.Error?.StartsWith("只能修改") == true) return Forbid(result.Error);
+            if (result.Error == "用户不存在") return NotFound(result.Error);
+            return Error(result.Error ?? "个人资料修改失败");
         }
 
         LogOperation("修改个人资料", new { RealName = dto.RealName, PhoneNumber = dto.PhoneNumber }, id);
-        return Success(user!, "个人资料修改成功");
+        return Success(result.Value!, "个人资料修改成功");
     }
 
     /// <summary>
@@ -236,13 +226,13 @@ public abstract class BaseUsersController : BaseApiController
     {
         var (currentUserId, _, _) = GetOperator();
 
-        var (success, err) = await _userService.ChangePasswordAsync(id, request.OldPassword, request.NewPassword, currentUserId);
+        var result = await _sender.Send(new ChangePasswordCommand(id, request.OldPassword, request.NewPassword, currentUserId));
 
-        if (!success)
+        if (!result.IsSuccess)
         {
-            if (err?.StartsWith("只能修改") == true) return Forbid(err);
-            if (err == "用户不存在") return NotFound(err);
-            return Error(err ?? "密码修改失败");
+            if (result.Error?.StartsWith("只能修改") == true) return Forbid(result.Error);
+            if (result.Error == "用户不存在") return NotFound(result.Error);
+            return Error(result.Error ?? "密码修改失败");
         }
 
         LogOperation("修改密码", new { UserId = id }, id);
@@ -263,18 +253,18 @@ public abstract class BaseUsersController : BaseApiController
         var (currentUserId, _, currentRole) = GetOperator();
         var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
 
-        var (success, user, err) = await _userService.ToggleUserStatusAsync(id, currentUserId, isAdmin);
+        var result = await _sender.Send(new ToggleUserStatusCommand(id, currentUserId, isAdmin));
 
-        if (!success)
+        if (!result.IsSuccess)
         {
-            if (err == "用户不存在") return NotFound(err);
-            if (err?.StartsWith("系统管理员") == true) return Forbid(err);
-            if (err?.StartsWith("您没有权限") == true) return Forbid(err);
-            return Error(err ?? "切换用户状态失败");
+            if (result.Error == "用户不存在") return NotFound(result.Error);
+            if (result.Error?.StartsWith("系统管理员") == true) return Forbid(result.Error);
+            if (result.Error?.StartsWith("您没有权限") == true) return Forbid(result.Error);
+            return Error(result.Error ?? "切换用户状态失败");
         }
 
         LogOperation("切换用户状态", new { }, id);
-        return Success(user!, "用户状态已切换");
+        return Success(result.Value!, "用户状态已切换");
     }
 
     /// <summary>
@@ -294,9 +284,11 @@ public abstract class BaseUsersController : BaseApiController
         var (currentUserId, _, currentRole) = GetOperator();
         var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
 
-        var result = await _userService.BatchDeleteUsersAsync(dto.Ids, currentUserId, isAdmin);
+        var result = await _sender.Send(new BatchDeleteUsersCommand(dto.Ids, currentUserId, isAdmin));
 
-        LogOperation("批量删除用户", new { Ids = dto.Ids, Result = result.Message }, null);
-        return Success(result, result.Message);
+        LogOperation("批量删除用户", new { Ids = dto.Ids, Result = result.Value?.Message }, null);
+        return Success(result.Value!, result.Value?.Message ?? "批量删除完成");
     }
 }
+
+

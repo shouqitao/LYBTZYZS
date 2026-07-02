@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
@@ -12,7 +12,8 @@
 	  <None Remove="obj\**" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+				<PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+		<PackageReference Include="MediatR" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design">
 			<PrivateAssets>all</PrivateAssets>
@@ -30,5 +31,6 @@
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Validators\LYBT.Shared.Validators.csproj" />
 		<ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
 		<ProjectReference Include="..\..\Core\LYBT.Entities\LYBT.Entities.csproj" />
+		<ProjectReference Include="..\..\Core\LYBT.SharedKernel\LYBT.SharedKernel.csproj" />
 	</ItemGroup>
 </Project>

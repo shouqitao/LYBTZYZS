@@ -1,4 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace LYBT.WebAPI.Middleware
@@ -134,3 +134,5 @@ namespace LYBT.WebAPI.Middleware
         }
     }
 }
+
+

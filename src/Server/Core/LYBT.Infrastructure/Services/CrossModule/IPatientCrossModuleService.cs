@@ -22,3 +22,5 @@ public interface IPatientCrossModuleService
     /// <summary>检查患者引用关系 (医案引用数)</summary>
     Task<ReferenceCheckResult> CheckPatientReferenceAsync(Guid patientId, CancellationToken cancellationToken = default);
 }
+
+

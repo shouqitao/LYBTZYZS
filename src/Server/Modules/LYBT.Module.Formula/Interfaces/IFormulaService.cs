@@ -80,3 +80,5 @@ namespace LYBT.Module.Formulas.Interfaces
         Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId = default);
     }
 }
+
+

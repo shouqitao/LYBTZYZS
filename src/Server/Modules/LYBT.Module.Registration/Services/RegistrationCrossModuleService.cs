@@ -1,5 +1,7 @@
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Registration.Interfaces;
+using LYBT.Shared.Models.Enums;
+using RegistrationEntity = LYBT.Module.Registration.Domain.Registration;
 
 namespace LYBT.Module.Registration.Services;
 
@@ -9,63 +11,80 @@ namespace LYBT.Module.Registration.Services;
 /// </summary>
 public class RegistrationCrossModuleService : IRegistrationCrossModuleService
 {
-    private readonly IRegistrationService _registrationService;
     private readonly IRegistrationRepository _registrationRepository;
-    
+
     public RegistrationCrossModuleService(
-        IRegistrationService registrationService,
         IRegistrationRepository registrationRepository)
     {
-        _registrationService = registrationService;
         _registrationRepository = registrationRepository;
     }
-    
+
     public async Task CompleteByMedicalCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
-        await _registrationService.CompleteByMedicalCaseAsync(medicalCaseId);
+        var entity = await _registrationRepository.GetByMedicalCaseIdAsync(medicalCaseId, ct);
+        if (entity is null) return;
+
+        entity.Complete();
+        await _registrationRepository.UpdateAsync(entity, ct);
+        await _registrationRepository.SaveChangesAsync(ct);
     }
-    
+
     public async Task HandleMedicalCaseCancelledAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
-        await _registrationService.HandleMedicalCaseCancelledAsync(medicalCaseId);
+        var entity = await _registrationRepository.GetByMedicalCaseIdAsync(medicalCaseId, ct);
+        if (entity is null) return;
+
+        if (entity.Source == RegistrationSource.Receptionist)
+        {
+            entity.RevertToWaiting();
+        }
+        else
+        {
+            entity.SoftDelete(entity.Id);
+        }
+
+        await _registrationRepository.UpdateAsync(entity, ct);
+        await _registrationRepository.SaveChangesAsync(ct);
     }
-    
+
     public async Task<Guid> StartVisitAsync(Guid registrationId, CancellationToken ct = default)
     {
-        var result = await _registrationService.StartVisitAsync(registrationId);
-        return result.IsSuccess ? result.Data : Guid.Empty;
+        var entity = await _registrationRepository.GetByIdAsync(registrationId, ct);
+        if (entity is null) return Guid.Empty;
+
+        entity.StartVisit();
+        await _registrationRepository.UpdateAsync(entity, ct);
+        await _registrationRepository.SaveChangesAsync(ct);
+        return entity.Id;
     }
-    
+
     public async Task<int> GetWaitingCountByDoctorAsync(Guid doctorId, CancellationToken ct = default)
     {
-        var result = await _registrationService.GetWaitingQueueAsync(doctorId);
-        return result.IsSuccess ? result.Data.Count : 0;
+        var queue = await _registrationRepository.GetWaitingQueueAsync(doctorId, ct);
+        return queue.Count;
     }
-    
+
     public async Task<bool> HasWaitingRegistrationAsync(Guid patientId, CancellationToken ct = default)
     {
-        var result = await _registrationService.GetPagedAsync(
-            page: 1, 
-            pageSize: 1, 
-            patientId: patientId);
-        
-        return result.IsSuccess && 
-               result.Data.Items.Any(r => r.Status == Shared.Models.Enums.RegistrationStatus.Waiting);
+        return await _registrationRepository.HasWaitingRegistrationAsync(patientId, ct);
     }
-    
+
     public async Task LinkRegistrationToMedicalCaseAsync(Guid registrationId, Guid medicalCaseId, CancellationToken ct = default)
     {
         var registration = await _registrationRepository.GetByIdAsync(registrationId, ct);
         if (registration != null)
         {
-            registration.MedicalCaseId = medicalCaseId;
+            registration.AssignMedicalCase(medicalCaseId);
             await _registrationRepository.UpdateAsync(registration, ct);
+            await _registrationRepository.SaveChangesAsync(ct);
         }
     }
-    
+
     public async Task<Guid?> GetRegistrationIdByMedicalCaseIdAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
         var registration = await _registrationRepository.GetByMedicalCaseIdAsync(medicalCaseId, ct);
         return registration?.Id;
     }
 }
+
+

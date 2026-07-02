@@ -21,3 +21,5 @@ public interface IMedicalCaseCrossModuleService
     /// <summary>为快速看诊创建医案并关联挂号</summary>
     Task<Guid?> CreateQuickVisitMedicalCaseAsync(Guid patientId, Guid registrationId, Guid doctorId, CancellationToken cancellationToken = default);
 }
+
+

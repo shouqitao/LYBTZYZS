@@ -9,3 +9,5 @@ public interface ICrossModuleAuthService
     /// <summary>撤销指定用户的所有 Token Family</summary>
     Task RevokeUserTokensAsync(Guid userId, string reason);
 }
+
+

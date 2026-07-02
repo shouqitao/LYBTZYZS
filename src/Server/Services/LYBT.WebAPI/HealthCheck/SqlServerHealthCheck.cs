@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace LYBT.WebAPI.HealthCheck;
@@ -105,3 +105,5 @@ public class SqlServerHealthCheck : IHealthCheck
         };
     }
 }
+
+

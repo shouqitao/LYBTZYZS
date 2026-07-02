@@ -53,3 +53,5 @@ public class MedicalCaseConfiguration : BaseEntityConfiguration<MedicalCase>
               .OnDelete(DeleteBehavior.Restrict);
     }
 }
+
+

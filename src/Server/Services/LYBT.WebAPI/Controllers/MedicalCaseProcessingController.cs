@@ -1,15 +1,14 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.MedicalCases.Interfaces;
-using LYBT.Module.MedicalCases.Mapping;
+using LYBT.Module.MedicalCases.Application.Commands;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -24,17 +23,14 @@ namespace LYBT.WebAPI.Controllers
     [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class MedicalCaseProcessingController : BaseApiController
     {
-        private readonly IMedicalCaseFacade _facade;
-        private readonly MedicalCaseMapper _mapper;
+        private readonly ISender _sender;
 
         public MedicalCaseProcessingController(
-            IMedicalCaseFacade facade,
-            MedicalCaseMapper mapper,
+            ISender sender,
             ILogger<MedicalCaseProcessingController> logger)
             : base(logger)
         {
-            _facade = facade;
-            _mapper = mapper;
+            _sender = sender;
         }
 
         /// <summary>
@@ -49,28 +45,26 @@ namespace LYBT.WebAPI.Controllers
             Guid id,
             [FromBody] MedicalCaseStatusInputDto request)
         {
-            // Completed 状态通过 CompleteAsync 统一入口处理
+            var (operatorId, _, operatorRole) = GetOperator();
+            var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+
             if (request.Status == MedicalCaseStatus.Completed)
             {
-                var (operatorId, _, operatorRole) = GetOperator();
-                var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-                var completeResult = await _facade.CompleteAsync(id, operatorId, isAdmin, skipWorkflowValidation: false);
-                if (completeResult == null)
-                    return NotFound("医案不存在");
+                var completeResult = await _sender.Send(new CompleteMedicalCaseCommand(id, operatorId, isAdmin));
+                if (!completeResult.IsSuccess)
+                    return NotFound(completeResult.Error ?? "医案不存在");
 
-                var completeDto = _mapper.MapToMedicalCaseDetailDto(completeResult);
-                return Success(completeDto, "医案已完成");
+                return Success("医案已完成");
             }
 
-            var result = await _facade.UpdateStatusAsync(id, request.Status);
+            var result = await _sender.Send(new UpdateMedicalCaseStatusCommand(id, request.Status, operatorId, isAdmin));
 
-            if (result == null)
-                return NotFound("医案不存在");
+            if (!result.IsSuccess)
+                return NotFound(result.Error ?? "医案不存在");
 
-            var dto = _mapper.MapToMedicalCaseDetailDto(result);
             _logger.LogInformation("医案状态更新成功，MedicalCaseId: {Id}, NewStatus: {Status}",
                 id, request.Status);
-            return Success(dto, "状态更新成功");
+            return Success(result.Value!, "状态更新成功");
         }
 
         /// <summary>
@@ -83,17 +77,15 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         public async Task<IActionResult> CloseMedicalCase(Guid id)
         {
-            // 委托给统一完成入口（skipWorkflowValidation=true）
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-            var result = await _facade.CompleteAsync(id, operatorId, isAdmin, skipWorkflowValidation: true);
+            var result = await _sender.Send(new CompleteMedicalCaseCommand(id, operatorId, isAdmin));
 
-            if (result == null)
-                return NotFound("医案不存在");
+            if (!result.IsSuccess)
+                return NotFound(result.Error ?? "医案不存在");
 
-            var dto = _mapper.MapToMedicalCaseDetailDto(result);
             _logger.LogInformation("医案关闭，MedicalCaseId: {Id}", id);
-            return Success(dto, "医案已关闭");
+            return Success("医案已关闭");
         }
 
         /// <summary>
@@ -110,21 +102,17 @@ namespace LYBT.WebAPI.Controllers
             Guid id,
             [FromBody] ConsultationInputDto? request = null)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _facade.SuspendAsync(id, request, operatorId, isAdmin);
-            if (result == null)
+            var result = await _sender.Send(new SuspendMedicalCaseCommand(id, operatorId, isAdmin));
+            if (!result.IsSuccess)
             {
-                return NotFound("医案不存在");
+                return NotFound(result.Error ?? "医案不存在");
             }
 
-            // Entity → DTO映射
-            var dto = _mapper.MapToMedicalCaseDetailDto(result);
-
             _logger.LogInformation("医案暂存成功，MedicalCaseId: {Id}", id);
-            return Success(dto, "医案已暂存");
+            return Success("医案已暂存");
         }
 
         /// <summary>
@@ -142,10 +130,10 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _facade.CancelAsync(id, operatorId, isAdmin, request?.Reason);
-            if (result == null)
+            var result = await _sender.Send(new CancelMedicalCaseCommand(id, operatorId, isAdmin, request?.Reason));
+            if (!result.IsSuccess)
             {
-                return NotFound("医案不存在");
+                return NotFound(result.Error ?? "医案不存在");
             }
 
             _logger.LogInformation("医案取消成功(软删除)，MedicalCaseId: {Id}", id);
@@ -154,3 +142,5 @@ namespace LYBT.WebAPI.Controllers
     }
 
 }
+
+

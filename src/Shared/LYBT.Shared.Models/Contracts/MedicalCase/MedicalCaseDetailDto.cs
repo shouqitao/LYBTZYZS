@@ -67,6 +67,10 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("完成时间")]
         public DateTime? CompletedAt { get; set; }
 
+        /// <summary>是否需要处方</summary>
+        [DisplayName("需要处方")]
+        public bool? NeedsPrescription { get; set; }
+
         // ConsultationDate已删除，用CreatedAt代替
 
         /// <summary>医疗案例专用状态</summary>

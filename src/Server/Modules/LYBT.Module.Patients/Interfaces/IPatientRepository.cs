@@ -1,72 +1,43 @@
 using LYBT.Entities.Patients;
-using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.Patients.Interfaces
+namespace LYBT.Module.Patients.Interfaces;
+
+/// <summary>
+/// 患者仓储接口。
+/// </summary>
+public interface IPatientRepository
 {
     /// <summary>
-    /// 病人仓储接口 - 优化版，包含查询优化方法
+    /// 根据ID获取患者。
     /// </summary>
+    Task<Patient?> GetByIdAsync(Guid id, CancellationToken ct);
+
     /// <summary>
-    /// 患者仓储接口 - 继承IRepository<Patient>标准接口
-    /// Task 1.2: PatientRepository重构，适配新的简化Repository设计
+    /// 分页查询患者。
     /// </summary>
-    /// <remarks>
-    /// 设计原则：
-    /// - ⭐ 继承BaseRepository：复用11个标准CRUD方法
-    /// - ⭐ 业务扩展：实现患者特定的业务查询方法
-    /// - ⭐ 接口隔离：职责单一，符合ISP原则
-    ///
-    /// 特定业务方法说明：
-    /// - GetByNameAsync: 根据姓名模糊查询患者
-    /// - ExistsAsync: 检查患者姓名唯一性（支持排除ID）
-    /// - GetByPhoneNumberAsync: 手机号重复检查（Epic #1934 BR-004）
-    /// </remarks>
-    public interface IPatientRepository : IRepository<Patient>
-    {
-        /// <summary>
-        /// 根据姓名获取患者（支持模糊匹配）
-        /// </summary>
-        /// <param name="name">患者姓名</param>
-        /// <returns>患者列表，不存在返回空列表</returns>
-        Task<List<Patient>> GetByNameAsync(string name);
+    Task<PagedResult<Patient>> GetPagedAsync(int page, int pageSize, string? keyword, CancellationToken ct);
 
-        /// <summary>
-        /// 检查患者姓名是否已存在
-        /// </summary>
-        /// <param name="name">患者姓名</param>
-        /// <param name="excludeId">排除的患者ID（用于更新时检查）</param>
-        /// <returns>存在返回true，否则返回false</returns>
-        Task<bool> ExistsAsync(string name, Guid? excludeId = null);
+    /// <summary>
+    /// 分页查询患者（支持状态筛选）。
+    /// </summary>
+    Task<PagedResult<Patient>> GetPagedAsync(int page, int pageSize, string? keyword, CommonStatus? status, CancellationToken ct);
 
-        /// <summary>
-        /// 根据手机号查询患者（Epic #1934 BR-004重复检查）
-        /// </summary>
-        /// <param name="phoneNumber">手机号</param>
-        /// <returns>患者对象，不存在返回null</returns>
-        Task<Patient?> GetByPhoneNumberAsync(string phoneNumber);
+    /// <summary>
+    /// 检查患者姓名是否已存在。
+    /// </summary>
+    Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default);
 
-        /// <summary>
-        /// 根据身份证号查询患者（T5-P2-24 唯一性检查）
-        /// </summary>
-        /// <param name="idNumber">身份证号</param>
-        /// <returns>患者对象，不存在返回null</returns>
-        Task<Patient?> GetByIdNumberAsync(string idNumber);
+    /// <summary>
+    /// 新增患者。
+    /// </summary>
+    Task AddAsync(Patient patient, CancellationToken ct);
 
-        /// <summary>
-        /// 分页查询患者（支持状态过滤）（T5-P2-27 角色过滤）
-        /// </summary>
-        /// <param name="page">页码</param>
-        /// <param name="pageSize">每页数量</param>
-        /// <param name="keyword">搜索关键词</param>
-        /// <param name="status">状态过滤</param>
-        Task<PagedResult<Patient>> GetPagedWithStatusFilterAsync(int page, int pageSize, string? keyword, CommonStatus status);
-        /// <summary>
-        /// 根据ID获取实体（包括已软删除的）
-        /// 用于Restore操作时获取已删除的实体
-        /// </summary>
-        /// <param name="id">实体ID</param>
-        Task<Patient?> GetByIdIncludingDeletedAsync(Guid id);
-    }
+    /// <summary>
+    /// 更新患者。
+    /// </summary>
+    Task UpdateAsync(Patient patient, CancellationToken ct);
 }
+
+

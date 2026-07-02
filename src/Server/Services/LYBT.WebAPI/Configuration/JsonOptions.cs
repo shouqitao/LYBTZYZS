@@ -28,3 +28,5 @@ public sealed class JsonOptions
     /// </summary>
     public bool AllowTrailingCommas { get; set; } = false;
 }
+
+

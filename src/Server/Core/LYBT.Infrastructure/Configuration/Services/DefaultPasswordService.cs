@@ -63,3 +63,5 @@ public sealed class DefaultPasswordService : IDefaultPasswordService
     public bool ShouldForcePasswordChange()
         => _defaultPasswordOptions.ForceChangeOnFirstLogin;
 }
+
+

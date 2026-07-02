@@ -1,10 +1,14 @@
 using FluentValidation;
 using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Module.Herbs.Application.Commands;
+using LYBT.Module.Herbs.Application.Validators;
+using LYBT.Module.Herbs.Infrastructure;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Repositories;
 using LYBT.Module.Herbs.Services;
 using LYBT.Shared.Validators.Herbs;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,13 +24,16 @@ namespace LYBT.Module.Herbs
         /// </summary>
         public static IServiceCollection AddHerbsModule(this IServiceCollection services, IConfiguration configuration)
         {
-            // 注册仓储
-            services.AddScoped<IHerbRepository, HerbRepository>();
+            // 注册 DbContext（模块级）
+            services.AddDbContext<HerbsDbContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+
+            // 注册仓储（Legacy）
+            services.AddScoped<IHerbRepositoryLegacy, LYBT.Module.Herbs.Repositories.HerbRepository>();
+            // 注册仓储（New - 给CQRS层使用）
+            services.AddScoped<IHerbRepository, LYBT.Module.Herbs.Infrastructure.HerbRepository>();
             services.AddScoped<IHerbReferenceRepository, HerbReferenceRepository>();
             // services.AddScoped<IHerbCategoryRepository, HerbCategoryRepository>();
-
-            // 注册服务实现类（统一使用Shared接口）
-            services.AddScoped<IHerbService, HerbService>();
 
             // 注册跨模块服务（替代 CrossModuleService 中的药材查询逻辑）
             services.AddScoped<IHerbCrossModuleService, HerbCrossModuleService>();
@@ -34,9 +41,12 @@ namespace LYBT.Module.Herbs
             // Epic #1731: 注册Herbs模块Validators
             services.AddValidatorsFromAssemblyContaining<HerbInputDtoValidator>();
 
-            // AutoMapper配置已在UnifiedServiceRegistration中集中注册
+            // 注册 MediatR（Application层）
+            services.AddMediatR(cfg =>
+                cfg.RegisterServicesFromAssembly(typeof(CreateHerbCommand).Assembly));
 
-            // 模块无特殊配置需求（通用配置在appsettings.json）
+            // 注册 Application 层验证器
+            services.AddValidatorsFromAssemblyContaining<CreateHerbValidator>();
 
             return services;
         }
@@ -52,3 +62,5 @@ namespace LYBT.Module.Herbs
 
     }
 }
+
+

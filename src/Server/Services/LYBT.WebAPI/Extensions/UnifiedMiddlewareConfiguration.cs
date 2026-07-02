@@ -1,4 +1,4 @@
-﻿using LYBT.WebAPI.Configuration;
+using LYBT.WebAPI.Configuration;
 using LYBT.WebAPI.Middleware;
 
 namespace LYBT.WebAPI.Extensions;
@@ -182,3 +182,5 @@ public static class UnifiedMiddlewareConfiguration
     }
 
 }
+
+

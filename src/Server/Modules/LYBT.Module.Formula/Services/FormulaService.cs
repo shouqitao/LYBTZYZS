@@ -20,13 +20,13 @@ namespace LYBT.Module.Formulas.Services
     /// </summary>
     public class FormulaService : BaseService, IFormulaService
     {
-        private readonly IFormulaRepository _repository;
+        private readonly IFormulaRepositoryLegacy _repository;
         private readonly IHerbCrossModuleService _crossModuleQuery;
         private readonly FormulaMapper _mapper = new();
         private readonly ICacheInvalidationService _cacheInvalidation;
 
         public FormulaService(
-            IFormulaRepository repository,
+            IFormulaRepositoryLegacy repository,
             IHerbCrossModuleService crossModuleQuery,
             ILogger<FormulaService> logger,
             ICacheInvalidationService cacheInvalidation)
@@ -389,3 +389,5 @@ namespace LYBT.Module.Formulas.Services
 
     }
 }
+
+

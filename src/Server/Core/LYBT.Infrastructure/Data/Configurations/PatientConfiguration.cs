@@ -22,3 +22,5 @@ public class PatientConfiguration : BaseEntityConfiguration<Patient>
         builder.Property(p => p.Status).HasConversion<int>();
     }
 }
+
+

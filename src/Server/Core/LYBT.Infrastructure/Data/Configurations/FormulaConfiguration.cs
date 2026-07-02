@@ -29,3 +29,5 @@ public class FormulaConfiguration : BaseEntityConfiguration<Formula>
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
+
+

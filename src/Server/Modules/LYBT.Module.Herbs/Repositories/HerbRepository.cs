@@ -19,7 +19,7 @@ namespace LYBT.Module.Herbs.Repositories
     /// - 软删除模式：所有查询自动过滤IsDeleted=true的数据
     /// - 查询优化：只读查询使用AsNoTracking提升性能
     /// </remarks>
-    internal class HerbRepository : BaseRepository<Herb>, IHerbRepository
+    internal class HerbRepository : BaseRepository<Herb>, IHerbRepositoryLegacy
     {
         public HerbRepository(AppDbContext context, ILogger<HerbRepository> logger)
             : base(context, logger)
@@ -151,3 +151,5 @@ namespace LYBT.Module.Herbs.Repositories
         }
     }
 }
+
+

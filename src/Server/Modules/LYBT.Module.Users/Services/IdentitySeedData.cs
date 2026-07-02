@@ -76,3 +76,5 @@ public static class IdentitySeedData
             await userManager.AddToRoleAsync(user, role);
     }
 }
+
+

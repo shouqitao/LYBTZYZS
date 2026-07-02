@@ -55,6 +55,10 @@ public class MedicalCaseListDto
     [DisplayName("诊断")]
     public string? Diagnosis { get; set; }
 
+    /// <summary>是否需要处方</summary>
+    [DisplayName("需要处方")]
+    public bool? NeedsPrescription { get; set; }
+
     /// <summary>是否有诊疗记录</summary>
     [DisplayName("有诊疗")]
     public bool HasConsultation { get; set; }

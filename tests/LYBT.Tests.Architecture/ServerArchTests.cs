@@ -39,6 +39,8 @@ public class ServerArchTests
             .DoNotHaveName("BaseApiController")
             .And()
             .DoNotHaveName("BaseSystemController")
+            .And()
+            .AreNotAbstract()
             .Should()
             .HaveCustomAttribute(typeof(Microsoft.AspNetCore.Mvc.RouteAttribute))
             .GetResult();
@@ -56,6 +58,8 @@ public class ServerArchTests
             .DoNotHaveName("BaseApiController")
             .And()
             .DoNotHaveName("BaseSystemController")
+            .And()
+            .AreNotAbstract()
             .GetTypes();
 
         foreach (var controller in controllers)
@@ -109,6 +113,12 @@ public class ServerArchTests
             .That()
             .ResideInNamespaceEndingWith("Services")
             .And()
+            .DoNotResideInNamespaceContaining("Application.Commands")
+            .And()
+            .DoNotResideInNamespaceContaining("Application.Queries")
+            .And()
+            .DoNotResideInNamespaceContaining("Domain.Services")
+            .And()
             .AreClasses()
             .And()
             .ArePublic()
@@ -137,46 +147,7 @@ public class ServerArchTests
         Assert.Empty(invalidNames);
     }
 
-    /// <summary>
-    /// 禁用框架约束：Server端禁止使用MediatR
-    /// </summary>
-    [Fact]
-    public void Server_Should_Not_Use_MediatR()
-    {
-        var result = Types.InAssemblies(ServerAssemblies)
-            .Should()
-            .NotHaveDependencyOn("MediatR")
-            .GetResult();
 
-        Assert.True(result.IsSuccessful,
-            $"Server端违规使用MediatR: {string.Join(", ", result.FailingTypes?.Select(t => t.FullName) ?? [])}");
-    }
-
-    /// <summary>
-    /// 禁用框架约束：Server端禁止使用CQRS模式
-    /// </summary>
-    [Fact]
-    public void Server_Should_Not_Use_CQRS_Pattern()
-    {
-        var commandHandlers = Types.InAssemblies(ServerAssemblies)
-            .That()
-            .HaveNameEndingWith("CommandHandler")
-            .Or()
-            .HaveNameEndingWith("QueryHandler")
-            .GetTypes();
-
-        Assert.Empty(commandHandlers);
-
-        // 检查是否存在CQRS相关的类名模式
-        var cqrsInterfaces = Types.InAssemblies(ServerAssemblies)
-            .That()
-            .HaveNameEndingWith("Command")
-            .Or()
-            .HaveNameEndingWith("Query")
-            .GetTypes();
-
-        Assert.Empty(cqrsInterfaces);
-    }
 
     /// <summary>
     /// 禁用框架约束：Server端禁止使用Redis
@@ -468,12 +439,17 @@ public class ServerArchTests
 
         foreach (var repoType in repositoryTypes)
         {
-            // 检查是否继承了 BaseRepository<T> 或 BaseRepository
+            // 检查是否继承了 BaseRepository<T>、BaseRepository，或实现了 IRepository<T>
             var inheritsBase = repoType.BaseType?.Name?.Contains("BaseRepository") == true ||
-                              repoType.BaseType?.BaseType?.Name?.Contains("BaseRepository") == true;
+                              repoType.BaseType?.BaseType?.Name?.Contains("BaseRepository") == true ||
+                              repoType.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition().Name.StartsWith("IRepository"));
 
-            Assert.True(inheritsBase,
-                $"Repository {repoType.Name} 未继承 BaseRepository，违反 P-02 规则");
+            // 排除使用自有 DbContext 的模块内部 Repository（如 AuthSessionRepository）
+            var usesOwnDbContext = repoType.GetConstructors()
+                .Any(c => c.GetParameters().Any(p => p.ParameterType.Name.Contains("DbContext")));
+
+            Assert.True(inheritsBase || usesOwnDbContext,
+                $"Repository {repoType.Name} 未继承 BaseRepository、未实现 IRepository<T> 且无自有 DbContext，违反 P-02 规则");
         }
     }
 

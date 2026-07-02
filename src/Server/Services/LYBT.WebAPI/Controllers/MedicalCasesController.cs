@@ -1,16 +1,16 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.MedicalCases.Interfaces;
-using LYBT.Module.MedicalCases.Mapping;
+using LYBT.Module.MedicalCases.Application.Commands;
+using LYBT.Module.MedicalCases.Application.Queries;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -25,17 +25,14 @@ namespace LYBT.WebAPI.Controllers
     [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class MedicalCasesController : BaseApiController
     {
-        private readonly IMedicalCaseFacade _facade;
-        private readonly MedicalCaseMapper _mapper;
+        private readonly ISender _sender;
 
         public MedicalCasesController(
-            IMedicalCaseFacade facade,
-            MedicalCaseMapper mapper,
+            ISender sender,
             ILogger<MedicalCasesController> logger)
             : base(logger)
         {
-            _facade = facade;
-            _mapper = mapper;
+            _sender = sender;
         }
 
         /// <summary>
@@ -54,22 +51,18 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> CreateMedicalCase(
             [FromBody] MedicalCaseInputDto dto)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            // 获取当前医生ID
             var (doctorId, _, _) = GetOperator();
 
-            // 确保Id为null以触发创建逻辑
             dto.Id = null;
-            var entity = await _facade.SaveAsync(dto, doctorId, isAdmin: false);
+            var result = await _sender.Send(new CreateMedicalCaseCommand(dto, doctorId));
 
-            if (entity == null)
-                return NotFound("患者不存在");
+            if (!result.IsSuccess)
+                return NotFound(result.Error ?? "患者不存在");
+
+            var responseDto = result.Value!;
 
             _logger.LogInformation("医案创建成功，ID: {Id}, Doctor: {DoctorName}, Patient: {PatientName}",
-                entity.Id, entity.DoctorName, entity.PatientName);
-
-            // Entity → MedicalCaseDetailDto 映射
-            var responseDto = _mapper.MapToMedicalCaseDetailDto(entity);
+                responseDto.Id, responseDto.DoctorName, responseDto.PatientName);
 
             return CreatedAtAction(nameof(GetById),
                 new { id = responseDto.Id, version = ApiVersionConstants.V1 },
@@ -90,22 +83,18 @@ namespace LYBT.WebAPI.Controllers
             Guid id,
             [FromBody] SetPrescriptionFlagRequest request)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _facade.SetPrescriptionFlagAsync(id, request.NeedsPrescription, operatorId, isAdmin);
-            if (result == null)
+            var result = await _sender.Send(new SetPrescriptionFlagCommand(id, request.NeedsPrescription, operatorId, isAdmin));
+            if (!result.IsSuccess)
             {
-                return NotFound("医案不存在");
+                return NotFound(result.Error ?? "医案不存在");
             }
-
-            // Entity → DTO映射
-            var dto = _mapper.MapToMedicalCaseDetailDto(result);
 
             _logger.LogInformation("处方标记更新成功，MedicalCaseId: {Id}, NeedsPrescription: {Flag}",
                 id, request.NeedsPrescription);
-            return Success(dto, "处方标记更新成功");
+            return Success(result.Value!, "处方标记更新成功");
         }
 
         /// <summary>
@@ -125,30 +114,23 @@ namespace LYBT.WebAPI.Controllers
             Guid id,
             [FromBody] MedicalCaseInputDto request)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            // 验证请求ID与路由ID一致
             if (request.Id != id)
             {
                 return Error("请求ID与路由ID不一致");
             }
 
-            // 获取当前用户信息
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            // 调用门面聚合保存服务
-            var result = await _facade.SaveAsync(request, operatorId, isAdmin);
+            var result = await _sender.Send(new SaveMedicalCaseCommand(request, operatorId, isAdmin));
 
-            if (result == null)
+            if (!result.IsSuccess)
             {
-                return NotFound("医案不存在");
+                return NotFound(result.Error ?? "医案不存在");
             }
 
-            // Entity → MedicalCaseDetailDto 映射
-            var detailDto = _mapper.MapToMedicalCaseDetailDto(result);
-
             _logger.LogInformation("医案聚合保存成功，MedicalCaseId: {MedicalCaseId}", id);
-            return Success(detailDto, "保存成功");
+            return Success(result.Value!, "保存成功");
         }
 
         /// <summary>
@@ -162,13 +144,12 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 403)]
         public async Task<IActionResult> DeleteMedicalCase(Guid id)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _facade.DeleteAsync(id, operatorId, isAdmin);
-            if (!result)
-                return NotFound("医案不存在");
+            var result = await _sender.Send(new DeleteMedicalCaseCommand(id, operatorId, isAdmin));
+            if (!result.IsSuccess)
+                return NotFound(result.Error ?? "医案不存在");
 
             _logger.LogInformation("医案已软删除，MedicalCaseId: {Id}, OperatorId: {OperatorId}", id, operatorId);
             return Success(true, "医案已删除");
@@ -182,7 +163,6 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchDelete([FromBody] LYBT.Shared.Models.Contracts.Common.BatchDeleteInputDto dto)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (dto.Ids == null || dto.Ids.Count == 0)
             {
                 return ValidationFail("请至少选择一个医案");
@@ -191,14 +171,14 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _facade.BatchDeleteAsync(dto.Ids, operatorId, isAdmin);
-            if (!result.IsSuccess || result.Data == null)
+            var result = await _sender.Send(new BatchDeleteMedicalCasesCommand(dto.Ids, operatorId, isAdmin));
+            if (!result.IsSuccess || result.Value == null)
             {
-                return HandleResult(result);
+                return BusinessFail(result.Error ?? "批量删除失败");
             }
 
-            LogOperation("批量删除医案", new { Ids = dto.Ids, Result = result.Data.Message }, null);
-            return Success(result.Data, result.Data.Message);
+            LogOperation("批量删除医案", new { Ids = dto.Ids, Result = result.Value.Message }, null);
+            return Success(result.Value, result.Value.Message);
         }
 
         /// <summary>
@@ -210,16 +190,12 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         public async Task<IActionResult> GetById(Guid id)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            var result = await _facade.GetByIdAsync(id);
+            var result = await _sender.Send(new GetMedicalCaseQuery(id));
 
-            if (result == null)
-                return NotFound("医案不存在");
+            if (!result.IsSuccess)
+                return NotFound(result.Error ?? "医案不存在");
 
-            // Entity → DTO映射 - 使用MapToMedicalCaseDetailDto返回完整详情
-            var dto = _mapper.MapToMedicalCaseDetailDto(result);
-
-            return Success(dto, "查询成功");
+            return Success(result.Value!, "查询成功");
         }
 
         /// <summary>
@@ -236,17 +212,16 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] bool includeAllDoctors = false,
             [FromQuery] string? keyword = null)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidatePagination(page, pageSize) is { } error) return error;
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin || includeAllDoctors;
-            var result = await _facade.GetListDtoAsync(
-                status, patientId, page, pageSize,
-                currentDoctorId: operatorId,
-                isAdmin: isAdmin,
-                keyword: keyword);
+            var result = await _sender.Send(new GetMedicalCasesQuery(
+                status, patientId, page, pageSize, operatorId, isAdmin, keyword));
 
-            return Success(result, "查询成功");
+            if (!result.IsSuccess)
+                return BusinessFail(result.Error ?? "查询失败");
+
+            return Success(result.Value!, "查询成功");
         }
 
         /// <summary>
@@ -260,30 +235,29 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PagedResult<MedicalCaseListDto>>), 400)]
         public async Task<IActionResult> GetMedicalCases([FromQuery] MedicalCaseQueryDto query)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidatePagination(query.PageIndex, query.PageSize) is { } error) return error;
 
-            // 获取当前用户信息
             var (operatorId, _, operatorRole) = GetOperator();
 
-            // 设置DoctorId和权限
             if (!query.DoctorId.HasValue)
             {
                 query.DoctorId = operatorId;
             }
 
-            // Admin角色可以查看所有数据
             if (operatorRole is UserRole.SuperAdmin or UserRole.Admin)
             {
                 query.IncludeAllDoctors = true;
             }
 
-            var result = await _facade.QueryAsync(query);
+            var result = await _sender.Send(new QueryMedicalCasesCommand(query));
+
+            if (!result.IsSuccess)
+                return BusinessFail(result.Error ?? "查询失败");
 
             _logger.LogInformation("统一查询完成，QueryType: {QueryType}, 返回{Count}条记录",
-                query.QueryType, result.Items.Count);
+                query.QueryType, result.Value!.Items.Count);
 
-            return Success(result, "查询成功");
+            return Success(result.Value!, "查询成功");
         }
 
         /// <summary>
@@ -308,13 +282,15 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidatePagination(page, pageSize) is { } error) return error;
 
-            var result = await _facade.SearchMedicalCasesAsync(
-                patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
+            var result = await _sender.Send(new SearchMedicalCasesQuery(
+                patientName, diagnosisKeyword, startDate, endDate, page, pageSize));
 
-            return Success(result, "搜索成功");
+            if (!result.IsSuccess)
+                return BusinessFail(result.Error ?? "搜索失败");
+
+            return Success(result.Value!, "搜索成功");
         }
 
         /// <summary>
@@ -326,10 +302,12 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> GetConsultationList(
             Guid medicalCaseId)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            var result = await _facade.GetConsultationListAsync(medicalCaseId);
+            var result = await _sender.Send(new GetMedicalCaseConsultationsQuery(medicalCaseId));
 
-            return Success(result, "查询成功");
+            if (!result.IsSuccess)
+                return BusinessFail(result.Error ?? "查询失败");
+
+            return Success(result.Value!, "查询成功");
         }
 
         /// <summary>
@@ -341,10 +319,19 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> GetPrescriptionList(
             Guid medicalCaseId)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            var result = await _facade.GetPrescriptionListAsync(medicalCaseId);
+            var result = await _sender.Send(new GetMedicalCasePrescriptionsQuery(medicalCaseId));
 
-            return Success(result, "查询成功");
+            if (!result.IsSuccess)
+                return BusinessFail(result.Error ?? "查询失败");
+
+            return Success(result.Value!, "查询成功");
         }
     }
+
+    public class SetPrescriptionFlagRequest
+    {
+        public bool NeedsPrescription { get; set; }
+    }
 }
+
+

@@ -6,4 +6,7 @@ public static class PolicyConstants
     public const string DoctorOrAdmin = "DoctorOrAdmin";
     public const string AdminOrSuperAdmin = "AdminOrSuperAdmin";
     public const string DoctorOrReceptionist = "DoctorOrReceptionist";
+    public const string DoctorOrAdminOrReceptionist = "DoctorOrAdminOrReceptionist";
 }
+
+

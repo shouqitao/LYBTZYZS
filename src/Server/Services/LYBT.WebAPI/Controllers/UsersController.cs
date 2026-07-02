@@ -1,7 +1,7 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Users.Controllers;
-using LYBT.Module.Users.Interfaces;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.WebAPI.Controllers
@@ -12,10 +12,12 @@ namespace LYBT.WebAPI.Controllers
     public class UsersController : BaseUsersController
     {
         public UsersController(
-            IUserService userService,
+            ISender sender,
             ILogger<UsersController> logger)
-            : base(userService, logger)
+            : base(sender, logger)
         {
         }
     }
 }
+
+

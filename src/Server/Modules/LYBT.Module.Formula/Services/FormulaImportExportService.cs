@@ -18,14 +18,14 @@ namespace LYBT.Module.Formulas.Services;
 /// </summary>
 public class FormulaImportExportService : IFormulaImportExportService
 {
-    private readonly IFormulaRepository _repository;
+    private readonly IFormulaRepositoryLegacy _repository;
     private readonly IHerbCrossModuleService _crossModuleQuery;
     private readonly ILogger<FormulaImportExportService> _logger;
     private readonly FormulaMapper _mapper = new();
     private readonly ICacheInvalidationService _cacheInvalidation;
 
     public FormulaImportExportService(
-        IFormulaRepository repository,
+        IFormulaRepositoryLegacy repository,
         IHerbCrossModuleService crossModuleQuery,
         ILogger<FormulaImportExportService> logger,
         ICacheInvalidationService cacheInvalidation)
@@ -358,3 +358,5 @@ public class FormulaImportExportService : IFormulaImportExportService
         }
     }
 }
+
+

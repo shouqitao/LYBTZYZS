@@ -46,10 +46,10 @@ public static class LocalWebApiProgram
         builder.Services.AddUsersModule(builder.Configuration);
         builder.Services.AddPatientsModule(builder.Configuration);
         builder.Services.AddHerbsModule(builder.Configuration);
-        builder.Services.AddFormulaModule();
+        builder.Services.AddFormulaModule(builder.Configuration);
         builder.Services.AddMedicalCaseModule();
-        builder.Services.AddRegistrationModule();
-        builder.Services.AddReportsModule();
+        builder.Services.AddRegistrationModule(builder.Configuration);
+        builder.Services.AddReportsModule(builder.Configuration);
 
         builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
         {

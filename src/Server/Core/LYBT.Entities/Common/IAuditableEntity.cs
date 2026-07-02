@@ -26,3 +26,5 @@ public interface IAuditableEntity
     /// </summary>
     Guid? UpdatedBy { get; set; }
 }
+
+

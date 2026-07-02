@@ -1,10 +1,12 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.Herbs.Interfaces;
+using LYBT.Module.Herbs.Application.Commands;
+using LYBT.Module.Herbs.Application.Queries;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -21,14 +23,14 @@ namespace LYBT.WebAPI.Controllers
     [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class HerbsController : BaseApiController
     {
-        private readonly IHerbService _herbService;
+        private readonly ISender _sender;
 
         public HerbsController(
-            IHerbService herbService,
+            ISender sender,
             ILogger<HerbsController> logger)
             : base(logger)
         {
-            _herbService = herbService;
+            _sender = sender;
         }
 
         /// <summary>
@@ -44,11 +46,11 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] string? keyword = null,
             [FromQuery] string? category = null)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidatePagination(page, pageSize) is { } error) return error;
 
-            var result = await _herbService.GetPagedAsync(page, pageSize, keyword, category, cancellationToken);
-            return Success(result.Data!, "查询成功");
+            var result = await _sender.Send(new GetHerbsQuery(page, pageSize, keyword, category), cancellationToken);
+            if (!result.IsSuccess) return Error(result.Error ?? "查询失败");
+            return Success(result.Value!, "查询成功");
         }
 
         /// <summary>
@@ -58,15 +60,14 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken = default)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (ValidateGuid(id, "药材ID") is { } error) return error;
 
-            var result = await _herbService.GetByIdAsync(id, cancellationToken);
-            if (!result.IsSuccess || result.Data == null)
+            var result = await _sender.Send(new GetHerbQuery(id), cancellationToken);
+            if (!result.IsSuccess || result.Value == null)
             {
-                return NotFound(result.ErrorMessage ?? "药材不存在");
+                return NotFound(result.Error ?? "药材不存在");
             }
-            return Success(result.Data, "查询成功");
+            return Success(result.Value, "查询成功");
         }
 
         /// <summary>
@@ -76,18 +77,19 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), StatusCodes.Status201Created)]
         public async Task<IActionResult> Create([FromBody] HerbInputDto dto, CancellationToken cancellationToken = default)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            var result = await _herbService.CreateAsync(dto, cancellationToken);
-            if (result.IsSuccess && result.Data != null)
+            var (operatorId, _, _) = GetOperator();
+            var result = await _sender.Send(new CreateHerbCommand(dto, operatorId), cancellationToken);
+            if (result.IsSuccess && result.Value != null)
             {
-                LogOperation("创建药材", result.Data, result.Data.Id);
+                LogOperation("创建药材", result.Value, result.Value.Id);
                 return CreatedAtAction(nameof(GetById),
-                    new { id = result.Data.Id, version = ApiVersionConstants.V1 },
-                    ApiResponse<HerbDetailDto>.CreateSuccess(result.Data, "药材创建成功"));
+                    new { id = result.Value.Id, version = ApiVersionConstants.V1 },
+                    ApiResponse<HerbDetailDto>.CreateSuccess(result.Value, "药材创建成功"));
             }
 
-            return HandleResult(result);
+            return BusinessFail(result.Error ?? "创建失败");
         }
+
         /// <summary>
         /// 切换药材状态（启用/禁用）
         /// </summary>
@@ -96,19 +98,27 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> ToggleStatus(Guid id, CancellationToken cancellationToken = default)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
-            // 使用统一的所有权检查方法
-            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync<HerbDetailDto>(id, guid => _herbService.GetByIdAsync(guid, cancellationToken), "药材");
-            if (ownershipError != null) return ownershipError;
+            var (operatorId, _, _) = GetOperator();
 
-            var result = await _herbService.ToggleStatusAsync(id, cancellationToken);
-            if (!result.IsSuccess || result.Data == null)
+            var getResult = await _sender.Send(new GetHerbQuery(id), cancellationToken);
+            if (!getResult.IsSuccess || getResult.Value == null)
             {
-                return HandleResult<HerbDetailDto>(result);
+                return NotFound(getResult.Error ?? "药材不存在");
             }
 
-            LogOperation("切换药材状态", new { NewStatus = result.Data.Status }, id);
-            return Success(result.Data, $"药材已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
+            if (ValidateOwnership(getResult.Value.CreatedBy, "药材") is { } ownerError)
+            {
+                return ownerError;
+            }
+
+            var result = await _sender.Send(new ToggleHerbStatusCommand(id, operatorId), cancellationToken);
+            if (!result.IsSuccess || result.Value == null)
+            {
+                return BusinessFail(result.Error ?? "切换状态失败");
+            }
+
+            LogOperation("切换药材状态", new { NewStatus = result.Value.Status }, id);
+            return Success(result.Value, $"药材已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
         }
 
         [HttpPost("batch-delete")]
@@ -116,20 +126,20 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
         {
-            // consolidate-exception-handling: 移除try-catch，由全局异常处理器接管
             if (dto.Ids == null || dto.Ids.Count == 0)
             {
                 return ValidationFail("请至少选择一个药材");
             }
 
-            var result = await _herbService.BatchDeleteAsync(dto.Ids, cancellationToken);
-            if (!result.IsSuccess || result.Data == null)
+            var (operatorId, _, _) = GetOperator();
+            var result = await _sender.Send(new BatchDeleteHerbsCommand(dto.Ids, operatorId), cancellationToken);
+            if (!result.IsSuccess || result.Value == null)
             {
-                return HandleResult<BatchOperationResultDto>(result);
+                return BusinessFail(result.Error ?? "批量删除失败");
             }
 
-            LogOperation("批量删除药材", new { Ids = dto.Ids, Result = result.Data.Message }, null);
-            return Success(result.Data, result.Data.Message);
+            LogOperation("批量删除药材", new { Ids = dto.Ids, Result = result.Value.Message }, null);
+            return Success(result.Value, result.Value.Message);
         }
 
         /// <summary>
@@ -142,17 +152,27 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidateGuid(id, "药材ID") is { } error) return error;
 
-            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync<HerbDetailDto>(id, guid => _herbService.GetByIdAsync(guid, cancellationToken), "药材");
-            if (ownershipError != null) return ownershipError;
+            var (operatorId, _, _) = GetOperator();
 
-            var result = await _herbService.UpdateAsync(id, dto, cancellationToken);
-            if (!result.IsSuccess || result.Data == null)
+            var getResult = await _sender.Send(new GetHerbQuery(id), cancellationToken);
+            if (!getResult.IsSuccess || getResult.Value == null)
             {
-                return HandleResult<HerbDetailDto>(result);
+                return NotFound(getResult.Error ?? "药材不存在");
             }
 
-            LogOperation("更新药材", result.Data, result.Data.Id);
-            return Success(result.Data, "药材更新成功");
+            if (ValidateOwnership(getResult.Value.CreatedBy, "药材") is { } ownerError)
+            {
+                return ownerError;
+            }
+
+            var result = await _sender.Send(new UpdateHerbCommand(id, dto, operatorId), cancellationToken);
+            if (!result.IsSuccess || result.Value == null)
+            {
+                return BusinessFail(result.Error ?? "更新失败");
+            }
+
+            LogOperation("更新药材", result.Value, result.Value.Id);
+            return Success(result.Value, "药材更新成功");
         }
 
         /// <summary>
@@ -165,13 +185,23 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidateGuid(id, "药材ID") is { } error) return error;
 
-            var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync<HerbDetailDto>(id, guid => _herbService.GetByIdAsync(guid, cancellationToken), "药材");
-            if (ownershipError != null) return ownershipError;
+            var (operatorId, _, _) = GetOperator();
 
-            var result = await _herbService.DeleteAsync(id, cancellationToken);
+            var getResult = await _sender.Send(new GetHerbQuery(id), cancellationToken);
+            if (!getResult.IsSuccess || getResult.Value == null)
+            {
+                return NotFound(getResult.Error ?? "药材不存在");
+            }
+
+            if (ValidateOwnership(getResult.Value.CreatedBy, "药材") is { } ownerError)
+            {
+                return ownerError;
+            }
+
+            var result = await _sender.Send(new DeleteHerbCommand(id, operatorId), cancellationToken);
             if (!result.IsSuccess)
             {
-                return HandleResult(result);
+                return BusinessFail(result.Error ?? "删除失败");
             }
 
             LogOperation("删除药材", new { Id = id }, id);
@@ -191,14 +221,17 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("导入列表不能为空");
             }
 
-            var result = await _herbService.BatchImportAsync(request.Herbs, request.Strategy, cancellationToken);
-            if (!result.IsSuccess || result.Data == null)
+            var (operatorId, _, _) = GetOperator();
+            var result = await _sender.Send(new BatchImportHerbsCommand(request.Herbs, request.Strategy, operatorId), cancellationToken);
+            if (!result.IsSuccess || result.Value == null)
             {
-                return HandleResult<HerbBatchImportResultDto>(result);
+                return BusinessFail(result.Error ?? "导入失败");
             }
 
             LogOperation("批量导入药材", new { Count = request.Herbs.Count, Strategy = request.Strategy }, null);
-            return Success(result.Data, $"成功导入 {result.Data.SuccessCount} 条药材");
+            return Success(result.Value, $"成功导入 {result.Value.SuccessCount} 条药材");
         }
     }
 }
+
+

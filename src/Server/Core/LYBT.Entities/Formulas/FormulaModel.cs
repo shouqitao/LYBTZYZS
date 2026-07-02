@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Common;
@@ -82,3 +82,5 @@ namespace LYBT.Entities.Formulas
         public virtual ICollection<FormulaHerbItem> Herbs { get; set; } = new List<FormulaHerbItem>();
     }
 }
+
+

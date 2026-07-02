@@ -41,3 +41,5 @@ public interface IRegistrationCrossModuleService
     /// </summary>
     Task<Guid?> GetRegistrationIdByMedicalCaseIdAsync(Guid medicalCaseId, CancellationToken ct = default);
 }
+
+

@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Models.DTOs.Users;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -15,11 +16,13 @@ namespace LYBT.Module.Users.Services;
 public class UserCrossModuleService : IUserCrossModuleService
 {
     private readonly AppDbContext _context;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<UserCrossModuleService> _logger;
 
-    public UserCrossModuleService(IDbContextAccessor dbAccessor, ILogger<UserCrossModuleService> logger)
+    public UserCrossModuleService(IDbContextAccessor dbAccessor, UserManager<ApplicationUser> userManager, ILogger<UserCrossModuleService> logger)
     {
         _context = dbAccessor.Context;
+        _userManager = userManager;
         _logger = logger;
     }
 
@@ -126,4 +129,14 @@ public class UserCrossModuleService : IUserCrossModuleService
             await _context.SaveChangesAsync(cancellationToken);
         }
     }
+
+    public async Task<bool> VerifyPasswordAsync(string username, string password, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByNameAsync(username);
+        if (user == null) return false;
+
+        return await _userManager.CheckPasswordAsync(user, password);
+    }
 }
+
+

@@ -21,8 +21,8 @@ Central documentation hub for the LYBTZYZS TCM clinic management system. Hosts t
 |-----------|---------|-------|
 | `01-product/` | Product vision, feature overview, user roles | 4 |
 | `02-requirements/` | PRD: 10 v1.0 modules, 141 User Stories, NFR, traceability matrix (Sync is v2.0) | 14 |
-| `03-architecture/` | System architecture, data model, dual-mode design, 14 ADRs (ADR-0001~0014; 0013=SignalR, 0014=sysadmin config), permissions matrix, business flows, `decisions/`, `archive/`, `localwebapi/` | 31 |
-| `03-architecture/decisions/` | ADR-0001 through ADR-0014 |
+| `03-architecture/` | System architecture, data model, dual-mode design, 18 ADRs (ADR-0001~0018; 0013=SignalR, 0014=sysadmin config, 0017=Modular Monolith CQRS, 0018=Domain Events), permissions matrix, business flows, `decisions/`, `archive/`, `localwebapi/` | 33 |
+| `03-architecture/decisions/` | ADR-0001 through ADR-0018 |
 | `03-architecture/localwebapi/` | LocalWebAPI-specific architecture docs |
 | `04-api-reference/` | All API endpoint documentation (printing, health, diagnostics, configuration; Sync is v2.0) | 14 |
 | `05-development/` | Quick start, coding standards, design patterns, testing guides, `standards/` (STD files), `archive/` | 26 |
@@ -49,7 +49,7 @@ Central documentation hub for the LYBTZYZS TCM clinic management system. Hosts t
 |------|-------|
 | v1.0 US total | **141** (AUTH13+USER12+PAT13+HERB13+FORM13+MC19+REG8+PRINT4+REPORT3+Platform43) |
 | v1.0 modules | **10** (Sync is v2.0; Reports is 10th) |
-| ADR count | **14** (ADR-0001~0014) |
+| ADR count | **18** (ADR-0001~0018; 0017=Modular Monolith CQRS, 0018=Domain Events) |
 | LocalWebAPI embedded port | **5300** (`EmbeddedLocalWebApiService.cs:17`) |
 | LocalWebAPI standalone debug port | 5290 (not active in embedded mode) |
 | Remote WebAPI port | 5000 |

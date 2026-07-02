@@ -89,3 +89,5 @@ public class PatientCrossModuleService : IPatientCrossModuleService
             Message: count > 0 ? $"患者有 {count} 条医案记录" : null);
     }
 }
+
+

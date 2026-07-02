@@ -46,3 +46,5 @@ public abstract class BaseEntityConfiguration<T> : IEntityTypeConfiguration<T>
         // 避免重复配置导致冲突
     }
 }
+
+

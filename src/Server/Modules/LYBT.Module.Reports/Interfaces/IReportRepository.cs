@@ -10,3 +10,5 @@ public interface IReportRepository
     Task<List<DoctorCountDto>> GetTodayConsultationsByDoctorAsync(CancellationToken cancellationToken = default);
     Task<List<HerbUsageItemDto>> GetTodayHerbUsageAsync(CancellationToken cancellationToken = default);
 }
+
+

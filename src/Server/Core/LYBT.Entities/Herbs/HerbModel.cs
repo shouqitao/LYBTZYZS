@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Common;
@@ -86,3 +86,5 @@ namespace LYBT.Entities.Herbs
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
     }
 }
+
+

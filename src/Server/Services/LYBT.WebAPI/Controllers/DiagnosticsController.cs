@@ -1,11 +1,11 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
-using LYBT.Shared.Logging.Management;
 using LYBT.Shared.Models.Contracts.Diagnostics;
+using LYBT.WebAPI.Configuration.Commands;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Serilog.Events;
 
 namespace LYBT.WebAPI.Controllers;
 
@@ -16,138 +16,76 @@ namespace LYBT.WebAPI.Controllers;
 [ApiController]
 [ApiVersion("1")]
 [Route("api/v{version:apiVersion}/diagnostics")]
-[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]  // 仅超级管理员可访问
+[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
 public class DiagnosticsController : BaseApiController
 {
-    private readonly LoggingLevelManager _loggingLevelManager;
+    private readonly ISender _sender;
 
     public DiagnosticsController(
-        LoggingLevelManager loggingLevelManager,
+        ISender sender,
         ILogger<DiagnosticsController> logger)
         : base(logger)
     {
-        _loggingLevelManager = loggingLevelManager;
+        _sender = sender;
     }
 
     /// <summary>
     /// 获取当前日志级别状态
     /// </summary>
-    /// <returns>当前日志配置信息</returns>
     [HttpGet("logging/status")]
-    public IActionResult GetLoggingStatus()
+    public async Task<IActionResult> GetLoggingStatus()
     {
-        var status = _loggingLevelManager.GetStatus();
-        return Success(new
-        {
-            currentLevel = status.CurrentLevel,
-            defaultLevel = status.DefaultLevel,
-            isDebugModeActive = status.IsActive,
-            debugModeStartedAt = status.StartedAt,
-            debugModeExpiresAt = status.ExpiresAt,
-            remainingMinutes = status.ExpiresAt.HasValue
-                ? Math.Max(0, (int)(status.ExpiresAt.Value - DateTime.UtcNow).TotalMinutes)
-                : (int?)null
-        });
+        var result = await _sender.Send(new GetLoggingStatusQuery());
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "获取日志状态失败");
+        return Success(result.Value!, "查询成功");
     }
 
     /// <summary>
     /// 启用调试模式 - 临时降低日志级别以捕获更多诊断信息
     /// </summary>
-    /// <param name="request">调试模式请求参数</param>
-    /// <returns>调试模式信息</returns>
     [HttpPost("logging/debug/enable")]
-    public IActionResult EnableDebugMode([FromBody] EnableDebugModeRequest? request)
+    public async Task<IActionResult> EnableDebugMode([FromBody] EnableDebugModeRequest? request)
     {
         var (operatorId, operatorName, _) = GetOperator();
 
-        var level = request?.Level?.ToLowerInvariant() switch
-        {
-            "verbose" => LogEventLevel.Verbose,
-            "debug" => LogEventLevel.Debug,
-            "information" => LogEventLevel.Information,
-            _ => LogEventLevel.Debug
-        };
+        var result = await _sender.Send(new EnableDebugModeCommand(
+            request?.Level, request?.DurationMinutes, operatorId, operatorName));
 
-        var durationMinutes = request?.DurationMinutes ?? 30;
-
-        // 限制最大持续时间为2小时
-        if (durationMinutes > 120)
-        {
-            durationMinutes = 120;
-        }
-
-        var result = _loggingLevelManager.EnableDebugMode(level, durationMinutes);
-
-        _logger.LogWarning(
-            "调试模式已启用 - 操作者: {OperatorName}({OperatorId}), 级别: {Level}, 持续时间: {Duration}分钟, 过期时间: {ExpiresAt}",
-            operatorName, operatorId, level, durationMinutes, result.ExpiresAt);
-
-        return Success(new
-        {
-            message = "调试模式已启用",
-            previousLevel = result.PreviousLevel,
-            currentLevel = result.CurrentLevel,
-            startedAt = result.StartedAt,
-            expiresAt = result.ExpiresAt,
-            durationMinutes = result.DurationMinutes
-        });
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "启用调试模式失败");
+        return Success(result.Value!, "调试模式已启用");
     }
 
     /// <summary>
     /// 禁用调试模式 - 恢复默认日志级别
     /// </summary>
-    /// <returns>调试模式信息</returns>
     [HttpPost("logging/debug/disable")]
-    public IActionResult DisableDebugMode()
+    public async Task<IActionResult> DisableDebugMode()
     {
         var (operatorId, operatorName, _) = GetOperator();
 
-        var result = _loggingLevelManager.DisableDebugMode();
-
-        _logger.LogWarning(
-            "调试模式已禁用 - 操作者: {OperatorName}({OperatorId}), 恢复级别: {Level}",
-            operatorName, operatorId, result.CurrentLevel);
-
-        return Success(new
-        {
-            message = "调试模式已禁用，已恢复默认日志级别",
-            previousLevel = result.PreviousLevel,
-            currentLevel = result.CurrentLevel
-        });
+        var result = await _sender.Send(new DisableDebugModeCommand(operatorId, operatorName));
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "禁用调试模式失败");
+        return Success(result.Value!, "调试模式已禁用");
     }
 
     /// <summary>
     /// 设置指定的日志级别（无自动过期）
     /// </summary>
-    /// <param name="request">日志级别请求</param>
-    /// <returns>操作结果</returns>
     [HttpPost("logging/level")]
-    public IActionResult SetLoggingLevel([FromBody] SetLoggingLevelRequest request)
+    public async Task<IActionResult> SetLoggingLevel([FromBody] SetLoggingLevelRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Level))
-        {
-            return ValidationFail("日志级别不能为空");
-        }
-
-        if (!Enum.TryParse<LogEventLevel>(request.Level, ignoreCase: true, out var level))
-        {
-            return ValidationFail($"无效的日志级别，有效值: {string.Join(", ", Enum.GetNames<LogEventLevel>())}");
-        }
-
         var (operatorId, operatorName, _) = GetOperator();
-        var previousLevel = _loggingLevelManager.GetStatus().CurrentLevel;
 
-        _loggingLevelManager.SetLevel(level);
+        var result = await _sender.Send(new SetLoggingLevelCommand(
+            request.Level, operatorId, operatorName));
 
-        _logger.LogWarning(
-            "日志级别已手动更改 - 操作者: {OperatorName}({OperatorId}), 从 {PreviousLevel} 改为 {NewLevel}",
-            operatorName, operatorId, previousLevel, level);
-
-        return Success(new
-        {
-            message = "日志级别已更新",
-            previousLevel,
-            currentLevel = level.ToString()
-        });
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "设置日志级别失败");
+        return Success(result.Value!, "日志级别已更新");
     }
 }
+
+

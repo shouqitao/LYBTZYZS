@@ -75,5 +75,68 @@ namespace LYBT.Entities.Registrations
     /// </summary>
     [StringLength(500)]
     public string? Remark { get; set; }
+
+    // ==== 领域方法 ====
+
+    /// <summary>
+    /// 接诊：从队列选中患者，Registration -> InProgress
+    /// </summary>
+    public void StartVisit()
+    {
+        if (Status != RegistrationStatus.Waiting)
+            throw new InvalidOperationException("只有等待中的挂号可以接诊");
+
+        Status = RegistrationStatus.InProgress;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// 完成就诊
+    /// </summary>
+    public void Complete()
+    {
+        Status = RegistrationStatus.Completed;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// 取消挂号
+    /// </summary>
+    public void Cancel()
+    {
+        Status = RegistrationStatus.Cancelled;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// 关联医案
+    /// </summary>
+    public void AssignMedicalCase(Guid medicalCaseId)
+    {
+        MedicalCaseId = medicalCaseId;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// 恢复到等待状态
+    /// </summary>
+    public void RevertToWaiting()
+    {
+        Status = RegistrationStatus.Waiting;
+        MedicalCaseId = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// 软删除挂号记录
+    /// </summary>
+    public void SoftDelete(Guid deletedBy)
+    {
+        IsDeleted = true;
+        UpdatedBy = deletedBy;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }
 }
+
+

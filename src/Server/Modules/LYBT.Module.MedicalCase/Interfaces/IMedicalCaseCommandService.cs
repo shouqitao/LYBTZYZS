@@ -141,3 +141,5 @@ namespace LYBT.Module.MedicalCases.Interfaces
         Task<LYBT.Shared.Models.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default);
     }
 }
+
+

@@ -28,9 +28,13 @@ public class LocalWebApiPatternTests
                 "LYBT.Infrastructure",
                 "LYBT.Module",
                 "LYBT.Shared",
+                "LYBT.SharedKernel",
+                "FluentValidation",
+                "MediatR",
                 "Microsoft.AspNetCore",
                 "Microsoft.EntityFrameworkCore",
                 "Microsoft.Extensions",
+                "Microsoft.IdentityModel",
                 "Serilog",
                 "System",
                 "System.Threading",
@@ -43,7 +47,7 @@ public class LocalWebApiPatternTests
             .GetResult();
 
         Assert.True(result.IsSuccessful,
-            "LocalWebAPI controllers may depend on Service interfaces, entities, and framework types");
+            $"LocalWebAPI controllers have unapproved dependencies: {string.Join(", ", result.FailingTypes?.Select(t => t.Name) ?? [])}");
     }
 
     /// <summary>

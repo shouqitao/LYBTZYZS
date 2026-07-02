@@ -12,3 +12,5 @@ public interface IDefaultPasswordService
 
     bool ShouldForcePasswordChange();
 }
+
+

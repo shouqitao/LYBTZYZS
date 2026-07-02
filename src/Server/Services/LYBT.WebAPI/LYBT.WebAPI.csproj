@@ -86,6 +86,7 @@
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Registration\LYBT.Module.Registration.csproj" />
 		<!-- 报表模块 -->
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Reports\LYBT.Module.Reports.csproj" />
+		<ProjectReference Include="..\..\Core\LYBT.SharedKernel\LYBT.SharedKernel.csproj" />
 	</ItemGroup>
 
 </Project>

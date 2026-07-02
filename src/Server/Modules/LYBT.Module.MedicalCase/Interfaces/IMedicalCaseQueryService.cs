@@ -156,3 +156,5 @@ namespace LYBT.Module.MedicalCases.Interfaces
         Task<List<MedicalCase>> GetBatchAsync(List<Guid> ids, CancellationToken cancellationToken = default);
     }
 }
+
+

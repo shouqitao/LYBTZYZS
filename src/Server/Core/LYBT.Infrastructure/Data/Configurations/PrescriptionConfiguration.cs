@@ -39,3 +39,5 @@ public class PrescriptionConfiguration : BaseEntityConfiguration<Prescription>
               .OnDelete(DeleteBehavior.Cascade);
     }
 }
+
+

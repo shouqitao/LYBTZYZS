@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Formulas;
+using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -28,3 +28,5 @@ namespace LYBT.Infrastructure.Data.Configurations
         }
     }
 }
+
+

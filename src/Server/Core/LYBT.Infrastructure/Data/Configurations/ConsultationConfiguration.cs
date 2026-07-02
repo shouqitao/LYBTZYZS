@@ -32,3 +32,5 @@ public class ConsultationConfiguration : BaseEntityConfiguration<Consultation>
               .OnDelete(DeleteBehavior.Cascade);
     }
 }
+
+

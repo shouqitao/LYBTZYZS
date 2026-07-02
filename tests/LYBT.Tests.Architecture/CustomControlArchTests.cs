@@ -250,7 +250,11 @@ public class CustomControlArchTests
             // Models
             "PatientDisplayModel", "BreadcrumbItem",
             // Services
-            "SystemTimeProvider"
+            "SystemTimeProvider",
+            // Non-control UI helpers
+            "NavigationItem",
+            // Converters (not UserControl-derived)
+            "BoolToIntConverter", "BoolToMarginConverter"
         };
 
         var actualViolations = result.FailingTypes?
