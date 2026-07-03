@@ -576,7 +576,7 @@ curl -X POST \
 
 ## POST /users/{id}/restore
 
-> 🚧 **v1.0 待实现（D4 Restore 软删除恢复补回，基线§1）**：基础设施已就绪，端点待补。
+> ✅ **已实现**
 
 恢复已删除的用户。
 
@@ -652,7 +652,7 @@ curl -X POST \
 
 ## POST /users/batch-enable
 
-> 🚧 **v1.0 待实现（D4 Restore/批量操作补回，基线§1）**。
+> ✅ **已实现**
 
 批量启用用户。
 
@@ -702,7 +702,7 @@ curl -X POST \
 
 ## POST /users/batch-disable
 
-> 🚧 **v1.0 待实现（D4 Restore/批量操作补回，基线§1）**。
+> ✅ **已实现**
 
 批量禁用用户。
 
@@ -787,3 +787,4 @@ curl -X POST \
 | 2026-06-25 | v1.6 | 补充所有端点完整 curl 命令 + 请求/响应 JSON 示例 + 字段说明表; 权限策略统一为 AdminOnly (对齐实际代码); reset-password 请求体修正为 MustChangeOnNextLogin (对齐 ResetPasswordRequestDto) |
 | 2026-06-28 | v1.7 | 文档对齐基线：权限策略 AdminOnly→AdminOrSuperAdmin（对齐 PolicyConstants）；响应信封 code→success（基线§6）；restore/batch-enable/batch-disable 标 D4 v1.0 待实现 |
 | 2026-06-28 | v1.8 | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；删除「通用响应格式」节（README 已集中化）；curl 引用 README TOKEN |
+| 2026-06-29 | v1.9 | restore/batch-enable/batch-disable 三个端点从待实现变为已实现 |

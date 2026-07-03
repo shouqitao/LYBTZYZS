@@ -131,7 +131,7 @@ TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
 
 ## 模块端点索引
 
-> **端点总数说明**：v1.0 已实现约 **76** 个公开端点（Auth 5 + Users 11 + Patients 7 + Herbs 8 + Formulas 10 + MedicalCases 15 + Registrations 7 + Reports 3 + Diagnostics 4 + Configuration 3 + Health 3；Sync 模块整块未实现）。另有 **D1-D10 待补回项**（见各分文档「🚧 v1.0 待实现」标注）属 v1.0 范围但代码尚未落地，文档保留设计。基线 `docs/compose/specs/2026-06-28-docs-reconciliation-baseline.md`。
+> **端点总数说明**：v1.0 已实现约 **85** 个公开端点（Auth 5 + Users 14 + Patients 10 + Herbs 8 + Formulas 10 + MedicalCases 18 + Registrations 7 + Reports 3 + Diagnostics 4 + Configuration 3 + Health 3；Sync 模块整块未实现）。另有 **D1-D10 待补回项**（见各分文档「🚧 v1.0 待实现」标注）属 v1.0 范围但代码尚未落地，文档保留设计。基线 `docs/compose/specs/2026-06-28-docs-reconciliation-baseline.md`。
 
 ### 认证模块 ([01-auth.md](01-auth.md))
 

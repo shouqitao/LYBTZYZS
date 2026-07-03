@@ -1019,9 +1019,9 @@ curl -X GET "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
 
 | 端点 | 说明 | 补回决策 |
 |------|------|----------|
-| `POST /medicalcases/batch-details` | 批量获取医案详情（单次最多 50 个，对应 ERR-30603） | 🚧 v1.0 待实现（**D9** 历史聚合查询补回） |
-| `GET /medicalcases/{id}/permissions` | 获取当前用户对该医案的操作权限 | 🚧 v1.0 待实现（**D9**） |
-| `GET /medicalcases/{id}/audit-logs` | 医案审计日志查询（需 AuditLog 实体 + Service） | 🚧 v1.0 待实现（**D1** 医案审计日志补回，对应 MC-017） |
+| `POST /medicalcases/batch-details` | 批量获取医案详情（单次最多 50 个，对应 ERR-30603） | ✅ 已实现 |
+| `GET /medicalcases/{id}/permissions` | 获取当前用户对该医案的操作权限 | ✅ 已实现 |
+| `GET /medicalcases/{id}/audit-logs` | 医案审计日志查询（需 AuditLog 实体 + Service） | ✅ 已实现 |
 | `PUT /medicalcases/{id}/print-completed` | 记录打印完成（IsPrinted/PrintVersion/PrintCount/LastPrintedAt 回写） | 🚧 v1.0 待实现（**D2** 打印保护/回写补回，PRINT-004） |
 | `POST /medicalcases/{id}/print-logs` | 添加打印日志（需 PrintLog 实体） | 🚧 v1.0 待实现（**D2**） |
 
@@ -1074,3 +1074,4 @@ curl -X GET "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
 | 2026-06-25 | v2.0 | 补充所有端点完整请求/响应 JSON 示例和 curl 命令; 更新 DTO 字段与代码对齐 (移除 remark 字段, 修正 PrescriptionInputDto 结构); 新增枚举值速查表; 移除不存在的 MedicalCasePrintController/MedicalCaseAuditController 引用 |
 | 2026-06-28 | v2.1 | 文档对齐基线：响应信封 code→success（基线§6）；权限策略加 D7 待对齐标注（目标 DoctorOrReceptionist/创建 Doctor-only，代码 DoctorOrAdmin）；新增「待实现端点」章节标注 batch-details/permissions/audit-logs/print-completed/print-logs（D1 审计/D2 打印回写/D9 历史） |
 | 2026-06-28 | v2.2 | 文档结构优化批次1：3 处 MedicalCaseDetailDto 重复合一；JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；通用状态码引用 README |
+| 2026-06-29 | v2.3 | batch-details/permissions/audit-logs 三个端点从待实现变为已实现 |
