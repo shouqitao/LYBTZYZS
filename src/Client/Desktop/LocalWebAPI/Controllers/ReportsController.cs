@@ -21,9 +21,12 @@ public class ReportsController : BaseApiController
     }
 
     [HttpGet("daily/income")]
-    public async Task<IActionResult> GetDailyIncome(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetDailyIncome(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        CancellationToken cancellationToken = default)
     {
-        var result = await _sender.Send(new GetDailyIncomeQuery(), cancellationToken);
+        var result = await _sender.Send(new GetDailyIncomeQuery(startDate, endDate), cancellationToken);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
         var dto = new DailyIncomeDto
@@ -36,9 +39,12 @@ public class ReportsController : BaseApiController
     }
 
     [HttpGet("daily/consultations")]
-    public async Task<IActionResult> GetDailyConsultations(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetDailyConsultations(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        CancellationToken cancellationToken = default)
     {
-        var result = await _sender.Send(new GetDailyConsultationsQuery(), cancellationToken);
+        var result = await _sender.Send(new GetDailyConsultationsQuery(startDate, endDate), cancellationToken);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
         var byDoctor = result.Value!.ByDoctor
@@ -53,9 +59,12 @@ public class ReportsController : BaseApiController
     }
 
     [HttpGet("daily/herbs")]
-    public async Task<IActionResult> GetDailyHerbs(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetDailyHerbs(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        CancellationToken cancellationToken = default)
     {
-        var result = await _sender.Send(new GetDailyHerbUsageQuery(), cancellationToken);
+        var result = await _sender.Send(new GetDailyHerbUsageQuery(startDate, endDate), cancellationToken);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
         var items = result.Value!.Items

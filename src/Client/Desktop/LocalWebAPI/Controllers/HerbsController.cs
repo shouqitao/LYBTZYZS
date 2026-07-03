@@ -1,3 +1,4 @@
+using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Herbs.Application.Commands;
 using LYBT.Module.Herbs.Application.Queries;
@@ -12,7 +13,7 @@ namespace LYBT.LocalWebAPI.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize]
+[Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
 public class HerbsController : BaseApiController
 {
     private readonly ISender _sender;
@@ -100,6 +101,16 @@ public class HerbsController : BaseApiController
         return Success(result.Value, $"药材已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
     }
 
+    [HttpPost("{id}/restore")]
+    public async Task<IActionResult> Restore(Guid id)
+    {
+        var (operatorId, _, _) = GetOperator();
+        var result = await _sender.Send(new RestoreHerbCommand(id, operatorId));
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "恢复失败");
+        return Success(result.Value, "恢复成功");
+    }
+
     [HttpPost("batch-import")]
     public async Task<IActionResult> BatchImport([FromBody] HerbBatchImportInputDto request)
     {
@@ -110,5 +121,28 @@ public class HerbsController : BaseApiController
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "导入失败");
         return Success(result.Value, result.Value.Message);
+    }
+
+    [HttpGet("{id}/check-reference")]
+    public async Task<IActionResult> CheckReference(Guid id)
+    {
+        var result = await _sender.Send(new CheckHerbReferenceQuery(id));
+        if (!result.IsSuccess || result.Value == null)
+            return NotFound(result.Error ?? "药材不存在");
+        return Success(result.Value, "引用检查完成");
+    }
+
+    [HttpPost("batch-check-reference")]
+    public async Task<IActionResult> BatchCheckReference([FromBody] HerbBatchCheckReferenceInputDto dto)
+    {
+        if (dto?.HerbIds == null || dto.HerbIds.Count == 0)
+            return ValidationFail("药材ID列表不能为空");
+        if (dto.HerbIds.Count > 100)
+            return ValidationFail("单次最多检查100条药材");
+
+        var result = await _sender.Send(new BatchCheckHerbReferenceQuery(dto.HerbIds));
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "批量引用检查失败");
+        return Success(result.Value, "批量引用检查完成");
     }
 }

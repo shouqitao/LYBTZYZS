@@ -115,6 +115,21 @@ public class HerbCrossModuleService : IHerbCrossModuleService
 
         return disabledIds;
     }
+
+    public async Task<List<HerbBasicDto>> GetAllActiveHerbsAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Herbs
+            .AsNoTracking()
+            .Where(h => !h.IsDeleted && h.Status == CommonStatus.Enabled)
+            .Select(h => new HerbBasicDto
+            {
+                Id = h.Id,
+                Name = h.Name,
+                Pinyin = h.PinYinCode,
+                Category = h.Category
+            })
+            .ToListAsync(cancellationToken);
+    }
 }
 
 

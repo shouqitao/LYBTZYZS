@@ -8,6 +8,6 @@ namespace LYBT.Module.Auth.Application.Queries;
 /// </summary>
 public record ValidateTokenQuery(
     string Token
-) : IRequest<Result<bool>>;
+) : IRequest<Result<ValidateTokenResult>>;
 
 

@@ -2,7 +2,6 @@ using FluentValidation;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Validators.Auth;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,9 +25,11 @@ namespace LYBT.Module.Auth
 
             // 注册仓储
             services.AddScoped<Interfaces.IAuthSessionRepository, Infrastructure.AuthSessionRepository>();
+            services.AddScoped<Interfaces.ISecurityAuditRepository, Infrastructure.SecurityAuditRepository>();
 
             // 注册核心服务
             services.AddSingleton<Interfaces.IJwtService, Services.JwtService>();
+            services.AddScoped<Interfaces.ISecurityAuditService, Services.SecurityAuditService>();
 
             // 注册 MediatR（Application层）
             services.AddMediatR(cfg =>
@@ -40,13 +41,7 @@ namespace LYBT.Module.Auth
 
             return services;
         }
-        /// 配置认证模块中间件
-        public static IApplicationBuilder UseAuthModule(this IApplicationBuilder app)
-        {
-            app.UseAuthentication();
-            app.UseAuthorization();
-            return app;
-        }
+
     }
 }
 

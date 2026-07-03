@@ -3,7 +3,6 @@ using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Auth.Application.Commands;
 using LYBT.Module.Auth.Application.Queries;
-using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Primitives.ErrorCodes;
@@ -14,6 +13,9 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace LYBT.WebAPI.Controllers
 {
+    /// <summary>
+    /// 认证授权 API - 登录、登出、Token刷新、自动登录
+    /// </summary>
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
@@ -21,16 +23,13 @@ namespace LYBT.WebAPI.Controllers
     public class AuthController : BaseApiController
     {
         private readonly ISender _sender;
-        private readonly IJwtService _jwtService;
 
         public AuthController(
             ISender sender,
-            IJwtService jwtService,
             ILogger<AuthController> logger)
             : base(logger)
         {
             _sender = sender;
-            _jwtService = jwtService;
         }
 
         [HttpPost("login")]
@@ -65,6 +64,9 @@ namespace LYBT.WebAPI.Controllers
             };
         }
 
+        /// <summary>
+        /// 用户登出
+        /// </summary>
         [HttpPost("logout")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse), 200)]
@@ -82,6 +84,9 @@ namespace LYBT.WebAPI.Controllers
             return Success("登出成功");
         }
 
+        /// <summary>
+        /// 刷新访问令牌
+        /// </summary>
         [HttpPost("refresh")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
@@ -104,15 +109,22 @@ namespace LYBT.WebAPI.Controllers
             };
         }
 
+        /// <summary>
+        /// 自动登录（免密登录）
+        /// </summary>
         [HttpPost("auto-login")]
         [AllowAnonymous]
+        [EnableRateLimiting("Login")]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 401)]
-        public IActionResult AutoLoginAsync([FromBody] AutoLoginRequest request)
+        public async Task<IActionResult> AutoLoginAsync([FromBody] AutoLoginRequest request)
         {
             if (ValidateModel() is { } modelError) return modelError;
 
-            var result = _jwtService.ValidateAutoLoginToken(request.AutoLoginToken);
+            var result = await _sender.Send(new AutoLoginCommand(
+                request.AutoLoginToken,
+                Request.HttpContext.Connection.RemoteIpAddress?.ToString(),
+                Request.Headers.UserAgent.ToString()));
             return HandleResult(result, "自动登录成功", useAuthMapping: true);
         }
 
@@ -124,42 +136,38 @@ namespace LYBT.WebAPI.Controllers
             var authHeader = Request.Headers.Authorization.FirstOrDefault();
             if (string.IsNullOrWhiteSpace(authHeader))
             {
-                return Unauthorized(ApiResponse<object>.CreateFail("Missing Authorization header", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
+                return Unauthorized(ApiResponse<object>.CreateFail("缺少 Authorization 头", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
             }
 
             if (!authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             {
-                return Unauthorized(ApiResponse<object>.CreateFail("Invalid Authorization header format", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
+                return Unauthorized(ApiResponse<object>.CreateFail("Authorization 头格式无效", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
             }
 
             var token = authHeader.Substring("Bearer ".Length).Trim();
             if (string.IsNullOrWhiteSpace(token))
             {
-                return Unauthorized(ApiResponse<object>.CreateFail("Missing token in Authorization header", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
+                return Unauthorized(ApiResponse<object>.CreateFail("Authorization 头中缺少 Token", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
             }
 
             var result = await _sender.Send(new ValidateTokenQuery(token));
-            if (result.IsSuccess && result.Value)
+            if (result.IsSuccess && result.Value?.IsValid == true)
             {
-                var principal = _jwtService.ValidateToken(token);
-                if (principal != null)
+                object response = new
                 {
-                    object response = new
+                    valid = true,
+                    sub = new
                     {
-                        valid = true,
-                        sub = new
-                        {
-                            UserId = principal.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
-                            UserName = principal.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value,
-                            Role = principal.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
-                        },
-                        message = "Token is valid"
-                    };
-                    return Success(response, "Token验证成功");
-                }
+                        result.Value.UserId,
+                        result.Value.UserName,
+                        result.Value.Role
+                    },
+                    message = "Token 有效"
+                };
+                return Success(response, "Token验证成功");
             }
 
-            return Unauthorized(ApiResponse<object>.CreateFail("Token is invalid", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
+            return Unauthorized(ApiResponse<object>.CreateFail("Token 无效", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
         }
 
         [HttpGet]

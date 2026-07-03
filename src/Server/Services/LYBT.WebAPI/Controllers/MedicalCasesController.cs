@@ -11,6 +11,8 @@ using LYBT.Shared.Models.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -43,7 +45,8 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         /// <param name="dto">创建请求（Id应为null）</param>
         [HttpPost]
-        [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
+        [EnableRateLimiting("ApiCalls")]
+        [Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]
@@ -105,6 +108,7 @@ namespace LYBT.WebAPI.Controllers
         /// <param name="request">聚合保存请求</param>
         /// <returns>更新后的医案详情</returns>
         [HttpPut("{id:guid}")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]
@@ -139,6 +143,7 @@ namespace LYBT.WebAPI.Controllers
         /// 资源级权限由 Service 层 EnsureCanEdit/EnsureCanDelete 统一检查
         /// </summary>
         [HttpDelete("{id:guid}")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         [ProducesResponseType(typeof(ApiResponse), 403)]
@@ -159,6 +164,7 @@ namespace LYBT.WebAPI.Controllers
         /// 批量删除医案
         /// </summary>
         [HttpPost("batch-delete")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchDelete([FromBody] LYBT.Shared.Models.Contracts.Common.BatchDeleteInputDto dto)
@@ -203,6 +209,7 @@ namespace LYBT.WebAPI.Controllers
         /// Epic #1612: 支持按状态、患者ID过滤
         /// </summary>
         [HttpGet]
+        [OutputCache(PolicyName = "MedicalCaseCache")]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<MedicalCaseListDto>>), 200)]
         public async Task<IActionResult> GetList(
             [FromQuery] MedicalCaseStatus? status = null,
@@ -294,6 +301,46 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 查询患者辨证记录历史
+        /// US-MC-008: 按患者ID分页查询所有医案的辨证记录
+        /// </summary>
+        [HttpGet("patient/{patientId:guid}/consultations")]
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<ConsultationDetailDto>>), 200)]
+        public async Task<IActionResult> GetPatientConsultations(
+            Guid patientId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            var result = await _sender.Send(
+                new GetPatientConsultationsQuery(patientId, page, pageSize));
+
+            if (!result.IsSuccess)
+                return BusinessFail(result.Error ?? "查询失败");
+
+            return Success(result.Value!, "查询成功");
+        }
+
+        /// <summary>
+        /// 查询患者处方历史
+        /// US-MC-009: 按患者ID分页查询所有医案的处方记录
+        /// </summary>
+        [HttpGet("patient/{patientId:guid}/prescriptions")]
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<PrescriptionDetailDto>>), 200)]
+        public async Task<IActionResult> GetPatientPrescriptions(
+            Guid patientId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            var result = await _sender.Send(
+                new GetPatientPrescriptionsQuery(patientId, page, pageSize));
+
+            if (!result.IsSuccess)
+                return BusinessFail(result.Error ?? "查询失败");
+
+            return Success(result.Value!, "查询成功");
+        }
+
+        /// <summary>
         /// 查询辨证记录列表
         /// Epic #1612: 返回医案的所有历史辨证记录
         /// </summary>
@@ -326,11 +373,87 @@ namespace LYBT.WebAPI.Controllers
 
             return Success(result.Value!, "查询成功");
         }
-    }
 
-    public class SetPrescriptionFlagRequest
-    {
-        public bool NeedsPrescription { get; set; }
+        /// <summary>
+        /// 批量查询医案详情（≤50条）
+        /// 解决列表视图N+1查询问题
+        /// </summary>
+        [HttpPost("batch-details")]
+        [ProducesResponseType(typeof(ApiResponse<List<MedicalCaseDetailDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        public async Task<IActionResult> GetBatchDetails([FromBody] List<Guid> ids)
+        {
+            if (ids == null || ids.Count == 0)
+                return ValidationFail("IDs不能为空");
+            if (ids.Count > 50)
+                return ValidationFail("最多查询50条");
+
+            var result = await _sender.Send(new GetMedicalCasesBatchQuery(ids));
+            if (!result.IsSuccess)
+                return BusinessFail(result.Error ?? "查询失败");
+
+            return Success(result.Value!, "查询成功");
+        }
+
+        /// <summary>
+        /// 获取医案操作权限
+        /// US-MC-016: 返回当前用户对该医案可执行的操作
+        /// </summary>
+        [HttpGet("{id}/permissions")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCasePermissionsDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public async Task<IActionResult> GetPermissions(Guid id)
+        {
+            var (operatorId, _, operatorRole) = GetOperator();
+            var roleInt = (int)operatorRole;
+            var result = await _sender.Send(new GetMedicalCasePermissionsQuery(id, operatorId, roleInt));
+            if (!result.IsSuccess)
+                return NotFound(result.Error ?? "医案不存在");
+            return Success(result.Value!, "查询成功");
+        }
+
+        /// <summary>
+        /// 获取医案审计日志
+        /// US-MC-017: 返回医案的变更历史记录
+        /// </summary>
+        [HttpGet("{id}/audit-logs")]
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<AuditLogDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public async Task<IActionResult> GetAuditLogs(
+            Guid id,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            if (ValidatePagination(page, pageSize) is { } error) return error;
+            var result = await _sender.Send(new GetMedicalCaseAuditLogsQuery(id, page, pageSize));
+            if (!result.IsSuccess)
+                return NotFound(result.Error ?? "医案不存在");
+            return Success(result.Value!, "查询成功");
+        }
+
+        /// <summary>
+        /// 记录打印完成
+        /// US-PRINT-004: 更新医案打印状态并记录打印日志
+        /// </summary>
+        [HttpPut("{id:guid}/print-completed")]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        [ProducesResponseType(typeof(ApiResponse), 422)]
+        public async Task<IActionResult> RecordPrint(
+            Guid id,
+            [FromBody] RecordPrintRequest request)
+        {
+            var (operatorId, operatorName, _) = GetOperator();
+            var result = await _sender.Send(new RecordPrintCommand(
+                id, request.PrintType, request.PrinterName, operatorId, operatorName));
+
+            if (!result.IsSuccess)
+                return NotFound(result.Error ?? "医案不存在");
+
+            _logger.LogInformation("打印记录写入成功，MedicalCaseId: {Id}, PrintType: {PrintType}, Operator: {Operator}",
+                id, request.PrintType, operatorName);
+            return Success(true, "打印记录已写入");
+        }
     }
 }
 

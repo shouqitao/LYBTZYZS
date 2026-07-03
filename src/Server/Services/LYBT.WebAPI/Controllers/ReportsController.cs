@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.WebAPI.Controllers;
 
+/// <summary>
+/// 统计报表 API - 收入、问诊、药材使用统计
+/// </summary>
 [ApiController]
 [ApiVersion("1")]
 [Route("api/v{version:apiVersion}/reports")]
@@ -26,11 +29,17 @@ public class ReportsController : BaseApiController
         _sender = sender;
     }
 
+    /// <summary>
+    /// 获取日收入统计
+    /// </summary>
     [HttpGet("daily/income")]
     [ProducesResponseType(typeof(ApiResponse<DailyIncomeDto>), 200)]
-    public async Task<IActionResult> GetDailyIncome(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetDailyIncome(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        CancellationToken cancellationToken = default)
     {
-        var result = await _sender.Send(new GetDailyIncomeQuery(), cancellationToken);
+        var result = await _sender.Send(new GetDailyIncomeQuery(startDate, endDate), cancellationToken);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
 
@@ -43,11 +52,17 @@ public class ReportsController : BaseApiController
         return Success(dto, "查询成功");
     }
 
+    /// <summary>
+    /// 获取日问诊统计
+    /// </summary>
     [HttpGet("daily/consultations")]
     [ProducesResponseType(typeof(ApiResponse<DailyConsultationDto>), 200)]
-    public async Task<IActionResult> GetDailyConsultations(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetDailyConsultations(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        CancellationToken cancellationToken = default)
     {
-        var result = await _sender.Send(new GetDailyConsultationsQuery(), cancellationToken);
+        var result = await _sender.Send(new GetDailyConsultationsQuery(startDate, endDate), cancellationToken);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
 
@@ -62,11 +77,17 @@ public class ReportsController : BaseApiController
         return Success(dto, "查询成功");
     }
 
+    /// <summary>
+    /// 获取日药材使用统计
+    /// </summary>
     [HttpGet("daily/herbs")]
     [ProducesResponseType(typeof(ApiResponse<DailyHerbUsageDto>), 200)]
-    public async Task<IActionResult> GetDailyHerbs(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetDailyHerbs(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        CancellationToken cancellationToken = default)
     {
-        var result = await _sender.Send(new GetDailyHerbUsageQuery(), cancellationToken);
+        var result = await _sender.Send(new GetDailyHerbUsageQuery(startDate, endDate), cancellationToken);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
 

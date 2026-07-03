@@ -12,7 +12,7 @@ namespace LYBT.Shared.Primitives.ErrorCodes;
 /// - 4xxxx: 处方模块 (Prescriptions)
 /// - 5xxxx: 草药模块 (Herbs)
 /// - 6xxxx: 配方模块 (Formula)
-/// - 7xxxx: 同步模块 (Sync)
+/// - 8xxxx: 挂号模块 (Registration)
 /// </summary>
 public enum ErrorCode
 {
@@ -524,41 +524,6 @@ public enum ErrorCode
 
     #region 4xxxx - 处方模块 (Prescriptions)
 
-    /// <summary>
-    /// 处方未找到
-    /// </summary>
-    PrescriptionNotFound = 40001,
-
-    /// <summary>
-    /// 处方状态不允许此操作
-    /// </summary>
-    InvalidPrescriptionState = 40002,
-
-    /// <summary>
-    /// 处方已发药
-    /// </summary>
-    PrescriptionAlreadyDispensed = 40003,
-
-    /// <summary>
-    /// 处方草药为空
-    /// </summary>
-    PrescriptionNoHerbs = 40004,
-
-    /// <summary>
-    /// 处方剂量超出限制
-    /// </summary>
-    PrescriptionDosageExceeded = 40005,
-
-    /// <summary>
-    /// 处方包含禁忌配伍
-    /// </summary>
-    PrescriptionContraindication = 40006,
-
-    /// <summary>
-    /// 无法修改已完成的处方
-    /// </summary>
-    PrescriptionCompleted = 40007,
-
     #endregion
 
     #region 5xxxx - 草药模块 (Herbs)
@@ -800,120 +765,6 @@ public enum ErrorCode
 
     #endregion
 
-    #region 7xxxx - 同步模块 (Sync)
-
-    // --- 701xx: 服务端通用错误 ---
-
-    /// <summary>
-    /// 不支持的实体类型
-    /// </summary>
-    UnsupportedEntityType = 70101,
-
-    /// <summary>
-    /// JSON 反序列化失败
-    /// </summary>
-    JsonDeserializeFailed = 70102,
-
-    /// <summary>
-    /// 同步数据冲突 (服务端已存在)
-    /// </summary>
-    SyncDataConflict = 70103,
-
-    // --- 702xx: 服务端上传错误 ---
-
-    /// <summary>
-    /// 药材上传失败
-    /// </summary>
-    HerbUploadFailed = 70201,
-
-    /// <summary>
-    /// 患者上传失败
-    /// </summary>
-    PatientUploadFailed = 70202,
-
-    /// <summary>
-    /// 验方上传失败
-    /// </summary>
-    FormulaUploadFailed = 70203,
-
-    /// <summary>
-    /// 医案上传失败
-    /// </summary>
-    MedicalCaseUploadFailed = 70204,
-
-    // --- 703xx: 服务端 MedicalCase 特有错误 ---
-
-    /// <summary>
-    /// 同步时患者不存在
-    /// </summary>
-    SyncPatientNotFound = 70301,
-
-    /// <summary>
-    /// 同步时药材不存在
-    /// </summary>
-    SyncHerbNotFound = 70302,
-
-    /// <summary>
-    /// 医案已锁定，无法通过同步覆盖
-    /// </summary>
-    SyncCaseLocked = 70304,
-
-    // --- 704xx: 服务端删除错误 ---
-
-    /// <summary>
-    /// 同步删除引用检查失败
-    /// </summary>
-    SyncReferenceCheckFailed = 70401,
-
-    /// <summary>
-    /// 同步删除时药材被处方引用
-    /// </summary>
-    SyncHerbHasReference = 70402,
-
-    /// <summary>
-    /// 同步删除时患者有医案记录
-    /// </summary>
-    SyncPatientHasReference = 70403,
-
-    /// <summary>
-    /// 同步删除时实体不存在
-    /// </summary>
-    SyncEntityNotFound = 70404,
-
-    // --- 705xx: 客户端错误 ---
-
-    /// <summary>
-    /// 未选择同步数据类型
-    /// </summary>
-    SyncNoEntityTypeSelected = 70501,
-
-    /// <summary>
-    /// 同步失败
-    /// </summary>
-    SyncFailed = 70502,
-
-    /// <summary>
-    /// 不支持的 Checksum 实体类型
-    /// </summary>
-    SyncChecksumTypeError = 70503,
-
-    /// <summary>
-    /// 同步前依赖未满足
-    /// </summary>
-    SyncDependencyNotSynced = 70504,
-
-    /// <summary>
-    /// 患者重映射失败
-    /// </summary>
-    SyncPatientRemapFailed = 70505,
-
-    /// <summary>
-    /// 本地有未完成的医案，无法切换模式
-    /// </summary>
-    SyncLocalActiveCasesExist = 70506,
-
-    #endregion
-
     #region 8xxxx - 挂号模块 (Registration)
 
     /// <summary>
@@ -930,31 +781,6 @@ public enum ErrorCode
     /// 有活跃/已完成医案，不允许取消
     /// </summary>
     RegistrationCancelNotAllowed = 80003,
-
-    /// <summary>
-    /// 无权取消此挂号 (非 Receptionist 或非本人创建)
-    /// </summary>
-    RegistrationUnauthorizedCancel = 80004,
-
-    /// <summary>
-    /// 患者已禁用，不允许创建挂号
-    /// </summary>
-    RegistrationPatientDisabled = 80005,
-
-    /// <summary>
-    /// 指派医生不可用 (禁用/不存在)
-    /// </summary>
-    RegistrationDoctorNotAvailable = 80006,
-
-    /// <summary>
-    /// 该患者已有等待中的挂号记录
-    /// </summary>
-    RegistrationDuplicateWaiting = 80007,
-
-    /// <summary>
-    /// G-11: 医生有等待中的挂号记录，无法禁用
-    /// </summary>
-    RegistrationDoctorHasWaiting = 80008,
 
     #endregion
 }

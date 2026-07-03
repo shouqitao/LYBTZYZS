@@ -11,6 +11,7 @@ using LYBT.SharedKernel.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -49,7 +50,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _sender.Send(new GetPatientsQuery(page, pageSize, keyword, FilterDisabled: !isAdmin));
             if (!result.IsSuccess || result.Value == null)
             {
-                return HandleKernelResult(result);
+                return BusinessFail(result.Error ?? "查询失败");
             }
 
             return SuccessPaged(result.Value, "查询成功");
@@ -78,6 +79,7 @@ namespace LYBT.WebAPI.Controllers
         /// T5-P2-29: 创建成功返回201
         /// </summary>
         [HttpPost]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), StatusCodes.Status201Created)]
         public async Task<IActionResult> Create([FromBody] PatientInputDto dto)
         {
@@ -85,7 +87,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _sender.Send(new CreatePatientCommand(dto, operatorId));
             if (!result.IsSuccess || result.Value == null)
             {
-                return HandleKernelResult(result);
+                return BusinessFail(result.Error ?? "创建失败");
             }
 
             LogOperation("新增患者成功", result.Value, result.Value.Id);
@@ -98,6 +100,7 @@ namespace LYBT.WebAPI.Controllers
         /// 更新患者信息
         /// </summary>
         [HttpPut("{id:guid}")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public async Task<IActionResult> Update(Guid id, [FromBody] PatientInputDto dto)
         {
@@ -114,7 +117,7 @@ namespace LYBT.WebAPI.Controllers
                 {
                     return NotFound(result.Error);
                 }
-                return HandleKernelResult(result);
+                return BusinessFail(result.Error ?? "更新失败");
             }
 
             LogOperation("更新患者成功", result.Value, id);
@@ -125,6 +128,7 @@ namespace LYBT.WebAPI.Controllers
         /// 删除患者（软删除）
         /// </summary>
         [HttpDelete("{id:guid}")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> Delete(Guid id)
         {
@@ -138,7 +142,7 @@ namespace LYBT.WebAPI.Controllers
             if (!result.IsSuccess)
             {
                 if (result.Error?.Contains("医案记录") == true)
-                    return HandleKernelResult(result);
+                    return BusinessFail(result.Error);
                 return NotFound("患者不存在");
             }
 
@@ -163,7 +167,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _sender.Send(new TogglePatientStatusCommand(id, operatorId));
             if (!result.IsSuccess || result.Value == null)
             {
-                return HandleKernelResult(result);
+                return BusinessFail(result.Error ?? "操作失败");
             }
 
             LogOperation("切换患者状态", new { NewStatus = result.Value.Status }, id);
@@ -174,6 +178,7 @@ namespace LYBT.WebAPI.Controllers
         /// 批量删除患者
         /// </summary>
         [HttpPost("batch-delete")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
@@ -187,7 +192,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _sender.Send(new BatchDeletePatientsCommand(dto.Ids, operatorId));
             if (!result.IsSuccess || result.Value == null)
             {
-                return HandleKernelResult(result);
+                return BusinessFail(result.Error ?? "批量删除失败");
             }
 
             LogOperation("批量删除患者", new { Ids = dto.Ids, Result = result.Value.Message }, null);
@@ -213,21 +218,6 @@ namespace LYBT.WebAPI.Controllers
             return (result.Value, null);
         }
 
-        /// <summary>
-        /// 处理LYBT.SharedKernel.Common.Result → IActionResult
-        /// SharedKernel Result使用.Value/.Error，控制器Helper使用.Data/.ErrorMessage
-        /// </summary>
-        private IActionResult HandleKernelResult<T>(LYBT.SharedKernel.Common.Result<T> result)
-        {
-            var message = result.Error ?? "操作失败";
-            return BusinessFail(message);
-        }
-
-        private IActionResult HandleKernelResult(LYBT.SharedKernel.Common.Result result)
-        {
-            var message = result.Error ?? "操作失败";
-            return BusinessFail(message);
-        }
     }
 }
 

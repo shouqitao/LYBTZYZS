@@ -57,6 +57,30 @@ namespace LYBT.Module.MedicalCases.Repositories
         }
 
         /// <summary>
+        /// 根据患者ID分页获取医疗案例（DB层分页）
+        /// </summary>
+        public async Task<PagedResult<MedicalCase>> GetByPatientIdPagedAsync(Guid patientId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        {
+            var query = GetBaseQuery()
+                .Where(m => m.PatientId == patientId)
+                .OrderByDescending(m => m.CreatedAt);
+
+            return await GetPagedResultAsync(query, pageNumber, pageSize, cancellationToken);
+        }
+
+        /// <summary>
+        /// 根据患者ID获取医案（包含Consultation和Prescription关联数据）
+        /// US-MC-008/009: 患者诊疗/处方历史查询
+        /// </summary>
+        public async Task<List<MedicalCase>> GetByPatientIdWithDetailsAsync(Guid patientId, CancellationToken cancellationToken = default)
+        {
+            return await GetDetailQuery()
+                .Where(m => m.PatientId == patientId)
+                .OrderByDescending(m => m.CreatedAt)
+                .ToListAsync(cancellationToken);
+        }
+
+        /// <summary>
         /// 根据ID获取医案（包含关联数据）
         /// </summary>
         public async Task<MedicalCase> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
@@ -486,6 +510,45 @@ namespace LYBT.Module.MedicalCases.Repositories
         }
 
         /// <summary>
+        /// 分页查询医案列表（支持多条件组合查询，DB层分页）
+        /// </summary>
+        public async Task<PagedResult<MedicalCase>> QueryPagedAsync(
+            string? patientName,
+            DateTime? startDate,
+            DateTime? endDate,
+            string? diagnosisKeyword,
+            int pageNumber,
+            int pageSize,
+            CancellationToken cancellationToken = default)
+        {
+            var query = GetDetailQuery();
+
+            if (!string.IsNullOrWhiteSpace(patientName))
+                query = query.Where(m => m.PatientName.Contains(patientName));
+
+            if (startDate.HasValue)
+                query = query.Where(m => m.CreatedAt >= startDate.Value);
+
+            if (endDate.HasValue)
+            {
+                var endOfDay = endDate.Value.Date.AddDays(1).AddSeconds(-1);
+                query = query.Where(m => m.CreatedAt <= endOfDay);
+            }
+
+            if (!string.IsNullOrWhiteSpace(diagnosisKeyword))
+            {
+                query = query.Where(m =>
+                    m.Consultation != null &&
+                    m.Consultation.TcmDiagnosis != null &&
+                    m.Consultation.TcmDiagnosis.Contains(diagnosisKeyword));
+            }
+
+            query = query.OrderByDescending(m => m.CreatedAt);
+
+            return await GetPagedResultAsync(query, pageNumber, pageSize, cancellationToken);
+        }
+
+        /// <summary>
         /// 获取患者的未完成医案（Status != Completed）
         /// Epic #1676 Phase 4 Task 4.1
         /// Epic #2210 Task 3.1.1: 添加doctorId筛选
@@ -596,6 +659,37 @@ namespace LYBT.Module.MedicalCases.Repositories
             _logger?.LogInformation("批量获取医案详情完成，返回数量: {Count}", result.Count);
 
             return result;
+        }
+
+        /// <summary>
+        /// 获取医案审计日志（分页）
+        /// </summary>
+        public async Task<List<MedicalCaseAuditLog>> GetAuditLogsAsync(Guid medicalCaseId, int page, int pageSize, CancellationToken cancellationToken = default)
+        {
+            return await _context.MedicalCaseAuditLogs
+                .Where(l => l.MedicalCaseId == medicalCaseId && !l.IsDeleted)
+                .OrderByDescending(l => l.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// 统计医案审计日志总数
+        /// </summary>
+        public async Task<int> CountAuditLogsAsync(Guid medicalCaseId, CancellationToken cancellationToken = default)
+        {
+            return await _context.MedicalCaseAuditLogs
+                .CountAsync(l => l.MedicalCaseId == medicalCaseId && !l.IsDeleted, cancellationToken);
+        }
+
+        /// <summary>
+        /// 添加打印日志
+        /// </summary>
+        public async Task AddPrintLogAsync(MedicalCasePrintLog printLog, CancellationToken cancellationToken = default)
+        {
+            await _context.MedicalCasePrintLogs.AddAsync(printLog, cancellationToken);
+            await SaveChangesAsync(cancellationToken);
         }
     }
 }

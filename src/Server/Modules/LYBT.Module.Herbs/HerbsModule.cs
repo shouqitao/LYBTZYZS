@@ -33,10 +33,13 @@ namespace LYBT.Module.Herbs
             // 注册仓储（New - 给CQRS层使用）
             services.AddScoped<IHerbRepository, LYBT.Module.Herbs.Infrastructure.HerbRepository>();
             services.AddScoped<IHerbReferenceRepository, HerbReferenceRepository>();
-            // services.AddScoped<IHerbCategoryRepository, HerbCategoryRepository>();
+            
 
             // 注册跨模块服务（替代 CrossModuleService 中的药材查询逻辑）
             services.AddScoped<IHerbCrossModuleService, HerbCrossModuleService>();
+
+            // 注册导入导出服务
+            services.AddScoped<IHerbImportExportService, HerbImportExportService>();
 
             // Epic #1731: 注册Herbs模块Validators
             services.AddValidatorsFromAssemblyContaining<HerbInputDtoValidator>();

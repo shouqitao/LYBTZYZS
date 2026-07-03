@@ -20,7 +20,10 @@ public class GetDailyHerbUsageQueryHandler : IRequestHandler<GetDailyHerbUsageQu
     public async Task<Result<DailyHerbUsage>> Handle(
         GetDailyHerbUsageQuery request, CancellationToken cancellationToken)
     {
-        var herbUsageItems = await _reportRepository.GetTodayHerbUsageAsync(cancellationToken);
+        var startDate = request.StartDate ?? DateTime.Today;
+        var endDate = request.EndDate ?? DateTime.Today;
+
+        var herbUsageItems = await _reportRepository.GetHerbUsageAsync(startDate, endDate, cancellationToken);
 
         var items = herbUsageItems
             .Select(h => new HerbUsageItem(h.HerbName, h.UsageCount, h.TotalDosage))

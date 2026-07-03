@@ -9,13 +9,18 @@ using LYBT.Shared.Models.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LYBT.WebAPI.Controllers
 {
+    /// <summary>
+    /// 验方管理 API - CRUD、验证、批量操作
+    /// </summary>
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
+    [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
     public class FormulasController : BaseApiController
     {
         private readonly ISender _sender;
@@ -28,7 +33,11 @@ namespace LYBT.WebAPI.Controllers
             _sender = sender;
         }
 
+        /// <summary>
+        /// 获取验方分页列表（按所有权过滤）
+        /// </summary>
         [HttpGet]
+        [OutputCache(PolicyName = "FormulasCache")]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<FormulaListDto>>), 200)]
         public async Task<IActionResult> GetList(
             [FromQuery] int page = 1,
@@ -45,6 +54,9 @@ namespace LYBT.WebAPI.Controllers
             return SuccessPaged(result.Value!, "查询成功");
         }
 
+        /// <summary>
+        /// 获取验方详情
+        /// </summary>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         public async Task<IActionResult> GetById(Guid id)
@@ -57,10 +69,19 @@ namespace LYBT.WebAPI.Controllers
                 return NotFound(result.Error ?? "验方不存在");
             }
 
+            // Ownership check: Doctor can only see own + shared
+            var (operatorId, _, operatorRole) = GetOperator();
+            if (operatorRole == UserRole.Doctor && result.Value.CreatedBy != operatorId && !result.Value.IsShared)
+                return StatusCode(403, ApiResponse<object>.CreateFail("无权限查看此验方"));
+
             return Success(result.Value, "查询成功");
         }
 
+        /// <summary>
+        /// 新增验方
+        /// </summary>
         [HttpPost]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), StatusCodes.Status201Created)]
         public async Task<IActionResult> Create([FromBody] FormulaInputDto dto)
         {
@@ -77,7 +98,11 @@ namespace LYBT.WebAPI.Controllers
                 ApiResponse<FormulaDetailDto>.CreateSuccess(result.Value, "验方创建成功"));
         }
 
+        /// <summary>
+        /// 更新验方信息
+        /// </summary>
         [HttpPut("{id}")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         public async Task<IActionResult> Update(Guid id, [FromBody] FormulaInputDto dto)
         {
@@ -100,7 +125,11 @@ namespace LYBT.WebAPI.Controllers
             return Success(result.Value, "验方更新成功");
         }
 
+        /// <summary>
+        /// 删除验方（软删除）
+        /// </summary>
         [HttpDelete("{id}")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> Delete(Guid id)
         {
@@ -123,7 +152,33 @@ namespace LYBT.WebAPI.Controllers
             return Success(true, "删除成功");
         }
 
+        /// <summary>
+        /// 恢复已删除的验方
+        /// </summary>
+        [HttpPost("{id}/restore")]
+        [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public async Task<IActionResult> Restore(Guid id)
+        {
+            if (ValidateGuid(id, "验方ID") is { } error) return error;
+
+            var (operatorId, _, _) = GetOperator();
+
+            var result = await _sender.Send(new RestoreFormulaCommand(id, operatorId));
+            if (!result.IsSuccess || result.Value == null)
+            {
+                return BusinessFail(result.Error ?? "恢复失败");
+            }
+
+            LogOperation("恢复验方", result.Value, result.Value.Id);
+            return Success(result.Value, "验方恢复成功");
+        }
+
+        /// <summary>
+        /// 批量导入验方
+        /// </summary>
         [HttpPost("batch-import")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaBatchImportResultDto>), 200)]
         public async Task<IActionResult> Import([FromBody] FormulaBatchImportInputDto request)
         {
@@ -146,6 +201,35 @@ namespace LYBT.WebAPI.Controllers
             return Success(result.Value, result.Value.Message);
         }
 
+        /// <summary>
+        /// 导出验方到Excel
+        /// </summary>
+        [HttpGet("export")]
+        [ProducesResponseType(typeof(FileResult), 200)]
+        public async Task<IActionResult> Export([FromQuery] string? category = null)
+        {
+            var result = await _sender.Send(new ExportFormulasQuery(category));
+            if (!result.IsSuccess || result.Value == null)
+                return BusinessFail(result.Error ?? "导出失败");
+            return File(result.Value, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "formulas.xlsx");
+        }
+
+        /// <summary>
+        /// 下载验方导入模板
+        /// </summary>
+        [HttpGet("import-template")]
+        [ProducesResponseType(typeof(FileResult), 200)]
+        public async Task<IActionResult> ImportTemplate()
+        {
+            var result = await _sender.Send(new GetFormulaImportTemplateQuery());
+            if (!result.IsSuccess || result.Value == null)
+                return BusinessFail(result.Error ?? "获取模板失败");
+            return File(result.Value, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "formula-import-template.xlsx");
+        }
+
+        /// <summary>
+        /// 获取待校验验方列表
+        /// </summary>
         [HttpGet("pending-validation")]
         [ProducesResponseType(typeof(ApiResponse<List<FormulaDetailDto>>), 200)]
         public async Task<IActionResult> GetPendingValidation()
@@ -160,6 +244,9 @@ namespace LYBT.WebAPI.Controllers
             return Success(result.Value, $"查询成功，共{result.Value.Count}个待校验验方");
         }
 
+        /// <summary>
+        /// 校验验方药材匹配
+        /// </summary>
         [HttpPost("{formulaId}/herbs/{herbItemId}/validate")]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(404)]
@@ -186,14 +273,18 @@ namespace LYBT.WebAPI.Controllers
             return Success("药材验证成功");
         }
 
+        /// <summary>
+        /// 批量删除验方
+        /// </summary>
         [HttpPost("batch-delete")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
         {
             if (dto.Ids == null || dto.Ids.Count == 0)
             {
-                return ValidationFail("ids 不能为空");
+                return ValidationFail("请至少选择一个验方");
             }
 
             var (operatorId, _, _) = GetOperator();
@@ -208,6 +299,9 @@ namespace LYBT.WebAPI.Controllers
             return Success(result.Value, result.Value.Message);
         }
 
+        /// <summary>
+        /// 切换验方启用/禁用状态
+        /// </summary>
         [HttpPost("{id}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]

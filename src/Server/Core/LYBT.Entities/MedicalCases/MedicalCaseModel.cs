@@ -64,9 +64,31 @@ namespace LYBT.Entities.MedicalCases
         [DisplayName("完成时间")]
         public DateTime? CompletedAt { get; set; }
 
+        // ========== 打印追踪字段 ==========
+
+        /// <summary>是否已打印过</summary>
+        [DisplayName("是否已打印")]
+        public bool IsPrinted { get; set; }
+
+        /// <summary>打印次数</summary>
+        [DisplayName("打印次数")]
+        public int PrintCount { get; set; }
+
+        /// <summary>最后打印时间</summary>
+        [DisplayName("最后打印时间")]
+        public DateTime? LastPrintedAt { get; set; }
+
+        /// <summary>打印版本号（每次打印+1）</summary>
+        [DisplayName("打印版本号")]
+        public int PrintVersion { get; set; }
+
         // ConsultationDate已删除，用BaseEntity.CreatedAt代替
 
         // ========== 同聚合导航属性 ==========
+
+        /// <summary>打印日志（一对多）</summary>
+        [DisplayName("打印日志")]
+        public virtual ICollection<MedicalCasePrintLog> PrintLogs { get; set; } = new List<MedicalCasePrintLog>();
 
         /// <summary>诊断记录（1:1关系）</summary>
         [DisplayName("诊断记录")]

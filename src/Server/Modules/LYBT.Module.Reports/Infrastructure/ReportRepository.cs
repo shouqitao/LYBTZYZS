@@ -19,46 +19,42 @@ internal class ReportRepository : IReportRepository
     }
 
     /// <inheritdoc/>
-    public async Task<decimal> GetTodayRegistrationFeeTotalAsync(CancellationToken cancellationToken = default)
+    public async Task<decimal> GetRegistrationFeeTotalAsync(DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default)
     {
-        var today = DateTime.Today;
         return await _context.Registrations
-            .Where(r => !r.IsDeleted && r.CreatedAt.Date == today)
+            .Where(r => !r.IsDeleted && r.CreatedAt >= startDate && r.CreatedAt < endDate.AddDays(1))
             .SumAsync(r => r.RegistrationFee, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<decimal> GetTodayMedicineFeeTotalAsync(CancellationToken cancellationToken = default)
+    public async Task<decimal> GetMedicineFeeTotalAsync(DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default)
     {
-        var today = DateTime.Today;
-        var todayCaseIds = await _context.MedicalCases
-            .Where(mc => !mc.IsDeleted && mc.CreatedAt.Date == today && mc.CaseStatus == MedicalCaseStatus.Completed)
+        var caseIds = await _context.MedicalCases
+            .Where(mc => !mc.IsDeleted && mc.CreatedAt >= startDate && mc.CreatedAt < endDate.AddDays(1) && mc.CaseStatus == MedicalCaseStatus.Completed)
             .Select(mc => mc.Id)
             .ToListAsync(cancellationToken);
 
-        if (todayCaseIds.Count == 0)
+        if (caseIds.Count == 0)
             return 0;
 
         return await _context.Prescriptions
-            .Where(p => todayCaseIds.Contains(p.MedicalCaseId) && !p.IsDeleted)
+            .Where(p => caseIds.Contains(p.MedicalCaseId) && !p.IsDeleted)
             .SelectMany(p => p.Items)
             .SumAsync(pi => pi.Amount, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<int> GetTodayConsultationCountAsync(CancellationToken cancellationToken = default)
+    public async Task<int> GetConsultationCountAsync(DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default)
     {
-        var today = DateTime.Today;
         return await _context.MedicalCases
-            .CountAsync(mc => !mc.IsDeleted && mc.CreatedAt.Date == today && mc.CaseStatus == MedicalCaseStatus.Completed, cancellationToken);
+            .CountAsync(mc => !mc.IsDeleted && mc.CreatedAt >= startDate && mc.CreatedAt < endDate.AddDays(1) && mc.CaseStatus == MedicalCaseStatus.Completed, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<List<DoctorCountDto>> GetTodayConsultationsByDoctorAsync(CancellationToken cancellationToken = default)
+    public async Task<List<DoctorCountDto>> GetConsultationsByDoctorAsync(DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default)
     {
-        var today = DateTime.Today;
         return await _context.MedicalCases
-            .Where(mc => !mc.IsDeleted && mc.CreatedAt.Date == today && mc.CaseStatus == MedicalCaseStatus.Completed)
+            .Where(mc => !mc.IsDeleted && mc.CreatedAt >= startDate && mc.CreatedAt < endDate.AddDays(1) && mc.CaseStatus == MedicalCaseStatus.Completed)
             .GroupBy(mc => mc.DoctorName)
             .Select(g => new DoctorCountDto
             {
@@ -70,12 +66,11 @@ internal class ReportRepository : IReportRepository
     }
 
     /// <inheritdoc/>
-    public async Task<List<HerbUsageItemDto>> GetTodayHerbUsageAsync(CancellationToken cancellationToken = default)
+    public async Task<List<HerbUsageItemDto>> GetHerbUsageAsync(DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default)
     {
-        var today = DateTime.Today;
         return await (
             from mc in _context.MedicalCases
-            where !mc.IsDeleted && mc.CreatedAt.Date == today && mc.CaseStatus == MedicalCaseStatus.Completed
+            where !mc.IsDeleted && mc.CreatedAt >= startDate && mc.CreatedAt < endDate.AddDays(1) && mc.CaseStatus == MedicalCaseStatus.Completed
             join p in _context.Prescriptions on mc.Id equals p.MedicalCaseId
             where !p.IsDeleted
             from pi in p.Items

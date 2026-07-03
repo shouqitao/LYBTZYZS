@@ -10,6 +10,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -20,7 +21,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
+    [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
     public class HerbsController : BaseApiController
     {
         private readonly ISender _sender;
@@ -49,7 +50,7 @@ namespace LYBT.WebAPI.Controllers
             if (ValidatePagination(page, pageSize) is { } error) return error;
 
             var result = await _sender.Send(new GetHerbsQuery(page, pageSize, keyword, category), cancellationToken);
-            if (!result.IsSuccess) return Error(result.Error ?? "查询失败");
+            if (!result.IsSuccess) return BusinessFail(result.Error ?? "查询失败");
             return Success(result.Value!, "查询成功");
         }
 
@@ -74,6 +75,7 @@ namespace LYBT.WebAPI.Controllers
         /// 创建新药材
         /// </summary>
         [HttpPost]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), StatusCodes.Status201Created)]
         public async Task<IActionResult> Create([FromBody] HerbInputDto dto, CancellationToken cancellationToken = default)
         {
@@ -121,7 +123,11 @@ namespace LYBT.WebAPI.Controllers
             return Success(result.Value, $"药材已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
         }
 
+        /// <summary>
+        /// 批量删除药材
+        /// </summary>
         [HttpPost("batch-delete")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
@@ -146,6 +152,7 @@ namespace LYBT.WebAPI.Controllers
         /// 更新药材信息
         /// </summary>
         [HttpPut("{id}")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto dto, CancellationToken cancellationToken = default)
@@ -179,6 +186,7 @@ namespace LYBT.WebAPI.Controllers
         /// 删除药材
         /// </summary>
         [HttpDelete("{id}")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
@@ -209,9 +217,32 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 恢复已删除的药材
+        /// </summary>
+        [HttpPost("{id}/restore")]
+        [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public async Task<IActionResult> Restore(Guid id, CancellationToken cancellationToken = default)
+        {
+            if (ValidateGuid(id, "药材ID") is { } error) return error;
+
+            var (operatorId, _, _) = GetOperator();
+
+            var result = await _sender.Send(new RestoreHerbCommand(id, operatorId), cancellationToken);
+            if (!result.IsSuccess || result.Value == null)
+            {
+                return BusinessFail(result.Error ?? "恢复失败");
+            }
+
+            LogOperation("恢复药材", result.Value, result.Value.Id);
+            return Success(result.Value, "药材恢复成功");
+        }
+
+        /// <summary>
         /// 批量导入药材
         /// </summary>
         [HttpPost("batch-import")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbBatchImportResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchImport([FromBody] HerbBatchImportInputDto request, CancellationToken cancellationToken = default)
@@ -230,6 +261,68 @@ namespace LYBT.WebAPI.Controllers
 
             LogOperation("批量导入药材", new { Count = request.Herbs.Count, Strategy = request.Strategy }, null);
             return Success(result.Value, $"成功导入 {result.Value.SuccessCount} 条药材");
+        }
+
+        /// <summary>
+        /// 导出药材到Excel
+        /// </summary>
+        [HttpGet("export")]
+        [ProducesResponseType(typeof(FileResult), 200)]
+        public async Task<IActionResult> Export([FromQuery] string? category = null, CancellationToken cancellationToken = default)
+        {
+            var result = await _sender.Send(new ExportHerbsQuery(category), cancellationToken);
+            if (!result.IsSuccess || result.Value == null)
+                return BusinessFail(result.Error ?? "导出失败");
+            return File(result.Value, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "herbs.xlsx");
+        }
+
+        /// <summary>
+        /// 下载药材导入模板
+        /// </summary>
+        [HttpGet("import-template")]
+        [ProducesResponseType(typeof(FileResult), 200)]
+        public async Task<IActionResult> ImportTemplate(CancellationToken cancellationToken = default)
+        {
+            var result = await _sender.Send(new GetHerbImportTemplateQuery(), cancellationToken);
+            if (!result.IsSuccess || result.Value == null)
+                return BusinessFail(result.Error ?? "获取模板失败");
+            return File(result.Value, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "herb-import-template.xlsx");
+        }
+
+        /// <summary>
+        /// 检查药材引用关系（删除前检查）
+        /// </summary>
+        [HttpGet("{id}/check-reference")]
+        [ProducesResponseType(typeof(ApiResponse<HerbReferenceCheckDto>), 200)]
+        public async Task<IActionResult> CheckReference(Guid id, CancellationToken cancellationToken = default)
+        {
+            if (ValidateGuid(id, "药材ID") is { } error) return error;
+
+            var result = await _sender.Send(new CheckHerbReferenceQuery(id), cancellationToken);
+            if (!result.IsSuccess || result.Value == null)
+                return NotFound(result.Error ?? "药材不存在");
+            return Success(result.Value, "引用检查完成");
+        }
+
+        /// <summary>
+        /// 批量检查药材引用关系
+        /// </summary>
+        [HttpPost("batch-check-reference")]
+        [ProducesResponseType(typeof(ApiResponse<List<HerbReferenceCheckDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        public async Task<IActionResult> BatchCheckReference(
+            [FromBody] HerbBatchCheckReferenceInputDto dto,
+            CancellationToken cancellationToken = default)
+        {
+            if (dto?.HerbIds == null || dto.HerbIds.Count == 0)
+                return ValidationFail("药材ID列表不能为空");
+            if (dto.HerbIds.Count > 100)
+                return ValidationFail("单次最多检查100条药材");
+
+            var result = await _sender.Send(new BatchCheckHerbReferenceQuery(dto.HerbIds), cancellationToken);
+            if (!result.IsSuccess || result.Value == null)
+                return BusinessFail(result.Error ?? "批量引用检查失败");
+            return Success(result.Value, "批量引用检查完成");
         }
     }
 }

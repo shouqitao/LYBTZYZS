@@ -26,6 +26,14 @@ public class UserRepository : IUserRepository
     }
 
     /// <inheritdoc/>
+    public async Task<ApplicationUser?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task<PagedResult<ApplicationUser>> GetPagedAsync(
         int page, int pageSize, string? keyword,
         UserRole? role, CommonStatus? status,

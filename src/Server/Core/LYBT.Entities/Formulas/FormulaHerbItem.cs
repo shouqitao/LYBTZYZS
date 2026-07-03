@@ -99,6 +99,45 @@ namespace LYBT.Entities.Formulas
         /// </summary>
         [DisplayName("煎法")]
         public DecocteMethod DecocteMethod { get; set; } = DecocteMethod.Default;
+
+        public static FormulaHerbItem Create(
+            Guid formulaId,
+            string herbName,
+            int dosage = 1,
+            string unit = "g",
+            Guid? herbId = null,
+            string? originalHerbName = null,
+            string? usage = null,
+            string? remark = null,
+            string? processingMethod = null,
+            DecocteMethod decocteMethod = DecocteMethod.Default)
+        {
+            if (string.IsNullOrWhiteSpace(herbName))
+                throw new ArgumentException("药材名称不能为空", nameof(herbName));
+
+            return new FormulaHerbItem
+            {
+                Id = Guid.NewGuid(),
+                FormulaId = formulaId,
+                HerbName = herbName.Trim(),
+                Dosage = dosage,
+                Unit = unit,
+                HerbId = herbId,
+                OriginalHerbName = originalHerbName?.Trim(),
+                IsValidated = herbId.HasValue,
+                Usage = usage?.Trim(),
+                Remark = remark?.Trim(),
+                ProcessingMethod = processingMethod?.Trim(),
+                DecocteMethod = decocteMethod
+            };
+        }
+
+        public void BindHerb(Guid herbId, string herbName)
+        {
+            HerbId = herbId;
+            HerbName = herbName;
+            IsValidated = true;
+        }
     }
 }
 

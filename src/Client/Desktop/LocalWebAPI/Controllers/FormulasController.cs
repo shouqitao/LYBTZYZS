@@ -1,8 +1,8 @@
 using System.Security.Claims;
+using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Formulas.Application.Commands;
 using LYBT.Module.Formulas.Application.Queries;
-using LYBT.Module.Formulas.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
@@ -14,19 +14,16 @@ namespace LYBT.LocalWebAPI.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize]
+[Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
 public class FormulasController : BaseApiController
 {
     private readonly ISender _sender;
-    private readonly IFormulaService _formulaService;
 
     public FormulasController(
         ISender sender,
-        IFormulaService formulaService,
         ILogger<FormulasController> logger) : base(logger)
     {
         _sender = sender;
-        _formulaService = formulaService;
     }
 
     private Guid GetCurrentUserId()
@@ -57,6 +54,18 @@ public class FormulasController : BaseApiController
         var result = await _sender.Send(new GetFormulaQuery(id));
         if (!result.IsSuccess || result.Value == null)
             return NotFound(result.Error ?? "验方不存在");
+
+        // Ownership check: Doctor can only see own + shared
+        var operatorId = GetCurrentUserId();
+        var roleStr = User.FindFirst(ClaimTypes.Role)?.Value;
+        if (Enum.TryParse<UserRole>(roleStr, true, out var operatorRole) &&
+            operatorRole == UserRole.Doctor &&
+            result.Value.CreatedBy != operatorId &&
+            !result.Value.IsShared)
+        {
+            return Forbid("您没有权限查看此验方");
+        }
+
         return Success(result.Value, "查询成功");
     }
 
@@ -116,6 +125,16 @@ public class FormulasController : BaseApiController
         return Success(result.Value, $"验方已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
     }
 
+    [HttpPost("{id}/restore")]
+    public async Task<IActionResult> Restore(Guid id)
+    {
+        var operatorId = GetCurrentUserId();
+        var result = await _sender.Send(new RestoreFormulaCommand(id, operatorId));
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "恢复失败");
+        return Success(result.Value, "恢复成功");
+    }
+
     [HttpPost("{id}/clone")]
     public async Task<IActionResult> Clone(Guid id)
     {
@@ -165,19 +184,19 @@ public class FormulasController : BaseApiController
     [HttpGet("pending-validation")]
     public async Task<IActionResult> GetPendingValidation()
     {
-        var result = await _formulaService.GetPendingValidationFormulasAsync();
-        if (!result.IsSuccess || result.Data == null)
-            return HandleResult(result);
-        return Success(result.Data, $"查询成功，共{result.Data.Count}个待校验验方");
+        var result = await _sender.Send(new GetPendingValidationQuery());
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "查询失败");
+        return Success(result.Value, $"查询成功，共{result.Value.Count}个待校验验方");
     }
 
     [HttpPost("{formulaId}/herbs/{herbItemId}/validate")]
     public async Task<IActionResult> ValidateHerb(Guid formulaId, Guid herbItemId, [FromBody] ValidateHerbRequest request)
     {
-        var result = await _formulaService.ValidateFormulaHerbAsync(formulaId, herbItemId, request.SelectedHerbId);
+        var result = await _sender.Send(new ValidateFormulaHerbCommand(formulaId, herbItemId, request.SelectedHerbId));
         if (!result.IsSuccess)
-            return HandleResult(result);
-        return Success(result.Message ?? "药材验证成功");
+            return BusinessFail(result.Error ?? "药材验证失败");
+        return Success("药材验证成功");
     }
 }
 

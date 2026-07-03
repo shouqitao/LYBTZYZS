@@ -20,8 +20,11 @@ public class GetDailyIncomeQueryHandler : IRequestHandler<GetDailyIncomeQuery, R
     public async Task<Result<DailyIncome>> Handle(
         GetDailyIncomeQuery request, CancellationToken cancellationToken)
     {
-        var registrationFeeTotal = await _reportRepository.GetTodayRegistrationFeeTotalAsync(cancellationToken);
-        var medicineFeeTotal = await _reportRepository.GetTodayMedicineFeeTotalAsync(cancellationToken);
+        var startDate = request.StartDate ?? DateTime.Today;
+        var endDate = request.EndDate ?? DateTime.Today;
+
+        var registrationFeeTotal = await _reportRepository.GetRegistrationFeeTotalAsync(startDate, endDate, cancellationToken);
+        var medicineFeeTotal = await _reportRepository.GetMedicineFeeTotalAsync(startDate, endDate, cancellationToken);
 
         var dailyIncome = new DailyIncome(
             TotalIncome: registrationFeeTotal + medicineFeeTotal,

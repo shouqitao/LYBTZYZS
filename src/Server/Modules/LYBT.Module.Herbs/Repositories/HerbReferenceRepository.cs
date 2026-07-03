@@ -48,6 +48,34 @@ namespace LYBT.Module.Herbs.Repositories
                 .Take(take)
                 .ToListAsync(ct);
         }
+
+        public async Task<Dictionary<Guid, int>> GetBatchPrescriptionReferenceCountsAsync(List<Guid> herbIds, CancellationToken ct = default)
+        {
+            if (herbIds == null || herbIds.Count == 0)
+                return new Dictionary<Guid, int>();
+
+            var counts = await _context.PrescriptionItems
+                .Where(pi => herbIds.Contains(pi.HerbId))
+                .GroupBy(pi => pi.HerbId)
+                .Select(g => new { HerbId = g.Key, Count = g.Count() })
+                .ToListAsync(ct);
+
+            return counts.ToDictionary(x => x.HerbId, x => x.Count);
+        }
+
+        public async Task<Dictionary<Guid, int>> GetBatchFormulaReferenceCountsAsync(List<Guid> herbIds, CancellationToken ct = default)
+        {
+            if (herbIds == null || herbIds.Count == 0)
+                return new Dictionary<Guid, int>();
+
+            var counts = await _context.Set<FormulaHerbItem>()
+                .Where(fhi => fhi.HerbId != null && herbIds.Contains(fhi.HerbId!.Value))
+                .GroupBy(fhi => fhi.HerbId!.Value)
+                .Select(g => new { HerbId = g.Key, Count = g.Count() })
+                .ToListAsync(ct);
+
+            return counts.ToDictionary(x => x.HerbId, x => x.Count);
+        }
     }
 }
 

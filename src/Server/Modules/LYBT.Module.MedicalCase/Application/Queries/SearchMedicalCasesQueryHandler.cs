@@ -15,20 +15,13 @@ public class SearchMedicalCasesQueryHandler(
     public async Task<Result<PagedResult<MedicalCaseDetailDto>>> Handle(
         SearchMedicalCasesQuery request, CancellationToken cancellationToken)
     {
-        var entities = await repository.QueryAsync(
+        var pagedResult = await repository.QueryPagedAsync(
             request.PatientName, request.StartDate, request.EndDate,
-            request.DiagnosisKeyword, cancellationToken);
+            request.DiagnosisKeyword, request.Page, request.PageSize, cancellationToken);
 
-        var ordered = entities.OrderByDescending(e => e.CreatedAt).ToList();
-        var totalCount = ordered.Count;
-        var paged = ordered
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
-            .ToList();
-
-        var dtos = paged.Select(mapper.MapToMedicalCaseDetailDto).ToList();
+        var dtos = pagedResult.Items.Select(mapper.MapToMedicalCaseDetailDto).ToList();
         return Result<PagedResult<MedicalCaseDetailDto>>.Success(
-            new PagedResult<MedicalCaseDetailDto>(dtos, totalCount, request.Page, request.PageSize));
+            new PagedResult<MedicalCaseDetailDto>(dtos, pagedResult.TotalCount, request.Page, request.PageSize));
     }
 }
 

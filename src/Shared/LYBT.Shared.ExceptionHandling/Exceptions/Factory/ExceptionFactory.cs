@@ -1,4 +1,4 @@
-﻿using EC = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
+using EC = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Shared.ExceptionHandling.Exceptions;
 
@@ -70,27 +70,6 @@ public static class ExceptionFactory
         public static BusinessException InsufficientStock(Guid herbId, decimal required, decimal available) =>
             new(EC.HerbInsufficientStock,
                 $"药材 (ID: {herbId}) 库存不足，需要: {required}，可用: {available}");
-    }
-
-    /// <summary>
-    /// 处方相关异常
-    /// </summary>
-    public static class Prescription
-    {
-        public static NotFoundException NotFound(Guid prescriptionId) =>
-            NotFoundException.Prescription(prescriptionId);
-
-        public static BusinessException InvalidState(Guid prescriptionId, string currentState, string expectedState) =>
-            new(EC.InvalidPrescriptionState,
-                $"处方 (ID: {prescriptionId}) 状态无效，当前: {currentState}，期望: {expectedState}");
-
-        public static BusinessException AlreadyDispensed(Guid prescriptionId) =>
-            new(EC.PrescriptionAlreadyDispensed,
-                $"处方 (ID: {prescriptionId}) 已发药，无法修改");
-
-        public static BusinessException NoHerbs(Guid prescriptionId) =>
-            new(EC.PrescriptionNoHerbs,
-                $"处方 (ID: {prescriptionId}) 草药为空");
     }
 
     /// <summary>

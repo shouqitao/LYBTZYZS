@@ -1,5 +1,6 @@
 using LYBT.Module.Formulas.Domain;
 using Microsoft.EntityFrameworkCore;
+using FormulaEntity = LYBT.Entities.Formulas.Formula;
 
 namespace LYBT.Module.Formulas.Infrastructure;
 
@@ -9,7 +10,7 @@ namespace LYBT.Module.Formulas.Infrastructure;
 public class FormulaDbContext : DbContext
 {
     /// <summary>验方集</summary>
-    public DbSet<Formula> Formulas { get; set; } = null!;
+    public DbSet<FormulaEntity> Formulas { get; set; } = null!;
 
     /// <summary>验方药材明细集</summary>
     public DbSet<FormulaHerbItem> FormulaHerbItems { get; set; } = null!;
@@ -28,7 +29,7 @@ public class FormulaDbContext : DbContext
 
         modelBuilder.HasDefaultSchema("Formulas");
 
-        modelBuilder.Entity<Formula>(entity =>
+        modelBuilder.Entity<FormulaEntity>(entity =>
         {
             entity.ToTable("Formulas");
             entity.HasKey(e => e.Id);

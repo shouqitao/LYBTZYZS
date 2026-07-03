@@ -14,6 +14,11 @@ public interface IHerbRepository
     Task<Herb?> GetByIdAsync(Guid id, CancellationToken ct);
 
     /// <summary>
+    /// 根据ID获取药材（包括已软删除的）。
+    /// </summary>
+    Task<Herb?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken ct);
+
+    /// <summary>
     /// 分页查询药材（支持关键字 + 分类筛选）。
     /// </summary>
     Task<PagedResult<Herb>> GetPagedAsync(int page, int pageSize, string? keyword, string? category, CancellationToken ct);

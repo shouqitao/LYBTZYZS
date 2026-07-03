@@ -7,6 +7,6 @@ namespace LYBT.Module.Reports.Application.Queries;
 /// <summary>
 /// 获取每日收入汇总查询。
 /// </summary>
-public record GetDailyIncomeQuery : IRequest<Result<DailyIncome>>;
+public record GetDailyIncomeQuery(DateTime? StartDate = null, DateTime? EndDate = null) : IRequest<Result<DailyIncome>>;
 
 

@@ -149,6 +149,18 @@ namespace LYBT.Module.Herbs.Repositories
                 .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
+
+        /// <summary>
+        /// 按分类筛选药材（DB层执行过滤）
+        /// </summary>
+        public async Task<List<Herb>> GetByCategoryAsync(string category)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Where(h => !h.IsDeleted && h.Category != null && h.Category.Contains(category))
+                .OrderBy(h => h.PinYinCode ?? h.Name)
+                .ToListAsync();
+        }
     }
 }
 

@@ -8,6 +8,7 @@ using LYBT.Shared.Models.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Users.Controllers;
@@ -48,7 +49,7 @@ public abstract class BaseUsersController : BaseApiController
         if (ValidatePagination(page, pageSize) is { } error) return error;
 
         var result = await _sender.Send(new GetUsersQuery(page, pageSize, keyword, role, status), cancellationToken);
-        if (!result.IsSuccess) return Error(result.Error ?? "查询失败");
+        if (!result.IsSuccess) return BusinessFail(result.Error ?? "查询失败");
         return SuccessPaged(result.Value!, "查询成功");
     }
 
@@ -85,11 +86,12 @@ public abstract class BaseUsersController : BaseApiController
     /// <summary>
     /// 创建用户
     /// </summary>
-    [HttpPost]
-    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 201)]
-    [ProducesResponseType(400)]
-    public virtual async Task<IActionResult> Create([FromBody] UserInputDto dto, CancellationToken cancellationToken = default)
+        [HttpPost]
+        [EnableRateLimiting("ApiCalls")]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+        [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 201)]
+        [ProducesResponseType(400)]
+        public virtual async Task<IActionResult> Create([FromBody] UserInputDto dto, CancellationToken cancellationToken = default)
     {
         var (currentUserId, _, currentRole) = GetOperator();
         var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
@@ -98,7 +100,7 @@ public abstract class BaseUsersController : BaseApiController
 
         if (!result.IsSuccess)
         {
-            return Error(result.Error ?? "创建用户失败");
+            return BusinessFail(result.Error ?? "创建用户失败");
         }
 
         LogOperation("创建用户", dto, result.Value!.Id);
@@ -110,11 +112,12 @@ public abstract class BaseUsersController : BaseApiController
     /// <summary>
     /// 更新用户
     /// </summary>
-    [HttpPut("{id:guid}")]
-    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
-    [ProducesResponseType(404)]
-    public virtual async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto dto)
+        [HttpPut("{id:guid}")]
+        [EnableRateLimiting("ApiCalls")]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+        [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
+        [ProducesResponseType(404)]
+        public virtual async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto dto)
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
@@ -128,7 +131,7 @@ public abstract class BaseUsersController : BaseApiController
             if (result.Error == "用户不存在") return NotFound(result.Error);
             if (result.Error?.StartsWith("您没有权限") == true) return Forbid(result.Error);
             if (result.Error?.StartsWith("系统管理员") == true) return Forbid(result.Error);
-            return Error(result.Error ?? "更新用户失败");
+            return BusinessFail(result.Error ?? "更新用户失败");
         }
 
         LogOperation("更新用户", dto, id);
@@ -138,11 +141,12 @@ public abstract class BaseUsersController : BaseApiController
     /// <summary>
     /// 删除用户
     /// </summary>
-    [HttpDelete("{id:guid}")]
-    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    [ProducesResponseType(typeof(ApiResponse), 200)]
-    [ProducesResponseType(404)]
-    public virtual async Task<IActionResult> Delete(Guid id)
+        [HttpDelete("{id:guid}")]
+        [EnableRateLimiting("ApiCalls")]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+        [ProducesResponseType(typeof(ApiResponse), 200)]
+        [ProducesResponseType(404)]
+        public virtual async Task<IActionResult> Delete(Guid id)
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
@@ -157,7 +161,7 @@ public abstract class BaseUsersController : BaseApiController
             if (result.Error?.StartsWith("不能删除") == true) return Forbid(result.Error);
             if (result.Error?.StartsWith("系统管理员") == true) return Forbid(result.Error);
             if (result.Error?.StartsWith("您没有权限") == true) return Forbid(result.Error);
-            return Error(result.Error ?? "删除用户失败");
+            return BusinessFail(result.Error ?? "删除用户失败");
         }
 
         LogOperation("删除用户", null, id);
@@ -180,7 +184,7 @@ public abstract class BaseUsersController : BaseApiController
         if (!result.IsSuccess)
         {
             if (result.Error == "用户不存在") return NotFound(result.Error);
-            return Error(result.Error ?? "密码重置失败");
+            return BusinessFail(result.Error ?? "密码重置失败");
         }
 
         LogOperation("重置用户密码", new { AutoGenerated = true }, id);
@@ -208,7 +212,7 @@ public abstract class BaseUsersController : BaseApiController
         {
             if (result.Error?.StartsWith("只能修改") == true) return Forbid(result.Error);
             if (result.Error == "用户不存在") return NotFound(result.Error);
-            return Error(result.Error ?? "个人资料修改失败");
+            return BusinessFail(result.Error ?? "个人资料修改失败");
         }
 
         LogOperation("修改个人资料", new { RealName = dto.RealName, PhoneNumber = dto.PhoneNumber }, id);
@@ -232,7 +236,7 @@ public abstract class BaseUsersController : BaseApiController
         {
             if (result.Error?.StartsWith("只能修改") == true) return Forbid(result.Error);
             if (result.Error == "用户不存在") return NotFound(result.Error);
-            return Error(result.Error ?? "密码修改失败");
+            return BusinessFail(result.Error ?? "密码修改失败");
         }
 
         LogOperation("修改密码", new { UserId = id }, id);
@@ -260,7 +264,7 @@ public abstract class BaseUsersController : BaseApiController
             if (result.Error == "用户不存在") return NotFound(result.Error);
             if (result.Error?.StartsWith("系统管理员") == true) return Forbid(result.Error);
             if (result.Error?.StartsWith("您没有权限") == true) return Forbid(result.Error);
-            return Error(result.Error ?? "切换用户状态失败");
+            return BusinessFail(result.Error ?? "切换用户状态失败");
         }
 
         LogOperation("切换用户状态", new { }, id);
@@ -270,11 +274,12 @@ public abstract class BaseUsersController : BaseApiController
     /// <summary>
     /// 批量删除用户
     /// </summary>
-    [HttpPost("batch-delete")]
-    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
-    [ProducesResponseType(typeof(ApiResponse), 400)]
-    public virtual async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
+        [HttpPost("batch-delete")]
+        [EnableRateLimiting("ApiCalls")]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        public virtual async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
     {
         if (dto.Ids == null || dto.Ids.Count == 0)
         {
@@ -288,6 +293,74 @@ public abstract class BaseUsersController : BaseApiController
 
         LogOperation("批量删除用户", new { Ids = dto.Ids, Result = result.Value?.Message }, null);
         return Success(result.Value!, result.Value?.Message ?? "批量删除完成");
+    }
+
+    /// <summary>
+    /// 恢复已删除用户
+    /// </summary>
+    [HttpPost("{id:guid}/restore")]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse), 404)]
+    public virtual async Task<IActionResult> Restore(Guid id)
+    {
+        if (ValidateGuid(id, "用户ID") is { } error) return error;
+
+        var (operatorId, _, _) = GetOperator();
+
+        var result = await _sender.Send(new RestoreUserCommand(id, operatorId));
+
+        if (!result.IsSuccess)
+        {
+            if (result.Error == "用户不存在") return NotFound(result.Error);
+            if (result.Error?.StartsWith("该用户未被删除") == true) return BusinessFail(result.Error);
+            return BusinessFail(result.Error ?? "恢复用户失败");
+        }
+
+        LogOperation("恢复用户", new { }, id);
+        return Success(result.Value!, "用户恢复成功");
+    }
+
+    /// <summary>
+    /// 批量启用用户
+    /// </summary>
+        [HttpPost("batch-enable")]
+        [EnableRateLimiting("ApiCalls")]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        public virtual async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto)
+    {
+        if (dto.Ids == null || dto.Ids.Count == 0)
+        {
+            return ValidationFail("请至少选择一个用户");
+        }
+
+        var result = await _sender.Send(new BatchEnableUsersCommand(dto.Ids));
+
+        LogOperation("批量启用用户", new { Ids = dto.Ids, Result = result.Value?.Message }, null);
+        return Success(result.Value!, result.Value?.Message ?? "批量启用完成");
+    }
+
+    /// <summary>
+    /// 批量禁用用户
+    /// </summary>
+        [HttpPost("batch-disable")]
+        [EnableRateLimiting("ApiCalls")]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        public virtual async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto)
+    {
+        if (dto.Ids == null || dto.Ids.Count == 0)
+        {
+            return ValidationFail("请至少选择一个用户");
+        }
+
+        var result = await _sender.Send(new BatchDisableUsersCommand(dto.Ids));
+
+        LogOperation("批量禁用用户", new { Ids = dto.Ids, Result = result.Value?.Message }, null);
+        return Success(result.Value!, result.Value?.Message ?? "批量禁用完成");
     }
 }
 

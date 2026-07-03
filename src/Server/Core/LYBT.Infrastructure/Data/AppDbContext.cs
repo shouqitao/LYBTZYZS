@@ -50,6 +50,9 @@ namespace LYBT.Infrastructure.Data
         // 医疗案例
         public DbSet<MedicalCase> MedicalCases { get; set; }
 
+        // 医案打印日志
+        public DbSet<MedicalCasePrintLog> MedicalCasePrintLogs { get; set; }
+
         // 诊断
         public DbSet<Consultation> Consultations { get; set; }
 
@@ -67,8 +70,14 @@ namespace LYBT.Infrastructure.Data
         // 挂号管理
         public DbSet<Registration> Registrations { get; set; }
 
+        // 安全审计日志
+        public DbSet<SecurityAuditLog> SecurityAuditLogs { get; set; }
+
         // 系统日志
         public DbSet<SystemLog> SystemLogs { get; set; }
+
+        // 医案审计日志
+        public DbSet<MedicalCaseAuditLog> MedicalCaseAuditLogs { get; set; }
 
         // 配伍管理 - 移除：HerbCompatibilityNote实体已删除
 

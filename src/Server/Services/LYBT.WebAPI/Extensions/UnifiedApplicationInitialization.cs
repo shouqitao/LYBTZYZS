@@ -101,27 +101,7 @@ public static class UnifiedApplicationInitialization
                 logger?.LogWarning(" 数据库连接配置可能存在问题");
             }
 
-            try
-            {
-                var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ??
-                Environment.GetEnvironmentVariable("JWT_SECRET") ?? "P3配置直读统一-已移至IOptions注入";
 
-                if (string.IsNullOrEmpty(jwtSecret))
-                {
-                    if (app.Environment.IsProduction())
-                    {
-                        throw new InvalidOperationException("生产环境必须配置JWT_SECRET环境变量或JwtOptions:Secret");
-                    }
-
-                    jwtSecret = "DefaultDevelopmentSecretKeyForJWTAuthentication_ShouldBeReplacedInProduction";
-                }
-
-                logger?.LogInformation(" JWT配置验证通过");
-            }
-            catch (Exception)
-            {
-                logger?.LogWarning(" JWT配置可能存在问题");
-            }
         }
         catch (Exception ex)
         {

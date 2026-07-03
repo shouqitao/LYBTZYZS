@@ -7,6 +7,7 @@
 using LYBT.Entities.Formulas;
 using LYBT.Shared.Models.Contracts.Formula;
 using Riok.Mapperly.Abstractions;
+using FormulaEntity = LYBT.Entities.Formulas.Formula;
 
 namespace LYBT.Module.Formulas.Mapping;
 
@@ -24,15 +25,15 @@ public partial class FormulaMapper
     /// Indications映射自Indication字段
     /// HerbCount/TotalPrice由Service计算
     /// </remarks>
-    [MapProperty(nameof(Formula.Indication), nameof(FormulaListDto.Indications))]
+    [MapProperty(nameof(FormulaEntity.Indication), nameof(FormulaListDto.Indications))]
     [MapperIgnoreTarget(nameof(FormulaListDto.HerbCount))]
     [MapperIgnoreTarget(nameof(FormulaListDto.TotalPrice))]
-    public partial FormulaListDto ToListDto(Formula entity);
+    public partial FormulaListDto ToListDto(FormulaEntity entity);
 
     /// <summary>
     /// Formula实体列表转换为FormulaListDto列表
     /// </summary>
-    public partial List<FormulaListDto> ToListDtos(List<Formula> entities);
+    public partial List<FormulaListDto> ToListDtos(List<FormulaEntity> entities);
 
     /// <summary>
     /// Formula实体转换为FormulaDetailDto（详情查询）
@@ -42,18 +43,18 @@ public partial class FormulaMapper
     /// HerbCount/TotalPrice由Service计算
     /// Herbs通过ToHerbItemDto/ToHerbItemDtos自动映射
     /// </remarks>
-    [MapProperty(nameof(Formula.Indication), nameof(FormulaDetailDto.Indications))]
+    [MapProperty(nameof(FormulaEntity.Indication), nameof(FormulaDetailDto.Indications))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.HerbCount))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.TotalPrice))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.Description))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.Source))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.Contraindications))]
-    public partial FormulaDetailDto ToDetailDto(Formula entity);
+    public partial FormulaDetailDto ToDetailDto(FormulaEntity entity);
 
     /// <summary>
     /// Formula实体列表转换为FormulaDetailDto列表
     /// </summary>
-    public partial List<FormulaDetailDto> ToDetailDtos(List<Formula> entities);
+    public partial List<FormulaDetailDto> ToDetailDtos(List<FormulaEntity> entities);
 
     /// <summary>
     /// FormulaHerbItem实体转换为FormulaHerbItemDto
@@ -86,21 +87,21 @@ public partial class FormulaMapper
     [MapperIgnoreSource(nameof(FormulaInputDto.Indications))]
     [MapperIgnoreSource(nameof(FormulaInputDto.Contraindications))]
     [MapperIgnoreSource(nameof(FormulaInputDto.Preparation))]
-    [MapperIgnoreTarget(nameof(Formula.Id))]
-    [MapperIgnoreTarget(nameof(Formula.Status))]
-    [MapperIgnoreTarget(nameof(Formula.Property))]
-    [MapperIgnoreTarget(nameof(Formula.Herbs))]
-    [MapperIgnoreTarget(nameof(Formula.CreatedAt))]
-    [MapperIgnoreTarget(nameof(Formula.CreatedBy))]
-    [MapperIgnoreTarget(nameof(Formula.UpdatedAt))]
-    [MapperIgnoreTarget(nameof(Formula.UpdatedBy))]
-    [MapperIgnoreTarget(nameof(Formula.RowVersion))]
-    [MapperIgnoreTarget(nameof(Formula.IsDeleted))]
-    [MapperIgnoreTarget(nameof(Formula.ValidationStatus))]
-    [MapperIgnoreTarget(nameof(Formula.UserId))]
-    [MapperIgnoreTarget(nameof(Formula.Indication))]
-    [MapperIgnoreTarget(nameof(Formula.FormulaType))]
-    public partial Formula ToEntity(FormulaInputDto dto);
+    [MapperIgnoreTarget(nameof(FormulaEntity.Id))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.Status))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.Property))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.Herbs))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.CreatedAt))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.CreatedBy))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.UpdatedAt))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.UpdatedBy))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.RowVersion))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.IsDeleted))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.ValidationStatus))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.UserId))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.Indication))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.FormulaType))]
+    public partial FormulaEntity ToEntity(FormulaInputDto dto);
 
     /// <summary>
     /// FormulaInputDto更新到现有Formula实体
@@ -110,21 +111,21 @@ public partial class FormulaMapper
     [MapperIgnoreSource(nameof(FormulaInputDto.Indications))]
     [MapperIgnoreSource(nameof(FormulaInputDto.Contraindications))]
     [MapperIgnoreSource(nameof(FormulaInputDto.Preparation))]
-    [MapperIgnoreTarget(nameof(Formula.Id))]
-    [MapperIgnoreTarget(nameof(Formula.Status))]
-    [MapperIgnoreTarget(nameof(Formula.Property))]
-    [MapperIgnoreTarget(nameof(Formula.Herbs))]
-    [MapperIgnoreTarget(nameof(Formula.CreatedAt))]
-    [MapperIgnoreTarget(nameof(Formula.CreatedBy))]
-    [MapperIgnoreTarget(nameof(Formula.UpdatedAt))]
-    [MapperIgnoreTarget(nameof(Formula.UpdatedBy))]
-    [MapperIgnoreTarget(nameof(Formula.RowVersion))]
-    [MapperIgnoreTarget(nameof(Formula.IsDeleted))]
-    [MapperIgnoreTarget(nameof(Formula.ValidationStatus))]
-    [MapperIgnoreTarget(nameof(Formula.UserId))]
-    [MapperIgnoreTarget(nameof(Formula.Indication))]
-    [MapperIgnoreTarget(nameof(Formula.FormulaType))]
-    public partial void UpdateEntity(FormulaInputDto dto, Formula entity);
+    [MapperIgnoreTarget(nameof(FormulaEntity.Id))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.Status))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.Property))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.Herbs))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.CreatedAt))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.CreatedBy))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.UpdatedAt))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.UpdatedBy))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.RowVersion))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.IsDeleted))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.ValidationStatus))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.UserId))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.Indication))]
+    [MapperIgnoreTarget(nameof(FormulaEntity.FormulaType))]
+    public partial void UpdateEntity(FormulaInputDto dto, FormulaEntity entity);
 }
 
 

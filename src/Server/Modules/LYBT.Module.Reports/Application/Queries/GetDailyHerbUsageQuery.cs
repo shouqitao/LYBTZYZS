@@ -7,6 +7,6 @@ namespace LYBT.Module.Reports.Application.Queries;
 /// <summary>
 /// 获取每日草药使用汇总查询。
 /// </summary>
-public record GetDailyHerbUsageQuery : IRequest<Result<DailyHerbUsage>>;
+public record GetDailyHerbUsageQuery(DateTime? StartDate = null, DateTime? EndDate = null) : IRequest<Result<DailyHerbUsage>>;
 
 

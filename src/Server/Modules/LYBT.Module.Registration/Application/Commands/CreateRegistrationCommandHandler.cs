@@ -4,6 +4,8 @@ using LYBT.Module.Registration.Domain.Events;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.SharedKernel.Common;
 using MediatR;
 using RegistrationEntity = LYBT.Entities.Registrations.Registration;
 
@@ -13,7 +15,7 @@ namespace LYBT.Module.Registration.Application.Commands;
 /// 创建挂号处理器。
 /// </summary>
 public sealed class CreateRegistrationCommandHandler
-    : IRequestHandler<CreateRegistrationCommand, RegistrationDetailDto>
+    : IRequestHandler<CreateRegistrationCommand, Result<RegistrationDetailDto>>
 {
     private readonly IRegistrationRepository _repository;
     private readonly IPublisher _publisher;
@@ -26,7 +28,7 @@ public sealed class CreateRegistrationCommandHandler
         _publisher = publisher;
     }
 
-    public async Task<RegistrationDetailDto> Handle(
+    public async Task<Result<RegistrationDetailDto>> Handle(
         CreateRegistrationCommand request, CancellationToken cancellationToken)
     {
         var dto = request.Input;
@@ -62,7 +64,7 @@ public sealed class CreateRegistrationCommandHandler
             registration.Status,
             registration.QueueNumber), cancellationToken);
 
-        return RegistrationMapper.ToDetailDto(registration);
+        return Result<RegistrationDetailDto>.Success(RegistrationMapper.ToDetailDto(registration));
     }
 }
 

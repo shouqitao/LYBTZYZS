@@ -25,6 +25,14 @@ public class HerbRepository : IHerbRepository
     }
 
     /// <inheritdoc/>
+    public async Task<Herb?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Herbs
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(h => h.Id == id, cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task<PagedResult<Herb>> GetPagedAsync(
         int page, int pageSize, string? keyword, string? category,
         CancellationToken cancellationToken = default)

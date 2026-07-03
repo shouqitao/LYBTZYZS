@@ -1,5 +1,6 @@
 using MediatR;
 using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Primitives.ErrorCodes;
 using LYBT.SharedKernel.Common;
@@ -24,6 +25,12 @@ public class BatchImportFormulasCommandHandler(
             StartTime = DateTime.UtcNow,
             TotalCount = request.Formulas.Count
         };
+
+        var allHerbs = await herbCrossModule.GetAllActiveHerbsAsync(cancellationToken);
+        var herbByName = allHerbs.ToDictionary(h => h.Name, StringComparer.OrdinalIgnoreCase);
+        var herbByPinyin = allHerbs
+            .Where(h => h.Pinyin != null)
+            .ToDictionary(h => h.Pinyin!, StringComparer.OrdinalIgnoreCase);
 
         int index = 0;
         foreach (var item in request.Formulas)
@@ -55,7 +62,7 @@ public class BatchImportFormulasCommandHandler(
                     continue;
                 }
 
-                var formula = LYBT.Module.Formulas.Domain.Formula.Create(
+                var formula = LYBT.Entities.Formulas.Formula.Create(
                     name: item.Name,
                     effect: item.Effect,
                     usage: item.Usage,
@@ -65,8 +72,13 @@ public class BatchImportFormulasCommandHandler(
 
                 foreach (var herbDto in item.Herbs)
                 {
-                    var matchedHerb = await herbCrossModule.GetHerbByNameOrPinyinAsync(herbDto.HerbName, cancellationToken);
-                    var herbItem = LYBT.Module.Formulas.Domain.FormulaHerbItem.Create(
+                    HerbBasicDto? matchedHerb = null;
+                    if (herbDto.HerbName != null)
+                    {
+                        if (!herbByName.TryGetValue(herbDto.HerbName, out matchedHerb))
+                            herbByPinyin.TryGetValue(herbDto.HerbName, out matchedHerb);
+                    }
+                    var herbItem = LYBT.Entities.Formulas.FormulaHerbItem.Create(
                         formulaId: formula.Id,
                         herbName: herbDto.HerbName,
                         dosage: herbDto.Dosage,

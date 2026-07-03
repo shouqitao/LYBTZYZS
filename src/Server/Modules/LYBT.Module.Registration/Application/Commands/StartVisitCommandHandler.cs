@@ -1,4 +1,6 @@
 using LYBT.Module.Registration.Interfaces;
+using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.SharedKernel.Common;
 using MediatR;
 
 namespace LYBT.Module.Registration.Application.Commands;
@@ -7,7 +9,7 @@ namespace LYBT.Module.Registration.Application.Commands;
 /// 接诊处理器。
 /// </summary>
 public sealed class StartVisitCommandHandler
-    : IRequestHandler<StartVisitCommand, Guid>
+    : IRequestHandler<StartVisitCommand, Result<Guid>>
 {
     private readonly IRegistrationRepository _repository;
 
@@ -16,18 +18,26 @@ public sealed class StartVisitCommandHandler
         _repository = repository;
     }
 
-    public async Task<Guid> Handle(
+    public async Task<Result<Guid>> Handle(
         StartVisitCommand request, CancellationToken cancellationToken)
     {
         var entity = await _repository.GetByIdAsync(request.RegistrationId, cancellationToken);
         if (entity is null)
-            throw new InvalidOperationException("挂号记录不存在");
+            return Result<Guid>.Failure(ErrorCode.RegistrationNotFound, ErrorMessages.Get(ErrorCode.RegistrationNotFound));
 
-        entity.StartVisit();
+        try
+        {
+            entity.StartVisit();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Result<Guid>.Failure(ErrorCode.RegistrationInvalidStatusTransition, ex.Message);
+        }
+
         await _repository.UpdateAsync(entity, cancellationToken);
         await _repository.SaveChangesAsync(cancellationToken);
 
-        return entity.Id;
+        return Result<Guid>.Success(entity.Id);
     }
 }
 

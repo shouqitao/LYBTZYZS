@@ -137,7 +137,7 @@ namespace LYBT.WebAPI.Controllers
             }
 
             _logger.LogInformation("医案取消成功(软删除)，MedicalCaseId: {Id}", id);
-            return NoContent();
+            return Success(true, "医案已取消");
         }
     }
 

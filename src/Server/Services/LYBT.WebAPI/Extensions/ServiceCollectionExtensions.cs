@@ -13,6 +13,7 @@ using LYBT.Module.Patients;
 using LYBT.Module.Registration;
 using LYBT.Module.Reports;
 using LYBT.Module.Users;
+using Microsoft.AspNetCore.HttpsPolicy;
 using LYBT.SharedKernel.Events;
 using LYBT.WebAPI.Configuration.Commands;
 using LYBT.WebAPI.Filters;
@@ -49,7 +50,10 @@ public static class ServiceCollectionExtensions
         services.RegisterBusinessModules(configuration);
 
         // 4）API 文档（Swagger、API版本、ProblemDetails、AutoMapper）
-        services.RegisterApiServices();
+        services.RegisterApiServices(configuration);
+
+        // 4.1 CORS 配置
+        services.AddCorsConfiguration(configuration);
 
         // 5）控制器与 JSON（FluentValidation、JSON序列化）
         services.RegisterControllerServices(configuration);
@@ -65,6 +69,14 @@ public static class ServiceCollectionExtensions
 
         // 9）安全服务（数据保护、密钥管理、密钥旋转）
         services.AddSecurityServices(configuration, environment);
+
+        // 9.1 HSTS 配置（365天，含子域，Preload）
+        services.AddHsts(options =>
+        {
+            options.MaxAge = TimeSpan.FromDays(365);
+            options.IncludeSubDomains = true;
+            options.Preload = true;
+        });
 
         // 10）环境感知配置校验 - 已移除，统一使用 LYBT.Shared.Configuration 配置验证
 

@@ -2,6 +2,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Formulas.Domain;
 using LYBT.Module.Formulas.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using FormulaEntity = LYBT.Entities.Formulas.Formula;
 
 namespace LYBT.Module.Formulas.Infrastructure;
 
@@ -21,7 +22,7 @@ public class FormulaRepository : IFormulaRepository
     }
 
     /// <inheritdoc/>
-    public async Task<Formula?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<FormulaEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Formulas
             .Include(f => f.Herbs)
@@ -29,7 +30,16 @@ public class FormulaRepository : IFormulaRepository
     }
 
     /// <inheritdoc/>
-    public async Task<PagedResult<Formula>> GetPagedAsync(
+    public async Task<FormulaEntity?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Formulas
+            .Include(f => f.Herbs)
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(f => f.Id == id, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<PagedResult<FormulaEntity>> GetPagedAsync(
         int page, int pageSize, string? keyword, string? category,
         CancellationToken cancellationToken = default)
     {
@@ -59,7 +69,7 @@ public class FormulaRepository : IFormulaRepository
             .Take(pageSize)
             .ToListAsync(cancellationToken);
 
-        return new PagedResult<Formula>
+        return new PagedResult<FormulaEntity>
         {
             Items = items,
             TotalCount = totalCount,
@@ -81,22 +91,22 @@ public class FormulaRepository : IFormulaRepository
     }
 
     /// <inheritdoc/>
-    public async Task AddAsync(Formula formula, CancellationToken cancellationToken = default)
+    public async Task AddAsync(FormulaEntity formula, CancellationToken cancellationToken = default)
     {
         await _context.Formulas.AddAsync(formula, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task UpdateAsync(Formula formula, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(FormulaEntity formula, CancellationToken cancellationToken = default)
     {
         _context.Formulas.Update(formula);
         await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<List<Formula>> FindWithHerbsAsync(
-        System.Linq.Expressions.Expression<Func<Formula, bool>> predicate,
+    public async Task<List<FormulaEntity>> FindWithHerbsAsync(
+        System.Linq.Expressions.Expression<Func<FormulaEntity, bool>> predicate,
         CancellationToken cancellationToken = default)
     {
         return await _context.Formulas

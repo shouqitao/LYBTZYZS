@@ -42,9 +42,9 @@ public class DatabaseStartupDiagnostics : IHostedService
             var useWindowsAuth = builder.IntegratedSecurity;
 
             _logger.LogInformation(" [DatabaseStartupDiagnostics] 连接信息:");
-            _logger.LogInformation($"   - 服务器: {serverName}");
-            _logger.LogInformation($"   - 数据库: {databaseName}");
-            _logger.LogInformation($"   - 认证方式: {(useWindowsAuth ? "Windows Authentication" : "SQL Server Authentication")}");
+            _logger.LogInformation("   - 服务器: {ServerName}", serverName);
+            _logger.LogInformation("   - 数据库: {DatabaseName}", databaseName);
+            _logger.LogInformation("   - 认证方式: {AuthMethod}", useWindowsAuth ? "Windows Authentication" : "SQL Server Authentication");
 
             // 3. 测试连接
             using (var connection = new SqlConnection(connectionString))
@@ -57,14 +57,14 @@ public class DatabaseStartupDiagnostics : IHostedService
                 {
                     command.CommandText = "SELECT DB_NAME()";
                     var result = await command.ExecuteScalarAsync(cancellationToken);
-                    _logger.LogInformation($" [DatabaseStartupDiagnostics] 当前数据库: {result}");
+                    _logger.LogInformation(" [DatabaseStartupDiagnostics] 当前数据库: {Database}", result);
                 }
 
                 // 5. 检查连接池状态
-                _logger.LogInformation($" [DatabaseStartupDiagnostics] 连接池配置:");
-                _logger.LogInformation($"   - Max Pool Size: {builder.MaxPoolSize}");
-                _logger.LogInformation($"   - Min Pool Size: {builder.MinPoolSize}");
-                _logger.LogInformation($"   - Connection Timeout: {builder.ConnectTimeout}秒");
+                _logger.LogInformation(" [DatabaseStartupDiagnostics] 连接池配置:");
+                _logger.LogInformation("   - Max Pool Size: {MaxPoolSize}", builder.MaxPoolSize);
+                _logger.LogInformation("   - Min Pool Size: {MinPoolSize}", builder.MinPoolSize);
+                _logger.LogInformation("   - Connection Timeout: {ConnectTimeout}秒", builder.ConnectTimeout);
             }
 
             _logger.LogInformation(" [DatabaseStartupDiagnostics] 数据库诊断完成，系统可正常启动");
@@ -72,8 +72,8 @@ public class DatabaseStartupDiagnostics : IHostedService
         catch (SqlException ex)
         {
             _logger.LogError(" [DatabaseStartupDiagnostics] SQL Server连接失败！");
-            _logger.LogError($"   错误代码: {ex.Number}");
-            _logger.LogError($"   错误信息: {ex.Message}");
+            _logger.LogError("   错误代码: {ErrorNumber}", ex.Number);
+            _logger.LogError("   错误信息: {ErrorMessage}", ex.Message);
 
             // 提供详细的故障排查建议
             _logger.LogWarning(" [DatabaseStartupDiagnostics] 故障排查建议:");
@@ -104,6 +104,14 @@ public class DatabaseStartupDiagnostics : IHostedService
         catch (Exception ex)
         {
             _logger.LogError(ex, " [DatabaseStartupDiagnostics] 数据库诊断过程中发生未知错误");
+
+            if (System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production" ||
+                System.Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") == "Production")
+            {
+                _logger.LogCritical(" [DatabaseStartupDiagnostics] 生产环境数据库不可用，应用将终止");
+                throw;
+            }
+
             _logger.LogWarning(" [DatabaseStartupDiagnostics] 应用将继续启动，但数据库功能不可用");
         }
     }

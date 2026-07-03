@@ -38,6 +38,11 @@ public interface IPatientRepository
     /// 更新患者。
     /// </summary>
     Task UpdateAsync(Patient patient, CancellationToken ct);
+
+    /// <summary>
+    /// 根据身份证号查询患者。
+    /// </summary>
+    Task<Patient?> GetByIdNumberAsync(string idNumber, CancellationToken ct);
 }
 
 

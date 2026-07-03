@@ -16,6 +16,8 @@ using LYBT.Module.Reports;
 using LYBT.Module.Users.Services;
 using LYBT.Entities.Users;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.LocalWebAPI;
@@ -66,6 +68,18 @@ public static class LocalWebApiProgram
 
         LocalJwtConfig.ConfigureServices(builder.Services, builder.Configuration);
 
+        builder.Services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.AddFixedWindowLimiter("LocalLogin", opt =>
+            {
+                opt.PermitLimit = 5;
+                opt.Window = TimeSpan.FromMinutes(1);
+                opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                opt.QueueLimit = 0;
+            });
+        });
+
         // Register DefaultPasswordOptions from configuration (required by IdentitySeedData)
         builder.Services.AddOptions<LYBT.Shared.Configuration.Options.Server.DefaultPasswordOptions>()
             .Bind(builder.Configuration.GetSection(LYBT.Shared.Configuration.Options.Server.DefaultPasswordOptions.SectionName))
@@ -75,6 +89,7 @@ public static class LocalWebApiProgram
 
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseRateLimiter();
         app.MapControllers();
 
         return app;

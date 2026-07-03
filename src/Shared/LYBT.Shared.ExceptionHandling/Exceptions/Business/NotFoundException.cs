@@ -63,9 +63,6 @@ public class NotFoundException : AppException
     public static NotFoundException Herb(Guid herbId) =>
         new(EC.HerbNotFound, "药材不存在", "药材", herbId.ToString());
 
-    public static NotFoundException Prescription(Guid prescriptionId) =>
-        new(EC.PrescriptionNotFound, "处方不存在", "处方", prescriptionId.ToString());
-
     public static NotFoundException MedicalCase(Guid caseId) =>
         new(EC.MedicalCaseNotFound, "医案不存在", "医案", caseId.ToString());
 

@@ -18,6 +18,17 @@ namespace LYBT.Module.MedicalCases.Interfaces
         Task<List<MedicalCase>> GetByPatientIdAsync(Guid patientId, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// 根据患者ID分页获取医疗案例（DB层分页）
+        /// </summary>
+        Task<PagedResult<MedicalCase>> GetByPatientIdPagedAsync(Guid patientId, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 根据患者ID获取医案（包含Consultation和Prescription关联数据）
+        /// US-MC-008/009: 患者诊疗/处方历史查询
+        /// </summary>
+        Task<List<MedicalCase>> GetByPatientIdWithDetailsAsync(Guid patientId, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// 根据ID获取医案（包含所有关联数据）
         /// </summary>
         Task<MedicalCase> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
@@ -72,6 +83,18 @@ namespace LYBT.Module.MedicalCases.Interfaces
             CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// 分页查询医案列表（支持多条件组合查询，DB层分页）
+        /// </summary>
+        Task<PagedResult<MedicalCase>> QueryPagedAsync(
+            string? patientName,
+            DateTime? startDate,
+            DateTime? endDate,
+            string? diagnosisKeyword,
+            int pageNumber,
+            int pageSize,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// 获取患者的未完成医案（Status != Completed）
         /// Epic #1676 Phase 4 Task 4.1
         /// Epic #2210 Task 3.1.1: 添加doctorId筛选
@@ -97,12 +120,29 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="cancellationToken">取消令牌</param>
         Task<int> CountByPrefixAsync(string prefix, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// 按前缀统计处方编号数量（包含软删除，避免编号重复）
+    /// T5-P2-13: 处方编号自动生成
+    /// </summary>
+    /// <param name="cancellationToken">取消令牌</param>
+    Task<int> CountPrescriptionsByPrefixAsync(string prefix, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 添加打印日志
+    /// </summary>
+    /// <param name="printLog">打印日志实体</param>
+    /// <param name="cancellationToken">取消令牌</param>
+    Task AddPrintLogAsync(MedicalCasePrintLog printLog, CancellationToken cancellationToken = default);
+
         /// <summary>
-        /// 按前缀统计处方编号数量（包含软删除，避免编号重复）
-        /// T5-P2-13: 处方编号自动生成
+        /// 获取医案审计日志（分页）
         /// </summary>
-        /// <param name="cancellationToken">取消令牌</param>
-        Task<int> CountPrescriptionsByPrefixAsync(string prefix, CancellationToken cancellationToken = default);
+        Task<List<MedicalCaseAuditLog>> GetAuditLogsAsync(Guid medicalCaseId, int page, int pageSize, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 统计医案审计日志总数
+        /// </summary>
+        Task<int> CountAuditLogsAsync(Guid medicalCaseId, CancellationToken cancellationToken = default);
     }
 }
 

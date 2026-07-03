@@ -23,11 +23,6 @@
 		<PackageReference Include="MediatR" />
 	</ItemGroup>
 
-	<!-- Exclude old service layer files replaced by CQRS handlers -->
-	<ItemGroup>
-		<Compile Remove="Services\PatientService.cs" />
-	</ItemGroup>
-
 	<ItemGroup>
 		<ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
 		<ProjectReference Include="..\..\Core/LYBT.Entities/LYBT.Entities.csproj" />

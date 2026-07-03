@@ -1,5 +1,7 @@
 using LYBT.WebAPI.Configuration;
 using LYBT.WebAPI.Middleware;
+using Microsoft.AspNetCore.HttpOverrides;
+using Serilog;
 
 namespace LYBT.WebAPI.Extensions;
 
@@ -86,7 +88,13 @@ public static class UnifiedMiddlewareConfiguration
             await context.HttpContext.Response.WriteAsJsonAsync(errorResponse);
         });
 
-        // 1.2 CorrelationId追踪（尽早注册，确保所有后续日志都包含追踪ID）
+        // 1.2 转发头处理（必须在 CorrelationId 之前，用于反向代理场景）
+        app.UseForwardedHeaders(new ForwardedHeadersOptions
+        {
+            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+        });
+
+        // 1.3 CorrelationId追踪（尽早注册，确保所有后续日志都包含追踪ID）
         // refactor-logging-system: 实现端到端请求追踪
         app.UseCorrelationId();
 
@@ -124,6 +132,20 @@ public static class UnifiedMiddlewareConfiguration
 
         // 3.1 路由（必须在认证之前）
         app.UseRouting();
+
+        // 3.1.0 CORS（在UseRouting之后、认证/授权之前）
+        app.UseCors("AllowConfiguredOrigins");
+
+        // 3.1.1 Serilog请求日志
+        app.UseSerilogRequestLogging(options =>
+        {
+            options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000}ms";
+            options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+            {
+                diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+                diagnosticContext.Set("UserAgent", httpContext.Request.Headers.UserAgent.ToString());
+            };
+        });
 
         // 3.2 速率限制 - A2-02: 启用速率限制中间件
         app.UseRateLimiter();

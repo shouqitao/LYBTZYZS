@@ -34,6 +34,11 @@ namespace LYBT.Module.Herbs.Interfaces
         /// 根据ID获取实体（包括已软删除的）
         /// </summary>
         Task<Herb?> GetByIdIncludingDeletedAsync(Guid id);
+
+        /// <summary>
+        /// 按分类筛选药材（DB层执行过滤）
+        /// </summary>
+        Task<List<Herb>> GetByCategoryAsync(string category);
     }
 }
 

@@ -9,6 +9,8 @@ using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
+using FormulaEntity = LYBT.Entities.Formulas.Formula;
+using FormulaHerbItemEntity = LYBT.Entities.Formulas.FormulaHerbItem;
 
 namespace LYBT.Module.Formulas.Services;
 
@@ -52,6 +54,12 @@ public class FormulaImportExportService : IFormulaImportExportService
             TotalCount = formulas.Count
         };
 
+        var allHerbs = await _crossModuleQuery.GetAllActiveHerbsAsync();
+        var herbByName = allHerbs.ToDictionary(h => h.Name, StringComparer.OrdinalIgnoreCase);
+        var herbByPinyin = allHerbs
+            .Where(h => h.Pinyin != null)
+            .ToDictionary(h => h.Pinyin!, StringComparer.OrdinalIgnoreCase);
+
         int index = 0;
         foreach (var formulaImportItem in formulas)
         {
@@ -71,7 +79,7 @@ public class FormulaImportExportService : IFormulaImportExportService
                 }
 
                 // 创建验方实体（从DTO映射）
-                var formula = new Formula
+                var formula = new FormulaEntity
                 {
                     Name = formulaImportItem.Name,
                     Effect = formulaImportItem.Effect,
@@ -82,15 +90,20 @@ public class FormulaImportExportService : IFormulaImportExportService
                     Status = CommonStatus.Enabled,
                     ValidationStatus = FormulaValidationStatus.Draft,
                     CreatedAt = DateTime.UtcNow,
-                    Herbs = new List<FormulaHerbItem>()
+                    Herbs = new List<FormulaHerbItemEntity>()
                 };
 
                 // 添加药材（从DTO列表）
                 foreach (var herbDto in formulaImportItem.Herbs)
                 {
-                    var matchedHerb = await TryMatchHerbAsync(herbDto.HerbName);
+                    HerbBasicDto? matchedHerb = null;
+                    if (!string.IsNullOrWhiteSpace(herbDto.HerbName))
+                    {
+                        if (!herbByName.TryGetValue(herbDto.HerbName, out matchedHerb))
+                            herbByPinyin.TryGetValue(herbDto.HerbName, out matchedHerb);
+                    }
 
-                    formula.Herbs.Add(new FormulaHerbItem
+                    formula.Herbs.Add(new FormulaHerbItemEntity
                     {
                         Id = Guid.NewGuid(),
                         HerbId = matchedHerb?.Id,
@@ -160,15 +173,9 @@ public class FormulaImportExportService : IFormulaImportExportService
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
         // T5-P2-36: 使用 GetAllWithHerbsAsync 加载药材组成
-        var formulas = await _repository.GetAllWithHerbsAsync();
-
-        if (!string.IsNullOrWhiteSpace(category))
-        {
-            formulas = formulas.Where(f =>
-                !string.IsNullOrEmpty(f.Category) &&
-                f.Category.Contains(category, StringComparison.OrdinalIgnoreCase))
-            .ToList();
-        }
+        var formulas = !string.IsNullOrWhiteSpace(category)
+            ? await _repository.GetByCategoryWithHerbsAsync(category)
+            : await _repository.GetAllWithHerbsAsync();
 
         var stream = new MemoryStream();
         using (var package = new ExcelPackage(stream))

@@ -3,9 +3,7 @@ using LYBT.Shared.ExceptionHandling.Handlers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Primitives.ErrorCodes;
 using LYBT.WebAPI.Configuration;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
+
 
 namespace LYBT.WebAPI.Extensions;
 
@@ -17,9 +15,33 @@ namespace LYBT.WebAPI.Extensions;
 public static class ApiServiceCollectionExtensions
 {
     /// <summary>
+    /// 注册 CORS 服务
+    /// </summary>
+    public static IServiceCollection AddCorsConfiguration(this IServiceCollection services, IConfiguration configuration)
+    {
+        var corsSection = configuration.GetSection("Cors");
+        if (corsSection.Exists())
+        {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowConfiguredOrigins", builder =>
+                {
+                    var origins = corsSection.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+                    builder.WithOrigins(origins)
+                        .WithMethods(corsSection.GetSection("AllowedMethods").Get<string[]>() ?? new[] { "GET", "POST", "PUT", "DELETE" })
+                        .WithHeaders(corsSection.GetSection("AllowedHeaders").Get<string[]>() ?? Array.Empty<string>())
+                        .AllowCredentials();
+                });
+            });
+        }
+
+        return services;
+    }
+
+    /// <summary>
     /// 注册 API 文档（Swagger）与统一异常处理
     /// </summary>
-    public static IServiceCollection RegisterApiServices(this IServiceCollection services)
+    public static IServiceCollection RegisterApiServices(this IServiceCollection services, IConfiguration configuration)
     {
         // API版本管理（MVP阶段仅v1.0，简化配置）
         // Issue #1732 Phase 2: 移除3种版本读取器（QueryString/Header/UrlSegment），使用默认行为
@@ -51,13 +73,11 @@ public static class ApiServiceCollectionExtensions
         services.AddExceptionHandler<BusinessExceptionHandler>();
         services.AddExceptionHandler<SystemExceptionHandler>();
 
-        // Swagger（含 JWT）- 从服务提供者获取配置
+        // Swagger（含 JWT）- 从配置参数获取配置
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
         {
             // unify-configuration-system: 使用强类型 SwaggerOptions
-            var serviceProvider = services.BuildServiceProvider();
-            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
             var swaggerConfig = new SwaggerOptions();
             configuration.GetSection(SwaggerOptions.SectionName).Bind(swaggerConfig);
 
@@ -96,12 +116,9 @@ public static class ApiServiceCollectionExtensions
             // XML 注释 - 使用统一配置控制
             if (swaggerConfig.EnableXmlComments)
             {
-                var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                if (File.Exists(xmlPath))
-                {
-                    c.IncludeXmlComments(xmlPath);
-                }
+                var xmlFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.xml", SearchOption.TopDirectoryOnly);
+                foreach (var xmlFile in xmlFiles)
+                    c.IncludeXmlComments(xmlFile);
             }
 
             // 避免 Schema ID 冲突
@@ -221,38 +238,6 @@ public static class ApiServiceCollectionExtensions
         return services;
     }
 
-    /// <summary>
-    /// Issue #3.1: 注册分布式缓存服务（Redis + MemoryCache 降级）
-    /// 支持多实例部署，当 Redis 不可用时自动降级为内存缓存
-    /// </summary>
-    public static IServiceCollection AddCachingServices(
-        this IServiceCollection services,
-        IConfiguration configuration,
-        ILogger logger)
-    {
-        var redisConnection = configuration["REDIS_CONNECTION"]
-            ?? configuration.GetConnectionString("Redis")
-            ?? Environment.GetEnvironmentVariable("REDIS_CONNECTION");
-
-        if (!string.IsNullOrEmpty(redisConnection))
-        {
-            services.AddStackExchangeRedisCache(options =>
-            {
-                options.Configuration = redisConnection;
-                options.InstanceName = "LYBT:";
-            });
-            services.AddHealthChecks()
-                .AddRedis(redisConnection, name: "redis");
-            logger.LogInformation("Redis distributed cache configured");
-        }
-        else
-        {
-            services.AddDistributedMemoryCache();
-            logger.LogInformation("Memory distributed cache configured (Redis not available)");
-        }
-
-        return services;
-    }
 }
 
 

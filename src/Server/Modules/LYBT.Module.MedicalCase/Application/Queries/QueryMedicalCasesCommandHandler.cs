@@ -33,16 +33,12 @@ public class QueryMedicalCasesCommandHandler(
         if (!query.PatientId.HasValue)
             return Result<PagedResult<MedicalCaseListDto>>.Success(new PagedResult<MedicalCaseListDto>());
 
-        var entities = await repository.GetByPatientIdAsync(query.PatientId.Value, ct);
-        var ordered = entities.OrderByDescending(e => e.CreatedAt).ToList();
-        var paged = ordered
-            .Skip((query.PageIndex - 1) * query.PageSize)
-            .Take(query.PageSize)
-            .ToList();
+        var pagedResult = await repository.GetByPatientIdPagedAsync(
+            query.PatientId.Value, query.PageIndex, query.PageSize, ct);
 
-        var dtos = paged.Select(mapper.ToListDto).ToList();
+        var dtos = pagedResult.Items.Select(mapper.ToListDto).ToList();
         return Result<PagedResult<MedicalCaseListDto>>.Success(
-            new PagedResult<MedicalCaseListDto>(dtos, entities.Count, query.PageIndex, query.PageSize));
+            new PagedResult<MedicalCaseListDto>(dtos, pagedResult.TotalCount, query.PageIndex, query.PageSize));
     }
 
     private async Task<Result<PagedResult<MedicalCaseListDto>>> HandlePendingAsync(
@@ -92,14 +88,11 @@ public class QueryMedicalCasesCommandHandler(
         if (!query.PatientId.HasValue)
             return Result<PagedResult<MedicalCaseListDto>>.Success(new PagedResult<MedicalCaseListDto>());
 
-        var entities = await repository.GetByPatientIdAsync(query.PatientId.Value, ct);
         var count = query.Limit ?? 5;
-        var recentCases = entities
-            .OrderByDescending(e => e.CreatedAt)
-            .Take(count)
-            .ToList();
+        var pagedResult = await repository.GetByPatientIdPagedAsync(
+            query.PatientId.Value, 1, count, ct);
 
-        var dtos = recentCases.Select(mapper.ToListDto).ToList();
+        var dtos = pagedResult.Items.Select(mapper.ToListDto).ToList();
         return Result<PagedResult<MedicalCaseListDto>>.Success(
             new PagedResult<MedicalCaseListDto>(dtos, dtos.Count, 1, dtos.Count));
     }

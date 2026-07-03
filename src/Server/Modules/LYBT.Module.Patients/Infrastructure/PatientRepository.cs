@@ -97,6 +97,13 @@ public class PatientRepository : IPatientRepository
         _context.Patients.Update(patient);
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public async Task<Patient?> GetByIdNumberAsync(string idNumber, CancellationToken cancellationToken = default)
+    {
+        return await _context.Patients
+            .FirstOrDefaultAsync(p => p.IdNumber == idNumber && !p.IsDeleted, cancellationToken);
+    }
 }
 
 

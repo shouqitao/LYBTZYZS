@@ -20,8 +20,11 @@ public class GetDailyConsultationsQueryHandler : IRequestHandler<GetDailyConsult
     public async Task<Result<DailyConsultation>> Handle(
         GetDailyConsultationsQuery request, CancellationToken cancellationToken)
     {
-        var totalCount = await _reportRepository.GetTodayConsultationCountAsync(cancellationToken);
-        var byDoctorDtos = await _reportRepository.GetTodayConsultationsByDoctorAsync(cancellationToken);
+        var startDate = request.StartDate ?? DateTime.Today;
+        var endDate = request.EndDate ?? DateTime.Today;
+
+        var totalCount = await _reportRepository.GetConsultationCountAsync(startDate, endDate, cancellationToken);
+        var byDoctorDtos = await _reportRepository.GetConsultationsByDoctorAsync(startDate, endDate, cancellationToken);
 
         var byDoctor = byDoctorDtos
             .Select(d => new DoctorCount(d.DoctorName, d.Count))

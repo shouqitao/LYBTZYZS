@@ -20,10 +20,8 @@ namespace LYBT.Module.Formulas
         /// </summary>
         public static IServiceCollection AddFormulaModule(this IServiceCollection services, IConfiguration configuration)
         {
-            // Legacy仓储（给旧FormulaService使用）
+            // Legacy仓储（给FormulaImportExportService使用）
             services.AddScoped<IFormulaRepositoryLegacy, FormulaRepository>();
-            // 统一服务 - 合并查询和业务逻辑
-            services.AddScoped<IFormulaService, FormulaService>();
             services.AddScoped<IFormulaImportExportService, FormulaImportExportService>();
             // 注册共享验证器
             services.AddValidatorsFromAssemblyContaining<FormulaInputDtoValidator>();

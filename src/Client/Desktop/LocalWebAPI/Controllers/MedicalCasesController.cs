@@ -1,10 +1,12 @@
 using System.Security.Claims;
+using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.MedicalCases.Application.Commands;
 using LYBT.Module.MedicalCases.Application.Queries;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -137,6 +139,32 @@ public class MedicalCasesController : BaseApiController
         return Success(result.Value!.Items, "查询成功");
     }
 
+    [HttpGet("patient/{patientId:guid}/consultations")]
+    public async Task<IActionResult> GetPatientConsultations(
+        Guid patientId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        var result = await _sender.Send(
+            new GetPatientConsultationsQuery(patientId, page, pageSize));
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "查询失败");
+        return Success(result.Value!, "查询成功");
+    }
+
+    [HttpGet("patient/{patientId:guid}/prescriptions")]
+    public async Task<IActionResult> GetPatientPrescriptions(
+        Guid patientId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        var result = await _sender.Send(
+            new GetPatientPrescriptionsQuery(patientId, page, pageSize));
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "查询失败");
+        return Success(result.Value!, "查询成功");
+    }
+
     [HttpGet("{id}/consultations")]
     public async Task<IActionResult> GetConsultations(Guid id)
     {
@@ -155,9 +183,36 @@ public class MedicalCasesController : BaseApiController
         return Success(result.Value!, "查询成功");
     }
 
+    // ===================== Permissions & Audit Endpoints =====================
+
+    [HttpGet("{id}/permissions")]
+    public async Task<IActionResult> GetPermissions(Guid id)
+    {
+        var (operatorId, _, operatorRole) = GetOperator();
+        var roleInt = (int)operatorRole;
+        var result = await _sender.Send(new GetMedicalCasePermissionsQuery(id, operatorId, roleInt));
+        if (!result.IsSuccess)
+            return NotFound(result.Error ?? "医案不存在");
+        return Success(result.Value!, "查询成功");
+    }
+
+    [HttpGet("{id}/audit-logs")]
+    public async Task<IActionResult> GetAuditLogs(
+        Guid id,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        if (ValidatePagination(page, pageSize) is { } error) return error;
+        var result = await _sender.Send(new GetMedicalCaseAuditLogsQuery(id, page, pageSize));
+        if (!result.IsSuccess)
+            return NotFound(result.Error ?? "医案不存在");
+        return Success(result.Value!, "查询成功");
+    }
+
     // ===================== Command Endpoints =====================
 
     [HttpPost]
+    [Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
     public async Task<IActionResult> Create([FromBody] MedicalCaseInputDto input)
     {
         var operatorId = GetCurrentUserId();
@@ -201,6 +256,20 @@ public class MedicalCasesController : BaseApiController
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "批量删除失败");
         return Success(result.Value, result.Value.Message);
+    }
+
+    [HttpPost("batch-details")]
+    public async Task<IActionResult> GetBatchDetails([FromBody] List<Guid> ids)
+    {
+        if (ids == null || ids.Count == 0)
+            return ValidationFail("IDs不能为空");
+        if (ids.Count > 50)
+            return ValidationFail("最多查询50条");
+
+        var result = await _sender.Send(new GetMedicalCasesBatchQuery(ids));
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "查询失败");
+        return Success(result.Value!, "查询成功");
     }
 
     // ===================== State Transition Endpoints =====================
@@ -268,9 +337,26 @@ public class MedicalCasesController : BaseApiController
             return BusinessFail(result.Error ?? "状态更新失败");
         return Success(result.Value!, "状态更新成功");
     }
+
+    [HttpPut("{id:guid}/print-completed")]
+    public async Task<IActionResult> RecordPrint(Guid id, [FromBody] RecordPrintRequest request)
+    {
+        var (operatorId, operatorName, _) = GetOperator();
+        var result = await _sender.Send(new RecordPrintCommand(
+            id, request.PrintType, request.PrinterName, operatorId, operatorName));
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "医案不存在");
+        return Success(true, "打印记录已写入");
+    }
 }
 
 public class SetPrescriptionFlagRequest
 {
     public bool NeedsPrescription { get; set; }
+}
+
+public class RecordPrintRequest
+{
+    public int PrintType { get; set; }
+    public string? PrinterName { get; set; }
 }

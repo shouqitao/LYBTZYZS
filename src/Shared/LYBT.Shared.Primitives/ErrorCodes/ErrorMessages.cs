@@ -117,13 +117,6 @@ public static class ErrorMessages
         [ErrorCode.McCaseNotFound] = ("医案不存在", "Medical case not found"),
 
         // 处方模块 (4xxxx)
-        [ErrorCode.PrescriptionNotFound] = ("处方不存在", "Prescription not found"),
-        [ErrorCode.InvalidPrescriptionState] = ("处方状态不允许此操作", "Invalid prescription state"),
-        [ErrorCode.PrescriptionAlreadyDispensed] = ("处方已发药，无法修改", "Prescription already dispensed"),
-        [ErrorCode.PrescriptionNoHerbs] = ("处方草药为空", "Prescription has no herbs"),
-        [ErrorCode.PrescriptionDosageExceeded] = ("处方剂量超出限制", "Prescription dosage exceeded"),
-        [ErrorCode.PrescriptionContraindication] = ("处方包含禁忌配伍", "Prescription contraindication"),
-        [ErrorCode.PrescriptionCompleted] = ("无法修改已完成的处方", "Prescription is completed"),
 
         // 药材模块 (5xxxx)
         [ErrorCode.HerbNotFound] = ("药材不存在", "Herb not found"),
@@ -175,42 +168,10 @@ public static class ErrorMessages
         [ErrorCode.FormulaBatchItemNotFound] = ("方剂不存在", "Formula not found in batch operation"),
         [ErrorCode.FormulaBatchItemError] = ("操作失败", "Batch item operation failed"),
 
-        // 同步模块 (7xxxx)
-        // 701xx: 服务端通用错误
-        [ErrorCode.UnsupportedEntityType] = ("不支持的实体类型", "Unsupported entity type"),
-        [ErrorCode.JsonDeserializeFailed] = ("JSON 反序列化失败", "JSON deserialization failed"),
-        [ErrorCode.SyncDataConflict] = ("服务器已存在该数据", "Server data conflict"),
-        // 702xx: 服务端上传错误
-        [ErrorCode.HerbUploadFailed] = ("药材上传失败", "Herb upload failed"),
-        [ErrorCode.PatientUploadFailed] = ("患者上传失败", "Patient upload failed"),
-        [ErrorCode.FormulaUploadFailed] = ("验方上传失败", "Formula upload failed"),
-        [ErrorCode.MedicalCaseUploadFailed] = ("医案上传失败", "Medical case upload failed"),
-        // 703xx: MedicalCase 同步错误
-        [ErrorCode.SyncPatientNotFound] = ("患者不存在，请先同步患者", "Sync patient not found"),
-        [ErrorCode.SyncHerbNotFound] = ("药材不存在，请先同步药材", "Sync herb not found"),
-        [ErrorCode.SyncCaseLocked] = ("医案已完成且已锁定，无法通过同步覆盖", "Medical case is locked, cannot overwrite via sync"),
-        // 704xx: 同步删除错误
-        [ErrorCode.SyncReferenceCheckFailed] = ("无法检查引用关系", "Sync reference check failed"),
-        [ErrorCode.SyncHerbHasReference] = ("药材被处方引用，请先禁用", "Herb has prescription references"),
-        [ErrorCode.SyncPatientHasReference] = ("患者有医案记录，请先禁用", "Patient has medical case references"),
-        [ErrorCode.SyncEntityNotFound] = ("实体不存在或已删除", "Sync entity not found or deleted"),
-        // 705xx: 客户端错误
-        [ErrorCode.SyncNoEntityTypeSelected] = ("请选择要同步的数据类型", "No entity type selected for sync"),
-        [ErrorCode.SyncFailed] = ("同步失败", "Sync failed"),
-        [ErrorCode.SyncChecksumTypeError] = ("不支持的 Checksum 实体类型", "Unsupported checksum entity type"),
-        [ErrorCode.SyncDependencyNotSynced] = ("请先同步药材和患者数据", "Sync dependencies not satisfied"),
-        [ErrorCode.SyncPatientRemapFailed] = ("无法匹配患者，请手动处理", "Patient remap failed"),
-        [ErrorCode.SyncLocalActiveCasesExist] = ("本地有未完成的医案，请先完成或取消后再切换模式", "Local active cases exist, complete or cancel before switching mode"),
-
         // 挂号模块 (8xxxx)
         [ErrorCode.RegistrationNotFound] = ("挂号记录不存在", "Registration not found"),
         [ErrorCode.RegistrationInvalidStatusTransition] = ("非法的挂号状态转换", "Invalid registration status transition"),
-        [ErrorCode.RegistrationCancelNotAllowed] = ("有活跃或已完成的医案，不允许取消挂号", "Cannot cancel registration with active or completed medical case"),
-        [ErrorCode.RegistrationUnauthorizedCancel] = ("无权取消此挂号记录", "Unauthorized to cancel this registration"),
-        [ErrorCode.RegistrationPatientDisabled] = ("患者已禁用，不允许创建挂号", "Patient is disabled, cannot create registration"),
-        [ErrorCode.RegistrationDoctorNotAvailable] = ("指派的医生不可用", "Assigned doctor is not available"),
-        [ErrorCode.RegistrationDuplicateWaiting] = ("该患者已有等待中的挂号记录", "Patient already has a waiting registration"),
-        [ErrorCode.RegistrationDoctorHasWaiting] = ("该医生有 {0} 条等待中的挂号记录，请先由前台取消后再禁用", "Doctor has {0} waiting registrations, please cancel them before disabling")
+        [ErrorCode.RegistrationCancelNotAllowed] = ("有活跃或已完成的医案，不允许取消挂号", "Cannot cancel registration with active or completed medical case")
     };
 
     /// <summary>

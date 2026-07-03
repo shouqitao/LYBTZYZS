@@ -80,6 +80,124 @@ namespace LYBT.Entities.Formulas
         /// </summary>
         [DisplayName("药材组成")]
         public virtual ICollection<FormulaHerbItem> Herbs { get; set; } = new List<FormulaHerbItem>();
+
+        /// <summary>药材数量</summary>
+        public int HerbCount => Herbs?.Count ?? 0;
+
+        public static Formula Create(
+            string name,
+            string? effect = null,
+            string? indication = null,
+            string? usage = null,
+            string? remark = null,
+            string? property = null,
+            string? category = null,
+            FormulaType formulaType = FormulaType.Experience,
+            bool isShared = false,
+            Guid? userId = null,
+            Guid? createdBy = null)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("验方名称不能为空", nameof(name));
+
+            return new Formula
+            {
+                Id = Guid.NewGuid(),
+                Name = name.Trim(),
+                Effect = effect?.Trim(),
+                Indication = indication?.Trim(),
+                Usage = usage?.Trim(),
+                Remark = remark?.Trim(),
+                Property = property?.Trim(),
+                Category = category?.Trim(),
+                FormulaType = formulaType,
+                IsShared = isShared,
+                UserId = userId,
+                Status = CommonStatus.Enabled,
+                ValidationStatus = FormulaValidationStatus.Draft,
+                CreatedBy = createdBy,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
+
+        public void UpdateProfile(
+            string name,
+            string? effect,
+            string? indication,
+            string? usage,
+            string? remark,
+            string? property,
+            string? category,
+            bool isShared,
+            Guid updatedBy)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("验方名称不能为空", nameof(name));
+
+            Name = name.Trim();
+            Effect = effect?.Trim();
+            Indication = indication?.Trim();
+            Usage = usage?.Trim();
+            Remark = remark?.Trim();
+            Property = property?.Trim();
+            Category = category?.Trim();
+            IsShared = isShared;
+            UpdatedBy = updatedBy;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void AddHerb(FormulaHerbItem herb)
+        {
+            if (herb == null)
+                throw new ArgumentNullException(nameof(herb));
+
+            Herbs.Add(herb);
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void RemoveHerb(Guid herbItemId)
+        {
+            var herb = Herbs.FirstOrDefault(h => h.Id == herbItemId);
+            if (herb != null)
+            {
+                Herbs.Remove(herb);
+                UpdatedAt = DateTime.UtcNow;
+            }
+        }
+
+        public void Validate()
+        {
+            ValidationStatus = FormulaValidationStatus.Validated;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void MarkShared(bool shared, Guid updatedBy)
+        {
+            IsShared = shared;
+            UpdatedBy = updatedBy;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void ChangeStatus(CommonStatus newStatus, Guid updatedBy)
+        {
+            Status = newStatus;
+            UpdatedBy = updatedBy;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void SoftDelete(Guid deletedBy)
+        {
+            IsDeleted = true;
+            UpdatedBy = deletedBy;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void Restore(Guid restoredBy)
+        {
+            IsDeleted = false;
+            UpdatedBy = restoredBy;
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 }
 

@@ -23,6 +23,9 @@ public interface IHerbCrossModuleService
 
     /// <summary>从给定的药材ID中筛选出已禁用的药材ID（AD-02: 禁用药材不可加入处方）</summary>
     Task<HashSet<Guid>> GetDisabledHerbIdsAsync(IEnumerable<Guid> herbIds, CancellationToken cancellationToken = default);
+
+    /// <summary>获取所有有效药材（用于批量导入时的名称/拼音匹配）</summary>
+    Task<List<HerbBasicDto>> GetAllActiveHerbsAsync(CancellationToken cancellationToken = default);
 }
 
 

@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Diagnostics;
 using LYBT.WebAPI.Configuration.Commands;
 using MediatR;
@@ -33,6 +34,7 @@ public class DiagnosticsController : BaseApiController
     /// 获取当前日志级别状态
     /// </summary>
     [HttpGet("logging/status")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetLoggingStatus()
     {
         var result = await _sender.Send(new GetLoggingStatusQuery());
@@ -45,6 +47,7 @@ public class DiagnosticsController : BaseApiController
     /// 启用调试模式 - 临时降低日志级别以捕获更多诊断信息
     /// </summary>
     [HttpPost("logging/debug/enable")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<IActionResult> EnableDebugMode([FromBody] EnableDebugModeRequest? request)
     {
         var (operatorId, operatorName, _) = GetOperator();
@@ -61,6 +64,7 @@ public class DiagnosticsController : BaseApiController
     /// 禁用调试模式 - 恢复默认日志级别
     /// </summary>
     [HttpPost("logging/debug/disable")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<IActionResult> DisableDebugMode()
     {
         var (operatorId, operatorName, _) = GetOperator();
@@ -75,6 +79,7 @@ public class DiagnosticsController : BaseApiController
     /// 设置指定的日志级别（无自动过期）
     /// </summary>
     [HttpPost("logging/level")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<IActionResult> SetLoggingLevel([FromBody] SetLoggingLevelRequest request)
     {
         var (operatorId, operatorName, _) = GetOperator();

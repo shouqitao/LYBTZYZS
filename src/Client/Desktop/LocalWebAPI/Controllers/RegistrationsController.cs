@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Registration.Application.Commands;
 using LYBT.Module.Registration.Application.Queries;
@@ -54,7 +55,9 @@ public class RegistrationsController : BaseApiController
     public async Task<IActionResult> Create([FromBody] RegistrationInputDto dto)
     {
         var result = await _sender.Send(new CreateRegistrationCommand(dto));
-        return Success(result, "挂号创建成功");
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "创建挂号失败");
+        return Success(result.Value, "挂号创建成功");
     }
 
     [HttpGet("queue")]
@@ -65,16 +68,22 @@ public class RegistrationsController : BaseApiController
     }
 
     [HttpPut("{id}/start-visit")]
+    [Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
     public async Task<IActionResult> StartVisit(Guid id)
     {
         var result = await _sender.Send(new StartVisitCommand(id));
-        return Success(result, "开始就诊");
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "接诊失败");
+        return Success(result.Value, "开始就诊");
     }
 
     [HttpPut("{id}/cancel")]
+    [Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
     public async Task<IActionResult> Cancel(Guid id)
     {
-        await _sender.Send(new CancelRegistrationCommand(id));
+        var result = await _sender.Send(new CancelRegistrationCommand(id));
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "取消挂号失败");
         return Success("挂号取消成功");
     }
 

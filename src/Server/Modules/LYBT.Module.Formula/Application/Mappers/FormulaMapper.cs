@@ -1,5 +1,6 @@
 using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Module.Formulas.Domain;
+using FormulaEntity = LYBT.Entities.Formulas.Formula;
+using FormulaHerbItemEntity = LYBT.Entities.Formulas.FormulaHerbItem;
 
 namespace LYBT.Module.Formulas.Application.Mappers;
 
@@ -11,7 +12,7 @@ public static class FormulaDtoMapper
     /// <summary>
     /// FormulaInputDto 转换为 Formula 实体（创建）。
     /// </summary>
-    public static Formula ToEntity(FormulaInputDto dto, Guid? createdBy = null) => Formula.Create(
+    public static FormulaEntity ToEntity(FormulaInputDto dto, Guid? createdBy = null) => FormulaEntity.Create(
         dto.Name,
         dto.Effect,
         dto.Indications,
@@ -27,7 +28,7 @@ public static class FormulaDtoMapper
     /// <summary>
     /// Formula 实体转换为 FormulaListDto（列表查询）。
     /// </summary>
-    public static FormulaListDto ToListDto(Formula entity) => new()
+    public static FormulaListDto ToListDto(FormulaEntity entity) => new()
     {
         Id = entity.Id,
         Name = entity.Name,
@@ -45,7 +46,7 @@ public static class FormulaDtoMapper
     /// <summary>
     /// Formula 实体转换为 FormulaDetailDto（详情查询）。
     /// </summary>
-    public static FormulaDetailDto ToDetailDto(Formula entity) => new()
+    public static FormulaDetailDto ToDetailDto(FormulaEntity entity) => new()
     {
         Id = entity.Id,
         Name = entity.Name,
@@ -69,7 +70,7 @@ public static class FormulaDtoMapper
     /// <summary>
     /// FormulaHerbItem 实体转换为 FormulaHerbItemDto。
     /// </summary>
-    public static FormulaHerbItemDto ToHerbItemDto(FormulaHerbItem entity) => new()
+    public static FormulaHerbItemDto ToHerbItemDto(FormulaHerbItemEntity entity) => new()
     {
         Id = entity.Id,
         HerbId = entity.HerbId,

@@ -1,7 +1,6 @@
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Patients.Application.Commands;
 using LYBT.Module.Patients.Application.Queries;
-using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
@@ -17,15 +16,12 @@ namespace LYBT.LocalWebAPI.Controllers;
 public class PatientsController : BaseApiController
 {
     private readonly ISender _sender;
-    private readonly IPatientService _patientService;
 
     public PatientsController(
         ISender sender,
-        IPatientService patientService,
         ILogger<PatientsController> logger) : base(logger)
     {
         _sender = sender;
-        _patientService = patientService;
     }
 
     [HttpGet]
@@ -90,14 +86,10 @@ public class PatientsController : BaseApiController
     [HttpGet("by-id-number/{idNumber}")]
     public async Task<IActionResult> GetByIdNumber(string idNumber)
     {
-        var result = await _patientService.SearchAsync(idNumber);
-        if (result.IsSuccess && result.Data != null && result.Data.Count > 0)
-        {
-            var patient = result.Data.FirstOrDefault(p => p.IdNumber == idNumber);
-            if (patient != null)
-                return Success(patient);
-        }
-        return NotFound("未找到匹配的患者");
+        var result = await _sender.Send(new SearchPatientByIdNumberQuery(idNumber));
+        if (!result.IsSuccess || result.Value == null)
+            return NotFound(result.Error ?? "未找到匹配的患者");
+        return Success(result.Value);
     }
 
     [HttpPost("batch-delete")]
