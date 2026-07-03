@@ -328,7 +328,7 @@ Server/Local → UsersController → IUserManagerService
 
 **角色**: SuperAdmin / sysadmin
 **优先级**: Should
-**状态**: 🚧 v1.0 待实现（D4 补回：Restore 基础设施已就绪，端点缺失）
+**状态**: ✅ 已实现
 
 **作为** 管理员，**我想要** 恢复软删除的用户，**以便** 误删后可还原。
 
@@ -347,7 +347,7 @@ Server/Local → UsersController → IUserManagerService
 
 **角色**: Admin / SuperAdmin
 **优先级**: Should
-**状态**: ⚠️ 部分实现（仅 batch-delete）
+**状态**: ✅ 已实现
 
 **作为** 管理员，**我想要** 批量删除/启用/禁用用户，**以便** 高效管理多个账号。
 
