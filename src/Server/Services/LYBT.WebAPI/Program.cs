@@ -36,6 +36,30 @@ public class Program
         // 修复Windows控制台中文乱码问题
         Console.OutputEncoding = Encoding.UTF8;
 
+        // ── 热更新：检查并应用待更新包 ──
+        var updateFlag = Path.Combine(AppContext.BaseDirectory, ".update-pending");
+        if (File.Exists(updateFlag))
+        {
+            try
+            {
+                var zipPath = await File.ReadAllTextAsync(updateFlag);
+                if (File.Exists(zipPath))
+                {
+                    Console.WriteLine("[UPDATE] 检测到更新包，正在应用...");
+                    var currentDir = AppContext.BaseDirectory;
+                    System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, currentDir, overwriteFiles: true);
+                    File.Delete(zipPath);
+                    Console.WriteLine("[UPDATE] 更新完成，重新启动...");
+                }
+                File.Delete(updateFlag);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[UPDATE] 更新失败: {ex.Message}");
+                File.Delete(updateFlag);
+            }
+        }
+
         // Phase 1: Bootstrap Logger - 确保启动阶段异常能够被记录
         // 在try块外初始化，捕获配置加载阶段的任何异常
         // refactor-logging-system: 测试环境使用普通Logger避免WebApplicationFactory"logger is already frozen"错误
