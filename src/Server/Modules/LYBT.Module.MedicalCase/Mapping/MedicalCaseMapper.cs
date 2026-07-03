@@ -131,11 +131,6 @@ public partial class MedicalCaseMapper
     public partial PrescriptionItemDto ToPrescriptionItemDto(PrescriptionItem entity);
 
     /// <summary>
-    /// PrescriptionItem实体列表转换为PrescriptionItemDto列表
-    /// </summary>
-    public partial List<PrescriptionItemDto> ToPrescriptionItemDtos(List<PrescriptionItem> entities);
-
-    /// <summary>
     /// 医案实体转换为MedicalCaseDetailDto（完整版）
     /// 基于Mapperly生成的ToDetailDto，再补充嵌套对象和计算字段
     /// Architecture Fix: 统一使用Mapperly + 手动丰富模式

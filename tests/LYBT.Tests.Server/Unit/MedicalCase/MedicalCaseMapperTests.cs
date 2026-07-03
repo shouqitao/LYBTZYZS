@@ -407,31 +407,6 @@ public class MedicalCaseMapperTests
 
     #endregion
 
-    #region ToPrescriptionItemDtos 测试
-
-    [Fact]
-    public void ToPrescriptionItemDtos_WithMultipleEntities_ShouldMapAll()
-    {
-        // Arrange
-        var entities = new List<PrescriptionItem>
-        {
-            CreateTestPrescriptionItem(),
-            CreateTestPrescriptionItem(),
-            CreateTestPrescriptionItem()
-        };
-
-        // Act
-        var dtos = _mapper.ToPrescriptionItemDtos(entities);
-
-        // Assert
-        dtos.Should().HaveCount(3);
-        dtos[0].Id.Should().Be(entities[0].Id);
-        dtos[1].Id.Should().Be(entities[1].Id);
-        dtos[2].Id.Should().Be(entities[2].Id);
-    }
-
-    #endregion
-
     #region MapToMedicalCaseDetailDto 测试（完整版）
 
     [Fact]
