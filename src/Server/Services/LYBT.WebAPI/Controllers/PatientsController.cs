@@ -215,6 +215,19 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 根据身份证号查询患者
+        /// </summary>
+        [HttpGet("by-id-number/{idNumber}")]
+        [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
+        public async Task<IActionResult> GetByIdNumber(string idNumber)
+        {
+            var result = await _sender.Send(new SearchPatientByIdNumberQuery(idNumber));
+            if (!result.IsSuccess || result.Value == null)
+                return NotFound(result.Error ?? "未找到匹配的患者");
+            return Success(result.Value, "查询成功");
+        }
+
+        /// <summary>
         /// 批量检查多个患者的引用关系
         /// </summary>
         [HttpPost("batch-check-reference")]
