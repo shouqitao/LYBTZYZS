@@ -55,8 +55,8 @@
 | US-USER-008 | Must | ADR-0004 | Flow 4 | PUT /users/{id}/profile | UsersController | — | ✅ 已实现 |
 | US-USER-009 | Must | ADR-0005 | — | PUT /users/{id}/change-password | UsersController | — | ✅ 已实现 |
 | US-USER-010 | Must | ADR-0005 | — | POST /users/{id}/toggle-status | UsersController | A9 | ✅ 已实现 |
-| US-USER-011 | Should | ADR-0005 | — | POST /users/{id}/restore | UsersController | A10 | 🧲 v1.0 待实现（D4：基础设施已就绪） |
-| US-USER-012 | Should | ADR-0005 | — | POST /users/batch-delete 等 | UsersController | — | ⚠️ 部分实现（仅 batch-delete） |
+| US-USER-011 | Should | ADR-0005 | — | POST /users/{id}/restore | UsersController | A10 | ✅ 已实现 |
+| US-USER-012 | Should | ADR-0005 | — | POST /users/batch-delete 等 | UsersController | — | ✅ 已实现 |
 
 ## 三、患者管理（US-PAT × 13）
 
