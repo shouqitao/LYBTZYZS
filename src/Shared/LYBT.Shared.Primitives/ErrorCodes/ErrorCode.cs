@@ -74,11 +74,6 @@ public enum ErrorCode
     DatabaseError = 10,
 
     /// <summary>
-    /// 配置错误
-    /// </summary>
-    ConfigurationError = 11,
-
-    /// <summary>
     /// 请求频率过高
     /// </summary>
     RateLimitExceeded = 12,
@@ -98,19 +93,9 @@ public enum ErrorCode
     UserNameExists = 10002,
 
     /// <summary>
-    /// 邮箱已被使用
-    /// </summary>
-    EmailExists = 10003,
-
-    /// <summary>
     /// 密码不正确
     /// </summary>
     InvalidPassword = 10004,
-
-    /// <summary>
-    /// 密码不符合策略要求
-    /// </summary>
-    PasswordPolicyViolation = 10005,
 
     /// <summary>
     /// 用户已被禁用
@@ -123,19 +108,9 @@ public enum ErrorCode
     UserLocked = 10007,
 
     /// <summary>
-    /// 登录凭证过期
-    /// </summary>
-    CredentialsExpired = 10008,
-
-    /// <summary>
     /// 刷新令牌无效或过期
     /// </summary>
     InvalidRefreshToken = 10009,
-
-    /// <summary>
-    /// 角色不存在
-    /// </summary>
-    RoleNotFound = 10010,
 
     /// <summary>
     /// 无法删除系统管理员
@@ -146,18 +121,6 @@ public enum ErrorCode
     /// 需要首次登录修改密码
     /// </summary>
     PasswordChangeRequired = 10012,
-
-    /// <summary>
-    /// 设备指纹不匹配
-    /// refactor-auth-role-system Phase 1.3
-    /// </summary>
-    DeviceMismatch = 10014,
-
-    /// <summary>
-    /// 会话已过期
-    /// refactor-auth-role-system Phase 1.3
-    /// </summary>
-    SessionExpired = 10015,
 
     // --- Auth MCCEE 编码 (101xx~103xx) ---
     // OpenSpec: T3-X1-01 - Auth 模块 MCCEE 统一
@@ -219,24 +182,9 @@ public enum ErrorCode
     PatientIdCardExists = 20002,
 
     /// <summary>
-    /// 患者电话已存在
-    /// </summary>
-    PatientPhoneExists = 20003,
-
-    /// <summary>
     /// 患者有关联的医案
     /// </summary>
     PatientHasActiveCases = 20004,
-
-    /// <summary>
-    /// 患者已被禁用
-    /// </summary>
-    PatientDisabled = 20005,
-
-    /// <summary>
-    /// 无效的患者状态
-    /// </summary>
-    InvalidPatientStatus = 20006,
 
     // --- MCCEE 编码 (207xx~208xx) ---
 
@@ -309,11 +257,6 @@ public enum ErrorCode
     InvalidMedicalCaseState = 30002,
 
     /// <summary>
-    /// 医案已归档
-    /// </summary>
-    MedicalCaseArchived = 30003,
-
-    /// <summary>
     /// 医案正在被其他用户编辑
     /// </summary>
     MedicalCaseLocked = 30004,
@@ -322,21 +265,6 @@ public enum ErrorCode
     /// 医案数据版本冲突
     /// </summary>
     MedicalCaseVersionConflict = 30005,
-
-    /// <summary>
-    /// 无法创建重复医案
-    /// </summary>
-    DuplicateMedicalCase = 30006,
-
-    /// <summary>
-    /// 医案缺少必要的诊断信息
-    /// </summary>
-    MedicalCaseMissingDiagnosis = 30007,
-
-    /// <summary>
-    /// 无法删除有处方的医案
-    /// </summary>
-    MedicalCaseHasPrescriptions = 30008,
 
     // --- MCCEE 编码 (301xx~306xx) ---
     // OpenSpec: T3-X1-12 - 现有 30001~30008 保留兼容，新 MCCEE 码并行
@@ -434,15 +362,18 @@ public enum ErrorCode
 
     /// <summary>
     /// 非当天本人取消需提供取消原因
-    /// T5-P2-16
     /// </summary>
     McCancelReasonRequired = 30308,
 
     /// <summary>
     /// 完成时处方明细为空
-    /// T5-P2-15
     /// </summary>
     McPrescriptionItemsRequired = 30309,
+
+    /// <summary>
+    /// 医案缺少必要的诊断信息
+    /// </summary>
+    MedicalCaseMissingDiagnosis = 30007,
 
     // 304xx: 处方错误
 
@@ -538,26 +469,6 @@ public enum ErrorCode
     /// </summary>
     HerbNameExists = 50002,
 
-    /// <summary>
-    /// 草药库存不足
-    /// </summary>
-    HerbInsufficientStock = 50003,
-
-    /// <summary>
-    /// 草药已被禁用
-    /// </summary>
-    HerbDisabled = 50004,
-
-    /// <summary>
-    /// 无法删除已使用的草药
-    /// </summary>
-    HerbInUse = 50005,
-
-    /// <summary>
-    /// 草药价格无效
-    /// </summary>
-    HerbInvalidPrice = 50006,
-
     // --- MCCEE 编码 (501xx~503xx) ---
 
     // 501xx: 核心错误
@@ -636,11 +547,6 @@ public enum ErrorCode
     /// </summary>
     HerbImportExcelError = 50304,
 
-    /// <summary>
-    /// Excel 文件中没有数据行
-    /// </summary>
-    HerbImportNoData = 50305,
-
     #endregion
 
     #region 6xxxx - 配方模块 (Formula)
@@ -656,24 +562,9 @@ public enum ErrorCode
     FormulaNameExists = 60002,
 
     /// <summary>
-    /// 配方草药为空
-    /// </summary>
-    FormulaNoHerbs = 60003,
-
-    /// <summary>
     /// 配方验证失败
     /// </summary>
     FormulaValidationFailed = 60004,
-
-    /// <summary>
-    /// 无法删除已使用的配方
-    /// </summary>
-    FormulaInUse = 60005,
-
-    /// <summary>
-    /// 配方已被禁用
-    /// </summary>
-    FormulaDisabled = 60006,
 
     // --- MCCEE 编码 (601xx~603xx) ---
 

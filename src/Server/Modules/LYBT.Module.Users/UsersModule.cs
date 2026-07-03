@@ -6,7 +6,6 @@ using LYBT.Module.Users.Infrastructure;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Services;
 using LYBT.Shared.Validators.Users;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,9 +27,6 @@ namespace LYBT.Module.Users
             services.AddDbContext<UsersDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-            // UserManagerService 是 UserManager<T> 的薄包装
-            services.AddScoped<IUserManagerService, UserManagerService>();
-
             // 注册新架构：IUserRepository
             services.AddScoped<IUserRepository, UserRepository>();
 
@@ -45,14 +41,6 @@ namespace LYBT.Module.Users
             services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
 
             return services;
-        }
-
-        /// <summary>
-        /// 配置用户模块中间件
-        /// </summary>
-        public static IApplicationBuilder UseUsersModule(this IApplicationBuilder app)
-        {
-            return app;
         }
     }
 }

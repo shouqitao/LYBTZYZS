@@ -163,7 +163,6 @@ public static class DatabaseServiceCollectionExtensions
         services.AddScoped<IPatientCrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
         services.AddScoped<IHerbCrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
         services.AddScoped<IUserCrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
-        services.AddScoped<ICrossModuleAuthService>(sp => sp.GetRequiredService<CrossModuleService>());
 
         // Architecture Fix: 注册健康检查服务 (Task 1.1)
         services.AddScoped<IHealthCheckService, HealthCheckService>();

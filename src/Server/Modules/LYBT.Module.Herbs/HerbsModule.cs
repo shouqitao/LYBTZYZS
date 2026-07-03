@@ -7,7 +7,6 @@ using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Repositories;
 using LYBT.Module.Herbs.Services;
 using LYBT.Shared.Validators.Herbs;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,16 +52,6 @@ namespace LYBT.Module.Herbs
 
             return services;
         }
-
-        /// <summary>
-        /// 配置中药模块中间件（如有需要）
-        /// </summary>
-        public static IApplicationBuilder UseHerbsModule(this IApplicationBuilder app)
-        {
-            // 当前无特殊中间件需求
-            return app;
-        }
-
     }
 }
 

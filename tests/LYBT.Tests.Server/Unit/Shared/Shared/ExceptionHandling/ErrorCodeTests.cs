@@ -290,8 +290,7 @@ public class ErrorCodeTests
             ErrorCode.HerbImportFileEmpty,         // 50301
             ErrorCode.HerbImportFileFormat,        // 50302
             ErrorCode.HerbImportFileSize,          // 50303
-            ErrorCode.HerbImportExcelError,        // 50304
-            ErrorCode.HerbImportNoData             // 50305
+            ErrorCode.HerbImportExcelError         // 50304
         };
 
         foreach (var code in herbCodes)

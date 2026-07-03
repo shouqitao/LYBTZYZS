@@ -7,7 +7,6 @@ using LYBT.Module.Patients.Infrastructure;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Services;
 using LYBT.Shared.Validators.Patients;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -40,14 +39,6 @@ namespace LYBT.Module.Patients
             services.AddValidatorsFromAssemblyContaining<CreatePatientValidator>();
 
             return services;
-        }
-
-        /// <summary>
-        /// 配置患者模块中间件（如有需要）
-        /// </summary>
-        public static IApplicationBuilder UsePatientsModule(this IApplicationBuilder app)
-        {
-            return app;
         }
     }
 }

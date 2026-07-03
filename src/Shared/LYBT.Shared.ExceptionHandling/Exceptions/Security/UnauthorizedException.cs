@@ -53,9 +53,6 @@ public class UnauthorizedException : AppException
     public static UnauthorizedException InvalidPassword() =>
         new(EC.InvalidPassword, "用户名或密码错误", "密码验证失败");
 
-    public static UnauthorizedException CredentialsExpired() =>
-        new(EC.CredentialsExpired, "登录已过期，请重新登录", "凭据已过期");
-
     public static UnauthorizedException InvalidRefreshToken() =>
         new(EC.InvalidRefreshToken, "登录状态异常，请重新登录", "刷新令牌无效");
 
@@ -67,20 +64,6 @@ public class UnauthorizedException : AppException
 
     public static UnauthorizedException PasswordChangeRequired() =>
         new(EC.PasswordChangeRequired, "首次登录需要修改密码", "需要修改密码");
-
-    /// <summary>
-    /// 设备指纹不匹配
-    /// refactor-auth-role-system Phase 1.3
-    /// </summary>
-    public static UnauthorizedException DeviceMismatch() =>
-        new(EC.DeviceMismatch, "登录设备异常，请重新登录", "设备指纹不匹配");
-
-    /// <summary>
-    /// 会话已过期
-    /// refactor-auth-role-system Phase 1.3
-    /// </summary>
-    public static UnauthorizedException SessionExpired() =>
-        new(EC.SessionExpired, "会话已过期，请重新登录", "会话已过期");
 
     /// <summary>
     /// 访问令牌已过期

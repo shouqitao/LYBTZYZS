@@ -20,24 +20,17 @@ public static class ErrorMessages
         [ErrorCode.ServiceUnavailable] = ("服务暂时不可用，请稍后重试", "Service unavailable"),
         [ErrorCode.InternalError] = ("系统处理异常，请稍后重试", "Internal server error"),
         [ErrorCode.DatabaseError] = ("数据库操作失败，请稍后重试", "Database error"),
-        [ErrorCode.ConfigurationError] = ("系统配置错误，请联系管理员", "Configuration error"),
         [ErrorCode.RateLimitExceeded] = ("请求过于频繁，请稍后重试", "Rate limit exceeded"),
 
         // 用户模块 (1xxxx)
         [ErrorCode.UserNotFound] = ("用户不存在", "User not found"),
         [ErrorCode.UserNameExists] = ("用户名已被使用", "Username already exists"),
-        [ErrorCode.EmailExists] = ("邮箱已被使用", "Email already exists"),
         [ErrorCode.InvalidPassword] = ("用户名或密码错误", "Invalid password"),
-        [ErrorCode.PasswordPolicyViolation] = ("密码不符合策略要求", "Password policy violation"),
         [ErrorCode.UserDisabled] = ("用户账号已被禁用，请联系管理员", "User account is disabled"),
         [ErrorCode.UserLocked] = ("账号已被锁定，请稍后重试", "User account is locked"),
-        [ErrorCode.CredentialsExpired] = ("您的登录已过期，请重新登录", "Credentials expired"),
         [ErrorCode.InvalidRefreshToken] = ("登录状态异常，请重新登录", "Invalid refresh token"),
-        [ErrorCode.RoleNotFound] = ("角色不存在", "Role not found"),
         [ErrorCode.CannotDeleteSysAdmin] = ("无法删除系统管理员", "Cannot delete system admin"),
-        [ErrorCode.DeviceMismatch] = ("登录设备不匹配", "Device mismatch"),
         [ErrorCode.PasswordChangeRequired] = ("首次登录需要修改密码", "Password change required"),
-        [ErrorCode.SessionExpired] = ("会话已到期，请重新登录", "Session expired"),
         // Auth MCCEE 码
         [ErrorCode.AuthInvalidCredentials] = ("用户名或密码错误", "Invalid credentials"),
         [ErrorCode.AuthTokenInvalid] = ("登录凭据无效", "Token is invalid"),
@@ -50,10 +43,7 @@ public static class ErrorMessages
         // 患者模块 (2xxxx)
         [ErrorCode.PatientNotFound] = ("患者信息不存在", "Patient not found"),
         [ErrorCode.PatientIdCardExists] = ("身份证号已被使用", "Patient ID card exists"),
-        [ErrorCode.PatientPhoneExists] = ("手机号已被使用", "Patient phone exists"),
         [ErrorCode.PatientHasActiveCases] = ("患者有关联的医案，无法删除", "Patient has referenced cases"),
-        [ErrorCode.PatientDisabled] = ("患者档案已停用", "Patient is disabled"),
-        [ErrorCode.InvalidPatientStatus] = ("无效的患者状态", "Invalid patient status"),
         // 207xx: 业务规则错误
         [ErrorCode.PatientPhoneDuplicate] = ("手机号已存在", "Phone number already exists"),
         [ErrorCode.PatientNotDeleted] = ("该患者未被删除，无需恢复", "Patient is not deleted, no need to restore"),
@@ -70,12 +60,8 @@ public static class ErrorMessages
         // 医案模块 (3xxxx)
         [ErrorCode.MedicalCaseNotFound] = ("医案不存在", "Medical case not found"),
         [ErrorCode.InvalidMedicalCaseState] = ("医案状态不允许此操作", "Invalid medical case state"),
-        [ErrorCode.MedicalCaseArchived] = ("医案已归档，无法修改", "Medical case is archived"),
         [ErrorCode.MedicalCaseLocked] = ("医案正在被其他用户编辑", "Medical case is locked"),
         [ErrorCode.MedicalCaseVersionConflict] = ("医案数据已被其他用户修改，请刷新页面后重试", "Medical case version conflict"),
-        [ErrorCode.DuplicateMedicalCase] = ("无法创建重复医案", "Duplicate medical case"),
-        [ErrorCode.MedicalCaseMissingDiagnosis] = ("医案缺少必要的诊断信息", "Medical case missing diagnosis"),
-        [ErrorCode.MedicalCaseHasPrescriptions] = ("无法删除有处方的医案", "Medical case has prescriptions"),
         // 301xx: 创建医案错误
         [ErrorCode.McPatientNotFound] = ("患者不存在", "Patient not found"),
         [ErrorCode.McDoctorNotFound] = ("医生不存在", "Doctor not found"),
@@ -98,6 +84,7 @@ public static class ErrorMessages
         [ErrorCode.McAlreadyDeleted] = ("医案已经是删除状态", "Medical case is already deleted"),
         [ErrorCode.McCancelReasonRequired] = ("非当天本人创建的医案取消时必须提供取消原因", "Cancel reason is required for non-same-day or non-owner cancellation"),
         [ErrorCode.McPrescriptionItemsRequired] = ("处方必须包含至少一项药材才能完成医案", "Prescription must contain at least one item to complete medical case"),
+        [ErrorCode.MedicalCaseMissingDiagnosis] = ("医案缺少必要的诊断信息", "Medical case missing diagnosis"),
         // 304xx: 处方错误
         [ErrorCode.McPrescriptionFlagNotSet] = ("未标记需要开处方，请先设置处方需求标记", "Prescription flag not set"),
         [ErrorCode.McPrescriptionAlreadyExists] = ("医案已存在处方，请使用更新接口", "Prescription already exists, use update endpoint"),
@@ -121,10 +108,6 @@ public static class ErrorMessages
         // 药材模块 (5xxxx)
         [ErrorCode.HerbNotFound] = ("药材不存在", "Herb not found"),
         [ErrorCode.HerbNameExists] = ("药材名称已存在", "Herb name exists"),
-        [ErrorCode.HerbInsufficientStock] = ("药材库存不足", "Insufficient herb stock"),
-        [ErrorCode.HerbDisabled] = ("药材已停用", "Herb is disabled"),
-        [ErrorCode.HerbInUse] = ("无法删除已使用的药材", "Herb is in use"),
-        [ErrorCode.HerbInvalidPrice] = ("药材价格无效", "Invalid herb price"),
         [ErrorCode.HerbValidationFailed] = ("药材验证失败", "Herb validation failed"),
         [ErrorCode.HerbNoPermission] = ("您没有权限操作此药材，只能操作自己创建的数据", "No permission to operate this herb"),
         [ErrorCode.HerbNotDeleted] = ("该药材未被删除，无需恢复", "Herb is not deleted, no need to restore"),
@@ -139,15 +122,11 @@ public static class ErrorMessages
         [ErrorCode.HerbImportFileFormat] = ("仅支持.xlsx格式的Excel文件", "Only .xlsx format is supported"),
         [ErrorCode.HerbImportFileSize] = ("文件大小不能超过10MB", "File size exceeds 10MB limit"),
         [ErrorCode.HerbImportExcelError] = ("Excel文件格式错误", "Excel file format error"),
-        [ErrorCode.HerbImportNoData] = ("Excel文件中没有数据行", "No data rows in Excel file"),
 
         // 方剂模块 (6xxxx)
         [ErrorCode.FormulaNotFound] = ("方剂不存在", "Formula not found"),
         [ErrorCode.FormulaNameExists] = ("方剂名称已存在", "Formula name exists"),
-        [ErrorCode.FormulaNoHerbs] = ("方剂草药为空", "Formula has no herbs"),
         [ErrorCode.FormulaValidationFailed] = ("方剂验证失败", "Formula validation failed"),
-        [ErrorCode.FormulaInUse] = ("无法删除已使用的方剂", "Formula is in use"),
-        [ErrorCode.FormulaDisabled] = ("方剂已停用", "Formula is disabled"),
         // 601xx: 核心错误
         [ErrorCode.FormulaIdInvalid] = ("验方ID不能为空", "Formula ID cannot be empty"),
         [ErrorCode.FormulaNoPermission] = ("您没有权限操作此验方，只能操作自己创建的数据", "No permission to operate this formula"),

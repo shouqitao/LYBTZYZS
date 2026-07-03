@@ -16,8 +16,6 @@ public static class ErrorCodeExtensions
             // 400 Bad Request - 验证错误
             ErrorCode.InvalidRequest => 400,
             ErrorCode.ValidationFailed => 400,
-            ErrorCode.PasswordPolicyViolation => 400,
-            ErrorCode.FormulaNoHerbs => 400,
             ErrorCode.FormulaIdInvalid => 400,
             ErrorCode.FormulaInvalidPagination => 400,
             ErrorCode.FormulaHerbItemIdInvalid => 400,
@@ -38,7 +36,6 @@ public static class ErrorCodeExtensions
             ErrorCode.PatientImportFileSize => 400,
             ErrorCode.PatientImportNoWorksheet => 400,
             ErrorCode.PatientImportRowExceeded => 400,
-            ErrorCode.HerbInvalidPrice => 400,
             ErrorCode.HerbValidationFailed => 400,
             ErrorCode.HerbInvalidPagination => 400,
             ErrorCode.HerbBatchEmpty => 400,
@@ -52,9 +49,6 @@ public static class ErrorCodeExtensions
             // 401 Unauthorized - 认证错误
             ErrorCode.Unauthorized => 401,
             ErrorCode.InvalidPassword => 401,
-            ErrorCode.CredentialsExpired => 401,
-            ErrorCode.DeviceMismatch => 401,
-            ErrorCode.SessionExpired => 401,
             ErrorCode.InvalidRefreshToken => 401,
             ErrorCode.AuthInvalidCredentials => 401,
             ErrorCode.AuthTokenInvalid => 401,
@@ -73,17 +67,13 @@ public static class ErrorCodeExtensions
             ErrorCode.McCannotCancelCase => 403,
             ErrorCode.McCannotDeletePrescription => 403,
             ErrorCode.McCannotSuspendCase => 403,
-            ErrorCode.PatientDisabled => 403,
-            ErrorCode.HerbDisabled => 403,
             ErrorCode.HerbNoPermission => 403,
-            ErrorCode.FormulaDisabled => 403,
             ErrorCode.FormulaNoPermission => 403,
             ErrorCode.CannotDeleteSysAdmin => 403,
 
             // 404 Not Found - 资源未找到
             ErrorCode.NotFound => 404,
             ErrorCode.UserNotFound => 404,
-            ErrorCode.RoleNotFound => 404,
             ErrorCode.PatientNotFound => 404,
             ErrorCode.MedicalCaseNotFound => 404,
             ErrorCode.McPatientNotFound => 404,
@@ -96,21 +86,17 @@ public static class ErrorCodeExtensions
 
             // 400 Bad Request - 客户端输入验证错误
             ErrorCode.UserNameExists => 400,
-            ErrorCode.EmailExists => 400,
             ErrorCode.PatientIdCardExists => 400,
-            ErrorCode.PatientPhoneExists => 400,
             ErrorCode.HerbNameExists => 400,
             ErrorCode.FormulaNameExists => 400,
 
             // 409 Conflict - 资源冲突（乐观并发、状态冲突等）
             ErrorCode.ConcurrencyConflict => 409,
-            ErrorCode.DuplicateMedicalCase => 409,
             ErrorCode.MedicalCaseVersionConflict => 409,
             ErrorCode.MedicalCaseLocked => 409,
 
 
             // 422 Unprocessable Entity - 业务规则违反
-            ErrorCode.InvalidPatientStatus => 422,
             ErrorCode.InvalidMedicalCaseState => 422,
             ErrorCode.PatientHasActiveCases => 422,
             ErrorCode.McActiveCaseExists => 422,
@@ -129,13 +115,7 @@ public static class ErrorCodeExtensions
             ErrorCode.McPrescriptionAlreadyExists => 422,
             ErrorCode.McPrintedRequiresReason => 422,
             ErrorCode.McPrintedCannotDelete => 422,
-            ErrorCode.MedicalCaseArchived => 422,
-            ErrorCode.MedicalCaseMissingDiagnosis => 422,
-            ErrorCode.MedicalCaseHasPrescriptions => 422,
-            ErrorCode.HerbInsufficientStock => 422,
-            ErrorCode.HerbInUse => 422,
             ErrorCode.FormulaValidationFailed => 422,
-            ErrorCode.FormulaInUse => 422,
             ErrorCode.PasswordChangeRequired => 422,
             ErrorCode.RegistrationInvalidStatusTransition => 422,
             ErrorCode.RegistrationCancelNotAllowed => 422,
@@ -167,8 +147,6 @@ public static class ErrorCodeExtensions
             // 验证错误
             ErrorCode.InvalidRequest => ErrorCategory.Validation,
             ErrorCode.ValidationFailed => ErrorCategory.Validation,
-            ErrorCode.PasswordPolicyViolation => ErrorCategory.Validation,
-            ErrorCode.FormulaNoHerbs => ErrorCategory.Validation,
             ErrorCode.FormulaIdInvalid => ErrorCategory.Validation,
             ErrorCode.FormulaInvalidPagination => ErrorCategory.Validation,
             ErrorCode.FormulaHerbItemIdInvalid => ErrorCategory.Validation,
@@ -189,7 +167,6 @@ public static class ErrorCodeExtensions
             ErrorCode.PatientImportFileSize => ErrorCategory.Validation,
             ErrorCode.PatientImportNoWorksheet => ErrorCategory.Validation,
             ErrorCode.PatientImportRowExceeded => ErrorCategory.Validation,
-            ErrorCode.HerbInvalidPrice => ErrorCategory.Validation,
             ErrorCode.HerbValidationFailed => ErrorCategory.Validation,
             ErrorCode.HerbInvalidPagination => ErrorCategory.Validation,
             ErrorCode.HerbBatchEmpty => ErrorCategory.Validation,
@@ -203,9 +180,6 @@ public static class ErrorCodeExtensions
             // 认证错误
             ErrorCode.Unauthorized => ErrorCategory.Authentication,
             ErrorCode.InvalidPassword => ErrorCategory.Authentication,
-            ErrorCode.CredentialsExpired => ErrorCategory.Authentication,
-            ErrorCode.DeviceMismatch => ErrorCategory.Authentication,
-            ErrorCode.SessionExpired => ErrorCategory.Authentication,
             ErrorCode.InvalidRefreshToken => ErrorCategory.Authentication,
             ErrorCode.AuthInvalidCredentials => ErrorCategory.Authentication,
             ErrorCode.AuthTokenInvalid => ErrorCategory.Authentication,
@@ -224,17 +198,13 @@ public static class ErrorCodeExtensions
             ErrorCode.McCannotCancelCase => ErrorCategory.Authorization,
             ErrorCode.McCannotDeletePrescription => ErrorCategory.Authorization,
             ErrorCode.McCannotSuspendCase => ErrorCategory.Authorization,
-            ErrorCode.PatientDisabled => ErrorCategory.Authorization,
-            ErrorCode.HerbDisabled => ErrorCategory.Authorization,
             ErrorCode.HerbNoPermission => ErrorCategory.Authorization,
-            ErrorCode.FormulaDisabled => ErrorCategory.Authorization,
             ErrorCode.FormulaNoPermission => ErrorCategory.Authorization,
             ErrorCode.CannotDeleteSysAdmin => ErrorCategory.Authorization,
 
             // 资源错误
             ErrorCode.NotFound => ErrorCategory.Resource,
             ErrorCode.UserNotFound => ErrorCategory.Resource,
-            ErrorCode.RoleNotFound => ErrorCategory.Resource,
             ErrorCode.PatientNotFound => ErrorCategory.Resource,
             ErrorCode.MedicalCaseNotFound => ErrorCategory.Resource,
             ErrorCode.McPatientNotFound => ErrorCategory.Resource,
@@ -253,13 +223,9 @@ public static class ErrorCodeExtensions
 
             // 业务逻辑错误
             ErrorCode.UserNameExists => ErrorCategory.Business,
-            ErrorCode.EmailExists => ErrorCategory.Business,
             ErrorCode.PatientIdCardExists => ErrorCategory.Business,
-            ErrorCode.PatientPhoneExists => ErrorCategory.Business,
-            ErrorCode.DuplicateMedicalCase => ErrorCategory.Business,
             ErrorCode.HerbNameExists => ErrorCategory.Business,
             ErrorCode.FormulaNameExists => ErrorCategory.Business,
-            ErrorCode.InvalidPatientStatus => ErrorCategory.Business,
             ErrorCode.McActiveCaseExists => ErrorCategory.Business,
             ErrorCode.McSuspendedCaseExists => ErrorCategory.Business,
             ErrorCode.McPatientDisabled => ErrorCategory.Business,
@@ -270,28 +236,20 @@ public static class ErrorCodeExtensions
             ErrorCode.McDeletedCannotSuspend => ErrorCategory.Business,
             ErrorCode.McCompletedCannotCancel => ErrorCategory.Business,
             ErrorCode.McAlreadyDeleted => ErrorCategory.Business,
-            ErrorCode.McCancelReasonRequired => ErrorCategory.Business,
-            ErrorCode.McPrescriptionItemsRequired => ErrorCategory.Business,
             ErrorCode.McPrescriptionFlagNotSet => ErrorCategory.Business,
             ErrorCode.McPrescriptionAlreadyExists => ErrorCategory.Business,
             ErrorCode.McPrintedRequiresReason => ErrorCategory.Business,
             ErrorCode.McPrintedCannotDelete => ErrorCategory.Business,
             ErrorCode.InvalidMedicalCaseState => ErrorCategory.Business,
             ErrorCode.PatientHasActiveCases => ErrorCategory.Business,
-            ErrorCode.MedicalCaseArchived => ErrorCategory.Business,
             ErrorCode.MedicalCaseMissingDiagnosis => ErrorCategory.Business,
-            ErrorCode.MedicalCaseHasPrescriptions => ErrorCategory.Business,
-            ErrorCode.HerbInsufficientStock => ErrorCategory.Business,
             ErrorCode.PatientNotDeleted => ErrorCategory.Business,
-            ErrorCode.HerbInUse => ErrorCategory.Business,
             ErrorCode.HerbNotDeleted => ErrorCategory.Business,
             ErrorCode.HerbBatchItemNotFound => ErrorCategory.Business,
             ErrorCode.HerbBatchItemDeletedOrMissing => ErrorCategory.Business,
             ErrorCode.HerbBatchItemError => ErrorCategory.Business,
             ErrorCode.HerbImportExcelError => ErrorCategory.Business,
-            ErrorCode.HerbImportNoData => ErrorCategory.Business,
             ErrorCode.FormulaValidationFailed => ErrorCategory.Business,
-            ErrorCode.FormulaInUse => ErrorCategory.Business,
             ErrorCode.FormulaNotDeleted => ErrorCategory.Business,
             ErrorCode.FormulaCreateFailed => ErrorCategory.Business,
             ErrorCode.FormulaUpdateFailed => ErrorCategory.Business,
@@ -314,10 +272,6 @@ public static class ErrorCodeExtensions
             ErrorCode.McPrescriptionCreateRetryFailed => ErrorCategory.System,
             ErrorCode.McSaveRetryFailed => ErrorCategory.System,
             ErrorCode.McConsultationNotFound => ErrorCategory.System,
-
-
-            // 配置错误
-            ErrorCode.ConfigurationError => ErrorCategory.Configuration,
 
             // 默认
             _ => ErrorCategory.General

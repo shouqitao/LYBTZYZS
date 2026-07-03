@@ -39,7 +39,6 @@ namespace LYBT.WebAPI.Serialization;
 
 [JsonSerializable(typeof(LoginRequest))]
 [JsonSerializable(typeof(LoginResponse))]
-[JsonSerializable(typeof(TokenPair))]
 [JsonSerializable(typeof(ChangePasswordRequest))]
 [JsonSerializable(typeof(RefreshTokenRequest))]
 [JsonSerializable(typeof(LogoutRequest))]
@@ -127,7 +126,6 @@ namespace LYBT.WebAPI.Serialization;
 
 [JsonSerializable(typeof(ApiResponse<UserDetailDto>))]
 [JsonSerializable(typeof(ApiResponse<LoginResponse>))]
-[JsonSerializable(typeof(ApiResponse<TokenPair>))]
 [JsonSerializable(typeof(ApiResponse<PagedResult<UserListDto>>))]
 [JsonSerializable(typeof(ApiResponse<PagedResult<PatientListDto>>))]
 [JsonSerializable(typeof(ApiResponse<PagedResult<HerbListDto>>))]

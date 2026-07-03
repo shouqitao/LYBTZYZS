@@ -2,7 +2,6 @@ using LYBT.Module.Reports.Application.Queries;
 using LYBT.Module.Reports.Infrastructure;
 using LYBT.Module.Reports.Interfaces;
 using MediatR;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,14 +30,6 @@ public static class ReportsModule
             cfg.RegisterServicesFromAssembly(typeof(GetDailyIncomeQuery).Assembly));
 
         return services;
-    }
-
-    /// <summary>
-    /// 配置报表模块中间件。
-    /// </summary>
-    public static IApplicationBuilder UseReportsModule(this IApplicationBuilder app)
-    {
-        return app;
     }
 }
 

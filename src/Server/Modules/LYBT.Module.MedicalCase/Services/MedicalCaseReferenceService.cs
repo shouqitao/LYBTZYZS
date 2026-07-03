@@ -8,10 +8,9 @@ namespace LYBT.Module.MedicalCases.Services
     /// <summary>
     /// 医案引用查询服务实现 - 用于跨模块查询
     /// Architecture Fix: 集中处理医案查询逻辑，供其他模块（如Patient）使用
-    /// 同时实现IMedicalCaseReferenceService和IMedicalCaseCrossModuleService
     /// Task 6: Repository 规范统一 — 委托 IMedicalCaseReferenceRepository
     /// </summary>
-    public class MedicalCaseReferenceService : IMedicalCaseReferenceService, IMedicalCaseCrossModuleService
+    public class MedicalCaseReferenceService : IMedicalCaseCrossModuleService
     {
         private readonly IMedicalCaseReferenceRepository _referenceRepository;
         private readonly IMedicalCaseCommandService _commandService;

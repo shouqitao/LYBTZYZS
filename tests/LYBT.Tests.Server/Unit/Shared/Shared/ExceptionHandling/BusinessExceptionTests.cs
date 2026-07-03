@@ -56,8 +56,8 @@ public class BusinessExceptionTests
     public void BusinessException_WithTypedErrorCode_SetsProperties()
     {
         // Arrange
-        var errorCode = EC.MedicalCaseHasPrescriptions;
-        var message = "病例存在处方无法删除";
+        var errorCode = EC.MedicalCaseNotFound;
+        var message = "医案不存在";
 
         // Act
         var exception = new BusinessException(errorCode, message);

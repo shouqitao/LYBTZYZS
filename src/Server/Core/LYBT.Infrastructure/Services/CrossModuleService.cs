@@ -20,8 +20,7 @@ namespace LYBT.Infrastructure.Services;
 public class CrossModuleService :
     IPatientCrossModuleService,
     IHerbCrossModuleService,
-    IUserCrossModuleService,
-    ICrossModuleAuthService
+    IUserCrossModuleService
 {
     private readonly AppDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
@@ -367,16 +366,6 @@ public class CrossModuleService :
         return await _userManager.CheckPasswordAsync(user, password);
     }
 
-    #endregion
-
-    #region 认证服务 (ICrossModuleAuthService)
-
-    /// <inheritdoc />
-    public Task RevokeUserTokensAsync(Guid userId, string reason)
-    {
-        _logger.LogDebug("[CMQS] RevokeUserTokens → NoOp (RefreshToken system removed) - UserId={UserId}", userId);
-        return Task.CompletedTask;
-    }
     #endregion
 }
 
