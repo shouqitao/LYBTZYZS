@@ -115,19 +115,9 @@ namespace LYBT.Infrastructure.Web
         }
 
         /// <summary>
-        /// 验证GUID参数
-        /// </summary>
-        protected bool IsValidGuid(Guid id) => id != Guid.Empty;
-
-        /// <summary>
         /// 获取请求ID（用于链路追踪）
         /// </summary>
         protected string GetRequestId() => HttpContext?.TraceIdentifier ?? Guid.NewGuid().ToString();
-
-        /// <summary>
-        /// 验证模型状态
-        /// </summary>
-        protected bool IsModelValid => ModelState.IsValid;
 
         /// <summary>
         /// 获取验证错误消息
@@ -290,49 +280,6 @@ namespace LYBT.Infrastructure.Web
             // 无错误码时作为业务失败处理（422）
             return BusinessFail(message);
         }
-
-        /// <summary>
-        /// 处理ServiceResult返回值 - 用于同步模块的ServiceResult<T>
-        /// </summary>
-        protected IActionResult HandleServiceResult<T>(ServiceResult<T> result, string successMessage = "操作成功")
-        {
-            if (result.IsSuccess)
-            {
-                return Success(result.Data!, successMessage);
-            }
-            return BusinessFail(result.ErrorMessage ?? "操作失败");
-        }
-
-        /// <summary>
-        /// 处理分页Result返回值
-        /// </summary>
-        protected IActionResult HandlePagedResult<T>(Result<PagedResult<T>> result, string successMessage = "查询成功")
-        {
-            if (result.IsSuccess)
-            {
-                return SuccessPaged(result.Data!, successMessage);
-            }
-            return BusinessFail(result.ErrorMessage ?? "查询失败");
-        }
-
-        /// <summary>
-        /// 处理布尔Result返回值
-        /// </summary>
-        protected IActionResult HandleBoolResult(Result<bool> result, string successMessage = "操作成功")
-        {
-            if (result.IsSuccess)
-            {
-                return Success(successMessage);
-            }
-            return BusinessFail(result.ErrorMessage ?? "操作失败");
-        }
-
-        /// <summary>
-        /// [已合并到 HandleResult&lt;T&gt;(useAuthMapping: true)]
-        /// </summary>
-        [Obsolete("Use HandleResult<T>(result, message, useAuthMapping: true) instead")]
-        protected IActionResult HandleAuthResult<T>(Result<T> result, string successMessage = "操作成功")
-            => HandleResult(result, successMessage, useAuthMapping: true);
 
         /// <summary>
         /// 创建统一错误码响应对象
