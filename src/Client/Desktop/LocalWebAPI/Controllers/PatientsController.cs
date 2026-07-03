@@ -92,6 +92,42 @@ public class PatientsController : BaseApiController
         return Success(result.Value);
     }
 
+    [HttpPost("{id}/restore")]
+    public async Task<IActionResult> Restore(Guid id)
+    {
+        var (operatorId, _, _) = GetOperator();
+        var result = await _sender.Send(new RestorePatientCommand(id, operatorId));
+        if (!result.IsSuccess || result.Value == null)
+        {
+            if (result.Error?.Contains("未被删除") == true)
+                return BusinessFail(result.Error);
+            return NotFound(result.Error ?? "患者不存在");
+        }
+        return Success(result.Value, "患者恢复成功");
+    }
+
+    [HttpGet("{id}/check-reference")]
+    public async Task<IActionResult> CheckReference(Guid id)
+    {
+        var result = await _sender.Send(new CheckPatientReferenceQuery(id));
+        if (!result.IsSuccess || result.Value == null)
+            return NotFound(result.Error ?? "患者不存在");
+        return Success(result.Value, "引用检查完成");
+    }
+
+    [HttpPost("batch-check-reference")]
+    public async Task<IActionResult> BatchCheckReference([FromBody] PatientBatchCheckReferenceInputDto dto)
+    {
+        if (dto.PatientIds == null || dto.PatientIds.Count == 0)
+            return ValidationFail("请至少选择一个患者");
+        if (dto.PatientIds.Count > 100)
+            return ValidationFail("批量检查最多支持100条");
+        var result = await _sender.Send(new BatchCheckPatientReferenceQuery(dto.PatientIds));
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "批量检查失败");
+        return Success(result.Value, "批量引用检查完成");
+    }
+
     [HttpPost("batch-delete")]
     public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto request)
     {

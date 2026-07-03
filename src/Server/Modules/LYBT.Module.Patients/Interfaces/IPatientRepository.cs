@@ -43,6 +43,11 @@ public interface IPatientRepository
     /// 根据身份证号查询患者。
     /// </summary>
     Task<Patient?> GetByIdNumberAsync(string idNumber, CancellationToken ct);
+
+    /// <summary>
+    /// 根据ID获取患者（含已删除）。
+    /// </summary>
+    Task<Patient?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken ct);
 }
 
 

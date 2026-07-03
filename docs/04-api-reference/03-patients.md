@@ -475,7 +475,7 @@ curl -X GET "http://localhost:5000/api/v1/patients/export" \
 
 ## POST /patients/{id}/restore
 
-> 🚧 **v1.0 待实现（D4 Restore 软删除恢复补回，基线§1）**：基础设施已就绪（`IgnoreQueryFilters`），端点待补。
+> ✅ **已实现**
 
 恢复已删除的患者。绕过软删除全局过滤器。
 
@@ -508,7 +508,7 @@ curl -X POST "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef12
 
 ## GET /patients/{id}/check-reference
 
-> 🚧 **v1.0 待实现（D5 引用检查 BR-DEL-001 必做补回，基线§1）**。
+> ✅ **已实现**
 
 检查患者是否被医案引用，用于删除前确认。
 
@@ -542,7 +542,7 @@ curl -X GET "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef123
 
 ## POST /patients/batch-check-reference
 
-> 🚧 **v1.0 待实现（D5 引用检查必做补回，基线§1）**。
+> ✅ **已实现**
 
 批量检查多个患者的引用关系。
 
@@ -648,3 +648,4 @@ curl -X POST "http://localhost:5000/api/v1/patients/batch-check-reference" \
 | 2026-06-25 | v2.0 | 补充全部 12 个端点的完整请求/响应 JSON 示例、curl 命令、错误码表；修正响应字段与源码一致 |
 | 2026-06-28 | v2.1 | 文档对齐基线：权限策略加 D7 待对齐标注；import-template/export 标 v2.0（D6）；restore 标 D4 待实现；check-reference/batch-check-reference 标 D5 必做补回 |
 | 2026-06-28 | v2.2 | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表引用；待实现端点删除 JSON 示例只保留字段表+标注 |
+| 2026-06-29 | v2.3 | restore/check-reference/batch-check-reference 三个端点从待实现变为已实现 |

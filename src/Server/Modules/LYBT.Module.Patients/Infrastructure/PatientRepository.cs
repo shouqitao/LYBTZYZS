@@ -104,6 +104,14 @@ public class PatientRepository : IPatientRepository
         return await _context.Patients
             .FirstOrDefaultAsync(p => p.IdNumber == idNumber && !p.IsDeleted, cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public async Task<Patient?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Patients
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+    }
 }
 
 
