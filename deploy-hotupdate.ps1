@@ -67,12 +67,12 @@ try {
     )
     $body = $bodyLines -join $LF
     
-    $uploadResp = Invoke-RestMethod -Uri "$baseUrl/api/deploy/upload" -Method POST -ContentType "multipart/form-data; boundary=$boundary" -Body $body -Headers $headers
+    $uploadResp = Invoke-RestMethod -Uri "$baseUrl/api/v1/deploy/upload" -Method POST -ContentType "multipart/form-data; boundary=$boundary" -Body $body -Headers $headers
     Write-Host "  上传成功: $($uploadResp.message)" -ForegroundColor Green
     
     # 触发重启
     Write-Host "  触发服务器重启..." -ForegroundColor Gray
-    $restartResp = Invoke-RestMethod -Uri "$baseUrl/api/deploy/restart" -Method POST -Headers $headers
+    $restartResp = Invoke-RestMethod -Uri "$baseUrl/api/v1/deploy/restart" -Method POST -Headers $headers
     Write-Host "  $($restartResp.message)" -ForegroundColor Green
     
 } catch {

@@ -1,3 +1,5 @@
+using Asp.Versioning;
+using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,8 +10,9 @@ namespace LYBT.WebAPI.Controllers;
 /// 部署管理 API - 支持在线热更新
 /// </summary>
 [ApiController]
-[Route("api/deploy")]
-[Authorize(Policy = "AdminOrSuperAdmin")]
+[ApiVersion("1")]
+[Route("api/v{version:apiVersion}/deploy")]
+[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
 public class DeployController : BaseApiController
 {
     private readonly IWebHostEnvironment _env;
