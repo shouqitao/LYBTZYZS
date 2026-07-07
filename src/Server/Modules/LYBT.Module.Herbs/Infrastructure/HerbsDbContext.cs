@@ -19,8 +19,6 @@ public class HerbsDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.HasDefaultSchema("Herbs");
-
         modelBuilder.Entity<Herb>(entity =>
         {
             entity.ToTable("Herbs");
@@ -37,7 +35,8 @@ public class HerbsDbContext : DbContext
             entity.Property(e => e.Effect).HasMaxLength(500);
             entity.Property(e => e.Usage).HasMaxLength(500);
             entity.Property(e => e.Remark).HasMaxLength(500);
-            entity.Property(e => e.Status).HasConversion<string>();
+
+
 
             entity.HasIndex(e => e.Name);
             entity.HasIndex(e => e.PinYinCode);

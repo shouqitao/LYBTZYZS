@@ -19,8 +19,6 @@ public class AuthDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.HasDefaultSchema("Auth");
-
         modelBuilder.Entity<AuthSession>(entity =>
         {
             entity.ToTable("AuthSessions");
@@ -28,7 +26,7 @@ public class AuthDbContext : DbContext
             entity.Property(e => e.TokenHash).HasMaxLength(256).IsRequired();
             entity.Property(e => e.IpAddress).HasMaxLength(45).IsRequired();
             entity.Property(e => e.UserAgent).HasMaxLength(500);
-            entity.Property(e => e.Status).HasConversion<string>();
+            entity.Property(e => e.Status);
 
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.TokenHash);

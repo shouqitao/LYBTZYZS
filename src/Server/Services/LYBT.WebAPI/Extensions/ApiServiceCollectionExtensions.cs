@@ -172,10 +172,12 @@ public static class ApiServiceCollectionExtensions
         var rateLimitingEnabled = configuration.GetValue("Security:RateLimiting:Enabled", true);
         if (!rateLimitingEnabled)
         {
-            // 注册无操作 RateLimiter，包含 Login 策略名以兼容 [EnableRateLimiting("Login")]
+            // 注册无操作 RateLimiter，包含所有策略名以兼容 [EnableRateLimiting("xxx")]
             services.AddRateLimiter(options =>
             {
                 options.AddPolicy("Login", _ =>
+                    System.Threading.RateLimiting.RateLimitPartition.GetNoLimiter("noop"));
+                options.AddPolicy("ApiCalls", _ =>
                     System.Threading.RateLimiting.RateLimitPartition.GetNoLimiter("noop"));
             });
             return services;

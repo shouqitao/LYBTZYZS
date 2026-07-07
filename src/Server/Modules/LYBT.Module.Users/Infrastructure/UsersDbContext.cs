@@ -18,9 +18,6 @@ public class UsersDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Gu
     {
         base.OnModelCreating(modelBuilder);
 
-        // 设置用户模块Schema
-        modelBuilder.HasDefaultSchema("Users");
-
         // 应用程序用户配置
         modelBuilder.Entity<ApplicationUser>(entity =>
         {
@@ -31,8 +28,8 @@ public class UsersDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Gu
             entity.Property(e => e.PhoneNumber).HasMaxLength(20);
             entity.Property(e => e.Email).HasMaxLength(100);
             entity.Property(e => e.Remark).HasMaxLength(500);
-            entity.Property(e => e.Role).HasConversion<string>();
-            entity.Property(e => e.Status).HasConversion<string>();
+            entity.Property(e => e.Role).HasConversion<int>();
+            entity.Property(e => e.Status).HasConversion<int>();
 
             // 索引
             entity.HasIndex(e => e.UserName).IsUnique();

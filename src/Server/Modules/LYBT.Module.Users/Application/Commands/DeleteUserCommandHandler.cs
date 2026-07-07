@@ -34,6 +34,9 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Resul
         if (user == null)
             return Result.Failure(ErrorCode.NotFound, "用户不存在");
 
+        if (user.IsSysAdmin)
+            return Result.Failure(ErrorCode.CannotDeleteSysAdmin, "系统管理员账号不可被删除");
+
         user.SoftDelete(request.CurrentUserId);
 
         await _userRepository.UpdateAsync(user, cancellationToken);

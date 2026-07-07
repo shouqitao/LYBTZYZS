@@ -1,0 +1,55 @@
+{
+  "info": {
+    "name": "Variable Scope Test 2",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "FolderA",
+      "item": [
+        {
+          "name": "Set Variable",
+          "request": {
+            "method": "GET",
+            "url": "https://httpbin.org/get"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('myToken', 'hello-from-folderA');",
+                  "pm.test('Variable set', function() { pm.expect(pm.collectionVariables.get('myToken')).to.eql('hello-from-folderA'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FolderB",
+      "item": [
+        {
+          "name": "Read Variable",
+          "request": {
+            "method": "GET",
+            "url": "https://httpbin.org/get"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var token = pm.collectionVariables.get('myToken');",
+                  "pm.test('Variable exists', function() { pm.expect(token).to.not.be.undefined; });",
+                  "pm.test('Variable value', function() { pm.expect(token).to.eql('hello-from-folderA'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

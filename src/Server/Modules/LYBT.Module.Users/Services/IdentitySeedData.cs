@@ -41,7 +41,8 @@ public static class IdentitySeedData
                 UserName = userName,
                 RealName = realName,
                 Email = email,
-                IsSysAdmin = isSysAdmin
+                IsSysAdmin = isSysAdmin,
+                Role = Enum.Parse<LYBT.Shared.Models.Enums.UserRole>(role)
             };
             await userManager.CreateAsync(user, defaultPassword);
             await userManager.AddToRoleAsync(user, role);
@@ -68,6 +69,13 @@ public static class IdentitySeedData
         if (user.IsSysAdmin != isSysAdmin)
         {
             user.IsSysAdmin = isSysAdmin;
+            await userManager.UpdateAsync(user);
+        }
+
+        var userRole = Enum.Parse<LYBT.Shared.Models.Enums.UserRole>(role);
+        if (user.Role != userRole)
+        {
+            user.Role = userRole;
             await userManager.UpdateAsync(user);
         }
 

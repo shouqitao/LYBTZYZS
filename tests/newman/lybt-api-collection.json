@@ -1,0 +1,262 @@
+{
+  "info": {
+    "name": "LYBT WebAPI 集成测试 v3",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://192.168.190.246:5000" },
+    { "key": "token", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "patientId", "value": "" },
+    { "key": "herbId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Health",
+      "item": [{
+        "name": "GET /health",
+        "request": {
+          "method": "GET",
+          "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+        },
+        "event": [{ "listen": "test", "script": { "exec": ["pm.test('Health 200', function(){pm.response.to.have.status(200)});"] }}]
+      }]
+    },
+    {
+      "name": "2. Auth",
+      "item": [
+        {
+          "name": "POST /auth/login",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","login"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"username\":\"sysadmin\",\"password\":\"SysAdmin@2026!\"}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Login 200', function(){pm.response.to.have.status(200)});",
+            "pm.test('Token', function(){var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('token',d.token);pm.collectionVariables.set('userId',d.user.id);});"
+          ] }}]
+        },
+        {
+          "name": "GET /auth/validate",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/validate", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","validate"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Validate 200', function(){pm.response.to.have.status(200)});"] }}]
+        },
+        {
+          "name": "POST /auth/login (refresh)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","login"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"username\":\"sysadmin\",\"password\":\"SysAdmin@2026!\"}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Refresh login 200', function(){pm.response.to.have.status(200)});",
+            "pm.test('New token', function(){pm.collectionVariables.set('token',pm.response.json().data.token);});"
+          ] }}]
+        }
+      ]
+    },
+    {
+      "name": "3. Patients",
+      "item": [
+        {
+          "name": "POST /patients",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/v1/patients", "host": ["{{baseUrl}}"], "path": ["api","v1","patients"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" },{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"name\":\"TestPatient\",\"gender\":1,\"birthDate\":\"1990-01-01\",\"phoneNumber\":\"13900439001\",\"idNumber\":\"110101199001049999\"}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Create patient', function(){pm.expect([200,201]).to.include(pm.response.code);pm.collectionVariables.set('patientId',pm.response.json().data.id);});"] }}]
+        },
+        {
+          "name": "GET /patients",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/patients?page=1&pageSize=5", "host": ["{{baseUrl}}"], "path": ["api","v1","patients"], "query": [{"key":"page","value":"1"},{"key":"pageSize","value":"5"}] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Patients list', function(){pm.response.to.have.status(200)});"] }}]
+        },
+        {
+          "name": "GET /patients/{id}",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/patients/{{patientId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","patients","{{patientId}}"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Patient detail', function(){pm.response.to.have.status(200)});"] }}]
+        },
+        {
+          "name": "GET /patients/{id}/check-reference",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/patients/{{patientId}}/check-reference", "host": ["{{baseUrl}}"], "path": ["api","v1","patients","{{patientId}}","check-reference"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Check ref', function(){pm.response.to.have.status(200)});"] }}]
+        },
+        {
+          "name": "GET /patients/by-id-number",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/patients/by-id-number/110101199001049999", "host": ["{{baseUrl}}"], "path": ["api","v1","patients","by-id-number","110101199001049999"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Search by ID', function(){pm.response.to.have.status(200)});"] }}]
+        }
+      ]
+    },
+    {
+      "name": "4. Herbs",
+      "item": [
+        {
+          "name": "POST /herbs",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/v1/herbs", "host": ["{{baseUrl}}"], "path": ["api","v1","herbs"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" },{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"name\":\"TestHerb-BoHe\",\"category\":\"ClearHeat\",\"effect\":\"ClearHeat\",\"origin\":\"Guangdong\",\"price\":15.0}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Create herb', function(){pm.expect([200,201]).to.include(pm.response.code);pm.collectionVariables.set('herbId',pm.response.json().data.id);});"] }}]
+        },
+        {
+          "name": "GET /herbs",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/herbs?page=1&pageSize=5", "host": ["{{baseUrl}}"], "path": ["api","v1","herbs"], "query": [{"key":"page","value":"1"},{"key":"pageSize","value":"5"}] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Herbs list', function(){pm.response.to.have.status(200)});"] }}]
+        },
+        {
+          "name": "GET /herbs/{id}",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/herbs/{{herbId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","herbs","{{herbId}}"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Herb detail', function(){pm.response.to.have.status(200)});"] }}]
+        },
+        {
+          "name": "GET /herbs/{id}/check-reference",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/herbs/{{herbId}}/check-reference", "host": ["{{baseUrl}}"], "path": ["api","v1","herbs","{{herbId}}","check-reference"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Herb check ref', function(){pm.response.to.have.status(200)});"] }}]
+        },
+        {
+          "name": "POST /herbs/{id}/toggle-status",
+          "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/api/v1/herbs/{{herbId}}/toggle-status", "host": ["{{baseUrl}}"], "path": ["api","v1","herbs","{{herbId}}","toggle-status"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Toggle herb', function(){pm.response.to.have.status(200)});"] }}]
+        },
+        {
+          "name": "POST /herbs/{id}/restore",
+          "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/api/v1/herbs/{{herbId}}/restore", "host": ["{{baseUrl}}"], "path": ["api","v1","herbs","{{herbId}}","restore"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Restore herb', function(){pm.response.to.have.status(200)});"] }}]
+        }
+      ]
+    },
+    {
+      "name": "5. Formulas",
+      "item": [
+        {
+          "name": "POST /formulas",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/v1/formulas", "host": ["{{baseUrl}}"], "path": ["api","v1","formulas"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" },{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"name\":\"TestFormula-SiWuTang\",\"effect\":\"NourishBlood\",\"usage\":\"Oral 6g\",\"isShared\":true,\"herbs\":[{\"herbName\":\"ShuDiHuang\",\"dosage\":24,\"unit\":\"g\"}]}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Create formula', function(){pm.expect([200,201]).to.include(pm.response.code);});"] }}]
+        },
+        {
+          "name": "GET /formulas",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/formulas?page=1&pageSize=5", "host": ["{{baseUrl}}"], "path": ["api","v1","formulas"], "query": [{"key":"page","value":"1"},{"key":"pageSize","value":"5"}] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Formulas list', function(){pm.response.to.have.status(200)});"] }}]
+        },
+        {
+          "name": "GET /formulas/pending-validation",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/formulas/pending-validation", "host": ["{{baseUrl}}"], "path": ["api","v1","formulas","pending-validation"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Pending val', function(){pm.response.to.have.status(200)});"] }}]
+        }
+      ]
+    },
+    {
+      "name": "6. Registrations",
+      "item": [
+        {
+          "name": "POST /registrations",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/v1/registrations", "host": ["{{baseUrl}}"], "path": ["api","v1","registrations"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" },{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"patientId\":\"{{patientId}}\",\"patientName\":\"TestPatient\",\"doctorId\":\"{{userId}}\",\"doctorName\":\"Admin\",\"source\":\"Doctor\",\"remark\":\"Integration test\"}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Create reg', function(){pm.expect([200,201]).to.include(pm.response.code);});"] }}]
+        },
+        {
+          "name": "GET /registrations",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/registrations?page=1&pageSize=5", "host": ["{{baseUrl}}"], "path": ["api","v1","registrations"], "query": [{"key":"page","value":"1"},{"key":"pageSize","value":"5"}] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Regs list', function(){pm.response.to.have.status(200)});"] }}]
+        },
+        {
+          "name": "GET /registrations/queue",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/registrations/queue", "host": ["{{baseUrl}}"], "path": ["api","v1","registrations","queue"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Queue', function(){pm.response.to.have.status(200)});"] }}]
+        }
+      ]
+    },
+    {
+      "name": "7. Reports",
+      "item": [
+        {
+          "name": "GET /reports/daily/income",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/reports/daily/income", "host": ["{{baseUrl}}"], "path": ["api","v1","reports","daily","income"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Income', function(){pm.response.to.have.status(200)});"] }}]
+        },
+        {
+          "name": "GET /reports/daily/consultations",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/reports/daily/consultations", "host": ["{{baseUrl}}"], "path": ["api","v1","reports","daily","consultations"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Consultations', function(){pm.response.to.have.status(200)});"] }}]
+        },
+        {
+          "name": "GET /reports/daily/herbs",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/reports/daily/herbs", "host": ["{{baseUrl}}"], "path": ["api","v1","reports","daily","herbs"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Herbs report', function(){pm.response.to.have.status(200)});"] }}]
+        }
+      ]
+    },
+    {
+      "name": "8. Cleanup",
+      "item": [
+        {
+          "name": "DELETE /herbs/{id}",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/v1/herbs/{{herbId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","herbs","{{herbId}}"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Delete herb', function(){pm.response.to.have.status(200)});"] }}]
+        },
+        {
+          "name": "DELETE /patients/{id}",
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/v1/patients/{{patientId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","patients","{{patientId}}"] },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Delete patient', function(){pm.response.to.have.status(200)});"] }}]
+        }
+      ]
+    }
+  ]
+}

@@ -12,8 +12,7 @@ public class FormulaDbContext : DbContext
     /// <summary>验方集</summary>
     public DbSet<FormulaEntity> Formulas { get; set; } = null!;
 
-    /// <summary>验方药材明细集</summary>
-    public DbSet<FormulaHerbItem> FormulaHerbItems { get; set; } = null!;
+    // FormulaHerbItems 已在 AppDbContext 中管理，此处不再注册
 
     /// <summary>
     /// 初始化数据库上下文。
@@ -27,8 +26,6 @@ public class FormulaDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.HasDefaultSchema("Formulas");
-
         modelBuilder.Entity<FormulaEntity>(entity =>
         {
             entity.ToTable("Formulas");
@@ -40,9 +37,8 @@ public class FormulaDbContext : DbContext
             entity.Property(e => e.Remark).HasMaxLength(500);
             entity.Property(e => e.Property).HasMaxLength(300);
             entity.Property(e => e.Category).HasMaxLength(50);
-            entity.Property(e => e.Status).HasConversion<string>();
-            entity.Property(e => e.ValidationStatus).HasConversion<string>();
-            entity.Property(e => e.FormulaType).HasConversion<string>();
+
+
 
             entity.HasIndex(e => e.Name);
             entity.HasIndex(e => e.Category);
@@ -55,18 +51,7 @@ public class FormulaDbContext : DbContext
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<FormulaHerbItem>(entity =>
-        {
-            entity.ToTable("FormulaHerbItems");
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.HerbName).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.OriginalHerbName).HasMaxLength(100);
-            entity.Property(e => e.Unit).HasMaxLength(16);
-            entity.Property(e => e.Usage).HasMaxLength(200);
-            entity.Property(e => e.Remark).HasMaxLength(200);
-            entity.Property(e => e.ProcessingMethod).HasMaxLength(100);
-            entity.Property(e => e.DecocteMethod).HasConversion<string>();
-        });
+
     }
 }
 

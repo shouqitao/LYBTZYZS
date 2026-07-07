@@ -15,7 +15,7 @@ public class ReportsDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.HasDefaultSchema("Reports");
+        // Reports 模块使用 AppDbContext 的表，无需独立 Schema
     }
 }
 

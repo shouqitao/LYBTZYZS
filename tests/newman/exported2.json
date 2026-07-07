@@ -1,0 +1,88 @@
+{
+  "item": [
+    {
+      "id": "7f0370ef-d7ff-40b3-a648-7dd99bb6ae86",
+      "name": "Set It",
+      "request": {
+        "url": {
+          "protocol": "https",
+          "path": [
+            "get"
+          ],
+          "host": [
+            "httpbin",
+            "org"
+          ],
+          "query": [],
+          "variable": []
+        },
+        "method": "GET"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "020ac8f9-2a3d-4596-991a-4b84a476c124",
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('myVar', 'test-value-123');",
+              "pm.test('Set OK', function() { pm.expect(pm.collectionVariables.get('myVar')).to.eql('test-value-123'); });"
+            ],
+            "_lastExecutionId": "bee1c6b1-db35-47c3-8265-b21bb3d3ef84"
+          }
+        }
+      ]
+    },
+    {
+      "id": "9001cc5a-2e94-4c75-b343-bb3a5aa42a8a",
+      "name": "Read It",
+      "request": {
+        "url": {
+          "protocol": "https",
+          "path": [
+            "get"
+          ],
+          "host": [
+            "httpbin",
+            "org"
+          ],
+          "query": [],
+          "variable": []
+        },
+        "method": "GET"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "3d703489-6300-41e8-9e9e-6f5f896f2809",
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Read OK', function() { pm.expect(pm.collectionVariables.get('myVar')).to.eql('test-value-123'); });"
+            ],
+            "_lastExecutionId": "f5093b2f-0945-48a1-a678-8ae0fd1a7356"
+          }
+        }
+      ]
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "any",
+      "value": "",
+      "key": "myVar"
+    }
+  ],
+  "info": {
+    "_postman_id": "f5db6965-f70e-44e6-b4b5-9cee1b5d751d",
+    "name": "Set Variable Test",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "name": "collection",
+  "_postman_variable_scope": "collection",
+  "_postman_exported_at": "2026-07-07T08:55:23.687Z",
+  "_postman_exported_using": "Newman/6.2.2"
+}

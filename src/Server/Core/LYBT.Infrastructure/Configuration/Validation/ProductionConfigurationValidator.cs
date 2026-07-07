@@ -334,6 +334,21 @@ public class ProductionConfigurationValidator
             }
         }
 
+        var printedIndices = new HashSet<int>();
+        foreach (var e in criticalErrors) printedIndices.Add(_errors.IndexOf(e));
+        foreach (var e in importantErrors) printedIndices.Add(_errors.IndexOf(e));
+        foreach (var e in crossFieldErrors) printedIndices.Add(_errors.IndexOf(e));
+        var otherErrors = _errors.Where((e, i) => !printedIndices.Contains(i)).ToList();
+        if (otherErrors.Any())
+        {
+            sb.AppendLine(" OTHER 错误:");
+            sb.AppendLine();
+            foreach (var error in otherErrors)
+            {
+                AppendErrorDetail(sb, error);
+            }
+        }
+
         sb.AppendLine("───────────────────────────────────────────────────────────");
         sb.AppendLine("📖 详细配置指南: docs/deployment/production-setup.md");
         sb.AppendLine(" 验证脚本: .\\scripts\\validate-production-config.ps1");

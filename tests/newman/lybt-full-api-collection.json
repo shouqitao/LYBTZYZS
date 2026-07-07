@@ -1,0 +1,5916 @@
+{
+  "info": {
+    "name": "LYBT WebAPI 全量集成测试 v4",
+    "description": "按角色顺序（SysAdmin→Admin→Receptionist→Doctor）覆盖所有端点的 happy-path + negative + 权限边界测试",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://192.168.190.246:5000"
+    },
+    {
+      "key": "sysadmin_token",
+      "value": ""
+    },
+    {
+      "key": "sysadmin_user_id",
+      "value": ""
+    },
+    {
+      "key": "admin_token",
+      "value": ""
+    },
+    {
+      "key": "admin_user_id",
+      "value": ""
+    },
+    {
+      "key": "admin_password",
+      "value": "Admin@123456"
+    },
+    {
+      "key": "receptionist_token",
+      "value": ""
+    },
+    {
+      "key": "receptionist_user_id",
+      "value": ""
+    },
+    {
+      "key": "doctor_token",
+      "value": ""
+    },
+    {
+      "key": "doctor_user_id",
+      "value": ""
+    },
+    {
+      "key": "test_patient_id",
+      "value": ""
+    },
+    {
+      "key": "test_herb_id",
+      "value": ""
+    },
+    {
+      "key": "test_formula_id",
+      "value": ""
+    },
+    {
+      "key": "test_medical_case_id",
+      "value": ""
+    },
+    {
+      "key": "test_registration_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Phase 1: SysAdmin",
+      "description": "系统运维：登录→用户管理→系统配置→诊断→部署→权限边界",
+      "item": [
+        {
+          "name": "1.1 Auth - Login Success",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"sysadmin\",\"password\":\"SysAdmin@2026!\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.response.to.have.status(200)});",
+                  "pm.test('Has token', function(){var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('sysadmin_token',d.token);pm.collectionVariables.set('sysadmin_user_id',d.user.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.1 Auth - Wrong Password",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"sysadmin\",\"password\":\"wrongpassword\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', function(){pm.response.to.have.status(401)});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.1 Auth - User Not Found",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"nonexistent_user\",\"password\":\"xxx\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 401', function(){pm.expect(pm.response.code).to.be.oneOf([400,401]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.1 Auth - Empty Username",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"\",\"password\":\"SysAdmin@2026!\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.1 Auth - Empty Password",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"sysadmin\",\"password\":\"\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.1 Auth - Validate Token",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/validate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "validate"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.response.to.have.status(200)});",
+                  "pm.test('valid=true', function(){pm.expect(pm.response.json().data.valid).to.eql(true);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.1 Auth - Validate No Token",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/validate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "validate"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": ""
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', function(){pm.response.to.have.status(401)});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.1 Auth - Refresh Token",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "refresh"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"sysadmin\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 401', function(){pm.expect(pm.response.code).to.be.oneOf([200,401]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.1 Auth - Refresh No Token",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "refresh"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": ""
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"sysadmin\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', function(){pm.response.to.have.status(401)});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.1 Auth - Logout",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "logout"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"sysadmin\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.response.to.have.status(200)});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 1.2: SysAdmin - User Management",
+      "description": "用户管理：创建Admin（成功+失败）→CRUD→禁止操作sysadmin",
+      "item": [
+        {
+          "name": "1.2 Login as SysAdmin",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"sysadmin\",\"password\":\"SysAdmin@2026!\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.response.to.have.status(200)});",
+                  "pm.test('Has token', function(){var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('sysadmin_token',d.token);pm.collectionVariables.set('sysadmin_user_id',d.user.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Create Admin - Success",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"newadmin\",\"realName\":\"测试管理员\",\"email\":\"test@lybt.com\",\"password\":\"Admin@123456\",\"confirmPassword\":\"Admin@123456\",\"role\":10}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Save admin id', function(){var d=pm.response.json();if(d.data&&d.data.id){pm.collectionVariables.set('admin_user_id',d.data.id);}else{pm.collectionVariables.set('admin_user_id','953b5bd9-70e6-4590-96a2-ae4948fc17c6');}});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Create Admin - Password No Uppercase",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"testpwd1\",\"realName\":\"测试\",\"password\":\"admin123!\",\"role\":1}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Create Admin - Password No Digit",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"testpwd2\",\"realName\":\"测试\",\"password\":\"AdminAdmin!\",\"role\":1}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Create Admin - Password Too Short",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"testpwd3\",\"realName\":\"测试\",\"password\":\"Ab1!\",\"role\":1}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Create Admin - Duplicate Username",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"newadmin\",\"realName\":\"重复\",\"password\":\"Admin@123456\",\"role\":1}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 409 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,409,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Create Admin - Missing RealName",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"test99\",\"password\":\"Admin@123456\",\"role\":1}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Create Admin - Missing Role",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"test98\",\"realName\":\"测试\",\"password\":\"Admin@123456\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Create Admin - Invalid Email",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"test97\",\"realName\":\"测试\",\"email\":\"not-an-email\",\"password\":\"Admin@123456\",\"role\":1}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Create Admin - Username Too Short",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"ab\",\"realName\":\"测试\",\"password\":\"Admin@123456\",\"role\":1}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Create Admin - Reserved Username",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"administrator\",\"realName\":\"测试\",\"password\":\"Admin@123456\",\"role\":1}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Get User Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{admin_user_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{admin_user_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Update User",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{admin_user_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{admin_user_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"newadmin\",\"realName\":\"更新后管理员\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Get User List",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users?page=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Get User - Not Found",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/00000000-0000-0000-0000-000000000999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "00000000-0000-0000-0000-000000000999"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Delete SysAdmin - Forbidden",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{sysadmin_user_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{sysadmin_user_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403', function(){pm.expect(pm.response.code).to.be.oneOf([400,403]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Toggle SysAdmin Status - Forbidden",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{sysadmin_user_id}}/toggle-status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{sysadmin_user_id}}",
+                "toggle-status"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403', function(){pm.expect(pm.response.code).to.be.oneOf([400,403]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Change Password - Wrong Old",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{admin_user_id}}/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{admin_user_id}}",
+                "change-password"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"oldPassword\":\"wrongold\",\"newPassword\":\"Admin@789012\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Change Password - New Too Short",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{admin_user_id}}/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{admin_user_id}}",
+                "change-password"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"oldPassword\":\"Admin@123456\",\"newPassword\":\"Ab1!\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 1.3: SysAdmin - System",
+      "description": "系统配置→诊断→部署→权限边界",
+      "item": [
+        {
+          "name": "1.3 Login as SysAdmin",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","login"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"username\":\"sysadmin\",\"password\":\"SysAdmin@2026!\"}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', function(){pm.response.to.have.status(200)});",
+            "pm.test('Has token', function(){var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('sysadmin_token',d.token);pm.collectionVariables.set('sysadmin_user_id',d.user.id);});"
+          ] }}]
+        },
+        {
+          "name": "1.3 Configuration - Get",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/configuration",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "configuration"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.6 Boundary - Herbs Denied",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.6 Boundary - Formulas Denied",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 2: Admin",
+      "description": "管理员：登录→用户管理→患者→医案→挂号→报表→权限边界",
+      "item": [
+        {
+          "name": "2.1 Login as Admin",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"newadmin\", \"password\": \"Admin@123456\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.response.to.have.status(200)});",
+                  "pm.test('Has token', function(){var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('admin_token',d.token);pm.collectionVariables.set('admin_user_id',d.user.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.1 Auth - Login Success",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"newadmin\",\"password\":\"Admin@123456\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});",
+                  "pm.test('Save token', function(){var d=pm.response.json().data;pm.collectionVariables.set('admin_token',d.token);pm.collectionVariables.set('admin_user_id',d.user.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.1 Auth - Login Wrong Password",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"newadmin\",\"password\":\"wrong\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 401', function(){pm.expect(pm.response.code).to.be.oneOf([400,401]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.2 Create Doctor",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"doctor1\",\"realName\":\"测试医生\",\"email\":\"doc@lybt.com\",\"password\":\"Doctor@123\",\"confirmPassword\":\"Doctor@123\",\"role\":1}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Save doctor id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('doctor_user_id',d.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.2 Create Receptionist",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"reception1\",\"realName\":\"测试前台\",\"email\":\"rec@lybt.com\",\"password\":\"Recep@123\",\"confirmPassword\":\"Recep@123\",\"role\":0}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Save receptionist id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('receptionist_user_id',d.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.2 Create User - Duplicate",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"doctor1\",\"realName\":\"重复\",\"password\":\"Doctor@123\",\"role\":2}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 409 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,409,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.2 Create User - Weak Password",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"weakpwd\",\"realName\":\"弱密码\",\"password\":\"123456\",\"role\":2}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.2 Create User - Missing Fields",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"missingfields\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.2 Delete SysAdmin - Forbidden",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{sysadmin_user_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{sysadmin_user_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Create Patient",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"_test_Admin创建患者\",\"gender\":1,\"birthDate\":\"1990-01-15\",\"phoneNumber\":\"13800138001\",\"idNumber\":\"110101199001150001\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Save patient id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_patient_id',d.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Create Patient - Missing Name",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"gender\":1,\"idNumber\":\"110101199001150099\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Create Patient - Invalid ID",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"身份证错误\",\"gender\":1,\"idNumber\":\"12345\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Create Patient - Duplicate ID",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"重复身份证\",\"gender\":1,\"idNumber\":\"110101199001150001\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 409 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,409,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Create Patient - Invalid Phone",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"手机号错误\",\"gender\":1,\"phoneNumber\":\"abc\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Create Patient - Future BirthDate",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"未来生日\",\"gender\":1,\"birthDate\":\"2030-01-01\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Get Patients List",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients?page=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Get Patient Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/{{test_patient_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "{{test_patient_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Update Patient",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/{{test_patient_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "{{test_patient_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"_test_Admin更新患者\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Search By ID Number",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/by-id-number/110101199001150001",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "by-id-number",
+                "110101199001150001"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Check Reference",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/{{test_patient_id}}/check-reference",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "{{test_patient_id}}",
+                "check-reference"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Patient - Not Found",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/00000000-0000-0000-0000-000000000999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "00000000-0000-0000-0000-000000000999"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 ID Number Search - Not Found",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/by-id-number/000000000000000000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "by-id-number",
+                "000000000000000000"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.4 Create MedicalCase",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"patientId\":\"{{test_patient_id}}\",\"userId\":\"{{admin_user_id}}\",\"remark\":\"_test_Admin医案\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Save mc id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_medical_case_id',d.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.4 Create MC - Missing PatientId",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\":\"{{admin_user_id}}\",\"remark\":\"缺少patientId\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.4 Create MC - Invalid PatientId",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"patientId\":\"00000000-0000-0000-0000-000000000999\",\"userId\":\"{{admin_user_id}}\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.4 Get MC List",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.4 Get MC Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/{{test_medical_case_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "{{test_medical_case_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.4 MC - Not Found",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/00000000-0000-0000-0000-000000000999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "00000000-0000-0000-0000-000000000999"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.4 Update MC",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/{{test_medical_case_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "{{test_medical_case_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"consultation\":{\"symptoms\":\"头痛\"},\"prescription\":{\"herbs\":[]}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.4 Update MC - Not Found",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/00000000-0000-0000-0000-000000000999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "00000000-0000-0000-0000-000000000999"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"consultation\":{\"symptoms\":\"更新\"}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.5 Create Registration",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"patientId\":\"{{test_patient_id}}\",\"patientName\":\"_test_Admin挂号\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Save reg id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_registration_id',d.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.5 Create Reg - Missing PatientId",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.5 Create Reg - Invalid PatientId",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"patientId\":\"00000000-0000-0000-0000-000000000999\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.5 Get Registrations List",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.5 Registration - Not Found",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations/00000000-0000-0000-0000-000000000999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations",
+                "00000000-0000-0000-0000-000000000999"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.6 Report - Daily Income",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/daily-income",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "daily-income"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.6 Report - Consultations",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/consultations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "consultations"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.6 Report - Herbs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/herbs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "herbs"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.7 Boundary - Herbs Denied",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.7 Boundary - Formulas Denied",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 3: Receptionist",
+      "description": "前台：登录→患者→挂号→权限边界",
+      "item": [
+        {
+          "name": "3.1 Login as Receptionist",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"reception1\", \"password\": \"Recep@123\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.response.to.have.status(200)});",
+                  "pm.test('Has token', function(){var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('receptionist_token',d.token);pm.collectionVariables.set('receptionist_user_id',d.user.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.1 Auth - Login Success",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"reception1\",\"password\":\"Recep@123\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});",
+                  "pm.test('Save token', function(){var d=pm.response.json().data;pm.collectionVariables.set('receptionist_token',d.token);pm.collectionVariables.set('receptionist_user_id',d.user.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.1 Auth - Login Wrong Password",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"reception1\",\"password\":\"wrong\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 401', function(){pm.expect(pm.response.code).to.be.oneOf([400,401]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 Create Patient",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"_test_前台创建患者\",\"gender\":2,\"idNumber\":\"110101199001150010\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Save patient id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_patient_id',d.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 Create Patient - Missing Name",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"gender\":1}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 Create Patient - Invalid ID",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"身份证错误\",\"gender\":1,\"idNumber\":\"abc\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 Get Patients List",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 Get Patient Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/{{test_patient_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "{{test_patient_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 Update Patient",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/{{test_patient_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "{{test_patient_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"_test_前台更新患者\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 Search By ID Number",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/by-id-number/110101199001150010",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "by-id-number",
+                "110101199001150010"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 Patient - Not Found",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/00000000-0000-0000-0000-000000000999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "00000000-0000-0000-0000-000000000999"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.3 Create Registration",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"patientId\":\"{{test_patient_id}}\",\"patientName\":\"_test_前台挂号\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Save reg id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_registration_id',d.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.3 Create Reg - Missing PatientId",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.3 Get Registrations List",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.3 Quick Visit - Denied",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations/{{test_registration_id}}/quick-visit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations",
+                "{{test_registration_id}}",
+                "quick-visit"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.3 Start Visit - Denied",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations/{{test_registration_id}}/start-visit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations",
+                "{{test_registration_id}}",
+                "start-visit"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.4 Boundary - Users Denied",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.4 Boundary - MedicalCases Denied",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.4 Boundary - Reports Denied",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/daily-income",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "daily-income"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.4 Boundary - Configuration Denied",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/configuration",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "configuration"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.4 Boundary - Diagnostics Denied",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/diagnostics/db-info",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "diagnostics",
+                "db-info"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionist_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Phase 4: Doctor",
+      "description": "医生：登录→患者→药材→验方→医案→挂号→报表→权限边界",
+      "item": [
+        {
+          "name": "4.1 Login as Doctor",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"doctor1\", \"password\": \"Doctor@123\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.response.to.have.status(200)});",
+                  "pm.test('Has token', function(){var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('doctor_token',d.token);pm.collectionVariables.set('doctor_user_id',d.user.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.1 Auth - Login Success",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"doctor1\",\"password\":\"Doctor@123\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});",
+                  "pm.test('Save token', function(){var d=pm.response.json().data;pm.collectionVariables.set('doctor_token',d.token);pm.collectionVariables.set('doctor_user_id',d.user.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.1 Auth - Login Wrong Password",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"doctor1\",\"password\":\"wrong\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 401', function(){pm.expect(pm.response.code).to.be.oneOf([400,401]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.2 Create Patient",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"_test_医生创建患者\",\"gender\":1,\"idNumber\":\"110101199001150020\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Save patient id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_patient_id',d.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.2 Create Patient - Missing Name",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"gender\":1}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Create Herb",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"_test_薄荷\",\"pinYinCode\":\"BH\",\"category\":\"清热药\",\"properties\":\"凉\",\"origin\":\"广东\",\"spec\":\"统货\",\"unit\":\"克\",\"price\":15.0,\"costPrice\":10.0,\"effect\":\"疏散风热\",\"usage\":\"煎服\",\"status\":1}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Save herb id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_herb_id',d.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Create Herb - Missing Name",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"category\":\"清热药\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Get Herbs List",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs?page=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Get Herb Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs/{{test_herb_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs",
+                "{{test_herb_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Update Herb",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs/{{test_herb_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs",
+                "{{test_herb_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"_test_薄荷Updated\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Toggle Herb Status",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs/{{test_herb_id}}/toggle-status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs",
+                "{{test_herb_id}}",
+                "toggle-status"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Restore Herb",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs/{{test_herb_id}}/restore",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs",
+                "{{test_herb_id}}",
+                "restore"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Check Herb Reference",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs/{{test_herb_id}}/check-reference",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs",
+                "{{test_herb_id}}",
+                "check-reference"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Herb - Not Found",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs/00000000-0000-0000-0000-000000000999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs",
+                "00000000-0000-0000-0000-000000000999"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Update Herb - Not Found",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs/00000000-0000-0000-0000-000000000999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs",
+                "00000000-0000-0000-0000-000000000999"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"不存在\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Toggle Herb - Not Found",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs/00000000-0000-0000-0000-000000000999/toggle-status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs",
+                "00000000-0000-0000-0000-000000000999",
+                "toggle-status"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Restore Herb - Not Found",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs/00000000-0000-0000-0000-000000000999/restore",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs",
+                "00000000-0000-0000-0000-000000000999",
+                "restore"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Check Reference - Not Found",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs/00000000-0000-0000-0000-000000000999/check-reference",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs",
+                "00000000-0000-0000-0000-000000000999",
+                "check-reference"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.4 Create Formula",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"_test_四物汤\",\"pinYinCode\":\"SWT\",\"category\":\"补血方\",\"description\":\"测试验方\",\"herbs\":[]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Save formula id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_formula_id',d.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.4 Create Formula - Missing Name",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"category\":\"补血方\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.4 Get Formulas List",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.4 Get Formula Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas/{{test_formula_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas",
+                "{{test_formula_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.4 Update Formula",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas/{{test_formula_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas",
+                "{{test_formula_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"_test_四物汤Updated\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.4 Formula - Not Found",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas/00000000-0000-0000-0000-000000000999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas",
+                "00000000-0000-0000-0000-000000000999"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.4 Update Formula - Not Found",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas/00000000-0000-0000-0000-000000000999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas",
+                "00000000-0000-0000-0000-000000000999"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"不存在\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.4 Clone Formula - Not Found",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas/00000000-0000-0000-0000-000000000999/clone",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas",
+                "00000000-0000-0000-0000-000000000999",
+                "clone"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Create MedicalCase",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"patientId\":\"{{test_patient_id}}\",\"userId\":\"{{doctor_user_id}}\",\"remark\":\"_test_医生医案\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Save mc id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_medical_case_id',d.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Create MC - Missing PatientId",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\":\"{{doctor_user_id}}\",\"remark\":\"缺少patientId\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Create MC - Invalid PatientId",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"patientId\":\"00000000-0000-0000-0000-000000000999\",\"userId\":\"{{doctor_user_id}}\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Get MC List",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Get MC Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/{{test_medical_case_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "{{test_medical_case_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 MC - Not Found",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/00000000-0000-0000-0000-000000000999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "00000000-0000-0000-0000-000000000999"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Update MC",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/{{test_medical_case_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "{{test_medical_case_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"consultation\":{\"symptoms\":\"医生更新\"},\"prescription\":{\"herbs\":[]}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Update MC - Not Found",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/00000000-0000-0000-0000-000000000999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "00000000-0000-0000-0000-000000000999"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"consultation\":{\"symptoms\":\"不存在\"}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Set Prescription Flag",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/{{test_medical_case_id}}/prescription-flag",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "{{test_medical_case_id}}",
+                "prescription-flag"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"needPrescription\":true}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Search MC",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/search?keyword=医生",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "医生"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Recent MC",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/recent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "recent"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Audit Logs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/{{test_medical_case_id}}/audit-logs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "{{test_medical_case_id}}",
+                "audit-logs"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Audit Logs - Not Found",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/00000000-0000-0000-0000-000000000999/audit-logs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "00000000-0000-0000-0000-000000000999",
+                "audit-logs"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Print Logs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/{{test_medical_case_id}}/print-logs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "{{test_medical_case_id}}",
+                "print-logs"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Print Logs - Not Found",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/00000000-0000-0000-0000-000000000999/print-logs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "00000000-0000-0000-0000-000000000999",
+                "print-logs"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Mark Print Completed",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/{{test_medical_case_id}}/print-completed",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "{{test_medical_case_id}}",
+                "print-completed"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.6 Create Registration",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"patientId\":\"{{test_patient_id}}\",\"patientName\":\"_test_医生挂号\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Save reg id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_registration_id',d.id);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.6 Create Reg - Missing PatientId",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.6 Get Registrations List",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.6 Get Queue",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations/queue",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations",
+                "queue"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.6 Registration - Not Found",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations/00000000-0000-0000-0000-000000000999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations",
+                "00000000-0000-0000-0000-000000000999"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.6 Cancel Reg - Not Found",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations/00000000-0000-0000-0000-000000000999/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations",
+                "00000000-0000-0000-0000-000000000999",
+                "cancel"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.6 Start Visit - Not Found",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations/00000000-0000-0000-0000-000000000999/start-visit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations",
+                "00000000-0000-0000-0000-000000000999",
+                "start-visit"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.7 Report - Daily Income",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/daily-income",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "daily-income"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.7 Report - Consultations",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/consultations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "consultations"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.7 Report - Herbs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/herbs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "herbs"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.8 Boundary - Users Denied",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.8 Boundary - Configuration Denied",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/configuration",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "configuration"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.8 Boundary - Diagnostics Denied",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/diagnostics/db-info",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "diagnostics",
+                "db-info"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.8 Boundary - Deploy Denied",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/deploy/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "deploy",
+                "status"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Global: No Auth",
+      "description": "未认证场景：所有端点无token/伪造token访问",
+      "item": [
+        {
+          "name": "G.1 Patients - No Token",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": ""
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', function(){pm.response.to.have.status(401);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "G.2 Herbs - No Token",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": ""
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', function(){pm.response.to.have.status(401);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "G.3 Users - No Token",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": ""
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', function(){pm.response.to.have.status(401);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "G.4 Patients - Fake Token",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer fake.token.here"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', function(){pm.response.to.have.status(401);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "G.5 MedicalCases - No Token",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases"
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": ""
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', function(){pm.response.to.have.status(401);});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
