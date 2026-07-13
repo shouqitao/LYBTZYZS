@@ -15,12 +15,12 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
-    /// 验方管理 API - CRUD、验证、批量操作
+    /// 验方管理 API - CRUD、验证、批量操作（仅Admin和SuperAdmin角色）
     /// </summary>
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public class FormulasController : BaseApiController
     {
         private readonly ISender _sender;

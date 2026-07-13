@@ -1,7 +1,7 @@
 # LYBT WebAPI 部署总结
 
-> 记录时间: 2026-04-22
-> 环境: **开发环境**（非生产）
+> 记录时间: 2026-04-22 | 更新: 2026-07-13
+> 环境: **生产环境**
 
 ---
 
@@ -9,23 +9,37 @@
 
 | 角色 | 主机 | IP | 系统 | 说明 |
 |------|------|-----|------|------|
-| 开发主机 | 开发者 PC | - | Ubuntu | 代码编写、编译、Git |
-| 服务器 | WIN-URSB5I68VL5 | 192.168.190.248 | Windows Server 2012 R2 | WebAPI 运行 |
+| 开发主机 | 开发者 PC | - | Windows | 代码编写、编译、Git |
+| **生产服务器** | tonyshou | **60.190.215.86** | **Linux Ubuntu** | WebAPI 公网运行 |
+| 内网服务器 | WIN-URSB5I68VL5 | 192.168.190.248 | Windows Server 2012 R2 | WebAPI 内网开发 |
+| 数据库服务器 | - | 192.168.190.243 | SQL Server | 数据库 |
 | 桌面端 | Desktop PC | 192.168.190.6 | Windows | WPF 客户端 |
 
-> 248 和 6 是为配合 Ubuntu 开发主机而创建的开发环境。
+> **当前生产环境**: 60.190.215.86 (Linux)
 
 ---
 
 ## 当前部署状态
+
+### 生产环境 (60.190.215.86)
+
+| 项目 | 值 |
+|------|-----|
+| 部署方式 | 框架依赖发布（Framework-Dependent） |
+| 启动方式 | nohup 后台进程 |
+| 进程 | `/home/player/.dotnet/dotnet LYBT.WebAPI.dll` |
+| 监听地址 | `http://0.0.0.0:5000` |
+| 数据库 | SQL Server @ 192.168.190.243 |
+| 运行时 | .NET 8 (/home/player/.dotnet/) |
+| SSH | player@60.190.215.86:5555 |
+
+### 开发环境 (192.168.190.248)
 
 | 项目 | 值 |
 |------|-----|
 | 部署方式 | 框架依赖发布（Framework-Dependent） |
 | 启动方式 | Windows 计划任务（`schtasks`） |
 | 任务名 | `LYBT-API` |
-| 运行身份 | SYSTEM |
-| 启动触发 | 系统启动时自动拉起 |
 | 进程 | `dotnet LYBT.WebAPI.dll` |
 | 监听地址 | `http://0.0.0.0:5000` |
 | 数据库 | SQL Server (localhost) - Windows Authentication |
@@ -35,17 +49,25 @@
 
 ## 部署路径
 
+### 生产环境 (Linux)
+```
+/home/player/lybt-api/          # 主部署目录
+├── LYBT.WebAPI.dll
+├── appsettings.json            # 基础配置
+├── appsettings.Production.json # 生产配置
+├── logs/                       # 日志目录
+└── ...
+```
+
+### 开发环境 (Windows)
 ```
 C:\Services\LYBT-API\          # 主部署目录
 ├── LYBT.WebAPI.dll
 ├── appsettings.json            # 基础配置
-├── appsettings.Production.json # 生产配置（ASPNETCORE_ENVIRONMENT=Production）
+├── appsettings.Production.json # 生产配置
 ├── start-service.bat           # 计划任务入口
 ├── logs\                       # 日志目录
 └── ...
-
-C:\LYBTZYZS\                   # 源码目录（服务器上）
-└── src\Server\Services\LYBT.WebAPI\
 ```
 
 ---
@@ -53,19 +75,17 @@ C:\LYBTZYZS\                   # 源码目录（服务器上）
 ## 配置要点
 
 ### 连接字符串
-- Server: `localhost`
-- 数据库: `LYBTDB_Dev`
-- 认证: `Trusted_Connection=True`（Windows Authentication）
+- **生产环境**: Server=192.168.190.243;Database=LYBTDB_Dev;User ID=sa
+- **开发环境**: Server=localhost;Database=LYBTDB_Dev;Trusted_Connection=True
 
 ### 密码配置
+生产环境必须使用实际密码，不可使用环境变量占位符 `${VAR}`:
 ```json
 {
   "DefaultPasswords": {
-    "SysAdminPassword": "<REDACTED>",
-    "NewUserPassword": "<REDACTED>"
-  },
-  "SystemAdmin": {
-    "Email": "admin@lybt.com"
+    "SysAdminPassword": "SysAdmin@2026!",
+    "AdminPassword": "Admin@123456",
+    "NewUserPassword": "User@2026!Qwx"
   }
 }
 ```
@@ -73,6 +93,17 @@ C:\LYBTZYZS\                   # 源码目录（服务器上）
 ### Kestrel 监听
 - 基础配置: `http://localhost:5000`
 - Production 覆盖: `http://0.0.0.0:5000`
+- **注意**: 已移除 HTTPS 端点（生产环境由反向代理处理 TLS）
+
+### JWT 配置
+```json
+{
+  "Jwt": {
+    "SecretKey": "jin39uYqW840gYkGyxlHozWYwyTO/hjpM2ylVbbIniU=",
+    "AccessTokenExpirationMinutes": 30
+  }
+}
+```
 
 ---
 
@@ -143,6 +174,31 @@ set ASPNETCORE_ENVIRONMENT=Production
 
 ## 常用运维命令
 
+### Linux 生产环境
+```bash
+# SSH 连接
+ssh -p 5555 player@60.190.215.86
+
+# 查看服务状态
+ps aux | grep dotnet
+
+# 停止服务
+pkill -9 -f 'dotnet.*LYBT'
+
+# 启动服务
+cd /home/player/lybt-api && nohup /home/player/.dotnet/dotnet LYBT.WebAPI.dll --environment Production &
+
+# 健康检查
+curl http://60.190.215.86:5000/health
+
+# 查看日志
+tail -50 /home/player/lybt-api/logs/lybt-web-api-*.log
+
+# 查看端口
+ss -tlnp | grep 5000
+```
+
+### Windows 开发环境
 ```powershell
 # 查看任务状态
 schtasks /query /tn LYBT-API /fo LIST
@@ -155,9 +211,6 @@ Stop-Process -Name dotnet -Force
 
 # 查看进程
 Get-Process dotnet
-
-# 查看端口
-Get-NetTCPConnection -LocalPort 5000
 
 # 健康检查
 (New-Object Net.WebClient).DownloadString("http://127.0.0.1:5000/health")

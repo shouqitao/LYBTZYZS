@@ -19,10 +19,86 @@
 
 | 方式 | 说明 | 文档 |
 |------|------|------|
-| **Windows Service**（推荐） | 独立进程，开机自启，适合后台服务 | 待创建部署脚本 |
-| IIS | 需要 IIS 环境，图形化管理 | 待创建部署脚本 |
+| **Linux 直接运行** | nohup 后台进程，轻量 | 见下方 Linux 部署 |
+| Windows Service | 独立进程，开机自启 | deploy.ps1 |
+| IIS | 需要 IIS 环境，图形化管理 | 备选方案 |
 
 两种方式均使用 `dotnet publish` 产出部署包，通过对应脚本部署。
+
+---
+
+### Linux 公网服务器部署
+
+> **当前生产环境**: 60.190.215.86 (Ubuntu)
+
+#### 服务器信息
+
+| 项目 | 值 |
+|------|-----|
+| IP | 60.190.215.86 |
+| SSH 端口 | 5555 |
+| 用户名 | player |
+| 认证方式 | SSH Key（免密登录） |
+| 操作系统 | Linux (Ubuntu) |
+| dotnet 路径 | /home/player/.dotnet/dotnet |
+| 部署路径 | /home/player/lybt-api |
+| API 端口 | 5000 |
+| 数据库 | SQL Server @ 192.168.190.243 |
+
+#### 快速同步命令
+
+```powershell
+# 完整构建 + 同步 + 重启
+.\sync-to-server.ps1 -Build -Restart
+
+# 仅同步配置文件
+.\sync-to-server.ps1 -ConfigOnly -Restart
+
+# 仅重启服务
+.\sync-to-server.ps1 -Restart
+```
+
+#### 手动部署步骤
+
+```bash
+# 1. 构建
+dotnet publish src/Server/Services/LYBT.WebAPI -c Release -o ./publish-webapi
+
+# 2. 上传文件
+scp -P 5555 ./publish-webapi/* player@60.190.215.86:/home/player/lybt-api/
+
+# 3. 重启服务
+ssh -p 5555 player@60.190.215.86 "pkill -9 -f 'dotnet.*LYBT'; sleep 2; cd /home/player/lybt-api && nohup /home/player/.dotnet/dotnet LYBT.WebAPI.dll --environment Production &"
+
+# 4. 验证
+curl http://60.190.215.86:5000/health
+```
+
+#### 配置注意事项
+
+1. **HTTPS 端点**: 已移除，仅使用 HTTP（生产环境由反向代理处理 TLS）
+2. **密码策略**: 必须包含大小写字母和数字
+3. **环境变量占位符**: Production 配置中不可使用 `${VAR}` 格式，需写入实际值
+4. **dotnet 路径**: 必须使用完整路径 `/home/player/.dotnet/dotnet`
+
+#### 常用运维命令
+
+```bash
+# SSH 连接
+ssh -p 5555 player@60.190.215.86
+
+# 查看服务状态
+ps aux | grep dotnet
+
+# 查看日志
+tail -50 /home/player/lybt-api/logs/lybt-web-api-*.log
+
+# 健康检查
+curl http://60.190.215.86:5000/health
+
+# 查看端口
+ss -tlnp | grep 5000
+```
 
 ### Desktop 自动升级
 
@@ -206,3 +282,4 @@ dotnet ef database update -s src/Server/Services/LYBT.WebAPI
 | 2026-02-22 | v1.1 | 新增故障排查章节 (服务端/客户端/数据库) |
 | 2026-06-25 | v1.2 | 修正 Desktop 日志路径 %APPDATA%\LYBT → %LOCALAPPDATA%\LYBTZYZS（与代码一致） |
 | 2026-06-25 | v1.3 | 新增环境变量参考表、部署后健康检查验证、IIS 配置要点 |
+| 2026-07-13 | v1.4 | 新增 Linux 公网服务器部署章节 (60.190.215.86) |

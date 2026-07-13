@@ -1,0 +1,7 @@
+{
+  "id": "lybt-env-public",
+  "name": "LYBT Public Production",
+  "values": [
+    { "key": "baseUrl", "value": "http://60.190.215.86:5000", "enabled": true }
+  ]
+}

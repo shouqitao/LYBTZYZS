@@ -9,7 +9,7 @@
 | 03 | [架构文档](03-architecture/) | 系统架构、数据模型、双模式、14 ADR、权限矩阵、业务流程 | 31 |
 | 04 | [API 参考](04-api-reference/) | 全部 API 端点文档 | 14 |
 | 05 | [开发指南](05-development/) | 快速开始、编码规范、测试标准、测试覆盖地图 | 26 |
-| 06 | [运维文档](06-operations/) | 部署、配置、监控、备份、配置与密钥 | 13 |
+| 06 | [运维文档](06-operations/) | 部署、配置、监控、备份、配置与密钥 | 15 |
 | — | [compose/](compose/README.md) | 设计规格 / 实施计划 / 审查报告（工作流产物） | 90+ |
 | — | [plans/](plans/README.md) | ⚠️ 已弃用，重定向至 compose/ | — |
 | — | [training/](training/) | 培训材料 | 1 |
@@ -62,9 +62,10 @@
 ### 运维部署
 
 1. [部署指南](06-operations/01-deployment.md) — 部署步骤与流程
-2. [配置管理](06-operations/02-configuration.md) — 配置架构与选项
-3. [备份恢复](06-operations/07-backup-recovery.md) — 备份策略与恢复
-4. [监控告警](06-operations/08-monitoring-alerting.md) — 监控与告警
+2. [服务器配置参考](06-operations/13-server-config-reference.md) — 生产服务器快速查询
+3. [配置管理](06-operations/02-configuration.md) — 配置架构与选项
+4. [备份恢复](06-operations/07-backup-recovery.md) — 备份策略与恢复
+5. [监控告警](06-operations/08-monitoring-alerting.md) — 监控与告警
 
 ### compose 工作流产物
 
