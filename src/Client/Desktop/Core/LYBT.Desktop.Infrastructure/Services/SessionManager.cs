@@ -13,6 +13,7 @@ namespace LYBT.Desktop.Infrastructure.Services
     public class SessionManager : ISessionManager
     {
         private readonly IAuthenticationService _authService;
+        private readonly object _lock = new();
         private UserDetailDto? _cachedUser;
         public event EventHandler? SessionExpired;
         public event EventHandler<SessionChangedEventArgs>? SessionChanged;
@@ -22,7 +23,18 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// <summary>
         /// 当前用户（使用同步方法避免WPF死锁）
         /// </summary>
-        public UserDetailDto? CurrentUser { get { if (_cachedUser == null) _cachedUser = _authService.GetCurrentUser(); return _cachedUser; } }
+        public UserDetailDto? CurrentUser
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    if (_cachedUser == null)
+                        _cachedUser = _authService.GetCurrentUser();
+                    return _cachedUser;
+                }
+            }
+        }
         public Guid? CurrentUserId => CurrentUser?.Id;
         public string? CurrentUserName => CurrentUser?.UserName;
         public bool IsAuthenticated => !string.IsNullOrEmpty(_authService.GetToken());
@@ -30,7 +42,10 @@ namespace LYBT.Desktop.Infrastructure.Services
 
         public void SetSession(UserDetailDto user, string accessToken, string? refreshToken = null)
         {
-            _cachedUser = user ?? throw new ArgumentNullException(nameof(user));
+            lock (_lock)
+            {
+                _cachedUser = user ?? throw new ArgumentNullException(nameof(user));
+            }
             ArgumentNullException.ThrowIfNull(accessToken);
             SessionChanged?.Invoke(this, new SessionChangedEventArgs(true, user));
         }
@@ -38,7 +53,10 @@ namespace LYBT.Desktop.Infrastructure.Services
         public void ClearSession()
         {
             var wasAuthenticated = IsAuthenticated;
-            _cachedUser = null;
+            lock (_lock)
+            {
+                _cachedUser = null;
+            }
             _authService.ClearAuthInfo();
             
             if (wasAuthenticated)
