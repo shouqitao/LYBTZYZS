@@ -1,5 +1,10 @@
 # WebAPI 功能清单完整性审计
 
+> [!NOTE]
+> 此文档可能不反映当前实现。
+> 请参阅最终报告了解最新状态：
+> [Final Report](../reports/2026-07-02-api-gap-analysis-report.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use compose:subagent (recommended) or compose:execute to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 对照 141 个 US 需求，逐一审计 WebAPI 端点覆盖度，识别缺失/错位的功能点，输出实施计划。

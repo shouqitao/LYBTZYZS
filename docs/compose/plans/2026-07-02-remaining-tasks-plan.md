@@ -1,5 +1,10 @@
 # 剩余任务实施计划 (Phase 2)
 
+> [!NOTE]
+> 此文档可能不反映当前实现。
+> 请参阅最终报告了解最新状态：
+> [Final Report](../reports/2026-07-02-remaining-gaps-report.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use compose:subagent (recommended) or compose:execute to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Complete dead code cleanup, finish test coverage, and implement v1.0 quick-win features.

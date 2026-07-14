@@ -1,5 +1,10 @@
 # WebAPI 完善实施计划
 
+> [!NOTE]
+> 此文档可能不反映当前实现。
+> 请参阅最终报告了解最新状态：
+> [Final Report](../reports/2026-07-02-webapi-completeness-audit.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use compose:subagent (recommended) or compose:execute to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 消除 WebAPI 15 个改进项，提升安全、性能、一致性和可维护性。

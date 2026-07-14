@@ -1,5 +1,10 @@
 # LYBT WebAPI 功能清单
 
+> [!NOTE]
+> 此文档可能不反映当前实现。
+> 请参阅最终报告了解最新状态：
+> [Final Report](../reports/2026-07-14-configuration-audit-report.md)
+
 > **基于集成测试结果生成** — 2026-07-13
 > **测试覆盖：90/90 = 100%**
 
