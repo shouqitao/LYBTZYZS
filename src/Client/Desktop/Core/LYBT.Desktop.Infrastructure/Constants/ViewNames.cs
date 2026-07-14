@@ -88,5 +88,11 @@ public static class ViewNames
 
     #endregion
 
+    #region 诊断视图
+
+    /// <summary>日志级别控制</summary>
+    public const string LogLevelControl = "LogLevelControlView";
+
+    #endregion
 
 }
