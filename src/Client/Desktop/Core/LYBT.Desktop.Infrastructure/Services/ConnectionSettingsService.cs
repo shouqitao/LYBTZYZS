@@ -65,10 +65,10 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
     public string CurrentUrl =>
         _preferredMode == "Remote" && !string.IsNullOrEmpty(_remoteUrl)
             ? _remoteUrl
-            : LocalUrlConstant;
+            : _currentUrl;
 
     /// <inheritdoc />
-    public bool IsLocal => _preferredMode != "Remote" || string.IsNullOrEmpty(_remoteUrl);
+    public bool IsLocal => CurrentUrl.Contains("127.0.0.1") || CurrentUrl.Contains("localhost");
 
     /// <inheritdoc />
     public event EventHandler<string>? UrlChanged;
@@ -83,22 +83,22 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
             throw new ArgumentException($"Invalid URL format: {url}", nameof(url));
 
         var normalized = url.TrimEnd('/');
+        var oldUrl = _currentUrl;
 
         if (IsLocalUrl(normalized))
         {
             _preferredMode = "Local";
+            _currentUrl = normalized;
             await PersistPreferredModeAsync("Local").ConfigureAwait(false);
         }
         else
         {
             _remoteUrl = normalized;
             _preferredMode = "Remote";
+            _currentUrl = normalized;
             await PersistRemoteUrlAsync(normalized).ConfigureAwait(false);
             await PersistPreferredModeAsync("Remote").ConfigureAwait(false);
         }
-
-        var oldUrl = _currentUrl;
-        _currentUrl = CurrentUrl;
 
         _logger.LogInformation("[CONNECTION-CFG] URL changed: {OldUrl} -> {NewUrl}", oldUrl, _currentUrl);
 
@@ -126,7 +126,10 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
         await PersistRemoteUrlAsync(_remoteUrl).ConfigureAwait(false);
 
         var oldUrl = _currentUrl;
-        _currentUrl = CurrentUrl;
+        if (_preferredMode == "Remote" && !string.IsNullOrEmpty(_remoteUrl))
+        {
+            _currentUrl = _remoteUrl;
+        }
         if (oldUrl != _currentUrl)
         {
             UrlChanged?.Invoke(this, _currentUrl);
@@ -143,7 +146,14 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
         await PersistPreferredModeAsync(mode).ConfigureAwait(false);
 
         var oldUrl = _currentUrl;
-        _currentUrl = CurrentUrl;
+        if (mode == "Remote" && !string.IsNullOrEmpty(_remoteUrl))
+        {
+            _currentUrl = _remoteUrl;
+        }
+        else
+        {
+            _currentUrl = LocalUrlConstant;
+        }
         if (oldUrl != _currentUrl)
         {
             UrlChanged?.Invoke(this, _currentUrl);

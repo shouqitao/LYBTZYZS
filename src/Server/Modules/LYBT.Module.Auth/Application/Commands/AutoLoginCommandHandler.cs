@@ -25,6 +25,11 @@ public class AutoLoginCommandHandler : IRequestHandler<AutoLoginCommand, Result<
         _logger.LogInformation("[Handler] AutoLogin - TokenLength={TokenLength} IpAddress={IpAddress}",
             request.Token?.Length ?? 0, request.IpAddress ?? "unknown");
 
+        if (string.IsNullOrEmpty(request.Token))
+        {
+            return Task.FromResult(Result<LoginResponse>.Failure("Auto login token is required."));
+        }
+
         var result = _jwtService.ValidateAutoLoginToken(request.Token);
         return Task.FromResult(result);
     }

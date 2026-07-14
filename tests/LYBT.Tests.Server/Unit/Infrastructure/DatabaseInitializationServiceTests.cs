@@ -79,10 +79,10 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
             Options.Create(passwordOptions ?? DefaultPasswordOpts));
     }
 
-    #region EnsureSystemAdminExistsAsync - 创建场景
+    #region EnsureSystemAdminExistsAsync - 创建场景（已迁移到 IdentitySeedData）
 
     [Fact]
-    public async Task InitializeDatabase_WhenNoSuperAdminExists_CreatesUser()
+    public async Task InitializeDatabase_WhenNoSuperAdminExists_InitializationSucceeds()
     {
         // Arrange
         var service = CreateService();
@@ -90,23 +90,12 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
         // Act
         await service.InitializeDatabaseAsync();
 
-        // Assert
-        var superAdmin = await _dbContext.Users
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(u => u.Role == UserRole.SuperAdmin);
-
-        superAdmin.Should().NotBeNull("应创建SuperAdmin用户");
-        superAdmin!.UserName.Should().Be("sysadmin");
-        superAdmin.RealName.Should().Be("系统管理员");
-        superAdmin.Email.Should().Be("admin@lybt.com");
-        superAdmin.Role.Should().Be(UserRole.SuperAdmin);
-        superAdmin.Status.Should().Be(CommonStatus.Enabled);
-        superAdmin.PasswordHash.Should().NotBeNullOrEmpty("密码应被Hash");
-        superAdmin.IsDeleted.Should().BeFalse();
+        // Assert - 用户创建已委托给 IdentitySeedData，服务仅检查是否存在
+        // InMemory 数据库已创建，无异常抛出
     }
 
     [Fact]
-    public async Task InitializeDatabase_CreatedUser_PasswordCanBeVerified()
+    public async Task InitializeDatabase_WhenNoSuperAdminExists_DoesNotCreateUser()
     {
         // Arrange
         var service = CreateService();
@@ -114,14 +103,13 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
         // Act
         await service.InitializeDatabaseAsync();
 
-        // Assert
-        var superAdmin = await _dbContext.Users.FirstOrDefaultAsync(u => u.Role == UserRole.SuperAdmin);
-        superAdmin.Should().NotBeNull();
+        // Assert - 用户创建已迁移到 IdentitySeedData
+        var superAdmins = await _dbContext.Users
+            .IgnoreQueryFilters()
+            .Where(u => u.Role == UserRole.SuperAdmin)
+            .ToListAsync();
 
-        var passwordVerifies = BCrypt.Net.BCrypt.Verify(
-            DefaultPasswordOpts.SysAdminPassword,
-            superAdmin!.PasswordHash);
-        passwordVerifies.Should().BeTrue("创建的密码Hash应可被验证");
+        superAdmins.Should().BeEmpty("用户创建已委托给 IdentitySeedData，DatabaseInitializationService 不再直接创建");
     }
 
     #endregion
@@ -258,7 +246,7 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
     #region 幂等性
 
     [Fact]
-    public async Task InitializeDatabase_CalledTwice_CreatesOnlyOneSuperAdmin()
+    public async Task InitializeDatabase_CalledTwice_DoesNotCreateUser()
     {
         // Arrange
         var service = CreateService();
@@ -267,13 +255,13 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
         await service.InitializeDatabaseAsync();
         await service.InitializeDatabaseAsync();
 
-        // Assert: 应只有1个SuperAdmin
+        // Assert: 用户创建已委托给 IdentitySeedData，服务不创建用户
         var superAdmins = await _dbContext.Users
             .IgnoreQueryFilters()
             .Where(u => u.Role == UserRole.SuperAdmin)
             .ToListAsync();
 
-        superAdmins.Should().HaveCount(1, "多次调用不应创建重复的SuperAdmin");
+        superAdmins.Should().BeEmpty("用户创建已委托给 IdentitySeedData");
     }
 
     #endregion
@@ -294,12 +282,13 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
         // Act
         await service.InitializeDatabaseAsync();
 
-        // Assert
-        var superAdmin = await _dbContext.Users
+        // Assert - 用户创建已委托给 IdentitySeedData，服务不创建用户
+        var superAdmins = await _dbContext.Users
             .IgnoreQueryFilters()
-            .SingleAsync(u => u.Role == UserRole.SuperAdmin);
+            .Where(u => u.Role == UserRole.SuperAdmin)
+            .ToListAsync();
 
-        superAdmin.MustChangeOnNextLogin.Should().BeTrue();
+        superAdmins.Should().BeEmpty("用户创建已委托给 IdentitySeedData");
     }
 
     [Fact]
@@ -317,14 +306,13 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
         // Act
         await service.InitializeDatabaseAsync();
 
-        // Assert
-        var superAdmin = await _dbContext.Users
+        // Assert - 用户创建已委托给 IdentitySeedData，服务不创建用户
+        var superAdmins = await _dbContext.Users
             .IgnoreQueryFilters()
-            .SingleAsync(u => u.Role == UserRole.SuperAdmin);
+            .Where(u => u.Role == UserRole.SuperAdmin)
+            .ToListAsync();
 
-        superAdmin.MustChangeOnNextLogin.Should().BeFalse();
-        logger.Entries.Should().Contain(entry => entry.Level == LogLevel.Warning,
-            "关闭首次登录强制改密时应记录安全警告");
+        superAdmins.Should().BeEmpty("用户创建已委托给 IdentitySeedData");
     }
 
     [Fact]
@@ -364,7 +352,7 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
     }
 
     [Fact]
-    public async Task EnsureSystemAdminExists_Production_AutoCreateEnabled_ValidToken_CreatesAdmin()
+    public async Task EnsureSystemAdminExists_Production_AutoCreateEnabled_ValidToken_DoesNotCreateAdmin()
     {
         // Arrange
         var originalEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -392,13 +380,13 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
             // Act
             await service.InitializeDatabaseAsync();
 
-            // Assert
-            var superAdmin = await _dbContext.Users
+            // Assert - 用户创建已委托给 IdentitySeedData，服务不创建用户
+            var superAdmins = await _dbContext.Users
                 .IgnoreQueryFilters()
-                .SingleAsync(u => u.Role == UserRole.SuperAdmin);
+                .Where(u => u.Role == UserRole.SuperAdmin)
+                .ToListAsync();
 
-            superAdmin.Should().NotBeNull();
-            superAdmin.MustChangeOnNextLogin.Should().BeTrue();
+            superAdmins.Should().BeEmpty("用户创建已委托给 IdentitySeedData");
         }
         finally
         {
@@ -448,7 +436,7 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
     }
 
     [Fact]
-    public async Task EnsureSystemAdminExists_Development_AlwaysCreatesAdmin()
+    public async Task EnsureSystemAdminExists_Development_DoesNotCreateAdmin()
     {
         // Arrange
         var originalEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -466,13 +454,13 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
             // Act
             await service.InitializeDatabaseAsync();
 
-            // Assert
-            var superAdmin = await _dbContext.Users
+            // Assert - 用户创建已委托给 IdentitySeedData，服务不创建用户
+            var superAdmins = await _dbContext.Users
                 .IgnoreQueryFilters()
-                .SingleAsync(u => u.Role == UserRole.SuperAdmin);
+                .Where(u => u.Role == UserRole.SuperAdmin)
+                .ToListAsync();
 
-            superAdmin.Should().NotBeNull();
-            superAdmin.MustChangeOnNextLogin.Should().BeTrue();
+            superAdmins.Should().BeEmpty("用户创建已委托给 IdentitySeedData");
         }
         finally
         {
@@ -490,13 +478,37 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
         // Act
         await service.InitializeDatabaseAsync();
 
-        // Assert
-        logger.Entries.Should().ContainSingle(entry => entry.Level == LogLevel.Warning);
-        var entry = logger.Entries.Single(e => e.Level == LogLevel.Warning);
-        entry.Properties.Should().NotBeNull();
-        entry.Properties!.Should().Contain(kvp => kvp.Key == "UserName");
-        entry.Properties!.Should().Contain(kvp => kvp.Key == "Email");
-        entry.Properties!.Should().Contain(kvp => kvp.Key == "Role");
+        // Assert - 用户创建已委托给 IdentitySeedData，服务不创建用户
+        // 服务只记录初始化完成日志
+        var superAdmins = await _dbContext.Users
+            .IgnoreQueryFilters()
+            .Where(u => u.Role == UserRole.SuperAdmin)
+            .ToListAsync();
+
+        superAdmins.Should().BeEmpty("用户创建已委托给 IdentitySeedData");
+    }
+
+    [Fact]
+    public async Task EnsureSystemAdminExists_NewAdmin_DoesNotCreateUser()
+    {
+        // Arrange
+        var service = CreateService(passwordOptions: new DefaultPasswordOptions
+        {
+            SysAdminPassword = DefaultPasswordOpts.SysAdminPassword,
+            NewUserPassword = "TempUser2025@",
+            ForceChangeOnFirstLogin = true
+        });
+
+        // Act
+        await service.InitializeDatabaseAsync();
+
+        // Assert - 用户创建已委托给 IdentitySeedData，服务不创建用户
+        var superAdmins = await _dbContext.Users
+            .IgnoreQueryFilters()
+            .Where(u => u.Role == UserRole.SuperAdmin)
+            .ToListAsync();
+
+        superAdmins.Should().BeEmpty("用户创建已委托给 IdentitySeedData");
     }
 
     [Fact]
@@ -530,8 +542,6 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
             .SingleAsync(u => u.UserName == "existing_admin");
 
         existingAdmin.MustChangeOnNextLogin.Should().BeFalse();
-        logger.Entries.Should().Contain(entry => entry.Level == LogLevel.Warning,
-            "检测到已存在的系统管理员时应记录告警级事件");
     }
 
     [Fact]
@@ -566,31 +576,6 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
             .SingleAsync(u => u.UserName == "existing_admin");
 
         existingAdmin.PasswordHash.Should().Be(passwordHash);
-        logger.Entries.Should().Contain(entry => entry.Level == LogLevel.Warning,
-            "跳过已有系统管理员时应记录告警级事件");
-    }
-
-    [Fact]
-    public async Task EnsureSystemAdminExists_NewAdmin_PasswordIsHashedWithBCrypt()
-    {
-        // Arrange
-        var service = CreateService(passwordOptions: new DefaultPasswordOptions
-        {
-            SysAdminPassword = DefaultPasswordOpts.SysAdminPassword,
-            NewUserPassword = "TempUser2025@",
-            ForceChangeOnFirstLogin = true
-        });
-
-        // Act
-        await service.InitializeDatabaseAsync();
-
-        // Assert
-        var superAdmin = await _dbContext.Users
-            .IgnoreQueryFilters()
-            .SingleAsync(u => u.Role == UserRole.SuperAdmin);
-
-        superAdmin.PasswordHash.Should().MatchRegex(@"^\$(2a|2b)\$");
-        superAdmin.MustChangeOnNextLogin.Should().BeTrue();
     }
 
     private sealed class CapturingLogger<T> : ILogger<T>
