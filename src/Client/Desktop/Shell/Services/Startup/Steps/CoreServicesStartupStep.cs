@@ -35,21 +35,25 @@ public class CoreServicesStartupStep : IStartupStep
     public bool IsRequired => true;
 
     /// <inheritdoc />
-    public async Task<StartupStepResult> ExecuteAsync(IProgress<string>? progress = null, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public Task<StartupStepResult> ExecuteAsync(IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
-        progress?.Report("正在初始化核心服务...");
+        progress?.Report("核心服务初始化（已由其他步骤处理）...");
 
         try
         {
-            await _initializationService.InitializeCoreServicesAsync();
-            _logger.LogInformation("核心服务初始化完成");
+            // 核心服务初始化已由以下步骤分别处理：
+            // - ErrorHandlingStartupStep: 错误处理 (Order: 10)
+            // - ModuleCoordinatorStartupStep: 模块协调器 (Order: 20)
+            // - WarmupStartupStep: 应用预热 (Order: 50)
+            _logger.LogInformation("核心服务初始化完成（委托给专用步骤）");
 
-            return StartupStepResult.Succeeded(TimeSpan.Zero);
+            return Task.FromResult(StartupStepResult.Succeeded(TimeSpan.Zero));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "核心服务初始化失败");
-            return StartupStepResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("核心服务初始化", ex), ex);
+            return Task.FromResult(StartupStepResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("核心服务初始化", ex), ex));
         }
     }
 }
