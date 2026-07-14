@@ -264,32 +264,6 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 导出药材到Excel
-        /// </summary>
-        [HttpGet("export")]
-        [ProducesResponseType(typeof(FileResult), 200)]
-        public async Task<IActionResult> Export([FromQuery] string? category = null, CancellationToken cancellationToken = default)
-        {
-            var result = await _sender.Send(new ExportHerbsQuery(category), cancellationToken);
-            if (!result.IsSuccess || result.Value == null)
-                return BusinessFail(result.Error ?? "导出失败");
-            return File(result.Value, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "herbs.xlsx");
-        }
-
-        /// <summary>
-        /// 下载药材导入模板
-        /// </summary>
-        [HttpGet("import-template")]
-        [ProducesResponseType(typeof(FileResult), 200)]
-        public async Task<IActionResult> ImportTemplate(CancellationToken cancellationToken = default)
-        {
-            var result = await _sender.Send(new GetHerbImportTemplateQuery(), cancellationToken);
-            if (!result.IsSuccess || result.Value == null)
-                return BusinessFail(result.Error ?? "获取模板失败");
-            return File(result.Value, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "herb-import-template.xlsx");
-        }
-
-        /// <summary>
         /// 检查药材引用关系（删除前检查）
         /// </summary>
         [HttpGet("{id}/check-reference")]
