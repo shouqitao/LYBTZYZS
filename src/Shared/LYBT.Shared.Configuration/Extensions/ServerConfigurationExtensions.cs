@@ -77,12 +77,6 @@ public static class ServerConfigurationExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        // LocalJWT 配置
-        services.AddOptions<LocalJwtOptions>()
-            .Bind(configuration.GetSection(LocalJwtOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
         // CORS 配置 (支持热更新，不使用 ValidateOnStart)
         services.AddOptions<CorsOptions>()
             .Bind(configuration.GetSection(CorsOptions.SectionName))
@@ -99,8 +93,7 @@ public static class ServerConfigurationExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        // 注册 LocalJwt 验证器
-        services.AddSingleton<IValidateOptions<LocalJwtOptions>, LocalJwtOptionsValidator>();
+
 
         return services;
     }
