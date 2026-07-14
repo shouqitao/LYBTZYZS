@@ -61,7 +61,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     protected IRegionManager RegionManager { get; }
     protected ICommonDialogService? CommonDialogService { get; }
-    protected IUserNotificationService? UserNotificationService { get; }
     protected IToastService? ToastService { get; }
 
     #endregion
@@ -152,7 +151,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     public MainWindowViewModel(
         IViewModelServices services,
-        IUserNotificationService userNotificationService,
         INavigationCoordinator navigationCoordinator,
         MenuManager menuManager,
         IActiveConsultationService activeConsultationService,
@@ -168,7 +166,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         RegionManager = services.RegionManager;
         CommonDialogService = services.CommonDialogService;
         ToastService = services.ToastService;
-        UserNotificationService = userNotificationService;
 
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));
