@@ -115,46 +115,46 @@ public class MedicalCaseStartCoordinator : IMedicalCaseStartCoordinator
     /// <summary>
     /// 关闭旧医案并创建新医案
     /// </summary>
-    public async Task<StartResultData> CloseAndCreateNewAsync(PatientDetailDto patient, Guid oldMedicalCaseId)
+    public Task<StartResultData> CloseAndCreateNewAsync(PatientDetailDto patient, Guid oldMedicalCaseId)
     {
         try
         {
             _logger.LogInformation("新建医案，先关闭旧医案：OldMedicalCaseId={OldMedicalCaseId}",
                 oldMedicalCaseId);
 
-            return new StartResultData { Result = StartResult.CreateNew };
+            return Task.FromResult(new StartResultData { Result = StartResult.CreateNew });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "新建医案失败");
-            return new StartResultData
+            return Task.FromResult(new StartResultData
             {
                 Result = StartResult.Error,
                 ErrorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("新建医案", ex)
-            };
+            });
         }
     }
 
     /// <summary>
     /// 仅关闭旧医案（不创建新医案）
     /// </summary>
-    public async Task<StartResultData> CloseOnlyAsync(PatientDetailDto patient, Guid oldMedicalCaseId)
+    public Task<StartResultData> CloseOnlyAsync(PatientDetailDto patient, Guid oldMedicalCaseId)
     {
         try
         {
             _logger.LogInformation("仅关闭医案：OldMedicalCaseId={OldMedicalCaseId}",
                 oldMedicalCaseId);
 
-            return new StartResultData { Result = StartResult.CloseOnly };
+            return Task.FromResult(new StartResultData { Result = StartResult.CloseOnly });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "关闭医案失败");
-            return new StartResultData
+            return Task.FromResult(new StartResultData
             {
                 Result = StartResult.Error,
                 ErrorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("关闭医案", ex)
-            };
+            });
         }
     }
 

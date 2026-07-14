@@ -29,6 +29,11 @@ internal partial class LocalMedicalCaseMapper
     [MapperIgnoreSource(nameof(MedicalCase.UpdatedBy))]
     [MapperIgnoreSource(nameof(MedicalCase.RowVersion))]
     [MapperIgnoreSource(nameof(MedicalCase.IsDeleted))]
+    [MapperIgnoreSource(nameof(MedicalCase.PrintLogs))]
+    [MapperIgnoreSource(nameof(MedicalCase.LastPrintedAt))]
+    [MapperIgnoreSource(nameof(MedicalCase.PrintVersion))]
+    [MapperIgnoreSource(nameof(MedicalCase.IsPrinted))]
+    [MapperIgnoreSource(nameof(MedicalCase.PrintCount))]
     [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.PatientGender))]
     [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.PatientAge))]
     [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.ConsultationId))]
@@ -39,6 +44,7 @@ internal partial class LocalMedicalCaseMapper
     [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.PresentIllness))]
     [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.Consultation))]
     [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.Prescription))]
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailDto.NeedsPrescription))]
     public partial MedicalCaseDetailDto ToDetailDtoCore(MedicalCase entity);
 
     /// <summary>
@@ -123,6 +129,8 @@ internal partial class LocalMedicalCaseMapper
     [MapperIgnoreTarget(nameof(PrescriptionItemDto.TotalPrice))]
     [MapperIgnoreTarget(nameof(PrescriptionItemDto.TotalWeight))]
     [MapperIgnoreTarget(nameof(PrescriptionItemDto.Notes))]
+    [MapperIgnoreTarget(nameof(PrescriptionItemDto.PrescriptionId))]
+    [MapperIgnoreTarget(nameof(PrescriptionItemDto.Role))]
     private partial PrescriptionItemDto ToPrescriptionItemDto(PrescriptionItem entity);
 
     #endregion
@@ -149,6 +157,11 @@ internal partial class LocalMedicalCaseMapper
     [MapperIgnoreTarget(nameof(MedicalCase.UpdatedBy))]
     [MapperIgnoreTarget(nameof(MedicalCase.RowVersion))]
     [MapperIgnoreTarget(nameof(MedicalCase.IsDeleted))]
+    [MapperIgnoreTarget(nameof(MedicalCase.IsPrinted))]
+    [MapperIgnoreTarget(nameof(MedicalCase.PrintCount))]
+    [MapperIgnoreTarget(nameof(MedicalCase.LastPrintedAt))]
+    [MapperIgnoreTarget(nameof(MedicalCase.PrintVersion))]
+    [MapperIgnoreTarget(nameof(MedicalCase.PrintLogs))]
     public partial MedicalCase ToEntity(MedicalCaseInputDto dto);
 
     #endregion

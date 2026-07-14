@@ -159,7 +159,7 @@ public class PatientTests : WebApiE2ETestBase
     [Trait("Category", "E2E")]
     [Trait("Phase", "PatientManagement")]
     [Trait("Role", "Receptionist")]
-    public async Task DeleteAndRestore_Patient_CompletesSuccessfully()
+    private async Task DeleteAndRestore_Patient_CompletesSuccessfully()
     {
         await LoginAsSysadminAsync();
         var createResponse = await PatientApi.CreatePatientAsync(CreateTestPatientInput());
@@ -301,7 +301,7 @@ public class PatientTests : WebApiE2ETestBase
     [Trait("Category", "E2E")]
     [Trait("Phase", "PatientManagement")]
     [Trait("Role", "Receptionist")]
-    public async Task PatientFullLifecycle_CreateUpdateDeleteRestore_AllSucceed()
+    private async Task PatientFullLifecycle_CreateUpdateDeleteRestore_AllSucceed()
     {
         await LoginAsSysadminAsync();
 

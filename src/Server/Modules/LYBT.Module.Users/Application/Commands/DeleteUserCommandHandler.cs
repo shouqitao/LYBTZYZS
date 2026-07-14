@@ -43,7 +43,7 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Resul
 
         await _eventDispatcher.DispatchAsync(new[]
         {
-            new UserDeletedEvent(user.Id, user.UserName, user.RealName, request.CurrentUserId)
+            new UserDeletedEvent(user.Id, user.UserName ?? string.Empty, user.RealName ?? string.Empty, request.CurrentUserId)
         }, cancellationToken);
 
         return Result.Success();

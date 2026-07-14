@@ -19,6 +19,8 @@ public class SaveMedicalCaseCommandHandler(
     ILogger<SaveMedicalCaseCommandHandler> logger
 ) : IRequestHandler<SaveMedicalCaseCommand, Result<MedicalCaseDetailDto>>
 {
+    private readonly ILogger<SaveMedicalCaseCommandHandler> _logger = logger;
+
     public async Task<Result<MedicalCaseDetailDto>> Handle(
         SaveMedicalCaseCommand request, CancellationToken cancellationToken)
     {
@@ -105,7 +107,7 @@ public class SaveMedicalCaseCommandHandler(
                         Id = Guid.NewGuid(),
                         PrescriptionId = prescription.Id,
                         HerbId = itemDto.HerbId,
-                        HerbName = itemDto.HerbName,
+                        HerbName = itemDto.HerbName ?? string.Empty,
                         Dosage = itemDto.Dosage,
                         Unit = itemDto.Unit,
                         UnitPrice = unitPrice,
@@ -190,7 +192,7 @@ public class SaveMedicalCaseCommandHandler(
                             Id = Guid.NewGuid(),
                             PrescriptionId = prescription.Id,
                             HerbId = itemDto.HerbId,
-                            HerbName = itemDto.HerbName,
+                            HerbName = itemDto.HerbName ?? string.Empty,
                             Dosage = itemDto.Dosage,
                             Unit = itemDto.Unit,
                             UnitPrice = unitPrice,
@@ -227,7 +229,7 @@ public class SaveMedicalCaseCommandHandler(
                             Id = Guid.NewGuid(),
                             PrescriptionId = existing.Id,
                             HerbId = itemDto.HerbId,
-                            HerbName = itemDto.HerbName,
+                            HerbName = itemDto.HerbName ?? string.Empty,
                             Dosage = itemDto.Dosage,
                             Unit = itemDto.Unit,
                             UnitPrice = unitPrice,

@@ -91,7 +91,7 @@ public class CreateMedicalCaseCommandHandler(
                         Id = Guid.NewGuid(),
                         PrescriptionId = prescription.Id,
                         HerbId = itemDto.HerbId,
-                        HerbName = itemDto.HerbName,
+                        HerbName = itemDto.HerbName ?? string.Empty,
                         Dosage = itemDto.Dosage,
                         Unit = itemDto.Unit,
                         UnitPrice = unitPrice,

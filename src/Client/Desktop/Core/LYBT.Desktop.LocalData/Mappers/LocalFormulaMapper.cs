@@ -21,6 +21,7 @@ internal partial class LocalFormulaMapper
     [MapperIgnoreSource(nameof(Formula.UpdatedBy))]
     [MapperIgnoreSource(nameof(Formula.RowVersion))]
     [MapperIgnoreSource(nameof(Formula.IsDeleted))]
+    [MapperIgnoreSource(nameof(Formula.HerbCount))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.IsEnabled))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.Indications))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.Description))]

@@ -57,7 +57,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
 
         await _eventDispatcher.DispatchAsync(new[]
         {
-            new UserCreatedEvent(user.Id, user.UserName, user.RealName, user.Role, request.CurrentUserId)
+            new UserCreatedEvent(user.Id, user.UserName ?? string.Empty, user.RealName ?? string.Empty, user.Role, request.CurrentUserId)
         }, cancellationToken);
 
         return Result<UserDetailDto>.Success(UserMapper.ToDetailDto(user));

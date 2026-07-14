@@ -156,7 +156,7 @@ public class UserTests : WebApiE2ETestBase
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
     [Trait("Role", "Admin")]
-    public async Task DeleteAndRestore_User_CompletesSuccessfully()
+    private async Task DeleteAndRestore_User_CompletesSuccessfully()
     {
         await LoginAsSysadminAsync();
         var createResponse = await UserApi.CreateUserAsync(CreateTestUserInput());
@@ -318,7 +318,7 @@ public class UserTests : WebApiE2ETestBase
     [Trait("Category", "E2E")]
     [Trait("Phase", "UserManagement")]
     [Trait("Role", "Admin")]
-    public async Task UserFullLifecycle_CreateUpdateToggleDeleteRestore_AllSucceed()
+    private async Task UserFullLifecycle_CreateUpdateToggleDeleteRestore_AllSucceed()
     {
         await LoginAsSysadminAsync();
 

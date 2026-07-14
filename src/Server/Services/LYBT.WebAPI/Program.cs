@@ -123,14 +123,14 @@ public class Program
             builder.Host.UseSerilog((context, services, configuration) =>
             {
                 configuration
-                    .MinimumLevel.ControlledBy(LoggingLevelManager.LevelSwitch)
                     .ReadFrom.Configuration(context.Configuration)
                     .ReadFrom.Services(services)
                     .Enrich.FromLogContext()
                     .Enrich.WithMachineName()
                     .Enrich.WithThreadId()
                     .Enrich.WithProperty("Application", "LYBT.WebAPI")
-                    .WithSensitiveDataMasking();
+                    .WithSensitiveDataMasking()
+                    .MinimumLevel.ControlledBy(LoggingLevelManager.LevelSwitch); // 必须在 ReadFrom.Configuration 之后
 
                 // 测试环境跳过 SQL Server Sink，避免 AutoCreateSqlTable 与 EF 迁移冲突
                 if (!context.HostingEnvironment.IsEnvironment("Test"))
@@ -247,10 +247,6 @@ public class Program
 
     /// <summary>
     /// 验证默认密码配置
-    /// 确保必需的密码配置存在，如果缺少则启动失败
-    /// </summary>
-    /// <param name="configuration">应用程序配置</param>
-    /// <exception cref="InvalidOperationException">当缺少必需的密码配置时抛出</exception>
     /// <summary>
     /// 验证默认密码配置
     /// 开发环境：只验证存在和长度 >= 8，且不是常见弱密码

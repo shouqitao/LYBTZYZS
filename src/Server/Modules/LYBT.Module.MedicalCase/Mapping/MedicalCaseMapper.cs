@@ -128,6 +128,7 @@ public partial class MedicalCaseMapper
     [MapperIgnoreTarget(nameof(PrescriptionItemDto.TotalWeight))]
     [MapperIgnoreTarget(nameof(PrescriptionItemDto.Subtotal))]
     [MapperIgnoreTarget(nameof(PrescriptionItemDto.Notes))]
+    [MapperIgnoreTarget(nameof(PrescriptionItemDto.Role))]
     public partial PrescriptionItemDto ToPrescriptionItemDto(PrescriptionItem entity);
 
     /// <summary>

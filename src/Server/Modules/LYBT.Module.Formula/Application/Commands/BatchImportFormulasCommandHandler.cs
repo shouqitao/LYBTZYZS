@@ -80,7 +80,7 @@ public class BatchImportFormulasCommandHandler(
                     }
                     var herbItem = LYBT.Entities.Formulas.FormulaHerbItem.Create(
                         formulaId: formula.Id,
-                        herbName: herbDto.HerbName,
+                        herbName: herbDto.HerbName ?? string.Empty,
                         dosage: herbDto.Dosage,
                         unit: herbDto.Unit ?? "g",
                         herbId: matchedHerb?.Id,

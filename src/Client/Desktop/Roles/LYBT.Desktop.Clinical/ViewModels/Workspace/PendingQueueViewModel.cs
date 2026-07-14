@@ -65,7 +65,7 @@ public class PendingQueueViewModel : ChildViewModelBase
     /// <summary>
     /// Refresh the pending queue.
     /// </summary>
-    public async Task RefreshQueueAsync()
+    public Task RefreshQueueAsync()
     {
         try
         {
@@ -74,10 +74,12 @@ public class PendingQueueViewModel : ChildViewModelBase
             Logger.LogInformation("待诊队列加载完成，共{Count}条", _queue.Count);
             OnPropertyChanged(nameof(Queue));
             OnPropertyChanged(nameof(HasNoPendingCases));
+            return Task.CompletedTask;
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "加载待诊队列失败");
+            return Task.CompletedTask;
         }
         finally
         {

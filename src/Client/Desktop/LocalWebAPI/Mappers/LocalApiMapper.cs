@@ -27,13 +27,13 @@ public static class LocalApiMapper
 
     public static UserListDto ToListDto(this ApplicationUser u) => new()
     {
-        Id = u.Id, UserName = u.UserName, RealName = u.RealName,
+        Id = u.Id, UserName = u.UserName ?? string.Empty, RealName = u.RealName ?? string.Empty,
         Role = u.Role, Status = u.Status
     };
 
     public static UserDetailDto ToDetailDto(this ApplicationUser u) => new()
     {
-        Id = u.Id, UserName = u.UserName, RealName = u.RealName,
+        Id = u.Id, UserName = u.UserName ?? string.Empty, RealName = u.RealName ?? string.Empty,
         Role = u.Role, Status = u.Status
     };
 

@@ -145,9 +145,9 @@ public class FormulasController : BaseApiController
         var clone = new FormulaInputDto
         {
             Name = $"{source.Value.Name} (副本)",
-            Effect = source.Value.Effect,
+            Effect = source.Value.Effect ?? string.Empty,
             Description = source.Value.Description,
-            Usage = source.Value.Usage,
+            Usage = source.Value.Usage ?? string.Empty,
             Property = source.Value.Property,
             Category = source.Value.Category,
             IsShared = false,

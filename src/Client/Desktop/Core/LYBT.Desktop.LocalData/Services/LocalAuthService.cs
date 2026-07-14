@@ -70,6 +70,11 @@ public class LocalAuthService : ILocalAuthService
         }
 
         // 验证密码
+        if (string.IsNullOrEmpty(user.PasswordHash))
+        {
+            _logger.LogWarning("[LocalAuth] 登录失败 - 密码哈希为空: {Username}", username);
+            return null;
+        }
         var verificationResult = PasswordHelper.VerifyPassword(password, user.PasswordHash, user.Role, _logger);
         if (!verificationResult.IsSuccess)
         {
@@ -124,6 +129,11 @@ public class LocalAuthService : ILocalAuthService
         }
 
         // 验证旧密码
+        if (string.IsNullOrEmpty(user.PasswordHash))
+        {
+            _logger.LogWarning("[LocalAuth] 修改密码失败 - 密码哈希为空: {Username}", user.UserName);
+            return false;
+        }
         var verificationResult = PasswordHelper.VerifyPassword(oldPassword, user.PasswordHash, user.Role, _logger);
         if (!verificationResult.IsSuccess)
         {

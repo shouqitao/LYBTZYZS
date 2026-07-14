@@ -31,7 +31,6 @@ namespace LYBT.Desktop.Shell;
 /// <summary>应用程序主入口 - WPF应用程序核心启动器，提供智能模块加载和角色驱动初始化</summary>
 public partial class App : PrismApplication
 {
-    private AppStartupOrchestrator? _orchestrator;
     private static Mutex? _instanceMutex;
     private const string MutexName = "Global\\LYBTZYZS_Shell_Instance";
     private const string MainWindowTitle = "凌隐宝堂中医诊所管理系统";

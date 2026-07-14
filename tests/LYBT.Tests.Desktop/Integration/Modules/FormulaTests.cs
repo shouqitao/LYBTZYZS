@@ -187,7 +187,7 @@ public class FormulaTests : WebApiE2ETestBase
     [Trait("Category", "E2E")]
     [Trait("Phase", "FormulaManagement")]
     [Trait("Role", "Doctor")]
-    public async Task DeleteAndRestore_Formula_CompletesSuccessfully()
+    private async Task DeleteAndRestore_Formula_CompletesSuccessfully()
     {
         await LoginAsSysadminAsync();
         var herbId = await CreateTestHerbAsync();

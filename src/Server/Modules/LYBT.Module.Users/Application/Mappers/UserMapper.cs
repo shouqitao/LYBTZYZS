@@ -8,8 +8,8 @@ public static class UserMapper
     public static UserListDto ToListDto(ApplicationUser entity) => new()
     {
         Id = entity.Id,
-        UserName = entity.UserName,
-        RealName = entity.RealName,
+        UserName = entity.UserName ?? string.Empty,
+        RealName = entity.RealName ?? string.Empty,
         PhoneNumber = entity.PhoneNumber,
         Role = entity.Role,
         Status = entity.Status,
@@ -20,8 +20,8 @@ public static class UserMapper
     public static UserDetailDto ToDetailDto(ApplicationUser entity) => new()
     {
         Id = entity.Id,
-        UserName = entity.UserName,
-        RealName = entity.RealName,
+        UserName = entity.UserName ?? string.Empty,
+        RealName = entity.RealName ?? string.Empty,
         Role = entity.Role,
         Status = entity.Status,
         PhoneNumber = entity.PhoneNumber,

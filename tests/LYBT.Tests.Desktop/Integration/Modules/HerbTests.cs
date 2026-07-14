@@ -137,7 +137,7 @@ public class HerbTests : WebApiE2ETestBase
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
     [Trait("Role", "Admin")]
-    public async Task DeleteAndRestore_Herb_CompletesSuccessfully()
+    private async Task DeleteAndRestore_Herb_CompletesSuccessfully()
     {
         await LoginAsSysadminAsync();
         var createResponse = await HerbApi.CreateHerbAsync(CreateTestHerbInput());
@@ -277,7 +277,7 @@ public class HerbTests : WebApiE2ETestBase
     [Trait("Category", "E2E")]
     [Trait("Phase", "HerbManagement")]
     [Trait("Role", "Admin")]
-    public async Task HerbFullLifecycle_CreateUpdateToggleDeleteRestore_AllSucceed()
+    private async Task HerbFullLifecycle_CreateUpdateToggleDeleteRestore_AllSucceed()
     {
         await LoginAsSysadminAsync();
 

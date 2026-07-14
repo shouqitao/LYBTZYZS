@@ -47,8 +47,8 @@ public class UserRepository : IUserRepository
         {
             var kw = keyword.ToLower();
             query = query.Where(u =>
-                u.UserName.ToLower().Contains(kw) ||
-                u.RealName.ToLower().Contains(kw) ||
+                (u.UserName != null && u.UserName.ToLower().Contains(kw)) ||
+                (u.RealName != null && u.RealName.ToLower().Contains(kw)) ||
                 (u.PhoneNumber != null && u.PhoneNumber.Contains(kw)) ||
                 (u.Email != null && u.Email.ToLower().Contains(kw)));
         }
