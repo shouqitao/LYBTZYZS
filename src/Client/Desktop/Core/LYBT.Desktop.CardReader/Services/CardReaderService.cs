@@ -1,5 +1,6 @@
 using LYBT.Desktop.CardReader.Abstractions;
 using LYBT.Desktop.CardReader.Models;
+using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.CardReader.Services;

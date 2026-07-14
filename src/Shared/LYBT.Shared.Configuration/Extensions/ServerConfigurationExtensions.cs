@@ -71,6 +71,12 @@ public static class ServerConfigurationExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        // Swagger 配置
+        services.AddOptions<SwaggerOptions>()
+            .Bind(configuration.GetSection(SwaggerOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         // LocalJWT 配置
         services.AddOptions<LocalJwtOptions>()
             .Bind(configuration.GetSection(LocalJwtOptions.SectionName))

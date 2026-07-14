@@ -1,4 +1,4 @@
-using LYBT.Desktop.CardReader.Abstractions;
+using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Configuration;
 
 namespace LYBT.Tests.Desktop;

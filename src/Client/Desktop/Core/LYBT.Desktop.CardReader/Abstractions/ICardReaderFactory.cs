@@ -1,3 +1,5 @@
+using LYBT.Shared.Configuration.Options.Client;
+
 namespace LYBT.Desktop.CardReader.Abstractions;
 
 /// <summary>

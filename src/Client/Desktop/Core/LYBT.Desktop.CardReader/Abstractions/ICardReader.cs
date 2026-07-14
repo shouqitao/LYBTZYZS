@@ -1,4 +1,3 @@
-using System.IO;
 using LYBT.Desktop.CardReader.Models;
 
 namespace LYBT.Desktop.CardReader.Abstractions;
@@ -89,51 +88,4 @@ public class CardDetectedEventArgs : EventArgs
 {
     /// <summary>检测到卡片的时间</summary>
     public DateTime DetectedTime { get; init; } = DateTime.UtcNow;
-}
-
-/// <summary>
-/// 读卡器配置选项
-/// PRD-13: 支持从 appsettings.json 的 "CardReader" 节点读取配置
-/// </summary>
-public class CardReaderOptions
-{
-    /// <summary>
-    /// 配置节名称
-    /// </summary>
-    public const string SectionName = "CardReader";
-
-    /// <summary>
-    /// 连接超时时间（毫秒）
-    /// </summary>
-    public int ConnectTimeout { get; set; } = 5000;
-
-    /// <summary>
-    /// 读卡超时时间（毫秒）
-    /// </summary>
-    public int ReadTimeout { get; set; } = 10000;
-
-    /// <summary>
-    /// 自动重连间隔（毫秒）
-    /// </summary>
-    public int ReconnectInterval { get; set; } = 3000;
-
-    /// <summary>
-    /// 是否启用自动重连
-    /// </summary>
-    public bool AutoReconnect { get; set; } = true;
-
-    /// <summary>
-    /// 照片保存目录
-    /// </summary>
-    public string PhotoSaveDirectory { get; set; } = Path.Combine(Path.GetTempPath(), "LYBT_CardPhotos");
-
-    /// <summary>
-    /// USB端口（华大读卡器默认1001）
-    /// </summary>
-    public int UsbPort { get; set; } = 1001;
-
-    /// <summary>
-    /// 串口端口号（1-16，0表示不使用串口）
-    /// </summary>
-    public int SerialPort { get; set; } = 0;
 }

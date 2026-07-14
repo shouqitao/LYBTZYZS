@@ -1,5 +1,6 @@
 using LYBT.Desktop.CardReader.Abstractions;
 using LYBT.Desktop.CardReader.Models;
+using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.CardReader.Adapters;

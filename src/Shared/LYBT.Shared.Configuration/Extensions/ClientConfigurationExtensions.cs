@@ -57,6 +57,12 @@ public static class ClientConfigurationExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        // 读卡器配置 (PRD-13)
+        services.AddOptions<CardReaderOptions>()
+            .Bind(configuration.GetSection(CardReaderOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         return services;
     }
 }

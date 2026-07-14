@@ -62,6 +62,7 @@
 
   <ItemGroup Label="Shared Libraries">
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Configuration\LYBT.Shared.Configuration.csproj" />
   </ItemGroup>
 
   <!-- 原生DLL文件 - 部署时需要确保DLL在输出目录 -->

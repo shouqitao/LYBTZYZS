@@ -2,6 +2,7 @@ using System.IO;
 using LYBT.Desktop.CardReader.Abstractions;
 using LYBT.Desktop.CardReader.Adapters;
 using LYBT.Desktop.CardReader.Native;
+using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.CardReader.Services;
