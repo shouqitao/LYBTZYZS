@@ -61,8 +61,10 @@ namespace LYBT.Desktop.Infrastructure.Services
             
             if (wasAuthenticated)
             {
-                SessionExpired?.Invoke(this, EventArgs.Empty);
+                // 先触发SessionChanged，再触发SessionExpired
+                // 这样订阅者可以先处理会话状态变更，再处理过期逻辑
                 SessionChanged?.Invoke(this, new SessionChangedEventArgs(false));
+                SessionExpired?.Invoke(this, EventArgs.Empty);
             }
         }
 

@@ -35,7 +35,6 @@ public class CoreServicesStartupStep : IStartupStep
     public bool IsRequired => true;
 
     /// <inheritdoc />
-    /// <inheritdoc />
     public Task<StartupStepResult> ExecuteAsync(IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
         progress?.Report("核心服务初始化（已由其他步骤处理）...");
