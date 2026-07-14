@@ -77,7 +77,7 @@ sqlcmd -S "(localdb)\MSSQLLocalDB" -Q "DROP DATABASE IF EXISTS LYBTDesktop"     
 - **DDD**: MedicalCase 唯一聚合根
 - **Dual-Mode**: Remote(port 5000)+Local(LocalDB 5300)，URL 路由切换(`SwitchingApiClient`)；WebAPI 有公网部署需求（印证 D3 B+ 安全方案）
 - **Modular**: Server(`LYBT.Module.*`)/Desktop(`LYBT.Desktop.*`)/Roles(Admin/Clinical/Receptionist/Sysadmin)
-- **sysadmin=独立用户非角色**: `ApplicationUser.IsSysAdmin=true`；默认 `sysadmin/SysAdmin@2026!`、`admin/Admin@123456`（密码从 `appsettings.json:DefaultPasswords`）
+- **sysadmin=独立用户非角色**: `ApplicationUser.IsSysAdmin=true`；启动仅自动创建 `sysadmin/SysAdmin@2026!`（密码从 `appsettings.json:DefaultPasswords`），admin 由 sysadmin 手动创建
 
 **术语**: Consultation=中医诊断｜MedicalCase=医案(非病历)｜Formula=验方｜HerbRole=君臣佐使｜Sysadmin=运维(独立用户)
 

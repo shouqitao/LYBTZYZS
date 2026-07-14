@@ -89,7 +89,7 @@ services.AddSyncModule(configuration);
 dotnet run --project src/Server/Services/LYBT.WebAPI
 
 # Swagger 文档
-# https://localhost:7001/swagger
+# http://localhost:5000/swagger
 
 # 数据库迁移
 dotnet ef database update \
@@ -579,8 +579,8 @@ GET    /api/v1/health/details          [Authorize] 详细健康检查(含数据�
 # 开发环境启动
 dotnet run --project src/Server/Services/LYBT.WebAPI
 
-# Swagger: https://localhost:7001/swagger
-# Health:  https://localhost:7001/health
+# Swagger: http://localhost:5000/swagger
+# Health:  http://localhost:5000/health
 
 # 数据库迁移
 dotnet ef database update \

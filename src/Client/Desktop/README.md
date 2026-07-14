@@ -110,7 +110,7 @@ dotnet run --project src/Client/Desktop/Shell/LYBT.Desktop.Shell.csproj
 ```csharp
 // 注册示例
 services.AddRefitClient<IAuthApi>()
-    .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://localhost:7001"))
+    .ConfigureHttpClient(c => c.BaseAddress = new Uri("http://localhost:5000"))
     .AddHttpMessageHandler<AuthorizationMessageHandler>();
 ```
 

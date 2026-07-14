@@ -208,6 +208,12 @@ public class Program
                 }
             }
 
+            // Kestrel 限制：最大请求体 10MB（原 appsettings.json Kestrel.Limits 迁移至此）
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.Limits.MaxRequestBodySize = 10 * 1024 * 1024;
+            });
+
             var app = builder.Build();
 
             // 初始化应用服务

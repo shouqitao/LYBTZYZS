@@ -97,7 +97,7 @@
 | # | 类型 | 问题 | 代码位置 | 修复方向 |
 |---|------|------|---------|---------|
 | **K4** | 💻 | **生产门控失效**：`IdentitySeedData.SeedRolesAndAdminAsync` 不读 `SystemAdminOptions.AllowAutoCreateInProduction`/`InitialSetupToken`，也无 `IHostEnvironment` 判定，直接用明文 `SysAdmin@2026!` 创建 sysadmin。生产环境 sysadmin 默认密码裸奔 | `IdentitySeedData.cs` | 注入 `IDefaultPasswordService`+`IHostEnvironment`，复用 `GetOrGeneratePassword`/`ValidateSetupToken` |
-| **K5** | 💻 | **种子矛盾**：`IdentitySeedData` 同时种子 admin + sysadmin，违反"只种子 sysadmin"设计（admin 应由 US-SHELL-011 向导 Step4 创建） | `IdentitySeedData.cs:26-27` | 删 admin 种子，admin 改由向导创建 |
+| **K5** | ✅ | **已修复**：`IdentitySeedData` 已移除 admin 种子，仅创建 sysadmin。admin 改由向导创建 | `IdentitySeedData.cs` | 已完成 |
 
 ### P1 严重（角色边界正确性）
 

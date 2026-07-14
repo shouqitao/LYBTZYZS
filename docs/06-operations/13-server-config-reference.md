@@ -97,7 +97,7 @@ scp -P 5555 <file> player@60.190.215.86:<path>
 
 | 错误 | 原因 | 解决 |
 |------|------|------|
-| HTTPS endpoint 配置失败 | appsettings.json 含 HTTPS 配置 | 移除 Kestrel.Endpoints.Https |
+| 端口覆盖警告 | launchSettings.json 与 appsettings.json Kestrel 配置冲突 | 端口统一由 launchSettings.json 管理，appsettings.json 不再配置 Kestrel.Endpoints |
 | 密码不符合安全策略 | Production 使用环境变量占位符 | 写入实际密码 |
 | Address already in use | 端口被占用 | 杀掉旧进程 |
 | dotnet: command not found | PATH 未设置 | 使用完整路径 /home/player/.dotnet/dotnet |

@@ -24,7 +24,6 @@ public static class IdentitySeedData
         }
 
         await EnsureUserAsync(userManager, "sysadmin", "系统运维", "sysadmin@lybtzyzs.local", passwordOptions.SysAdminPassword, "SuperAdmin", isSysAdmin: true);
-        await EnsureUserAsync(userManager, "admin", "系统管理员", "admin@lybtzyzs.local", passwordOptions.AdminPassword, "Admin", isSysAdmin: false);
     }
 
     private static async Task EnsureUserAsync(

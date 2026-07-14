@@ -66,7 +66,7 @@ sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局
 - **不参与常规权限层级**：绕过 `PermissionLevel` 检查，可管理任何用户
 - **不可混淆**：sysadmin 是独立用户（`IsSysAdmin=true` + SuperAdmin 角色双机制并存）；admin 是业务管理员角色用户
 - **只种子 sysadmin**（v1.0 设计）：系统启动仅自动创建 sysadmin，首个 admin 由 sysadmin 在初始化向导中手动创建
-  - ⚠️ 代码待改：`IdentitySeedData.cs:26-27` 仍同时种子 admin（Phase② TODO）
+  - ✅ 已修：`IdentitySeedData.cs` 已移除 admin 种子，仅创建 sysadmin
 - **首登强制改密**：`ForceChangeOnFirstLogin=true`，sysadmin 首次登录后必须修改默认密码
   - ✅ 已修：appsettings.json 值已改为 `true`，`EmbeddedLocalWebApiService` 从 config 读
 
@@ -99,7 +99,7 @@ sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局
 | `ApplicationUser.IsSysAdmin` 布尔字段 | ✅ | `Users/ApplicationUser.cs` |
 | `CanManageUser` 使用 `IsSysAdmin` 判断 | ✅ | `UsersController.cs` |
 | JWT Claims 包含 `IsSysAdmin=true` | ✅ | Auth 模块 |
-| IdentitySeedData 种子 sysadmin | ✅ | `IdentitySeedData.cs:26`（但目前同时种子 admin，v1.0 改为只种子 sysadmin） |
+| IdentitySeedData 种子 sysadmin | ✅ | `IdentitySeedData.cs:26`（已移除 admin 种子，仅创建 sysadmin） |
 | **`SystemAdminOptions`** | ✅ | `Shared.Configuration/Options/Server/SystemAdminOptions.cs` — 含 `AutoCreateOnStartup`(true)、`AllowAutoCreateInProduction`(false)、`InitialSetupToken`(生产环境令牌)、`SessionTimeoutMinutes`(240) |
 | **`DefaultPasswordService`** | ✅ 服务端已实现 | `Infrastructure/Configuration/Services/DefaultPasswordService.cs` — 含 `GetOrGeneratePassword()`（生产环境随机密码）、`ValidateSetupToken()`（加密令牌验证）、`ShouldForcePasswordChange()` |
 | `ForceChangeOnFirstLogin` | ⚠️ `DefaultPasswordOptions` 类默认 `true`，但 `appsettings.json` 覆盖为 `false`（v1.0 已改为 `true`） | `DefaultPasswordOptions.cs:36` |

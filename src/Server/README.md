@@ -64,7 +64,7 @@ Shared.Models (DTO契约) 被 Modules 和 WebAPI 引用
 
 ```bash
 dotnet run --project src/Server/Services/LYBT.WebAPI
-# Swagger: https://localhost:7001/swagger
+# Swagger: http://localhost:5000/swagger
 ```
 
 ## 更新记录
@@ -127,7 +127,7 @@ dotnet ef database update \
 
 # 运行
 dotnet run --project src/Server/Services/LYBT.WebAPI
-# Swagger: https://localhost:7001/swagger
+# Swagger: http://localhost:5000/swagger
 
 # 测试 (Testing Trophy: 真实 SQL Server + Respawn, 零 mock)
 dotnet test tests/LYBT.Tests.Server/
