@@ -35,9 +35,6 @@ namespace LYBT.Desktop.Clinical
             containerRegistry.RegisterForNavigation<Views.FormulaManagementView>();
             containerRegistry.RegisterForNavigation<Views.PatientManagementView>();
             containerRegistry.RegisterForNavigation<Views.MedicalCaseManagementView>();
-            
-            // 注册PendingQueueView
-            containerRegistry.RegisterForNavigation<Views.PendingQueueView>();
         }
     }
 }
