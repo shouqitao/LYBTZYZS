@@ -2,9 +2,11 @@ using FluentValidation;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Validators.Auth;
+using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Module.Auth
 {
@@ -20,8 +22,11 @@ namespace LYBT.Module.Auth
         public static IServiceCollection AddAuthModule(this IServiceCollection services, IConfiguration configuration)
         {
             // 注册 DbContext（模块级）
-            services.AddDbContext<Infrastructure.AuthDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<Infrastructure.AuthDbContext>((sp, options) =>
+            {
+                var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+                options.UseSqlServer(dbOptions.ConnectionString);
+            });
 
             // 注册仓储
             services.AddScoped<Interfaces.IAuthSessionRepository, Infrastructure.AuthSessionRepository>();

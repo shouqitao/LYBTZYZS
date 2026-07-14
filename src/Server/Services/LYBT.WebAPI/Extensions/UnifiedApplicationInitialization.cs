@@ -1,3 +1,6 @@
+using LYBT.Shared.Configuration.Options.Server;
+using Microsoft.Extensions.Options;
+
 namespace LYBT.WebAPI.Extensions;
 
 /// <summary>
@@ -74,11 +77,10 @@ public static class UnifiedApplicationInitialization
     {
         var logger = scope.ServiceProvider.GetService<ILogger<Program>>();
 
-        // =========== 直接使用IConfiguration验证 ===========
+        // =========== 使用 IOptions<DatabaseOptions> 验证 ===========
         try
         {
-            // 直接使用IConfiguration进行配置验证
-            var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+            var dbOptions = scope.ServiceProvider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
 
             // 基本配置验证
             logger?.LogInformation(" 配置服务初始化完成");
@@ -93,8 +95,15 @@ public static class UnifiedApplicationInitialization
             // 验证关键配置
             try
             {
-                var _ = GetConnectionString(configuration);
-                logger?.LogInformation(" 数据库连接配置验证通过");
+                var connectionString = dbOptions.ConnectionString;
+                if (string.IsNullOrEmpty(connectionString))
+                {
+                    logger?.LogWarning(" 数据库连接字符串未配置");
+                }
+                else
+                {
+                    logger?.LogInformation(" 数据库连接配置验证通过");
+                }
             }
             catch (Exception)
             {
@@ -233,22 +242,6 @@ public static class UnifiedApplicationInitialization
         }
     }
 
-    /// <summary>
-    /// 获取数据库连接字符串 - 直接使用IConfiguration
-    /// 优先级: CONNECTION_STRING环境变量 -> 配置文件
-    /// </summary>
-    private static string GetConnectionString(IConfiguration configuration, string name = "DefaultConnection")
-    {
-        // 优先使用环境变量
-        var envConnectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
-        if (!string.IsNullOrEmpty(envConnectionString))
-        {
-            return envConnectionString;
-        }
-
-        // 使用配置文件
-        return configuration.GetConnectionString(name) ?? string.Empty;
-    }
 }
 
 

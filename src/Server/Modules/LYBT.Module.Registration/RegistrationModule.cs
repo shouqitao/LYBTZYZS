@@ -6,7 +6,6 @@ using LYBT.Module.Registration.Application.Validators;
 using LYBT.Module.Registration.Infrastructure;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Module.Registration.Services;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Registration;
@@ -19,7 +18,7 @@ public static class RegistrationModule
     /// <summary>
     /// 注册挂号模块服务
     /// </summary>
-    public static IServiceCollection AddRegistrationModule(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddRegistrationModule(this IServiceCollection services)
     {
         // 注册仓储（使用AppDbContext）
         services.AddScoped<IRegistrationRepository, Infrastructure.RegistrationRepository>();

@@ -7,7 +7,6 @@ using LYBT.Module.Patients.Infrastructure;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Services;
 using LYBT.Shared.Validators.Patients;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Patients
@@ -20,7 +19,7 @@ namespace LYBT.Module.Patients
         /// <summary>
         /// 注册患者模块服务
         /// </summary>
-        public static IServiceCollection AddPatientsModule(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddPatientsModule(this IServiceCollection services)
         {
             // 注册仓储（使用AppDbContext）
             services.AddScoped<IPatientRepository, LYBT.Module.Patients.Infrastructure.PatientRepository>();

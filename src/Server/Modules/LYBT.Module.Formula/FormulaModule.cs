@@ -3,9 +3,11 @@ using LYBT.Module.Formulas.Interfaces;
 using LYBT.Module.Formulas.Repositories;
 using LYBT.Module.Formulas.Services;
 using LYBT.Shared.Validators.Formula;
+using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Module.Formulas
 {
@@ -36,8 +38,11 @@ namespace LYBT.Module.Formulas
         private static IServiceCollection AddFormulaModuleDDD(this IServiceCollection services, IConfiguration configuration)
         {
             // Infrastructure层
-            services.AddDbContext<Infrastructure.FormulaDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<Infrastructure.FormulaDbContext>((sp, options) =>
+            {
+                var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+                options.UseSqlServer(dbOptions.ConnectionString);
+            });
             services.AddScoped<Interfaces.IFormulaRepository, Infrastructure.FormulaRepository>();
 
             // Application层 - MediatR

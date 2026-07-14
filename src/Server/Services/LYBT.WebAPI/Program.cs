@@ -9,6 +9,7 @@
 using System.Text;
 using DotNetEnv;
 using LYBT.Shared.Configuration.Extensions;
+using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Logging.Extensions;
 using LYBT.Shared.Logging.Management;
 using LYBT.Shared.Utilities.Security;
@@ -18,6 +19,7 @@ using LYBT.Infrastructure.Configuration.Validation;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Events;
 using LYBT.Module.Users.Services;
@@ -135,8 +137,9 @@ public class Program
                 // 测试环境跳过 SQL Server Sink，避免 AutoCreateSqlTable 与 EF 迁移冲突
                 if (!context.HostingEnvironment.IsEnvironment("Test"))
                 {
+                    var dbOptions = services.GetRequiredService<IOptions<DatabaseOptions>>().Value;
                     configuration.AddMSSqlServerSinkWithColumnOptions(
-                        context.Configuration.GetConnectionString("DefaultConnection"));
+                        dbOptions.ConnectionString);
                 }
             });
 

@@ -47,11 +47,11 @@ public static class LocalWebApiProgram
         // 注册模块 Service（与远程 WebAPI 使用相同的 Service/Repository 层）
         builder.Services.AddAuthModule(builder.Configuration);
         builder.Services.AddUsersModule(builder.Configuration);
-        builder.Services.AddPatientsModule(builder.Configuration);
+        builder.Services.AddPatientsModule();
         builder.Services.AddHerbsModule(builder.Configuration);
         builder.Services.AddFormulaModule(builder.Configuration);
         builder.Services.AddMedicalCaseModule();
-        builder.Services.AddRegistrationModule(builder.Configuration);
+        builder.Services.AddRegistrationModule();
         builder.Services.AddReportsModule(builder.Configuration);
 
         builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>

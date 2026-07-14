@@ -1,4 +1,6 @@
+using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.WebAPI.HealthCheck;
 
@@ -9,14 +11,14 @@ namespace LYBT.WebAPI.HealthCheck;
 public class DatabaseStartupDiagnostics : IHostedService
 {
     private readonly ILogger<DatabaseStartupDiagnostics> _logger;
-    private readonly IConfiguration _configuration;
+    private readonly DatabaseOptions _dbOptions;
 
     public DatabaseStartupDiagnostics(
         ILogger<DatabaseStartupDiagnostics> logger,
-        IConfiguration configuration)
+        IOptions<DatabaseOptions> dbOptions)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _dbOptions = dbOptions?.Value ?? throw new ArgumentNullException(nameof(dbOptions));
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -26,7 +28,7 @@ public class DatabaseStartupDiagnostics : IHostedService
         try
         {
             // 1. 读取连接字符串
-            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            var connectionString = _dbOptions.ConnectionString;
             if (string.IsNullOrEmpty(connectionString))
             {
                 _logger.LogError(" [DatabaseStartupDiagnostics] 未找到连接字符串 'ConnectionStrings:DefaultConnection'");

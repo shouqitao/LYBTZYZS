@@ -99,13 +99,13 @@ public static class ServiceCollectionExtensions
 
         // 2. 挂号模块 - Sprint 2
         // 必须在 Users 和 MedicalCase 之前注册，因为 UserService 和 MedicalCaseCommandService 依赖 IRegistrationRepository
-        services.AddRegistrationModule(configuration);
+        services.AddRegistrationModule();
 
         // 3. 用户模块
         services.AddUsersModule(configuration);
 
         // 4. 患者模块
-        services.AddPatientsModule(configuration);
+        services.AddPatientsModule();
 
         // 5. 中药模块
         services.AddHerbsModule(configuration);

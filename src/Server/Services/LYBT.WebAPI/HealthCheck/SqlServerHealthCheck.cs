@@ -1,5 +1,7 @@
+using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.WebAPI.HealthCheck;
 
@@ -9,11 +11,11 @@ namespace LYBT.WebAPI.HealthCheck;
 /// </summary>
 public class SqlServerHealthCheck : IHealthCheck
 {
-    private readonly IConfiguration _configuration;
+    private readonly DatabaseOptions _dbOptions;
 
-    public SqlServerHealthCheck(IConfiguration configuration)
+    public SqlServerHealthCheck(IOptions<DatabaseOptions> dbOptions)
     {
-        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _dbOptions = dbOptions?.Value ?? throw new ArgumentNullException(nameof(dbOptions));
     }
 
     public async Task<HealthCheckResult> CheckHealthAsync(
@@ -22,7 +24,7 @@ public class SqlServerHealthCheck : IHealthCheck
     {
         try
         {
-            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            var connectionString = _dbOptions.ConnectionString;
             if (string.IsNullOrEmpty(connectionString))
             {
                 return HealthCheckResult.Unhealthy(

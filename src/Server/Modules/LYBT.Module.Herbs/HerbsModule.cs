@@ -7,9 +7,11 @@ using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Repositories;
 using LYBT.Module.Herbs.Services;
 using LYBT.Shared.Validators.Herbs;
+using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Module.Herbs
 {
@@ -24,8 +26,11 @@ namespace LYBT.Module.Herbs
         public static IServiceCollection AddHerbsModule(this IServiceCollection services, IConfiguration configuration)
         {
             // 注册 DbContext（模块级）
-            services.AddDbContext<HerbsDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<HerbsDbContext>((sp, options) =>
+            {
+                var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+                options.UseSqlServer(dbOptions.ConnectionString);
+            });
 
             // 注册仓储（Legacy）
             services.AddScoped<IHerbRepositoryLegacy, LYBT.Module.Herbs.Repositories.HerbRepository>();

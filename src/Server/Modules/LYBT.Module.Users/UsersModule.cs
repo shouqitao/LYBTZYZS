@@ -6,9 +6,11 @@ using LYBT.Module.Users.Infrastructure;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Services;
 using LYBT.Shared.Validators.Users;
+using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Module.Users
 {
@@ -24,8 +26,11 @@ namespace LYBT.Module.Users
         public static IServiceCollection AddUsersModule(this IServiceCollection services, IConfiguration configuration)
         {
             // 注册 DbContext（模块级）
-            services.AddDbContext<UsersDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<UsersDbContext>((sp, options) =>
+            {
+                var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+                options.UseSqlServer(dbOptions.ConnectionString);
+            });
 
             // 注册新架构：IUserRepository
             services.AddScoped<IUserRepository, UserRepository>();
