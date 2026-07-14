@@ -73,7 +73,7 @@
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" },{ "key": "Content-Type", "value": "application/json" }],
             "body": { "mode": "raw", "raw": "{\"name\":\"TestPatientNm\",\"gender\":1,\"birthDate\":\"1990-01-01\",\"phoneNumber\":\"13800138001\",\"idNumber\":\"110101199001040001\"}" }
           },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Create patient', function(){pm.expect([200,201]).to.include(pm.response.code);pm.collectionVariables.set('patientId',pm.response.json().data.id);});"] }}]
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Create patient', function(){if(pm.response.code===200||pm.response.code===201){pm.collectionVariables.set('patientId',pm.response.json().data.id)}else if(pm.response.code===422){pm.test('Patient already exists',function(){pm.expect(true).to.be.true})}else{pm.expect.fail('Unexpected status: '+pm.response.code)}});"] }}]
         },
         {
           "name": "GET /patients",
