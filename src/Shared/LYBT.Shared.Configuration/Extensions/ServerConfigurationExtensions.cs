@@ -71,6 +71,31 @@ public static class ServerConfigurationExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        // LocalJWT 配置
+        services.AddOptions<LocalJwtOptions>()
+            .Bind(configuration.GetSection(LocalJwtOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        // CORS 配置 (支持热更新，不使用 ValidateOnStart)
+        services.AddOptions<CorsOptions>()
+            .Bind(configuration.GetSection(CorsOptions.SectionName))
+            .ValidateDataAnnotations();
+
+        // Desktop 更新配置
+        services.AddOptions<DesktopUpdateOptions>()
+            .Bind(configuration.GetSection(DesktopUpdateOptions.SectionName))
+            .ValidateDataAnnotations();
+
+        // 应用信息配置
+        services.AddOptions<AppInfoOptions>()
+            .Bind(configuration.GetSection(AppInfoOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        // 注册 LocalJwt 验证器
+        services.AddSingleton<IValidateOptions<LocalJwtOptions>, LocalJwtOptionsValidator>();
+
         return services;
     }
 }

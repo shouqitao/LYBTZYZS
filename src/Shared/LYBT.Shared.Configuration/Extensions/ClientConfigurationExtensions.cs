@@ -51,6 +51,12 @@ public static class ClientConfigurationExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        // 离线模式配置
+        services.AddOptions<OfflineModeOptions>()
+            .Bind(configuration.GetSection(OfflineModeOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         return services;
     }
 }

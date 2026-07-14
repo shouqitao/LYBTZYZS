@@ -38,6 +38,10 @@ public class ConfigurationLoadingTests
         serviceProvider.GetService<IOptions<SystemAdminOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<LoggingOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<MemoryCacheOptions>>().Should().NotBeNull();
+        serviceProvider.GetService<IOptions<LocalJwtOptions>>().Should().NotBeNull();
+        serviceProvider.GetService<IOptions<CorsOptions>>().Should().NotBeNull();
+        serviceProvider.GetService<IOptions<DesktopUpdateOptions>>().Should().NotBeNull();
+        serviceProvider.GetService<IOptions<AppInfoOptions>>().Should().NotBeNull();
     }
 
     [Fact]
@@ -88,6 +92,7 @@ public class ConfigurationLoadingTests
         serviceProvider.GetService<IOptions<ClientSessionOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<ClinicSettingsOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<FeatureToggleOptions>>().Should().NotBeNull();
+        serviceProvider.GetService<IOptions<OfflineModeOptions>>().Should().NotBeNull();
     }
 
     [Fact]
@@ -273,6 +278,134 @@ public class ConfigurationLoadingTests
 
     #endregion
 
+    #region LocalJwtOptions 验证器测试
+
+    [Fact]
+    public void ServerConfiguration_RegistersIValidateOptions_ForLocalJwtOptions()
+    {
+        // Arrange
+        var configuration = CreateServerConfiguration();
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddLybtServerConfiguration(configuration);
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert - IValidateOptions<LocalJwtOptions> 应注册为 LocalJwtOptionsValidator
+        var validators = serviceProvider.GetServices<IValidateOptions<LocalJwtOptions>>().ToList();
+        validators.Should().ContainSingle(v => v is LocalJwtOptionsValidator);
+    }
+
+    [Fact]
+    public void LocalJwtOptionsValidator_InvalidBase64Key_FailsValidation()
+    {
+        // Arrange
+        var validator = new LocalJwtOptionsValidator();
+        var options = new LocalJwtOptions { SecretKey = "not-valid-base64!!!" };
+
+        // Act
+        var result = validator.Validate(null, options);
+
+        // Assert
+        result.Succeeded.Should().BeFalse();
+        result.Failures.Should().Contain(f => f.Contains("Base64"));
+    }
+
+    [Fact]
+    public void LocalJwtOptionsValidator_ShortKey_FailsValidation()
+    {
+        // Arrange
+        var validator = new LocalJwtOptionsValidator();
+        var options = new LocalJwtOptions { SecretKey = "c2hvcnQ=" }; // "short" in Base64, 5 bytes
+
+        // Act
+        var result = validator.Validate(null, options);
+
+        // Assert
+        result.Succeeded.Should().BeFalse();
+        result.Failures.Should().Contain(f => f.Contains("32 字节"));
+    }
+
+    [Fact]
+    public void LocalJwtOptionsValidator_ValidKey_PassesValidation()
+    {
+        // Arrange
+        var validator = new LocalJwtOptionsValidator();
+        var options = new LocalJwtOptions
+        {
+            SecretKey = "J4CM3t5EsIA9COGVMpQJoAHfX/mgeIbKxrlbXNKfv34T6AGxRnD/2fRJmh932xWypxhjl0nm7whrsdK9PcY9fw=="
+        };
+
+        // Act
+        var result = validator.Validate(null, options);
+
+        // Assert
+        result.Succeeded.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region 新增 Options 默认值测试
+
+    [Fact]
+    public void LocalJwtOptions_DefaultValues_AreCorrect()
+    {
+        var options = new LocalJwtOptions();
+        options.Issuer.Should().Be("LYBT-LocalWebAPI");
+        options.Audience.Should().Be("LYBT-Desktop");
+        options.ExpirationMinutes.Should().Be(60);
+    }
+
+    [Fact]
+    public void CorsOptions_DefaultValues_AreCorrect()
+    {
+        var options = new CorsOptions();
+        options.AllowedOrigins.Should().BeEmpty();
+        options.AllowCredentials.Should().BeFalse();
+        options.PreflightMaxAgeSeconds.Should().Be(86400);
+    }
+
+    [Fact]
+    public void DesktopUpdateOptions_DefaultValues_AreCorrect()
+    {
+        var options = new DesktopUpdateOptions();
+        options.Enabled.Should().BeFalse();
+        options.CheckIntervalMinutes.Should().Be(60);
+        options.DownloadBaseUrl.Should().BeNull();
+    }
+
+    [Fact]
+    public void OfflineModeOptions_DefaultValues_AreCorrect()
+    {
+        var options = new OfflineModeOptions();
+        options.Enabled.Should().BeFalse();
+        options.LocalApiBaseUrl.Should().Be("http://localhost:5300");
+        options.AutoSwitchToLocal.Should().BeTrue();
+        options.HealthCheckIntervalSeconds.Should().Be(30);
+        options.RetryCountBeforeSwitch.Should().Be(3);
+    }
+
+    [Fact]
+    public void AppInfoOptions_DefaultValues_AreCorrect()
+    {
+        var options = new AppInfoOptions();
+        options.Name.Should().Be("LYBTZYZS");
+        options.Version.Should().Be("1.0.0");
+        options.Environment.Should().Be("Development");
+    }
+
+    [Fact]
+    public void AllNewOptions_SectionNameConstants_AreCorrect()
+    {
+        LocalJwtOptions.SectionName.Should().Be("LocalJwt");
+        CorsOptions.SectionName.Should().Be("Cors");
+        DesktopUpdateOptions.SectionName.Should().Be("DesktopUpdate");
+        OfflineModeOptions.SectionName.Should().Be("OfflineMode");
+        AppInfoOptions.SectionName.Should().Be("App");
+    }
+
+    #endregion
+
     #region 辅助方法
 
     private static IConfiguration CreateServerConfiguration()
@@ -313,7 +446,26 @@ public class ConfigurationLoadingTests
 
             // MemoryCache 配置
             ["MemoryCache:SlidingExpirationMinutes"] = "30",
-            ["MemoryCache:AbsoluteExpirationMinutes"] = "60"
+            ["MemoryCache:AbsoluteExpirationMinutes"] = "60",
+
+            // LocalJwt 配置
+            ["LocalJwt:SecretKey"] = "J4CM3t5EsIA9COGVMpQJoAHfX/mgeIbKxrlbXNKfv34T6AGxRnD/2fRJmh932xWypxhjl0nm7whrsdK9PcY9fw==",
+            ["LocalJwt:Issuer"] = "LYBT-LocalWebAPI",
+            ["LocalJwt:Audience"] = "LYBT-Desktop",
+            ["LocalJwt:ExpirationMinutes"] = "60",
+
+            // Cors 配置
+            ["Cors:AllowedOrigins:0"] = "https://localhost:5001",
+            ["Cors:AllowCredentials"] = "true",
+
+            // DesktopUpdate 配置
+            ["DesktopUpdate:Enabled"] = "true",
+            ["DesktopUpdate:CheckIntervalMinutes"] = "60",
+
+            // AppInfo 配置
+            ["App:Name"] = "LYBTZYZS",
+            ["App:Version"] = "1.0.0",
+            ["App:Environment"] = "Development"
         };
 
         return new ConfigurationBuilder()
@@ -349,7 +501,14 @@ public class ConfigurationLoadingTests
             ["FeatureToggles:ConsultationCreate"] = "true",
             ["FeatureToggles:PrescriptionCreate"] = "false",
             ["FeatureToggles:DuplicateHerbMergeStrategy"] = "Max",
-            ["FeatureToggles:OverwriteConflicts"] = "false"
+            ["FeatureToggles:OverwriteConflicts"] = "false",
+
+            // OfflineMode 配置
+            ["OfflineMode:Enabled"] = "true",
+            ["OfflineMode:LocalApiBaseUrl"] = "http://localhost:5300",
+            ["OfflineMode:AutoSwitchToLocal"] = "true",
+            ["OfflineMode:HealthCheckIntervalSeconds"] = "30",
+            ["OfflineMode:RetryCountBeforeSwitch"] = "3"
         };
 
         return new ConfigurationBuilder()
