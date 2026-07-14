@@ -1,5 +1,10 @@
 # 测试清理合并实施计划
 
+> [!NOTE]
+> 此文档可能不反映当前实现。
+> 请参阅最终报告了解最新状态：
+> [Final Report](../reports/test-cleanup.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use compose:subagent (recommended) or compose:execute to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 清理冗余的 C# 集成测试（已被 Newman API 测试覆盖），保留单元测试、架构测试和必要的集成测试。
