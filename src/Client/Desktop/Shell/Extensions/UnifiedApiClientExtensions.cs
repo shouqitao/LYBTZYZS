@@ -17,8 +17,10 @@ using Prism.DryIoc;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Http;
+using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Prism.Ioc;
 using Refit;
 
@@ -69,8 +71,9 @@ public static class UnifiedApiClientExtensions
             var tokenStorage = container.Resolve<ITokenStorageService>();
             var credentialVault = container.Resolve<ICredentialVault>();
 
+            var apiClientOptions = Options.Create(apiOptions);
             var tokenRefreshHandler = new TokenRefreshHandler(
-                tokenStorage, credentialVault, configuration,
+                tokenStorage, credentialVault, apiClientOptions,
                 container.Resolve<ILogger<TokenRefreshHandler>>(),
                 userActivityState: null);
             tokenRefreshHandler.InnerHandler = httpHandler;

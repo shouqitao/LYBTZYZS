@@ -66,7 +66,16 @@ public static class LocalWebApiProgram
         .AddEntityFrameworkStores<AppDbContext>()
         .AddDefaultTokenProviders();
 
-        LocalJwtConfig.ConfigureServices(builder.Services, builder.Configuration);
+        // Register LocalJwtOptions from configuration
+        builder.Services.AddOptions<LYBT.Shared.Configuration.Options.Server.LocalJwtOptions>()
+            .Bind(builder.Configuration.GetSection(LYBT.Shared.Configuration.Options.Server.LocalJwtOptions.SectionName))
+            .ValidateDataAnnotations();
+
+        var localJwtOptions = builder.Configuration
+            .GetSection(LYBT.Shared.Configuration.Options.Server.LocalJwtOptions.SectionName)
+            .Get<LYBT.Shared.Configuration.Options.Server.LocalJwtOptions>()
+            ?? new LYBT.Shared.Configuration.Options.Server.LocalJwtOptions();
+        LocalJwtConfig.ConfigureServices(builder.Services, localJwtOptions);
 
         builder.Services.AddRateLimiter(options =>
         {

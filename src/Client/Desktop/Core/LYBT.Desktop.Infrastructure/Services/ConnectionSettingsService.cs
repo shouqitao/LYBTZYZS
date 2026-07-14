@@ -5,8 +5,9 @@
 using System.IO;
 using System.Text.Json.Nodes;
 using LYBT.Desktop.Contracts.Services;
-using Microsoft.Extensions.Configuration;
+using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Desktop.Infrastructure.Services;
 
@@ -28,12 +29,13 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
     private string _preferredMode;
 
     public ConnectionSettingsService(
-        IConfiguration configuration,
+        IOptions<ApiClientOptions> apiOptions,
         ILogger<ConnectionSettingsService> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        var baseUrl = configuration["ApiClient:BaseUrl"];
+        var options = apiOptions.Value;
+        var baseUrl = options.BaseUrl;
         if (string.IsNullOrWhiteSpace(baseUrl))
         {
             baseUrl = LocalUrlConstant;
@@ -41,9 +43,9 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
         }
         _currentUrl = baseUrl;
 
-        _remoteUrl = configuration["ApiClient:RemoteUrl"] ?? string.Empty;
+        _remoteUrl = options.RemoteUrl ?? string.Empty;
 
-        var preferred = configuration["ApiClient:PreferredMode"];
+        var preferred = options.PreferredMode;
         _preferredMode = string.IsNullOrWhiteSpace(preferred) ? "Local" : preferred;
 
         _settingsFilePath = Path.Combine(

@@ -7,8 +7,8 @@ using LYBT.Desktop.Foundation.Security;
 using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Prism.Events;
 
 namespace LYBT.Desktop.Foundation.Http
@@ -26,7 +26,7 @@ namespace LYBT.Desktop.Foundation.Http
         private readonly ICredentialVault _credentialVault;
         private readonly IUserActivityState? _userActivityState;
         private readonly ILogger<TokenRefreshHandler> _logger;
-        private readonly IConfiguration _configuration;
+        private readonly ApiClientOptions _apiOptions;
         private readonly IEventAggregator? _eventAggregator;
         private readonly HttpClient _refreshHttpClient; // 专用HttpClient，避免循环依赖
         private readonly SemaphoreSlim _refreshSemaphore = new SemaphoreSlim(1, 1);
@@ -46,24 +46,21 @@ namespace LYBT.Desktop.Foundation.Http
         public TokenRefreshHandler(
             ITokenStorageService tokenStorage,
             ICredentialVault credentialVault,
-            IConfiguration configuration,
+            IOptions<ApiClientOptions> apiOptions,
             ILogger<TokenRefreshHandler> logger,
             IUserActivityState? userActivityState = null,
             IEventAggregator? eventAggregator = null)
         {
             _tokenStorage = tokenStorage ?? throw new ArgumentNullException(nameof(tokenStorage));
             _credentialVault = credentialVault ?? throw new ArgumentNullException(nameof(credentialVault));
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _apiOptions = apiOptions?.Value ?? throw new ArgumentNullException(nameof(apiOptions));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _userActivityState = userActivityState; // 可选依赖，启动时可能尚未注册
             _eventAggregator = eventAggregator;
 
-            // unify-configuration-system: 使用强类型配置
             // 创建专用HttpClient用于RefreshToken调用（不包含TokenRefreshHandler，避免循环依赖）
-            var apiOptions = new ApiClientOptions();
-            _configuration.GetSection(ApiClientOptions.SectionName).Bind(apiOptions);
-            var apiBaseUrl = apiOptions.BaseUrl;
-            var ignoreSslErrors = apiOptions.IgnoreSslErrors;
+            var apiBaseUrl = _apiOptions.BaseUrl;
+            var ignoreSslErrors = _apiOptions.IgnoreSslErrors;
 
             var httpHandler = new HttpClientHandler();
             if (ignoreSslErrors)

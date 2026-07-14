@@ -1,6 +1,7 @@
 using LYBT.Desktop.Foundation.HealthCheck;
-using Microsoft.Extensions.Configuration;
+using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Desktop.Foundation.Application
 {
@@ -55,14 +56,13 @@ namespace LYBT.Desktop.Foundation.Application
         /// </summary>
         public ApplicationStateService(
             IApiHealthCheckService? apiHealthCheckService,
-            IConfiguration configuration,
+            IOptions<ApiClientOptions> apiOptions,
             ILogger<ApplicationStateService> logger)
         {
             _apiHealthCheckService = apiHealthCheckService;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            // 从配置文件读取API基础URL
-            _apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+            _apiBaseUrl = apiOptions?.Value?.BaseUrl ?? "http://localhost:5000";
 
             _logger.LogInformation("ApplicationStateService初始化，API基础URL: {ApiBaseUrl}", _apiBaseUrl);
         }

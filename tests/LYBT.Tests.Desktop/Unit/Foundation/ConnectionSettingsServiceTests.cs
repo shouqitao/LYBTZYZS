@@ -1,7 +1,8 @@
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
-using Microsoft.Extensions.Configuration;
+using LYBT.Shared.Configuration.Options.Client;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using System.IO;
@@ -29,15 +30,15 @@ public class ConnectionSettingsServiceTests : IDisposable
         try { File.Delete(_testSettingsPath); } catch { }
     }
 
-    private IConfiguration CreateConfig(string baseUrl)
+    private static IOptions<ApiClientOptions> CreateApiOptions(string? baseUrl = null, string? remoteUrl = null, string? preferredMode = null)
     {
-        // Write temporary settings file for persistence testing
-        var json = $"{{\"ApiClient\": {{\"BaseUrl\": \"{baseUrl}\"}}}}";
-        File.WriteAllText(_testSettingsPath, json);
-
-        var config = Substitute.For<IConfiguration>();
-        config["ApiClient:BaseUrl"].Returns(baseUrl);
-        return config;
+        var options = new ApiClientOptions
+        {
+            BaseUrl = baseUrl ?? "http://127.0.0.1:5300",
+            RemoteUrl = remoteUrl ?? string.Empty,
+            PreferredMode = preferredMode ?? "Local"
+        };
+        return Options.Create(options);
     }
 
     #region CurrentUrl and Default
@@ -45,8 +46,8 @@ public class ConnectionSettingsServiceTests : IDisposable
     [Fact]
     public void CurrentUrl_WithSavedUrl_ShouldReturnSavedValue()
     {
-        var config = CreateConfig("http://192.168.1.100:5000");
-        var service = new ConnectionSettingsService(config, _logger);
+        var opts = CreateApiOptions("http://192.168.1.100:5000");
+        var service = new ConnectionSettingsService(opts, _logger);
 
         service.CurrentUrl.Should().Be("http://192.168.1.100:5000");
     }
@@ -54,9 +55,8 @@ public class ConnectionSettingsServiceTests : IDisposable
     [Fact]
     public void CurrentUrl_WithNullConfig_ShouldDefaultToLocalhost()
     {
-        var config = Substitute.For<IConfiguration>();
-        config["ApiClient:BaseUrl"].Returns((string?)null);
-        var service = new ConnectionSettingsService(config, _logger);
+        var opts = CreateApiOptions(baseUrl: null);
+        var service = new ConnectionSettingsService(opts, _logger);
 
         service.CurrentUrl.Should().Be("http://127.0.0.1:5300");
     }
@@ -64,9 +64,8 @@ public class ConnectionSettingsServiceTests : IDisposable
     [Fact]
     public void CurrentUrl_WithEmptyConfig_ShouldDefaultToLocalhost()
     {
-        var config = Substitute.For<IConfiguration>();
-        config["ApiClient:BaseUrl"].Returns(string.Empty);
-        var service = new ConnectionSettingsService(config, _logger);
+        var opts = CreateApiOptions(baseUrl: string.Empty);
+        var service = new ConnectionSettingsService(opts, _logger);
 
         service.CurrentUrl.Should().Be("http://127.0.0.1:5300");
     }
@@ -84,8 +83,8 @@ public class ConnectionSettingsServiceTests : IDisposable
     [InlineData("http://localhost:80", true)]
     public void IsLocal_ShouldDetectLocalhostCorrectly(string url, bool expected)
     {
-        var config = CreateConfig(url);
-        var service = new ConnectionSettingsService(config, _logger);
+        var opts = CreateApiOptions(url);
+        var service = new ConnectionSettingsService(opts, _logger);
 
         service.IsLocal.Should().Be(expected);
         service.CurrentUrl.Should().Be(url);
@@ -105,8 +104,8 @@ public class ConnectionSettingsServiceTests : IDisposable
     [InlineData("   ", false)]
     public void IsValidUrl_ShouldValidateCorrectly(string url, bool expected)
     {
-        var config = CreateConfig("http://127.0.0.1:5300");
-        var service = new ConnectionSettingsService(config, _logger);
+        var opts = CreateApiOptions("http://127.0.0.1:5300");
+        var service = new ConnectionSettingsService(opts, _logger);
 
         service.IsValidUrl(url).Should().Be(expected);
     }
@@ -118,8 +117,8 @@ public class ConnectionSettingsServiceTests : IDisposable
     [Fact]
     public async Task SetUrlAsync_WithValidUrl_ShouldUpdateCurrentUrl()
     {
-        var config = CreateConfig("http://127.0.0.1:5300");
-        var service = new ConnectionSettingsService(config, _logger);
+        var opts = CreateApiOptions("http://127.0.0.1:5300");
+        var service = new ConnectionSettingsService(opts, _logger);
 
         await service.SetUrlAsync("http://192.168.1.100:5000");
 
@@ -130,8 +129,8 @@ public class ConnectionSettingsServiceTests : IDisposable
     [Fact]
     public async Task SetUrlAsync_WithSameUrl_ShouldNotFireEvent()
     {
-        var config = CreateConfig("http://127.0.0.1:5300");
-        var service = new ConnectionSettingsService(config, _logger);
+        var opts = CreateApiOptions("http://127.0.0.1:5300");
+        var service = new ConnectionSettingsService(opts, _logger);
         var fired = false;
         service.UrlChanged += (_, _) => fired = true;
 
@@ -143,8 +142,8 @@ public class ConnectionSettingsServiceTests : IDisposable
     [Fact]
     public async Task SetUrlAsync_WithDifferentUrl_ShouldFireEvent()
     {
-        var config = CreateConfig("http://127.0.0.1:5300");
-        var service = new ConnectionSettingsService(config, _logger);
+        var opts = CreateApiOptions("http://127.0.0.1:5300");
+        var service = new ConnectionSettingsService(opts, _logger);
         var receivedUrl = string.Empty;
         service.UrlChanged += (_, url) => receivedUrl = url;
 
@@ -156,8 +155,8 @@ public class ConnectionSettingsServiceTests : IDisposable
     [Fact]
     public async Task SetUrlAsync_WithInvalidUrl_ShouldThrow()
     {
-        var config = CreateConfig("http://127.0.0.1:5300");
-        var service = new ConnectionSettingsService(config, _logger);
+        var opts = CreateApiOptions("http://127.0.0.1:5300");
+        var service = new ConnectionSettingsService(opts, _logger);
 
         var act = () => service.SetUrlAsync("not-valid");
         await act.Should().ThrowAsync<ArgumentException>();
@@ -166,8 +165,8 @@ public class ConnectionSettingsServiceTests : IDisposable
     [Fact]
     public async Task SetUrlAsync_WithEmptyUrl_ShouldThrow()
     {
-        var config = CreateConfig("http://127.0.0.1:5300");
-        var service = new ConnectionSettingsService(config, _logger);
+        var opts = CreateApiOptions("http://127.0.0.1:5300");
+        var service = new ConnectionSettingsService(opts, _logger);
 
         var act = () => service.SetUrlAsync("");
         await act.Should().ThrowAsync<ArgumentException>();

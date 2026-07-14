@@ -1,11 +1,12 @@
 using LYBT.Desktop.Contracts.Services;
 using LYBT.LocalWebAPI;
+using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Desktop.Shell.Services;
 
@@ -14,23 +15,27 @@ namespace LYBT.Desktop.Shell.Services;
 /// </summary>
 public sealed class EmbeddedLocalWebApiService : IEmbeddedLocalWebApiService, IDisposable
 {
-    private const string LocalUrl = "http://localhost:5300";
     private const string LocalConnectionString =
         "Server=(localdb)\\MSSQLLocalDB;Database=LYBTDesktop;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
 
     private readonly ILogger<EmbeddedLocalWebApiService> _logger;
-    private readonly IConfiguration _configuration;
+    private readonly IOptions<OfflineModeOptions> _offlineModeOptions;
+    private readonly IOptions<DefaultPasswordOptions> _defaultPasswordOptions;
     private WebApplication? _app;
     private readonly object _lock = new();
 
-    public EmbeddedLocalWebApiService(ILogger<EmbeddedLocalWebApiService> logger, IConfiguration configuration)
+    public EmbeddedLocalWebApiService(
+        ILogger<EmbeddedLocalWebApiService> logger,
+        IOptions<OfflineModeOptions> offlineModeOptions,
+        IOptions<DefaultPasswordOptions> defaultPasswordOptions)
     {
         _logger = logger;
-        _configuration = configuration;
+        _offlineModeOptions = offlineModeOptions;
+        _defaultPasswordOptions = defaultPasswordOptions;
     }
 
     public bool IsRunning => Volatile.Read(ref _app) != null;
-    public string BaseUrl => LocalUrl;
+    public string BaseUrl => _offlineModeOptions.Value.LocalApiBaseUrl;
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
@@ -41,17 +46,18 @@ public sealed class EmbeddedLocalWebApiService : IEmbeddedLocalWebApiService, ID
 
         try
         {
-            _logger.LogInformation("[LOCAL-API] Starting embedded LocalWebAPI on {Url}", LocalUrl);
+            _logger.LogInformation("[LOCAL-API] Starting embedded LocalWebAPI on {Url}", BaseUrl);
 
             var builder = LocalWebApiProgram.CreateBuilder();
-            builder.WebHost.UseUrls(LocalUrl);
+            builder.WebHost.UseUrls(BaseUrl);
 
+            var passwords = _defaultPasswordOptions.Value;
             builder.Services.Configure<DefaultPasswordOptions>(options =>
             {
-                options.SysAdminPassword = _configuration["DefaultPasswords:SysAdminPassword"] ?? "SysAdmin@2026!";
-                options.AdminPassword = _configuration["DefaultPasswords:AdminPassword"] ?? "Admin@123456";
-                options.NewUserPassword = _configuration["DefaultPasswords:NewUserPassword"] ?? "User@123456";
-                options.ForceChangeOnFirstLogin = _configuration.GetValue<bool>("DefaultPasswords:ForceChangeOnFirstLogin");
+                options.SysAdminPassword = passwords.SysAdminPassword;
+                options.AdminPassword = passwords.AdminPassword;
+                options.NewUserPassword = passwords.NewUserPassword;
+                options.ForceChangeOnFirstLogin = passwords.ForceChangeOnFirstLogin;
             });
 
             _app = LocalWebApiProgram.CreateApplication(builder, LocalConnectionString);
@@ -59,7 +65,7 @@ public sealed class EmbeddedLocalWebApiService : IEmbeddedLocalWebApiService, ID
 
             await _app.StartAsync(cancellationToken);
 
-            _logger.LogInformation("[LOCAL-API] Embedded LocalWebAPI started on {Url}", LocalUrl);
+            _logger.LogInformation("[LOCAL-API] Embedded LocalWebAPI started on {Url}", BaseUrl);
         }
         catch (Exception ex)
         {

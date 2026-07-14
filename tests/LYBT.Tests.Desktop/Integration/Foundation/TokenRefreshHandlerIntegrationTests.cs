@@ -8,12 +8,13 @@ using FluentAssertions;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Security;
+using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NSubstitute;
 
@@ -34,22 +35,17 @@ public class TokenRefreshHandlerIntegrationTests : IDisposable
     private const string Issuer = "LYBT.WebAPI";
     private const string Audience = "LYBT.Desktop";
 
-    private readonly IConfiguration _configuration;
+    private readonly IOptions<ApiClientOptions> _apiOptions;
     private readonly ILogger<TokenRefreshHandler> _logger;
     private readonly ICredentialVault _credentialVault;
 
     public TokenRefreshHandlerIntegrationTests()
     {
-        _configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["Lybt:Client:Api:BaseUrl"] = "https://localhost:5001",
-                ["Lybt:Client:Api:IgnoreSslErrors"] = "true",
-                ["Lybt:Jwt:SecretKey"] = SecretKey,
-                ["Lybt:Jwt:Issuer"] = Issuer,
-                ["Lybt:Jwt:Audience"] = Audience
-            })
-            .Build();
+        _apiOptions = Options.Create(new ApiClientOptions
+        {
+            BaseUrl = "https://localhost:5001",
+            IgnoreSslErrors = true
+        });
 
         _logger = Substitute.For<ILogger<TokenRefreshHandler>>();
         _credentialVault = Substitute.For<ICredentialVault>();
@@ -90,7 +86,7 @@ public class TokenRefreshHandlerIntegrationTests : IDisposable
         using var handler = new TokenRefreshHandler(
             mockTokenStorage,
             _credentialVault,
-            _configuration,
+            _apiOptions,
             _logger,
             mockActivityState)
         {
@@ -159,7 +155,7 @@ public class TokenRefreshHandlerIntegrationTests : IDisposable
         using var handler = new TokenRefreshHandler(
             mockTokenStorage,
             _credentialVault,
-            _configuration,
+            _apiOptions,
             _logger,
             mockActivityState)
         {
@@ -206,7 +202,7 @@ public class TokenRefreshHandlerIntegrationTests : IDisposable
         using var handler = new TokenRefreshHandler(
             mockTokenStorage,
             _credentialVault,
-            _configuration,
+            _apiOptions,
             _logger,
             mockActivityState)
         {
@@ -242,7 +238,7 @@ public class TokenRefreshHandlerIntegrationTests : IDisposable
         using var handler = new TokenRefreshHandler(
             mockTokenStorage,
             _credentialVault,
-            _configuration,
+            _apiOptions,
             _logger,
             mockActivityState)
         {
@@ -288,7 +284,7 @@ public class TokenRefreshHandlerIntegrationTests : IDisposable
         using var handler = new TokenRefreshHandler(
             mockTokenStorage,
             _credentialVault,
-            _configuration,
+            _apiOptions,
             _logger,
             userActivityState: null)
         {

@@ -3,8 +3,9 @@ using System.Security.Claims;
 using System.Text;
 using FluentAssertions;
 using LYBT.Desktop.Foundation.Security;
-using Microsoft.Extensions.Configuration;
+using LYBT.Shared.Configuration.Options.Common;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NSubstitute;
 
@@ -16,7 +17,6 @@ namespace LYBT.Tests.Desktop;
 /// </summary>
 public class LocalTokenValidatorTests
 {
-    private readonly IConfiguration _configuration;
     private readonly ILogger<LocalTokenValidator> _logger;
     private readonly LocalTokenValidator _validator;
 
@@ -28,19 +28,16 @@ public class LocalTokenValidatorTests
     {
         _logger = Substitute.For<ILogger<LocalTokenValidator>>();
 
-        // 使用内存配置，支持 GetSection().Bind()
-        // JwtOptions.SectionName = "Jwt"
-        var configurationBuilder = new ConfigurationBuilder();
-        configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
+        var jwtOptions = new JwtOptions
         {
-            ["Jwt:SecretKey"] = SecretKey,
-            ["Jwt:Issuer"] = Issuer,
-            ["Jwt:Audience"] = Audience,
-            ["Jwt:ClockSkewSeconds"] = "300"
-        });
-        _configuration = configurationBuilder.Build();
+            SecretKey = SecretKey,
+            Issuer = Issuer,
+            Audience = Audience,
+            ClockSkewSeconds = 300
+        };
+        var optionsWrapper = Options.Create(jwtOptions);
 
-        _validator = new LocalTokenValidator(_configuration, _logger);
+        _validator = new LocalTokenValidator(optionsWrapper, _logger);
     }
 
     /// <summary>

@@ -8,9 +8,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Constants;
+using LYBT.Shared.Configuration.Options.Server;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.LocalWebAPI.Auth;
 
@@ -20,29 +21,28 @@ namespace LYBT.LocalWebAPI.Auth;
 /// </summary>
 public static class LocalJwtConfig
 {
-    private const string DefaultSecret = "LYBT-LocalWebAPI-Secret-Key-2024-DoNotUseInProduction";
     private const int TokenExpirationDays = 365;
-    private static string _secret = DefaultSecret;
+    private static string _secret = string.Empty;
 
     /// <summary>
     /// 令牌过期时间（天数）
     /// </summary>
     public static int ExpirationDays => TokenExpirationDays;
-    
+
     /// <summary>
-    /// 初始化密钥（从配置读取）
+    /// 初始化密钥（从 Options 读取）
     /// </summary>
-    public static void Initialize(IConfiguration configuration)
+    public static void Initialize(LocalJwtOptions options)
     {
-        _secret = configuration["LocalJwt:SecretKey"] ?? DefaultSecret;
+        _secret = options.SecretKey;
     }
 
     /// <summary>
     /// Configure JWT authentication/authorization services.
     /// </summary>
-    public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    public static void ConfigureServices(IServiceCollection services, LocalJwtOptions jwtOptions)
     {
-        Initialize(configuration);
+        Initialize(jwtOptions);
         var key = Encoding.UTF8.GetBytes(_secret);
         var tokenValidationParameters = new TokenValidationParameters
         {

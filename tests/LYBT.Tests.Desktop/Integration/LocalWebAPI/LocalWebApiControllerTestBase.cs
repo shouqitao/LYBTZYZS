@@ -93,7 +93,11 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
         .AddEntityFrameworkStores<AppDbContext>()
         .AddDefaultTokenProviders();
 
-        LocalJwtConfig.ConfigureServices(builder.Services, builder.Configuration);
+        var localJwtOptions = new LYBT.Shared.Configuration.Options.Server.LocalJwtOptions
+        {
+            SecretKey = "LYBT-LocalWebAPI-Secret-Key-2024-DoNotUseInProduction"
+        };
+        LocalJwtConfig.ConfigureServices(builder.Services, localJwtOptions);
 
         // Register DefaultPasswordOptions (required by IdentitySeedData)
         builder.Services.Configure<LYBT.Shared.Configuration.Options.Server.DefaultPasswordOptions>(options =>

@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Web;
 using LYBT.LocalWebAPI.Auth;
+using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
@@ -24,18 +26,17 @@ public class AuthController : BaseApiController
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly LocalJwtOptions _jwtOptions;
 
-    private readonly IConfiguration _configuration;
-    
     public AuthController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        IConfiguration configuration,
+        IOptions<LocalJwtOptions> jwtOptions,
         ILogger<AuthController> logger) : base(logger)
     {
         _userManager = userManager;
         _signInManager = signInManager;
-        _configuration = configuration;
+        _jwtOptions = jwtOptions?.Value ?? throw new ArgumentNullException(nameof(jwtOptions));
     }
 
     private static Guid GetCurrentUserId(ClaimsPrincipal principal)
@@ -162,8 +163,7 @@ public class AuthController : BaseApiController
         try
         {
             var handler = new JwtSecurityTokenHandler();
-            var secretKey = _configuration["LocalJwt:SecretKey"] ?? "LYBT-LocalWebAPI-Secret-Key-2024-DoNotUseInProduction";
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
 
             var validationParameters = new TokenValidationParameters
             {

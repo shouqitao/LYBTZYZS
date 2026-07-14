@@ -2,8 +2,8 @@ using System.IO;
 using System.Text.Json;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Shared.Configuration.Options.Client;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Desktop.Infrastructure.Services
 {
@@ -14,7 +14,7 @@ namespace LYBT.Desktop.Infrastructure.Services
     /// </summary>
     public class ClinicSettingsService : IClinicSettingsService
     {
-        private readonly IConfiguration _configuration;
+        private readonly IOptions<ClinicSettingsOptions> _clinicOptions;
         private readonly ILogger<ClinicSettingsService> _logger;
 
         private static readonly JsonSerializerOptions JsonWriteOptions = new()
@@ -31,20 +31,19 @@ namespace LYBT.Desktop.Infrastructure.Services
         public string Email => GetSettings().Email;
 
         public ClinicSettingsService(
-            IConfiguration configuration,
+            IOptions<ClinicSettingsOptions> clinicOptions,
             ILogger<ClinicSettingsService> logger)
         {
-            _configuration = configuration;
+            _clinicOptions = clinicOptions;
             _logger = logger;
         }
 
         /// <summary>
-        /// 获取当前诊所配置（每次从 IConfiguration 读取，支持热更新）
+        /// 获取当前诊所配置
         /// </summary>
         public ClinicSettingsOptions GetSettings()
         {
-            var section = _configuration.GetSection(ClinicSettingsOptions.SectionName);
-            return section.Get<ClinicSettingsOptions>() ?? new ClinicSettingsOptions();
+            return _clinicOptions.Value ?? new ClinicSettingsOptions();
         }
 
         /// <summary>

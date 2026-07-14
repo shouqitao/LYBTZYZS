@@ -2,8 +2,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using LYBT.Shared.Configuration.Options.Common;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace LYBT.Desktop.Foundation.Security
@@ -22,15 +22,15 @@ namespace LYBT.Desktop.Foundation.Security
     /// </remarks>
     public class LocalTokenValidator : ITokenValidator
     {
-        private readonly IConfiguration _configuration;
+        private readonly IOptions<JwtOptions> _jwtOptions;
         private readonly ILogger<LocalTokenValidator> _logger;
         private readonly JwtSecurityTokenHandler _tokenHandler;
 
         public LocalTokenValidator(
-            IConfiguration configuration,
+            IOptions<JwtOptions> jwtOptions,
             ILogger<LocalTokenValidator> logger)
         {
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _jwtOptions = jwtOptions ?? throw new ArgumentNullException(nameof(jwtOptions));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _tokenHandler = new JwtSecurityTokenHandler();
         }
@@ -54,9 +54,7 @@ namespace LYBT.Desktop.Foundation.Security
 
             try
             {
-                // unify-configuration-system: 使用强类型配置
-                var jwtOptions = new JwtOptions();
-                _configuration.GetSection(JwtOptions.SectionName).Bind(jwtOptions);
+                var jwtOptions = _jwtOptions.Value;
                 var secretKey = jwtOptions.SecretKey;
                 var issuer = jwtOptions.Issuer;
                 var audience = jwtOptions.Audience;

@@ -1,6 +1,7 @@
 using LYBT.Desktop.CardReader.Abstractions;
 using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.Configuration.Options.Common;
+using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Prism.Ioc;
@@ -38,6 +39,15 @@ public static class PrismConfigurationExtensions
 
         // 读卡器配置 (PRD-13)
         RegisterOptions<CardReaderOptions>(containerRegistry, configuration, CardReaderOptions.SectionName);
+
+        // 离线模式配置
+        RegisterOptions<OfflineModeOptions>(containerRegistry, configuration, OfflineModeOptions.SectionName);
+
+        // 默认密码配置
+        RegisterOptions<DefaultPasswordOptions>(containerRegistry, configuration, DefaultPasswordOptions.SectionName);
+
+        // LocalWebAPI JWT 配置
+        RegisterOptions<LocalJwtOptions>(containerRegistry, configuration, LocalJwtOptions.SectionName);
     }
 
     /// <summary>

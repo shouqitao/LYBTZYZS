@@ -1,6 +1,6 @@
 using System.Net.Http;
 using LYBT.Shared.Configuration.Options.Client;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Desktop.Foundation.HealthCheck;
 
@@ -10,14 +10,14 @@ namespace LYBT.Desktop.Foundation.HealthCheck;
 public class ApiHealthCheckService : IApiHealthCheckService
 {
     private readonly HttpClient _httpClient;
-    private readonly IConfiguration _configuration;
+    private readonly ApiClientOptions _apiOptions;
 
     public string? LastErrorMessage { get; private set; }
 
-    public ApiHealthCheckService(HttpClient httpClient, IConfiguration configuration)
+    public ApiHealthCheckService(HttpClient httpClient, IOptions<ApiClientOptions> apiOptions)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _apiOptions = apiOptions?.Value ?? throw new ArgumentNullException(nameof(apiOptions));
     }
 
     /// <summary>
@@ -29,10 +29,7 @@ public class ApiHealthCheckService : IApiHealthCheckService
 
         try
         {
-            // unify-configuration-system: 使用强类型配置
-            var apiOptions = new ApiClientOptions();
-            _configuration.GetSection(ApiClientOptions.SectionName).Bind(apiOptions);
-            var healthUrl = $"{apiOptions.BaseUrl.TrimEnd('/')}/health";
+            var healthUrl = $"{_apiOptions.BaseUrl.TrimEnd('/')}/health";
 
             using var cts = new CancellationTokenSource(timeout);
 

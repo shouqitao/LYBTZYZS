@@ -11,6 +11,7 @@ using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Prism.Ioc;
 using Refit;
 
@@ -34,12 +35,12 @@ namespace LYBT.Desktop.Shell.Extensions
             {
                 var tokenStorage = resolver.Resolve<ITokenStorageService>();
                 var credentialVault = resolver.Resolve<ICredentialVault>();
-                var configuration = resolver.Resolve<IConfiguration>();
+                var apiOptions = resolver.Resolve<IOptions<ApiClientOptions>>();
                 var logger = resolver.Resolve<ILogger<TokenRefreshHandler>>();
                 IUserActivityState? userActivityState = null;
                 try { userActivityState = resolver.Resolve<IUserActivityState>(); }
                 catch { /* 启动阶段可能尚未注册 */ }
-                return new TokenRefreshHandler(tokenStorage, credentialVault, configuration, logger, userActivityState);
+                return new TokenRefreshHandler(tokenStorage, credentialVault, apiOptions, logger, userActivityState);
             });
             containerRegistry.Register<ITokenRefreshHandler>(resolver => resolver.Resolve<TokenRefreshHandler>());
 
