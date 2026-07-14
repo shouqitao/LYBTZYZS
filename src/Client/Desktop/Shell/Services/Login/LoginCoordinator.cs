@@ -93,7 +93,7 @@ public class LoginCoordinator : ILoginCoordinator, IDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(username);
         ArgumentException.ThrowIfNullOrWhiteSpace(password);
 
-        await _loginLock.WaitAsync();
+        await _loginLock.WaitAsync(TimeSpan.FromSeconds(30));
         try
         {
             lock (_stateLock)
