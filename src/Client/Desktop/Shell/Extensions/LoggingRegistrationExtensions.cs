@@ -121,8 +121,6 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // Shell启动流程重构 - Phase 2 新增Logger
             RegisterLogger<LoginCoordinator>(containerRegistry);
-
-            // HealthCheckCoordinator已由ApiHealthMonitor替代，不再注册Logger
         }
 
         /// <summary>注册业务模块Logger</summary>

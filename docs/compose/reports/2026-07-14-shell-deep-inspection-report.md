@@ -33,13 +33,10 @@
 
 | 问题 | 严重度 | 说明 |
 |------|--------|------|
-| W6: MainWindowViewModel事件订阅泄漏 | Warning | Prism EventAggregator的Subscribe返回void，需重构 |
-| W7: ThemeService事件泄漏 | Warning | 已修复（实现IDisposable） |
-| W10: 健康检查系统重复 | Warning | 需架构层面统一 |
+| W6: MainWindowViewModel事件订阅泄漏 | ~~Warning~~ **非问题** | CoreViewModelBase.Dispose()已自动清理EventSubscriptionManager |
+| W10: 健康检查系统重复 | ~~Warning~~ **已修复** | HealthCheckCoordinator是死代码，已删除 |
 | W12: MainWindowViewModel 12参数 | Warning | 需更大规模重构 |
-| I2: async void滥用 | Info | 部分已修复（MenuManager） |
 | I3: 主题未持久化 | Info | 需新增功能 |
-| I4: ApiHealthCheckStartupStep仪式性 | Info | 可考虑移除 |
 
 ---
 

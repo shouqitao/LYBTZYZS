@@ -58,7 +58,7 @@ public class ApiHealthCheckStartupStep : IStartupStep
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "[Startup] 后台API健康检查失败，将在HealthCheckCoordinator中重试");
+                _logger.LogWarning(ex, "[Startup] 后台API健康检查失败，将在ApiHealthMonitor中重试");
             }
         }, cancellationToken);
 

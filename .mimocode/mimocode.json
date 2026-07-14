@@ -7,6 +7,25 @@
       "environment": {
         "TAVILY_API_KEY": "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"
       }
+    },
+    "context7": {
+      "type": "local",
+      "command": ["npx", "-y", "@upstash/context7-mcp@latest"]
+    },
+    "codegraph": {
+      "type": "local",
+      "command": ["codegraph", "serve", "--mcp"]
+    },
+    "serena": {
+      "type": "local",
+      "command": ["uvx", "serena-agent", "start-mcp-server"],
+      "environment": {
+        "SERENA_PROJECT": "LYBTZYZS"
+      }
+    },
+    "sequentialthinking": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"]
     }
   }
 }
