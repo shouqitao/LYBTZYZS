@@ -199,7 +199,6 @@ public class MenuManager
     private void ExecuteShowHistory()
     {
         _logger.LogInformation("显示导航历史面板");
-        // TODO: Publish event to open/focus NavigationHistoryPanel
         // For now, show notification as placeholder
         _userNotificationService.ShowInfoAsync("导航历史面板功能待实现 - 将显示导航历史记录");
     }
