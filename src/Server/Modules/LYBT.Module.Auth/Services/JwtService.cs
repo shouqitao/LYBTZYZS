@@ -8,7 +8,7 @@ using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Primitives.ErrorCodes;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -22,13 +22,13 @@ namespace LYBT.Module.Auth.Services;
 public class JwtService : IJwtService
 {
     private readonly JwtOptions _jwtOptions;
-    private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _environment;
     private readonly JwtSecurityTokenHandler _tokenHandler;
 
-    public JwtService(IOptions<JwtOptions> jwtOptions, IConfiguration configuration)
+    public JwtService(IOptions<JwtOptions> jwtOptions, IWebHostEnvironment environment)
     {
         _jwtOptions = jwtOptions.Value ?? throw new ArgumentNullException(nameof(jwtOptions));
-        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         _tokenHandler = new JwtSecurityTokenHandler();
 
         // 启动时验证 JWT 密钥强度(方案A:最小加固)
@@ -58,9 +58,7 @@ public class JwtService : IJwtService
         }
 
         // T5-P2-45: 生产环境禁止使用已知默认密钥
-        var environment = _configuration["ASPNETCORE_ENVIRONMENT"]
-            ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
-            ?? "Development";
+        var environment = _environment.EnvironmentName;
 
         const string knownDefaultKey = "DefaultDevelopmentSecretKeyForJWTAuthentication_ShouldBeReplacedInProduction";
         if (environment.Equals("Production", StringComparison.OrdinalIgnoreCase) &&

@@ -4,7 +4,7 @@ using FluentAssertions;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Models.Enums;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -19,7 +19,7 @@ public class JwtServiceTests : IDisposable
 {
     private readonly JwtService _sut;
     private readonly JwtOptions _jwtOptions;
-    private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _environment;
 
     public JwtServiceTests()
     {
@@ -32,17 +32,10 @@ public class JwtServiceTests : IDisposable
             ClockSkewSeconds = 30
         };
 
-        var inMemorySettings = new Dictionary<string, string>
-        {
-            { "ASPNETCORE_ENVIRONMENT", "Development" }
-        };
-
-        _configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(inMemorySettings!)
-            .Build();
+        _environment = new TestWebHostEnvironment { EnvironmentName = "Development" };
 
         var options = Options.Create(_jwtOptions);
-        _sut = new JwtService(options, _configuration);
+        _sut = new JwtService(options, _environment);
     }
 
     public void Dispose()
@@ -237,7 +230,7 @@ public class JwtServiceTests : IDisposable
             ClockSkewSeconds = 0
         };
 
-        var shortExpiryService = new JwtService(Options.Create(shortExpiryOptions), _configuration);
+        var shortExpiryService = new JwtService(Options.Create(shortExpiryOptions), _environment);
         var token = shortExpiryService.GenerateToken(Guid.NewGuid().ToString(), "testuser", UserRole.Doctor);
 
         // 等待 Token 过期 (1 分钟 + 缓冲)
@@ -263,7 +256,7 @@ public class JwtServiceTests : IDisposable
             ClockSkewSeconds = _jwtOptions.ClockSkewSeconds
         };
 
-        var differentKeyService = new JwtService(Options.Create(differentKeyOptions), _configuration);
+        var differentKeyService = new JwtService(Options.Create(differentKeyOptions), _environment);
         var token = differentKeyService.GenerateToken(Guid.NewGuid().ToString(), "testuser", UserRole.Doctor);
 
         // Act
@@ -314,7 +307,7 @@ public class JwtServiceTests : IDisposable
             ClockSkewSeconds = _jwtOptions.ClockSkewSeconds
         };
 
-        var wrongIssuerService = new JwtService(Options.Create(wrongIssuerOptions), _configuration);
+        var wrongIssuerService = new JwtService(Options.Create(wrongIssuerOptions), _environment);
         var token = wrongIssuerService.GenerateToken(Guid.NewGuid().ToString(), "testuser", UserRole.Doctor);
 
         // Act
@@ -337,7 +330,7 @@ public class JwtServiceTests : IDisposable
             ClockSkewSeconds = _jwtOptions.ClockSkewSeconds
         };
 
-        var wrongAudienceService = new JwtService(Options.Create(wrongAudienceOptions), _configuration);
+        var wrongAudienceService = new JwtService(Options.Create(wrongAudienceOptions), _environment);
         var token = wrongAudienceService.GenerateToken(Guid.NewGuid().ToString(), "testuser", UserRole.Doctor);
 
         // Act
@@ -365,7 +358,7 @@ public class JwtServiceTests : IDisposable
         };
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new JwtService(Options.Create(shortKeyOptions), _configuration));
+        Assert.Throws<ArgumentException>(() => new JwtService(Options.Create(shortKeyOptions), _environment));
     }
 
     [Fact]
@@ -382,21 +375,14 @@ public class JwtServiceTests : IDisposable
         };
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => new JwtService(Options.Create(emptyKeyOptions), _configuration));
+        Assert.Throws<InvalidOperationException>(() => new JwtService(Options.Create(emptyKeyOptions), _environment));
     }
 
     [Fact]
     public void Constructor_InProductionWithDefaultKey_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        var productionSettings = new Dictionary<string, string>
-        {
-            { "ASPNETCORE_ENVIRONMENT", "Production" }
-        };
-
-        var productionConfig = new ConfigurationBuilder()
-            .AddInMemoryCollection(productionSettings!)
-            .Build();
+        var productionEnvironment = new TestWebHostEnvironment { EnvironmentName = "Production" };
 
         var defaultKeyOptions = new JwtOptions
         {
@@ -408,7 +394,7 @@ public class JwtServiceTests : IDisposable
         };
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => new JwtService(Options.Create(defaultKeyOptions), productionConfig));
+        Assert.Throws<InvalidOperationException>(() => new JwtService(Options.Create(defaultKeyOptions), productionEnvironment));
     }
 
     #endregion
@@ -465,4 +451,17 @@ public class JwtServiceTests : IDisposable
     }
 
     #endregion
+}
+
+/// <summary>
+/// Minimal IWebHostEnvironment implementation for unit tests
+/// </summary>
+internal sealed class TestWebHostEnvironment : IWebHostEnvironment
+{
+    public string EnvironmentName { get; set; } = "Development";
+    public string ApplicationName { get; set; } = string.Empty;
+    public string ContentRootPath { get; set; } = string.Empty;
+    public string WebRootPath { get; set; } = string.Empty;
+    public Microsoft.Extensions.FileProviders.IFileProvider ContentRootFileProvider { get; set; } = null!;
+    public Microsoft.Extensions.FileProviders.IFileProvider WebRootFileProvider { get; set; } = null!;
 }
