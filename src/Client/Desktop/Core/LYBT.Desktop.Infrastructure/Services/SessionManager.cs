@@ -14,9 +14,7 @@ namespace LYBT.Desktop.Infrastructure.Services
     {
         private readonly IAuthenticationService _authService;
         private UserDetailDto? _cachedUser;
-#pragma warning disable CS0067
         public event EventHandler? SessionExpired;
-#pragma warning restore CS0067
         public event EventHandler<SessionChangedEventArgs>? SessionChanged;
 
         public SessionManager(IAuthenticationService authService) => _authService = authService ?? throw new ArgumentNullException(nameof(authService));
@@ -42,7 +40,12 @@ namespace LYBT.Desktop.Infrastructure.Services
             var wasAuthenticated = IsAuthenticated;
             _cachedUser = null;
             _authService.ClearAuthInfo();
-            if (wasAuthenticated) SessionChanged?.Invoke(this, new SessionChangedEventArgs(false));
+            
+            if (wasAuthenticated)
+            {
+                SessionExpired?.Invoke(this, EventArgs.Empty);
+                SessionChanged?.Invoke(this, new SessionChangedEventArgs(false));
+            }
         }
 
         public bool HasPermission(UserRole requiredRole) => CurrentUser != null && CurrentUser.Role >= requiredRole;
