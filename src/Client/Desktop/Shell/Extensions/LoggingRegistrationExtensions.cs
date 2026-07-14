@@ -123,8 +123,8 @@ namespace LYBT.Desktop.Shell.Extensions
             // Shell启动流程重构 - Phase 2 新增Logger
             RegisterLogger<LoginCoordinator>(containerRegistry);
 
-            // Shell架构整合 - HealthCheckCoordinator Logger
-            RegisterLogger<HealthCheckCoordinator>(containerRegistry);
+            // Shell架构整合 - HealthCheckCoordinator Logger (已由ApiHealthMonitor替代)
+            // RegisterLogger<HealthCheckCoordinator>(containerRegistry);
         }
 
         /// <summary>注册业务模块Logger</summary>

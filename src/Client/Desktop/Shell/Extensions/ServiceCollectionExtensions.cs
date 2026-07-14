@@ -194,8 +194,8 @@ namespace LYBT.Desktop.Shell.Extensions
             });
             containerRegistry.Register<IStartupStep, WarmupStartupStep>("Warmup");
 
-            // Shell架构整合 - HealthCheckCoordinator服务
-            containerRegistry.RegisterSingleton<IHealthCheckCoordinator, HealthCheckCoordinator>();
+            // Shell架构整合 - HealthCheckCoordinator服务 (已由ApiHealthMonitor替代，保留注册以避免破坏现有代码)
+            // containerRegistry.RegisterSingleton<IHealthCheckCoordinator, HealthCheckCoordinator>();
 
             // 全局API健康监控器（断路器+订阅模式）
             containerRegistry.RegisterSingleton<IApiHealthMonitor, ApiHealthMonitor>();
