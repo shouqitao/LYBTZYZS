@@ -26,6 +26,7 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
     private int _tokenRefreshCount;
     private DateTime? _lastTokenRefreshTime;
     private SubscriptionToken? _tokenLifecycleSubscription;
+    private volatile bool _sessionExpiredFired;
     private bool _disposed;
 
     public SessionLifecycleManager(
@@ -111,6 +112,8 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(userName);
         ArgumentException.ThrowIfNullOrWhiteSpace(userRole);
+
+        _sessionExpiredFired = false;
 
         lock (_stateLock)
         {
@@ -286,8 +289,12 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
                 break;
 
             case TokenLifecycleState.Expired:
-                TransitionTo(SessionState.Expired);
-                SessionExpired?.Invoke(this, EventArgs.Empty);
+                if (!_sessionExpiredFired)
+                {
+                    _sessionExpiredFired = true;
+                    TransitionTo(SessionState.Expired);
+                    SessionExpired?.Invoke(this, EventArgs.Empty);
+                }
                 break;
 
             case TokenLifecycleState.Active:
@@ -304,9 +311,13 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
     /// </summary>
     private void OnUserActivitySessionExpired(object? sender, EventArgs e)
     {
-        _logger.LogWarning("用户长时间不活跃，会话已过期");
-        TransitionTo(SessionState.Expired);
-        SessionExpired?.Invoke(this, EventArgs.Empty);
+        if (!_sessionExpiredFired)
+        {
+            _sessionExpiredFired = true;
+            _logger.LogWarning("用户长时间不活跃，会话已过期");
+            TransitionTo(SessionState.Expired);
+            SessionExpired?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     public void Dispose()

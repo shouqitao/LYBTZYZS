@@ -111,7 +111,6 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<NotificationService>(containerRegistry);
             RegisterLogger<DesktopExceptionHandler>(containerRegistry);
             RegisterLogger<App>(containerRegistry);
-            RegisterLogger<ApplicationInitializationService>(containerRegistry);
             RegisterLogger<ApplicationBootstrapper>(containerRegistry);
             RegisterLogger<ApplicationStateService>(containerRegistry);
             RegisterLogger<MenuManager>(containerRegistry);

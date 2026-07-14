@@ -57,14 +57,8 @@ public class AppStartupOrchestrator
     {
         pipeline.RegisterStep(_container.Resolve<IStartupStep>("ErrorHandling"));
         pipeline.RegisterStep(_container.Resolve<IStartupStep>("ModuleCoordinator"));
-        pipeline.RegisterStep(_container.Resolve<IStartupStep>("CoreServices"));
-        pipeline.RegisterStep(new LocalWebApiStartupStep(
-            _container.Resolve<IEmbeddedLocalWebApiService>(),
-            _container.Resolve<ILogger<LocalWebApiStartupStep>>()));
-        pipeline.RegisterStep(new ApiHealthCheckStartupStep(
-            _container.Resolve<IApplicationStateService>(),
-            _container.Resolve<ILogger<ApiHealthCheckStartupStep>>(),
-            timeoutSeconds: 5));
+        pipeline.RegisterStep(_container.Resolve<IStartupStep>("LocalWebApi"));
+        pipeline.RegisterStep(_container.Resolve<ApiHealthCheckStartupStep>());
         pipeline.RegisterStep(_container.Resolve<IStartupStep>("Warmup"));
     }
 }

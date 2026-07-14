@@ -38,6 +38,12 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// <summary>启动画面渲染等待时间（毫秒）</summary>
     private const int SplashRenderDelayMs = 500;
 
+    /// <summary>侧边栏折叠宽度</summary>
+    private const int SidebarCollapsedWidth = 60;
+
+    /// <summary>侧边栏展开宽度</summary>
+    private const int SidebarExpandedWidth = 140;
+
     #endregion
 
     #region 依赖服务
@@ -324,7 +330,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// </summary>
     partial void OnIsSidebarExpandedChanged(bool value)
     {
-        SidebarWidth = value ? 140 : 60;
+        SidebarWidth = value ? SidebarExpandedWidth : SidebarCollapsedWidth;
     }
 
     /// <summary>
@@ -498,20 +504,23 @@ public partial class MainWindowViewModel : CoreViewModelBase
         Title = "凌隐宝堂中医诊所诊疗系统";
         NavigationItems.Clear(); // UI Redesign: 清空导航项
 
+        var serverLogoutCompleted = false;
         try
         {
             await _loginCoordinator.LogoutAsync();
-            EventAggregator.GetEvent<AuthEvents.LogoutCompletedEvent>().Publish(new LogoutCompletedPayload
-            {
-                LocalLogoutCompleted = true,
-                ServerLogoutCompleted = true
-            });
+            serverLogoutCompleted = true;
         }
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "登出处理异常");
         }
-        
+
+        EventAggregator.GetEvent<AuthEvents.LogoutCompletedEvent>().Publish(new LogoutCompletedPayload
+        {
+            LocalLogoutCompleted = true,
+            ServerLogoutCompleted = serverLogoutCompleted
+        });
+
         // 登出完成后清除导航历史并导航到登录页
         _navigationCoordinator.ClearHistory();
         _navigationCoordinator.ClearContentRegion();

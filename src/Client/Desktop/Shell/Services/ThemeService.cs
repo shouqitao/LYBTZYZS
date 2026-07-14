@@ -3,9 +3,11 @@ using MaterialDesignThemes.Wpf;
 
 namespace LYBT.Desktop.Shell.Services;
 
-public partial class ThemeService : ObservableObject, IThemeService
+public partial class ThemeService : ObservableObject, IThemeService, IDisposable
 {
     private readonly PaletteHelper _paletteHelper = new();
+    private EventHandler<ThemeChangedEventArgs>? _themeChangedHandler;
+    private bool _disposed;
 
     [ObservableProperty]
     private bool _isDarkMode;
@@ -32,10 +34,21 @@ public partial class ThemeService : ObservableObject, IThemeService
     {
         if (_paletteHelper.GetThemeManager() is { } themeManager)
         {
-            themeManager.ThemeChanged += (_, e) =>
+            _themeChangedHandler = (_, e) =>
             {
                 IsDarkMode = e.NewTheme?.GetBaseTheme() == BaseTheme.Dark;
             };
+            themeManager.ThemeChanged += _themeChangedHandler;
         }
+    }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        if (_paletteHelper.GetThemeManager() is { } themeManager && _themeChangedHandler != null)
+        {
+            themeManager.ThemeChanged -= _themeChangedHandler;
+        }
+        _disposed = true;
     }
 }

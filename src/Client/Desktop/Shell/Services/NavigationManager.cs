@@ -113,7 +113,7 @@ public partial class NavigationManager : ObservableObject
                 items.Add(CreateNavItem("用户管理", ViewNames.UserManagement, "AccountTie", "管理"));
             }
         }
-        if (definition.GetAllModules().Contains("ReportsModule"))
+        if (modules.Contains("ReportsModule"))
             items.Add(CreateNavItem("统计报表", ViewNames.ReportsHome, "ChartBar", "管理"));
 
         if (role == UserRole.SuperAdmin)

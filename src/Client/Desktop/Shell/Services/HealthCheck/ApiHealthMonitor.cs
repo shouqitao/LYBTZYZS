@@ -24,10 +24,10 @@ public sealed class ApiHealthMonitor : IApiHealthMonitor
     private DateTime? _lastCheckTime;
     private DateTime? _nextCheckTime;
     private string? _lastError;
-    private bool _isChecking;
-    private int _consecutiveFailures;
+    private volatile bool _isChecking;
+    private volatile int _consecutiveFailures;
 
-    private CircuitState _circuitState = CircuitState.Closed;
+    private volatile CircuitState _circuitState = CircuitState.Closed;
     private DateTime? _circuitOpenedAt;
 
     public ApiHealthMonitor(

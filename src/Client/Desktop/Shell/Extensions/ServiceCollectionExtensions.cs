@@ -114,6 +114,8 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IDesktopExceptionHandler, DesktopExceptionHandler>();
             containerRegistry.RegisterSingleton<MenuManager>();
             containerRegistry.RegisterSingleton<INavigationCoordinator, NavigationCoordinator>();
+            containerRegistry.RegisterSingleton<NavigationManager>();
+            containerRegistry.RegisterSingleton<StatusBarManager>();
         }
 
         /// <summary>注册Infrastructure层服务</summary>
@@ -170,7 +172,6 @@ namespace LYBT.Desktop.Shell.Extensions
         /// <summary>注册应用程序启动服务</summary>
         private static void RegisterApplicationServices(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterSingleton<IApplicationInitializationService, ApplicationInitializationService>();
             // IApplicationBootstrapper 由 App.xaml.cs 注册，此处不重复
             containerRegistry.RegisterSingleton<IApplicationStateService, ApplicationStateService>();
 
@@ -184,17 +185,10 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IStartupPipeline, StartupPipeline>();
             containerRegistry.Register<IStartupStep, ErrorHandlingStartupStep>("ErrorHandling");
             containerRegistry.Register<IStartupStep, ModuleCoordinatorStartupStep>("ModuleCoordinator");
-            containerRegistry.Register<IStartupStep, CoreServicesStartupStep>("CoreServices");
+            containerRegistry.Register<IStartupStep, LocalWebApiStartupStep>("LocalWebApi");
             // API健康检查 - 5秒超时，后台异步执行（Transient生命周期，每次解析新实例）
-            containerRegistry.Register<IStartupStep>(resolver =>
-            {
-                var appState = resolver.Resolve<IApplicationStateService>();
-                var logger = resolver.Resolve<ILogger<ApiHealthCheckStartupStep>>();
-                return new ApiHealthCheckStartupStep(appState, logger, timeoutSeconds: 5);
-            });
+            containerRegistry.Register<ApiHealthCheckStartupStep>();
             containerRegistry.Register<IStartupStep, WarmupStartupStep>("Warmup");
-
-            // HealthCheckCoordinator已由ApiHealthMonitor替代，不再注册
 
             // 全局API健康监控器（断路器+订阅模式）
             containerRegistry.RegisterSingleton<IApiHealthMonitor, ApiHealthMonitor>();

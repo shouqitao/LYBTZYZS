@@ -134,11 +134,11 @@ public class MenuManager
     /// <summary>初始化所有命令</summary>
     private void InitializeCommands()
     {
-        QuickAddPatientCommand = new DelegateCommand(async () => await ExecuteQuickAddPatientAsync().ConfigureAwait(false));
-        QuickStartMedicalCaseCommand = new DelegateCommand(async () => await ExecuteQuickStartMedicalCaseAsync().ConfigureAwait(false));
+        QuickAddPatientCommand = new DelegateCommand(() => _ = ExecuteQuickAddPatientAsync());
+        QuickStartMedicalCaseCommand = new DelegateCommand(() => _ = ExecuteQuickStartMedicalCaseAsync());
         ShowHelpCommand = new DelegateCommand(ExecuteShowHelp);
         ShowSettingsCommand = new DelegateCommand(ExecuteShowSettings);
-        ToggleThemeCommand = new DelegateCommand(async () => await ExecuteToggleThemeAsync().ConfigureAwait(false));
+        ToggleThemeCommand = new DelegateCommand(() => _ = ExecuteToggleThemeAsync());
         EditProfileCommand = new DelegateCommand(ExecuteAccountSettings);
         NavigateToHomeCommand = new DelegateCommand(ExecuteNavigateToHome);
         NavigateToSystemSettingsCommand = new DelegateCommand(ExecuteNavigateToSystemSettings);

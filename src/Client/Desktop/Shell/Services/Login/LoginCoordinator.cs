@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Shell.Services.Login;
 /// <summary>
 /// 登录流程协调器实现
 /// </summary>
-public class LoginCoordinator : ILoginCoordinator
+public class LoginCoordinator : ILoginCoordinator, IDisposable
 {
     private readonly ILogger<LoginCoordinator> _logger;
     private readonly IAuthenticationService _authenticationService;
@@ -30,6 +30,7 @@ public class LoginCoordinator : ILoginCoordinator
     private readonly IUsernameStorageService? _usernameStorage;
     private readonly IAuthenticationStateMachine _stateMachine;
     private readonly object _stateLock = new();
+    private readonly SemaphoreSlim _loginLock = new(1, 1);
 
     private UserDetailDto? _currentUser;
     private DateTime? _loginTime;
@@ -92,42 +93,50 @@ public class LoginCoordinator : ILoginCoordinator
         ArgumentException.ThrowIfNullOrWhiteSpace(username);
         ArgumentException.ThrowIfNullOrWhiteSpace(password);
 
-        lock (_stateLock)
-        {
-            _loginAttemptCount++;
-        }
-
-        _logger.LogInformation("开始登录流程 [用户: {Username}, 尝试次数: {AttemptCount}]",
-            username, _loginAttemptCount);
-
-        _stateMachine.Fire(AuthEvent.StartLogin, "正在验证身份...");
-
+        await _loginLock.WaitAsync();
         try
         {
-            var loginRequest = new LoginRequest { UserName = username, Password = password, RememberMe = false };
-            var result = await _authenticationService.LoginAsync(loginRequest);
-
-            if (!result.IsSuccess || result.Data == null)
+            lock (_stateLock)
             {
-                _logger.LogWarning("登录认证失败 [用户: {Username}]", username);
-                _stateMachine.Fire(AuthEvent.LoginFailure, result.Message ?? "认证失败");
-                return LoginResult.Failed(result.Message ?? "认证失败");
+                _loginAttemptCount++;
             }
 
-            var loginResponse = result.Data;
-            var user = loginResponse.User;
+            _logger.LogInformation("开始登录流程 [用户: {Username}, 尝试次数: {AttemptCount}]",
+                username, _loginAttemptCount);
 
-            _stateMachine.Fire(AuthEvent.CredentialsValidated, "正在启动会话...");
+            _stateMachine.Fire(AuthEvent.StartLogin, "正在验证身份...");
 
-            await _tokenStorageService.SaveAuthenticationAsync(loginResponse, rememberMe: false);
+            try
+            {
+                var loginRequest = new LoginRequest { UserName = username, Password = password, RememberMe = false };
+                var result = await _authenticationService.LoginAsync(loginRequest);
 
-            return await CompleteLoginFlowAsync(user, loginResponse.ExpiresAt);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    _logger.LogWarning("登录认证失败 [用户: {Username}]", username);
+                    _stateMachine.Fire(AuthEvent.LoginFailure, result.Message ?? "认证失败");
+                    return LoginResult.Failed(result.Message ?? "认证失败");
+                }
+
+                var loginResponse = result.Data;
+                var user = loginResponse.User;
+
+                _stateMachine.Fire(AuthEvent.CredentialsValidated, "正在启动会话...");
+
+                await _tokenStorageService.SaveAuthenticationAsync(loginResponse, rememberMe: false);
+
+                return await CompleteLoginFlowAsync(user, loginResponse.ExpiresAt);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "登录流程异常 [用户: {Username}]", username);
+                _stateMachine.Fire(AuthEvent.LoginFailure, ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex));
+                return LoginResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex));
+            }
         }
-        catch (Exception ex)
+        finally
         {
-            _logger.LogError(ex, "登录流程异常 [用户: {Username}]", username);
-            _stateMachine.Fire(AuthEvent.LoginFailure, ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex));
-            return LoginResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex));
+            _loginLock.Release();
         }
     }
 
@@ -212,7 +221,7 @@ public class LoginCoordinator : ILoginCoordinator
         catch (Exception ex)
         {
             _logger.LogError(ex, "登出流程异常");
-            _stateMachine.Fire(AuthEvent.LogoutSuccess);
+            _stateMachine.Fire(AuthEvent.LoginFailure);
             throw;
         }
     }
@@ -311,5 +320,10 @@ public class LoginCoordinator : ILoginCoordinator
         }
 
         await Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        _loginLock.Dispose();
     }
 }
