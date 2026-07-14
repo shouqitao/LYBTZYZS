@@ -1,5 +1,10 @@
 # View Design & Cleanup Implementation Plan
 
+> [!NOTE]
+> This document may not reflect the current implementation.
+> See the final report for up-to-date state:
+> [Final Report](../reports/view-design-cleanup.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use compose:subagent (recommended) or compose:execute to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Design a complete view architecture for the Desktop WPF application and remove all unused/dead views.
