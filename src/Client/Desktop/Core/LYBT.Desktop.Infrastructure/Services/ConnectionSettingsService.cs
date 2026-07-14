@@ -102,7 +102,10 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
 
         _logger.LogInformation("[CONNECTION-CFG] URL changed: {OldUrl} -> {NewUrl}", oldUrl, _currentUrl);
 
-        UrlChanged?.Invoke(this, _currentUrl);
+        if (oldUrl != _currentUrl)
+        {
+            UrlChanged?.Invoke(this, _currentUrl);
+        }
     }
 
     /// <inheritdoc />

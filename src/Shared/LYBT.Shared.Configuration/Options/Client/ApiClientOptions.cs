@@ -5,9 +5,6 @@ namespace LYBT.Shared.Configuration.Options.Client;
 /// <summary>
 /// API 客户端配置
 /// </summary>
-/// <summary>
-/// API 客户端配置
-/// </summary>
 public sealed class ApiClientOptions
 {
     public const string SectionName = "ApiClient";

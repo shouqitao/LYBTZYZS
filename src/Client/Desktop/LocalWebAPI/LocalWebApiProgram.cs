@@ -14,6 +14,7 @@ using LYBT.Module.MedicalCases;
 using LYBT.Module.Registration;
 using LYBT.Module.Reports;
 using LYBT.Module.Users.Services;
+using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
@@ -67,14 +68,14 @@ public static class LocalWebApiProgram
         .AddDefaultTokenProviders();
 
         // Register LocalJwtOptions from configuration
-        builder.Services.AddOptions<LYBT.Shared.Configuration.Options.Server.LocalJwtOptions>()
-            .Bind(builder.Configuration.GetSection(LYBT.Shared.Configuration.Options.Server.LocalJwtOptions.SectionName))
+        builder.Services.AddOptions<LocalJwtOptions>()
+            .Bind(builder.Configuration.GetSection(LocalJwtOptions.SectionName))
             .ValidateDataAnnotations();
 
         var localJwtOptions = builder.Configuration
-            .GetSection(LYBT.Shared.Configuration.Options.Server.LocalJwtOptions.SectionName)
-            .Get<LYBT.Shared.Configuration.Options.Server.LocalJwtOptions>()
-            ?? new LYBT.Shared.Configuration.Options.Server.LocalJwtOptions();
+            .GetSection(LocalJwtOptions.SectionName)
+            .Get<LocalJwtOptions>()
+            ?? new LocalJwtOptions();
         LocalJwtConfig.ConfigureServices(builder.Services, localJwtOptions);
 
         builder.Services.AddRateLimiter(options =>
@@ -90,8 +91,8 @@ public static class LocalWebApiProgram
         });
 
         // Register DefaultPasswordOptions from configuration (required by IdentitySeedData)
-        builder.Services.AddOptions<LYBT.Shared.Configuration.Options.Server.DefaultPasswordOptions>()
-            .Bind(builder.Configuration.GetSection(LYBT.Shared.Configuration.Options.Server.DefaultPasswordOptions.SectionName))
+        builder.Services.AddOptions<DefaultPasswordOptions>()
+            .Bind(builder.Configuration.GetSection(DefaultPasswordOptions.SectionName))
             .ValidateDataAnnotations();
 
         var app = builder.Build();

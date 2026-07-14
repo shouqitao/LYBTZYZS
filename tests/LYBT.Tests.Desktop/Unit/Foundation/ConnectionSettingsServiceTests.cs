@@ -64,7 +64,7 @@ public class ConnectionSettingsServiceTests : IDisposable
     [Fact]
     public void CurrentUrl_WithEmptyConfig_ShouldDefaultToLocalhost()
     {
-        var opts = CreateApiOptions(baseUrl: string.Empty);
+        var opts = CreateApiOptions(baseUrl: null);
         var service = new ConnectionSettingsService(opts, _logger);
 
         service.CurrentUrl.Should().Be("http://127.0.0.1:5300");
