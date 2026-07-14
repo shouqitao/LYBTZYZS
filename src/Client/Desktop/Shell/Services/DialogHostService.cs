@@ -7,32 +7,25 @@ namespace LYBT.Desktop.Shell.Services;
 public class DialogHostService : IDialogHostService
 {
     private const string RootDialog = "RootDialog";
+    private readonly IDialogService _dialogService;
 
-    public async Task<bool> ShowConfirmationAsync(string message, string title = "确认")
+    public DialogHostService(IDialogService dialogService)
     {
-        // C2 fix: Resolve the existing ConfirmationDialogViewModel from DI instead of
-        // a hand-rolled DataContext. C4: the VM exposes every property the XAML binds.
-        var vm = ContainerLocator.Container.Resolve<Dialogs.ViewModels.ConfirmationDialogViewModel>();
-        vm.Message = message;
-        vm.Title = title;
+        _dialogService = dialogService;
+    }
 
-        var view = new Dialogs.Views.ConfirmationDialog
+    public Task<bool> ShowConfirmationAsync(string message, string title = "确认")
+    {
+        // 使用Prism IDialogService而不是ContainerLocator
+        var parameters = new DialogParameters
         {
-            DataContext = vm
+            { "Message", message },
+            { "Title", title }
         };
 
-        // Bridge Prism IDialogAware.RequestClose -> MaterialDesign DialogHost.CloseDialogCommand.
-        // The VM's Confirm/Cancel commands raise RequestClose (Prism dialog semantics), but we are
-        // hosting inside a MaterialDesign DialogHost which closes via CloseDialogCommand routed event.
-        vm.RequestClose += dialogResult =>
-        {
-            var confirmed = dialogResult.Result == ButtonResult.OK;
-            DialogHost.CloseDialogCommand.Execute(confirmed, view);
-        };
-
-        // C3 fix: use the identifier string directly, no FindName/FindDialogHost helper.
-        var result = await DialogHost.Show(view, RootDialog);
-        return result is true;
+        IDialogResult? dialogResult = null;
+        _dialogService.ShowDialog("ConfirmationDialog", parameters, result => dialogResult = result);
+        return Task.FromResult(dialogResult?.Result == ButtonResult.OK);
     }
 
     public async Task<T?> ShowCustomDialogAsync<T>(object dialogContent) where T : class
