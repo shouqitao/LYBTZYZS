@@ -1,5 +1,10 @@
 # Shell层深度检查修复 Implementation Plan
 
+> [!NOTE]
+> 此文档可能不反映当前实现。
+> 请参阅最终报告了解最新状态：
+> [Final Report](../reports/2026-07-14-shell-deep-inspection-report.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use compose:subagent (recommended) or compose:execute to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 修复Shell层深度检查发现的3个Critical + 12个Warning问题，提升系统稳定性和可维护性

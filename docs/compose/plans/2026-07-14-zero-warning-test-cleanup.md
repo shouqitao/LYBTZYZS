@@ -1,5 +1,10 @@
 # Zero Warning & Test Cleanup Implementation Plan
 
+> [!NOTE]
+> 此文档可能不反映当前实现。
+> 请参阅最终报告了解最新状态：
+> [Final Report](../reports/test-cleanup.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use compose:subagent (recommended) or compose:execute to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Achieve 0 build warnings, clean up redundant C# tests (Newman tests are complete), and sync to server.

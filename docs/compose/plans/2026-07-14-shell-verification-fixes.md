@@ -1,5 +1,9 @@
 # Shell端整体验证 + 测试修复实施计划
 
+> [!NOTE]
+> 此文档可能不反映当前实现。
+> 所有修复已完成：ConnectionSettingsService 测试通过（26个），AutoLoginCommandHandler 警告已修复。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use compose:subagent (recommended) or compose:execute to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 修复Shell端验证中发现的所有真实测试失败（非环境依赖），使单元测试全部通过，消除编译警告。
