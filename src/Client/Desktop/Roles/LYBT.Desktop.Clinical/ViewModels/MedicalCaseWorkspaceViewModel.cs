@@ -217,6 +217,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     public DelegateCommand BackCommand { get; }
     public DelegateCommand BackToPatientSelectionCommand => BackCommand;
     public DelegateCommand ViewPatientHistoryCommand { get; }
+    public DelegateCommand ViewAuditLogsCommand { get; }
     /// <summary>
     /// Management模式: 审计 + 保存 + 进入只读 (parent-level concern, not in child Commands VM)
     /// </summary>
@@ -269,6 +270,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         BackCommand = new DelegateCommand(async () => await ExecuteBackAsync());
         ViewPatientHistoryCommand = new DelegateCommand(ExecuteViewPatientHistory, () => CurrentPatient != null)
             .ObservesProperty(() => CurrentPatient);
+        ViewAuditLogsCommand = new DelegateCommand(ExecuteViewAuditLogs, () => MedicalCaseId != Guid.Empty)
+            .ObservesProperty(() => MedicalCaseId);
         SaveChangesCommand = new DelegateCommand(ExecuteSaveChanges, () => State.ShowSaveButton);
 
         // Event subscriptions
@@ -740,6 +743,14 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         if (CurrentPatient == null) return;
         Logger.LogInformation("查看患者历史, PatientId: {PatientId}", CurrentPatient.Id);
         _navigationCoordinator.NavigateTo(ViewNames.PatientManagement);
+    }
+
+    private void ExecuteViewAuditLogs()
+    {
+        if (MedicalCaseId == Guid.Empty) return;
+        Logger.LogInformation("查看审计日志, MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+        var parameters = new Dictionary<string, object> { { "MedicalCaseId", MedicalCaseId } };
+        _navigationCoordinator.NavigateTo(ViewNames.AuditLog, parameters);
     }
 
     #endregion

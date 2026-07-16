@@ -95,6 +95,10 @@ namespace LYBT.Desktop.MedicalCase
             
             // 注册MasterDetail View用于导航
             containerRegistry.RegisterForNavigation<Views.MedicalCaseMasterDetailView>();
+
+            // 审计日志视图
+            containerRegistry.Register<ViewModels.AuditLogViewModel>();
+            containerRegistry.RegisterForNavigation<Views.AuditLogView>();
         }
     }
 }

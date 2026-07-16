@@ -62,6 +62,9 @@ public static class ViewNames
     /// <summary>医案主从视图</summary>
     public const string MedicalCaseMasterDetail = "MedicalCaseMasterDetailView";
 
+    /// <summary>医案审计日志</summary>
+    public const string AuditLog = "AuditLogView";
+
     #endregion
 
     #region 设置视图
