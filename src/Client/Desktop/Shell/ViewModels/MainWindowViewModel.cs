@@ -436,6 +436,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
             OnPropertyChanged(nameof(IsPasswordChangeVisible));
 
             _navigationManager.NavigationItems = _navigationManager.BuildNavigationItems(user.Role);
+            OnPropertyChanged(nameof(NavigationItems));
 
             Logger.LogInformation("登录成功UI更新完成 [用户: {Username}]", user.UserName);
         });
