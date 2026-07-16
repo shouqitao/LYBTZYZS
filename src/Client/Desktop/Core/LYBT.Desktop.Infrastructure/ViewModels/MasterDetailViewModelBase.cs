@@ -590,6 +590,31 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         }
 
         /// <summary>
+        /// 恢复命令（恢复软删除的记录）
+        /// </summary>
+        [RelayCommand(CanExecute = nameof(HasSelection))]
+        protected virtual async Task RestoreAsync()
+        {
+            var item = SelectedItem;
+            if (item == null) return;
+
+            var confirmed = await _masterDetailServices.Dialog.ShowConfirmAsync(
+                "确认恢复", "确定要恢复选中的记录吗？");
+            if (!confirmed) return;
+
+            await RestoreItemAsync(item);
+            await RefreshAsync();
+        }
+
+        /// <summary>
+        /// 恢复单项。子类必须重写以调用服务 API。
+        /// </summary>
+        protected virtual Task RestoreItemAsync(TListItem item)
+        {
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
         /// 批量启用。子类重写以调用服务 API。
         /// </summary>
         protected virtual async Task EnableBatchAsync(List<TListItem> items)
@@ -631,6 +656,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             SaveCommand.NotifyCanExecuteChanged();
             CancelCommand.NotifyCanExecuteChanged();
             DeleteCommand.NotifyCanExecuteChanged();
+            RestoreCommand.NotifyCanExecuteChanged();
         }
 
         /// <summary>
