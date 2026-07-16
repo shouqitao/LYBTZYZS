@@ -591,8 +591,8 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         /// <summary>
         /// 恢复命令（恢复软删除的记录）
+        /// 子类应使用 [RelayCommand] 重写此方法以提供自定义恢复逻辑。
         /// </summary>
-        [RelayCommand(CanExecute = nameof(HasSelection))]
         protected virtual async Task RestoreAsync()
         {
             var item = SelectedItem;
@@ -656,7 +656,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             SaveCommand.NotifyCanExecuteChanged();
             CancelCommand.NotifyCanExecuteChanged();
             DeleteCommand.NotifyCanExecuteChanged();
-            RestoreCommand.NotifyCanExecuteChanged();
         }
 
         /// <summary>
