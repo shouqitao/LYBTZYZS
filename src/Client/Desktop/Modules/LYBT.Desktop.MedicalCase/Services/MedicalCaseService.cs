@@ -55,9 +55,6 @@ public class MedicalCaseService : IMedicalCaseService
     public virtual async Task<MedicalCaseDetailDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false, CancellationToken ct = default)
         => await _queryService.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId, checkAllDoctors, ct);
 
-    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
-        => await _queryService.CloseCaseAsync(medicalCaseId, ct);
-
     #endregion
 
     #region IMedicalCaseCommandService 委托
@@ -99,6 +96,9 @@ public class MedicalCaseService : IMedicalCaseService
 
     public virtual async Task<(bool success, string? errorMessage)> ResumeSuspendedAsync(Guid medicalCaseId, CancellationToken ct = default)
         => await _lifecycleService.ResumeSuspendedAsync(medicalCaseId, ct);
+
+    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
+        => await _lifecycleService.CloseCaseAsync(medicalCaseId, ct);
 
     #endregion
 

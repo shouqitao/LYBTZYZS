@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -65,4 +66,11 @@ public interface IMedicalCaseLifecycleService
     /// <param name="medicalCaseId">医案ID</param>
     /// <returns>(是否成功, 错误信息)</returns>
     Task<(bool success, string? errorMessage)> ResumeSuspendedAsync(Guid medicalCaseId, CancellationToken ct = default);
+
+    /// <summary>
+    /// 关闭医案
+    /// </summary>
+    /// <param name="medicalCaseId">医案ID</param>
+    /// <returns>API响应，包含关闭后的医案详情</returns>
+    Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default);
 }

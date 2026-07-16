@@ -153,6 +153,7 @@ public class ShellEventCoordinator : IDisposable
         _loginCoordinator.LoginSucceeded -= OnLoginSucceeded;
         _userActivityTracker.SessionExpired -= OnSessionExpired;
         _loginStateManager.LogoutRequested -= OnLogoutRequested;
+        _userActivityTracker.StopTracking();
         _eventSubscriptions.Dispose();
     }
 }

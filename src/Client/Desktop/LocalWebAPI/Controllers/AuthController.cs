@@ -27,9 +27,9 @@ public class AuthController : BaseApiController
     [HttpPost("login")]
     [AllowAnonymous]
     [EnableRateLimiting("LocalLogin")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
     {
-        var result = await _sender.Send(new LocalLoginCommand(request));
+        var result = await _sender.Send(new LocalLoginCommand(request), ct);
         if (!result.Success)
             return Unauthorized(result);
         return Ok(result);
@@ -45,9 +45,9 @@ public class AuthController : BaseApiController
 
     [HttpPost("refresh")]
     [AllowAnonymous]
-    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request, CancellationToken ct)
     {
-        var result = await _sender.Send(new LocalRefreshTokenCommand(request));
+        var result = await _sender.Send(new LocalRefreshTokenCommand(request), ct);
         if (!result.Success)
             return Unauthorized(result);
         return Ok(result);
@@ -55,19 +55,19 @@ public class AuthController : BaseApiController
 
     [HttpPost("auto-login")]
     [AllowAnonymous]
-    public async Task<IActionResult> AutoLogin([FromBody] AutoLoginRequest request)
+    public async Task<IActionResult> AutoLogin([FromBody] AutoLoginRequest request, CancellationToken ct)
     {
-        var result = await _sender.Send(new LocalAutoLoginCommand(request));
+        var result = await _sender.Send(new LocalAutoLoginCommand(request), ct);
         if (!result.Success)
             return Unauthorized(result);
         return Ok(result);
     }
 
     [HttpGet("validate")]
-    public async Task<IActionResult> ValidateToken()
+    public async Task<IActionResult> ValidateToken(CancellationToken ct)
     {
         var userId = GetCurrentUserId(User);
-        var result = await _sender.Send(new LocalValidateTokenQuery(userId));
+        var result = await _sender.Send(new LocalValidateTokenQuery(userId), ct);
         return Ok(result);
     }
 }

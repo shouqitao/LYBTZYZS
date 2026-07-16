@@ -163,6 +163,27 @@ internal class MedicalCaseLifecycleService : IMedicalCaseLifecycleService
         }
     }
 
+    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
+    {
+        try
+        {
+            _logger.LogInformation("[LC] MedicalCase.CloseCase started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            var data = await _repository.CloseCaseAsync(medicalCaseId);
+
+            if (data != null)
+            {
+                _logger.LogInformation("[LC] MedicalCase.CloseCase completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = data };
+            }
+            else
+            {
+                _logger.LogWarning("[LC] MedicalCase.CloseCase failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "关闭医案失败" };
+            }
+        }
+        catch (Exception ex) { _logger.LogError(ex, "[LC] MedicalCase.CloseCase failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
+    }
+
     #region 内部 API 调用
 
     private async Task<ApiResponse<MedicalCaseDetailDto>> SuspendViaApiAsync(Guid medicalCaseId)

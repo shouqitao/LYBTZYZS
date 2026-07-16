@@ -75,25 +75,4 @@ internal class MedicalCaseQueryService : IMedicalCaseQueryService
         }
         catch (Exception ex) { _logger.LogError(ex, "[Query] MedicalCase.GetUnfinishedByPatient failed - PatientId={PatientId}", patientId); throw; }
     }
-
-    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
-    {
-        try
-        {
-            _logger.LogInformation("[Query] MedicalCase.CloseCase started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            var data = await _repository.CloseCaseAsync(medicalCaseId);
-
-            if (data != null)
-            {
-                _logger.LogInformation("[Query] MedicalCase.CloseCase completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = data };
-            }
-            else
-            {
-                _logger.LogWarning("[Query] MedicalCase.CloseCase failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "关闭医案失败" };
-            }
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[Query] MedicalCase.CloseCase failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
-    }
 }

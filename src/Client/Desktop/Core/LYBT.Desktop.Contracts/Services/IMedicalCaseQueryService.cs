@@ -38,11 +38,4 @@ public interface IMedicalCaseQueryService
         Guid doctorId,
         bool checkAllDoctors = false,
         CancellationToken ct = default);
-
-    /// <summary>
-    /// 关闭医案
-    /// </summary>
-    /// <param name="medicalCaseId">医案ID</param>
-    /// <returns>API响应，包含关闭后的医案详情</returns>
-    Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default);
 }

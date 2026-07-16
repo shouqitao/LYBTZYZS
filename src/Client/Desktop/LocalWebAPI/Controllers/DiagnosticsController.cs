@@ -101,36 +101,36 @@ public class DiagnosticsController : BaseApiController
     }
 
     [HttpGet("logging/status")]
-    public async Task<IActionResult> GetLoggingStatus()
+    public async Task<IActionResult> GetLoggingStatus(CancellationToken ct)
     {
-        var result = await _sender.Send(new GetLoggingStatusQuery());
+        var result = await _sender.Send(new GetLoggingStatusQuery(), ct);
         return Ok(result);
     }
 
     [HttpPost("logging/debug/enable")]
-    public async Task<IActionResult> EnableDebugMode([FromBody] EnableDebugModeRequest? request)
+    public async Task<IActionResult> EnableDebugMode([FromBody] EnableDebugModeRequest? request, CancellationToken ct)
     {
         if (!IsAdminOrHigher()) return Forbid("仅管理员可调整日志级别");
-        var result = await _sender.Send(new EnableDebugModeCommand(request?.Level, request?.DurationMinutes));
+        var result = await _sender.Send(new EnableDebugModeCommand(request?.Level, request?.DurationMinutes), ct);
         return Ok(result);
     }
 
     [HttpPost("logging/debug/disable")]
-    public async Task<IActionResult> DisableDebugMode()
+    public async Task<IActionResult> DisableDebugMode(CancellationToken ct)
     {
         if (!IsAdminOrHigher()) return Forbid("仅管理员可调整日志级别");
-        var result = await _sender.Send(new DisableDebugModeCommand());
+        var result = await _sender.Send(new DisableDebugModeCommand(), ct);
         return Ok(result);
     }
 
     [HttpPost("logging/level")]
-    public async Task<IActionResult> SetLoggingLevel([FromBody] SetLoggingLevelRequest request)
+    public async Task<IActionResult> SetLoggingLevel([FromBody] SetLoggingLevelRequest request, CancellationToken ct)
     {
         if (!IsAdminOrHigher()) return Forbid("仅管理员可调整日志级别");
         if (string.IsNullOrWhiteSpace(request.Level))
             return Error("日志级别不能为空");
 
-        var result = await _sender.Send(new SetLoggingLevelCommand(request.Level));
+        var result = await _sender.Send(new SetLoggingLevelCommand(request.Level), ct);
         if (!result.Success)
             return ValidationFail(result.Message);
         return Ok(result);
