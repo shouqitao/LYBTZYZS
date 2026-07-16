@@ -50,7 +50,7 @@ public class LocalRefreshTokenCommandHandler : IRequestHandler<LocalRefreshToken
 
             var roles = await _userManager.GetRolesAsync(user);
             var token = LocalJwtConfig.GenerateToken(user, roles);
-            var role = ParseUserRole(roles);
+            var role = LocalAuthHelpers.ParseUserRole(roles);
 
             _logger.LogInformation("[AUTH] Local token refresh - UserName={UserName}", user.UserName);
 
@@ -76,10 +76,5 @@ public class LocalRefreshTokenCommandHandler : IRequestHandler<LocalRefreshToken
         }
     }
 
-    private static UserRole ParseUserRole(IList<string> roles)
-    {
-        if (roles.Count > 0 && Enum.TryParse<UserRole>(roles[0], ignoreCase: true, out var role))
-            return role;
-        return UserRole.Doctor;
-    }
+
 }

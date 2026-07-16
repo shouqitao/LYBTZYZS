@@ -73,7 +73,7 @@ public class LocalAutoLoginCommandHandler : IRequestHandler<LocalAutoLoginComman
 
             var roles = await _userManager.GetRolesAsync(user);
             var token = LocalJwtConfig.GenerateToken(user, roles);
-            var role = ParseUserRole(roles);
+            var role = LocalAuthHelpers.ParseUserRole(roles);
 
             _logger.LogInformation("[AUTH] Local auto-login - UserName={UserName} Role={Role}",
                 user.UserName, role);
@@ -100,10 +100,5 @@ public class LocalAutoLoginCommandHandler : IRequestHandler<LocalAutoLoginComman
         }
     }
 
-    private static UserRole ParseUserRole(IList<string> roles)
-    {
-        if (roles.Count > 0 && Enum.TryParse<UserRole>(roles[0], ignoreCase: true, out var role))
-            return role;
-        return UserRole.Doctor;
-    }
+
 }

@@ -12,4 +12,19 @@ public class HealthStatusDto
 
     [JsonPropertyName("version")]
     public string? Version { get; set; }
+
+    [JsonPropertyName("database")]
+    public string? Database { get; set; }
+
+    [JsonPropertyName("dbResponseMs")]
+    public long DbResponseMs { get; set; }
+
+    [JsonPropertyName("statistics")]
+    public HealthStatistics? Statistics { get; set; }
+}
+
+public class HealthStatistics
+{
+    [JsonPropertyName("totalUsers")]
+    public int TotalUsers { get; set; }
 }

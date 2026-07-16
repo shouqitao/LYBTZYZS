@@ -29,7 +29,7 @@ public class LocalValidateTokenQueryHandler : IRequestHandler<LocalValidateToken
                 new ValidateTokenResponse { IsValid = false, ErrorMessage = "用户不存在" }, "用户不存在");
 
         var roles = await _userManager.GetRolesAsync(user);
-        var role = ParseUserRole(roles);
+        var role = LocalAuthHelpers.ParseUserRole(roles);
 
         return ApiResponse<ValidateTokenResponse>.CreateSuccess(new ValidateTokenResponse
         {
@@ -40,10 +40,5 @@ public class LocalValidateTokenQueryHandler : IRequestHandler<LocalValidateToken
         }, "Token 验证成功");
     }
 
-    private static UserRole ParseUserRole(IList<string> roles)
-    {
-        if (roles.Count > 0 && Enum.TryParse<UserRole>(roles[0], ignoreCase: true, out var role))
-            return role;
-        return UserRole.Doctor;
-    }
+
 }

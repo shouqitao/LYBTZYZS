@@ -31,6 +31,8 @@ public class LocalLoginCommandHandler : IRequestHandler<LocalLoginCommand, ApiRe
     public async Task<ApiResponse<LoginResponse>> Handle(LocalLoginCommand command, CancellationToken cancellationToken)
     {
         var request = command.Request;
+        if (request is null)
+            return ApiResponse<LoginResponse>.CreateFail("请求不能为空");
 
         if (string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Password))
             return ApiResponse<LoginResponse>.CreateFail("用户名或密码错误",
@@ -50,7 +52,7 @@ public class LocalLoginCommandHandler : IRequestHandler<LocalLoginCommand, ApiRe
         await _userManager.UpdateAsync(user);
 
         var roles = await _userManager.GetRolesAsync(user);
-        var role = ParseUserRole(roles);
+        var role = LocalAuthHelpers.ParseUserRole(roles);
 
         var token = LocalJwtConfig.GenerateToken(user, roles);
 
@@ -73,10 +75,5 @@ public class LocalLoginCommandHandler : IRequestHandler<LocalLoginCommand, ApiRe
         }, "登录成功");
     }
 
-    private static UserRole ParseUserRole(IList<string> roles)
-    {
-        if (roles.Count > 0 && Enum.TryParse<UserRole>(roles[0], ignoreCase: true, out var role))
-            return role;
-        return UserRole.Doctor;
-    }
+
 }
