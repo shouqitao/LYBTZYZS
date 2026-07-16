@@ -93,6 +93,9 @@ public static class ViewNames
     /// <summary>日志级别控制</summary>
     public const string LogLevelControl = "LogLevelControlView";
 
+    /// <summary>部署管理</summary>
+    public const string Deployment = "DeploymentView";
+
     #endregion
 
 }
