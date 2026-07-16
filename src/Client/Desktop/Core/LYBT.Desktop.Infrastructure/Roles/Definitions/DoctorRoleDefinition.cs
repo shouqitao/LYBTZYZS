@@ -22,7 +22,8 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
             "FormulaModule",
             "MedicalCaseModule",
             // [已删除] "PrescriptionsModule" - 空壳模块已移除
-            "RegistrationModule" // PRD: registration.md - 挂号管理
+            "RegistrationModule", // PRD: registration.md - 挂号管理
+            "ReportsModule"
         };
 
         /// <inheritdoc/>
