@@ -50,6 +50,10 @@ public class NavigationCoordinator : INavigationCoordinator
         { ViewNames.MedicalCaseMasterDetail, "MedicalCaseModule" },
         { ViewNames.RegistrationList, "RegistrationModule" },
         { ViewNames.ReportsHome, "ReportsModule" },
+        { ViewNames.AuditLog, "MedicalCaseModule" },
+        { ViewNames.SystemSettings, "AdminModule" },
+        { ViewNames.LogLevelControl, "SysadminModule" },
+        { ViewNames.Deployment, "SysadminModule" },
     };
 
     public NavigationCoordinator(
