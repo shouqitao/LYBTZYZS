@@ -72,6 +72,34 @@ namespace LYBT.Desktop.Controls.Controls
 
         #endregion
 
+        #region BatchEnableCommand - 批量启用命令
+
+        public ICommand BatchEnableCommand
+        {
+            get => (ICommand)GetValue(BatchEnableCommandProperty);
+            set => SetValue(BatchEnableCommandProperty, value);
+        }
+
+        public static readonly DependencyProperty BatchEnableCommandProperty =
+            DependencyProperty.Register(nameof(BatchEnableCommand), typeof(ICommand), typeof(DataGridToolbar),
+                new PropertyMetadata(null));
+
+        #endregion
+
+        #region BatchDisableCommand - 批量禁用命令
+
+        public ICommand BatchDisableCommand
+        {
+            get => (ICommand)GetValue(BatchDisableCommandProperty);
+            set => SetValue(BatchDisableCommandProperty, value);
+        }
+
+        public static readonly DependencyProperty BatchDisableCommandProperty =
+            DependencyProperty.Register(nameof(BatchDisableCommand), typeof(ICommand), typeof(DataGridToolbar),
+                new PropertyMetadata(null));
+
+        #endregion
+
         #region AdditionalContent - 附加内容
 
         public object AdditionalContent

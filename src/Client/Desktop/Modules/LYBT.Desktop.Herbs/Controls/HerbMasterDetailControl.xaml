@@ -46,6 +46,8 @@
                 <controls:DataGridToolbar
                     Grid.Row="0"
                     BatchDeleteCommand="{Binding DeleteCommand}"
+                    BatchEnableCommand="{Binding BatchEnableCommand}"
+                    BatchDisableCommand="{Binding BatchDisableCommand}"
                     CreateCommand="{Binding CreateNewCommand}"
                     ExportCommand="{Binding ExportHerbsCommand}"
                     RefreshCommand="{Binding RefreshCommand}">

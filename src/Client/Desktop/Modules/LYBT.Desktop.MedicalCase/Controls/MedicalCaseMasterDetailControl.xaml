@@ -43,6 +43,8 @@
                 <controls:DataGridToolbar
                     Grid.Row="0"
                     BatchDeleteCommand="{Binding DeleteCommand}"
+                    BatchEnableCommand="{Binding BatchEnableCommand}"
+                    BatchDisableCommand="{Binding BatchDisableCommand}"
                     RefreshCommand="{Binding RefreshCommand}" />
 
                 <!--  搜索框  -->

@@ -555,6 +555,66 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             }
         }
 
+        /// <summary>
+        /// 批量启用命令
+        /// </summary>
+        [RelayCommand(CanExecute = nameof(HasSelection))]
+        protected virtual async Task BatchEnableAsync()
+        {
+            var items = GetSelectedItemsForDelete();
+            if (items.Count == 0) return;
+
+            var confirmed = await _masterDetailServices.Dialog.ShowConfirmAsync(
+                "确认启用", $"确定要启用选中的 {items.Count} 条记录吗？");
+            if (!confirmed) return;
+
+            await EnableBatchAsync(items);
+            await RefreshAsync();
+        }
+
+        /// <summary>
+        /// 批量禁用命令
+        /// </summary>
+        [RelayCommand(CanExecute = nameof(HasSelection))]
+        protected virtual async Task BatchDisableAsync()
+        {
+            var items = GetSelectedItemsForDelete();
+            if (items.Count == 0) return;
+
+            var confirmed = await _masterDetailServices.Dialog.ShowConfirmAsync(
+                "确认禁用", $"确定要禁用选中的 {items.Count} 条记录吗？");
+            if (!confirmed) return;
+
+            await DisableBatchAsync(items);
+            await RefreshAsync();
+        }
+
+        /// <summary>
+        /// 批量启用。子类重写以调用服务 API。
+        /// </summary>
+        protected virtual async Task EnableBatchAsync(List<TListItem> items)
+        {
+            foreach (var item in items)
+                await SetItemEnabledAsync(item, true);
+        }
+
+        /// <summary>
+        /// 批量禁用。子类重写以调用服务 API。
+        /// </summary>
+        protected virtual async Task DisableBatchAsync(List<TListItem> items)
+        {
+            foreach (var item in items)
+                await SetItemEnabledAsync(item, false);
+        }
+
+        /// <summary>
+        /// 设置单项启用/禁用状态。子类必须重写。
+        /// </summary>
+        protected virtual Task SetItemEnabledAsync(TListItem item, bool enabled)
+        {
+            return Task.CompletedTask;
+        }
+
         private bool CanCreateNew() => !IsEditMode && !IsBusy;
         private bool CanEdit() => HasSelection && !IsEditMode && !IsBusy;
         private bool CanSave() => IsEditMode && CurrentDetail != null && !IsBusy;
