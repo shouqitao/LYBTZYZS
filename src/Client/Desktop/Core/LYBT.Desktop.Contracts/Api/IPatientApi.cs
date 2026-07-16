@@ -77,5 +77,11 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/patients/{id}/toggle-status")]
         Task<ApiResponse<PatientDetailDto>> ToggleStatusAsync(Guid id);
+
+        /// <summary>
+        /// 恢复已删除的患者
+        /// </summary>
+        [Refit.Post("/api/v1/patients/{id}/restore")]
+        Task<ApiResponse<PatientDetailDto>> RestoreAsync(Guid id);
     }
 }

@@ -72,5 +72,11 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/herbs/batch-delete")]
         Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
+
+        /// <summary>
+        /// 恢复已删除的药材
+        /// </summary>
+        [Refit.Post("/api/v1/herbs/{id}/restore")]
+        Task<ApiResponse<HerbDetailDto>> RestoreAsync(Guid id);
     }
 }

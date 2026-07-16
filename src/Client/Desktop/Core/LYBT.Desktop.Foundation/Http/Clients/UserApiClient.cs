@@ -70,6 +70,18 @@ internal sealed class UserApiClient : IApiClientUsers
         => _api.BatchDeleteAsync(request);
 
     /// <inheritdoc />
+    public Task<ApiResponse<UserDetailDto>> RestoreAsync(Guid id)
+        => _api.RestoreAsync(id);
+
+    /// <inheritdoc />
+    public Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request)
+        => _api.BatchEnableAsync(request);
+
+    /// <inheritdoc />
+    public Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request)
+        => _api.BatchDisableAsync(request);
+
+    /// <inheritdoc />
     /// <remarks>Local-only method — not available in remote Refit mode.</remarks>
     public Task<UserDetailDto> GetCurrentUserAsync()
         => throw new NotSupportedException("GetCurrentUserAsync is a local-only method and is not available in remote mode.");

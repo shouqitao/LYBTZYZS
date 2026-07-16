@@ -75,6 +75,19 @@ internal sealed class FormulaApiClient : IApiClientFormulas
         => _api.ExportTemplateAsync();
 
     /// <inheritdoc />
+    public Task<ApiResponse<FormulaDetailDto>> RestoreAsync(Guid id)
+        => _api.RestoreAsync(id);
+
+    /// <inheritdoc />
+    public Task<ApiResponse<List<FormulaListDto>>> GetPendingValidationAsync()
+        => _api.GetPendingValidationAsync();
+
+    /// <inheritdoc />
+    public Task<ApiResponse<FormulaHerbItemDto>> ValidateHerbAsync(
+        Guid formulaId, Guid herbItemId, ValidateFormulaHerbInputDto request)
+        => _api.ValidateHerbAsync(formulaId, herbItemId, request);
+
+    /// <inheritdoc />
     /// <remarks>Local-only method — not available in remote Refit mode.</remarks>
     public Task<List<string>> GetCategoriesAsync()
         => throw new NotSupportedException("GetCategoriesAsync is a local-only method and is not available in remote mode.");

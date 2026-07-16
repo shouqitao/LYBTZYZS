@@ -95,6 +95,26 @@ public interface IApiClientUsers
     // ========== Local-only methods ==========
 
     /// <summary>
+    /// Restore a soft-deleted user.
+    /// </summary>
+    /// <param name="id">User ID.</param>
+    Task<ApiResponse<UserDetailDto>> RestoreAsync(Guid id);
+
+    /// <summary>
+    /// Batch enable users.
+    /// </summary>
+    /// <param name="request">Batch input with IDs.</param>
+    Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request);
+
+    /// <summary>
+    /// Batch disable users.
+    /// </summary>
+    /// <param name="request">Batch input with IDs.</param>
+    Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request);
+
+    // ========== Local-only methods ==========
+
+    /// <summary>
     /// Get current authenticated user (local mode only).
     /// </summary>
     Task<UserDetailDto> GetCurrentUserAsync();

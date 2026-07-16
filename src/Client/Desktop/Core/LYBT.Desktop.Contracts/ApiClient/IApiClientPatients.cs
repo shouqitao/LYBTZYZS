@@ -88,4 +88,10 @@ public interface IApiClientPatients
     /// </summary>
     /// <param name="id">Patient ID.</param>
     Task<ApiResponse<PatientDetailDto>> ToggleStatusAsync(Guid id);
+
+    /// <summary>
+    /// Restore a soft-deleted patient.
+    /// </summary>
+    /// <param name="id">Patient ID.</param>
+    Task<ApiResponse<PatientDetailDto>> RestoreAsync(Guid id);
 }

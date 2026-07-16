@@ -88,6 +88,12 @@ public interface IApiClientHerbs
     /// <param name="request">Batch delete input with IDs.</param>
     Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request);
 
+    /// <summary>
+    /// Restore a soft-deleted herb.
+    /// </summary>
+    /// <param name="id">Herb ID.</param>
+    Task<ApiResponse<HerbDetailDto>> RestoreAsync(Guid id);
+
     // ========== Local-only methods ==========
 
     /// <summary>

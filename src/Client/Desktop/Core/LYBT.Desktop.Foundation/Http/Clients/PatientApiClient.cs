@@ -69,4 +69,8 @@ internal sealed class PatientApiClient : IApiClientPatients
     /// <inheritdoc />
     public Task<ApiResponse<PatientDetailDto>> ToggleStatusAsync(Guid id)
         => _api.ToggleStatusAsync(id);
+
+    /// <inheritdoc />
+    public Task<ApiResponse<PatientDetailDto>> RestoreAsync(Guid id)
+        => _api.RestoreAsync(id);
 }

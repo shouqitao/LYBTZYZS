@@ -111,4 +111,12 @@ internal sealed class MedicalCaseApiClient : IApiClientMedicalCases
     /// <inheritdoc />
     public Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request)
         => _api.BatchDeleteAsync(request);
+
+    /// <inheritdoc />
+    public Task<ApiResponse<MedicalCasePermissionsDto>> GetPermissionsAsync(Guid id)
+        => _api.GetPermissionsAsync(id);
+
+    /// <inheritdoc />
+    public Task<ApiResponse<MedicalCaseDetailDto>> RecordPrintAsync(Guid id, RecordPrintRequest request)
+        => _api.RecordPrintAsync(id, request);
 }

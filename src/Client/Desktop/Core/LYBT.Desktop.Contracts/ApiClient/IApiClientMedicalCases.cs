@@ -158,4 +158,19 @@ public interface IApiClientMedicalCases
     /// <param name="request">Batch delete input with IDs.</param>
     Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request);
 
+    /// <summary>
+    /// Get medical case permissions for current user.
+    /// </summary>
+    /// <param name="id">Medical case ID.</param>
+    Task<ApiResponse<MedicalCasePermissionsDto>> GetPermissionsAsync(Guid id);
+
+    /// <summary>
+    /// Record print completion for a medical case.
+    /// </summary>
+    /// <param name="id">Medical case ID.</param>
+    /// <param name="request">Print record request.</param>
+    Task<ApiResponse<MedicalCaseDetailDto>> RecordPrintAsync(
+        Guid id,
+        RecordPrintRequest request);
+
 }

@@ -94,6 +94,28 @@ public interface IApiClientFormulas
     /// <returns>Template file stream.</returns>
     Task<HttpResponseMessage> ExportTemplateAsync();
 
+    /// <summary>
+    /// Restore a soft-deleted formula.
+    /// </summary>
+    /// <param name="id">Formula ID.</param>
+    Task<ApiResponse<FormulaDetailDto>> RestoreAsync(Guid id);
+
+    /// <summary>
+    /// Get formulas pending validation.
+    /// </summary>
+    Task<ApiResponse<List<FormulaListDto>>> GetPendingValidationAsync();
+
+    /// <summary>
+    /// Validate a formula herb item (bind to system herb catalog).
+    /// </summary>
+    /// <param name="formulaId">Formula ID.</param>
+    /// <param name="herbItemId">Herb item ID in the formula.</param>
+    /// <param name="request">Validation request with selected herb ID.</param>
+    Task<ApiResponse<FormulaHerbItemDto>> ValidateHerbAsync(
+        Guid formulaId,
+        Guid herbItemId,
+        ValidateFormulaHerbInputDto request);
+
     // ========== Local-only methods ==========
 
     /// <summary>

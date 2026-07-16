@@ -72,5 +72,23 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/users/batch-delete")]
         Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
+
+        /// <summary>
+        /// 恢复已删除的用户
+        /// </summary>
+        [Refit.Post("/api/v1/users/{id}/restore")]
+        Task<ApiResponse<UserDetailDto>> RestoreAsync(Guid id);
+
+        /// <summary>
+        /// 批量启用用户
+        /// </summary>
+        [Refit.Post("/api/v1/users/batch-enable")]
+        Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync([Refit.Body] BatchDeleteInputDto request);
+
+        /// <summary>
+        /// 批量禁用用户
+        /// </summary>
+        [Refit.Post("/api/v1/users/batch-disable")]
+        Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync([Refit.Body] BatchDeleteInputDto request);
     }
 }

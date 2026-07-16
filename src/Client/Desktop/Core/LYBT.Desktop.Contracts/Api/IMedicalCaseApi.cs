@@ -178,5 +178,19 @@ namespace LYBT.Desktop.Contracts.Api
             Guid id,
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20);
+
+        /// <summary>
+        /// 获取医案操作权限
+        /// </summary>
+        [Refit.Get("/api/v1/medicalcases/{id}/permissions")]
+        Task<ApiResponse<MedicalCasePermissionsDto>> GetPermissionsAsync(Guid id);
+
+        /// <summary>
+        /// 记录打印完成
+        /// </summary>
+        [Refit.Put("/api/v1/medicalcases/{id}/print-completed")]
+        Task<ApiResponse<MedicalCaseDetailDto>> RecordPrintAsync(
+            Guid id,
+            [Refit.Body] RecordPrintRequest request);
     }
 }

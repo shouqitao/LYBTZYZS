@@ -75,5 +75,26 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Get("/api/v1/formulas/import-template")]
         Task<HttpResponseMessage> ExportTemplateAsync();
+
+        /// <summary>
+        /// 恢复已删除的验方
+        /// </summary>
+        [Refit.Post("/api/v1/formulas/{id}/restore")]
+        Task<ApiResponse<FormulaDetailDto>> RestoreAsync(Guid id);
+
+        /// <summary>
+        /// 获取待校验验方列表
+        /// </summary>
+        [Refit.Get("/api/v1/formulas/pending-validation")]
+        Task<ApiResponse<List<FormulaListDto>>> GetPendingValidationAsync();
+
+        /// <summary>
+        /// 校验验方中的药材（绑定到系统药材库）
+        /// </summary>
+        [Refit.Post("/api/v1/formulas/{formulaId}/herbs/{herbItemId}/validate")]
+        Task<ApiResponse<FormulaHerbItemDto>> ValidateHerbAsync(
+            Guid formulaId,
+            Guid herbItemId,
+            [Refit.Body] ValidateFormulaHerbInputDto request);
     }
 }
