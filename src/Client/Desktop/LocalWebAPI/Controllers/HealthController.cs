@@ -1,114 +1,66 @@
-using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Web;
-using System;
 using System.Reflection;
-using System.Threading.Tasks;
+using LYBT.Infrastructure.Interfaces;
+using LYBT.Infrastructure.Web;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Health;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using LYBT.LocalWebAPI.Data;
-using LYBT.Shared.Models.Contracts.Common;
-using Microsoft.EntityFrameworkCore;
+using HealthStatus = LYBT.Shared.Models.Contracts.Health.HealthStatus;
 
-namespace LYBT.LocalWebAPI.Controllers
+namespace LYBT.LocalWebAPI.Controllers;
+
+[ApiController]
+[Route("api/v1/[controller]")]
+[AllowAnonymous]
+public class HealthController : BaseApiController
 {
-    [ApiController]
-    [Route("api/v1/[controller]")]
-    [AllowAnonymous]
-    public class HealthController : BaseApiController
+    private readonly IHealthCheckService _healthCheckService;
+
+    public HealthController(IHealthCheckService healthCheckService, ILogger<HealthController> logger)
+        : base(logger)
     {
-        private readonly AppDbContext _db;
+        _healthCheckService = healthCheckService;
+    }
 
-        public HealthController(AppDbContext db, ILogger<HealthController> logger)
-            : base(logger)
+    [HttpGet]
+    public async Task<IActionResult> GetHealth()
+    {
+        var dbResult = await _healthCheckService.CheckDatabaseAsync();
+        var status = dbResult.Status == HealthStatus.Healthy ? "Healthy" :
+                     dbResult.Status == HealthStatus.Degraded ? "Degraded" : "Unhealthy";
+
+        return Success(new HealthStatusDto
         {
-            _db = db;
-        }
+            Status = status,
+            Timestamp = DateTime.UtcNow,
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)
+        });
+    }
 
-        /// <summary>
-        /// GET /api/health — 基础健康检查
-        /// </summary>
-        [HttpGet]
-        public async Task<IActionResult> GetHealth()
+    [HttpGet("ping")]
+    public IActionResult Ping()
+    {
+        return Success(new HealthStatusDto
         {
-            bool canConnect = false;
-            try
-            {
-                canConnect = await _db.Database.CanConnectAsync();
-            }
-            catch
-            {
-                canConnect = false;
-            }
+            Status = "Pong",
+            Timestamp = DateTime.UtcNow,
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)
+        });
+    }
 
-            var status = canConnect ? "Healthy" : "Degraded";
-            return Success(new HealthStatusDto
-            {
-                Status = status,
-                Timestamp = DateTime.UtcNow,
-                Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)
-            });
-        }
+    [HttpGet("details")]
+    [Authorize]
+    public async Task<IActionResult> GetDetails()
+    {
+        var dbResult = await _healthCheckService.CheckDatabaseAsync();
+        var status = dbResult.Status == HealthStatus.Healthy ? "Healthy" :
+                     dbResult.Status == HealthStatus.Degraded ? "Degraded" : "Unhealthy";
 
-        /// <summary>
-        /// GET /api/health/ping — 简单存活检查
-        /// </summary>
-        [HttpGet("ping")]
-        public IActionResult Ping()
+        return Success(new HealthStatusDto
         {
-            return Success(new HealthStatusDto
-            {
-                Status = "Pong",
-                Timestamp = DateTime.UtcNow,
-                Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)
-            });
-        }
-
-        /// <summary>
-        /// GET /api/health/details — 详细健康信息（DB 连接、版本等）
-        /// </summary>
-        [HttpGet("details")]
-        [Authorize]
-        public async Task<IActionResult> GetDetails()
-        {
-            var dbConnected = false;
-            var dbVersion = "unknown";
-            var dbResponseMs = 0L;
-
-            try
-            {
-                var sw = System.Diagnostics.Stopwatch.StartNew();
-                dbConnected = await _db.Database.CanConnectAsync();
-                sw.Stop();
-                dbResponseMs = sw.ElapsedMilliseconds;
-
-                if (dbConnected)
-                {
-                    dbVersion = _db.Database.ProviderName ?? "unknown";
-                }
-            }
-            catch (Exception ex)
-            {
-                dbConnected = false;
-                dbVersion = $"Error: {ex.Message}";
-            }
-
-            var userCount = 0;
-            try
-            {
-                userCount = await _db.Users.IgnoreQueryFilters().CountAsync();
-            }
-            catch
-            {
-                // ignore
-            }
-
-            return Success(new HealthStatusDto
-            {
-                Status = dbConnected ? "Healthy" : "Degraded",
-                Timestamp = DateTime.UtcNow,
-                Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0"
-            });
-        }
+            Status = status,
+            Timestamp = DateTime.UtcNow,
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0"
+        });
     }
 }

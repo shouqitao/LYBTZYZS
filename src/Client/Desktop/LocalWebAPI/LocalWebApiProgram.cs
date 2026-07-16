@@ -5,6 +5,8 @@ using LYBT.LocalWebAPI.Data;
 using LYBT.LocalWebAPI.Auth;
 using LYBT.Shared.Logging.Management;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Interfaces;
+using LYBT.Infrastructure.Services;
 using LYBT.Module.Auth;
 using LYBT.Module.Users;
 using LYBT.Module.Patients;
@@ -16,6 +18,7 @@ using LYBT.Module.Reports;
 using LYBT.Module.Users.Services;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Entities.Users;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
@@ -53,6 +56,14 @@ public static class LocalWebApiProgram
         builder.Services.AddMedicalCaseModule();
         builder.Services.AddRegistrationModule();
         builder.Services.AddReportsModule(builder.Configuration);
+
+        // LocalWebAPI CQRS Handlers（Auth + Diagnostics）
+        builder.Services.AddMediatR(cfg =>
+            cfg.RegisterServicesFromAssembly(typeof(LocalWebApiProgram).Assembly));
+
+        // 健康检查服务（复用 Server 基础设施层）
+        builder.Services.AddScoped<IDbContextAccessor, DbContextAccessor>();
+        builder.Services.AddScoped<IHealthCheckService, HealthCheckService>();
 
         builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
         {

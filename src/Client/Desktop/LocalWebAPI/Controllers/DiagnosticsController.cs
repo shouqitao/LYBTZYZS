@@ -1,43 +1,33 @@
-using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Web;
-using System;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
-using System.Threading.Tasks;
+using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Web;
+using LYBT.LocalWebAPI.Commands;
+using LYBT.Shared.Models.Contracts.Diagnostics;
+using LYBT.Shared.Models.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Serilog.Events;
-using LYBT.LocalWebAPI.Data;
-using LYBT.Shared.Logging.Management;
-using LYBT.Shared.Models.Contracts.Diagnostics;
-using LYBT.Shared.Models.Enums;
 
 namespace LYBT.LocalWebAPI.Controllers;
 
-/// <summary>
-/// Diagnostics controller: database info, version, recent logs, and logging management.
-/// Read endpoints require authentication. Logging management requires Admin+.
-/// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
 [Authorize]
 public class DiagnosticsController : BaseApiController
 {
     private readonly AppDbContext _db;
-    private readonly LoggingLevelManager _loggingLevelManager;
+    private readonly ISender _sender;
 
-    public DiagnosticsController(AppDbContext db, LoggingLevelManager loggingLevelManager, ILogger<DiagnosticsController> logger)
+    public DiagnosticsController(AppDbContext db, ISender sender, ILogger<DiagnosticsController> logger)
         : base(logger)
     {
         _db = db;
-        _loggingLevelManager = loggingLevelManager;
+        _sender = sender;
     }
 
-    // GET /api/diagnostics/db-info
     [HttpGet("db-info")]
     public async Task<IActionResult> GetDbInfo()
     {
@@ -51,17 +41,14 @@ public class DiagnosticsController : BaseApiController
             canConnect = false;
         }
 
-        var providerName = _db.Database.ProviderName ?? "Unknown";
-
         return Success(new
         {
-            provider = providerName,
+            provider = _db.Database.ProviderName ?? "Unknown",
             connectionState = canConnect ? "Connected" : "Disconnected",
             timestamp = DateTime.UtcNow
         });
     }
 
-    // GET /api/diagnostics/version
     [HttpGet("version")]
     public IActionResult GetVersion()
     {
@@ -82,7 +69,6 @@ public class DiagnosticsController : BaseApiController
         });
     }
 
-    // GET /api/diagnostics/logs/recent?count=50
     [HttpGet("logs/recent")]
     public async Task<IActionResult> GetRecentLogs([FromQuery] int count = 50)
     {
@@ -108,92 +94,40 @@ public class DiagnosticsController : BaseApiController
         return Success(new { count = logs.Count, items = logs });
     }
 
-    // GET /api/diagnostics/logging/status
     [HttpGet("logging/status")]
-    public IActionResult GetLoggingStatus()
+    public async Task<IActionResult> GetLoggingStatus()
     {
-        var status = _loggingLevelManager.GetStatus();
-        return Success(new
-        {
-            currentLevel = status.CurrentLevel,
-            defaultLevel = status.DefaultLevel,
-            isDebugModeActive = status.IsActive,
-            debugModeStartedAt = status.StartedAt,
-            debugModeExpiresAt = status.ExpiresAt,
-            remainingMinutes = status.ExpiresAt.HasValue
-                ? Math.Max(0, (int)(status.ExpiresAt.Value - DateTime.UtcNow).TotalMinutes)
-                : (int?)null
-        });
+        var result = await _sender.Send(new GetLoggingStatusQuery());
+        return Ok(result);
     }
 
-    // POST /api/diagnostics/logging/debug/enable
     [HttpPost("logging/debug/enable")]
-    public IActionResult EnableDebugMode([FromBody] EnableDebugModeRequest? request)
+    public async Task<IActionResult> EnableDebugMode([FromBody] EnableDebugModeRequest? request)
     {
         if (!IsAdminOrHigher()) return Forbid("仅管理员可调整日志级别");
-        var level = request?.Level?.ToLowerInvariant() switch
-        {
-            "verbose" => LogEventLevel.Verbose,
-            "debug" => LogEventLevel.Debug,
-            "information" => LogEventLevel.Information,
-            _ => LogEventLevel.Debug
-        };
-
-        var durationMinutes = request?.DurationMinutes ?? 30;
-        if (durationMinutes > 120) durationMinutes = 120;
-
-        var result = _loggingLevelManager.EnableDebugMode(level, durationMinutes);
-
-        return Success(new
-        {
-            message = "调试模式已启用",
-            previousLevel = result.PreviousLevel,
-            currentLevel = result.CurrentLevel,
-            startedAt = result.StartedAt,
-            expiresAt = result.ExpiresAt,
-            durationMinutes = result.DurationMinutes
-        });
+        var result = await _sender.Send(new EnableDebugModeCommand(request?.Level, request?.DurationMinutes));
+        return Ok(result);
     }
 
-    // POST /api/diagnostics/logging/debug/disable
     [HttpPost("logging/debug/disable")]
-    public IActionResult DisableDebugMode()
+    public async Task<IActionResult> DisableDebugMode()
     {
         if (!IsAdminOrHigher()) return Forbid("仅管理员可调整日志级别");
-        var result = _loggingLevelManager.DisableDebugMode();
-
-        return Success(new
-        {
-            message = "调试模式已禁用，已恢复默认日志级别",
-            previousLevel = result.PreviousLevel,
-            currentLevel = result.CurrentLevel
-        });
+        var result = await _sender.Send(new DisableDebugModeCommand());
+        return Ok(result);
     }
 
-    // POST /api/diagnostics/logging/level
     [HttpPost("logging/level")]
-    public IActionResult SetLoggingLevel([FromBody] SetLoggingLevelRequest request)
+    public async Task<IActionResult> SetLoggingLevel([FromBody] SetLoggingLevelRequest request)
     {
         if (!IsAdminOrHigher()) return Forbid("仅管理员可调整日志级别");
         if (string.IsNullOrWhiteSpace(request.Level))
-        {
             return Error("日志级别不能为空");
-        }
 
-        if (!Enum.TryParse<LogEventLevel>(request.Level, ignoreCase: true, out var level))
-        {
-            return ValidationFail($"无效的日志级别，有效值: {string.Join(", ", Enum.GetNames<LogEventLevel>())}");
-        }
-
-        var previousLevel = _loggingLevelManager.GetStatus().CurrentLevel;
-        _loggingLevelManager.SetLevel(level);
-
-        return Success(new
-        {
-            message = "日志级别已更新",
-            previousLevel,
-            currentLevel = level.ToString()
-        });
+        var result = await _sender.Send(new SetLoggingLevelCommand(request.Level));
+        if (!result.Success)
+            return ValidationFail(result.Message);
+        return Ok(result);
     }
 
     private bool IsAdminOrHigher()
