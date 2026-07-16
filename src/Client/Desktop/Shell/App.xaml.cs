@@ -95,6 +95,7 @@ public partial class App : PrismApplication
         containerRegistry.RegisterSingleton<AppStartupOrchestrator>();
         containerRegistry.RegisterSingleton<IApplicationBootstrapper, ApplicationBootstrapper>();
         containerRegistry.RegisterAllServices();
+        containerRegistry.Register<Views.MainWindow>();
         containerRegistry.Register<MainWindowViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.ConfirmationDialog, Dialogs.ViewModels.ConfirmationDialogViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.MessageDialog, Dialogs.ViewModels.MessageDialogViewModel>();
@@ -103,6 +104,9 @@ public partial class App : PrismApplication
             LYBT.Desktop.Infrastructure.ViewModels.UnfinishedCaseDialogViewModel>();
         containerRegistry.Register<ViewModels.AccountSettingsViewModel>();
         containerRegistry.RegisterForNavigation<Views.AccountSettingsView>();
+
+        // MaterialDesignThemes ISnackbarMessageQueue registration
+        containerRegistry.RegisterSingleton<MaterialDesignThemes.Wpf.ISnackbarMessageQueue, MaterialDesignThemes.Wpf.SnackbarMessageQueue>();
 
         containerRegistry.RegisterSingleton<IThemeService>(resolver =>
         {
