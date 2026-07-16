@@ -495,24 +495,63 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         }
 
         /// <summary>
-        /// 删除命令
+        /// 删除命令 - 支持单选和批量删除
         /// </summary>
         [RelayCommand(CanExecute = nameof(CanDelete))]
         protected virtual async Task DeleteAsync()
         {
-            if (SelectedItem == null) return;
+            var itemsToDelete = GetSelectedItemsForDelete();
+            if (itemsToDelete.Count == 0) return;
 
-            var confirmed = await _masterDetailServices.Dialog.ShowConfirmAsync(
-                "确认删除",
-                "确定要删除选中的记录吗？");
+            var message = itemsToDelete.Count == 1
+                ? "确定要删除选中的记录吗？"
+                : $"确定要删除选中的 {itemsToDelete.Count} 条记录吗？";
 
+            var confirmed = await _masterDetailServices.Dialog.ShowConfirmAsync("确认删除", message);
             if (!confirmed) return;
 
-            var success = await DeleteItemAsync(SelectedItem);
-            if (success)
+            if (itemsToDelete.Count == 1)
             {
+                var success = await DeleteItemAsync(itemsToDelete[0]);
+                if (success)
+                {
+                    await RefreshAsync();
+                    await OnItemDeletedAsync(itemsToDelete[0]);
+                }
+            }
+            else
+            {
+                await DeleteBatchAsync(itemsToDelete);
                 await RefreshAsync();
-                await OnItemDeletedAsync(SelectedItem);
+            }
+        }
+
+        /// <summary>
+        /// 获取用于批量删除的选中项。
+        /// 优先使用 DataGrid 复选框选中的项，回退到单个 SelectedItem。
+        /// </summary>
+        protected virtual List<TListItem> GetSelectedItemsForDelete()
+        {
+            if (SelectedItems != null && SelectedItems.Count > 0)
+                return new List<TListItem>(SelectedItems);
+
+            if (SelectedItem != null)
+                return new List<TListItem> { SelectedItem };
+
+            return new List<TListItem>();
+        }
+
+        /// <summary>
+        /// 批量删除多个项。子类可重写以调用批量 API。
+        /// 默认实现逐个删除。
+        /// </summary>
+        protected virtual async Task DeleteBatchAsync(List<TListItem> items)
+        {
+            foreach (var item in items)
+            {
+                var success = await DeleteItemAsync(item);
+                if (success)
+                    await OnItemDeletedAsync(item);
             }
         }
 
