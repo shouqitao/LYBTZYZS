@@ -8,7 +8,14 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
         <StackPanel MaxWidth="600" HorizontalAlignment="Center">
             <!-- Header -->
-            <TextBlock Text="{Binding PageTitle}" Style="{StaticResource MaterialDesignTitleTextBlock}" Margin="0,0,0,16"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                <Button Command="{Binding GoBackCommand}" Style="{StaticResource MaterialDesignIconButton}"
+                        ToolTip="返回" Margin="0,0,8,0">
+                    <md:PackIcon Kind="ArrowLeft"/>
+                </Button>
+                <TextBlock Text="{Binding PageTitle}" Style="{StaticResource MaterialDesignTitleTextBlock}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
 
             <!-- Upload Card -->
             <md:Card Padding="20" Margin="0,0,0,16">

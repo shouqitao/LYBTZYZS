@@ -16,6 +16,7 @@ namespace LYBT.Desktop.Sysadmin.ViewModels;
 public partial class DeploymentViewModel : NavigableViewModelBase
 {
     private readonly IDeployApi _deployApi;
+    private readonly INavigationCoordinator _navigationCoordinator;
 
     [ObservableProperty] private string _statusMessage = string.Empty;
     [ObservableProperty] private bool _isUploading;
@@ -23,10 +24,11 @@ public partial class DeploymentViewModel : NavigableViewModelBase
     [ObservableProperty] private double _uploadProgress;
     [ObservableProperty] private string? _selectedFileName;
 
-    public DeploymentViewModel(IViewModelServices services, IDeployApi deployApi)
+    public DeploymentViewModel(IViewModelServices services, IDeployApi deployApi, INavigationCoordinator navigationCoordinator)
         : base(services)
     {
         _deployApi = deployApi;
+        _navigationCoordinator = navigationCoordinator;
         PageTitle = "部署管理";
     }
 
@@ -102,4 +104,7 @@ public partial class DeploymentViewModel : NavigableViewModelBase
     }
 
     private bool CanControl => !IsUploading && !IsRestarting;
+
+    [RelayCommand]
+    private void GoBack() => _navigationCoordinator.NavigateBack();
 }
