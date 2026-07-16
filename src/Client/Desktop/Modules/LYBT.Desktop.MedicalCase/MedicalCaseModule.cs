@@ -42,12 +42,13 @@ namespace LYBT.Desktop.MedicalCase
             // IMedicalCaseRepository 由 Shell DI 注册 (Refit API)
             // [已移除] IPrescriptionPrintService, PrescriptionPrintService
 
-            // Epic #1773: 注册Component组件
+            // S7: MedicalCaseService 拆分 - 注册共享编辑上下文 + 三个独立服务
+            containerRegistry.Register<MedicalCaseEditContext>();
+            containerRegistry.Register<IMedicalCaseQueryService, MedicalCaseQueryService>();
+            containerRegistry.Register<IMedicalCaseCommandService, MedicalCaseCommandService>();
+            containerRegistry.Register<IMedicalCaseLifecycleService, MedicalCaseLifecycleService>();
+            // IMedicalCaseService 聚合代理 - 现有消费者无需改动
             containerRegistry.Register<IMedicalCaseService, MedicalCaseService>();
-            // 遵循依赖倒置原则：其他模块可按需依赖特定职责的接口
-            containerRegistry.Register<IMedicalCaseQueryService, MedicalCaseService>();
-            containerRegistry.Register<IMedicalCaseCommandService, MedicalCaseService>();
-            containerRegistry.Register<IMedicalCaseLifecycleService, MedicalCaseService>();
 
             // Issue #1806: 注册MedicalCaseFlowViewModel组件化服务（Epic #1805 Phase 2）
             // [已移除] MedicalCaseFlowManager - 三步流程已取消

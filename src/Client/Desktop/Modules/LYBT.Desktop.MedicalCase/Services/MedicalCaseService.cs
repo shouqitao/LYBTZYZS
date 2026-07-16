@@ -1,136 +1,238 @@
-using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.MedicalCase.Interfaces;
-using LYBT.Desktop.MedicalCase.Mappers;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Extensions;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 
 namespace LYBT.Desktop.MedicalCase.Services;
 
 /// <summary>
-/// 医案Service - 聚合根门面模式实现
-/// 合并了 Coordinator 的数据加载、聚合保存、生命周期编排职责
+/// 医案Service - 聚合代理
+/// 委托 Query/Command/Lifecycle 三个独立服务，自身保留 Coordinator 职责
 /// </summary>
 public class MedicalCaseService : IMedicalCaseService
 {
     private readonly IMedicalCaseRepository _repository;
+    private readonly IMedicalCaseQueryService _queryService;
+    private readonly IMedicalCaseCommandService _commandService;
+    private readonly IMedicalCaseLifecycleService _lifecycleService;
+    private readonly MedicalCaseEditContext _context;
     private readonly ISessionManager? _sessionManager;
     private readonly ILogger<MedicalCaseService> _logger;
-    private readonly MedicalCaseCloneMapper _cloneMapper = new();
-    private MedicalCaseDetailDto? _originalDetail;
-    private MedicalCaseDetailDto? _currentDetail;
-
-    // 缓存字段 (合并自 Coordinator)
-    private MedicalCaseDetailDto? _cachedMedicalCase;
-    private ConsultationDetailDto? _cachedConsultation;
-    private PrescriptionDetailDto? _cachedPrescription;
 
     public MedicalCaseService(
         IMedicalCaseRepository repository,
+        IMedicalCaseQueryService queryService,
+        IMedicalCaseCommandService commandService,
+        IMedicalCaseLifecycleService lifecycleService,
+        MedicalCaseEditContext context,
         ILogger<MedicalCaseService> logger,
         ISessionManager? sessionManager = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+        _commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
+        _lifecycleService = lifecycleService ?? throw new ArgumentNullException(nameof(lifecycleService));
+        _context = context ?? throw new ArgumentNullException(nameof(context));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _sessionManager = sessionManager;
     }
 
-    #region 属性
+    #region IMedicalCaseQueryService 委托
 
-    public virtual Guid MedicalCaseId => _currentDetail?.Id ?? Guid.Empty;
-    public virtual MedicalCaseDetailDto? Current => _currentDetail;
-    public virtual ConsultationDetailDto? CurrentConsultation => _currentDetail?.Consultation;
-    public virtual PrescriptionDetailDto? CurrentPrescription => _currentDetail?.Prescription;
-    public virtual bool HasChanges => _currentDetail != null && _originalDetail != null &&
-        (IsMedicalCaseChanged() || IsConsultationChanged() || IsPrescriptionChanged());
+    public virtual async Task<PagedResult<MedicalCaseListDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null, CancellationToken ct = default)
+        => await _queryService.GetPagedAsync(page, pageSize, searchText, ct);
 
-    // 缓存属性 (合并自 Coordinator)
-    public MedicalCaseDetailDto? CachedMedicalCase => _cachedMedicalCase;
-    public ConsultationDetailDto? CachedConsultation => _cachedConsultation;
-    public PrescriptionDetailDto? CachedPrescription => _cachedPrescription;
+    public virtual async Task<PagedResult<MedicalCaseListDto>?> QueryAsync(MedicalCaseQueryDto query, CancellationToken ct = default)
+        => await _queryService.QueryAsync(query, ct);
+
+    public virtual async Task<MedicalCaseDetailDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false, CancellationToken ct = default)
+        => await _queryService.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId, checkAllDoctors, ct);
+
+    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
+        => await _queryService.CloseCaseAsync(medicalCaseId, ct);
 
     #endregion
 
-    #region IDataManager实现
-    public async Task InitializeAsync(Guid entityId, CancellationToken ct = default)
-    {
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.Initialize started - MedicalCaseId={MedicalCaseId}", entityId);
-            _currentDetail = await _repository.GetByIdAsync(entityId);
-            if (_currentDetail == null) throw new InvalidOperationException($"未找到ID为{entityId}的医案");
-            _originalDetail = _cloneMapper.Clone(_currentDetail);
-            _logger.LogDebug("[SVC] MedicalCase.Initialize detail - PatientId={PatientId} UserId={UserId} PatientName={PatientName}",
-                _currentDetail.PatientId, _currentDetail.UserId, _currentDetail.PatientName);
-            _logger.LogInformation("[SVC] MedicalCase.Initialize completed - PatientName={PatientName}", _currentDetail.PatientName);
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Initialize failed - MedicalCaseId={MedicalCaseId}", entityId); throw; }
-    }
-    public virtual async Task<bool> SaveAsync(CancellationToken ct = default)
-    {
-        if (_currentDetail == null) { _logger.LogWarning("[SVC] MedicalCase.Save → NoData"); return false; }
-        if (!HasChanges) { _logger.LogDebug("[SVC] MedicalCase.Save → NoChanges - MedicalCaseId={MedicalCaseId}", _currentDetail.Id); return true; }
+    #region IMedicalCaseCommandService 委托
 
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.Save started - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
-            var inputDto = _currentDetail.ToInputDto();
-            _logger.LogDebug("[SVC] MedicalCase.Save inputDto - PatientId={PatientId} UserId={UserId}",
-                inputDto.PatientId, inputDto.UserId);
-            var updated = await _repository.SaveAsync(_currentDetail.Id, inputDto);
-            if (updated != null)
-            {
-                UpdateMedicalCaseFields(_currentDetail, updated);
-                if (updated.Consultation != null) _currentDetail.Consultation = updated.Consultation;
-                if (updated.Prescription != null) _currentDetail.Prescription = updated.Prescription;
-            }
-            _originalDetail = _cloneMapper.Clone(_currentDetail);
-            _logger.LogInformation("[SVC] MedicalCase.Save completed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
-            return true;
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Save failed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id); return false; }
-    }
+    public MedicalCaseDetailDto? Current => _commandService.Current;
+    public bool HasChanges => _commandService.HasChanges;
+
+    public virtual async Task<bool> SaveAsync(CancellationToken ct = default)
+        => await _commandService.SaveAsync(ct);
 
     public virtual async Task<bool> DeleteAsync(CancellationToken ct = default)
-    {
-        if (_currentDetail == null) { _logger.LogWarning("[SVC] MedicalCase.Delete → NoData"); return false; }
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.Delete started - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
-            var result = await _repository.DeleteAsync(_currentDetail.Id);
-            if (result)
-            {
-                _logger.LogInformation("[SVC] MedicalCase.Delete completed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
-                _currentDetail = null; _originalDetail = null;
-            }
-            else
-            {
-                _logger.LogWarning("[SVC] MedicalCase.Delete → Failed - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
-            }
-            return result;
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Delete failed - MedicalCaseId={MedicalCaseId}", _currentDetail?.Id ?? Guid.Empty); return false; }
-    }
+        => await _commandService.DeleteAsync(ct);
+
+    public virtual async Task<(bool success, Guid medicalCaseId, string? errorMessage)> CreateMedicalCaseAsync(Guid patientId, Guid? registrationId = null, CancellationToken ct = default)
+        => await _commandService.CreateMedicalCaseAsync(patientId, registrationId, ct);
+
+    #endregion
+
+    #region IMedicalCaseLifecycleService 委托
+
+    public Guid MedicalCaseId => _lifecycleService.MedicalCaseId;
+    public ConsultationDetailDto? CurrentConsultation => _lifecycleService.CurrentConsultation;
+    public PrescriptionDetailDto? CurrentPrescription => _lifecycleService.CurrentPrescription;
+
+    public async Task InitializeAsync(Guid entityId, CancellationToken ct = default)
+        => await _lifecycleService.InitializeAsync(entityId, ct);
 
     public virtual async Task ReloadAsync(CancellationToken ct = default)
+        => await _lifecycleService.ReloadAsync(ct);
+
+    public virtual async Task<(bool success, string? errorMessage)> SuspendAsync(Guid medicalCaseId, CancellationToken ct = default)
+        => await _lifecycleService.SuspendAsync(medicalCaseId, ct);
+
+    public virtual async Task<(bool success, string? errorMessage)> CancelMedicalCaseAsync(Guid medicalCaseId, string? reason = null, CancellationToken ct = default)
+        => await _lifecycleService.CancelMedicalCaseAsync(medicalCaseId, reason, ct);
+
+    public virtual async Task<(bool success, string? errorMessage)> CompleteMedicalCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
+        => await _lifecycleService.CompleteMedicalCaseAsync(medicalCaseId, ct);
+
+    public virtual async Task<(bool success, string? errorMessage)> ResumeSuspendedAsync(Guid medicalCaseId, CancellationToken ct = default)
+        => await _lifecycleService.ResumeSuspendedAsync(medicalCaseId, ct);
+
+    #endregion
+
+    #region IMedicalCaseService 独有成员（Coordinator 职责）
+
+    public MedicalCaseDetailDto? CachedMedicalCase => _context.CachedMedicalCase;
+    public ConsultationDetailDto? CachedConsultation => _context.CachedConsultation;
+    public PrescriptionDetailDto? CachedPrescription => _context.CachedPrescription;
+
+    public async Task<(bool success, MedicalCaseDetailDto? detail, string? errorMessage)> LoadDetailsAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
-        if (_currentDetail != null)
+        try
         {
-            _logger.LogDebug("[SVC] MedicalCase.Reload started - MedicalCaseId={MedicalCaseId}", _currentDetail.Id);
-            await InitializeAsync(_currentDetail.Id);
+            _logger.LogInformation("[SVC] MedicalCase.LoadDetails started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+
+            var detail = await _repository.GetByIdAsync(medicalCaseId);
+            if (detail == null)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.LoadDetails → NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return (false, null, "未找到医案数据");
+            }
+
+            _context.CachedMedicalCase = detail;
+            _context.CachedConsultation = detail.Consultation;
+            _context.CachedPrescription = detail.Prescription;
+
+            _logger.LogInformation("[SVC] MedicalCase.LoadDetails completed");
+            return (true, detail, null);
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[SVC] MedicalCase.LoadDetails failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载医案数据", ex));
+        }
+    }
+
+    public void ClearCache()
+    {
+        _logger.LogDebug("[SVC] MedicalCase.ClearCache");
+        _context.ClearCache();
+    }
+
+    public async Task<(bool Success, MedicalCaseDetailDto? Data, string? Error)> AggregateSaveAsync(
+        Guid medicalCaseId,
+        ConsultationInputDto? consultation,
+        PrescriptionInputDto? prescription,
+        string? remark = null,
+        string? editReason = null,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            _logger.LogInformation("[SVC] MedicalCase.AggregateSave started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+
+            var aggregateDto = new MedicalCaseInputDto
+            {
+                Id = medicalCaseId,
+                EditReason = editReason,
+                Consultation = consultation,
+                Prescription = prescription
+            };
+
+            var result = await _repository.SaveAsync(medicalCaseId, aggregateDto);
+
+            _context.CachedMedicalCase = result;
+            _context.CachedConsultation = result?.Consultation;
+            _context.CachedPrescription = result?.Prescription;
+
+            _logger.LogInformation("[SVC] MedicalCase.AggregateSave completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return (true, result, null);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[SVC] MedicalCase.AggregateSave failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex));
+        }
+    }
+
+    public async Task<(bool Success, string? Error)> SaveAndCompleteAsync(
+        Guid medicalCaseId,
+        ConsultationInputDto? consultation,
+        PrescriptionInputDto? prescription,
+        IValidatable? consultationValidator,
+        IValidatable? prescriptionValidator,
+        string? remark = null,
+        bool isPrescriptionEnabled = true,
+        CancellationToken ct = default)
+    {
+        if (consultationValidator != null && !consultationValidator.Validate())
+            return (false, consultationValidator.ValidationMessage);
+        if (isPrescriptionEnabled && prescriptionValidator != null && !prescriptionValidator.Validate())
+            return (false, prescriptionValidator.ValidationMessage);
+
+        var (saveOk, _, saveError) = await AggregateSaveAsync(medicalCaseId, consultation, prescription, remark);
+        if (!saveOk) return (false, saveError);
+
+        return await CompleteMedicalCaseAsync(medicalCaseId);
+    }
+
+    public async Task<(bool Success, string? Error)> SaveAndSuspendAsync(
+        Guid medicalCaseId,
+        ConsultationInputDto? consultation,
+        PrescriptionInputDto? prescription,
+        string? remark = null,
+        CancellationToken ct = default)
+    {
+        var (saveOk, _, saveError) = await AggregateSaveAsync(medicalCaseId, consultation, prescription, remark);
+        if (!saveOk) return (false, saveError);
+
+        return await SuspendAsync(medicalCaseId);
+    }
+
+    public async Task<(bool Success, string? Error)> SaveAndCancelAsync(
+        Guid medicalCaseId,
+        ConsultationInputDto? consultation,
+        PrescriptionInputDto? prescription,
+        string? remark = null,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            await AggregateSaveAsync(medicalCaseId, consultation, prescription, remark);
+        }
+        catch (Exception saveEx)
+        {
+            _logger.LogWarning(saveEx, "[SVC] MedicalCase.SaveAndCancel → SaveFailed, proceeding with cancel");
+        }
+
+        return await CancelMedicalCaseAsync(medicalCaseId);
     }
 
     #endregion
 
-    #region 简单CRUD方法
+    #region 额外业务方法（非接口成员，供 ViewModel 直接调用）
 
     public virtual async Task<MedicalCaseDetailDto?> GetByIdSimpleAsync(Guid id)
     {
@@ -144,39 +246,6 @@ public class MedicalCaseService : IMedicalCaseService
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.GetByIdSimple failed - MedicalCaseId={MedicalCaseId}", id); return null; }
     }
-    // ViewModel应直接使用Repository进行CRUD操作
-    public virtual async Task<PagedResult<MedicalCaseListDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null, CancellationToken ct = default)
-    {
-        try
-        {
-            _logger.LogDebug("[SVC] MedicalCase.GetPaged started - Page={Page} PageSize={PageSize}", page, pageSize);
-            var result = await _repository.GetPagedAsync(page, pageSize, searchText);
-            _logger.LogDebug("[SVC] MedicalCase.GetPaged completed - TotalCount={TotalCount}", result?.TotalCount ?? 0);
-            return result;
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.GetPaged failed - Page={Page}", page); return null; }
-    }
-
-    /// <summary>
-    /// 统一查询医案
-    /// </summary>
-    public virtual async Task<PagedResult<MedicalCaseListDto>?> QueryAsync(MedicalCaseQueryDto query, CancellationToken ct = default)
-    {
-        try
-        {
-            _logger.LogDebug("[SVC] MedicalCase.Query started - QueryType={QueryType}", query.QueryType);
-            var result = await _repository.QueryAsync(query);
-            _logger.LogDebug("[SVC] MedicalCase.Query completed - TotalCount={TotalCount}", result?.TotalCount ?? 0);
-            return result;
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.Query failed - QueryType={QueryType}", query.QueryType); return null; }
-    }
-    // ViewModel应直接使用Repository进行这些操作
-
-    #endregion
-
-    #region 业务命令方法（API-based）
-    // 诊断更新通过聚合保存 SaveAsync 处理
 
     public virtual async Task<ApiResponse<MedicalCaseDetailDto>> SetPrescriptionFlagAsync(Guid medicalCaseId, SetPrescriptionFlagRequest request)
     {
@@ -185,7 +254,7 @@ public class MedicalCaseService : IMedicalCaseService
             _logger.LogInformation("[SVC] MedicalCase.SetPrescriptionFlag started - MedicalCaseId={MedicalCaseId} NeedsPrescription={NeedsPrescription}",
                 medicalCaseId, request.NeedsPrescription);
             var data = await _repository.SetPrescriptionFlagAsync(medicalCaseId, request);
-            
+
             if (data != null)
             {
                 _logger.LogInformation("[SVC] MedicalCase.SetPrescriptionFlag completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
@@ -199,62 +268,6 @@ public class MedicalCaseService : IMedicalCaseService
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.SetPrescriptionFlag failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
-    // - ClearPrescriptionAsync: Server端从未实现
-    // - ImportFormulaIntoPrescriptionAsync: Server端从未实现
-
-    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
-    {
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.CloseCase started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            var data = await _repository.CloseCaseAsync(medicalCaseId);
-            
-            if (data != null)
-            {
-                _logger.LogInformation("[SVC] MedicalCase.CloseCase completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = data };
-            }
-            else
-            {
-                _logger.LogWarning("[SVC] MedicalCase.CloseCase failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "关闭医案失败" };
-            }
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.CloseCase failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
-    }
-    public virtual async Task<MedicalCaseDetailDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false, CancellationToken ct = default)
-    {
-        try
-        {
-            _logger.LogDebug("[SVC] MedicalCase.GetUnfinishedByPatient started - PatientId={PatientId} DoctorId={DoctorId}", patientId, doctorId);
-            
-            // 使用统一查询端点
-            var query = new MedicalCaseQueryDto
-            {
-                QueryType = LYBT.Shared.Models.Enums.MedicalCaseQueryType.Unfinished,
-                PatientId = patientId,
-                DoctorId = doctorId,
-                IncludeAllDoctors = checkAllDoctors,
-                PageSize = 1
-            };
-            var result = await _repository.QueryAsync(query);
-            
-            if (result?.Items?.Count > 0)
-            {
-                // 获取完整详情
-                var detail = await _repository.GetByIdAsync(result.Items[0].Id);
-                _logger.LogDebug("[SVC] MedicalCase.GetUnfinishedByPatient found - MedicalCaseId={MedicalCaseId}", detail?.Id);
-                return detail;
-            }
-            
-            _logger.LogDebug("[SVC] MedicalCase.GetUnfinishedByPatient → NotFound - PatientId={PatientId}", patientId);
-            return null;
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.GetUnfinishedByPatient failed - PatientId={PatientId}", patientId); throw; }
-    }
-    // - CreatePrescriptionViaApiAsync: 通过SaveAsync创建
-    // - UpdatePrescriptionViaApiAsync: 通过SaveAsync更新
-    // - DeletePrescriptionViaApiAsync: 通过SaveAsync设置NeedsPrescription=false触发
 
     public virtual async Task<ApiResponse> DeleteMedicalCaseAsync(Guid medicalCaseId)
     {
@@ -262,7 +275,7 @@ public class MedicalCaseService : IMedicalCaseService
         {
             _logger.LogInformation("[SVC] MedicalCase.DeleteViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             var success = await _repository.DeleteAsync(medicalCaseId);
-            
+
             if (success)
             {
                 _logger.LogInformation("[SVC] MedicalCase.DeleteViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
@@ -277,16 +290,13 @@ public class MedicalCaseService : IMedicalCaseService
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.DeleteViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); return new ApiResponse { Success = false, Message = ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除", ex) }; }
     }
 
-    // ========== SoftDeleteMedicalCaseAsync 已删除==========
-    // Server端点DELETE /api/v1/medicalcases/{id}/soft 不存在，使用DeleteMedicalCaseAsync代替
-
     public virtual async Task<ApiResponse<MedicalCaseDetailDto>> UpdateStatusAsync(Guid medicalCaseId, MedicalCaseStatusInputDto request)
     {
         try
         {
             _logger.LogInformation("[SVC] MedicalCase.UpdateStatus started - MedicalCaseId={MedicalCaseId} Status={Status}", medicalCaseId, request.Status);
             var data = await _repository.UpdateStatusAsync(medicalCaseId, request);
-            
+
             if (data != null)
             {
                 _logger.LogInformation("[SVC] MedicalCase.UpdateStatus completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
@@ -329,7 +339,7 @@ public class MedicalCaseService : IMedicalCaseService
             _logger.LogInformation("[SVC] MedicalCase.CancelViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             var request = string.IsNullOrEmpty(reason) ? null : new CancelMedicalCaseRequestDto { Reason = reason };
             var data = await _repository.CancelMedicalCaseAsync(medicalCaseId, request);
-            
+
             if (data != null)
             {
                 _logger.LogInformation("[SVC] MedicalCase.CancelViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
@@ -342,355 +352,6 @@ public class MedicalCaseService : IMedicalCaseService
             }
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.CancelViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
-    }
-
-    #endregion
-    // - UpdateConsultation: 直接修改Current.Consultation即可
-    // - CreatePrescriptionAsync: 通过SaveAsync创建
-    // - UpdatePrescription: 直接修改Current.Prescription即可
-    // - DeletePrescriptionAsync: 通过SaveAsync设置NeedsPrescription=false触发
-
-    #region 私有方法 - 变更检测
-    private bool IsMedicalCaseChanged() => _currentDetail != null && _originalDetail != null &&
-        (_currentDetail.CaseNumber != _originalDetail.CaseNumber ||
-         _currentDetail.PatientId != _originalDetail.PatientId || _currentDetail.UserId != _originalDetail.UserId ||
-         _currentDetail.CaseStatus != _originalDetail.CaseStatus);
-    private bool IsConsultationChanged()
-    {
-        if (_currentDetail?.Consultation == null || _originalDetail?.Consultation == null) return false;
-        var c = _currentDetail.Consultation; var o = _originalDetail.Consultation;
-        return c.PresentIllness != o.PresentIllness ||
-               c.TongueDiagnosis != o.TongueDiagnosis || c.PulseDiagnosis != o.PulseDiagnosis ||
-               c.TcmDiagnosis != o.TcmDiagnosis;
-    }
-
-    private bool IsPrescriptionChanged()
-    {
-        if (_currentDetail?.Prescription == null || _originalDetail?.Prescription == null) return false;
-        var c = _currentDetail.Prescription; var o = _originalDetail.Prescription;
-        return c.DosageCount != o.DosageCount || c.Usage != o.Usage ||
-               c.Discount != o.Discount || c.Advice != o.Advice || c.Remark != o.Remark;
-    }
-    private void UpdateMedicalCaseFields(MedicalCaseDetailDto target, MedicalCaseDetailDto source)
-    {
-        target.CaseNumber = source.CaseNumber;
-        target.PatientId = source.PatientId; target.PatientName = source.PatientName;
-        target.PatientGender = source.PatientGender; target.PatientAge = source.PatientAge;
-        target.UserId = source.UserId; target.DoctorName = source.DoctorName;
-        target.ConsultationId = source.ConsultationId; target.PrescriptionId = source.PrescriptionId;
-        target.CaseStatus = source.CaseStatus;
-        target.UpdatedAt = source.UpdatedAt;
-    }
-
-    #endregion
-
-    #region 生命周期管理（合并自MedicalCaseLifecycleHandler）
-
-    /// <summary>
-    /// 创建新医案
-    /// </summary>
-    /// <param name="patientId">患者ID</param>
-    /// <param name="registrationId">关联挂号ID（可选，从前台挂号创建时传入）</param>
-    public virtual async Task<(bool success, Guid medicalCaseId, string? errorMessage)> CreateMedicalCaseAsync(Guid patientId, Guid? registrationId = null, CancellationToken ct = default)
-    {
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.CreateNew started - PatientId={PatientId} RegistrationId={RegistrationId}",
-                patientId, registrationId);
-
-            // 验证SessionManager和CurrentUser
-            if (_sessionManager == null)
-            {
-                _logger.LogWarning("[SVC] MedicalCase.CreateNew → NullSessionManager");
-                return (false, Guid.Empty, "会话管理器未初始化，无法创建医案");
-            }
-            if (_sessionManager.CurrentUser == null)
-            {
-                _logger.LogWarning("[SVC] MedicalCase.CreateNew → NullCurrentUser");
-                return (false, Guid.Empty, "用户信息丢失，无法创建医案");
-            }
-
-            _logger.LogDebug("[SVC] MedicalCase.CreateNew sessionValidated - UserName={UserName} UserId={UserId}",
-                _sessionManager.CurrentUser.UserName, _sessionManager.CurrentUser.Id);
-
-            var createDto = new MedicalCaseInputDto
-            {
-                Id = null,
-                PatientId = patientId,
-                UserId = _sessionManager.CurrentUser.Id,
-                RegistrationId = registrationId
-            };
-            var createdDto = await _repository.CreateAsync(createDto);
-            if (createdDto == null)
-            {
-                _logger.LogWarning("[SVC] MedicalCase.CreateNew → NullResult");
-                return (false, Guid.Empty, "创建医案失败：服务返回空结果");
-            }
-
-            _logger.LogInformation("[SVC] MedicalCase.CreateNew completed - MedicalCaseId={MedicalCaseId}", createdDto.Id);
-            return (true, createdDto.Id, null);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[SVC] MedicalCase.CreateNew failed - PatientId={PatientId}", patientId);
-            return (false, Guid.Empty, ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建医案", ex));
-        }
-    }
-
-    /// <summary>
-    /// 挂起医案
-    /// </summary>
-    public virtual async Task<(bool success, string? errorMessage)> SuspendAsync(Guid medicalCaseId, CancellationToken ct = default)
-    {
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.Suspend started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-
-            var response = await SuspendViaApiAsync(medicalCaseId);
-            if (!response.Success)
-            {
-                _logger.LogWarning("[SVC] MedicalCase.Suspend → Failed - Message={Message}", response.Message);
-                return (false, response.Message ?? "挂起医案失败");
-            }
-
-            _logger.LogInformation("[SVC] MedicalCase.Suspend completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return (true, null);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[SVC] MedicalCase.Suspend failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("挂起", ex));
-        }
-    }
-
-    /// <summary>
-    /// 取消医案
-    /// </summary>
-    public virtual async Task<(bool success, string? errorMessage)> CancelMedicalCaseAsync(Guid medicalCaseId, string? reason = null, CancellationToken ct = default)
-    {
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.Cancel started - MedicalCaseId={MedicalCaseId} HasReason={HasReason}",
-                medicalCaseId, !string.IsNullOrEmpty(reason));
-
-            var response = await CancelMedicalCaseViaApiAsync(medicalCaseId, reason);
-            if (!response.Success)
-            {
-                _logger.LogWarning("[SVC] MedicalCase.Cancel → Failed - Message={Message}", response.Message);
-                return (false, response.Message ?? "取消医案失败");
-            }
-
-            _logger.LogInformation("[SVC] MedicalCase.Cancel completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return (true, null);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[SVC] MedicalCase.Cancel failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("取消", ex));
-        }
-    }
-
-    /// <summary>
-    /// 完成医案
-    /// </summary>
-    public virtual async Task<(bool success, string? errorMessage)> CompleteMedicalCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
-    {
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.Complete started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-
-            var request = new MedicalCaseStatusInputDto
-            {
-                Status = MedicalCaseStatus.Completed,
-                StatusChangeReason = null
-            };
-            var response = await UpdateStatusAsync(medicalCaseId, request);
-
-            if (!response.Success)
-            {
-                _logger.LogWarning("[SVC] MedicalCase.Complete → Failed - Message={Message}", response.Message);
-                return (false, response.Message ?? "完成医案失败");
-            }
-
-            _logger.LogInformation("[SVC] MedicalCase.Complete completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return (true, null);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[SVC] MedicalCase.Complete failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("完成", ex));
-        }
-    }
-
-    /// <summary>
-    /// 恢复挂起医案为Active状态
-    /// </summary>
-    public virtual async Task<(bool success, string? errorMessage)> ResumeSuspendedAsync(Guid medicalCaseId, CancellationToken ct = default)
-    {
-        try
-        {
-            _logger.LogDebug("[SVC] MedicalCase.ResumeSuspended started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-
-            var request = new MedicalCaseStatusInputDto
-            {
-                Status = MedicalCaseStatus.Active,
-                StatusChangeReason = null
-            };
-            var response = await UpdateStatusAsync(medicalCaseId, request);
-
-            if (!response.Success)
-            {
-                _logger.LogWarning("[SVC] MedicalCase.ResumeSuspended → Failed - Message={Message}", response.Message);
-                return (false, response.Message ?? "恢复医案失败");
-            }
-
-            _logger.LogInformation("[SVC] MedicalCase.ResumeSuspended completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return (true, null);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[SVC] MedicalCase.ResumeSuspended failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("恢复", ex));
-        }
-    }
-
-    #endregion
-
-    #region 数据加载与缓存 (合并自 Coordinator)
-
-    public async Task<(bool success, MedicalCaseDetailDto? detail, string? errorMessage)> LoadDetailsAsync(Guid medicalCaseId, CancellationToken ct = default)
-    {
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.LoadDetails started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-
-            var detail = await GetByIdSimpleAsync(medicalCaseId);
-            if (detail == null)
-            {
-                _logger.LogWarning("[SVC] MedicalCase.LoadDetails → NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return (false, null, "未找到医案数据");
-            }
-
-            _cachedMedicalCase = detail;
-            _cachedConsultation = detail.Consultation;
-            _cachedPrescription = detail.Prescription;
-
-            _logger.LogInformation("[SVC] MedicalCase.LoadDetails completed");
-            return (true, detail, null);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[SVC] MedicalCase.LoadDetails failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            var errorMsg = ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载医案数据", ex);
-            return (false, null, errorMsg);
-        }
-    }
-
-    public void ClearCache()
-    {
-        _logger.LogDebug("[SVC] MedicalCase.ClearCache");
-        _cachedMedicalCase = null;
-        _cachedConsultation = null;
-        _cachedPrescription = null;
-    }
-
-    #endregion
-
-    #region 聚合保存 (合并自 Coordinator)
-
-    public async Task<(bool Success, MedicalCaseDetailDto? Data, string? Error)> AggregateSaveAsync(
-        Guid medicalCaseId,
-        ConsultationInputDto? consultation,
-        PrescriptionInputDto? prescription,
-        string? remark = null,
-        string? editReason = null,
-        CancellationToken ct = default)
-    {
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.AggregateSave started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-
-            var aggregateDto = new MedicalCaseInputDto
-            {
-                Id = medicalCaseId,
-                EditReason = editReason,
-                Consultation = consultation,
-                Prescription = prescription
-            };
-
-            var result = await _repository.SaveAsync(medicalCaseId, aggregateDto);
-
-            _cachedMedicalCase = result;
-            _cachedConsultation = result?.Consultation;
-            _cachedPrescription = result?.Prescription;
-
-            _logger.LogInformation("[SVC] MedicalCase.AggregateSave completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return (true, result, null);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[SVC] MedicalCase.AggregateSave failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex));
-        }
-    }
-
-    public async Task<(bool Success, string? Error)> SaveAndCompleteAsync(
-        Guid medicalCaseId,
-        ConsultationInputDto? consultation,
-        PrescriptionInputDto? prescription,
-        IValidatable? consultationValidator,
-        IValidatable? prescriptionValidator,
-        string? remark = null,
-        bool isPrescriptionEnabled = true,
-        CancellationToken ct = default)
-    {
-        // 验证诊断数据
-        if (consultationValidator != null && !consultationValidator.Validate())
-            return (false, consultationValidator.ValidationMessage);
-
-        // 验证处方数据（如果启用）
-        if (isPrescriptionEnabled && prescriptionValidator != null && !prescriptionValidator.Validate())
-            return (false, prescriptionValidator.ValidationMessage);
-
-        // 聚合保存
-        var (saveOk, _, saveError) = await AggregateSaveAsync(medicalCaseId, consultation, prescription, remark);
-        if (!saveOk) return (false, saveError);
-
-        // 完成医案
-        return await CompleteMedicalCaseAsync(medicalCaseId);
-    }
-
-    public async Task<(bool Success, string? Error)> SaveAndSuspendAsync(
-        Guid medicalCaseId,
-        ConsultationInputDto? consultation,
-        PrescriptionInputDto? prescription,
-        string? remark = null,
-        CancellationToken ct = default)
-    {
-        var (saveOk, _, saveError) = await AggregateSaveAsync(medicalCaseId, consultation, prescription, remark);
-        if (!saveOk) return (false, saveError);
-
-        return await SuspendAsync(medicalCaseId);
-    }
-
-    public async Task<(bool Success, string? Error)> SaveAndCancelAsync(
-        Guid medicalCaseId,
-        ConsultationInputDto? consultation,
-        PrescriptionInputDto? prescription,
-        string? remark = null,
-        CancellationToken ct = default)
-    {
-        // 取消前保存供审计
-        try
-        {
-            await AggregateSaveAsync(medicalCaseId, consultation, prescription, remark);
-        }
-        catch (Exception saveEx)
-        {
-            _logger.LogWarning(saveEx, "[SVC] MedicalCase.SaveAndCancel → SaveFailed, proceeding with cancel");
-        }
-
-        return await CancelMedicalCaseAsync(medicalCaseId);
     }
 
     #endregion
