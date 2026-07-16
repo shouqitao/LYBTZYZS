@@ -2,9 +2,11 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Web;
 using LYBT.LocalWebAPI.Commands;
 using LYBT.Shared.Models.Contracts.Diagnostics;
+using LYBT.Shared.Models.Contracts.Health;
 using LYBT.Shared.Models.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -19,32 +21,35 @@ namespace LYBT.LocalWebAPI.Controllers;
 public class DiagnosticsController : BaseApiController
 {
     private readonly AppDbContext _db;
+    private readonly IHealthCheckService _healthCheckService;
     private readonly ISender _sender;
 
-    public DiagnosticsController(AppDbContext db, ISender sender, ILogger<DiagnosticsController> logger)
+    public DiagnosticsController(AppDbContext db, IHealthCheckService healthCheckService, ISender sender, ILogger<DiagnosticsController> logger)
         : base(logger)
     {
         _db = db;
+        _healthCheckService = healthCheckService;
         _sender = sender;
     }
 
     [HttpGet("db-info")]
     public async Task<IActionResult> GetDbInfo()
     {
-        bool canConnect = false;
-        try
+        var dbResult = await _healthCheckService.CheckDatabaseAsync();
+        var statusString = dbResult.Status switch
         {
-            canConnect = await _db.Database.CanConnectAsync();
-        }
-        catch
-        {
-            canConnect = false;
-        }
+            HealthStatus.Healthy => "Connected",
+            HealthStatus.Degraded => "Degraded",
+            _ => "Disconnected"
+        };
 
         return Success(new
         {
-            provider = _db.Database.ProviderName ?? "Unknown",
-            connectionState = canConnect ? "Connected" : "Disconnected",
+            provider = dbResult.Provider ?? "Unknown",
+            connectionState = statusString,
+            pendingMigrations = dbResult.PendingMigrationCount,
+            serverVersion = dbResult.ServerVersion,
+            duration = dbResult.Duration,
             timestamp = DateTime.UtcNow
         });
     }
@@ -70,6 +75,7 @@ public class DiagnosticsController : BaseApiController
     }
 
     [HttpGet("logs/recent")]
+    // TODO: 注入 ISystemLogRepository 替代直接查询 AppDbContext（目前未注册）
     public async Task<IActionResult> GetRecentLogs([FromQuery] int count = 50)
     {
         if (count <= 0) count = 50;
