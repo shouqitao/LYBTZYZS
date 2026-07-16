@@ -180,6 +180,10 @@ namespace LYBT.Desktop.Shell.Extensions
             // Shell启动流程重构 - Phase 2 新增服务
             containerRegistry.RegisterSingleton<ILoginCoordinator, LoginCoordinator>();
 
+            // MainWindowViewModel 拆分 - 登录状态管理与事件协调
+            containerRegistry.RegisterSingleton<ILoginStateManager, LoginStateManager>();
+            containerRegistry.RegisterSingleton<ShellEventCoordinator>();
+
             // Shell启动流程重构 - Phase 3 新增服务
             containerRegistry.RegisterSingleton<IStartupPipeline, StartupPipeline>();
             containerRegistry.Register<IStartupStep, ErrorHandlingStartupStep>("ErrorHandling");
