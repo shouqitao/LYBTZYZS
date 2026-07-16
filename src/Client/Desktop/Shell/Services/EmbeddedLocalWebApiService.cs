@@ -101,6 +101,6 @@ public sealed class EmbeddedLocalWebApiService : IEmbeddedLocalWebApiService, ID
 
     public void Dispose()
     {
-        _ = StopAsync();
+        StopAsync().GetAwaiter().GetResult();
     }
 }

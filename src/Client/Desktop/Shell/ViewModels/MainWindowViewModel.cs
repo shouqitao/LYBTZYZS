@@ -262,16 +262,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     /// </summary>
     public ICommand NavigateForwardCommand => _menuManager.NavigateForwardCommand;
 
-    /// <summary>
-    /// 显示导航历史命令 (Ctrl+Shift+H) — Phase 2-3
-    /// </summary>
-    public ICommand ShowHistoryCommand => _menuManager.ShowHistoryCommand;
-
-    /// <summary>
-    /// 循环切换区域焦点命令 (F6) — Phase 2-3
-    /// </summary>
-    public ICommand CycleRegionsCommand => _menuManager.CycleRegionsCommand;
-
     #endregion
 
     #region RelayCommand

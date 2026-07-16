@@ -75,4 +75,22 @@ internal static class NativeMethods
 
         return SetForegroundWindow(hWnd);
     }
+
+    /// <summary>
+    /// 获取控制台窗口句柄
+    /// </summary>
+    [DllImport("kernel32.dll")]
+    public static extern IntPtr GetConsoleWindow();
+
+    /// <summary>
+    /// 设置控制台输出代码页
+    /// </summary>
+    [DllImport("kernel32.dll")]
+    public static extern bool SetConsoleOutputCP(uint wCodePageID);
+
+    /// <summary>
+    /// 设置控制台输入代码页
+    /// </summary>
+    [DllImport("kernel32.dll")]
+    public static extern bool SetConsoleCP(uint wCodePageID);
 }

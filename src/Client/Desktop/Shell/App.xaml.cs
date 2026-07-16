@@ -183,8 +183,8 @@ public partial class App : PrismApplication
         {
             try
             {
-                SetConsoleOutputCP(65001);
-                SetConsoleCP(65001);
+                NativeMethods.SetConsoleOutputCP(65001);
+                NativeMethods.SetConsoleCP(65001);
                 System.Console.OutputEncoding = System.Text.Encoding.UTF8;
                 System.Console.InputEncoding = System.Text.Encoding.UTF8;
             }
@@ -198,15 +198,6 @@ public partial class App : PrismApplication
     /// <summary>检查是否有可用的控制台窗口（使用Windows API避免异常）</summary>
     private static bool HasConsole()
     {
-        return GetConsoleWindow() != IntPtr.Zero;
+        return NativeMethods.GetConsoleWindow() != IntPtr.Zero;
     }
-
-    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
-    private static extern IntPtr GetConsoleWindow();
-
-    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
-    private static extern bool SetConsoleOutputCP(uint wCodePageID);
-
-    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
-    private static extern bool SetConsoleCP(uint wCodePageID);
 }

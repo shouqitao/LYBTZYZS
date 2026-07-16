@@ -23,8 +23,6 @@
         <KeyBinding Key="OemComma" Command="{Binding ShowSettingsCommand}" Modifiers="Ctrl" />
 
         <KeyBinding Key="M" Command="{Binding ToggleSidebarCommand}" Modifiers="Ctrl" />
-        <KeyBinding Key="H" Command="{Binding ShowHistoryCommand}" Modifiers="Ctrl+Shift" />
-        <KeyBinding Key="F6" Command="{Binding CycleRegionsCommand}" />
 
         <KeyBinding Key="Left" Command="{Binding NavigateBackCommand}" Modifiers="Alt" />
         <KeyBinding Key="Right" Command="{Binding NavigateForwardCommand}" Modifiers="Alt" />

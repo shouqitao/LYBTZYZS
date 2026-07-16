@@ -123,12 +123,6 @@ public class MenuManager
     /// <summary>面包屑跳转命令 — 导航架构改进方案 v1.0</summary>
     public DelegateCommand<BreadcrumbItem> NavigateToBreadcrumbCommand { get; private set; } = null!;
 
-    /// <summary>显示导航历史命令 (Ctrl+Shift+H) — Phase 2-3</summary>
-    public DelegateCommand ShowHistoryCommand { get; private set; } = null!;
-
-    /// <summary>循环切换区域焦点命令 (F6) — Phase 2-3</summary>
-    public DelegateCommand CycleRegionsCommand { get; private set; } = null!;
-
     #endregion 命令属性
 
     /// <summary>初始化所有命令</summary>
@@ -147,10 +141,6 @@ public class MenuManager
         NavigateBackCommand = new DelegateCommand(ExecuteNavigateBack, () => _navigationCoordinator.CanNavigateBack);
         NavigateForwardCommand = new DelegateCommand(ExecuteNavigateForward, () => _navigationCoordinator.CanNavigateForward);
         NavigateToBreadcrumbCommand = new DelegateCommand<BreadcrumbItem>(ExecuteNavigateToBreadcrumb);
-
-        // Phase 2-3 — 导航历史和区域循环命令
-        ShowHistoryCommand = new DelegateCommand(ExecuteShowHistory);
-        CycleRegionsCommand = new DelegateCommand(ExecuteCycleRegions);
 
         _logger.LogDebug("菜单命令系统已初始化");
     }
@@ -193,23 +183,6 @@ public class MenuManager
         if (item == null) return;
         _logger.LogInformation("面包屑跳转: {Title}", item.Title);
         _navigationCoordinator.NavigateToBreadcrumb(item);
-    }
-
-    /// <summary>显示导航历史面板 (Ctrl+Shift+H) — Phase 2-3</summary>
-    private void ExecuteShowHistory()
-    {
-        _logger.LogInformation("显示导航历史面板");
-        // For now, show notification as placeholder
-        _userNotificationService.ShowInfoAsync("导航历史面板功能待实现 - 将显示导航历史记录");
-    }
-
-    /// <summary>循环切换区域焦点 (F6) — Phase 2-3</summary>
-    private void ExecuteCycleRegions()
-    {
-        _logger.LogInformation("循环切换区域焦点");
-        // TODO: Implement region cycling logic
-        // For now, show notification as placeholder
-        _userNotificationService.ShowInfoAsync("区域循环功能待实现 - 将在ContentRegion、SidebarRegion等区域间切换焦点");
     }
 
     /// <summary>刷新导航命令可执行状态</summary>

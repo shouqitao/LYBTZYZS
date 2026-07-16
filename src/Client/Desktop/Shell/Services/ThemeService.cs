@@ -47,9 +47,28 @@ public partial class ThemeService : ObservableObject, IThemeService, IDisposable
         }
     }
 
+    private static readonly string ThemePreferencePath =
+        System.IO.Path.Combine(AppContext.BaseDirectory, "theme-preference.json");
+
     private void LoadThemePreference()
     {
         var isDarkMode = _configuration?.GetValue<bool>("Theme:IsDarkMode") ?? false;
+
+        try
+        {
+            if (System.IO.File.Exists(ThemePreferencePath))
+            {
+                var json = System.IO.File.ReadAllText(ThemePreferencePath);
+                var doc = System.Text.Json.JsonDocument.Parse(json);
+                if (doc.RootElement.TryGetProperty("IsDarkMode", out var prop))
+                    isDarkMode = prop.GetBoolean();
+            }
+        }
+        catch
+        {
+            // 读取失败使用默认值
+        }
+
         ApplyTheme(isDarkMode);
     }
 
@@ -57,29 +76,10 @@ public partial class ThemeService : ObservableObject, IThemeService, IDisposable
     {
         try
         {
-            var configPath = System.IO.Path.Combine(
-                AppContext.BaseDirectory,
-                "appsettings.json");
-
-            if (!System.IO.File.Exists(configPath))
-                return;
-
-            var json = System.IO.File.ReadAllText(configPath);
-            var config = System.Text.Json.JsonDocument.Parse(json);
-
-            if (config.RootElement.TryGetProperty("Theme", out _))
-            {
-                var themeObj = config.RootElement.GetProperty("Theme");
-                var updatedTheme = System.Text.Json.JsonSerializer.Serialize(new { IsDarkMode = isDarkMode });
-                var updatedThemeObj = System.Text.Json.JsonDocument.Parse(updatedTheme).RootElement;
-
-                var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
-                // 简单替换Theme部分
-                json = json.Replace(
-                    $"\"IsDarkMode\": {themeObj.GetProperty("IsDarkMode").GetBoolean().ToString().ToLower()}",
-                    $"\"IsDarkMode\": {isDarkMode.ToString().ToLower()}");
-                System.IO.File.WriteAllText(configPath, json);
-            }
+            var json = System.Text.Json.JsonSerializer.Serialize(
+                new { IsDarkMode = isDarkMode },
+                new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            System.IO.File.WriteAllText(ThemePreferencePath, json);
         }
         catch
         {

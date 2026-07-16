@@ -57,13 +57,6 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterComponentLoggers(containerRegistry);
         }
 
-        /// <summary>
-        /// 注册数据源 Logger
-        /// </summary>
-        public static void RegisterDataSourceLoggers(this IContainerRegistry containerRegistry)
-        {
-        }
-
         /// <summary>注册LoggerFactory和泛型ILogger&lt;&gt;</summary>
         /// <remarks>refactor-logging-system: 使用Serilog作为日志提供程序</remarks>
         private static void RegisterLoggerFactory(IContainerRegistry containerRegistry)

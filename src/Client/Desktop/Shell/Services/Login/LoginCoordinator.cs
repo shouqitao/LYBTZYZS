@@ -307,21 +307,6 @@ public class LoginCoordinator : ILoginCoordinator, IDisposable
         }).Task;
     }
 
-    private async Task ClearInvalidTokenAsync()
-    {
-        try
-        {
-            _authenticationService.ClearAuthInfo();
-            _logger.LogDebug("已清除无效Token");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "清除无效Token时发生异常");
-        }
-
-        await Task.CompletedTask;
-    }
-
     public void Dispose()
     {
         _loginLock.Dispose();

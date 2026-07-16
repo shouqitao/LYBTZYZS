@@ -50,7 +50,6 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterCacheServices(containerRegistry);
 
             containerRegistry.RegisterRepositories(configuration);
-            containerRegistry.RegisterDataSourceLoggers();
 
             containerRegistry.RegisterHttpServices(configuration);
             containerRegistry.AddUnifiedApiClient(configuration);
