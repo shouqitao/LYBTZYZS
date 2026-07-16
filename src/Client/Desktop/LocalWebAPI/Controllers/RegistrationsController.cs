@@ -35,43 +35,44 @@ public class RegistrationsController : BaseApiController
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null,
         [FromQuery] Guid? patientId = null,
-        [FromQuery] Guid? doctorId = null)
+        [FromQuery] Guid? doctorId = null,
+        CancellationToken ct = default)
     {
         var result = await _sender.Send(new GetRegistrationsQuery(page, pageSize, keyword,
-            startDate, endDate, patientId, doctorId));
+            startDate, endDate, patientId, doctorId), ct);
         return SuccessPaged(result, "查询成功");
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
-        var result = await _sender.Send(new GetRegistrationQuery(id));
+        var result = await _sender.Send(new GetRegistrationQuery(id), ct);
         if (result == null)
             return NotFound("挂号不存在");
         return Success(result, "查询成功");
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] RegistrationInputDto dto)
+    public async Task<IActionResult> Create([FromBody] RegistrationInputDto dto, CancellationToken ct)
     {
-        var result = await _sender.Send(new CreateRegistrationCommand(dto));
+        var result = await _sender.Send(new CreateRegistrationCommand(dto), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "创建挂号失败");
         return Success(result.Value, "挂号创建成功");
     }
 
     [HttpGet("queue")]
-    public async Task<IActionResult> GetQueue([FromQuery] Guid? doctorId = null)
+    public async Task<IActionResult> GetQueue([FromQuery] Guid? doctorId = null, CancellationToken ct = default)
     {
-        var result = await _sender.Send(new GetWaitingQueueQuery(doctorId));
+        var result = await _sender.Send(new GetWaitingQueueQuery(doctorId), ct);
         return Success(result, "查询成功");
     }
 
     [HttpPut("{id}/start-visit")]
     [Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
-    public async Task<IActionResult> StartVisit(Guid id)
+    public async Task<IActionResult> StartVisit(Guid id, CancellationToken ct)
     {
-        var result = await _sender.Send(new StartVisitCommand(id));
+        var result = await _sender.Send(new StartVisitCommand(id), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "接诊失败");
         return Success(result.Value, "开始就诊");
@@ -79,22 +80,22 @@ public class RegistrationsController : BaseApiController
 
     [HttpPut("{id}/cancel")]
     [Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
-    public async Task<IActionResult> Cancel(Guid id)
+    public async Task<IActionResult> Cancel(Guid id, CancellationToken ct)
     {
-        var result = await _sender.Send(new CancelRegistrationCommand(id));
+        var result = await _sender.Send(new CancelRegistrationCommand(id), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "取消挂号失败");
         return Success("挂号取消成功");
     }
 
     [HttpPost("quick-visit")]
-    public async Task<IActionResult> QuickVisit([FromBody] QuickVisitInputDto request)
+    public async Task<IActionResult> QuickVisit([FromBody] QuickVisitInputDto request, CancellationToken ct)
     {
         if (request == null || request.PatientId == Guid.Empty)
             return ValidationFail("患者信息不能为空");
 
         var (doctorId, doctorName, _) = GetOperator();
-        var result = await _sender.Send(new QuickVisitCommand(request, doctorId, doctorName));
+        var result = await _sender.Send(new QuickVisitCommand(request, doctorId, doctorName), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "快速看诊失败");
         return Success(result.Value, "快速看诊创建成功");

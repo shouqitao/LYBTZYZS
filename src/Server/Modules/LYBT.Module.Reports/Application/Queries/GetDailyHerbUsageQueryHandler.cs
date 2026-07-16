@@ -1,5 +1,5 @@
-using LYBT.Module.Reports.Domain;
 using LYBT.Module.Reports.Interfaces;
+using LYBT.Shared.Models.Contracts.Reports;
 using LYBT.SharedKernel.Common;
 using MediatR;
 
@@ -8,7 +8,7 @@ namespace LYBT.Module.Reports.Application.Queries;
 /// <summary>
 /// 获取每日草药使用汇总查询处理器。
 /// </summary>
-public class GetDailyHerbUsageQueryHandler : IRequestHandler<GetDailyHerbUsageQuery, Result<DailyHerbUsage>>
+public class GetDailyHerbUsageQueryHandler : IRequestHandler<GetDailyHerbUsageQuery, Result<DailyHerbUsageDto>>
 {
     private readonly IReportRepository _reportRepository;
 
@@ -17,21 +17,17 @@ public class GetDailyHerbUsageQueryHandler : IRequestHandler<GetDailyHerbUsageQu
         _reportRepository = reportRepository;
     }
 
-    public async Task<Result<DailyHerbUsage>> Handle(
+    public async Task<Result<DailyHerbUsageDto>> Handle(
         GetDailyHerbUsageQuery request, CancellationToken cancellationToken)
     {
         var startDate = request.StartDate ?? DateTime.Today;
         var endDate = request.EndDate ?? DateTime.Today;
 
-        var herbUsageItems = await _reportRepository.GetHerbUsageAsync(startDate, endDate, cancellationToken);
+        var items = await _reportRepository.GetHerbUsageAsync(startDate, endDate, cancellationToken);
 
-        var items = herbUsageItems
-            .Select(h => new HerbUsageItem(h.HerbName, h.UsageCount, h.TotalDosage))
-            .ToList();
+        var dto = new DailyHerbUsageDto { Items = items };
 
-        var dailyHerbUsage = new DailyHerbUsage(Items: items);
-
-        return Result<DailyHerbUsage>.Success(dailyHerbUsage);
+        return Result<DailyHerbUsageDto>.Success(dto);
     }
 }
 

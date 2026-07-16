@@ -41,13 +41,14 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            [FromQuery] string? keyword = null)
+            [FromQuery] string? keyword = null,
+            CancellationToken ct = default)
         {
             if (ValidatePagination(page, pageSize) is { } error) return error;
 
             var isAdmin = User?.IsInRole(RoleConstants.Admin) == true || User?.IsInRole(RoleConstants.SuperAdmin) == true;
 
-            var result = await _sender.Send(new GetPatientsQuery(page, pageSize, keyword, FilterDisabled: !isAdmin));
+            var result = await _sender.Send(new GetPatientsQuery(page, pageSize, keyword, FilterDisabled: !isAdmin), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "查询失败");
@@ -61,11 +62,11 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
         {
             if (ValidateGuid(id, "患者ID") is { } error) return error;
 
-            var result = await _sender.Send(new GetPatientQuery(id));
+            var result = await _sender.Send(new GetPatientQuery(id), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return NotFound(result.Error ?? "患者不存在");
@@ -81,10 +82,10 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), StatusCodes.Status201Created)]
-        public async Task<IActionResult> Create([FromBody] PatientInputDto dto)
+        public async Task<IActionResult> Create([FromBody] PatientInputDto dto, CancellationToken ct)
         {
             var (operatorId, _, _) = GetOperator();
-            var result = await _sender.Send(new CreatePatientCommand(dto, operatorId));
+            var result = await _sender.Send(new CreatePatientCommand(dto, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "创建失败");
@@ -102,7 +103,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPut("{id:guid}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] PatientInputDto dto)
+        public async Task<IActionResult> Update(Guid id, [FromBody] PatientInputDto dto, CancellationToken ct)
         {
             if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
 
@@ -110,7 +111,7 @@ namespace LYBT.WebAPI.Controllers
             if (ownershipError != null) return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await _sender.Send(new UpdatePatientCommand(id, dto, operatorId));
+            var result = await _sender.Send(new UpdatePatientCommand(id, dto, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 if (result.Error?.Contains("不存在") == true)
@@ -130,7 +131,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpDelete("{id:guid}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
         {
             if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
 
@@ -138,7 +139,7 @@ namespace LYBT.WebAPI.Controllers
             if (ownershipError != null) return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await _sender.Send(new DeletePatientCommand(id, operatorId));
+            var result = await _sender.Send(new DeletePatientCommand(id, operatorId), ct);
             if (!result.IsSuccess)
             {
                 if (result.Error?.Contains("医案记录") == true)
@@ -156,7 +157,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("{id:guid}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> ToggleStatus(Guid id)
+        public async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
         {
             if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
 
@@ -164,7 +165,7 @@ namespace LYBT.WebAPI.Controllers
             if (ownershipError != null) return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await _sender.Send(new TogglePatientStatusCommand(id, operatorId));
+            var result = await _sender.Send(new TogglePatientStatusCommand(id, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "操作失败");
@@ -179,12 +180,12 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpPost("{id:guid}/restore")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
-        public async Task<IActionResult> Restore(Guid id)
+        public async Task<IActionResult> Restore(Guid id, CancellationToken ct)
         {
             if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await _sender.Send(new RestorePatientCommand(id, operatorId));
+            var result = await _sender.Send(new RestorePatientCommand(id, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 if (result.Error?.Contains("未被删除") == true)
@@ -201,11 +202,11 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet("{id:guid}/check-reference")]
         [ProducesResponseType(typeof(ApiResponse<PatientReferenceCheckDto>), 200)]
-        public async Task<IActionResult> CheckReference(Guid id)
+        public async Task<IActionResult> CheckReference(Guid id, CancellationToken ct)
         {
             if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
 
-            var result = await _sender.Send(new CheckPatientReferenceQuery(id));
+            var result = await _sender.Send(new CheckPatientReferenceQuery(id), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return NotFound(result.Error ?? "患者不存在");
@@ -219,9 +220,9 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet("by-id-number/{idNumber}")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
-        public async Task<IActionResult> GetByIdNumber(string idNumber)
+        public async Task<IActionResult> GetByIdNumber(string idNumber, CancellationToken ct)
         {
-            var result = await _sender.Send(new SearchPatientByIdNumberQuery(idNumber));
+            var result = await _sender.Send(new SearchPatientByIdNumberQuery(idNumber), ct);
             if (!result.IsSuccess || result.Value == null)
                 return NotFound(result.Error ?? "未找到匹配的患者");
             return Success(result.Value, "查询成功");
@@ -232,7 +233,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpPost("batch-check-reference")]
         [ProducesResponseType(typeof(ApiResponse<List<PatientReferenceCheckDto>>), 200)]
-        public async Task<IActionResult> BatchCheckReference([FromBody] PatientBatchCheckReferenceInputDto dto)
+        public async Task<IActionResult> BatchCheckReference([FromBody] PatientBatchCheckReferenceInputDto dto, CancellationToken ct)
         {
             if (dto.PatientIds == null || dto.PatientIds.Count == 0)
             {
@@ -244,7 +245,7 @@ namespace LYBT.WebAPI.Controllers
                 return ValidationFail("批量检查最多支持100条");
             }
 
-            var result = await _sender.Send(new BatchCheckPatientReferenceQuery(dto.PatientIds));
+            var result = await _sender.Send(new BatchCheckPatientReferenceQuery(dto.PatientIds), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "批量检查失败");
@@ -260,7 +261,7 @@ namespace LYBT.WebAPI.Controllers
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
+        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
         {
             if (dto.Ids == null || dto.Ids.Count == 0)
             {
@@ -268,7 +269,7 @@ namespace LYBT.WebAPI.Controllers
             }
 
             var (operatorId, _, _) = GetOperator();
-            var result = await _sender.Send(new BatchDeletePatientsCommand(dto.Ids, operatorId));
+            var result = await _sender.Send(new BatchDeletePatientsCommand(dto.Ids, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "批量删除失败");

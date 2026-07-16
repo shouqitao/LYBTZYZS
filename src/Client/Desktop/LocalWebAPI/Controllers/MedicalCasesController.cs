@@ -52,33 +52,26 @@ public class MedicalCasesController : BaseApiController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] bool includeAllDoctors = false,
-        [FromQuery] string? keyword = null)
+        [FromQuery] string? keyword = null,
+        CancellationToken ct = default)
     {
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin || includeAllDoctors;
         var result = await _sender.Send(new GetMedicalCasesQuery(
-            status, patientId, page, pageSize, operatorId, isAdmin, keyword));
+            status, patientId, page, pageSize, operatorId, isAdmin, keyword), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
         return SuccessPaged(result.Value!, "查询成功");
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
-        var mc = await _sender.Send(new GetMedicalCaseQuery(id));
-        if (!mc.IsSuccess || mc.Value == null)
-            return NotFound(mc.Error ?? "医案不存在");
+        var result = await _sender.Send(new GetMedicalCaseQuery(id), ct);
+        if (!result.IsSuccess || result.Value == null)
+            return NotFound(result.Error ?? "医案不存在");
 
-        var consultations = await _sender.Send(new GetMedicalCaseConsultationsQuery(id));
-        var prescriptions = await _sender.Send(new GetMedicalCasePrescriptionsQuery(id));
-
-        return Success(new
-        {
-            medicalCase = mc.Value,
-            consultation = consultations.IsSuccess ? consultations.Value?.FirstOrDefault() : null,
-            prescription = prescriptions.IsSuccess ? prescriptions.Value?.FirstOrDefault() : null
-        });
+        return Success(result.Value!, "查询成功");
     }
 
     [HttpGet("search")]
@@ -88,41 +81,42 @@ public class MedicalCasesController : BaseApiController
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
     {
         var result = await _sender.Send(new SearchMedicalCasesQuery(
-            patientName, diagnosisKeyword, startDate, endDate, page, pageSize));
+            patientName, diagnosisKeyword, startDate, endDate, page, pageSize), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "搜索失败");
         return SuccessPaged(result.Value!, "搜索成功");
     }
 
     [HttpGet("query")]
-    public async Task<IActionResult> Query([FromQuery] MedicalCaseQueryDto query)
+    public async Task<IActionResult> Query([FromQuery] MedicalCaseQueryDto query, CancellationToken ct = default)
     {
         var doctorFilter = GetDoctorFilter();
         if (doctorFilter.HasValue && query.DoctorId == null)
             query.DoctorId = doctorFilter.Value;
-        var result = await _sender.Send(new QueryMedicalCasesCommand(query));
+        var result = await _sender.Send(new QueryMedicalCasesCommand(query), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
         return SuccessPaged(result.Value!, "查询成功");
     }
 
     [HttpGet("by-status/{status}")]
-    public async Task<IActionResult> GetByStatus(MedicalCaseStatus status)
+    public async Task<IActionResult> GetByStatus(MedicalCaseStatus status, CancellationToken ct = default)
     {
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
         var result = await _sender.Send(new GetMedicalCasesQuery(
-            status, null, 1, 100, operatorId, isAdmin));
+            status, null, 1, 100, operatorId, isAdmin), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
         return Success(result.Value!.Items, "查询成功");
     }
 
     [HttpGet("pending")]
-    public async Task<IActionResult> GetPending([FromQuery] Guid? patientId = null)
+    public async Task<IActionResult> GetPending([FromQuery] Guid? patientId = null, CancellationToken ct = default)
     {
         var doctorFilter = GetDoctorFilter();
         var query = new MedicalCaseQueryDto
@@ -133,7 +127,7 @@ public class MedicalCasesController : BaseApiController
         };
         if (doctorFilter.HasValue)
             query.DoctorId = doctorFilter.Value;
-        var result = await _sender.Send(new QueryMedicalCasesCommand(query));
+        var result = await _sender.Send(new QueryMedicalCasesCommand(query), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
         return Success(result.Value!.Items, "查询成功");
@@ -143,10 +137,11 @@ public class MedicalCasesController : BaseApiController
     public async Task<IActionResult> GetPatientConsultations(
         Guid patientId,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
     {
         var result = await _sender.Send(
-            new GetPatientConsultationsQuery(patientId, page, pageSize));
+            new GetPatientConsultationsQuery(patientId, page, pageSize), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
         return Success(result.Value!, "查询成功");
@@ -156,28 +151,29 @@ public class MedicalCasesController : BaseApiController
     public async Task<IActionResult> GetPatientPrescriptions(
         Guid patientId,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
     {
         var result = await _sender.Send(
-            new GetPatientPrescriptionsQuery(patientId, page, pageSize));
+            new GetPatientPrescriptionsQuery(patientId, page, pageSize), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
         return Success(result.Value!, "查询成功");
     }
 
     [HttpGet("{id}/consultations")]
-    public async Task<IActionResult> GetConsultations(Guid id)
+    public async Task<IActionResult> GetConsultations(Guid id, CancellationToken ct = default)
     {
-        var result = await _sender.Send(new GetMedicalCaseConsultationsQuery(id));
+        var result = await _sender.Send(new GetMedicalCaseConsultationsQuery(id), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
         return Success(result.Value!, "查询成功");
     }
 
     [HttpGet("{id}/prescriptions")]
-    public async Task<IActionResult> GetPrescriptions(Guid id)
+    public async Task<IActionResult> GetPrescriptions(Guid id, CancellationToken ct = default)
     {
-        var result = await _sender.Send(new GetMedicalCasePrescriptionsQuery(id));
+        var result = await _sender.Send(new GetMedicalCasePrescriptionsQuery(id), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
         return Success(result.Value!, "查询成功");
@@ -186,11 +182,11 @@ public class MedicalCasesController : BaseApiController
     // ===================== Permissions & Audit Endpoints =====================
 
     [HttpGet("{id}/permissions")]
-    public async Task<IActionResult> GetPermissions(Guid id)
+    public async Task<IActionResult> GetPermissions(Guid id, CancellationToken ct = default)
     {
         var (operatorId, _, operatorRole) = GetOperator();
         var roleInt = (int)operatorRole;
-        var result = await _sender.Send(new GetMedicalCasePermissionsQuery(id, operatorId, roleInt));
+        var result = await _sender.Send(new GetMedicalCasePermissionsQuery(id, operatorId, roleInt), ct);
         if (!result.IsSuccess)
             return NotFound(result.Error ?? "医案不存在");
         return Success(result.Value!, "查询成功");
@@ -200,10 +196,11 @@ public class MedicalCasesController : BaseApiController
     public async Task<IActionResult> GetAuditLogs(
         Guid id,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
     {
         if (ValidatePagination(page, pageSize) is { } error) return error;
-        var result = await _sender.Send(new GetMedicalCaseAuditLogsQuery(id, page, pageSize));
+        var result = await _sender.Send(new GetMedicalCaseAuditLogsQuery(id, page, pageSize), ct);
         if (!result.IsSuccess)
             return NotFound(result.Error ?? "医案不存在");
         return Success(result.Value!, "查询成功");
@@ -213,60 +210,60 @@ public class MedicalCasesController : BaseApiController
 
     [HttpPost]
     [Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
-    public async Task<IActionResult> Create([FromBody] MedicalCaseInputDto input)
+    public async Task<IActionResult> Create([FromBody] MedicalCaseInputDto input, CancellationToken ct)
     {
         var operatorId = GetCurrentUserId();
-        var result = await _sender.Send(new CreateMedicalCaseCommand(input, operatorId));
+        var result = await _sender.Send(new CreateMedicalCaseCommand(input, operatorId), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "医案创建失败");
         return Success(result.Value!, "医案创建成功");
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Save(Guid id, [FromBody] MedicalCaseInputDto input)
+    public async Task<IActionResult> Save(Guid id, [FromBody] MedicalCaseInputDto input, CancellationToken ct)
     {
         input.Id = id;
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
-        var result = await _sender.Send(new SaveMedicalCaseCommand(input, operatorId, isAdmin));
+        var result = await _sender.Send(new SaveMedicalCaseCommand(input, operatorId, isAdmin), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "医案保存失败");
         return Success(result.Value!, "保存成功");
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
-        var result = await _sender.Send(new DeleteMedicalCaseCommand(id, operatorId, isAdmin));
+        var result = await _sender.Send(new DeleteMedicalCaseCommand(id, operatorId, isAdmin), ct);
         if (!result.IsSuccess)
             return NotFound(result.Error ?? "医案不存在");
         return Success(true, "删除成功");
     }
 
     [HttpPost("batch-delete")]
-    public async Task<IActionResult> BatchDelete([FromBody] List<Guid> ids)
+    public async Task<IActionResult> BatchDelete([FromBody] List<Guid> ids, CancellationToken ct)
     {
         if (ids == null || ids.Count == 0)
             return ValidationFail("ids 不能为空");
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
-        var result = await _sender.Send(new BatchDeleteMedicalCasesCommand(ids, operatorId, isAdmin));
+        var result = await _sender.Send(new BatchDeleteMedicalCasesCommand(ids, operatorId, isAdmin), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "批量删除失败");
         return Success(result.Value, result.Value.Message);
     }
 
     [HttpPost("batch-details")]
-    public async Task<IActionResult> GetBatchDetails([FromBody] List<Guid> ids)
+    public async Task<IActionResult> GetBatchDetails([FromBody] List<Guid> ids, CancellationToken ct)
     {
         if (ids == null || ids.Count == 0)
             return ValidationFail("IDs不能为空");
         if (ids.Count > 50)
             return ValidationFail("最多查询50条");
 
-        var result = await _sender.Send(new GetMedicalCasesBatchQuery(ids));
+        var result = await _sender.Send(new GetMedicalCasesBatchQuery(ids), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
         return Success(result.Value!, "查询成功");
@@ -275,75 +272,75 @@ public class MedicalCasesController : BaseApiController
     // ===================== State Transition Endpoints =====================
 
     [HttpPut("{id}/close")]
-    public async Task<IActionResult> CloseCase(Guid id)
+    public async Task<IActionResult> CloseCase(Guid id, CancellationToken ct)
     {
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
-        var result = await _sender.Send(new CompleteMedicalCaseCommand(id, operatorId, isAdmin));
+        var result = await _sender.Send(new CompleteMedicalCaseCommand(id, operatorId, isAdmin), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "完成医案失败");
         return Success("医案已完成");
     }
 
     [HttpPut("{id}/suspend")]
-    public async Task<IActionResult> SuspendCase(Guid id, [FromBody] ConsultationInputDto? request = null)
+    public async Task<IActionResult> SuspendCase(Guid id, [FromBody] ConsultationInputDto? request = null, CancellationToken ct = default)
     {
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
-        var result = await _sender.Send(new SuspendMedicalCaseCommand(id, operatorId, isAdmin));
+        var result = await _sender.Send(new SuspendMedicalCaseCommand(id, operatorId, isAdmin), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "挂起失败");
         return Success("医案已暂存");
     }
 
     [HttpPut("{id}/cancel")]
-    public async Task<IActionResult> CancelCase(Guid id, [FromBody] CancelMedicalCaseRequestDto? request = null)
+    public async Task<IActionResult> CancelCase(Guid id, [FromBody] CancelMedicalCaseRequestDto? request = null, CancellationToken ct = default)
     {
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
-        var result = await _sender.Send(new CancelMedicalCaseCommand(id, operatorId, isAdmin, request?.Reason));
+        var result = await _sender.Send(new CancelMedicalCaseCommand(id, operatorId, isAdmin, request?.Reason), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "取消失败");
         return Success("医案已取消");
     }
 
     [HttpPut("{id}/prescription-flag")]
-    public async Task<IActionResult> SetPrescriptionFlag(Guid id, [FromBody] SetPrescriptionFlagRequest request)
+    public async Task<IActionResult> SetPrescriptionFlag(Guid id, [FromBody] SetPrescriptionFlagRequest request, CancellationToken ct)
     {
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
-        var result = await _sender.Send(new SetPrescriptionFlagCommand(id, request.NeedsPrescription, operatorId, isAdmin));
+        var result = await _sender.Send(new SetPrescriptionFlagCommand(id, request.NeedsPrescription, operatorId, isAdmin), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "设置失败");
         return Success(result.Value!, "处方标记更新成功");
     }
 
     [HttpPut("{id}/status")]
-    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] MedicalCaseStatusInputDto request)
+    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] MedicalCaseStatusInputDto request, CancellationToken ct)
     {
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
 
         if (request.Status == MedicalCaseStatus.Completed)
         {
-            var completeResult = await _sender.Send(new CompleteMedicalCaseCommand(id, operatorId, isAdmin));
+            var completeResult = await _sender.Send(new CompleteMedicalCaseCommand(id, operatorId, isAdmin), ct);
             if (!completeResult.IsSuccess)
                 return BusinessFail(completeResult.Error ?? "完成医案失败");
             return Success("医案已完成");
         }
 
-        var result = await _sender.Send(new UpdateMedicalCaseStatusCommand(id, request.Status, operatorId, isAdmin));
+        var result = await _sender.Send(new UpdateMedicalCaseStatusCommand(id, request.Status, operatorId, isAdmin), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "状态更新失败");
         return Success(result.Value!, "状态更新成功");
     }
 
     [HttpPut("{id:guid}/print-completed")]
-    public async Task<IActionResult> RecordPrint(Guid id, [FromBody] RecordPrintRequest request)
+    public async Task<IActionResult> RecordPrint(Guid id, [FromBody] RecordPrintRequest request, CancellationToken ct)
     {
         var (operatorId, operatorName, _) = GetOperator();
         var result = await _sender.Send(new RecordPrintCommand(
-            id, request.PrintType, request.PrinterName, operatorId, operatorName));
+            id, request.PrintType, request.PrinterName, operatorId, operatorName), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "医案不存在");
         return Success(true, "打印记录已写入");

@@ -43,21 +43,21 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
         public async Task<IActionResult> UpdateStatus(
             Guid id,
-            [FromBody] MedicalCaseStatusInputDto request)
+            [FromBody] MedicalCaseStatusInputDto request, CancellationToken ct)
         {
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
             if (request.Status == MedicalCaseStatus.Completed)
             {
-                var completeResult = await _sender.Send(new CompleteMedicalCaseCommand(id, operatorId, isAdmin));
+                var completeResult = await _sender.Send(new CompleteMedicalCaseCommand(id, operatorId, isAdmin), ct);
                 if (!completeResult.IsSuccess)
                     return NotFound(completeResult.Error ?? "医案不存在");
 
                 return Success("医案已完成");
             }
 
-            var result = await _sender.Send(new UpdateMedicalCaseStatusCommand(id, request.Status, operatorId, isAdmin));
+            var result = await _sender.Send(new UpdateMedicalCaseStatusCommand(id, request.Status, operatorId, isAdmin), ct);
 
             if (!result.IsSuccess)
                 return NotFound(result.Error ?? "医案不存在");
@@ -75,11 +75,11 @@ namespace LYBT.WebAPI.Controllers
         [HttpPut("{id}/close")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
-        public async Task<IActionResult> CloseMedicalCase(Guid id)
+        public async Task<IActionResult> CloseMedicalCase(Guid id, CancellationToken ct)
         {
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-            var result = await _sender.Send(new CompleteMedicalCaseCommand(id, operatorId, isAdmin));
+            var result = await _sender.Send(new CompleteMedicalCaseCommand(id, operatorId, isAdmin), ct);
 
             if (!result.IsSuccess)
                 return NotFound(result.Error ?? "医案不存在");
@@ -100,12 +100,12 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 403)]
         public async Task<IActionResult> Suspend(
             Guid id,
-            [FromBody] ConsultationInputDto? request = null)
+            [FromBody] ConsultationInputDto? request = null, CancellationToken ct = default)
         {
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _sender.Send(new SuspendMedicalCaseCommand(id, operatorId, isAdmin));
+            var result = await _sender.Send(new SuspendMedicalCaseCommand(id, operatorId, isAdmin), ct);
             if (!result.IsSuccess)
             {
                 return NotFound(result.Error ?? "医案不存在");
@@ -125,12 +125,12 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 403)]
         public async Task<IActionResult> CancelMedicalCase(
             Guid id,
-            [FromBody] CancelMedicalCaseRequestDto? request = null)
+            [FromBody] CancelMedicalCaseRequestDto? request = null, CancellationToken ct = default)
         {
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _sender.Send(new CancelMedicalCaseCommand(id, operatorId, isAdmin, request?.Reason));
+            var result = await _sender.Send(new CancelMedicalCaseCommand(id, operatorId, isAdmin, request?.Reason), ct);
             if (!result.IsSuccess)
             {
                 return NotFound(result.Error ?? "医案不存在");

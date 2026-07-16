@@ -40,11 +40,11 @@ public class RegistrationsController : BaseApiController
         [EnableRateLimiting("ApiCalls")]
         [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     [ProducesResponseType(typeof(ApiResponse<QuickVisitResultDto>), StatusCodes.Status201Created)]
-    public async Task<IActionResult> QuickVisit([FromBody] QuickVisitInputDto dto)
+    public async Task<IActionResult> QuickVisit([FromBody] QuickVisitInputDto dto, CancellationToken ct)
     {
         var (doctorId, doctorName, _) = GetOperator();
 
-        var result = await _sender.Send(new QuickVisitCommand(dto, doctorId, doctorName));
+        var result = await _sender.Send(new QuickVisitCommand(dto, doctorId, doctorName), ct);
         if (!result.IsSuccess || result.Value is null)
         {
             return BusinessFail(result.Error ?? "快速看诊失败");
@@ -62,9 +62,9 @@ public class RegistrationsController : BaseApiController
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<RegistrationDetailDto>), StatusCodes.Status201Created)]
-        public async Task<IActionResult> Create([FromBody] RegistrationInputDto dto)
+        public async Task<IActionResult> Create([FromBody] RegistrationInputDto dto, CancellationToken ct)
     {
-        var result = await _sender.Send(new CreateRegistrationCommand(dto));
+        var result = await _sender.Send(new CreateRegistrationCommand(dto), ct);
 
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "创建挂号失败");
@@ -80,11 +80,11 @@ public class RegistrationsController : BaseApiController
     /// </summary>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(ApiResponse<RegistrationDetailDto>), 200)]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "挂号ID") is { } error) return error;
 
-        var result = await _sender.Send(new GetRegistrationQuery(id));
+        var result = await _sender.Send(new GetRegistrationQuery(id), ct);
         if (result == null)
         {
             return NotFound("挂号不存在");
@@ -106,12 +106,13 @@ public class RegistrationsController : BaseApiController
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null,
         [FromQuery] Guid? patientId = null,
-        [FromQuery] Guid? doctorId = null)
+        [FromQuery] Guid? doctorId = null,
+        CancellationToken ct = default)
     {
         if (ValidatePagination(page, pageSize) is { } error) return error;
 
         var result = await _sender.Send(new GetRegistrationsQuery(page, pageSize, keyword,
-            startDate, endDate, patientId, doctorId));
+            startDate, endDate, patientId, doctorId), ct);
 
         return SuccessPaged(result, "查询成功");
     }
@@ -122,9 +123,9 @@ public class RegistrationsController : BaseApiController
     /// </summary>
     [HttpGet("queue")]
     [ProducesResponseType(typeof(ApiResponse<List<RegistrationListDto>>), 200)]
-    public async Task<IActionResult> GetQueue([FromQuery] Guid? doctorId = null)
+    public async Task<IActionResult> GetQueue([FromQuery] Guid? doctorId = null, CancellationToken ct = default)
     {
-        var result = await _sender.Send(new GetWaitingQueueQuery(doctorId));
+        var result = await _sender.Send(new GetWaitingQueueQuery(doctorId), ct);
         return Success(result, "查询成功");
     }
 
@@ -136,11 +137,11 @@ public class RegistrationsController : BaseApiController
         [EnableRateLimiting("ApiCalls")]
         [Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
     [ProducesResponseType(typeof(ApiResponse<Guid>), 200)]
-    public async Task<IActionResult> StartVisit(Guid id)
+    public async Task<IActionResult> StartVisit(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "挂号ID") is { } error) return error;
 
-        var result = await _sender.Send(new StartVisitCommand(id));
+        var result = await _sender.Send(new StartVisitCommand(id), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "接诊失败");
 
@@ -155,11 +156,11 @@ public class RegistrationsController : BaseApiController
         [HttpPut("{id}/cancel")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse), 200)]
-        public async Task<IActionResult> Cancel(Guid id)
+        public async Task<IActionResult> Cancel(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "挂号ID") is { } error) return error;
 
-        var result = await _sender.Send(new CancelRegistrationCommand(id));
+        var result = await _sender.Send(new CancelRegistrationCommand(id), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "取消挂号失败");
 

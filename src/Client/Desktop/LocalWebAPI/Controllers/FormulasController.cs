@@ -40,18 +40,19 @@ public class FormulasController : BaseApiController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? keyword = null,
-        [FromQuery] string? category = null)
+        [FromQuery] string? category = null,
+        CancellationToken ct = default)
     {
-        var result = await _sender.Send(new GetFormulasQuery(page, pageSize, keyword, category));
+        var result = await _sender.Send(new GetFormulasQuery(page, pageSize, keyword, category), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "查询失败");
         return SuccessPaged(result.Value, "查询成功");
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
-        var result = await _sender.Send(new GetFormulaQuery(id));
+        var result = await _sender.Send(new GetFormulaQuery(id), ct);
         if (!result.IsSuccess || result.Value == null)
             return NotFound(result.Error ?? "验方不存在");
 
@@ -70,20 +71,20 @@ public class FormulasController : BaseApiController
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] FormulaInputDto dto)
+    public async Task<IActionResult> Create([FromBody] FormulaInputDto dto, CancellationToken ct)
     {
         var operatorId = GetCurrentUserId();
-        var result = await _sender.Send(new CreateFormulaCommand(dto, operatorId));
+        var result = await _sender.Send(new CreateFormulaCommand(dto, operatorId), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "创建失败");
         return Success(result.Value, "创建成功");
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] FormulaInputDto dto)
+    public async Task<IActionResult> Update(Guid id, [FromBody] FormulaInputDto dto, CancellationToken ct)
     {
         var operatorId = GetCurrentUserId();
-        var result = await _sender.Send(new UpdateFormulaCommand(id, dto, operatorId));
+        var result = await _sender.Send(new UpdateFormulaCommand(id, dto, operatorId), ct);
         if (!result.IsSuccess || result.Value == null)
         {
             if (result.Error?.Contains("不存在") == true)
@@ -94,51 +95,51 @@ public class FormulasController : BaseApiController
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         var operatorId = GetCurrentUserId();
-        var result = await _sender.Send(new DeleteFormulaCommand(id, operatorId));
+        var result = await _sender.Send(new DeleteFormulaCommand(id, operatorId), ct);
         if (!result.IsSuccess)
             return NotFound(result.Error ?? "验方不存在");
         return Success(true, "删除成功");
     }
 
     [HttpPost("batch-delete")]
-    public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto request)
+    public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto request, CancellationToken ct)
     {
         if (request?.Ids == null || request.Ids.Count == 0)
             return ValidationFail("ids 不能为空");
         var operatorId = GetCurrentUserId();
-        var result = await _sender.Send(new BatchDeleteFormulasCommand(request.Ids, operatorId));
+        var result = await _sender.Send(new BatchDeleteFormulasCommand(request.Ids, operatorId), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "批量删除失败");
         return Success(result.Value, result.Value.Message);
     }
 
     [HttpPost("{id}/toggle-status")]
-    public async Task<IActionResult> ToggleStatus(Guid id)
+    public async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
     {
         var operatorId = GetCurrentUserId();
-        var result = await _sender.Send(new ToggleFormulaStatusCommand(id, operatorId));
+        var result = await _sender.Send(new ToggleFormulaStatusCommand(id, operatorId), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "切换状态失败");
         return Success(result.Value, $"验方已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
     }
 
     [HttpPost("{id}/restore")]
-    public async Task<IActionResult> Restore(Guid id)
+    public async Task<IActionResult> Restore(Guid id, CancellationToken ct)
     {
         var operatorId = GetCurrentUserId();
-        var result = await _sender.Send(new RestoreFormulaCommand(id, operatorId));
+        var result = await _sender.Send(new RestoreFormulaCommand(id, operatorId), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "恢复失败");
         return Success(result.Value, "恢复成功");
     }
 
     [HttpPost("{id}/clone")]
-    public async Task<IActionResult> Clone(Guid id)
+    public async Task<IActionResult> Clone(Guid id, CancellationToken ct)
     {
-        var source = await _sender.Send(new GetFormulaQuery(id));
+        var source = await _sender.Send(new GetFormulaQuery(id), ct);
         if (!source.IsSuccess || source.Value == null)
             return NotFound(source.Error ?? "验方不存在");
 
@@ -164,36 +165,36 @@ public class FormulasController : BaseApiController
         };
 
         var operatorId = GetCurrentUserId();
-        var result = await _sender.Send(new CreateFormulaCommand(clone, operatorId));
+        var result = await _sender.Send(new CreateFormulaCommand(clone, operatorId), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "复制失败");
         return Success(result.Value, "复制成功");
     }
 
     [HttpPost("batch-import")]
-    public async Task<IActionResult> BatchImport([FromBody] List<FormulaImportItemDto> formulas)
+    public async Task<IActionResult> BatchImport([FromBody] List<FormulaImportItemDto> formulas, CancellationToken ct)
     {
         if (formulas == null || formulas.Count == 0)
             return ValidationFail("导入列表不能为空");
-        var result = await _sender.Send(new BatchImportFormulasCommand(formulas, null));
+        var result = await _sender.Send(new BatchImportFormulasCommand(formulas, null), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "导入失败");
         return Success(result.Value, result.Value.Message);
     }
 
     [HttpGet("pending-validation")]
-    public async Task<IActionResult> GetPendingValidation()
+    public async Task<IActionResult> GetPendingValidation(CancellationToken ct)
     {
-        var result = await _sender.Send(new GetPendingValidationQuery());
+        var result = await _sender.Send(new GetPendingValidationQuery(), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "查询失败");
         return Success(result.Value, $"查询成功，共{result.Value.Count}个待校验验方");
     }
 
     [HttpPost("{formulaId}/herbs/{herbItemId}/validate")]
-    public async Task<IActionResult> ValidateHerb(Guid formulaId, Guid herbItemId, [FromBody] ValidateHerbRequest request)
+    public async Task<IActionResult> ValidateHerb(Guid formulaId, Guid herbItemId, [FromBody] ValidateHerbRequest request, CancellationToken ct)
     {
-        var result = await _sender.Send(new ValidateFormulaHerbCommand(formulaId, herbItemId, request.SelectedHerbId));
+        var result = await _sender.Send(new ValidateFormulaHerbCommand(formulaId, herbItemId, request.SelectedHerbId), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "药材验证失败");
         return Success("药材验证成功");

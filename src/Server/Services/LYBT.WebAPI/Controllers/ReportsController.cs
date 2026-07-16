@@ -43,13 +43,7 @@ public class ReportsController : BaseApiController
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
 
-        var dto = new DailyIncomeDto
-        {
-            TotalIncome = result.Value!.TotalIncome,
-            RegistrationFeeTotal = result.Value.RegistrationFeeTotal,
-            MedicineFeeTotal = result.Value.MedicineFeeTotal
-        };
-        return Success(dto, "查询成功");
+        return Success(result.Value!, "查询成功");
     }
 
     /// <summary>
@@ -66,15 +60,7 @@ public class ReportsController : BaseApiController
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
 
-        var byDoctor = result.Value!.ByDoctor
-            .Select(d => new DoctorCountDto { DoctorName = d.DoctorName, Count = d.Count })
-            .ToList();
-        var dto = new DailyConsultationDto
-        {
-            TotalCount = result.Value.TotalCount,
-            ByDoctor = byDoctor
-        };
-        return Success(dto, "查询成功");
+        return Success(result.Value!, "查询成功");
     }
 
     /// <summary>
@@ -91,11 +77,7 @@ public class ReportsController : BaseApiController
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
 
-        var items = result.Value!.Items
-            .Select(h => new HerbUsageItemDto { HerbName = h.HerbName, UsageCount = h.UsageCount, TotalDosage = h.TotalDosage })
-            .ToList();
-        var dto = new DailyHerbUsageDto { Items = items };
-        return Success(dto, "查询成功");
+        return Success(result.Value!, "查询成功");
     }
 }
 

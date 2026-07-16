@@ -16,20 +16,23 @@ namespace LYBT.WebAPI.Controllers;
 public class DeployController : BaseApiController
 {
     private readonly IWebHostEnvironment _env;
+    private readonly IHostApplicationLifetime _appLifetime;
     private static readonly string TempDir = Path.Combine(Path.GetTempPath(), "lybt-deploy");
 
     public DeployController(
         IWebHostEnvironment env,
+        IHostApplicationLifetime appLifetime,
         ILogger<DeployController> logger) : base(logger)
     {
         _env = env;
+        _appLifetime = appLifetime;
     }
 
     /// <summary>
     /// 上传更新包
     /// </summary>
     [HttpPost("upload")]
-    public async Task<IActionResult> Upload(IFormFile file)
+    public async Task<IActionResult> Upload(IFormFile file, CancellationToken ct)
     {
         if (file == null || file.Length == 0)
             return ValidationFail("请上传更新包文件");
@@ -41,9 +44,9 @@ public class DeployController : BaseApiController
             Directory.CreateDirectory(TempDir);
 
         var zipPath = Path.Combine(TempDir, "update.zip");
-        using (var stream = new FileStream(zipPath, FileMode.Create))
+        await using (var stream = new FileStream(zipPath, FileMode.Create))
         {
-            await file.CopyToAsync(stream);
+            await file.CopyToAsync(stream, ct);
         }
 
         LogOperation("上传更新包", new { FileName = file.FileName, Size = file.Length });
@@ -70,7 +73,7 @@ public class DeployController : BaseApiController
                 var currentDir = _env.ContentRootPath;
                 var flagFile = Path.Combine(currentDir, ".update-pending");
                 await System.IO.File.WriteAllTextAsync(flagFile, zipPath);
-                Environment.Exit(0);
+                _appLifetime.StopApplication();
             }
             catch (Exception ex)
             {

@@ -52,12 +52,12 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
         public async Task<IActionResult> CreateMedicalCase(
-            [FromBody] MedicalCaseInputDto dto)
+            [FromBody] MedicalCaseInputDto dto, CancellationToken ct)
         {
             var (doctorId, _, _) = GetOperator();
 
             dto.Id = null;
-            var result = await _sender.Send(new CreateMedicalCaseCommand(dto, doctorId));
+            var result = await _sender.Send(new CreateMedicalCaseCommand(dto, doctorId), ct);
 
             if (!result.IsSuccess)
                 return NotFound(result.Error ?? "患者不存在");
@@ -84,12 +84,12 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 403)]
         public async Task<IActionResult> SetPrescriptionFlag(
             Guid id,
-            [FromBody] SetPrescriptionFlagRequest request)
+            [FromBody] SetPrescriptionFlagRequest request, CancellationToken ct)
         {
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _sender.Send(new SetPrescriptionFlagCommand(id, request.NeedsPrescription, operatorId, isAdmin));
+            var result = await _sender.Send(new SetPrescriptionFlagCommand(id, request.NeedsPrescription, operatorId, isAdmin), ct);
             if (!result.IsSuccess)
             {
                 return NotFound(result.Error ?? "医案不存在");
@@ -116,7 +116,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
         public async Task<IActionResult> Save(
             Guid id,
-            [FromBody] MedicalCaseInputDto request)
+            [FromBody] MedicalCaseInputDto request, CancellationToken ct)
         {
             if (request.Id != id)
             {
@@ -126,7 +126,7 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _sender.Send(new SaveMedicalCaseCommand(request, operatorId, isAdmin));
+            var result = await _sender.Send(new SaveMedicalCaseCommand(request, operatorId, isAdmin), ct);
 
             if (!result.IsSuccess)
             {
@@ -147,12 +147,12 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         [ProducesResponseType(typeof(ApiResponse), 403)]
-        public async Task<IActionResult> DeleteMedicalCase(Guid id)
+        public async Task<IActionResult> DeleteMedicalCase(Guid id, CancellationToken ct)
         {
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _sender.Send(new DeleteMedicalCaseCommand(id, operatorId, isAdmin));
+            var result = await _sender.Send(new DeleteMedicalCaseCommand(id, operatorId, isAdmin), ct);
             if (!result.IsSuccess)
                 return NotFound(result.Error ?? "医案不存在");
 
@@ -167,7 +167,7 @@ namespace LYBT.WebAPI.Controllers
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchDelete([FromBody] LYBT.Shared.Models.Contracts.Common.BatchDeleteInputDto dto)
+        public async Task<IActionResult> BatchDelete([FromBody] LYBT.Shared.Models.Contracts.Common.BatchDeleteInputDto dto, CancellationToken ct)
         {
             if (dto.Ids == null || dto.Ids.Count == 0)
             {
@@ -177,7 +177,7 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _sender.Send(new BatchDeleteMedicalCasesCommand(dto.Ids, operatorId, isAdmin));
+            var result = await _sender.Send(new BatchDeleteMedicalCasesCommand(dto.Ids, operatorId, isAdmin), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "批量删除失败");
@@ -194,9 +194,9 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
         {
-            var result = await _sender.Send(new GetMedicalCaseQuery(id));
+            var result = await _sender.Send(new GetMedicalCaseQuery(id), ct);
 
             if (!result.IsSuccess)
                 return NotFound(result.Error ?? "医案不存在");
@@ -217,13 +217,14 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] bool includeAllDoctors = false,
-            [FromQuery] string? keyword = null)
+            [FromQuery] string? keyword = null,
+            CancellationToken ct = default)
         {
             if (ValidatePagination(page, pageSize) is { } error) return error;
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin || includeAllDoctors;
             var result = await _sender.Send(new GetMedicalCasesQuery(
-                status, patientId, page, pageSize, operatorId, isAdmin, keyword));
+                status, patientId, page, pageSize, operatorId, isAdmin, keyword), ct);
 
             if (!result.IsSuccess)
                 return BusinessFail(result.Error ?? "查询失败");
@@ -240,7 +241,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("query")]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<MedicalCaseListDto>>), 200)]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<MedicalCaseListDto>>), 400)]
-        public async Task<IActionResult> GetMedicalCases([FromQuery] MedicalCaseQueryDto query)
+        public async Task<IActionResult> GetMedicalCases([FromQuery] MedicalCaseQueryDto query, CancellationToken ct = default)
         {
             if (ValidatePagination(query.PageIndex, query.PageSize) is { } error) return error;
 
@@ -256,7 +257,7 @@ namespace LYBT.WebAPI.Controllers
                 query.IncludeAllDoctors = true;
             }
 
-            var result = await _sender.Send(new QueryMedicalCasesCommand(query));
+            var result = await _sender.Send(new QueryMedicalCasesCommand(query), ct);
 
             if (!result.IsSuccess)
                 return BusinessFail(result.Error ?? "查询失败");
@@ -287,12 +288,13 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] DateTime? startDate = null,
             [FromQuery] DateTime? endDate = null,
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20)
+            [FromQuery] int pageSize = 20,
+            CancellationToken ct = default)
         {
             if (ValidatePagination(page, pageSize) is { } error) return error;
 
             var result = await _sender.Send(new SearchMedicalCasesQuery(
-                patientName, diagnosisKeyword, startDate, endDate, page, pageSize));
+                patientName, diagnosisKeyword, startDate, endDate, page, pageSize), ct);
 
             if (!result.IsSuccess)
                 return BusinessFail(result.Error ?? "搜索失败");
@@ -309,10 +311,11 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> GetPatientConsultations(
             Guid patientId,
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20)
+            [FromQuery] int pageSize = 20,
+            CancellationToken ct = default)
         {
             var result = await _sender.Send(
-                new GetPatientConsultationsQuery(patientId, page, pageSize));
+                new GetPatientConsultationsQuery(patientId, page, pageSize), ct);
 
             if (!result.IsSuccess)
                 return BusinessFail(result.Error ?? "查询失败");
@@ -329,10 +332,11 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> GetPatientPrescriptions(
             Guid patientId,
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20)
+            [FromQuery] int pageSize = 20,
+            CancellationToken ct = default)
         {
             var result = await _sender.Send(
-                new GetPatientPrescriptionsQuery(patientId, page, pageSize));
+                new GetPatientPrescriptionsQuery(patientId, page, pageSize), ct);
 
             if (!result.IsSuccess)
                 return BusinessFail(result.Error ?? "查询失败");
@@ -347,9 +351,9 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("{medicalCaseId}/consultations")]
         [ProducesResponseType(typeof(ApiResponse<List<ConsultationDetailDto>>), 200)]
         public async Task<IActionResult> GetConsultationList(
-            Guid medicalCaseId)
+            Guid medicalCaseId, CancellationToken ct)
         {
-            var result = await _sender.Send(new GetMedicalCaseConsultationsQuery(medicalCaseId));
+            var result = await _sender.Send(new GetMedicalCaseConsultationsQuery(medicalCaseId), ct);
 
             if (!result.IsSuccess)
                 return BusinessFail(result.Error ?? "查询失败");
@@ -364,9 +368,9 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("{medicalCaseId}/prescriptions")]
         [ProducesResponseType(typeof(ApiResponse<List<PrescriptionDetailDto>>), 200)]
         public async Task<IActionResult> GetPrescriptionList(
-            Guid medicalCaseId)
+            Guid medicalCaseId, CancellationToken ct)
         {
-            var result = await _sender.Send(new GetMedicalCasePrescriptionsQuery(medicalCaseId));
+            var result = await _sender.Send(new GetMedicalCasePrescriptionsQuery(medicalCaseId), ct);
 
             if (!result.IsSuccess)
                 return BusinessFail(result.Error ?? "查询失败");
@@ -381,14 +385,14 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("batch-details")]
         [ProducesResponseType(typeof(ApiResponse<List<MedicalCaseDetailDto>>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> GetBatchDetails([FromBody] List<Guid> ids)
+        public async Task<IActionResult> GetBatchDetails([FromBody] List<Guid> ids, CancellationToken ct)
         {
             if (ids == null || ids.Count == 0)
                 return ValidationFail("IDs不能为空");
             if (ids.Count > 50)
                 return ValidationFail("最多查询50条");
 
-            var result = await _sender.Send(new GetMedicalCasesBatchQuery(ids));
+            var result = await _sender.Send(new GetMedicalCasesBatchQuery(ids), ct);
             if (!result.IsSuccess)
                 return BusinessFail(result.Error ?? "查询失败");
 
@@ -402,11 +406,11 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("{id}/permissions")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCasePermissionsDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> GetPermissions(Guid id)
+        public async Task<IActionResult> GetPermissions(Guid id, CancellationToken ct)
         {
             var (operatorId, _, operatorRole) = GetOperator();
             var roleInt = (int)operatorRole;
-            var result = await _sender.Send(new GetMedicalCasePermissionsQuery(id, operatorId, roleInt));
+            var result = await _sender.Send(new GetMedicalCasePermissionsQuery(id, operatorId, roleInt), ct);
             if (!result.IsSuccess)
                 return NotFound(result.Error ?? "医案不存在");
             return Success(result.Value!, "查询成功");
@@ -422,10 +426,11 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> GetAuditLogs(
             Guid id,
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20)
+            [FromQuery] int pageSize = 20,
+            CancellationToken ct = default)
         {
             if (ValidatePagination(page, pageSize) is { } error) return error;
-            var result = await _sender.Send(new GetMedicalCaseAuditLogsQuery(id, page, pageSize));
+            var result = await _sender.Send(new GetMedicalCaseAuditLogsQuery(id, page, pageSize), ct);
             if (!result.IsSuccess)
                 return NotFound(result.Error ?? "医案不存在");
             return Success(result.Value!, "查询成功");
@@ -441,11 +446,11 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 422)]
         public async Task<IActionResult> RecordPrint(
             Guid id,
-            [FromBody] RecordPrintRequest request)
+            [FromBody] RecordPrintRequest request, CancellationToken ct)
         {
             var (operatorId, operatorName, _) = GetOperator();
             var result = await _sender.Send(new RecordPrintCommand(
-                id, request.PrintType, request.PrinterName, operatorId, operatorName));
+                id, request.PrintType, request.PrinterName, operatorId, operatorName), ct);
 
             if (!result.IsSuccess)
                 return NotFound(result.Error ?? "医案不存在");

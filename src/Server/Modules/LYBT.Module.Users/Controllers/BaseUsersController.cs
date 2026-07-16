@@ -117,14 +117,14 @@ public abstract class BaseUsersController : BaseApiController
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
         [ProducesResponseType(404)]
-        public virtual async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto dto)
+        public virtual async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto dto, CancellationToken ct = default)
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
         var (currentUserId, _, currentRole) = GetOperator();
         var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
 
-        var result = await _sender.Send(new UpdateUserCommand(id, dto, currentUserId, isAdmin));
+        var result = await _sender.Send(new UpdateUserCommand(id, dto, currentUserId, isAdmin), ct);
 
         if (!result.IsSuccess)
         {
@@ -146,14 +146,14 @@ public abstract class BaseUsersController : BaseApiController
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(404)]
-        public virtual async Task<IActionResult> Delete(Guid id)
+        public virtual async Task<IActionResult> Delete(Guid id, CancellationToken ct = default)
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
         var (currentUserId, _, currentRole) = GetOperator();
         var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
 
-        var result = await _sender.Send(new DeleteUserCommand(id, currentUserId, isAdmin));
+        var result = await _sender.Send(new DeleteUserCommand(id, currentUserId, isAdmin), ct);
 
         if (!result.IsSuccess)
         {
@@ -175,11 +175,11 @@ public abstract class BaseUsersController : BaseApiController
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [ProducesResponseType(typeof(ApiResponse<ResetPasswordResponseDto>), 200)]
     [ProducesResponseType(404)]
-    public virtual async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordRequestDto request)
+    public virtual async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordRequestDto request, CancellationToken ct = default)
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-        var result = await _sender.Send(new ResetPasswordCommand(id));
+        var result = await _sender.Send(new ResetPasswordCommand(id), ct);
 
         if (!result.IsSuccess)
         {
@@ -202,11 +202,11 @@ public abstract class BaseUsersController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(404)]
-    public virtual async Task<IActionResult> ChangeProfile(Guid id, [FromBody] ChangeProfileDto dto)
+    public virtual async Task<IActionResult> ChangeProfile(Guid id, [FromBody] ChangeProfileDto dto, CancellationToken ct = default)
     {
         var (currentUserId, _, _) = GetOperator();
 
-        var result = await _sender.Send(new ChangeProfileCommand(id, dto, currentUserId));
+        var result = await _sender.Send(new ChangeProfileCommand(id, dto, currentUserId), ct);
 
         if (!result.IsSuccess)
         {
@@ -226,11 +226,11 @@ public abstract class BaseUsersController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse), 200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(404)]
-    public virtual async Task<IActionResult> ChangePassword(Guid id, [FromBody] LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request)
+    public virtual async Task<IActionResult> ChangePassword(Guid id, [FromBody] LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request, CancellationToken ct = default)
     {
         var (currentUserId, _, _) = GetOperator();
 
-        var result = await _sender.Send(new ChangePasswordCommand(id, request.OldPassword, request.NewPassword, currentUserId));
+        var result = await _sender.Send(new ChangePasswordCommand(id, request.OldPassword, request.NewPassword, currentUserId), ct);
 
         if (!result.IsSuccess)
         {
@@ -250,14 +250,14 @@ public abstract class BaseUsersController : BaseApiController
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
-    public virtual async Task<IActionResult> ToggleStatus(Guid id)
+    public virtual async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct = default)
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
         var (currentUserId, _, currentRole) = GetOperator();
         var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
 
-        var result = await _sender.Send(new ToggleUserStatusCommand(id, currentUserId, isAdmin));
+        var result = await _sender.Send(new ToggleUserStatusCommand(id, currentUserId, isAdmin), ct);
 
         if (!result.IsSuccess)
         {
@@ -279,7 +279,7 @@ public abstract class BaseUsersController : BaseApiController
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public virtual async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto)
+        public virtual async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
     {
         if (dto.Ids == null || dto.Ids.Count == 0)
         {
@@ -289,7 +289,7 @@ public abstract class BaseUsersController : BaseApiController
         var (currentUserId, _, currentRole) = GetOperator();
         var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
 
-        var result = await _sender.Send(new BatchDeleteUsersCommand(dto.Ids, currentUserId, isAdmin));
+        var result = await _sender.Send(new BatchDeleteUsersCommand(dto.Ids, currentUserId, isAdmin), ct);
 
         LogOperation("批量删除用户", new { Ids = dto.Ids, Result = result.Value?.Message }, null);
         return Success(result.Value!, result.Value?.Message ?? "批量删除完成");
@@ -302,13 +302,13 @@ public abstract class BaseUsersController : BaseApiController
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 404)]
-    public virtual async Task<IActionResult> Restore(Guid id)
+    public virtual async Task<IActionResult> Restore(Guid id, CancellationToken ct = default)
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
         var (operatorId, _, _) = GetOperator();
 
-        var result = await _sender.Send(new RestoreUserCommand(id, operatorId));
+        var result = await _sender.Send(new RestoreUserCommand(id, operatorId), ct);
 
         if (!result.IsSuccess)
         {
@@ -329,14 +329,14 @@ public abstract class BaseUsersController : BaseApiController
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public virtual async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto)
+        public virtual async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
     {
         if (dto.Ids == null || dto.Ids.Count == 0)
         {
             return ValidationFail("请至少选择一个用户");
         }
 
-        var result = await _sender.Send(new BatchEnableUsersCommand(dto.Ids));
+        var result = await _sender.Send(new BatchEnableUsersCommand(dto.Ids), ct);
 
         LogOperation("批量启用用户", new { Ids = dto.Ids, Result = result.Value?.Message }, null);
         return Success(result.Value!, result.Value?.Message ?? "批量启用完成");
@@ -350,14 +350,14 @@ public abstract class BaseUsersController : BaseApiController
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public virtual async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto)
+        public virtual async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
     {
         if (dto.Ids == null || dto.Ids.Count == 0)
         {
             return ValidationFail("请至少选择一个用户");
         }
 
-        var result = await _sender.Send(new BatchDisableUsersCommand(dto.Ids));
+        var result = await _sender.Send(new BatchDisableUsersCommand(dto.Ids), ct);
 
         LogOperation("批量禁用用户", new { Ids = dto.Ids, Result = result.Value?.Message }, null);
         return Success(result.Value!, result.Value?.Message ?? "批量禁用完成");
