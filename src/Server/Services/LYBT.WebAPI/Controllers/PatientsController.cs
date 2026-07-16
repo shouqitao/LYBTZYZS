@@ -107,7 +107,7 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
 
-            var (ownerDto, ownershipError) = await CheckOwnershipAsync(id);
+            var (ownerDto, ownershipError) = await CheckOwnershipAsync(id, ct);
             if (ownershipError != null) return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
@@ -135,7 +135,7 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
 
-            var (ownerDto, ownershipError) = await CheckOwnershipAsync(id);
+            var (ownerDto, ownershipError) = await CheckOwnershipAsync(id, ct);
             if (ownershipError != null) return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
@@ -161,7 +161,7 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
 
-            var (ownerDto, ownershipError) = await CheckOwnershipAsync(id);
+            var (ownerDto, ownershipError) = await CheckOwnershipAsync(id, ct);
             if (ownershipError != null) return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
@@ -282,9 +282,9 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 通过ISender查询患者并验证所有权
         /// </summary>
-        private async Task<(PatientDetailDto? dto, IActionResult? error)> CheckOwnershipAsync(Guid id)
+        private async Task<(PatientDetailDto? dto, IActionResult? error)> CheckOwnershipAsync(Guid id, CancellationToken ct)
         {
-            var result = await _sender.Send(new GetPatientQuery(id));
+            var result = await _sender.Send(new GetPatientQuery(id), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return (null, NotFound("患者不存在"));

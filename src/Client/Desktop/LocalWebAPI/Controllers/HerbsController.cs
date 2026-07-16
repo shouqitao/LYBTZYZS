@@ -31,6 +31,7 @@ public class HerbsController : BaseApiController
         [FromQuery] string? category = null,
         CancellationToken ct = default)
     {
+        if (ValidatePagination(page, pageSize) is { } error) return error;
         var result = await _sender.Send(new GetHerbsQuery(page, pageSize, keyword, category), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "查询失败");

@@ -55,6 +55,7 @@ public class MedicalCasesController : BaseApiController
         [FromQuery] string? keyword = null,
         CancellationToken ct = default)
     {
+        if (ValidatePagination(page, pageSize) is { } error) return error;
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin || includeAllDoctors;
         var result = await _sender.Send(new GetMedicalCasesQuery(
@@ -84,6 +85,7 @@ public class MedicalCasesController : BaseApiController
         [FromQuery] int pageSize = 20,
         CancellationToken ct = default)
     {
+        if (ValidatePagination(page, pageSize) is { } error) return error;
         var result = await _sender.Send(new SearchMedicalCasesQuery(
             patientName, diagnosisKeyword, startDate, endDate, page, pageSize), ct);
         if (!result.IsSuccess)
@@ -140,6 +142,7 @@ public class MedicalCasesController : BaseApiController
         [FromQuery] int pageSize = 20,
         CancellationToken ct = default)
     {
+        if (ValidatePagination(page, pageSize) is { } error) return error;
         var result = await _sender.Send(
             new GetPatientConsultationsQuery(patientId, page, pageSize), ct);
         if (!result.IsSuccess)
@@ -154,6 +157,7 @@ public class MedicalCasesController : BaseApiController
         [FromQuery] int pageSize = 20,
         CancellationToken ct = default)
     {
+        if (ValidatePagination(page, pageSize) is { } error) return error;
         var result = await _sender.Send(
             new GetPatientPrescriptionsQuery(patientId, page, pageSize), ct);
         if (!result.IsSuccess)

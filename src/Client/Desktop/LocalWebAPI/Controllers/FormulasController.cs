@@ -43,6 +43,7 @@ public class FormulasController : BaseApiController
         [FromQuery] string? category = null,
         CancellationToken ct = default)
     {
+        if (ValidatePagination(page, pageSize) is { } error) return error;
         var result = await _sender.Send(new GetFormulasQuery(page, pageSize, keyword, category), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "查询失败");
@@ -97,6 +98,7 @@ public class FormulasController : BaseApiController
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
+        // Local模式为单用户桌面端，跳过ValidateOwnership检查（与Remote端的区别）
         var operatorId = GetCurrentUserId();
         var result = await _sender.Send(new DeleteFormulaCommand(id, operatorId), ct);
         if (!result.IsSuccess)
@@ -119,6 +121,7 @@ public class FormulasController : BaseApiController
     [HttpPost("{id}/toggle-status")]
     public async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
     {
+        // Local模式为单用户桌面端，跳过ValidateOwnership检查（与Remote端的区别）
         var operatorId = GetCurrentUserId();
         var result = await _sender.Send(new ToggleFormulaStatusCommand(id, operatorId), ct);
         if (!result.IsSuccess || result.Value == null)

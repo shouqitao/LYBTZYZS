@@ -38,6 +38,7 @@ public class RegistrationsController : BaseApiController
         [FromQuery] Guid? doctorId = null,
         CancellationToken ct = default)
     {
+        if (ValidatePagination(page, pageSize) is { } error) return error;
         var result = await _sender.Send(new GetRegistrationsQuery(page, pageSize, keyword,
             startDate, endDate, patientId, doctorId), ct);
         return SuccessPaged(result, "查询成功");
