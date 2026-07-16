@@ -30,11 +30,24 @@ namespace LYBT.Desktop.Formula.Interfaces
         #region 保存操作
 
         /// <summary>
-        /// 保存配方（创建或更新）
-        /// Issue #2149: 优化双重映射，直接接收InputDto以提升性能
+        /// 创建配方
         /// </summary>
-        Task<CommandResult<FormulaDetailDto>> SaveFormulaAsync(
-            FormulaDetailDto currentFormula,
+        Task<CommandResult<FormulaDetailDto>> CreateFormulaAsync(
+            string formulaName,
+            string effect,
+            string usage,
+            string property,
+            string category,
+            string remark,
+            bool isShared,
+            List<FormulaHerbItemInputDto> herbInputDtos,
+            CancellationToken ct = default);
+
+        /// <summary>
+        /// 更新配方
+        /// </summary>
+        Task<CommandResult<FormulaDetailDto>> UpdateFormulaAsync(
+            Guid formulaId,
             string formulaName,
             string effect,
             string usage,

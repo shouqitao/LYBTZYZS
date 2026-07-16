@@ -6,7 +6,6 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
 using System.Threading;
-using Refit;
 
 namespace LYBT.Desktop.Herbs.Services
 {
@@ -32,7 +31,7 @@ namespace LYBT.Desktop.Herbs.Services
         /// <summary>
         /// 创建药材
         /// </summary>
-        public async Task<CommandResult<HerbDetailDto>> CreateAsync(HerbInputDto createDto, CancellationToken ct = default)
+        public async Task<CommandResult<HerbDetailDto>> CreateHerbAsync(HerbInputDto createDto, CancellationToken ct = default)
         {
             try
             {
@@ -52,7 +51,7 @@ namespace LYBT.Desktop.Herbs.Services
         /// <summary>
         /// 更新药材
         /// </summary>
-        public async Task<CommandResult<HerbDetailDto>> UpdateAsync(HerbInputDto updateDto, CancellationToken ct = default)
+        public async Task<CommandResult<HerbDetailDto>> UpdateHerbAsync(HerbInputDto updateDto, CancellationToken ct = default)
         {
             try
             {
@@ -72,7 +71,7 @@ namespace LYBT.Desktop.Herbs.Services
         /// <summary>
         /// 删除药材
         /// </summary>
-        public async Task<CommandResult<bool>> DeleteAsync(Guid herbId, CancellationToken ct = default)
+        public async Task<CommandResult<bool>> DeleteHerbAsync(Guid herbId, CancellationToken ct = default)
         {
             try
             {

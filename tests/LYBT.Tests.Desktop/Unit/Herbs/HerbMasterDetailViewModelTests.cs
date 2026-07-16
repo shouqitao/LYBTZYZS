@@ -160,14 +160,14 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
         _herbEditor.Herb.Unit = "g";
         _herbEditor.Herb.Price = 10m;
 
-        _herbService.CreateAsync(Arg.Any<HerbInputDto>(), Arg.Any<System.Threading.CancellationToken>())
+        _herbService.CreateHerbAsync(Arg.Any<HerbInputDto>(), Arg.Any<System.Threading.CancellationToken>())
             .Returns(Task.FromResult(new CommandResult<HerbDetailDto>(true, created, null)));
         _masterDetailServices.DetailEditor.IsNew.Returns(true);
 
         var result = await sut.SaveDetailPublicAsync(detail);
 
         result.Should().BeTrue();
-        await _herbService.Received(1).CreateAsync(
+        await _herbService.Received(1).CreateHerbAsync(
             Arg.Is<HerbInputDto>(dto => dto.Name == "黄芪" && dto.Unit == "g" && dto.Price == 10m),
             Arg.Any<System.Threading.CancellationToken>());
         _cacheManager.Received(1).InvalidateHerbCaches();
@@ -188,16 +188,16 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
 
         var updated = CreateHerbDetailDto(herbId, "黄芪（修订）");
 
-        _herbService.UpdateAsync(Arg.Any<HerbInputDto>(), Arg.Any<System.Threading.CancellationToken>())
+        _herbService.UpdateHerbAsync(Arg.Any<HerbInputDto>(), Arg.Any<System.Threading.CancellationToken>())
             .Returns(Task.FromResult(new CommandResult<HerbDetailDto>(true, updated, null)));
 
         var result = await sut.SaveDetailPublicAsync(detail);
 
         result.Should().BeTrue();
-        await _herbService.Received(1).UpdateAsync(
+        await _herbService.Received(1).UpdateHerbAsync(
             Arg.Is<HerbInputDto>(dto => dto.Id == herbId && dto.Name == "黄芪（修订）"),
             Arg.Any<System.Threading.CancellationToken>());
-        await _herbService.DidNotReceive().CreateAsync(Arg.Any<HerbInputDto>(), Arg.Any<System.Threading.CancellationToken>());
+        await _herbService.DidNotReceive().CreateHerbAsync(Arg.Any<HerbInputDto>(), Arg.Any<System.Threading.CancellationToken>());
         _cacheManager.Received(1).InvalidateHerbCaches();
     }
 
@@ -207,13 +207,13 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
         var sut = CreateSut();
         var herb = CreateHerbListDto();
 
-        _herbService.DeleteAsync(herb.Id, Arg.Any<System.Threading.CancellationToken>())
+        _herbService.DeleteHerbAsync(herb.Id, Arg.Any<System.Threading.CancellationToken>())
             .Returns(Task.FromResult(new CommandResult<bool>(true, true, null)));
 
         var result = await sut.DeleteItemPublicAsync(herb);
 
         result.Should().BeTrue();
-        await _herbService.Received(1).DeleteAsync(herb.Id, Arg.Any<System.Threading.CancellationToken>());
+        await _herbService.Received(1).DeleteHerbAsync(herb.Id, Arg.Any<System.Threading.CancellationToken>());
         _cacheManager.Received(1).InvalidateHerbCaches();
     }
 

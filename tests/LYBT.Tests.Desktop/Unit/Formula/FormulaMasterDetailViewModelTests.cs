@@ -179,8 +179,7 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
             DecocteMethod = DecocteMethod.Default
         });
 
-        _formulaService.SaveFormulaAsync(
-                Arg.Any<FormulaDetailDto>(),
+        _formulaService.CreateFormulaAsync(
                 "新验方",
                 "益气健脾",
                 "每日一剂",
@@ -197,8 +196,7 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
 
         await sut.SaveCommand.ExecuteAsync(null);
 
-        await _formulaService.Received(1).SaveFormulaAsync(
-            Arg.Is<FormulaDetailDto>(x => x.Id == Guid.Empty),
+        await _formulaService.Received(1).CreateFormulaAsync(
             "新验方",
             "益气健脾",
             "每日一剂",
@@ -236,8 +234,8 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
             DecocteMethod = DecocteMethod.Default
         });
 
-        _formulaService.SaveFormulaAsync(
-                Arg.Any<FormulaDetailDto>(),
+        _formulaService.UpdateFormulaAsync(
+                existingId,
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<string>(),
@@ -254,8 +252,8 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
 
         await sut.SaveCommand.ExecuteAsync(null);
 
-        await _formulaService.Received(1).SaveFormulaAsync(
-            Arg.Is<FormulaDetailDto>(x => x.Id == existingId),
+        await _formulaService.Received(1).UpdateFormulaAsync(
+            existingId,
             "旧验方",
             "更新功效",
             "更新用法",

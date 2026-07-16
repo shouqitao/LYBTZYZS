@@ -96,28 +96,4 @@ public class HttpHerbRepository : IHerbRepository
         var response = await _apiClient.Herbs.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
         return response.Data;
     }
-
-    public async Task<(bool success, HerbDetailDto? data, string? error)> CreateWithResultAsync(HerbInputDto input)
-    {
-        try { var d = await CreateAsync(input); return (true, d, null); }
-        catch (Exception ex) { return (false, null, ex.Message); }
-    }
-
-    public async Task<(bool success, HerbDetailDto? data, string? error)> UpdateWithResultAsync(Guid id, HerbInputDto input)
-    {
-        try { var d = await UpdateAsync(input); return (true, d, null); }
-        catch (Exception ex) { return (false, null, ex.Message); }
-    }
-
-    public async Task<(bool success, string? error)> DeleteWithResultAsync(Guid id)
-    {
-        try { var d = await DeleteAsync(id); return (d, null); }
-        catch (Exception ex) { return (false, ex.Message); }
-    }
-
-    public async Task<(bool success, HerbDetailDto? data, string? error)> GetByIdWithResultAsync(Guid id)
-    {
-        try { var d = await GetByIdAsync(id); return (d != null, d, null); }
-        catch (Exception ex) { return (false, null, ex.Message); }
-    }
 }

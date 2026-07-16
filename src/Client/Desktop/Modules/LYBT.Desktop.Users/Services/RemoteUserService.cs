@@ -8,7 +8,6 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.Extensions.Logging;
 using System.Threading;
-using Refit;
 
 namespace LYBT.Desktop.Users.Services
 {
@@ -34,7 +33,7 @@ namespace LYBT.Desktop.Users.Services
         /// <summary>
         /// 创建用户
         /// </summary>
-        public async Task<CommandResult<UserDetailDto>> CreateAsync(UserInputDto createDto, CancellationToken ct = default)
+        public async Task<CommandResult<UserDetailDto>> CreateUserAsync(UserInputDto createDto, CancellationToken ct = default)
         {
             try
             {
@@ -54,7 +53,7 @@ namespace LYBT.Desktop.Users.Services
         /// <summary>
         /// 更新用户
         /// </summary>
-        public async Task<CommandResult<UserDetailDto>> UpdateAsync(UserInputDto updateDto, CancellationToken ct = default)
+        public async Task<CommandResult<UserDetailDto>> UpdateUserAsync(UserInputDto updateDto, CancellationToken ct = default)
         {
             try
             {
@@ -74,7 +73,7 @@ namespace LYBT.Desktop.Users.Services
         /// <summary>
         /// 删除用户
         /// </summary>
-        public async Task<CommandResult<bool>> DeleteAsync(Guid userId, CancellationToken ct = default)
+        public async Task<CommandResult<bool>> DeleteUserAsync(Guid userId, CancellationToken ct = default)
         {
             try
             {

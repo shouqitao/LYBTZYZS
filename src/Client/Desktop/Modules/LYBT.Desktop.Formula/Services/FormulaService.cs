@@ -67,8 +67,7 @@ namespace LYBT.Desktop.Formula.Services
 
         #region 保存操作
 
-        public async Task<CommandResult<FormulaDetailDto>> SaveFormulaAsync(
-            FormulaDetailDto currentFormula,
+        public async Task<CommandResult<FormulaDetailDto>> CreateFormulaAsync(
             string formulaName,
             string effect,
             string usage,
@@ -81,8 +80,7 @@ namespace LYBT.Desktop.Formula.Services
         {
             try
             {
-                var isNewFormula = currentFormula.Id == Guid.Empty;
-                _logger.LogInformation("[SVC] Formula.Save started - FormulaId={FormulaId} IsNew={IsNew}", currentFormula.Id, isNewFormula);
+                _logger.LogInformation("[SVC] Formula.Create started - Name={Name}", formulaName);
 
                 if (herbInputDtos == null || herbInputDtos.Count == 0)
                 {
@@ -91,7 +89,6 @@ namespace LYBT.Desktop.Formula.Services
 
                 var inputDto = new FormulaInputDto
                 {
-                    Id = currentFormula.Id,
                     Name = formulaName.Trim(),
                     Effect = string.IsNullOrWhiteSpace(effect) ? null! : effect.Trim(),
                     Usage = string.IsNullOrWhiteSpace(usage) ? null! : usage.Trim(),
@@ -102,26 +99,61 @@ namespace LYBT.Desktop.Formula.Services
                     Herbs = herbInputDtos
                 };
 
-                FormulaDetailDto resultFormula;
-                if (isNewFormula)
-                {
-                    _logger.LogInformation("[SVC] Formula.Create started - Name={Name}", formulaName);
-                    resultFormula = await _repository.CreateAsync(inputDto);
-                    _logger.LogInformation("[SVC] Formula.Create completed - FormulaId={FormulaId}", resultFormula.Id);
-                }
-                else
-                {
-                    _logger.LogInformation("[SVC] Formula.Update started - FormulaId={FormulaId}", currentFormula.Id);
-                    resultFormula = await _repository.UpdateAsync(inputDto);
-                    _logger.LogInformation("[SVC] Formula.Update completed - FormulaId={FormulaId}", resultFormula.Id);
-                }
+                var resultFormula = await _repository.CreateAsync(inputDto);
+                _logger.LogInformation("[SVC] Formula.Create completed - FormulaId={FormulaId}", resultFormula.Id);
 
                 return CommandResult<FormulaDetailDto>.Succeeded(resultFormula);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[SVC] Formula.Save failed - FormulaId={FormulaId}", currentFormula.Id);
-                return CommandResult<FormulaDetailDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存配方", ex));
+                _logger.LogError(ex, "[SVC] Formula.Create failed - Name={Name}", formulaName);
+                return CommandResult<FormulaDetailDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建配方", ex));
+            }
+        }
+
+        public async Task<CommandResult<FormulaDetailDto>> UpdateFormulaAsync(
+            Guid formulaId,
+            string formulaName,
+            string effect,
+            string usage,
+            string property,
+            string category,
+            string remark,
+            bool isShared,
+            List<FormulaHerbItemInputDto> herbInputDtos,
+            CancellationToken ct = default)
+        {
+            try
+            {
+                _logger.LogInformation("[SVC] Formula.Update started - FormulaId={FormulaId}", formulaId);
+
+                if (herbInputDtos == null || herbInputDtos.Count == 0)
+                {
+                    return CommandResult<FormulaDetailDto>.Failed("验方必须包含至少一味中药材");
+                }
+
+                var inputDto = new FormulaInputDto
+                {
+                    Id = formulaId,
+                    Name = formulaName.Trim(),
+                    Effect = string.IsNullOrWhiteSpace(effect) ? null! : effect.Trim(),
+                    Usage = string.IsNullOrWhiteSpace(usage) ? null! : usage.Trim(),
+                    Property = string.IsNullOrWhiteSpace(property) ? null : property.Trim(),
+                    Category = string.IsNullOrWhiteSpace(category) ? null : category.Trim(),
+                    Remark = string.IsNullOrWhiteSpace(remark) ? null! : remark.Trim(),
+                    IsShared = isShared,
+                    Herbs = herbInputDtos
+                };
+
+                var resultFormula = await _repository.UpdateAsync(inputDto);
+                _logger.LogInformation("[SVC] Formula.Update completed - FormulaId={FormulaId}", resultFormula.Id);
+
+                return CommandResult<FormulaDetailDto>.Succeeded(resultFormula);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[SVC] Formula.Update failed - FormulaId={FormulaId}", formulaId);
+                return CommandResult<FormulaDetailDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("更新配方", ex));
             }
         }
 

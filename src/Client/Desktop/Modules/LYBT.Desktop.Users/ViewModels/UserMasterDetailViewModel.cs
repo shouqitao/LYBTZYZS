@@ -257,8 +257,8 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
             var input = UserEditor.GetUserInput();
 
             var result = UserEditor.User.Id == Guid.Empty
-                ? await _commandHandler.CreateAsync(input)
-                : await _commandHandler.UpdateAsync(input);
+                ? await _commandHandler.CreateUserAsync(input)
+                : await _commandHandler.UpdateUserAsync(input);
 
             if (result.Success && result.Data != null)
             {
@@ -309,7 +309,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
             return false;
         }
 
-        var result = await _commandHandler.DeleteAsync(item.Id);
+        var result = await _commandHandler.DeleteUserAsync(item.Id);
         if (!result.Success)
         {
             MasterDetailServices.ErrorHandler.SetError("Delete", result.Error ?? $"删除用户 '{item.UserName}' 失败");

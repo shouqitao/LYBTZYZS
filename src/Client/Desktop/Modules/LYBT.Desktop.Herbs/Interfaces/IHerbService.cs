@@ -2,7 +2,6 @@ using LYBT.Desktop.Shared.Results;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using System.Threading;
-using Refit;
 
 namespace LYBT.Desktop.Herbs.Interfaces
 {
@@ -16,17 +15,17 @@ namespace LYBT.Desktop.Herbs.Interfaces
         /// <summary>
         /// 创建药材
         /// </summary>
-        Task<CommandResult<HerbDetailDto>> CreateAsync(HerbInputDto createDto, CancellationToken ct = default);
+        Task<CommandResult<HerbDetailDto>> CreateHerbAsync(HerbInputDto createDto, CancellationToken ct = default);
 
         /// <summary>
         /// 更新药材
         /// </summary>
-        Task<CommandResult<HerbDetailDto>> UpdateAsync(HerbInputDto updateDto, CancellationToken ct = default);
+        Task<CommandResult<HerbDetailDto>> UpdateHerbAsync(HerbInputDto updateDto, CancellationToken ct = default);
 
         /// <summary>
         /// 删除药材
         /// </summary>
-        Task<CommandResult<bool>> DeleteAsync(Guid herbId, CancellationToken ct = default);
+        Task<CommandResult<bool>> DeleteHerbAsync(Guid herbId, CancellationToken ct = default);
 
         /// <summary>
         /// 批量删除药材

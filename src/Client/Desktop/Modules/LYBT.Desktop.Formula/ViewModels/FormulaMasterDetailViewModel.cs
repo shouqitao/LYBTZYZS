@@ -160,16 +160,27 @@ namespace LYBT.Desktop.Formula.ViewModels
                 var herbInputDtos = FormulaEditor.GetHerbInputDtos();
                 var formula = FormulaEditor.Formula;
 
-                var result = await _formulaService.SaveFormulaAsync(
-                    new FormulaDetailDto { Id = formula.Id },
-                    formula.Name,
-                    formula.Effect ?? string.Empty,
-                    formula.Usage ?? string.Empty,
-                    formula.Property ?? string.Empty,
-                    formula.Category ?? string.Empty,
-                    formula.Remark ?? string.Empty,
-                    formula.IsShared,
-                    herbInputDtos);
+                var isNew = formula.Id == Guid.Empty;
+                var result = isNew
+                    ? await _formulaService.CreateFormulaAsync(
+                        formula.Name,
+                        formula.Effect ?? string.Empty,
+                        formula.Usage ?? string.Empty,
+                        formula.Property ?? string.Empty,
+                        formula.Category ?? string.Empty,
+                        formula.Remark ?? string.Empty,
+                        formula.IsShared,
+                        herbInputDtos)
+                    : await _formulaService.UpdateFormulaAsync(
+                        formula.Id,
+                        formula.Name,
+                        formula.Effect ?? string.Empty,
+                        formula.Usage ?? string.Empty,
+                        formula.Property ?? string.Empty,
+                        formula.Category ?? string.Empty,
+                        formula.Remark ?? string.Empty,
+                        formula.IsShared,
+                        herbInputDtos);
 
                 if (!result)
                 {

@@ -71,28 +71,4 @@ public interface IHerbRepository
     Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids);
 
     #endregion
-
-    #region 包装方法 (统一返回元组格式)
-
-    /// <summary>
-    /// 创建中药 (带结果包装)
-    /// </summary>
-    Task<(bool success, HerbDetailDto? data, string? error)> CreateWithResultAsync(HerbInputDto input);
-
-    /// <summary>
-    /// 更新中药 (带结果包装)
-    /// </summary>
-    Task<(bool success, HerbDetailDto? data, string? error)> UpdateWithResultAsync(Guid id, HerbInputDto input);
-
-    /// <summary>
-    /// 删除中药 (带结果包装)
-    /// </summary>
-    Task<(bool success, string? error)> DeleteWithResultAsync(Guid id);
-
-    /// <summary>
-    /// 根据 ID 获取中药详情 (带结果包装)
-    /// </summary>
-    Task<(bool success, HerbDetailDto? data, string? error)> GetByIdWithResultAsync(Guid id);
-
-    #endregion
 }
