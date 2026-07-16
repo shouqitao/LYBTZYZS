@@ -28,12 +28,20 @@ public partial class ReportsHomeViewModel : NavigableViewModelBase
     [ObservableProperty]
     private string? _errorMessage;
 
+    [ObservableProperty]
+    private DateTime _selectedDate = DateTime.Today;
+
     public ReportsHomeViewModel(
         IViewModelServices services,
         IApiClient apiClient)
         : base(services)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+    }
+
+    partial void OnSelectedDateChanged(DateTime value)
+    {
+        _ = LoadDataAsync();
     }
 
     public override async void OnNavigatedTo(NavigationContext navigationContext)
@@ -50,6 +58,9 @@ public partial class ReportsHomeViewModel : NavigableViewModelBase
     }
 
     [RelayCommand]
+    private void GoToToday() => SelectedDate = DateTime.Today;
+
+    [RelayCommand]
     private async Task LoadDataAsync()
     {
         IsLoading = true;
@@ -57,9 +68,12 @@ public partial class ReportsHomeViewModel : NavigableViewModelBase
 
         try
         {
-            var incomeTask = _apiClient.Reports.GetDailyIncomeAsync();
-            var consultationsTask = _apiClient.Reports.GetDailyConsultationsAsync();
-            var herbsTask = _apiClient.Reports.GetDailyHerbUsageAsync();
+            var startDate = SelectedDate.Date;
+            var endDate = SelectedDate.Date.AddDays(1);
+
+            var incomeTask = _apiClient.Reports.GetDailyIncomeAsync(startDate, endDate);
+            var consultationsTask = _apiClient.Reports.GetDailyConsultationsAsync(startDate, endDate);
+            var herbsTask = _apiClient.Reports.GetDailyHerbUsageAsync(startDate, endDate);
 
             await Task.WhenAll(incomeTask, consultationsTask, herbsTask);
 

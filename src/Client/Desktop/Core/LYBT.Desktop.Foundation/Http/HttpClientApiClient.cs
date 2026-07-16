@@ -732,12 +732,12 @@ public sealed class HttpClientApiClient : IApiClient,
     // IApiClientReports — Report endpoints (explicit implementation)
     // ========================================================================
 
-    Task<ApiResponse<DailyIncomeDto>> IApiClientReports.GetDailyIncomeAsync()
-        => GetAndWrapAsync<DailyIncomeDto>("/api/v1/reports/daily/income");
+    Task<ApiResponse<DailyIncomeDto>> IApiClientReports.GetDailyIncomeAsync(DateTime? startDate, DateTime? endDate)
+        => GetAndWrapAsync<DailyIncomeDto>($"/api/v1/reports/daily/income?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
 
-    Task<ApiResponse<DailyConsultationDto>> IApiClientReports.GetDailyConsultationsAsync()
-        => GetAndWrapAsync<DailyConsultationDto>("/api/v1/reports/daily/consultations");
+    Task<ApiResponse<DailyConsultationDto>> IApiClientReports.GetDailyConsultationsAsync(DateTime? startDate, DateTime? endDate)
+        => GetAndWrapAsync<DailyConsultationDto>($"/api/v1/reports/daily/consultations?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
 
-    Task<ApiResponse<DailyHerbUsageDto>> IApiClientReports.GetDailyHerbUsageAsync()
-        => GetAndWrapAsync<DailyHerbUsageDto>("/api/v1/reports/daily/herbs");
+    Task<ApiResponse<DailyHerbUsageDto>> IApiClientReports.GetDailyHerbUsageAsync(DateTime? startDate, DateTime? endDate)
+        => GetAndWrapAsync<DailyHerbUsageDto>($"/api/v1/reports/daily/herbs?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
 }

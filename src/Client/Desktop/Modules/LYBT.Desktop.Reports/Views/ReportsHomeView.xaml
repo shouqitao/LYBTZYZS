@@ -20,11 +20,18 @@
                 Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
                 Text="统计报表" />
             <TextBlock
-                Margin="0,4,0,0"
+                Margin="0,4,0,8"
                 HorizontalAlignment="Center"
                 FontSize="14"
                 Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                 Text="凌隐宝堂中医诊所 - 每日数据概览" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,8">
+                <TextBlock VerticalAlignment="Center" Margin="0,0,8,0"
+                           Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}">日期：</TextBlock>
+                <DatePicker SelectedDate="{Binding SelectedDate}" Width="200"/>
+                <Button Content="今天" Command="{Binding GoToTodayCommand}" Margin="8,0,0,0"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"/>
+            </StackPanel>
         </StackPanel>
 
         <!-- Loading -->
