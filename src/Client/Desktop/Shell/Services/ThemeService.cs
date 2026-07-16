@@ -59,7 +59,7 @@ public partial class ThemeService : ObservableObject, IThemeService, IDisposable
             if (System.IO.File.Exists(ThemePreferencePath))
             {
                 var json = System.IO.File.ReadAllText(ThemePreferencePath);
-                var doc = System.Text.Json.JsonDocument.Parse(json);
+                using var doc = System.Text.Json.JsonDocument.Parse(json);
                 if (doc.RootElement.TryGetProperty("IsDarkMode", out var prop))
                     isDarkMode = prop.GetBoolean();
             }

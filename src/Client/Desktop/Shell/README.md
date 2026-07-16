@@ -612,7 +612,7 @@ DelegateCommand (9个):
 
 #### Services/Lifecycle/
 
-**ApplicationState** (枚举) - NotStarted(0), Initializing(1), Authenticating(2), Ready(3), Running(4), ShuttingDown(5)
+(Session/Token lifecycle services — see SessionState enum in Session directory)
 
 ---
 
