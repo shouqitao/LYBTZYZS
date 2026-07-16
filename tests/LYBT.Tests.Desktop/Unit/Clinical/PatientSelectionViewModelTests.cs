@@ -26,6 +26,7 @@ public class PatientSelectionViewModelTests
     private readonly IPatientApi _patientApi;
     private readonly IMedicalCaseApi _medicalCaseApi;
     private readonly IMedicalCaseService _medicalCaseService;
+    private readonly IRegistrationService _registrationService;
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly ILoggerFactory _loggerFactory;
     private readonly IEventAggregator _eventAggregator;
@@ -54,6 +55,7 @@ public class PatientSelectionViewModelTests
         _patientApi = Substitute.For<IPatientApi>();
         _medicalCaseApi = Substitute.For<IMedicalCaseApi>();
         _medicalCaseService = Substitute.For<IMedicalCaseService>();
+        _registrationService = Substitute.For<IRegistrationService>();
         _navigationCoordinator = Substitute.For<INavigationCoordinator>();
         _cardReaderService = Substitute.For<ICardReaderService>();
         _patientIntegration = Substitute.For<IPatientCardReaderIntegration>();
@@ -64,6 +66,7 @@ public class PatientSelectionViewModelTests
         _patientApi,
         _medicalCaseApi,
         _medicalCaseService,
+        _registrationService,
         _navigationCoordinator,
         _cardReaderService,
         _patientIntegration);

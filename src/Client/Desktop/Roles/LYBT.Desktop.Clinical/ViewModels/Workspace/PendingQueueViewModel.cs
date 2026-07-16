@@ -6,6 +6,7 @@ using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -20,6 +21,7 @@ public class PendingQueueViewModel : ChildViewModelBase
 {
     private readonly IMedicalCaseWorkspaceContext _context;
     private readonly IMedicalCaseService _medicalCaseService;
+    private readonly IRegistrationService _registrationService;
     private readonly INavigationCoordinator _navigationCoordinator;
 
     private readonly ObservableCollection<PendingMedicalCaseDto> _queue = new();
@@ -51,11 +53,13 @@ public class PendingQueueViewModel : ChildViewModelBase
         IWorkspaceHost host,
         ILoggerFactory loggerFactory,
         IMedicalCaseService medicalCaseService,
+        IRegistrationService registrationService,
         INavigationCoordinator navigationCoordinator)
         : base(host, loggerFactory)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
+        _registrationService = registrationService ?? throw new ArgumentNullException(nameof(registrationService));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
 
         RefreshCommand = new DelegateCommand(async () => await RefreshQueueAsync());
@@ -63,29 +67,58 @@ public class PendingQueueViewModel : ChildViewModelBase
     }
 
     /// <summary>
-    /// Refresh the pending queue.
+    /// Refresh the pending queue from the registration service.
     /// </summary>
-    public Task RefreshQueueAsync()
+    public async Task RefreshQueueAsync()
     {
         try
         {
             IsRefreshing = true;
             _queue.Clear();
+
+            var doctorId = _context.SessionManager?.CurrentUserId;
+            var result = await _registrationService.GetQueueAsync(doctorId);
+
+            if (result.Success && result.Data != null)
+            {
+                foreach (var reg in result.Data)
+                {
+                    _queue.Add(new PendingMedicalCaseDto
+                    {
+                        PatientId = reg.PatientId,
+                        PatientName = reg.PatientName,
+                        MedicalCaseId = reg.MedicalCaseId,
+                        CaseStatus = MapRegistrationStatus(reg.Status),
+                        CreatedAt = reg.CreatedAt,
+                        QueueNumber = reg.QueueNumber
+                    });
+                }
+            }
+
             Logger.LogInformation("待诊队列加载完成，共{Count}条", _queue.Count);
             OnPropertyChanged(nameof(Queue));
             OnPropertyChanged(nameof(HasNoPendingCases));
-            return Task.CompletedTask;
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "加载待诊队列失败");
-            return Task.CompletedTask;
         }
         finally
         {
             IsRefreshing = false;
         }
     }
+
+    /// <summary>
+    /// Map RegistrationStatus to MedicalCaseStatus for pending queue display.
+    /// </summary>
+    private static MedicalCaseStatus MapRegistrationStatus(RegistrationStatus status) => status switch
+    {
+        RegistrationStatus.Waiting => MedicalCaseStatus.Suspended,
+        RegistrationStatus.InProgress => MedicalCaseStatus.Active,
+        RegistrationStatus.Completed => MedicalCaseStatus.Completed,
+        _ => MedicalCaseStatus.Suspended
+    };
 
     /// <summary>
     /// Select a pending case and switch to it.

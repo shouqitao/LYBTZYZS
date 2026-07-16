@@ -30,6 +30,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
     private readonly IPatientApi _patientApi;
     private readonly IMedicalCaseApi _medicalCaseApi;
     private readonly IMedicalCaseService _medicalCaseService;
+    private readonly IRegistrationService _registrationService;
     private readonly ICommonDialogService _dialogService;
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly ICardReaderService _cardReaderService;
@@ -105,6 +106,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
         IPatientApi patientApi,
         IMedicalCaseApi medicalCaseApi,
         IMedicalCaseService medicalCaseService,
+        IRegistrationService registrationService,
         INavigationCoordinator navigationCoordinator,
         ICardReaderService cardReaderService,
         IPatientCardReaderIntegration patientIntegration)
@@ -113,6 +115,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
         _patientApi = patientApi ?? throw new ArgumentNullException(nameof(patientApi));
         _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
         _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
+        _registrationService = registrationService ?? throw new ArgumentNullException(nameof(registrationService));
         _dialogService = services.CommonDialogService;
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _cardReaderService = cardReaderService ?? throw new ArgumentNullException(nameof(cardReaderService));
@@ -126,7 +129,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
 
         PendingQueue = new PendingQueueViewModel(
             WorkspaceContext, this, services.LoggerFactory,
-            medicalCaseService, navigationCoordinator);
+            medicalCaseService, registrationService, navigationCoordinator);
 
         PendingQueue.SuspendCurrentCase = null;
     }
