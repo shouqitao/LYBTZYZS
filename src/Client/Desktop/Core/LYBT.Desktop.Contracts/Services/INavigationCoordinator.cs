@@ -20,6 +20,11 @@ public interface INavigationCoordinator
     void NavigateTo(string viewName, IDictionary<string, object>? parameters = null);
 
     /// <summary>
+    /// 导航到指定视图（强类型参数）
+    /// </summary>
+    void NavigateTo<TParams>(string viewName, TParams parameters) where TParams : class;
+
+    /// <summary>
     /// 导航到当前角色主页
     /// </summary>
     void NavigateToHome();

@@ -121,6 +121,20 @@ public class NavigationCoordinator : INavigationCoordinator
         }
     }
 
+    /// <summary>导航到指定视图（强类型参数）</summary>
+    public void NavigateTo<TParams>(string viewName, TParams parameters) where TParams : class
+    {
+        ArgumentNullException.ThrowIfNull(parameters);
+        var dict = new Dictionary<string, object>();
+        foreach (var prop in typeof(TParams).GetProperties())
+        {
+            var value = prop.GetValue(parameters);
+            if (value != null)
+                dict[prop.Name] = value;
+        }
+        NavigateTo(viewName, dict);
+    }
+
     /// <summary>导航到当前角色主页</summary>
     public void NavigateToHome()
     {
