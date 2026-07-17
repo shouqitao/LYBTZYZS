@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Windows;
 using LYBT.Desktop.Shared.UI;
 using LYBT.Desktop.Contracts.Roles;
@@ -27,6 +28,7 @@ public class NavigationCoordinator : INavigationCoordinator
     private DateTime _lastNavigationTime = DateTime.MinValue;
     private string? _lastNavigationView;
     private const int NavigationDebounceMs = 300;
+    private const int NavigationTimeoutSeconds = 10;
 
     public NavigationCoordinator(
         IRegionManager regionManager,
@@ -113,8 +115,14 @@ public class NavigationCoordinator : INavigationCoordinator
             _logger.LogInformation("导航到 {ViewName}", viewName);
             var navParams = ConvertToNavigationParameters(parameters);
 
+                        var tcs = new TaskCompletionSource<bool>();
+            var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(NavigationTimeoutSeconds));
+            timeoutCts.Token.Register(() => tcs.TrySetResult(false));
+
             _regionManager.RequestNavigate(RegionNames.ContentRegion, viewName, result =>
             {
+                tcs.TrySetResult(result.Result == true);
+            
                 if (result.Result == true)
                 {
                     _historyService.RecordNavigation(fromView, viewName);
@@ -128,6 +136,15 @@ public class NavigationCoordinator : INavigationCoordinator
                     _userNotificationService?.ShowErrorAsync($"无法打开页面：{errorMessage}");
                 }
             }, navParams);
+
+            _ = Task.Run(async () =>
+            {
+                if (!await tcs.Task)
+                {
+                    _logger.LogWarning("导航超时: {ViewName} ({TimeoutSeconds}s)", viewName, NavigationTimeoutSeconds);
+                    _userNotificationService?.ShowWarningAsync($"页面加载超时：{viewName}");
+                }
+            });
         }
         catch (Exception ex)
         {
