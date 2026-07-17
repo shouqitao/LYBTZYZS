@@ -82,7 +82,18 @@ public class NavigationCoordinator : INavigationCoordinator
     }
 
     /// <summary>是否可以前进</summary>
-    public bool CanNavigateForward => _historyService.CanNavigateForward;
+    public bool CanNavigateForward
+    {
+        get
+        {
+            try
+            {
+                var region = _regionManager.Regions[RegionNames.ContentRegion];
+                return region?.NavigationService?.Journal?.CanGoForward ?? false;
+            }
+            catch { return false; }
+        }
+    }
 
     /// <summary>导航历史记录</summary>
     public IReadOnlyList<string> NavigationHistory => _historyService.NavigationHistory;
@@ -195,10 +206,6 @@ public class NavigationCoordinator : INavigationCoordinator
             var region = _regionManager.Regions[RegionNames.ContentRegion];
             if (region?.NavigationService?.Journal?.CanGoBack == true)
             {
-                var currentView = CurrentView;
-                if (currentView != null)
-                    _historyService.PushForwardStack(currentView);
-
                 region.NavigationService.Journal.GoBack();
                 _logger.LogDebug("导航回退成功");
             }
@@ -217,11 +224,23 @@ public class NavigationCoordinator : INavigationCoordinator
     /// <summary>导航前进</summary>
     public void NavigateForward()
     {
-        var viewName = _historyService.PopForwardStack();
-        if (viewName != null)
+        try
         {
-            _logger.LogInformation("导航前进到 {ViewName}", viewName);
-            NavigateTo(viewName);
+            var region = _regionManager.Regions[RegionNames.ContentRegion];
+            if (region?.NavigationService?.Journal?.CanGoForward == true)
+            {
+                region.NavigationService.Journal.GoForward();
+                _logger.LogDebug("导航前进成功");
+            }
+            else
+            {
+                _logger.LogWarning("无法前进，无前进历史");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "导航前进失败");
+            _userNotificationService?.ShowErrorAsync($"导航前进失败：{ex.Message}");
         }
     }
 
