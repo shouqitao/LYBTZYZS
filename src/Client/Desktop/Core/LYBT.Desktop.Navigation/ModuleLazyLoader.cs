@@ -1,5 +1,6 @@
 using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Navigation;
@@ -56,6 +57,35 @@ public class ModuleLazyLoader : IModuleLazyLoader
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "懒加载模块 {ModuleName} 失败", moduleName);
+        }
+    }
+
+    public void PreloadModules(UserRole role)
+    {
+        if (_moduleLoadingService == null) return;
+
+        var modulesToPreload = role switch
+        {
+            UserRole.Doctor => new[] { "PatientsModule", "HerbsModule", "FormulaModule", "MedicalCaseModule" },
+            UserRole.Receptionist => new[] { "PatientsModule", "RegistrationModule" },
+            UserRole.Admin => new[] { "UsersModule", "ReportsModule" },
+            UserRole.SuperAdmin => new[] { "UsersModule", "ReportsModule", "SysadminModule" },
+            _ => Array.Empty<string>()
+        };
+
+        foreach (var moduleName in modulesToPreload)
+        {
+            if (_moduleLoadingService.IsModuleLoaded(moduleName)) continue;
+
+            try
+            {
+                _logger.LogDebug("预加载模块: {ModuleName}", moduleName);
+                _moduleLoadingService.LoadModuleAsync(moduleName).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "预加载模块失败: {ModuleName}", moduleName);
+            }
         }
     }
 }
