@@ -24,6 +24,9 @@ public class NavigationCoordinator : INavigationCoordinator
     private readonly IRegionMonitor _regionMonitor;
     private readonly ILogger<NavigationCoordinator> _logger;
     private readonly IUserNotificationService? _userNotificationService;
+    private DateTime _lastNavigationTime = DateTime.MinValue;
+    private string? _lastNavigationView;
+    private const int NavigationDebounceMs = 300;
 
     public NavigationCoordinator(
         IRegionManager regionManager,
@@ -93,6 +96,18 @@ public class NavigationCoordinator : INavigationCoordinator
     {
         try
         {
+            // 防抖：300ms 内不重复导航到同一视图
+            if (viewName == _lastNavigationView &&
+                viewName == CurrentView &&
+                (DateTime.UtcNow - _lastNavigationTime).TotalMilliseconds < NavigationDebounceMs)
+            {
+                _logger.LogDebug("导航防抖：忽略重复请求 {ViewName}", viewName);
+                return;
+            }
+
+            _lastNavigationTime = DateTime.UtcNow;
+            _lastNavigationView = viewName;
+
             _moduleLazyLoader.EnsureModuleLoaded(viewName);
             var fromView = CurrentView;
             _logger.LogInformation("导航到 {ViewName}", viewName);
