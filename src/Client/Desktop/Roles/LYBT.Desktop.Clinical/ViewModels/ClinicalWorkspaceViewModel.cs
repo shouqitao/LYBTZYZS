@@ -71,6 +71,13 @@ public partial class ClinicalWorkspaceViewModel : NavigableViewModelBase
 
     #endregion 可观察属性
 
+    #region 导航行为
+
+    /// <summary>医生工作台需要保持状态（患者选择、看诊上下文）</summary>
+    public override bool KeepAlive => true;
+
+    #endregion 导航行为
+
     #region 计算属性
 
     /// <summary>是否有选中患者</summary>

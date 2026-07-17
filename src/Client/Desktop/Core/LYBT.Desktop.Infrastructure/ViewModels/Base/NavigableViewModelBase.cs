@@ -112,7 +112,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
         /// <summary>
         /// 是否在导航离开时保持活动
         /// </summary>
-        public virtual bool KeepAlive => true;
+        public virtual bool KeepAlive => false;
 
         #endregion
 

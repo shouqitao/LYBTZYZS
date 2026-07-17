@@ -51,6 +51,13 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
 
     #endregion
 
+    #region 导航行为
+
+    /// <summary>医案工作区需要保持状态（编辑中的医案数据）</summary>
+    public override bool KeepAlive => true;
+
+    #endregion 导航行为
+
     #region IMedicalCaseWorkspaceContext
 
     private WorkspaceState _state = new();
