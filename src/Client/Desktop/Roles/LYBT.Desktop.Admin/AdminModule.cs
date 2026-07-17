@@ -25,10 +25,6 @@ namespace LYBT.Desktop.Admin
             containerRegistry.RegisterForNavigation<Views.AdminHomeView>();
             containerRegistry.RegisterForNavigation<Views.SystemSettingsView>();
             // View在角色台，Control在业务模块
-            containerRegistry.RegisterForNavigation<Views.HerbManagementView>();
-            containerRegistry.RegisterForNavigation<Views.FormulaManagementView>();
-            containerRegistry.RegisterForNavigation<Views.PatientManagementView>();
-            containerRegistry.RegisterForNavigation<Views.MedicalCaseManagementView>();
             containerRegistry.RegisterForNavigation<Views.UserManagementView>();
         }
     }
