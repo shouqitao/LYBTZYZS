@@ -116,6 +116,7 @@ temp/
 graphify-out/
 .codegraph/
 .envsitter/
+.mimocode/
 
 # ========================================
 # Local Planning Notes (session-temporary)
