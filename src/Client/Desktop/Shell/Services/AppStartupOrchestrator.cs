@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Shell.Services.Startup.Steps;
@@ -23,6 +24,7 @@ public class AppStartupOrchestrator
 
     public async Task RunStartupAsync()
     {
+        var totalStopwatch = Stopwatch.StartNew();
         try
         {
             _logger.LogInformation("启动管道开始执行");
@@ -50,6 +52,11 @@ public class AppStartupOrchestrator
                 System.Windows.MessageBox.Show(message, "启动失败",
                     System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             });
+        }
+        finally
+        {
+            totalStopwatch.Stop();
+            _logger.LogInformation("启动管道总耗时: {ElapsedMs}ms", totalStopwatch.ElapsedMilliseconds);
         }
     }
 
