@@ -1,158 +1,123 @@
 # LYBT.Desktop.Auth
 
-> 用户认证模块 | 登录/登出/Token管理
+> 登录认证模块 — 首次运行向导 / 凭据持久化 / 连接模式切换 / API 健康检查
 
 ## 项目定位
 
-- **层级**: Client Modules层
-- **职责**: 提供用户登录界面和认证流程，管理登录状态和Token存储
+- **层级**: Client / Desktop / Modules
+- **职责**: 用户登录界面与认证流程编排，管理凭据持久化（DPAPI）、连接模式（Remote/Local）检测与切换、首次运行配置向导
+- **状态**: Active
 
 ## 目录结构
 
 ```
 LYBT.Desktop.Auth/
+├── AuthenticationModule.cs                # Prism 模块注册 (IModule, 无依赖)
 ├── ViewModels/
-│   └── LoginViewModel.cs           # 登录ViewModel(核心)
+│   ├── LoginViewModel.cs                  # 登录主 ViewModel (~705 行)
+│   ├── ServerConfigViewModel.cs           # 服务器配置对话框 ViewModel
+│   └── FirstRunSetupViewModel.cs          # 首次运行配置向导 ViewModel
 ├── Views/
-│   ├── LoginView.xaml              # 登录视图
-│   ├── LoginView.xaml.cs           # CodeBehind
-│   ├── LoginWindow.xaml            # 登录窗口
-│   └── LoginWindow.xaml.cs         # CodeBehind
-└── AuthenticationModule.cs          # Prism模块注册
+│   ├── LoginView.xaml / .xaml.cs          # 登录视图 (UserControl, PasswordBox code-behind 同步)
+│   ├── ServerConfigView.xaml / .xaml.cs   # 服务器配置对话框
+│   └── FirstRunSetupView.xaml / .xaml.cs  # 首次运行向导对话框
+└── README.md
 ```
 
-## LoginViewModel
+## 核心组件
 
-### 属性
+### AuthenticationModule — 模块入口
 
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| Username | string | 用户名 |
-| Password | string | 密码(SecureString) |
-| RememberMe | bool | 记住密码 |
-| IsLoggingIn | bool | 登录中状态 |
-| ErrorMessage | string | 错误提示 |
-| CanLogin | bool | 可登录状态 |
-| ServerStatus | string | 服务器连接状态 |
-| Version | string | 应用版本号 |
-| LoginProgress | int | 登录进度(0-100) |
+**设计依据**: 基础模块，无 `[ModuleDependency]`；Services 由 Core 层统一注册，此处仅注册 VM/View/Dialog
 
-### 命令
+| 注册项 | 方式 | 说明 |
+|--------|------|------|
+| `LoginViewModel` | `Register<T>()` | 登录 ViewModel |
+| `LoginView` | `RegisterForNavigation<T>()` | 导航视图 |
+| `ServerConfigView` + `ServerConfigViewModel` | `RegisterDialog<TView, TViewModel>()` | 服务器配置对话框 |
+| `FirstRunSetupView` + `FirstRunSetupViewModel` | `RegisterDialog<TView, TViewModel>()` | 首次运行向导 |
+
+### LoginViewModel — 登录主逻辑
+
+**设计依据**: 继承 `NavigableViewModelBase`；通过 `ILoginCoordinator` 委托登录流程，VM 自身不直接调用 AuthApi；凭据通过 `IUsernameStorageService` + `ICredentialVault`（DPAPI）持久化
+
+| 命令 | 类型 | CanExecute | 说明 |
+|------|------|------------|------|
+| `LoginCommand` | `DelegateCommand` | Username/Password 非空且非 Loading | 调用 `ILoginCoordinator.LoginAsync`，成功后保存凭据 |
+| `CloseApplicationCommand` | `DelegateCommand` | 始终可用 | 确认对话框后 `Application.Current.Shutdown()` |
+| `RetryApiCheckCommand` | `DelegateCommand` | `ApiStatus == Unhealthy` | 触发 `IApplicationStateService.CheckApiHealthAsync` |
+| `OpenSettingsCommand` | `DelegateCommand` | 始终可用 | 打开 `ServerConfigView` 对话框 |
+| `SwitchToLocalCommand` | `DelegateCommand` | 始终可用 | `IConnectionModeService.SetMode(Local)` |
+| `SwitchToRemoteCommand` | `DelegateCommand` | `IsRemoteAvailable` | `IConnectionModeService.SetMode(Remote)` |
+
+**BackgroundInitAsync 序列**:
+1. `MaybeShowFirstRunSetupAsync` — 检测 `%LOCALAPPDATA%\LYBT\Desktop\first_run_done.flag`，不存在则弹出向导
+2. `LoadSavedCredentialsAsync` — 从 `IUsernameStorageService` + `ICredentialVault` 加载用户名/密码
+3. `LoadApiStatusFromStateServiceAsync` — 从 `IApplicationStateService` 读取 API 健康状态
+4. `DetectConnectionModeAsync` — 检测最佳连接模式（远程优先，本地回退）
+
+### ServerConfigViewModel — 服务器配置对话框
+
+**设计依据**: 继承 `DialogViewModelBase`；两种保存模式：「保存并启用」(Confirm) vs 「仅保存」(SaveOnly)
 
 | 命令 | 说明 |
 |------|------|
-| LoginCommand | 执行登录(异步) |
-| CancelCommand | 取消登录 |
-| ExitCommand | 退出应用 |
-| CheckServerCommand | 检查服务器状态 |
+| `TestConnectionAsync` | 调用 `IConnectionModeService.TestRemoteConnectionAsync`，更新 `ConnectionTestStatus` |
+| `Confirm` (override) | 校验 URL + 测试通过后，`SetUrlAsync` + `SetMode(Remote)` + 关闭对话框 |
+| `SaveOnlyAsync` | 仅 `SaveRemoteUrlAsync`，不切换当前模式 |
 
-### 方法
-
-| 方法 | 说明 |
-|------|------|
-| LoginAsync | 异步登录流程(验证→API调用→Token存储) |
-| ValidateCredentials | 验证用户名密码格式 |
-| LoadSavedCredentials | 加载记住的凭证 |
-| SaveCredentials | 保存凭证到安全存储 |
-| HandleLoginError | 处理登录错误(网络/凭证/服务器) |
-| CheckServerStatus | 检查API服务器状态 |
-| NavigateToMain | 登录成功后导航到主界面 |
-
-## 登录流程
-
-| 步骤 | 操作 | 说明 |
+| 属性 | 类型 | 说明 |
 |------|------|------|
-| 1 | 输入验证 | 检查用户名/密码非空 |
-| 2 | 服务器检查 | 验证API服务器可达 |
-| 3 | 认证请求 | 调用IAuthApi.LoginAsync |
-| 4 | Token存储 | 保存JWT到安全存储 |
-| 5 | 会话创建 | 更新ISessionManager状态 |
-| 6 | 导航跳转 | 跳转到主界面 |
+| `RemoteUrl` | `string` | `[ObservableProperty]`，双向绑定 |
+| `TestStatus` | `ConnectionTestStatus` | Idle/Testing/Success/Failed |
+| `TestStatusMessage` | `string` | 状态描述文本 |
+| `IsNotTesting` | `bool` | 测试中时禁用按钮 |
 
-## 设计依据
+### FirstRunSetupViewModel — 首次运行向导
 
-- 认证作为独立模块而非嵌入Shell，遵循Prism模块化原则，便于独立测试和替换认证方案
-- 登录流程分步设计(输入验证->服务器检查->认证->Token存储->会话创建)，每步可独立失败和重试
-- 凭证通过IAuthenticationService存储到安全存储(DPAPI)，而非明文保存在配置文件
-- LoginWindow独立于主窗口，认证通过后才加载主界面，防止未授权访问
+**设计依据**: 继承 `DialogViewModelBase`；单屏欢迎对话框，引导用户配置远程服务器或回退到本地模式
+
+| 命令 | 说明 |
+|------|------|
+| `TestConnectionAsync` | 与 ServerConfig 相同的连接测试逻辑 |
+| `Confirm` (override) | 保存远程 URL 并切换到远程模式 |
+| `UseLocalMode` | 直接 `SetMode(Local)` 并关闭对话框 |
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `IsRemoteAvailable` | `bool` | 最近一次测试是否成功 |
+| `ShouldShowFallbackHint` | `bool` | 测试失败时显示「将使用本地模式」提示 |
 
 ## 依赖关系
 
-### 依赖
-- LYBT.Desktop.Foundation (IAuthenticationService)
-- LYBT.Desktop.Infrastructure (ISessionManager)
-- LYBT.Desktop.Contracts (IAuthApi)
-- LYBT.Shared.Models (LoginDto)
-- Prism.Core/Prism.DryIoc (8.x)
+```
+LYBT.Desktop.Auth
+├── LYBT.Desktop.Foundation      (IApplicationStateService, IConnectionModeService, ICredentialVault, IUsernameStorageService, ILoginCoordinator)
+├── LYBT.Desktop.Infrastructure   (NavigableViewModelBase, DialogViewModelBase, IViewModelServices)
+├── LYBT.Desktop.Contracts        (IConnectionSettingsService)
+└── LYBT.Shared.Models            (DTOs, Enums)
+```
 
-### 被依赖
-- LYBT.Desktop.Shell (启动时加载)
+NuGet: `Prism.Core`, `Prism.DryIoc`, `Prism.Wpf`, `Microsoft.Extensions.Logging.Abstractions`
 
-## 更新记录
+**被依赖**: Shell 启动时加载；其他模块（如 Patients、Users）通过 `[ModuleDependency("AuthenticationModule")]` 声明依赖
 
-| 日期 | 变更 |
+## 设计决策
+
+| 决策 | 原因 |
 |------|------|
-| 2025-12-04 | 按README规范重写文档 |
-| 2025-10-29 | 初始版本 |
-
-## 开发笔记
-
-# LYBT.Desktop.Auth CLAUDE.md
-
-## 架构决策
-
-- AuthenticationModule 是基础模块，无模块依赖 (其他模块如 PatientsModule 依赖它)
-- 登录流程通过 ILoginCoordinator 编排，ViewModel 不直接调用 AuthApi
-- 密码双向绑定通过 code-behind 手动同步 PasswordBox (WPF 安全限制，PasswordBox.Password 不支持数据绑定)
-- 记住账号 (IUsernameStorageService) 和记住密码 (ICredentialVault/DPAPI) 为可选依赖
-- LoginWindow 已弃用，当前使用单窗口模式 (LoginView 作为 UserControl 嵌入主窗口)
-- 连接模式选择 (Remote/Local) 已预留 UI 入口，Local 模式尚未实现
-
-## 代码文件结构
-
-### 模块注册
-
-| 文件 | 类 | 说明 |
-|------|-----|------|
-| AuthenticationModule.cs | `AuthenticationModule : IModule` | Prism 模块注册，注册 LoginViewModel 和 LoginView (导航)。Services 由 Core 层统一注册 |
-
-### ViewModels/
-
-| 文件 | 类 | 说明 |
-|------|-----|------|
-| LoginViewModel.cs | `LoginViewModel : NavigableViewModelBase` | 登录视图模型。属性: Username, Password, RememberUsername, RememberPassword, HasMessage, ApiStatus (ApiHealthStatus), ApiStatusMessage, IsApiUnhealthy。命令: LoginCommand (DelegateCommand, CanExecute 检查用户名/密码非空且非加载中), CloseApplicationCommand (确认后退出), RetryApiCheckCommand (重试 API 连接)。核心方法: ExecuteLoginAsync (调用 LoginCoordinator，成功后保存用户名/密码), LoadSavedCredentialsAsync (启动时加载已存凭证), LoadApiStatusFromStateServiceAsync, OnApiStatusChanged (事件驱动 API 状态更新), ClearSavedUsernameAsync, ClearSavedPasswordAsync |
-
-### Views/
-
-| 文件 | 类 | 说明 |
-|------|-----|------|
-| LoginView.xaml.cs | `LoginView : UserControl` | 登录视图 code-behind。PasswordBox 双向绑定: DataContextChanged/PropertyChanged 事件同步 ViewModel.Password <-> PasswordBox.Password (避免循环更新)。响应式布局: SizeChanged 事件处理宽度 <800px 时隐藏左侧品牌区 (适配 1080P) |
-| LoginWindow.xaml.cs | `LoginWindow : Window` | 已弃用的登录窗口，保留仅为向后兼容，当前使用单窗口模式 LoginView |
-
-## 死代码与废弃标记
-
-| 类型 | 位置 | 状态 | 说明 |
-|------|------|------|------|
-| LoginWindow | Views/LoginWindow.xaml.cs | 已弃用 | 代码注释明确标记"已弃用，现在使用单窗口模式"。仅被自身 XAML 和 README 引用，无运行时消费者 |
+| 认证作为独立 Prism 模块 | 遵循模块化原则，便于独立测试和替换认证方案 |
+| `ILoginCoordinator` 委托模式 | VM 不直接调用 AuthApi，解耦登录流程编排与 UI 逻辑 |
+| PasswordBox code-behind 同步 | WPF 安全限制：`PasswordBox.Password` 不支持数据绑定，需 `PasswordChanged` 事件手动同步并防循环 |
+| DPAPI 凭据持久化 | `ICredentialVault` 使用 Windows DPAPI 加密保存密码，非明文存储 |
+| 首次运行标记文件 | `%LOCALAPPDATA%\LYBT\Desktop\first_run_done.flag`，标记失败不阻塞使用 |
+| `SafeFireAndForget` 异步模式 | BackgroundInitAsync 和 SaveAndEnableAsync 使用此模式避免未观察异常 |
 
 ## 已知陷阱
 
-- PasswordBox.Password 不支持 WPF 数据绑定 (安全设计)，必须通过 code-behind 的 PasswordChanged 事件手动同步，且需防止循环更新
-- LoginView 构造函数中 Prism 可能在 InitializeComponent 时就设置 DataContext (Issue #1246)，此时 DataContextChanged 不会触发，需在构造函数中手动处理
-- RememberPassword 勾选时自动联动勾选 RememberUsername (取消 RememberPassword 不取消 RememberUsername)
-- 切换用户名时，如果之前有已保存的密码，会自动清空 Password 字段
-
-## OpenSpec 追踪
-
-| OpenSpec ID | 涉及文件 | 状态 |
-|-------------|----------|------|
-| simplify-login-options | LoginViewModel.cs | 记住账号+记住密码已实现，自动登录已移除 |
-| refactor-startup-connection-resilience | LoginViewModel.cs | 事件驱动 API 状态更新 |
-| remove-secure-credential-storage | LoginViewModel.cs | 已移除废弃的 SecureCredentialStorage 依赖 |
-| redesign-login-remember-password | LoginViewModel.cs | DPAPI CredentialVault 保存/加载密码已实现 |
-| enhance-viewmodel-architecture | LoginViewModel.cs | 使用 IViewModelServices 聚合服务 |
-| remove-titlebar-add-close-button | LoginViewModel.cs | CloseApplicationCommand 已实现 |
-| remove-statusbar-relocate-status | LoginViewModel.cs | RetryApiCheckCommand 已实现 |
-
----
-最后更新: 2026-03-01
+- `PasswordBox.Password` 不支持 WPF 数据绑定，必须通过 code-behind 的 `PasswordChanged` 事件手动同步，且需防止循环更新
+- `LoginView` 构造函数中 Prism 可能在 `InitializeComponent` 时就设置 `DataContext`，此时 `DataContextChanged` 不会触发，需在构造函数中手动处理
+- `RememberPassword` 勾选时自动联动勾选 `RememberUsername`（取消时不反向取消）
+- 切换用户名时，如果之前有已保存的密码，会自动清空 `Password` 字段
+- `LoginWindow.xaml` 已弃用（代码注释明确标记），当前使用单窗口模式 `LoginView` 作为 `UserControl` 嵌入主窗口
+- 首次运行标记文件写入失败时，下次启动仍会弹出向导（设计为可接受的降级）

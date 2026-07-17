@@ -13,7 +13,6 @@ public class DesktopLayerArchTests
     private static readonly Assembly[] DesktopAssemblies =
     [
         Assembly.Load("LYBT.Desktop.Infrastructure"),
-        Assembly.Load("LYBT.Desktop.Models"),
         Assembly.Load("LYBT.Desktop.Shell"),
         Assembly.Load("LYBT.Desktop.Auth"),
         Assembly.Load("LYBT.Desktop.Users"),
@@ -120,12 +119,11 @@ public class DesktopLayerArchTests
 
         var baseTypes = new[]
         {
-            "ModernViewModelBase",
-            "ModernManagementViewModel",
-            "NavigationViewModelBase",
+            "CoreViewModelBase",
+            "NavigableViewModelBase",
+            "MasterDetailViewModelBase",
             "DialogViewModelBase",
-            "BaseServiceManagementViewModel", // 临时保留，待迁移
-            "NewBaseListViewModel" // 临时保留，待迁移
+            "ChildViewModelBase"
         };
 
         foreach (var vmType in viewModelTypes)
@@ -352,15 +350,11 @@ public class DesktopLayerArchTests
     {
         var allowedBaseClasses = new[]
         {
-            "UnifiedViewModelBase",
-            "UnifiedListViewModelBase`1",  // 泛型类
-            "ModernViewModelBase",
-            "ModernManagementViewModel",
-            "NavigationViewModelBase",
+            "CoreViewModelBase",
+            "NavigableViewModelBase",
+            "MasterDetailViewModelBase`2",  // 泛型类
             "DialogViewModelBase",
-            // 临时保留
-            "BaseServiceManagementViewModel",
-            "NewBaseListViewModel"
+            "ChildViewModelBase"
         };
 
         var viewModelTypes = Types.InAssemblies(DesktopAssemblies)
@@ -539,6 +533,79 @@ public class DesktopLayerArchTests
     }
 
     /// <summary>
+    /// 禁止在 ViewModel 中新增 DelegateCommand（应使用 [RelayCommand]）
+    /// 例外：ChildViewModelBase 子类（CanExecute 跨 VM 边界需要 DelegateCommand）
+    /// </summary>
+    [Fact]
+    public void ViewModels_Should_Not_Use_New_DelegateCommand()
+    {
+        var viewModelTypes = Types.InAssemblies(DesktopAssemblies)
+            .That()
+            .ResideInNamespaceContaining("ViewModels")
+            .And()
+            .HaveNameEndingWith("ViewModel")
+            .And()
+            .AreClasses()
+            .GetTypes()
+            .Where(t => !t.Name.Contains("Design") && !t.Name.Contains("Mock"))
+            .ToList();
+
+        var violations = new List<string>();
+
+        foreach (var vmType in viewModelTypes)
+        {
+            // 例外：ChildViewModelBase 子类（CanExecute 跨 VM 边界）
+            var isChild = false;
+            var current = vmType.BaseType;
+            while (current != null && current != typeof(object))
+            {
+                if (current.Name == "ChildViewModelBase")
+                {
+                    isChild = true;
+                    break;
+                }
+                current = current.BaseType;
+            }
+            if (isChild) continue;
+
+            // 例外：ChildViewModelBase 子类（CanExecute 跨 VM 边界）和已知使用 CanExecute 的 VM
+            var delegateCommandExceptionVmTypes = new[]
+            {
+                "MedicalCaseWorkspaceViewModel", // CanExecute 依赖外部 State
+                "LoginViewModel"                 // CanExecute 依赖 Username/Password/IsLoading
+            };
+            if (delegateCommandExceptionVmTypes.Contains(vmType.Name))
+                continue;
+
+            var ctors = vmType.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            foreach (var ctor in ctors)
+            {
+                var body = ctor.GetMethodBody();
+                if (body == null) continue;
+
+                // 检查 IL 中是否有 newobj DelegateCommand
+                var il = body.GetILAsByteArray();
+                if (il == null) continue;
+
+                // 简单检查：构造函数中是否引用了 DelegateCommand 类型
+                var fields = vmType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+                var delegateCommandFields = fields.Where(f =>
+                    f.FieldType.Name.Contains("DelegateCommand") ||
+                    (f.FieldType.IsGenericType && f.FieldType.GetGenericTypeDefinition().Name.Contains("DelegateCommand")))
+                    .ToList();
+
+                if (delegateCommandFields.Any())
+                {
+                    violations.Add($"{vmType.Name}: {string.Join(", ", delegateCommandFields.Select(f => f.Name))}");
+                }
+            }
+        }
+
+        Assert.True(violations.Count == 0,
+            $"ViewModel 不应使用 new DelegateCommand（应使用 [RelayCommand]）:\n{string.Join("\n", violations)}");
+    }
+
+    /// <summary>
     /// 验证所有 Repository 接口定义在 Contracts 层
     /// </summary>
     /// <remarks>
@@ -578,5 +645,49 @@ public class DesktopLayerArchTests
 
         Assert.True(misplacedInterfaces.Count == 0,
             $"Repository 接口应定义在 Contracts 层，而非模块中:\n{string.Join("\n", misplacedInterfaces)}");
+    }
+
+    /// <summary>
+    /// 业务模块不得引用其他业务模块（Registration 例外）
+    /// 防止模块耦合，确保模块隔离
+    /// </summary>
+    [Fact]
+    public void Business_Modules_Should_Not_Reference_Other_Business_Modules()
+    {
+        var moduleAssemblies = new Dictionary<string, Assembly>
+        {
+            ["LYBT.Desktop.Patients"] = Assembly.Load("LYBT.Desktop.Patients"),
+            ["LYBT.Desktop.Herbs"] = Assembly.Load("LYBT.Desktop.Herbs"),
+            ["LYBT.Desktop.Formula"] = Assembly.Load("LYBT.Desktop.Formula"),
+            ["LYBT.Desktop.MedicalCase"] = Assembly.Load("LYBT.Desktop.MedicalCase"),
+            ["LYBT.Desktop.Users"] = Assembly.Load("LYBT.Desktop.Users"),
+            ["LYBT.Desktop.Auth"] = Assembly.Load("LYBT.Desktop.Auth"),
+        };
+
+        // Registration 可依赖 Patients/Users/MedicalCase.Models（已文档化例外）
+        var registrationExceptionDeps = new[]
+        {
+            "LYBT.Desktop.Patients",
+            "LYBT.Desktop.Users",
+            "LYBT.Desktop.MedicalCase"
+        };
+
+        var violations = new List<string>();
+
+        foreach (var (moduleName, assembly) in moduleAssemblies)
+        {
+            var referencedModules = assembly.GetReferencedAssemblies()
+                .Where(a => moduleAssemblies.ContainsKey(a.Name!) && a.Name != moduleName)
+                .Select(a => a.Name!)
+                .ToList();
+
+            if (referencedModules.Any())
+            {
+                violations.Add($"{moduleName} 引用了: {string.Join(", ", referencedModules)}");
+            }
+        }
+
+        Assert.True(violations.Count == 0,
+            $"违反模块隔离规则: 业务模块间不得相互引用\n{string.Join("\n", violations)}");
     }
 }

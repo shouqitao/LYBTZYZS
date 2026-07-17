@@ -42,6 +42,6 @@ Business modules for the WPF desktop client. Each module encapsulates a domain a
 
 ### External
 - Prism.DryIoc (MVVM, DI, navigation)
-- AutoMapper / Riok.Mapperly (object mapping)
+- Riok.Mapperly (compile-time object mapping; AutoMapper is forbidden)
 
 <!-- MANUAL: -->

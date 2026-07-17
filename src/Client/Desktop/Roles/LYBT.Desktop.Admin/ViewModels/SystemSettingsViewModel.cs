@@ -5,7 +5,7 @@ using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
+using CommunityToolkit.Mvvm.Input;
 using Prism.Events;
 using Prism.Regions;
 
@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Admin.ViewModels
     /// 系统设置视图模型
     /// D2: 增加诊所配置化功能 (clinic-settings.json 热更新)
     /// </summary>
-    public class SystemSettingsViewModel : NavigableViewModelBase
+    public partial class SystemSettingsViewModel : NavigableViewModelBase
     {
         #region 服务依赖
 
@@ -109,14 +109,6 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         #endregion
 
-        #region 命令
-
-        public DelegateCommand SaveCommand { get; private set; }
-        public DelegateCommand ResetCommand { get; private set; }
-        public DelegateCommand BrowseBackupPathCommand { get; private set; }
-
-        #endregion
-
         #region 构造函数
 
         public SystemSettingsViewModel(
@@ -129,10 +121,6 @@ namespace LYBT.Desktop.Admin.ViewModels
             _clinicSettingsService = clinicSettingsService ?? throw new ArgumentNullException(nameof(clinicSettingsService));
 
             PageTitle = "系统设置";
-
-            SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync());
-            ResetCommand = new DelegateCommand(async () => await ExecuteResetAsync());
-            BrowseBackupPathCommand = new DelegateCommand(async () => await ExecuteBrowseBackupPathAsync());
         }
 
         #endregion
@@ -181,7 +169,8 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         #region 命令实现
 
-        private async Task ExecuteSaveAsync()
+        [RelayCommand]
+        private async Task SaveAsync()
         {
             try
             {
@@ -227,7 +216,8 @@ namespace LYBT.Desktop.Admin.ViewModels
             }
         }
 
-        private async Task ExecuteResetAsync()
+        [RelayCommand]
+        private async Task ResetAsync()
         {
             try
             {
@@ -264,7 +254,8 @@ namespace LYBT.Desktop.Admin.ViewModels
             }
         }
 
-        private async Task ExecuteBrowseBackupPathAsync()
+        [RelayCommand]
+        private async Task BrowseBackupPathAsync()
         {
             try
             {

@@ -29,6 +29,9 @@ Modules 实现业务功能，Roles 提供角色驱动的工作台导航。
 | LYBT.Desktop.MedicalCase | 医案诊疗流程界面 | 稳定 |
 | LYBT.Desktop.Herbs | 中药材信息维护界面 | 稳定 |
 | LYBT.Desktop.Formula | 验方模板管理界面 | 稳定 |
+| LYBT.Desktop.Reports | 统计报表 | 稳定 |
+| LYBT.Desktop.Registration | 挂号管理 | 稳定 |
+| LYBT.Desktop.Sysadmin | 系统运维工作台 | 稳定 |
 | LYBT.Desktop.Sync | 数据同步模块 | 开发中 |
 | LYBT.Desktop.Admin | 系统管理工作台 | 稳定 |
 | LYBT.Desktop.Clinical | 诊疗工作台 | 稳定 |
@@ -57,7 +60,9 @@ src/Client/Desktop/
 │   └── LYBT.Desktop.Sync/
 ├── Roles/
 │   ├── LYBT.Desktop.Admin/
-│   └── LYBT.Desktop.Clinical/
+│   ├── LYBT.Desktop.Clinical/
+│   ├── LYBT.Desktop.Receptionist/
+│   └── LYBT.Desktop.Sysadmin/
 └── Resources/
 ```
 
@@ -96,7 +101,7 @@ dotnet run --project src/Client/Desktop/Shell/LYBT.Desktop.Shell.csproj
 
 - .NET 8.0 Windows + WPF + Prism.DryIoc 8.1.97
 - Refit (类型安全 REST 客户端) | Riok.Mapperly (对象映射)
-- MVVM DataBinding + DelegateCommand + EventAggregator
+- MVVM DataBinding + CommunityToolkit.Mvvm (`[RelayCommand]`) + EventAggregator
 
 ## MVVM 规范
 
@@ -145,6 +150,8 @@ services.AddRefitClient<IAuthApi>()
 
 - **Admin**: 系统配置、用户管理、数据导入导出
 - **Doctor**: 患者档案、诊疗记录、处方开具、验方管理
+- **Receptionist**: 挂号管理、患者接待
+- **SuperAdmin**: 系统运维、全局配置
 
 ## 开发注意事项
 

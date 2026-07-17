@@ -30,7 +30,7 @@ LYBT.Desktop.MedicalCase/
 ## CONVENTIONS
 
 - **ViewModel base** — `MasterDetailViewModelBase<TListDto, TDetailModel>`
-- **Object mapping** — Riok.Mapperly (compile-time) + AutoMapper (runtime fallback)
+- **Object mapping** — Riok.Mapperly (compile-time; AutoMapper is forbidden)
 - **Navigation** — Prism Region-based between modules
 - **Data access** — `IMedicalCaseDataManager` for aggregate operations
 

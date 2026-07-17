@@ -1,236 +1,120 @@
 # LYBT.Desktop.Printing
 
-> WPF 处方打印服务，支持 A4/A5 双纸张模板与续页
+> 处方打印服务模块：提供打印、预览、PDF导出、批量打印功能，支持A5/A4纸张及多页续方。
 
 ## 项目定位
 
-- **层级**: Desktop Core (基础设施层)
-- **职责**: 提供处方打印、预览、导出功能，基于 WPF FixedDocument 实现 A4/A5 双纸张模板，支持多页续页打印
-- **状态**: Active
+独立 Prism 模块，封装处方笺的物理输出能力（打印机、PDF、XPS）。业务模块通过泛型接口 `IPrintService<PrescriptionPrintModel>` 调用，不直接依赖 WPF 打印 API 或 QuestPDF。默认纸张 A5（中医处方标准），A4 用于药材较多的详细处方。
 
 ## 目录结构
 
 ```
 LYBT.Desktop.Printing/
-├── PrintingModule.cs      # Prism 模块注册
-├── Interfaces/            # 泛型打印服务接口 (IPrintService<T>)
-├── Models/                # 打印数据模型与日志
-├── Services/              # PrescriptionPrintService 实现
-└── Templates/             # XAML 打印模板 (A4/A5 主页+续页)
+├── Interfaces/
+│   └── IPrintService.cs          # 泛型打印接口 + PrintOptions + 枚举
+├── Models/
+│   └── PrescriptionPrintModel.cs # 处方打印数据模型（诊所/患者/诊断/药材/费用/签名）
+├── Services/
+│   ├── PrescriptionPrintService.cs  # WPF FixedDocument + XPS 打印实现
+│   └── PrescriptionPdfExporter.cs   # QuestPDF PDF 导出器
+├── Templates/
+│   ├── PrescriptionPrintTemplate.xaml(.cs)        # A5 首页模板
+│   ├── PrescriptionPrintA4Template.xaml(.cs)      # A4 首页模板
+│   ├── PrescriptionContinuationTemplate.xaml(.cs)  # A5 续页模板
+│   └── PrescriptionContinuationA4Template.xaml(.cs)# A4 续页模板
+└── PrintingModule.cs             # Prism IModule 入口
 ```
 
 ## 核心组件
 
-| 名称 | 说明 |
+| 类 | 设计依据 |
+|---|---|
+| **IPrintService\<TModel\>** — 泛型打印接口 | 类型安全的打印/预览/导出/批量打印/打印机管理，约束 `where TModel : class` |
+
+| 方法 | 说明 |
 |------|------|
-| IPrintService\<T\> | 泛型打印服务接口，定义 Print/Preview/Export/BatchPrint 操作 |
-| PrintOptions | 打印选项，支持纸张大小 (A4/A5)、方向、份数、双面打印 |
-| PrescriptionPrintModel | 处方打印数据模型 |
-| PrintLogEntry | 打印日志条目，记录打印成功/失败 |
-| PrescriptionPrintService | 处方打印服务实现，基于 FixedDocument + PrintDialog |
-| PrescriptionPrintTemplate | A5 处方主页模板 (148mm x 210mm) |
-| PrescriptionPrintA4Template | A4 处方主页模板 (210mm x 297mm) |
-| PrescriptionContinuationTemplate | A5 续页模板 |
-| PrescriptionContinuationA4Template | A4 续页模板 |
+| `PrintAsync(TModel, PrintOptions?)` | 打印文档，支持对话框/直打模式 |
+| `PreviewAsync(TModel, PrintOptions?)` | 弹出预览窗口 |
+| `ExportAsync(TModel, string, ExportFormat)` | 导出为 XPS 或 PDF |
+| `BatchPrintAsync(TModel[], PrintOptions?)` | 批量打印，返回成功数 |
+| `GetAvailablePrinters()` | 返回系统打印机列表 |
+| `SetDefaultPrinter(string)` | 设置默认打印机 |
+| `GetDefaultPrinter()` | 获取当前默认打印机 |
 
-## 设计依据
+| 类 | 设计依据 |
+|---|---|
+| **PrintOptions** — 打印选项 | 打印机名称/份数/纸张/方向/双面/是否显示对话框 |
 
-处方打印是中医诊所的核心业务需求。采用 WPF 原生 FixedDocument 方案而非第三方报表引擎，原因：
-- 处方笺格式固定，无需复杂报表设计器
-- WPF FixedDocument 原生支持精确打印排版
-- A5 是处方笺行业标准纸张，A4 用于正式病历归档
-- 续页模板处理药材数量超出单页的场景
+| 属性 | 默认值 | 说明 |
+|------|--------|------|
+| `PrinterName` | `null`（系统默认） | 目标打印机 |
+| `Copies` | `1` | 打印份数 |
+| `PaperSize` | `A5` | 纸张大小（A4/A5/Letter/Legal） |
+| `Orientation` | `Portrait` | 打印方向 |
+| `DuplexPrinting` | `false` | 双面打印 |
+| `ShowDialog` | `true` | 是否显示打印对话框 |
 
-打印日志事件 (PrintLogRequested) 采用观察者模式，由调用方订阅以实现打印记录持久化。
+| 类 | 设计依据 |
+|---|---|
+| **PrescriptionPrintModel** — 处方打印数据模型 | 包含诊所信息、患者信息、四诊诊断、处方药材、费用、签名等完整处方数据 |
+
+| 分组 | 字段 |
+|------|------|
+| 诊所 | `ClinicName`, `ClinicAddress`, `ClinicPhone`, `Department` |
+| 患者 | `PatientName`, `Gender`, `Age`, `ConsultationDate`, `OutpatientNumber`, `PatientPhone`, `PatientAddress` |
+| 诊断 | `TcmDiagnosis`, `Symptoms`, `PresentIllness`, `InspectionDiagnosis`, `AuscultationDiagnosis`, `TongueDiagnosis`, `PulseDiagnosis` |
+| 处方 | `Items`(药材列表), `DosageCount`, `Usage`, `Advice`, `FormulaSource` |
+| 费用 | `ConsultationFee`, `MedicineFee`, `TreatmentFee`, `SingleDosePrice`, `Discount`, `TotalPrice` |
+| 签名 | `DoctorName`, `PrescriptionDate`, `Reviewer`, `Dispenser`, `PrescriptionNumber` |
+| 其他 | `IsDraft`（草稿水印标记） |
+
+| 类 | 设计依据 |
+|---|---|
+| **PrescriptionPrintService** — 打印服务实现 | FixedDocument + XPS 技术栈，支持多页自动分页（A5=12味/A4=20味首页阈值） |
+
+| 常量 | 值 | 说明 |
+|------|------|------|
+| `A5FirstPageHerbLimit` | 12 | A5 首页最多 12 味药材 |
+| `A4FirstPageHerbLimit` | 20 | A4 首页最多 20 味药材 |
+| `ContinuationPageHerbLimit` | 20 | 续页最多 20 味药材 |
+
+| 类 | 设计依据 |
+|---|---|
+| **PrescriptionPdfExporter** — PDF 导出器 | QuestPDF 静态类，A5 页面，Microsoft YaHei 字体，草稿水印旋转 -35° |
+
+| 类 | 设计依据 |
+|---|---|
+| **PrescriptionPrintTemplate** | A5 首页 XAML 模板（559×794px，96DPI） |
+| **PrescriptionPrintA4Template** | A4 首页 XAML 模板（794×1123px，96DPI） |
+| **PrescriptionContinuationTemplate** | A5 续页模板，`SetAsLastPage()` 显示签名/费用区 |
+| **PrescriptionContinuationA4Template** | A4 续页模板，同上 |
+| **PrintingModule** | Prism `IModule` 入口，注册 `IPrintService<PrescriptionPrintModel>` 为 Singleton |
 
 ## 依赖关系
 
-### 依赖
-- Prism.Core / Prism.DryIoc - 模块化框架
-- LYBT.Desktop.Infrastructure - 基础设施支持
-
-### 被依赖
-- LYBT.Desktop.MedicalCase - 医案模块调用打印服务
-- LYBT.Desktop.Shell - 主程序模块加载
-
-## 更新记录
-
-| 日期 | 变更 |
-|------|------|
-| 2026-03-01 | 初始 README 创建 |
-
-## 开发笔记
-
-# LYBT.Desktop.Printing 代码知识
-
-打印服务模块 - 基于 WPF FixedDocument 实现处方打印、预览、导出，支持 A4/A5 纸张和自动分页。
-
-## 代码文件结构
-
 ```
-LYBT.Desktop.Printing/
-├── Interfaces/
-│   └── IPrintService.cs                          # 泛型打印服务接口 + 选项/枚举定义
-├── Models/
-│   ├── PrescriptionPrintModel.cs                 # 处方打印数据模型
-│   └── PrintLogEntry.cs                          # 打印日志条目
-├── Services/
-│   └── PrescriptionPrintService.cs               # 处方打印服务实现
-├── Templates/
-│   ├── PrescriptionPrintTemplate.xaml(.cs)        # A5 首页模板
-│   ├── PrescriptionPrintA4Template.xaml(.cs)      # A4 首页模板
-│   ├── PrescriptionContinuationTemplate.xaml(.cs) # A5 续页模板
-│   └── PrescriptionContinuationA4Template.xaml(.cs) # A4 续页模板
-└── PrintingModule.cs                             # Prism 模块注册
+LYBT.Desktop.Printing
+├── LYBT.Desktop.Infrastructure  (WPF 基础设施)
+├── LYBT.Shared.Models           (DecocteMethod 枚举)
+├── QuestPDF                     (PDF 生成，Community 许可)
+├── SixLabors.Fonts              (显式引用，覆盖传递依赖)
+├── SixLabors.ImageSharp         (显式引用，覆盖传递依赖)
+└── Prism.Core / Prism.DryIoc    (模块注册)
 ```
 
-### Interfaces/IPrintService.cs
-**IPrintService\<TModel\>** (interface, generic) | 泛型打印服务接口
+## 设计决策
 
-| 方法 | 说明 |
-|------|------|
-| PrintAsync(TModel, PrintOptions?) | 打印文档 |
-| PreviewAsync(TModel, PrintOptions?) | 预览文档 |
-| ExportAsync(TModel, string, ExportFormat) | 导出文档 (XPS/PDF) |
-| BatchPrintAsync(TModel[], PrintOptions?) | 批量打印，返回成功数量 |
-| GetAvailablePrinters() | 获取可用打印机列表 |
-| SetDefaultPrinter(string) | 设置默认打印机 |
-| GetDefaultPrinter() | 获取当前默认打印机 |
-
-**PrintOptions** (class) | 打印选项
-
-| 属性 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| PrinterName | string? | null | 打印机名称 (空=系统默认) |
-| Copies | int | 1 | 份数 |
-| PaperSize | PaperSize | A5 | 纸张大小 |
-| Orientation | PrintOrientation | Portrait | 打印方向 |
-| DuplexPrinting | bool | false | 是否双面打印 |
-| ShowDialog | bool | true | 是否显示打印对话框 |
-
-**PaperSize** (enum) | A4, A5, Letter, Legal
-**PrintOrientation** (enum) | Portrait, Landscape
-**ExportFormat** (enum) | Xps, Pdf (PDF 暂不支持，预留扩展)
-
-### Models/PrescriptionPrintModel.cs
-**PrescriptionPrintModel** (class) | 处方打印数据模型
-
-| 属性分组 | 主要属性 |
-|----------|----------|
-| 诊所信息 | ClinicName, Department, ClinicAddress, ClinicPhone |
-| 患者信息 | PatientName, Gender, Age, ConsultationDate, OutpatientNumber, PatientPhone |
-| 诊断信息 | TcmDiagnosis, Symptoms, PresentIllness, TongueDiagnosis, PulseDiagnosis |
-| 处方内容 | Items (List\<PrescriptionItemPrintModel\>), DosageCount, Usage, Advice |
-| 费用信息 | ConsultationFee, MedicineFee, SingleDosePrice, Discount, TotalPrice |
-| 签名区 | DoctorName, PrescriptionDate, Reviewer, Dispenser |
-
-| 计算属性 | 说明 |
-|----------|------|
-| SymptomsText | 合并 Symptoms + PresentIllness，分号分隔 (T4-S5-07) |
-
-**PrescriptionItemPrintModel** (class) | 处方药材打印数据
-
-| 属性 | 说明 |
-|------|------|
-| SequenceNumber | 序号 |
-| HerbName | 药材名 |
-| Dosage | 剂量 |
-| Unit | 单位 |
-| DecocteMethod | 煎法 (Default 时不显示标注) |
-| DisplayText | 格式化文本: "药材名 剂量单位(煎法)" |
-
-### Models/PrintLogEntry.cs
-**PrintLogEntry** (class) | 打印日志条目 (T4-S5-01)
-
-| 属性/方法 | 说明 |
-|-----------|------|
-| IsSuccess | 是否成功 (init) |
-| PrinterName | 打印机名称 (init) |
-| ErrorMessage | 错误信息 (init) |
-| PrintedAt | 打印时间 (init) |
-| Succeeded(string?) | 创建成功日志 (static factory) |
-| Failed(string, string?) | 创建失败日志 (static factory) |
-
-### Services/PrescriptionPrintService.cs
-**PrescriptionPrintService** : IPrintService\<PrescriptionPrintModel\> | 处方打印服务
-
-| 方法 | 说明 |
-|------|------|
-| PrintAsync(PrescriptionPrintModel, PrintOptions?) | 打印处方，支持对话框/静默模式 |
-| PreviewAsync(PrescriptionPrintModel, PrintOptions?) | 预览窗口 (含打印设置面板+纸张切换) |
-| ExportAsync(PrescriptionPrintModel, string, ExportFormat) | 导出为 XPS 文件 |
-| BatchPrintAsync(PrescriptionPrintModel[], PrintOptions?) | 逐个批量打印 |
-| GetAvailablePrinters() | 通过 LocalPrintServer 获取打印机列表 |
-| SetDefaultPrinter(string) | 设置默认打印机名称 |
-| GetDefaultPrinter() | 获取默认打印机 (优先已设置，否则系统默认) |
-| BuildFixedDocument(PrescriptionPrintModel, Size) | 构建 FixedDocument，超过首页限制时自动分页 |
-| BuildMultiPageDocument(FixedDocument, PrescriptionPrintModel, Size) | 多页文档构建 (首页完整模板 + 续页模板) |
-| CreateFixedPage(PrescriptionPrintModel, Size) | 创建首页 (根据纸张选择 A4/A5 模板) |
-| CreateContinuationFixedPage(PrescriptionPrintModel, Size, bool) | 创建续页 (最后一页显示签名/费用) |
-| CloneModelWithItems(PrescriptionPrintModel, List) | 克隆模型替换药材列表 (分页用) |
-
-| 事件 | 说明 |
-|------|------|
-| PrintLogRequested | 打印成功/失败时触发，调用方订阅以记录日志 (T4-S5-01) |
-
-| 常量 | 值 | 说明 |
-|------|----|------|
-| A5PageSize | 559x794 px | A5 纸张 148x210mm (96 DPI) |
-| A4PageSize | 794x1123 px | A4 纸张 210x297mm (96 DPI) |
-| A5FirstPageHerbLimit | 12 | A5 首页最多 12 味药材 |
-| A4FirstPageHerbLimit | 20 | A4 首页最多 20 味药材 |
-| ContinuationPageHerbLimit | 20 | 续页最多 20 味药材 |
-
-### Templates/PrescriptionPrintTemplate.xaml(.cs)
-**PrescriptionPrintTemplate** : UserControl | A5 普通处方笺首页模板 (XAML 布局)
-
-### Templates/PrescriptionPrintA4Template.xaml(.cs)
-**PrescriptionPrintA4Template** : UserControl | A4 普通处方笺首页模板
-
-### Templates/PrescriptionContinuationTemplate.xaml(.cs)
-**PrescriptionContinuationTemplate** : UserControl | A5 续页模板 (T4-S5-09)
-
-| 方法 | 说明 |
-|------|------|
-| SetAsLastPage() | 显示服法、医嘱、签名、费用区域 (最后一页专用) |
-
-### Templates/PrescriptionContinuationA4Template.xaml(.cs)
-**PrescriptionContinuationA4Template** : UserControl | A4 续页模板
-
-| 方法 | 说明 |
-|------|------|
-| SetAsLastPage() | 显示服法、医嘱、签名、费用区域 (最后一页专用) |
-
-### PrintingModule.cs
-**PrintingModule** : IModule (Prism) | 模块注册
-
-| 方法 | 说明 |
-|------|------|
-| RegisterTypes(IContainerRegistry) | 注册 IPrintService\<PrescriptionPrintModel\> -> PrescriptionPrintService (Singleton) |
-| OnInitialized(IContainerProvider) | 空实现 |
-
-## 死代码与废弃标记
-
-- `ExportFormat.Pdf` 枚举值已定义但 PrescriptionPrintService.ExportAsync 中明确标注 "PDF导出暂不支持"，会自动降级为 XPS -- 预留扩展，非死代码
-- `PrintOptions.DuplexPrinting` 和 `PrintOptions.Orientation` 属性已定义但 PrescriptionPrintService 中未使用 -- 预留扩展属性
-- 所有 4 个模板类仅被 PrescriptionPrintService 内部引用 (无外部直接使用) -- 正常封装设计
-
-## 设计分析
-
-1. **泛型接口设计**: IPrintService\<TModel\> 支持不同打印模型的扩展，当前仅实现 PrescriptionPrintModel，后续可扩展其他打印类型
-2. **纸张感知模板选择**: CreateFixedPage 根据 PaperSize 在 A4/A5 模板间切换，IsA4() 方法判断纸张尺寸
-3. **自动分页策略**: 药材超过首页限制 (A5=12味, A4=20味) 时自动分页，首页用完整模板，后续页用简化续页模板，最后一页通过 SetAsLastPage() 显示签名/费用区域
-4. **PrintLogRequested 事件**: 打印结果通过事件通知调用方 (PrescriptionPrintHandler)，实现打印日志与打印服务的解耦
-5. **预览窗口**: PreviewAsync 构建包含打印设置面板 (打印机/份数/纸张) 的 WPF Window，支持实时切换纸张尺寸重新生成文档
-6. **Prism 模块化**: PrintingModule 作为独立 Prism 模块注册，通过 DI 容器提供 IPrintService 实例
+1. **泛型接口 `IPrintService<TModel>`** — 当前仅 `PrescriptionPrintModel` 实现，但接口设计支持未来扩展（如发票、报告等打印类型），新增类型只需实现接口并在 `PrintingModule` 注册。
+2. **双渲染引擎** — WPF FixedDocument + XPS 用于打印预览和直打（利用系统打印驱动），QuestPDF 用于 PDF 导出（跨平台兼容性更好）。
+3. **自动多页分页** — 超过首页药材阈值时自动创建续页，续页使用独立模板（头部更简洁），最后一页通过 `SetAsLastPage()` 显示签名和费用区。
+4. **CloneModelWithItems** — 多页模式下克隆模型替换药材列表，避免修改原始数据。
+5. **草稿水印** — `IsDraft=true` 时 PDF 导出显示旋转 -35° 的半透明红色"草稿"水印。
+6. **药名截断** — `PrescriptionItemPrintModel.HerbName` 限制 10 字符，避免溢出打印区域（CODE-37）。
 
 ## 已知陷阱
 
-- ExportAsync 中 PDF 格式会被静默替换为 XPS，不会抛异常，调用方需注意扩展名变更
-- BatchPrintAsync 默认 ShowDialog=false，避免每份都弹出对话框
-- PrescriptionItemPrintModel.DisplayText 使用反射获取 DecocteMethod 枚举的 Description 特性，性能敏感场景需注意
-- 预览窗口中纸张切换会重新构建 FixedDocument 并替换 DocumentViewer.Document，频繁切换可能有性能开销
-- 续页模板默认隐藏签名/费用区域，仅通过 SetAsLastPage() 方法显示，遗漏调用会导致最后一页缺少必要信息
-
----
-最后更新: 2026-03-01
+- **空处方防御** — `PrintAsync`/`PreviewAsync` 对空药材列表抛出 `InvalidOperationException`，调用方（`PrescriptionPrintHandler`）应在 UI 层先检查。
+- **QuestPDF License** — 每次 `Export()` 调用设置 `License = LicenseType.Community`，商业部署需更换。
+- **SixLabors 显式引用** — 为覆盖 QuestPDF 传递依赖的安全漏洞，不可移除。
+- **A5 尺寸硬编码** — `A5PageSize = new(559, 794)` 基于 96DPI 计算，如 DPI 不同需调整。
+- **无多 PDF 合并** — PDF 导出仅支持单处方，批量场景需外部拼接。

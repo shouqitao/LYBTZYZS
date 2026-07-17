@@ -1,821 +1,227 @@
 # LYBT.Desktop.Contracts
 
-> Desktop端接口契约层 | Refit API定义 | 服务抽象 | Repository契约
+> 纯接口层 — 零实现、零运行时依赖，仅包含契约、DTO、枚举和事件参数
 
 ## 项目定位
 
-- **层级**: Client Core层
-- **职责**: 定义Desktop端所有抽象接口，包括API客户端契约、服务接口、Repository契约和事件类型。所有模块通过此层实现依赖倒置
+- **层级**: Core
+- **职责**: 定义 Desktop 客户端所有服务、仓储、API 客户端的接口契约
+- **状态**: Active
+- **设计依据**: 接口隔离原则 (ISP) — 每个关注点（认证、导航、会话、缓存等）独立接口，依赖方仅引用所需契约
 
 ## 目录结构
 
 ```
 LYBT.Desktop.Contracts/
-├── Api/                          # Refit API接口(7个模块)
-│   ├── IAuthApi.cs               # 认证(登录/登出/Token/健康检查)
-│   ├── IUserApi.cs               # 用户CRUD+密码+批量操作
-│   ├── IPatientApi.cs            # 患者CRUD+导入导出+批量操作
-│   ├── IMedicalCaseApi.cs        # 医案CRUD+生命周期+打印+批量
-│   ├── IHerbApi.cs               # 药材CRUD+导入导出+批量操作
-│   ├── IFormulaApi.cs            # 验方CRUD+克隆+导入导出+批量
-│   └── ISyncApi.cs               # 数据同步(比对/上传/下载/删除)
-├── CommandHandlers/              # 统一命令模式(3文件)
-│   ├── CommandResult.cs          # 统一返回类型(含隐式bool转换)
-│   ├── ICommandHandlerBase.cs    # 泛型CRUD接口
-│   └── QueryParams.cs            # 统一查询参数
-├── Repositories/                 # Repository契约(6文件)
-│   ├── IHerbRepository.cs        # 药材仓储
-│   ├── IFormulaRepository.cs     # 验方仓储
-│   ├── IMedicalCaseRepository.cs # 医案仓储(聚合根)
-│   ├── IPatientRepository.cs     # 患者仓储
-│   ├── IRegistrationRepository.cs # 挂号仓储
-│   └── IUserRepository.cs        # 用户仓储
-├── Events/CacheEvents.cs         # 缓存失效事件
-├── Models/ImportValidationResult.cs # 导入验证结果
-├── Roles/                        # 角色体系(2文件)
-│   ├── IRoleDefinition.cs        # 角色定义接口(策略模式)
-│   └── IRoleRegistry.cs          # 角色注册表接口
-├── Security/                     # 安全认证(2文件)
-│   ├── AuthState.cs              # 认证状态枚举+事件+参数
-│   └── IAuthenticationStateMachine.cs # 状态机接口
-└── Services/                     # 服务接口(24文件)
-    ├── CrossModule/              # 跨模块搜索(2文件)
-    │   ├── IFormulaSearchProvider.cs
-    │   └── IHerbSearchProvider.cs
-    ├── ILoginCoordinator.cs      # 登录流程协调
-    ├── ISessionManager.cs        # 会话管理
-    ├── INavigationCoordinator.cs # 统一导航
-    ├── IMedicalCase*.cs          # 医案三分离(Query/Command/Lifecycle)
-    ├── IPendingQueueManager.cs   # 待诊队列
-    ├── IStartupPipeline.cs       # 启动管道
-    ├── ISyncService.cs           # 数据同步协调
-    └── ...                       # 其他服务接口
+├── ApiClient/          # 统一 API 客户端接口 (IApiClient + 8 个子接口)
+├── Api/                # Refit 属性接口 (远程模式) + Local 模式接口
+├── Roles/              # 角色定义接口 (IRoleDefinition, IRoleRegistry)
+├── Services/           # 应用服务契约 (启动管道、连接、会话、导航、缓存等)
+├── Security/           # 认证状态机接口
+├── Repositories/       # 数据访问契约 (6 个实体仓储)
+├── Performance/        # 性能监控接口
+├── Initialization/     # 数据库初始化接口
+└── CrossModule/        # 跨模块搜索提供者接口
 ```
 
-## 核心接口
+## 核心组件
 
-| 接口 | 方法数 | 说明 |
-|------|--------|------|
-| IAuthApi | 7 | 登录/自动登录/登出/Token刷新/验证/健康检查 |
-| IUserApi | 14 | 用户CRUD/密码管理/批量操作 |
-| IPatientApi | 10 | 患者CRUD/导入导出/批量操作 |
-| IMedicalCaseApi | 19 | 医案CRUD/状态管理/打印/审计/批量操作 |
-| IHerbApi | 13 | 药材CRUD/导入导出/批量操作 |
-| IFormulaApi | 14 | 验方CRUD/克隆/导入导出/批量操作 |
-| ISyncApi | 6 | 同步元数据/比对/上传/下载/删除 |
+### ApiClient/ — 统一 API 客户端抽象
 
-## 设计特点
+#### `IApiClient`
+**设计依据**: Facade 模式，聚合所有领域子接口。两个实现：`RefitApiClient`（远程）和 `HttpClientApiClient`（本地）。`SwitchingApiClient` 代理透明切换，仓储层完全无感知。
 
-| 特点 | 说明 |
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `Auth` | `IApiClientAuth` | 认证端点 |
+| `Users` | `IApiClientUsers` | 用户管理 |
+| `Patients` | `IApiClientPatients` | 患者管理 |
+| `Herbs` | `IApiClientHerbs` | 药材管理 |
+| `Formulas` | `IApiClientFormulas` | 验方管理 |
+| `MedicalCases` | `IApiClientMedicalCases` | 医案管理 |
+| `Registrations` | `IApiClientRegistrations` | 挂号管理 |
+| `Reports` | `IApiClientReports` | 统计报表 |
+
+#### `IApiClientAuth`
+**设计依据**: 合并远程 `IAuthApi` 和本地 `ILocalAuthApi` 为统一契约，无 Refit 属性。
+
+| 方法 | 返回类型 | 说明 |
+|------|----------|------|
+| `LoginAsync(LoginRequest)` | `Task<ApiResponse<LoginResponse>>` | 凭证登录 |
+| `LoginWithAutoTokenAsync(AutoLoginRequest)` | `Task<ApiResponse<LoginResponse>>` | Token 自动登录 |
+| `LogoutAsync(LogoutRequest)` | `Task<ApiResponse>` | 登出 |
+| `RefreshTokenAsync(RefreshTokenRequest)` | `Task<ApiResponse<LoginResponse>>` | 刷新 Token |
+| `ValidateTokenFromHeaderAsync()` | `Task<ApiResponse<object>>` | 从 Header 验证 Token |
+| `HealthCheckAsync()` | `Task<ApiResponse<HealthCheckResponse>>` | 健康检查 |
+
+#### `IApiClientUsers` (14 方法)
+**设计依据**: 统一用户 CRUD + 密码管理。本地模式有额外方法（`RestoreAsync`, `BatchEnableAsync`, `GetCurrentUserAsync`）。
+
+| 方法 | 说明 |
 |------|------|
-| Refit框架 | 通过特性标注自动生成HTTP客户端实现 |
-| 类型安全 | 所有API方法使用强类型DTO，编译时检查 |
-| 依赖倒置 | 业务模块依赖此层接口，不直接互相依赖 |
-| 双模式支持 | Repository 契约 + SwitchingApiClient 根据URL路由到远程/本地API |
-| SRP三分离 | MedicalCase拆分为Query/Command/Lifecycle三个接口 |
+| `GetUsersAsync(page, pageSize, keyword)` | 分页查询 |
+| `GetUserByIdAsync(id)` | 按 ID 查询 |
+| `CreateUserAsync(request)` | 创建用户 |
+| `UpdateUserAsync(id, request)` | 更新用户 |
+| `DeleteUserAsync(id)` | 删除用户 |
+| `ChangeProfileAsync(id, request)` | 修改个人资料 |
+| `ChangePasswordAsync(id, request)` | 修改密码 |
+| `ResetPasswordAsync(id, request)` | 重置密码 |
+| `ToggleStatusAsync(id)` | 启用/禁用 |
+| `BatchDeleteAsync(request)` | 批量删除 |
 
-## 设计依据
+#### `IApiClientMedicalCases` (16+ 方法)
+**设计依据**: 最大的 API 接口。MedicalCase 是 DDD 聚合根，生命周期复杂（Draft → Active → Suspended/Completed/Cancelled）。`SaveAsync` 是聚合保存（诊断 + 处方一次性提交）。
 
-- Contracts层独立于实现，允许模块间通过接口通信而不产生直接依赖
-- 使用Refit接口定义API契约，消除手写HttpClient代码
-- API接口与Shared.Models中的DTO配合，确保Client与Server端API类型编译时同步
-- 跨模块服务契约(如IHerbSearchProvider)放在此层，避免业务模块循环依赖
+| 方法 | 说明 |
+|------|------|
+| `GetMedicalCasesAsync(page, pageSize, keyword, includeAllDoctors)` | 分页查询 |
+| `QueryMedicalCasesAsync(queryType, patientId, ...)` | 统一查询模型 |
+| `GetMedicalCaseByIdAsync(id)` | 按 ID 查询 |
+| `CreateMedicalCaseAsync(request)` | 创建医案 |
+| `SaveAsync(id, request)` | 聚合保存 |
+| `CloseCaseAsync(id)` | 关闭医案 |
+| `SuspendAsync(id, request)` | 暂存医案 |
+| `CancelMedicalCaseAsync(id, request)` | 取消医案 |
+| `UpdateStatusAsync(id, request)` | 更新状态 |
+| `GetPermissionsAsync(id)` | 获取权限 |
+| `RecordPrintAsync(id, request)` | 记录打印 |
+
+### Roles/ — 角色驱动工作台系统
+
+#### `IRoleDefinition`
+**设计依据**: 每个角色实现此接口，声明模块集合和主页视图。`GetAllModules()` 合并基础模块 + 角色特定模块。
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `Role` | `UserRole` | 角色枚举 |
+| `DisplayName` | `string` | 显示名称 |
+| `Description` | `string` | 角色描述 |
+| `HomeViewName` | `string` | 主页视图名 |
+| `RequiredModules` | `IReadOnlyList<string>` | 角色特定模块 |
+| `BaseModules` | `IReadOnlyList<string>` | 基础模块（所有角色共享） |
+
+#### `IRoleRegistry`
+**设计依据**: 中央注册表，启动时根据用户角色确定加载哪些模块。
+
+| 方法 | 说明 |
+|------|------|
+| `Register(IRoleDefinition)` | 注册角色定义 |
+| `GetDefinition(UserRole)` | 按角色查找 |
+| `GetAllDefinitions()` | 获取所有定义 |
+| `IsRegistered(UserRole)` | 检查是否已注册 |
+| `GetHomeViewName(UserRole)` | 获取主页视图名 |
+| `GetModulesForRole(UserRole)` | 获取角色所需模块 |
+
+### Services/ — 应用服务契约
+
+#### `IStartupStep` / `IStartupPipeline`
+**设计依据**: 启动步骤抽象。`ParallelGroup` 支持相邻步骤并行执行。必需步骤失败终止管道，可选步骤失败继续。
+
+| 接口 | 关键成员 |
+|------|----------|
+| `IStartupStep` | `Name`, `Order`, `IsRequired`, `ParallelGroup`, `ExecuteAsync()` |
+| `IStartupPipeline` | `State`, `Steps`, `RegisterStep()`, `ExecuteAsync()`, `Reset()`, `GetDiagnostics()` |
+
+#### `IConnectionSettingsService`
+**设计依据**: URL 驱动的连接模型。`localhost`/`127.0.0.1` → 本地模式，其他 → 远程模式。持久化设置跨会话。
+
+| 属性/方法 | 说明 |
+|-----------|------|
+| `CurrentUrl` | 当前 API 基础 URL |
+| `IsLocal` | 是否本地模式 |
+| `LocalUrl` / `RemoteUrl` | 本地/远程 URL |
+| `SetUrlAsync(url)` | 设置 URL |
+| `SaveRemoteUrlAsync(url)` | 保存远程 URL |
+| `UrlChanged` event | URL 变更事件 |
+
+#### `ISessionManager`
+**设计依据**: 内存会话状态。Token 管理委托给 `ITokenStorageService`。权限检查基于 `UserRole` 枚举。
+
+| 成员 | 说明 |
+|------|------|
+| `CurrentUser` | 当前用户 |
+| `IsAuthenticated` | 是否已认证 |
+| `SetSession(user, token, refreshToken)` | 设置会话 |
+| `ClearSession()` | 清除会话 |
+| `HasPermission(UserRole)` | 角色权限检查 |
+| `IsAdmin()` | 管理员检查 |
+
+#### `INavigationCoordinator`
+**设计依据**: 统一导航入口，整合 `NavigationManager`、`ViewNavigationService`、`RoleNavigationService`。支持面包屑导航和前进导航。
+
+| 方法 | 说明 |
+|------|------|
+| `NavigateTo(viewName, parameters?)` | 导航到视图 |
+| `NavigateToHome()` / `NavigateToHome(role)` | 导航到主页 |
+| `NavigateBack()` / `NavigateForward()` | 前进/后退 |
+| `NavigateToBreadcrumb(item)` | 面包屑跳转 |
+| `ShowLoginDialog()` | 显示登录 |
+
+#### `IViewModelServices`
+**设计依据**: 聚合 9 个常用服务为一个可注入接口，将 ViewModel 构造函数参数从 9 个减少到 1 个。
+
+| 属性 | 类型 |
+|------|------|
+| `LoggerFactory` | `ILoggerFactory` |
+| `EventAggregator` | `IEventAggregator` |
+| `RegionManager` | `IRegionManager` |
+| `SessionManager` | `ISessionManager` |
+| `UserNotificationService` | `IUserNotificationService` |
+| `CommonDialogService` | `ICommonDialogService` |
+| `ToastService` | `IToastService` |
+| `RoleRegistry` | `IRoleRegistry` |
+| `UiThreadDispatcher` | `IUiThreadDispatcher` |
+
+#### `ICommonDialogService`
+**设计依据**: 统一对话框抽象。`ShowTripleChoiceAsync`（是/否/取消）支持未保存更改确认。`ShowUnfinishedCaseDialogAsync` 是领域特定的 4 选项对话框。
+
+| 方法 | 说明 |
+|------|------|
+| `ShowInfoAsync` / `ShowWarningAsync` / `ShowErrorAsync` | 消息对话框 |
+| `ShowConfirmAsync` | 是/否确认 |
+| `ShowTripleChoiceAsync` | 是/否/取消 |
+| `ShowInputAsync` | 输入对话框 |
+| `ShowOpenFileDialogAsync` / `ShowSaveFileDialogAsync` | 文件对话框 |
+| `ShowUnfinishedCaseDialogAsync` | 未完成医案对话框 |
+
+#### `IApplicationTickService`
+**设计依据**: 单一 `DispatcherTimer`（1 秒间隔）广播 `Tick` 事件。所有周期任务（会话超时、健康检查）订阅 `Tick` 并自行决定频率。避免多个定时器。
+
+### Security/ — 认证状态机
+
+#### `IAuthenticationStateMachine`
+**设计依据**: 表驱动状态机，11 个状态（Idle, Authenticating, ValidatingToken, LoadingProfile, LoadingModules, Navigating, Authenticated, Failed, LoggingOut, SessionExpired, RefreshingToken）。线程安全（lock）。事件在 lock 外发布避免死锁。
+
+### Repositories/ — 数据访问契约
+
+**设计依据**: 双实现仓储（HTTP 在 Foundation，LocalDB 在 LocalData）。所有方法接受 `CancellationToken`。
+
+| 接口 | 关键方法 |
+|------|----------|
+| `IUserRepository` | CRUD + `GetDoctorsAsync`, `ChangePasswordAsync`, `ResetPasswordAsync` |
+| `IPatientRepository` | CRUD + `GetByIdNumberAsync`（身份证查询）, `BatchImportAsync` |
+| `IHerbRepository` | CRUD + `BatchImportAsync`, `ToggleStatusAsync` |
+| `IFormulaRepository` | CRUD + `CloneFormulaAsync`, `BatchImportAsync` |
+| `IMedicalCaseRepository` | CRUD + `SaveAsync`（聚合保存）, `QueryAsync`, `CloseCaseAsync`, `SuspendAsync` |
+| `IRegistrationRepository` | `CreateAsync`, `GetWaitingQueueAsync`, `StartVisitAsync`, `CancelAsync` |
+
+### CrossModule/ — 跨模块搜索提供者
+
+#### `IHerbSearchProvider` / `IFormulaSearchProvider`
+**设计依据**: 解耦 MedicalCase/Formula 模块与 Herbs/Formula 模块的编译时依赖。跨模块搜索通过接口注入。
 
 ## 依赖关系
 
-### 依赖
-- LYBT.Shared.Models (共享DTO)
-- Refit (7.x)
-- Refit.HttpClientFactory (7.x)
+- **依赖**: `LYBT.Shared.Models`（DTO、枚举）
+- **被依赖**: Foundation、Infrastructure、Modules、Roles、Shell、LocalWebAPI — 所有 Desktop 项目
 
-### 被依赖
-- LYBT.Desktop.Foundation (Refit客户端注册)
-- LYBT.Desktop.Models (Repository层调用)
-- 所有Desktop业务模块
+## 设计决策
 
-## 更新记录
-
-| 日期 | 变更 |
-|------|------|
-| 2026-03-01 | 修正目录结构，移除已删除的ghost接口 |
-| 2025-12-04 | 按README规范重写文档 |
-| 2025-10-12 | 从Shared.Interfaces迁移至Desktop.Contracts |
-
-## 开发笔记
-
-# LYBT.Desktop.Contracts 代码知识
-
-Desktop 端接口契约层，定义跨模块共享的抽象接口、API 客户端契约和事件类型。所有模块通过此层实现依赖倒置，消除编译期直接依赖。
-
-## 架构决策
-
-| 决策 | 原因 | 日期 | 关联 OpenSpec |
-|------|------|------|--------------|
-| AuthState 统一状态机替代双状态机 | 原有 LoginState + LoginFlowState 架构冗余，合并为单一 AuthState 枚举 (11个状态 + AuthEvent 转换) | Phase 1.1 | refactor-auth-role-system |
-| MedicalCase 服务 SRP 三分离 | 将原单体 MedicalCaseService 拆分为 Query/Command/Lifecycle 三个接口，各司其职 | ADR-1 | refactor-frontend-srp-patterns |
-| CommandHandler 统一返回类型 | 所有 CommandHandler 方法使用 CommandResult<T> 返回，确保错误处理一致性 | Phase 1.4 | unify-desktop-architecture |
-| INavigationCoordinator 整合三个导航服务 | 合并 NavigationManager + ViewNavigationService + RoleNavigationService 为单一协调器 | ADR-3 + ADR-7 | unify-navigation-architecture |
-| IViewModelServices 聚合接口 | 将 ViewModel 基类所需的 7 个通用服务聚合为 1 个接口，简化构造函数 | - | enhance-viewmodel-architecture |
-| IApplicationTickService 统一定时调度 | 单一 DispatcherTimer 每秒 Tick，替代各组件独立 Timer，减少资源浪费 | AUTH-000 | refactor-token-sliding-expiration |
-| IUserActivityState 分离查询接口 | 从 IUserActivityTracker 提取只读查询接口，供 Foundation 层使用，避免循环依赖 | AUTH-002 | refactor-token-sliding-expiration |
-| Repository 契约层 | IRepository<T> 统一数据访问操作，SwitchingApiClient 根据URL路由远程/本地双模式 | - | SYNC-D02 |
-| CrossModule 搜索接口 | IHerbSearchProvider / IFormulaSearchProvider 解耦模块间编译期依赖 (D5-3) | - | - |
-| IPendingQueueManager 解耦 | 待诊队列管理独立接口，消除 MedicalCase 和 Patients 模块的直接耦合 | - | refactor-medicalcase-workspace |
-| LoginCoordinator 简化 | 移除 rememberCredentials 参数（凭证保存由 ViewModel 处理）、移除 IsAutoLogin、移除 AutoLoginAttemptCount | - | simplify-login-options |
-| AutoLoginToken 机制 | 替代密码存储，支持服务端撤销和 Token 轮换 | CVT-001 | refactor-login-authentication |
-| IMedicalCaseApi 聚合保存 | SaveAsync (PUT /medicalcases/{id}) 一次保存诊断+处方，减少 API 调用次数 | Phase 3.5 | refactor-medicalcase-aggregate-crud |
-| QueryMedicalCasesAsync 统一查询 | 整合多种查询方式为单一端点 GET /medicalcases/query | - | optimize-medicalcase-api |
-| IDesktopCacheManager 统一失效 | 按域 (Patients/MedicalCases/All) 统一管理缓存失效 | - | - |
-| ICurrentUserProvider 审计字段 | 为 LocalDbContext 提供当前用户 ID，填充审计字段 | - | implement-local-mode |
-| ImportValidationResult 提升到 Contracts | 原在 Infrastructure 层，提升到 Contracts 避免循环依赖 | Issue #1781 | - |
-| IRoleDefinition 策略模式 | 每个角色实现此接口定义模块加载和导航行为，替代 switch-case | Phase 2.1.1 | refactor-auth-role-system |
-
-## 死代码与废弃标记
-
-| 类型/方法 | 状态 | 替代方案 | 清理计划 |
-|-----------|------|----------|----------|
-| ISessionManager.SetCurrentUser | [COMPAT] 兼容保留 | SetSession (支持 RefreshToken) | 待全面迁移后移除 |
-| ISessionManager.SetUserSession | [COMPAT] 兼容保留 | SetSession 的别名 | 待全面迁移后移除 |
-| ISessionManager.ClearUserSession | [COMPAT] 兼容保留 | ClearSession 的别名 | 待全面迁移后移除 |
-| SessionExpiring 事件 | [DEAD] 已移除 | simplify-auth-architecture: 不再显示即将过期警告 | 已清理 |
-| SessionExpiringEventArgs | [DEAD] 已移除 | simplify-auth-architecture | 已清理 |
-
-状态值: [DEAD] 已废弃 | [COMPAT] 兼容保留 | [PENDING] 待重构
-
-## 已知陷阱
-
-| 问题 | 原因 | 解决方案 |
-|------|------|----------|
-| GetPendingCasesAsync 与 QueryMedicalCasesAsync 不能互相替代 | 返回 DTO 类型不同: Pending 返回 PendingMedicalCaseDto (含 Type 字段), Query 返回 MedicalCaseListDto (含 CaseStatus 字段) | 保留两个独立端点 (standardize-api-naming) |
-| IMedicalCaseApi 中大量已删除方法的注释 | API 演进过程中删除了重复/Ghost API，注释保留用于追溯 | 不要尝试恢复这些方法，它们的功能已合并到现有方法中 |
-| ICommonDialogService 与 IUserNotificationService 功能重叠 | 历史原因: IUserNotificationService 原名 IErrorHandlingService (Issue #840 重命名), ICommonDialogService 后加入提供更丰富的对话框 | IUserNotificationService 用于简单消息提示, ICommonDialogService 用于需要用户选择的对话框 |
-| ISessionManager.IsLoggedIn 是 IsAuthenticated 的别名 | 兼容性保留，两个属性行为完全一致 | 新代码统一使用 IsAuthenticated |
-| CommandResult<T> 隐式转换为 bool | 使用 `if (result)` 判断成功/失败，但可能被误用为空值检查 | 明确使用 `result.Success` 提高可读性 |
-
-## OpenSpec 追踪
-
-| OpenSpec ID | 内容 | 状态 |
-|-------------|------|------|
-| refactor-auth-role-system | 统一认证状态机 (AuthState/AuthEvent/IAuthenticationStateMachine)、角色定义 (IRoleDefinition/IRoleRegistry)、登录协调器 (ILoginCoordinator) | 已完成 |
-| refactor-token-sliding-expiration | 应用级 Tick 服务 (AUTH-000)、用户活动追踪 (AUTH-001/002/003)、IUserActivityState 分离 | 已完成 |
-| unify-desktop-architecture | CommandHandler 统一接口/返回类型/查询参数 (Phase 1.4) | 已完成 |
-| unify-navigation-architecture | INavigationCoordinator 整合导航 (ADR-3 + ADR-7) | 已完成 |
-| refactor-frontend-srp-patterns | MedicalCase 服务三分离 (ADR-1): IMedicalCaseQueryService / IMedicalCaseCommandService / IMedicalCaseLifecycleService; IAsyncInitializable 接口 | 已完成 |
-| clarify-cancel-consultation-logic | IActiveConsultationService、LeaveConsultationChoice 枚举 | 已完成 |
-| optimize-medicalcase-navigation | UnfinishedCaseChoice 四选项弹窗、ICommonDialogService.ShowUnfinishedCaseDialogAsync | 已完成 |
-| simplify-login-options | 移除 rememberCredentials/IsAutoLogin/AutoLoginAttemptCount | 已完成 |
-| simplify-auth-architecture | 移除 SessionExpiring 事件和 SessionExpiringEventArgs | 已完成 |
-| refactor-medicalcase-workspace | IPendingQueueManager 解耦 MedicalCase 和 Patients 模块 | 已完成 |
-| enhance-viewmodel-architecture | IViewModelServices 聚合接口 (7个服务 -> 1个注入) | 已完成 |
-| standardize-desktop-api-layer | API 返回类型修正 (IUserApi)、导入导出功能 (IFormulaApi) | 已完成 |
-| standardize-api-naming | 统一 ApiResponse 返回类型、REQ-API-002 批量操作 URL 模式、保留 PendingCases 独立端点 | 已完成 |
-| optimize-medicalcase-api | QueryMedicalCasesAsync 统一查询端点 | 已完成 |
-| consolidate-medicalcase-queries | SearchMedicalCasesAsync 跨医案搜索 (LIFECYCLE-015)、删除 CreateMedicalCaseWithDetailsAsync/SoftDeleteMedicalCaseAsync (Phase 7) | 已完成 |
-| consolidate-medicalcase-detail-queries | 删除 GetMedicalCasesByPatientIdAsync/GetMedicalCaseByIdWithDetailsAsync/GetUnfinishedCaseByPatientIdAsync、新增 GetBatchDetailsAsync | 已完成 |
-| simplify-medicalcase-api | 删除 Ghost APIs (ClearPrescription/ImportFormulaIntoPrescription)、删除独立 Prescription CRUD、删除 UpdateConsultationAsync | 已完成 |
-| post-release-cleanup | 合并 GetMedicalCasesListAsync 到 GetMedicalCasesAsync，统一返回 MedicalCaseListDto | 已完成 |
-| fix-history-copy-all-patients | GetMedicalCasesAsync 添加 includeAllDoctors 参数 | 已完成 |
-| unify-pending-query-api | GetPendingCasesAsync 添加 patientId 参数支持按患者筛选 | 已完成 |
-| refactor-medicalcase-api | SuspendAsync (LIFECYCLE-010) 挂起医案 | 已完成 |
-| refactor-medicalcase-management | GetPermissionsAsync (LIFECYCLE-007)、GetAuditLogsAsync (LIFECYCLE-008) | 已完成 |
-| refactor-medicalcase-aggregate-crud | SaveAsync 聚合保存 (Phase 3.5) | 已完成 |
-| optimize-module-list-ui | IPatientApi/IHerbApi/IFormulaApi 恢复功能 (Restore) 和状态切换 (ToggleStatus) | 已完成 |
-| optimize-batch-operations | Phase 2: 批量删除/启用/禁用 (Herbs/Formulas/Users/Patients/MedicalCases) | 已完成 |
-| refactor-login-authentication | AutoLoginToken 自动登录 (CVT-001) | 已完成 |
-| cleanup-patient-dead-code | 删除重复的 PagedResult<T> 和未使用的 IPagedCommandHandler | 已完成 |
-| cleanup-formula-dead-code | 删除 GetPendingValidationFormulasAsync/ValidateFormulaHerbAsync | 已完成 |
-| implement-local-mode | ICurrentUserProvider 接口 | 已完成 |
-| SYNC-D02 | Repository 契约层 + SwitchingApiClient 双模式路由，DataSource 抽象层已移除 | 已完成 |
-| enhance-duplicate-herb-dialog | IPrescriptionSettingsService 处方设置 | 已完成 |
-| rationalize-module-architecture | IMedicalCaseQueryService 遵循依赖倒置原则 | 已完成 |
-
-## 代码文件结构
-
-### Api/ -- Refit API 客户端接口 (7个)
-
-Refit 在编译期自动生成实现类，无需手写实现。
-
-#### IAuthApi.cs
-
-认证 API 客户端，JWT 认证、会话管理、健康检查。
-
-| HTTP | 方法签名 | 路由 |
-|------|----------|------|
-| POST | `LoginAsync(LoginRequest) -> ApiResponse<LoginResponse>` | /api/v1/auth/login |
-| POST | `LoginWithAutoTokenAsync(AutoLoginRequest) -> ApiResponse<LoginResponse>` | /api/v1/auth/auto-login |
-| POST | `LogoutAsync(LogoutRequest) -> ApiResponse` | /api/v1/auth/logout |
-| POST | `RefreshTokenAsync(RefreshTokenRequest) -> ApiResponse<LoginResponse>` | /api/v1/auth/refresh |
-| GET | `ValidateTokenFromHeaderAsync() -> ApiResponse<object>` | /api/v1/auth/validate |
-| POST | `ValidateTokenAsync(ValidateTokenRequest) -> ApiResponse<ValidateTokenResponse>` | /api/v1/auth/validate |
-| GET | `HealthCheckAsync() -> HealthCheckResponse` | /api/v1/health |
-
-#### IFormulaApi.cs
-
-验方 CRUD + 批量操作 + 导入导出。
-
-| HTTP | 方法签名 | 路由 |
-|------|----------|------|
-| GET | `GetFormulasAsync(page, pageSize, keyword?, category?) -> ApiResponse<PagedResult<FormulaListDto>>` | /api/v1/formulas |
-| GET | `GetFormulaByIdAsync(id) -> ApiResponse<FormulaDetailDto>` | /api/v1/formulas/{id} |
-| POST | `CreateFormulaAsync(FormulaInputDto) -> ApiResponse<FormulaDetailDto>` | /api/v1/formulas |
-| PUT | `UpdateFormulaAsync(id, FormulaInputDto) -> ApiResponse<FormulaDetailDto>` | /api/v1/formulas/{id} |
-| DELETE | `DeleteFormulaAsync(id) -> ApiResponse` | /api/v1/formulas/{id} |
-| POST | `CloneFormulaAsync(id) -> ApiResponse<FormulaDetailDto>` | /api/v1/formulas/{id}/clone |
-| POST | `ToggleStatusAsync(id) -> ApiResponse<FormulaDetailDto>` | /api/v1/formulas/{id}/toggle-status |
-| POST | `RestoreAsync(id) -> ApiResponse<FormulaDetailDto>` | /api/v1/formulas/{id}/restore |
-| POST | `BatchDeleteAsync(BatchDeleteInputDto) -> ApiResponse<BatchOperationResultDto>` | /api/v1/formulas/batch-delete |
-| POST | `BatchEnableAsync(BatchDeleteInputDto) -> ApiResponse<BatchOperationResultDto>` | /api/v1/formulas/batch-enable |
-| POST | `BatchDisableAsync(BatchDeleteInputDto) -> ApiResponse<BatchOperationResultDto>` | /api/v1/formulas/batch-disable |
-| POST | `BatchImportAsync(FormulaBatchImportInputDto) -> ApiResponse<FormulaBatchImportResultDto>` | /api/v1/formulas/batch-import |
-| GET | `ExportFormulasAsync(category?) -> HttpResponseMessage` | /api/v1/formulas/export |
-| GET | `ExportTemplateAsync() -> HttpResponseMessage` | /api/v1/formulas/import-template |
-
-#### IHerbApi.cs
-
-药材 CRUD + 批量操作 + 导入导出。
-
-| HTTP | 方法签名 | 路由 |
-|------|----------|------|
-| GET | `GetHerbsAsync(page, pageSize, keyword?, category?) -> ApiResponse<PagedResult<HerbListDto>>` | /api/v1/herbs |
-| GET | `GetHerbByIdAsync(id) -> ApiResponse<HerbDetailDto>` | /api/v1/herbs/{id} |
-| POST | `CreateHerbAsync(HerbInputDto) -> ApiResponse<HerbDetailDto>` | /api/v1/herbs |
-| PUT | `UpdateHerbAsync(id, HerbInputDto) -> ApiResponse<HerbDetailDto>` | /api/v1/herbs/{id} |
-| DELETE | `DeleteHerbAsync(id) -> ApiResponse` | /api/v1/herbs/{id} |
-| POST (Multipart) | `BatchImportAsync(StreamPart file) -> ApiResponse<HerbBatchImportResultDto>` | /api/v1/herbs/import |
-| GET | `ExportTemplateAsync() -> HttpResponseMessage` | /api/v1/herbs/import-template |
-| GET | `ExportHerbsAsync(keyword?) -> HttpResponseMessage` | /api/v1/herbs/export |
-| POST | `ToggleStatusAsync(id) -> ApiResponse<HerbDetailDto>` | /api/v1/herbs/{id}/toggle-status |
-| POST | `RestoreAsync(id) -> ApiResponse<HerbDetailDto>` | /api/v1/herbs/{id}/restore |
-| POST | `BatchDeleteAsync(BatchDeleteInputDto) -> ApiResponse<BatchOperationResultDto>` | /api/v1/herbs/batch-delete |
-| POST | `BatchEnableAsync(BatchDeleteInputDto) -> ApiResponse<BatchOperationResultDto>` | /api/v1/herbs/batch-enable |
-| POST | `BatchDisableAsync(BatchDeleteInputDto) -> ApiResponse<BatchOperationResultDto>` | /api/v1/herbs/batch-disable |
-
-#### IMedicalCaseApi.cs
-
-医案 CRUD + 生命周期 + 打印 + 批量操作。方法最多的 API 接口。
-
-| HTTP | 方法签名 | 路由 |
-|------|----------|------|
-| GET | `GetMedicalCasesAsync(page, pageSize, keyword?, includeAllDoctors) -> ApiResponse<PagedResult<MedicalCaseListDto>>` | /api/v1/medicalcases |
-| GET | `QueryMedicalCasesAsync(queryType, patientId?, doctorId?, keyword?, pageIndex, pageSize, includeAllDoctors, limit?) -> ApiResponse<PagedResult<MedicalCaseListDto>>` | /api/v1/medicalcases/query |
-| GET | `GetMedicalCaseByIdAsync(id) -> ApiResponse<MedicalCaseDetailDto>` | /api/v1/medicalcases/{id} |
-| GET | `GetPendingCasesAsync(patientId?) -> ApiResponse<List<PendingMedicalCaseDto>>` | /api/v1/medicalcases/pending |
-| GET | `SearchMedicalCasesAsync(patientName?, diagnosisKeyword?, startDate?, endDate?, page, pageSize) -> ApiResponse<PagedResult<MedicalCaseDetailDto>>` | /api/v1/medicalcases/search |
-| POST | `CreateMedicalCaseAsync(MedicalCaseInputDto) -> ApiResponse<MedicalCaseDetailDto>` | /api/v1/medicalcases |
-| PUT | `SaveAsync(id, MedicalCaseInputDto) -> ApiResponse<MedicalCaseDetailDto>` | /api/v1/medicalcases/{id} |
-| DELETE | `DeleteMedicalCaseAsync(id) -> ApiResponse` | /api/v1/medicalcases/{id} |
-| PUT | `SetPrescriptionFlagAsync(medicalCaseId, SetPrescriptionFlagRequest) -> ApiResponse<MedicalCaseDetailDto>` | /api/v1/medicalcases/{id}/prescription-flag |
-| PUT | `CloseCaseAsync(id) -> ApiResponse<MedicalCaseDetailDto>` | /api/v1/medicalcases/{id}/close |
-| PUT | `SuspendAsync(id, ConsultationInputDto?) -> ApiResponse<MedicalCaseDetailDto>` | /api/v1/medicalcases/{id}/suspend |
-| PUT | `CancelMedicalCaseAsync(id, CancelMedicalCaseRequestDto?) -> ApiResponse<MedicalCaseDetailDto>` | /api/v1/medicalcases/{id}/cancel |
-| PUT | `UpdateStatusAsync(id, MedicalCaseStatusInputDto) -> ApiResponse<MedicalCaseDetailDto>` | /api/v1/medicalcases/{id}/status |
-| GET | `GetPermissionsAsync(id) -> ApiResponse<MedicalCasePermissionDto>` | /api/v1/medicalcases/{id}/permissions |
-| GET | `GetAuditLogsAsync(id, page, pageSize) -> ApiResponse<MedicalCaseAuditLogPagedResultDto>` | /api/v1/medicalcases/{id}/audit-logs |
-| PUT | `RecordPrintCompletedAsync(medicalCaseId, PrintCompletedRequest) -> ApiResponse<MedicalCaseDetailDto>` | /api/v1/medicalcases/{id}/print-completed |
-| POST | `AddPrintLogAsync(medicalCaseId, PrintLogInputDto) -> ApiResponse<object>` | /api/v1/medicalcases/{id}/print-logs |
-| POST | `BatchDeleteAsync(BatchDeleteInputDto) -> ApiResponse<BatchOperationResultDto>` | /api/v1/medicalcases/batch-delete |
-| POST | `GetBatchDetailsAsync(BatchDetailQueryDto) -> ApiResponse<List<MedicalCaseDetailDto>>` | /api/v1/medicalcases/batch-details |
-
-#### IPatientApi.cs
-
-患者 CRUD + 批量操作 + 导入导出。注: 患者无 Status 字段，无 ToggleStatus 方法。
-
-| HTTP | 方法签名 | 路由 |
-|------|----------|------|
-| GET | `GetPatientsAsync(page, pageSize, keyword?) -> ApiResponse<PagedResult<PatientListDto>>` | /api/v1/patients |
-| GET | `GetPatientByIdAsync(id) -> ApiResponse<PatientDetailDto>` | /api/v1/patients/{id} |
-| POST | `CreatePatientAsync(PatientInputDto) -> ApiResponse<PatientDetailDto>` | /api/v1/patients |
-| PUT | `UpdatePatientAsync(id, PatientInputDto) -> ApiResponse<PatientDetailDto>` | /api/v1/patients/{id} |
-| DELETE | `DeletePatientAsync(id) -> ApiResponse` | /api/v1/patients/{id} |
-| POST | `BatchImportAsync(PatientBatchImportInputDto) -> ApiResponse<PatientBatchImportResultDto>` | /api/v1/patients/batch-import |
-| GET | `ExportTemplateAsync() -> HttpResponseMessage` | /api/v1/patients/import-template |
-| GET | `ExportPatientsAsync(keyword?) -> HttpResponseMessage` | /api/v1/patients/export |
-| POST | `RestoreAsync(id) -> ApiResponse<PatientDetailDto>` | /api/v1/patients/{id}/restore |
-| POST | `BatchDeleteAsync(BatchDeleteInputDto) -> ApiResponse<BatchOperationResultDto>` | /api/v1/patients/batch-delete |
-
-#### ISyncApi.cs
-
-数据同步 API，对应服务器端 SyncController。
-
-| HTTP | 方法签名 | 路由 |
-|------|----------|------|
-| GET | `GetEntityTypesAsync() -> ApiResponse<IReadOnlyList<string>>` | /api/v1/sync/entity-types |
-| GET | `GetMetadataAsync(entityType) -> ApiResponse<List<SyncMetadataDto>>` | /api/v1/sync/metadata |
-| POST | `CompareAsync(SyncCompareInputDto) -> ApiResponse<SyncCompareResultDto>` | /api/v1/sync/compare |
-| POST | `UploadAsync(SyncUploadInputDto) -> ApiResponse<SyncUploadResultDto>` | /api/v1/sync/upload |
-| POST | `DownloadAsync(SyncDownloadInputDto) -> ApiResponse<SyncDownloadResultDto>` | /api/v1/sync/download |
-| POST | `DeleteAsync(SyncDeleteInputDto) -> ApiResponse<SyncDeleteResultDto>` | /api/v1/sync/delete |
-
-#### IUserApi.cs
-
-用户 CRUD + 密码管理 + 批量操作。
-
-| HTTP | 方法签名 | 路由 |
-|------|----------|------|
-| GET | `GetUsersAsync(page, pageSize, keyword?) -> ApiResponse<PagedResult<UserListDto>>` | /api/v1/users |
-| GET | `GetUserByIdAsync(id) -> ApiResponse<UserDetailDto>` | /api/v1/users/{id} |
-| POST | `CreateUserAsync(UserInputDto) -> ApiResponse<UserDetailDto>` | /api/v1/users |
-| PUT | `UpdateUserAsync(id, UserInputDto) -> ApiResponse<UserDetailDto>` | /api/v1/users/{id} |
-| DELETE | `DeleteUserAsync(id) -> ApiResponse` | /api/v1/users/{id} |
-| PUT | `ChangeProfileAsync(id, ChangeProfileDto) -> ApiResponse<UserDetailDto>` | /api/v1/users/{id}/profile |
-| PUT | `ChangePasswordAsync(id, ChangePasswordRequest) -> ApiResponse` | /api/v1/users/{id}/change-password |
-| POST | `ResetPasswordAsync(id, ResetPasswordRequestDto) -> ApiResponse<ResetPasswordResponseDto>` | /api/v1/users/{id}/reset-password |
-| POST | `BatchImportAsync(UserBatchImportInputDto) -> ApiResponse<UserBatchImportResultDto>` | /api/v1/users/batch-import |
-| POST | `ToggleStatusAsync(id) -> ApiResponse<UserDetailDto>` | /api/v1/users/{id}/toggle-status |
-| POST | `RestoreAsync(id) -> ApiResponse<UserDetailDto>` | /api/v1/users/{id}/restore |
-| POST | `BatchDeleteAsync(BatchDeleteInputDto) -> ApiResponse<BatchOperationResultDto>` | /api/v1/users/batch-delete |
-| POST | `BatchEnableAsync(BatchDeleteInputDto) -> ApiResponse<BatchOperationResultDto>` | /api/v1/users/batch-enable |
-| POST | `BatchDisableAsync(BatchDeleteInputDto) -> ApiResponse<BatchOperationResultDto>` | /api/v1/users/batch-disable |
-
----
-
-### CommandHandlers/ -- 统一命令模式 (Phase 1.4)
-
-#### CommandResult.cs
-
-统一返回类型，支持泛型和无数据两种形式。
-
-- `CommandResult<T>` -- record(Success, Data?, Error?)
-  - `static Succeeded(T data) -> CommandResult<T>`
-  - `static Failed(string error) -> CommandResult<T>`
-  - `static NotFound(string? message) -> CommandResult<T>`
-  - `implicit operator bool` -- 隐式转换为 bool
-
-- `CommandResult` -- record(Success, Error?)
-  - `static Succeeded() -> CommandResult`
-  - `static Failed(string error) -> CommandResult`
-  - `implicit operator bool` -- 隐式转换为 bool
-
-#### ICommandHandlerBase.cs
-
-泛型 CRUD 接口和只读接口。
-
-- `ICommandHandlerBase<TListDto, TDetailDto, TInputDto>` -- 约束: where T : class
-  - `GetListAsync(QueryParams?) -> Task<CommandResult<List<TListDto>>>`
-  - `GetDetailAsync(Guid id) -> Task<CommandResult<TDetailDto>>`
-  - `SaveAsync(TInputDto input) -> Task<CommandResult<TDetailDto>>`
-  - `DeleteAsync(Guid id) -> Task<CommandResult<bool>>`
-
-实现者: IFormulaCommandHandler, IUserCommandHandler, IPatientCommandHandler
-
-#### QueryParams.cs
-
-统一查询参数 record。
-
-- 属性: SearchText, Page(=1), PageSize(=20), SortBy, SortDescending, Filters
-- `static Default -> QueryParams`
-- `static Search(string) -> QueryParams`
-- `static Paged(int, int) -> QueryParams`
-- `WithFilter(string key, object value) -> QueryParams` -- 不可变追加过滤条件
-
----
-
-### Repositories/ -- Repository 契约层
-
-Repository 契约接口，由 Infrastructure 层的 RepositoryBase 实现，通过 SwitchingApiClient 路由到远程或本地 API。
-
-| 接口 | 继承 | 说明 |
+| 决策 | 原因 | 日期 |
 |------|------|------|
-| IUserRepository.cs | IRepository | 用户数据访问 (CRUD/密码管理/批量操作) |
-| IPatientRepository.cs | IRepository | 患者数据访问 (CRUD/搜索/批量操作) |
-| IHerbRepository.cs | IRepository | 药材数据访问 (CRUD/分类/批量操作) |
-| IFormulaRepository.cs | IRepository | 验方数据访问 (CRUD/克隆/批量操作) |
-| IMedicalCaseRepository.cs | IRepository | 医案数据访问 (CRUD/聚合保存/生命周期) |
-| IRegistrationRepository.cs | IRepository | 挂号数据访问 |
-
-> 注: 原 `DataSources/` 目录下的 IDataSourceBase 及 IXxxDataSource 接口已移除，统一替换为 IRepository 模式。
-
----
-
-### Events/ -- 事件定义
-
-#### CacheEvents.cs
-
-- `CacheEvents.InvalidatedEvent` -- 继承 `PubSubEvent<CacheInvalidatedPayload>`，缓存失效通知
-- `CacheInvalidatedPayload` -- record: Domain(CacheDomain), Reason(string), Timestamp(DateTime)
-- `CacheDomain` -- 枚举: Patients, MedicalCases, All
-
----
-
-### Models/ -- 契约模型
-
-#### ImportValidationResult.cs
-
-导入验证结果类 (Issue #1781 从 Infrastructure 提升到 Contracts 避免循环依赖)。
-
-- 属性: IsValid, Errors(List<string>), Warnings(List<string>), ValidRowCount, InvalidRowCount
-
----
-
-### Roles/ -- 角色体系
-
-#### IRoleDefinition.cs
-
-角色定义接口，策略模式替代 switch-case (Phase 2.1.1)。
-
-- 属性: Role(UserRole), DisplayName, Description, HomeViewName, RequiredModules(IReadOnlyList<string>), BaseModules(IReadOnlyList<string>)
-- `GetAllModules() -> IEnumerable<string>` -- 返回基础模块 + 角色特定模块
-
-#### IRoleRegistry.cs
-
-角色注册表接口 (Phase 2.1.2)。
-
-- `Register(IRoleDefinition) -> void`
-- `GetDefinition(UserRole) -> IRoleDefinition?`
-- `GetAllDefinitions() -> IReadOnlyCollection<IRoleDefinition>`
-- `IsRegistered(UserRole) -> bool`
-- `GetHomeViewName(UserRole) -> string`
-- `GetModulesForRole(UserRole) -> IEnumerable<string>`
-
----
-
-### Security/ -- 安全认证
-
-#### AuthState.cs
-
-三个类型定义于同一文件。
-
-- `AuthState` -- 枚举(11值): Idle(0), Authenticating(1), ValidatingToken(2), LoadingProfile(3), LoadingModules(4), Navigating(5), Authenticated(10), Failed(20), LoggingOut(30), SessionExpired(40), RefreshingToken(50)
-
-- `AuthEvent` -- 枚举(15值): StartLogin, StartAutoLogin, CredentialsValidated, TokenValidated, ProfileLoaded, ModulesLoaded, NavigationCompleted, LoginFailure, StartLogout, LogoutSuccess, LogoutFailure, SessionExpire, StartTokenRefresh, TokenRefreshSuccess, TokenRefreshFailure, Reset
-
-- `AuthStateChangedEventArgs` -- EventArgs 子类
-  - 属性: PreviousState(AuthState), CurrentState(AuthState), Trigger(AuthEvent), StatusMessage(string?), Timestamp(DateTime)
-
-#### IAuthenticationStateMachine.cs
-
-统一认证状态机接口，替代原双状态机架构。
-
-- 属性: CurrentState(AuthState), IsAuthenticated, IsTransitioning, StatusMessage(string?)
-- `Fire(AuthEvent, statusMessage?) -> bool`
-- `FireAsync(AuthEvent, statusMessage?) -> Task<bool>`
-- `CanFire(AuthEvent) -> bool`
-- `Reset() -> void`
-- `GetPermittedEvents() -> IEnumerable<AuthEvent>`
-- 事件: `StateChanged -> EventHandler<AuthStateChangedEventArgs>`
-
----
-
-### Services/ -- 服务接口
-
-#### CrossModule/IFormulaSearchProvider.cs
-
-验方搜索提供者，解耦 MedicalCase 对 Formula 模块的编译期依赖 (D5-3)。
-
-- `GetFormulasPagedAsync(int page, int pageSize) -> Task<PagedResult<FormulaListDto>>`
-- `GetFormulaByIdAsync(Guid id) -> Task<FormulaDetailDto?>`
-
-#### CrossModule/IHerbSearchProvider.cs
-
-药材搜索提供者，解耦 MedicalCase/Formula 对 Herbs 模块的编译期依赖 (D5-3)。
-
-- `SearchHerbsAsync(string keyword) -> Task<IReadOnlyList<HerbListDto>>`
-- `GetAllHerbsAsync() -> Task<IReadOnlyList<HerbListDto>>`
-
-#### IActiveConsultationService.cs
-
-活跃医案追踪，离开确认逻辑。
-
-- 属性: HasActiveConsultation(bool), ActiveMedicalCaseId(Guid?)
-- `Register(Guid medicalCaseId, Func<Task<LeaveConsultationResult>> leaveHandler) -> void`
-- `Unregister() -> void`
-- `RequestLeaveAsync() -> Task<LeaveConsultationResult>`
-- 附属类型: `LeaveConsultationResult` -- CanLeave(bool), Choice(LeaveConsultationChoice), 静态工厂 AllowLeave/CancelLeave
-- 附属枚举: `LeaveConsultationChoice` -- None, Suspend, CancelCase, Stay
-
-#### IApplicationTickService.cs
-
-统一 1 秒定时调度 (AUTH-000)，单一 DispatcherTimer 替代各组件独立 Timer。
-
-- 属性: TickCount(long), IsRunning(bool)
-- `Start() -> void`
-- `Stop() -> void`
-- 事件: `Tick -> EventHandler<ApplicationTickEventArgs>`
-- 附属类型: `ApplicationTickEventArgs` -- TickCount(long), Timestamp(DateTime)
-
-#### IAsyncInitializable.cs
-
-异步初始化接口，View 加载时自动执行。
-
-- `InitializeAsync() -> Task`
-
-注: 被 MasterDetailViewModelBase/MasterDetailControlBase 类型检查引用，无直接实现类
-
-#### ICommonDialogService.cs
-
-通用对话框服务，提供丰富的用户交互对话框。
-
-- `ShowInfoAsync(message, title?) -> Task`
-- `ShowWarningAsync(message, title?) -> Task`
-- `ShowErrorAsync(message, title?) -> Task`
-- `ShowConfirmAsync(message, title?) -> Task<bool>`
-- `ShowTripleChoiceAsync(message, title?) -> Task<TripleChoiceResult>` -- 是/否/取消
-- `ShowInputAsync(message, title?, defaultValue?) -> Task<string?>`
-- `ShowOpenFileDialogAsync(filter?, title?) -> Task<string?>`
-- `ShowSaveFileDialogAsync(filter?, title?, defaultFileName?) -> Task<string?>`
-- `ShowUnfinishedCaseDialogAsync(string patientName) -> Task<UnfinishedCaseChoice>`
-- 附属枚举: `TripleChoiceResult` -- Yes, No, Cancel
-
-#### ICurrentUserProvider.cs
-
-当前用户 ID 提供者，供 LocalDbContext 审计字段填充。
-
-- 属性: CurrentUserId(Guid?)
-
-实现: SessionBasedCurrentUserProvider (Shell)
-
-#### IDesktopCacheManager.cs
-
-缓存失效管理器，按域统一管理。
-
-- `InvalidatePatientCaches() -> void`
-- `InvalidateMedicalCaseCaches() -> void`
-- `InvalidateAll() -> void`
-
-实现: DesktopCacheManager (Foundation)
-
-#### ILocalAuthService.cs
-
-本地认证服务 (本地模式使用)。
-
-- `ValidateAsync(username, password, ct) -> Task<UserDetailDto?>`
-- `ChangePasswordAsync(userId, oldPassword, newPassword, ct) -> Task<bool>`
-
-实现: LocalAuthService (LocalData)
-
-#### ILoginCoordinator.cs
-
-登录流程协调器，编排认证-会话-模块加载-导航完整流程。
-
-- 属性: CurrentState(AuthState), IsLoggedIn(bool), CurrentUser(UserDetailDto?)
-- `LoginAsync(username, password) -> Task<LoginResult>`
-- `HandleLoginSuccessAsync(UserDetailDto user, DateTime tokenExpiresAt) -> Task`
-- `LogoutAsync() -> Task`
-- `GetDiagnostics() -> LoginFlowDiagnostics`
-- 事件: StateChanged, LoginSucceeded, LogoutCompleted
-- 附属类型:
-  - `LoginSuccessEventArgs` -- User(UserDetailDto), TokenExpiresAt(DateTime)
-  - `LoginResult` -- record: Success, ErrorMessage?, ErrorCode?, User?, 静态工厂 Succeeded/Failed
-  - `LoginFlowDiagnostics` -- record: CurrentState, IsLoggedIn, UserName?, UserRole?, LoginTime?, LastStateChangeTime?, LoginAttemptCount
-
-#### IMedicalCaseCommandService.cs
-
-医案写操作服务 (ADR-1 SRP 分离)。
-
-- 属性: Current(MedicalCaseDetailDto?), HasChanges(bool)
-- `SaveAsync() -> Task<bool>`
-- `DeleteAsync() -> Task<bool>`
-- `CreateMedicalCaseAsync(Guid patientId) -> Task<(bool success, Guid medicalCaseId, string? errorMessage)>`
-
-#### IMedicalCaseLifecycleService.cs
-
-医案生命周期服务 (ADR-1 SRP 分离)。
-
-- 属性: MedicalCaseId(Guid), CurrentConsultation(ConsultationDetailDto?), CurrentPrescription(PrescriptionDetailDto?)
-- `InitializeAsync(Guid entityId) -> Task`
-- `ReloadAsync() -> Task`
-- `SuspendAsync(Guid medicalCaseId) -> Task<(bool success, string? errorMessage)>`
-- `CancelMedicalCaseAsync(Guid medicalCaseId, string? reason) -> Task<(bool, string?)>`
-- `CompleteMedicalCaseAsync(Guid medicalCaseId) -> Task<(bool, string?)>`
-- `ResumeSuspendedAsync(Guid medicalCaseId) -> Task<(bool, string?)>`
-
-#### IMedicalCaseQueryService.cs
-
-医案查询服务 (ADR-1 SRP 分离)，供 Patients 模块跨模块查询。
-
-- `GetPagedAsync(page, pageSize, searchText?) -> Task<PagedResult<MedicalCaseListDto>?>`
-- `QueryAsync(MedicalCaseQueryDto) -> Task<PagedResult<MedicalCaseListDto>?>`
-- `GetUnfinishedCaseByPatientIdAsync(patientId, doctorId, checkAllDoctors) -> Task<MedicalCaseDetailDto?>`
-- `CloseCaseAsync(Guid medicalCaseId) -> Task<ApiResponse<MedicalCaseDetailDto>>`
-
-#### INavigationCoordinator.cs
-
-统一导航协调器 (ADR-3 + ADR-7)，整合三个独立导航服务。
-
-- 基础导航:
-  - `NavigateTo(string viewName, IDictionary<string, object>? parameters) -> void`
-  - `NavigateToHome() -> void` / `NavigateToHome(UserRole) -> void`
-  - `NavigateBack() -> void`
-  - 属性: CanNavigateBack(bool), CurrentView(string?)
-- 历史导航:
-  - 属性: NavigationHistory(IReadOnlyList<string>)
-  - `ClearHistory() -> void`
-  - 事件: `NavigationChanged -> EventHandler<NavigationChangedEventArgs>`
-- Region 管理:
-  - `ShowLoginDialog() -> void`
-  - `ClearLoginRegion() -> void`
-  - `ClearContentRegion() -> void`
-  - `SubscribeToRegionCollection() -> void`
-  - `UnsubscribeFromRegionCollection() -> void`
-- 附属类型: `NavigationChangedEventArgs` -- FromView(string?), ToView(string), Parameters
-
-#### IPendingQueueManager.cs
-
-待诊队列管理器，解耦 MedicalCase 和 Patients 模块。
-
-- 属性: PendingQueue(ObservableCollection<PendingMedicalCaseDto>)
-- `LoadPendingCasesAsync() -> Task`
-- `LoadPatientForPendingCaseAsync(Guid patientId) -> Task<PatientDetailDto?>`
-- `RemoveFromQueue(Guid patientId) -> void`
-- `ClearQueue() -> void`
-
-#### IPrescriptionSettingsService.cs
-
-处方设置服务，重复药材合并策略。
-
-- 属性: DuplicateHerbMergeStrategy(string) -- 值: Max/Min/Sum/Import/Keep
-- `CalculateMergedDosage(int currentDosage, int importedDosage) -> int`
-
-实现: PrescriptionSettingsService (Infrastructure)
-
-#### ISessionManager.cs
-
-会话管理器，管理登录状态、用户信息、权限检查。
-
-- 用户属性: CurrentUser(UserDetailDto?), CurrentUserId(Guid?), CurrentUserName(string?)
-- 认证属性: IsAuthenticated(bool), IsLoggedIn(bool) -- [COMPAT] IsLoggedIn 是 IsAuthenticated 的别名
-- 会话方法:
-  - `SetCurrentUser(UserDetailDto, string token) -> void` -- [COMPAT]
-  - `SetSession(UserDetailDto, accessToken, refreshToken?) -> void`
-  - `SetUserSession(UserDetailDto, string token) -> void` -- [COMPAT] 别名
-  - `ClearSession() -> void`
-  - `ClearUserSession() -> void` -- [COMPAT] 别名
-- 权限方法:
-  - `HasPermission(UserRole) -> bool`
-  - `HasPermission(string) -> bool`
-  - `HasRole(string) -> bool`
-  - `IsAdmin() -> bool`
-  - `GetCurrentUserRoleDisplay() -> string`
-- 事件: SessionExpired, SessionChanged(SessionChangedEventArgs)
-- 附属类型: `SessionChangedEventArgs` -- IsLoggedIn(bool), User(UserDetailDto?)
-
-#### IStartupPipeline.cs
-
-启动管道和步骤定义，含大量诊断类型。
-
-- `IStartupStep` 接口:
-  - 属性: Name(string), Order(int), IsRequired(bool)
-  - `ExecuteAsync(IProgress<string>?, CancellationToken) -> Task<StartupStepResult>`
-  - 实现: ApiHealthCheckStartupStep, WarmupStartupStep, ModuleCoordinatorStartupStep, ErrorHandlingStartupStep, CoreServicesStartupStep (均在 Shell)
-
-- `IStartupPipeline` 接口:
-  - 属性: State(StartupPipelineState), Steps(IReadOnlyList<IStartupStep>)
-  - `RegisterStep(IStartupStep) -> void`
-  - `ExecuteAsync(IProgress<string>?, CancellationToken) -> Task<StartupPipelineResult>`
-  - `GetDiagnostics() -> StartupPipelineDiagnostics`
-  - `Reset() -> void`
-  - 事件: StateChanged, StepCompleted
-
-- 附属类型:
-  - `StartupPipelineState` -- 枚举: NotStarted, Running, Completed, Failed, Cancelled
-  - `StartupStepResult` -- record: Success, ErrorMessage?, Exception?, Duration, Skipped, 静态工厂 Succeeded/Failed/SkippedResult
-  - `StartupPipelineResult` -- record: Success, TotalDuration, StepResults, FailedStepName?, ErrorMessage?, 静态工厂 Succeeded/Failed
-  - `StartupPipelineStateChangedEventArgs` -- PreviousState, CurrentState, CurrentStepName?
-  - `StartupStepCompletedEventArgs` -- StepName, StepOrder, Result, CompletedCount, TotalCount
-  - `StartupPipelineDiagnostics` -- record: CurrentState, TotalSteps, CompletedSteps, FailedSteps, TotalDuration?, StepDiagnostics
-  - `StartupStepDiagnostics` -- record: Name, Order, IsRequired, Executed, Success, Duration?, ErrorMessage?
-
-#### ISyncService.cs
-
-数据同步协调服务，管理本地与服务器数据同步。
-
-- `GetSupportedEntityTypesAsync(ct) -> Task<IReadOnlyList<string>>`
-- `CheckDifferencesAsync(string entityType, ct) -> Task<SyncCheckResult>`
-- `UploadAsync(entityType, List<Guid>, ct) -> Task<SyncUploadResultDto>`
-- `DownloadAsync(entityType, List<Guid>, ct) -> Task<SyncDownloadResultDto>`
-- `DeleteAsync(entityType, List<Guid>, ct) -> Task<SyncDeleteResultDto>`
-- `ExecuteSyncAsync(entityType, SyncResolution, ct) -> Task<SyncExecutionResult>`
-- 附属类型:
-  - `SyncCheckResult` -- EntityType, LocalOnly, ServerOnly, Conflicts, HasDifferences, TotalDifferences
-  - `SyncResolution` -- ToUpload, ToDownload, ConflictResolutions(Dict<Guid,bool>), Skipped
-  - `SyncExecutionResult` -- EntityType, UploadedCount, DownloadedCount, SkippedCount, FailedCount, Errors, IsSuccess
-
-实现: SyncService (LocalData)
-
-#### IUserActivityState.cs
-
-用户活动状态只读查询接口 (AUTH-002)，供 Foundation 层使用避免循环依赖。
-
-- 属性: IsUserActive(bool)
-- `ResetActivity() -> void`
-
-#### IUserActivityTracker.cs
-
-用户活动追踪完整接口 (AUTH-001/002/003)，读写操作。
-
-- 属性: LastActivityTime(DateTime), IsUserActive(bool), TimeUntilInactive(TimeSpan), IsTracking(bool)
-- `StartTracking() -> void`
-- `StopTracking() -> void`
-- `ResetActivity() -> void`
-- 事件: SessionExpired
-
-#### IUserNotificationService.cs
-
-用户通知服务 (原 IErrorHandlingService 重命名)。
-
-- `HandleExceptionAsync(Exception, context?) -> Task`
-- `ShowErrorAsync(message, title?) -> Task`
-- `ShowSuccessAsync(message, title?) -> Task`
-- `ShowWarningAsync(message, title?) -> Task`
-- `ShowInfoAsync(message, title?) -> Task`
-- `ShowConfirmAsync(message, title?) -> Task<bool>`
-
-#### IViewModelServices.cs
-
-ViewModel 服务聚合接口，简化构造函数参数 (7 -> 1)。
-
-- 属性: LoggerFactory(ILoggerFactory), EventAggregator(IEventAggregator), RegionManager(IRegionManager), SessionManager(ISessionManager), UserNotificationService(IUserNotificationService), CommonDialogService(ICommonDialogService), RoleRegistry(IRoleRegistry)
-
-#### UnfinishedCaseChoice.cs
-
-未完成医案对话框选择枚举。
-
-- Continue -- 继续看诊
-- CloseAndCreate -- 关闭并新建
-- CloseOnly -- 仅关闭
-- Cancel -- 取消操作
-
----
-
-### 死代码分析补充
-
-| 接口 | 实现数 | 状态 |
-|------|--------|------|
-| ICommandHandler (Components/) | 0 | [已清理] 2026-03-01，文件及 Components 目录已删除 |
-| IReadOnlyCommandHandler | 0 | [已清理] 2026-03-01，从 ICommandHandlerBase.cs 中移除 |
-| ICustomDialogAware | 0 | [已清理] 2026-03-01，文件已删除 |
-| IAsyncInitializable | 0 (类型检查引用) | MasterDetailViewModelBase/ControlBase 做类型检查，无 class 实现此接口 |
-
-## 模块演进记录
-
-### 目录结构
-
-```
-LYBT.Desktop.Contracts/
-+-- Api/                          # Refit API 客户端接口 (7个)
-|   +-- IAuthApi.cs               # 认证: 登录/登出/Token刷新/自动登录/健康检查
-|   +-- IFormulaApi.cs            # 验方 CRUD + 批量操作 + 导入导出
-|   +-- IHerbApi.cs               # 药材 CRUD + 批量操作 + 导入导出
-|   +-- IMedicalCaseApi.cs        # 医案 CRUD + 生命周期 + 批量操作 + 打印
-|   +-- IPatientApi.cs            # 患者 CRUD + 批量操作 + 导入导出
-|   +-- ISyncApi.cs               # 数据同步: 元数据/比对/上传/下载/删除
-|   +-- IUserApi.cs               # 用户 CRUD + 批量操作 + 密码管理
-+-- CommandHandlers/              # CommandHandler 统一模式 (Phase 1.4)
-|   +-- CommandResult.cs          # 统一返回类型 (含隐式 bool 转换)
-|   +-- ICommandHandlerBase.cs    # 泛型 CRUD + 只读接口
-|   +-- QueryParams.cs            # 统一查询参数 (分页/搜索/排序/过滤)
-+-- Repositories/                 # Repository 契约层
-|   +-- IFormulaRepository.cs     # 验方仓储 (含克隆/验证/分类)
-|   +-- IHerbRepository.cs        # 药材仓储 (含分类/引用检查)
-|   +-- IMedicalCaseRepository.cs # 医案仓储 (含聚合保存/生命周期)
-|   +-- IPatientRepository.cs     # 患者仓储 (含搜索/引用检查)
-|   +-- IRegistrationRepository.cs # 挂号仓储
-|   +-- IUserRepository.cs        # 用户仓储 (含密码/状态管理)
-+-- Events/                       # 事件定义
-|   +-- CacheEvents.cs            # 缓存失效事件 (PubSubEvent + CacheDomain)
-+-- Models/                       # 契约模型
-|   +-- ImportValidationResult.cs # 导入验证结果
-+-- Roles/                        # 角色体系
-|   +-- IRoleDefinition.cs        # 角色定义接口 (模块/导航)
-|   +-- IRoleRegistry.cs          # 角色注册表接口
-+-- Security/                     # 安全认证
-|   +-- AuthState.cs              # 认证状态枚举 + 认证事件 + 状态变更参数
-|   +-- IAuthenticationStateMachine.cs  # 状态机接口 (Fire/CanFire/Reset)
-+-- Services/                     # 服务接口
-    +-- CrossModule/              # 跨模块搜索接口
-    |   +-- IFormulaSearchProvider.cs  # 验方搜索 (解耦 MedicalCase -> Formula)
-    |   +-- IHerbSearchProvider.cs     # 药材搜索 (解耦 MedicalCase/Formula -> Herbs)
-    +-- IActiveConsultationService.cs  # 活跃医案追踪 (离开确认)
-    +-- IApplicationTickService.cs     # 统一 1 秒定时调度
-    +-- IAsyncInitializable.cs         # 异步初始化接口
-    +-- ICommonDialogService.cs        # 通用对话框 (Info/Warn/Error/Confirm/Input/File)
-    +-- ICurrentUserProvider.cs        # 当前用户 ID (本地模式审计)
-    +-- IDesktopCacheManager.cs        # 缓存失效管理器
-    +-- ILocalAuthService.cs           # 本地认证 (Validate/ChangePassword)
-    +-- ILoginCoordinator.cs           # 登录流程协调 + LoginResult + LoginFlowDiagnostics
-    +-- IMedicalCaseCommandService.cs  # 医案写操作 (Save/Delete/Create)
-    +-- IMedicalCaseLifecycleService.cs # 医案生命周期 (Suspend/Cancel/Complete/Resume)
-    +-- IMedicalCaseQueryService.cs    # 医案查询 (分页/统一查询/未完成医案)
-    +-- INavigationCoordinator.cs      # 统一导航 + NavigationChangedEventArgs
-    +-- IPendingQueueManager.cs        # 待诊队列管理
-    +-- IPrescriptionSettingsService.cs # 处方设置 (重复药材合并策略)
-    +-- ISessionManager.cs            # 会话管理 + SessionChangedEventArgs
-    +-- IStartupPipeline.cs           # 启动管道 + 步骤 + 诊断
-    +-- ISyncService.cs               # 数据同步协调 + SyncCheckResult + SyncResolution
-    +-- IUserActivityState.cs          # 用户活动状态查询 (只读)
-    +-- IUserActivityTracker.cs        # 用户活动追踪 (读写)
-    +-- IUserNotificationService.cs    # 用户通知 (HandleException + 消息提示)
-    +-- IViewModelServices.cs          # ViewModel 服务聚合 (7 -> 1)
-    +-- UnfinishedCaseChoice.cs        # 未完成医案四选项枚举
-```
-
-### 重大演进
-
-1. **认证架构重构** (refactor-auth-role-system): 双状态机 -> 统一 AuthState; LoginFlowState -> AuthState; IRoleDefinition 策略模式替代 switch-case
-2. **MedicalCase API 精简** (simplify-medicalcase-api + consolidate-medicalcase-queries): 从 20+ 个端点精简到 ~15 个核心端点，删除 Ghost API、重复查询、独立 Prescription CRUD
-3. **MedicalCase 服务 SRP** (refactor-frontend-srp-patterns): 单体服务 -> Query + Command + Lifecycle 三接口
-4. **导航统一** (unify-navigation-architecture): 三个独立导航服务合并为 INavigationCoordinator
-5. **Repository 模式引入**: 为 SYNC-D02 双模式 (远程/本地) 准备的数据访问抽象，DataSource 层已移除，统一使用 IRepository + SwitchingApiClient 路由
-6. **批量操作标准化** (optimize-batch-operations Phase 2): 所有模块统一支持 BatchDelete/BatchEnable/BatchDisable
-7. **Token 过期机制重构** (refactor-token-sliding-expiration): 引入 IApplicationTickService + IUserActivityTracker + IUserActivityState 三层架构
-8. **登录流程简化** (simplify-login-options + simplify-auth-architecture): 移除多余参数和事件，AutoLoginToken 替代密码存储
+| IApiClient 聚合所有子接口 | 替代分散的 Refit 接口，统一 Remote/Local 模式 | 2025-12 |
+| IRoleDefinition 驱动模块加载 | 不同角色加载不同模块集合，减少非必要初始化 | 2025-12 |
+| IStartupStep 支持 ParallelGroup | 相邻步骤可并行执行，加速启动 | 2025-12 |
+| IViewModelServices 聚合 9 服务 | 减少 ViewModel 构造函数参数爆炸 | 2026-01 |
+| IUiThreadDispatcher 抽象 | 解耦 ViewModel 对 WPF Dispatcher 的直接依赖，提升可测试性 | 2025-12 |

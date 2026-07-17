@@ -1,224 +1,113 @@
 # LYBT.Desktop.LocalData
 
-> 本地 SQL Server LocalDB 数据层，离线模式核心基础设施
+本地数据访问层模块，基于 EF Core + LocalDB 实现离线数据存储，镜像服务端数据结构并提供本地认证与同步支持。
 
 ## 项目定位
 
-- **层级**: Desktop Core (基础设施层)
-- **职责**: 提供基于 SQL Server LocalDB + EF Core 的本地数据存储，支持离线模式下的完整数据操作，包括本地认证、数据同步、种子数据初始化
-- **状态**: Active
+桌面客户端的本地持久化层，在无法连接远程服务器时提供完整的数据读写能力。通过 EF Core 映射 10 个 DbSet 镜像服务端模型，支持软删除、审计字段自动填充、SHA256 校验和同步冲突检测。
 
 ## 目录结构
 
 ```
 LYBT.Desktop.LocalData/
-├── Context/               # LocalDbContext (LocalDB DbContext)
-├── Helpers/               # 工具类 (ChecksumHelper)
-├── Initialization/        # 数据库初始化与种子数据
-├── Mappers/               # Mapperly 实体-DTO 映射器
-└── Services/              # 本地认证与同步服务
+├── Data/
+│   └── LocalDbContext.cs            # EF Core DbContext，10 个 DbSet
+├── Initializers/
+│   └── DatabaseInitializer.cs       # 线程安全的数据库初始化
+├── Services/
+│   ├── LocalAuthService.cs          # 本地认证（BCrypt + 锁定策略）
+│   └── ChecksumHelper.cs            # SHA256 同步校验
+├── Mappers/
+│   ├── LocalPatientMapper.cs        # Riok.Mapperly 编译期映射
+│   ├── LocalHerbMapper.cs
+│   ├── LocalFormulaMapper.cs
+│   ├── LocalMedicalCaseMapper.cs
+│   ├── LocalUserMapper.cs
+│   └── LocalRegistrationMapper.cs
+└── LocalDataModule.cs               # Prism 模块注册
 ```
 
 ## 核心组件
 
-| 名称 | 说明 |
+### LocalDbContext — 本地数据库上下文
+
+**设计依据**：EF Core DbContext，10 个 DbSet 镜像服务端 `AppDbContext` 表结构，保证离线/在线数据模型一致。
+
+| 特性 | 说明 |
 |------|------|
-| LocalDbContext | SQL Server LocalDB DbContext，管理 10 个 DbSet，处理软删除过滤 |
-| LocalAuthService | 本地 BCrypt 密码认证，支持登录失败锁定 (5次/15分钟) |
-| SyncService | 本地-服务器数据同步协调，基于 Checksum 的增量同步 |
-| DatabaseInitializer | LocalDB 数据库初始化，确保数据库创建与 Schema 同步 |
-| SeedData | 种子数据填充，提供初始基础数据 |
-| ChecksumHelper | 数据校验和计算，用于同步时检测数据变更 |
-| Local*Mapper (x5) | 基于 Mapperly 的编译时映射器，Entity 与 DTO 之间转换 |
+| DbSet 数量 | 10 个（Patient, Herb, Formula, MedicalCase, User, Registration 等） |
+| 软删除 | `IsDeleted` 全局查询过滤器，`SaveChanges` 自动拦截 |
+| 审计字段 | `CreatedAt`/`CreatedBy`/`UpdatedAt`/`UpdatedBy` 自动填充 |
+| 数据库 | LocalDB（`LYBTDesktop`），非 SQLite |
 
-## 设计依据
+### DatabaseInitializer — 数据库初始化器
 
-本项目是双模式架构 (SYNC-D02) 的本地模式实现。远程模式通过 API 访问 SQL Server，本地模式通过 SQL Server LocalDB 实现离线数据操作。两种模式共享 Service/Repository 层，数据访问统一通过 Repository 模式 + SwitchingApiClient 双模式 API 路由。
+**设计依据**：线程安全的幂等初始化，防止并发启动时重复执行迁移。
+
+| 机制 | 说明 |
+|------|------|
+| SemaphoreSlim | 互斥锁，保证单线程执行初始化 |
+| 双重检查锁定 | 外层 `_isInitialized` 快速路径，内层锁内二次确认 |
+| 迁移策略 | `MigrateAsync()` 幂等迁移，支持重试 |
+
+### LocalAuthService — 本地认证服务
+
+**设计依据**：离线场景下的身份验证，BCrypt 哈希比对，带账户锁定策略防止暴力破解。
+
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| ValidateCredentials | `Task<LocalUser?> ValidateCredentialsAsync(string username, string password)` | 验证用户名密码 |
+| 认证方式 | BCrypt | 与服务端 PasswordHelper 一致 |
+| 锁定策略 | 5 次失败 → 锁定 15 分钟 | `FailedLoginAttempts` + `LockoutEnd` |
+
+### ChecksumHelper — 同步校验工具
+
+**设计依据**：SHA256 计算实体哈希值，用于同步时检测冲突。排除审计字段（`UpdatedAt` 等），避免时间戳变化导致误判冲突。
+
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| ComputeChecksum | `string ComputeChecksum<T>(T entity)` | 对实体序列化后计算 SHA256 |
+| 排除字段 | `UpdatedAt`, `UpdatedBy`, `CreatedAt`, `CreatedBy` | 审计字段不参与哈希计算 |
+
+### Mappers — Mapperly 编译期映射
+
+**设计依据**：全部使用 Riok.Mapperly 编译期代码生成，零运行时反射开销。忽略审计字段，仅映射业务数据。
+
+| Mapper | 源 → 目标 | 说明 |
+|--------|-----------|------|
+| LocalPatientMapper | Server ↔ Local | 患者数据映射 |
+| LocalHerbMapper | Server ↔ Local | 中药数据映射 |
+| LocalFormulaMapper | Server ↔ Local | 验方数据映射 |
+| LocalMedicalCaseMapper | Server ↔ Local | 医案数据映射 |
+| LocalUserMapper | Server ↔ Local | 用户数据映射 |
+| LocalRegistrationMapper | Server ↔ Local | 挂号数据映射 |
+
+共性：所有 Mapper 均忽略审计字段（`CreatedAt`/`CreatedBy`/`UpdatedAt`/`UpdatedBy`），仅映射业务属性。
 
 ## 依赖关系
 
-### 依赖
-- Microsoft.EntityFrameworkCore.SqlServer - SQL Server LocalDB 数据库引擎
-- BCrypt.Net-Next - 密码哈希验证
-- Riok.Mapperly - 编译时对象映射
-- LYBT.Entities - 领域实体定义
-- LYBT.Shared.Models - 共享 DTO 模型
-- LYBT.Shared.Validators - 共享验证规则
-- LYBT.Shared.Configuration - 同步选项等配置
-- LYBT.Desktop.Contracts - 服务接口契约 (ISyncService, ILocalAuthService)
-
-### 被依赖
-- LYBT.Desktop.Shell - 主程序组合根
-- LYBT.Tests.Desktop.Unit - 单元测试
-- LYBT.Tests.Desktop.Integration - 集成测试
-
-## 更新记录
-
-| 日期 | 变更 |
+| 依赖 | 用途 |
 |------|------|
-| 2026-03-01 | 初始 README 创建 |
+| Microsoft.EntityFrameworkCore | ORM 框架 |
+| Microsoft.EntityFrameworkCore.SqlServer | LocalDB 驱动 |
+| BCrypt.Net-Next | 密码哈希验证 |
+| Riok.Mapperly | 编译期对象映射 |
+| Prism.Modularity | IModule 模块注册 |
+| LYBT.Shared.Models | 实体/DTO 定义 |
 
-## 开发笔记
+## 设计决策
 
-# LYBT.Desktop.LocalData 代码知识
-
-本地数据层 - SQL Server LocalDB EF Core 实现，提供离线模式的数据存取、同步和本地认证服务。
-
-## 代码文件结构
-
-```
-LYBT.Desktop.LocalData/
-├── Context/
-│   └── LocalDbContext.cs           # SQL Server LocalDB 数据库上下文
-├── Helpers/
-│   └── ChecksumHelper.cs          # SHA256 校验和计算 (同步用)
-├── Initialization/
-│   ├── DatabaseInitializer.cs      # LocalDB 数据库初始化
-│   └── SeedData.cs                 # 默认管理员种子数据
-├── Mappers/
-│   ├── LocalFormulaMapper.cs       # 验方 Entity <-> DTO 映射
-│   ├── LocalHerbMapper.cs          # 药材 Entity <-> DTO 映射
-│   ├── LocalMedicalCaseMapper.cs   # 医案 Entity <-> DTO 映射
-│   ├── LocalPatientMapper.cs       # 患者 Entity <-> DTO 映射
-│   └── LocalUserMapper.cs          # 用户 Entity <-> DTO 映射
-└── Services/
-    ├── LocalAuthService.cs         # 本地认证 (BCrypt 密码验证)
-    ├── LocalDbBackupService.cs     # 数据库备份恢复服务
-    └── SyncService.cs              # 本地-服务器数据同步服务
-```
-
-### Context/LocalDbContext.cs
-**LocalDbContext** : DbContext | SQL Server LocalDB 数据库上下文，10 个 DbSet，自动审计字段
-
-| 方法 | 说明 |
-|------|------|
-| OnModelCreating(ModelBuilder) | 配置软删除过滤器、实体关系 |
-| ApplySoftDeleteFilter(ModelBuilder) | 遍历 ISoftDeletable 实体应用全局查询过滤器 |
-| ConfigureRelationships(ModelBuilder) | MedicalCase 聚合根关系: 1:1 Consultation(共享主键), 1:0..1 Prescription, 1:N PrintLog |
-| SaveChangesAsync(CancellationToken) | 重写保存，自动设置 CreatedAt/UpdatedAt/CreatedBy/UpdatedBy |
-| SaveChanges() | 同步版自动审计 |
-
-### Data Access 层说明
-
-原 `DataSources/` 目录下的 `LocalUserDataSource`、`LocalPatientDataSource`、`LocalHerbDataSource`、`LocalFormulaDataSource`、`LocalMedicalCaseDataSource` 类已移除。数据访问统一由 **Repository 模式** 处理：
-
-- **Repository 接口**: 定义在 `LYBT.Desktop.Contracts/Repositories/` (IUserRepository, IPatientRepository, IHerbRepository, IFormulaRepository, IMedicalCaseRepository, IRegistrationRepository)
-- **Repository 实现**: `LYBT.Desktop.Infrastructure/Repositories/RepositoryBase.cs` 泛型基类，通过 Refit API 客户端访问数据
-- **双模式路由**: `SwitchingApiClient` 根据连接 URL 自动路由到远程服务器 API 或本地嵌入 LocalWebAPI
-- **本地模式数据存取**: 本地嵌入的 LocalWebAPI 直接操作 `LocalDbContext`，对 Repository 层完全透明
-
-### Helpers/ChecksumHelper.cs
-**ChecksumHelper** (static) | SHA256 校验和计算，用于同步差异比对
-
-| 方法 | 说明 |
-|------|------|
-| ComputeHerbChecksum(Herb) | 计算药材 Checksum (排除审计字段) |
-| ComputePatientChecksum(Patient) | 计算患者 Checksum |
-| ComputeFormulaChecksum(Formula) | 计算验方 Checksum (含排序后的药材子项) |
-| ComputeChecksum(object, string) | 按实体类型分发计算 |
-| ComputeHash(object) | 序列化为 JSON 后计算 SHA256 |
-
-### Initialization/DatabaseInitializer.cs
-**DatabaseInitializer** | SQL Server LocalDB 数据库初始化器
-
-| 方法 | 说明 |
-|------|------|
-| InitializeAsync(CancellationToken) | 创建目录、EnsureCreated、种子数据 |
-| DatabaseExists() | 检查数据库文件是否存在 (static) |
-| GetConnectionString() | 获取连接字符串 (static) |
-| DatabasePath | AppData/LYBTZYZS/lybtzyzs.db (static) |
-
-### Initialization/SeedData.cs
-**SeedData** (static) | 种子数据，创建默认管理员
-
-| 方法 | 说明 |
-|------|------|
-| SeedAsync(LocalDbContext, ILogger, CancellationToken) | 初始化种子数据 |
-| SeedAdminUserAsync(LocalDbContext, ILogger, CancellationToken) | 创建 admin/Admin@123 SuperAdmin 账户 |
-
-### Mappers/LocalFormulaMapper.cs
-**LocalFormulaMapper** (internal, partial) : Riok.Mapperly [Mapper] | 验方 Entity <-> DTO
-
-| 方法 | 说明 |
-|------|------|
-| ToDetailDto(Formula) | Formula -> FormulaDetailDto (含计算属性 HerbCount) |
-| ToEntity(FormulaInputDto) | FormulaInputDto -> Formula |
-| ToDto(FormulaHerbItem) | FormulaHerbItem -> FormulaHerbItemDto |
-| ToEntity(FormulaHerbItemInputDto) | FormulaHerbItemInputDto -> FormulaHerbItem |
-
-### Mappers/LocalHerbMapper.cs
-**LocalHerbMapper** (internal, partial) : Riok.Mapperly [Mapper] | 药材 Entity <-> DTO
-
-| 方法 | 说明 |
-|------|------|
-| ToDetailDto(Herb) | Herb -> HerbDetailDto |
-| ToEntity(HerbInputDto) | HerbInputDto -> Herb |
-
-### Mappers/LocalPatientMapper.cs
-**LocalPatientMapper** (internal, partial) : Riok.Mapperly [Mapper] | 患者 Entity <-> DTO
-
-| 方法 | 说明 |
-|------|------|
-| ToDetailDto(Patient) | Patient -> PatientDetailDto |
-| ToEntity(PatientInputDto) | PatientInputDto -> Patient |
-
-### Mappers/LocalUserMapper.cs
-**LocalUserMapper** (internal, partial) : Riok.Mapperly [Mapper] | 用户 Entity <-> DTO
-
-| 方法 | 说明 |
-|------|------|
-| ToDetailDto(User) | User -> UserDetailDto (排除 PasswordHash) |
-| ToEntity(UserInputDto) | UserInputDto -> User (排除 Password/ConfirmPassword) |
-
-### Mappers/LocalMedicalCaseMapper.cs
-**LocalMedicalCaseMapper** (internal, partial) : Riok.Mapperly [Mapper] | 医案聚合根映射
-
-| 方法 | 说明 |
-|------|------|
-| ToDetailDto(MedicalCase) | MedicalCase -> MedicalCaseDetailDto (含 Consultation/Prescription 嵌套) |
-| ToConsultationDetailDto(Consultation, MedicalCase) | Consultation -> ConsultationDetailDto (需要父实体补充 PatientId 等) |
-| ToPrescriptionDetailDto(Prescription) | Prescription -> PrescriptionDetailDto |
-| ToPrescriptionItemDto(PrescriptionItem) | PrescriptionItem -> PrescriptionItemDto |
-| ToEntity(MedicalCaseInputDto) | MedicalCaseInputDto -> MedicalCase |
-
-### Services/LocalAuthService.cs
-**LocalAuthService** : ILocalAuthService | 本地认证服务
-
-| 方法 | 说明 |
-|------|------|
-| ValidateAsync(string, string, CancellationToken) | 验证用户名密码，含账户锁定机制 (5次失败锁定15分钟) |
-| ChangePasswordAsync(Guid, string, string, CancellationToken) | 修改密码，验证旧密码 |
-
-### Services/SyncService.cs
-**SyncService** : ISyncService | 数据同步服务，协调本地与服务器之间的同步
-
-| 方法 | 说明 |
-|------|------|
-| GetSupportedEntityTypesAsync(CancellationToken) | 获取支持的实体类型 (Herb/Patient/Formula) |
-| CheckDifferencesAsync(string, CancellationToken) | Checksum 比对，生成 LocalOnly/ServerOnly/Conflicts 三类差异 |
-| UploadAsync(string, List\<Guid\>, CancellationToken) | 上传本地实体到服务器 |
-| DownloadAsync(string, List\<Guid\>, CancellationToken) | 从服务器下载实体到本地 |
-| DeleteAsync(string, List\<Guid\>, CancellationToken) | 请求服务器删除实体 |
-| ExecuteSyncAsync(string, SyncResolution, CancellationToken) | 执行完整同步流程 (上传+下载+冲突解决) |
-
-## 死代码与废弃标记
-
-- Mappers (5个) 均为 `internal` 访问级别，仅在 LocalData 项目内部被对应的 Service 使用，无外部引用 -- 属于正常设计 (internal 封装)
-- `SeedData` 仅被 `DatabaseInitializer` 调用，测试项目通过 `DatabaseInitializer` 间接使用 -- 非死代码
-- Repository 注册在 `ServiceCollectionExtensions.cs` 中完成 -- 非死代码
-
-## 设计分析
-
-1. **Repository + 双模式 API 模式**: 数据访问统一通过 Repository 接口 (Contracts/Repositories/)，由 `SwitchingApiClient` 根据连接 URL 路由到远程服务器 API 或本地嵌入 LocalWebAPI，Repository 层对模式切换完全透明
-2. **Mapperly 编译期映射**: 使用 Riok.Mapperly 源生成器替代运行时反射映射，5 个 Mapper 均为 `internal partial class`，编译器自动生成映射实现
-3. **聚合根模式**: MedicalCase 管理 Consultation + Prescription 三实体的完整生命周期，通过 IMedicalCaseRepository 聚合保存
-4. **Checksum 同步**: ChecksumHelper 计算实体业务字段的 SHA256 哈希 (排除审计字段)，必须与服务器端 `LYBT.Module.Sync.Services.ChecksumHelper` 保持完全一致
-5. **角色保护逻辑**: 用户管理实现 SuperAdmin 不可删除/不可禁用、最后管理员保护等业务规则
+1. **镜像服务端结构**：10 个 DbSet 与 `AppDbContext` 保持一致，降低同步时的映射复杂度
+2. **LocalDB 而非 SQLite**：与服务端同为 SQL Server 生态，EF Core 迁移脚本可复用
+3. **全局查询过滤器**：软删除实体自动过滤，`IgnoreQueryFilters()` 用于恢复操作
+4. **BCrypt 而非 PBKDF2**：桌面端本地认证使用 BCrypt（`PasswordHelper`），服务端 Identity 使用 PBKDF2，两者不互通
+5. **编译期映射**：Mapperly 在编译时生成映射代码，避免 AutoMapper 的运行时反射和启动开销
+6. **Checksum 排除审计字段**：同步冲突检测只关注业务数据变化，时间戳变化不触发冲突
 
 ## 已知陷阱
 
-- ChecksumHelper 的 JSON 序列化选项 (camelCase, WhenWritingNull) 必须与服务器端完全一致，否则相同数据会产生不同的 Checksum 导致同步误判
-- SeedData 中硬编码了默认管理员密码 "Admin@123"，仅用于首次初始化，不应在生产环境保留
-
----
-最后更新: 2026-03-01
+- **LocalDB 实例名**：连接字符串中的 `(localdb)\MSSQLLocalDB` 需确保 LocalDB 已安装并启动，否则初始化静默失败
+- **BCrypt vs PBKDF2**：本地认证和远程认证使用不同哈希算法，密码不能直接跨端使用
+- **软删除恢复**：恢复已删除实体必须用 `IgnoreQueryFilters()`，否则 `FindAsync` 找不到
+- **审计字段自动填充**：`SaveChanges` 重写中设置审计字段，手动赋值会被覆盖
+- **迁移并发**：`DatabaseInitializer` 的 SemaphoreSlim 仅限进程内，多进程同时启动 LocalDB 迁移可能冲突

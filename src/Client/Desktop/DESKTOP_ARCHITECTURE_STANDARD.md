@@ -1,7 +1,7 @@
 # Desktop 端架构设计标准
 
 > **文档版本**: v1.0
-> **最后更新**: 2025-10-12
+> **最后更新**: 2026-07-17
 > **适用范围**: LYBT.Desktop.* 所有业务模块
 
 ## 📋 目录
@@ -30,7 +30,8 @@
 - **架构模式**: MVVM (Model-View-ViewModel)
 - **模块化框架**: Prism.DryIoc 8.x+
 - **依赖注入**: Prism.DryIoc (DryIoc 容器)
-- **对象映射**: AutoMapper 13.0+
+- **对象映射**: Riok.Mapperly (编译期映射)
+- **MVVM 工具**: CommunityToolkit.Mvvm (`[ObservableProperty]`, `[RelayCommand]`)
 - **.NET 版本**: .NET 8.0
 
 ### 1.2 架构原则
@@ -51,10 +52,10 @@
 │  - 负责UI展示和用户交互                              │
 │  - 通过 DataBinding 绑定 ViewModel                   │
 ├─────────────────────────────────────────────────────┤
-│  ViewModel 层 (UnifiedViewModelBase)                │
+│  ViewModel 层 (CoreViewModelBase / NavigableViewModelBase) │
 │  - 负责业务逻辑和数据转换                            │
 │  - 调用 Repository 获取数据                          │
-│  - 使用 AutoMapper 进行 DTO ↔ UI Model 转换         │
+│  - 使用 Mapperly 进行 DTO ↔ UI Model 转换           │
 ├─────────────────────────────────────────────────────┤
 │  Repository 层 (IXxxRepository)                     │
 │  - 负责数据访问和API调用                             │
@@ -90,13 +91,13 @@
 **职责**:
 - 负责业务逻辑和数据转换
 - 调用 Repository 获取数据
-- 使用 AutoMapper 进行 DTO ↔ UI Model 转换
+- 使用 Mapperly 进行 DTO ↔ UI Model 转换
 - 处理异常并显示用户友好的错误信息
 
 **约束**:
-- ✅ 继承 `UnifiedViewModelBase` 或 `UnifiedListViewModelBase<T>`
+- ✅ 继承 `CoreViewModelBase`、`NavigableViewModelBase`、`MasterDetailViewModelBase<TListItem, TDetail>` 等标准基类
 - ✅ 使用构造函数注入依赖
-- ✅ 使用 AutoMapper 进行对象映射
+- ✅ 使用 Mapperly 进行对象映射
 - ✅ 使用 `INotificationService` 显示消息
 - ❌ 禁止直接调用 API（必须通过 Repository）
 - ❌ 禁止在 ViewModel 中创建 UI 元素
@@ -296,12 +297,13 @@ public async Task<List<UserDto>> GetAllAsync()
 
 ### 4.1 基类选择
 
-| 场景 | 基类 | 说明 |
-|------|------|------|
-| 普通页面 | `UnifiedViewModelBase` | 基础 ViewModel 功能（INotifyPropertyChanged, Busy 状态等） |
-| 列表管理页面 | `UnifiedListViewModelBase<T>` | 包含列表加载、分页、搜索、刷新功能 |
-| 导航页面 | `NavigationViewModelBase` | 支持 Prism 导航（OnNavigatedTo/OnNavigatedFrom） |
-| 对话框页面 | `DialogViewModelBase` | 支持 Prism 对话框（IDialogAware） |
+| 基类 | 说明 | 典型场景 |
+|------|------|----------|
+| `CoreViewModelBase` | 核心基类（ObservableObject + IViewModelServices 聚合） | 所有 VM 的根基类 |
+| `NavigableViewModelBase` | 可导航 VM（INavigationAware + IRegionMemberLifetime） | 需要 Prism 导航的页面 |
+| `MasterDetailViewModelBase<TListItem, TDetail>` | Master-Detail CRUD 模式 | 列表+详情管理页面 |
+| `DialogViewModelBase` | 对话框 VM（IDialogAware） | 模态对话框 |
+| `ChildViewModelBase` | 复合 VM 子组件 | 嵌入父 VM 的子区域 |
 
 ### 4.2 构造函数注入
 
@@ -309,19 +311,19 @@ public async Task<List<UserDto>> GetAllAsync()
 ```csharp
 namespace LYBT.Desktop.Users.ViewModels;
 
-public class UserManagementViewModel : UnifiedListViewModelBase<UserDto>
+public partial class UserManagementViewModel : NavigableViewModelBase
 {
     private readonly IUserRepository _userRepository;
     private readonly INotificationService _notificationService;
     private readonly IDialogService _dialogService;
-    private readonly IMapper _mapper;
+    private readonly UserMapper _mapper;
     private readonly ILogger<UserManagementViewModel> _logger;
 
     public UserManagementViewModel(
         IUserRepository userRepository,
         INotificationService notificationService,
         IDialogService dialogService,
-        IMapper mapper,
+        UserMapper mapper,
         ILogger<UserManagementViewModel> logger)
     {
         _userRepository = userRepository;
@@ -329,8 +331,6 @@ public class UserManagementViewModel : UnifiedListViewModelBase<UserDto>
         _dialogService = dialogService;
         _mapper = mapper;
         _logger = logger;
-
-        InitializeCommands();
     }
 
     // ViewModel 实现...
@@ -339,25 +339,13 @@ public class UserManagementViewModel : UnifiedListViewModelBase<UserDto>
 
 ### 4.3 命令定义
 
-**使用**: `DelegateCommand` 或 `DelegateCommand<T>`
+**使用**: `[RelayCommand]` 特性（CommunityToolkit.Mvvm）
 
 **示例**:
 ```csharp
-public class UserManagementViewModel : UnifiedViewModelBase
+public partial class UserManagementViewModel : NavigableViewModelBase
 {
-    public DelegateCommand LoadUsersCommand { get; private set; }
-    public DelegateCommand AddUserCommand { get; private set; }
-    public DelegateCommand<int> EditUserCommand { get; private set; }
-    public DelegateCommand<int> DeleteUserCommand { get; private set; }
-
-    private void InitializeCommands()
-    {
-        LoadUsersCommand = new DelegateCommand(async () => await LoadUsersAsync());
-        AddUserCommand = new DelegateCommand(async () => await AddUserAsync());
-        EditUserCommand = new DelegateCommand<int>(async (id) => await EditUserAsync(id));
-        DeleteUserCommand = new DelegateCommand<int>(async (id) => await DeleteUserAsync(id));
-    }
-
+    [RelayCommand]
     private async Task LoadUsersAsync()
     {
         try
@@ -380,6 +368,15 @@ public class UserManagementViewModel : UnifiedViewModelBase
             IsBusy = false;
         }
     }
+
+    [RelayCommand]
+    private async Task AddUserAsync() { /* ... */ }
+
+    [RelayCommand]
+    private async Task EditUserAsync(UserItem user) { /* ... */ }
+
+    [RelayCommand]
+    private async Task DeleteUserAsync(UserItem user) { /* ... */ }
 }
 ```
 
@@ -420,32 +417,36 @@ private async Task ExecuteActionAsync()
 }
 ```
 
-### 4.5 AutoMapper 使用
+### 4.5 Mapperly 映射
 
-**配置**: 在 `{模块}/Mappings/AutoMapperProfile.cs` 中定义映射
+**配置**: 在 `{模块}/Mappings/` 中定义 Mapper 类（编译期生成，无运行时反射）
 
 **示例**:
 ```csharp
+using Riok.Mapperly.Abstractions;
+
 namespace LYBT.Desktop.Users.Mappings;
 
-public class UserMappingProfile : Profile
+[Mapper]
+public partial class UserMapper
 {
-    public UserMappingProfile()
-    {
-        // DTO → UI Model
-        CreateMap<UserDto, UserItem>();
+    // DTO → UI Model
+    [MapProperty(nameof(UserDto.FirstName), nameof(UserItem.FullName)]
+    public partial UserItem ToItem(UserDto dto);
 
-        // UI Model → DTO
-        CreateMap<UserItem, UpdateUserDto>();
-    }
+    // UI Model → Update DTO
+    public partial UpdateUserDto ToUpdateDto(UserItem item);
+
+    // 批量映射
+    public partial List<UserItem> ToItemList(List<UserDto> dtos);
 }
 ```
 
 **使用**:
 ```csharp
-// ViewModel 中使用
-var userItems = _mapper.Map<List<UserItem>>(users);
-var updateDto = _mapper.Map<UpdateUserDto>(userItem);
+// ViewModel 中使用（编译期生成，无运行时反射）
+var userItems = _mapper.ToItemList(users);
+var updateDto = _mapper.ToUpdateDto(userItem);
 ```
 
 ---
@@ -577,8 +578,8 @@ LYBT.Desktop.{模块名}/
 ├── Models/                   # UI 模型
 │   ├── XxxItem.cs
 │   └── XxxInfo.cs
-├── Mappings/                 # AutoMapper 配置
-│   └── XxxMappingProfile.cs
+├── Mappings/                 # Mapperly 映射器
+│   └── XxxMapper.cs
 ├── Events/                   # 模块事件
 │   └── XxxChangedEvent.cs
 └── {模块名}Module.cs          # 模块入口
@@ -827,7 +828,7 @@ containerRegistry.RegisterSingleton<INotificationService, NotificationService>()
 - `ILogger<T>`: 日志服务（Serilog）
 - `ICacheService`: 缓存服务
 - `IConfigurationService`: 配置服务
-- `IMapper`: AutoMapper 映射
+- Mapperly 映射器（编译期生成，无需 DI 注册）
 
 **注册位置**: `LYBT.Desktop.Shell/App.xaml.cs` 或 `InfrastructureModule.cs`
 
@@ -836,14 +837,7 @@ containerRegistry.RegisterSingleton<INotificationService, NotificationService>()
 containerRegistry.RegisterSingleton<ILogger<T>, Logger<T>>();
 containerRegistry.RegisterSingleton<ICacheService, MemoryCacheService>();
 containerRegistry.RegisterSingleton<IConfigurationService, ConfigurationService>();
-containerRegistry.RegisterSingleton<IMapper>(provider =>
-{
-    var config = new MapperConfiguration(cfg =>
-    {
-        cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies());
-    });
-    return config.CreateMapper();
-});
+// Mapperly 映射器由各模块自行注册（编译期生成，无需全局 IMapper）
 ```
 
 ### 7.4 Repository 层服务
@@ -878,7 +872,7 @@ public class UsersModule : IModule
 **✅ 唯一推荐方式**: 构造函数注入
 
 ```csharp
-public class UserManagementViewModel : UnifiedViewModelBase
+public class UserManagementViewModel : NavigableViewModelBase
 {
     private readonly IUserRepository _userRepository;
     private readonly INotificationService _notificationService;
@@ -952,7 +946,7 @@ public void RegisterTypes(IContainerRegistry containerRegistry)
 | ViewModel | `LYBT.Desktop.{模块名}.ViewModels` | `LYBT.Desktop.Users.ViewModels` |
 | View | `LYBT.Desktop.{模块名}.Views` | `LYBT.Desktop.Users.Views` |
 | UI Model | `LYBT.Desktop.{模块名}.Models` | `LYBT.Desktop.Users.Models` |
-| AutoMapper | `LYBT.Desktop.{模块名}.Mappings` | `LYBT.Desktop.Users.Mappings` |
+| Mapperly 映射器 | `LYBT.Desktop.{模块名}.Mappings` | `LYBT.Desktop.Users.Mappings` |
 | 事件 | `LYBT.Desktop.{模块名}.Events` | `LYBT.Desktop.Users.Events` |
 
 ### 9.2 类命名
@@ -965,7 +959,7 @@ public void RegisterTypes(IContainerRegistry containerRegistry)
 | View | `{功能}View` | `UserManagementView`, `UserDetailView` |
 | Dialog | `{功能}Dialog` | `UserEditorDialog` |
 | UI Model | `{实体}Item`, `{实体}Info` | `UserItem`, `UserInfo` |
-| AutoMapper Profile | `{模块}MappingProfile` | `UserMappingProfile` |
+| Mapperly Mapper | `{模块}Mapper` | `UserMapper` |
 | Event | `{实体}{动作}Event` | `UserCreatedEvent`, `UserUpdatedEvent` |
 
 ### 9.3 成员命名
@@ -1167,28 +1161,29 @@ public class UserItem
 }
 ```
 
-#### 10.1.4 AutoMapper Profile
+#### 10.1.4 Mapperly Mapper
 
-**文件**: `LYBT.Desktop.Users/Mappings/UserMappingProfile.cs`
+**文件**: `LYBT.Desktop.Users/Mappings/UserMapper.cs`
 
 ```csharp
-using AutoMapper;
+using Riok.Mapperly.Abstractions;
 using LYBT.Desktop.Users.Models;
 using LYBT.Shared.Dtos.User;
 
 namespace LYBT.Desktop.Users.Mappings;
 
-public class UserMappingProfile : Profile
+[Mapper]
+public partial class UserMapper
 {
-    public UserMappingProfile()
-    {
-        // DTO → UI Model
-        CreateMap<UserDto, UserItem>()
-            .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"));
+    // DTO → UI Model
+    [MapProperty(nameof(UserDto.FirstName), nameof(UserItem.FullName)]
+    public partial UserItem ToItem(UserDto dto);
 
-        // UI Model → Update DTO
-        CreateMap<UserItem, UpdateUserDto>();
-    }
+    // UI Model → Update DTO
+    public partial UpdateUserDto ToUpdateDto(UserItem item);
+
+    // 批量映射
+    public partial List<UserItem> ToItemList(List<UserDto> dtos);
 }
 ```
 
@@ -1197,32 +1192,32 @@ public class UserMappingProfile : Profile
 **文件**: `LYBT.Desktop.Users/ViewModels/UserManagementViewModel.cs`
 
 ```csharp
-using AutoMapper;
+using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Desktop.Presentation.Interfaces;
 using LYBT.Desktop.Users.Interfaces;
+using LYBT.Desktop.Users.Mappings;
 using LYBT.Desktop.Users.Models;
 using LYBT.Shared.Dtos.User;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
 using Prism.Services.Dialogs;
 using System.Collections.ObjectModel;
 
 namespace LYBT.Desktop.Users.ViewModels;
 
-public class UserManagementViewModel : UnifiedListViewModelBase<UserItem>
+public partial class UserManagementViewModel : MasterDetailViewModelBase<UserItem, UserDetailModel>
 {
     private readonly IUserRepository _userRepository;
     private readonly INotificationService _notificationService;
     private readonly IDialogService _dialogService;
-    private readonly IMapper _mapper;
+    private readonly UserMapper _mapper;
     private readonly ILogger<UserManagementViewModel> _logger;
 
     public UserManagementViewModel(
         IUserRepository userRepository,
         INotificationService notificationService,
         IDialogService dialogService,
-        IMapper mapper,
+        UserMapper mapper,
         ILogger<UserManagementViewModel> logger)
     {
         _userRepository = userRepository;
@@ -1230,24 +1225,7 @@ public class UserManagementViewModel : UnifiedListViewModelBase<UserItem>
         _dialogService = dialogService;
         _mapper = mapper;
         _logger = logger;
-
-        InitializeCommands();
     }
-
-    #region 命令
-
-    public DelegateCommand AddUserCommand { get; private set; }
-    public DelegateCommand<UserItem> EditUserCommand { get; private set; }
-    public DelegateCommand<UserItem> DeleteUserCommand { get; private set; }
-
-    private void InitializeCommands()
-    {
-        AddUserCommand = new DelegateCommand(async () => await AddUserAsync());
-        EditUserCommand = new DelegateCommand<UserItem>(async (user) => await EditUserAsync(user));
-        DeleteUserCommand = new DelegateCommand<UserItem>(async (user) => await DeleteUserAsync(user));
-    }
-
-    #endregion
 
     #region 重写基类方法
 
@@ -1257,7 +1235,7 @@ public class UserManagementViewModel : UnifiedListViewModelBase<UserItem>
         {
             _logger.LogInformation("正在加载用户列表...");
             var users = await _userRepository.GetAllAsync();
-            return _mapper.Map<List<UserItem>>(users);
+            return _mapper.ToItemList(users);
         }
         catch (Exception ex)
         {
@@ -1586,12 +1564,11 @@ public class DesktopLayerArchTests
     {
         var allowedBaseClasses = new[]
         {
-            "UnifiedViewModelBase",
-            "UnifiedListViewModelBase`1",
-            "ModernViewModelBase",
-            "ModernManagementViewModel",
-            "NavigationViewModelBase",
-            "DialogViewModelBase"
+            "CoreViewModelBase",
+            "NavigableViewModelBase",
+            "MasterDetailViewModelBase`2",
+            "DialogViewModelBase",
+            "ChildViewModelBase"
         };
 
         var viewModelTypes = Types.InAssemblies(DesktopAssemblies)
@@ -1728,7 +1705,7 @@ Task<ServiceResult<List<UserDto>>> GetAllUsersAsync();
 **错误示例**:
 ```csharp
 // ❌ 错误：ViewModel 直接调用 API
-public class UserManagementViewModel : UnifiedViewModelBase
+public class UserManagementViewModel : NavigableViewModelBase
 {
     private readonly IUserApi _userApi; // ❌ 不应直接注入 API
 
@@ -1742,7 +1719,7 @@ public class UserManagementViewModel : UnifiedViewModelBase
 **正确示例**:
 ```csharp
 // ✅ 正确：ViewModel 通过 Repository 调用
-public class UserManagementViewModel : UnifiedViewModelBase
+public class UserManagementViewModel : NavigableViewModelBase
 {
     private readonly IUserRepository _userRepository; // ✅ 注入 Repository
 
@@ -1768,7 +1745,7 @@ public class UserChangedEvent : PubSubEvent<int> { }
 
 2. 发布事件（模块 A）:
 ```csharp
-public class UserManagementViewModel : UnifiedViewModelBase
+public class UserManagementViewModel : NavigableViewModelBase
 {
     private readonly IEventAggregator _eventAggregator;
 
@@ -1782,7 +1759,7 @@ public class UserManagementViewModel : UnifiedViewModelBase
 
 3. 订阅事件（模块 B）:
 ```csharp
-public class PatientManagementViewModel : UnifiedViewModelBase
+public class PatientManagementViewModel : NavigableViewModelBase
 {
     private readonly IEventAggregator _eventAggregator;
 
@@ -1850,13 +1827,7 @@ public class UserRepositoryTests
 
 **示例**:
 ```csharp
-public DelegateCommand ImportDataCommand { get; private set; }
-
-private void InitializeCommands()
-{
-    ImportDataCommand = new DelegateCommand(async () => await ImportDataAsync());
-}
-
+[RelayCommand]
 private async Task ImportDataAsync()
 {
     try

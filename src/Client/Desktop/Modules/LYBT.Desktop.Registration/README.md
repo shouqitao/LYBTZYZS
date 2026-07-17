@@ -1,106 +1,104 @@
 # LYBT.Desktop.Registration
 
-> 挂号排队模块 — 患者挂号、候诊队列、开始就诊
+挂号管理模块 -- 管理患者挂号队列的完整生命周期（创建→等待→接诊/取消）。
 
-## 定位
+## 项目定位
 
-| 属性 | 说明 |
-|------|------|
-| 层级 | Desktop 业务模块 |
-| 职责 | 挂号创建、候诊队列管理、开始就诊 |
-| 模块依赖 | Authentication, Patients, Users |
-| 导航目标 | `RegistrationListView` |
-
----
+前台挂号是诊所日常运营的入口流程。本模块为 Receptionist 提供创建挂号能力，为 Doctor 提供个人队列视图和接诊入口，队列 30 秒自动刷新。接诊操作创建 MedicalCase 并导航至 MedicalCaseWorkspace（Clinical 编辑模式）。PRD: registration.md US-REG-001~006。
 
 ## 目录结构
 
 ```
 LYBT.Desktop.Registration/
-├── RegistrationModule.cs              # Prism IModule 注册
+├── RegistrationModule.cs          # Prism IModule 入口
+├── ViewModels/
+│   └── RegistrationListViewModel.cs
+├── Views/
+│   └── RegistrationListView.xaml(.cs)
 ├── Dialogs/
-│   ├── RegistrationCreateDialog.xaml   # 新建挂号对话框
+│   ├── RegistrationCreateDialog.xaml(.cs)
 │   └── RegistrationCreateDialogViewModel.cs
 ├── Repositories/
-│   └── RegistrationRepository.cs       # IApiClient (Refit)
-├── Services/
-│   └── RemoteRegistrationService.cs    # CommandResult 包装
-├── ViewModels/
-│   └── RegistrationListViewModel.cs    # 候诊队列主VM
-└── Views/
-    └── RegistrationListView.xaml       # 候诊队列视图
+│   └── RegistrationRepository.cs   # 双模式仓库（Remote/Local）
+└── Services/
+    └── RemoteRegistrationService.cs
 ```
 
----
+## 核心组件
 
-## 核心接口
+### RegistrationModule
 
-| 接口 | 职责 |
-|------|------|
-| `IRegistrationService` | 业务操作（创建、队列、开始就诊、取消） |
-| `IRegistrationRepository` | API通信（Refit IApiClient） |
+**设计依据**: Prism IModule 标准入口，声明模块依赖和 DI 注册。
 
----
+| 注册项 | 类型 | 说明 |
+|--------|------|------|
+| `IRegistrationService` → `RemoteRegistrationService` | Service | 挂号服务实现 |
+| `RegistrationListViewModel` | ViewModel | 队列列表 VM |
+| `RegistrationListView` | Navigation | 导航视图 |
+| `RegistrationCreateDialog` + VM | Dialog | 新建挂号弹窗 |
 
-## 关键功能
+**模块依赖**: `AuthenticationModule`, `PatientsModule`, `UsersModule`
 
-### 候诊队列 (RegistrationListViewModel)
+### RegistrationListViewModel
 
-| 功能 | 命令 | 说明 |
-|------|------|------|
-| 刷新队列 | `RefreshCommand` | 手动刷新 |
-| 新建挂号 | `CreateRegistrationCommand` | 打开创建对话框 |
-| 开始就诊 | `StartVisitCommand` | 医生专用，创建医案并跳转 |
-| 取消挂号 | `CancelRegistrationCommand` | 前台专用，取消候诊 |
-| 自动刷新 | 30秒定时器 | PeriodicTimer，NavigateFrom时停止 |
+**设计依据**: NavigableViewModelBase 子类，角色感知队列 + 自动刷新 + 接诊导航。
 
-### 新建挂号 (RegistrationCreateDialogViewModel)
+| 属性/命令 | 说明 |
+|-----------|------|
+| `WaitingQueue` | 等待队列集合 |
+| `SelectedRegistration` | 当前选中挂号 |
+| `RefreshCommand` | 手动刷新队列 |
+| `CreateRegistrationCommand` | 打开新建挂号弹窗 |
+| `StartVisitCommand` | 接诊：创建 MedicalCase → 导航 Workspace |
+| `CancelRegistrationCommand` | 取消挂号（仅 Waiting + Receptionist） |
 
-- 患者搜索：关键字搜索 → 下拉选择
-- 医生选择：加载所有启用医生，下拉选择
-- 来源标记：`RegistrationSource.Receptionist`
+- **角色感知**: Doctor 只看自己队列（传 `doctorId`），Receptionist/Admin 看全部
+- **自动刷新**: `PeriodicTimer` 30 秒间隔，`OnNavigatedTo` 启动、`OnNavigatedFrom` 停止
+- **接诊流程**: `StartVisitAsync()` → 获取 `MedicalCaseId` → `IPatientApi.GetPatientByIdAsync()` → 导航 `MedicalCaseWorkspace`（`WorkspaceMode.Clinical` + `EditState.Editing`）
 
-### 开始就诊流程
+### RegistrationCreateDialogViewModel
 
-```
-选择候诊记录 → StartVisitAsync → 获取 MedicalCaseId
-    → 加载 PatientDetailDto → 导航到 MedicalCaseWorkspace (Clinical/Editing)
-```
+**设计依据**: DialogViewModelBase 子类，跨模块调用患者搜索和医生列表。
 
----
+| 依赖服务 | 来源模块 | 用途 |
+|----------|----------|------|
+| `IPatientService` | PatientsModule | 患者搜索自动补全 |
+| `IUserService` | UsersModule | 医生下拉列表 |
 
-## 角色权限
+### RemoteRegistrationService
 
-| 角色 | 队列可见范围 | 可用命令 |
-|------|-------------|---------|
-| Receptionist | 全部 | 新建、刷新、取消 |
-| Doctor | 仅自己 | 刷新、开始就诊 |
-| Admin/SuperAdmin | 全部（只读） | 刷新 |
+**设计依据**: IRegistrationService 实现，CommandResult 模式包装 Repository。
 
----
+| 方法 | 返回类型 | 说明 |
+|------|----------|------|
+| `CreateAsync` | `CommandResult<RegistrationDetailDto>` | 创建挂号，Source=Receptionist |
+| `GetByIdAsync` | `CommandResult<RegistrationDetailDto>` | 获取详情 |
+| `GetPagedAsync` | `CommandResult<PagedResult<RegistrationListDto>>` | 分页查询 |
+| `GetQueueAsync` | `CommandResult<List<RegistrationListDto>>` | 获取等待队列 |
+| `StartVisitAsync` | `CommandResult<Guid>` | 接诊，返回 MedicalCaseId |
+| `CancelAsync` | `CommandResult` | 取消，仅 Waiting 状态可取消 |
 
-## 模块依赖
-
-| 依赖 | 用途 |
-|------|------|
-| `LYBT.Desktop.Patients` | `IPatientService`, `IPatientApi` — 患者搜索 |
-| `LYBT.Desktop.Users` | `IUserService` — 加载医生列表 |
-| `LYBT.Desktop.Infrastructure` | `INavigationCoordinator`, `ViewNames` |
-| `LYBT.Desktop.MedicalCase` | `WorkspaceMode`, `EditState` — 就诊导航参数 |
-
----
-
-## 状态机
+## 依赖关系
 
 ```
-Waiting → (StartVisit) → InProgress → (医案关闭) → Completed
-Waiting → (Cancel, 仅Receptionist源) → Cancelled
+RegistrationModule
+├── LYBT.Desktop.Contracts    # IRegistrationService, IRegistrationRepository, INavigationCoordinator
+├── LYBT.Desktop.Infrastructure  # NavigableViewModelBase, DialogViewModelBase, ViewNames
+├── LYBT.Desktop.Patients     # IPatientService, IPatientApi (跨模块)
+├── LYBT.Desktop.Users        # IUserService (跨模块)
+└── LYBT.Shared.Models        # DTOs, CommandResult
 ```
 
----
+## 设计决策
 
-## 测试
+1. **跨模块依赖许可**: Registration 是工作流模块，可引用 Patients/Users 的服务接口（AGENTS.md 明确例外）
+2. **PeriodicTimer 替代 DispatcherTimer**: 更现代的异步刷新模式，支持 CancellationToken
+3. **CommandResult 模式**: 所有 Service 方法返回 `CommandResult<T>`，调用方检查 `.Success` 后访问 `.Data`
+4. **双模式仓库**: `RegistrationRepository` 通过 `IApiRouter` 路由到 Remote/Local
 
-- `HttpRegistrationRepositoryTests` — Repository 单元测试
-- `RegistrationsControllerTests` — LocalWebAPI 集成测试
-- `RegistrationStatusTransitionTests` — 状态转换规则
+## 已知陷阱
+
+- **StartVisit 导航参数**: 必须同时传 `MedicalCaseId`、`CurrentPatient`、`WorkspaceMode`、`EditState` 四个参数，缺一不可
+- **Cancel 守卫条件**: 仅 `Status=Waiting` + `Source=Receptionist` + 当前用户为 Receptionist 三个条件同时满足才可取消
+- **跨模块 DTO**: `RegistrationCreateDialogViewModel` 依赖 `IPatientService` 和 `IUserService`，若这些模块未加载会 DI 失败
+- **自动刷新生命周期**: 必须在 `OnNavigatedFrom` 停止定时器，否则离开页面后仍在轮询

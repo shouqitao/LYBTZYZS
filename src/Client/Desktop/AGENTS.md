@@ -50,7 +50,6 @@ WPF/Prism.DryIoc desktop application for the LYBTZYZS TCM clinic management syst
 
 ### External
 - Prism.DryIoc
-- AutoMapper
 - Riok.Mapperly
 - QuestPDF (printing)
 - Refit (HTTP client)

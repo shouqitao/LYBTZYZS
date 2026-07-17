@@ -9,7 +9,7 @@ using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
+using CommunityToolkit.Mvvm.Input;
 
 namespace LYBT.Desktop.Clinical.ViewModels.Workspace;
 
@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Clinical.ViewModels.Workspace;
 /// Child VM for pending queue management.
 /// Upgraded from PendingQueueHandler, replacing callbacks with IWorkspaceHost/IMedicalCaseWorkspaceContext.
 /// </summary>
-public class PendingQueueViewModel : ChildViewModelBase
+public partial class PendingQueueViewModel : ChildViewModelBase
 {
     private readonly IMedicalCaseWorkspaceContext _context;
     private readonly IMedicalCaseService _medicalCaseService;
@@ -45,9 +45,6 @@ public class PendingQueueViewModel : ChildViewModelBase
 
     public bool HasNoPendingCases => Queue.Count == 0;
 
-    public DelegateCommand RefreshCommand { get; }
-    public DelegateCommand<PendingMedicalCaseDto> SelectCommand { get; }
-
     public PendingQueueViewModel(
         IMedicalCaseWorkspaceContext context,
         IWorkspaceHost host,
@@ -61,10 +58,13 @@ public class PendingQueueViewModel : ChildViewModelBase
         _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
         _registrationService = registrationService ?? throw new ArgumentNullException(nameof(registrationService));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
-
-        RefreshCommand = new DelegateCommand(async () => await RefreshQueueAsync());
-        SelectCommand = new DelegateCommand<PendingMedicalCaseDto>(async c => await SelectPendingCaseAsync(c));
     }
+
+    [RelayCommand]
+    private async Task RefreshAsync() => await RefreshQueueAsync();
+
+    [RelayCommand]
+    private async Task SelectAsync(PendingMedicalCaseDto c) => await SelectPendingCaseAsync(c);
 
     /// <summary>
     /// Refresh the pending queue from the registration service.
