@@ -115,6 +115,12 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<INavigationCoordinator, NavigationCoordinator>();
             containerRegistry.RegisterSingleton<NavigationManager>();
             containerRegistry.RegisterSingleton<StatusBarManager>();
+
+            // Navigation 服务拆分
+            containerRegistry.RegisterSingleton<INavigationHistoryService, NavigationHistoryService>();
+            containerRegistry.RegisterSingleton<IModuleLazyLoader, ModuleLazyLoader>();
+            containerRegistry.RegisterSingleton<IRegionMonitor, RegionMonitor>();
+            containerRegistry.RegisterSingleton<ShellDialogHelper>();
         }
 
         /// <summary>注册Infrastructure层服务</summary>

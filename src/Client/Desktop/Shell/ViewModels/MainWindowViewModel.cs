@@ -48,6 +48,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private readonly NavigationManager _navigationManager;
     private readonly ILoginStateManager _loginStateManager;
     private readonly ShellEventCoordinator _shellEventCoordinator;
+    private readonly ShellDialogHelper _dialogHelper;
 
     protected IRegionManager RegionManager { get; }
     protected ICommonDialogService? CommonDialogService { get; }
@@ -124,7 +125,8 @@ public partial class MainWindowViewModel : CoreViewModelBase
         StatusBarManager statusBarManager,
         NavigationManager navigationManager,
         ILoginStateManager loginStateManager,
-        ShellEventCoordinator shellEventCoordinator)
+        ShellEventCoordinator shellEventCoordinator,
+        ShellDialogHelper dialogHelper)
         : base(services)
     {
         RegionManager = services.RegionManager;
@@ -140,6 +142,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
         _loginStateManager = loginStateManager ?? throw new ArgumentNullException(nameof(loginStateManager));
         _shellEventCoordinator = shellEventCoordinator ?? throw new ArgumentNullException(nameof(shellEventCoordinator));
+        _dialogHelper = dialogHelper ?? throw new ArgumentNullException(nameof(dialogHelper));
 
         _tickService.Tick += OnTick;
         _tickService.Start();
@@ -278,43 +281,17 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     #region 对话框辅助方法
 
-    protected virtual async Task ShowSuccessMessageAsync(string message)
-    {
-        if (ToastService != null)
-        {
-            await Task.Run(() => ToastService.ShowSuccess(message));
-            return;
-        }
-        Logger.LogWarning("ToastService不可用，成功消息未显示: {Message}", message);
-    }
+    protected virtual async Task ShowSuccessMessageAsync(string message) =>
+        await _dialogHelper.ShowSuccessMessageAsync(message);
 
-    protected virtual async Task ShowErrorMessageAsync(string message)
-    {
-        if (ToastService != null)
-        {
-            await Task.Run(() => ToastService.ShowError(message));
-            return;
-        }
-        Logger.LogError("ToastService不可用，错误消息未显示: {Message}", message);
-    }
+    protected virtual async Task ShowErrorMessageAsync(string message) =>
+        await _dialogHelper.ShowErrorMessageAsync(message);
 
-    protected virtual async Task ShowWarningMessageAsync(string message)
-    {
-        if (CommonDialogService != null)
-        {
-            await CommonDialogService.ShowWarningAsync(message, "警告");
-            return;
-        }
-        Logger.LogWarning("CommonDialogService不可用，警告消息未显示: {Message}", message);
-    }
+    protected virtual async Task ShowWarningMessageAsync(string message) =>
+        await _dialogHelper.ShowWarningMessageAsync(message);
 
-    protected virtual async Task<bool> ShowConfirmationAsync(string message, string title = "确认")
-    {
-        if (CommonDialogService != null)
-            return await CommonDialogService.ShowConfirmAsync(message, title);
-        Logger.LogWarning("CommonDialogService不可用，确认对话框未显示: {Message}，默认返回false", message);
-        return false;
-    }
+    protected virtual async Task<bool> ShowConfirmationAsync(string message, string title = "确认") =>
+        await _dialogHelper.ShowConfirmationAsync(message, title);
 
     #endregion
 

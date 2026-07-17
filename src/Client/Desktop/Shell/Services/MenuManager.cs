@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Shared.UI;
+using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.Constants;
@@ -19,6 +20,7 @@ public class MenuManager
 {
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly ISessionManager _sessionManager;
+    private readonly IRoleRegistry _roleRegistry;
     private readonly ILogger<MenuManager> _logger;
     private readonly IUserNotificationService _userNotificationService;
     private readonly IApplicationCommands _applicationCommands;
@@ -27,6 +29,7 @@ public class MenuManager
     public MenuManager(
         INavigationCoordinator navigationCoordinator,
         ISessionManager sessionManager,
+        IRoleRegistry roleRegistry,
         ILogger<MenuManager> logger,
         IUserNotificationService userNotificationService,
         IApplicationCommands applicationCommands,
@@ -34,6 +37,7 @@ public class MenuManager
     {
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
+        _roleRegistry = roleRegistry ?? throw new ArgumentNullException(nameof(roleRegistry));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _userNotificationService = userNotificationService ?? throw new ArgumentNullException(nameof(userNotificationService));
         _applicationCommands = applicationCommands ?? throw new ArgumentNullException(nameof(applicationCommands));
@@ -45,12 +49,20 @@ public class MenuManager
     #region S6-01 菜单可见性
 
     /// <summary>S6-01: 用户管理菜单可见性 (仅 Admin/SuperAdmin)</summary>
-    public bool IsUserManagementVisible =>
-        _sessionManager.CurrentUser?.Role is UserRole.Admin or UserRole.SuperAdmin;
+    public bool IsUserManagementVisible
+    {
+        get
+        {
+            var role = _sessionManager.CurrentUser?.Role;
+            if (role == null) return false;
+            var definition = _roleRegistry.GetDefinition(role.Value);
+            return definition?.RequiredModules.Contains("UsersModule") ?? false;
+        }
+    }
 
-    /// <summary>S6-01: 系统设置可见性 (仅 Admin/SuperAdmin)</summary>
+    /// <summary>S6-01: 系统设置可见性 (仅 SuperAdmin)</summary>
     public bool IsSystemSettingsVisible =>
-        _sessionManager.CurrentUser?.Role is UserRole.Admin or UserRole.SuperAdmin;
+        _sessionManager.CurrentUser?.Role == UserRole.SuperAdmin;
 
     /// <summary>S6-01: 密码修改可见性</summary>
     public bool IsPasswordChangeVisible => true;
