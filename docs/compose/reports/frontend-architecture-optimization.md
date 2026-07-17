@@ -6,6 +6,7 @@ specs:
 plans:
   - docs/compose/plans/2026-07-17-frontend-architecture-optimization.md
 branch: master
+commits: 8b3a7432c
 ---
 
 # 前端 WPF 架构全面优化 — Final Report
