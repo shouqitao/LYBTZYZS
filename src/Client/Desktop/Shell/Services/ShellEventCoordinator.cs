@@ -3,6 +3,7 @@ using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Navigation;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 
@@ -23,6 +24,7 @@ public class ShellEventCoordinator : IDisposable
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly MenuManager _menuManager;
     private readonly NavigationManager _navigationManager;
+    private readonly IModuleLazyLoader _moduleLazyLoader;
     private readonly IUiThreadDispatcher _uiDispatcher;
     private readonly ILogger<ShellEventCoordinator> _logger;
 
@@ -43,6 +45,7 @@ public class ShellEventCoordinator : IDisposable
         INavigationCoordinator navigationCoordinator,
         MenuManager menuManager,
         NavigationManager navigationManager,
+        IModuleLazyLoader moduleLazyLoader,
         IUiThreadDispatcher uiDispatcher,
         ILogger<ShellEventCoordinator> logger)
     {
@@ -53,6 +56,7 @@ public class ShellEventCoordinator : IDisposable
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
+        _moduleLazyLoader = moduleLazyLoader ?? throw new ArgumentNullException(nameof(moduleLazyLoader));
         _uiDispatcher = uiDispatcher ?? throw new ArgumentNullException(nameof(uiDispatcher));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -85,6 +89,13 @@ public class ShellEventCoordinator : IDisposable
 
             _menuManager.RefreshMenuVisibility();
             _navigationManager.NavigationItems = _navigationManager.BuildNavigationItems(args.User.Role);
+
+            // 背景预加载高频模块
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(2000);
+                _moduleLazyLoader.PreloadModules(args.User.Role);
+            });
 
             _logger.LogInformation("登录成功UI更新完成 [用户: {Username}]", args.User.UserName);
 
