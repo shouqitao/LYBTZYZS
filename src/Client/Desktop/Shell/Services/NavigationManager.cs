@@ -7,6 +7,7 @@ using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Navigation.NavigationArgs;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
@@ -103,8 +104,9 @@ public partial class NavigationManager : ObservableObject
                     Title = "用户管理",
                     ViewName = ViewNames.UserManagement,
                     IconKind = "AccountTie",
-                    Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(ViewNames.UserManagement,
-                        new Dictionary<string, object> { { "DefaultRoleFilter", UserRole.Admin } })),
+                    Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(
+                        ViewNames.UserManagement,
+                        new UserManagementNavParams(DefaultRoleFilter: UserRole.Admin))),
                     Group = "管理"
                 });
             }
