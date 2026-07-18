@@ -11,10 +11,6 @@ namespace LYBT.Desktop.Foundation.Performance
         private DateTime _startTime;
         private DateTime _endTime;
 
-#pragma warning disable CS0067 // Event is never used
-        public event EventHandler? OptimizationCompleted;
-#pragma warning restore CS0067
-
         public StartupOptimizationService(ILogger<StartupOptimizationService> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));

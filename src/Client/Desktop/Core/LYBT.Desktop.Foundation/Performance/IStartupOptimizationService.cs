@@ -31,11 +31,6 @@ namespace LYBT.Desktop.Foundation.Performance
         void ClearStartupCache();
 
         /// <summary>
-        /// 启动优化完成事件
-        /// </summary>
-        event EventHandler OptimizationCompleted;
-
-        /// <summary>
         /// 异步执行应用程序预热操作
         /// </summary>
         Task WarmupApplicationAsync();
