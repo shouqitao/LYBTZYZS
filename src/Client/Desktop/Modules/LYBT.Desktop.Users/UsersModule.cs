@@ -39,16 +39,6 @@ namespace LYBT.Desktop.Users
             containerRegistry.Register<IUserPasswordHandler, UserPasswordHandler>();
             containerRegistry.Register<IUserStatusHandler, UserStatusHandler>();
 
-            // Issue #1928: Sprint 2 - ResetPassword迁移为Navigation模式
-            // Issue #2167: ResetPasswordView已删除（改用按钮触发直接API调用）
-            // 合并为AccountSettingsView（TabControl形式），由Shell/ViewModels/AccountSettingsViewModel统一管理
-
-            // Epic #1926 Sprint 4: Dialog已全部迁移为Navigation模式，以下DI注册已移除：
-            // - ChangePasswordDialog → ChangePasswordView
-            // - ResetPasswordDialog → 重置密码移至列表操作
-            // - UserProfileDialog → UserProfileView
-            // - UserFormDialog → UserDetailView（Issue #2168：统一Create/Edit/View模式）
-            // 注册Users模块的MasterDetail服务
             containerRegistry.AddMasterDetailServices<UserListDto, UserDetailModel>();
             containerRegistry.Register<ViewModels.UserEditorViewModel>();
             // UserMasterDetailControl供角色台View复用，ViewModel在Control内部解析

@@ -51,10 +51,6 @@ namespace LYBT.Desktop.Patients
             // Epic #1773 Task 4: 注册患者模块组件化组件（Scoped生命周期）
             containerRegistry.Register<IPatientService, Services.PatientService>();
             containerRegistry.Register<IPatientValidator, ViewModels.Components.PatientValidator>();
-            // PatientDetailViewModel/PatientDetailView已删除，改用PatientMasterDetailControl（内嵌在角色台的PatientManagementView中）
-            // PatientSelectionViewModel已迁移到Clinical模块
-            // QuickCreatePatientDialog已删除（无调用）
-            // 注册Patients模块的MasterDetail服务
             containerRegistry.AddMasterDetailServices<PatientListDto, PatientDetailModel>();
 
             // Handler DI注册

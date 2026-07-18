@@ -123,7 +123,6 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<UsersModule>(containerRegistry);
             RegisterLogger<PatientsModule>(containerRegistry);
             RegisterLogger<MedicalCaseModule>(containerRegistry);
-            // [已删除] RegisterLogger<PrescriptionsModule> - 模块已移除
             RegisterLogger<HerbsModule>(containerRegistry);
             RegisterLogger<FormulaModule>(containerRegistry);
             RegisterLogger<ClinicalModule>(containerRegistry);
@@ -147,7 +146,6 @@ namespace LYBT.Desktop.Shell.Extensions
         /// <summary>注册业务服务Logger</summary>
         private static void RegisterServiceLoggers(IContainerRegistry containerRegistry)
         {
-            // [已删除] RegisterLogger<PrescriptionEditorService> - 服务已删除
             RegisterLogger<SystemSettingsService>(containerRegistry);
             RegisterLogger<PrescriptionPrintService>(containerRegistry);
         }

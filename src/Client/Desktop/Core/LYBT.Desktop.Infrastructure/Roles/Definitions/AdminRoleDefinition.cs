@@ -22,7 +22,6 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
             "FormulaModule",
             "MedicalCaseModule",
             "ReportsModule"
-            // [已删除] "PrescriptionsModule" - 空壳模块已移除
         };
 
         /// <inheritdoc/>

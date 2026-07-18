@@ -34,9 +34,7 @@ namespace LYBT.Desktop.Herbs
 
             // D5-3: 跨模块药材搜索提供者，供 MedicalCase 模块使用
             containerRegistry.Register<IHerbSearchProvider, Services.HerbSearchProvider>();
-            // Issue #2168: CRUD统一架构 - HerbCreateViewModel已删除
 
-            // Handler 组件
             containerRegistry.Register<ViewModels.Handlers.IHerbStatusHandler, ViewModels.Handlers.HerbStatusHandler>();
             containerRegistry.AddMasterDetailServices<HerbListDto, HerbDetailModel>();
             containerRegistry.Register<ViewModels.HerbMasterDetailViewModel>();
