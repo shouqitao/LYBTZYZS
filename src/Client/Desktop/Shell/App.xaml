@@ -16,6 +16,7 @@
                     SecondaryColor="Amber" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/Surfaces.xaml" />
+                <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/TcmBrands.xaml" />
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/Icons.xaml" />
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/Spacing.xaml" />
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/DataGridStyles.xaml" />

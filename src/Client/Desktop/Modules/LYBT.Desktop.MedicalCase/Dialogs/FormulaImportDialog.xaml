@@ -163,7 +163,7 @@
                                                     Padding="8,2">
 <TextBlock Text="{Binding HerbCount, StringFormat={}{0}味}"
                                                             FontSize="12"
-                                                            Foreground="#2E8B57" />
+                                                            Foreground="{DynamicResource TcmGreenBrush}" />
                                             </Border>
                                         </Grid>
 

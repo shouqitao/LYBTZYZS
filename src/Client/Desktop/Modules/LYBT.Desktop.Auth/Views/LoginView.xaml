@@ -51,7 +51,7 @@
 
                         <!-- 模式徽章 -->
                         <Border Padding="12,4" HorizontalAlignment="Center" CornerRadius="10" Margin="0,0,0,24"
-                                Background="#DAA520">
+                                Background="{DynamicResource TcmGoldBrush}">
                             <Border.Style>
                                 <Style TargetType="Border">
                                     <Style.Triggers>

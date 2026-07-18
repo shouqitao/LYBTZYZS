@@ -323,7 +323,7 @@
                                       MinHeight="32"
                                       VerticalContentAlignment="Top"/>
                             <TextBlock Grid.Column="1"
-                                       Text="&#x2713;" Foreground="#2E8B57" FontSize="16" FontWeight="Bold" Margin="8,0,0,0" VerticalAlignment="Center"
+                                       Text="&#x2713;" Foreground="{DynamicResource TcmGreenBrush}" FontSize="16" FontWeight="Bold" Margin="8,0,0,0" VerticalAlignment="Center"
                                        Visibility="{Binding Consultation.IsPresentIllnessValid, Converter={x:Static converters:Cvt.BoolToVis}}"/>
                         </Grid>
                     </StackPanel>
@@ -372,7 +372,7 @@
                                      Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                      MinHeight="36"/>
                             <TextBlock Grid.Column="1"
-                                       Text="&#x2713;" Foreground="#2E8B57" FontSize="16" FontWeight="Bold" Margin="8,0,0,0" VerticalAlignment="Center"
+                                       Text="&#x2713;" Foreground="{DynamicResource TcmGreenBrush}" FontSize="16" FontWeight="Bold" Margin="8,0,0,0" VerticalAlignment="Center"
                                        Visibility="{Binding Consultation.IsDiagnosisComplete, Converter={x:Static converters:Cvt.BoolToVis}}"/>
                         </Grid>
                         <TextBlock Text="{Binding Consultation.ValidationMessage}"
@@ -411,7 +411,7 @@
 
                         <!-- 需要处方 -->
                         <Border Grid.Column="0"
-                                Background="#2E8B57" Opacity="0.1"
+                                Background="{DynamicResource TcmGreenBrush}" Opacity="0.1"
                                 CornerRadius="8" Padding="16,12" Margin="0,0,8,0">
                             <StackPanel>
                                 <RadioButton Content="需要处方" GroupName="PrescriptionNeed"
@@ -441,7 +441,7 @@
 
                         <!-- 稍后决定 -->
                         <Border Grid.Column="2"
-                                Background="#DAA520" Opacity="0.1"
+                                Background="{DynamicResource TcmGoldBrush}" Opacity="0.1"
                                 CornerRadius="8" Padding="16,12">
                             <StackPanel>
                                 <RadioButton Content="稍后决定" GroupName="PrescriptionNeed"
@@ -494,7 +494,7 @@
                                 <Run Text="味药材"/>
                             </TextBlock>
                             <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="68,0,0,0" Visibility="{Binding Prescription.HasItems, Converter={x:Static converters:Cvt.BoolToVis}}">
-                                <Run Text="✓" Foreground="#2E8B57" FontSize="14" FontWeight="Bold"/>
+                                <Run Text="✓" Foreground="{DynamicResource TcmGreenBrush}" FontSize="14" FontWeight="Bold"/>
                             </TextBlock>
 
                             <!-- 剂数-->
@@ -520,13 +520,13 @@
                             <!-- 总价-->
                             <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <TextBlock Text="单剂价:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#2E8B57" Margin="0,0,16,0">
+                                <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{DynamicResource TcmGreenBrush}" Margin="0,0,16,0">
                                     <Run Text="¥"/>
                                     <Run Text="{Binding Prescription.SingleDosePrice, StringFormat='{}{0:F2}', Mode=OneWay}"/>
                                 </TextBlock>
                                 
                                 <TextBlock Text="总价:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock VerticalAlignment="Center" FontWeight="Bold" FontSize="14" Foreground="#2E8B57">
+                                <TextBlock VerticalAlignment="Center" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource TcmGreenBrush}">
                                     <Run Text="¥"/>
                                     <Run Text="{Binding Prescription.TotalPrice, StringFormat='{}{0:F2}', Mode=OneWay}"/>
                                 </TextBlock>
@@ -631,12 +631,12 @@
 
                     <!-- 完成提示 -->
                     <TextBlock Margin="0,8,0,0" FontWeight="Medium"
-                               Foreground="#2E8B57"
+                               Foreground="{DynamicResource TcmGreenBrush}"
                                Visibility="{Binding Completeness.CanCompleteCase, Converter={x:Static converters:Cvt.BoolToVis}}">
                         可以完成看诊
                     </TextBlock>
                     <TextBlock Margin="0,8,0,0" FontWeight="Medium"
-                               Foreground="#DAA520"
+                               Foreground="{DynamicResource TcmGoldBrush}"
                                Visibility="{Binding Completeness.CanCompleteCase, Converter={x:Static converters:Cvt.InverseBoolToVis}}">
                         尚未完成所有必填项
                     </TextBlock>

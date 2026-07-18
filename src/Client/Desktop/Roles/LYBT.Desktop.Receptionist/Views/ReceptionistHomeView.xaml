@@ -211,7 +211,7 @@
                             <TextBlock VerticalAlignment="Center"
                                        FontSize="20"
                                        FontWeight="SemiBold"
-                                       Foreground="#DAA520"
+                                       Foreground="{DynamicResource TcmGoldBrush}"
                                        Text="{Binding WaitingCount, FallbackValue=0}" />
                         </StackPanel>
                         
@@ -224,7 +224,7 @@
                             <TextBlock VerticalAlignment="Center"
                                        FontSize="20"
                                        FontWeight="SemiBold"
-                                       Foreground="#2E8B57"
+                                       Foreground="{DynamicResource TcmGreenBrush}"
                                        Text="{Binding CompletedCount, FallbackValue=0}" />
                         </StackPanel>
                     </StackPanel>

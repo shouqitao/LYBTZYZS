@@ -213,7 +213,7 @@
 
                                         <!-- 状态标签 -->
                                         <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                                            <Border Background="#2E8B57"
+                                            <Border Background="{DynamicResource TcmGreenBrush}"
                                                      CornerRadius="3"
                                                      Padding="6,2"
                                                      Visibility="{Binding HasConsultation, Converter={x:Static converters:Cvt.BoolToVis}}">

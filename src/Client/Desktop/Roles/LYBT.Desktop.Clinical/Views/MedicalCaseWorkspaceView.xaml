@@ -198,7 +198,7 @@
                             VerticalAlignment="Center"
                             FontSize="13"
                             FontWeight="Bold"
-                            Foreground="#DAA520"
+                            Foreground="{DynamicResource TcmGoldBrush}"
                             Text="修改原因" />
                         <TextBox
                             Width="200"
@@ -221,7 +221,7 @@
                             Margin="0,0,8,0"
                             Command="{Binding Commands.EnterEditModeCommand}"
                             Content="修改医案"
-                            Style="{StaticResource MaterialDesignRaisedButton}" Background="#2E8B57" Foreground="White" BorderThickness="0"
+                            Style="{StaticResource MaterialDesignRaisedButton}" Background="{DynamicResource TcmGreenBrush}" Foreground="White" BorderThickness="0"
                             ToolTip="进入编辑模式，可修改诊断和处方内容"
                             Visibility="{Binding State.ShowEditButton, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
@@ -230,7 +230,7 @@
                             Margin="0,0,8,0"
                             Command="{Binding Commands.SuspendCommand}"
                             Content="暂存医案"
-                            Style="{StaticResource MaterialDesignRaisedButton}" Background="#DAA520" Foreground="White" BorderThickness="0"
+                            Style="{StaticResource MaterialDesignRaisedButton}" Background="{DynamicResource TcmGoldBrush}" Foreground="White" BorderThickness="0"
                             ToolTip="保存当前进度，稍后点击'修改医案'继续编辑"
                             Visibility="{Binding State.ShowSuspendButton, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
@@ -265,7 +265,7 @@
                             Command="{Binding Commands.CompleteCommand}"
                             Content="完成看诊"
                             IsEnabled="{Binding State.CanComplete}"
-                            Style="{StaticResource MaterialDesignRaisedButton}" Background="#2E8B57" Foreground="White" BorderThickness="0"
+                            Style="{StaticResource MaterialDesignRaisedButton}" Background="{DynamicResource TcmGreenBrush}" Foreground="White" BorderThickness="0"
                             ToolTip="完成本次看诊并关闭医案"
                             Visibility="{Binding State.ShowCompleteButton, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
@@ -273,7 +273,7 @@
                         <Button
                             Command="{Binding SaveChangesCommand}"
                             Content="保存医案"
-                            Style="{StaticResource MaterialDesignRaisedButton}" Background="#2E8B57" Foreground="White" BorderThickness="0"
+                            Style="{StaticResource MaterialDesignRaisedButton}" Background="{DynamicResource TcmGreenBrush}" Foreground="White" BorderThickness="0"
                             ToolTip="保存修改并留在当前界面"
                             Visibility="{Binding State.ShowSaveButton, Converter={x:Static converters:Cvt.BoolToVis}}" />
                     </StackPanel>
@@ -288,7 +288,7 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="暂存医案"
                         Command="{Binding Commands.SuspendCommand}"
-                        Style="{StaticResource MaterialDesignRaisedButton}" Background="#DAA520" Foreground="White" BorderThickness="0"
+                        Style="{StaticResource MaterialDesignRaisedButton}" Background="{DynamicResource TcmGoldBrush}" Foreground="White" BorderThickness="0"
                         Margin="0,0,8,0"
                         Padding="16,8"/>
                 
@@ -308,7 +308,7 @@
                 
                 <Button Content="完成看诊"
                         Command="{Binding Commands.CompleteCommand}"
-                        Style="{StaticResource MaterialDesignRaisedButton}" Background="#2E8B57" Foreground="White" BorderThickness="0"
+                        Style="{StaticResource MaterialDesignRaisedButton}" Background="{DynamicResource TcmGreenBrush}" Foreground="White" BorderThickness="0"
                         IsEnabled="{Binding State.CanComplete}"
                         Padding="16,8"/>
             </StackPanel>

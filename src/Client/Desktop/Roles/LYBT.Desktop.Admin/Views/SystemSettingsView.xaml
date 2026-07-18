@@ -37,7 +37,7 @@
                         Margin="8"
                         Command="{Binding SaveCommand}"
                         Content="保存配置"
-                        Style="{StaticResource MaterialDesignRaisedButton}" Background="#2E8B57" Foreground="White" BorderThickness="0" />
+                        Style="{StaticResource MaterialDesignRaisedButton}" Background="{DynamicResource TcmGreenBrush}" Foreground="White" BorderThickness="0" />
                     <Button
                         Margin="8"
                         Command="{Binding ResetCommand}"

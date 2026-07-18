@@ -268,7 +268,7 @@
                                             Margin="4,0,0,0"
                                             VerticalAlignment="Center"
                                             FontSize="12"
-                                            Foreground="#E65100"
+                                            Foreground="{DynamicResource TcmOrangeBrush}"
                                             Visibility="{Binding DecocteMethod, Converter={x:Static converters:Cvt.DecocteMethodToVis}}">
                                             <TextBlock.Text>
                                                 <Binding Converter="{x:Static converters:Cvt.EnumDesc}" Path="DecocteMethod" />

@@ -60,7 +60,7 @@
                                 <ToggleButton
                                     DockPanel.Dock="Top"
                                     IsChecked="{Binding IsSidebarExpanded}"
-                                    Foreground="White"
+                                    Foreground="{DynamicResource MaterialDesign.Brush.IdealForeground}"
                                     Margin="0,8,0,0">
                                     <ToggleButton.Style>
                                         <Style TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignHamburgerToggleButton}">
@@ -80,9 +80,9 @@
                                             Orientation="Horizontal" Margin="0,8,0,12"
                                             HorizontalAlignment="Center">
                                     <materialDesign:PackIcon Kind="Leaf" Width="24" Height="24"
-                                                             Foreground="White" />
+                                                             Foreground="{DynamicResource MaterialDesign.Brush.IdealForeground}" />
                                     <TextBlock Margin="8,0,0,0" FontSize="14" FontWeight="Bold"
-                                               Foreground="White"
+                                               Foreground="{DynamicResource MaterialDesign.Brush.IdealForeground}"
                                                Text="凌隐宝堂"
                                                Visibility="{Binding DataContext.NavTextVisibility,
                                                            RelativeSource={RelativeSource AncestorType=Window}}" />
@@ -101,7 +101,7 @@
                                     <Button Command="{Binding EditProfileCommand}"
                                             Style="{StaticResource MaterialDesignFlatButton}"
                                             HorizontalAlignment="Center"
-                                            Foreground="White"
+                                            Foreground="{DynamicResource MaterialDesign.Brush.IdealForeground}"
                                             Padding="8,4"
                                             Margin="0,6,0,0"
                                             ToolTip="账户设置">
@@ -118,14 +118,14 @@
                                                   IsChecked="{Binding IsDarkMode, Mode=TwoWay}"
                                                   HorizontalAlignment="Center"
                                                   Margin="0,6,0,0"
-                                                  Foreground="White"
+                                                  Foreground="{DynamicResource MaterialDesign.Brush.IdealForeground}"
                                                   ToolTip="切换深色/浅色主题" />
                                     <Separator Margin="8,4"
                                                Background="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
                                     <Button Command="{Binding LogoutCommand}"
                                             Style="{StaticResource MaterialDesignFlatButton}"
                                             HorizontalAlignment="Center"
-                                            Foreground="White"
+                                            Foreground="{DynamicResource MaterialDesign.Brush.IdealForeground}"
                                             Padding="8,4"
                                             Margin="0,4,0,0">
                                         <StackPanel Orientation="Horizontal">
@@ -160,10 +160,10 @@
                                                             Margin="0,4">
                                                     <materialDesign:PackIcon Kind="{Binding IconKind}"
                                                                              Width="22" Height="22"
-                                                                             Foreground="White"
+                                                                             Foreground="{DynamicResource MaterialDesign.Brush.IdealForeground}"
                                                                              VerticalAlignment="Center" />
                                                     <TextBlock Margin="12,0,0,0" FontSize="14"
-                                                               Foreground="White"
+                                                               Foreground="{DynamicResource MaterialDesign.Brush.IdealForeground}"
                                                                VerticalAlignment="Center"
                                                                Text="{Binding Title}"
                                                                Visibility="{Binding DataContext.NavTextVisibility,

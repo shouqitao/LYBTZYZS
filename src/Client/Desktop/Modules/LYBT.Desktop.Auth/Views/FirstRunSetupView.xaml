@@ -122,7 +122,7 @@
                 Margin="0,2,0,0"
                 Padding="14,10"
                 Background="#FFF8E1"
-                BorderBrush="#E65100"
+                BorderBrush="{DynamicResource TcmOrangeBrush}"
                 BorderThickness="1"
                 CornerRadius="6"
                 Visibility="{Binding ShouldShowFallbackHint, Converter={x:Static converters:Cvt.BoolToVis}}">
@@ -130,7 +130,7 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         FontSize="13"
-                        Foreground="#E65100"
+                        Foreground="{DynamicResource TcmOrangeBrush}"
                         Text="⚠" />
                     <TextBlock
                         Margin="8,0,0,0"

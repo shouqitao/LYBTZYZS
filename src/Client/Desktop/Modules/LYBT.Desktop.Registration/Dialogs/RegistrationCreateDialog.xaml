@@ -108,7 +108,7 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="已选: " FontSize="13" Foreground="#2E8B57" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="0" Text="已选: " FontSize="13" Foreground="{DynamicResource TcmGreenBrush}" VerticalAlignment="Center" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding SelectedPatient.Name, StringFormat={}{0} ({1}), FallbackValue=''}"
                                    FontSize="13"

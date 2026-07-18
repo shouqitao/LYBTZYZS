@@ -197,7 +197,7 @@
                                                 <TextBlock Text="{Binding HerbName}" Style="{DynamicResource HerbTagNameStyle}"/>
                                                 <TextBlock Text="{Binding Dosage, StringFormat={}{0}g}" Style="{DynamicResource HerbTagDosageStyle}"/>
                                                 <!-- 煎法显示（非默认时显示） -->
-                                                <TextBlock Foreground="#E65100"
+                                                <TextBlock Foreground="{DynamicResource TcmOrangeBrush}"
                                                            FontSize="12"
                                                            Margin="4,0,0,0"
                                                            VerticalAlignment="Center"
@@ -342,7 +342,7 @@
                         </TextBlock>
                         <TextBlock Margin="24,0,0,0" VerticalAlignment="Center">
                             <Run Text="总价: "/>
-                            <Run Text="{Binding Prescription.SingleDosePrice, StringFormat='{}{0:F2}元'}" FontWeight="SemiBold" Foreground="#2E8B57"/>
+                            <Run Text="{Binding Prescription.SingleDosePrice, StringFormat='{}{0:F2}元'}" FontWeight="SemiBold" Foreground="{DynamicResource TcmGreenBrush}"/>
                         </TextBlock>
                     </StackPanel>
 

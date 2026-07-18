@@ -1,0 +1,39 @@
+<!--
+    TcmBrands.xaml - 中医品牌色彩系统
+
+    定义 TCM 专用品牌色，用于按钮、状态指示器等需要品牌标识的场景。
+    所有颜色定义为 DynamicResource，支持亮色/暗色主题切换。
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- TCM 品牌绿 (药材/确认/成功) -->
+    <Color x:Key="TcmGreenColor">#2E8B57</Color>
+    <SolidColorBrush x:Key="TcmGreenBrush" Color="{StaticResource TcmGreenColor}" />
+
+    <!-- TCM 品牌金 (处方/警告/重要) -->
+    <Color x:Key="TcmGoldColor">#DAA520</Color>
+    <SolidColorBrush x:Key="TcmGoldBrush" Color="{StaticResource TcmGoldColor}" />
+
+    <!-- TCM 品牌橙 (编辑/进行中) -->
+    <Color x:Key="TcmOrangeColor">#E65100</Color>
+    <SolidColorBrush x:Key="TcmOrangeBrush" Color="{StaticResource TcmOrangeColor}" />
+
+    <!-- 暗色主题覆盖 -->
+    <Style TargetType="Application">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsDarkMode, Source={x:Static Application.Current}}" Value="True">
+                <Setter Property="Resources">
+                    <Setter.Value>
+                        <ResourceDictionary>
+                            <SolidColorBrush x:Key="TcmGreenBrush" Color="#4CAF50" />
+                            <SolidColorBrush x:Key="TcmGoldBrush" Color="#FFD54F" />
+                            <SolidColorBrush x:Key="TcmOrangeBrush" Color="#FF9800" />
+                        </ResourceDictionary>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+</ResourceDictionary>
