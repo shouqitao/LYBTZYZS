@@ -302,32 +302,32 @@ public sealed class HttpClientApiClient : IApiClient,
 
     async Task<ApiResponse<LoginResponse>> IApiClientAuth.LoginAsync(LoginRequest loginRequest)
     {
-        var raw = await PostRawAsync<JsonElement>("/api/auth/login", loginRequest);
+        var raw = await PostRawAsync<JsonElement>("/api/v1/auth/login", loginRequest);
         return WrapSuccess(MapToLoginResponse(raw));
     }
 
     async Task<ApiResponse<LoginResponse>> IApiClientAuth.LoginWithAutoTokenAsync(AutoLoginRequest request)
     {
-        var raw = await PostRawAsync<JsonElement>("/api/auth/auto-login", request);
+        var raw = await PostRawAsync<JsonElement>("/api/v1/auth/auto-login", request);
         return WrapSuccess(MapToLoginResponse(raw));
     }
 
     async Task<ApiResponse> IApiClientAuth.LogoutAsync(LogoutRequest logoutRequest)
     {
-        await PostVoidAsync("/api/auth/logout", logoutRequest);
+        await PostVoidAsync("/api/v1/auth/logout", logoutRequest);
         return WrapSuccess();
     }
 
     async Task<ApiResponse<LoginResponse>> IApiClientAuth.RefreshTokenAsync(RefreshTokenRequest request)
     {
-        var raw = await PostRawAsync<JsonElement>("/api/auth/refresh", request);
+        var raw = await PostRawAsync<JsonElement>("/api/v1/auth/refresh", request);
         return WrapSuccess(MapToLoginResponse(raw));
     }
 
     async Task<ApiResponse<object>> IApiClientAuth.ValidateTokenFromHeaderAsync()
     {
         using var client = CreateClient();
-        var response = await client.GetAsync("/api/auth/validate");
+        var response = await client.GetAsync("/api/v1/auth/validate");
         await EnsureSuccessOrThrowAsync(response);
         var data = await DeserializeAsync<object>(response);
         return WrapSuccess(data!);
@@ -336,7 +336,7 @@ public sealed class HttpClientApiClient : IApiClient,
     async Task<ApiResponse<ValidateTokenResponse>> IApiClientAuth.ValidateTokenAsync(ValidateTokenRequest request)
     {
         using var client = CreateClient();
-        var response = await client.GetAsync("/api/auth/validate");
+        var response = await client.GetAsync("/api/v1/auth/validate");
         await EnsureSuccessOrThrowAsync(response);
         var raw = await DeserializeAsync<JsonElement>(response);
 
@@ -356,7 +356,7 @@ public sealed class HttpClientApiClient : IApiClient,
     async Task<ApiResponse<HealthCheckResponse>> IApiClientAuth.HealthCheckAsync()
     {
         using var client = CreateClient();
-        var response = await client.GetAsync("/api/health");
+        var response = await client.GetAsync("/api/v1/health");
         await EnsureSuccessOrThrowAsync(response);
         var raw = await DeserializeAsync<JsonElement>(response);
 
@@ -376,7 +376,7 @@ public sealed class HttpClientApiClient : IApiClient,
     async Task<ApiResponse<PagedResult<UserListDto>>> IApiClientUsers.GetUsersAsync(
         int page, int pageSize, string? keyword)
     {
-        var url = $"/api/users?page={page}&pageSize={pageSize}";
+        var url = $"/api/v1/users?page={page}&pageSize={pageSize}";
         if (!string.IsNullOrWhiteSpace(keyword))
             url += $"&keyword={Uri.EscapeDataString(keyword)}";
 
@@ -389,43 +389,43 @@ public sealed class HttpClientApiClient : IApiClient,
     }
 
     Task<ApiResponse<UserDetailDto>> IApiClientUsers.GetUserByIdAsync(Guid id)
-        => GetAndWrapAsync<UserDetailDto>($"/api/users/{id}");
+        => GetAndWrapAsync<UserDetailDto>($"/api/v1/users/{id}");
 
     Task<ApiResponse<UserDetailDto>> IApiClientUsers.CreateUserAsync(UserInputDto request)
-        => PostAndWrapAsync<UserDetailDto>("/api/users", request);
+        => PostAndWrapAsync<UserDetailDto>("/api/v1/users", request);
 
     Task<ApiResponse<UserDetailDto>> IApiClientUsers.UpdateUserAsync(Guid id, UserInputDto request)
-        => PutAndWrapAsync<UserDetailDto>($"/api/users/{id}", request);
+        => PutAndWrapAsync<UserDetailDto>($"/api/v1/users/{id}", request);
 
     Task<ApiResponse> IApiClientUsers.DeleteUserAsync(Guid id)
-        => DeleteVoidAsync($"/api/users/{id}");
+        => DeleteVoidAsync($"/api/v1/users/{id}");
 
     Task<ApiResponse<UserDetailDto>> IApiClientUsers.ChangeProfileAsync(Guid id, ChangeProfileDto request)
-        => PutAndWrapAsync<UserDetailDto>($"/api/users/{id}/profile", request);
+        => PutAndWrapAsync<UserDetailDto>($"/api/v1/users/{id}/profile", request);
 
     Task<ApiResponse> IApiClientUsers.ChangePasswordAsync(Guid id, ChangePasswordRequest request)
-        => PutVoidAsync($"/api/users/{id}/change-password", request);
+        => PutVoidAsync($"/api/v1/users/{id}/change-password", request);
 
     Task<ApiResponse<ResetPasswordResponseDto>> IApiClientUsers.ResetPasswordAsync(Guid id, ResetPasswordRequestDto request)
-        => PostAndWrapAsync<ResetPasswordResponseDto>($"/api/users/{id}/reset-password", request);
+        => PostAndWrapAsync<ResetPasswordResponseDto>($"/api/v1/users/{id}/reset-password", request);
 
     Task<ApiResponse<UserDetailDto>> IApiClientUsers.ToggleStatusAsync(Guid id)
-        => PostAndWrapAsync<UserDetailDto>($"/api/users/{id}/toggle-status");
+        => PostAndWrapAsync<UserDetailDto>($"/api/v1/users/{id}/toggle-status");
 
     Task<ApiResponse<BatchOperationResultDto>> IApiClientUsers.BatchDeleteAsync(BatchDeleteInputDto request)
-        => PostAndWrapAsync<BatchOperationResultDto>("/api/users/batch-delete", request);
+        => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/users/batch-delete", request);
 
     Task<ApiResponse<UserDetailDto>> IApiClientUsers.RestoreAsync(Guid id)
-        => PostAndWrapAsync<UserDetailDto>($"/api/users/{id}/restore");
+        => PostAndWrapAsync<UserDetailDto>($"/api/v1/users/{id}/restore");
 
     Task<ApiResponse<BatchOperationResultDto>> IApiClientUsers.BatchEnableAsync(BatchDeleteInputDto request)
-        => PostAndWrapAsync<BatchOperationResultDto>("/api/users/batch-enable", request);
+        => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/users/batch-enable", request);
 
     Task<ApiResponse<BatchOperationResultDto>> IApiClientUsers.BatchDisableAsync(BatchDeleteInputDto request)
-        => PostAndWrapAsync<BatchOperationResultDto>("/api/users/batch-disable", request);
+        => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/users/batch-disable", request);
 
     Task<UserDetailDto> IApiClientUsers.GetCurrentUserAsync()
-        => GetRawAsync<UserDetailDto>("/api/users/current");
+        => GetRawAsync<UserDetailDto>("/api/v1/users/current");
 
     // ========================================================================
     // IApiClientPatients — Patient management endpoints (explicit implementation)
@@ -434,7 +434,7 @@ public sealed class HttpClientApiClient : IApiClient,
     async Task<ApiResponse<PagedResult<PatientListDto>>> IApiClientPatients.GetPatientsAsync(
         int page, int pageSize, string? keyword)
     {
-        var url = $"/api/patients?page={page}&pageSize={pageSize}";
+        var url = $"/api/v1/patients?page={page}&pageSize={pageSize}";
         if (!string.IsNullOrWhiteSpace(keyword))
             url += $"&keyword={Uri.EscapeDataString(keyword)}";
 
@@ -447,39 +447,39 @@ public sealed class HttpClientApiClient : IApiClient,
     }
 
     Task<ApiResponse<PatientDetailDto>> IApiClientPatients.GetPatientByIdAsync(Guid id)
-        => GetAndWrapAsync<PatientDetailDto>($"/api/patients/{id}");
+        => GetAndWrapAsync<PatientDetailDto>($"/api/v1/patients/{id}");
 
     Task<ApiResponse<PatientDetailDto>> IApiClientPatients.CreatePatientAsync(PatientInputDto request)
-        => PostAndWrapAsync<PatientDetailDto>("/api/patients", request);
+        => PostAndWrapAsync<PatientDetailDto>("/api/v1/patients", request);
 
     Task<ApiResponse<PatientDetailDto>> IApiClientPatients.UpdatePatientAsync(Guid id, PatientInputDto request)
-        => PutAndWrapAsync<PatientDetailDto>($"/api/patients/{id}", request);
+        => PutAndWrapAsync<PatientDetailDto>($"/api/v1/patients/{id}", request);
 
     Task<ApiResponse> IApiClientPatients.DeletePatientAsync(Guid id)
-        => DeleteVoidAsync($"/api/patients/{id}");
+        => DeleteVoidAsync($"/api/v1/patients/{id}");
 
     Task<ApiResponse<PatientBatchImportResultDto>> IApiClientPatients.BatchImportAsync(PatientBatchImportInputDto request)
-        => PostAndWrapAsync<PatientBatchImportResultDto>("/api/patients/import", request);
+        => PostAndWrapAsync<PatientBatchImportResultDto>("/api/v1/patients/import", request);
 
     Task<HttpResponseMessage> IApiClientPatients.ExportTemplateAsync()
-        => GetResponseAsync("/api/patients/import-template");
+        => GetResponseAsync("/api/v1/patients/import-template");
 
     async Task<HttpResponseMessage> IApiClientPatients.ExportPatientsAsync(string? keyword)
     {
-        var url = "/api/patients/export";
+        var url = "/api/v1/patients/export";
         if (!string.IsNullOrWhiteSpace(keyword))
             url += $"?keyword={Uri.EscapeDataString(keyword)}";
         return await GetResponseAsync(url);
     }
 
     Task<ApiResponse<BatchOperationResultDto>> IApiClientPatients.BatchDeleteAsync(BatchDeleteInputDto request)
-        => PostAndWrapAsync<BatchOperationResultDto>("/api/patients/batch-delete", request);
+        => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/patients/batch-delete", request);
 
     Task<ApiResponse<PatientDetailDto>> IApiClientPatients.ToggleStatusAsync(Guid id)
-        => PostAndWrapAsync<PatientDetailDto>($"/api/patients/{id}/toggle-status");
+        => PostAndWrapAsync<PatientDetailDto>($"/api/v1/patients/{id}/toggle-status");
 
     Task<ApiResponse<PatientDetailDto>> IApiClientPatients.RestoreAsync(Guid id)
-        => PostAndWrapAsync<PatientDetailDto>($"/api/patients/{id}/restore");
+        => PostAndWrapAsync<PatientDetailDto>($"/api/v1/patients/{id}/restore");
 
     // ========================================================================
     // IApiClientHerbs — Herb management endpoints (explicit implementation)
@@ -488,7 +488,7 @@ public sealed class HttpClientApiClient : IApiClient,
     async Task<ApiResponse<PagedResult<HerbListDto>>> IApiClientHerbs.GetHerbsAsync(
         int page, int pageSize, string? keyword, string? category)
     {
-        var url = $"/api/herbs?page={page}&pageSize={pageSize}";
+        var url = $"/api/v1/herbs?page={page}&pageSize={pageSize}";
         if (!string.IsNullOrWhiteSpace(keyword))
             url += $"&keyword={Uri.EscapeDataString(keyword)}";
         if (!string.IsNullOrWhiteSpace(category))
@@ -503,42 +503,42 @@ public sealed class HttpClientApiClient : IApiClient,
     }
 
     Task<ApiResponse<HerbDetailDto>> IApiClientHerbs.GetHerbByIdAsync(Guid id)
-        => GetAndWrapAsync<HerbDetailDto>($"/api/herbs/{id}");
+        => GetAndWrapAsync<HerbDetailDto>($"/api/v1/herbs/{id}");
 
     Task<ApiResponse<HerbDetailDto>> IApiClientHerbs.CreateHerbAsync(HerbInputDto request)
-        => PostAndWrapAsync<HerbDetailDto>("/api/herbs", request);
+        => PostAndWrapAsync<HerbDetailDto>("/api/v1/herbs", request);
 
     Task<ApiResponse<HerbDetailDto>> IApiClientHerbs.UpdateHerbAsync(Guid id, HerbInputDto request)
-        => PutAndWrapAsync<HerbDetailDto>($"/api/herbs/{id}", request);
+        => PutAndWrapAsync<HerbDetailDto>($"/api/v1/herbs/{id}", request);
 
     Task<ApiResponse> IApiClientHerbs.DeleteHerbAsync(Guid id)
-        => DeleteVoidAsync($"/api/herbs/{id}");
+        => DeleteVoidAsync($"/api/v1/herbs/{id}");
 
     Task<ApiResponse<HerbBatchImportResultDto>> IApiClientHerbs.BatchImportAsync(HerbBatchImportInputDto request)
-        => PostAndWrapAsync<HerbBatchImportResultDto>("/api/herbs/batch-import", request);
+        => PostAndWrapAsync<HerbBatchImportResultDto>("/api/v1/herbs/batch-import", request);
 
     Task<HttpResponseMessage> IApiClientHerbs.ExportTemplateAsync()
-        => GetResponseAsync("/api/herbs/import-template");
+        => GetResponseAsync("/api/v1/herbs/import-template");
 
     async Task<HttpResponseMessage> IApiClientHerbs.ExportHerbsAsync(string? keyword)
     {
-        var url = "/api/herbs/export";
+        var url = "/api/v1/herbs/export";
         if (!string.IsNullOrWhiteSpace(keyword))
             url += $"?keyword={Uri.EscapeDataString(keyword)}";
         return await GetResponseAsync(url);
     }
 
     Task<ApiResponse<HerbDetailDto>> IApiClientHerbs.ToggleStatusAsync(Guid id)
-        => PostAndWrapAsync<HerbDetailDto>($"/api/herbs/{id}/toggle-status");
+        => PostAndWrapAsync<HerbDetailDto>($"/api/v1/herbs/{id}/toggle-status");
 
     Task<ApiResponse<BatchOperationResultDto>> IApiClientHerbs.BatchDeleteAsync(BatchDeleteInputDto request)
-        => PostAndWrapAsync<BatchOperationResultDto>("/api/herbs/batch-delete", request);
+        => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/herbs/batch-delete", request);
 
     Task<ApiResponse<HerbDetailDto>> IApiClientHerbs.RestoreAsync(Guid id)
-        => PostAndWrapAsync<HerbDetailDto>($"/api/herbs/{id}/restore");
+        => PostAndWrapAsync<HerbDetailDto>($"/api/v1/herbs/{id}/restore");
 
     Task<List<string>> IApiClientHerbs.GetCategoriesAsync()
-        => GetRawAsync<List<string>>("/api/herbs/categories");
+        => GetRawAsync<List<string>>("/api/v1/herbs/categories");
 
     // ========================================================================
     // IApiClientFormulas — Formula management endpoints (explicit implementation)
@@ -547,7 +547,7 @@ public sealed class HttpClientApiClient : IApiClient,
     async Task<ApiResponse<PagedResult<FormulaListDto>>> IApiClientFormulas.GetFormulasAsync(
         int page, int pageSize, string? keyword, string? category)
     {
-        var url = $"/api/formulas?page={page}&pageSize={pageSize}";
+        var url = $"/api/v1/formulas?page={page}&pageSize={pageSize}";
         if (!string.IsNullOrWhiteSpace(keyword))
             url += $"&keyword={Uri.EscapeDataString(keyword)}";
         if (!string.IsNullOrWhiteSpace(category))
@@ -562,52 +562,52 @@ public sealed class HttpClientApiClient : IApiClient,
     }
 
     Task<ApiResponse<FormulaDetailDto>> IApiClientFormulas.GetFormulaByIdAsync(Guid id)
-        => GetAndWrapAsync<FormulaDetailDto>($"/api/formulas/{id}");
+        => GetAndWrapAsync<FormulaDetailDto>($"/api/v1/formulas/{id}");
 
     Task<ApiResponse<FormulaDetailDto>> IApiClientFormulas.CreateFormulaAsync(FormulaInputDto request)
-        => PostAndWrapAsync<FormulaDetailDto>("/api/formulas", request);
+        => PostAndWrapAsync<FormulaDetailDto>("/api/v1/formulas", request);
 
     Task<ApiResponse<FormulaDetailDto>> IApiClientFormulas.UpdateFormulaAsync(Guid id, FormulaInputDto request)
-        => PutAndWrapAsync<FormulaDetailDto>($"/api/formulas/{id}", request);
+        => PutAndWrapAsync<FormulaDetailDto>($"/api/v1/formulas/{id}", request);
 
     Task<ApiResponse> IApiClientFormulas.DeleteFormulaAsync(Guid id)
-        => DeleteVoidAsync($"/api/formulas/{id}");
+        => DeleteVoidAsync($"/api/v1/formulas/{id}");
 
     Task<ApiResponse<FormulaDetailDto>> IApiClientFormulas.CloneFormulaAsync(Guid id)
-        => PostAndWrapAsync<FormulaDetailDto>($"/api/formulas/{id}/clone");
+        => PostAndWrapAsync<FormulaDetailDto>($"/api/v1/formulas/{id}/clone");
 
     Task<ApiResponse<FormulaDetailDto>> IApiClientFormulas.ToggleStatusAsync(Guid id)
-        => PostAndWrapAsync<FormulaDetailDto>($"/api/formulas/{id}/toggle-status");
+        => PostAndWrapAsync<FormulaDetailDto>($"/api/v1/formulas/{id}/toggle-status");
 
     Task<ApiResponse<BatchOperationResultDto>> IApiClientFormulas.BatchDeleteAsync(BatchDeleteInputDto request)
-        => PostAndWrapAsync<BatchOperationResultDto>("/api/formulas/batch-delete", request);
+        => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/formulas/batch-delete", request);
 
     Task<ApiResponse<FormulaBatchImportResultDto>> IApiClientFormulas.BatchImportAsync(FormulaBatchImportInputDto request)
-        => PostAndWrapAsync<FormulaBatchImportResultDto>("/api/formulas/batch-import", request);
+        => PostAndWrapAsync<FormulaBatchImportResultDto>("/api/v1/formulas/batch-import", request);
 
     async Task<HttpResponseMessage> IApiClientFormulas.ExportFormulasAsync(string? category)
     {
-        var url = "/api/formulas/export";
+        var url = "/api/v1/formulas/export";
         if (!string.IsNullOrWhiteSpace(category))
             url += $"?category={Uri.EscapeDataString(category)}";
         return await GetResponseAsync(url);
     }
 
     Task<HttpResponseMessage> IApiClientFormulas.ExportTemplateAsync()
-        => GetResponseAsync("/api/formulas/import-template");
+        => GetResponseAsync("/api/v1/formulas/import-template");
 
     Task<ApiResponse<FormulaDetailDto>> IApiClientFormulas.RestoreAsync(Guid id)
-        => PostAndWrapAsync<FormulaDetailDto>($"/api/formulas/{id}/restore");
+        => PostAndWrapAsync<FormulaDetailDto>($"/api/v1/formulas/{id}/restore");
 
     Task<ApiResponse<List<FormulaListDto>>> IApiClientFormulas.GetPendingValidationAsync()
-        => GetAndWrapAsync<List<FormulaListDto>>("/api/formulas/pending-validation");
+        => GetAndWrapAsync<List<FormulaListDto>>("/api/v1/formulas/pending-validation");
 
     Task<ApiResponse<FormulaHerbItemDto>> IApiClientFormulas.ValidateHerbAsync(
         Guid formulaId, Guid herbItemId, ValidateFormulaHerbInputDto request)
-        => PostAndWrapAsync<FormulaHerbItemDto>($"/api/formulas/{formulaId}/herbs/{herbItemId}/validate", request);
+        => PostAndWrapAsync<FormulaHerbItemDto>($"/api/v1/formulas/{formulaId}/herbs/{herbItemId}/validate", request);
 
     Task<List<string>> IApiClientFormulas.GetCategoriesAsync()
-        => GetRawAsync<List<string>>("/api/formulas/categories");
+        => GetRawAsync<List<string>>("/api/v1/formulas/categories");
 
     // ========================================================================
     // IApiClientMedicalCases — Medical case endpoints (explicit implementation)
@@ -616,7 +616,7 @@ public sealed class HttpClientApiClient : IApiClient,
     async Task<ApiResponse<PagedResult<MedicalCaseListDto>>> IApiClientMedicalCases.GetMedicalCasesAsync(
         int page, int pageSize, string? keyword, bool includeAllDoctors)
     {
-        var url = $"/api/medicalcases?page={page}&pageSize={pageSize}&includeAllDoctors={includeAllDoctors.ToString().ToLower()}";
+        var url = $"/api/v1/medicalcases?page={page}&pageSize={pageSize}&includeAllDoctors={includeAllDoctors.ToString().ToLower()}";
         if (!string.IsNullOrWhiteSpace(keyword))
             url += $"&keyword={Uri.EscapeDataString(keyword)}";
         return await GetAndWrapAsync<PagedResult<MedicalCaseListDto>>(url);
@@ -626,7 +626,7 @@ public sealed class HttpClientApiClient : IApiClient,
         MedicalCaseQueryType queryType, Guid? patientId, Guid? doctorId, string? keyword,
         int pageIndex, int pageSize, bool includeAllDoctors, int? limit)
     {
-        var url = $"/api/medicalcases/query?queryType={queryType}&pageIndex={pageIndex}&pageSize={pageSize}&includeAllDoctors={includeAllDoctors.ToString().ToLower()}";
+        var url = $"/api/v1/medicalcases/query?queryType={queryType}&pageIndex={pageIndex}&pageSize={pageSize}&includeAllDoctors={includeAllDoctors.ToString().ToLower()}";
         if (patientId.HasValue) url += $"&patientId={patientId.Value}";
         if (doctorId.HasValue) url += $"&doctorId={doctorId.Value}";
         if (!string.IsNullOrWhiteSpace(keyword)) url += $"&keyword={Uri.EscapeDataString(keyword)}";
@@ -635,11 +635,11 @@ public sealed class HttpClientApiClient : IApiClient,
     }
 
     Task<ApiResponse<MedicalCaseDetailDto>> IApiClientMedicalCases.GetMedicalCaseByIdAsync(Guid id)
-        => GetAndWrapAsync<MedicalCaseDetailDto>($"/api/medicalcases/{id}");
+        => GetAndWrapAsync<MedicalCaseDetailDto>($"/api/v1/medicalcases/{id}");
 
     async Task<ApiResponse<List<PendingMedicalCaseDto>>> IApiClientMedicalCases.GetPendingCasesAsync(Guid? patientId)
     {
-        var url = "/api/medicalcases/pending";
+        var url = "/api/v1/medicalcases/pending";
         if (patientId.HasValue) url += $"?patientId={patientId.Value}";
         return await GetAndWrapAsync<List<PendingMedicalCaseDto>>(url);
     }
@@ -647,7 +647,7 @@ public sealed class HttpClientApiClient : IApiClient,
     async Task<ApiResponse<PagedResult<MedicalCaseDetailDto>>> IApiClientMedicalCases.SearchMedicalCasesAsync(
         string? patientName, string? diagnosisKeyword, DateTime? startDate, DateTime? endDate, int page, int pageSize)
     {
-        var url = $"/api/medicalcases/search?page={page}&pageSize={pageSize}";
+        var url = $"/api/v1/medicalcases/search?page={page}&pageSize={pageSize}";
         if (!string.IsNullOrWhiteSpace(patientName)) url += $"&patientName={Uri.EscapeDataString(patientName)}";
         if (!string.IsNullOrWhiteSpace(diagnosisKeyword)) url += $"&diagnosisKeyword={Uri.EscapeDataString(diagnosisKeyword)}";
         if (startDate.HasValue) url += $"&startDate={startDate.Value:O}";
@@ -656,59 +656,59 @@ public sealed class HttpClientApiClient : IApiClient,
     }
 
     Task<ApiResponse<MedicalCaseDetailDto>> IApiClientMedicalCases.CreateMedicalCaseAsync(MedicalCaseInputDto request)
-        => PostAndWrapAsync<MedicalCaseDetailDto>("/api/medicalcases", request);
+        => PostAndWrapAsync<MedicalCaseDetailDto>("/api/v1/medicalcases", request);
 
     Task<ApiResponse> IApiClientMedicalCases.DeleteMedicalCaseAsync(Guid id)
-        => DeleteVoidAsync($"/api/medicalcases/{id}");
+        => DeleteVoidAsync($"/api/v1/medicalcases/{id}");
 
     Task<ApiResponse<MedicalCaseDetailDto>> IApiClientMedicalCases.SetPrescriptionFlagAsync(Guid medicalCaseId, SetPrescriptionFlagRequest request)
-        => PutAndWrapAsync<MedicalCaseDetailDto>($"/api/medicalcases/{medicalCaseId}/prescription-flag", request);
+        => PutAndWrapAsync<MedicalCaseDetailDto>($"/api/v1/medicalcases/{medicalCaseId}/prescription-flag", request);
 
     Task<ApiResponse<MedicalCaseDetailDto>> IApiClientMedicalCases.CloseCaseAsync(Guid id)
-        => PutAndWrapAsync<MedicalCaseDetailDto>($"/api/medicalcases/{id}/close");
+        => PutAndWrapAsync<MedicalCaseDetailDto>($"/api/v1/medicalcases/{id}/close");
 
     Task<ApiResponse<MedicalCaseDetailDto>> IApiClientMedicalCases.SuspendAsync(Guid id, ConsultationInputDto? request)
-        => PutAndWrapAsync<MedicalCaseDetailDto>($"/api/medicalcases/{id}/suspend", request);
+        => PutAndWrapAsync<MedicalCaseDetailDto>($"/api/v1/medicalcases/{id}/suspend", request);
 
     async Task<ApiResponse> IApiClientMedicalCases.CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequestDto? request)
     {
-        await PutVoidAsync($"/api/medicalcases/{id}/cancel", request);
+        await PutVoidAsync($"/api/v1/medicalcases/{id}/cancel", request);
         return WrapSuccess();
     }
 
     Task<ApiResponse<MedicalCaseDetailDto>> IApiClientMedicalCases.UpdateStatusAsync(Guid id, MedicalCaseStatusInputDto request)
-        => PutAndWrapAsync<MedicalCaseDetailDto>($"/api/medicalcases/{id}/status", request);
+        => PutAndWrapAsync<MedicalCaseDetailDto>($"/api/v1/medicalcases/{id}/status", request);
 
     Task<ApiResponse<MedicalCaseDetailDto>> IApiClientMedicalCases.SaveAsync(Guid id, MedicalCaseInputDto request)
-        => PutAndWrapAsync<MedicalCaseDetailDto>($"/api/medicalcases/{id}", request);
+        => PutAndWrapAsync<MedicalCaseDetailDto>($"/api/v1/medicalcases/{id}", request);
 
     Task<ApiResponse<BatchOperationResultDto>> IApiClientMedicalCases.BatchDeleteAsync(BatchDeleteInputDto request)
-        => PostAndWrapAsync<BatchOperationResultDto>("/api/medicalcases/batch-delete", request);
+        => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/medicalcases/batch-delete", request);
 
     Task<ApiResponse<MedicalCasePermissionsDto>> IApiClientMedicalCases.GetPermissionsAsync(Guid id)
-        => GetAndWrapAsync<MedicalCasePermissionsDto>($"/api/medicalcases/{id}/permissions");
+        => GetAndWrapAsync<MedicalCasePermissionsDto>($"/api/v1/medicalcases/{id}/permissions");
 
     Task<ApiResponse<MedicalCaseDetailDto>> IApiClientMedicalCases.RecordPrintAsync(Guid id, RecordPrintRequest request)
-        => PutAndWrapAsync<MedicalCaseDetailDto>($"/api/medicalcases/{id}/print-completed", request);
+        => PutAndWrapAsync<MedicalCaseDetailDto>($"/api/v1/medicalcases/{id}/print-completed", request);
 
     Task<ApiResponse<PagedResult<AuditLogDto>>> IApiClientMedicalCases.GetAuditLogsAsync(Guid id, int page, int pageSize)
-        => GetAndWrapAsync<PagedResult<AuditLogDto>>($"/api/medicalcases/{id}/audit-logs?page={page}&pageSize={pageSize}");
+        => GetAndWrapAsync<PagedResult<AuditLogDto>>($"/api/v1/medicalcases/{id}/audit-logs?page={page}&pageSize={pageSize}");
 
     // ========================================================================
     // IApiClientRegistrations — Registration endpoints (explicit implementation)
     // ========================================================================
 
     Task<ApiResponse<RegistrationDetailDto>> IApiClientRegistrations.CreateAsync(RegistrationInputDto request)
-        => PostAndWrapAsync<RegistrationDetailDto>("/api/registrations", request);
+        => PostAndWrapAsync<RegistrationDetailDto>("/api/v1/registrations", request);
 
     Task<ApiResponse<RegistrationDetailDto>> IApiClientRegistrations.GetByIdAsync(Guid id)
-        => GetAndWrapAsync<RegistrationDetailDto>($"/api/registrations/{id}");
+        => GetAndWrapAsync<RegistrationDetailDto>($"/api/v1/registrations/{id}");
 
     async Task<ApiResponse<PagedResult<RegistrationListDto>>> IApiClientRegistrations.GetListAsync(
         int page, int pageSize, string? keyword, DateTime? startDate, DateTime? endDate,
         Guid? patientId, Guid? doctorId)
     {
-        var url = $"/api/registrations?page={page}&pageSize={pageSize}";
+        var url = $"/api/v1/registrations?page={page}&pageSize={pageSize}";
         if (!string.IsNullOrWhiteSpace(keyword)) url += $"&keyword={Uri.EscapeDataString(keyword)}";
         if (startDate.HasValue) url += $"&startDate={startDate.Value:O}";
         if (endDate.HasValue) url += $"&endDate={endDate.Value:O}";
@@ -725,7 +725,7 @@ public sealed class HttpClientApiClient : IApiClient,
 
     async Task<ApiResponse<List<RegistrationListDto>>> IApiClientRegistrations.GetQueueAsync(Guid? doctorId)
     {
-        var url = "/api/registrations/queue";
+        var url = "/api/v1/registrations/queue";
         if (doctorId.HasValue) url += $"?doctorId={doctorId.Value}";
         return await GetAndWrapAsync<List<RegistrationListDto>>(url);
     }
@@ -733,7 +733,7 @@ public sealed class HttpClientApiClient : IApiClient,
     async Task<ApiResponse<Guid>> IApiClientRegistrations.StartVisitAsync(Guid id)
     {
         using var client = CreateClient();
-        var response = await client.PutAsync($"/api/registrations/{id}/start-visit", null);
+        var response = await client.PutAsync($"/api/v1/registrations/{id}/start-visit", null);
         await EnsureSuccessOrThrowAsync(response);
         var result = await DeserializeAsync<Guid>(response);
         return WrapSuccess(result);
@@ -741,24 +741,24 @@ public sealed class HttpClientApiClient : IApiClient,
 
     async Task<ApiResponse> IApiClientRegistrations.CancelAsync(Guid id)
     {
-        await PutVoidAsync($"/api/registrations/{id}/cancel");
+        await PutVoidAsync($"/api/v1/registrations/{id}/cancel");
         return WrapSuccess();
     }
 
     async Task<List<RegistrationListDto>> IApiClientRegistrations.GetRegistrationsAsync(DateTime? date)
     {
-        var url = "/api/registrations";
+        var url = "/api/v1/registrations";
         if (date.HasValue) url += $"?date={date.Value:O}";
         return await GetRawAsync<List<RegistrationListDto>>(url);
     }
 
     Task<QuickVisitResultDto> IApiClientRegistrations.QuickVisitAsync(QuickVisitInputDto request)
-        => PostRawAsync<QuickVisitResultDto>("/api/registrations/quick-visit", request);
+        => PostRawAsync<QuickVisitResultDto>("/api/v1/registrations/quick-visit", request);
 
     async Task IApiClientRegistrations.DeleteRegistrationAsync(Guid id)
     {
         using var client = CreateClient();
-        var response = await client.DeleteAsync($"/api/registrations/{id}");
+        var response = await client.DeleteAsync($"/api/v1/registrations/{id}");
         await EnsureSuccessOrThrowAsync(response);
     }
 
@@ -767,11 +767,11 @@ public sealed class HttpClientApiClient : IApiClient,
     // ========================================================================
 
     Task<ApiResponse<DailyIncomeDto>> IApiClientReports.GetDailyIncomeAsync(DateTime? startDate, DateTime? endDate)
-        => GetAndWrapAsync<DailyIncomeDto>($"/api/v1/reports/daily/income?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
+        => GetAndWrapAsync<DailyIncomeDto>($"/api/v1/v1/reports/daily/income?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
 
     Task<ApiResponse<DailyConsultationDto>> IApiClientReports.GetDailyConsultationsAsync(DateTime? startDate, DateTime? endDate)
-        => GetAndWrapAsync<DailyConsultationDto>($"/api/v1/reports/daily/consultations?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
+        => GetAndWrapAsync<DailyConsultationDto>($"/api/v1/v1/reports/daily/consultations?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
 
     Task<ApiResponse<DailyHerbUsageDto>> IApiClientReports.GetDailyHerbUsageAsync(DateTime? startDate, DateTime? endDate)
-        => GetAndWrapAsync<DailyHerbUsageDto>($"/api/v1/reports/daily/herbs?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
+        => GetAndWrapAsync<DailyHerbUsageDto>($"/api/v1/v1/reports/daily/herbs?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
 }

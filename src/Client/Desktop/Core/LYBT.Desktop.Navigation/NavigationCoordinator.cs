@@ -126,14 +126,14 @@ public class NavigationCoordinator : INavigationCoordinator
             _logger.LogInformation("导航到 {ViewName}", viewName);
             var navParams = ConvertToNavigationParameters(parameters);
 
-                        var tcs = new TaskCompletionSource<bool>();
-            var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(NavigationTimeoutSeconds));
-            timeoutCts.Token.Register(() => tcs.TrySetResult(false));
+            var tcs = new TaskCompletionSource<bool>();
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(NavigationTimeoutSeconds));
+            using var timeoutRegistration = timeoutCts.Token.Register(() => tcs.TrySetResult(false));
 
             _regionManager.RequestNavigate(RegionNames.ContentRegion, viewName, result =>
             {
                 tcs.TrySetResult(result.Result == true);
-            
+
                 if (result.Result == true)
                 {
                     _historyService.RecordNavigation(fromView, viewName);
@@ -150,10 +150,18 @@ public class NavigationCoordinator : INavigationCoordinator
 
             _ = Task.Run(async () =>
             {
-                if (!await tcs.Task)
+                try
                 {
-                    _logger.LogWarning("导航超时: {ViewName} ({TimeoutSeconds}s)", viewName, NavigationTimeoutSeconds);
-                    _userNotificationService?.ShowWarningAsync($"页面加载超时：{viewName}");
+                    if (!await tcs.Task)
+                    {
+                        _logger.LogWarning("导航超时: {ViewName} ({TimeoutSeconds}s)", viewName, NavigationTimeoutSeconds);
+                        _userNotificationService?.ShowWarningAsync($"页面加载超时：{viewName}");
+                    }
+                }
+                finally
+                {
+                    timeoutCts.Dispose();
+                    timeoutRegistration.Dispose();
                 }
             });
         }
