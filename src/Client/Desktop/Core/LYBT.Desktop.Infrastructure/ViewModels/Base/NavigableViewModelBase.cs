@@ -318,27 +318,30 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
         /// 显示成功消息
         /// Phase 2.2: 使用ToastService替代CommonDialogService（非阻塞通知）
         /// </summary>
-        protected virtual async Task ShowSuccessMessageAsync(string message)
+        protected virtual Task ShowSuccessMessageAsync(string message)
         {
-            await Task.Run(() => ToastService.ShowSuccess(message));
+            ToastService.ShowSuccess(message);
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// 显示错误消息
         /// Phase 2.2: 使用ToastService替代CommonDialogService（非阻塞通知）
         /// </summary>
-        protected virtual async Task ShowErrorMessageAsync(string message)
+        protected virtual Task ShowErrorMessageAsync(string message)
         {
-            await Task.Run(() => ToastService.ShowError(message));
+            ToastService.ShowError(message);
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// 显示警告消息
         /// Phase 2.2: 使用ToastService替代CommonDialogService（非阻塞通知）
         /// </summary>
-        protected virtual async Task ShowWarningMessageAsync(string message)
+        protected virtual Task ShowWarningMessageAsync(string message)
         {
-            await Task.Run(() => ToastService.ShowWarning(message));
+            ToastService.ShowWarning(message);
+            return Task.CompletedTask;
         }
 
         /// <summary>

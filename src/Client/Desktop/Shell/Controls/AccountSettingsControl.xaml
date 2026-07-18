@@ -80,13 +80,13 @@
                     <RadioButton
                         Content="个人资料"
                         GroupName="ProfileNav"
-                        IsChecked="{Binding IsProfileSelected}"
+                        IsChecked="{Binding IsProfileSelected, Mode=TwoWay}"
                         Style="{StaticResource MaterialDesignTabRadioButton}"
                         Padding="12,10" Margin="0,2" />
                     <RadioButton
                         Content="安全设置"
                         GroupName="ProfileNav"
-                        IsChecked="{Binding IsPasswordSelected}"
+                        IsChecked="{Binding IsPasswordSelected, Mode=TwoWay}"
                         Style="{StaticResource MaterialDesignTabRadioButton}"
                         Padding="12,10" Margin="0,2" />
                 </StackPanel>
