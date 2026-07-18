@@ -4,6 +4,7 @@ using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.Extensions.Logging;
@@ -124,7 +125,7 @@ public partial class AccountSettingsViewModel : CoreViewModelBase, INavigationAw
         catch (Exception ex)
         {
             Logger.LogError(ex, "保存个人资料失败");
-            Services.ToastService.ShowError($"保存失败: {ex.Message}");
+            Services.ToastService.ShowError(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存个人资料", ex));
         }
         finally
         {
@@ -201,7 +202,7 @@ public partial class AccountSettingsViewModel : CoreViewModelBase, INavigationAw
         catch (Exception ex)
         {
             Logger.LogError(ex, "修改密码失败");
-            Services.ToastService.ShowError($"修改失败: {ex.Message}");
+            Services.ToastService.ShowError(ClientErrorMessageMapper.GetSafeOperationFailureMessage("修改密码", ex));
         }
         finally
         {

@@ -63,7 +63,7 @@ public class NavigationCoordinator : INavigationCoordinator
                 var activeView = region?.ActiveViews.FirstOrDefault();
                 return activeView?.GetType().Name;
             }
-            catch { return null; }
+            catch (Exception ex) { _logger.LogDebug(ex, "获取当前视图名称失败"); return null; }
         }
     }
 
@@ -77,7 +77,7 @@ public class NavigationCoordinator : INavigationCoordinator
                 var region = _regionManager.Regions[RegionNames.ContentRegion];
                 return region?.NavigationService?.Journal?.CanGoBack ?? false;
             }
-            catch { return false; }
+            catch (Exception ex) { _logger.LogDebug(ex, "检查导航后退状态失败"); return false; }
         }
     }
 
@@ -91,7 +91,7 @@ public class NavigationCoordinator : INavigationCoordinator
                 var region = _regionManager.Regions[RegionNames.ContentRegion];
                 return region?.NavigationService?.Journal?.CanGoForward ?? false;
             }
-            catch { return false; }
+            catch (Exception ex) { _logger.LogDebug(ex, "检查导航前进状态失败"); return false; }
         }
     }
 
