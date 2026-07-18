@@ -212,32 +212,24 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         private void SubscribeToServiceEvents()
         {
-            // Loading状态变更
             _masterDetailServices.Loading.PropertyChanged += OnLoadingPropertyChanged;
-
-            // Pagination变更
             _masterDetailServices.Pagination.PropertyChanged += OnPaginationPropertyChanged;
-
             _masterDetailServices.Pagination.PageChanged += OnPaginationPageChanged;
-
-            // Search变更
-            _masterDetailServices.Search.PropertyChanged += OnSearchPropertyChanged;
-
-            // Selection变更
+            _masterDetailServices.Search.PropertyChanged += ForwardPropertyChanged;
             _masterDetailServices.Selection.PropertyChanged += OnSelectionPropertyChanged;
-
             _masterDetailServices.Selection.SelectionChanged += OnSelectionSelectionChanged;
-
-            // DetailEditor变更
             _masterDetailServices.DetailEditor.PropertyChanged += OnDetailEditorPropertyChanged;
-
-            // Error变更
             _masterDetailServices.ErrorHandler.PropertyChanged += OnErrorHandlerPropertyChanged;
         }
 
+        /// <summary>
+        /// 通用属性转发 - 将子服务的 PropertyChanged 直接转发到基类
+        /// </summary>
+        private void ForwardPropertyChanged(object? sender, PropertyChangedEventArgs e)
+            => OnPropertyChanged(e.PropertyName);
+
         private void OnLoadingPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            // IsLoading/IsBusy 继承自基类，需要从子服务同步
             if (e.PropertyName == nameof(ILoadingStateManager.IsLoading))
             {
                 IsLoading = _masterDetailServices.Loading.IsLoading;
@@ -249,7 +241,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             }
             else
             {
-                // 转发其他属性 (BusyMessage 等)
                 OnPropertyChanged(e.PropertyName);
             }
         }
@@ -257,7 +248,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         private void OnPaginationPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             OnPropertyChanged(e.PropertyName);
-            // 分页状态变化时刷新分页命令的CanExecute状态
             if (e.PropertyName is nameof(IPaginationService.CurrentPage)
                 or nameof(IPaginationService.TotalPages)
                 or nameof(IPaginationService.TotalCount)
@@ -274,11 +264,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         {
             LoadListAsync().SafeFireAndForget(
                 ex => MasterDetailServices.ErrorHandler.HandleException(ex, $"Pagination change failed in {GetType().Name}"));
-        }
-
-        private void OnSearchPropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            OnPropertyChanged(e.PropertyName);
         }
 
         private void OnSelectionPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -299,35 +284,28 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         private void OnDetailEditorPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            // HasUnsavedChanges 继承自基类，需要从子服务同步
             if (e.PropertyName == nameof(IDetailEditorService<TDetail>.HasUnsavedChanges))
             {
                 HasUnsavedChanges = _masterDetailServices.DetailEditor.HasUnsavedChanges;
             }
             else
             {
-                // 转发其他属性 (CurrentDetail, IsEditMode, IsNew 等)
                 OnPropertyChanged(e.PropertyName);
             }
 
-            if (e.PropertyName == nameof(IDetailEditorService<TDetail>.IsEditMode))
-            {
-                NotifyCommandsCanExecuteChanged();
-                OnPropertyChanged(nameof(ShowDetailPanel));
-            }
-
-            // DetailTitle 依赖 CurrentDetail/IsEditMode/IsNew，自动通知
-            if (e.PropertyName is nameof(IDetailEditorService<TDetail>.CurrentDetail)
-                or nameof(IDetailEditorService<TDetail>.IsEditMode)
+            if (e.PropertyName is nameof(IDetailEditorService<TDetail>.IsEditMode)
+                or nameof(IDetailEditorService<TDetail>.CurrentDetail)
                 or nameof(IDetailEditorService<TDetail>.IsNew))
             {
+                if (e.PropertyName == nameof(IDetailEditorService<TDetail>.IsEditMode))
+                    NotifyCommandsCanExecuteChanged();
+                OnPropertyChanged(nameof(ShowDetailPanel));
                 OnPropertyChanged(nameof(DetailTitle));
             }
         }
 
         private void OnErrorHandlerPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            // ErrorMessage 继承自基类，需要从子服务同步 (HasError 由基类从 ErrorMessage 计算)
             if (e.PropertyName == nameof(IErrorHandler.ErrorMessage))
             {
                 ErrorMessage = _masterDetailServices.ErrorHandler.ErrorMessage ?? string.Empty;
@@ -771,11 +749,10 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         protected override void OnDisposing()
         {
-            // 取消订阅服务事件处理器
             _masterDetailServices.Loading.PropertyChanged -= OnLoadingPropertyChanged;
             _masterDetailServices.Pagination.PropertyChanged -= OnPaginationPropertyChanged;
             _masterDetailServices.Pagination.PageChanged -= OnPaginationPageChanged;
-            _masterDetailServices.Search.PropertyChanged -= OnSearchPropertyChanged;
+            _masterDetailServices.Search.PropertyChanged -= ForwardPropertyChanged;
             _masterDetailServices.Selection.PropertyChanged -= OnSelectionPropertyChanged;
             _masterDetailServices.Selection.SelectionChanged -= OnSelectionSelectionChanged;
             _masterDetailServices.DetailEditor.PropertyChanged -= OnDetailEditorPropertyChanged;
