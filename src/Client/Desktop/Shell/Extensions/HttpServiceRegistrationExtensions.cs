@@ -18,10 +18,13 @@ using Refit;
 namespace LYBT.Desktop.Shell.Extensions
 {
     /// <summary>HTTP相关服务注册扩展方法</summary>
+    /// <remarks>已废弃: 请使用 IApiClient (SwitchingApiClient) 替代。此方法将在后续版本移除。</remarks>
+    [Obsolete("Use IApiClient (SwitchingApiClient) instead. This method will be removed in a future version.")]
     public static class HttpServiceRegistrationExtensions
     {
         /// <summary>注册HTTP相关服务</summary>
         /// <remarks>adopt-activity-api-tracing: HttpClient自动传播W3C TraceContext，无需自定义Handler</remarks>
+        [Obsolete("Use IApiClient (SwitchingApiClient) instead.")]
         public static void RegisterHttpServices(this IContainerRegistry containerRegistry, IConfiguration config)
         {
             // unify-configuration-system: 使用强类型配置
