@@ -220,7 +220,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "[REG-VM] 接诊失败: RegistrationId={Id}", registrationId);
-            await ShowErrorMessageAsync($"接诊失败: {ex.Message}");
+            await ShowErrorMessageAsync("接诊失败，请稍后重试");
         }
         finally
         {
@@ -263,7 +263,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "[REG-VM] 取消挂号失败: RegistrationId={Id}", SelectedRegistration.Id);
-            await ShowErrorMessageAsync($"取消挂号失败: {ex.Message}");
+            await ShowErrorMessageAsync("取消挂号失败，请稍后重试");
         }
         finally
         {

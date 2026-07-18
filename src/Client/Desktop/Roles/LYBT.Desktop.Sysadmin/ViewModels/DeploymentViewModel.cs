@@ -72,7 +72,7 @@ public partial class DeploymentViewModel : NavigableViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "上传更新包失败");
-            StatusMessage = $"上传失败: {ex.Message}";
+            StatusMessage = "上传失败，请检查文件和网络连接";
         }
         finally
         {
@@ -95,7 +95,7 @@ public partial class DeploymentViewModel : NavigableViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "重启服务失败");
-            StatusMessage = $"重启失败: {ex.Message}";
+            StatusMessage = "重启失败，请稍后重试";
         }
         finally
         {

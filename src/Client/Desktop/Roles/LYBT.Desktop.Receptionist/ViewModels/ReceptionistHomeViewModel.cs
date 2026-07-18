@@ -139,7 +139,7 @@ public partial class ReceptionistHomeViewModel : NavigableViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "读卡器操作失败");
-            await ShowErrorMessageAsync($"读卡操作失败：{ex.Message}");
+            await ShowErrorMessageAsync("读卡操作失败，请检查设备连接后重试");
         }
         finally
         {
@@ -206,7 +206,7 @@ public partial class ReceptionistHomeViewModel : NavigableViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "搜索患者失败");
-            await ShowErrorMessageAsync($"搜索失败: {ex.Message}");
+            await ShowErrorMessageAsync("搜索失败，请稍后重试");
         }
         finally
         {
@@ -279,7 +279,7 @@ public partial class ReceptionistHomeViewModel : NavigableViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "处理读卡器结果时发生异常");
-            await ShowErrorMessageAsync($"处理患者信息失败：{ex.Message}");
+            await ShowErrorMessageAsync("处理患者信息失败，请稍后重试");
         }
         finally
         {

@@ -157,7 +157,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "保存医案数据失败");
-            _toastService.Show($"保存失败：{ex.Message}", ToastType.Error, 4000);
+            _toastService.Show("保存失败，请稍后重试", ToastType.Error, 4000);
         }
         finally
         {
@@ -192,7 +192,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "暂存医案失败");
-            _toastService.Show($"暂存失败：{ex.Message}", ToastType.Error, 4000);
+            _toastService.Show("暂存失败，请稍后重试", ToastType.Error, 4000);
         }
         finally
         {
@@ -230,7 +230,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "完成医案失败");
-            _toastService.Show($"完成失败：{ex.Message}", ToastType.Error, 4000);
+            _toastService.Show("完成失败，请稍后重试", ToastType.Error, 4000);
         }
         finally
         {
@@ -265,7 +265,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "打印处方笺失败");
-            _toastService.Show($"打印失败：{ex.Message}", ToastType.Error, 4000);
+            _toastService.Show("打印失败，请稍后重试", ToastType.Error, 4000);
         }
         finally
         {
@@ -308,7 +308,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "导出PDF失败");
-            _toastService.Show($"导出失败：{ex.Message}", ToastType.Error, 4000);
+            _toastService.Show("导出失败，请稍后重试", ToastType.Error, 4000);
         }
         finally
         {

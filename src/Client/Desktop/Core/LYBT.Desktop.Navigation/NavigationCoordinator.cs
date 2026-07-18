@@ -168,7 +168,7 @@ public class NavigationCoordinator : INavigationCoordinator
         catch (Exception ex)
         {
             _logger.LogError(ex, "导航到 {ViewName} 时发生异常", viewName);
-            _userNotificationService?.ShowErrorAsync($"导航失败：{ex.Message}");
+            _userNotificationService?.ShowErrorAsync("导航失败，请重试");
         }
     }
 
@@ -225,7 +225,7 @@ public class NavigationCoordinator : INavigationCoordinator
         catch (Exception ex)
         {
             _logger.LogError(ex, "导航回退失败");
-            _userNotificationService?.ShowErrorAsync($"导航回退失败：{ex.Message}");
+            _userNotificationService?.ShowErrorAsync("导航回退失败，请重试");
         }
     }
 
@@ -248,7 +248,7 @@ public class NavigationCoordinator : INavigationCoordinator
         catch (Exception ex)
         {
             _logger.LogError(ex, "导航前进失败");
-            _userNotificationService?.ShowErrorAsync($"导航前进失败：{ex.Message}");
+            _userNotificationService?.ShowErrorAsync("导航前进失败，请重试");
         }
     }
 

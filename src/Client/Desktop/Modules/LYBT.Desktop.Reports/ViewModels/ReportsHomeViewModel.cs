@@ -93,7 +93,7 @@ public partial class ReportsHomeViewModel : NavigableViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "加载报表数据失败");
-            ErrorMessage = $"加载失败: {ex.Message}";
+            ErrorMessage = "报表加载失败，请稍后重试";
         }
         finally
         {

@@ -95,7 +95,7 @@ public class PrescriptionPrintHandler
         catch (Exception ex)
         {
             _logger.LogError(ex, "打印处方笺失败");
-            return PrintResult.Failed($"打印失败: {ex.Message}");
+            return PrintResult.Failed("打印服务异常，请重试");
         }
     }
 
@@ -143,7 +143,7 @@ public class PrescriptionPrintHandler
         catch (Exception ex)
         {
             _logger.LogError(ex, "导出处方笺PDF失败");
-            return PrintResult.Failed($"导出失败: {ex.Message}");
+            return PrintResult.Failed("导出服务异常，请重试");
         }
     }
 

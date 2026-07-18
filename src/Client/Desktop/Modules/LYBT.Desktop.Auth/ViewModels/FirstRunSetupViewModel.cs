@@ -117,7 +117,7 @@ public partial class FirstRunSetupViewModel : DialogViewModelBase
             Logger.LogError(ex, "[FIRST-RUN] 测试连接异常");
             IsRemoteAvailable = false;
             TestStatus = ConnectionTestStatus.Failed;
-            TestStatusMessage = $"✗ 不可用: {ex.Message}";
+            TestStatusMessage = "✗ 不可用: 无法连接到服务器";
         }
     }
 
@@ -160,7 +160,7 @@ public partial class FirstRunSetupViewModel : DialogViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "[FIRST-RUN] 切换本地模式失败");
-            TestStatusMessage = $"切换本地模式失败: {ex.Message}";
+            StatusMessage = "切换本地模式失败，请稍后重试";
         }
     }
 
@@ -181,7 +181,7 @@ public partial class FirstRunSetupViewModel : DialogViewModelBase
             Logger.LogError(ex, "[FIRST-RUN] 保存远程配置失败");
             await Services.UiThreadDispatcher.InvokeAsync(() =>
             {
-                TestStatusMessage = $"保存失败: {ex.Message}";
+                StatusMessage = "保存失败，请稍后重试";
             });
         }
         finally

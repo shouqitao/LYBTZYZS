@@ -125,7 +125,7 @@ public partial class ServerConfigViewModel : DialogViewModelBase
         {
             Logger.LogError(ex, "[SERVER-CONFIG] 测试连接异常");
             TestStatus = ConnectionTestStatus.Failed;
-            TestStatusMessage = $"✗ 不可用: {ex.Message}";
+            TestStatusMessage = "✗ 不可用: 无法连接到服务器";
         }
     }
 
@@ -166,7 +166,7 @@ public partial class ServerConfigViewModel : DialogViewModelBase
             Logger.LogError(ex, "[SERVER-CONFIG] 保存并启用失败");
             await Services.UiThreadDispatcher.InvokeAsync(() =>
             {
-                TestStatusMessage = $"保存失败: {ex.Message}";
+                TestStatusMessage = "保存失败，请稍后重试";
             });
         }
         finally
@@ -199,7 +199,7 @@ public partial class ServerConfigViewModel : DialogViewModelBase
             Logger.LogError(ex, "[SERVER-CONFIG] 仅保存失败");
             await Services.UiThreadDispatcher.InvokeAsync(() =>
             {
-                TestStatusMessage = $"保存失败: {ex.Message}";
+                TestStatusMessage = "保存失败，请稍后重试";
             });
         }
         finally

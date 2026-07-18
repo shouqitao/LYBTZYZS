@@ -124,7 +124,7 @@ public partial class RegistrationCreateDialogViewModel : DialogViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "[REG-DIALOG] 创建挂号失败");
-            StatusMessage = $"创建挂号失败: {ex.Message}";
+            StatusMessage = "创建挂号失败，请稍后重试";
         }
         finally
         {

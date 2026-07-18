@@ -232,7 +232,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
             Logger.LogError(ex, "开始看诊失败");
             PageStatusMessage = "开始看诊失败，请重试";
             IsError = true;
-            await ShowErrorDialogAsync("开始看诊失败：" + ex.Message);
+            await ShowErrorDialogAsync("开始看诊失败，请重试");
             SetBusyWithMessage(false, null);
         }
     }

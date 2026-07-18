@@ -69,7 +69,7 @@ public partial class LogLevelControlViewModel : NavigableViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "[SYSADMIN] Set log level failed");
-            StatusMessage = $"设置失败: {ex.Message}";
+            StatusMessage = "日志级别设置失败，请稍后重试";
         }
         finally { IsBusy = false; }
     }
@@ -85,7 +85,7 @@ public partial class LogLevelControlViewModel : NavigableViewModelBase
             CurrentLevel = "Debug (60分钟)";
             StatusMessage = "Debug 模式已开启（60分钟后自动关闭）";
         }
-        catch (Exception ex) { StatusMessage = $"开启失败: {ex.Message}"; }
+        catch { StatusMessage = "开启Debug模式失败，请稍后重试"; }
         finally { IsBusy = false; }
     }
 
@@ -99,7 +99,7 @@ public partial class LogLevelControlViewModel : NavigableViewModelBase
             CurrentLevel = "Information";
             StatusMessage = "Debug 模式已关闭";
         }
-        catch (Exception ex) { StatusMessage = $"关闭失败: {ex.Message}"; }
+        catch { StatusMessage = "关闭Debug模式失败，请稍后重试"; }
         finally { IsBusy = false; }
     }
 }

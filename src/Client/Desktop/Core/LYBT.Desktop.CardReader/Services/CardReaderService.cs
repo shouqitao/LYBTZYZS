@@ -114,7 +114,7 @@ public class CardReaderService : ICardReaderService
         catch (Exception ex)
         {
             _logger?.LogError(ex, "初始化读卡器时发生异常");
-            OnConnectionStateChanged(false, ex.Message);
+            OnConnectionStateChanged(false, "读卡器连接失败，请检查设备");
             return false;
         }
     }
@@ -199,8 +199,8 @@ public class CardReaderService : ICardReaderService
         catch (Exception ex)
         {
             _logger?.LogError(ex, "读卡时发生异常");
-            OnCardReadError(-99, ex.Message, ex);
-            return CardReadResult.Failure(-99, ex.Message);
+            OnCardReadError(-99, "读卡器访问异常，请重新连接设备", ex);
+            return CardReadResult.Failure(-99, "读卡器访问异常，请重新连接设备");
         }
     }
 
@@ -296,7 +296,7 @@ public class CardReaderService : ICardReaderService
         catch (Exception ex)
         {
             _logger?.LogError(ex, "自动读卡时发生异常");
-            OnCardReadError(-99, ex.Message, ex);
+            OnCardReadError(-99, "自动读卡异常，请重试", ex);
         }
     }
 

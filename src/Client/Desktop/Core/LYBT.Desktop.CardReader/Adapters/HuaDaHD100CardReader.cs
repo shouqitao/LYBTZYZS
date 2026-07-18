@@ -93,7 +93,7 @@ public sealed class HuaDaHD100CardReader : ICardReader
                 catch (Exception ex)
                 {
                     _logger?.LogError(ex, "连接读卡器时发生异常");
-                    OnConnectionStateChanged(false, ex.Message);
+                    OnConnectionStateChanged(false, "读卡器连接失败，请检查设备");
                     return false;
                 }
             }
@@ -222,7 +222,7 @@ public sealed class HuaDaHD100CardReader : ICardReader
                 catch (Exception ex)
                 {
                     _logger?.LogError(ex, "读卡时发生异常");
-                    return CardReadResult.Failure(-99, ex.Message);
+                    return CardReadResult.Failure(-99, "读卡器访问异常，请重新连接设备");
                 }
             }
         }, cancellationToken);
