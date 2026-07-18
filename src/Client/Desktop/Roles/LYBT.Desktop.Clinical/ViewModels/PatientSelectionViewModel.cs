@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.CardReader.Integration;
 using LYBT.Desktop.CardReader.Services;
 using LYBT.Desktop.Clinical.ViewModels.Workspace;
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.MedicalCase.Interfaces;
@@ -27,8 +27,8 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
 {
     #region 依赖服务
 
-    private readonly IPatientApi _patientApi;
-    private readonly IMedicalCaseApi _medicalCaseApi;
+    private readonly IApiClientPatients _patientApi;
+    private readonly IApiClientMedicalCases _medicalCaseApi;
     private readonly IMedicalCaseService _medicalCaseService;
     private readonly IRegistrationService _registrationService;
     private readonly ICommonDialogService _dialogService;
@@ -103,8 +103,8 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
     /// </summary>
     public PatientSelectionViewModel(
         IViewModelServices services,
-        IPatientApi patientApi,
-        IMedicalCaseApi medicalCaseApi,
+        IApiClientPatients patientApi,
+        IApiClientMedicalCases medicalCaseApi,
         IMedicalCaseService medicalCaseService,
         IRegistrationService registrationService,
         INavigationCoordinator navigationCoordinator,

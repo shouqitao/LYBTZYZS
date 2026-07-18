@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -15,7 +15,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels;
 /// </summary>
 public partial class AuditLogViewModel : NavigableViewModelBase
 {
-    private readonly IMedicalCaseApi _medicalCaseApi;
+    private readonly IApiClientMedicalCases _medicalCaseApi;
     private readonly INavigationCoordinator _navigationCoordinator;
 
     private Guid _medicalCaseId;
@@ -28,7 +28,7 @@ public partial class AuditLogViewModel : NavigableViewModelBase
 
     private const int PageSize = 20;
 
-    public AuditLogViewModel(IViewModelServices services, IMedicalCaseApi medicalCaseApi, INavigationCoordinator navigationCoordinator)
+    public AuditLogViewModel(IViewModelServices services, IApiClientMedicalCases medicalCaseApi, INavigationCoordinator navigationCoordinator)
         : base(services)
     {
         _medicalCaseApi = medicalCaseApi;

@@ -119,4 +119,8 @@ internal sealed class MedicalCaseApiClient : IApiClientMedicalCases
     /// <inheritdoc />
     public Task<ApiResponse<MedicalCaseDetailDto>> RecordPrintAsync(Guid id, RecordPrintRequest request)
         => _api.RecordPrintAsync(id, request);
+
+    /// <inheritdoc />
+    public Task<ApiResponse<PagedResult<AuditLogDto>>> GetAuditLogsAsync(Guid id, int page = 1, int pageSize = 20)
+        => _api.GetAuditLogsAsync(id, page, pageSize);
 }

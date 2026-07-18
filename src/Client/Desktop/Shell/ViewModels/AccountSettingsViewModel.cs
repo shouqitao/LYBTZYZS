@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Shell.ViewModels;
 public partial class AccountSettingsViewModel : CoreViewModelBase, INavigationAware
 {
     private readonly IAuthenticationService _authService;
-    private readonly IUserApi _userApi;
+    private readonly IApiClientUsers _userApi;
     private readonly INavigationCoordinator _navigationCoordinator;
 
     #region Tab 选择
@@ -67,7 +67,7 @@ public partial class AccountSettingsViewModel : CoreViewModelBase, INavigationAw
     public AccountSettingsViewModel(
         IViewModelServices services,
         IAuthenticationService authService,
-        IUserApi userApi,
+        IApiClientUsers userApi,
         INavigationCoordinator navigationCoordinator)
         : base(services)
     {

@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using FluentAssertions;
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Shared.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
@@ -31,7 +31,7 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
     private readonly IViewModelServices _viewModelServices;
     private readonly IRegistrationService _registrationService;
     private readonly INavigationCoordinator _navigationCoordinator;
-    private readonly IPatientApi _patientApi;
+    private readonly IApiClientPatients _patientApi;
     private readonly IDialogService _dialogService;
     private readonly ICommonDialogService _commonDialogService;
     private readonly ISessionManager _sessionManager;
@@ -43,7 +43,7 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
         IViewModelServices services,
         IRegistrationService registrationService,
         INavigationCoordinator navigationCoordinator,
-        IPatientApi patientApi,
+        IApiClientPatients patientApi,
         IDialogService? dialogService = null)
         : RegistrationListViewModel(services, registrationService, navigationCoordinator, patientApi, dialogService)
     {
@@ -60,7 +60,7 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
         _viewModelServices.LoggerFactory.Returns(realLoggerFactory);
         _registrationService = Substitute.For<IRegistrationService>();
         _navigationCoordinator = Substitute.For<INavigationCoordinator>();
-        _patientApi = Substitute.For<IPatientApi>();
+        _patientApi = Substitute.For<IApiClientPatients>();
         _dialogService = Substitute.For<IDialogService>();
         _commonDialogService = _viewModelServices.CommonDialogService;
         _sessionManager = _viewModelServices.SessionManager;

@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Interfaces;
@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Sysadmin.ViewModels;
 /// </summary>
 public partial class SysadminHomeViewModel : NavigableViewModelBase
 {
-    private readonly IAuthApi _authApi;
+    private readonly IApiClientAuth _authApi;
     private readonly IClinicSettingsService _clinicSettings;
     private CancellationTokenSource? _pollCts;
 
@@ -24,7 +24,7 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
 
     public SysadminHomeViewModel(
         IViewModelServices services,
-        IAuthApi authApi,
+        IApiClientAuth authApi,
         IClinicSettingsService clinicSettings)
         : base(services)
     {

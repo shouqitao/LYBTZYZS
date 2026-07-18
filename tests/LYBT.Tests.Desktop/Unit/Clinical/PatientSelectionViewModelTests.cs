@@ -3,7 +3,7 @@ using LYBT.Desktop.CardReader.Integration;
 using LYBT.Desktop.CardReader.Services;
 using LYBT.Desktop.Clinical.ViewModels;
 using LYBT.Desktop.Clinical.ViewModels.Workspace;
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -23,8 +23,8 @@ namespace LYBT.Tests.Desktop;
 public class PatientSelectionViewModelTests
 {
     private readonly IViewModelServices _viewModelServices;
-    private readonly IPatientApi _patientApi;
-    private readonly IMedicalCaseApi _medicalCaseApi;
+    private readonly IApiClientPatients _patientApi;
+    private readonly IApiClientMedicalCases _medicalCaseApi;
     private readonly IMedicalCaseService _medicalCaseService;
     private readonly IRegistrationService _registrationService;
     private readonly INavigationCoordinator _navigationCoordinator;
@@ -52,8 +52,8 @@ public class PatientSelectionViewModelTests
         _viewModelServices.SessionManager.Returns(_sessionManager);
         _viewModelServices.CommonDialogService.Returns(_commonDialogService);
 
-        _patientApi = Substitute.For<IPatientApi>();
-        _medicalCaseApi = Substitute.For<IMedicalCaseApi>();
+        _patientApi = Substitute.For<IApiClientPatients>();
+        _medicalCaseApi = Substitute.For<IApiClientMedicalCases>();
         _medicalCaseService = Substitute.For<IMedicalCaseService>();
         _registrationService = Substitute.For<IRegistrationService>();
         _navigationCoordinator = Substitute.For<INavigationCoordinator>();

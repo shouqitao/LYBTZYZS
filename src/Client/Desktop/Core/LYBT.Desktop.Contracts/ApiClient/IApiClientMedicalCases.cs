@@ -173,4 +173,15 @@ public interface IApiClientMedicalCases
         Guid id,
         RecordPrintRequest request);
 
+    /// <summary>
+    /// Get audit logs for a medical case (paginated).
+    /// </summary>
+    /// <param name="id">Medical case ID.</param>
+    /// <param name="page">Page number (default 1).</param>
+    /// <param name="pageSize">Page size (default 20).</param>
+    Task<ApiResponse<PagedResult<AuditLogDto>>> GetAuditLogsAsync(
+        Guid id,
+        int page = 1,
+        int pageSize = 20);
+
 }

@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.MedicalCase.Models;
@@ -27,7 +27,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
 {
     private readonly IRegistrationService _registrationService;
     private readonly INavigationCoordinator _navigationCoordinator;
-    private readonly IPatientApi _patientApi;
+    private readonly IApiClientPatients _patientApi;
     private readonly IDialogService? _dialogService;
     private readonly PeriodicTimer _refreshTimer = new(TimeSpan.FromSeconds(30));
     private CancellationTokenSource? _timerCts;
@@ -73,7 +73,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         IViewModelServices services,
         IRegistrationService registrationService,
         INavigationCoordinator navigationCoordinator,
-        IPatientApi patientApi,
+        IApiClientPatients patientApi,
         IDialogService? dialogService = null)
         : base(services)
     {

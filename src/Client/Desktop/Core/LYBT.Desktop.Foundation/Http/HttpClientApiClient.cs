@@ -691,6 +691,9 @@ public sealed class HttpClientApiClient : IApiClient,
     Task<ApiResponse<MedicalCaseDetailDto>> IApiClientMedicalCases.RecordPrintAsync(Guid id, RecordPrintRequest request)
         => PutAndWrapAsync<MedicalCaseDetailDto>($"/api/medicalcases/{id}/print-completed", request);
 
+    Task<ApiResponse<PagedResult<AuditLogDto>>> IApiClientMedicalCases.GetAuditLogsAsync(Guid id, int page, int pageSize)
+        => GetAndWrapAsync<PagedResult<AuditLogDto>>($"/api/medicalcases/{id}/audit-logs?page={page}&pageSize={pageSize}");
+
     // ========================================================================
     // IApiClientRegistrations — Registration endpoints (explicit implementation)
     // ========================================================================
