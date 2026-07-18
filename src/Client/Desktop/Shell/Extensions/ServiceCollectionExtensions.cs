@@ -51,7 +51,6 @@ namespace LYBT.Desktop.Shell.Extensions
 
             containerRegistry.RegisterRepositories(configuration);
 
-            containerRegistry.RegisterHttpServices(configuration);
             containerRegistry.AddUnifiedApiClient(configuration);
             RegisterFoundationServices(containerRegistry);
             RegisterPresentationServices(containerRegistry);
