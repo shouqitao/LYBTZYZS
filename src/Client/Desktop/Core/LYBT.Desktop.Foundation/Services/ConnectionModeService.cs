@@ -26,7 +26,7 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     private const string RemoteHealthPath = "/api/v1/health";
 
     /// <summary>LocalWebAPI anonymous health path.</summary>
-    private const string LocalHealthPath = "/api/health";
+    private const string LocalHealthPath = "/api/v1/health";
 
     private static readonly TimeSpan RemoteProbeTimeout = TimeSpan.FromSeconds(3);
     private static readonly TimeSpan LocalProbeTimeout = TimeSpan.FromSeconds(2);

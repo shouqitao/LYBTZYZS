@@ -127,8 +127,8 @@ public class NavigationCoordinator : INavigationCoordinator
             var navParams = ConvertToNavigationParameters(parameters);
 
             var tcs = new TaskCompletionSource<bool>();
-            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(NavigationTimeoutSeconds));
-            using var timeoutRegistration = timeoutCts.Token.Register(() => tcs.TrySetResult(false));
+            var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(NavigationTimeoutSeconds));
+            var timeoutRegistration = timeoutCts.Token.Register(() => tcs.TrySetResult(false));
 
             _regionManager.RequestNavigate(RegionNames.ContentRegion, viewName, result =>
             {
