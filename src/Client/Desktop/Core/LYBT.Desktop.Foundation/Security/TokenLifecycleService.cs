@@ -1,4 +1,4 @@
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Shared.Models.Contracts.Auth;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -21,7 +21,7 @@ namespace LYBT.Desktop.Foundation.Security
     /// </remarks>
     public class TokenLifecycleService : ITokenLifecycleService
     {
-        private readonly IAuthApi _authApi;
+        private readonly IApiClientAuth _authApi;
         private readonly ITokenStorageService _tokenStorage;
         private readonly IEventAggregator _eventAggregator;
         private readonly ILogger<TokenLifecycleService> _logger;
@@ -43,7 +43,7 @@ namespace LYBT.Desktop.Foundation.Security
         private readonly TimeSpan _monitorInterval = TimeSpan.FromSeconds(30);
 
         public TokenLifecycleService(
-            IAuthApi authApi,
+            IApiClientAuth authApi,
             ITokenStorageService tokenStorage,
             IEventAggregator eventAggregator,
             ILogger<TokenLifecycleService> logger)

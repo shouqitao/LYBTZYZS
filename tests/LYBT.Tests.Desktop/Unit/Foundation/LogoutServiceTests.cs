@@ -1,6 +1,6 @@
 using System.Net.Http;
 using FluentAssertions;
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Shared.Models;
 using LYBT.Desktop.Foundation.Security;
@@ -26,7 +26,7 @@ public class LogoutServiceTests : IDisposable
 {
     private readonly ILogger<LogoutService> _logger;
     private readonly ITokenStorageService _tokenStorage;
-    private readonly IAuthApi _authApi;
+    private readonly IApiClientAuth _authApi;
     private readonly IAuthenticationStateMachine _stateMachine;
     private readonly IEventAggregator _eventAggregator;
     private readonly LogoutService _sut;
@@ -35,7 +35,7 @@ public class LogoutServiceTests : IDisposable
     {
         _logger = Substitute.For<ILogger<LogoutService>>();
         _tokenStorage = Substitute.For<ITokenStorageService>();
-        _authApi = Substitute.For<IAuthApi>();
+        _authApi = Substitute.For<IApiClientAuth>();
         _stateMachine = Substitute.For<IAuthenticationStateMachine>();
         _eventAggregator = new EventAggregator();
 

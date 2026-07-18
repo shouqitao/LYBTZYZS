@@ -1,5 +1,5 @@
 using FluentAssertions;
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Shared.Models;
 using LYBT.Desktop.Foundation.Security;
@@ -30,7 +30,7 @@ public class AuthEventPublishingTests
         _eventAggregator.GetEvent<AuthEvents.LoginStartedEvent>()
             .Subscribe(p => received = p);
 
-        var authApi = Substitute.For<IAuthApi>();
+        var authApi = Substitute.For<IApiClientAuth>();
         authApi.LoginAsync(Arg.Any<LoginRequest>())
             .Returns(ApiResponse<LoginResponse>.CreateSuccess(new LoginResponse
             {
@@ -58,7 +58,7 @@ public class AuthEventPublishingTests
         _eventAggregator.GetEvent<AuthEvents.LoginStartedEvent>()
             .Subscribe(p => received = p);
 
-        var authApi = Substitute.For<IAuthApi>();
+        var authApi = Substitute.For<IApiClientAuth>();
         authApi.LoginWithAutoTokenAsync(Arg.Any<AutoLoginRequest>())
             .Returns(ApiResponse<LoginResponse>.CreateSuccess(new LoginResponse
             {
@@ -90,7 +90,7 @@ public class AuthEventPublishingTests
         _eventAggregator.GetEvent<AuthEvents.LoginStartedEvent>()
             .Subscribe(p => received = p);
 
-        var authApi = Substitute.For<IAuthApi>();
+        var authApi = Substitute.For<IApiClientAuth>();
         authApi.LoginAsync(Arg.Any<LoginRequest>())
             .Returns(ApiResponse<LoginResponse>.CreateFail("Invalid credentials"));
 
@@ -138,10 +138,10 @@ public class AuthEventPublishingTests
 
     #region Helpers
 
-    private AuthenticationService CreateAuthenticationService(IAuthApi? authApi = null)
+    private AuthenticationService CreateAuthenticationService(IApiClientAuth? authApi = null)
     {
         return new AuthenticationService(
-            authApi ?? Substitute.For<IAuthApi>(),
+            authApi ?? Substitute.For<IApiClientAuth>(),
             Substitute.For<ITokenStorageService>(),
             Substitute.For<ITokenValidator>(),
             Substitute.For<ICredentialVault>(),
@@ -157,7 +157,7 @@ public class AuthEventPublishingTests
         return new LogoutService(
             Substitute.For<ILogger<LogoutService>>(),
             tokenStorage ?? Substitute.For<ITokenStorageService>(),
-            Substitute.For<IAuthApi>(),
+            Substitute.For<IApiClientAuth>(),
             stateMachine,
             _eventAggregator);
     }

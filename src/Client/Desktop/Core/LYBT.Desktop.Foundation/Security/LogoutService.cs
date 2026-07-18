@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net.Http;
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Shared.Models;
 using LYBT.Shared.Models.Contracts.Auth;
@@ -18,7 +18,7 @@ public class LogoutService : ILogoutService, IDisposable
 {
     private readonly ILogger<LogoutService> _logger;
     private readonly ITokenStorageService _tokenStorage;
-    private readonly IAuthApi _authApi;
+    private readonly IApiClientAuth _authApi;
     private readonly IAuthenticationStateMachine _stateMachine;
     private readonly IEventAggregator? _eventAggregator;
     private readonly ConcurrentQueue<PendingServerLogout> _pendingLogouts = new();
@@ -37,7 +37,7 @@ public class LogoutService : ILogoutService, IDisposable
     public LogoutService(
         ILogger<LogoutService> logger,
         ITokenStorageService tokenStorage,
-        IAuthApi authApi,
+        IApiClientAuth authApi,
         IAuthenticationStateMachine stateMachine,
         IEventAggregator? eventAggregator = null)
     {
