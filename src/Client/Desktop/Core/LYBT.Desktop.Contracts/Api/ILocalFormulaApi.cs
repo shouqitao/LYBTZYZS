@@ -8,41 +8,41 @@ namespace LYBT.Desktop.Contracts.Api;
 /// </summary>
 public interface ILocalFormulaApi
 {
-    [Refit.Get("/api/formulas")]
+    [Refit.Get("/api/v1/formulas")]
     Task<List<FormulaListDto>> GetFormulasAsync(
         [Refit.Query] string? keyword = null,
         [Refit.Query] string? category = null);
 
-    [Refit.Get("/api/formulas/{id}")]
+    [Refit.Get("/api/v1/formulas/{id}")]
     Task<FormulaDetailDto> GetFormulaByIdAsync(Guid id);
 
-    [Refit.Post("/api/formulas")]
+    [Refit.Post("/api/v1/formulas")]
     Task<FormulaDetailDto> CreateFormulaAsync([Refit.Body] FormulaInputDto request);
 
-    [Refit.Put("/api/formulas/{id}")]
+    [Refit.Put("/api/v1/formulas/{id}")]
     Task<FormulaDetailDto> UpdateFormulaAsync(Guid id, [Refit.Body] FormulaInputDto request);
 
-    [Refit.Delete("/api/formulas/{id}")]
+    [Refit.Delete("/api/v1/formulas/{id}")]
     Task DeleteFormulaAsync(Guid id);
 
-    [Refit.Post("/api/formulas/{id}/clone")]
+    [Refit.Post("/api/v1/formulas/{id}/clone")]
     Task<FormulaDetailDto> CloneFormulaAsync(Guid id);
 
-    [Refit.Post("/api/formulas/{id}/toggle-status")]
+    [Refit.Post("/api/v1/formulas/{id}/toggle-status")]
     Task<FormulaDetailDto> ToggleStatusAsync(Guid id);
 
-    [Refit.Post("/api/formulas/batch-delete")]
+    [Refit.Post("/api/v1/formulas/batch-delete")]
     Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
 
-    [Refit.Get("/api/formulas/categories")]
+    [Refit.Get("/api/v1/formulas/categories")]
     Task<List<string>> GetCategoriesAsync();
 
-    [Refit.Get("/api/formulas/export")]
+    [Refit.Get("/api/v1/formulas/export")]
     Task<List<FormulaDetailDto>> ExportFormulasAsync([Refit.Query] string? category = null);
 
-    [Refit.Get("/api/formulas/import-template")]
+    [Refit.Get("/api/v1/formulas/import-template")]
     Task<object> ExportTemplateAsync();
 
-    [Refit.Post("/api/formulas/batch-import")]
+    [Refit.Post("/api/v1/formulas/batch-import")]
     Task<FormulaBatchImportResultDto> BatchImportAsync([Refit.Body] FormulaBatchImportInputDto request);
 }

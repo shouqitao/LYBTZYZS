@@ -1,5 +1,6 @@
 using FluentValidation;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Primitives.Validation;
 
 namespace LYBT.Shared.Validators.Consultation
 {
@@ -17,7 +18,7 @@ namespace LYBT.Shared.Validators.Consultation
             // TcmDiagnosis是唯一必填字段
             RuleFor(x => x.TcmDiagnosis)
                 .NotEmpty().WithMessage("中医诊断不能为空")
-                .MaximumLength(500).WithMessage("中医诊断长度不能超过500个字符");
+                .MaximumLength(ValidationConstants.DiagnosisMaxLength).WithMessage("中医诊断长度不能超过{MaxLength}个字符");
         }
     }
 }

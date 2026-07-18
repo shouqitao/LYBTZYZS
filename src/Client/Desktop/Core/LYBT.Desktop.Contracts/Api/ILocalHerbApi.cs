@@ -8,38 +8,38 @@ namespace LYBT.Desktop.Contracts.Api;
 /// </summary>
 public interface ILocalHerbApi
 {
-    [Refit.Get("/api/herbs")]
+    [Refit.Get("/api/v1/herbs")]
     Task<List<HerbListDto>> GetHerbsAsync(
         [Refit.Query] string? keyword = null,
         [Refit.Query] string? category = null);
 
-    [Refit.Get("/api/herbs/{id}")]
+    [Refit.Get("/api/v1/herbs/{id}")]
     Task<HerbDetailDto> GetHerbByIdAsync(Guid id);
 
-    [Refit.Post("/api/herbs")]
+    [Refit.Post("/api/v1/herbs")]
     Task<HerbDetailDto> CreateHerbAsync([Refit.Body] HerbInputDto request);
 
-    [Refit.Put("/api/herbs/{id}")]
+    [Refit.Put("/api/v1/herbs/{id}")]
     Task<HerbDetailDto> UpdateHerbAsync(Guid id, [Refit.Body] HerbInputDto request);
 
-    [Refit.Delete("/api/herbs/{id}")]
+    [Refit.Delete("/api/v1/herbs/{id}")]
     Task DeleteHerbAsync(Guid id);
 
-    [Refit.Post("/api/herbs/{id}/toggle-status")]
+    [Refit.Post("/api/v1/herbs/{id}/toggle-status")]
     Task<HerbDetailDto> ToggleStatusAsync(Guid id);
 
-    [Refit.Post("/api/herbs/batch-delete")]
+    [Refit.Post("/api/v1/herbs/batch-delete")]
     Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
 
-    [Refit.Get("/api/herbs/categories")]
+    [Refit.Get("/api/v1/herbs/categories")]
     Task<List<string>> GetCategoriesAsync();
 
-    [Refit.Get("/api/herbs/export")]
+    [Refit.Get("/api/v1/herbs/export")]
     Task<List<HerbDetailDto>> ExportHerbsAsync([Refit.Query] string? keyword = null);
 
-    [Refit.Get("/api/herbs/import-template")]
+    [Refit.Get("/api/v1/herbs/import-template")]
     Task<object> ExportTemplateAsync();
 
-    [Refit.Post("/api/herbs/batch-import")]
+    [Refit.Post("/api/v1/herbs/batch-import")]
     Task<HerbBatchImportResultDto> BatchImportAsync([Refit.Body] HerbBatchImportInputDto request);
 }

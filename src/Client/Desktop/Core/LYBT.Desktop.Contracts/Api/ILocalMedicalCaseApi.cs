@@ -10,25 +10,25 @@ namespace LYBT.Desktop.Contracts.Api;
 /// </summary>
 public interface ILocalMedicalCaseApi
 {
-    [Refit.Get("/api/medicalcases")]
+    [Refit.Get("/api/v1/medicalcases")]
     Task<List<MedicalCaseListDto>> GetMedicalCasesAsync([Refit.Query] Guid? patientId = null);
 
-    [Refit.Get("/api/medicalcases/{id}")]
+    [Refit.Get("/api/v1/medicalcases/{id}")]
     Task<MedicalCaseDetailDto> GetMedicalCaseByIdAsync(Guid id);
 
-    [Refit.Post("/api/medicalcases")]
+    [Refit.Post("/api/v1/medicalcases")]
     Task<MedicalCaseDetailDto> CreateMedicalCaseAsync([Refit.Body] MedicalCaseInputDto request);
 
-    [Refit.Delete("/api/medicalcases/{id}")]
+    [Refit.Delete("/api/v1/medicalcases/{id}")]
     Task DeleteMedicalCaseAsync(Guid id);
 
     /// <summary>
     /// Aggregate save (diagnosis + prescription in one call).
     /// </summary>
-    [Refit.Put("/api/medicalcases/{id}")]
+    [Refit.Put("/api/v1/medicalcases/{id}")]
     Task<MedicalCaseDetailDto> SaveAsync(Guid id, [Refit.Body] MedicalCaseInputDto request);
 
-    [Refit.Get("/api/medicalcases/search")]
+    [Refit.Get("/api/v1/medicalcases/search")]
     Task<PagedResult<MedicalCaseDetailDto>> SearchMedicalCasesAsync(
         [Refit.Query] string? patientName = null,
         [Refit.Query] string? diagnosisKeyword = null,
@@ -37,7 +37,7 @@ public interface ILocalMedicalCaseApi
         [Refit.Query] int page = 1,
         [Refit.Query] int pageSize = 20);
 
-    [Refit.Get("/api/medicalcases/query")]
+    [Refit.Get("/api/v1/medicalcases/query")]
     Task<PagedResult<MedicalCaseListDto>> QueryMedicalCasesAsync(
         [Refit.Query] MedicalCaseQueryType queryType = MedicalCaseQueryType.All,
         [Refit.Query] Guid? patientId = null,
@@ -48,24 +48,47 @@ public interface ILocalMedicalCaseApi
         [Refit.Query] bool includeAllDoctors = false,
         [Refit.Query] int? limit = null);
 
-    [Refit.Post("/api/medicalcases/batch-delete")]
+    [Refit.Post("/api/v1/medicalcases/batch-delete")]
     Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
 
-    [Refit.Put("/api/medicalcases/{id}/close")]
+    [Refit.Put("/api/v1/medicalcases/{id}/close")]
     Task<MedicalCaseDetailDto> CloseCaseAsync(Guid id);
 
-    [Refit.Put("/api/medicalcases/{id}/suspend")]
+    [Refit.Put("/api/v1/medicalcases/{id}/suspend")]
     Task<MedicalCaseDetailDto> SuspendAsync(Guid id, [Refit.Body] ConsultationInputDto? request = null);
 
-    [Refit.Put("/api/medicalcases/{id}/cancel")]
+    [Refit.Put("/api/v1/medicalcases/{id}/cancel")]
     Task CancelMedicalCaseAsync(Guid id, [Refit.Body] CancelMedicalCaseRequestDto? request = null);
 
-    [Refit.Put("/api/medicalcases/{id}/status")]
+    [Refit.Put("/api/v1/medicalcases/{id}/status")]
     Task<MedicalCaseDetailDto> UpdateStatusAsync(Guid id, [Refit.Body] MedicalCaseStatusInputDto request);
 
-    [Refit.Put("/api/medicalcases/{id}/prescription-flag")]
+    [Refit.Put("/api/v1/medicalcases/{id}/prescription-flag")]
     Task<MedicalCaseDetailDto> SetPrescriptionFlagAsync(Guid id, [Refit.Body] SetPrescriptionFlagRequest request);
 
-    [Refit.Get("/api/medicalcases/pending")]
+    [Refit.Get("/api/v1/medicalcases/pending")]
     Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync([Refit.Query] Guid? patientId = null);
+
+    /// <summary>
+    /// 获取医案审计日志（分页）
+    /// </summary>
+    [Refit.Get("/api/v1/medicalcases/{id}/audit-logs")]
+    Task<PagedResult<AuditLogDto>> GetAuditLogsAsync(
+        Guid id,
+        [Refit.Query] int page = 1,
+        [Refit.Query] int pageSize = 20);
+
+    /// <summary>
+    /// 获取医案操作权限
+    /// </summary>
+    [Refit.Get("/api/v1/medicalcases/{id}/permissions")]
+    Task<MedicalCasePermissionsDto> GetPermissionsAsync(Guid id);
+
+    /// <summary>
+    /// 记录打印完成
+    /// </summary>
+    [Refit.Put("/api/v1/medicalcases/{id}/print-completed")]
+    Task<MedicalCaseDetailDto> RecordPrintAsync(
+        Guid id,
+        [Refit.Body] RecordPrintRequest request);
 }

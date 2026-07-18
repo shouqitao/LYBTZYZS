@@ -9,36 +9,36 @@ namespace LYBT.Desktop.Contracts.Api;
 /// </summary>
 public interface ILocalUserApi
 {
-    [Refit.Get("/api/users")]
+    [Refit.Get("/api/v1/users")]
     Task<List<UserListDto>> GetUsersAsync();
 
-    [Refit.Get("/api/users/{id}")]
+    [Refit.Get("/api/v1/users/{id}")]
     Task<UserDetailDto> GetUserByIdAsync(Guid id);
 
-    [Refit.Post("/api/users")]
+    [Refit.Post("/api/v1/users")]
     Task<UserDetailDto> CreateUserAsync([Refit.Body] UserInputDto request);
 
-    [Refit.Put("/api/users/{id}")]
+    [Refit.Put("/api/v1/users/{id}")]
     Task<UserDetailDto> UpdateUserAsync(Guid id, [Refit.Body] UserInputDto request);
 
-    [Refit.Delete("/api/users/{id}")]
+    [Refit.Delete("/api/v1/users/{id}")]
     Task DeleteUserAsync(Guid id);
 
-    [Refit.Put("/api/users/{id}/change-password")]
+    [Refit.Put("/api/v1/users/{id}/change-password")]
     Task ChangePasswordAsync(Guid id, [Refit.Body] ChangePasswordRequest request);
 
-    [Refit.Post("/api/users/{id}/reset-password")]
+    [Refit.Post("/api/v1/users/{id}/reset-password")]
     Task<ResetPasswordResponseDto> ResetPasswordAsync(Guid id, [Refit.Body] ResetPasswordRequestDto request);
 
-    [Refit.Put("/api/users/{id}/profile")]
+    [Refit.Put("/api/v1/users/{id}/profile")]
     Task<UserDetailDto> ChangeProfileAsync(Guid id, [Refit.Body] ChangeProfileDto request);
 
-    [Refit.Post("/api/users/{id}/toggle-status")]
+    [Refit.Post("/api/v1/users/{id}/toggle-status")]
     Task<UserDetailDto> ToggleStatusAsync(Guid id);
 
-    [Refit.Post("/api/users/batch-delete")]
+    [Refit.Post("/api/v1/users/batch-delete")]
     Task<BatchOperationResultDto> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
 
-    [Refit.Get("/api/users/current")]
+    [Refit.Get("/api/v1/users/current")]
     Task<UserDetailDto> GetCurrentUserAsync();
 }
