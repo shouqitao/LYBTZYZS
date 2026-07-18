@@ -1,7 +1,6 @@
 using System.Net.Http;
 using FluentAssertions;
 using LYBT.Desktop.Foundation.Application;
-using LYBT.Desktop.Foundation.Performance;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Startup.Steps;
 using LYBT.Shared.ExceptionHandling.Handlers;
@@ -269,17 +268,13 @@ public class StartupStepsTests
 
     public class WarmupStartupStepTests
     {
-        private readonly IStartupOptimizationService _startupOptimizationService;
         private readonly ILogger<WarmupStartupStep> _logger;
         private readonly WarmupStartupStep _sut;
 
         public WarmupStartupStepTests()
         {
-            _startupOptimizationService = Substitute.For<IStartupOptimizationService>();
             _logger = Substitute.For<ILogger<WarmupStartupStep>>();
-            _sut = new WarmupStartupStep(
-                _startupOptimizationService,
-                _logger);
+            _sut = new WarmupStartupStep(_logger);
         }
 
         [Fact]
@@ -291,43 +286,17 @@ public class StartupStepsTests
         }
 
         [Fact]
-        public async Task ExecuteAsync_ShouldCallWarmupApplicationAsync()
+        public async Task ExecuteAsync_ShouldReturnSuccess()
         {
-            // Act
             var result = await _sut.ExecuteAsync();
-
-            // Assert
             result.Success.Should().BeTrue();
-            await _startupOptimizationService.Received(1).WarmupApplicationAsync();
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_WhenServiceThrows_ShouldReturnFailed()
-        {
-            // Arrange
-            _startupOptimizationService
-                .WarmupApplicationAsync()
-                .ThrowsAsync(new InvalidOperationException("Warmup error"));
-
-            // Act
-            var result = await _sut.ExecuteAsync();
-
-            // Assert
-            result.Success.Should().BeFalse();
-            // ERR-012: 异常消息安全化 - 错误消息不应包含原始异常信息，应使用安全的用户友好消息
-            result.ErrorMessage.Should().Contain("应用预热失败");
         }
 
         [Fact]
         public async Task ExecuteAsync_ShouldReportProgress()
         {
-            // Arrange
             var progress = Substitute.For<IProgress<string>>();
-
-            // Act
             await _sut.ExecuteAsync(progress);
-
-            // Assert
             progress.Received(1).Report(Arg.Is<string>(s => s.Contains("预热")));
         }
     }

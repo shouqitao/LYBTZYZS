@@ -1,7 +1,6 @@
 using LYBT.Desktop.Shared.Results;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Users.Interfaces;
-using LYBT.Desktop.Foundation.Utilities;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;

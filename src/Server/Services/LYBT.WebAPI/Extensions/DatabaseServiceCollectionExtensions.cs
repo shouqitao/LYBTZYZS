@@ -1,7 +1,7 @@
 using LYBT.Infrastructure.DependencyInjection;
 using LYBT.Infrastructure.Interfaces;
-using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Services;
+using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
@@ -158,11 +158,7 @@ public static class DatabaseServiceCollectionExtensions
 
         services.AddScoped<LYBT.Infrastructure.Data.DatabaseInitializationService>();
 
-        // D5-1: 跨模块服务 ISP 注册 (CrossModuleService 实现全部接口，共享 Scoped 实例)
-        services.AddScoped<CrossModuleService>();
-        services.AddScoped<IPatientCrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
-        services.AddScoped<IHerbCrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
-        services.AddScoped<IUserCrossModuleService>(sp => sp.GetRequiredService<CrossModuleService>());
+        // 跨模块服务已由各模块独立注册（PatientsModule, HerbsModule, UsersModule）
 
         // Architecture Fix: 注册健康检查服务 (Task 1.1)
         services.AddScoped<IHealthCheckService, HealthCheckService>();

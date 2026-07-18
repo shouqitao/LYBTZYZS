@@ -93,7 +93,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     public bool IsSystemSettingsVisible => _menuManager.IsSystemSettingsVisible;
     public bool IsPasswordChangeVisible => _menuManager.IsPasswordChangeVisible;
 
-    public ICollectionView GroupedNavItems => _navigationManager.GroupedNavItems;
     public ObservableCollection<NavigationItem> NavigationItems => _navigationManager.NavigationItems;
 
     public NavigationItem? SelectedNavItem

@@ -324,45 +324,7 @@ public static class ClientErrorMessageMapper
 
     #endregion
 
-    #region ProblemDetails解析
 
-    /// <summary>
-    /// 从ClientProblemDetails获取用户消息
-    /// </summary>
-    public static string GetUserMessageFromProblemDetails(ClientProblemDetails problemDetails)
-    {
-        // 优先使用服务器返回的详细消息
-        if (!string.IsNullOrEmpty(problemDetails.Detail))
-        {
-            return problemDetails.Detail;
-        }
-
-        // 如果有验证错误，格式化显示
-        if (problemDetails.IsValidationError)
-        {
-            return problemDetails.GetValidationErrorMessage() ?? "输入数据验证失败";
-        }
-
-        // 根据错误码获取消息
-        if (!string.IsNullOrEmpty(problemDetails.ErrorCode))
-        {
-            var prefix = GetErrorCodePrefix(problemDetails.ErrorCode);
-            if (ErrorCodePrefixMessages.TryGetValue(prefix, out var prefixMessage))
-            {
-                return problemDetails.Title ?? prefixMessage;
-            }
-        }
-
-        // 根据状态码获取消息
-        if (problemDetails.Status.HasValue)
-        {
-            return GetUserMessageFromStatusCode(problemDetails.Status.Value);
-        }
-
-        return problemDetails.Title ?? DefaultErrorMessage;
-    }
-
-    #endregion
 
     #region 安全消息
 

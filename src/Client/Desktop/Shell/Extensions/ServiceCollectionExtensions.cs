@@ -7,7 +7,6 @@ using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Modules;
-using LYBT.Desktop.Foundation.Performance;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
@@ -101,7 +100,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<ISystemSettingsService, SystemSettingsService>();
             containerRegistry.RegisterSingleton<IApiHealthCheckService, ApiHealthCheckService>();
             containerRegistry.RegisterSingleton<IApiService, ApiService>();
-            containerRegistry.RegisterSingleton<IStartupOptimizationService, StartupOptimizationService>();
+            // StartupOptimizationService 已移除（空壳无实际功能）
             containerRegistry.RegisterSingleton<ITokenLifecycleService, TokenLifecycleService>();
         }
 

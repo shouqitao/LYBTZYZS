@@ -29,21 +29,6 @@ public partial class NavigationManager : ObservableObject
     [ObservableProperty]
     private NavigationItem? _selectedNavItem;
 
-    private ICollectionView? _groupedNavItems;
-
-    public ICollectionView GroupedNavItems
-    {
-        get
-        {
-            if (_groupedNavItems == null)
-            {
-                _groupedNavItems = CollectionViewSource.GetDefaultView(NavigationItems);
-                _groupedNavItems.GroupDescriptions.Add(new PropertyGroupDescription(nameof(NavigationItem.Group)));
-            }
-            return _groupedNavItems;
-        }
-    }
-
     public NavigationManager(
         INavigationCoordinator navigationCoordinator,
         ILogger<NavigationManager> logger,

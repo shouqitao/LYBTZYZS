@@ -25,107 +25,18 @@ namespace LYBT.Desktop.Controls.Converters
     /// </summary>
     public static class Cvt
     {
-        // ========== Boolean Converters ==========
-
-        /// <summary>
-        /// Bool -> Visibility (true=Visible, false=Collapsed)
-        /// </summary>
         public static readonly IValueConverter BoolToVis = new BooleanToVisibilityConverter();
-
-        /// <summary>
-        /// Bool -> int (false=0, true=1)，用于 Transitioner.SelectedIndex
-        /// </summary>
         public static readonly IValueConverter BoolToInt = new BoolToIntConverter();
-
-        /// <summary>
-        /// Bool -> Visibility (true=Collapsed, false=Visible)
-        /// </summary>
-        public static readonly IValueConverter InverseBoolToVis = new InverseBooleanToVisibilityConverter();
-
-        /// <summary>
-        /// Bool -> !Bool
-        /// </summary>
-        public static readonly IValueConverter InverseBool = new InverseBooleanConverter();
-
-        /// <summary>
-        /// Bool -> Brush (可配置TrueBrush/FalseBrush)
-        /// </summary>
         public static readonly IValueConverter BoolToBrush = new BoolToBrushConverter();
-
-        /// <summary>
-        /// Bool -> Color/Brush (支持ConverterParameter="TrueColor|FalseColor")
-        /// </summary>
         public static readonly IValueConverter BoolToColor = new BoolToColorConverter();
-
-        /// <summary>
-        /// Bool -> Double (可配置TrueValue/FalseValue)
-        /// </summary>
-        public static readonly IValueConverter BoolToDouble = new BoolToDoubleConverter();
-
-        /// <summary>
-        /// Bool -> Margin/Thickness (true=12,8,0,8 expanded, false=0,8,0,8 collapsed centered)
-        /// </summary>
-        public static readonly IValueConverter BoolToMargin = new BoolToMarginConverter();
-
-        // ========== Visibility Converters ==========
-
-        /// <summary>
-        /// String -> Visibility (null/empty=Collapsed, otherwise=Visible)
-        /// </summary>
+        public static readonly IValueConverter InverseBoolToVis = new InverseBooleanToVisibilityConverter();
+        public static readonly IValueConverter InverseBool = new InverseBooleanConverter();
         public static readonly IValueConverter StringToVis = new StringToVisibilityConverter();
-
-        /// <summary>
-        /// Object -> Visibility (null=Collapsed, otherwise=Visible)
-        /// </summary>
         public static readonly IValueConverter NullToVis = new NullToVisibilityConverter();
-
-        /// <summary>
-        /// Object -> Visibility (null=Visible, otherwise=Collapsed)
-        /// </summary>
-        public static readonly IValueConverter InverseNullToVis = new InverseNullToVisibilityConverter();
-
-        /// <summary>
-        /// Object -> Visibility (null=Collapsed, otherwise=Visible)
-        /// 别名: 与 NullToVis 相同功能，语义更清晰
-        /// </summary>
         public static readonly IValueConverter NotNullToVis = new NullToVisibilityConverter();
-
-        /// <summary>
-        /// int/long -> Visibility (0=Visible, otherwise=Collapsed)
-        /// 用于显示空状态：当集合为空时显示"无数据"提示
-        /// </summary>
-        public static readonly IValueConverter ZeroToVis = new ZeroToVisibilityConverter();
-
-        // ========== Enum/Status Converters ==========
-
-        /// <summary>
-        /// Enum -> Description属性值
-        /// </summary>
+        public static readonly IValueConverter InverseNullToVis = new InverseNullToVisibilityConverter();
         public static readonly IValueConverter EnumDesc = new EnumDescriptionConverter();
-
-        /// <summary>
-        /// ApiHealthStatus -> Color
-        /// </summary>
-        public static readonly IValueConverter ApiStatusToColor = new ApiHealthStatusToColorConverter();
-
-        /// <summary>
-        /// ApiHealthStatus -> Text
-        /// </summary>
-        public static readonly IValueConverter ApiStatusToText = new ApiHealthStatusToTextConverter();
-
-        // ========== String Converters ==========
-
-        /// <summary>
-        /// String -> 首字符
-        /// </summary>
         public static readonly IValueConverter FirstChar = new FirstCharacterConverter();
-
-        // ========== Domain-specific Converters ========== ========== ==========
-
-        /// <summary>
-        /// DecocteMethod -> Visibility (特殊煎法显示控制)
-        /// </summary>
         public static readonly IValueConverter DecocteMethodToVis = new DecocteMethodToVisibilityConverter();
-
     }
 }
