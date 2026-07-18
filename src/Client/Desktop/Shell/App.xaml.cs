@@ -115,7 +115,7 @@ public partial class App : PrismApplication
         });
         // Infrastructure registrations: available for future callers, not yet injected anywhere.
         containerRegistry.RegisterSingleton<ISnackbarService, SnackbarService>();
-        containerRegistry.RegisterSingleton<IDialogHostService, DialogHostService>();
+
     }
 
     /// <summary>配置ViewModel定位器</summary>

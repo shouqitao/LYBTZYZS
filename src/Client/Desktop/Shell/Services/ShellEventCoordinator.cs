@@ -87,7 +87,6 @@ public class ShellEventCoordinator : IDisposable
             _userActivityTracker.StartTracking();
             _ = _tokenLifecycleService.StartMonitoringFromStorageAsync();
 
-            _menuManager.RefreshMenuVisibility();
             _navigationManager.NavigationItems = _navigationManager.BuildNavigationItems(args.User.Role);
 
             // 背景预加载高频模块

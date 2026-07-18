@@ -28,11 +28,7 @@ public static class UnifiedApplicationInitialization
             // 2. 配置服务初始化
             app.InitializeConfigurationServices(scope);
 
-            // 3. 安全配置验证
-            // 临时注释掉缺失的安全配置验证服务
-            // await app.ValidateSecurityConfigurationAsync(scope);
-
-            // 4. 记录启动日志
+            // 3. 记录启动日志
             await app.LogApplicationStartupAsync(scope);
         }
         catch (Exception ex)
@@ -132,14 +128,6 @@ public static class UnifiedApplicationInitialization
 
     /// <summary>
     /// 安全配置验证
-    /// </summary>
-    private static async Task ValidateSecurityConfigurationAsync(this WebApplication app, IServiceScope scope)
-    {
-        // 临时注释掉安全配置验证以完成核心功能测试
-        await Task.CompletedTask;
-
-    }
-
     /// <summary>
     /// 记录启动日志
     /// </summary>

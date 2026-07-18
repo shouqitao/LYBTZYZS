@@ -89,10 +89,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     #region 计算属性（委托给 MenuManager / NavigationManager / StatusBarManager）
 
-    public bool IsUserManagementVisible => _menuManager.IsUserManagementVisible;
-    public bool IsSystemSettingsVisible => _menuManager.IsSystemSettingsVisible;
-    public bool IsPasswordChangeVisible => _menuManager.IsPasswordChangeVisible;
-
     public ObservableCollection<NavigationItem> NavigationItems => _navigationManager.NavigationItems;
 
     public NavigationItem? SelectedNavItem
@@ -245,9 +241,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     private void OnLoginSuccessHandled(object? sender, EventArgs e)
     {
-        OnPropertyChanged(nameof(IsUserManagementVisible));
-        OnPropertyChanged(nameof(IsSystemSettingsVisible));
-        OnPropertyChanged(nameof(IsPasswordChangeVisible));
         OnPropertyChanged(nameof(NavigationItems));
     }
 

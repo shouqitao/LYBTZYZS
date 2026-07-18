@@ -195,7 +195,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.Register<IStartupStep, LocalWebApiStartupStep>("LocalWebApi");
             // API健康检查 - 5秒超时，后台异步执行（Transient生命周期，每次解析新实例）
             containerRegistry.Register<ApiHealthCheckStartupStep>();
-            containerRegistry.Register<IStartupStep, WarmupStartupStep>("Warmup");
+
 
             // 全局API健康监控器（断路器+订阅模式）
             containerRegistry.RegisterSingleton<IApiHealthMonitor, ApiHealthMonitor>();

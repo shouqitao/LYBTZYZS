@@ -46,8 +46,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
             dto.Remark,
             request.CurrentUserId);
 
-        // 使用Identity的密码哈希
-        var password = dto.Password ?? "User@123456";
+        var password = dto.Password ?? Guid.NewGuid().ToString("N")[..12];
         var result = await _userManager.CreateAsync(user, password);
         if (!result.Succeeded)
         {

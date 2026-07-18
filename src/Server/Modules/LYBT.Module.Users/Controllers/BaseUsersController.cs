@@ -17,7 +17,6 @@ namespace LYBT.Module.Users.Controllers;
 /// 用户管理 Controller 共享基类
 /// 供 WebAPI 和 LocalWebAPI 共享，减少重复代码
 /// </summary>
-using LYBT.Infrastructure.Constants;
 
 [ApiController]
 [Authorize]

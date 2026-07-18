@@ -73,11 +73,6 @@ public interface INavigationCoordinator
     /// </summary>
     IReadOnlyList<BreadcrumbItem> Breadcrumbs { get; }
 
-    /// <summary>
-    /// 跳转到指定面包屑层级
-    /// </summary>
-    void NavigateToBreadcrumb(BreadcrumbItem item);
-
     #endregion
 
     #region 历史导航 (从ViewNavigationService整合)

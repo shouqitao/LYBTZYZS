@@ -263,43 +263,4 @@ public class StartupStepsTests
     }
 
     #endregion
-
-    #region WarmupStartupStep Tests
-
-    public class WarmupStartupStepTests
-    {
-        private readonly ILogger<WarmupStartupStep> _logger;
-        private readonly WarmupStartupStep _sut;
-
-        public WarmupStartupStepTests()
-        {
-            _logger = Substitute.For<ILogger<WarmupStartupStep>>();
-            _sut = new WarmupStartupStep(_logger);
-        }
-
-        [Fact]
-        public void Properties_ShouldHaveCorrectValues()
-        {
-            _sut.Name.Should().Be("应用预热");
-            _sut.Order.Should().Be(50);
-            _sut.IsRequired.Should().BeFalse();
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_ShouldReturnSuccess()
-        {
-            var result = await _sut.ExecuteAsync();
-            result.Success.Should().BeTrue();
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_ShouldReportProgress()
-        {
-            var progress = Substitute.For<IProgress<string>>();
-            await _sut.ExecuteAsync(progress);
-            progress.Received(1).Report(Arg.Is<string>(s => s.Contains("预热")));
-        }
-    }
-
-    #endregion
 }

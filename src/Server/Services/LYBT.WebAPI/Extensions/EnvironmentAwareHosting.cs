@@ -23,20 +23,6 @@ public static class EnvironmentAwareHosting
             // 开发模式：控制台运行
             hostBuilder.UseConsoleLifetime();
         }
-        else
-        {
-            // 生产模式：Windows Service运行
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                hostBuilder.UseWindowsService();
-            }
-            else
-            {
-                // 非Windows平台使用标准主机生命周期
-                hostBuilder.UseConsoleLifetime();
-            }
-        }
-
         return hostBuilder;
     }
 
@@ -141,70 +127,6 @@ public static class EnvironmentAwareHosting
         return app;
     }
 
-    /// <summary>
-    /// 配置环境感知的优雅关闭
-    /// </summary>
-    public static async Task ConfigureEnvironmentAwareShutdown(this WebApplication app)
-    {
-        var environment = app.Environment.EnvironmentName;
-
-        if (environment == "Development")
-        {
-            await ConfigureDevelopmentShutdown(app);
-        }
-        else
-        {
-            await ConfigureProductionShutdown(app);
-        }
-    }
-
-    /// <summary>
-    /// 开发模式的优雅关闭配置
-    /// </summary>
-    private static async Task ConfigureDevelopmentShutdown(WebApplication app)
-    {
-        var cancellationTokenSource = new CancellationTokenSource();
-
-        Console.CancelKeyPress += (sender, e) =>
-        {
-            e.Cancel = true;
-            Console.WriteLine();
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("⏹️  正在停止服务...");
-            Console.ResetColor();
-            cancellationTokenSource.Cancel();
-        };
-
-        AppDomain.CurrentDomain.ProcessExit += (_, __) =>
-        {
-            cancellationTokenSource.Cancel();
-            app.StopAsync().GetAwaiter().GetResult();
-        };
-
-        try
-        {
-            await app.RunAsync(cancellationTokenSource.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine(" 服务已安全停止");
-            Console.ResetColor();
-        }
-        finally
-        {
-            await app.DisposeAsync();
-        }
-    }
-
-    /// <summary>
-    /// 生产模式的优雅关闭配置
-    /// </summary>
-    private static async Task ConfigureProductionShutdown(WebApplication app)
-    {
-        // 生产模式使用标准的Windows Service生命周期管理
-        await app.RunAsync();
-    }
 }
 
 

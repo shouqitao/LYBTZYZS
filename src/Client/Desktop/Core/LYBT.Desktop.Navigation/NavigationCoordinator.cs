@@ -255,14 +255,6 @@ public class NavigationCoordinator : INavigationCoordinator
     /// <summary>清除导航历史</summary>
     public void ClearHistory() => _historyService.ClearHistory();
 
-    /// <summary>跳转到指定面包屑</summary>
-    public void NavigateToBreadcrumb(BreadcrumbItem item)
-    {
-        if (item.IsCurrent) return;
-        _logger.LogInformation("面包屑导航: 跳转到 {Title} ({ViewName})", item.Title, item.ViewName);
-        NavigateTo(item.ViewName);
-    }
-
     #endregion
 
     #region Region 管理

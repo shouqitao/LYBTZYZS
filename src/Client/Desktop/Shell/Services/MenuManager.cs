@@ -46,42 +46,6 @@ public class MenuManager
         InitializeCommands();
     }
 
-    #region S6-01 菜单可见性
-
-    /// <summary>S6-01: 用户管理菜单可见性 (仅 Admin/SuperAdmin)</summary>
-    public bool IsUserManagementVisible
-    {
-        get
-        {
-            var role = _sessionManager.CurrentUser?.Role;
-            if (role == null) return false;
-            var definition = _roleRegistry.GetDefinition(role.Value);
-            return definition?.RequiredModules.Contains("UsersModule") ?? false;
-        }
-    }
-
-    /// <summary>S6-01: 系统设置可见性 (仅 SuperAdmin)</summary>
-    public bool IsSystemSettingsVisible =>
-        _sessionManager.CurrentUser?.Role == UserRole.SuperAdmin;
-
-    /// <summary>S6-01: 密码修改可见性</summary>
-    public bool IsPasswordChangeVisible => true;
-
-    /// <summary>S6-01: 账户设置可见性</summary>
-    public bool IsAccountSettingsVisible => true;
-
-    /// <summary>刷新菜单可见性 (登录后/角色变更时调用)</summary>
-    public void RefreshMenuVisibility()
-    {
-        _logger.LogDebug(
-            "菜单可见性刷新: Role={Role}, UserManagement={UserMgmt}, Settings={Settings}",
-            _sessionManager.CurrentUser?.Role,
-            IsUserManagementVisible,
-            IsSystemSettingsVisible);
-    }
-
-    #endregion S6-01 菜单可见性
-
     #region 命令属性
 
     /// <summary>快速添加患者命令(Ctrl+N)</summary>
@@ -132,9 +96,6 @@ public class MenuManager
     /// <summary>导航前进命令 — 导航架构改进方案 v1.0</summary>
     public DelegateCommand NavigateForwardCommand { get; private set; } = null!;
 
-    /// <summary>面包屑跳转命令 — 导航架构改进方案 v1.0</summary>
-    public DelegateCommand<BreadcrumbItem> NavigateToBreadcrumbCommand { get; private set; } = null!;
-
     #endregion 命令属性
 
     /// <summary>初始化所有命令</summary>
@@ -149,10 +110,8 @@ public class MenuManager
         NavigateToHomeCommand = new DelegateCommand(ExecuteNavigateToHome);
         NavigateToSystemSettingsCommand = new DelegateCommand(ExecuteNavigateToSystemSettings);
 
-        // 导航架构改进方案 v1.0 — 后退/前进/面包屑命令
         NavigateBackCommand = new DelegateCommand(ExecuteNavigateBack, () => _navigationCoordinator.CanNavigateBack);
         NavigateForwardCommand = new DelegateCommand(ExecuteNavigateForward, () => _navigationCoordinator.CanNavigateForward);
-        NavigateToBreadcrumbCommand = new DelegateCommand<BreadcrumbItem>(ExecuteNavigateToBreadcrumb);
 
         _logger.LogDebug("菜单命令系统已初始化");
     }
@@ -189,23 +148,7 @@ public class MenuManager
         RaiseNavigationCanExecuteChanged();
     }
 
-    /// <summary>导航架构改进方案 v1.0 — 面包屑跳转命令</summary>
-    private void ExecuteNavigateToBreadcrumb(BreadcrumbItem? item)
-    {
-        if (item == null) return;
-        _logger.LogInformation("面包屑跳转: {Title}", item.Title);
-        _navigationCoordinator.NavigateToBreadcrumb(item);
-    }
-
-    /// <summary>刷新导航命令可执行状态</summary>
     private void RaiseNavigationCanExecuteChanged()
-    {
-        NavigateBackCommand.RaiseCanExecuteChanged();
-        NavigateForwardCommand.RaiseCanExecuteChanged();
-    }
-
-    /// <summary>外部刷新导航命令可执行状态 — 由MainWindowViewModel在导航事件后调用</summary>
-    public void RefreshNavigationCanExecute()
     {
         NavigateBackCommand.RaiseCanExecuteChanged();
         NavigateForwardCommand.RaiseCanExecuteChanged();

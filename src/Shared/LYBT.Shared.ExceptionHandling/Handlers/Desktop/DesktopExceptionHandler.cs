@@ -49,7 +49,7 @@ public class DesktopExceptionHandler : IDesktopExceptionHandler
     /// <inheritdoc/>
     public string GetUserFriendlyMessage(Exception exception)
     {
-        return ExceptionMessageMapper.GetUserFriendlyMessage(exception);
+        return ClientErrorMessageMapper.GetUserFriendlyMessage(exception);
     }
 
     /// <inheritdoc/>
