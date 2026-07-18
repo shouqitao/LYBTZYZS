@@ -2,6 +2,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using CommunityToolkit.Mvvm.ComponentModel;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Services
@@ -55,8 +56,8 @@ namespace LYBT.Desktop.Infrastructure.Services
         public void HandleException(Exception exception, string? context = null)
         {
             var message = context != null
-                ? $"{context}: {exception.Message}"
-                : exception.Message;
+                ? ClientErrorMessageMapper.GetSafeOperationFailureMessage(context, exception)
+                : ClientErrorMessageMapper.GetUserFriendlyMessage(exception);
 
             ErrorMessage = message;
             _logger?.LogError(exception, "Error occurred: {Context}", context);

@@ -7,6 +7,7 @@ using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Desktop.Shared.Events;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
@@ -99,6 +100,9 @@ public partial class ClinicalWorkspaceViewModel : NavigableViewModelBase
         _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
 
         PageTitle = "看诊工作台";
+
+        // 订阅缓存失效事件：其他模块修改患者数据后立即刷新本地缓存
+        Events.Subscribe<CacheEvents.InvalidatedEvent, CacheInvalidatedPayload>(OnCacheInvalidated);
     }
 
     #endregion 构造函数
@@ -301,6 +305,21 @@ public partial class ClinicalWorkspaceViewModel : NavigableViewModelBase
     }
 
     #endregion 私有方法
+
+    #region 缓存失效处理
+
+    private void OnCacheInvalidated(CacheInvalidatedPayload payload)
+    {
+        if (payload.Domain is CacheDomain.Patients or CacheDomain.All)
+        {
+            Logger.LogDebug("收到缓存失效通知 ({Domain}: {Reason})，清除患者列表缓存", payload.Domain, payload.Reason);
+            _patientListCache = null;
+            _patientHistoryCache.Clear();
+            _ = LoadPatientsAsync();
+        }
+    }
+
+    #endregion 缓存失效处理
 
     #region INavigationAware
 

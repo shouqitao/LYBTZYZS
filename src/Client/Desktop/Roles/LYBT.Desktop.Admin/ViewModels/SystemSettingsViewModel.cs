@@ -148,7 +148,7 @@ namespace LYBT.Desktop.Admin.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "加载系统设置失败");
-                SetError($"加载系统设置失败: {ex.Message}");
+                SetError(ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载系统设置", ex));
             }
 
             return Task.CompletedTask;

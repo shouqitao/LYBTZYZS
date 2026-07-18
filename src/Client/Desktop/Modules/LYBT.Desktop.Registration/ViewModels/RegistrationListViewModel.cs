@@ -6,6 +6,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -308,7 +309,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "[REG-VM] 加载队列失败");
-            SetError($"加载失败: {ex.Message}");
+            SetError(ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载挂号列表", ex));
         }
         finally
         {

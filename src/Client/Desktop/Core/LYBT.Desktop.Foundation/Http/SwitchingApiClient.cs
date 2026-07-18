@@ -29,18 +29,11 @@ public sealed class SwitchingApiClient : IApiClient, IDisposable
     private readonly Func<string, IHttpClientFactory> _localHttpClientFactory;
     private readonly RefitSettings _refitSettings;
 
-    private IApiClient? _current;
-    private string? _currentUrl;
+    private volatile IApiClient? _current;
+    private volatile string? _currentUrl;
     private readonly object _lock = new();
     private bool _disposed;
 
-    /// <summary>
-    /// Initializes a new instance of <see cref="SwitchingApiClient"/>.
-    /// </summary>
-    /// <param name="connectionSettings">Connection URL provider.</param>
-    /// <param name="remoteHttpClientFactory">Factory for Remote-mode HttpClient with handler chain.</param>
-    /// <param name="localHttpClientFactory">Factory for Local-mode IHttpClientFactory.</param>
-    /// <param name="refitSettings">Refit serialization settings.</param>
     public SwitchingApiClient(
         IConnectionSettingsService connectionSettings,
         Func<string, HttpClient> remoteHttpClientFactory,
@@ -58,31 +51,37 @@ public sealed class SwitchingApiClient : IApiClient, IDisposable
     }
 
     /// <summary>
-    /// Current active API client, resolved from URL.
-    /// Throws if no client could be created.
+    /// 无锁快路径：URL 未变时直接返回缓存的客户端（99.9% 命中）。
+    /// URL 变更时才进入 lock 创建新客户端。
     /// </summary>
     private IApiClient Current
     {
         get
         {
+            var current = _current;
+            var url = _connectionSettings.CurrentUrl;
+
+            // 快路径：URL 未变，直接返回缓存实例
+            if (current is not null && _currentUrl == url)
+                return current;
+
+            // 慢路径：URL 变更或首次初始化，加锁创建
             lock (_lock)
             {
-                var url = _connectionSettings.CurrentUrl;
-                if (_current is null || _currentUrl != url)
-                {
-                    var oldClient = _current as IDisposable;
-                    _current = _connectionSettings.IsLocal
-                        ? new HttpClientApiClient(_localHttpClientFactory(url))
-                        : new RefitApiClient(_remoteHttpClientFactory(url), _refitSettings);
-                    _currentUrl = url;
-                    oldClient?.Dispose();
-                }
+                // 双重检查（可能被其他线程抢先创建）
+                if (_current is not null && _currentUrl == url)
+                    return _current;
+
+                var oldClient = _current as IDisposable;
+                _current = _connectionSettings.IsLocal
+                    ? new HttpClientApiClient(_localHttpClientFactory(url))
+                    : new RefitApiClient(_remoteHttpClientFactory(url), _refitSettings);
+                _currentUrl = url;
+                oldClient?.Dispose();
                 return _current;
             }
         }
     }
-
-    // ========== IApiClient property delegation ==========
 
     /// <inheritdoc />
     public IApiClientAuth Auth => Current.Auth;

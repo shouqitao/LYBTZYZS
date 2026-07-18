@@ -4,6 +4,7 @@ using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Services.Toast;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Regions;
@@ -166,7 +167,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
                         catch (Exception ex)
                         {
                             Logger.LogError(ex, "InitializeAsync 执行失败");
-                            SetError($"初始化失败: {ex.Message}");
+                            SetError(ClientErrorMessageMapper.GetSafeOperationFailureMessage("初始化", ex));
                         }
                     });
                 }
@@ -174,7 +175,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
             catch (Exception ex)
             {
                 Logger.LogError(ex, "页面导航处理失败");
-                SetError($"页面加载失败: {ex.Message}");
+                SetError(ClientErrorMessageMapper.GetSafeOperationFailureMessage("页面加载", ex));
             }
         }
 
@@ -276,7 +277,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
             catch (Exception ex)
             {
                 Logger.LogError(ex, "返回主页失败");
-                SetError($"返回主页失败: {ex.Message}");
+                SetError(ClientErrorMessageMapper.GetSafeOperationFailureMessage("返回主页", ex));
             }
         }
 
@@ -297,7 +298,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
             catch (Exception ex)
             {
                 Logger.LogError(ex, "导航失败: {ViewName}", viewName);
-                SetError($"导航失败: {ex.Message}");
+                SetError(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导航", ex));
             }
         }
 

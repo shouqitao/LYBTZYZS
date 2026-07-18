@@ -43,6 +43,9 @@ public class ModuleLazyLoader : IModuleLazyLoader
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <summary>
+    /// 同步版本 — 内部 LoadModuleAsync 使用 Task.Run，不会死锁
+    /// </summary>
     public void EnsureModuleLoaded(string viewName)
     {
         if (_moduleLoadingService == null) return;
@@ -60,7 +63,27 @@ public class ModuleLazyLoader : IModuleLazyLoader
         }
     }
 
-    public void PreloadModules(UserRole role)
+    /// <summary>
+    /// 异步版本 — 推荐使用
+    /// </summary>
+    public async Task EnsureModuleLoadedAsync(string viewName)
+    {
+        if (_moduleLoadingService == null) return;
+        if (!ViewToModuleMap.TryGetValue(viewName, out var moduleName)) return;
+        if (_moduleLoadingService.IsModuleLoaded(moduleName)) return;
+
+        try
+        {
+            _logger.LogDebug("懒加载业务模块: {ModuleName}（触发视图: {ViewName}）", moduleName, viewName);
+            await _moduleLoadingService.LoadModuleAsync(moduleName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "懒加载模块 {ModuleName} 失败", moduleName);
+        }
+    }
+
+    public async Task PreloadModulesAsync(UserRole role)
     {
         if (_moduleLoadingService == null) return;
 
@@ -80,7 +103,7 @@ public class ModuleLazyLoader : IModuleLazyLoader
             try
             {
                 _logger.LogDebug("预加载模块: {ModuleName}", moduleName);
-                _moduleLoadingService.LoadModuleAsync(moduleName).GetAwaiter().GetResult();
+                await _moduleLoadingService.LoadModuleAsync(moduleName);
             }
             catch (Exception ex)
             {

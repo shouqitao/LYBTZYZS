@@ -8,6 +8,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
@@ -373,7 +374,7 @@ public partial class ReceptionistHomeViewModel : NavigableViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "导航失败: {ViewName}", viewName);
-            SetError($"导航失败: {ex.Message}");
+            SetError(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导航", ex));
         }
     }
 

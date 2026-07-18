@@ -2,6 +2,7 @@ using System.Reactive.Disposables;
 using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Events;
+using LYBT.Shared.ExceptionHandling.Mappers;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 
@@ -201,7 +202,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
                 Logger.LogError(ex, "{Operation} 失败", operationName);
                 if (showErrorToUser)
                 {
-                    SetError($"{operationName}失败: {ex.Message}");
+                    SetError(ClientErrorMessageMapper.GetSafeOperationFailureMessage(operationName, ex));
                 }
             }
             finally
@@ -243,7 +244,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
                 Logger.LogError(ex, "{Operation} 失败", operationName);
                 if (showErrorToUser)
                 {
-                    SetError($"{operationName}失败: {ex.Message}");
+                    SetError(ClientErrorMessageMapper.GetSafeOperationFailureMessage(operationName, ex));
                 }
                 return defaultValue;
             }

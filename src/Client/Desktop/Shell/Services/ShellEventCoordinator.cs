@@ -94,7 +94,7 @@ public class ShellEventCoordinator : IDisposable
             _ = Task.Run(async () =>
             {
                 await Task.Delay(2000);
-                _moduleLazyLoader.PreloadModules(args.User.Role);
+                await _moduleLazyLoader.PreloadModulesAsync(args.User.Role);
             });
 
             _logger.LogInformation("登录成功UI更新完成 [用户: {Username}]", args.User.UserName);

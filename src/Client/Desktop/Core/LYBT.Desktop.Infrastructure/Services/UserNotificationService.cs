@@ -1,5 +1,6 @@
 using System.Windows;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Shared.ExceptionHandling.Mappers;
 
 namespace LYBT.Desktop.Infrastructure.Services
 {
@@ -16,8 +17,8 @@ namespace LYBT.Desktop.Infrastructure.Services
         public Task HandleExceptionAsync(Exception exception, string? context = null)
         {
             var message = context != null
-                ? $"{context}\n\n错误详情: {exception.Message}"
-                : exception.Message;
+                ? ClientErrorMessageMapper.GetSafeOperationFailureMessage(context, exception)
+                : ClientErrorMessageMapper.GetUserFriendlyMessage(exception);
 
             return ShowErrorAsync(message, "错误");
         }
