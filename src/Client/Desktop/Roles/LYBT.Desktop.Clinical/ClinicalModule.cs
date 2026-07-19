@@ -10,6 +10,8 @@ namespace LYBT.Desktop.Clinical
     [Module(ModuleName = nameof(ClinicalModule))]
     [ModuleDependency("PatientsModule")]
     [ModuleDependency("MedicalCaseModule")]
+    [ModuleDependency("RegistrationModule")]
+    [ModuleDependency("CardReaderModule")]
     public class ClinicalModule : IModule
     {
         public void OnInitialized(IContainerProvider containerProvider)
@@ -35,6 +37,10 @@ namespace LYBT.Desktop.Clinical
             containerRegistry.RegisterForNavigation<Views.FormulaManagementView>();
             containerRegistry.RegisterForNavigation<Views.PatientManagementView>();
             containerRegistry.RegisterForNavigation<Views.MedicalCaseManagementView>();
+
+            // 前台角色视图（原 Receptionist 模块）
+            containerRegistry.Register<Receptionist.ViewModels.ReceptionistHomeViewModel>();
+            containerRegistry.RegisterForNavigation<Receptionist.Views.ReceptionistHomeView>();
         }
     }
 }

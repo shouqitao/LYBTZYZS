@@ -1,6 +1,6 @@
 using System.Windows;
 using LYBT.Desktop.Admin;
-using LYBT.Desktop.Receptionist;
+using LYBT.Desktop.Clinical.Receptionist;
 using LYBT.Desktop.Auth;
 using LYBT.Desktop.Infrastructure.CardReader;
 using LYBT.Desktop.Clinical;

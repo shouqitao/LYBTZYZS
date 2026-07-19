@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace LYBT.Desktop.Receptionist.Views;
+namespace LYBT.Desktop.Clinical.Receptionist.Views;
 
 /// <summary>
 /// 前台工作台主页视图

@@ -15,7 +15,7 @@ using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
 using Prism.Regions;
 
-namespace LYBT.Desktop.Receptionist.ViewModels;
+namespace LYBT.Desktop.Clinical.Receptionist.ViewModels;
 
 /// <summary>
 /// 前台工作台主页ViewModel

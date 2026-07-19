@@ -1,7 +1,7 @@
 using Prism.Ioc;
 using Prism.Modularity;
 
-namespace LYBT.Desktop.Receptionist;
+namespace LYBT.Desktop.Clinical.Receptionist;
 
 /// <summary>
 /// 前台角色模块
