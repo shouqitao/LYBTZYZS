@@ -791,7 +791,7 @@ namespace LYBT.Module.MedicalCases.Services
             return items;
         }
 
-        #region Private Helper Methods
+        #region 私有辅助方法
 
         /// <summary>
         /// 生成医案编号（格式：MC + 年月日 + 序号）

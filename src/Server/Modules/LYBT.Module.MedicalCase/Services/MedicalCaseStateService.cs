@@ -305,7 +305,7 @@ namespace LYBT.Module.MedicalCases.Services
                 medicalCaseId);
         }
 
-        #region Private Helper Methods
+        #region 私有辅助方法
 
         #endregion
     }
