@@ -42,12 +42,19 @@ public interface IFormulaRepository
     /// <summary>
     /// 按条件查询验方（含药材组成）。
     /// </summary>
-    /// <summary>
-    /// 按条件查询验方（含药材组成）。
-    /// </summary>
     Task<List<FormulaEntity>> FindWithHerbsAsync(
         System.Linq.Expressions.Expression<Func<FormulaEntity, bool>> predicate,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// 获取所有验方（含药材组成）。
+    /// </summary>
+    Task<List<FormulaEntity>> GetAllWithHerbsAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// 按分类获取验方（含药材组成）。
+    /// </summary>
+    Task<List<FormulaEntity>> GetByCategoryWithHerbsAsync(string category, CancellationToken ct = default);
 }
 
 

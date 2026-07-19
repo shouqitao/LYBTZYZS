@@ -19,14 +19,14 @@ namespace LYBT.Module.Formulas.Services;
 /// </summary>
 public class FormulaImportExportService : IFormulaImportExportService
 {
-    private readonly IFormulaRepositoryLegacy _repository;
+    private readonly IFormulaRepository _repository;
     private readonly IHerbCrossModuleService _crossModuleQuery;
     private readonly ILogger<FormulaImportExportService> _logger;
     private readonly FormulaMapper _mapper = new();
     private readonly ICacheInvalidationService _cacheInvalidation;
 
     public FormulaImportExportService(
-        IFormulaRepositoryLegacy repository,
+        IFormulaRepository repository,
         IHerbCrossModuleService crossModuleQuery,
         ILogger<FormulaImportExportService> logger,
         ICacheInvalidationService cacheInvalidation)
@@ -131,11 +131,11 @@ public class FormulaImportExportService : IFormulaImportExportService
                     formula.ValidationStatus = FormulaValidationStatus.Validated;
                 }
 
-                var savedFormula = await _repository.AddAsync(formula);
-                var formulaResultDto = _mapper.ToDetailDto(savedFormula);
+                await _repository.AddAsync(formula, CancellationToken.None);
+                var formulaResultDto = _mapper.ToDetailDto(formula);
 
                 result.SuccessCount++;
-                result.SuccessfulIds.Add(savedFormula.Id);
+                result.SuccessfulIds.Add(formula.Id);
                 result.SuccessfulFormulas.Add(formulaResultDto);
             }
             catch (Exception ex)

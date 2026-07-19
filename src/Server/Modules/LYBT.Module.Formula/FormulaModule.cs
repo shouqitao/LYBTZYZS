@@ -1,6 +1,5 @@
 using FluentValidation;
 using LYBT.Module.Formulas.Interfaces;
-using LYBT.Module.Formulas.Repositories;
 using LYBT.Module.Formulas.Services;
 using LYBT.Shared.Models.Validators.Formula;
 using LYBT.Shared.Configuration.Options.Server;
@@ -22,8 +21,7 @@ namespace LYBT.Module.Formulas
         /// </summary>
         public static IServiceCollection AddFormulaModule(this IServiceCollection services, IConfiguration configuration)
         {
-            // Legacy仓储（给FormulaImportExportService使用）
-            services.AddScoped<IFormulaRepositoryLegacy, FormulaRepository>();
+            // 注册导入导出服务
             services.AddScoped<IFormulaImportExportService, FormulaImportExportService>();
             // 注册共享验证器
             services.AddValidatorsFromAssemblyContaining<FormulaInputDtoValidator>();
@@ -43,7 +41,7 @@ namespace LYBT.Module.Formulas
                 var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
                 options.UseSqlServer(dbOptions.ConnectionString);
             });
-            services.AddScoped<Interfaces.IFormulaRepository, Infrastructure.FormulaRepository>();
+            services.AddScoped<IFormulaRepository, Infrastructure.FormulaRepository>();
 
             // Application层 - MediatR
             services.AddMediatR(cfg =>
