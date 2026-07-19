@@ -39,26 +39,6 @@ namespace LYBT.Infrastructure.DependencyInjection
             return services;
         }
 
-        /// <summary>
-        /// 注册Server端核心Repository（基于BaseRepository）
-        /// Phase 2 Task 2.4: 支持新旧两套接口注册（向后兼容）
-        /// </summary>
-        /// <param name="services">服务集合</param>
-        /// <returns>服务集合</returns>
-        public static IServiceCollection AddServerRepositories(this IServiceCollection services)
-        {
-            // 重要：不要注册开放泛型的基类（BaseRepository<>）
-            // 原因：基类是抽象的，无法被DI容器实例化
-            // 具体的Repository实现类已在各自模块的注册方法中注册
-
-            // 注册核心Repository（如果存在）
-            // 这里可以手动添加已知的Repository
-            // services.AddScoped<IPatientRepository, PatientRepository>();
-            // 等等...
-
-            return services;
-        }
-
     }
 }
 

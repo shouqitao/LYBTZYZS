@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Security.Claims;
 using LYBT.Entities.Auth;
 using LYBT.Entities.Common;
@@ -99,12 +100,32 @@ namespace LYBT.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // 显式应用软删除全局过滤器（与LocalDbContext保持一致）
+            ApplySoftDeleteFilter(modelBuilder);
+
             // 应用查询优化配置（索引、全局过滤器等）
             modelBuilder.ApplyOptimizations();
 
             // 自动发现并应用所有 IEntityTypeConfiguration<T> 配置类
             // 符合 Microsoft EF Core 官方最佳实践
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        }
+
+        /// <summary>
+        /// 应用软删除全局过滤器 — 遍历所有实现ISoftDeletable的实体
+        /// </summary>
+        private static void ApplySoftDeleteFilter(ModelBuilder modelBuilder)
+        {
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                if (typeof(ISoftDeletable).IsAssignableFrom(entityType.ClrType))
+                {
+                    var parameter = Expression.Parameter(entityType.ClrType, "e");
+                    var property = Expression.Property(parameter, nameof(ISoftDeletable.IsDeleted));
+                    var filter = Expression.Lambda(Expression.Not(property), parameter);
+                    modelBuilder.Entity(entityType.ClrType).HasQueryFilter(filter);
+                }
+            }
         }
 
         #region 审计字段自动化

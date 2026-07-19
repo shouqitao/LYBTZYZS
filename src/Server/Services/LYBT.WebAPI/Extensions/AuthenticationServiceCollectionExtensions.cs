@@ -35,13 +35,7 @@ public static class AuthenticationServiceCollectionExtensions
 
             if (string.IsNullOrEmpty(jwtSecret))
             {
-                var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
-                if (environment.Equals("Production", StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new InvalidOperationException("生产环境必须配置 JWT 密钥（JWT_SECRET 或 Jwt:SecretKey）。");
-                }
-
-                jwtSecret = "DefaultDevelopmentSecretKeyForJWTAuthentication_ShouldBeReplacedInProduction";
+                throw new InvalidOperationException("必须配置 JWT 密钥（JWT_SECRET 环境变量或 Jwt:SecretKey 配置项）。");
             }
 
             if (!string.IsNullOrEmpty(jwtSecret))
