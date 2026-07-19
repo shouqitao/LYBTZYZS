@@ -137,12 +137,58 @@ public sealed class HttpClientApiClient : IApiClient,
     private static ApiResponse WrapSuccess(string message = "操作成功")
         => ApiResponse.CreateSuccess(null, message);
 
+    /// <summary>Build URL with conditional query parameters.</summary>
+    private static string BuildQueryString(string baseUrl, params (string Key, string? Value)[] parameters)
+    {
+        var sb = new StringBuilder(baseUrl);
+        var first = !baseUrl.Contains('?');
+        foreach (var (key, value) in parameters)
+        {
+            if (string.IsNullOrWhiteSpace(value)) continue;
+            sb.Append(first ? '?' : '&');
+            sb.Append(key);
+            sb.Append('=');
+            sb.Append(Uri.EscapeDataString(value));
+            first = false;
+        }
+        return sb.ToString();
+    }
+
+    /// <summary>Unified HTTP request execution with response handling.</summary>
+    private async Task<HttpResponseMessage> SendAsync(string url, HttpMethod method, object? body = null, CancellationToken ct = default)
+    {
+        using var client = CreateClient();
+        HttpResponseMessage response;
+        if (body != null)
+        {
+            using var content = ToJsonContent(body);
+            response = method.Method.ToUpperInvariant() switch
+            {
+                "POST" => await client.PostAsync(url, content, ct),
+                "PUT" => await client.PutAsync(url, content, ct),
+                "PATCH" => await client.PatchAsync(url, content, ct),
+                _ => throw new ArgumentException($"Unsupported HTTP method: {method.Method}")
+            };
+        }
+        else
+        {
+            response = method.Method.ToUpperInvariant() switch
+            {
+                "GET" => await client.GetAsync(url, ct),
+                "POST" => await client.PostAsync(url, null, ct),
+                "PUT" => await client.PutAsync(url, null, ct),
+                "DELETE" => await client.DeleteAsync(url, ct),
+                _ => throw new ArgumentException($"Unsupported HTTP method: {method.Method}")
+            };
+        }
+        await EnsureSuccessOrThrowAsync(response);
+        return response;
+    }
+
     /// <summary>GET -> deserialize -> wrap in ApiResponse&lt;T&gt;.</summary>
     private async Task<ApiResponse<T>> GetAndWrapAsync<T>(string url, CancellationToken ct = default)
     {
-        using var client = CreateClient();
-        var response = await client.GetAsync(url, ct);
-        await EnsureSuccessOrThrowAsync(response);
+        var response = await SendAsync(url, HttpMethod.Get, ct: ct);
         var data = await DeserializeAsync<T>(response, ct);
         return WrapSuccess(data!);
     }
@@ -150,114 +196,64 @@ public sealed class HttpClientApiClient : IApiClient,
     /// <summary>GET -> deserialize -> return raw T (local-only methods).</summary>
     private async Task<T> GetRawAsync<T>(string url, CancellationToken ct = default)
     {
-        using var client = CreateClient();
-        var response = await client.GetAsync(url, ct);
-        await EnsureSuccessOrThrowAsync(response);
+        var response = await SendAsync(url, HttpMethod.Get, ct: ct);
         return (await DeserializeAsync<T>(response, ct))!;
     }
 
     /// <summary>POST with JSON body -> deserialize -> wrap in ApiResponse&lt;T&gt;.</summary>
-    private async Task<ApiResponse<T>> PostAndWrapAsync<T>(string url, object? body = null, CancellationToken ct = default)
-    {
-        using var client = CreateClient();
-        HttpResponseMessage response;
-        if (body != null)
-        {
-            using var content = ToJsonContent(body);
-            response = await client.PostAsync(url, content, ct);
-        }
-        else
-        {
-            response = await client.PostAsync(url, null, ct);
-        }
-        await EnsureSuccessOrThrowAsync(response);
-        var data = await DeserializeAsync<T>(response, ct);
-        return WrapSuccess(data!);
-    }
+    private Task<ApiResponse<T>> PostAndWrapAsync<T>(string url, object? body = null, CancellationToken ct = default)
+        => SendAndWrapAsync<T>(url, HttpMethod.Post, body, ct);
 
     /// <summary>POST -> non-generic ApiResponse (void operations).</summary>
     private async Task<ApiResponse> PostVoidAsync(string url, object? body = null, CancellationToken ct = default)
     {
-        using var client = CreateClient();
-        HttpResponseMessage response;
-        if (body != null)
-        {
-            using var content = ToJsonContent(body);
-            response = await client.PostAsync(url, content, ct);
-        }
-        else
-        {
-            response = await client.PostAsync(url, null, ct);
-        }
-        await EnsureSuccessOrThrowAsync(response);
+        await SendAsync(url, HttpMethod.Post, body, ct);
         return WrapSuccess();
     }
 
     /// <summary>POST -> return raw T (local-only methods).</summary>
     private async Task<T> PostRawAsync<T>(string url, object? body = null, CancellationToken ct = default)
     {
-        using var client = CreateClient();
-        HttpResponseMessage response;
-        if (body != null)
-        {
-            using var content = ToJsonContent(body);
-            response = await client.PostAsync(url, content, ct);
-        }
-        else
-        {
-            response = await client.PostAsync(url, null, ct);
-        }
-        await EnsureSuccessOrThrowAsync(response);
+        var response = await SendAsync(url, HttpMethod.Post, body, ct);
         return (await DeserializeAsync<T>(response, ct))!;
     }
 
     /// <summary>PUT with JSON body -> deserialize -> wrap in ApiResponse&lt;T&gt;.</summary>
-    private async Task<ApiResponse<T>> PutAndWrapAsync<T>(string url, object? body = null, CancellationToken ct = default)
-    {
-        using var client = CreateClient();
-        HttpResponseMessage response;
-        if (body != null)
-        {
-            using var content = ToJsonContent(body);
-            response = await client.PutAsync(url, content, ct);
-        }
-        else
-        {
-            response = await client.PutAsync(url, null, ct);
-        }
-        await EnsureSuccessOrThrowAsync(response);
-        var data = await DeserializeAsync<T>(response, ct);
-        return WrapSuccess(data!);
-    }
+    private Task<ApiResponse<T>> PutAndWrapAsync<T>(string url, object? body = null, CancellationToken ct = default)
+        => SendAndWrapAsync<T>(url, HttpMethod.Put, body, ct);
 
     /// <summary>PUT -> non-generic ApiResponse (void operations).</summary>
     private async Task<ApiResponse> PutVoidAsync(string url, object? body = null, CancellationToken ct = default)
     {
-        using var client = CreateClient();
-        HttpResponseMessage response;
-        if (body != null)
-        {
-            using var content = ToJsonContent(body);
-            response = await client.PutAsync(url, content, ct);
-        }
-        else
-        {
-            response = await client.PutAsync(url, null, ct);
-        }
-        await EnsureSuccessOrThrowAsync(response);
+        await SendAsync(url, HttpMethod.Put, body, ct);
         return WrapSuccess();
     }
 
     /// <summary>DELETE -> non-generic ApiResponse.</summary>
     private async Task<ApiResponse> DeleteVoidAsync(string url, CancellationToken ct = default)
     {
-        using var client = CreateClient();
-        var response = await client.DeleteAsync(url, ct);
-        await EnsureSuccessOrThrowAsync(response);
+        await SendAsync(url, HttpMethod.Delete, ct: ct);
         return WrapSuccess();
     }
 
-    /// <summary>GET -> return HttpResponseMessage (file downloads). Caller disposes client.</summary>
+    /// <summary>HTTP request -> deserialize -> wrap in ApiResponse&lt;T&gt;.</summary>
+    private async Task<ApiResponse<T>> SendAndWrapAsync<T>(string url, HttpMethod method, object? body = null, CancellationToken ct = default)
+    {
+        var response = await SendAsync(url, method, body, ct);
+        var data = await DeserializeAsync<T>(response, ct);
+        return WrapSuccess(data!);
+    }
+
+    /// <summary>GET -> client-side pagination -> wrap in ApiResponse&lt;PagedResult&lt;T&gt;&gt;.</summary>
+    private async Task<ApiResponse<PagedResult<T>>> GetPagedAndWrapAsync<T>(string url, int page, int pageSize, CancellationToken ct = default)
+    {
+        var response = await SendAsync(url, HttpMethod.Get, ct: ct);
+        var items = await DeserializeAsync<List<T>>(response, ct) ?? [];
+        var paged = new PagedResult<T>(items, items.Count, page, pageSize);
+        return WrapSuccess(paged);
+    }
+
+    /// <summary>GET -> return HttpResponseMessage (file downloads). Caller disposes response.</summary>
     private async Task<HttpResponseMessage> GetResponseAsync(string url, CancellationToken ct = default)
     {
         var client = CreateClient();
@@ -376,16 +372,9 @@ public sealed class HttpClientApiClient : IApiClient,
     async Task<ApiResponse<PagedResult<UserListDto>>> IApiClientUsers.GetUsersAsync(
         int page, int pageSize, string? keyword)
     {
-        var url = $"/api/v1/users?page={page}&pageSize={pageSize}";
-        if (!string.IsNullOrWhiteSpace(keyword))
-            url += $"&keyword={Uri.EscapeDataString(keyword)}";
-
-        using var client = CreateClient();
-        var response = await client.GetAsync(url);
-        await EnsureSuccessOrThrowAsync(response);
-        var items = await DeserializeAsync<List<UserListDto>>(response) ?? [];
-        var paged = new PagedResult<UserListDto>(items, items.Count, page, pageSize);
-        return WrapSuccess(paged);
+        var url = BuildQueryString($"/api/v1/users?page={page}&pageSize={pageSize}",
+            ("keyword", keyword));
+        return await GetPagedAndWrapAsync<UserListDto>(url, page, pageSize);
     }
 
     Task<ApiResponse<UserDetailDto>> IApiClientUsers.GetUserByIdAsync(Guid id)
@@ -434,16 +423,9 @@ public sealed class HttpClientApiClient : IApiClient,
     async Task<ApiResponse<PagedResult<PatientListDto>>> IApiClientPatients.GetPatientsAsync(
         int page, int pageSize, string? keyword)
     {
-        var url = $"/api/v1/patients?page={page}&pageSize={pageSize}";
-        if (!string.IsNullOrWhiteSpace(keyword))
-            url += $"&keyword={Uri.EscapeDataString(keyword)}";
-
-        using var client = CreateClient();
-        var response = await client.GetAsync(url);
-        await EnsureSuccessOrThrowAsync(response);
-        var items = await DeserializeAsync<List<PatientListDto>>(response) ?? [];
-        var paged = new PagedResult<PatientListDto>(items, items.Count, page, pageSize);
-        return WrapSuccess(paged);
+        var url = BuildQueryString($"/api/v1/patients?page={page}&pageSize={pageSize}",
+            ("keyword", keyword));
+        return await GetPagedAndWrapAsync<PatientListDto>(url, page, pageSize);
     }
 
     Task<ApiResponse<PatientDetailDto>> IApiClientPatients.GetPatientByIdAsync(Guid id)
@@ -488,18 +470,9 @@ public sealed class HttpClientApiClient : IApiClient,
     async Task<ApiResponse<PagedResult<HerbListDto>>> IApiClientHerbs.GetHerbsAsync(
         int page, int pageSize, string? keyword, string? category)
     {
-        var url = $"/api/v1/herbs?page={page}&pageSize={pageSize}";
-        if (!string.IsNullOrWhiteSpace(keyword))
-            url += $"&keyword={Uri.EscapeDataString(keyword)}";
-        if (!string.IsNullOrWhiteSpace(category))
-            url += $"&category={Uri.EscapeDataString(category)}";
-
-        using var client = CreateClient();
-        var response = await client.GetAsync(url);
-        await EnsureSuccessOrThrowAsync(response);
-        var items = await DeserializeAsync<List<HerbListDto>>(response) ?? [];
-        var paged = new PagedResult<HerbListDto>(items, items.Count, page, pageSize);
-        return WrapSuccess(paged);
+        var url = BuildQueryString($"/api/v1/herbs?page={page}&pageSize={pageSize}",
+            ("keyword", keyword), ("category", category));
+        return await GetPagedAndWrapAsync<HerbListDto>(url, page, pageSize);
     }
 
     Task<ApiResponse<HerbDetailDto>> IApiClientHerbs.GetHerbByIdAsync(Guid id)
@@ -547,18 +520,9 @@ public sealed class HttpClientApiClient : IApiClient,
     async Task<ApiResponse<PagedResult<FormulaListDto>>> IApiClientFormulas.GetFormulasAsync(
         int page, int pageSize, string? keyword, string? category)
     {
-        var url = $"/api/v1/formulas?page={page}&pageSize={pageSize}";
-        if (!string.IsNullOrWhiteSpace(keyword))
-            url += $"&keyword={Uri.EscapeDataString(keyword)}";
-        if (!string.IsNullOrWhiteSpace(category))
-            url += $"&category={Uri.EscapeDataString(category)}";
-
-        using var client = CreateClient();
-        var response = await client.GetAsync(url);
-        await EnsureSuccessOrThrowAsync(response);
-        var items = await DeserializeAsync<List<FormulaListDto>>(response) ?? [];
-        var paged = new PagedResult<FormulaListDto>(items, items.Count, page, pageSize);
-        return WrapSuccess(paged);
+        var url = BuildQueryString($"/api/v1/formulas?page={page}&pageSize={pageSize}",
+            ("keyword", keyword), ("category", category));
+        return await GetPagedAndWrapAsync<FormulaListDto>(url, page, pageSize);
     }
 
     Task<ApiResponse<FormulaDetailDto>> IApiClientFormulas.GetFormulaByIdAsync(Guid id)
@@ -708,19 +672,13 @@ public sealed class HttpClientApiClient : IApiClient,
         int page, int pageSize, string? keyword, DateTime? startDate, DateTime? endDate,
         Guid? patientId, Guid? doctorId)
     {
-        var url = $"/api/v1/registrations?page={page}&pageSize={pageSize}";
-        if (!string.IsNullOrWhiteSpace(keyword)) url += $"&keyword={Uri.EscapeDataString(keyword)}";
-        if (startDate.HasValue) url += $"&startDate={startDate.Value:O}";
-        if (endDate.HasValue) url += $"&endDate={endDate.Value:O}";
-        if (patientId.HasValue) url += $"&patientId={patientId.Value}";
-        if (doctorId.HasValue) url += $"&doctorId={doctorId.Value}";
-
-        using var client = CreateClient();
-        var response = await client.GetAsync(url);
-        await EnsureSuccessOrThrowAsync(response);
-        var items = await DeserializeAsync<List<RegistrationListDto>>(response) ?? [];
-        var paged = new PagedResult<RegistrationListDto>(items, items.Count, page, pageSize);
-        return WrapSuccess(paged);
+        var url = BuildQueryString($"/api/v1/registrations?page={page}&pageSize={pageSize}",
+            ("keyword", keyword),
+            ("startDate", startDate?.ToString("O")),
+            ("endDate", endDate?.ToString("O")),
+            ("patientId", patientId?.ToString()),
+            ("doctorId", doctorId?.ToString()));
+        return await GetPagedAndWrapAsync<RegistrationListDto>(url, page, pageSize);
     }
 
     async Task<ApiResponse<List<RegistrationListDto>>> IApiClientRegistrations.GetQueueAsync(Guid? doctorId)
@@ -731,13 +689,7 @@ public sealed class HttpClientApiClient : IApiClient,
     }
 
     async Task<ApiResponse<Guid>> IApiClientRegistrations.StartVisitAsync(Guid id)
-    {
-        using var client = CreateClient();
-        var response = await client.PutAsync($"/api/v1/registrations/{id}/start-visit", null);
-        await EnsureSuccessOrThrowAsync(response);
-        var result = await DeserializeAsync<Guid>(response);
-        return WrapSuccess(result);
-    }
+        => await SendAndWrapAsync<Guid>($"/api/v1/registrations/{id}/start-visit", HttpMethod.Put);
 
     async Task<ApiResponse> IApiClientRegistrations.CancelAsync(Guid id)
     {
@@ -757,9 +709,7 @@ public sealed class HttpClientApiClient : IApiClient,
 
     async Task IApiClientRegistrations.DeleteRegistrationAsync(Guid id)
     {
-        using var client = CreateClient();
-        var response = await client.DeleteAsync($"/api/v1/registrations/{id}");
-        await EnsureSuccessOrThrowAsync(response);
+        await SendAsync($"/api/v1/registrations/{id}", HttpMethod.Delete);
     }
 
     // ========================================================================
