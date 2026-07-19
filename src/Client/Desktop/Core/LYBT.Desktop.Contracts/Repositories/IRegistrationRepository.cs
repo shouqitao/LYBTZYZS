@@ -13,33 +13,33 @@ public interface IRegistrationRepository
     /// 创建挂号 (前台模式: Source=Receptionist, Status=Waiting)
     /// US-REG-001
     /// </summary>
-    Task<RegistrationDetailDto> CreateAsync(RegistrationInputDto input);
+    Task<RegistrationDetailDto> CreateAsync(RegistrationInputDto input, CancellationToken ct = default);
 
     /// <summary>
     /// 获取挂号详情
     /// </summary>
-    Task<RegistrationDetailDto?> GetByIdAsync(Guid id);
+    Task<RegistrationDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 分页查询挂号记录
     /// </summary>
-    Task<PagedResult<RegistrationListDto>> GetPagedAsync(int page, int pageSize, string? keyword = null);
+    Task<PagedResult<RegistrationListDto>> GetPagedAsync(int page, int pageSize, string? keyword = null, CancellationToken ct = default);
 
     /// <summary>
     /// 获取等待队列
     /// US-REG-003: Waiting 状态，按挂号时间升序
     /// </summary>
-    Task<List<RegistrationListDto>> GetWaitingQueueAsync(Guid? doctorId = null);
+    Task<List<RegistrationListDto>> GetWaitingQueueAsync(Guid? doctorId = null, CancellationToken ct = default);
 
     /// <summary>
     /// 接诊: Registration -> InProgress，返回创建的医案 ID
     /// US-REG-003 验收标准第4条
     /// </summary>
-    Task<Guid?> StartVisitAsync(Guid id);
+    Task<Guid?> StartVisitAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 取消挂号
     /// US-REG-004: 仅 Waiting 状态可取消
     /// </summary>
-    Task<bool> CancelAsync(Guid id);
+    Task<bool> CancelAsync(Guid id, CancellationToken ct = default);
 }

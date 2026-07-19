@@ -17,7 +17,7 @@ public class HttpRegistrationRepository : IRegistrationRepository
         _logger = logger;
     }
 
-    public async Task<RegistrationDetailDto> CreateAsync(RegistrationInputDto input)
+    public async Task<RegistrationDetailDto> CreateAsync(RegistrationInputDto input, CancellationToken ct = default)
     {
         var response = await _apiClient.Registrations.CreateAsync(input);
         if (!response.Success || response.Data == null)
@@ -25,13 +25,13 @@ public class HttpRegistrationRepository : IRegistrationRepository
         return response.Data;
     }
 
-    public async Task<RegistrationDetailDto?> GetByIdAsync(Guid id)
+    public async Task<RegistrationDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         var response = await _apiClient.Registrations.GetByIdAsync(id);
         return response.Data;
     }
 
-    public async Task<PagedResult<RegistrationListDto>> GetPagedAsync(int page, int pageSize, string? keyword = null)
+    public async Task<PagedResult<RegistrationListDto>> GetPagedAsync(int page, int pageSize, string? keyword = null, CancellationToken ct = default)
     {
         var response = await _apiClient.Registrations.GetListAsync(page, pageSize, keyword);
         if (response.Data == null)
@@ -39,7 +39,7 @@ public class HttpRegistrationRepository : IRegistrationRepository
         return response.Data;
     }
 
-    public async Task<List<RegistrationListDto>> GetWaitingQueueAsync(Guid? doctorId = null)
+    public async Task<List<RegistrationListDto>> GetWaitingQueueAsync(Guid? doctorId = null, CancellationToken ct = default)
     {
         var response = await _apiClient.Registrations.GetQueueAsync(doctorId);
         if (!response.Success || response.Data == null)
@@ -47,7 +47,7 @@ public class HttpRegistrationRepository : IRegistrationRepository
         return response.Data;
     }
 
-    public async Task<Guid?> StartVisitAsync(Guid id)
+    public async Task<Guid?> StartVisitAsync(Guid id, CancellationToken ct = default)
     {
         var response = await _apiClient.Registrations.StartVisitAsync(id);
         if (!response.Success)
@@ -55,7 +55,7 @@ public class HttpRegistrationRepository : IRegistrationRepository
         return response.Data;
     }
 
-    public async Task<bool> CancelAsync(Guid id)
+    public async Task<bool> CancelAsync(Guid id, CancellationToken ct = default)
     {
         var response = await _apiClient.Registrations.CancelAsync(id);
         return response.Success;
