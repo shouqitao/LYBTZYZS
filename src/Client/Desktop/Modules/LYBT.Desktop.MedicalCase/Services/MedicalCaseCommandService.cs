@@ -64,17 +64,10 @@ internal class MedicalCaseCommandService : IMedicalCaseCommandService
         try
         {
             _logger.LogInformation("[CMD] MedicalCase.Delete started - MedicalCaseId={MedicalCaseId}", _context.CurrentDetail.Id);
-            var result = await _repository.DeleteAsync(_context.CurrentDetail.Id);
-            if (result)
-            {
-                _logger.LogInformation("[CMD] MedicalCase.Delete completed - MedicalCaseId={MedicalCaseId}", _context.CurrentDetail.Id);
-                _context.Clear();
-            }
-            else
-            {
-                _logger.LogWarning("[CMD] MedicalCase.Delete → Failed - MedicalCaseId={MedicalCaseId}", _context.CurrentDetail.Id);
-            }
-            return result;
+            await _repository.DeleteAsync(_context.CurrentDetail.Id);
+            _logger.LogInformation("[CMD] MedicalCase.Delete completed - MedicalCaseId={MedicalCaseId}", _context.CurrentDetail.Id);
+            _context.Clear();
+            return true;
         }
         catch (Exception ex) { _logger.LogError(ex, "[CMD] MedicalCase.Delete failed - MedicalCaseId={MedicalCaseId}", _context.CurrentDetail?.Id ?? Guid.Empty); return false; }
     }

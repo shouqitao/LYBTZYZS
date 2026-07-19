@@ -55,9 +55,10 @@ public class HttpRegistrationRepository : IRegistrationRepository
         return response.Data;
     }
 
-    public async Task<bool> CancelAsync(Guid id, CancellationToken ct = default)
+    public async Task CancelAsync(Guid id, CancellationToken ct = default)
     {
         var response = await _apiClient.Registrations.CancelAsync(id);
-        return response.Success;
+        if (!response.Success)
+            throw new InvalidOperationException(response.Message ?? "Cancel registration failed");
     }
 }

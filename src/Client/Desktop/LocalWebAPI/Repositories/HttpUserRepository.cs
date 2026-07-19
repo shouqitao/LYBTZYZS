@@ -55,10 +55,11 @@ public class HttpUserRepository : IUserRepository
         return response.Data;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
+    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
         var response = await _apiClient.Users.DeleteUserAsync(id);
-        return response.Success;
+        if (!response.Success)
+            throw new InvalidOperationException(response.Message ?? "Delete user failed");
     }
 
     public async Task<UserDetailDto> GetByUsernameAsync(string username, CancellationToken ct = default)

@@ -53,10 +53,11 @@ public class HttpHerbRepository : IHerbRepository
         return response.Data;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
+    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
         var response = await _apiClient.Herbs.DeleteHerbAsync(id);
-        return response.Success;
+        if (!response.Success)
+            throw new InvalidOperationException(response.Message ?? "Delete herb failed");
     }
 
     public async Task<List<HerbListDto>> SearchAsync(string keyword, CancellationToken ct = default)

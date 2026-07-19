@@ -87,19 +87,19 @@ public sealed class PatientRepository
         }, nameof(UpdateAsync), LogLevel.Information);
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
+    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
-        try
-        {
-            Logger.LogInformation("[REPO] Patient.Delete - Id={Id}", id);
-            var response = await _apiClient.Patients.DeletePatientAsync(id);
-            return response.Success;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "[REPO] Patient.Delete failed - Id={Id}", id);
-            return false;
-        }
+        await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Patients.DeletePatientAsync(id);
+                if (!response.Success)
+                    throw new InvalidOperationException(response.Message ?? "删除患者失败");
+
+                Logger.LogInformation("[REPO] Patient.Delete completed - Id={Id}", id);
+            },
+            nameof(DeleteAsync),
+            LogLevel.Information);
     }
 
     public async Task<List<PatientListDto>> SearchAsync(string keyword, CancellationToken ct = default)

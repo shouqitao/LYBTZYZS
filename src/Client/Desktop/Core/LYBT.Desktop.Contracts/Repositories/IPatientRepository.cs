@@ -33,7 +33,7 @@ public interface IPatientRepository
     /// <summary>
     /// 删除患者 (软删除)
     /// </summary>
-    Task<bool> DeleteAsync(Guid id, CancellationToken ct = default);
+    Task DeleteAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 搜索患者 (基于关键词，返回 ListDto)

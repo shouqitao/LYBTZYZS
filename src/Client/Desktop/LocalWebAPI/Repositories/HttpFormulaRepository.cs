@@ -53,10 +53,11 @@ public class HttpFormulaRepository : IFormulaRepository
         return response.Data;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
+    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
         var response = await _apiClient.Formulas.DeleteFormulaAsync(id);
-        return response.Success;
+        if (!response.Success)
+            throw new InvalidOperationException(response.Message ?? "Delete formula failed");
     }
 
     public async Task<List<FormulaListDto>> SearchAsync(string keyword, CancellationToken ct = default)

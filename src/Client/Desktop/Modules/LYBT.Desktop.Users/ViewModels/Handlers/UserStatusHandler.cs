@@ -1,4 +1,3 @@
-using System.Net.Http;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels.Handlers;
 using LYBT.Desktop.Contracts.Repositories;
@@ -53,7 +52,7 @@ public class UserStatusHandler : BaseStatusHandler<UserListDto>, IUserStatusHand
             await Dialog.ShowErrorAsync(result.Error ?? "切换用户状态失败", "操作失败");
             return false;
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex)
         {
             Logger.LogError(ex, "切换用户状态失败");
             await Dialog.ShowErrorAsync("切换用户状态失败", "操作失败");

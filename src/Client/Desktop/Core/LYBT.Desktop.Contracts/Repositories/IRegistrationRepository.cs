@@ -41,5 +41,5 @@ public interface IRegistrationRepository
     /// 取消挂号
     /// US-REG-004: 仅 Waiting 状态可取消
     /// </summary>
-    Task<bool> CancelAsync(Guid id, CancellationToken ct = default);
+    Task CancelAsync(Guid id, CancellationToken ct = default);
 }

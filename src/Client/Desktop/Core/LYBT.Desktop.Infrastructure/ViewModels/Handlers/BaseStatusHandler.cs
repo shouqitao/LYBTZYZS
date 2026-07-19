@@ -1,4 +1,3 @@
-using System.Net.Http;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -64,7 +63,7 @@ public abstract class BaseStatusHandler<TListDto> where TListDto : class
             await Dialog.ShowErrorAsync($"恢复{EntityTypeName}失败", "操作失败");
             return false;
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex)
         {
             Logger.LogError(ex, "恢复{EntityType}失败", EntityTypeName);
             await Dialog.ShowErrorAsync($"恢复{EntityTypeName}失败", "操作失败");
@@ -102,7 +101,7 @@ public abstract class BaseStatusHandler<TListDto> where TListDto : class
             await Dialog.ShowErrorAsync($"切换{EntityTypeName}状态失败", "操作失败");
             return false;
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex)
         {
             Logger.LogError(ex, "切换{EntityType}状态失败", EntityTypeName);
             await Dialog.ShowErrorAsync($"切换{EntityTypeName}状态失败", "操作失败");

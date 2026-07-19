@@ -107,27 +107,25 @@ public class HttpRegistrationRepositoryTests
     }
 
     [Fact]
-    public async Task CancelAsync_Returns_True_On_Success()
+    public async Task CancelAsync_Completes_On_Success()
     {
         var id = Guid.NewGuid();
         _mockRegistrations.CancelAsync(id)
             .Returns(new ApiResponse { Success = true });
 
-        var result = await _repo.CancelAsync(id);
-
-        result.Should().BeTrue();
+        await _repo.Invoking(r => r.CancelAsync(id))
+            .Should().NotThrowAsync();
     }
 
     [Fact]
-    public async Task CancelAsync_Returns_False_On_Failure()
+    public async Task CancelAsync_Throws_On_Failure()
     {
         var id = Guid.NewGuid();
         _mockRegistrations.CancelAsync(id)
-            .Returns(new ApiResponse { Success = false });
+            .Returns(new ApiResponse { Success = false, Message = "Cancel failed" });
 
-        var result = await _repo.CancelAsync(id);
-
-        result.Should().BeFalse();
+        await _repo.Invoking(r => r.CancelAsync(id))
+            .Should().ThrowAsync<InvalidOperationException>();
     }
 
     [Fact]

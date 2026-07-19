@@ -112,26 +112,18 @@ public sealed class RegistrationRepository : ApiClientRepositoryBase<Registratio
     }
 
     /// <inheritdoc/>
-    public async Task<bool> CancelAsync(Guid id, CancellationToken ct = default)
+    public async Task CancelAsync(Guid id, CancellationToken ct = default)
     {
-        // CancelAsync returns false on exception instead of rethrowing,
-        // which differs from ExecuteAsync's always-rethrow behavior.
-        try
-        {
-            Logger.LogInformation("[REPO] Registration.Cancel - Id={Id}", id);
+        await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Registrations.CancelAsync(id);
+                if (!response.Success)
+                    throw new InvalidOperationException(response.Message ?? "取消挂号失败");
 
-            var response = await _apiClient.Registrations.CancelAsync(id);
-            if (response.Success)
                 Logger.LogInformation("[REPO] Registration.Cancel completed - Id={Id}", id);
-            else
-                Logger.LogWarning("[REPO] Registration.Cancel failed - Id={Id}", id);
-
-            return response.Success;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "[REPO] Registration.Cancel failed - Id={Id}", id);
-            return false;
-        }
+            },
+            "Cancel",
+            LogLevel.Information);
     }
 }

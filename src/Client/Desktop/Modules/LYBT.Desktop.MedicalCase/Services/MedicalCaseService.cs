@@ -274,18 +274,10 @@ public class MedicalCaseService : IMedicalCaseService
         try
         {
             _logger.LogInformation("[SVC] MedicalCase.DeleteViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            var success = await _repository.DeleteAsync(medicalCaseId);
+            await _repository.DeleteAsync(medicalCaseId);
 
-            if (success)
-            {
-                _logger.LogInformation("[SVC] MedicalCase.DeleteViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse { Success = true, Message = "医案已取消" };
-            }
-            else
-            {
-                _logger.LogWarning("[SVC] MedicalCase.DeleteViaApi → Failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse { Success = false, Message = "删除失败" };
-            }
+            _logger.LogInformation("[SVC] MedicalCase.DeleteViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return new ApiResponse { Success = true, Message = "医案已取消" };
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.DeleteViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); return new ApiResponse { Success = false, Message = ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除", ex) }; }
     }

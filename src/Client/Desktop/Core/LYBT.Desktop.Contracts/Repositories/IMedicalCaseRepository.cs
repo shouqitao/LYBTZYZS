@@ -50,7 +50,7 @@ public interface IMedicalCaseRepository
     /// <summary>
     /// 删除医案 (软删除)
     /// </summary>
-    Task<bool> DeleteAsync(Guid id, CancellationToken ct = default);
+    Task DeleteAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 关闭医案 (直接标记为 Completed)

@@ -98,27 +98,19 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
             LogLevel.Information);
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
+    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
-        // DeleteAsync returns false on exception instead of rethrowing,
-        // which differs from ExecuteAsync's always-rethrow behavior.
-        try
-        {
-            Logger.LogInformation("[REPO] MedicalCase.Delete - Id={Id}", id);
+        await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.MedicalCases.DeleteMedicalCaseAsync(id);
+                if (!response.Success)
+                    throw new InvalidOperationException(response.Message ?? "删除医案失败");
 
-            var response = await _apiClient.MedicalCases.DeleteMedicalCaseAsync(id);
-            if (response.Success)
                 Logger.LogInformation("[REPO] MedicalCase.Delete completed - Id={Id}", id);
-            else
-                Logger.LogWarning("[REPO] MedicalCase.Delete failed - Id={Id}", id);
-
-            return response.Success;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "[REPO] MedicalCase.Delete failed - Id={Id}", id);
-            return false;
-        }
+            },
+            "Delete",
+            LogLevel.Information);
     }
 
     #endregion

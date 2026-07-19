@@ -32,7 +32,7 @@ public interface IHerbRepository
     /// <summary>
     /// 删除药材 (软删除)
     /// </summary>
-    Task<bool> DeleteAsync(Guid id, CancellationToken ct = default);
+    Task DeleteAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 搜索药材 (基于关键词，返回 ListDto)

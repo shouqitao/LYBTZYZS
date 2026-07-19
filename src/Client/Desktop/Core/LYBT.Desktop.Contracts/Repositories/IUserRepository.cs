@@ -33,7 +33,7 @@ public interface IUserRepository
     /// <summary>
     /// 删除用户 (软删除)
     /// </summary>
-    Task<bool> DeleteAsync(Guid id, CancellationToken ct = default);
+    Task DeleteAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 根据用户名获取用户

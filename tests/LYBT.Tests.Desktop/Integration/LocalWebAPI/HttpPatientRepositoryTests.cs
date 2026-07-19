@@ -54,15 +54,25 @@ public class HttpPatientRepositoryTests
     }
 
     [Fact]
-    public async Task DeleteAsync_Returns_True_On_Success()
+    public async Task DeleteAsync_Completes_On_Success()
     {
         var id = Guid.NewGuid();
         _mockPatients.DeletePatientAsync(id)
             .Returns(new ApiResponse { Success = true });
 
-        var result = await _repo.DeleteAsync(id);
+        await _repo.Invoking(r => r.DeleteAsync(id))
+            .Should().NotThrowAsync();
+    }
 
-        result.Should().BeTrue();
+    [Fact]
+    public async Task DeleteAsync_Throws_On_Failure()
+    {
+        var id = Guid.NewGuid();
+        _mockPatients.DeletePatientAsync(id)
+            .Returns(new ApiResponse { Success = false, Message = "Delete failed" });
+
+        await _repo.Invoking(r => r.DeleteAsync(id))
+            .Should().ThrowAsync<InvalidOperationException>();
     }
 
     [Fact]

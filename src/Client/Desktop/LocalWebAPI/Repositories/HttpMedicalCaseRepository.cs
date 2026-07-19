@@ -79,10 +79,11 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
         return response.Data;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
+    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
         var response = await _apiClient.MedicalCases.DeleteMedicalCaseAsync(id);
-        return response.Success;
+        if (!response.Success)
+            throw new InvalidOperationException(response.Message ?? "Delete medical case failed");
     }
 
     public async Task<MedicalCaseDetailDto?> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default)

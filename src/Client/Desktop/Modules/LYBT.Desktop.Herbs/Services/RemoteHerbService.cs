@@ -77,9 +77,9 @@ namespace LYBT.Desktop.Herbs.Services
             {
                 _logger.LogInformation("[SVC] Herb.Delete started - HerbId={HerbId}", herbId);
 
-                var success = await _herbRepository.DeleteAsync(herbId);
-                _logger.LogInformation("[SVC] Herb.Delete completed - HerbId={HerbId}, Success={Success}", herbId, success);
-                return CommandResult<bool>.Succeeded(success);
+                await _herbRepository.DeleteAsync(herbId);
+                _logger.LogInformation("[SVC] Herb.Delete completed - HerbId={HerbId}", herbId);
+                return CommandResult<bool>.Succeeded(true);
             }
             catch (Exception ex)
             {

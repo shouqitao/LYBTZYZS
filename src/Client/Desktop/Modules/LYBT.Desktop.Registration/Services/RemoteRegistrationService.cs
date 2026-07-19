@@ -154,16 +154,9 @@ public class RemoteRegistrationService : IRegistrationService
         {
             _logger.LogInformation("[SVC] Registration.Cancel started - RegistrationId={RegistrationId}", id);
 
-            var success = await _registrationRepository.CancelAsync(id);
-            if (success)
-            {
-                _logger.LogInformation("[SVC] Registration.Cancel completed - RegistrationId={RegistrationId}", id);
-                return CommandResult.Succeeded();
-            }
-            else
-            {
-                return CommandResult.Failed("取消挂号失败，可能存在关联的活跃医案");
-            }
+            await _registrationRepository.CancelAsync(id);
+            _logger.LogInformation("[SVC] Registration.Cancel completed - RegistrationId={RegistrationId}", id);
+            return CommandResult.Succeeded();
         }
         catch (Exception ex)
         {

@@ -54,16 +54,26 @@ public class HttpHerbRepositoryTests
     }
 
     [Fact]
-    public async Task DeleteAsync_Returns_True_On_Success()
+    public async Task DeleteAsync_Completes_On_Success()
     {
         var id = Guid.NewGuid();
         _mockHerbs.DeleteHerbAsync(id)
             .Returns(new ApiResponse { Success = true });
 
-        var result = await _repo.DeleteAsync(id);
-
-        result.Should().BeTrue();
+        await _repo.Invoking(r => r.DeleteAsync(id))
+            .Should().NotThrowAsync();
         await _mockHerbs.Received(1).DeleteHerbAsync(id);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_Throws_On_Failure()
+    {
+        var id = Guid.NewGuid();
+        _mockHerbs.DeleteHerbAsync(id)
+            .Returns(new ApiResponse { Success = false, Message = "Delete failed" });
+
+        await _repo.Invoking(r => r.DeleteAsync(id))
+            .Should().ThrowAsync<InvalidOperationException>();
     }
 
     [Fact]
