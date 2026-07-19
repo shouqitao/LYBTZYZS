@@ -198,7 +198,8 @@ public class DesktopLayerArchTests
         {
             "Repository",       // Repository层 - EF Core数据访问
             "Mapper",           // Mapper层 - Entity↔DTO映射
-            "LoginCoordinator"  // 认证协调器 - 需要User Entity
+            "LoginCoordinator", // 认证协调器 - 需要User Entity
+            "LocalDbContext"    // 本地数据库上下文 - EF Core需要引用Entity定义表结构
         };
 
         var actualViolations = result.FailingTypes?
