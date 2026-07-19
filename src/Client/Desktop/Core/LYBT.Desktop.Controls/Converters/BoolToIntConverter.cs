@@ -8,8 +8,6 @@ namespace LYBT.Desktop.Controls.Converters;
 /// </summary>
 public class BoolToIntConverter : IValueConverter
 {
-    public static readonly BoolToIntConverter Instance = new();
-
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         => value is bool b ? (b ? 1 : 0) : 0;
 

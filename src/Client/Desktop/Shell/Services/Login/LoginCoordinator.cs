@@ -9,7 +9,6 @@ using LYBT.Desktop.Shell.Services.Session;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Shell.Services.Login;
@@ -46,7 +45,6 @@ public class LoginCoordinator : ILoginCoordinator, IDisposable
         INavigationCoordinator navigationCoordinator,
         ISessionManager sessionManager,
         IAuthenticationStateMachine stateMachine,
-        IConfiguration configuration,
         ICredentialVault? credentialVault = null,
         IUsernameStorageService? usernameStorage = null)
     {

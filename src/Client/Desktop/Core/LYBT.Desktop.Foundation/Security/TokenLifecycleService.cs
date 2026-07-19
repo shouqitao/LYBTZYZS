@@ -258,11 +258,18 @@ namespace LYBT.Desktop.Foundation.Security
                         // 尝试自动刷新
                         _ = Task.Run(async () =>
                         {
-                            var success = await TryRefreshTokenAsync();
-                            if (!success && CurrentState == TokenLifecycleState.Warning)
+                            try
                             {
-                                // 刷新失败，保持Warning状态，让用户决定
-                                _logger.LogWarning("自动Token刷新失败，等待用户操作");
+                                var success = await TryRefreshTokenAsync();
+                                if (!success && CurrentState == TokenLifecycleState.Warning)
+                                {
+                                    // 刷新失败，保持Warning状态，让用户决定
+                                    _logger.LogWarning("自动Token刷新失败，等待用户操作");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "自动Token刷新异常");
                             }
                         });
                     }

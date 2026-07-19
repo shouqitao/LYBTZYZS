@@ -18,7 +18,6 @@ using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Views;
 using LYBT.Desktop.Sysadmin;
 using LYBT.Desktop.Users;
-using LYBT.Shared.Models.Enums;
 using MaterialDesignThemes.Wpf;
 using Prism.DryIoc;
 using Prism.Ioc;
@@ -113,9 +112,6 @@ public partial class App : PrismApplication
             var configuration = resolver.Resolve<Microsoft.Extensions.Configuration.IConfiguration>();
             return new ThemeService(configuration);
         });
-        // Infrastructure registrations: available for future callers, not yet injected anywhere.
-        containerRegistry.RegisterSingleton<ISnackbarService, SnackbarService>();
-
     }
 
     /// <summary>配置ViewModel定位器</summary>
@@ -162,18 +158,6 @@ public partial class App : PrismApplication
         moduleCatalog.AddModule<ReportsModule>(InitializationMode.OnDemand);
 
         base.ConfigureModuleCatalog(moduleCatalog);
-    }
-
-    /// <summary>用户登录后的角色驱动模块加载</summary>
-    public async Task LoadRoleBasedModulesAsync(string userRole)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(userRole, nameof(userRole));
-
-        var bootstrapper = Container.Resolve<IApplicationBootstrapper>();
-        if (Enum.TryParse<UserRole>(userRole, out var role))
-            await bootstrapper.LoadModulesForRoleAsync(role);
-        else
-            throw new ArgumentException($"无效的用户角色: {userRole}");
     }
 
     /// <summary>设置控制台编码为UTF-8（必须在Serilog初始化前调用）</summary>

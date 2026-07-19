@@ -6,6 +6,7 @@ using LYBT.Desktop.CardReader.Models;
 using LYBT.Desktop.CardReader.Services;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Infrastructure.Helpers;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;
@@ -290,13 +291,8 @@ public partial class ReceptionistHomeViewModel : NavigableViewModelBase
     /// <summary>
     /// 掩码身份证号（保护隐私）
     /// </summary>
-    private static string MaskIdNumber(string idNumber)
-    {
-        if (string.IsNullOrEmpty(idNumber) || idNumber.Length < 10)
-            return idNumber;
-
-        return idNumber.Substring(0, 6) + "****" + idNumber.Substring(idNumber.Length - 4);
-    }
+    private static string MaskIdNumber(string? idNumber)
+        => PrivacyHelper.MaskIdNumber(idNumber);
 
     #endregion
 

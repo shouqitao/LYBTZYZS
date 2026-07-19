@@ -225,19 +225,18 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region 扩展命令
 
-        /// <summary>恢复软删除</summary>
-        [RelayCommand(CanExecute = nameof(CanRestore))]
-        private async Task RestoreAsync()
+        /// <inheritdoc/>
+        protected override async Task InvalidateCachesAsync()
         {
-            if (SelectedItem == null) return;
-            if (await _statusHandler.RestoreAsync(SelectedItem))
-            {
-                _cacheManager.InvalidatePatientCaches();
-                await RefreshAsync();
-            }
+            _cacheManager.InvalidatePatientCaches();
+            await Task.CompletedTask;
         }
 
-        private bool CanRestore() => HasSelection && !IsBusy && IsAdmin;
+        /// <inheritdoc/>
+        protected override async Task RestoreItemAsync(PatientListDto item)
+        {
+            await _statusHandler.RestoreAsync(item);
+        }
 
         /// <summary>查看医案</summary>
         [RelayCommand(CanExecute = nameof(CanViewMedicalRecords))]

@@ -101,6 +101,17 @@ public sealed class EmbeddedLocalWebApiService : IEmbeddedLocalWebApiService, ID
 
     public void Dispose()
     {
-        StopAsync().GetAwaiter().GetResult();
+        try
+        {
+            _ = StopAsync().ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                    _logger.LogError(t.Exception, "[LOCAL-API] Error stopping during dispose");
+            }, TaskContinuationOptions.OnlyOnFaulted);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[LOCAL-API] Error during dispose");
+        }
     }
 }

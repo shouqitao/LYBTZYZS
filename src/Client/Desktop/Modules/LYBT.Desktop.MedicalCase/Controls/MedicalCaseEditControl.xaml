@@ -430,7 +430,7 @@
                                 CornerRadius="8" Padding="16,12" Margin="0,0,8,0">
                             <StackPanel>
                                 <RadioButton Content="不需要处方" GroupName="PrescriptionNeed"
-                                             IsChecked="{Binding NeedsPrescription, Converter={x:Static converters:InverseBooleanConverter.Instance}}"
+                                             IsChecked="{Binding NeedsPrescription, Converter={x:Static converters:Cvt.InverseBool}}"
                                              FontWeight="SemiBold"
                                              ToolTip="仅做辨证，不开具处方（如咨询、调理建议等）"/>
                                 <TextBlock Text="仅做辨证记录" FontSize="12"

@@ -36,23 +36,7 @@ namespace LYBT.Desktop.Admin.ViewModels
         [ObservableProperty]
         private string _currentUserName = "系统管理员";
 
-        /// <summary>
-        /// 是否为系统管理员 (Issue #1887-1892)
-        /// </summary>
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsNotSysAdmin))]
-        private bool _isSysAdmin = true; // 默认为true，避免按钮闪现
-
         #endregion 可观察属性
-
-        #region 计算属性
-
-        /// <summary>
-        /// 是否不是系统管理员（用于UI可见性绑定）
-        /// </summary>
-        public bool IsNotSysAdmin => !IsSysAdmin;
-
-        #endregion 计算属性
 
         #region 构造函数
 
@@ -155,22 +139,18 @@ namespace LYBT.Desktop.Admin.ViewModels
                 {
                     // Issue #1909: 所有用户（包括SuperAdmin）都在Users表中
                     CurrentUserName = currentUser.RealName ?? currentUser.UserName ?? "管理员";
-                    // 不再需要IsSysAdmin标志，SuperAdmin也是普通用户，只是Role不同
-                    IsSysAdmin = false;
                 }
                 else
                 {
                     // 获取用户信息失败（不应该发生）
                     Logger.LogWarning("无法获取当前用户信息，可能未登录");
                     CurrentUserName = "未知用户";
-                    IsSysAdmin = false;
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "加载当前用户信息失败");
                 CurrentUserName = "加载失败";
-                IsSysAdmin = false;
             }
         }
 

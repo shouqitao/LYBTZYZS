@@ -251,17 +251,9 @@ namespace LYBT.Desktop.Clinical.ViewModels
         /// </summary>
         private void LoadTodayStatistics()
         {
-            try
-            {
-                // FUTURE: 从服务获取今日统计数据 (US-SHELL-005)
-                // 临时使用模拟数据
-                TodayConsultationCount = 0;
-                PendingCaseCount = 0;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "加载今日统计数据时发生异常");
-            }
+            // TODO: US-SHELL-005 - 从服务获取今日统计数据
+            TodayConsultationCount = 0;
+            PendingCaseCount = 0;
         }
 
         #endregion 辅助方法

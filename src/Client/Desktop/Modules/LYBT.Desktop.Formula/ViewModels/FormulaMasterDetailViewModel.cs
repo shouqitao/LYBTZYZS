@@ -278,19 +278,18 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         private bool CanCopyFormula() => HasSelection && !IsBusy;
 
-        /// <summary>恢复软删除</summary>
-        [RelayCommand(CanExecute = nameof(CanRestore))]
-        private async Task RestoreAsync()
+        /// <inheritdoc/>
+        protected override async Task InvalidateCachesAsync()
         {
-            if (SelectedItem == null) return;
-            if (await _statusHandler.RestoreAsync(SelectedItem))
-            {
-                _cacheManager.InvalidateFormulaCaches();
-                await RefreshAsync();
-            }
+            _cacheManager.InvalidateFormulaCaches();
+            await Task.CompletedTask;
         }
 
-        private bool CanRestore() => HasSelection && !IsBusy && IsAdmin;
+        /// <inheritdoc/>
+        protected override async Task RestoreItemAsync(FormulaListDto item)
+        {
+            await _statusHandler.RestoreAsync(item);
+        }
 
         /// <summary>添加药材行</summary>
         [RelayCommand(CanExecute = nameof(CanAddHerb))]

@@ -366,19 +366,18 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
 
     private bool CanToggleUserStatus() => _statusHandler.CanToggleUserStatus(SelectedItem, IsBusy);
 
-    /// <summary>恢复软删除</summary>
-    [RelayCommand(CanExecute = nameof(CanRestore))]
-    private async Task RestoreAsync()
+    /// <inheritdoc/>
+    protected override async Task InvalidateCachesAsync()
     {
-        if (SelectedItem == null) return;
-        if (await _statusHandler.RestoreAsync(SelectedItem))
-        {
-            _cacheManager.InvalidateUserCaches();
-            await RefreshAsync();
-        }
+        _cacheManager.InvalidateUserCaches();
+        await Task.CompletedTask;
     }
 
-    private bool CanRestore() => _statusHandler.CanRestore(SelectedItem, IsBusy, IsAdmin);
+    /// <inheritdoc/>
+    protected override async Task RestoreItemAsync(UserListDto item)
+    {
+        await _statusHandler.RestoreAsync(item);
+    }
 
     #endregion
 

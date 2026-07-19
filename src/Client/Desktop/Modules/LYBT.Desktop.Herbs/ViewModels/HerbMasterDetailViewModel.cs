@@ -250,19 +250,18 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         private bool CanCopyHerb() => HasSelection && !IsBusy && IsAdmin;
 
-        /// <summary>恢复软删除</summary>
-        [RelayCommand(CanExecute = nameof(CanRestore))]
-        private async Task RestoreAsync()
+        /// <inheritdoc/>
+        protected override async Task InvalidateCachesAsync()
         {
-            if (SelectedItem == null) return;
-            if (await _statusHandler.RestoreAsync(SelectedItem))
-            {
-                _cacheManager.InvalidateHerbCaches();
-                await RefreshAsync();
-            }
+            _cacheManager.InvalidateHerbCaches();
+            await Task.CompletedTask;
         }
 
-        private bool CanRestore() => HasSelection && !IsBusy && IsAdmin;
+        /// <inheritdoc/>
+        protected override async Task RestoreItemAsync(HerbListDto item)
+        {
+            await _statusHandler.RestoreAsync(item);
+        }
 
         /// <summary>按分类搜索</summary>
         [RelayCommand]

@@ -11,8 +11,6 @@ namespace LYBT.Desktop.Controls.Converters
     /// </summary>
     public class BoolToColorConverter : IValueConverter
     {
-        public static readonly BoolToColorConverter Instance = new BoolToColorConverter();
-
         private static readonly SolidColorBrush DefaultTrue = new SolidColorBrush(Color.FromRgb(0x28, 0xA7, 0x45)); // Green
         private static readonly SolidColorBrush DefaultFalse = new SolidColorBrush(Color.FromRgb(0xFF, 0xC1, 0x07)); // Amber
 

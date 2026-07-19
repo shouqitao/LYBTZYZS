@@ -26,15 +26,6 @@ public static class PatientEvents
     public class UpdatedEvent : PubSubEvent<PatientUpdatedPayload> { }
 
     #endregion
-
-    #region 选择事件
-
-    /// <summary>
-    /// 患者选择事件
-    /// </summary>
-    public class SelectedEvent : PubSubEvent<PatientSelectedPayload> { }
-
-    #endregion
 }
 
 /// <summary>

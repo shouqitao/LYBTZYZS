@@ -29,15 +29,6 @@ public static class CaseEvents
     public class PrescriptionCompletedEvent : PubSubEvent<CasePrescriptionCompletedPayload> { }
 
     #endregion
-
-    #region 工作区事件
-
-    /// <summary>
-    /// 工作区变更事件
-    /// </summary>
-    public class WorkspaceChangedEvent : PubSubEvent<WorkspaceChangedPayload> { }
-
-    #endregion
 }
 
 /// <summary>
@@ -102,30 +93,6 @@ public record CasePrescriptionCompletedPayload
     /// 是否挂起
     /// </summary>
     public bool IsSuspended { get; init; }
-
-    /// <summary>
-    /// 事件时间戳
-    /// </summary>
-    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
-}
-
-/// <summary>
-/// 工作区变更事件载荷
-/// </summary>
-/// <remarks>
-/// 使用record类型符合事件Payload规范(EVENT-002)
-/// </remarks>
-public record WorkspaceChangedPayload
-{
-    /// <summary>
-    /// 医案流程ID
-    /// </summary>
-    public Guid MedicalCaseFlowId { get; init; }
-
-    /// <summary>
-    /// 当前工作区状态
-    /// </summary>
-    public required string WorkspaceState { get; init; }
 
     /// <summary>
     /// 事件时间戳

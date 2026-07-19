@@ -3,6 +3,7 @@ using LYBT.Desktop.CardReader.Integration;
 using LYBT.Desktop.CardReader.Models;
 using LYBT.Desktop.CardReader.Services;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Helpers;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 
@@ -97,10 +98,6 @@ public partial class PatientCardReaderViewModel : CoreViewModelBase
     }
 
     /// <summary>掩码身份证号（保护隐私）</summary>
-    public static string MaskIdNumber(string idNumber)
-    {
-        if (string.IsNullOrEmpty(idNumber) || idNumber.Length < 10)
-            return idNumber;
-        return idNumber[..6] + "****" + idNumber[^4..];
-    }
+    public static string MaskIdNumber(string? idNumber)
+        => PrivacyHelper.MaskIdNumber(idNumber);
 }

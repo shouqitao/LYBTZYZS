@@ -4,6 +4,7 @@ using LYBT.Desktop.CardReader.Models;
 using LYBT.Desktop.CardReader.Services;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.Infrastructure.Helpers;
 using LYBT.Desktop.Infrastructure.ViewModels.Composition;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
@@ -395,13 +396,8 @@ public partial class CardReaderViewModel : ChildViewModelBase
     /// <summary>
     /// Mask ID number for privacy (keep first 6 and last 4 digits).
     /// </summary>
-    public static string MaskIdNumber(string idNumber)
-    {
-        if (string.IsNullOrEmpty(idNumber) || idNumber.Length < 10)
-            return idNumber;
-
-        return idNumber[..6] + "****" + idNumber[^4..];
-    }
+    public static string MaskIdNumber(string? idNumber)
+        => PrivacyHelper.MaskIdNumber(idNumber);
 
     #endregion
 

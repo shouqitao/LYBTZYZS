@@ -9,8 +9,6 @@ namespace LYBT.Desktop.Controls.Converters
     /// </summary>
     public class BoolToBrushConverter : IValueConverter
     {
-        public static readonly BoolToBrushConverter Instance = new BoolToBrushConverter();
-
         private static readonly SolidColorBrush TrueBrush = new SolidColorBrush(Color.FromRgb(0x28, 0xA7, 0x45)); // 绿色
         private static readonly SolidColorBrush FalseBrush = new SolidColorBrush(Color.FromRgb(0xDC, 0x35, 0x45)); // 红色
 

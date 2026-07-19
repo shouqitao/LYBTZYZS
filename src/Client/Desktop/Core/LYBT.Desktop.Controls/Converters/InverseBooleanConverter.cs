@@ -9,8 +9,6 @@ namespace LYBT.Desktop.Controls.Converters
     /// </summary>
     public class InverseBooleanConverter : IValueConverter
     {
-        public static readonly InverseBooleanConverter Instance = new InverseBooleanConverter();
-
         /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

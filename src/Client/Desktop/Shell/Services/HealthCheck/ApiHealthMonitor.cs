@@ -54,8 +54,7 @@ public sealed class ApiHealthMonitor : IApiHealthMonitor
     public event EventHandler<ApiHealthMonitorChangedEventArgs>? StatusChanged;
     public event EventHandler<HealthCheckCompletedEventArgs>? CheckCompleted;
 
-#pragma warning disable CS1998
-    public async Task StartMonitoringAsync(CancellationToken ct = default)
+    public Task StartMonitoringAsync(CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
@@ -69,13 +68,13 @@ public sealed class ApiHealthMonitor : IApiHealthMonitor
             CheckInterval);
 
         _nextCheckTime = DateTime.UtcNow.Add(CheckInterval);
-    }
-#pragma warning restore CS1998
 
-#pragma warning disable CS1998
-    public async Task StopMonitoringAsync()
+        return Task.CompletedTask;
+    }
+
+    public Task StopMonitoringAsync()
     {
-        if (_disposed) return;
+        if (_disposed) return Task.CompletedTask;
 
         _logger.LogInformation("[HEALTH-MON] 停止 API 健康监控");
         _checkTimer?.Dispose();
@@ -89,8 +88,9 @@ public sealed class ApiHealthMonitor : IApiHealthMonitor
         }
 
         UpdateState(ApiMonitorHealthStatus.Unhealthy, ApiConnectionState.Disconnected, "监控已停止");
+
+        return Task.CompletedTask;
     }
-#pragma warning restore CS1998
 
     public async Task<ApiMonitorHealthStatus> ForceCheckAsync()
     {

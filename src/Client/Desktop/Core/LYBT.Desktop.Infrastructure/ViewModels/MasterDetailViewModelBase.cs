@@ -569,8 +569,9 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
 
         /// <summary>
         /// 恢复命令（恢复软删除的记录）
-        /// 子类应使用 [RelayCommand] 重写此方法以提供自定义恢复逻辑。
+        /// 子类可重写 InvalidateCachesAsync 以在恢复后刷新模块特定缓存。
         /// </summary>
+        [RelayCommand(CanExecute = nameof(CanRestore))]
         protected virtual async Task RestoreAsync()
         {
             var item = SelectedItem;
@@ -581,6 +582,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             if (!confirmed) return;
 
             await RestoreItemAsync(item);
+            await InvalidateCachesAsync();
             await RefreshAsync();
         }
 
@@ -591,6 +593,11 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         {
             return Task.CompletedTask;
         }
+
+        /// <summary>
+        /// 恢复后刷新模块特定缓存。子类重写以实现模块特定的缓存失效。
+        /// </summary>
+        protected virtual Task InvalidateCachesAsync() => Task.CompletedTask;
 
         /// <summary>
         /// 批量启用。子类重写以调用服务 API。
@@ -623,6 +630,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         private bool CanSave() => IsEditMode && CurrentDetail != null && !IsBusy;
         private bool CanCancel() => IsEditMode;
         private bool CanDelete() => HasSelection && !IsEditMode && !IsBusy;
+        private bool CanRestore() => HasSelection && !IsBusy && IsAdmin;
 
         /// <summary>
         /// 通知所有命令刷新CanExecute状态

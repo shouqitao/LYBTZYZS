@@ -9,8 +9,6 @@ namespace LYBT.Desktop.Controls.Converters
     /// </summary>
     public class InverseBooleanToVisibilityConverter : IValueConverter
     {
-        public static readonly InverseBooleanToVisibilityConverter Instance = new InverseBooleanToVisibilityConverter();
-
         /// <inheritdoc/>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

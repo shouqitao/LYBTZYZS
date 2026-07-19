@@ -92,8 +92,15 @@ public class ShellEventCoordinator : IDisposable
             // 背景预加载高频模块
             _ = Task.Run(async () =>
             {
-                await Task.Delay(2000);
-                await _moduleLazyLoader.PreloadModulesAsync(args.User.Role);
+                try
+                {
+                    await Task.Delay(2000);
+                    await _moduleLazyLoader.PreloadModulesAsync(args.User.Role);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "背景模块预加载失败");
+                }
             });
 
             _logger.LogInformation("登录成功UI更新完成 [用户: {Username}]", args.User.UserName);

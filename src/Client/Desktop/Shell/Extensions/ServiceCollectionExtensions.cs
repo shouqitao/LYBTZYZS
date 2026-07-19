@@ -63,7 +63,7 @@ namespace LYBT.Desktop.Shell.Extensions
         private static IConfiguration RegisterConfiguration(IContainerRegistry containerRegistry)
         {
             var configuration = new ConfigurationBuilder()
-                .SetBasePath(System.IO.Directory.GetCurrentDirectory())
+                .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile("clinic-settings.json", optional: true, reloadOnChange: true)
                 .Build();

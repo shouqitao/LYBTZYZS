@@ -10,7 +10,6 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Infrastructure.Services.Toast;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Shell.Services;
@@ -19,7 +18,6 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using MaterialDesignThemes.Wpf;
 using Microsoft.Extensions.Logging;
-using Prism.Regions;
 
 namespace LYBT.Desktop.Shell.ViewModels;
 
@@ -49,10 +47,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
     private readonly ILoginStateManager _loginStateManager;
     private readonly ShellEventCoordinator _shellEventCoordinator;
     private readonly ShellDialogHelper _dialogHelper;
-
-    protected IRegionManager RegionManager { get; }
-    protected ICommonDialogService? CommonDialogService { get; }
-    protected IToastService? ToastService { get; }
 
     #endregion
 
@@ -124,10 +118,6 @@ public partial class MainWindowViewModel : CoreViewModelBase
         ShellDialogHelper dialogHelper)
         : base(services)
     {
-        RegionManager = services.RegionManager;
-        CommonDialogService = services.CommonDialogService;
-        ToastService = services.ToastService;
-
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));
         _activeConsultationService = activeConsultationService ?? throw new ArgumentNullException(nameof(activeConsultationService));
