@@ -7,13 +7,16 @@ using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
+using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Desktop.MedicalCase.ViewModels.Components;
 using LYBT.Desktop.MedicalCase.ViewModels.Workspace;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Shared.ExceptionHandling.Mappers;
+using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -28,7 +31,7 @@ namespace LYBT.Desktop.Clinical.ViewModels;
 /// Implements IMedicalCaseWorkspaceContext (state reading) and IWorkspaceHost (child-to-parent operations).
 /// </summary>
 public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
-    IMedicalCaseWorkspaceContext, IWorkspaceHost
+    IMedicalCaseWorkspaceContext, IWorkspaceHost, IMedicalCaseDataProvider
 {
     #region Fields
 
@@ -257,19 +260,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         // Create child VMs (not container-resolved; coupled to parent lifecycle)
         ConsultationEditor = new ConsultationEditorViewModel(this, this, services.LoggerFactory);
         PrescriptionEditor = new PrescriptionEditorViewModel(this, this, services.LoggerFactory);
-        Commands = new MedicalCaseCommandsViewModel(this, this, services.LoggerFactory, medicalCaseService, printHandler, _toastService, dialogService);
-
-        // Wire data providers for Commands
-        Commands.GetConsultationData = () => ConsultationEditor.GetConsultationData();
-        Commands.GetPrescriptionData = () => PrescriptionEditor.GetPrescriptionData();
-        Commands.GetConsultationValidator = () => ConsultationEditor.Consultation;
-        Commands.GetPrescriptionValidator = () => PrescriptionEditor.Prescription;
-        Commands.GetPrescriptionProvider = () => PrescriptionEditor.Prescription;
-        Commands.GetConsultationItem = () => ConsultationEditor.Consultation;
-        Commands.GetPrescriptionItem = () => PrescriptionEditor.Prescription;
-        Commands.GetAllHerbs = () => AllHerbs;
-        Commands.GetEditReason = () => EditReason;
-        Commands.GetIsPrescriptionEnabled = () => IsPrescriptionEnabled;
+        Commands = new MedicalCaseCommandsViewModel(this, this, services.LoggerFactory, medicalCaseService, this, printHandler, _toastService, dialogService);
 
         // Wire PendingQueue suspend delegate
 
@@ -759,6 +750,40 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         var parameters = new Dictionary<string, object> { { "MedicalCaseId", MedicalCaseId } };
         _navigationCoordinator.NavigateTo(ViewNames.AuditLog, parameters);
     }
+
+    #endregion
+
+    #region IMedicalCaseDataProvider 实现
+
+    ConsultationInputDto? IMedicalCaseDataProvider.GetConsultationData()
+        => ConsultationEditor.GetConsultationData();
+
+    PrescriptionInputDto? IMedicalCaseDataProvider.GetPrescriptionData()
+        => PrescriptionEditor.GetPrescriptionData();
+
+    IValidatable? IMedicalCaseDataProvider.GetConsultationValidator()
+        => ConsultationEditor.Consultation;
+
+    IValidatable? IMedicalCaseDataProvider.GetPrescriptionValidator()
+        => PrescriptionEditor.Prescription;
+
+    IDataProvider? IMedicalCaseDataProvider.GetPrescriptionProvider()
+        => PrescriptionEditor.Prescription;
+
+    ConsultationItem? IMedicalCaseDataProvider.GetConsultationItem()
+        => ConsultationEditor.Consultation;
+
+    PrescriptionItem? IMedicalCaseDataProvider.GetPrescriptionItem()
+        => PrescriptionEditor.Prescription;
+
+    IEnumerable<HerbListDto>? IMedicalCaseDataProvider.GetAllHerbs()
+        => AllHerbs;
+
+    string IMedicalCaseDataProvider.GetRemark() => string.Empty;
+
+    string IMedicalCaseDataProvider.GetEditReason() => EditReason;
+
+    bool IMedicalCaseDataProvider.GetIsPrescriptionEnabled() => IsPrescriptionEnabled;
 
     #endregion
 

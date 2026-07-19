@@ -37,31 +37,11 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
 {
     private readonly IMedicalCaseWorkspaceContext _context;
     private readonly IMedicalCaseService _medicalCaseService;
+    private readonly IMedicalCaseDataProvider _dataProvider;
     private readonly PrescriptionPrintHandler _printHandler;
     private readonly IDialogService? _dialogService;
     private readonly IToastService _toastService;
     private readonly ConsultationMapper _consultationMapper = new();
-
-    #region Data provider delegates (set by parent after construction)
-
-    public Func<ConsultationInputDto?>? GetConsultationData { get; set; }
-    public Func<PrescriptionInputDto?>? GetPrescriptionData { get; set; }
-    public Func<IValidatable>? GetConsultationValidator { get; set; }
-    public Func<IValidatable>? GetPrescriptionValidator { get; set; }
-    public Func<IDataProvider?>? GetPrescriptionProvider { get; set; }
-    public Func<ConsultationItem?>? GetConsultationItem { get; set; }
-    public Func<PrescriptionItem?>? GetPrescriptionItem { get; set; }
-    public Func<IEnumerable<HerbListDto>?>? GetAllHerbs { get; set; }
-
-    #endregion
-
-    #region State accessors from parent (set by parent)
-
-    public Func<string>? GetRemark { get; set; }
-    public Func<string>? GetEditReason { get; set; }
-    public Func<bool>? GetIsPrescriptionEnabled { get; set; }
-
-    #endregion
 
     #region Commands
 
@@ -82,6 +62,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         IWorkspaceHost host,
         ILoggerFactory loggerFactory,
         IMedicalCaseService medicalCaseService,
+        IMedicalCaseDataProvider dataProvider,
         PrescriptionPrintHandler printHandler,
         IToastService toastService,
         IDialogService? dialogService = null)
@@ -89,6 +70,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
+        _dataProvider = dataProvider ?? throw new ArgumentNullException(nameof(dataProvider));
         _printHandler = printHandler ?? throw new ArgumentNullException(nameof(printHandler));
         _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
         _dialogService = dialogService;
@@ -138,10 +120,10 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             Host.SetBusy(true, "正在保存医案...");
             var result = await _medicalCaseService.AggregateSaveAsync(
                 _context.MedicalCaseId,
-                GetConsultationData?.Invoke(),
-                GetPrescriptionData?.Invoke(),
-                GetRemark?.Invoke() ?? "",
-                GetEditReason?.Invoke() ?? "");
+                _dataProvider.GetConsultationData(),
+                _dataProvider.GetPrescriptionData(),
+                _dataProvider.GetRemark() ?? "",
+                _dataProvider.GetEditReason() ?? "");
 
             if (result.Success)
             {
@@ -173,9 +155,9 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             Host.SetBusy(true, "正在暂存医案...");
             var result = await _medicalCaseService.SaveAndSuspendAsync(
                 _context.MedicalCaseId,
-                GetConsultationData?.Invoke(),
-                GetPrescriptionData?.Invoke(),
-                GetRemark?.Invoke() ?? "");
+                _dataProvider.GetConsultationData(),
+                _dataProvider.GetPrescriptionData(),
+                _dataProvider.GetRemark() ?? "");
 
             if (result.Success)
             {
@@ -208,12 +190,12 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             Host.SetBusy(true, "正在完成看诊并归档...");
             var result = await _medicalCaseService.SaveAndCompleteAsync(
                 _context.MedicalCaseId,
-                GetConsultationData?.Invoke(),
-                GetPrescriptionData?.Invoke(),
-                GetConsultationValidator?.Invoke(),
-                GetPrescriptionValidator?.Invoke(),
-                GetRemark?.Invoke() ?? "",
-                GetIsPrescriptionEnabled?.Invoke() ?? false);
+                _dataProvider.GetConsultationData(),
+                _dataProvider.GetPrescriptionData(),
+                _dataProvider.GetConsultationValidator(),
+                _dataProvider.GetPrescriptionValidator(),
+                _dataProvider.GetRemark() ?? "",
+                _dataProvider.GetIsPrescriptionEnabled());
 
             if (result.Success)
             {
@@ -245,14 +227,14 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         {
             Host.SetBusy(true, "正在准备打印预览...");
 
-            var consultationItem = GetConsultationItem?.Invoke();
+            var consultationItem = _dataProvider.GetConsultationItem();
             var consultationData = consultationItem != null
                 ? _consultationMapper.ToInputDto(consultationItem)
                 : null;
 
             var result = await _printHandler.PrintPreviewAsync(
                 _context.MedicalCaseId,
-                GetPrescriptionProvider?.Invoke(),
+                _dataProvider.GetPrescriptionProvider(),
                 _context.CurrentPatient,
                 consultationData);
 
@@ -283,14 +265,14 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         {
             Host.SetBusy(true, "正在生成PDF文件...");
 
-            var consultationItem = GetConsultationItem?.Invoke();
+            var consultationItem = _dataProvider.GetConsultationItem();
             var consultationData = consultationItem != null
                 ? _consultationMapper.ToInputDto(consultationItem)
                 : null;
 
             var result = await _printHandler.ExportPdfAsync(
                 _context.MedicalCaseId,
-                GetPrescriptionProvider?.Invoke(),
+                _dataProvider.GetPrescriptionProvider(),
                 _context.CurrentPatient,
                 consultationData);
 
@@ -369,7 +351,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
     private void ExecuteClearHerbs() => ExecuteClearHerbsAsync().SafeFireAndForget(ex => Logger.LogError(ex, "清空药材失败"));
     private async Task ExecuteClearHerbsAsync()
     {
-        var prescription = GetPrescriptionItem?.Invoke();
+        var prescription = _dataProvider.GetPrescriptionItem();
         if (prescription == null)
         {
             Logger.LogWarning("处方数据为空，无法清空药材");
@@ -407,7 +389,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
                 return;
             }
 
-            var prescription = GetPrescriptionItem?.Invoke();
+            var prescription = _dataProvider.GetPrescriptionItem();
             if (prescription == null)
             {
                 Logger.LogWarning("处方数据为空，无法导入验方");
@@ -462,7 +444,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
                 return;
             }
 
-            var prescription = GetPrescriptionItem?.Invoke();
+            var prescription = _dataProvider.GetPrescriptionItem();
             if (prescription == null)
             {
                 Logger.LogWarning("处方数据为空，无法复制历史处方");
@@ -523,7 +505,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
     /// </summary>
     private IReadOnlyDictionary<Guid, decimal>? BuildHerbPriceLookup()
     {
-        var allHerbs = GetAllHerbs?.Invoke();
+        var allHerbs = _dataProvider.GetAllHerbs();
         if (allHerbs == null) return null;
 
         return allHerbs
@@ -537,7 +519,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
     private IReadOnlyList<PrescriptionItemDto> FilterDisabledHerbs(
         IReadOnlyList<PrescriptionItemDto> items, string source)
     {
-        var allHerbs = GetAllHerbs?.Invoke();
+        var allHerbs = _dataProvider.GetAllHerbs();
         if (allHerbs == null) return items;
 
         var disabledHerbIds = new HashSet<Guid>(
