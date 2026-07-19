@@ -1,11 +1,11 @@
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Foundation.Repositories;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Users.Repositories;
@@ -13,192 +13,169 @@ namespace LYBT.Desktop.Users.Repositories;
 /// <summary>
 /// 用户仓储 — routes all calls through IApiClient.
 /// </summary>
-public sealed class UserRepository : IUserRepository
+public sealed class UserRepository : ApiClientRepositoryBase<UserListDto, UserDetailDto, UserInputDto, UserInputDto>, IUserRepository
 {
     private readonly IApiClient _apiClient;
-    private readonly ILogger<UserRepository> _logger;
 
     public UserRepository(
         IApiClient apiClient,
         ILogger<UserRepository> logger)
+        : base(logger)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
+
+    protected override string LogPrefix => "User";
 
     #region 标准 CRUD 操作
 
-    public async Task<PagedResult<UserListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+    public async Task<PagedResult<UserListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, CancellationToken ct = default)
     {
-        try
-        {
-            _logger.LogDebug("[REPO] User.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword}",
-                page, pageSize, keyword);
-
-            var response = await _apiClient.Users.GetUsersAsync(page, pageSize, keyword);
-            if (response.Data == null)
-                return new PagedResult<UserListDto> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize };
-
-            return new PagedResult<UserListDto>
+        return await ExecuteAsync(
+            async () =>
             {
-                Items = response.Data.Items.ToList(),
-                TotalCount = response.Data.TotalCount,
-                CurrentPage = page,
-                PageSize = pageSize
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] User.GetPaged failed");
-            throw;
-        }
+                var response = await _apiClient.Users.GetUsersAsync(page, pageSize, keyword);
+                if (response.Data == null)
+                    return new PagedResult<UserListDto> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize };
+
+                return new PagedResult<UserListDto>
+                {
+                    Items = response.Data.Items.ToList(),
+                    TotalCount = response.Data.TotalCount,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+            },
+            "GetPaged",
+            "[REPO] User.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword}",
+            [page, pageSize, keyword]);
     }
 
-    public async Task<UserDetailDto?> GetByIdAsync(Guid id)
+    public async Task<UserDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        try
-        {
-            _logger.LogDebug("[REPO] User.GetById - Id={Id}", id);
-
-            var response = await _apiClient.Users.GetUserByIdAsync(id);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] User.GetById failed - Id={Id}", id);
-            throw;
-        }
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Users.GetUserByIdAsync(id);
+                return response.Data;
+            },
+            "GetById");
     }
 
-    public async Task<UserDetailDto> CreateAsync(UserInputDto dto)
+    public async Task<UserDetailDto> CreateAsync(UserInputDto dto, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        try
-        {
-            _logger.LogInformation("[REPO] User.Create - UserName={UserName}", dto.UserName);
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Users.CreateUserAsync(dto);
+                if (!response.Success || response.Data == null)
+                    throw new InvalidOperationException(response.Message ?? "创建用户失败");
 
-            var response = await _apiClient.Users.CreateUserAsync(dto);
-            if (!response.Success || response.Data == null)
-                throw new InvalidOperationException(response.Message ?? "创建用户失败");
-
-            _logger.LogInformation("[REPO] User.Create completed - Id={Id}", response.Data.Id);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] User.Create failed - UserName={UserName}", dto.UserName);
-            throw;
-        }
+                Logger.LogInformation("[REPO] User.Create completed - Id={Id}", response.Data.Id);
+                return response.Data;
+            },
+            "Create",
+            LogLevel.Information);
     }
 
-    public async Task<UserDetailDto> UpdateAsync(UserInputDto dto)
+    public async Task<UserDetailDto> UpdateAsync(UserInputDto dto, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(dto);
         if (dto.Id is null || dto.Id == Guid.Empty)
             throw new ArgumentException("更新DTO必须包含有效的ID", nameof(dto));
 
-        try
-        {
-            _logger.LogInformation("[REPO] User.Update - Id={Id}", dto.Id);
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Users.UpdateUserAsync(dto.Id.Value, dto);
+                if (!response.Success || response.Data == null)
+                    throw new InvalidOperationException(response.Message ?? "更新用户失败");
 
-            var response = await _apiClient.Users.UpdateUserAsync(dto.Id.Value, dto);
-            if (!response.Success || response.Data == null)
-                throw new InvalidOperationException(response.Message ?? "更新用户失败");
-
-            _logger.LogInformation("[REPO] User.Update completed - Id={Id}", response.Data.Id);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] User.Update failed - Id={Id}", dto.Id);
-            throw;
-        }
+                Logger.LogInformation("[REPO] User.Update completed - Id={Id}", response.Data.Id);
+                return response.Data;
+            },
+            "Update",
+            LogLevel.Information);
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
     {
+        // DeleteAsync returns false on exception instead of rethrowing,
+        // which differs from ExecuteAsync's always-rethrow behavior.
         try
         {
-            _logger.LogInformation("[REPO] User.Delete - Id={Id}", id);
+            Logger.LogInformation("[REPO] User.Delete - Id={Id}", id);
 
             var response = await _apiClient.Users.DeleteUserAsync(id);
             if (response.Success)
-                _logger.LogInformation("[REPO] User.Delete completed - Id={Id}", id);
+                Logger.LogInformation("[REPO] User.Delete completed - Id={Id}", id);
             else
-                _logger.LogWarning("[REPO] User.Delete failed - Id={Id}", id);
+                Logger.LogWarning("[REPO] User.Delete failed - Id={Id}", id);
 
             return response.Success;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] User.Delete failed - Id={Id}", id);
+            Logger.LogError(ex, "[REPO] User.Delete failed - Id={Id}", id);
             return false;
         }
     }
 
-    public async Task<List<UserListDto>> SearchAsync(string keyword)
+    public async Task<List<UserListDto>> SearchAsync(string keyword, CancellationToken ct = default)
     {
-        try
-        {
-            _logger.LogDebug("[REPO] User.Search - Keyword={Keyword}", keyword);
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Users.GetUsersAsync(1, 100, keyword);
+                if (response.Data == null)
+                    return [];
 
-            var response = await _apiClient.Users.GetUsersAsync(1, 100, keyword);
-            if (response.Data == null)
-                return [];
-
-            return response.Data.Items.ToList();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] User.Search failed");
-            throw;
-        }
+                return response.Data.Items.ToList();
+            },
+            "Search");
     }
 
     #endregion
 
     #region 用户专用方法
 
-    public async Task<UserDetailDto> GetByUsernameAsync(string username)
+    public async Task<UserDetailDto> GetByUsernameAsync(string username, CancellationToken ct = default)
     {
-        try
-        {
-            _logger.LogDebug("[REPO] User.GetByUsername - Username={Username}", username);
+        return await ExecuteAsync(
+            async () =>
+            {
+                // 通过搜索找到匹配的用户
+                var response = await _apiClient.Users.GetUsersAsync(1, 100, username);
+                if (response.Data == null)
+                    throw new InvalidOperationException($"用户 {username} 不存在");
 
-            // 通过搜索找到匹配的用户
-            var response = await _apiClient.Users.GetUsersAsync(1, 100, username);
-            if (response.Data == null)
-                throw new InvalidOperationException($"用户 {username} 不存在");
+                // 从搜索结果中精确匹配用户名
+                var remoteMatch = response.Data.Items.FirstOrDefault(u =>
+                    u.UserName.Equals(username, StringComparison.OrdinalIgnoreCase));
 
-            // 从搜索结果中精确匹配用户名
-            var remoteMatch = response.Data.Items.FirstOrDefault(u =>
-                u.UserName.Equals(username, StringComparison.OrdinalIgnoreCase));
+                if (remoteMatch == null)
+                    throw new InvalidOperationException($"用户 {username} 不存在");
 
-            if (remoteMatch == null)
-                throw new InvalidOperationException($"用户 {username} 不存在");
-
-            // 获取完整详情
-            var detail = await GetByIdAsync(remoteMatch.Id);
-            return detail ?? throw new InvalidOperationException($"用户 {username} 不存在");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] User.GetByUsername failed - Username={Username}", username);
-            throw;
-        }
+                // 获取完整详情
+                var detail = await GetByIdAsync(remoteMatch.Id, ct);
+                return detail ?? throw new InvalidOperationException($"用户 {username} 不存在");
+            },
+            "GetByUsername");
     }
 
-    public async Task<List<UserListDto>> GetDoctorsAsync()
+    public async Task<List<UserListDto>> GetDoctorsAsync(CancellationToken ct = default)
     {
+        // Returns empty list on exception instead of rethrowing — keep manual try/catch.
         try
         {
-            _logger.LogDebug("[REPO] User.GetDoctors started");
+            Logger.LogDebug("[REPO] User.GetDoctors started");
 
             var response = await _apiClient.Users.GetUsersAsync(1, 100, null);
             if (response.Data?.Items == null)
             {
-                _logger.LogWarning("[REPO] User.GetDoctors -> Empty result");
+                Logger.LogWarning("[REPO] User.GetDoctors -> Empty result");
                 return [];
             }
 
@@ -207,87 +184,86 @@ public sealed class UserRepository : IUserRepository
                 .Where(u => u.Role == UserRole.Doctor && u.Status == CommonStatus.Enabled)
                 .ToList();
 
-            _logger.LogInformation("[REPO] User.GetDoctors completed - Count={Count}", remoteDoctors.Count);
+            Logger.LogInformation("[REPO] User.GetDoctors completed - Count={Count}", remoteDoctors.Count);
             return remoteDoctors;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] User.GetDoctors failed");
+            Logger.LogError(ex, "[REPO] User.GetDoctors failed");
             return [];
         }
     }
 
-    public async Task<UserDetailDto> ChangeProfileAsync(Guid userId, ChangeProfileDto dto)
+    public async Task<UserDetailDto> ChangeProfileAsync(Guid userId, ChangeProfileDto dto, CancellationToken ct = default)
     {
-        try
-        {
-            _logger.LogInformation("[REPO] User.ChangeProfile - UserId={UserId}", userId);
-
-            var response = await _apiClient.Users.ChangeProfileAsync(userId, dto);
-            if (response.Success && response.Data != null)
+        return await ExecuteAsync(
+            async () =>
             {
-                _logger.LogInformation("[REPO] User.ChangeProfile completed - UserId={UserId}", userId);
-                return response.Data;
-            }
+                var response = await _apiClient.Users.ChangeProfileAsync(userId, dto);
+                if (response.Success && response.Data != null)
+                {
+                    Logger.LogInformation("[REPO] User.ChangeProfile completed - UserId={UserId}", userId);
+                    return response.Data;
+                }
 
-            var errorMsg = response.Message ?? "修改个人资料失败";
-            _logger.LogWarning("[REPO] User.ChangeProfile failed - {Message}", errorMsg);
-            throw new InvalidOperationException(errorMsg);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] User.ChangeProfile failed - UserId={UserId}", userId);
-            throw;
-        }
+                var errorMsg = response.Message ?? "修改个人资料失败";
+                Logger.LogWarning("[REPO] User.ChangeProfile failed - {Message}", errorMsg);
+                throw new InvalidOperationException(errorMsg);
+            },
+            "ChangeProfile",
+            LogLevel.Information);
     }
 
-    public async Task<Result> ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
+    public async Task<Result> ChangePasswordAsync(Guid userId, ChangePasswordRequest request, CancellationToken ct = default)
     {
+        // Returns Result.Failure on exception instead of rethrowing — keep manual try/catch.
         try
         {
-            _logger.LogInformation("[REPO] User.ChangePassword - UserId={UserId}", userId);
+            Logger.LogInformation("[REPO] User.ChangePassword - UserId={UserId}", userId);
 
             var response = await _apiClient.Users.ChangePasswordAsync(userId, request);
             if (response.Success)
             {
-                _logger.LogInformation("[REPO] User.ChangePassword completed - UserId={UserId}", userId);
+                Logger.LogInformation("[REPO] User.ChangePassword completed - UserId={UserId}", userId);
                 return Result.Success();
             }
 
             var errorMsg = response.Message ?? "修改密码失败";
-            _logger.LogWarning("[REPO] User.ChangePassword failed - {Message}", errorMsg);
+            Logger.LogWarning("[REPO] User.ChangePassword failed - {Message}", errorMsg);
             return Result.Failure(errorMsg);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] User.ChangePassword failed - UserId={UserId}", userId);
+            Logger.LogError(ex, "[REPO] User.ChangePassword failed - UserId={UserId}", userId);
             return Result.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("修改密码", ex));
         }
     }
 
     public async Task<Result<ResetPasswordResponseDto>> ResetPasswordAsync(
         Guid userId,
-        ResetPasswordRequestDto request)
+        ResetPasswordRequestDto request,
+        CancellationToken ct = default)
     {
+        // Returns Result.Failure on exception instead of rethrowing — keep manual try/catch.
         try
         {
-            _logger.LogDebug("[REPO] User.ResetPassword - UserId={UserId}", userId);
+            Logger.LogDebug("[REPO] User.ResetPassword - UserId={UserId}", userId);
 
             var apiResponse = await _apiClient.Users.ResetPasswordAsync(userId, request);
             if (apiResponse.Success && apiResponse.Data != null)
             {
-                _logger.LogInformation("[REPO] User.ResetPassword completed - UserId={UserId}", userId);
+                Logger.LogInformation("[REPO] User.ResetPassword completed - UserId={UserId}", userId);
                 return Result<ResetPasswordResponseDto>.Success(apiResponse.Data);
             }
 
-            _logger.LogWarning("[REPO] User.ResetPassword failed - UserId={UserId}, Message={Message}",
+            Logger.LogWarning("[REPO] User.ResetPassword failed - UserId={UserId}, Message={Message}",
                 userId, apiResponse.Message);
             return Result<ResetPasswordResponseDto>.Failure(
                 apiResponse.Message ?? "重置密码失败");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] User.ResetPassword failed - UserId={UserId}", userId);
+            Logger.LogError(ex, "[REPO] User.ResetPassword failed - UserId={UserId}", userId);
             return Result<ResetPasswordResponseDto>.Failure(
                 ClientErrorMessageMapper.GetSafeOperationFailureMessage("重置密码", ex));
         }
@@ -297,51 +273,62 @@ public sealed class UserRepository : IUserRepository
 
     #region 状态切换、恢复和批量操作
 
-    public async Task<UserDetailDto?> ToggleStatusAsync(Guid id)
+    public async Task<UserDetailDto?> ToggleStatusAsync(Guid id, CancellationToken ct = default)
     {
+        // Returns null on failure instead of rethrowing — keep manual try/catch.
         try
         {
-            _logger.LogInformation("[REPO] User.ToggleStatus - Id={Id}", id);
+            Logger.LogInformation("[REPO] User.ToggleStatus - Id={Id}", id);
 
             var response = await _apiClient.Users.ToggleStatusAsync(id);
             if (!response.Success || response.Data == null)
             {
-                _logger.LogWarning("[REPO] User.ToggleStatus failed: {Message}", response.Message);
+                Logger.LogWarning("[REPO] User.ToggleStatus failed: {Message}", response.Message);
                 return null;
             }
 
-            _logger.LogInformation("[REPO] User.ToggleStatus completed - Id={Id}, Status={Status}",
+            Logger.LogInformation("[REPO] User.ToggleStatus completed - Id={Id}, Status={Status}",
                 id, response.Data.Status);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] User.ToggleStatus failed - Id={Id}", id);
+            Logger.LogError(ex, "[REPO] User.ToggleStatus failed - Id={Id}", id);
             return null;
         }
     }
 
-    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
+    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
+        // Returns failure DTO on exception instead of rethrowing — keep manual try/catch.
         try
         {
-            _logger.LogInformation("[REPO] User.BatchDelete - Count={Count}", ids.Count);
+            Logger.LogInformation("[REPO] User.BatchDelete - Count={Count}", ids.Count);
 
             var response = await _apiClient.Users.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
             if (!response.Success || response.Data == null)
             {
-                _logger.LogError("[REPO] User.BatchDelete failed - {Message}", response.Message);
-                return null;
+                return new BatchOperationResultDto
+                {
+                    TotalCount = ids.Count,
+                    FailureCount = ids.Count,
+                    IsSuccess = false,
+                    Message = response.Message ?? "批量删除失败"
+                };
             }
 
-            _logger.LogInformation("[REPO] User.BatchDelete completed - Success={Success}, Failure={Failure}",
-                response.Data.SuccessCount, response.Data.FailureCount);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] User.BatchDelete failed");
-            return null;
+            Logger.LogError(ex, "[REPO] User.BatchDelete failed");
+            return new BatchOperationResultDto
+            {
+                TotalCount = ids.Count,
+                FailureCount = ids.Count,
+                IsSuccess = false,
+                Message = ex.Message
+            };
         }
     }
 
