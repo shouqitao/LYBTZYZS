@@ -34,7 +34,7 @@ Five consolidation operations, executed in dependency order:
 - Move the `Result<T>` and `Result` classes
 - Change namespace from `LYBT.SharedKernel.Common` to `LYBT.Shared.Models.Contracts.Common`
 - Keep all methods, properties, and implicit operators identical
-- Add `using LYBT.Shared.Primitives.ErrorCodes;` (already available since Shared.Models references Shared.Primitives)
+- Add `using LYBT.Shared.Models.Primitives.ErrorCodes;` (already available since Shared.Models references Shared.Primitives)
 
 ### 1b. Remove SharedKernel project references
 

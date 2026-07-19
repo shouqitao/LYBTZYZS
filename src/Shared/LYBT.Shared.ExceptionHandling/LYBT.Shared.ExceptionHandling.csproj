@@ -26,7 +26,6 @@
   -->
   <ItemGroup>
     <ProjectReference Include="..\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
-    <ProjectReference Include="..\LYBT.Shared.Primitives\LYBT.Shared.Primitives.csproj" />
   </ItemGroup>
 
 </Project>

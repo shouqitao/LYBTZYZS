@@ -1,4 +1,4 @@
-namespace LYBT.Shared.Primitives.ErrorCodes;
+namespace LYBT.Shared.Models.Primitives.ErrorCodes;
 
 /// <summary>
 /// 错误消息映射 - 提供中英文错误消息

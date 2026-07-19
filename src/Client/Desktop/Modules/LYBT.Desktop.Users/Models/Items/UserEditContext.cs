@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Primitives.Validation;
+using LYBT.Shared.Models.Primitives.Validation;
 using LYBT.Shared.Utilities.Text;
 
 namespace LYBT.Desktop.Users.Models.Items

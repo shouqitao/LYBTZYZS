@@ -2,7 +2,7 @@ using FluentAssertions;
 using FluentValidation.TestHelper;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Primitives.Validation;
+using LYBT.Shared.Models.Primitives.Validation;
 using LYBT.Shared.Validators.Users;
 using Xunit;
 

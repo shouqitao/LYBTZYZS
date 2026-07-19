@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Primitives.Validation;
+using LYBT.Shared.Models.Primitives.Validation;
 
 namespace LYBT.Shared.Models.Contracts.Consultation
 {

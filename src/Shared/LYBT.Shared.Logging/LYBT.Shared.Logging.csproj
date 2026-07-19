@@ -30,7 +30,7 @@
 
   <!-- 项目引用 -->
   <ItemGroup Label="Project References">
-    <ProjectReference Include="..\LYBT.Shared.Primitives\LYBT.Shared.Primitives.csproj" />
+    <ProjectReference Include="..\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
   </ItemGroup>
 
 </Project>

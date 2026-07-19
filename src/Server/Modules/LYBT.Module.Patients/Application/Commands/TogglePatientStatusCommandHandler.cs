@@ -1,7 +1,7 @@
 using MediatR;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Entities.Patients;

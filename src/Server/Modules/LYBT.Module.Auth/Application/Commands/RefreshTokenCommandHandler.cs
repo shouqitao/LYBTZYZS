@@ -5,7 +5,7 @@ using LYBT.Module.Auth.Domain;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Models;
 using LYBT.Shared.Models.Contracts.Auth;
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 

@@ -3,7 +3,7 @@ using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.MedicalCases.Mapping;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 

@@ -1,7 +1,7 @@
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.ExceptionHandling.Handlers;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.WebAPI.Configuration;
 
 

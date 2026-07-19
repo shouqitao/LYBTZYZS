@@ -5,7 +5,7 @@ using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Primitives.Validation;
+using LYBT.Shared.Models.Primitives.Validation;
 
 namespace LYBT.Desktop.Modules.MedicalCase.Models;
 

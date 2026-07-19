@@ -5,7 +5,7 @@ using LYBT.Module.Auth.Application.Commands;
 using LYBT.Module.Auth.Application.Queries;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

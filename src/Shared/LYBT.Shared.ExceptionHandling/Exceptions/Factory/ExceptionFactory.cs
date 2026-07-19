@@ -1,4 +1,4 @@
-using EC = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
+using EC = LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Shared.ExceptionHandling.Exceptions;
 

@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using MediatR;
 using LYBT.Module.Auth.Interfaces;
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 

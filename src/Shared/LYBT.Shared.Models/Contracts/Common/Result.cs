@@ -1,4 +1,4 @@
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Shared.Models.Contracts.Common;
 

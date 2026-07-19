@@ -156,7 +156,7 @@ git commit -m "refactor(Server): extract OperatorAccessor from BaseApiController
 ```csharp
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Mvc;
 using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
 

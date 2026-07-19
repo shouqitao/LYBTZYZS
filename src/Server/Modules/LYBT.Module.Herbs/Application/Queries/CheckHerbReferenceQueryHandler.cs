@@ -1,7 +1,7 @@
 using MediatR;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Module.Herbs.Application.Queries;

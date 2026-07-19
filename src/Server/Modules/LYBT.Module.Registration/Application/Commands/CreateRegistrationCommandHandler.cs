@@ -4,7 +4,7 @@ using LYBT.Module.Registration.Domain.Events;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using MediatR;
 using RegistrationEntity = LYBT.Entities.Registrations.Registration;

@@ -47,7 +47,6 @@
     <ProjectReference Include="..\..\src\Shared\LYBT.Shared.Logging\LYBT.Shared.Logging.csproj" />
     <ProjectReference Include="..\..\src\Shared\LYBT.Shared.Validators\LYBT.Shared.Validators.csproj" />
     <ProjectReference Include="..\..\src\Shared\LYBT.Shared.ExceptionHandling\LYBT.Shared.ExceptionHandling.csproj" />
-    <ProjectReference Include="..\..\src\Shared\LYBT.Shared.Primitives\LYBT.Shared.Primitives.csproj" />
     <ProjectReference Include="..\..\src\Shared\LYBT.Shared.Configuration\LYBT.Shared.Configuration.csproj" />
     <!-- Server Modules -->
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj" />

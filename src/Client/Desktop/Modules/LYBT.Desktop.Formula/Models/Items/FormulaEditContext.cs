@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Primitives.Validation;
+using LYBT.Shared.Models.Primitives.Validation;
 
 namespace LYBT.Desktop.Formula.Models.Items;
 

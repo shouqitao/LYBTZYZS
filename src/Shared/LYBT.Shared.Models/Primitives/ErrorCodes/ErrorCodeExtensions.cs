@@ -1,4 +1,4 @@
-namespace LYBT.Shared.Primitives.ErrorCodes;
+namespace LYBT.Shared.Models.Primitives.ErrorCodes;
 
 /// <summary>
 /// ErrorCode扩展方法

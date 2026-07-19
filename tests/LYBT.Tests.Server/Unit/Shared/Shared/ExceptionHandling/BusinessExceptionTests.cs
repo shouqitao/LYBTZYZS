@@ -1,8 +1,8 @@
 using FluentAssertions;
 using LYBT.Shared.ExceptionHandling.Exceptions;
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Xunit;
-using EC = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
+using EC = LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Tests.Server;
 

@@ -1,6 +1,6 @@
 using FluentValidation;
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Primitives.Validation;
+using LYBT.Shared.Models.Primitives.Validation;
 
 namespace LYBT.Shared.Validators.Herbs
 {

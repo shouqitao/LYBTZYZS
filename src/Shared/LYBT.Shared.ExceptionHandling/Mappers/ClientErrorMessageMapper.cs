@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using System.Text.Json;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.ExceptionHandling.ProblemDetails;
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Shared.ExceptionHandling.Mappers;
 

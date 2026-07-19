@@ -207,7 +207,7 @@ grep -r "LYBT.Shared.Models.Enums.ErrorCategory" --include="*.cs"
 - [ ] **Step 3: 修改引用为 Primitives 版本**
 
 ```
-将 using LYBT.Shared.Models.Enums; 改为 using LYBT.Shared.Primitives.ErrorCodes;
+将 using LYBT.Shared.Models.Enums; 改为 using LYBT.Shared.Models.Primitives.ErrorCodes;
 或添加 using PrimitivesAlias = LYBT.Shared.Primitives.ErrorCodes;
 ```
 

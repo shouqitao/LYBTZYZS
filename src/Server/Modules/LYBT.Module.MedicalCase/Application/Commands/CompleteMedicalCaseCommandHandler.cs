@@ -1,6 +1,6 @@
 using MediatR;
 using LYBT.Module.MedicalCases.Interfaces;
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Module.MedicalCases.Application.Commands;

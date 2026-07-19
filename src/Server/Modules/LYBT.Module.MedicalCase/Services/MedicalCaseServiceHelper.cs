@@ -7,7 +7,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.DTOs.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using EC = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
+using EC = LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Module.MedicalCases.Services
 {

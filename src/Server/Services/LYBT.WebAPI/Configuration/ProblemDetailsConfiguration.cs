@@ -1,6 +1,6 @@
 using LYBT.Infrastructure.Constants;
 using LYBT.Shared.ExceptionHandling.ProblemDetails;
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.WebAPI.Middleware;
 
 namespace LYBT.WebAPI.Configuration;

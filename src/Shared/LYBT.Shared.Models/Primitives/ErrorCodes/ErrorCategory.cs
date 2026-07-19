@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace LYBT.Shared.Primitives.ErrorCodes;
+namespace LYBT.Shared.Models.Primitives.ErrorCodes;
 
 /// <summary>
 /// 错误类别枚举

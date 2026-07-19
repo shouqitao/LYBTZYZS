@@ -1,6 +1,6 @@
 using MediatR;
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Herbs.Domain;
 using LYBT.Module.Herbs.Interfaces;

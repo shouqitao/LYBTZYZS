@@ -1,4 +1,4 @@
-namespace LYBT.Shared.Primitives.Validation
+namespace LYBT.Shared.Models.Primitives.Validation
 {
     /// <summary>
     /// 验证常量类 - 统一管理所有验证规则

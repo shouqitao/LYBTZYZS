@@ -2,10 +2,10 @@ using LYBT.Shared.Logging.Masking;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using GenericErrorCode = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
+using GenericErrorCode = LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Infrastructure.Web
 {

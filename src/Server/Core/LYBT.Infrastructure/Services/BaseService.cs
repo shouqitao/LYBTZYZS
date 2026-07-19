@@ -3,10 +3,10 @@ using FluentValidation;
 using LYBT.Infrastructure.Constants;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using EC = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
+using EC = LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Infrastructure.Services
 {

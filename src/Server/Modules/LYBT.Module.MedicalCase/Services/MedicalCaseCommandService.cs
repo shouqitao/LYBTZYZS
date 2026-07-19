@@ -13,7 +13,7 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;
 using System.Threading;
-using EC = LYBT.Shared.Primitives.ErrorCodes.ErrorCode;
+using EC = LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Module.MedicalCases.Services
 {

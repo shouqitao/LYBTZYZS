@@ -35,7 +35,7 @@
 Create `src/Shared/LYBT.Shared.Models/Contracts/Common/Result.cs` with the exact content from `src/Server/Core/LYBT.SharedKernel/Common/Result.cs`, but change the namespace:
 
 ```csharp
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Shared.Models.Contracts.Common;
 

@@ -2,7 +2,7 @@ using MediatR;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Formulas.Interfaces;
 using Microsoft.Extensions.Logging;
