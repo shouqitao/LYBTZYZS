@@ -43,6 +43,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
 
     /// <summary>US-MC-011: Edit mode FSM (lifecycle tied to parent VM, not DI).</summary>
     private readonly IEditModeStateMachine _editStateMachine;
+    private readonly WorkspaceStateManager _stateManager;
+    private readonly WorkspaceNavigationHandler _navHandler;
 
     #endregion
 
@@ -255,7 +257,27 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
 
         // US-MC-011: Create edit mode FSM (lifecycle tied to this VM)
         _editStateMachine = new EditModeStateMachine(services.LoggerFactory.CreateLogger<EditModeStateMachine>());
-        _editStateMachine.StateChanged += OnEditStateChanged;
+        _editStateMachine.StateChanged += OnEditStateChangedFsm;
+
+        // Create extracted components
+        _stateManager = new WorkspaceStateManager(
+            _editStateMachine,
+            () => ConsultationEditor,
+            () => PrescriptionEditor,
+            () => IsPrescriptionEnabled);
+
+        _navHandler = new WorkspaceNavigationHandler(
+            medicalCaseService,
+            navigationCoordinator,
+            activeConsultationService,
+            _editStateMachine,
+            dialogService,
+            toastService,
+            () => CommonDialogService,
+            () => IsBusy,
+            (busy, msg) => SetBusy(busy, msg),
+            async () => await ShowSuccessMessageAsync("保存成功"),
+            async (msg) => await ShowErrorMessageAsync(msg));
 
         // Create child VMs (not container-resolved; coupled to parent lifecycle)
         ConsultationEditor = new ConsultationEditorViewModel(this, this, services.LoggerFactory);
@@ -323,150 +345,29 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
 
     private void UpdateState()
     {
-        UpdateCurrentStep();
-        UpdateCompleteness();
-        State = State with
+        var newState = _stateManager.UpdateState(State);
+        CurrentStep = _stateManager.CalculateCurrentStep();
+        if (State.Completeness != newState.Completeness || State.CanComplete != newState.CanComplete || State.CanPrint != newState.CanPrint)
         {
-            CanComplete = CalculateCanComplete(),
-            CanPrint = PrescriptionEditor.HasItems
-        };
-    }
-
-    /// <summary>
-    /// Phase 1.4: 更新完整性检查状态
-    /// 根据当前诊断和处方数据计算完成度
-    /// </summary>
-    private void UpdateCompleteness()
-    {
-        var completeness = new CompletenessCheck(
-            DiagnosisComplete: ConsultationEditor.Consultation.IsDiagnosisComplete,
-            PrescriptionDecisionComplete: true, // 总是true，因为用户必须选择需要/不需要处方
-            PrescriptionContentComplete: !IsPrescriptionEnabled || PrescriptionEditor.Prescription.HasItems,
-            DosageCountComplete: !IsPrescriptionEnabled || PrescriptionEditor.Prescription.DosageCount > 0,
-            CanCompleteCase: CalculateCanComplete(),
-            PrescriptionItemCount: PrescriptionEditor.Prescription.ItemCount,
-            DosageCount: PrescriptionEditor.Prescription.DosageCount
-        );
-
-        // 更新State中的Completeness
-        if (State.Completeness != completeness)
-        {
-            State = State with { Completeness = completeness };
+            State = newState;
         }
-    }
-
-    /// <summary>
-    /// Phase 1.2: 自动推进工作流步骤
-    /// 步推进逻辑:
-    /// - Step 1→2: PresentIllness has content
-    /// - Step 2→3: TcmDiagnosis validated
-    /// - Step 3→4: NeedsPrescription decided
-    /// - Step 4→5: Prescription has items OR NoPrescription selected
-    /// </summary>
-    private void UpdateCurrentStep()
-    {
-        int newStep = 1;
-
-        // Step 1: 四诊采集
-        if (!string.IsNullOrWhiteSpace(ConsultationEditor.Consultation.PresentIllness))
-        {
-            newStep = 2;
-        }
-
-        // Step 2: 中医辨证
-        if (newStep == 2 && ConsultationEditor.Consultation.IsDiagnosisComplete)
-        {
-            newStep = 3;
-        }
-
-        // Step 3: 处方决策
-        if (newStep == 3)
-        {
-            newStep = 4;
-        }
-
-        // Step 4: 处方编辑
-        if (newStep == 4)
-        {
-            if (!IsPrescriptionEnabled)
-            {
-                // 不需要处方 -> 直接到完成
-                newStep = 5;
-            }
-            else if (PrescriptionEditor.Prescription.ItemCount > 0)
-            {
-                // 有处方内容 -> 可以完成
-                newStep = 5;
-            }
-            // else: 保持在步骤4，等待添加处方
-        }
-
-        CurrentStep = newStep;
-    }
-
-    private bool CalculateCanComplete()
-    {
-        if (!ConsultationEditor.Consultation.IsDiagnosisComplete) return false;
-        if (!IsPrescriptionEnabled) return true;
-        return PrescriptionEditor.Prescription.ItemCount > 0;
     }
 
     private void DetermineEditMode(WorkspaceMode workspaceMode, EditState initialEditState, bool isHistoricalEdit)
     {
-        var medicalCase = _medicalCaseService.CachedMedicalCase;
-        if (medicalCase == null)
-        {
-            State = new WorkspaceState(Mode: workspaceMode, EditState: EditState.Editing, EditType: EditType.Create, CanEdit: true);
-            InitializeEditStateMachine(canEdit: true, startEditing: true);
-            return;
-        }
+        var (newState, canEdit, startEditing) = _stateManager.DetermineEditMode(
+            State, workspaceMode, _medicalCaseService.CachedMedicalCase,
+            SessionManager?.CurrentUser?.Role, SessionManager?.CurrentUser?.Id ?? Guid.Empty,
+            initialEditState, isHistoricalEdit);
 
-        var currentUserRole = SessionManager?.CurrentUser?.Role;
-        var isAdmin = currentUserRole == UserRole.Admin
-                   || currentUserRole == UserRole.SuperAdmin;
-        var currentUserId = SessionManager?.CurrentUser?.Id ?? Guid.Empty;
-        var isOwner = medicalCase.UserId == currentUserId;
-        var isCompleted = medicalCase.CaseStatus == MedicalCaseStatus.Completed;
-        var preferEditing = initialEditState == EditState.Editing || isHistoricalEdit;
-
-        State = State.DetermineFromContext(workspaceMode, isCompleted, isOwner, isAdmin, preferEditing);
-        if (isHistoricalEdit) State = State with { EditType = EditType.EditCompleted };
-
-        var canEdit = isAdmin || (isOwner && !isCompleted);
-        InitializeEditStateMachine(canEdit, preferEditing && canEdit);
+        State = newState;
+        _stateManager.InitializeEditStateMachine(canEdit, startEditing);
     }
 
-    /// <summary>
-    /// US-MC-011: Initialize the FSM from computed context.
-    /// Maps EditState -> WorkspaceEditState for the state machine initial state.
-    /// </summary>
-    private void InitializeEditStateMachine(bool canEdit, bool startEditing)
+    private void OnEditStateChangedFsm(object? sender, EditStateChangedEventArgs e)
     {
-        var initialFsmState = startEditing
-            ? WorkspaceEditState.Editing
-            : WorkspaceEditState.ReadOnly;
-
-        _editStateMachine.Initialize(initialFsmState, guardPredicate: evt =>
-        {
-            // EnterEdit guard: only allowed when CanEdit
-            if (evt == WorkspaceEditEvent.EnterEdit && !canEdit)
-                return false;
-            return true;
-        });
-    }
-
-    /// <summary>
-    /// US-MC-011: Handle FSM state changes -- update WorkspaceState.EditState to match.
-    /// </summary>
-    private void OnEditStateChanged(object? sender, EditStateChangedEventArgs e)
-    {
-        var editState = e.NewState is WorkspaceEditState.Editing or WorkspaceEditState.DirtyEditing
-            ? EditState.Editing
-            : EditState.ReadOnly;
-
-        State = State with { EditState = editState };
-
-        Logger.LogDebug("WorkspaceState.EditState <- {NewEditState} (FSM: {FsmState})", editState, e.NewState);
+        State = _stateManager.OnEditStateChanged(State, e);
+        Logger.LogDebug("WorkspaceState.EditState <- {NewEditState} (FSM: {FsmState})", State.EditState, e.NewState);
     }
 
     #endregion
@@ -561,27 +462,10 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
 
     private async Task ExecuteBackAsync()
     {
-        try
-        {
-            if (State.Mode == WorkspaceMode.Management)
-            {
-                if (State.IsReadOnly)
-                {
-                    _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseMasterDetail);
-                    return;
-                }
-                var shouldNavigate = await HandleManagementLeaveRequestAsync();
-                if (shouldNavigate) _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseMasterDetail);
-                return;
-            }
-
-            var result = await HandleLeaveRequestAsync();
-            if (result.CanLeave) _navigationCoordinator.NavigateTo(ViewNames.PatientSelection);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Navigation.ExecuteBack failed - Mode={Mode} IsReadOnly={IsReadOnly}", State.Mode, State.IsReadOnly);
-        }
+        await _navHandler.ExecuteBackAsync(State, MedicalCaseId,
+            () => ConsultationEditor.GetConsultationData(),
+            () => PrescriptionEditor.GetPrescriptionData(),
+            () => HandleLeaveRequestAsync());
     }
 
     /// <summary>
@@ -589,128 +473,18 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     /// </summary>
     public async Task<LeaveConsultationResult> HandleLeaveRequestAsync()
     {
-        var message = "您将离开看诊界面，是否暂存当前医案？\n\n" +
-            "【是】暂存医案 - 保存当前进度，下次可继续\n" +
-            "【否】取消医案 - 作废本次就诊\n" +
-            "【取消】继续看诊 - 返回当前界面";
-
-        LeaveConsultationChoice choice;
-        if (CommonDialogService != null)
-        {
-            var dialogResult = await CommonDialogService.ShowTripleChoiceAsync(message, "离开确认");
-            choice = dialogResult switch
-            {
-                TripleChoiceResult.Yes => LeaveConsultationChoice.Suspend,
-                TripleChoiceResult.No => LeaveConsultationChoice.CancelCase,
-                _ => LeaveConsultationChoice.Stay
-            };
-        }
-        else
-        {
-            Logger.LogWarning("Navigation.HandleLeaveRequest -> CommonDialogServiceUnavailable");
-            choice = LeaveConsultationChoice.Stay;
-        }
-
-        switch (choice)
-        {
-            case LeaveConsultationChoice.Suspend:
-                await SuspendOnlyAsync();
-                return LeaveConsultationResult.AllowLeave(choice);
-            case LeaveConsultationChoice.CancelCase:
-                await CancelCaseOnlyAsync();
-                return LeaveConsultationResult.AllowLeave(choice);
-            default:
-                return LeaveConsultationResult.CancelLeave();
-        }
-    }
-
-    private async Task<bool> HandleManagementLeaveRequestAsync()
-    {
-        if (_dialogService == null) { Logger.LogWarning("Navigation.HandleManagementLeave -> DialogServiceUnavailable"); return false; }
-
-        var tcs = new TaskCompletionSource<bool>();
-        _dialogService.ShowDialog("UnsavedChangesDialog", new DialogParameters(), async dialogResult =>
-        {
-            try
-            {
-                switch (dialogResult.Result)
-                {
-                    case ButtonResult.Yes:
-                        _editStateMachine.Fire(WorkspaceEditEvent.Save, "management-leave-save");
-                        await SuspendOnlyAsync();
-                        _editStateMachine.Fire(WorkspaceEditEvent.SaveCompleted, "management-leave-save-completed");
-                        tcs.SetResult(true);
-                        break;
-                    case ButtonResult.No:
-                        tcs.SetResult(true);
-                        break;
-                    default:
-                        tcs.SetResult(false);
-                        break;
-                }
-            }
-            catch (Exception ex) { Logger.LogError(ex, "Navigation.HandleManagementLeave failed"); tcs.SetResult(false); }
-        });
-
-        return await tcs.Task;
-    }
-
-    private async Task SuspendOnlyAsync()
-    {
-        try
-        {
-            SetBusy(true, "正在保存...");
-            await _medicalCaseService.SaveAndSuspendAsync(
-                MedicalCaseId, ConsultationEditor.GetConsultationData(),
-                PrescriptionEditor.GetPrescriptionData());
-        }
-        finally { SetBusy(false); }
-    }
-
-    private async Task CancelCaseOnlyAsync()
-    {
-        try
-        {
-            SetBusy(true, "正在处理...");
-            await _medicalCaseService.SaveAndCancelAsync(
-                MedicalCaseId, ConsultationEditor.GetConsultationData(),
-                PrescriptionEditor.GetPrescriptionData());
-        }
-        finally { SetBusy(false); }
+        return await _navHandler.HandleLeaveRequestAsync(
+            MedicalCaseId,
+            () => ConsultationEditor.GetConsultationData(),
+            () => PrescriptionEditor.GetPrescriptionData());
     }
 
     /// <summary>Management模式: 审计确认 + 保存 + 进入只读</summary>
     private void ExecuteSaveChanges()
-        => ExecuteSaveChangesAsync().SafeFireAndForget(ex => Logger.LogError(ex, "保存医案失败"));
-
-    private async Task ExecuteSaveChangesAsync()
-    {
-        try
-        {
-            SetBusy(true, "正在保存...");
-            _editStateMachine.Fire(WorkspaceEditEvent.Save, "save-changes");
-            var result = await _medicalCaseService.SaveAndSuspendAsync(
-                MedicalCaseId, ConsultationEditor.GetConsultationData(),
-                PrescriptionEditor.GetPrescriptionData());
-
-            if (result.Success)
-            {
-                _editStateMachine.Fire(WorkspaceEditEvent.SaveCompleted, "save-changes-completed");
-                await ShowSuccessMessageAsync("保存成功");
-            }
-            else
-            {
-                _editStateMachine.Fire(WorkspaceEditEvent.SaveFailed, "save-changes-failed");
-                await ShowErrorMessageAsync(result.Error ?? "保存失败");
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "保存医案失败");
-            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex));
-        }
-        finally { SetBusy(false); }
-    }
+        => _navHandler.ExecuteSaveChangesAsync(
+            MedicalCaseId,
+            () => ConsultationEditor.GetConsultationData(),
+            () => PrescriptionEditor.GetPrescriptionData()).SafeFireAndForget(ex => Logger.LogError(ex, "保存医案失败"));
 
     #endregion
 
@@ -793,7 +567,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     {
         if (disposing)
         {
-            _editStateMachine.StateChanged -= OnEditStateChanged;
+            _editStateMachine.StateChanged -= OnEditStateChangedFsm;
             _activeConsultationService.Unregister();
             EventAggregator.GetEvent<CaseEvents.ConsultationCompletedEvent>().Unsubscribe(OnConsultationCompleted);
             EventAggregator.GetEvent<CaseEvents.PrescriptionCompletedEvent>().Unsubscribe(OnPrescriptionCompleted);
