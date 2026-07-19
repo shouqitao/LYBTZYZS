@@ -21,8 +21,8 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand,
         if (user == null)
             return Result<ResetPasswordResult>.Failure(ErrorCode.UserNotFound, "用户不存在");
 
-        var newPassword = LYBT.Shared.Utilities.Security.PasswordHelper.GenerateSecurePassword();
-        var hashedPassword = LYBT.Shared.Utilities.Security.PasswordHelper.HashPassword(newPassword);
+        var newPassword = LYBT.Shared.Models.Utilities.Security.PasswordHelper.GenerateSecurePassword();
+        var hashedPassword = LYBT.Shared.Models.Utilities.Security.PasswordHelper.HashPassword(newPassword);
 
         user.PasswordHash = hashedPassword;
         await _userRepository.UpdateAsync(user, cancellationToken);

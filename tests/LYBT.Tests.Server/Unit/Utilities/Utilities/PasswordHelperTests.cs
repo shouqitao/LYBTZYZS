@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Xunit;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Security;
+using LYBT.Shared.Models.Utilities.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 

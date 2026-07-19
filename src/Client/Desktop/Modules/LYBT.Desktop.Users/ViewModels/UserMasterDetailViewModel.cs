@@ -11,7 +11,7 @@ using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Text;
+using LYBT.Shared.Models.Utilities.Text;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Users.ViewModels;

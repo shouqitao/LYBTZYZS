@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using LYBT.Shared.Utilities.Extensions.ServiceCollection;
+using LYBT.Shared.Models.Utilities.Extensions.ServiceCollection;
 
 namespace LYBT.Infrastructure.Caching;
 

@@ -24,12 +24,12 @@ public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordComman
         if (user == null)
             return Result.Failure(ErrorCode.UserNotFound, "用户不存在");
 
-        var verifyResult = LYBT.Shared.Utilities.Security.PasswordHelper.VerifyPassword(
+        var verifyResult = LYBT.Shared.Models.Utilities.Security.PasswordHelper.VerifyPassword(
             request.OldPassword, user.PasswordHash ?? string.Empty);
         if (!verifyResult.IsSuccess)
             return Result.Failure(ErrorCode.InvalidPassword, "原密码错误");
 
-        var newHash = LYBT.Shared.Utilities.Security.PasswordHelper.HashPassword(request.NewPassword);
+        var newHash = LYBT.Shared.Models.Utilities.Security.PasswordHelper.HashPassword(request.NewPassword);
         user.PasswordHash = newHash;
         await _userRepository.UpdateAsync(user, cancellationToken);
 

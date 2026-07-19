@@ -74,7 +74,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Configuration\LYBT.Shared.Configuration.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
-		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
 		<!-- consolidate-exception-handling: 统一异常处理 -->
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.ExceptionHandling\LYBT.Shared.ExceptionHandling.csproj" />
 		<!-- Phase 3: Auth模块已启用 -->

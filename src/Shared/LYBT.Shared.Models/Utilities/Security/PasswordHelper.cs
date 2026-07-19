@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Shared.Utilities.Security
+namespace LYBT.Shared.Models.Utilities.Security
 {
     // OpenSpec: unify-enums-to-shared - PasswordStrength已迁移到LYBT.Shared.Models.Enums.SecurityEnums.cs
 

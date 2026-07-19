@@ -42,7 +42,7 @@ dotnet run --project src/Tools/PasswordHashGenerator/PasswordHashGenerator/
 
 # PasswordHashGenerator 代码知识
 
-使用 BCrypt 算法生成密码哈希值的命令行工具，依赖 LYBT.Shared.Utilities.Security.PasswordHelper。
+使用 BCrypt 算法生成密码哈希值的命令行工具，依赖 LYBT.Shared.Models.Utilities.Security.PasswordHelper。
 
 ## 代码文件结构
 
@@ -74,7 +74,7 @@ dotnet run --project src/Tools/PasswordHashGenerator/PasswordHashGenerator/
 
 | 依赖 | 用途 |
 |------|------|
-| LYBT.Shared.Utilities.Security.PasswordHelper | BCrypt 哈希生成/验证核心逻辑 |
+| LYBT.Shared.Models.Utilities.Security.PasswordHelper | BCrypt 哈希生成/验证核心逻辑 |
 | LYBT.Shared.Models.Enums.UserRole | 用户角色枚举 |
 | Microsoft.Extensions.Configuration | 读取 appsettings.json 配置 |
 

@@ -30,7 +30,6 @@
 		<ProjectReference Include="..\..\Core\LYBT.Entities\LYBT.Entities.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Configuration\LYBT.Shared.Configuration.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
-		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Validators\LYBT.Shared.Validators.csproj" />
 		<!-- D5-1: 挂号联动已通过 IRegistrationCrossModuleService 解耦 -->
 	</ItemGroup>

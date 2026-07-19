@@ -17,7 +17,6 @@
     <ProjectReference Include="../../../Shared/LYBT.Shared.Logging/LYBT.Shared.Logging.csproj" />
     <ProjectReference Include="../../../Server/Core/LYBT.Entities/LYBT.Entities.csproj" />
     <ProjectReference Include="../../../Server/Core/LYBT.Infrastructure/LYBT.Infrastructure.csproj" />
-    <ProjectReference Include="../../../Shared/LYBT.Shared.Utilities/LYBT.Shared.Utilities.csproj" />
     <!-- Server modules (unified Service layer — same as Remote WebAPI) -->
     <ProjectReference Include="../../../Server/Modules/LYBT.Module.Auth/LYBT.Module.Auth.csproj" />
     <ProjectReference Include="../../../Server/Modules/LYBT.Module.Users/LYBT.Module.Users.csproj" />

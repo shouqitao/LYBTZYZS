@@ -2,7 +2,7 @@ using System.Collections;
 using System.Reflection;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace LYBT.Shared.Utilities.Extensions.ServiceCollection;
+namespace LYBT.Shared.Models.Utilities.Extensions.ServiceCollection;
 
 /// <summary>
 /// IMemoryCache 扩展方法 -- 按前缀清除和全量清除

@@ -6,7 +6,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Herbs.Domain;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Application.Mappers;
-using LYBT.Shared.Utilities.Text;
+using LYBT.Shared.Models.Utilities.Text;
 
 namespace LYBT.Module.Herbs.Application.Commands;
 

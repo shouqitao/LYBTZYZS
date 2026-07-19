@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Desktop.Patients.Models.Items;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Text;
+using LYBT.Shared.Models.Utilities.Text;
 
 namespace LYBT.Desktop.Patients.ViewModels;
 

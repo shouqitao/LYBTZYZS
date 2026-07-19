@@ -1,7 +1,7 @@
 using System.Text;
 using hyjiacan.py4n;
 
-namespace LYBT.Shared.Utilities.Text
+namespace LYBT.Shared.Models.Utilities.Text
 {
     /// <summary>
     /// 拼音码生成工具类 - 基于hyjiacan.pinyin4net库

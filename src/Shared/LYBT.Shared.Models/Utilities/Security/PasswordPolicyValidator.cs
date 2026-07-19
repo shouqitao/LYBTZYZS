@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Utilities.Security
+namespace LYBT.Shared.Models.Utilities.Security
 {
     /// <summary>
     /// 密码策略验证器 - 企业级密码复杂度策略实现

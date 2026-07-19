@@ -9,7 +9,7 @@ using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Text;
+using LYBT.Shared.Models.Utilities.Text;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Herbs.ViewModels

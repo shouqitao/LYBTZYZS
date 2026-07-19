@@ -2,7 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Users.Models.Items;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Utilities.Text;
+using LYBT.Shared.Models.Utilities.Text;
 
 namespace LYBT.Desktop.Users.ViewModels
 {

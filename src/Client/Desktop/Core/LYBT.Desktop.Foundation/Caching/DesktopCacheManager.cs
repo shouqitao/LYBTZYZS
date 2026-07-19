@@ -1,6 +1,6 @@
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Events;
-using LYBT.Shared.Utilities.Extensions.ServiceCollection;
+using LYBT.Shared.Models.Utilities.Extensions.ServiceCollection;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Prism.Events;

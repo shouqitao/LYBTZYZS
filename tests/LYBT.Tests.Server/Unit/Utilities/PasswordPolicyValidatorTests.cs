@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Xunit;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Security;
+using LYBT.Shared.Models.Utilities.Security;
 
 namespace LYBT.Tests.Server.PureLogic.Utilities
 {

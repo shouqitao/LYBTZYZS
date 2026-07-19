@@ -2,7 +2,7 @@ using LYBT.Entities.Users;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Security;
+using LYBT.Shared.Models.Utilities.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

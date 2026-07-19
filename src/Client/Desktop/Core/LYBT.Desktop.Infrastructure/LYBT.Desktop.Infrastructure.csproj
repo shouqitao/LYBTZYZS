@@ -62,7 +62,6 @@
     <!-- unify-logging-system: 统一日志系统 -->
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Logging\LYBT.Shared.Logging.csproj" />
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
-    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
     <!-- D2: 诊所配置化，IClinicSettingsService 使用 ClinicSettingsOptions -->
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Configuration\LYBT.Shared.Configuration.csproj" />
   </ItemGroup>

@@ -714,7 +714,7 @@ public class ArchTests
             .That()
             .ResideInNamespaceStartingWith("LYBT.Entities")
             .Should()
-            .NotHaveDependencyOnAny("LYBT.Shared.Utilities", "LYBT.Shared.Interfaces")
+            .NotHaveDependencyOnAny("LYBT.Shared.Models.Utilities", "LYBT.Shared.Interfaces")
             .GetResult();
 
         // TODO: P4重构时将枚举移至Entities层或创建独立枚举项目
@@ -733,7 +733,7 @@ public class ArchTests
     {
         var result = Types.InAssemblies(Assemblies)
             .That()
-            .ResideInNamespaceStartingWith("LYBT.Shared.Utilities")
+            .ResideInNamespaceStartingWith("LYBT.Shared.Models.Utilities")
             .Should()
             .NotHaveDependencyOnAny("Microsoft.AspNetCore")
             .GetResult();
@@ -751,7 +751,7 @@ public class ArchTests
     {
         var result = Types.InAssemblies(Assemblies)
             .That()
-            .ResideInNamespaceStartingWith("LYBT.Shared.Utilities")
+            .ResideInNamespaceStartingWith("LYBT.Shared.Models.Utilities")
             .Should()
             .NotHaveDependencyOnAny("Swashbuckle")
             .GetResult();

@@ -12,7 +12,7 @@ using LYBT.Shared.Configuration.Extensions;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Logging.Extensions;
 using LYBT.Shared.Logging.Management;
-using LYBT.Shared.Utilities.Security;
+using LYBT.Shared.Models.Utilities.Security;
 using LYBT.WebAPI.Extensions;
 using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Infrastructure.Configuration.Validation;

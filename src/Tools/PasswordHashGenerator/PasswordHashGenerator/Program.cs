@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Utilities.Security;
+using LYBT.Shared.Models.Utilities.Security;
 
 namespace PasswordHashGenerator
 {
