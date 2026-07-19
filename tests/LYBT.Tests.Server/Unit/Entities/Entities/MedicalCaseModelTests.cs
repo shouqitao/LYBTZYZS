@@ -35,7 +35,7 @@ public class MedicalCaseModelTests
         var mc = new MedicalCase
         {
             CaseStatus = MedicalCaseStatus.Completed,
-            CompletedAt = DateTime.Today.AddHours(1)
+            CompletedAt = DateTime.UtcNow.Date.AddHours(1)
         };
         mc.IsLocked.Should().BeFalse("当天完成的医案不应被锁定");
     }
@@ -46,7 +46,7 @@ public class MedicalCaseModelTests
         var mc = new MedicalCase
         {
             CaseStatus = MedicalCaseStatus.Completed,
-            CompletedAt = DateTime.Today.AddDays(-1)
+            CompletedAt = DateTime.UtcNow.Date.AddDays(-1)
         };
         mc.IsLocked.Should().BeTrue("非当天完成的医案应该被锁定");
     }
