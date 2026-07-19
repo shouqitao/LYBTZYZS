@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace LYBT.Desktop.Sysadmin.Views;
+namespace LYBT.Desktop.Admin.Sysadmin.Views;
 
 public partial class DeploymentView : UserControl
 {

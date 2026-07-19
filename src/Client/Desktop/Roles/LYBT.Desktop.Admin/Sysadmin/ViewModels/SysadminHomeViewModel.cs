@@ -5,10 +5,10 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
-using LYBT.Desktop.Sysadmin.Models;
+using LYBT.Desktop.Admin.Sysadmin.Models;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Sysadmin.ViewModels;
+namespace LYBT.Desktop.Admin.Sysadmin.ViewModels;
 
 /// <summary>
 /// 系统运维控制台主页视图模型

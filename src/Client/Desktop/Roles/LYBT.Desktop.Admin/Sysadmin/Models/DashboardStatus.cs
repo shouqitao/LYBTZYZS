@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace LYBT.Desktop.Sysadmin.Models;
+namespace LYBT.Desktop.Admin.Sysadmin.Models;
 
 /// <summary>
 /// 单个状态卡片模型 - 用于仪表盘 2x2 网格中的每一个卡片

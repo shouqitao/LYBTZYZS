@@ -15,7 +15,7 @@ using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Bootstrap;
 using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Views;
-using LYBT.Desktop.Sysadmin;
+using LYBT.Desktop.Admin.Sysadmin;
 using LYBT.Desktop.Users;
 using MaterialDesignThemes.Wpf;
 using Prism.DryIoc;

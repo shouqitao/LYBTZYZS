@@ -1,7 +1,7 @@
 using Prism.Ioc;
 using Prism.Modularity;
 
-namespace LYBT.Desktop.Sysadmin;
+namespace LYBT.Desktop.Admin.Sysadmin;
 
 /// <summary>
 /// 系统运维控制台模块 - 为 sysadmin 用户提供独立的暗色仪表盘体验

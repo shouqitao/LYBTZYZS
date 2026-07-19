@@ -7,7 +7,7 @@ using LYBT.Shared.Models.Contracts.Diagnostics;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
-namespace LYBT.Desktop.Sysadmin.ViewModels;
+namespace LYBT.Desktop.Admin.Sysadmin.ViewModels;
 
 /// <summary>
 /// 日志级别控制视图模型 - 调用 DiagnosticsController 实现运行时日志级别调整

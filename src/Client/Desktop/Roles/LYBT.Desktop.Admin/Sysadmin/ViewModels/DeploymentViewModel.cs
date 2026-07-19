@@ -8,7 +8,7 @@ using Microsoft.Win32;
 using System.IO;
 using System.Net.Http;
 
-namespace LYBT.Desktop.Sysadmin.ViewModels;
+namespace LYBT.Desktop.Admin.Sysadmin.ViewModels;
 
 /// <summary>
 /// 部署管理视图模型 - 上传更新包、重启服务
