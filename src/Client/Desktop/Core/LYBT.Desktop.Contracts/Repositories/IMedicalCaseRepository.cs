@@ -13,7 +13,7 @@ public interface IMedicalCaseRepository
     /// <summary>
     /// 分页查询医案列表 (返回轻量级 ListDto)
     /// </summary>
-    Task<PagedResult<MedicalCaseListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
+    Task<PagedResult<MedicalCaseListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, CancellationToken ct = default);
 
     /// <summary>
     /// 搜索医案 (返回 DetailDto，支持跨医生查询)
@@ -24,70 +24,71 @@ public interface IMedicalCaseRepository
         DateTime? startDate = null,
         DateTime? endDate = null,
         int page = 1,
-        int pageSize = 20);
+        int pageSize = 20,
+        CancellationToken ct = default);
 
     /// <summary>
     /// 根据 ID 获取医案详情 (返回完整 DetailDto)
     /// </summary>
-    Task<MedicalCaseDetailDto?> GetByIdAsync(Guid id);
+    Task<MedicalCaseDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 统一查询医案
     /// </summary>
-    Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query);
+    Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query, CancellationToken ct = default);
 
     /// <summary>
     /// 创建医案 (Epic #1961: 统一 MedicalCaseInputDto)
     /// </summary>
-    Task<MedicalCaseDetailDto> CreateAsync(MedicalCaseInputDto dto);
+    Task<MedicalCaseDetailDto> CreateAsync(MedicalCaseInputDto dto, CancellationToken ct = default);
 
     /// <summary>
     /// 更新医案 (Epic #1961: 统一 MedicalCaseInputDto)
     /// </summary>
-    Task<MedicalCaseDetailDto> UpdateAsync(MedicalCaseInputDto dto);
+    Task<MedicalCaseDetailDto> UpdateAsync(MedicalCaseInputDto dto, CancellationToken ct = default);
 
     /// <summary>
     /// 删除医案 (软删除)
     /// </summary>
-    Task<bool> DeleteAsync(Guid id);
+    Task<bool> DeleteAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 关闭医案 (直接标记为 Completed)
     /// Epic #1676 Phase 4 Task 4.4
     /// </summary>
-    Task<MedicalCaseDetailDto?> CloseCaseAsync(Guid medicalCaseId);
+    Task<MedicalCaseDetailDto?> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default);
 
     /// <summary>
     /// 聚合保存医案 (诊断+处方一次性保存)
     /// </summary>
-    Task<MedicalCaseDetailDto> SaveAsync(Guid medicalCaseId, MedicalCaseInputDto dto);
+    Task<MedicalCaseDetailDto> SaveAsync(Guid medicalCaseId, MedicalCaseInputDto dto, CancellationToken ct = default);
 
     /// <summary>
     /// 设置处方标志
     /// </summary>
-    Task<MedicalCaseDetailDto?> SetPrescriptionFlagAsync(Guid id, SetPrescriptionFlagRequest request);
+    Task<MedicalCaseDetailDto?> SetPrescriptionFlagAsync(Guid id, SetPrescriptionFlagRequest request, CancellationToken ct = default);
 
     /// <summary>
     /// 更新医案状态
     /// </summary>
-    Task<MedicalCaseDetailDto?> UpdateStatusAsync(Guid id, MedicalCaseStatusInputDto request);
+    Task<MedicalCaseDetailDto?> UpdateStatusAsync(Guid id, MedicalCaseStatusInputDto request, CancellationToken ct = default);
 
     /// <summary>
     /// 取消医案
     /// </summary>
-    Task<MedicalCaseDetailDto?> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequestDto? request);
+    Task<MedicalCaseDetailDto?> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequestDto? request, CancellationToken ct = default);
 
     /// <summary>
     /// 挂起医案
     /// </summary>
-    Task<MedicalCaseDetailDto?> SuspendAsync(Guid id, ConsultationInputDto? request);
+    Task<MedicalCaseDetailDto?> SuspendAsync(Guid id, ConsultationInputDto? request, CancellationToken ct = default);
 
     #region 批量操作
 
     /// <summary>
     /// 批量删除医案
     /// </summary>
-    Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids);
+    Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default);
 
     #endregion
 }

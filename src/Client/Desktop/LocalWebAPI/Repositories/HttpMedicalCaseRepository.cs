@@ -18,7 +18,7 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
         _logger = logger;
     }
 
-    public async Task<PagedResult<MedicalCaseListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+    public async Task<PagedResult<MedicalCaseListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, CancellationToken ct = default)
     {
         var response = await _apiClient.MedicalCases.GetMedicalCasesAsync(page, pageSize, keyword);
         if (response.Data == null)
@@ -32,7 +32,7 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
         };
     }
 
-    public async Task<PagedResult<MedicalCaseDetailDto>> SearchAsync(string? patientName = null, string? diagnosisKeyword = null, DateTime? startDate = null, DateTime? endDate = null, int page = 1, int pageSize = 20)
+    public async Task<PagedResult<MedicalCaseDetailDto>> SearchAsync(string? patientName = null, string? diagnosisKeyword = null, DateTime? startDate = null, DateTime? endDate = null, int page = 1, int pageSize = 20, CancellationToken ct = default)
     {
         var response = await _apiClient.MedicalCases.SearchMedicalCasesAsync(
             patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
@@ -41,13 +41,13 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
         return response.Data;
     }
 
-    public async Task<MedicalCaseDetailDto?> GetByIdAsync(Guid id)
+    public async Task<MedicalCaseDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         var response = await _apiClient.MedicalCases.GetMedicalCaseByIdAsync(id);
         return response.Data;
     }
 
-    public async Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query)
+    public async Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query, CancellationToken ct = default)
     {
         var response = await _apiClient.MedicalCases.QueryMedicalCasesAsync(
             queryType: query.QueryType,
@@ -63,7 +63,7 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
         return response.Data;
     }
 
-    public async Task<MedicalCaseDetailDto> CreateAsync(MedicalCaseInputDto dto)
+    public async Task<MedicalCaseDetailDto> CreateAsync(MedicalCaseInputDto dto, CancellationToken ct = default)
     {
         var response = await _apiClient.MedicalCases.CreateMedicalCaseAsync(dto);
         if (!response.Success || response.Data == null)
@@ -71,7 +71,7 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
         return response.Data;
     }
 
-    public async Task<MedicalCaseDetailDto> UpdateAsync(MedicalCaseInputDto dto)
+    public async Task<MedicalCaseDetailDto> UpdateAsync(MedicalCaseInputDto dto, CancellationToken ct = default)
     {
         var response = await _apiClient.MedicalCases.SaveAsync(dto.Id!.Value, dto);
         if (!response.Success || response.Data == null)
@@ -79,19 +79,19 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
         return response.Data;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
     {
         var response = await _apiClient.MedicalCases.DeleteMedicalCaseAsync(id);
         return response.Success;
     }
 
-    public async Task<MedicalCaseDetailDto?> CloseCaseAsync(Guid medicalCaseId)
+    public async Task<MedicalCaseDetailDto?> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
         var response = await _apiClient.MedicalCases.CloseCaseAsync(medicalCaseId);
         return response.Data;
     }
 
-    public async Task<MedicalCaseDetailDto> SaveAsync(Guid medicalCaseId, MedicalCaseInputDto dto)
+    public async Task<MedicalCaseDetailDto> SaveAsync(Guid medicalCaseId, MedicalCaseInputDto dto, CancellationToken ct = default)
     {
         var response = await _apiClient.MedicalCases.SaveAsync(medicalCaseId, dto);
         if (!response.Success || response.Data == null)
@@ -99,31 +99,31 @@ public class HttpMedicalCaseRepository : IMedicalCaseRepository
         return response.Data;
     }
 
-    public async Task<MedicalCaseDetailDto?> SetPrescriptionFlagAsync(Guid id, SetPrescriptionFlagRequest request)
+    public async Task<MedicalCaseDetailDto?> SetPrescriptionFlagAsync(Guid id, SetPrescriptionFlagRequest request, CancellationToken ct = default)
     {
         var response = await _apiClient.MedicalCases.SetPrescriptionFlagAsync(id, request);
         return response.Data;
     }
 
-    public async Task<MedicalCaseDetailDto?> UpdateStatusAsync(Guid id, MedicalCaseStatusInputDto request)
+    public async Task<MedicalCaseDetailDto?> UpdateStatusAsync(Guid id, MedicalCaseStatusInputDto request, CancellationToken ct = default)
     {
         var response = await _apiClient.MedicalCases.UpdateStatusAsync(id, request);
         return response.Data;
     }
 
-    public async Task<MedicalCaseDetailDto?> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequestDto? request)
+    public async Task<MedicalCaseDetailDto?> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequestDto? request, CancellationToken ct = default)
     {
         var response = await _apiClient.MedicalCases.CancelMedicalCaseAsync(id, request);
         return response.Success ? null : null;
     }
 
-    public async Task<MedicalCaseDetailDto?> SuspendAsync(Guid id, ConsultationInputDto? request)
+    public async Task<MedicalCaseDetailDto?> SuspendAsync(Guid id, ConsultationInputDto? request, CancellationToken ct = default)
     {
         var response = await _apiClient.MedicalCases.SuspendAsync(id, request);
         return response.Data;
     }
 
-    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
+    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         var response = await _apiClient.MedicalCases.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
         return response.Data;
