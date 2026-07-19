@@ -1,6 +1,6 @@
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Repositories;
-using LYBT.Shared.ExceptionHandling.Mappers;
+using LYBT.Desktop.Foundation.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
@@ -10,222 +10,207 @@ namespace LYBT.Desktop.Herbs.Repositories;
 /// <summary>
 /// 药材仓储 — routes all calls through IApiClient.
 /// </summary>
-public sealed class HerbRepository : IHerbRepository
+public sealed class HerbRepository : ApiClientRepositoryBase<HerbListDto, HerbDetailDto, HerbInputDto, HerbInputDto>, IHerbRepository
 {
     private readonly IApiClient _apiClient;
-    private readonly ILogger<HerbRepository> _logger;
 
     public HerbRepository(
         IApiClient apiClient,
         ILogger<HerbRepository> logger)
+        : base(logger)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
+
+    protected override string LogPrefix => "Herb";
 
     #region 标准 CRUD 操作
 
-    public async Task<PagedResult<HerbListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
+    public async Task<PagedResult<HerbListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null, CancellationToken ct = default)
     {
-        try
-        {
-            _logger.LogDebug("[REPO] Herb.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword} Category={Category}",
-                page, pageSize, keyword, category);
-
-            var response = await _apiClient.Herbs.GetHerbsAsync(page, pageSize, keyword, category);
-            if (response.Data == null)
-                return new PagedResult<HerbListDto> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize };
-
-            return new PagedResult<HerbListDto>
+        return await ExecuteAsync(
+            async () =>
             {
-                Items = response.Data.Items.ToList(),
-                TotalCount = response.Data.TotalCount,
-                CurrentPage = page,
-                PageSize = pageSize
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Herb.GetPaged failed");
-            throw;
-        }
+                var response = await _apiClient.Herbs.GetHerbsAsync(page, pageSize, keyword, category);
+                if (response.Data == null)
+                    return new PagedResult<HerbListDto> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize };
+
+                return new PagedResult<HerbListDto>
+                {
+                    Items = response.Data.Items.ToList(),
+                    TotalCount = response.Data.TotalCount,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+            },
+            "GetPaged",
+            "[REPO] Herb.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword} Category={Category}",
+            [page, pageSize, keyword, category]);
     }
 
-    public async Task<HerbDetailDto?> GetByIdAsync(Guid id)
+    public async Task<HerbDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        try
-        {
-            _logger.LogDebug("[REPO] Herb.GetById - Id={Id}", id);
-            var response = await _apiClient.Herbs.GetHerbByIdAsync(id);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Herb.GetById failed - Id={Id}", id);
-            throw;
-        }
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Herbs.GetHerbByIdAsync(id);
+                return response.Data;
+            },
+            "GetById");
     }
 
-    public async Task<HerbDetailDto> CreateAsync(HerbInputDto dto)
+    public async Task<HerbDetailDto> CreateAsync(HerbInputDto dto, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        try
-        {
-            _logger.LogInformation("[REPO] Herb.Create started - Name={Name}", dto.Name);
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Herbs.CreateHerbAsync(dto);
+                if (!response.Success || response.Data == null)
+                    throw new InvalidOperationException(response.Message ?? "创建药材失败");
 
-            var response = await _apiClient.Herbs.CreateHerbAsync(dto);
-            if (!response.Success || response.Data == null)
-                throw new InvalidOperationException(response.Message ?? "创建药材失败");
-
-            _logger.LogInformation("[REPO] Herb.Create completed - Id={Id}", response.Data.Id);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Herb.Create failed - Name={Name}", dto.Name);
-            throw;
-        }
+                Logger.LogInformation("[REPO] Herb.Create completed - Id={Id}", response.Data.Id);
+                return response.Data;
+            },
+            "Create",
+            LogLevel.Information);
     }
 
-    public async Task<HerbDetailDto> UpdateAsync(HerbInputDto dto)
+    public async Task<HerbDetailDto> UpdateAsync(HerbInputDto dto, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(dto);
         if (dto.Id is null || dto.Id == Guid.Empty)
             throw new ArgumentException("更新DTO必须包含有效的ID", nameof(dto));
 
-        try
-        {
-            _logger.LogInformation("[REPO] Herb.Update - Id={Id}", dto.Id);
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Herbs.UpdateHerbAsync(dto.Id.Value, dto);
+                if (!response.Success || response.Data == null)
+                    throw new InvalidOperationException(response.Message ?? "更新药材失败");
 
-            var response = await _apiClient.Herbs.UpdateHerbAsync(dto.Id.Value, dto);
-            if (!response.Success || response.Data == null)
-                throw new InvalidOperationException(response.Message ?? "更新药材失败");
-
-            _logger.LogInformation("[REPO] Herb.Update completed - Id={Id}", response.Data.Id);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Herb.Update failed - Id={Id}", dto.Id);
-            throw;
-        }
+                Logger.LogInformation("[REPO] Herb.Update completed - Id={Id}", response.Data.Id);
+                return response.Data;
+            },
+            "Update",
+            LogLevel.Information);
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
     {
+        // DeleteAsync returns false on exception instead of rethrowing,
+        // which differs from ExecuteAsync's always-rethrow behavior.
         try
         {
-            _logger.LogInformation("[REPO] Herb.Delete - Id={Id}", id);
+            Logger.LogInformation("[REPO] Herb.Delete - Id={Id}", id);
 
             var response = await _apiClient.Herbs.DeleteHerbAsync(id);
             if (response.Success)
-                _logger.LogInformation("[REPO] Herb.Delete completed - Id={Id}", id);
+                Logger.LogInformation("[REPO] Herb.Delete completed - Id={Id}", id);
             else
-                _logger.LogWarning("[REPO] Herb.Delete failed - Id={Id}", id);
+                Logger.LogWarning("[REPO] Herb.Delete failed - Id={Id}", id);
 
             return response.Success;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Herb.Delete failed - Id={Id}", id);
+            Logger.LogError(ex, "[REPO] Herb.Delete failed - Id={Id}", id);
             return false;
         }
     }
 
-    public async Task<List<HerbListDto>> SearchAsync(string keyword)
+    public async Task<List<HerbListDto>> SearchAsync(string keyword, CancellationToken ct = default)
     {
-        try
-        {
-            _logger.LogDebug("[REPO] Herb.Search - Keyword={Keyword}", keyword);
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Herbs.GetHerbsAsync(1, 100, keyword);
+                if (response.Data == null)
+                    return [];
 
-            var response = await _apiClient.Herbs.GetHerbsAsync(1, 100, keyword);
-            if (response.Data == null)
-                return [];
-
-            return response.Data.Items.ToList();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Herb.Search failed");
-            throw;
-        }
+                return response.Data.Items.ToList();
+            },
+            "Search");
     }
 
     #endregion
 
     #region 批量导入/导出功能
 
-    public async Task<HerbBatchImportResultDto?> BatchImportAsync(HerbBatchImportInputDto request)
+    public async Task<HerbBatchImportResultDto?> BatchImportAsync(HerbBatchImportInputDto request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        // Returns null on failure instead of rethrowing — keep manual try/catch.
         try
         {
-            _logger.LogInformation("[REPO] Herb.BatchImport - Count={Count}", request.Herbs.Count);
+            Logger.LogInformation("[REPO] Herb.BatchImport - Count={Count}", request.Herbs.Count);
 
             var response = await _apiClient.Herbs.BatchImportAsync(request);
             if (!response.Success || response.Data == null)
             {
-                _logger.LogError("[REPO] Herb.BatchImport failed: {Message}", response.Message);
+                Logger.LogError("[REPO] Herb.BatchImport failed: {Message}", response.Message);
                 return null;
             }
 
-            _logger.LogInformation("[REPO] Herb.BatchImport completed - Success={SuccessCount} Failure={FailureCount}",
+            Logger.LogInformation("[REPO] Herb.BatchImport completed - Success={SuccessCount} Failure={FailureCount}",
                 response.Data.SuccessCount, response.Data.FailureCount);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Herb.BatchImport failed");
+            Logger.LogError(ex, "[REPO] Herb.BatchImport failed");
             return null;
         }
     }
 
-    public async Task<byte[]?> ExportTemplateAsync()
+    public async Task<byte[]?> ExportTemplateAsync(CancellationToken ct = default)
     {
+        // Returns null on failure instead of rethrowing — keep manual try/catch.
         try
         {
-            _logger.LogInformation("[REPO] Herb.ExportTemplate");
+            Logger.LogInformation("[REPO] Herb.ExportTemplate");
 
             var response = await _apiClient.Herbs.ExportTemplateAsync();
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogError("[REPO] Herb.ExportTemplate failed: {StatusCode}", response.StatusCode);
+                Logger.LogError("[REPO] Herb.ExportTemplate failed: {StatusCode}", response.StatusCode);
                 return null;
             }
 
             var bytes = await response.Content.ReadAsByteArrayAsync();
-            _logger.LogInformation("[REPO] Herb.ExportTemplate completed - Size={Size} bytes", bytes.Length);
+            Logger.LogInformation("[REPO] Herb.ExportTemplate completed - Size={Size} bytes", bytes.Length);
             return bytes;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Herb.ExportTemplate failed");
+            Logger.LogError(ex, "[REPO] Herb.ExportTemplate failed");
             return null;
         }
     }
 
-    public async Task<byte[]?> ExportHerbsAsync(string? keyword = null)
+    public async Task<byte[]?> ExportHerbsAsync(string? keyword = null, CancellationToken ct = default)
     {
+        // Returns null on failure instead of rethrowing — keep manual try/catch.
         try
         {
-            _logger.LogInformation("[REPO] Herb.ExportHerbs - Keyword={Keyword}", keyword ?? "全部");
+            Logger.LogInformation("[REPO] Herb.ExportHerbs - Keyword={Keyword}", keyword ?? "全部");
 
             var response = await _apiClient.Herbs.ExportHerbsAsync(keyword);
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogError("[REPO] Herb.ExportHerbs failed: {StatusCode}", response.StatusCode);
+                Logger.LogError("[REPO] Herb.ExportHerbs failed: {StatusCode}", response.StatusCode);
                 return null;
             }
 
             var bytes = await response.Content.ReadAsByteArrayAsync();
-            _logger.LogInformation("[REPO] Herb.ExportHerbs completed - Size={Size} bytes", bytes.Length);
+            Logger.LogInformation("[REPO] Herb.ExportHerbs completed - Size={Size} bytes", bytes.Length);
             return bytes;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Herb.ExportHerbs failed");
+            Logger.LogError(ex, "[REPO] Herb.ExportHerbs failed");
             return null;
         }
     }
@@ -234,34 +219,36 @@ public sealed class HerbRepository : IHerbRepository
 
     #region 状态切换、恢复和批量操作
 
-    public async Task<HerbDetailDto?> ToggleStatusAsync(Guid id)
+    public async Task<HerbDetailDto?> ToggleStatusAsync(Guid id, CancellationToken ct = default)
     {
+        // Returns null on failure instead of rethrowing — keep manual try/catch.
         try
         {
-            _logger.LogInformation("[REPO] Herb.ToggleStatus - Id={Id}", id);
+            Logger.LogInformation("[REPO] Herb.ToggleStatus - Id={Id}", id);
 
             var response = await _apiClient.Herbs.ToggleStatusAsync(id);
             if (!response.Success || response.Data == null)
             {
-                _logger.LogWarning("[REPO] Herb.ToggleStatus failed: {Message}", response.Message);
+                Logger.LogWarning("[REPO] Herb.ToggleStatus failed: {Message}", response.Message);
                 return null;
             }
 
-            _logger.LogInformation("[REPO] Herb.ToggleStatus completed - Status={Status}", response.Data.Status);
+            Logger.LogInformation("[REPO] Herb.ToggleStatus completed - Status={Status}", response.Data.Status);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Herb.ToggleStatus failed - Id={Id}", id);
+            Logger.LogError(ex, "[REPO] Herb.ToggleStatus failed - Id={Id}", id);
             return null;
         }
     }
 
-    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
+    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
+        // Returns failure DTO on exception instead of rethrowing — keep manual try/catch.
         try
         {
-            _logger.LogInformation("[REPO] Herb.BatchDelete - Count={Count}", ids.Count);
+            Logger.LogInformation("[REPO] Herb.BatchDelete - Count={Count}", ids.Count);
 
             var response = await _apiClient.Herbs.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
             if (!response.Success || response.Data == null)
@@ -279,7 +266,7 @@ public sealed class HerbRepository : IHerbRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Herb.BatchDelete failed");
+            Logger.LogError(ex, "[REPO] Herb.BatchDelete failed");
             return new BatchOperationResultDto
             {
                 TotalCount = ids.Count,

@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Foundation.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
@@ -9,204 +10,185 @@ namespace LYBT.Desktop.Formula.Repositories;
 /// <summary>
 /// 验方仓储 — routes all calls through IApiClient.
 /// </summary>
-public sealed class FormulaRepository : IFormulaRepository
+public sealed class FormulaRepository : ApiClientRepositoryBase<FormulaListDto, FormulaDetailDto, FormulaInputDto, FormulaInputDto>, IFormulaRepository
 {
     private readonly IApiClient _apiClient;
-    private readonly ILogger<FormulaRepository> _logger;
 
     public FormulaRepository(
         IApiClient apiClient,
         ILogger<FormulaRepository> logger)
+        : base(logger)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
+
+    protected override string LogPrefix => "Formula";
 
     #region 标准 CRUD 操作
 
-    public async Task<PagedResult<FormulaListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
+    public async Task<PagedResult<FormulaListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null, CancellationToken ct = default)
     {
-        try
-        {
-            _logger.LogDebug("[REPO] Formula.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword} Category={Category}",
-                page, pageSize, keyword, category);
-
-            var response = await _apiClient.Formulas.GetFormulasAsync(page, pageSize, keyword, category);
-            if (response.Data == null)
-                return new PagedResult<FormulaListDto> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize };
-
-            return new PagedResult<FormulaListDto>
+        return await ExecuteAsync(
+            async () =>
             {
-                Items = response.Data.Items.ToList(),
-                TotalCount = response.Data.TotalCount,
-                CurrentPage = page,
-                PageSize = pageSize
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Formula.GetPaged failed");
-            throw;
-        }
+                var response = await _apiClient.Formulas.GetFormulasAsync(page, pageSize, keyword, category);
+                if (response.Data == null)
+                    return new PagedResult<FormulaListDto> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize };
+
+                return new PagedResult<FormulaListDto>
+                {
+                    Items = response.Data.Items.ToList(),
+                    TotalCount = response.Data.TotalCount,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+            },
+            "GetPaged",
+            "[REPO] Formula.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword} Category={Category}",
+            [page, pageSize, keyword, category]);
     }
 
-    public async Task<FormulaDetailDto?> GetByIdAsync(Guid id)
+    public async Task<FormulaDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        try
-        {
-            _logger.LogDebug("[REPO] Formula.GetById - Id={Id}", id);
-            var response = await _apiClient.Formulas.GetFormulaByIdAsync(id);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Formula.GetById failed - Id={Id}", id);
-            throw;
-        }
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Formulas.GetFormulaByIdAsync(id);
+                return response.Data;
+            },
+            "GetById");
     }
 
-    public async Task<FormulaDetailDto> CreateAsync(FormulaInputDto dto)
+    public async Task<FormulaDetailDto> CreateAsync(FormulaInputDto dto, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        try
-        {
-            _logger.LogInformation("[REPO] Formula.Create started - Name={Name}", dto.Name);
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Formulas.CreateFormulaAsync(dto);
+                if (!response.Success || response.Data == null)
+                    throw new InvalidOperationException(response.Message ?? "创建验方失败");
 
-            var response = await _apiClient.Formulas.CreateFormulaAsync(dto);
-            if (!response.Success || response.Data == null)
-                throw new InvalidOperationException(response.Message ?? "创建验方失败");
-
-            _logger.LogInformation("[REPO] Formula.Create completed - Id={Id}", response.Data.Id);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Formula.Create failed - Name={Name}", dto.Name);
-            throw;
-        }
+                Logger.LogInformation("[REPO] Formula.Create completed - Id={Id}", response.Data.Id);
+                return response.Data;
+            },
+            "Create",
+            LogLevel.Information);
     }
 
-    public async Task<FormulaDetailDto> UpdateAsync(FormulaInputDto dto)
+    public async Task<FormulaDetailDto> UpdateAsync(FormulaInputDto dto, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(dto);
         if (dto.Id is null || dto.Id == Guid.Empty)
             throw new ArgumentException("更新DTO必须包含有效的ID", nameof(dto));
 
-        try
-        {
-            _logger.LogInformation("[REPO] Formula.Update - Id={Id}", dto.Id);
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Formulas.UpdateFormulaAsync(dto.Id.Value, dto);
+                if (!response.Success || response.Data == null)
+                    throw new InvalidOperationException(response.Message ?? "更新验方失败");
 
-            var response = await _apiClient.Formulas.UpdateFormulaAsync(dto.Id.Value, dto);
-            if (!response.Success || response.Data == null)
-                throw new InvalidOperationException(response.Message ?? "更新验方失败");
-
-            _logger.LogInformation("[REPO] Formula.Update completed - Id={Id}", response.Data.Id);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Formula.Update failed - Id={Id}", dto.Id);
-            throw;
-        }
+                Logger.LogInformation("[REPO] Formula.Update completed - Id={Id}", response.Data.Id);
+                return response.Data;
+            },
+            "Update",
+            LogLevel.Information);
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
     {
+        // DeleteAsync returns false on exception instead of rethrowing,
+        // which differs from ExecuteAsync's always-rethrow behavior.
         try
         {
-            _logger.LogInformation("[REPO] Formula.Delete - Id={Id}", id);
+            Logger.LogInformation("[REPO] Formula.Delete - Id={Id}", id);
 
             var response = await _apiClient.Formulas.DeleteFormulaAsync(id);
             if (response.Success)
-                _logger.LogInformation("[REPO] Formula.Delete completed - Id={Id}", id);
+                Logger.LogInformation("[REPO] Formula.Delete completed - Id={Id}", id);
             else
-                _logger.LogWarning("[REPO] Formula.Delete failed - Id={Id}", id);
+                Logger.LogWarning("[REPO] Formula.Delete failed - Id={Id}", id);
 
             return response.Success;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Formula.Delete failed - Id={Id}", id);
+            Logger.LogError(ex, "[REPO] Formula.Delete failed - Id={Id}", id);
             return false;
         }
     }
 
-    public async Task<List<FormulaListDto>> SearchAsync(string keyword)
+    public async Task<List<FormulaListDto>> SearchAsync(string keyword, CancellationToken ct = default)
     {
-        try
-        {
-            _logger.LogDebug("[REPO] Formula.Search - Keyword={Keyword}", keyword);
-            var response = await _apiClient.Formulas.GetFormulasAsync(1, 100, keyword, null);
-            if (response.Data == null)
-                return [];
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Formulas.GetFormulasAsync(1, 100, keyword, null);
+                if (response.Data == null)
+                    return [];
 
-            return response.Data.Items.ToList();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Formula.Search failed");
-            throw;
-        }
+                return response.Data.Items.ToList();
+            },
+            "Search");
     }
 
     #endregion
 
     #region 验方专用方法
 
-    public async Task<FormulaDetailDto> CloneFormulaAsync(Guid formulaId)
+    public async Task<FormulaDetailDto> CloneFormulaAsync(Guid formulaId, CancellationToken ct = default)
     {
-        try
-        {
-            _logger.LogInformation("[REPO] Formula.Clone - Id={Id}", formulaId);
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Formulas.CloneFormulaAsync(formulaId);
+                if (!response.Success || response.Data == null)
+                    throw new InvalidOperationException(response.Message ?? $"克隆验方失败，ID: {formulaId}");
 
-            var response = await _apiClient.Formulas.CloneFormulaAsync(formulaId);
-            if (!response.Success || response.Data == null)
-                throw new InvalidOperationException(response.Message ?? $"克隆验方失败，ID: {formulaId}");
-
-            _logger.LogInformation("[REPO] Formula.Clone completed - OriginalId={OriginalId} ClonedId={ClonedId}",
-                formulaId, response.Data.Id);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Formula.Clone failed - Id={Id}", formulaId);
-            throw;
-        }
+                Logger.LogInformation("[REPO] Formula.Clone completed - OriginalId={OriginalId} ClonedId={ClonedId}",
+                    formulaId, response.Data.Id);
+                return response.Data;
+            },
+            "Clone",
+            LogLevel.Information);
     }
 
     #endregion
 
     #region 状态切换、恢复和批量操作
 
-    public async Task<FormulaDetailDto?> ToggleStatusAsync(Guid id)
+    public async Task<FormulaDetailDto?> ToggleStatusAsync(Guid id, CancellationToken ct = default)
     {
+        // Returns null on failure instead of rethrowing — keep manual try/catch.
         try
         {
-            _logger.LogInformation("[REPO] Formula.ToggleStatus - Id={Id}", id);
+            Logger.LogInformation("[REPO] Formula.ToggleStatus - Id={Id}", id);
 
             var response = await _apiClient.Formulas.ToggleStatusAsync(id);
             if (!response.Success || response.Data == null)
             {
-                _logger.LogWarning("[REPO] Formula.ToggleStatus failed: {Message}", response.Message);
+                Logger.LogWarning("[REPO] Formula.ToggleStatus failed: {Message}", response.Message);
                 return null;
             }
 
-            _logger.LogInformation("[REPO] Formula.ToggleStatus completed - Status={Status}", response.Data.Status);
+            Logger.LogInformation("[REPO] Formula.ToggleStatus completed - Status={Status}", response.Data.Status);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Formula.ToggleStatus failed - Id={Id}", id);
+            Logger.LogError(ex, "[REPO] Formula.ToggleStatus failed - Id={Id}", id);
             return null;
         }
     }
 
-    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
+    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
+        // Returns failure DTO on exception instead of rethrowing — keep manual try/catch.
         try
         {
-            _logger.LogInformation("[REPO] Formula.BatchDelete - Count={Count}", ids.Count);
+            Logger.LogInformation("[REPO] Formula.BatchDelete - Count={Count}", ids.Count);
 
             var response = await _apiClient.Formulas.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
             if (!response.Success || response.Data == null)
@@ -224,7 +206,7 @@ public sealed class FormulaRepository : IFormulaRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Formula.BatchDelete failed");
+            Logger.LogError(ex, "[REPO] Formula.BatchDelete failed");
             return new BatchOperationResultDto
             {
                 TotalCount = ids.Count,
@@ -241,72 +223,75 @@ public sealed class FormulaRepository : IFormulaRepository
 
     public async Task<FormulaBatchImportResultDto?> BatchImportAsync(FormulaBatchImportInputDto request, CancellationToken ct = default)
     {
+        // Returns null on failure instead of rethrowing — keep manual try/catch.
         try
         {
-            _logger.LogInformation("[REPO] Formula.BatchImport started");
+            Logger.LogInformation("[REPO] Formula.BatchImport started");
 
             var response = await _apiClient.Formulas.BatchImportAsync(request);
             if (!response.Success || response.Data == null)
             {
-                _logger.LogWarning("[REPO] Formula.BatchImport failed: {Message}", response.Message);
+                Logger.LogWarning("[REPO] Formula.BatchImport failed: {Message}", response.Message);
                 return null;
             }
 
-            _logger.LogInformation("[REPO] Formula.BatchImport completed - Success={Success}, Failed={Failed}",
+            Logger.LogInformation("[REPO] Formula.BatchImport completed - Success={Success}, Failed={Failed}",
                 response.Data.SuccessCount, response.Data.FailureCount);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Formula.BatchImport failed");
+            Logger.LogError(ex, "[REPO] Formula.BatchImport failed");
             return null;
         }
     }
 
     public async Task<byte[]?> ExportFormulasAsync(string? category = null, CancellationToken ct = default)
     {
+        // Returns null on failure instead of rethrowing — keep manual try/catch.
         try
         {
-            _logger.LogInformation("[REPO] Formula.ExportFormulas - Category={Category}", category);
+            Logger.LogInformation("[REPO] Formula.ExportFormulas - Category={Category}", category);
 
             var response = await _apiClient.Formulas.ExportFormulasAsync(category);
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("[REPO] Formula.ExportFormulas failed: StatusCode={StatusCode}", response.StatusCode);
+                Logger.LogWarning("[REPO] Formula.ExportFormulas failed: StatusCode={StatusCode}", response.StatusCode);
                 return null;
             }
 
             var data = await response.Content.ReadAsByteArrayAsync(ct);
-            _logger.LogInformation("[REPO] Formula.ExportFormulas completed - Size={Size} bytes", data.Length);
+            Logger.LogInformation("[REPO] Formula.ExportFormulas completed - Size={Size} bytes", data.Length);
             return data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Formula.ExportFormulas failed");
+            Logger.LogError(ex, "[REPO] Formula.ExportFormulas failed");
             return null;
         }
     }
 
     public async Task<byte[]?> ExportTemplateAsync(CancellationToken ct = default)
     {
+        // Returns null on failure instead of rethrowing — keep manual try/catch.
         try
         {
-            _logger.LogInformation("[REPO] Formula.ExportTemplate started");
+            Logger.LogInformation("[REPO] Formula.ExportTemplate started");
 
             var response = await _apiClient.Formulas.ExportTemplateAsync();
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("[REPO] Formula.ExportTemplate failed: StatusCode={StatusCode}", response.StatusCode);
+                Logger.LogWarning("[REPO] Formula.ExportTemplate failed: StatusCode={StatusCode}", response.StatusCode);
                 return null;
             }
 
             var data = await response.Content.ReadAsByteArrayAsync(ct);
-            _logger.LogInformation("[REPO] Formula.ExportTemplate completed - Size={Size} bytes", data.Length);
+            Logger.LogInformation("[REPO] Formula.ExportTemplate completed - Size={Size} bytes", data.Length);
             return data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Formula.ExportTemplate failed");
+            Logger.LogError(ex, "[REPO] Formula.ExportTemplate failed");
             return null;
         }
     }

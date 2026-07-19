@@ -17,7 +17,7 @@ public class HttpFormulaRepository : IFormulaRepository
         _logger = logger;
     }
 
-    public async Task<PagedResult<FormulaListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
+    public async Task<PagedResult<FormulaListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null, CancellationToken ct = default)
     {
         var response = await _apiClient.Formulas.GetFormulasAsync(page, pageSize, keyword, category);
         if (response.Data == null)
@@ -31,13 +31,13 @@ public class HttpFormulaRepository : IFormulaRepository
         };
     }
 
-    public async Task<FormulaDetailDto?> GetByIdAsync(Guid id)
+    public async Task<FormulaDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         var response = await _apiClient.Formulas.GetFormulaByIdAsync(id);
         return response.Data;
     }
 
-    public async Task<FormulaDetailDto> CreateAsync(FormulaInputDto dto)
+    public async Task<FormulaDetailDto> CreateAsync(FormulaInputDto dto, CancellationToken ct = default)
     {
         var response = await _apiClient.Formulas.CreateFormulaAsync(dto);
         if (!response.Success || response.Data == null)
@@ -45,7 +45,7 @@ public class HttpFormulaRepository : IFormulaRepository
         return response.Data;
     }
 
-    public async Task<FormulaDetailDto> UpdateAsync(FormulaInputDto dto)
+    public async Task<FormulaDetailDto> UpdateAsync(FormulaInputDto dto, CancellationToken ct = default)
     {
         var response = await _apiClient.Formulas.UpdateFormulaAsync(dto.Id!.Value, dto);
         if (!response.Success || response.Data == null)
@@ -53,13 +53,13 @@ public class HttpFormulaRepository : IFormulaRepository
         return response.Data;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
     {
         var response = await _apiClient.Formulas.DeleteFormulaAsync(id);
         return response.Success;
     }
 
-    public async Task<List<FormulaListDto>> SearchAsync(string keyword)
+    public async Task<List<FormulaListDto>> SearchAsync(string keyword, CancellationToken ct = default)
     {
         var response = await _apiClient.Formulas.GetFormulasAsync(1, 100, keyword, null);
         if (response.Data == null)
@@ -67,7 +67,7 @@ public class HttpFormulaRepository : IFormulaRepository
         return response.Data.Items.ToList();
     }
 
-    public async Task<FormulaDetailDto> CloneFormulaAsync(Guid formulaId)
+    public async Task<FormulaDetailDto> CloneFormulaAsync(Guid formulaId, CancellationToken ct = default)
     {
         var response = await _apiClient.Formulas.CloneFormulaAsync(formulaId);
         if (!response.Success || response.Data == null)
@@ -75,13 +75,13 @@ public class HttpFormulaRepository : IFormulaRepository
         return response.Data;
     }
 
-    public async Task<FormulaDetailDto?> ToggleStatusAsync(Guid id)
+    public async Task<FormulaDetailDto?> ToggleStatusAsync(Guid id, CancellationToken ct = default)
     {
         var response = await _apiClient.Formulas.ToggleStatusAsync(id);
         return response.Data;
     }
 
-    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
+    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         var response = await _apiClient.Formulas.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
         return response.Data;

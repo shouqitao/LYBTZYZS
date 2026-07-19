@@ -17,7 +17,7 @@ public class HttpHerbRepository : IHerbRepository
         _logger = logger;
     }
 
-    public async Task<PagedResult<HerbListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
+    public async Task<PagedResult<HerbListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null, CancellationToken ct = default)
     {
         var response = await _apiClient.Herbs.GetHerbsAsync(page, pageSize, keyword, category);
         if (response.Data == null)
@@ -31,13 +31,13 @@ public class HttpHerbRepository : IHerbRepository
         };
     }
 
-    public async Task<HerbDetailDto?> GetByIdAsync(Guid id)
+    public async Task<HerbDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         var response = await _apiClient.Herbs.GetHerbByIdAsync(id);
         return response.Data;
     }
 
-    public async Task<HerbDetailDto> CreateAsync(HerbInputDto dto)
+    public async Task<HerbDetailDto> CreateAsync(HerbInputDto dto, CancellationToken ct = default)
     {
         var response = await _apiClient.Herbs.CreateHerbAsync(dto);
         if (!response.Success || response.Data == null)
@@ -45,7 +45,7 @@ public class HttpHerbRepository : IHerbRepository
         return response.Data;
     }
 
-    public async Task<HerbDetailDto> UpdateAsync(HerbInputDto dto)
+    public async Task<HerbDetailDto> UpdateAsync(HerbInputDto dto, CancellationToken ct = default)
     {
         var response = await _apiClient.Herbs.UpdateHerbAsync(dto.Id!.Value, dto);
         if (!response.Success || response.Data == null)
@@ -53,13 +53,13 @@ public class HttpHerbRepository : IHerbRepository
         return response.Data;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
     {
         var response = await _apiClient.Herbs.DeleteHerbAsync(id);
         return response.Success;
     }
 
-    public async Task<List<HerbListDto>> SearchAsync(string keyword)
+    public async Task<List<HerbListDto>> SearchAsync(string keyword, CancellationToken ct = default)
     {
         var response = await _apiClient.Herbs.GetHerbsAsync(1, 100, keyword);
         if (response.Data == null)
@@ -67,31 +67,31 @@ public class HttpHerbRepository : IHerbRepository
         return response.Data.Items.ToList();
     }
 
-    public async Task<HerbBatchImportResultDto?> BatchImportAsync(HerbBatchImportInputDto request)
+    public async Task<HerbBatchImportResultDto?> BatchImportAsync(HerbBatchImportInputDto request, CancellationToken ct = default)
     {
         var response = await _apiClient.Herbs.BatchImportAsync(request);
         return response.Data;
     }
 
-    public async Task<byte[]?> ExportTemplateAsync()
+    public async Task<byte[]?> ExportTemplateAsync(CancellationToken ct = default)
     {
         var response = await _apiClient.Herbs.ExportTemplateAsync();
         return response.IsSuccessStatusCode ? await response.Content.ReadAsByteArrayAsync() : null;
     }
 
-    public async Task<byte[]?> ExportHerbsAsync(string? keyword = null)
+    public async Task<byte[]?> ExportHerbsAsync(string? keyword = null, CancellationToken ct = default)
     {
         var response = await _apiClient.Herbs.ExportHerbsAsync(keyword);
         return response.IsSuccessStatusCode ? await response.Content.ReadAsByteArrayAsync() : null;
     }
 
-    public async Task<HerbDetailDto?> ToggleStatusAsync(Guid id)
+    public async Task<HerbDetailDto?> ToggleStatusAsync(Guid id, CancellationToken ct = default)
     {
         var response = await _apiClient.Herbs.ToggleStatusAsync(id);
         return response.Data;
     }
 
-    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids)
+    public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         var response = await _apiClient.Herbs.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
         return response.Data;

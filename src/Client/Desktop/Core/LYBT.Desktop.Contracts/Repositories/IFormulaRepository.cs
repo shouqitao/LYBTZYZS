@@ -12,49 +12,49 @@ public interface IFormulaRepository
     /// <summary>
     /// 分页查询验方列表 (返回轻量级 ListDto，支持分类过滤)
     /// </summary>
-    Task<PagedResult<FormulaListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
+    Task<PagedResult<FormulaListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null, CancellationToken ct = default);
 
     /// <summary>
     /// 根据 ID 获取验方详情 (返回完整 DetailDto，含药材子项)
     /// </summary>
-    Task<FormulaDetailDto?> GetByIdAsync(Guid id);
+    Task<FormulaDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 创建新验方
     /// </summary>
-    Task<FormulaDetailDto> CreateAsync(FormulaInputDto dto);
+    Task<FormulaDetailDto> CreateAsync(FormulaInputDto dto, CancellationToken ct = default);
 
     /// <summary>
     /// 更新验方信息
     /// </summary>
-    Task<FormulaDetailDto> UpdateAsync(FormulaInputDto dto);
+    Task<FormulaDetailDto> UpdateAsync(FormulaInputDto dto, CancellationToken ct = default);
 
     /// <summary>
     /// 删除验方 (软删除)
     /// </summary>
-    Task<bool> DeleteAsync(Guid id);
+    Task<bool> DeleteAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 搜索验方 (基于关键词，返回 ListDto)
     /// </summary>
-    Task<List<FormulaListDto>> SearchAsync(string keyword);
+    Task<List<FormulaListDto>> SearchAsync(string keyword, CancellationToken ct = default);
 
     /// <summary>
     /// 克隆验方
     /// </summary>
-    Task<FormulaDetailDto> CloneFormulaAsync(Guid formulaId);
+    Task<FormulaDetailDto> CloneFormulaAsync(Guid formulaId, CancellationToken ct = default);
 
     #region 状态切换、恢复和批量操作
 
     /// <summary>
     /// 切换验方状态 (启用/禁用)
     /// </summary>
-    Task<FormulaDetailDto?> ToggleStatusAsync(Guid id);
+    Task<FormulaDetailDto?> ToggleStatusAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 批量删除验方
     /// </summary>
-    Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids);
+    Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default);
 
     #endregion
 
