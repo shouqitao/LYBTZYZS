@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using LYBT.Infrastructure.Configuration.Validation;
-using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Infrastructure.Configuration.Services;
 

@@ -37,28 +37,21 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     #region 依赖服务
 
+    private readonly IShellServices _shell;
     private readonly INavigationCoordinator _navigationCoordinator;
-    private readonly MenuManager _menuManager;
-    private readonly IActiveConsultationService _activeConsultationService;
-    private readonly IApplicationTickService _tickService;
-    private readonly IThemeService _themeService;
-    private readonly StatusBarManager _statusBarManager;
-    private readonly NavigationManager _navigationManager;
-    private readonly ILoginStateManager _loginStateManager;
-    private readonly ShellEventCoordinator _shellEventCoordinator;
-    private readonly ShellDialogHelper _dialogHelper;
+    private readonly INavigationManager _navigationManager;
 
     #endregion
 
     #region 登录状态代理（委托给 ILoginStateManager）
 
-    public string Title => _loginStateManager.Title;
-    public UserDetailDto? CurrentUser => _loginStateManager.CurrentUser;
-    public bool IsLoggedIn => _loginStateManager.IsLoggedIn;
-    public bool IsNotLoggedIn => _loginStateManager.IsNotLoggedIn;
-    public string CurrentUserDisplayName => _loginStateManager.CurrentUserDisplayName;
-    public string CurrentUserInitial => _loginStateManager.CurrentUserInitial;
-    public string CurrentUserRoleDisplay => _loginStateManager.CurrentUserRoleDisplay;
+    public string Title => _shell.LoginState.Title;
+    public UserDetailDto? CurrentUser => _shell.LoginState.CurrentUser;
+    public bool IsLoggedIn => _shell.LoginState.IsLoggedIn;
+    public bool IsNotLoggedIn => _shell.LoginState.IsNotLoggedIn;
+    public string CurrentUserDisplayName => _shell.LoginState.CurrentUserDisplayName;
+    public string CurrentUserInitial => _shell.LoginState.CurrentUserInitial;
+    public string CurrentUserRoleDisplay => _shell.LoginState.CurrentUserRoleDisplay;
 
     #endregion
 
@@ -77,11 +70,11 @@ public partial class MainWindowViewModel : CoreViewModelBase
     [ObservableProperty]
     private bool _isDarkMode;
 
-    partial void OnIsDarkModeChanged(bool value) => _themeService.ApplyTheme(value);
+    partial void OnIsDarkModeChanged(bool value) => _shell.Theme.ApplyTheme(value);
 
     #endregion
 
-    #region 计算属性（委托给 MenuManager / NavigationManager / StatusBarManager）
+    #region 计算属性（委托给 NavigationManager / StatusBarManager）
 
     public ObservableCollection<NavigationItem> NavigationItems => _navigationManager.NavigationItems;
 
@@ -91,14 +84,14 @@ public partial class MainWindowViewModel : CoreViewModelBase
         set => _navigationManager.SelectedNavItem = value;
     }
 
-    public ApiHealthStatus ApiStatus => _statusBarManager.ApiStatus;
-    public string ConnectionUrl => _statusBarManager.ConnectionUrl;
-    public bool IsLocal => _statusBarManager.IsLocal;
-    public string ConnectionModeDisplay => _statusBarManager.ConnectionModeDisplay;
-    public bool IsRemoteMode => _statusBarManager.IsRemoteMode;
-    public string CurrentTimeDisplay => _statusBarManager.CurrentTimeDisplay;
-    public PackIconKind ApiStatusIcon => _statusBarManager.ApiStatusIcon;
-    public Brush ApiStatusColor => _statusBarManager.ApiStatusColor;
+    public ApiHealthStatus ApiStatus => _shell.StatusBar.ApiStatus;
+    public string ConnectionUrl => _shell.StatusBar.ConnectionUrl;
+    public bool IsLocal => _shell.StatusBar.IsLocal;
+    public string ConnectionModeDisplay => _shell.StatusBar.ConnectionModeDisplay;
+    public bool IsRemoteMode => _shell.StatusBar.IsRemoteMode;
+    public string CurrentTimeDisplay => _shell.StatusBar.CurrentTimeDisplay;
+    public PackIconKind ApiStatusIcon => _shell.StatusBar.ApiStatusIcon;
+    public Brush ApiStatusColor => _shell.StatusBar.ApiStatusColor;
 
     #endregion
 
@@ -106,56 +99,42 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     public MainWindowViewModel(
         IViewModelServices services,
+        IShellServices shell,
         INavigationCoordinator navigationCoordinator,
-        MenuManager menuManager,
-        IActiveConsultationService activeConsultationService,
-        IApplicationTickService tickService,
-        IThemeService themeService,
-        StatusBarManager statusBarManager,
-        NavigationManager navigationManager,
-        ILoginStateManager loginStateManager,
-        ShellEventCoordinator shellEventCoordinator,
-        ShellDialogHelper dialogHelper)
+        INavigationManager navigationManager)
         : base(services)
     {
+        _shell = shell ?? throw new ArgumentNullException(nameof(shell));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
-        _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));
-        _activeConsultationService = activeConsultationService ?? throw new ArgumentNullException(nameof(activeConsultationService));
-        _tickService = tickService ?? throw new ArgumentNullException(nameof(tickService));
-        _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
-        _statusBarManager = statusBarManager ?? throw new ArgumentNullException(nameof(statusBarManager));
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
-        _loginStateManager = loginStateManager ?? throw new ArgumentNullException(nameof(loginStateManager));
-        _shellEventCoordinator = shellEventCoordinator ?? throw new ArgumentNullException(nameof(shellEventCoordinator));
-        _dialogHelper = dialogHelper ?? throw new ArgumentNullException(nameof(dialogHelper));
 
-        _tickService.Tick += OnTick;
-        _tickService.Start();
+        _shell.Tick.Tick += OnTick;
+        _shell.Tick.Start();
 
-        _loginStateManager.LoginStateChanged += OnLoginStateChanged;
-        _shellEventCoordinator.LoginSuccessHandled += OnLoginSuccessHandled;
+        _shell.LoginState.LoginStateChanged += OnLoginStateChanged;
+        _shell.Events.LoginSuccessHandled += OnLoginSuccessHandled;
     }
 
     #endregion
 
     #region 委托命令属性
 
-    public ICommand QuickAddPatientCommand => _menuManager.QuickAddPatientCommand;
-    public ICommand QuickStartMedicalCaseCommand => _menuManager.QuickStartMedicalCaseCommand;
-    public ICommand ShowHelpCommand => _menuManager.ShowHelpCommand;
-    public ICommand ShowSettingsCommand => _menuManager.ShowSettingsCommand;
-    public ICommand ToggleThemeCommand => _menuManager.ToggleThemeCommand;
-    public ICommand SaveAllCommand => _menuManager.SaveAllCommand;
-    public ICommand RefreshAllCommand => _menuManager.RefreshAllCommand;
-    public ICommand PrintCommand => _menuManager.PrintCommand;
-    public ICommand ExportCommand => _menuManager.ExportCommand;
-    public ICommand UndoCommand => _menuManager.UndoCommand;
-    public ICommand RedoCommand => _menuManager.RedoCommand;
-    public ICommand EditProfileCommand => _menuManager.EditProfileCommand;
-    public ICommand NavigateToHomeCommand => _menuManager.NavigateToHomeCommand;
-    public ICommand NavigateToSystemSettingsCommand => _menuManager.NavigateToSystemSettingsCommand;
-    public ICommand NavigateBackCommand => _menuManager.NavigateBackCommand;
-    public ICommand NavigateForwardCommand => _menuManager.NavigateForwardCommand;
+    public ICommand QuickAddPatientCommand => _shell.Menu.QuickAddPatientCommand;
+    public ICommand QuickStartMedicalCaseCommand => _shell.Menu.QuickStartMedicalCaseCommand;
+    public ICommand ShowHelpCommand => _shell.Menu.ShowHelpCommand;
+    public ICommand ShowSettingsCommand => _shell.Menu.ShowSettingsCommand;
+    public ICommand ToggleThemeCommand => _shell.Menu.ToggleThemeCommand;
+    public ICommand SaveAllCommand => _shell.Menu.SaveAllCommand;
+    public ICommand RefreshAllCommand => _shell.Menu.RefreshAllCommand;
+    public ICommand PrintCommand => _shell.Menu.PrintCommand;
+    public ICommand ExportCommand => _shell.Menu.ExportCommand;
+    public ICommand UndoCommand => _shell.Menu.UndoCommand;
+    public ICommand RedoCommand => _shell.Menu.RedoCommand;
+    public ICommand EditProfileCommand => _shell.Menu.EditProfileCommand;
+    public ICommand NavigateToHomeCommand => _shell.Menu.NavigateToHomeCommand;
+    public ICommand NavigateToSystemSettingsCommand => _shell.Menu.NavigateToSystemSettingsCommand;
+    public ICommand NavigateBackCommand => _shell.Menu.NavigateBackCommand;
+    public ICommand NavigateForwardCommand => _shell.Menu.NavigateForwardCommand;
 
     #endregion
 
@@ -166,9 +145,9 @@ public partial class MainWindowViewModel : CoreViewModelBase
     {
         try
         {
-            if (_activeConsultationService.HasActiveConsultation)
+            if (_shell.ActiveConsultation.HasActiveConsultation)
             {
-                var leaveResult = await _activeConsultationService.RequestLeaveAsync();
+                var leaveResult = await _shell.ActiveConsultation.RequestLeaveAsync();
                 if (!leaveResult.CanLeave)
                 {
                     Logger.LogDebug("用户选择继续停留，取消退出登录");
@@ -183,7 +162,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
                     return;
             }
 
-            await _loginStateManager.PerformLogoutAsync();
+            await _shell.LoginState.PerformLogoutAsync();
         }
         catch (Exception ex)
         {
@@ -195,7 +174,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     [RelayCommand]
     private async Task RetryHealthCheckAsync()
     {
-        await _statusBarManager.ForceCheckAsync();
+        await _shell.StatusBar.ForceCheckAsync();
     }
 
     partial void OnIsSidebarExpandedChanged(bool value)
@@ -215,7 +194,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     private void OnTick(object? sender, ApplicationTickEventArgs e)
     {
-        _statusBarManager.UpdateTime();
+        _shell.StatusBar.UpdateTime();
     }
 
     private void OnLoginStateChanged(object? sender, EventArgs e)
@@ -264,16 +243,16 @@ public partial class MainWindowViewModel : CoreViewModelBase
     #region 对话框辅助方法
 
     protected virtual async Task ShowSuccessMessageAsync(string message) =>
-        await _dialogHelper.ShowSuccessMessageAsync(message);
+        await _shell.Dialogs.ShowSuccessMessageAsync(message);
 
     protected virtual async Task ShowErrorMessageAsync(string message) =>
-        await _dialogHelper.ShowErrorMessageAsync(message);
+        await _shell.Dialogs.ShowErrorMessageAsync(message);
 
     protected virtual async Task ShowWarningMessageAsync(string message) =>
-        await _dialogHelper.ShowWarningMessageAsync(message);
+        await _shell.Dialogs.ShowWarningMessageAsync(message);
 
     protected virtual async Task<bool> ShowConfirmationAsync(string message, string title = "确认") =>
-        await _dialogHelper.ShowConfirmationAsync(message, title);
+        await _shell.Dialogs.ShowConfirmationAsync(message, title);
 
     #endregion
 
@@ -283,12 +262,12 @@ public partial class MainWindowViewModel : CoreViewModelBase
     {
         try
         {
-            _tickService.Tick -= OnTick;
-            _loginStateManager.LoginStateChanged -= OnLoginStateChanged;
-            _shellEventCoordinator.LoginSuccessHandled -= OnLoginSuccessHandled;
-            _shellEventCoordinator.Dispose();
-            _loginStateManager.Dispose();
-            _statusBarManager.Dispose();
+            _shell.Tick.Tick -= OnTick;
+            _shell.LoginState.LoginStateChanged -= OnLoginStateChanged;
+            _shell.Events.LoginSuccessHandled -= OnLoginSuccessHandled;
+            _shell.Events.Dispose();
+            _shell.LoginState.Dispose();
+            _shell.StatusBar.Dispose();
         }
         catch (Exception ex) { Logger.LogError(ex, "资源清理异常"); }
         finally { base.OnDisposing(); }

@@ -138,7 +138,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="operatorId">操作者ID</param>
         /// <param name="isAdmin">是否管理员</param>
         /// <param name="cancellationToken">取消令牌</param>
-        Task<LYBT.Shared.Models.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default);
+        Task<LYBT.Shared.Models.Contracts.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default);
     }
 }
 

@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Configuration.Options.Common;
-using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -21,13 +21,13 @@ namespace LYBT.Module.Auth.Services;
 /// </summary>
 public class JwtService : IJwtService
 {
-    private readonly JwtOptions _jwtOptions;
+    private readonly IOptionsMonitor<JwtOptions> CurrentOptionsMonitor;
     private readonly IWebHostEnvironment _environment;
     private readonly JwtSecurityTokenHandler _tokenHandler;
 
-    public JwtService(IOptions<JwtOptions> jwtOptions, IWebHostEnvironment environment)
+    public JwtService(IOptionsMonitor<JwtOptions> jwtOptionsMonitor, IWebHostEnvironment environment)
     {
-        _jwtOptions = jwtOptions.Value ?? throw new ArgumentNullException(nameof(jwtOptions));
+        CurrentOptionsMonitor = jwtOptionsMonitor ?? throw new ArgumentNullException(nameof(jwtOptionsMonitor));
         _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         _tokenHandler = new JwtSecurityTokenHandler();
 
@@ -35,13 +35,16 @@ public class JwtService : IJwtService
         ValidateSecretKeyStrength();
     }
 
+    /// <summary>获取当前 JWT 配置（支持热重载）</summary>
+    private JwtOptions CurrentOptions => CurrentOptionsMonitor.CurrentValue;
+
     /// <summary>
     /// 验证 JWT 密钥强度,确保符合安全基线要求
     /// </summary>
     private void ValidateSecretKeyStrength()
     {
         // unify-configuration-system: 使用扁平化配置路径
-        var secretKey = _jwtOptions.SecretKey;
+        var secretKey = CurrentOptions.SecretKey;
 
         if (string.IsNullOrEmpty(secretKey))
         {
@@ -82,7 +85,7 @@ public class JwtService : IJwtService
             throw new ArgumentException("用户名不能为空", nameof(userName));
 
         // unify-configuration-system: 使用强类型 JwtOptions
-        var secretKey = _jwtOptions.SecretKey;
+        var secretKey = CurrentOptions.SecretKey;
         if (string.IsNullOrEmpty(secretKey))
         {
             throw new InvalidOperationException("JWT SecretKey 配置未找到或为空。请检查 appsettings.json 中的 Jwt:SecretKey 配置。");
@@ -104,7 +107,7 @@ public class JwtService : IJwtService
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         // unify-configuration-system: 从强类型配置读取Token过期时间
-        var expireMinutes = _jwtOptions.AccessTokenExpirationMinutes;
+        var expireMinutes = CurrentOptions.AccessTokenExpirationMinutes;
         var expires = DateTime.UtcNow.AddMinutes(expireMinutes);
 
         // 创建Token
@@ -112,8 +115,8 @@ public class JwtService : IJwtService
         {
             Subject = new ClaimsIdentity(claims),
             Expires = expires,
-            Issuer = _jwtOptions.Issuer,
-            Audience = _jwtOptions.Audience,
+            Issuer = CurrentOptions.Issuer,
+            Audience = CurrentOptions.Audience,
             SigningCredentials = credentials
         };
 
@@ -133,7 +136,7 @@ public class JwtService : IJwtService
             throw new ArgumentException("用户名不能为空", nameof(userName));
 
         // unify-configuration-system: 使用强类型 JwtOptions
-        var secretKey = _jwtOptions.SecretKey;
+        var secretKey = CurrentOptions.SecretKey;
         if (string.IsNullOrEmpty(secretKey))
         {
             throw new InvalidOperationException("JWT SecretKey 配置未找到或为空。请检查 appsettings.json 中的 Jwt:SecretKey 配置。");
@@ -164,7 +167,7 @@ public class JwtService : IJwtService
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         // unify-configuration-system: 从强类型配置读取Token过期时间
-        var expireMinutes = _jwtOptions.AccessTokenExpirationMinutes;
+        var expireMinutes = CurrentOptions.AccessTokenExpirationMinutes;
         var expires = DateTime.UtcNow.AddMinutes(expireMinutes);
 
         // 创建Token
@@ -172,8 +175,8 @@ public class JwtService : IJwtService
         {
             Subject = new ClaimsIdentity(claims),
             Expires = expires,
-            Issuer = _jwtOptions.Issuer,
-            Audience = _jwtOptions.Audience,
+            Issuer = CurrentOptions.Issuer,
+            Audience = CurrentOptions.Audience,
             SigningCredentials = credentials
         };
 
@@ -192,18 +195,18 @@ public class JwtService : IJwtService
         try
         {
             // unify-configuration-system: 使用强类型 JwtOptions
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(CurrentOptions.SecretKey));
 
             var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = key,
                 ValidateIssuer = true,
-                ValidIssuer = _jwtOptions.Issuer,
+                ValidIssuer = CurrentOptions.Issuer,
                 ValidateAudience = true,
-                ValidAudience = _jwtOptions.Audience,
+                ValidAudience = CurrentOptions.Audience,
                 ValidateLifetime = true,
-                ClockSkew = TimeSpan.FromSeconds(_jwtOptions.ClockSkewSeconds)
+                ClockSkew = TimeSpan.FromSeconds(CurrentOptions.ClockSkewSeconds)
             };
 
             var principal = _tokenHandler.ValidateToken(token, validationParameters, out _);
@@ -226,18 +229,18 @@ public class JwtService : IJwtService
 
         try
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(CurrentOptions.SecretKey));
 
             var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = key,
                 ValidateIssuer = true,
-                ValidIssuer = _jwtOptions.Issuer,
+                ValidIssuer = CurrentOptions.Issuer,
                 ValidateAudience = true,
-                ValidAudience = _jwtOptions.Audience,
+                ValidAudience = CurrentOptions.Audience,
                 ValidateLifetime = false,
-                ClockSkew = TimeSpan.FromSeconds(_jwtOptions.ClockSkewSeconds)
+                ClockSkew = TimeSpan.FromSeconds(CurrentOptions.ClockSkewSeconds)
             };
 
             var principal = _tokenHandler.ValidateToken(expiredToken, validationParameters, out var securityToken);
@@ -275,7 +278,7 @@ public class JwtService : IJwtService
                     Status = CommonStatus.Enabled,
                     CreatedAt = DateTime.UtcNow
                 },
-                ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtOptions.AccessTokenExpirationMinutes)
+                ExpiresAt = DateTime.UtcNow.AddMinutes(CurrentOptions.AccessTokenExpirationMinutes)
             };
 
             return Result<LoginResponse>.Success(response);
@@ -304,18 +307,18 @@ public class JwtService : IJwtService
 
         try
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(CurrentOptions.SecretKey));
 
             var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = key,
                 ValidateIssuer = true,
-                ValidIssuer = _jwtOptions.Issuer,
+                ValidIssuer = CurrentOptions.Issuer,
                 ValidateAudience = true,
-                ValidAudience = _jwtOptions.Audience,
+                ValidAudience = CurrentOptions.Audience,
                 ValidateLifetime = false,
-                ClockSkew = TimeSpan.FromSeconds(_jwtOptions.ClockSkewSeconds)
+                ClockSkew = TimeSpan.FromSeconds(CurrentOptions.ClockSkewSeconds)
             };
 
             var principal = _tokenHandler.ValidateToken(autoLoginToken, validationParameters, out var securityToken);
@@ -353,7 +356,7 @@ public class JwtService : IJwtService
                     Status = CommonStatus.Enabled,
                     CreatedAt = DateTime.UtcNow
                 },
-                ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtOptions.AccessTokenExpirationMinutes)
+                ExpiresAt = DateTime.UtcNow.AddMinutes(CurrentOptions.AccessTokenExpirationMinutes)
             };
 
             return Result<LoginResponse>.Success(response);

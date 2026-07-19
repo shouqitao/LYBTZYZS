@@ -3,7 +3,7 @@ using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Primitives.ErrorCodes;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Registration.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;

@@ -1,5 +1,5 @@
 using System.Threading;
-using LYBT.Desktop.Shared.Results;
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 

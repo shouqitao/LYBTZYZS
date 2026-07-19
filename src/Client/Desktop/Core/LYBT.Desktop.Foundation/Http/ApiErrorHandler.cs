@@ -1,9 +1,9 @@
 // ---------------------------------------------------------------------------
-// ApiErrorHandler — Maps HTTP/Refit exceptions to ServiceResult<T>
+// ApiErrorHandler — Maps HTTP/Refit exceptions to Result<T>
 // ---------------------------------------------------------------------------
 // Provides a unified error-handling entry point for Desktop API calls.
 // Converts Refit.ApiException, HttpRequestException, and generic exceptions
-// into ServiceResult<T> with Chinese user-friendly messages.
+// into Result<T> with Chinese user-friendly messages.
 //
 // Reuses ClientErrorMessageMapper for status-code → message mapping to avoid
 // duplicating the shared dictionary.
@@ -15,15 +15,16 @@ using System.Net.Sockets;
 using System.Text.Json;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using Refit;
 
 namespace LYBT.Desktop.Foundation.Http;
 
 /// <summary>
-/// API错误处理器 — 将HTTP/Refit异常转换为统一的ServiceResult&lt;T&gt;
+/// API错误处理器 — 将HTTP/Refit异常转换为统一的Result&lt;T&gt;
 /// </summary>
 /// <remarks>
-/// <para>所有Desktop模块的API调用异常都应通过此类转换为 <see cref="ServiceResult{T}"/>，
+/// <para>所有Desktop模块的API调用异常都应通过此类转换为 <see cref="Result{T}"/>，
 /// 以确保用户看到一致的中文错误消息。</para>
 /// <para>状态码映射委托给 <see cref="ClientErrorMessageMapper"/>，保持共享层单一数据源。</para>
 /// </remarks>
@@ -34,12 +35,12 @@ public static class ApiErrorHandler
     #region Refit ApiException handling
 
     /// <summary>
-    /// 处理Refit ApiException，转换为ServiceResult&lt;T&gt;
+    /// 处理Refit ApiException，转换为Result&lt;T&gt;
     /// </summary>
     /// <typeparam name="T">响应数据类型</typeparam>
     /// <param name="ex">Refit ApiException</param>
-    /// <returns>包含中文错误消息的ServiceResult</returns>
-    public static ServiceResult<T> HandleRefitException<T>(ApiException ex)
+    /// <returns>包含中文错误消息的Result</returns>
+    public static Result<T> HandleRefitException<T>(ApiException ex)
     {
         var statusCode = ex.StatusCode;
         var message = GetMessageFromStatusCode(statusCode);
@@ -51,7 +52,7 @@ public static class ApiErrorHandler
             message = serverMessage;
         }
 
-        return ServiceResult<T>.Failure(message, ex);
+        return Result<T>.Failure(message, ex);
     }
 
     #endregion
@@ -59,13 +60,13 @@ public static class ApiErrorHandler
     #region HttpRequestException handling
 
     /// <summary>
-    /// 处理HttpRequestException，转换为ServiceResult&lt;T&gt;
+    /// 处理HttpRequestException，转换为Result&lt;T&gt;
     /// </summary>
     /// <typeparam name="T">响应数据类型</typeparam>
     /// <param name="ex">HttpRequestException</param>
     /// <param name="statusCode">可选的HTTP状态码（当异常未携带状态码时由调用方提供）</param>
-    /// <returns>包含中文错误消息的ServiceResult</returns>
-    public static ServiceResult<T> HandleHttpException<T>(HttpRequestException ex, HttpStatusCode? statusCode = null)
+    /// <returns>包含中文错误消息的Result</returns>
+    public static Result<T> HandleHttpException<T>(HttpRequestException ex, HttpStatusCode? statusCode = null)
     {
         // 优先使用异常自带的状态码，其次使用调用方提供的状态码
         var effectiveStatusCode = ex.StatusCode ?? statusCode;
@@ -73,7 +74,7 @@ public static class ApiErrorHandler
         if (effectiveStatusCode.HasValue)
         {
             var message = GetMessageFromStatusCode(effectiveStatusCode.Value);
-            return ServiceResult<T>.Failure(message, ex);
+            return Result<T>.Failure(message, ex);
         }
 
         // 无状态码时，根据内部异常类型判断
@@ -84,7 +85,7 @@ public static class ApiErrorHandler
             _ => "网络请求失败，请稍后重试"
         };
 
-        return ServiceResult<T>.Failure(fallbackMessage, ex);
+        return Result<T>.Failure(fallbackMessage, ex);
     }
 
     #endregion
@@ -96,7 +97,7 @@ public static class ApiErrorHandler
     /// </summary>
     /// <typeparam name="T">响应数据类型</typeparam>
     /// <param name="ex">异常实例</param>
-    /// <returns>包含中文错误消息的ServiceResult</returns>
+    /// <returns>包含中文错误消息的Result</returns>
     /// <remarks>
     /// <para>分派逻辑：</para>
     /// <list type="number">
@@ -107,16 +108,16 @@ public static class ApiErrorHandler
     ///   <item>其他 → 默认错误消息</item>
     /// </list>
     /// </remarks>
-    public static ServiceResult<T> HandleException<T>(Exception ex)
+    public static Result<T> HandleException<T>(Exception ex)
     {
         return ex switch
         {
             ApiException refitEx => HandleRefitException<T>(refitEx),
             HttpRequestException httpEx => HandleHttpException<T>(httpEx),
-            TaskCanceledException => ServiceResult<T>.Failure("操作已取消", ex),
-            TimeoutException => ServiceResult<T>.Failure("操作超时，请稍后重试", ex),
-            SocketException => ServiceResult<T>.Failure("无法连接到服务器，请检查网络连接", ex),
-            _ => ServiceResult<T>.Failure(DefaultErrorMessage, ex)
+            TaskCanceledException => Result<T>.Failure("操作已取消", ex),
+            TimeoutException => Result<T>.Failure("操作超时，请稍后重试", ex),
+            SocketException => Result<T>.Failure("无法连接到服务器，请检查网络连接", ex),
+            _ => Result<T>.Failure(DefaultErrorMessage, ex)
         };
     }
 

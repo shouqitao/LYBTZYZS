@@ -1,7 +1,7 @@
 using MediatR;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Module.Herbs.Application.Commands;
 

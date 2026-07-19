@@ -19,6 +19,7 @@ using System.Text.Json;
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -137,6 +138,21 @@ public sealed class HttpClientApiClient : IApiClient,
     private static ApiResponse WrapSuccess(string message = "操作成功")
         => ApiResponse.CreateSuccess(null, message);
 
+    /// <summary>Build URL with pagination + optional filter parameters.</summary>
+    private static string BuildPagedUrl(string baseUrl, int page, int pageSize, params (string Key, string? Value)[] filters)
+    {
+        var sb = new StringBuilder($"{baseUrl}?page={page}&pageSize={pageSize}");
+        foreach (var (key, value) in filters)
+        {
+            if (string.IsNullOrWhiteSpace(value)) continue;
+            sb.Append('&');
+            sb.Append(key);
+            sb.Append('=');
+            sb.Append(Uri.EscapeDataString(value));
+        }
+        return sb.ToString();
+    }
+
     /// <summary>Build URL with conditional query parameters.</summary>
     private static string BuildQueryString(string baseUrl, params (string Key, string? Value)[] parameters)
     {
@@ -204,12 +220,16 @@ public sealed class HttpClientApiClient : IApiClient,
     private Task<ApiResponse<T>> PostAndWrapAsync<T>(string url, object? body = null, CancellationToken ct = default)
         => SendAndWrapAsync<T>(url, HttpMethod.Post, body, ct);
 
-    /// <summary>POST -> non-generic ApiResponse (void operations).</summary>
-    private async Task<ApiResponse> PostVoidAsync(string url, object? body = null, CancellationToken ct = default)
+    /// <summary>Unified void HTTP request -> ApiResponse.</summary>
+    private async Task<ApiResponse> SendVoidAsync(string url, HttpMethod method, object? body = null, CancellationToken ct = default)
     {
-        await SendAsync(url, HttpMethod.Post, body, ct);
+        await SendAsync(url, method, body, ct);
         return WrapSuccess();
     }
+
+    /// <summary>POST -> non-generic ApiResponse (void operations).</summary>
+    private Task<ApiResponse> PostVoidAsync(string url, object? body = null, CancellationToken ct = default)
+        => SendVoidAsync(url, HttpMethod.Post, body, ct);
 
     /// <summary>POST -> return raw T (local-only methods).</summary>
     private async Task<T> PostRawAsync<T>(string url, object? body = null, CancellationToken ct = default)
@@ -223,18 +243,12 @@ public sealed class HttpClientApiClient : IApiClient,
         => SendAndWrapAsync<T>(url, HttpMethod.Put, body, ct);
 
     /// <summary>PUT -> non-generic ApiResponse (void operations).</summary>
-    private async Task<ApiResponse> PutVoidAsync(string url, object? body = null, CancellationToken ct = default)
-    {
-        await SendAsync(url, HttpMethod.Put, body, ct);
-        return WrapSuccess();
-    }
+    private Task<ApiResponse> PutVoidAsync(string url, object? body = null, CancellationToken ct = default)
+        => SendVoidAsync(url, HttpMethod.Put, body, ct);
 
     /// <summary>DELETE -> non-generic ApiResponse.</summary>
-    private async Task<ApiResponse> DeleteVoidAsync(string url, CancellationToken ct = default)
-    {
-        await SendAsync(url, HttpMethod.Delete, ct: ct);
-        return WrapSuccess();
-    }
+    private Task<ApiResponse> DeleteVoidAsync(string url, CancellationToken ct = default)
+        => SendVoidAsync(url, HttpMethod.Delete, ct: ct);
 
     /// <summary>HTTP request -> deserialize -> wrap in ApiResponse&lt;T&gt;.</summary>
     private async Task<ApiResponse<T>> SendAndWrapAsync<T>(string url, HttpMethod method, object? body = null, CancellationToken ct = default)
@@ -372,8 +386,7 @@ public sealed class HttpClientApiClient : IApiClient,
     async Task<ApiResponse<PagedResult<UserListDto>>> IApiClientUsers.GetUsersAsync(
         int page, int pageSize, string? keyword)
     {
-        var url = BuildQueryString($"/api/v1/users?page={page}&pageSize={pageSize}",
-            ("keyword", keyword));
+        var url = BuildPagedUrl("/api/v1/users", page, pageSize, ("keyword", keyword));
         return await GetPagedAndWrapAsync<UserListDto>(url, page, pageSize);
     }
 
@@ -423,8 +436,7 @@ public sealed class HttpClientApiClient : IApiClient,
     async Task<ApiResponse<PagedResult<PatientListDto>>> IApiClientPatients.GetPatientsAsync(
         int page, int pageSize, string? keyword)
     {
-        var url = BuildQueryString($"/api/v1/patients?page={page}&pageSize={pageSize}",
-            ("keyword", keyword));
+        var url = BuildPagedUrl("/api/v1/patients", page, pageSize, ("keyword", keyword));
         return await GetPagedAndWrapAsync<PatientListDto>(url, page, pageSize);
     }
 
@@ -470,8 +482,7 @@ public sealed class HttpClientApiClient : IApiClient,
     async Task<ApiResponse<PagedResult<HerbListDto>>> IApiClientHerbs.GetHerbsAsync(
         int page, int pageSize, string? keyword, string? category)
     {
-        var url = BuildQueryString($"/api/v1/herbs?page={page}&pageSize={pageSize}",
-            ("keyword", keyword), ("category", category));
+        var url = BuildPagedUrl("/api/v1/herbs", page, pageSize, ("keyword", keyword), ("category", category));
         return await GetPagedAndWrapAsync<HerbListDto>(url, page, pageSize);
     }
 
@@ -520,8 +531,7 @@ public sealed class HttpClientApiClient : IApiClient,
     async Task<ApiResponse<PagedResult<FormulaListDto>>> IApiClientFormulas.GetFormulasAsync(
         int page, int pageSize, string? keyword, string? category)
     {
-        var url = BuildQueryString($"/api/v1/formulas?page={page}&pageSize={pageSize}",
-            ("keyword", keyword), ("category", category));
+        var url = BuildPagedUrl("/api/v1/formulas", page, pageSize, ("keyword", keyword), ("category", category));
         return await GetPagedAndWrapAsync<FormulaListDto>(url, page, pageSize);
     }
 
@@ -672,7 +682,7 @@ public sealed class HttpClientApiClient : IApiClient,
         int page, int pageSize, string? keyword, DateTime? startDate, DateTime? endDate,
         Guid? patientId, Guid? doctorId)
     {
-        var url = BuildQueryString($"/api/v1/registrations?page={page}&pageSize={pageSize}",
+        var url = BuildPagedUrl("/api/v1/registrations", page, pageSize,
             ("keyword", keyword),
             ("startDate", startDate?.ToString("O")),
             ("endDate", endDate?.ToString("O")),

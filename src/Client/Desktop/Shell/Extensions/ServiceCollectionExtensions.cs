@@ -1,7 +1,7 @@
 using LYBT.Desktop.Admin.Services;
 using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Security;
-using LYBT.Desktop.Shared.Models;
+using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
@@ -15,7 +15,7 @@ using LYBT.Desktop.Infrastructure.Roles;
 using LYBT.Desktop.Infrastructure.Roles.Definitions;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.Services.Notifications;
-using LYBT.Desktop.Navigation;
+using LYBT.Desktop.Infrastructure.Navigation;
 using LYBT.Desktop.Printing.Interfaces;
 using LYBT.Desktop.Printing.Models;
 using LYBT.Desktop.Printing.Services;
@@ -109,16 +109,20 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             containerRegistry.RegisterSingleton<INotificationService, NotificationService>();
             containerRegistry.RegisterSingleton<IDesktopExceptionHandler, DesktopExceptionHandler>();
-            containerRegistry.RegisterSingleton<MenuManager>();
+            containerRegistry.RegisterSingleton<IMenuManager, MenuManager>();
+            containerRegistry.RegisterSingleton<INavigationServices, NavigationServices>();
             containerRegistry.RegisterSingleton<INavigationCoordinator, NavigationCoordinator>();
-            containerRegistry.RegisterSingleton<NavigationManager>();
-            containerRegistry.RegisterSingleton<StatusBarManager>();
+            containerRegistry.RegisterSingleton<INavigationManager, NavigationManager>();
+            containerRegistry.RegisterSingleton<IStatusBarManager, StatusBarManager>();
 
             // Navigation 服务拆分
             containerRegistry.RegisterSingleton<INavigationHistoryService, NavigationHistoryService>();
             containerRegistry.RegisterSingleton<IModuleLazyLoader, ModuleLazyLoader>();
             containerRegistry.RegisterSingleton<IRegionMonitor, RegionMonitor>();
             containerRegistry.RegisterSingleton<ShellDialogHelper>();
+
+            // Shell 服务聚合 — 减少 MainWindowViewModel 构造函数参数
+            containerRegistry.RegisterSingleton<IShellServices, ShellServices>();
         }
 
         /// <summary>注册Infrastructure层服务</summary>
@@ -186,6 +190,7 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // MainWindowViewModel 拆分 - 登录状态管理与事件协调
             containerRegistry.RegisterSingleton<ILoginStateManager, LoginStateManager>();
+            containerRegistry.RegisterSingleton<IShellEventServices, ShellEventServices>();
             containerRegistry.RegisterSingleton<ShellEventCoordinator>();
 
             // Shell启动流程重构 - Phase 3 新增服务

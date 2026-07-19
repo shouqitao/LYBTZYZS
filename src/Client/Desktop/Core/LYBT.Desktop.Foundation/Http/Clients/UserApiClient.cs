@@ -9,6 +9,7 @@ using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Foundation.Http.Clients;

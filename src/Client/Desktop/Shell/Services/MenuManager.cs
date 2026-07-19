@@ -1,6 +1,6 @@
 using System.Windows;
 using System.Windows.Input;
-using LYBT.Desktop.Shared.UI;
+using LYBT.Desktop.Contracts.UI;
 using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Commands;
@@ -16,7 +16,7 @@ namespace LYBT.Desktop.Shell.Services;
 /// <remarks>
 /// S6-01: 根据 CurrentUser.Role 控制菜单可见性
 /// </remarks>
-public class MenuManager
+public class MenuManager : IMenuManager
 {
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly ISessionManager _sessionManager;
@@ -49,19 +49,19 @@ public class MenuManager
     #region 命令属性
 
     /// <summary>快速添加患者命令(Ctrl+N)</summary>
-    public DelegateCommand QuickAddPatientCommand { get; private set; } = null!;
+    public ICommand QuickAddPatientCommand { get; private set; } = null!;
 
     /// <summary>快速开始看诊命令(Ctrl+Shift+C)</summary>
-    public DelegateCommand QuickStartMedicalCaseCommand { get; private set; } = null!;
+    public ICommand QuickStartMedicalCaseCommand { get; private set; } = null!;
 
     /// <summary>显示帮助命令 (F1)</summary>
-    public DelegateCommand ShowHelpCommand { get; private set; } = null!;
+    public ICommand ShowHelpCommand { get; private set; } = null!;
 
     /// <summary>显示设置命令 (Ctrl+,)</summary>
-    public DelegateCommand ShowSettingsCommand { get; private set; } = null!;
+    public ICommand ShowSettingsCommand { get; private set; } = null!;
 
     /// <summary>主题切换命令</summary>
-    public DelegateCommand ToggleThemeCommand { get; private set; } = null!;
+    public ICommand ToggleThemeCommand { get; private set; } = null!;
 
     /// <summary>全局保存命令 (Ctrl+S)</summary>
     public ICommand SaveAllCommand => _applicationCommands.SaveAllCommand;
@@ -82,13 +82,13 @@ public class MenuManager
     public ICommand RedoCommand => _applicationCommands.RedoCommand;
 
     /// <summary>账户设置命令</summary>
-    public DelegateCommand EditProfileCommand { get; private set; } = null!;
+    public ICommand EditProfileCommand { get; private set; } = null!;
 
     /// <summary>导航到主页命令</summary>
-    public DelegateCommand NavigateToHomeCommand { get; private set; } = null!;
+    public ICommand NavigateToHomeCommand { get; private set; } = null!;
 
     /// <summary>导航到系统设置命令</summary>
-    public DelegateCommand NavigateToSystemSettingsCommand { get; private set; } = null!;
+    public ICommand NavigateToSystemSettingsCommand { get; private set; } = null!;
 
     /// <summary>导航后退命令 — 导航架构改进方案 v1.0</summary>
     public DelegateCommand NavigateBackCommand { get; private set; } = null!;

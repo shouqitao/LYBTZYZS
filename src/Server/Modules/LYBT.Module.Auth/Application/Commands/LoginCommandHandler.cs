@@ -13,7 +13,7 @@ using LYBT.Shared.Models.DTOs.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Primitives.ErrorCodes;
 using LYBT.Shared.Utilities.Security;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

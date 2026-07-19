@@ -22,7 +22,7 @@
 
   <!--
     consolidate-exception-handling: 异常处理层
-    依赖 Models（ServiceResult）和 Primitives（ErrorCode）
+    依赖 Models 和 Primitives（ErrorCode）
   -->
   <ItemGroup>
     <ProjectReference Include="..\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />

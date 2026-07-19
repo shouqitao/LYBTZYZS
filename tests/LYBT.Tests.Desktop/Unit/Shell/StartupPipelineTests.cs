@@ -1,6 +1,6 @@
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Performance;
-using LYBT.Desktop.Shared.Models;
+using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Shell.Services.Startup;
 using Microsoft.Extensions.Logging;

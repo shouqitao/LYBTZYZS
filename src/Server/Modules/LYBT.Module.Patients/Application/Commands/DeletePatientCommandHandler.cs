@@ -1,6 +1,6 @@
 using MediatR;
 using LYBT.Shared.Primitives.ErrorCodes;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.SharedKernel.Events;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Domain.Events;

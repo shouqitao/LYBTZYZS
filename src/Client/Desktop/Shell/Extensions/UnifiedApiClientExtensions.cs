@@ -11,7 +11,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using DryIoc;
 using LYBT.Desktop.Contracts.ApiClient;
-using LYBT.Desktop.Shared.Models;
+using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
 using Prism.DryIoc;
 using LYBT.Desktop.Foundation.Http;

@@ -1,5 +1,5 @@
 using MediatR;
-using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Auth;
 
 namespace LYBT.Module.Auth.Application.Commands;

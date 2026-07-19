@@ -17,12 +17,12 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <Compile Remove="Events\SyncEvents.cs" />
+    <Compile Remove="Events\CacheEvents.cs" />
     <Compile Remove="Services\IViewModelServices.cs" />
     <Compile Remove="Services\IUiThreadDispatcher.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LYBT.Desktop.Shared\LYBT.Desktop.Shared.csproj" />
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
   </ItemGroup>
 

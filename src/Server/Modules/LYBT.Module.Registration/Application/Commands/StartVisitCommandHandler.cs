@@ -1,6 +1,6 @@
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Shared.Primitives.ErrorCodes;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using MediatR;
 
 namespace LYBT.Module.Registration.Application.Commands;

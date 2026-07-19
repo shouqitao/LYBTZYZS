@@ -1,5 +1,5 @@
 using LYBT.Shared.Logging.Masking;
-using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Primitives.ErrorCodes;

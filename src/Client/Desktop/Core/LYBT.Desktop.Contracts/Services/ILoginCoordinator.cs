@@ -1,4 +1,4 @@
-using LYBT.Desktop.Shared.Models;
+using LYBT.Desktop.Contracts.Models;
 using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Contracts.Services;

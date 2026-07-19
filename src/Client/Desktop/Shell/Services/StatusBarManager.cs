@@ -12,7 +12,7 @@ namespace LYBT.Desktop.Shell.Services;
 /// 状态栏管理器 - 负责 API 健康状态、连接地址、连接模式的显示
 /// 从 MainWindowViewModel 提取，减少主 VM 行数
 /// </summary>
-public partial class StatusBarManager : ObservableObject, IDisposable
+public partial class StatusBarManager : ObservableObject, IStatusBarManager, IDisposable
 {
     private readonly IApiHealthMonitor _apiHealthMonitor;
     private readonly IConnectionSettingsService _connectionSettings;

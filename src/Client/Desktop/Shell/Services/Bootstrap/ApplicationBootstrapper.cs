@@ -1,5 +1,5 @@
 using LYBT.Desktop.Contracts.Performance;
-using LYBT.Desktop.Shared.Models;
+using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Roles;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;

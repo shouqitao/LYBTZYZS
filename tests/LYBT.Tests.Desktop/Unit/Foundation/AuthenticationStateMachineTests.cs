@@ -1,6 +1,6 @@
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Security;
-using LYBT.Desktop.Shared.Models;
+using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Foundation.Security;
 using Microsoft.Extensions.Logging;
 using NSubstitute;

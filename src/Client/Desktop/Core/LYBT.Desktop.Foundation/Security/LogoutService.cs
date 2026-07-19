@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Net.Http;
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Security;
-using LYBT.Desktop.Shared.Models;
+using LYBT.Desktop.Contracts.Models;
 using LYBT.Shared.Models.Contracts.Auth;
 using Microsoft.Extensions.Logging;
 using Prism.Events;

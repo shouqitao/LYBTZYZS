@@ -1,5 +1,5 @@
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Shared.Events;
+using LYBT.Desktop.Contracts.Events;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;

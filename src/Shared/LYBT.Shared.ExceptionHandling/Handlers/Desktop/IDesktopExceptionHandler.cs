@@ -1,4 +1,5 @@
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Shared.ExceptionHandling.Handlers;
 
@@ -48,27 +49,27 @@ public interface IDesktopExceptionHandler
 
     #endregion
 
-    #region ServiceResult支持（从IExceptionHandler合并）
+    #region Result支持（从IExceptionHandler合并）
 
     /// <summary>
     /// 处理异常并返回用户友好的结果
     /// </summary>
-    ServiceResult<T> HandleException<T>(Exception exception, string methodName, string? context = null);
+    Result<T> HandleException<T>(Exception exception, string methodName, string? context = null);
 
     /// <summary>
     /// 处理异常并返回无数据的结果
     /// </summary>
-    ServiceResult HandleExceptionWithResult(Exception exception, string methodName, string? context = null);
+    Result HandleExceptionWithResult(Exception exception, string methodName, string? context = null);
 
     /// <summary>
     /// 安全执行操作，自动处理异常
     /// </summary>
-    Task<ServiceResult<T>> SafeExecuteAsync<T>(Func<Task<ServiceResult<T>>> operation, string methodName, string? context = null);
+    Task<Result<T>> SafeExecuteAsync<T>(Func<Task<Result<T>>> operation, string methodName, string? context = null);
 
     /// <summary>
     /// 安全执行无返回值的操作，自动处理异常
     /// </summary>
-    Task<ServiceResult> SafeExecuteAsync(Func<Task<ServiceResult>> operation, string methodName, string? context = null);
+    Task<Result> SafeExecuteAsync(Func<Task<Result>> operation, string methodName, string? context = null);
 
     #endregion
 }

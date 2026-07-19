@@ -4,7 +4,7 @@ using System.Text;
 using MediatR;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Primitives.ErrorCodes;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Auth.Application.Queries;

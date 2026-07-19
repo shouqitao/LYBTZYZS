@@ -15,9 +15,8 @@ Cross-tier shared libraries used by both the Server and Desktop client. Contains
 ## Subdirectories
 | Directory | Purpose |
 |-----------|---------|
-| LYBT.Shared.Models/ | DTOs, contracts, and request/response models — the primary cross-tier data contract |
+| LYBT.Shared.Models/ | DTOs, contracts, request/response models, Result<T>, IHerbItem — the primary cross-tier data contract |
 | LYBT.Shared.Validators/ | FluentValidation rules shared between Server and Client |
-| LYBT.Shared.Components/ | Shared UI components (used by Desktop client) |
 | LYBT.Shared.Configuration/ | Shared configuration models and options |
 | LYBT.Shared.Primitives/ | Base types, constants, enums used across all tiers |
 | LYBT.Shared.ExceptionHandling/ | Unified exception types and error handling |

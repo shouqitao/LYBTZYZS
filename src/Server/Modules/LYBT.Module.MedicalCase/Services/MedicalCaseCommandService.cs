@@ -259,7 +259,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// <summary>
         /// 复制历史处方到新医案
         /// </summary>
-        public async Task<LYBT.Shared.Models.Common.Result<PrescriptionDetailDto>> CopyHistoricalPrescriptionAsync(
+        public async Task<LYBT.Shared.Models.Contracts.Common.Result<PrescriptionDetailDto>> CopyHistoricalPrescriptionAsync(
             Guid sourceMedicalCaseId,
             Guid targetMedicalCaseId,
             Guid currentUserId,
@@ -273,7 +273,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// <summary>
         /// 实际执行历史处方复制逻辑
         /// </summary>
-        private async Task<LYBT.Shared.Models.Common.Result<PrescriptionDetailDto>> ExecuteCopyHistoricalPrescriptionAsync(
+        private async Task<LYBT.Shared.Models.Contracts.Common.Result<PrescriptionDetailDto>> ExecuteCopyHistoricalPrescriptionAsync(
             Guid sourceMedicalCaseId,
             Guid targetMedicalCaseId,
             Guid currentUserId,
@@ -283,26 +283,26 @@ namespace LYBT.Module.MedicalCases.Services
             var sourceCase = await _repository.GetByIdWithDetailsAsync(sourceMedicalCaseId, cancellationToken);
             if (sourceCase == null)
             {
-                return LYBT.Shared.Models.Common.Result<PrescriptionDetailDto>.Failure("源医案不存在");
+                return LYBT.Shared.Models.Contracts.Common.Result<PrescriptionDetailDto>.Failure("源医案不存在");
             }
             if (sourceCase.Prescription == null)
             {
-                return LYBT.Shared.Models.Common.Result<PrescriptionDetailDto>.Failure("源医案没有处方");
+                return LYBT.Shared.Models.Contracts.Common.Result<PrescriptionDetailDto>.Failure("源医案没有处方");
             }
 
             // 2) fetch target and validate
             var targetCase = await _repository.GetByIdWithDetailsAsync(targetMedicalCaseId, cancellationToken);
             if (targetCase == null)
             {
-                return LYBT.Shared.Models.Common.Result<PrescriptionDetailDto>.Failure("目标医案不存在");
+                return LYBT.Shared.Models.Contracts.Common.Result<PrescriptionDetailDto>.Failure("目标医案不存在");
             }
             if (targetCase.NeedsPrescription != true)
             {
-                return LYBT.Shared.Models.Common.Result<PrescriptionDetailDto>.Failure("目标医案不需要处方");
+                return LYBT.Shared.Models.Contracts.Common.Result<PrescriptionDetailDto>.Failure("目标医案不需要处方");
             }
             if (targetCase.Prescription != null)
             {
-                return LYBT.Shared.Models.Common.Result<PrescriptionDetailDto>.Failure("目标医案已有处方");
+                return LYBT.Shared.Models.Contracts.Common.Result<PrescriptionDetailDto>.Failure("目标医案已有处方");
             }
 
             // 3) copy prescription with new IDs
@@ -350,7 +350,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 6) map to DTO and return as successful result
             var dto = _mapper.ToPrescriptionDetailDto(newPrescription);
-            return LYBT.Shared.Models.Common.Result<PrescriptionDetailDto>.Success(dto);
+            return LYBT.Shared.Models.Contracts.Common.Result<PrescriptionDetailDto>.Success(dto);
         }
 
         /// <summary>
@@ -824,7 +824,7 @@ namespace LYBT.Module.MedicalCases.Services
 
         #endregion
         /// <inheritdoc />
-        public async Task<LYBT.Shared.Models.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default)
+        public async Task<LYBT.Shared.Models.Contracts.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default)
         {
             var result = new LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto
             {
@@ -878,7 +878,7 @@ namespace LYBT.Module.MedicalCases.Services
             result.IsSuccess = result.SuccessCount > 0;
             result.Message = $"批量删除完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条";
 
-            return LYBT.Shared.Models.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>.Success(result);
+            return LYBT.Shared.Models.Contracts.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>.Success(result);
         }
     }
 }

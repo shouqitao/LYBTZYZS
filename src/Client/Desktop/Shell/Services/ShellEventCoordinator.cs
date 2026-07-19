@@ -3,7 +3,7 @@ using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Navigation;
+using LYBT.Desktop.Infrastructure.Navigation;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 
@@ -17,15 +17,7 @@ namespace LYBT.Desktop.Shell.Services.Login;
 /// </summary>
 public class ShellEventCoordinator : IDisposable
 {
-    private readonly ILoginStateManager _loginStateManager;
-    private readonly IUserActivityTracker _userActivityTracker;
-    private readonly ILoginCoordinator _loginCoordinator;
-    private readonly ITokenLifecycleService _tokenLifecycleService;
-    private readonly INavigationCoordinator _navigationCoordinator;
-    private readonly MenuManager _menuManager;
-    private readonly NavigationManager _navigationManager;
-    private readonly IModuleLazyLoader _moduleLazyLoader;
-    private readonly IUiThreadDispatcher _uiDispatcher;
+    private readonly IShellEventServices _services;
     private readonly ILogger<ShellEventCoordinator> _logger;
 
     private readonly EventSubscriptionManager _eventSubscriptions;
@@ -37,27 +29,11 @@ public class ShellEventCoordinator : IDisposable
     public event EventHandler? PasswordChangedHandled;
 
     public ShellEventCoordinator(
-        ILoginStateManager loginStateManager,
+        IShellEventServices services,
         IEventAggregator eventAggregator,
-        IUserActivityTracker userActivityTracker,
-        ILoginCoordinator loginCoordinator,
-        ITokenLifecycleService tokenLifecycleService,
-        INavigationCoordinator navigationCoordinator,
-        MenuManager menuManager,
-        NavigationManager navigationManager,
-        IModuleLazyLoader moduleLazyLoader,
-        IUiThreadDispatcher uiDispatcher,
         ILogger<ShellEventCoordinator> logger)
     {
-        _loginStateManager = loginStateManager ?? throw new ArgumentNullException(nameof(loginStateManager));
-        _userActivityTracker = userActivityTracker ?? throw new ArgumentNullException(nameof(userActivityTracker));
-        _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
-        _tokenLifecycleService = tokenLifecycleService ?? throw new ArgumentNullException(nameof(tokenLifecycleService));
-        _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
-        _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));
-        _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
-        _moduleLazyLoader = moduleLazyLoader ?? throw new ArgumentNullException(nameof(moduleLazyLoader));
-        _uiDispatcher = uiDispatcher ?? throw new ArgumentNullException(nameof(uiDispatcher));
+        _services = services ?? throw new ArgumentNullException(nameof(services));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         _eventSubscriptions = new EventSubscriptionManager(eventAggregator);
@@ -67,9 +43,9 @@ public class ShellEventCoordinator : IDisposable
 
     private void SubscribeToEvents()
     {
-        _loginCoordinator.LoginSucceeded += OnLoginSucceeded;
-        _userActivityTracker.SessionExpired += OnSessionExpired;
-        _loginStateManager.LogoutRequested += OnLogoutRequested;
+        _services.LoginCoordinator.LoginSucceeded += OnLoginSucceeded;
+        _services.ActivityTracker.SessionExpired += OnSessionExpired;
+        _services.LoginState.LogoutRequested += OnLogoutRequested;
 
         _eventSubscriptions.Subscribe<AuthEvents.PasswordChangedEvent, PasswordChangedPayload>(OnPasswordChanged);
         _eventSubscriptions.Subscribe<AuthEvents.ProfileUpdatedEvent, ProfileUpdatedPayload>(OnProfileUpdated);
@@ -79,15 +55,15 @@ public class ShellEventCoordinator : IDisposable
 
     private void OnLoginSucceeded(object? sender, LoginSuccessEventArgs args)
     {
-        _uiDispatcher.InvokeAsync(() =>
+        _services.UiDispatcher.InvokeAsync(() =>
         {
-            _loginStateManager.ApplyLoginSuccess(args.User);
+            _services.LoginState.ApplyLoginSuccess(args.User);
 
-            _navigationCoordinator.ClearLoginRegion();
-            _userActivityTracker.StartTracking();
-            _ = _tokenLifecycleService.StartMonitoringFromStorageAsync();
+            _services.Navigation.ClearLoginRegion();
+            _services.ActivityTracker.StartTracking();
+            _ = _services.TokenLifecycle.StartMonitoringFromStorageAsync();
 
-            _navigationManager.NavigationItems = _navigationManager.BuildNavigationItems(args.User.Role);
+            _services.NavigationManager.NavigationItems = _services.NavigationManager.BuildNavigationItems(args.User.Role);
 
             // 背景预加载高频模块
             _ = Task.Run(async () =>
@@ -95,7 +71,7 @@ public class ShellEventCoordinator : IDisposable
                 try
                 {
                     await Task.Delay(2000);
-                    await _moduleLazyLoader.PreloadModulesAsync(args.User.Role);
+                    await _services.ModuleLoader.PreloadModulesAsync(args.User.Role);
                 }
                 catch (Exception ex)
                 {
@@ -111,19 +87,19 @@ public class ShellEventCoordinator : IDisposable
 
     private void OnSessionExpired(object? sender, EventArgs e)
     {
-        _loginStateManager.HandleSessionExpiredAsync()
+        _services.LoginState.HandleSessionExpiredAsync()
             .SafeFireAndForget(ex => _logger.LogError(ex, "会话过期处理异常"));
     }
 
     private void OnPasswordChanged(PasswordChangedPayload payload)
     {
         _logger.LogInformation("收到密码修改成功事件 [用户: {UserName}]，导航到登录界面", payload.UserName);
-        _uiDispatcher.InvokeAsync(() =>
+        _services.UiDispatcher.InvokeAsync(() =>
         {
-            _loginStateManager.ApplyPasswordChanged();
+            _services.LoginState.ApplyPasswordChanged();
 
-            _navigationCoordinator.ClearContentRegion();
-            _navigationCoordinator.ShowLoginDialog();
+            _services.Navigation.ClearContentRegion();
+            _services.Navigation.ShowLoginDialog();
 
             PasswordChangedHandled?.Invoke(this, EventArgs.Empty);
         });
@@ -131,9 +107,9 @@ public class ShellEventCoordinator : IDisposable
 
     private void OnProfileUpdated(ProfileUpdatedPayload payload)
     {
-        _uiDispatcher.InvokeAsync(() =>
+        _services.UiDispatcher.InvokeAsync(() =>
         {
-            _loginStateManager.ApplyProfileUpdate(payload.UpdatedUser);
+            _services.LoginState.ApplyProfileUpdate(payload.UpdatedUser);
         });
     }
 
@@ -141,7 +117,7 @@ public class ShellEventCoordinator : IDisposable
     {
         _logger.LogDebug("Token生命周期状态变更: {Previous} -> {Current}", args.PreviousState, args.CurrentState);
 
-        await _uiDispatcher.InvokeAsync(async () =>
+        await _services.UiDispatcher.InvokeAsync(async () =>
         {
             switch (args.CurrentState)
             {
@@ -151,7 +127,7 @@ public class ShellEventCoordinator : IDisposable
                     break;
 
                 case TokenLifecycleState.Expired:
-                    await _loginStateManager.HandleTokenExpiredAsync();
+                    await _services.LoginState.HandleTokenExpiredAsync();
                     break;
             }
         });
@@ -159,18 +135,18 @@ public class ShellEventCoordinator : IDisposable
 
     private void OnLogoutRequested(object? sender, EventArgs e)
     {
-        _navigationManager.NavigationItems.Clear();
-        _navigationCoordinator.ClearHistory();
-        _navigationCoordinator.ClearContentRegion();
-        _navigationCoordinator.ShowLoginDialog();
+        _services.NavigationManager.NavigationItems.Clear();
+        _services.Navigation.ClearHistory();
+        _services.Navigation.ClearContentRegion();
+        _services.Navigation.ShowLoginDialog();
     }
 
     public void Dispose()
     {
-        _loginCoordinator.LoginSucceeded -= OnLoginSucceeded;
-        _userActivityTracker.SessionExpired -= OnSessionExpired;
-        _loginStateManager.LogoutRequested -= OnLogoutRequested;
-        _userActivityTracker.StopTracking();
+        _services.LoginCoordinator.LoginSucceeded -= OnLoginSucceeded;
+        _services.ActivityTracker.SessionExpired -= OnSessionExpired;
+        _services.LoginState.LogoutRequested -= OnLogoutRequested;
+        _services.ActivityTracker.StopTracking();
         _eventSubscriptions.Dispose();
     }
 }

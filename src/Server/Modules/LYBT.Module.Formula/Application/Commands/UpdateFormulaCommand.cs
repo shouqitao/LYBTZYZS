@@ -1,6 +1,6 @@
 using MediatR;
 using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Module.Formulas.Application.Commands;
 

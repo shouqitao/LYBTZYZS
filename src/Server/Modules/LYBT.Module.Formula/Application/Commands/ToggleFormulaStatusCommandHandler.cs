@@ -2,7 +2,7 @@ using MediatR;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Primitives.ErrorCodes;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Module.Formulas.Application.Mappers;
 

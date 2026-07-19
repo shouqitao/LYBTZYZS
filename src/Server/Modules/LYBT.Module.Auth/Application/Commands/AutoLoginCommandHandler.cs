@@ -1,6 +1,6 @@
 using MediatR;
 using LYBT.Module.Auth.Interfaces;
-using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Auth;
 using Microsoft.Extensions.Logging;
 

@@ -1,6 +1,6 @@
 using MediatR;
 using LYBT.Module.Herbs.Interfaces;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Herbs.Application.Queries;

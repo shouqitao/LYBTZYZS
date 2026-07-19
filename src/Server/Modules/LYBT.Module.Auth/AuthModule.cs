@@ -33,7 +33,7 @@ namespace LYBT.Module.Auth
             services.AddScoped<Interfaces.ISecurityAuditRepository, Infrastructure.SecurityAuditRepository>();
 
             // 注册核心服务
-            services.AddSingleton<Interfaces.IJwtService, Services.JwtService>();
+            services.AddScoped<Interfaces.IJwtService, Services.JwtService>();
             services.AddScoped<Interfaces.ISecurityAuditService, Services.SecurityAuditService>();
 
             // 注册 MediatR（Application层）

@@ -34,8 +34,14 @@ public class JwtServiceTests : IDisposable
 
         _environment = new TestWebHostEnvironment { EnvironmentName = "Development" };
 
-        var options = Options.Create(_jwtOptions);
-        _sut = new JwtService(options, _environment);
+        _sut = new JwtService(CreateOptionsMonitor(_jwtOptions), _environment);
+    }
+
+    /// <summary>创建 IOptionsMonitor 用于测试</summary>
+    private static IOptionsMonitor<T> CreateOptionsMonitor<T>(T value) where T : class, new()
+    {
+        var options = Options.Create(value);
+        return new TestOptionsMonitor<T>(options);
     }
 
     public void Dispose()
@@ -230,7 +236,7 @@ public class JwtServiceTests : IDisposable
             ClockSkewSeconds = 0
         };
 
-        var shortExpiryService = new JwtService(Options.Create(shortExpiryOptions), _environment);
+        var shortExpiryService = new JwtService(CreateOptionsMonitor(shortExpiryOptions), _environment);
         var token = shortExpiryService.GenerateToken(Guid.NewGuid().ToString(), "testuser", UserRole.Doctor);
 
         // 等待 Token 过期 (1 分钟 + 缓冲)
@@ -256,7 +262,7 @@ public class JwtServiceTests : IDisposable
             ClockSkewSeconds = _jwtOptions.ClockSkewSeconds
         };
 
-        var differentKeyService = new JwtService(Options.Create(differentKeyOptions), _environment);
+        var differentKeyService = new JwtService(CreateOptionsMonitor(differentKeyOptions), _environment);
         var token = differentKeyService.GenerateToken(Guid.NewGuid().ToString(), "testuser", UserRole.Doctor);
 
         // Act
@@ -307,7 +313,7 @@ public class JwtServiceTests : IDisposable
             ClockSkewSeconds = _jwtOptions.ClockSkewSeconds
         };
 
-        var wrongIssuerService = new JwtService(Options.Create(wrongIssuerOptions), _environment);
+        var wrongIssuerService = new JwtService(CreateOptionsMonitor(wrongIssuerOptions), _environment);
         var token = wrongIssuerService.GenerateToken(Guid.NewGuid().ToString(), "testuser", UserRole.Doctor);
 
         // Act
@@ -330,7 +336,7 @@ public class JwtServiceTests : IDisposable
             ClockSkewSeconds = _jwtOptions.ClockSkewSeconds
         };
 
-        var wrongAudienceService = new JwtService(Options.Create(wrongAudienceOptions), _environment);
+        var wrongAudienceService = new JwtService(CreateOptionsMonitor(wrongAudienceOptions), _environment);
         var token = wrongAudienceService.GenerateToken(Guid.NewGuid().ToString(), "testuser", UserRole.Doctor);
 
         // Act
@@ -358,7 +364,7 @@ public class JwtServiceTests : IDisposable
         };
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new JwtService(Options.Create(shortKeyOptions), _environment));
+        Assert.Throws<ArgumentException>(() => new JwtService(CreateOptionsMonitor(shortKeyOptions), _environment));
     }
 
     [Fact]
@@ -375,7 +381,7 @@ public class JwtServiceTests : IDisposable
         };
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => new JwtService(Options.Create(emptyKeyOptions), _environment));
+        Assert.Throws<InvalidOperationException>(() => new JwtService(CreateOptionsMonitor(emptyKeyOptions), _environment));
     }
 
     [Fact]
@@ -394,7 +400,7 @@ public class JwtServiceTests : IDisposable
         };
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => new JwtService(Options.Create(defaultKeyOptions), productionEnvironment));
+        Assert.Throws<InvalidOperationException>(() => new JwtService(CreateOptionsMonitor(defaultKeyOptions), productionEnvironment));
     }
 
     #endregion
@@ -464,4 +470,28 @@ internal sealed class TestWebHostEnvironment : IWebHostEnvironment
     public string WebRootPath { get; set; } = string.Empty;
     public Microsoft.Extensions.FileProviders.IFileProvider ContentRootFileProvider { get; set; } = null!;
     public Microsoft.Extensions.FileProviders.IFileProvider WebRootFileProvider { get; set; } = null!;
+}
+
+/// <summary>
+/// Minimal IOptionsMonitor implementation for unit tests
+/// </summary>
+internal sealed class TestOptionsMonitor<T> : IOptionsMonitor<T> where T : class, new()
+{
+    private readonly IOptions<T> _options;
+
+    public TestOptionsMonitor(IOptions<T> options)
+    {
+        _options = options;
+    }
+
+    public T CurrentValue => _options.Value;
+
+    public T Get(string? name) => _options.Value;
+
+    public IDisposable OnChange(Action<T, string> listener) => new NoOpDisposable();
+
+    private sealed class NoOpDisposable : IDisposable
+    {
+        public void Dispose() { }
+    }
 }

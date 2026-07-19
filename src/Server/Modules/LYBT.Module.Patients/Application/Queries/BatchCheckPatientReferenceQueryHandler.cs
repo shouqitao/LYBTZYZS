@@ -1,7 +1,7 @@
 using MediatR;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Primitives.ErrorCodes;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Patients.Interfaces;
 

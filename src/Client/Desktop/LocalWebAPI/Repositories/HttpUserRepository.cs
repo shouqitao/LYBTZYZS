@@ -5,6 +5,7 @@ using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.LocalWebAPI.Repositories;
 
@@ -97,20 +98,20 @@ public class HttpUserRepository : IUserRepository
         return response.Data;
     }
 
-    public async Task<ServiceResult> ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
+    public async Task<Result> ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
     {
         var response = await _apiClient.Users.ChangePasswordAsync(userId, request);
         return response.Success
-            ? new ServiceResult { IsSuccess = true }
-            : new ServiceResult { IsSuccess = false };
+            ? Result.Success()
+            : Result.Failure("修改密码失败");
     }
 
-    public async Task<ServiceResult<ResetPasswordResponseDto>> ResetPasswordAsync(Guid userId, ResetPasswordRequestDto request)
+    public async Task<Result<ResetPasswordResponseDto>> ResetPasswordAsync(Guid userId, ResetPasswordRequestDto request)
     {
         var response = await _apiClient.Users.ResetPasswordAsync(userId, request);
         if (response.Success && response.Data != null)
-            return ServiceResult<ResetPasswordResponseDto>.Success(response.Data);
-        return ServiceResult<ResetPasswordResponseDto>.Failure(response.Message ?? "Reset password failed");
+            return Result<ResetPasswordResponseDto>.Success(response.Data);
+        return Result<ResetPasswordResponseDto>.Failure(response.Message ?? "Reset password failed");
     }
 
     public async Task<UserDetailDto?> ToggleStatusAsync(Guid id)

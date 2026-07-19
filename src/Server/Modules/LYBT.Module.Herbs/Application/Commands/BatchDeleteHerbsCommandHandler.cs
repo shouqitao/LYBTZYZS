@@ -1,7 +1,7 @@
 using MediatR;
 using LYBT.Infrastructure.Caching;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Herbs.Domain;
 using LYBT.Module.Herbs.Interfaces;
 

@@ -1,6 +1,6 @@
 using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Shared.Primitives.ErrorCodes;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using MediatR;
 
 namespace LYBT.WebAPI.Configuration.Commands;

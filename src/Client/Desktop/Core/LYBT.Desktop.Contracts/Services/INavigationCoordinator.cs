@@ -1,4 +1,4 @@
-using LYBT.Desktop.Shared.UI;
+using LYBT.Desktop.Contracts.UI;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Contracts.Services;

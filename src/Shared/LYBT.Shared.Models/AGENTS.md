@@ -7,13 +7,13 @@
 ```
 LYBT.Shared.Models/
 ├── Contracts/
-│   ├── Common/          # 16 common DTOs
+│   ├── Common/          # 18 common DTOs (incl. Result<T>, ApiResponse, PagedResult)
 │   ├── MedicalCase/     # 13 medical case DTOs
 │   ├── Formula/         # 13 formula DTOs
 │   ├── Auth/            # 11 auth DTOs
 │   ├── Patients/        # 11 patient DTOs
 │   ├── Sync/            # 10 sync DTOs
-│   └── Herbs/           # Herb DTOs
+│   └── Herbs/           # Herb DTOs + IHerbItem, IHerbItemEditable, HerbValidatorBase
 ├── Enums/               # 13 shared enumerations
 └── Extensions/          # DtoConversionExtensions, EnumExtensions
 ```
@@ -22,9 +22,10 @@ LYBT.Shared.Models/
 
 | Task | Location | Notes |
 |------|----------|-------|
-| Common DTOs | `Contracts/Common/` | Result, ApiResponse, ValidationResult |
+| Common DTOs | `Contracts/Common/` | Result<T>, ApiResponse, ValidationResult, PagedResult |
 | MedicalCase DTOs | `Contracts/MedicalCase/` | Consultation, Prescription, MedicalCase DTOs |
 | Auth DTOs | `Contracts/Auth/` | Login, Token, User DTOs |
+| Herb interfaces | `Contracts/Herbs/` | IHerbItem, IHerbItemEditable, HerbValidatorBase |
 | Enums | `Enums/` | Shared enumeration types |
 | DTO conversions | `Extensions/DtoConversionExtensions.cs` | Entity ↔ DTO mapping helpers |
 

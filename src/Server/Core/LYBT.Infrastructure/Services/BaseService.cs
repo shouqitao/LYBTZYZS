@@ -2,7 +2,7 @@ using System.Security.Claims;
 using FluentValidation;
 using LYBT.Infrastructure.Constants;
 using LYBT.Shared.ExceptionHandling.Exceptions;
-using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;

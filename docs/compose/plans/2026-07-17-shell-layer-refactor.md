@@ -446,7 +446,7 @@ containerRegistry.RegisterSingleton<IRegionMonitor, RegionMonitor>();
 需要在文件顶部添加 using：
 
 ```csharp
-using LYBT.Desktop.Navigation;
+using LYBT.Desktop.Infrastructure.Navigation;
 ```
 
 - [ ] **Step 2: 编译验证**

@@ -2,7 +2,7 @@ using MediatR;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Primitives.ErrorCodes;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Herbs.Domain;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Application.Mappers;

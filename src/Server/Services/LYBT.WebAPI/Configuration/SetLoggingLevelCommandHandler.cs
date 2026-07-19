@@ -1,6 +1,6 @@
 using LYBT.Shared.Logging.Management;
 using LYBT.Shared.Primitives.ErrorCodes;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using MediatR;
 using Serilog.Events;
 

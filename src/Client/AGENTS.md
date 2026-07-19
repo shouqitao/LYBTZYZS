@@ -24,7 +24,7 @@ Container for the WPF desktop client application. Currently contains only the De
 ## Dependencies
 
 ### Internal
-- [Shared/](../Shared/AGENTS.md) — `LYBT.Shared.Models`, `LYBT.Shared.Validators`, `LYBT.Shared.Components`
+- [Shared/](../Shared/AGENTS.md) — `LYBT.Shared.Models` (incl. IHerbItem), `LYBT.Shared.Validators`
 
 ### External
 - .NET 8 SDK (Windows)

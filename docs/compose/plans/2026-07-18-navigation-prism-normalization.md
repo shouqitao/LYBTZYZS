@@ -225,7 +225,7 @@ void PushForwardStack(string viewName);
 修改后的接口：
 
 ```csharp
-using LYBT.Desktop.Shared.UI;
+using LYBT.Desktop.Contracts.UI;
 
 namespace LYBT.Desktop.Navigation;
 
@@ -262,7 +262,7 @@ public interface INavigationHistoryService
 修改后的实现：
 
 ```csharp
-using LYBT.Desktop.Shared.UI;
+using LYBT.Desktop.Contracts.UI;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Navigation;

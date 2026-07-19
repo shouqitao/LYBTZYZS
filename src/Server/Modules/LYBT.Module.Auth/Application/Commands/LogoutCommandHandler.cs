@@ -6,7 +6,7 @@ using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Models;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Primitives.ErrorCodes;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Auth.Application.Commands;

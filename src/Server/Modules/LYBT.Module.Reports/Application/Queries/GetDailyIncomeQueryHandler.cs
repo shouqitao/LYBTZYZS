@@ -1,6 +1,6 @@
 using LYBT.Module.Reports.Interfaces;
 using LYBT.Shared.Models.Contracts.Reports;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using MediatR;
 
 namespace LYBT.Module.Reports.Application.Queries;

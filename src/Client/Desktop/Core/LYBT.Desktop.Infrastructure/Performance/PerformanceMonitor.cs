@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using LYBT.Desktop.Contracts.Performance;
-using LYBT.Desktop.Shared.Models;
+using LYBT.Desktop.Contracts.Models;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Performance

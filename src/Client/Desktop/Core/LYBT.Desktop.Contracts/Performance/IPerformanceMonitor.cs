@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using LYBT.Desktop.Shared.Models;
+using LYBT.Desktop.Contracts.Models;
 
 namespace LYBT.Desktop.Contracts.Performance
 {

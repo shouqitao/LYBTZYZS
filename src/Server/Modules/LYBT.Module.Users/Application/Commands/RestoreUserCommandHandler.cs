@@ -2,7 +2,7 @@ using MediatR;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Primitives.ErrorCodes;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Users.Application.Mappers;
 using LYBT.Module.Users.Interfaces;
 using Microsoft.EntityFrameworkCore;

@@ -1,6 +1,7 @@
 using System.Net.Sockets;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Shared.ExceptionHandling.Handlers;
@@ -185,10 +186,10 @@ public class DesktopExceptionHandler : IDesktopExceptionHandler
         };
     }
 
-    #region ServiceResult支持（从IExceptionHandler合并）
+    #region Result支持（从IExceptionHandler合并）
 
     /// <inheritdoc/>
-    public ServiceResult<T> HandleException<T>(Exception exception, string methodName, string? context = null)
+    public Result<T> HandleException<T>(Exception exception, string methodName, string? context = null)
     {
         LogExceptionInternal(exception, methodName, context);
         var userMessage = GetUserFriendlyMessage(exception);
@@ -196,11 +197,11 @@ public class DesktopExceptionHandler : IDesktopExceptionHandler
         if (!string.IsNullOrWhiteSpace(context))
             userMessage = $"{context}: {userMessage}";
 
-        return ServiceResult<T>.Failure(userMessage);
+        return Result<T>.Failure(userMessage);
     }
 
     /// <inheritdoc/>
-    public ServiceResult HandleExceptionWithResult(Exception exception, string methodName, string? context = null)
+    public Result HandleExceptionWithResult(Exception exception, string methodName, string? context = null)
     {
         LogExceptionInternal(exception, methodName, context);
         var userMessage = GetUserFriendlyMessage(exception);
@@ -208,11 +209,11 @@ public class DesktopExceptionHandler : IDesktopExceptionHandler
         if (!string.IsNullOrWhiteSpace(context))
             userMessage = $"{context}: {userMessage}";
 
-        return ServiceResult.Failure(userMessage);
+        return Result.Failure(userMessage);
     }
 
     /// <inheritdoc/>
-    public async Task<ServiceResult<T>> SafeExecuteAsync<T>(Func<Task<ServiceResult<T>>> operation, string methodName, string? context = null)
+    public async Task<Result<T>> SafeExecuteAsync<T>(Func<Task<Result<T>>> operation, string methodName, string? context = null)
     {
         try
         {
@@ -225,7 +226,7 @@ public class DesktopExceptionHandler : IDesktopExceptionHandler
     }
 
     /// <inheritdoc/>
-    public async Task<ServiceResult> SafeExecuteAsync(Func<Task<ServiceResult>> operation, string methodName, string? context = null)
+    public async Task<Result> SafeExecuteAsync(Func<Task<Result>> operation, string methodName, string? context = null)
     {
         try
         {

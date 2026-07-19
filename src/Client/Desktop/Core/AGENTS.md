@@ -9,11 +9,10 @@ Core infrastructure libraries for the WPF desktop client. Provides interface con
 ## Subdirectories
 | Directory | Purpose |
 |-----------|---------|
-| LYBT.Desktop.Contracts/ | Interface definitions + shared DTOs (CommandResult, BreadcrumbItem via Shared) |
+| LYBT.Desktop.Contracts/ | Interface definitions + shared DTOs (CommandResult, BreadcrumbItem, AuthState, CacheEvents) |
 | LYBT.Desktop.Foundation/ | HTTP clients, security/auth, configuration, ExcelHelper |
-| LYBT.Desktop.Infrastructure/ | WPF services — ViewModel base classes, Dialog, Navigation, Behaviors, Services |
+| LYBT.Desktop.Infrastructure/ | WPF services — ViewModel base classes, Dialog, Navigation (NavigationCoordinator, RegionMonitor), Behaviors, Services |
 | LYBT.Desktop.Controls/ | WPF presentation — custom controls, themes, converters, helpers |
-| LYBT.Desktop.Shared/ | Non-interface shared types — CommandResult, BreadcrumbItem |
 | LYBT.Desktop.LocalData/ | SQL Server LocalDB local-mode — `LocalDbContext`, local repositories |
 | LYBT.Desktop.Printing/ | Print service — QuestPDF-based document generation |
 | LYBT.Desktop.CardReader/ | Hardware integration — ID card reader device support |
@@ -22,15 +21,14 @@ Core infrastructure libraries for the WPF desktop client. Provides interface con
 
 ### Working In This Directory
 - Dependency order: `Contracts <- Foundation <- Infrastructure <- Controls` (unidirectional).
-- `Shared` has no dependencies (pure DTOs/records).
-- `Contracts` defines interfaces + references Shared for shared types.
+- `Contracts` defines interfaces + shared types (CommandResult, AuthState, BreadcrumbItem, CacheEvents).
 - `Foundation` implements HTTP, auth, config; depends on `Contracts`.
 - `Infrastructure` provides ViewModel base classes, navigation, services; depends on `Foundation` + `Controls`.
-- `Controls` provides WPF presentation assets; depends on `Contracts` + `Shared` + `Foundation` (no Infrastructure dependency).
+- `Controls` provides WPF presentation assets; depends on `Contracts` + `Foundation` (no Infrastructure dependency).
 - `LocalData` provides the SQL Server LocalDB alternative to the remote HTTP API path.
 - When adding a new interface, place it in `Contracts`; implement it in `Foundation` or `Infrastructure`.
 - WPF controls and converters belong in `Controls`; ViewModel base classes belong in `Infrastructure`.
-- Shared DTOs (used across modules) belong in `Shared`.
+- Shared DTOs (used across modules) belong in `Contracts`.
 
 ### Common Patterns
 - **Repository interfaces**: `I{Entity}Repository<T>` in Contracts, implemented in Foundation (HTTP) and LocalData (SQL Server LocalDB)

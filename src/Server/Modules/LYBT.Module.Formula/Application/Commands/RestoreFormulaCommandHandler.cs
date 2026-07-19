@@ -1,7 +1,7 @@
 using MediatR;
 using LYBT.Shared.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Module.Formulas.Application.Mappers;
 

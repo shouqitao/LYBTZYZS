@@ -1,6 +1,6 @@
 using MediatR;
 using LYBT.Module.Formulas.Interfaces;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Formulas.Application.Queries;

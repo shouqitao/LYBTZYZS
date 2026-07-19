@@ -2,7 +2,7 @@ using MediatR;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Primitives.ErrorCodes;
-using LYBT.SharedKernel.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCases.Application.Commands;

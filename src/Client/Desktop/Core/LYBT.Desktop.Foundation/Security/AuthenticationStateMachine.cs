@@ -1,5 +1,5 @@
 using LYBT.Desktop.Contracts.Security;
-using LYBT.Desktop.Shared.Models;
+using LYBT.Desktop.Contracts.Models;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 

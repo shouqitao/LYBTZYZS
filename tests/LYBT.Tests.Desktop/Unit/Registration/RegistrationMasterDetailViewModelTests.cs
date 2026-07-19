@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using FluentAssertions;
 using LYBT.Desktop.Contracts.ApiClient;
-using LYBT.Desktop.Shared.Results;
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Services;

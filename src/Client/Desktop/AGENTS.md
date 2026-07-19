@@ -46,7 +46,7 @@ WPF/Prism.DryIoc desktop application for the LYBTZYZS TCM clinic management syst
 ## Dependencies
 
 ### Internal
-- [Shared/](../../../Shared/AGENTS.md) — `LYBT.Shared.Models`, `LYBT.Shared.Validators`, `LYBT.Shared.Components`, `LYBT.Shared.Configuration`
+- [Shared/](../../../Shared/AGENTS.md) — `LYBT.Shared.Models` (includes IHerbItem, HerbValidatorBase), `LYBT.Shared.Validators`, `LYBT.Shared.Configuration`
 
 ### External
 - Prism.DryIoc

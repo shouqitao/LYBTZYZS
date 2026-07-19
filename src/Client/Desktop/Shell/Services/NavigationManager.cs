@@ -7,7 +7,7 @@ using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.Infrastructure.Constants;
-using LYBT.Desktop.Navigation.NavigationArgs;
+using LYBT.Desktop.Infrastructure.Navigation.NavigationArgs;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Shell.Services;
 /// 导航管理器 - 负责侧边栏导航项构建和管理
 /// 从 MainWindowViewModel 提取，减少主 VM 行数
 /// </summary>
-public partial class NavigationManager : ObservableObject
+public partial class NavigationManager : ObservableObject, INavigationManager
 {
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly ILogger<NavigationManager> _logger;

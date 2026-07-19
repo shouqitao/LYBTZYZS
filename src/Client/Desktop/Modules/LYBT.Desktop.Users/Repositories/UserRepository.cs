@@ -5,6 +5,7 @@ using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Users.Repositories;
@@ -240,7 +241,7 @@ public sealed class UserRepository : IUserRepository
         }
     }
 
-    public async Task<ServiceResult> ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
+    public async Task<Result> ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
     {
         try
         {
@@ -250,21 +251,21 @@ public sealed class UserRepository : IUserRepository
             if (response.Success)
             {
                 _logger.LogInformation("[REPO] User.ChangePassword completed - UserId={UserId}", userId);
-                return ServiceResult.Success();
+                return Result.Success();
             }
 
             var errorMsg = response.Message ?? "修改密码失败";
             _logger.LogWarning("[REPO] User.ChangePassword failed - {Message}", errorMsg);
-            return ServiceResult.Failure(errorMsg);
+            return Result.Failure(errorMsg);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "[REPO] User.ChangePassword failed - UserId={UserId}", userId);
-            return ServiceResult.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("修改密码", ex));
+            return Result.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("修改密码", ex));
         }
     }
 
-    public async Task<ServiceResult<ResetPasswordResponseDto>> ResetPasswordAsync(
+    public async Task<Result<ResetPasswordResponseDto>> ResetPasswordAsync(
         Guid userId,
         ResetPasswordRequestDto request)
     {
@@ -276,18 +277,18 @@ public sealed class UserRepository : IUserRepository
             if (apiResponse.Success && apiResponse.Data != null)
             {
                 _logger.LogInformation("[REPO] User.ResetPassword completed - UserId={UserId}", userId);
-                return ServiceResult<ResetPasswordResponseDto>.Success(apiResponse.Data);
+                return Result<ResetPasswordResponseDto>.Success(apiResponse.Data);
             }
 
             _logger.LogWarning("[REPO] User.ResetPassword failed - UserId={UserId}, Message={Message}",
                 userId, apiResponse.Message);
-            return ServiceResult<ResetPasswordResponseDto>.Failure(
+            return Result<ResetPasswordResponseDto>.Failure(
                 apiResponse.Message ?? "重置密码失败");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "[REPO] User.ResetPassword failed - UserId={UserId}", userId);
-            return ServiceResult<ResetPasswordResponseDto>.Failure(
+            return Result<ResetPasswordResponseDto>.Failure(
                 ClientErrorMessageMapper.GetSafeOperationFailureMessage("重置密码", ex));
         }
     }

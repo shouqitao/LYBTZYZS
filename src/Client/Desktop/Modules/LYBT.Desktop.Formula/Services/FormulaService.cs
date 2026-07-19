@@ -1,4 +1,4 @@
-using LYBT.Desktop.Shared.Results;
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Shared.ExceptionHandling.Mappers;

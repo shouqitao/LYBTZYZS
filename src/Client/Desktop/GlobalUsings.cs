@@ -27,5 +27,6 @@ global using Prism.Ioc;
 global using Prism.Modularity;
 
 // 项目内部共享
-global using LYBT.Shared.Models.Common;
+global using LYBT.Shared.Models.Contracts.Common;
 global using LYBT.Shared.Models.Contracts;
+global using LYBT.Shared.Models.Contracts.Common;

@@ -7,7 +7,7 @@ using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
-using LYBT.Desktop.Shared.Events;
+using LYBT.Desktop.Contracts.Events;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
