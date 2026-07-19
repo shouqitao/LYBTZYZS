@@ -111,6 +111,16 @@ namespace LYBT.Desktop.Printing.Models
         // ===== D3: 草稿水印 =====
         /// <summary>是否为草稿（未完成医案），打印/导出时显示"草稿"水印</summary>
         public bool IsDraft { get; set; }
+
+        /// <summary>
+        /// 克隆模型并替换药材列表（用于多页分页打印）
+        /// </summary>
+        public PrescriptionPrintModel CloneWithItems(List<PrescriptionItemPrintModel> items)
+        {
+            var clone = (PrescriptionPrintModel)MemberwiseClone();
+            clone.Items = items;
+            return clone;
+        }
     }
 
     /// <summary>

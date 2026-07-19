@@ -20,6 +20,7 @@ namespace LYBT.Desktop.Printing.Services
     public class PrescriptionPrintService : IPrintService<PrescriptionPrintModel>
     {
         private readonly ILogger<PrescriptionPrintService> _logger;
+        private readonly LocalPrintServer _printServer = new();
         private string? _defaultPrinterName;
 
         // 纸张尺寸定义（像素，96 DPI）
@@ -208,8 +209,7 @@ namespace LYBT.Desktop.Printing.Services
         {
             try
             {
-                var printServer = new LocalPrintServer();
-                var printQueues = printServer.GetPrintQueues();
+                var printQueues = _printServer.GetPrintQueues();
 
                 return printQueues
                     .Where(pq => pq != null && !string.IsNullOrEmpty(pq.Name))
@@ -344,60 +344,13 @@ namespace LYBT.Desktop.Printing.Services
 
         /// <summary>
         /// 克隆打印模型但替换药材列表
-        /// T4-S5-09
+        /// T4-S5-09: 委托给模型的 CloneWithItems 方法
         /// </summary>
         private static PrescriptionPrintModel CloneModelWithItems(
             PrescriptionPrintModel source,
             List<PrescriptionItemPrintModel> items)
         {
-            return new PrescriptionPrintModel
-            {
-                // 诊所信息
-                ClinicName = source.ClinicName,
-                ClinicAddress = source.ClinicAddress,
-                ClinicPhone = source.ClinicPhone,
-                Department = source.Department,
-
-                // 患者信息
-                PatientName = source.PatientName,
-                Gender = source.Gender,
-                Age = source.Age,
-                ConsultationDate = source.ConsultationDate,
-                OutpatientNumber = source.OutpatientNumber,
-                PatientPhone = source.PatientPhone,
-                PatientAddress = source.PatientAddress,
-
-                // 诊断信息
-                TcmDiagnosis = source.TcmDiagnosis,
-                Symptoms = source.Symptoms,
-                PresentIllness = source.PresentIllness,
-                InspectionDiagnosis = source.InspectionDiagnosis,
-                AuscultationDiagnosis = source.AuscultationDiagnosis,
-                TongueDiagnosis = source.TongueDiagnosis,
-                PulseDiagnosis = source.PulseDiagnosis,
-
-                // 处方内容（替换药材列表）
-                Items = items,
-                DosageCount = source.DosageCount,
-                Usage = source.Usage,
-                Advice = source.Advice,
-                FormulaSource = source.FormulaSource,
-
-                // 费用信息
-                ConsultationFee = source.ConsultationFee,
-                MedicineFee = source.MedicineFee,
-                TreatmentFee = source.TreatmentFee,
-                SingleDosePrice = source.SingleDosePrice,
-                Discount = source.Discount,
-                TotalPrice = source.TotalPrice,
-
-                // 签名
-                DoctorName = source.DoctorName,
-                PrescriptionDate = source.PrescriptionDate,
-                Reviewer = source.Reviewer,
-                Dispenser = source.Dispenser,
-                PrescriptionNumber = source.PrescriptionNumber,
-            };
+            return source.CloneWithItems(items);
         }
 
         /// <summary>
@@ -405,30 +358,11 @@ namespace LYBT.Desktop.Printing.Services
         /// </summary>
         private FixedPage CreateFixedPage(PrescriptionPrintModel model, Size pageSize)
         {
-            UserControl template = IsA4(pageSize)
-                ? new PrescriptionPrintA4Template { DataContext = model, Width = pageSize.Width, Height = pageSize.Height }
+            var template = IsA4(pageSize)
+                ? (UserControl)new PrescriptionPrintA4Template { DataContext = model, Width = pageSize.Width, Height = pageSize.Height }
                 : new PrescriptionPrintTemplate { DataContext = model, Width = pageSize.Width, Height = pageSize.Height };
 
-            template.Measure(pageSize);
-            template.Arrange(new Rect(pageSize));
-            template.UpdateLayout();
-
-            var fixedPage = new FixedPage
-            {
-                Width = pageSize.Width,
-                Height = pageSize.Height,
-                Background = System.Windows.Media.Brushes.White
-            };
-
-            fixedPage.Children.Add(template);
-            FixedPage.SetLeft(template, 0);
-            FixedPage.SetTop(template, 0);
-
-            fixedPage.Measure(pageSize);
-            fixedPage.Arrange(new Rect(pageSize));
-            fixedPage.UpdateLayout();
-
-            return fixedPage;
+            return CreatePageFromTemplate(template, pageSize);
         }
 
         /// <summary>
@@ -461,6 +395,14 @@ namespace LYBT.Desktop.Printing.Services
                 template = a5Template;
             }
 
+            return CreatePageFromTemplate(template, pageSize);
+        }
+
+        /// <summary>
+        /// 从 XAML 模板创建 FixedPage（共享布局逻辑）
+        /// </summary>
+        private static FixedPage CreatePageFromTemplate(UserControl template, Size pageSize)
+        {
             template.Measure(pageSize);
             template.Arrange(new Rect(pageSize));
             template.UpdateLayout();
@@ -553,8 +495,7 @@ namespace LYBT.Desktop.Printing.Services
             {
                 if (!string.IsNullOrEmpty(printerName))
                 {
-                    var printServer = new LocalPrintServer();
-                    return printServer.GetPrintQueue(printerName);
+                    return _printServer.GetPrintQueue(printerName);
                 }
 
                 return LocalPrintServer.GetDefaultPrintQueue();
@@ -737,9 +678,8 @@ namespace LYBT.Desktop.Printing.Services
         {
             try
             {
-                var printServer = new LocalPrintServer();
                 var defaultPrinter = LocalPrintServer.GetDefaultPrintQueue();
-                var printQueues = printServer.GetPrintQueues();
+                var printQueues = _printServer.GetPrintQueues();
 
                 foreach (var pq in printQueues)
                 {
