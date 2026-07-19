@@ -15,7 +15,6 @@ using System.Net.Sockets;
 using System.Text.Json;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Common;
 using Refit;
 
 namespace LYBT.Desktop.Foundation.Http;

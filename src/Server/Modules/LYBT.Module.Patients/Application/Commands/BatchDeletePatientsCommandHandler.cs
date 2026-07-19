@@ -1,6 +1,5 @@
 using MediatR;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Patients.Domain;
 using LYBT.Module.Patients.Interfaces;

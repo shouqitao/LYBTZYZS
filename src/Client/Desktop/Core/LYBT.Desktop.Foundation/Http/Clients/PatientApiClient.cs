@@ -9,7 +9,6 @@ using System.Net.Http;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 
 namespace LYBT.Desktop.Foundation.Http.Clients;

@@ -1,6 +1,5 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Models.Contracts.Common;
 using MediatR;
 
 namespace LYBT.Module.MedicalCases.Application.Queries;

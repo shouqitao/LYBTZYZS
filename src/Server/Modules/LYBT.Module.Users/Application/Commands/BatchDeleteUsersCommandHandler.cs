@@ -1,7 +1,6 @@
 using MediatR;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Users.Interfaces;
 
 namespace LYBT.Module.Users.Application.Commands;

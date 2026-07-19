@@ -7,7 +7,6 @@ using LYBT.Desktop.Foundation.Security;
 using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Prism.Events;

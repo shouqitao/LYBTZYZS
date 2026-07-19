@@ -67,7 +67,7 @@ public sealed class PatientRepository
         {
             var response = await _apiClient.Patients.CreatePatientAsync(patient);
             if (!response.Success || response.Data == null)
-                throw new InvalidOperationException(response.Message ?? "Create patient failed");
+                throw new InvalidOperationException(response.Message ?? "创建患者失败");
             return response.Data;
         }, nameof(CreateAsync), LogLevel.Information);
     }
@@ -82,7 +82,7 @@ public sealed class PatientRepository
         {
             var response = await _apiClient.Patients.UpdatePatientAsync(patient.Id.Value, patient);
             if (!response.Success || response.Data == null)
-                throw new InvalidOperationException(response.Message ?? "Update patient failed");
+                throw new InvalidOperationException(response.Message ?? "更新患者失败");
             return response.Data;
         }, nameof(UpdateAsync), LogLevel.Information);
     }
@@ -208,7 +208,7 @@ public sealed class PatientRepository
                     TotalCount = ids.Count,
                     FailureCount = ids.Count,
                     IsSuccess = false,
-                    Message = response.Message ?? "Batch delete failed"
+                    Message = response.Message ?? "批量删除患者失败"
                 };
             }
             return response.Data;

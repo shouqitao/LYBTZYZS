@@ -1,7 +1,6 @@
 using System.Net.Sockets;
 using LYBT.Shared.ExceptionHandling.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Shared.ExceptionHandling.Handlers;
