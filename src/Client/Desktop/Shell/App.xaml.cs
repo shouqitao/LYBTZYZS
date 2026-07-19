@@ -1,6 +1,5 @@
 using System.Windows;
 using LYBT.Desktop.Admin;
-using LYBT.Desktop.Clinical.Receptionist;
 using LYBT.Desktop.Auth;
 using LYBT.Desktop.Infrastructure.CardReader;
 using LYBT.Desktop.Clinical;
@@ -141,7 +140,6 @@ public partial class App : PrismApplication
         moduleCatalog.AddModule<UsersModule>(InitializationMode.OnDemand);
         moduleCatalog.AddModule<ClinicalModule>(InitializationMode.WhenAvailable);
         moduleCatalog.AddModule<AdminModule>(InitializationMode.WhenAvailable);
-        moduleCatalog.AddModule<ReceptionistModule>(InitializationMode.WhenAvailable);
         moduleCatalog.AddModule<SysadminModule>(InitializationMode.WhenAvailable);
 
         // 业务模块 - 按需加载（首次导航到该模块视图时由 NavigationCoordinator 触发）

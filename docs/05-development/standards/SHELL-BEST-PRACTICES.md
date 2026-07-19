@@ -14,7 +14,7 @@
 ## 2. 模块加载规范
 
 ### 2.1 模块分类
-- **核心模块**：`WhenAvailable`（AuthenticationModule, ClinicalModule, AdminModule, ReceptionistModule, SysadminModule）
+- **核心模块**：`WhenAvailable`（AuthenticationModule, ClinicalModule, AdminModule, SysadminModule）
 - **业务模块**：`OnDemand`（PatientsModule, HerbsModule, FormulaModule, MedicalCaseModule, RegistrationModule）
 
 ### 2.2 模块依赖
