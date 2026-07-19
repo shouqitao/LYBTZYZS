@@ -55,6 +55,7 @@ Central documentation hub for the LYBTZYZS TCM clinic management system. Hosts t
 | Remote WebAPI port | 5000 |
 | Desktop test DB | **SQL Server LocalDB** (NOT SQLite) |
 | ApiResponse fields | `success/message/data/errors/timestamp/requestId` (no `code`) |
+| Solution project count | **34** (after Phase 2 consolidation: 40→34, merged 9 small projects) |
 
 ### Documentation Authority Principle
 
