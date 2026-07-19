@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
+using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
@@ -26,7 +26,7 @@ public partial class ClinicalWorkspaceViewModel : NavigableViewModelBase
 
     private readonly IPatientService _patientService;
     private readonly INavigationCoordinator _navigationCoordinator;
-    private readonly IMedicalCaseRepository _medicalCaseRepository;
+    private readonly IMedicalCaseService _medicalCaseService;
 
     #endregion 依赖服务
 
@@ -92,12 +92,12 @@ public partial class ClinicalWorkspaceViewModel : NavigableViewModelBase
         IViewModelServices services,
         IPatientService patientService,
         INavigationCoordinator navigationCoordinator,
-        IMedicalCaseRepository medicalCaseRepository)
+        IMedicalCaseService medicalCaseService)
         : base(services)
     {
         _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
-        _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
+        _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
 
         PageTitle = "看诊工作台";
 
@@ -242,7 +242,7 @@ public partial class ClinicalWorkspaceViewModel : NavigableViewModelBase
 
     /// <summary>
     /// 加载选中患者的最近 5 条就诊记录
-    /// 通过 IMedicalCaseRepository.QueryAsync + MedicalCaseQueryDto.PatientId 过滤
+    /// 通过 IMedicalCaseService.QueryAsync + MedicalCaseQueryDto.PatientId 过滤
     /// </summary>
     private async Task LoadPatientHistoryAsync()
     {
@@ -269,7 +269,7 @@ public partial class ClinicalWorkspaceViewModel : NavigableViewModelBase
                 PageIndex = 1,
                 PageSize = 5,
             };
-            var paged = await _medicalCaseRepository.QueryAsync(query);
+            var paged = await _medicalCaseService.QueryAsync(query);
 
             var items = paged?.Items ?? Enumerable.Empty<MedicalCaseListDto>();
             var history = items
