@@ -4,7 +4,6 @@ using LYBT.Module.Herbs.Application.Commands;
 using LYBT.Module.Herbs.Application.Validators;
 using LYBT.Module.Herbs.Infrastructure;
 using LYBT.Module.Herbs.Interfaces;
-using LYBT.Module.Herbs.Repositories;
 using LYBT.Module.Herbs.Services;
 using LYBT.Shared.Models.Validators.Herbs;
 using LYBT.Shared.Configuration.Options.Server;
@@ -32,12 +31,9 @@ namespace LYBT.Module.Herbs
                 options.UseSqlServer(dbOptions.ConnectionString);
             });
 
-            // 注册仓储（Legacy）
-            services.AddScoped<IHerbRepositoryLegacy, LYBT.Module.Herbs.Repositories.HerbRepository>();
-            // 注册仓储（New - 给CQRS层使用）
-            services.AddScoped<IHerbRepository, LYBT.Module.Herbs.Infrastructure.HerbRepository>();
+            // 注册仓储
+            services.AddScoped<IHerbRepository, HerbRepository>();
             services.AddScoped<IHerbReferenceRepository, HerbReferenceRepository>();
-            
 
             // 注册跨模块服务（替代 CrossModuleService 中的药材查询逻辑）
             services.AddScoped<IHerbCrossModuleService, HerbCrossModuleService>();

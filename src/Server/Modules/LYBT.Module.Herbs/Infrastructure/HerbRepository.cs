@@ -96,6 +96,51 @@ public class HerbRepository : IHerbRepository
         _context.Herbs.Update(herb);
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public async Task<Herb?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
+    {
+        return await _context.Herbs
+            .FirstOrDefaultAsync(h => h.Name == name && !h.IsDeleted, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<Herb?> GetByNameOrPinyinAsync(string searchTerm, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+            return null;
+
+        var term = searchTerm.ToLower();
+
+        // 优先精确匹配名称
+        var byName = await _context.Herbs
+            .FirstOrDefaultAsync(h => h.Name.ToLower() == term && !h.IsDeleted, cancellationToken);
+
+        if (byName != null)
+            return byName;
+
+        // 然后匹配拼音码
+        return await _context.Herbs
+            .FirstOrDefaultAsync(h => h.PinYinCode != null && h.PinYinCode.ToLower() == term && !h.IsDeleted, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<List<Herb>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Herbs
+            .Where(h => !h.IsDeleted)
+            .OrderBy(h => h.PinYinCode ?? h.Name)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<List<Herb>> GetByCategoryAsync(string category, CancellationToken cancellationToken = default)
+    {
+        return await _context.Herbs
+            .Where(h => !h.IsDeleted && h.Category != null && h.Category.Contains(category))
+            .OrderBy(h => h.PinYinCode ?? h.Name)
+            .ToListAsync(cancellationToken);
+    }
 }
 
 

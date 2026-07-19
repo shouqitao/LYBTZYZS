@@ -10,11 +10,11 @@ namespace LYBT.Module.Herbs.Services;
 /// </summary>
 public class HerbImportExportService : IHerbImportExportService
 {
-    private readonly IHerbRepositoryLegacy _repository;
+    private readonly IHerbRepository _repository;
     private readonly ILogger<HerbImportExportService> _logger;
 
     public HerbImportExportService(
-        IHerbRepositoryLegacy repository,
+        IHerbRepository repository,
         ILogger<HerbImportExportService> logger)
     {
         _repository = repository;
