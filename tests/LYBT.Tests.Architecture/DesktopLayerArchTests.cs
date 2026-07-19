@@ -495,7 +495,7 @@ public class DesktopLayerArchTests
     [Fact]
     public void P07_LocalData_Must_Not_Depend_On_SQLite()
     {
-        var localDataAssembly = Assembly.Load("LYBT.Desktop.LocalData");
+        var localDataAssembly = Assembly.Load("LYBT.Desktop.Infrastructure");
 
         // LocalData 不应引用 SQLite 相关程序集
         var sqliteReferences = localDataAssembly.GetReferencedAssemblies()
@@ -515,7 +515,7 @@ public class DesktopLayerArchTests
     [Fact]
     public void P08_LocalDbContext_Must_Not_Have_SQLite_Adapters()
     {
-        var localDataAssembly = Assembly.Load("LYBT.Desktop.LocalData");
+        var localDataAssembly = Assembly.Load("LYBT.Desktop.Infrastructure");
         var localDbContextType = localDataAssembly.GetTypes()
             .FirstOrDefault(t => t.Name == "LocalDbContext");
 

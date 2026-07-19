@@ -2,7 +2,7 @@ using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
-using LYBT.Desktop.LocalData.Context;
+using LYBT.Desktop.Infrastructure.LocalData.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

@@ -74,8 +74,7 @@
     <!-- NavigationCoordinator 已迁移到 Infrastructure -->
     <!-- OpenSpec: create-printing-module - 独立打印模块 -->
     <ProjectReference Include="..\Core\LYBT.Desktop.Printing\LYBT.Desktop.Printing.csproj" />
-    <!-- OpenSpec: implement-local-mode - 本地数据存储层 -->
-    <ProjectReference Include="..\Core\LYBT.Desktop.LocalData\LYBT.Desktop.LocalData.csproj" />
+    <!-- LocalData merged into Infrastructure -->
     <!-- Local WebAPI 项目引用 -->
     <ProjectReference Include="..\LocalWebAPI\LYBT.LocalWebAPI.csproj" />
   </ItemGroup>

@@ -11,7 +11,7 @@ using LYBT.Entities.Registrations;
 using LYBT.Entities.Users;
 using Microsoft.EntityFrameworkCore;
 
-namespace LYBT.Desktop.LocalData.Context;
+namespace LYBT.Desktop.Infrastructure.LocalData.Context;
 
 /// <summary>
 /// 本地数据库上下文 - SQL Server LocalDB 实现

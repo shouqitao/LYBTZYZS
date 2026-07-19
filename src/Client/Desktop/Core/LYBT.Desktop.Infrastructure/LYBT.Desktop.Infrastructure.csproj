@@ -78,6 +78,19 @@
   <ItemGroup Label="Core_New Dependencies">
   </ItemGroup>
 
+  <!-- LocalData Dependencies (merged from LYBT.Desktop.LocalData) -->
+  <ItemGroup Label="LocalData Dependencies">
+    <ProjectReference Include="..\..\..\..\Server\Core\LYBT.Entities\LYBT.Entities.csproj" />
+    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Validators\LYBT.Shared.Validators.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="BCrypt.Net-Next" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+
   <!-- 原生DLL文件 - CardReader P/Invoke -->
   <ItemGroup Label="Native DLL Files">
     <None Update="CardReader\Native\*.dll">
