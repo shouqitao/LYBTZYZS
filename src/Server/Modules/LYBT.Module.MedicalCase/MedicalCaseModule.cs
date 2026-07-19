@@ -5,7 +5,7 @@ using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.MedicalCases.Mapping;
 using LYBT.Module.MedicalCases.Repositories;
 using LYBT.Module.MedicalCases.Services;
-using LYBT.Shared.Validators.MedicalCase;
+using LYBT.Shared.Models.Validators.MedicalCase;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.MedicalCases

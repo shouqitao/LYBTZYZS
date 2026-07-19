@@ -1,6 +1,6 @@
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Validators.BusinessRules;
+namespace LYBT.Shared.Models.Validators.BusinessRules;
 
 /// <summary>
 /// 医案核心业务规则 (纯函数, 无外部依赖)

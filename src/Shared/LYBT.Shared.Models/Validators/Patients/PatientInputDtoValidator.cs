@@ -2,7 +2,7 @@
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Primitives.Validation;
 
-namespace LYBT.Shared.Validators.Patients
+namespace LYBT.Shared.Models.Validators.Patients
 {
     /// <summary>
     /// 患者输入DTO验证器

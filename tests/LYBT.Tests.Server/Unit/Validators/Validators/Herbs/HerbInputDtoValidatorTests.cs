@@ -2,7 +2,7 @@ using FluentAssertions;
 using FluentValidation.TestHelper;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Primitives.Validation;
-using LYBT.Shared.Validators.Herbs;
+using LYBT.Shared.Models.Validators.Herbs;
 using Xunit;
 
 namespace LYBT.Tests.Server;

@@ -70,8 +70,6 @@
 
   <ItemGroup Label="Shared Libraries">
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
-
-    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Validators\LYBT.Shared.Validators.csproj" />
   </ItemGroup>
 
 

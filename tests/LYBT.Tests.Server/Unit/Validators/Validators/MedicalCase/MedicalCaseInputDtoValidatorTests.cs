@@ -2,7 +2,7 @@ using FluentAssertions;
 using FluentValidation.TestHelper;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Primitives.Validation;
-using LYBT.Shared.Validators.MedicalCase;
+using LYBT.Shared.Models.Validators.MedicalCase;
 using Xunit;
 
 namespace LYBT.Tests.Server;

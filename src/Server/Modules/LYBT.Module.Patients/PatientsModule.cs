@@ -6,7 +6,7 @@ using LYBT.Module.Patients.Application.Validators;
 using LYBT.Module.Patients.Infrastructure;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Services;
-using LYBT.Shared.Validators.Patients;
+using LYBT.Shared.Models.Validators.Patients;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Patients

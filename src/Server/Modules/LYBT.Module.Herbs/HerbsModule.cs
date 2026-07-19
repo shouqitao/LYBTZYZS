@@ -6,7 +6,7 @@ using LYBT.Module.Herbs.Infrastructure;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Repositories;
 using LYBT.Module.Herbs.Services;
-using LYBT.Shared.Validators.Herbs;
+using LYBT.Shared.Models.Validators.Herbs;
 using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

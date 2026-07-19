@@ -1,7 +1,7 @@
 using FluentAssertions;
 using FluentValidation.TestHelper;
 using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Validators.Consultation;
+using LYBT.Shared.Models.Validators.Consultation;
 using Xunit;
 
 namespace LYBT.Tests.Server;

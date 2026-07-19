@@ -2,7 +2,7 @@ using FluentValidation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Primitives.Validation;
 
-namespace LYBT.Shared.Validators.Prescriptions
+namespace LYBT.Shared.Models.Validators.Prescriptions
 {
     /// <summary>
     /// 处方输入DTO验证器 - 统一创建/更新验证

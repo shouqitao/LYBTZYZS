@@ -80,7 +80,6 @@
   <!-- LocalData Dependencies (merged from LYBT.Desktop.LocalData) -->
   <ItemGroup Label="LocalData Dependencies">
     <ProjectReference Include="..\..\..\..\Server\Core\LYBT.Entities\LYBT.Entities.csproj" />
-    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Validators\LYBT.Shared.Validators.csproj" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>

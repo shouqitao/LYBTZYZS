@@ -1,9 +1,9 @@
 using FluentValidation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Primitives.Validation;
-using LYBT.Shared.Validators.Prescriptions;
+using LYBT.Shared.Models.Validators.Prescriptions;
 
-namespace LYBT.Shared.Validators.MedicalCase
+namespace LYBT.Shared.Models.Validators.MedicalCase
 {
     /// <summary>
     /// 医案输入DTO验证器

@@ -3,7 +3,7 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.Validation;
 
-namespace LYBT.Shared.Validators.Users
+namespace LYBT.Shared.Models.Validators.Users
 {
     public class UserInputDtoValidator : AbstractValidator<UserInputDto>
     {

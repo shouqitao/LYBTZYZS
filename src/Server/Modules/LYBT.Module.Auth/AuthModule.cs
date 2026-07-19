@@ -1,7 +1,7 @@
 using FluentValidation;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
-using LYBT.Shared.Validators.Auth;
+using LYBT.Shared.Models.Validators.Auth;
 using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -41,7 +41,7 @@ namespace LYBT.Module.Auth
                 cfg.RegisterServicesFromAssembly(typeof(Application.Commands.LoginCommand).Assembly));
 
             // Epic #1731: 注册Auth模块Validators
-            services.AddValidatorsFromAssemblyContaining<Shared.Validators.Auth.LoginRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<LYBT.Shared.Models.Validators.Auth.LoginRequestValidator>();
             services.AddValidatorsFromAssemblyContaining<Application.Validators.LoginRequestValidator>();
 
             return services;

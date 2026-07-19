@@ -1,6 +1,6 @@
 using LYBT.Entities.MedicalCases;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Validators.BusinessRules;
+using LYBT.Shared.Models.Validators.BusinessRules;
 
 namespace LYBT.Module.MedicalCases.Services;
 

@@ -2,7 +2,7 @@ using FluentValidation;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Primitives.Validation;
 
-namespace LYBT.Shared.Validators.Herbs
+namespace LYBT.Shared.Models.Validators.Herbs
 {
     /// <summary>
     /// 药材输入DTO验证器

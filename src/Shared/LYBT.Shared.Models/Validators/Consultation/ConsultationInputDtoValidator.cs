@@ -2,7 +2,7 @@ using FluentValidation;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Primitives.Validation;
 
-namespace LYBT.Shared.Validators.Consultation
+namespace LYBT.Shared.Models.Validators.Consultation
 {
     /// <summary>
     /// 诊疗创建/更新DTO验证器（精简版 - OpenSpec: refactor-diagnosis-fields）

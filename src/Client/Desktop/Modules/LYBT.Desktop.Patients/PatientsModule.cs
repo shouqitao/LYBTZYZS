@@ -10,7 +10,7 @@ using LYBT.Desktop.Patients.Models.Items;
 using LYBT.Desktop.Patients.Repositories;
 using LYBT.Desktop.Patients.Services;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Validators.Patients;
+using LYBT.Shared.Models.Validators.Patients;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;

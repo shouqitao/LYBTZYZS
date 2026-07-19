@@ -3,7 +3,7 @@ using FluentValidation.TestHelper;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.Validation;
-using LYBT.Shared.Validators.Patients;
+using LYBT.Shared.Models.Validators.Patients;
 using Xunit;
 
 namespace LYBT.Tests.Server;

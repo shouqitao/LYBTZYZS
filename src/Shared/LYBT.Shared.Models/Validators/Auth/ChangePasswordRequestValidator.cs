@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using LYBT.Shared.Models.Contracts.Auth;
 
-namespace LYBT.Shared.Validators.Auth
+namespace LYBT.Shared.Models.Validators.Auth
 {
     /// <summary>
     /// 修改密码请求验证器

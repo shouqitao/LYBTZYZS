@@ -2,7 +2,7 @@
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Primitives.Validation;
 
-namespace LYBT.Shared.Validators.Formula
+namespace LYBT.Shared.Models.Validators.Formula
 {
     /// <summary>
     /// 方剂创建DTO验证器
