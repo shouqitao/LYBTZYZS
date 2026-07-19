@@ -36,8 +36,8 @@ public class LocalDbContext : DbContext
     /// <summary>患者表</summary>
     public DbSet<Patient> Patients => Set<Patient>();
 
-        /// <summary>用户表</summary>
-        public DbSet<ApplicationUser> Users => Set<ApplicationUser>();
+    /// <summary>用户表</summary>
+    public DbSet<ApplicationUser> Users => Set<ApplicationUser>();
 
     /// <summary>药材表</summary>
     public DbSet<Herb> Herbs => Set<Herb>();
