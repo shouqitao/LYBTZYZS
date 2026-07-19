@@ -7,7 +7,7 @@ using LYBT.Shared.Models.Contracts.Reports;
 using Microsoft.Extensions.Logging;
 using Prism.Regions;
 
-namespace LYBT.Desktop.Reports.ViewModels;
+namespace LYBT.Desktop.MedicalCase.Reports.ViewModels;
 
 public partial class ReportsHomeViewModel : NavigableViewModelBase
 {

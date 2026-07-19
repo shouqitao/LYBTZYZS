@@ -1,5 +1,5 @@
 <UserControl
-    x:Class="LYBT.Desktop.Reports.Views.ReportsHomeView"
+    x:Class="LYBT.Desktop.MedicalCase.Reports.Views.ReportsHomeView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:prism="http://prismlibrary.com/"

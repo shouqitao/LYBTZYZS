@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace LYBT.Desktop.Reports.Views;
+namespace LYBT.Desktop.MedicalCase.Reports.Views;
 
 public partial class ReportsHomeView : UserControl
 {

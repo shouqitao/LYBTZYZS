@@ -90,8 +90,7 @@
     <ProjectReference Include="..\Modules\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />
     <!-- PRD: registration.md - 挂号管理模块 -->
     <ProjectReference Include="..\Modules\LYBT.Desktop.Registration\LYBT.Desktop.Registration.csproj" />
-    <!-- 统计报表模块 -->
-    <ProjectReference Include="..\Modules\LYBT.Desktop.Reports\LYBT.Desktop.Reports.csproj" />
+    <!-- 统计报表模块已合并到 MedicalCase -->
   </ItemGroup>
 
   <!-- Issue #1553: 角色主页模块 -->
