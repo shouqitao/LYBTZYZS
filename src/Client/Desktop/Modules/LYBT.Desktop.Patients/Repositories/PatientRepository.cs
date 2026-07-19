@@ -1,6 +1,7 @@
 using System.Threading;
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Foundation.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
@@ -11,29 +12,28 @@ namespace LYBT.Desktop.Patients.Repositories;
 /// <summary>
 /// Patient repository — routes all calls through IApiClient.
 /// </summary>
-public sealed class PatientRepository : IPatientRepository
+public sealed class PatientRepository
+    : ApiClientRepositoryBase<PatientListDto, PatientDetailDto, PatientInputDto, PatientInputDto>,
+      IPatientRepository
 {
     private readonly IApiClient _apiClient;
-    private readonly ILogger<PatientRepository> _logger;
-    private readonly PatientListToDetailMapper _listMapper = new();
+
+    protected override string LogPrefix => "Patient";
 
     public PatientRepository(
         IApiClient apiClient,
         ILogger<PatientRepository> logger)
+        : base(logger)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     #region Standard CRUD
 
     public async Task<PagedResult<PatientListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, CancellationToken ct = default)
     {
-        try
+        return await ExecuteAsync(async () =>
         {
-            _logger.LogDebug("[REPO] Patient.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword}",
-                page, pageSize, keyword);
-
             var response = await _apiClient.Patients.GetPatientsAsync(page, pageSize, keyword);
             if (response.Data == null)
                 return new PagedResult<PatientListDto> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize };
@@ -45,46 +45,31 @@ public sealed class PatientRepository : IPatientRepository
                 CurrentPage = page,
                 PageSize = pageSize
             };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Patient.GetPaged failed");
-            throw;
-        }
+        }, nameof(GetPagedAsync), "[REPO] {0}.{1} - Page={2} PageSize={3} Keyword={4}",
+           [LogPrefix, nameof(GetPagedAsync), page, pageSize, keyword]);
     }
 
     public async Task<PatientDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        try
+        return await ExecuteAsync(async () =>
         {
-            _logger.LogDebug("[REPO] Patient.GetById - Id={Id}", id);
             var response = await _apiClient.Patients.GetPatientByIdAsync(id);
             return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Patient.GetById failed - Id={Id}", id);
-            throw;
-        }
+        }, nameof(GetByIdAsync), "[REPO] {0}.{1} - Id={2}",
+           [LogPrefix, nameof(GetByIdAsync), id]);
     }
 
     public async Task<PatientDetailDto> CreateAsync(PatientInputDto patient, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(patient);
 
-        try
+        return await ExecuteAsync(async () =>
         {
-            _logger.LogInformation("[REPO] Patient.Create");
             var response = await _apiClient.Patients.CreatePatientAsync(patient);
             if (!response.Success || response.Data == null)
                 throw new InvalidOperationException(response.Message ?? "Create patient failed");
             return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Patient.Create failed");
-            throw;
-        }
+        }, nameof(CreateAsync), LogLevel.Information);
     }
 
     public async Task<PatientDetailDto> UpdateAsync(PatientInputDto patient, CancellationToken ct = default)
@@ -93,51 +78,39 @@ public sealed class PatientRepository : IPatientRepository
         if (patient.Id is null || patient.Id == Guid.Empty)
             throw new ArgumentException("Update DTO must contain valid ID", nameof(patient));
 
-        try
+        return await ExecuteAsync(async () =>
         {
-            _logger.LogInformation("[REPO] Patient.Update - Id={Id}", patient.Id);
             var response = await _apiClient.Patients.UpdatePatientAsync(patient.Id.Value, patient);
             if (!response.Success || response.Data == null)
                 throw new InvalidOperationException(response.Message ?? "Update patient failed");
             return response.Data;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Patient.Update failed - Id={Id}", patient.Id);
-            throw;
-        }
+        }, nameof(UpdateAsync), LogLevel.Information);
     }
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
     {
         try
         {
-            _logger.LogInformation("[REPO] Patient.Delete - Id={Id}", id);
+            Logger.LogInformation("[REPO] Patient.Delete - Id={Id}", id);
             var response = await _apiClient.Patients.DeletePatientAsync(id);
             return response.Success;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Patient.Delete failed - Id={Id}", id);
+            Logger.LogError(ex, "[REPO] Patient.Delete failed - Id={Id}", id);
             return false;
         }
     }
 
     public async Task<List<PatientListDto>> SearchAsync(string keyword, CancellationToken ct = default)
     {
-        try
+        return await ExecuteAsync(async () =>
         {
-            _logger.LogDebug("[REPO] Patient.Search - Keyword={Keyword}", keyword);
             var response = await _apiClient.Patients.GetPatientsAsync(1, 100, keyword);
             if (response.Data == null)
                 return [];
             return response.Data.Items.ToList();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[REPO] Patient.Search failed");
-            throw;
-        }
+        }, nameof(SearchAsync));
     }
 
     #endregion
@@ -151,7 +124,7 @@ public sealed class PatientRepository : IPatientRepository
 
         try
         {
-            _logger.LogInformation("[REPO] Patient.GetByIdNumber");
+            Logger.LogInformation("[REPO] Patient.GetByIdNumber");
             var response = await _apiClient.Patients.GetPatientsAsync(1, 100, idNumber);
             if (response.Data == null)
                 return null;
@@ -166,7 +139,7 @@ public sealed class PatientRepository : IPatientRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Patient.GetByIdNumber failed");
+            Logger.LogError(ex, "[REPO] Patient.GetByIdNumber failed");
             return null;
         }
     }
@@ -179,13 +152,13 @@ public sealed class PatientRepository : IPatientRepository
     {
         try
         {
-            _logger.LogInformation("[REPO] Patient.BatchImport - Count={Count}", request.Patients.Count);
+            Logger.LogInformation("[REPO] Patient.BatchImport - Count={Count}", request.Patients.Count);
             var response = await _apiClient.Patients.BatchImportAsync(request);
             return response.Data;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Patient.BatchImport failed");
+            Logger.LogError(ex, "[REPO] Patient.BatchImport failed");
             return null;
         }
     }
@@ -199,7 +172,7 @@ public sealed class PatientRepository : IPatientRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Patient.ExportTemplate failed");
+            Logger.LogError(ex, "[REPO] Patient.ExportTemplate failed");
             return null;
         }
     }
@@ -213,7 +186,7 @@ public sealed class PatientRepository : IPatientRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Patient.ExportPatients failed");
+            Logger.LogError(ex, "[REPO] Patient.ExportPatients failed");
             return null;
         }
     }
@@ -226,7 +199,7 @@ public sealed class PatientRepository : IPatientRepository
     {
         try
         {
-            _logger.LogInformation("[REPO] Patient.BatchDelete - Count={Count}", ids.Count);
+            Logger.LogInformation("[REPO] Patient.BatchDelete - Count={Count}", ids.Count);
             var response = await _apiClient.Patients.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
             if (!response.Success || response.Data == null)
             {
@@ -242,7 +215,7 @@ public sealed class PatientRepository : IPatientRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[REPO] Patient.BatchDelete failed");
+            Logger.LogError(ex, "[REPO] Patient.BatchDelete failed");
             return new BatchOperationResultDto { TotalCount = ids.Count, FailureCount = ids.Count, IsSuccess = false, Message = ex.Message };
         }
     }
