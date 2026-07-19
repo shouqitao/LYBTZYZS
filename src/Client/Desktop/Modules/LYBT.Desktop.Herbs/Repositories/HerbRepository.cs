@@ -97,27 +97,19 @@ public sealed class HerbRepository : ApiClientRepositoryBase<HerbListDto, HerbDe
             LogLevel.Information);
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
+    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
-        // DeleteAsync returns false on exception instead of rethrowing,
-        // which differs from ExecuteAsync's always-rethrow behavior.
-        try
-        {
-            Logger.LogInformation("[REPO] Herb.Delete - Id={Id}", id);
+        await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Herbs.DeleteHerbAsync(id);
+                if (!response.Success)
+                    throw new InvalidOperationException(response.Message ?? "删除药材失败");
 
-            var response = await _apiClient.Herbs.DeleteHerbAsync(id);
-            if (response.Success)
                 Logger.LogInformation("[REPO] Herb.Delete completed - Id={Id}", id);
-            else
-                Logger.LogWarning("[REPO] Herb.Delete failed - Id={Id}", id);
-
-            return response.Success;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "[REPO] Herb.Delete failed - Id={Id}", id);
-            return false;
-        }
+            },
+            "Delete",
+            LogLevel.Information);
     }
 
     public async Task<List<HerbListDto>> SearchAsync(string keyword, CancellationToken ct = default)
@@ -221,26 +213,18 @@ public sealed class HerbRepository : ApiClientRepositoryBase<HerbListDto, HerbDe
 
     public async Task<HerbDetailDto?> ToggleStatusAsync(Guid id, CancellationToken ct = default)
     {
-        // Returns null on failure instead of rethrowing — keep manual try/catch.
-        try
-        {
-            Logger.LogInformation("[REPO] Herb.ToggleStatus - Id={Id}", id);
-
-            var response = await _apiClient.Herbs.ToggleStatusAsync(id);
-            if (!response.Success || response.Data == null)
+        return await ExecuteAsync(
+            async () =>
             {
-                Logger.LogWarning("[REPO] Herb.ToggleStatus failed: {Message}", response.Message);
-                return null;
-            }
+                var response = await _apiClient.Herbs.ToggleStatusAsync(id);
+                if (!response.Success || response.Data == null)
+                    throw new InvalidOperationException(response.Message ?? "切换药材状态失败");
 
-            Logger.LogInformation("[REPO] Herb.ToggleStatus completed - Status={Status}", response.Data.Status);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "[REPO] Herb.ToggleStatus failed - Id={Id}", id);
-            return null;
-        }
+                Logger.LogInformation("[REPO] Herb.ToggleStatus completed - Status={Status}", response.Data.Status);
+                return response.Data;
+            },
+            "ToggleStatus",
+            LogLevel.Information);
     }
 
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)

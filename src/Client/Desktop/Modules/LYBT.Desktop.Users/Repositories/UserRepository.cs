@@ -100,27 +100,19 @@ public sealed class UserRepository : ApiClientRepositoryBase<UserListDto, UserDe
             LogLevel.Information);
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
+    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
-        // DeleteAsync returns false on exception instead of rethrowing,
-        // which differs from ExecuteAsync's always-rethrow behavior.
-        try
-        {
-            Logger.LogInformation("[REPO] User.Delete - Id={Id}", id);
+        await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Users.DeleteUserAsync(id);
+                if (!response.Success)
+                    throw new InvalidOperationException(response.Message ?? "删除用户失败");
 
-            var response = await _apiClient.Users.DeleteUserAsync(id);
-            if (response.Success)
                 Logger.LogInformation("[REPO] User.Delete completed - Id={Id}", id);
-            else
-                Logger.LogWarning("[REPO] User.Delete failed - Id={Id}", id);
-
-            return response.Success;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "[REPO] User.Delete failed - Id={Id}", id);
-            return false;
-        }
+            },
+            "Delete",
+            LogLevel.Information);
     }
 
     public async Task<List<UserListDto>> SearchAsync(string keyword, CancellationToken ct = default)
@@ -275,27 +267,19 @@ public sealed class UserRepository : ApiClientRepositoryBase<UserListDto, UserDe
 
     public async Task<UserDetailDto?> ToggleStatusAsync(Guid id, CancellationToken ct = default)
     {
-        // Returns null on failure instead of rethrowing — keep manual try/catch.
-        try
-        {
-            Logger.LogInformation("[REPO] User.ToggleStatus - Id={Id}", id);
-
-            var response = await _apiClient.Users.ToggleStatusAsync(id);
-            if (!response.Success || response.Data == null)
+        return await ExecuteAsync(
+            async () =>
             {
-                Logger.LogWarning("[REPO] User.ToggleStatus failed: {Message}", response.Message);
-                return null;
-            }
+                var response = await _apiClient.Users.ToggleStatusAsync(id);
+                if (!response.Success || response.Data == null)
+                    throw new InvalidOperationException(response.Message ?? "切换用户状态失败");
 
-            Logger.LogInformation("[REPO] User.ToggleStatus completed - Id={Id}, Status={Status}",
-                id, response.Data.Status);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "[REPO] User.ToggleStatus failed - Id={Id}", id);
-            return null;
-        }
+                Logger.LogInformation("[REPO] User.ToggleStatus completed - Id={Id}, Status={Status}",
+                    id, response.Data.Status);
+                return response.Data;
+            },
+            "ToggleStatus",
+            LogLevel.Information);
     }
 
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
