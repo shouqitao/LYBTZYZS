@@ -1,4 +1,4 @@
-using LYBT.SharedKernel.Events;
+using LYBT.Infrastructure.SharedKernel.Events;
 
 namespace LYBT.Module.Patients.Domain.Events;
 

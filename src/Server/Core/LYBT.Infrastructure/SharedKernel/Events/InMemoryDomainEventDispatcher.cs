@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace LYBT.SharedKernel.Events;
+namespace LYBT.Infrastructure.SharedKernel.Events;
 
 public class InMemoryDomainEventDispatcher : IDomainEventDispatcher
 {

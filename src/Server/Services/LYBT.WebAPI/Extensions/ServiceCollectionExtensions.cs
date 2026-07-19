@@ -14,7 +14,7 @@ using LYBT.Module.Registration;
 using LYBT.Module.Reports;
 using LYBT.Module.Users;
 using Microsoft.AspNetCore.HttpsPolicy;
-using LYBT.SharedKernel.Events;
+using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.WebAPI.Configuration.Commands;
 using LYBT.WebAPI.Filters;
 using MediatR;

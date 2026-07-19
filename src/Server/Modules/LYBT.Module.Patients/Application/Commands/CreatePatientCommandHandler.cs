@@ -2,7 +2,7 @@ using MediatR;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.SharedKernel.Events;
+using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Domain.Events;
 using LYBT.Module.Patients.Interfaces;

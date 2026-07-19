@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Enums;
-using LYBT.SharedKernel.Primitives;
+using LYBT.Infrastructure.SharedKernel.Primitives;
 using Microsoft.AspNetCore.Identity;
 
 namespace LYBT.Module.Users.Domain;

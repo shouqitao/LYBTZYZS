@@ -1,4 +1,4 @@
-namespace LYBT.SharedKernel.Primitives;
+namespace LYBT.Infrastructure.SharedKernel.Primitives;
 
 /// <summary>
 /// 实体基类。具有唯一身份标识（Guid）。

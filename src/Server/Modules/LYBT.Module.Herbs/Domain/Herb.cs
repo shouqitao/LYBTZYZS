@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Enums;
-using LYBT.SharedKernel.Primitives;
+using LYBT.Infrastructure.SharedKernel.Primitives;
 
 namespace LYBT.Module.Herbs.Domain;
 

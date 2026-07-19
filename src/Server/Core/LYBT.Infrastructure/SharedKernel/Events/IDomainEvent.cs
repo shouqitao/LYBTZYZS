@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace LYBT.SharedKernel.Events;
+namespace LYBT.Infrastructure.SharedKernel.Events;
 
 /// <summary>
 /// 领域事件基接口。所有领域事件必须实现此接口。

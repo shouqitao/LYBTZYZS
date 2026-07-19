@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Shared.Models.Enums;
-using LYBT.SharedKernel.Primitives;
+using LYBT.Infrastructure.SharedKernel.Primitives;
 
 namespace LYBT.Module.Registration.Domain;
 
