@@ -1,5 +1,5 @@
 using FluentValidation;
-using LYBT.Desktop.CardReader.Integration;
+using LYBT.Desktop.Infrastructure.CardReader.Integration;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 using LYBT.Desktop.Patients.Controls;

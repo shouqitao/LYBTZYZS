@@ -1,11 +1,11 @@
 using System.IO;
-using LYBT.Desktop.CardReader.Abstractions;
-using LYBT.Desktop.CardReader.Adapters;
-using LYBT.Desktop.CardReader.Native;
+using LYBT.Desktop.Infrastructure.CardReader.Abstractions;
+using LYBT.Desktop.Infrastructure.CardReader.Adapters;
+using LYBT.Desktop.Infrastructure.CardReader.Native;
 using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.CardReader.Services;
+namespace LYBT.Desktop.Infrastructure.CardReader.Services;
 
 /// <summary>
 /// 读卡器工厂实现

@@ -1,4 +1,4 @@
-using LYBT.Desktop.CardReader.Abstractions;
+using LYBT.Desktop.Infrastructure.CardReader.Abstractions;
 using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;

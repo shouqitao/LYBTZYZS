@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.Input;
-using LYBT.Desktop.CardReader.Integration;
-using LYBT.Desktop.CardReader.Models;
-using LYBT.Desktop.CardReader.Services;
+using LYBT.Desktop.Infrastructure.CardReader.Integration;
+using LYBT.Desktop.Infrastructure.CardReader.Models;
+using LYBT.Desktop.Infrastructure.CardReader.Services;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Helpers;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;

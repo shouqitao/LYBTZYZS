@@ -1,6 +1,6 @@
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Desktop.CardReader.Models;
+namespace LYBT.Desktop.Infrastructure.CardReader.Models;
 
 /// <summary>
 /// 身份证读取结果

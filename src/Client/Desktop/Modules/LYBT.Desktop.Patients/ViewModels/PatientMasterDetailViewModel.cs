@@ -12,7 +12,7 @@ using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using LYBT.Desktop.CardReader.Models;
+using LYBT.Desktop.Infrastructure.CardReader.Models;
 
 namespace LYBT.Desktop.Patients.ViewModels
 {

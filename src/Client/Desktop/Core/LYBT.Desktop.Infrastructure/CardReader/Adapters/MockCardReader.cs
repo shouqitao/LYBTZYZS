@@ -1,9 +1,9 @@
-using LYBT.Desktop.CardReader.Abstractions;
-using LYBT.Desktop.CardReader.Models;
+using LYBT.Desktop.Infrastructure.CardReader.Abstractions;
+using LYBT.Desktop.Infrastructure.CardReader.Models;
 using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Desktop.CardReader.Adapters;
+namespace LYBT.Desktop.Infrastructure.CardReader.Adapters;
 
 /// <summary>
 /// 模拟读卡器（用于开发测试）

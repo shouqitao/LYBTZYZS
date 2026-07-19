@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LYBT.Desktop.CardReader.Integration;
-using LYBT.Desktop.CardReader.Models;
-using LYBT.Desktop.CardReader.Services;
+using LYBT.Desktop.Infrastructure.CardReader.Integration;
+using LYBT.Desktop.Infrastructure.CardReader.Models;
+using LYBT.Desktop.Infrastructure.CardReader.Services;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Helpers;

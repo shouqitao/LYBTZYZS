@@ -74,9 +74,5 @@
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Validators\LYBT.Shared.Validators.csproj" />
   </ItemGroup>
 
-  <ItemGroup Label="Module Dependencies">
-    <!-- OpenSpec: integrate-cardreader-module - 身份证读卡器集成 (已迁移到Core目录) -->
-    <ProjectReference Include="..\..\Core\LYBT.Desktop.CardReader\LYBT.Desktop.CardReader.csproj" />
-  </ItemGroup>
 
 </Project>

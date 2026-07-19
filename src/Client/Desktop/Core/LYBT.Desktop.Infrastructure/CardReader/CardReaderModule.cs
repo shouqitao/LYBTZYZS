@@ -1,10 +1,10 @@
-using LYBT.Desktop.CardReader.Abstractions;
-using LYBT.Desktop.CardReader.Services;
+using LYBT.Desktop.Infrastructure.CardReader.Abstractions;
+using LYBT.Desktop.Infrastructure.CardReader.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Prism.Ioc;
 using Prism.Modularity;
 
-namespace LYBT.Desktop.CardReader;
+namespace LYBT.Desktop.Infrastructure.CardReader;
 
 /// <summary>
 /// 读卡器模块

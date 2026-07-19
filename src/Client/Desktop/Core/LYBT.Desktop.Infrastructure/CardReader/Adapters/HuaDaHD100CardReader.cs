@@ -1,12 +1,12 @@
 using System.IO;
 using System.Text;
-using LYBT.Desktop.CardReader.Abstractions;
-using LYBT.Desktop.CardReader.Models;
-using LYBT.Desktop.CardReader.Native;
+using LYBT.Desktop.Infrastructure.CardReader.Abstractions;
+using LYBT.Desktop.Infrastructure.CardReader.Models;
+using LYBT.Desktop.Infrastructure.CardReader.Native;
 using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.CardReader.Adapters;
+namespace LYBT.Desktop.Infrastructure.CardReader.Adapters;
 
 /// <summary>
 /// 华大HD100身份证读卡器适配器

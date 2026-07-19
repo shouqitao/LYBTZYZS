@@ -6,6 +6,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <AcceptNPOIOSMFLicense>true</AcceptNPOIOSMFLicense>
+    <!-- CardReader P/Invoke需要允许不安全代码 -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <!-- Assembly Information -->
     <AssemblyTitle>LYBT.Desktop.Infrastructure</AssemblyTitle>
@@ -74,6 +76,13 @@
 
   <!-- Core_New Dependencies -->
   <ItemGroup Label="Core_New Dependencies">
+  </ItemGroup>
+
+  <!-- 原生DLL文件 - CardReader P/Invoke -->
+  <ItemGroup Label="Native DLL Files">
+    <None Update="CardReader\Native\*.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

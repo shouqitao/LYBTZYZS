@@ -1,6 +1,6 @@
 using FluentAssertions;
-using LYBT.Desktop.CardReader.Integration;
-using LYBT.Desktop.CardReader.Services;
+using LYBT.Desktop.Infrastructure.CardReader.Integration;
+using LYBT.Desktop.Infrastructure.CardReader.Services;
 using LYBT.Desktop.Clinical.ViewModels;
 using LYBT.Desktop.Clinical.ViewModels.Workspace;
 using LYBT.Desktop.Contracts.ApiClient;

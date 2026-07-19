@@ -1,6 +1,6 @@
-using LYBT.Desktop.CardReader.Models;
+using LYBT.Desktop.Infrastructure.CardReader.Models;
 
-namespace LYBT.Desktop.CardReader.Abstractions;
+namespace LYBT.Desktop.Infrastructure.CardReader.Abstractions;
 
 /// <summary>
 /// 身份证读卡器抽象接口

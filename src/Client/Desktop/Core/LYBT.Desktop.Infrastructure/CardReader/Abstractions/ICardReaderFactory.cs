@@ -1,6 +1,6 @@
 using LYBT.Shared.Configuration.Options.Client;
 
-namespace LYBT.Desktop.CardReader.Abstractions;
+namespace LYBT.Desktop.Infrastructure.CardReader.Abstractions;
 
 /// <summary>
 /// 读卡器工厂接口

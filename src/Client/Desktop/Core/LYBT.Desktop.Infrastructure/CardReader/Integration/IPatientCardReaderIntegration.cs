@@ -1,7 +1,7 @@
-using LYBT.Desktop.CardReader.Models;
+using LYBT.Desktop.Infrastructure.CardReader.Models;
 using LYBT.Shared.Models.Contracts.Patients;
 
-namespace LYBT.Desktop.CardReader.Integration;
+namespace LYBT.Desktop.Infrastructure.CardReader.Integration;
 
 /// <summary>
 /// 患者读卡器集成接口

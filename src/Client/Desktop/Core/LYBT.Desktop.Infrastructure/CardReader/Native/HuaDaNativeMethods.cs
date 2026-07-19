@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace LYBT.Desktop.CardReader.Native;
+namespace LYBT.Desktop.Infrastructure.CardReader.Native;
 
 /// <summary>
 /// 华大HD100身份证读卡器原生方法

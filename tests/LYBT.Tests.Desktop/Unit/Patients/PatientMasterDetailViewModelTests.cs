@@ -1,5 +1,5 @@
 using FluentAssertions;
-using LYBT.Desktop.CardReader.Integration;
+using LYBT.Desktop.Infrastructure.CardReader.Integration;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Patients.Models;
@@ -101,7 +101,7 @@ public class PatientMasterDetailViewModelTests
         // 创建 Child ViewModel mocks
         _cardReaderViewModel = Substitute.For<PatientCardReaderViewModel>(
             _viewModelServices,
-            Substitute.For<LYBT.Desktop.CardReader.Services.ICardReaderService>(),
+            Substitute.For<LYBT.Desktop.Infrastructure.CardReader.Services.ICardReaderService>(),
             Substitute.For<IPatientCardReaderIntegration>(),
             Substitute.For<ILogger<PatientCardReaderViewModel>>());
 
@@ -634,14 +634,14 @@ public class PatientMasterDetailViewModelTests
     {
         // Arrange
         var sut = CreateSut();
-        var cardResult = new LYBT.Desktop.CardReader.Models.CardReadResult
+        var cardResult = new LYBT.Desktop.Infrastructure.CardReader.Models.CardReadResult
         {
             IsSuccess = true,
             Name = "测试患者",
             IdNumber = "110101199001011234"
         };
 
-        _cardReaderViewModel.ReadCardAsync().Returns(Task.FromResult<LYBT.Desktop.CardReader.Models.CardReadResult?>(cardResult));
+        _cardReaderViewModel.ReadCardAsync().Returns(Task.FromResult<LYBT.Desktop.Infrastructure.CardReader.Models.CardReadResult?>(cardResult));
         _cardReaderViewModel.FindPatientByIdNumberAsync(cardResult.IdNumber)
             .Returns(Task.FromResult<PatientFromCardResult?>(null));
         _dialogManager.ShowConfirmAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(Task.FromResult(false));
@@ -658,14 +658,14 @@ public class PatientMasterDetailViewModelTests
     {
         // Arrange
         var sut = CreateSut();
-        var cardResult = new LYBT.Desktop.CardReader.Models.CardReadResult
+        var cardResult = new LYBT.Desktop.Infrastructure.CardReader.Models.CardReadResult
         {
             IsSuccess = true,
             Name = "测试患者",
             IdNumber = "110101199001011234"
         };
 
-        _cardReaderViewModel.ReadCardAsync().Returns(Task.FromResult<LYBT.Desktop.CardReader.Models.CardReadResult?>(cardResult));
+        _cardReaderViewModel.ReadCardAsync().Returns(Task.FromResult<LYBT.Desktop.Infrastructure.CardReader.Models.CardReadResult?>(cardResult));
         _cardReaderViewModel.FindPatientByIdNumberAsync(cardResult.IdNumber)
             .Returns(Task.FromResult<PatientFromCardResult?>(null));
         _dialogManager.ShowConfirmAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(Task.FromResult(false));
@@ -683,7 +683,7 @@ public class PatientMasterDetailViewModelTests
         // Arrange
         var sut = CreateSut();
 
-        _cardReaderViewModel.ReadCardAsync().Returns(Task.FromResult<LYBT.Desktop.CardReader.Models.CardReadResult?>(null));
+        _cardReaderViewModel.ReadCardAsync().Returns(Task.FromResult<LYBT.Desktop.Infrastructure.CardReader.Models.CardReadResult?>(null));
 
         // Act
         await sut.ReadCardAsync();

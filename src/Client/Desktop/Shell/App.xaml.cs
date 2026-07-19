@@ -2,7 +2,7 @@ using System.Windows;
 using LYBT.Desktop.Admin;
 using LYBT.Desktop.Receptionist;
 using LYBT.Desktop.Auth;
-using LYBT.Desktop.CardReader;
+using LYBT.Desktop.Infrastructure.CardReader;
 using LYBT.Desktop.Clinical;
 using LYBT.Desktop.Formula;
 using LYBT.Desktop.Herbs;

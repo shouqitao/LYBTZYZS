@@ -1,9 +1,9 @@
-using LYBT.Desktop.CardReader.Abstractions;
-using LYBT.Desktop.CardReader.Models;
+using LYBT.Desktop.Infrastructure.CardReader.Abstractions;
+using LYBT.Desktop.Infrastructure.CardReader.Models;
 using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.CardReader.Services;
+namespace LYBT.Desktop.Infrastructure.CardReader.Services;
 
 /// <summary>
 /// 读卡器服务实现

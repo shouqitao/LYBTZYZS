@@ -1,7 +1,7 @@
-using LYBT.Desktop.CardReader.Abstractions;
-using LYBT.Desktop.CardReader.Models;
+using LYBT.Desktop.Infrastructure.CardReader.Abstractions;
+using LYBT.Desktop.Infrastructure.CardReader.Models;
 
-namespace LYBT.Desktop.CardReader.Services;
+namespace LYBT.Desktop.Infrastructure.CardReader.Services;
 
 /// <summary>
 /// 读卡器服务接口
