@@ -36,7 +36,7 @@ LYBT.Desktop.Foundation/
 
 ## 职责边界
 
-**Foundation = 无头运行时层**，不依赖 WPF/Prism。
+**Foundation = 无头运行时层**，不依赖 WPF UI 类型；使用 Prism.Events 进行跨层通信。
 
 | 文件夹 | 职责 |
 |--------|------|
@@ -49,4 +49,4 @@ LYBT.Desktop.Foundation/
 | Repositories/ | API 客户端仓储基类 |
 | Services/ | 连接模式服务 |
 
-**规则**：Foundation 中的代码不得引用 WPF 类型（Window, UserControl, DependencyObject 等）。
+**规则**：Foundation 中的代码不得引用 WPF UI 类型（Window, UserControl, DependencyObject 等）。Prism.Events（IEventAggregator）是正当的跨层通信机制。

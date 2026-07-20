@@ -86,4 +86,4 @@ LYBT.Desktop.Infrastructure/
 | Views/ | 共享 View |
 | Windows/ | 窗口 |
 
-**规则**：Infrastructure 可引用 Foundation，但 Foundation 不得引用 Infrastructure。
+**规则**：Infrastructure 可引用 Foundation，但 Foundation 不得引用 Infrastructure。Infrastructure 引用 Server/LYBT.Entities 是 LocalData 合并的有意设计。
