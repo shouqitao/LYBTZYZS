@@ -5,6 +5,7 @@ using LYBT.Module.Registration.Application.Commands;
 using LYBT.Module.Registration.Application.Validators;
 using LYBT.Module.Registration.Infrastructure;
 using LYBT.Module.Registration.Interfaces;
+using LYBT.Module.Registration.Mapping;
 using LYBT.Module.Registration.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,6 +26,9 @@ public static class RegistrationModule
 
         // 注册跨模块服务
         services.AddScoped<IRegistrationCrossModuleService, RegistrationCrossModuleService>();
+
+        // 注册 Mapper
+        services.AddSingleton<RegistrationMapper>();
 
         // 注册 MediatR（Application层）
         services.AddMediatR(cfg =>

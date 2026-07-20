@@ -1,4 +1,4 @@
-using LYBT.Module.Registration.Application.Mappers;
+using LYBT.Module.Registration.Mapping;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Shared.Models.Contracts.Registration;
 using MediatR;
@@ -12,10 +12,12 @@ public sealed class GetRegistrationQueryHandler
     : IRequestHandler<GetRegistrationQuery, RegistrationDetailDto?>
 {
     private readonly IRegistrationRepository _repository;
+    private readonly RegistrationMapper _mapper;
 
-    public GetRegistrationQueryHandler(IRegistrationRepository repository)
+    public GetRegistrationQueryHandler(IRegistrationRepository repository, RegistrationMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
     public async Task<RegistrationDetailDto?> Handle(
@@ -24,7 +26,7 @@ public sealed class GetRegistrationQueryHandler
         var entity = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (entity is null) return null;
 
-        return RegistrationMapper.ToDetailDto(entity);
+        return _mapper.ToDetailDto(entity);
     }
 }
 

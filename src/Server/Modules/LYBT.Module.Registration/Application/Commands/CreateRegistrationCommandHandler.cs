@@ -1,5 +1,5 @@
 using LYBT.Entities.Registrations;
-using LYBT.Module.Registration.Application.Mappers;
+using LYBT.Module.Registration.Mapping;
 using LYBT.Module.Registration.Domain.Events;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Shared.Models.Contracts.Registration;
@@ -19,13 +19,16 @@ public sealed class CreateRegistrationCommandHandler
 {
     private readonly IRegistrationRepository _repository;
     private readonly IPublisher _publisher;
+    private readonly RegistrationMapper _mapper;
 
     public CreateRegistrationCommandHandler(
         IRegistrationRepository repository,
-        IPublisher publisher)
+        IPublisher publisher,
+        RegistrationMapper mapper)
     {
         _repository = repository;
         _publisher = publisher;
+        _mapper = mapper;
     }
 
     public async Task<Result<RegistrationDetailDto>> Handle(
@@ -64,7 +67,7 @@ public sealed class CreateRegistrationCommandHandler
             registration.Status,
             registration.QueueNumber), cancellationToken);
 
-        return Result<RegistrationDetailDto>.Success(RegistrationMapper.ToDetailDto(registration));
+        return Result<RegistrationDetailDto>.Success(_mapper.ToDetailDto(registration));
     }
 }
 

@@ -1,4 +1,4 @@
-using LYBT.Module.Registration.Application.Mappers;
+using LYBT.Module.Registration.Mapping;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Registration;
@@ -13,10 +13,12 @@ public sealed class GetRegistrationsQueryHandler
     : IRequestHandler<GetRegistrationsQuery, PagedResult<RegistrationListDto>>
 {
     private readonly IRegistrationRepository _repository;
+    private readonly RegistrationMapper _mapper;
 
-    public GetRegistrationsQueryHandler(IRegistrationRepository repository)
+    public GetRegistrationsQueryHandler(IRegistrationRepository repository, RegistrationMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
     public async Task<PagedResult<RegistrationListDto>> Handle(
@@ -28,7 +30,7 @@ public sealed class GetRegistrationsQueryHandler
             request.PatientId, request.DoctorId, cancellationToken);
 
         var items = pagedResult.Items
-            .Select(RegistrationMapper.ToListDto)
+            .Select(x => _mapper.ToListDto(x))
             .ToList();
 
         return new PagedResult<RegistrationListDto>
