@@ -3,7 +3,9 @@ using System.ComponentModel;
 namespace LYBT.Shared.Models.Contracts.Common
 {
     /// <summary>
-    /// 操作结果基础DTO - 用于所有操作结果的基类
+    /// 批量操作结果的基础 DTO — 用于 API 响应层。
+    /// 注意：这是 API 批量操作（导入/删除）的响应结构，非领域操作结果。
+    /// 领域操作结果请使用 <see cref="Result{T}"/>。
     /// </summary>
     public class OperationResultDto
     {

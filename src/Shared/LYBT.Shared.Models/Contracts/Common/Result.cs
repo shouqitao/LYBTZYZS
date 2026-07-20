@@ -4,7 +4,8 @@ namespace LYBT.Shared.Models.Contracts.Common;
 
 /// <summary>
 /// 操作结果封装。用于命令和查询的统一返回类型。
-/// 统一 Result 模式：合并 Shared.Models.Result 和 ServiceResult 的有用功能。
+/// 这是领域操作结果模式，用于 Service/Repository 层。
+/// API 批量操作的响应结构请使用 <see cref="OperationResultDto"/>。
 /// </summary>
 public class Result<T>
 {
