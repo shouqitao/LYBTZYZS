@@ -1,8 +1,8 @@
 using LYBT.Entities.Formulas;
 using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Module.Formulas.Application.Mappers;
 using LYBT.Module.Formulas.Interfaces;
-using LYBT.Module.Formulas.Mapping;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
@@ -22,7 +22,6 @@ public class FormulaImportExportService : IFormulaImportExportService
     private readonly IFormulaRepository _repository;
     private readonly IHerbCrossModuleService _crossModuleQuery;
     private readonly ILogger<FormulaImportExportService> _logger;
-    private readonly FormulaMapper _mapper = new();
     private readonly ICacheInvalidationService _cacheInvalidation;
 
     public FormulaImportExportService(
@@ -132,7 +131,7 @@ public class FormulaImportExportService : IFormulaImportExportService
                 }
 
                 await _repository.AddAsync(formula, CancellationToken.None);
-                var formulaResultDto = _mapper.ToDetailDto(formula);
+                var formulaResultDto = FormulaDtoMapper.ToDetailDto(formula);
 
                 result.SuccessCount++;
                 result.SuccessfulIds.Add(formula.Id);
