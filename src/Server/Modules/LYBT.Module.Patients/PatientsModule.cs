@@ -27,6 +27,9 @@ namespace LYBT.Module.Patients
             // 注册跨模块服务（替代 CrossModuleService 中的患者查询逻辑）
             services.AddScoped<IPatientCrossModuleService, PatientCrossModuleService>();
 
+            // 统一跨模块服务（委托给各域 CrossModuleService）
+            services.AddScoped<ICrossModuleService, CrossModuleService>();
+
             // Epic #1731: 注册Patients模块Validators
             services.AddValidatorsFromAssemblyContaining<PatientInputDtoValidator>();
 

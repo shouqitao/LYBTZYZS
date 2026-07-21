@@ -9,13 +9,13 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
     /// <summary>
     /// 对话框ViewModel基类
     ///
-    /// 继承CoreViewModelBase，实现IDialogAware:
+    /// 继承NavigableViewModelBase，实现IDialogAware:
     /// - 对话框参数处理
     /// - 对话框结果返回
     /// - 关闭请求事件
     /// - 标准取消命令
     /// </summary>
-    public abstract partial class DialogViewModelBase : CoreViewModelBase, IDialogAware
+    public abstract partial class DialogViewModelBase : NavigableViewModelBase, IDialogAware
     {
         #region 可观察属性
 
@@ -31,15 +31,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsNotLoading))]
         private bool _isLoading;
-
-        #endregion
-
-        #region 计算属性
-
-        /// <summary>
-        /// 是否未在加载
-        /// </summary>
-        public bool IsNotLoading => !IsLoading;
 
         #endregion
 

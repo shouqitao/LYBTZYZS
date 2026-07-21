@@ -14,14 +14,14 @@ namespace LYBT.Module.Registration.Application.Commands;
 
 public class QuickVisitCommandHandler(
     IRegistrationRepository repository,
-    IPatientCrossModuleService patientCrossModule,
+    ICrossModuleService crossModule,
     IMedicalCaseCrossModuleService medicalCaseCrossModule
 ) : IRequestHandler<QuickVisitCommand, Result<QuickVisitResultDto>>
 {
     public async Task<Result<QuickVisitResultDto>> Handle(
         QuickVisitCommand request, CancellationToken cancellationToken)
     {
-        var patientInfo = await patientCrossModule.GetPatientBasicInfoAsync(request.Input.PatientId, cancellationToken);
+        var patientInfo = await crossModule.GetPatientBasicInfoAsync(request.Input.PatientId, cancellationToken);
         if (patientInfo == null)
             return Result<QuickVisitResultDto>.Failure(ErrorCode.NotFound, "患者不存在");
 

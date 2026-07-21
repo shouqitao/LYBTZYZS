@@ -10,7 +10,7 @@ namespace LYBT.Module.Formulas.Application.Commands;
 
 public class BatchImportFormulasCommandHandler(
     IFormulaRepository repository,
-    IHerbCrossModuleService herbCrossModule,
+    ICrossModuleService crossModule,
     ILogger<BatchImportFormulasCommandHandler> logger
 ) : IRequestHandler<BatchImportFormulasCommand, Result<FormulaBatchImportResultDto>>
 {
@@ -25,7 +25,7 @@ public class BatchImportFormulasCommandHandler(
             TotalCount = request.Formulas.Count
         };
 
-        var allHerbs = await herbCrossModule.GetAllActiveHerbsAsync(cancellationToken);
+        var allHerbs = await crossModule.GetAllActiveHerbsAsync(cancellationToken);
         var herbByName = allHerbs.ToDictionary(h => h.Name, StringComparer.OrdinalIgnoreCase);
         var herbByPinyin = allHerbs
             .Where(h => h.Pinyin != null)

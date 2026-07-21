@@ -22,7 +22,7 @@ namespace LYBT.Module.Auth.Application.Commands;
 public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
 {
     private readonly IJwtService _jwtService;
-    private readonly IUserCrossModuleService _crossModuleService;
+    private readonly ICrossModuleService _crossModuleService;
     private readonly IAuthSessionRepository _authSessionRepository;
     private readonly ISecurityAuditService _securityAuditService;
     private readonly IPublisher _publisher;
@@ -31,7 +31,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
 
     public LoginCommandHandler(
         IJwtService jwtService,
-        IUserCrossModuleService crossModuleService,
+        ICrossModuleService crossModuleService,
         IAuthSessionRepository authSessionRepository,
         ISecurityAuditService securityAuditService,
         IPublisher publisher,

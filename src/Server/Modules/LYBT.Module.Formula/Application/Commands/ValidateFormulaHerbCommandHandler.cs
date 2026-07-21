@@ -11,10 +11,10 @@ namespace LYBT.Module.Formulas.Application.Commands;
 /// </summary>
 public class ValidateFormulaHerbCommandHandler(
     IFormulaRepository formulaRepository,
-    IHerbCrossModuleService herbCrossModuleService) : IRequestHandler<ValidateFormulaHerbCommand, Result>
+    ICrossModuleService crossModuleService) : IRequestHandler<ValidateFormulaHerbCommand, Result>
 {
     private readonly IFormulaRepository _formulaRepository = formulaRepository;
-    private readonly IHerbCrossModuleService _herbCrossModuleService = herbCrossModuleService;
+    private readonly ICrossModuleService _crossModuleService = crossModuleService;
 
     public async Task<Result> Handle(
         ValidateFormulaHerbCommand request, CancellationToken cancellationToken)
@@ -30,7 +30,7 @@ public class ValidateFormulaHerbCommandHandler(
         if (herbItem.IsValidated)
             return Result.Failure(ErrorCode.FormulaValidationFailed, "该药材已校验，无需重复操作");
 
-        var selectedHerb = await _herbCrossModuleService.GetHerbBasicInfoAsync(request.SelectedHerbId, cancellationToken);
+        var selectedHerb = await _crossModuleService.GetHerbBasicInfoAsync(request.SelectedHerbId, cancellationToken);
         if (selectedHerb == null)
             return Result.Failure(ErrorCode.HerbNotFound, "所选药材不存在");
 

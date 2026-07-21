@@ -16,7 +16,7 @@ namespace LYBT.Desktop.Shell.ViewModels;
 /// 账户设置视图模型 - 左右分栏重设计 (2026-06-21)
 /// 个人资料 + 安全设置（修改密码）合并
 /// </summary>
-public partial class AccountSettingsViewModel : CoreViewModelBase, INavigationAware
+public partial class AccountSettingsViewModel : NavigableViewModelBase
 {
     private readonly IAuthenticationService _authService;
     private readonly IApiClientUsers _userApi;
@@ -257,7 +257,7 @@ public partial class AccountSettingsViewModel : CoreViewModelBase, INavigationAw
 
     #region INavigationAware
 
-    public async void OnNavigatedTo(NavigationContext navigationContext)
+    public override async void OnNavigatedTo(NavigationContext navigationContext)
     {
         if (navigationContext.Parameters.ContainsKey("Tab"))
         {
@@ -275,9 +275,9 @@ public partial class AccountSettingsViewModel : CoreViewModelBase, INavigationAw
         await LoadUserProfileAsync();
     }
 
-    public bool IsNavigationTarget(NavigationContext navigationContext) => true;
+    public override bool IsNavigationTarget(NavigationContext navigationContext) => true;
 
-    public void OnNavigatedFrom(NavigationContext navigationContext)
+    public override void OnNavigatedFrom(NavigationContext navigationContext)
     {
         ClearPasswordFields();
     }

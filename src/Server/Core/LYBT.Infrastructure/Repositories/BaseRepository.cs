@@ -165,26 +165,7 @@ namespace LYBT.Infrastructure.Repositories
             return await query.ToListAsync();
         }
 
-        /// <summary>
-        /// 获取投影查询结果（减少数据传输）
-        /// </summary>
-        /// <typeparam name="TResult">投影结果类型</typeparam>
-        /// <param name="predicate">查询条件</param>
-        /// <param name="selector">投影选择器</param>
-        /// <returns>投影结果列表</returns>
-        public virtual async Task<List<TResult>> SelectAsync<TResult>(
-            Expression<Func<TEntity, bool>>? predicate,
-            Expression<Func<TEntity, TResult>> selector)
-        {
-            var query = _dbSet.Where(e => !e.IsDeleted);
-
-            if (predicate != null)
-            {
-                query = query.Where(predicate);
-            }
-
-            return await query.Select(selector).ToListAsync();
-        }
+        // SelectAsync 已提取为 QueryablePagingExtensions.SelectAsync 扩展方法
 
         /// <summary>
         // Issue #1756: 删除GetPaginatedAsync - 未使用，功能与GetPagedAsync重复
@@ -555,29 +536,7 @@ namespace LYBT.Infrastructure.Repositories
             return await _dbSet.FromSqlRaw(sql, parameters).ToListAsync();
         }
 
-        /// <summary>
-        /// 通用分页查询助手 - 返回PagedResult<T>
-        /// Phase 2: Repository层简化（Epic #1725）
-        /// </summary>
-        /// <param name="query">已配置的查询（包含Where和Include）</param>
-        /// <param name="pageNumber">页码（从1开始）</param>
-        /// <param name="pageSize">每页大小</param>
-        /// <param name="cancellationToken">取消令牌</param>
-        /// <returns>PagedResult分页结果</returns>
-        protected async Task<PagedResult<TEntity>> GetPagedResultAsync(
-            IQueryable<TEntity> query,
-            int pageNumber,
-            int pageSize,
-            CancellationToken cancellationToken = default)
-        {
-            var totalCount = await query.CountAsync(cancellationToken);
-            var items = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync(cancellationToken);
-
-            return new PagedResult<TEntity>(items, totalCount, pageNumber, pageSize);
-        }
+        // GetPagedResultAsync 已提取为 QueryablePagingExtensions.GetPagedResultAsync 扩展方法
 
         #endregion
 

@@ -26,18 +26,14 @@ namespace LYBT.Module.MedicalCases.Services
     {
         private readonly IMedicalCaseRepository _repository;
         private readonly IRegistrationCrossModuleService _registrationCrossModule;
-        private readonly IPatientCrossModuleService _patientCrossModule;
-        private readonly IUserCrossModuleService _userCrossModule;
-        private readonly IHerbCrossModuleService _herbCrossModule;
+        private readonly ICrossModuleService _crossModule;
         private readonly MedicalCaseMapper _mapper;
         private readonly ICacheInvalidationService _cacheInvalidation;
 
         public MedicalCaseCommandService(
             IMedicalCaseRepository repository,
             IRegistrationCrossModuleService registrationCrossModule,
-            IPatientCrossModuleService patientCrossModule,
-            IUserCrossModuleService userCrossModule,
-            IHerbCrossModuleService herbCrossModule,
+            ICrossModuleService crossModule,
             MedicalCaseMapper mapper,
             ILogger<MedicalCaseCommandService> logger,
             ICacheInvalidationService cacheInvalidation)
@@ -46,9 +42,7 @@ namespace LYBT.Module.MedicalCases.Services
             _mapper = mapper;
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _registrationCrossModule = registrationCrossModule ?? throw new ArgumentNullException(nameof(registrationCrossModule));
-            _patientCrossModule = patientCrossModule ?? throw new ArgumentNullException(nameof(patientCrossModule));
-            _userCrossModule = userCrossModule ?? throw new ArgumentNullException(nameof(userCrossModule));
-            _herbCrossModule = herbCrossModule ?? throw new ArgumentNullException(nameof(herbCrossModule));
+            _crossModule = crossModule ?? throw new ArgumentNullException(nameof(crossModule));
             _cacheInvalidation = cacheInvalidation ?? throw new ArgumentNullException(nameof(cacheInvalidation));
         }
 
@@ -87,7 +81,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 统一验证: 参数、Patient、Doctor、BR-001
             var (patient, doctor) = await MedicalCaseServiceHelper.ValidateAndFetchCreationContextAsync(
-                request.PatientId, doctorId, _patientCrossModule, _userCrossModule, _repository, _logger, cancellationToken);
+                request.PatientId, doctorId, _crossModule, _crossModule, _repository, _logger, cancellationToken);
 
             // 创建MedicalCase实体
             var medicalCase = new MedicalCase
@@ -734,7 +728,7 @@ namespace LYBT.Module.MedicalCases.Services
             var allHerbIds = prescriptionDto.Items.Select(i => i.HerbId).Distinct().ToList();
 
             // AD-02: 过滤禁用药材，禁止加入处方
-            var disabledHerbIds = await _herbCrossModule.GetDisabledHerbIdsAsync(allHerbIds, cancellationToken);
+            var disabledHerbIds = await _crossModule.GetDisabledHerbIdsAsync(allHerbIds, cancellationToken);
             var validItems = prescriptionDto.Items;
             if (disabledHerbIds.Count > 0)
             {
@@ -760,7 +754,7 @@ namespace LYBT.Module.MedicalCases.Services
             Dictionary<Guid, decimal>? herbPrices = null;
             if (herbIdsNeedingPrice.Count > 0)
             {
-                herbPrices = await _herbCrossModule.GetHerbPricesAsync(herbIdsNeedingPrice, cancellationToken);
+                herbPrices = await _crossModule.GetHerbPricesAsync(herbIdsNeedingPrice, cancellationToken);
                 _logger.LogInformation("[SVC] Auto-populated UnitPrice for {Count} herbs from herb catalog",
                     herbPrices.Count);
             }

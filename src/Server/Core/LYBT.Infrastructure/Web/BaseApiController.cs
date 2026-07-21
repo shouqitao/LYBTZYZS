@@ -159,13 +159,13 @@ namespace LYBT.Infrastructure.Web
         /// 使用模式: var (dto, error) = await GetEntityWithOwnershipCheckAsync(() => _service.GetByIdAsync(id), "资源");
         ///          if (error != null) return error;
         /// </summary>
-        /// <typeparam name="TDto">实现ICreatorTrackable的DTO类型</typeparam>
+        /// <typeparam name="TDto">实现IAuditable的DTO类型</typeparam>
         /// <param name="getEntityFunc">获取实体的异步函数</param>
         /// <param name="resourceName">资源名称（用于错误消息）</param>
         /// <returns>元组：(实体数据, 错误响应)，如果error为null则表示验证通过</returns>
         protected async Task<(TDto? dto, IActionResult? error)> GetEntityWithOwnershipCheckAsync<TDto>(
             Func<Task<Result<TDto>>> getEntityFunc,
-            string resourceName = "资源") where TDto : class, ICreatorTrackable
+            string resourceName = "资源") where TDto : class, IAuditable
         {
             var result = await getEntityFunc();
 
@@ -188,7 +188,7 @@ namespace LYBT.Infrastructure.Web
         protected async Task<(TDto? dto, IActionResult? error)> GetEntityWithOwnershipCheckAsync<TDto>(
             Guid id,
             Func<Guid, Task<Result<TDto>>> getByIdFunc,
-            string resourceName = "资源") where TDto : class, ICreatorTrackable
+            string resourceName = "资源") where TDto : class, IAuditable
         {
             if (ValidateGuid(id, $"{resourceName}ID") is { } guidError)
             {

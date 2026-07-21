@@ -20,18 +20,18 @@ namespace LYBT.Module.Formulas.Services;
 public class FormulaImportExportService : IFormulaImportExportService
 {
     private readonly IFormulaRepository _repository;
-    private readonly IHerbCrossModuleService _crossModuleQuery;
+    private readonly ICrossModuleService _crossModule;
     private readonly ILogger<FormulaImportExportService> _logger;
     private readonly ICacheInvalidationService _cacheInvalidation;
 
     public FormulaImportExportService(
         IFormulaRepository repository,
-        IHerbCrossModuleService crossModuleQuery,
+        ICrossModuleService crossModule,
         ILogger<FormulaImportExportService> logger,
         ICacheInvalidationService cacheInvalidation)
     {
         _repository = repository;
-        _crossModuleQuery = crossModuleQuery;
+        _crossModule = crossModule;
         _logger = logger;
         _cacheInvalidation = cacheInvalidation;
     }
@@ -52,7 +52,7 @@ public class FormulaImportExportService : IFormulaImportExportService
             TotalCount = formulas.Count
         };
 
-        var allHerbs = await _crossModuleQuery.GetAllActiveHerbsAsync();
+        var allHerbs = await _crossModule.GetAllActiveHerbsAsync();
         var herbByName = allHerbs.ToDictionary(h => h.Name, StringComparer.OrdinalIgnoreCase);
         var herbByPinyin = allHerbs
             .Where(h => h.Pinyin != null)
@@ -353,7 +353,7 @@ public class FormulaImportExportService : IFormulaImportExportService
 
         try
         {
-            var herb = await _crossModuleQuery.GetHerbByNameOrPinyinAsync(herbName);
+            var herb = await _crossModule.GetHerbByNameOrPinyinAsync(herbName);
             return herb;
         }
         catch (Exception ex)

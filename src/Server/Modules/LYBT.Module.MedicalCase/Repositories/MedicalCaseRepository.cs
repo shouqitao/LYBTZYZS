@@ -4,6 +4,7 @@ using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Prescriptions;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Extensions;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -65,7 +66,7 @@ namespace LYBT.Module.MedicalCases.Repositories
                 .Where(m => m.PatientId == patientId)
                 .OrderByDescending(m => m.CreatedAt);
 
-            return await GetPagedResultAsync(query, pageNumber, pageSize, cancellationToken);
+            return await query.GetPagedResultAsync(pageNumber, pageSize, cancellationToken);
         }
 
         /// <summary>
@@ -184,7 +185,7 @@ namespace LYBT.Module.MedicalCases.Repositories
             // 按创建时间倒序
             query = query.OrderByDescending(m => m.CreatedAt);
 
-            return await GetPagedResultAsync(query, pageNumber, pageSize, cancellationToken);
+            return await query.GetPagedResultAsync(pageNumber, pageSize, cancellationToken);
         }
 
         /// <summary>
@@ -545,7 +546,7 @@ namespace LYBT.Module.MedicalCases.Repositories
 
             query = query.OrderByDescending(m => m.CreatedAt);
 
-            return await GetPagedResultAsync(query, pageNumber, pageSize, cancellationToken);
+            return await query.GetPagedResultAsync(pageNumber, pageSize, cancellationToken);
         }
 
         /// <summary>

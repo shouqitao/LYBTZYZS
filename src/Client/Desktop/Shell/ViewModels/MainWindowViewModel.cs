@@ -25,7 +25,7 @@ namespace LYBT.Desktop.Shell.ViewModels;
 /// 主窗口视图模型 - 界面导航控制、键盘快捷键、登录状态代理
 /// 登录状态管理已提取至 ILoginStateManager，事件协调已提取至 ShellEventCoordinator
 /// </summary>
-public partial class MainWindowViewModel : CoreViewModelBase
+public partial class MainWindowViewModel : NavigableViewModelBase
 {
     #region 常量
 
@@ -131,7 +131,7 @@ public partial class MainWindowViewModel : CoreViewModelBase
     public ICommand UndoCommand => _shell.Menu.UndoCommand;
     public ICommand RedoCommand => _shell.Menu.RedoCommand;
     public ICommand EditProfileCommand => _shell.Menu.EditProfileCommand;
-    public ICommand NavigateToHomeCommand => _shell.Menu.NavigateToHomeCommand;
+    public new ICommand NavigateToHomeCommand => _shell.Menu.NavigateToHomeCommand;
     public ICommand NavigateToSystemSettingsCommand => _shell.Menu.NavigateToSystemSettingsCommand;
     public ICommand NavigateBackCommand => _shell.Menu.NavigateBackCommand;
     public ICommand NavigateForwardCommand => _shell.Menu.NavigateForwardCommand;
@@ -242,13 +242,13 @@ public partial class MainWindowViewModel : CoreViewModelBase
 
     #region 对话框辅助方法
 
-    protected virtual async Task ShowSuccessMessageAsync(string message) =>
+    protected override async Task ShowSuccessMessageAsync(string message) =>
         await _shell.Dialogs.ShowSuccessMessageAsync(message);
 
-    protected virtual async Task ShowErrorMessageAsync(string message) =>
+    protected override async Task ShowErrorMessageAsync(string message) =>
         await _shell.Dialogs.ShowErrorMessageAsync(message);
 
-    protected virtual async Task ShowWarningMessageAsync(string message) =>
+    protected override async Task ShowWarningMessageAsync(string message) =>
         await _shell.Dialogs.ShowWarningMessageAsync(message);
 
     protected virtual async Task<bool> ShowConfirmationAsync(string message, string title = "确认") =>

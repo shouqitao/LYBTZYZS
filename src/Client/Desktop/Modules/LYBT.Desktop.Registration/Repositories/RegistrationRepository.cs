@@ -10,7 +10,7 @@ namespace LYBT.Desktop.Registration.Repositories;
 /// <summary>
 /// 挂号仓储 — routes all calls through IApiClient.
 /// </summary>
-public sealed class RegistrationRepository : ApiClientRepositoryBase<RegistrationListDto, RegistrationDetailDto, RegistrationInputDto, object>, IRegistrationRepository
+public sealed class RegistrationRepository : ApiClientRepositoryBase<RegistrationListDto, RegistrationDetailDto>, IRegistrationRepository
 {
     private readonly IApiClient _apiClient;
 

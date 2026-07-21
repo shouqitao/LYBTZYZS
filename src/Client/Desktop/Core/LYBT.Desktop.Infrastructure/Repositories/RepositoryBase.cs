@@ -14,7 +14,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
     /// <typeparam name="TUpdateDto">更新DTO类型</typeparam>
     /// <typeparam name="TApi">Refit API接口类型</typeparam>
     public abstract class RepositoryBase<TDetailDto, TListDto, TCreateDto, TUpdateDto, TApi>
-        : ApiClientRepositoryBase<TListDto, TDetailDto, TCreateDto, TUpdateDto>
+        : ApiClientRepositoryBase<TListDto, TDetailDto>
         where TApi : class
         where TDetailDto : class
         where TListDto : class

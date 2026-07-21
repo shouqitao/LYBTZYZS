@@ -12,7 +12,7 @@ namespace LYBT.Desktop.Auth.ViewModels;
 /// 连接状态 UI — API 健康状态、连接模式显示、模式切换
 /// 从 LoginViewModel 提取，单一职责：连接状态管理
 /// </summary>
-public partial class ConnectionStatusViewModel : CoreViewModelBase
+public partial class ConnectionStatusViewModel : NavigableViewModelBase
 {
     private readonly IApplicationStateService _applicationStateService;
     private readonly IConnectionModeService? _connectionModeService;

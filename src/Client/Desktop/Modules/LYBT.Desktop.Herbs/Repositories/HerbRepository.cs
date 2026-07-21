@@ -10,7 +10,7 @@ namespace LYBT.Desktop.Herbs.Repositories;
 /// <summary>
 /// 药材仓储 — routes all calls through IApiClient.
 /// </summary>
-public sealed class HerbRepository : ApiClientRepositoryBase<HerbListDto, HerbDetailDto, HerbInputDto, HerbInputDto>, IHerbRepository
+public sealed class HerbRepository : ApiClientRepositoryBase<HerbListDto, HerbDetailDto>, IHerbRepository
 {
     private readonly IApiClient _apiClient;
 

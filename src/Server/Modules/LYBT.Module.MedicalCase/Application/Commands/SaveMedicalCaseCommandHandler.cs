@@ -12,10 +12,8 @@ namespace LYBT.Module.MedicalCases.Application.Commands;
 public class SaveMedicalCaseCommandHandler(
     IMedicalCaseRepository repository,
     MedicalCaseMapper mapper,
-    IPatientCrossModuleService patientCrossModule,
-    IUserCrossModuleService userCrossModule,
+    ICrossModuleService crossModule,
     IRegistrationCrossModuleService registrationCrossModule,
-    IHerbCrossModuleService herbCrossModule,
     ILogger<SaveMedicalCaseCommandHandler> logger
 ) : IRequestHandler<SaveMedicalCaseCommand, Result<MedicalCaseDetailDto>>
 {
@@ -39,11 +37,11 @@ public class SaveMedicalCaseCommandHandler(
     {
         var doctorId = input.UserId != Guid.Empty ? input.UserId : operatorId;
 
-        var patient = await patientCrossModule.GetPatientBasicInfoAsync(input.PatientId, ct);
+        var patient = await crossModule.GetPatientBasicInfoAsync(input.PatientId, ct);
         if (patient == null)
             return Result<MedicalCaseDetailDto>.Failure(ErrorCode.NotFound, "患者不存在");
 
-        var doctor = await userCrossModule.GetUserBasicInfoAsync(doctorId, ct);
+        var doctor = await crossModule.GetUserBasicInfoAsync(doctorId, ct);
         if (doctor == null)
             return Result<MedicalCaseDetailDto>.Failure(ErrorCode.NotFound, "医生不存在");
 
@@ -97,7 +95,7 @@ public class SaveMedicalCaseCommandHandler(
             if (input.Prescription.Items != null)
             {
                 var herbIds = input.Prescription.Items.Select(i => i.HerbId).Distinct().ToList();
-                var herbPrices = await herbCrossModule.GetHerbPricesAsync(herbIds, ct);
+                var herbPrices = await crossModule.GetHerbPricesAsync(herbIds, ct);
 
                 foreach (var itemDto in input.Prescription.Items)
                 {
@@ -182,7 +180,7 @@ public class SaveMedicalCaseCommandHandler(
                 if (input.Prescription.Items != null)
                 {
                     var herbIds = input.Prescription.Items.Select(i => i.HerbId).Distinct().ToList();
-                    var herbPrices = await herbCrossModule.GetHerbPricesAsync(herbIds, ct);
+                    var herbPrices = await crossModule.GetHerbPricesAsync(herbIds, ct);
 
                     foreach (var itemDto in input.Prescription.Items)
                     {
@@ -219,7 +217,7 @@ public class SaveMedicalCaseCommandHandler(
                 {
                     existing.Items.Clear();
                     var herbIds = input.Prescription.Items.Select(i => i.HerbId).Distinct().ToList();
-                    var herbPrices = await herbCrossModule.GetHerbPricesAsync(herbIds, ct);
+                    var herbPrices = await crossModule.GetHerbPricesAsync(herbIds, ct);
 
                     foreach (var itemDto in input.Prescription.Items)
                     {

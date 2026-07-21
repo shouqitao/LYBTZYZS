@@ -11,10 +11,8 @@ namespace LYBT.Module.MedicalCases.Application.Commands;
 public class CreateMedicalCaseCommandHandler(
     IMedicalCaseRepository repository,
     MedicalCaseMapper mapper,
-    IPatientCrossModuleService patientCrossModule,
-    IUserCrossModuleService userCrossModule,
-    IRegistrationCrossModuleService registrationCrossModule,
-    IHerbCrossModuleService herbCrossModule
+    ICrossModuleService crossModule,
+    IRegistrationCrossModuleService registrationCrossModule
 ) : IRequestHandler<CreateMedicalCaseCommand, Result<MedicalCaseDetailDto>>
 {
     public async Task<Result<MedicalCaseDetailDto>> Handle(
@@ -23,11 +21,11 @@ public class CreateMedicalCaseCommandHandler(
         var input = request.Input;
         var doctorId = input.UserId != Guid.Empty ? input.UserId : request.CurrentUserId;
 
-        var patient = await patientCrossModule.GetPatientBasicInfoAsync(input.PatientId, cancellationToken);
+        var patient = await crossModule.GetPatientBasicInfoAsync(input.PatientId, cancellationToken);
         if (patient == null)
             return Result<MedicalCaseDetailDto>.Failure(ErrorCode.NotFound, "患者不存在");
 
-        var doctor = await userCrossModule.GetUserBasicInfoAsync(doctorId, cancellationToken);
+        var doctor = await crossModule.GetUserBasicInfoAsync(doctorId, cancellationToken);
         if (doctor == null)
             return Result<MedicalCaseDetailDto>.Failure(ErrorCode.NotFound, "医生不存在");
 
@@ -81,7 +79,7 @@ public class CreateMedicalCaseCommandHandler(
             if (input.Prescription.Items != null)
             {
                 var herbIds = input.Prescription.Items.Select(i => i.HerbId).Distinct().ToList();
-                var herbPrices = await herbCrossModule.GetHerbPricesAsync(herbIds, cancellationToken);
+                var herbPrices = await crossModule.GetHerbPricesAsync(herbIds, cancellationToken);
 
                 foreach (var itemDto in input.Prescription.Items)
                 {

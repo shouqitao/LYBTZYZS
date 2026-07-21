@@ -1,5 +1,6 @@
 using LYBT.Entities.Formulas;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Extensions;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -98,7 +99,7 @@ namespace LYBT.Module.Formulas.Repositories
             // 使用模板方法（基类默认）进行排序
             query = ApplyDefaultOrdering(query);
 
-            return await GetPagedResultAsync(query, pageNumber, pageSize);
+            return await query.GetPagedResultAsync(pageNumber, pageSize);
         }
 
         /// <summary>
@@ -137,7 +138,7 @@ namespace LYBT.Module.Formulas.Repositories
             // 默认排序
             query = ApplyDefaultOrdering(query);
 
-            return await GetPagedResultAsync(query, pageNumber, pageSize);
+            return await query.GetPagedResultAsync(pageNumber, pageSize);
         }
 
         /// <summary>

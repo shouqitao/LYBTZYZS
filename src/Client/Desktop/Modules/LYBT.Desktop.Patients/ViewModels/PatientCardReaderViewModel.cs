@@ -13,7 +13,7 @@ namespace LYBT.Desktop.Patients.ViewModels;
 /// 患者读卡器功能 ViewModel (Child VM)
 /// 从 PatientMasterDetailViewModel 拆分出来的读卡器相关功能
 /// </summary>
-public partial class PatientCardReaderViewModel : CoreViewModelBase
+public partial class PatientCardReaderViewModel : NavigableViewModelBase
 {
     private readonly ICardReaderService _cardReaderService;
     private readonly IPatientCardReaderIntegration _patientCardReaderIntegration;

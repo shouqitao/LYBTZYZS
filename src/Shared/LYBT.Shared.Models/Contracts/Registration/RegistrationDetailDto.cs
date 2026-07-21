@@ -8,7 +8,7 @@ namespace LYBT.Shared.Models.Contracts.Registration;
 /// 挂号详情 DTO -- 扁平化设计
 /// PRD: registration.md
 /// </summary>
-public class RegistrationDetailDto : ICreatorTrackable
+public class RegistrationDetailDto : IAuditable
 {
     /// <summary>挂号 ID</summary>
     [DisplayName("挂号ID")]

@@ -11,7 +11,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories;
 /// <summary>
 /// 医案仓储 — routes all calls through IApiClient.
 /// </summary>
-public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseListDto, MedicalCaseDetailDto, MedicalCaseInputDto, MedicalCaseInputDto>, IMedicalCaseRepository
+public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseListDto, MedicalCaseDetailDto>, IMedicalCaseRepository
 {
     private readonly IApiClient _apiClient;
 

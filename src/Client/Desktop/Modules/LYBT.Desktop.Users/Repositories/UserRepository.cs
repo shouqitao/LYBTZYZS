@@ -13,7 +13,7 @@ namespace LYBT.Desktop.Users.Repositories;
 /// <summary>
 /// 用户仓储 — routes all calls through IApiClient.
 /// </summary>
-public sealed class UserRepository : ApiClientRepositoryBase<UserListDto, UserDetailDto, UserInputDto, UserInputDto>, IUserRepository
+public sealed class UserRepository : ApiClientRepositoryBase<UserListDto, UserDetailDto>, IUserRepository
 {
     private readonly IApiClient _apiClient;
 

@@ -10,7 +10,7 @@ namespace LYBT.Desktop.Auth.ViewModels;
 /// 登录凭证 UI 状态 — 用户名/密码输入、记住密码
 /// 从 LoginViewModel 提取，单一职责：凭证输入状态管理
 /// </summary>
-public partial class LoginCredentialsViewModel : CoreViewModelBase
+public partial class LoginCredentialsViewModel : NavigableViewModelBase
 {
     private readonly IUsernameStorageService? _usernameStorage;
     private readonly ICredentialVault? _credentialVault;

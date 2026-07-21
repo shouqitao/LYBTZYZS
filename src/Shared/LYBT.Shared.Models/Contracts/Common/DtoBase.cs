@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Contracts.Common
@@ -18,7 +18,7 @@ namespace LYBT.Shared.Models.Contracts.Common
     }
 
     /// <summary>
-    /// 审计接口 - 提供创建和更新时间追踪
+    /// 审计接口 - 提供创建、更新时间追踪和创建者信息
     /// </summary>
     public interface IAuditable
     {
@@ -28,17 +28,12 @@ namespace LYBT.Shared.Models.Contracts.Common
 
         /// <summary>更新时间</summary>
         DateTime? UpdatedAt { get; set; }
-    }
 
-    /// <summary>
-    /// 创建者追踪接口 - 提供创建者信息
-    /// OpenSpec: optimize-module-list-ui - 支持所有权检查
-    /// </summary>
-    public interface ICreatorTrackable
-    {
         /// <summary>创建者ID</summary>
         Guid? CreatedBy { get; set; }
     }
+
+    // ICreatorTrackable 已合并到 IAuditable
 
     /// <summary>
     /// 状态管理接口 - 提供通用状态字段
@@ -71,7 +66,7 @@ namespace LYBT.Shared.Models.Contracts.Common
     /// UltraThink简化：统一审计时间管理
     /// OpenSpec: optimize-module-list-ui - 添加CreatedBy支持所有权检查
     /// </summary>
-    public abstract class TimestampDto : BaseDto, IAuditable, ICreatorTrackable
+    public abstract class TimestampDto : BaseDto, IAuditable
     {
 
         /// <summary>创建时间</summary>

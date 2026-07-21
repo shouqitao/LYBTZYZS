@@ -13,7 +13,7 @@ namespace LYBT.Desktop.Patients.Repositories;
 /// Patient repository — routes all calls through IApiClient.
 /// </summary>
 public sealed class PatientRepository
-    : ApiClientRepositoryBase<PatientListDto, PatientDetailDto, PatientInputDto, PatientInputDto>,
+    : ApiClientRepositoryBase<PatientListDto, PatientDetailDto>,
       IPatientRepository
 {
     private readonly IApiClient _apiClient;

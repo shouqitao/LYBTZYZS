@@ -8,7 +8,7 @@ namespace LYBT.Shared.Models.Contracts.Patients;
 /// 患者详情DTO - 扁平化设计
 /// OpenSpec: dto-architecture-specification - 统一使用PatientDetailDto
 /// </summary>
-public class PatientDetailDto : ICreatorTrackable
+public class PatientDetailDto : IAuditable
 {
     /// <summary>患者ID</summary>
     [DisplayName("患者ID")]

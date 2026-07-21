@@ -119,7 +119,6 @@ public class DesktopLayerArchTests
 
         var baseTypes = new[]
         {
-            "CoreViewModelBase",
             "NavigableViewModelBase",
             "MasterDetailViewModelBase",
             "DialogViewModelBase",
@@ -351,7 +350,6 @@ public class DesktopLayerArchTests
     {
         var allowedBaseClasses = new[]
         {
-            "CoreViewModelBase",
             "NavigableViewModelBase",
             "MasterDetailViewModelBase`2",  // 泛型类
             "DialogViewModelBase",

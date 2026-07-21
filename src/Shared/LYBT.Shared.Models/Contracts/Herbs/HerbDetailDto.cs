@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 
@@ -8,7 +8,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs;
 /// 药材详情DTO - 扁平化设计
 /// OpenSpec: dto-architecture-specification - 统一使用HerbDetailDto
 /// </summary>
-public class HerbDetailDto : ICreatorTrackable
+public class HerbDetailDto : IAuditable
 {
     /// <summary>药材ID</summary>
     [DisplayName("药材ID")]

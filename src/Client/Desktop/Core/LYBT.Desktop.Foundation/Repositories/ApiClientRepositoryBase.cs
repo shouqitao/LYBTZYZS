@@ -7,9 +7,7 @@ namespace LYBT.Desktop.Foundation.Repositories;
 /// </summary>
 /// <typeparam name="TListDto">列表 DTO 类型</typeparam>
 /// <typeparam name="TDetailDto">详情 DTO 类型</typeparam>
-/// <typeparam name="TCreateDto">创建 DTO 类型</typeparam>
-/// <typeparam name="TUpdateDto">更新 DTO 类型</typeparam>
-public abstract class ApiClientRepositoryBase<TListDto, TDetailDto, TCreateDto, TUpdateDto>
+public abstract class ApiClientRepositoryBase<TListDto, TDetailDto>
 {
     protected readonly ILogger Logger;
 

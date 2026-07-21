@@ -10,7 +10,7 @@ namespace LYBT.Desktop.Formula.Repositories;
 /// <summary>
 /// 验方仓储 — routes all calls through IApiClient.
 /// </summary>
-public sealed class FormulaRepository : ApiClientRepositoryBase<FormulaListDto, FormulaDetailDto, FormulaInputDto, FormulaInputDto>, IFormulaRepository
+public sealed class FormulaRepository : ApiClientRepositoryBase<FormulaListDto, FormulaDetailDto>, IFormulaRepository
 {
     private readonly IApiClient _apiClient;
 

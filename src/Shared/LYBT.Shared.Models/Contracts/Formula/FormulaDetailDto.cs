@@ -10,7 +10,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// OpenSpec: refactor-dto-simplification - 移除继承，直接定义所有字段
     /// 与Formula实体对齐
     /// </summary>
-    public class FormulaDetailDto : ICreatorTrackable
+    public class FormulaDetailDto : IAuditable
     {
         // ========== 基础标识字段 ==========
 

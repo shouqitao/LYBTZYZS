@@ -1,5 +1,10 @@
 # 继承冗余与过度设计优化方案
 
+> [!NOTE]
+> This document may not reflect the current implementation.
+> See the final report for up-to-date state:
+> [Final Report](../reports/inheritance-redundancy-optimization.md)
+
 > 日期: 2026-07-21
 > 状态: 待审核
 > 范围: 全解决方案 — 继承层次、过度抽象、冗余设计

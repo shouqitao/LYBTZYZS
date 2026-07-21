@@ -20,20 +20,20 @@ namespace LYBT.Module.MedicalCases.Services
     public class MedicalCaseStateService : BaseService<MedicalCase>, IMedicalCaseStateService
     {
         private readonly IMedicalCaseRepository _repository;
-        private readonly IUserCrossModuleService _userCrossModule;
+        private readonly ICrossModuleService _crossModule;
         private readonly ICacheInvalidationService _cacheInvalidation;
         private readonly IRegistrationCrossModuleService _registrationCrossModule;
 
         public MedicalCaseStateService(
             IMedicalCaseRepository repository,
-            IUserCrossModuleService userCrossModule,
+            ICrossModuleService crossModule,
             ILogger<MedicalCaseStateService> logger,
             ICacheInvalidationService cacheInvalidation,
             IRegistrationCrossModuleService registrationCrossModule)
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _userCrossModule = userCrossModule ?? throw new ArgumentNullException(nameof(userCrossModule));
+            _crossModule = crossModule ?? throw new ArgumentNullException(nameof(crossModule));
             _cacheInvalidation = cacheInvalidation ?? throw new ArgumentNullException(nameof(cacheInvalidation));
             _registrationCrossModule = registrationCrossModule ?? throw new ArgumentNullException(nameof(registrationCrossModule));
         }
