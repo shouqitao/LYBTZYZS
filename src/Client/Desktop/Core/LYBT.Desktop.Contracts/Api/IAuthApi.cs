@@ -104,8 +104,9 @@ namespace LYBT.Desktop.Contracts.Api
         /// <para>功能: 验证指定的Token并返回用户信息和过期时间</para>
         /// <para>用途: Desktop客户端启动时的Token自动验证</para>
         /// </remarks>
-        [Refit.Post("/api/v1/auth/validate")]
-        Task<ApiResponse<ValidateTokenResponse>> ValidateTokenAsync([Refit.Body] ValidateTokenRequest request);
+        [Refit.Get("/api/v1/auth/validate")]
+        [Refit.Headers("Authorization: Bearer")]
+        Task<ApiResponse<ValidateTokenResponse>> ValidateTokenAsync();
 
         /// <summary>
         /// API服务健康状态检查

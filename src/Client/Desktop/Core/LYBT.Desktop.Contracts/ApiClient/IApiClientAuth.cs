@@ -53,12 +53,11 @@ public interface IApiClientAuth
     Task<ApiResponse<object>> ValidateTokenFromHeaderAsync();
 
     /// <summary>
-    /// Validate a specific token (POST method).
+    /// Validate token from Authorization header (GET method).
     /// Issue #1824
     /// </summary>
-    /// <param name="request">Token validation request.</param>
     /// <returns>Detailed validation result.</returns>
-    Task<ApiResponse<ValidateTokenResponse>> ValidateTokenAsync(ValidateTokenRequest request);
+    Task<ApiResponse<ValidateTokenResponse>> ValidateTokenAsync();
 
     /// <summary>
     /// API service health check.

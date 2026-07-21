@@ -22,10 +22,12 @@ namespace ApiTester
             try
             {
                 // 1. 登录获取token
+                var password = Environment.GetEnvironmentVariable("LYBT_TEST_PASSWORD")
+                    ?? throw new InvalidOperationException("请设置环境变量 LYBT_TEST_PASSWORD");
                 var loginData = new
                 {
                     username = "sysadmin",
-                    password = "LybtAdmin2025@SecurePass#"
+                    password
                 };
 
                 var loginContent = new StringContent(JsonSerializer.Serialize(loginData), Encoding.UTF8, "application/json");

@@ -104,7 +104,7 @@ public class DiagnosticsController : BaseApiController
     public async Task<IActionResult> GetLoggingStatus(CancellationToken ct)
     {
         var result = await _sender.Send(new GetLoggingStatusQuery(), ct);
-        return Ok(result);
+        return Success(result);
     }
 
     [HttpPost("logging/debug/enable")]
@@ -112,7 +112,7 @@ public class DiagnosticsController : BaseApiController
     {
         if (!IsAdminOrHigher()) return Forbid("仅管理员可调整日志级别");
         var result = await _sender.Send(new EnableDebugModeCommand(request?.Level, request?.DurationMinutes), ct);
-        return Ok(result);
+        return Success(result);
     }
 
     [HttpPost("logging/debug/disable")]
@@ -120,7 +120,7 @@ public class DiagnosticsController : BaseApiController
     {
         if (!IsAdminOrHigher()) return Forbid("仅管理员可调整日志级别");
         var result = await _sender.Send(new DisableDebugModeCommand(), ct);
-        return Ok(result);
+        return Success(result);
     }
 
     [HttpPost("logging/level")]
@@ -133,7 +133,7 @@ public class DiagnosticsController : BaseApiController
         var result = await _sender.Send(new SetLoggingLevelCommand(request.Level), ct);
         if (!result.Success)
             return ValidationFail(result.Message);
-        return Ok(result);
+        return Success(result);
     }
 
     private bool IsAdminOrHigher()

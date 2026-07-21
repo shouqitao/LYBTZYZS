@@ -49,8 +49,8 @@ internal sealed class AuthApiClient : IApiClientAuth
         => _api.ValidateTokenFromHeaderAsync();
 
     /// <inheritdoc />
-    public Task<ApiResponse<ValidateTokenResponse>> ValidateTokenAsync(ValidateTokenRequest request)
-        => _api.ValidateTokenAsync(request);
+    public Task<ApiResponse<ValidateTokenResponse>> ValidateTokenAsync()
+        => _api.ValidateTokenAsync();
 
     /// <inheritdoc />
     public Task<ApiResponse<HealthCheckResponse>> HealthCheckAsync()

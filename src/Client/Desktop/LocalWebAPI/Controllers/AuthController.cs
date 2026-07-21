@@ -31,8 +31,8 @@ public class AuthController : BaseApiController
     {
         var result = await _sender.Send(new LocalLoginCommand(request), ct);
         if (!result.Success)
-            return Unauthorized(result);
-        return Ok(result);
+            return BusinessFail(result.Message ?? "登录失败");
+        return Success(result);
     }
 
     [HttpPost("logout")]
@@ -49,8 +49,8 @@ public class AuthController : BaseApiController
     {
         var result = await _sender.Send(new LocalRefreshTokenCommand(request), ct);
         if (!result.Success)
-            return Unauthorized(result);
-        return Ok(result);
+            return BusinessFail(result.Message ?? "刷新令牌失败");
+        return Success(result);
     }
 
     [HttpPost("auto-login")]
@@ -59,8 +59,8 @@ public class AuthController : BaseApiController
     {
         var result = await _sender.Send(new LocalAutoLoginCommand(request), ct);
         if (!result.Success)
-            return Unauthorized(result);
-        return Ok(result);
+            return BusinessFail(result.Message ?? "自动登录失败");
+        return Success(result);
     }
 
     [HttpGet("validate")]
@@ -68,6 +68,6 @@ public class AuthController : BaseApiController
     {
         var userId = GetCurrentUserId(User);
         var result = await _sender.Send(new LocalValidateTokenQuery(userId), ct);
-        return Ok(result);
+        return Success(result);
     }
 }

@@ -342,7 +342,7 @@ public sealed class HttpClientApiClient : IApiClient,
         return WrapSuccess(data!);
     }
 
-    async Task<ApiResponse<ValidateTokenResponse>> IApiClientAuth.ValidateTokenAsync(ValidateTokenRequest request)
+    async Task<ApiResponse<ValidateTokenResponse>> IApiClientAuth.ValidateTokenAsync()
     {
         using var client = CreateClient();
         var response = await client.GetAsync("/api/v1/auth/validate");

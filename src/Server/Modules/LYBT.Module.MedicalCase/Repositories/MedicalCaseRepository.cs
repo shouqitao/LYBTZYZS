@@ -638,23 +638,11 @@ namespace LYBT.Module.MedicalCases.Repositories
 
             _logger?.LogInformation("批量获取医案详情，ID数量: {Count}", ids.Count);
 
-            // OPENJSON-COMPAT: 逐个查询避免 EF Core 8 List<Guid>.Contains() 生成 OPENJSON WITH 语法
-            // SQL Server 兼容级别 < 130 不支持此语法
-            var result = new List<MedicalCase>();
-            foreach (var id in ids)
-            {
-                var entity = await GetDetailQuery()
-                    .Where(m => m.Id == id)
-                    .SingleOrDefaultAsync(cancellationToken);
-
-                if (entity != null)
-                {
-                    result.Add(entity);
-                }
-            }
-
-            // 保持原排序: 按创建时间降序
-            result = result.OrderByDescending(m => m.CreatedAt).ToList();
+            // 使用 Contains 生成单次 SQL 查询（IN 子句），替代逐个查询的 N+1 模式
+            var result = await GetDetailQuery()
+                .Where(m => ids.Contains(m.Id))
+                .OrderByDescending(m => m.CreatedAt)
+                .ToListAsync(cancellationToken);
 
             _logger?.LogInformation("批量获取医案详情完成，返回数量: {Count}", result.Count);
 
