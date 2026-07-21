@@ -290,8 +290,11 @@ public abstract class BaseUsersController : BaseApiController
 
         var result = await _sender.Send(new BatchDeleteUsersCommand(dto.Ids, currentUserId, isAdmin), ct);
 
-        LogOperation("批量删除用户", new { Ids = dto.Ids, Result = result.Value?.Message }, null);
-        return Success(result.Value!, result.Value?.Message ?? "批量删除完成");
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "批量删除失败");
+
+        LogOperation("批量删除用户", new { Ids = dto.Ids, Result = result.Value.Message }, null);
+        return Success(result.Value, result.Value.Message ?? "批量删除完成");
     }
 
     /// <summary>

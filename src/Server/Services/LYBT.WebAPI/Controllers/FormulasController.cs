@@ -73,7 +73,7 @@ namespace LYBT.WebAPI.Controllers
             // Ownership check: Doctor can only see own + shared
             var (operatorId, _, operatorRole) = GetOperator();
             if (operatorRole == UserRole.Doctor && result.Value.CreatedBy != operatorId && !result.Value.IsShared)
-                return StatusCode(403, ApiResponse<object>.CreateFail("无权限查看此验方"));
+                return Forbid("无权限查看此验方");
 
             return Success(result.Value, "查询成功");
         }
