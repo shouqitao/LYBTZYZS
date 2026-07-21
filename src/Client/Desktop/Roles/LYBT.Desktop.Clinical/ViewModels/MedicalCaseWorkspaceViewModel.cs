@@ -11,7 +11,7 @@ using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Desktop.MedicalCase.ViewModels.Components;
 using LYBT.Desktop.MedicalCase.ViewModels.Workspace;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
-using LYBT.Shared.ExceptionHandling.Mappers;
+using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.MedicalCase;

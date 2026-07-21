@@ -1,9 +1,10 @@
+using System.Net.Http;
 using System.Net.Sockets;
-using LYBT.Shared.ExceptionHandling.Mappers;
+using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Shared.ExceptionHandling.Handlers;
+namespace LYBT.Desktop.Infrastructure.ExceptionHandling;
 
 /// <summary>
 /// Desktop端异常处理器实现

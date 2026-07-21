@@ -3,10 +3,9 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Text.Json;
 using LYBT.Shared.ExceptionHandling.Exceptions;
-using LYBT.Shared.ExceptionHandling.ProblemDetails;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 
-namespace LYBT.Shared.ExceptionHandling.Mappers;
+namespace LYBT.Desktop.Foundation.ExceptionHandling;
 
 /// <summary>
 /// 客户端错误消息映射器

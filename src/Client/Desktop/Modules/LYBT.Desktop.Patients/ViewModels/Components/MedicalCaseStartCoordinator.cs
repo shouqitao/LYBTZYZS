@@ -1,6 +1,6 @@
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Patients.Interfaces;
-using LYBT.Shared.ExceptionHandling.Mappers;
+using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Desktop.Patients.Services;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;

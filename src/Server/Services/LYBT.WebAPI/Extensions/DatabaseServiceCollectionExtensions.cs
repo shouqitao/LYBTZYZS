@@ -5,7 +5,6 @@ using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
-using LYBT.Shared.ExceptionHandling.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using LybtMemoryCacheOptions = LYBT.Shared.Configuration.Options.Server.MemoryCacheOptions;

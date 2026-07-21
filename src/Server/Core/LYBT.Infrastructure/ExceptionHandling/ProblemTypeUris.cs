@@ -1,4 +1,4 @@
-namespace LYBT.Shared.ExceptionHandling.ProblemDetails;
+namespace LYBT.Infrastructure.ExceptionHandling;
 
 /// <summary>
 /// RFC 7807 标准问题类型 URI 常量

@@ -1,4 +1,4 @@
-namespace LYBT.Shared.ExceptionHandling.Handlers;
+namespace LYBT.Desktop.Infrastructure.ExceptionHandling;
 
 /// <summary>
 /// 异常严重程度

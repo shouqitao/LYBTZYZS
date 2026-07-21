@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Shared.ExceptionHandling.Handlers;
+namespace LYBT.Infrastructure.ExceptionHandling;
 
 /// <summary>
 /// 业务异常处理器 - 处理AppException及其子类

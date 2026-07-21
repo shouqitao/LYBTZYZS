@@ -3,7 +3,7 @@ using FluentAssertions;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Startup.Steps;
-using LYBT.Shared.ExceptionHandling.Handlers;
+using LYBT.Desktop.Infrastructure.ExceptionHandling;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;

@@ -2,7 +2,7 @@ using LYBT.Desktop.Admin.Services;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Shared.Configuration.Options.Client;
-using LYBT.Shared.ExceptionHandling.Mappers;
+using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using CommunityToolkit.Mvvm.Input;

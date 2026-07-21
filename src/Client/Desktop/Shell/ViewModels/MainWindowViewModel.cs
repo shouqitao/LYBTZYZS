@@ -10,7 +10,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Shared.ExceptionHandling.Mappers;
+using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Login;

@@ -1,5 +1,5 @@
 using FluentAssertions;
-using LYBT.Shared.ExceptionHandling.Handlers;
+using LYBT.Desktop.Infrastructure.ExceptionHandling;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;

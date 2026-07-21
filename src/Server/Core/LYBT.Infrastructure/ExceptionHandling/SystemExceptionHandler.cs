@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Shared.ExceptionHandling.Handlers;
+namespace LYBT.Infrastructure.ExceptionHandling;
 
 /// <summary>
 /// 系统异常处理器 - 兜底处理所有未被其他处理器处理的异常

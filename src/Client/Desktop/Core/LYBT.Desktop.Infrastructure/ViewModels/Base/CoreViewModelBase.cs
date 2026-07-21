@@ -2,7 +2,7 @@ using System.Reactive.Disposables;
 using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Events;
-using LYBT.Shared.ExceptionHandling.Mappers;
+using LYBT.Desktop.Foundation.ExceptionHandling;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 

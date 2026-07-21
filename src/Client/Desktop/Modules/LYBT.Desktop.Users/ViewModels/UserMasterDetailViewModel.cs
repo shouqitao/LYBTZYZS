@@ -8,7 +8,7 @@ using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Desktop.Users.Models;
 using LYBT.Desktop.Users.ViewModels.Handlers;
 using LYBT.Desktop.Users.Interfaces;
-using LYBT.Shared.ExceptionHandling.Mappers;
+using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Utilities.Text;

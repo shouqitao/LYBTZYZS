@@ -1,5 +1,5 @@
 using LYBT.Shared.Configuration.Options.Server;
-using LYBT.Shared.ExceptionHandling.Handlers;
+using LYBT.Infrastructure.ExceptionHandling;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.WebAPI.Configuration;

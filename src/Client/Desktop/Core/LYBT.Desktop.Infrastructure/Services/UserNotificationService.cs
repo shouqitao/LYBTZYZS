@@ -1,6 +1,6 @@
 using System.Windows;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Shared.ExceptionHandling.Mappers;
+using LYBT.Desktop.Foundation.ExceptionHandling;
 
 namespace LYBT.Desktop.Infrastructure.Services
 {

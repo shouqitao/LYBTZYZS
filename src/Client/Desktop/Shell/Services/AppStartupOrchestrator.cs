@@ -2,7 +2,7 @@ using System.Diagnostics;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Shell.Services.Startup.Steps;
-using LYBT.Shared.ExceptionHandling.Mappers;
+using LYBT.Desktop.Foundation.ExceptionHandling;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
 

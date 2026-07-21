@@ -1,5 +1,5 @@
 using LYBT.Infrastructure.Constants;
-using LYBT.Shared.ExceptionHandling.ProblemDetails;
+using LYBT.Infrastructure.ExceptionHandling;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.WebAPI.Middleware;
 

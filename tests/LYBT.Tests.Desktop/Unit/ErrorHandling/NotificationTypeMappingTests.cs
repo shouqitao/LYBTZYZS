@@ -1,5 +1,5 @@
 using FluentAssertions;
-using LYBT.Shared.ExceptionHandling.Handlers;
+using LYBT.Desktop.Infrastructure.ExceptionHandling;
 using Xunit;
 
 namespace LYBT.Tests.Desktop;

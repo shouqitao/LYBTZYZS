@@ -1,6 +1,6 @@
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Shared.ExceptionHandling.Mappers;
-using LYBT.Shared.ExceptionHandling.Handlers;
+using LYBT.Desktop.Foundation.ExceptionHandling;
+using LYBT.Desktop.Infrastructure.ExceptionHandling;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Shell.Services.Startup.Steps;

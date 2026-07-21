@@ -1,6 +1,6 @@
 using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Shared.ExceptionHandling.Handlers;
+namespace LYBT.Desktop.Infrastructure.ExceptionHandling;
 
 /// <summary>
 /// Desktop端异常处理器接口

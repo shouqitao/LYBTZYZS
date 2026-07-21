@@ -6,25 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- ASP.NET Core 依赖 -->
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-
-    <!-- FluentValidation 依赖（用于类型检测） -->
-    <PackageReference Include="FluentValidation" />
-
-    <!-- EF Core 依赖（用于类型检测） -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore" />
-
-    <!-- 配置依赖 -->
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
-  </ItemGroup>
-
-  <!--
-    consolidate-exception-handling: 异常处理层
-    依赖 Models 和 Primitives（ErrorCode）
-  -->
-  <ItemGroup>
+    <!--
+      consolidate-exception-handling: 异常处理层
+      仅保留共享异常类型，依赖 Models（ErrorCode）
+    -->
     <ProjectReference Include="..\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
   </ItemGroup>
 
