@@ -279,7 +279,7 @@ public class LoginCoordinator : ILoginCoordinator, IDisposable
         {
             try
             {
-                _navigationCoordinator.NavigateToHome(role);
+                _ = _navigationCoordinator.NavigateToHome(role);
                 _logger.LogDebug("角色导航完成 [角色: {Role}]", role);
             }
             catch (Exception ex)
@@ -294,7 +294,7 @@ public class LoginCoordinator : ILoginCoordinator, IDisposable
         {
             try
             {
-                _navigationCoordinator.NavigateToHome(role);
+                _ = _navigationCoordinator.NavigateToHome(role);
                 _logger.LogDebug("角色导航完成 [角色: {Role}]", role);
             }
             catch (Exception ex)

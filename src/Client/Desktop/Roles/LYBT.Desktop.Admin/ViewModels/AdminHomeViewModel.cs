@@ -117,7 +117,7 @@ namespace LYBT.Desktop.Admin.ViewModels
             try
             {
                 Logger.LogInformation("导航到 {ViewName}", viewName);
-                _navigationCoordinator.NavigateTo(viewName);
+                _ = _navigationCoordinator.NavigateTo(viewName);
             }
             catch (Exception ex)
             {

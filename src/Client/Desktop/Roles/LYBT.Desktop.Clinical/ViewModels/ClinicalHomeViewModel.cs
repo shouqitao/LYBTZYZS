@@ -87,7 +87,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
         private void StartMedicalCase()
         {
             Logger.LogInformation("开始看诊，导航到临床工作台");
-            _navigationCoordinator.NavigateTo(ViewNames.ClinicalWorkspace);
+            _ = _navigationCoordinator.NavigateTo(ViewNames.ClinicalWorkspace);
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
         private void NavigateToPatientManagement()
         {
             Logger.LogInformation("导航到患者管理视图");
-            _navigationCoordinator.NavigateTo(ViewNames.PatientManagement);
+            _ = _navigationCoordinator.NavigateTo(ViewNames.PatientManagement);
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
         private void NavigateToMedicalCaseQuery()
         {
             Logger.LogInformation("导航到医案管理视图");
-            _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseManagement);
+            _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseManagement);
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
         private void NavigateToHerbLibrary()
         {
             Logger.LogInformation("导航到药材管理视图");
-            _navigationCoordinator.NavigateTo(ViewNames.HerbManagement);
+            _ = _navigationCoordinator.NavigateTo(ViewNames.HerbManagement);
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
         private void NavigateToFormulaLibrary()
         {
             Logger.LogInformation("导航到经验方管理视图");
-            _navigationCoordinator.NavigateTo(ViewNames.FormulaManagement);
+            _ = _navigationCoordinator.NavigateTo(ViewNames.FormulaManagement);
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
         private void NavigateToRegistrationQueue()
         {
             Logger.LogInformation("导航到挂号队列视图");
-            _navigationCoordinator.NavigateTo(ViewNames.RegistrationList);
+            _ = _navigationCoordinator.NavigateTo(ViewNames.RegistrationList);
         }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
         private void EditProfile()
         {
             Logger.LogInformation("导航到账户设置页面(个人资料)");
-            _navigationCoordinator.NavigateTo(ViewNames.AccountSettings);
+            _ = _navigationCoordinator.NavigateTo(ViewNames.AccountSettings);
         }
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
         {
             Logger.LogInformation("导航到账户设置页面(修改密码)");
             var parameters = new Dictionary<string, object> { { "Tab", "Password" } };
-            _navigationCoordinator.NavigateTo(ViewNames.AccountSettings, parameters);
+            _ = _navigationCoordinator.NavigateTo(ViewNames.AccountSettings, parameters);
         }
 
         #endregion 命令

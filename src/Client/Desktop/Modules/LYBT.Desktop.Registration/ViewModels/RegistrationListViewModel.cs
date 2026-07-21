@@ -215,7 +215,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
                 { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
                 { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
             };
-            _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, navParams);
+            _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, navParams);
         }
         catch (Exception ex)
         {

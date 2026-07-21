@@ -17,23 +17,23 @@ public interface INavigationCoordinator
     /// </summary>
     /// <param name="viewName">视图名称（建议使用ViewNames常量）</param>
     /// <param name="parameters">导航参数（键值对形式）</param>
-    void NavigateTo(string viewName, IDictionary<string, object>? parameters = null);
+    Task NavigateTo(string viewName, IDictionary<string, object>? parameters = null);
 
     /// <summary>
     /// 导航到指定视图（强类型参数）
     /// </summary>
-    void NavigateTo<TParams>(string viewName, TParams parameters) where TParams : class;
+    Task NavigateTo<TParams>(string viewName, TParams parameters) where TParams : class;
 
     /// <summary>
     /// 导航到当前角色主页
     /// </summary>
-    void NavigateToHome();
+    Task NavigateToHome();
 
     /// <summary>
     /// 导航到指定角色主页
     /// </summary>
     /// <param name="role">用户角色</param>
-    void NavigateToHome(UserRole role);
+    Task NavigateToHome(UserRole role);
 
     /// <summary>
     /// 导航后退

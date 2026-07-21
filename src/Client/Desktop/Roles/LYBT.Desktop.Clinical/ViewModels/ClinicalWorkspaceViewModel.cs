@@ -131,7 +131,7 @@ public partial class ClinicalWorkspaceViewModel : NavigableViewModelBase
         {
             Logger.LogInformation("开始看诊 - 患者: {Name} ({Id})", SelectedPatient.Name, SelectedPatient.Id);
             var navParams = MedicalCaseNavigationParameters.ForClinical(SelectedPatient.Id);
-            _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, new Dictionary<string, object>(navParams));
+            _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, new Dictionary<string, object>(navParams));
         }
         catch (Exception ex)
         {
@@ -149,7 +149,7 @@ public partial class ClinicalWorkspaceViewModel : NavigableViewModelBase
         {
             Logger.LogInformation("导航到患者管理（新建）");
             var parameters = new Dictionary<string, object> { { "Action", "AddNew" } };
-            _navigationCoordinator.NavigateTo(ViewNames.PatientManagement, parameters);
+            _ = _navigationCoordinator.NavigateTo(ViewNames.PatientManagement, parameters);
         }
         catch (Exception ex)
         {

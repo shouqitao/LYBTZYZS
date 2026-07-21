@@ -118,18 +118,18 @@ public class MenuManager : IMenuManager
     private void ExecuteAccountSettings()
     {
         _logger.LogInformation("导航到账户设置");
-        _navigationCoordinator.NavigateTo(ViewNames.AccountSettings);
+        _ = _navigationCoordinator.NavigateTo(ViewNames.AccountSettings);
     }
     private void ExecuteNavigateToHome()
     {
         _logger.LogInformation("导航到主页");
-        _navigationCoordinator.NavigateToHome();
+        _ = _navigationCoordinator.NavigateToHome();
     }
     /// <remarks>ADR-5修正: 系统设置从HomeView移至Sidebar全局入口，角色自适应内容</remarks>
     private void ExecuteNavigateToSystemSettings()
     {
         _logger.LogInformation("导航到系统设置");
-        _navigationCoordinator.NavigateTo(ViewNames.SystemSettings);
+        _ = _navigationCoordinator.NavigateTo(ViewNames.SystemSettings);
     }
 
     /// <summary>导航架构改进方案 v1.0 — 后退命令</summary>
@@ -159,7 +159,7 @@ public class MenuManager : IMenuManager
     {
         try
         {
-            _navigationCoordinator.NavigateTo(ViewNames.PatientManagement, new Dictionary<string, object> { { "Action", "AddNew" } });
+            _ = _navigationCoordinator.NavigateTo(ViewNames.PatientManagement, new Dictionary<string, object> { { "Action", "AddNew" } });
             await _userNotificationService.ShowSuccessAsync("已切换到患者管理页面，准备添加新患者");
         }
         catch (Exception ex) { await _userNotificationService.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("快速添加患者", ex)); }
@@ -170,7 +170,7 @@ public class MenuManager : IMenuManager
     {
         try
         {
-            _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace);
+            _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace);
             await _userNotificationService.ShowSuccessAsync("已开始诊疗流程，请选择患者");
         }
         catch (Exception ex) { await _userNotificationService.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("快速开始诊疗", ex)); }

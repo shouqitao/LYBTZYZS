@@ -87,7 +87,7 @@ public class NavigationCoordinator : INavigationCoordinator
     public event EventHandler<NavigationChangedEventArgs>? NavigationChanged;
 
     /// <summary>导航到指定视图</summary>
-    public void NavigateTo(string viewName, IDictionary<string, object>? parameters = null)
+    public async Task NavigateTo(string viewName, IDictionary<string, object>? parameters = null)
     {
         try
         {
@@ -103,7 +103,7 @@ public class NavigationCoordinator : INavigationCoordinator
             _lastNavigationTime = DateTime.UtcNow;
             _lastNavigationView = viewName;
 
-            _services.ModuleLazyLoader.EnsureModuleLoaded(viewName);
+            await _services.ModuleLazyLoader.EnsureModuleLoadedAsync(viewName);
             var fromView = CurrentView;
             _logger.LogInformation("导航到 {ViewName}", viewName);
             var navParams = ConvertToNavigationParameters(parameters);
@@ -155,7 +155,7 @@ public class NavigationCoordinator : INavigationCoordinator
     }
 
     /// <summary>导航到指定视图（强类型参数）</summary>
-    public void NavigateTo<TParams>(string viewName, TParams parameters) where TParams : class
+    public async Task NavigateTo<TParams>(string viewName, TParams parameters) where TParams : class
     {
         ArgumentNullException.ThrowIfNull(parameters);
         var dict = new Dictionary<string, object>();
@@ -165,11 +165,11 @@ public class NavigationCoordinator : INavigationCoordinator
             if (value != null)
                 dict[prop.Name] = value;
         }
-        NavigateTo(viewName, dict);
+        await NavigateTo(viewName, dict);
     }
 
     /// <summary>导航到当前角色主页</summary>
-    public void NavigateToHome()
+    public async Task NavigateToHome()
     {
         var role = _services.SessionManager.CurrentUser?.Role;
         var homeViewName = role == null
@@ -177,15 +177,15 @@ public class NavigationCoordinator : INavigationCoordinator
             : _services.RoleRegistry.GetHomeViewName(role.Value);
 
         _logger.LogInformation("导航到主页: {HomeViewName}", homeViewName);
-        NavigateTo(homeViewName);
+        await NavigateTo(homeViewName);
     }
 
     /// <summary>导航到指定角色主页</summary>
-    public void NavigateToHome(UserRole role)
+    public async Task NavigateToHome(UserRole role)
     {
         var homeViewName = _services.RoleRegistry.GetHomeViewName(role);
         _logger.LogInformation("导航到角色主页: Role={Role}, HomeView={HomeViewName}", role, homeViewName);
-        NavigateTo(homeViewName);
+        await NavigateTo(homeViewName);
     }
 
     /// <summary>导航后退</summary>

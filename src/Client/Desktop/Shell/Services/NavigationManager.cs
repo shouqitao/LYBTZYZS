@@ -43,7 +43,7 @@ public partial class NavigationManager : ObservableObject, INavigationManager
     {
         if (value?.ViewName is string viewName && !string.IsNullOrEmpty(viewName))
         {
-            _navigationCoordinator.NavigateTo(viewName);
+            _ = _navigationCoordinator.NavigateTo(viewName);
         }
     }
 
@@ -65,7 +65,7 @@ public partial class NavigationManager : ObservableObject, INavigationManager
             Title = "主页",
             ViewName = definition.HomeViewName,
             IconKind = "Home",
-            Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(definition.HomeViewName)),
+            Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(definition.HomeViewName)),
             Group = "主页"
         });
 
@@ -89,7 +89,7 @@ public partial class NavigationManager : ObservableObject, INavigationManager
                     Title = "用户管理",
                     ViewName = ViewNames.UserManagement,
                     IconKind = "AccountTie",
-                    Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(
+                    Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(
                         ViewNames.UserManagement,
                         new UserManagementNavParams(DefaultRoleFilter: UserRole.Admin))),
                     Group = "管理"
@@ -120,7 +120,7 @@ public partial class NavigationManager : ObservableObject, INavigationManager
             Title = title,
             ViewName = viewName,
             IconKind = iconKind,
-            Command = new RelayCommand(() => _navigationCoordinator.NavigateTo(viewName)),
+            Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(viewName)),
             Group = group
         };
 }

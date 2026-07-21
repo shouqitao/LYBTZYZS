@@ -290,7 +290,7 @@ public partial class PendingQueueViewModel : ChildViewModelBase
                 { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
             };
 
-            _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
+            _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
             Logger.LogInformation("已导航到新医案：{MedicalCaseId}", createResult.medicalCaseId);
         }
         catch (Exception ex)
@@ -336,7 +336,7 @@ public partial class PendingQueueViewModel : ChildViewModelBase
                 { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
             };
 
-            _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
+            _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
             Logger.LogInformation("已导航到挂起医案：{MedicalCaseId}", pendingCase.MedicalCaseId.Value);
         }
         catch (Exception ex)

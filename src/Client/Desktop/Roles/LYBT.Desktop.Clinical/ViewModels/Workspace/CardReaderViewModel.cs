@@ -385,7 +385,7 @@ public partial class CardReaderViewModel : ChildViewModelBase
             { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
             { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
         };
-        _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
+        _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
     }
 
     private void UpdateStatus(string message)

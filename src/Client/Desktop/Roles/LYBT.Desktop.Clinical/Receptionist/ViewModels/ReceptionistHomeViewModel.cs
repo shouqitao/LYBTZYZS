@@ -365,7 +365,7 @@ public partial class ReceptionistHomeViewModel : NavigableViewModelBase
         try
         {
             Logger.LogDebug("前台导航到: {ViewName}", viewName);
-            _navigationCoordinator.NavigateTo(viewName, parameters);
+            _ = _navigationCoordinator.NavigateTo(viewName, parameters);
         }
         catch (Exception ex)
         {

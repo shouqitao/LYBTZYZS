@@ -71,16 +71,16 @@ internal sealed class WorkspaceNavigationHandler
             {
                 if (state.IsReadOnly)
                 {
-                    _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseMasterDetail);
+                    _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseMasterDetail);
                     return;
                 }
                 var shouldNavigate = await HandleManagementLeaveRequestAsync(medicalCaseId, getConsultationData, getPrescriptionData);
-                if (shouldNavigate) _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseMasterDetail);
+                if (shouldNavigate) _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseMasterDetail);
                 return;
             }
 
             var result = await handleLeaveRequest();
-            if (result.CanLeave) _navigationCoordinator.NavigateTo(ViewNames.PatientSelection);
+            if (result.CanLeave) _ = _navigationCoordinator.NavigateTo(ViewNames.PatientSelection);
         }
         catch (Exception ex)
         {

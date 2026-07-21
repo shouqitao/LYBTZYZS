@@ -514,7 +514,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     {
         if (CurrentPatient == null) return;
         Logger.LogInformation("查看患者历史, PatientId: {PatientId}", CurrentPatient.Id);
-        _navigationCoordinator.NavigateTo(ViewNames.PatientManagement);
+        _ = _navigationCoordinator.NavigateTo(ViewNames.PatientManagement);
     }
 
     private void ExecuteViewAuditLogs()
@@ -522,7 +522,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         if (MedicalCaseId == Guid.Empty) return;
         Logger.LogInformation("查看审计日志, MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
         var parameters = new Dictionary<string, object> { { "MedicalCaseId", MedicalCaseId } };
-        _navigationCoordinator.NavigateTo(ViewNames.AuditLog, parameters);
+        _ = _navigationCoordinator.NavigateTo(ViewNames.AuditLog, parameters);
     }
 
     #endregion

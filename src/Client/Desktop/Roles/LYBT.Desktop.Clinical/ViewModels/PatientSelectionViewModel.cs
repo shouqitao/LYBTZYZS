@@ -171,7 +171,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
     {
         // 导航到患者管理视图，用户可在MasterDetail界面点击"新建"按钮
         Logger.LogInformation("导航到患者管理视图");
-        _navigationCoordinator.NavigateTo(ViewNames.PatientManagement);
+        _ = _navigationCoordinator.NavigateTo(ViewNames.PatientManagement);
     }
 
     /// <summary>刷新列表</summary>
@@ -398,7 +398,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
         };
 
         Logger.LogInformation("导航到医案工作区：{MedicalCaseId}", medicalCaseId);
-        _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
+        _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
     }
 
     /// <summary>

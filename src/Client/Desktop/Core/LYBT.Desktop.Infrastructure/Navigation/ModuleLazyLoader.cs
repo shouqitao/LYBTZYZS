@@ -44,27 +44,7 @@ public class ModuleLazyLoader : IModuleLazyLoader
     }
 
     /// <summary>
-    /// 同步版本 — 内部 LoadModuleAsync 使用 Task.Run，不会死锁
-    /// </summary>
-    public void EnsureModuleLoaded(string viewName)
-    {
-        if (_moduleLoadingService == null) return;
-        if (!ViewToModuleMap.TryGetValue(viewName, out var moduleName)) return;
-        if (_moduleLoadingService.IsModuleLoaded(moduleName)) return;
-
-        try
-        {
-            _logger.LogDebug("懒加载业务模块: {ModuleName}（触发视图: {ViewName}）", moduleName, viewName);
-            _moduleLoadingService.LoadModuleAsync(moduleName).GetAwaiter().GetResult();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "懒加载模块 {ModuleName} 失败", moduleName);
-        }
-    }
-
-    /// <summary>
-    /// 异步版本 — 推荐使用
+    /// 确保目标视图所属的业务模块已加载
     /// </summary>
     public async Task EnsureModuleLoadedAsync(string viewName)
     {
