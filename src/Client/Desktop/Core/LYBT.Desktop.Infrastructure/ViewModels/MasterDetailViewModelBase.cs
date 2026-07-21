@@ -248,24 +248,21 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         protected virtual Task OnDetailCreatedAsync(TDetail detail) => Task.CompletedTask;
         protected virtual Task OnDetailSavedAsync(TDetail detail) => Task.CompletedTask;
         protected virtual Task OnItemDeletedAsync(TListItem item) => Task.CompletedTask;
-        protected virtual Task DeleteBatchAsync(List<TListItem> items)
+        protected virtual async Task DeleteBatchAsync(List<TListItem> items)
         {
             foreach (var item in items)
             {
-                var success = DeleteItemAsync(item).GetAwaiter().GetResult();
-                if (success) OnItemDeletedAsync(item).GetAwaiter().GetResult();
+                var success = await DeleteItemAsync(item);
+                if (success) await OnItemDeletedAsync(item);
             }
-            return Task.CompletedTask;
         }
-        protected virtual Task EnableBatchAsync(List<TListItem> items)
+        protected virtual async Task EnableBatchAsync(List<TListItem> items)
         {
-            foreach (var item in items) SetItemEnabledAsync(item, true).GetAwaiter().GetResult();
-            return Task.CompletedTask;
+            foreach (var item in items) await SetItemEnabledAsync(item, true);
         }
-        protected virtual Task DisableBatchAsync(List<TListItem> items)
+        protected virtual async Task DisableBatchAsync(List<TListItem> items)
         {
-            foreach (var item in items) SetItemEnabledAsync(item, false).GetAwaiter().GetResult();
-            return Task.CompletedTask;
+            foreach (var item in items) await SetItemEnabledAsync(item, false);
         }
         protected virtual Task RestoreItemAsync(TListItem item) => Task.CompletedTask;
         protected virtual Task InvalidateCachesAsync() => Task.CompletedTask;
