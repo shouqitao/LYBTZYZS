@@ -2,7 +2,6 @@ using System.IO.Compression;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
-using FluentValidation.AspNetCore;
 using LYBT.Infrastructure.Serialization;
 using LYBT.WebAPI.Serialization;
 using LYBT.Module.Auth;
@@ -143,14 +142,6 @@ public static class ServiceCollectionExtensions
 
         // 确保 UTF-8 编码可用
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-        // Epic #1731 Phase 3: 配置FluentValidation全局自动验证（使用新API）
-        services.AddFluentValidationAutoValidation(config =>
-        {
-            // 保留DataAnnotations验证（与FluentValidation共存）
-            config.DisableDataAnnotationsValidation = false;
-        });
-        services.AddFluentValidationClientsideAdapters();
 
         services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
         {

@@ -195,16 +195,11 @@ public class FormulasController : BaseApiController
     }
 
     [HttpPost("{formulaId}/herbs/{herbItemId}/validate")]
-    public async Task<IActionResult> ValidateHerb(Guid formulaId, Guid herbItemId, [FromBody] ValidateHerbRequest request, CancellationToken ct)
+    public async Task<IActionResult> ValidateHerb(Guid formulaId, Guid herbItemId, [FromBody] ValidateFormulaHerbInputDto request, CancellationToken ct)
     {
         var result = await _sender.Send(new ValidateFormulaHerbCommand(formulaId, herbItemId, request.SelectedHerbId), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "药材验证失败");
         return Success("药材验证成功");
     }
-}
-
-public class ValidateHerbRequest
-{
-    public Guid SelectedHerbId { get; set; }
 }

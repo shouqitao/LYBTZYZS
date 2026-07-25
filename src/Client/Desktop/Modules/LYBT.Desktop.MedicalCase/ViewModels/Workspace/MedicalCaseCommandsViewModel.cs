@@ -373,27 +373,26 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         _toastService.Show($"已清空所有药材（共{validItemCount}味）", ToastType.Warning, 4000);
     }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators
-    private async Task HandleFormulaImportResultAsync(IDialogParameters parameters)
+    private Task HandleFormulaImportResultAsync(IDialogParameters parameters)
     {
         try
         {
             Host.SetBusy(true, "正在导入验方药材...");
 
             if (!parameters.TryGetValue<FormulaDetailDto>("SelectedFormula", out var formula) || formula == null)
-                return;
+                return Task.CompletedTask;
 
             if (!parameters.TryGetValue<List<FormulaHerbItemDto>>("SelectedHerbs", out var herbs) || herbs?.Any() != true)
             {
                 _toastService.Show("验方无药材信息", ToastType.Error, 4000);
-                return;
+                return Task.CompletedTask;
             }
 
             var prescription = _dataProvider.GetPrescriptionItem();
             if (prescription == null)
             {
                 Logger.LogWarning("处方数据为空，无法导入验方");
-                return;
+                return Task.CompletedTask;
             }
 
             var herbPrices = BuildHerbPriceLookup();
@@ -401,7 +400,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             if (!herbItems.Any())
             {
                 _toastService.Show("验方无有效药材", ToastType.Error, 4000);
-                return;
+                return Task.CompletedTask;
             }
 
             foreach (var item in herbItems)
@@ -428,11 +427,10 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         {
             Host.SetBusy(false);
         }
+        return Task.CompletedTask;
     }
 
-#pragma warning restore CS1998
-#pragma warning disable CS1998 // Async method lacks 'await' operators
-    private async Task HandleHistoryCopyResultAsync(IDialogParameters parameters)
+    private Task HandleHistoryCopyResultAsync(IDialogParameters parameters)
     {
         try
         {
@@ -441,14 +439,14 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             if (!parameters.TryGetValue<List<PrescriptionItemDto>>("SelectedItems", out var items) || items?.Any() != true)
             {
                 _toastService.Show("历史处方无药材记录", ToastType.Error, 4000);
-                return;
+                return Task.CompletedTask;
             }
 
             var prescription = _dataProvider.GetPrescriptionItem();
             if (prescription == null)
             {
                 Logger.LogWarning("处方数据为空，无法复制历史处方");
-                return;
+                return Task.CompletedTask;
             }
 
             // T5-P2-21: Filter disabled herbs
@@ -458,7 +456,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             if (!herbItems.Any())
             {
                 _toastService.Show("历史处方无有效药材", ToastType.Error, 4000);
-                return;
+                return Task.CompletedTask;
             }
 
             foreach (var item in herbItems)
@@ -497,8 +495,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         {
             Host.SetBusy(false);
         }
+        return Task.CompletedTask;
     }
-#pragma warning restore CS1998
 
     /// <summary>
     /// CODE-08: 从 AllHerbs 构建 HerbId -> 当前价格 查找表

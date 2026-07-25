@@ -28,7 +28,6 @@
   <ItemGroup Label="WPF Framework">
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="FluentValidation" />
-    <PackageReference Include="HandyControl" />
     <PackageReference Include="NPOI" />
     <PackageReference Include="Prism.Core" />
     <PackageReference Include="Prism.Wpf" />

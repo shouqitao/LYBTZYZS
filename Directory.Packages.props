@@ -6,7 +6,6 @@
     <!-- .NET Core 基础框架包 -->
     <PackageVersion Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
-    <PackageVersion Include="HandyControl" Version="3.5.1" />
     <PackageVersion Include="hyjiacan.pinyin4net" Version="4.1.1" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.26" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.26" />
@@ -27,7 +26,6 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.26" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.2" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
@@ -38,8 +36,6 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="8.0.26" />
-    <PackageVersion Include="NPinyin" Version="0.2.6321.26573" />
-    <PackageVersion Include="PinyinNet" Version="1.0.0" />
     <PackageVersion Include="System.CommandLine" Version="2.0.6" />
     <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
     <!-- 对象映射 - 编译时映射源生成器 -->
@@ -47,8 +43,6 @@
     <!-- MediatR: CQRS and Domain Events -->
     <PackageVersion Include="MediatR" Version="12.4.1" />
     <PackageVersion Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="12.3.0" />
-    <!-- Issue #3.1: Redis 健康检查 -->
-    <PackageVersion Include="AspNetCore.HealthChecks.Redis" Version="8.0.1" />
 
   </ItemGroup>
   <ItemGroup Label="Web API Packages">
@@ -90,8 +84,6 @@
     <PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <!-- 数据验证 - 统一到 12.0.0 解决版本冲突 -->
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
-    <!-- Epic #1731: FluentValidation ASP.NET Core集成 (使用最新稳定版11.3.1) -->
-    <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.1" />
   </ItemGroup>
   <ItemGroup Label="Testing Packages">
     <!-- 测试框架 -->
@@ -153,7 +145,6 @@
   <ItemGroup Label="Additional Packages">
     <!-- 数据库和数据处理 -->
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.4" />
-    <PackageVersion Include="System.Data.SqlClient" Version="4.9.1" />
     <!-- .env文件支持 -->
     <PackageVersion Include="DotNetEnv" Version="3.1.1" />
     <!-- UI和设计 -->
@@ -163,8 +154,5 @@
     <PackageVersion Include="System.Reactive" Version="6.1.0" />
     <!-- HTTP 策略和重试 -->
     <PackageVersion Include="Polly" Version="8.6.6" />
-    <PackageVersion Include="Polly.Extensions.Http" Version="3.0.0" />
-    <!-- JSON 处理 -->
-    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 </Project>

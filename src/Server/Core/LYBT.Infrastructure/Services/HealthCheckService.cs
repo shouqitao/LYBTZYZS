@@ -3,7 +3,6 @@ using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Health;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using HealthStatus = LYBT.Shared.Models.Contracts.Health.HealthStatus;
 
 namespace LYBT.Infrastructure.Services
 {
