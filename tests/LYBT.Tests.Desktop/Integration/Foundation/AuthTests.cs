@@ -106,7 +106,7 @@ public class AuthTests : WebApiE2ETestBase
         
         Logger.LogInformation("Testing token validation after login...");
 
-        var response = await authenticatedAuthApi.ValidateTokenFromHeaderAsync();
+        var response = await authenticatedAuthApi.ValidateTokenAsync();
 
         // Log response
         _output.WriteLine("Current User Response: {0}", System.Text.Json.JsonSerializer.Serialize(response));
@@ -128,7 +128,7 @@ public class AuthTests : WebApiE2ETestBase
         await LoginAsSysadminAsync();
         var authenticatedAuthApi = CreateAuthenticatedAuthApi();
 
-        var response = await authenticatedAuthApi.ValidateTokenFromHeaderAsync();
+        var response = await authenticatedAuthApi.ValidateTokenAsync();
 
         response.Success.Should().BeTrue();
         response.Data.Should().NotBeNull();

@@ -27,6 +27,7 @@ using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Contracts.Reports;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Contracts.Diagnostics;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Foundation.Http;
@@ -48,7 +49,8 @@ namespace LYBT.Desktop.Foundation.Http;
 public sealed class HttpClientApiClient : IApiClient,
     IApiClientAuth, IApiClientUsers, IApiClientPatients,
     IApiClientHerbs, IApiClientFormulas, IApiClientMedicalCases,
-    IApiClientRegistrations, IApiClientReports
+    IApiClientRegistrations, IApiClientReports,
+    IApiClientDeploy, IApiClientDiagnostics
 {
     private readonly IHttpClientFactory _httpClientFactory;
 
@@ -99,6 +101,12 @@ public sealed class HttpClientApiClient : IApiClient,
 
     /// <inheritdoc />
     public IApiClientReports Reports => this;
+
+    /// <inheritdoc />
+    public IApiClientDeploy Deploy => this;
+
+    /// <inheritdoc />
+    public IApiClientDiagnostics Diagnostics => this;
 
     // ========================================================================
     // Base HTTP helpers (private)
@@ -331,15 +339,6 @@ public sealed class HttpClientApiClient : IApiClient,
     {
         var raw = await PostRawAsync<JsonElement>("/api/v1/auth/refresh", request);
         return WrapSuccess(MapToLoginResponse(raw));
-    }
-
-    async Task<ApiResponse<object>> IApiClientAuth.ValidateTokenFromHeaderAsync()
-    {
-        using var client = CreateClient();
-        var response = await client.GetAsync("/api/v1/auth/validate");
-        await EnsureSuccessOrThrowAsync(response);
-        var data = await DeserializeAsync<object>(response);
-        return WrapSuccess(data!);
     }
 
     async Task<ApiResponse<ValidateTokenResponse>> IApiClientAuth.ValidateTokenAsync()
@@ -733,4 +732,30 @@ public sealed class HttpClientApiClient : IApiClient,
 
     Task<ApiResponse<DailyHerbUsageDto>> IApiClientReports.GetDailyHerbUsageAsync(DateTime? startDate, DateTime? endDate)
         => GetAndWrapAsync<DailyHerbUsageDto>($"/api/v1/reports/daily/herbs?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
+
+    // ========================================================================
+    // IApiClientDeploy — Deploy endpoints (Local mode not supported)
+    // ========================================================================
+
+    Task<ApiResponse<object>> IApiClientDeploy.UploadAsync(MultipartFormDataContent content)
+        => Task.FromResult(ApiResponse<object>.CreateFail("本地模式不支持部署更新"));
+
+    Task<ApiResponse<object>> IApiClientDeploy.RestartAsync()
+        => Task.FromResult(ApiResponse<object>.CreateFail("本地模式不支持部署更新"));
+
+    // ========================================================================
+    // IApiClientDiagnostics — Diagnostics endpoints (explicit implementation)
+    // ========================================================================
+
+    Task<ApiResponse<object>> IApiClientDiagnostics.GetLoggingStatusAsync()
+        => GetAndWrapAsync<object>("/api/v1/diagnostics/logging/status");
+
+    Task<ApiResponse<object>> IApiClientDiagnostics.EnableDebugModeAsync(EnableDebugModeRequest request)
+        => PostAndWrapAsync<object>("/api/v1/diagnostics/logging/debug/enable", request);
+
+    Task<ApiResponse<object>> IApiClientDiagnostics.DisableDebugModeAsync()
+        => PostAndWrapAsync<object>("/api/v1/diagnostics/logging/debug/disable", new object());
+
+    Task<ApiResponse<object>> IApiClientDiagnostics.SetLoggingLevelAsync(SetLoggingLevelRequest request)
+        => PostAndWrapAsync<object>("/api/v1/diagnostics/logging/level", request);
 }

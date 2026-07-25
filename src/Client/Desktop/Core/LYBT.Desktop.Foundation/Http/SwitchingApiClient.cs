@@ -107,6 +107,12 @@ public sealed class SwitchingApiClient : IApiClient, IDisposable
     /// <inheritdoc />
     public IApiClientReports Reports => Current.Reports;
 
+    /// <inheritdoc />
+    public IApiClientDeploy Deploy => Current.Deploy;
+
+    /// <inheritdoc />
+    public IApiClientDiagnostics Diagnostics => Current.Diagnostics;
+
     public void Dispose()
     {
         if (_disposed) return;

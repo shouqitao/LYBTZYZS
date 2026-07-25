@@ -42,4 +42,10 @@ public interface IApiClient
 
     /// <summary>Report endpoints (daily income, consultations, herb usage).</summary>
     IApiClientReports Reports { get; }
+
+    /// <summary>Server deployment endpoints (upload, restart).</summary>
+    IApiClientDeploy Deploy { get; }
+
+    /// <summary>Diagnostics/logging endpoints (status, enable/disable, level).</summary>
+    IApiClientDiagnostics Diagnostics { get; }
 }

@@ -75,28 +75,7 @@ namespace LYBT.Desktop.Contracts.Api
         // SuperAdmin密码修改现统一使用IUserApi.ChangePasswordAsync
 
         /// <summary>
-        /// 验证Token (GET方法)
-        /// </summary>
-        /// <returns>验证结果包含token有效性和用户信息</returns>
-        /// <remarks>
-        /// <para>功能: 从Authorization header中获取Bearer Token进行验证</para>
-        /// <para>返回: Token有效性、用户信息和过期时间</para>
-        /// </remarks>
-        [Refit.Get("/api/v1/auth/validate")]
-        [Refit.Headers("Authorization: Bearer")]
-        Task<ApiResponse<object>> ValidateTokenFromHeaderAsync();
-
-        /// <summary>
-        /// 验证Token (POST方法)
-        /// </summary>
-        /// <param name="token">要验证的Token</param>
-        /// <returns>验证结果</returns>
-        /// <remarks>
-        /// <para>功能: 验证指定的Token是否有效</para>
-        /// <para>用途: 用于无法使用Header的场景</para>
-        /// </remarks>
-        /// <summary>
-        /// 验证Token并返回详细信息 (POST方法) - Issue #1824
+        /// 验证Token并返回详细信息 - Issue #1824
         /// </summary>
         /// <param name="request">Token验证请求</param>
         /// <returns>详细的验证结果</returns>

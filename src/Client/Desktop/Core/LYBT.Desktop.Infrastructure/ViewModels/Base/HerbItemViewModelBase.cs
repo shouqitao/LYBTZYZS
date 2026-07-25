@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Infrastructure.ViewModels.Base

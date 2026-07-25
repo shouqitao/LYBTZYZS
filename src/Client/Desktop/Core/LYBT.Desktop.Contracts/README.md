@@ -51,7 +51,7 @@ LYBT.Desktop.Contracts/
 | `LoginWithAutoTokenAsync(AutoLoginRequest)` | `Task<ApiResponse<LoginResponse>>` | Token 自动登录 |
 | `LogoutAsync(LogoutRequest)` | `Task<ApiResponse>` | 登出 |
 | `RefreshTokenAsync(RefreshTokenRequest)` | `Task<ApiResponse<LoginResponse>>` | 刷新 Token |
-| `ValidateTokenFromHeaderAsync()` | `Task<ApiResponse<object>>` | 从 Header 验证 Token |
+| `ValidateTokenAsync()` | `Task<ApiResponse<ValidateTokenResponse>>` | 验证 Token |
 | `HealthCheckAsync()` | `Task<ApiResponse<HealthCheckResponse>>` | 健康检查 |
 
 #### `IApiClientUsers` (14 方法)

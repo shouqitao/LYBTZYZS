@@ -48,12 +48,6 @@ public interface IApiClientAuth
 
     /// <summary>
     /// Validate token from Authorization header (GET method).
-    /// </summary>
-    /// <returns>Validation result with token validity and user info.</returns>
-    Task<ApiResponse<object>> ValidateTokenFromHeaderAsync();
-
-    /// <summary>
-    /// Validate token from Authorization header (GET method).
     /// Issue #1824
     /// </summary>
     /// <returns>Detailed validation result.</returns>
