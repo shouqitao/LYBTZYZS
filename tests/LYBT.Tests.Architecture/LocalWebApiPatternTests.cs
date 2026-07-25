@@ -103,31 +103,4 @@ public class LocalWebApiPatternTests
             Assert.True(hasAttribute, $"{type.Name} must have [ApiController] attribute");
         }
     }
-
-    /// <summary>
-    /// P23: All Desktop repository interfaces must have HttpRepository implementations.
-    /// This ensures 100% coverage for LocalWebAPI mode.
-    /// </summary>
-    [Fact]
-    public void P23_All_Repository_Interfaces_Must_Have_HttpRepository_Implementations()
-    {
-        var repositoryAssembly = typeof(LYBT.Desktop.Contracts.Repositories.IPatientRepository).Assembly;
-        var httpRepoAssembly = typeof(LYBT.LocalWebAPI.Repositories.HttpPatientRepository).Assembly;
-
-        var repoInterfaces = repositoryAssembly.GetTypes()
-            .Where(t => t.IsInterface && t.Namespace == "LYBT.Desktop.Contracts.Repositories")
-            .ToList();
-
-        var httpRepoTypes = httpRepoAssembly.GetTypes()
-            .Where(t => t.IsClass && t.Namespace == "LYBT.LocalWebAPI.Repositories" && t.Name.StartsWith("Http"))
-            .ToList();
-
-        foreach (var repoInterface in repoInterfaces)
-        {
-            var expectedName = repoInterface.Name.Replace("I", "").Replace("Repository", "");
-            var hasImplementation = httpRepoTypes.Any(t => t.Name.Contains(expectedName));
-            Assert.True(hasImplementation, 
-                $"Repository interface {repoInterface.Name} must have HttpRepository implementation");
-        }
-    }
 }

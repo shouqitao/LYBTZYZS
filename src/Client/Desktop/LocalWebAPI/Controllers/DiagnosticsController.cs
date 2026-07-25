@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
-using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Web;
 using LYBT.LocalWebAPI.Commands;
@@ -11,7 +10,6 @@ using LYBT.Shared.Models.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.LocalWebAPI.Controllers;
 
@@ -20,14 +18,14 @@ namespace LYBT.LocalWebAPI.Controllers;
 [Authorize]
 public class DiagnosticsController : BaseApiController
 {
-    private readonly AppDbContext _db;
+    private readonly ISystemLogRepository _systemLogRepository;
     private readonly IHealthCheckService _healthCheckService;
     private readonly ISender _sender;
 
-    public DiagnosticsController(AppDbContext db, IHealthCheckService healthCheckService, ISender sender, ILogger<DiagnosticsController> logger)
+    public DiagnosticsController(ISystemLogRepository systemLogRepository, IHealthCheckService healthCheckService, ISender sender, ILogger<DiagnosticsController> logger)
         : base(logger)
     {
-        _db = db;
+        _systemLogRepository = systemLogRepository;
         _healthCheckService = healthCheckService;
         _sender = sender;
     }
@@ -75,29 +73,25 @@ public class DiagnosticsController : BaseApiController
     }
 
     [HttpGet("logs/recent")]
-    // TODO: 注入 ISystemLogRepository 替代直接查询 AppDbContext（目前未注册）
-    public async Task<IActionResult> GetRecentLogs([FromQuery] int count = 50)
+    public async Task<IActionResult> GetRecentLogs([FromQuery] int count = 50, CancellationToken ct = default)
     {
         if (count <= 0) count = 50;
         if (count > 500) count = 500;
 
-        var logs = await _db.SystemLogs
-            .AsNoTracking()
-            .OrderByDescending(l => l.Timestamp)
-            .Take(count)
-            .Select(l => new
-            {
-                l.Id,
-                l.Timestamp,
-                l.Level,
-                l.Message,
-                l.Exception,
-                l.LoggerName,
-                l.MachineName
-            })
-            .ToListAsync();
+        var logs = await _systemLogRepository.GetRecentLogsAsync(count, ct);
 
-        return Success(new { count = logs.Count, items = logs });
+        var items = logs.Select(l => new
+        {
+            l.Id,
+            l.Timestamp,
+            l.Level,
+            l.Message,
+            l.Exception,
+            l.LoggerName,
+            l.MachineName
+        }).ToList();
+
+        return Success(new { count = items.Count, items });
     }
 
     [HttpGet("logging/status")]

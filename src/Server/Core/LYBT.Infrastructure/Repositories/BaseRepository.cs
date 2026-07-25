@@ -633,12 +633,12 @@ namespace LYBT.Infrastructure.Repositories
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                _logger?.LogError(ex, "并发冲突 - 类型: {EntityType}", typeof(TEntity).Name);
+                _logger.LogError(ex, "并发冲突 - 类型: {EntityType}", typeof(TEntity).Name);
                 throw new InvalidOperationException("数据已被其他用户修改，请刷新后重试", ex);
             }
             catch (DbUpdateException ex)
             {
-                _logger?.LogError(ex, "数据库更新失败 - 类型: {EntityType}", typeof(TEntity).Name);
+                _logger.LogError(ex, "数据库更新失败 - 类型: {EntityType}", typeof(TEntity).Name);
                 throw;
             }
         }

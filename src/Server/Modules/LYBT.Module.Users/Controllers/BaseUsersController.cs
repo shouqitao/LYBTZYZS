@@ -85,12 +85,12 @@ public abstract class BaseUsersController : BaseApiController
     /// <summary>
     /// 创建用户
     /// </summary>
-        [HttpPost]
-        [EnableRateLimiting("ApiCalls")]
-        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-        [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 201)]
-        [ProducesResponseType(400)]
-        public virtual async Task<IActionResult> Create([FromBody] UserInputDto dto, CancellationToken cancellationToken = default)
+    [HttpPost]
+    [EnableRateLimiting("ApiCalls")]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 201)]
+    [ProducesResponseType(400)]
+    public virtual async Task<IActionResult> Create([FromBody] UserInputDto dto, CancellationToken cancellationToken = default)
     {
         var (currentUserId, _, currentRole) = GetOperator();
         var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
@@ -111,12 +111,12 @@ public abstract class BaseUsersController : BaseApiController
     /// <summary>
     /// 更新用户
     /// </summary>
-        [HttpPut("{id:guid}")]
-        [EnableRateLimiting("ApiCalls")]
-        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-        [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
-        [ProducesResponseType(404)]
-        public virtual async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto dto, CancellationToken ct = default)
+    [HttpPut("{id:guid}")]
+    [EnableRateLimiting("ApiCalls")]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
+    [ProducesResponseType(404)]
+    public virtual async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto dto, CancellationToken ct = default)
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
@@ -140,12 +140,12 @@ public abstract class BaseUsersController : BaseApiController
     /// <summary>
     /// 删除用户
     /// </summary>
-        [HttpDelete("{id:guid}")]
-        [EnableRateLimiting("ApiCalls")]
-        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-        [ProducesResponseType(typeof(ApiResponse), 200)]
-        [ProducesResponseType(404)]
-        public virtual async Task<IActionResult> Delete(Guid id, CancellationToken ct = default)
+    [HttpDelete("{id:guid}")]
+    [EnableRateLimiting("ApiCalls")]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    [ProducesResponseType(typeof(ApiResponse), 200)]
+    [ProducesResponseType(404)]
+    public virtual async Task<IActionResult> Delete(Guid id, CancellationToken ct = default)
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
@@ -273,12 +273,12 @@ public abstract class BaseUsersController : BaseApiController
     /// <summary>
     /// 批量删除用户
     /// </summary>
-        [HttpPost("batch-delete")]
-        [EnableRateLimiting("ApiCalls")]
-        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
-        [ProducesResponseType(typeof(ApiResponse), 400)]
-        public virtual async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
+    [HttpPost("batch-delete")]
+    [EnableRateLimiting("ApiCalls")]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse), 400)]
+    public virtual async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
     {
         if (dto.Ids == null || dto.Ids.Count == 0)
         {
@@ -326,12 +326,12 @@ public abstract class BaseUsersController : BaseApiController
     /// <summary>
     /// 批量启用用户
     /// </summary>
-        [HttpPost("batch-enable")]
-        [EnableRateLimiting("ApiCalls")]
-        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
-        [ProducesResponseType(typeof(ApiResponse), 400)]
-        public virtual async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
+    [HttpPost("batch-enable")]
+    [EnableRateLimiting("ApiCalls")]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse), 400)]
+    public virtual async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
     {
         if (dto.Ids == null || dto.Ids.Count == 0)
         {
@@ -347,12 +347,12 @@ public abstract class BaseUsersController : BaseApiController
     /// <summary>
     /// 批量禁用用户
     /// </summary>
-        [HttpPost("batch-disable")]
-        [EnableRateLimiting("ApiCalls")]
-        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
-        [ProducesResponseType(typeof(ApiResponse), 400)]
-        public virtual async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
+    [HttpPost("batch-disable")]
+    [EnableRateLimiting("ApiCalls")]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse), 400)]
+    public virtual async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
     {
         if (dto.Ids == null || dto.Ids.Count == 0)
         {

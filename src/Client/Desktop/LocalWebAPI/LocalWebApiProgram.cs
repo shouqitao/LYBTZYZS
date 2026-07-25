@@ -6,6 +6,7 @@ using LYBT.LocalWebAPI.Auth;
 using LYBT.Shared.Logging.Management;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
+using LYBT.Infrastructure.Repositories;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.Auth;
 using LYBT.Module.Users;
@@ -39,6 +40,9 @@ public static class LocalWebApiProgram
         // DbContext — 使用 AppDbContext（与远程 WebAPI 一致，含审计自动化）
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(connectionString));
+
+        // 系统日志仓储（只读查询，替代 DiagnosticsController 中的直接 DbContext 注入）
+        builder.Services.AddScoped<ISystemLogRepository, SystemLogRepository>();
 
         builder.Services.AddHttpContextAccessor();
 
