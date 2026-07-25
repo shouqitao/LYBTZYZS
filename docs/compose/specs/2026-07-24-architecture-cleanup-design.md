@@ -3,6 +3,7 @@ feature: architecture-cleanup
 status: delivered
 updated: 2026-07-24
 branch: refactor/arch-cleanup-remaining
+commits: ac614f184..30ae7f4c9
 ---
 
 # Architecture Cleanup — Remaining Issues
