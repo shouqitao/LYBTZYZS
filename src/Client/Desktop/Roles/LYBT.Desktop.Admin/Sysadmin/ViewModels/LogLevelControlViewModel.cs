@@ -85,7 +85,11 @@ public partial class LogLevelControlViewModel : NavigableViewModelBase
             CurrentLevel = "Debug (60分钟)";
             StatusMessage = "Debug 模式已开启（60分钟后自动关闭）";
         }
-        catch { StatusMessage = "开启Debug模式失败，请稍后重试"; }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "开启Debug模式失败");
+            StatusMessage = "开启Debug模式失败，请稍后重试";
+        }
         finally { IsBusy = false; }
     }
 
@@ -99,7 +103,11 @@ public partial class LogLevelControlViewModel : NavigableViewModelBase
             CurrentLevel = "Information";
             StatusMessage = "Debug 模式已关闭";
         }
-        catch { StatusMessage = "关闭Debug模式失败，请稍后重试"; }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "关闭Debug模式失败");
+            StatusMessage = "关闭Debug模式失败，请稍后重试";
+        }
         finally { IsBusy = false; }
     }
 }

@@ -162,7 +162,11 @@ internal sealed class WorkspaceNavigationHandler
                         break;
                 }
             }
-            catch (Exception) { tcs.SetResult(false); }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[WorkspaceNavigationHandler] Save failed during navigation: {ex.Message}");
+                tcs.SetResult(false);
+            }
         });
 
         return await tcs.Task;

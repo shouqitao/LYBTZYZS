@@ -18,6 +18,7 @@ public class CardReaderService : ICardReaderService
 
     private ICardReader? _currentReader;
     private Timer? _autoReadTimer;
+    private CancellationTokenSource? _autoReadCts;
     private bool _isAutoReading;
     private bool _disposed;
     private string? _lastReadIdNumber;
@@ -229,6 +230,7 @@ public class CardReaderService : ICardReaderService
 
             _isAutoReading = true;
             _lastReadIdNumber = null;
+            _autoReadCts = new CancellationTokenSource();
 
             _autoReadTimer = new Timer(
                 AutoReadCallback,
@@ -250,6 +252,9 @@ public class CardReaderService : ICardReaderService
             if (!_isAutoReading) return;
 
             _isAutoReading = false;
+            _autoReadCts?.Cancel();
+            _autoReadCts?.Dispose();
+            _autoReadCts = null;
             _autoReadTimer?.Dispose();
             _autoReadTimer = null;
             _lastReadIdNumber = null;
@@ -266,21 +271,25 @@ public class CardReaderService : ICardReaderService
         if (!_isAutoReading) return;
 
         ICardReader? reader;
+        CancellationToken ct;
         lock (_lockObj)
         {
             reader = _currentReader;
+            ct = _autoReadCts?.Token ?? CancellationToken.None;
             if (reader == null || !reader.IsConnected || !_isAutoReading)
                 return;
         }
 
         try
         {
+            ct.ThrowIfCancellationRequested();
+
             // 检测是否有卡片
             if (!await reader.DetectCardAsync())
                 return;
 
             // 读取卡片
-            var result = await reader.ReadCardAsync(false, null, CancellationToken.None);
+            var result = await reader.ReadCardAsync(false, null, ct);
 
             if (!result.IsSuccess) return;
 

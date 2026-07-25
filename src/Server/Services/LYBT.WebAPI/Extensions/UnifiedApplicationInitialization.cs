@@ -101,9 +101,9 @@ public static class UnifiedApplicationInitialization
                     logger?.LogInformation(" 数据库连接配置验证通过");
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                logger?.LogWarning(" 数据库连接配置可能存在问题");
+                logger?.LogWarning(ex, "数据库连接配置验证异常: {ErrorMessage}", ex.Message);
             }
 
 

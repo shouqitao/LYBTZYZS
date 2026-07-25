@@ -21,11 +21,12 @@ namespace LoginTester
 
             try
             {
-                // 测试账号列表
+                // 从环境变量读取测试凭据，未设置则使用占位符
+                var testPassword = Environment.GetEnvironmentVariable("TEST_PASSWORD") ?? "__TEST_PASSWORD_NOT_SET__";
                 var testAccounts = new[]
                 {
-                    new { Username = "shouqitao", Password = "Lybt2025@TempPass#" },
-                    new { Username = "jjr", Password = "Lybt2025@TempPass#" }
+                    new { Username = "shouqitao", Password = testPassword },
+                    new { Username = "jjr", Password = testPassword }
                 };
 
                 Console.WriteLine("=====================================");

@@ -37,9 +37,10 @@ namespace LYBT.Desktop.Shell.Views
                     await viewModel.OnWindowLoadedAsync();
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // 异常已在ViewModel中记录，此处静默处理避免崩溃
+                // 异常已在ViewModel中记录，此处仅防止窗口崩溃
+                System.Diagnostics.Debug.WriteLine($"[MainWindow] OnWindowLoaded exception: {ex.Message}");
             }
         }
 
