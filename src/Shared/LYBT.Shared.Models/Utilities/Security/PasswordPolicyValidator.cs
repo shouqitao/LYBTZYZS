@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Utilities.Security
@@ -222,57 +222,6 @@ namespace LYBT.Shared.Models.Utilities.Security
                 >= 20 => PasswordStrength.Fair,
                 _ => PasswordStrength.Weak
             };
-        }
-
-        /// <summary>
-        /// 生成符合策略的随机密码
-        /// </summary>
-        /// <param name="length">密码长度（默认12）</param>
-        /// <returns>随机密码</returns>
-        public static string GenerateSecurePassword(int length = 12)
-        {
-            if (length < Policy.MinLength)
-                length = Policy.MinLength;
-
-            if (length > Policy.MaxLength)
-                length = Policy.MaxLength;
-
-            const string uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            const string lowercase = "abcdefghijklmnopqrstuvwxyz";
-            const string digits = "0123456789";
-            const string special = "!@#$%^&*()_+-=[]{}|;:,./<>?";
-
-            var chars = new List<char>();
-            var random = new Random(Guid.NewGuid().GetHashCode());
-
-            // 确保至少包含每种类型的字符
-            if (Policy.RequireUppercase)
-                chars.Add(uppercase[random.Next(uppercase.Length)]);
-
-            if (Policy.RequireLowercase)
-                chars.Add(lowercase[random.Next(lowercase.Length)]);
-
-            if (Policy.RequireDigit)
-                chars.Add(digits[random.Next(digits.Length)]);
-
-            if (Policy.RequireSpecialChar)
-                chars.Add(special[random.Next(special.Length)]);
-
-            // 填充剩余字符
-            var allChars = uppercase + lowercase + digits + special;
-            while (chars.Count < length)
-            {
-                chars.Add(allChars[random.Next(allChars.Length)]);
-            }
-
-            // 打乱顺序
-            for (int i = chars.Count - 1; i > 0; i--)
-            {
-                int j = random.Next(i + 1);
-                (chars[i], chars[j]) = (chars[j], chars[i]);
-            }
-
-            return new string(chars.ToArray());
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using LYBT.Shared.Models.Enums;
@@ -186,22 +186,21 @@ namespace LYBT.Shared.Models.Utilities.Security
             const string lowerChars = "abcdefghijklmnopqrstuvwxyz";
             const string numberChars = "0123456789";
 
-            var random = new Random();
             var password = new char[8];
 
             // 1个大写字母
-            password[0] = upperChars[random.Next(upperChars.Length)];
+            password[0] = upperChars[GetRandomInt(upperChars.Length)];
 
             // 4个小写字母
             for (int i = 1; i <= 4; i++)
             {
-                password[i] = lowerChars[random.Next(lowerChars.Length)];
+                password[i] = lowerChars[GetRandomInt(lowerChars.Length)];
             }
 
             // 3个数字
             for (int i = 5; i < 8; i++)
             {
-                password[i] = numberChars[random.Next(numberChars.Length)];
+                password[i] = numberChars[GetRandomInt(numberChars.Length)];
             }
 
             return new string(password);
@@ -434,22 +433,22 @@ namespace LYBT.Shared.Models.Utilities.Security
             if (includeLowercase)
             {
                 chars.Append(lowercase);
-                password.Append(lowercase[Random.Shared.Next(lowercase.Length)]);
+                password.Append(lowercase[GetRandomInt(lowercase.Length)]);
             }
             if (includeUppercase)
             {
                 chars.Append(uppercase);
-                password.Append(uppercase[Random.Shared.Next(uppercase.Length)]);
+                password.Append(uppercase[GetRandomInt(uppercase.Length)]);
             }
             if (includeDigits)
             {
                 chars.Append(digits);
-                password.Append(digits[Random.Shared.Next(digits.Length)]);
+                password.Append(digits[GetRandomInt(digits.Length)]);
             }
             if (includeSpecialChars)
             {
                 chars.Append(specialChars);
-                password.Append(specialChars[Random.Shared.Next(specialChars.Length)]);
+                password.Append(specialChars[GetRandomInt(specialChars.Length)]);
             }
 
             if (chars.Length == 0)
@@ -459,16 +458,12 @@ namespace LYBT.Shared.Models.Utilities.Security
             var allChars = chars.ToString();
             while (password.Length < length)
             {
-                password.Append(allChars[Random.Shared.Next(allChars.Length)]);
+                password.Append(allChars[GetRandomInt(allChars.Length)]);
             }
 
             // 简单打乱字符顺序
             var result = password.ToString().ToCharArray();
-            for (int i = result.Length - 1; i > 0; i--)
-            {
-                int j = Random.Shared.Next(i + 1);
-                (result[i], result[j]) = (result[j], result[i]);
-            }
+            Shuffle(result);
 
             return new string(result);
         }
