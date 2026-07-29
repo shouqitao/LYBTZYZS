@@ -38,6 +38,9 @@ public class FormulaDbContext : DbContext
             entity.Property(e => e.Property).HasMaxLength(300);
             entity.Property(e => e.Category).HasMaxLength(50);
 
+            // 枚举转换（与 AppDbContext 保持一致）
+            entity.Property(e => e.Status).HasConversion<int>();
+
 
 
             entity.HasIndex(e => e.Name);

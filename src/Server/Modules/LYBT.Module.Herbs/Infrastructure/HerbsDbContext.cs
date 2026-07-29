@@ -36,6 +36,9 @@ public class HerbsDbContext : DbContext
             entity.Property(e => e.Usage).HasMaxLength(500);
             entity.Property(e => e.Remark).HasMaxLength(500);
 
+            // 枚举转换（与 AppDbContext 保持一致）
+            entity.Property(e => e.Status).HasConversion<int>();
+
 
 
             entity.HasIndex(e => e.Name);
