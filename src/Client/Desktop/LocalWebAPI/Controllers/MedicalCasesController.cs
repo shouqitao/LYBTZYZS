@@ -16,7 +16,7 @@ namespace LYBT.LocalWebAPI.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize]
+[Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
 public class MedicalCasesController : BaseApiController
 {
     private readonly ISender _sender;

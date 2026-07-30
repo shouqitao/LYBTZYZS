@@ -1,3 +1,4 @@
+using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.AspNetCore.Authorization;
@@ -7,7 +8,7 @@ namespace LYBT.LocalWebAPI.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize]
+[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
 public class DeployController : BaseApiController
 {
     public DeployController(ILogger<DeployController> logger) : base(logger) { }

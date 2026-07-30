@@ -13,7 +13,7 @@ namespace LYBT.LocalWebAPI.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize]
+[Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
 public class RegistrationsController : BaseApiController
 {
     private readonly ISender _sender;

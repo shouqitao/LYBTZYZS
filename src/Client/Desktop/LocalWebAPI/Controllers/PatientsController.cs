@@ -1,3 +1,4 @@
+using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Patients.Application.Commands;
 using LYBT.Module.Patients.Application.Queries;
@@ -12,7 +13,7 @@ namespace LYBT.LocalWebAPI.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize]
+[Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
 public class PatientsController : BaseApiController
 {
     private readonly ISender _sender;

@@ -1,4 +1,5 @@
 using LYBT.Infrastructure.Web;
+using LYBT.Infrastructure.Constants;
 using LYBT.Module.Reports.Application.Queries;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Reports;
@@ -10,7 +11,7 @@ namespace LYBT.LocalWebAPI.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize]
+[Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
 public class ReportsController : BaseApiController
 {
     private readonly ISender _sender;

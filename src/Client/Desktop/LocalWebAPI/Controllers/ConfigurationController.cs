@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using LYBT.Infrastructure.Web;
+using LYBT.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +15,7 @@ namespace LYBT.LocalWebAPI.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize]
+[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
 public class ConfigurationController : BaseApiController
 {
     // In-memory configuration store (singleton lifetime via static field)

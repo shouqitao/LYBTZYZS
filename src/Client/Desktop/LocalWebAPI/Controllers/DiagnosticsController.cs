@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
+using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Web;
 using LYBT.LocalWebAPI.Commands;
@@ -15,7 +16,7 @@ namespace LYBT.LocalWebAPI.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize]
+[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
 public class DiagnosticsController : BaseApiController
 {
     private readonly ISystemLogRepository _systemLogRepository;
