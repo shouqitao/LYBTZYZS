@@ -105,9 +105,10 @@ namespace LYBT.Desktop.Controls.Controls.HerbList
                 .OrderBy(i => i.HerbRole)
                 .ToList();
 
-            Items.Clear();
+            ClearItemsWithUnsubscribe();
             foreach (var item in sorted)
             {
+                item.ItemChanged += OnItemChanged;
                 Items.Add(item);
             }
 
@@ -126,7 +127,7 @@ namespace LYBT.Desktop.Controls.Controls.HerbList
         /// </summary>
         public void LoadFromDto(IEnumerable<PrescriptionItemDto> items)
         {
-            Items.Clear();
+            ClearItemsWithUnsubscribe();
             foreach (var dto in items.Where(i => i.HerbId != Guid.Empty))
             {
                 var vm = CreateItemViewModel();
@@ -220,7 +221,7 @@ namespace LYBT.Desktop.Controls.Controls.HerbList
         /// </summary>
         public void Clear()
         {
-            Items.Clear();
+            ClearItemsWithUnsubscribe();
             EnsureSingleEmptySlot();
             OnListChanged(HerbListChangeType.Cleared);
         }
@@ -234,6 +235,7 @@ namespace LYBT.Desktop.Controls.Controls.HerbList
                 return;
 
             var item = Items[index];
+            UnsubscribeItem(item);
             Items.RemoveAt(index);
 
             EnsureSingleEmptySlot();
@@ -368,6 +370,7 @@ namespace LYBT.Desktop.Controls.Controls.HerbList
             while (emptySlots.Count > 1)
             {
                 var toRemove = emptySlots[emptySlots.Count - 1];
+                UnsubscribeItem(toRemove);
                 Items.Remove(toRemove);
                 emptySlots.RemoveAt(emptySlots.Count - 1);
             }
@@ -390,10 +393,11 @@ namespace LYBT.Desktop.Controls.Controls.HerbList
             // 收集所有非空项
             var nonEmptyItems = Items.Where(i => !i.IsEmpty).ToList();
 
-            // 清空并重新添加
-            Items.Clear();
+            // 清空并重新添加（非空项已在 ClearItemsWithUnsubscribe 中取消订阅，需重新订阅）
+            ClearItemsWithUnsubscribe();
             foreach (var item in nonEmptyItems)
             {
+                item.ItemChanged += OnItemChanged;
                 Items.Add(item);
             }
 
@@ -424,6 +428,24 @@ namespace LYBT.Desktop.Controls.Controls.HerbList
                 .ToList();
 
             return herbIds.Count != herbIds.Distinct().Count();
+        }
+
+        /// <summary>
+        /// 取消子项事件订阅
+        /// </summary>
+        private void UnsubscribeItem(HerbItemControlViewModel item)
+        {
+            item.ItemChanged -= OnItemChanged;
+        }
+
+        /// <summary>
+        /// 取消所有子项事件订阅后清空集合
+        /// </summary>
+        private void ClearItemsWithUnsubscribe()
+        {
+            foreach (var item in Items)
+                UnsubscribeItem(item);
+            Items.Clear();
         }
 
         /// <summary>
