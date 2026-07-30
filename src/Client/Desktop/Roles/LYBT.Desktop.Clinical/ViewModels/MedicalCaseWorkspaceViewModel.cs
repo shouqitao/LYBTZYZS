@@ -18,7 +18,7 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
+using CommunityToolkit.Mvvm.Input;
 using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
@@ -76,7 +76,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
                 OnPropertyChanged(nameof(State));
                 OnPropertyChanged(nameof(Completeness));
                 Commands?.RefreshCanExecute();
-                SaveChangesCommand?.RaiseCanExecuteChanged();
+                SaveChangesCommand?.NotifyCanExecuteChanged();
             }
         }
     }
@@ -88,7 +88,15 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     public CompletenessCheck Completeness => State.Completeness ?? new();
 
     private Guid _medicalCaseId = Guid.Empty;
-    public Guid MedicalCaseId { get => _medicalCaseId; set => SetProperty(ref _medicalCaseId, value); }
+    public Guid MedicalCaseId
+    {
+        get => _medicalCaseId;
+        set
+        {
+            if (SetProperty(ref _medicalCaseId, value))
+                ViewAuditLogsCommand?.NotifyCanExecuteChanged();
+        }
+    }
 
     private PatientDetailDto? _currentPatient;
     public PatientDetailDto? CurrentPatient
@@ -103,6 +111,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
                 OnPropertyChanged(nameof(CurrentPatientDisplayModel));
                 OnPropertyChanged(nameof(PatientName));
                 OnPropertyChanged(nameof(PatientInfo));
+                ViewPatientHistoryCommand?.NotifyCanExecuteChanged();
             }
         }
     }
@@ -226,14 +235,14 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
 
     #region Commands
 
-    public DelegateCommand BackCommand { get; }
-    public DelegateCommand BackToPatientSelectionCommand => BackCommand;
-    public DelegateCommand ViewPatientHistoryCommand { get; }
-    public DelegateCommand ViewAuditLogsCommand { get; }
+    public IAsyncRelayCommand BackCommand { get; }
+    public IAsyncRelayCommand BackToPatientSelectionCommand => BackCommand;
+    public IRelayCommand ViewPatientHistoryCommand { get; }
+    public IRelayCommand ViewAuditLogsCommand { get; }
     /// <summary>
     /// Management模式: 审计 + 保存 + 进入只读 (parent-level concern, not in child Commands VM)
     /// </summary>
-    public DelegateCommand SaveChangesCommand { get; }
+    public IRelayCommand SaveChangesCommand { get; }
 
     #endregion
 
@@ -287,12 +296,10 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         // Wire PendingQueue suspend delegate
 
         // Parent-level commands
-        BackCommand = new DelegateCommand(async () => await ExecuteBackAsync());
-        ViewPatientHistoryCommand = new DelegateCommand(ExecuteViewPatientHistory, () => CurrentPatient != null)
-            .ObservesProperty(() => CurrentPatient);
-        ViewAuditLogsCommand = new DelegateCommand(ExecuteViewAuditLogs, () => MedicalCaseId != Guid.Empty)
-            .ObservesProperty(() => MedicalCaseId);
-        SaveChangesCommand = new DelegateCommand(ExecuteSaveChanges, () => State.ShowSaveButton);
+        BackCommand = new AsyncRelayCommand(ExecuteBackAsync);
+        ViewPatientHistoryCommand = new RelayCommand(ExecuteViewPatientHistory, () => CurrentPatient != null);
+        ViewAuditLogsCommand = new RelayCommand(ExecuteViewAuditLogs, () => MedicalCaseId != Guid.Empty);
+        SaveChangesCommand = new RelayCommand(ExecuteSaveChanges, () => State.ShowSaveButton);
 
         // Event subscriptions
         Events.Subscribe<CaseEvents.ConsultationCompletedEvent, CaseConsultationCompletedPayload>(OnConsultationCompleted);

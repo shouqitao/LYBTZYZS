@@ -9,7 +9,7 @@ using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Infrastructure.Extensions;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
+using CommunityToolkit.Mvvm.Input;
 using Prism.Regions;
 using Prism.Services.Dialogs;
 
@@ -162,10 +162,10 @@ namespace LYBT.Desktop.Auth.ViewModels
             ConnectionStatus = new ConnectionStatusViewModel(services, applicationStateService, connectionModeService);
 
             // 命令
-            LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), () => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && !IsLoading);
-            CloseApplicationCommand = new DelegateCommand(async () => await ExecuteCloseApplicationAsync());
+            LoginCommand = new AsyncRelayCommand(ExecuteLoginAsync, () => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && !IsLoading);
+            CloseApplicationCommand = new AsyncRelayCommand(ExecuteCloseApplicationAsync);
             RetryApiCheckCommand = ConnectionStatus.RetryApiCheckCommand;
-            OpenSettingsCommand = new DelegateCommand(ExecuteOpenSettings);
+            OpenSettingsCommand = new RelayCommand(ExecuteOpenSettings);
             SwitchToLocalCommand = ConnectionStatus.SwitchToLocalCommand;
             SwitchToRemoteCommand = ConnectionStatus.SwitchToRemoteCommand;
 
