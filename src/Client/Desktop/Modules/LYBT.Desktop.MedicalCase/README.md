@@ -82,7 +82,7 @@ LYBT.Desktop.MedicalCase/
 | **MedicalCaseMasterDetailViewModel** | 继承 `MasterDetailViewModelBase<MedicalCaseListDto, MedicalCaseDetailModel>`；组合模式含 ConsultationEditor + PrescriptionEditor 子 VM | 分页列表、详情加载(缓存→子 VM)、聚合保存(AggregateSaveAsync)、删除(CancelMedicalCase)、CreateNewDetail 抛 NotSupportedException |
 | **ConsultationEditorViewModel** | `ChildViewModelBase` 子 VM；ConsultationMapper 编译时映射 | InitializeFromDto(ConsultationDetailDto→ConsultationItem)、GetConsultationData(→ConsultationInputDto)、Validate |
 | **PrescriptionEditorViewModel** | `ChildViewModelBase` 子 VM；PrescriptionMapper 编译时映射；CollectionChanged 通知父 VM 状态重算 | InitializeFromDto(PrescriptionDetailDto→PrescriptionItem)、GetPrescriptionData(→PrescriptionInputDto)、Validate、HasItems |
-| **MedicalCaseCommandsViewModel** | `ChildViewModelBase`；~555 行；9 个 DelegateCommand；delegate 属性由父 VM 赋值（跨子 VM 边界不能用 ObservesProperty） | Save / Suspend / Complete / Print / ExportPdf / EnterEditMode / ImportFormula / CopyHistory / ClearHerbs |
+| **MedicalCaseCommandsViewModel** | `ChildViewModelBase`；~555 行；9 个 CommunityToolkit 命令（AsyncRelayCommand/RelayCommand）；delegate 属性由父 VM 赋值（跨子 VM 边界用 NotifyCanExecuteChanged 手动刷新） | Save / Suspend / Complete / Print / ExportPdf / EnterEditMode / ImportFormula / CopyHistory / ClearHerbs |
 | **EditModeStateMachine** | Dictionary 转换表驱动；`lock` 线程安全；事件在锁外触发防死锁；参考 AuthenticationStateMachine 模式 | 6 状态(ReadOnly/Editing/DirtyEditing/Saving/TransitionBlocked/LeavingConfirming) × 10 事件(EnterEdit/ExitEdit/MakeChange/Save/SaveCompleted/SaveFailed/RequestLeave/LeaveConfirmed/LeaveCancelled) |
 | **PrescriptionPrintHandler** | `IPrintService<PrescriptionPrintModel>` 委托；诊所配置 `clinic-settings.json` 热更新(IClinicSettingsService)；草稿水印(IsDraft=非 Completed) | PrintPreviewAsync、ExportPdfAsync(SaveFileDialog)、BuildPrintModel(自动绑定 DoctorName + Discount 折扣计算) |
 | **FormulaImportDialogViewModel** | `DialogViewModelBase`；跨模块 `IFormulaSearchProvider`；自动筛选 Validated + Enabled 验方 | 搜索/分类筛选/详情预览/确认导入；过滤逻辑：ValidationStatus==Validated && Status==Enabled |
@@ -122,7 +122,7 @@ LYBT.Desktop.MedicalCase/
 
 1. **聚合根模式**: MedicalCase 是唯一聚合根，统一管理 Consultation + Prescription 的生命周期；Consultation/Prescription 不作为独立模块存在（Issue #1463 移除 ConsultationModule 依赖）
 2. **Service 四拆分**: MedicalCaseService 聚合代理委托 Query/Command/Lifecycle 三独立服务 + MedicalCaseEditContext 共享缓存，SRP 职责分离
-3. **子 VM + delegate 属性模式**: ConsultationEditor / PrescriptionEditor / Commands 三个 ChildViewModelBase 子 VM；CommandsVM 的数据提供者(GetConsultationData/GetPrescriptionData 等)由父 VM 通过 delegate 属性注入，因 DelegateCommand.ObservesProperty 无法跨子 VM 边界工作
+3. **子 VM + delegate 属性模式**: ConsultationEditor / PrescriptionEditor / Commands 三个 ChildViewModelBase 子 VM；CommandsVM 的数据提供者(GetConsultationData/GetPrescriptionData 等)由父 VM 通过 delegate 属性注入，因 CommunityToolkit 的 CanExecute 属性观察无法跨子 VM 边界工作，使用 NotifyCanExecuteChanged 手动刷新
 4. **转换表驱动状态机**: EditModeStateMachine 用 `Dictionary<(State,Event), State>` 静态转换表 + `lock` 线程安全 + 事件锁外触发防死锁，替代嵌套 if/switch
 5. **处方打印热更新**: PrescriptionPrintHandler 通过 IClinicSettingsService 读取 `clinic-settings.json`，支持诊所信息(名称/地址/电话)运行时更新
 6. **历史复制 UX**: HistoryCopyDialog 默认显示当前患者最近 5 条已完成记录 → "显示更多"展开本患者全部 → "查看全部患者"切换全局模式

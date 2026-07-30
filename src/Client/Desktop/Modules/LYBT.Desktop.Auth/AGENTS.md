@@ -33,7 +33,7 @@ Authentication module for the TCM clinic desktop client. Handles user login/logo
 - The "Remember Password" checkbox auto-enables "Remember Username" (T5-P2-07 behavior).
 - API health is monitored via `IApplicationStateService.StatusChanged` event -- ViewModel subscribes in constructor and unsubscribes in `OnDisposing()`.
 - The ViewModel uses `NavigableViewModelBase` (not `UnifiedViewModelBase`) per OpenSpec refactor-viewmodel-base-classes.
-- Commands use Prism `DelegateCommand` (not CommunityToolkit `[RelayCommand]`) for async commands with CanExecute.
+- Commands use CommunityToolkit `AsyncRelayCommand` / `RelayCommand` (manual instantiation in constructor, not `[RelayCommand]` attribute, because CanExecute depends on multiple properties).
 
 ### Testing Requirements
 

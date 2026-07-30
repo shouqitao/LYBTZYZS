@@ -43,12 +43,12 @@ LYBT.Desktop.Auth/
 
 | 命令 | 类型 | CanExecute | 说明 |
 |------|------|------------|------|
-| `LoginCommand` | `DelegateCommand` | Username/Password 非空且非 Loading | 调用 `ILoginCoordinator.LoginAsync`，成功后保存凭据 |
-| `CloseApplicationCommand` | `DelegateCommand` | 始终可用 | 确认对话框后 `Application.Current.Shutdown()` |
-| `RetryApiCheckCommand` | `DelegateCommand` | `ApiStatus == Unhealthy` | 触发 `IApplicationStateService.CheckApiHealthAsync` |
-| `OpenSettingsCommand` | `DelegateCommand` | 始终可用 | 打开 `ServerConfigView` 对话框 |
-| `SwitchToLocalCommand` | `DelegateCommand` | 始终可用 | `IConnectionModeService.SetMode(Local)` |
-| `SwitchToRemoteCommand` | `DelegateCommand` | `IsRemoteAvailable` | `IConnectionModeService.SetMode(Remote)` |
+| `LoginCommand` | `AsyncRelayCommand` | Username/Password 非空且非 Loading | 调用 `ILoginCoordinator.LoginAsync`，成功后保存凭据 |
+| `CloseApplicationCommand` | `AsyncRelayCommand` | 始终可用 | 确认对话框后 `Application.Current.Shutdown()` |
+| `RetryApiCheckCommand` | `IRelayCommand` | `ApiStatus == Unhealthy` | 触发 `IApplicationStateService.CheckApiHealthAsync` |
+| `OpenSettingsCommand` | `RelayCommand` | 始终可用 | 打开 `ServerConfigView` 对话框 |
+| `SwitchToLocalCommand` | `RelayCommand` | 始终可用 | `IConnectionModeService.SetMode(Local)` |
+| `SwitchToRemoteCommand` | `RelayCommand` | `IsRemoteAvailable` | `IConnectionModeService.SetMode(Remote)` |
 
 **BackgroundInitAsync 序列**:
 1. `MaybeShowFirstRunSetupAsync` — 检测 `%LOCALAPPDATA%\LYBT\Desktop\first_run_done.flag`，不存在则弹出向导

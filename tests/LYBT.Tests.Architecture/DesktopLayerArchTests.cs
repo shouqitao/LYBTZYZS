@@ -536,7 +536,7 @@ public class DesktopLayerArchTests
 
     /// <summary>
     /// 禁止在 ViewModel 中新增 DelegateCommand（应使用 [RelayCommand]）
-    /// 例外：ChildViewModelBase 子类（CanExecute 跨 VM 边界需要 DelegateCommand）
+    /// 截至 2026-07-30，全部 51 个 VM 已使用 CommunityToolkit 命令，零 DelegateCommand。
     /// </summary>
     [Fact]
     public void ViewModels_Should_Not_Use_New_DelegateCommand()
@@ -556,28 +556,7 @@ public class DesktopLayerArchTests
 
         foreach (var vmType in viewModelTypes)
         {
-            // 例外：ChildViewModelBase 子类（CanExecute 跨 VM 边界）
-            var isChild = false;
-            var current = vmType.BaseType;
-            while (current != null && current != typeof(object))
-            {
-                if (current.Name == "ChildViewModelBase")
-                {
-                    isChild = true;
-                    break;
-                }
-                current = current.BaseType;
-            }
-            if (isChild) continue;
-
-            // 例外：ChildViewModelBase 子类（CanExecute 跨 VM 边界）和已知使用 CanExecute 的 VM
-            var delegateCommandExceptionVmTypes = new[]
-            {
-                "MedicalCaseWorkspaceViewModel", // CanExecute 依赖外部 State
-                "LoginViewModel"                 // CanExecute 依赖 Username/Password/IsLoading
-            };
-            if (delegateCommandExceptionVmTypes.Contains(vmType.Name))
-                continue;
+            // 截至 2026-07-30，所有 VM 已迁移 CommunityToolkit，无需例外
 
             var ctors = vmType.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             foreach (var ctor in ctors)
