@@ -66,7 +66,7 @@ sqlcmd -S "(localdb)\MSSQLLocalDB" -Q "DROP DATABASE IF EXISTS LYBTDesktop"     
 
 **Git**: Remote=Gitee(`gitee.com/shouqitao/LYBTZYZS.git`) NOT GitHub｜Branch=`master`｜Commit 英文 `feat/fix/docs/refactor/test(模块): 描述`
 
-**Database**: Latest migration=`AddIsSysAdmin`｜Remote=`LYBTDB_Dev`(SQL Server)｜Local=`LYBTDesktop`(LocalDB, NOT SQLite)｜`DatabaseInitializationService` 用 `MigrateAsync()`（幂等迁移+重试），InMemory 用 `EnsureCreatedAsync`
+**Database**: Latest migration=`AddRowVersionToAspNetUsers`｜Remote=`LYBTDB_Dev`(SQL Server)｜Local=`LYBTDesktop`(LocalDB, NOT SQLite)｜`DatabaseInitializationService` 用 `MigrateAsync()`（幂等迁移+重试），InMemory 用 `EnsureCreatedAsync`
 
 ---
 
