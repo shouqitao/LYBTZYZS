@@ -202,13 +202,11 @@ public class DatabaseInitializationService
     /// <summary>
     /// 判断当前是否为开发环境。
     /// 仅当 ASPNETCORE_ENVIRONMENT 为 "Development"（不区分大小写）时返回 true。
-    /// 环境变量为 null/空字符串时视为开发环境（兼容测试和本地运行）。
+    /// 环境变量为 null/空字符串时视为生产环境（保守默认，避免绕过生产门控）。
     /// </summary>
     private static bool IsDevelopment()
     {
         var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        if (string.IsNullOrEmpty(env))
-            return true; // 未设置环境变量时视为开发环境
         return string.Equals(env, "Development", StringComparison.OrdinalIgnoreCase);
     }
 

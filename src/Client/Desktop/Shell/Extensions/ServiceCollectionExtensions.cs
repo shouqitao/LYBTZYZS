@@ -152,7 +152,6 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IPrescriptionSettingsService, PrescriptionSettingsService>();
             containerRegistry.RegisterSingleton<IClinicSettingsService, ClinicSettingsService>();
             containerRegistry.RegisterSingleton<ICommonDialogService, CommonDialogService>();
-            // IPrintService<T> 由 PrintingModule 注册，此处不重复
 
             // refactor-auth-role-system Phase 2.1: 可扩展角色注册表
             containerRegistry.RegisterSingleton<IRoleRegistry>(resolver =>

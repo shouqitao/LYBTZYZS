@@ -46,6 +46,9 @@ public class HerbsDbContext : DbContext
             entity.HasIndex(e => e.Category);
             entity.HasIndex(e => e.Status);
             entity.HasIndex(e => e.IsDeleted);
+
+            // 软删除全局查询过滤器（与 AppDbContext 保持一致）
+            entity.HasQueryFilter(e => !e.IsDeleted);
         });
     }
 }

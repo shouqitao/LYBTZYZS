@@ -17,6 +17,7 @@ using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Views;
 using LYBT.Desktop.Admin.Sysadmin;
 using LYBT.Desktop.Users;
+using LYBT.Desktop.Printing;
 using MaterialDesignThemes.Wpf;
 using Prism.DryIoc;
 using Prism.Ioc;
@@ -154,6 +155,9 @@ public partial class App : PrismApplication
 
         // 统计报表模块
         moduleCatalog.AddModule<ReportsModule>(InitializationMode.OnDemand);
+
+        // 打印模块
+        moduleCatalog.AddModule<PrintingModule>(InitializationMode.OnDemand);
 
         base.ConfigureModuleCatalog(moduleCatalog);
     }

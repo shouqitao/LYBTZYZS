@@ -1,17 +1,18 @@
 using MediatR;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Module.Users.Interfaces;
+using LYBT.Entities.Users;
+using Microsoft.AspNetCore.Identity;
 
 namespace LYBT.Module.Users.Application.Commands;
 
 public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommand, Result>
 {
-    private readonly IUserRepository _userRepository;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public ChangePasswordCommandHandler(IUserRepository userRepository)
+    public ChangePasswordCommandHandler(UserManager<ApplicationUser> userManager)
     {
-        _userRepository = userRepository;
+        _userManager = userManager;
     }
 
     public async Task<Result> Handle(
@@ -20,21 +21,18 @@ public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordComman
         if (request.Id != request.CurrentUserId)
             return Result.Failure(ErrorCode.Forbidden, "只能修改自己的密码");
 
-        var user = await _userRepository.GetByIdAsync(request.Id, cancellationToken);
+        var user = await _userManager.FindByIdAsync(request.Id.ToString());
         if (user == null)
             return Result.Failure(ErrorCode.UserNotFound, "用户不存在");
 
-        var verifyResult = LYBT.Shared.Models.Utilities.Security.PasswordHelper.VerifyPassword(
-            request.OldPassword, user.PasswordHash ?? string.Empty);
-        if (!verifyResult.IsSuccess)
-            return Result.Failure(ErrorCode.InvalidPassword, "原密码错误");
-
-        var newHash = LYBT.Shared.Models.Utilities.Security.PasswordHelper.HashPassword(request.NewPassword);
-        user.PasswordHash = newHash;
-        await _userRepository.UpdateAsync(user, cancellationToken);
+        var result = await _userManager.ChangePasswordAsync(user, request.OldPassword, request.NewPassword);
+        if (!result.Succeeded)
+        {
+            var error = result.Errors.FirstOrDefault();
+            var message = error?.Description ?? "密码修改失败";
+            return Result.Failure(ErrorCode.InvalidPassword, message);
+        }
 
         return Result.Success();
     }
 }
-
-

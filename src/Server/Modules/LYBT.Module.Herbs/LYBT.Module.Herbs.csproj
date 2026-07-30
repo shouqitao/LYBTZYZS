@@ -26,7 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Core/LYBT.Entities/LYBT.Entities.csproj" />
+    <ProjectReference Include="..\..\..\Shared/LYBT.Entities/LYBT.Entities.csproj" />
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
   </ItemGroup>
 

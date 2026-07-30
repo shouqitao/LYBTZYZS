@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.4.11626.88
@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server.Services", "Server.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Infrastructure", "src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj", "{C3D4E5F6-A7B8-6C7D-0E1F-2A3B4C5D6E7F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Entities", "src\Server\Core\LYBT.Entities\LYBT.Entities.csproj", "{D4E5F6A7-B8C9-7D8E-1F2A-3B4C5D6E7F8A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Entities", "src\Shared\LYBT.Entities\LYBT.Entities.csproj", "{D4E5F6A7-B8C9-7D8E-1F2A-3B4C5D6E7F8A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WebAPI", "src\Server\Services\LYBT.WebAPI\LYBT.WebAPI.csproj", "{D2E3F4A5-B6C7-5D6E-9F0A-1B2C3D4E5F6A}"
 EndProject

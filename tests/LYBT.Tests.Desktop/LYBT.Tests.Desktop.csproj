@@ -54,7 +54,7 @@
     <ProjectReference Include="..\..\src\Client\Desktop\Shell\LYBT.Desktop.Shell.csproj" />
     <!-- Shared + Entities -->
     <ProjectReference Include="..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
-    <ProjectReference Include="..\..\src\Server\Core\LYBT.Entities\LYBT.Entities.csproj" />
+    <ProjectReference Include="..\..\src\Shared\LYBT.Entities\LYBT.Entities.csproj" />
 
     <!-- WebApi Integration Testing -->
     <ProjectReference Include="..\..\src\Server\Services\LYBT.WebAPI\LYBT.WebAPI.csproj" />

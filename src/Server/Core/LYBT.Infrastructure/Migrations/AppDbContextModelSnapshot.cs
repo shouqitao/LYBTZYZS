@@ -553,7 +553,7 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MedicalCaseAuditLogs");
+                    b.ToTable("MedicalCaseAuditLogs", (string)null);
                 });
 
             modelBuilder.Entity("LYBT.Entities.MedicalCases.MedicalCasePrintLog", b =>
@@ -606,7 +606,7 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.HasIndex("MedicalCaseId");
 
-                    b.ToTable("MedicalCasePrintLogs");
+                    b.ToTable("MedicalCasePrintLogs", (string)null);
                 });
 
             modelBuilder.Entity("LYBT.Entities.Patients.Patient", b =>

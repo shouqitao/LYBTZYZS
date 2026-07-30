@@ -13,7 +13,7 @@ public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
     public void Configure(EntityTypeBuilder<ApplicationUser> builder)
     {
         // 表名沿用 Users（与 Identity 约定一致）
-        builder.ToTable("Users");
+        builder.ToTable("AspNetUsers");
 
         // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
         // 枚举转换（Fluent API 专属功能）

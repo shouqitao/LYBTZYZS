@@ -39,7 +39,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\LYBT.Entities\LYBT.Entities.csproj" />
+		<ProjectReference Include="..\..\..\Shared\LYBT.Entities\LYBT.Entities.csproj" />
 		<!-- unify-configuration-system: 添加统一配置项目引用 -->
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Configuration\LYBT.Shared.Configuration.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />

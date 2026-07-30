@@ -17,11 +17,11 @@ namespace LYBT.WebAPI.Controllers
     /// <summary>
     /// 药材管理 API - 基础CRUD功能
     /// </summary>
-    /// optimize-api-permissions: 药材管理仅Admin和SuperAdmin角色
+    /// optimize-api-permissions: 药材管理权限与LocalWebAPI对齐（DoctorOrReceptionist）
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
     public class HerbsController : BaseApiController
     {
         private readonly ISender _sender;

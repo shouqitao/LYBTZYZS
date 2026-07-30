@@ -36,6 +36,9 @@ public class UsersDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Gu
             entity.HasIndex(e => e.PinYinCode);
             entity.HasIndex(e => e.Role);
             entity.HasIndex(e => e.Status);
+
+            // 软删除全局查询过滤器（与 AppDbContext 保持一致）
+            entity.HasQueryFilter(e => !e.IsDeleted);
         });
     }
 }

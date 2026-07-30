@@ -25,14 +25,14 @@ public class DesktopLayerArchTests
     ];
 
     /// <summary>
-    /// Desktop层不得依赖Server层
+    /// Desktop层不得依赖Server层（LYBT.Entities 已下沉到 Shared，不再受限）
     /// </summary>
     [Fact]
     public void Desktop_Should_Not_Depend_On_Server_Layers()
     {
         var result = Types.InAssemblies(DesktopAssemblies)
             .Should()
-            .NotHaveDependencyOnAll("LYBT.Infrastructure", "LYBT.Entities")
+            .NotHaveDependencyOn("LYBT.Infrastructure")
             .GetResult();
 
         Assert.True(

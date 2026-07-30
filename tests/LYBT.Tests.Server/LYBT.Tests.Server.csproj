@@ -40,7 +40,7 @@
     <!-- Server Core -->
     <ProjectReference Include="..\..\src\Server\Services\LYBT.WebAPI\LYBT.WebAPI.csproj" />
     <ProjectReference Include="..\..\src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\src\Server\Core\LYBT.Entities\LYBT.Entities.csproj" />
+    <ProjectReference Include="..\..\src\Shared\LYBT.Entities\LYBT.Entities.csproj" />
     <!-- Shared -->
     <ProjectReference Include="..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\..\src\Shared\LYBT.Shared.Logging\LYBT.Shared.Logging.csproj" />
