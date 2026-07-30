@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.Services.Toast;
@@ -16,7 +17,6 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
 using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels.Workspace;
@@ -45,15 +45,15 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
 
     #region Commands
 
-    public DelegateCommand SaveCommand { get; }
-    public DelegateCommand SuspendCommand { get; }
-    public DelegateCommand CompleteCommand { get; }
-    public DelegateCommand PrintCommand { get; }
-    public DelegateCommand ExportPdfCommand { get; }
-    public DelegateCommand EnterEditModeCommand { get; }
-    public DelegateCommand ImportFormulaCommand { get; }
-    public DelegateCommand CopyHistoryCommand { get; }
-    public DelegateCommand ClearHerbsCommand { get; }
+    public IRelayCommand SaveCommand { get; }
+    public IRelayCommand SuspendCommand { get; }
+    public IRelayCommand CompleteCommand { get; }
+    public IRelayCommand PrintCommand { get; }
+    public IRelayCommand ExportPdfCommand { get; }
+    public IRelayCommand EnterEditModeCommand { get; }
+    public IRelayCommand ImportFormulaCommand { get; }
+    public IRelayCommand CopyHistoryCommand { get; }
+    public IRelayCommand ClearHerbsCommand { get; }
 
     #endregion
 
@@ -75,44 +75,43 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
         _dialogService = dialogService;
 
-        SaveCommand = new DelegateCommand(ExecuteSave, CanSave);
-        SuspendCommand = new DelegateCommand(ExecuteSuspend, CanSuspend);
-        CompleteCommand = new DelegateCommand(ExecuteComplete, CanComplete);
-        PrintCommand = new DelegateCommand(ExecutePrint, CanPrint);
-        ExportPdfCommand = new DelegateCommand(ExecuteExportPdf, CanPrint);
-        EnterEditModeCommand = new DelegateCommand(ExecuteEnterEditMode, CanEnterEditMode);
-        ImportFormulaCommand = new DelegateCommand(ExecuteImportFormula);
-        CopyHistoryCommand = new DelegateCommand(ExecuteCopyHistory);
-        ClearHerbsCommand = new DelegateCommand(ExecuteClearHerbs);
+        SaveCommand = new AsyncRelayCommand(ExecuteSaveAsync, () => CanSave);
+        SuspendCommand = new AsyncRelayCommand(ExecuteSuspendAsync, () => CanSuspend);
+        CompleteCommand = new AsyncRelayCommand(ExecuteCompleteAsync, () => CanComplete);
+        PrintCommand = new AsyncRelayCommand(ExecutePrintAsync, () => CanPrint);
+        ExportPdfCommand = new AsyncRelayCommand(ExecuteExportPdfAsync, () => CanPrint);
+        EnterEditModeCommand = new RelayCommand(ExecuteEnterEditMode, () => CanEnterEditMode);
+        ImportFormulaCommand = new RelayCommand(ExecuteImportFormula);
+        CopyHistoryCommand = new RelayCommand(ExecuteCopyHistory);
+        ClearHerbsCommand = new AsyncRelayCommand(ExecuteClearHerbsAsync);
     }
 
     /// <summary>
     /// Called by parent when State changes to update CanExecute for all commands.
-    /// DelegateCommand.ObservesProperty does NOT work across child VM boundaries.
+    /// CommunityToolkit IRelayCommand.NotifyCanExecuteChanged() replaces Prism's RaiseCanExecuteChanged().
     /// </summary>
     public void RefreshCanExecute()
     {
-        SaveCommand.RaiseCanExecuteChanged();
-        SuspendCommand.RaiseCanExecuteChanged();
-        CompleteCommand.RaiseCanExecuteChanged();
-        PrintCommand.RaiseCanExecuteChanged();
-        ExportPdfCommand.RaiseCanExecuteChanged();
-        EnterEditModeCommand.RaiseCanExecuteChanged();
+        SaveCommand.NotifyCanExecuteChanged();
+        SuspendCommand.NotifyCanExecuteChanged();
+        CompleteCommand.NotifyCanExecuteChanged();
+        PrintCommand.NotifyCanExecuteChanged();
+        ExportPdfCommand.NotifyCanExecuteChanged();
+        EnterEditModeCommand.NotifyCanExecuteChanged();
     }
 
     #region CanExecute
 
-    private bool CanSave() => _context.State.IsEditing;
-    private bool CanSuspend() => _context.State.ShowSuspendButton;
-    private bool CanComplete() => _context.State.ShowCompleteButton && _context.State.CanComplete;
-    private bool CanPrint() => _context.State.CanPrint;
-    private bool CanEnterEditMode() => _context.State.ShowEditButton || _context.State.ShowEditButtonTopRight;
+    private bool CanSave => _context.State.IsEditing;
+    private bool CanSuspend => _context.State.ShowSuspendButton;
+    private bool CanComplete => _context.State.ShowCompleteButton && _context.State.CanComplete;
+    private bool CanPrint => _context.State.CanPrint;
+    private bool CanEnterEditMode => _context.State.ShowEditButton || _context.State.ShowEditButtonTopRight;
 
     #endregion
 
     #region Core Command Implementations
 
-    private void ExecuteSave() => ExecuteSaveAsync().SafeFireAndForget(ex => Logger.LogError(ex, "保存医案数据失败"));
     private async Task ExecuteSaveAsync()
     {
         try
@@ -147,7 +146,6 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         }
     }
 
-    private void ExecuteSuspend() => ExecuteSuspendAsync().SafeFireAndForget(ex => Logger.LogError(ex, "暂存医案失败"));
     private async Task ExecuteSuspendAsync()
     {
         try
@@ -182,7 +180,6 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         }
     }
 
-    private void ExecuteComplete() => ExecuteCompleteAsync().SafeFireAndForget(ex => Logger.LogError(ex, "完成医案失败"));
     private async Task ExecuteCompleteAsync()
     {
         try
@@ -220,7 +217,6 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         }
     }
 
-    private void ExecutePrint() => ExecutePrintAsync().SafeFireAndForget(ex => Logger.LogError(ex, "打印处方笺失败"));
     private async Task ExecutePrintAsync()
     {
         try
@@ -255,10 +251,6 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         }
     }
 
-    /// <summary>
-    /// D1: 导出处方笺为 PDF
-    /// </summary>
-    private void ExecuteExportPdf() => ExecuteExportPdfAsync().SafeFireAndForget(ex => Logger.LogError(ex, "导出PDF失败"));
     private async Task ExecuteExportPdfAsync()
     {
         try
@@ -298,10 +290,6 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         }
     }
 
-    /// <summary>
-    /// P1-2 FIX: Request transition to edit mode by triggering the state machine.
-    /// This properly transitions WorkspaceState.EditState from ReadOnly to Editing.
-    /// </summary>
     private void ExecuteEnterEditMode()
     {
         Host.RequestEnterEditMode();
@@ -348,7 +336,6 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         });
     }
 
-    private void ExecuteClearHerbs() => ExecuteClearHerbsAsync().SafeFireAndForget(ex => Logger.LogError(ex, "清空药材失败"));
     private async Task ExecuteClearHerbsAsync()
     {
         var prescription = _dataProvider.GetPrescriptionItem();
@@ -449,8 +436,6 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
                 return Task.CompletedTask;
             }
 
-            // T5-P2-21: Filter disabled herbs
-            // CODE-08: 复制历史处方时刷新为当前药材价格
             var herbPrices = BuildHerbPriceLookup();
             var herbItems = FilterDisabledHerbs(items.ToPrescriptionItemDtos(herbPrices), "历史复制");
             if (!herbItems.Any())
@@ -462,7 +447,6 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             foreach (var item in herbItems)
                 prescription.Items.Add(item);
 
-            // T5-P2-23 + T5-P3-09: Copy source info and prescription-level fields
             if (parameters.TryGetValue<MedicalCaseDetailDto>("SelectedCase", out var selectedCase) && selectedCase != null)
             {
                 var sourceRef = !string.IsNullOrEmpty(selectedCase.CaseNumber)
@@ -498,9 +482,6 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         return Task.CompletedTask;
     }
 
-    /// <summary>
-    /// CODE-08: 从 AllHerbs 构建 HerbId -> 当前价格 查找表
-    /// </summary>
     private IReadOnlyDictionary<Guid, decimal>? BuildHerbPriceLookup()
     {
         var allHerbs = _dataProvider.GetAllHerbs();
@@ -511,9 +492,6 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             .ToDictionary(h => h.Id, h => h.Price);
     }
 
-    /// <summary>
-    /// Filter disabled herbs from import source. T5-P2-19, T5-P2-21.
-    /// </summary>
     private IReadOnlyList<PrescriptionItemDto> FilterDisabledHerbs(
         IReadOnlyList<PrescriptionItemDto> items, string source)
     {

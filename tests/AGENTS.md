@@ -18,11 +18,7 @@ Test projects for the LYBTZYZS solution. Implements a Testing Trophy architectur
 |-----------|---------|
 | LYBT.Tests.Server/ | Server integration tests — ~1185 tests, real SQL Server + Respawn reset, zero mock |
 | LYBT.Tests.Desktop/ | Desktop tests — ~760 tests, SQL Server LocalDB + real Repository pattern |
-| LYBT.Tests.Architecture/ | Architecture guard tests — ~76 tests enforcing dependency rules, naming conventions, anti-mock policies |
-| LYBT.Tests.Server.Unit/ | Server unit tests (subset) |
-| LYBT.Tests.Integration/ | Integration test infrastructure |
-| LYBT.Tests.Integration.Server/ | Server API integration tests |
-| LYBTZYZS/ | End-to-end or solution-level tests |
+| LYBT.Tests.Architecture/ | Architecture guard tests — ~83 tests enforcing dependency rules, naming conventions, anti-mock policies |
 | postman/ | Postman/Newman API test collections |
 
 ## For AI Agents

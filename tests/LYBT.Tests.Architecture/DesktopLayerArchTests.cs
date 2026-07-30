@@ -21,7 +21,10 @@ public class DesktopLayerArchTests
         Assembly.Load("LYBT.Desktop.Herbs"),
         Assembly.Load("LYBT.Desktop.Formula"),
         Assembly.Load("LYBT.Desktop.Admin"),
-        Assembly.Load("LYBT.Desktop.Clinical")
+        Assembly.Load("LYBT.Desktop.Clinical"),
+        Assembly.Load("LYBT.Desktop.Registration"),
+        Assembly.Load("LYBT.Desktop.Controls"),
+        Assembly.Load("LYBT.Desktop.Printing")
     ];
 
     /// <summary>
