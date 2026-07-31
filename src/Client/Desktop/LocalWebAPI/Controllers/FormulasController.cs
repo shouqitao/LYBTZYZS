@@ -168,11 +168,7 @@ public class FormulasController : BaseCrudController<FormulaListDto, FormulaDeta
     protected override IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
         => new DeleteFormulaCommand(id, operatorId);
 
-    protected override IRequest<Result<FormulaDetailDto>> CreateToggleStatusCommand(Guid id, Guid operatorId)
-        => new ToggleFormulaStatusCommand(id, operatorId);
-
-    protected override IRequest<Result<FormulaDetailDto>> CreateRestoreCommand(Guid id, Guid operatorId)
-        => new RestoreFormulaCommand(id, operatorId);
+    
 
     protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
         => new BatchDeleteFormulasCommand(ids, operatorId);

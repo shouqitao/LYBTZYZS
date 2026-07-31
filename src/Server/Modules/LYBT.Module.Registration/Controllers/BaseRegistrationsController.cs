@@ -64,7 +64,7 @@ public abstract class BaseRegistrationsController
 
     #endregion
 
-    #region Override 不支持的操作（挂号不支持 Update/Delete/ToggleStatus/Restore/BatchDelete）
+    #region Override 不支持的操作（挂号不支持 Update/Delete/BatchDelete）
 
     [HttpPut("{id:guid}")]
     public override Task<IActionResult> Update(Guid id, [FromBody] RegistrationInputDto dto, CancellationToken ct)
@@ -73,14 +73,6 @@ public abstract class BaseRegistrationsController
     [HttpDelete("{id:guid}")]
     public override Task<IActionResult> Delete(Guid id, CancellationToken ct)
         => Task.FromResult<IActionResult>(NotFound("挂号不支持删除操作"));
-
-    [HttpPost("{id:guid}/toggle-status")]
-    public override Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
-        => Task.FromResult<IActionResult>(NotFound("挂号不支持切换状态"));
-
-    [HttpPost("{id:guid}/restore")]
-    public override Task<IActionResult> Restore(Guid id, CancellationToken ct)
-        => Task.FromResult<IActionResult>(NotFound("挂号不支持恢复操作"));
 
     [HttpPost("batch-delete")]
     public override Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
@@ -103,12 +95,6 @@ public abstract class BaseRegistrationsController
 
     protected override IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
         => throw new NotSupportedException("挂号不支持删除操作");
-
-    protected override IRequest<Result<RegistrationDetailDto>> CreateToggleStatusCommand(Guid id, Guid operatorId)
-        => throw new NotSupportedException("挂号不支持切换状态");
-
-    protected override IRequest<Result<RegistrationDetailDto>> CreateRestoreCommand(Guid id, Guid operatorId)
-        => throw new NotSupportedException("挂号不支持恢复操作");
 
     protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
         => throw new NotSupportedException("挂号不支持批量删除操作");

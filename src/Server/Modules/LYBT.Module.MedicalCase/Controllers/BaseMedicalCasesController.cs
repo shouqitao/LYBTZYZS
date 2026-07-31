@@ -23,18 +23,6 @@ public abstract class BaseMedicalCasesController : BaseCrudController<MedicalCas
     {
     }
 
-    #region Override ToggleStatus/Restore (医案不支持)
-
-    [HttpPost("{id:guid}/toggle-status")]
-    public override Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
-        => Task.FromResult<IActionResult>(NotFound("医案不支持切换状态"));
-
-    [HttpPost("{id:guid}/restore")]
-    public override Task<IActionResult> Restore(Guid id, CancellationToken ct)
-        => Task.FromResult<IActionResult>(NotFound("医案不支持恢复操作"));
-
-    #endregion
-
     #region 抽象方法实现
 
     protected override GetMedicalCasesQuery CreateGetListQuery(int page, int pageSize, string? keyword)
@@ -64,12 +52,6 @@ public abstract class BaseMedicalCasesController : BaseCrudController<MedicalCas
 
     protected override IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
         => throw new NotSupportedException("医案删除需要 isAdmin 参数，请在子类 override Delete 方法");
-
-    protected override IRequest<Result<MedicalCaseDetailDto>> CreateToggleStatusCommand(Guid id, Guid operatorId)
-        => throw new NotSupportedException("医案不支持切换状态");
-
-    protected override IRequest<Result<MedicalCaseDetailDto>> CreateRestoreCommand(Guid id, Guid operatorId)
-        => throw new NotSupportedException("医案不支持恢复操作");
 
     protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
     {

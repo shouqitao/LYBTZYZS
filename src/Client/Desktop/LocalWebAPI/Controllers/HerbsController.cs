@@ -129,11 +129,7 @@ public class HerbsController : BaseCrudController<HerbListDto, HerbDetailDto, He
     protected override IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
         => new DeleteHerbCommand(id, operatorId);
 
-    protected override IRequest<Result<HerbDetailDto>> CreateToggleStatusCommand(Guid id, Guid operatorId)
-        => new ToggleHerbStatusCommand(id, operatorId);
-
-    protected override IRequest<Result<HerbDetailDto>> CreateRestoreCommand(Guid id, Guid operatorId)
-        => new RestoreHerbCommand(id, operatorId);
+    
 
     protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
         => new BatchDeleteHerbsCommand(ids, operatorId);

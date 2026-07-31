@@ -54,18 +54,6 @@ public abstract class BaseUsersController : BaseCrudController<UserListDto, User
         return new DeleteUserCommand(id, operatorId, isAdmin);
     }
 
-    protected override IRequest<Result<UserDetailDto>> CreateToggleStatusCommand(Guid id, Guid operatorId)
-    {
-        var (_, _, currentRole) = GetOperator();
-        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
-        return new ToggleUserStatusCommand(id, operatorId, isAdmin);
-    }
-
-    protected override IRequest<Result<UserDetailDto>> CreateRestoreCommand(Guid id, Guid operatorId)
-    {
-        return new RestoreUserCommand(id, operatorId);
-    }
-
     protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
     {
         var (_, _, currentRole) = GetOperator();
@@ -120,14 +108,35 @@ public abstract class BaseUsersController : BaseCrudController<UserListDto, User
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
     {
-        return await base.ToggleStatus(id, ct);
+        if (ValidateGuid(id, "用户ID") is { } error) return error;
+
+        var (operatorId, _, operatorRole) = GetOperator();
+        var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+        var result = await Sender.Send(new ToggleUserStatusCommand(id, operatorId, isAdmin), ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "切换状态失败");
+
+        LogOperation("切换用户状态", null, id);
+        return Success(result.Value, "状态已切换");
     }
 
     [HttpPost("{id:guid}/restore")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
     {
-        return await base.Restore(id, ct);
+        if (ValidateGuid(id, "用户ID") is { } error) return error;
+
+        var (operatorId, _, _) = GetOperator();
+        var result = await Sender.Send(new RestoreUserCommand(id, operatorId), ct);
+        if (!result.IsSuccess || result.Value == null)
+        {
+            if (result.Error?.Contains("未被删除") == true)
+                return BusinessFail(result.Error);
+            return NotFound(result.Error ?? "用户不存在");
+        }
+
+        LogOperation("恢复用户", null, id);
+        return Success(result.Value, "用户恢复成功");
     }
 
     [HttpPost("batch-delete")]

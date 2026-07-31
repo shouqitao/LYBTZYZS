@@ -91,11 +91,7 @@ public class PatientsController : BaseCrudController<PatientListDto, PatientDeta
     protected override IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
         => new DeletePatientCommand(id, operatorId);
 
-    protected override IRequest<Result<PatientDetailDto>> CreateToggleStatusCommand(Guid id, Guid operatorId)
-        => new TogglePatientStatusCommand(id, operatorId);
-
-    protected override IRequest<Result<PatientDetailDto>> CreateRestoreCommand(Guid id, Guid operatorId)
-        => new RestorePatientCommand(id, operatorId);
+    
 
     protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
         => new BatchDeletePatientsCommand(ids, operatorId);

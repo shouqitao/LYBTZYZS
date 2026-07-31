@@ -217,5 +217,102 @@ namespace LYBT.WebAPI.Controllers
                 id, request.PrintType, operatorName);
             return Success(true, "打印记录已写入");
         }
+
+        #region 状态流转（从 MedicalCaseProcessingController 合入）
+
+        /// <summary>
+        /// 更新医案状态
+        /// </summary>
+        [HttpPut("{id}/status")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
+        public async Task<IActionResult> UpdateStatus(
+            Guid id,
+            [FromBody] MedicalCaseStatusInputDto request, CancellationToken ct)
+        {
+            var (operatorId, _, operatorRole) = GetOperator();
+            var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+
+            if (request.Status == MedicalCaseStatus.Completed)
+            {
+                var completeResult = await Sender.Send(new CompleteMedicalCaseCommand(id, operatorId, isAdmin), ct);
+                if (!completeResult.IsSuccess)
+                    return NotFound(completeResult.Error ?? "医案不存在");
+                return Success("医案已完成");
+            }
+
+            var result = await Sender.Send(new UpdateMedicalCaseStatusCommand(id, request.Status, operatorId, isAdmin), ct);
+            if (!result.IsSuccess)
+                return NotFound(result.Error ?? "医案不存在");
+
+            _logger.LogInformation("医案状态更新成功，MedicalCaseId: {Id}, NewStatus: {Status}", id, request.Status);
+            return Success(result.Value!, "状态更新成功");
+        }
+
+        /// <summary>
+        /// 关闭医案（直接标记为Completed）
+        /// </summary>
+        [HttpPut("{id}/close")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
+        public async Task<IActionResult> CloseMedicalCase(Guid id, CancellationToken ct)
+        {
+            var (operatorId, _, operatorRole) = GetOperator();
+            var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+            var result = await Sender.Send(new CompleteMedicalCaseCommand(id, operatorId, isAdmin), ct);
+            if (!result.IsSuccess)
+                return NotFound(result.Error ?? "医案不存在");
+
+            _logger.LogInformation("医案关闭，MedicalCaseId: {Id}", id);
+            return Success("医案已关闭");
+        }
+
+        /// <summary>
+        /// 挂起医案
+        /// </summary>
+        [HttpPut("{id}/suspend")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 403)]
+        public async Task<IActionResult> Suspend(
+            Guid id,
+            [FromBody] ConsultationInputDto? request = null, CancellationToken ct = default)
+        {
+            var (operatorId, _, operatorRole) = GetOperator();
+            var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+
+            var result = await Sender.Send(new SuspendMedicalCaseCommand(id, operatorId, isAdmin), ct);
+            if (!result.IsSuccess)
+                return NotFound(result.Error ?? "医案不存在");
+
+            _logger.LogInformation("医案暂存成功，MedicalCaseId: {Id}", id);
+            return Success("医案已暂存");
+        }
+
+        /// <summary>
+        /// 取消医案（统一为软删除 + 审计日志）
+        /// </summary>
+        [HttpPut("{id}/cancel")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        [ProducesResponseType(typeof(ApiResponse), 403)]
+        public async Task<IActionResult> CancelMedicalCase(
+            Guid id,
+            [FromBody] CancelMedicalCaseRequestDto? request = null, CancellationToken ct = default)
+        {
+            var (operatorId, _, operatorRole) = GetOperator();
+            var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+
+            var result = await Sender.Send(new CancelMedicalCaseCommand(id, operatorId, isAdmin, request?.Reason), ct);
+            if (!result.IsSuccess)
+                return NotFound(result.Error ?? "医案不存在");
+
+            _logger.LogInformation("医案取消成功(软删除)，MedicalCaseId: {Id}", id);
+            return Success(true, "医案已取消");
+        }
+
+        #endregion
     }
 }

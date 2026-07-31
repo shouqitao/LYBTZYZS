@@ -116,42 +116,18 @@ public abstract class BaseCrudController<TListDto, TDetailDto, TInputDto, TQuery
     }
 
     /// <summary>
-    /// 切换状态（启用/禁用）
+    /// 切换状态（启用/禁用）— 默认不支持，子类按需 override
     /// </summary>
     [HttpPost("{id:guid}/toggle-status")]
-    public virtual async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
-    {
-        if (ValidateGuid(id, "ID") is { } error) return error;
-
-        var (operatorId, _, _) = GetOperator();
-        var command = CreateToggleStatusCommand(id, operatorId);
-        var result = await _sender.Send(command, ct);
-        if (!result.IsSuccess || result.Value == null)
-            return BusinessFail(result.Error ?? "切换状态失败");
-        LogOperation("切换状态", null, id);
-        return Success(result.Value, "状态已切换");
-    }
+    public virtual Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
+        => throw new NotSupportedException("此资源不支持切换状态操作");
 
     /// <summary>
-    /// 恢复已删除的资源
+    /// 恢复已删除的资源 — 默认不支持，子类按需 override
     /// </summary>
     [HttpPost("{id:guid}/restore")]
-    public virtual async Task<IActionResult> Restore(Guid id, CancellationToken ct)
-    {
-        if (ValidateGuid(id, "ID") is { } error) return error;
-
-        var (operatorId, _, _) = GetOperator();
-        var command = CreateRestoreCommand(id, operatorId);
-        var result = await _sender.Send(command, ct);
-        if (!result.IsSuccess || result.Value == null)
-        {
-            if (result.Error?.Contains("未被删除") == true)
-                return BusinessFail(result.Error);
-            return NotFound(result.Error ?? "资源不存在");
-        }
-        LogOperation("恢复成功", result.Value, id);
-        return Success(result.Value, "恢复成功");
-    }
+    public virtual Task<IActionResult> Restore(Guid id, CancellationToken ct)
+        => throw new NotSupportedException("此资源不支持恢复操作");
 
     /// <summary>
     /// 批量删除
@@ -192,16 +168,6 @@ public abstract class BaseCrudController<TListDto, TDetailDto, TInputDto, TQuery
     /// 创建删除命令
     /// </summary>
     protected abstract IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId);
-
-    /// <summary>
-    /// 创建切换状态命令
-    /// </summary>
-    protected abstract IRequest<Result<TDetailDto>> CreateToggleStatusCommand(Guid id, Guid operatorId);
-
-    /// <summary>
-    /// 创建恢复命令
-    /// </summary>
-    protected abstract IRequest<Result<TDetailDto>> CreateRestoreCommand(Guid id, Guid operatorId);
 
     /// <summary>
     /// 创建批量删除命令
