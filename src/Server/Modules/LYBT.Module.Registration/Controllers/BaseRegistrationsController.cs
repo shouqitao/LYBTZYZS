@@ -24,6 +24,28 @@ public abstract class BaseRegistrationsController
     #region Override 基类方法
 
     /// <summary>
+    /// 获取挂号分页列表（保留原始 7 参数过滤）
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> GetList(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? keyword = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] Guid? patientId = null,
+        [FromQuery] Guid? doctorId = null,
+        CancellationToken ct = default)
+    {
+        if (ValidatePagination(page, pageSize) is { } error) return error;
+
+        var result = await Sender.Send(new GetRegistrationsQuery(page, pageSize, keyword,
+            startDate, endDate, patientId, doctorId), ct);
+
+        return SuccessPaged(result, "查询成功");
+    }
+
+    /// <summary>
     /// 获取挂号详情
     /// </summary>
     [HttpGet("{id:guid}")]
