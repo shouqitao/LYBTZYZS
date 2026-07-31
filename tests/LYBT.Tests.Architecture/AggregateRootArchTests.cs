@@ -25,7 +25,8 @@ public class AggregateRootArchTests
     /// <summary>
     /// AR-001: 聚合根模式验证 - MedicalCase作为聚合根
     /// OpenSpec: consolidate-medicalcase-queries - 已删除ConsultationController和PrescriptionsController
-    /// Issue #1612: 旧MedicalCaseController已删除，功能拆分为4个新控制器
+    /// Issue #1612: 旧MedicalCaseController已删除，功能合并为MedicalCasesController
+    /// 注：MedicalCaseProcessingController已在前序重构中合并到MedicalCasesController
     /// </summary>
     [Fact]
     public void AR001_MedicalCase_Should_Be_Aggregate_Root()
@@ -56,34 +57,25 @@ public class AggregateRootArchTests
 
         Assert.Null(oldController); // 旧控制器已拆分删除
 
-        // 3. 验证新的拆分控制器存在（聚合根入口）
-        var newControllerNames = new[]
-        {
-            "MedicalCasesController",
-            "MedicalCaseProcessingController"
-        };
+        // 3. 验证MedicalCasesController存在（聚合根入口，已合并ProcessingController）
+        var controller = Types.InAssemblies(ServerAssemblies)
+            .That()
+            .HaveName("MedicalCasesController")
+            .GetTypes()
+            .FirstOrDefault();
 
-        foreach (var controllerName in newControllerNames)
-        {
-            var controller = Types.InAssemblies(ServerAssemblies)
-                .That()
-                .HaveName(controllerName)
-                .GetTypes()
-                .FirstOrDefault();
+        Assert.NotNull(controller);
 
-            Assert.NotNull(controller);
+        var writeMethods = controller.GetMethods(
+            System.Reflection.BindingFlags.Public |
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.DeclaredOnly)
+            .Where(m =>
+                m.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.HttpPostAttribute), false).Any() ||
+                m.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.HttpPutAttribute), false).Any())
+            .ToList();
 
-            var writeMethods = controller.GetMethods(
-                System.Reflection.BindingFlags.Public |
-                System.Reflection.BindingFlags.Instance |
-                System.Reflection.BindingFlags.DeclaredOnly)
-                .Where(m =>
-                    m.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.HttpPostAttribute), false).Any() ||
-                    m.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.HttpPutAttribute), false).Any())
-                .ToList();
-
-            Assert.NotEmpty(writeMethods);
-        }
+        Assert.NotEmpty(writeMethods);
     }
 
     /// <summary>

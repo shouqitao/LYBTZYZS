@@ -15,13 +15,13 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
-    /// 药材管理 API - 继承 BaseCrudController 提供标准 CRUD
+    /// 药材管理 API
     /// </summary>
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
-    public class HerbsController : BaseCrudController<HerbListDto, HerbDetailDto, HerbInputDto, GetHerbsQuery>
+    public class HerbsController : BaseCrudController
     {
         public HerbsController(ISender sender, ILogger<HerbsController> logger)
             : base(sender, logger)
@@ -29,7 +29,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取药材分页列表（添加 OutputCache 和分类筛选）
+        /// 获取药材分页列表
         /// </summary>
         [HttpGet]
         [OutputCache(PolicyName = "HerbsCache")]
@@ -42,15 +42,13 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidatePagination(page, pageSize) is { } error) return error;
 
-            // 注意：GetHerbsQuery 需要 category 参数，这里先传 null
-            // 子类可以 override 这个方法来添加 category 参数
             var result = await Sender.Send(new GetHerbsQuery(page, pageSize, keyword), ct);
             if (!result.IsSuccess) return BusinessFail(result.Error ?? "查询失败");
             return Success(result.Value!, "查询成功");
         }
 
         /// <summary>
-        /// 获取药材详情（添加 Ownership 检查）
+        /// 获取药材详情
         /// </summary>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
@@ -68,15 +66,18 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 创建新药材（添加 OutputCache 和 RateLimiting）
+        /// 创建新药材
         /// </summary>
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), StatusCodes.Status201Created)]
-        public override async Task<IActionResult> Create([FromBody] HerbInputDto dto, CancellationToken ct)
+        public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
         {
+            if (dto is not HerbInputDto inputDto)
+                return ValidationFail("无效的请求数据");
+
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new CreateHerbCommand(dto, operatorId), ct);
+            var result = await Sender.Send(new CreateHerbCommand(inputDto, operatorId), ct);
             if (result.IsSuccess && result.Value != null)
             {
                 LogOperation("创建药材", result.Value, null);
@@ -89,15 +90,17 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 更新药材信息（添加 Ownership 检查）
+        /// 更新药材信息
         /// </summary>
         [HttpPut("{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public override async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto dto, CancellationToken ct)
+        public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
         {
             if (ValidateGuid(id, "药材ID") is { } error) return error;
+            if (dto is not HerbInputDto inputDto)
+                return ValidationFail("无效的请求数据");
 
             var getResult = await Sender.Send(new GetHerbQuery(id), ct);
             if (!getResult.IsSuccess || getResult.Value == null)
@@ -111,7 +114,7 @@ namespace LYBT.WebAPI.Controllers
             }
 
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new UpdateHerbCommand(id, dto, operatorId), ct);
+            var result = await Sender.Send(new UpdateHerbCommand(id, inputDto, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "更新失败");
@@ -122,7 +125,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 删除药材（添加 Ownership 检查）
+        /// 删除药材
         /// </summary>
         [HttpDelete("{id}")]
         [EnableRateLimiting("ApiCalls")]
@@ -155,7 +158,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 切换药材状态（启用/禁用，添加 Ownership 检查）
+        /// 切换药材状态
         /// </summary>
         [HttpPost("{id}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
@@ -208,7 +211,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 批量删除药材（添加 OutputCache 和 RateLimiting）
+        /// 批量删除药材
         /// </summary>
         [HttpPost("batch-delete")]
         [EnableRateLimiting("ApiCalls")]
@@ -258,7 +261,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 检查药材引用关系（删除前检查）
+        /// 检查药材引用关系
         /// </summary>
         [HttpGet("{id}/check-reference")]
         [ProducesResponseType(typeof(ApiResponse<HerbReferenceCheckDto>), 200)]
@@ -332,22 +335,5 @@ namespace LYBT.WebAPI.Controllers
             LogOperation("批量禁用药材", new { Count = dto.Ids.Count }, null);
             return Success(result.Value, result.Value.Message);
         }
-
-        #region 基类抽象方法实现
-        protected override GetHerbsQuery CreateGetListQuery(int page, int pageSize, string? keyword)
-            => new GetHerbsQuery(page, pageSize, keyword);
-
-        protected override IRequest<Result<HerbDetailDto>> CreateCreateCommand(HerbInputDto dto, Guid operatorId)
-            => new CreateHerbCommand(dto, operatorId);
-
-        protected override IRequest<Result<HerbDetailDto>> CreateUpdateCommand(Guid id, HerbInputDto dto, Guid operatorId)
-            => new UpdateHerbCommand(id, dto, operatorId);
-
-        protected override IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
-            => new DeleteHerbCommand(id, operatorId);
-
-        protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
-            => new BatchDeleteHerbsCommand(ids, operatorId);
-        #endregion
     }
 }

@@ -15,13 +15,13 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
-    /// 患者管理 API - 继承 BaseCrudController 提供标准 CRUD
+    /// 患者管理 API
     /// </summary>
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
-    public class PatientsController : BaseCrudController<PatientListDto, PatientDetailDto, PatientInputDto, GetPatientsQuery>
+    public class PatientsController : BaseCrudController
     {
         public PatientsController(ISender sender, ILogger<PatientsController> logger)
             : base(sender, logger)
@@ -29,7 +29,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取患者列表 - 支持分页和查询（添加 OutputCache 和 IsAdmin 检查）
+        /// 获取患者列表 - 支持分页和查询
         /// </summary>
         [HttpGet]
         [OutputCache(PolicyName = "PatientsCache")]
@@ -54,7 +54,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取患者详情（添加 Ownership 检查）
+        /// 获取患者详情
         /// </summary>
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
@@ -72,15 +72,18 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 新增患者（添加 OutputCache 和 RateLimiting）
+        /// 新增患者
         /// </summary>
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), StatusCodes.Status201Created)]
-        public override async Task<IActionResult> Create([FromBody] PatientInputDto dto, CancellationToken ct)
+        public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
         {
+            if (dto is not PatientInputDto inputDto)
+                return ValidationFail("无效的请求数据");
+
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new CreatePatientCommand(dto, operatorId), ct);
+            var result = await Sender.Send(new CreatePatientCommand(inputDto, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "创建失败");
@@ -93,20 +96,22 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 更新患者信息（添加 Ownership 检查）
+        /// 更新患者信息
         /// </summary>
         [HttpPut("{id:guid}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
-        public override async Task<IActionResult> Update(Guid id, [FromBody] PatientInputDto dto, CancellationToken ct)
+        public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
         {
             if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
+            if (dto is not PatientInputDto inputDto)
+                return ValidationFail("无效的请求数据");
 
             var (ownerDto, ownershipError) = await CheckOwnershipAsync(id, ct);
             if (ownershipError != null) return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new UpdatePatientCommand(id, dto, operatorId), ct);
+            var result = await Sender.Send(new UpdatePatientCommand(id, inputDto, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 if (result.Error?.Contains("不存在") == true)
@@ -121,7 +126,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 删除患者（软删除，添加 Ownership 检查）
+        /// 删除患者（软删除）
         /// </summary>
         [HttpDelete("{id:guid}")]
         [EnableRateLimiting("ApiCalls")]
@@ -147,7 +152,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 切换患者状态（启用/禁用，添加 Ownership 检查）
+        /// 切换患者状态（启用/禁用）
         /// </summary>
         [HttpPost("{id:guid}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
@@ -171,7 +176,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 恢复已删除的患者（软删除恢复）
+        /// 恢复已删除的患者
         /// </summary>
         [HttpPost("{id:guid}/restore")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
@@ -193,7 +198,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 批量删除患者（添加 OutputCache 和 RateLimiting）
+        /// 批量删除患者
         /// </summary>
         [HttpPost("batch-delete")]
         [EnableRateLimiting("ApiCalls")]
@@ -218,7 +223,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 检查患者是否被医案引用（删除前确认）
+        /// 检查患者是否被医案引用
         /// </summary>
         [HttpGet("{id:guid}/check-reference")]
         [ProducesResponseType(typeof(ApiResponse<PatientReferenceCheckDto>), 200)]
@@ -292,24 +297,5 @@ namespace LYBT.WebAPI.Controllers
 
             return (result.Value, null);
         }
-
-        #region 基类抽象方法实现
-        protected override GetPatientsQuery CreateGetListQuery(int page, int pageSize, string? keyword)
-            => new GetPatientsQuery(page, pageSize, keyword);
-
-        protected override IRequest<Result<PatientDetailDto>> CreateCreateCommand(PatientInputDto dto, Guid operatorId)
-            => new CreatePatientCommand(dto, operatorId);
-
-        protected override IRequest<Result<PatientDetailDto>> CreateUpdateCommand(Guid id, PatientInputDto dto, Guid operatorId)
-            => new UpdatePatientCommand(id, dto, operatorId);
-
-        protected override IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
-            => new DeletePatientCommand(id, operatorId);
-
-        
-
-        protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
-            => new BatchDeletePatientsCommand(ids, operatorId);
-        #endregion
     }
 }

@@ -15,13 +15,13 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
-    /// 验方管理 API - 继承 BaseCrudController 提供标准 CRUD
+    /// 验方管理 API
     /// </summary>
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
-    public class FormulasController : BaseCrudController<FormulaListDto, FormulaDetailDto, FormulaInputDto, GetFormulasQuery>
+    public class FormulasController : BaseCrudController
     {
         public FormulasController(ISender sender, ILogger<FormulasController> logger)
             : base(sender, logger)
@@ -29,7 +29,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取验方分页列表（添加 OutputCache）
+        /// 获取验方分页列表
         /// </summary>
         [HttpGet]
         [OutputCache(PolicyName = "FormulasCache")]
@@ -50,7 +50,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取验方详情（添加 Ownership 检查）
+        /// 获取验方详情
         /// </summary>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
@@ -64,7 +64,6 @@ namespace LYBT.WebAPI.Controllers
                 return NotFound(result.Error ?? "验方不存在");
             }
 
-            // Ownership check: Doctor can only see own + shared
             var (operatorId, _, operatorRole) = GetOperator();
             if (operatorRole == UserRole.Doctor && result.Value.CreatedBy != operatorId && !result.Value.IsShared)
                 return Forbid("无权限查看此验方");
@@ -73,15 +72,18 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 新增验方（添加 OutputCache 和 RateLimiting）
+        /// 新增验方
         /// </summary>
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), StatusCodes.Status201Created)]
-        public override async Task<IActionResult> Create([FromBody] FormulaInputDto dto, CancellationToken ct)
+        public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
         {
+            if (dto is not FormulaInputDto inputDto)
+                return ValidationFail("无效的请求数据");
+
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new CreateFormulaCommand(dto, operatorId), ct);
+            var result = await Sender.Send(new CreateFormulaCommand(inputDto, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "创建失败");
@@ -94,14 +96,16 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 更新验方信息（添加 Ownership 检查）
+        /// 更新验方信息
         /// </summary>
         [HttpPut("{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
-        public override async Task<IActionResult> Update(Guid id, [FromBody] FormulaInputDto dto, CancellationToken ct)
+        public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
         {
             if (ValidateGuid(id, "验方ID") is { } error) return error;
+            if (dto is not FormulaInputDto inputDto)
+                return ValidationFail("无效的请求数据");
 
             var getResult = await Sender.Send(new GetFormulaQuery(id), ct);
             if (!getResult.IsSuccess || getResult.Value == null)
@@ -110,7 +114,7 @@ namespace LYBT.WebAPI.Controllers
                 return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new UpdateFormulaCommand(id, dto, operatorId), ct);
+            var result = await Sender.Send(new UpdateFormulaCommand(id, inputDto, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "更新失败");
@@ -121,7 +125,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 删除验方（软删除，添加 Ownership 检查）
+        /// 删除验方（软删除）
         /// </summary>
         [HttpDelete("{id}")]
         [EnableRateLimiting("ApiCalls")]
@@ -148,7 +152,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 切换验方启用/禁用状态（添加 Ownership 检查）
+        /// 切换验方启用/禁用状态
         /// </summary>
         [HttpPost("{id}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
@@ -197,7 +201,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 批量删除验方（添加 OutputCache 和 RateLimiting）
+        /// 批量删除验方
         /// </summary>
         [HttpPost("batch-delete")]
         [EnableRateLimiting("ApiCalls")]
@@ -335,24 +339,5 @@ namespace LYBT.WebAPI.Controllers
             LogOperation("批量禁用药方", new { Count = dto.Ids.Count }, null);
             return Success(result.Value, result.Value.Message);
         }
-
-        #region 基类抽象方法实现
-        protected override GetFormulasQuery CreateGetListQuery(int page, int pageSize, string? keyword)
-            => new GetFormulasQuery(page, pageSize, keyword);
-
-        protected override IRequest<Result<FormulaDetailDto>> CreateCreateCommand(FormulaInputDto dto, Guid operatorId)
-            => new CreateFormulaCommand(dto, operatorId);
-
-        protected override IRequest<Result<FormulaDetailDto>> CreateUpdateCommand(Guid id, FormulaInputDto dto, Guid operatorId)
-            => new UpdateFormulaCommand(id, dto, operatorId);
-
-        protected override IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
-            => new DeleteFormulaCommand(id, operatorId);
-
-        
-
-        protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
-            => new BatchDeleteFormulasCommand(ids, operatorId);
-        #endregion
     }
 }

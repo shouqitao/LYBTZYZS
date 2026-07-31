@@ -19,49 +19,12 @@ namespace LYBT.Module.Users.Controllers;
 /// </summary>
 [ApiController]
 [Authorize]
-public abstract class BaseUsersController : BaseCrudController<UserListDto, UserDetailDto, UserInputDto, GetUsersQuery>
+public abstract class BaseUsersController : BaseCrudController
 {
     protected BaseUsersController(ISender sender, ILogger logger)
         : base(sender, logger)
     {
     }
-
-    #region 抽象方法实现
-
-    protected override GetUsersQuery CreateGetListQuery(int page, int pageSize, string? keyword)
-    {
-        return new GetUsersQuery(page, pageSize, keyword);
-    }
-
-    protected override IRequest<Result<UserDetailDto>> CreateCreateCommand(UserInputDto dto, Guid operatorId)
-    {
-        var (_, _, currentRole) = GetOperator();
-        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
-        return new CreateUserCommand(dto, operatorId, isAdmin);
-    }
-
-    protected override IRequest<Result<UserDetailDto>> CreateUpdateCommand(Guid id, UserInputDto dto, Guid operatorId)
-    {
-        var (_, _, currentRole) = GetOperator();
-        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
-        return new UpdateUserCommand(id, dto, operatorId, isAdmin);
-    }
-
-    protected override IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
-    {
-        var (_, _, currentRole) = GetOperator();
-        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
-        return new DeleteUserCommand(id, operatorId, isAdmin);
-    }
-
-    protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
-    {
-        var (_, _, currentRole) = GetOperator();
-        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
-        return new BatchDeleteUsersCommand(ids, operatorId, isAdmin);
-    }
-
-    #endregion
 
     #region 重写 CRUD 方法（添加授权策略）
 
@@ -73,35 +36,80 @@ public abstract class BaseUsersController : BaseCrudController<UserListDto, User
         [FromQuery] string? keyword = null,
         CancellationToken ct = default)
     {
-        return await base.GetList(page, pageSize, keyword, ct);
+        if (ValidatePagination(page, pageSize) is { } error) return error;
+
+        var result = await Sender.Send(new GetUsersQuery(page, pageSize, keyword), ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "查询失败");
+        return SuccessPaged(result.Value, "查询成功");
     }
 
     [HttpGet("{id:guid}")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
-        return await base.GetById(id, ct);
+        if (ValidateGuid(id, "用户ID") is { } error) return error;
+
+        var result = await Sender.Send(new GetUserQuery(id), ct);
+        if (!result.IsSuccess || result.Value == null)
+            return NotFound(result.Error ?? "用户不存在");
+        return Success(result.Value, "查询成功");
     }
 
     [HttpPost]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    public override async Task<IActionResult> Create([FromBody] UserInputDto dto, CancellationToken ct)
+    public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
     {
-        return await base.Create(dto, ct);
+        if (dto is not UserInputDto inputDto)
+            return ValidationFail("无效的请求数据");
+
+        var (operatorId, _, currentRole) = GetOperator();
+        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
+        var result = await Sender.Send(new CreateUserCommand(inputDto, operatorId, isAdmin), ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "创建失败");
+        LogOperation("创建用户成功", result.Value, null);
+        return Success(result.Value, "用户创建成功");
     }
 
     [HttpPut("{id:guid}")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    public override async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto dto, CancellationToken ct)
+    public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
     {
-        return await base.Update(id, dto, ct);
+        if (ValidateGuid(id, "用户ID") is { } guidError) return guidError;
+        if (dto is not UserInputDto inputDto)
+            return ValidationFail("无效的请求数据");
+
+        var (operatorId, _, currentRole) = GetOperator();
+        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
+        var result = await Sender.Send(new UpdateUserCommand(id, inputDto, operatorId, isAdmin), ct);
+        if (!result.IsSuccess || result.Value == null)
+        {
+            if (result.Error?.Contains("不存在") == true)
+                return NotFound(result.Error);
+            return BusinessFail(result.Error ?? "更新失败");
+        }
+        LogOperation("更新用户成功", result.Value, id);
+        return Success(result.Value, "用户更新成功");
     }
 
     [HttpDelete("{id:guid}")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
-        return await base.Delete(id, ct);
+        if (ValidateGuid(id, "用户ID") is { } error) return error;
+
+        var (operatorId, _, currentRole) = GetOperator();
+        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
+        var result = await Sender.Send(new DeleteUserCommand(id, operatorId, isAdmin), ct);
+        if (!result.IsSuccess)
+        {
+            if (result.Error?.Contains("不存在") == true)
+                return NotFound(result.Error);
+            return BusinessFail(result.Error ?? "删除失败");
+        }
+        LogOperation("删除用户成功", null, id);
+        return Success("删除成功");
     }
 
     [HttpPost("{id:guid}/toggle-status")]
@@ -143,7 +151,17 @@ public abstract class BaseUsersController : BaseCrudController<UserListDto, User
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public override async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
     {
-        return await base.BatchDelete(dto, ct);
+        if (dto.Ids == null || dto.Ids.Count == 0)
+            return ValidationFail("请至少选择一个用户");
+
+        var (operatorId, _, currentRole) = GetOperator();
+        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
+        var result = await Sender.Send(new BatchDeleteUsersCommand(dto.Ids, operatorId, isAdmin), ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "批量删除失败");
+
+        LogOperation("批量删除用户", new { Ids = dto.Ids, Result = result.Value.Message }, null);
+        return Success(result.Value, result.Value.Message);
     }
 
     #endregion

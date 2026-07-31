@@ -12,12 +12,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace LYBT.LocalWebAPI.Controllers;
 
 /// <summary>
-/// 验方管理 API - 继承 BaseCrudController 提供标准 CRUD（简化版）
+/// 验方管理 API - LocalWebAPI 简化版
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
 [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
-public class FormulasController : BaseCrudController<FormulaListDto, FormulaDetailDto, FormulaInputDto, GetFormulasQuery>
+public class FormulasController : BaseCrudController
 {
     public FormulasController(
         ISender sender,
@@ -26,7 +26,7 @@ public class FormulasController : BaseCrudController<FormulaListDto, FormulaDeta
     }
 
     /// <summary>
-    /// 获取验方详情（添加 Ownership 检查）
+    /// 获取验方详情
     /// </summary>
     [HttpGet("{id}")]
     public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
@@ -35,7 +35,6 @@ public class FormulasController : BaseCrudController<FormulaListDto, FormulaDeta
         if (!result.IsSuccess || result.Value == null)
             return NotFound(result.Error ?? "验方不存在");
 
-        // Ownership check: Doctor can only see own + shared
         var (operatorId, _, operatorRole) = GetOperator();
         if (operatorRole == UserRole.Doctor && result.Value.CreatedBy != operatorId && !result.Value.IsShared)
         {
@@ -154,23 +153,4 @@ public class FormulasController : BaseCrudController<FormulaListDto, FormulaDeta
 
         return Success(result.Value, result.Value.Message);
     }
-
-    #region 基类抽象方法实现
-    protected override GetFormulasQuery CreateGetListQuery(int page, int pageSize, string? keyword)
-        => new GetFormulasQuery(page, pageSize, keyword);
-
-    protected override IRequest<Result<FormulaDetailDto>> CreateCreateCommand(FormulaInputDto dto, Guid operatorId)
-        => new CreateFormulaCommand(dto, operatorId);
-
-    protected override IRequest<Result<FormulaDetailDto>> CreateUpdateCommand(Guid id, FormulaInputDto dto, Guid operatorId)
-        => new UpdateFormulaCommand(id, dto, operatorId);
-
-    protected override IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
-        => new DeleteFormulaCommand(id, operatorId);
-
-    
-
-    protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
-        => new BatchDeleteFormulasCommand(ids, operatorId);
-    #endregion
 }
