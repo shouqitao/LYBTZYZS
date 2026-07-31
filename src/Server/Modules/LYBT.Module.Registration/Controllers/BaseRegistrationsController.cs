@@ -1,5 +1,4 @@
 using MediatR;
-using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Registration.Application.Commands;
 using LYBT.Module.Registration.Application.Queries;
@@ -12,51 +11,27 @@ namespace LYBT.Module.Registration.Controllers;
 
 /// <summary>
 /// 挂号管理 Controller 共享基类
-/// 提供 GetList、GetById、Create、GetQueue、StartVisit、Cancel、QuickVisit 等方法
+/// 继承 BaseCrudController 提供标准 CRUD，保留挂号特化方法
 /// </summary>
-public abstract class BaseRegistrationsController : BaseApiController
+public abstract class BaseRegistrationsController
+    : BaseCrudController<RegistrationListDto, RegistrationDetailDto, RegistrationInputDto, GetRegistrationsQueryWrapped>
 {
-    private readonly ISender _sender;
-
     protected BaseRegistrationsController(ISender sender, ILogger logger)
-        : base(logger)
+        : base(sender, logger)
     {
-        _sender = sender ?? throw new ArgumentNullException(nameof(sender));
     }
 
-    protected ISender Sender => _sender;
-
-    /// <summary>
-    /// 分页查询挂号记录
-    /// </summary>
-    [HttpGet]
-    public virtual async Task<IActionResult> GetList(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
-        [FromQuery] string? keyword = null,
-        [FromQuery] DateTime? startDate = null,
-        [FromQuery] DateTime? endDate = null,
-        [FromQuery] Guid? patientId = null,
-        [FromQuery] Guid? doctorId = null,
-        CancellationToken ct = default)
-    {
-        if (ValidatePagination(page, pageSize) is { } error) return error;
-
-        var result = await _sender.Send(new GetRegistrationsQuery(page, pageSize, keyword,
-            startDate, endDate, patientId, doctorId), ct);
-
-        return SuccessPaged(result, "查询成功");
-    }
+    #region Override 基类方法
 
     /// <summary>
     /// 获取挂号详情
     /// </summary>
     [HttpGet("{id:guid}")]
-    public virtual async Task<IActionResult> GetById(Guid id, CancellationToken ct)
+    public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "挂号ID") is { } error) return error;
 
-        var result = await _sender.Send(new GetRegistrationQuery(id), ct);
+        var result = await Sender.Send(new GetRegistrationQuery(id), ct);
         if (result == null)
         {
             return NotFound("挂号不存在");
@@ -65,22 +40,60 @@ public abstract class BaseRegistrationsController : BaseApiController
         return Success(result, "查询成功");
     }
 
-    /// <summary>
-    /// 创建挂号记录
-    /// </summary>
-    [HttpPost]
-    public virtual async Task<IActionResult> Create([FromBody] RegistrationInputDto dto, CancellationToken ct)
+    #endregion
+
+    #region Override 不支持的操作（挂号不支持 Update/Delete/ToggleStatus/Restore/BatchDelete）
+
+    [HttpPut("{id:guid}")]
+    public override Task<IActionResult> Update(Guid id, [FromBody] RegistrationInputDto dto, CancellationToken ct)
+        => Task.FromResult<IActionResult>(NotFound("挂号不支持更新操作"));
+
+    [HttpDelete("{id:guid}")]
+    public override Task<IActionResult> Delete(Guid id, CancellationToken ct)
+        => Task.FromResult<IActionResult>(NotFound("挂号不支持删除操作"));
+
+    [HttpPost("{id:guid}/toggle-status")]
+    public override Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
+        => Task.FromResult<IActionResult>(NotFound("挂号不支持切换状态"));
+
+    [HttpPost("{id:guid}/restore")]
+    public override Task<IActionResult> Restore(Guid id, CancellationToken ct)
+        => Task.FromResult<IActionResult>(NotFound("挂号不支持恢复操作"));
+
+    [HttpPost("batch-delete")]
+    public override Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
+        => Task.FromResult<IActionResult>(NotFound("挂号不支持批量删除操作"));
+
+    #endregion
+
+    #region 抽象方法实现
+
+    protected override GetRegistrationsQueryWrapped CreateGetListQuery(int page, int pageSize, string? keyword)
     {
-        var result = await _sender.Send(new CreateRegistrationCommand(dto), ct);
-
-        if (!result.IsSuccess || result.Value == null)
-            return BusinessFail(result.Error ?? "创建挂号失败");
-
-        LogOperation("创建挂号", dto, result.Value.Id);
-        return CreatedAtAction(nameof(GetById),
-            new { id = result.Value.Id, version = ApiVersionConstants.V1 },
-            result.Value);
+        return new GetRegistrationsQueryWrapped(page, pageSize, keyword);
     }
+
+    protected override IRequest<Result<RegistrationDetailDto>> CreateCreateCommand(RegistrationInputDto dto, Guid operatorId)
+        => new CreateRegistrationCommand(dto);
+
+    protected override IRequest<Result<RegistrationDetailDto>> CreateUpdateCommand(Guid id, RegistrationInputDto dto, Guid operatorId)
+        => throw new NotSupportedException("挂号不支持更新操作");
+
+    protected override IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
+        => throw new NotSupportedException("挂号不支持删除操作");
+
+    protected override IRequest<Result<RegistrationDetailDto>> CreateToggleStatusCommand(Guid id, Guid operatorId)
+        => throw new NotSupportedException("挂号不支持切换状态");
+
+    protected override IRequest<Result<RegistrationDetailDto>> CreateRestoreCommand(Guid id, Guid operatorId)
+        => throw new NotSupportedException("挂号不支持恢复操作");
+
+    protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
+        => throw new NotSupportedException("挂号不支持批量删除操作");
+
+    #endregion
+
+    #region 挂号特化方法
 
     /// <summary>
     /// 获取等待队列
@@ -88,7 +101,7 @@ public abstract class BaseRegistrationsController : BaseApiController
     [HttpGet("queue")]
     public virtual async Task<IActionResult> GetQueue([FromQuery] Guid? doctorId = null, CancellationToken ct = default)
     {
-        var result = await _sender.Send(new GetWaitingQueueQuery(doctorId), ct);
+        var result = await Sender.Send(new GetWaitingQueueQuery(doctorId), ct);
         return Success(result, "查询成功");
     }
 
@@ -100,7 +113,7 @@ public abstract class BaseRegistrationsController : BaseApiController
     {
         if (ValidateGuid(id, "挂号ID") is { } error) return error;
 
-        var result = await _sender.Send(new StartVisitCommand(id), ct);
+        var result = await Sender.Send(new StartVisitCommand(id), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "接诊失败");
 
@@ -116,7 +129,7 @@ public abstract class BaseRegistrationsController : BaseApiController
     {
         if (ValidateGuid(id, "挂号ID") is { } error) return error;
 
-        var result = await _sender.Send(new CancelRegistrationCommand(id), ct);
+        var result = await Sender.Send(new CancelRegistrationCommand(id), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "取消挂号失败");
 
@@ -132,15 +145,52 @@ public abstract class BaseRegistrationsController : BaseApiController
     {
         var (doctorId, doctorName, _) = GetOperator();
 
-        var result = await _sender.Send(new QuickVisitCommand(dto, doctorId, doctorName), ct);
+        var result = await Sender.Send(new QuickVisitCommand(dto, doctorId, doctorName), ct);
         if (!result.IsSuccess || result.Value is null)
         {
             return BusinessFail(result.Error ?? "快速看诊失败");
         }
 
         LogOperation("医生快速看诊", dto, result.Value.RegistrationId);
-        return CreatedAtAction(nameof(GetById),
-            new { id = result.Value.RegistrationId, version = ApiVersionConstants.V1 },
-            result.Value);
+        return Success(result.Value, "快速看诊创建成功");
+    }
+
+    #endregion
+}
+
+/// <summary>
+/// 包装 GetRegistrationsQuery，使其符合 BaseCrudController 的 IRequest&lt;Result&lt;PagedResult&lt;T&gt;&gt;&gt; 约束
+/// </summary>
+public sealed record GetRegistrationsQueryWrapped(
+    int Page = 1,
+    int PageSize = 20,
+    string? Keyword = null,
+    DateTime? StartDate = null,
+    DateTime? EndDate = null,
+    Guid? PatientId = null,
+    Guid? DoctorId = null) : IRequest<Result<PagedResult<RegistrationListDto>>>;
+
+/// <summary>
+/// GetRegistrationsQueryWrapped 处理器 - 将底层查询包装为 Result
+/// </summary>
+public sealed class GetRegistrationsQueryWrappedHandler
+    : IRequestHandler<GetRegistrationsQueryWrapped, Result<PagedResult<RegistrationListDto>>>
+{
+    private readonly ISender _sender;
+
+    public GetRegistrationsQueryWrappedHandler(ISender sender)
+    {
+        _sender = sender;
+    }
+
+    public async Task<Result<PagedResult<RegistrationListDto>>> Handle(
+        GetRegistrationsQueryWrapped request, CancellationToken cancellationToken)
+    {
+        var pagedResult = await _sender.Send(
+            new GetRegistrationsQuery(request.Page, request.PageSize, request.Keyword,
+                request.StartDate, request.EndDate, request.PatientId, request.DoctorId),
+            cancellationToken);
+
+        return Result<PagedResult<RegistrationListDto>>.Success(pagedResult);
     }
 }
