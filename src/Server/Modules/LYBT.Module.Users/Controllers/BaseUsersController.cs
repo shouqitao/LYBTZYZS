@@ -75,6 +75,70 @@ public abstract class BaseUsersController : BaseCrudController<UserListDto, User
 
     #endregion
 
+    #region 重写 CRUD 方法（添加授权策略）
+
+    [HttpGet]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    public override async Task<IActionResult> GetList(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? keyword = null,
+        CancellationToken ct = default)
+    {
+        return await base.GetList(page, pageSize, keyword, ct);
+    }
+
+    [HttpGet("{id:guid}")]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
+    {
+        return await base.GetById(id, ct);
+    }
+
+    [HttpPost]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    public override async Task<IActionResult> Create([FromBody] UserInputDto dto, CancellationToken ct)
+    {
+        return await base.Create(dto, ct);
+    }
+
+    [HttpPut("{id:guid}")]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    public override async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto dto, CancellationToken ct)
+    {
+        return await base.Update(id, dto, ct);
+    }
+
+    [HttpDelete("{id:guid}")]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        return await base.Delete(id, ct);
+    }
+
+    [HttpPost("{id:guid}/toggle-status")]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
+    {
+        return await base.ToggleStatus(id, ct);
+    }
+
+    [HttpPost("{id:guid}/restore")]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
+    {
+        return await base.Restore(id, ct);
+    }
+
+    [HttpPost("batch-delete")]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    public override async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
+    {
+        return await base.BatchDelete(dto, ct);
+    }
+
+    #endregion
+
     #region 特化方法
 
     /// <summary>
