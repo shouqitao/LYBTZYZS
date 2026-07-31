@@ -1,5 +1,4 @@
 using MediatR;
-using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.MedicalCases.Application.Commands;
 using LYBT.Module.MedicalCases.Application.Queries;
@@ -15,59 +14,56 @@ namespace LYBT.Module.MedicalCases.Controllers;
 
 /// <summary>
 /// 医案管理 Controller 共享基类
-/// 提供 GetList、GetById、Create、Save、Delete、BatchDelete、GetPatientConsultations、GetPatientPrescriptions、
-/// GetConsultations、GetPrescriptions、GetBatchDetails、GetPermissions、GetAuditLogs、SetPrescriptionFlag、RecordPrint 等方法
+/// 继承 BaseCrudController 提供标准 CRUD，保留医案特化方法
 /// </summary>
-public abstract class BaseMedicalCasesController : BaseApiController
+public abstract class BaseMedicalCasesController : BaseCrudController<MedicalCaseListDto, MedicalCaseDetailDto, MedicalCaseInputDto, GetMedicalCasesQuery>
 {
-    private readonly ISender _sender;
-
     protected BaseMedicalCasesController(ISender sender, ILogger logger)
-        : base(logger)
+        : base(sender, logger)
     {
-        _sender = sender ?? throw new ArgumentNullException(nameof(sender));
     }
 
-    protected ISender Sender => _sender;
+    #region Override ToggleStatus/Restore (医案不支持)
 
-    /// <summary>
-    /// 查询医案列表（分页）
-    /// </summary>
-    [HttpGet]
-    public virtual async Task<IActionResult> GetList(
-        [FromQuery] MedicalCaseStatus? status = null,
-        [FromQuery] Guid? patientId = null,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
-        [FromQuery] bool includeAllDoctors = false,
-        [FromQuery] string? keyword = null,
-        CancellationToken ct = default)
+    [HttpPost("{id:guid}/toggle-status")]
+    public override Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
+        => Task.FromResult<IActionResult>(NotFound("医案不支持切换状态"));
+
+    [HttpPost("{id:guid}/restore")]
+    public override Task<IActionResult> Restore(Guid id, CancellationToken ct)
+        => Task.FromResult<IActionResult>(NotFound("医案不支持恢复操作"));
+
+    #endregion
+
+    #region 抽象方法实现
+
+    protected override GetMedicalCasesQuery CreateGetListQuery(int page, int pageSize, string? keyword)
+        => new(Keyword: keyword, Page: page, PageSize: pageSize);
+
+    protected override IRequest<Result<MedicalCaseDetailDto>> CreateCreateCommand(MedicalCaseInputDto dto, Guid operatorId)
     {
-        if (ValidatePagination(page, pageSize) is { } error) return error;
-        var (operatorId, _, operatorRole) = GetOperator();
-        var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin || includeAllDoctors;
-        var result = await _sender.Send(new GetMedicalCasesQuery(
-            status, patientId, page, pageSize, operatorId, isAdmin, keyword), ct);
-
-        if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "查询失败");
-
-        return Success(result.Value!, "查询成功");
+        dto.Id = null;
+        return new CreateMedicalCaseCommand(dto, operatorId);
     }
 
-    /// <summary>
-    /// 获取医案详情
-    /// </summary>
-    [HttpGet("{id:guid}")]
-    public virtual async Task<IActionResult> GetById(Guid id, CancellationToken ct)
-    {
-        var result = await _sender.Send(new GetMedicalCaseQuery(id), ct);
+    protected override IRequest<Result<MedicalCaseDetailDto>> CreateUpdateCommand(Guid id, MedicalCaseInputDto dto, Guid operatorId)
+        => new SaveMedicalCaseCommand(dto, operatorId, false);
 
-        if (!result.IsSuccess)
-            return NotFound(result.Error ?? "医案不存在");
+    protected override IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
+        => throw new NotSupportedException("医案删除需要 isAdmin 参数，请在子类 override Delete 方法");
 
-        return Success(result.Value!, "查询成功");
-    }
+    protected override IRequest<Result<MedicalCaseDetailDto>> CreateToggleStatusCommand(Guid id, Guid operatorId)
+        => throw new NotSupportedException("医案不支持切换状态");
+
+    protected override IRequest<Result<MedicalCaseDetailDto>> CreateRestoreCommand(Guid id, Guid operatorId)
+        => throw new NotSupportedException("医案不支持恢复操作");
+
+    protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
+        => new BatchDeleteMedicalCasesCommand(ids, operatorId, false);
+
+    #endregion
+
+    #region 医案特化方法
 
     /// <summary>
     /// 跨医案搜索
@@ -84,7 +80,7 @@ public abstract class BaseMedicalCasesController : BaseApiController
     {
         if (ValidatePagination(page, pageSize) is { } error) return error;
 
-        var result = await _sender.Send(new SearchMedicalCasesQuery(
+        var result = await Sender.Send(new SearchMedicalCasesQuery(
             patientName, diagnosisKeyword, startDate, endDate, page, pageSize), ct);
 
         if (!result.IsSuccess)
@@ -113,7 +109,7 @@ public abstract class BaseMedicalCasesController : BaseApiController
             query.IncludeAllDoctors = true;
         }
 
-        var result = await _sender.Send(new QueryMedicalCasesCommand(query), ct);
+        var result = await Sender.Send(new QueryMedicalCasesCommand(query), ct);
 
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
@@ -131,7 +127,7 @@ public abstract class BaseMedicalCasesController : BaseApiController
         [FromQuery] int pageSize = 20,
         CancellationToken ct = default)
     {
-        var result = await _sender.Send(
+        var result = await Sender.Send(
             new GetPatientConsultationsQuery(patientId, page, pageSize), ct);
 
         if (!result.IsSuccess)
@@ -150,7 +146,7 @@ public abstract class BaseMedicalCasesController : BaseApiController
         [FromQuery] int pageSize = 20,
         CancellationToken ct = default)
     {
-        var result = await _sender.Send(
+        var result = await Sender.Send(
             new GetPatientPrescriptionsQuery(patientId, page, pageSize), ct);
 
         if (!result.IsSuccess)
@@ -166,7 +162,7 @@ public abstract class BaseMedicalCasesController : BaseApiController
     public virtual async Task<IActionResult> GetConsultations(
         Guid medicalCaseId, CancellationToken ct)
     {
-        var result = await _sender.Send(new GetMedicalCaseConsultationsQuery(medicalCaseId), ct);
+        var result = await Sender.Send(new GetMedicalCaseConsultationsQuery(medicalCaseId), ct);
 
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
@@ -181,7 +177,7 @@ public abstract class BaseMedicalCasesController : BaseApiController
     public virtual async Task<IActionResult> GetPrescriptions(
         Guid medicalCaseId, CancellationToken ct)
     {
-        var result = await _sender.Send(new GetMedicalCasePrescriptionsQuery(medicalCaseId), ct);
+        var result = await Sender.Send(new GetMedicalCasePrescriptionsQuery(medicalCaseId), ct);
 
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
@@ -200,7 +196,7 @@ public abstract class BaseMedicalCasesController : BaseApiController
         if (ids.Count > 50)
             return ValidationFail("最多查询50条");
 
-        var result = await _sender.Send(new GetMedicalCasesBatchQuery(ids), ct);
+        var result = await Sender.Send(new GetMedicalCasesBatchQuery(ids), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
 
@@ -215,7 +211,7 @@ public abstract class BaseMedicalCasesController : BaseApiController
     {
         var (operatorId, _, operatorRole) = GetOperator();
         var roleInt = (int)operatorRole;
-        var result = await _sender.Send(new GetMedicalCasePermissionsQuery(id, operatorId, roleInt), ct);
+        var result = await Sender.Send(new GetMedicalCasePermissionsQuery(id, operatorId, roleInt), ct);
         if (!result.IsSuccess)
             return NotFound(result.Error ?? "医案不存在");
         return Success(result.Value!, "查询成功");
@@ -232,98 +228,10 @@ public abstract class BaseMedicalCasesController : BaseApiController
         CancellationToken ct = default)
     {
         if (ValidatePagination(page, pageSize) is { } error) return error;
-        var result = await _sender.Send(new GetMedicalCaseAuditLogsQuery(id, page, pageSize), ct);
+        var result = await Sender.Send(new GetMedicalCaseAuditLogsQuery(id, page, pageSize), ct);
         if (!result.IsSuccess)
             return NotFound(result.Error ?? "医案不存在");
         return Success(result.Value!, "查询成功");
-    }
-
-    /// <summary>
-    /// 创建新医案
-    /// </summary>
-    [HttpPost]
-    public virtual async Task<IActionResult> Create([FromBody] MedicalCaseInputDto dto, CancellationToken ct)
-    {
-        var (doctorId, _, _) = GetOperator();
-
-        dto.Id = null;
-        var result = await _sender.Send(new CreateMedicalCaseCommand(dto, doctorId), ct);
-
-        if (!result.IsSuccess)
-            return NotFound(result.Error ?? "患者不存在");
-
-        LogOperation("医案创建成功", result.Value, result.Value.Id);
-        return CreatedAtAction(nameof(GetById),
-            new { id = result.Value.Id, version = ApiVersionConstants.V1 },
-            result.Value);
-    }
-
-    /// <summary>
-    /// 保存医案聚合根
-    /// </summary>
-    [HttpPut("{id:guid}")]
-    public virtual async Task<IActionResult> Save(
-        Guid id,
-        [FromBody] MedicalCaseInputDto request, CancellationToken ct)
-    {
-        if (request.Id != id)
-        {
-            return Error("请求ID与路由ID不一致");
-        }
-
-        var (operatorId, _, operatorRole) = GetOperator();
-        var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-
-        var result = await _sender.Send(new SaveMedicalCaseCommand(request, operatorId, isAdmin), ct);
-
-        if (!result.IsSuccess)
-        {
-            return NotFound(result.Error ?? "医案不存在");
-        }
-
-        LogOperation("医案聚合保存成功", result.Value, id);
-        return Success(result.Value!, "保存成功");
-    }
-
-    /// <summary>
-    /// 删除医案（软删除）
-    /// </summary>
-    [HttpDelete("{id:guid}")]
-    public virtual async Task<IActionResult> Delete(Guid id, CancellationToken ct)
-    {
-        var (operatorId, _, operatorRole) = GetOperator();
-        var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-
-        var result = await _sender.Send(new DeleteMedicalCaseCommand(id, operatorId, isAdmin), ct);
-        if (!result.IsSuccess)
-            return NotFound(result.Error ?? "医案不存在");
-
-        LogOperation("医案已软删除", null, id);
-        return Success(true, "医案已删除");
-    }
-
-    /// <summary>
-    /// 批量删除医案
-    /// </summary>
-    [HttpPost("batch-delete")]
-    public virtual async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-    {
-        if (dto.Ids == null || dto.Ids.Count == 0)
-        {
-            return ValidationFail("请至少选择一个医案");
-        }
-
-        var (operatorId, _, operatorRole) = GetOperator();
-        var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-
-        var result = await _sender.Send(new BatchDeleteMedicalCasesCommand(dto.Ids, operatorId, isAdmin), ct);
-        if (!result.IsSuccess || result.Value == null)
-        {
-            return BusinessFail(result.Error ?? "批量删除失败");
-        }
-
-        LogOperation("批量删除医案", new { Ids = dto.Ids, Result = result.Value.Message }, null);
-        return Success(result.Value, result.Value.Message);
     }
 
     /// <summary>
@@ -337,7 +245,7 @@ public abstract class BaseMedicalCasesController : BaseApiController
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-        var result = await _sender.Send(new SetPrescriptionFlagCommand(id, request.NeedsPrescription, operatorId, isAdmin), ct);
+        var result = await Sender.Send(new SetPrescriptionFlagCommand(id, request.NeedsPrescription, operatorId, isAdmin), ct);
         if (!result.IsSuccess)
         {
             return NotFound(result.Error ?? "医案不存在");
@@ -355,7 +263,7 @@ public abstract class BaseMedicalCasesController : BaseApiController
         [FromBody] RecordPrintRequest request, CancellationToken ct)
     {
         var (operatorId, operatorName, _) = GetOperator();
-        var result = await _sender.Send(new RecordPrintCommand(
+        var result = await Sender.Send(new RecordPrintCommand(
             id, request.PrintType, request.PrinterName, operatorId, operatorName), ct);
 
         if (!result.IsSuccess)
@@ -364,4 +272,6 @@ public abstract class BaseMedicalCasesController : BaseApiController
         LogOperation("打印记录写入成功", null, id);
         return Success(true, "打印记录已写入");
     }
+
+    #endregion
 }

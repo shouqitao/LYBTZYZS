@@ -42,7 +42,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet]
         [OutputCache(PolicyName = "MedicalCaseCache")]
-        public override async Task<IActionResult> GetList(
+        public new async Task<IActionResult> GetList(
             [FromQuery] MedicalCaseStatus? status = null,
             [FromQuery] Guid? patientId = null,
             [FromQuery] int page = 1,
@@ -103,7 +103,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 403)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
-        public override async Task<IActionResult> Save(
+        public new async Task<IActionResult> Save(
             Guid id,
             [FromBody] MedicalCaseInputDto request, CancellationToken ct)
         {
