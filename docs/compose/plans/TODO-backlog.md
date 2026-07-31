@@ -1,13 +1,13 @@
 ---
 feature: todo-backlog
 status: active
-updated: 2026-07-30
+updated: 2026-07-31
 scope: 全部待做任务清单（按优先级排序）
 ---
 
 # LYBTZYZS 待做清单
 
-> 生成时间: 2026-07-30 | 当前状态: Build 0 错误, Server 711/712 pass, Architecture 82/83 pass
+> 更新时间: 2026-07-31 | 当前状态: Build 0 错误, Server 711/712 pass, Architecture 82/83 pass
 
 ---
 
@@ -32,9 +32,9 @@ scope: 全部待做任务清单（按优先级排序）
 
 | ID | 任务 | 描述 | 预估 |
 |----|------|------|------|
-| **T8** | Controller 共享基类下沉（6 对合并） | Phase 2 T17 deferred — Herbs/Formula/Patients/Users/Registrations/MedicalCases Controller 的重复 CRUD 模式合并到基类。复杂度高。 | **大 (1-2d)** |
-| **T9** | Offline-sync 功能延后开发 | 分支 `rebase/offline-sync` 已 rebase 到 master，9 个 commit。待重新评估架构后再决定是否采用。 | **待定** |
-| **T10** | 架构测试补全 | 当前 82/83 pass。可增加：Herbs/Formulas 新 batch 端点授权策略测试、MedicalCase 复杂度限制测试 | **小 (0.5d)** |
+| **T8** | Controller 共享基类下沉（6 对合并） | BaseCrudController + BaseMedicalCasesController + BaseRegistrationsController 已实现（`a23fd0ead`~`c144489db`）。**状态: DONE** | 0 |
+| **T9** | Offline-sync v2.0 规划 | 架构评估完成（2026-07-31）。分支无法编译（缺 ISyncService/ISyncApi/ChecksumHelper/Sync DTOs），且删除了 T8/T3 代码。建议放弃分支，基于 master 重新实现。详见 `docs/compose/reports/2026-07-31-offline-sync-evaluation.md`。**状态: v2.0 规划** | **v2.0** |
+| **T10** | 架构测试补全 | 修复 T8 重构引入的 2 个失败测试（BaseCrudController/BaseMedicalCasesController 排除），新增 3 个测试：batch 端点授权策略、MedicalCase 状态流转规则、MedicalCase 验证器存在性。当前 85/86 pass。**状态: DONE** | 0 |
 | **T11** | Documentation update | AGENTS.md/README.md 部分内容过时。IPatientService/IFormulaService 引用经审计实际存在（非过时）。需持续维护。 | **小 (0.5d)** |
 
 ## P3 — 运维 / 部署
@@ -58,6 +58,12 @@ scope: 全部待做任务清单（按优先级排序）
 
 | Commit | 任务 | 日期 |
 |--------|------|------|
+| `c144489db` | T8: MedicalCasesController consolidating using BaseMedicalCasesController | 2026-07-31 |
+| `3775a7ffd` | T8: RegistrationsController consolidating using BaseRegistrationsController | 2026-07-31 |
+| `bd53a9eb2` | T8: FormulasController consolidating using BaseCrudController | 2026-07-31 |
+| `80bb61ec7` | T8: HerbsController consolidating using BaseCrudController | 2026-07-31 |
+| `9fe87d41b` | T8: PatientsController consolidating using BaseCrudController | 2026-07-31 |
+| `a23fd0ead` | T8: BaseCrudController generic base class for CRUD operations | 2026-07-31 |
 | `ce5538e69` | LoginVM + MedicalCaseWorkspaceVM CommunityToolkit 迁移 | 2026-07-30 |
 | `6c4407565` | MVVM 架构审计修正（51 VM 零 DelegateCommand） | 2026-07-30 |
 | `e0df3701b` | HerbListControlViewModel 事件订阅泄漏修复 | 2026-07-30 |

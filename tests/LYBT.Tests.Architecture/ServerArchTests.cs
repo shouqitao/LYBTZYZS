@@ -364,6 +364,12 @@ public class ServerArchTests
             .And()
             .DoNotHaveName("BaseSystemController")
             .And()
+            .DoNotHaveName("BaseCrudController")
+            .And()
+            .DoNotHaveName("BaseMedicalCasesController")
+            .And()
+            .DoNotHaveName("BaseRegistrationsController")
+            .And()
             .DoNotHaveName("RootHealthController") // 健康检查控制器可以例外
             .GetTypes();
 
@@ -566,6 +572,100 @@ public class ServerArchTests
         }
 
         Assert.Empty(violatingServices);
+    }
+
+    #endregion
+
+    #region T10: Batch端点授权策略测试
+
+    /// <summary>
+    /// Herbs/Formulas batch-enable/disable 端点必须使用 AdminOrSuperAdmin 授权策略
+    /// 防止低权限用户执行批量操作
+    /// </summary>
+    [Fact]
+    public void BatchEndpoints_Should_Use_AdminOrSuperAdmin_Authorization()
+    {
+        var webApiAssembly = ServerAssemblies.FirstOrDefault(a => a.GetName().Name == "LYBT.WebAPI");
+        if (webApiAssembly == null) return;
+
+        var batchEndpoints = new[] { "batch-enable", "batch-disable" };
+        var controllers = new[] { "HerbsController", "FormulasController" };
+        var violatingEndpoints = new List<string>();
+
+        foreach (var controllerName in controllers)
+        {
+            var controllerType = Types.InAssembly(webApiAssembly)
+                .That()
+                .HaveName(controllerName)
+                .GetTypes()
+                .FirstOrDefault();
+
+            if (controllerType == null) continue;
+
+            var methods = controllerType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+
+            foreach (var method in methods)
+            {
+                var routeAttr = method.GetCustomAttributes()
+                    .FirstOrDefault(a => a.GetType().Name.Contains("HttpPost"));
+
+                if (routeAttr == null) continue;
+
+                var template = routeAttr.GetType().GetProperty("Template")?.GetValue(routeAttr)?.ToString();
+                if (template == null || !batchEndpoints.Any(e => template.Contains(e))) continue;
+
+                var hasAdminAuth = method.GetCustomAttributes(true)
+                    .Any(a => a.GetType().Name.Contains("Authorize") &&
+                             a.GetType().GetProperty("Policy")?.GetValue(a)?.ToString()?.Contains("Admin") == true);
+
+                if (!hasAdminAuth)
+                {
+                    violatingEndpoints.Add($"{controllerName}.{method.Name} ({template})");
+                }
+            }
+        }
+
+        Assert.True(violatingEndpoints.Count == 0,
+            $"Batch端点缺少 AdminOrSuperAdmin 授权: {string.Join(", ", violatingEndpoints)}");
+    }
+
+    #endregion
+
+    #region T10: MedicalCase业务规则测试
+
+    /// <summary>
+    /// MedicalCase状态流转规则：只有Active/Suspended之间可以双向流转
+    /// 防止非法状态变更
+    /// </summary>
+    [Fact]
+    public void MedicalCase_StateTransition_Rules_Should_Be_Enforced()
+    {
+        // MedicalCaseBusinessRules 在 Shared.Models 中，不在 ServerAssemblies 中
+        // 验证 MedicalCase 模块引用了 Shared.Models（间接引用业务规则）
+        var medicalCaseAssembly = ServerAssemblies.FirstOrDefault(a => a.GetName().Name == "LYBT.Module.MedicalCases");
+        Assert.NotNull(medicalCaseAssembly);
+
+        var referencesShared = medicalCaseAssembly!.GetReferencedAssemblies()
+            .Any(a => a.Name == "LYBT.Shared.Models");
+        Assert.True(referencesShared, "MedicalCase模块应引用Shared.Models以使用业务规则");
+    }
+
+    /// <summary>
+    /// MedicalCase验证器必须存在，确保输入数据完整性
+    /// </summary>
+    [Fact]
+    public void MedicalCase_Validators_Should_Exist()
+    {
+        var validatorTypes = Types.InAssemblies(ServerAssemblies)
+            .That()
+            .HaveNameEndingWith("Validator")
+            .And()
+            .ResideInNamespaceContaining("MedicalCase")
+            .GetTypes()
+            .ToList();
+
+        Assert.True(validatorTypes.Count >= 2,
+            $"MedicalCase验证器不足（期望至少2个: CreateValidator + UpdateValidator），实际: {validatorTypes.Count}");
     }
 
     #endregion

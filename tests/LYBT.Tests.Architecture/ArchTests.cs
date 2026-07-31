@@ -152,11 +152,12 @@ public class ArchTests
             .GetTypes();
 
         // 排除基础架构控制器类（含Module.Users中的共享基类）
-        var baseControllerNames = new[] { "BaseApiController", "BaseControllerCore", "BaseSystemController", "BaseUsersController" };
+        // 包含 T8 重构新增的泛型 CRUD 基类
+        var baseControllerNames = new[] { "BaseApiController", "BaseControllerCore", "BaseSystemController", "BaseUsersController", "BaseCrudController", "BaseMedicalCasesController", "BaseRegistrationsController" };
 
         var controllersOutsideWebAPI = allControllers
             .Where(t => !t.Assembly.GetName().Name?.Equals("LYBT.WebAPI", StringComparison.OrdinalIgnoreCase) == true)
-            .Where(t => !baseControllerNames.Contains(t.Name)) // 排除基础控制器
+            .Where(t => !baseControllerNames.Any(name => t.Name.StartsWith(name))) // 排除基础控制器（泛型类以名称开头匹配）
             .Select(t => $"{t.Assembly.GetName().Name}.{t.Name}")
             .ToList();
 
