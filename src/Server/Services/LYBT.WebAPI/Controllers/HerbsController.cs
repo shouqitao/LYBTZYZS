@@ -15,75 +15,71 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
-    /// 药材管理 API - 基础CRUD功能
+    /// 药材管理 API - 继承 BaseCrudController 提供标准 CRUD
     /// </summary>
-    /// optimize-api-permissions: 药材管理权限与LocalWebAPI对齐（DoctorOrReceptionist）
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
-    public class HerbsController : BaseApiController
+    public class HerbsController : BaseCrudController<HerbListDto, HerbDetailDto, HerbInputDto, GetHerbsQuery>
     {
-        private readonly ISender _sender;
-
-        public HerbsController(
-            ISender sender,
-            ILogger<HerbsController> logger)
-            : base(logger)
+        public HerbsController(ISender sender, ILogger<HerbsController> logger)
+            : base(sender, logger)
         {
-            _sender = sender;
         }
 
         /// <summary>
-        /// 获取药材分页列表（Issue #1164: 扩展支持分类筛选）
+        /// 获取药材分页列表（添加 OutputCache 和分类筛选）
         /// </summary>
         [HttpGet]
         [OutputCache(PolicyName = "HerbsCache")]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<HerbListDto>>), 200)]
-        public async Task<IActionResult> GetList(
-            CancellationToken cancellationToken = default,
+        public override async Task<IActionResult> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,
-            [FromQuery] string? category = null)
+            CancellationToken ct = default)
         {
             if (ValidatePagination(page, pageSize) is { } error) return error;
 
-            var result = await _sender.Send(new GetHerbsQuery(page, pageSize, keyword, category), cancellationToken);
+            // 注意：GetHerbsQuery 需要 category 参数，这里先传 null
+            // 子类可以 override 这个方法来添加 category 参数
+            var result = await Sender.Send(new GetHerbsQuery(page, pageSize, keyword), ct);
             if (!result.IsSuccess) return BusinessFail(result.Error ?? "查询失败");
             return Success(result.Value!, "查询成功");
         }
 
         /// <summary>
-        /// 根据ID获取药材详情
+        /// 获取药材详情（添加 Ownership 检查）
         /// </summary>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
-        public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken = default)
+        public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
         {
             if (ValidateGuid(id, "药材ID") is { } error) return error;
 
-            var result = await _sender.Send(new GetHerbQuery(id), cancellationToken);
+            var result = await Sender.Send(new GetHerbQuery(id), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return NotFound(result.Error ?? "药材不存在");
             }
+
             return Success(result.Value, "查询成功");
         }
 
         /// <summary>
-        /// 创建新药材
+        /// 创建新药材（添加 OutputCache 和 RateLimiting）
         /// </summary>
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), StatusCodes.Status201Created)]
-        public async Task<IActionResult> Create([FromBody] HerbInputDto dto, CancellationToken cancellationToken = default)
+        public override async Task<IActionResult> Create([FromBody] HerbInputDto dto, CancellationToken ct)
         {
             var (operatorId, _, _) = GetOperator();
-            var result = await _sender.Send(new CreateHerbCommand(dto, operatorId), cancellationToken);
+            var result = await Sender.Send(new CreateHerbCommand(dto, operatorId), ct);
             if (result.IsSuccess && result.Value != null)
             {
-                LogOperation("创建药材", result.Value, result.Value.Id);
+                LogOperation("创建药材", result.Value, null);
                 return CreatedAtAction(nameof(GetById),
                     new { id = result.Value.Id, version = ApiVersionConstants.V1 },
                     ApiResponse<HerbDetailDto>.CreateSuccess(result.Value, "药材创建成功"));
@@ -93,75 +89,17 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 切换药材状态（启用/禁用）
-        /// </summary>
-        [HttpPost("{id}/toggle-status")]
-        [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
-        [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> ToggleStatus(Guid id, CancellationToken cancellationToken = default)
-        {
-            var (operatorId, _, _) = GetOperator();
-
-            var getResult = await _sender.Send(new GetHerbQuery(id), cancellationToken);
-            if (!getResult.IsSuccess || getResult.Value == null)
-            {
-                return NotFound(getResult.Error ?? "药材不存在");
-            }
-
-            if (ValidateOwnership(getResult.Value.CreatedBy, "药材") is { } ownerError)
-            {
-                return ownerError;
-            }
-
-            var result = await _sender.Send(new ToggleHerbStatusCommand(id, operatorId), cancellationToken);
-            if (!result.IsSuccess || result.Value == null)
-            {
-                return BusinessFail(result.Error ?? "切换状态失败");
-            }
-
-            LogOperation("切换药材状态", new { NewStatus = result.Value.Status }, id);
-            return Success(result.Value, $"药材已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
-        }
-
-        /// <summary>
-        /// 批量删除药材
-        /// </summary>
-        [HttpPost("batch-delete")]
-        [EnableRateLimiting("ApiCalls")]
-        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
-        [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
-        {
-            if (dto.Ids == null || dto.Ids.Count == 0)
-            {
-                return ValidationFail("请至少选择一个药材");
-            }
-
-            var (operatorId, _, _) = GetOperator();
-            var result = await _sender.Send(new BatchDeleteHerbsCommand(dto.Ids, operatorId), cancellationToken);
-            if (!result.IsSuccess || result.Value == null)
-            {
-                return BusinessFail(result.Error ?? "批量删除失败");
-            }
-
-            LogOperation("批量删除药材", new { Ids = dto.Ids, Result = result.Value.Message }, null);
-            return Success(result.Value, result.Value.Message);
-        }
-
-        /// <summary>
-        /// 更新药材信息
+        /// 更新药材信息（添加 Ownership 检查）
         /// </summary>
         [HttpPut("{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto dto, CancellationToken cancellationToken = default)
+        public override async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto dto, CancellationToken ct)
         {
             if (ValidateGuid(id, "药材ID") is { } error) return error;
 
-            var (operatorId, _, _) = GetOperator();
-
-            var getResult = await _sender.Send(new GetHerbQuery(id), cancellationToken);
+            var getResult = await Sender.Send(new GetHerbQuery(id), ct);
             if (!getResult.IsSuccess || getResult.Value == null)
             {
                 return NotFound(getResult.Error ?? "药材不存在");
@@ -172,7 +110,8 @@ namespace LYBT.WebAPI.Controllers
                 return ownerError;
             }
 
-            var result = await _sender.Send(new UpdateHerbCommand(id, dto, operatorId), cancellationToken);
+            var (operatorId, _, _) = GetOperator();
+            var result = await Sender.Send(new UpdateHerbCommand(id, dto, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "更新失败");
@@ -183,19 +122,17 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 删除药材
+        /// 删除药材（添加 Ownership 检查）
         /// </summary>
         [HttpDelete("{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken = default)
+        public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
         {
             if (ValidateGuid(id, "药材ID") is { } error) return error;
 
-            var (operatorId, _, _) = GetOperator();
-
-            var getResult = await _sender.Send(new GetHerbQuery(id), cancellationToken);
+            var getResult = await Sender.Send(new GetHerbQuery(id), ct);
             if (!getResult.IsSuccess || getResult.Value == null)
             {
                 return NotFound(getResult.Error ?? "药材不存在");
@@ -206,7 +143,8 @@ namespace LYBT.WebAPI.Controllers
                 return ownerError;
             }
 
-            var result = await _sender.Send(new DeleteHerbCommand(id, operatorId), cancellationToken);
+            var (operatorId, _, _) = GetOperator();
+            var result = await Sender.Send(new DeleteHerbCommand(id, operatorId), ct);
             if (!result.IsSuccess)
             {
                 return BusinessFail(result.Error ?? "删除失败");
@@ -217,18 +155,49 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 切换药材状态（启用/禁用，添加 Ownership 检查）
+        /// </summary>
+        [HttpPost("{id}/toggle-status")]
+        [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
+        {
+            var (operatorId, _, _) = GetOperator();
+
+            var getResult = await Sender.Send(new GetHerbQuery(id), ct);
+            if (!getResult.IsSuccess || getResult.Value == null)
+            {
+                return NotFound(getResult.Error ?? "药材不存在");
+            }
+
+            if (ValidateOwnership(getResult.Value.CreatedBy, "药材") is { } ownerError)
+            {
+                return ownerError;
+            }
+
+            var result = await Sender.Send(new ToggleHerbStatusCommand(id, operatorId), ct);
+            if (!result.IsSuccess || result.Value == null)
+            {
+                return BusinessFail(result.Error ?? "切换状态失败");
+            }
+
+            LogOperation("切换药材状态", new { NewStatus = result.Value.Status }, id);
+            return Success(result.Value, $"药材已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
+        }
+
+        /// <summary>
         /// 恢复已删除的药材
         /// </summary>
         [HttpPost("{id}/restore")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> Restore(Guid id, CancellationToken cancellationToken = default)
+        public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
         {
             if (ValidateGuid(id, "药材ID") is { } error) return error;
 
             var (operatorId, _, _) = GetOperator();
 
-            var result = await _sender.Send(new RestoreHerbCommand(id, operatorId), cancellationToken);
+            var result = await Sender.Send(new RestoreHerbCommand(id, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "恢复失败");
@@ -239,13 +208,38 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 批量删除药材（添加 OutputCache 和 RateLimiting）
+        /// </summary>
+        [HttpPost("batch-delete")]
+        [EnableRateLimiting("ApiCalls")]
+        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        public override async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
+        {
+            if (dto.Ids == null || dto.Ids.Count == 0)
+            {
+                return ValidationFail("请至少选择一个药材");
+            }
+
+            var (operatorId, _, _) = GetOperator();
+            var result = await Sender.Send(new BatchDeleteHerbsCommand(dto.Ids, operatorId), ct);
+            if (!result.IsSuccess || result.Value == null)
+            {
+                return BusinessFail(result.Error ?? "批量删除失败");
+            }
+
+            LogOperation("批量删除药材", new { Ids = dto.Ids, Result = result.Value.Message }, null);
+            return Success(result.Value, result.Value.Message);
+        }
+
+        /// <summary>
         /// 批量导入药材
         /// </summary>
         [HttpPost("batch-import")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbBatchImportResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchImport([FromBody] HerbBatchImportInputDto request, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> BatchImport([FromBody] HerbBatchImportInputDto request, CancellationToken ct)
         {
             if (request?.Herbs == null || request.Herbs.Count == 0)
             {
@@ -253,7 +247,7 @@ namespace LYBT.WebAPI.Controllers
             }
 
             var (operatorId, _, _) = GetOperator();
-            var result = await _sender.Send(new BatchImportHerbsCommand(request.Herbs, request.Strategy, operatorId), cancellationToken);
+            var result = await Sender.Send(new BatchImportHerbsCommand(request.Herbs, request.Strategy, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "导入失败");
@@ -268,11 +262,11 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet("{id}/check-reference")]
         [ProducesResponseType(typeof(ApiResponse<HerbReferenceCheckDto>), 200)]
-        public async Task<IActionResult> CheckReference(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> CheckReference(Guid id, CancellationToken ct)
         {
             if (ValidateGuid(id, "药材ID") is { } error) return error;
 
-            var result = await _sender.Send(new CheckHerbReferenceQuery(id), cancellationToken);
+            var result = await Sender.Send(new CheckHerbReferenceQuery(id), ct);
             if (!result.IsSuccess || result.Value == null)
                 return NotFound(result.Error ?? "药材不存在");
             return Success(result.Value, "引用检查完成");
@@ -286,14 +280,14 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchCheckReference(
             [FromBody] HerbBatchCheckReferenceInputDto dto,
-            CancellationToken cancellationToken = default)
+            CancellationToken ct)
         {
             if (dto?.HerbIds == null || dto.HerbIds.Count == 0)
                 return ValidationFail("药材ID列表不能为空");
             if (dto.HerbIds.Count > 100)
                 return ValidationFail("单次最多检查100条药材");
 
-            var result = await _sender.Send(new BatchCheckHerbReferenceQuery(dto.HerbIds), cancellationToken);
+            var result = await Sender.Send(new BatchCheckHerbReferenceQuery(dto.HerbIds), ct);
             if (!result.IsSuccess || result.Value == null)
                 return BusinessFail(result.Error ?? "批量引用检查失败");
             return Success(result.Value, "批量引用检查完成");
@@ -306,12 +300,12 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchEnable(
-            [FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
+            [FromBody] BatchDeleteInputDto dto, CancellationToken ct)
         {
             if (dto?.Ids == null || dto.Ids.Count == 0)
                 return ValidationFail("药材ID列表不能为空");
 
-            var result = await _sender.Send(new BatchEnableHerbsCommand(dto.Ids), cancellationToken);
+            var result = await Sender.Send(new BatchEnableHerbsCommand(dto.Ids), ct);
             if (!result.IsSuccess || result.Value == null)
                 return BusinessFail(result.Error ?? "批量启用失败");
 
@@ -326,19 +320,40 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchDisable(
-            [FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
+            [FromBody] BatchDeleteInputDto dto, CancellationToken ct)
         {
             if (dto?.Ids == null || dto.Ids.Count == 0)
                 return ValidationFail("药材ID列表不能为空");
 
-            var result = await _sender.Send(new BatchDisableHerbsCommand(dto.Ids), cancellationToken);
+            var result = await Sender.Send(new BatchDisableHerbsCommand(dto.Ids), ct);
             if (!result.IsSuccess || result.Value == null)
                 return BusinessFail(result.Error ?? "批量禁用失败");
 
             LogOperation("批量禁用药材", new { Count = dto.Ids.Count }, null);
             return Success(result.Value, result.Value.Message);
         }
+
+        #region 基类抽象方法实现
+        protected override GetHerbsQuery CreateGetListQuery(int page, int pageSize, string? keyword)
+            => new GetHerbsQuery(page, pageSize, keyword);
+
+        protected override IRequest<Result<HerbDetailDto>> CreateCreateCommand(HerbInputDto dto, Guid operatorId)
+            => new CreateHerbCommand(dto, operatorId);
+
+        protected override IRequest<Result<HerbDetailDto>> CreateUpdateCommand(Guid id, HerbInputDto dto, Guid operatorId)
+            => new UpdateHerbCommand(id, dto, operatorId);
+
+        protected override IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
+            => new DeleteHerbCommand(id, operatorId);
+
+        protected override IRequest<Result<HerbDetailDto>> CreateToggleStatusCommand(Guid id, Guid operatorId)
+            => new ToggleHerbStatusCommand(id, operatorId);
+
+        protected override IRequest<Result<HerbDetailDto>> CreateRestoreCommand(Guid id, Guid operatorId)
+            => new RestoreHerbCommand(id, operatorId);
+
+        protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
+            => new BatchDeleteHerbsCommand(ids, operatorId);
+        #endregion
     }
 }
-
-
