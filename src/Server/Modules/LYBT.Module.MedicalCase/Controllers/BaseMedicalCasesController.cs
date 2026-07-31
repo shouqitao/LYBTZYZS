@@ -38,7 +38,16 @@ public abstract class BaseMedicalCasesController : BaseCrudController<MedicalCas
     #region 抽象方法实现
 
     protected override GetMedicalCasesQuery CreateGetListQuery(int page, int pageSize, string? keyword)
-        => new(Keyword: keyword, Page: page, PageSize: pageSize);
+    {
+        var (operatorId, _, operatorRole) = GetOperator();
+        var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
+        return new GetMedicalCasesQuery(
+            Page: page,
+            PageSize: pageSize,
+            CurrentDoctorId: operatorId,
+            IsAdmin: isAdmin,
+            Keyword: keyword);
+    }
 
     protected override IRequest<Result<MedicalCaseDetailDto>> CreateCreateCommand(MedicalCaseInputDto dto, Guid operatorId)
     {
@@ -47,7 +56,11 @@ public abstract class BaseMedicalCasesController : BaseCrudController<MedicalCas
     }
 
     protected override IRequest<Result<MedicalCaseDetailDto>> CreateUpdateCommand(Guid id, MedicalCaseInputDto dto, Guid operatorId)
-        => new SaveMedicalCaseCommand(dto, operatorId, false);
+    {
+        var (_, _, operatorRole) = GetOperator();
+        var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
+        return new SaveMedicalCaseCommand(dto, operatorId, isAdmin);
+    }
 
     protected override IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
         => throw new NotSupportedException("医案删除需要 isAdmin 参数，请在子类 override Delete 方法");
@@ -59,7 +72,11 @@ public abstract class BaseMedicalCasesController : BaseCrudController<MedicalCas
         => throw new NotSupportedException("医案不支持恢复操作");
 
     protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
-        => new BatchDeleteMedicalCasesCommand(ids, operatorId, false);
+    {
+        var (_, _, operatorRole) = GetOperator();
+        var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
+        return new BatchDeleteMedicalCasesCommand(ids, operatorId, isAdmin);
+    }
 
     #endregion
 
