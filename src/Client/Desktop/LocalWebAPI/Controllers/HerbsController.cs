@@ -147,4 +147,32 @@ public class HerbsController : BaseApiController
             return BusinessFail(result.Error ?? "批量引用检查失败");
         return Success(result.Value, "批量引用检查完成");
     }
+
+    [HttpPost("batch-enable")]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
+    {
+        if (dto?.Ids == null || dto.Ids.Count == 0)
+            return ValidationFail("药材ID列表不能为空");
+
+        var result = await _sender.Send(new BatchEnableHerbsCommand(dto.Ids), ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "批量启用失败");
+
+        return Success(result.Value, result.Value.Message);
+    }
+
+    [HttpPost("batch-disable")]
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
+    {
+        if (dto?.Ids == null || dto.Ids.Count == 0)
+            return ValidationFail("药材ID列表不能为空");
+
+        var result = await _sender.Send(new BatchDisableHerbsCommand(dto.Ids), ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "批量禁用失败");
+
+        return Success(result.Value, result.Value.Message);
+    }
 }

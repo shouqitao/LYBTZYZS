@@ -301,6 +301,46 @@ namespace LYBT.WebAPI.Controllers
             LogOperation("切换验方状态", new { NewStatus = result.Value.Status }, id);
             return Success(result.Value, $"验方已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
         }
+
+        /// <summary>
+        /// 批量启用药方
+        /// </summary>
+        [HttpPost("batch-enable")]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
+        public async Task<IActionResult> BatchEnable(
+            [FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
+        {
+            if (dto?.Ids == null || dto.Ids.Count == 0)
+                return ValidationFail("验方ID列表不能为空");
+
+            var result = await _sender.Send(new BatchEnableFormulasCommand(dto.Ids), ct);
+            if (!result.IsSuccess || result.Value == null)
+                return BusinessFail(result.Error ?? "批量启用失败");
+
+            LogOperation("批量启用药方", new { Count = dto.Ids.Count }, null);
+            return Success(result.Value, result.Value.Message);
+        }
+
+        /// <summary>
+        /// 批量禁用药方
+        /// </summary>
+        [HttpPost("batch-disable")]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
+        public async Task<IActionResult> BatchDisable(
+            [FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
+        {
+            if (dto?.Ids == null || dto.Ids.Count == 0)
+                return ValidationFail("验方ID列表不能为空");
+
+            var result = await _sender.Send(new BatchDisableFormulasCommand(dto.Ids), ct);
+            if (!result.IsSuccess || result.Value == null)
+                return BusinessFail(result.Error ?? "批量禁用失败");
+
+            LogOperation("批量禁用药方", new { Count = dto.Ids.Count }, null);
+            return Success(result.Value, result.Value.Message);
+        }
     }
 }
 

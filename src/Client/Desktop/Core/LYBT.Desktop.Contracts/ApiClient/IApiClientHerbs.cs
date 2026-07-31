@@ -94,6 +94,18 @@ public interface IApiClientHerbs
     /// <param name="id">Herb ID.</param>
     Task<ApiResponse<HerbDetailDto>> RestoreAsync(Guid id);
 
+    /// <summary>
+    /// Batch enable herbs.
+    /// </summary>
+    /// <param name="request">Batch operation input with IDs.</param>
+    Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request);
+
+    /// <summary>
+    /// Batch disable herbs.
+    /// </summary>
+    /// <param name="request">Batch operation input with IDs.</param>
+    Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request);
+
     // ========== Local-only methods ==========
 
     /// <summary>

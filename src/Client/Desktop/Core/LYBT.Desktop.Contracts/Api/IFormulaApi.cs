@@ -96,5 +96,17 @@ namespace LYBT.Desktop.Contracts.Api
             Guid formulaId,
             Guid herbItemId,
             [Refit.Body] ValidateFormulaHerbInputDto request);
+
+        /// <summary>
+        /// 批量启用药方
+        /// </summary>
+        [Refit.Post("/api/v1/formulas/batch-enable")]
+        Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync([Refit.Body] BatchDeleteInputDto request);
+
+        /// <summary>
+        /// 批量禁用药方
+        /// </summary>
+        [Refit.Post("/api/v1/formulas/batch-disable")]
+        Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync([Refit.Body] BatchDeleteInputDto request);
     }
 }

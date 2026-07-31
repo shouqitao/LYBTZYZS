@@ -519,6 +519,12 @@ public sealed class HttpClientApiClient : IApiClient,
     Task<ApiResponse<HerbDetailDto>> IApiClientHerbs.RestoreAsync(Guid id)
         => PostAndWrapAsync<HerbDetailDto>($"/api/v1/herbs/{id}/restore");
 
+    Task<ApiResponse<BatchOperationResultDto>> IApiClientHerbs.BatchEnableAsync(BatchDeleteInputDto request)
+        => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/herbs/batch-enable", request);
+
+    Task<ApiResponse<BatchOperationResultDto>> IApiClientHerbs.BatchDisableAsync(BatchDeleteInputDto request)
+        => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/herbs/batch-disable", request);
+
     Task<List<string>> IApiClientHerbs.GetCategoriesAsync()
         => GetRawAsync<List<string>>("/api/v1/herbs/categories");
 
@@ -570,6 +576,12 @@ public sealed class HttpClientApiClient : IApiClient,
 
     Task<ApiResponse<FormulaDetailDto>> IApiClientFormulas.RestoreAsync(Guid id)
         => PostAndWrapAsync<FormulaDetailDto>($"/api/v1/formulas/{id}/restore");
+
+    Task<ApiResponse<BatchOperationResultDto>> IApiClientFormulas.BatchEnableAsync(BatchDeleteInputDto request)
+        => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/formulas/batch-enable", request);
+
+    Task<ApiResponse<BatchOperationResultDto>> IApiClientFormulas.BatchDisableAsync(BatchDeleteInputDto request)
+        => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/formulas/batch-disable", request);
 
     Task<ApiResponse<List<FormulaListDto>>> IApiClientFormulas.GetPendingValidationAsync()
         => GetAndWrapAsync<List<FormulaListDto>>("/api/v1/formulas/pending-validation");

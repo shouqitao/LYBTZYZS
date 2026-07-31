@@ -101,6 +101,18 @@ public interface IApiClientFormulas
     Task<ApiResponse<FormulaDetailDto>> RestoreAsync(Guid id);
 
     /// <summary>
+    /// Batch enable formulas.
+    /// </summary>
+    /// <param name="request">Batch operation input with IDs.</param>
+    Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request);
+
+    /// <summary>
+    /// Batch disable formulas.
+    /// </summary>
+    /// <param name="request">Batch operation input with IDs.</param>
+    Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request);
+
+    /// <summary>
     /// Get formulas pending validation.
     /// </summary>
     Task<ApiResponse<List<FormulaListDto>>> GetPendingValidationAsync();

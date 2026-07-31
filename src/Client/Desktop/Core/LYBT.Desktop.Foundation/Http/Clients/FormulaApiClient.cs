@@ -79,6 +79,14 @@ internal sealed class FormulaApiClient : IApiClientFormulas
         => _api.RestoreAsync(id);
 
     /// <inheritdoc />
+    public Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request)
+        => _api.BatchEnableAsync(request);
+
+    /// <inheritdoc />
+    public Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request)
+        => _api.BatchDisableAsync(request);
+
+    /// <inheritdoc />
     public Task<ApiResponse<List<FormulaListDto>>> GetPendingValidationAsync()
         => _api.GetPendingValidationAsync();
 

@@ -75,6 +75,14 @@ internal sealed class HerbApiClient : IApiClientHerbs
         => _api.RestoreAsync(id);
 
     /// <inheritdoc />
+    public Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request)
+        => _api.BatchEnableAsync(request);
+
+    /// <inheritdoc />
+    public Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request)
+        => _api.BatchDisableAsync(request);
+
+    /// <inheritdoc />
     /// <remarks>Local-only method — not available in remote Refit mode.</remarks>
     public Task<List<string>> GetCategoriesAsync()
         => throw new NotSupportedException("GetCategoriesAsync is a local-only method and is not available in remote mode.");

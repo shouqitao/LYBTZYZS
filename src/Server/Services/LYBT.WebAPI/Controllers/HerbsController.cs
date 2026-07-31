@@ -298,6 +298,46 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.Error ?? "批量引用检查失败");
             return Success(result.Value, "批量引用检查完成");
         }
+
+        /// <summary>
+        /// 批量启用药材
+        /// </summary>
+        [HttpPost("batch-enable")]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
+        public async Task<IActionResult> BatchEnable(
+            [FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
+        {
+            if (dto?.Ids == null || dto.Ids.Count == 0)
+                return ValidationFail("药材ID列表不能为空");
+
+            var result = await _sender.Send(new BatchEnableHerbsCommand(dto.Ids), cancellationToken);
+            if (!result.IsSuccess || result.Value == null)
+                return BusinessFail(result.Error ?? "批量启用失败");
+
+            LogOperation("批量启用药材", new { Count = dto.Ids.Count }, null);
+            return Success(result.Value, result.Value.Message);
+        }
+
+        /// <summary>
+        /// 批量禁用药材
+        /// </summary>
+        [HttpPost("batch-disable")]
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
+        public async Task<IActionResult> BatchDisable(
+            [FromBody] BatchDeleteInputDto dto, CancellationToken cancellationToken = default)
+        {
+            if (dto?.Ids == null || dto.Ids.Count == 0)
+                return ValidationFail("药材ID列表不能为空");
+
+            var result = await _sender.Send(new BatchDisableHerbsCommand(dto.Ids), cancellationToken);
+            if (!result.IsSuccess || result.Value == null)
+                return BusinessFail(result.Error ?? "批量禁用失败");
+
+            LogOperation("批量禁用药材", new { Count = dto.Ids.Count }, null);
+            return Success(result.Value, result.Value.Message);
+        }
     }
 }
 
