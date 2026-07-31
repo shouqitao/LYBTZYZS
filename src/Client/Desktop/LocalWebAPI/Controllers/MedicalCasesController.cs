@@ -46,9 +46,10 @@ public class MedicalCasesController : BaseMedicalCasesController
     [HttpGet("query")]
     public override async Task<IActionResult> Query([FromQuery] MedicalCaseQueryDto query, CancellationToken ct = default)
     {
-        var doctorFilter = GetDoctorFilter();
-        if (doctorFilter.HasValue && query.DoctorId == null)
-            query.DoctorId = doctorFilter.Value;
+        var (operatorId, _, operatorRole) = GetOperator();
+        var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
+        if (!isAdmin && query.DoctorId == null)
+            query.DoctorId = operatorId;
         var result = await Sender.Send(new QueryMedicalCasesCommand(query), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
@@ -76,15 +77,16 @@ public class MedicalCasesController : BaseMedicalCasesController
     [HttpGet("pending")]
     public async Task<IActionResult> GetPending([FromQuery] Guid? patientId = null, CancellationToken ct = default)
     {
-        var doctorFilter = GetDoctorFilter();
+        var (operatorId, _, operatorRole) = GetOperator();
+        var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
         var query = new MedicalCaseQueryDto
         {
             QueryType = MedicalCaseQueryType.Pending,
             PatientId = patientId,
-            IncludeAllDoctors = !doctorFilter.HasValue
+            IncludeAllDoctors = isAdmin
         };
-        if (doctorFilter.HasValue)
-            query.DoctorId = doctorFilter.Value;
+        if (!isAdmin)
+            query.DoctorId = operatorId;
         var result = await Sender.Send(new QueryMedicalCasesCommand(query), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
@@ -97,8 +99,9 @@ public class MedicalCasesController : BaseMedicalCasesController
     [HttpPut("{id}/close")]
     public async Task<IActionResult> CloseCase(Guid id, CancellationToken ct)
     {
+        if (ValidateGuid(id, "医案ID") is { } error) return error;
         var (operatorId, _, operatorRole) = GetOperator();
-        var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
+        var isAdmin = operatorRole is UserRole.SuperAdmin || operatorRole == UserRole.Admin;
         var result = await Sender.Send(new CompleteMedicalCaseCommand(id, operatorId, isAdmin), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "完成医案失败");
@@ -111,8 +114,9 @@ public class MedicalCasesController : BaseMedicalCasesController
     [HttpPut("{id}/suspend")]
     public async Task<IActionResult> SuspendCase(Guid id, [FromBody] ConsultationInputDto? request = null, CancellationToken ct = default)
     {
+        if (ValidateGuid(id, "医案ID") is { } error) return error;
         var (operatorId, _, operatorRole) = GetOperator();
-        var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
+        var isAdmin = operatorRole is UserRole.SuperAdmin || operatorRole == UserRole.Admin;
         var result = await Sender.Send(new SuspendMedicalCaseCommand(id, operatorId, isAdmin), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "挂起失败");
@@ -125,6 +129,7 @@ public class MedicalCasesController : BaseMedicalCasesController
     [HttpPut("{id}/cancel")]
     public async Task<IActionResult> CancelCase(Guid id, [FromBody] CancelMedicalCaseRequestDto? request = null, CancellationToken ct = default)
     {
+        if (ValidateGuid(id, "医案ID") is { } error) return error;
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
         var result = await Sender.Send(new CancelMedicalCaseCommand(id, operatorId, isAdmin, request?.Reason), ct);
@@ -139,6 +144,7 @@ public class MedicalCasesController : BaseMedicalCasesController
     [HttpPut("{id}/status")]
     public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] MedicalCaseStatusInputDto request, CancellationToken ct = default)
     {
+        if (ValidateGuid(id, "医案ID") is { } error) return error;
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
 
@@ -155,16 +161,4 @@ public class MedicalCasesController : BaseMedicalCasesController
             return BusinessFail(result.Error ?? "状态更新失败");
         return Success(result.Value!, "状态更新成功");
     }
-
-    private Guid GetCurrentUserId()
-        => Guid.TryParse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var id) ? id : Guid.Empty;
-
-    private bool IsAdmin()
-    {
-        var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
-        return role == UserRole.Admin.ToString() || role == UserRole.SuperAdmin.ToString();
-    }
-
-    private Guid? GetDoctorFilter()
-        => IsAdmin() ? null : GetCurrentUserId();
 }
