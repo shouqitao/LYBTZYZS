@@ -9,8 +9,6 @@ using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Registration.Dialogs;
 using LYBT.Desktop.Registration.ViewModels;
-using LYBT.Desktop.Patients.Interfaces;
-using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Registration;

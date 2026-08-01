@@ -2,7 +2,7 @@ using LYBT.Desktop.Contracts.Results;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using System.Threading;
-namespace LYBT.Desktop.Patients.Interfaces
+namespace LYBT.Desktop.Contracts.Services
 {
     /// <summary>
     /// 患者Service接口

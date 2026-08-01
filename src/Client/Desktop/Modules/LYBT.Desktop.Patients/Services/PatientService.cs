@@ -1,5 +1,5 @@
 using LYBT.Desktop.Contracts.Results;
-using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Shared.Models.Contracts.Common;

@@ -7,7 +7,6 @@ using LYBT.Desktop.Patients.Services;
 using LYBT.Desktop.Patients.ViewModels;
 using LYBT.Desktop.Patients.ViewModels.Handlers;
 using LYBT.Desktop.Contracts.Results;
-using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;

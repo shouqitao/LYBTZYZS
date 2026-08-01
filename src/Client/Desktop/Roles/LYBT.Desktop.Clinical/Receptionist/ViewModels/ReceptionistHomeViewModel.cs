@@ -8,7 +8,6 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Helpers;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
-using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Contracts.Patients;

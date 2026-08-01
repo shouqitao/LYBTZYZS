@@ -1,5 +1,5 @@
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
-using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.Models;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;

@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
-using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.ViewModels;
 using LYBT.Desktop.Patients.ViewModels.Handlers;

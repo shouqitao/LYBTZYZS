@@ -1,6 +1,5 @@
 using LYBT.Desktop.Infrastructure.CardReader.Integration;
 using LYBT.Desktop.Infrastructure.CardReader.Models;
-using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Shared.Models.Contracts.Patients;

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Patients;

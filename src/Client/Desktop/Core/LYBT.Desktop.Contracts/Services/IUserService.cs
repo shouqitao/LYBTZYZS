@@ -3,7 +3,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using System.Threading;
 
-namespace LYBT.Desktop.Users.Interfaces
+namespace LYBT.Desktop.Contracts.Services
 {
     /// <summary>
     /// 用户Service接口

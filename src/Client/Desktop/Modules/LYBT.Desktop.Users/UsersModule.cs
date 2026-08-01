@@ -1,7 +1,7 @@
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 // SYNC-D02: IUserRepository 迁移到 Contracts.Repositories
 using LYBT.Desktop.Users.Controls;
-using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.Models;
 using LYBT.Desktop.Users.ViewModels.Handlers;
 using LYBT.Shared.Models.Contracts.Users;
