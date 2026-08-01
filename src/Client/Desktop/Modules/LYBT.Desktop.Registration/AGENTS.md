@@ -11,9 +11,9 @@ Patient registration (挂号) module for the TCM clinic desktop client. Manages 
 
 | File | Description |
 |------|-------------|
-| `RegistrationModule.cs` | Prism IModule entry point. Depends on AuthenticationModule, PatientsModule, UsersModule. Registers IRegistrationService, RegistrationListViewModel, RegistrationListView, and RegistrationCreateDialog. |
+| `RegistrationModule.cs` | Prism IModule entry point. Depends on AuthenticationModule. Registers IRegistrationService, RegistrationListViewModel, RegistrationListView, and RegistrationCreateDialog. |
 | `ViewModels/RegistrationListViewModel.cs` | Queue display ViewModel. Role-aware (Receptionist sees all, Doctor sees own). Commands: Refresh, CreateRegistration (dialog), StartVisit (creates MedicalCase + navigates), CancelRegistration. Auto-refreshes via PeriodicTimer every 30s. |
-| `Dialogs/RegistrationCreateDialogViewModel.cs` | Dialog ViewModel for creating a new registration. Patient search with autocomplete, doctor dropdown selection. Uses IPatientService and IUserService from cross-module dependencies. |
+| `Dialogs/RegistrationCreateDialogViewModel.cs` | Dialog ViewModel for creating a new registration. Patient search with autocomplete, doctor dropdown selection. Uses IPatientService and IUserService from LYBT.Desktop.Contracts.Services. |
 | `Dialogs/RegistrationCreateDialog.xaml` | Registration creation dialog UI. |
 | `Repositories/RegistrationRepository.cs` | Dual-mode repository (Remote via IRegistrationApi / Local via ILocalRegistrationApi). Uses IApiRouter to determine offline mode. |
 | `Services/RemoteRegistrationService.cs` | IRegistrationService implementation wrapping IRegistrationRepository with error handling and logging. |
@@ -33,7 +33,7 @@ Patient registration (挂号) module for the TCM clinic desktop client. Manages 
 
 ### Working In This Directory
 
-- **Cross-module dependencies**: This module references PatientsModule (IPatientService) and UsersModule (IUserService) for the create-dialog's patient search and doctor list. This is an exception to the "modules must not reference each other" rule -- Registration is a workflow module that needs data from multiple domains.
+- **Cross-module dependencies**: Registration 通过 `LYBT.Desktop.Contracts.Services`（IPatientService/IUserService 已下沉 Contracts）使用患者搜索与医生列表，不再直接引用 Patients/Users 模块；仅保留 MedicalCase.Models 例外（WorkspaceMode/EditState/MedicalCaseNavigationParameters）。
 - **Role-based behavior**: Receptionist/Admin/SuperAdmin see all queue items and can cancel. Doctor sees only their own queue and can start visits. Role is checked via `SessionManager.CurrentUser?.Role`.
 - **StartVisit flow**: Calls `_registrationService.StartVisitAsync()` which returns a MedicalCaseId, then fetches full PatientDetailDto via `IPatientApi.GetPatientByIdAsync()`, then navigates to MedicalCaseWorkspace with Clinical mode + Editing state.
 - **Cancel guard**: Only Receptionist can cancel, and only Waiting-status registrations with Source=Receptionist.
@@ -61,12 +61,10 @@ Patient registration (挂号) module for the TCM clinic desktop client. Manages 
 
 | Dependency | Purpose |
 |------------|---------|
-| `LYBT.Desktop.Contracts` | IRegistrationService, IRegistrationRepository, IRegistrationApi, ILocalRegistrationApi, IApiRouter, INavigationCoordinator, ISessionManager |
+| `LYBT.Desktop.Contracts` | IRegistrationService, IRegistrationRepository, IRegistrationApi, ILocalRegistrationApi, IPatientService, IUserService, IApiRouter, INavigationCoordinator, ISessionManager |
 | `LYBT.Desktop.Infrastructure` | ViewNames constants, MedicalCaseNavigationParameters, Extensions |
 | `LYBT.Desktop.Infrastructure` | NavigableViewModelBase, DialogViewModelBase base classes |
 | `LYBT.Desktop.MedicalCase` | WorkspaceMode enum, EditState enum (for navigation parameters) |
-| `LYBT.Desktop.Patients` | IPatientService, IPatientApi (cross-module) |
-| `LYBT.Desktop.Users` | IUserService (cross-module) |
 | `LYBT.Shared.Models` | RegistrationListDto, RegistrationDetailDto, RegistrationInputDto, PatientListDto, UserListDto, CommandResult |
 | `LYBT.Shared.Primitives` | Shared constants and primitives |
 

@@ -629,7 +629,7 @@ public class DesktopLayerArchTests
     }
 
     /// <summary>
-    /// 业务模块不得引用其他业务模块（Registration 例外）
+    /// 业务模块不得引用其他业务模块（仅 MedicalCase.Models 枚举例外）
     /// 防止模块耦合，确保模块隔离
     /// </summary>
     [Fact]
@@ -643,14 +643,6 @@ public class DesktopLayerArchTests
             ["LYBT.Desktop.MedicalCase"] = Assembly.Load("LYBT.Desktop.MedicalCase"),
             ["LYBT.Desktop.Users"] = Assembly.Load("LYBT.Desktop.Users"),
             ["LYBT.Desktop.Auth"] = Assembly.Load("LYBT.Desktop.Auth"),
-        };
-
-        // Registration 可依赖 Patients/Users/MedicalCase.Models（已文档化例外）
-        var registrationExceptionDeps = new[]
-        {
-            "LYBT.Desktop.Patients",
-            "LYBT.Desktop.Users",
-            "LYBT.Desktop.MedicalCase"
         };
 
         var violations = new List<string>();

@@ -37,7 +37,7 @@ LYBT.Desktop.Registration/
 | `RegistrationListView` | Navigation | 导航视图 |
 | `RegistrationCreateDialog` + VM | Dialog | 新建挂号弹窗 |
 
-**模块依赖**: `AuthenticationModule`, `PatientsModule`, `UsersModule`
+**模块依赖**: `AuthenticationModule`
 
 ### RegistrationListViewModel
 
@@ -58,12 +58,12 @@ LYBT.Desktop.Registration/
 
 ### RegistrationCreateDialogViewModel
 
-**设计依据**: DialogViewModelBase 子类，跨模块调用患者搜索和医生列表。
+**设计依据**: DialogViewModelBase 子类，通过 `LYBT.Desktop.Contracts.Services` 调用患者搜索和医生列表。
 
-| 依赖服务 | 来源模块 | 用途 |
-|----------|----------|------|
-| `IPatientService` | PatientsModule | 患者搜索自动补全 |
-| `IUserService` | UsersModule | 医生下拉列表 |
+| 依赖服务 | 来源 | 用途 |
+|----------|------|------|
+| `IPatientService` | `LYBT.Desktop.Contracts.Services` | 患者搜索自动补全 |
+| `IUserService` | `LYBT.Desktop.Contracts.Services` | 医生下拉列表 |
 
 ### RemoteRegistrationService
 
@@ -82,16 +82,15 @@ LYBT.Desktop.Registration/
 
 ```
 RegistrationModule
-├── LYBT.Desktop.Contracts    # IRegistrationService, IRegistrationRepository, INavigationCoordinator
+├── LYBT.Desktop.Contracts    # IRegistrationService, IRegistrationRepository, INavigationCoordinator, IPatientService, IUserService
 ├── LYBT.Desktop.Infrastructure  # NavigableViewModelBase, DialogViewModelBase, ViewNames
-├── LYBT.Desktop.Patients     # IPatientService, IPatientApi (跨模块)
-├── LYBT.Desktop.Users        # IUserService (跨模块)
+├── LYBT.Desktop.MedicalCase  # WorkspaceMode/EditState 枚举（导航参数）
 └── LYBT.Shared.Models        # DTOs, CommandResult
 ```
 
 ## 设计决策
 
-1. **跨模块依赖许可**: Registration 是工作流模块，可引用 Patients/Users 的服务接口（AGENTS.md 明确例外）
+1. **跨模块依赖收敛**: Registration 通过 `LYBT.Desktop.Contracts.Services` 使用 IPatientService/IUserService（已下沉 Contracts），不再直接引用 Patients/Users 模块；仅保留 MedicalCase.Models 枚举例外
 2. **PeriodicTimer 替代 DispatcherTimer**: 更现代的异步刷新模式，支持 CancellationToken
 3. **CommandResult 模式**: 所有 Service 方法返回 `CommandResult<T>`，调用方检查 `.Success` 后访问 `.Data`
 4. **双模式仓库**: `RegistrationRepository` 通过 `IApiRouter` 路由到 Remote/Local
@@ -100,5 +99,5 @@ RegistrationModule
 
 - **StartVisit 导航参数**: 必须同时传 `MedicalCaseId`、`CurrentPatient`、`WorkspaceMode`、`EditState` 四个参数，缺一不可
 - **Cancel 守卫条件**: 仅 `Status=Waiting` + `Source=Receptionist` + 当前用户为 Receptionist 三个条件同时满足才可取消
-- **跨模块 DTO**: `RegistrationCreateDialogViewModel` 依赖 `IPatientService` 和 `IUserService`，若这些模块未加载会 DI 失败
+- **Contracts 服务依赖**: `RegistrationCreateDialogViewModel` 依赖 `IPatientService` 和 `IUserService`（来自 `LYBT.Desktop.Contracts.Services`），若这些服务未注册会 DI 失败
 - **自动刷新生命周期**: 必须在 `OnNavigatedFrom` 停止定时器，否则离开页面后仍在轮询
