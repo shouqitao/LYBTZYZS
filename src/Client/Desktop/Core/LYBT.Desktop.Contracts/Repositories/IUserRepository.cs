@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
@@ -58,12 +59,12 @@ public interface IUserRepository
     /// <summary>
     /// 修改密码 (Issue #1887-1892)
     /// </summary>
-    Task<Result> ChangePasswordAsync(Guid userId, ChangePasswordRequest request, CancellationToken ct = default);
+    Task<CommandResult> ChangePasswordAsync(Guid userId, ChangePasswordRequest request, CancellationToken ct = default);
 
     /// <summary>
     /// 管理员重置用户密码 (Issue #1911)
     /// </summary>
-    Task<Result<ResetPasswordResponseDto>> ResetPasswordAsync(Guid userId, ResetPasswordRequestDto request, CancellationToken ct = default);
+    Task<CommandResult<ResetPasswordResponseDto>> ResetPasswordAsync(Guid userId, ResetPasswordRequestDto request, CancellationToken ct = default);
 
     /// <summary>
     /// 切换用户状态 (启用/禁用)

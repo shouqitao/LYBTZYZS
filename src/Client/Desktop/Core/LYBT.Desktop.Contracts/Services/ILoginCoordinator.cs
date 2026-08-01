@@ -1,4 +1,5 @@
 using LYBT.Desktop.Contracts.Models;
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Contracts.Services;
@@ -47,7 +48,7 @@ public interface ILoginCoordinator
     /// <param name="username">用户名</param>
     /// <param name="password">密码</param>
     /// <returns>登录结果</returns>
-    Task<LoginResult> LoginAsync(string username, string password);
+    Task<CommandResult<UserDetailDto>> LoginAsync(string username, string password);
 
     /// <summary>
     /// 处理登录成功后的流程
@@ -82,37 +83,6 @@ public class LoginSuccessEventArgs : EventArgs
         User = user ?? throw new ArgumentNullException(nameof(user));
         TokenExpiresAt = tokenExpiresAt;
     }
-}
-
-/// <summary>
-/// 登录结果
-/// </summary>
-public record LoginResult
-{
-    /// <summary>是否成功</summary>
-    public bool Success { get; init; }
-
-    /// <summary>错误消息（失败时）</summary>
-    public string? ErrorMessage { get; init; }
-
-    /// <summary>错误代码（失败时）</summary>
-    public string? ErrorCode { get; init; }
-
-    /// <summary>用户信息（成功时）</summary>
-    public UserDetailDto? User { get; init; }
-
-    public static LoginResult Succeeded(UserDetailDto user) => new()
-    {
-        Success = true,
-        User = user
-    };
-
-    public static LoginResult Failed(string errorMessage, string? errorCode = null) => new()
-    {
-        Success = false,
-        ErrorMessage = errorMessage,
-        ErrorCode = errorCode
-    };
 }
 
 /// <summary>

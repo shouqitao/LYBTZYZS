@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Foundation.Repositories;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Shared.Models.Contracts.Auth;
@@ -206,9 +207,9 @@ public sealed class UserRepository : ApiClientRepositoryBase<UserListDto, UserDe
             LogLevel.Information);
     }
 
-    public async Task<Result> ChangePasswordAsync(Guid userId, ChangePasswordRequest request, CancellationToken ct = default)
+    public async Task<CommandResult> ChangePasswordAsync(Guid userId, ChangePasswordRequest request, CancellationToken ct = default)
     {
-        // Returns Result.Failure on exception instead of rethrowing — keep manual try/catch.
+        // Returns CommandResult.Failed on exception instead of rethrowing — keep manual try/catch.
         try
         {
             Logger.LogInformation("[REPO] User.ChangePassword - UserId={UserId}", userId);
@@ -217,26 +218,26 @@ public sealed class UserRepository : ApiClientRepositoryBase<UserListDto, UserDe
             if (response.Success)
             {
                 Logger.LogInformation("[REPO] User.ChangePassword completed - UserId={UserId}", userId);
-                return Result.Success();
+                return CommandResult.Succeeded();
             }
 
             var errorMsg = response.Message ?? "修改密码失败";
             Logger.LogWarning("[REPO] User.ChangePassword failed - {Message}", errorMsg);
-            return Result.Failure(errorMsg);
+            return CommandResult.Failed(errorMsg);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "[REPO] User.ChangePassword failed - UserId={UserId}", userId);
-            return Result.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("修改密码", ex));
+            return CommandResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("修改密码", ex));
         }
     }
 
-    public async Task<Result<ResetPasswordResponseDto>> ResetPasswordAsync(
+    public async Task<CommandResult<ResetPasswordResponseDto>> ResetPasswordAsync(
         Guid userId,
         ResetPasswordRequestDto request,
         CancellationToken ct = default)
     {
-        // Returns Result.Failure on exception instead of rethrowing — keep manual try/catch.
+        // Returns CommandResult.Failed on exception instead of rethrowing — keep manual try/catch.
         try
         {
             Logger.LogDebug("[REPO] User.ResetPassword - UserId={UserId}", userId);
@@ -245,18 +246,18 @@ public sealed class UserRepository : ApiClientRepositoryBase<UserListDto, UserDe
             if (apiResponse.Success && apiResponse.Data != null)
             {
                 Logger.LogInformation("[REPO] User.ResetPassword completed - UserId={UserId}", userId);
-                return Result<ResetPasswordResponseDto>.Success(apiResponse.Data);
+                return CommandResult<ResetPasswordResponseDto>.Succeeded(apiResponse.Data);
             }
 
             Logger.LogWarning("[REPO] User.ResetPassword failed - UserId={UserId}, Message={Message}",
                 userId, apiResponse.Message);
-            return Result<ResetPasswordResponseDto>.Failure(
+            return CommandResult<ResetPasswordResponseDto>.Failed(
                 apiResponse.Message ?? "重置密码失败");
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "[REPO] User.ResetPassword failed - UserId={UserId}", userId);
-            return Result<ResetPasswordResponseDto>.Failure(
+            return CommandResult<ResetPasswordResponseDto>.Failed(
                 ClientErrorMessageMapper.GetSafeOperationFailureMessage("重置密码", ex));
         }
     }

@@ -1,4 +1,5 @@
 using System.Windows;
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
@@ -86,7 +87,7 @@ public class LoginCoordinator : ILoginCoordinator, IDisposable
     /// <summary>
     /// 两种模式统一走 WebAPI 认证 (Remote→远程WebAPI, Local→localhost WebAPI)
     /// </summary>
-    public async Task<LoginResult> LoginAsync(string username, string password)
+    public async Task<CommandResult<UserDetailDto>> LoginAsync(string username, string password)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(username);
         ArgumentException.ThrowIfNullOrWhiteSpace(password);
@@ -109,11 +110,11 @@ public class LoginCoordinator : ILoginCoordinator, IDisposable
                 var loginRequest = new LoginRequest { UserName = username, Password = password, RememberMe = false };
                 var result = await _authenticationService.LoginAsync(loginRequest);
 
-                if (!result.IsSuccess || result.Data == null)
+                if (!result.Success || result.Data == null)
                 {
                     _logger.LogWarning("登录认证失败 [用户: {Username}]", username);
-                    _stateMachine.Fire(AuthEvent.LoginFailure, result.Message ?? "认证失败");
-                    return LoginResult.Failed(result.Message ?? "认证失败");
+                    _stateMachine.Fire(AuthEvent.LoginFailure, result.Error ?? "认证失败");
+                    return CommandResult<UserDetailDto>.Failed(result.Error ?? "认证失败");
                 }
 
                 var loginResponse = result.Data;
@@ -129,7 +130,7 @@ public class LoginCoordinator : ILoginCoordinator, IDisposable
             {
                 _logger.LogError(ex, "登录流程异常 [用户: {Username}]", username);
                 _stateMachine.Fire(AuthEvent.LoginFailure, ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex));
-                return LoginResult.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex));
+                return CommandResult<UserDetailDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex));
             }
         }
         finally
@@ -138,7 +139,7 @@ public class LoginCoordinator : ILoginCoordinator, IDisposable
         }
     }
 
-    private async Task<LoginResult> CompleteLoginFlowAsync(UserDetailDto user, DateTime tokenExpiresAt)
+    private async Task<CommandResult<UserDetailDto>> CompleteLoginFlowAsync(UserDetailDto user, DateTime tokenExpiresAt)
     {
         await StartSessionAsync(user, tokenExpiresAt);
         _stateMachine.Fire(AuthEvent.ProfileLoaded, "正在加载模块...");
@@ -154,7 +155,7 @@ public class LoginCoordinator : ILoginCoordinator, IDisposable
         _logger.LogInformation("登录流程完成 [用户: {Username}, 角色: {Role}]",
             user.UserName, user.Role);
 
-        return LoginResult.Succeeded(user);
+        return CommandResult<UserDetailDto>.Succeeded(user);
     }
 
     public async Task HandleLoginSuccessAsync(UserDetailDto user, DateTime tokenExpiresAt)

@@ -253,7 +253,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                 else
                 {
                     IsLoading = false;
-                    ErrorMessage = result.ErrorMessage ?? "登录失败，请检查用户名和密码";
+                    ErrorMessage = result.Error ?? "登录失败，请检查用户名和密码";
                     Password = string.Empty;
                 }
             }

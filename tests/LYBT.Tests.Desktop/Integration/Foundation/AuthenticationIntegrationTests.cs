@@ -82,7 +82,7 @@ public class AuthenticationIntegrationTests
 
         // Assert 1: 登录成功
         loginResult.Should().NotBeNull();
-        loginResult.IsSuccess.Should().BeTrue("登录应该成功");
+        loginResult.Success.Should().BeTrue("登录应该成功");
         loginResult.Data.Should().NotBeNull();
         loginResult.Data!.Token.Should().NotBeNullOrEmpty();
 

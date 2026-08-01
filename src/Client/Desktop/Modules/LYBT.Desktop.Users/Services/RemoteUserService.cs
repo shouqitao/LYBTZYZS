@@ -297,15 +297,15 @@ namespace LYBT.Desktop.Users.Services
                 };
                 var serviceResult = await _userRepository.ChangePasswordAsync(userId, request);
 
-                if (serviceResult.IsSuccess)
+                if (serviceResult.Success)
                 {
                     _logger.LogInformation("[SVC] User.ChangePassword completed - UserId={UserId}", userId);
                     return CommandResult<bool>.Succeeded(true);
                 }
                 else
                 {
-                    _logger.LogWarning("[SVC] User.ChangePassword failed - UserId={UserId}, Error={Error}", userId, serviceResult.ErrorMessage);
-                    return CommandResult<bool>.Failed(serviceResult.ErrorMessage ?? "修改密码失败");
+                    _logger.LogWarning("[SVC] User.ChangePassword failed - UserId={UserId}, Error={Error}", userId, serviceResult.Error);
+                    return CommandResult<bool>.Failed(serviceResult.Error ?? "修改密码失败");
                 }
             }
             catch (Exception ex)
@@ -331,15 +331,15 @@ namespace LYBT.Desktop.Users.Services
                 };
                 var serviceResult = await _userRepository.ResetPasswordAsync(userId, request);
 
-                if (serviceResult.IsSuccess)
+                if (serviceResult.Success)
                 {
                     _logger.LogInformation("[SVC] User.ResetPassword completed - UserId={UserId}", userId);
                     return CommandResult<ResetPasswordResponseDto>.Succeeded(serviceResult.Data!);
                 }
                 else
                 {
-                    _logger.LogWarning("[SVC] User.ResetPassword failed - UserId={UserId}, Error={Error}", userId, serviceResult.ErrorMessage);
-                    return CommandResult<ResetPasswordResponseDto>.Failed(serviceResult.ErrorMessage ?? "重置密码失败");
+                    _logger.LogWarning("[SVC] User.ResetPassword failed - UserId={UserId}, Error={Error}", userId, serviceResult.Error);
+                    return CommandResult<ResetPasswordResponseDto>.Failed(serviceResult.Error ?? "重置密码失败");
                 }
             }
             catch (Exception ex)

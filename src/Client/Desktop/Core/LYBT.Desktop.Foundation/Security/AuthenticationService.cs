@@ -1,4 +1,5 @@
 using LYBT.Desktop.Contracts.ApiClient;
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
@@ -52,7 +53,7 @@ namespace LYBT.Desktop.Foundation.Security
         /// <summary>
         /// 用户登录 - 调用HTTP API
         /// </summary>
-        public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)
+        public async Task<CommandResult<LoginResponse>> LoginAsync(LoginRequest request)
         {
             try
             {
@@ -63,24 +64,24 @@ namespace LYBT.Desktop.Foundation.Security
 
                 if (apiResponse.Success && apiResponse.Data != null)
                 {
-                    return Result<LoginResponse>.Success(apiResponse.Data, apiResponse.Message);
+                    return CommandResult<LoginResponse>.Succeeded(apiResponse.Data);
                 }
                 else
                 {
-                    return Result<LoginResponse>.Failure(apiResponse.Message);
+                    return CommandResult<LoginResponse>.Failed(apiResponse.Message);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "登录失败");
-                return Result<LoginResponse>.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex));
+                return CommandResult<LoginResponse>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex));
             }
         }
 
         /// <summary>
         /// 用户登出 - 调用HTTP API
         /// </summary>
-        public async Task<Result> LogoutAsync()
+        public async Task<CommandResult> LogoutAsync()
         {
             try
             {
@@ -95,7 +96,7 @@ namespace LYBT.Desktop.Foundation.Security
                     _logger.LogInformation("Token已过期，跳过服务端登出API调用");
                     await _tokenStorage.ClearAuthenticationAsync();
                     // 用户主动登出不清除自动登录凭据，只有取消勾选"自动登录"时才清除
-                    return Result.Success("本地登出成功");
+                    return CommandResult.Succeeded();
                 }
 
                 // 调用 IAuthApi.LogoutAsync(LogoutRequest)
@@ -113,12 +114,12 @@ namespace LYBT.Desktop.Foundation.Security
 
                 if (apiResponse.Success)
                 {
-                    return Result.Success(apiResponse.Message);
+                    return CommandResult.Succeeded();
                 }
                 else
                 {
                     // 即使服务器登出失败,本地 Token 已清除,视为成功
-                    return Result.Success("本地登出成功");
+                    return CommandResult.Succeeded();
                 }
             }
             catch (Exception ex)
@@ -126,7 +127,7 @@ namespace LYBT.Desktop.Foundation.Security
                 _logger.LogError(ex, "登出失败");
                 // 即使异常,也清除本地 Token（但保留AutoLoginToken）
                 await _tokenStorage.ClearAuthenticationAsync();
-                return Result.Success("本地登出成功");
+                return CommandResult.Succeeded();
             }
         }
 
@@ -162,13 +163,13 @@ namespace LYBT.Desktop.Foundation.Security
         /// 验证Token并返回详细信息
         /// Issue #1864: 使用客户端JWT自验证，移除Server API依赖
         /// </summary>
-        public async Task<Result<ValidateTokenResponse>> ValidateTokenAsync(string token)
+        public async Task<CommandResult<ValidateTokenResponse>> ValidateTokenAsync(string token)
         {
             try
             {
                 if (string.IsNullOrEmpty(token))
                 {
-                    return Result<ValidateTokenResponse>.Failure("Token不能为空");
+                    return CommandResult<ValidateTokenResponse>.Failed("Token不能为空");
                 }
 
                 // Issue #1864: 使用本地Token验证器，移除Server API依赖
@@ -189,19 +190,19 @@ namespace LYBT.Desktop.Foundation.Security
 
                     _logger.LogInformation("Token本地验证成功: {Username} (UserType: {UserType})",
                         userInfo.UserName, userInfo.UserType);
-                    return Result<ValidateTokenResponse>.Success(response, "Token验证成功");
+                    return CommandResult<ValidateTokenResponse>.Succeeded(response);
                 }
                 else
                 {
                     _logger.LogWarning("Token本地验证失败: {ErrorMessage}", validationResult.ErrorMessage);
-                    return Result<ValidateTokenResponse>.Failure(
+                    return CommandResult<ValidateTokenResponse>.Failed(
                         validationResult.ErrorMessage ?? "Token验证失败");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Token验证发生异常");
-                return Result<ValidateTokenResponse>.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("Token验证", ex));
+                return CommandResult<ValidateTokenResponse>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("Token验证", ex));
             }
         }
 
@@ -245,7 +246,7 @@ namespace LYBT.Desktop.Foundation.Security
         /// <summary>
         /// 使用AutoLoginToken自动登录
         /// </summary>
-        public async Task<Result<LoginResponse>> LoginWithAutoTokenAsync(AutoLoginRequest request)
+        public async Task<CommandResult<LoginResponse>> LoginWithAutoTokenAsync(AutoLoginRequest request)
         {
             try
             {
@@ -259,19 +260,19 @@ namespace LYBT.Desktop.Foundation.Security
                 if (apiResponse.Success && apiResponse.Data != null)
                 {
                     _logger.LogInformation("AutoLoginToken登录成功 - UserName: {UserName}", request.UserName);
-                    return Result<LoginResponse>.Success(apiResponse.Data, apiResponse.Message);
+                    return CommandResult<LoginResponse>.Succeeded(apiResponse.Data);
                 }
                 else
                 {
                     _logger.LogWarning("AutoLoginToken登录失败 - UserName: {UserName}, Message: {Message}",
                         request.UserName, apiResponse.Message);
-                    return Result<LoginResponse>.Failure(apiResponse.Message);
+                    return CommandResult<LoginResponse>.Failed(apiResponse.Message);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "AutoLoginToken登录异常 - UserName: {UserName}", request.UserName);
-                return Result<LoginResponse>.Failure(ClientErrorMessageMapper.GetSafeOperationFailureMessage("自动登录", ex));
+                return CommandResult<LoginResponse>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("自动登录", ex));
             }
         }
 

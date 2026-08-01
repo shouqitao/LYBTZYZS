@@ -1,6 +1,7 @@
 using FluentAssertions;
 using LYBT.Tests.Desktop._Infrastructure.Builders;
 using LYBT.Desktop.Auth.ViewModels;
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
@@ -207,7 +208,7 @@ public class LoginViewModelTests
         sut.Password = "password123";
 
         _loginCoordinator.LoginAsync(Arg.Any<string>(), Arg.Any<string>())
-            .Returns(LoginResult.Succeeded(new UserDetailDto()));
+            .Returns(CommandResult<UserDetailDto>.Succeeded(new UserDetailDto()));
 
         // Act
         sut.LoginCommand.Execute(null);
@@ -227,7 +228,7 @@ public class LoginViewModelTests
         sut.Password = "wrongpassword";
 
         _loginCoordinator.LoginAsync(Arg.Any<string>(), Arg.Any<string>())
-            .Returns(LoginResult.Failed("Invalid credentials"));
+            .Returns(CommandResult<UserDetailDto>.Failed("Invalid credentials"));
 
         // Act
         sut.LoginCommand.Execute(null);
@@ -248,7 +249,7 @@ public class LoginViewModelTests
         sut.RememberUsername = true;
 
         _loginCoordinator.LoginAsync(Arg.Any<string>(), Arg.Any<string>())
-            .Returns(LoginResult.Succeeded(new UserDetailDto()));
+            .Returns(CommandResult<UserDetailDto>.Succeeded(new UserDetailDto()));
 
         // Act
         sut.LoginCommand.Execute(null);
@@ -267,7 +268,7 @@ public class LoginViewModelTests
         sut.RememberUsername = false;
 
         _loginCoordinator.LoginAsync(Arg.Any<string>(), Arg.Any<string>())
-            .Returns(LoginResult.Succeeded(new UserDetailDto()));
+            .Returns(CommandResult<UserDetailDto>.Succeeded(new UserDetailDto()));
 
         // Act
         sut.LoginCommand.Execute(null);
@@ -287,7 +288,7 @@ public class LoginViewModelTests
         sut.RememberPassword = true;
 
         _loginCoordinator.LoginAsync(Arg.Any<string>(), Arg.Any<string>())
-            .Returns(LoginResult.Succeeded(new UserDetailDto()));
+            .Returns(CommandResult<UserDetailDto>.Succeeded(new UserDetailDto()));
         _credentialVault.SavePasswordAsync(Arg.Any<string>(), Arg.Any<string>())
             .Returns(true);
 
@@ -309,7 +310,7 @@ public class LoginViewModelTests
         sut.RememberPassword = false;
 
         _loginCoordinator.LoginAsync(Arg.Any<string>(), Arg.Any<string>())
-            .Returns(LoginResult.Succeeded(new UserDetailDto()));
+            .Returns(CommandResult<UserDetailDto>.Succeeded(new UserDetailDto()));
 
         // Act
         sut.LoginCommand.Execute(null);
@@ -433,7 +434,7 @@ public class LoginViewModelTests
         
         var user = UserBuilder.Doctor().Build();
         _loginCoordinator.LoginAsync(Arg.Any<string>(), Arg.Any<string>())
-            .Returns(LoginResult.Succeeded(user));
+            .Returns(CommandResult<UserDetailDto>.Succeeded(user));
 
         // Act
         sut.LoginCommand.Execute(null);
@@ -458,7 +459,7 @@ public class LoginViewModelTests
         sut.Password = "wrong_password";
         
         _loginCoordinator.LoginAsync(Arg.Any<string>(), Arg.Any<string>())
-            .Returns(LoginResult.Failed("密码错误", "INVALID_CREDENTIALS"));
+            .Returns(CommandResult<UserDetailDto>.Failed("密码错误"));
 
         // Act
         sut.LoginCommand.Execute(null);

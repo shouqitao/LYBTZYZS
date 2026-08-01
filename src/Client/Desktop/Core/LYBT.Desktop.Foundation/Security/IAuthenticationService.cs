@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
@@ -19,12 +20,12 @@ namespace LYBT.Desktop.Foundation.Security
         /// <summary>
         /// 用户登录
         /// </summary>
-        Task<Result<LoginResponse>> LoginAsync(LoginRequest request);
+        Task<CommandResult<LoginResponse>> LoginAsync(LoginRequest request);
 
         /// <summary>
         /// 用户登出
         /// </summary>
-        Task<Result> LogoutAsync();
+        Task<CommandResult> LogoutAsync();
 
         /// <summary>
         /// 获取当前用户信息 (异步)
@@ -45,7 +46,7 @@ namespace LYBT.Desktop.Foundation.Security
         /// <summary>
         /// 验证Token并返回详细信息 - Issue #1824
         /// </summary>
-        Task<Result<ValidateTokenResponse>> ValidateTokenAsync(string token);
+        Task<CommandResult<ValidateTokenResponse>> ValidateTokenAsync(string token);
 
         /// <summary>
         /// 清除认证信息
@@ -66,6 +67,6 @@ namespace LYBT.Desktop.Foundation.Security
         /// </summary>
         /// <param name="request">自动登录请求</param>
         /// <returns>登录响应</returns>
-        Task<Result<LoginResponse>> LoginWithAutoTokenAsync(AutoLoginRequest request);
+        Task<CommandResult<LoginResponse>> LoginWithAutoTokenAsync(AutoLoginRequest request);
     }
 }
