@@ -81,7 +81,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 统一验证: 参数、Patient、Doctor、BR-001
             var (patient, doctor) = await MedicalCaseServiceHelper.ValidateAndFetchCreationContextAsync(
-                request.PatientId, doctorId, _crossModule, _crossModule, _repository, _logger, cancellationToken);
+                request.PatientId, doctorId, _crossModule, _repository, _logger, cancellationToken);
 
             // 创建MedicalCase实体
             var medicalCase = new MedicalCase

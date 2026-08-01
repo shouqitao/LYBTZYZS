@@ -6,6 +6,7 @@ using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.DTOs.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Validators.BusinessRules;
 using Microsoft.Extensions.Logging;
 using EC = LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode;
 
@@ -109,7 +110,6 @@ namespace LYBT.Module.MedicalCases.Services
             Guid patientId,
             Guid doctorId,
             ICrossModuleService crossModule,
-            ICrossModuleService _, // 同一实例，保留签名兼容
             IMedicalCaseRepository medicalCaseRepository,
             ILogger logger,
             CancellationToken cancellationToken = default)
@@ -136,9 +136,10 @@ namespace LYBT.Module.MedicalCases.Services
 
             // BR-001: 单患者仅一条未完成医案
             var existingCases = await medicalCaseRepository.GetByPatientIdAsync(patientId, cancellationToken);
-            if (!MedicalCaseRules.CanCreateNewCase(existingCases))
+            var existingStatuses = existingCases.Select(c => c.CaseStatus);
+            if (!MedicalCaseBusinessRules.CanCreateNewCase(existingStatuses))
             {
-                if (MedicalCaseRules.HasActiveCase(existingCases))
+                if (MedicalCaseBusinessRules.HasActiveCase(existingStatuses))
                 {
                     var activeCase = existingCases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Active);
                     logger.LogWarning("[SVC] MedicalCase -> ActiveCaseExists - PatientId={PatientId} CaseId={CaseId}",
@@ -146,7 +147,7 @@ namespace LYBT.Module.MedicalCases.Services
                     throw new BusinessException("该患者已有进行中的医案，请先完成现有医案");
                 }
 
-                if (MedicalCaseRules.HasSuspendedCase(existingCases))
+                if (MedicalCaseBusinessRules.HasSuspendedCase(existingStatuses))
                 {
                     var suspendedCase = existingCases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Suspended);
                     logger.LogWarning("[SVC] MedicalCase -> SuspendedCaseExists - PatientId={PatientId} CaseId={CaseId}",
