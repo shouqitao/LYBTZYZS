@@ -50,7 +50,6 @@ scope: 全部待做任务清单（按优先级排序）
 | ID | 任务 | 描述 | 预估 |
 |----|------|------|------|
 | **T15** | Package 清理（剩余） | FluentValidation.AspNetCore 已迁移。可检查其他废弃包 | **小** |
-| **T16** | code-review-graph 使用 | CRG 已安装（.venv-crg），图谱已构建（8348 nodes/49172 edges）。可用于代码审查、架构分析 | **工具就绪** |
 
 ---
 
@@ -79,5 +78,4 @@ scope: 全部待做任务清单（按优先级排序）
 1. **读取本 TODO**: `docs/compose/plans/TODO-backlog.md`
 2. **读取 MEMORY**: 项目 MEMORY.md 中的待做列表
 3. **运行测试确认基线**: `dotnet test`（Server + Architecture）
-4. **检查 code-review-graph**: `.venv-crg\Scripts\python.exe -m code_review_graph status`
-5. **选择任务**: 从上面的优先级列表中选一个，按 compose:brainstorm → plan → implement 流程执行
+4. **选择任务**: 从上面的优先级列表中选一个，按 compose:brainstorm → plan → implement 流程执行
