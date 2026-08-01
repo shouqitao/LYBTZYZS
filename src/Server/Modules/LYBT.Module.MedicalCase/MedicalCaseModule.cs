@@ -33,6 +33,10 @@ namespace LYBT.Module.MedicalCases
             services.AddScoped<IMedicalCaseQueryService, MedicalCaseQueryService>();
             services.AddScoped<IMedicalCaseStateService, MedicalCaseStateService>();
 
+            // U3-1: 处方内部操作与生命周期服务（从CommandService拆分）
+            services.AddScoped<MedicalCasePrescriptionService>();
+            services.AddScoped<PrescriptionItemService>();
+
             // Architecture Fix: 注册跨模块服务接口，供Patients模块使用
             services.AddScoped<IMedicalCaseCrossModuleService, MedicalCaseReferenceService>();
 
