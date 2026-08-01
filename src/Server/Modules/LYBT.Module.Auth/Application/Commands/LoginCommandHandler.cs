@@ -3,6 +3,7 @@ using System.Text;
 using MediatR;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Entities.Auth;
+using LYBT.Module.Auth.Application.Mappers;
 using LYBT.Module.Auth.Domain.Events;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Models;
@@ -27,6 +28,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
     private readonly IPublisher _publisher;
     private readonly ILogger<LoginCommandHandler> _logger;
     private readonly SecurityOptions _securityOptions;
+    private readonly AuthUserMapper _userMapper;
 
     public LoginCommandHandler(
         IJwtService jwtService,
@@ -35,7 +37,8 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
         ISecurityAuditService securityAuditService,
         IPublisher publisher,
         ILogger<LoginCommandHandler> logger,
-        IOptions<SecurityOptions> securityOptions)
+        IOptions<SecurityOptions> securityOptions,
+        AuthUserMapper userMapper)
     {
         _jwtService = jwtService;
         _crossModuleService = crossModuleService;
@@ -44,6 +47,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
         _publisher = publisher;
         _logger = logger;
         _securityOptions = securityOptions?.Value ?? throw new ArgumentNullException(nameof(securityOptions));
+        _userMapper = userMapper ?? throw new ArgumentNullException(nameof(userMapper));
     }
 
     public async Task<Result<LoginResponse>> Handle(
@@ -139,7 +143,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
 
         await _crossModuleService.ResetLoginStateAsync(user.Id, cancellationToken);
 
-        var userDetail = MapToUserDetailDto(user);
+        var userDetail = _userMapper.ToUserDetailDto(user);
         string userType = userDetail.Role == UserRole.SuperAdmin ? "superadmin" : "user";
 
         var token = _jwtService.GenerateToken(
@@ -185,17 +189,6 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
 
         return Result<LoginResponse>.Success(response);
     }
-
-    private static UserDetailDto MapToUserDetailDto(UserCredentialDto user) => new()
-    {
-        Id = user.Id,
-        UserName = user.UserName,
-        RealName = user.RealName,
-        Role = user.Role,
-        Status = user.Status,
-        PhoneNumber = user.PhoneNumber,
-        CreatedAt = user.CreatedAt
-    };
 
     private static string ComputeTokenHash(string token)
     {

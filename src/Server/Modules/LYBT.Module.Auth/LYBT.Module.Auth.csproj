@@ -21,6 +21,7 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
 		<PackageReference Include="Microsoft.IdentityModel.Tokens" />
+		<PackageReference Include="Riok.Mapperly" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" />
 	</ItemGroup>
 	<ItemGroup>

@@ -40,6 +40,9 @@ namespace LYBT.Module.Auth
             services.AddMediatR(cfg =>
                 cfg.RegisterServicesFromAssembly(typeof(Application.Commands.LoginCommand).Assembly));
 
+            // Mapperly映射器 - 无状态单例
+            services.AddSingleton<Application.Mappers.AuthUserMapper>();
+
             // Epic #1731: 注册Auth模块Validators
             services.AddValidatorsFromAssemblyContaining<LYBT.Shared.Models.Validators.Auth.LoginRequestValidator>();
             services.AddValidatorsFromAssemblyContaining<Application.Validators.LoginRequestValidator>();

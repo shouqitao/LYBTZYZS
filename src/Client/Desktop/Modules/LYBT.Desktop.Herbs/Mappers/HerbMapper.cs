@@ -65,7 +65,7 @@ public partial class HerbMapper
     [MapperIgnoreSource(nameof(HerbDetailModel.CreatedAt))]
     [MapperIgnoreSource(nameof(HerbDetailModel.UpdatedAt))]
     [MapperIgnoreTarget(nameof(HerbInputDto.Id))]
-    public partial HerbInputDto ToInputDtoCore(HerbDetailModel model);
+    private partial HerbInputDto ToInputDtoCore(HerbDetailModel model);
 
     /// <summary>
     /// 将HerbDetailModel转换为HerbInputDto（完整映射）。

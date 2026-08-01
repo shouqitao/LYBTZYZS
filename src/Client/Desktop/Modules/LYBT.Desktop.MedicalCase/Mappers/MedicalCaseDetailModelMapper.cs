@@ -71,7 +71,7 @@ public partial class MedicalCaseDetailModelMapper
     [MapperIgnoreTarget(nameof(MedicalCaseDetailModel.Errors))]
     [MapperIgnoreTarget(nameof(MedicalCaseDetailModel.HasErrorsDictionary))]
     [MapProperty(nameof(MedicalCaseDetailDto.CaseStatus), nameof(MedicalCaseDetailModel.Status))]
-    public partial MedicalCaseDetailModel ToItemCore(MedicalCaseDetailDto dto);
+    private partial MedicalCaseDetailModel ToItemCore(MedicalCaseDetailDto dto);
 
     /// <summary>
     /// 将MedicalCaseDetailDto转换为MedicalCaseDetailModel（完整映射）。
@@ -147,7 +147,7 @@ public partial class MedicalCaseDetailModelMapper
     [MapperIgnoreTarget(nameof(MedicalCaseInputDto.Consultation))]
     [MapperIgnoreTarget(nameof(MedicalCaseInputDto.Prescription))]
     [MapperIgnoreTarget(nameof(MedicalCaseInputDto.NeedsPrescription))]
-    public partial MedicalCaseInputDto ToInputDtoCore(MedicalCaseDetailModel model);
+    private partial MedicalCaseInputDto ToInputDtoCore(MedicalCaseDetailModel model);
 
     /// <summary>
     /// 将MedicalCaseDetailModel转换为MedicalCaseInputDto（完整映射）。

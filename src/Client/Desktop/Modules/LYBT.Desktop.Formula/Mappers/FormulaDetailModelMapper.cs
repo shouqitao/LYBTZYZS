@@ -46,7 +46,7 @@ public partial class FormulaDetailModelMapper
     [MapperIgnoreTarget(nameof(FormulaDetailModel.HasErrors))]
     [MapperIgnoreTarget(nameof(FormulaDetailModel.Errors))]
     [MapperIgnoreTarget(nameof(FormulaDetailModel.HasErrorsDictionary))]
-    public partial FormulaDetailModel ToItemCore(FormulaDetailDto dto);
+    private partial FormulaDetailModel ToItemCore(FormulaDetailDto dto);
 
     /// <summary>
     /// 将FormulaDetailDto转换为FormulaDetailModel（完整映射）。
@@ -95,7 +95,7 @@ public partial class FormulaDetailModelMapper
     [MapperIgnoreTarget(nameof(FormulaDetailDto.Description))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.Indications))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.Contraindications))]
-    public partial FormulaDetailDto ToDtoCore(FormulaDetailModel model);
+    private partial FormulaDetailDto ToDtoCore(FormulaDetailModel model);
 
     /// <summary>
     /// 将FormulaDetailModel转换为FormulaDetailDto（完整映射）。
@@ -135,7 +135,7 @@ public partial class FormulaDetailModelMapper
     [MapperIgnoreTarget(nameof(FormulaInputDto.Indications))]
     [MapperIgnoreTarget(nameof(FormulaInputDto.Contraindications))]
     [MapperIgnoreTarget(nameof(FormulaInputDto.Preparation))]
-    public partial FormulaInputDto ToInputDtoCore(FormulaDetailModel model);
+    private partial FormulaInputDto ToInputDtoCore(FormulaDetailModel model);
 
     /// <summary>
     /// 将FormulaDetailModel转换为FormulaInputDto（完整映射）。
