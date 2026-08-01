@@ -547,7 +547,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// 执行单次保存尝试
         /// consolidate-code-quality: 从SaveAsync提取核心逻辑
         /// </summary>
-        private async Task<MedicalCase> ExecuteSaveAttemptAsync(
+        private async Task<MedicalCase?> ExecuteSaveAttemptAsync(
             MedicalCaseInputDto request,
             Guid medicalCaseId,
             Guid currentUserId,
@@ -556,8 +556,9 @@ namespace LYBT.Module.MedicalCases.Services
         {
 
             // 获取聚合根
-            var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId, cancellationToken)
-                ?? throw ExceptionFactory.MedicalCase.NotFound(medicalCaseId);
+            var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId, cancellationToken);
+            if (medicalCase == null)
+                return null;
 
             // 权限检查
             ValidateEditPermission(medicalCase, currentUserId, isAdmin);

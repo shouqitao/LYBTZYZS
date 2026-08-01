@@ -126,6 +126,29 @@ public sealed class HttpClientApiClient : IApiClient,
         return JsonSerializer.Deserialize<T>(json, JsonOptions);
     }
 
+    /// <summary>
+    /// 反序列化 LocalWebAPI 响应并解包 ApiResponse&lt;T&gt; 信封（与 Remote/Refit 契约一致）。
+    /// 兼容两种情况：LocalWebAPI 返回信封时取 Data；极端情况返回裸 T 时直接反序列化。
+    /// </summary>
+    private static async Task<ApiResponse<T>> DeserializeEnvelopeAsync<T>(HttpResponseMessage response, CancellationToken ct = default)
+    {
+        var json = await response.Content.ReadAsStringAsync(ct);
+
+        try
+        {
+            var envelope = JsonSerializer.Deserialize<ApiResponse<T>>(json, JsonOptions);
+            if (envelope != null)
+                return envelope;
+        }
+        catch (JsonException)
+        {
+            // 不是信封格式，回退裸反序列化
+        }
+
+        var raw = JsonSerializer.Deserialize<T>(json, JsonOptions);
+        return ApiResponse<T>.CreateSuccess(raw!);
+    }
+
     private static async Task EnsureSuccessOrThrowAsync(HttpResponseMessage response)
     {
         if (response.IsSuccessStatusCode)
@@ -212,15 +235,15 @@ public sealed class HttpClientApiClient : IApiClient,
     private async Task<ApiResponse<T>> GetAndWrapAsync<T>(string url, CancellationToken ct = default)
     {
         var response = await SendAsync(url, HttpMethod.Get, ct: ct);
-        var data = await DeserializeAsync<T>(response, ct);
-        return WrapSuccess(data!);
+        return await DeserializeEnvelopeAsync<T>(response, ct);
     }
 
     /// <summary>GET -> deserialize -> return raw T (local-only methods).</summary>
     private async Task<T> GetRawAsync<T>(string url, CancellationToken ct = default)
     {
         var response = await SendAsync(url, HttpMethod.Get, ct: ct);
-        return (await DeserializeAsync<T>(response, ct))!;
+        var envelope = await DeserializeEnvelopeAsync<T>(response, ct);
+        return envelope.Data ?? default!;
     }
 
     /// <summary>POST with JSON body -> deserialize -> wrap in ApiResponse&lt;T&gt;.</summary>
@@ -242,7 +265,8 @@ public sealed class HttpClientApiClient : IApiClient,
     private async Task<T> PostRawAsync<T>(string url, object? body = null, CancellationToken ct = default)
     {
         var response = await SendAsync(url, HttpMethod.Post, body, ct);
-        return (await DeserializeAsync<T>(response, ct))!;
+        var envelope = await DeserializeEnvelopeAsync<T>(response, ct);
+        return envelope.Data ?? default!;
     }
 
     /// <summary>PUT with JSON body -> deserialize -> wrap in ApiResponse&lt;T&gt;.</summary>
@@ -261,18 +285,12 @@ public sealed class HttpClientApiClient : IApiClient,
     private async Task<ApiResponse<T>> SendAndWrapAsync<T>(string url, HttpMethod method, object? body = null, CancellationToken ct = default)
     {
         var response = await SendAsync(url, method, body, ct);
-        var data = await DeserializeAsync<T>(response, ct);
-        return WrapSuccess(data!);
+        return await DeserializeEnvelopeAsync<T>(response, ct);
     }
 
-    /// <summary>GET -> client-side pagination -> wrap in ApiResponse&lt;PagedResult&lt;T&gt;&gt;.</summary>
-    private async Task<ApiResponse<PagedResult<T>>> GetPagedAndWrapAsync<T>(string url, int page, int pageSize, CancellationToken ct = default)
-    {
-        var response = await SendAsync(url, HttpMethod.Get, ct: ct);
-        var items = await DeserializeAsync<List<T>>(response, ct) ?? [];
-        var paged = new PagedResult<T>(items, items.Count, page, pageSize);
-        return WrapSuccess(paged);
-    }
+    /// <summary>GET -> server-side pagination envelope -> wrap in ApiResponse&lt;PagedResult&lt;T&gt;&gt;.</summary>
+    private Task<ApiResponse<PagedResult<T>>> GetPagedAndWrapAsync<T>(string url, CancellationToken ct = default)
+        => GetAndWrapAsync<PagedResult<T>>(url, ct);
 
     /// <summary>GET -> return HttpResponseMessage (file downloads). Caller disposes response.</summary>
     private async Task<HttpResponseMessage> GetResponseAsync(string url, CancellationToken ct = default)
@@ -284,50 +302,14 @@ public sealed class HttpClientApiClient : IApiClient,
     }
 
     // ========================================================================
-    // Auth helpers
-    // ========================================================================
-
-    /// <summary>
-    /// Maps LocalWebAPI auth response (flat { Token, UserId, Username, Role }) to LoginResponse.
-    /// LocalWebAPI returns a different shape than the remote API.
-    /// </summary>
-    private static LoginResponse MapToLoginResponse(JsonElement raw)
-    {
-        var response = new LoginResponse
-        {
-            Token = raw.TryGetProperty("Token", out var token) ? token.GetString() ?? string.Empty : string.Empty
-        };
-
-        // Local API returns flat structure; map to nested User
-        response.User = new UserDetailDto
-        {
-            Id = raw.TryGetProperty("UserId", out var userId) && userId.ValueKind == JsonValueKind.String
-                ? Guid.Parse(userId.GetString()!)
-                : Guid.Empty,
-            UserName = raw.TryGetProperty("Username", out var username) ? username.GetString() ?? string.Empty : string.Empty,
-            Role = raw.TryGetProperty("Role", out var role) && role.ValueKind == JsonValueKind.String
-                ? Enum.TryParse<UserRole>(role.GetString(), out var userRole) ? userRole : UserRole.Doctor
-                : UserRole.Doctor
-        };
-
-        return response;
-    }
-
-    // ========================================================================
     // IApiClientAuth — Authentication endpoints (explicit implementation)
     // ========================================================================
 
     async Task<ApiResponse<LoginResponse>> IApiClientAuth.LoginAsync(LoginRequest loginRequest)
-    {
-        var raw = await PostRawAsync<JsonElement>("/api/v1/auth/login", loginRequest);
-        return WrapSuccess(MapToLoginResponse(raw));
-    }
+        => await PostAndWrapAsync<LoginResponse>("/api/v1/auth/login", loginRequest);
 
     async Task<ApiResponse<LoginResponse>> IApiClientAuth.LoginWithAutoTokenAsync(AutoLoginRequest request)
-    {
-        var raw = await PostRawAsync<JsonElement>("/api/v1/auth/auto-login", request);
-        return WrapSuccess(MapToLoginResponse(raw));
-    }
+        => await PostAndWrapAsync<LoginResponse>("/api/v1/auth/auto-login", request);
 
     async Task<ApiResponse> IApiClientAuth.LogoutAsync(LogoutRequest logoutRequest)
     {
@@ -336,46 +318,13 @@ public sealed class HttpClientApiClient : IApiClient,
     }
 
     async Task<ApiResponse<LoginResponse>> IApiClientAuth.RefreshTokenAsync(RefreshTokenRequest request)
-    {
-        var raw = await PostRawAsync<JsonElement>("/api/v1/auth/refresh", request);
-        return WrapSuccess(MapToLoginResponse(raw));
-    }
+        => await PostAndWrapAsync<LoginResponse>("/api/v1/auth/refresh", request);
 
     async Task<ApiResponse<ValidateTokenResponse>> IApiClientAuth.ValidateTokenAsync()
-    {
-        using var client = CreateClient();
-        var response = await client.GetAsync("/api/v1/auth/validate");
-        await EnsureSuccessOrThrowAsync(response);
-        var raw = await DeserializeAsync<JsonElement>(response);
-
-        var result = new ValidateTokenResponse
-        {
-            IsValid = raw.TryGetProperty("IsValid", out var isValid) && isValid.GetBoolean(),
-            Username = raw.TryGetProperty("Username", out var username) ? username.GetString() : null,
-            Role = raw.TryGetProperty("Role", out var role) ? role.GetString() : null
-        };
-
-        if (raw.TryGetProperty("UserId", out var userIdEl) && userIdEl.ValueKind == JsonValueKind.Number)
-            result.UserId = userIdEl.GetInt32();
-
-        return WrapSuccess(result);
-    }
+        => await GetAndWrapAsync<ValidateTokenResponse>("/api/v1/auth/validate");
 
     async Task<ApiResponse<HealthCheckResponse>> IApiClientAuth.HealthCheckAsync()
-    {
-        using var client = CreateClient();
-        var response = await client.GetAsync("/api/v1/health");
-        await EnsureSuccessOrThrowAsync(response);
-        var raw = await DeserializeAsync<JsonElement>(response);
-
-        var result = new HealthCheckResponse
-        {
-            Status = raw.TryGetProperty("status", out var status) ? status.GetString() ?? "Unknown" : "Unknown",
-            Timestamp = raw.TryGetProperty("timestamp", out var ts) ? ts.GetDateTime() : DateTime.UtcNow
-        };
-
-        return WrapSuccess(result);
-    }
+        => await GetAndWrapAsync<HealthCheckResponse>("/api/v1/health");
 
     // ========================================================================
     // IApiClientUsers — User management endpoints (explicit implementation)
@@ -385,7 +334,7 @@ public sealed class HttpClientApiClient : IApiClient,
         int page, int pageSize, string? keyword)
     {
         var url = BuildPagedUrl("/api/v1/users", page, pageSize, ("keyword", keyword));
-        return await GetPagedAndWrapAsync<UserListDto>(url, page, pageSize);
+        return await GetPagedAndWrapAsync<UserListDto>(url);
     }
 
     Task<ApiResponse<UserDetailDto>> IApiClientUsers.GetUserByIdAsync(Guid id)
@@ -435,7 +384,7 @@ public sealed class HttpClientApiClient : IApiClient,
         int page, int pageSize, string? keyword)
     {
         var url = BuildPagedUrl("/api/v1/patients", page, pageSize, ("keyword", keyword));
-        return await GetPagedAndWrapAsync<PatientListDto>(url, page, pageSize);
+        return await GetPagedAndWrapAsync<PatientListDto>(url);
     }
 
     Task<ApiResponse<PatientDetailDto>> IApiClientPatients.GetPatientByIdAsync(Guid id)
@@ -481,7 +430,7 @@ public sealed class HttpClientApiClient : IApiClient,
         int page, int pageSize, string? keyword, string? category)
     {
         var url = BuildPagedUrl("/api/v1/herbs", page, pageSize, ("keyword", keyword), ("category", category));
-        return await GetPagedAndWrapAsync<HerbListDto>(url, page, pageSize);
+        return await GetPagedAndWrapAsync<HerbListDto>(url);
     }
 
     Task<ApiResponse<HerbDetailDto>> IApiClientHerbs.GetHerbByIdAsync(Guid id)
@@ -536,7 +485,7 @@ public sealed class HttpClientApiClient : IApiClient,
         int page, int pageSize, string? keyword, string? category)
     {
         var url = BuildPagedUrl("/api/v1/formulas", page, pageSize, ("keyword", keyword), ("category", category));
-        return await GetPagedAndWrapAsync<FormulaListDto>(url, page, pageSize);
+        return await GetPagedAndWrapAsync<FormulaListDto>(url);
     }
 
     Task<ApiResponse<FormulaDetailDto>> IApiClientFormulas.GetFormulaByIdAsync(Guid id)
@@ -698,7 +647,7 @@ public sealed class HttpClientApiClient : IApiClient,
             ("endDate", endDate?.ToString("O")),
             ("patientId", patientId?.ToString()),
             ("doctorId", doctorId?.ToString()));
-        return await GetPagedAndWrapAsync<RegistrationListDto>(url, page, pageSize);
+        return await GetPagedAndWrapAsync<RegistrationListDto>(url);
     }
 
     async Task<ApiResponse<List<RegistrationListDto>>> IApiClientRegistrations.GetQueueAsync(Guid? doctorId)
