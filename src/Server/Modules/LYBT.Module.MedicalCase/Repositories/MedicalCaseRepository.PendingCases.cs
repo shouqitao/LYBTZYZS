@@ -1,13 +1,8 @@
 using System.Threading;
-using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Patients;
-using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Repositories;
-using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCases.Repositories
 {
