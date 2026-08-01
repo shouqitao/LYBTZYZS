@@ -1,14 +1,8 @@
 using System.IO;
 using System.IO.Packaging;
-using System.Printing;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Markup;
 using System.Windows.Xps.Packaging;
 using LYBT.Desktop.Printing.Interfaces;
 using LYBT.Desktop.Printing.Models;
-using LYBT.Desktop.Printing.Templates;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Printing.Services
@@ -16,21 +10,25 @@ namespace LYBT.Desktop.Printing.Services
     /// <summary>
     /// 处方打印服务实现
     /// 使用FixedDocument + PrintDialog实现打印功能
+    /// U3-5: 页面构建/执行/预览逻辑已拆分至独立构建器类
     /// </summary>
-    // TODO: 超大类型，建议拆分（详见 docs/compose/reports/code-review-duplicates.md 🟡5）
     public class PrescriptionPrintService : IPrintService<PrescriptionPrintModel>
     {
         private readonly ILogger<PrescriptionPrintService> _logger;
-        private readonly LocalPrintServer _printServer = new();
-        private string? _defaultPrinterName;
+        private readonly PrescriptionDocumentBuilder _documentBuilder;
+        private readonly PrescriptionPrintExecutor _executor;
+        private readonly PrescriptionPreviewWindowBuilder _previewWindowBuilder;
 
-        // 纸张尺寸定义（像素，96 DPI）
-        private static readonly Size A5PageSize = new(559, 794);  // 148mm x 210mm
-        private static readonly Size A4PageSize = new(794, 1123); // 210mm x 297mm
-
-        public PrescriptionPrintService(ILogger<PrescriptionPrintService> logger)
+        public PrescriptionPrintService(
+            ILogger<PrescriptionPrintService> logger,
+            PrescriptionDocumentBuilder documentBuilder,
+            PrescriptionPrintExecutor executor,
+            PrescriptionPreviewWindowBuilder previewWindowBuilder)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _documentBuilder = documentBuilder ?? throw new ArgumentNullException(nameof(documentBuilder));
+            _executor = executor ?? throw new ArgumentNullException(nameof(executor));
+            _previewWindowBuilder = previewWindowBuilder ?? throw new ArgumentNullException(nameof(previewWindowBuilder));
         }
 
         /// <summary>
@@ -50,17 +48,17 @@ namespace LYBT.Desktop.Printing.Services
                 _logger.LogInformation("[PRINT] PrintAsync started");
 
                 options ??= new PrintOptions();
-                var pageSize = GetPageSize(options.PaperSize);
-                var document = BuildFixedDocument(model, pageSize);
+                var pageSize = PrescriptionDocumentBuilder.GetPageSize(options.PaperSize);
+                var document = _documentBuilder.BuildFixedDocument(model, pageSize);
 
                 bool success;
                 if (options.ShowDialog)
                 {
-                    success = ExecutePrintWithDialog(document, options);
+                    success = _executor.ExecutePrintWithDialog(document, options);
                 }
                 else
                 {
-                    success = ExecutePrintDirect(document, options);
+                    success = _executor.ExecutePrintDirect(document, options);
                 }
 
                 if (success)
@@ -98,10 +96,10 @@ namespace LYBT.Desktop.Printing.Services
                 _logger.LogDebug("[PRINT] PreviewAsync started");
 
                 options ??= new PrintOptions();
-                var pageSize = GetPageSize(options.PaperSize);
-                var document = BuildFixedDocument(model, pageSize);
+                var pageSize = PrescriptionDocumentBuilder.GetPageSize(options.PaperSize);
+                var document = _documentBuilder.BuildFixedDocument(model, pageSize);
 
-                ShowPreviewWindow(document, model, options);
+                _previewWindowBuilder.ShowPreviewWindow(document, model, options);
 
                 _logger.LogDebug("[PRINT] PreviewAsync completed");
                 await Task.CompletedTask;
@@ -148,7 +146,7 @@ namespace LYBT.Desktop.Printing.Services
 
                 _logger.LogInformation("[PRINT] XPS ExportAsync started - FilePath={FilePath}", filePath);
 
-                var document = BuildFixedDocument(model, A5PageSize);
+                var document = _documentBuilder.BuildFixedDocument(model, PrescriptionDocumentBuilder.A5PageSize);
 
                 using (var package = Package.Open(filePath, FileMode.Create, FileAccess.ReadWrite))
                 {
@@ -208,20 +206,7 @@ namespace LYBT.Desktop.Printing.Services
         /// </summary>
         public string[] GetAvailablePrinters()
         {
-            try
-            {
-                var printQueues = _printServer.GetPrintQueues();
-
-                return printQueues
-                    .Where(pq => pq != null && !string.IsNullOrEmpty(pq.Name))
-                    .Select(pq => pq.Name)
-                    .ToArray();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[PRINT] GetAvailablePrinters failed");
-                return Array.Empty<string>();
-            }
+            return _executor.GetAvailablePrinters();
         }
 
         /// <summary>
@@ -229,11 +214,7 @@ namespace LYBT.Desktop.Printing.Services
         /// </summary>
         public void SetDefaultPrinter(string printerName)
         {
-            if (string.IsNullOrEmpty(printerName))
-                throw new ArgumentException("打印机名称不能为空", nameof(printerName));
-
-            _defaultPrinterName = printerName;
-            _logger.LogInformation("[PRINT] SetDefaultPrinter: {PrinterName}", printerName);
+            _executor.SetDefaultPrinter(printerName);
         }
 
         /// <summary>
@@ -241,469 +222,7 @@ namespace LYBT.Desktop.Printing.Services
         /// </summary>
         public string? GetDefaultPrinter()
         {
-            return _defaultPrinterName ?? LocalPrintServer.GetDefaultPrintQueue()?.Name;
+            return _executor.GetDefaultPrinter();
         }
-
-        #region Private Methods
-
-        private static Size GetPageSize(Interfaces.PaperSize paperSize)
-        {
-            return paperSize switch
-            {
-                Interfaces.PaperSize.A4 => A4PageSize,
-                Interfaces.PaperSize.A5 => A5PageSize,
-                _ => A5PageSize
-            };
-        }
-
-        // T4-S5-09: 分页阈值和容量常量
-        private const int A5FirstPageHerbLimit = 12;      // A5首页最多显示12味药材
-        private const int A4FirstPageHerbLimit = 20;      // A4首页最多显示20味药材
-        private const int ContinuationPageHerbLimit = 20; // 续页最多显示20味药材（头部更简洁）
-
-        /// <summary>
-        /// 判断是否为A4纸张尺寸
-        /// </summary>
-        private static bool IsA4(Size pageSize) => pageSize.Width >= A4PageSize.Width;
-
-        /// <summary>
-        /// 根据纸张大小获取首页药材限制
-        /// </summary>
-        private static int GetFirstPageHerbLimit(Size pageSize) =>
-            IsA4(pageSize) ? A4FirstPageHerbLimit : A5FirstPageHerbLimit;
-
-        /// <summary>
-        /// 构建FixedDocument，支持多页
-        /// T4-S5-09: 当药材超过首页限制时自动分页 (A5=12味, A4=20味)
-        /// </summary>
-        private FixedDocument BuildFixedDocument(PrescriptionPrintModel model, Size pageSize)
-        {
-            var document = new FixedDocument();
-            document.DocumentPaginator.PageSize = pageSize;
-
-            var itemCount = model.Items?.Count ?? 0;
-            var firstPageLimit = GetFirstPageHerbLimit(pageSize);
-
-            if (itemCount <= firstPageLimit)
-            {
-                // 单页模式
-                var pageContent = new PageContent();
-                var fixedPage = CreateFixedPage(model, pageSize);
-                ((IAddChild)pageContent).AddChild(fixedPage);
-                document.Pages.Add(pageContent);
-            }
-            else
-            {
-                // 多页模式 T4-S5-09
-                _logger.LogInformation("[PRINT] Multi-page mode: {ItemCount} herbs, threshold={Threshold}",
-                    itemCount, firstPageLimit);
-                BuildMultiPageDocument(document, model, pageSize);
-            }
-
-            return document;
-        }
-
-        /// <summary>
-        /// 构建多页文档
-        /// T4-S5-09: 首页显示前N味药材（使用完整模板），后续页使用续页模板
-        /// </summary>
-        private void BuildMultiPageDocument(FixedDocument document, PrescriptionPrintModel model, Size pageSize)
-        {
-            var allItems = model.Items?.ToList() ?? new List<PrescriptionItemPrintModel>();
-            var totalItems = allItems.Count;
-            var offset = 0;
-            var firstPageLimit = GetFirstPageHerbLimit(pageSize);
-
-            // 第1页：使用完整模板，限制药材数量
-            var firstPageItems = allItems.Take(firstPageLimit).ToList();
-            var firstPageModel = CloneModelWithItems(model, firstPageItems);
-            var firstPage = CreateFixedPage(firstPageModel, pageSize);
-            var firstPageContent = new PageContent();
-            ((IAddChild)firstPageContent).AddChild(firstPage);
-            document.Pages.Add(firstPageContent);
-            offset += firstPageLimit;
-
-            // 后续页：使用续页模板
-            while (offset < totalItems)
-            {
-                var remainingCount = totalItems - offset;
-                var pageItems = allItems.Skip(offset).Take(ContinuationPageHerbLimit).ToList();
-                var isLastPage = (offset + pageItems.Count) >= totalItems;
-
-                var continuationModel = CloneModelWithItems(model, pageItems);
-                var continuationPage = CreateContinuationFixedPage(continuationModel, pageSize, isLastPage);
-                var continuationPageContent = new PageContent();
-                ((IAddChild)continuationPageContent).AddChild(continuationPage);
-                document.Pages.Add(continuationPageContent);
-
-                offset += pageItems.Count;
-            }
-
-            _logger.LogInformation("[PRINT] Multi-page document built: {PageCount} pages for {ItemCount} herbs",
-                document.Pages.Count, totalItems);
-        }
-
-        /// <summary>
-        /// 克隆打印模型但替换药材列表
-        /// T4-S5-09: 委托给模型的 CloneWithItems 方法
-        /// </summary>
-        private static PrescriptionPrintModel CloneModelWithItems(
-            PrescriptionPrintModel source,
-            List<PrescriptionItemPrintModel> items)
-        {
-            return source.CloneWithItems(items);
-        }
-
-        /// <summary>
-        /// 创建首页 FixedPage（根据纸张尺寸选择A4或A5模板）
-        /// </summary>
-        private FixedPage CreateFixedPage(PrescriptionPrintModel model, Size pageSize)
-        {
-            var template = IsA4(pageSize)
-                ? (UserControl)new PrescriptionPrintA4Template { DataContext = model, Width = pageSize.Width, Height = pageSize.Height }
-                : new PrescriptionPrintTemplate { DataContext = model, Width = pageSize.Width, Height = pageSize.Height };
-
-            return CreatePageFromTemplate(template, pageSize);
-        }
-
-        /// <summary>
-        /// 创建续页 FixedPage（根据纸张尺寸选择A4或A5续页模板）
-        /// T4-S5-09
-        /// </summary>
-        private FixedPage CreateContinuationFixedPage(PrescriptionPrintModel model, Size pageSize, bool isLastPage)
-        {
-            UserControl template;
-            if (IsA4(pageSize))
-            {
-                var a4Template = new PrescriptionContinuationA4Template
-                {
-                    DataContext = model,
-                    Width = pageSize.Width,
-                    Height = pageSize.Height
-                };
-                if (isLastPage) a4Template.SetAsLastPage();
-                template = a4Template;
-            }
-            else
-            {
-                var a5Template = new PrescriptionContinuationTemplate
-                {
-                    DataContext = model,
-                    Width = pageSize.Width,
-                    Height = pageSize.Height
-                };
-                if (isLastPage) a5Template.SetAsLastPage();
-                template = a5Template;
-            }
-
-            return CreatePageFromTemplate(template, pageSize);
-        }
-
-        /// <summary>
-        /// 从 XAML 模板创建 FixedPage（共享布局逻辑）
-        /// </summary>
-        private static FixedPage CreatePageFromTemplate(UserControl template, Size pageSize)
-        {
-            template.Measure(pageSize);
-            template.Arrange(new Rect(pageSize));
-            template.UpdateLayout();
-
-            var fixedPage = new FixedPage
-            {
-                Width = pageSize.Width,
-                Height = pageSize.Height,
-                Background = System.Windows.Media.Brushes.White
-            };
-
-            fixedPage.Children.Add(template);
-            FixedPage.SetLeft(template, 0);
-            FixedPage.SetTop(template, 0);
-
-            fixedPage.Measure(pageSize);
-            fixedPage.Arrange(new Rect(pageSize));
-            fixedPage.UpdateLayout();
-
-            return fixedPage;
-        }
-
-        private bool ExecutePrintWithDialog(FixedDocument document, PrintOptions options)
-        {
-            var printDialog = new PrintDialog();
-            SetupPrinter(printDialog, options);
-
-            if (printDialog.ShowDialog() != true)
-                return false;
-
-            for (int i = 0; i < options.Copies; i++)
-            {
-                printDialog.PrintDocument(document.DocumentPaginator, "处方打印");
-            }
-
-            return true;
-        }
-
-        private bool ExecutePrintDirect(FixedDocument document, PrintOptions options)
-        {
-            try
-            {
-                var printQueue = GetPrintQueue(options.PrinterName);
-                if (printQueue == null)
-                {
-                    _logger.LogError("[PRINT] No printer available");
-                    return false;
-                }
-
-                var paginator = document.DocumentPaginator;
-
-                for (int i = 0; i < options.Copies; i++)
-                {
-                    var writer = PrintQueue.CreateXpsDocumentWriter(printQueue);
-                    writer.Write(paginator);
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[PRINT] ExecutePrintDirect failed");
-                return false;
-            }
-        }
-
-        private void SetupPrinter(PrintDialog printDialog, PrintOptions options)
-        {
-            var printerName = options.PrinterName ?? _defaultPrinterName;
-            if (string.IsNullOrEmpty(printerName))
-                return;
-
-            try
-            {
-                var printQueue = GetPrintQueue(printerName);
-                if (printQueue != null)
-                {
-                    printDialog.PrintQueue = printQueue;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "[PRINT] SetupPrinter failed: {PrinterName}", printerName);
-            }
-        }
-
-        private PrintQueue? GetPrintQueue(string? printerName)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(printerName))
-                {
-                    return _printServer.GetPrintQueue(printerName);
-                }
-
-                return LocalPrintServer.GetDefaultPrintQueue();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "[PRINT] GetPrintQueue failed for printer: {PrinterName}, falling back to default", printerName);
-                return LocalPrintServer.GetDefaultPrintQueue();
-            }
-        }
-
-        private void ShowPreviewWindow(FixedDocument document, PrescriptionPrintModel model, PrintOptions options)
-        {
-            var previewWindow = new Window
-            {
-                Title = "处方预览",
-                Width = 900,
-                Height = 700,
-                WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                Background = System.Windows.Media.Brushes.White
-            };
-
-            var mainGrid = new Grid();
-            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(220) });
-            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-
-            // 预览区域
-            var docViewer = new DocumentViewer
-            {
-                Document = document,
-                Background = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(240, 240, 240))
-            };
-            docViewer.FitToWidth();
-
-            var previewBorder = new Border { Child = docViewer };
-            Grid.SetColumn(previewBorder, 1);
-            mainGrid.Children.Add(previewBorder);
-
-            // 设置面板
-            var settingsPanel = CreateSettingsPanel(document, model, options, previewWindow, docViewer);
-            Grid.SetColumn(settingsPanel, 0);
-            mainGrid.Children.Add(settingsPanel);
-
-            previewWindow.Content = mainGrid;
-            previewWindow.ShowDialog();
-        }
-
-        private Border CreateSettingsPanel(
-            FixedDocument document,
-            PrescriptionPrintModel model,
-            PrintOptions options,
-            Window parentWindow,
-            DocumentViewer docViewer)
-        {
-            var settingsBorder = new Border
-            {
-                Background = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(245, 245, 245)),
-                BorderBrush = System.Windows.Media.Brushes.LightGray,
-                BorderThickness = new Thickness(0, 0, 1, 0),
-                Padding = new Thickness(15)
-            };
-
-            var settingsStack = new StackPanel();
-
-            // 标题
-            settingsStack.Children.Add(new TextBlock
-            {
-                Text = "打印设置",
-                FontSize = 16,
-                FontWeight = FontWeights.Bold,
-                Margin = new Thickness(0, 0, 0, 15)
-            });
-
-            // 打印机选择
-            settingsStack.Children.Add(new TextBlock { Text = "打印机", Margin = new Thickness(0, 0, 0, 5) });
-            var printerComboBox = new ComboBox { Margin = new Thickness(0, 0, 0, 15), Height = 28 };
-            PopulatePrinterList(printerComboBox);
-            settingsStack.Children.Add(printerComboBox);
-
-            // 份数
-            settingsStack.Children.Add(new TextBlock { Text = "份数", Margin = new Thickness(0, 0, 0, 5) });
-            var copiesPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 15) };
-            var copiesTextBox = new TextBox
-            {
-                Text = options.Copies.ToString(),
-                Width = 60,
-                Height = 28,
-                TextAlignment = TextAlignment.Center,
-                VerticalContentAlignment = VerticalAlignment.Center
-            };
-            var decreaseBtn = new Button { Content = "-", Width = 28, Height = 28 };
-            var increaseBtn = new Button { Content = "+", Width = 28, Height = 28, Margin = new Thickness(5, 0, 0, 0) };
-
-            decreaseBtn.Click += (s, e) =>
-            {
-                if (int.TryParse(copiesTextBox.Text, out int copies) && copies > 1)
-                    copiesTextBox.Text = (copies - 1).ToString();
-            };
-            increaseBtn.Click += (s, e) =>
-            {
-                if (int.TryParse(copiesTextBox.Text, out int copies) && copies < 99)
-                    copiesTextBox.Text = (copies + 1).ToString();
-            };
-
-            copiesPanel.Children.Add(decreaseBtn);
-            copiesPanel.Children.Add(copiesTextBox);
-            copiesPanel.Children.Add(increaseBtn);
-            settingsStack.Children.Add(copiesPanel);
-
-            // 纸张大小
-            settingsStack.Children.Add(new TextBlock { Text = "纸张尺寸", Margin = new Thickness(0, 0, 0, 5) });
-            var paperSizeComboBox = new ComboBox { Margin = new Thickness(0, 0, 0, 15), Height = 28 };
-            paperSizeComboBox.Items.Add(new ComboBoxItem { Content = "A5 (148 x 210 mm)", Tag = Interfaces.PaperSize.A5 });
-            paperSizeComboBox.Items.Add(new ComboBoxItem { Content = "A4 (210 x 297 mm)", Tag = Interfaces.PaperSize.A4 });
-            paperSizeComboBox.SelectedIndex = options.PaperSize == Interfaces.PaperSize.A4 ? 1 : 0;
-
-            var currentDocument = document;
-            paperSizeComboBox.SelectionChanged += (s, e) =>
-            {
-                if (paperSizeComboBox.SelectedItem is ComboBoxItem item && item.Tag is Interfaces.PaperSize size)
-                {
-                    var newPageSize = GetPageSize(size);
-                    currentDocument = BuildFixedDocument(model, newPageSize);
-                    docViewer.Document = currentDocument;
-                }
-            };
-            settingsStack.Children.Add(paperSizeComboBox);
-
-            // 分隔线
-            settingsStack.Children.Add(new Border
-            {
-                BorderBrush = System.Windows.Media.Brushes.LightGray,
-                BorderThickness = new Thickness(0, 1, 0, 0),
-                Margin = new Thickness(0, 5, 0, 20)
-            });
-
-            // 打印按钮
-            var printButton = new Button
-            {
-                Content = "打印",
-                Height = 35,
-                Margin = new Thickness(0, 0, 0, 10),
-                Background = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(0, 120, 212)),
-                Foreground = System.Windows.Media.Brushes.White,
-                BorderThickness = new Thickness(0)
-            };
-
-            var cancelButton = new Button { Content = "取消", Height = 35 };
-
-            printButton.Click += (s, e) =>
-            {
-                if (!int.TryParse(copiesTextBox.Text, out int copies) || copies < 1)
-                    copies = 1;
-
-                var selectedPrinter = (printerComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString();
-                var printOptions = new PrintOptions
-                {
-                    PrinterName = selectedPrinter,
-                    Copies = copies,
-                    ShowDialog = false
-                };
-
-                ExecutePrintDirect(currentDocument, printOptions);
-                parentWindow.Close();
-            };
-
-            cancelButton.Click += (s, e) => parentWindow.Close();
-
-            settingsStack.Children.Add(printButton);
-            settingsStack.Children.Add(cancelButton);
-
-            settingsBorder.Child = settingsStack;
-            return settingsBorder;
-        }
-
-        private void PopulatePrinterList(ComboBox printerComboBox)
-        {
-            try
-            {
-                var defaultPrinter = LocalPrintServer.GetDefaultPrintQueue();
-                var printQueues = _printServer.GetPrintQueues();
-
-                foreach (var pq in printQueues)
-                {
-                    if (pq != null && !string.IsNullOrEmpty(pq.Name))
-                    {
-                        var isDefault = pq.Name == defaultPrinter?.Name;
-                        var displayName = isDefault ? $"{pq.Name} (默认)" : pq.Name;
-                        var item = new ComboBoxItem { Content = displayName, Tag = pq.Name };
-                        printerComboBox.Items.Add(item);
-
-                        if (isDefault)
-                        {
-                            printerComboBox.SelectedItem = item;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "[PRINT] PopulatePrinterList failed");
-            }
-        }
-
-        #endregion
     }
 }

@@ -21,6 +21,9 @@ namespace LYBT.Desktop.Printing
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // 注册处方打印服务
+            containerRegistry.RegisterSingleton<PrescriptionDocumentBuilder>();
+            containerRegistry.RegisterSingleton<PrescriptionPrintExecutor>();
+            containerRegistry.RegisterSingleton<PrescriptionPreviewWindowBuilder>();
             containerRegistry.RegisterSingleton<IPrintService<PrescriptionPrintModel>, PrescriptionPrintService>();
         }
     }
