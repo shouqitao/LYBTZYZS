@@ -3,6 +3,7 @@ using LYBT.Entities.Patients;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCases.Repositories
 {
