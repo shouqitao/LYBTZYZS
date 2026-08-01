@@ -31,7 +31,6 @@ namespace LYBT.WebAPI.Serialization;
 [JsonSerializable(typeof(HealthCheckResponse))]
 [JsonSerializable(typeof(HealthStatusDto))]
 [JsonSerializable(typeof(OperationResultDto))]
-[JsonSerializable(typeof(PagedQueryBaseDto))]
 
 // ============================================================
 // Auth Types
