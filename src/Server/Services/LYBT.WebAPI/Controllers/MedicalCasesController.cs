@@ -38,24 +38,27 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 查询医案列表（分页）- 添加 OutputCache
+        /// 查询医案列表（分页）
         /// </summary>
         [HttpGet]
         [OutputCache(PolicyName = "MedicalCaseCache")]
-        public new async Task<IActionResult> GetList(
-            [FromQuery] MedicalCaseStatus? status = null,
-            [FromQuery] Guid? patientId = null,
+        public override async Task<IActionResult> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            [FromQuery] bool includeAllDoctors = false,
             [FromQuery] string? keyword = null,
             CancellationToken ct = default)
         {
             if (ValidatePagination(page, pageSize) is { } error) return error;
             var (operatorId, _, operatorRole) = GetOperator();
-            var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin || includeAllDoctors;
+            var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
             var result = await Sender.Send(new GetMedicalCasesQuery(
-                status, patientId, page, pageSize, operatorId, isAdmin, keyword), ct);
+                Status: null,
+                PatientId: null,
+                Page: page,
+                PageSize: pageSize,
+                CurrentDoctorId: operatorId,
+                IsAdmin: isAdmin,
+                Keyword: keyword), ct);
 
             if (!result.IsSuccess)
                 return BusinessFail(result.Error ?? "查询失败");
@@ -64,7 +67,23 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 创建新医案 - 添加 OutputCache 和 RateLimiting
+        /// 获取医案详情
+        /// </summary>
+        [HttpGet("{id:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
+        public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
+        {
+            if (ValidateGuid(id, "医案ID") is { } error) return error;
+
+            var result = await Sender.Send(new GetMedicalCaseQuery(id), ct);
+            if (!result.IsSuccess || result.Value == null)
+                return NotFound(result.Error ?? "医案不存在");
+
+            return Success(result.Value, "查询成功");
+        }
+
+        /// <summary>
+        /// 创建新医案
         /// </summary>
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
@@ -73,12 +92,15 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
-        public override async Task<IActionResult> Create([FromBody] MedicalCaseInputDto dto, CancellationToken ct)
+        public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
         {
+            if (dto is not MedicalCaseInputDto inputDto)
+                return ValidationFail("无效的请求数据");
+
             var (doctorId, _, _) = GetOperator();
 
-            dto.Id = null;
-            var result = await Sender.Send(new CreateMedicalCaseCommand(dto, doctorId), ct);
+            inputDto.Id = null;
+            var result = await Sender.Send(new CreateMedicalCaseCommand(inputDto, doctorId), ct);
 
             if (!result.IsSuccess)
                 return NotFound(result.Error ?? "患者不存在");
@@ -94,7 +116,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 保存医案聚合根 - 添加 OutputCache 和 RateLimiting
+        /// 保存医案聚合根
         /// </summary>
         [HttpPut("{id:guid}")]
         [EnableRateLimiting("ApiCalls")]
@@ -103,10 +125,13 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 403)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
-        public new async Task<IActionResult> Save(
+        public override async Task<IActionResult> Update(
             Guid id,
-            [FromBody] MedicalCaseInputDto request, CancellationToken ct)
+            [FromBody] object dto, CancellationToken ct)
         {
+            if (dto is not MedicalCaseInputDto request)
+                return ValidationFail("无效的请求数据");
+
             if (request.Id != id)
             {
                 return Error("请求ID与路由ID不一致");
@@ -127,7 +152,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 删除医案（软删除）- 添加 OutputCache 和 RateLimiting
+        /// 删除医案（软删除）
         /// </summary>
         [HttpDelete("{id:guid}")]
         [EnableRateLimiting("ApiCalls")]
@@ -148,7 +173,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 批量删除医案 - 添加 OutputCache 和 RateLimiting
+        /// 批量删除医案
         /// </summary>
         [HttpPost("batch-delete")]
         [EnableRateLimiting("ApiCalls")]
@@ -175,7 +200,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 标记是否需要开处方 - 添加 RateLimiting
+        /// 标记是否需要开处方
         /// </summary>
         [HttpPut("{id:guid}/prescription-flag")]
         [EnableRateLimiting("ApiCalls")]
@@ -198,7 +223,7 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 记录打印完成 - 添加 RateLimiting
+        /// 记录打印完成
         /// </summary>
         [HttpPut("{id:guid}/print-completed")]
         [EnableRateLimiting("ApiCalls")]

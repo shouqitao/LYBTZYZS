@@ -1,6 +1,5 @@
 using FluentValidation;
 using LYBT.Module.Formulas.Interfaces;
-using LYBT.Module.Formulas.Services;
 using LYBT.Shared.Models.Validators.Formula;
 using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.EntityFrameworkCore;
@@ -21,8 +20,6 @@ namespace LYBT.Module.Formulas
         /// </summary>
         public static IServiceCollection AddFormulaModule(this IServiceCollection services, IConfiguration configuration)
         {
-            // 注册导入导出服务
-            services.AddScoped<IFormulaImportExportService, FormulaImportExportService>();
             // 注册共享验证器
             services.AddValidatorsFromAssemblyContaining<FormulaInputDtoValidator>();
             // DDD层注册

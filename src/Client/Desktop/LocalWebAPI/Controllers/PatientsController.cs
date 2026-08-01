@@ -11,12 +11,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace LYBT.LocalWebAPI.Controllers;
 
 /// <summary>
-/// 患者管理 API - 继承 BaseCrudController 提供标准 CRUD（简化版）
+/// 患者管理 API - LocalWebAPI 简化版
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
 [Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
-public class PatientsController : BaseCrudController<PatientListDto, PatientDetailDto, PatientInputDto, GetPatientsQuery>
+public class PatientsController : BaseCrudController
 {
     public PatientsController(
         ISender sender,
@@ -77,23 +77,4 @@ public class PatientsController : BaseCrudController<PatientListDto, PatientDeta
             return BusinessFail(result.Error ?? "批量检查失败");
         return Success(result.Value, "批量引用检查完成");
     }
-
-    #region 基类抽象方法实现
-    protected override GetPatientsQuery CreateGetListQuery(int page, int pageSize, string? keyword)
-        => new GetPatientsQuery(page, pageSize, keyword);
-
-    protected override IRequest<Result<PatientDetailDto>> CreateCreateCommand(PatientInputDto dto, Guid operatorId)
-        => new CreatePatientCommand(dto, operatorId);
-
-    protected override IRequest<Result<PatientDetailDto>> CreateUpdateCommand(Guid id, PatientInputDto dto, Guid operatorId)
-        => new UpdatePatientCommand(id, dto, operatorId);
-
-    protected override IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
-        => new DeletePatientCommand(id, operatorId);
-
-    
-
-    protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
-        => new BatchDeletePatientsCommand(ids, operatorId);
-    #endregion
 }

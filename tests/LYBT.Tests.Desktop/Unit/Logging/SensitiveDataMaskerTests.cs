@@ -1,5 +1,6 @@
 using FluentAssertions;
 using LYBT.Shared.Logging.Masking;
+using LYBT.Shared.Models.Attributes;
 using Xunit;
 
 namespace LYBT.Tests.Desktop;

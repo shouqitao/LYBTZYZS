@@ -1,5 +1,5 @@
+using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.Shared.Models.Enums;
-using MediatR;
 
 namespace LYBT.Module.Registration.Domain.Events;
 
@@ -14,6 +14,10 @@ public sealed record RegistrationCreatedEvent(
     string DoctorName,
     RegistrationSource Source,
     RegistrationStatus Status,
-    int QueueNumber) : INotification;
+    int QueueNumber) : IDomainEvent
+{
+    public Guid EventId { get; } = Guid.NewGuid();
+    public DateTime OccurredOn { get; } = DateTime.UtcNow;
+}
 
 

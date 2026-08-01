@@ -22,5 +22,3 @@ namespace LYBT.WebAPI.Controllers
         }
     }
 }
-
-

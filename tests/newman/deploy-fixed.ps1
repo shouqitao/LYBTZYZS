@@ -1,6 +1,6 @@
 # 部署脚本 - 排除配置文件，避免覆盖服务器配置
 param(
-    [string]$Server = "192.168.190.246",
+    [string]$Server = "60.190.215.86",
     [string]$User = "player"
 )
 

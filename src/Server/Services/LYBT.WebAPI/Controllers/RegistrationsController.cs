@@ -55,14 +55,17 @@ public class RegistrationsController : BaseRegistrationsController
     /// </summary>
     [HttpPost]
     [EnableRateLimiting("ApiCalls")]
-    public override async Task<IActionResult> Create([FromBody] RegistrationInputDto dto, CancellationToken ct)
+    public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
     {
-        var result = await Sender.Send(new CreateRegistrationCommand(dto), ct);
+        if (dto is not RegistrationInputDto inputDto)
+            return ValidationFail("无效的请求数据");
+
+        var result = await Sender.Send(new CreateRegistrationCommand(inputDto), ct);
 
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "创建挂号失败");
 
-        LogOperation("创建挂号", dto, result.Value.Id);
+        LogOperation("创建挂号", inputDto, result.Value.Id);
         return CreatedAtAction(nameof(GetById),
             new { id = result.Value.Id, version = ApiVersionConstants.V1 },
             ApiResponse<RegistrationDetailDto>.CreateSuccess(result.Value, "挂号创建成功"));

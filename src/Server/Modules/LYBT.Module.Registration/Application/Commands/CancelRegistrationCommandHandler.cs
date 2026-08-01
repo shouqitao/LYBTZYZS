@@ -1,3 +1,4 @@
+using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.Module.Registration.Domain.Events;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
@@ -13,14 +14,14 @@ public sealed class CancelRegistrationCommandHandler
     : IRequestHandler<CancelRegistrationCommand, Result>
 {
     private readonly IRegistrationRepository _repository;
-    private readonly IPublisher _publisher;
+    private readonly IDomainEventDispatcher _eventDispatcher;
 
     public CancelRegistrationCommandHandler(
         IRegistrationRepository repository,
-        IPublisher publisher)
+        IDomainEventDispatcher eventDispatcher)
     {
         _repository = repository;
-        _publisher = publisher;
+        _eventDispatcher = eventDispatcher;
     }
 
     public async Task<Result> Handle(
@@ -45,11 +46,14 @@ public sealed class CancelRegistrationCommandHandler
         await _repository.UpdateAsync(entity, cancellationToken);
         await _repository.SaveChangesAsync(cancellationToken);
 
-        await _publisher.Publish(new RegistrationCancelledEvent(
-            entity.Id,
-            entity.PatientId,
-            entity.PatientName,
-            entity.DoctorId), cancellationToken);
+        await _eventDispatcher.DispatchAsync(new[]
+        {
+            new RegistrationCancelledEvent(
+                entity.Id,
+                entity.PatientId,
+                entity.PatientName,
+                entity.DoctorId)
+        }, cancellationToken);
 
         return Result.Success();
     }

@@ -11,10 +11,9 @@ namespace LYBT.Module.Registration.Controllers;
 
 /// <summary>
 /// 挂号管理 Controller 共享基类
-/// 继承 BaseCrudController 提供标准 CRUD，保留挂号特化方法
+/// 继承 BaseCrudController，挂号模块只使用 Create/GetById/GetList，其他操作不支持
 /// </summary>
-public abstract class BaseRegistrationsController
-    : BaseCrudController<RegistrationListDto, RegistrationDetailDto, RegistrationInputDto, GetRegistrationsQueryWrapped>
+public abstract class BaseRegistrationsController : BaseCrudController
 {
     protected BaseRegistrationsController(ISender sender, ILogger logger)
         : base(sender, logger)
@@ -67,7 +66,7 @@ public abstract class BaseRegistrationsController
     #region Override 不支持的操作（挂号不支持 Update/Delete/BatchDelete）
 
     [HttpPut("{id:guid}")]
-    public override Task<IActionResult> Update(Guid id, [FromBody] RegistrationInputDto dto, CancellationToken ct)
+    public override Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
         => Task.FromResult<IActionResult>(NotFound("挂号不支持更新操作"));
 
     [HttpDelete("{id:guid}")]
@@ -77,27 +76,6 @@ public abstract class BaseRegistrationsController
     [HttpPost("batch-delete")]
     public override Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
         => Task.FromResult<IActionResult>(NotFound("挂号不支持批量删除操作"));
-
-    #endregion
-
-    #region 抽象方法实现
-
-    protected override GetRegistrationsQueryWrapped CreateGetListQuery(int page, int pageSize, string? keyword)
-    {
-        return new GetRegistrationsQueryWrapped(page, pageSize, keyword);
-    }
-
-    protected override IRequest<Result<RegistrationDetailDto>> CreateCreateCommand(RegistrationInputDto dto, Guid operatorId)
-        => new CreateRegistrationCommand(dto);
-
-    protected override IRequest<Result<RegistrationDetailDto>> CreateUpdateCommand(Guid id, RegistrationInputDto dto, Guid operatorId)
-        => throw new NotSupportedException("挂号不支持更新操作");
-
-    protected override IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
-        => throw new NotSupportedException("挂号不支持删除操作");
-
-    protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
-        => throw new NotSupportedException("挂号不支持批量删除操作");
 
     #endregion
 
@@ -164,41 +142,4 @@ public abstract class BaseRegistrationsController
     }
 
     #endregion
-}
-
-/// <summary>
-/// 包装 GetRegistrationsQuery，使其符合 BaseCrudController 的 IRequest&lt;Result&lt;PagedResult&lt;T&gt;&gt;&gt; 约束
-/// </summary>
-public sealed record GetRegistrationsQueryWrapped(
-    int Page = 1,
-    int PageSize = 20,
-    string? Keyword = null,
-    DateTime? StartDate = null,
-    DateTime? EndDate = null,
-    Guid? PatientId = null,
-    Guid? DoctorId = null) : IRequest<Result<PagedResult<RegistrationListDto>>>;
-
-/// <summary>
-/// GetRegistrationsQueryWrapped 处理器 - 将底层查询包装为 Result
-/// </summary>
-public sealed class GetRegistrationsQueryWrappedHandler
-    : IRequestHandler<GetRegistrationsQueryWrapped, Result<PagedResult<RegistrationListDto>>>
-{
-    private readonly ISender _sender;
-
-    public GetRegistrationsQueryWrappedHandler(ISender sender)
-    {
-        _sender = sender;
-    }
-
-    public async Task<Result<PagedResult<RegistrationListDto>>> Handle(
-        GetRegistrationsQueryWrapped request, CancellationToken cancellationToken)
-    {
-        var pagedResult = await _sender.Send(
-            new GetRegistrationsQuery(request.Page, request.PageSize, request.Keyword,
-                request.StartDate, request.EndDate, request.PatientId, request.DoctorId),
-            cancellationToken);
-
-        return Result<PagedResult<RegistrationListDto>>.Success(pagedResult);
-    }
 }

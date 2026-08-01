@@ -155,50 +155,6 @@ namespace LYBT.Infrastructure.Web
         }
 
         /// <summary>
-        /// 获取实体并验证所有权 - 重构后的统一方法
-        /// 使用模式: var (dto, error) = await GetEntityWithOwnershipCheckAsync(() => _service.GetByIdAsync(id), "资源");
-        ///          if (error != null) return error;
-        /// </summary>
-        /// <typeparam name="TDto">实现IAuditable的DTO类型</typeparam>
-        /// <param name="getEntityFunc">获取实体的异步函数</param>
-        /// <param name="resourceName">资源名称（用于错误消息）</param>
-        /// <returns>元组：(实体数据, 错误响应)，如果error为null则表示验证通过</returns>
-        protected async Task<(TDto? dto, IActionResult? error)> GetEntityWithOwnershipCheckAsync<TDto>(
-            Func<Task<Result<TDto>>> getEntityFunc,
-            string resourceName = "资源") where TDto : class, IAuditable
-        {
-            var result = await getEntityFunc();
-
-            if (!result.IsSuccess || result.Data == null)
-            {
-                return (null, NotFound($"{resourceName}不存在"));
-            }
-
-            if (ValidateOwnership(result.Data.CreatedBy, resourceName) is { } ownerError)
-            {
-                return (null, ownerError);
-            }
-
-            return (result.Data, null);
-        }
-
-        /// <summary>
-        /// 获取实体并验证所有权（使用Guid ID） - 便捷重载方法
-        /// </summary>
-        protected async Task<(TDto? dto, IActionResult? error)> GetEntityWithOwnershipCheckAsync<TDto>(
-            Guid id,
-            Func<Guid, Task<Result<TDto>>> getByIdFunc,
-            string resourceName = "资源") where TDto : class, IAuditable
-        {
-            if (ValidateGuid(id, $"{resourceName}ID") is { } guidError)
-            {
-                return (null, guidError);
-            }
-
-            return await GetEntityWithOwnershipCheckAsync(() => getByIdFunc(id), resourceName);
-        }
-
-        /// <summary>
         /// 验证模型状态，返回null表示验证通过
         /// 使用模式: if (ValidateModel() is { } error) return error;
         /// </summary>

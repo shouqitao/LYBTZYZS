@@ -1,8 +1,8 @@
 {
 	"id": "remote-api-env-001",
-	"name": "RemoteWebAPI Environment (192.168.190.246)",
+	"name": "RemoteWebAPI Environment (60.190.215.86)",
 	"values": [
-		{ "key": "base_url", "value": "http://192.168.190.246:5000", "enabled": true },
+		{ "key": "base_url", "value": "http://60.190.215.86:5000", "enabled": true },
 		{ "key": "auth_token", "value": "", "enabled": true },
 		{ "key": "admin_user_id", "value": "", "enabled": true },
 		{ "key": "test_patient_id", "value": "", "enabled": true },

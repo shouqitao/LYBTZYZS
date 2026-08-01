@@ -5,6 +5,7 @@ using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Validators.BusinessRules;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;
 using System.Threading;
@@ -66,7 +67,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             // 业务规则验证：状态流转合法性
-            if (!MedicalCaseRules.IsValidStatusTransition(medicalCase.CaseStatus, status))
+            if (!MedicalCaseBusinessRules.IsValidStatusTransition(medicalCase.CaseStatus, status))
             {
                 _logger.LogWarning("[SVC] MedicalCase.UpdateStatus → InvalidTransition - OldStatus={OldStatus} NewStatus={NewStatus}",
                     medicalCase.CaseStatus, status);

@@ -31,7 +31,6 @@ namespace LYBT.WebAPI.Serialization;
 [JsonSerializable(typeof(HealthCheckResponse))]
 [JsonSerializable(typeof(HealthStatusDto))]
 [JsonSerializable(typeof(OperationResultDto))]
-[JsonSerializable(typeof(PagedQueryBaseDto))]
 
 // ============================================================
 // Auth Types
@@ -43,10 +42,7 @@ namespace LYBT.WebAPI.Serialization;
 [JsonSerializable(typeof(RefreshTokenRequest))]
 [JsonSerializable(typeof(LogoutRequest))]
 [JsonSerializable(typeof(AutoLoginRequest))]
-[JsonSerializable(typeof(SuperAdminLoginRequest))]
-[JsonSerializable(typeof(ValidateTokenRequest))]
 [JsonSerializable(typeof(ValidateTokenResponse))]
-[JsonSerializable(typeof(ChangeSysAdminPassword))]
 
 // ============================================================
 // Users Types
@@ -101,7 +97,6 @@ namespace LYBT.WebAPI.Serialization;
 [JsonSerializable(typeof(MedicalCaseQueryDto))]
 [JsonSerializable(typeof(MedicalCaseStatusInputDto))]
 [JsonSerializable(typeof(PendingMedicalCaseDto))]
-[JsonSerializable(typeof(BatchDetailQueryDto))]
 [JsonSerializable(typeof(SetPrescriptionFlagRequest))]
 
 // ============================================================

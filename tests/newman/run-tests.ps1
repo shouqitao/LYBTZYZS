@@ -1,5 +1,5 @@
 # LYBT WebAPI 集成测试 (PowerShell)
-param([string]$BaseUrl = "http://192.168.190.246:5000")
+param([string]$BaseUrl = "http://60.190.215.86:5000")
 
 $pass = 0; $fail = 0; $token = ""; $userId = ""
 

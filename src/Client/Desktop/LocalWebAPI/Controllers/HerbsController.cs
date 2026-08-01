@@ -12,12 +12,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace LYBT.LocalWebAPI.Controllers;
 
 /// <summary>
-/// 药材管理 API - 继承 BaseCrudController 提供标准 CRUD（简化版）
+/// 药材管理 API - LocalWebAPI 简化版
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
 [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
-public class HerbsController : BaseCrudController<HerbListDto, HerbDetailDto, HerbInputDto, GetHerbsQuery>
+public class HerbsController : BaseCrudController
 {
     public HerbsController(ISender sender, ILogger<HerbsController> logger)
         : base(sender, logger)
@@ -115,23 +115,4 @@ public class HerbsController : BaseCrudController<HerbListDto, HerbDetailDto, He
 
         return Success(result.Value, result.Value.Message);
     }
-
-    #region 基类抽象方法实现
-    protected override GetHerbsQuery CreateGetListQuery(int page, int pageSize, string? keyword)
-        => new GetHerbsQuery(page, pageSize, keyword);
-
-    protected override IRequest<Result<HerbDetailDto>> CreateCreateCommand(HerbInputDto dto, Guid operatorId)
-        => new CreateHerbCommand(dto, operatorId);
-
-    protected override IRequest<Result<HerbDetailDto>> CreateUpdateCommand(Guid id, HerbInputDto dto, Guid operatorId)
-        => new UpdateHerbCommand(id, dto, operatorId);
-
-    protected override IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
-        => new DeleteHerbCommand(id, operatorId);
-
-    
-
-    protected override IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
-        => new BatchDeleteHerbsCommand(ids, operatorId);
-    #endregion
 }

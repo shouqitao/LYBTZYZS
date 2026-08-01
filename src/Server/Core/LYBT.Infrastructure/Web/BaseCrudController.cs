@@ -8,14 +8,9 @@ namespace LYBT.Infrastructure.Web;
 /// <summary>
 /// 通用 CRUD Controller 基类
 /// 提供统一的分页查询、详情、创建、更新、删除、切换状态、恢复、批量删除等方法
+/// 子类直接 override 需要的 action 方法，通过 Sender 发送 MediatR 命令
 /// </summary>
-/// <typeparam name="TListDto">列表 DTO 类型</typeparam>
-/// <typeparam name="TDetailDto">详情 DTO 类型</typeparam>
-/// <typeparam name="TInputDto">输入 DTO 类型</typeparam>
-/// <typeparam name="TQuery">查询请求类型（必须实现 IRequest&lt;Result&lt;PagedResult&lt;TListDto&gt;&gt;&gt;）</typeparam>
-public abstract class BaseCrudController<TListDto, TDetailDto, TInputDto, TQuery> 
-    : BaseApiController
-    where TQuery : IRequest<Result<PagedResult<TListDto>>>
+public abstract class BaseCrudController : BaseApiController
 {
     private readonly ISender _sender;
 
@@ -28,7 +23,7 @@ public abstract class BaseCrudController<TListDto, TDetailDto, TInputDto, TQuery
     protected ISender Sender => _sender;
 
     /// <summary>
-    /// 获取分页列表
+    /// 获取分页列表 — 子类按需 override
     /// </summary>
     [HttpGet]
     public virtual async Task<IActionResult> GetList(
@@ -47,22 +42,17 @@ public abstract class BaseCrudController<TListDto, TDetailDto, TInputDto, TQuery
     }
 
     /// <summary>
-    /// 根据 ID 获取详情（子类应 override 此方法）
+    /// 根据 ID 获取详情 — 子类应 override 此方法
     /// </summary>
     [HttpGet("{id:guid}")]
-    public virtual async Task<IActionResult> GetById(Guid id, CancellationToken ct)
-    {
-        if (ValidateGuid(id, "ID") is { } error) return error;
-
-        // 子类应 override 此方法以提供具体的查询逻辑
-        return NotFound("未实现 GetById 方法");
-    }
+    public virtual Task<IActionResult> GetById(Guid id, CancellationToken ct)
+        => throw new NotSupportedException("此资源不支持 GetById 操作");
 
     /// <summary>
-    /// 创建资源
+    /// 创建资源 — 子类按需 override
     /// </summary>
     [HttpPost]
-    public virtual async Task<IActionResult> Create([FromBody] TInputDto dto, CancellationToken ct)
+    public virtual async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
     {
         var (operatorId, _, _) = GetOperator();
         var command = CreateCreateCommand(dto, operatorId);
@@ -74,10 +64,10 @@ public abstract class BaseCrudController<TListDto, TDetailDto, TInputDto, TQuery
     }
 
     /// <summary>
-    /// 更新资源
+    /// 更新资源 — 子类按需 override
     /// </summary>
     [HttpPut("{id:guid}")]
-    public virtual async Task<IActionResult> Update(Guid id, [FromBody] TInputDto dto, CancellationToken ct)
+    public virtual async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
     {
         if (ValidateGuid(id, "ID") is { } error) return error;
 
@@ -95,7 +85,7 @@ public abstract class BaseCrudController<TListDto, TDetailDto, TInputDto, TQuery
     }
 
     /// <summary>
-    /// 删除资源（软删除）
+    /// 删除资源（软删除）— 子类按需 override
     /// </summary>
     [HttpDelete("{id:guid}")]
     public virtual async Task<IActionResult> Delete(Guid id, CancellationToken ct)
@@ -130,7 +120,7 @@ public abstract class BaseCrudController<TListDto, TDetailDto, TInputDto, TQuery
         => throw new NotSupportedException("此资源不支持恢复操作");
 
     /// <summary>
-    /// 批量删除
+    /// 批量删除 — 子类按需 override
     /// </summary>
     [HttpPost("batch-delete")]
     public virtual async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
@@ -147,32 +137,37 @@ public abstract class BaseCrudController<TListDto, TDetailDto, TInputDto, TQuery
         return Success(result.Value, "批量删除成功");
     }
 
-    #region 抽象方法 - 子类必须实现
+    #region 工厂方法 - 子类按需 override（默认 throw）
 
     /// <summary>
-    /// 创建分页查询请求
+    /// 创建分页查询请求 — 子类 override GetList 时无需实现此方法
     /// </summary>
-    protected abstract TQuery CreateGetListQuery(int page, int pageSize, string? keyword);
+    protected virtual IRequest<Result<PagedResult<object>>> CreateGetListQuery(int page, int pageSize, string? keyword)
+        => throw new NotSupportedException("请 override GetList 方法或实现 CreateGetListQuery");
 
     /// <summary>
-    /// 创建创建命令
+    /// 创建创建命令 — 子类 override Create 时无需实现此方法
     /// </summary>
-    protected abstract IRequest<Result<TDetailDto>> CreateCreateCommand(TInputDto dto, Guid operatorId);
+    protected virtual IRequest<Result<object>> CreateCreateCommand(object dto, Guid operatorId)
+        => throw new NotSupportedException("请 override Create 方法或实现 CreateCreateCommand");
 
     /// <summary>
-    /// 创建更新命令
+    /// 创建更新命令 — 子类 override Update 时无需实现此方法
     /// </summary>
-    protected abstract IRequest<Result<TDetailDto>> CreateUpdateCommand(Guid id, TInputDto dto, Guid operatorId);
+    protected virtual IRequest<Result<object>> CreateUpdateCommand(Guid id, object dto, Guid operatorId)
+        => throw new NotSupportedException("请 override Update 方法或实现 CreateUpdateCommand");
 
     /// <summary>
-    /// 创建删除命令
+    /// 创建删除命令 — 子类 override Delete 时无需实现此方法
     /// </summary>
-    protected abstract IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId);
+    protected virtual IRequest<Result> CreateDeleteCommand(Guid id, Guid operatorId)
+        => throw new NotSupportedException("请 override Delete 方法或实现 CreateDeleteCommand");
 
     /// <summary>
-    /// 创建批量删除命令
+    /// 创建批量删除命令 — 子类 override BatchDelete 时无需实现此方法
     /// </summary>
-    protected abstract IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId);
+    protected virtual IRequest<Result<BatchOperationResultDto>> CreateBatchDeleteCommand(List<Guid> ids, Guid operatorId)
+        => throw new NotSupportedException("请 override BatchDelete 方法或实现 CreateBatchDeleteCommand");
 
     #endregion
 }

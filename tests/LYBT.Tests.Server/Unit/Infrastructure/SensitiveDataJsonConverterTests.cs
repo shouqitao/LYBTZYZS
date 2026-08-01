@@ -1,8 +1,8 @@
 using FluentAssertions;
 using Xunit;
 using System.Text.Json;
-using LYBT.Entities.Attributes;
 using LYBT.Infrastructure.Serialization;
+using LYBT.Shared.Models.Attributes;
 
 namespace LYBT.Tests.Server;
 
