@@ -5,7 +5,7 @@ using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
-using LYBT.Module.MedicalCases.Mapping;
+using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -22,6 +22,7 @@ namespace LYBT.Module.MedicalCases.Services
     /// Phase 3: 从MedicalCaseService拆分，遵循CQRS原则
     /// 职责：Create, Update, Delete操作
     /// </summary>
+    // TODO: 超大类型，建议拆分（详见 docs/compose/reports/code-review-duplicates.md 🟡5）
     public class MedicalCaseCommandService : BaseService<MedicalCase>, IMedicalCaseCommandService
     {
         private readonly IMedicalCaseRepository _repository;
@@ -306,14 +307,14 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = targetMedicalCaseId,
-                PrescriptionNumber = await GeneratePrescriptionNumberAsync(cancellationToken),  // TODO:价格刷新在后续实现
+                PrescriptionNumber = await GeneratePrescriptionNumberAsync(cancellationToken),  // TODO: 价格刷新在后续实现
                 Remark = sourcePrescription.Remark,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 CreatedBy = currentUserId
             };
 
-            // 4) copy items (price refresh TODO handled as noted in US-MC-016)
+            // 4) 复制处方明细（价格刷新 TODO 已在 US-MC-016 记录）
             var newItems = new List<PrescriptionItem>();
             foreach (var sourceItem in sourcePrescription.Items)
             {

@@ -1,7 +1,7 @@
 using FluentAssertions;
 using LYBT.Entities.Consultations;
 using LYBT.Entities.Prescriptions;
-using LYBT.Module.MedicalCases.Mapping;
+using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;

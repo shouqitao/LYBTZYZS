@@ -13,6 +13,7 @@ namespace LYBT.Shared.Models.Utilities.Security
     /// 解决密码操作分散在多个文件中的问题，提供统一的密码处理接口
     /// 使用BCrypt算法确保密码安全性，整合了PasswordLegacyHelper的密码验证功能
     /// </summary>
+    // TODO: 超大类型，建议拆分（详见 docs/compose/reports/code-review-duplicates.md 🟡5）
     public static class PasswordHelper
     {
         #region 配置常量

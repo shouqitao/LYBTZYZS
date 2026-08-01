@@ -27,6 +27,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
     /// - 未保存变更追踪
     /// - IDisposable实现
     /// </summary>
+    // TODO: 超大类型，建议拆分（详见 docs/compose/reports/code-review-duplicates.md 🟡5）
     public abstract partial class NavigableViewModelBase
         : ObservableObject, IDisposable, INavigationAware, IRegionMemberLifetime, IConfirmNavigationRequest, IEditable
     {

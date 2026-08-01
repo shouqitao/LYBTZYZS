@@ -5,7 +5,7 @@ using LYBT.Module.Registration.Application.Commands;
 using LYBT.Module.Registration.Application.Validators;
 using LYBT.Module.Registration.Infrastructure;
 using LYBT.Module.Registration.Interfaces;
-using LYBT.Module.Registration.Mapping;
+using LYBT.Module.Registration.Mappers;
 using LYBT.Module.Registration.Services;
 using Microsoft.Extensions.DependencyInjection;
 

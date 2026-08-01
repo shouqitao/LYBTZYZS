@@ -1,6 +1,6 @@
 using MediatR;
 using LYBT.Module.MedicalCases.Interfaces;
-using LYBT.Module.MedicalCases.Mapping;
+using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Contracts.Common;
 

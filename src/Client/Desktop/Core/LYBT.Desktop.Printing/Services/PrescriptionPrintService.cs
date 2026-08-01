@@ -17,6 +17,7 @@ namespace LYBT.Desktop.Printing.Services
     /// 处方打印服务实现
     /// 使用FixedDocument + PrintDialog实现打印功能
     /// </summary>
+    // TODO: 超大类型，建议拆分（详见 docs/compose/reports/code-review-duplicates.md 🟡5）
     public class PrescriptionPrintService : IPrintService<PrescriptionPrintModel>
     {
         private readonly ILogger<PrescriptionPrintService> _logger;

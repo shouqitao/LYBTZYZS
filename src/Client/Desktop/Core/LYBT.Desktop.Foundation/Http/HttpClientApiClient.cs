@@ -46,6 +46,7 @@ namespace LYBT.Desktop.Foundation.Http;
 /// <para>Response wrapping: LocalWebAPI returns raw DTOs; each method wraps the result
 /// in <see cref="ApiResponse{T}"/> to satisfy the unified interface contract.</para>
 /// </remarks>
+// TODO: 超大类型，建议拆分（详见 docs/compose/reports/code-review-duplicates.md 🟡5）
 public sealed class HttpClientApiClient : IApiClient,
     IApiClientAuth, IApiClientUsers, IApiClientPatients,
     IApiClientHerbs, IApiClientFormulas, IApiClientMedicalCases,

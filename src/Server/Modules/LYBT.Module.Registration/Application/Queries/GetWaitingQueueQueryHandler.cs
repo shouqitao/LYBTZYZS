@@ -1,4 +1,4 @@
-using LYBT.Module.Registration.Mapping;
+using LYBT.Module.Registration.Mappers;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Shared.Models.Contracts.Registration;
 using MediatR;

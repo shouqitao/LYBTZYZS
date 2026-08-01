@@ -2,7 +2,7 @@ using FluentValidation;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Application.Commands;
 using LYBT.Module.MedicalCases.Interfaces;
-using LYBT.Module.MedicalCases.Mapping;
+using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Module.MedicalCases.Repositories;
 using LYBT.Module.MedicalCases.Services;
 using LYBT.Shared.Models.Validators.MedicalCase;

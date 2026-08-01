@@ -30,6 +30,7 @@ namespace LYBT.Desktop.Clinical.ViewModels;
 /// Delegates to child VMs: ConsultationEditor, PrescriptionEditor, Commands, PendingQueue, CardReader.
 /// Implements IMedicalCaseWorkspaceContext (state reading) and IWorkspaceHost (child-to-parent operations).
 /// </summary>
+// TODO: 超大类型，建议拆分（详见 docs/compose/reports/code-review-duplicates.md 🟡5）
 public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     IMedicalCaseWorkspaceContext, IWorkspaceHost, IMedicalCaseDataProvider
 {

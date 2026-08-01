@@ -1,7 +1,7 @@
 using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.MedicalCases.Interfaces;
-using LYBT.Module.MedicalCases.Mapping;
+using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;

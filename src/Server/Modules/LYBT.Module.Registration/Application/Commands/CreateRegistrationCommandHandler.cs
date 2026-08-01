@@ -1,6 +1,6 @@
 using LYBT.Entities.Registrations;
 using LYBT.Infrastructure.SharedKernel.Events;
-using LYBT.Module.Registration.Mapping;
+using LYBT.Module.Registration.Mappers;
 using LYBT.Module.Registration.Domain.Events;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Shared.Models.Contracts.Registration;

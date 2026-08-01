@@ -18,6 +18,7 @@ namespace LYBT.Module.MedicalCases.Repositories
     /// <summary>
     /// 医案仓储 - 简化版，减少过度复杂的Include策略
     /// </summary>
+    // TODO: 超大类型，建议拆分（详见 docs/compose/reports/code-review-duplicates.md 🟡5）
     internal class MedicalCaseRepository : BaseRepository<MedicalCase>, IMedicalCaseRepository
     {
         public MedicalCaseRepository(AppDbContext context, ILogger<MedicalCaseRepository> logger)

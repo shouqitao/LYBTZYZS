@@ -12,7 +12,7 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Riok.Mapperly.Abstractions;
 
-namespace LYBT.Module.MedicalCases.Mapping;
+namespace LYBT.Module.MedicalCases.Mappers;
 
 /// <summary>
 /// 医案数据映射器 - Mapperly编译时生成

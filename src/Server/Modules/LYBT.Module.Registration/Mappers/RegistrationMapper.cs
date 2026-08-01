@@ -2,7 +2,7 @@ using LYBT.Shared.Models.Contracts.Registration;
 using Riok.Mapperly.Abstractions;
 using RegistrationEntity = LYBT.Entities.Registrations.Registration;
 
-namespace LYBT.Module.Registration.Mapping;
+namespace LYBT.Module.Registration.Mappers;
 
 /// <summary>
 /// 挂号数据映射器 -- Mapperly 编译时生成
