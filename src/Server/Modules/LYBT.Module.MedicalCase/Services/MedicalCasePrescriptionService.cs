@@ -1,7 +1,6 @@
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
 using LYBT.Infrastructure.Caching;
-using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -19,7 +18,6 @@ namespace LYBT.Module.MedicalCases.Services
     public class MedicalCasePrescriptionService
     {
         private readonly IMedicalCaseRepository _repository;
-        private readonly ICrossModuleService _crossModule;
         private readonly MedicalCaseMapper _mapper;
         private readonly ICacheInvalidationService _cacheInvalidation;
         private readonly ILogger<MedicalCasePrescriptionService> _logger;
@@ -27,14 +25,12 @@ namespace LYBT.Module.MedicalCases.Services
 
         public MedicalCasePrescriptionService(
             IMedicalCaseRepository repository,
-            ICrossModuleService crossModule,
             MedicalCaseMapper mapper,
             ICacheInvalidationService cacheInvalidation,
             ILogger<MedicalCasePrescriptionService> logger,
             PrescriptionItemService itemService)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _crossModule = crossModule ?? throw new ArgumentNullException(nameof(crossModule));
             _mapper = mapper;
             _cacheInvalidation = cacheInvalidation ?? throw new ArgumentNullException(nameof(cacheInvalidation));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));

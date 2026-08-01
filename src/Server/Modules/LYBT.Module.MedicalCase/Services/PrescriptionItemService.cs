@@ -30,8 +30,6 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 处理处方更新(创建/更新/软删除)
-        /// <summary>
-        /// 处理处方更新(创建/更新/软删除)
         /// consolidate-code-quality: 从SaveAsync提取，降低圈复杂度
         /// </summary>
         public async Task HandlePrescriptionUpdateAsync(

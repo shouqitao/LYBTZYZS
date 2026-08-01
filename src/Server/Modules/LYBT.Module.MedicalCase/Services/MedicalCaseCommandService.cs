@@ -5,7 +5,6 @@ using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
-using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -27,7 +26,6 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly IMedicalCaseRepository _repository;
         private readonly IRegistrationCrossModuleService _registrationCrossModule;
         private readonly ICrossModuleService _crossModule;
-        private readonly MedicalCaseMapper _mapper;
         private readonly ICacheInvalidationService _cacheInvalidation;
         private readonly MedicalCasePrescriptionService _prescriptionService;
         private readonly PrescriptionItemService _itemService;
@@ -36,14 +34,12 @@ namespace LYBT.Module.MedicalCases.Services
             IMedicalCaseRepository repository,
             IRegistrationCrossModuleService registrationCrossModule,
             ICrossModuleService crossModule,
-            MedicalCaseMapper mapper,
             ILogger<MedicalCaseCommandService> logger,
             ICacheInvalidationService cacheInvalidation,
             MedicalCasePrescriptionService prescriptionService,
             PrescriptionItemService itemService)
             : base(logger)
         {
-            _mapper = mapper;
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _registrationCrossModule = registrationCrossModule ?? throw new ArgumentNullException(nameof(registrationCrossModule));
             _crossModule = crossModule ?? throw new ArgumentNullException(nameof(crossModule));
