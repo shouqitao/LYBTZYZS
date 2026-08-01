@@ -1,4 +1,4 @@
-using LYBT.Module.Auth.Domain;
+using LYBT.Entities.Auth;
 
 namespace LYBT.Module.Auth.Interfaces;
 

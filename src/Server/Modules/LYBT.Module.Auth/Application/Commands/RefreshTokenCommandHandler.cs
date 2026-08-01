@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using MediatR;
-using LYBT.Module.Auth.Domain;
+using LYBT.Entities.Auth;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Models;
 using LYBT.Shared.Models.Contracts.Auth;

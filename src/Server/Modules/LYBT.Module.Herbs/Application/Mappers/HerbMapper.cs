@@ -1,5 +1,5 @@
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Module.Herbs.Domain;
+using LYBT.Entities.Herbs;
 
 namespace LYBT.Module.Herbs.Application.Mappers;
 

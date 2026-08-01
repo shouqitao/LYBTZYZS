@@ -1,5 +1,5 @@
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Module.Herbs.Domain;
+using LYBT.Entities.Herbs;
 using LYBT.Module.Herbs.Interfaces;
 using Microsoft.EntityFrameworkCore;
 

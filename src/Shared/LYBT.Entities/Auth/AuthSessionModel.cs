@@ -60,6 +60,77 @@ namespace LYBT.Entities.Auth
         /// <summary>状态</summary>
         [DisplayName("状态")]
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
+
+        /// <summary>
+        /// 创建新的认证会话。
+        /// </summary>
+        public static AuthSession Create(
+            Guid userId,
+            string tokenHash,
+            DateTime expiryTime,
+            string ipAddress,
+            string? userAgent = null)
+        {
+            if (userId == Guid.Empty)
+                throw new ArgumentException("用户ID不能为空", nameof(userId));
+            if (string.IsNullOrWhiteSpace(tokenHash))
+                throw new ArgumentException("令牌哈希不能为空", nameof(tokenHash));
+            if (string.IsNullOrWhiteSpace(ipAddress))
+                throw new ArgumentException("IP地址不能为空", nameof(ipAddress));
+
+            return new AuthSession
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                TokenHash = tokenHash,
+                LoginTime = DateTime.UtcNow,
+                ExpiryTime = expiryTime,
+                IpAddress = ipAddress.Trim(),
+                UserAgent = userAgent?.Trim(),
+                Status = CommonStatus.Enabled
+            };
+        }
+
+        /// <summary>
+        /// 登出会话。
+        /// </summary>
+        public void Logout()
+        {
+            if (IsRevoked)
+                throw new InvalidOperationException("会话已被撤销");
+
+            LogoutTime = DateTime.UtcNow;
+            Status = CommonStatus.Disabled;
+        }
+
+        /// <summary>
+        /// 撤销会话（强制登出）。
+        /// </summary>
+        public void Revoke()
+        {
+            IsRevoked = true;
+            LogoutTime = DateTime.UtcNow;
+            Status = CommonStatus.Disabled;
+        }
+
+        /// <summary>
+        /// 检查会话是否有效。
+        /// </summary>
+        public bool IsValid()
+        {
+            return !IsRevoked
+                && Status == CommonStatus.Enabled
+                && LogoutTime == null
+                && DateTime.UtcNow < ExpiryTime;
+        }
+
+        /// <summary>
+        /// 检查会话是否已过期。
+        /// </summary>
+        public bool IsExpired()
+        {
+            return DateTime.UtcNow >= ExpiryTime;
+        }
     }
 }
 

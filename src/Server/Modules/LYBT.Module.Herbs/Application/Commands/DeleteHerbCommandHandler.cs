@@ -2,7 +2,7 @@ using MediatR;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Infrastructure.SharedKernel.Events;
-using LYBT.Module.Herbs.Domain;
+using LYBT.Entities.Herbs;
 using LYBT.Module.Herbs.Domain.Events;
 using LYBT.Module.Herbs.Interfaces;
 

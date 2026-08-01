@@ -84,6 +84,139 @@ namespace LYBT.Entities.Herbs
         /// <summary>药材状态</summary>
         [DisplayName("状态")]
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
+
+        /// <summary>
+        /// 创建新药材。
+        /// </summary>
+        public static Herb Create(
+            string name,
+            string unit,
+            decimal price,
+            string? pinYinCode = null,
+            string? category = null,
+            string? properties = null,
+            string? origin = null,
+            string? spec = null,
+            decimal? costPrice = null,
+            string? effect = null,
+            string? usage = null,
+            string? remark = null,
+            Guid? createdBy = null)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("药材名称不能为空", nameof(name));
+            if (name.Length > 100)
+                throw new ArgumentException("药材名称长度不能超过100个字符", nameof(name));
+            if (string.IsNullOrWhiteSpace(unit))
+                throw new ArgumentException("单位不能为空", nameof(unit));
+            if (price < 0)
+                throw new ArgumentException("单价不能为负数", nameof(price));
+
+            return new Herb
+            {
+                Id = Guid.NewGuid(),
+                Name = name.Trim(),
+                Unit = unit.Trim(),
+                Price = price,
+                PinYinCode = pinYinCode?.Trim(),
+                Category = category?.Trim(),
+                Properties = properties?.Trim(),
+                Origin = origin?.Trim(),
+                Spec = spec?.Trim(),
+                CostPrice = costPrice,
+                Effect = effect?.Trim(),
+                Usage = usage?.Trim(),
+                Remark = remark?.Trim(),
+                Status = CommonStatus.Enabled,
+                CreatedBy = createdBy,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
+
+        /// <summary>
+        /// 更新药材基本信息。
+        /// </summary>
+        public void UpdateProfile(
+            string name,
+            string unit,
+            decimal price,
+            string? pinYinCode,
+            string? category,
+            string? properties,
+            string? origin,
+            string? spec,
+            decimal? costPrice,
+            string? effect,
+            string? usage,
+            string? remark,
+            Guid updatedBy)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("药材名称不能为空", nameof(name));
+            if (string.IsNullOrWhiteSpace(unit))
+                throw new ArgumentException("单位不能为空", nameof(unit));
+            if (price < 0)
+                throw new ArgumentException("单价不能为负数", nameof(price));
+
+            Name = name.Trim();
+            Unit = unit.Trim();
+            Price = price;
+            PinYinCode = pinYinCode?.Trim();
+            Category = category?.Trim();
+            Properties = properties?.Trim();
+            Origin = origin?.Trim();
+            Spec = spec?.Trim();
+            CostPrice = costPrice;
+            Effect = effect?.Trim();
+            Usage = usage?.Trim();
+            Remark = remark?.Trim();
+            UpdatedBy = updatedBy;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// 更新药材价格。
+        /// </summary>
+        public void UpdatePrice(decimal newPrice, decimal? newCostPrice, Guid updatedBy)
+        {
+            if (newPrice < 0)
+                throw new ArgumentException("单价不能为负数", nameof(newPrice));
+
+            Price = newPrice;
+            CostPrice = newCostPrice;
+            UpdatedBy = updatedBy;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// 更改药材状态（启用/禁用）。
+        /// </summary>
+        public void ChangeStatus(CommonStatus newStatus, Guid updatedBy)
+        {
+            Status = newStatus;
+            UpdatedBy = updatedBy;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// 软删除药材。
+        /// </summary>
+        public void SoftDelete(Guid deletedBy)
+        {
+            IsDeleted = true;
+            UpdatedBy = deletedBy;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// 恢复已软删除的药材。
+        /// </summary>
+        public void Restore(Guid restoredBy)
+        {
+            IsDeleted = false;
+            UpdatedBy = restoredBy;
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 }
 

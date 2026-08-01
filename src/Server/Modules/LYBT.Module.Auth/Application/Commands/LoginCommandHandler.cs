@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using MediatR;
 using LYBT.Infrastructure.Services.CrossModule;
-using LYBT.Module.Auth.Domain;
+using LYBT.Entities.Auth;
 using LYBT.Module.Auth.Domain.Events;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Models;

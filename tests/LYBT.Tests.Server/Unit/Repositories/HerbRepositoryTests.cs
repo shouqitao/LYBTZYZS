@@ -1,9 +1,9 @@
 using FluentAssertions;
-using LYBT.Module.Herbs.Domain;
+using LYBT.Entities.Herbs;
 using LYBT.Module.Herbs.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
-using Herb = LYBT.Module.Herbs.Domain.Herb;
+using Herb = LYBT.Entities.Herbs.Herb;
 
 namespace LYBT.Tests.Server;
 

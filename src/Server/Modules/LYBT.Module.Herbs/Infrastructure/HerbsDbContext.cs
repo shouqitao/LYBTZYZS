@@ -1,4 +1,4 @@
-using LYBT.Module.Herbs.Domain;
+using LYBT.Entities.Herbs;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Herbs.Infrastructure;
