@@ -341,7 +341,7 @@ public class MedicalCaseMasterDetailViewModelTests
             PresentIllness = "测试现病史",
             TcmDiagnosis = "测试中医诊断"
         };
-        sut.PrescriptionEditor.Prescription = new LYBT.Desktop.MedicalCase.Models.Items.PrescriptionItem
+        sut.PrescriptionEditor.Prescription = new LYBT.Desktop.MedicalCase.Models.Items.PrescriptionItemViewModel
         {
             DosageCount = 7,
             Items = new System.Collections.ObjectModel.ObservableCollection<PrescriptionItemDto>()
@@ -368,7 +368,7 @@ public class MedicalCaseMasterDetailViewModelTests
         var exception = new Exception("Save failed");
 
         sut.ConsultationEditor.Consultation = new LYBT.Desktop.MedicalCase.Models.Items.ConsultationItem();
-        sut.PrescriptionEditor.Prescription = new LYBT.Desktop.MedicalCase.Models.Items.PrescriptionItem();
+        sut.PrescriptionEditor.Prescription = new LYBT.Desktop.MedicalCase.Models.Items.PrescriptionItemViewModel();
 
         _medicalCaseService.AggregateSaveAsync(detail.Id, Arg.Any<ConsultationInputDto?>(), Arg.Any<PrescriptionInputDto?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<(bool Success, MedicalCaseDetailDto? Data, string? Error)>(exception));
@@ -391,7 +391,7 @@ public class MedicalCaseMasterDetailViewModelTests
         var herbId = Guid.NewGuid();
 
         // 设置有药材的处方
-        var prescriptionItem = new LYBT.Desktop.MedicalCase.Models.Items.PrescriptionItem
+        var prescriptionItem = new LYBT.Desktop.MedicalCase.Models.Items.PrescriptionItemViewModel
         {
             DosageCount = 5,
             Remark = "测试备注"

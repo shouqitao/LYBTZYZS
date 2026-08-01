@@ -554,7 +554,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     ConsultationItem? IMedicalCaseDataProvider.GetConsultationItem()
         => ConsultationEditor.Consultation;
 
-    PrescriptionItem? IMedicalCaseDataProvider.GetPrescriptionItem()
+    PrescriptionItemViewModel? IMedicalCaseDataProvider.GetPrescriptionItem()
         => PrescriptionEditor.Prescription;
 
     IEnumerable<HerbListDto>? IMedicalCaseDataProvider.GetAllHerbs()

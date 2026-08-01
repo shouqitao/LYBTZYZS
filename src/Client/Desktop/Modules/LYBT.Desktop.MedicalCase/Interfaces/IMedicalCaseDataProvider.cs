@@ -19,7 +19,7 @@ public interface IMedicalCaseDataProvider
     IValidatable? GetPrescriptionValidator();
     IDataProvider? GetPrescriptionProvider();
     ConsultationItem? GetConsultationItem();
-    PrescriptionItem? GetPrescriptionItem();
+    PrescriptionItemViewModel? GetPrescriptionItem();
     IEnumerable<HerbListDto>? GetAllHerbs();
     string GetRemark();
     string GetEditReason();

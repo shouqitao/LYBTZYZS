@@ -81,12 +81,12 @@ public partial class MedicalCaseViewControl : UserControl
     /// 替代原有 HerbItems, DoseCount, Usage, TotalPrice 等分散属性
     /// </summary>
     public static readonly DependencyProperty PrescriptionProperty =
-        DependencyProperty.Register(nameof(Prescription), typeof(PrescriptionItem), typeof(MedicalCaseViewControl),
+        DependencyProperty.Register(nameof(Prescription), typeof(PrescriptionItemViewModel), typeof(MedicalCaseViewControl),
             new PropertyMetadata(null));
 
-    public PrescriptionItem? Prescription
+    public PrescriptionItemViewModel? Prescription
     {
-        get => (PrescriptionItem?)GetValue(PrescriptionProperty);
+        get => (PrescriptionItemViewModel?)GetValue(PrescriptionProperty);
         set => SetValue(PrescriptionProperty, value);
     }
 

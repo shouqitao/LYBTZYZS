@@ -11,17 +11,18 @@ using Prism.Mvvm;
 namespace LYBT.Desktop.MedicalCase.Models.Items;
 
 /// <summary>
-/// 处方数据Item - 用于UI绑定的处方数据模型
+/// 处方数据视图模型 - 用于UI绑定的处方数据模型
 ///
 /// 遵循Entity-DTO-Item模式：
 /// - Entity: 服务端Prescription实体
 /// - DTO: PrescriptionDetailDto/PrescriptionInputDto (Shared层)
-/// - Item: PrescriptionItem (Desktop层，用于XAML绑定)
+/// - Item: PrescriptionItemViewModel (Desktop层，用于XAML绑定)
 ///
 /// 属性名与PrescriptionDetailDto保持一致，确保XAML绑定兼容
 /// </summary>
-public class PrescriptionItem : BindableBase, IDataProvider, IValidatable, INotifyDataErrorInfo
+public class PrescriptionItemViewModel : BindableBase, IDataProvider, IValidatable, INotifyDataErrorInfo
 {
+    // TODO: 静态mapper与DI风格不一致，未来改为构造注入（需同步改造Mapperly生成代码的实例化路径）
     private static readonly PrescriptionMapper s_mapper = new();
 
     /// <summary>

@@ -99,12 +99,12 @@ public partial class MedicalCaseEditControl : UserControl
     /// 替代原有 HerbCount, DoseCount, HerbItems, Usage, TotalPrice 等分散属性
     /// </summary>
     public static readonly DependencyProperty PrescriptionProperty =
-        DependencyProperty.Register(nameof(Prescription), typeof(PrescriptionItem), typeof(MedicalCaseEditControl),
+        DependencyProperty.Register(nameof(Prescription), typeof(PrescriptionItemViewModel), typeof(MedicalCaseEditControl),
             new PropertyMetadata(null));
 
-    public PrescriptionItem? Prescription
+    public PrescriptionItemViewModel? Prescription
     {
-        get => (PrescriptionItem?)GetValue(PrescriptionProperty);
+        get => (PrescriptionItemViewModel?)GetValue(PrescriptionProperty);
         set => SetValue(PrescriptionProperty, value);
     }
 
@@ -233,7 +233,7 @@ public partial class MedicalCaseEditControl : UserControl
 
     /// <summary>
     /// 备注 - 医案聚合根备注字段
-    /// 绑定到 MedicalCaseDetailModel.Remark（聚合根），而非 PrescriptionItem.Remark
+    /// 绑定到 MedicalCaseDetailModel.Remark（聚合根），而非 PrescriptionItemViewModel.Remark
     /// </summary>
     public static readonly DependencyProperty RemarkProperty =
         DependencyProperty.Register(nameof(Remark), typeof(string), typeof(MedicalCaseEditControl),

@@ -11,7 +11,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Workspace;
 
 /// <summary>
 /// Child VM for prescription data editing.
-/// Wraps PrescriptionItem, handles DTO initialization and collection change notifications.
+/// Wraps PrescriptionItemViewModel, handles DTO initialization and collection change notifications.
 /// Notifies parent when Items collection changes for state recalculation (CanComplete, CanPrint).
 /// </summary>
 public class PrescriptionEditorViewModel : ChildViewModelBase
@@ -19,9 +19,9 @@ public class PrescriptionEditorViewModel : ChildViewModelBase
     private readonly IMedicalCaseWorkspaceContext _context;
     private readonly PrescriptionMapper _mapper = new();
 
-    private PrescriptionItem _prescription = new();
+    private PrescriptionItemViewModel _prescription = new();
 
-    public PrescriptionItem Prescription
+    public PrescriptionItemViewModel Prescription
     {
         get => _prescription;
         set

@@ -8,7 +8,7 @@ using Xunit;
 namespace LYBT.Tests.Desktop;
 
 /// <summary>
-/// Phase 1.3: PrescriptionItem validation property tests
+/// Phase 1.3: PrescriptionItemViewModel validation property tests
 /// Tests for prescription validation and indicators
 /// </summary>
 public class PrescriptionItemTests : UserJourneyTestBase
@@ -17,7 +17,7 @@ public class PrescriptionItemTests : UserJourneyTestBase
     {
     }
 
-    private PrescriptionItem CreateSut() => new();
+    private PrescriptionItemViewModel CreateSut() => new();
 
     [Fact]
     public void Constructor_InitializesWithDefaults()
@@ -28,7 +28,7 @@ public class PrescriptionItemTests : UserJourneyTestBase
         sut.MedicalCaseId.Should().Be(Guid.Empty);
         sut.PrescriptionNumber.Should().BeNull();
         sut.DosageCount.Should().Be(7);
-        sut.Usage.Should().Be(PrescriptionItem.DefaultUsage);
+        sut.Usage.Should().Be(PrescriptionItemViewModel.DefaultUsage);
         sut.Advice.Should().BeNull();
         sut.Remark.Should().BeNull();
         sut.Discount.Should().Be(1.0m);
@@ -90,9 +90,9 @@ public class PrescriptionItemTests : UserJourneyTestBase
 
         sut.Items.Add(new PrescriptionItemDto { HerbId = Guid.NewGuid() });
 
-        propertiesChanged.Should().Contain(nameof(PrescriptionItem.HasItems));
-        propertiesChanged.Should().Contain(nameof(PrescriptionItem.ItemCount));
-        propertiesChanged.Should().Contain(nameof(PrescriptionItem.IsValid));
+        propertiesChanged.Should().Contain(nameof(PrescriptionItemViewModel.HasItems));
+        propertiesChanged.Should().Contain(nameof(PrescriptionItemViewModel.ItemCount));
+        propertiesChanged.Should().Contain(nameof(PrescriptionItemViewModel.IsValid));
     }
 
     [Fact]
@@ -275,7 +275,7 @@ public class PrescriptionItemTests : UserJourneyTestBase
         sut.Id.Should().Be(id);
         sut.MedicalCaseId.Should().Be(medicalCaseId);
         sut.DosageCount.Should().Be(7);
-        sut.Usage.Should().Be(PrescriptionItem.DefaultUsage);
+        sut.Usage.Should().Be(PrescriptionItemViewModel.DefaultUsage);
         sut.Items.Should().BeEmpty();
     }
 
@@ -288,12 +288,12 @@ public class PrescriptionItemTests : UserJourneyTestBase
 
         sut.NotifyItemsChanged();
 
-        propertiesChanged.Should().Contain(nameof(PrescriptionItem.ItemCount));
-        propertiesChanged.Should().Contain(nameof(PrescriptionItem.HasItems));
-        propertiesChanged.Should().Contain(nameof(PrescriptionItem.IsValid));
-        propertiesChanged.Should().Contain(nameof(PrescriptionItem.TotalPrice));
-        propertiesChanged.Should().Contain(nameof(PrescriptionItem.SingleDosePrice));
-        propertiesChanged.Should().Contain(nameof(PrescriptionItem.DisplayText));
+        propertiesChanged.Should().Contain(nameof(PrescriptionItemViewModel.ItemCount));
+        propertiesChanged.Should().Contain(nameof(PrescriptionItemViewModel.HasItems));
+        propertiesChanged.Should().Contain(nameof(PrescriptionItemViewModel.IsValid));
+        propertiesChanged.Should().Contain(nameof(PrescriptionItemViewModel.TotalPrice));
+        propertiesChanged.Should().Contain(nameof(PrescriptionItemViewModel.SingleDosePrice));
+        propertiesChanged.Should().Contain(nameof(PrescriptionItemViewModel.DisplayText));
     }
 
     [Fact]
