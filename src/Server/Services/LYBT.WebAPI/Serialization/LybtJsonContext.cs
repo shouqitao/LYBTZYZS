@@ -43,10 +43,8 @@ namespace LYBT.WebAPI.Serialization;
 [JsonSerializable(typeof(RefreshTokenRequest))]
 [JsonSerializable(typeof(LogoutRequest))]
 [JsonSerializable(typeof(AutoLoginRequest))]
-[JsonSerializable(typeof(SuperAdminLoginRequest))]
 [JsonSerializable(typeof(ValidateTokenRequest))]
 [JsonSerializable(typeof(ValidateTokenResponse))]
-[JsonSerializable(typeof(ChangeSysAdminPassword))]
 
 // ============================================================
 // Users Types
