@@ -1,7 +1,7 @@
 #!/bin/bash
 # LYBT WebAPI 集成测试 - curl 版本
 
-BASE_URL="http://192.168.190.246:5000"
+BASE_URL="http://60.190.215.86:5000"
 PASS=0
 FAIL=0
 TOKEN=""

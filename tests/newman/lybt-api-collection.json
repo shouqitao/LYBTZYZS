@@ -4,7 +4,7 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://192.168.190.246:5000" },
+    { "key": "baseUrl", "value": "http://60.190.215.86:5000" },
     { "key": "token", "value": "" },
     { "key": "userId", "value": "" },
     { "key": "patientId", "value": "" },

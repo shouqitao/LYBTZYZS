@@ -2,6 +2,6 @@
   "id": "lybt-env-full",
   "name": "LYBT Full Test",
   "values": [
-    { "key": "baseUrl", "value": "http://192.168.190.246:5000", "enabled": true }
+    { "key": "baseUrl", "value": "http://60.190.215.86:5000", "enabled": true }
   ]
 }

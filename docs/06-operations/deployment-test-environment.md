@@ -6,21 +6,21 @@
 
 | 服务器 | IP | 用途 | 端口 | 操作系统 |
 |--------|-----|------|------|----------|
-| WebAPI | 192.168.190.246 | WebAPI 服务 | 5000 | Ubuntu |
-| WebAPI (公网) | 60.190.215.86 | WebAPI 公网访问 | 5000 | - |
+| WebAPI | 60.190.215.86 | WebAPI 服务（公网） | 5000 | Ubuntu |
 | 数据库 | 192.168.190.243 | SQL Server | 1433 | Windows |
 
 ## [S2] 服务账号
 
-### WebAPI 服务器 (192.168.190.246)
+### WebAPI 服务器 (60.190.215.86)
 
 | 项目 | 值 |
 |------|-----|
 | SSH 用户 | player |
-| SSH 密码 | 123456 |
-| SSH 免密登录 | 已配置 |
-| WebAPI 安装路径 | ~/lybt-api |
-| 日志路径 | ~/lybt-api/logs/webapi.log |
+| SSH 端口 | 5555 |
+| SSH 认证 | 免密登录（SSH key） |
+| WebAPI 安装路径 | /home/player/lybt-api |
+| 日志路径 | /home/player/lybt-api/logs/webapi.log |
+| dotnet 路径 | /home/player/.dotnet/dotnet |
 | 启动方式 | `dotnet LYBT.WebAPI.dll` (nohup) |
 
 ### 数据库服务器 (192.168.190.243)
@@ -65,8 +65,7 @@
 
 ### API 路由
 
-- 远程 WebAPI: `http://192.168.190.246:5000/api/v1/[controller]`
-- 公网访问: `http://60.190.215.86:5000/api/v1/[controller]`
+- 远程 WebAPI: `http://60.190.215.86:5000/api/v1/[controller]`
 
 ## [S4] 测试账号
 
@@ -94,17 +93,17 @@ Compress-Archive -Path "$env:TEMP\lybt-publish\*" -DestinationPath "$env:TEMP\ly
 ### 5.3 上传到服务器
 
 ```powershell
-scp "$env:TEMP\lybt-webapi-update.zip" player@192.168.190.246:/tmp/lybt-webapi-update.zip
+scp -P 5555 "$env:TEMP\lybt-webapi-update.zip" player@60.190.215.86:/tmp/lybt-webapi-update.zip
 ```
 
 ### 5.4 部署到服务器
 
 ```bash
-ssh player@192.168.190.246 "
+ssh -p 5555 player@60.190.215.86 "
   pkill -f 'dotnet LYBT.WebAPI.dll' 2>/dev/null;
   sleep 2;
-  cd ~/lybt-api && unzip -o /tmp/lybt-webapi-update.zip -d . > /dev/null 2>&1;
-  nohup dotnet LYBT.WebAPI.dll > logs/webapi.log 2>&1 &
+  cd /home/player/lybt-api && unzip -o /tmp/lybt-webapi-update.zip -d . > /dev/null 2>&1;
+  nohup /home/player/.dotnet/dotnet LYBT.WebAPI.dll > logs/webapi.log 2>&1 &
   sleep 5;
   ps aux | grep 'dotnet LYBT.WebAPI' | grep -v grep
 "
@@ -157,7 +156,7 @@ npx newman run tests/newman/lybt-full-api-collection.json -e tests/newman/env-fu
 
 **修复**: 已在 `src/Server/Modules/LYBT.Module.Users/Services/IdentitySeedData.cs` 中添加 Role 设置
 
-**状态**: 修复已提交，待部署到 246
+**状态**: 修复已提交，待部署
 
 ### 7.2 密码策略验证
 

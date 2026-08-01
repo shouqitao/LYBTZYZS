@@ -581,7 +581,7 @@ Phase 4: Doctor（医生）
 
 ```json
 {
-  "base_url": "http://192.168.190.246:5000",
+  "base_url": "http://60.190.215.86:5000",
   "sysadmin_token": "",
   "sysadmin_user_id": "",
   "admin_token": "",
