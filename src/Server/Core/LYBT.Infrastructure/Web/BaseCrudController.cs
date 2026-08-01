@@ -137,6 +137,80 @@ public abstract class BaseCrudController : BaseApiController
         return Success(result.Value, "批量删除成功");
     }
 
+    #region 批量操作模板 - 子类 action 方法体委托到此，消除复制粘贴
+
+    /// <summary>
+    /// 批量删除模板执行器。子类 BatchDelete action 委托到此方法，传入命令工厂与文案。
+    /// </summary>
+    protected async Task<IActionResult> ExecuteBatchDeleteAsync(
+        BatchDeleteInputDto dto,
+        Func<List<Guid>, Guid, IRequest<Result<BatchOperationResultDto>>> createCommand,
+        string emptyMessage,
+        string operationName,
+        CancellationToken ct)
+    {
+        if (dto.Ids == null || dto.Ids.Count == 0)
+            return ValidationFail(emptyMessage);
+
+        var (operatorId, _, _) = GetOperator();
+        var result = await Sender.Send(createCommand(dto.Ids, operatorId), ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "批量删除失败");
+
+        LogOperation(operationName, new { Ids = dto.Ids, Result = result.Value.Message }, null);
+        return Success(result.Value, result.Value.Message);
+    }
+
+    /// <summary>
+    /// 批量启用/禁用模板执行器。子类 BatchEnable/BatchDisable action 委托到此方法。
+    /// operationName/logData 传 null 表示不记录日志。
+    /// </summary>
+    protected async Task<IActionResult> ExecuteBatchStatusAsync(
+        BatchDeleteInputDto dto,
+        Func<List<Guid>, IRequest<Result<BatchOperationResultDto>>> createCommand,
+        string emptyMessage,
+        string errorMessage,
+        string? operationName,
+        object? logData,
+        CancellationToken ct)
+    {
+        if (dto?.Ids == null || dto.Ids.Count == 0)
+            return ValidationFail(emptyMessage);
+
+        var result = await Sender.Send(createCommand(dto.Ids), ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? errorMessage);
+
+        if (operationName != null)
+            LogOperation(operationName, logData, null);
+        return Success(result.Value, result.Value.Message);
+    }
+
+    /// <summary>
+    /// 批量引用检查模板执行器。子类 BatchCheckReference action 委托到此方法。
+    /// </summary>
+    protected async Task<IActionResult> ExecuteBatchCheckReferenceAsync<T>(
+        List<Guid> ids,
+        Func<List<Guid>, IRequest<Result<List<T>>>> createQuery,
+        string emptyMessage,
+        string maxMessage,
+        string errorMessage,
+        CancellationToken ct)
+    {
+        if (ids == null || ids.Count == 0)
+            return ValidationFail(emptyMessage);
+        if (ids.Count > 100)
+            return ValidationFail(maxMessage);
+
+        var result = await Sender.Send(createQuery(ids), ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? errorMessage);
+
+        return Success(result.Value, "批量引用检查完成");
+    }
+
+    #endregion
+
     #region 工厂方法 - 子类按需 override（默认 throw）
 
     /// <summary>

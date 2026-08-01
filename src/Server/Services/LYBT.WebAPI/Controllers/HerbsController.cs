@@ -218,22 +218,12 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public override async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-        {
-            if (dto.Ids == null || dto.Ids.Count == 0)
-            {
-                return ValidationFail("请至少选择一个药材");
-            }
-
-            var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new BatchDeleteHerbsCommand(dto.Ids, operatorId), ct);
-            if (!result.IsSuccess || result.Value == null)
-            {
-                return BusinessFail(result.Error ?? "批量删除失败");
-            }
-
-            LogOperation("批量删除药材", new { Ids = dto.Ids, Result = result.Value.Message }, null);
-            return Success(result.Value, result.Value.Message);
-        }
+            => await ExecuteBatchDeleteAsync(
+                dto,
+                (ids, operatorId) => new BatchDeleteHerbsCommand(ids, operatorId),
+                "请至少选择一个药材",
+                "批量删除药材",
+                ct);
 
         /// <summary>
         /// 批量导入药材
@@ -284,17 +274,13 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> BatchCheckReference(
             [FromBody] HerbBatchCheckReferenceInputDto dto,
             CancellationToken ct)
-        {
-            if (dto?.HerbIds == null || dto.HerbIds.Count == 0)
-                return ValidationFail("药材ID列表不能为空");
-            if (dto.HerbIds.Count > 100)
-                return ValidationFail("单次最多检查100条药材");
-
-            var result = await Sender.Send(new BatchCheckHerbReferenceQuery(dto.HerbIds), ct);
-            if (!result.IsSuccess || result.Value == null)
-                return BusinessFail(result.Error ?? "批量引用检查失败");
-            return Success(result.Value, "批量引用检查完成");
-        }
+            => await ExecuteBatchCheckReferenceAsync(
+                dto.HerbIds,
+                ids => new BatchCheckHerbReferenceQuery(ids),
+                "药材ID列表不能为空",
+                "单次最多检查100条药材",
+                "批量引用检查失败",
+                ct);
 
         /// <summary>
         /// 批量启用药材
@@ -304,17 +290,14 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchEnable(
             [FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-        {
-            if (dto?.Ids == null || dto.Ids.Count == 0)
-                return ValidationFail("药材ID列表不能为空");
-
-            var result = await Sender.Send(new BatchEnableHerbsCommand(dto.Ids), ct);
-            if (!result.IsSuccess || result.Value == null)
-                return BusinessFail(result.Error ?? "批量启用失败");
-
-            LogOperation("批量启用药材", new { Count = dto.Ids.Count }, null);
-            return Success(result.Value, result.Value.Message);
-        }
+            => await ExecuteBatchStatusAsync(
+                dto,
+                ids => new BatchEnableHerbsCommand(ids),
+                "药材ID列表不能为空",
+                "批量启用失败",
+                "批量启用药材",
+                new { Count = dto.Ids.Count },
+                ct);
 
         /// <summary>
         /// 批量禁用药材
@@ -324,16 +307,13 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchDisable(
             [FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-        {
-            if (dto?.Ids == null || dto.Ids.Count == 0)
-                return ValidationFail("药材ID列表不能为空");
-
-            var result = await Sender.Send(new BatchDisableHerbsCommand(dto.Ids), ct);
-            if (!result.IsSuccess || result.Value == null)
-                return BusinessFail(result.Error ?? "批量禁用失败");
-
-            LogOperation("批量禁用药材", new { Count = dto.Ids.Count }, null);
-            return Success(result.Value, result.Value.Message);
-        }
+            => await ExecuteBatchStatusAsync(
+                dto,
+                ids => new BatchDisableHerbsCommand(ids),
+                "药材ID列表不能为空",
+                "批量禁用失败",
+                "批量禁用药材",
+                new { Count = dto.Ids.Count },
+                ct);
     }
 }

@@ -67,14 +67,11 @@ public class PatientsController : BaseCrudController
     /// </summary>
     [HttpPost("batch-check-reference")]
     public async Task<IActionResult> BatchCheckReference([FromBody] PatientBatchCheckReferenceInputDto dto, CancellationToken ct)
-    {
-        if (dto.PatientIds == null || dto.PatientIds.Count == 0)
-            return ValidationFail("请至少选择一个患者");
-        if (dto.PatientIds.Count > 100)
-            return ValidationFail("批量检查最多支持100条");
-        var result = await Sender.Send(new BatchCheckPatientReferenceQuery(dto.PatientIds), ct);
-        if (!result.IsSuccess || result.Value == null)
-            return BusinessFail(result.Error ?? "批量检查失败");
-        return Success(result.Value, "批量引用检查完成");
-    }
+        => await ExecuteBatchCheckReferenceAsync(
+            dto.PatientIds,
+            ids => new BatchCheckPatientReferenceQuery(ids),
+            "请至少选择一个患者",
+            "批量检查最多支持100条",
+            "批量检查失败",
+            ct);
 }

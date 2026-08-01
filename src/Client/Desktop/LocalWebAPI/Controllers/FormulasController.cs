@@ -126,16 +126,14 @@ public class FormulasController : BaseCrudController
     [HttpPost("batch-enable")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-    {
-        if (dto?.Ids == null || dto.Ids.Count == 0)
-            return ValidationFail("验方ID列表不能为空");
-
-        var result = await Sender.Send(new BatchEnableFormulasCommand(dto.Ids), ct);
-        if (!result.IsSuccess || result.Value == null)
-            return BusinessFail(result.Error ?? "批量启用失败");
-
-        return Success(result.Value, result.Value.Message);
-    }
+        => await ExecuteBatchStatusAsync(
+            dto,
+            ids => new BatchEnableFormulasCommand(ids),
+            "验方ID列表不能为空",
+            "批量启用失败",
+            null,
+            null,
+            ct);
 
     /// <summary>
     /// 批量禁用药方
@@ -143,14 +141,12 @@ public class FormulasController : BaseCrudController
     [HttpPost("batch-disable")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-    {
-        if (dto?.Ids == null || dto.Ids.Count == 0)
-            return ValidationFail("验方ID列表不能为空");
-
-        var result = await Sender.Send(new BatchDisableFormulasCommand(dto.Ids), ct);
-        if (!result.IsSuccess || result.Value == null)
-            return BusinessFail(result.Error ?? "批量禁用失败");
-
-        return Success(result.Value, result.Value.Message);
-    }
+        => await ExecuteBatchStatusAsync(
+            dto,
+            ids => new BatchDisableFormulasCommand(ids),
+            "验方ID列表不能为空",
+            "批量禁用失败",
+            null,
+            null,
+            ct);
 }

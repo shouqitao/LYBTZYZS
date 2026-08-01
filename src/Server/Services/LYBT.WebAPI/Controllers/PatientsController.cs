@@ -205,22 +205,12 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public override async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-        {
-            if (dto.Ids == null || dto.Ids.Count == 0)
-            {
-                return ValidationFail("请至少选择一个患者");
-            }
-
-            var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new BatchDeletePatientsCommand(dto.Ids, operatorId), ct);
-            if (!result.IsSuccess || result.Value == null)
-            {
-                return BusinessFail(result.Error ?? "批量删除失败");
-            }
-
-            LogOperation("批量删除患者", new { Ids = dto.Ids, Result = result.Value.Message }, null);
-            return Success(result.Value, result.Value.Message);
-        }
+            => await ExecuteBatchDeleteAsync(
+                dto,
+                (ids, operatorId) => new BatchDeletePatientsCommand(ids, operatorId),
+                "请至少选择一个患者",
+                "批量删除患者",
+                ct);
 
         /// <summary>
         /// 检查患者是否被医案引用
@@ -259,25 +249,13 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("batch-check-reference")]
         [ProducesResponseType(typeof(ApiResponse<List<PatientReferenceCheckDto>>), 200)]
         public async Task<IActionResult> BatchCheckReference([FromBody] PatientBatchCheckReferenceInputDto dto, CancellationToken ct)
-        {
-            if (dto.PatientIds == null || dto.PatientIds.Count == 0)
-            {
-                return ValidationFail("请至少选择一个患者");
-            }
-
-            if (dto.PatientIds.Count > 100)
-            {
-                return ValidationFail("批量检查最多支持100条");
-            }
-
-            var result = await Sender.Send(new BatchCheckPatientReferenceQuery(dto.PatientIds), ct);
-            if (!result.IsSuccess || result.Value == null)
-            {
-                return BusinessFail(result.Error ?? "批量检查失败");
-            }
-
-            return Success(result.Value, "批量引用检查完成");
-        }
+            => await ExecuteBatchCheckReferenceAsync(
+                dto.PatientIds,
+                ids => new BatchCheckPatientReferenceQuery(ids),
+                "请至少选择一个患者",
+                "批量检查最多支持100条",
+                "批量检查失败",
+                ct);
 
         /// <summary>
         /// 通过ISender查询患者并验证所有权

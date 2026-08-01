@@ -208,23 +208,12 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public override async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-        {
-            if (dto.Ids == null || dto.Ids.Count == 0)
-            {
-                return ValidationFail("请至少选择一个验方");
-            }
-
-            var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new BatchDeleteFormulasCommand(dto.Ids, operatorId), ct);
-
-            if (!result.IsSuccess || result.Value == null)
-            {
-                return BusinessFail(result.Error ?? "批量删除失败");
-            }
-
-            LogOperation("批量删除验方", new { Ids = dto.Ids, Result = result.Value.Message }, null);
-            return Success(result.Value, result.Value.Message);
-        }
+            => await ExecuteBatchDeleteAsync(
+                dto,
+                (ids, operatorId) => new BatchDeleteFormulasCommand(ids, operatorId),
+                "请至少选择一个验方",
+                "批量删除验方",
+                ct);
 
         /// <summary>
         /// 批量导入验方
@@ -308,17 +297,14 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchEnable(
             [FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
-        {
-            if (dto?.Ids == null || dto.Ids.Count == 0)
-                return ValidationFail("验方ID列表不能为空");
-
-            var result = await Sender.Send(new BatchEnableFormulasCommand(dto.Ids), ct);
-            if (!result.IsSuccess || result.Value == null)
-                return BusinessFail(result.Error ?? "批量启用失败");
-
-            LogOperation("批量启用药方", new { Count = dto.Ids.Count }, null);
-            return Success(result.Value, result.Value.Message);
-        }
+            => await ExecuteBatchStatusAsync(
+                dto,
+                ids => new BatchEnableFormulasCommand(ids),
+                "验方ID列表不能为空",
+                "批量启用失败",
+                "批量启用药方",
+                new { Count = dto.Ids.Count },
+                ct);
 
         /// <summary>
         /// 批量禁用药方
@@ -328,16 +314,13 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchDisable(
             [FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
-        {
-            if (dto?.Ids == null || dto.Ids.Count == 0)
-                return ValidationFail("验方ID列表不能为空");
-
-            var result = await Sender.Send(new BatchDisableFormulasCommand(dto.Ids), ct);
-            if (!result.IsSuccess || result.Value == null)
-                return BusinessFail(result.Error ?? "批量禁用失败");
-
-            LogOperation("批量禁用药方", new { Count = dto.Ids.Count }, null);
-            return Success(result.Value, result.Value.Message);
-        }
+            => await ExecuteBatchStatusAsync(
+                dto,
+                ids => new BatchDisableFormulasCommand(ids),
+                "验方ID列表不能为空",
+                "批量禁用失败",
+                "批量禁用药方",
+                new { Count = dto.Ids.Count },
+                ct);
     }
 }
