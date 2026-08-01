@@ -42,7 +42,6 @@ namespace LYBT.WebAPI.Serialization;
 [JsonSerializable(typeof(RefreshTokenRequest))]
 [JsonSerializable(typeof(LogoutRequest))]
 [JsonSerializable(typeof(AutoLoginRequest))]
-[JsonSerializable(typeof(ValidateTokenRequest))]
 [JsonSerializable(typeof(ValidateTokenResponse))]
 
 // ============================================================
