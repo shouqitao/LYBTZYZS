@@ -18,6 +18,7 @@ using LYBT.Module.Registration;
 using LYBT.Module.Reports;
 using LYBT.Module.Users.Services;
 using LYBT.Shared.Configuration.Options.Server;
+using LYBT.Shared.Models.Utilities.Security;
 using LYBT.Entities.Users;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -71,11 +72,11 @@ public static class LocalWebApiProgram
 
         builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
         {
-            options.Password.RequireDigit = true;
-            options.Password.RequiredLength = 6;
-            options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequireUppercase = false;
-            options.Password.RequireLowercase = true;
+            options.Password.RequireDigit = PasswordPolicyValidator.Policy.RequireDigit;
+            options.Password.RequiredLength = PasswordPolicyValidator.Policy.MinLength;
+            options.Password.RequireNonAlphanumeric = PasswordPolicyValidator.Policy.RequireSpecialChar;
+            options.Password.RequireUppercase = PasswordPolicyValidator.Policy.RequireUppercase;
+            options.Password.RequireLowercase = PasswordPolicyValidator.Policy.RequireLowercase;
             options.Lockout.MaxFailedAccessAttempts = int.MaxValue;
             options.Lockout.AllowedForNewUsers = false;
         })

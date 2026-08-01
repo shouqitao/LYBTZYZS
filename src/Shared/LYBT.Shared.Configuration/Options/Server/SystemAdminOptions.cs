@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using LYBT.Shared.Models.Primitives;
 
 namespace LYBT.Shared.Configuration.Options.Server;
 
@@ -13,7 +14,7 @@ public sealed class SystemAdminOptions
     /// 用户名
     /// </summary>
     [Required]
-    public string UserName { get; set; } = "sysadmin";
+    public string UserName { get; set; } = UserConstants.SysAdminUsername;
 
     /// <summary>
     /// 邮箱

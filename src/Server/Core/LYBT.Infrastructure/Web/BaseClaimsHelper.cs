@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using LYBT.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Infrastructure.Web;
@@ -21,7 +22,7 @@ public static class BaseClaimsHelper
     public static bool IsAdmin(ClaimsPrincipal user)
     {
         var role = user.FindFirst(ClaimTypes.Role)?.Value;
-        return role == UserRole.Admin.ToString() || role == UserRole.SuperAdmin.ToString();
+        return role == RoleConstants.Admin || role == RoleConstants.SuperAdmin;
     }
 
     /// <summary>
@@ -41,10 +42,10 @@ public static class BaseClaimsHelper
         var roleString = identityRoles[0];
         return roleString switch
         {
-            "SuperAdmin" => UserRole.SuperAdmin,
-            "Admin" => UserRole.Admin,
-            "Doctor" => UserRole.Doctor,
-            "Receptionist" => UserRole.Receptionist,
+            RoleConstants.SuperAdmin => UserRole.SuperAdmin,
+            RoleConstants.Admin => UserRole.Admin,
+            RoleConstants.Doctor => UserRole.Doctor,
+            RoleConstants.Receptionist => UserRole.Receptionist,
             _ => UserRole.Receptionist
         };
     }
@@ -56,11 +57,11 @@ public static class BaseClaimsHelper
     {
         return role switch
         {
-            UserRole.SuperAdmin => "SuperAdmin",
-            UserRole.Admin => "Admin",
-            UserRole.Doctor => "Doctor",
-            UserRole.Receptionist => "Receptionist",
-            _ => "Receptionist"
+            UserRole.SuperAdmin => RoleConstants.SuperAdmin,
+            UserRole.Admin => RoleConstants.Admin,
+            UserRole.Doctor => RoleConstants.Doctor,
+            UserRole.Receptionist => RoleConstants.Receptionist,
+            _ => RoleConstants.Receptionist
         };
     }
 

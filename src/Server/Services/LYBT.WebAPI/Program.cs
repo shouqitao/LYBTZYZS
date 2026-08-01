@@ -164,11 +164,11 @@ public class Program
             // If AddIdentity runs after, it overwrites the JWT default → 302 redirects.
             builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
             {
-                options.Password.RequireDigit = true;
-                options.Password.RequiredLength = 8;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = true;
-                options.Password.RequireLowercase = true;
+                options.Password.RequireDigit = PasswordPolicyValidator.Policy.RequireDigit;
+                options.Password.RequiredLength = PasswordPolicyValidator.Policy.MinLength;
+                options.Password.RequireNonAlphanumeric = PasswordPolicyValidator.Policy.RequireSpecialChar;
+                options.Password.RequireUppercase = PasswordPolicyValidator.Policy.RequireUppercase;
+                options.Password.RequireLowercase = PasswordPolicyValidator.Policy.RequireLowercase;
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
             })

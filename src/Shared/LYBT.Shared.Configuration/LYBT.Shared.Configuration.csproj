@@ -11,4 +11,8 @@
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+  </ItemGroup>
+
 </Project>

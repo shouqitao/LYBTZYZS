@@ -1,5 +1,6 @@
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Primitives;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Users.Models.Items;
@@ -212,7 +213,7 @@ public class UserItem : BindableBase
     /// <summary>
     /// 是否可以删除
     /// </summary>
-    public bool CanDelete => !UserName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase);
+    public bool CanDelete => !UserName.Equals(UserConstants.SysAdminUsername, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// 是否可以重置密码

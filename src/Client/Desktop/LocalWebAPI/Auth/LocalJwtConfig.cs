@@ -120,7 +120,7 @@ public static class LocalJwtConfig
     private static string ParseRoleClaim(IList<string> roles)
     {
         // Identity roles seeded by IdentitySeedData ("Doctor", "Admin", "SuperAdmin", "Receptionist")
-        // map 1:1 to UserRole enum names and to AuthorizationConstants policy role names.
+        // map 1:1 to UserRole enum names and to RoleConstants policy role names.
         return roles.Count > 0 ? roles[0] : RoleConstants.Doctor;
     }
 }

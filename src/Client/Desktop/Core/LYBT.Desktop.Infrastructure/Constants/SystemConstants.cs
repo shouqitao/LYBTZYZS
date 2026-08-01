@@ -1,3 +1,5 @@
+using LYBT.Shared.Models.Primitives;
+
 namespace LYBT.Desktop.Infrastructure.Constants
 {
     /// <summary>
@@ -38,9 +40,9 @@ namespace LYBT.Desktop.Infrastructure.Constants
         public const string DefaultTheme = "Light";
 
         /// <summary>
-        /// 超级管理员用户名
+        /// 超级管理员用户名（权威定义见 LYBT.Shared.Models.Primitives.UserConstants）
         /// </summary>
-        public const string SuperAdminUsername = "sysadmin";
+        public const string SuperAdminUsername = UserConstants.SysAdminUsername;
 
         /// <summary>
         /// 会话超时时间（分钟）
@@ -93,19 +95,6 @@ namespace LYBT.Desktop.Infrastructure.Constants
         public const int DatabaseTimeoutSeconds = 30;
 
         /// <summary>
-        /// 默认密码策略
-        /// </summary>
-        public static class PasswordPolicy
-        {
-            public const int MinLength = 8;
-            public const int MaxLength = 128;
-            public const bool RequireUppercase = true;
-            public const bool RequireLowercase = true;
-            public const bool RequireDigit = true;
-            public const bool RequireSpecialChar = true;
-        }
-
-        /// <summary>
         /// 文件路径
         /// </summary>
         public static class FilePaths
@@ -127,21 +116,6 @@ namespace LYBT.Desktop.Infrastructure.Constants
             public const string Backup = ".bak";
             public const string Export = ".xlsx";
             public const string Pdf = ".pdf";
-        }
-
-        /// <summary>
-        /// 错误代码
-        /// </summary>
-        public static class ErrorCodes
-        {
-            public const string AuthenticationFailed = "AUTH_001";
-            public const string AuthorizationFailed = "AUTH_002";
-            public const string SessionExpired = "AUTH_003";
-            public const string InvalidInput = "VALID_001";
-            public const string DataNotFound = "DATA_001";
-            public const string DatabaseError = "DB_001";
-            public const string NetworkError = "NET_001";
-            public const string UnknownError = "SYS_001";
         }
     }
 }

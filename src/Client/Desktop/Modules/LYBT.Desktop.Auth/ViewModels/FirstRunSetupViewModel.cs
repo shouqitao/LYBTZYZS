@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Auth.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
@@ -15,17 +16,6 @@ public partial class FirstRunSetupViewModel : DialogViewModelBase
 {
     private readonly IConnectionModeService _connectionModeService;
     private readonly IConnectionSettingsService _connectionSettingsService;
-
-    /// <summary>
-    /// 连接测试状态 (UI 显示用枚举)
-    /// </summary>
-    public enum ConnectionTestStatus
-    {
-        Idle,
-        Testing,
-        Success,
-        Failed
-    }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
