@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Foundation.Repositories;
@@ -105,6 +106,50 @@ public abstract class ApiClientRepositoryBase<TListDto, TDetailDto>
         {
             HandleException(ex, operation);
             throw; // unreachable, but satisfies compiler
+        }
+    }
+
+    /// <summary>
+    /// 批量删除执行模板 — 统一 try/catch + 日志；失败/异常时返回失败结果 DTO（不抛异常）
+    /// </summary>
+    /// <param name="func">批量删除 API 调用</param>
+    /// <param name="operation">操作名称（用于日志）</param>
+    /// <param name="failureMessage">失败提示文案</param>
+    /// <param name="totalCount">待删除总数</param>
+    protected async Task<BatchOperationResultDto?> ExecuteBatchDeleteAsync(
+        Func<Task<ApiResponse<BatchOperationResultDto>>> func,
+        string operation,
+        string failureMessage,
+        int totalCount)
+    {
+        try
+        {
+            Logger.LogInformation("[REPO] {LogPrefix}.{Operation} - Count={Count}", LogPrefix, operation, totalCount);
+
+            var response = await func();
+            if (!response.Success || response.Data == null)
+            {
+                return new BatchOperationResultDto
+                {
+                    TotalCount = totalCount,
+                    FailureCount = totalCount,
+                    IsSuccess = false,
+                    Message = response.Message ?? failureMessage
+                };
+            }
+
+            return response.Data;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "[REPO] {LogPrefix}.{Operation} failed", LogPrefix, operation);
+            return new BatchOperationResultDto
+            {
+                TotalCount = totalCount,
+                FailureCount = totalCount,
+                IsSuccess = false,
+                Message = ex.Message
+            };
         }
     }
 }

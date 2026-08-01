@@ -229,36 +229,11 @@ public sealed class HerbRepository : ApiClientRepositoryBase<HerbListDto, HerbDe
 
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
-        // Returns failure DTO on exception instead of rethrowing — keep manual try/catch.
-        try
-        {
-            Logger.LogInformation("[REPO] Herb.BatchDelete - Count={Count}", ids.Count);
-
-            var response = await _apiClient.Herbs.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
-            if (!response.Success || response.Data == null)
-            {
-                return new BatchOperationResultDto
-                {
-                    TotalCount = ids.Count,
-                    FailureCount = ids.Count,
-                    IsSuccess = false,
-                    Message = response.Message ?? "批量删除失败"
-                };
-            }
-
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "[REPO] Herb.BatchDelete failed");
-            return new BatchOperationResultDto
-            {
-                TotalCount = ids.Count,
-                FailureCount = ids.Count,
-                IsSuccess = false,
-                Message = ex.Message
-            };
-        }
+        return await ExecuteBatchDeleteAsync(
+            () => _apiClient.Herbs.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }),
+            "BatchDelete",
+            "批量删除失败",
+            ids.Count);
     }
 
     #endregion

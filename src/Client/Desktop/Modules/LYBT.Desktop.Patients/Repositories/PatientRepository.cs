@@ -197,27 +197,11 @@ public sealed class PatientRepository
 
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
-        try
-        {
-            Logger.LogInformation("[REPO] Patient.BatchDelete - Count={Count}", ids.Count);
-            var response = await _apiClient.Patients.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids });
-            if (!response.Success || response.Data == null)
-            {
-                return new BatchOperationResultDto
-                {
-                    TotalCount = ids.Count,
-                    FailureCount = ids.Count,
-                    IsSuccess = false,
-                    Message = response.Message ?? "批量删除患者失败"
-                };
-            }
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "[REPO] Patient.BatchDelete failed");
-            return new BatchOperationResultDto { TotalCount = ids.Count, FailureCount = ids.Count, IsSuccess = false, Message = ex.Message };
-        }
+        return await ExecuteBatchDeleteAsync(
+            () => _apiClient.Patients.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }),
+            "BatchDelete",
+            "批量删除患者失败",
+            ids.Count);
     }
 
     #endregion
