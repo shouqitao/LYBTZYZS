@@ -98,7 +98,6 @@ namespace LYBT.WebAPI.Serialization;
 [JsonSerializable(typeof(MedicalCaseQueryDto))]
 [JsonSerializable(typeof(MedicalCaseStatusInputDto))]
 [JsonSerializable(typeof(PendingMedicalCaseDto))]
-[JsonSerializable(typeof(BatchDetailQueryDto))]
 [JsonSerializable(typeof(SetPrescriptionFlagRequest))]
 
 // ============================================================
