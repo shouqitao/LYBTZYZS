@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using LYBT.Shared.Models.Attributes;
 using Serilog.Core;
 using Serilog.Events;
 

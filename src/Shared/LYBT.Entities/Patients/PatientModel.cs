@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using LYBT.Entities.Attributes;
 using LYBT.Entities.Common;
+using LYBT.Shared.Models.Attributes;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Entities.Patients
