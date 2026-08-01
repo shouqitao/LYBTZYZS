@@ -2,7 +2,6 @@ using MediatR;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Module.Formulas.Domain;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Module.Formulas.Application.Mappers;
 

@@ -1,7 +1,6 @@
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Shared.Models.Enums;
-using RegistrationEntity = LYBT.Module.Registration.Domain.Registration;
 
 namespace LYBT.Module.Registration.Services;
 

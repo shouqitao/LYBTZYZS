@@ -1,5 +1,4 @@
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Module.Formulas.Domain;
 using FormulaEntity = LYBT.Entities.Formulas.Formula;
 
 namespace LYBT.Module.Formulas.Interfaces;
