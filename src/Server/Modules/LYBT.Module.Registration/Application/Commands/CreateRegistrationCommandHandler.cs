@@ -1,4 +1,5 @@
 using LYBT.Entities.Registrations;
+using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.Module.Registration.Mapping;
 using LYBT.Module.Registration.Domain.Events;
 using LYBT.Module.Registration.Interfaces;
@@ -18,16 +19,16 @@ public sealed class CreateRegistrationCommandHandler
     : IRequestHandler<CreateRegistrationCommand, Result<RegistrationDetailDto>>
 {
     private readonly IRegistrationRepository _repository;
-    private readonly IPublisher _publisher;
+    private readonly IDomainEventDispatcher _eventDispatcher;
     private readonly RegistrationMapper _mapper;
 
     public CreateRegistrationCommandHandler(
         IRegistrationRepository repository,
-        IPublisher publisher,
+        IDomainEventDispatcher eventDispatcher,
         RegistrationMapper mapper)
     {
         _repository = repository;
-        _publisher = publisher;
+        _eventDispatcher = eventDispatcher;
         _mapper = mapper;
     }
 
@@ -57,15 +58,18 @@ public sealed class CreateRegistrationCommandHandler
         await _repository.AddAsync(registration, cancellationToken);
         await _repository.SaveChangesAsync(cancellationToken);
 
-        await _publisher.Publish(new RegistrationCreatedEvent(
-            registration.Id,
-            registration.PatientId,
-            registration.PatientName,
-            registration.DoctorId,
-            registration.DoctorName,
-            registration.Source,
-            registration.Status,
-            registration.QueueNumber), cancellationToken);
+        await _eventDispatcher.DispatchAsync(new[]
+        {
+            new RegistrationCreatedEvent(
+                registration.Id,
+                registration.PatientId,
+                registration.PatientName,
+                registration.DoctorId,
+                registration.DoctorName,
+                registration.Source,
+                registration.Status,
+                registration.QueueNumber)
+        }, cancellationToken);
 
         return Result<RegistrationDetailDto>.Success(_mapper.ToDetailDto(registration));
     }
