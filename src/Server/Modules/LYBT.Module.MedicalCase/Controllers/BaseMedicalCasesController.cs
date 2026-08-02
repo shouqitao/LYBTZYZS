@@ -2,6 +2,8 @@ using MediatR;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.MedicalCases.Application.Commands;
 using LYBT.Module.MedicalCases.Application.Queries;
+using LYBT.Module.MedicalCases.Interfaces;
+using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -18,9 +20,25 @@ namespace LYBT.Module.MedicalCases.Controllers;
 /// </summary>
 public abstract class BaseMedicalCasesController : BaseCrudController
 {
-    protected BaseMedicalCasesController(ISender sender, ILogger logger)
+    // 直接注入服务，减少 MediatR 间接层
+    protected readonly IMedicalCaseQueryService _medicalCaseQueryService;
+    protected readonly IMedicalCaseCommandService _medicalCaseCommandService;
+    protected readonly IMedicalCaseStateService _medicalCaseStateService;
+    protected readonly MedicalCaseMapper _mapper;
+
+    protected BaseMedicalCasesController(
+        ISender sender,
+        ILogger logger,
+        IMedicalCaseQueryService medicalCaseQueryService,
+        IMedicalCaseCommandService medicalCaseCommandService,
+        IMedicalCaseStateService medicalCaseStateService,
+        MedicalCaseMapper mapper)
         : base(sender, logger)
     {
+        _medicalCaseQueryService = medicalCaseQueryService;
+        _medicalCaseCommandService = medicalCaseCommandService;
+        _medicalCaseStateService = medicalCaseStateService;
+        _mapper = mapper;
     }
 
     #region 医案特化方法
@@ -156,11 +174,13 @@ public abstract class BaseMedicalCasesController : BaseCrudController
         if (ids.Count > 50)
             return ValidationFail("最多查询50条");
 
-        var result = await Sender.Send(new GetMedicalCasesBatchQuery(ids), ct);
-        if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "查询失败");
+        // 直接调用 QueryService 批量获取实体并映射为 DTO
+        var entities = await _medicalCaseQueryService.GetBatchAsync(ids, ct);
+        if (entities == null || entities.Count == 0)
+            return BusinessFail("未找到指定医案");
 
-        return Success(result.Value!, "查询成功");
+        var dtos = _mapper.ToDetailDtos(entities);
+        return Success(dtos, "查询成功");
     }
 
     /// <summary>
@@ -205,13 +225,15 @@ public abstract class BaseMedicalCasesController : BaseCrudController
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-        var result = await Sender.Send(new SetPrescriptionFlagCommand(id, request.NeedsPrescription, operatorId, isAdmin), ct);
-        if (!result.IsSuccess)
-        {
-            return NotFound(result.Error ?? "医案不存在");
-        }
+        // 直接调用 CommandService 更新处方标记
+        var entity = await _medicalCaseCommandService.SetPrescriptionFlagAsync(
+            id, request.NeedsPrescription, operatorId, isAdmin, ct);
 
-        return Success(result.Value!, "处方标记更新成功");
+        if (entity == null)
+            return NotFound("医案不存在");
+
+        var dto = _mapper.MapToMedicalCaseDetailDto(entity);
+        return Success(dto, "处方标记更新成功");
     }
 
     /// <summary>

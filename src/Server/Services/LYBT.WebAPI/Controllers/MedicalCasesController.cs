@@ -4,6 +4,8 @@ using LYBT.Infrastructure.Web;
 using LYBT.Module.MedicalCases.Application.Commands;
 using LYBT.Module.MedicalCases.Application.Queries;
 using LYBT.Module.MedicalCases.Controllers;
+using LYBT.Module.MedicalCases.Interfaces;
+using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -32,8 +34,12 @@ namespace LYBT.WebAPI.Controllers
     {
         public MedicalCasesController(
             ISender sender,
-            ILogger<MedicalCasesController> logger)
-            : base(sender, logger)
+            ILogger<MedicalCasesController> logger,
+            IMedicalCaseQueryService medicalCaseQueryService,
+            IMedicalCaseCommandService medicalCaseCommandService,
+            IMedicalCaseStateService medicalCaseStateService,
+            MedicalCaseMapper mapper)
+            : base(sender, logger, medicalCaseQueryService, medicalCaseCommandService, medicalCaseStateService, mapper)
         {
         }
 
@@ -75,11 +81,13 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidateGuid(id, "医案ID") is { } error) return error;
 
-            var result = await Sender.Send(new GetMedicalCaseQuery(id), ct);
-            if (!result.IsSuccess || result.Value == null)
-                return NotFound(result.Error ?? "医案不存在");
+            // 直接调用 QueryService 获取实体并映射为详情 DTO
+            var entity = await _medicalCaseQueryService.GetByIdAsync(id, ct);
+            if (entity == null)
+                return NotFound("医案不存在");
 
-            return Success(result.Value, "查询成功");
+            var dto = _mapper.MapToMedicalCaseDetailDto(entity);
+            return Success(dto, "查询成功");
         }
 
         /// <summary>
@@ -164,9 +172,10 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await Sender.Send(new DeleteMedicalCaseCommand(id, operatorId, isAdmin), ct);
-            if (!result.IsSuccess)
-                return NotFound(result.Error ?? "医案不存在");
+            // 直接调用 CommandService 删除医案
+            var deleted = await _medicalCaseCommandService.DeleteAsync(id, operatorId, isAdmin, ct);
+            if (!deleted)
+                return NotFound("医案不存在");
 
             _logger.LogInformation("医案已软删除，MedicalCaseId: {Id}, OperatorId: {OperatorId}", id, operatorId);
             return Success(true, "医案已删除");
@@ -211,15 +220,18 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await Sender.Send(new SetPrescriptionFlagCommand(id, request.NeedsPrescription, operatorId, isAdmin), ct);
-            if (!result.IsSuccess)
-            {
-                return NotFound(result.Error ?? "医案不存在");
-            }
+            // 直接调用 CommandService 更新处方标记
+            var entity = await _medicalCaseCommandService.SetPrescriptionFlagAsync(
+                id, request.NeedsPrescription, operatorId, isAdmin, ct);
+
+            if (entity == null)
+                return NotFound("医案不存在");
+
+            var dto = _mapper.MapToMedicalCaseDetailDto(entity);
 
             _logger.LogInformation("处方标记更新成功，MedicalCaseId: {Id}, NeedsPrescription: {Flag}",
                 id, request.NeedsPrescription);
-            return Success(result.Value!, "处方标记更新成功");
+            return Success(dto, "处方标记更新成功");
         }
 
         /// <summary>
@@ -261,18 +273,21 @@ namespace LYBT.WebAPI.Controllers
 
             if (request.Status == MedicalCaseStatus.Completed)
             {
-                var completeResult = await Sender.Send(new CompleteMedicalCaseCommand(id, operatorId, isAdmin), ct);
-                if (!completeResult.IsSuccess)
-                    return NotFound(completeResult.Error ?? "医案不存在");
+                // 直接调用 StateService 完成医案
+                var completed = await _medicalCaseStateService.CompleteAsync(id, operatorId, isAdmin, cancellationToken: ct);
+                if (completed == null)
+                    return NotFound("医案不存在");
                 return Success("医案已完成");
             }
 
-            var result = await Sender.Send(new UpdateMedicalCaseStatusCommand(id, request.Status, operatorId, isAdmin), ct);
-            if (!result.IsSuccess)
-                return NotFound(result.Error ?? "医案不存在");
+            // 直接调用 StateService 更新状态
+            var entity = await _medicalCaseStateService.UpdateStatusAsync(id, request.Status, ct);
+            if (entity == null)
+                return NotFound("医案不存在");
 
+            var dto = _mapper.MapToMedicalCaseDetailDto(entity);
             _logger.LogInformation("医案状态更新成功，MedicalCaseId: {Id}, NewStatus: {Status}", id, request.Status);
-            return Success(result.Value!, "状态更新成功");
+            return Success(dto, "状态更新成功");
         }
 
         /// <summary>
@@ -285,9 +300,11 @@ namespace LYBT.WebAPI.Controllers
         {
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-            var result = await Sender.Send(new CompleteMedicalCaseCommand(id, operatorId, isAdmin), ct);
-            if (!result.IsSuccess)
-                return NotFound(result.Error ?? "医案不存在");
+
+            // 直接调用 StateService 关闭医案
+            var entity = await _medicalCaseStateService.CompleteAsync(id, operatorId, isAdmin, skipWorkflowValidation: true, cancellationToken: ct);
+            if (entity == null)
+                return NotFound("医案不存在");
 
             _logger.LogInformation("医案关闭，MedicalCaseId: {Id}", id);
             return Success("医案已关闭");
@@ -308,9 +325,10 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await Sender.Send(new SuspendMedicalCaseCommand(id, operatorId, isAdmin), ct);
-            if (!result.IsSuccess)
-                return NotFound(result.Error ?? "医案不存在");
+            // 直接调用 StateService 挂起医案
+            var entity = await _medicalCaseStateService.SuspendAsync(id, request, operatorId, isAdmin, ct);
+            if (entity == null)
+                return NotFound("医案不存在");
 
             _logger.LogInformation("医案暂存成功，MedicalCaseId: {Id}", id);
             return Success("医案已暂存");
@@ -330,9 +348,10 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await Sender.Send(new CancelMedicalCaseCommand(id, operatorId, isAdmin, request?.Reason), ct);
-            if (!result.IsSuccess)
-                return NotFound(result.Error ?? "医案不存在");
+            // 直接调用 StateService 取消医案
+            var entity = await _medicalCaseStateService.CancelAsync(id, operatorId, isAdmin, request?.Reason, ct);
+            if (entity == null)
+                return NotFound("医案不存在");
 
             _logger.LogInformation("医案取消成功(软删除)，MedicalCaseId: {Id}", id);
             return Success(true, "医案已取消");
