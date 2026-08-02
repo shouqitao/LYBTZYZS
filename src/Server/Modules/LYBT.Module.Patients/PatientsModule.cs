@@ -27,6 +27,9 @@ namespace LYBT.Module.Patients
             // 注册跨模块服务（替代 CrossModuleService 中的患者查询逻辑）
             services.AddScoped<IPatientCrossModuleService, PatientCrossModuleService>();
 
+            // 注册患者服务（替代 trivial MediatR Handler）
+            services.AddScoped<IPatientService, PatientService>();
+
             // 统一跨模块服务（委托给各域 CrossModuleService）
             services.AddScoped<ICrossModuleService, CrossModuleService>();
 

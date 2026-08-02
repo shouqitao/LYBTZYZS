@@ -2,6 +2,7 @@ using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Patients.Application.Commands;
 using LYBT.Module.Patients.Application.Queries;
+using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using MediatR;
@@ -18,10 +19,14 @@ namespace LYBT.LocalWebAPI.Controllers;
 [Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
 public class PatientsController : BaseCrudController
 {
+    private readonly IPatientService _patientService;
+
     public PatientsController(
         ISender sender,
-        ILogger<PatientsController> logger) : base(sender, logger)
+        ILogger<PatientsController> logger,
+        IPatientService patientService) : base(sender, logger)
     {
+        _patientService = patientService;
     }
 
     /// <summary>
@@ -32,7 +37,7 @@ public class PatientsController : BaseCrudController
     {
         if (ValidateGuid(id, "患者ID") is { } error) return error;
 
-        var result = await Sender.Send(new GetPatientQuery(id), ct);
+        var result = await _patientService.GetByIdAsync(id, ct);
         if (!result.IsSuccess || result.Value == null)
             return NotFound(result.Error ?? "患者不存在");
         return Success(result.Value, "查询成功");
@@ -44,7 +49,7 @@ public class PatientsController : BaseCrudController
     [HttpGet("by-id-number/{idNumber}")]
     public async Task<IActionResult> GetByIdNumber(string idNumber, CancellationToken ct)
     {
-        var result = await Sender.Send(new SearchPatientByIdNumberQuery(idNumber), ct);
+        var result = await _patientService.GetByIdNumberAsync(idNumber, ct);
         if (!result.IsSuccess || result.Value == null)
             return NotFound(result.Error ?? "未找到匹配的患者");
         return Success(result.Value);

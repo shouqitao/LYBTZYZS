@@ -4,6 +4,7 @@ using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Patients.Application.Commands;
 using LYBT.Module.Patients.Application.Queries;
+using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
@@ -23,9 +24,12 @@ namespace LYBT.WebAPI.Controllers
     [Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
     public class PatientsController : BaseCrudController
     {
-        public PatientsController(ISender sender, ILogger<PatientsController> logger)
+        private readonly IPatientService _patientService;
+
+        public PatientsController(ISender sender, ILogger<PatientsController> logger, IPatientService patientService)
             : base(sender, logger)
         {
+            _patientService = patientService;
         }
 
         /// <summary>
@@ -44,11 +48,9 @@ namespace LYBT.WebAPI.Controllers
 
             var isAdmin = User?.IsInRole(RoleConstants.Admin) == true || User?.IsInRole(RoleConstants.SuperAdmin) == true;
 
-            var result = await Sender.Send(new GetPatientsQuery(page, pageSize, keyword, FilterDisabled: !isAdmin), ct);
+            var result = await _patientService.GetPagedAsync(page, pageSize, keyword, filterDisabled: !isAdmin, ct);
             if (!result.IsSuccess || result.Value == null)
-            {
                 return BusinessFail(result.Error ?? "查询失败");
-            }
 
             return SuccessPaged(result.Value, "查询成功");
         }
@@ -62,11 +64,9 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidateGuid(id, "患者ID") is { } error) return error;
 
-            var result = await Sender.Send(new GetPatientQuery(id), ct);
+            var result = await _patientService.GetByIdAsync(id, ct);
             if (!result.IsSuccess || result.Value == null)
-            {
                 return NotFound(result.Error ?? "患者不存在");
-            }
 
             return Success(result.Value, "查询成功");
         }
@@ -111,13 +111,11 @@ namespace LYBT.WebAPI.Controllers
             if (ownershipError != null) return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new UpdatePatientCommand(id, inputDto, operatorId), ct);
+            var result = await _patientService.UpdateAsync(id, inputDto, operatorId, ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 if (result.Error?.Contains("不存在") == true)
-                {
                     return NotFound(result.Error);
-                }
                 return BusinessFail(result.Error ?? "更新失败");
             }
 
@@ -185,7 +183,7 @@ namespace LYBT.WebAPI.Controllers
             if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new RestorePatientCommand(id, operatorId), ct);
+            var result = await _patientService.RestoreAsync(id, operatorId, ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 if (result.Error?.Contains("未被删除") == true)
@@ -237,7 +235,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public async Task<IActionResult> GetByIdNumber(string idNumber, CancellationToken ct)
         {
-            var result = await Sender.Send(new SearchPatientByIdNumberQuery(idNumber), ct);
+            var result = await _patientService.GetByIdNumberAsync(idNumber, ct);
             if (!result.IsSuccess || result.Value == null)
                 return NotFound(result.Error ?? "未找到匹配的患者");
             return Success(result.Value, "查询成功");
@@ -262,16 +260,12 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         private async Task<(PatientDetailDto? dto, IActionResult? error)> CheckOwnershipAsync(Guid id, CancellationToken ct)
         {
-            var result = await Sender.Send(new GetPatientQuery(id), ct);
+            var result = await _patientService.GetByIdAsync(id, ct);
             if (!result.IsSuccess || result.Value == null)
-            {
                 return (null, NotFound("患者不存在"));
-            }
 
             if (ValidateOwnership(result.Value.CreatedBy, "患者") is { } ownerError)
-            {
                 return (null, ownerError);
-            }
 
             return (result.Value, null);
         }
