@@ -229,9 +229,8 @@ flowchart TD
 
 > **双模式工作流**：
 > 1. **连接模式选择**（登录前）：远程 → 登录远程 WebAPI；本地 → 使用内嵌 LocalAPI
-> 2. **运行模式选择**（登录后）：
->    - **远程模式**：从待诊队列选患者→StartVisit→看诊；急诊可用 QuickVisit 直接接诊
->    - **本地模式**：**直接看诊**——「来一个看一个」，选/建患者→系统自动创建 Registration(Source=Doctor)→开医案→看诊→打印，无队列、无 SignalR。医生无感，Registration 由系统自动创建以保持数据模型统一
+> 2. **远程模式**：查看待诊队列→从队列选患者→StartVisit→看诊；急诊可用 QuickVisit 跳过排队直接接诊
+> 3. **本地模式**：**直接看诊**——「来一个看一个」，选/建患者→系统自动创建 Registration(Source=Doctor)→开医案→看诊→打印，无队列、无 SignalR。医生无感，Registration 由系统自动创建以保持数据模型统一
 
 ### 操作流程图
 
@@ -242,21 +241,18 @@ flowchart TD
     A[医生打开 Desktop] --> B{选择连接模式}
     B -->|远程| C[登录远程 WebAPI]
     B -->|本地 📋| D[使用内嵌 LocalAPI]
-    C --> E{选择运行模式}
-    E -->|队列模式| F[查看待诊队列]
-    E -->|快速模式| G[直接选/建患者]
-    D --> G
-    F --> H{选择患者}
-    H -->|从队列选| I[点击开始就诊 StartVisit]
-    H -->|急诊/跳过排队| J[QuickVisit 快速挂号]
-    J --> J1[系统创建 Registration\nSource=Doctor, Status=InProgress]
+    C --> C1[查看待诊队列]
+    C1 --> H{选择患者}
+    H -->|从队列选| I[StartVisit → Registration→InProgress]
+    H -->|急诊/跳过排队| J[QuickVisit → 系统创建 Registration\nSource=Doctor, Status=InProgress]
+    D --> G[直接选/建患者]
     G --> G1[系统自动创建 Registration 📋\nSource=Doctor, Status=InProgress]
-    G1 --> K[进入诊疗表单]
-    J1 --> K
-    I --> K
-    K --> L[诊疗表单（单页）]
-    L --> L1[填写诊断：主诉/现病史/舌诊/脉诊/辨证]
-    L --> L2[是否开方 Toggle，默认关闭]
+    I --> K[进入诊疗表单]
+    J --> K
+    G1 --> K
+
+    K --> L1[填写诊断：主诉/现病史/舌诊/脉诊/辨证]
+    K --> L2[是否开方 Toggle，默认关闭]
     L2 -->|开启| L3[处方区域：手选药材 / 导入验方]
     L2 -->|关闭| L4[跳过处方]
 
