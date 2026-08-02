@@ -123,3 +123,35 @@
 | 2 | Update | 更新 |
 | 3 | StatusChange | 状态变更 |
 | 4 | SoftDelete | 软删除（含取消操作） |
+
+### CommonStatus (通用状态)
+
+| 值 | 英文 | 中文 |
+|----|------|------|
+| 0 | Disabled | 禁用 |
+| 1 | Enabled | 启用 |
+
+### FormulaType (方剂类型)
+
+| 值 | 英文 | 中文 |
+|----|------|------|
+| 1 | Classic | 经典方 |
+| 2 | Experience | 经验方 |
+
+### HerbRole (药材角色 — 君臣佐使)
+
+| 值 | 英文 | 中文 |
+|----|------|------|
+| 0 | None | 未指定 |
+| 1 | Sovereign | 君药 |
+| 2 | Minister | 臣药 |
+| 3 | Assistant | 佐药 |
+| 4 | Guide | 使药 |
+
+### DuplicateStrategy (批量导入重复处理策略)
+
+| 值 | 英文 | 中文 |
+|----|------|------|
+| 0 | Skip | 跳过重复项 |
+| 1 | Update | 更新已有记录 |
+| 2 | Error | 报错回滚 |

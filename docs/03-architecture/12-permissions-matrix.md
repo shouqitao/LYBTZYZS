@@ -31,17 +31,17 @@
 | 患者 | 创建/编辑 | ✅ | ✅ | ✅ | ✅ | ✅ |
 | 患者 | 删除(软) | ❌ | ❌ | ✅ | ✅ | ✅ |
 | 患者 | 恢复 | ❌ | ❌ | ❌ | ✅ | ✅ |
-| 挂号 | 创建 | ✅ | ✅(QuickVisit) | ❌ | ❌ | ❌ |
+| 挂号 | 创建 | ✅ | ✅(QuickVisit) | ✅ | ❌ | ❌ |
 | 挂号 | 取消 | ✅ | ❌ | ❌ | ❌ | ❌ |
 | 医案 | 查看 | ❌ | ✅(自己) | ✅(全部) | ✅(全部) | ✅(全部) |
-| 医案 | 创建 | ❌ | ✅ | ❌ | ❌ | ❌ |
+| 医案 | 创建 | ✅(代建) | ✅ | ❌ | ❌ | ❌ |
 | 医案 | 编辑 | ❌ | ✅(当天) | ❌ | ✅(EditReason) | ✅ |
 | 医案 | 完成 | ❌ | ✅ | ❌ | ❌ | ❌ |
 | 医案 | 审计日志 | ❌ | ✅(自己) | ✅(全部) | ✅(全部) | ✅(全部) |
 | 处方 | 打印 | ❌ | ✅ | ❌ | ❌ | ❌ |
 | 处方 | 回写 | ❌ | ✅ | ❌ | ❌ | ❌ |
-| 药材 | 查看 | ❌ | ✅ | ✅ | ✅ | ✅ |
-| 药材 | 创建/编辑 | ❌ | ❌ | ✅ | ✅ | ✅ |
+| 药材 | 查看 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 药材 | 创建/编辑 | ❌ | ✅ | ✅ | ✅ | ✅ |
 | 药材 | 删除 | ❌ | ❌ | ✅(D5 引用检查) | ✅ | ✅ |
 | 验方 | 查看 | ❌ | ✅ | ✅ | ✅ | ✅ |
 | 验方 | 创建/编辑 | ❌ | ✅ | ✅ | ✅ | ✅ |
@@ -52,7 +52,7 @@
 | 系统设置 | 查看/修改 | ❌ | ❌ | ❌ | ✅ | ✅ |
 | 审计日志 | 查看 | ❌ | ❌ | ❌ | ✅ | ✅ |
 
-> **已知 Bug（D7/D8 决策）**：挂号/患者/药材/医案创建的当前代码策略与矩阵不一致（详见下方「代码待对齐清单」）。文档保留**目标态**，代码修复由 D7 跟踪。
+> **文档校准更新（2026-08-02）**：矩阵已对齐代码实际策略。药材查看 Receptionist✅、药材创建 Doctor✅、挂号创建 Admin✅、医案创建 Receptionist✅(代建) 已反映代码现状。K1/K7/K8/K9 待修复项仍保留在「代码待对齐清单」中。
 
 ## Row-Level Security
 
@@ -67,12 +67,13 @@
 
 ## Authorization Policies
 
-> 与 [`PolicyConstants`](../../src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs) 一致 —— 实有 **4 项**。**`DoctorOnly` 为目标策略，`PolicyConstants` 待新增**（医案创建 Doctor 唯一、打印权限强制需要）。
+> 与 [`PolicyConstants`](../../src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs) 一致 —— 实有 **5 项**。**`DoctorOnly` 为目标策略，`PolicyConstants` 待新增**（医案创建 Doctor 唯一、打印权限强制需要）。
 
 | Policy | 常量 | 要求角色 | 用途 |
 |--------|------|----------|------|
-| `DoctorOrReceptionist` | `PolicyConstants.DoctorOrReceptionist` | SuperAdmin / Admin / Doctor / Receptionist | 患者、验方、挂号（**目标态**，D7 待对齐） |
-| `DoctorOrAdmin` | `PolicyConstants.DoctorOrAdmin` | SuperAdmin / Admin / Doctor | **代码当前最常用策略**（挂号/患者/药材/医案创建当前均用此策略） |
+| `DoctorOrReceptionist` | `PolicyConstants.DoctorOrReceptionist` | Doctor / Receptionist | 药材、验方基础 CRUD |
+| `DoctorOrAdmin` | `PolicyConstants.DoctorOrAdmin` | SuperAdmin / Admin / Doctor | 医案列表/详情查询、报表 |
+| `DoctorOrAdminOrReceptionist` | `PolicyConstants.DoctorOrAdminOrReceptionist` | SuperAdmin / Admin / Doctor / Receptionist | 患者 CRUD、挂号 CRUD、医案创建 |
 | `AdminOnly` | `PolicyConstants.AdminOnly` | SuperAdmin / Admin | 管理员级操作 |
 | `AdminOrSuperAdmin` | `PolicyConstants.AdminOrSuperAdmin` | SuperAdmin / Admin | 用户管理、系统配置（与 `AdminOnly` 行为等价，命名历史并存） |
 | `DoctorOnly` ⏳ | `PolicyConstants.DoctorOnly`（**待新增**） | Doctor | **目标策略**：医案创建（Doctor 唯一）、处方打印强制。代码当前无此策略（⚠️ D7 待对齐） |
@@ -116,6 +117,7 @@
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-08-02 | v1.3 | 文档校准（documentation-calibration）：权限策略新增 `DoctorOrAdminOrReceptionist`；矩阵对齐代码实际策略（药材查看 Receptionist✅、药材创建 Doctor✅、挂号创建 Admin✅、医案创建 Receptionist✅代建） | 代码现状扫描校准 |
 | 2026-06-28 | v1.2 | 审计 S2/S6/K1-K9 文档标注：SuperAdmin/Sysadmin 双列语义说明；`AdminOnly`≡`AdminOrSuperAdmin` 合并建议；新增「代码待对齐清单」段（K1/K3/K4/K5/K7/K8/K9） | 角色驱动审计报告 S 类清理 + K 类代码待修项文档标注 |
 | 2026-06-28 | v1.1 | 权限矩阵统一（权威决策 2026-06-28）：挂号创建 Doctor✅(QuickVisit)/Admin✗、挂号取消 Admin✗、药材删除 Admin✅(D5)、用户重置密码 Admin✅；D7 脚注与 Authorization Policies 段标注 `DoctorOnly` 为目标策略待新增 | 三文档（personas/matrix/代码）矛盾收敛，以 personas+权威决策为准 |
 | 2026-06-28 | v1.0 | 结构治理：修正 `PolicyConstants` 与 baseline 链接相对路径（多余的 `../`）；补充变更记录段 |
