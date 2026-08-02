@@ -34,7 +34,7 @@
 | 挂号 | 创建 | ✅ | ✅(QuickVisit) | ✅ | ❌ | ❌ |
 | 挂号 | 取消 | ✅ | ❌ | ❌ | ❌ | ❌ |
 | 医案 | 查看 | ❌ | ✅(自己) | ✅(全部) | ✅(全部) | ✅(全部) |
-| 医案 | 创建 | ✅(代建) | ✅ | ❌ | ❌ | ❌ |
+| 医案 | 创建 | ❌ | ✅ | ❌ | ❌ | ❌ |
 | 医案 | 编辑 | ❌ | ✅(当天) | ❌ | ✅(EditReason) | ✅ |
 | 医案 | 完成 | ❌ | ✅ | ❌ | ❌ | ❌ |
 | 医案 | 审计日志 | ❌ | ✅(自己) | ✅(全部) | ✅(全部) | ✅(全部) |
@@ -52,7 +52,7 @@
 | 系统设置 | 查看/修改 | ❌ | ❌ | ❌ | ✅ | ✅ |
 | 审计日志 | 查看 | ❌ | ❌ | ❌ | ✅ | ✅ |
 
-> **文档校准更新（2026-08-02）**：矩阵已对齐代码实际策略。药材查看 Receptionist✅、药材创建 Doctor✅、挂号创建 Admin✅、医案创建 Receptionist✅(代建) 已反映代码现状。K1/K7/K8/K9 待修复项仍保留在「代码待对齐清单」中。
+> **文档校准更新（2026-08-02）**：矩阵已对齐代码实际策略。药材查看 Receptionist✅、药材创建 Admin+ only、挂号创建 Admin✅、医案创建 Doctor only 已反映代码现状。K1/K7/K8/K9 待修复项仍保留在「代码待对齐清单」中。
 
 ## Row-Level Security
 
@@ -128,7 +128,7 @@
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
-| 2026-08-02 | v1.3 | 文档校准（documentation-calibration）：权限策略新增 `DoctorOrAdminOrReceptionist`；矩阵对齐代码实际策略（药材查看 Receptionist✅、药材创建 Doctor✅、挂号创建 Admin✅、医案创建 Receptionist✅代建） | 代码现状扫描校准 |
+| 2026-08-02 | v1.3 | 文档校准（documentation-calibration）：权限策略新增 `DoctorOrAdminOrReceptionist`；矩阵对齐代码实际策略（药材查看 Receptionist✅、药材创建 Admin+ only、挂号创建 Admin✅、医案创建 Doctor only） | 代码现状扫描校准 |
 | 2026-06-28 | v1.2 | 审计 S2/S6/K1-K9 文档标注：SuperAdmin/Sysadmin 双列语义说明；`AdminOnly`≡`AdminOrSuperAdmin` 合并建议；新增「代码待对齐清单」段（K1/K3/K4/K5/K7/K8/K9） | 角色驱动审计报告 S 类清理 + K 类代码待修项文档标注 |
 | 2026-06-28 | v1.1 | 权限矩阵统一（权威决策 2026-06-28）：挂号创建 Doctor✅(QuickVisit)/Admin✗、挂号取消 Admin✗、药材删除 Admin✅(D5)、用户重置密码 Admin✅；D7 脚注与 Authorization Policies 段标注 `DoctorOnly` 为目标策略待新增 | 三文档（personas/matrix/代码）矛盾收敛，以 personas+权威决策为准 |
 | 2026-06-28 | v1.0 | 结构治理：修正 `PolicyConstants` 与 baseline 链接相对路径（多余的 `../`）；补充变更记录段 |

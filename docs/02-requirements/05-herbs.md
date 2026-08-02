@@ -43,7 +43,7 @@
 
 ### US-HERB-001: 分页查询药材列表
 
-**角色**: 前台/医生/管理员（DoctorOrReceptionist 策略）
+**角色**: 前台/医生/管理员（所有角色可查看）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -73,7 +73,7 @@
 
 ### US-HERB-002: 查看药材详情
 
-**角色**: 医生/管理员（DoctorOrReceptionist 策略）
+**角色**: 管理员（AdminOrSuperAdmin 策略）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -101,11 +101,11 @@
 
 ### US-HERB-003: 创建药材
 
-**角色**: 医生/管理员（DoctorOrReceptionist 策略）
+**角色**: 管理员（AdminOrSuperAdmin 策略）
 **优先级**: Must
 **状态**: ✅ 已实现
 
-**作为** 医生或管理员，**我想要** 创建新的药材记录，**以便** 扩充系统药材库。
+**作为** 管理员，**我想要** 创建新的药材记录，**以便** 扩充系统药材库。
 
 **验收标准**:
 - [ ] 接受名称、性味、归经、功效、分类等字段
@@ -130,7 +130,7 @@
 
 ### US-HERB-004: 更新药材
 
-**角色**: 医生/管理员（DoctorOrReceptionist 策略）
+**角色**: 管理员（AdminOrSuperAdmin 策略）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -159,7 +159,7 @@
 
 ### US-HERB-005: 删除药材（软删除，引用检查）
 
-**角色**: 医生/管理员（DoctorOrReceptionist 策略）
+**角色**: 管理员（AdminOrSuperAdmin 策略）
 **优先级**: Must
 **状态**: 🔴 引用检查缺失
 
@@ -189,7 +189,7 @@
 
 ### US-HERB-006: 批量导入药材（Skip/Update/Error 策略）
 
-**角色**: 医生/管理员（DoctorOrReceptionist 策略）
+**角色**: 管理员（AdminOrSuperAdmin 策略）
 **优先级**: Must
 **状态**: ⚠️ DTO 路径完整但 Excel 服务端解析缺失（`IHerbImportExportService` 不存在，EPPlus 仅 Formula 模块用）
 
@@ -225,7 +225,7 @@
 
 ### US-HERB-007: 导出全部药材
 
-**角色**: 医生/管理员（DoctorOrReceptionist 策略）
+**角色**: 管理员（AdminOrSuperAdmin 策略）
 **优先级**: Should
 **状态**: ✅ 已实现
 
@@ -254,7 +254,7 @@
 
 ### US-HERB-008: 单个引用检查
 
-**角色**: 医生/管理员（DoctorOrReceptionist 策略）
+**角色**: 管理员（AdminOrSuperAdmin 策略）
 **优先级**: Should
 **状态**: 🔴 端点不存在
 
@@ -282,7 +282,7 @@
 
 ### US-HERB-009: 批量引用检查
 
-**角色**: 医生/管理员（DoctorOrReceptionist 策略）
+**角色**: 管理员（AdminOrSuperAdmin 策略）
 **优先级**: Should
 **状态**: 🔴 端点不存在
 
@@ -310,7 +310,7 @@
 
 ### US-HERB-010: 启用/禁用药材
 
-**角色**: 医生/管理员（DoctorOrReceptionist 策略）
+**角色**: 管理员（AdminOrSuperAdmin 策略）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -366,7 +366,7 @@
 
 ### US-HERB-012: 批量操作（启用/禁用/删除）
 
-**角色**: 医生/管理员（DoctorOrReceptionist 策略）
+**角色**: 管理员（AdminOrSuperAdmin 策略）
 **优先级**: Should
 **状态**: ✅ 已实现
 
@@ -395,7 +395,7 @@
 
 ### US-HERB-013: 导出 Excel + 下载模板
 
-**角色**: 医生/管理员（DoctorOrReceptionist 策略）
+**角色**: 管理员（AdminOrSuperAdmin 策略）
 **优先级**: Should
 **状态**: 🔴 端点不存在（Service 层实现但 Controller 无 export/import-template 路由）
 

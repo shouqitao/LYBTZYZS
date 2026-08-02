@@ -1,8 +1,9 @@
 # ADR-0005: SuperAdmin 归属 Auth 模块
 
-**状态**: 已采纳
+**状态**: ⚠️ 已废弃（2026-06-28 被替代）
 **日期**: 2025-12-01
 **来源**: ADR-010, ADR-011
+**替代**: SuperAdmin 已迁移到 Users 表（`ApplicationUser.IsSysAdmin=true`），AdminSecrets 表已移除。见 03-glossary.md 和 IdentitySeedData.cs。
 
 ## 背景
 
