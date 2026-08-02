@@ -101,6 +101,12 @@
 | REG-BR-004 | 患者不存在时创建 | 查询无结果时提示创建患者 |
 | REG-BR-005 | 回退后恢复原医案 | Source=Receptionist 医案取消回退 Waiting 后，医生重新接诊时恢复原 MedicalCase（IsDeleted=false, Status→Active） |
 | REG-BR-006 | 患者侧大屏叫号（R9 决策） | 患者侧候诊大屏叫号属 **v2.0 / 按需**，v1.0 不实现；v1.0 候诊队列仅前台端（US-REG-004）与医生端可见 |
+| REG-BR-007 | 当天重复挂号检查 | 患者当天已有未完成挂号时，提示不能重复挂号 |
+| REG-BR-008 | 前台仅退当天挂号 | 前台只能退当天的 Status=Waiting 挂号；非当天的需管理员退款 |
+| REG-BR-009 | 挂号费跟医生相关 | 挂号费跟医生相关，创建挂号时收取，退号时按实际退 |
+| REG-BR-010 | 换医生流程 | 先取消原挂号（退费），再重新挂号到新医生（收费） |
+| REG-BR-011 | 开始看诊并发保护 | 医生点"开始看诊"时检查挂号状态，防止前台退号同时医生接诊 |
+| REG-BR-012 | 医生待诊列表仅显示当天 | 医生待诊列表仅显示当天的 Waiting 挂号，非当天的不显示 |
 
 ### QuickVisit 原子性
 
@@ -136,11 +142,12 @@
 **验收标准**:
 - [ ] 前台可通过姓名/拼音码/身份证号查询患者
 - [ ] 患者不存在时提示是否创建新患者（REG-BR-004）
-- [ ] 选择创建：补充必填信息（姓名、手机号）后创建患者，返回挂号界面
+- [ ] 选择创建：补充必填信息（姓名、联系号码、家庭住址、身份证）后创建患者，返回挂号界面
 - [ ] 选择患者后，指派医生（从可用医生列表选择）
 - [ ] 创建 Registration：`Source=Receptionist`、`Status=Waiting`
 - [ ] 仅 Receptionist 角色可操作
 - [ ] 患者 `Status=Disabled` → 返回 422（REG-70005）
+- [ ] 患者当天已有未完成挂号时，提示不能重复挂号
 
 **业务规则**:
 1. Source=Receptionist，Status=Waiting（进入排队队列）
@@ -148,12 +155,20 @@
 3. 患者必须存在且 Enabled
 4. 同一患者同日唯一活跃挂号约束（并发保护）
 5. 仅 Receptionist 可创建
+6. **当天检查**：患者当天已有未完成挂号时，提示不能重复挂号
+7. **挂号费**：挂号费跟医生相关，创建挂号时收取
+
+**患者必填字段**:
+- 姓名
+- 联系号码
+- 家庭住址
+- 身份证
 
 **双模式**:
 | 模式 | 行为 |
 |------|------|
 | 远程 | POST `/api/v1/Registrations` |
-| 本地 | 完全一致（通过统一 Service 层） |
+| 本地 | 不适用（本地模式不使用前台账号） |
 
 **实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs:24`、`IRegistrationService`
 
@@ -234,7 +249,7 @@
 **验收标准**:
 - [ ] 显示所有 `Status=Waiting` 且 `DoctorId=当前医生` 的挂号记录（Doctor 视图）
 - [ ] Receptionist 可查看全部医生的队列（只读）
-- [ ] 列表信息：患者姓名、挂号时间、等待时长
+- [ ] 列表信息：挂号号码、姓名、手机尾号4位
 - [ ] 按挂号时间升序排列（先到先诊）
 - [ ] 支持按日期范围、患者、医生、状态筛选
 - [ ] 显示挂号时间、患者、医生、Source、Status、关联医案编号
@@ -243,14 +258,15 @@
 1. Doctor 查看个人队列（Waiting 且 DoctorId=自己）
 2. Receptionist/Admin 查看全部队列（只读）
 3. 按挂号时间升序排列（先到先诊）
-4. 列表信息含患者姓名、挂号时间、等待时长
+4. 列表信息含挂号号码、姓名、手机尾号4位
 5. 状态着色：Waiting=黄色、InProgress=蓝色、Completed=灰色、Cancelled=红色
+6. **仅显示当天的 Waiting 挂号**：非当天的 Waiting 挂号不显示在医生待诊列表
 
 **双模式**:
 | 模式 | 行为 |
 |------|------|
 | 远程 | GET `/api/v1/Registrations?status=&doctorId=&patientId=&startDate=&endDate=&page=&pageSize=` 或 GET `/api/v1/Registrations/queue` |
-| 本地 | 完全一致（通过统一 Service 层） |
+| 本地 | 不适用（本地模式无待诊队列） |
 
 **实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs:24`、`IRegistrationRepository`
 
@@ -268,12 +284,14 @@
 - [ ] 医生选中 Waiting 挂号 → 自动创建 MedicalCase，Registration 状态转为 InProgress
 - [ ] Registration.MedicalCaseId 填充为新建医案 ID
 - [ ] 若患者已有活跃医案 → 触发 BR-001 碰撞处理（[07-medical-cases.md](07-medical-cases.md)）
+- [ ] **开始看诊时检查挂号状态**：防止并发问题（前台退号同时医生点开始看诊）
 
 **业务规则**:
 1. Waiting → InProgress 状态转换
 2. 同时创建 MedicalCase 并关联 RegistrationId
 3. 受 BR-001 单活跃医案约束
 4. 医案创建后医生进入诊疗工作流
+5. **并发保护**：开始看诊时检查挂号状态，如果挂号已变为 Cancelled，提示"患者已退号"
 
 **双模式**:
 | 模式 | 行为 |
@@ -285,7 +303,7 @@
 
 ---
 
-### US-REG-006: 取消挂号（仅 Waiting）
+### US-REG-006: 取消挂号（仅当天 Waiting）
 
 **角色**: 前台接待员
 **优先级**: Must
@@ -296,22 +314,26 @@
 **验收标准**:
 - [ ] 仅 Receptionist 可取消 `Source=Receptionist` 的挂号（REG-BR-002）
 - [ ] 仅 `Status=Waiting` 的挂号可取消（REG-BR-001）
+- [ ] **仅当天的 Waiting 挂号可取消**：非当天的 Waiting 挂号，前台提醒患者联系管理员退款
 - [ ] 取消前校验：无关联医案 OR 关联医案状态为 Cancelled
 - [ ] 有 Active/Suspended/Completed 医案时拒绝取消，提示原因（REG-70003）
 - [ ] 取消后 Status → Cancelled
+- [ ] 取消后自动退挂号费（按医生挂号费）
 - [ ] Doctor 无权执行此操作（REG-70004）
 
 **业务规则**:
 1. **REG-BR-001 取消前置校验**：无关联医案 OR 关联医案状态为 Cancelled，否则拒绝取消
 2. **REG-BR-002 前台取消权限**：Source=Receptionist 的挂号仅 Receptionist 可取消
 3. 仅 `Status=Waiting` 可取消（InProgress 的挂号需先取消医案联动处理）
-4. 取消后 Status=Cancelled
+4. **仅当天的 Waiting 挂号可取消**：非当天的 Waiting 挂号需管理员退款
+5. 取消后 Status=Cancelled
+6. **退挂号费**：取消时自动退挂号费（按医生挂号费）
 
 **双模式**:
 | 模式 | 行为 |
 |------|------|
 | 远程 | PUT `/api/v1/Registrations/{id}/cancel` |
-| 本地 | 完全一致（通过统一 Service 层） |
+| 本地 | 不适用（本地模式不使用前台账号） |
 
 **实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs:24`、`IRegistrationService`
 
@@ -390,9 +412,31 @@
 
 ### 同日重复挂号
 
-- [ ] 同一患者同一天由前台创建第二条 Waiting 挂号 → 返回 422（PatientId+Date+Status 唯一约束）
-- [ ] 同一患者同一天已有 Waiting 挂号，医生 QuickVisit → 返回 422（唯一约束冲突），提示先处理已有挂号
+- [ ] 同一患者同一天由前台创建第二条 Waiting 挂号 → 提示不能重复挂号（REG-BR-007）
+- [ ] 同一患者同一天已有 Waiting 挂号，医生 QuickVisit → 提示不能重复挂号（REG-BR-007）
 - [ ] 同一患者同一天已有 Cancelled 挂号，再次创建 Waiting 挂号 → 允许（Cancelled 不参与唯一约束）
+- [ ] 患者当天已有 Waiting 挂号，前台可查看但不可重复挂号
+- [ ] 患者非当天有 Waiting 挂号，前台可正常挂号（不阻塞）
+
+### 本地模式设计
+
+**核心逻辑**：本地模式不使用前台账号，医生直接看诊。
+
+**流程**：
+1. 医生从患者库查询或新建患者
+2. 选中患者后，系统自动创建 Registration（Source=Doctor, Status=InProgress）
+3. 医生开始看诊
+
+**特点**：
+- 无待诊队列（大家自觉排队）
+- 无前台账号
+- 医案有挂号人字段，记录医生
+- UI 设计可以隐藏待诊列表或保持空着
+
+**挂号费**：
+- 医生实体中有"挂号费"字段，默认带出
+- 医生可选择不收费，在医案备注一下
+- 方便统计，如果没有统计是医生失职
 
 ## 交叉引用
 

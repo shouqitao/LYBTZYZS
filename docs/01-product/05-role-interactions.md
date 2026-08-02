@@ -102,9 +102,11 @@ flowchart TD
 | 5 | 挂号登记 | Receptionist → Doctor | 挂号单（Registration，状态=Waiting） | ✅ | — |
 | 6 | 开始就诊 | Doctor → 医案系统 | 医案（MedicalCase，状态=Suspended） | ✅ | StartVisit 不创建医案（BR-000 设计正确） |
 | 7 | 完成就诊 | Doctor → 系统 | 完成医案 + 打印记录 | ⚠️ | 打印回写缺失、审计日志缺失 |
-| 8 | 队列更新 | Doctor → Receptionist | 候诊队列状态变更（SignalR） | 📋 | SignalR 接线待验证 |
+| 8 | 队列更新 | Doctor → Receptionist | 候诊队列状态变更 | ✅ | 退号后队列自动更新，直接消失 |
 | 9 | 纠偏修改 | Admin → 医案系统 | 修改记录 + 审计日志 | 📋 | 纠偏 UI + 审计日志未实现 |
 | 10 | 密码重置 | Sysadmin → Admin（离线工具） | 重置后的密码 hash | 📋 | 离线密码重置工具待开发 |
+| 11 | 换医生 | Receptionist → Doctor | 取消原挂号 + 重新挂号 | ✅ | 先退费再收费 |
+| 12 | 过期挂号提醒 | Receptionist → Patient | 提醒联系管理员退款 | ✅ | 非当天 Waiting 挂号提醒患者退款 |
 
 ### 2.2 交接物定义
 
@@ -126,11 +128,14 @@ flowchart TD
 
 | 异常场景 | 处理策略 | 负责角色 | 实现状态 |
 |---------|---------|---------|:--------:|
-| 同一医生同时段重复挂号 | 提示冲突，引导选择其他时段/医生 | Receptionist | 📋 |
-| 读身份证失败（磁条损坏） | 回退到手动输入 | Receptionist | 📋 |
-| 患者信息不全 | 创建不完整档案，标记「待补充」 | Receptionist | 📋 |
-| 患者要求退号 | 确认后取消挂号，状态→Cancelled | Receptionist | ✅ |
-| 批量患者同时到达 | 支持连续读卡批量登记 | Receptionist | 📋 |
+| 同一患者当天重复挂号 | 提示不能重复挂号（REG-BR-007） | Receptionist | ✅ |
+| 读身份证失败（磁条损坏） | 回退到手动输入 | Receptionist | ✅ |
+| 患者信息不全 | 必填项：姓名、联系号码、家庭住址、身份证 | Receptionist | ✅ |
+| 患者要求退号（当天） | 确认后取消挂号，退挂号费 | Receptionist | ✅ |
+| 患者要求退号（非当天） | 提醒患者联系管理员退款 | Receptionist | ✅ |
+| 患者要求换医生 | 先取消原挂号（退费），再重新挂号（收费） | Receptionist | ✅ |
+| 医生叫号时患者已退号 | 开始看诊时检查挂号状态，提示"患者已退号" | Doctor | ✅ |
+| 非当天 Waiting 挂号 | 前台可查看，提醒患者可联系管理员退款 | Receptionist | ✅ |
 
 ### 3.2 诊疗环节
 
