@@ -158,7 +158,7 @@ v1.0 包含 **10 个功能模块、141 个 User Stories**（Must / Should / Coul
 |------|------|:---:|:---:|:---:|:---:|
 | **Auth** | 登录/登出/刷新 | ✓ | ✓ | ✓ | ✓ |
 | **Users** | 查询/创建/编辑/删除 | ✗ | ✗ | ✓¹ | ✓¹ |
-| **Users** | 重置密码/恢复 | ✗ | ✗ | ✗ | ✓ |
+| **Users** | 重置密码 | ✗ | ✗ | ✓¹ | ✓¹ |
 | **Users** | 自助（资料/密码） | ✓ | ✓ | ✓ | ✓ |
 | **Patients** | 查询/创建/编辑 | ✓ | ✓ | ✓ | ✓ |
 | **Patients** | 删除 | ✗ | ✓ | ✓ | ✓ |
@@ -186,7 +186,7 @@ v1.0 包含 **10 个功能模块、141 个 User Stories**（Must / Should / Coul
 
 **注释**：
 
-1. **Users Admin 权限**：受 USER-D04 层级规则约束（仅可操作权限值低于自己的用户）；Admin 列表过滤 sysadmin 与其他 Admin。
+1. **Users Admin 权限**：受 USER-D04 层级规则约束（仅可操作权限值低于自己的用户）；Admin 列表过滤 sysadmin 与其他 Admin；Admin 可重置 Doctor/Receptionist 密码，不可重置 Admin/Sysadmin 密码。
 2. **Doctor 写操作归属限制**：Herbs 与 Formulas 的 Doctor 仅可操作**自己创建的**记录（`CreatedBy` / `UserId` 字段）；Restore 操作为 Admin-only。
 3. **Formula Doctor 可见性**：Doctor 仅可见自己创建的 + `IsShared=true` 的共享验方；Admin 不受 `IsShared` 限制可见全部。
 4. **Doctor 医案/挂号归属限制**：Doctor 仅可见/操作 `UserId=自己` 的医案与挂号；Receptionist 自动过滤禁用患者。

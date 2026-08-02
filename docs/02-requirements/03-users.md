@@ -68,7 +68,7 @@ Doctor/Receptionist → 不可管理任何角色
 | `POST /users` (创建用户) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
 | `PUT /users/{id}` (更新用户) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
 | `DELETE /users/{id}` (删除用户) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
-| `POST /users/{id}/reset-password` (重置密码) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
+| `POST /users/{id}/reset-password` (重置密码) | ❌ | ❌ | ✅¹ | ✅¹ | AdminOrSuperAdmin |
 | `PUT /users/{id}/profile` (修改资料) | ✅* | ✅* | ✅* | ✅* | 仅本人 |
 | `PUT /users/{id}/change-password` (修改密码) | ✅* | ✅* | ✅* | ✅* | 仅本人 |
 | `POST /users/{id}/toggle-status` (启用/禁用) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |

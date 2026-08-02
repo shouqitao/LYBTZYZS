@@ -120,7 +120,7 @@
 | **C1** | 💻 | **患者删除缺策略**：`PatientsController.Delete` 无操作级 `[Authorize]`，回退类级 `DoctorOrAdminOrReceptionist`（Doctor/Receptionist 也可删患者）。矩阵要求 Admin+ | `PatientsController.cs:129` | 补 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]` |
 | **C2** | 💻 | **药材创建/编辑缺策略**：`HerbsController.Create/Update` 无操作级 `[Authorize]`，回退类级 `DoctorOrReceptionist`（Doctor 也可创建/编辑药材）。矩阵要求 Admin+ | `HerbsController.cs:73,97` | Create/Update 补 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`；或改类级策略为 `DoctorOrAdminOrReceptionist` + Create/Update 覆盖为 `AdminOrSuperAdmin` |
 | **C3** | 💻 | **挂号取消权限倒置**（与 K9 合并）：`RegistrationsController.Cancel` 无操作级策略，回退类级 `DoctorOrAdminOrReceptionist`。矩阵要求仅 Receptionist | `RegistrationsController.cs:95` | 补 `[Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]` + 服务层校验 Source=Receptionist |
-| **C4** | 💻 | **医案创建含 Receptionist**：`MedicalCasesController.Create` 策略 `DoctorOrAdminOrReceptionist`（含 Receptionist 代建）。矩阵已标注 ✅(代建)，但需确认是否为设计意图 | `MedicalCasesController.cs:93` | 如确认代建：保留现状；如不确认：改策略为 `DoctorOrAdmin` |
+| **C4** | 💻 | **医案创建含 Receptionist**：`MedicalCasesController.Create` 策略 `DoctorOrAdminOrReceptionist`（含 Receptionist/代建）。设计决策 BR-000：医案创建仅 Doctor。**已确认为非设计意图**，待修复为 `DoctorOnly` | `MedicalCasesController.cs:93` | 改策略为 `DoctorOnly`（需新增 PolicyConstants） |
 
 ---
 
