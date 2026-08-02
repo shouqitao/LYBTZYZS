@@ -7,9 +7,11 @@
 挂号（Registration）是患者就诊流程的系统化入口，用于管理患者分流、排队顺序和就诊可追溯性。系统支持**两种来源模式**：
 
 - **前台模式（Source=Receptionist）**：前台接待员创建 `Waiting` 状态挂号，患者进入排队队列，医生从队列接诊。
-- **医生模式（Source=Doctor）**：医生通过 QuickVisit 直接创建 `InProgress` 状态挂号，同时静默创建关联医案，跳过排队。
+- **医生模式（Source=Doctor）**：医生通过 QuickVisit 直接创建 `InProgress` 状态挂号，跳过排队。
 
-两种模式通过 `Source` 字段区分，医案状态变更时根据 Source 执行不同的联动策略（US-REG-007）。挂号模块确保 100% 就诊可追溯（COUNT(Registration) / COUNT(MedicalCase) = 1.0），为运营报表提供数据基础。
+两种模式通过 `Source` 字段区分。挂号（Registration）与医案（MedicalCase）是**独立实体**：挂号记录排队关系，医案记录诊疗内容，通过 `MedicalCaseId` 关联。挂号时不创建医案，医案由医生在开始诊疗时主动创建。
+
+> **架构决策（2026-08-02）**：Registration ≠ MedicalCase。前台/系统只建挂号，医生管医案。这样保证不会有空医案（患者退号时无残留），待诊清单只展示排队关系。
 
 ## 双模式工作流
 
@@ -21,19 +23,25 @@
 前台建档(首诊) + 挂号(Waiting) → 待诊队列
         ↓ SignalR 推送通知医生（仅远程，见 ADR-0013）
 医生待诊列表 → 选患者 →「开始就诊」StartVisit（US-REG-005）
-        ↓ 原子事务：创建 MedicalCase(Active) + Registration(InProgress) + 返回 MedicalCaseId
-导航医案编辑 → 望闻问切 → 开方 → 打印（系统终点）
+        ↓ Registration(InProgress)，不建医案
+医生进入诊疗 → 填写诊断时才创建 MedicalCase(Active)
+        ↓
+望闻问切 → 开方 → 打印（系统终点）
 
-急诊/特殊通道：医生 QuickVisit（US-REG-002）→ 选/建患者 → 原子创建 Registration+MedicalCase → 直接看诊
+退号场景：患者退号或医生觉得没问题 → Registration→Cancelled，无医案产生
+
+急诊/特殊通道：医生 QuickVisit（US-REG-002）→ 选/建患者 → 创建 Registration(InProgress)
+        ↓ 不建医案，跳转医案编辑
+医生填写诊断时创建 MedicalCase(Active) → 看诊
 ```
 
-**要素**：前台挂号驱动；待诊队列；SignalR 推送（仅远程）；StartVisit 原子创建医案；QuickVisit 急诊通道并存。
+**要素**：前台挂号驱动；待诊队列；SignalR 推送（仅远程）；StartVisit 仅改 Registration 状态；QuickVisit 不建医案；医案由医生主动创建。
 
 ### 本地模式（全角色支持，差异由用户配置决定）
 
 ```
-默认（无前台用户）：患者到诊 → 医生选/建患者（Patient）→ 直接开医案（MedicalCase）→ 看诊 → 打印
-建了前台用户时：   前台挂号(Waiting) → 待诊队列 → 医生 StartVisit 接诊 链同样可用
+默认（无前台用户）：患者到诊 → 医生选/建患者（Patient）→ 创建 MedicalCase(Active) → 看诊 → 打印
+建了前台用户时：   前台挂号(Waiting) → 待诊队列 → 医生 StartVisit(InProgress) → 创建 MedicalCase → 看诊
 ```
 
 **要素**：

@@ -17,6 +17,30 @@
 
 ## 业务规则
 
+### BR-000：医案创建时机（架构决策 2026-08-02）
+
+**核心原则**：医案在「医生决定要看病并开始记录」时创建，不提前。
+
+| 场景 | 触发 | 医案创建时机 |
+|------|------|------------|
+| 前台挂号 → 医生接诊 | StartVisit | **不建医案**，仅 Registration→InProgress；医生写诊断时才建 |
+| 前台挂号 → 患者退号 | CancelRegistration | **不建医案**，Registration→Cancelled |
+| 医生接诊 → 觉得没问题 → 退号 | StartVisit → CancelRegistration | **不建医案** |
+| QuickVisit | 医生直接操作 | **不建医案**，仅建 Registration(InProgress)；医生写诊断时才建 |
+| 本地无前台 | 医生独立使用 | **医生主动创建** MedicalCase(Active) |
+
+**架构约束**：
+- Registration ≠ MedicalCase。挂号记录排队关系，医案记录诊疗内容
+- 挂号（Registration）由前台/系统创建，医案（MedicalCase）由医生创建
+- 一个 Registration 可以没有 MedicalCase（退号/取消场景）
+- MedicalCase 创建时必须关联已有 Registration（通过 MedicalCaseId）
+
+**状态机**：
+```
+Registration:  Waiting → InProgress → Completed/Cancelled
+MedicalCase:   （不存在）→ Active → Suspended/Completed/Cancelled
+```
+
 ### BR-001：同一患者单活跃医案约束（核心铁律）
 
 **规则**：同一患者在同一时间只能有一个 `Active` 或 `Suspended` 状态的医案。
@@ -69,7 +93,7 @@
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Active: 创建（仅 Doctor）
+    [*] --> Active: 创建（仅 Doctor，写诊断时）
     Active --> Suspended: 暂停（US-MC-013）
     Suspended --> Active: 恢复编辑
     Active --> Completed: 完成（US-MC-011，通过 BR-003 校验）
@@ -77,8 +101,9 @@ stateDiagram-v2
     Active --> Cancelled: 取消=软删除（US-MC-014）
     Suspended --> Cancelled: 取消=软删除（US-MC-014）
     Completed --> [*]: 终态（仅 Admin+EditReason 可改）
-    note right of Cancelled: Cancelled = IsDeleted=true\n（不在枚举中，等同于软删除）
-    note right of Completed: 完成后当天可编辑\n隔天 0 点自动锁定（IsLocked）
+    note right of Cancelled: Cancelled = IsDeleted=true\\n（不在枚举中，等同于软删除）
+    note right of Completed: 完成后当天可编辑\\n隔天 0 点自动锁定（IsLocked）
+    note left of [*]: 医案不在挂号时创建\\n医生写诊断时才创建
 ```
 
 **关键说明**：
