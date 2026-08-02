@@ -511,7 +511,7 @@
 
 | 文档 | 路径 | 用途 |
 |------|------|------|
+| **产品功能清单** | `docs/compose/plans/feature-inventory.md` | 128 个用户操作，按模块/角色分类 |
 | 代码审计报告 | `docs/reports/2026-08-02-codebase-audit.md` | 项目现状全面审计 |
 | 代码审查报告 | `docs/reports/code-review-duplicates.md` | 重复定义与不统一问题 |
-| 功能清单 v2 | `docs/compose/plans/feature-inventory-v2.md` | 产品功能详细清单（诚实版） |
 | AGENTS.md | `AGENTS.md` | 开发规范与约束 |
