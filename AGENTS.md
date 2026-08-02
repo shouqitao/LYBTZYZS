@@ -65,7 +65,7 @@
 | 小修补(1-2行) | 改 → `dotnet build` → 提交 |
 | 跨模块大改 | `brainstorm`→`plan`→`plan-eng-review`→`subagent`→`verify`→`review`→`merge` |
 
-**Karpathy**：先思考再编码｜最小代码｜外科手术式修改｜可验证成功标准
+**Karpathy 四规则**（强制）：① 先思考再动手（查文档/历史，不假设）② 简洁优先（最小代码，不过度设计）③ 外科手术式修改（只改被要求的）④ 目标驱动执行（可验证成功标准，循环达标）。详见 `lybtzys-coder-rules` skill。
 
 ---
 
