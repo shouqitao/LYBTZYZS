@@ -1,8 +1,9 @@
-# 代码偏移修复清单（Documentation Calibration 产出）
+# 代码偏移修复清单（Documentation Calibration + 审稿产出）
 
-> 来源：2026-08-02 文档校准任务
+> 来源：2026-08-02 文档校准 + 审稿任务
 > 状态：⬜ 待执行
 > 原则：先批 A（纯策略补丁），再批 B（业务逻辑）
+> 术语：Admin = 管理员，Sysadmin = 超管
 
 ---
 
@@ -14,20 +15,25 @@
 - **修复**：Delete 方法补 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`
 - **验证**：`dotnet build` + 架构测试
 
-### A2. HerbsController Create/Update 补策略
+### A2. HerbsController Create/Update 改策略
 - **问题**：Create/Update 无操作级 `[Authorize]`，回退类级 `DoctorOrReceptionist`，Doctor 也可创建/编辑药材
 - **文件**：`src/Server/Services/LYBT.WebAPI/Controllers/HerbsController.cs:73,97`
 - **修复**：Create 和 Update 方法各补 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`
 - **验证**：`dotnet build` + 架构测试
 
-### A3. PolicyConstants 补 DoctorOrReceptionist 含 SuperAdmin/Admin（K1）
-- **问题**：`DoctorOrReceptionist` 策略注册仅含 Doctor/Receptionist，缺少 SuperAdmin/Admin
-- **文件**：`src/Server/Core/LYBT.Infrastructure/.../AuthenticationServiceCollectionExtensions.cs`
-- **修复**：扩策略注册 `RequireRole(SuperAdmin, Admin, Doctor, Receptionist)`
-- **影响**：所有使用 `DoctorOrReceptionist` 的端点（Herbs/Formulas）权限范围扩大
-- **验证**：`dotnet build` + 架构测试 + 角色集成测试
+### A3. FormulasController Create/Update 补策略
+- **问题**：Create/Update 用类级 `DoctorOrReceptionist`，不含管理员
+- **文件**：`src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs`
+- **修复**：Create 和 Update 方法各补 `[Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]`
+- **验证**：`dotnet build` + 架构测试
 
-### A4. PolicyConstants 补 DoctorOnly（K3）
+### A4. MedicalCasesController.Create 改策略
+- **问题**：Create 策略含 Receptionist（可代建），但 BR-000 决策仅 Doctor 可建
+- **文件**：`src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:93`
+- **修复**：Create 策略从 `DoctorOrAdminOrReceptionist` 改为 `DoctorOrAdmin`
+- **验证**：`dotnet build` + 架构测试
+
+### A5. PolicyConstants 补 DoctorOnly（K3）
 - **问题**：医案创建目标策略 `DoctorOnly` 不存在
 - **文件**：`src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs`
 - **修复**：新增 `public const string DoctorOnly = "DoctorOnly";` + 注册策略
@@ -61,11 +67,6 @@
 - **文件**：`src/Server/Modules/LYBT.Module.Users/Services/IdentitySeedData.cs`
 - **修复**：注入 `IDefaultPasswordService` + `IHostEnvironment`，复用 `GetOrGeneratePassword`/`ValidateSetupToken`
 - **验证**：生产环境配置测试
-
-### B5. ~~医案创建 Receptionist 代建确认（C4）~~ ✅ 已关闭
-- **决策**：Receptionist 不应直接创建医案。前台只建挂号，医案由医生创建
-- **代码改动**：`MedicalCasesController.Create` 策略从 `DoctorOrAdminOrReceptionist` 改为 `DoctorOrAdmin`
-- **已记录**：`07-medical-cases.md` BR-000、`08-registration.md` 架构决策
 
 ---
 
