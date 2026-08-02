@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Herbs.Application.Commands;
 using LYBT.Module.Herbs.Application.Queries;
+using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
@@ -23,9 +24,12 @@ namespace LYBT.WebAPI.Controllers
     [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
     public class HerbsController : BaseCrudController
     {
-        public HerbsController(ISender sender, ILogger<HerbsController> logger)
+        private readonly IHerbService _herbService;
+
+        public HerbsController(ISender sender, ILogger<HerbsController> logger, IHerbService herbService)
             : base(sender, logger)
         {
+            _herbService = herbService;
         }
 
         /// <summary>
@@ -42,7 +46,7 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidatePagination(page, pageSize) is { } error) return error;
 
-            var result = await Sender.Send(new GetHerbsQuery(page, pageSize, keyword), ct);
+            var result = await _herbService.GetPagedAsync(page, pageSize, keyword, ct);
             if (!result.IsSuccess) return BusinessFail(result.Error ?? "查询失败");
             return Success(result.Value!, "查询成功");
         }
@@ -56,11 +60,9 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidateGuid(id, "药材ID") is { } error) return error;
 
-            var result = await Sender.Send(new GetHerbQuery(id), ct);
+            var result = await _herbService.GetByIdAsync(id, ct);
             if (!result.IsSuccess || result.Value == null)
-            {
                 return NotFound(result.Error ?? "药材不存在");
-            }
 
             return Success(result.Value, "查询成功");
         }
@@ -102,23 +104,17 @@ namespace LYBT.WebAPI.Controllers
             if (dto is not HerbInputDto inputDto)
                 return ValidationFail("无效的请求数据");
 
-            var getResult = await Sender.Send(new GetHerbQuery(id), ct);
+            var getResult = await _herbService.GetByIdAsync(id, ct);
             if (!getResult.IsSuccess || getResult.Value == null)
-            {
                 return NotFound(getResult.Error ?? "药材不存在");
-            }
 
             if (ValidateOwnership(getResult.Value.CreatedBy, "药材") is { } ownerError)
-            {
                 return ownerError;
-            }
 
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new UpdateHerbCommand(id, inputDto, operatorId), ct);
+            var result = await _herbService.UpdateAsync(id, inputDto, operatorId, ct);
             if (!result.IsSuccess || result.Value == null)
-            {
                 return BusinessFail(result.Error ?? "更新失败");
-            }
 
             LogOperation("更新药材", result.Value, result.Value.Id);
             return Success(result.Value, "药材更新成功");
@@ -135,23 +131,17 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidateGuid(id, "药材ID") is { } error) return error;
 
-            var getResult = await Sender.Send(new GetHerbQuery(id), ct);
+            var getResult = await _herbService.GetByIdAsync(id, ct);
             if (!getResult.IsSuccess || getResult.Value == null)
-            {
                 return NotFound(getResult.Error ?? "药材不存在");
-            }
 
             if (ValidateOwnership(getResult.Value.CreatedBy, "药材") is { } ownerError)
-            {
                 return ownerError;
-            }
 
             var (operatorId, _, _) = GetOperator();
             var result = await Sender.Send(new DeleteHerbCommand(id, operatorId), ct);
             if (!result.IsSuccess)
-            {
                 return BusinessFail(result.Error ?? "删除失败");
-            }
 
             LogOperation("删除药材", new { Id = id }, id);
             return Success<object?>(null, "药材删除成功");
@@ -167,22 +157,16 @@ namespace LYBT.WebAPI.Controllers
         {
             var (operatorId, _, _) = GetOperator();
 
-            var getResult = await Sender.Send(new GetHerbQuery(id), ct);
+            var getResult = await _herbService.GetByIdAsync(id, ct);
             if (!getResult.IsSuccess || getResult.Value == null)
-            {
                 return NotFound(getResult.Error ?? "药材不存在");
-            }
 
             if (ValidateOwnership(getResult.Value.CreatedBy, "药材") is { } ownerError)
-            {
                 return ownerError;
-            }
 
-            var result = await Sender.Send(new ToggleHerbStatusCommand(id, operatorId), ct);
+            var result = await _herbService.ToggleStatusAsync(id, operatorId, ct);
             if (!result.IsSuccess || result.Value == null)
-            {
                 return BusinessFail(result.Error ?? "切换状态失败");
-            }
 
             LogOperation("切换药材状态", new { NewStatus = result.Value.Status }, id);
             return Success(result.Value, $"药材已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
@@ -199,12 +183,9 @@ namespace LYBT.WebAPI.Controllers
             if (ValidateGuid(id, "药材ID") is { } error) return error;
 
             var (operatorId, _, _) = GetOperator();
-
-            var result = await Sender.Send(new RestoreHerbCommand(id, operatorId), ct);
+            var result = await _herbService.RestoreAsync(id, operatorId, ct);
             if (!result.IsSuccess || result.Value == null)
-            {
                 return BusinessFail(result.Error ?? "恢复失败");
-            }
 
             LogOperation("恢复药材", result.Value, result.Value.Id);
             return Success(result.Value, "药材恢复成功");
@@ -290,14 +271,17 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchEnable(
             [FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-            => await ExecuteBatchStatusAsync(
-                dto,
-                ids => new BatchEnableHerbsCommand(ids),
-                "药材ID列表不能为空",
-                "批量启用失败",
-                "批量启用药材",
-                new { Count = dto.Ids.Count },
-                ct);
+        {
+            if (dto.Ids == null || dto.Ids.Count == 0)
+                return ValidationFail("药材ID列表不能为空");
+
+            var result = await _herbService.BatchEnableAsync(dto.Ids, ct);
+            if (!result.IsSuccess || result.Value == null)
+                return BusinessFail(result.Error ?? "批量启用失败");
+
+            LogOperation("批量启用药材", new { Count = dto.Ids.Count }, null);
+            return Success(result.Value, result.Value.Message);
+        }
 
         /// <summary>
         /// 批量禁用药材
@@ -307,13 +291,16 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchDisable(
             [FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-            => await ExecuteBatchStatusAsync(
-                dto,
-                ids => new BatchDisableHerbsCommand(ids),
-                "药材ID列表不能为空",
-                "批量禁用失败",
-                "批量禁用药材",
-                new { Count = dto.Ids.Count },
-                ct);
+        {
+            if (dto.Ids == null || dto.Ids.Count == 0)
+                return ValidationFail("药材ID列表不能为空");
+
+            var result = await _herbService.BatchDisableAsync(dto.Ids, ct);
+            if (!result.IsSuccess || result.Value == null)
+                return BusinessFail(result.Error ?? "批量禁用失败");
+
+            LogOperation("批量禁用药材", new { Count = dto.Ids.Count }, null);
+            return Success(result.Value, result.Value.Message);
+        }
     }
 }
