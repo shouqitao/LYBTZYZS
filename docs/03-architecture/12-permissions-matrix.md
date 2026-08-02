@@ -1,27 +1,6 @@
 # Permissions — 权限矩阵
 
-## Roles
-
-| 角色 | PermissionLevel | 说明 |
-|------|:---:|------|
-| Receptionist | 0 | 前台，负责挂号、患者管理 |
-| Doctor | 1 | 医生，负责诊断、开方 |
-| Admin | 10 | 管理员，负责用户、药材、验方管理 |
-| SuperAdmin | 100 | 超管，系统设置、全局管理 |
-| Sysadmin | — | 独立用户（IsSysAdmin=true），非角色，运维 |
-
-**Sysadmin 特殊性**：
-- `ApplicationUser.IsSysAdmin = true`
-- 跳过角色检查
-- 不可被删除/禁用/修改
-- 默认凭证：`sysadmin/SysAdmin@2026!`
-
-> **SuperAdmin vs Sysadmin 双列语义说明**（审计 S2 澄清，2026-06-28）：
-> 矩阵保留两列不合并，因二者是**不同机制**：
-> - **SuperAdmin（角色列）**= 角色 PermissionLevel=100，通过角色放行获得权限（角色体系内的最高权限）
-> - **Sysadmin（独立用户列）**= `IsSysAdmin=true` 布尔标记，提供**不可删除/禁用/修改**的额外保护（独立于角色体系）
-> - **并存关系**：sysadmin 用户默认即被赋予 SuperAdmin 角色（见 `IdentitySeedData`），即「超管角色获权 + IsSysAdmin 布尔提供保护」双机制叠加
-> - 两列在「资源×操作」矩阵中几乎全 ✅ 重叠属**设计预期**（sysadmin 经超管角色获权），而非冗余
+> **角色定义**见 [02-personas.md](../01-product/02-personas.md)。**完整权限矩阵**见 [04-permissions.md](../01-product/04-permissions.md)。
 
 ## Resource × Operation × Role Matrix
 
@@ -67,19 +46,7 @@
 
 ## Authorization Policies
 
-> 与 [`PolicyConstants`](../../src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs) 一致 —— 实有 **5 项**。**`DoctorOnly` 为目标策略，`PolicyConstants` 待新增**（医案创建 Doctor 唯一、打印权限强制需要）。
-
-| Policy | 常量 | 要求角色 | 用途 |
-|--------|------|----------|------|
-| `DoctorOrReceptionist` | `PolicyConstants.DoctorOrReceptionist` | Doctor / Receptionist | 药材、验方基础 CRUD |
-| `DoctorOrAdmin` | `PolicyConstants.DoctorOrAdmin` | SuperAdmin / Admin / Doctor | 医案列表/详情查询、报表 |
-| `DoctorOrAdminOrReceptionist` | `PolicyConstants.DoctorOrAdminOrReceptionist` | SuperAdmin / Admin / Doctor / Receptionist | 患者 CRUD、挂号 CRUD、医案创建 |
-| `AdminOnly` | `PolicyConstants.AdminOnly` | SuperAdmin / Admin | 管理员级操作 |
-| `AdminOrSuperAdmin` | `PolicyConstants.AdminOrSuperAdmin` | SuperAdmin / Admin | 用户管理、系统配置（与 `AdminOnly` 行为等价，命名历史并存） |
-| `DoctorOnly` ⏳ | `PolicyConstants.DoctorOnly`（**待新增**） | Doctor | **目标策略**：医案创建（Doctor 唯一）、处方打印强制。代码当前无此策略（⚠️ D7 待对齐） |
-| `FallbackPolicy` | （`RequireAuthenticatedUser`） | 任何已登录用户 | 默认策略，所有未显式标注 Policy 的端点 |
-
-> 📌 **`AdminOnly` ≡ `AdminOrSuperAdmin` 合并建议**（审计 S6，2026-06-28）：两者行为完全等价，建议 Phase② 合并为单一策略。
+> 授权策略定义、代码策略映射、修复项详见 [04-permissions.md](../01-product/04-permissions.md) §当前代码策略映射。
 
 ---
 
@@ -128,7 +95,8 @@
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
-| 2026-08-02 | v1.3 | 文档校准（documentation-calibration）：权限策略新增 `DoctorOrAdminOrReceptionist`；矩阵对齐代码实际策略（药材查看 Receptionist✅、药材创建 Admin+ only、挂号创建 Admin✅、医案创建 Doctor only） | 代码现状扫描校准 |
+| 2026-08-02 | v2.0 | 去重：角色定义/策略表改为引用 02-personas.md 和 04-permissions.md；保留架构级 Resource×Operation 矩阵 + 代码待对齐清单 |
+| 2026-08-02 | v1.3 | 文档校准（documentation-calibration）：权限策略新增 `DoctorOrAdminOrReceptionist`；矩阵对齐代码实际策略 |
 | 2026-06-28 | v1.2 | 审计 S2/S6/K1-K9 文档标注：SuperAdmin/Sysadmin 双列语义说明；`AdminOnly`≡`AdminOrSuperAdmin` 合并建议；新增「代码待对齐清单」段（K1/K3/K4/K5/K7/K8/K9） | 角色驱动审计报告 S 类清理 + K 类代码待修项文档标注 |
 | 2026-06-28 | v1.1 | 权限矩阵统一（权威决策 2026-06-28）：挂号创建 Doctor✅(QuickVisit)/Admin✗、挂号取消 Admin✗、药材删除 Admin✅(D5)、用户重置密码 Admin✅；D7 脚注与 Authorization Policies 段标注 `DoctorOnly` 为目标策略待新增 | 三文档（personas/matrix/代码）矛盾收敛，以 personas+权威决策为准 |
 | 2026-06-28 | v1.0 | 结构治理：修正 `PolicyConstants` 与 baseline 链接相对路径（多余的 `../`）；补充变更记录段 |
