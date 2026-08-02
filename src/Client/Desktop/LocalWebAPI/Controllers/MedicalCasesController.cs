@@ -4,7 +4,6 @@ using LYBT.Module.MedicalCases.Application.Commands;
 using LYBT.Module.MedicalCases.Application.Queries;
 using LYBT.Module.MedicalCases.Controllers;
 using LYBT.Module.MedicalCases.Interfaces;
-using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -26,10 +25,9 @@ public class MedicalCasesController : BaseMedicalCasesController
     public MedicalCasesController(
         ISender sender,
         ILogger<MedicalCasesController> logger,
-        IMedicalCaseQueryService medicalCaseQueryService,
         IMedicalCaseCommandService medicalCaseCommandService,
-        IMedicalCaseStateService medicalCaseStateService,
-        MedicalCaseMapper mapper) : base(sender, logger, medicalCaseQueryService, medicalCaseCommandService, medicalCaseStateService, mapper)
+        IMedicalCaseStateService medicalCaseStateService)
+        : base(sender, logger, medicalCaseCommandService, medicalCaseStateService)
     {
     }
 
@@ -39,13 +37,11 @@ public class MedicalCasesController : BaseMedicalCasesController
     [HttpGet("{id}")]
     public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
-        // 直接调用 QueryService 获取实体并映射为详情 DTO
-        var entity = await _medicalCaseQueryService.GetByIdAsync(id, ct);
-        if (entity == null)
-            return NotFound("医案不存在");
+        var result = await Sender.Send(new GetMedicalCaseQuery(id), ct);
+        if (!result.IsSuccess)
+            return NotFound(result.Error ?? "医案不存在");
 
-        var dto = _mapper.MapToMedicalCaseDetailDto(entity);
-        return Success(dto, "查询成功");
+        return Success(result.Value!, "查询成功");
     }
 
     /// <summary>
