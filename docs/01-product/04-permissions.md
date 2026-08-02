@@ -127,11 +127,47 @@
 5. **操作级细分**：同一 Controller 的读/写操作可使用不同策略（Phase② 落地）
 6. **sysadmin 特殊性**：绕过所有权限检查，但不可参与业务操作；联系方式在 About 页公开
 
+## 五、数据管理规则
+
+### 5.1 两字段模式（禁用 + 软删除）
+
+系统不执行物理删除，所有数据通过标记位管理生命周期。**两个字段语义不同**：
+
+| 字段 | 存储 | 语义 | 可逆性 | 典型场景 |
+|------|------|------|--------|---------|
+| `CommonStatus Status` | 枚举（Enabled=1/Disabled=0） | 临时停用 | 立即可逆（`ChangeStatus`） | 医生请假、前台调岗、季节性下架药材 |
+| `IsDeleted` | 布尔（BaseEntity） | 永久归档 | Restore 审批流程 | 离职、停售药材、过期患者档案 |
+
+**医疗行业依据**：HIPAA 要求 ePHI 可追溯不可丢，禁用和归档的审计级别不同——禁用只需记录操作，归档需记录归档原因 + 审批人。
+
+### 5.2 适用范围
+
+| 实体类别 | 需要两字段？ | 实体 | 理由 |
+|---------|:----------:|------|------|
+| **资源类** | ✅ | User, Herb, Formula, Patient | 可以临时停用（请假/下架），也可以归档（离职/停售） |
+| **流程类** | ❌ | MedicalCase, Registration | 用业务状态枚举管理生命周期，无「启用/禁用」概念 |
+| **从属类** | ❌ | Consultation, Prescription | 跟随父实体（医案）状态，无独立生命周期 |
+| **审计类** | ❌ | AuditLog, PrintLog | 追加写入，永不修改/删除 |
+
+### 5.3 实体状态字段映射
+
+| 实体 | 禁用字段 | 归档字段 | 业务状态 |
+|------|---------|---------|---------|
+| ApplicationUser | `CommonStatus Status` | `IsDeleted` | `UserRole` |
+| HerbModel | `CommonStatus Status` | `IsDeleted` | — |
+| FormulaModel | `CommonStatus Status` | `IsDeleted` | `FormulaValidationStatus` |
+| PatientModel | `CommonStatus Status` | `IsDeleted` | — |
+| MedicalCaseModel | — | `IsDeleted` | `MedicalCaseStatus` (Active/Suspended/Completed) |
+| RegistrationModel | — | `IsDeleted` | `RegistrationStatus` (Waiting/InProgress/Completed/Cancelled) |
+| ConsultationModel | — | `IsDeleted` | — |
+| PrescriptionModel | — | — | — |
+
 ---
 
-## 五、变更日志
+## 六、变更日志
 
 | 日期 | 变更 |
 |------|------|
+| 2026-08-02 | §五 新增数据管理规则：两字段模式（禁用+软删除）定义、适用范围（资源类/流程类/从属类/审计类）、实体状态字段映射 |
 | 2026-08-02 | v4.0 新建：从 02-personas.md 拆分；修正代码策略映射（实际代码与文档偏差）；增加 P0/P1/P2 分级 |
 | 2026-06-28 | 初始权限矩阵（含在 personas 中） |
