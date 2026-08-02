@@ -39,11 +39,11 @@
 | 前台挂号 → 患者退号 | CancelRegistration | **不建医案**，Registration→Cancelled |
 | 医生接诊 → 觉得没问题 → 退号 | StartVisit → CancelRegistration | **不建医案** |
 | QuickVisit | 医生直接操作 | **不建医案**，仅建 Registration(InProgress)；医生写诊断时才建 |
-| 本地无前台 | 医生独立使用 | **医生主动创建** MedicalCase(Active) |
+| 本地模式 | 医生独立使用 | **系统自动创建** Registration(Source=Doctor, InProgress)→医生写诊断时创建 MedicalCase(Active)（Registration 由系统自动创建，医生无感） |
 
 **架构约束**：
 - Registration ≠ MedicalCase。挂号记录排队关系，医案记录诊疗内容
-- 挂号（Registration）由前台/系统创建，医案（MedicalCase）由医生创建
+- 挂号（Registration）由前台创建（远程标准流程）或系统自动创建（远程 QuickVisit / 本地模式），医案（MedicalCase）由医生创建
 - 一个 Registration 可以没有 MedicalCase（退号/取消场景）
 - MedicalCase 创建时必须关联已有 Registration（通过 MedicalCaseId）
 
