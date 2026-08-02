@@ -35,6 +35,9 @@ namespace LYBT.Module.Users
             // 注册新架构：IUserRepository
             services.AddScoped<IUserRepository, UserRepository>();
 
+            // 注册用户服务（替代 trivial MediatR Handler）
+            services.AddScoped<IUserService, UserService>();
+
             // 注册跨模块服务（替代 CrossModuleService 中的用户查询逻辑）
             services.AddScoped<IUserCrossModuleService, UserCrossModuleService>();
 

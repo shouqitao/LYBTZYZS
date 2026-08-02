@@ -1,7 +1,7 @@
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Users.Application.Commands;
-using LYBT.Module.Users.Application.Queries;
+using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -21,9 +21,12 @@ namespace LYBT.Module.Users.Controllers;
 [Authorize]
 public abstract class BaseUsersController : BaseCrudController
 {
-    protected BaseUsersController(ISender sender, ILogger logger)
+    private readonly IUserService _userService;
+
+    protected BaseUsersController(ISender sender, ILogger logger, IUserService userService)
         : base(sender, logger)
     {
+        _userService = userService;
     }
 
     #region 重写 CRUD 方法（添加授权策略）
@@ -38,7 +41,7 @@ public abstract class BaseUsersController : BaseCrudController
     {
         if (ValidatePagination(page, pageSize) is { } error) return error;
 
-        var result = await Sender.Send(new GetUsersQuery(page, pageSize, keyword), ct);
+        var result = await _userService.GetPagedAsync(page, pageSize, keyword, ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "查询失败");
         return SuccessPaged(result.Value, "查询成功");
@@ -50,7 +53,7 @@ public abstract class BaseUsersController : BaseCrudController
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-        var result = await Sender.Send(new GetUserQuery(id), ct);
+        var result = await _userService.GetByIdAsync(id, ct);
         if (!result.IsSuccess || result.Value == null)
             return NotFound(result.Error ?? "用户不存在");
         return Success(result.Value, "查询成功");
@@ -80,9 +83,8 @@ public abstract class BaseUsersController : BaseCrudController
         if (dto is not UserInputDto inputDto)
             return ValidationFail("无效的请求数据");
 
-        var (operatorId, _, currentRole) = GetOperator();
-        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
-        var result = await Sender.Send(new UpdateUserCommand(id, inputDto, operatorId, isAdmin), ct);
+        var (operatorId, _, _) = GetOperator();
+        var result = await _userService.UpdateAsync(id, inputDto, operatorId, ct);
         if (!result.IsSuccess || result.Value == null)
         {
             if (result.Error?.Contains("不存在") == true)
@@ -177,7 +179,7 @@ public abstract class BaseUsersController : BaseCrudController
     public virtual async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken = default)
     {
         var userId = BaseClaimsHelper.GetCurrentUserId(User);
-        var result = await Sender.Send(new GetCurrentUserQuery(userId), cancellationToken);
+        var result = await _userService.GetCurrentUserAsync(userId, cancellationToken);
         if (!result.IsSuccess) return NotFound(result.Error ?? "用户不存在");
         return Success(result.Value!);
     }
@@ -220,7 +222,7 @@ public abstract class BaseUsersController : BaseCrudController
     {
         var (currentUserId, _, _) = GetOperator();
 
-        var result = await Sender.Send(new ChangeProfileCommand(id, dto, currentUserId), ct);
+        var result = await _userService.ChangeProfileAsync(id, dto, currentUserId, ct);
 
         if (!result.IsSuccess)
         {

@@ -1,5 +1,6 @@
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Users.Controllers;
+using LYBT.Module.Users.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,8 +12,9 @@ public class UsersController : BaseUsersController
 {
     public UsersController(
         ISender sender,
-        ILogger<UsersController> logger)
-        : base(sender, logger)
+        ILogger<UsersController> logger,
+        IUserService userService)
+        : base(sender, logger, userService)
     {
     }
 }
