@@ -96,13 +96,15 @@ flowchart TD
 | # | 交接 | 上游 → 下游 | 传递物 | 状态 | 关键缺口 |
 |:---:|------|------------|--------|:----:|----------|
 | 1 | 系统初始化 | Sysadmin → Admin | Admin 账号 + 密码 | 📋 | 向导未实现（当前仅连接配置） |
-| 2 | 基础数据准备 | Admin → Doctor/Receptionist | 药材库 + 验方库 | 📋 | Excel 导入缺失（阻断 Admin 初始化药材库→Doctor 无药可开方） |
-| 3 | 挂号登记 | Receptionist → Doctor | 挂号单（Registration，状态=Waiting） | ✅ | — |
-| 4 | 开始就诊 | Doctor → 医案系统 | 医案（MedicalCase，状态=Suspended） | ✅ | StartVisit 不创建医案（BR-000 设计正确） |
-| 5 | 完成就诊 | Doctor → 系统 | 完成医案 + 打印记录 | ⚠️ | 打印回写缺失、审计日志缺失 |
-| 6 | 队列更新 | Doctor → Receptionist | 候诊队列状态变更（SignalR） | 📋 | SignalR 接线待验证 |
-| 7 | 纠偏修改 | Admin → 医案系统 | 修改记录 + 审计日志 | 📋 | 纠偏 UI + 审计日志未实现 |
-| 8 | 密码重置 | Sysadmin/Admin → 用户 | 重置后的密码 | ✅ | — |
+| 2 | 用户管理 | Sysadmin → Admin | 管理权（创建/编辑/禁用/删除/重置密码） | 📋 | Sysadmin 管 Admin 的 UI 待开发 |
+| 3 | 用户管理 | Admin → Doctor/Receptionist | 管理权（创建/编辑/禁用/删除/重置密码） | ⚠️ | 部分功能可用，禁用/删除待完善 |
+| 4 | 基础数据准备 | Admin → Doctor/Receptionist | 药材库 + 验方库 | 📋 | Excel 导入缺失 |
+| 5 | 挂号登记 | Receptionist → Doctor | 挂号单（Registration，状态=Waiting） | ✅ | — |
+| 6 | 开始就诊 | Doctor → 医案系统 | 医案（MedicalCase，状态=Suspended） | ✅ | StartVisit 不创建医案（BR-000 设计正确） |
+| 7 | 完成就诊 | Doctor → 系统 | 完成医案 + 打印记录 | ⚠️ | 打印回写缺失、审计日志缺失 |
+| 8 | 队列更新 | Doctor → Receptionist | 候诊队列状态变更（SignalR） | 📋 | SignalR 接线待验证 |
+| 9 | 纠偏修改 | Admin → 医案系统 | 修改记录 + 审计日志 | 📋 | 纠偏 UI + 审计日志未实现 |
+| 10 | 密码重置 | Sysadmin → Admin（离线工具） | 重置后的密码 hash | 📋 | 离线密码重置工具待开发 |
 
 ### 2.2 交接物定义
 
@@ -168,16 +170,14 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    SA["Sysadmin 🔧"] -->|"创建账号"| AD["Admin 👔"]
-    AD -->|"创建账号"| DR["Doctor 🩺"]
-    AD -->|"创建账号"| RE["Receptionist 📋"]
+    SA["Sysadmin 🔧"] -->|"管理 Admin"| AD["Admin 👔"]
+    AD -->|"管理 Doctor/Receptionist"| DR["Doctor 🩺"]
+    AD -->|"管理 Doctor/Receptionist"| RE["Receptionist 📋"]
     AD -->|"导入药材/验方"| DR
     RE -->|"挂号单"| DR
     DR -->|"完成医案"| SYS["系统"]
     AD -->|"纠偏修改"| SYS
-    SA -->|"重置任何密码"| AD
-    SA -->|"重置任何密码"| DR
-    SA -->|"重置任何密码"| RE
+    SA -.->|"About 页公开联系方式"| AD
 ```
 
 ---

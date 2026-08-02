@@ -18,8 +18,10 @@
 | 操作 | Receptionist | Doctor | Admin | SuperAdmin |
 |------|:-----------:|:------:|:-----:|:----------:|
 | **用户管理** |||||
-| 用户 CRUD | ✗ | ✗ | ✅（仅 Doctor/Receptionist） | ✅ 全部 |
-| 重置密码 | ✗ | ✗ | ✅ | ✅ |
+| 用户 CRUD | ✗ | ✗ | ✅（仅 Doctor/Receptionist） | ✅（仅 Admin） |
+| 重置密码 | ✗ | ✗ | ✅（仅 Doctor/Receptionist） | ✅（仅 Admin） |
+| 禁用/启用/删除 | ✗ | ✗ | ✅（仅 Doctor/Receptionist） | ✅（仅 Admin） |
+| 角色变更 | ✗ | ✗ | ✗ | ✗ |
 | **患者管理** |||||
 | 患者 CRUD | ✅ | ✅ | ✅ | ✅ |
 | 患者删除 | ✗ | ✅ | ✅ | ✅ |
@@ -115,10 +117,15 @@
 
 ## 四、权限设计原则
 
-1. **最小权限**：每个角色仅拥有完成本职工作所需的最小权限
-2. **职责分离**：药材管理（Admin 统一管库）与药材查询（Doctor/Receptionist 读取）分离
-3. **操作级细分**：同一 Controller 的读/写操作可使用不同策略（Phase② 落地）
-4. **sysadmin 特殊性**：绕过所有权限检查，但不可参与业务操作
+1. **层级管理**：上级管下级，不自管，不越级
+   - Sysadmin → Admin（创建/编辑/禁用/删除/重置密码）
+   - Admin → Doctor/Receptionist（创建/编辑/禁用/删除/重置密码）
+   - Doctor/Receptionist → 无用户管理权限
+2. **不可自管**：每个角色不可删除/禁用自己。Sysadmin 密码遗忘使用离线重置工具
+3. **角色不可变更**：用户创建后角色固定，不支持升级/降级（避免权限追溯问题）
+4. **职责分离**：药材管理（Admin 统一管库）与药材查询（Doctor/Receptionist 读取）分离
+5. **操作级细分**：同一 Controller 的读/写操作可使用不同策略（Phase② 落地）
+6. **sysadmin 特殊性**：绕过所有权限检查，但不可参与业务操作；联系方式在 About 页公开
 
 ---
 

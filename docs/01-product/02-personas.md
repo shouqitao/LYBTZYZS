@@ -60,19 +60,20 @@ flowchart TD
     N -->|是| O[诊断排查 → 修复 → 回到 M]
     N -->|否| M
 
-    M5 --> P[重置用户密码]
-    M5 --> Q[查看所有用户]
-    M5 --> R[创建/删除用户]
-    M5 --> S{目标是 sysadmin?}
-    S -->|是| T[❌ 拒绝：sysadmin 不可删/禁/改]
-    S -->|否| R
+    M5 --> P[重置 Admin 密码]
+    M5 --> Q[查看 Admin 账号]
+    M5 --> R[创建/编辑/禁用/删除 Admin]
+    M5 --> S[❌ 不管 Doctor/Receptionist]
+    M5 --> T[❌ 不管自己（无自管理入口）]
+    M5 --> U[About 页 → 公开 sysadmin 联系方式]
 ```
 
 ### 约束
 
-- **不可删除**：`ApplicationUser.IsSysAdmin=true` 标记，Users 检查 `IsSysAdmin` 后拒绝删/禁/改
-- **不参与常规权限层级**：绕过 `PermissionLevel` 检查，可管理任何用户
-- **不可混淆**：sysadmin 是独立用户（`IsSysAdmin=true` + SuperAdmin 角色双机制并存）；admin 是业务管理员角色用户
+- **层级管理**：sysadmin **仅管理 Admin**，不管理 Doctor/Receptionist（由 Admin 管理）
+- **不可自管**：sysadmin 无自管理入口，不可删除/禁用自己。密码遗忘使用**离线密码重置工具**（使用系统加密算法直接更新数据库）
+- **不可混淆**：sysadmin 是独立用户（`IsSysAdmin=true`）；admin 是业务管理员角色用户
+- **About 页公开**：sysadmin 联系方式在 About 页公开，Admin 无需进入用户管理即可联系
 - **首登强制改密**：`ForceChangeOnFirstLogin=true`，sysadmin 首次登录后必须修改默认密码
 
 ### 双模式配置管理（ADR-0014）
@@ -128,11 +129,12 @@ flowchart TD
     A[Admin 登录] --> B[管理后台]
 
     B --> C[用户管理]
-    C --> C1[创建/编辑/禁用 Doctor/Receptionist]
-    C --> C2[重置密码]
-    C --> C3{目标是 Admin/SuperAdmin?}
-    C3 -->|是| C4[❌ 拒绝：不可管理同级/上级]
-    C3 -->|否| C1
+    C --> C1[创建/编辑 Doctor/Receptionist]
+    C --> C2[重置 Doctor/Receptionist 密码]
+    C --> C3[禁用/启用/删除 Doctor/Receptionist]
+    C --> C4{目标是 Admin/Sysadmin?}
+    C4 -->|是| C5[❌ 拒绝：不可管理同级/上级]
+    C4 -->|否| C1
 
     B --> D[药材管理]
     D --> D1[创建/编辑药材]
@@ -175,7 +177,9 @@ flowchart TD
 
 | 能力 | Admin | 说明 |
 |------|:-----:|------|
-| 用户 CRUD | ✅（仅 Doctor/Receptionist） | 不可管理 Admin/SuperAdmin |
+| 用户 CRUD | ✅（仅 Doctor/Receptionist） | 不可管理 Admin/Sysadmin |
+| 重置密码 | ✅（仅 Doctor/Receptionist） | Sysadmin 重置 Admin 密码 |
+| 禁用/启用/删除 | ✅（仅 Doctor/Receptionist） | Sysadmin 操作 Admin 的禁用/删除 |
 | 药材 CRUD | ✅ 全部 | Admin 统一管库，Doctor 不直接操作药材 |
 | 验方 CRUD | ✅ 全部 | |
 | 医案创建 | ❌ | 仅 Doctor |
@@ -382,7 +386,7 @@ flowchart TD
 
 | 日期 | 变更 |
 |------|------|
-| 2026-08-02 | v4.0 重构：拆分为 3 个文档（personas/permissions/interactions）；补充异常分支流程图；增加实现态标注；增加 Admin 主线流程+纠偏子流程；增加前台批量登记+冲突处理；修正 sysadmin 流程；移除权限矩阵（→03）和交叉对比（→04） |
+| 2026-08-02 | v4.1 用户管理层级模型：Sysadmin→Admin→Doctor/Receptionist 层级管理；不可自管；角色不可变更；sysadmin 密码离线重置工具；About 页公开 sysadmin 联系方式 |
 | 2026-06-28 | 四角色全面重写 + 交叉对比 + 二轮设计验证 |
 | 2026-06-20 | v3.2 Sysadmin 改为独立用户设计 |
 | 2026-06-20 | v3.1 增加代码实现列 |
