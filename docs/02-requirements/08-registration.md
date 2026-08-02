@@ -104,6 +104,8 @@
 
 ### QuickVisit 原子性
 
+> **⚠️ 当前状态**：API 已实现（`RegistrationsController`），Desktop 端接线**待激活**。v1.0 需完成 Desktop 端 QuickVisit 入口。
+
 医生快速就诊（US-REG-002）使用 `TransactionScope(ReadCommitted)` 包裹 Registration + MedicalCase 两个实体的创建，确保原子性：要么同时成功，要么同时回滚。
 
 ### 并发保护

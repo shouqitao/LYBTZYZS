@@ -143,7 +143,7 @@ sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局
 | **用户管理** | Users (12 US) | 8/12 ✅ 3⚠️ 1🔴 | ⚠️ 部分 | 分页筛选 bug（内存过滤导致 TotalCount 错误）、Restore 未实现、CreatedAt 始终 MinValue |
 | **药材管理** | Herbs (13 US) | 3/13 ✅ 3⚠️ **7🔴** | 🔴 严重 | 删除无引用检查（破坏处方完整性）、Excel 导入导出**完全缺失**、批量操作不完整、权限策略待细化（Admin 统一管库；前台不涉及药材） |
 | **验方管理** | Formulas (13 US) | 7/13 ✅ 3⚠️ 3🔴 | ⚠️ 部分 | GetDetail **无所有权检查**（Admin 能读他人非共享验方→安全缺陷）、Export/Import 端点缺失、Restore 缺失 |
-| **医案管理** | MedicalCases (18 US) | 8/18 ✅ 6⚠️ 4🔴 | ⚠️ 部分 | 审计日志缺失、打印保护缺失、历史聚合缺失。**设计决策**：admin 医案操作 = 状态变更（CaseStatus → Completed），**不编辑 Consultation/Prescription 内容**。**v1.0 医生对医案负责，Admin 不审核医案**（医案查询见 MC-005/006，不可创建/编辑/审核）；医生不可用时管理关闭解除 BR-001；变更追溯由 D1 审计日志（v1.0 补回）保障。代码已符合此边界 |
+|| **医案管理** | MedicalCases (18 US) | 8/18 ✅ 6⚠️ 4🔴 | ⚠️ 部分 | 审计日志缺失、打印保护缺失、历史聚合缺失。**设计决策**：admin 医案操作 = 纠偏场景（医生/前台出错时 Admin 介入修改，需填原因）+ 状态变更。**v1.0 医生对医案负责，Admin 不审核医案**（不可创建医案）；变更追溯由 D1 审计日志（v1.0 补回）保障 |
 | **挂号监控** | Registration (7 US) | 2/7 ✅ 2⚠️ 3🔴 | 🔴 严重 | **权限策略错误**（类级 `DoctorOrAdmin` 挡住 Receptionist 核心职能）、StartVisit 链路断裂、跨模块直接引用 |
 
 **汇总**：63 个 US 中 28 个达标（44%），**21 个完全未实现**。
@@ -317,21 +317,20 @@ sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局
 
 | 步骤 | 角色 | 状态 | 说明 |
 |------|------|:---:|------|
-| 部署系统 | Sysadmin | 📋 | 初始化向导待开发 |
+| 部署系统 | Sysadmin | 📋 | 初始化向导待开发（v1.0 简化为4步：改密→诊所信息→创建admin→交权） |
 | 创建 admin | Sysadmin | 📋 | 依赖向导 |
 | admin 创建医生/前台 | Admin | ⚠️ | Users 分页 bug |
 | 前台读卡 | Receptionist | ✅ | |
-| **前台创建挂号** | Receptionist | 🔴 | **DoctorOrAdmin 阻断**（P0 修复） |
-| **医生开始就诊** | Doctor | 🔴 | **StartVisit 不创建医案**（P0） |
-| 医生创建医案 | Doctor | ⚠️ | 能建但策略允许 Admin |
-| 诊断+开方 | Doctor | ⚠️ | 能做但非事务 |
+| 前台创建挂号 | Receptionist | 🔴 | **DoctorOrAdmin 阻断**（P0 修复） |
+| 医生开始就诊 | Doctor | ⚠️ | StartVisit 不建医案（BR-000），进入表单填写诊断+处方，保存时建医案 |
+| 医生写诊断+开方 | Doctor | ⚠️ | 能做但非事务 |
 | 打印 | Doctor | ⚠️ | 能打印但回写缺失 |
 
 ### 跨角色决策汇总
 
 | # | 决策 | 状态 |
 |:---:|------|:---:|
-| 1 | **权限修复**：Registration/Patients/Herbs + LocalWebAPI Patients 的 `[Authorize]` 改为 `DoctorOrReceptionist` | 📋 Phase② |
+|| 1 | **权限修复**：Herbs Create/Update 改 `AdminOrSuperAdmin`；Formulas Create/Update 补 `DoctorOrAdminOrReceptionist`；MedicalCases Create 改 `DoctorOrAdmin`；Patients Delete 补 `AdminOrSuperAdmin` | 📋 Phase② |
 | 2 | **审计日志 + 打印回写** | ✅ **v1.0 必做**（医疗合规） |
 | 3 | **历史医案查询（MC-008/009）**：搜索 + 导出处方到当前 | ✅ **v1.0 Must** |
 | 4 | **本地模式角色检查**：LocalWebAPI 统一 `DoctorOrReceptionist` | 📋 Phase② |
