@@ -41,7 +41,7 @@
 | 处方 | 打印 | ❌ | ✅ | ❌ | ❌ | ❌ |
 | 处方 | 回写 | ❌ | ✅ | ❌ | ❌ | ❌ |
 | 药材 | 查看 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 药材 | 创建/编辑 | ❌ | ✅ | ✅ | ✅ | ✅ |
+| 药材 | 创建/编辑 | ❌ | ❌ | ✅ | ✅ | ✅ |
 | 药材 | 删除 | ❌ | ❌ | ✅(D5 引用检查) | ✅ | ✅ |
 | 验方 | 查看 | ❌ | ✅ | ✅ | ✅ | ✅ |
 | 验方 | 创建/编辑 | ❌ | ✅ | ✅ | ✅ | ✅ |
@@ -110,6 +110,17 @@
 | **K3** | 💻 | `PolicyConstants` 缺 `DoctorOnly`：本文档"医案创建 Doctor 唯一"目标无策略可执行（`PolicyConstants.cs` 仅 4 项）。`personas` "唯一创建者"+"DoctorOrAdmin 策略"自相矛盾（该策略含 Admin） | `PolicyConstants.cs` | 新增 `DoctorOnly` 常量，或服务层 `CreatedBy==currentUser` 归属校验兜底 |
 
 > 完整问题清单（含 I1-I10 重要问题、S1-S10 次要问题）见 [审计报告全文](../compose/reports/2026-06-28-role-driven-audit.md)。
+
+### P1 文档校准发现（2026-08-02）
+
+> 以下为文档校准（documentation-calibration）发现的**代码与矩阵不一致**项。矩阵已更新为目标态，代码待修复。
+
+| # | 类型 | 问题 | 代码位置 | 修复方向 |
+|---|------|------|---------|---------|
+| **C1** | 💻 | **患者删除缺策略**：`PatientsController.Delete` 无操作级 `[Authorize]`，回退类级 `DoctorOrAdminOrReceptionist`（Doctor/Receptionist 也可删患者）。矩阵要求 Admin+ | `PatientsController.cs:129` | 补 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]` |
+| **C2** | 💻 | **药材创建/编辑缺策略**：`HerbsController.Create/Update` 无操作级 `[Authorize]`，回退类级 `DoctorOrReceptionist`（Doctor 也可创建/编辑药材）。矩阵要求 Admin+ | `HerbsController.cs:73,97` | Create/Update 补 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`；或改类级策略为 `DoctorOrAdminOrReceptionist` + Create/Update 覆盖为 `AdminOrSuperAdmin` |
+| **C3** | 💻 | **挂号取消权限倒置**（与 K9 合并）：`RegistrationsController.Cancel` 无操作级策略，回退类级 `DoctorOrAdminOrReceptionist`。矩阵要求仅 Receptionist | `RegistrationsController.cs:95` | 补 `[Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]` + 服务层校验 Source=Receptionist |
+| **C4** | 💻 | **医案创建含 Receptionist**：`MedicalCasesController.Create` 策略 `DoctorOrAdminOrReceptionist`（含 Receptionist 代建）。矩阵已标注 ✅(代建)，但需确认是否为设计意图 | `MedicalCasesController.cs:93` | 如确认代建：保留现状；如不确认：改策略为 `DoctorOrAdmin` |
 
 ---
 

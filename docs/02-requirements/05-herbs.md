@@ -45,10 +45,10 @@
 - [ ] 支持按名称、拼音首字母（PinyinAbbreviation）筛选
 - [ ] 支持按 Category（分类）筛选
 - [ ] 返回总数与分页数据
-- [ ] Receptionist 可查看药材列表（只读）；Doctor 可创建/编辑药材
+- [ ] Receptionist/Doctor 可查看药材列表（只读）；Admin+ 可创建/编辑药材
 
 **业务规则**:
-1. 端点受 `DoctorOrReceptionist` 策略保护（Receptionist 可查询，Doctor/Admin/SuperAdmin 可查询+编辑）
+1. 端点受 `DoctorOrReceptionist` 策略保护（Receptionist/Doctor 可查询，Admin+ 可查询+创建/编辑）；Create/Update 端点需补 `AdminOrSuperAdmin` 策略（⚠️ 代码待修复 C2）
 2. 拼音搜索基于 `PinyinAbbreviation` 字段（如 "dg" 匹配 "当归"）
 3. 结果受 OutputCache 缓存（`HerbsCache` 策略）提升查询性能
 
