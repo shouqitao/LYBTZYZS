@@ -1,116 +1,54 @@
 # 运维文档
 
+> **用户速览**：给运维人员看的。部署、配置、监控、备份都在这里。
+
 ## 部署架构
 
 ```
 [Desktop Client (WPF)]
      │
-     ├── 远程模式 ──→ [LYBT.WebAPI] ──→ [SQL Server]
-     │                   (Kestrel :5000/:5001)
+     ├── 远程 ──→ [LYBT.WebAPI] ──→ [SQL Server]
+     │              (Kestrel :5000)
      │
-     └── 本地模式 ──→ [LYBT.LocalWebAPI] ──→ [SQL Server LocalDB]
-                         (Kestrel :5300)        (%LOCALAPPDATA%\LYBTZYZS\data\)
+     └── 本地 ──→ [LocalWebAPI] ──→ [LocalDB]
+                    (Kestrel :5300)
 ```
 
----
+## 文档索引
 
-## 概述
-
-本目录包含 LYBT 系统的运维相关文档，涵盖部署、配置、日志和健康检查。
-
-| 文档 | 内容 |
-|------|------|
-| [01-deployment.md](./01-deployment.md) | 服务端部署、客户端部署、数据库运维 |
-| [02-configuration.md](./02-configuration.md) | 完整配置项说明 (JWT/密码策略/会话/限流/数据库/缓存/Kestrel) |
-| [03-webapi-deployment-summary.md](./03-webapi-deployment-summary.md) | WebAPI 部署摘要 |
-| [04-windows-deployment.md](./04-windows-deployment.md) | Windows 部署指南 |
-| [05-development-environment-spec.md](./05-development-environment-spec.md) | 开发环境规格说明 |
-| [06-api-tests.md](./06-api-tests.md) | API 测试用例文档 |
-| [07-backup-recovery.md](./07-backup-recovery.md) | 备份策略、恢复流程、灾难恢复 |
-| [08-monitoring-alerting.md](./08-monitoring-alerting.md) | 监控指标、告警规则、日常巡检 |
-| [09-deployment-rollback.md](./09-deployment-rollback.md) | 部署流程、回滚策略、决策矩阵 |
-| [10-variables-secrets.md](./10-variables-secrets.md) | 配置变量与密钥清单、上线前检查 |
-| [11-variables-value-ranges.md](./11-variables-value-ranges.md) | 变量值域、默认值、取值范围 |
-| [12-deployment-flow.md](./12-deployment-flow.md) | 远程/本地部署流程、更新与回滚步骤 |
-
-> 注：历史归档子目录 `archive/` 已不存在（文件已合并入主目录）。
-
----
+| # | 文档 | 一句话说明 |
+|---|------|-----------|
+| 01 | [部署指南](01-deployment.md) | 服务端+客户端+数据库部署 |
+| 02 | [配置管理](02-configuration.md) | 完整配置项说明 |
+| 03 | [WebAPI 部署摘要](03-webapi-deployment-summary.md) | 快速部署参考 |
+| 04 | [Windows 部署](04-windows-deployment.md) | Windows 环境部署 |
+| 05 | [开发环境规格](05-development-environment-spec.md) | 环境要求 |
+| 06 | [API 测试](06-api-tests.md) | 测试用例 |
+| 07 | [备份恢复](07-backup-recovery.md) | 备份策略+灾难恢复 |
+| 08 | [监控告警](08-monitoring-alerting.md) | 监控指标+告警规则 |
+| 09 | [部署回滚](09-deployment-rollback.md) | 回滚策略+决策矩阵 |
+| 10 | [变量与密钥](10-variables-secrets.md) | 配置变量清单 |
+| 11 | [变量值域](11-variables-value-ranges.md) | 取值范围+默认值 |
+| 12 | [部署流程](12-deployment-flow.md) | 远程/本地部署步骤 |
+| 13 | [服务器配置参考](13-server-config-reference.md) | 生产环境速查 |
+| 14 | [测试环境](14-deployment-test-environment.md) | 测试环境配置 |
 
 ## 日志系统
 
-### 日志输出
-
 | 目标 | 级别 | 说明 |
 |------|------|------|
-| Console | Information+ | 开发调试 |
-| File | Information+ | 本地日志文件 (30天轮转) |
-| SQL Server | Warning+ | 数据库持久化 (SystemLogs 表) |
+| Console | Info+ | 开发调试 |
+| File | Info+ | 本地日志（30天轮转） |
+| SQL Server | Warn+ | 数据库持久化 |
 
-### 日志文件
-
-- 路径: `logs/lybt-web-api-{date}.log`
-- 轮转: 每日轮转，最多 30 个文件
-- 单文件上限: 10MB
-- 格式: `{Timestamp} [{Level}] [{CorrelationId}] [{SourceContext}] {Message}`
-
-### 运行时日志调整
-
-通过 Diagnostics API 动态调整日志级别 (需 SuperAdmin 权限)，详见 [API 参考 - Diagnostics](../04-api-reference/README.md):
-
-```bash
-# 查看当前日志级别
-GET /api/v1/diagnostics/logging/status
-
-# 启用调试模式 (临时，最长 120 分钟)
-POST /api/v1/diagnostics/logging/debug/enable
-{
-  "level": "Debug",
-  "durationMinutes": 30
-}
-
-# 禁用调试模式
-POST /api/v1/diagnostics/logging/debug/disable
-```
-
----
+日志路径：`logs/lybt-web-api-{date}.log`
 
 ## 健康检查
 
-### 端点
-
-系统提供两组健康检查端点：
-
-| 端点 | 类型 | 权限 | 说明 |
-|------|------|------|------|
-| `GET /health` | 中间件映射 | 匿名 | ASP.NET Core HealthCheck 中间件（探活、负载均衡） |
-| `GET /health/database` | 中间件映射 | 匿名 | 数据库连接检查（`MapHealthChecks` 中间件层，**仅 Server WebAPI 提供**，LocalWebAPI 无此端点） |
-| `GET /api/v1/health` | 控制器 | 匿名 | 业务层健康检查（返回 `Healthy` + 时间戳） |
-| `GET /api/v1/health/ping` | 控制器 | 匿名 | Ping/Pong |
-| `GET /api/v1/health/details` | 控制器 | 已认证 | 详细检查 (含数据库连接、迁移状态) |
-
-### 响应示例
-
-```json
-{
-  "status": "Healthy",
-  "timestamp": "2026-02-10T10:00:00Z",
-  "database": {
-    "status": "Healthy",
-    "duration": 15
-  }
-}
-```
-
-状态值: `Healthy` / `Degraded` / `Unhealthy`。`Degraded` 返回 503。
-
-详见 [API 参考 - Health](../04-api-reference/README.md)。
-
----
-
-## 变更记录
-| 日期 | 版本 | 变更内容 |
-|------|------|----------|
-| 2026-06-28 | v1.2 | 端口统一 5300（LocalWebAPI 嵌入模式）；导航补 10/11/12；/health/database 注明仅 Server；LocalDB 路径改 %LOCALAPPDATA%\LYBTZYZS |
-| 2026-02-10 | v1.1 | 拆分部署和配置内容到独立文档，精简为索引+日志+健康检查 |
-| 2026-02-10 | v1.0 | 初始版本 |
+| 端点 | 权限 | 说明 |
+|------|------|------|
+| `GET /health` | 匿名 | 探活 |
+| `GET /health/database` | 匿名 | 数据库检查（仅 Server） |
+| `GET /api/v1/health` | 匿名 | 业务健康检查 |
+| `GET /api/v1/health/ping` | 匿名 | Ping/Pong |
+| `GET /api/v1/health/details` | 已认证 | 详细检查 |
