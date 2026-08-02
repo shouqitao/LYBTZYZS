@@ -1,6 +1,7 @@
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Models.DTOs.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ namespace LYBT.Module.Users.Services;
 /// 用户跨模块服务实现
 /// 替代 CrossModuleService 中的用户查询逻辑
 /// </summary>
-public class UserCrossModuleService
+public class UserCrossModuleService : IUserCrossModuleService
 {
     private readonly AppDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;

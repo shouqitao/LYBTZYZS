@@ -12,7 +12,7 @@ namespace LYBT.Module.Herbs.Services;
 /// 药材跨模块服务实现
 /// 替代 CrossModuleService 中的药材查询逻辑
 /// </summary>
-public class HerbCrossModuleService
+public class HerbCrossModuleService : IHerbCrossModuleService
 {
     private readonly AppDbContext _context;
     private readonly ILogger<HerbCrossModuleService> _logger;

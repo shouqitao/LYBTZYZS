@@ -1,9 +1,10 @@
 using LYBT.Entities.Auth;
 using LYBT.Infrastructure.Data;
+using LYBT.Module.Auth.Interfaces;
 
 namespace LYBT.Module.Auth.Infrastructure;
 
-public class SecurityAuditRepository
+public class SecurityAuditRepository : ISecurityAuditRepository
 {
     private readonly AppDbContext _context;
 

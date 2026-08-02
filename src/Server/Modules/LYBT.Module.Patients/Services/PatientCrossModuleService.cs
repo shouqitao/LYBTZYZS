@@ -11,7 +11,7 @@ namespace LYBT.Module.Patients.Services;
 /// 患者跨模块服务实现
 /// 替代 CrossModuleService 中的患者查询逻辑
 /// </summary>
-public class PatientCrossModuleService
+public class PatientCrossModuleService : IPatientCrossModuleService
 {
     private readonly AppDbContext _context;
     private readonly ILogger<PatientCrossModuleService> _logger;

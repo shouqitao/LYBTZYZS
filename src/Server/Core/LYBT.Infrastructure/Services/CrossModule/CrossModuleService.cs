@@ -1,11 +1,7 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.DTOs.Users;
-using LYBT.Infrastructure.Services.CrossModule;
-using LYBT.Module.Patients.Services;
-using LYBT.Module.Herbs.Services;
-using LYBT.Module.Users.Services;
 
-namespace LYBT.Module.Patients.Services;
+namespace LYBT.Infrastructure.Services.CrossModule;
 
 /// <summary>
 /// 跨模块通信服务 — 统一实现
@@ -13,14 +9,14 @@ namespace LYBT.Module.Patients.Services;
 /// </summary>
 public class CrossModuleService : ICrossModuleService
 {
-    private readonly PatientCrossModuleService _patient;
-    private readonly HerbCrossModuleService _herb;
-    private readonly UserCrossModuleService _user;
+    private readonly IPatientCrossModuleService _patient;
+    private readonly IHerbCrossModuleService _herb;
+    private readonly IUserCrossModuleService _user;
 
     public CrossModuleService(
-        PatientCrossModuleService patient,
-        HerbCrossModuleService herb,
-        UserCrossModuleService user)
+        IPatientCrossModuleService patient,
+        IHerbCrossModuleService herb,
+        IUserCrossModuleService user)
     {
         _patient = patient;
         _herb = herb;

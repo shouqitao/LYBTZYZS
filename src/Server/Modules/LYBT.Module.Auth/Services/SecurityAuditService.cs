@@ -1,5 +1,4 @@
 using LYBT.Entities.Auth;
-using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Models;
 using Microsoft.Extensions.Logging;
@@ -8,12 +7,12 @@ namespace LYBT.Module.Auth.Services;
 
 public class SecurityAuditService : ISecurityAuditService
 {
-    private readonly AppDbContext _context;
+    private readonly ISecurityAuditRepository _repository;
     private readonly ILogger<SecurityAuditService> _logger;
 
-    public SecurityAuditService(AppDbContext context, ILogger<SecurityAuditService> logger)
+    public SecurityAuditService(ISecurityAuditRepository repository, ILogger<SecurityAuditService> logger)
     {
-        _context = context;
+        _repository = repository;
         _logger = logger;
     }
 
@@ -34,8 +33,8 @@ public class SecurityAuditService : ISecurityAuditService
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _context.SecurityAuditLogs.AddAsync(log, ct);
-            await _context.SaveChangesAsync(ct);
+            await _repository.AddAsync(log, ct);
+            await _repository.SaveChangesAsync(ct);
         }
         catch (Exception ex)
         {
