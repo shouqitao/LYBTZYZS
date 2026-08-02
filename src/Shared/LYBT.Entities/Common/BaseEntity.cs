@@ -6,6 +6,7 @@ namespace LYBT.Entities.Common
     /// <summary>
     /// 实体基类 - 提供统一的基础字段和审计功能
     /// 适用于凌隐宝堂中医诊所系统的所有业务实体
+    /// 所有业务实体应继承此类以获得统一的审计与软删除能力
     /// </summary>
     public abstract class BaseEntity : IAuditableEntity, ISoftDeletable
     {
