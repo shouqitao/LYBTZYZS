@@ -239,31 +239,48 @@ flowchart TD
 ```mermaid
 flowchart TD
     A[医生打开 Desktop] --> B{选择连接模式}
-    B -->|远程| C[登录远程 WebAPI]
-    B -->|本地 📋| D[使用内嵌 LocalAPI]
-    C --> C1[查看待诊队列]
-    C1 --> H{选择患者}
-    H -->|从队列选| I[StartVisit → Registration→InProgress]
-    H -->|急诊/跳过排队| J[QuickVisit → 系统创建 Registration\nSource=Doctor, Status=InProgress]
-    D --> G[直接选/建患者]
-    G --> G1[系统自动创建 Registration 📋\nSource=Doctor, Status=InProgress]
-    I --> K[进入诊疗表单]
-    J --> K
-    G1 --> K
 
-    K --> L1[填写诊断：主诉/现病史/舌诊/脉诊/辨证]
-    K --> L2[是否开方 Toggle，默认关闭]
-    L2 -->|开启| L3[处方区域：手选药材 / 导入验方]
-    L2 -->|关闭| L4[跳过处方]
+    subgraph Remote["远程模式（SQL Server）"]
+        C[登录远程 WebAPI] --> C1[查看待诊队列]
+        C1 --> H{选择患者}
+        H -->|从队列选| I[StartVisit → Registration→InProgress]
+        H -->|急诊/跳过排队| J[QuickVisit → 系统创建 Registration\nSource=Doctor, Status=InProgress]
+        I --> K1[进入诊疗表单]
+        J --> K1
+        K1 --> L1R[填写诊断：主诉/现病史/舌诊/脉诊/辨证]
+        K1 --> L2R[是否开方 Toggle，默认关闭]
+        L2R -->|开启| L3R[处方区域：手选药材 / 导入验方]
+        L2R -->|关闭| L4R[跳过处方]
+        L1R & L3R & L4R --> MR{点击完成医案}
+        MR -->|有处方| NR[保存 → 完成]
+        MR -->|无处方| OR{确认弹窗：该医案未开处方}
+        OR -->|确认跳过| PR[标记未开方 → 完成]
+        OR -->|取消回去| L2R
+        NR --> QR[打印处方（可选）]
+        PR --> RR[结束]
+        QR --> RR
+    end
 
-    L1 & L3 & L4 --> M{点击完成医案}
-    M -->|有处方| N[保存 → 完成]
-    M -->|无处方| O{确认弹窗：该医案未开处方}
-    O -->|确认跳过| P[标记未开方 → 完成]
-    O -->|取消回去| L2
-    N --> Q[打印处方（可选）]
-    P --> R[结束]
-    Q --> R
+    subgraph Local["本地模式（LocalDB） 📋"]
+        D[使用内嵌 LocalAPI] --> G[直接选/建患者]
+        G --> G1[系统自动创建 Registration\nSource=Doctor, Status=InProgress]
+        G1 --> K2[进入诊疗表单]
+        K2 --> L1L[填写诊断：主诉/现病史/舌诊/脉诊/辨证]
+        K2 --> L2L[是否开方 Toggle，默认关闭]
+        L2L -->|开启| L3L[处方区域：手选药材 / 导入验方]
+        L2L -->|关闭| L4L[跳过处方]
+        L1L & L3L & L4L --> ML{点击完成医案}
+        ML -->|有处方| NL[保存 → 完成]
+        ML -->|无处方| OL{确认弹窗：该医案未开处方}
+        OL -->|确认跳过| PL[标记未开方 → 完成]
+        OL -->|取消回去| L2L
+        NL --> QL[打印处方（可选）]
+        PL --> RL[结束]
+        QL --> RL
+    end
+
+    B -->|远程| C
+    B -->|本地| D
 ```
 
 #### 异常场景处理
