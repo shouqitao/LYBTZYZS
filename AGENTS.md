@@ -27,7 +27,7 @@
 
 ### 🔒 项目总账维护（强制规则，不可违反）
 
-`docs/compose/plans/PROJECT-MASTER-PLAN.md` 是项目的**唯一全局视图**。所有 session 必须遵守：
+`docs/03-architecture/13-project-master-plan.md` 是项目的**唯一全局视图**。所有 session 必须遵守：
 
 | 时机 | 动作 |
 |------|------|
