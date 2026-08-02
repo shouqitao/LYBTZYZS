@@ -30,7 +30,6 @@ namespace LYBT.Module.Auth
 
             // 注册仓储
             services.AddScoped<Interfaces.IAuthSessionRepository, Infrastructure.AuthSessionRepository>();
-            services.AddScoped<Interfaces.ISecurityAuditRepository, Infrastructure.SecurityAuditRepository>();
 
             // 注册核心服务
             services.AddScoped<Interfaces.IJwtService, Services.JwtService>();
