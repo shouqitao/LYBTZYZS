@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Formulas.Application.Commands;
 using LYBT.Module.Formulas.Application.Queries;
+using LYBT.Module.Formulas.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
@@ -23,9 +24,12 @@ namespace LYBT.WebAPI.Controllers
     [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
     public class FormulasController : BaseCrudController
     {
-        public FormulasController(ISender sender, ILogger<FormulasController> logger)
+        private readonly IFormulaService _formulaService;
+
+        public FormulasController(ISender sender, ILogger<FormulasController> logger, IFormulaService formulaService)
             : base(sender, logger)
         {
+            _formulaService = formulaService;
         }
 
         /// <summary>
@@ -42,7 +46,7 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidatePagination(page, pageSize) is { } error) return error;
 
-            var result = await Sender.Send(new GetFormulasQuery(page, pageSize, keyword), ct);
+            var result = await _formulaService.GetPagedAsync(page, pageSize, keyword, ct);
             if (!result.IsSuccess)
                 return BusinessFail(result.Error ?? "查询失败");
 
@@ -58,11 +62,9 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidateGuid(id, "验方ID") is { } error) return error;
 
-            var result = await Sender.Send(new GetFormulaQuery(id), ct);
+            var result = await _formulaService.GetByIdAsync(id, ct);
             if (!result.IsSuccess || result.Value == null)
-            {
                 return NotFound(result.Error ?? "验方不存在");
-            }
 
             var (operatorId, _, operatorRole) = GetOperator();
             if (operatorRole == UserRole.Doctor && result.Value.CreatedBy != operatorId && !result.Value.IsShared)
@@ -107,18 +109,16 @@ namespace LYBT.WebAPI.Controllers
             if (dto is not FormulaInputDto inputDto)
                 return ValidationFail("无效的请求数据");
 
-            var getResult = await Sender.Send(new GetFormulaQuery(id), ct);
+            var getResult = await _formulaService.GetByIdAsync(id, ct);
             if (!getResult.IsSuccess || getResult.Value == null)
                 return NotFound("验方不存在");
             if (ValidateOwnership(getResult.Value.CreatedBy, "验方") is { } ownershipError)
                 return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new UpdateFormulaCommand(id, inputDto, operatorId), ct);
+            var result = await _formulaService.UpdateAsync(id, inputDto, operatorId, ct);
             if (!result.IsSuccess || result.Value == null)
-            {
                 return BusinessFail(result.Error ?? "更新失败");
-            }
 
             LogOperation("更新验方成功", result.Value, id);
             return Success(result.Value, "验方更新成功");
@@ -134,7 +134,7 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidateGuid(id, "验方ID") is { } error) return error;
 
-            var getResult = await Sender.Send(new GetFormulaQuery(id), ct);
+            var getResult = await _formulaService.GetByIdAsync(id, ct);
             if (!getResult.IsSuccess || getResult.Value == null)
                 return NotFound("验方不存在");
             if (ValidateOwnership(getResult.Value.CreatedBy, "验方") is { } ownershipError)
@@ -161,18 +161,16 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidateGuid(id, "验方ID") is { } error) return error;
 
-            var getResult = await Sender.Send(new GetFormulaQuery(id), ct);
+            var getResult = await _formulaService.GetByIdAsync(id, ct);
             if (!getResult.IsSuccess || getResult.Value == null)
                 return NotFound("验方不存在");
             if (ValidateOwnership(getResult.Value.CreatedBy, "验方") is { } ownershipError)
                 return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new ToggleFormulaStatusCommand(id, operatorId), ct);
+            var result = await _formulaService.ToggleStatusAsync(id, operatorId, ct);
             if (!result.IsSuccess || result.Value == null)
-            {
                 return BusinessFail(result.Error ?? "切换状态失败");
-            }
 
             LogOperation("切换验方状态", new { NewStatus = result.Value.Status }, id);
             return Success(result.Value, $"验方已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
@@ -189,12 +187,9 @@ namespace LYBT.WebAPI.Controllers
             if (ValidateGuid(id, "验方ID") is { } error) return error;
 
             var (operatorId, _, _) = GetOperator();
-
-            var result = await Sender.Send(new RestoreFormulaCommand(id, operatorId), ct);
+            var result = await _formulaService.RestoreAsync(id, operatorId, ct);
             if (!result.IsSuccess || result.Value == null)
-            {
                 return BusinessFail(result.Error ?? "恢复失败");
-            }
 
             LogOperation("恢复验方", result.Value, result.Value.Id);
             return Success(result.Value, "验方恢复成功");
@@ -297,14 +292,17 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchEnable(
             [FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
-            => await ExecuteBatchStatusAsync(
-                dto,
-                ids => new BatchEnableFormulasCommand(ids),
-                "验方ID列表不能为空",
-                "批量启用失败",
-                "批量启用药方",
-                new { Count = dto.Ids.Count },
-                ct);
+        {
+            if (dto.Ids == null || dto.Ids.Count == 0)
+                return ValidationFail("验方ID列表不能为空");
+
+            var result = await _formulaService.BatchEnableAsync(dto.Ids, ct);
+            if (!result.IsSuccess || result.Value == null)
+                return BusinessFail(result.Error ?? "批量启用失败");
+
+            LogOperation("批量启用药方", new { Count = dto.Ids.Count }, null);
+            return Success(result.Value, result.Value.Message);
+        }
 
         /// <summary>
         /// 批量禁用药方
@@ -314,13 +312,16 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchDisable(
             [FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
-            => await ExecuteBatchStatusAsync(
-                dto,
-                ids => new BatchDisableFormulasCommand(ids),
-                "验方ID列表不能为空",
-                "批量禁用失败",
-                "批量禁用药方",
-                new { Count = dto.Ids.Count },
-                ct);
+        {
+            if (dto.Ids == null || dto.Ids.Count == 0)
+                return ValidationFail("验方ID列表不能为空");
+
+            var result = await _formulaService.BatchDisableAsync(dto.Ids, ct);
+            if (!result.IsSuccess || result.Value == null)
+                return BusinessFail(result.Error ?? "批量禁用失败");
+
+            LogOperation("批量禁用药方", new { Count = dto.Ids.Count }, null);
+            return Success(result.Value, result.Value.Message);
+        }
     }
 }

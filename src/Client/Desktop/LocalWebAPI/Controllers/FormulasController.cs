@@ -2,6 +2,7 @@ using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Formulas.Application.Commands;
 using LYBT.Module.Formulas.Application.Queries;
+using LYBT.Module.Formulas.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
@@ -19,10 +20,14 @@ namespace LYBT.LocalWebAPI.Controllers;
 [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
 public class FormulasController : BaseCrudController
 {
+    private readonly IFormulaService _formulaService;
+
     public FormulasController(
         ISender sender,
-        ILogger<FormulasController> logger) : base(sender, logger)
+        ILogger<FormulasController> logger,
+        IFormulaService formulaService) : base(sender, logger)
     {
+        _formulaService = formulaService;
     }
 
     /// <summary>
@@ -31,15 +36,13 @@ public class FormulasController : BaseCrudController
     [HttpGet("{id}")]
     public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
-        var result = await Sender.Send(new GetFormulaQuery(id), ct);
+        var result = await _formulaService.GetByIdAsync(id, ct);
         if (!result.IsSuccess || result.Value == null)
             return NotFound(result.Error ?? "验方不存在");
 
         var (operatorId, _, operatorRole) = GetOperator();
         if (operatorRole == UserRole.Doctor && result.Value.CreatedBy != operatorId && !result.Value.IsShared)
-        {
             return Forbid("您没有权限查看此验方");
-        }
 
         return Success(result.Value, "查询成功");
     }
@@ -50,7 +53,7 @@ public class FormulasController : BaseCrudController
     [HttpPost("{id}/clone")]
     public async Task<IActionResult> Clone(Guid id, CancellationToken ct)
     {
-        var source = await Sender.Send(new GetFormulaQuery(id), ct);
+        var source = await _formulaService.GetByIdAsync(id, ct);
         if (!source.IsSuccess || source.Value == null)
             return NotFound(source.Error ?? "验方不存在");
 
@@ -126,14 +129,16 @@ public class FormulasController : BaseCrudController
     [HttpPost("batch-enable")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-        => await ExecuteBatchStatusAsync(
-            dto,
-            ids => new BatchEnableFormulasCommand(ids),
-            "验方ID列表不能为空",
-            "批量启用失败",
-            null,
-            null,
-            ct);
+    {
+        if (dto.Ids == null || dto.Ids.Count == 0)
+            return ValidationFail("验方ID列表不能为空");
+
+        var result = await _formulaService.BatchEnableAsync(dto.Ids, ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "批量启用失败");
+
+        return Success(result.Value, result.Value.Message);
+    }
 
     /// <summary>
     /// 批量禁用药方
@@ -141,12 +146,14 @@ public class FormulasController : BaseCrudController
     [HttpPost("batch-disable")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-        => await ExecuteBatchStatusAsync(
-            dto,
-            ids => new BatchDisableFormulasCommand(ids),
-            "验方ID列表不能为空",
-            "批量禁用失败",
-            null,
-            null,
-            ct);
+    {
+        if (dto.Ids == null || dto.Ids.Count == 0)
+            return ValidationFail("验方ID列表不能为空");
+
+        var result = await _formulaService.BatchDisableAsync(dto.Ids, ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "批量禁用失败");
+
+        return Success(result.Value, result.Value.Message);
+    }
 }

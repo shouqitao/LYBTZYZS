@@ -1,5 +1,6 @@
 using FluentValidation;
 using LYBT.Module.Formulas.Interfaces;
+using LYBT.Module.Formulas.Services;
 using LYBT.Shared.Models.Validators.Formula;
 using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +40,9 @@ namespace LYBT.Module.Formulas
                 options.UseSqlServer(dbOptions.ConnectionString);
             });
             services.AddScoped<IFormulaRepository, Infrastructure.FormulaRepository>();
+
+            // 注册验方服务（替代 trivial MediatR Handler）
+            services.AddScoped<IFormulaService, FormulaService>();
 
             // Application层 - MediatR
             services.AddMediatR(cfg =>
