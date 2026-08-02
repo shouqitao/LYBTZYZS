@@ -1,9 +1,8 @@
 using LYBT.Infrastructure.Web;
 using LYBT.Infrastructure.Constants;
-using LYBT.Module.Reports.Application.Queries;
+using LYBT.Module.Reports.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Reports;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,11 +13,11 @@ namespace LYBT.LocalWebAPI.Controllers;
 [Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
 public class ReportsController : BaseApiController
 {
-    private readonly ISender _sender;
+    private readonly IReportRepository _reportRepository;
 
-    public ReportsController(ISender sender, ILogger<ReportsController> logger) : base(logger)
+    public ReportsController(IReportRepository reportRepository, ILogger<ReportsController> logger) : base(logger)
     {
-        _sender = sender;
+        _reportRepository = reportRepository;
     }
 
     [HttpGet("daily/income")]
@@ -27,10 +26,20 @@ public class ReportsController : BaseApiController
         [FromQuery] DateTime? endDate = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await _sender.Send(new GetDailyIncomeQuery(startDate, endDate), cancellationToken);
-        if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "查询失败");
-        return Success(result.Value!, "查询成功");
+        var start = startDate ?? DateTime.Today;
+        var end = endDate ?? DateTime.Today;
+
+        var registrationFeeTotal = await _reportRepository.GetRegistrationFeeTotalAsync(start, end, cancellationToken);
+        var medicineFeeTotal = await _reportRepository.GetMedicineFeeTotalAsync(start, end, cancellationToken);
+
+        var dto = new DailyIncomeDto
+        {
+            TotalIncome = registrationFeeTotal + medicineFeeTotal,
+            RegistrationFeeTotal = registrationFeeTotal,
+            MedicineFeeTotal = medicineFeeTotal
+        };
+
+        return Success(dto, "查询成功");
     }
 
     [HttpGet("daily/consultations")]
@@ -39,10 +48,19 @@ public class ReportsController : BaseApiController
         [FromQuery] DateTime? endDate = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await _sender.Send(new GetDailyConsultationsQuery(startDate, endDate), cancellationToken);
-        if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "查询失败");
-        return Success(result.Value!, "查询成功");
+        var start = startDate ?? DateTime.Today;
+        var end = endDate ?? DateTime.Today;
+
+        var totalCount = await _reportRepository.GetConsultationCountAsync(start, end, cancellationToken);
+        var byDoctor = await _reportRepository.GetConsultationsByDoctorAsync(start, end, cancellationToken);
+
+        var dto = new DailyConsultationDto
+        {
+            TotalCount = totalCount,
+            ByDoctor = byDoctor
+        };
+
+        return Success(dto, "查询成功");
     }
 
     [HttpGet("daily/herbs")]
@@ -51,9 +69,13 @@ public class ReportsController : BaseApiController
         [FromQuery] DateTime? endDate = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await _sender.Send(new GetDailyHerbUsageQuery(startDate, endDate), cancellationToken);
-        if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "查询失败");
-        return Success(result.Value!, "查询成功");
+        var start = startDate ?? DateTime.Today;
+        var end = endDate ?? DateTime.Today;
+
+        var items = await _reportRepository.GetHerbUsageAsync(start, end, cancellationToken);
+
+        var dto = new DailyHerbUsageDto { Items = items };
+
+        return Success(dto, "查询成功");
     }
 }

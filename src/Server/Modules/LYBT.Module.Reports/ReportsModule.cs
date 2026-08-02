@@ -1,7 +1,5 @@
-using LYBT.Module.Reports.Application.Queries;
 using LYBT.Module.Reports.Infrastructure;
 using LYBT.Module.Reports.Interfaces;
-using MediatR;
 using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -27,12 +25,8 @@ public static class ReportsModule
             options.UseSqlServer(dbOptions.ConnectionString);
         });
 
-        // 仓储层 - Legacy（给旧ReportService使用）
+        // 仓储层
         services.AddScoped<IReportRepository, LYBT.Module.Reports.Infrastructure.ReportRepository>();
-
-        // Application层 - MediatR
-        services.AddMediatR(cfg =>
-            cfg.RegisterServicesFromAssembly(typeof(GetDailyIncomeQuery).Assembly));
 
         return services;
     }

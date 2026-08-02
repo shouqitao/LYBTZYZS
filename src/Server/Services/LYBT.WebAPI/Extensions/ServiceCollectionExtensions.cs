@@ -121,7 +121,7 @@ public static class ServiceCollectionExtensions
 
         // 9. WebAPI级别 MediatR（Configuration/Diagnostics handlers）
         services.AddMediatR(cfg =>
-            cfg.RegisterServicesFromAssembly(typeof(GetConfigurationQuery).Assembly));
+            cfg.RegisterServicesFromAssembly(typeof(EnableDebugModeCommand).Assembly));
 
         // 10. 领域事件分发器（跨模块共享）
         services.AddScoped<IDomainEventDispatcher, InMemoryDomainEventDispatcher>();

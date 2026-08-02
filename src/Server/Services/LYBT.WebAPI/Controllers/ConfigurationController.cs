@@ -1,9 +1,8 @@
 using Asp.Versioning;
+using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.WebAPI.Configuration.Commands;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,12 +18,14 @@ namespace LYBT.WebAPI.Controllers;
 [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
 public class ConfigurationController : BaseApiController
 {
-    private readonly ISender _sender;
+    private readonly ISystemConfigurationService _configurationService;
 
-    public ConfigurationController(ISender sender, ILogger<ConfigurationController> logger)
+    public ConfigurationController(
+        ISystemConfigurationService configurationService,
+        ILogger<ConfigurationController> logger)
         : base(logger)
     {
-        _sender = sender;
+        _configurationService = configurationService;
     }
 
     /// <summary>
@@ -34,10 +35,10 @@ public class ConfigurationController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<Dictionary<string, string>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetConfiguration(CancellationToken cancellationToken)
     {
-        var result = await _sender.Send(new GetConfigurationQuery(), cancellationToken);
+        var result = await _configurationService.GetConfigurationAsync(cancellationToken);
         if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "获取配置失败");
-        return Success(result.Value!, "查询成功");
+            return BusinessFail(result.ErrorMessage ?? "获取配置失败");
+        return Success(result.Data!, "查询成功");
     }
 
     /// <summary>
@@ -47,10 +48,10 @@ public class ConfigurationController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetValue(string key, CancellationToken cancellationToken)
     {
-        var result = await _sender.Send(new GetValueQuery(key), cancellationToken);
+        var result = await _configurationService.GetValueAsync(key, cancellationToken);
         if (!result.IsSuccess)
-            return NotFound(result.Error ?? "配置项不存在");
-        return Success(result.Value, "查询成功");
+            return NotFound(result.ErrorMessage ?? "配置项不存在");
+        return Success(result.Data, "查询成功");
     }
 
     /// <summary>
@@ -60,11 +61,9 @@ public class ConfigurationController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> ValidateProduction(CancellationToken cancellationToken)
     {
-        var result = await _sender.Send(new ValidateConfigurationQuery(), cancellationToken);
+        var result = await _configurationService.ValidateProductionConfigAsync(cancellationToken);
         if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "配置验证失败");
+            return BusinessFail(result.ErrorMessage ?? "配置验证失败");
         return Success("配置验证通过");
     }
 }
-
-
