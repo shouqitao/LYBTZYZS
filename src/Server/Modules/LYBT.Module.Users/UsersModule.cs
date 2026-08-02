@@ -36,7 +36,7 @@ namespace LYBT.Module.Users
             services.AddScoped<IUserRepository, UserRepository>();
 
             // 注册跨模块服务（替代 CrossModuleService 中的用户查询逻辑）
-            services.AddScoped<IUserCrossModuleService, UserCrossModuleService>();
+            services.AddScoped<UserCrossModuleService>();
 
             // 注册 MediatR（Application层）
             services.AddMediatR(cfg =>
