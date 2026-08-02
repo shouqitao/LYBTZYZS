@@ -4,8 +4,6 @@ using LYBT.Infrastructure.Web;
 using LYBT.Shared.Logging.Management;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Diagnostics;
-using LYBT.WebAPI.Configuration.Commands;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog.Events;
@@ -22,16 +20,13 @@ namespace LYBT.WebAPI.Controllers;
 [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
 public class DiagnosticsController : BaseApiController
 {
-    private readonly ISender _sender;
     private readonly LoggingLevelManager _loggingLevelManager;
 
     public DiagnosticsController(
-        ISender sender,
         LoggingLevelManager loggingLevelManager,
         ILogger<DiagnosticsController> logger)
         : base(logger)
     {
-        _sender = sender;
         _loggingLevelManager = loggingLevelManager;
     }
 
@@ -62,16 +57,31 @@ public class DiagnosticsController : BaseApiController
     /// </summary>
     [HttpPost("logging/debug/enable")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> EnableDebugMode([FromBody] EnableDebugModeRequest? request)
+    public IActionResult EnableDebugMode([FromBody] EnableDebugModeRequest? request)
     {
-        var (operatorId, operatorName, _) = GetOperator();
+        var level = request?.Level?.ToLowerInvariant() switch
+        {
+            "verbose" => LogEventLevel.Verbose,
+            "debug" => LogEventLevel.Debug,
+            "information" => LogEventLevel.Information,
+            _ => LogEventLevel.Debug
+        };
 
-        var result = await _sender.Send(new EnableDebugModeCommand(
-            request?.Level, request?.DurationMinutes, operatorId, operatorName));
+        var durationMinutes = request?.DurationMinutes ?? 30;
+        if (durationMinutes > 120) durationMinutes = 120;
 
-        if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "启用调试模式失败");
-        return Success(result.Value!, "调试模式已启用");
+        var result = _loggingLevelManager.EnableDebugMode(level, durationMinutes);
+
+        object response = new
+        {
+            message = "调试模式已启用",
+            previousLevel = result.PreviousLevel,
+            currentLevel = result.CurrentLevel,
+            startedAt = result.StartedAt,
+            expiresAt = result.ExpiresAt,
+            durationMinutes = result.DurationMinutes
+        };
+        return Success(response, "调试模式已启用");
     }
 
     /// <summary>

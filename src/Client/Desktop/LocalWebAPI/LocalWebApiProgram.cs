@@ -62,7 +62,7 @@ public static class LocalWebApiProgram
         builder.Services.AddRegistrationModule();
         builder.Services.AddReportsModule(builder.Configuration);
 
-        // LocalWebAPI CQRS Handlers（Auth + Diagnostics）
+        // LocalWebAPI CQRS Handlers（Auth）
         builder.Services.AddMediatR(cfg =>
             cfg.RegisterServicesFromAssembly(typeof(LocalWebApiProgram).Assembly));
 

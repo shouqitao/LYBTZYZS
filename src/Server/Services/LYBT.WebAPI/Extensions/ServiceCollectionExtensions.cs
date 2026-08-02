@@ -14,9 +14,7 @@ using LYBT.Module.Reports;
 using LYBT.Module.Users;
 using Microsoft.AspNetCore.HttpsPolicy;
 using LYBT.Infrastructure.SharedKernel.Events;
-using LYBT.WebAPI.Configuration.Commands;
 using LYBT.WebAPI.Filters;
-using MediatR;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -119,11 +117,7 @@ public static class ServiceCollectionExtensions
         // 8. 报表模块
         services.AddReportsModule(configuration);
 
-        // 9. WebAPI级别 MediatR（Configuration/Diagnostics handlers）
-        services.AddMediatR(cfg =>
-            cfg.RegisterServicesFromAssembly(typeof(EnableDebugModeCommand).Assembly));
-
-        // 10. 领域事件分发器（跨模块共享）
+        // 9. 领域事件分发器（跨模块共享）
         services.AddScoped<IDomainEventDispatcher, InMemoryDomainEventDispatcher>();
 
         return services;

@@ -4,12 +4,12 @@ using System.Security.Claims;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Web;
-using LYBT.LocalWebAPI.Commands;
+using LYBT.Shared.Logging.Management;
 using LYBT.Shared.Models.Contracts.Diagnostics;
 using LYBT.Shared.Models.Contracts.Health;
 using LYBT.Shared.Models.Enums;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Serilog.Events;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.LocalWebAPI.Controllers;
@@ -21,14 +21,14 @@ public class DiagnosticsController : BaseApiController
 {
     private readonly ISystemLogRepository _systemLogRepository;
     private readonly IHealthCheckService _healthCheckService;
-    private readonly ISender _sender;
+    private readonly LoggingLevelManager _loggingLevelManager;
 
-    public DiagnosticsController(ISystemLogRepository systemLogRepository, IHealthCheckService healthCheckService, ISender sender, ILogger<DiagnosticsController> logger)
+    public DiagnosticsController(ISystemLogRepository systemLogRepository, IHealthCheckService healthCheckService, LoggingLevelManager loggingLevelManager, ILogger<DiagnosticsController> logger)
         : base(logger)
     {
         _systemLogRepository = systemLogRepository;
         _healthCheckService = healthCheckService;
-        _sender = sender;
+        _loggingLevelManager = loggingLevelManager;
     }
 
     [HttpGet("db-info")]
@@ -96,39 +96,85 @@ public class DiagnosticsController : BaseApiController
     }
 
     [HttpGet("logging/status")]
-    public async Task<IActionResult> GetLoggingStatus(CancellationToken ct)
+    public IActionResult GetLoggingStatus()
     {
-        var result = await _sender.Send(new GetLoggingStatusQuery(), ct);
-        return Success(result);
+        var status = _loggingLevelManager.GetStatus();
+        return Success(new
+        {
+            currentLevel = status.CurrentLevel,
+            defaultLevel = status.DefaultLevel,
+            isDebugModeActive = status.IsActive,
+            debugModeStartedAt = status.StartedAt,
+            debugModeExpiresAt = status.ExpiresAt,
+            remainingMinutes = status.ExpiresAt.HasValue
+                ? Math.Max(0, (int)(status.ExpiresAt.Value - DateTime.UtcNow).TotalMinutes)
+                : (int?)null
+        });
     }
 
     [HttpPost("logging/debug/enable")]
-    public async Task<IActionResult> EnableDebugMode([FromBody] EnableDebugModeRequest? request, CancellationToken ct)
+    public IActionResult EnableDebugMode([FromBody] EnableDebugModeRequest? request)
     {
         if (!IsAdminOrHigher()) return Forbid("仅管理员可调整日志级别");
-        var result = await _sender.Send(new EnableDebugModeCommand(request?.Level, request?.DurationMinutes), ct);
-        return Success(result);
+
+        var level = request?.Level?.ToLowerInvariant() switch
+        {
+            "verbose" => LogEventLevel.Verbose,
+            "debug" => LogEventLevel.Debug,
+            "information" => LogEventLevel.Information,
+            _ => LogEventLevel.Debug
+        };
+
+        var durationMinutes = request?.DurationMinutes ?? 30;
+        if (durationMinutes > 120) durationMinutes = 120;
+
+        var result = _loggingLevelManager.EnableDebugMode(level, durationMinutes);
+
+        return Success(new
+        {
+            message = "调试模式已启用",
+            previousLevel = result.PreviousLevel,
+            currentLevel = result.CurrentLevel,
+            startedAt = result.StartedAt,
+            expiresAt = result.ExpiresAt,
+            durationMinutes = result.DurationMinutes
+        });
     }
 
     [HttpPost("logging/debug/disable")]
-    public async Task<IActionResult> DisableDebugMode(CancellationToken ct)
+    public IActionResult DisableDebugMode()
     {
         if (!IsAdminOrHigher()) return Forbid("仅管理员可调整日志级别");
-        var result = await _sender.Send(new DisableDebugModeCommand(), ct);
-        return Success(result);
+
+        var result = _loggingLevelManager.DisableDebugMode();
+
+        return Success(new
+        {
+            message = "调试模式已禁用，已恢复默认日志级别",
+            previousLevel = result.PreviousLevel,
+            currentLevel = result.CurrentLevel
+        });
     }
 
     [HttpPost("logging/level")]
-    public async Task<IActionResult> SetLoggingLevel([FromBody] SetLoggingLevelRequest request, CancellationToken ct)
+    public IActionResult SetLoggingLevel([FromBody] SetLoggingLevelRequest request)
     {
         if (!IsAdminOrHigher()) return Forbid("仅管理员可调整日志级别");
         if (string.IsNullOrWhiteSpace(request.Level))
             return Error("日志级别不能为空");
 
-        var result = await _sender.Send(new SetLoggingLevelCommand(request.Level), ct);
-        if (!result.Success)
-            return ValidationFail(result.Message);
-        return Success(result);
+        if (!Enum.TryParse<LogEventLevel>(request.Level, ignoreCase: true, out var level))
+            return Error($"无效的日志级别，有效值: {string.Join(", ", Enum.GetNames<LogEventLevel>())}");
+
+        var previousLevel = _loggingLevelManager.GetStatus().CurrentLevel;
+        _loggingLevelManager.SetLevel(level);
+
+        return Success(new
+        {
+            message = "日志级别已更新",
+            previousLevel,
+            currentLevel = level.ToString()
+        });
     }
 
     private bool IsAdminOrHigher()
