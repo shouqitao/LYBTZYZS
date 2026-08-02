@@ -1,8 +1,13 @@
 # 用户画像 (Personas)
 
-> 版本: v3.1 | 日期: 2026-06-20 | 状态: 代码验证
+> 版本: v4.0 | 日期: 2026-08-02 | 状态: 文档定义（设计态）
 
-本文件定义凌隐宝堂中医诊所管理系统的四个核心角色。所有功能映射均经过代码验证。
+本文件定义凌隐宝堂中医诊所管理系统的四个核心角色及其工作流程。
+
+**图例**：✅ 已实现 | 📋 已设计未实现 | 🔴 未实现/缺失
+
+> 权限矩阵与修复项详见 [04-permissions.md](04-permissions.md)。
+> 角色交接与协同流程详见 [05-role-interactions.md](05-role-interactions.md)。
 
 ---
 
@@ -14,98 +19,18 @@
 
 **sysadmin 不是一个角色，而是一个独立的系统用户。** 安装时自动创建，不可删除，独立于角色体系。负责系统全生命周期管理：部署→初始化→日常运维→安全→备份恢复→升级。
 
+> **设计原则**：sysadmin 所有基础配置都有 UI 界面，不靠手动改 JSON。
+
 ### 核心职责
 
 | 阶段 | 职责 | 实现状态 |
-|------|------|---------|
+|------|------|----------|
 | **部署** | Desktop 安装（Velopack）、WebAPI 服务器部署 | 📋 已设计 |
-| **初始化** | 5 步向导：改密→诊所信息→模式选择→创建首个 admin→交权 | 📋 已设计 |
+| **初始化** | 5 步向导：改密→诊所信息→模式选择→创建首个 admin→交权 | 📋 已设计（当前仅连接配置，向导待扩展） |
 | **日常运维** | 系统健康监控、配置管理、日志级别/调试模式、用户管理支持 | ✅ API 齐备（Health/Diagnostics/Configuration） |
 | **数据维护** | 数据库备份/恢复、备份状态查看、日志清理 | ⚠️ 备份有、恢复 UI 待开发 |
 | **安全管理** | 安全审计日志查看、sysadmin 不可删/禁/改保护 | ⚠️ 审计日志待补回 |
 | **升级** | Desktop 自动更新（Velopack）、WebAPI 手动升级 | 📋 已设计 |
-
-### 配置中心（SysadminHomeView 配置面板）
-
-**设计原则**：sysadmin 所有基础配置都有 UI 界面，不靠手动改 JSON。
-
-| 分组 | 配置项 | 值域 | Options 类 | 实现状态 |
-|------|--------|------|-----------|---------|
-| **诊所信息** | 名称/地址/电话/科室/许可证号/邮箱 | 文本 | `ClinicSettingsOptions` | ✅ 向导写入，UI 待做 |
-| **会话设置** | 不活动超时 | 1-120 分钟 | `ClientSessionOptions` | ✅ API 齐备，UI 待做 |
-| | 超时前警告 | 0-10 分钟 | `ClientSessionOptions` | ✅ API 齐备，UI 待做 |
-| | 活动检查间隔 | 10-120 秒 | `ClientSessionOptions` | ✅ API 齐备，UI 待做 |
-| **连接设置** | API 地址 | URL | `ApiClientOptions` | ✅ 已有测试连通按钮 |
-| | 请求超时 | 5-300 秒 | `ApiClientOptions` | ✅ API 齐备，UI 待做 |
-| **安全策略** | 首登强制改密 | 开/关 | `DefaultPasswordOptions` | ✅ 已修复为 `true` |
-| | 新用户默认密码 | 文本 | `DefaultPasswordOptions` | ⚠️ 需加 UI |
-| **功能开关** | OverwriteConflicts | 开/关 | `FeatureToggleOptions` | ✅ 支持热更新 |
-| | DuplicateHerbMergeStrategy | 下拉 | `FeatureToggleOptions` | ✅ 支持热更新 |
-| **读卡器管理** | 厂家选择/诊断测试/连接状态/手动参数覆盖 | 多项 | `ICardReader`+`ICardReaderDiagnostics` | 📋 设计中 |
-| | ↳ 测试模式（sysadmin） | 厂家下拉+设备探测/读卡测试/串口测试/固件版本 | 诊断接口 | 📋 设计中 |
-| | ↳ 使用模式（医生） | 无感——自动检测+自动读卡，全程无 UI | `ICardReaderFactory` | ✅ 已实现 |
-| **系统信息(只读)** | 版本/DB状态/连接状态 | 只读 | `DiagnosticsController` | ✅ API 齐备，UI 待做 |
-
-**不纳入客户端 UI 的配置**（服务器端基础设施，仅通过服务端 API 在远程模式管理）：`JwtOptions`(SecretKey)、`SystemAdminOptions`(部署配置)、`DatabaseOptions`(连接串)、`SecurityOptions`(速率限制)、`SessionOptions`(服务端会话)、`LoggingOptions`(日志清理)、`MemoryCacheOptions`(缓存)、`SwaggerOptions`(API文档)。
-
-### 双模式配置管理（ADR-0014）
-
-sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局随之区分：
-
-| 模式 | 管理范围 | 面板布局 |
-|------|---------|---------|
-| **远程** | 服务端配置（WebAPI/SQL Server/公网）+ 客户端配置（Desktop） | ① 客户端配置（本机 7 组） ② 服务端配置（调 Configuration API） |
-| **本地** | 本地全栈（LocalWebAPI + LocalDB + Desktop） | ① 本地配置（全栈） ② 备份恢复（US-SHELL-013） |
-
-- **远程模式管服务端配置**：通过服务端 Configuration API（`GET` 脱敏 / `PUT` 业务参数白名单 / 敏感黑名单 403 / `POST` 延迟重启），sysadmin 全远程闭环，无需登录服务器改文件。详见 [ADR-0014](../03-architecture/decisions/0014-sysadmin-config-dual-mode.md)。
-- **本地模式管全栈**：单面板读写本机 appsettings（含 LocalWebAPI 特有的 `OfflineMode`/`LocalApiBaseUrl`/本地 Jwt 等），无独立服务端；备份恢复入口（US-SHELL-013）。
-
-### 约束
-
-- **不可删除**：`ApplicationUser.IsSysAdmin=true` 标记，Users 检查 `IsSysAdmin` 后拒绝删/禁/改
-- **不参与常规权限层级**：绕过 `PermissionLevel` 检查，可管理任何用户
-- **不可混淆**：sysadmin 是独立用户（`IsSysAdmin=true` + SuperAdmin 角色双机制并存）；admin 是业务管理员角色用户
-- **只种子 sysadmin**（v1.0 设计）：系统启动仅自动创建 sysadmin，首个 admin 由 sysadmin 在初始化向导中手动创建
-  - ✅ 已修：`IdentitySeedData.cs` 已移除 admin 种子，仅创建 sysadmin
-- **首登强制改密**：`ForceChangeOnFirstLogin=true`，sysadmin 首次登录后必须修改默认密码
-  - ✅ 已修：appsettings.json 值已改为 `true`，`EmbeddedLocalWebApiService` 从 config 读
-
-### 认证方式
-
-| 模式 | 登录方式 | 密码来源 | 说明 |
-|------|---------|---------|------|
-| 远程 | 用户名密码 | `appsettings.json:DefaultPasswords.SysAdminPassword` | 首次登录强制改密（`ForceChangeOnFirstLogin=true`） |
-| 本地 | 用户名密码 | **同一份 config** | 远程/本地用相同凭证：`sysadmin/{DefaultPasswords.SysAdminPassword}` |
-
-### 会话超时策略
-
-| 类型 | 值 | 说明 |
-|------|:---:|------|
-| 不活动超时 | **30 分钟** | 无操作 30 分钟自动退出（原 5 分钟太短，医生看诊交谈时不碰电脑会被踢） |
-| 绝对超时 | **禁用**（v1.0） | 240 分钟绝对超时不启用，小诊所场景无此需求 |
-
-### v1.0 新增能力（设计中）
-
-- **Desktop 自动更新**：Velopack 打包 + 启动时检查 + 用户自愿升级（安全更新强制）
-- **首次初始化向导**：sysadmin 首登走 5 步向导，不完成不能用系统
-- **数据恢复 UI**：从 LocalDB 备份恢复数据库
-- **安全审计日志查看**：登录/登出/密码变更/权限变更记录
-- **配置导出/导入**：sysadmin 可备份/还原系统配置
-
-### 当前实现状态
-
-| 项 | 状态 | 代码位置 |
-|----|------|---------|
-| `ApplicationUser.IsSysAdmin` 布尔字段 | ✅ | `Users/ApplicationUser.cs` |
-| `CanManageUser` 使用 `IsSysAdmin` 判断 | ✅ | `UsersController.cs` |
-| JWT Claims 包含 `IsSysAdmin=true` | ✅ | Auth 模块 |
-| IdentitySeedData 种子 sysadmin | ✅ | `IdentitySeedData.cs:26`（已移除 admin 种子，仅创建 sysadmin） |
-| **`SystemAdminOptions`** | ✅ | `Shared.Configuration/Options/Server/SystemAdminOptions.cs` — 含 `AutoCreateOnStartup`(true)、`AllowAutoCreateInProduction`(false)、`InitialSetupToken`(生产环境令牌)、`SessionTimeoutMinutes`(240) |
-| **`DefaultPasswordService`** | ✅ 服务端已实现 | `Infrastructure/Configuration/Services/DefaultPasswordService.cs` — 含 `GetOrGeneratePassword()`（生产环境随机密码）、`ValidateSetupToken()`（加密令牌验证）、`ShouldForcePasswordChange()` |
-| `ForceChangeOnFirstLogin` | ⚠️ `DefaultPasswordOptions` 类默认 `true`，但 `appsettings.json` 覆盖为 `false`（v1.0 已改为 `true`） | `DefaultPasswordOptions.cs:36` |
-| 默认密码硬编码 | ⚠️ `appsettings.json:9-11` 三套密码明文（v1.0 改为随机生成或 config-only） | `DefaultPasswords` 配置节 |
-| `EmbeddedLocalWebApiService` 密码硬编码 | ⚠️ 已修复：改为从 `IConfiguration` 读取（不再硬编码） | `EmbeddedLocalWebApiService.cs:50-53` |
-| 首次初始化向导 | ❌ 现有 `FirstRunSetupViewModel` 仅做连接配置，需扩展为 5 步 | `Auth/ViewModels/FirstRunSetupViewModel.cs` |
 
 ### 操作流程图
 
@@ -113,29 +38,49 @@ sysadmin 配置对象在双模式下本质不同，SysadminHomeView 面板布局
 flowchart TD
     A[系统安装部署] --> B[超管首次登录]
     B --> C{首次登录?}
-    C -->|是| D[强制修改密码]
-    C -->|否| E[进入系统]
-    D --> F[填写诊所信息]
-    F --> G[创建管理员账号]
-    G --> H[交权给管理员]
-    H --> E
+    C -->|是 📋| D[Step1: 强制修改默认密码]
+    C -->|否| L
+    D --> E[Step2: 填写诊所信息]
+    E --> F[Step3: 选择运行模式]
+    F -->|远程| F1[配置远程服务器地址]
+    F -->|本地| F2[使用本地 LocalDB]
+    F1 --> G[Step4: 创建首个 Admin 账号]
+    F2 --> G
+    G --> H[Step5: 交权给 Admin]
+    H --> L
 
-    E --> I[日常运维]
-    I --> I1[健康监控]
-    I --> I2[日志级别调整]
-    I --> I3[系统配置管理]
-    I --> I4[备份恢复]
+    L[进入系统] --> M[日常运维]
+    M --> M1[健康监控]
+    M --> M2[日志级别调整]
+    M --> M3[系统配置管理]
+    M --> M4[备份恢复]
+    M --> M5[用户管理]
 
-    I1 --> J{系统异常?}
-    J -->|是| K[诊断排查]
-    J -->|否| I
-    K --> I
+    M1 --> N{系统异常?}
+    N -->|是| O[诊断排查 → 修复 → 回到 M]
+    N -->|否| M
 
-    E --> L[用户管理]
-    L --> L1[重置管理员密码]
-    L --> L2[查看所有用户]
-    L --> L3[创建/删除用户]
+    M5 --> P[重置用户密码]
+    M5 --> Q[查看所有用户]
+    M5 --> R[创建/删除用户]
+    M5 --> S{目标是 sysadmin?}
+    S -->|是| T[❌ 拒绝：sysadmin 不可删/禁/改]
+    S -->|否| R
 ```
+
+### 约束
+
+- **不可删除**：`ApplicationUser.IsSysAdmin=true` 标记，Users 检查 `IsSysAdmin` 后拒绝删/禁/改
+- **不参与常规权限层级**：绕过 `PermissionLevel` 检查，可管理任何用户
+- **不可混淆**：sysadmin 是独立用户（`IsSysAdmin=true` + SuperAdmin 角色双机制并存）；admin 是业务管理员角色用户
+- **首登强制改密**：`ForceChangeOnFirstLogin=true`，sysadmin 首次登录后必须修改默认密码
+
+### 双模式配置管理（ADR-0014）
+
+| 模式 | 管理范围 | 面板布局 |
+|------|---------|----------|
+| **远程** | 服务端配置（WebAPI/SQL Server/公网）+ 客户端配置（Desktop） | ① 客户端配置（本机 7 组） ② 服务端配置（调 Configuration API） |
+| **本地** | 本地全栈（LocalWebAPI + LocalDB + Desktop） | ① 本地配置（全栈） ② 备份恢复（US-SHELL-013） |
 
 ### 默认用户
 
@@ -144,7 +89,7 @@ flowchart TD
 | 业务管理员 | `admin` | `Admin@123456` | Admin | **false** | ✅ |
 | 系统运维 | `sysadmin` | `SysAdmin@2026!` | SuperAdmin | **true** | ❌ |
 
-> ⚠️ admin 和 sysadmin 是**两个独立用户**，不可混淆。sysadmin 是信任根——创建第一个 admin，可重置 admin 密码。admin 只能由 sysadmin 创建。
+> ⚠️ admin 和 sysadmin 是**两个独立用户**，不可混淆。sysadmin 是信任根——创建第一个 admin，可重置 admin 密码。
 
 ---
 
@@ -156,56 +101,54 @@ flowchart TD
 
 负责中医诊所业务管理的管理员。主要工作是维护业务基础数据、管理用户账号、管理药材/验方、数据维护。日均使用 1-2h。
 
-### 代码实现
-
-| 配置项 | 值 | 代码位置 |
-|--------|-----|---------|
-| `UserRole` | `Admin(10)` | `AdminRoleDefinition.cs:28` |
-| `HomeViewName` | `ViewNames.AdminHome` | `AdminRoleDefinition.cs:36` |
-| `RequiredModules` | UsersModule, PatientsModule, HerbsModule, FormulaModule, MedicalCaseModule | `AdminRoleDefinition.cs:17-22` |
-| `CanManageUser` 逻辑 | Admin 可管理 Doctor/Receptionist，不可管理 Admin/SuperAdmin | `UsersController.cs:547-560` |
-| Desktop 页面 | AdminHomeView + 7 个管理页面（SystemSettings/Herb/Formula/Patient/MedicalCase/UserManagement） | `AdminModule.cs` 注册 |
-
-### 核心职责与实现状态
-
-| 职责 | 覆盖模块 | US 达标率 | 实现状态 | 关键问题 |
-|------|---------|:---:|------|------|
-| **用户管理** | Users (12 US) | 8/12 ✅ 3⚠️ 1🔴 | ⚠️ 部分 | 分页筛选 bug（内存过滤导致 TotalCount 错误）、Restore 未实现、CreatedAt 始终 MinValue |
-| **药材管理** | Herbs (13 US) | 3/13 ✅ 3⚠️ **7🔴** | 🔴 严重 | 删除无引用检查（破坏处方完整性）、Excel 导入导出**完全缺失**、批量操作不完整、权限策略待细化（Admin 统一管库；前台不涉及药材） |
-| **验方管理** | Formulas (13 US) | 7/13 ✅ 3⚠️ 3🔴 | ⚠️ 部分 | GetDetail **无所有权检查**（Admin 能读他人非共享验方→安全缺陷）、Export/Import 端点缺失、Restore 缺失 |
-|| **医案管理** | MedicalCases (18 US) | 8/18 ✅ 6⚠️ 4🔴 | ⚠️ 部分 | 审计日志缺失、打印保护缺失、历史聚合缺失。**设计决策**：admin 医案操作 = 纠偏场景（医生/前台出错时 Admin 介入修改，需填原因）+ 状态变更。**v1.0 医生对医案负责，Admin 不审核医案**（不可创建医案）；变更追溯由 D1 审计日志（v1.0 补回）保障 |
-| **挂号监控** | Registration (7 US) | 2/7 ✅ 2⚠️ 3🔴 | 🔴 严重 | **权限策略错误**（类级 `DoctorOrAdmin` 挡住 Receptionist 核心职能）、StartVisit 链路断裂、跨模块直接引用 |
-
-**汇总**：63 个 US 中 28 个达标（44%），**21 个完全未实现**。
+**核心身份**：Admin 既不是纯粹的 IT 运维（那是 sysadmin），也不是业务操作者（那是 Doctor/Receptionist）。Admin 是**运营管理者**——为业务运行准备基础设施，同时在异常场景下兜底介入。
 
 ### 操作流程图
 
+#### 主线流程：诊所开业准备
+
 ```mermaid
 flowchart TD
-    A[管理员登录] --> B[进入管理后台]
+    A[Admin 首次登录] --> B[创建医生账号]
+    B --> C[创建前台账号]
+    C --> D[导入药材库 📋 Excel导入]
+    D --> E[导入验方库 📋 Excel导入]
+    E --> F[配置系统参数]
+    F --> G[诊所就绪]
+
+    B -->|失败| B1{账号名冲突?}
+    B1 -->|是| B2[提示已存在 → 修改后重试]
+    B1 -->|否| B3[检查输入合法性 → 重试]
+```
+
+#### 日常管理流程
+
+```mermaid
+flowchart TD
+    A[Admin 登录] --> B[管理后台]
 
     B --> C[用户管理]
-    C --> C1[创建医生/前台账号]
-    C --> C2[修改用户信息]
-    C --> C3[启用/禁用用户]
-    C --> C4[重置密码]
+    C --> C1[创建/编辑/禁用 Doctor/Receptionist]
+    C --> C2[重置密码]
+    C --> C3{目标是 Admin/SuperAdmin?}
+    C3 -->|是| C4[❌ 拒绝：不可管理同级/上级]
+    C3 -->|否| C1
 
     B --> D[药材管理]
     D --> D1[创建/编辑药材]
-    D --> D2[批量导入药材]
-    D --> D3[删除药材（引用检查）]
-    D --> D4[启用/禁用药材]
+    D --> D2[启用/禁用药材]
+    D --> D3[删除药材 → 引用检查 BR-DEL-001 🔴]
+    D --> D4[批量导入 📋 Excel导入]
 
     B --> E[验方管理]
     E --> E1[创建/编辑验方]
-    E --> E2[批量导入验方]
-    E --> E3[验证药材绑定]
-    E --> E4[启用/禁用验方]
+    E --> E2[启用/禁用验方]
+    E --> E3[验证药材绑定完整性]
+    E --> E4[导出/导入 📋]
 
     B --> F[医案管理]
     F --> F1[查看所有医案]
-    F --> F2[纠偏修改（需填原因）]
-    F --> F3[查看审计日志]
+    F --> F2[纠偏修改 → 见下方子流程]
 
     B --> G[报表查看]
     G --> G1[收入报表]
@@ -213,32 +156,34 @@ flowchart TD
     G --> G3[药材使用排行]
 ```
 
-### 权限矩阵（Admin 相关操作）
+#### 医案纠偏子流程
 
-| 操作 | Receptionist | Doctor | Admin | SuperAdmin |
-|------|:---:|:---:|:---:|:---:|
-| 用户 CRUD | ✗ | ✗ | ✓（仅 Doctor/Receptionist） | ✓ 全部 |
-| 重置密码 | ✗ | ✗ | ✓ | ✓ |
-| 患者管理 | ✓ | ✓ | ✓ | ✓ |
-| 药材查询 | ✗（前台不涉及药材） | ✓ | ✓ | ✓ |
-| 药材写操作 | ✗ | ✗（Admin 统一管库） | ✓（全部） | ✓ |
-| 验方查询 | ✗ | ✓*（仅自己+共享） | ✓（全部） | ✓ |
-| 验方写操作 | ✗ | ✓*（仅自己创建） | ✓（全部） | ✓ |
-| 医案创建 | ✗ | ✓（唯一） | ✗ | ✗ |
-| 医案查看 | ✗ | ✓*（仅自己的） | ✓（全部） | ✓ |
-| 医案完成/关闭 | ✗ | ✓*（仅自己的） | ✓（仅状态变更） | ✓ |
-| 挂号创建 | ✓（前台） | ✓（QuickVisit） | ✗ | ✗ |
-| 打印 | ✗ | ✓（唯一） | ✗ | ✗ |
+```mermaid
+flowchart TD
+    A[发现医案错误] --> B[选择目标医案]
+    B --> C[点击纠偏修改]
+    C --> D[填写纠偏原因 📋 必填]
+    D --> E[执行修改]
+    E --> F[保存 → 写入审计日志 📋]
+    F --> G[完成]
 
-### 需要修复的权限问题
+    D -->|原因为空| H[❌ 拒绝保存]
+    H --> D
+```
 
-| # | 问题 | 严重度 | 代码位置 |
-|---|------|:---:|---------|
-| 1 | Herbs Controller 用 `DoctorOrAdmin` → 策略待细化（目标：Admin 统一管库、Doctor❌、Receptionist❌） | 🔴 | `HerbsController.cs` |
-| 2 | Registration Controller 类级 `DoctorOrAdmin` → Receptionist 无法挂号/取消 | 🔴 | `RegistrationsController.cs` |
-| 3 | Formulas `GetDetail` 无所有权检查 → Admin 可读他人非共享验方 | 🟠 | `FormulasService` |
-| 4 | Patients 单删路径无引用检查（BR-DEL-001）→ 可删除被医案引用的患者 | 🔴 | `PatientsService` |
-| 5 | Herbs 删除无引用检查 → 被处方引用的药材可静默软删 | 🔴 | `HerbsService` |
+### 权限边界
+
+| 能力 | Admin | 说明 |
+|------|:-----:|------|
+| 用户 CRUD | ✅（仅 Doctor/Receptionist） | 不可管理 Admin/SuperAdmin |
+| 药材 CRUD | ✅ 全部 | Admin 统一管库，Doctor 不直接操作药材 |
+| 验方 CRUD | ✅ 全部 | |
+| 医案创建 | ❌ | 仅 Doctor |
+| 医案查看 | ✅ 全部 | |
+| 医案纠偏修改 | ✅（需填原因） | 纠偏场景：医生/前台出错时 Admin 介入 |
+| 挂号 | ❌ | 不参与 |
+| 打印 | ❌ | 仅 Doctor |
+| 报表 | ✅ | |
 
 ---
 
@@ -250,22 +195,24 @@ flowchart TD
 
 中医内科主治医师，系统核心业务操作者——**唯一能创建医案的角色**，承担从诊断到开方到打印的完整临床链路。日均使用 6-8h，触及全部 6 个业务模块。
 
-> **双模式工作流（R10 spec S2/S3）**：
+> **双模式工作流**：
 > - **远程模式**：从待诊队列选患者→StartVisit→看诊；急诊可用 QuickVisit 直接接诊
-> - **本地模式**：**直接看诊**——「来一个看一个」，选/建患者(Patient)→直接开医案(MedicalCase)→看诊→打印，**无挂号环节**、无队列、无 SignalR（本质等同远程 QuickVisit）
+> - **本地模式**：**直接看诊**——「来一个看一个」，选/建患者→直接开医案→看诊→打印，**无挂号环节**、无队列、无 SignalR（本质等同远程 QuickVisit）
 
 ### 操作流程图
+
+#### 主线流程：标准看诊
 
 ```mermaid
 flowchart TD
     A[医生登录] --> B{选择模式}
 
-    B -->|远程模式| C[查看待诊队列]
+    B -->|远程 📋| C[查看待诊队列]
     C --> D{选择患者}
-    D -->|从队列选| E[点击开始就诊]
+    D -->|从队列选| E[点击开始就诊 StartVisit]
     D -->|急诊/跳过排队| F[QuickVisit 快速看诊]
 
-    B -->|本地模式| G[直接选/建患者]
+    B -->|本地 📋| G[直接选/建患者]
 
     E --> H[进入诊疗表单]
     F --> H
@@ -296,54 +243,48 @@ flowchart TD
     P -->|否| Q[结束]
 ```
 
-### 代码实现
+#### 异常场景处理
 
-| 配置项 | 值 | 代码位置 |
-|--------|-----|---------|
-| `UserRole` | `Doctor(1)` | `DoctorRoleDefinition.cs:28` |
-| `HomeViewName` | `ViewNames.ClinicalWorkspace` | `DoctorRoleDefinition.cs:37` |
-| `RequiredModules` | UsersModule, PatientsModule, HerbsModule, FormulaModule, MedicalCaseModule, **RegistrationModule** | `DoctorRoleDefinition.cs:16-24` |
-| 专属 UI | ClinicalWorkspaceView（患者列表+看诊工作区一体化） | `Roles/LYBT.Desktop.Clinical/Views/` |
-| 医案创建权限 | **唯一**能创建医案（目标策略 `DoctorOnly`，`PolicyConstants` 待新增；代码当前 `DoctorOrAdmin` 允许 Admin，⚠️代码待对齐 D7） | `MedicalCasesController` |
+```mermaid
+flowchart TD
+    subgraph "异常场景"
+        E1[打印失败 📋] --> E1a{失败原因}
+        E1a -->|缺纸/卡纸| E1b[补纸后重试]
+        E1a -->|打印机故障| E1c[保存草稿 📋 → 暂不打印]
 
-### 核心职责与实现状态
+        E2[开方中途离开] --> E2a[自动保存草稿 📋]
+        E2a --> E2b[下次选同一患者时恢复草稿]
 
-| 职责 | 覆盖模块 | US 达标率 | 实现状态 | 关键问题 |
-|------|---------|:---:|------|------|
-| **临床诊疗（核心）** | MedicalCases (18 US) | 8/18 ✅ 6⚠️ 4🔴 | ⚠️ 部分 | 复诊历史聚合缺失（MC-008/009）、打印回写缺失、BR-001 DB索引漏Suspended、MC-LOCK时区错误、跨模块非事务 |
-| **患者管理** | Patients (13 US) | 4/13 ✅ 4⚠️ 5🔴 | ⚠️ 部分 | 读卡去重第一环落空、引用检查缺失、Restore 缺失、权限策略 `DoctorOrAdmin` 需改 |
-| **药材查询** | Herbs (13 US) | 3/13 ✅ 3⚠️ 7🔴 | ⚠️ 部分 | 删除无引用检查（破坏处方完整性）、批量操作不完整、Excel 缺失；药材写操作 Doctor❌（Admin 统一管库） |
-| **验方管理** | Formulas (13 US) | 7/13 ✅ 3⚠️ 3🔴 | ⚠️ 部分 | GetDetail 无所有权检查、Export/Import 端点缺失、Restore 缺失 |
-| **偶尔挂号** | Registration (7 US) | 2/7 ✅ 2⚠️ 3🔴 | ⚠️ 部分 | QuickVisit API 已实现（`RegistrationsController:44-94`），Desktop 接线待激活；StartVisit 不创建医案 |
-| **处方打印** | Printing (4 US) | 1/4 ✅ 2⚠️ 1🔴 | ⚠️ 部分 | 回写缺失（PrintLog 表已删）、PDF 分页逻辑未镜像 XAML 多页、IsDraft 字段未克隆 |
+        E3[患者拒绝处方] --> E3a[标记"未开方"]
+        E3a --> E3b[完成医案（无处方）]
 
-### 权限边界（医生独有 vs 与其他角色的区别）
+        E4[处方开错药] --> E4a{已打印?}
+        E4a -->|否| E4b[直接修改]
+        E4a -->|是| E4c[作废原处方 📋 → 重新开方]
+    end
 
-| 能力 | Doctor | Admin | Sysadmin |
-|------|--------|-------|---------|
-| 医案创建 | **唯一** | 管理关闭（仅状态） | 不参与 |
-| 医案编辑 | **仅自己的** | 查看全部（不编辑内容） | 不参与 |
-| 药材/验方写操作 | ✗（药材 Admin 统一管库）/验方✓（仅自己创建） | 全部 | 不参与 |
-| 打印处方 | **唯一** | 不能 | 不能 |
-| 历史查看 | 期望看**自己所有医案历史** | 看所有人（但聚合也缺失） | 不参与 |
-| 挂号 | QuickVisit（仅自己，急诊+本地常规） | 不参与 | 不参与 |
+    subgraph "复诊流程 📋"
+        F1[选患者] --> F2[展示既往医案列表 MC-008/009 🔴]
+        F2 --> F3[选择参考医案]
+        F3 --> F4[导入处方到当前]
+        F4 --> F5[调整后开方]
+    end
+```
 
-### 医生视角的 P0 缺陷
+### 权限边界（Doctor 独有）
 
-| 缺陷 | 影响 | PRD 量化目标关联 |
-|------|------|----------------|
-| **MC-008/009 历史聚合缺失** | 复诊时看不到既往诊断/处方，需手动翻医案 | vision："25min→10min" 的数据基础缺失 |
-| **BR-001 DB 索引漏 Suspended** | 并发下可为同一患者创建两个 Suspended 医案，违反核心铁律 | 数据一致性破坏 |
-| **打印回写缺失** | 处方打印后无追溯记录 | 合规要求 |
-| **MC-LOCK 时区用 UtcNow** | 北京时间 8am 前误判医案锁定 | 用户体验 bug |
-
-### 设计决策（与 Sysadmin/Admin 协同）
-
-- **医案归属**：Doctor 仅操作自己的医案（`UserId=自己`归属限制）
-- **唯一创建者**：仅 Doctor 能创建医案（目标策略 `DoctorOnly`，`PolicyConstants` 待新增；代码当前 `DoctorOrAdmin` 允许 Admin，⚠️代码待对齐 D7，限 MC-001）
-- **打印控制**：仅 Doctor 能打印处方（目标策略 `DoctorOnly`，`PolicyConstants` 待新增；当前打印权限未在 Controller 层强制，⚠️代码待补）
-- **验方归属**：Doctor 只能编辑自己创建的验方（`CreatedBy` 归属检查；药材写操作 Doctor❌，Admin 统一管库）
-- **QuickVisit**：Doctor 在前台繁忙时可替代挂号（API 已实现 `RegistrationsController:44-94`，Desktop 接线待激活）
+| 能力 | Doctor | 说明 |
+|------|:------:|------|
+| 医案创建 | ✅ **唯一** | 仅 Doctor 能创建医案 |
+| 医案编辑 | ✅ 仅自己的 | |
+| 处方打印 | ✅ **唯一** | |
+| 历史查看 | ✅ 自己所有医案 | |
+| 药材查询 | ✅ | |
+| 药材写操作 | ❌ | Admin 统一管库 |
+| 验方查询 | ✅ 自己 + 共享 | |
+| 验方写操作 | ✅ 仅自己创建 | |
+| QuickVisit | ✅ 急诊 + 本地常规 | |
+| 用户管理 | ❌ | |
 
 ---
 
@@ -355,172 +296,69 @@ flowchart TD
 
 前台接待人员，专注患者挂号和相关信息维护。日均使用 4-6h，是诊所每天第一个开机、最后关机的角色。
 
-> **双模式适用性（R10 spec S2/S3）**：本地模式**由用户配置决定，不强制排除**任何角色。默认无前台用户时，医生独立「来一个看一个」（直接 Patient→MedicalCase），Registration 模块不显现；若 Admin 建了前台用户，则前台登录即见 Registration 模块，挂号/队列职责在本地同样有适用场景。Shell 按登录角色加载模块（US-SHELL-003）已天然处理，无需本地特殊角色逻辑。
+> **双模式适用性**：本地模式**由用户配置决定，不强制排除**任何角色。默认无前台用户时，医生独立「来一个看一个」；若 Admin 建了前台用户，则前台登录即见 Registration 模块。
 
 ### 操作流程图
+
+#### 主线流程：挂号登记
 
 ```mermaid
 flowchart TD
     A[前台登录] --> B[进入工作台]
 
     B --> C[患者登记]
-    C --> C1{患者已存在?}
-    C1 -->|是| C2[查找患者]
-    C1 -->|否| C3[读身份证自动填充]
-    C3 --> C4[创建新患者档案]
-    C2 --> D[创建挂号]
-    C4 --> D
+    C --> D{患者已存在?}
+    D -->|是| E[查找患者]
+    D -->|否| F{读身份证成功?}
+    F -->|是| G[自动填充信息]
+    F -->|否 📋| H[手动输入信息]
+    G --> I[创建新患者档案]
+    H --> I
+    E --> J[创建挂号]
+    I --> J
 
-    D --> D1[选择医生]
-    D1 --> D2[挂号成功 → Waiting 状态]
-    D2 --> D3[患者进入候诊队列]
+    J --> K[选择医生]
+    K --> L{该医生同时段已有挂号?}
+    L -->|是 📋| M[⚠️ 提示冲突 → 选择其他时段/医生]
+    L -->|否| N[挂号成功 → Waiting 状态]
+    M --> K
 
-    D3 --> E[查看候诊队列]
-    E --> F{患者要求退号?}
-    F -->|是| G[取消挂号]
-    F -->|否| E
-
-    G --> H[确认取消]
-    H --> I[Registration → Cancelled]
-
-    E --> J{医生叫号?}
-    J -->|是| K[队列自动更新]
-    J -->|否| E
-
-    K --> L[继续接待下一位]
-    L --> C
+    N --> O[患者进入候诊队列]
 ```
 
-### 代码实现（前台）
+#### 日常管理流程
 
-| 配置项 | 值 | 代码位置 |
-|--------|-----|---------|
-| `UserRole` | `Receptionist(0)` | `ReceptionistRoleDefinition.cs:27` |
-| `HomeViewName` | `ViewNames.ReceptionistHome` | `ReceptionistRoleDefinition.cs:34` |
-| `RequiredModules` | **仅 3 个**：UsersModule, PatientsModule, RegistrationModule | `ReceptionistRoleDefinition.cs:18-21` |
-| 专属 UI | ReceptionistHomeView（挂号队列+快捷操作） | `Roles/LYBT.Desktop.Receptionist/Views/` |
+```mermaid
+flowchart TD
+    A[前台工作台] --> B[查看候诊队列]
+    B --> C{患者要求退号?}
+    C -->|是| D[确认退号]
+    D --> E[Registration → Cancelled]
+    E --> F[通知医生队列更新 📋]
+    C -->|否| B
 
-### ⚠️ 致命问题：前台角色在当前代码中基本不可用
+    B --> G{医生叫号?}
+    G -->|是| H[队列自动更新]
+    G -->|否| B
 
-**三个核心模块被 `DoctorOrAdmin` 权限策略阻断**，前台无法执行本职工作：
+    H --> I[继续接待下一位]
+    I --> J
+    J[患者登记] --> K{批量登记 📋}
+    K -->|是| L[连续读卡 → 批量创建挂号]
+    K -->|否| J
+```
 
-| 模块 | PRD 要求策略 | 代码实际策略 | 后果 |
-|------|------------|------------|------|
-| Registration（挂号） | Receptionist 是主体 | **`DoctorOrAdmin`** | 🔴 无法创建/取消挂号 |
-| Patients（患者管理） | `DoctorOrReceptionist`（PRD 已标 TODO） | **`DoctorOrAdmin`** | 🔴 无法管理患者 |
+### 权限边界
 
-> **注**：药材（Herbs）模块前台**按设计不应访问**（权威决策 2026-06-28：前台不涉及药材），`ReceptionistRoleDefinition.RequiredModules` 不含 HerbsModule，无需修复前台药材入口。
-
-**根因**：Registration 和 Patients 的 Controller 类级属性用 `DoctorOrAdmin` 而非 `DoctorOrReceptionist`。这是系统最严重的权限架构问题——**前台角色在服务端设计层面被完全排除**。v1.0 首要修复项。
-
-### 核心职责与实现状态
-
-| 职责 | 覆盖模块 | US 达标率 | 实现状态 | 关键问题 |
-|------|---------|:---:|------|------|
-| **挂号管理** | Registration (7 US) | 2/7 ✅ 2⚠️ **3🔴** | 🔴 严重 | 权限阻断前台（001/006）、StartVisit 未创建医案+返回错 ID（005）、QuickVisit Desktop 接线待激活（002，API 已实现） |
-| **患者管理** | Patients (13 US) | 4/13 ✅ 4⚠️ 5🔴 | 🔴 严重 | 权限阻断前台、Restore 缺失、引用检查缺失（单删/批量）、读卡去重数据层缺陷、BR-DEL-001 不一致 |
-| **读卡登记** | CardReader (2 US) | 2/2 ✅ | ✅ 达标 | 读卡+患者去重查找已实现；但 Patients 的 IdNumber 搜索数据层丢弃导致去重第一环落空 |
-
-### 权限矩阵（前台相关操作）
-
-| 操作 | Receptionist | Doctor | Admin | SuperAdmin |
-|------|:---:|:---:|:---:|:---:|
-| 创建挂号 | ✅（应可，但**代码阻断**） | ✓ QuickVisit | ✗ | ✗ |
-| 取消挂号 | ✅（应可，但**代码阻断**） | ✗ | ✗ | ✗ |
-| 患者 CRUD | ✅（应可，但**代码阻断**） | ✓ | ✓ | ✓ |
-| 药材查询 | ✗（前台不涉及药材） | ✓ | ✓ | ✓ |
-| 患者删除 | ✗ | ✓ | ✓ | ✓ |
-| 患者启用/禁用 | ✗ | ✗ | ✓ | ✓ |
-
-> 上表标注"代码阻断"的操作，PRD 设计上允许但代码权限策略未放行。
-
-### 需要修复的权限问题（共 2 个，均 P0）
-
-| # | 问题 | 代码位置 | 修复方案 |
-|---|------|---------|---------|
-| 1 | Registration 类级 `DoctorOrAdmin` | `RegistrationsController.cs` | 改为 `DoctorOrReceptionist`，QuickVisit/Cancel 按操作细分 |
-| 2 | Patients 类级 `DoctorOrAdmin` | `PatientsController.cs:23` | 改为 `DoctorOrReceptionist`（PRD 注释已标 T5-P2-30 TODO） |
-
-> **注**：Herbs Controller 同样用 `DoctorOrAdmin`，但前台按设计不涉及药材，无需为前台开通药材入口；Herbs 策略修复由 Admin 角色权限项跟踪（Admin 统一管库）。
-
-### 与 sysadmin 交叉点
-
-- Sysadmin 创建首个 admin 后，admin 创建 Receptionist 账号
-- Sysadmin 可重置 Receptionist 密码（通过用户管理 UI）
-- Sysadmin 的读卡器诊断测试 → Receptionist 日常无感使用读卡
-- Sysadmin 不参与挂号流程
-
----
-
-## 四角色交叉对比（2026-06-28 审计 + 二轮设计验证）
-
-### 功能闭环检查：首诊旅程
-
-| 步骤 | 角色 | 状态 | 说明 |
-|------|------|:---:|------|
-| 部署系统 | Sysadmin | 📋 | 初始化向导待开发（v1.0 简化为4步：改密→诊所信息→创建admin→交权） |
-| 创建 admin | Sysadmin | 📋 | 依赖向导 |
-| admin 创建医生/前台 | Admin | ⚠️ | Users 分页 bug |
-| 前台读卡 | Receptionist | ✅ | |
-| 前台创建挂号 | Receptionist | 🔴 | **DoctorOrAdmin 阻断**（P0 修复） |
-| 医生开始就诊 | Doctor | ⚠️ | StartVisit 不建医案（BR-000），进入表单填写诊断+处方，保存时建医案 |
-| 医生写诊断+开方 | Doctor | ⚠️ | 能做但非事务 |
-| 打印 | Doctor | ⚠️ | 能打印但回写缺失 |
-
-### 跨角色决策汇总
-
-| # | 决策 | 状态 |
-|:---:|------|:---:|
-|| 1 | **权限修复**：Herbs Create/Update 改 `AdminOrSuperAdmin`；Formulas Create/Update 补 `DoctorOrAdminOrReceptionist`；MedicalCases Create 改 `DoctorOrAdmin`；Patients Delete 补 `AdminOrSuperAdmin` | 📋 Phase② |
-| 2 | **审计日志 + 打印回写** | ✅ **v1.0 必做**（医疗合规） |
-| 3 | **历史医案查询（MC-008/009）**：搜索 + 导出处方到当前 | ✅ **v1.0 Must** |
-| 4 | **本地模式角色检查**：LocalWebAPI 统一 `DoctorOrReceptionist` | 📋 Phase② |
-| 5 | **知情同意**：医案完成时增加"患者已知情同意"勾选（方案 A） | 📋 Phase② |
-| 6 | **多医生协作**：BR-001 已覆盖 | ✅ 无需额外功能 |
-| 7 | **数据迁移**：`MigrateAsync()` 自动处理非破坏性迁移 | ✅ 无需额外开发 |
-| 8 | **权限模型统一**：RBAC + Permission 枚举（~35 项，Phase② 落地） | 📋 Phase② |
-| 9 | **数据一致性**：v1.0 不需新增设计（切换主动行为 / 并发乐观锁 / 本地生命周期 v2.0） | ✅ 无需设计变更 |
-
-### 无人区场景处理
-
-| 场景 | 决策 | 说明 |
-|------|------|------|
-| 版本升级数据迁移 | 自动 + 手动 | 非破坏性→`MigrateAsync()`；破坏性→sysadmin 手动+文档 |
-| 医疗纠纷追溯 | v1.0 审计功能全部补回 | SecurityAuditLog 恢复 + 关键操作审计 + Sysadmin 查看 UI |
-| 处方打印审计 | v1.0 打印回写补回 | 恢复 PrintLog 字段/实体 |
-| 患者知情同意 | 方案 A（勾选） | 医案完成时确认勾选 + 打印处方单为知情同意载体 |
-| 多医生协作 | BR-001 已覆盖 | 无需额外功能 |
-
----
-
-### 二轮设计验证（2026-06-28）
-
-#### 角色交接闭环验证
-
-8 个角色间交接点重评（2026-06-28 审计 S3）：**1 闭环 + 3 设计层收敛 + 4 代码待对齐**：
-
-| 交接 | 上游→下游 | 状态 | 关键缺口 |
-|:---:|---------|:---:|---------|
-| 1 | Sysadmin→Admin | 📋 | 向导未实现 |
-| 2 | Admin→Doctor/Receptionist | ⚠️ | **药材 Excel 导入缺失**（阻断 Admin 初始化药材库→Doctor 无药可开方） |
-| 3 | Receptionist→Doctor | 🔴 | 双重断裂：权限阻断 + StartVisit 不创建医案 |
-| 4 | Doctor→医案系统 | ⚠️ | 历史聚合缺失 + 打印回写缺失 |
-| 5 | Admin→医案状态维护 | ⚠️ | 审计日志缺失（v1.0 补回已定） |
-| 6 | Doctor→患者 | ⚠️ | 打印回写缺失（v1.0 补回已定） |
-| 7 | 任何→Sysadmin | ✅ | — |
-| 8 | 系统→Sysadmin | ⚠️ | 审计日志缺失 |
-
-#### 统一权限模型（2026-06-28 确定）
-
-采用 **RBAC + Permission 枚举**方案（~35 项原子操作），替代当前分散在 `CanManageUser`/API 策略/Service 层的碎片化权限逻辑。每个角色在 `RoleDefinition` 中声明 `RequiredPermissions` 集合。Phase② 落地。
-
-#### 数据一致性设计（2026-06-28 确定）
-
-| 场景 | 结论 | 理由 |
-|------|------|------|
-| 模式切换告知 | v1.0 不需新增 | 切换是用户主动行为，状态栏已有模式标识 |
-| 并发操作保护 | v1.0 不需设计变更 | 乐观并发（RowVersion）设计已正确；Phase② 扩展重试到所有写操作 |
-| 本地数据生命周期 | v1.0 不处理 | v2.0 同步处理；本地数据随 Desktop 存在，卸载删除 |
+| 能力 | Receptionist | 说明 |
+|------|:-----------:|------|
+| 挂号创建/取消 | ✅ | 核心职能 |
+| 患者 CRUD | ✅ | 登记、查找、编辑 |
+| 读卡登记 | ✅ | 身份证读卡 + 自动填充 |
+| 药材查询 | ❌ | 前台不涉及药材 |
+| 验方/医案 | ❌ | |
+| 用户管理 | ❌ | |
+| 打印 | ❌ | |
 
 ---
 
@@ -530,13 +368,11 @@ flowchart TD
 |------|----------|-------|--------|-------------|
 | **身份类型** | **独立用户** | 角色 | 角色 | 角色 |
 | **模块数** | 5（全量） | 5 | **6** | **3** |
-| **包含 RegistrationModule** | ❌ | ❌ | **✅** | **✅** |
+| **包含 RegistrationModule** | ❌ | ❌ | ✅ | ✅ |
 | **包含 HerbsModule** | ✅ | ✅ | ✅ | ❌ |
 | **包含 FormulaModule** | ✅ | ✅ | ✅ | ❌ |
 | **包含 MedicalCaseModule** | ✅ | ✅ | ✅ | ❌ |
-| **首页视图** | SysadminHome | AdminHome | **ClinicalWorkspace** | ReceptionistHome |
-| **授权策略** | 跳过角色检查 | DoctorOrReceptionist + AdminOrSuperAdmin | 仅 DoctorOrReceptionist | 仅 DoctorOrReceptionist |
-| **CanManageUser** | 跳过 | 可管理 Doctor/Receptionist | 不可管理 | 不可管理 |
+| **首页视图** | SysadminHome | AdminHome | ClinicalWorkspace | ReceptionistHome |
 | **可删除** | ❌ | ✅ | ✅ | ✅ |
 | **可禁用** | ❌ | ✅ | ✅ | ✅ |
 
@@ -544,17 +380,10 @@ flowchart TD
 
 ## 变更日志
 
-| 日期 | 变更 | 原因 |
-|------|------|------|
-| 2026-06-28 | 权限矩阵统一（权威决策 2026-06-28）：Admin 矩阵（药材查询 Receptionist❌、药材写 Doctor❌、挂号 Admin✗）、Doctor 权限边界（药材写❌、QuickVisit 急诊+本地常规）、Receptionist 矩阵（药材查询❌）、架构差异表（sysadmin 首页→SysadminHome） | 三文档（personas/matrix/代码）矛盾收敛 |
-| 2026-06-28 | K3 自相矛盾修正：医案创建「唯一+DoctorOrAdmin」→「目标 DoctorOnly（PolicyConstants 待新增，代码 DoctorOrAdmin 待对齐 D7）」；打印同；QuickVisit「死代码」→「API 已实现，Desktop 接线待激活」（S5）；前台权限问题由 3→2（剔除药材） | 审计报告 K3/S5 + 前台不涉及药材决策 |
-| 2026-06-28 | Receptionist 双模式注修正：「仅远程模式存在」改为「本地模式由用户配置决定（不强制排除）」 | 2026-06-28 产品澄清（本地全角色支持） |
-| 2026-06-28 | Doctor/Receptionist 角色补双模式工作流注（本地模式直接看诊/无前台） | R10 spec S8 文档更新 |
-| 2026-06-28 | sysadmin 段补「双模式配置管理」（远程管服务端 Configuration API + 延迟重启；本地管全栈单面板 + 备份恢复），修订「不纳入 UI」措辞 | sysadmin 配置设计 spec S7 文档更新（ADR-0014） |
-| 2026-06-28 | 四角色全面重写 + 交叉对比 + 二轮设计验证 | 代码审计 + 设计决策 + 功能闭环 + 权限模型 + 数据一致性 |
-| 2026-06-28 | 二轮验证：交接闭环(8点) + RBAC权限枚举 + 数据一致性策略 | 协作闭环验证 + 设计合理性 |
-| 2026-06-28 | 一轮决策：权限修复/审计补回/知情同意方案A/历史查询v1.0 Must | 交叉对比发现 |
-| 2026-06-20 | v3.2 Sysadmin 改为独立用户设计 | 行业标准：sysadmin 是用户而非角色 |
-| 2026-06-20 | v3.1 增加代码实现列 | 用户要求结合代码验证角色定位 |
-| 2026-06-20 | v3.0 重构角色定义 | 明确各角色定位 |
-| 2026-06-15 | v2.0 重建 | Phase 1 简化后重建 |
+| 日期 | 变更 |
+|------|------|
+| 2026-08-02 | v4.0 重构：拆分为 3 个文档（personas/permissions/interactions）；补充异常分支流程图；增加实现态标注；增加 Admin 主线流程+纠偏子流程；增加前台批量登记+冲突处理；修正 sysadmin 流程；移除权限矩阵（→03）和交叉对比（→04） |
+| 2026-06-28 | 四角色全面重写 + 交叉对比 + 二轮设计验证 |
+| 2026-06-20 | v3.2 Sysadmin 改为独立用户设计 |
+| 2026-06-20 | v3.1 增加代码实现列 |
+| 2026-06-15 | v2.0 重建 |
