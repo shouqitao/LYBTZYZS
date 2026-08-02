@@ -1,300 +1,120 @@
 # 需求文档 (02-requirements)
 
-> 版本: v2.1 | 日期: 2026-06-28 | 状态: ✅ 已更新（v1.0 范围冻结）
+> 版本: v3.0 | 日期: 2026-08-02 | 状态: ✅ 已更新
 
-## v1.0 范围决策（2026-06-28）
+---
 
-基于 PRD-代码对账矩阵（D1-D10）+ Sync/N1 + SHELL 扩展判定，以下 US 状态已更新：
+## 这些文档是给谁看的？
 
-| US ID / 决策 | 标题 | 决策 | 状态 |
-|-------|------|------|------|
-| D1 / US-MC-017 | 医案审计日志 | A 补回 v1.0 | 🧲 v1.0 待实现 |
-| D2 / US-PRINT-004 | 打印保护/回写（IsPrinted/PrintVersion/PrintCount/LastPrintedAt） | A 补回 v1.0 | 🧲 v1.0 待实现 |
-| D3 / US-AUTH-006 | 令牌族旋转撤销 | B+ 补回 v1.0（重放检测 v2.0） | 🧲 v1.0 待实现 |
-| D3 / US-AUTH-007 | 安全审计日志 | B+ 补回 v1.0 | 🧲 v1.0 待实现 |
-| D3 / US-AUTH-013 | 本地限流 | B+ 补回 v1.0 | 🧲 v1.0 待实现 |
-| D4 / US-USER-011 等 | Restore 软删除恢复（Users/Patients/Herbs/Formulas） | A 补回 v1.0（基础设施已就绪） | 🧲 v1.0 待实现 |
-| D5 / BR-DEL-001 | 引用检查（Patients 单删 / Herbs） | A 必做 v1.0 | 🧲 v1.0 待实现 |
-| D6 / US-HERB-006 等 | Excel 导入导出（Herbs 补 Excel；Patients 导入 v2.0） | A Herbs 补 v1.0 | 🧲 v1.0 待实现 |
-| D7 | 权限策略错配（Registration/Patients/Herbs/MC） | A 按文档修代码（文档权威） | ⚠️ 代码待对齐 |
-| D8 | P0 数据/安全 Bug（7 个） | A 全修 | ⚠️ 代码待对齐 |
-| D9 / US-MC-008 | 诊断历史聚合 | A 补回 v1.0 | 🧲 v1.0 待实现 |
-| D9 / US-MC-009 | 处方历史聚合 | A 补回 v1.0 | 🧲 v1.0 待实现 |
-| D10 | 字段级加密 | 拉回 v1.0 | 🧲 v1.0 待实现 |
-| Sync 整模块 | 数据同步（8 US） | v2.0（v1.0 数据孤立 N1） | v2.0 规划 |
-| SHELL-010~019 | Shell 扩展 10 项 | 010/011/013/014/016/017/018/019 = v1.0；012 = v2.0；015 = 撤销并入 013 | 见 11a-shell.md |
-| US-SHELL-003 | 模块加载 | A 修复 v1.0 | ⚠️ v1.0 修复 |
-| **范围溯源** | **141 = baseline 136 + MC-019 + REG-008 + REPORT×3** | baseline 冻结后补入 | MC-019[D6] + REG-008[R10] + REPORT×3[A7]，均五要素齐全；模块 9→10（REPORT 独立） | 详见 baseline spec §5 |
+**给你（产品负责人/用户）看的。** 不需要懂代码，只需要知道：
+- 系统该做什么
+- 每个功能做到什么程度
+- 你的日常工作中，哪些功能对应哪些文档
 
-## 文件索引
+---
 
-| 文件 | 模块 | US 数 | 状态 |
-|------|------|-------|------|
-| [01-prd.md](01-prd.md) | 顶层 PRD | — | ✅ 已完成 |
-| [02-auth.md](02-auth.md) | 认证与会话 | 13 | ✅ 已完成 |
-| [03-users.md](03-users.md) | 用户管理 | 12 | ✅ 已完成 |
-| [04-patients.md](04-patients.md) | 患者管理 | 13 | ✅ 已完成 |
-| [05-herbs.md](05-herbs.md) | 药材管理 | 13 | ✅ 已完成 |
-| [06-formulas.md](06-formulas.md) | 验方管理 | 13 | ✅ 已完成 |
-| [07-medical-cases.md](07-medical-cases.md) | 医案管理（核心聚合根） | 19 | ✅ 已完成 |
-| [08-registration.md](08-registration.md) | 挂号管理 | 8 | ✅ 已完成 |
-| [09-printing.md](09-printing.md) | 处方打印 | 4 | ✅ 已完成 |
-| [10-reports.md](10-reports.md) | 报表管理 | 3 | ✅ 已完成 |
-| [11a-shell.md](11a-shell.md) | 平台-Shell（壳程序生命周期） | 15 | ✅ 已完成 |
-| [11b-configuration.md](11b-configuration.md) | 平台-配置管理 | 4 | ✅ 已完成 |
-| [11c-error-handling.md](11c-error-handling.md) | 平台-异常处理 | 8 | ✅ 已完成 |
-| [11d-observability.md](11d-observability.md) | 平台-可观测性（日志+健康诊断） | 16 | ✅ 已完成 |
-| [11e-cardreader.md](11e-cardreader.md) | 平台-读卡器 | 2 | ✅ 已完成 |
-| [12-nfr.md](12-nfr.md) | 非功能需求 | — | ✅ 已完成 |
-| [13-traceability-matrix.md](13-traceability-matrix.md) | 需求追溯矩阵（US→ADR/Flow/API/实现） | 141 | ✅ 已完成 |
-| **合计** | | **141** | |
+## 按你的日常工作找文档
 
-> 注：报表管理（Reports）为独立 v1.0 需求模块（US-REPORT × 3），原仅存 API 文档，A7 落地后补入需求矩阵。
+### 🏥 患者来了（核心诊疗流程）
 
-## US 编号体系
+这是你最关心的——患者从进门到处方打印的完整链路。
 
-所有需求统一使用 `US-{DOMAIN}-{NNN}` 格式（User Story）。原 `FR-` 前缀已全部迁移为 `US-`，编号保持不变。`NFR-` 前缀（非功能需求）保留不变。
+| 步骤 | 你在做什么 | 看这个文档 | 读哪段 |
+|------|-----------|-----------|--------|
+| 1. 患者登记 | 前台录入患者信息（姓名、身份证、电话） | [04-patients.md](04-patients.md) | US-PAT-001~004 |
+| 2. 身份证读卡 | 读卡器自动填充患者信息 | [11e-cardreader.md](11e-cardreader.md) | US-CARD-001~002 |
+| 3. 挂号排队 | 前台建挂号单，患者进入等候队列 | [08-registration.md](08-registration.md) | US-REG-001, 004 |
+| 4. 医生接诊 | 医生从待诊清单选患者，开始看病 | [08-registration.md](08-registration.md) | US-REG-005 |
+| 5. 写诊断 | 医生填写：主诉、现病史、舌诊、脉诊、辨证 | [07-medical-cases.md](07-medical-cases.md) | US-MC-001, 002 |
+| 6. 开处方 | 从验方导入或手动添加药材 | [07-medical-cases.md](07-medical-cases.md) + [05-herbs.md](05-herbs.md) + [06-formulas.md](06-formulas.md) | US-MC-002, US-FORM-001 |
+| 7. 打印处方 | A5 处方笺打印，患者凭处方取药 | [09-printing.md](09-printing.md) | US-PRINT-001~003 |
+| 8. 完成/退号 | 医生完成医案，或患者退号取消 | [07-medical-cases.md](07-medical-cases.md) + [08-registration.md](08-registration.md) | US-MC-011, US-REG-006 |
 
-| 前缀 | 域 | 文件 |
-|------|-----|------|
-| US-AUTH | 认证与会话 | 02-auth.md |
-| US-USER | 用户管理 | 03-users.md |
-| US-PAT | 患者管理 | 04-patients.md |
-| US-HERB | 药材管理 | 05-herbs.md |
-| US-FORM | 验方管理 | 06-formulas.md |
-| US-MC | 医案管理 | 07-medical-cases.md |
-| US-REG | 挂号管理 | 08-registration.md |
-| US-PRINT | 处方打印 | 09-printing.md |
-| US-REPORT | 报表管理 | 10-reports.md |
-| US-SHELL | 平台-Shell | 11a-shell.md |
-| US-CFG | 平台-配置 | 11b-configuration.md |
-| US-ERR | 平台-异常处理 | 11c-error-handling.md |
-| US-LOG | 平台-日志审计 | 11d-observability.md |
-| US-SYS | 平台-健康诊断 | 11d-observability.md |
-| US-CARD | 平台-读卡器 | 11e-cardreader.md |
+### 💊 管理员日常
 
-## US 总览（141 项）
+| 你在做什么 | 看这个文档 | 读哪段 |
+|-----------|-----------|--------|
+| 管理药材库（增删改、批量导入） | [05-herbs.md](05-herbs.md) | US-HERB-001~013 |
+| 管理验方库（创建、验证、共享） | [06-formulas.md](06-formulas.md) | US-FORM-001~013 |
+| 管理用户（增删改、重置密码） | [03-users.md](03-users.md) | US-USER-001~012 |
+| 看报表（收入、问诊量、药材消耗） | [10-reports.md](10-reports.md) | US-REPORT-001~003 |
+| 系统配置 | [11b-configuration.md](11b-configuration.md) | US-CFG-001~004 |
 
-### 认证与会话（US-AUTH × 13）
+### 🔐 所有人
 
-| US ID | 标题 |
-|-------|------|
-| US-AUTH-001 | 用户名密码登录 |
-| US-AUTH-002 | 登录失败锁定 |
-| US-AUTH-003 | 登录限流 |
-| US-AUTH-004 | 令牌刷新 |
-| US-AUTH-005 | 令牌验证 |
-| US-AUTH-006 | 重放攻击检测（令牌族撤销） |
-| US-AUTH-007 | 安全审计日志 |
-| US-AUTH-008 | 登出（含过期令牌） |
-| US-AUTH-009 | 本地自动登录（AutoLoginToken） |
-| US-AUTH-010 | AutoLoginToken 轮换 |
-| US-AUTH-011 | 保留用户名拦截 |
-| US-AUTH-012 | 本地简化认证（1 年令牌） |
-| US-AUTH-013 | 本地登录限流（5 次/分） |
+| 你在做什么 | 看这个文档 | 读哪段 |
+|-----------|-----------|--------|
+| 登录/登出/忘记密码 | [02-auth.md](02-auth.md) | US-AUTH-001~008 |
+| 改个人资料/改密码 | [03-users.md](03-users.md) | US-USER-008~009 |
 
-### 用户管理（US-USER × 12）
+---
 
-| US ID | 标题 |
-|-------|------|
-| US-USER-001 | 分页查询用户列表 |
-| US-USER-002 | 查看用户详情 |
-| US-USER-003 | 查看当前用户资料 |
-| US-USER-004 | 创建用户 |
-| US-USER-005 | 更新用户（用户名不可变） |
-| US-USER-006 | 删除用户（软删除，不可删自己） |
-| US-USER-007 | 重置用户密码（SuperAdmin） |
-| US-USER-008 | 修改个人资料（IDOR 防护） |
-| US-USER-009 | 修改密码（需旧密码） |
-| US-USER-010 | 启用/禁用用户 |
-| US-USER-011 | 恢复软删除用户（SuperAdmin） |
-| US-USER-012 | 批量操作（删除/启用/禁用） |
+## 模块一览
 
-### 患者管理（US-PAT × 13）
+| # | 模块 | 做什么 | US 数 | 状态 |
+|---|------|--------|:-----:|------|
+| 1 | [认证授权](02-auth.md) | 登录、登出、令牌管理 | 13 | ✅ 核心完成 |
+| 2 | [用户管理](03-users.md) | 增删改查用户、角色分配 | 12 | ✅ 核心完成 |
+| 3 | [患者管理](04-patients.md) | 患者档案、身份证读卡 | 13 | ✅ 全部完成 |
+| 4 | [药材管理](05-herbs.md) | 药材库维护、批量导入 | 13 | ✅ 核心完成 |
+| 5 | [验方管理](06-formulas.md) | 经验方创建、验证、共享 | 13 | ✅ 核心完成 |
+| 6 | [医案管理](07-medical-cases.md) | ⭐ 核心——诊断+处方+状态流转 | 19 | ✅ 核心完成 |
+| 7 | [挂号管理](08-registration.md) | 挂号排队、接诊、退号 | 8 | ✅ 全部完成 |
+| 8 | [处方打印](09-printing.md) | A5/A4 打印、PDF 导出 | 4 | ✅ 核心完成 |
+| 9 | [报表管理](10-reports.md) | 收入/问诊/药材统计 | 3 | ✅ 全部完成 |
+| 10 | [Shell 平台](11a-shell.md) | 启动、导航、模块加载 | 14 | ✅ 核心完成 |
+| 11 | [配置管理](11b-configuration.md) | 系统配置读写 | 4 | ✅ 全部完成 |
+| 12 | [错误处理](11c-error-handling.md) | 友好错误提示 | 8 | ✅ 全部完成 |
+| 13 | [可观测性](11d-observability.md) | 日志、审计、健康检查 | 16 | ✅ 全部完成 |
+| 14 | [读卡器](11e-cardreader.md) | 身份证读卡 | 2 | ✅ 全部完成 |
+| 15 | [非功能需求](12-nfr.md) | 安全、性能、数据 | — | ✅ 已定义 |
 
-| US ID | 标题 |
-|-------|------|
-| US-PAT-001 | 分页查询患者列表 |
-| US-PAT-002 | 查看患者详情 |
-| US-PAT-003 | 创建患者 |
-| US-PAT-004 | 更新患者 |
-| US-PAT-005 | 删除患者（软删除，引用检查） |
-| US-PAT-006 | 启用/禁用患者 |
-| US-PAT-007 | 恢复软删除患者 |
-| US-PAT-008 | 批量删除患者 |
-| US-PAT-009 | 单个引用检查 |
-| US-PAT-010 | 批量引用检查 |
-| US-PAT-011 | 下载导入模板 |
-| US-PAT-012 | 导出患者 Excel |
-| US-PAT-013 | 敏感数据脱敏（存储与传输） |
+**总计：141 个用户故事，10 个功能模块**
 
-### 药材管理（US-HERB × 13）
+---
 
-| US ID | 标题 |
-|-------|------|
-| US-HERB-001 | 分页查询药材列表 |
-| US-HERB-002 | 查看药材详情 |
-| US-HERB-003 | 创建药材 |
-| US-HERB-004 | 更新药材 |
-| US-HERB-005 | 删除药材（软删除，引用检查） |
-| US-HERB-006 | 批量导入药材（Skip/Update/Error 策略） |
-| US-HERB-007 | 导出全部药材 |
-| US-HERB-008 | 单个引用检查 |
-| US-HERB-009 | 批量引用检查 |
-| US-HERB-010 | 启用/禁用药材 |
-| US-HERB-011 | 恢复软删除药材 |
-| US-HERB-012 | 批量操作（启用/禁用/删除） |
-| US-HERB-013 | 导出 Excel + 下载模板 |
+## 状态标记说明
 
-### 验方管理（US-FORM × 13）
+| 标记 | 含义 |
+|------|------|
+| ✅ 已实现 | 功能已完成开发和测试 |
+| ⚠️ 部分实现 | 核心功能有，但某些细节待完善 |
+| 🚧 待实现 | 已有明确需求，代码尚未开发 |
+| ❌ 未开始 | 需求已定义，未排入开发计划 |
+| 🔮 v2.0 | 不在当前版本范围，后续规划 |
 
-| US ID | 标题 |
-|-------|------|
-| US-FORM-001 | 分页查询验方列表（按所有权） |
-| US-FORM-002 | 查看验方详情 |
-| US-FORM-003 | 创建验方（Draft 初始状态） |
-| US-FORM-004 | 更新验方（触发状态重新评估） |
-| US-FORM-005 | 删除验方（软删除） |
-| US-FORM-006 | 批量导入验方 |
-| US-FORM-007 | 查询待验证验方（Doctor to-do） |
-| US-FORM-008 | 验证单个药材（绑定系统药材） |
-| US-FORM-009 | 全部药材验证后自动晋升 Validated |
-| US-FORM-010 | 药材变更后降级 Draft（FLAW-F1） |
-| US-FORM-011 | 启用/禁用验方 |
-| US-FORM-012 | 恢复软删除验方 |
-| US-FORM-013 | 批量操作 + 导出 + 模板 |
+---
 
-### 医案管理（US-MC × 19，核心聚合根）
+## 术语速查
 
-| US ID | 标题 |
-|-------|------|
-| US-MC-001 | 创建医案（含诊断+处方聚合） |
-| US-MC-002 | 保存医案（统一聚合保存） |
-| US-MC-003 | 设置处方需求标志（3步工作流第2步） |
-| US-MC-004 | 查询医案详情（含诊断+处方） |
-| US-MC-005 | 分页查询医案列表（按角色过滤） |
-| US-MC-006 | 统一查询（ByPatient/Pending/Recent 等） |
-| US-MC-007 | 跨模块搜索（患者+诊断+日期） |
-| US-MC-008 | 查询诊断历史 |
-| US-MC-009 | 查询处方历史 |
-| US-MC-010 | 更新医案状态（Active/Suspended） |
-| US-MC-011 | 完成医案（工作流验证） |
-| US-MC-012 | 强制关闭医案 |
-| US-MC-013 | 暂停医案 |
-| US-MC-014 | 取消医案（软删除+打印保护） |
-| US-MC-015 | 删除/批量删除医案 |
-| US-MC-016 | 查询医案权限 |
-| US-MC-017 | 查询审计日志（20字段差异） |
-| US-MC-018 | 批量详情查询（≤50，解决 N+1） |
-| US-MC-019 | 复制上次处方微调（D6） |
+不懂某个词？看 [03-glossary.md](../01-product/03-glossary.md)。最常见的几个：
 
-### 挂号管理（US-REG × 8）
+| 词 | 意思 |
+|----|------|
+| **医案** | 一次完整的诊疗记录（⚠️ 不是"病历"） |
+| **验方** | 可复用的处方模板（⚠️ 不是"公式"） |
+| **处方** | 具体的药材配伍和剂量 |
+| **中医诊断** | 望闻问切、辨证论治（⚠️ 不是"问诊"） |
+| **双模式** | 远程（联网）和本地（离线）两种运行方式 |
 
-> **双模式适用性**：本地模式**按需**——默认无前台用户时 Registration 不显现，医生直接 Patient→MedicalCase「来一个看一个」；若 Admin 建前台用户则前台挂号/队列/StartVisit 链同样可用（全角色支持，差异由用户配置决定，非模式级裁剪）。本地无 SignalR（用轮询/手动刷新）。详见 [08-registration.md「双模式工作流」](08-registration.md)。
+---
 
-| US ID | 标题 |
-|-------|------|
-| US-REG-001 | 前台创建挂号（Waiting 排队） |
-| US-REG-002 | 医生快速就诊（QuickVisit 原子事务） |
-| US-REG-003 | 查看挂号详情 |
-| US-REG-004 | 分页查询挂号 + 查看排队 |
-| US-REG-005 | 开始就诊（Waiting→InProgress） |
-| US-REG-006 | 取消挂号（仅 Waiting） |
-| US-REG-007 | 医案联动（完成/取消自动回写） |
-| US-REG-008 | 医生工作台待诊列表实时更新（SignalR） |
+## 我想深入了解
 
-### 处方打印（US-PRINT × 4）
+| 我关心什么 | 看这个文档 |
+|-----------|-----------|
+| 谁能做什么操作 | [权限矩阵](../03-architecture/12-permissions-matrix.md) |
+| 系统安全怎么保障 | [非功能需求-安全](12-nfr.md#安全-security) |
+| 系统性能要求 | [非功能需求-性能](12-nfr.md#性能-performance) |
+| 代码和文档是否一致 | [校准报告](../reports/documentation-calibration-report.md) |
+| 整体规划和进度 | [项目总账](../03-architecture/13-project-master-plan.md) |
 
-| US ID | 标题 |
-|-------|------|
-| US-PRINT-001 | 打印处方（A5/A4，对话框/直打印） |
-| US-PRINT-002 | 处方预览 |
-| US-PRINT-003 | 导出处方（XPS/PDF） |
-| US-PRINT-004 | 打印记录回写服务器（成功/失败） |
+---
 
-### 报表管理（US-REPORT × 3）
+## 变更记录
 
-| US ID | 标题 |
-|-------|------|
-| US-REPORT-001 | 查询收入报表（按时间范围，默认当日） |
-| US-REPORT-002 | 查询就诊统计报表（按时间范围，含 byDoctor 工作量） |
-| US-REPORT-003 | 查询药材使用排行（按时间范围） |
-
-### 平台基础设施（US-SHELL/CFG/ERR/LOG/SYS/CARD × 43）
-
-> 详见 [11a-shell.md](11a-shell.md)、[11b-configuration.md](11b-configuration.md)、[11c-error-handling.md](11c-error-handling.md)、[11d-observability.md](11d-observability.md)、[11e-cardreader.md](11e-cardreader.md)
-
-#### Shell（v1.0 有效 13：原 5 + SHELL-010~019 补充 8；另有 012=v2.0、015=撤销）
-
-| US ID | 标题 |
-|-------|------|
-| US-SHELL-001 | 应用启动（单实例） |
-| US-SHELL-003 | 角色基础模块加载 |
-| US-SHELL-004 | 账户设置（个人资料+密码） |
-| US-SHELL-005 | 菜单导航 |
-| US-SHELL-007 | 双模式连接切换 |
-| US-SHELL-010 | Desktop 安装（Velopack）🧲 v1.0 |
-| US-SHELL-011 | 首次初始化向导 🧲 v1.0 |
-| US-SHELL-012 | Desktop 自动更新（v2.0 规划） |
-| US-SHELL-013 | 数据库备份恢复（含备份状态+手动备份，原 015 并入）🧲 v1.0 |
-| US-SHELL-014 | 安全审计日志查看 🧲 v1.0 |
-| ~~US-SHELL-015~~ | ~~备份状态与手动备份~~（撤销，并入 013） |
-| US-SHELL-016 | 配置导出/导入 🧲 v1.0 |
-| US-SHELL-017 | 生产环境安全门控（v1.0 ✅） |
-| US-SHELL-018 | sysadmin 配置中心 🧲 v1.0 |
-| US-SHELL-019 | 读卡器诊断测试工具 🧲 v1.0 |
-
-#### Configuration（4）
-
-| US ID | 标题 |
-|-------|------|
-| US-CFG-001 | 查询所有配置 |
-| US-CFG-002 | 查询单个配置 |
-| US-CFG-003 | 验证生产配置 |
-| US-CFG-004 | 功能开关 |
-
-#### Error Handling（8）
-
-| US ID | 标题 |
-|-------|------|
-| US-ERR-001 | 全局异常处理（Dispatcher+AppDomain） |
-| US-ERR-002 | 中文友好错误消息 |
-| US-ERR-003 | 追踪 ID（TraceId） |
-| US-ERR-004 | CorrelationId 端到端追踪 |
-| US-ERR-005 | 生产环境堆栈屏蔽 |
-| US-ERR-006 | 验证错误统一格式（422） |
-| US-ERR-007 | 业务异常分类 |
-| US-ERR-008 | 异常层级（Validation/NotFound/Conflict → Business） |
-
-#### Logging & Audit（7）
-
-| US ID | 标题 |
-|-------|------|
-| US-LOG-001 | 结构化日志（Serilog） |
-| US-LOG-002 | 两阶段 Serilog 引导 |
-| US-LOG-003 | 敏感数据脱敏 |
-| US-LOG-004 | 审计日志（可配置保留期） |
-| US-LOG-005 | 日志级别动态调整 |
-| US-LOG-006 | CorrelationId 注入 |
-| US-LOG-007 | 日志自动清理（默认 365 天） |
-
-#### Health & Diagnostics（9）
-
-| US ID | 标题 |
-|-------|------|
-| US-SYS-001 | 匿名存活探针（/health） |
-| US-SYS-002 | Ping 端点（/ping） |
-| US-SYS-003 | 详细健康检查（/details，含 DB） |
-| US-SYS-004 | 健康状态 503 返回 |
-| US-SYS-005 | 日志级别状态查询 |
-| US-SYS-006 | 启用调试模式（定时，≤120 分钟） |
-| US-SYS-007 | 禁用调试模式 |
-| US-SYS-008 | 设置显式日志级别 |
-| US-SYS-009 | 调试模式自动过期 |
-
-#### Card Reader（2）
-
-| US ID | 标题 |
-|-------|------|
-| US-CARD-001 | 身份证读卡（初始化+读取+自动读） |
-| US-CARD-002 | 患者去重查找或创建（PRD-15） |
+| 日期 | 版本 | 变更 |
+|------|------|------|
+| 2026-08-02 | v3.0 | 重写为用户友好版本：场景导航、模块一览、状态说明、术语速查 |
+| 2026-06-28 | v2.1 | v1.0 范围冻结，D1-D10 决策落地 |
+| 2026-06-15 | v2.0 | 需求文档重建 |
