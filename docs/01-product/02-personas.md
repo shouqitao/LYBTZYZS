@@ -110,16 +110,18 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[Admin 首次登录] --> B[创建医生账号]
-    B --> C[创建前台账号]
-    C --> D[导入药材库 📋 Excel导入]
-    D --> E[导入验方库 📋 Excel导入]
-    E --> F[配置系统参数]
-    F --> G[诊所就绪]
+    A[Admin 首次登录] --> B[用户管理]
+    B --> B1[创建医生账号]
+    B --> B2[创建前台账号]
+    B1 --> C[导入药材库 📋 Excel导入]
+    B2 --> C
+    C --> D[导入验方库 📋 Excel导入]
+    D --> E[配置系统参数]
+    E --> F[诊所就绪]
 
-    B -->|失败| B1{账号名冲突?}
-    B1 -->|是| B2[提示已存在 → 修改后重试]
-    B1 -->|否| B3[检查输入合法性 → 重试]
+    B1 -->|失败| B1a{账号名冲突?}
+    B1a -->|是| B1b[提示已存在 → 修改后重试]
+    B1a -->|否| B1c[检查输入合法性 → 重试]
 ```
 
 #### 日常管理流程
@@ -129,12 +131,13 @@ flowchart TD
     A[Admin 登录] --> B[管理后台]
 
     B --> C[用户管理]
-    C --> C1[创建/编辑 Doctor/Receptionist]
-    C --> C2[重置 Doctor/Receptionist 密码]
+    C --> C1[创建/编辑 Doctor]
+    C --> C2[创建/编辑 Receptionist]
     C --> C3[禁用/启用/删除 Doctor/Receptionist]
-    C --> C4{目标是 Admin/Sysadmin?}
-    C4 -->|是| C5[❌ 拒绝：不可管理同级/上级]
-    C4 -->|否| C1
+    C --> C4[重置 Doctor/Receptionist 密码]
+    C1 & C2 & C3 & C4 --> C5{目标是 Admin/Sysadmin?}
+    C5 -->|是| C6[❌ 拒绝：不可管理同级/上级]
+    C5 -->|否| C[继续管理]
 
     B --> D[药材管理]
     D --> D1[创建/编辑药材]
