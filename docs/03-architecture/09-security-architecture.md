@@ -434,7 +434,7 @@ stateDiagram-v2
 
 | ID | 决策 | 原因 |
 |----|------|------|
-| ADR-0005 | 双轨认证 (AdminSecrets + Users) | SuperAdmin 使用独立凭据表，与普通用户分离管理 |
+| ADR-0005 | ~~双轨认证 (AdminSecrets + Users)~~ 已废弃 | SuperAdmin 迁移到 Users 表，AdminSecrets 已移除 |
 | ADR-0008 | Token Family 防御性设计 | RefreshToken 轮换 + Family 撤销检测盗用 |
 | Issue #1864 | 客户端 JWT 自验证 | Desktop 端本地解析 JWT，移除对 Server 验证 API 的依赖 |
 | Issue #1907 | Token 内存存储 | 医疗系统合规：进程结束自动清除，不留磁盘痕迹 |

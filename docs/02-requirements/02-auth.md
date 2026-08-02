@@ -1,6 +1,6 @@
 # 认证与会话 (Authentication & Session)
 
-> 版本: v2.0 | 日期: 2026-06-15 | 状态: 重建
+> 版本: v3.0 | 日期: 2026-06-15 | 状态: 重建
 
 ## 模块概述
 
@@ -18,7 +18,7 @@
 4. **AutoLoginToken 服务端可撤销**：本地自动登录令牌由服务端管理生命周期，成功登录后轮换；服务端可主动撤销以终止本地会话。
 5. **登出允许过期令牌**：`[AllowAnonymous]` 装饰登出端点，即使令牌已过期也能正常登出，避免令牌过期导致无法登出的死锁。
 6. **保留用户名**：`admin/administrator/root/system/superadmin/sysadmin` 为系统保留用户名，拒绝普通注册与冒用。
-7. **AdminSecrets 已移除**（Issue #1909）：SuperAdmin 凭证已统一到 Users 表（Role=100），不再使用独立的 AdminSecrets 表。
+7. **超管凭证统一到 Users 表**（Issue #1909）：SuperAdmin 凭证已统一到 Users 表（Role=100），不再使用独立的 AdminSecrets 表。
 
 ## 双模式差异
 
@@ -51,7 +51,7 @@
 1. 远程模式返回 access_token (60 分钟) + refresh_token (7d，可旋转)
 2. 本地模式返回单一 JWT (1 年，无 refresh)
 3. 保留用户名（admin/administrator/root/system/superadmin/sysadmin）拒绝普通注册
-4. SuperAdmin 凭证统一存储于 Users 表（Role=100），AdminSecrets 已移除（Issue #1909）
+4. 超管凭证统一存储于 Users 表（Role=100），AdminSecrets 已移除（Issue #1909）
 
 **双模式**:
 | 模式 | 行为 |

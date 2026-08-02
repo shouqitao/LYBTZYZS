@@ -7,7 +7,7 @@
 | Receptionist | 0 | 前台，负责挂号、患者管理 |
 | Doctor | 1 | 医生，负责诊断、开方 |
 | Admin | 10 | 管理员，负责用户、药材、验方管理 |
-| SuperAdmin | 100 | 超级管理员，系统设置、全局管理 |
+| SuperAdmin | 100 | 超管，系统设置、全局管理 |
 | Sysadmin | — | 独立用户（IsSysAdmin=true），非角色，运维 |
 
 **Sysadmin 特殊性**：
@@ -20,8 +20,8 @@
 > 矩阵保留两列不合并，因二者是**不同机制**：
 > - **SuperAdmin（角色列）**= 角色 PermissionLevel=100，通过角色放行获得权限（角色体系内的最高权限）
 > - **Sysadmin（独立用户列）**= `IsSysAdmin=true` 布尔标记，提供**不可删除/禁用/修改**的额外保护（独立于角色体系）
-> - **并存关系**：sysadmin 用户默认即被赋予 SuperAdmin 角色（见 `IdentitySeedData`），即「SuperAdmin 角色获权 + IsSysAdmin 布尔提供保护」双机制叠加
-> - 两列在「资源×操作」矩阵中几乎全 ✅ 重叠属**设计预期**（sysadmin 经 SuperAdmin 角色获权），而非冗余
+> - **并存关系**：sysadmin 用户默认即被赋予 SuperAdmin 角色（见 `IdentitySeedData`），即「超管角色获权 + IsSysAdmin 布尔提供保护」双机制叠加
+> - 两列在「资源×操作」矩阵中几乎全 ✅ 重叠属**设计预期**（sysadmin 经超管角色获权），而非冗余
 
 ## Resource × Operation × Role Matrix
 

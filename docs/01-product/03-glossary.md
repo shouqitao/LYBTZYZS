@@ -84,10 +84,10 @@
 
 | 值 | 英文 | 中文 | 授权策略 |
 |----|------|------|---------|
-| 0 | Receptionist | 前台接待 | `DoctorOrReceptionist` |
+| 0 | Receptionist | 前台 | `DoctorOrReceptionist` |
 | 1 | Doctor | 医生 | `DoctorOrReceptionist` |
 | 10 | Admin | 管理员 | `DoctorOrReceptionist` + `AdminOrSuperAdmin` |
-| 100 | SuperAdmin | 超级管理员 | `DoctorOrReceptionist` + `AdminOrSuperAdmin` |
+| 100 | SuperAdmin | 超管 | `DoctorOrReceptionist` + `AdminOrSuperAdmin` |
 
 ### MedicalCaseStatus (医案状态)
 
