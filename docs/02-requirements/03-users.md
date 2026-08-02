@@ -33,7 +33,7 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 
 ## 权限模型
 
-**4 级角色**：`Receptionist(0)` < `Doctor(1)` < `Admin(10)` < `SuperAdmin(100)`
+> 角色定义、层级管理规则详见 [`../01-product/02-personas.md`](../01-product/02-personas.md)。权限矩阵详见 [`../01-product/04-permissions.md`](../01-product/04-permissions.md)。
 
 **2 条授权策略**（Phase 1 从 4 条简化）：
 | 策略 | 允许角色 | 用途 |
@@ -41,12 +41,7 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 | `DoctorOrReceptionist` | 所有4角色 | 患者/医案/挂号/药材/验方 |
 | `AdminOrSuperAdmin` | Admin + SuperAdmin | 用户管理/系统设置/报表 |
 
-**控制器层权限控制**（CanManageUser 逻辑）：
-```
-SuperAdmin → 可管理所有角色
-Admin → 可管理 Doctor + Receptionist，不可管理 Admin/SuperAdmin
-Doctor/Receptionist → 不可管理任何角色
-```
+> 层级管理规则（一级管一级）、不可自管规则详见 [`../01-product/02-personas.md`](../01-product/02-personas.md) §约束。
 
 ## 权限矩阵
 
@@ -124,9 +119,9 @@ Doctor/Receptionist → 不可管理任何角色
 1. **用户名不可变**：创建后不可修改
 2. **IDOR 防护**：/profile 和 /change-password 验证 `id == currentUserId`
 3. **不可删除自己**：删除端点校验 `id != currentUserId`
-4. **sysadmin 保护**：系统管理员账号不可修改/删除/禁用
+4. **sysadmin 保护**：详见 [`../01-product/02-personas.md`](../01-product/02-personas.md) §约束
 5. **密码默认值**：新用户创建时默认密码见 `appsettings.json:DefaultPasswords`（开发环境：`admin/Admin@123456`、`sysadmin/SysAdmin@2026!`；生产环境由 `DefaultPasswordService.GetOrGeneratePassword()` 随机生成）
-6. **角色层级**：Admin 不能创建/修改 SuperAdmin；Doctor/Receptionist 不能管理任何角色
+6. **角色层级**：详见 [`../01-product/02-personas.md`](../01-product/02-personas.md) §约束
 7. **保留用户名**：admin, administrator, root, system, superadmin, sysadmin
 
 ## 边界条件验收标准

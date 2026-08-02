@@ -37,7 +37,7 @@ v1.0 包含 **10 个功能模块、141 个 User Stories**（Must / Should / Coul
 
 ## 目标用户
 
-系统服务于四类角色，权限层级递进（`PermissionLevel`：Receptionist=0、Doctor=1、Admin=10、SuperAdmin=100）。详细画像、日常工作流、痛点与成功标准见 [`../01-product/02-personas.md`](../01-product/02-personas.md)。
+详细角色定义、层级管理规则、工作流程见 [`../01-product/02-personas.md`](../01-product/02-personas.md)。权限矩阵见 [`../01-product/04-permissions.md`](../01-product/04-permissions.md)。
 
 | 角色 | 使用频率 | 核心场景 |
 |------|---------|---------|
@@ -126,74 +126,15 @@ v1.0 包含 **10 个功能模块、141 个 User Stories**（Must / Should / Coul
 
 ### 角色层级
 
-| 角色 | PermissionLevel | 定位 | 数量 |
-|------|----------------|------|------|
-| SuperAdmin | 100 | 系统固定账号，数据库种子预置 | 1（固定） |
-| Admin | 10 | 诊所管理员 | 1-2 |
-| Doctor | 1 | 医生，核心诊疗操作者 | 1-5 |
-| Receptionist | 0 | 前台接待 | 1-2 |
-
-**层级规则**：`operator.PermissionLevel > target.PermissionLevel` 才允许操作目标用户（USER-D04）。
-
-**SuperAdmin 特殊规则**（USER-D05）：作为操作者拥有 Admin 全部权限；作为目标**不可被任何人管理**（不可改角色、不可删除、不可禁用、不可重置密码）；Admin 用户列表中不可见；密码恢复仅通过 SeedTool CLI（运维操作）。
+> 完整角色定义、层级管理规则（一级管一级）、不可自管规则、角色不可变更规则详见 [`../01-product/02-personas.md`](../01-product/02-personas.md)。权限矩阵详见 [`../01-product/04-permissions.md`](../01-product/04-permissions.md)。
 
 ### 授权策略
 
-系统定义 4 个授权策略（Authorization Policy），作为 API 端点的"门禁"：
-
-| 策略 | 允许角色 | 典型端点 |
-|------|---------|---------|
-| `DoctorOrReceptionist` | Receptionist + Doctor + Admin + SuperAdmin | `/patients`、`/registrations`、`/herbs`、`/formulas`、`/medicalcases` |
-| `AdminOrSuperAdmin` | Admin + SuperAdmin | `/users`（CRUD）、`/configuration`、`/diagnostics`、`/patients/{id}/status`、`/users/{id}/reset-password`、`/users/{id}/restore` |
-
-另有 `AllowAnonymous`（登录、登出、健康探针、导入模板下载）与隐式 `Authenticated`（任意已认证用户：当前用户资料、修改密码）。
-
-**检查顺序**（短路返回）：① 认证（401）→ ② 角色策略（403）→ ③ 资源归属（模块错误码 ERR-xxxxx）→ ④ 业务规则（422）。
+> 授权策略定义、代码策略映射、修复项详见 [`../01-product/04-permissions.md`](../01-product/04-permissions.md) §当前代码策略映射。
 
 ### 模块权限矩阵
 
-下表汇总每个模块的核心操作权限。`✓` = 允许；`✓*` = 允许但有限制（见注释）；`✗` = 拒绝。
-
-| 模块 | 操作 | Receptionist | Doctor | Admin | SuperAdmin |
-|------|------|:---:|:---:|:---:|:---:|
-| **Auth** | 登录/登出/刷新 | ✓ | ✓ | ✓ | ✓ |
-| **Users** | 查询/创建/编辑/删除 | ✗ | ✗ | ✓¹ | ✓¹ |
-| **Users** | 重置密码 | ✗ | ✗ | ✓¹ | ✓¹ |
-| **Users** | 自助（资料/密码） | ✓ | ✓ | ✓ | ✓ |
-| **Patients** | 查询/创建/编辑 | ✓ | ✓ | ✓ | ✓ |
-| **Patients** | 删除 | ✗ | ✓ | ✓ | ✓ |
-| **Patients** | 启用/禁用 | ✗ | ✗ | ✓ | ✓ |
-| **Herbs** | 查询 | ✗ | ✓ | ✓ | ✓ |
-| **Herbs** | 创建/编辑/删除/启禁 | ✗ | ✓*² | ✓ | ✓ |
-| **Formulas** | 查询 | ✗ | ✓*³ | ✓ | ✓ |
-| **Formulas** | 创建/编辑/删除/启禁 | ✗ | ✓*² | ✓ | ✓ |
-| **MedicalCases** | 创建 | ✗ | ✓ | ✗ | ✗ |
-| **MedicalCases** | 查询 | ✗ | ✓*⁴ | ✓ | ✓ |
-| **MedicalCases** | 编辑（Active） | ✗ | ✓*⁴ | ✓ | ✓ |
-| **MedicalCases** | 编辑（Completed 当天） | ✗ | ✓*⁴⁵ | ✓⁵ | ✓⁵ |
-| **MedicalCases** | 编辑（Completed 隔天+） | ✗ | ✗⁶ | ✓⁵ | ✓⁵ |
-| **MedicalCases** | 完成/挂起/取消 | ✗ | ✓*⁴ | ✓ | ✓ |
-| **Registration** | 前台创建（Waiting） | ✓ | ✗ | ✗ | ✗ |
-| **Registration** | 医生快速就诊（QuickVisit） | ✗ | ✓ | ✗ | ✗ |
-| **Registration** | 查询队列/历史 | ✓ | ✓*⁴ | ✓ | ✓ |
-| **Registration** | 取消（仅 Waiting） | ✓*⁷ | ✗ | ✗ | ✗ |
-| **Printing** | 打印/预览/导出 | ✗ | ✓ | ✗ | ✗ |
-| **Platform/Config** | 查询/验证配置 | ✗ | ✗ | ✗ | ✓ |
-| **Platform/Health** | 存活探针（/health） | ✓⁸ | ✓⁸ | ✓⁸ | ✓⁸ |
-| **Platform/Health** | 详细检查（/details） | ✓ | ✓ | ✓ | ✓ |
-| **Platform/Diagnostics** | 日志级别控制 | ✗ | ✗ | ✗ | ✓ |
-| **Platform/CardReader** | 读卡 + 查找或创建患者 | ✓ | ✓ | ✓ | ✓ |
-
-**注释**：
-
-1. **Users Admin 权限**：受 USER-D04 层级规则约束（仅可操作权限值低于自己的用户）；Admin 列表过滤 sysadmin 与其他 Admin；Admin 可重置 Doctor/Receptionist 密码，不可重置 Admin/Sysadmin 密码。
-2. **Doctor 写操作归属限制**：Herbs 与 Formulas 的 Doctor 仅可操作**自己创建的**记录（`CreatedBy` / `UserId` 字段）；Restore 操作为 Admin-only。
-3. **Formula Doctor 可见性**：Doctor 仅可见自己创建的 + `IsShared=true` 的共享验方；Admin 不受 `IsShared` 限制可见全部。
-4. **Doctor 医案/挂号归属限制**：Doctor 仅可见/操作 `UserId=自己` 的医案与挂号；Receptionist 自动过滤禁用患者。
-5. **Completed 医案编辑**：Admin/SuperAdmin 任何时间均可编辑已完成医案，但需提供 `EditReason` + UI 确认弹窗（MC-LOCK-03）。
-6. **MC-LOCK 锁定规则**：`IsLocked = (Status == Completed) AND (CompletedAt.Date < Today)`，仅限制 Doctor；Admin/SuperAdmin 不受影响。
-7. **Registration 取消**：Receptionist 仅可取消 `Source=Receptionist` 且 `Status=Waiting` 的挂号（REG-BR-001）。
-8. **Health 匿名访问**：`/health` 与 `/ping` 为 `AllowAnonymous`，未认证也可访问；`/details` 需认证。
+> 完整权限矩阵、代码策略映射、已知问题与修复项详见 [`../01-product/04-permissions.md`](../01-product/04-permissions.md)。
 
 ### 数据归属与共享
 

@@ -40,7 +40,7 @@
 | Herb | 药材 | 中药材，包含名称、分类、产地、价格等信息。记录式管理（无库存） |
 | Patient | 患者 | 患者基本信息，含个人信息和就诊历史统计 |
 | Registration | 挂号 | 患者就诊登记记录，含候诊队列管理和就诊状态跟踪 |
-| User | 用户 | 系统用户，角色分为前台接待、医生、管理员、超级管理员 |
+| User | 用户 | 系统用户。角色定义见 [02-personas.md](02-personas.md) |
 | MedicalCaseAuditLog | 医案审计日志 | 记录医案的所有修改历史，含操作人、变更字段（20 字段差异追踪）、修改原因。🚧 v1.0 待实现（D1 补回） |
 | MedicalCasePrintLog | 打印日志 | 记录医案打印历史（含 PrintType 区分打印类型）。🚧 v1.0 待实现（D2 补回） |
 | SecurityAuditLog | 安全审计日志 | 记录认证相关的安全事件（登录、登出、令牌撤销等）。🚧 v1.0 待实现（D3 补回） |
@@ -82,12 +82,7 @@
 
 ### UserRole (用户角色)
 
-| 值 | 英文 | 中文 | 授权策略 |
-|----|------|------|---------|
-| 0 | Receptionist | 前台 | `DoctorOrReceptionist` |
-| 1 | Doctor | 医生 | `DoctorOrReceptionist` |
-| 10 | Admin | 管理员 | `DoctorOrReceptionist` + `AdminOrSuperAdmin` |
-| 100 | SuperAdmin | 超管 | `DoctorOrReceptionist` + `AdminOrSuperAdmin` |
+> 角色定义、层级、权限矩阵详见 [02-personas.md](02-personas.md) 和 [04-permissions.md](04-permissions.md)。
 
 ### MedicalCaseStatus (医案状态)
 
