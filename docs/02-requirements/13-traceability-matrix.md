@@ -41,6 +41,8 @@
 | US-AUTH-012 | Must | ADR-0002/0009/0010 | Flow 3 | LocalWebAPI/AuthController.cs | LocalWebAPI/Controllers/AuthController.cs:19 | D19 | ✅ 已实现 |
 | US-AUTH-013 | Must | ADR-0010 | Flow 3 | 本地限流中间件 | LocalWebAPI/Controllers/AuthController.cs:19 | — | 🧲 v1.0 待实现（D3） |
 
+> **注**：02-auth.md 的 US-AUTH-000「首次登录初始化向导」与 US-SHELL-011「首次初始化向导」为同一功能，归属 Shell 模块（见 §九），本段不单列。
+
 ## 二、用户管理（US-USER × 12）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
