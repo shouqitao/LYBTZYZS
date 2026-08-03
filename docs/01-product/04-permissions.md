@@ -1,6 +1,6 @@
 # 权限矩阵与修复项 (Permissions)
 
-> 版本: v4.0 | 日期: 2026-08-02 | 状态: 文档定义（设计态）
+> 版本: v4.1 | 日期: 2026-08-03 | 状态: 文档定义（设计态）
 
 本文件定义四角色的权限矩阵、当前代码策略映射、已知问题与修复计划。
 
@@ -24,7 +24,7 @@
 | 角色变更 | ✗ | ✗ | ✗ | ✗ |
 | **患者管理** |||||
 | 患者 CRUD | ✅ | ✅ | ✅ | ✅ |
-| 患者删除 | ✗ | ✅ | ✅ | ✅ |
+| 患者删除 | ✗ | ✗ | ✅ | ✅ |
 | 患者启用/禁用 | ✗ | ✗ | ✅ | ✅ |
 | **药材管理** |||||
 | 药材查询 | ✗（前台不涉及药材） | ✅ | ✅ | ✅ |
@@ -41,10 +41,12 @@
 | 医案完成/关闭 | ✗ | ✅（仅自己的） | ✅（仅状态变更） | ✅ |
 | 医案纠偏修改 | ✗ | ✗ | ✅（需填原因） | ✅ |
 | **挂号管理** |||||
+| 挂号查看 | ✅（全部） | ✅（仅自己的） | ✅（全部只读） | ✅（全部只读） |
 | 挂号创建 | ✅ | ✅ QuickVisit | ✗ | ✗ |
 | 挂号取消 | ✅ | ✗ | ✗ | ✗ |
 | **打印** |||||
 | 处方打印 | ✗ | ✅ **唯一** | ✗ | ✗ |
+| 打印记录查看 | ✗ | ✅（仅自己的） | ✅（全部） | ✅（全部） |
 | **报表** |||||
 | 报表查看 | ✗ | ✅ | ✅ | ✅ |
 
@@ -61,13 +63,13 @@
 
 ### 2.1 Controller 级授权策略
 
-| Controller | 代码策略 | 目标策略 | 差异 |
+| Controller | 代码策略 | 目标策略（操作级细分） | 差异 |
 |-----------|---------|---------|------|
-| `RegistrationsController` | `DoctorOrAdminOrReceptionist` | `DoctorOrReceptionist` | ⚠️ 多了 Admin（Admin 不参与挂号） |
-| `PatientsController` | `DoctorOrAdminOrReceptionist` | `DoctorOrReceptionist` | ⚠️ 多了 Admin（Admin 不直接管理患者） |
-| `MedicalCasesController` | `DoctorOrAdmin` | `DoctorOnly` | ⚠️ 多了 Admin（Admin 不创建医案） |
-| `HerbsController` | `DoctorOrReceptionist` | `AdminOrSuperAdmin` | 🔴 策略错误：应仅 Admin 管药材，Doctor/Receptionist 无写权限 |
-| `FormulasController` | `DoctorOrReceptionist` | `DoctorOrAdmin` | 🔴 策略待细化 |
+| `RegistrationsController` | `DoctorOrAdminOrReceptionist` | GET：Doctor+Receptionist+**Admin 只读**；POST：Receptionist；quick-visit：`DoctorOnly`；start-visit：`DoctorOnly`；cancel：Receptionist | ⚠️ Admin 只读查看挂号（2026-08-03 决策）；创建/取消仅前台；接诊/QuickVisit 仅 Doctor |
+| `PatientsController` | `DoctorOrAdminOrReceptionist` | GET/POST/PUT：Doctor+Receptionist；DELETE/禁用：`AdminOrSuperAdmin` | ⚠️ 删除/禁用仅 Admin+（2026-08-03 决策）；Admin 不直接管理患者读写 |
+| `MedicalCasesController` | `DoctorOrAdmin` | 创建：`DoctorOnly`；查看/编辑按 MC 铁律 | ⚠️ 创建仅 Doctor（C4/K3 待修） |
+| `HerbsController` | `DoctorOrReceptionist` | GET：Doctor+Admin+SuperAdmin（**前台不可查**）；POST/PUT/DELETE：`AdminOrSuperAdmin` | 🔴 前台不可查看药材（2026-08-03 决策）；写操作仅 Admin |
+| `FormulasController` | `DoctorOrReceptionist` | GET：Doctor+Admin+SuperAdmin（**前台不可查**）；POST/PUT：`DoctorOrAdmin` | 🔴 前台不可查看验方（2026-08-03 决策）；写操作 Doctor(自己)+Admin |
 
 ### 2.2 PolicyConstants 现有策略
 
@@ -98,13 +100,13 @@
 
 ## 三、已知权限问题与修复项
 
-### 3.1 P0 必须修复（阻断核心流程）
+### 3.1 P0 必须修复（阻断核心流程）—— 目标策略均已 2026-08-03 产品确认
 
 | # | 问题 | Controller | 目标策略 | 修复方案 |
 |---|------|-----------|---------|----------|
-| P0-1 | Herbs 策略 `DoctorOrReceptionist` → Doctor/Receptionist 可写药材 | `HerbsController` | `AdminOrSuperAdmin`（写操作）；查询 `DoctorOrReceptionist`（读操作） | 按操作细分：GET `DoctorOrReceptionist`，POST/PUT/DELETE `AdminOrSuperAdmin` |
+| P0-1 | Herbs 策略 `DoctorOrReceptionist` → Doctor/Receptionist 可写药材 | `HerbsController` | `AdminOrSuperAdmin`（写）；GET 不含前台 | GET：Doctor+Admin+SuperAdmin；POST/PUT/DELETE：`AdminOrSuperAdmin` |
 | P0-2 | MedicalCases `DoctorOrAdmin` → Admin 可创建医案 | `MedicalCasesController` | `DoctorOnly` | 新增 `DoctorOnly` 策略；Create 操作限定 Doctor |
-| P0-3 | Formulas 策略 `DoctorOrReceptionist` → Receptionist 可写验方 | `FormulasController` | `DoctorOrAdmin`（写操作）；查询 `DoctorOrReceptionist`（读操作） | 按操作细分 |
+| P0-3 | Formulas 策略 `DoctorOrReceptionist` → Receptionist 可写验方 | `FormulasController` | 写：`DoctorOrAdmin`；读：不含前台 | GET：Doctor+Admin+SuperAdmin；POST/PUT：`DoctorOrAdmin` |
 | P0-4 | Herbs 删除无引用检查 → 可删除被处方引用的药材 | `HerbsService` | — | 增加引用检查（BR-DEL-001） |
 | P0-5 | Patients 删除无引用检查 → 可删除被医案引用的患者 | `PatientsService` | — | 增加引用检查（BR-DEL-001） |
 
@@ -115,8 +117,9 @@
 | P1-1 | Formulas `GetDetail` 无所有权检查 → Admin 可读他人非共享验方 | `FormulasService` | 增加 `CreatedBy` 归属检查 |
 | P1-2 | 医案打印回写缺失 | 医案模块 | 恢复 PrintLog 字段/实体 |
 | P1-3 | 审计日志缺失 | SecurityAuditLog | 恢复审计日志记录 |
-| P1-4 | Registrations 多了 Admin 策略 | `RegistrationsController` | 改为 `DoctorOrReceptionist`，QuickVisit 保持 `DoctorOrAdmin` |
-| P1-5 | Patients 多了 Admin 策略 | `PatientsController` | 改为 `DoctorOrReceptionist` |
+| P1-4 | Registrations 策略未操作级细分 | `RegistrationsController` | GET：Doctor+Receptionist+Admin 只读；POST：Receptionist；quick-visit/start-visit：`DoctorOnly`；cancel：Receptionist |
+| P1-5 | Patients 删除/禁用未限 Admin | `PatientsController` | DELETE/禁用：`AdminOrSuperAdmin`；读写：Doctor+Receptionist |
+| P1-6 | 打印无 `DoctorOnly` 策略 | 打印模块 | 处方打印操作限定 Doctor（2026-08-03 决策：仅 Doctor 打印，管理员可查记录） |
 
 ### 3.3 P2 增强（Phase②）
 
@@ -181,6 +184,7 @@
 
 | 日期 | 变更 |
 |------|------|
+| 2026-08-03 | v4.1 权限决策四连（四角色需求审查）：① 患者删除/禁用仅 Admin+（医生/前台不可删）；② 前台不可查看药材/验方；③ 打印仅 Doctor（管理员可查打印记录）；④ Admin 挂号只读查看。矩阵/策略映射/问题清单同步 |
 | 2026-08-02 | §五 新增数据管理规则：两字段模式（禁用+软删除）定义、适用范围（资源类/流程类/从属类/审计类）、实体状态字段映射 |
 | 2026-08-02 | v4.0 新建：从 02-personas.md 拆分；修正代码策略映射（实际代码与文档偏差）；增加 P0/P1/P2 分级 |
 | 2026-06-28 | 初始权限矩阵（含在 personas 中） |

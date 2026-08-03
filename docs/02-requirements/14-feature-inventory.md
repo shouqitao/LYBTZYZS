@@ -1,6 +1,8 @@
 # LYBTZYZS 产品功能清单
 
 > 版本: v1.0 | 日期: 2026-08-02 | 原则: 从代码实际定义出发，不粉饰
+>
+> ⚠️ **角色列为代码现状**（2026-08-02 扫描）。2026-08-03 权限决策四连后，以下行的角色需随代码收敛：患者删除/禁用（→Admin+）、药材/验方查看（→不含前台）、挂号取消（→仅前台）、打印（→仅 Doctor）。目标权限见 [04-permissions.md](../01-product/04-permissions.md)，代码待办见 [code-gap-fix-list.md](../compose/plans/code-gap-fix-list.md)。
 
 ---
 

@@ -6,8 +6,9 @@
 >
 > | 我是… | 我能… |
 > |-------|-------|
-> | 前台/医生 | 查看药材列表、搜药材 |
+> | 医生 | 查看药材列表、搜药材（开方选药） |
 > | 管理员 | 全部操作：增删改、批量导入、启用/禁用、调价 |
+> | 前台 | ❌ 不涉及药材（2026-08-03 决策） |
 
 ---
 
@@ -43,7 +44,7 @@
 
 ### US-HERB-001: 分页查询药材列表
 
-**角色**: 前台/医生/管理员（所有角色可查看）
+**角色**: 医生/管理员（前台不可查看，2026-08-03 决策）
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -54,10 +55,10 @@
 - [ ] 支持按名称、拼音首字母（PinyinAbbreviation）筛选
 - [ ] 支持按 Category（分类）筛选
 - [ ] 返回总数与分页数据
-- [ ] Receptionist/Doctor 可查看药材列表（只读）；Admin+ 可创建/编辑药材
+- [ ] Doctor/Admin/SuperAdmin 可查看药材列表（只读，前台不可）；Admin+ 可创建/编辑药材
 
 **业务规则**:
-1. 端点受 `DoctorOrReceptionist` 策略保护（Receptionist/Doctor 可查询，Admin+ 可查询+创建/编辑）；Create/Update 端点需补 `AdminOrSuperAdmin` 策略（⚠️ 代码待修复 C2）
+1. GET 端点策略：Doctor+Admin+SuperAdmin（前台不可查，2026-08-03 决策）；Create/Update 需补 `AdminOrSuperAdmin` 策略（⚠️ 代码待修复 C2）
 2. 拼音搜索基于 `PinyinAbbreviation` 字段（如 "dg" 匹配 "当归"）
 3. 结果受 OutputCache 缓存（`HerbsCache` 策略）提升查询性能
 

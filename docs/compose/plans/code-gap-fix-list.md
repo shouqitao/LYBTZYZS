@@ -21,16 +21,16 @@
 - **修复**：Create 和 Update 方法各补 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`
 - **验证**：`dotnet build` + 架构测试
 
-### A3. FormulasController Create/Update 补策略
-- **问题**：Create/Update 用类级 `DoctorOrReceptionist`，不含管理员
+### A3. FormulasController Create/Update 补策略（P0-3）
+- **问题**：Create/Update 用类级 `DoctorOrReceptionist`，前台也可写验方
 - **文件**：`src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs`
-- **修复**：Create 和 Update 方法各补 `[Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]`
+- **修复**：Create/Update 补 `[Authorize(Policy = PolicyConstants.DoctorOrAdmin)]`；GET 拆前台见 A6
 - **验证**：`dotnet build` + 架构测试
 
-### A4. MedicalCasesController.Create 改策略
-- **问题**：Create 策略含 Receptionist（可代建），但 BR-000 决策仅 Doctor 可建
+### A4. MedicalCasesController.Create 改策略（C4）
+- **问题**：Create 策略含 Receptionist/Admin，但 BR-000 决策仅 Doctor 可建
 - **文件**：`src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:93`
-- **修复**：Create 策略从 `DoctorOrAdminOrReceptionist` 改为 `DoctorOrAdmin`
+- **修复**：Create 策略改为 `DoctorOnly`（依赖 A5 新增策略常量）
 - **验证**：`dotnet build` + 架构测试
 
 ### A5. PolicyConstants 补 DoctorOnly（K3）
@@ -38,6 +38,18 @@
 - **文件**：`src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs`
 - **修复**：新增 `public const string DoctorOnly = "DoctorOnly";` + 注册策略
 - **验证**：`dotnet build`
+
+### A6. Herbs/Formulas GET 拆前台（C5，2026-08-03 决策）
+- **问题**：`HerbsController`/`FormulasController` GET 类级 `DoctorOrReceptionist`，前台可查看药材/验方
+- **文件**：`HerbsController.cs` / `FormulasController.cs`
+- **修复**：GET 策略改为 Doctor+Admin+SuperAdmin（不含 Receptionist），需新增策略（如 `DoctorOrAdminOrSuperAdmin`）或操作级覆盖
+- **验证**：`dotnet build` + 角色权限测试
+
+### A7. 打印补 DoctorOnly（C6/P1-6，2026-08-03 决策）
+- **问题**：处方打印端点无操作级策略，管理员/前台可打印
+- **文件**：打印模块 Controller（Desktop 打印调用方）
+- **修复**：打印操作补 `[Authorize(Policy = PolicyConstants.DoctorOnly)]`（依赖 A5）；管理员仅可查看打印记录
+- **验证**：`dotnet build` + 角色权限测试
 
 ---
 
@@ -51,10 +63,10 @@
 - **参考**：BR-000（2026-08-03 修订）、R10 spec S5、08-registration.md US-REG-005
 - **验证**：集成测试 + Desktop 端接诊流程
 
-### B2. 挂号取消权限修复（K9/C3 合并）
-- **问题**：Cancel 无操作级策略，前台被挡、Doctor/Admin 反被放行
-- **文件**：`src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs:95`
-- **修复**：Cancel 补 `[Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]` + 服务层校验 Source=Receptionist
+### B2. 挂号操作级权限细分（K9/C3/P1-4 合并，2026-08-03 决策）
+- **问题**：Cancel 无操作级策略（前台被挡、Doctor/Admin 反被放行）；Create/start-visit/quick-visit 均回退类级 `DoctorOrAdminOrReceptionist`（Admin 可创/取/接诊）
+- **文件**：`src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs`
+- **修复**：按操作级细分——GET：Doctor+Receptionist+Admin 只读；POST：Receptionist；quick-visit/start-visit：`DoctorOnly`；cancel：`Receptionist` + 服务层校验 Source=Receptionist
 - **验证**：`dotnet build` + 角色权限测试
 
 ### B3. LocalWebAPI 权限策略（K8）
@@ -78,4 +90,5 @@
 - [ ] `dotnet test tests/LYBT.Tests.Server/` 通过
 - [ ] 权限矩阵文档与代码策略完全一致
 - [ ] 医案创建时机符合 BR-000（2026-08-03 修订：**接诊即建**——StartVisit/QuickVisit/本地模式原子创建）
+- [ ] 患者删除/禁用仅 Admin+；前台不可查看药材/验方；打印仅 Doctor；Admin 挂号只读（2026-08-03 决策四连）
 - [ ] Git commit: `fix(auth): align authorization policies with permission matrix`

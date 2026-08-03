@@ -130,6 +130,8 @@
 | Admin (10) | 查看全部队列和历史（只读统计） |
 | SuperAdmin (100) | 与 Admin 相同（只读监控） |
 
+> **权限细化（2026-08-03 决策）**：Admin 只读查看挂号（列表/详情/队列），不可创建/取消/接诊；QuickVisit 仅 Doctor（现 `DoctorOrAdmin` 需收为 `DoctorOnly`）；创建仅 Receptionist；取消仅 Receptionist（REG-BR-002）。代码待按操作级细分（见 04-permissions P1-4）。
+
 ## 用户故事
 
 ### US-REG-001: 前台创建挂号（Waiting 排队）

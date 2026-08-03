@@ -10,6 +10,7 @@
 | 患者 | 创建/编辑 | ✅ | ✅ | ✅ | ✅ | ✅ |
 | 患者 | 删除(软) | ❌ | ❌ | ✅ | ✅ | ✅ |
 | 患者 | 恢复 | ❌ | ❌ | ❌ | ✅ | ✅ |
+| 挂号 | 查看 | ✅ | ✅(自己) | ✅(只读) | ✅(只读) | ✅(只读) |
 | 挂号 | 创建 | ✅ | ✅(QuickVisit) | ❌ | ❌ | ❌ |
 | 挂号 | 取消 | ✅ | ❌ | ❌ | ❌ | ❌ |
 | 医案 | 查看 | ❌ | ✅(自己) | ✅(全部) | ✅(全部) | ✅(全部) |
@@ -18,11 +19,12 @@
 | 医案 | 完成 | ❌ | ✅ | ❌ | ❌ | ❌ |
 | 医案 | 审计日志 | ❌ | ✅(自己) | ✅(全部) | ✅(全部) | ✅(全部) |
 | 处方 | 打印 | ❌ | ✅ | ❌ | ❌ | ❌ |
+| 处方 | 打印记录 | ❌ | ✅(自己) | ✅(全部) | ✅(全部) | ✅(全部) |
 | 处方 | 回写 | ❌ | ✅ | ❌ | ❌ | ❌ |
-| 药材 | 查看 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 药材 | 查看 | ❌ | ✅ | ✅ | ✅ | ✅ |
 | 药材 | 创建/编辑 | ❌ | ❌ | ✅ | ✅ | ✅ |
 | 药材 | 删除 | ❌ | ❌ | ✅(D5 引用检查) | ✅ | ✅ |
-| 验方 | 查看 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 验方 | 查看 | ❌ | ✅ | ✅ | ✅ | ✅ |
 | 验方 | 创建/编辑 | ❌ | ✅ | ✅ | ✅ | ✅ |
 | 用户 | 查看 | ❌ | ❌ | ✅ | ✅ | ✅ |
 | 用户 | 创建/编辑 | ❌ | ❌ | ✅ | ✅ | ✅ |
@@ -82,12 +84,14 @@
 
 > 以下为文档校准（documentation-calibration）发现的**代码与矩阵不一致**项。矩阵已更新为目标态，代码待修复。
 
-| # | 类型 | 问题 | 代码位置 | 修复方向 |
+| # | 类型 | 问题 | 代码位置 | 修复方向（2026-08-03 决策已确认） |
 |---|------|------|---------|---------|
-| **C1** | 💻 | **患者删除缺策略**：`PatientsController.Delete` 无操作级 `[Authorize]`，回退类级 `DoctorOrAdminOrReceptionist`（Doctor/Receptionist 也可删患者）。矩阵要求 Admin+ | `PatientsController.cs:129` | 补 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]` |
-| **C2** | 💻 | **药材创建/编辑缺策略**：`HerbsController.Create/Update` 无操作级 `[Authorize]`，回退类级 `DoctorOrReceptionist`（Doctor 也可创建/编辑药材）。矩阵要求 Admin+ | `HerbsController.cs:73,97` | Create/Update 补 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`；或改类级策略为 `DoctorOrAdminOrReceptionist` + Create/Update 覆盖为 `AdminOrSuperAdmin` |
+| **C1** | 💻 | **患者删除缺策略**：`PatientsController.Delete` 无操作级 `[Authorize]`，回退类级 `DoctorOrAdminOrReceptionist`（Doctor/Receptionist 也可删患者）。矩阵要求 Admin+ | `PatientsController.cs:129` | 补 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`；禁用同理 |
+| **C2** | 💻 | **药材创建/编辑缺策略**：`HerbsController.Create/Update` 无操作级 `[Authorize]`，回退类级 `DoctorOrReceptionist`（Doctor 也可创建/编辑药材）。矩阵要求 Admin+ | `HerbsController.cs:73,97` | Create/Update 补 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`；GET 不含 Receptionist（前台不可查药材） |
 | **C3** | 💻 | **挂号取消权限倒置**（与 K9 合并）：`RegistrationsController.Cancel` 无操作级策略，回退类级 `DoctorOrAdminOrReceptionist`。矩阵要求仅 Receptionist | `RegistrationsController.cs:95` | 补 `[Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]` + 服务层校验 Source=Receptionist |
-| **C4** | 💻 | **医案创建含 Receptionist**：`MedicalCasesController.Create` 策略 `DoctorOrAdminOrReceptionist`（含 Receptionist/代建）。设计决策 BR-000：医案创建仅 Doctor。**已确认为非设计意图**，待修复为 `DoctorOnly` | `MedicalCasesController.cs:93` | 改策略为 `DoctorOnly`（需新增 PolicyConstants） |
+| **C4** | 💻 | **医案创建含 Receptionist**：`MedicalCasesController.Create` 策略 `DoctorOrAdminOrReceptionist`（含 Receptionist/代建）。设计决策 BR-000：医案创建仅 Doctor | `MedicalCasesController.cs:93` | 改策略为 `DoctorOnly`（需新增 PolicyConstants） |
+| **C5** | 💻 | **前台可查看药材/验方**：`HerbsController`/`FormulasController` GET 类级 `DoctorOrReceptionist`。2026-08-03 决策：前台不可查看药材/验方 | `HerbsController.cs` / `FormulasController.cs` | GET 策略改为 Doctor+Admin+SuperAdmin（不含 Receptionist），需新增策略或操作级覆盖 |
+| **C6** | 💻 | **打印无 DoctorOnly**：处方打印端点无操作级策略，2026-08-03 决策：仅 Doctor 打印（管理员可查打印记录） | 打印模块 Controller | 打印操作补 `[Authorize(Policy = PolicyConstants.DoctorOnly)]` |
 
 ---
 
@@ -95,6 +99,7 @@
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-08-03 | v2.2 | 权限决策四连落地（四角色需求审查）：新增「挂号查看」行（Admin 只读）、「打印记录」行（Admin 可查）；药材/验方查看 Receptionist ❌；C1-C6 待对齐清单决策标注 |
 | 2026-08-03 | v2.1 | K7 状态更新：D8 bug「接诊链断裂」设计已确认（2026-08-03 产品决策：接诊即建），代码待实施（code-gap-fix-list B1） |
 | 2026-08-02 | v2.0 | 去重：角色定义/策略表改为引用 02-personas.md 和 04-permissions.md；保留架构级 Resource×Operation 矩阵 + 代码待对齐清单 |
 | 2026-08-02 | v1.3 | 文档校准（documentation-calibration）：权限策略新增 `DoctorOrAdminOrReceptionist`；矩阵对齐代码实际策略 |
