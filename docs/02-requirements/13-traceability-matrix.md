@@ -141,10 +141,10 @@
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
 |-------|:---:|------|------|------|------|------|------|
 | US-REG-001 | Must | ADR-0001 | Flow 1 | POST /Registrations | RegistrationsController.cs:24 | R3/R6/R11 | 🔴 代码待对齐（D7：DoctorOrAdmin 阻断 Receptionist） |
-| US-REG-002 | Must | ADR-0001 | — | POST /Registrations/quick-visit | RegistrationsController.cs:24 | R13 | 🧲 v1.0 待激活（急诊通道[远程]+本地常规；当前死代码，见 R10 spec S6） |
+| US-REG-002 | Must | ADR-0001 | — | POST /Registrations/quick-visit | RegistrationsController.cs:24 | R13 | 🧲 v1.0 待激活（急诊通道[远程]+本地常规；当前死代码，见 R10 spec S6；业务逻辑与 2026-08-03「接诊即建」决策一致） |
 | US-REG-003 | Must | ADR-0010 | — | GET /Registrations/{id} | RegistrationsController.cs:24 | — | ✅ 已实现 |
 | US-REG-004 | Must | ADR-0010 | Flow 1 | GET /Registrations/queue | RegistrationsController.cs:24 | R8/R9 | ✅ 已实现 |
-| US-REG-005 | Must | ADR-0001 | Flow 1 | PUT /Registrations/{id}/start | RegistrationsController.cs:24 | — | 🔴 代码待对齐（D8：StartVisit 待原子创建医案[MedicalCase(Active)+Registration(InProgress)+返回 MedicalCaseId]，见 R10 spec S5） |
+| US-REG-005 | Must | ADR-0001 | Flow 1 | PUT /Registrations/{id}/start | RegistrationsController.cs:24 | — | 🔴 代码待对齐（D8：**2026-08-03 已决策「接诊即建」**——StartVisit 待原子创建医案[MedicalCase(Active)+Registration(InProgress)+返回 MedicalCaseId]，见 R10 spec S5） |
 | US-REG-006 | Must | ADR-0010 | Flow 1 | PUT /Registrations/{id}/cancel | RegistrationsController.cs:24 | R11 | 🔴 代码待对齐（D7：权限阻断 Receptionist） |
 | US-REG-007 | Must | ADR-0001 | Flow 1 | MedicalCaseService 内部触发 | RegistrationsController.cs:24 | — | ✅ 已实现 |
 | US-REG-008 | Must | ADR-0013 | Flow 1 | SignalR Hub | SignalR Hub（待专项 spec） | R10/X2.1 | 🧲 v1.0 待实现（SignalR 推送） |

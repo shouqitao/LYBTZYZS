@@ -37,7 +37,7 @@ flowchart TD
     end
 
     subgraph Doctor["🩺 Doctor"]
-        DO1[查看待诊队列] --> DO2[选择患者 → StartVisit]
+        DO1[查看待诊队列] --> DO2[选择患者 → StartVisit\n（接诊即建：原子创建医案 + Registration InProgress）]
         DO2 --> DO3[填写诊断 + 开方]
         DO3 --> DO4[打印处方]
         DO4 --> DO5[完成医案]
@@ -100,7 +100,7 @@ flowchart TD
 | 3 | 用户管理 | Admin → Doctor/Receptionist | 管理权（创建/编辑/禁用/删除/重置密码） | ⚠️ | 部分功能可用，禁用/删除待完善 |
 | 4 | 基础数据准备 | Admin → Doctor/Receptionist | 药材库 + 验方库 | 📋 | Excel 导入缺失 |
 | 5 | 挂号登记 | Receptionist → Doctor | 挂号单（Registration，状态=Waiting） | ✅ | — |
-| 6 | 开始就诊 | Doctor → 医案系统 | 医案（MedicalCase，状态=Suspended） | ✅ | StartVisit 不创建医案（BR-000 设计正确） |
+| 6 | 开始就诊 | Doctor → 医案系统 | 医案（MedicalCase，状态=Active） | ✅ | 接诊即建（2026-08-03 决策）：StartVisit 原子创建 MedicalCase(Active) + Registration(InProgress) |
 | 7 | 完成就诊 | Doctor → 系统 | 完成医案 + 打印记录 | ⚠️ | 打印回写缺失、审计日志缺失 |
 | 8 | 队列更新 | Doctor → Receptionist | 候诊队列状态变更 | ✅ | 退号后队列自动更新，直接消失 |
 | 9 | 纠偏修改 | Admin → 医案系统 | 修改记录 + 审计日志 | 📋 | 纠偏 UI + 审计日志未实现 |
@@ -204,5 +204,6 @@ flowchart LR
 
 | 日期 | 变更 |
 |------|------|
+| 2026-08-03 | 交接点 #6 + 泳道图更新：「接诊即建」决策——StartVisit 原子创建 MedicalCase(Active)+Registration(InProgress) |
 | 2026-08-02 | v4.0 新建：从 02-personas.md 拆分；新增泳道图（首诊/复诊/纠偏）；新增异常场景处理矩阵（4 类 20+ 场景）；新增交接物定义；新增角色关系图 |
 | 2026-06-28 | 初始交接闭环验证（含在 personas 中） |

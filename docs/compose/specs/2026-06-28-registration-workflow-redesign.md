@@ -71,6 +71,8 @@ R10 节点（挂号→医生接诊）当前断裂：D8 bug（StartVisit 不创�
 - 复用现有 BR-001 单活跃医案约束（同一患者仅一个 Active/Suspended）
 - 若患者已有 Active/Suspended 医案，StartVisit 提示「重开现有医案」而非新建
 
+> **决策确认（2026-08-03）**：产品负责人确认「**接诊即建**」——本修复方向正式生效，与 QuickVisit（US-REG-002）原子创建一致；BR-000 已相应修订（07-medical-cases.md），US-REG-005 状态已更新。
+
 ---
 
 ## [S6] US-REG-002 QuickVisit 激活（待代码实施）

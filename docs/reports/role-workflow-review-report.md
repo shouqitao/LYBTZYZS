@@ -108,7 +108,7 @@ Step 7: 完成医案
 
 | # | 问题 | 严重度 | 说明 |
 |---|------|:------:|------|
-| D1 | **StartVisit 不创建医案** | 🔴 | personas 说「StartVisit → 进入看诊」，08-registration.md BR-000 说「StartVisit 不建医案」，但 personas 的「首诊旅程」检查表说 StartVisit 🔴（P0）。流程断裂：医生点「开始就诊」后，医案从哪来？ |
+| D1 | **StartVisit 不创建医案** | ✅ 已决策 | **2026-08-03 产品决策「接诊即建」**：StartVisit/QuickVisit 原子创建 MedicalCase(Active) + Registration(InProgress)，一次点击进入医案编辑。BR-000 已修订（07-medical-cases.md），US-REG-005 状态已更新（08-registration.md），代码待实施（code-gap-fix-list B1） |
 | D2 | **医生能否查看所有验方？** | 🟡 | 06-formulas.md 说「查看自己和共享的验方」，权限矩阵说 Doctor ✅ 查看。一致。但 personas 说 Doctor 可创建验方——代码确认 Doctor 可创建（DoctorOrReceptionist 策略）。一致 |
 | D3 | **医生能否创建药材？** | 🟡 | 05-herbs.md 已改为「管理员」，权限矩阵说 Doctor ❌。一致。但 personas 说 Doctor「药材查询」可做，「药材写操作」✗。一致 |
 
@@ -123,7 +123,7 @@ Step 7: 完成医案
 | 1 | **前台无法创建/取消挂号** | personas(🔴) vs 08-registration.md(✅) vs 代码(DoctorOrAdmin) | 代码策略改 DoctorOrReceptionist |
 | 2 | **药材创建/编辑：Admin 用不了** | 05-herbs.md(管理员) vs 代码(DoctorOrReceptionist) | 代码策略改 AdminOrSuperAdmin |
 | 3 | **初始化向导未实现** | personas(📋已设计) vs 代码(❌) | 需开发或标注为 v2.0 |
-| 4 | **StartVisit 不创建医案** | personas(🔴) vs BR-000(✅不建) vs 代码(不建) | 需明确：医生点「开始就诊」后，医案何时创建？Desktop 端流程需补充 |
+| 4 | ~~StartVisit 不创建医案~~ | personas(🔴) vs BR-000(✅不建) vs 代码(不建) | ✅ **2026-08-03 已决策：接诊即建**——StartVisit/QuickVisit 原子创建 MedicalCase(Active) + Registration(InProgress)，一次点击进入医案编辑 |
 
 ### 🟡 P1 应该修复
 

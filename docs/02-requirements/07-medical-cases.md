@@ -29,23 +29,26 @@
 
 ## 业务规则
 
-### BR-000：医案创建时机（架构决策 2026-08-02）
+### BR-000：医案创建时机（架构决策 2026-08-02，2026-08-03 修订为「接诊即建」）
 
-**核心原则**：医案在「医生决定要看病并开始记录」时创建，不提前。
+**核心原则**：医案在医生「接诊」时创建——StartVisit / QuickVisit / 本地选患者开始看诊时，系统**原子创建** `MedicalCase(Active)` + `Registration(InProgress)`，一次点击直接进入医案编辑。
+
+> **决策修订（2026-08-03）**：原 BR-000（2026-08-02）主张「医案在医生写诊断时才创建，StartVisit 不建医案」，与 US-REG-005 修复方向（StartVisit 原子建医案）矛盾，且代码实际已走向「接诊即建」（临床工作台直接建医案）。产品负责人拍板：**接诊即建**。InProgress 状态天然挡住前台退号（REG-BR-001 仅 Waiting 可取消），不存在空医案残留问题。
 
 | 场景 | 触发 | 医案创建时机 |
 |------|------|------------|
-| 前台挂号 → 医生接诊 | StartVisit | **不建医案**，仅 Registration→InProgress；医生写诊断时才建 |
+| 前台挂号 → 医生接诊 | StartVisit | **原子创建** MedicalCase(Active) + Registration→InProgress，返回 MedicalCaseId |
 | 前台挂号 → 患者退号 | CancelRegistration | **不建医案**，Registration→Cancelled |
-| 医生接诊 → 觉得没问题 → 退号 | StartVisit → CancelRegistration | **不建医案** |
-| QuickVisit | 医生直接操作 | **不建医案**，仅建 Registration(InProgress)；医生写诊断时才建 |
-| 本地模式 | 医生独立使用 | **系统自动创建** Registration(Source=Doctor, InProgress)→医生写诊断时创建 MedicalCase(Active)（Registration 由系统自动创建，医生无感） |
+| 医生接诊 → 觉得没问题 → 退号 | StartVisit（建医案）→ 医生取消医案 | 医案已建(Active)，取消医案 → Registration 回退 Waiting（US-REG-007 Source-aware）→ 前台取消退号 |
+| QuickVisit | 医生直接操作 | **原子创建** Registration(InProgress) + MedicalCase(Active)（服务端已实现，Desktop 待激活） |
+| 本地模式 | 医生独立使用 | **系统自动创建** Registration(Source=Doctor, InProgress) + MedicalCase(Active)，医生无感 |
 
 **架构约束**：
 - Registration ≠ MedicalCase。挂号记录排队关系，医案记录诊疗内容
-- 挂号（Registration）由前台创建（远程标准流程）或系统自动创建（远程 QuickVisit / 本地模式），医案（MedicalCase）由医生创建
+- 挂号（Registration）由前台创建（远程标准流程）或系统自动创建（远程 QuickVisit / 本地模式），医案（MedicalCase）由医生接诊时创建
 - 一个 Registration 可以没有 MedicalCase（退号/取消场景）
 - MedicalCase 创建时必须关联已有 Registration（通过 MedicalCaseId）
+- **创建时机受 BR-001 单活跃医案约束**：接诊时若患者已有 Active/Suspended 医案，提示「重开现有医案」而非新建（spec S5）
 
 **状态机**：
 ```
@@ -115,7 +118,7 @@ stateDiagram-v2
     Completed --> [*]: 终态（仅 Admin+EditReason 可改）
     note right of Cancelled: Cancelled = IsDeleted=true\\n（不在枚举中，等同于软删除）
     note right of Completed: 完成后当天可编辑\\n隔天 0 点自动锁定（IsLocked）
-    note left of [*]: 医案不在挂号时创建\\n医生写诊断时才创建
+    note left of [*]: 医案在接诊（StartVisit/QuickVisit）时原子创建\n（2026-08-03 决策：接诊即建）
 ```
 
 **关键说明**：
@@ -751,3 +754,4 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 |------|------|------|
 | 2026-06-28 | US-MC-011 业务规则压缩（引用 BR-003）；19 个 US 双模式表改一行格式；实现参考路径精简 | spec S3 批次2 提炼 |
 | 2026-06-28 | US-MC-018 加交叉引用注；US-MC-008/009 加与 US-MC-006 边界说明 | plan Task 7 边缘 US 修正 |
+| 2026-08-03 | **BR-000 修订为「接诊即建」**：StartVisit/QuickVisit/本地模式原子创建 MedicalCase(Active)+Registration(InProgress)；状态机注释同步 | 产品决策（消除 BR-000 与 US-REG-005 矛盾） |

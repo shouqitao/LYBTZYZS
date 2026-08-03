@@ -23,9 +23,9 @@
 - **前台模式（Source=Receptionist）**：前台接待员创建 `Waiting` 状态挂号，患者进入排队队列，医生从队列接诊。
 - **医生模式（Source=Doctor）**：医生通过 QuickVisit 直接创建 `InProgress` 状态挂号，跳过排队。
 
-两种模式通过 `Source` 字段区分。挂号（Registration）与医案（MedicalCase）是**独立实体**：挂号记录排队关系，医案记录诊疗内容，通过 `MedicalCaseId` 关联。挂号时不创建医案，医案由医生在开始诊疗时主动创建。
+两种模式通过 `Source` 字段区分。挂号（Registration）与医案（MedicalCase）是**独立实体**：挂号记录排队关系，医案记录诊疗内容，通过 `MedicalCaseId` 关联。挂号时不创建医案；**医案由医生接诊时原子创建**（2026-08-03 决策：接诊即建，见 [07-medical-cases.md BR-000](07-medical-cases.md)）。
 
-> **架构决策（2026-08-02）**：Registration ≠ MedicalCase。前台/系统只建挂号，医生管医案。这样保证不会有空医案（患者退号时无残留），待诊清单只展示排队关系。
+> **架构决策（2026-08-02）**：Registration ≠ MedicalCase。前台/系统只建挂号，医生接诊时建医案。这样保证不会有空医案（患者退号时无残留），待诊清单只展示排队关系。
 
 ## 双模式工作流
 
@@ -37,29 +37,30 @@
 前台建档(首诊) + 挂号(Waiting) → 待诊队列
         ↓ SignalR 推送通知医生（仅远程，见 ADR-0013）
 医生待诊列表 → 选患者 →「开始就诊」StartVisit（US-REG-005）
-        ↓ Registration(InProgress)，不建医案
-医生进入诊疗 → 填写诊断时才创建 MedicalCase(Active)
+        ↓ 原子创建：Registration(InProgress) + MedicalCase(Active)，返回 MedicalCaseId（2026-08-03 决策：接诊即建）
+医生进入诊疗（医案已建，直接编辑诊断/处方）
         ↓
 望闻问切 → 开方 → 打印（系统终点）
 
-退号场景：患者退号或医生觉得没问题 → Registration→Cancelled，无医案产生
+退号场景：患者退号（Waiting 时）→ Registration→Cancelled，无医案产生
+          医生接诊后觉得没问题 → 取消医案 → Registration 回退 Waiting（US-REG-007 Source-aware）→ 前台退号
 
-急诊/特殊通道：医生 QuickVisit（US-REG-002）→ 选/建患者 → 创建 Registration(InProgress)
-        ↓ 不建医案，跳转医案编辑
-医生填写诊断时创建 MedicalCase(Active) → 看诊
+急诊/特殊通道：医生 QuickVisit（US-REG-002）→ 选/建患者 → 原子创建 Registration(InProgress) + MedicalCase(Active)
+        ↓ 跳转医案编辑
+医生看诊（医案已建）
 ```
 
-**要素**：前台挂号驱动；待诊队列；SignalR 推送（仅远程）；StartVisit 仅改 Registration 状态；QuickVisit 不建医案；医案由医生主动创建。
+**要素**：前台挂号驱动；待诊队列；SignalR 推送（仅远程）；StartVisit 原子创建 Registration(InProgress) + MedicalCase(Active)；QuickVisit 同样原子创建；接诊即建（BR-000）。
 
 ### 本地模式（全角色支持，差异由用户配置决定）
 
 ```
-默认（无前台用户）：患者到诊 → 医生选/建患者（Patient）→ 创建 MedicalCase(Active) → 看诊 → 打印
-建了前台用户时：   前台挂号(Waiting) → 待诊队列 → 医生 StartVisit(InProgress) → 创建 MedicalCase → 看诊
+默认（无前台用户）：患者到诊 → 医生选/建患者（Patient）→ 系统自动创建 Registration(Source=Doctor, InProgress) + MedicalCase(Active) → 看诊 → 打印
+建了前台用户时：   前台挂号(Waiting) → 待诊队列 → 医生 StartVisit（原子创建 MedicalCase(Active) + Registration→InProgress）→ 看诊
 ```
 
 **要素**：
-- **默认医生独立使用（无前台用户时）**：来一个看一个，系统自动创建 Registration(Source=Doctor, InProgress)→医生写诊断时创建 MedicalCase，Registration 由系统自动创建以保持数据模型统一（医生无感）
+- **默认医生独立使用（无前台用户时）**：来一个看一个，系统自动创建 Registration(Source=Doctor, InProgress) + MedicalCase(Active)（等价于 QuickVisit），Registration 由系统自动创建以保持数据模型统一（医生无感）
 - **若 Admin 建了前台用户，前台挂号功能也可用**（本地模式不强制排除任何角色）——前台挂号→待诊队列→StartVisit 链在本地同样有效
 - **无待诊队列（仅在无前台用户时）**：仅医生独立使用则清单恒空；建前台用户后队列生效
 - **无 SignalR**：本地无队列推送需求，即使有前台也用轮询/手动刷新
@@ -110,7 +111,7 @@
 
 ### QuickVisit 原子性
 
-> **⚠️ 当前状态**：API 已实现（`RegistrationsController`），Desktop 端接线**待激活**。v1.0 需完成 Desktop 端 QuickVisit 入口。
+> **⚠️ 当前状态**：API 已实现（`RegistrationsController`，原子创建 Registration + MedicalCase，与 2026-08-03「接诊即建」决策一致），Desktop 端接线**待激活**。v1.0 需完成 Desktop 端 QuickVisit 入口。
 
 医生快速就诊（US-REG-002）使用 `TransactionScope(ReadCommitted)` 包裹 Registration + MedicalCase 两个实体的创建，确保原子性：要么同时成功，要么同时回滚。
 
@@ -276,7 +277,7 @@
 
 **角色**: 医生
 **优先级**: Must
-**状态**: 🔴 代码待对齐（**D8 bug**：StartVisit 不创建医案 + 返回 RegistrationId 冒充 MedicalCaseId → Desktop 导航到空医案。**修复方向**——改为原子事务：`Registration.Status=InProgress` + 创建 `MedicalCase(Active)` 关联 `RegistrationId` + 返回 `MedicalCaseId`；复用 BR-001 单活跃医案约束，碰撞时提示「重开现有医案」。见 [R10 spec S5](../compose/specs/2026-06-28-registration-workflow-redesign.md)）
+**状态**: ✅ 设计已确认（2026-08-03 产品决策：**接诊即建**），代码待实施。原 D8 bug：StartVisit 不创建医案 + 返回 RegistrationId 冒充 MedicalCaseId → Desktop 导航到空医案。**修复方向（已确认）**——改为原子事务：`Registration.Status=InProgress` + 创建 `MedicalCase(Active)` 关联 `RegistrationId` + 返回 `MedicalCaseId`；复用 BR-001 单活跃医案约束，碰撞时提示「重开现有医案」。见 [R10 spec S5](../compose/specs/2026-06-28-registration-workflow-redesign.md)）
 
 **作为** 医生，**我想要** 从队列选中患者开始就诊，**以便** 系统自动创建医案并将挂号状态转为进行中。
 
@@ -452,6 +453,7 @@
 | 日期 | 变更 | 原因 |
 |------|------|------|
 | 2026-06-28 | 新增「双模式工作流」段（远程挂号驱动 / 本地默认医生独立来一个看一个，建前台用户则挂号可用，全角色支持）；US-REG-002 状态改 🧲 v1.0 待激活+定位补注；US-REG-005 D8 修复方向补注 | R10 spec S8 文档更新 |
+| 2026-08-03 | **「接诊即建」决策落地**：模块概述/双模式工作流（远程+本地）/US-REG-005 状态（🔴→✅ 设计已确认）同步为 StartVisit/QuickVisit 原子创建 MedicalCase(Active)+Registration(InProgress) | 产品决策（与 07-medical-cases.md BR-000 修订联动） |
 | 2026-06-28 | 本地模式表述修正：「取消挂号/Registration 不激活」改为「全角色支持，差异由用户配置决定（无前台用户时医生独立，建前台用户则挂号可用）；无 SignalR」 | 2026-06-28 产品澄清（本地不做角色强制过滤） |
 | 2026-06-25 | 补充 InProgress 取消、同日重复挂号边界条件验收标准 | 需求文档验收标准完善 |
 | 2026-06-28 | 补 REG-BR-006 患者侧大屏叫号业务规则（R9：v2.0/按需，v1.0 候诊队列仅前台/医生端） | spec S7 弱反映项补全 |

@@ -43,11 +43,12 @@
 
 ## 批次 B：业务逻辑修复（🔧 需设计确认）
 
-### B1. StartVisit 不再建医案（K7 修正）
-- **问题**：原方案要求 StartVisit 原子创建医案，但架构决策（BR-000）明确医案由医生主动创建
-- **文件**：`src/Server/Modules/LYBT.Module.Registration/.../RegistrationsController.cs`
-- **修复**：StartVisit 仅改 Registration 状态为 InProgress，**不建医案**；移除返回 MedicalCaseId 的逻辑
-- **参考**：BR-000（医案创建时机）、R10 spec S5（需更新）
+### B1. StartVisit 接诊即建（D8 修复）
+- **问题**：StartVisit 当前不创建医案 + 返回 RegistrationId 冒充 MedicalCaseId → Desktop 导航到空医案（D8 bug 确认存在）
+- **决策**：2026-08-03 产品负责人确认「**接诊即建**」——StartVisit/QuickVisit/本地选患者开始看诊时原子创建 MedicalCase(Active) + Registration(InProgress)。原 B1「不再建医案」基于旧 BR-000（2026-08-02），已随决策修订作废
+- **文件**：`src/Server/Modules/LYBT.Module.Registration/Application/Commands/StartVisitCommandHandler.cs`、`RegistrationsController.cs`
+- **修复**：StartVisit 改为原子事务：`Registration.Status=InProgress` + 创建 `MedicalCase(Active)` 关联 `RegistrationId` + 返回 `MedicalCaseId`；复用 BR-001 单活跃医案约束，碰撞时提示「重开现有医案」
+- **参考**：BR-000（2026-08-03 修订）、R10 spec S5、08-registration.md US-REG-005
 - **验证**：集成测试 + Desktop 端接诊流程
 
 ### B2. 挂号取消权限修复（K9/C3 合并）
@@ -76,5 +77,5 @@
 - [ ] `dotnet test tests/LYBT.Tests.Architecture/` 通过
 - [ ] `dotnet test tests/LYBT.Tests.Server/` 通过
 - [ ] 权限矩阵文档与代码策略完全一致
-- [ ] 医案创建时机符合 BR-000（医生写诊断时才建）
+- [ ] 医案创建时机符合 BR-000（2026-08-03 修订：**接诊即建**——StartVisit/QuickVisit/本地模式原子创建）
 - [ ] Git commit: `fix(auth): align authorization policies with permission matrix`

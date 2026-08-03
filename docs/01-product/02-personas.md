@@ -229,8 +229,8 @@ flowchart TD
 
 > **双模式工作流**：
 > 1. **连接模式选择**（登录前）：远程 → 登录远程 WebAPI；本地 → 使用内嵌 LocalAPI
-> 2. **远程模式**：查看待诊队列→从队列选患者→StartVisit→看诊；急诊可用 QuickVisit 跳过排队直接接诊
-> 3. **本地模式**：**直接看诊**——「来一个看一个」，选/建患者→系统自动创建 Registration(Source=Doctor)→开医案→看诊→打印，无队列、无 SignalR。医生无感，Registration 由系统自动创建以保持数据模型统一
+> 2. **远程模式**：查看待诊队列→从队列选患者→StartVisit（**接诊即建**：原子创建 MedicalCase(Active)+Registration(InProgress)，2026-08-03 决策）→看诊；急诊可用 QuickVisit 跳过排队直接接诊
+> 3. **本地模式**：**直接看诊**——「来一个看一个」，选/建患者→系统自动创建 Registration(Source=Doctor, InProgress)+MedicalCase(Active)→看诊→打印，无队列、无 SignalR。医生无感，Registration 由系统自动创建以保持数据模型统一
 
 ### 操作流程图
 
@@ -243,8 +243,8 @@ flowchart TD
     subgraph Remote["远程模式（SQL Server）"]
         C[登录远程 WebAPI] --> C1[查看待诊队列]
         C1 --> H{选择患者}
-        H -->|从队列选| I[StartVisit → Registration→InProgress]
-        H -->|急诊/跳过排队| J[QuickVisit → 系统创建 Registration\nSource=Doctor, Status=InProgress]
+        H -->|从队列选| I[StartVisit → 原子创建\nMedicalCase(Active) + Registration(InProgress)]
+        H -->|急诊/跳过排队| J[QuickVisit → 原子创建\nRegistration(InProgress) + MedicalCase(Active)]
         I --> K1[进入诊疗表单]
         J --> K1
         K1 --> L1R[填写诊断：主诉/现病史/舌诊/脉诊/辨证]
@@ -263,7 +263,7 @@ flowchart TD
 
     subgraph Local["本地模式（LocalDB） 📋"]
         D[使用内嵌 LocalAPI] --> G[直接选/建患者]
-        G --> G1[系统自动创建 Registration\nSource=Doctor, Status=InProgress]
+        G --> G1[系统自动创建 Registration(InProgress)\n+ MedicalCase(Active) 原子创建]
         G1 --> K2[进入诊疗表单]
         K2 --> L1L[填写诊断：主诉/现病史/舌诊/脉诊/辨证]
         K2 --> L2L[是否开方 Toggle，默认关闭]
@@ -498,6 +498,7 @@ flowchart TD
 
 | 日期 | 变更 |
 |------|------|
+| 2026-08-03 | v4.2 医生工作流更新：「接诊即建」决策——StartVisit/QuickVisit/本地模式原子创建 MedicalCase(Active)+Registration(InProgress) |
 | 2026-08-02 | v4.1 用户管理层级模型：Sysadmin→Admin→Doctor/Receptionist 层级管理；不可自管；角色不可变更；sysadmin 密码离线重置工具；About 页公开 sysadmin 联系方式 |
 | 2026-06-28 | 四角色全面重写 + 交叉对比 + 二轮设计验证 |
 | 2026-06-20 | v3.2 Sysadmin 改为独立用户设计 |
