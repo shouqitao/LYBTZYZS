@@ -1,6 +1,6 @@
 # 用户管理 (User Management)
 
-> 版本: v3.0 | 日期: 2026-06-20 | 状态: 已重构
+> 版本: v3.3 | 日期: 2026-08-03 | 状态: 已更新
 
 ## 模块概述
 
@@ -35,11 +35,17 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 
 > 角色定义、层级管理规则详见 [`../01-product/02-personas.md`](../01-product/02-personas.md)。权限矩阵详见 [`../01-product/04-permissions.md`](../01-product/04-permissions.md)。
 
-**2 条授权策略**（Phase 1 从 4 条简化）：
+**5 条授权策略**（PolicyConstants 当前代码）：
+
 | 策略 | 允许角色 | 用途 |
 |------|---------|------|
-| `DoctorOrReceptionist` | 所有4角色 | 患者/医案/挂号/药材/验方 |
-| `AdminOrSuperAdmin` | Admin + SuperAdmin | 用户管理/系统设置/报表 |
+| `AdminOnly` | Admin | 系统设置 |
+| `DoctorOrAdmin` | Doctor, Admin | 医案、报表 |
+| `AdminOrSuperAdmin` | Admin, SuperAdmin | 用户管理、系统设置、患者删除/禁用、药材写操作 |
+| `DoctorOrReceptionist` | Doctor, Receptionist | 患者读写（删除/禁用除外）、挂号、药材/验方查询（读） |
+| `DoctorOrAdminOrReceptionist` | Doctor, Admin, Receptionist | 挂号查看（Admin 只读）等 |
+
+> **权限决策（2026-08-03，四角色需求审查）**：目标态为操作级细分——患者删除/禁用 `AdminOrSuperAdmin`；药材/验方 GET 不含前台；打印 `DoctorOnly`；挂号创建仅前台、接诊/QuickVisit 仅 Doctor、取消仅前台、Admin 只读查看；医案创建 `DoctorOnly`（待新增策略常量）。详见 [04-permissions.md](../01-product/04-permissions.md) 与 [code-gap-fix-list.md](../compose/plans/code-gap-fix-list.md)。
 
 > 层级管理规则（一级管一级）、不可自管规则详见 [`../01-product/02-personas.md`](../01-product/02-personas.md) §约束。
 
@@ -377,6 +383,7 @@ Server/Local → UsersController → IUserManagerService
 
 | 日期 | 变更 | 原因 |
 |------|------|------|
+| 2026-08-03 | v3.3 | 权限模型更新：2 条策略 → 5 条（PolicyConstants 现状）+ 2026-08-03 操作级细分决策注 | 四角色需求审查 |
 | 2026-06-28 | v3.1 | 文档对齐：默认密码改为引用 `appsettings:DefaultPasswords`；本地密码/锁定策略与 auth/nfr 统一；补 12 个 US-USER 故事块 | 文档一致性修复 |
 | 2026-06-28 | v3.2 | US-USER-011 验收从 3 条扩展至 6 条（状态/归属/权限/硬删/审计）；US-USER-012 验收拆分删除/启用/禁用三组独立条件 | plan Task 7 边缘 US 修正 |
 | 2026-06-25 | 补充边界条件验收标准（并发会话、禁用用户中断操作） | 需求文档验收标准完善 |

@@ -1,6 +1,6 @@
 # 顶层 PRD (Product Requirements Document)
 
-> 版本: v3.0 | 日期: 2026-06-15 | 状态: 重建
+> 版本: v3.1 | 日期: 2026-08-03 | 状态: 已更新
 
 ## 执行摘要
 
@@ -8,7 +8,7 @@
 
 系统采用**双模式架构**（远程 SQL Server + 本地 SQL Server LocalDB），共享统一 Service/Repository 层，确保医生在任何网络条件下都能完成诊疗工作。**v1.0 远程库与本地库数据孤立不互通**（N1 决策），双向同步属 v2.0 规划。`MedicalCase`（医案）作为 DDD 唯一聚合根，聚合 `Consultation`（中医诊断）与 `Prescription`（处方），保证诊疗数据的原子性写入与事务一致性。
 
-v1.0 包含 **10 个功能模块、141 个 User Stories**（Must / Should / Could 三级优先级），目标用户涵盖医生（Doctor）、管理员（Admin）、前台接待（Receptionist）与超级管理员（SuperAdmin）四类角色。详细角色画像与业务背景见 [`../01-product/02-personas.md`](../01-product/02-personas.md)，产品愿景与核心价值见 [`../01-product/01-vision.md`](../01-product/01-vision.md)。
+v1.0 包含 **10 个功能模块、141 个 User Stories**（Must / Should / Could 三级优先级），目标用户涵盖医生（Doctor）、管理员（Admin）、前台接待（Receptionist）与系统运维（Sysadmin，**独立用户**，角色为 SuperAdmin）四类。详细角色画像与业务背景见 [`../01-product/02-personas.md`](../01-product/02-personas.md)，产品愿景与核心价值见 [`../01-product/01-vision.md`](../01-product/01-vision.md)。
 
 ## 问题陈述
 
@@ -44,7 +44,9 @@ v1.0 包含 **10 个功能模块、141 个 User Stories**（Must / Should / Coul
 | 前台接待 (Receptionist) | 每日 4-6h | 患者登记、身份证读卡、挂号分诊 |
 | 医生 (Doctor) | 每日 6-8h | 诊疗、开方、验方积累、处方打印 |
 | 管理员 (Admin) | 每日 1-2h | 药材库管理、用户管理、数据维护 |
-| 超级管理员 (SuperAdmin) | 极低 | 系统初始化、诊断工具、配置管理 |
+| 系统运维 (Sysadmin) | 极低 | 系统初始化、诊断工具、配置管理、部署运维 |
+
+> **Sysadmin = 独立用户（非角色）**：安装时自动创建，不可删除，角色为 SuperAdmin。负责系统全生命周期（部署→初始化→日常运维→安全→备份恢复→升级），仅管理 Admin（一级管一级），不参与业务操作。详见 [personas](../01-product/02-personas.md)。
 
 ## 成功指标
 
@@ -209,6 +211,7 @@ v1.0 包含 **10 个功能模块、141 个 User Stories**（Must / Should / Coul
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-08-03 | v3.1 | 角色体系同步 personas v4.x：SuperAdmin 表述更新为「Sysadmin（独立用户，角色 SuperAdmin）」；目标用户表更新 | 四角色需求审查（L1） |
 | 2026-06-15 | v2.0 | 重建：合并原独立权限矩阵文档（448 行）为本文件 §权限矩阵；模块从 15 精简为 10；US 总数 138→136；统一采用 `US-` 编号；WHO/WHY 上下文迁移至 `../01-product/` |
 | 2026-06-25 | v2.1 | 修正 US 总数 136→128（实际计数）；Platform 模块 US 数 37→35 |
 | 2026-06-28 | v2.2 | 文档对齐：US 总数统一 136；Sync 模块移出 v1.0（9 模块）；Platform 35→43（含 SHELL-010~019 中 v1.0 的 8 项）；AccessToken 统一 60 分钟 |
