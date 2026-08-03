@@ -52,21 +52,20 @@
 
 **要素**：前台挂号驱动；待诊队列；SignalR 推送（仅远程）；StartVisit 原子创建 Registration(InProgress) + MedicalCase(Active)；QuickVisit 同样原子创建；接诊即建（BR-000）。
 
-### 本地模式（全角色支持，差异由用户配置决定）
+### 本地模式（仅医生使用）
 
 ```
-默认（无前台用户）：患者到诊 → 医生选/建患者（Patient）→ 系统自动创建 Registration(Source=Doctor, InProgress) + MedicalCase(Active) → 看诊 → 打印
-建了前台用户时：   前台挂号(Waiting) → 待诊队列 → 医生 StartVisit（原子创建 MedicalCase(Active) + Registration→InProgress）→ 看诊
+患者到诊 → 医生选/建患者（Patient）→ 系统自动创建 Registration(Source=Doctor, InProgress) + MedicalCase(Active) → 看诊 → 打印
 ```
 
 **要素**：
-- **默认医生独立使用（无前台用户时）**：来一个看一个，系统自动创建 Registration(Source=Doctor, InProgress) + MedicalCase(Active)（等价于 QuickVisit），Registration 由系统自动创建以保持数据模型统一（医生无感）
-- **若 Admin 建了前台用户，前台挂号功能也可用**（本地模式不强制排除任何角色）——前台挂号→待诊队列→StartVisit 链在本地同样有效
-- **无待诊队列（仅在无前台用户时）**：仅医生独立使用则清单恒空；建前台用户后队列生效
-- **无 SignalR**：本地无队列推送需求，即使有前台也用轮询/手动刷新
-- 本地模式 = 远程功能完整副本（数据孤立 N1），差异由用户配置自然调节，非模式级裁剪
+- **本地模式仅医生使用**：来一个看一个，系统自动创建 Registration(Source=Doctor, InProgress) + MedicalCase(Active)（等价于 QuickVisit），Registration 由系统自动创建以保持数据模型统一（医生无感）
+- **数据模型完整但实际不创建前台账号**：本地数据库 Registration.Source=Receptionist 字段保留（模型统一），但 Admin 不在本地创建前台用户 → 本地前台挂号/退号入口自然不出现
+- **无待诊队列**：仅医生独立使用，待诊清单恒空
+- **无 SignalR**：本地无队列推送需求
+- 本地模式 = 医生应急/外出工具；远程模式承载多角色协同。差异为产品定位裁决，非配置可调
 
-**模式适用性**：Registration 模块在本地**按需**——无前台用户时不显现（菜单无入口），有前台用户则可用；Shell 按登录角色加载模块（US-SHELL-003）已天然处理，无需本地特殊角色逻辑。
+**模式适用性**：Registration 模块在本地**仅医生使用**——前台挂号/退号入口不出现（无前台用户）；Shell 按登录角色加载模块（US-SHELL-003）天然处理。
 
 ## 业务规则
 
@@ -171,7 +170,7 @@
 | 模式 | 行为 |
 |------|------|
 | 远程 | POST `/api/v1/Registrations` |
-| 本地 | 不适用（本地模式不使用前台账号） |
+| 本地 | 不适用（本地模式仅医生，不创建前台账号） |
 
 **实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs:24`、`IRegistrationService`
 
@@ -336,7 +335,7 @@
 | 模式 | 行为 |
 |------|------|
 | 远程 | PUT `/api/v1/Registrations/{id}/cancel` |
-| 本地 | 不适用（本地模式不使用前台账号） |
+| 本地 | 不适用（本地模式仅医生，不创建前台账号） |
 
 **实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs:24`、`IRegistrationService`
 
