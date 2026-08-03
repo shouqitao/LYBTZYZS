@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using LYBT.LocalWebAPI.Data;
@@ -33,6 +34,8 @@ public static class LocalWebApiProgram
     public static WebApplicationBuilder CreateBuilder(string[]? args = null)
     {
         var builder = WebApplication.CreateBuilder(args ?? []);
+        // 嵌入式本地服务始终按开发环境运行（密码使用 Desktop 配置，无生产环境变量要求）
+        builder.WebHost.UseEnvironment("Development");
         return builder;
     }
 
