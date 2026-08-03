@@ -98,6 +98,25 @@ public class MedicalCasesController : BaseMedicalCasesController
     }
 
     /// <summary>
+    /// 创建新医案 — 仅 Doctor
+    /// </summary>
+    [Authorize(Policy = PolicyConstants.DoctorOnly)]
+    [HttpPost]
+    public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
+    {
+        if (dto is not MedicalCaseInputDto inputDto)
+            return ValidationFail("无效的请求数据");
+
+        var (doctorId, _, _) = GetOperator();
+        inputDto.Id = null;
+        var result = await Sender.Send(new CreateMedicalCaseCommand(inputDto, doctorId), ct);
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "创建失败");
+
+        return Success(result.Value!, "医案创建成功");
+    }
+
+    /// <summary>
     /// 关闭医案
     /// </summary>
     [HttpPut("{id}/close")]

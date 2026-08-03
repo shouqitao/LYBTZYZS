@@ -68,6 +68,48 @@ public class PatientsController : BaseCrudController
     }
 
     /// <summary>
+    /// 删除患者（软删除）— 仅 Admin+
+    /// </summary>
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    [HttpDelete("{id:guid}")]
+    public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        if (ValidateGuid(id, "患者ID") is { } error) return error;
+
+        var getResult = await _patientService.GetByIdAsync(id, ct);
+        if (!getResult.IsSuccess || getResult.Value == null)
+            return NotFound("患者不存在");
+
+        var (operatorId, _, _) = GetOperator();
+        var result = await Sender.Send(new DeletePatientCommand(id, operatorId), ct);
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "删除失败");
+
+        return Success(true, "删除成功");
+    }
+
+    /// <summary>
+    /// 切换患者状态（启用/禁用）— 仅 Admin+
+    /// </summary>
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    [HttpPost("{id:guid}/toggle-status")]
+    public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
+    {
+        if (ValidateGuid(id, "患者ID") is { } error) return error;
+
+        var getResult = await _patientService.GetByIdAsync(id, ct);
+        if (!getResult.IsSuccess || getResult.Value == null)
+            return NotFound("患者不存在");
+
+        var (operatorId, _, _) = GetOperator();
+        var result = await Sender.Send(new TogglePatientStatusCommand(id, operatorId), ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "切换状态失败");
+
+        return Success(result.Value, "状态已切换");
+    }
+
+    /// <summary>
     /// 批量检查引用关系
     /// </summary>
     [HttpPost("batch-check-reference")]
