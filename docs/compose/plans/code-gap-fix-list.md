@@ -1,51 +1,53 @@
 # 代码偏移修复清单（Documentation Calibration + 审稿产出）
 
 > 来源：2026-08-02 文档校准 + 审稿任务
-> 状态：⬜ 待执行
+> 状态：🟡 批次 A 已完成（2026-08-03，commit `165f1b08f` + LocalWebAPI 补齐 T2 中）；批次 B 待执行
 > 原则：先批 A（纯策略补丁），再批 B（业务逻辑）
 > 术语：Admin = 管理员，Sysadmin = 超管
 
 ---
 
-## 批次 A：纯策略补丁（⚡ 改动极小，可一次过）
+## 批次 A：纯策略补丁（⚡ 改动极小，可一次过）—— ✅ 2026-08-03 完成
 
-### A1. PatientsController.Delete 补策略
+> 全部 A 项已落地：Server 端 5 控制器 + LocalWebAPI 端（commit `165f1b08f`）；LocalWebAPI Patients/MedicalCases 补齐由 T2 跟进。
+
+### A1. PatientsController.Delete 补策略 ✅
 - **问题**：Delete 无操作级 `[Authorize]`，回退类级 `DoctorOrAdminOrReceptionist`，Doctor/Receptionist 也可删患者
 - **文件**：`src/Server/Services/LYBT.WebAPI/Controllers/PatientsController.cs:129`
 - **修复**：Delete 方法补 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`
 - **验证**：`dotnet build` + 架构测试
 
-### A2. HerbsController Create/Update 改策略
+### A2. HerbsController Create/Update 改策略 ✅
 - **问题**：Create/Update 无操作级 `[Authorize]`，回退类级 `DoctorOrReceptionist`，Doctor 也可创建/编辑药材
 - **文件**：`src/Server/Services/LYBT.WebAPI/Controllers/HerbsController.cs:73,97`
 - **修复**：Create 和 Update 方法各补 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`
 - **验证**：`dotnet build` + 架构测试
 
-### A3. FormulasController Create/Update 补策略（P0-3）
+### A3. FormulasController Create/Update 补策略（P0-3）✅
 - **问题**：Create/Update 用类级 `DoctorOrReceptionist`，前台也可写验方
 - **文件**：`src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs`
 - **修复**：Create/Update 补 `[Authorize(Policy = PolicyConstants.DoctorOrAdmin)]`；GET 拆前台见 A6
 - **验证**：`dotnet build` + 架构测试
 
-### A4. MedicalCasesController.Create 改策略（C4）
+### A4. MedicalCasesController.Create 改策略（C4）✅
 - **问题**：Create 策略含 Receptionist/Admin，但 BR-000 决策仅 Doctor 可建
 - **文件**：`src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:93`
 - **修复**：Create 策略改为 `DoctorOnly`（依赖 A5 新增策略常量）
 - **验证**：`dotnet build` + 架构测试
 
-### A5. PolicyConstants 补 DoctorOnly（K3）
+### A5. PolicyConstants 补 DoctorOnly（K3）✅
 - **问题**：医案创建目标策略 `DoctorOnly` 不存在
 - **文件**：`src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs`
 - **修复**：新增 `public const string DoctorOnly = "DoctorOnly";` + 注册策略
 - **验证**：`dotnet build`
 
-### A6. Herbs/Formulas GET 拆前台（C5，2026-08-03 决策）
+### A6. Herbs/Formulas GET 拆前台（C5，2026-08-03 决策）✅
 - **问题**：`HerbsController`/`FormulasController` GET 类级 `DoctorOrReceptionist`，前台可查看药材/验方
 - **文件**：`HerbsController.cs` / `FormulasController.cs`
 - **修复**：GET 策略改为 Doctor+Admin+SuperAdmin（不含 Receptionist），需新增策略（如 `DoctorOrAdminOrSuperAdmin`）或操作级覆盖
 - **验证**：`dotnet build` + 角色权限测试
 
-### A7. 打印补 DoctorOnly（C6/P1-6，2026-08-03 决策）
+### A7. 打印补 DoctorOnly（C6/P1-6，2026-08-03 决策）✅
 - **问题**：处方打印端点无操作级策略，管理员/前台可打印
 - **文件**：打印模块 Controller（Desktop 打印调用方）
 - **修复**：打印操作补 `[Authorize(Policy = PolicyConstants.DoctorOnly)]`（依赖 A5）；管理员仅可查看打印记录

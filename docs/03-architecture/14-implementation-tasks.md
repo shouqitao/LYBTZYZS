@@ -81,18 +81,19 @@
 - **文件**: `src/Client/Desktop/Core/LYBT.Desktop.LocalData/Services/SyncService.cs:613`
 - **修复**: 添加 null 检查或使用 null-forgiving operator
 
-### TASK-08: API 文档与实现不一致项
+### TASK-08: API 文档与实现不一致项 ✅ 2026-08-03 已处理
 - **来源**: docs/04-api-reference/ 审计发现
 - **不一致项**:
-  1. `import-template` 端点文档标注 `[AllowAnonymous]` 但代码继承类级 `[Authorize]`
-  2. `POST /import` (Excel) 文档中存在但代码只实现 `batch-import` (JSON)
-  3. `toggle-status` 文档标注 AdminOrSuperAdmin 但代码继承更宽泛的类级 Policy
-  4. 部分创建端点返回 201 但文档写 200
+  1. `import-template` 端点文档标注 `[AllowAnonymous]` 但代码继承类级 `[Authorize]` ✅ 已修正（标注为 v2.0 规划，代码无此端点）
+  2. `POST /import` (Excel) 文档中存在但代码只实现 `batch-import` (JSON) ✅ 已修正（明确服务端无 Excel import，标注 v2.0）
+  3. `toggle-status` 文档标注 AdminOrSuperAdmin 但代码继承更宽泛的类级 Policy ✅ 已修正（Herbs 方法级已补 AdminOrSuperAdmin，commit `165f1b08f`）
+  4. 部分创建端点返回 201 但文档写 200 ✅ 已核对（文档已标注 201 Created）
 - **修复**: 以代码为准更新文档，或以文档为准补全实现
 
-### TASK-09: Desktop 模块 README 引用过时内容
+### TASK-09: Desktop 模块 README 引用过时内容 ✅ 2026-08-03 核实无问题
 - **现状**: 部分 Desktop 模块 README 仍引用 DataSource/SQLite 架构
-- **修复**: 更新为当前 LocalDB + Repository 架构
+- **核实**: `Shell/README.md` 中 `DataSourceRegistrationExtensions.cs` 为真实存在文件（当前数据源感知注册架构的一部分），非过时内容。SQLite 误称已在 2026-08-01 评估中修正（当前为 LocalDB）
+- **修复**: 无需改动
 
 ### TASK-10: 未使用的桌面 PatientMapper
 - **文件**: `src/Client/Desktop/Modules/LYBT.Desktop.Patients/Mapping/PatientMapper.cs`
