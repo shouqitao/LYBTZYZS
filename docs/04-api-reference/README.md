@@ -9,7 +9,7 @@
 | Base URL | `https://{host}/api/v1` |
 | 认证 | Bearer Token (JWT) |
 | 格式 | `application/json` |
-| Token 有效期 | 60 分钟 |
+| Token 有效期 | 配置驱动：base 480 / Dev·Test 60 / Prod 30 分钟（见 [01-auth.md](01-auth.md)） |
 
 ## 获取 Token
 

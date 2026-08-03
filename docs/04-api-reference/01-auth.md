@@ -6,7 +6,7 @@
 
 提供用户登录、登出、Token 验证功能。登录端点启用限流策略 `Login`。
 
-> **实现状态**: 全部 5 个端点（login/logout/refresh/auto-login/validate）均已在 `AuthController` 实现。AccessToken 有效期 **60 分钟**（`AddMinutes(60)` 硬编码）。
+> **实现状态**: 全部 5 个端点（login/logout/refresh/auto-login/validate）均已在 `AuthController` 实现。AccessToken 有效期**从配置读取**（`JwtService.cs:110`）：base 480/Dev·Test 60/Prod 30 分钟（非硬编码）。
 
 ---
 

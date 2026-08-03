@@ -30,7 +30,7 @@
 | 数据库类型 | SQL Server |
 | 数据库名 | LYBTDB_Dev |
 | SA 用户名 | sa |
-| SA 密码 | Shou@850528 |
+| SA 密码 | `<REDACTED>`（见下方连接串，从密钥管理获取） |
 
 ## [S3] 应用配置 (appsettings.Production.json)
 
@@ -38,15 +38,16 @@
 
 ```json
 "ConnectionStrings": {
-  "DefaultConnection": "Server=192.168.190.243;Database=LYBTDB_Dev;User ID=sa;Password=Shou@850528;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  "DefaultConnection": "Server=192.168.190.243;Database=LYBTDB_Dev;User ID=sa;Password=<REDACTED>;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
 }
 ```
 
 ### JWT 配置
+> ⚠️ **安全注意**: SecretKey 已脱敏。生产环境必须通过 `Jwt__SecretKey` 环境变量注入强随机密钥，禁止使用开发环境密钥。
 
 ```json
 "Jwt": {
-  "SecretKey": "LyBTZYZS2026!SecretKeyForJWT@Production",
+  "SecretKey": "<REDACTED>",
   "AccessTokenExpirationMinutes": 30
 }
 ```

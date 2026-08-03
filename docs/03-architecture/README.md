@@ -47,7 +47,7 @@
 
 | 目录 | 内容 |
 |------|------|
-| [decisions/](decisions/) | ADR 架构决策记录（14 条） |
+| [decisions/](decisions/) | ADR 架构决策记录（17 条，0001~0015 + 0017~0018；0016 预留跳号） |
 | [modules/](modules/) | 各模块架构规格（10 个模块） |
 | [localwebapi/](localwebapi/) | 本地模式 API 架构 |
 

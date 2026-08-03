@@ -674,6 +674,65 @@ curl -X POST "http://localhost:5000/api/v1/formulas/batch-delete" \
 
 ---
 
+## POST /formulas/{id}/restore
+
+> ✅ **已实现**（2026-08-03 补充文档）
+
+恢复已软删除的验方。绕过软删除全局过滤器。
+
+- **权限**: `DoctorOrReceptionist`
+
+**路径参数**: `id` (Guid)
+
+**成功响应** (200): `ApiResponse<FormulaDetailDto>`
+
+**curl 示例：**
+
+```bash
+curl -X POST "http://localhost:5000/api/v1/formulas/a1b2c3d4-e5f6-7890-abcd-ef1234567890/restore" \
+  -H "Authorization: Bearer ***"
+```
+
+---
+
+## POST /formulas/batch-enable
+
+> ✅ **已实现**（2026-08-03 补充文档）
+
+批量启用验方。
+
+- **权限**: `AdminOrSuperAdmin`
+
+**请求体**:
+```json
+{
+  "ids": ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
+}
+```
+
+**成功响应** (200): `ApiResponse<BatchOperationResultDto>`
+
+---
+
+## POST /formulas/batch-disable
+
+> ✅ **已实现**（2026-08-03 补充文档）
+
+批量禁用验方。
+
+- **权限**: `AdminOrSuperAdmin`
+
+**请求体**:
+```json
+{
+  "ids": ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
+}
+```
+
+**成功响应** (200): `ApiResponse<BatchOperationResultDto>`
+
+---
+
 ## 错误码汇总
 
 > 完整错误码定义见 [formulas.md PRD](../02-requirements/06-formulas.md)。错误码分区: 6xxxx。通用错误码（401/403/404 等）见 [README](README.md#通用-http-状态码)。
@@ -710,6 +769,7 @@ curl -X POST "http://localhost:5000/api/v1/formulas/batch-delete" \
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本 |
 | 2026-02-18 | v1.1 | 新增错误码章节 (ERR-60101~60302) |
-| 2026-06-25 | v2.0 | 全面重写：移除不存在的 batch-enable/batch-disable/export/import-template 端点；为全部 10 个端点补充完整请求/响应 JSON 示例、curl 命令、错误码表 |
+| 2026-06-25 | v2.0 | 全面重写：移除不存在的 export/import-template 端点；为全部 10 个端点补充完整请求/响应 JSON 示例、curl 命令、错误码表 |
 | 2026-06-28 | v2.1 | 文档对齐基线：权限策略加 D7 待对齐标注（目标 DoctorOrReceptionist，代码 DoctorOrAdmin） |
 | 2026-06-28 | vX.Y | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；curl 删除 TOKEN 脚本（见 README）；通用状态码引用 README |
+| 2026-08-03 | v2.2 | **端点修正**：恢复 restore/batch-enable/batch-disable 3 个端点文档（代码实际存在，`FormulasController` 共 13 个端点）；changelog 此前误称「已移除」 |

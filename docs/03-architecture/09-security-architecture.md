@@ -139,16 +139,17 @@ sequenceDiagram
 
 ## 4. 授权策略
 
-系统在 `PolicyConstants`（`src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs`）中定义 4 项授权策略，通过 `RequireRole()` 声明式配置：
+系统在 `PolicyConstants`（`src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs`）中定义 **5 项**授权策略，通过 `RequireRole()` 声明式配置：
 
 | Policy | 常量 | 满足条件的角色 | 典型用途 |
 |--------|------|--------------|----------|
-| `DoctorOrReceptionist` | `PolicyConstants.DoctorOrReceptionist` | SuperAdmin, Admin, Doctor, Receptionist | 患者、药材、验方、挂号（**目标态**，见 §下方 D7 待对齐注） |
-| `DoctorOrAdmin` | `PolicyConstants.DoctorOrAdmin` | SuperAdmin, Admin, Doctor | **代码当前最常用策略**（挂号/患者/药材/医案创建当前均用此策略） |
+| `DoctorOrReceptionist` | `PolicyConstants.DoctorOrReceptionist` | SuperAdmin, Admin, Doctor, Receptionist | 药材、验方（**目标态**，见 §下方 D7 待对齐注） |
+| `DoctorOrAdmin` | `PolicyConstants.DoctorOrAdmin` | SuperAdmin, Admin, Doctor | 医案列表/详情、报表 |
+| `DoctorOrAdminOrReceptionist` | `PolicyConstants.DoctorOrAdminOrReceptionist` | SuperAdmin, Admin, Doctor, Receptionist | **患者 CRUD、挂号、医案创建**（代码当前最常用策略） |
 | `AdminOnly` | `PolicyConstants.AdminOnly` | SuperAdmin, Admin | 管理员级操作 |
 | `AdminOrSuperAdmin` | `PolicyConstants.AdminOrSuperAdmin` | SuperAdmin, Admin | 用户管理、系统配置、诊断工具（名称与 AdminOnly 行为等价，命名历史并存） |
 
-> ⚠️ **D7 权限对齐待办**（详见 [baseline §3](../compose/specs/2026-06-28-docs-reconciliation-baseline.md)）：以下模块**代码当前为 `DoctorOrAdmin`，待修复为 `DoctorOrReceptionist`** —— 挂号（创建/取消）、患者（CRUD）、药材（CRUD）、医案创建。文档保留目标态 `DoctorOrReceptionist`，代码修复由 D7 跟踪。**代码不存在 `DoctorOnly` 策略**（文档历史版本曾提及，已删除）。
+> ⚠️ **D7 权限对齐待办**（详见 [04-permissions.md](../01-product/04-permissions.md) P0-P2 修复项）：以下模块**代码当前为 `DoctorOrAdminOrReceptionist`/`DoctorOrReceptionist`，待按 2026-08-03 四连决策做操作级细分** —— 患者删除/禁用 → `AdminOrSuperAdmin`；药材/验方 GET 不含前台；挂号创建/取消仅前台、接诊/QuickVisit 仅 Doctor；医案创建 → `DoctorOnly`（待新增策略常量）。**代码当前不存在 `DoctorOnly` 策略**（文档历史版本曾提及，已删除；2026-08-03 决策目标态需新增）。
 
 角色层次（隐含权限继承）：
 
@@ -292,17 +293,20 @@ stateDiagram-v2
 
 ### PatientsController (`/api/v1/patients`)
 
+> ⚠️ **本节为历史策略表**（部分行仍反映早期 `DoctorOrReceptionist` 目标态）。2026-08-03 四连决策后的**权威权限矩阵见 [04-permissions.md](../01-product/04-permissions.md)**（含代码现状与目标态差异、P0-P2 修复项）。代码实际策略以控制器 `[Authorize]` 属性为准：PatientsController 类级 `DoctorOrAdminOrReceptionist`，DELETE/禁用目标 `AdminOrSuperAdmin`（P0-5 待修）。
+
 | 端点 | Policy | 备注 |
 |------|--------|------|
-| 类级别 | FallbackPolicy (需认证) | |
-| 所有 CRUD 方法 | DoctorOrReceptionist | 包含 Receptionist |
+| 类级别 | DoctorOrAdminOrReceptionist | 代码实际（2026-08-03 前为 FallbackPolicy 需认证） |
+| 所有 CRUD 方法 | DoctorOrAdminOrReceptionist | 代码实际；删除/禁用目标态 AdminOrSuperAdmin |
 
 ### MedicalCasesController (`/api/v1/medicalcases`)
 
 | 端点 | Policy | 备注 |
 |------|--------|------|
-| 类级别 | FallbackPolicy (需认证) | |
-| 所有方法 | DoctorOrReceptionist | 医生及以上权限 |
+| 类级别 | DoctorOrAdmin | 代码实际（2026-08-03 前为 FallbackPolicy 需认证） |
+| 创建 | DoctorOrAdminOrReceptionist | 代码实际；目标态 DoctorOnly（P0-4 待修） |
+| 其余方法 | DoctorOrAdmin | 代码实际 |
 
 ### MedicalCaseProcessingController (`/api/v1/medicalcase-processing`)
 
@@ -338,8 +342,10 @@ stateDiagram-v2
 
 | 端点 | Policy | 备注 |
 |------|--------|------|
-| 类级别 | DoctorOrReceptionist | 接诊员可访问 |
-| 创建/更新挂号 | DoctorOrReceptionist | 需医生权限 |
+| 类级别 | DoctorOrAdminOrReceptionist | 代码实际（2026-08-03 前为 DoctorOrReceptionist 目标态） |
+| 创建/取消 | DoctorOrAdminOrReceptionist | 代码实际；目标态仅前台 Receptionist（P1-4 待修） |
+| quick-visit | DoctorOrAdmin | 代码实际；目标态 DoctorOnly（P1-4 待修） |
+| start-visit | DoctorOrAdminOrReceptionist | 代码实际 |
 
 ### SyncController (`/api/v1/sync`)
 

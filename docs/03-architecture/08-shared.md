@@ -495,13 +495,13 @@ Entity (DataAnnotations)
 | Client Desktop 模块 | 10 | `src/Client/Desktop/Modules/LYBT.Desktop.*/Mappers/` |
 | Client 内联 | 1 | `PatientRepository.cs` 内 `PatientListToDetailMapper` |
 
-> **映射约定（属性配置/方法命名/特性使用）、Server/Client LocalData 映射模式、Core+Enrich 模式、DI 注册、已知陷阱（HasPrescription/Boolean 反转/Audit 字段等）的完整规范** 已外移到 [mapperly.md](mapperly.md)。本层仅保留 Mapper 数量与位置概览。
+> **映射约定（属性配置/方法命名/特性使用）、Server/Client LocalData 映射模式、Core+Enrich 模式、DI 注册、已知陷阱（HasPrescription/Boolean 反转/Audit 字段等）的完整规范** 已外移到 [15-mapperly.md](15-mapperly.md)。本层仅保留 Mapper 数量与位置概览。
 
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
-| 2026-06-28 | v1.5 | **spec S3 批次2 提炼（659→~470 行）**：Mapperly 映射规范整体外移至 [mapperly.md](mapperly.md)（约定/Server/Client 模式/Core+Enrich/DI/陷阱）；SensitiveDataAttribute 详细定义外移至 [03-server.md](03-server.md)（与运行时使用处合并）。本文件保留 8 个 Shared 项目结构 + Mapper 数量/位置概览 + SensitiveData 特性声明位置。变更历史见 git log。 |
+| 2026-06-28 | v1.5 | **spec S3 批次2 提炼（659→~470 行）**：Mapperly 映射规范整体外移至 [15-mapperly.md](15-mapperly.md)（约定/Server/Client 模式/Core+Enrich/DI/陷阱）；SensitiveDataAttribute 详细定义外移至 [03-server.md](03-server.md)（与运行时使用处合并）。本文件保留 8 个 Shared 项目结构 + Mapper 数量/位置概览 + SensitiveData 特性声明位置。变更历史见 git log。 |
 | 2026-06-13 | v1.4 | 新增 Mapperly 映射规范章节: 23 个 Mapper 类的约定、Server/Client 映射模式、Core+Enrich 模式、已知陷阱 |
 | 2026-06-13 | v1.3 | **Serilog 架构**: 扩展 Logging 章节 — 两阶段启动、Sink 配置、日志文件布局、敏感数据脱敏示例 |
 | 2026-02-26 | v1.2 | DOC3-03: 补全 4 个缺失 Shared 项目文档 (Primitives/Validators/ExceptionHandling/Configuration)；DOC3-13: 新增 SensitiveDataAttribute 设计章节 |

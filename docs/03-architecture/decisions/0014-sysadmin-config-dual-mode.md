@@ -64,7 +64,7 @@ sysadmin 在双模式下配置对象本质不同：
 - [US-SHELL-013: 数据库备份恢复](../../02-requirements/11a-shell.md)（本地模式面板的备份恢复入口）
 - [ADR-0002: 双模式架构](0002-dual-mode-architecture.md)
 - [ADR-0009: URL 驱动双模式](0009-url-driven-dual-mode.md)
-- [sysadmin 配置设计 spec](../../compose/specs/2026-06-28-sysadmin-config-design.md)
+- [sysadmin 配置设计 spec](../..//compose/specs/2026-06-28-registration-workflow-redesign.md)（同批次 compose spec；sysadmin 配置细节以本 ADR + [11a-shell.md](../../02-requirements/11a-shell.md) US-SHELL-017/018 为准）
 
 ## 变更记录
 

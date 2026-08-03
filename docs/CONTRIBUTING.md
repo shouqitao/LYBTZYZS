@@ -143,7 +143,7 @@ dotnet test tests/LYBT.Tests.Architecture/  # 架构守卫
 
 ## 工作流
 
-详见 [`05-development/03-code-standards.md`](05-development/03-code-standards.md)（编码规范与开发流程）。
+详见 [`05-development/02-code-standards.md`](05-development/02-code-standards.md)（编码规范与开发流程）。
 
 ---
 

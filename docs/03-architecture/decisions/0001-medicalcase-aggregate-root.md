@@ -49,6 +49,7 @@ MedicalCase 是系统唯一的 DDD 聚合根:
 | 2026-01-05 | Desktop.Prescriptions 模块移除，功能迁入 MedicalCase |
 | 2026-02-21 | MedicalCaseModel 从贫血模型演进为充血模型: 新增 `Complete()`, `Suspend()` (原名 `SaveAsDraft()`，MC-D20 重命名), `SoftDelete()`, `UpdateConsultation()` 域方法; 移除 `Cancelled` 枚举值 (取消=软删除); 新增 MedicalCaseServiceHelper 提取共享代码 |
 | 2026-06-25 | 修正 ADR-0001: 更新 BaseReadRepository 引用为当前实际查询接口 |
+| 2026-08-03 | **取消=物理删除定案**：取消操作直接物理删除医案记录（不判内容），审计类型为 `Cancel`；已完成医案仅可软删除（Admin 清理）；「接诊即建」——StartVisit/QuickVisit/本地选患者开始看诊时原子创建 MedicalCase(Active) + Registration(InProgress)。详见 [13-project-master-plan.md §九](../13-project-master-plan.md) 与 [07-medical-cases.md](../../02-requirements/07-medical-cases.md) BR-000 |
 
 ## 关联 US
 

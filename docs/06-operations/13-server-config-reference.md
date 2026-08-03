@@ -46,18 +46,20 @@ scp -P 5555 <file> player@60.190.215.86:<path>
 
 | 项目 | 值 |
 |------|-----|
-| SecretKey | jin39uYqW840gYkGyxlHozWYwyTO/hjpM2ylVbbIniU= |
+| SecretKey | `<REDACTED>`（生产环境通过 `Jwt__SecretKey` 环境变量注入） |
 | Issuer | LYBT.WebAPI |
 | Audience | LYBT.Client |
-| Token 有效期 | 30 分钟 |
+| Token 有效期 | 30 分钟（生产） |
 
 ### 密码配置
 
+> ⚠️ 以下为默认密码占位说明，实际值通过环境变量/密钥管理注入。
+
 | 用户 | 密码 |
 |------|------|
-| SysAdmin | SysAdmin@2026! |
-| Admin | Admin@123456 |
-| NewUser | User@2026!Qwx |
+| SysAdmin | `<REDACTED>` |
+| Admin | `<REDACTED>` |
+| NewUser | `<REDACTED>` |
 
 ---
 

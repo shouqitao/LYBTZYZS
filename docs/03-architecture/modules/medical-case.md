@@ -128,7 +128,7 @@ PendingMedicalCaseDto（待诊队列）
 │  (已完成)    │──── 同日可编辑(IsLocked=false)，次日锁定(IsLocked=true)
 └──────────────┘
 
-特殊: Cancel = 软删除(IsDeleted=true)，无独立 Cancelled 状态
+特殊: **取消 = 物理删除**（2026-08-03 决策），无独立 Cancelled 状态；已完成医案仅可软删除（Admin 清理）
 ```
 
 **业务规则**:
@@ -144,7 +144,7 @@ PendingMedicalCaseDto（待诊队列）
 Desktop → POST /api/v1/medicalcases
 Controller → MedicalCaseCommandService.CreateAsync
   → 生成医案编号(MC{yyyyMMdd}{seq:3})
-  → 创建 MedicalCase 实体（Status=Suspended）
+  → 创建 MedicalCase 实体（Status=Active；接诊即建：StartVisit/QuickVisit/本地选患者时原子创建，2026-08-03 决策）
   → 关联 Registration（如提供 RegistrationId）
   → 保存 Consultation + Prescription（如有）
   → 返回 MedicalCaseDetailDto
@@ -176,8 +176,9 @@ Controller → MedicalCaseStateService.CompleteAsync
 ```
 Desktop → PUT /api/v1/medicalcases/{id}/cancel
 Controller → MedicalCaseStateService.CancelAsync
-  → 软删除(IsDeleted=true, DeletedAt=now)
-  → 回滚关联 Registration 状态（前台→Waiting，医生→Cancelled）
+  → 物理删除医案记录（2026-08-03 决策：不判内容，审计记录「取消」用于统计）
+  → 级联清除聚合（Consultation/Prescription）
+  → 更新关联 Registration 状态为 Cancelled
   → 返回 null（已删除）
 ```
 

@@ -10,7 +10,7 @@
 > - **v1.0**：Token 族旋转 + 登录限流 + 登出撤销 + 安全审计日志
 > - **v2.0**：FamilyId 重放检测
 >
-> 详见 [docs/compose/specs/2026-06-28-docs-reconciliation-baseline.md §1 D3](../../compose/specs/2026-06-28-docs-reconciliation-baseline.md)。
+> 详见 [13-project-master-plan.md §九 决策记录](../13-project-master-plan.md) 与 [09-security-architecture.md §7](../09-security-architecture.md)。
 
 ## 背景
 
@@ -65,7 +65,7 @@ Token 安全机制已实现并测试通过，维护成本极低 (仅 DB 字段 +
 - `2026-02-21-system-architecture-diagrams.md` Section 4.3: Token 生命周期状态图
 - `AuthService.cs`: FamilyId 和 Token 轮换实现（🧲 待补回）
 - `ITokenRevocationService.cs`: Token 撤销接口（🧲 待补回）
-- [D3 B+ 决策基线](../../compose/specs/2026-06-28-docs-reconciliation-baseline.md) §1
+- [D3 B+ 决策基线](../09-security-architecture.md) §7.1（v1.0 补回范围）
 
 ## 关联 US
 

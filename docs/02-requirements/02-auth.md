@@ -4,9 +4,9 @@
 
 ## 模块概述
 
-认证与会话模块负责保障中医诊所系统中患者敏感医疗数据（诊断记录、处方信息、身份信息）的访问安全。系统采用双模式认证架构：远程模式提供完整的 JWT 双令牌机制（60 分钟访问令牌 + 7d 刷新令牌族），适合多用户多设备协同工作场景；本地模式提供简化 JWT（1 年有效期），适合医生外出诊疗等离线场景。
+认证与会话模块负责保障中医诊所系统中患者敏感医疗数据（诊断记录、处方信息、身份信息）的访问安全。系统采用双模式认证架构：远程模式提供完整的 JWT 双令牌机制（访问令牌有效期从配置读取，默认开发 480 分钟/生产 30 分钟 + 7d 刷新令牌族），适合多用户多设备协同工作场景；本地模式提供简化 JWT（1 年有效期），适合医生外出诊疗等离线场景。
 
-> **AccessToken 有效期 = 60 分钟**（代码 `AuthController.cs:98 AddMinutes(60)` 硬编码）。有效期「可配置」为 v2.0 规划，v1.0 固定 60 分钟。
+> **AccessToken 有效期从配置读取**（`JwtService.cs:110` `CurrentOptions.AccessTokenExpirationMinutes`）：base `appsettings.json`=480 分钟（8 小时），Development/Test=60 分钟，Production=30 分钟。**非硬编码**（历史文档所述 `AuthController.cs:98 AddMinutes(60)` 实为 refresh 端点的展示字段）。
 
 模块核心包括：用户名密码登录、账户锁定防护、登录限流、令牌刷新与验证、重放攻击检测（令牌族撤销）、安全审计日志、登出、本地自动登录（AutoLoginToken）及轮换、保留用户名拦截、本地简化认证与限流。诊所环境下医生日均接诊 15-30 人，认证流程必须在保障安全的同时尽可能减少摩擦。
 
@@ -24,7 +24,7 @@
 
 | 维度 | 远程模式 | 本地模式 |
 |------|----------|----------|
-| 访问令牌 | JWT 60 分钟 | JWT 1 年 |
+| 访问令牌 | JWT 配置驱动（开发 480/生产 30 分钟） | JWT 1 年 |
 | 刷新令牌 | RefreshToken 7d（族旋转） | 无 |
 | AutoLoginToken | 服务端可撤销 + 轮换 | 由 `LocalJwtConfig` 签发 |
 | 限流策略 | `[EnableRateLimiting("Login")]` | 5 次/分 |
@@ -72,13 +72,13 @@
 
 **验收标准**:
 - [ ] 接受用户名 + 密码组合
-- [ ] 验证成功后返回 JWT 访问令牌（远程：60 分钟；本地：1 年）
+- [ ] 验证成功后返回 JWT 访问令牌（远程：配置驱动，见上方有效期说明；本地：1 年）
 - [ ] 验证失败返回通用错误信息（不泄露用户名是否存在）
 - [ ] 连续失败达到阈值后触发账户锁定
 - [ ] 登录端点应用限流策略
 
 **业务规则**:
-1. 远程模式返回 access_token (60 分钟) + refresh_token (7d，可旋转)
+1. 远程模式返回 access_token（配置驱动有效期）+ refresh_token (7d，可旋转)
 2. 本地模式返回单一 JWT (1 年，无 refresh)
 3. 保留用户名（admin/administrator/root/system/superadmin/sysadmin）拒绝普通注册
 4. 超管凭证统一存储于 Users 表（Role=100），AdminSecrets 已移除（Issue #1909）
@@ -86,7 +86,7 @@
 **双模式**:
 | 模式 | 行为 |
 |------|------|
-| 远程 | JWT 60 分钟 + Refresh 7d（族旋转）+ 安全审计 |
+| 远程 | JWT 配置驱动（开发 480/生产 30 分钟）+ Refresh 7d（族旋转）+ 安全审计 |
 | 本地 | JWT 1 年 + 限流 5 次/分 + 无 refresh |
 
 **实现参考**: `AuthController.cs:44` (LoginAsync), `AuthService.cs`, `LocalWebAPI/Controllers/AuthController.cs`

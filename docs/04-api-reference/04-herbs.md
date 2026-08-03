@@ -555,6 +555,112 @@ curl -X POST "http://localhost:5000/api/v1/herbs/batch-import" \
 
 ---
 
+## POST /herbs/{id}/restore
+
+> ✅ **已实现**（2026-08-03 补充文档）
+
+恢复已软删除的药材。绕过软删除全局过滤器。
+
+- **权限**: `DoctorOrReceptionist`（目标态 Admin+，见 [04-permissions.md](../01-product/04-permissions.md)）
+
+**路径参数**: `id` (Guid)
+
+**成功响应** (200): `ApiResponse<HerbDetailDto>`
+
+**curl 示例：**
+
+```bash
+curl -X POST "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef1234567890/restore" \
+  -H "Authorization: Bearer ***"
+```
+
+**错误码：**
+
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 200 | 该药材未被删除 (ERR-50104) |
+| 404 | 药材不存在 (ERR-50101) |
+
+---
+
+## GET /herbs/{id}/check-reference
+
+> ✅ **已实现**（2026-08-03 补充文档）
+
+检查药材是否被处方/验方引用，用于删除前确认。
+
+- **权限**: `DoctorOrReceptionist`
+
+**路径参数**: `id` (Guid)
+
+**成功响应** (200): `ApiResponse<HerbReferenceCheckDto>`
+
+**curl 示例：**
+
+```bash
+curl -X GET "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef1234567890/check-reference" \
+  -H "Authorization: Bearer ***"
+```
+
+---
+
+## POST /herbs/batch-check-reference
+
+> ✅ **已实现**（2026-08-03 补充文档）
+
+批量检查多个药材的引用关系。
+
+- **权限**: `DoctorOrReceptionist`
+
+**请求体**:
+```json
+{
+  "herbIds": ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
+}
+```
+
+**成功响应** (200): `ApiResponse<List<HerbReferenceCheckDto>>`
+
+---
+
+## POST /herbs/batch-enable
+
+> ✅ **已实现**（2026-08-03 补充文档）
+
+批量启用药材。
+
+- **权限**: `AdminOrSuperAdmin`
+
+**请求体**:
+```json
+{
+  "ids": ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
+}
+```
+
+**成功响应** (200): `ApiResponse<BatchOperationResultDto>`
+
+---
+
+## POST /herbs/batch-disable
+
+> ✅ **已实现**（2026-08-03 补充文档）
+
+批量禁用药材。
+
+- **权限**: `AdminOrSuperAdmin`
+
+**请求体**:
+```json
+{
+  "ids": ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
+}
+```
+
+**成功响应** (200): `ApiResponse<BatchOperationResultDto>`
+
+---
+
 ## 错误码
 
 > 完整错误码定义见 [herbs.md PRD](../02-requirements/05-herbs.md)。错误码分区: 5xxxx。
@@ -586,6 +692,7 @@ curl -X POST "http://localhost:5000/api/v1/herbs/batch-import" \
 | 2026-02-18 | v1.1 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-50101~50203)，含核心/批量/导入三类 |
 | 2026-06-12 | v1.2 | 标注 POST /herbs/import 为客户端功能; 服务端仅提供 batch-import (JSON) |
 | 2026-06-12 | v1.3 | HerbDetailDto: 新增 origin/spec/costPrice/usage/remark 字段 |
-| 2026-06-25 | v2.0 | 移除不存在的端点 (export/export-all/import-template/check-reference/batch-check-reference/batch-enable/batch-disable/restore); 补充全部 8 个端点的完整请求/响应 JSON 示例、curl 命令 |
+| 2026-06-25 | v2.0 | 移除不存在的端点 (export/export-all/import-template)；补充 8 个核心端点的完整请求/响应 JSON 示例、curl 命令 |
 | 2026-06-28 | v2.1 | 文档对齐基线：权限策略加 D7 待对齐标注（目标 DoctorOrReceptionist，代码 DoctorOrAdmin） |
 | 2026-06-28 | vX.Y | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；curl 删除 TOKEN 脚本（见 README）；通用状态码引用 README |
+| 2026-08-03 | v2.2 | **端点修正**：恢复 restore/check-reference/batch-check-reference/batch-enable/batch-disable 5 个端点文档（代码实际存在，`HerbsController` 共 13 个端点）；changelog 此前误称「已移除」 |

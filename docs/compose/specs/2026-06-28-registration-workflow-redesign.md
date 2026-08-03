@@ -3,7 +3,7 @@
 > **日期**：2026-06-28
 > **状态**：📝 待审
 > **范围**：挂号→接诊节点的双模式工作流重设计；修复 D8 StartVisit bug；激活 US-REG-002 QuickVisit；明确 SignalR 仅远程、本地模式无挂号。**文档更新可立即执行；代码改动（D8 修复/QuickView 接线）标「待实施」，由后续代码 plan 承载（用户指示「先修正文档不修改代码」）。**
-> **配套**：基线 `2026-06-28-docs-reconciliation-baseline.md`、`scenario-functional-map` 旅程1/6、`prd-code-reconciliation` D7/D8、ADR-0013 SignalR
+> **配套**：ADR-0013 SignalR、`04-data-model.md` Registration 状态机、[08-registration.md](../../02-requirements/08-registration.md)（当前权威需求文档）
 
 ---
 

@@ -6,7 +6,7 @@
 > - 双模式架构概述：[05-dual-mode.md](05-dual-mode.md)
 > - 同步 API 端点参考：[../04-api-reference/09-sync.md](../04-api-reference/09-sync.md)
 > - 同步 UI（SyncPhase FSM / 冲突解决）：[02-desktop.md「同步 UI 架构」](02-desktop.md#同步-ui-架构)
-> - Sync 模块需求故事：[../02-requirements/09-sync.md](../02-requirements/09-sync.md)（v2.0）
+> - Sync 模块需求故事：API 参考文档 [../04-api-reference/09-sync.md](../04-api-reference/09-sync.md)（v2.0）
 
 ---
 

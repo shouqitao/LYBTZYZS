@@ -4,7 +4,7 @@
 >
 > **基线§2 N1 决策（用户 2026-06-28）**：v1.0 远程库与本地库**数据孤立，不互通**。本地模式定位为「远程故障应急降级」，断网期录入的数据事后手动补录或可丢。**无 `SyncController`**，下列 6 端点均无对应实现。
 >
-> 本文内容**保留作 v2.0 同步模块的设计参考**，不代表 v1.0 可用功能。详见 `docs/compose/specs/2026-06-28-docs-reconciliation-baseline.md` §2 及 `docs/03-architecture/05-dual-mode.md` 的 v2.0 同步协议规划。
+> 本文内容**保留作 v2.0 同步模块的设计参考**，不代表 v1.0 可用功能。详见 [16-sync-protocol.md](../03-architecture/16-sync-protocol.md)（v2.0 同步协议规划）与 [05-dual-mode.md](../03-architecture/05-dual-mode.md) N1 决策。
 
 ---
 

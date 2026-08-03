@@ -79,16 +79,18 @@ C:\Services\LYBT-API\          # 主部署目录
 - **开发环境**: Server=localhost;Database=LYBTDB_Dev;Trusted_Connection=True
 
 ### 密码配置
-生产环境必须使用实际密码，不可使用环境变量占位符 `${VAR}`:
+> ⚠️ **安全注意**: 以下密码为占位说明。生产环境密码必须通过环境变量注入，**禁止**提交真实密码到 git。
 ```json
 {
   "DefaultPasswords": {
-    "SysAdminPassword": "SysAdmin@2026!",
-    "AdminPassword": "Admin@123456",
-    "NewUserPassword": "User@2026!Qwx"
+    "SysAdminPassword": "<REDACTED>",
+    "AdminPassword": "<REDACTED>",
+    "NewUserPassword": "<REDACTED>"
   }
 }
 ```
+
+> ⚠️ **2026-08-03 安全脱敏**: 本文档曾含真实生产密码（`SysAdmin@2026!`/`Admin@123456`/`User@2026!Qwx`）与 JWT SecretKey 明文，已替换为 `<REDACTED>`。**已在 git 历史泄露的密钥必须轮换**（参考 `10-variables-secrets.md`）。
 
 ### Kestrel 监听
 - 基础配置: `http://localhost:5000`
@@ -96,10 +98,11 @@ C:\Services\LYBT-API\          # 主部署目录
 - **注意**: 已移除 HTTPS 端点（生产环境由反向代理处理 TLS）
 
 ### JWT 配置
+> ⚠️ **安全注意**: SecretKey 已脱敏。生产环境必须通过 `Jwt__SecretKey` 环境变量注入强随机密钥（≥32 字符），禁止使用开发环境密钥。
 ```json
 {
   "Jwt": {
-    "SecretKey": "jin39uYqW840gYkGyxlHozWYwyTO/hjpM2ylVbbIniU=",
+    "SecretKey": "<REDACTED>",
     "AccessTokenExpirationMinutes": 30
   }
 }

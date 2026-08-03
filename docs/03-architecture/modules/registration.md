@@ -49,14 +49,16 @@ public interface IRegistrationService
 
 ### API 端点映射
 
-| HTTP | 路由 | 方法 | 权限 |
+> ⚠️ 权限列为**代码实际**（2026-08-03 前旧文档为 DoctorOrAdmin 目标态）。目标态按操作级细分见 [04-permissions.md](../../01-product/04-permissions.md)：创建/取消仅前台、接诊/QuickVisit 仅 Doctor、Admin 只读。
+
+| HTTP | 路由 | 方法 | 权限（代码实际） |
 |------|------|------|------|
-| POST | `/api/v1/registrations` | Create | DoctorOrAdmin |
-| GET | `/api/v1/registrations/{id}` | GetById | DoctorOrAdmin |
-| GET | `/api/v1/registrations` | GetList | DoctorOrAdmin |
-| GET | `/api/v1/registrations/queue` | GetQueue | DoctorOrAdmin |
-| PUT | `/api/v1/registrations/{id}/start-visit` | StartVisit | DoctorOrAdmin |
-| PUT | `/api/v1/registrations/{id}/cancel` | Cancel | DoctorOrAdmin |
+| POST | `/api/v1/registrations` | Create | DoctorOrAdminOrReceptionist |
+| GET | `/api/v1/registrations/{id}` | GetById | DoctorOrAdminOrReceptionist |
+| GET | `/api/v1/registrations` | GetList | DoctorOrAdminOrReceptionist |
+| GET | `/api/v1/registrations/queue` | GetQueue | DoctorOrAdminOrReceptionist |
+| PUT | `/api/v1/registrations/{id}/start-visit` | StartVisit | DoctorOrAdminOrReceptionist |
+| PUT | `/api/v1/registrations/{id}/cancel` | Cancel | DoctorOrAdminOrReceptionist |
 | POST | `/api/v1/registrations/quick-visit` | QuickVisit | DoctorOrAdmin |
 
 ### DTO 结构
@@ -90,15 +92,17 @@ QuickVisitResultDto
 
 ## 状态机
 
+> **2026-08-03 决策修订**：医案取消=物理删除（无 Cancelled 医案状态）；「接诊即建」——StartVisit 原子创建 MedicalCase(Active)+Registration(InProgress)。REG-BR-005 **放弃恢复**（D4 回滚到 Waiting 已移除）。
+
 ```
 ┌─────────────┐
-│   Waiting    │◄──────────────────┐
-│  (等待中)    │                   │
-└──┬───────┬──┘                   │
-   │       │                      │ D4 回滚(Receptionist)
-   ▼       ▼                      │
-┌──────────────┐   ┌───────────┐  │
-│  InProgress  │   │ Cancelled │──┘
+│   Waiting    │
+│  (等待中)    │
+└──┬───────┬──┘
+   │       │
+   ▼       ▼
+┌──────────────┐   ┌───────────┐
+│  InProgress  │   │ Cancelled │
 │  (接诊中)    │──▶│ (已取消)  │
 └──────┬───────┘   └───────────┘
        │
@@ -110,11 +114,11 @@ QuickVisitResultDto
 ```
 
 **允许的转换**: Waiting→InProgress, Waiting→Cancelled, InProgress→Completed, InProgress→Cancelled
-**禁止的转换**: Waiting→Completed, InProgress→Waiting, Completed→任何, Cancelled→任何
+**禁止的转换**: Waiting→Completed, InProgress→Waiting（D4 回滚已移除，REG-BR-005 放弃恢复）, Completed→任何, Cancelled→任何
 
-**D4 回滚规则**（MedicalCase 取消时）:
-- Source=Receptionist: 回滚到 Waiting，清空 MedicalCaseId
-- Source=Doctor: 直接转为 Cancelled
+**接诊即建**（2026-08-03 决策）:
+- `Waiting → InProgress` 时**原子创建** MedicalCase(Active) + Registration(InProgress)，统一远程/本地两条接诊路径
+- 医案取消（物理删除）时：关联 Registration 自动转为 `Cancelled`（InProgress→Cancelled）
 
 ## 数据流
 

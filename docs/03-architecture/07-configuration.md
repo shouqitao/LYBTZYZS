@@ -145,7 +145,7 @@ services.AddOptions<JwtOptions>()
 | SecurityOptions | `AccountLockoutOptions` | `Security:AccountLockout` | 账户锁定策略: Enabled (默认 true)、MaxFailedCount (默认 5, 范围 1-100)、LockoutMinutes (默认 15, 范围 1-1440) |
 | SecurityOptions | `RateLimitOptions` | `Security:RateLimiting` | API 速率限制配置 |
 
-详见 [安全与密码管理](../05-development/06-security-password-management.md)。
+详见 [安全与密码管理](../05-development/05-security-password-management.md)。
 
 ## 变更记录
 

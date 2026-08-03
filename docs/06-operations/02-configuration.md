@@ -151,10 +151,10 @@ $env:Jwt__SecretKey = "YourSecureSecretKeyAtLeast32CharactersLong"
 ```json
 {
   "DefaultPasswords": {
-    "SysAdminPassword": "SysAdmin@2026!",        // 开发占位明文（设计如此）
-    "AdminPassword": "Admin@123456",             // 开发占位明文（设计如此）
-    "NewUserPassword": "User@123456",            // 开发占位明文（设计如此）
-    "ForceChangeOnFirstLogin": true              // 首次登录强制修改密码
+    "SysAdminPassword": "DevP@ssw0rd!",        // 开发占位明文（设计如此，与 appsettings.json 实际一致）
+    "AdminPassword": "DevP@ssw0rd!",           // 开发占位明文（设计如此）
+    "NewUserPassword": "DevP@ssw0rd!",         // 开发占位明文（设计如此）
+    "ForceChangeOnFirstLogin": true            // 首次登录强制修改密码
   }
 }
 ```

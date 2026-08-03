@@ -254,4 +254,4 @@ if (existing?.LastLoginAt == null)
 
 - [配置架构](../03-architecture/07-configuration.md) — Options 模式与验证管道
 - [API 认证](../04-api-reference/README.md) — JWT + RefreshToken 认证流程
-- [测试指南](05-testing.md) — 测试中如何配置安全选项
+- [测试指南](04-testing.md) — 测试中如何配置安全选项

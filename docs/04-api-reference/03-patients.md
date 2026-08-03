@@ -1,15 +1,15 @@
 # 患者 API
 
-> Controller: `PatientsController` | 路由前缀: `/api/v1/patients` | 默认权限: `[Authorize(Policy = "DoctorOrReceptionist")]`
+> Controller: `PatientsController` | 路由前缀: `/api/v1/patients` | 默认权限: `[Authorize(Policy = "DoctorOrAdminOrReceptionist")]`（代码实际，`PatientsController.cs:24`）
 >
-> ⚠️ **权限待对齐（D7，基线§3）**：文档目标策略为 `DoctorOrReceptionist`；代码当前为 `DoctorOrAdmin`（`PatientsController.cs:23`），待对齐。
+> ⚠️ **权限待对齐（2026-08-03 四连决策，见 [04-permissions.md](../01-product/04-permissions.md)）**：患者删除/禁用目标态 `AdminOrSuperAdmin`（P0-5 待修，代码当前仍为类级 `DoctorOrAdminOrReceptionist`）。
 
 ## 概述
 
-患者管理 CRUD、Excel 导出/导入模板、软删除恢复、批量操作、引用检查。支持 OutputCache (`PatientsCache`)。
+患者管理 CRUD、身份证号查询、软删除恢复、批量操作、引用检查。支持 OutputCache (`PatientsCache`)。
 Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 
-> **注意**: 患者 Excel 导入在客户端 (Desktop) 完成，服务端无 `POST /patients/import` 端点。服务端仅提供 `GET /patients/import-template` 下载模板。
+> **注意**: 患者 Excel 导入/导出在客户端 (Desktop) 完成，服务端**无** `POST /patients/import`、`GET /patients/import-template`、`GET /patients/export` 端点（下述两节为 v2.0 规划，代码未实现）。服务端提供 `GET /patients/by-id-number/{idNumber}` 身份证号查询。
 
 ---
 
@@ -503,6 +503,37 @@ curl -X POST "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef12
 | 200 | 该患者未被删除 (ERR-20702) |
 | 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 | 404 | 患者不存在 (ERR-20001) |
+
+---
+
+## GET /patients/by-id-number/{idNumber}
+
+> ✅ **已实现**
+
+根据身份证号查询患者（用于读卡器/快速登记）。
+
+- **权限**: `DoctorOrAdminOrReceptionist`
+
+**路径参数**:
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `idNumber` | string | 身份证号 |
+
+**成功响应** (200): `ApiResponse<PatientDetailDto>`
+
+**curl 示例：**
+
+```bash
+curl -X GET "http://localhost:5000/api/v1/patients/by-id-number/110101199001011234" \
+  -H "Authorization: Bearer ***"
+```
+
+**错误码：**
+
+| HTTP 状态码 | 说明 |
+|------------|------|
+| 404 | 未找到匹配的患者 |
 
 ---
 

@@ -1,8 +1,8 @@
 # 挂号管理 API
 
-> Controller: `RegistrationsController` | 路由前缀: `/api/v1/registrations` | 默认权限: `[Authorize(Policy = "DoctorOrReceptionist")]`
+> Controller: `RegistrationsController` | 路由前缀: `/api/v1/registrations` | 默认权限: `[Authorize(Policy = "DoctorOrAdminOrReceptionist")]`（代码实际，`RegistrationsController.cs:21`）
 >
-> ⚠️ **权限待对齐（D7，基线§3）**：文档目标策略为 `DoctorOrReceptionist`（挂号创建/取消需 Receptionist 前台角色，US-REG-001）；代码当前为 `DoctorOrAdmin`（`RegistrationsController.cs:23`），导致 Receptionist 无法挂号，待对齐。
+> ⚠️ **权限待对齐（2026-08-03 四连决策，见 [04-permissions.md](../01-product/04-permissions.md)）**：目标态操作级细分——挂号创建/取消仅前台 Receptionist、接诊/QuickVisit 仅 Doctor（`DoctorOnly` 待新增）、Admin 只读查看。代码当前为类级 `DoctorOrAdminOrReceptionist`（Receptionist 可挂号，已实现）。
 
 ## 概述
 

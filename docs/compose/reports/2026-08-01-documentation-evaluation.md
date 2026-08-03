@@ -40,7 +40,7 @@
 | 位置 | 泄露内容 | 严重度 |
 |------|----------|--------|
 | `deployment-test-environment.md:21` | SSH 密码 `123456` 明文 | 高 |
-| `deployment-test-environment.md:33` | SA 密码 `Shou@850528` 明文 | **极高** |
+| `deployment-test-environment.md:33` | SA 密码 `Shou@850528` 明文（已脱敏） | **极高** |
 | `03-webapi-deployment-summary.md:102` | **生产 JWT SecretKey 明文** | **极高**（可伪造任意用户 Token） |
 
 **建议**: 

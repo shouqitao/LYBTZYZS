@@ -49,7 +49,7 @@
 | BlacklistedToken | 黑名单令牌 | 被撤销的 JWT 令牌。🚧 v1.0 待实现 |
 | PinYinCode | 拼音码 | 中文姓名/药材名的拼音首字母，用于快速检索 |
 | DecocteMethod | 煎法 | 药材的煎煮方式：默认、先煎 (PreDecoct)、后下 (PostDecoct) |
-| 草稿水印 | 草稿水印 | 未完成医案（CaseStatus != Completed）打印 / 预览 / 导出 PDF 时叠加的"草稿"标识（72pt / -35° 旋转 / 半透明红色），提示该处方非最终版（见 [09-printing.md](../02-requirements/09-printing.md)） |
+| ~~草稿水印~~ | ~~草稿水印~~ | ~~未完成医案打印时叠加的"草稿"标识~~ — **已删除**（2026-08-03 决策：未完成医案不可打印，无此场景，见 [09-printing.md](../02-requirements/09-printing.md)） |
 | 等候时长 | 等候时长 | 患者从挂号（Status=Waiting）到医生接诊（Status=InProgress）的排队等待时间，候诊队列展示用（见 [08-registration.md](../02-requirements/08-registration.md) US-REG-004） |
 | QuickVisit | 医生快速就诊 | 医生绕过前台挂号，直接查询/创建患者并进入看诊的原子事务（Registration + MedicalCase 同事务创建，见 [08-registration.md](../02-requirements/08-registration.md) US-REG-002） |
 | 剂量单位 | 剂量单位 | 处方中药材的计量单位，默认 g（克）；v1.0 为自由文本不做换算（见 [05-herbs.md](../02-requirements/05-herbs.md) D13） |
@@ -92,7 +92,7 @@
 | 1 | Active | 进行中 | 正在诊疗 |
 | 2 | Completed | 已完成 | 诊疗流程全部完成，锁定编辑 |
 
-> 取消医案统一通过 `IsDeleted=true` 软删除实现（审计类型为 `SoftDelete`），不再使用独立的 Cancelled 状态。
+> **取消医案 = 物理删除**（2026-08-03 决策）：取消操作直接删除医案记录（不判内容），审计类型为 `Cancel`；已完成医案仅可软删除（Admin 清理）。不再使用独立的 Cancelled 状态。详见 [07-medical-cases.md](../02-requirements/07-medical-cases.md) BR-000 与 [04-permissions.md](04-permissions.md)。
 
 ### RegistrationStatus (挂号状态)
 
@@ -117,7 +117,8 @@
 | 1 | Create | 创建 |
 | 2 | Update | 更新 |
 | 3 | StatusChange | 状态变更 |
-| 4 | SoftDelete | 软删除（含取消操作） |
+| 4 | SoftDelete | 软删除（Admin 清理已完成医案） |
+| 5 | Cancel | 取消（物理删除，2026-08-03 决策） |
 
 ### CommonStatus (通用状态)
 

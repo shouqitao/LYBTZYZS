@@ -691,7 +691,7 @@ Desktop 端异常处理实现 `DesktopExceptionHandler`（注册 `AppDomain.Unha
 
 > 🧲 **v2.0 规划** — 对应 US-SYNC-007（Sync 模块整体 v2.0，N1 决策 2026-06-28；v2.0 范围见 [PRD](../02-requirements/01-prd.md#v20-规划范围)）。
 
-SyncPhase 状态机（`Idle → CheckingDifferences → ReviewingDifferences → Syncing → Completed/Failed`）、关键类型（`SyncResultSummary`/`SyncRetryDescriptor`/`SyncErrorCategory`）、SyncView 底栏布局、冲突解决 UI（左右对比 + 差异高亮 + 保留本地/使用服务端/跳过）的完整设计已并入 [sync-protocol.md](sync-protocol.md) 的「同步状态机」「错误分类」段。
+SyncPhase 状态机（`Idle → CheckingDifferences → ReviewingDifferences → Syncing → Completed/Failed`）、关键类型（`SyncResultSummary`/`SyncRetryDescriptor`/`SyncErrorCategory`）、SyncView 底栏布局、冲突解决 UI（左右对比 + 差异高亮 + 保留本地/使用服务端/跳过）的完整设计已并入 [16-sync-protocol.md](16-sync-protocol.md) 的「同步状态机」「错误分类」段。
 
 ---
 

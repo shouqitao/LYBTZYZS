@@ -57,17 +57,18 @@
 
 | 目录 | 内容 | 文件数 |
 |------|------|:------:|
-| [01-product](01-product/) | 产品愿景、用户画像、术语表 | 4 |
-| [02-requirements](02-requirements/) | 需求文档（10 模块，141 US） | 19 |
+| [01-product](01-product/) | 产品愿景、用户画像、术语表、权限矩阵、角色交互 | 6 |
+| [02-requirements](02-requirements/) | 需求文档（15 模块，142 US） | 19 |
 | [03-architecture](03-architecture/) | 架构文档、ADR 决策记录、权限矩阵 | 48 |
-| [04-api-reference](04-api-reference/) | API 端点文档 | 14 |
+| [04-api-reference](04-api-reference/) | API 端点文档 | 15 |
 | [05-development](05-development/) | 开发指南、编码规范、测试标准 | 27 |
 | [06-operations](06-operations/) | 部署、配置、监控、备份 | 15 |
+| [compose](compose/) | 活动 spec/plan/report | 4 |
 | [prompts](prompts/) | Prompt 模板 | 2 |
-| [reports](reports/) | 校准报告、审计报告 | 4 |
+| [reports](reports/) | 校准报告、审计报告 | 6 |
 | [training](training/) | 培训材料 | 1 |
 
-**总计：~134 个文档**
+**总计：146 个文档**
 
 ---
 

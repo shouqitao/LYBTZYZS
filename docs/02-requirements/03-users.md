@@ -26,7 +26,7 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 |--------|-------------|-------------|
 | 密码策略 | 8位+大小写+数字+特殊字符 | 同左（统一 Service 层） |
 | 锁定策略 | 可配置（默认5次失败锁定15分钟） | 同左（统一 Service 层） |
-| JWT 有效期 | Access 60 分钟 / Refresh 7 天 | 365 天 |
+| JWT 有效期 | Access 配置驱动（开发 480/生产 30 分钟）/ Refresh 7 天 | 365 天 |
 | SecurityStamp | 启用 | 未配置 |
 
 > 密码策略与锁定策略远程/本地一致（与 [02-auth.md](02-auth.md) AUTH-002、[12-nfr.md](12-nfr.md) NFR-SEC-002 统一）。
@@ -81,20 +81,23 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 
 ### 业务端点权限概览
 
+> ⚠️ 目标态（2026-08-03 权限四连决策），代码部分待按操作级细分，详见 [04-permissions.md](../01-product/04-permissions.md)。
+
 | 模块 | Receptionist | Doctor | Admin | SuperAdmin |
 |------|:---:|:---:|:---:|:---:|
-| 患者管理 | ✅ CRUD | ✅ CRUD | ✅ CRUD | ✅ CRUD |
-| 挂号 | ✅ CRUD | ✅ QuickVisit | ✅ CRUD | ❌ 只读 |
+| 患者管理 | ✅ 读/写 | ✅ 读/写 | ✅ 读 | ✅ 读（删/禁仅 Admin+） |
+| 挂号 | ✅ 创建/取消/队列 | ✅ 接诊/QuickVisit | 🔍 只读 | 🔍 只读 |
 | 读卡器 | ✅ | ❌ | ❌ | ❌ |
 | 医案（创建） | ❌ | ✅ | ❌ | ❌ |
 | 医案（查看/编辑） | ❌ | ✅ 自己的 | ✅ 所有 | ✅ 所有 |
-| 药材管理 | ✅ 查看 | ✅ 查看 | ✅ CRUD | ✅ CRUD |
-| 验方管理 | ✅ 查看 | ✅ CRUD(自己的+共享) | ✅ CRUD | ✅ CRUD |
+| 药材管理 | ❌ 不可查看 | ✅ 查看 | ✅ 管理 | ✅ 管理 |
+| 验方管理 | ❌ 不可查看 | ✅ 查看/创建 | ✅ 查看/管理 | ✅ 查看/管理 |
 | 用户管理 | ❌ | ❌ | ✅ | ✅ |
 | 系统设置 | ❌ | ❌ | ❌ | ✅ |
 | 报表 | ❌ | ✅ | ✅ | ✅ |
 | 系统诊断 | ❌ | ❌ | ❌ | ✅ |
 | 日志级别 | ❌ | ❌ | ❌ | ✅ |
+| 打印 | ❌ | ✅ | 🔍 仅查打印记录 | 🔍 仅查打印记录 |
 
 ## API 端点（11 个，Remote 和 Local 统一）
 

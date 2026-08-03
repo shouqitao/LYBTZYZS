@@ -33,7 +33,7 @@
 | 系统设置 | 查看/修改 | ❌ | ❌ | ❌ | ✅ | ✅ |
 | 审计日志 | 查看 | ❌ | ❌ | ❌ | ✅ | ✅ |
 
-> **文档校准更新（2026-08-02）**：矩阵已对齐代码实际策略。药材查看 Receptionist✅、药材创建 Admin+ only、挂号创建 Admin✅、医案创建 Doctor only 已反映代码现状。K1/K7/K8/K9 待修复项仍保留在「代码待对齐清单」中。
+> **矩阵说明（2026-08-03 更新）**：本表为**目标态**（2026-08-03 权限四连决策）。药材查看 Receptionist❌、药材创建 Admin+ only、挂号创建仅 Receptionist、医案创建 Doctor only 均为产品决策目标。**代码当前仍为类级策略**（患者/挂号 `DoctorOrAdminOrReceptionist`、药材/验方 `DoctorOrReceptionist`、医案 `DoctorOrAdmin`+创建 `DoctorOrAdminOrReceptionist`），操作级细分待修（见 [04-permissions.md](../01-product/04-permissions.md) P0-P2 修复项）。K1/K7/K8/K9 待修复项仍保留在「代码待对齐清单」中。
 
 ## Row-Level Security
 

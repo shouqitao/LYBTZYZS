@@ -1,6 +1,6 @@
 # 打印 API 参考
 
-> 🚧 **v1.0 待实现（D2 打印保护/回写补回，基线§1）**：下列打印端点（`print-completed`/`print-logs`）及相关实体（`IsPrinted`/`PrintVersion`/`PrintCount`/`LastPrintedAt` 字段、`MedicalCasePrintLog`/`PrintLog` 实体）**代码尚未实现**。本文保留作 D2 补回的设计参考。详见 `docs/compose/specs/2026-06-28-docs-reconciliation-baseline.md` §1 D2。
+> 🚧 **v1.0 待实现（D2 打印保护/回写补回）**：下列打印端点（`print-completed`/`print-logs`）及相关实体（`IsPrinted`/`PrintVersion`/`PrintCount`/`LastPrintedAt` 字段、`MedicalCasePrintLog`/`PrintLog` 实体）**部分已实现**（`print-completed` 在 `MedicalCasesController`，见 [06-medical-cases.md](06-medical-cases.md)）。本文保留作设计参考。
 
 > 医案打印相关端点，隶属 MedicalCasePrintController（远程）和 MedicalCasesController（本地）。
 

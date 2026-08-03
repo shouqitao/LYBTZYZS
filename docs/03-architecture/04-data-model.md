@@ -260,15 +260,16 @@ graph TB
 | MedicalCaseId | Guid? | 否 | 关联医案 (FK, 接诊后填入) |
 | Source | RegistrationSource | 是 | 创建来源: Receptionist / Doctor |
 | Status | RegistrationStatus | 是 | 状态: Waiting / InProgress / Completed / Cancelled |
+| QueueNumber | int | 是 | 排队号（当日序号） |
+| RegistrationFee | decimal | 是 | 挂号费（创建时从医生 `RegistrationFee` 快照带出，免号填 0） |
 
-> Registration 继承 BaseEntity (含 Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy, RowVersion, IsDeleted)。与 MedicalCase 为 1:0..1 关系: Waiting 状态时无医案，接诊后填入 MedicalCaseId。
+> Registration 继承 BaseEntity (含 Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy, RowVersion, IsDeleted)。与 MedicalCase 为 1:0..1 关系: Waiting 状态时无医案，接诊后填入 MedicalCaseId。`RegistrationFee` 为快照字段（2026-08-03 决策，REG-BR-009）：创建时从医生实体带出，后续医生改价不影响已建挂号。
 
 **状态机**:
-- `Waiting -> InProgress`: 医生从队列选中 (自动创建 MedicalCase)
+- `Waiting -> InProgress`: 医生从队列选中（**原子创建 MedicalCase**，2026-08-03「接诊即建」决策，见 [08-registration.md](../02-requirements/08-registration.md)）
 - `Waiting -> Cancelled`: 前台手动取消 (REG-BR-001 校验)
 - `InProgress -> Completed`: 医案 Completed 时自动跟随
-- `InProgress -> Waiting`: 医案 Cancelled 且 Source=Receptionist (回退)
-- `InProgress -> Cancelled`: 医案 Cancelled 且 Source=Doctor (自动)
+- `InProgress -> Cancelled`: 医案取消（物理删除）时自动取消（2026-08-03 决策：取消即物理删除，无 Cancelled 医案状态）
 
 ### FormulaHerbItem (验方药材项)
 
