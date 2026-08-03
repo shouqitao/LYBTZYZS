@@ -100,7 +100,7 @@
 | REG-BR-002 | 前台取消权限 | Source=Receptionist 的挂号仅 Receptionist 可取消，Doctor 无权 |
 | REG-BR-003 | 医生模式跳过 Waiting | Source=Doctor 创建时直接进入 InProgress，不经过队列 |
 | REG-BR-004 | 患者不存在时创建 | 查询无结果时提示创建患者 |
-| REG-BR-005 | 回退后恢复原医案 | Source=Receptionist 医案取消回退 Waiting 后，医生重新接诊时恢复原 MedicalCase（IsDeleted=false, Status→Active） |
+| REG-BR-005 | 回退后重建医案（2026-08-03 修订） | Source=Receptionist 医案取消（物理删除）后 Registration 回退 Waiting；患者回来时医生重新接诊 → **新建**医案（取消=物理删除，无原医案可恢复） |
 | REG-BR-006 | 患者侧大屏叫号（R9 决策） | 患者侧候诊大屏叫号属 **v2.0 / 按需**，v1.0 不实现；v1.0 候诊队列仅前台端（US-REG-004）与医生端可见 |
 | REG-BR-007 | 当天重复挂号检查 | 患者当天已有未完成挂号时，提示不能重复挂号 |
 | REG-BR-008 | 前台仅退当天挂号 | 前台只能退当天的 Status=Waiting 挂号；非当天的需管理员退款 |
@@ -352,8 +352,8 @@
 
 **验收标准**:
 - [ ] MedicalCase 完成时（CaseStatus=Completed）→ 关联 Registration.Status 自动变为 Completed
-- [ ] MedicalCase 取消时（IsDeleted=true）→ 根据 Source 执行不同策略：
-  - Source=Receptionist：Registration.Status 回退为 Waiting（等前台取消），MedicalCaseId 保留（用于恢复原医案，REG-BR-005）
+- [ ] MedicalCase 取消时（物理删除）→ 根据 Source 执行不同策略：
+  - Source=Receptionist：Registration.Status 回退为 Waiting（等前台取消），MedicalCaseId 清空（原医案已物理删，重新接诊时新建，2026-08-03 修订）
   - Source=Doctor：Registration.Status 自动变为 Cancelled（流程完全闭环）
 - [ ] 适用于所有 Source 类型
 - [ ] 联动在 MedicalCaseService 内部触发，无需人工操作
@@ -361,7 +361,7 @@
 **业务规则**:
 1. **完成联动**：MedicalCase.CompleteAsync() 内部调用 RegistrationService.CompleteByMedicalCase()，Registration → Completed
 2. **取消联动（Source-aware）**：MedicalCase.CancelAsync() 内部根据 Source 调用不同方法
-   - Source=Receptionist：回退为 Waiting，MedicalCaseId 保留（REG-BR-005，支持恢复原医案）
+   - Source=Receptionist：回退为 Waiting，MedicalCaseId 清空（2026-08-03：原医案已物理删除，患者回来重新接诊时新建）
    - Source=Doctor：自动变为 Cancelled（闭环）
 3. 联动在事务内执行，保证一致性
 
@@ -457,6 +457,7 @@
 | 日期 | 变更 | 原因 |
 |------|------|------|
 | 2026-06-28 | 新增「双模式工作流」段（远程挂号驱动 / 本地默认医生独立来一个看一个，建前台用户则挂号可用，全角色支持）；US-REG-002 状态改 🧲 v1.0 待激活+定位补注；US-REG-005 D8 修复方向补注 | R10 spec S8 文档更新 |
+| 2026-08-03 | **REG-BR-005 修订**：回退后恢复原医案 → 回退后重建（取消=物理删除，MedicalCaseId 清空，重新接诊时新建）；US-REG-007 取消联动同步 | 产品决策（医案专题：取消=物理删除） |
 | 2026-08-03 | **「接诊即建」决策落地**：模块概述/双模式工作流（远程+本地）/US-REG-005 状态（🔴→✅ 设计已确认）同步为 StartVisit/QuickVisit 原子创建 MedicalCase(Active)+Registration(InProgress) | 产品决策（与 07-medical-cases.md BR-000 修订联动） |
 | 2026-06-28 | 本地模式表述修正：「取消挂号/Registration 不激活」改为「全角色支持，差异由用户配置决定（无前台用户时医生独立，建前台用户则挂号可用）；无 SignalR」 | 2026-06-28 产品澄清（本地不做角色强制过滤） |
 | 2026-06-25 | 补充 InProgress 取消、同日重复挂号边界条件验收标准 | 需求文档验收标准完善 |

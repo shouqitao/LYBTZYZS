@@ -13,9 +13,9 @@
 
 ## 模块概述
 
-处方打印是医案（MedicalCase）诊疗闭环的最后一步：将结构化电子处方渲染为符合中医处方笺行业标准的纸质载体，交付患者取药。本模块为 Desktop 客户端能力，基于 WPF `FixedDocument` 渲染 XAML 模板，并通过 QuestPDF 提供独立的 PDF 导出管线。打印成功后将状态与日志回写到 MedicalCase 聚合根（`IsPrinted` / `PrintVersion` / `PrintCount` / `LastPrintedAt`）及 `MedicalCasePrintLog`。
+处方打印是医案（MedicalCase）诊疗闭环的最后一步：将已完成医案的电子处方渲染为符合中医处方笺行业标准的纸质载体，交付患者取药。本模块为 Desktop 客户端能力，基于 WPF `FixedDocument` 渲染 XAML 模板，并通过 QuestPDF 提供独立的 PDF 导出管线。打印成功后将状态与日志回写到 MedicalCase 聚合根（`IsPrinted` / `PrintVersion` / `PrintCount` / `LastPrintedAt`）及 `MedicalCasePrintLog`。
 
-打印与医案模块强耦合：一旦打印，聚合根进入编辑保护态，后续编辑需填写原因并使 `PrintVersion` 递增、`IsPrinted` 重置（详见 [07-medical-cases.md](07-medical-cases.md)）。
+**打印时机（2026-08-03 决策）**：**仅 Completed 医案可打印**（未完成医案不可打印）；打印后修改内容触发 `PrintVersion++` 提示重新打印（详见 [07-medical-cases.md](07-medical-cases.md) §打印保护简化）。
 
 ## 业务规则
 
@@ -23,8 +23,8 @@
 2. **默认纸张**：A5（148×210mm，中医处方笺标准）；同时支持 A4（210×297mm）。
 3. **多页续打**：药材数超出单页容量时使用续页模板（A5 首页 12 味、续页 20 味；签名区始终位于最后一页底部）。
 4. **打印事件**：`PrintLogRequested` 在成功与失败时均触发，驱动日志回写。
-5. **打印保护耦合**：编辑已打印医案会重置 `IsPrinted=false` 并递增 `PrintVersion`。
-6. **草稿水印**：`CaseStatus != Completed` 的医案允许打印，但模板与 PDF 均叠加"草稿"水印（Sprint 6 已实现）。
+5. **打印时机（2026-08-03 决策）**：仅 `CaseStatus=Completed` 可打印；未完成医案（Active/Suspended）禁止打印。
+6. **打印标记**：打印成功后 `IsPrinted=true`、`PrintCount++`；打印后修改内容 → `IsPrinted=false`、`PrintVersion++`（提示重新打印）。~~草稿水印机制已删除~~（2026-08-03 决策，无未完成打印场景）
 7. **PDF 管线**：QuestPDF 2025.4.0（Community 许可证），独立布局引擎，非 XPS 转换。
 8. **诊所信息来源**：标题区诊所名称/科别/地址/电话从 `ClinicSettings` 配置读取，缺失时使用默认值。
 
@@ -177,5 +177,6 @@
 
 | 日期 | 变更 | 原因 |
 |------|------|------|
+| 2026-08-03 | **仅 Completed 可打印**：草稿水印机制删除；打印保护简化为打印状态标记（IsPrinted/PrintVersion++ 重打）；模块概述/业务规则同步 | 产品决策（医案专题：未完成不可打印） |
 | 2026-06-25 | 补充无打印机、过期打印版本边界条件验收标准 | 需求文档验收标准完善 |
 | 2026-06-28 | US-PRINT-001 补单联/多联打印业务规则（D14：v1.0 单联，多联 v2.0） | spec S7 弱反映项补全 |

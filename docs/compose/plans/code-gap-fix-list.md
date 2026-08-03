@@ -87,6 +87,30 @@
 - **修复**：`ApplicationUser` 加 `RegistrationFee`（decimal(10,2)，默认 0）；Admin 创建/编辑医生时设置；前台创建挂号自动带出（可改，义诊/优惠）；QuickVisit/本地自动带出
 - **验证**：集成测试（挂号带出）+ 报表测试（RegistrationFeeTotal 覆盖 QuickVisit/本地）
 
+### B6. 医案取消 = 物理删除（2026-08-03 决策）
+- **问题**：`CancelAsync` 当前软删除（IsDeleted=true）；新决策取消=物理删除（不判内容，级联清聚合，审计记录 Cancel）
+- **文件**：`MedicalCaseStateService.CancelAsync`、`MedicalCaseServiceHelper`、Desktop 取消确认弹窗
+- **修复**：CancelAsync 改为物理删除（EF 级联删除聚合）；前端强确认「将永久删除，不可恢复」；审计 OperationType=Cancel；已完成医案不可取消（只可软删）
+- **验证**：集成测试（取消后无残留 + Registration 联动）
+
+### B7. 未完成医案不可打印（2026-08-03 决策）
+- **问题**：当前允许未完成打印（草稿水印）；新决策仅 Completed 可打印
+- **文件**：Desktop 打印入口（MedicalCaseCommandsViewModel）、PrescriptionPrintHandler
+- **修复**：打印前校验 CaseStatus=Completed；删除草稿水印逻辑
+- **验证**：Desktop 集成测试
+
+### B8. 打印保护简化（2026-08-03 决策）
+- **问题**：IsPrinted 作为操作限制触发器（打印后禁止取消/删除、修改需 EditReason）；新设计降级为打印状态标记（PrintVersion++ 重打）
+- **文件**：`MedicalCaseStateService`、`MedicalCaseBusinessRules`、US-MC-014/015 相关校验
+- **修复**：IsPrinted 仅用于标记/版本追踪；删除「打印后修改需 EditReason」强制校验（隔天由 IsLocked 覆盖）
+- **验证**：状态机测试
+
+### B9. 状态机绕过漏洞（P4）
+- **问题**：`UpdateMedicalCaseStatusCommandHandler` 直接 `CaseStatus = request.Status`，绕过 StateService 校验（可设 Completed）
+- **文件**：`UpdateMedicalCaseStatusCommandHandler.cs`、`MedicalCasesController PUT /{id}/status`
+- **修复**：Handler 委托 `IMedicalCaseStateService.UpdateStatusAsync`（或删除 handler，统一走 StateService）
+- **验证**：状态机测试（UpdateStatus 仅允许 Suspended↔Active）
+
 ---
 
 ## 验收清单

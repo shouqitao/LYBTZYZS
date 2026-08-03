@@ -129,8 +129,8 @@
 | US-MC-011 | Must | ADR-0001 | Flow 1 | PUT /medicalcases/{id}/close | MedicalCaseProcessingController.cs:25 | — | ✅ 已实现 |
 | US-MC-012 | Should | ADR-0001 | — | PUT /medicalcases/{id}/close?force=true | MedicalCaseProcessingController.cs:25 | — | ✅ 已实现 |
 | US-MC-013 | Must | ADR-0001 | — | PUT /medicalcases/{id}/suspend | MedicalCaseProcessingController.cs:25 | — | ✅ 已实现 |
-| US-MC-014 | Must | ADR-0001 | Flow 5 | PUT /medicalcases/{id}/cancel | MedicalCaseProcessingController.cs:25 | D16 | ✅ 已实现 |
-| US-MC-015 | Must | ADR-0001 | — | DELETE /medicalcases/{id} + batch-delete | MedicalCasesController.cs:26 | — | ✅ 已实现 |
+| US-MC-014 | Must | ADR-0001 | Flow 5 | PUT /medicalcases/{id}/cancel | MedicalCaseProcessingController.cs:25 | D16 | ⚠️ 代码待重构（2026-08-03 决策：取消=物理删除，已完成不可取消） |
+| US-MC-015 | Must | ADR-0001 | — | DELETE /medicalcases/{id} + batch-delete | MedicalCasesController.cs:26 | — | ⚠️ 代码待对齐（2026-08-03 决策：删除仅 Admin、仅已完成医案软删） |
 | US-MC-016 | Should | ADR-0001 | — | GET /medicalcases/{id}/permissions | MedicalCaseAuditController.cs:23 | X2.3 | 🔴 代码待对齐（端点不存在） |
 | US-MC-017 | Must | ADR-0001 | — | GET /medicalcases/{id}/audit-logs | MedicalCaseAuditController.cs:23 | A11 | 🧲 v1.0 待实现（D1：实体已删，Audit Service 缺） |
 | US-MC-018 | Should | ADR-0001 | — | POST /medicalcases/batch-details | MedicalCasesController.cs:26 | — | 🔴 代码待对齐（Service 有，Controller 无端点） |

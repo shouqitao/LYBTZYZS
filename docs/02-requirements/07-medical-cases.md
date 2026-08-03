@@ -73,7 +73,7 @@ MedicalCase:   （不存在）→ Active → Suspended/Completed/Cancelled
 
 离开医案编辑界面时，必须选择一种处置方式：
 1. **挂起** — 状态设为 Suspended，保存当前数据，稍后可继续（US-MC-013）
-2. **取消** — 执行软删除（IsDeleted=true）
+2. **取消** — **物理删除**（2026-08-03 决策：取消=物理删除，不判断是否有内容，前端强确认后执行；审计记录「取消」用于统计）
 3. **完成** — 状态设为 Completed，需通过完成校验（US-MC-011）
 
 异常状态（崩溃/断网/强制关闭）：医案保持当前状态（Active），未保存变更丢失（MC-D18，不实现自动保存）。
@@ -108,21 +108,21 @@ MedicalCase:   （不存在）→ Active → Suspended/Completed/Cancelled
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Active: 创建（仅 Doctor，写诊断时）
-    Active --> Suspended: 暂停（US-MC-013）
+    [*] --> Active: 创建（接诊即建，仅 Doctor）
+    Active --> Suspended: 挂起（US-MC-013，当天内离开）
     Suspended --> Active: 恢复编辑
     Active --> Completed: 完成（US-MC-011，通过 BR-003 校验）
     Suspended --> Completed: 完成（US-MC-011）
-    Active --> Cancelled: 取消=软删除（US-MC-014）
-    Suspended --> Cancelled: 取消=软删除（US-MC-014）
-    Completed --> [*]: 终态（仅 Admin+EditReason 可改）
-    note right of Cancelled: Cancelled = IsDeleted=true\\n（不在枚举中，等同于软删除）
-    note right of Completed: 完成后当天可编辑\\n隔天 0 点自动锁定（IsLocked）
-    note left of [*]: 医案在接诊（StartVisit/QuickVisit）时原子创建\n（2026-08-03 决策：接诊即建）
+    Active --> [*]: 取消=物理删除（US-MC-014，🔥 不判内容）
+    Suspended --> [*]: 取消=物理删除（US-MC-014，🔥 不判内容）
+    Completed --> [*]: 终态（隔天 IsLocked，仅 Admin+EditReason 可改）
+    note right of Completed: 完成后当天可编辑\\n隔天 0 点自动锁定（IsLocked）\\n打印仅 Completed（未完成不可打印）\\nAdmin 清理 = 软删除（IsDeleted）
+    note left of [*]: 医案在接诊（StartVisit/QuickVisit）时原子创建\\n（2026-08-03 决策：接诊即建）
 ```
 
 **关键说明**：
-- `Cancelled` 不在 `MedicalCaseStatus` 枚举中，取消 = 软删除（`IsDeleted=true`）
+- **取消 = 物理删除**（2026-08-03 决策）：未完成医案（Active/Suspended）取消即物理删除，不判断是否有内容，级联清除聚合；审计记录「取消」用于统计。**没有 `Cancelled` 状态**
+- **删除 = 软删除**（`IsDeleted=true`）：仅用于管理员清理**已完成**医案（Completed 不可取消，只可软删）
 - `Completed` 是业务终态，仅 Admin/SuperAdmin 提供 EditReason 后可编辑
 - `IsLocked` 是计算属性：`IsCompleted && CompletedAt.Date < Today`，0 点自动生效，无后台任务
 - `Draft` 状态已被移除（MC-D20），由 `Suspended` 承载"工作流暂停"语义
@@ -159,20 +159,22 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 | 隔天修改任何医案 | ✅ |
 | 非本人修改医案 | ✅ |
 | 取消医案（非当天本人） | ✅ |
-| 打印后修改内容（IsPrinted=true） | ✅ |
+| 打印后修改内容（IsPrinted=true） | ❌（仅 `PrintVersion++` 提示重打；隔天由 IsLocked 覆盖，2026-08-03 简化） |
 
 预置修改原因选项：补充遗漏信息 / 更正录入错误 / 患者要求修改 / 医嘱调整
 
-### 打印保护耦合
+### 打印保护（2026-08-03 简化）
 
 **规则**（MC-D15）：打印字段全部位于 MedicalCase 聚合根（Prescription 无打印字段）。
 
+> **简化说明（2026-08-03）**：未完成医案不可打印 → 打印仅发生在 Completed → 原「打印保护」（打印后禁止取消/删除、修改需 EditReason）职责与完成保护（IsLocked）重叠，删除。`IsPrinted` 降级为**打印状态标记**（追踪打印历史与版本），不再是操作限制触发器。
+
 | 事件 | 行为 |
 |------|------|
-| 打印成功 | `IsPrinted=true`、`PrintCount++`、`LastPrintedAt=now`，生成 `MedicalCasePrintLog` |
-| 打印后修改 Consultation 或 Prescription | **必须**提供 EditReason（ERR-30403） |
-| 修改成功后 | `IsPrinted=false`、`PrintVersion++`（标记需重新打印） |
-| 删除处方 | 始终禁止（ERR-30404，IsPrinted=true 时） |
+| 打印成功（仅 Completed） | `IsPrinted=true`、`PrintCount++`、`LastPrintedAt=now`，生成 `MedicalCasePrintLog` |
+| 打印后修改 Consultation 或 Prescription（当天） | `PrintVersion++`（标记需重新打印）；隔天受 IsLocked 保护（Admin+EditReason） |
+| 修改成功后 | `IsPrinted=false`、`PrintVersion++`（提示重新打印） |
+| 删除处方 | 无独立「删除处方」操作；已完成医案整体删除 = 软删除（Admin 清理） |
 
 ### 双模式说明
 
@@ -227,8 +229,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **验收标准**:
 - [ ] 编辑锁定医案未提供 EditReason → 返回 422
 - [ ] 更新处方 Items → 原有 Items 全部替换为新列表
-- [ ] `IsPrinted=true` 且修改 Consultation/Prescription 内容但未提供 EditReason → 返回 422（ERR-30403）
-- [ ] `IsPrinted=true` 修改成功后 → `IsPrinted=false`、`PrintVersion++`
+- [ ] `IsPrinted=true` 修改成功后 → `IsPrinted=false`、`PrintVersion++`（提示重新打印；当天修改无需 EditReason，2026-08-03 简化）
 - [ ] Doctor 保存 `UserId≠自己` 的医案 → 返回 403
 - [ ] 乐观锁冲突（DbUpdateConcurrencyException）→ 最多重试 3 次
 - [ ] DosageCount 超过 100 → 返回 422（ERR-30307）
@@ -239,7 +240,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 编辑已完成/隔天/非本人医案需要提供 EditReason（见编辑理由表）
 4. 处方药材采用粗粒度替换策略（完整替换 Items 集合）
 5. 记录审计日志（US-MC-017）
-6. **打印保护**：若 `MedicalCase.IsPrinted=true` 且请求包含 Consultation 或 Prescription 内容变更，则 EditReason 必填（ERR-30403）。修改成功后：`MedicalCase.IsPrinted=false`、`MedicalCase.PrintVersion++`（需重新打印）
+6. **打印标记**（2026-08-03 简化）：修改已打印医案内容 → `MedicalCase.IsPrinted=false`、`MedicalCase.PrintVersion++`（提示重新打印）；不再强制 EditReason（隔天由 IsLocked 覆盖，Admin+EditReason）
 7. **乐观并发控制**：RowVersion + 3 次重试（MC-D10）
 8. **辨证录入（D7 决策）**：主诉 / 现病史 / 舌诊 / 脉诊 / 辨证为 Consultation 的结构化字段（见 [04-data-model](../03-architecture/04-data-model.md) Consultation 实体）；舌象 / 脉象提供常用选项选择器 + 自由文本兜底；v1.0 **不做**智能辅助诊断（如 AI 推荐、证型自动判别）。
 
@@ -538,30 +539,31 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 ---
 
-### US-MC-014: 取消医案（软删除+打印保护）
+### US-MC-014: 取消医案（物理删除）
 
 **角色**: 医生、管理员
 **优先级**: Must
-**状态**: ✅ 已实现
+**状态**: ✅ 已实现（2026-08-03 决策：取消语义改为**物理删除**，代码待重构）
 
-**作为** 医生，**我想要** 取消本次诊疗，**以便** 错误创建或患者临时取消的医案可以标记作废而不影响正常医案列表。
+**作为** 医生，**我想要** 取消本次诊疗，**以便** 错误创建、患者临时取消或接诊后发现没必要的医案彻底清除，不影响正常医案列表。
 
 **验收标准**:
-- [ ] 取消后 → `IsDeleted=true`，医案不可再编辑
-- [ ] 诊断/处方数据保留在数据库中
-- [ ] 已完成医案取消 → 返回 422（ERR-30306，已完成不可取消）
-- [ ] 已打印医案取消 → 禁止（打印保护）
+- [ ] 取消后 → **物理删除**（医案、诊断、处方数据全部清除，数据库中无残留）
+- [ ] 不判断是否有医疗内容（空医案/有内容医案取消均物理删除）
+- [ ] 已完成医案取消 → 返回 422（ERR-30306，已完成不可取消，只可软删除）
+- [ ] 取消前前端强确认弹窗（"将永久删除，不可恢复"）
 - [ ] 非当天本人取消 → 需提供 EditReason
 - [ ] 取消后关联 Registration 根据来源回退或自动取消（US-REG-007）
+- [ ] 审计记录「取消」操作（OperationType=Cancel，用于统计取消次数）
 
 **业务规则**:
-1. 状态设为 Cancelled（通过 `IsDeleted=true` 软删除，不在枚举中）
-2. 诊断/处方数据保留（软删除）
+1. **物理删除**：取消 = 物理删除（2026-08-03 决策，不判断内容），级联清除 MedicalCase + Consultation + Prescription + Items
+2. 无 `Cancelled` 状态（取消即删除，不留状态）
 3. 非当天本人取消需要审计理由（EditReason）
-4. 需要用户确认（"确定要取消?"）
-5. **打印保护**：已打印（IsPrinted=true）的医案不可取消
+4. 需要用户强确认（"将永久删除，不可恢复"）
+5. **已完成医案不可取消**（只可软删除，Admin 清理）
 6. **Registration 联动**：取消后根据 Source 执行不同策略（US-REG-007）
-   - Source=Receptionist：Registration 回退为 Waiting
+   - Source=Receptionist：Registration 回退为 Waiting（原医案已物理删，患者回来重新接诊时新建）
    - Source=Doctor：Registration 自动变为 Cancelled
 
 **双模式**: 远程 `PUT /api/v1/medicalcases/{id}/cancel`；本地一致。
@@ -570,27 +572,27 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 ---
 
-### US-MC-015: 删除/批量删除医案
+### US-MC-015: 删除/批量删除医案（软删除，管理清理）
 
-**角色**: 医生、管理员
+**角色**: 管理员
 **优先级**: Must
-**状态**: ✅ 已实现
+**状态**: ✅ 已实现（2026-08-03 决策：删除仅针对已完成医案，代码待对齐）
 
 **作为** 管理员，**我想要** 删除或批量删除医案，**以便** 清理无效或测试数据。
 
 **验收标准**:
-- [ ] 单个删除 → 软删除（IsDeleted=true）
+- [ ] 单个删除 → 软删除（IsDeleted=true，数据保留可追溯）
 - [ ] 批量删除 → 单次请求，返回成功/失败计数
 - [ ] 批量删除 IDs 为空 → 返回 400（ERR-30604）
-- [ ] Doctor 删除 `UserId≠自己` 的医案 → 返回 403
-- [ ] 已打印医案删除处方 → 禁止（ERR-30404）
+- [ ] 删除权限 → 仅 Admin/SuperAdmin（医生不可删除医案——未完成用「取消」物理删，已完成不可动）
+- [ ] 未完成医案删除 → 提示改用取消（物理删除）
 
 **业务规则**:
-1. 删除 = 软删除（IsDeleted=true）
-2. 权限检查：Doctor 仅自己；Admin 全部
-3. **删除权限 = 编辑权限**
+1. 删除 = 软删除（IsDeleted=true），**仅用于已完成医案**（2026-08-03 决策：未完成取消=物理删，已完成删除=软删）
+2. 权限检查：仅 Admin/SuperAdmin
+3. **删除权限 = 编辑权限**（Admin 可编辑已完成医案，删除=软删）
 4. 批量删除 IDs 列表非空校验
-5. 已打印医案受打印保护
+5. 未完成医案不可删除（走「取消」= 物理删除）
 
 **双模式**: 远程 `DELETE /api/v1/medicalcases/{id}` 或 `POST /api/v1/medicalcases/batch-delete`；本地一致。
 
@@ -755,3 +757,4 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 | 2026-06-28 | US-MC-011 业务规则压缩（引用 BR-003）；19 个 US 双模式表改一行格式；实现参考路径精简 | spec S3 批次2 提炼 |
 | 2026-06-28 | US-MC-018 加交叉引用注；US-MC-008/009 加与 US-MC-006 边界说明 | plan Task 7 边缘 US 修正 |
 | 2026-08-03 | **BR-000 修订为「接诊即建」**：StartVisit/QuickVisit/本地模式原子创建 MedicalCase(Active)+Registration(InProgress)；状态机注释同步 | 产品决策（消除 BR-000 与 US-REG-005 矛盾） |
+| 2026-08-03 | **医案状态机重构（医案专题）**：取消=物理删除（不判内容，无 Cancelled 状态）；已完成只可软删（Admin）；未完成不可打印；打印保护简化为 IsPrinted 标记；REG-BR-005 放弃恢复；无 Status 字段 | 产品决策（场景驱动生命周期设计） |

@@ -156,6 +156,8 @@
 
 **医疗行业依据**：HIPAA 要求 ePHI 可追溯不可丢，禁用和归档的审计级别不同——禁用只需记录操作，归档需记录归档原因 + 审批人。
 
+> **医案取消语义（2026-08-03 决策）**：医案**取消 = 物理删除**（未完成医案 Active/Suspended 取消即物理删除，不判断是否有内容，无状态残留）；`IsDeleted` 软删除**仅用于管理员清理已完成医案**。医案无 `Status` 字段（只需 `CaseStatus` 管理生命周期）。详见 [07-medical-cases.md](../02-requirements/07-medical-cases.md) US-MC-014/015。
+
 ### 5.2 适用范围
 
 | 实体类别 | 需要两字段？ | 实体 | 理由 |
@@ -173,7 +175,7 @@
 | HerbModel | `CommonStatus Status` | `IsDeleted` | — |
 | FormulaModel | `CommonStatus Status` | `IsDeleted` | `FormulaValidationStatus` |
 | PatientModel | `CommonStatus Status` | `IsDeleted` | — |
-| MedicalCaseModel | — | `IsDeleted` | `MedicalCaseStatus` (Active/Suspended/Completed) |
+| MedicalCaseModel | — | `IsDeleted`（仅已完成医案软删，2026-08-03） | `MedicalCaseStatus` (Active/Suspended/Completed) |
 | RegistrationModel | — | `IsDeleted` | `RegistrationStatus` (Waiting/InProgress/Completed/Cancelled) |
 | ConsultationModel | — | `IsDeleted` | — |
 | PrescriptionModel | — | — | — |
@@ -184,7 +186,8 @@
 
 | 日期 | 变更 |
 |------|------|
-| 2026-08-03 | v4.1 权限决策四连（四角色需求审查）：① 患者删除/禁用仅 Admin+（医生/前台不可删）；② 前台不可查看药材/验方；③ 打印仅 Doctor（管理员可查打印记录）；④ Admin 挂号只读查看。矩阵/策略映射/问题清单同步 |
+| 2026-08-03 | v4.4 医案状态机注（§5 数据管理规则）：取消=物理删除、软删仅已完成、无 Status 字段 |
+| 2026-08-03 | v4.3 权限边界更新（四角色需求审查）：Admin 挂号只读查看 + 打印记录查看；Doctor/Receptionist 患者删除/禁用 ❌；前台不涉及药材/验方（决策确认） |
 | 2026-08-02 | §五 新增数据管理规则：两字段模式（禁用+软删除）定义、适用范围（资源类/流程类/从属类/审计类）、实体状态字段映射 |
 | 2026-08-02 | v4.0 新建：从 02-personas.md 拆分；修正代码策略映射（实际代码与文档偏差）；增加 P0/P1/P2 分级 |
 | 2026-06-28 | 初始权限矩阵（含在 personas 中） |
