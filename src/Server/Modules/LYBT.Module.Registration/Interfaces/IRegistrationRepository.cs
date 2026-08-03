@@ -1,5 +1,6 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
+using Microsoft.EntityFrameworkCore.Storage;
 using RegistrationEntity = LYBT.Entities.Registrations.Registration;
 
 namespace LYBT.Module.Registration.Interfaces;
@@ -9,6 +10,11 @@ namespace LYBT.Module.Registration.Interfaces;
 /// </summary>
 public interface IRegistrationRepository
 {
+    /// <summary>
+    /// 开启数据库事务（接诊即建：Registration + MedicalCase 原子提交）
+    /// </summary>
+    Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
+
     /// <summary>
     /// 根据ID获取挂号记录
     /// </summary>

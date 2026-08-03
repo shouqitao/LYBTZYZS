@@ -116,7 +116,7 @@
                         </ComboBox>
                     </StackPanel>
 
-                    <!-- 第四行：账户状态 -->
+                    <!-- 第四行：账户状态、挂号费 -->
                     <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,24,24"
                                 Visibility="{Binding ShowStatus, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
                         <TextBlock Text="账户状态" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
@@ -131,6 +131,15 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
                     </StackPanel>
+
+                    <StackPanel Grid.Row="3" Grid.Column="1" Margin="0,0,0,24">
+                        <TextBlock Text="挂号费 (元)" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"
+                                   ToolTip="医生挂号费，前台/快速看诊创建挂号时自动带出（REG-BR-009）"/>
+                        <TextBox TabIndex="8" Text="{Binding RegistrationFee, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 MinHeight="44"
+                                 Padding="12,10"/>
+                    </StackPanel>
                 </Grid>
             </controls:InfoCard.Content>
         </controls:InfoCard>
@@ -138,7 +147,7 @@
         <!-- 备注卡片 -->
         <controls:InfoCard Title="备注">
             <controls:InfoCard.Content>
-                <TextBox TabIndex="8" Text="{Binding User.Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                <TextBox TabIndex="9" Text="{Binding User.Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          Style="{StaticResource MaterialDesignOutlinedTextBox}"
                          TextWrapping="Wrap"
                          AcceptsReturn="True"

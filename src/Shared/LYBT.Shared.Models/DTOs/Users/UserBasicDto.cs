@@ -25,6 +25,8 @@ public record UserBasicDto
     public bool MustChangeOnNextLogin { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; init; }
+    /// <summary>挂号费(元) - REG-BR-009: 医生挂号费，前台/QuickVisit 创建挂号时自动带出</summary>
+    public decimal RegistrationFee { get; init; }
     public string? Remark { get; init; }
 }
 

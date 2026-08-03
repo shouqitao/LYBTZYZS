@@ -14,6 +14,7 @@ public static class UserMapper
         Role = entity.Role,
         Status = entity.Status,
         LastLoginTime = entity.LastLoginAt,
+        RegistrationFee = entity.RegistrationFee,
         CreatedAt = entity.CreatedAt
     };
 
@@ -28,6 +29,7 @@ public static class UserMapper
         Email = entity.Email,
         PinYinCode = entity.PinYinCode,
         LastLoginTime = entity.LastLoginAt,
+        RegistrationFee = entity.RegistrationFee,
         CreatedAt = entity.CreatedAt,
         UpdatedAt = entity.UpdatedAt,
         Remark = entity.Remark

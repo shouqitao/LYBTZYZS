@@ -122,6 +122,16 @@ public class UserItem : BindableBase
         set => SetProperty(ref _updatedAt, value);
     }
 
+    /// <summary>
+    /// 挂号费(元) - REG-BR-009
+    /// </summary>
+    private decimal _registrationFee;
+    public decimal RegistrationFee
+    {
+        get => _registrationFee;
+        set => SetProperty(ref _registrationFee, value);
+    }
+
     private bool _isSelected;
     public bool IsSelected
     {
@@ -241,6 +251,7 @@ public class UserItem : BindableBase
         Status = dto.Status;
         CreatedAt = dto.CreatedAt;
         UpdatedAt = dto.UpdatedAt;
+        RegistrationFee = dto.RegistrationFee;
     }
 
     #endregion

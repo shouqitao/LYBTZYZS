@@ -211,6 +211,8 @@ public partial class RegistrationCreateDialogViewModel : DialogViewModelBase
 
     partial void OnSelectedDoctorChanged(UserListDto? value)
     {
+        // REG-BR-009: 挂号费从医生自动带出（可改，义诊/优惠填 0）
+        RegistrationFee = value?.RegistrationFee ?? 0m;
         OnPropertyChanged(nameof(CanConfirm));
     }
 

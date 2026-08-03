@@ -41,6 +41,10 @@ public class UserListDto
     [DisplayName("最后登录时间")]
     public DateTime? LastLoginTime { get; set; }
 
+    /// <summary>挂号费(元) - REG-BR-009: 医生挂号费，前台/QuickVisit 创建挂号时自动带出</summary>
+    [DisplayName("挂号费")]
+    public decimal RegistrationFee { get; set; }
+
     /// <summary>创建时间</summary>
     [DisplayName("创建时间")]
     public DateTime CreatedAt { get; set; }

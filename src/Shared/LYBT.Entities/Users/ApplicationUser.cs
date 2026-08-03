@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Common;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Identity;
@@ -44,6 +45,11 @@ public class ApplicationUser : IdentityUser<Guid>, IAuditableEntity, ISoftDeleta
     /// <summary>最后登录时间 (UTC)</summary>
     [DisplayName("最后登录时间")]
     public DateTime? LastLoginAt { get; set; }
+
+    /// <summary>挂号费 (元) - REG-BR-009: 医生挂号费，前台/QuickVisit 创建挂号时自动带出</summary>
+    [Column(TypeName = "decimal(10,2)")]
+    [DisplayName("挂号费")]
+    public decimal RegistrationFee { get; set; }
 
     /// <summary>备注</summary>
     [DisplayName("备注")]
@@ -91,7 +97,8 @@ public class ApplicationUser : IdentityUser<Guid>, IAuditableEntity, ISoftDeleta
         string? phoneNumber = null,
         string? email = null,
         string? remark = null,
-        Guid? createdBy = null)
+        Guid? createdBy = null,
+        decimal registrationFee = 0m)
     {
         if (string.IsNullOrWhiteSpace(userName))
             throw new ArgumentException("用户名不能为空", nameof(userName));
@@ -109,6 +116,7 @@ public class ApplicationUser : IdentityUser<Guid>, IAuditableEntity, ISoftDeleta
             PhoneNumber = phoneNumber?.Trim(),
             Email = email?.Trim(),
             Remark = remark?.Trim(),
+            RegistrationFee = registrationFee,
             Status = CommonStatus.Enabled,
             CreatedBy = createdBy,
             CreatedAt = DateTime.UtcNow
@@ -118,7 +126,7 @@ public class ApplicationUser : IdentityUser<Guid>, IAuditableEntity, ISoftDeleta
     /// <summary>
     /// 更新用户基本信息。
     /// </summary>
-    public void UpdateProfile(string realName, string? phoneNumber, string? email, string? remark, Guid updatedBy)
+    public void UpdateProfile(string realName, string? phoneNumber, string? email, string? remark, Guid updatedBy, decimal? registrationFee = null)
     {
         if (string.IsNullOrWhiteSpace(realName))
             throw new ArgumentException("真实姓名不能为空", nameof(realName));
@@ -127,6 +135,8 @@ public class ApplicationUser : IdentityUser<Guid>, IAuditableEntity, ISoftDeleta
         PhoneNumber = phoneNumber?.Trim();
         Email = email?.Trim();
         Remark = remark?.Trim();
+        if (registrationFee.HasValue)
+            RegistrationFee = registrationFee.Value;
         UpdatedBy = updatedBy;
         UpdatedAt = DateTime.UtcNow;
     }

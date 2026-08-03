@@ -47,7 +47,8 @@ namespace LYBT.Desktop.Users.ViewModels
                 LastLoginTime = dto.LastLoginTime,
                 CreatedAt = dto.CreatedAt,
                 UpdatedAt = dto.UpdatedAt,
-                Remark = dto.Remark
+                Remark = dto.Remark,
+                RegistrationFee = dto.RegistrationFee
             };
             IsDirty = false;
         }
@@ -75,7 +76,8 @@ namespace LYBT.Desktop.Users.ViewModels
                 PhoneNumber = User.PhoneNumber?.Trim(),
                 Email = User.Email?.Trim(),
                 Role = User.Role,
-                Remark = User.Remark?.Trim()
+                Remark = User.Remark?.Trim(),
+                RegistrationFee = User.RegistrationFee
             };
         }
 

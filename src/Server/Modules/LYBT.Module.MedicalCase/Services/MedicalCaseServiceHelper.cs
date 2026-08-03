@@ -144,7 +144,7 @@ namespace LYBT.Module.MedicalCases.Services
                     var activeCase = existingCases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Active);
                     logger.LogWarning("[SVC] MedicalCase -> ActiveCaseExists - PatientId={PatientId} CaseId={CaseId}",
                         patientId, activeCase?.Id);
-                    throw new BusinessException(EC.McActiveCaseExists, "该患者已有进行中的医案，请先完成现有医案");
+                    throw new BusinessException(EC.McActiveCaseExists, "该患者已有进行中的医案，请先完成或重开现有医案");
                 }
 
                 if (MedicalCaseBusinessRules.HasSuspendedCase(existingStatuses))

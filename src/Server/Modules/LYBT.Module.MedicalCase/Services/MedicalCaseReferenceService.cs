@@ -42,7 +42,7 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Guid?> CreateQuickVisitMedicalCaseAsync(Guid patientId, Guid registrationId, Guid doctorId, CancellationToken cancellationToken = default)
+        public async Task<Guid?> CreateMedicalCaseForRegistrationAsync(Guid patientId, Guid registrationId, Guid doctorId, CancellationToken cancellationToken = default)
         {
             var input = new MedicalCaseInputDto
             {

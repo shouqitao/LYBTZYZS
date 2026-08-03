@@ -62,6 +62,10 @@ public class UserDetailDto
     [DisplayName("更新时间")]
     public DateTime? UpdatedAt { get; set; }
 
+    /// <summary>挂号费(元) - REG-BR-009: 医生挂号费，前台/QuickVisit 创建挂号时自动带出</summary>
+    [DisplayName("挂号费")]
+    public decimal RegistrationFee { get; set; }
+
     /// <summary>备注</summary>
     [DisplayName("备注")]
     public string? Remark { get; set; }

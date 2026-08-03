@@ -131,6 +131,14 @@ namespace LYBT.Desktop.Users.Models.Items
             set => SetPropertyAndValidate(ref _remark, value);
         }
 
+        /// <summary>挂号费(元) - REG-BR-009: 医生挂号费</summary>
+        private decimal _registrationFee;
+        public decimal RegistrationFee
+        {
+            get => _registrationFee;
+            set => SetProperty(ref _registrationFee, value);
+        }
+
         /// <summary>用户名是否只读（编辑时不可改）</summary>
         public bool IsUserNameReadOnly => Id != Guid.Empty;
 
@@ -163,7 +171,8 @@ namespace LYBT.Desktop.Users.Models.Items
                 LastLoginTime = LastLoginTime,
                 CreatedAt = CreatedAt,
                 UpdatedAt = UpdatedAt,
-                Remark = Remark
+                Remark = Remark,
+                RegistrationFee = RegistrationFee
             };
             return clone;
         }

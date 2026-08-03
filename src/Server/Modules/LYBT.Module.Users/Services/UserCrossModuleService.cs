@@ -51,6 +51,7 @@ public class UserCrossModuleService : IUserCrossModuleService
             MustChangeOnNextLogin = u.MustChangeOnNextLogin,
             CreatedAt = u.CreatedAt,
             UpdatedAt = u.UpdatedAt,
+            RegistrationFee = u.RegistrationFee,
             Remark = u.Remark
         };
     }
@@ -80,6 +81,7 @@ public class UserCrossModuleService : IUserCrossModuleService
             MustChangeOnNextLogin = u.MustChangeOnNextLogin,
             CreatedAt = u.CreatedAt,
             UpdatedAt = u.UpdatedAt,
+            RegistrationFee = u.RegistrationFee,
             Remark = u.Remark,
             PasswordHash = u.PasswordHash ?? string.Empty
         };

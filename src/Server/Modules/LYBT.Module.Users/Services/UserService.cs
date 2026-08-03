@@ -63,7 +63,8 @@ internal class UserService : IUserService
             dto.PhoneNumber,
             dto.Email,
             dto.Remark,
-            operatorId);
+            operatorId,
+            dto.RegistrationFee);
 
         await _userRepository.UpdateAsync(user, ct);
         return Result<UserDetailDto>.Success(UserMapper.ToDetailDto(user));

@@ -67,6 +67,10 @@ namespace LYBT.Shared.Models.Contracts.Users
         [DisplayName("用户角色")]
         public UserRole? Role { get; set; } = UserRole.Doctor;
 
+        /// <summary>挂号费(元) - REG-BR-009: 医生挂号费，前台/QuickVisit 创建挂号时自动带出</summary>
+        [DisplayName("挂号费")]
+        public decimal RegistrationFee { get; set; }
+
         /// <summary>备注</summary>
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         [DisplayName("备注")]

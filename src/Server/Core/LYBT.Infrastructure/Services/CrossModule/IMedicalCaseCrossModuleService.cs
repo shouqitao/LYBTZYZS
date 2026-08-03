@@ -19,7 +19,7 @@ public interface IMedicalCaseCrossModuleService
     Task<List<MedicalCaseReferenceDto>> GetRecentMedicalCasesAsync(Guid patientId, int count, CancellationToken cancellationToken = default);
 
     /// <summary>为快速看诊创建医案并关联挂号</summary>
-    Task<Guid?> CreateQuickVisitMedicalCaseAsync(Guid patientId, Guid registrationId, Guid doctorId, CancellationToken cancellationToken = default);
+    Task<Guid?> CreateMedicalCaseForRegistrationAsync(Guid patientId, Guid registrationId, Guid doctorId, CancellationToken cancellationToken = default);
 }
 
 

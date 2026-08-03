@@ -133,6 +133,14 @@ namespace LYBT.Desktop.Users.Models
             set => SetPropertyAndValidate(ref _remark, value);
         }
 
+        /// <summary>挂号费(元) - REG-BR-009</summary>
+        private decimal _registrationFee;
+        public decimal RegistrationFee
+        {
+            get => _registrationFee;
+            set => SetProperty(ref _registrationFee, value);
+        }
+
         /// <summary>创建空模型</summary>
         public static UserDetailModel CreateNew()
         {
@@ -160,7 +168,8 @@ namespace LYBT.Desktop.Users.Models
                 LastLoginTime = LastLoginTime,
                 CreatedAt = CreatedAt,
                 UpdatedAt = UpdatedAt,
-                Remark = Remark
+                Remark = Remark,
+                RegistrationFee = RegistrationFee
             };
             // 直接赋值拼音码，避免设置RealName时触发自动生成
             clone._realName = RealName;

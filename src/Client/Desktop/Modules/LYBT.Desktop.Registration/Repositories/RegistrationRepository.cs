@@ -99,8 +99,9 @@ public sealed class RegistrationRepository : ApiClientRepositoryBase<Registratio
                 var response = await _apiClient.Registrations.StartVisitAsync(id);
                 if (!response.Success)
                 {
+                    // 抛出服务器业务消息（如 BR-001 重开现有医案），经 Service 映射后展示给用户
                     Logger.LogWarning("[REPO] Registration.StartVisit failed: {Message}", response.Message);
-                    return null;
+                    throw new InvalidOperationException(response.Message ?? "接诊失败");
                 }
 
                 Logger.LogInformation("[REPO] Registration.StartVisit completed - Id={Id}, MedicalCaseId={McId}",

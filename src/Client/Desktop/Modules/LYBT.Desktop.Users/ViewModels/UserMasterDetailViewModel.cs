@@ -204,7 +204,8 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
                 LastLoginTime = result.Data.LastLoginTime,
                 CreatedAt = result.Data.CreatedAt,
                 UpdatedAt = result.Data.UpdatedAt,
-                Remark = result.Data.Remark
+                Remark = result.Data.Remark,
+                RegistrationFee = result.Data.RegistrationFee
             });
 
             var detail = new UserDetailModel
@@ -220,7 +221,8 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
                 LastLoginTime = result.Data.LastLoginTime,
                 CreatedAt = result.Data.CreatedAt,
                 UpdatedAt = result.Data.UpdatedAt,
-                Remark = result.Data.Remark
+                Remark = result.Data.Remark,
+                RegistrationFee = result.Data.RegistrationFee
             };
 
             MasterDetailServices.DetailEditor.LoadDetail(detail);
@@ -273,6 +275,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
                 detail.CreatedAt = result.Data.CreatedAt;
                 detail.UpdatedAt = result.Data.UpdatedAt;
                 detail.Remark = result.Data.Remark;
+                detail.RegistrationFee = result.Data.RegistrationFee;
 
                 Logger.LogInformation("用户{Action}成功: {UserId} - {UserName}",
                     UserEditor.User.Id == Guid.Empty ? "创建" : "更新", result.Data.Id, result.Data.UserName);

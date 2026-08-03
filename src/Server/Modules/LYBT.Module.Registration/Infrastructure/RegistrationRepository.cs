@@ -3,6 +3,7 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using RegistrationEntity = LYBT.Entities.Registrations.Registration;
 
 namespace LYBT.Module.Registration.Infrastructure;
@@ -17,6 +18,12 @@ public class RegistrationRepository : IRegistrationRepository
     public RegistrationRepository(AppDbContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
+    }
+
+    /// <inheritdoc/>
+    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Database.BeginTransactionAsync(cancellationToken);
     }
 
     /// <inheritdoc/>

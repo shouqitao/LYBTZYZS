@@ -44,7 +44,8 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
             dto.PhoneNumber,
             dto.Email,
             dto.Remark,
-            request.CurrentUserId);
+            request.CurrentUserId,
+            dto.RegistrationFee);
 
         var password = dto.Password ?? Guid.NewGuid().ToString("N")[..12];
         var result = await _userManager.CreateAsync(user, password);

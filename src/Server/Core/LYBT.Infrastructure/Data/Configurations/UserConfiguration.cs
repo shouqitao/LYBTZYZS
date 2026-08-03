@@ -20,6 +20,9 @@ public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
         builder.Property(u => u.Status).HasConversion<int>();
         builder.Property(u => u.Role).HasConversion<int>();
 
+        // 挂号费（REG-BR-009）：decimal(10,2)，默认 0
+        builder.Property(u => u.RegistrationFee).HasColumnType("decimal(10,2)").HasDefaultValue(0m);
+
         // 软删除全局查询过滤器
         builder.HasQueryFilter(u => !u.IsDeleted);
 
