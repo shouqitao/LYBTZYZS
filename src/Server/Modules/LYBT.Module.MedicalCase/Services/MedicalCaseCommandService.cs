@@ -301,6 +301,9 @@ namespace LYBT.Module.MedicalCases.Services
                 await _itemService.HandlePrescriptionUpdateAsync(medicalCase, request.Prescription);
             }
 
+            // 打印保护简化（2026-08-03）：打印后修改内容 → IsPrinted=false、PrintVersion++（提示重新打印）
+            MedicalCaseServiceHelper.ResetPrintMarker(medicalCase);
+
             // 保存
             var result = await _repository.UpdateAsync(medicalCase, cancellationToken);
             await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);

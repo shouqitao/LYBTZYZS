@@ -2,6 +2,7 @@ using MediatR;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.MedicalCases.Mappers;
+using LYBT.Module.MedicalCases.Services;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
@@ -238,6 +239,9 @@ public class SaveMedicalCaseCommandHandler(
                 }
             }
         }
+
+        // 打印保护简化（2026-08-03）：打印后修改内容 → IsPrinted=false、PrintVersion++（提示重新打印）
+        MedicalCaseServiceHelper.ResetPrintMarker(medicalCase);
 
         var result = await repository.UpdateAsync(medicalCase, ct);
         var dto = mapper.MapToMedicalCaseDetailDto(result);

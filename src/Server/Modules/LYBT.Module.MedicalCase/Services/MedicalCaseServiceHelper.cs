@@ -215,6 +215,18 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
+        /// 打印保护简化（2026-08-03）：打印后修改内容 → IsPrinted=false、PrintVersion++（提示重新打印）
+        /// IsPrinted 降级为打印状态标记，不再作为操作限制触发器（隔天由 IsLocked 覆盖）
+        /// </summary>
+        public static void ResetPrintMarker(MedicalCase medicalCase)
+        {
+            if (!medicalCase.IsPrinted) return;
+
+            medicalCase.IsPrinted = false;
+            medicalCase.PrintVersion += 1;
+        }
+
+        /// <summary>
         /// 删除权限验证: Admin可删除所有，非Admin只能删除自己创建的进行中医案
         /// </summary>
         public static void EnsureCanDelete(

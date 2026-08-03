@@ -75,6 +75,12 @@ public class PrescriptionPrintHandler
                 return PrintResult.Failed("打印服务未配置");
             }
 
+            // 2026-08-03 决策: 仅已完成医案可打印（未完成医案不可打印）
+            if (_medicalCaseService.Current?.CaseStatus != MedicalCaseStatus.Completed)
+            {
+                return PrintResult.Failed("仅已完成医案可打印");
+            }
+
             // 获取处方数据（从缓存或Provider构建）
             var prescription = BuildPrescriptionDetailDto(medicalCaseId, prescriptionProvider);
             if (prescription == null)
@@ -114,6 +120,10 @@ public class PrescriptionPrintHandler
 
             if (_printService == null)
                 return PrintResult.Failed("打印服务未配置");
+
+            // 2026-08-03 决策: 仅已完成医案可打印（未完成医案不可打印）
+            if (_medicalCaseService.Current?.CaseStatus != MedicalCaseStatus.Completed)
+                return PrintResult.Failed("仅已完成医案可打印");
 
             var prescription = BuildPrescriptionDetailDto(medicalCaseId, prescriptionProvider);
             if (prescription == null)
@@ -200,10 +210,7 @@ public class PrescriptionPrintHandler
 
             // T4-S5-10: 签名 - 自动绑定当前用户
             DoctorName = doctorName,
-            PrescriptionDate = DateTime.Now,
-
-            // D3: 草稿水印 -- 非 Completed 状态即为草稿
-            IsDraft = _medicalCaseService.Current?.CaseStatus != MedicalCaseStatus.Completed
+            PrescriptionDate = DateTime.Now
         };
 
         // T4-S5-11: 计算总价（含折扣）

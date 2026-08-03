@@ -6,7 +6,9 @@ using LYBT.Desktop.MedicalCase.ViewModels.Components;
 using LYBT.Desktop.Printing.Interfaces;
 using LYBT.Desktop.Printing.Models;
 using LYBT.Shared.Configuration.Options.Client;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Tests.Desktop;
@@ -15,6 +17,7 @@ namespace LYBT.Tests.Desktop;
 /// PrescriptionPrintHandler 单元测试
 /// CODE-24: 验证空处方打印应被阻止
 /// D2: 验证诊所信息注入到打印模型
+/// 2026-08-03: 仅已完成医案可打印（未完成医案不可打印）
 /// </summary>
 public class PrescriptionPrintHandlerTests
 {
@@ -28,6 +31,7 @@ public class PrescriptionPrintHandlerTests
     public PrescriptionPrintHandlerTests()
     {
         _medicalCaseService = Substitute.For<IMedicalCaseService>();
+        _medicalCaseService.Current.Returns(new MedicalCaseDetailDto { CaseStatus = MedicalCaseStatus.Completed });
         _repository = Substitute.For<IMedicalCaseRepository>();
         _sessionManager = Substitute.For<ISessionManager>();
         _clinicSettingsService = Substitute.For<IClinicSettingsService>();
@@ -98,5 +102,49 @@ public class PrescriptionPrintHandlerTests
         // Assert - CODE-24: null items should be blocked
         result.IsSuccess.Should().BeFalse();
         result.ErrorMessage.Should().Contain("无药材信息");
+    }
+
+    [Fact]
+    public async Task PrintPreviewAsync_NotCompleted_ShouldReturnFailed()
+    {
+        // Arrange - 2026-08-03: 未完成医案（Active）禁止打印
+        _medicalCaseService.Current.Returns(new MedicalCaseDetailDto { CaseStatus = MedicalCaseStatus.Active });
+        var prescription = new PrescriptionDetailDto
+        {
+            Id = Guid.NewGuid(),
+            DosageCount = 7,
+            Items = new List<PrescriptionItemDto> { new() { HerbName = "黄芪", Dosage = 15 } }
+        };
+        _medicalCaseService.CachedPrescription.Returns(prescription);
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.PrintPreviewAsync(Guid.NewGuid(), null, null, null);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("仅已完成医案可打印");
+    }
+
+    [Fact]
+    public async Task ExportPdfAsync_NotCompleted_ShouldReturnFailed()
+    {
+        // Arrange - 2026-08-03: 未完成医案（Suspended）禁止导出
+        _medicalCaseService.Current.Returns(new MedicalCaseDetailDto { CaseStatus = MedicalCaseStatus.Suspended });
+        var prescription = new PrescriptionDetailDto
+        {
+            Id = Guid.NewGuid(),
+            DosageCount = 7,
+            Items = new List<PrescriptionItemDto> { new() { HerbName = "黄芪", Dosage = 15 } }
+        };
+        _medicalCaseService.CachedPrescription.Returns(prescription);
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.ExportPdfAsync(Guid.NewGuid(), null, null, null);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("仅已完成医案可打印");
     }
 }

@@ -80,18 +80,6 @@ public static class PrescriptionPdfExporter
                     // 费用行
                     ComposeFeeRow(col, model);
                 });
-
-                // D3: 草稿水印
-                if (model.IsDraft)
-                {
-                    page.Foreground()
-                        .AlignCenter().AlignMiddle()
-                        .Rotate(-35)
-                        .Text("草 稿")
-                        .FontSize(72).Bold()
-                        .FontFamily("Microsoft YaHei")
-                        .FontColor(Color.FromHex("#30FF0000"));
-                }
             });
         }).GeneratePdf(filePath);
     }
