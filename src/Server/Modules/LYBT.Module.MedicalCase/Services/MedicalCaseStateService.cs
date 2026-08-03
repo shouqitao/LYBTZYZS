@@ -20,6 +20,11 @@ namespace LYBT.Module.MedicalCases.Services
     /// </summary>
     public class MedicalCaseStateService : BaseService<MedicalCase>, IMedicalCaseStateService
     {
+        /// <summary>
+        /// 审计操作类型：0=创建 1=更新 2=状态变更 3=删除 4=取消（US-MC-014 取消统计）
+        /// </summary>
+        private const int AuditOperationCancel = 4;
+
         private readonly IMedicalCaseRepository _repository;
         private readonly ICrossModuleService _crossModule;
         private readonly ICacheInvalidationService _cacheInvalidation;
@@ -223,8 +228,10 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 取消医案（统一为软删除）
-        /// 原 LIFECYCLE-011: 设置 IsDeleted=true 替代 CaseStatus=Cancelled
+        /// 取消医案（US-MC-014：物理删除）
+        /// 2026-08-03 决策：取消 = 物理删除（不判内容），级联清除聚合
+        /// （MedicalCase + Consultation + Prescription + PrescriptionItems + PrintLogs），
+        /// 审计记录 OperationType=Cancel 用于统计；已完成医案不可取消（只可软删，Admin 清理）。
         /// </summary>
         public async Task<MedicalCase?> CancelAsync(
             Guid id,
@@ -246,7 +253,7 @@ namespace LYBT.Module.MedicalCases.Services
             // 权限检查
             MedicalCaseServiceHelper.EnsureCanEdit(medicalCase, operatorId, isAdmin, "Cancel", _logger);
 
-            // T5-P2-16: 非当天本人取消需原因
+            // T5-P2-16: 非当天本人取消需原因（US-MC-014 保留审计理由）
             var isSameDay = medicalCase.CreatedAt.Date == DateTime.Today;
             var isOwner = medicalCase.UserId == operatorId;
             if (!(isSameDay && isOwner) && string.IsNullOrWhiteSpace(reason))
@@ -256,7 +263,7 @@ namespace LYBT.Module.MedicalCases.Services
                 throw new BusinessException(EC.McCancelReasonRequired, "非当天本人创建的医案取消时必须提供取消原因");
             }
 
-            // 业务规则验证：只有Draft/Active状态可以取消
+            // 业务规则验证：已完成医案不可取消（只可软删，Admin 清理）
             if (medicalCase.CaseStatus == MedicalCaseStatus.Completed)
             {
                 _logger.LogWarning("[SVC] MedicalCase.Cancel → AlreadyCompleted - MedicalCaseId={MedicalCaseId}", id);
@@ -270,23 +277,63 @@ namespace LYBT.Module.MedicalCases.Services
                 throw new BusinessException(EC.McAlreadyDeleted, "医案已被删除");
             }
 
-            // DDD: 委托给聚合根域方法
-            medicalCase.SoftDelete();
+            // 物理删除聚合根（DB 级联清除 Consultation/Prescription/Items/PrintLogs）
+            var deleted = await _repository.HardDeleteAsync(medicalCase, cancellationToken);
+            if (!deleted)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.Cancel → HardDeleteFailed - MedicalCaseId={MedicalCaseId}", id);
+                return null;
+            }
 
-            // 保存
-            var result = await _repository.UpdateAsync(medicalCase, cancellationToken);
+            // 审计记录「取消」（US-MC-014；US-MC-017 异常隔离：审计失败不影响取消结果）
+            await TryWriteCancelAuditAsync(medicalCase, operatorId, isAdmin, reason, cancellationToken);
 
-            // G-9: 医案取消后，根据挂号来源回退挂号状态
-            await RollbackRegistrationAsync(id, result.CaseNumber ?? "N/A", cancellationToken);
+            // G-9: 医案取消后，根据挂号来源回退挂号状态（Receptionist→Waiting / Doctor→Cancelled）
+            await RollbackRegistrationAsync(id, medicalCase.CaseNumber ?? "N/A", cancellationToken);
 
             await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
 
-            return result;
+            return medicalCase;
+        }
+
+        /// <summary>
+        /// 审计记录「取消」操作（OperationType=Cancel=4）
+        /// US-MC-017 异常隔离：写入失败仅记录 Error 日志，不影响主业务流程
+        /// </summary>
+        private async Task TryWriteCancelAuditAsync(
+            MedicalCase medicalCase,
+            Guid operatorId,
+            bool isAdmin,
+            string? reason,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var (operatorName, operatorRole) = await MedicalCaseServiceHelper
+                    .GetOperatorInfoAsync(_crossModule, operatorId, isAdmin, _logger, cancellationToken);
+
+                await _repository.AddAuditLogAsync(new MedicalCaseAuditLog
+                {
+                    MedicalCaseId = medicalCase.Id,
+                    OperatorId = operatorId,
+                    OperatorName = operatorName,
+                    OperatorRole = (int)operatorRole,
+                    OperationType = AuditOperationCancel,
+                    Reason = reason
+                }, cancellationToken);
+
+                _logger.LogInformation("[SVC] MedicalCase.Cancel → AuditRecorded - MedicalCaseId={MedicalCaseId}", medicalCase.Id);
+            }
+            catch (Exception ex)
+            {
+                // 审计隔离：记录失败不影响医案取消（US-MC-017）
+                _logger.LogError(ex, "[SVC] MedicalCase.Cancel → AuditWriteFailed - MedicalCaseId={MedicalCaseId}", medicalCase.Id);
+            }
         }
 
         /// <summary>
         /// G-9: 医案取消后回退挂号状态
-        /// - Receptionist来源: 回退到Waiting状态，保留MedicalCaseId（用于恢复）
+        /// - Receptionist来源: 回退到Waiting，清除MedicalCaseId（原医案已物理删除，回来重新接诊时新建）
         /// - Doctor来源: 设置为Cancelled（闭环）
         /// </summary>
         private async Task RollbackRegistrationAsync(Guid medicalCaseId, string caseNumber, CancellationToken cancellationToken = default)

@@ -5,6 +5,7 @@ using LYBT.Module.MedicalCases.Application.Commands;
 using LYBT.Module.MedicalCases.Application.Queries;
 using LYBT.Module.MedicalCases.Controllers;
 using LYBT.Module.MedicalCases.Interfaces;
+using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -31,13 +32,17 @@ namespace LYBT.WebAPI.Controllers
     [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class MedicalCasesController : BaseMedicalCasesController
     {
+        private readonly MedicalCaseMapper _medicalCaseMapper;
+
         public MedicalCasesController(
             ISender sender,
             ILogger<MedicalCasesController> logger,
             IMedicalCaseCommandService medicalCaseCommandService,
-            IMedicalCaseStateService medicalCaseStateService)
+            IMedicalCaseStateService medicalCaseStateService,
+            MedicalCaseMapper medicalCaseMapper)
             : base(sender, logger, medicalCaseCommandService, medicalCaseStateService)
         {
+            _medicalCaseMapper = medicalCaseMapper ?? throw new ArgumentNullException(nameof(medicalCaseMapper));
         }
 
         /// <summary>
@@ -272,12 +277,14 @@ namespace LYBT.WebAPI.Controllers
                 return Success("医案已完成");
             }
 
-            var result = await Sender.Send(new UpdateMedicalCaseStatusCommand(id, request.Status, operatorId, isAdmin), ct);
-            if (!result.IsSuccess)
-                return NotFound(result.Error ?? "医案不存在");
+            // T4-B9: 统一走 StateService 状态机校验（仅允许 Suspended↔Active，Completed 走 CompleteAsync）
+            var entity = await _medicalCaseStateService.UpdateStatusAsync(id, request.Status, ct);
+            if (entity == null)
+                return NotFound("医案不存在");
 
+            var dto = _medicalCaseMapper.MapToMedicalCaseDetailDto(entity);
             _logger.LogInformation("医案状态更新成功，MedicalCaseId: {Id}, NewStatus: {Status}", id, request.Status);
-            return Success(result.Value!, "状态更新成功");
+            return Success(dto, "状态更新成功");
         }
 
         /// <summary>

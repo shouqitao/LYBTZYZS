@@ -1,6 +1,7 @@
 using System.Threading;
 using LYBT.Entities.MedicalCases;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCases.Repositories
 {
@@ -30,6 +31,31 @@ namespace LYBT.Module.MedicalCases.Repositories
         {
             return await _context.MedicalCaseAuditLogs
                 .CountAsync(l => l.MedicalCaseId == medicalCaseId && !l.IsDeleted, cancellationToken);
+        }
+
+        /// <summary>
+        /// 记录医案审计日志（US-MC-017）
+        /// 审计表无 FK 约束，医案物理删除后审计记录仍保留用于统计
+        /// </summary>
+        public async Task AddAuditLogAsync(MedicalCaseAuditLog log, CancellationToken cancellationToken = default)
+        {
+            await _context.MedicalCaseAuditLogs.AddAsync(log, cancellationToken);
+            await SaveChangesAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// 物理删除医案（US-MC-014 取消语义）
+        /// Remove 聚合根，Consultation/Prescription/PrescriptionItems/PrintLogs 由 DB 级联删除
+        /// </summary>
+        public async Task<bool> HardDeleteAsync(MedicalCase entity, CancellationToken cancellationToken = default)
+        {
+            if (entity == null)
+                return false;
+
+            _context.MedicalCases.Remove(entity);
+            await SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("[REPO] MedicalCase.HardDelete - MedicalCaseId={MedicalCaseId}", entity.Id);
+            return true;
         }
 
         /// <summary>

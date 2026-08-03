@@ -70,15 +70,15 @@ namespace LYBT.Module.MedicalCases.Interfaces
             CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 取消医案
-        /// 业务规则：统一为软删除(IsDeleted=true)，保留审计日志
+        /// 取消医案（US-MC-014：物理删除）
+        /// 级联清除聚合 + 审计记录 OperationType=Cancel；已完成医案不可取消（只可软删）
         /// </summary>
         /// <param name="id">医案ID</param>
         /// <param name="operatorId">操作者ID</param>
         /// <param name="isAdmin">是否管理员</param>
-        /// <param name="reason">取消原因（审计时必填）</param>
+        /// <param name="reason">取消原因（非当天本人取消时必填）</param>
         /// <param name="cancellationToken">取消令牌</param>
-        /// <returns>更新后的医案实体</returns>
+        /// <returns>被物理删除的医案实体（null=未找到）</returns>
         Task<MedicalCase?> CancelAsync(
             Guid id,
             Guid operatorId,

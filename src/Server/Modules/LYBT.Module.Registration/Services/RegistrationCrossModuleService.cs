@@ -35,11 +35,13 @@ public class RegistrationCrossModuleService : IRegistrationCrossModuleService
 
         if (entity.Source == RegistrationSource.Receptionist)
         {
+            // US-MC-014: 前台来源回退 Waiting（原医案已物理删除，患者回来重新接诊时新建）
             entity.RevertToWaiting();
         }
         else
         {
-            entity.SoftDelete(entity.Id);
+            // US-MC-014: 医生来源自动取消（闭环）
+            entity.Cancel();
         }
 
         await _registrationRepository.UpdateAsync(entity, ct);

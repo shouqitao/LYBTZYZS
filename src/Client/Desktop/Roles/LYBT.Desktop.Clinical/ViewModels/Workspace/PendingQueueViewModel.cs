@@ -226,7 +226,7 @@ public partial class PendingQueueViewModel : ChildViewModelBase
 
         var message = $"患者 {pendingCase.PatientName ?? "未知"} 有未完成的医案。\n\n" +
             "点击「确定」继续看诊原医案\n" +
-            "点击「取消」关闭原医案并新建";
+            "点击「取消」关闭原医案（将永久删除，不可恢复）并新建";
 
         var choice = await dialogService.ShowConfirmAsync(message, "选择操作");
 

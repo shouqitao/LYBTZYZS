@@ -2,7 +2,10 @@ using System.Threading;
 using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Services;
 using LYBT.Module.MedicalCases.Interfaces;
+using LYBT.Shared.ExceptionHandling.Exceptions;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
+using EC = LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Module.MedicalCases.Services
 {
@@ -14,7 +17,8 @@ namespace LYBT.Module.MedicalCases.Services
     public partial class MedicalCaseCommandService : BaseService<MedicalCase>, IMedicalCaseCommandService
     {
         /// <summary>
-        /// 删除医案（软删除）
+        /// 删除医案（软删除）— Admin 清理路径
+        /// US-MC-015: 仅用于已完成医案；未完成医案走「取消」= 物理删除（MedicalCaseStateService.CancelAsync）
         /// 使用BaseRepository默认软删除机制（IsDeleted=true）
         /// </summary>
         public async Task<bool> DeleteAsync(Guid id, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default)
@@ -30,6 +34,14 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 权限检查: 确保操作者有权删除此医案
             MedicalCaseServiceHelper.EnsureCanDelete(medicalCase, operatorId, isAdmin, "Delete", _logger);
+
+            // US-MC-015: 软删除仅限已完成医案，未完成医案应使用「取消」（物理删除）
+            if (medicalCase.CaseStatus != MedicalCaseStatus.Completed)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.Delete → OnlyCompletedCanDelete - MedicalCaseId={MedicalCaseId} Status={Status}",
+                    id, medicalCase.CaseStatus);
+                throw new BusinessException(EC.McOnlyCompletedCanDelete, "仅已完成医案可删除，未完成医案请使用「取消」（物理删除）");
+            }
 
             // D2 FIX: 删除前回滚关联的挂号记录
             await _registrationCrossModule.HandleMedicalCaseCancelledAsync(id, cancellationToken);
@@ -72,6 +84,20 @@ namespace LYBT.Module.MedicalCases.Services
 
                     // 权限检查: 确保操作者有权删除此医案
                     MedicalCaseServiceHelper.EnsureCanDelete(entity, operatorId, isAdmin, "BatchDelete", _logger);
+
+                    // US-MC-015: 软删除仅限已完成医案，未完成医案应使用「取消」（物理删除）
+                    if (entity.CaseStatus != MedicalCaseStatus.Completed)
+                    {
+                        result.FailureCount++;
+                        result.FailedIds.Add(id);
+                        result.FailedItems.Add(new LYBT.Shared.Models.Contracts.Common.BatchOperationFailureItem
+                        {
+                            Id = id,
+                            Reason = "仅已完成医案可删除（未完成医案请使用取消）"
+                        });
+                        _logger.LogWarning("[SVC] MedicalCase.BatchDelete → OnlyCompletedCanDelete - MedicalCaseId={MedicalCaseId}", id);
+                        continue;
+                    }
 
                     entity.IsDeleted = true;
                     entity.UpdatedAt = DateTime.UtcNow;

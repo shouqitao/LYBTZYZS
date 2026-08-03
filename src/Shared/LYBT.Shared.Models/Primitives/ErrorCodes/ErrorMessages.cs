@@ -80,6 +80,7 @@ public static class ErrorMessages
         [ErrorCode.McAlreadyDeleted] = ("医案已经是删除状态", "Case is already deleted"),
         [ErrorCode.McCancelReasonRequired] = ("非当天本人取消需提供取消原因", "Cancel reason required"),
         [ErrorCode.McPrescriptionItemsRequired] = ("完成时处方明细为空", "Prescription items required"),
+        [ErrorCode.McOnlyCompletedCanDelete] = ("仅已完成医案可删除，未完成请使用取消（物理删除）", "Only completed cases can be deleted"),
         [ErrorCode.MedicalCaseMissingDiagnosis] = ("医案缺少必要的诊断信息", "Missing diagnosis information"),
         [ErrorCode.McPrescriptionFlagNotSet] = ("未标记需要开处方", "Prescription flag not set"),
         [ErrorCode.McPrescriptionAlreadyExists] = ("医案已存在处方，请使用更新接口", "Prescription already exists"),

@@ -371,6 +371,11 @@ public enum ErrorCode
     McPrescriptionItemsRequired = 30309,
 
     /// <summary>
+    /// 仅已完成医案可删除（未完成走取消=物理删除，US-MC-015）
+    /// </summary>
+    McOnlyCompletedCanDelete = 30310,
+
+    /// <summary>
     /// 医案缺少必要的诊断信息
     /// </summary>
     MedicalCaseMissingDiagnosis = 30007,

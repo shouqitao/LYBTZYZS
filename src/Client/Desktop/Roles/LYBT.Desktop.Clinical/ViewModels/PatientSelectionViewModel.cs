@@ -316,7 +316,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
         var message = $"患者 {SelectedPatient!.Name} 有未完成的医案。\n\n" +
             "请选择操作：\n" +
             "继续 - 继续看诊原医案\n" +
-            "新建 - 关闭原医案并新建";
+            "新建 - 关闭原医案（将永久删除，不可恢复）并新建";
 
         var continueExisting = await _dialogService.ShowConfirmAsync(message, "选择操作");
 

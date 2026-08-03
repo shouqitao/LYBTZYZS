@@ -98,7 +98,7 @@ internal sealed class WorkspaceNavigationHandler
     {
         var message = "您将离开看诊界面，是否暂存当前医案？\n\n" +
             "【是】暂存医案 - 保存当前进度，下次可继续\n" +
-            "【否】取消医案 - 作废本次就诊\n" +
+            "【否】取消医案 - 将永久删除，不可恢复\n" +
             "【取消】继续看诊 - 返回当前界面";
 
         LeaveConsultationChoice choice;

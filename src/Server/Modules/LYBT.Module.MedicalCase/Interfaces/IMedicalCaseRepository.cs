@@ -143,6 +143,21 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// 统计医案审计日志总数
         /// </summary>
         Task<int> CountAuditLogsAsync(Guid medicalCaseId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 记录医案审计日志（US-MC-017）
+        /// 审计写入失败不影响主业务流程（异常隔离由调用方保证）
+        /// </summary>
+        Task AddAuditLogAsync(MedicalCaseAuditLog log, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 物理删除医案（US-MC-014 取消语义）
+        /// 级联清除聚合：MedicalCase + Consultation + Prescription + PrescriptionItems + PrintLogs（DB 级联）
+        /// </summary>
+        /// <param name="entity">已加载的聚合根实体（含关联数据）</param>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns>删除是否成功</returns>
+        Task<bool> HardDeleteAsync(MedicalCase entity, CancellationToken cancellationToken = default);
     }
 }
 

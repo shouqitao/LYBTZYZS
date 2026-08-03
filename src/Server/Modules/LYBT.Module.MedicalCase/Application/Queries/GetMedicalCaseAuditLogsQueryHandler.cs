@@ -29,6 +29,7 @@ public class GetMedicalCaseAuditLogsQueryHandler(
                 1 => "医案更新",
                 2 => "状态变更",
                 3 => "医案删除",
+                4 => "医案取消",
                 _ => "未知操作"
             },
             PerformedBy = l.OperatorId.ToString("D"),
