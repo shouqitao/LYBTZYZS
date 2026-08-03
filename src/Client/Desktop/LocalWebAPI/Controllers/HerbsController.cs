@@ -16,7 +16,7 @@ namespace LYBT.LocalWebAPI.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
+[Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
 public class HerbsController : BaseCrudController
 {
     private readonly IHerbService _herbService;

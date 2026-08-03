@@ -1,6 +1,7 @@
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Registration.Controllers;
+using LYBT.Shared.Models.Contracts.Registration;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,4 +20,24 @@ public class RegistrationsController : BaseRegistrationsController
         : base(sender, logger)
     {
     }
+
+    /// <inheritdoc />
+    [Authorize(Policy = PolicyConstants.DoctorOnly)]
+    public override async Task<IActionResult> QuickVisit([FromBody] QuickVisitInputDto dto, CancellationToken ct)
+        => await base.QuickVisit(dto, ct);
+
+    /// <inheritdoc />
+    [Authorize(Policy = PolicyConstants.DoctorOnly)]
+    public override async Task<IActionResult> StartVisit(Guid id, CancellationToken ct)
+        => await base.StartVisit(id, ct);
+
+    /// <inheritdoc />
+    [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
+    public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
+        => await base.Create(dto, ct);
+
+    /// <inheritdoc />
+    [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
+    public override async Task<IActionResult> Cancel(Guid id, CancellationToken ct)
+        => await base.Cancel(id, ct);
 }

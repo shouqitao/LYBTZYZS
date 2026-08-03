@@ -90,7 +90,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
-        [Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
+        [Authorize(Policy = PolicyConstants.DoctorOnly)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]

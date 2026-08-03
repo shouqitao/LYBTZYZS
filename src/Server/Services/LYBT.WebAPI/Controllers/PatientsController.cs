@@ -126,6 +126,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 删除患者（软删除）
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpDelete("{id:guid}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
@@ -152,6 +153,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 切换患者状态（启用/禁用）
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpPost("{id:guid}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]

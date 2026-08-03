@@ -21,7 +21,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
+    [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class HerbsController : BaseCrudController
     {
         private readonly IHerbService _herbService;
@@ -70,6 +70,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 创建新药材
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), StatusCodes.Status201Created)]
@@ -94,6 +95,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 更新药材信息
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpPut("{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
@@ -123,6 +125,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 删除药材
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpDelete("{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse), 200)]
@@ -150,6 +153,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 切换药材状态
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpPost("{id}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
@@ -175,6 +179,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 恢复已删除的药材
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpPost("{id}/restore")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]

@@ -33,7 +33,7 @@ public class RegistrationsController : BaseRegistrationsController
     /// </summary>
     [HttpPost("quick-visit")]
     [EnableRateLimiting("ApiCalls")]
-    [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
+    [Authorize(Policy = PolicyConstants.DoctorOnly)]
     public override async Task<IActionResult> QuickVisit([FromBody] QuickVisitInputDto dto, CancellationToken ct)
     {
         var (doctorId, doctorName, _) = GetOperator();
@@ -53,6 +53,7 @@ public class RegistrationsController : BaseRegistrationsController
     /// <summary>
     /// 创建挂号记录 (添加 OutputCache 和 RateLimiting)
     /// </summary>
+    [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
     [HttpPost]
     [EnableRateLimiting("ApiCalls")]
     public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
@@ -76,7 +77,7 @@ public class RegistrationsController : BaseRegistrationsController
     /// </summary>
     [HttpPut("{id:guid}/start-visit")]
     [EnableRateLimiting("ApiCalls")]
-    [Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
+    [Authorize(Policy = PolicyConstants.DoctorOnly)]
     public override async Task<IActionResult> StartVisit(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "挂号ID") is { } error) return error;
@@ -92,6 +93,7 @@ public class RegistrationsController : BaseRegistrationsController
     /// <summary>
     /// 取消挂号 (添加 OutputCache 和 RateLimiting)
     /// </summary>
+    [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
     [HttpPut("{id:guid}/cancel")]
     [EnableRateLimiting("ApiCalls")]
     public override async Task<IActionResult> Cancel(Guid id, CancellationToken ct)

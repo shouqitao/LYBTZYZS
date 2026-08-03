@@ -21,7 +21,7 @@ namespace LYBT.WebAPI.Controllers
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
+    [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class FormulasController : BaseCrudController
     {
         private readonly IFormulaService _formulaService;
