@@ -31,7 +31,7 @@
 
 | 实体 | 表名 | 关键字段 | 关系 |
 |------|------|---------|------|
-| **ApplicationUser** | Users (Identity) | RealName, PinYinCode, Role(UserRole), IsSysAdmin, Status, MustChangeOnNextLogin | IdentityUser<Guid> |
+| **ApplicationUser** | Users (Identity) | RealName, PinYinCode, Role(UserRole), IsSysAdmin, Status, MustChangeOnNextLogin, RegistrationFee | IdentityUser<Guid> |
 | **Patient** | Patients | Name, PinYinCode, Gender, BirthDate, IdNumber(加密), PhoneNumber(加密), Status | — |
 | **MedicalCase** | MedicalCases | PatientId, UserId(Doctor), CaseNumber, CaseStatus, NeedsPrescription, IsPrinted, PrintCount | 聚合根 |
 | **Consultation** | Consultations | PresentIllness, TongueDiagnosis, PulseDiagnosis, TcmDiagnosis | 1:1 MedicalCase |
@@ -496,6 +496,7 @@
 | 2026-08-02 | 离线同步 v2.0 放弃旧分支，基于 master 重新实现 | 旧分支无法编译且删除了关键代码 | 技术总监 |
 | 2026-08-03 | **接诊即建**：StartVisit/QuickVisit/本地选患者开始看诊时原子创建 MedicalCase(Active) + Registration(InProgress)，统一两条接诊路径 | 消除 BR-000 与 US-REG-005 矛盾；InProgress 天然挡住退号，无空医案残留 | 产品负责人 |
 | 2026-08-03 | 权限决策四连（四角色需求审查）：① 患者删除/禁用仅 Admin+；② 前台不可查看药材/验方；③ 打印仅 Doctor（Admin 可查打印记录）；④ Admin 挂号只读查看 | 最小权限 + 角色画像清晰；代码待按操作级细分 | 产品负责人 |
+| 2026-08-03 | 挂号费：医生实体加 `RegistrationFee` 字段（Admin 设置），前台/QuickVisit/本地创建挂号时自动带出，免号填 0 | 落地 REG-BR-009「挂号费跟医生相关」；报表统计准确 | 产品负责人 |
 
 ---
 

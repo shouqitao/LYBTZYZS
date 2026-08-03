@@ -214,6 +214,7 @@ graph TB
 | LastLoginTime | DateTime? | 否 | 最后登录时间（用于 IdentitySeedData 重置判断） |
 | Remark | string(500) | 否 | 备注 |
 | IsSysAdmin | bool | 是 | 运维标记（独立用户非角色，默认 false） |
+| RegistrationFee | decimal(10,2) | 是 | 挂号费（默认 0，Admin 设置；2026-08-03 决策：创建挂号时带出，见 08-registration REG-BR-009） |
 
 ### Herb (药材)
 

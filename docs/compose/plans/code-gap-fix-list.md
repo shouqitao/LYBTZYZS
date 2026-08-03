@@ -81,6 +81,12 @@
 - **修复**：注入 `IDefaultPasswordService` + `IHostEnvironment`，复用 `GetOrGeneratePassword`/`ValidateSetupToken`
 - **验证**：生产环境配置测试
 
+### B5. 医生挂号费字段（2026-08-03 决策）
+- **问题**：REG-BR-009「挂号费跟医生相关」无载体（`ApplicationUser` 无 RegistrationFee）；QuickVisit/本地自动建挂号恒 0，报表挂号费失真
+- **文件**：`ApplicationUser` 实体 + Migration；UsersController/Admin 用户管理 UI；前台挂号表单；QuickVisitCommandHandler；本地模式建挂号
+- **修复**：`ApplicationUser` 加 `RegistrationFee`（decimal(10,2)，默认 0）；Admin 创建/编辑医生时设置；前台创建挂号自动带出（可改，义诊/优惠）；QuickVisit/本地自动带出
+- **验证**：集成测试（挂号带出）+ 报表测试（RegistrationFeeTotal 覆盖 QuickVisit/本地）
+
 ---
 
 ## 验收清单
