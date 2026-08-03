@@ -342,7 +342,6 @@ Server/Local → UsersController → IUserManagerService
 - [ ] 关联历史医案归属保留不变（CreatedBy/DoctorName 字段不重写，审计链完整）
 - [ ] 已硬删除用户（物理删除）不可恢复 → 返回 404（ERR-USER-404）
 - [ ] 恢复操作写审计日志（记录操作人/时间/目标用户 ID/原因）
-- [ ] 🚧 v1.0 补回（D4 决策）
 
 ---
 

@@ -58,7 +58,7 @@
 - [ ] Doctor/Admin/SuperAdmin 可查看药材列表（只读，前台不可）；Admin+ 可创建/编辑药材
 
 **业务规则**:
-1. GET 端点策略：Doctor+Admin+SuperAdmin（前台不可查，2026-08-03 决策）；Create/Update 需补 `AdminOrSuperAdmin` 策略（⚠️ 代码待修复 C2）
+1. GET 端点策略：Doctor+Admin+SuperAdmin（前台不可查，2026-08-03 决策）；Create/Update 需补 `AdminOrSuperAdmin` 策略（⚠️ 代码现状仍为 `DoctorOrReceptionist`，待修复 C2）
 2. 拼音搜索基于 `PinyinAbbreviation` 字段（如 "dg" 匹配 "当归"）
 3. 结果受 OutputCache 缓存（`HerbsCache` 策略）提升查询性能
 
@@ -87,7 +87,7 @@
 - [ ] 仅 Doctor 及以上角色可访问
 
 **业务规则**:
-1. 端点受 `DoctorOrReceptionist` 策略保护
+1. 端点受 `DoctorOrReceptionist` 策略保护（代码现状；目标态 Doctor+Admin+SuperAdmin，待 C2 修复）
 2. 药材详情同样受 OutputCache 缓存
 
 **双模式**:
@@ -117,7 +117,7 @@
 **业务规则**:
 1. 拼音由服务自动生成，无需客户端提供
 2. 新药材默认 `IsEnabled=true`、`IsDeleted=false`
-3. 端点受 `DoctorOrReceptionist` 策略保护（医生与管理员均可创建）
+3. 端点受 `DoctorOrReceptionist` 策略保护（代码现状；目标态 `AdminOrSuperAdmin`，待 C2 修复）
 
 **双模式**:
 | 模式 | 行为 |
@@ -146,7 +146,7 @@
 **业务规则**:
 1. 更新时重新生成 PinyinAbbreviation（名称可能变更）
 2. 名称唯一约束同样适用于更新
-3. 端点受 `DoctorOrReceptionist` 策略保护
+3. 端点受 `DoctorOrReceptionist` 策略保护（代码现状；目标态 `AdminOrSuperAdmin`，待 C2 修复）
 
 **双模式**:
 | 模式 | 行为 |
@@ -240,7 +240,7 @@
 
 **业务规则**:
 1. 导出由 `IHerbImportExportService` 执行（EPPlus）
-2. 端点受 `DoctorOrReceptionist` 策略保护
+2. 端点受 `DoctorOrReceptionist` 策略保护（代码现状；目标态 `AdminOrSuperAdmin`，待 C2 修复）
 3. 与 US-HERB-013 的导出端点不同：本端点导出全部，US-HERB-013 支持筛选导出 + 模板下载
 
 **双模式**:
@@ -382,7 +382,7 @@
 **业务规则**:
 1. 批量操作采用逐项处理（非原子），允许部分失败
 2. 批量删除每项均执行引用检查（同 US-HERB-005 规则）
-3. 端点受 `DoctorOrReceptionist` 策略保护
+3. 端点受 `DoctorOrReceptionist` 策略保护（代码现状；目标态 `AdminOrSuperAdmin`，待 C2 修复）
 
 **双模式**:
 | 模式 | 行为 |
