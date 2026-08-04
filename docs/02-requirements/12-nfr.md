@@ -293,4 +293,4 @@ Server 端（ASP.NET Core）理论上跨平台，但当前部署目标为 Window
 | 2026-02-17 | v1.0 | 初始版本（性能/数据/可用性/安全 4 维度） |
 | 2026-06-15 | v2.0 | 重建：新增可维护性与兼容性维度；修正 DPAPI 范围（仅照片/密码/令牌，IdCardNumber/PhoneNumber 明文）；稳定 NFR ID 以支持交叉引用；SQLite 废弃说明 |
 | 2026-06-25 | v2.1 | 修正跨文档不一致：AccessToken 2h→30min；备份保留 30d→7d；RTO 30min→1h |
-| 2026-06-28 | v2.2 | 文档对齐：AccessToken 统一 60 分钟（代码 `AuthController.cs:98 AddMinutes(60)`），「可配置」标 v2.0；与 02-auth/03-users 密码策略统一 |
+| 2026-06-28 | v2.2 | 文档对齐：AccessToken 有效期以配置为准（base 480/Dev·Test 60/Prod 30 分钟，`JwtService.cs:110`，非硬编码）；与 02-auth/03-users 密码策略统一 |
