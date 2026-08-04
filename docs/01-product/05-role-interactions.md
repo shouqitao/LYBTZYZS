@@ -104,11 +104,31 @@ flowchart TD
 | 7 | 完成就诊 | Doctor → 系统 | 完成医案 + 打印记录 | ⚠️ | 打印回写缺失、审计日志缺失 |
 | 8 | 队列更新 | Doctor → Receptionist | 候诊队列状态变更 | ✅ | 退号后队列自动更新，直接消失 |
 | 9 | 纠偏修改 | Admin → 医案系统 | 修改记录 + 审计日志 | 📋 | 纠偏 UI + 审计日志未实现 |
-| 10 | 密码重置 | Sysadmin → Admin（离线工具） | 重置后的密码 hash | 📋 | 离线密码重置工具待开发 |
+| 10 | 密码重置 | Sysadmin → Admin（离线工具） | 重置后的密码 hash | ✅ | 离线密码重置工具 `PasswordHashGenerator`（src/Tools/），见下方 2.3 |
 | 11 | 换医生 | Receptionist → Doctor | 取消原挂号 + 重新挂号 | ✅ | 先退费再收费 |
 | 12 | 过期挂号提醒 | Receptionist → Patient | 提醒联系管理员退款 | ✅ | 非当天 Waiting 挂号提醒患者退款 |
 
 ### 2.2 交接物定义
+
+### 2.3 离线密码重置方案（G-02 补写，2026-08-04）
+
+**场景**：远程服务器不可用 / sysadmin 或 Admin 忘记密码时，绕过 WebAPI 直接重置数据库中的密码哈希。
+
+**现状**：工具已存在 —— `src/Tools/PasswordHashGenerator/`（`dotnet run --project src/Tools/PasswordHashGenerator/`），生成哈希并输出 SQL UPDATE 语句。
+
+**⚠️ 哈希算法约束（关键）**：
+- 登录认证走 **ASP.NET Identity PBKDF2**（`UserManager`）
+- `PasswordHelper`（工具依赖）生成的是 **BCrypt** 哈希
+- 两者**不兼容**：直接写入 BCrypt 哈希会导致该用户无法登录（`DatabaseInitializationService.cs:193` 注释明确「避免 BCrypt/PBKDF2 哈希冲突」）
+- **修复方向**：离线重置必须生成 Identity PBKDF2 兼容哈希（参考 `IdentitySeedData` 的哈希流程），或改用 `dotnet aspnet-codegenerator` / 专用重置命令。当前工具存在此缺陷，**待修复后启用**（记入 code-gap-fix-list）
+
+**操作流程（修复后）**：
+1. 运维在离线环境运行工具，输入目标用户名 + 新密码
+2. 工具输出 `UPDATE AspNetUsers SET PasswordHash='<pbkdf2-hash>' WHERE UserName='<name>'`
+3. 通过数据库工具（sqlcmd / SSMS）执行 UPDATE
+4. 用户用新密码登录（如 `ForceChangeOnFirstLogin=true` 则首登改密）
+
+**安全要求**：工具仅限运维使用；生产环境运行后删除明文密码痕迹；日志脱敏。
 
 | 交接物 | 数据结构 | 说明 |
 |--------|---------|------|

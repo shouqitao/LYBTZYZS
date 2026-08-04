@@ -238,6 +238,36 @@
 | 远程 | 完整族旋转 + 重放撤销 |
 | 本地 | 不适用（无 refresh） |
 
+### 令牌族 DB 设计（RefreshTokens 表）
+
+> 2026-08-04 G-02 补写（依据 `InitialCreate.cs` 迁移实际表结构，2026-04-05）。
+
+`RefreshTokens` 表（`LYBT.Infrastructure` 迁移）：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `Id` | uniqueidentifier PK | 令牌记录 ID |
+| `Token` | nvarchar(512) | 刷新令牌值（哈希存储） |
+| `UserId` | uniqueidentifier FK | 所属用户 |
+| `UserType` | nvarchar(50) | 用户类型（superadmin/user） |
+| `Jti` | nvarchar(128) | JWT ID（关联访问令牌） |
+| `ExpiresAt` | datetime2 | 滑动过期时间（7d） |
+| `AbsoluteExpiresAt` | datetime2? | 绝对过期（会话上限） |
+| `IsRevoked` / `RevokedReason` / `RevokedAt` / `RevokedBy` | — | 撤销标记 + 审计（登出/攻击） |
+| `ClientIp` / `UserAgent` / `DeviceId` / `DeviceName` | — | 设备指纹（防跨设备重放） |
+| `UsageCount` / `LastUsedAt` | — | 使用计数（检测异常高频刷新） |
+| `ReplacedByToken` | nvarchar(512)? | 轮换链：旧令牌→新令牌 |
+| **`FamilyId`** | nvarchar(128)? | **令牌族 ID**（首次登录创建，贯穿会话） |
+| **`IsUsed`** / `UsedAt` | — | **已使用标记**（重放检测核心：旧令牌再次提交→IsUsed=true→判定攻击） |
+| `CreatedAt`/`UpdatedAt`/`CreatedBy`/`UpdatedBy`/`RowVersion`/`IsDeleted` | — | 审计 + 乐观并发 + 软删 |
+
+**重放检测逻辑**（US-AUTH-006）：
+1. 刷新时：校验旧令牌 `IsUsed=false` → 标记 `IsUsed=true` + `UsedAt` → 签发新令牌（同 `FamilyId`，`ReplacedByToken` 指向旧值）
+2. 若提交已 `IsUsed=true` 的令牌 → 判定重放攻击 → 撤销整个 `FamilyId` 族的全部令牌（`IsRevoked=true` + `RevokedReason=ReplayDetected`）
+3. 已撤销族的后续刷新请求全部拒绝 → 用户重新登录
+
+**实现位置**：`JwtService.cs`（签发/校验）、`RefreshTokenCommandHandler.cs`（刷新逻辑）、`LogoutCommandHandler.cs`（撤销）。
+
 **实现参考**: `AuthController.cs:128`, `ITokenRevocationService`, `ITokenManagementService`
 
 ---

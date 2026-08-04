@@ -152,6 +152,8 @@ Controller → MedicalCaseCommandService.CreateAsync
   → 返回 MedicalCaseDetailDto
 ```
 
+> **编号并发说明（G-02 补写，2026-08-04）**：`GenerateCaseNumberAsync`（`MedicalCaseCommandService.cs:349`）= `MC{yyyyMMdd}{CountByPrefix+1:D3}`，count **包含软删除**（避免编号重复）。并发风险同队列号（读计数+1 非原子）；缓解：诊所并发量低 + 计数含软删兜底。若需严格唯一可加唯一索引。处方编号 `RX{yyyyMMdd}{seq:4}` 同理。
+
 ### 聚合保存（诊断+处方）
 ```
 Desktop → PUT /api/v1/medicalcases/{id}

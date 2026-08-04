@@ -135,6 +135,8 @@ Controller → RegistrationService.CreateAsync
   → 返回 RegistrationDetailDto
 ```
 
+> **并发说明（G-02 补写，2026-08-04）**：`GetTodayMaxQueueNumberAsync`（`RegistrationRepository.cs:101`）= `MAX(QueueNumber)+1`（当日，`MaxAsync`）。**并发场景下存在重复风险**（两请求同时读到同一 MAX）。当前缓解：诊所并发量低（NFR 1-3 用户）+ 单节点数据库 + 挂号入口串行化；如后续高并发需加唯一约束（QueueNumber+Date 联合索引）或数据库序列。实现位置：`CreateRegistrationCommandHandler.cs:40`、`QuickVisitCommandHandler.cs:31`。
+
 ### 医生快速接诊（QuickVisit）
 ```
 Desktop → POST /api/v1/registrations/quick-visit
