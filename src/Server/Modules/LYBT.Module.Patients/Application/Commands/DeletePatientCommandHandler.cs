@@ -2,6 +2,7 @@ using MediatR;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Infrastructure.SharedKernel.Events;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Domain.Events;
 using LYBT.Module.Patients.Interfaces;
@@ -14,13 +15,16 @@ namespace LYBT.Module.Patients.Application.Commands;
 public class DeletePatientCommandHandler : IRequestHandler<DeletePatientCommand, Result>
 {
     private readonly IPatientRepository _patientRepository;
+    private readonly IMedicalCaseCrossModuleService _medicalCaseCrossModuleService;
     private readonly IDomainEventDispatcher _eventDispatcher;
 
     public DeletePatientCommandHandler(
         IPatientRepository patientRepository,
+        IMedicalCaseCrossModuleService medicalCaseCrossModuleService,
         IDomainEventDispatcher eventDispatcher)
     {
         _patientRepository = patientRepository;
+        _medicalCaseCrossModuleService = medicalCaseCrossModuleService;
         _eventDispatcher = eventDispatcher;
     }
 
@@ -30,6 +34,11 @@ public class DeletePatientCommandHandler : IRequestHandler<DeletePatientCommand,
         var patient = await _patientRepository.GetByIdAsync(request.Id, cancellationToken);
         if (patient == null)
             return Result.Failure(ErrorCode.PatientNotFound, "患者不存在");
+
+        // 被医案引用的患者不可删除（与批量删除逻辑一致）
+        var refCount = await _medicalCaseCrossModuleService.CountMedicalCasesAsync(request.Id, cancellationToken);
+        if (refCount > 0)
+            return Result.Failure(ErrorCode.PatientHasActiveCases, $"患者有 {refCount} 条医案记录，无法删除");
 
         patient.SoftDelete(request.CurrentUserId);
 

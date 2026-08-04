@@ -176,8 +176,9 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 恢复已删除的患者
+        /// 恢复已删除的患者 — 仅 Admin（业务管理）
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminBusinessOnly)]
         [HttpPost("{id:guid}/restore")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)

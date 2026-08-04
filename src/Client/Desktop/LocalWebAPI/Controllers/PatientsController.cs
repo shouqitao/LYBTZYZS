@@ -110,6 +110,23 @@ public class PatientsController : BaseCrudController
     }
 
     /// <summary>
+    /// 恢复已删除的患者 — 仅 Admin（业务管理）
+    /// </summary>
+    [Authorize(Policy = PolicyConstants.AdminBusinessOnly)]
+    [HttpPost("{id:guid}/restore")]
+    public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
+    {
+        if (ValidateGuid(id, "患者ID") is { } error) return error;
+
+        var (operatorId, _, _) = GetOperator();
+        var result = await _patientService.RestoreAsync(id, operatorId, ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "恢复失败");
+
+        return Success(result.Value, "患者恢复成功");
+    }
+
+    /// <summary>
     /// 批量检查引用关系
     /// </summary>
     [HttpPost("batch-check-reference")]

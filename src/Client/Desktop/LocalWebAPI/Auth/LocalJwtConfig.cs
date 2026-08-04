@@ -70,6 +70,11 @@ public static class LocalJwtConfig
                 policy.RequireAuthenticatedUser()
                       .RequireRole(RoleConstants.SuperAdmin, RoleConstants.Admin));
 
+            // 纯 Admin（业务管理）策略：不含 SuperAdmin（系统运维不碰业务数据）
+            options.AddPolicy(PolicyConstants.AdminBusinessOnly, policy =>
+                policy.RequireAuthenticatedUser()
+                      .RequireRole(RoleConstants.Admin));
+
             options.AddPolicy(PolicyConstants.DoctorOrAdmin, policy =>
                 policy.RequireAuthenticatedUser()
                       .RequireRole(RoleConstants.SuperAdmin, RoleConstants.Admin, RoleConstants.Doctor));
