@@ -116,7 +116,6 @@
 ---
 
 ## 批次 C：doc-audit 代码缺口（2026-08-04，G-01 审计产出）—— ✅ 已完成
-
 > 来源：2026-08-04 doc-audit（3 并行子代理审稿 + 主代理代码校准）。
 > 完成：C1-C3 → commit `f50269f23`；C4-C6 → commit `ce905f8b3`。Build 0 错误、架构测试通过。
 
@@ -155,6 +154,24 @@
 - **文件**：MedicalCaseProcessingController + PrintLog 实体
 - **修复**：实现打印回写 + AuditLog/MedicalCasePrintLog
 - **验证**：集成测试
+
+---
+
+## 批次 D：G-02 缺口补写发现的代码待实现（2026-08-04）—— ⬜ 待派发
+
+> 来源：2026-08-04 G-02 缺口补写（doc-gap 核实发现文档目标态但代码缺失）。
+
+### D1. 离线密码重置工具哈希算法缺陷（P1）
+- **问题**：`src/Tools/PasswordHashGenerator/` 生成 BCrypt 哈希，但登录认证走 Identity PBKDF2（`UserManager`）——**两者不兼容**，直接写入 `AspNetUsers.PasswordHash` 会导致该用户无法登录（`DatabaseInitializationService.cs:193` 注释明确「避免 BCrypt/PBKDF2 哈希冲突」）
+- **文件**：`src/Tools/PasswordHashGenerator/`（依赖 `PasswordHelper`）、或新增专用重置命令
+- **修复**：改为生成 Identity PBKDF2 兼容哈希（参考 `IdentitySeedData` 哈希流程），或改用专用离线重置命令（`UserManager.GeneratePasswordResetTokenAsync` 风格）
+- **验证**：工具输出哈希 → 写入 DB → 该用户可登录
+
+### D2. ConfigurationSections 常量类缺失（P2）
+- **问题**：11b-configuration.md 声称「14 个 Options 类由 `ConfigurationSections` 常量类统一管理配置节名称」——**代码中无此类**
+- **文件**：`src/Shared/LYBT.Shared.Configuration/Options/`（若需）
+- **修复**：新增 `ConfigurationSections` 常量类（8 服务端 + 1 共享 + 4 客户端 + 1 WebAPI = 14 项）或删除文档声称
+- **验证**：文档与代码一致
 
 ---
 
