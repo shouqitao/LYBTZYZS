@@ -436,6 +436,12 @@ stateDiagram-v2
 
 审计记录包含：IP 地址（脱敏，如 `192.168.1.*`）、UserAgent（截断至 500 字符）、时间戳。审计日志保留 365 天（`SecurityOptions.AuditRetentionDays`）。
 
+**存储与清理（G-02 补写，2026-08-04）**：
+- **存储位置**：`SecurityAuditLogs` 表（`AppDbContext.cs:74`），与业务数据同库。字段：`Id/EventType/UserId/UserType/UserName/IpAddress/UserAgent/Success/ErrorMessage/Metadata/CreatedAt`（11 字段，`InitialCreate.cs:154`）；索引 `IX_SecurityAuditLogs_EventType_CreatedAt`、`IX_SecurityAuditLogs_UserId_CreatedAt`。
+- **保留策略**：`SecurityOptions.AuditRetentionDays`（默认 365），后台任务按 `CreatedAt < now-365d` 批量清理（`SecurityAuditService` 待实现，D3 v1.0 补回）。
+- **写入点**：登录成功/失败、令牌撤销、限流触发、权限拒绝等安全事件（`SecurityAuditService.RecordAsync`）。
+- **查询入口**：管理端审计日志页（Admin/SuperAdmin）。
+
 ## 8. 决策记录
 
 | ID | 决策 | 原因 |

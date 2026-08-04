@@ -445,6 +445,17 @@ public string PhoneNumber { get; set; }
 | Full | 完全隐藏 | `[已隐藏]` |
 | Hash | SHA256 短哈希标识 | `[REDACTED:A1B2C3D4]` |
 
+### 分级 ↔ 脱敏映射（G-02 补写，2026-08-04）
+
+> 分级权威定义见 [12-nfr.md NFR-SEC-004](../02-requirements/12-nfr.md)；本表为**分级 → MaskingMode 的显式映射**，实施时以此为准。
+
+| 分级 | 示例字段 | MaskingMode | 说明 |
+|------|---------|-------------|------|
+| L1-高敏感 | IdNumber, PhoneNumber | `Partial` | 保留前3后4 |
+| L2-一般敏感（个人） | Address, AllergyHistory, MedicalHistory | `Full`（Address）/ `Hash`（AllergyHistory） | 按字段特性选择 |
+| L2-一般敏感（医疗） | TcmDiagnosis, PresentIllness, TongueDiagnosis, PulseDiagnosis | 不记录到日志（无 MaskingMode） | 日志排除，而非脱敏 |
+| L3-普通 | Name, Gender, BirthDate, HerbName | 无（正常记录） | 不标记 `[SensitiveData]` |
+
 ### 数据类型 (SensitiveDataType)
 
 | 类型 | 说明 | 典型字段 |
