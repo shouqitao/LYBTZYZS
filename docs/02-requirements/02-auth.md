@@ -6,6 +6,8 @@
 
 认证与会话模块负责保障中医诊所系统中患者敏感医疗数据（诊断记录、处方信息、身份信息）的访问安全。系统采用双模式认证架构：远程模式提供完整的 JWT 双令牌机制（访问令牌有效期从配置读取，默认开发 480 分钟/生产 30 分钟 + 7d 刷新令牌族），适合多用户多设备协同工作场景；本地模式提供简化 JWT（1 年有效期），适合医生外出诊疗等离线场景。
 
+> **权限权威**：认证端点权限以 [04-api-reference/01-auth.md](../04-api-reference/01-auth.md) 为准；完整权限矩阵见 [04-permissions.md](../01-product/04-permissions.md)。
+
 > **AccessToken 有效期从配置读取**（`JwtService.cs:110` `CurrentOptions.AccessTokenExpirationMinutes`）：base `appsettings.json`=480 分钟（8 小时），Development/Test=60 分钟，Production=30 分钟。**非硬编码**（历史文档所述 `AuthController.cs:98 AddMinutes(60)` 实为 refresh 端点的展示字段）。
 
 模块核心包括：用户名密码登录、账户锁定防护、登录限流、令牌刷新与验证、重放攻击检测（令牌族撤销）、安全审计日志、登出、本地自动登录（AutoLoginToken）及轮换、保留用户名拦截、本地简化认证与限流。诊所环境下医生日均接诊 15-30 人，认证流程必须在保障安全的同时尽可能减少摩擦。

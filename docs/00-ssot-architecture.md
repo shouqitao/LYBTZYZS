@@ -1,6 +1,6 @@
 # 文档 SSOT 架构方案（Single Source of Truth）
 
-> 版本: v1.0 | 日期: 2026-08-04 | 状态: 待产品负责人确认
+> 版本: v1.1 | 日期: 2026-08-04 | 状态: 批次 A/B 已完成 ✅（2026-08-04 审计推进）；批次 C 部分完成；D 完成；E 待产品负责人确认
 > 问题背景: 审计发现同一信息点被多处定义——权限 12 处、状态机 10 处、Code Style 10 处、技术栈 9 处、已知问题 6 处、术语 4 处。
 
 ---
@@ -58,25 +58,25 @@
 
 ## 四、调整清单（分批执行）
 
-### 批次 A：权限收敛（最大重复源，12 处 → 1 权威）
-- [ ] `02-requirements/` 各模块权限表 → 保留「本模块权限需求摘要」并标注「权威见 04-permissions.md」，删除与 04 重复的矩阵
-- [ ] `03-architecture/04-data-model.md`、`09-security-architecture.md`、`11-business-flows.md` 中的权限规则 → 改引用
-- [ ] `04-api-reference/` 权限列 → 标注「权限以 04-permissions.md 为准」
-- [ ] `01-product/02-personas.md`、`03-glossary.md`、`05-role-interactions.md` 权限描述 → 改引用
+### 批次 A：权限收敛（最大重复源，12 处 → 1 权威）—— ✅ 完成（2026-08-04）
+- [x] `02-requirements/` 各模块权限表 → 保留「本模块权限需求摘要」并标注「权威见 04-permissions.md」，删除与 04 重复的矩阵
+- [x] `03-architecture/04-data-model.md`、`09-security-architecture.md`、`11-business-flows.md` 中的权限规则 → 改引用
+- [x] `04-api-reference/` 权限列 → 标注「权限以 04-permissions.md 为准」
+- [x] `01-product/02-personas.md`、`03-glossary.md`、`05-role-interactions.md` 权限描述 → 改引用
 
-### 批次 B：状态机收敛（10 处 → 04 数据权威 + 需求业务规则）
-- [ ] `07-medical-cases.md` 保留业务触发规则，删除完整状态转换图（引用 04）
-- [ ] `08-registration.md`、`13-traceability-matrix.md` 同步
-- [ ] `modules/medical-case.md`、`modules/registration.md` 状态机 → 引用 04
+### 批次 B：状态机收敛（10 处 → 04 数据权威 + 需求业务规则）—— ✅ 完成（2026-08-04）
+- [x] `07-medical-cases.md` 保留业务触发规则，删除完整状态转换图（引用 04）
+- [x] `08-registration.md`、`13-traceability-matrix.md` 同步
+- [x] `modules/medical-case.md`、`modules/registration.md` 状态机 → 引用 04
 
 ### 批次 C：技术栈/Code Style/术语/已知问题收敛
-- [ ] 技术栈：prd/localwebapi/06-operations 描述 → 引用 00-summary；AGENTS.md/master plan 保留速览
-- [ ] Code Style：localwebapi/03-server 等 → 引用 02-code-standards
-- [ ] 术语：02-personas/07-medical-cases/13a 术语行 → 引用 glossary
-- [ ] 已知问题：master plan/code-gap-fix-list → 引用 13c
+- [x] 已知问题：master plan/code-gap-fix-list → 引用 13c（2026-08-04 批次 C 已收敛）
+- [ ] 技术栈：prd/localwebapi/06-operations 描述 → 引用 00-summary；AGENTS.md/master plan 保留速览（**2026-08-04 评估：低价值高风险的视角性描述，建议保留，待产品负责人确认**）
+- [ ] Code Style：localwebapi/03-server 等 → 引用 02-code-standards（同上评估）
+- [ ] 术语：02-personas/07-medical-cases/13a 术语行 → 引用 glossary（**专项，需逐上下文判断，见 P2 留档**）
 
-### 批次 D：视图层规范
-- [ ] 13a/13b/12-permissions-matrix 头部统一「权威见 XX」格式（13a/13b 已完成 ✅，补 12）
+### 批次 D：视图层规范 —— ✅ 完成（2026-08-04）
+- [x] 13a/13b/12-permissions-matrix 头部统一「权威见 XX」格式（13a/13b 已完成 ✅，补 12 ✅）
 
 ### 批次 E（后续，另行确认）：部署/测试文档收敛
 - [ ] 06-operations 6 份部署 → 合并/归档
