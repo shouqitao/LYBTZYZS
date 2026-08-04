@@ -1015,7 +1015,7 @@ curl -X GET "https://api.example.com/api/v1/medicalcases/12345678-abcd-ef01-2345
 
 ## 🚧 待实现端点（v1.0 范围，D1/D2/D9 补回项）
 
-> 以下端点属 v1.0 设计范围（D1 审计/D2 打印回写/D9 历史，见 [13-project-master-plan.md](../03-architecture/13-project-master-plan.md) §五 待办），代码尚未实现，文档保留设计。当前实现见上文各端点「实现状态」标注。
+> 以下端点属 v1.0 设计范围（D1 审计/D2 打印回写/D9 历史，见 [13-project-master-plan.md](../03-architecture/13-project-master-plan.md) §六 待做工作清单），代码尚未实现，文档保留设计。当前实现见上文各端点「实现状态」标注。
 
 | 端点 | 说明 | 补回决策 |
 |------|------|----------|

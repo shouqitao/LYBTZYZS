@@ -1,10 +1,12 @@
 # LYBTZYZS 项目总账
 
-> 版本: v2.0 | 更新: 2026-08-02 | 维护者: 技术总监 + 产品负责人
+> 版本: v2.1 | 更新: 2026-08-04 | 维护者: 技术总监 + 产品负责人
 >
 > **本文件是项目的唯一全局视图。** 任何 session 开始前必读此文件。
 >
 > **维护原则**: 文档必须反映代码真实状态。代码变更 → 文档同步更新。文档变更 → 代码必须跟上。
+>
+> **文档结构（2026-08-04 拆分）**: 数据模型 → [13a-data-model.md](13a-data-model.md)｜API 端点 → [13b-api-endpoints.md](13b-api-endpoints.md)｜Desktop 视图 + 已知问题 → [13c-current-status.md](13c-current-status.md)
 
 ---
 
@@ -27,289 +29,19 @@
 
 ## 二、数据模型（代码实际定义）
 
-### 2.1 核心实体（Shared/LYBT.Entities）
-
-| 实体 | 表名 | 关键字段 | 关系 |
-|------|------|---------|------|
-| **ApplicationUser** | Users (Identity) | RealName, PinYinCode, Role(UserRole), IsSysAdmin, Status, MustChangeOnNextLogin, RegistrationFee | IdentityUser<Guid> |
-| **Patient** | Patients | Name, PinYinCode, Gender, BirthDate, IdNumber(加密), PhoneNumber(加密), Status | — |
-| **MedicalCase** | MedicalCases | PatientId, UserId(Doctor), CaseNumber, CaseStatus, NeedsPrescription, IsPrinted, PrintCount | 聚合根 |
-| **Consultation** | Consultations | PresentIllness, TongueDiagnosis, PulseDiagnosis, TcmDiagnosis | 1:1 MedicalCase |
-| **Prescription** | Prescriptions | MedicalCaseId, PrescriptionNumber, DosageCount, Discount, Usage, Advice, ReferencedFormulas | 1:0..1 MedicalCase |
-| **PrescriptionItem** | PrescriptionItems | PrescriptionId, HerbId, HerbName, Quantity, UnitPrice, Unit, Role(君臣佐使) | 1:N Prescription |
-| **Herb** | Herbs | Name, PinYinCode, Category, Properties, Origin, Spec, Unit, Price, CostPrice, Effect, Usage | — |
-| **Formula** | Formulas | Name, Effect, Indication, Usage, Status, IsShared, ValidationStatus, Category, FormulaType | — |
-| **FormulaHerbItem** | FormulaHerbItems | FormulaId, HerbId, HerbName, Quantity, Unit, Role | 1:N Formula |
-| **Registration** | Registrations | PatientId, DoctorId, MedicalCaseId, Source(前台/医生), Status, QueueNumber, RegistrationFee | — |
-| **AuthSession** | AuthSessions | UserId, RefreshToken, TokenFamily | — |
-| **SecurityAuditLog** | SecurityAuditLogs | 事件类型、用户、IP、时间 | — |
-| **MedicalCaseAuditLog** | MedicalCaseAuditLogs | 医案ID、操作、操作人 | — |
-| **MedicalCasePrintLog** | MedicalCasePrintLogs | 医案ID、打印类型、打印机、操作人 | — |
-| **SystemLog** | SystemLogs | 系统日志（已标记死代码，待删除） | — |
-
-### 2.2 状态枚举
-
-| 枚举 | 值 | 用途 |
-|------|-----|------|
-| **MedicalCaseStatus** | Active/Completed/Suspended/Cancelled | 医案生命周期 |
-| **RegistrationStatus** | Waiting/InProgress/Completed/Cancelled | 挂号生命周期 |
-| **RegistrationSource** | Receptionist/Doctor | 挂号来源 |
-| **CommonStatus** | Enabled/Disabled | 通用启用/禁用 |
-| **UserRole** | SuperAdmin(100)/Admin(10)/Doctor(1)/Receptionist(0) | 角色 |
-| **FormulaValidationStatus** | Draft/Validated | 验方验证状态 |
-| **FormulaType** | Classic/Experience | 经典方/经验方 |
-| **Gender** | Male/Female/Unknown | 性别 |
-
----
+> 📄 已拆分至 [13a-data-model.md](13a-data-model.md)：核心实体（Shared/LYBT.Entities）+ 状态枚举。
 
 ## 三、API 端点（代码实际定义）
 
-### 3.1 认证授权 (Auth) — `api/v1/auth`
-
-| 方法 | 端点 | 功能 | 权限 |
-|------|------|------|------|
-| POST | /login | 用户名密码登录 | 匿名 |
-| POST | /logout | 登出 | 匿名 |
-| POST | /refresh | Token 刷新 | 匿名 |
-| POST | /auto-login | 自动登录 | 匿名 |
-| GET | /validate | Token 验证 | 需认证 |
-
-### 3.2 用户管理 (Users) — `api/v1/users`
-
-| 方法 | 端点 | 功能 | 权限 |
-|------|------|------|------|
-| GET | / | 用户列表（分页） | Admin+ |
-| GET | /{id} | 用户详情 | Admin+ |
-| POST | / | 创建用户 | Admin+ |
-| PUT | /{id} | 更新用户 | Admin+ |
-| DELETE | /{id} | 删除用户（软删除） | Admin+ |
-| POST | /{id}/toggle-status | 启用/禁用 | Admin+ |
-| POST | /{id}/restore | 恢复已删除 | Admin+ |
-| POST | /batch-delete | 批量删除 | Admin+ |
-| POST | /batch-enable | 批量启用 | Admin+ |
-| POST | /batch-disable | 批量禁用 | Admin+ |
-| POST | /{id}/reset-password | 重置密码 | Admin+ |
-| GET | /current | 当前用户信息 | 需认证 |
-| PUT | /{id}/profile | 修改个人资料 | 需认证 |
-| PUT | /{id}/change-password | 修改密码 | 需认证 |
-
-### 3.3 患者管理 (Patients) — `api/v1/patients`
-
-| 方法 | 端点 | 功能 | 权限 |
-|------|------|------|------|
-| GET | / | 患者列表（分页） | Doctor/Receptionist |
-| GET | /{id} | 患者详情 | Doctor/Receptionist |
-| POST | / | 创建患者 | Doctor/Receptionist |
-| PUT | /{id} | 更新患者 | Doctor/Receptionist |
-| DELETE | /{id} | 删除患者（软删除） | Doctor/Receptionist |
-| POST | /{id}/toggle-status | 启用/禁用 | Doctor/Receptionist |
-| POST | /{id}/restore | 恢复已删除 | Doctor/Receptionist |
-| POST | /batch-delete | 批量删除 | Doctor/Receptionist |
-| GET | /{id}/check-reference | 检查引用关系 | Doctor/Receptionist |
-| POST | /batch-check-reference | 批量检查引用 | Doctor/Receptionist |
-| GET | /by-id-number/{idNumber} | 身份证号查询 | Doctor/Receptionist |
-
-### 3.4 药材管理 (Herbs) — `api/v1/herbs`
-
-| 方法 | 端点 | 功能 | 权限 |
-|------|------|------|------|
-| GET | / | 药材列表（分页） | Doctor/Receptionist |
-| GET | /{id} | 药材详情 | Doctor/Receptionist |
-| POST | / | 创建药材 | Doctor/Receptionist |
-| PUT | /{id} | 更新药材 | Doctor/Receptionist |
-| DELETE | /{id} | 删除药材（软删除） | Doctor/Receptionist |
-| POST | /{id}/toggle-status | 启用/禁用 | Doctor/Receptionist |
-| POST | /{id}/restore | 恢复已删除 | Doctor/Receptionist |
-| POST | /batch-delete | 批量删除 | Doctor/Receptionist |
-| POST | /batch-import | 批量导入（JSON） | Doctor/Receptionist |
-| GET | /{id}/check-reference | 检查引用关系 | Doctor/Receptionist |
-| POST | /batch-check-reference | 批量检查引用 | Doctor/Receptionist |
-| POST | /batch-enable | 批量启用 | Admin+ |
-| POST | /batch-disable | 批量禁用 | Admin+ |
-
-### 3.5 验方管理 (Formulas) — `api/v1/formulas`
-
-| 方法 | 端点 | 功能 | 权限 |
-|------|------|------|------|
-| GET | / | 验方列表（分页） | Doctor/Receptionist |
-| GET | /{id} | 验方详情 | Doctor/Receptionist |
-| POST | / | 创建验方 | Doctor/Receptionist |
-| PUT | /{id} | 更新验方 | Doctor/Receptionist |
-| DELETE | /{id} | 删除验方（软删除） | Doctor/Receptionist |
-| POST | /{id}/toggle-status | 启用/禁用 | Doctor/Receptionist |
-| POST | /{id}/restore | 恢复已删除 | Doctor/Receptionist |
-| POST | /batch-delete | 批量删除 | Doctor/Receptionist |
-| POST | /batch-import | 批量导入（JSON） | Doctor/Receptionist |
-| GET | /pending-validation | 待校验验方列表 | Doctor/Receptionist |
-| POST | /{formulaId}/herbs/{herbItemId}/validate | 校验药材匹配 | Doctor/Receptionist |
-| POST | /batch-enable | 批量启用 | Admin+ |
-| POST | /batch-disable | 批量禁用 | Admin+ |
-
-### 3.6 医案管理 (MedicalCases) — `api/v1/medicalcases`
-
-| 方法 | 端点 | 功能 | 权限 |
-|------|------|------|------|
-| GET | / | 医案列表（分页） | Doctor/Receptionist |
-| GET | /{id} | 医案详情 | Doctor/Receptionist |
-| POST | / | 创建医案 | Doctor |
-| PUT | /{id} | 更新医案 | Doctor |
-| DELETE | /{id} | 删除医案 | Doctor/Admin |
-| POST | /batch-delete | 批量删除 | Doctor/Admin |
-| PUT | /{id}/close | 完成医案 | Doctor |
-| PUT | /{id}/suspend | 挂起医案 | Doctor |
-| PUT | /{id}/cancel | 取消医案 | Doctor |
-| PUT | /{id}/status | 更新状态 | Doctor |
-| PUT | /{id}/prescription-flag | 标记处方需求 | Doctor |
-| PUT | /{id}/print-completed | 记录打印完成 | Doctor |
-| GET | /{id}/consultations | 辨证记录列表 | Doctor/Receptionist |
-| GET | /{id}/prescriptions | 处方列表 | Doctor/Receptionist |
-| GET | /patient/{id}/consultations | 患者辨证历史 | Doctor/Receptionist |
-| GET | /patient/{id}/prescriptions | 患者处方历史 | Doctor/Receptionist |
-| POST | /batch-details | 批量查询详情（≤50） | Doctor/Receptionist |
-| GET | /search | 跨医案搜索 | Doctor/Receptionist |
-| GET | /query | 统一查询端点 | Doctor/Receptionist |
-| GET | /{id}/permissions | 操作权限查询 | Doctor/Receptionist |
-| GET | /{id}/audit-logs | 审计日志 | Doctor/Receptionist |
-
-### 3.7 挂号管理 (Registrations) — `api/v1/registrations`
-
-| 方法 | 端点 | 功能 | 权限 |
-|------|------|------|------|
-| GET | / | 挂号列表（分页+筛选） | Doctor/Receptionist |
-| GET | /{id} | 挂号详情 | Doctor/Receptionist |
-| POST | / | 创建挂号 | Doctor/Receptionist |
-| PUT | /{id}/start-visit | 接诊 | Doctor/Receptionist |
-| PUT | /{id}/cancel | 取消挂号 | Doctor/Receptionist |
-| GET | /queue | 等待队列 | Doctor/Receptionist |
-| POST | /quick-visit | 医生快速看诊 | Doctor |
-
-### 3.8 统计报表 (Reports) — `api/v1/reports`
-
-| 方法 | 端点 | 功能 | 权限 |
-|------|------|------|------|
-| GET | /daily/income | 日收入统计 | Doctor/Admin |
-| GET | /daily/consultations | 日问诊统计 | Doctor/Admin |
-| GET | /daily/herbs | 日药材使用统计 | Doctor/Admin |
-
-### 3.9 系统配置 (Configuration) — `api/v1/configuration`
-
-| 方法 | 端点 | 功能 | 权限 |
-|------|------|------|------|
-| GET | / | 获取全部配置 | Admin+ |
-| GET | /{key} | 获取单个配置 | Admin+ |
-| POST | /validate | 生产环境验证 | Admin+ |
-| ~~PUT~~ | ~~/~~ | ~~修改配置~~ | **❌ 缺失** |
-
-### 3.10 诊断调试 (Diagnostics) — `api/v1/diagnostics`
-
-| 方法 | 端点 | 功能 | 权限 |
-|------|------|------|------|
-| GET | /logging/status | 日志级别状态 | Admin+ |
-| POST | /logging/debug/enable | 启用调试模式 | Admin+ |
-| POST | /logging/debug/disable | 禁用调试模式 | Admin+ |
-| POST | /logging/level | 设置日志级别 | Admin+ |
-
-### 3.11 部署管理 (Deploy) — `api/v1/deploy`
-
-| 方法 | 端点 | 功能 | 权限 |
-|------|------|------|------|
-| POST | /upload | 上传更新包 | Admin+ |
-| POST | /restart | 重启服务 | Admin+ |
-| ~~GET~~ | ~~/version~~ | ~~版本检查~~ | **❌ 缺失** |
-
----
+> 📄 已拆分至 [13b-api-endpoints.md](13b-api-endpoints.md)：Auth/Users/Patients/Herbs/Formulas/MedicalCases/Registrations/Reports/Configuration/Diagnostics/Deploy 全部端点。
 
 ## 四、Desktop 视图（代码实际定义）
 
-### 4.1 Shell
-
-| 视图 | 文件 | 功能 | 问题 |
-|------|------|------|------|
-| LoginView | Modules/LYBT.Desktop.Auth/Views/ | 登录界面 | — |
-| FirstRunSetupView | Modules/LYBT.Desktop.Auth/Views/ | 首次运行向导 | 功能有限 |
-| ServerConfigView | Modules/LYBT.Desktop.Auth/Views/ | 服务器地址配置 | — |
-| AccountSettingsView | Shell/Views/ | 账户设置（个人资料/密码） | — |
-
-### 4.2 管理员角色
-
-| 视图 | 文件 | 功能 | 问题 |
-|------|------|------|------|
-| AdminHomeView | Roles/LYBT.Desktop.Admin/Views/ | 管理员首页 | — |
-| UserManagementView | Roles/LYBT.Desktop.Admin/Views/ | 用户管理 | — |
-| SystemSettingsView | Roles/LYBT.Desktop.Admin/Views/ | 系统设置 | 仅读取，无编辑 |
-| SysadminHomeView | Roles/LYBT.Desktop.Admin/Sysadmin/Views/ | 运维首页 | — |
-| LogLevelControlView | Roles/LYBT.Desktop.Admin/Sysadmin/Views/ | 日志级别控制 | — |
-| DeploymentView | Roles/LYBT.Desktop.Admin/Sysadmin/Views/ | 部署视图 | 仅上传+重启 |
-
-### 4.3 临床角色
-
-| 视图 | 文件 | 功能 | 问题 |
-|------|------|------|------|
-| ClinicalHomeView | Roles/LYBT.Desktop.Clinical/Views/ | 临床首页 | TODO: 今日统计 |
-| ClinicalWorkspaceView | Roles/LYBT.Desktop.Clinical/Views/ | 临床工作台 | — |
-| PatientManagementView | Roles/LYBT.Desktop.Clinical/Views/ | 患者管理 | — |
-| PatientSelectionView | Roles/LYBT.Desktop.Clinical/Views/ | 患者选择（身份证读卡） | — |
-| HerbManagementView | Roles/LYBT.Desktop.Clinical/Views/ | 药材管理 | — |
-| FormulaManagementView | Roles/LYBT.Desktop.Clinical/Views/ | 验方管理 | — |
-| MedicalCaseManagementView | Roles/LYBT.Desktop.Clinical/Views/ | 医案管理 | — |
-| MedicalCaseWorkspaceView | Roles/LYBT.Desktop.Clinical/Views/ | 医案工作台（核心） | 超大类型 558 行 |
-| PendingQueueView | Roles/LYBT.Desktop.Clinical/Views/ | 待诊队列 | — |
-| ReceptionistHomeView | Roles/LYBT.Desktop.Clinical/Receptionist/Views/ | 前台首页 | — |
-
-### 4.4 医疗模块
-
-| 视图 | 文件 | 功能 | 问题 |
-|------|------|------|------|
-| MedicalCaseMasterDetailView | Modules/LYBT.Desktop.MedicalCase/Views/ | 医案主从详情 | — |
-| AuditLogView | Modules/LYBT.Desktop.MedicalCase/Views/ | 审计日志 | — |
-| ReportsHomeView | Modules/LYBT.Desktop.MedicalCase/Reports/Views/ | 报表首页 | TODO: 待完善 |
-
-### 4.5 其他
-
-| 视图 | 文件 | 功能 | 问题 |
-|------|------|------|------|
-| RegistrationListView | Modules/LYBT.Desktop.Registration/Views/ | 挂号列表 | — |
-
----
+> 📄 已拆分至 [13c-current-status.md](13c-current-status.md)：Shell/Admin/Clinical/Medical/Registration 视图清单。
 
 ## 五、已知问题（代码实际状态）
 
-### 🔴 P0 — 必须修复
-
-| ID | 问题 | 位置 | 影响 |
-|----|------|------|------|
-| P0-01 | Shell 登出状态机错误 | Shell/LoginCoordinator | 用户登出后状态不正确 |
-| P0-02 | 并发登录竞态 | Shell/LoginCoordinator | 多人登录数据错乱 |
-| P0-03 | 异常时事件未发布 | Shell/ShellEventCoordinator | 异常后 UI 卡死 |
-| P0-04 | Sync-over-Async 死锁 | Desktop 多处 `.GetAwaiter().GetResult()` | WPF UI 线程冻结 |
-| P0-05 | 明文密码泄露 | appsettings.json (SSH/SA/JWT SecretKey) | 安全风险 |
-| P0-06 | 104 个 Desktop 测试失败 | tests/LYBT.Tests.Desktop | 测试主机崩溃，质量保障失效 |
-| P0-07 | 配置无法 API 修改 | ConfigurationController 无 PUT | 运维只能手动改文件 |
-
-### 🟡 P1 — 应修复
-
-| ID | 问题 | 位置 | 影响 |
-|----|------|------|------|
-| P1-01 | 9 个 Build 警告 | 多处 (CA1001/CS8603/CS0168/CS4014) | 代码质量 |
-| P1-02 | 8 个 TODO 残留 | MedicalCase/Shell/Reports | 技术债务 |
-| P1-03 | 5 个超大类型 (>600行) | MedicalCaseCommandService/Repository/HttpClientApiClient/NavigableViewModelBase/PrescriptionPrintService | 可维护性 |
-| P1-04 | 22 个 MediatR trivial Handler | MedicalCase Application/ | 过度设计 |
-| P1-05 | 实体双模型 | Domain/ vs Shared/ (6 对双胞胎) | 维护成本翻倍 |
-| P1-06 | Excel 导入/导出缺失 | Herbs/Formula/Patients | 无法批量操作 |
-| P1-07 | 报表功能严重不足 | ReportsController (仅 3 个日统计) | 数据分析能力弱 |
-| P1-08 | 6 个 NotSupportedException 桩 | Desktop Foundation Http/Clients | Desktop 功能不完整 |
-| P1-09 |处方价格刷新未实现 | MedicalCasePrescriptionService TODO | 价格不自动更新 |
-
-### 🔵 P2 — 可后续完善
-
-| ID | 问题 | 位置 | 影响 |
-|----|------|------|------|
-| P2-01 | 自动更新 | Shell (Velopack) | 运维依赖 |
-| P2-02 | 数据备份/恢复 | — | 运维依赖 |
-| P2-03 | SignalR 实时通知 | — | 体验增强 |
-| P2-04 | 离线同步 v2.0 | 旧分支已放弃 | 大功能 |
-| P2-05 | Swagger/OpenAPI | — | 开发体验 |
-| P2-06 | 排班管理 | Registration | 业务增强 |
+> 📄 已拆分至 [13c-current-status.md](13c-current-status.md)：P0（必须修复）/P1（应修复）/P2（可后续完善）问题清单。
 
 ---
 
@@ -362,6 +94,23 @@
 | C-03 | 部署脚本清理 | 评估 3 个脚本 | 无 | ⬜ | 0.25d |
 | C-04 | NuGet 包清理 | 废弃包检查 | 无 | ⬜ | 0.25d |
 | C-05 | 文档同步 | AGENTS.md/README.md 更新 | 所有代码改动后 | ⬜ | 0.5d |
+
+### D 类 — 医案/挂号专项（2026-08-03 批次）
+
+| ID | 任务 | 内容 | 依赖 | 状态 | 预估 |
+|----|------|------|------|------|------|
+| D-01 | 接诊链修复 | StartVisit 原子建医案（D8） | 无 | ✅ | — |
+| D-02 | QuickVisit Desktop 接线 | US-REG-002 激活 | D-01 | ✅ | — |
+| D-03 | 医案状态机重构 | 取消=物理删 / 仅 Completed 打印 / 打印保护简化 / 堵绕过 | 无 | ✅ | — |
+
+### E 类 — 规则体系优化（2026-08-04）
+
+| ID | 任务 | 内容 | 依赖 | 状态 | 预估 |
+|----|------|------|------|------|------|
+| E-01 | coder 层 | 角色 AGENTS.md 精简 + Skill v0.6.0 SSOT | 无 | ✅ | — |
+| E-02 | 项目层 | 项目 AGENTS.md 精简为入口+引用 | E-01 | ✅ | — |
+| E-03 | 总账拆分 | 13a/13b/13c 拆分 | E-02 | ✅ | — |
+| E-04 | MCP 配置 | 禁用 tavily/serena + 注释 | 无 | ✅ | — |
 
 ---
 
@@ -486,8 +235,8 @@
 | D-03 医案状态机重构（B6-B9：取消=物理删 / 仅 Completed 打印 / 打印保护简化 / 堵状态机绕过） | ✅ | 2026-08-03 | `64adfebd3` `5bc01de5b` `7fd4a09e5` `d98332394` |
 | E-01 规则体系：coder 层（角色 AGENTS.md 精简 + Skill v0.6.0 确立 SSOT） | ✅ | 2026-08-04 | profile 目录（非 repo），备份 `profiles\coder\backups\2026-08-04\` |
 | E-02 规则体系：项目层（项目 AGENTS.md 精简为入口+引用，详细规则迁入 Skill） | ✅ | 2026-08-04 | `da2290117` |
-| E-03 项目总账拆分（13a/13b/13c） | ⬜ | — | — |
-| E-04 MCP 配置禁用问题工具（tavily/serena + 注释） | ⬜ | — | — |
+| E-03 规则体系：项目总账拆分（13a/13b/13c） | ✅ | 2026-08-04 | 待提交 |
+| E-04 规则体系：MCP 配置禁用问题工具（tavily/serena） | ✅ | 2026-08-04 | 待提交 |
 
 ---
 
@@ -505,6 +254,7 @@
 | 2026-08-03 | 医案状态机重构（医案专题）：取消=物理删除（不判内容，审计可统计）；已完成只可软删（Admin 清理）；未完成不可打印（草稿水印删，打印保护简化为 IsPrinted 标记）；REG-BR-005 放弃恢复；医案无 Status 字段（只需 CaseStatus） | 场景驱动的生命周期设计；消除状态/保护机制冗余 | 产品负责人 |
 | 2026-08-03 | 文档深度审查（3 路并行）：45 文件修改 + 14-deploy.md 补建；P0 明文密码/密钥全部脱敏；21 处断链清零；08-03 定案向下游传播（glossary/users/data-model/printing/security/ADR-0001/modules）；幻影端点修正；Token 有效期 9 处改为配置驱动 | 三次审计后系统性清理；A-01 文档清理部分完成 | 技术总监 |
 | 2026-08-04 | 规则体系三层架构优化（见 `docs/reports/rule-optimization-report-20260803.md`）：角色层=通用工作流/调度/沟通规则，项目层=入口+引用，Skill=项目规则 SSOT（v0.6.0）；沟通规则归位角色层；项目 AGENTS.md 141→58 行 | 消除规则分散重复（重复率约 40%），单点维护 | 技术总监 |
+| 2026-08-04 | 总账拆分：数据模型→13a、API 端点→13b、Desktop 视图+已知问题→13c；主文件保留待办/阶段/状态/决策/维护规则，章节编号不变（§九 引用兼容） | 主文件聚焦任务管理，附录独立维护 | 技术总监 |
 
 ---
 
@@ -528,4 +278,7 @@
 | 代码审计报告 | `docs/reports/2026-08-02-codebase-audit.md` | 项目现状全面审计 |
 | 代码审查报告 | `docs/reports/code-review-duplicates.md` | 重复定义与不统一问题 |
 | PRD | `docs/02-requirements/01-prd.md` | 产品需求文档 |
+| 数据模型 | `docs/03-architecture/13a-data-model.md` | 核心实体 + 状态枚举 |
+| API 端点 | `docs/03-architecture/13b-api-endpoints.md` | 全部模块端点 |
+| 当前状态 | `docs/03-architecture/13c-current-status.md` | Desktop 视图 + 已知问题 |
 | AGENTS.md | `AGENTS.md` | 开发规范与约束 |

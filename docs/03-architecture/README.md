@@ -38,7 +38,10 @@
 | 10 | [打印架构](10-printing-architecture.md) | 处方模板、PDF |
 | 11 | [业务流程](11-business-flows.md) | 挂号→就诊→诊断→开方→打印 |
 | 12 | [权限矩阵](12-permissions-matrix.md) | 角色 × 资源 × 操作 |
-| 13 | [项目总账](13-project-master-plan.md) | 唯一全局视图 |
+| 13 | [项目总账](13-project-master-plan.md) | 唯一全局视图（任务/阶段/决策/维护规则） |
+| 13a | [数据模型](13a-data-model.md) | 核心实体 + 状态枚举 |
+| 13b | [API 端点](13b-api-endpoints.md) | 全部模块端点 |
+| 13c | [当前状态](13c-current-status.md) | Desktop 视图 + 已知问题 |
 | 14 | [实现任务](14-implementation-tasks.md) | v1.0 缺口清单 |
 | 15 | [Mapperly](15-mapperly.md) | 映射规范 |
 | 16 | [同步协议](16-sync-protocol.md) | v2.0 数据同步设计 |
