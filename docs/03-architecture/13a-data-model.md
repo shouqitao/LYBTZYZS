@@ -28,7 +28,7 @@
 
 | 枚举 | 值 | 用途 |
 |------|-----|------|
-| **MedicalCaseStatus** | Active/Completed/Suspended/Cancelled | 医案生命周期 |
+| **MedicalCaseStatus** | Active/Suspended/Completed（无 Cancelled，取消=物理删除） | 医案生命周期 |
 | **RegistrationStatus** | Waiting/InProgress/Completed/Cancelled | 挂号生命周期 |
 | **RegistrationSource** | Receptionist/Doctor | 挂号来源 |
 | **CommonStatus** | Enabled/Disabled | 通用启用/禁用 |

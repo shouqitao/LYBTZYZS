@@ -37,33 +37,33 @@
 
 | 方法 | 端点 | 功能 | 权限 |
 |------|------|------|------|
-| GET | / | 患者列表（分页） | Doctor/Receptionist |
-| GET | /{id} | 患者详情 | Doctor/Receptionist |
+| GET | / | 患者列表（分页） | Doctor/Receptionist/Admin |
+| GET | /{id} | 患者详情 | Doctor/Receptionist/Admin |
 | POST | / | 创建患者 | Doctor/Receptionist |
 | PUT | /{id} | 更新患者 | Doctor/Receptionist |
-| DELETE | /{id} | 删除患者（软删除） | Doctor/Receptionist |
-| POST | /{id}/toggle-status | 启用/禁用 | Doctor/Receptionist |
-| POST | /{id}/restore | 恢复已删除 | Doctor/Receptionist |
-| POST | /batch-delete | 批量删除 | Doctor/Receptionist |
-| GET | /{id}/check-reference | 检查引用关系 | Doctor/Receptionist |
-| POST | /batch-check-reference | 批量检查引用 | Doctor/Receptionist |
-| GET | /by-id-number/{idNumber} | 身份证号查询 | Doctor/Receptionist |
+| DELETE | /{id} | 删除患者（软删除） | Admin+ |
+| POST | /{id}/toggle-status | 启用/禁用 | Admin+ |
+| POST | /{id}/restore | 恢复已删除 | Admin（业务管理） |
+| POST | /batch-delete | 批量删除 | Admin+ |
+| GET | /{id}/check-reference | 检查引用关系 | Doctor/Receptionist/Admin |
+| POST | /batch-check-reference | 批量检查引用 | Doctor/Receptionist/Admin |
+| GET | /by-id-number/{idNumber} | 身份证号查询 | Doctor/Receptionist/Admin |
 
 ## 3.4 药材管理 (Herbs) — `api/v1/herbs`
 
 | 方法 | 端点 | 功能 | 权限 |
 |------|------|------|------|
-| GET | / | 药材列表（分页） | Doctor/Receptionist |
-| GET | /{id} | 药材详情 | Doctor/Receptionist |
-| POST | / | 创建药材 | Doctor/Receptionist |
-| PUT | /{id} | 更新药材 | Doctor/Receptionist |
-| DELETE | /{id} | 删除药材（软删除） | Doctor/Receptionist |
-| POST | /{id}/toggle-status | 启用/禁用 | Doctor/Receptionist |
-| POST | /{id}/restore | 恢复已删除 | Doctor/Receptionist |
-| POST | /batch-delete | 批量删除 | Doctor/Receptionist |
-| POST | /batch-import | 批量导入（JSON） | Doctor/Receptionist |
-| GET | /{id}/check-reference | 检查引用关系 | Doctor/Receptionist |
-| POST | /batch-check-reference | 批量检查引用 | Doctor/Receptionist |
+| GET | / | 药材列表（分页） | Doctor/Admin |
+| GET | /{id} | 药材详情 | Doctor/Admin |
+| POST | / | 创建药材 | Admin+ |
+| PUT | /{id} | 更新药材 | Admin+ |
+| DELETE | /{id} | 删除药材（软删除） | Admin+ |
+| POST | /{id}/toggle-status | 启用/禁用 | Admin+ |
+| POST | /{id}/restore | 恢复已删除 | Admin（业务管理） |
+| POST | /batch-delete | 批量删除 | Admin+ |
+| POST | /batch-import | 批量导入（JSON） | Admin+ |
+| GET | /{id}/check-reference | 检查引用关系 | Doctor/Admin |
+| POST | /batch-check-reference | 批量检查引用 | Doctor/Admin |
 | POST | /batch-enable | 批量启用 | Admin+ |
 | POST | /batch-disable | 批量禁用 | Admin+ |
 
@@ -71,17 +71,17 @@
 
 | 方法 | 端点 | 功能 | 权限 |
 |------|------|------|------|
-| GET | / | 验方列表（分页） | Doctor/Receptionist |
-| GET | /{id} | 验方详情 | Doctor/Receptionist |
-| POST | / | 创建验方 | Doctor/Receptionist |
-| PUT | /{id} | 更新验方 | Doctor/Receptionist |
-| DELETE | /{id} | 删除验方（软删除） | Doctor/Receptionist |
-| POST | /{id}/toggle-status | 启用/禁用 | Doctor/Receptionist |
-| POST | /{id}/restore | 恢复已删除 | Doctor/Receptionist |
-| POST | /batch-delete | 批量删除 | Doctor/Receptionist |
-| POST | /batch-import | 批量导入（JSON） | Doctor/Receptionist |
-| GET | /pending-validation | 待校验验方列表 | Doctor/Receptionist |
-| POST | /{formulaId}/herbs/{herbItemId}/validate | 校验药材匹配 | Doctor/Receptionist |
+| GET | / | 验方列表（分页） | Doctor/Admin |
+| GET | /{id} | 验方详情 | Doctor/Admin |
+| POST | / | 创建验方 | Admin/Doctor |
+| PUT | /{id} | 更新验方 | Admin/Doctor |
+| DELETE | /{id} | 删除验方（软删除） | Admin/Doctor |
+| POST | /{id}/toggle-status | 启用/禁用 | Admin+ |
+| POST | /{id}/restore | 恢复已删除 | Admin（业务管理） |
+| POST | /batch-delete | 批量删除 | Admin+ |
+| POST | /batch-import | 批量导入（JSON） | Admin+ |
+| GET | /pending-validation | 待校验验方列表 | Doctor/Admin |
+| POST | /{formulaId}/herbs/{herbItemId}/validate | 校验药材匹配 | Doctor/Admin |
 | POST | /batch-enable | 批量启用 | Admin+ |
 | POST | /batch-disable | 批量禁用 | Admin+ |
 
@@ -89,39 +89,39 @@
 
 | 方法 | 端点 | 功能 | 权限 |
 |------|------|------|------|
-| GET | / | 医案列表（分页） | Doctor/Receptionist |
-| GET | /{id} | 医案详情 | Doctor/Receptionist |
-| POST | / | 创建医案 | Doctor |
-| PUT | /{id} | 更新医案 | Doctor |
+| GET | / | 医案列表（分页） | Doctor/Admin（数据所有权过滤） |
+| GET | /{id} | 医案详情 | Doctor/Admin（数据所有权过滤） |
+| POST | / | 创建医案 | Doctor（DoctorOnly） |
+| PUT | /{id} | 更新医案 | Doctor（仅自己的） |
 | DELETE | /{id} | 删除医案 | Doctor/Admin |
 | POST | /batch-delete | 批量删除 | Doctor/Admin |
-| PUT | /{id}/close | 完成医案 | Doctor |
-| PUT | /{id}/suspend | 挂起医案 | Doctor |
-| PUT | /{id}/cancel | 取消医案 | Doctor |
+| PUT | /{id}/close | 完成医案 | Doctor（仅自己的） |
+| PUT | /{id}/suspend | 挂起医案 | Doctor（仅自己的） |
+| PUT | /{id}/cancel | 取消医案 | Doctor（仅自己的） |
 | PUT | /{id}/status | 更新状态 | Doctor |
 | PUT | /{id}/prescription-flag | 标记处方需求 | Doctor |
 | PUT | /{id}/print-completed | 记录打印完成 | Doctor |
-| GET | /{id}/consultations | 辨证记录列表 | Doctor/Receptionist |
-| GET | /{id}/prescriptions | 处方列表 | Doctor/Receptionist |
-| GET | /patient/{id}/consultations | 患者辨证历史 | Doctor/Receptionist |
-| GET | /patient/{id}/prescriptions | 患者处方历史 | Doctor/Receptionist |
-| POST | /batch-details | 批量查询详情（≤50） | Doctor/Receptionist |
-| GET | /search | 跨医案搜索 | Doctor/Receptionist |
-| GET | /query | 统一查询端点 | Doctor/Receptionist |
-| GET | /{id}/permissions | 操作权限查询 | Doctor/Receptionist |
-| GET | /{id}/audit-logs | 审计日志 | Doctor/Receptionist |
+| GET | /{id}/consultations | 辨证记录列表 | Doctor/Admin |
+| GET | /{id}/prescriptions | 处方列表 | Doctor/Admin |
+| GET | /patient/{id}/consultations | 患者辨证历史 | Doctor/Admin |
+| GET | /patient/{id}/prescriptions | 患者处方历史 | Doctor/Admin |
+| POST | /batch-details | 批量查询详情（≤50） | Doctor/Admin |
+| GET | /search | 跨医案搜索 | Doctor/Admin |
+| GET | /query | 统一查询端点 | Doctor/Admin |
+| GET | /{id}/permissions | 操作权限查询 | Doctor/Admin |
+| GET | /{id}/audit-logs | 审计日志 | Doctor/Admin |
 
 ## 3.7 挂号管理 (Registrations) — `api/v1/registrations`
 
 | 方法 | 端点 | 功能 | 权限 |
 |------|------|------|------|
-| GET | / | 挂号列表（分页+筛选） | Doctor/Receptionist |
-| GET | /{id} | 挂号详情 | Doctor/Receptionist |
-| POST | / | 创建挂号 | Doctor/Receptionist |
-| PUT | /{id}/start-visit | 接诊 | Doctor/Receptionist |
-| PUT | /{id}/cancel | 取消挂号 | Doctor/Receptionist |
-| GET | /queue | 等待队列 | Doctor/Receptionist |
-| POST | /quick-visit | 医生快速看诊 | Doctor |
+| GET | / | 挂号列表（分页+筛选） | Doctor/Receptionist/Admin（Admin 只读） |
+| GET | /{id} | 挂号详情 | Doctor/Receptionist/Admin（Admin 只读） |
+| POST | / | 创建挂号 | Receptionist |
+| PUT | /{id}/start-visit | 接诊 | Doctor（DoctorOnly） |
+| PUT | /{id}/cancel | 取消挂号 | Receptionist |
+| GET | /queue | 等待队列 | Doctor/Receptionist/Admin（Admin 只读） |
+| POST | /quick-visit | 医生快速看诊 | Doctor（DoctorOnly） |
 
 ## 3.8 统计报表 (Reports) — `api/v1/reports`
 

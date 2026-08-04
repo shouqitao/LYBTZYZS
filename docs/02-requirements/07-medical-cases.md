@@ -53,7 +53,7 @@
 **状态机**：
 ```
 Registration:  Waiting → InProgress → Completed/Cancelled
-MedicalCase:   （不存在）→ Active → Suspended/Completed/Cancelled
+MedicalCase:   （不存在）→ Active → Suspended/Completed（取消=物理删除，无 Cancelled 状态）
 ```
 
 ### BR-001：同一患者单活跃医案约束（核心铁律）
@@ -64,7 +64,7 @@ MedicalCase:   （不存在）→ Active → Suspended/Completed/Cancelled
 
 **碰撞处理**：当患者已有 `Active`/`Suspended` 医案时，系统提示用户选择：
 1. **重开现有医案** — 导航到已有的 Active/Suspended 医案继续编辑
-2. **关闭旧的后新建** — 将已有医案软删除（Cancelled），然后创建新医案
+2. **关闭旧的后新建** — 将已有医案取消（物理删除），然后创建新医案
 3. **取消操作** — 放弃创建
 
 **技术实现**：代码层检查（`MedicalCaseBusinessRules`）+ DB 唯一索引（Active + Suspended 状态）。并发冲突风险极低（NFR 1-3 用户，MC-D06）。
@@ -646,7 +646,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **业务规则**:
 1. 记录操作人（ID/姓名/角色）、操作类型、变更字段、前后值
-2. 操作类型：Create/Update/StatusChange/SoftDelete（取消统一为 SoftDelete）。OperationType 使用 int 枚举存储
+2. 操作类型：Create/Update/StatusChange/SoftDelete/Cancel（取消=物理删除，OperationType=Cancel，见 :557）。OperationType 使用 int 枚举存储
 3. 修改原因：历史医案修改时必填
 4. 支持分页查看审计日志
 5. 变更字段和值以 JSON 格式存储（CamelCase）

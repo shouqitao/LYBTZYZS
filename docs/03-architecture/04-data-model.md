@@ -118,7 +118,7 @@ graph TB
 
 ### MedicalCase 业务生命周期
 
-**状态机**：`Suspended ↔ Active → Completed`（取消 = 软删除 IsDeleted=true，不在枚举中）。
+**状态机**：`Suspended ↔ Active → Completed`（取消 = 物理删除，无 Cancelled 状态）。
 
 > 完整状态转换矩阵（守卫条件 + 实现位置）、Registration 联动规则、打印保护覆盖层（IsPrinted/PrintVersion/EditReason）见权威文档 [07-medical-cases.md「状态机」「打印保护耦合」](../02-requirements/07-medical-cases.md)。状态枚举值定义见下方 [枚举定义](#枚举定义) 段。
 
@@ -325,7 +325,7 @@ graph TB
 | 1 | Active | 进行中 |
 | 2 | Completed | 已完成 |
 
-> **注意**: `Draft` (原值=0) 已重命名为 `Suspended` (MC-D20)。`Cancelled` (原值=3) 已移除，取消操作统一通过 `IsDeleted=true` 软删除实现。
+> **注意**: `Draft` (原值=0) 已重命名为 `Suspended` (MC-D20)。`Cancelled` (原值=3) 已移除，取消操作统一为物理删除（2026-08-03 决策），无 Cancelled 状态。
 
 ### UserRole
 

@@ -48,8 +48,8 @@ public interface IAuthService
 |------|------|------|------|
 | POST | `/api/v1/auth/login` | Login | 匿名 |
 | POST | `/api/v1/auth/refresh` | RefreshToken | 匿名 |
-| POST | `/api/v1/auth/logout` | Logout | Bearer |
-| POST | `/api/v1/auth/validate` | ValidateToken | 匿名 |
+| POST | `/api/v1/auth/logout` | Logout | 匿名 |
+| POST | `/api/v1/auth/validate` | ValidateToken | 已认证 |
 | GET | `/api/v1/health` | Health | 匿名 |
 
 ### DTO 结构

@@ -317,14 +317,14 @@
 - [ ] 仅 Receptionist 可取消 `Source=Receptionist` 的挂号（REG-BR-002）
 - [ ] 仅 `Status=Waiting` 的挂号可取消（REG-BR-001）
 - [ ] **仅当天的 Waiting 挂号可取消**：非当天的 Waiting 挂号，前台提醒患者联系管理员退款
-- [ ] 取消前校验：无关联医案 OR 关联医案状态为 Cancelled
+- [ ] 取消前校验：无关联医案（医案取消=物理删除，不留 Cancelled 状态）
 - [ ] 有 Active/Suspended/Completed 医案时拒绝取消，提示原因（REG-70003）
 - [ ] 取消后 Status → Cancelled
 - [ ] 取消后自动退挂号费（按医生挂号费）
 - [ ] Doctor 无权执行此操作（REG-70004）
 
 **业务规则**:
-1. **REG-BR-001 取消前置校验**：无关联医案 OR 关联医案状态为 Cancelled，否则拒绝取消
+1. **REG-BR-001 取消前置校验**：无关联医案（医案取消=物理删除，不留 Cancelled 状态），否则拒绝取消
 2. **REG-BR-002 前台取消权限**：Source=Receptionist 的挂号仅 Receptionist 可取消
 3. 仅 `Status=Waiting` 可取消（InProgress 的挂号需先取消医案联动处理）
 4. **仅当天的 Waiting 挂号可取消**：非当天的 Waiting 挂号需管理员退款
