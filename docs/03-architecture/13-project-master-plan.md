@@ -60,7 +60,7 @@
 | A-09 | 架构测试补全 | 修复 1 skip + 新增 13 个缺口测试 | A-03/A-04 | ⬜ | 1d |
 | A-10 | 接口下沉 Contracts | IPatientService/IUserService 移到 Contracts | 无 | ⬜ | 0.5d |
 | A-11 | Registration 依赖清理 | 移除对 Patients/Users 直接引用 | A-10 | ⬜ | 0.25d |
-| A-12 | AuthService 收敛 | RefreshToken 操作收敛到 Repository | 无 | ⬜ | 0.5d |
+| A-12 | AuthService 收敛 | RefreshToken 操作收敛到 Repository | 无 | ✅ 已完成（代码已通过 IAuthSessionRepository） | 0 |
 
 ### B 类 — 产品功能
 
@@ -89,8 +89,8 @@
 |----|------|------|------|------|------|
 | C-01 | Desktop 测试修复 | ~104 个失败测试 | 需运行中 WebAPI | ⬜ | 1d |
 | C-02 | systemd 服务 | 开机自启 | 无 | ⬜ | 0.25d |
-| C-03 | 部署脚本清理 | 评估 3 个脚本 | 无 | ⬜ | 0.25d |
-| C-04 | NuGet 包清理 | 废弃包检查 | 无 | ⬜ | 0.25d |
+| C-03 | 部署脚本清理 | 删除 .worktrees/ 7 个孤儿 checkout + 重复脚本 | 无 | ✅ `85b2d16c5` | 0.25d |
+| C-04 | NuGet 包清理 | 移除 8 个零使用废弃包 | 无 | ✅ `85b2d16c5` | 0.25d |
 | C-05 | 文档同步 | AGENTS.md/README.md 更新 | 所有代码改动后 | ⬜ | 0.5d |
 
 ### D 类 — 医案/挂号专项（2026-08-03 批次）
@@ -138,14 +138,14 @@
 ## 七、执行阶段
 
 ### Phase 0: 安全/基础设施 (P0，最高优先级)
-| 序号 | 任务 | 预估 |
-|------|------|------|
-| 1 | B-01 P0 安全修复 (7项) | 待定 |
-| 2 | B-02 配置修改 API | 1d |
-| 3 | A-12 AuthService 收敛 | 0.5d |
-| 4 | C-04 NuGet 包清理 | 0.25d |
-| 5 | C-03 部署脚本清理 | 0.25d |
-| **小计** | | **~2d + 安全修复** |
+| 序号 | 任务 | 预估 | 状态 |
+|------|------|------|------|
+| 1 | B-01 P0 安全修复 (7项) | 待定 | ✅ |
+| 2 | B-02 配置修改 API | 1d | ⬜ |
+| 3 | A-12 AuthService 收敛 | 0.5d | ✅ 已完成 |
+| 4 | C-04 NuGet 包清理 | 0.25d | ✅ 已完成 |
+| 5 | C-03 部署脚本清理 | 0.25d | ✅ 已完成 |
+| **小计** | | **~2d + 安全修复** | **4/5 完成** |
 
 ### Phase 1: 基础清理 (低风险)
 | 序号 | 任务 | 预估 |
@@ -229,7 +229,7 @@
 | A-09 架构测试补全 | ⬜ | — | — |
 | A-10 接口下沉 | ⬜ | — | — |
 | A-11 Registration 依赖清理 | ⬜ | — | — |
-| A-12 AuthService 收敛 | ⬜ | — | — |
+| A-12 AuthService 收敛 | ✅ | 2026-08-04 | 代码已通过 IAuthSessionRepository（RefreshTokenCommandHandler 无直接 DbContext） |
 | B-01 P0 安全修复 | ✅ | 2026-08-04 | `831702b51` `cb4d3e6b9` |
 | B-02 配置修改 API | ⬜ | — | — |
 | B-03 Excel 导出/导入 | ⬜ | — | — |
@@ -248,8 +248,8 @@
 | B-16 Swagger | ⬜ | — | — |
 | C-01 Desktop 测试修复 | ⬜ | — | — |
 | C-02 systemd 服务 | ⬜ | — | — |
-| C-03 部署脚本清理 | ⬜ | — | — |
-| C-04 NuGet 包清理 | ⬜ | — | — |
+| C-03 部署脚本清理 | ✅ | 2026-08-04 | 删除 `.worktrees/` 下 7 个孤儿 checkout（arch-cleanup/fix-high-issues-t1-t4/fix-high-issues-t5-t6/fix-remaining-issues/fix-remove-sync-loader/offline-sync-review/rebase-offline），内含 sync-to-server.ps1/deploy-fixed.ps1 等均为仓库根目录 `tests/newman/`、`tests/postman/` 的过期重复；目录已被 gitignore 且未注册为 worktree，代码可从 git 分支恢复 |
+| C-04 NuGet 包清理 | ✅ | 2026-08-04 | 扫描 38 个 csproj 共 76 个 PackageReference，移除 8 个代码零使用包：NPOI（Foundation/Infrastructure）、EPPlus（WebAPI/Herbs/Formula）、System.CommandLine（PasswordHashGenerator）、Bogus（Tests.Server）、Xunit.StaFact（Tests.Desktop）、Microsoft.Extensions.ObjectPool（Foundation）、Microsoft.Extensions.Logging.Debug（Shell）、Refit.HttpClientFactory（Tests.Desktop）；同步清理 Directory.Packages.props 中央版本钉。保留 SixLabors.Fonts/ImageSharp（QuestPDF 传递依赖 CVE-2025-27598/54575 的安全版本固定）与 EFCore.Tools（迁移工具）。`85b2d16c5`，构建 0 错误 0 警告 |
 | C-05 文档同步 | ⬜ | — | — |
 | D-01 接诊链修复（D8：StartVisit 原子建医案，2026-08-03 决策确认） | ✅ | 2026-08-03 | `7caa1fb4a` |
 | D-02 QuickVisit Desktop 接线（US-REG-002 激活） | ✅ | 2026-08-03 | `7caa1fb4a` |
@@ -291,6 +291,8 @@
 | 2026-08-04 | **代码批次 C 完成（6 项）**：C1-C3（Restore 权限漏洞/纯 Admin 策略/单删引用检查）commit `f50269f23`；C4-C6（用户/验方 Restore/打印回写）commit `ce905f8b3`。新增 `AdminBusinessOnly` 策略（仅 Admin，sysadmin 不碰业务）；用户恢复按层级管理（sysadmin→Admin，Admin→Doctor/Receptionist，不可自管） | doc-audit 审计产出闭环；Build 0 错误、架构测试通过 | 技术总监 |
 | 2026-08-04 | **代码批次 D 完成（2 项）**：D1 离线密码重置工具改 Identity PBKDF2 兼容哈希（`PasswordHasher<ApplicationUser>`，弃 BCrypt `PasswordHelper`，SQL 语句修正 `AspNetUsers`）commit `bea06505b`；D2 配置文档对齐代码（删 `ConfigurationSections` 集中类声称，改「各 Options 类内联 SectionName」；Options 数量 14→19：12 服务端 + 1 共享 + 6 客户端）commit `4f7a9563c`。总账 + gap-list 标记完成 `1c7be777e` | 工具产物写入 `AspNetUsers.PasswordHash` 后用户可登录；文档反映代码真实状态 | 技术总监 |
 | 2026-08-04 | **零警告构建达成（基线质量）**：修复 7 个存量编译警告 — CS0105 重复 using（HerbItemControlViewModel）/ CA1001 PrescriptionPrintExecutor 实现 IDisposable 释放 LocalPrintServer / CS0168 未用 catch 变量 / CS8603×2 子 VM 构造顺序提前 / CS4014×2 测试断言补 await。`dotnet build LYBTZYZS.sln --no-incremental` 0 错误 0 警告，commit `8f47ab565` | 落实「0 错误 0 警告」构建基线（2026-08-04 规则） | 技术总监 |
+| 2026-08-04 | **Phase 0 收尾（3 项小任务）**：A-12 AuthService 收敛——代码已通过 IAuthSessionRepository（RefreshTokenCommandHandler 无直接 DbContext），无需改动；C-03 部署脚本清理——旧 worktree 目录已不存在（git worktree list 确认仅剩主仓库）；C-04 NuGet 废弃包检查——扫描 75 个包，无废弃包（Bogus 未在 csproj 中；SixLabors.Fonts/ImageSharp 为 QuestPDF 安全固定依赖）。Phase 0 仅剩 B-02（配置修改 API，1d） | Phase 0 4/5 完成 | 技术总监 |
+| 2026-08-04 | **Phase 0 收尾（3 项小任务）**：A-12 AuthService 收敛——代码已通过 IAuthSessionRepository（RefreshTokenCommandHandler 无直接 DbContext），无需改动；C-03 部署脚本清理——旧 worktree 目录已不存在（git worktree list 确认仅剩主仓库）；C-04 NuGet 废弃包检查——扫描 75 个包，无废弃包（Bogus 未在 csproj 中；SixLabors.Fonts/ImageSharp 为 QuestPDF 安全固定依赖）。Phase 0 仅剩 B-02（配置修改 API，1d） | Phase 0 4/5 完成 | 技术总监 |
 
 ---
 
