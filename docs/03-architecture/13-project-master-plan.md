@@ -289,6 +289,7 @@
 | 2026-08-04 | **恢复权限裁决**：**业务数据**（患者/验方）恢复 = 仅 Admin（业务管理，sysadmin 不碰业务、Doctor/前台无权）；**用户账号**恢复 = 层级管理（sysadmin 恢复 Admin，Admin 恢复 Doctor/Receptionist，不可自管）。代码现状：PatientsController.Restore 回退类级策略（全员可调，安全漏洞）；现有 AdminOnly 策略含 SuperAdmin，需新增纯 Admin 策略 | 恢复是删除的逆操作，与「患者删除/禁用仅 Admin」对称；用户账号按已确立的层级管理规则（02-personas §约束） | 产品负责人 |
 | 2026-08-04 | **doc-audit 审计完成（G-01）**：3 并行子代理审稿 + 主代理代码校准，150 文档。P0 矛盾 16 项 + P1 未对齐 22 项 + A 类 doc-vs-code 4 项全部修复（4 commit）；结构层健康（断链 1 条在归档）；核心裁决：医案取消=物理删除清 Cancelled 残留、13b 端点权限表按终局重写、PolicyConstants 6 项、Prism=模块框架+CommunityToolkit MVVM、C2（药材权限）已修复、D5（患者单删缺引用检查）待修 | 审计暴露 6 项代码缺口（Restore 权限漏洞、缺纯 Admin 策略、单删缺引用检查、用户/验方 Restore 未实现、打印回写未实现）→ 批次 C 已派发 | 技术总监 |
 | 2026-08-04 | **代码批次 C 完成（6 项）**：C1-C3（Restore 权限漏洞/纯 Admin 策略/单删引用检查）commit `f50269f23`；C4-C6（用户/验方 Restore/打印回写）commit `ce905f8b3`。新增 `AdminBusinessOnly` 策略（仅 Admin，sysadmin 不碰业务）；用户恢复按层级管理（sysadmin→Admin，Admin→Doctor/Receptionist，不可自管） | doc-audit 审计产出闭环；Build 0 错误、架构测试通过 | 技术总监 |
+| 2026-08-04 | **代码批次 D 完成（2 项）**：D1 离线密码重置工具改 Identity PBKDF2 兼容哈希（`PasswordHasher<ApplicationUser>`，弃 BCrypt `PasswordHelper`，SQL 语句修正 `AspNetUsers`）commit `bea06505b`；D2 配置文档对齐代码（删 `ConfigurationSections` 集中类声称，改「各 Options 类内联 SectionName」；Options 数量 14→19：12 服务端 + 1 共享 + 6 客户端）commit `4f7a9563c`。总账 + gap-list 标记完成 `1c7be777e` | 工具产物写入 `AspNetUsers.PasswordHash` 后用户可登录；文档反映代码真实状态 | 技术总监 |
 
 ---
 
