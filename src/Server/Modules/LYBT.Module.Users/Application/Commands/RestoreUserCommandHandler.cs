@@ -28,6 +28,21 @@ public class RestoreUserCommandHandler : IRequestHandler<RestoreUserCommand, Res
         if (!user.IsDeleted)
             return Result<UserDetailDto>.Failure(ErrorCode.InvalidRequest, "该用户未被删除，无需恢复");
 
+        // 层级校验：sysadmin 可恢复 Admin；Admin 仅可恢复 Doctor/Receptionist；不可自管
+        if (request.OperatorRole is not (UserRole.Admin or UserRole.SuperAdmin))
+            return Result<UserDetailDto>.Failure(ErrorCode.Unauthorized, "无权恢复用户");
+
+        if (request.OperatorId == request.UserId)
+            return Result<UserDetailDto>.Failure(ErrorCode.Forbidden, "不能恢复自己的账号");
+
+        if (user.IsSysAdmin)
+            return Result<UserDetailDto>.Failure(ErrorCode.Forbidden, "系统管理员账号不可被恢复");
+
+        if (request.OperatorRole == UserRole.Admin
+            && user.Role != UserRole.Doctor
+            && user.Role != UserRole.Receptionist)
+            return Result<UserDetailDto>.Failure(ErrorCode.Forbidden, "仅超级管理员可恢复管理员账号");
+
         user.IsDeleted = false;
         user.Status = CommonStatus.Enabled;
         user.LockoutEnd = null;

@@ -5,6 +5,7 @@ using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -136,12 +137,14 @@ public abstract class BaseUsersController : BaseCrudController
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-        var (operatorId, _, _) = GetOperator();
-        var result = await Sender.Send(new RestoreUserCommand(id, operatorId), ct);
+        var (operatorId, _, operatorRole) = GetOperator();
+        var result = await Sender.Send(new RestoreUserCommand(id, operatorId, operatorRole), ct);
         if (!result.IsSuccess || result.Value == null)
         {
             if (result.Error?.Contains("未被删除") == true)
                 return BusinessFail(result.Error);
+            if (result.ErrorCode == ErrorCode.Forbidden)
+                return Forbid(result.Error ?? "无权恢复该用户");
             return NotFound(result.Error ?? "用户不存在");
         }
 

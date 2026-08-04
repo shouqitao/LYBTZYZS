@@ -1,4 +1,5 @@
 using MediatR;
+using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.MedicalCases.Application.Commands;
 using LYBT.Module.MedicalCases.Application.Queries;
@@ -8,6 +9,7 @@ using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -225,8 +227,9 @@ public abstract class BaseMedicalCasesController : BaseCrudController
     }
 
     /// <summary>
-    /// 记录打印完成
+    /// 记录打印完成 — 仅 Doctor（打印仅 Doctor，2026-08-03 决策）
     /// </summary>
+    [Authorize(Policy = PolicyConstants.DoctorOnly)]
     [HttpPut("{id:guid}/print-completed")]
     public virtual async Task<IActionResult> RecordPrint(
         Guid id,
@@ -241,6 +244,29 @@ public abstract class BaseMedicalCasesController : BaseCrudController
 
         LogOperation("打印记录写入成功", null, id);
         return Success(true, "打印记录已写入");
+    }
+
+    /// <summary>
+    /// 记录打印日志（成功/失败）— 仅 Doctor
+    /// 打印成功时回写医案打印状态，失败时仅记录日志
+    /// </summary>
+    [Authorize(Policy = PolicyConstants.DoctorOnly)]
+    [HttpPost("{id:guid}/print-logs")]
+    public virtual async Task<IActionResult> AddPrintLog(
+        Guid id,
+        [FromBody] PrintLogRequest request, CancellationToken ct)
+    {
+        if (ValidateGuid(id, "医案ID") is { } error) return error;
+
+        var (operatorId, operatorName, _) = GetOperator();
+        var result = await Sender.Send(new AddPrintLogCommand(
+            id, request.PrintType, request.IsSuccess, request.PrinterName, operatorId, operatorName), ct);
+
+        if (!result.IsSuccess)
+            return NotFound(result.Error ?? "医案不存在");
+
+        LogOperation("打印日志记录成功", new { PrintType = request.PrintType, IsSuccess = request.IsSuccess }, id);
+        return Success(true, "打印日志已记录");
     }
 
     #endregion

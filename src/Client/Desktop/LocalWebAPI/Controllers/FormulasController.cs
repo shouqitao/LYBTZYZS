@@ -124,6 +124,27 @@ public class FormulasController : BaseCrudController
     }
 
     /// <summary>
+    /// 恢复已删除的验方 — 仅 Admin（业务管理）
+    /// </summary>
+    [Authorize(Policy = PolicyConstants.AdminBusinessOnly)]
+    [HttpPost("{id}/restore")]
+    public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
+    {
+        if (ValidateGuid(id, "验方ID") is { } error) return error;
+
+        var (operatorId, _, _) = GetOperator();
+        var result = await _formulaService.RestoreAsync(id, operatorId, ct);
+        if (!result.IsSuccess || result.Value == null)
+        {
+            if (result.Error?.Contains("未被删除") == true)
+                return BusinessFail(result.Error);
+            return NotFound(result.Error ?? "验方不存在");
+        }
+
+        return Success(result.Value, "验方恢复成功");
+    }
+
+    /// <summary>
     /// 批量启用药方
     /// </summary>
     [HttpPost("batch-enable")]

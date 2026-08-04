@@ -52,6 +52,11 @@ public interface IFormulaRepository
     Task<FormulaDetailDto?> ToggleStatusAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
+    /// 恢复已删除的验方
+    /// </summary>
+    Task<FormulaDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>
     /// 批量删除验方
     /// </summary>
     Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default);

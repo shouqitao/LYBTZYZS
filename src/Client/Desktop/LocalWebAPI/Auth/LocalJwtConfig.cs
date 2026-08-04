@@ -79,6 +79,11 @@ public static class LocalJwtConfig
                 policy.RequireAuthenticatedUser()
                       .RequireRole(RoleConstants.SuperAdmin, RoleConstants.Admin, RoleConstants.Doctor));
 
+            // 仅 Doctor（打印、接诊等操作，2026-08-03 决策）
+            options.AddPolicy(PolicyConstants.DoctorOnly, policy =>
+                policy.RequireAuthenticatedUser()
+                      .RequireRole(RoleConstants.Doctor));
+
             options.AddPolicy(PolicyConstants.AdminOrSuperAdmin, policy =>
                 policy.RequireAuthenticatedUser()
                       .RequireRole(RoleConstants.Admin, RoleConstants.SuperAdmin));

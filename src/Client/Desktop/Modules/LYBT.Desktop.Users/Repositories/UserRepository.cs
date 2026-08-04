@@ -283,6 +283,22 @@ public sealed class UserRepository : ApiClientRepositoryBase<UserListDto, UserDe
             LogLevel.Information);
     }
 
+    public async Task<UserDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default)
+    {
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Users.RestoreAsync(id);
+                if (!response.Success || response.Data == null)
+                    throw new InvalidOperationException(response.Message ?? "恢复用户失败");
+
+                Logger.LogInformation("[REPO] User.Restore completed - Id={Id}", id);
+                return response.Data;
+            },
+            "Restore",
+            LogLevel.Information);
+    }
+
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         return await ExecuteBatchDeleteAsync(

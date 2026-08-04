@@ -72,6 +72,11 @@ public interface IUserRepository
     Task<UserDetailDto?> ToggleStatusAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
+    /// 恢复已删除的用户
+    /// </summary>
+    Task<UserDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>
     /// 批量删除用户
     /// </summary>
     Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default);

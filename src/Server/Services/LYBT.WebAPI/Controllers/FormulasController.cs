@@ -177,8 +177,9 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 恢复已删除的验方
+        /// 恢复已删除的验方 — 仅 Admin（业务管理）
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminBusinessOnly)]
         [HttpPost("{id}/restore")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
@@ -189,7 +190,11 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, _) = GetOperator();
             var result = await _formulaService.RestoreAsync(id, operatorId, ct);
             if (!result.IsSuccess || result.Value == null)
-                return BusinessFail(result.Error ?? "恢复失败");
+            {
+                if (result.Error?.Contains("未被删除") == true)
+                    return BusinessFail(result.Error);
+                return NotFound(result.Error ?? "验方不存在");
+            }
 
             LogOperation("恢复验方", result.Value, result.Value.Id);
             return Success(result.Value, "验方恢复成功");

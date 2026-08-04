@@ -232,8 +232,9 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 记录打印完成
+        /// 记录打印完成 — 仅 Doctor（打印仅 Doctor，2026-08-03 决策）
         /// </summary>
+        [Authorize(Policy = PolicyConstants.DoctorOnly)]
         [HttpPut("{id:guid}/print-completed")]
         [EnableRateLimiting("ApiCalls")]
         public override async Task<IActionResult> RecordPrint(

@@ -167,6 +167,22 @@ public sealed class FormulaRepository : ApiClientRepositoryBase<FormulaListDto, 
             LogLevel.Information);
     }
 
+    public async Task<FormulaDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default)
+    {
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Formulas.RestoreAsync(id);
+                if (!response.Success || response.Data == null)
+                    throw new InvalidOperationException(response.Message ?? "恢复验方失败");
+
+                Logger.LogInformation("[REPO] Formula.Restore completed - Id={Id}", id);
+                return response.Data;
+            },
+            "Restore",
+            LogLevel.Information);
+    }
+
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         return await ExecuteBatchDeleteAsync(
