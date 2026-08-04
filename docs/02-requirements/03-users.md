@@ -293,9 +293,9 @@ Server/Local → UsersController → IUserManagerService
 
 ---
 
-### US-USER-011: 恢复软删除用户（SuperAdmin）
+### US-USER-011: 恢复软删除用户（层级管理）
 
-**角色**: SuperAdmin / sysadmin
+**角色**: sysadmin 恢复 Admin；Admin 恢复 Doctor/Receptionist（一级管一级）
 **优先级**: Should
 **状态**: ✅ 已实现
 
@@ -303,7 +303,7 @@ Server/Local → UsersController → IUserManagerService
 
 **验收标准**:
 - [ ] `POST /users/{id}/restore` 端点
-- [ ] 仅 SuperAdmin 可执行（Admin 不可，与删除权限区分以避免越权还原）
+- [ ] 层级管理：sysadmin 可恢复 Admin；Admin 可恢复 Doctor/Receptionist（不可自管）
 - [ ] 恢复后用户 `IsDeleted=false`，状态回 Active（LockoutEnd 清除，可登录）
 - [ ] 关联历史医案归属保留不变（CreatedBy/DoctorName 字段不重写，审计链完整）
 - [ ] 已硬删除用户（物理删除）不可恢复 → 返回 404（ERR-USER-404）

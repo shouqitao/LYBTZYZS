@@ -142,7 +142,7 @@ v1.0 包含 **10 个功能模块、141 个 User Stories**（Must / Should / Coul
 
 - **归属字段**：Herb 使用 `BaseEntity.CreatedBy`；Formula 与 MedicalCase 使用业务字段 `UserId`；Patient 无归属限制。
 - **共享机制**：仅 Formula 支持 `IsShared` 标记（Doctor 可共享给团队，他人只读）；Herb/MedicalCase/Patient 无共享标记。
-- **软删除可见性**：软删除数据默认被全局查询过滤器隐藏；Restore 操作仅 Admin/SuperAdmin 可执行（Doctor 无权）。
+- **软删除可见性**：软删除数据默认被全局查询过滤器隐藏；Restore 操作仅 Admin 可执行（业务管理；sysadmin 系统运维不碰业务，Doctor 无权）。
 - **统一删除策略**（BR-DEL-001）：Patient 被 MedicalCase 引用、Herb 被 PrescriptionItem/FormulaItem 引用时禁止删除（返回 422，建议禁用）。
 
 ### 跨模块联动

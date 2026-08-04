@@ -389,7 +389,7 @@ stateDiagram-v2
 
 **业务规则**:
 1. 使用 `IgnoreQueryFilters()` 绕过全局软删除过滤器
-2. 仅 Admin/SuperAdmin 可恢复
+2. 仅 Admin 可恢复（业务管理；sysadmin 系统运维不碰业务）
 3. 恢复后验方状态保持删除前的 ValidationStatus
 
 **双模式**:
