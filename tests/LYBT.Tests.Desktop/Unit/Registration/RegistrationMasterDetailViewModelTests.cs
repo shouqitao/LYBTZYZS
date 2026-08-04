@@ -249,7 +249,7 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
         await _patientApi.Received(1).GetPatientByIdAsync(patientId);
         await _navigationCoordinator.Received(1).NavigateTo(
             ViewNames.MedicalCaseWorkspace,
-            Arg.Is<IDictionary<string, object>>(p =>
+            Arg.Is<Dictionary<string, object>>(p =>
                 p.ContainsKey(MedicalCaseNavigationParameters.MedicalCaseIdKey) &&
                 p.ContainsKey("CurrentPatient") &&
                 p.ContainsKey(MedicalCaseNavigationParameters.WorkspaceModeKey) &&

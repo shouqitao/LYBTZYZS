@@ -1,11 +1,14 @@
 using System.Collections.ObjectModel;
+using System.Threading;
 using FluentAssertions;
 using LYBT.Desktop.Clinical.ViewModels.Workspace;
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -60,7 +63,8 @@ public class PendingQueueViewModelTests
     {
         var sut = CreateSut();
 
-        sut.Queue.Should().BeSameAs(_emptyQueue);
+        sut.Queue.Should().BeOfType<ObservableCollection<PendingMedicalCaseDto>>()
+            .And.BeEmpty("ViewModel initializes its own empty queue");
     }
 
     [Fact]
@@ -72,10 +76,17 @@ public class PendingQueueViewModelTests
     }
 
     [Fact]
-    public void HasNoPendingCases_ReturnsFalse_WhenQueueHasItems()
+    public async Task HasNoPendingCases_ReturnsFalse_WhenQueueHasItems()
     {
-        _emptyQueue.Add(new PendingMedicalCaseDto { PatientId = Guid.NewGuid() });
+        var items = new List<RegistrationListDto>
+        {
+            new() { PatientId = Guid.NewGuid(), PatientName = "张三", Status = RegistrationStatus.Waiting }
+        };
+        _registrationService.GetQueueAsync(Arg.Any<Guid?>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new CommandResult<List<RegistrationListDto>>(true, items, null)));
+
         var sut = CreateSut();
+        await sut.RefreshQueueAsync();
 
         sut.HasNoPendingCases.Should().BeFalse();
     }
@@ -108,7 +119,7 @@ public class PendingQueueViewModelTests
         suspendWasCalled.Should().BeFalse("no active medical case — suspend should be skipped");
         await _navigationCoordinator.Received().NavigateTo(
             Arg.Any<string>(),
-            Arg.Any<IDictionary<string, object>>());
+            Arg.Any<Dictionary<string, object>>());
     }
 
     [Fact]
