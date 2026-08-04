@@ -92,6 +92,8 @@ QuickVisitResultDto
 
 ## 状态机
 
+> **权威定义**：完整状态机（守卫条件/转换规则/联动）见 [08-registration.md](../../02-requirements/08-registration.md)；状态枚举见 [04-data-model.md](../04-data-model.md)。下图为模块视图。
+
 > **2026-08-03 决策修订**：医案取消=物理删除（无 Cancelled 医案状态）；「接诊即建」——StartVisit 原子创建 MedicalCase(Active)+Registration(InProgress)。REG-BR-005 **放弃恢复**（D4 回滚到 Waiting 已移除）。
 
 ```

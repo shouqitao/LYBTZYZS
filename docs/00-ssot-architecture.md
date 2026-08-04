@@ -47,7 +47,7 @@
 | 4 | **API 端点契约** | `04-api-reference/` | 13b 速查（已加指引 ✅） |
 | 5 | **任务清单/状态** | `13-project-master-plan.md` | 14-implementation-tasks（已归档 ✅） |
 | 6 | **架构决策** | `03-architecture/decisions/` | — |
-| 7 | **状态机（数据转换）** | `03-architecture/04-data-model.md` | 需求文档重复画状态机→只写业务触发规则，转换图引用 04 |
+| 7 | **状态机（业务转换）** | `02-requirements/07-medical-cases.md`（医案）/ `08-registration.md`（挂号） | 04-data-model 只定义状态枚举+简式（已引用 07 ✅）；modules 文档状态机已加权威引用（2026-08-04 批次 B） |
 | 8 | **技术栈/架构总览** | `03-architecture/00-architecture-summary.md` | 9 处（AGENTS.md/master plan 保留一行速览→引用；prd/localwebapi/06 删描述） |
 | 9 | **Code Style** | `05-development/02-code-standards.md` | localwebapi/03-server 等（→删或引用） |
 | 10 | **已知问题** | `03-architecture/13c-current-status.md` | master plan/code-gap-fix-list（→改引用） |

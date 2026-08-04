@@ -110,6 +110,8 @@ PendingMedicalCaseDto（待诊队列）
 
 ## 状态机
 
+> **权威定义**：完整状态机（守卫条件/转换规则/联动）见 [07-medical-cases.md](../../02-requirements/07-medical-cases.md)；状态枚举见 [04-data-model.md](../04-data-model.md)。下图为模块视图。
+
 ```
 ┌─────────────┐
 │  Suspended   │◄──────────────┐
