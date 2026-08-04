@@ -48,9 +48,9 @@
 | 5 | **任务清单/状态** | `13-project-master-plan.md` | 14-implementation-tasks（已归档 ✅） |
 | 6 | **架构决策** | `03-architecture/decisions/` | — |
 | 7 | **状态机（业务转换）** | `02-requirements/07-medical-cases.md`（医案）/ `08-registration.md`（挂号） | 04-data-model 只定义状态枚举+简式（已引用 07 ✅）；modules 文档状态机已加权威引用（2026-08-04 批次 B） |
-| 8 | **技术栈/架构总览** | `03-architecture/00-architecture-summary.md` | 9 处（AGENTS.md/master plan 保留一行速览→引用；prd/localwebapi/06 删描述） |
-| 9 | **Code Style** | `05-development/02-code-standards.md` | localwebapi/03-server 等（→删或引用） |
-| 10 | **已知问题** | `03-architecture/13c-current-status.md` | master plan/code-gap-fix-list（→改引用） |
+| 8 | **技术栈/架构总览** | `03-architecture/00-architecture-summary.md` | 一句话速览允许多处（低风险事实，AGENTS.md/prd/master plan 保留）；架构约束定义唯一在 00-summary |
+| 9 | **Code Style** | `05-development/02-code-standards.md` | PascalCase 等在 03-server/localwebapi 出现处为特定上下文技术约定（DB 映射/API 序列化），非规则复制，保留 |
+| 10 | **已知问题/当前状态** | `03-architecture/13c-current-status.md` | master plan 概况状态行已收敛为引用 13c（2026-08-04 批次 C ✅）；code-gap-fix-list/审计报告中的提及保留（任务上下文/历史） |
 | 11 | **开发规则/流程（agent 层）** | Skill `lybtzys-coder-rules` | AGENTS.md 引用 ✅ 已确立 |
 | 12 | **部署/配置** | `06-operations/`（收敛中） | 6 份部署文档（单独批次收敛） |
 

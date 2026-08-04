@@ -21,9 +21,7 @@
 | 数据库 | Remote: SQL Server (LYBTDB_Dev) / Local: LocalDB (LYBTDesktop) |
 | Server 模块 | 8 个 (Auth/Users/Patients/Herbs/Formula/MedicalCase/Registration/Reports) |
 | Desktop 模块 | 7 个 + 3 个 Core 层 |
-| 架构测试 | 85/86 pass（P07/P08/P10 约束不可违反） |
-| Build | 0 错误 **9 个警告** |
-| Desktop 测试 | 240 pass **104 fail**（测试主机进程崩溃） |
+| 当前状态 | Build/测试/架构测试/已知问题见 [13c-current-status.md](13c-current-status.md)（唯一权威） |
 
 ---
 

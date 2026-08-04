@@ -1,6 +1,15 @@
 # LYBTZYZS 当前状态
 
-> 由 [13-project-master-plan.md §四/§五](13-project-master-plan.md) 拆出（2026-08-04 规则体系优化 E-03），内容原样迁移：Desktop 视图实现现状 + 已知问题清单。
+> 由 [13-project-master-plan.md §四/§五](13-project-master-plan.md) 拆出（2026-08-04 规则体系优化 E-03），内容原样迁移：Desktop 视图实现现状 + 已知问题清单。**本文件是 Build/测试/已知问题的唯一权威。**
+
+## 三、当前状态速览
+
+| 项 | 值 |
+|----|-----|
+| Build | 0 错误 **9 个警告** |
+| 架构测试 | 85/86 pass（P07/P08/P10 约束不可违反） |
+| Desktop 测试 | 240 pass **104 fail**（测试主机进程崩溃） |
+| 最新迁移 | `AddRowVersionToAspNetUsers` |
 
 ## 四、Desktop 视图（代码实际定义）
 
