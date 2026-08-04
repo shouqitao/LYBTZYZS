@@ -15,7 +15,7 @@
 | 远程控制器 | `MedicalCasePrintController` |
 | 本地控制器 | `MedicalCasesController`（内嵌打印端点） |
 | 服务层 | `MedicalCasePrintService` → `IMedicalCasePrintService` |
-| 认证 | 远程: `[Authorize(Policy = "DoctorOrReceptionist")]` / 本地: JWT |
+| 认证 | 远程: `[Authorize(Policy = "DoctorOnly")]`（2026-08-03 决策：打印仅 Doctor）/ 本地: JWT |
 | 打印类型 | `PrintType` 枚举: `Prescription=1`, `Formula=2` |
 
 ---
@@ -24,7 +24,7 @@
 
 记录一次成功的打印，更新医案打印状态并创建打印日志。
 
-**认证**: DoctorOrReceptionist
+**认证**: DoctorOnly（打印仅 Doctor）
 
 **请求体**:
 
@@ -105,7 +105,7 @@ curl -X PUT http://localhost:5000/api/v1/medicalcases/a1b2c3d4-e5f6-7890-abcd-ef
 
 记录打印成功或失败事件。
 
-**认证**: DoctorOrReceptionist
+**认证**: DoctorOnly（打印仅 Doctor）
 
 **请求体**:
 

@@ -54,16 +54,17 @@ public interface IFormulaImportExportService
 
 | HTTP | 路由 | 方法 | 权限 |
 |------|------|------|------|
-| GET | `/api/v1/Formulas` | GetList | DoctorOrAdmin |
-| GET | `/api/v1/Formulas/{id}` | GetById | DoctorOrAdmin |
-| POST | `/api/v1/Formulas` | Create | DoctorOrAdmin |
-| PUT | `/api/v1/Formulas/{id}` | Update | DoctorOrAdmin |
-| DELETE | `/api/v1/Formulas/{id}` | Delete | DoctorOrAdmin |
-| POST | `/api/v1/Formulas/batch-import` | Import | DoctorOrAdmin |
-| GET | `/api/v1/Formulas/pending-validation` | GetPendingValidation | DoctorOrAdmin |
-| POST | `/api/v1/Formulas/{formulaId}/herbs/{herbItemId}/validate` | ValidateHerb | DoctorOrAdmin |
-| POST | `/api/v1/Formulas/batch-delete` | BatchDelete | DoctorOrAdmin |
-| POST | `/api/v1/Formulas/{id}/toggle-status` | ToggleStatus | DoctorOrAdmin |
+| GET | `/api/v1/formulas` | GetList | Doctor/Admin（前台不可查） |
+| GET | `/api/v1/formulas/{id}` | GetById | Doctor/Admin（前台不可查） |
+| POST | `/api/v1/formulas` | Create | Admin/Doctor（Doctor 仅自己创建） |
+| PUT | `/api/v1/formulas/{id}` | Update | Admin/Doctor（Doctor 仅自己创建） |
+| DELETE | `/api/v1/formulas/{id}` | Delete | Admin/Doctor |
+| POST | `/api/v1/formulas/batch-import` | Import | Admin+ |
+| GET | `/api/v1/formulas/pending-validation` | GetPendingValidation | Doctor/Admin（前台不可查） |
+| POST | `/api/v1/formulas/{formulaId}/herbs/{herbItemId}/validate` | ValidateHerb | Doctor/Admin |
+| POST | `/api/v1/formulas/batch-delete` | BatchDelete | Admin+ |
+| POST | `/api/v1/formulas/{id}/toggle-status` | ToggleStatus | Admin+ |
+| POST | `/api/v1/formulas/{id}/restore` | Restore | Admin（业务管理） |
 
 ### DTO 结构
 

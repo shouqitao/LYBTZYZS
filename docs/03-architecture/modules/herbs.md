@@ -58,14 +58,17 @@ public interface IHerbReferenceRepository
 
 | HTTP | 路由 | 方法 | 权限 |
 |------|------|------|------|
-| GET | `/api/v1/herbs` | GetList | DoctorOrAdmin |
-| GET | `/api/v1/herbs/{id}` | GetById | DoctorOrAdmin |
-| POST | `/api/v1/herbs` | Create | DoctorOrAdmin |
-| PUT | `/api/v1/herbs/{id}` | Update | DoctorOrAdmin |
-| DELETE | `/api/v1/herbs/{id}` | Delete | DoctorOrAdmin |
-| POST | `/api/v1/herbs/{id}/toggle-status` | ToggleStatus | DoctorOrAdmin |
-| POST | `/api/v1/herbs/batch-delete` | BatchDelete | DoctorOrAdmin |
-| POST | `/api/v1/herbs/batch-import` | BatchImport | DoctorOrAdmin |
+| GET | `/api/v1/herbs` | GetList | Doctor/Admin（前台不可查） |
+| GET | `/api/v1/herbs/{id}` | GetById | Doctor/Admin（前台不可查） |
+| POST | `/api/v1/herbs` | Create | Admin+ |
+| PUT | `/api/v1/herbs/{id}` | Update | Admin+ |
+| DELETE | `/api/v1/herbs/{id}` | Delete | Admin+ |
+| POST | `/api/v1/herbs/{id}/toggle-status` | ToggleStatus | Admin+ |
+| POST | `/api/v1/herbs/{id}/restore` | Restore | Admin（业务管理） |
+| POST | `/api/v1/herbs/batch-delete` | BatchDelete | Admin+ |
+| POST | `/api/v1/herbs/batch-import` | BatchImport | Admin+ |
+| GET | `/api/v1/herbs/{id}/check-reference` | CheckReference | Doctor/Admin |
+| POST | `/api/v1/herbs/batch-check-reference` | BatchCheckReference | Doctor/Admin |
 
 ### DTO 结构
 

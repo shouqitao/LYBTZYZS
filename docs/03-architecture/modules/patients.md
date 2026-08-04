@@ -45,13 +45,17 @@ public interface IPatientService
 
 | HTTP | 路由 | 方法 | 权限 |
 |------|------|------|------|
-| GET | `/api/v1/patients` | GetList | DoctorOrAdmin |
-| GET | `/api/v1/patients/{id}` | GetById | DoctorOrAdmin |
-| POST | `/api/v1/patients` | Create | DoctorOrAdmin |
-| PUT | `/api/v1/patients/{id}` | Update | DoctorOrAdmin |
-| DELETE | `/api/v1/patients/{id}` | Delete | DoctorOrAdmin |
-| POST | `/api/v1/patients/{id}/toggle-status` | ToggleStatus | DoctorOrAdmin |
-| POST | `/api/v1/patients/batch-delete` | BatchDelete | DoctorOrAdmin |
+| GET | `/api/v1/patients` | GetList | Doctor/Receptionist/Admin |
+| GET | `/api/v1/patients/{id}` | GetById | Doctor/Receptionist/Admin |
+| POST | `/api/v1/patients` | Create | Doctor/Receptionist |
+| PUT | `/api/v1/patients/{id}` | Update | Doctor/Receptionist |
+| DELETE | `/api/v1/patients/{id}` | Delete | Admin+ |
+| POST | `/api/v1/patients/{id}/toggle-status` | ToggleStatus | Admin+ |
+| POST | `/api/v1/patients/{id}/restore` | Restore | Admin（业务管理） |
+| POST | `/api/v1/patients/batch-delete` | BatchDelete | Admin+ |
+| GET | `/api/v1/patients/{id}/check-reference` | CheckReference | Doctor/Receptionist/Admin |
+| POST | `/api/v1/patients/batch-check-reference` | BatchCheckReference | Doctor/Receptionist/Admin |
+| GET | `/api/v1/patients/by-id-number/{idNumber}` | GetByIdNumber | Doctor/Receptionist/Admin |
 
 ### DTO 结构
 

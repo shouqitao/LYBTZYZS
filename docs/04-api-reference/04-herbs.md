@@ -1,8 +1,8 @@
 # 药材 API
 
-> Controller: `HerbsController` | 路由前缀: `/api/v1/herbs` | 默认权限: `[Authorize(Policy = "DoctorOrReceptionist")]`
+> Controller: `HerbsController` | 路由前缀: `/api/v1/herbs` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`（代码实际，前台不可查）
 >
-> ⚠️ **权限待对齐（D7，基线§3）**：文档目标策略为 `DoctorOrReceptionist`；代码当前为 `DoctorOrAdmin`，待对齐。
+> ⚠️ **权限目标态（2026-08-04 终局裁决）**：药材 GET 不含前台（Doctor/Admin 可查）；POST/PUT/DELETE/批量 = `AdminOrSuperAdmin`（写操作仅 Admin+）；恢复 = Admin（业务管理）。代码已按此实现（类级 `DoctorOrAdmin` + 写操作 `AdminOrSuperAdmin`），前台不可查已落地。
 
 ## 概述
 
@@ -17,7 +17,7 @@ Doctor 只能编辑自己创建的药材，Admin 可操作全部。
 
 获取药材分页列表。启用 OutputCache。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `Doctor/Admin`（前台不可查）
 
 **查询参数**:
 
@@ -106,7 +106,7 @@ curl -X GET "http://localhost:5000/api/v1/herbs?category=补气药&page=1&pageSi
 
 获取药材详情。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `Doctor/Admin`（前台不可查）
 
 **路径参数**: `id` (Guid)
 
@@ -155,7 +155,7 @@ curl -X GET "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123456
 
 创建新药材。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `Admin+`（写操作仅 Admin）
 
 **请求体** (`HerbInputDto`):
 
@@ -251,7 +251,7 @@ curl -X POST "http://localhost:5000/api/v1/herbs" \
 
 更新药材信息。执行所有权检查。
 
-- **权限**: `DoctorOrReceptionist`（Doctor 仅限自己创建的药材）
+- **权限**: `Admin+`（写操作仅 Admin）
 
 **路径参数**: `id` (Guid)
 
@@ -313,7 +313,7 @@ curl -X PUT "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123456
 
 删除药材 (软删除)。执行所有权检查。
 
-- **权限**: `DoctorOrReceptionist`（Doctor 仅限自己创建的药材）
+- **权限**: `Admin+`（写操作仅 Admin）
 
 **路径参数**: `id` (Guid)
 
@@ -342,7 +342,7 @@ curl -X DELETE "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123
 
 切换药材状态 (启用/禁用)。执行所有权检查。
 
-- **权限**: `DoctorOrReceptionist`（Doctor 仅限自己创建的药材）
+- **权限**: `Admin+`（写操作仅 Admin）
 
 **路径参数**: `id` (Guid)
 
@@ -391,7 +391,7 @@ curl -X POST "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef12345
 
 批量删除药材。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `Admin+`（写操作仅 Admin）
 
 **请求体** (`BatchDeleteInputDto`):
 
@@ -448,7 +448,7 @@ curl -X POST "http://localhost:5000/api/v1/herbs/batch-delete" \
 
 JSON 批量导入药材 (非 Excel，直接 DTO 数组)。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `Admin+`（写操作仅 Admin）
 
 **请求体** (`HerbBatchImportInputDto`):
 
@@ -561,7 +561,7 @@ curl -X POST "http://localhost:5000/api/v1/herbs/batch-import" \
 
 恢复已软删除的药材。绕过软删除全局过滤器。
 
-- **权限**: `DoctorOrReceptionist`（目标态 Admin+，见 [04-permissions.md](../01-product/04-permissions.md)）
+- **权限**: `Admin`（业务管理）
 
 **路径参数**: `id` (Guid)
 
@@ -589,7 +589,7 @@ curl -X POST "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef12345
 
 检查药材是否被处方/验方引用，用于删除前确认。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `Doctor/Admin`（前台不可查）
 
 **路径参数**: `id` (Guid)
 
@@ -610,7 +610,7 @@ curl -X GET "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123456
 
 批量检查多个药材的引用关系。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `Doctor/Admin`（前台不可查）
 
 **请求体**:
 ```json

@@ -1,8 +1,8 @@
 # 验方 API
 
-> Controller: `FormulasController` | 路由前缀: `/api/v1/formulas` | 默认权限: `[Authorize(Policy = "DoctorOrReceptionist")]`
+> Controller: `FormulasController` | 路由前缀: `/api/v1/formulas` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`（代码实际，前台不可查）
 >
-> ⚠️ **权限待对齐（D7，基线§3）**：文档目标策略为 `DoctorOrReceptionist`；代码当前为 `DoctorOrAdmin`，待对齐。
+> ⚠️ **权限目标态（2026-08-04 终局裁决）**：验方 GET 不含前台（Doctor/Admin 可查）；写操作 = Admin+Doctor（Doctor 仅自己创建）；批量/启停 = Admin+；恢复 = Admin（业务管理）。代码已按此实现（类级 `DoctorOrAdmin` + 批量 `AdminOrSuperAdmin`），前台不可查已落地。
 
 ## 概述
 
@@ -16,7 +16,7 @@ Doctor 只能看到自己的和共享的验方，Admin/SuperAdmin 可操作全�
 
 获取验方列表 (分页)。Doctor 角色自动过滤为仅看到自己创建的和共享的验方。
 
-- **权限**: DoctorOrReceptionist
+- **权限**: `Doctor/Admin`（前台不可查）
 
 **查询参数**:
 
@@ -99,7 +99,7 @@ curl -X GET "http://localhost:5000/api/v1/formulas?category=%E8%A1%A5%E7%9B%8A%E
 
 获取验方详情 (含药材组成)。
 
-- **权限**: DoctorOrReceptionist
+- **权限**: `Doctor/Admin（前台不可查）`
 
 **路径参数**: `id` (Guid)
 
@@ -172,7 +172,7 @@ curl -X GET "http://localhost:5000/api/v1/formulas/a1b2c3d4-e5f6-7890-abcd-ef123
 
 新增验方。自动设置 `createdBy` 为当前用户 ID。
 
-- **权限**: DoctorOrReceptionist
+- **权限**: `Admin/Doctor`（Doctor 仅自己创建）
 
 **请求体** (`FormulaInputDto`):
 
@@ -282,7 +282,7 @@ curl -X POST "http://localhost:5000/api/v1/formulas" \
 
 更新验方。执行所有权检查。
 
-- **权限**: DoctorOrReceptionist（Admin 可操作全部，Doctor 只能操作自己的）
+- **权限**: `Admin/Doctor（Doctor 仅自己创建）`
 
 **路径参数**: `id` (Guid)
 
@@ -357,7 +357,7 @@ curl -X PUT "http://localhost:5000/api/v1/formulas/a1b2c3d4-e5f6-7890-abcd-ef123
 
 删除验方 (软删除)。执行所有权检查。
 
-- **权限**: DoctorOrReceptionist（Admin 可操作全部，Doctor 只能操作自己的）
+- **权限**: `Admin/Doctor`
 
 **路径参数**: `id` (Guid)
 
@@ -388,7 +388,7 @@ curl -X DELETE "http://localhost:5000/api/v1/formulas/a1b2c3d4-e5f6-7890-abcd-ef
 
 JSON 批量导入验方（Server 端只处理 DTO，Excel 解析由 Client 端负责）。
 
-- **权限**: DoctorOrReceptionist
+- **权限**: `Admin+`
 
 **请求体** (`FormulaBatchImportInputDto`):
 
@@ -470,7 +470,7 @@ curl -X POST "http://localhost:5000/api/v1/formulas/batch-import" \
 
 获取待校验的验方列表（含未绑定系统药材的 HerbItem）。
 
-- **权限**: DoctorOrReceptionist
+- **权限**: `Doctor/Admin`（前台不可查）
 
 **成功响应** (200): `ApiResponse<List<FormulaDetailDto>>`
 
@@ -533,7 +533,7 @@ curl -X GET "http://localhost:5000/api/v1/formulas/pending-validation" \
 
 验证验方药材 — 将未绑定的 HerbItem 手动绑定到系统药材库。
 
-- **权限**: DoctorOrReceptionist
+- **权限**: `Doctor/Admin`
 
 **路径参数**:
 - `formulaId` (Guid): 验方 ID
@@ -577,7 +577,7 @@ curl -X POST "http://localhost:5000/api/v1/formulas/b2c3d4e5-f6a7-8901-bcde-f123
 
 切换验方状态 (启用/禁用)。执行所有权检查。
 
-- **权限**: DoctorOrReceptionist（Admin 可操作全部，Doctor 只能操作自己的）
+- **权限**: `Admin+`
 
 **路径参数**: `id` (Guid)
 
@@ -623,7 +623,7 @@ curl -X POST "http://localhost:5000/api/v1/formulas/a1b2c3d4-e5f6-7890-abcd-ef12
 
 批量删除验方。
 
-- **权限**: DoctorOrReceptionist
+- **权限**: `Admin+`
 
 **请求体** (`BatchDeleteInputDto`):
 
@@ -680,7 +680,7 @@ curl -X POST "http://localhost:5000/api/v1/formulas/batch-delete" \
 
 恢复已软删除的验方。绕过软删除全局过滤器。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `Admin（业务管理）`
 
 **路径参数**: `id` (Guid)
 

@@ -162,7 +162,7 @@ v1.0 包含 **10 个功能模块、141 个 User Stories**（Must / Should / Coul
 | .NET 8 LTS | 运行时（2026-11 EOL） | 低（LTS 周期内） |
 | SQL Server | 远程模式数据库 | 低（成熟稳定） |
 | SQL Server LocalDB | 本地模式数据库 | 低 |
-| Prism 9.0 | WPF MVVM 框架 | 低 |
+| Prism 8.1.97 | WPF 模块框架 + DI + Region 导航（MVVM 基类用 CommunityToolkit.Mvvm，见 ADR-0012） | 低 |
 | HandyControl | WPF UI 控件库 | 低 |
 | QuestPDF | 处方 PDF 导出（Community license） | 低 |
 | 华大 HD100 读卡器 | 身份证读卡硬件 | 中（单一供应商） |

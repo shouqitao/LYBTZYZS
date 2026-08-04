@@ -57,21 +57,21 @@ IMedicalCaseFacade（组合以上三个接口）
 
 | HTTP | 路由 | 方法 | 权限 |
 |------|------|------|------|
-| POST | `/api/v1/medicalcases` | CreateMedicalCase | DoctorOrAdmin |
-| PUT | `/api/v1/medicalcases/{id}` | Save | DoctorOrAdmin |
-| PUT | `/api/v1/medicalcases/{id}/prescription-flag` | SetPrescriptionFlag | DoctorOrAdmin |
-| DELETE | `/api/v1/medicalcases/{id}` | DeleteMedicalCase | DoctorOrAdmin |
-| POST | `/api/v1/medicalcases/batch-delete` | BatchDelete | DoctorOrAdmin |
-| GET | `/api/v1/medicalcases/{id}` | GetById | DoctorOrAdmin |
-| GET | `/api/v1/medicalcases` | GetList | DoctorOrAdmin |
-| GET | `/api/v1/medicalcases/query` | GetMedicalCases | DoctorOrAdmin |
-| GET | `/api/v1/medicalcases/search` | SearchMedicalCases | DoctorOrAdmin |
-| GET | `/api/v1/medicalcases/{id}/consultations` | GetConsultationList | DoctorOrAdmin |
-| GET | `/api/v1/medicalcases/{id}/prescriptions` | GetPrescriptionList | DoctorOrAdmin |
-| PUT | `/api/v1/medicalcases/{id}/status` | UpdateStatus | DoctorOrAdmin |
-| PUT | `/api/v1/medicalcases/{id}/close` | CloseMedicalCase | DoctorOrAdmin |
-| PUT | `/api/v1/medicalcases/{id}/suspend` | Suspend | DoctorOrAdmin |
-| PUT | `/api/v1/medicalcases/{id}/cancel` | CancelMedicalCase | DoctorOrAdmin |
+| POST | `/api/v1/medicalcases` | CreateMedicalCase | DoctorOnly（创建仅 Doctor） |
+| PUT | `/api/v1/medicalcases/{id}` | Save | Doctor（仅自己的）；Admin（纠偏已完成需 EditReason） |
+| PUT | `/api/v1/medicalcases/{id}/prescription-flag` | SetPrescriptionFlag | Doctor |
+| DELETE | `/api/v1/medicalcases/{id}` | DeleteMedicalCase | Doctor/Admin |
+| POST | `/api/v1/medicalcases/batch-delete` | BatchDelete | Doctor/Admin |
+| GET | `/api/v1/medicalcases/{id}` | GetById | Doctor(自己)/Admin(全部) |
+| GET | `/api/v1/medicalcases` | GetList | Doctor(自己)/Admin(全部) |
+| GET | `/api/v1/medicalcases/query` | GetMedicalCases | Doctor(自己)/Admin(全部) |
+| GET | `/api/v1/medicalcases/search` | SearchMedicalCases | Doctor(自己)/Admin(全部) |
+| GET | `/api/v1/medicalcases/{id}/consultations` | GetConsultationList | Doctor(自己)/Admin(全部) |
+| GET | `/api/v1/medicalcases/{id}/prescriptions` | GetPrescriptionList | Doctor(自己)/Admin(全部) |
+| PUT | `/api/v1/medicalcases/{id}/status` | UpdateStatus | Doctor/Admin |
+| PUT | `/api/v1/medicalcases/{id}/close` | CloseMedicalCase | Doctor（仅自己的）；Admin（仅状态变更） |
+| PUT | `/api/v1/medicalcases/{id}/suspend` | Suspend | Doctor（仅自己的） |
+| PUT | `/api/v1/medicalcases/{id}/cancel` | CancelMedicalCase | Doctor（仅自己的） |
 
 ### DTO 结构
 

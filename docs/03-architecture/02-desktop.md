@@ -2,7 +2,7 @@
 
 ## 概述
 
-桌面端采用 WPF + Prism 8.1.97 MVVM 架构，共 16 个项目，分为 Core (基础设施)、Modules (业务模块)、Roles (角色入口)、Shell (应用外壳) 四层。通过 DryIoc DI 容器管理依赖，使用 Prism Region 机制实现模块间导航。
+桌面端采用 WPF + Prism 8.1.97（模块框架/DI/导航）+ CommunityToolkit.Mvvm（ViewModel 基类）架构，共 16 个项目，分为 Core (基础设施)、Modules (业务模块)、Roles (角色入口)、Shell (应用外壳) 四层。通过 DryIoc DI 容器管理依赖，使用 Prism Region 机制实现模块间导航。
 
 ## 架构图
 

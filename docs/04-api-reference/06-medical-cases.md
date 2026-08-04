@@ -2,7 +2,7 @@
 
 > Controllers: `MedicalCasesController`, `MedicalCaseProcessingController` | 路由前缀: `/api/v1/medicalcases` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`
 >
-> ⚠️ **权限待对齐（D7，基线§3）**：文档目标策略为 `DoctorOrReceptionist`，医案**创建端点**目标为 Doctor-only（注：`PolicyConstants` 中**无 `DoctorOnly` 常量**，仅有 `AdminOnly/DoctorOrAdmin/AdminOrSuperAdmin/DoctorOrReceptionist` 四项）。代码当前统一为 `DoctorOrAdmin`，待对齐。
+> ⚠️ **权限目标态（2026-08-04 终局裁决）**：医案**创建端点 = DoctorOnly**（`PolicyConstants` 已有 `DoctorOnly` 常量，`MedicalCasesController.cs:98` 已使用）；查看/查询 = Doctor(自己)+Admin(全部，数据所有权过滤)，前台不可见；审计日志 = Doctor/Admin。代码已按此实现。
 
 ## 概述
 
