@@ -1,6 +1,8 @@
 # LYBTZYZS 数据模型
 
 > 由 [13-project-master-plan.md §二](13-project-master-plan.md) 拆出（2026-08-04 规则体系优化 E-03），内容原样迁移，不改变定义。
+>
+> **权威定义**：实体字段/状态机/计算属性等详细定义见 [04-data-model.md](04-data-model.md)。
 
 ## 2.1 核心实体（Shared/LYBT.Entities）
 

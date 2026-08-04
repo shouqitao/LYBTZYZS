@@ -110,7 +110,22 @@
 | E-01 | coder 层 | 角色 AGENTS.md 精简 + Skill v0.6.0 SSOT | 无 | ✅ | — |
 | E-02 | 项目层 | 项目 AGENTS.md 精简为入口+引用 | E-01 | ✅ | — |
 | E-03 | 总账拆分 | 13a/13b/13c 拆分 | E-02 | ✅ | — |
-| E-04 | MCP 配置 | 禁用 tavily/serena + 注释 | 无 | ✅ | — |
+| E-04 | MCP 配置 | 移除 tavily 又恢复，serena/tavily 全部保留 | 无 | ✅ | — |
+
+### F 类 — 遗留任务归一（2026-08-04，来自 14-implementation-tasks 归档）
+
+| ID | 任务 | 内容（原 TASK） | 依赖 | 状态 | 预估 |
+|----|------|------|------|------|------|
+| F-01 | FeatureToggle 开关接入 | TASK-03：14 个功能开关仅 1 个被检查，需在各模块 Service/ViewModel 接入 | 无 | ⬜ | 4-6h |
+| F-02 | 桌面 Mapper 统一 | TASK-05：未使用的 PatientMapper + MedicalCaseMapper DI 不一致 | 无 | ⬜ | 1-2h |
+| F-03 | LocalData Mapper Target 策略 | TASK-06：统一 RequiredMappingStrategy.Target | 无 | ⬜ | 1-2h |
+| F-04 | SyncService CS8602 | TASK-07：可空引用警告 | 无 | ⬜ | 0.5h |
+| F-05 | PatientMapper 死代码 | TASK-10：删除或启用（与 A-02 相关） | A-02 | ⬜ | 0.5h |
+| F-06 | 打印模板扩展 | TASK-11：诊断报告/患者摘要/医案完整打印（低优先级） | 无 | ⬜ | 4-8h |
+| F-07 | API 版本化准备 | TASK-12：v2 版本协商中间件（低优先级） | 无 | ⬜ | 2-3h |
+| F-08 | 日志归档策略 | TASK-13：LogCleanupService 按月压缩（低优先级） | 无 | ⬜ | 1-2h |
+
+> TASK-04（MedicalCase RestoreAsync）已被 2026-08-03 决策废弃（取消=物理删除、放弃恢复），不入清单。
 
 ---
 
@@ -237,6 +252,14 @@
 | E-02 规则体系：项目层（项目 AGENTS.md 精简为入口+引用，详细规则迁入 Skill） | ✅ | 2026-08-04 | `da2290117` |
 | E-03 规则体系：项目总账拆分（13a/13b/13c） | ✅ | 2026-08-04 | `1664f2ffc` |
 | E-04 规则体系：MCP 配置清理（移除 tavily 又恢复，serena/tavily 全部保留） | ✅ | 2026-08-04 | 本地修改（`.mimocode` 被 gitignore，无 commit） |
+| F-01 FeatureToggle 开关接入 | ⬜ | — | — |
+| F-02 桌面 Mapper 统一 | ⬜ | — | — |
+| F-03 LocalData Mapper Target 策略 | ⬜ | — | — |
+| F-04 SyncService CS8602 | ⬜ | — | — |
+| F-05 PatientMapper 死代码 | ⬜ | — | — |
+| F-06 打印模板扩展 | ⬜ | — | — |
+| F-07 API 版本化准备 | ⬜ | — | — |
+| F-08 日志归档策略 | ⬜ | — | — |
 
 ---
 
@@ -274,7 +297,7 @@
 
 | 文档 | 路径 | 用途 |
 |------|------|------|
-| **产品功能清单** | `docs/02-requirements/14-feature-inventory.md` | 128 个用户操作，按模块/角色分类 |
+| ~~产品功能清单~~ | `docs/02-requirements/archive/14-feature-inventory.md` | 已过时归档（2026-08-04），以各模块 US 需求文档为准 |
 | 代码审计报告 | `docs/reports/2026-08-02-codebase-audit.md` | 项目现状全面审计 |
 | 代码审查报告 | `docs/reports/code-review-duplicates.md` | 重复定义与不统一问题 |
 | PRD | `docs/02-requirements/01-prd.md` | 产品需求文档 |

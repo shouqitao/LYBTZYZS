@@ -42,7 +42,7 @@
 | 13a | [数据模型](13a-data-model.md) | 核心实体 + 状态枚举 |
 | 13b | [API 端点](13b-api-endpoints.md) | 全部模块端点 |
 | 13c | [当前状态](13c-current-status.md) | Desktop 视图 + 已知问题 |
-| 14 | [实现任务](14-implementation-tasks.md) | v1.0 缺口清单 |
+| ~~14~~ | ~~实现任务~~ | 已归档 → `archive/14-implementation-tasks.md`（任务并入 master plan F 类） |
 | 15 | [Mapperly](15-mapperly.md) | 映射规范 |
 | 16 | [同步协议](16-sync-protocol.md) | v2.0 数据同步设计 |
 
