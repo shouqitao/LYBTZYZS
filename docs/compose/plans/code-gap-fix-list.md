@@ -1,9 +1,9 @@
 # 代码偏移修复清单（Documentation Calibration + 审稿产出）
 
-> 来源：2026-08-02 文档校准 + 审稿任务
-> 状态：🟡 批次 A 已完成（2026-08-03，commit `165f1b08f` + LocalWebAPI 补齐 T2 中）；批次 B 待执行
-> 原则：先批 A（纯策略补丁），再批 B（业务逻辑）
-> 术语：Admin = 管理员，Sysadmin = 超管
+> 来源：2026-08-02 文档校准 + 审稿任务 + 2026-08-04 doc-audit（G-01）
+> 状态：🟡 批次 A 已完成（2026-08-03，commit `165f1b08f` + LocalWebAPI 补齐 T2 中）；批次 B 待执行；批次 C 待派发（2026-08-04 审计产出）
+> 原则：先批 A（纯策略补丁），再批 B（业务逻辑），再批 C（审计缺口，P0 优先）
+> 术语：Admin = 管理员（业务管理），Sysadmin = 超级管理员（系统运维，不碰业务）
 
 ---
 
@@ -112,6 +112,48 @@
 - **文件**：`UpdateMedicalCaseStatusCommandHandler.cs`、`MedicalCasesController PUT /{id}/status`
 - **修复**：Handler 委托 `IMedicalCaseStateService.UpdateStatusAsync`（或删除 handler，统一走 StateService）
 - **验证**：状态机测试（UpdateStatus 仅允许 Suspended↔Active）
+
+---
+
+## 批次 C：doc-audit 代码缺口（2026-08-04，G-01 审计产出）—— ⬜ 待派发
+
+> 来源：2026-08-04 doc-audit（3 并行子代理审稿 + 主代理代码校准）。与批次 A/B 独立，按优先级派发 Mimo Code。
+
+### C1. 患者 Restore 补操作级权限（P0 安全漏洞）
+- **问题**：`POST /patients/{id}/restore` 无操作级 `[Authorize]`，回退类级 `DoctorOrAdminOrReceptionist` → **前台/医生都能恢复患者**。裁决：恢复患者 = 仅 Admin（业务管理）
+- **文件**：`src/Server/Services/LYBT.WebAPI/Controllers/PatientsController.cs:181` + LocalWebAPI 对应
+- **修复**：Restore 方法补 `[Authorize(Policy = PolicyConstants.AdminOnly)]`（需 C2 新增纯 Admin 策略后改用）
+- **验证**：集成测试（Receptionist/Doctor 调 restore 403）
+
+### C2. 新增纯 Admin 策略（P0）
+- **问题**：现有 `AdminOnly` 注册为 `RequireRole(SuperAdmin, Admin)` 含 sysadmin；「恢复业务数据=仅 Admin」无策略可执行。sysadmin 不碰业务
+- **文件**：`PolicyConstants.cs` + `AuthenticationServiceCollectionExtensions.cs:111` + `LocalJwtConfig.cs:69`
+- **修复**：新增 `PolicyConstants.AdminBusinessOnly = "AdminBusinessOnly"`，注册 `RequireRole(Admin)`（不含 SuperAdmin）；C1 及患者删除/禁用如需纯 Admin 时使用
+- **验证**：架构测试 + 集成测试（sysadmin 调业务恢复 403）
+
+### C3. 患者单删补引用检查（P0，D5）
+- **问题**：`DeletePatientCommandHandler.cs:34` 直接 `SoftDelete`，未查 MedicalCase 引用 → 被引用的患者仍可删
+- **文件**：`DeletePatientCommandHandler.cs`
+- **修复**：删除前查 `PatientCrossModuleService` 引用计数，被引用返回 422（同批量删除逻辑）
+- **验证**：集成测试（被引用患者删除 422）
+
+### C4. 用户 Restore 端点缺失（P1）
+- **问题**：US-USER-011 声称 ✅ 已实现，但 `ExecuteRestoreAsync` 返回 null、Server 无端点
+- **文件**：Users 模块 Controller/Service/Desktop API
+- **修复**：实现 `POST /users/{id}/restore`（层级管理：sysadmin 恢复 Admin，Admin 恢复 Doctor/Receptionist）
+- **验证**：集成测试
+
+### C5. 验方 Restore 端点缺失（P1）
+- **问题**：US-FORM-012 状态 🔴 未实现（Server 无端点，Desktop 返回 null）
+- **文件**：Formulas 模块 Controller/Service
+- **修复**：实现 `POST /formulas/{id}/restore`（仅 Admin 业务管理）
+- **验证**：集成测试
+
+### C6. 医案打印日志回写端点未实现（P1）
+- **问题**：`PUT /medicalcases/{id}/print-completed`、`POST /medicalcases/{id}/print-logs` 在 v1.0 范围但代码未实现
+- **文件**：MedicalCaseProcessingController + PrintLog 实体
+- **修复**：实现打印回写 + AuditLog/MedicalCasePrintLog
+- **验证**：集成测试
 
 ---
 
