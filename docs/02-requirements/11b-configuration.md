@@ -26,7 +26,7 @@
 
 **业务规则**:
 1. 端点受 `AdminOrSuperAdmin` 策略保护。
-2. 配置节名称通过 `ConfigurationSections` 常量统一管理。
+2. 配置节名称由各 Options 类内联 `SectionName` 常量统一管理（见 07-configuration.md「配置节命名约定」）。
 3. 敏感配置（SecretKey/Password）脱敏展示。
 
 **双模式**:
@@ -53,7 +53,7 @@
 - [ ] 非 SuperAdmin → 403
 
 **业务规则**:
-1. 支持 14 个 Options 类（8 服务端 + 1 共享 + 4 客户端 + 1 WebAPI）。
+1. 支持 19 个 Options 类（12 服务端 + 1 共享 + 6 客户端）。
 2. 客户端 `ClinicSettings`（Name/Department/Address/Phone）驱动处方打印标题区。
 
 **双模式**:

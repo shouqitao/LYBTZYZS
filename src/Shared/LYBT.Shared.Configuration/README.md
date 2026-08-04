@@ -13,7 +13,7 @@
 ```
 LYBT.Shared.Configuration/
 ├── Constants/
-│   └── ConfigurationSections.cs    # 配置节名称常量
+│   └── LocalEndpoints.cs           # 本地端点常量
 ├── Extensions/
 │   ├── ClientConfigurationExtensions.cs  # 客户端配置注册
 │   └── ServerConfigurationExtensions.cs  # 服务端配置注册
@@ -38,7 +38,6 @@ LYBT.Shared.Configuration/
 
 | 名称 | 说明 |
 |------|------|
-| ConfigurationSections | 配置节名称常量 (避免魔法字符串) |
 | ServerConfigurationExtensions | 服务端 Options 批量注册 |
 | ClientConfigurationExtensions | 客户端 Options 批量注册 |
 | *OptionsValidator | IValidateOptions 启动时验证 |
