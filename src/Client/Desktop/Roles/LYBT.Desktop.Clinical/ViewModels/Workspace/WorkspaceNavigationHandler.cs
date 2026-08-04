@@ -82,7 +82,7 @@ internal sealed class WorkspaceNavigationHandler
             var result = await handleLeaveRequest();
             if (result.CanLeave) _ = _navigationCoordinator.NavigateTo(ViewNames.PatientSelection);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Log handled by caller
         }

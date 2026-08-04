@@ -269,6 +269,10 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         _editStateMachine = new EditModeStateMachine(services.LoggerFactory.CreateLogger<EditModeStateMachine>());
         _editStateMachine.StateChanged += OnEditStateChangedFsm;
 
+        // Create child VMs (not container-resolved; coupled to parent lifecycle)
+        ConsultationEditor = new ConsultationEditorViewModel(this, this, services.LoggerFactory);
+        PrescriptionEditor = new PrescriptionEditorViewModel(this, this, services.LoggerFactory);
+
         // Create extracted components
         _stateManager = new WorkspaceStateManager(
             _editStateMachine,
@@ -289,9 +293,6 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
             async () => await ShowSuccessMessageAsync("保存成功"),
             async (msg) => await ShowErrorMessageAsync(msg));
 
-        // Create child VMs (not container-resolved; coupled to parent lifecycle)
-        ConsultationEditor = new ConsultationEditorViewModel(this, this, services.LoggerFactory);
-        PrescriptionEditor = new PrescriptionEditorViewModel(this, this, services.LoggerFactory);
         Commands = new MedicalCaseCommandsViewModel(this, this, services.LoggerFactory, medicalCaseService, this, printHandler, _toastService, dialogService);
 
         // Wire PendingQueue suspend delegate

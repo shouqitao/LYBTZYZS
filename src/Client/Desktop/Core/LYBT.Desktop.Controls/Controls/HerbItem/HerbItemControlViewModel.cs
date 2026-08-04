@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using HerbRole = LYBT.Shared.Models.Enums.HerbRole;

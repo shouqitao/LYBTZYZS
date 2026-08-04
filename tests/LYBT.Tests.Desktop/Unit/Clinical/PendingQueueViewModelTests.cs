@@ -106,7 +106,7 @@ public class PendingQueueViewModelTests
         await sut.SelectPendingCaseAsync(targetCase);
 
         suspendWasCalled.Should().BeFalse("no active medical case — suspend should be skipped");
-        _navigationCoordinator.Received().NavigateTo(
+        await _navigationCoordinator.Received().NavigateTo(
             Arg.Any<string>(),
             Arg.Any<IDictionary<string, object>>());
     }

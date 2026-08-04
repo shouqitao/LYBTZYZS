@@ -247,7 +247,7 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
 
         await _registrationService.Received(1).StartVisitAsync(registrationId, Arg.Any<CancellationToken>());
         await _patientApi.Received(1).GetPatientByIdAsync(patientId);
-        _navigationCoordinator.Received(1).NavigateTo(
+        await _navigationCoordinator.Received(1).NavigateTo(
             ViewNames.MedicalCaseWorkspace,
             Arg.Is<IDictionary<string, object>>(p =>
                 p.ContainsKey(MedicalCaseNavigationParameters.MedicalCaseIdKey) &&

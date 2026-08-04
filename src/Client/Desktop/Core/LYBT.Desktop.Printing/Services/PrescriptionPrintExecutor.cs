@@ -10,15 +10,38 @@ namespace LYBT.Desktop.Printing.Services
     /// 处方打印执行器
     /// U3-5: 从 PrescriptionPrintService 拆分，负责打印机管理与打印执行
     /// </summary>
-    public class PrescriptionPrintExecutor
+    public class PrescriptionPrintExecutor : IDisposable
     {
         private readonly ILogger<PrescriptionPrintExecutor> _logger;
         private readonly LocalPrintServer _printServer = new();
         private string? _defaultPrinterName;
+        private bool _disposed;
 
         public PrescriptionPrintExecutor(ILogger<PrescriptionPrintExecutor> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
+        /// <summary>
+        /// 释放打印服务器资源
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
+            if (disposing)
+            {
+                _printServer.Dispose();
+            }
         }
 
         /// <summary>
