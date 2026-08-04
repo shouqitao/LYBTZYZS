@@ -70,11 +70,11 @@
 
 | ID | 问题 | 位置 | 影响 |
 |----|------|------|------|
-| P0-01 | Shell 登出状态机错误 | Shell/LoginCoordinator | 用户登出后状态不正确 |
-| P0-02 | 并发登录竞态 | Shell/LoginCoordinator | 多人登录数据错乱 |
-| P0-03 | 异常时事件未发布 | Shell/ShellEventCoordinator | 异常后 UI 卡死 |
-| P0-04 | Sync-over-Async 死锁 | Desktop 多处 `.GetAwaiter().GetResult()` | WPF UI 线程冻结 |
-| P0-05 | 明文密码泄露 | appsettings.json (SSH/SA/JWT SecretKey) | 安全风险 |
+| P0-01 | Shell 登出状态机错误 | Shell/LoginCoordinator | ✅ 已修复 (2026-08-04, B-01) |
+| P0-02 | 并发登录竞态 | Shell/LoginCoordinator | ✅ 已修复 (2026-08-04, B-01) |
+| P0-03 | 异常时事件未发布 | Shell/ShellEventCoordinator | ✅ 已修复 (2026-08-04, B-01) |
+| P0-04 | Sync-over-Async 死锁 | Desktop 多处 `.GetAwaiter().GetResult()` | ✅ 已核实无残留 (2026-08-04, B-01) |
+| P0-05 | 明文密码泄露 | appsettings.json (SSH/SA/JWT SecretKey) | ✅ 已修复 (2026-08-04, B-01) |
 | P0-06 | 104 个 Desktop 测试失败 | tests/LYBT.Tests.Desktop | 测试主机崩溃，质量保障失效 |
 | P0-07 | 配置无法 API 修改 | ConfigurationController 无 PUT | 运维只能手动改文件 |
 
