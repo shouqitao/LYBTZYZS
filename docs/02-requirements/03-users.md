@@ -53,51 +53,14 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 
 ## 权限矩阵
 
-### 认证端点 (AuthController)
+> **权威定义**：完整权限矩阵见 [04-permissions.md](../01-product/04-permissions.md)；端点级权限见 [04-api-reference/02-users.md](../04-api-reference/02-users.md)；速查表见 [12-permissions-matrix.md](../03-architecture/12-permissions-matrix.md)。
 
-| 端点 | Receptionist | Doctor | Admin | SuperAdmin | 未登录 |
-|------|:---:|:---:|:---:|:---:|:---:|
-| `POST /auth/login` | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `POST /auth/logout` | ✅ | ✅ | ✅ | ✅ | ❌ |
-| `GET /auth/validate` | ✅ | ✅ | ✅ | ✅ | ✅ |
+**本模块权限摘要**（详细矩阵以权威文档为准）：
+- 用户管理（列表/创建/编辑/删除/启停/重置密码/批量操作）：仅 Admin+（`AdminOrSuperAdmin`）
+- 个人资料（profile/change-password）：仅本人（IDOR 防护：`id == currentUserId`，Admin 也无法修改他人资料）
+- 登录/登出/Token 验证：所有角色（含未登录的 login）
 
-### 用户管理端点 (UsersController)
-
-| 端点 | Receptionist | Doctor | Admin | SuperAdmin | 策略 |
-|------|:---:|:---:|:---:|:---:|------|
-| `GET /users` (分页列表) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
-| `GET /users/current` (当前用户) | ✅ | ✅ | ✅ | ✅ | 仅本人 |
-| `GET /users/{id}` (用户详情) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
-| `POST /users` (创建用户) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
-| `PUT /users/{id}` (更新用户) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
-| `DELETE /users/{id}` (删除用户) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
-| `POST /users/{id}/reset-password` (重置密码) | ❌ | ❌ | ✅¹ | ✅¹ | AdminOrSuperAdmin |
-| `PUT /users/{id}/profile` (修改资料) | ✅* | ✅* | ✅* | ✅* | 仅本人 |
-| `PUT /users/{id}/change-password` (修改密码) | ✅* | ✅* | ✅* | ✅* | 仅本人 |
-| `POST /users/{id}/toggle-status` (启用/禁用) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
-| `POST /users/batch-delete` (批量删除) | ❌ | ❌ | ✅ | ✅ | AdminOrSuperAdmin |
-
-> `*` 标注：profile/change-password 仅限本人操作（IDOR 防护：`id == currentUserId`），Admin 也无法修改他人资料。
-
-### 业务端点权限概览
-
-> ⚠️ 目标态（2026-08-03 权限四连决策），代码部分待按操作级细分，详见 [04-permissions.md](../01-product/04-permissions.md)。
-
-| 模块 | Receptionist | Doctor | Admin | SuperAdmin |
-|------|:---:|:---:|:---:|:---:|
-| 患者管理 | ✅ 读/写 | ✅ 读/写 | ✅ 读 | ✅ 读（删/禁仅 Admin+） |
-| 挂号 | ✅ 创建/取消/队列 | ✅ 接诊/QuickVisit | 🔍 只读 | 🔍 只读 |
-| 读卡器 | ✅ | ❌ | ❌ | ❌ |
-| 医案（创建） | ❌ | ✅ | ❌ | ❌ |
-| 医案（查看/编辑） | ❌ | ✅ 自己的 | ✅ 所有 | ✅ 所有 |
-| 药材管理 | ❌ 不可查看 | ✅ 查看 | ✅ 管理 | ✅ 管理 |
-| 验方管理 | ❌ 不可查看 | ✅ 查看/创建 | ✅ 查看/管理 | ✅ 查看/管理 |
-| 用户管理 | ❌ | ❌ | ✅ | ✅ |
-| 系统设置 | ❌ | ❌ | ❌ | ✅ |
-| 报表 | ❌ | ✅ | ✅ | ✅ |
-| 系统诊断 | ❌ | ❌ | ❌ | ✅ |
-| 日志级别 | ❌ | ❌ | ❌ | ✅ |
-| 打印 | ❌ | ✅ | 🔍 仅查打印记录 | 🔍 仅查打印记录 |
+> ⚠️ 业务端点权限目标态（2026-08-03 权限四连决策，代码部分待按操作级细分）见 [04-permissions.md](../01-product/04-permissions.md) 与 [code-gap-fix-list.md](../compose/plans/code-gap-fix-list.md)。
 
 ## API 端点（11 个，Remote 和 Local 统一）
 

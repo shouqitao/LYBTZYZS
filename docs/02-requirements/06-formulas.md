@@ -48,6 +48,8 @@ stateDiagram-v2
 | Admin (10) | 全部 | 全部 | 全部 |
 | SuperAdmin (100) | 全部 | 全部 | 全部 |
 
+> 完整权限矩阵见权威文档 [04-permissions.md](../01-product/04-permissions.md)。
+
 ## 用户故事
 
 ### US-FORM-001: 分页查询验方列表（按所有权）

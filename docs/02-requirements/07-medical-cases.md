@@ -129,7 +129,7 @@ stateDiagram-v2
 
 ### 权限矩阵（MC 铁律）
 
-> 完整权限矩阵（资源 × 操作 × 角色）见权威文档 [12-permissions-matrix.md](../03-architecture/12-permissions-matrix.md)。
+> 完整权限矩阵（资源 × 操作 × 角色）见权威文档 [04-permissions.md](../01-product/04-permissions.md)；速查见 [12-permissions-matrix.md](../03-architecture/12-permissions-matrix.md)。
 
 **MC 核心铁律**：
 - **创建医案**：仅 Doctor（Admin/SuperAdmin/Receptionist 均 ❌）
