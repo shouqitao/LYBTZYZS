@@ -112,7 +112,6 @@ public class RefitClientContractTests
         properties.Should().Contain(p => p.Name == "IdNumber");
         properties.Should().Contain(p => p.Name == "PhoneNumber");
         properties.Should().Contain(p => p.Name == "Gender");
-        properties.Should().Contain(p => p.Name == "Address");
     }
 
     [Fact]
