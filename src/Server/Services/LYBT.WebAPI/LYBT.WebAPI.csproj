@@ -40,7 +40,6 @@
 
 	<ItemGroup>
 		<!-- OpenSpec: adopt-mapperly-unified-mapping - AutoMapper已移除，改用Mapperly -->
-		<PackageReference Include="EPPlus" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
 		<PackageReference Include="Microsoft.IdentityModel.Tokens" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" />

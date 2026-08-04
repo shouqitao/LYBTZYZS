@@ -20,7 +20,6 @@
     <PackageReference Include="FluentAssertions" />
     <!-- NSubstitute: Testing Trophy Desktop mock whitelist only (WPF boundary interfaces) -->
     <PackageReference Include="NSubstitute" />
-    <PackageReference Include="Xunit.StaFact" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
@@ -28,7 +27,6 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <!-- Refit for REST API clients -->
     <PackageReference Include="Refit" />
-    <PackageReference Include="Refit.HttpClientFactory" />
     <!-- SQL Server for all Desktop + WebApi integration tests -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.Data.SqlClient" />

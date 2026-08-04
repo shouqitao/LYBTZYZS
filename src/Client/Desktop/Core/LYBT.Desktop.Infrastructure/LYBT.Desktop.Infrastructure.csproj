@@ -5,7 +5,6 @@
     <UseWPF>true</UseWPF>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <AcceptNPOIOSMFLicense>true</AcceptNPOIOSMFLicense>
     <!-- CardReader P/Invoke需要允许不安全代码 -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
@@ -28,7 +27,6 @@
   <ItemGroup Label="WPF Framework">
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="FluentValidation" />
-    <PackageReference Include="NPOI" />
     <PackageReference Include="Prism.Core" />
     <PackageReference Include="Prism.Wpf" />
     <!-- OpenSpec: adopt-mapperly-unified-mapping - 编译时映射源生成器 -->

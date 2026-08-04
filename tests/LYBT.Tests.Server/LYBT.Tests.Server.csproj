@@ -29,7 +29,6 @@
     <PackageReference Include="BCrypt.Net-Next" />
     <!-- Validation and Data -->
     <PackageReference Include="FluentValidation" />
-    <PackageReference Include="Bogus" />
     <!-- Configuration -->
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
