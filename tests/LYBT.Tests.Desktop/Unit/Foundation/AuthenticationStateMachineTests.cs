@@ -324,7 +324,7 @@ public class AuthenticationStateMachineTests
     }
 
     [Fact]
-    public void LoggingOut_LogoutFailure_ShouldTransitionBackToAuthenticated()
+    public void LoggingOut_LogoutFailure_ShouldTransitionToIdle()
     {
         // Arrange
         var stateMachine = CreateStateMachine(AuthState.LoggingOut);
@@ -334,7 +334,7 @@ public class AuthenticationStateMachineTests
 
         // Assert
         Assert.True(result);
-        Assert.Equal(AuthState.Authenticated, stateMachine.CurrentState);
+        Assert.Equal(AuthState.Idle, stateMachine.CurrentState);
     }
 
     #endregion

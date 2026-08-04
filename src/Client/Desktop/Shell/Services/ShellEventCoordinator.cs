@@ -55,62 +55,132 @@ public class ShellEventCoordinator : IDisposable
 
     private void OnLoginSucceeded(object? sender, LoginSuccessEventArgs args)
     {
-        _services.UiDispatcher.InvokeAsync(() =>
+        try
         {
-            _services.LoginState.ApplyLoginSuccess(args.User);
-
-            _services.Navigation.ClearLoginRegion();
-            _services.ActivityTracker.StartTracking();
-            _ = _services.TokenLifecycle.StartMonitoringFromStorageAsync();
-
-            _services.NavigationManager.NavigationItems = _services.NavigationManager.BuildNavigationItems(args.User.Role);
-
-            // 背景预加载高频模块
-            _ = Task.Run(async () =>
+            _services.UiDispatcher.InvokeAsync(() =>
             {
                 try
                 {
-                    await Task.Delay(2000);
-                    await _services.ModuleLoader.PreloadModulesAsync(args.User.Role);
+                    _services.LoginState.ApplyLoginSuccess(args.User);
+
+                    _services.Navigation.ClearLoginRegion();
+                    _services.ActivityTracker.StartTracking();
+                    _ = _services.TokenLifecycle.StartMonitoringFromStorageAsync();
+
+                    _services.NavigationManager.NavigationItems = _services.NavigationManager.BuildNavigationItems(args.User.Role);
+
+                    // 背景预加载高频模块
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await Task.Delay(2000);
+                            await _services.ModuleLoader.PreloadModulesAsync(args.User.Role);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "背景模块预加载失败");
+                        }
+                    });
+
+                    _logger.LogInformation("登录成功UI更新完成 [用户: {Username}]", args.User.UserName);
+
+                    RaiseHandled(LoginSuccessHandled);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "背景模块预加载失败");
+                    _logger.LogError(ex, "登录成功UI更新异常 [用户: {Username}]", args.User.UserName);
                 }
             });
-
-            _logger.LogInformation("登录成功UI更新完成 [用户: {Username}]", args.User.UserName);
-
-            LoginSuccessHandled?.Invoke(this, EventArgs.Empty);
-        });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "登录成功事件处理异常 [用户: {Username}]", args.User.UserName);
+        }
     }
 
     private void OnSessionExpired(object? sender, EventArgs e)
     {
-        _services.LoginState.HandleSessionExpiredAsync()
-            .SafeFireAndForget(ex => _logger.LogError(ex, "会话过期处理异常"));
+        try
+        {
+            _services.LoginState.HandleSessionExpiredAsync()
+                .SafeFireAndForget(ex => _logger.LogError(ex, "会话过期处理异常"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "会话过期处理异常");
+        }
     }
 
     private void OnPasswordChanged(PasswordChangedPayload payload)
     {
         _logger.LogInformation("收到密码修改成功事件 [用户: {UserName}]，导航到登录界面", payload.UserName);
-        _services.UiDispatcher.InvokeAsync(() =>
+        try
         {
-            _services.LoginState.ApplyPasswordChanged();
+            _services.UiDispatcher.InvokeAsync(() =>
+            {
+                try
+                {
+                    _services.LoginState.ApplyPasswordChanged();
 
-            _services.Navigation.ClearContentRegion();
-            _services.Navigation.ShowLoginDialog();
+                    _services.Navigation.ClearContentRegion();
+                    _services.Navigation.ShowLoginDialog();
 
-            PasswordChangedHandled?.Invoke(this, EventArgs.Empty);
-        });
+                    RaiseHandled(PasswordChangedHandled);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "密码变更UI更新异常");
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "密码变更事件处理异常");
+        }
     }
 
     private void OnProfileUpdated(ProfileUpdatedPayload payload)
     {
-        _services.UiDispatcher.InvokeAsync(() =>
+        try
         {
-            _services.LoginState.ApplyProfileUpdate(payload.UpdatedUser);
-        });
+            _services.UiDispatcher.InvokeAsync(() =>
+            {
+                try
+                {
+                    _services.LoginState.ApplyProfileUpdate(payload.UpdatedUser);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "用户资料更新UI处理异常");
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "用户资料更新事件处理异常");
+        }
+    }
+
+    /// <summary>
+    /// 逐订阅者触发事件：单个订阅者异常不中断其他订阅者，也不向发布链回抛
+    /// </summary>
+    private void RaiseHandled(EventHandler? handled)
+    {
+        var subscribers = handled?.GetInvocationList();
+        if (subscribers == null) return;
+
+        foreach (var subscriber in subscribers)
+        {
+            try
+            {
+                ((EventHandler)subscriber).Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "事件订阅者处理异常");
+            }
+        }
     }
 
     private async Task OnTokenLifecycleStateChanged(TokenLifecycleStateChangedEventArgs args)

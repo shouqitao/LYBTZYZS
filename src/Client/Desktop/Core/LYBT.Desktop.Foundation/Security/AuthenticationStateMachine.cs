@@ -64,7 +64,7 @@ public class AuthenticationStateMachine : IAuthenticationStateMachine
 
         // LoggingOut 状态的转换
         { (AuthState.LoggingOut, AuthEvent.LogoutSuccess), AuthState.Idle },
-        { (AuthState.LoggingOut, AuthEvent.LogoutFailure), AuthState.Authenticated },
+        { (AuthState.LoggingOut, AuthEvent.LogoutFailure), AuthState.Idle },
         { (AuthState.LoggingOut, AuthEvent.Reset), AuthState.Idle },
 
         // SessionExpired 状态的转换

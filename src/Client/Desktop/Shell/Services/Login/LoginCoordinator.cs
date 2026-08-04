@@ -150,7 +150,7 @@ public class LoginCoordinator : ILoginCoordinator, IDisposable
         await NavigateToRoleHomeAsync(user);
         _stateMachine.Fire(AuthEvent.NavigationCompleted);
 
-        LoginSucceeded?.Invoke(this, new LoginSuccessEventArgs(user, tokenExpiresAt));
+        RaiseLoginSucceeded(user, tokenExpiresAt);
 
         _logger.LogInformation("登录流程完成 [用户: {Username}, 角色: {Role}]",
             user.UserName, user.Role);
@@ -158,58 +158,103 @@ public class LoginCoordinator : ILoginCoordinator, IDisposable
         return CommandResult<UserDetailDto>.Succeeded(user);
     }
 
+    /// <summary>
+    /// 逐订阅者触发登录成功事件：单个订阅者异常不中断发布链，也不影响登录流程结果
+    /// </summary>
+    private void RaiseLoginSucceeded(UserDetailDto user, DateTime tokenExpiresAt)
+    {
+        var args = new LoginSuccessEventArgs(user, tokenExpiresAt);
+        var subscribers = LoginSucceeded?.GetInvocationList();
+        if (subscribers == null) return;
+
+        foreach (var subscriber in subscribers)
+        {
+            try
+            {
+                ((EventHandler<LoginSuccessEventArgs>)subscriber).Invoke(this, args);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "登录成功事件订阅者处理异常");
+            }
+        }
+    }
+
     public async Task HandleLoginSuccessAsync(UserDetailDto user, DateTime tokenExpiresAt)
     {
         ArgumentNullException.ThrowIfNull(user);
 
-        _logger.LogInformation("处理登录成功 [用户: {Username}, Token过期: {ExpiresAt}]",
-            user.UserName, tokenExpiresAt);
-
+        // 与会话变更入口（LoginAsync/LogoutAsync）串行化，避免并发竞态
+        await _loginLock.WaitAsync(TimeSpan.FromSeconds(30));
         try
         {
-            if (_stateMachine.CurrentState == AuthState.Idle)
+            _logger.LogInformation("处理登录成功 [用户: {Username}, Token过期: {ExpiresAt}]",
+                user.UserName, tokenExpiresAt);
+
+            try
             {
-                _stateMachine.Fire(AuthEvent.StartLogin);
-                _stateMachine.Fire(AuthEvent.CredentialsValidated, "正在启动会话...");
+                if (_stateMachine.CurrentState == AuthState.Idle)
+                {
+                    _stateMachine.Fire(AuthEvent.StartLogin);
+                    _stateMachine.Fire(AuthEvent.CredentialsValidated, "正在启动会话...");
+                }
+
+                await StartSessionAsync(user, tokenExpiresAt);
+                _stateMachine.Fire(AuthEvent.ProfileLoaded, "正在加载模块...");
+
+                await LoadModulesForUserAsync(user);
+                _stateMachine.Fire(AuthEvent.ModulesLoaded, "正在跳转...");
+
+                await NavigateToRoleHomeAsync(user);
+                _stateMachine.Fire(AuthEvent.NavigationCompleted);
+
+                _logger.LogInformation("登录成功处理完成 [用户: {Username}]", user.UserName);
             }
-
-            await StartSessionAsync(user, tokenExpiresAt);
-            _stateMachine.Fire(AuthEvent.ProfileLoaded, "正在加载模块...");
-
-            await LoadModulesForUserAsync(user);
-            _stateMachine.Fire(AuthEvent.ModulesLoaded, "正在跳转...");
-
-            await NavigateToRoleHomeAsync(user);
-            _stateMachine.Fire(AuthEvent.NavigationCompleted);
-
-            _logger.LogInformation("登录成功处理完成 [用户: {Username}]", user.UserName);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "处理登录成功时发生异常");
+                _stateMachine.Fire(AuthEvent.LoginFailure);
+                throw;
+            }
         }
-        catch (Exception ex)
+        finally
         {
-            _logger.LogError(ex, "处理登录成功时发生异常");
-            _stateMachine.Fire(AuthEvent.LoginFailure);
-            throw;
+            _loginLock.Release();
         }
     }
 
     public async Task LogoutAsync()
     {
-        _logger.LogInformation("开始登出流程 [用户: {Username}]", _currentUser?.UserName);
-
-        _stateMachine.Fire(AuthEvent.StartLogout, "正在登出...");
-
+        // 与会话变更入口（LoginAsync/HandleLoginSuccessAsync）串行化，避免与登录流程交错
+        await _loginLock.WaitAsync(TimeSpan.FromSeconds(30));
         try
         {
-            await _sessionLifecycleManager.EndSessionAsync();
+            _logger.LogInformation("开始登出流程 [用户: {Username}]", _currentUser?.UserName);
 
-            _sessionManager.ClearSession();
+            _stateMachine.Fire(AuthEvent.StartLogout, "正在登出...");
 
-            await _authenticationService.LogoutAsync();
-
-            lock (_stateLock)
+            try
             {
-                _currentUser = null;
-                _loginTime = null;
+                await _sessionLifecycleManager.EndSessionAsync();
+
+                _sessionManager.ClearSession();
+
+                await _authenticationService.LogoutAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "登出流程异常");
+                _stateMachine.Fire(AuthEvent.LogoutFailure, ClientErrorMessageMapper.GetSafeOperationFailureMessage("登出", ex));
+                throw;
+            }
+            finally
+            {
+                // 无论登出成功与否都清理本地会话，避免 _currentUser 残留
+                lock (_stateLock)
+                {
+                    _currentUser = null;
+                    _loginTime = null;
+                }
             }
 
             _stateMachine.Fire(AuthEvent.LogoutSuccess);
@@ -217,11 +262,9 @@ public class LoginCoordinator : ILoginCoordinator, IDisposable
 
             _logger.LogInformation("登出流程完成");
         }
-        catch (Exception ex)
+        finally
         {
-            _logger.LogError(ex, "登出流程异常");
-            _stateMachine.Fire(AuthEvent.LoginFailure);
-            throw;
+            _loginLock.Release();
         }
     }
 
