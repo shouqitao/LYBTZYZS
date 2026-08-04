@@ -115,9 +115,10 @@
 
 ---
 
-## 批次 C：doc-audit 代码缺口（2026-08-04，G-01 审计产出）—— ⬜ 待派发
+## 批次 C：doc-audit 代码缺口（2026-08-04，G-01 审计产出）—— ✅ 已完成
 
-> 来源：2026-08-04 doc-audit（3 并行子代理审稿 + 主代理代码校准）。与批次 A/B 独立，按优先级派发 Mimo Code。
+> 来源：2026-08-04 doc-audit（3 并行子代理审稿 + 主代理代码校准）。
+> 完成：C1-C3 → commit `f50269f23`；C4-C6 → commit `ce905f8b3`。Build 0 错误、架构测试通过。
 
 ### C1. 患者 Restore 补操作级权限（P0 安全漏洞）
 - **问题**：`POST /patients/{id}/restore` 无操作级 `[Authorize]`，回退类级 `DoctorOrAdminOrReceptionist` → **前台/医生都能恢复患者**。裁决：恢复患者 = 仅 Admin（业务管理）

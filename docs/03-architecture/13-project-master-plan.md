@@ -287,7 +287,8 @@
 | 2026-08-04 | 权限终局裁决（LLM Wiki 审阅矛盾收敛）：**医案创建仅 Doctor**（医生负责制）；**药材管理仅 Admin+**（创建/编辑）；**验方管理 Admin+Doctor**；**可见范围：Admin 可见全部医生数据，Doctor 仅自己可见**（数据所有权过滤）；前台不可见/操作药材验方（沿用 08-03） | 审阅暴露的 US-MC-001/药材/验方权限矛盾统一收敛；D7 代码待对齐目标态 | 产品负责人 |
 | 2026-08-04 | **角色定位澄清**：sysadmin = 超级管理员（SuperAdmin 角色仅此一人，IsSysAdmin=true，只负责系统运维不碰业务数据）；Admin = 业务管理；前台 = 专职前台；Doctor = 主要看诊。无独立「SuperAdmin 用户群」 | 纠正此前将 SuperAdmin 视为独立角色群的误解；12-matrix SuperAdmin/Sysadmin 两列实为同一人 | 产品负责人 |
 | 2026-08-04 | **恢复权限裁决**：**业务数据**（患者/验方）恢复 = 仅 Admin（业务管理，sysadmin 不碰业务、Doctor/前台无权）；**用户账号**恢复 = 层级管理（sysadmin 恢复 Admin，Admin 恢复 Doctor/Receptionist，不可自管）。代码现状：PatientsController.Restore 回退类级策略（全员可调，安全漏洞）；现有 AdminOnly 策略含 SuperAdmin，需新增纯 Admin 策略 | 恢复是删除的逆操作，与「患者删除/禁用仅 Admin」对称；用户账号按已确立的层级管理规则（02-personas §约束） | 产品负责人 |
-| 2026-08-04 | **doc-audit 审计完成（G-01）**：3 并行子代理审稿 + 主代理代码校准，150 文档。P0 矛盾 16 项 + P1 未对齐 22 项 + A 类 doc-vs-code 4 项全部修复（4 commit）；结构层健康（断链 1 条在归档）；核心裁决：医案取消=物理删除清 Cancelled 残留、13b 端点权限表按终局重写、PolicyConstants 6 项、Prism=模块框架+CommunityToolkit MVVM、C2（药材权限）已修复、D5（患者单删缺引用检查）待修 | 审计暴露 6 项代码缺口（Restore 权限漏洞、缺纯 Admin 策略、单删缺引用检查、用户/验方 Restore 未实现、打印回写未实现）→ 记入代码待办，待派发 Mimo Code | 技术总监 |
+| 2026-08-04 | **doc-audit 审计完成（G-01）**：3 并行子代理审稿 + 主代理代码校准，150 文档。P0 矛盾 16 项 + P1 未对齐 22 项 + A 类 doc-vs-code 4 项全部修复（4 commit）；结构层健康（断链 1 条在归档）；核心裁决：医案取消=物理删除清 Cancelled 残留、13b 端点权限表按终局重写、PolicyConstants 6 项、Prism=模块框架+CommunityToolkit MVVM、C2（药材权限）已修复、D5（患者单删缺引用检查）待修 | 审计暴露 6 项代码缺口（Restore 权限漏洞、缺纯 Admin 策略、单删缺引用检查、用户/验方 Restore 未实现、打印回写未实现）→ 批次 C 已派发 | 技术总监 |
+| 2026-08-04 | **代码批次 C 完成（6 项）**：C1-C3（Restore 权限漏洞/纯 Admin 策略/单删引用检查）commit `f50269f23`；C4-C6（用户/验方 Restore/打印回写）commit `ce905f8b3`。新增 `AdminBusinessOnly` 策略（仅 Admin，sysadmin 不碰业务）；用户恢复按层级管理（sysadmin→Admin，Admin→Doctor/Receptionist，不可自管） | doc-audit 审计产出闭环；Build 0 错误、架构测试通过 | 技术总监 |
 
 ---
 
