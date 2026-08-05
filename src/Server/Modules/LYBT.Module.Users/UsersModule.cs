@@ -5,6 +5,7 @@ using LYBT.Module.Users.Application.Validators;
 using LYBT.Module.Users.Infrastructure;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Services;
+using LYBT.Shared.Configuration;
 using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -28,9 +29,9 @@ namespace LYBT.Module.Users
             services.AddDbContext<UsersDbContext>((sp, options) =>
             {
                 var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-                var connectionString = dbOptions.ConnectionString
-                    ?? configuration.GetConnectionString("DefaultConnection")
-                    ?? throw new InvalidOperationException("未配置数据库连接字符串");
+                var connectionString = ConnectionStringResolver.GetEffectiveConnectionString(dbOptions, configuration);
+                if (string.IsNullOrWhiteSpace(connectionString))
+                    throw new InvalidOperationException("未配置数据库连接字符串");
                 options.UseSqlServer(connectionString);
             });
 

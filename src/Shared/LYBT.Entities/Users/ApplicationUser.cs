@@ -14,7 +14,7 @@ namespace LYBT.Entities.Users;
 public class ApplicationUser : IdentityUser<Guid>, IAuditableEntity, ISoftDeletable
 {
     /// <summary>真实姓名</summary>
-    [StringLength(50)]
+    [StringLength(100)]
     [DisplayName("真实姓名")]
     public string RealName { get; set; } = string.Empty;
 

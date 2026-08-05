@@ -2,6 +2,7 @@ using FluentValidation;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Models.Validators.Auth;
+using LYBT.Shared.Configuration;
 using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -25,9 +26,9 @@ namespace LYBT.Module.Auth
             services.AddDbContext<Infrastructure.AuthDbContext>((sp, options) =>
             {
                 var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-                var connectionString = dbOptions.ConnectionString
-                    ?? configuration.GetConnectionString("DefaultConnection")
-                    ?? throw new InvalidOperationException("未配置数据库连接字符串");
+                var connectionString = ConnectionStringResolver.GetEffectiveConnectionString(dbOptions, configuration);
+                if (string.IsNullOrWhiteSpace(connectionString))
+                    throw new InvalidOperationException("未配置数据库连接字符串");
                 options.UseSqlServer(connectionString);
             });
 

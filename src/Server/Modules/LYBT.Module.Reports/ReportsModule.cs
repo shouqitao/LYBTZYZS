@@ -1,5 +1,6 @@
 using LYBT.Module.Reports.Infrastructure;
 using LYBT.Module.Reports.Interfaces;
+using LYBT.Shared.Configuration;
 using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -22,9 +23,9 @@ public static class ReportsModule
         services.AddDbContext<ReportsDbContext>((sp, options) =>
         {
             var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-            var connectionString = dbOptions.ConnectionString
-                ?? configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("未配置数据库连接字符串");
+            var connectionString = ConnectionStringResolver.GetEffectiveConnectionString(dbOptions, configuration);
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new InvalidOperationException("未配置数据库连接字符串");
             options.UseSqlServer(connectionString);
         });
 
