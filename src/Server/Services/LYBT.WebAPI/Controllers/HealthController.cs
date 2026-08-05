@@ -12,7 +12,7 @@ namespace LYBT.WebAPI.Controllers;
 
 /// <summary>
 /// 健康检查控制器 - 遵循三层架构
-/// Architecture Fix: 使用IHealthCheckService替代直接DbContext依赖
+/// 架构修复：使用 IHealthCheckService 替代直接 DbContext 依赖
 /// </summary>
 /// <remarks>
 /// 内部健康检查端点 (需认证)。外部监控请使用中间件端点 GET /health (匿名)。

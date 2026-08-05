@@ -134,7 +134,7 @@ public partial class MedicalCaseMapper
     /// <summary>
     /// 医案实体转换为MedicalCaseDetailDto（完整版）
     /// 基于Mapperly生成的ToDetailDto，再补充嵌套对象和计算字段
-    /// Architecture Fix: 统一使用Mapperly + 手动丰富模式
+    /// 架构修复：统一使用 Mapperly + 手动丰富模式
     /// </summary>
     /// <param name="entity">医案实体（需包含导航属性）</param>
     /// <returns>医案完整详情DTO</returns>

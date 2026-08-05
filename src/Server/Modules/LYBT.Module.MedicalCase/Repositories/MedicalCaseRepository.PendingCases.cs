@@ -16,7 +16,7 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// <summary>
         /// 获取待看诊医案列表（Status=Suspended或Active）
         /// Epic #1583 - Phase 5
-        /// Bug Fix: 应包含Suspended和Active两种未完成状态
+        /// Bug 修复：应包含 Suspended 和 Active 两种未完成状态
         /// </summary>
         public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId, Guid? patientId = null, CancellationToken cancellationToken = default)
         {
@@ -73,7 +73,7 @@ namespace LYBT.Module.MedicalCases.Repositories
 
         /// <summary>
         /// 获取所有待看诊医案列表（管理员专用）
-        /// Bug Fix: 应包含Suspended和Active两种未完成状态
+        /// Bug 修复：应包含 Suspended 和 Active 两种未完成状态
         /// </summary>
         public async Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync(CancellationToken cancellationToken = default)
         {

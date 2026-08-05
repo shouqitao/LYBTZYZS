@@ -7,7 +7,7 @@ namespace LYBT.Module.MedicalCases.Services
 {
     /// <summary>
     /// 医案跨模块查询服务实现 - 用于跨模块查询
-    /// Architecture Fix: 集中处理医案查询逻辑，供其他模块（如Patient）使用
+    /// 架构修复：集中处理医案查询逻辑，供其他模块（如 Patient）使用
     /// Task 6: Repository 规范统一 — 委托 IMedicalCaseReferenceRepository
     /// </summary>
     public class MedicalCaseCrossModuleService : IMedicalCaseCrossModuleService

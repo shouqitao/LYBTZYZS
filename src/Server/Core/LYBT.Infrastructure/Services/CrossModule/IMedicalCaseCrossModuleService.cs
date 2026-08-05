@@ -5,7 +5,7 @@ namespace LYBT.Infrastructure.Services.CrossModule;
 /// <summary>
 /// 医案域跨模块服务
 /// 供 Patients 模块使用，替代直接依赖 IMedicalCaseReferenceService
-/// Architecture Fix: 解决 Patients → MedicalCases 循环依赖问题
+/// 架构修复：解决 Patients → MedicalCases 循环依赖问题
 /// </summary>
 public interface IMedicalCaseCrossModuleService
 {
