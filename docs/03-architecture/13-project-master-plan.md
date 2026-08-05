@@ -57,7 +57,7 @@
 | A-06 | Repository 泛型化 | Desktop 15+ 对复制粘贴 | 无 | ⬜ | 1d |
 | A-07 | CrossModule 死方法 | 6 个零调用方法 | 无 | ✅ 已由 A-02 覆盖 | 0 |
 | A-08 | 命名规范统一 | 后缀/目录/注释语言 | 无 | 🟡 | 1d |
-| A-09 | 架构测试补全 | 修复 1 skip + 新增 13 个缺口测试 | A-03/A-04 | ⬜ | 1d |
+| A-09 | 架构测试补全 | 修复 1 skip（删除 YAGNI）+ 新增 7 个守卫测试（P07/P08/P10 已有） | A-03/A-04 | ✅ | 1d |
 | A-10 | 接口下沉 Contracts | IFormulaService/IHerbService 移到 Contracts（与 IPatientService/IUserService 一致） | 无 | ✅ | 0.5d |
 | A-11 | Registration 依赖清理 | 移除对 Patients/Users 直接引用 | A-10 | ✅ 已无跨模块依赖（A-02 清理后确认） | 0 |
 | A-12 | AuthService 收敛 | RefreshToken 操作收敛到 Repository | 无 | ✅ 已完成（代码已通过 IAuthSessionRepository） | 0 |
@@ -226,7 +226,7 @@
 | A-06 Repository 泛型化 | ⬜ | — | — |
 | A-07 CrossModule 死方法 | ✅ | 2026-08-05 | 已由 A-02 覆盖（`5f89e58ec` 删除 8 个死方法） |
 | A-08 命名规范统一 | 🟡 | 2026-08-05 | `35f4cc2e6` `580bc4fcc` `7dbd196b4` — XML 注释已统一为中文（~55 文件 + 5 服务端文件）；Repository 后缀全部一致；Service 后缀发现 ~20 处 Manager/复数/Handler 类不一致，已报告待决策（改名影响面大，未执行） |
-| A-09 架构测试补全 | ⬜ | — | — |
+| A-09 架构测试补全 | ✅ | 2026-08-05 | `97dcfe6b5` — 删除 skip 测试（YAGNI）+ 新增 7 守卫：Controller 继承 Base* / Desktop Repository 基类 / Module DI 注册 / Options SectionName / Controller 返回 IActionResult / Validator AbstractValidator / Mapperly [Mapper]；验证 build 0 错误 0 警告 + 架构测试 92 过 0 败 0 跳 |
 | A-10 接口下沉 | ✅ | 2026-08-05 | `6a1620e8b` — IFormulaService/IHerbService 从 Formula/Herbs 模块移到 LYBT.Desktop.Contracts.Services；9 个源文件 + 2 个测试文件 using 更新；空 Interfaces 目录删除 |
 | A-11 Registration 依赖清理 | ✅ | 2026-08-05 | 已无跨模块依赖（A-02 清理后确认） |
 | A-12 AuthService 收敛 | ✅ | 2026-08-04 | 代码已通过 IAuthSessionRepository（RefreshTokenCommandHandler 无直接 DbContext） |
