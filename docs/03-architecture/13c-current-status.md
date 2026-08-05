@@ -6,10 +6,10 @@
 
 | 项 | 值 |
 |----|-----|
-| Build | 0 错误 **9 个警告** |
-| 架构测试 | 85/86 pass（P07/P08/P10 约束不可违反） |
+| Build | 0 错误 **0 警告** |
+| 架构测试 | 92/92 pass（P07/P08/P10 约束不可违反） |
 | Desktop 测试 | 240 pass **104 fail**（测试主机进程崩溃） |
-| 最新迁移 | `AddRowVersionToAspNetUsers` |
+| 最新迁移 | `RecreateDroppedAuditTables` |
 
 ## 四、Desktop 视图（代码实际定义）
 
