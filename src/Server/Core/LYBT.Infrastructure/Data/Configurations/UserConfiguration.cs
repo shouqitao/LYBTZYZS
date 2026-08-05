@@ -15,6 +15,10 @@ public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
         // 表名沿用 Users（与 Identity 约定一致）
         builder.ToTable("Users");
 
+        // 业务字段（原 ApplicationUserConfiguration 已合并至此，避免对同一实体重复配置）
+        builder.Property(u => u.RealName).IsRequired().HasMaxLength(100);
+        builder.Property(u => u.LastLoginAt).IsRequired(false);
+
         // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
         // 枚举转换（Fluent API 专属功能）
         builder.Property(u => u.Status).HasConversion<int>();

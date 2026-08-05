@@ -123,7 +123,7 @@ namespace PasswordHashGenerator
             try
             {
                 // 必须使用 Identity 的 PasswordHasher（与 UserManager 登录认证同款，PBKDF2，AQAAAA 前缀）。
-                // 不能用 BCrypt（PasswordHelper）：直接写入 AspNetUsers.PasswordHash 将导致该用户无法登录
+                // 不能用 BCrypt（PasswordHelper）：直接写入 Users.PasswordHash 将导致该用户无法登录
                 // （见 DatabaseInitializationService.cs 关于避免 BCrypt/PBKDF2 哈希冲突的说明）。
                 var hasher = new PasswordHasher<ApplicationUser>();
                 var user = new ApplicationUser();
@@ -139,7 +139,7 @@ namespace PasswordHashGenerator
                 Console.WriteLine();
                 
                 Console.WriteLine("💡 SQL更新语句:");
-                Console.WriteLine($"   UPDATE AspNetUsers SET PasswordHash = '{hashedPassword}' WHERE UserName = '你的用户名';");
+                Console.WriteLine($"   UPDATE Users SET PasswordHash = '{hashedPassword}' WHERE UserName = '你的用户名';");
                 Console.WriteLine();
                 
                 Console.WriteLine("🔍 验证命令:");

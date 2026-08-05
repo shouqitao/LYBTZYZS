@@ -40,7 +40,7 @@ dotnet run --project src/Tools/PasswordHashGenerator/PasswordHashGenerator/
 
 # PasswordHashGenerator 代码知识
 
-使用 ASP.NET Core Identity `PasswordHasher<ApplicationUser>` 生成 PBKDF2 密码哈希值的命令行工具，哈希格式与系统登录认证（`UserManager`）完全兼容，可直接写入 `AspNetUsers.PasswordHash`。
+使用 ASP.NET Core Identity `PasswordHasher<ApplicationUser>` 生成 PBKDF2 密码哈希值的命令行工具，哈希格式与系统登录认证（`UserManager`）完全兼容，可直接写入 `Users.PasswordHash`。
 
 ## 代码文件结构
 

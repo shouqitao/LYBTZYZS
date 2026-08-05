@@ -28,7 +28,10 @@ namespace LYBT.Module.Users
             services.AddDbContext<UsersDbContext>((sp, options) =>
             {
                 var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-                options.UseSqlServer(dbOptions.ConnectionString);
+                var connectionString = dbOptions.ConnectionString
+                    ?? configuration.GetConnectionString("DefaultConnection")
+                    ?? throw new InvalidOperationException("未配置数据库连接字符串");
+                options.UseSqlServer(connectionString);
             });
 
             // 注册新架构：IUserRepository
