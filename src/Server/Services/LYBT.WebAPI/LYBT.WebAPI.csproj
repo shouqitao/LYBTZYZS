@@ -63,6 +63,8 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" />
 		<!-- .env文件支持 -->
 		<PackageReference Include="DotNetEnv" />
+		<!-- B-03: Excel 导出/导入 -->
+		<PackageReference Include="NPOI" />
 	</ItemGroup>
 
 	<ItemGroup>
