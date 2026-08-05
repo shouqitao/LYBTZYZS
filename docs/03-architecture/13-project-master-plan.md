@@ -54,7 +54,7 @@
 | A-03 | MediatR 简化 | 5 模块全部完成：Herbs/Formula/Patients/Users 24 Handler；MedicalCase 40 文件删除 | 无 | ✅ | 0.5d |
 | A-04 | 超大类型拆分 | 5 个 >600 行文件 | 无 | ✅ A-03 简化后全部降至 600 以下 | 0 |
 | A-05 | 实体源统一 | 消除 Domain/Shared 双模型 | A-02 | ⬜ | 3d |
-| A-06 | Repository 泛型化 | Desktop 15+ 对复制粘贴 | 无 | ⬜ | 1d |
+| A-06 | Repository 泛型化 | Desktop 15+ 对复制粘贴 | 无 | ✅ | 1d |
 | A-07 | CrossModule 死方法 | 6 个零调用方法 | 无 | ✅ 已由 A-02 覆盖 | 0 |
 | A-08 | 命名规范统一 | 后缀/目录/注释语言 | 无 | 🟡 | 1d |
 | A-09 | 架构测试补全 | 修复 1 skip（删除 YAGNI）+ 新增 7 个守卫测试（P07/P08/P10 已有） | A-03/A-04 | ✅ | 1d |
@@ -223,7 +223,7 @@
 | A-03 MediatR 简化 | ✅ | 2026-08-05 | `29a4675af` `c5aca4e04` `741ca8735` `4b97bcfde` `5172ff9ca` — MedicalCase 全部 Handler/Command/Query/Validator 删除（40 文件，-1285 行）；Server/LocalWebAPI/Base controller 直连 Service；AddMediatR 移除；架构测试更新为断言统一验证器 |
 | A-04 超大类型拆分 | ⬜ | — | — |
 | A-05 实体源统一 | ⬜ | — | — |
-| A-06 Repository 泛型化 | ⬜ | — | — |
+| A-06 Repository 泛型化 | ✅ | 2026-08-05 | `d379f4a9d` — 方案 B 收敛版：新增 `IEntityApiSegment<TList,TDetail,TInput>` 泛型段（5 标准 CRUD）+ `EntityApiClientRepositoryBase<TList,TDetail,TInput>` 派生基类（用段实现 CRUD，失败抛 InvalidOperationException、GetPaged Data==null 空分页，语义与现状一致）；4 段接口以 DIM 默认实现转发到现有实体命名方法（8 个实现类零改动）；新增 `IEntityInputDto` 约束接口（Shared）供基类提取更新 ID；Patient/Formula/Herb/User 4 仓储删标准 CRUD 样板（-340/+22，净 -318 行），Patient/User 因接口无 category 保留 1 行 GetPagedAsync 薄包装；Registration/MedicalCase 与 2 参旧基类保持原样。build --no-incremental 0 错误 0 警告；架构测试 92/92 |
 | A-07 CrossModule 死方法 | ✅ | 2026-08-05 | 已由 A-02 覆盖（`5f89e58ec` 删除 8 个死方法） |
 | A-08 命名规范统一 | 🟡 | 2026-08-05 | `35f4cc2e6` `580bc4fcc` `7dbd196b4` — XML 注释已统一为中文（~55 文件 + 5 服务端文件）；Repository 后缀全部一致；Service 后缀发现 ~20 处 Manager/复数/Handler 类不一致，已报告待决策（改名影响面大，未执行） |
 | A-09 架构测试补全 | ✅ | 2026-08-05 | `97dcfe6b5` — 删除 skip 测试（YAGNI）+ 新增 7 守卫：Controller 继承 Base* / Desktop Repository 基类 / Module DI 注册 / Options SectionName / Controller 返回 IActionResult / Validator AbstractValidator / Mapperly [Mapper]；验证 build 0 错误 0 警告 + 架构测试 92 过 0 败 0 跳 |
@@ -294,6 +294,7 @@
 | 2026-08-04 | **Phase 0 收尾（3 项小任务）**：A-12 AuthService 收敛——代码已通过 IAuthSessionRepository（RefreshTokenCommandHandler 无直接 DbContext），无需改动；C-03 部署脚本清理——删除 `.worktrees/` 下 7 个孤儿 checkout；C-04 NuGet 废弃包清理——移除 8 个代码零使用包（NPOI/EPPlus/System.CommandLine/Bogus/Xunit.StaFact/ObjectPool/Logging.Debug/Refit.HttpClientFactory）commit `85b2d16c5`，保留 SixLabors（QuestPDF 安全固定）。Phase 0 仅剩 B-02（配置修改 API，1d） | Phase 0 4/5 完成 | 技术总监 |
 | 2026-08-05 | **A-08 命名规范（部分完成）**：① XML `<summary>` 注释全部统一为中文（Desktop ~55 文件 + Server 5 文件，commit `580bc4fcc` `7dbd196b4`；跳过 Designer 自动生成文件、EF 迁移历史、`<remarks>`/`<param>` 与行内注释）；② Repository 后缀全部一致（`{Entity}Repository`）；③ Service 后缀报告：Server 侧全一致，Desktop 基础设施层约 20 处不一致（`DialogManager`/`SessionManager`/`ErrorHandler`/`AsyncExecutor`/`LoadingStateManager`/`PatientSearchManager`/`LoginStateManager`/`SessionLifecycleManager`/`NavigationManager`/`StatusBarManager` 等 Manager 后缀，`ListViewServices`/`MasterDetailServices`/`ViewModelServices` 复数，`LoginCoordinator`/`ShellEventCoordinator`/`AppStartupOrchestrator`/`ApiHealthMonitor`/`StartupPipeline`/`ApiRouter`/`CardReaderFactory` 等）——改名影响面大，仅报告不改 | 注释语言统一为中文；后缀不一致项交由产品负责人决策是否统一 | 技术总监 |
 | 2026-08-05 | **B-02 配置修改 API 完成（Phase 0 收官）**：`ISystemConfigurationService` 新增 `SetValueAsync`/`UpdateConfigurationAsync`；`ConfigurationController` 新增 `PUT /{key}` 与 `PUT /`（AdminOrSuperAdmin）；新增 `IConfigurationStore` + `JsonFileConfigurationStore`（`{BaseDirectory}/config/runtime-overrides.json`，仅持久化与 appsettings 默认值不同的项，原子写入）；白名单策略 `ConfigurationWritePolicy`（仅允许已注册 Server Options 节，禁止 `ConnectionStrings:DefaultConnection`/`Jwt:SecretKey`/`DefaultPasswords:*`）；Program.cs 以 `reloadOnChange:true` 追加覆盖文件，Service 写入后 `IConfigurationRoot.Reload()` 触发 `IOptionsMonitor<T>` 热更新。新增 13 个单元测试（Store 4 + Service 9，含热更新验证），Build 0 错误 0 警告，commit `41922a92a` | 架构约束 P10 用独立 Store 满足；测试真实实现零 mock | 技术总监 |
+| 2026-08-05 | **A-06 Repository 泛型化（方案 B 收敛版）**：① 新建 `IEntityApiSegment<TList,TDetail,TInput>`（5 标准 CRUD，category 默认 null）；② 4 个形状一致的段接口继承它，用默认接口方法（DIM）显式重实现泛型方法并转发到现有实体命名方法（`GetPatientsAsync` 等不重命名，8 个实现类零改动）；③ 新建 `EntityApiClientRepositoryBase<TList,TDetail,TInput>` 派生自现有 2 参基类（**不改旧基类**——Registration/MedicalCase 继承它且须保持原样，改 3 参会使二者编译失败），用泛型段实现标准 CRUD（失败抛 InvalidOperationException(msg??默认文案)、GetPaged Data==null 空分页、GetById 保持静默返回 null，全部与现状语义一致）；④ 新增 `IEntityInputDto`（Shared/Contracts/Common，`Guid? Id`），4 个输入 DTO 实现，供基类 Update 提取 ID；⑤ Patient/Formula/Herb/User 4 仓储删标准 CRUD（净 -318 行），Patient/User 因接口无 category 保留 1 行 GetPagedAsync 薄包装（已实测 C# 接口映射不允许额外可选参数）；⑥ MedicalCase/Registration 边界未越。commit `d379f4a9d`，build --no-incremental 0 错误 0 警告，架构测试 92/92；Desktop 套件在无 WebAPI 环境失败为已知环境项（C-01 需运行中 WebAPI；STA 失败源于 C-04 移除 Xunit.StaFact），已用 stash 基线对比证明与本次改动无关 | 泛型化只用于形状一致的实体，不硬套异形实体；DIM 使实现类零改动；2 参旧基类保留以满足边界约束 | 技术总监 |
 
 ---
 
