@@ -1,15 +1,12 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.MedicalCases.Application.Commands;
-using LYBT.Module.MedicalCases.Application.Queries;
 using LYBT.Module.MedicalCases.Controllers;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -38,9 +35,10 @@ namespace LYBT.WebAPI.Controllers
             ISender sender,
             ILogger<MedicalCasesController> logger,
             IMedicalCaseCommandService medicalCaseCommandService,
+            IMedicalCaseQueryService medicalCaseQueryService,
             IMedicalCaseStateService medicalCaseStateService,
             MedicalCaseMapper medicalCaseMapper)
-            : base(sender, logger, medicalCaseCommandService, medicalCaseStateService)
+            : base(sender, logger, medicalCaseCommandService, medicalCaseQueryService, medicalCaseStateService)
         {
             _medicalCaseMapper = medicalCaseMapper ?? throw new ArgumentNullException(nameof(medicalCaseMapper));
         }
@@ -59,19 +57,17 @@ namespace LYBT.WebAPI.Controllers
             if (ValidatePagination(page, pageSize) is { } error) return error;
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
-            var result = await Sender.Send(new GetMedicalCasesQuery(
-                Status: null,
-                PatientId: null,
-                Page: page,
-                PageSize: pageSize,
-                CurrentDoctorId: operatorId,
-                IsAdmin: isAdmin,
-                Keyword: keyword), ct);
+            var result = await _medicalCaseQueryService.GetListDtoAsync(
+                status: null,
+                patientId: null,
+                page: page,
+                pageSize: pageSize,
+                currentDoctorId: operatorId,
+                isAdmin: isAdmin,
+                keyword: keyword,
+                cancellationToken: ct);
 
-            if (!result.IsSuccess)
-                return BusinessFail(result.Error ?? "查询失败");
-
-            return Success(result.Value!, "查询成功");
+            return Success(result, "查询成功");
         }
 
         /// <summary>
@@ -83,7 +79,7 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidateGuid(id, "医案ID") is { } error) return error;
 
-            var result = await Sender.Send(new GetMedicalCaseQuery(id), ct);
+            var result = await _medicalCaseQueryService.GetDetailDtoAsync(id, ct);
             if (!result.IsSuccess)
                 return NotFound(result.Error ?? "医案不存在");
 
@@ -108,7 +104,7 @@ namespace LYBT.WebAPI.Controllers
             var (doctorId, _, _) = GetOperator();
 
             inputDto.Id = null;
-            var result = await Sender.Send(new CreateMedicalCaseCommand(inputDto, doctorId), ct);
+            var result = await _medicalCaseCommandService.SaveWithDetailAsync(inputDto, doctorId, isAdmin: false, ct);
 
             if (!result.IsSuccess)
                 return NotFound(result.Error ?? "患者不存在");
@@ -148,7 +144,7 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await Sender.Send(new SaveMedicalCaseCommand(request, operatorId, isAdmin), ct);
+            var result = await _medicalCaseCommandService.SaveWithDetailAsync(request, operatorId, isAdmin, ct);
 
             if (!result.IsSuccess)
             {
@@ -198,7 +194,7 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await Sender.Send(new BatchDeleteMedicalCasesCommand(dto.Ids, operatorId, isAdmin), ct);
+            var result = await _medicalCaseCommandService.BatchDeleteAsync(dto.Ids, operatorId, isAdmin, ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "批量删除失败");
@@ -220,8 +216,8 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await Sender.Send(new SetPrescriptionFlagCommand(
-                id, request.NeedsPrescription, operatorId, isAdmin), ct);
+            var result = await _medicalCaseCommandService.SetPrescriptionFlagWithDetailAsync(
+                id, request.NeedsPrescription, operatorId, isAdmin, ct);
 
             if (!result.IsSuccess)
                 return NotFound(result.Error ?? "医案不存在");
@@ -242,8 +238,8 @@ namespace LYBT.WebAPI.Controllers
             [FromBody] RecordPrintRequest request, CancellationToken ct)
         {
             var (operatorId, operatorName, _) = GetOperator();
-            var result = await Sender.Send(new RecordPrintCommand(
-                id, request.PrintType, request.PrinterName, operatorId, operatorName), ct);
+            var result = await _medicalCaseCommandService.RecordPrintAsync(
+                id, request.PrintType, request.PrinterName, operatorId, operatorName, ct);
 
             if (!result.IsSuccess)
                 return NotFound(result.Error ?? "医案不存在");

@@ -659,21 +659,17 @@ public class ServerArchTests
     }
 
     /// <summary>
-    /// MedicalCase验证器必须存在，确保输入数据完整性
+    /// MedicalCase输入验证必须存在，确保输入数据完整性。
+    /// A-03 简化：Application/Validators 的 Create/Update 验证器已随 Command 删除，
+    /// 验证职责统一由 Shared.Models 的 MedicalCaseInputDtoValidator 承担（Module 中注册）。
     /// </summary>
     [Fact]
     public void MedicalCase_Validators_Should_Exist()
     {
-        var validatorTypes = Types.InAssemblies(ServerAssemblies)
-            .That()
-            .HaveNameEndingWith("Validator")
-            .And()
-            .ResideInNamespaceContaining("MedicalCase")
-            .GetTypes()
-            .ToList();
+        var unifiedValidator = Assembly.Load("LYBT.Shared.Models")
+            .GetType("LYBT.Shared.Models.Validators.MedicalCase.MedicalCaseInputDtoValidator");
 
-        Assert.True(validatorTypes.Count >= 2,
-            $"MedicalCase验证器不足（期望至少2个: CreateValidator + UpdateValidator），实际: {validatorTypes.Count}");
+        Assert.NotNull(unifiedValidator);
     }
 
     #endregion

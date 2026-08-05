@@ -1,7 +1,5 @@
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.MedicalCases.Application.Commands;
-using LYBT.Module.MedicalCases.Application.Queries;
 using LYBT.Module.MedicalCases.Controllers;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -26,8 +24,9 @@ public class MedicalCasesController : BaseMedicalCasesController
         ISender sender,
         ILogger<MedicalCasesController> logger,
         IMedicalCaseCommandService medicalCaseCommandService,
+        IMedicalCaseQueryService medicalCaseQueryService,
         IMedicalCaseStateService medicalCaseStateService)
-        : base(sender, logger, medicalCaseCommandService, medicalCaseStateService)
+        : base(sender, logger, medicalCaseCommandService, medicalCaseQueryService, medicalCaseStateService)
     {
     }
 
@@ -37,7 +36,7 @@ public class MedicalCasesController : BaseMedicalCasesController
     [HttpGet("{id}")]
     public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
-        var result = await Sender.Send(new GetMedicalCaseQuery(id), ct);
+        var result = await _medicalCaseQueryService.GetDetailDtoAsync(id, ct);
         if (!result.IsSuccess)
             return NotFound(result.Error ?? "医案不存在");
 
@@ -54,10 +53,8 @@ public class MedicalCasesController : BaseMedicalCasesController
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
         if (!isAdmin && query.DoctorId == null)
             query.DoctorId = operatorId;
-        var result = await Sender.Send(new QueryMedicalCasesCommand(query), ct);
-        if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "查询失败");
-        return SuccessPaged(result.Value!, "查询成功");
+        var result = await _medicalCaseQueryService.QueryAsync(query, ct);
+        return SuccessPaged(result, "查询成功");
     }
 
     /// <summary>
@@ -68,11 +65,9 @@ public class MedicalCasesController : BaseMedicalCasesController
     {
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
-        var result = await Sender.Send(new GetMedicalCasesQuery(
-            status, null, 1, 100, operatorId, isAdmin), ct);
-        if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "查询失败");
-        return Success(result.Value!.Items, "查询成功");
+        var result = await _medicalCaseQueryService.GetListDtoAsync(
+            status, null, 1, 100, operatorId, isAdmin, cancellationToken: ct);
+        return Success(result.Items, "查询成功");
     }
 
     /// <summary>
@@ -91,10 +86,8 @@ public class MedicalCasesController : BaseMedicalCasesController
         };
         if (!isAdmin)
             query.DoctorId = operatorId;
-        var result = await Sender.Send(new QueryMedicalCasesCommand(query), ct);
-        if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "查询失败");
-        return Success(result.Value!.Items, "查询成功");
+        var result = await _medicalCaseQueryService.QueryAsync(query, ct);
+        return Success(result.Items, "查询成功");
     }
 
     /// <summary>
@@ -109,7 +102,7 @@ public class MedicalCasesController : BaseMedicalCasesController
 
         var (doctorId, _, _) = GetOperator();
         inputDto.Id = null;
-        var result = await Sender.Send(new CreateMedicalCaseCommand(inputDto, doctorId), ct);
+        var result = await _medicalCaseCommandService.SaveWithDetailAsync(inputDto, doctorId, isAdmin: false, ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "创建失败");
 

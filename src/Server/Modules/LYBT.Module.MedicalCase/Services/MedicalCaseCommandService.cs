@@ -5,6 +5,7 @@ using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
+using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -29,6 +30,7 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly ICacheInvalidationService _cacheInvalidation;
         private readonly MedicalCasePrescriptionService _prescriptionService;
         private readonly PrescriptionItemService _itemService;
+        private readonly MedicalCaseMapper _mapper;
 
         public MedicalCaseCommandService(
             IMedicalCaseRepository repository,
@@ -37,7 +39,8 @@ namespace LYBT.Module.MedicalCases.Services
             ILogger<MedicalCaseCommandService> logger,
             ICacheInvalidationService cacheInvalidation,
             MedicalCasePrescriptionService prescriptionService,
-            PrescriptionItemService itemService)
+            PrescriptionItemService itemService,
+            MedicalCaseMapper mapper)
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -46,6 +49,7 @@ namespace LYBT.Module.MedicalCases.Services
             _cacheInvalidation = cacheInvalidation ?? throw new ArgumentNullException(nameof(cacheInvalidation));
             _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
             _itemService = itemService ?? throw new ArgumentNullException(nameof(itemService));
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -335,6 +339,130 @@ namespace LYBT.Module.MedicalCases.Services
             consultation.PulseDiagnosis = dto.PulseDiagnosis;
             consultation.TcmDiagnosis = dto.TcmDiagnosis;
             consultation.UpdatedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// 统一保存医案并返回详情DTO（含NotFound语义）
+        /// </summary>
+        public async Task<LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>> SaveWithDetailAsync(
+            MedicalCaseInputDto request,
+            Guid currentUserId,
+            bool isAdmin = false,
+            CancellationToken cancellationToken = default)
+        {
+            var medicalCase = await SaveAsync(request, currentUserId, isAdmin, cancellationToken);
+            if (medicalCase == null)
+                return LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>.Failure(EC.NotFound, "医案不存在");
+
+            var dto = _mapper.MapToMedicalCaseDetailDto(medicalCase);
+            return LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>.Success(dto);
+        }
+
+        /// <summary>
+        /// 标记是否需要开处方并返回详情DTO（含NotFound语义）
+        /// </summary>
+        public async Task<LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>> SetPrescriptionFlagWithDetailAsync(
+            Guid medicalCaseId,
+            bool needsPrescription,
+            Guid currentUserId,
+            bool isAdmin = false,
+            CancellationToken cancellationToken = default)
+        {
+            var medicalCase = await SetPrescriptionFlagAsync(medicalCaseId, needsPrescription, currentUserId, isAdmin, cancellationToken);
+            if (medicalCase == null)
+                return LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>.Failure(EC.NotFound, "医案不存在");
+
+            var dto = _mapper.MapToMedicalCaseDetailDto(medicalCase);
+            return LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>.Success(dto);
+        }
+
+        /// <summary>
+        /// 添加打印日志（成功回写打印状态，失败仅记录日志）
+        /// </summary>
+        public async Task<LYBT.Shared.Models.Contracts.Common.Result<bool>> AddPrintLogAsync(
+            Guid medicalCaseId,
+            int printType,
+            bool isSuccess,
+            string? printerName,
+            Guid operatorId,
+            string operatorName,
+            CancellationToken cancellationToken = default)
+        {
+            var medicalCase = await _repository.GetByIdAsync(medicalCaseId, cancellationToken);
+            if (medicalCase == null)
+                return LYBT.Shared.Models.Contracts.Common.Result<bool>.Failure(EC.NotFound, "医案不存在");
+
+            var now = DateTime.UtcNow;
+
+            // 打印成功才回写医案打印状态
+            if (isSuccess)
+            {
+                medicalCase.IsPrinted = true;
+                medicalCase.PrintCount += 1;
+                medicalCase.LastPrintedAt = now;
+                medicalCase.PrintVersion += 1;
+
+                await _repository.UpdateAsync(medicalCase, cancellationToken);
+            }
+
+            var printLog = new MedicalCasePrintLog
+            {
+                Id = Guid.NewGuid(),
+                MedicalCaseId = medicalCaseId,
+                PrintType = printType,
+                PrintVersion = medicalCase.PrintVersion,
+                PrinterName = printerName,
+                PrintedBy = operatorName,
+                PrintedAt = now,
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+
+            await _repository.AddPrintLogAsync(printLog, cancellationToken);
+
+            return LYBT.Shared.Models.Contracts.Common.Result<bool>.Success(true);
+        }
+
+        /// <summary>
+        /// 记录打印完成（回写打印状态 + 记录日志）
+        /// </summary>
+        public async Task<LYBT.Shared.Models.Contracts.Common.Result<bool>> RecordPrintAsync(
+            Guid medicalCaseId,
+            int printType,
+            string? printerName,
+            Guid operatorId,
+            string operatorName,
+            CancellationToken cancellationToken = default)
+        {
+            var medicalCase = await _repository.GetByIdAsync(medicalCaseId, cancellationToken);
+            if (medicalCase == null)
+                return LYBT.Shared.Models.Contracts.Common.Result<bool>.Failure(EC.NotFound, "医案不存在");
+
+            var now = DateTime.UtcNow;
+
+            medicalCase.IsPrinted = true;
+            medicalCase.PrintCount += 1;
+            medicalCase.LastPrintedAt = now;
+            medicalCase.PrintVersion += 1;
+
+            await _repository.UpdateAsync(medicalCase, cancellationToken);
+
+            var printLog = new MedicalCasePrintLog
+            {
+                Id = Guid.NewGuid(),
+                MedicalCaseId = medicalCaseId,
+                PrintType = printType,
+                PrintVersion = medicalCase.PrintVersion,
+                PrinterName = printerName,
+                PrintedBy = operatorName,
+                PrintedAt = now,
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+
+            await _repository.AddPrintLogAsync(printLog, cancellationToken);
+
+            return LYBT.Shared.Models.Contracts.Common.Result<bool>.Success(true);
         }
 
         #region 私有辅助方法

@@ -7,6 +7,7 @@ using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 
@@ -403,6 +404,159 @@ namespace LYBT.Module.MedicalCases.Services
             }).ToList();
 
             return new PagedResult<MedicalCaseListDto>(listDtos, listDtos.Count, 1, listDtos.Count);
+        }
+
+        /// <summary>
+        /// 根据ID获取医案详情DTO（含NotFound语义）
+        /// </summary>
+        public async Task<Result<MedicalCaseDetailDto>> GetDetailDtoAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            var medicalCase = await _repository.GetByIdWithDetailsAsync(id, cancellationToken);
+            if (medicalCase == null)
+                return Result<MedicalCaseDetailDto>.Failure(ErrorCode.NotFound, "医案不存在");
+
+            var dto = _mapper.MapToMedicalCaseDetailDto(medicalCase);
+            return Result<MedicalCaseDetailDto>.Success(dto);
+        }
+
+        /// <summary>
+        /// 批量获取医案详情DTO列表
+        /// </summary>
+        public async Task<Result<List<MedicalCaseDetailDto>>> GetBatchDetailDtosAsync(List<Guid> ids, CancellationToken cancellationToken = default)
+        {
+            var medicalCases = await _repository.GetBatchWithDetailsAsync(ids, cancellationToken);
+            var dtos = _mapper.ToDetailDtos(medicalCases);
+            return Result<List<MedicalCaseDetailDto>>.Success(dtos);
+        }
+
+        /// <summary>
+        /// 获取患者辨证记录历史（分页）
+        /// </summary>
+        public async Task<PagedResult<ConsultationDetailDto>> GetPatientConsultationsAsync(
+            Guid patientId, int page, int pageSize, CancellationToken cancellationToken = default)
+        {
+            var medicalCases = await _repository.GetByPatientIdWithDetailsAsync(patientId, cancellationToken);
+
+            var consultations = medicalCases
+                .Where(mc => mc.Consultation != null && !mc.Consultation.IsDeleted)
+                .Select(mc =>
+                {
+                    var dto = _mapper.ToConsultationDetailDto(mc.Consultation!);
+                    dto.MedicalCaseId = mc.Id;
+                    dto.PatientId = mc.PatientId;
+                    dto.UserId = mc.UserId;
+                    dto.PatientName = mc.PatientName;
+                    dto.DoctorName = mc.DoctorName;
+                    dto.CreatedAt = mc.Consultation!.CreatedAt;
+                    dto.UpdatedAt = mc.Consultation.UpdatedAt;
+                    dto.CreatedBy = mc.Consultation.CreatedBy;
+                    return dto;
+                })
+                .OrderByDescending(c => c.CreatedAt)
+                .ToList();
+
+            var totalCount = consultations.Count;
+            var paged = consultations
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return new PagedResult<ConsultationDetailDto>(paged, totalCount, page, pageSize);
+        }
+
+        /// <summary>
+        /// 获取患者处方历史（分页）
+        /// </summary>
+        public async Task<PagedResult<PrescriptionDetailDto>> GetPatientPrescriptionsAsync(
+            Guid patientId, int page, int pageSize, CancellationToken cancellationToken = default)
+        {
+            var medicalCases = await _repository.GetByPatientIdWithDetailsAsync(patientId, cancellationToken);
+
+            var prescriptions = medicalCases
+                .Where(mc => mc.Prescription != null && !mc.Prescription.IsDeleted)
+                .Select(mc =>
+                {
+                    var p = mc.Prescription!;
+                    var dto = _mapper.ToPrescriptionDetailDto(p);
+                    dto.MedicalCaseId = mc.Id;
+                    dto.CreatedAt = p.CreatedAt;
+                    dto.UpdatedAt = p.UpdatedAt;
+                    dto.Items = p.Items?.Select(_mapper.ToPrescriptionItemDto).ToList()
+                        ?? new List<PrescriptionItemDto>();
+                    dto.SingleDosePrice = p.Items?.Sum(x => x.Amount) ?? 0;
+                    dto.TotalPrice = dto.SingleDosePrice * p.DosageCount * p.Discount;
+                    dto.TotalWeight = p.Items?.Sum(x => x.Dosage) ?? 0;
+                    return dto;
+                })
+                .OrderByDescending(p => p.CreatedAt)
+                .ToList();
+
+            var totalCount = prescriptions.Count;
+            var paged = prescriptions
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return new PagedResult<PrescriptionDetailDto>(paged, totalCount, page, pageSize);
+        }
+
+        /// <summary>
+        /// 获取医案审计日志（分页）
+        /// </summary>
+        public async Task<Result<PagedResult<AuditLogDto>>> GetAuditLogsAsync(
+            Guid caseId, int page, int pageSize, CancellationToken cancellationToken = default)
+        {
+            var medicalCase = await _repository.GetByIdWithDetailsAsync(caseId, cancellationToken);
+            if (medicalCase == null)
+                return Result<PagedResult<AuditLogDto>>.Failure(ErrorCode.NotFound, "医案不存在");
+
+            var totalCount = await _repository.CountAuditLogsAsync(caseId, cancellationToken);
+            var logs = await _repository.GetAuditLogsAsync(caseId, page, pageSize, cancellationToken);
+
+            var items = logs.Select(l => new AuditLogDto
+            {
+                Timestamp = l.CreatedAt,
+                Action = l.OperationType switch
+                {
+                    0 => "医案创建",
+                    1 => "医案更新",
+                    2 => "状态变更",
+                    3 => "医案删除",
+                    4 => "医案取消",
+                    _ => "未知操作"
+                },
+                PerformedBy = l.OperatorId.ToString("D"),
+                Details = l.Reason ?? $"操作人: {l.OperatorName}"
+            }).ToList();
+
+            var paged = new PagedResult<AuditLogDto>(items, totalCount, page, pageSize);
+            return Result<PagedResult<AuditLogDto>>.Success(paged);
+        }
+
+        /// <summary>
+        /// 获取医案操作权限
+        /// </summary>
+        public async Task<Result<MedicalCasePermissionsDto>> GetPermissionsAsync(
+            Guid caseId, Guid userId, int userRole, CancellationToken cancellationToken = default)
+        {
+            var medicalCase = await _repository.GetByIdWithDetailsAsync(caseId, cancellationToken);
+            if (medicalCase == null)
+                return Result<MedicalCasePermissionsDto>.Failure(ErrorCode.NotFound, "医案不存在");
+
+            var isOwner = medicalCase.UserId == userId;
+            var isAdmin = userRole == (int)UserRole.Admin || userRole == (int)UserRole.SuperAdmin;
+            var status = medicalCase.CaseStatus;
+
+            var dto = new MedicalCasePermissionsDto
+            {
+                CanEdit = (status == MedicalCaseStatus.Active || status == MedicalCaseStatus.Suspended) && (isOwner || isAdmin),
+                CanComplete = status == MedicalCaseStatus.Active && isOwner,
+                CanSuspend = (status == MedicalCaseStatus.Active || status == MedicalCaseStatus.Suspended) && isOwner,
+                CanCancel = status == MedicalCaseStatus.Active && isOwner,
+                CanDelete = !medicalCase.IsDeleted && (isOwner || isAdmin)
+            };
+
+            return Result<MedicalCasePermissionsDto>.Success(dto);
         }
 
     }

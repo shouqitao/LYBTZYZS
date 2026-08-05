@@ -154,6 +154,36 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>医案实体列表</returns>
         Task<List<MedicalCase>> GetBatchAsync(List<Guid> ids, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 根据ID获取医案详情DTO（含NotFound语义）
+        /// </summary>
+        Task<Result<MedicalCaseDetailDto>> GetDetailDtoAsync(Guid id, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 批量获取医案详情DTO列表
+        /// </summary>
+        Task<Result<List<MedicalCaseDetailDto>>> GetBatchDetailDtosAsync(List<Guid> ids, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 获取患者辨证记录历史（分页）
+        /// </summary>
+        Task<PagedResult<ConsultationDetailDto>> GetPatientConsultationsAsync(Guid patientId, int page, int pageSize, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 获取患者处方历史（分页）
+        /// </summary>
+        Task<PagedResult<PrescriptionDetailDto>> GetPatientPrescriptionsAsync(Guid patientId, int page, int pageSize, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 获取医案审计日志（分页）
+        /// </summary>
+        Task<Result<PagedResult<AuditLogDto>>> GetAuditLogsAsync(Guid caseId, int page, int pageSize, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 获取医案操作权限
+        /// </summary>
+        Task<Result<MedicalCasePermissionsDto>> GetPermissionsAsync(Guid caseId, Guid userId, int userRole, CancellationToken cancellationToken = default);
     }
 }
 

@@ -1,6 +1,7 @@
 using System.Threading;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -139,6 +140,48 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="isAdmin">是否管理员</param>
         /// <param name="cancellationToken">取消令牌</param>
         Task<LYBT.Shared.Models.Contracts.Common.Result<LYBT.Shared.Models.Contracts.Common.BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId, bool isAdmin, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 统一保存医案并返回详情DTO（含NotFound语义）
+        /// </summary>
+        Task<Result<MedicalCaseDetailDto>> SaveWithDetailAsync(
+            MedicalCaseInputDto request,
+            Guid currentUserId,
+            bool isAdmin = false,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 标记是否需要开处方并返回详情DTO（含NotFound语义）
+        /// </summary>
+        Task<Result<MedicalCaseDetailDto>> SetPrescriptionFlagWithDetailAsync(
+            Guid medicalCaseId,
+            bool needsPrescription,
+            Guid currentUserId,
+            bool isAdmin = false,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 添加打印日志（成功回写打印状态，失败仅记录日志）
+        /// </summary>
+        Task<Result<bool>> AddPrintLogAsync(
+            Guid medicalCaseId,
+            int printType,
+            bool isSuccess,
+            string? printerName,
+            Guid operatorId,
+            string operatorName,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 记录打印完成（回写打印状态 + 记录日志）
+        /// </summary>
+        Task<Result<bool>> RecordPrintAsync(
+            Guid medicalCaseId,
+            int printType,
+            string? printerName,
+            Guid operatorId,
+            string operatorName,
+            CancellationToken cancellationToken = default);
     }
 }
 

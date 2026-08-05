@@ -1,8 +1,6 @@
 using MediatR;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.MedicalCases.Application.Commands;
-using LYBT.Module.MedicalCases.Application.Queries;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -22,16 +20,19 @@ namespace LYBT.Module.MedicalCases.Controllers;
 public abstract class BaseMedicalCasesController : BaseCrudController
 {
     protected readonly IMedicalCaseCommandService _medicalCaseCommandService;
+    protected readonly IMedicalCaseQueryService _medicalCaseQueryService;
     protected readonly IMedicalCaseStateService _medicalCaseStateService;
 
     protected BaseMedicalCasesController(
         ISender sender,
         ILogger logger,
         IMedicalCaseCommandService medicalCaseCommandService,
+        IMedicalCaseQueryService medicalCaseQueryService,
         IMedicalCaseStateService medicalCaseStateService)
         : base(sender, logger)
     {
         _medicalCaseCommandService = medicalCaseCommandService;
+        _medicalCaseQueryService = medicalCaseQueryService;
         _medicalCaseStateService = medicalCaseStateService;
     }
 
@@ -52,13 +53,10 @@ public abstract class BaseMedicalCasesController : BaseCrudController
     {
         if (ValidatePagination(page, pageSize) is { } error) return error;
 
-        var result = await Sender.Send(new SearchMedicalCasesQuery(
-            patientName, diagnosisKeyword, startDate, endDate, page, pageSize), ct);
+        var result = await _medicalCaseQueryService.SearchMedicalCasesAsync(
+            patientName, diagnosisKeyword, startDate, endDate, page, pageSize, ct);
 
-        if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "搜索失败");
-
-        return Success(result.Value!, "搜索成功");
+        return Success(result, "搜索成功");
     }
 
     /// <summary>
@@ -81,12 +79,9 @@ public abstract class BaseMedicalCasesController : BaseCrudController
             query.IncludeAllDoctors = true;
         }
 
-        var result = await Sender.Send(new QueryMedicalCasesCommand(query), ct);
+        var result = await _medicalCaseQueryService.QueryAsync(query, ct);
 
-        if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "查询失败");
-
-        return Success(result.Value!, "查询成功");
+        return Success(result, "查询成功");
     }
 
     /// <summary>
@@ -99,13 +94,9 @@ public abstract class BaseMedicalCasesController : BaseCrudController
         [FromQuery] int pageSize = 20,
         CancellationToken ct = default)
     {
-        var result = await Sender.Send(
-            new GetPatientConsultationsQuery(patientId, page, pageSize), ct);
+        var result = await _medicalCaseQueryService.GetPatientConsultationsAsync(patientId, page, pageSize, ct);
 
-        if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "查询失败");
-
-        return Success(result.Value!, "查询成功");
+        return Success(result, "查询成功");
     }
 
     /// <summary>
@@ -118,13 +109,9 @@ public abstract class BaseMedicalCasesController : BaseCrudController
         [FromQuery] int pageSize = 20,
         CancellationToken ct = default)
     {
-        var result = await Sender.Send(
-            new GetPatientPrescriptionsQuery(patientId, page, pageSize), ct);
+        var result = await _medicalCaseQueryService.GetPatientPrescriptionsAsync(patientId, page, pageSize, ct);
 
-        if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "查询失败");
-
-        return Success(result.Value!, "查询成功");
+        return Success(result, "查询成功");
     }
 
     /// <summary>
@@ -134,12 +121,9 @@ public abstract class BaseMedicalCasesController : BaseCrudController
     public virtual async Task<IActionResult> GetConsultations(
         Guid medicalCaseId, CancellationToken ct)
     {
-        var result = await Sender.Send(new GetMedicalCaseConsultationsQuery(medicalCaseId), ct);
+        var result = await _medicalCaseQueryService.GetConsultationListAsync(medicalCaseId, ct);
 
-        if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "查询失败");
-
-        return Success(result.Value!, "查询成功");
+        return Success(result, "查询成功");
     }
 
     /// <summary>
@@ -149,12 +133,9 @@ public abstract class BaseMedicalCasesController : BaseCrudController
     public virtual async Task<IActionResult> GetPrescriptions(
         Guid medicalCaseId, CancellationToken ct)
     {
-        var result = await Sender.Send(new GetMedicalCasePrescriptionsQuery(medicalCaseId), ct);
+        var result = await _medicalCaseQueryService.GetPrescriptionListAsync(medicalCaseId, ct);
 
-        if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "查询失败");
-
-        return Success(result.Value!, "查询成功");
+        return Success(result, "查询成功");
     }
 
     /// <summary>
@@ -168,7 +149,7 @@ public abstract class BaseMedicalCasesController : BaseCrudController
         if (ids.Count > 50)
             return ValidationFail("最多查询50条");
 
-        var result = await Sender.Send(new GetMedicalCasesBatchQuery(ids), ct);
+        var result = await _medicalCaseQueryService.GetBatchDetailDtosAsync(ids, ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "未找到指定医案");
 
@@ -183,7 +164,7 @@ public abstract class BaseMedicalCasesController : BaseCrudController
     {
         var (operatorId, _, operatorRole) = GetOperator();
         var roleInt = (int)operatorRole;
-        var result = await Sender.Send(new GetMedicalCasePermissionsQuery(id, operatorId, roleInt), ct);
+        var result = await _medicalCaseQueryService.GetPermissionsAsync(id, operatorId, roleInt, ct);
         if (!result.IsSuccess)
             return NotFound(result.Error ?? "医案不存在");
         return Success(result.Value!, "查询成功");
@@ -200,7 +181,7 @@ public abstract class BaseMedicalCasesController : BaseCrudController
         CancellationToken ct = default)
     {
         if (ValidatePagination(page, pageSize) is { } error) return error;
-        var result = await Sender.Send(new GetMedicalCaseAuditLogsQuery(id, page, pageSize), ct);
+        var result = await _medicalCaseQueryService.GetAuditLogsAsync(id, page, pageSize, ct);
         if (!result.IsSuccess)
             return NotFound(result.Error ?? "医案不存在");
         return Success(result.Value!, "查询成功");
@@ -217,8 +198,8 @@ public abstract class BaseMedicalCasesController : BaseCrudController
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-        var result = await Sender.Send(new SetPrescriptionFlagCommand(
-            id, request.NeedsPrescription, operatorId, isAdmin), ct);
+        var result = await _medicalCaseCommandService.SetPrescriptionFlagWithDetailAsync(
+            id, request.NeedsPrescription, operatorId, isAdmin, ct);
 
         if (!result.IsSuccess)
             return NotFound(result.Error ?? "医案不存在");
@@ -236,8 +217,8 @@ public abstract class BaseMedicalCasesController : BaseCrudController
         [FromBody] RecordPrintRequest request, CancellationToken ct)
     {
         var (operatorId, operatorName, _) = GetOperator();
-        var result = await Sender.Send(new RecordPrintCommand(
-            id, request.PrintType, request.PrinterName, operatorId, operatorName), ct);
+        var result = await _medicalCaseCommandService.RecordPrintAsync(
+            id, request.PrintType, request.PrinterName, operatorId, operatorName, ct);
 
         if (!result.IsSuccess)
             return NotFound(result.Error ?? "医案不存在");
@@ -259,8 +240,8 @@ public abstract class BaseMedicalCasesController : BaseCrudController
         if (ValidateGuid(id, "医案ID") is { } error) return error;
 
         var (operatorId, operatorName, _) = GetOperator();
-        var result = await Sender.Send(new AddPrintLogCommand(
-            id, request.PrintType, request.IsSuccess, request.PrinterName, operatorId, operatorName), ct);
+        var result = await _medicalCaseCommandService.AddPrintLogAsync(
+            id, request.PrintType, request.IsSuccess, request.PrinterName, operatorId, operatorName, ct);
 
         if (!result.IsSuccess)
             return NotFound(result.Error ?? "医案不存在");
