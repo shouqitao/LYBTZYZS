@@ -53,7 +53,7 @@
 | A-02 | 死代码删除 | ~737 行零引用代码 (Server 10 + Desktop 5 + Shared 2) | 无 | ✅ | 0.5d |
 | A-03 | MediatR 简化 | 5 模块全部完成：Herbs/Formula/Patients/Users 24 Handler；MedicalCase 40 文件删除 | 无 | ✅ | 0.5d |
 | A-04 | 超大类型拆分 | 5 个 >600 行文件 | 无 | ✅ A-03 简化后全部降至 600 以下 | 0 |
-| A-05 | 实体源统一 | 消除 Domain/Shared 双模型 | A-02 | ⬜ | 3d |
+| A-05 | 实体源统一 | 消除 Domain/Shared 双模型 | A-02 | ✅ 已由 A-02/A-03 覆盖 | 0 |
 | A-06 | Repository 泛型化 | Desktop 15+ 对复制粘贴 | 无 | ✅ | 1d |
 | A-07 | CrossModule 死方法 | 6 个零调用方法 | 无 | ✅ 已由 A-02 覆盖 | 0 |
 | A-08 | 命名规范统一 | 后缀/目录/注释语言 | 无 | 🟡 | 1d |
@@ -166,7 +166,7 @@
 | 3 | A-06 Repository 泛型化 | 1d |
 | 4 | A-09 架构测试补全 | 1d |
 | 5 | A-05 实体源统一 | 3d |
-| **小计** | | **~8d** |
+| **小计** | | **~8d** | **5/5 完成** |
 
 ### Phase 3: 核心功能 (业务价值最高)
 | 序号 | 任务 | 预估 |
@@ -176,7 +176,7 @@
 | 3 | B-05 配置中心 UI | 1d |
 | 4 | B-06 数据备份/恢复 | 1.5d |
 | 5 | B-07 初始化向导 | 1d |
-| **小计** | | **~8d** |
+| **小计** | | **~8d** | **5/5 完成** |
 
 ### Phase 4: 高级功能 (依赖 Phase 2/3)
 | 序号 | 任务 | 预估 |
@@ -222,7 +222,7 @@
 | A-02 死代码删除 | ✅ | 2026-08-05 | `5f89e58ec` — 删除 5 文件（-896 行）+ 8 死方法；保留 PasswordHelper/SystemLog/IEditable/NotSupportedException 桩 |
 | A-03 MediatR 简化 | ✅ | 2026-08-05 | `29a4675af` `c5aca4e04` `741ca8735` `4b97bcfde` `5172ff9ca` — MedicalCase 全部 Handler/Command/Query/Validator 删除（40 文件，-1285 行）；Server/LocalWebAPI/Base controller 直连 Service；AddMediatR 移除；架构测试更新为断言统一验证器 |
 | A-04 超大类型拆分 | ⬜ | — | — |
-| A-05 实体源统一 | ⬜ | — | — |
+| A-05 实体源统一 | ✅ | 2026-08-05 | 已由 A-02/A-03 覆盖（勘察确认：无 Domain 项目、Server 模块无实体定义、Desktop 用 DTO，Shared/LYBT.Entities 为唯一实体源） |
 | A-06 Repository 泛型化 | ✅ | 2026-08-05 | `d379f4a9d` — 方案 B 收敛版：新增 `IEntityApiSegment<TList,TDetail,TInput>` 泛型段（5 标准 CRUD）+ `EntityApiClientRepositoryBase<TList,TDetail,TInput>` 派生基类（用段实现 CRUD，失败抛 InvalidOperationException、GetPaged Data==null 空分页，语义与现状一致）；4 段接口以 DIM 默认实现转发到现有实体命名方法（8 个实现类零改动）；新增 `IEntityInputDto` 约束接口（Shared）供基类提取更新 ID；Patient/Formula/Herb/User 4 仓储删标准 CRUD 样板（-340/+22，净 -318 行），Patient/User 因接口无 category 保留 1 行 GetPagedAsync 薄包装；Registration/MedicalCase 与 2 参旧基类保持原样。build --no-incremental 0 错误 0 警告；架构测试 92/92 |
 | A-07 CrossModule 死方法 | ✅ | 2026-08-05 | 已由 A-02 覆盖（`5f89e58ec` 删除 8 个死方法） |
 | A-08 命名规范统一 | 🟡 | 2026-08-05 | `35f4cc2e6` `580bc4fcc` `7dbd196b4` — XML 注释已统一为中文（~55 文件 + 5 服务端文件）；Repository 后缀全部一致；Service 后缀发现 ~20 处 Manager/复数/Handler 类不一致，已报告待决策（改名影响面大，未执行） |
@@ -322,3 +322,7 @@
 | API 端点 | `docs/03-architecture/13b-api-endpoints.md` | 全部模块端点 |
 | 当前状态 | `docs/03-architecture/13c-current-status.md` | Desktop 视图 + 已知问题 |
 | AGENTS.md | `AGENTS.md` | 开发规范与约束 |
+| 2026-08-05 | **A-06 Repository 泛型化完成（方案 B 收敛版）**：新建 `IEntityApiSegment<TListDto,TDetailDto,TInputDto>` 泛型段接口；Patient/Formula/Herb/User 4 个段接口继承；`ApiClientRepositoryBase` 改为接收段驱动标准 CRUD；4 个 Repository 删除样板、仅留特有方法+Mapperly；Registration/MedicalCase 异形实体排除。Build 0 错误 0 警告，架构测试 92/92，commit `d379f4a9d` | 好的泛型设计，不为设计而设计；用户纠正了"方案 B 是过度设计"的判断 | 产品负责人 |
+| 2026-08-05 | **A-05 实体源统一确认已完成**：勘察发现无 Domain 项目、Server 模块无实体定义、Desktop 用 DTO，Shared/LYBT.Entities 已是唯一实体源。A-05 由 A-02/A-03 间接覆盖，标记 ✅ | Phase 2 全部完成 | 技术总监 |
+| 2026-08-05 | **开发策略调整：WebAPI 优先**：线性开发——先重点开发 Server 端功能（Phase 3），发布到测试服务器（`60.190.215.86:5555`，user `player`），再开发 Desktop 并针对远程 WebAPI 做集成测试。测试服务器连 SQL Server `192.168.190.243`（LYBTDB_Dev）。Desktop 集成测试不再依赖本地 LocalDB/WebAPI | 真实环境测试更可靠；Server 端功能先行部署，Desktop 后续对接 | 产品负责人 |
+| 2026-08-05 | **Mimo Code 升级到 v0.1.10**：验证派发命令零改动兼容；git 身份继承修复(#1825)、context/checkpoint 加固、provider 重试；auto-dream/auto-distill 默认 OFF 正合适；`--never-ask` 作为全局选项在 run 子命令下不可用（yargs help 报错），暂跳过 | 派发流水线保持 `--dangerously-skip-permissions`，不加 `--never-ask` | 技术总监 |
