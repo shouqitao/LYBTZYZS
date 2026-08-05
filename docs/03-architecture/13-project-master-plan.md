@@ -68,7 +68,7 @@
 |----|------|------|------|------|------|
 | B-01 | P0 安全修复 | 明文密码/Shell Bug/死锁 (7 项) | 无 | ✅ | 待定 |
 | B-02 | 配置修改 API | ConfigurationController 添加 PUT | 无 | ✅ | 1d |
-| B-03 | Excel 导出/导入 | Herbs/Formula/Patients (NPOI) | 无 | ✅ | 2-3d |
+|| B-03 | Excel 导出/导入 | Herbs/Formula/Patients (前端 Excel ↔ WebApi JSON) | 无 | ✅ | 2-3d |
 | B-04 | 报表增强 | 图表/多维度/时间范围 | 无 | ⬜ | 2d |
 | B-05 | 配置中心 UI | SystemSettingsView 增强 | B-02 | ⬜ | 1d |
 | B-06 | 数据备份/恢复 | SQL Server 备份+恢复 | 无 | ⬜ | 1.5d |
@@ -232,7 +232,7 @@
 | A-12 AuthService 收敛 | ✅ | 2026-08-04 | 代码已通过 IAuthSessionRepository（RefreshTokenCommandHandler 无直接 DbContext） |
 | B-01 P0 安全修复 | ✅ | 2026-08-04 | `831702b51` `cb4d3e6b9` |
 | B-02 配置修改 API | ⬜ | — | — |
-| B-03 Excel 导出/导入 | ✅ | 2026-08-05 | `4d70b487a` `0fdfde0d3` `bed75026e` `709bad616` `64c58c59a` `8968fd130` `1bc468851` — NPOI 2.7.2（中央版本钉）；ExcelService 通用三方法（ExportToExcel/GenerateTemplate/ParseExcel，XSSFWorkbook）+ 4 单测；9 端点（3 实体 × export/import-template/batch-import-excel）；患者新增 BatchImportPatientsCommand（Skip/Update/Error 策略，与药材命令同构）；Herbs/Formulas Excel 导入复用现有 BatchImport 命令（拼音生成/药材名匹配/验方校验）；build --no-incremental 0 错误 0 警告，架构测试 92/92 |
+|| B-03 | Excel 导出/导入 | ✅ | 2026-08-05 | `4d70b487a` `0fdfde0d3` `bed75026e` `709bad616` `64c58c59a` `8968fd130` `1bc468851` — NPOI 2.7.2（中央版本钉）；ExcelService 通用三方法（ExportToExcel/GenerateTemplate/ParseExcel，XSSFWorkbook）+ 4 单测；WebApi 保留 JSON 批量导入端点（`POST /batch-import`），Excel 格式转换由前端 Desktop 负责；患者新增 BatchImportPatientsCommand（Skip/Update/Error 策略，与药材命令同构）；Herbs/Formulas Excel 导入复用现有 BatchImport 命令（拼音生成/药材名匹配/验方校验）；build --no-incremental 0 错误 0 警告，架构测试 92/92 |
 | B-04 报表增强 | ⬜ | — | — |
 | B-05 配置中心 UI | ⬜ | — | — |
 | B-06 数据备份/恢复 | ⬜ | — | — |

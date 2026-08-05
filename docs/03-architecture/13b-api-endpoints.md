@@ -45,9 +45,7 @@
 | POST | /{id}/toggle-status | 启用/禁用 | Admin+ |
 | POST | /{id}/restore | 恢复已删除 | Admin（业务管理） |
 | POST | /batch-delete | 批量删除 | Admin+ |
-| GET | /export?keyword= | 导出患者 Excel | Doctor/Receptionist/Admin |
-| GET | /import-template | 下载导入模板 | Doctor/Receptionist/Admin |
-| POST | /batch-import-excel | Excel 批量导入 | Admin+ |
+| POST | /batch-import | 批量导入（JSON） | Admin+ |
 | GET | /{id}/check-reference | 检查引用关系 | Doctor/Receptionist/Admin |
 | POST | /batch-check-reference | 批量检查引用 | Doctor/Receptionist/Admin |
 | GET | /by-id-number/{idNumber} | 身份证号查询 | Doctor/Receptionist/Admin |
@@ -65,9 +63,6 @@
 | POST | /{id}/restore | 恢复已删除 | Admin（业务管理） |
 | POST | /batch-delete | 批量删除 | Admin+ |
 | POST | /batch-import | 批量导入（JSON） | Admin+ |
-| GET | /export?keyword= | 导出药材 Excel | Doctor/Admin |
-| GET | /import-template | 下载导入模板 | Doctor/Admin |
-| POST | /batch-import-excel | Excel 批量导入 | Admin+ |
 | GET | /{id}/check-reference | 检查引用关系 | Doctor/Admin |
 | POST | /batch-check-reference | 批量检查引用 | Doctor/Admin |
 | POST | /batch-enable | 批量启用 | Admin+ |
@@ -86,9 +81,6 @@
 | POST | /{id}/restore | 恢复已删除 | Admin（业务管理） |
 | POST | /batch-delete | 批量删除 | Admin+ |
 | POST | /batch-import | 批量导入（JSON） | Admin+ |
-| GET | /export?category= | 导出验方 Excel | Doctor/Admin |
-| GET | /import-template | 下载导入模板 | Doctor/Admin |
-| POST | /batch-import-excel | Excel 批量导入 | Admin+ |
 | GET | /pending-validation | 待校验验方列表 | Doctor/Admin |
 | POST | /{formulaId}/herbs/{herbItemId}/validate | 校验药材匹配 | Doctor/Admin |
 | POST | /batch-enable | 批量启用 | Admin+ |
