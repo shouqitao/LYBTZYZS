@@ -56,7 +56,7 @@
 | A-05 | 实体源统一 | 消除 Domain/Shared 双模型 | A-02 | ⬜ | 3d |
 | A-06 | Repository 泛型化 | Desktop 15+ 对复制粘贴 | 无 | ⬜ | 1d |
 | A-07 | CrossModule 死方法 | 6 个零调用方法 | 无 | ✅ 已由 A-02 覆盖 | 0 |
-| A-08 | 命名规范统一 | 后缀/目录/注释语言 | 无 | ⬜ | 1d |
+| A-08 | 命名规范统一 | 后缀/目录/注释语言 | 无 | 🟡 | 1d |
 | A-09 | 架构测试补全 | 修复 1 skip + 新增 13 个缺口测试 | A-03/A-04 | ⬜ | 1d |
 | A-10 | 接口下沉 Contracts | IFormulaService/IHerbService 移到 Contracts（与 IPatientService/IUserService 一致） | 无 | ✅ | 0.5d |
 | A-11 | Registration 依赖清理 | 移除对 Patients/Users 直接引用 | A-10 | ✅ 已无跨模块依赖（A-02 清理后确认） | 0 |
@@ -225,7 +225,7 @@
 | A-05 实体源统一 | ⬜ | — | — |
 | A-06 Repository 泛型化 | ⬜ | — | — |
 | A-07 CrossModule 死方法 | ✅ | 2026-08-05 | 已由 A-02 覆盖（`5f89e58ec` 删除 8 个死方法） |
-| A-08 命名规范统一 | ⬜ | — | — |
+| A-08 命名规范统一 | 🟡 | 2026-08-05 | `35f4cc2e6` `580bc4fcc` `7dbd196b4` — XML 注释已统一为中文（~55 文件 + 5 服务端文件）；Repository 后缀全部一致；Service 后缀发现 ~20 处 Manager/复数/Handler 类不一致，已报告待决策（改名影响面大，未执行） |
 | A-09 架构测试补全 | ⬜ | — | — |
 | A-10 接口下沉 | ✅ | 2026-08-05 | `6a1620e8b` — IFormulaService/IHerbService 从 Formula/Herbs 模块移到 LYBT.Desktop.Contracts.Services；9 个源文件 + 2 个测试文件 using 更新；空 Interfaces 目录删除 |
 | A-11 Registration 依赖清理 | ✅ | 2026-08-05 | 已无跨模块依赖（A-02 清理后确认） |
@@ -292,6 +292,7 @@
 | 2026-08-04 | **代码批次 D 完成（2 项）**：D1 离线密码重置工具改 Identity PBKDF2 兼容哈希（`PasswordHasher<ApplicationUser>`，弃 BCrypt `PasswordHelper`，SQL 语句修正 `AspNetUsers`）commit `bea06505b`；D2 配置文档对齐代码（删 `ConfigurationSections` 集中类声称，改「各 Options 类内联 SectionName」；Options 数量 14→19：12 服务端 + 1 共享 + 6 客户端）commit `4f7a9563c`。总账 + gap-list 标记完成 `1c7be777e` | 工具产物写入 `AspNetUsers.PasswordHash` 后用户可登录；文档反映代码真实状态 | 技术总监 |
 | 2026-08-04 | **零警告构建达成（基线质量）**：修复 7 个存量编译警告 — CS0105 重复 using（HerbItemControlViewModel）/ CA1001 PrescriptionPrintExecutor 实现 IDisposable 释放 LocalPrintServer / CS0168 未用 catch 变量 / CS8603×2 子 VM 构造顺序提前 / CS4014×2 测试断言补 await。`dotnet build LYBTZYZS.sln --no-incremental` 0 错误 0 警告，commit `8f47ab565` | 落实「0 错误 0 警告」构建基线（2026-08-04 规则） | 技术总监 |
 | 2026-08-04 | **Phase 0 收尾（3 项小任务）**：A-12 AuthService 收敛——代码已通过 IAuthSessionRepository（RefreshTokenCommandHandler 无直接 DbContext），无需改动；C-03 部署脚本清理——删除 `.worktrees/` 下 7 个孤儿 checkout；C-04 NuGet 废弃包清理——移除 8 个代码零使用包（NPOI/EPPlus/System.CommandLine/Bogus/Xunit.StaFact/ObjectPool/Logging.Debug/Refit.HttpClientFactory）commit `85b2d16c5`，保留 SixLabors（QuestPDF 安全固定）。Phase 0 仅剩 B-02（配置修改 API，1d） | Phase 0 4/5 完成 | 技术总监 |
+| 2026-08-05 | **A-08 命名规范（部分完成）**：① XML `<summary>` 注释全部统一为中文（Desktop ~55 文件 + Server 5 文件，commit `580bc4fcc` `7dbd196b4`；跳过 Designer 自动生成文件、EF 迁移历史、`<remarks>`/`<param>` 与行内注释）；② Repository 后缀全部一致（`{Entity}Repository`）；③ Service 后缀报告：Server 侧全一致，Desktop 基础设施层约 20 处不一致（`DialogManager`/`SessionManager`/`ErrorHandler`/`AsyncExecutor`/`LoadingStateManager`/`PatientSearchManager`/`LoginStateManager`/`SessionLifecycleManager`/`NavigationManager`/`StatusBarManager` 等 Manager 后缀，`ListViewServices`/`MasterDetailServices`/`ViewModelServices` 复数，`LoginCoordinator`/`ShellEventCoordinator`/`AppStartupOrchestrator`/`ApiHealthMonitor`/`StartupPipeline`/`ApiRouter`/`CardReaderFactory` 等）——改名影响面大，仅报告不改 | 注释语言统一为中文；后缀不一致项交由产品负责人决策是否统一 | 技术总监 |
 | 2026-08-05 | **B-02 配置修改 API 完成（Phase 0 收官）**：`ISystemConfigurationService` 新增 `SetValueAsync`/`UpdateConfigurationAsync`；`ConfigurationController` 新增 `PUT /{key}` 与 `PUT /`（AdminOrSuperAdmin）；新增 `IConfigurationStore` + `JsonFileConfigurationStore`（`{BaseDirectory}/config/runtime-overrides.json`，仅持久化与 appsettings 默认值不同的项，原子写入）；白名单策略 `ConfigurationWritePolicy`（仅允许已注册 Server Options 节，禁止 `ConnectionStrings:DefaultConnection`/`Jwt:SecretKey`/`DefaultPasswords:*`）；Program.cs 以 `reloadOnChange:true` 追加覆盖文件，Service 写入后 `IConfigurationRoot.Reload()` 触发 `IOptionsMonitor<T>` 热更新。新增 13 个单元测试（Store 4 + Service 9，含热更新验证），Build 0 错误 0 警告，commit `41922a92a` | 架构约束 P10 用独立 Store 满足；测试真实实现零 mock | 技术总监 |
 
 ---
