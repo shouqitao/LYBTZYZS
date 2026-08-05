@@ -6,7 +6,6 @@ using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Herbs.Interfaces;
 
 namespace LYBT.Desktop.Herbs.ViewModels.Handlers;
 

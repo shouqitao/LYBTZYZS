@@ -1,6 +1,6 @@
 using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Formula.Controls;
-using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Formula.Models;
 using LYBT.Desktop.Formula.Repositories;
 using LYBT.Desktop.Infrastructure.DependencyInjection;

@@ -1,6 +1,6 @@
 using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Repositories;
-using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;

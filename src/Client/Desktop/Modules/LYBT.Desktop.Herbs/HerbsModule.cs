@@ -4,7 +4,7 @@ using LYBT.Desktop.Herbs.Controls;
 using LYBT.Desktop.Herbs.Mappers;
 using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Herbs.Repositories;
-using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Prism.Ioc;

@@ -3,7 +3,7 @@ using LYBT.Desktop.Contracts.Results;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 
-namespace LYBT.Desktop.Formula.Interfaces
+namespace LYBT.Desktop.Contracts.Services
 {
     /// <summary>
     /// 配方Service接口

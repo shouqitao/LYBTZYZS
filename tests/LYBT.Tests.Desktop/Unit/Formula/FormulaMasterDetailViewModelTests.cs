@@ -3,7 +3,6 @@ using FluentAssertions;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Services.CrossModule;
-using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Formula.Mappers;
 using LYBT.Desktop.Formula.Models;
 using LYBT.Desktop.Formula.ViewModels;

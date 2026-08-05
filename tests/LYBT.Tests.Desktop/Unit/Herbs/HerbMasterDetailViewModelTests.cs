@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Herbs.Models;
 using LYBT.Desktop.Herbs.ViewModels;
 using LYBT.Desktop.Herbs.ViewModels.Handlers;

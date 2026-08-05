@@ -3,7 +3,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using System.Threading;
 
-namespace LYBT.Desktop.Herbs.Interfaces
+namespace LYBT.Desktop.Contracts.Services
 {
     /// <summary>
     /// 药材Service接口

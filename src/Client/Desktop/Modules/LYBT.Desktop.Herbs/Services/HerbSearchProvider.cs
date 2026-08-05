@@ -1,7 +1,6 @@
 using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Shared.Models.Contracts.Herbs;
-using LYBT.Desktop.Herbs.Interfaces;
 
 namespace LYBT.Desktop.Herbs.Services;
 
