@@ -2,7 +2,7 @@
 
 ## 概述
 
-Server 层采用经典三层架构: Controller -> Service -> Repository -> DbContext。分为 Core (基础设施)、Modules (业务逻辑)、Services (API 入口) 三组。简单模块使用传统三层模式，复杂模块 (MedicalCase) 使用 CQRS 模式。Prescriptions 模块已于 2026-01-05 移除，处方功能迁移到 MedicalCase 聚合根内。
+Server 层采用模块化单体架构: Controller -> Service/MediatR Handler -> Repository -> DbContext，分为 Core (基础设施)、Modules (业务逻辑)、Services (API 入口) 三组，共 8 个业务模块。6 个模块 (Auth/Users/Patients/Herbs/Formula/Registration) 使用 MediatR CQRS，其中 Users/Patients/Herbs/Formula 由 Service 处理简单 CRUD、MediatR 处理复杂命令；MedicalCase 采用 Command/Query/State 三 Service 拆分（无 MediatR）；Reports 为只读聚合查询模块。Prescriptions 模块已于 2026-01-05 移除，处方功能迁移到 MedicalCase 聚合根内。
 
 ## 架构图
 
@@ -13,18 +13,21 @@ graph TB
     end
 
     subgraph Modules["Module 层 (业务逻辑)"]
-        Auth["Module.Auth"]
-        Users["Module.Users"]
-        Patients["Module.Patients"]
-        Herbs["Module.Herbs"]
-        Formula["Module.Formula"]
-        MC["Module.MedicalCase"]
-        Reg["Module.Registration"]
-        Reports["Module.Reports"]
+        Auth["Module.Auth<br>(MediatR CQRS)"]
+        Users["Module.Users<br>(Service + MediatR)"]
+        Patients["Module.Patients<br>(Service + MediatR)"]
+        Herbs["Module.Herbs<br>(Service + MediatR)"]
+        Formula["Module.Formula<br>(Service + MediatR)"]
+        MC["Module.MedicalCase<br>(Command/Query/State Service)"]
+        Reg["Module.Registration<br>(MediatR CQRS)"]
+        Reports["Module.Reports<br>(只读聚合查询)"]
     end
 
     subgraph Core["Core 层 (基础设施)"]
         Infra["LYBT.Infrastructure<br>(DbContext, BaseRepository)"]
+    end
+
+    subgraph Shared["Shared 层 (跨层共享)"]
         Entities["LYBT.Entities<br>(领域实体)"]
     end
 
@@ -58,27 +61,28 @@ sequenceDiagram
 
 ### LYBT.Entities
 
-领域实体定义，默认采用贫血模型。
+领域实体定义，默认采用贫血模型。实际位置 `src/Shared/LYBT.Entities/`（2026-08 实体源统一后移出 Core 层）。
 
 **职责**:
 - 定义所有领域实体 (继承 `BaseEntity`)
 - 定义领域枚举和值对象
 - 无外部依赖，仅引用 .NET BCL
 
-> **例外**: `MedicalCaseModel` 作为唯一 DDD 聚合根，包含域方法 (`Complete()`, `SaveAsDraft()`, `SoftDelete()`, `UpdateConsultation()`)，采用充血模型。其他实体保持贫血模型。
+> **例外**: `MedicalCaseModel` 作为唯一 DDD 聚合根，包含域方法 (`Complete()`, `Suspend()`, `SoftDelete()`, `UpdateConsultation()`)，采用充血模型；另有计算属性 `IsLocked / IsActive / IsCompleted`。其他实体保持贫血模型。
 
 **目录结构**:
 ```
 LYBT.Entities/
-  Auth/              # AuthSession, RefreshToken
-  Consultations/     # Consultation
-  Formulas/          # Formula, FormulaHerbItem
-  Herbs/             # Herb
-  Patients/          # Patient
-  Prescriptions/     # Prescription, PrescriptionItem
-  MedicalCases/      # MedicalCase, MedicalCasePrintLog
-  Users/             # User, UserRole 枚举
-  Common/            # BaseEntity, 通用枚举
+  Auth/              # AuthSessionModel, SecurityAuditLog
+  Common/            # BaseEntity, IAuditableEntity, ISoftDeletable, SystemLog
+  Consultations/     # ConsultationModel
+  Formulas/          # FormulaModel, FormulaHerbItem
+  Herbs/             # HerbModel
+  MedicalCases/      # MedicalCaseModel, MedicalCaseAuditLog, MedicalCasePrintLog
+  Patients/          # PatientModel
+  Prescriptions/     # PrescriptionModel, PrescriptionItem
+  Registrations/     # RegistrationModel
+  Users/             # ApplicationUser
 ```
 
 **BaseEntity 通用字段**: Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy, RowVersion, IsDeleted。详见 [data-model.md](04-data-model.md) 的 BaseEntity 章节。
@@ -89,13 +93,12 @@ LYBT.Entities/
 
 **职责**:
 - `AppDbContext` -- EF Core 数据库上下文
-- `BaseRepository<T>` -- Repository 基类 (21 个公开方法)
-- 跨模块服务接口 (ISP 原则，D5-1 设计):
-  - `ICrossModuleService` -- 旧统一接口 (标记 `[Obsolete]`，S3 渐进迁移)
-  - `IPatientCrossModuleService` -- 患者查询 + 引用检查 (S3 新增)
-  - `IHerbCrossModuleService` -- 药材查询 + 引用检查 (S3 新增)
-  - `IUserCrossModuleService` -- 用户查询 + 凭证操作 (S3 新增)
-  - `ICrossModuleAuthService` -- Token 撤销 (已设计，6 个触发场景)
+- `BaseRepository<T>` -- Repository 基类 (5 个核心方法：GetByIdAsync/AddAsync/UpdateAsync/DeleteAsync/SaveChangesAsync，复杂查询由各模块 Repository 自定义)
+- 跨模块服务接口 (ISP 原则，D5-1 设计，位于 `Services/CrossModule/`):
+  - `ICrossModuleService` -- 统一接口，替代旧的 `IPatientCrossModuleService`/`IHerbCrossModuleService`/`IUserCrossModuleService`；实现 `CrossModuleService` 委托各域服务
+  - `IPatientCrossModuleService` / `IHerbCrossModuleService` / `IUserCrossModuleService` -- 域接口 (旧接口文件保留，由统一接口委托/并存)
+  - `IMedicalCaseCrossModuleService` -- 医案域接口 (供 Patients 引用检查)
+  - `IRegistrationCrossModuleService` -- 挂号域接口 (供 MedicalCase)
 - `IRepository<T>` -- Repository 接口定义
 - EF Core 实体配置 (Fluent API)
 - 数据库迁移文件
@@ -103,89 +106,93 @@ LYBT.Entities/
 **目录结构**:
 ```
 LYBT.Infrastructure/
-  Data/
-    AppDbContext.cs
-    Configurations/          # EF Core Fluent API 配置
-      Base/                  # BaseEntityConfiguration
-      PatientConfiguration.cs
-      ...
-  Interfaces/
-    IRepository.cs
-  Repositories/
-    BaseRepository.cs        # 标准 CRUD + 分页 + 高级查询
-  Services/
-    ICrossModuleService.cs
-    CrossModuleService.cs
-  DependencyInjection/       # DI 扩展方法
+  Caching/                   # 缓存
+  Configuration/             # 配置
+  Constants/                 # PolicyConstants 等常量
+  Data/                      # AppDbContext + EF Core Fluent API 配置
+  ExceptionHandling/         # IExceptionHandler 等
+  Extensions/                # DI 扩展方法
+  Interfaces/                # IRepository<T> 等
   Logging/                   # 日志相关
   Migrations/                # EF Core 迁移
-  Validation/                # 验证工具
-  Web/
-    BaseApiController.cs     # Controller 基类
-    ApiErrorCodes.cs         # 错误码定义
+  Repositories/              # BaseRepository<T>
+  Serialization/             # 序列化
+  Services/                  # BaseService + CrossModule/ 跨模块服务
+  SharedKernel/              # 共享内核
+  Web/                       # BaseApiController / BaseCrudController / BaseClaimsHelper / ControllerBaseExtensions / OperatorAccessor
 ```
 
-**BaseRepository 公开方法 (21 个)**: GetByIdAsync / GetAllAsync / FindAsync(简单+高级) / SelectAsync / GetPagedAsync(模板+高级) / ExistsAsync / CountAsync(有无条件) / AddAsync / AddRangeAsync / UpdateAsync / UpdateRangeAsync / DeleteAsync(软) / DeleteRangeAsync / HardDeleteAsync / GetQueryable / GetNoTrackingQueryable / FromSqlRawAsync / SaveChangesAsync。
+> 错误码枚举位于 `LYBT.Shared.Models/Primitives/ErrorCodes/`：`ErrorCode.cs` (枚举) / `ErrorCategory.cs` / `ErrorMessages.cs` / `ErrorCodeExtensions.cs`。
 
-> 完整方法签名见源码 [`BaseRepository.cs`](../../src/Server/Core/LYBT.Infrastructure/Repositories/BaseRepository.cs)。
-
-**分页查询模板方法模式**:
-子类通过覆盖 `ApplyKeywordFilter` 和 `ApplyDefaultOrdering` 提供定制逻辑，不重写 `GetPagedAsync` 本身。
+**BaseRepository 公开方法 (5 个)**: GetByIdAsync / AddAsync / UpdateAsync / DeleteAsync / SaveChangesAsync。复杂查询由各模块 Repository 自定义方法实现。
 
 ## Module 层
 
 ### 标准目录结构
 
+模块实际存在三种目录形态:
+
+**CQRS 模块** (Auth/Users/Patients/Herbs/Formula/Registration，各模块另有 Controllers/Mappers 等变体):
 ```
 LYBT.Module.{Domain}/
   {Domain}Module.cs            # 模块注册入口
-  Repositories/
-    {Entity}Repository.cs      # Repository 实现
-  Services/
-    I{Entity}Service.cs        # Service 接口
-    {Entity}Service.cs         # Service 实现
-  Mapping/
-    {Entity}Mapper.cs          # Mapperly 映射器
-  Validators/                  # FluentValidation 验证器 (可选)
+  Application/                 # MediatR Commands/Queries + Handlers/Validators
+  Domain/                      # 领域实体、领域事件
+  Infrastructure/              # 模块 DbContext、Repository 实现
+  Interfaces/                  # I{Entity}Repository / I{Entity}Service 接口
+  Services/                    # Service 实现 (trivial CRUD、跨模块服务)
+```
+
+**MedicalCase** (Command/Query/State 三 Service 拆分):
+```
+LYBT.Module.MedicalCase/
+  Controllers/ Interfaces/ Mappers/ Repositories/ Services/
+```
+
+**Reports** (只读聚合查询):
+```
+LYBT.Module.Reports/
+  Domain/ Infrastructure/ Interfaces/
 ```
 
 ### 模块清单
 
-| 模块 | 架构模式 | 跨模块通信 | 说明 |
-|------|----------|------------|------|
-| Auth | 传统三层 | IUserService | JWT 认证、Token 管理 |
-| Users | 传统三层 | - | 用户 CRUD、密码管理 |
-| Patients | 传统三层 | - | 患者 CRUD、导入导出 |
-| Herbs | 传统三层 | - | 药材 CRUD、分类、导入 |
-| Formula | 传统三层 | ICrossModuleService | 验方 CRUD、药材绑定 |
-| MedicalCase | CQRS | IPatientService | 医案核心，状态机管理 |
-| Registration | 传统三层 | - | 挂号管理，队列状态流转 |
-| Reports | 传统三层 | ICrossModuleService | 报表/历史聚合查询（MC-008/009，D9 补回 v1.0） |
+| 模块 | 架构模式 | 跨模块通信 |
+|------|----------|------------|
+| Auth | MediatR CQRS | ICrossModuleService |
+| Users | Service + MediatR | IUserCrossModuleService（供 MedicalCase/Auth） |
+| Patients | Service + MediatR | IMedicalCaseCrossModuleService（引用检查） |
+| Herbs | Service + MediatR | IHerbCrossModuleService |
+| Formula | Service + MediatR | ICrossModuleService |
+| MedicalCase | Service 拆分（Command/Query/State） | IRegistrationCrossModuleService + ICrossModuleService |
+| Registration | 纯 MediatR CQRS | IRegistrationCrossModuleService |
+| Reports | Service + Repository（只读聚合） | - |
 
 > 🧲 **Sync 模块属 v2.0**（N1 决策 2026-06-28）：v1.0 远程与本地数据孤立，`LYBT.Module.Sync` 不在 v1.0 范围。代码可能保留骨架但不在 v1.0 加载。
 
-### CQRS 模式 (MedicalCase)
+### MedicalCase 服务拆分 (Command/Query/State)
 
-MedicalCase 作为系统核心聚合根，业务复杂度高，采用 CQRS 拆分:
+MedicalCase 作为系统核心聚合根，业务复杂度高，采用 Command/Query/State 三 Service 拆分（非 MediatR）:
 
-| Service | 职责 | 方法示例 |
-|---------|------|----------|
-| IMedicalCaseCommandService | 写操作 | CreateAsync, SaveAsync, CreatePrescriptionAsync |
-| IMedicalCaseQueryService | 读操作 | GetByIdAsync, GetPagedAsync, SearchAsync |
-| IMedicalCaseStateService | 状态变更 | CompleteAsync, SaveDraftAsync, CancelAsync, UpdateStatusAsync |
-| IMedicalCasePermissionService | 唯一权限权威 | CanEdit, CanDelete, GetPermissions |
-| IMedicalCaseAuditService | 审计日志 | LogAsync, DetectChanges |
-| MedicalCaseRules | 无状态策略 | CanCreateNewCase, HasActiveCase, IsValidStatusTransition |
-| MedicalCaseServiceHelper | 共享工具 | CloneMedicalCaseForAudit, ValidateAndFetchCreationContextAsync, EnsureCanEdit, ExecuteWithConcurrencyRetryAsync |
+| 接口 | 职责 |
+|------|------|
+| IMedicalCaseCommandService | 写操作（含 `.Deletion` partial、Prescription 内部操作） |
+| IMedicalCaseQueryService | 读操作 |
+| IMedicalCaseStateService | 状态变更 |
+| IMedicalCaseReferenceRepository | 医案引用检查（供 Patients 等模块） |
+| IMedicalCaseRepository | 医案数据访问 |
 
-**适用标准**: 读写复杂度差异大、细粒度权限控制、完整审计日志、复杂状态流转。
+另有实现类文件（非接口）：`MedicalCaseCrossModuleService` / `MedicalCasePrescriptionService` / `MedicalCaseServiceHelper` / `PrescriptionItemService`。Permission/Audit/Rules 服务已随 A-03 MediatR 简化移除，代码中不存在。
 
-### 传统三层模式 (其他模块)
+**适用标准**: 读写复杂度差异大、细粒度权限控制、完整审计日志、复杂状态流转。MedicalCase 采用 Service 拆分而非 MediatR（2026-08-02 决策：MediatR 保留用于复杂业务，trivial CRUD 直接注入）。
 
-标准 CRUD 模块使用单一 Service:
+### Service + MediatR 模式 (其他模块)
+
+标准 CRUD 模块由 Service 处理简单 CRUD，复杂命令/查询通过 MediatR Handler:
 
 ```
 Controller -> I{Entity}Service -> {Entity}Repository -> DbContext
+Controller -> MediatR Command/Query -> Handler -> {Entity}Repository -> DbContext
 ```
 
 ## Services 层 (WebAPI)
@@ -201,22 +208,48 @@ Controller -> I{Entity}Service -> {Entity}Repository -> DbContext
 ### Controller 规范
 
 ```csharp
+// CRUD 控制器: 继承 BaseCrudController，注入 ISender 派发 MediatR 命令/查询
 [ApiController]
-[Route("api/[controller]")]
-[Authorize]
-public class PatientsController : BaseApiController
+[ApiVersion("1")]
+[Route("api/v{version:apiVersion}/registrations")]
+public abstract class BaseRegistrationsController : BaseCrudController
 {
-    private readonly IPatientService _service;
-
-    public PatientsController(IPatientService service)
+    protected BaseRegistrationsController(ISender sender, ILogger logger)
+        : base(sender, logger)
     {
-        _service = service;
     }
 
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id)
+    [HttpGet]
+    public override async Task<IActionResult> GetList(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
     {
-        return Ok(await _service.GetByIdAsync(id));
+        if (ValidatePagination(page, pageSize) is { } error) return error;
+
+        var result = await Sender.Send(new GetRegistrationsQuery(page, pageSize, null, null, null, null, null), ct);
+        return SuccessPaged(result, "查询成功");
+    }
+}
+
+// 只读聚合控制器: 注入 Service 接口 (Reports 示例)
+[ApiController]
+[ApiVersion("1")]
+[Route("api/v{version:apiVersion}/reports")]
+[Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
+public class ReportsController : BaseApiController
+{
+    private readonly IReportService _reportService;
+
+    public ReportsController(IReportService reportService, ILogger<ReportsController> logger)
+        : base(logger)
+    {
+        _reportService = reportService;
+    }
+
+    [HttpGet("daily/income")]
+    public async Task<IActionResult> GetDailyIncome(CancellationToken cancellationToken)
+    {
+        var dto = await _reportService.GetDailyIncomeAsync(DateTime.Today, DateTime.Today, cancellationToken);
+        return Success(dto, "查询成功");
     }
 }
 ```
@@ -323,31 +356,17 @@ builder.Services.AddPatientsModule();
 | 4xxxx | 处方管理 (预留) | - | 当前归入 304xx |
 | 5xxxx | 药材管理 | 501xx~503xx | ~15 |
 | 6xxxx | 验方管理 | 601xx~603xx | ~17 |
-| 7xxxx | 数据同步 | 701xx~705xx | ~20 |
+| 8xxxx | 挂号管理 | 801xx~803xx | ~3 |
 
-> **总计**: 90+ 错误场景。详见各模块 PRD 文档的"错误码"章节和 [11c-error-handling.md](../02-requirements/11c-error-handling.md)。
+> **总计**: 90+ 错误场景。错误码完整枚举位于 `LYBT.Shared.Models/Primitives/ErrorCodes/ErrorCode.cs`（分区注释: 0xxxx 通用 / 1xxxx 用户 / 2xxxx 患者 / 3xxxx 医案 / 4xxxx 处方 / 5xxxx 草药 / 6xxxx 配方 / 8xxxx 挂号）。详见各模块 PRD 文档的"错误码"章节和 [11c-error-handling.md](../02-requirements/11c-error-handling.md)。
 
 ## Service 层规范
 
-### BaseService 层次结构 (D2-1)
+### BaseService 层次结构
 
-> 设计文档: d2-d5-design | 实施: S5
+> 实际状态 (2026-08-05 核对): `BaseService` 仅提供统一的 `ILogger` 注入，不含 ExecuteAsync/ValidateAsync 能力。
 
-所有 Service 统一继承 BaseService 层次结构:
-
-```
-BaseService (非泛型)
-  ├── 跨域 Service: AuthService, SyncService
-  └── BaseService<T> (泛型，继承 BaseService)
-       └── CRUD Service: HerbService, PatientService, FormulaService (A3-07), MedicalCase*
-```
-
-| 基类 | 适用场景 | 提供能力 |
-|------|----------|---------|
-| `BaseService` | 跨域服务 (Auth, Sync) | ExecuteAsync (三层异常处理), ValidateAsync (FluentValidation 封装) |
-| `BaseService<T>` | CRUD 实体服务 | 继承 BaseService 全部能力 + 泛型约束 |
-
-**当前状态**: HerbService/PatientService/FormulaService 已继承 (FormulaService 在 Sprint3-Batch4a A3-07 完成迁移)，AuthService/SyncService 待统一 (S5)
+`BaseService` (非泛型) 提供 `ILogger` 注入；`BaseService<T>` 提供类型安全的 Logger。仅 MedicalCase 的 Command/Query/State 三个 Service 继承 `BaseService<MedicalCase>`；其余模块 Service (UserService/PatientService/HerbService/FormulaService 等) 直接实现各自接口，不继承 BaseService。
 
 ### 返回值类型
 
@@ -371,7 +390,6 @@ Repository -> Mapper -> Logger -> Validator -> 其他依赖
 
 - Service 层不捕获异常 (异常透传到 IExceptionHandler)
 - 业务验证失败返回 `Result.Failure`，不抛异常
-- 使用 `ExecuteAsync<T>()` 包装可能抛异常的操作
 - 保留 fire-and-forget 场景的 catch (审计日志等非关键操作)
 
 ### FluentValidation 集成
@@ -402,6 +420,14 @@ Create/Update 方法在业务逻辑前调用验证。Validator 架构与共享�
 - L1/L2 不需要显式事务 (EF Core SaveChanges 自带隐式事务)
 - L3 场景必须使用 `IDbContextTransaction`，确保跨实体原子性
 - MedicalCase 聚合保存属于 L2: 单次 SaveChanges 写入 4 层实体
+
+## 模块独立 DbContext
+
+5 个模块拥有独立 DbContext（`AuthDbContext` / `UsersDbContext` / `HerbsDbContext` / `FormulaDbContext` / `ReportsDbContext`），均通过 `ConnectionStringResolver.GetEffectiveConnectionString()` 三级回退获取连接字符串（`Database:ConnectionString` → `ConnectionStrings:DefaultConnection` → `CONNECTION_STRING` 环境变量）。
+
+Patients / MedicalCase / Registration 3 个模块复用共享 `AppDbContext`（模块注册注释「使用AppDbContext」）。
+
+架构测试与此设计相呼应：P02（Repository 必须继承 BaseRepository）对直接注入 DbContext 的模块内 Repository 予以豁免（构造参数含 DbContext 即豁免）；P10（Service 禁止直接注入 AppDbContext）仅约束 Service 层，Repository 不受限。
 
 ## 数据库约定
 
@@ -490,5 +516,6 @@ Server 端采用 ASP.NET Core OutputCache（标签分组）+ IMemoryCache（高�
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-08-05 | v2.3 | **文档与代码全面对齐（14 项）**: 架构模式总述/架构图（Entities 移入 Shared 层、模块标注实际模式）/模块目录结构三形态/模块清单跨模块通信方向/MedicalCase 服务清单（5 接口，删 Permission/Audit/Rules）/Controller 规范示例/新增模块独立 DbContext 小节/错误码表（删 7xxxx、增 8xxxx、枚举位置）/BaseService 实际状态/BaseRepository 5 方法/Entities 位置与目录/错误码枚举位置等 |
 | 2026-06-28 | v2.2 | **spec S3 批次2 提炼（707→~530 行）**：BaseRepository 21 方法表改源码链接；缓存策略段（OutputCache/IMemoryCache/失效矩阵）改链接到 nfr.md；Validator 架构改链接到 08-shared.md；US-LOG/CFG/SYS 七段（敏感数据脱敏/API请求日志/启动配置验证/安全审计日志/日志清理/审计清理/Server启动诊断）合并为概览表改链接到 11d-observability.md/11b-configuration.md。变更历史见 git log。 |
 | 2026-06-28 | v2.1 | **N1 + 模块对齐**: 模块清单补 Reports（D9 补回 v1.0）; 架构图 Sync→Reports; Sync 标 🧲 v2.0 |
