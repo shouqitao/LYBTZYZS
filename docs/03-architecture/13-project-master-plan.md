@@ -68,7 +68,7 @@
 |----|------|------|------|------|------|
 | B-01 | P0 安全修复 | 明文密码/Shell Bug/死锁 (7 项) | 无 | ✅ | 待定 |
 | B-02 | 配置修改 API | ConfigurationController 添加 PUT | 无 | ✅ | 1d |
-| B-03 | Excel 导出/导入 | Herbs/Formula/Patients (NPOI) | 无 | ⬜ | 2-3d |
+| B-03 | Excel 导出/导入 | Herbs/Formula/Patients (NPOI) | 无 | ✅ | 2-3d |
 | B-04 | 报表增强 | 图表/多维度/时间范围 | 无 | ⬜ | 2d |
 | B-05 | 配置中心 UI | SystemSettingsView 增强 | B-02 | ⬜ | 1d |
 | B-06 | 数据备份/恢复 | SQL Server 备份+恢复 | 无 | ⬜ | 1.5d |
@@ -232,7 +232,7 @@
 | A-12 AuthService 收敛 | ✅ | 2026-08-04 | 代码已通过 IAuthSessionRepository（RefreshTokenCommandHandler 无直接 DbContext） |
 | B-01 P0 安全修复 | ✅ | 2026-08-04 | `831702b51` `cb4d3e6b9` |
 | B-02 配置修改 API | ⬜ | — | — |
-| B-03 Excel 导出/导入 | ⬜ | — | — |
+| B-03 Excel 导出/导入 | ✅ | 2026-08-05 | `4d70b487a` `0fdfde0d3` `bed75026e` `709bad616` `64c58c59a` `8968fd130` `1bc468851` — NPOI 2.7.2（中央版本钉）；ExcelService 通用三方法（ExportToExcel/GenerateTemplate/ParseExcel，XSSFWorkbook）+ 4 单测；9 端点（3 实体 × export/import-template/batch-import-excel）；患者新增 BatchImportPatientsCommand（Skip/Update/Error 策略，与药材命令同构）；Herbs/Formulas Excel 导入复用现有 BatchImport 命令（拼音生成/药材名匹配/验方校验）；build --no-incremental 0 错误 0 警告，架构测试 92/92 |
 | B-04 报表增强 | ⬜ | — | — |
 | B-05 配置中心 UI | ⬜ | — | — |
 | B-06 数据备份/恢复 | ⬜ | — | — |
@@ -326,3 +326,4 @@
 | 2026-08-05 | **A-05 实体源统一确认已完成**：勘察发现无 Domain 项目、Server 模块无实体定义、Desktop 用 DTO，Shared/LYBT.Entities 已是唯一实体源。A-05 由 A-02/A-03 间接覆盖，标记 ✅ | Phase 2 全部完成 | 技术总监 |
 | 2026-08-05 | **开发策略调整：WebAPI 优先**：线性开发——先重点开发 Server 端功能（Phase 3），发布到测试服务器（`60.190.215.86:5555`，user `player`），再开发 Desktop 并针对远程 WebAPI 做集成测试。测试服务器连 SQL Server `192.168.190.243`（LYBTDB_Dev）。Desktop 集成测试不再依赖本地 LocalDB/WebAPI | 真实环境测试更可靠；Server 端功能先行部署，Desktop 后续对接 | 产品负责人 |
 | 2026-08-05 | **Mimo Code 升级到 v0.1.10**：验证派发命令零改动兼容；git 身份继承修复(#1825)、context/checkpoint 加固、provider 重试；auto-dream/auto-distill 默认 OFF 正合适；`--never-ask` 作为全局选项在 run 子命令下不可用（yargs help 报错），暂跳过 | 派发流水线保持 `--dangerously-skip-permissions`，不加 `--never-ask` | 技术总监 |
+| 2026-08-05 | **B-03 Excel 导出/导入完成（Phase 3 第 1 项）**：① 路由裁决——模板端点以 Desktop Refit 定义为准为 `GET /import-template`（任务描述写 export-template，Refit 是硬约束）；新增 `POST /batch-import-excel`（multipart/form-data，仅 Admin+，Refit 无此端点）；导出/模板沿用类级权限（患者 DoctorOrAdminOrReceptionist、药材/验方 DoctorOrAdmin）。② ExcelService 通用化——`ExportToExcel<T>(data, sheetName, columnMapping)`/`GenerateTemplate(sheetName, columnHeaders)`/`ParseExcel<T>(stream, propertySetters)`，XSSFWorkbook；**DateTime 列以文本 `yyyy-MM-dd` 写出**（TDD 发现 XSSF 给单个 cell 赋自定义 DataFormat 会污染 workbook 格式表，导致其他数字列重载后被误判为日期）。③ 导入复用——Herbs/Formulas 复用现有 `BatchImportHerbsCommand`/`BatchImportFormulasCommand`（拼音生成/药材名匹配/验方校验）；患者新增同构 `BatchImportPatientsCommand`（Skip/Update/Error）。④ 列定义以现有 DTO/实体实际字段为准——任务列的「地址/过敏史/病史（患者）」「禁忌（药材）」模型中不存在未导出；验方「组成」列为 JSON（`[{HerbName,Dosage,Unit}]`），导入解析还原，导出 DTO 有但导入 DTO（FormulaImportItemDto）无的「描述/分类」列导入时忽略。Build 0 错误 0 警告、架构测试 92/92、ExcelService 4 单测全过。commit `4d70b487a` `0fdfde0d3` `bed75026e` `709bad616` `64c58c59a` `8968fd130` `1bc468851` | 路由与 Refit 完全匹配是硬约束；导入尽量复用现有命令避免双路径；NPOI XSSF 格式表污染是真实坑（TDD 捕获） | 技术总监 |
