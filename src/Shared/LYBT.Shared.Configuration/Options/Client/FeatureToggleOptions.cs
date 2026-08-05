@@ -9,7 +9,7 @@ public sealed class FeatureToggleOptions
 
     /// <summary>
     /// 重复药材合并策略: Max, Min, Sum, Import, Keep
-    /// (PrescriptionSettingsService reads this via IConfiguration.GetValue)
+    /// (PrescriptionSettingsService 通过 IConfiguration.GetValue 读取该配置)
     /// </summary>
     public string DuplicateHerbMergeStrategy { get; set; } = "Max";
 

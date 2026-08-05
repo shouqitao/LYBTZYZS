@@ -38,7 +38,7 @@ namespace LYBT.Module.MedicalCases
             services.AddScoped<PrescriptionItemService>();
 
             // Architecture Fix: 注册跨模块服务接口，供Patients模块使用
-            services.AddScoped<IMedicalCaseCrossModuleService, MedicalCaseReferenceService>();
+            services.AddScoped<IMedicalCaseCrossModuleService, MedicalCaseCrossModuleService>();
 
             // Epic #1961: 注册验证器 - 使用统一的 MedicalCaseInputDtoValidator
             services.AddValidatorsFromAssemblyContaining<MedicalCaseInputDtoValidator>();
