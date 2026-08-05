@@ -24,6 +24,16 @@ public interface ISystemConfigurationService
     /// 验证生产环境配置
     /// </summary>
     Task<Result> ValidateProductionConfigAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 修改单个配置项（白名单校验 + 持久化 + 热更新）
+    /// </summary>
+    Task<Result> SetValueAsync(string key, string value, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 批量修改配置项（白名单校验 + 持久化 + 热更新）
+    /// </summary>
+    Task<Result> UpdateConfigurationAsync(Dictionary<string, string> settings, CancellationToken cancellationToken = default);
 }
 
 

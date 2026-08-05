@@ -15,6 +15,7 @@ using LYBT.Shared.Logging.Management;
 using LYBT.Shared.Models.Utilities.Security;
 using LYBT.WebAPI.Extensions;
 using LYBT.Infrastructure.Configuration.Services;
+using LYBT.Infrastructure.Configuration.Stores;
 using LYBT.Infrastructure.Configuration.Validation;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
@@ -149,6 +150,13 @@ public class Program
             Log.Information("已切换到Final Logger，配置加载完成");
 
             // unify-configuration-system: 注册强类型配置
+            // B-02: 运行时配置覆盖 - 追加 runtime-overrides.json（reloadOnChange 支持 IOptionsMonitor 热更新）
+            var runtimeOverridesPath = Path.Combine(AppContext.BaseDirectory, "config", "runtime-overrides.json");
+            var baseline = builder.Configuration.AsEnumerable()
+                .Where(kv => kv.Value is not null)
+                .ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase);
+            builder.Configuration.AddJsonFile(runtimeOverridesPath, optional: true, reloadOnChange: true);
+            builder.Services.AddSingleton<IConfigurationStore>(new JsonFileConfigurationStore(runtimeOverridesPath, baseline));
             builder.Services.AddLybtServerConfiguration(builder.Configuration);
             // Register system configuration service for DI
             builder.Services.AddScoped<ProductionConfigurationValidator>();

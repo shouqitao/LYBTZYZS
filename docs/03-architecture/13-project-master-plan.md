@@ -67,7 +67,7 @@
 | ID | 任务 | 内容 | 依赖 | 状态 | 预估 |
 |----|------|------|------|------|------|
 | B-01 | P0 安全修复 | 明文密码/Shell Bug/死锁 (7 项) | 无 | ✅ | 待定 |
-| B-02 | 配置修改 API | ConfigurationController 添加 PUT | 无 | ⬜ | 1d |
+| B-02 | 配置修改 API | ConfigurationController 添加 PUT | 无 | ✅ | 1d |
 | B-03 | Excel 导出/导入 | Herbs/Formula/Patients (NPOI) | 无 | ⬜ | 2-3d |
 | B-04 | 报表增强 | 图表/多维度/时间范围 | 无 | ⬜ | 2d |
 | B-05 | 配置中心 UI | SystemSettingsView 增强 | B-02 | ⬜ | 1d |
@@ -141,11 +141,11 @@
 | 序号 | 任务 | 预估 | 状态 |
 |------|------|------|------|
 | 1 | B-01 P0 安全修复 (7项) | 待定 | ✅ |
-| 2 | B-02 配置修改 API | 1d | ⬜ |
+| 2 | B-02 配置修改 API | 1d | ✅ |
 | 3 | A-12 AuthService 收敛 | 0.5d | ✅ 已完成 |
 | 4 | C-04 NuGet 包清理 | 0.25d | ✅ 已完成 |
 | 5 | C-03 部署脚本清理 | 0.25d | ✅ 已完成 |
-| **小计** | | **~2d + 安全修复** | **4/5 完成** |
+| **小计** | | **~2d + 安全修复** | **5/5 完成** |
 
 ### Phase 1: 基础清理 (低风险)
 | 序号 | 任务 | 预估 |
@@ -292,6 +292,7 @@
 | 2026-08-04 | **代码批次 D 完成（2 项）**：D1 离线密码重置工具改 Identity PBKDF2 兼容哈希（`PasswordHasher<ApplicationUser>`，弃 BCrypt `PasswordHelper`，SQL 语句修正 `AspNetUsers`）commit `bea06505b`；D2 配置文档对齐代码（删 `ConfigurationSections` 集中类声称，改「各 Options 类内联 SectionName」；Options 数量 14→19：12 服务端 + 1 共享 + 6 客户端）commit `4f7a9563c`。总账 + gap-list 标记完成 `1c7be777e` | 工具产物写入 `AspNetUsers.PasswordHash` 后用户可登录；文档反映代码真实状态 | 技术总监 |
 | 2026-08-04 | **零警告构建达成（基线质量）**：修复 7 个存量编译警告 — CS0105 重复 using（HerbItemControlViewModel）/ CA1001 PrescriptionPrintExecutor 实现 IDisposable 释放 LocalPrintServer / CS0168 未用 catch 变量 / CS8603×2 子 VM 构造顺序提前 / CS4014×2 测试断言补 await。`dotnet build LYBTZYZS.sln --no-incremental` 0 错误 0 警告，commit `8f47ab565` | 落实「0 错误 0 警告」构建基线（2026-08-04 规则） | 技术总监 |
 | 2026-08-04 | **Phase 0 收尾（3 项小任务）**：A-12 AuthService 收敛——代码已通过 IAuthSessionRepository（RefreshTokenCommandHandler 无直接 DbContext），无需改动；C-03 部署脚本清理——删除 `.worktrees/` 下 7 个孤儿 checkout；C-04 NuGet 废弃包清理——移除 8 个代码零使用包（NPOI/EPPlus/System.CommandLine/Bogus/Xunit.StaFact/ObjectPool/Logging.Debug/Refit.HttpClientFactory）commit `85b2d16c5`，保留 SixLabors（QuestPDF 安全固定）。Phase 0 仅剩 B-02（配置修改 API，1d） | Phase 0 4/5 完成 | 技术总监 |
+| 2026-08-05 | **B-02 配置修改 API 完成（Phase 0 收官）**：`ISystemConfigurationService` 新增 `SetValueAsync`/`UpdateConfigurationAsync`；`ConfigurationController` 新增 `PUT /{key}` 与 `PUT /`（AdminOrSuperAdmin）；新增 `IConfigurationStore` + `JsonFileConfigurationStore`（`{BaseDirectory}/config/runtime-overrides.json`，仅持久化与 appsettings 默认值不同的项，原子写入）；白名单策略 `ConfigurationWritePolicy`（仅允许已注册 Server Options 节，禁止 `ConnectionStrings:DefaultConnection`/`Jwt:SecretKey`/`DefaultPasswords:*`）；Program.cs 以 `reloadOnChange:true` 追加覆盖文件，Service 写入后 `IConfigurationRoot.Reload()` 触发 `IOptionsMonitor<T>` 热更新。新增 12 个单元测试（Store 4 + Service 8），Build 0 错误 0 警告 | 架构约束 P10 用独立 Store 满足；测试真实实现零 mock | 技术总监 |
 
 ---
 

@@ -137,8 +137,9 @@
 |------|------|------|------|
 | GET | / | 获取全部配置 | Admin+ |
 | GET | /{key} | 获取单个配置 | Admin+ |
+| PUT | /{key} | 修改单个配置（白名单校验 + 持久化 + 热更新） | Admin+ |
+| PUT | / | 批量修改配置（白名单校验 + 持久化 + 热更新） | Admin+ |
 | POST | /validate | 生产环境验证 | Admin+ |
-| ~~PUT~~ | ~~/~~ | ~~修改配置~~ | **❌ 缺失** |
 
 ## 3.10 诊断调试 (Diagnostics) — `api/v1/diagnostics`
 

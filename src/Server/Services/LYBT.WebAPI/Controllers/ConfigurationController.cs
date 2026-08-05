@@ -55,6 +55,38 @@ public class ConfigurationController : BaseApiController
     }
 
     /// <summary>
+    /// 修改单个配置项（白名单校验 + 持久化 + 热更新）
+    /// </summary>
+    [HttpPut("{key}")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> SetValue(string key, [FromBody] string value, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            return ValidationFail("配置项名称不能为空");
+
+        var result = await _configurationService.SetValueAsync(key, value, cancellationToken);
+        if (!result.IsSuccess)
+            return BusinessFail(result.ErrorMessage ?? "修改配置失败");
+        return Success("配置修改成功");
+    }
+
+    /// <summary>
+    /// 批量修改配置项（白名单校验 + 持久化 + 热更新）
+    /// </summary>
+    [HttpPut]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateConfiguration([FromBody] Dictionary<string, string> settings, CancellationToken cancellationToken)
+    {
+        if (settings is null || settings.Count == 0)
+            return ValidationFail("配置项集合不能为空");
+
+        var result = await _configurationService.UpdateConfigurationAsync(settings, cancellationToken);
+        if (!result.IsSuccess)
+            return BusinessFail(result.ErrorMessage ?? "批量修改配置失败");
+        return Success($"批量修改 {settings.Count} 项配置成功");
+    }
+
+    /// <summary>
     /// 验证生产环境配置
     /// </summary>
     [HttpPost("validate")]
