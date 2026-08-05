@@ -471,7 +471,11 @@ Server 端采用 ASP.NET Core OutputCache（标签分组）+ IMemoryCache（高�
 
 **角色变更即时生效** (AUTH-D07): 用户角色变更时，UserService 通过 `ICrossModuleAuthService.RevokeAllUserTokensAsync()` 撤销该用户 Token Family，强制重登录。复用单会话的 Token Family 撤销逻辑。
 
-**跨模块 Token 撤销** (ICrossModuleAuthService): 独立接口 (ISP 原则，不污染 ICrossModuleQueryService)，Auth 模块提供实现，6 个触发场景:
+**跨模块 Token 撤销** (ICrossModuleAuthService): ⚠️ **已设计未实现** — 代码中不存在此接口，以下为设计说明，待后续实现。
+
+> **安全风险**：当前用户被删除/禁用、密码变更、角色降级后，旧 Token 仍有效（最长 30 分钟）。建议优先实现此接口。
+
+独立接口 (ISP 原则，不污染 ICrossModuleQueryService)，Auth 模块提供实现，6 个触发场景:
 
 | 场景 | 调用方 | reason |
 |------|--------|--------|
