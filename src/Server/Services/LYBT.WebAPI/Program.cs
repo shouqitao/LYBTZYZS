@@ -14,6 +14,7 @@ using LYBT.Shared.Logging.Extensions;
 using LYBT.Shared.Logging.Management;
 using LYBT.Shared.Models.Utilities.Security;
 using LYBT.WebAPI.Extensions;
+using LYBT.WebAPI.Services;
 using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Infrastructure.Configuration.Stores;
 using LYBT.Infrastructure.Configuration.Validation;
@@ -161,6 +162,8 @@ public class Program
             // Register system configuration service for DI
             builder.Services.AddScoped<ProductionConfigurationValidator>();
             builder.Services.AddScoped<ISystemConfigurationService, SystemConfigurationService>();
+            // B-03: Excel 导出/导入/模板通用服务（无状态）
+            builder.Services.AddSingleton<ExcelService>();
             Log.Information("强类型配置注册完成");
 
             // 验证默认密码配置（所有环境）
