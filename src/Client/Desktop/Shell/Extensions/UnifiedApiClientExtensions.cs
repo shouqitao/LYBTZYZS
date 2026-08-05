@@ -27,12 +27,12 @@ using Refit;
 namespace LYBT.Desktop.Shell.Extensions;
 
 /// <summary>
-/// Extension methods for registering <see cref="IApiClient"/>.
+/// 注册 <see cref="IApiClient"/> 的扩展方法。
 /// </summary>
 public static class UnifiedApiClientExtensions
 {
     /// <summary>
-    /// Registers <see cref="SwitchingApiClient"/> as the singleton <see cref="IApiClient"/>.
+    /// 将 <see cref="SwitchingApiClient"/> 注册为单例 <see cref="IApiClient"/>。
     /// </summary>
     public static void AddUnifiedApiClient(
         this IContainerRegistry containerRegistry,

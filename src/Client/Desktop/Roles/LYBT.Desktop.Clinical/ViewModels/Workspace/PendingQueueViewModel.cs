@@ -14,8 +14,8 @@ using CommunityToolkit.Mvvm.Input;
 namespace LYBT.Desktop.Clinical.ViewModels.Workspace;
 
 /// <summary>
-/// Child VM for pending queue management.
-/// Upgraded from PendingQueueHandler, replacing callbacks with IWorkspaceHost/IMedicalCaseWorkspaceContext.
+/// 待诊队列管理的子级 ViewModel。
+/// 由 PendingQueueHandler 升级而来，用 IWorkspaceHost/IMedicalCaseWorkspaceContext 取代回调。
 /// </summary>
 public partial class PendingQueueViewModel : ChildViewModelBase
 {
@@ -27,12 +27,12 @@ public partial class PendingQueueViewModel : ChildViewModelBase
     private readonly ObservableCollection<PendingMedicalCaseDto> _queue = new();
 
     /// <summary>
-    /// Delegate from parent for suspend-before-switch (edit mode uses this to save current edits).
+    /// 来自父级的委托，用于切换前先暂存当前医案（编辑模式下用于保存当前编辑）。
     /// </summary>
     public Func<Task>? SuspendCurrentCase { get; set; }
 
     /// <summary>
-    /// Pending queue collection.
+    /// 待诊队列集合。
     /// </summary>
     public ObservableCollection<PendingMedicalCaseDto> Queue => _queue;
 
@@ -67,7 +67,7 @@ public partial class PendingQueueViewModel : ChildViewModelBase
     private async Task SelectAsync(PendingMedicalCaseDto c) => await SelectPendingCaseAsync(c);
 
     /// <summary>
-    /// Refresh the pending queue from the registration service.
+    /// 从挂号服务刷新待诊队列。
     /// </summary>
     public async Task RefreshQueueAsync()
     {
@@ -110,7 +110,7 @@ public partial class PendingQueueViewModel : ChildViewModelBase
     }
 
     /// <summary>
-    /// Map RegistrationStatus to MedicalCaseStatus for pending queue display.
+    /// 将 RegistrationStatus 映射为 MedicalCaseStatus 用于待诊队列显示。
     /// </summary>
     private static MedicalCaseStatus MapRegistrationStatus(RegistrationStatus status) => status switch
     {
@@ -257,7 +257,7 @@ public partial class PendingQueueViewModel : ChildViewModelBase
     }
 
     /// <summary>
-    /// Create a new medical case for the patient and navigate to it.
+    /// 为患者创建新医案并导航到该医案。
     /// </summary>
     private async Task NavigateToNewMedicalCaseAsync(PendingMedicalCaseDto pendingCase)
     {
@@ -351,7 +351,7 @@ public partial class PendingQueueViewModel : ChildViewModelBase
     }
 
     /// <summary>
-    /// Get patient detail: return current patient if matching, otherwise null (OnNavigatedTo will handle).
+    /// 获取患者详情：若匹配则返回当前患者，否则返回 null（由 OnNavigatedTo 处理）。
     /// </summary>
     private PatientDetailDto? GetPatientDetail(Guid patientId)
     {

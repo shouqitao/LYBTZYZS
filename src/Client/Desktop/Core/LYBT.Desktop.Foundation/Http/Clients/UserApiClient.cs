@@ -14,14 +14,14 @@ using LYBT.Shared.Models.Contracts.Users;
 namespace LYBT.Desktop.Foundation.Http.Clients;
 
 /// <summary>
-/// User management API client — wraps IUserApi (Refit) to implement IApiClientUsers.
+/// 用户管理 API 客户端——包装 IUserApi（Refit）以实现 IApiClientUsers。
 /// </summary>
 internal sealed class UserApiClient : IApiClientUsers
 {
     private readonly IUserApi _api;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="UserApiClient"/>.
+    /// 初始化 <see cref="UserApiClient"/> 类的新实例。
     /// </summary>
     /// <param name="api">Refit-generated user API client.</param>
     public UserApiClient(IUserApi api)

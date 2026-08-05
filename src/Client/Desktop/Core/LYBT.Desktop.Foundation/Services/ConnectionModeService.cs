@@ -16,16 +16,16 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Foundation.Services;
 
 /// <summary>
-/// Detects the best connection mode (Remote vs Local) by probing the
-/// configured WebAPI health endpoint, and transparently falls back to the
-/// embedded LocalWebAPI when the remote server is unreachable.
+/// 通过探测配置的 WebAPI 健康端点检测最佳连接模式（Remote 或 Local），
+/// 当远程服务器不可达时透明地回退到
+/// 嵌入式 LocalWebAPI。
 /// </summary>
 public sealed class ConnectionModeService : IConnectionModeService, IDisposable
 {
-    /// <summary>Remote WebAPI anonymous health path.</summary>
+    /// <summary>远程 WebAPI 匿名健康路径。</summary>
     private const string RemoteHealthPath = "/api/v1/health";
 
-    /// <summary>LocalWebAPI anonymous health path.</summary>
+    /// <summary>LocalWebAPI 匿名健康路径。</summary>
     private const string LocalHealthPath = "/api/v1/health";
 
     private static readonly TimeSpan RemoteProbeTimeout = TimeSpan.FromSeconds(3);
@@ -40,9 +40,9 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     private bool _isRemoteAvailable;
 
     /// <summary>
-    /// Build the service. The initial <see cref="CurrentMode"/> is derived
-    /// from <see cref="IConnectionSettingsService.PreferredMode"/> /
-    /// <see cref="IConnectionSettingsService.IsLocal"/>.
+    /// 构建服务。初始 <see cref="CurrentMode"/> 由
+    /// <see cref="IConnectionSettingsService.PreferredMode"/> /
+    /// <see cref="IConnectionSettingsService.IsLocal"/> 推导。
     /// </summary>
     public ConnectionModeService(
         IConnectionSettingsService connectionSettings,
@@ -74,7 +74,7 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     /// <inheritdoc />
     public bool IsRemoteAvailable => _isRemoteAvailable;
 
-    /// <summary>API status message including mode info.</summary>
+    /// <summary>含模式信息的 API 状态消息。</summary>
     public string ApiStatusDisplay => _currentMode == ConnectionMode.Remote
         ? "远程 WebAPI 已连接"
         : "本地 WebAPI 已连接";
@@ -213,7 +213,7 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     }
 
     /// <summary>
-    /// Update the effective mode and raise <see cref="ModeChanged"/> when it changes.
+    /// 更新生效模式，变化时触发 <see cref="ModeChanged"/>。
     /// </summary>
     private void ApplyMode(ConnectionMode mode)
     {
@@ -231,7 +231,7 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     }
 
     /// <summary>
-    /// When the URL is changed externally, re-derive the effective mode.
+    /// 当 URL 被外部修改时，重新推导生效模式。
     /// </summary>
     private void OnUrlChanged(object? sender, string newUrl)
     {
@@ -242,8 +242,8 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     }
 
     /// <summary>
-    /// Release the detection gate and detach the URL subscription.
-    /// The DI container disposes singletons on shutdown.
+    /// 释放检测门并解除 URL 订阅。
+    /// DI 容器在关闭时释放单例。
     /// </summary>
     public void Dispose()
     {

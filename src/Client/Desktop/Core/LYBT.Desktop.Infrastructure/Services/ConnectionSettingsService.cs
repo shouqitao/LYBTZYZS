@@ -12,13 +12,13 @@ using Microsoft.Extensions.Options;
 namespace LYBT.Desktop.Infrastructure.Services;
 
 /// <summary>
-/// Manages the active API connection URL, persists it to appsettings.json,
-/// and notifies subscribers on change. Supports PreferredMode + RemoteUrl
-/// persistence for explicit mode switching.
+/// 管理活动 API 连接 URL，持久化到 appsettings.json，
+/// 并在变化时通知订阅者。支持 PreferredMode + RemoteUrl
+/// 持久化以显式切换模式。
 /// </summary>
 public sealed class ConnectionSettingsService : IConnectionSettingsService
 {
-    /// <summary>LocalWebAPI fixed address (always http://localhost:5300).</summary>
+    /// <summary>LocalWebAPI 固定地址（始终为 http://localhost:5300）。</summary>
     public const string LocalUrlConstant = "http://localhost:5300";
 
     private readonly ILogger<ConnectionSettingsService> _logger;
@@ -181,8 +181,8 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
     }
 
     /// <summary>
-    /// Persist a single key under a top-level section, creating the section
-    /// if missing. Other keys in the section are preserved.
+    /// 在顶层节下持久化单个键，节不存在时创建。
+    /// 节中其他键保持不变。
     /// </summary>
     private async Task PersistSettingAsync(string section, string key, string value)
     {

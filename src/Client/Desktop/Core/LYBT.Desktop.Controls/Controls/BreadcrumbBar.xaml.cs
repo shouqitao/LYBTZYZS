@@ -68,7 +68,7 @@ public partial class BreadcrumbBar : UserControl
     #endregion
 
     /// <summary>
-    /// Update breadcrumbs based on navigation path (e.g., "Patient > Clinical > Medical Case")
+    /// 根据导航路径更新面包屑（例如 "Patient > Clinical > Medical Case"）
     /// </summary>
     private void UpdateBreadcrumbs(string path)
     {
@@ -95,7 +95,7 @@ public partial class BreadcrumbBar : UserControl
 }
 
 /// <summary>
-/// Single breadcrumb item data model
+/// 单个面包屑项数据模型
 /// </summary>
 public class BreadcrumbItem
 {

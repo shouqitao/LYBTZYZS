@@ -3,43 +3,43 @@ using LYBT.Desktop.MedicalCase.Models;
 namespace LYBT.Desktop.MedicalCase.Interfaces;
 
 /// <summary>
-/// Edit mode state machine for workspace ViewModel (US-MC-011).
-/// Follows AuthenticationStateMachine pattern: transition table + thread-safe lock + events outside lock.
+/// 工作区 ViewModel 的编辑模式状态机（US-MC-011）。
+/// 遵循 AuthenticationStateMachine 模式：转换表 + 线程安全锁 + 锁外触发事件。
 /// </summary>
 public interface IEditModeStateMachine
 {
-    /// <summary>Current edit state.</summary>
+    /// <summary>当前编辑状态。</summary>
     WorkspaceEditState CurrentState { get; }
 
-    /// <summary>True when CurrentState is DirtyEditing (unsaved changes exist).</summary>
+    /// <summary>CurrentState 为 DirtyEditing（存在未保存更改）时为 true。</summary>
     bool IsDirty { get; }
 
     /// <summary>
-    /// Initialize the state machine from navigation context.
-    /// Must be called before first use.
+    /// 从导航上下文初始化状态机。
+    /// 首次使用前必须调用。
     /// </summary>
     /// <param name="initialState">Computed initial state from context.</param>
     /// <param name="guardPredicate">Optional guard — Fire returns false when guard returns false.</param>
     void Initialize(WorkspaceEditState initialState, Func<WorkspaceEditEvent, bool>? guardPredicate = null);
 
-    /// <summary>Returns true if the event can be fired from the current state.</summary>
+    /// <summary>如果事件可从当前状态触发，则返回 true。</summary>
     bool CanFire(WorkspaceEditEvent evt);
 
     /// <summary>
-    /// Fires an event, transitioning state if the event is permitted.
-    /// Returns false for invalid transitions or guard failures (never throws).
+    /// 触发事件，若允许则转换状态。
+    /// 非法转换或守卫失败时返回 false（从不抛出异常）。
     /// </summary>
     bool Fire(WorkspaceEditEvent evt, string? context = null);
 
-    /// <summary>Returns the events that are currently permitted.</summary>
+    /// <summary>返回当前允许触发的事件。</summary>
     IEnumerable<WorkspaceEditEvent> GetPermittedEvents();
 
-    /// <summary>Raised after a successful state transition (outside the state lock).</summary>
+    /// <summary>成功状态转换后触发（在状态锁之外）。</summary>
     event EventHandler<EditStateChangedEventArgs>? StateChanged;
 }
 
 /// <summary>
-/// Event args for IEditModeStateMachine.StateChanged.
+/// IEditModeStateMachine.StateChanged 的事件参数。
 /// </summary>
 public sealed class EditStateChangedEventArgs : EventArgs
 {

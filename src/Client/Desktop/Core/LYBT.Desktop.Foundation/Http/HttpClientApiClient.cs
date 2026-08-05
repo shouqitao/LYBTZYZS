@@ -16,9 +16,9 @@ using LYBT.Desktop.Foundation.Http.Clients;
 namespace LYBT.Desktop.Foundation.Http;
 
 /// <summary>
-/// LocalWebAPI mode API client — uses IHttpClientFactory to call local ASP.NET Core endpoints.
-/// Implements <see cref="IApiClient"/> by lazily creating a per-domain adapter
-/// (<see cref="AuthHttpApiClient"/>, <see cref="UsersHttpApiClient"/>, etc.) on first access.
+/// LocalWebAPI 模式 API 客户端——使用 IHttpClientFactory 调用本地 ASP.NET Core 端点。
+/// 通过首次访问时惰性创建各领域适配器
+/// （<see cref="AuthHttpApiClient"/>、<see cref="UsersHttpApiClient"/> 等）实现 <see cref="IApiClient"/>。
 /// </summary>
 public sealed class HttpClientApiClient : IApiClient
 {
@@ -36,7 +36,7 @@ public sealed class HttpClientApiClient : IApiClient
     private IApiClientDiagnostics? _diagnostics;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="HttpClientApiClient"/>.
+    /// 初始化 <see cref="HttpClientApiClient"/> 的新实例。
     /// </summary>
     /// <param name="httpClientFactory">Factory for creating named HttpClient instances.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="httpClientFactory"/> is null.</exception>

@@ -276,13 +276,13 @@ public class ConsultationItem : BindableBase, IDataProvider, IValidatable, INoti
 
     #region INotifyDataErrorInfo Implementation (P1-4 FIX)
 
-    /// <summary>P1-4: Fires when validation errors change, notifying WPF validation system</summary>
+    /// <summary>P1-4：验证错误变化时触发，通知 WPF 验证系统</summary>
     public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 
-    /// <summary>P1-4: Returns true if there are validation errors</summary>
+    /// <summary>P1-4：存在验证错误时返回 true</summary>
     bool INotifyDataErrorInfo.HasErrors => !string.IsNullOrWhiteSpace(_validationMessage);
 
-    /// <summary>P1-4: Returns validation errors for WPF validation system</summary>
+    /// <summary>P1-4：向 WPF 验证系统返回验证错误</summary>
     IEnumerable INotifyDataErrorInfo.GetErrors(string? propertyName)
     {
         // Return errors for all properties if no specific property requested

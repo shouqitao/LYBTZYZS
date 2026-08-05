@@ -15,14 +15,14 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Desktop.Foundation.Http.Clients;
 
 /// <summary>
-/// Medical case API client — wraps IMedicalCaseApi (Refit) to implement IApiClientMedicalCases.
+/// 医案 API 客户端——包装 IMedicalCaseApi（Refit）以实现 IApiClientMedicalCases。
 /// </summary>
 internal sealed class MedicalCaseApiClient : IApiClientMedicalCases
 {
     private readonly IMedicalCaseApi _api;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="MedicalCaseApiClient"/>.
+    /// 初始化 <see cref="MedicalCaseApiClient"/> 类的新实例。
     /// </summary>
     /// <param name="api">Refit-generated medical case API client.</param>
     public MedicalCaseApiClient(IMedicalCaseApi api)

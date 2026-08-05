@@ -3,7 +3,7 @@ using LYBT.Shared.Models.Contracts.Diagnostics;
 
 namespace LYBT.Desktop.Contracts.ApiClient;
 
-/// <summary>Diagnostics/logging API endpoints.</summary>
+/// <summary>诊断/日志 API 端点。</summary>
 public interface IApiClientDiagnostics
 {
     Task<ApiResponse<object>> GetLoggingStatusAsync();

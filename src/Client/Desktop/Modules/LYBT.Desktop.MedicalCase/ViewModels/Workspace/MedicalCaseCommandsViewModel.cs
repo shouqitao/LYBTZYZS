@@ -22,9 +22,9 @@ using Prism.Services.Dialogs;
 namespace LYBT.Desktop.MedicalCase.ViewModels.Workspace;
 
 /// <summary>
-/// Child VM for aggregate root commands (save/suspend/complete/print/import/clear).
-/// All operations go through the MedicalCase aggregate root via IMedicalCaseService.
-/// Import operations (formula/history/clear) are handled directly, replacing PrescriptionImportHandler callbacks.
+/// 聚合根命令的子级 ViewModel（保存/挂起/完成/打印/导入/清空）。
+/// 所有操作均通过 IMedicalCaseService 走医案聚合根。
+/// 导入操作（验方/历史/清空）直接处理，取代 PrescriptionImportHandler 回调。
 /// </summary>
 /// <remarks>
 /// ARCHITECTURE-NOTE: This VM is intentionally kept as a single cohesive unit despite having 9 commands.
@@ -87,8 +87,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
     }
 
     /// <summary>
-    /// Called by parent when State changes to update CanExecute for all commands.
-    /// CommunityToolkit IRelayCommand.NotifyCanExecuteChanged() replaces Prism's RaiseCanExecuteChanged().
+    /// 父级在 State 变化时调用，以更新所有命令的 CanExecute。
+    /// CommunityToolkit IRelayCommand.NotifyCanExecuteChanged() 取代 Prism 的 RaiseCanExecuteChanged()。
     /// </summary>
     public void RefreshCanExecute()
     {

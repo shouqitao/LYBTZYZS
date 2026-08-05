@@ -13,14 +13,14 @@ using LYBT.Shared.Models.Contracts.Registration;
 namespace LYBT.Desktop.Foundation.Http.Clients;
 
 /// <summary>
-/// Registration management API client — wraps IRegistrationApi (Refit) to implement IApiClientRegistrations.
+/// 挂号管理 API 客户端——包装 IRegistrationApi（Refit）以实现 IApiClientRegistrations。
 /// </summary>
 internal sealed class RegistrationApiClient : IApiClientRegistrations
 {
     private readonly IRegistrationApi _api;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="RegistrationApiClient"/>.
+    /// 初始化 <see cref="RegistrationApiClient"/> 类的新实例。
     /// </summary>
     /// <param name="api">Refit-generated registration API client.</param>
     public RegistrationApiClient(IRegistrationApi api)

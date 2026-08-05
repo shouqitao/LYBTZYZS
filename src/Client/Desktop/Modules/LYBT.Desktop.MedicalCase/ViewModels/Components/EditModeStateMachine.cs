@@ -5,9 +5,9 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.MedicalCase.ViewModels.Components;
 
 /// <summary>
-/// Transition-table driven edit mode state machine for MedicalCaseWorkspaceViewModel (US-MC-011).
-/// Follows AuthenticationStateMachine pattern: Dictionary transition table, thread-safe lock,
-/// events raised outside lock to prevent deadlock.
+/// 由转换表驱动的 MedicalCaseWorkspaceViewModel 编辑模式状态机（US-MC-011）。
+/// 遵循 AuthenticationStateMachine 模式：Dictionary 转换表、线程安全锁、
+/// 在锁外触发事件以防止死锁。
 /// </summary>
 public class EditModeStateMachine : IEditModeStateMachine
 {
@@ -19,8 +19,8 @@ public class EditModeStateMachine : IEditModeStateMachine
     private bool _isProcessingTransition;
 
     /// <summary>
-    /// Transition table: (CurrentState, Event) -> NextState.
-    /// _returnState handles Saving and LeavingConfirming rollback paths.
+    /// 转换表：（当前状态, 事件）-> 下一状态。
+    /// _returnState 处理 Saving 和 LeavingConfirming 的回滚路径。
     /// </summary>
     private static readonly Dictionary<(WorkspaceEditState, WorkspaceEditEvent), WorkspaceEditState> Transitions = new()
     {
@@ -69,7 +69,7 @@ public class EditModeStateMachine : IEditModeStateMachine
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    /// <summary>Internal constructor for tests — allows setting initial state directly.</summary>
+    /// <summary>供测试使用的内部构造函数——允许直接设置初始状态。</summary>
     internal EditModeStateMachine(ILogger<EditModeStateMachine> logger, WorkspaceEditState initialState)
         : this(logger)
     {

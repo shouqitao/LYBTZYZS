@@ -6,7 +6,7 @@ using LYBT.Shared.Models.Contracts.Diagnostics;
 namespace LYBT.Desktop.Foundation.Http.Clients;
 
 /// <summary>
-/// Diagnostics API client — wraps IDiagnosticsApi (Refit) to implement IApiClientDiagnostics.
+/// 诊断 API 客户端——包装 IDiagnosticsApi（Refit）以实现 IApiClientDiagnostics。
 /// </summary>
 internal sealed class DiagnosticsApiClient : IApiClientDiagnostics
 {

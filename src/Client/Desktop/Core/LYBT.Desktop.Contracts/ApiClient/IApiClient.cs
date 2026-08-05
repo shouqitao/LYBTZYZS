@@ -13,39 +13,39 @@
 namespace LYBT.Desktop.Contracts.ApiClient;
 
 /// <summary>
-/// Unified API client that aggregates all domain-specific API sub-interfaces.
-/// Replaces direct dependency on individual Refit interfaces (IHerbApi, IPatientApi, etc.)
-/// and HttpXxxRepository raw HttpClient usage.
+/// 聚合所有领域专用 API 子接口的统一 API 客户端。
+/// 取代对单个 Refit 接口（IHerbApi、IPatientApi 等）
+/// 以及 HttpXxxRepository 原生 HttpClient 用法的直接依赖。
 /// </summary>
 public interface IApiClient
 {
-    /// <summary>Authentication endpoints (login, logout, refresh, validate).</summary>
+    /// <summary>认证端点（登录、登出、刷新、校验）。</summary>
     IApiClientAuth Auth { get; }
 
-    /// <summary>User management endpoints (CRUD, password, profile).</summary>
+    /// <summary>用户管理端点（CRUD、密码、个人资料）。</summary>
     IApiClientUsers Users { get; }
 
-    /// <summary>Patient management endpoints (CRUD, import/export, batch operations).</summary>
+    /// <summary>患者管理端点（CRUD、导入/导出、批量操作）。</summary>
     IApiClientPatients Patients { get; }
 
-    /// <summary>Herb management endpoints (CRUD, import/export, batch operations).</summary>
+    /// <summary>药材管理端点（CRUD、导入/导出、批量操作）。</summary>
     IApiClientHerbs Herbs { get; }
 
-    /// <summary>Formula management endpoints (CRUD, clone, import/export, batch operations).</summary>
+    /// <summary>验方管理端点（CRUD、克隆、导入/导出、批量操作）。</summary>
     IApiClientFormulas Formulas { get; }
 
-    /// <summary>Medical case endpoints (CRUD, status transitions, prescriptions).</summary>
+    /// <summary>医案端点（CRUD、状态流转、处方）。</summary>
     IApiClientMedicalCases MedicalCases { get; }
 
-    /// <summary>Registration endpoints (CRUD, queue, visit management).</summary>
+    /// <summary>挂号端点（CRUD、队列、就诊管理）。</summary>
     IApiClientRegistrations Registrations { get; }
 
-    /// <summary>Report endpoints (daily income, consultations, herb usage).</summary>
+    /// <summary>报表端点（日收入、就诊、药材用量）。</summary>
     IApiClientReports Reports { get; }
 
-    /// <summary>Server deployment endpoints (upload, restart).</summary>
+    /// <summary>服务器部署端点（上传、重启）。</summary>
     IApiClientDeploy Deploy { get; }
 
-    /// <summary>Diagnostics/logging endpoints (status, enable/disable, level).</summary>
+    /// <summary>诊断/日志端点（状态、启用/禁用、级别）。</summary>
     IApiClientDiagnostics Diagnostics { get; }
 }

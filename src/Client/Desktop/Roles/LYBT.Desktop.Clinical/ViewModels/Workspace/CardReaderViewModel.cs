@@ -16,8 +16,8 @@ using CommunityToolkit.Mvvm.Input;
 namespace LYBT.Desktop.Clinical.ViewModels.Workspace;
 
 /// <summary>
-/// Child ViewModel for card reader operations.
-/// Replaces CardReaderWorkspaceHandler's callback-based design with Composite VM pattern.
+/// 读卡器操作的子级 ViewModel。
+/// 用复合 ViewModel 模式取代 CardReaderWorkspaceHandler 基于回调的设计。
 /// </summary>
 public partial class CardReaderViewModel : ChildViewModelBase
 {
@@ -35,17 +35,17 @@ public partial class CardReaderViewModel : ChildViewModelBase
     #region Properties
 
     /// <summary>
-    /// Whether the card reader is connected (delegates to service).
+    /// 读卡器是否已连接（委托给服务）。
     /// </summary>
     public bool IsConnected => _cardReaderService.IsConnected;
 
     /// <summary>
-    /// Whether auto-read mode is enabled (delegates to service).
+    /// 是否启用了自动读卡模式（委托给服务）。
     /// </summary>
     public bool IsAutoReadEnabled => _cardReaderService.IsAutoReadEnabled;
 
     /// <summary>
-    /// Whether a card read operation is in progress.
+    /// 读卡操作是否正在进行中。
     /// </summary>
     public bool IsReading
     {
@@ -54,7 +54,7 @@ public partial class CardReaderViewModel : ChildViewModelBase
     }
 
     /// <summary>
-    /// Current status message for the card reader.
+    /// 读卡器的当前状态消息。
     /// </summary>
     public string StatusMessage
     {

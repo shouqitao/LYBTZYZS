@@ -30,8 +30,8 @@ public record CompletenessCheck(
 }
 
 /// <summary>
-/// Immutable workspace state record. Replaces 30+ inline properties + RaiseEditStateProperties().
-/// Use 'with' expressions for state transitions; single OnPropertyChanged(nameof(State)) in parent VM.
+/// 不可变工作区状态记录。取代 30+ 个内联属性 + RaiseEditStateProperties()。
+/// 状态转换使用 'with' 表达式；父级 ViewModel 中单个 OnPropertyChanged(nameof(State))。
 /// </summary>
 public record WorkspaceState(
     EditState EditState = EditState.Editing,
@@ -52,8 +52,8 @@ public record WorkspaceState(
     public bool IsHistoricalEditMode => EditType == EditType.EditCompleted;
 
     /// <summary>
-    /// Show persistent amber edit-mode banner (US-MC-011).
-    /// True when user is actively editing (Editing or DirtyEditing state machine state).
+    /// 显示持久琥珀色编辑模式横幅（US-MC-011）。
+    /// 用户正在编辑（状态机处于 Editing 或 DirtyEditing）时为 true。
     /// </summary>
     public bool ShowEditBanner => IsEditing;
 

@@ -16,8 +16,8 @@ using Microsoft.Extensions.Options;
 namespace LYBT.LocalWebAPI.Auth;
 
 /// <summary>
-/// Local JWT configuration for the embedded Web API.
-/// Simplified to use a fixed HMAC-SHA256 key and 1-year expiry.
+/// 嵌入式 Web API 的本地 JWT 配置。
+/// 简化为固定 HMAC-SHA256 密钥和 1 年有效期。
 /// </summary>
 public static class LocalJwtConfig
 {
@@ -38,7 +38,7 @@ public static class LocalJwtConfig
     }
 
     /// <summary>
-    /// Configure JWT authentication/authorization services.
+    /// 配置 JWT 认证/授权服务。
     /// </summary>
     public static void ConfigureServices(IServiceCollection services, LocalJwtOptions jwtOptions)
     {
@@ -95,8 +95,8 @@ public static class LocalJwtConfig
     }
 
     /// <summary>
-    /// Generate a JWT for the given Identity user.
-    /// Subject: user.Id, Role claim (first Identity role), 365 days expiry.
+    /// 为给定 Identity 用户生成 JWT。
+    /// Subject：user.Id，Role 声明（第一个 Identity 角色），365 天有效期。
     /// </summary>
     public static string GenerateToken(ApplicationUser user, IList<string> roles)
     {

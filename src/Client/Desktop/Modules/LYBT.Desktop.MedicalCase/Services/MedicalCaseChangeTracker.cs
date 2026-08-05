@@ -6,8 +6,8 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 namespace LYBT.Desktop.MedicalCase.Services;
 
 /// <summary>
-/// Tracks changes to a MedicalCase aggregate by comparing current state against a deep-copied baseline.
-/// Extracted from MedicalCaseService for SRP.
+/// 通过将当前状态与深拷贝基线比较来跟踪 MedicalCase 聚合的变化。
+/// 从 MedicalCaseService 中提取，遵循单一职责原则。
 /// </summary>
 public class MedicalCaseChangeTracker
 {

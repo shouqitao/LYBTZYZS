@@ -5,8 +5,8 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Infrastructure.ViewModels.Composition;
 
 /// <summary>
-/// Base class for child ViewModels in the Composite VM pattern.
-/// Provides access to parent host operations and logging.
+/// 复合 ViewModel 模式中子级 ViewModel 的基类。
+/// 提供对父级宿主操作和日志的访问。
 /// </summary>
 public abstract class ChildViewModelBase : ObservableObject, IDisposable
 {
@@ -21,8 +21,8 @@ public abstract class ChildViewModelBase : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Initialize the child VM (data loading, subscriptions, etc.).
-    /// Called by parent VM after navigation lifecycle.
+    /// 初始化子级 ViewModel（数据加载、订阅等）。
+    /// 由父级 ViewModel 在导航生命周期后调用。
     /// </summary>
     public virtual Task InitializeAsync() => Task.CompletedTask;
 

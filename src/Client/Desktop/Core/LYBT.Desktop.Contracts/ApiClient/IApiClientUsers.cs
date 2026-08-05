@@ -12,7 +12,7 @@ using LYBT.Shared.Models.Contracts.Users;
 namespace LYBT.Desktop.Contracts.ApiClient;
 
 /// <summary>
-/// User management API sub-interface — CRUD, password management, batch operations.
+/// 用户管理 API 子接口——CRUD、密码管理、批量操作。
 /// </summary>
 /// <remarks>
 /// <para>Combines methods from IUserApi (remote) and ILocalUserApi (local).</para>
@@ -21,7 +21,7 @@ namespace LYBT.Desktop.Contracts.ApiClient;
 public interface IApiClientUsers
 {
     /// <summary>
-    /// Get user list with pagination.
+    /// 分页获取用户列表。
     /// </summary>
     /// <param name="page">Page number (default 1).</param>
     /// <param name="pageSize">Page size (default 20).</param>
@@ -32,32 +32,32 @@ public interface IApiClientUsers
         string? keyword = null);
 
     /// <summary>
-    /// Get user detail by ID.
+    /// 按 ID 获取用户详情。
     /// </summary>
     /// <param name="id">User ID.</param>
     Task<ApiResponse<UserDetailDto>> GetUserByIdAsync(Guid id);
 
     /// <summary>
-    /// Create a new user.
+    /// 创建新用户。
     /// </summary>
     /// <param name="request">User input data.</param>
     Task<ApiResponse<UserDetailDto>> CreateUserAsync(UserInputDto request);
 
     /// <summary>
-    /// Update an existing user.
+    /// 更新现有用户。
     /// </summary>
     /// <param name="id">User ID.</param>
     /// <param name="request">User input data.</param>
     Task<ApiResponse<UserDetailDto>> UpdateUserAsync(Guid id, UserInputDto request);
 
     /// <summary>
-    /// Delete a user (soft delete).
+    /// 删除用户（软删除）。
     /// </summary>
     /// <param name="id">User ID.</param>
     Task<ApiResponse> DeleteUserAsync(Guid id);
 
     /// <summary>
-    /// Change user profile.
+    /// 修改用户个人资料。
     /// Issue #1891
     /// </summary>
     /// <param name="id">User ID.</param>
@@ -65,7 +65,7 @@ public interface IApiClientUsers
     Task<ApiResponse<UserDetailDto>> ChangeProfileAsync(Guid id, ChangeProfileDto request);
 
     /// <summary>
-    /// Change user password.
+    /// 修改用户密码。
     /// Issue #1887-1892
     /// </summary>
     /// <param name="id">User ID.</param>
@@ -73,7 +73,7 @@ public interface IApiClientUsers
     Task<ApiResponse> ChangePasswordAsync(Guid id, ChangePasswordRequest request);
 
     /// <summary>
-    /// Admin reset user password.
+    /// 管理员重置用户密码。
     /// Issue #1910
     /// </summary>
     /// <param name="id">User ID.</param>
@@ -81,13 +81,13 @@ public interface IApiClientUsers
     Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequestDto request);
 
     /// <summary>
-    /// Toggle user status (enable/disable).
+    /// 切换用户状态（启用/禁用）。
     /// </summary>
     /// <param name="id">User ID.</param>
     Task<ApiResponse<UserDetailDto>> ToggleStatusAsync(Guid id);
 
     /// <summary>
-    /// Batch delete users.
+    /// 批量删除用户。
     /// </summary>
     /// <param name="request">Batch delete input with IDs.</param>
     Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request);
@@ -95,19 +95,19 @@ public interface IApiClientUsers
     // ========== Local-only methods ==========
 
     /// <summary>
-    /// Restore a soft-deleted user.
+    /// 恢复软删除的用户。
     /// </summary>
     /// <param name="id">User ID.</param>
     Task<ApiResponse<UserDetailDto>> RestoreAsync(Guid id);
 
     /// <summary>
-    /// Batch enable users.
+    /// 批量启用用户。
     /// </summary>
     /// <param name="request">Batch input with IDs.</param>
     Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request);
 
     /// <summary>
-    /// Batch disable users.
+    /// 批量禁用用户。
     /// </summary>
     /// <param name="request">Batch input with IDs.</param>
     Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request);
@@ -115,7 +115,7 @@ public interface IApiClientUsers
     // ========== Local-only methods ==========
 
     /// <summary>
-    /// Get current authenticated user (local mode only).
+    /// 获取当前已认证用户（仅本地模式）。
     /// </summary>
     Task<UserDetailDto> GetCurrentUserAsync();
 }

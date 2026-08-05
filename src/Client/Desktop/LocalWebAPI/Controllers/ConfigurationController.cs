@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.LocalWebAPI.Controllers;
 
 /// <summary>
-/// Configuration controller: in-memory key/value configuration store.
+/// 配置控制器：内存键值配置存储。
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]

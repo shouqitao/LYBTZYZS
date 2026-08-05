@@ -9,7 +9,7 @@ using Prism.Ioc;
 namespace LYBT.Desktop.Shell.Services;
 
 /// <summary>
-/// Runs the startup pipeline in the background after the main window is shown.
+/// 在主窗口显示后在后台运行启动管道。
 /// </summary>
 public class AppStartupOrchestrator
 {

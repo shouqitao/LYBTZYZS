@@ -6,12 +6,12 @@ using Refit;
 namespace LYBT.Desktop.Foundation.Http;
 
 /// <summary>
-/// Extension methods for registering <see cref="RefitApiClient"/> in the Prism DryIoc container.
+/// 在 Prism DryIoc 容器中注册 <see cref="RefitApiClient"/> 的扩展方法。
 /// </summary>
 public static class RefitApiClientExtensions
 {
     /// <summary>
-    /// Registers <see cref="IApiClient"/> as a singleton backed by <see cref="RefitApiClient"/>.
+    /// 注册 <see cref="IApiClient"/> 为基于 <see cref="RefitApiClient"/> 的单例。
     /// </summary>
     /// <remarks>
     /// <para>The <see cref="RefitApiClient"/> lazily creates Refit-generated HTTP clients for each

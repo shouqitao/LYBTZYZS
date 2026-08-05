@@ -10,9 +10,9 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.MedicalCase.ViewModels.Workspace;
 
 /// <summary>
-/// Child VM for prescription data editing.
-/// Wraps PrescriptionItemViewModel, handles DTO initialization and collection change notifications.
-/// Notifies parent when Items collection changes for state recalculation (CanComplete, CanPrint).
+/// 处方数据编辑的子级 ViewModel。
+/// 包装 PrescriptionItemViewModel，处理 DTO 初始化和集合变更通知。
+/// Items 集合变化时通知父级以重新计算状态（CanComplete、CanPrint）。
 /// </summary>
 public class PrescriptionEditorViewModel : ChildViewModelBase
 {
@@ -36,8 +36,8 @@ public class PrescriptionEditorViewModel : ChildViewModelBase
     }
 
     /// <summary>
-    /// Whether the prescription has any herb items.
-    /// Used by parent for state computation (CanPrint, CanComplete).
+    /// 处方是否包含任何药材条目。
+    /// 父级用于状态计算（CanPrint、CanComplete）。
     /// </summary>
     public bool HasItems => Prescription.HasItems;
 
@@ -50,7 +50,7 @@ public class PrescriptionEditorViewModel : ChildViewModelBase
     }
 
     /// <summary>
-    /// Initialize from existing prescription DTO (resume/view case).
+    /// 从现有处方 DTO 初始化（恢复/查看医案）。
     /// </summary>
     public void InitializeFromDto(PrescriptionDetailDto dto)
     {
@@ -58,7 +58,7 @@ public class PrescriptionEditorViewModel : ChildViewModelBase
     }
 
     /// <summary>
-    /// Initialize for new case creation.
+    /// 为新建医案初始化。
     /// </summary>
     public void InitializeForNewCase()
     {

@@ -19,9 +19,8 @@ using Refit;
 namespace LYBT.Desktop.Foundation.Http;
 
 /// <summary>
-/// Remote API client implementation using Refit-generated HTTP clients.
-/// Implements <see cref="IApiClient"/> by creating Refit instances for each
-/// domain API and wrapping them in adapter classes.
+/// 使用 Refit 生成的 HTTP 客户端的远程 API 客户端实现。
+/// 为每个领域 API 创建 Refit 实例并将其包装在适配器类中实现 <see cref="IApiClient"/>。
 /// </summary>
 /// <remarks>
 /// <para>Each property lazily creates a Refit instance via <see cref="RestService.For{T}(HttpClient, RefitSettings)"/>
@@ -48,7 +47,7 @@ public sealed class RefitApiClient : IApiClient
     private IApiClientDiagnostics? _diagnostics;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="RefitApiClient"/>.
+    /// 初始化 <see cref="RefitApiClient"/> 的新实例。
     /// </summary>
     /// <param name="httpClient">
     /// Shared HttpClient with the configured handler chain

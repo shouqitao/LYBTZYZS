@@ -18,9 +18,8 @@ using Refit;
 namespace LYBT.Desktop.Foundation.Http;
 
 /// <summary>
-/// Runtime-switchable API client that delegates to either
-/// <see cref="RefitApiClient"/> or <see cref="HttpClientApiClient"/>
-/// based on the connection URL.
+/// 运行时切换的 API 客户端，根据连接 URL
+/// 委托给 <see cref="RefitApiClient"/> 或 <see cref="HttpClientApiClient"/>。
 /// </summary>
 public sealed class SwitchingApiClient : IApiClient, IDisposable
 {

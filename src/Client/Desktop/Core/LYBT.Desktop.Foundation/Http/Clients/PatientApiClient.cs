@@ -14,14 +14,14 @@ using LYBT.Shared.Models.Contracts.Patients;
 namespace LYBT.Desktop.Foundation.Http.Clients;
 
 /// <summary>
-/// Patient management API client — wraps IPatientApi (Refit) to implement IApiClientPatients.
+/// 患者管理 API 客户端——包装 IPatientApi（Refit）以实现 IApiClientPatients。
 /// </summary>
 internal sealed class PatientApiClient : IApiClientPatients
 {
     private readonly IPatientApi _api;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="PatientApiClient"/>.
+    /// 初始化 <see cref="PatientApiClient"/> 类的新实例。
     /// </summary>
     /// <param name="api">Refit-generated patient API client.</param>
     public PatientApiClient(IPatientApi api)

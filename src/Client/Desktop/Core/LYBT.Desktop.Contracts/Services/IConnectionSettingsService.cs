@@ -10,45 +10,45 @@
 namespace LYBT.Desktop.Contracts.Services;
 
 /// <summary>
-/// Manages the active API connection URL and persists it across sessions.
+/// 管理活动 API 连接 URL，并在会话之间持久化保存。
 /// </summary>
 public interface IConnectionSettingsService
 {
-    /// <summary>Current connection URL (e.g., "http://192.168.190.248:5000").</summary>
+    /// <summary>当前连接 URL（例如 "http://192.168.190.248:5000"）。</summary>
     string CurrentUrl { get; }
 
     /// <summary>
-    /// Whether the current URL points to a local service
-    /// (contains "127.0.0.1" or "localhost").
+    /// 当前 URL 是否指向本地服务
+    /// （包含 "127.0.0.1" 或 "localhost"）。
     /// </summary>
     bool IsLocal { get; }
 
-    /// <summary>LocalWebAPI fixed address (always http://localhost:5300).</summary>
+    /// <summary>LocalWebAPI 固定地址（始终为 http://localhost:5300）。</summary>
     string LocalUrl { get; }
 
-    /// <summary>Saved remote server URL (persisted in appsettings.json).</summary>
+    /// <summary>已保存的远程服务器 URL（持久化于 appsettings.json）。</summary>
     string RemoteUrl { get; }
 
-    /// <summary>Last preferred mode: "Local" or "Remote" (persisted).</summary>
+    /// <summary>上次首选模式："Local" 或 "Remote"（已持久化）。</summary>
     string PreferredMode { get; }
 
     /// <summary>
-    /// Set a new connection URL, persist it, and notify subscribers.
+    /// 设置新的连接 URL，持久化保存并通知订阅者。
     /// </summary>
     /// <param name="url">The new URL (e.g., "http://192.168.190.248:5000").</param>
     Task SetUrlAsync(string url);
 
-    /// <summary>Save the remote URL to persistent storage.</summary>
+    /// <summary>将远程 URL 保存到持久化存储。</summary>
     Task SaveRemoteUrlAsync(string url);
 
-    /// <summary>Save the preferred mode to persistent storage.</summary>
+    /// <summary>将首选模式保存到持久化存储。</summary>
     Task SavePreferredModeAsync(string mode);
 
-    /// <summary>Fires when the connection URL changes. Payload is the new URL.</summary>
+    /// <summary>连接 URL 变化时触发。载荷为新 URL。</summary>
     event EventHandler<string>? UrlChanged;
 
     /// <summary>
-    /// Validates whether a URL string is a well-formed HTTP URL.
+    /// 验证 URL 字符串是否为格式正确的 HTTP URL。
     /// </summary>
     /// <param name="url">URL string to validate.</param>
     /// <returns>True if the URL starts with "http://" or "https://" and is a valid URI.</returns>

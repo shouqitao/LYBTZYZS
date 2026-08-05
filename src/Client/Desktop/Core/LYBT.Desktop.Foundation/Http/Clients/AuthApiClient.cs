@@ -13,14 +13,14 @@ using LYBT.Shared.Models.Contracts.Common;
 namespace LYBT.Desktop.Foundation.Http.Clients;
 
 /// <summary>
-/// Authentication API client — wraps IAuthApi (Refit) to implement IApiClientAuth.
+/// 认证 API 客户端——包装 IAuthApi（Refit）以实现 IApiClientAuth。
 /// </summary>
 internal sealed class AuthApiClient : IApiClientAuth
 {
     private readonly IAuthApi _api;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="AuthApiClient"/>.
+    /// 初始化 <see cref="AuthApiClient"/> 类的新实例。
     /// </summary>
     /// <param name="api">Refit-generated authentication API client.</param>
     public AuthApiClient(IAuthApi api)

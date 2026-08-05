@@ -11,7 +11,7 @@ using LYBT.Shared.Models.Contracts.Formula;
 namespace LYBT.Desktop.Contracts.ApiClient;
 
 /// <summary>
-/// Formula management API sub-interface — CRUD, clone, import/export, batch operations.
+/// 验方管理 API 子接口——CRUD、克隆、导入/导出、批量操作。
 /// </summary>
 /// <remarks>
 /// <para>Combines methods from IFormulaApi (remote) and ILocalFormulaApi (local).</para>
@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Contracts.ApiClient;
 public interface IApiClientFormulas
 {
     /// <summary>
-    /// Get formula list with pagination and optional category filter.
+    /// 分页获取验方列表，支持可选的分类筛选。
     /// </summary>
     /// <param name="page">Page number (default 1).</param>
     /// <param name="pageSize">Page size (default 20).</param>
@@ -33,92 +33,92 @@ public interface IApiClientFormulas
         string? category = null);
 
     /// <summary>
-    /// Get formula detail by ID.
+    /// 按 ID 获取验方详情。
     /// </summary>
     /// <param name="id">Formula ID.</param>
     Task<ApiResponse<FormulaDetailDto>> GetFormulaByIdAsync(Guid id);
 
     /// <summary>
-    /// Create a new formula.
+    /// 创建新验方。
     /// </summary>
     /// <param name="request">Formula input data.</param>
     Task<ApiResponse<FormulaDetailDto>> CreateFormulaAsync(FormulaInputDto request);
 
     /// <summary>
-    /// Update an existing formula.
+    /// 更新现有验方。
     /// </summary>
     /// <param name="id">Formula ID.</param>
     /// <param name="request">Formula input data.</param>
     Task<ApiResponse<FormulaDetailDto>> UpdateFormulaAsync(Guid id, FormulaInputDto request);
 
     /// <summary>
-    /// Delete a formula (soft delete).
+    /// 删除验方（软删除）。
     /// </summary>
     /// <param name="id">Formula ID.</param>
     Task<ApiResponse> DeleteFormulaAsync(Guid id);
 
     /// <summary>
-    /// Clone a formula.
+    /// 克隆验方。
     /// </summary>
     /// <param name="id">Source formula ID.</param>
     Task<ApiResponse<FormulaDetailDto>> CloneFormulaAsync(Guid id);
 
     /// <summary>
-    /// Toggle formula status (enable/disable).
+    /// 切换验方状态（启用/禁用）。
     /// </summary>
     /// <param name="id">Formula ID.</param>
     Task<ApiResponse<FormulaDetailDto>> ToggleStatusAsync(Guid id);
 
     /// <summary>
-    /// Batch delete formulas.
+    /// 批量删除验方。
     /// </summary>
     /// <param name="request">Batch delete input with IDs.</param>
     Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request);
 
     /// <summary>
-    /// Batch import formula data.
+    /// 批量导入验方数据。
     /// </summary>
     /// <param name="request">Batch import input data.</param>
     Task<ApiResponse<FormulaBatchImportResultDto>> BatchImportAsync(FormulaBatchImportInputDto request);
 
     /// <summary>
-    /// Export formula data to Excel.
+    /// 将验方数据导出到 Excel。
     /// </summary>
     /// <param name="category">Category filter (optional).</param>
     /// <returns>Excel file stream with formula data.</returns>
     Task<HttpResponseMessage> ExportFormulasAsync(string? category = null);
 
     /// <summary>
-    /// Download formula import template.
+    /// 下载验方导入模板。
     /// </summary>
     /// <returns>Template file stream.</returns>
     Task<HttpResponseMessage> ExportTemplateAsync();
 
     /// <summary>
-    /// Restore a soft-deleted formula.
+    /// 恢复软删除的验方。
     /// </summary>
     /// <param name="id">Formula ID.</param>
     Task<ApiResponse<FormulaDetailDto>> RestoreAsync(Guid id);
 
     /// <summary>
-    /// Batch enable formulas.
+    /// 批量启用验方。
     /// </summary>
     /// <param name="request">Batch operation input with IDs.</param>
     Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request);
 
     /// <summary>
-    /// Batch disable formulas.
+    /// 批量禁用验方。
     /// </summary>
     /// <param name="request">Batch operation input with IDs.</param>
     Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request);
 
     /// <summary>
-    /// Get formulas pending validation.
+    /// 获取待校验的验方。
     /// </summary>
     Task<ApiResponse<List<FormulaListDto>>> GetPendingValidationAsync();
 
     /// <summary>
-    /// Validate a formula herb item (bind to system herb catalog).
+    /// 校验验方中的药材条目（绑定到系统药材库）。
     /// </summary>
     /// <param name="formulaId">Formula ID.</param>
     /// <param name="herbItemId">Herb item ID in the formula.</param>
@@ -131,7 +131,7 @@ public interface IApiClientFormulas
     // ========== Local-only methods ==========
 
     /// <summary>
-    /// Get all formula categories (local mode only).
+    /// 获取全部验方分类（仅本地模式）。
     /// </summary>
     Task<List<string>> GetCategoriesAsync();
 }

@@ -5,9 +5,9 @@ using LYBT.Shared.Models.Contracts.Patients;
 namespace LYBT.Desktop.MedicalCase.Interfaces;
 
 /// <summary>
-/// Read-only context for MedicalCase child VMs.
-/// Implemented by MedicalCaseWorkspaceViewModel.
-/// Child VMs use this to read current workspace state without coupling to parent.
+/// 医案子级 ViewModel 的只读上下文。
+/// 由 MedicalCaseWorkspaceViewModel 实现。
+/// 子级 ViewModel 用它读取当前工作区状态而无需耦合到父级。
 /// </summary>
 public interface IMedicalCaseWorkspaceContext
 {

@@ -13,8 +13,8 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Desktop.Contracts.ApiClient;
 
 /// <summary>
-/// Medical case API sub-interface — CRUD, status transitions, prescriptions.
-/// Largest API interface with 19+ methods.
+/// 医案 API 子接口——CRUD、状态流转、处方。
+/// 最大的 API 接口，含 19+ 个方法。
 /// </summary>
 /// <remarks>
 /// <para>Combines methods from IMedicalCaseApi (remote) and ILocalMedicalCaseApi (local).</para>
@@ -23,7 +23,7 @@ namespace LYBT.Desktop.Contracts.ApiClient;
 public interface IApiClientMedicalCases
 {
     /// <summary>
-    /// Get medical case list with pagination.
+    /// 分页获取医案列表。
     /// </summary>
     /// <param name="page">Page number (default 1).</param>
     /// <param name="pageSize">Page size (default 20).</param>
@@ -36,7 +36,7 @@ public interface IApiClientMedicalCases
         bool includeAllDoctors = false);
 
     /// <summary>
-    /// Unified medical case query endpoint.
+    /// 统一医案查询端点。
     /// </summary>
     /// <param name="queryType">Query type filter.</param>
     /// <param name="patientId">Patient ID (required for ByPatient/Unfinished/Recent).</param>
@@ -57,19 +57,19 @@ public interface IApiClientMedicalCases
         int? limit = null);
 
     /// <summary>
-    /// Get medical case detail by ID.
+    /// 按 ID 获取医案详情。
     /// </summary>
     /// <param name="id">Medical case ID.</param>
     Task<ApiResponse<MedicalCaseDetailDto>> GetMedicalCaseByIdAsync(Guid id);
 
     /// <summary>
-    /// Get pending cases (Status=Draft/Active).
+    /// 获取未完成医案（Status=Draft/Active）。
     /// </summary>
     /// <param name="patientId">Patient ID filter (optional).</param>
     Task<ApiResponse<List<PendingMedicalCaseDto>>> GetPendingCasesAsync(Guid? patientId = null);
 
     /// <summary>
-    /// Cross-case search with pagination.
+    /// 跨医案分页搜索。
     /// </summary>
     /// <param name="patientName">Patient name filter (optional).</param>
     /// <param name="diagnosisKeyword">Diagnosis keyword filter (optional).</param>
@@ -86,21 +86,21 @@ public interface IApiClientMedicalCases
         int pageSize = 20);
 
     /// <summary>
-    /// Create a new medical case.
-    /// Epic #1961: Uses unified MedicalCaseInputDto.
+    /// 创建新医案。
+    /// Epic #1961：使用统一 MedicalCaseInputDto。
     /// </summary>
     /// <param name="request">Medical case input data.</param>
     Task<ApiResponse<MedicalCaseDetailDto>> CreateMedicalCaseAsync(MedicalCaseInputDto request);
 
     /// <summary>
-    /// Delete a medical case (soft delete).
+    /// 删除医案（软删除）。
     /// </summary>
     /// <param name="id">Medical case ID.</param>
     Task<ApiResponse> DeleteMedicalCaseAsync(Guid id);
 
     /// <summary>
-    /// Set prescription flag.
-    /// Task 3.4 (#1661): Auto-save on RadioBox change.
+    /// 设置处方标志。
+    /// Task 3.4 (#1661)：RadioBox 变化时自动保存。
     /// </summary>
     /// <param name="medicalCaseId">Medical case ID.</param>
     /// <param name="request">Prescription flag request.</param>
@@ -109,14 +109,14 @@ public interface IApiClientMedicalCases
         SetPrescriptionFlagRequest request);
 
     /// <summary>
-    /// Close a medical case (mark as Completed).
+    /// 关闭医案（标记为 Completed）。
     /// Epic #1676 Phase 4 Task 4.1
     /// </summary>
     /// <param name="id">Medical case ID.</param>
     Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid id);
 
     /// <summary>
-    /// Suspend a medical case.
+    /// 挂起医案。
     /// </summary>
     /// <param name="id">Medical case ID.</param>
     /// <param name="request">Consultation input data (optional).</param>
@@ -125,7 +125,7 @@ public interface IApiClientMedicalCases
         ConsultationInputDto? request = null);
 
     /// <summary>
-    /// Cancel a medical case (soft delete + audit log).
+    /// 取消医案（软删除 + 审计日志）。
     /// </summary>
     /// <param name="id">Medical case ID.</param>
     /// <param name="request">Cancel request data (optional).</param>
@@ -134,8 +134,8 @@ public interface IApiClientMedicalCases
         CancelMedicalCaseRequestDto? request = null);
 
     /// <summary>
-    /// Update medical case status.
-    /// Issue #2243: Fix Suspend and Complete functionality.
+    /// 更新医案状态。
+    /// Issue #2243：修复挂起与完成功能。
     /// </summary>
     /// <param name="id">Medical case ID.</param>
     /// <param name="request">Status update data.</param>
@@ -144,7 +144,7 @@ public interface IApiClientMedicalCases
         MedicalCaseStatusInputDto request);
 
     /// <summary>
-    /// Aggregate save (diagnosis + prescription in one call).
+    /// 聚合保存（一次调用保存诊断 + 处方）。
     /// </summary>
     /// <param name="id">Medical case ID.</param>
     /// <param name="request">Unified input DTO with diagnosis and prescription data.</param>
@@ -153,19 +153,19 @@ public interface IApiClientMedicalCases
         MedicalCaseInputDto request);
 
     /// <summary>
-    /// Batch delete medical cases.
+    /// 批量删除医案。
     /// </summary>
     /// <param name="request">Batch delete input with IDs.</param>
     Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request);
 
     /// <summary>
-    /// Get medical case permissions for current user.
+    /// 获取当前用户的医案权限。
     /// </summary>
     /// <param name="id">Medical case ID.</param>
     Task<ApiResponse<MedicalCasePermissionsDto>> GetPermissionsAsync(Guid id);
 
     /// <summary>
-    /// Record print completion for a medical case.
+    /// 记录医案打印完成。
     /// </summary>
     /// <param name="id">Medical case ID.</param>
     /// <param name="request">Print record request.</param>
@@ -174,7 +174,7 @@ public interface IApiClientMedicalCases
         RecordPrintRequest request);
 
     /// <summary>
-    /// Get audit logs for a medical case (paginated).
+    /// 获取医案的审计日志（分页）。
     /// </summary>
     /// <param name="id">Medical case ID.</param>
     /// <param name="page">Page number (default 1).</param>

@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace LYBT.Shared.Models.Contracts.Common
 {
@@ -11,7 +11,7 @@ namespace LYBT.Shared.Models.Contracts.Common
     {
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PagedResult{T}"/> class.
+        /// 初始化 <see cref="PagedResult{T}"/> 类的新实例。
         /// UltraThink统一构造函数
         /// </summary>
         public PagedResult()
@@ -19,7 +19,7 @@ namespace LYBT.Shared.Models.Contracts.Common
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PagedResult{T}"/> class.
+        /// 初始化 <see cref="PagedResult{T}"/> 类的新实例。
         /// UltraThink统一构造函数 - 4参数版本
         /// </summary>
         public PagedResult(List<T> items, int totalCount, int currentPage, int pageSize)

@@ -6,8 +6,8 @@ using LYBT.Shared.Models.Contracts.Patients;
 namespace LYBT.Desktop.Clinical.ViewModels;
 
 /// <summary>
-/// Adapter implementation of <see cref="IMedicalCaseWorkspaceContext"/> for patient selection.
-/// Returns empty/null state because no active medical case exists until a patient is selected.
+/// 用于患者选择的 <see cref="IMedicalCaseWorkspaceContext"/> 适配器实现。
+/// 在选中患者之前不存在活动医案，因此返回空/无效状态。
 /// </summary>
 public sealed class PatientSelectionWorkspaceContext : IMedicalCaseWorkspaceContext
 {

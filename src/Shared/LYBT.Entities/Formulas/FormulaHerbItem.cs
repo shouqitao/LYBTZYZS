@@ -53,7 +53,7 @@ namespace LYBT.Entities.Formulas
         public bool IsValidated { get; set; } = false;
 
         /// <summary>
-        /// Gets or sets 药材名称.
+        /// 获取或设置药材名称。
         /// </summary>
         [Required]
         [StringLength(100)]
@@ -67,28 +67,28 @@ namespace LYBT.Entities.Formulas
         public int Dosage { get; set; } = 1;
 
         /// <summary>
-        /// Gets or sets 单位（从药材库继承，如：克、钱、两等）.
+        /// 获取或设置单位（从药材库继承，如：克、钱、两等）。
         /// </summary>
         [StringLength(16)]
         [DisplayName("单位")]
         public string Unit { get; set; } = "g";
 
         /// <summary>
-        /// Gets or sets 用法说明（该药材的特殊用法）.
+        /// 获取或设置用法说明（该药材的特殊用法）。
         /// </summary>
         [StringLength(200)]
         [DisplayName("用法")]
         public string? Usage { get; set; }
 
         /// <summary>
-        /// Gets or sets 备注信息.
+        /// 获取或设置备注信息。
         /// </summary>
         [StringLength(200)]
         [DisplayName("备注")]
         public string? Remark { get; set; }
 
         /// <summary>
-        /// Gets or sets 炮制方法.
+        /// 获取或设置炮制方法。
         /// </summary>
         [StringLength(100)]
         [DisplayName("炮制方法")]

@@ -14,14 +14,14 @@ using LYBT.Shared.Models.Contracts.Herbs;
 namespace LYBT.Desktop.Foundation.Http.Clients;
 
 /// <summary>
-/// Herb management API client — wraps IHerbApi (Refit) to implement IApiClientHerbs.
+/// 药材管理 API 客户端——包装 IHerbApi（Refit）以实现 IApiClientHerbs。
 /// </summary>
 internal sealed class HerbApiClient : IApiClientHerbs
 {
     private readonly IHerbApi _api;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="HerbApiClient"/>.
+    /// 初始化 <see cref="HerbApiClient"/> 类的新实例。
     /// </summary>
     /// <param name="api">Refit-generated herb API client.</param>
     public HerbApiClient(IHerbApi api)

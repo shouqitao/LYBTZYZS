@@ -10,7 +10,7 @@ using Riok.Mapperly.Abstractions;
 namespace LYBT.Desktop.Patients.Repositories;
 
 /// <summary>
-/// Patient repository — routes all calls through IApiClient.
+/// 患者仓储——所有调用均通过 IApiClient 路由。
 /// </summary>
 public sealed class PatientRepository
     : ApiClientRepositoryBase<PatientListDto, PatientDetailDto>,

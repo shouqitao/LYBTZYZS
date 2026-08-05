@@ -6,7 +6,7 @@ using LYBT.Shared.Models.Contracts.Common;
 namespace LYBT.Desktop.Foundation.Http.Clients;
 
 /// <summary>
-/// Deploy API client — wraps IDeployApi (Refit) to implement IApiClientDeploy.
+/// 部署 API 客户端——包装 IDeployApi（Refit）以实现 IApiClientDeploy。
 /// </summary>
 internal sealed class DeployApiClient : IApiClientDeploy
 {

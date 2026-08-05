@@ -1,37 +1,37 @@
 namespace LYBT.Desktop.MedicalCase.Models;
 
 /// <summary>
-/// Events that drive the edit mode state machine (US-MC-011).
+/// 驱动编辑模式状态机的事件（US-MC-011）。
 /// </summary>
 public enum WorkspaceEditEvent
 {
-    /// <summary>User clicks the "Edit" button.</summary>
+    /// <summary>用户点击"编辑"按钮。</summary>
     EnterEdit = 0,
 
-    /// <summary>User cancels editing and reverts (from clean Editing state).</summary>
+    /// <summary>用户取消编辑并回退（从干净的 Editing 状态）。</summary>
     ExitEdit = 1,
 
-    /// <summary>Any data modification — transitions Editing -> DirtyEditing.</summary>
+    /// <summary>任意数据修改——将 Editing 转换为 DirtyEditing。</summary>
     MakeChange = 2,
 
-    /// <summary>User clicks Save/Suspend.</summary>
+    /// <summary>用户点击保存/挂起。</summary>
     Save = 3,
 
-    /// <summary>Save operation completed successfully.</summary>
+    /// <summary>保存操作成功完成。</summary>
     SaveCompleted = 4,
 
-    /// <summary>Save operation failed.</summary>
+    /// <summary>保存操作失败。</summary>
     SaveFailed = 5,
 
-    /// <summary>User clicks Back or triggers navigation away.</summary>
+    /// <summary>用户点击返回或触发导航离开。</summary>
     RequestLeave = 6,
 
-    /// <summary>User confirmed leave (discard or save-then-leave).</summary>
+    /// <summary>用户确认离开（放弃或先保存再离开）。</summary>
     LeaveConfirmed = 7,
 
-    /// <summary>User cancelled the leave dialog (stay).</summary>
+    /// <summary>用户取消离开对话框（留在当前页面）。</summary>
     LeaveCancelled = 8,
 
-    /// <summary>Navigation context initialization — sets state from context.</summary>
+    /// <summary>导航上下文初始化——从上下文设置状态。</summary>
     Initialize = 9
 }

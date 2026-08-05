@@ -11,7 +11,7 @@ using LYBT.Shared.Models.Contracts.Registration;
 namespace LYBT.Desktop.Contracts.ApiClient;
 
 /// <summary>
-/// Registration API sub-interface — CRUD, queue management, visit operations.
+/// 挂号 API 子接口——CRUD、队列管理、就诊操作。
 /// </summary>
 /// <remarks>
 /// <para>Combines methods from IRegistrationApi (remote) and ILocalRegistrationApi (local).</para>
@@ -20,21 +20,21 @@ namespace LYBT.Desktop.Contracts.ApiClient;
 public interface IApiClientRegistrations
 {
     /// <summary>
-    /// Create a registration (receptionist mode).
-    /// US-REG-001: Source=Receptionist, Status=Waiting
+    /// 创建挂号（分诊台模式）。
+    /// US-REG-001：Source=Receptionist，Status=Waiting
     /// </summary>
     /// <param name="request">Registration input data.</param>
     Task<ApiResponse<RegistrationDetailDto>> CreateAsync(RegistrationInputDto request);
 
     /// <summary>
-    /// Get registration detail by ID.
+    /// 按 ID 获取挂号详情。
     /// </summary>
     /// <param name="id">Registration ID.</param>
     Task<ApiResponse<RegistrationDetailDto>> GetByIdAsync(Guid id);
 
     /// <summary>
-    /// Get registration list with pagination and filters.
-    /// US-REG-007: Supports date range, patient, doctor filtering.
+    /// 分页获取挂号列表并支持筛选。
+    /// US-REG-007：支持按日期范围、患者、医生筛选。
     /// </summary>
     /// <param name="page">Page number (default 1).</param>
     /// <param name="pageSize">Page size (default 20).</param>
@@ -53,22 +53,22 @@ public interface IApiClientRegistrations
         Guid? doctorId = null);
 
     /// <summary>
-    /// Get waiting queue.
-    /// US-REG-003: Waiting status, ordered by registration time ascending.
+    /// 获取候诊队列。
+    /// US-REG-003：Waiting 状态，按挂号时间升序排列。
     /// </summary>
     /// <param name="doctorId">Doctor ID filter (optional).</param>
     Task<ApiResponse<List<RegistrationListDto>>> GetQueueAsync(Guid? doctorId = null);
 
     /// <summary>
-    /// Start visit — transition Registration to InProgress.
-    /// US-REG-003 acceptance criteria #4.
+    /// 开始就诊——将挂号流转为 InProgress。
+    /// US-REG-003 验收标准 #4。
     /// </summary>
     /// <param name="id">Registration ID.</param>
     Task<ApiResponse<Guid>> StartVisitAsync(Guid id);
 
     /// <summary>
-    /// Cancel a registration.
-    /// US-REG-004: Only Waiting status can be cancelled.
+    /// 取消挂号。
+    /// US-REG-004：仅 Waiting 状态可取消。
     /// </summary>
     /// <param name="id">Registration ID.</param>
     Task<ApiResponse> CancelAsync(Guid id);
@@ -76,19 +76,19 @@ public interface IApiClientRegistrations
     // ========== Local-only methods ==========
 
     /// <summary>
-    /// Get registration list (local mode, simple list without pagination wrapper).
+    /// 获取挂号列表（本地模式，无分页包装的简单列表）。
     /// </summary>
     /// <param name="date">Date filter (optional).</param>
     Task<List<RegistrationListDto>> GetRegistrationsAsync(DateTime? date = null);
 
     /// <summary>
-    /// Quick visit — create registration and start visit in one call (local mode only).
+    /// 快速就诊——一次调用完成创建挂号并开始就诊（仅本地模式）。
     /// </summary>
     /// <param name="request">Quick visit input data.</param>
     Task<QuickVisitResultDto> QuickVisitAsync(QuickVisitInputDto request);
 
     /// <summary>
-    /// Delete a registration (local mode only).
+    /// 删除挂号（仅本地模式）。
     /// </summary>
     /// <param name="id">Registration ID.</param>
     Task DeleteRegistrationAsync(Guid id);

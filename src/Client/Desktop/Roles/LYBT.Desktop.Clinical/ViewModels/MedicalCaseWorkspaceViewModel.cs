@@ -26,9 +26,9 @@ using Prism.Services.Dialogs;
 namespace LYBT.Desktop.Clinical.ViewModels;
 
 /// <summary>
-/// 医案工作台 - Composite ViewModel thin shell.
-/// Delegates to child VMs: ConsultationEditor, PrescriptionEditor, Commands, PendingQueue, CardReader.
-/// Implements IMedicalCaseWorkspaceContext (state reading) and IWorkspaceHost (child-to-parent operations).
+/// 医案工作台 - Composite ViewModel 薄壳。
+/// 委托给子级 ViewModel：ConsultationEditor、PrescriptionEditor、Commands、PendingQueue、CardReader。
+/// 实现 IMedicalCaseWorkspaceContext（状态读取）和 IWorkspaceHost（子级到父级操作）。
 /// </summary>
 // TODO: 超大类型，建议拆分（详见 docs/compose/reports/code-review-duplicates.md 🟡5）
 public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
@@ -42,7 +42,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     private readonly IDialogService? _dialogService;
     private readonly IToastService _toastService;
 
-    /// <summary>US-MC-011: Edit mode FSM (lifecycle tied to parent VM, not DI).</summary>
+    /// <summary>US-MC-011：编辑模式有限状态机（生命周期绑定父级 ViewModel，而非 DI）。</summary>
     private readonly IEditModeStateMachine _editStateMachine;
     private readonly WorkspaceStateManager _stateManager;
     private readonly WorkspaceNavigationHandler _navHandler;
@@ -131,8 +131,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     void IWorkspaceHost.NotifyStateChanged() => UpdateState();
 
     /// <summary>
-    /// P1-2 FIX: Request transition to edit mode by firing the state machine's EnterEdit event.
-    /// This properly transitions WorkspaceState.EditState from ReadOnly to Editing.
+    /// P1-2 修复：通过触发状态机的 EnterEdit 事件请求切换到编辑模式。
+    /// 这会将 WorkspaceState.EditState 从 ReadOnly 正确转换到 Editing。
     /// </summary>
     void IWorkspaceHost.RequestEnterEditMode()
     {

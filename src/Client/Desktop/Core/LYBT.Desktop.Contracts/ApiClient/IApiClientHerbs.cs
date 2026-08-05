@@ -11,7 +11,7 @@ using LYBT.Shared.Models.Contracts.Herbs;
 namespace LYBT.Desktop.Contracts.ApiClient;
 
 /// <summary>
-/// Herb management API sub-interface — CRUD, import/export, batch operations.
+/// 药材管理 API 子接口——CRUD、导入/导出、批量操作。
 /// </summary>
 /// <remarks>
 /// <para>Combines methods from IHerbApi (remote) and ILocalHerbApi (local).</para>
@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Contracts.ApiClient;
 public interface IApiClientHerbs
 {
     /// <summary>
-    /// Get herb list with pagination and optional category filter.
+    /// 分页获取药材列表，支持可选的分类筛选。
     /// </summary>
     /// <param name="page">Page number (default 1).</param>
     /// <param name="pageSize">Page size (default 20).</param>
@@ -33,75 +33,75 @@ public interface IApiClientHerbs
         string? category = null);
 
     /// <summary>
-    /// Get herb detail by ID.
+    /// 按 ID 获取药材详情。
     /// </summary>
     /// <param name="id">Herb ID.</param>
     Task<ApiResponse<HerbDetailDto>> GetHerbByIdAsync(Guid id);
 
     /// <summary>
-    /// Create a new herb.
+    /// 创建新药材。
     /// </summary>
     /// <param name="request">Herb input data.</param>
     Task<ApiResponse<HerbDetailDto>> CreateHerbAsync(HerbInputDto request);
 
     /// <summary>
-    /// Update an existing herb.
+    /// 更新现有药材。
     /// </summary>
     /// <param name="id">Herb ID.</param>
     /// <param name="request">Herb input data.</param>
     Task<ApiResponse<HerbDetailDto>> UpdateHerbAsync(Guid id, HerbInputDto request);
 
     /// <summary>
-    /// Delete a herb (soft delete).
+    /// 删除药材（软删除）。
     /// </summary>
     /// <param name="id">Herb ID.</param>
     Task<ApiResponse> DeleteHerbAsync(Guid id);
 
     /// <summary>
-    /// Batch import herb data.
+    /// 批量导入药材数据。
     /// </summary>
     /// <param name="request">Batch import input data.</param>
     Task<ApiResponse<HerbBatchImportResultDto>> BatchImportAsync(HerbBatchImportInputDto request);
 
     /// <summary>
-    /// Download herb import template.
+    /// 下载药材导入模板。
     /// </summary>
     /// <returns>Template file stream.</returns>
     Task<HttpResponseMessage> ExportTemplateAsync();
 
     /// <summary>
-    /// Export herb data to Excel.
+    /// 将药材数据导出到 Excel。
     /// </summary>
     /// <param name="keyword">Search keyword (optional).</param>
     /// <returns>Excel file stream with herb data.</returns>
     Task<HttpResponseMessage> ExportHerbsAsync(string? keyword = null);
 
     /// <summary>
-    /// Toggle herb status (enable/disable).
+    /// 切换药材状态（启用/禁用）。
     /// </summary>
     /// <param name="id">Herb ID.</param>
     Task<ApiResponse<HerbDetailDto>> ToggleStatusAsync(Guid id);
 
     /// <summary>
-    /// Batch delete herbs (soft delete).
+    /// 批量删除药材（软删除）。
     /// </summary>
     /// <param name="request">Batch delete input with IDs.</param>
     Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request);
 
     /// <summary>
-    /// Restore a soft-deleted herb.
+    /// 恢复软删除的药材。
     /// </summary>
     /// <param name="id">Herb ID.</param>
     Task<ApiResponse<HerbDetailDto>> RestoreAsync(Guid id);
 
     /// <summary>
-    /// Batch enable herbs.
+    /// 批量启用药材。
     /// </summary>
     /// <param name="request">Batch operation input with IDs.</param>
     Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request);
 
     /// <summary>
-    /// Batch disable herbs.
+    /// 批量禁用药材。
     /// </summary>
     /// <param name="request">Batch operation input with IDs.</param>
     Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request);
@@ -109,7 +109,7 @@ public interface IApiClientHerbs
     // ========== Local-only methods ==========
 
     /// <summary>
-    /// Get all herb categories (local mode only).
+    /// 获取全部药材分类（仅本地模式）。
     /// </summary>
     Task<List<string>> GetCategoriesAsync();
 }

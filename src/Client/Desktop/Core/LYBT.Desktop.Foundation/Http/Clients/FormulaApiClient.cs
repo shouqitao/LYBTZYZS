@@ -14,14 +14,14 @@ using LYBT.Shared.Models.Contracts.Formula;
 namespace LYBT.Desktop.Foundation.Http.Clients;
 
 /// <summary>
-/// Formula management API client — wraps IFormulaApi (Refit) to implement IApiClientFormulas.
+/// 验方管理 API 客户端——包装 IFormulaApi（Refit）以实现 IApiClientFormulas。
 /// </summary>
 internal sealed class FormulaApiClient : IApiClientFormulas
 {
     private readonly IFormulaApi _api;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="FormulaApiClient"/>.
+    /// 初始化 <see cref="FormulaApiClient"/> 类的新实例。
     /// </summary>
     /// <param name="api">Refit-generated formula API client.</param>
     public FormulaApiClient(IFormulaApi api)

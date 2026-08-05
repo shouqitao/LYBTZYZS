@@ -9,14 +9,14 @@
 namespace LYBT.Desktop.Contracts.Services;
 
 /// <summary>
-/// Read-only query interface for the current API connection.
-/// Delegates to <see cref="IConnectionSettingsService"/>.
+/// 当前 API 连接的只读查询接口。
+/// 委托给 <see cref="IConnectionSettingsService"/>。
 /// </summary>
 public interface IApiRouter
 {
-    /// <summary>Current connection URL.</summary>
+    /// <summary>当前连接 URL。</summary>
     string CurrentUrl { get; }
 
-    /// <summary>Whether the current URL points to a local service.</summary>
+    /// <summary>当前 URL 是否指向本地服务。</summary>
     bool IsLocal { get; }
 }

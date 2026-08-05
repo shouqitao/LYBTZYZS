@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 namespace LYBT.Desktop.Shell.Services;
 
 /// <summary>
-/// Starts and manages the embedded LocalWebAPI Kestrel server within the WPF process.
+/// 在 WPF 进程内启动并管理嵌入式 LocalWebAPI Kestrel 服务器。
 /// </summary>
 public sealed class EmbeddedLocalWebApiService : IEmbeddedLocalWebApiService, IDisposable
 {

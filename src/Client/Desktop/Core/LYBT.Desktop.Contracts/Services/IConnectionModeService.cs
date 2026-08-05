@@ -9,100 +9,99 @@
 namespace LYBT.Desktop.Contracts.Services;
 
 /// <summary>
-/// Connection mode qualifier. <see cref="Auto"/> is only used as a request
-/// to detect the best mode; the actual <see cref="IConnectionModeService.CurrentMode"/>
-/// resolves to either <see cref="Remote"/> or <see cref="Local"/>.
+/// 连接模式限定符。<see cref="Auto"/> 仅作为请求值用于检测最佳模式；实际的
+/// <see cref="IConnectionModeService.CurrentMode"/> 解析为 <see cref="Remote"/> 或 <see cref="Local"/>。
 /// </summary>
 public enum ConnectionMode
 {
-    /// <summary>Remote WebAPI (HTTP → SQL Server).</summary>
+    /// <summary>远程 WebAPI（HTTP → SQL Server）。</summary>
     Remote,
 
-    /// <summary>Embedded LocalWebAPI (→ SQL Server LocalDB).</summary>
+    /// <summary>嵌入式 LocalWebAPI（→ SQL Server LocalDB）。</summary>
     Local,
 
-    /// <summary>Probe remote first, fall back to local (detection request only).</summary>
+    /// <summary>优先探测远程，回退到本地（仅检测请求）。</summary>
     Auto
 }
 
 /// <summary>
-/// Detects and manages the active connection mode (Remote vs Local), providing
-/// transparent fallback when the remote server is unreachable.
+/// 检测并管理活动连接模式（Remote 或 Local），
+/// 当远程服务器不可达时提供透明的回退。
 /// </summary>
 public interface IConnectionModeService
 {
     /// <summary>
-    /// The currently effective mode. Always resolves to <see cref="ConnectionMode.Remote"/>
-    /// or <see cref="ConnectionMode.Local"/> after initialization.
+    /// 当前生效的模式。初始化后始终解析为 <see cref="ConnectionMode.Remote"/>
+    /// 或 <see cref="ConnectionMode.Local"/>。
     /// </summary>
     ConnectionMode CurrentMode { get; }
 
     /// <summary>
-    /// Localized display label for the current mode
-    /// ("远程模式" for Remote, "本地模式" for Local).
+    /// 当前模式的本地化显示标签
+    /// （Remote 为"远程模式"，Local 为"本地模式"）。
     /// </summary>
     string CurrentModeDisplay { get; }
 
-    /// <summary>True when the effective mode is <see cref="ConnectionMode.Remote"/>.</summary>
+    /// <summary>当前生效模式为 <see cref="ConnectionMode.Remote"/> 时为 true。</summary>
     bool IsRemote { get; }
 
-    /// <summary>True when the effective mode is <see cref="ConnectionMode.Local"/>.</summary>
+    /// <summary>当前生效模式为 <see cref="ConnectionMode.Local"/> 时为 true。</summary>
     bool IsLocal { get; }
 
     /// <summary>
-    /// Cached result of the last remote availability probe. Updated by
-    /// <see cref="DetectBestModeAsync"/>, <see cref="SetMode"/> and
-    /// <see cref="CheckRemoteAvailableAsync"/>. Used by the UI to enable or
-    /// disable the "switch to Remote" button.
+    /// 上次远程可用性探测的缓存结果。由
+    /// <see cref="DetectBestModeAsync"/>、<see cref="SetMode"/> 和
+    /// <see cref="CheckRemoteAvailableAsync"/> 更新。UI 据此启用或禁用
+    /// "切换到 Remote" 按钮。
     /// </summary>
     bool IsRemoteAvailable { get; }
 
-    /// <summary>API status display text with mode info (e.g., "远程 WebAPI 已连接").</summary>
+    /// <summary>含模式信息的 API 状态显示文本（例如"远程 WebAPI 已连接"）。</summary>
     string ApiStatusDisplay { get; }
 
     /// <summary>
-    /// Probe the configured remote URL and select the best mode automatically.
-    /// Falls back to Local when the remote server is unreachable.
+    /// 探测配置的远程 URL 并自动选择最佳模式。
+    /// 远程服务器不可达时回退到 Local。
     /// </summary>
     /// <returns>The resolved effective mode (Remote or Local).</returns>
     Task<ConnectionMode> DetectBestModeAsync();
 
     /// <summary>
-    /// Re-probe the configured remote URL and cache the result in
-    /// <see cref="IsRemoteAvailable"/>. Returns the probe result. No-op when
-    /// no remote URL is configured.
+    /// 重新探测配置的远程 URL，并将结果缓存到
+    /// <see cref="IsRemoteAvailable"/>。返回探测结果。未配置
+    /// 远程 URL 时不执行任何操作。
     /// </summary>
     /// <returns>True when the remote server is reachable.</returns>
     Task<bool> CheckRemoteAvailableAsync();
 
     /// <summary>
-    /// Test whether the remote WebAPI at <paramref name="url"/> is reachable.
-    /// Performs an anonymous GET against <c>{url}/api/v1/health</c>.
+    /// 测试 <paramref name="url"/> 处的远程 WebAPI 是否可达。
+    /// 对 <c>{url}/api/v1/health</c> 执行匿名 GET 请求。
     /// </summary>
     /// <param name="url">Remote server base URL (e.g., "http://192.168.1.10:5000").</param>
     /// <returns>True when the health endpoint responded successfully.</returns>
     Task<bool> TestRemoteConnectionAsync(string url);
 
     /// <summary>
-    /// Test whether the embedded LocalWebAPI is reachable on its default port.
+    /// 测试嵌入式 LocalWebAPI 是否在其默认端口上可达。
     /// </summary>
     /// <returns>True when <c>http://localhost:5000/api/health</c> responded successfully.</returns>
     Task<bool> TestLocalConnectionAsync();
 
     /// <summary>
-    /// Explicitly switch the effective mode. Updates the underlying
-    /// <see cref="IConnectionSettingsService"/> URL accordingly:
+    /// 显式切换生效模式。相应地更新底层
+    /// <see cref="IConnectionSettingsService"/> 的 URL：
     /// <list type="bullet">
-    ///   <item><see cref="ConnectionMode.Local"/> → points the URL at localhost.</item>
-    ///   <item><see cref="ConnectionMode.Remote"/> → keeps the current remote URL.</item>
-    ///   <item><see cref="ConnectionMode.Auto"/> → triggers background detection.</item>
+    ///   <item><see cref="ConnectionMode.Local"/> → 将 URL 指向 localhost。</item>
+    ///   <item><see cref="ConnectionMode.Remote"/> → 保留当前远程 URL。</item>
+    ///   <item><see cref="ConnectionMode.Auto"/> → 触发后台检测。</item>
     /// </list>
     /// </summary>
     /// <param name="mode">The mode to activate.</param>
     void SetMode(ConnectionMode mode);
 
     /// <summary>
-    /// Raised whenever <see cref="CurrentMode"/> changes. Payload is the new mode.
+    /// <see cref="CurrentMode"/> 变化时触发。载荷为新模式。
     /// </summary>
     event EventHandler<ConnectionMode>? ModeChanged;
 }

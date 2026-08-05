@@ -9,9 +9,9 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.MedicalCase.ViewModels.Workspace;
 
 /// <summary>
-/// Child VM for consultation (diagnosis) data editing.
-/// Wraps ConsultationItem for XAML binding, handles DTO initialization via ConsultationMapper.
-/// Replaces manual field-by-field copy in InitializeChildViewModels().
+/// 会诊（诊断）数据编辑的子级 ViewModel。
+/// 包装 ConsultationItem 供 XAML 绑定，通过 ConsultationMapper 处理 DTO 初始化。
+/// 取代 InitializeChildViewModels() 中逐字段复制的方式。
 /// </summary>
 public class ConsultationEditorViewModel : ChildViewModelBase
 {
@@ -33,7 +33,7 @@ public class ConsultationEditorViewModel : ChildViewModelBase
     }
 
     /// <summary>
-    /// Initialize from existing consultation DTO (resume/view case).
+    /// 从现有会诊 DTO 初始化（恢复/查看医案）。
     /// </summary>
     public void InitializeFromDto(ConsultationDetailDto dto)
     {
@@ -41,7 +41,7 @@ public class ConsultationEditorViewModel : ChildViewModelBase
     }
 
     /// <summary>
-    /// Initialize for new case creation.
+    /// 为新建医案初始化。
     /// </summary>
     public void InitializeForNewCase(string patientName, Guid patientId, Guid userId)
     {

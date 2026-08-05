@@ -239,8 +239,8 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
     #region Adapter classes for child VMs
 
     /// <summary>
-    /// Minimal IWorkspaceHost adapter for MasterDetail VM.
-    /// Delegates to ErrorHandler/DialogService from IViewModelServices.
+    /// 供 MasterDetail VM 使用的最小 IWorkspaceHost 适配器。
+    /// 委托给 IViewModelServices 中的 ErrorHandler/DialogService。
     /// </summary>
     private sealed class MasterDetailWorkspaceHost : IWorkspaceHost
     {
@@ -293,7 +293,7 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
     }
 
     /// <summary>
-    /// Minimal IMedicalCaseWorkspaceContext adapter for MasterDetail VM.
+    /// 供 MasterDetail VM 使用的最小 IMedicalCaseWorkspaceContext 适配器。
     /// </summary>
     private sealed class MasterDetailWorkspaceContext : IMedicalCaseWorkspaceContext
     {

@@ -14,7 +14,7 @@ using Prism.Ioc;
 namespace LYBT.Desktop.Foundation.Http;
 
 /// <summary>
-/// Extension methods for registering <see cref="HttpClientApiClient"/> in the Prism DryIoc container.
+/// 在 Prism DryIoc 容器中注册 <see cref="HttpClientApiClient"/> 的扩展方法。
 /// </summary>
 public static class HttpClientApiClientExtensions
 {
@@ -24,8 +24,8 @@ public static class HttpClientApiClientExtensions
     public const string HttpClientName = "LocalWebApi";
 
     /// <summary>
-    /// Registers <see cref="IApiClient"/> as a singleton backed by <see cref="HttpClientApiClient"/>,
-    /// and configures a named <see cref="HttpClient"/> via <c>IHttpClientFactory</c> with the specified base address.
+    /// 注册 <see cref="IApiClient"/> 为基于 <see cref="HttpClientApiClient"/> 的单例，
+    /// 并通过 <c>IHttpClientFactory</c> 配置带指定基地址的命名 <see cref="HttpClient"/>。
     /// </summary>
     /// <remarks>
     /// <para>The <see cref="HttpClient"/> is registered as a named client with <c>Microsoft.Extensions.Http</c>,
@@ -72,8 +72,8 @@ public static class HttpClientApiClientExtensions
     }
 
     /// <summary>
-    /// Registers <see cref="IApiClient"/> as a singleton backed by <see cref="HttpClientApiClient"/>,
-    /// using a pre-existing <see cref="IHttpClientFactory"/> from the container.
+    /// 注册 <see cref="IApiClient"/> 为基于 <see cref="HttpClientApiClient"/> 的单例，
+    /// 使用容器中已有的 <see cref="IHttpClientFactory"/>。
     /// </summary>
     /// <remarks>
     /// Use this overload when <see cref="IHttpClientFactory"/> is already configured (e.g. via
@@ -98,8 +98,8 @@ public static class HttpClientApiClientExtensions
     }
 
     /// <summary>
-    /// Minimal <see cref="IHttpClientFactory"/> implementation for LocalWebAPI mode.
-    /// Returns a shared <see cref="HttpClient"/> instance with the configured base address.
+    /// 适用于 LocalWebAPI 模式的最小 <see cref="IHttpClientFactory"/> 实现。
+    /// 返回带配置基地址的共享 <see cref="HttpClient"/> 实例。
     /// </summary>
     /// <remarks>
     /// <para>This is a lightweight fallback when <c>Microsoft.Extensions.Http</c> is not available
@@ -114,7 +114,7 @@ public static class HttpClientApiClientExtensions
         private bool _disposed;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="LocalWebApiHttpClientFactory"/>.
+        /// 初始化 <see cref="LocalWebApiHttpClientFactory"/> 的新实例。
         /// </summary>
         /// <param name="baseAddress">The base address for LocalWebAPI requests.</param>
         public LocalWebApiHttpClientFactory(Uri baseAddress)

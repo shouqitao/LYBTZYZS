@@ -21,8 +21,8 @@ namespace LYBT.Desktop.Foundation.Http;
 internal abstract class HttpApiClientBase
 {
     /// <summary>
-    /// JSON serialization options matching LocalWebAPI format:
-    /// PascalCase naming, case-insensitive deserialization.
+    /// 与 LocalWebAPI 格式匹配的 JSON 序列化选项：
+    /// PascalCase 命名、不区分大小写的反序列化。
     /// </summary>
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -98,7 +98,7 @@ internal abstract class HttpApiClientBase
     protected static ApiResponse WrapSuccess(string message = "操作成功")
         => ApiResponse.CreateSuccess(null, message);
 
-    /// <summary>Build URL with pagination + optional filter parameters.</summary>
+    /// <summary>构建带分页和可选筛选参数的 URL。</summary>
     protected static string BuildPagedUrl(string baseUrl, int page, int pageSize, params (string Key, string? Value)[] filters)
     {
         var sb = new StringBuilder($"{baseUrl}?page={page}&pageSize={pageSize}");
@@ -113,7 +113,7 @@ internal abstract class HttpApiClientBase
         return sb.ToString();
     }
 
-    /// <summary>Build URL with conditional query parameters.</summary>
+    /// <summary>构建带条件查询参数的 URL。</summary>
     protected static string BuildQueryString(string baseUrl, params (string Key, string? Value)[] parameters)
     {
         var sb = new StringBuilder(baseUrl);
@@ -130,7 +130,7 @@ internal abstract class HttpApiClientBase
         return sb.ToString();
     }
 
-    /// <summary>Unified HTTP request execution with response handling.</summary>
+    /// <summary>统一 HTTP 请求执行并处理响应。</summary>
     protected async Task<HttpResponseMessage> SendAsync(string url, HttpMethod method, object? body = null, CancellationToken ct = default)
     {
         using var client = CreateClient();
@@ -161,14 +161,14 @@ internal abstract class HttpApiClientBase
         return response;
     }
 
-    /// <summary>GET -> deserialize -> wrap in ApiResponse&lt;T&gt;.</summary>
+    /// <summary>GET -> 反序列化 -> 包装为 ApiResponse&lt;T&gt;。</summary>
     protected async Task<ApiResponse<T>> GetAndWrapAsync<T>(string url, CancellationToken ct = default)
     {
         var response = await SendAsync(url, HttpMethod.Get, ct: ct);
         return await DeserializeEnvelopeAsync<T>(response, ct);
     }
 
-    /// <summary>GET -> deserialize -> return raw T (local-only methods).</summary>
+    /// <summary>GET -> 反序列化 -> 返回裸 T（仅本地方法）。</summary>
     protected async Task<T> GetRawAsync<T>(string url, CancellationToken ct = default)
     {
         var response = await SendAsync(url, HttpMethod.Get, ct: ct);
@@ -176,22 +176,22 @@ internal abstract class HttpApiClientBase
         return envelope.Data ?? default!;
     }
 
-    /// <summary>POST with JSON body -> deserialize -> wrap in ApiResponse&lt;T&gt;.</summary>
+    /// <summary>带 JSON 请求体的 POST -> 反序列化 -> 包装为 ApiResponse&lt;T&gt;。</summary>
     protected Task<ApiResponse<T>> PostAndWrapAsync<T>(string url, object? body = null, CancellationToken ct = default)
         => SendAndWrapAsync<T>(url, HttpMethod.Post, body, ct);
 
-    /// <summary>Unified void HTTP request -> ApiResponse.</summary>
+    /// <summary>统一 void HTTP 请求 -> ApiResponse。</summary>
     protected async Task<ApiResponse> SendVoidAsync(string url, HttpMethod method, object? body = null, CancellationToken ct = default)
     {
         await SendAsync(url, method, body, ct);
         return WrapSuccess();
     }
 
-    /// <summary>POST -> non-generic ApiResponse (void operations).</summary>
+    /// <summary>POST -> 非泛型 ApiResponse（void 操作）。</summary>
     protected Task<ApiResponse> PostVoidAsync(string url, object? body = null, CancellationToken ct = default)
         => SendVoidAsync(url, HttpMethod.Post, body, ct);
 
-    /// <summary>POST -> return raw T (local-only methods).</summary>
+    /// <summary>POST -> 返回裸 T（仅本地方法）。</summary>
     protected async Task<T> PostRawAsync<T>(string url, object? body = null, CancellationToken ct = default)
     {
         var response = await SendAsync(url, HttpMethod.Post, body, ct);
@@ -199,30 +199,30 @@ internal abstract class HttpApiClientBase
         return envelope.Data ?? default!;
     }
 
-    /// <summary>PUT with JSON body -> deserialize -> wrap in ApiResponse&lt;T&gt;.</summary>
+    /// <summary>带 JSON 请求体的 PUT -> 反序列化 -> 包装为 ApiResponse&lt;T&gt;。</summary>
     protected Task<ApiResponse<T>> PutAndWrapAsync<T>(string url, object? body = null, CancellationToken ct = default)
         => SendAndWrapAsync<T>(url, HttpMethod.Put, body, ct);
 
-    /// <summary>PUT -> non-generic ApiResponse (void operations).</summary>
+    /// <summary>PUT -> 非泛型 ApiResponse（void 操作）。</summary>
     protected Task<ApiResponse> PutVoidAsync(string url, object? body = null, CancellationToken ct = default)
         => SendVoidAsync(url, HttpMethod.Put, body, ct);
 
-    /// <summary>DELETE -> non-generic ApiResponse.</summary>
+    /// <summary>DELETE -> 非泛型 ApiResponse。</summary>
     protected Task<ApiResponse> DeleteVoidAsync(string url, CancellationToken ct = default)
         => SendVoidAsync(url, HttpMethod.Delete, ct: ct);
 
-    /// <summary>HTTP request -> deserialize -> wrap in ApiResponse&lt;T&gt;.</summary>
+    /// <summary>HTTP 请求 -> 反序列化 -> 包装为 ApiResponse&lt;T&gt;。</summary>
     protected async Task<ApiResponse<T>> SendAndWrapAsync<T>(string url, HttpMethod method, object? body = null, CancellationToken ct = default)
     {
         var response = await SendAsync(url, method, body, ct);
         return await DeserializeEnvelopeAsync<T>(response, ct);
     }
 
-    /// <summary>GET -> server-side pagination envelope -> wrap in ApiResponse&lt;PagedResult&lt;T&gt;&gt;.</summary>
+    /// <summary>GET -> 服务端分页信封 -> 包装为 ApiResponse&lt;PagedResult&lt;T&gt;&gt;。</summary>
     protected Task<ApiResponse<PagedResult<T>>> GetPagedAndWrapAsync<T>(string url, CancellationToken ct = default)
         => GetAndWrapAsync<PagedResult<T>>(url, ct);
 
-    /// <summary>GET -> return HttpResponseMessage (file downloads). Caller disposes response.</summary>
+    /// <summary>GET -> 返回 HttpResponseMessage（文件下载）。调用方负责释放响应。</summary>
     protected async Task<HttpResponseMessage> GetResponseAsync(string url, CancellationToken ct = default)
     {
         var client = CreateClient();
