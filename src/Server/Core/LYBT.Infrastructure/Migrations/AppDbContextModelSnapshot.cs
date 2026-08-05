@@ -1050,7 +1050,7 @@ namespace LYBT.Infrastructure.Migrations
                     b.HasIndex("PhoneNumber")
                         .HasDatabaseName("IX_User_Phone");
 
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>

@@ -12,7 +12,7 @@ namespace LYBT.Infrastructure.Migrations
         {
             migrationBuilder.AddColumn<decimal>(
                 name: "RegistrationFee",
-                table: "AspNetUsers",
+                table: "Users",
                 type: "decimal(10,2)",
                 nullable: false,
                 defaultValue: 0m);
@@ -23,7 +23,7 @@ namespace LYBT.Infrastructure.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "RegistrationFee",
-                table: "AspNetUsers");
+                table: "Users");
         }
     }
 }
