@@ -30,42 +30,6 @@ public class CustomControlArchTests
     }
 
     /// <summary>
-    /// 承载用户内容的控件不应在构造函数中设置DataContext
-    /// </summary>
-    /// <remarks>
-    /// 承载用户内容的控件（有ContentPresenter相关DependencyProperty）
-    /// 如果在构造函数中设置DataContext = this，会污染用户内容的DataContext继承
-    ///
-    /// 检测标准：
-    /// - 控件有名为*Content的DependencyProperty
-    /// - 构造函数不应设置DataContext
-    ///
-    /// DIV-A02: SetsDataContextInConstructor 的 IL 分析未实现 (始终返回 false)，
-    /// 该检测通过代码审查完成，此自动化测试为 YAGNI。
-    /// </remarks>
-    [Fact(Skip = "DIV-A02: IL analysis not implemented - SetsDataContextInConstructor always returns false (YAGNI)")]
-    public void ContentHosting_Controls_Should_Not_Set_DataContext_In_Constructor()
-    {
-        var controlsWithContent = GetCustomControlTypes()
-            .Where(HasContentHostingProperty)
-            .ToList();
-
-        var violations = new List<string>();
-
-        foreach (var controlType in controlsWithContent)
-        {
-            if (SetsDataContextInConstructor(controlType))
-            {
-                violations.Add(controlType.Name);
-            }
-        }
-
-        Assert.True(
-            violations.Count == 0,
-            $"以下承载用户内容的控件在构造函数中设置了DataContext（违反规范）: {string.Join(", ", violations)}");
-    }
-
-    /// <summary>
     /// 自定义控件应有x:Name="Root"以支持ElementName绑定
     /// </summary>
     /// <remarks>
@@ -96,20 +60,6 @@ public class CustomControlArchTests
         {
             Assert.Contains(controls, c => c.Name == expected);
         }
-    }
-
-    /// <summary>
-    /// 检查类型是否有承载用户内容的DependencyProperty
-    /// </summary>
-    private static bool HasContentHostingProperty(Type type)
-    {
-        // 查找名为*Content的DependencyProperty字段
-        var contentProperties = type.GetFields(BindingFlags.Public | BindingFlags.Static)
-            .Where(f => f.FieldType == typeof(DependencyProperty) &&
-                       f.Name.EndsWith("ContentProperty"))
-            .ToList();
-
-        return contentProperties.Any();
     }
 
     /// <summary>

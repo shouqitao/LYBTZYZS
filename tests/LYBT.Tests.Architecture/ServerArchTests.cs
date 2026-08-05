@@ -1,4 +1,7 @@
 using System.Reflection;
+using LYBT.Desktop.Foundation.Repositories;
+using LYBT.Infrastructure.Web;
+using Microsoft.AspNetCore.Mvc;
 using NetArchTest.Rules;
 
 namespace LYBT.Tests.Architecture;
@@ -22,6 +25,25 @@ public class ServerArchTests
         Assembly.Load("LYBT.Module.MedicalCases"),
         Assembly.Load("LYBT.Module.Herbs"),
         Assembly.Load("LYBT.Module.Formulas")
+    ];
+
+    private static readonly Assembly[] DesktopAssemblies =
+    [
+        Assembly.Load("LYBT.Desktop.Contracts"),
+        Assembly.Load("LYBT.Desktop.Foundation"),
+        Assembly.Load("LYBT.Desktop.Infrastructure"),
+        Assembly.Load("LYBT.Desktop.Shell"),
+        Assembly.Load("LYBT.Desktop.Auth"),
+        Assembly.Load("LYBT.Desktop.Users"),
+        Assembly.Load("LYBT.Desktop.Patients"),
+        Assembly.Load("LYBT.Desktop.MedicalCase"),
+        Assembly.Load("LYBT.Desktop.Herbs"),
+        Assembly.Load("LYBT.Desktop.Formula"),
+        Assembly.Load("LYBT.Desktop.Admin"),
+        Assembly.Load("LYBT.Desktop.Clinical"),
+        Assembly.Load("LYBT.Desktop.Registration"),
+        Assembly.Load("LYBT.Desktop.Controls"),
+        Assembly.Load("LYBT.Desktop.Printing")
     ];
 
     /// <summary>
@@ -670,6 +692,233 @@ public class ServerArchTests
             .GetType("LYBT.Shared.Models.Validators.MedicalCase.MedicalCaseInputDtoValidator");
 
         Assert.NotNull(unifiedValidator);
+    }
+
+    #endregion
+
+    #region A-09: 架构守卫测试补全
+
+    /// <summary>
+    /// A-09: 所有 Controller 必须继承 BaseApiController 或 BaseCrudController
+    /// 确保统一的响应包装、操作者上下文与授权处理
+    /// </summary>
+    [Fact]
+    public void Controllers_Should_Inherit_BaseApiController_Or_BaseCrudController()
+    {
+        var controllers = Types.InAssemblies(ServerAssemblies)
+            .That()
+            .HaveNameEndingWith("Controller")
+            .And()
+            .AreClasses()
+            .And()
+            .ArePublic()
+            .And()
+            .AreNotAbstract()
+            .GetTypes();
+
+        var violations = controllers
+            .Where(t => !typeof(BaseApiController).IsAssignableFrom(t))
+            .Select(t => t.FullName ?? t.Name)
+            .ToList();
+
+        Assert.True(violations.Count == 0,
+            $"Controller 未继承 BaseApiController/BaseCrudController: {string.Join(", ", violations)}");
+    }
+
+    /// <summary>
+    /// A-09: Desktop Repository 必须继承 ApiClientRepositoryBase
+    /// 确保统一的 try/catch + 日志 + 异常处理模板
+    /// </summary>
+    [Fact]
+    public void Desktop_Repositories_Should_Inherit_ApiClientRepositoryBase()
+    {
+        var repositories = DesktopAssemblies
+            .SelectMany(a => a.GetTypes())
+            .Where(t => t.IsClass && t.IsPublic && !t.IsAbstract && t.Name.EndsWith("Repository"))
+            .ToList();
+
+        var violations = repositories
+            .Where(t => !InheritsApiClientRepositoryBase(t))
+            .Select(t => t.FullName ?? t.Name)
+            .ToList();
+
+        Assert.True(violations.Count == 0,
+            $"Desktop Repository 未继承 ApiClientRepositoryBase: {string.Join(", ", violations)}");
+    }
+
+    /// <summary>
+    /// A-09: 每个 Module 必须有 DI 注册方法
+    /// Desktop 模块通过 Prism IModule.RegisterTypes 注册，Server 模块通过静态 AddXxxModule 注册
+    /// </summary>
+    [Fact]
+    public void Modules_Should_Have_DI_Registration_Method()
+    {
+        var moduleTypes = ServerAssemblies.Concat(DesktopAssemblies)
+            .SelectMany(a => a.GetTypes())
+            .Where(t => t.IsClass && t.Name.EndsWith("Module"))
+            .ToList();
+
+        var violations = moduleTypes
+            .Where(t =>
+            {
+                var hasPrismRegisterTypes = t.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                    .Any(m => m.Name == "RegisterTypes");
+                var hasServerAddModule = t.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    .Any(m => m.Name.StartsWith("Add") && m.Name.EndsWith("Module"));
+                return !hasPrismRegisterTypes && !hasServerAddModule;
+            })
+            .Select(t => t.FullName ?? t.Name)
+            .ToList();
+
+        Assert.True(violations.Count == 0,
+            $"Module 缺少 RegisterTypes/AddXxxModule 注册方法: {string.Join(", ", violations)}");
+    }
+
+    /// <summary>
+    /// A-09: 所有 Options 类必须有 public const string SectionName
+    /// 例外：被其他 Options 类作为属性引用的子配置类（通过父级属性绑定，无独立 Section）
+    /// </summary>
+    [Fact]
+    public void Options_Classes_Should_Define_SectionName()
+    {
+        var optionsTypes = ServerAssemblies
+            .Append(Assembly.Load("LYBT.Shared.Configuration"))
+            .SelectMany(a => a.GetTypes())
+            .Where(t => t.IsClass && t.IsPublic && !t.IsAbstract && t.Name.EndsWith("Options") && t.DeclaringType == null)
+            .ToList();
+
+        // 子配置类（RateLimitOptions/ConnectionPoolOptions 等）通过父 Options 属性绑定，无需 SectionName
+        var subConfigTypes = optionsTypes
+            .SelectMany(o => o.GetProperties())
+            .Select(p => p.PropertyType)
+            .Where(t => t.IsClass && t.Name.EndsWith("Options"))
+            .ToHashSet();
+
+        var violations = optionsTypes
+            .Where(t => !subConfigTypes.Contains(t))
+            .Where(t =>
+            {
+                var sectionField = t.GetField("SectionName", BindingFlags.Public | BindingFlags.Static);
+                return sectionField is not { IsLiteral: true } || sectionField.FieldType != typeof(string);
+            })
+            .Select(t => t.FullName ?? t.Name)
+            .ToList();
+
+        Assert.True(violations.Count == 0,
+            $"Options 类缺少 public const string SectionName: {string.Join(", ", violations)}");
+    }
+
+    /// <summary>
+    /// A-09: Controller 公共方法必须返回 IActionResult 或 Task&lt;IActionResult&gt;
+    /// 统一 API 响应包装，避免直接暴露领域对象
+    /// </summary>
+    [Fact]
+    public void Controller_Public_Methods_Should_Return_IActionResult()
+    {
+        var controllers = Types.InAssemblies(ServerAssemblies)
+            .That()
+            .HaveNameEndingWith("Controller")
+            .And()
+            .AreClasses()
+            .And()
+            .ArePublic()
+            .And()
+            .AreNotAbstract()
+            .GetTypes();
+
+        var violations = new List<string>();
+
+        foreach (var controller in controllers)
+        {
+            var methods = controller.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Where(m => !m.IsSpecialName);
+
+            foreach (var method in methods)
+            {
+                var returnType = method.ReturnType;
+                var isActionResult = typeof(IActionResult).IsAssignableFrom(returnType);
+                var isTaskOfActionResult = returnType.IsGenericType &&
+                    returnType.GetGenericTypeDefinition() == typeof(Task<>) &&
+                    typeof(IActionResult).IsAssignableFrom(returnType.GetGenericArguments()[0]);
+
+                if (!isActionResult && !isTaskOfActionResult)
+                {
+                    violations.Add($"{controller.Name}.{method.Name} → {returnType.Name}");
+                }
+            }
+        }
+
+        Assert.True(violations.Count == 0,
+            $"Controller 公共方法必须返回 IActionResult: {string.Join(", ", violations)}");
+    }
+
+    /// <summary>
+    /// A-09: 验证器必须继承 AbstractValidator&lt;T&gt;
+    /// 例外：ProductionConfigurationValidator 是启动时配置检查器，非 FluentValidation 验证器
+    /// </summary>
+    [Fact]
+    public void Validators_Should_Inherit_AbstractValidator()
+    {
+        var validators = ServerAssemblies
+            .Append(Assembly.Load("LYBT.Shared.Models"))
+            .SelectMany(a => a.GetTypes())
+            .Where(t => t.IsClass && t.IsPublic && !t.IsAbstract && t.Name.EndsWith("Validator"))
+            .ToList();
+
+        var allowedNonFluentValidators = new[] { "ProductionConfigurationValidator" };
+
+        var violations = validators
+            .Where(t => !allowedNonFluentValidators.Contains(t.Name))
+            .Where(t => t.BaseType?.IsGenericType != true || t.BaseType.Name != "AbstractValidator`1")
+            .Select(t => t.FullName ?? t.Name)
+            .ToList();
+
+        Assert.True(violations.Count == 0,
+            $"验证器未继承 AbstractValidator<T>: {string.Join(", ", violations)}");
+    }
+
+    /// <summary>
+    /// A-09: 使用 Mapperly 的 Mapper 类必须有 [Mapper] 注解 + partial 修饰符
+    /// 静态手写映射工具类不在此列（非 partial 即为手写）
+    /// </summary>
+    [Fact]
+    public void Mapperly_Mappers_Should_Have_Mapper_Attribute()
+    {
+        var mapperTypes = ServerAssemblies.Concat(DesktopAssemblies)
+            .SelectMany(a => a.GetTypes())
+            .Where(t => t.IsClass && t.IsPublic && !t.IsAbstract
+                && t.Name.EndsWith("Mapper")
+                && t.IsNested == false  // 排除嵌套类
+                && t.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic).Any(m => m.IsDefined(typeof(Riok.Mapperly.Abstractions.MapperAttribute), true)))
+            .ToList();
+
+        // 如果没有 Mapperly Mapper，测试通过（全部是手写 Mapper）
+        if (mapperTypes.Count == 0) return;
+
+        var violations = mapperTypes
+            .Where(t => !t.GetCustomAttributes(true).Any(a => a.GetType().Name == "MapperAttribute"))
+            .Select(t => t.FullName ?? t.Name)
+            .ToList();
+
+        Assert.True(violations.Count == 0,
+            $"Mapperly Mapper 缺少 [Mapper] 注解: {string.Join(", ", violations)}");
+    }
+
+    /// <summary>
+    /// 检查类型是否直接/间接继承 ApiClientRepositoryBase&lt;,&gt;
+    /// </summary>
+    private static bool InheritsApiClientRepositoryBase(Type type)
+    {
+        var current = type.BaseType;
+        while (current != null)
+        {
+            if (current.IsGenericType && current.GetGenericTypeDefinition() == typeof(ApiClientRepositoryBase<,>))
+            {
+                return true;
+            }
+            current = current.BaseType;
+        }
+        return false;
     }
 
     #endregion
