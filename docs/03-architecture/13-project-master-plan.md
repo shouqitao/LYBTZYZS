@@ -59,7 +59,7 @@
 | A-08 | 命名规范统一 | 后缀/目录/注释语言 | 无 | ⬜ | 1d |
 | A-09 | 架构测试补全 | 修复 1 skip + 新增 13 个缺口测试 | A-03/A-04 | ⬜ | 1d |
 | A-10 | 接口下沉 Contracts | IFormulaService/IHerbService 移到 Contracts（与 IPatientService/IUserService 一致） | 无 | ✅ | 0.5d |
-| A-11 | Registration 依赖清理 | 移除对 Patients/Users 直接引用 | A-10 | ⬜ | 0.25d |
+| A-11 | Registration 依赖清理 | 移除对 Patients/Users 直接引用 | A-10 | ✅ 已无跨模块依赖（A-02 清理后确认） | 0 |
 | A-12 | AuthService 收敛 | RefreshToken 操作收敛到 Repository | 无 | ✅ 已完成（代码已通过 IAuthSessionRepository） | 0 |
 
 ### B 类 — 产品功能
@@ -228,7 +228,7 @@
 | A-08 命名规范统一 | ⬜ | — | — |
 | A-09 架构测试补全 | ⬜ | — | — |
 | A-10 接口下沉 | ✅ | 2026-08-05 | `6a1620e8b` — IFormulaService/IHerbService 从 Formula/Herbs 模块移到 LYBT.Desktop.Contracts.Services；9 个源文件 + 2 个测试文件 using 更新；空 Interfaces 目录删除 |
-| A-11 Registration 依赖清理 | ⬜ | — | — |
+| A-11 Registration 依赖清理 | ✅ | 2026-08-05 | 已无跨模块依赖（A-02 清理后确认） |
 | A-12 AuthService 收敛 | ✅ | 2026-08-04 | 代码已通过 IAuthSessionRepository（RefreshTokenCommandHandler 无直接 DbContext） |
 | B-01 P0 安全修复 | ✅ | 2026-08-04 | `831702b51` `cb4d3e6b9` |
 | B-02 配置修改 API | ⬜ | — | — |
