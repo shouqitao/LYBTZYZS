@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.RateLimiting;
+using LYBT.WebAPI.Services;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -25,11 +27,13 @@ namespace LYBT.WebAPI.Controllers
     public class FormulasController : BaseCrudController
     {
         private readonly IFormulaService _formulaService;
+        private readonly ExcelService _excelService;
 
-        public FormulasController(ISender sender, ILogger<FormulasController> logger, IFormulaService formulaService)
+        public FormulasController(ISender sender, ILogger<FormulasController> logger, IFormulaService formulaService, ExcelService excelService)
             : base(sender, logger)
         {
             _formulaService = formulaService;
+            _excelService = excelService;
         }
 
         /// <summary>
@@ -327,6 +331,156 @@ namespace LYBT.WebAPI.Controllers
 
             LogOperation("批量禁用药方", new { Count = dto.Ids.Count }, null);
             return Success(result.Value, result.Value.Message);
+        }
+
+        private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+
+        /// <summary>
+        /// 导出验方数据到 Excel（category 可选，按分类过滤）
+        /// </summary>
+        [HttpGet("export")]
+        [ProducesResponseType(typeof(FileResult), 200)]
+        public async Task<IActionResult> Export([FromQuery] string? category, CancellationToken ct)
+        {
+            var formulas = await GetAllDetailsAsync(category, ct);
+            if (formulas == null) return BusinessFail("导出失败");
+
+            var bytes = _excelService.ExportToExcel(formulas, "验方", new Dictionary<string, Func<FormulaDetailDto, object?>>
+            {
+                ["名称"] = f => f.Name,
+                ["分类"] = f => f.Category,
+                ["描述"] = f => f.Description,
+                ["组成"] = f => f.Herbs == null || f.Herbs.Count == 0
+                    ? string.Empty
+                    : JsonSerializer.Serialize(f.Herbs.Select(h => new { h.HerbName, h.Dosage, h.Unit, h.Preparation }), JsonOptions),
+                ["功效"] = f => f.Effect,
+                ["用法"] = f => f.Usage,
+                ["性味归经"] = f => f.Property,
+                ["主治"] = f => f.Indications,
+                ["禁忌症"] = f => f.Contraindications,
+                ["是否共享"] = f => f.IsShared
+            });
+
+            return File(bytes, ExcelService.ExcelContentType, $"验方导出_{DateTime.Now:yyyyMMddHHmmss}.xlsx");
+        }
+
+        /// <summary>
+        /// 下载验方导入模板（表头 + 示例行）
+        /// </summary>
+        [HttpGet("import-template")]
+        [ProducesResponseType(typeof(FileResult), 200)]
+        public IActionResult ImportTemplate()
+        {
+            var bytes = _excelService.GenerateTemplate("验方", new Dictionary<string, string>
+            {
+                ["名称"] = "四物汤",
+                ["分类"] = "补血剂",
+                ["描述"] = "补血调经",
+                ["组成"] = "[{\"HerbName\":\"当归\",\"Dosage\":10,\"Unit\":\"g\"},{\"HerbName\":\"川芎\",\"Dosage\":8,\"Unit\":\"g\"}]",
+                ["功效"] = "补血调血",
+                ["用法"] = "水煎服",
+                ["性味归经"] = "甘、温",
+                ["主治"] = "血虚证",
+                ["禁忌症"] = "",
+                ["是否共享"] = "false"
+            });
+
+            return File(bytes, ExcelService.ExcelContentType, "验方导入模板.xlsx");
+        }
+
+        /// <summary>
+        /// 从 Excel 文件批量导入验方（仅 Admin+），复用 BatchImportFormulasCommand（药材名/拼音匹配 + 验方校验）
+        /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+        [HttpPost("batch-import-excel")]
+        [Consumes("multipart/form-data")]
+        [EnableRateLimiting("ApiCalls")]
+        [ProducesResponseType(typeof(ApiResponse<FormulaBatchImportResultDto>), 200)]
+        public async Task<IActionResult> BatchImportExcel(
+            IFormFile file,
+            CancellationToken ct = default)
+        {
+            if (file == null || file.Length == 0)
+                return ValidationFail("请上传 Excel 文件");
+
+            List<FormulaImportItemDto> formulas;
+            try
+            {
+                using var stream = file.OpenReadStream();
+                formulas = _excelService.ParseExcel(stream, new Dictionary<string, Action<FormulaImportItemDto, string>>
+                {
+                    ["名称"] = (d, v) => d.Name = v,
+                    ["描述"] = (_, _) => { }, // 现有导入 DTO 无描述字段，忽略
+                    ["组成"] = (d, v) => d.Herbs = ParseHerbs(v),
+                    ["功效"] = (d, v) => d.Effect = v,
+                    ["用法"] = (d, v) => d.Usage = v,
+                    ["性味归经"] = (d, v) => d.Property = v,
+                    ["主治"] = (d, v) => d.Indications = v,
+                    ["禁忌症"] = (d, v) => d.Contraindications = v,
+                    ["是否共享"] = (d, v) => d.IsShared = bool.TryParse(v, out var b) && b,
+                    ["分类"] = (_, _) => { } // 现有导入 DTO 无分类字段，忽略
+                });
+            }
+            catch
+            {
+                return ValidationFail("Excel 文件解析失败，请使用系统模板");
+            }
+
+            if (formulas.Count == 0)
+                return ValidationFail("导入数据不能为空");
+
+            var result = await Sender.Send(new BatchImportFormulasCommand(formulas, file.FileName), ct);
+            if (!result.IsSuccess || result.Value == null)
+                return BusinessFail(result.Error ?? "导入失败");
+
+            LogOperation("批量导入验方(Excel)", new { Count = formulas.Count, FileName = file.FileName }, null);
+            return Success(result.Value, result.Value.Message);
+        }
+
+        /// <summary>
+        /// 全量拉取验方详情（分页循环 + 逐条详情），可选按分类过滤。失败返回 null。
+        /// </summary>
+        private async Task<List<FormulaDetailDto>?> GetAllDetailsAsync(string? category, CancellationToken ct)
+        {
+            var details = new List<FormulaDetailDto>();
+            const int pageSize = 100;
+            var page = 1;
+
+            while (true)
+            {
+                var paged = await _formulaService.GetPagedAsync(page, pageSize, null, ct);
+                if (!paged.IsSuccess || paged.Value == null) return null;
+                if (paged.Value.Items.Count == 0) break;
+
+                foreach (var item in paged.Value.Items)
+                {
+                    var detail = await _formulaService.GetByIdAsync(item.Id, ct);
+                    if (detail.IsSuccess && detail.Value != null) details.Add(detail.Value);
+                }
+
+                if (details.Count >= paged.Value.TotalCount || paged.Value.Items.Count < pageSize) break;
+                page++;
+            }
+
+            return string.IsNullOrWhiteSpace(category)
+                ? details
+                : details.Where(f => string.Equals(f.Category, category, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        /// <summary>
+        /// 解析组成列 JSON（[{HerbName,Dosage,Unit}]），空值/非法返回空列表
+        /// </summary>
+        private static List<FormulaHerbImportItemDto> ParseHerbs(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return new List<FormulaHerbImportItemDto>();
+            try
+            {
+                return JsonSerializer.Deserialize<List<FormulaHerbImportItemDto>>(value, JsonOptions) ?? new List<FormulaHerbImportItemDto>();
+            }
+            catch
+            {
+                return new List<FormulaHerbImportItemDto>();
+            }
         }
     }
 }
