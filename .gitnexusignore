@@ -1,5 +1,0 @@
-# Auto-generated migration files
-src/Server/Core/LYBT.Infrastructure/Migrations/
-
-# Large files causing scope resolution errors
-src/Server/Modules/LYBT.Module.MedicalCase/Services/MedicalCaseCommandService.cs
