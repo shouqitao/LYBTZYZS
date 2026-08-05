@@ -423,9 +423,23 @@ Create/Update 方法在业务逻辑前调用验证。Validator 架构与共享�
 
 ## 模块独立 DbContext
 
-5 个模块拥有独立 DbContext（`AuthDbContext` / `UsersDbContext` / `HerbsDbContext` / `FormulaDbContext` / `ReportsDbContext`），均通过 `ConnectionStringResolver.GetEffectiveConnectionString()` 三级回退获取连接字符串（`Database:ConnectionString` → `ConnectionStrings:DefaultConnection` → `CONNECTION_STRING` 环境变量）。
+5 个模块拥有独立 DbContext：
 
-Patients / MedicalCase / Registration 3 个模块复用共享 `AppDbContext`（模块注册注释「使用AppDbContext」）。
+- Auth: `AuthDbContext`（AuthSessionRepository 注入）
+- Users: `UsersDbContext`
+- Herbs: `HerbsDbContext`（HerbRepository 注入）
+- Formula: `FormulaDbContext`
+- Reports: `ReportsDbContext`（已注册，但 ReportRepository 实际注入 AppDbContext，待清理）
+
+均通过 `ConnectionStringResolver.GetEffectiveConnectionString()` 三级回退获取连接字符串（`Database:ConnectionString` → `ConnectionStrings:DefaultConnection` → `CONNECTION_STRING` 环境变量）。
+
+复用 `AppDbContext` 的 5 个模块：
+
+- Patients: PatientRepository 注入 AppDbContext
+- MedicalCase: MedicalCaseRepository 注入 AppDbContext
+- Registration: RegistrationRepository 注入 AppDbContext
+- Auth: SecurityAuditRepository 注入 AppDbContext
+- Herbs: HerbReferenceRepository 注入 AppDbContext
 
 架构测试与此设计相呼应：P02（Repository 必须继承 BaseRepository）对直接注入 DbContext 的模块内 Repository 予以豁免（构造参数含 DbContext 即豁免）；P10（Service 禁止直接注入 AppDbContext）仅约束 Service 层，Repository 不受限。
 
