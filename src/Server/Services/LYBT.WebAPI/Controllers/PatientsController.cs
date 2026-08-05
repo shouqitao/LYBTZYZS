@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.RateLimiting;
+using LYBT.WebAPI.Services;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -25,11 +26,13 @@ namespace LYBT.WebAPI.Controllers
     public class PatientsController : BaseCrudController
     {
         private readonly IPatientService _patientService;
+        private readonly ExcelService _excelService;
 
-        public PatientsController(ISender sender, ILogger<PatientsController> logger, IPatientService patientService)
+        public PatientsController(ISender sender, ILogger<PatientsController> logger, IPatientService patientService, ExcelService excelService)
             : base(sender, logger)
         {
             _patientService = patientService;
+            _excelService = excelService;
         }
 
         /// <summary>
@@ -271,6 +274,139 @@ namespace LYBT.WebAPI.Controllers
                 return (null, ownerError);
 
             return (result.Value, null);
+        }
+
+        /// <summary>
+        /// 导出患者数据到 Excel（keyword 可选；非 Admin 仅导出启用状态）
+        /// </summary>
+        [HttpGet("export")]
+        [ProducesResponseType(typeof(FileResult), 200)]
+        public async Task<IActionResult> Export([FromQuery] string? keyword, CancellationToken ct)
+        {
+            var patients = await GetAllDetailsAsync(keyword, ct);
+            if (patients == null) return BusinessFail("导出失败");
+
+            var bytes = _excelService.ExportToExcel(patients, "患者", new Dictionary<string, Func<PatientDetailDto, object?>>
+            {
+                ["姓名"] = p => p.Name,
+                ["性别"] = p => p.Gender,
+                ["出生日期"] = p => p.BirthDate,
+                ["身份证号"] = p => p.IdNumber,
+                ["电话"] = p => p.PhoneNumber,
+                ["拼音码"] = p => p.PinYinCode,
+                ["状态"] = p => p.Status
+            });
+
+            return File(bytes, ExcelService.ExcelContentType, $"患者导出_{DateTime.Now:yyyyMMddHHmmss}.xlsx");
+        }
+
+        /// <summary>
+        /// 下载患者导入模板（表头 + 示例行）
+        /// </summary>
+        [HttpGet("import-template")]
+        [ProducesResponseType(typeof(FileResult), 200)]
+        public IActionResult ImportTemplate()
+        {
+            var bytes = _excelService.GenerateTemplate("患者", new Dictionary<string, string>
+            {
+                ["姓名"] = "张三",
+                ["性别"] = "男",
+                ["出生日期"] = "1990-01-01",
+                ["身份证号"] = "110101199001010011",
+                ["电话"] = "13800138000",
+                ["拼音码"] = "zhangsan"
+            });
+
+            return File(bytes, ExcelService.ExcelContentType, "患者导入模板.xlsx");
+        }
+
+        /// <summary>
+        /// 从 Excel 文件批量导入患者（仅 Admin+）
+        /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+        [HttpPost("batch-import-excel")]
+        [Consumes("multipart/form-data")]
+        [EnableRateLimiting("ApiCalls")]
+        [ProducesResponseType(typeof(ApiResponse<PatientBatchImportResultDto>), 200)]
+        public async Task<IActionResult> BatchImportExcel(
+            IFormFile file,
+            [FromForm] DuplicateStrategy strategy = DuplicateStrategy.Skip,
+            CancellationToken ct = default)
+        {
+            if (file == null || file.Length == 0)
+                return ValidationFail("请上传 Excel 文件");
+
+            List<PatientInputDto> patients;
+            try
+            {
+                using var stream = file.OpenReadStream();
+                patients = _excelService.ParseExcel(stream, new Dictionary<string, Action<PatientInputDto, string>>
+                {
+                    ["姓名"] = (d, v) => d.Name = v,
+                    ["性别"] = (d, v) => d.Gender = ParseGender(v),
+                    ["出生日期"] = (d, v) => d.BirthDate = DateTime.TryParse(v, out var date) ? date : null,
+                    ["身份证号"] = (d, v) => d.IdNumber = v,
+                    ["电话"] = (d, v) => d.PhoneNumber = v,
+                    ["拼音码"] = (d, v) => d.PinYinCode = v
+                });
+            }
+            catch
+            {
+                return ValidationFail("Excel 文件解析失败，请使用系统模板");
+            }
+
+            if (patients.Count == 0)
+                return ValidationFail("导入列表不能为空");
+
+            var (operatorId, _, _) = GetOperator();
+            var result = await Sender.Send(new BatchImportPatientsCommand(patients, strategy, operatorId), ct);
+            if (!result.IsSuccess || result.Value == null)
+                return BusinessFail(result.Error ?? "导入失败");
+
+            LogOperation("批量导入患者(Excel)", new { Count = patients.Count, Strategy = strategy }, null);
+            return Success(result.Value, $"成功导入 {result.Value.SuccessCount} 条患者");
+        }
+
+        /// <summary>
+        /// 全量拉取患者详情（分页循环 + 逐条详情），非 Admin 仅取启用状态。失败返回 null。
+        /// </summary>
+        private async Task<List<PatientDetailDto>?> GetAllDetailsAsync(string? keyword, CancellationToken ct)
+        {
+            var isAdmin = User?.IsInRole(RoleConstants.Admin) == true || User?.IsInRole(RoleConstants.SuperAdmin) == true;
+            var details = new List<PatientDetailDto>();
+            const int pageSize = 100;
+            var page = 1;
+
+            while (true)
+            {
+                var paged = await _patientService.GetPagedAsync(page, pageSize, keyword, filterDisabled: !isAdmin, ct);
+                if (!paged.IsSuccess || paged.Value == null) return null;
+                if (paged.Value.Items.Count == 0) break;
+
+                foreach (var item in paged.Value.Items)
+                {
+                    var detail = await _patientService.GetByIdAsync(item.Id, ct);
+                    if (detail.IsSuccess && detail.Value != null) details.Add(detail.Value);
+                }
+
+                if (details.Count >= paged.Value.TotalCount || paged.Value.Items.Count < pageSize) break;
+                page++;
+            }
+
+            return details;
+        }
+
+        /// <summary>
+        /// 解析性别列（男/女/未知 或枚举名）
+        /// </summary>
+        private static Gender ParseGender(string value)
+        {
+            return value switch
+            {
+                "男" or "Male" => Gender.Male,
+                "女" or "Female" => Gender.Female,
+                _ => Gender.Unknown
+            };
         }
     }
 }
