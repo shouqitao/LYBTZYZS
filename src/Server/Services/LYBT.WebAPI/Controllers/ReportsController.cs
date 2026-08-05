@@ -18,14 +18,14 @@ namespace LYBT.WebAPI.Controllers;
 [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
 public class ReportsController : BaseApiController
 {
-    private readonly IReportRepository _reportRepository;
+    private readonly IReportService _reportService;
 
     public ReportsController(
-        IReportRepository reportRepository,
+        IReportService reportService,
         ILogger<ReportsController> logger)
         : base(logger)
     {
-        _reportRepository = reportRepository;
+        _reportService = reportService;
     }
 
     /// <summary>
@@ -41,15 +41,7 @@ public class ReportsController : BaseApiController
         var start = startDate ?? DateTime.Today;
         var end = endDate ?? DateTime.Today;
 
-        var registrationFeeTotal = await _reportRepository.GetRegistrationFeeTotalAsync(start, end, cancellationToken);
-        var medicineFeeTotal = await _reportRepository.GetMedicineFeeTotalAsync(start, end, cancellationToken);
-
-        var dto = new DailyIncomeDto
-        {
-            TotalIncome = registrationFeeTotal + medicineFeeTotal,
-            RegistrationFeeTotal = registrationFeeTotal,
-            MedicineFeeTotal = medicineFeeTotal
-        };
+        var dto = await _reportService.GetDailyIncomeAsync(start, end, cancellationToken);
 
         return Success(dto, "查询成功");
     }
@@ -67,14 +59,7 @@ public class ReportsController : BaseApiController
         var start = startDate ?? DateTime.Today;
         var end = endDate ?? DateTime.Today;
 
-        var totalCount = await _reportRepository.GetConsultationCountAsync(start, end, cancellationToken);
-        var byDoctor = await _reportRepository.GetConsultationsByDoctorAsync(start, end, cancellationToken);
-
-        var dto = new DailyConsultationDto
-        {
-            TotalCount = totalCount,
-            ByDoctor = byDoctor
-        };
+        var dto = await _reportService.GetDailyConsultationsAsync(start, end, cancellationToken);
 
         return Success(dto, "查询成功");
     }
@@ -92,9 +77,7 @@ public class ReportsController : BaseApiController
         var start = startDate ?? DateTime.Today;
         var end = endDate ?? DateTime.Today;
 
-        var items = await _reportRepository.GetHerbUsageAsync(start, end, cancellationToken);
-
-        var dto = new DailyHerbUsageDto { Items = items };
+        var dto = await _reportService.GetDailyHerbUsageAsync(start, end, cancellationToken);
 
         return Success(dto, "查询成功");
     }

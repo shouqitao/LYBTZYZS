@@ -24,7 +24,9 @@ public class ServerArchTests
         Assembly.Load("LYBT.Module.Patients"),
         Assembly.Load("LYBT.Module.MedicalCases"),
         Assembly.Load("LYBT.Module.Herbs"),
-        Assembly.Load("LYBT.Module.Formulas")
+        Assembly.Load("LYBT.Module.Formulas"),
+        Assembly.Load("LYBT.Module.Reports"),
+        Assembly.Load("LYBT.Module.Registration")
     ];
 
     private static readonly Assembly[] DesktopAssemblies =

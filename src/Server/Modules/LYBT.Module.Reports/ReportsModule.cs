@@ -32,6 +32,9 @@ public static class ReportsModule
         // 仓储层
         services.AddScoped<IReportRepository, LYBT.Module.Reports.Infrastructure.ReportRepository>();
 
+        // 服务层
+        services.AddScoped<IReportService, Services.ReportService>();
+
         return services;
     }
 }
