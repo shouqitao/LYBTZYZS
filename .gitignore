@@ -117,6 +117,8 @@ graphify-out/
 .codegraph/
 .envsitter/
 .mimocode/
+.reasonix/
+.hermes-review-*.json
 
 # ========================================
 # Local Planning Notes (session-temporary)
