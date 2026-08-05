@@ -19,59 +19,6 @@ namespace LYBT.Module.MedicalCases.Services
     public static class MedicalCaseServiceHelper
     {
         /// <summary>
-        /// 克隆医案实体用于审计比较（增强版: 含 Consultation + Prescription 字段）
-        /// </summary>
-        public static MedicalCase CloneMedicalCaseForAudit(MedicalCase source)
-        {
-            var clone = new MedicalCase
-            {
-                Id = source.Id,
-                PatientId = source.PatientId,
-                PatientName = source.PatientName,
-                UserId = source.UserId,
-                DoctorName = source.DoctorName,
-                CaseStatus = source.CaseStatus,
-                CompletedAt = source.CompletedAt,
-                NeedsPrescription = source.NeedsPrescription,
-                IsDeleted = source.IsDeleted,
-                CreatedAt = source.CreatedAt,
-                UpdatedAt = source.UpdatedAt
-            };
-
-            // 增强: 克隆 Consultation 关键字段
-            if (source.Consultation != null)
-            {
-                clone.Consultation = new LYBT.Entities.Consultations.Consultation
-                {
-                    Id = source.Consultation.Id,
-                    PresentIllness = source.Consultation.PresentIllness,
-                    TongueDiagnosis = source.Consultation.TongueDiagnosis,
-                    PulseDiagnosis = source.Consultation.PulseDiagnosis,
-                    TcmDiagnosis = source.Consultation.TcmDiagnosis,
-                    UpdatedAt = source.Consultation.UpdatedAt
-                };
-            }
-
-            // 增强: 克隆 Prescription 关键字段
-            if (source.Prescription != null)
-            {
-                clone.Prescription = new LYBT.Entities.Prescriptions.Prescription
-                {
-                    Id = source.Prescription.Id,
-                    MedicalCaseId = source.Prescription.MedicalCaseId,
-                    DosageCount = source.Prescription.DosageCount,
-                    Discount = source.Prescription.Discount,
-                    Advice = source.Prescription.Advice,
-                    ReferencedFormulas = source.Prescription.ReferencedFormulas,
-                    IsDeleted = source.Prescription.IsDeleted,
-                    UpdatedAt = source.Prescription.UpdatedAt
-                };
-            }
-
-            return clone;
-        }
-
-        /// <summary>
         /// 获取操作者信息用于审计日志
         /// D5-1: 从 IUserRepository 迁移到 IUserCrossModuleService
         /// </summary>

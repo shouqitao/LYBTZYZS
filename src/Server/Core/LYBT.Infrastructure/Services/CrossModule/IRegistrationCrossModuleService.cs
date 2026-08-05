@@ -17,11 +17,6 @@ public interface IRegistrationCrossModuleService
     Task HandleMedicalCaseCancelledAsync(Guid medicalCaseId, CancellationToken ct = default);
 
     /// <summary>
-    /// 检查患者是否有等待中的挂号
-    /// </summary>
-    Task<bool> HasWaitingRegistrationAsync(Guid patientId, CancellationToken ct = default);
-
-    /// <summary>
     /// 关联挂号到医案
     /// </summary>
     Task LinkRegistrationToMedicalCaseAsync(Guid registrationId, Guid medicalCaseId, CancellationToken ct = default);

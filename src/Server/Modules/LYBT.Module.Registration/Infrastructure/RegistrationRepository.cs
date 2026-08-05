@@ -108,16 +108,6 @@ public class RegistrationRepository : IRegistrationRepository
     }
 
     /// <inheritdoc/>
-    public async Task<bool> HasWaitingRegistrationAsync(Guid patientId, CancellationToken cancellationToken = default)
-    {
-        return await _context.Registrations.AnyAsync(r =>
-            !r.IsDeleted &&
-            r.PatientId == patientId &&
-            r.Status == RegistrationStatus.Waiting,
-            cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public async Task<RegistrationEntity?> GetByMedicalCaseIdAsync(Guid medicalCaseId, CancellationToken cancellationToken = default)
     {
         return await _context.Registrations.FirstOrDefaultAsync(r =>

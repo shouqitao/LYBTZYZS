@@ -15,25 +15,10 @@ public interface ICrossModuleService
     /// <summary>获取患者基本信息</summary>
     Task<PatientBasicDto?> GetPatientBasicInfoAsync(Guid patientId, CancellationToken cancellationToken = default);
 
-    /// <summary>批量获取患者基本信息</summary>
-    Task<Dictionary<Guid, PatientBasicDto>> GetPatientsBasicInfoAsync(IEnumerable<Guid> patientIds, CancellationToken cancellationToken = default);
-
-    /// <summary>检查患者是否存在 (未删除)</summary>
-    Task<bool> PatientExistsAsync(Guid patientId, CancellationToken cancellationToken = default);
-
-    /// <summary>检查患者引用关系 (医案引用数)</summary>
-    Task<ReferenceCheckResult> CheckPatientReferenceAsync(Guid patientId, CancellationToken cancellationToken = default);
-
     // ===== Herb =====
 
     /// <summary>获取药材基本信息</summary>
     Task<HerbBasicDto?> GetHerbBasicInfoAsync(Guid herbId, CancellationToken cancellationToken = default);
-
-    /// <summary>按名称或拼音查找药材</summary>
-    Task<HerbBasicDto?> GetHerbByNameOrPinyinAsync(string nameOrPinyin, CancellationToken cancellationToken = default);
-
-    /// <summary>检查药材引用关系 (处方引用数)</summary>
-    Task<ReferenceCheckResult> CheckHerbReferenceAsync(Guid herbId, CancellationToken cancellationToken = default);
 
     /// <summary>批量获取药材单价（用于处方项UnitPrice自动填充）</summary>
     Task<Dictionary<Guid, decimal>> GetHerbPricesAsync(IEnumerable<Guid> herbIds, CancellationToken cancellationToken = default);
@@ -51,12 +36,6 @@ public interface ICrossModuleService
 
     /// <summary>按用户名获取用户凭证信息 (含密码哈希)</summary>
     Task<UserCredentialDto?> GetUserByUsernameAsync(string username, CancellationToken cancellationToken = default);
-
-    /// <summary>更新用户密码哈希</summary>
-    Task UpdateUserPasswordHashAsync(Guid userId, string newPasswordHash, CancellationToken cancellationToken = default);
-
-    /// <summary>检查用户是否存在 (未删除)</summary>
-    Task<bool> UserExistsAsync(Guid userId, CancellationToken cancellationToken = default);
 
     /// <summary>更新登录失败状态 (FailedLoginCount + LockoutEnd)</summary>
     Task UpdateLoginFailureAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd, CancellationToken cancellationToken = default);

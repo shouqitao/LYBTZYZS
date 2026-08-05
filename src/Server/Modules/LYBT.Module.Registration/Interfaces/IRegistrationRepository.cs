@@ -45,12 +45,6 @@ public interface IRegistrationRepository
     Task<int> GetTodayMaxQueueNumberAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 检查患者是否有等待中的挂号记录 (REG-70007 防重复)
-    /// </summary>
-    /// <param name="patientId">患者 ID</param>
-    Task<bool> HasWaitingRegistrationAsync(Guid patientId, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// 根据医案 ID 查找关联的挂号记录
     /// US-REG-005/006: 医案状态变更联动
     /// </summary>

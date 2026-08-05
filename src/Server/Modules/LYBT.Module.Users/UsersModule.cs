@@ -5,7 +5,6 @@ using LYBT.Module.Users.Application.Validators;
 using LYBT.Module.Users.Infrastructure;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Services;
-using LYBT.Shared.Models.Validators.Users;
 using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

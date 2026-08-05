@@ -48,11 +48,6 @@ public class RegistrationCrossModuleService : IRegistrationCrossModuleService
         await _registrationRepository.SaveChangesAsync(ct);
     }
 
-    public async Task<bool> HasWaitingRegistrationAsync(Guid patientId, CancellationToken ct = default)
-    {
-        return await _registrationRepository.HasWaitingRegistrationAsync(patientId, ct);
-    }
-
     public async Task LinkRegistrationToMedicalCaseAsync(Guid registrationId, Guid medicalCaseId, CancellationToken ct = default)
     {
         var registration = await _registrationRepository.GetByIdAsync(registrationId, ct);
