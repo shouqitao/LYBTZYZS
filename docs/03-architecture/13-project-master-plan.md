@@ -51,7 +51,7 @@
 |----|------|------|------|------|------|
 | A-01 | 文档清理 | 归档 35 个 plan、删 17 个存根、修 27 个断链 | 无 | ⬜ | 0.5d |
 | A-02 | 死代码删除 | ~737 行零引用代码 (Server 10 + Desktop 5 + Shared 2) | 无 | ✅ | 0.5d |
-| A-03 | MediatR 简化 | Herbs/Formula/Patients/Users 4 模块已完成(24 Handler)；MedicalCase 待做 | 无 | 🟡 | 0.5d |
+| A-03 | MediatR 简化 | 5 模块全部完成：Herbs/Formula/Patients/Users 24 Handler；MedicalCase 40 文件删除 | 无 | ✅ | 0.5d |
 | A-04 | 超大类型拆分 | 5 个 >600 行文件 | 无 | ⬜ | 2d |
 | A-05 | 实体源统一 | 消除 Domain/Shared 双模型 | A-02 | ⬜ | 3d |
 | A-06 | Repository 泛型化 | Desktop 15+ 对复制粘贴 | 无 | ⬜ | 1d |
@@ -220,7 +220,7 @@
 |------|------|---------|--------|
 | A-01 文档清理 | 🟡 | 2026-08-03 | 待提交（断链 21→0、安全脱敏、08-03 定案传播；剩归档/存根项） |
 | A-02 死代码删除 | ✅ | 2026-08-05 | `5f89e58ec` — 删除 5 文件（-896 行）+ 8 死方法；保留 PasswordHelper/SystemLog/IEditable/NotSupportedException 桩 |
-| A-03 MediatR 简化 | 🟡 | 2026-08-02 | `29a4675af` `c5aca4e04` `741ca8735` `4b97bcfde` |
+| A-03 MediatR 简化 | ✅ | 2026-08-05 | `29a4675af` `c5aca4e04` `741ca8735` `4b97bcfde` `5172ff9ca` — MedicalCase 全部 Handler/Command/Query/Validator 删除（40 文件，-1285 行）；Server/LocalWebAPI/Base controller 直连 Service；AddMediatR 移除；架构测试更新为断言统一验证器 |
 | A-04 超大类型拆分 | ⬜ | — | — |
 | A-05 实体源统一 | ⬜ | — | — |
 | A-06 Repository 泛型化 | ⬜ | — | — |
