@@ -14,107 +14,27 @@ namespace LYBT.Desktop.Users.Repositories;
 /// <summary>
 /// 用户仓储 — routes all calls through IApiClient.
 /// </summary>
-public sealed class UserRepository : ApiClientRepositoryBase<UserListDto, UserDetailDto>, IUserRepository
+public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, UserDetailDto, UserInputDto>, IUserRepository
 {
     private readonly IApiClient _apiClient;
 
     public UserRepository(
         IApiClient apiClient,
         ILogger<UserRepository> logger)
-        : base(logger)
+        : base(logger, apiClient.Users)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
     }
 
     protected override string LogPrefix => "User";
 
-    #region 标准 CRUD 操作
+    /// <summary>
+    /// 分页查询用户列表（接口无 category 参数，转发基类标准实现）。
+    /// </summary>
+    public Task<PagedResult<UserListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, CancellationToken ct = default)
+        => base.GetPagedAsync(page, pageSize, keyword, null, ct);
 
-    public async Task<PagedResult<UserListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, CancellationToken ct = default)
-    {
-        return await ExecuteAsync(
-            async () =>
-            {
-                var response = await _apiClient.Users.GetUsersAsync(page, pageSize, keyword);
-                if (response.Data == null)
-                    return new PagedResult<UserListDto> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize };
-
-                return new PagedResult<UserListDto>
-                {
-                    Items = response.Data.Items.ToList(),
-                    TotalCount = response.Data.TotalCount,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-            },
-            "GetPaged",
-            "[REPO] User.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword}",
-            [page, pageSize, keyword]);
-    }
-
-    public async Task<UserDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
-    {
-        return await ExecuteAsync(
-            async () =>
-            {
-                var response = await _apiClient.Users.GetUserByIdAsync(id);
-                return response.Data;
-            },
-            "GetById");
-    }
-
-    public async Task<UserDetailDto> CreateAsync(UserInputDto dto, CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(dto);
-
-        return await ExecuteAsync(
-            async () =>
-            {
-                var response = await _apiClient.Users.CreateUserAsync(dto);
-                if (!response.Success || response.Data == null)
-                    throw new InvalidOperationException(response.Message ?? "创建用户失败");
-
-                Logger.LogInformation("[REPO] User.Create completed - Id={Id}", response.Data.Id);
-                return response.Data;
-            },
-            "Create",
-            LogLevel.Information);
-    }
-
-    public async Task<UserDetailDto> UpdateAsync(UserInputDto dto, CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(dto);
-        if (dto.Id is null || dto.Id == Guid.Empty)
-            throw new ArgumentException("更新DTO必须包含有效的ID", nameof(dto));
-
-        return await ExecuteAsync(
-            async () =>
-            {
-                var response = await _apiClient.Users.UpdateUserAsync(dto.Id.Value, dto);
-                if (!response.Success || response.Data == null)
-                    throw new InvalidOperationException(response.Message ?? "更新用户失败");
-
-                Logger.LogInformation("[REPO] User.Update completed - Id={Id}", response.Data.Id);
-                return response.Data;
-            },
-            "Update",
-            LogLevel.Information);
-    }
-
-    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
-    {
-        await ExecuteAsync(
-            async () =>
-            {
-                var response = await _apiClient.Users.DeleteUserAsync(id);
-                if (!response.Success)
-                    throw new InvalidOperationException(response.Message ?? "删除用户失败");
-
-                Logger.LogInformation("[REPO] User.Delete completed - Id={Id}", id);
-            },
-            "Delete",
-            LogLevel.Information);
-    }
+    #region 搜索
 
     public async Task<List<UserListDto>> SearchAsync(string keyword, CancellationToken ct = default)
     {

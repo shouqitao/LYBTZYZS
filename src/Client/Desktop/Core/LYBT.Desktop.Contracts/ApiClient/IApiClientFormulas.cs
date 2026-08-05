@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Contracts.ApiClient;
 /// <para>Combines methods from IFormulaApi (remote) and ILocalFormulaApi (local).</para>
 /// <para>Remote methods return ApiResponse&lt;T&gt;; local-only methods return raw DTOs.</para>
 /// </remarks>
-public interface IApiClientFormulas
+public interface IApiClientFormulas : IEntityApiSegment<FormulaListDto, FormulaDetailDto, FormulaInputDto>
 {
     /// <summary>
     /// 分页获取验方列表，支持可选的分类筛选。
@@ -134,4 +134,22 @@ public interface IApiClientFormulas
     /// 获取全部验方分类（仅本地模式）。
     /// </summary>
     Task<List<string>> GetCategoriesAsync();
+
+    // ========== 泛型段接口默认实现（转发到上方实体命名方法，实现类无需改动） ==========
+
+    Task<ApiResponse<PagedResult<FormulaListDto>>> IEntityApiSegment<FormulaListDto, FormulaDetailDto, FormulaInputDto>.GetPagedAsync(
+        int page, int pageSize, string? keyword, string? category)
+        => GetFormulasAsync(page, pageSize, keyword, category);
+
+    Task<ApiResponse<FormulaDetailDto>> IEntityApiSegment<FormulaListDto, FormulaDetailDto, FormulaInputDto>.GetByIdAsync(Guid id)
+        => GetFormulaByIdAsync(id);
+
+    Task<ApiResponse<FormulaDetailDto>> IEntityApiSegment<FormulaListDto, FormulaDetailDto, FormulaInputDto>.CreateAsync(FormulaInputDto request)
+        => CreateFormulaAsync(request);
+
+    Task<ApiResponse<FormulaDetailDto>> IEntityApiSegment<FormulaListDto, FormulaDetailDto, FormulaInputDto>.UpdateAsync(Guid id, FormulaInputDto request)
+        => UpdateFormulaAsync(id, request);
+
+    Task<ApiResponse> IEntityApiSegment<FormulaListDto, FormulaDetailDto, FormulaInputDto>.DeleteAsync(Guid id)
+        => DeleteFormulaAsync(id);
 }

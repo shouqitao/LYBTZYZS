@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;  // UserRole
 
 namespace LYBT.Shared.Models.Contracts.Users
@@ -13,7 +14,7 @@ namespace LYBT.Shared.Models.Contracts.Users
     /// Phase 3: 合并UserCreateDto和UserUpdateDto
     /// Issue #1262: 密码改为可选,Server端使用默认值
     /// </summary>
-    public class UserInputDto
+    public class UserInputDto : IEntityInputDto
     {
         /// <summary>用户ID(更新时必填,创建时为null)</summary>
         [DisplayName("用户ID")]

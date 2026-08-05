@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Contracts.ApiClient;
 /// <para>Combines methods from IHerbApi (remote) and ILocalHerbApi (local).</para>
 /// <para>Remote methods return ApiResponse&lt;T&gt;; local-only methods return raw DTOs.</para>
 /// </remarks>
-public interface IApiClientHerbs
+public interface IApiClientHerbs : IEntityApiSegment<HerbListDto, HerbDetailDto, HerbInputDto>
 {
     /// <summary>
     /// 分页获取药材列表，支持可选的分类筛选。
@@ -112,4 +112,22 @@ public interface IApiClientHerbs
     /// 获取全部药材分类（仅本地模式）。
     /// </summary>
     Task<List<string>> GetCategoriesAsync();
+
+    // ========== 泛型段接口默认实现（转发到上方实体命名方法，实现类无需改动） ==========
+
+    Task<ApiResponse<PagedResult<HerbListDto>>> IEntityApiSegment<HerbListDto, HerbDetailDto, HerbInputDto>.GetPagedAsync(
+        int page, int pageSize, string? keyword, string? category)
+        => GetHerbsAsync(page, pageSize, keyword, category);
+
+    Task<ApiResponse<HerbDetailDto>> IEntityApiSegment<HerbListDto, HerbDetailDto, HerbInputDto>.GetByIdAsync(Guid id)
+        => GetHerbByIdAsync(id);
+
+    Task<ApiResponse<HerbDetailDto>> IEntityApiSegment<HerbListDto, HerbDetailDto, HerbInputDto>.CreateAsync(HerbInputDto request)
+        => CreateHerbAsync(request);
+
+    Task<ApiResponse<HerbDetailDto>> IEntityApiSegment<HerbListDto, HerbDetailDto, HerbInputDto>.UpdateAsync(Guid id, HerbInputDto request)
+        => UpdateHerbAsync(id, request);
+
+    Task<ApiResponse> IEntityApiSegment<HerbListDto, HerbDetailDto, HerbInputDto>.DeleteAsync(Guid id)
+        => DeleteHerbAsync(id);
 }

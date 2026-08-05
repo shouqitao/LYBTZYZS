@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Shared.Models.Contracts.Herbs
 {
@@ -9,7 +10,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// 中药材输入DTO - 统一创建和更新
     /// Phase 3: 合并HerbCreateDto和HerbUpdateDto
     /// </summary>
-    public class HerbInputDto
+    public class HerbInputDto : IEntityInputDto
     {
         /// &lt;summary&gt;药材ID（更新时必填，创建时为null）&lt;/summary&gt;
         [DisplayName("药材ID")]

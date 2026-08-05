@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Contracts.ApiClient;
 /// <para>Combines methods from IPatientApi (remote) and ILocalPatientApi (local).</para>
 /// <para>Note: Patient entity has no Status field, so there is no BatchEnable/BatchDisable.</para>
 /// </remarks>
-public interface IApiClientPatients
+public interface IApiClientPatients : IEntityApiSegment<PatientListDto, PatientDetailDto, PatientInputDto>
 {
     /// <summary>
     /// 分页获取患者列表。
@@ -94,4 +94,22 @@ public interface IApiClientPatients
     /// </summary>
     /// <param name="id">Patient ID.</param>
     Task<ApiResponse<PatientDetailDto>> RestoreAsync(Guid id);
+
+    // ========== 泛型段接口默认实现（转发到上方实体命名方法，实现类无需改动） ==========
+
+    Task<ApiResponse<PagedResult<PatientListDto>>> IEntityApiSegment<PatientListDto, PatientDetailDto, PatientInputDto>.GetPagedAsync(
+        int page, int pageSize, string? keyword, string? category)
+        => GetPatientsAsync(page, pageSize, keyword);
+
+    Task<ApiResponse<PatientDetailDto>> IEntityApiSegment<PatientListDto, PatientDetailDto, PatientInputDto>.GetByIdAsync(Guid id)
+        => GetPatientByIdAsync(id);
+
+    Task<ApiResponse<PatientDetailDto>> IEntityApiSegment<PatientListDto, PatientDetailDto, PatientInputDto>.CreateAsync(PatientInputDto request)
+        => CreatePatientAsync(request);
+
+    Task<ApiResponse<PatientDetailDto>> IEntityApiSegment<PatientListDto, PatientDetailDto, PatientInputDto>.UpdateAsync(Guid id, PatientInputDto request)
+        => UpdatePatientAsync(id, request);
+
+    Task<ApiResponse> IEntityApiSegment<PatientListDto, PatientDetailDto, PatientInputDto>.DeleteAsync(Guid id)
+        => DeletePatientAsync(id);
 }

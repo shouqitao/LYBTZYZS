@@ -10,107 +10,21 @@ namespace LYBT.Desktop.Herbs.Repositories;
 /// <summary>
 /// 药材仓储 — routes all calls through IApiClient.
 /// </summary>
-public sealed class HerbRepository : ApiClientRepositoryBase<HerbListDto, HerbDetailDto>, IHerbRepository
+public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, HerbDetailDto, HerbInputDto>, IHerbRepository
 {
     private readonly IApiClient _apiClient;
 
     public HerbRepository(
         IApiClient apiClient,
         ILogger<HerbRepository> logger)
-        : base(logger)
+        : base(logger, apiClient.Herbs)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
     }
 
     protected override string LogPrefix => "Herb";
 
-    #region 标准 CRUD 操作
-
-    public async Task<PagedResult<HerbListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null, CancellationToken ct = default)
-    {
-        return await ExecuteAsync(
-            async () =>
-            {
-                var response = await _apiClient.Herbs.GetHerbsAsync(page, pageSize, keyword, category);
-                if (response.Data == null)
-                    return new PagedResult<HerbListDto> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize };
-
-                return new PagedResult<HerbListDto>
-                {
-                    Items = response.Data.Items.ToList(),
-                    TotalCount = response.Data.TotalCount,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-            },
-            "GetPaged",
-            "[REPO] Herb.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword} Category={Category}",
-            [page, pageSize, keyword, category]);
-    }
-
-    public async Task<HerbDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
-    {
-        return await ExecuteAsync(
-            async () =>
-            {
-                var response = await _apiClient.Herbs.GetHerbByIdAsync(id);
-                return response.Data;
-            },
-            "GetById");
-    }
-
-    public async Task<HerbDetailDto> CreateAsync(HerbInputDto dto, CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(dto);
-
-        return await ExecuteAsync(
-            async () =>
-            {
-                var response = await _apiClient.Herbs.CreateHerbAsync(dto);
-                if (!response.Success || response.Data == null)
-                    throw new InvalidOperationException(response.Message ?? "创建药材失败");
-
-                Logger.LogInformation("[REPO] Herb.Create completed - Id={Id}", response.Data.Id);
-                return response.Data;
-            },
-            "Create",
-            LogLevel.Information);
-    }
-
-    public async Task<HerbDetailDto> UpdateAsync(HerbInputDto dto, CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(dto);
-        if (dto.Id is null || dto.Id == Guid.Empty)
-            throw new ArgumentException("更新DTO必须包含有效的ID", nameof(dto));
-
-        return await ExecuteAsync(
-            async () =>
-            {
-                var response = await _apiClient.Herbs.UpdateHerbAsync(dto.Id.Value, dto);
-                if (!response.Success || response.Data == null)
-                    throw new InvalidOperationException(response.Message ?? "更新药材失败");
-
-                Logger.LogInformation("[REPO] Herb.Update completed - Id={Id}", response.Data.Id);
-                return response.Data;
-            },
-            "Update",
-            LogLevel.Information);
-    }
-
-    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
-    {
-        await ExecuteAsync(
-            async () =>
-            {
-                var response = await _apiClient.Herbs.DeleteHerbAsync(id);
-                if (!response.Success)
-                    throw new InvalidOperationException(response.Message ?? "删除药材失败");
-
-                Logger.LogInformation("[REPO] Herb.Delete completed - Id={Id}", id);
-            },
-            "Delete",
-            LogLevel.Information);
-    }
+    #region 搜索
 
     public async Task<List<HerbListDto>> SearchAsync(string keyword, CancellationToken ct = default)
     {

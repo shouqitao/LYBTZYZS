@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Shared.Models.Contracts.Formula
 {
@@ -8,7 +9,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// Phase 3: 合并FormulaCreateDto和FormulaUpdateDto
     /// OpenSpec: refactor-dto-simplification - 移除接口继承，直接声明Remark字段
     /// </summary>
-    public class FormulaInputDto
+    public class FormulaInputDto : IEntityInputDto
     {
 
         [Required(ErrorMessage = "验方名称不能为空")]

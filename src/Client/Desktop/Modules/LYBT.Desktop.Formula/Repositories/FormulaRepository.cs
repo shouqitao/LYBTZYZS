@@ -10,107 +10,21 @@ namespace LYBT.Desktop.Formula.Repositories;
 /// <summary>
 /// 验方仓储 — routes all calls through IApiClient.
 /// </summary>
-public sealed class FormulaRepository : ApiClientRepositoryBase<FormulaListDto, FormulaDetailDto>, IFormulaRepository
+public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaListDto, FormulaDetailDto, FormulaInputDto>, IFormulaRepository
 {
     private readonly IApiClient _apiClient;
 
     public FormulaRepository(
         IApiClient apiClient,
         ILogger<FormulaRepository> logger)
-        : base(logger)
+        : base(logger, apiClient.Formulas)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
     }
 
     protected override string LogPrefix => "Formula";
 
-    #region 标准 CRUD 操作
-
-    public async Task<PagedResult<FormulaListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null, CancellationToken ct = default)
-    {
-        return await ExecuteAsync(
-            async () =>
-            {
-                var response = await _apiClient.Formulas.GetFormulasAsync(page, pageSize, keyword, category);
-                if (response.Data == null)
-                    return new PagedResult<FormulaListDto> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize };
-
-                return new PagedResult<FormulaListDto>
-                {
-                    Items = response.Data.Items.ToList(),
-                    TotalCount = response.Data.TotalCount,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-            },
-            "GetPaged",
-            "[REPO] Formula.GetPaged - Page={Page} PageSize={PageSize} Keyword={Keyword} Category={Category}",
-            [page, pageSize, keyword, category]);
-    }
-
-    public async Task<FormulaDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
-    {
-        return await ExecuteAsync(
-            async () =>
-            {
-                var response = await _apiClient.Formulas.GetFormulaByIdAsync(id);
-                return response.Data;
-            },
-            "GetById");
-    }
-
-    public async Task<FormulaDetailDto> CreateAsync(FormulaInputDto dto, CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(dto);
-
-        return await ExecuteAsync(
-            async () =>
-            {
-                var response = await _apiClient.Formulas.CreateFormulaAsync(dto);
-                if (!response.Success || response.Data == null)
-                    throw new InvalidOperationException(response.Message ?? "创建验方失败");
-
-                Logger.LogInformation("[REPO] Formula.Create completed - Id={Id}", response.Data.Id);
-                return response.Data;
-            },
-            "Create",
-            LogLevel.Information);
-    }
-
-    public async Task<FormulaDetailDto> UpdateAsync(FormulaInputDto dto, CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(dto);
-        if (dto.Id is null || dto.Id == Guid.Empty)
-            throw new ArgumentException("更新DTO必须包含有效的ID", nameof(dto));
-
-        return await ExecuteAsync(
-            async () =>
-            {
-                var response = await _apiClient.Formulas.UpdateFormulaAsync(dto.Id.Value, dto);
-                if (!response.Success || response.Data == null)
-                    throw new InvalidOperationException(response.Message ?? "更新验方失败");
-
-                Logger.LogInformation("[REPO] Formula.Update completed - Id={Id}", response.Data.Id);
-                return response.Data;
-            },
-            "Update",
-            LogLevel.Information);
-    }
-
-    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
-    {
-        await ExecuteAsync(
-            async () =>
-            {
-                var response = await _apiClient.Formulas.DeleteFormulaAsync(id);
-                if (!response.Success)
-                    throw new InvalidOperationException(response.Message ?? "删除验方失败");
-
-                Logger.LogInformation("[REPO] Formula.Delete completed - Id={Id}", id);
-            },
-            "Delete",
-            LogLevel.Information);
-    }
+    #region 搜索
 
     public async Task<List<FormulaListDto>> SearchAsync(string keyword, CancellationToken ct = default)
     {

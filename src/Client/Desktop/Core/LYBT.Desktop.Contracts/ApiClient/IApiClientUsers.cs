@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Contracts.ApiClient;
 /// <para>Combines methods from IUserApi (remote) and ILocalUserApi (local).</para>
 /// <para>Remote methods return ApiResponse&lt;T&gt;; local-only methods return raw DTOs.</para>
 /// </remarks>
-public interface IApiClientUsers
+public interface IApiClientUsers : IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>
 {
     /// <summary>
     /// 分页获取用户列表。
@@ -118,4 +118,22 @@ public interface IApiClientUsers
     /// 获取当前已认证用户（仅本地模式）。
     /// </summary>
     Task<UserDetailDto> GetCurrentUserAsync();
+
+    // ========== 泛型段接口默认实现（转发到上方实体命名方法，实现类无需改动） ==========
+
+    Task<ApiResponse<PagedResult<UserListDto>>> IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>.GetPagedAsync(
+        int page, int pageSize, string? keyword, string? category)
+        => GetUsersAsync(page, pageSize, keyword);
+
+    Task<ApiResponse<UserDetailDto>> IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>.GetByIdAsync(Guid id)
+        => GetUserByIdAsync(id);
+
+    Task<ApiResponse<UserDetailDto>> IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>.CreateAsync(UserInputDto request)
+        => CreateUserAsync(request);
+
+    Task<ApiResponse<UserDetailDto>> IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>.UpdateAsync(Guid id, UserInputDto request)
+        => UpdateUserAsync(id, request);
+
+    Task<ApiResponse> IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>.DeleteAsync(Guid id)
+        => DeleteUserAsync(id);
 }

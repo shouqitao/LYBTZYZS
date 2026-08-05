@@ -13,7 +13,7 @@ namespace LYBT.Desktop.Patients.Repositories;
 /// 患者仓储——所有调用均通过 IApiClient 路由。
 /// </summary>
 public sealed class PatientRepository
-    : ApiClientRepositoryBase<PatientListDto, PatientDetailDto>,
+    : EntityApiClientRepositoryBase<PatientListDto, PatientDetailDto, PatientInputDto>,
       IPatientRepository
 {
     private readonly IApiClient _apiClient;
@@ -23,84 +23,18 @@ public sealed class PatientRepository
     public PatientRepository(
         IApiClient apiClient,
         ILogger<PatientRepository> logger)
-        : base(logger)
+        : base(logger, apiClient.Patients)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
     }
 
-    #region Standard CRUD
+    /// <summary>
+    /// 分页查询患者列表（接口无 category 参数，转发基类标准实现）。
+    /// </summary>
+    public Task<PagedResult<PatientListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, CancellationToken ct = default)
+        => base.GetPagedAsync(page, pageSize, keyword, null, ct);
 
-    public async Task<PagedResult<PatientListDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, CancellationToken ct = default)
-    {
-        return await ExecuteAsync(async () =>
-        {
-            var response = await _apiClient.Patients.GetPatientsAsync(page, pageSize, keyword);
-            if (response.Data == null)
-                return new PagedResult<PatientListDto> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize };
-
-            return new PagedResult<PatientListDto>
-            {
-                Items = response.Data.Items.ToList(),
-                TotalCount = response.Data.TotalCount,
-                CurrentPage = page,
-                PageSize = pageSize
-            };
-        }, nameof(GetPagedAsync), "[REPO] {0}.{1} - Page={2} PageSize={3} Keyword={4}",
-           [LogPrefix, nameof(GetPagedAsync), page, pageSize, keyword]);
-    }
-
-    public async Task<PatientDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
-    {
-        return await ExecuteAsync(async () =>
-        {
-            var response = await _apiClient.Patients.GetPatientByIdAsync(id);
-            return response.Data;
-        }, nameof(GetByIdAsync), "[REPO] {0}.{1} - Id={2}",
-           [LogPrefix, nameof(GetByIdAsync), id]);
-    }
-
-    public async Task<PatientDetailDto> CreateAsync(PatientInputDto patient, CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(patient);
-
-        return await ExecuteAsync(async () =>
-        {
-            var response = await _apiClient.Patients.CreatePatientAsync(patient);
-            if (!response.Success || response.Data == null)
-                throw new InvalidOperationException(response.Message ?? "创建患者失败");
-            return response.Data;
-        }, nameof(CreateAsync), LogLevel.Information);
-    }
-
-    public async Task<PatientDetailDto> UpdateAsync(PatientInputDto patient, CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(patient);
-        if (patient.Id is null || patient.Id == Guid.Empty)
-            throw new ArgumentException("Update DTO must contain valid ID", nameof(patient));
-
-        return await ExecuteAsync(async () =>
-        {
-            var response = await _apiClient.Patients.UpdatePatientAsync(patient.Id.Value, patient);
-            if (!response.Success || response.Data == null)
-                throw new InvalidOperationException(response.Message ?? "更新患者失败");
-            return response.Data;
-        }, nameof(UpdateAsync), LogLevel.Information);
-    }
-
-    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
-    {
-        await ExecuteAsync(
-            async () =>
-            {
-                var response = await _apiClient.Patients.DeletePatientAsync(id);
-                if (!response.Success)
-                    throw new InvalidOperationException(response.Message ?? "删除患者失败");
-
-                Logger.LogInformation("[REPO] Patient.Delete completed - Id={Id}", id);
-            },
-            nameof(DeleteAsync),
-            LogLevel.Information);
-    }
+    #region Search
 
     public async Task<List<PatientListDto>> SearchAsync(string keyword, CancellationToken ct = default)
     {
