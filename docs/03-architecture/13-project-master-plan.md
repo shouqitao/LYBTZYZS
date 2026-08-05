@@ -82,6 +82,13 @@
 | B-14 | 挂号排班 | 医生排班+号源管理 | 无 | ⬜ | 3d |
 | B-15 | 离线同步 v2.0 | 重新设计架构 | 无 | ⬜ | 5d+ |
 | B-16 | Swagger | API 文档生成 | 无 | ⬜ | 0.5d |
+| B-17 | 药材恢复端点 | POST /herbs/{id}/restore (US-HERB-011) | 无 | ⬜ | 0.5d |
+| B-18 | 验方恢复端点 | POST /Formulas/{id}/restore (US-FORM-012) | 无 | ⬜ | 0.5d |
+| B-19 | 医案历史聚合 | GET /medicalcases/{pid}/consultations + prescriptions (US-MC-008/009) | 无 | ⬜ | 1d |
+| B-20 | 打印回写 | PUT /print-completed + POST /print-log (US-PRINT-004) | 无 | ⬜ | 1d |
+| B-21 | 安全增强 | Token 族旋转 + 安全审计 + 本地限流 (US-AUTH-006/007/013) | 无 | ⬜ | 2d |
+| B-22 | 审计日志查询 | GET /medicalcases/{id}/audit-logs (US-MC-017) | B-19 | ⬜ | 1d |
+| B-23 | 复用上次处方 | 复用 US-MC-009 处方历史 (US-MC-019) | B-19 | ⬜ | 0.5d |
 
 ### C 类 — 运维部署
 

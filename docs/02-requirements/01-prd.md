@@ -8,7 +8,7 @@
 
 系统采用**双模式架构**（远程 SQL Server + 本地 SQL Server LocalDB），共享统一 Service/Repository 层，确保医生在任何网络条件下都能完成诊疗工作。**v1.0 远程库与本地库数据孤立不互通**（N1 决策），双向同步属 v2.0 规划。`MedicalCase`（医案）作为 DDD 唯一聚合根，聚合 `Consultation`（中医诊断）与 `Prescription`（处方），保证诊疗数据的原子性写入与事务一致性。
 
-v1.0 包含 **10 个功能模块、141 个 User Stories**（Must / Should / Could 三级优先级），目标用户涵盖医生（Doctor）、管理员（Admin）、前台接待（Receptionist）与系统运维（Sysadmin，**独立用户**，角色为 SuperAdmin）四类。详细角色画像与业务背景见 [`../01-product/02-personas.md`](../01-product/02-personas.md)，产品愿景与核心价值见 [`../01-product/01-vision.md`](../01-product/01-vision.md)。
+v1.0 包含 **10 个功能模块、142 个 User Stories**（Must / Should / Could 三级优先级），目标用户涵盖医生（Doctor）、管理员（Admin）、前台接待（Receptionist）与系统运维（Sysadmin，**独立用户**，角色为 SuperAdmin）四类。详细角色画像与业务背景见 [`../01-product/02-personas.md`](../01-product/02-personas.md)，产品愿景与核心价值见 [`../01-product/01-vision.md`](../01-product/01-vision.md)。
 
 ## 问题陈述
 
@@ -77,7 +77,7 @@ v1.0 包含 **10 个功能模块、141 个 User Stories**（Must / Should / Coul
 
 ## 范围
 
-### v1.0 范围（10 模块、141 US）
+### v1.0 范围（10 模块、142 US）
 
 | # | 模块 | US 数 | 核心能力 |
 |---|------|-------|---------|
