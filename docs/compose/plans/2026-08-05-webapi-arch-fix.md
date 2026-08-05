@@ -1,5 +1,10 @@
 # WebApi 架构修复计划（03-server.md 与代码对齐）
 
+> [!NOTE]
+> This document may not reflect the current implementation.
+> See the final report for up-to-date state:
+> [Final Report](../reports/webapi-arch-fix.md)
+
 > **For agentic workers:** 经技术总监确认后，按本计划 Task 逐步执行。每个 Task 完成后立即 `dotnet build LYBTZYZS.sln --no-incremental` 验证，最后统一提交。
 >
 > 状态：⏳ 待技术总监确认（2026-08-05 勘察完成，14 项问题全部验证属实）
