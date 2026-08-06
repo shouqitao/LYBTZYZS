@@ -58,6 +58,9 @@ internal class UserService : IUserService
         if (user == null)
             return Result<UserDetailDto>.Failure(ErrorCode.NotFound, "用户不存在");
 
+        if (string.IsNullOrWhiteSpace(dto.RealName))
+            return Result<UserDetailDto>.Failure(ErrorCode.InvalidRequest, "真实姓名不能为空");
+
         user.UpdateProfile(
             dto.RealName!,
             dto.PhoneNumber,
@@ -78,6 +81,9 @@ internal class UserService : IUserService
         var user = await _userRepository.GetByIdAsync(id, ct);
         if (user == null)
             return Result<UserDetailDto>.Failure(ErrorCode.UserNotFound, "用户不存在");
+
+        if (string.IsNullOrWhiteSpace(dto.RealName))
+            return Result<UserDetailDto>.Failure(ErrorCode.InvalidRequest, "真实姓名不能为空");
 
         user.UpdateProfile(
             dto.RealName,

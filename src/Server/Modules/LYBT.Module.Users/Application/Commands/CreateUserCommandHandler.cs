@@ -34,6 +34,11 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
         if (!request.IsAdmin)
             return Result<UserDetailDto>.Failure(ErrorCode.Unauthorized, "无权创建用户");
 
+        if (string.IsNullOrWhiteSpace(dto.RealName))
+            return Result<UserDetailDto>.Failure(ErrorCode.InvalidRequest, "真实姓名不能为空");
+        if (string.IsNullOrWhiteSpace(dto.UserName))
+            return Result<UserDetailDto>.Failure(ErrorCode.InvalidRequest, "用户名不能为空");
+
         if (await _userManager.FindByNameAsync(dto.UserName!) != null)
             return Result<UserDetailDto>.Failure(ErrorCode.UserNameExists, "用户名已存在");
 
