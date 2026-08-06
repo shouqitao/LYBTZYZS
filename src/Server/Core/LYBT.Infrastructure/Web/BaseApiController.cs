@@ -67,7 +67,7 @@ namespace LYBT.Infrastructure.Web
             => ControllerBaseExtensions.Success(this, data, message);
 
         protected IActionResult SuccessPaged<T>(PagedResult<T> pagedResult, string message = "查询成功")
-            => this.SuccessPaged(pagedResult, message);
+            => ControllerBaseExtensions.SuccessPaged(this, pagedResult, message);
 
         protected IActionResult Error(string message)
         {
