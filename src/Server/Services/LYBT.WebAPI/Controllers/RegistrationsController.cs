@@ -56,11 +56,9 @@ public class RegistrationsController : BaseRegistrationsController
     [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
     [HttpPost]
     [EnableRateLimiting("ApiCalls")]
-    public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
+#pragma warning disable CS0109
+    public new async Task<IActionResult> Create([FromBody] RegistrationInputDto inputDto, CancellationToken ct)
     {
-        if (dto is not RegistrationInputDto inputDto)
-            return ValidationFail("无效的请求数据");
-
         var result = await Sender.Send(new CreateRegistrationCommand(inputDto), ct);
 
         if (!result.IsSuccess || result.Value == null)

@@ -77,11 +77,9 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), StatusCodes.Status201Created)]
-        public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
+#pragma warning disable CS0109
+        public new async Task<IActionResult> Create([FromBody] PatientInputDto inputDto, CancellationToken ct)
         {
-            if (dto is not PatientInputDto inputDto)
-                return ValidationFail("无效的请求数据");
-
             var (operatorId, _, _) = GetOperator();
             var result = await Sender.Send(new CreatePatientCommand(inputDto, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
@@ -101,11 +99,10 @@ namespace LYBT.WebAPI.Controllers
         [HttpPut("{id:guid}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
-        public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
+#pragma warning disable CS0109
+        public new async Task<IActionResult> Update(Guid id, [FromBody] PatientInputDto inputDto, CancellationToken ct)
         {
             if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
-            if (dto is not PatientInputDto inputDto)
-                return ValidationFail("无效的请求数据");
 
             var (ownerDto, ownershipError) = await CheckOwnershipAsync(id, ct);
             if (ownershipError != null) return ownershipError;

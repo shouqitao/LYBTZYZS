@@ -74,11 +74,9 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), StatusCodes.Status201Created)]
-        public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
+#pragma warning disable CS0109
+        public new async Task<IActionResult> Create([FromBody] HerbInputDto inputDto, CancellationToken ct)
         {
-            if (dto is not HerbInputDto inputDto)
-                return ValidationFail("无效的请求数据");
-
             var (operatorId, _, _) = GetOperator();
             var result = await Sender.Send(new CreateHerbCommand(inputDto, operatorId), ct);
             if (result.IsSuccess && result.Value != null)
@@ -100,11 +98,10 @@ namespace LYBT.WebAPI.Controllers
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
+#pragma warning disable CS0109
+        public new async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto inputDto, CancellationToken ct)
         {
             if (ValidateGuid(id, "药材ID") is { } error) return error;
-            if (dto is not HerbInputDto inputDto)
-                return ValidationFail("无效的请求数据");
 
             var getResult = await _herbService.GetByIdAsync(id, ct);
             if (!getResult.IsSuccess || getResult.Value == null)

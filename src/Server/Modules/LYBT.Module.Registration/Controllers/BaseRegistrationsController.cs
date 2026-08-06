@@ -26,7 +26,8 @@ public abstract class BaseRegistrationsController : BaseCrudController
     /// 获取挂号分页列表（保留原始 7 参数过滤）
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> GetList(
+#pragma warning disable CS0109 // new is required to hide base class route registration
+    public new async Task<IActionResult> GetList(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? keyword = null,

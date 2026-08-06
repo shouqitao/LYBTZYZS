@@ -62,11 +62,9 @@ public abstract class BaseUsersController : BaseCrudController
 
     [HttpPost]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
+#pragma warning disable CS0109
+    public new async Task<IActionResult> Create([FromBody] UserInputDto inputDto, CancellationToken ct)
     {
-        if (dto is not UserInputDto inputDto)
-            return ValidationFail("无效的请求数据");
-
         var (operatorId, _, currentRole) = GetOperator();
         var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
         var result = await Sender.Send(new CreateUserCommand(inputDto, operatorId, isAdmin), ct);
@@ -78,11 +76,10 @@ public abstract class BaseUsersController : BaseCrudController
 
     [HttpPut("{id:guid}")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
+#pragma warning disable CS0109
+    public new async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto inputDto, CancellationToken ct)
     {
         if (ValidateGuid(id, "用户ID") is { } guidError) return guidError;
-        if (dto is not UserInputDto inputDto)
-            return ValidationFail("无效的请求数据");
 
         var (operatorId, _, _) = GetOperator();
         var result = await _userService.UpdateAsync(id, inputDto, operatorId, ct);

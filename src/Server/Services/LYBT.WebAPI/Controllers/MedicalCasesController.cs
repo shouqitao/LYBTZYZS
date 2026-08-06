@@ -96,11 +96,9 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
-        public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
+#pragma warning disable CS0109
+        public new async Task<IActionResult> Create([FromBody] MedicalCaseInputDto inputDto, CancellationToken ct)
         {
-            if (dto is not MedicalCaseInputDto inputDto)
-                return ValidationFail("无效的请求数据");
-
             var (doctorId, _, _) = GetOperator();
 
             inputDto.Id = null;
@@ -129,13 +127,11 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 403)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
-        public override async Task<IActionResult> Update(
+#pragma warning disable CS0109
+        public new async Task<IActionResult> Update(
             Guid id,
-            [FromBody] object dto, CancellationToken ct)
+            [FromBody] MedicalCaseInputDto request, CancellationToken ct)
         {
-            if (dto is not MedicalCaseInputDto request)
-                return ValidationFail("无效的请求数据");
-
             if (request.Id != id)
             {
                 return Error("请求ID与路由ID不一致");

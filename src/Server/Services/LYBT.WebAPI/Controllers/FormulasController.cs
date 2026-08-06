@@ -79,11 +79,9 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), StatusCodes.Status201Created)]
-        public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
+#pragma warning disable CS0109
+        public new async Task<IActionResult> Create([FromBody] FormulaInputDto inputDto, CancellationToken ct)
         {
-            if (dto is not FormulaInputDto inputDto)
-                return ValidationFail("无效的请求数据");
-
             var (operatorId, _, _) = GetOperator();
             var result = await Sender.Send(new CreateFormulaCommand(inputDto, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
@@ -103,11 +101,10 @@ namespace LYBT.WebAPI.Controllers
         [HttpPut("{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
-        public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
+#pragma warning disable CS0109
+        public new async Task<IActionResult> Update(Guid id, [FromBody] FormulaInputDto inputDto, CancellationToken ct)
         {
             if (ValidateGuid(id, "验方ID") is { } error) return error;
-            if (dto is not FormulaInputDto inputDto)
-                return ValidationFail("无效的请求数据");
 
             var getResult = await _formulaService.GetByIdAsync(id, ct);
             if (!getResult.IsSuccess || getResult.Value == null)
