@@ -92,10 +92,10 @@ namespace LYBT.Infrastructure.Web
         #region Result处理方法 - 委托给 ControllerBaseExtensions
 
         protected IActionResult HandleResult<T>(Result<T> result, string successMessage = "操作成功", bool useAuthMapping = false)
-            => this.HandleResult(result, successMessage, useAuthMapping);
+            => ControllerBaseExtensions.HandleResult(this, result, successMessage, useAuthMapping);
 
         protected IActionResult HandleResult(Result result, string successMessage = "操作成功")
-            => this.HandleResult(result, successMessage);
+            => ControllerBaseExtensions.HandleResult(this, result, successMessage);
 
         #endregion
 
