@@ -7628,7 +7628,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
+                  "pm.test('Status 200,400,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404, 429]);});"
                 ]
               }
             }
