@@ -53,6 +53,11 @@
     <PackageReference Include="Prism.Wpf" />
   </ItemGroup>
 
+  <!-- US-REG-008: SignalR 实时通知客户端 -->
+  <ItemGroup Label="SignalR">
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+  </ItemGroup>
+
   <!-- Project References -->
   <ItemGroup Label="Infrastructure Dependencies">
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />

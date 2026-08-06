@@ -30,6 +30,9 @@ public class RegistrationModule : IModule
         // IRegistrationRepository 由 Shell DI 注册 (Refit API)
         containerRegistry.Register<IRegistrationService, RemoteRegistrationService>();
 
+        // US-REG-008: SignalR 实时通知客户端（单例，连接生命周期跨页面）
+        containerRegistry.RegisterSingleton<Services.ISignalRClient, Services.SignalRClient>();
+
         // ViewModel
         containerRegistry.Register<ViewModels.RegistrationListViewModel>();
 

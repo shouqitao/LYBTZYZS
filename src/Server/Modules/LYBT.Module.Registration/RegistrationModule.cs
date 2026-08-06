@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Registration.Application.Commands;
 using LYBT.Module.Registration.Application.Validators;
+using LYBT.Module.Registration.Hubs;
 using LYBT.Module.Registration.Infrastructure;
 using LYBT.Module.Registration.Interfaces;
 using LYBT.Module.Registration.Mappers;
@@ -36,6 +37,10 @@ public static class RegistrationModule
 
         // 注册 Application 层验证器
         services.AddValidatorsFromAssemblyContaining<CreateRegistrationValidator>();
+
+        // 注册 SignalR 实时通知 (US-REG-008)
+        services.AddSingleton<RegistrationConnectionManager>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         return services;
     }

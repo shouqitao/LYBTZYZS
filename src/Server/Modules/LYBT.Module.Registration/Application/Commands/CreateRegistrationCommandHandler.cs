@@ -21,15 +21,18 @@ public sealed class CreateRegistrationCommandHandler
     private readonly IRegistrationRepository _repository;
     private readonly IDomainEventDispatcher _eventDispatcher;
     private readonly RegistrationMapper _mapper;
+    private readonly INotificationService _notificationService;
 
     public CreateRegistrationCommandHandler(
         IRegistrationRepository repository,
         IDomainEventDispatcher eventDispatcher,
-        RegistrationMapper mapper)
+        RegistrationMapper mapper,
+        INotificationService notificationService)
     {
         _repository = repository;
         _eventDispatcher = eventDispatcher;
         _mapper = mapper;
+        _notificationService = notificationService;
     }
 
     public async Task<Result<RegistrationDetailDto>> Handle(
@@ -71,7 +74,15 @@ public sealed class CreateRegistrationCommandHandler
                 registration.QueueNumber)
         }, cancellationToken);
 
-        return Result<RegistrationDetailDto>.Success(_mapper.ToDetailDto(registration));
+        // US-REG-008: 新挂号实时推送 — 仅 Waiting 状态会进入医生待诊列表
+        var detailDto = _mapper.ToDetailDto(registration);
+        if (registration.Status == RegistrationStatus.Waiting)
+        {
+            await _notificationService.NotifyNewRegistrationAsync(
+                registration.DoctorId, detailDto, cancellationToken);
+        }
+
+        return Result<RegistrationDetailDto>.Success(detailDto);
     }
 }
 

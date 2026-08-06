@@ -7,9 +7,12 @@ using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Foundation.ExceptionHandling;
+using LYBT.Desktop.Registration.Events;
+using LYBT.Desktop.Registration.Services;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
+using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
 
@@ -29,6 +32,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
     private readonly IRegistrationService _registrationService;
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly IApiClientPatients _patientApi;
+    private readonly ISignalRClient _signalRClient;
     private readonly IDialogService? _dialogService;
     private readonly PeriodicTimer _refreshTimer = new(TimeSpan.FromSeconds(30));
     private CancellationTokenSource? _timerCts;
@@ -75,14 +79,20 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         IRegistrationService registrationService,
         INavigationCoordinator navigationCoordinator,
         IApiClientPatients patientApi,
+        ISignalRClient signalRClient,
+        IEventAggregator eventAggregator,
         IDialogService? dialogService = null)
         : base(services)
     {
         _registrationService = registrationService;
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _patientApi = patientApi ?? throw new ArgumentNullException(nameof(patientApi));
+        _signalRClient = signalRClient ?? throw new ArgumentNullException(nameof(signalRClient));
         _dialogService = dialogService;
         PageTitle = "挂号队列";
+
+        // US-REG-008: SignalR 推送 / 降级轮询触发时刷新队列
+        eventAggregator.GetEvent<RegistrationRefreshedEvent>().Subscribe(OnRegistrationRefreshed);
 
         var currentRole = SessionManager.CurrentUser?.Role;
         IsReceptionist = currentRole == UserRole.Receptionist || currentRole == UserRole.Admin || currentRole == UserRole.SuperAdmin;
@@ -96,6 +106,12 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
     {
         await LoadQueueAsync();
         StartAutoRefresh();
+
+        // US-REG-008: 医生建立 SignalR 推送连接（≤3 秒实时更新待诊列表）
+        if (IsDoctor && SessionManager.CurrentUserId is { } doctorId)
+        {
+            await _signalRClient.StartAsync(doctorId);
+        }
     }
 
     /// <summary>每次导航到此页面时刷新</summary>
@@ -112,6 +128,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
     protected override void OnNavigatedFromCore(NavigationContext context)
     {
         StopAutoRefresh();
+        _ = _signalRClient.StopAsync();
     }
 
     private void StartAutoRefresh()
@@ -137,6 +154,13 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
             Logger.LogDebug("[REG-VM] 定时刷新队列");
             await LoadQueueAsync();
         }
+    }
+
+    /// <summary>SignalR 推送 / 降级轮询触发时的队列刷新（页面未初始化则跳过）。</summary>
+    private void OnRegistrationRefreshed()
+    {
+        if (!IsInitialized) return;
+        _ = LoadQueueAsync();
     }
 
     #endregion

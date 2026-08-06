@@ -185,6 +185,9 @@ public class Program
 
             builder.Services.RegisterAllApplicationServices(builder.Configuration, builder.Environment);
 
+            // US-REG-008: SignalR 实时通知（RegistrationHub）
+            builder.Services.AddSignalR();
+
             // T5-P3-01: 所有环境验证 Critical 配置项
             var configValidator = new LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationValidator(builder.Configuration);
             var criticalMissing = configValidator.ValidateCriticalItems();
@@ -247,6 +250,9 @@ public class Program
             // 配置中间件
             app.ConfigureAllMiddleware();
             app.UseDevelopmentRequestLogging();
+
+            // US-REG-008: 映射挂号实时通知 Hub
+            app.MapHub<LYBT.Module.Registration.Hubs.RegistrationHub>("/hubs/registration");
 
             Log.Information("应用配置完成，启动中...");
             await app.RunAsync();

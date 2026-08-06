@@ -65,6 +65,8 @@
     <PackageVersion Include="Prism.Core" Version="8.1.97" />
     <PackageVersion Include="Prism.DryIoc" Version="8.1.97" />
     <PackageVersion Include="Prism.Wpf" Version="8.1.97" />
+    <!-- US-REG-008: SignalR 实时通知客户端 -->
+    <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.26" />
     <!-- OpenSpec: refactor-viewmodel-composition - MVVM Toolkit源生成器 -->
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <!-- MaterialDesignThemes M2 (replaces HandyControl) -->

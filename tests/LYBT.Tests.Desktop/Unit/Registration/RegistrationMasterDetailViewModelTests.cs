@@ -8,6 +8,7 @@ using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Registration.Dialogs;
+using LYBT.Desktop.Registration.Services;
 using LYBT.Desktop.Registration.ViewModels;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -16,6 +17,7 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
 using Xunit;
@@ -35,6 +37,7 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
     private readonly ISessionManager _sessionManager;
     private readonly IPatientService _patientService;
     private readonly IUserService _userService;
+    private readonly IEventAggregator _eventAggregator = new EventAggregator();
     private readonly Guid _currentUserId = Guid.NewGuid();
 
     private sealed class TestableRegistrationListViewModel(
@@ -42,8 +45,10 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
         IRegistrationService registrationService,
         INavigationCoordinator navigationCoordinator,
         IApiClientPatients patientApi,
+        ISignalRClient signalRClient,
+        IEventAggregator eventAggregator,
         IDialogService? dialogService = null)
-        : RegistrationListViewModel(services, registrationService, navigationCoordinator, patientApi, dialogService)
+        : RegistrationListViewModel(services, registrationService, navigationCoordinator, patientApi, signalRClient, eventAggregator, dialogService)
     {
         public Task InitializePublicAsync() => base.InitializeAsync(CreateTestNavigationContext());
     }
@@ -82,6 +87,8 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
         _registrationService,
         _navigationCoordinator,
         _patientApi,
+        Substitute.For<ISignalRClient>(),
+        _eventAggregator,
         _dialogService);
 
     private RegistrationCreateDialogViewModel CreateDialogSut() => new(

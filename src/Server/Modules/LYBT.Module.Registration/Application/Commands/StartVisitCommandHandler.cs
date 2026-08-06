@@ -17,13 +17,16 @@ public sealed class StartVisitCommandHandler
 {
     private readonly IRegistrationRepository _repository;
     private readonly IMedicalCaseCrossModuleService _medicalCaseCrossModule;
+    private readonly INotificationService _notificationService;
 
     public StartVisitCommandHandler(
         IRegistrationRepository repository,
-        IMedicalCaseCrossModuleService medicalCaseCrossModule)
+        IMedicalCaseCrossModuleService medicalCaseCrossModule,
+        INotificationService notificationService)
     {
         _repository = repository;
         _medicalCaseCrossModule = medicalCaseCrossModule;
+        _notificationService = notificationService;
     }
 
     public async Task<Result<Guid>> Handle(
@@ -58,6 +61,10 @@ public sealed class StartVisitCommandHandler
 
             await _repository.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
+
+            // US-REG-008: 接诊状态变更实时同步到该医生待诊列表
+            await _notificationService.NotifyRegistrationStatusChangedAsync(
+                entity.DoctorId, entity.Id, entity.Status.ToString(), cancellationToken);
 
             return Result<Guid>.Success(medicalCaseId.Value);
         }

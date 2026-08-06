@@ -15,13 +15,16 @@ public sealed class CancelRegistrationCommandHandler
 {
     private readonly IRegistrationRepository _repository;
     private readonly IDomainEventDispatcher _eventDispatcher;
+    private readonly INotificationService _notificationService;
 
     public CancelRegistrationCommandHandler(
         IRegistrationRepository repository,
-        IDomainEventDispatcher eventDispatcher)
+        IDomainEventDispatcher eventDispatcher,
+        INotificationService notificationService)
     {
         _repository = repository;
         _eventDispatcher = eventDispatcher;
+        _notificationService = notificationService;
     }
 
     public async Task<Result> Handle(
@@ -54,6 +57,10 @@ public sealed class CancelRegistrationCommandHandler
                 entity.PatientName,
                 entity.DoctorId)
         }, cancellationToken);
+
+        // US-REG-008: 取消状态变更实时同步到该医生待诊列表
+        await _notificationService.NotifyRegistrationStatusChangedAsync(
+            entity.DoctorId, entity.Id, entity.Status.ToString(), cancellationToken);
 
         return Result.Success();
     }

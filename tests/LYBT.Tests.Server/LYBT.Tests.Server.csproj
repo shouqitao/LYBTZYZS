@@ -53,6 +53,7 @@
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Formula\LYBT.Module.Formula.csproj" />
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Reports\LYBT.Module.Reports.csproj" />
+    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Registration\LYBT.Module.Registration.csproj" />
   </ItemGroup>
 
   <ItemGroup>
