@@ -4,6 +4,7 @@ using LYBT.Infrastructure.Web;
 using LYBT.Module.Reports.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Reports;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -78,6 +79,100 @@ public class ReportsController : BaseApiController
         var end = endDate ?? DateTime.Today;
 
         var dto = await _reportService.GetDailyHerbUsageAsync(start, end, cancellationToken);
+
+        return Success(dto, "查询成功");
+    }
+
+    /// <summary>
+    /// 获取收入趋势（挂号费/药费/合计，默认最近 30 天）
+    /// </summary>
+    [HttpGet("trend/income")]
+    [ProducesResponseType(typeof(ApiResponse<IncomeTrendDto>), 200)]
+    public async Task<IActionResult> GetIncomeTrend(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] ReportGranularity granularity = ReportGranularity.Day,
+        CancellationToken cancellationToken = default)
+    {
+        var end = endDate ?? DateTime.Today;
+        var start = startDate ?? end.AddDays(-29);
+
+        var dto = await _reportService.GetIncomeTrendAsync(start, end, granularity, cancellationToken);
+
+        return Success(dto, "查询成功");
+    }
+
+    /// <summary>
+    /// 获取问诊趋势（默认最近 30 天）
+    /// </summary>
+    [HttpGet("trend/consultations")]
+    [ProducesResponseType(typeof(ApiResponse<ConsultationTrendDto>), 200)]
+    public async Task<IActionResult> GetConsultationTrend(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] ReportGranularity granularity = ReportGranularity.Day,
+        CancellationToken cancellationToken = default)
+    {
+        var end = endDate ?? DateTime.Today;
+        var start = startDate ?? end.AddDays(-29);
+
+        var dto = await _reportService.GetConsultationTrendAsync(start, end, granularity, cancellationToken);
+
+        return Success(dto, "查询成功");
+    }
+
+    /// <summary>
+    /// 获取医生绩效统计
+    /// </summary>
+    [HttpGet("doctor-performance")]
+    [ProducesResponseType(typeof(ApiResponse<List<DoctorPerformanceDto>>), 200)]
+    public async Task<IActionResult> GetDoctorPerformance(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        CancellationToken cancellationToken = default)
+    {
+        var start = startDate ?? DateTime.Today;
+        var end = endDate ?? DateTime.Today;
+
+        var dto = await _reportService.GetDoctorPerformanceAsync(start, end, cancellationToken);
+
+        return Success(dto, "查询成功");
+    }
+
+    /// <summary>
+    /// 获取热门药材排行
+    /// </summary>
+    [HttpGet("herbs/ranking")]
+    [ProducesResponseType(typeof(ApiResponse<List<HerbUsageItemDto>>), 200)]
+    public async Task<IActionResult> GetHerbRanking(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] int top = 10,
+        CancellationToken cancellationToken = default)
+    {
+        var start = startDate ?? DateTime.Today;
+        var end = endDate ?? DateTime.Today;
+
+        var dto = await _reportService.GetHerbRankingAsync(start, end, top, cancellationToken);
+
+        return Success(dto, "查询成功");
+    }
+
+    /// <summary>
+    /// 获取患者流量（新患者/回头患者，默认最近 30 天）
+    /// </summary>
+    [HttpGet("patient-flow")]
+    [ProducesResponseType(typeof(ApiResponse<PatientFlowDto>), 200)]
+    public async Task<IActionResult> GetPatientFlow(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] ReportGranularity granularity = ReportGranularity.Day,
+        CancellationToken cancellationToken = default)
+    {
+        var end = endDate ?? DateTime.Today;
+        var start = startDate ?? end.AddDays(-29);
+
+        var dto = await _reportService.GetPatientFlowAsync(start, end, granularity, cancellationToken);
 
         return Success(dto, "查询成功");
     }
