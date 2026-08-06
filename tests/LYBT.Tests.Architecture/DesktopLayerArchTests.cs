@@ -10,22 +10,7 @@ namespace LYBT.Tests.Architecture;
 /// </summary>
 public class DesktopLayerArchTests
 {
-    private static readonly Assembly[] DesktopAssemblies =
-    [
-        Assembly.Load("LYBT.Desktop.Infrastructure"),
-        Assembly.Load("LYBT.Desktop.Shell"),
-        Assembly.Load("LYBT.Desktop.Auth"),
-        Assembly.Load("LYBT.Desktop.Users"),
-        Assembly.Load("LYBT.Desktop.Patients"),
-        Assembly.Load("LYBT.Desktop.MedicalCase"),
-        Assembly.Load("LYBT.Desktop.Herbs"),
-        Assembly.Load("LYBT.Desktop.Formula"),
-        Assembly.Load("LYBT.Desktop.Admin"),
-        Assembly.Load("LYBT.Desktop.Clinical"),
-        Assembly.Load("LYBT.Desktop.Registration"),
-        Assembly.Load("LYBT.Desktop.Controls"),
-        Assembly.Load("LYBT.Desktop.Printing")
-    ];
+    private static Assembly[] DesktopAssemblies => TestAssemblies.Desktop;
 
     /// <summary>
     /// Desktop层不得依赖Server层（LYBT.Entities 已下沉到 Shared，不再受限）

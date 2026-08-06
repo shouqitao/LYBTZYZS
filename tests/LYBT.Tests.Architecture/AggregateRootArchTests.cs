@@ -9,18 +9,7 @@ namespace LYBT.Tests.Architecture;
 /// </summary>
 public class AggregateRootArchTests
 {
-    private static readonly Assembly[] ServerAssemblies =
-    [
-        Assembly.Load("LYBT.WebAPI"),
-        Assembly.Load("LYBT.Infrastructure"),
-        Assembly.Load("LYBT.Entities"),
-        Assembly.Load("LYBT.Module.Auth"),
-        Assembly.Load("LYBT.Module.Users"),
-        Assembly.Load("LYBT.Module.Patients"),
-        Assembly.Load("LYBT.Module.MedicalCases"),
-        Assembly.Load("LYBT.Module.Herbs"),
-        Assembly.Load("LYBT.Module.Formulas")
-    ];
+    private static Assembly[] ServerAssemblies => TestAssemblies.Server;
 
     /// <summary>
     /// AR-001: 聚合根模式验证 - MedicalCase作为聚合根

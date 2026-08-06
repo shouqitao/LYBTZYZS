@@ -14,45 +14,14 @@ namespace LYBT.Tests.Architecture;
 
 public class ServerArchTests
 {
-    private static readonly Assembly[] ServerAssemblies =
-    [
-        Assembly.Load("LYBT.WebAPI"),
-        Assembly.Load("LYBT.Infrastructure"),
-        Assembly.Load("LYBT.Entities"),
-        Assembly.Load("LYBT.Module.Auth"),
-        Assembly.Load("LYBT.Module.Users"),
-        Assembly.Load("LYBT.Module.Patients"),
-        Assembly.Load("LYBT.Module.MedicalCases"),
-        Assembly.Load("LYBT.Module.Herbs"),
-        Assembly.Load("LYBT.Module.Formulas"),
-        Assembly.Load("LYBT.Module.Reports"),
-        Assembly.Load("LYBT.Module.Registration")
-    ];
-
-    private static readonly Assembly[] DesktopAssemblies =
-    [
-        Assembly.Load("LYBT.Desktop.Contracts"),
-        Assembly.Load("LYBT.Desktop.Foundation"),
-        Assembly.Load("LYBT.Desktop.Infrastructure"),
-        Assembly.Load("LYBT.Desktop.Shell"),
-        Assembly.Load("LYBT.Desktop.Auth"),
-        Assembly.Load("LYBT.Desktop.Users"),
-        Assembly.Load("LYBT.Desktop.Patients"),
-        Assembly.Load("LYBT.Desktop.MedicalCase"),
-        Assembly.Load("LYBT.Desktop.Herbs"),
-        Assembly.Load("LYBT.Desktop.Formula"),
-        Assembly.Load("LYBT.Desktop.Admin"),
-        Assembly.Load("LYBT.Desktop.Clinical"),
-        Assembly.Load("LYBT.Desktop.Registration"),
-        Assembly.Load("LYBT.Desktop.Controls"),
-        Assembly.Load("LYBT.Desktop.Printing")
-    ];
+    private static Assembly[] ServerAssemblies => TestAssemblies.Server;
+    private static Assembly[] DesktopAssemblies => TestAssemblies.Desktop;
 
     /// <summary>
     /// API版本控制：所有Controller必须使用v1路由
     /// </summary>
     [Fact]
-    public void ApiVersionTests_Controllers_Should_Use_V1_Routes_Only()
+    public void P09b_Controllers_Should_Use_V1_Routes()
     {
         var result = Types.InAssemblies(ServerAssemblies)
             .That()
@@ -108,7 +77,7 @@ public class ServerArchTests
     /// Controller位置约束：所有Controller必须在Controllers命名空间
     /// </summary>
     [Fact]
-    public void Controllers_Should_Be_In_Controllers_Namespace()
+    public void P09c_Controller_Must_Be_In_Controllers_Namespace()
     {
         var result = Types.InAssemblies(ServerAssemblies)
             .That()
@@ -139,7 +108,7 @@ public class ServerArchTests
     /// 服务命名约定：Service类必须以Service结尾
     /// </summary>
     [Fact]
-    public void Services_Should_Have_Service_Suffix()
+    public void P10b_Service_Must_Have_Service_Suffix()
     {
         var serviceTypes = Types.InAssemblies(ServerAssemblies)
             .That()
@@ -185,7 +154,7 @@ public class ServerArchTests
     /// 禁用框架约束：Server端禁止使用Redis
     /// </summary>
     [Fact]
-    public void Server_Should_Not_Use_Redis()
+    public void P11_No_Redis_Usage()
     {
         var result = Types.InAssemblies(ServerAssemblies)
             .Should()
@@ -200,7 +169,7 @@ public class ServerArchTests
     /// 禁用框架约束：Server端禁止使用Entity Framework外的其他ORM
     /// </summary>
     [Fact]
-    public void Server_Should_Only_Use_Entity_Framework()
+    public void P11b_Only_Use_EntityFramework()
     {
         var result = Types.InAssemblies(ServerAssemblies)
             .Should()
@@ -215,7 +184,7 @@ public class ServerArchTests
     /// 依赖方向约束：Entities层不得依赖其他业务层
     /// </summary>
     [Fact]
-    public void Entities_Should_Not_Depend_On_Business_Layers()
+    public void P12_Entities_Should_Not_Depend_On_Business_Layers()
     {
         var entitiesAssembly = Assembly.Load("LYBT.Entities");
 
@@ -232,7 +201,7 @@ public class ServerArchTests
     /// 依赖方向约束：Infrastructure层不得依赖WebAPI层
     /// </summary>
     [Fact]
-    public void Infrastructure_Should_Not_Depend_On_WebAPI()
+    public void P12b_Infrastructure_Should_Not_Depend_On_WebAPI()
     {
         var infrastructureAssembly = Assembly.Load("LYBT.Infrastructure");
 
@@ -249,7 +218,7 @@ public class ServerArchTests
     /// DTO命名约束：所有DTO类必须以Dto结尾
     /// </summary>
     [Fact]
-    public void DTOs_Should_Have_Dto_Suffix()
+    public void P13_Dto_Must_Have_Dto_Suffix()
     {
         var dtoTypes = Types.InAssemblies(ServerAssemblies)
             .That()
@@ -272,7 +241,7 @@ public class ServerArchTests
     /// 异步约定：Service方法涉及I/O操作必须异步
     /// </summary>
     [Fact]
-    public void Service_IO_Methods_Should_Be_Async()
+    public void P14_Service_IO_Methods_Must_Be_Async()
     {
         var serviceTypes = Types.InAssemblies(ServerAssemblies)
             .That()
@@ -327,7 +296,7 @@ public class ServerArchTests
     /// 配置类约束：Configuration类必须在正确位置
     /// </summary>
     [Fact]
-    public void Configuration_Classes_Should_Be_In_Correct_Location()
+    public void P15_Configuration_Must_Be_In_Correct_Location()
     {
         var configTypes = Types.InAssemblies(ServerAssemblies)
             .That()
@@ -347,7 +316,7 @@ public class ServerArchTests
     /// 模块依赖约束：模块间不得循环依赖
     /// </summary>
     [Fact]
-    public void Modules_Should_Not_Have_Circular_Dependencies()
+    public void P16_Modules_No_Circular_Dependencies()
     {
         var moduleAssemblies = ServerAssemblies
             .Where(a => a.GetName().Name?.StartsWith("LYBT.Module.") == true)
@@ -381,52 +350,11 @@ public class ServerArchTests
     }
 
     /// <summary>
-    /// 安全约束：Controller必须有适当的授权属性
-    /// </summary>
-    [Fact]
-    public void Controllers_Should_Have_Authorization_Attributes()
-    {
-        var controllerTypes = Types.InAssemblies(ServerAssemblies)
-            .That()
-            .HaveNameEndingWith("Controller")
-            .And()
-            .DoNotHaveName("BaseController")
-            .And()
-            .DoNotHaveName("BaseApiController")
-            .And()
-            .DoNotHaveName("BaseSystemController")
-            .And()
-            .DoNotHaveName("BaseCrudController")
-            .And()
-            .DoNotHaveName("BaseMedicalCasesController")
-            .And()
-            .DoNotHaveName("BaseRegistrationsController")
-            .And()
-            .DoNotHaveName("RootHealthController") // 健康检查控制器可以例外
-            .GetTypes();
-
-        foreach (var controller in controllerTypes)
-        {
-            var hasAuthAttribute = controller.GetCustomAttributes(true)
-                .Any(attr => attr.GetType().Name.Contains("Authorize") ||
-                           attr.GetType().Name.Contains("AllowAnonymous"));
-
-            var hasAuthMethods = controller.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                .Any(m => m.GetCustomAttributes(true)
-                    .Any(attr => attr.GetType().Name.Contains("Authorize") ||
-                               attr.GetType().Name.Contains("AllowAnonymous")));
-
-            Assert.True(hasAuthAttribute || hasAuthMethods,
-                $"Controller {controller.Name} 缺少授权属性");
-        }
-    }
-
-    /// <summary>
     /// P2架构门禁：基础设施强化规则
     /// 验证关键基础设施组件符合生产环境要求
     /// </summary>
     [Fact]
-    public void P2_Infrastructure_Hardening_Rules()
+    public void P17_Infrastructure_Hardening_Rules()
     {
         // 验证日志配置类存在
         var logConfigTypes = Types.InAssemblies(ServerAssemblies)
@@ -494,9 +422,10 @@ public class ServerArchTests
     /// <summary>
     /// P-09: 所有 Controller 必须有类级别 [Authorize] 属性
     /// Sprint3-A3-08: FallbackPolicy 已启用，此规则为二重保障
+    /// 合并: Batch 端点必须使用 AdminOrSuperAdmin 授权策略
     /// </summary>
     [Fact]
-    public void P09_AllControllers_Must_Have_ClassLevel_Authorize()
+    public void P09_Controller_Must_Have_ClassLevel_Authorize()
     {
         var controllerTypes = Types.InAssemblies(ServerAssemblies)
             .That()
@@ -525,6 +454,51 @@ public class ServerArchTests
             Assert.True(hasClassLevelAuth || hasClassLevelAllowAnonymous || isInfraController,
                 $"Controller {controller.Name} 缺少类级别 [Authorize] 属性，违反 P-09 规则");
         }
+
+        // 合并检查: batch-enable/disable 端点必须使用 AdminOrSuperAdmin 授权策略
+        var batchEndpoints = new[] { "batch-enable", "batch-disable" };
+        var batchControllers = new[] { "HerbsController", "FormulasController" };
+        var violatingEndpoints = new List<string>();
+
+        var webApiAssembly = ServerAssemblies.FirstOrDefault(a => a.GetName().Name == "LYBT.WebAPI");
+        if (webApiAssembly != null)
+        {
+            foreach (var controllerName in batchControllers)
+            {
+                var controllerType = Types.InAssembly(webApiAssembly)
+                    .That()
+                    .HaveName(controllerName)
+                    .GetTypes()
+                    .FirstOrDefault();
+
+                if (controllerType == null) continue;
+
+                var methods = controllerType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+
+                foreach (var method in methods)
+                {
+                    var routeAttr = method.GetCustomAttributes()
+                        .FirstOrDefault(a => a.GetType().Name.Contains("HttpPost"));
+
+                    if (routeAttr == null) continue;
+
+                    var template = routeAttr.GetType().GetProperty("Template")?.GetValue(routeAttr)?.ToString();
+                    if (template == null || !batchEndpoints.Any(e => template.Contains(e))) continue;
+
+                    var hasAdminAuth = method.GetCustomAttributes(true)
+                        .Any(a => a.GetType().Name.Contains("Authorize") &&
+                                 a.GetType().GetProperty("Policy")?.GetValue(a)?.ToString()?.Contains("Admin") == true);
+
+                    if (!hasAdminAuth)
+                    {
+                        violatingEndpoints.Add($"{controllerName}.{method.Name} ({template})");
+                    }
+                }
+            }
+        }
+
+        Assert.True(violatingEndpoints.Count == 0,
+            $"Batch端点缺少 AdminOrSuperAdmin 授权: {string.Join(", ", violatingEndpoints)}");
     }
 
     /// <summary>
@@ -604,61 +578,6 @@ public class ServerArchTests
         }
 
         Assert.Empty(violatingServices);
-    }
-
-    #endregion
-
-    #region T10: Batch端点授权策略测试
-
-    /// <summary>
-    /// Herbs/Formulas batch-enable/disable 端点必须使用 AdminOrSuperAdmin 授权策略
-    /// 防止低权限用户执行批量操作
-    /// </summary>
-    [Fact]
-    public void BatchEndpoints_Should_Use_AdminOrSuperAdmin_Authorization()
-    {
-        var webApiAssembly = ServerAssemblies.FirstOrDefault(a => a.GetName().Name == "LYBT.WebAPI");
-        if (webApiAssembly == null) return;
-
-        var batchEndpoints = new[] { "batch-enable", "batch-disable" };
-        var controllers = new[] { "HerbsController", "FormulasController" };
-        var violatingEndpoints = new List<string>();
-
-        foreach (var controllerName in controllers)
-        {
-            var controllerType = Types.InAssembly(webApiAssembly)
-                .That()
-                .HaveName(controllerName)
-                .GetTypes()
-                .FirstOrDefault();
-
-            if (controllerType == null) continue;
-
-            var methods = controllerType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
-
-            foreach (var method in methods)
-            {
-                var routeAttr = method.GetCustomAttributes()
-                    .FirstOrDefault(a => a.GetType().Name.Contains("HttpPost"));
-
-                if (routeAttr == null) continue;
-
-                var template = routeAttr.GetType().GetProperty("Template")?.GetValue(routeAttr)?.ToString();
-                if (template == null || !batchEndpoints.Any(e => template.Contains(e))) continue;
-
-                var hasAdminAuth = method.GetCustomAttributes(true)
-                    .Any(a => a.GetType().Name.Contains("Authorize") &&
-                             a.GetType().GetProperty("Policy")?.GetValue(a)?.ToString()?.Contains("Admin") == true);
-
-                if (!hasAdminAuth)
-                {
-                    violatingEndpoints.Add($"{controllerName}.{method.Name} ({template})");
-                }
-            }
-        }
-
-        Assert.True(violatingEndpoints.Count == 0,
-            $"Batch端点缺少 AdminOrSuperAdmin 授权: {string.Join(", ", violatingEndpoints)}");
     }
 
     #endregion
