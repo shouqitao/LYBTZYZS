@@ -161,3 +161,4 @@ backups/
 
 # Compose brainstorm sessions
 .compose/
+tests/newman/results.json
