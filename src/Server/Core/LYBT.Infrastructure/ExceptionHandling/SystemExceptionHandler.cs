@@ -54,14 +54,25 @@ public class SystemExceptionHandler : IExceptionHandler
                     exceptionType = exception.GetType().FullName,
                     stackTrace = exception.StackTrace,
                     correlationId,
-                    traceId = httpContext.TraceIdentifier
+                    traceId = httpContext.TraceIdentifier,
+                    validationErrors = exception is FluentValidation.ValidationException devValEx
+                        ? devValEx.Errors.Select(e => new { field = e.PropertyName, error = e.ErrorMessage })
+                        : null
                 }
-                : (object)new
-                {
-                    title,
-                    correlationId,
-                    traceId = httpContext.TraceIdentifier
-                },
+                : exception is FluentValidation.ValidationException valEx
+                    ? (object)new
+                    {
+                        title,
+                        correlationId,
+                        traceId = httpContext.TraceIdentifier,
+                        validationErrors = valEx.Errors.Select(e => new { field = e.PropertyName, error = e.ErrorMessage })
+                    }
+                    : (object)new
+                    {
+                        title,
+                        correlationId,
+                        traceId = httpContext.TraceIdentifier
+                    },
             RequestId = correlationId
         };
 
