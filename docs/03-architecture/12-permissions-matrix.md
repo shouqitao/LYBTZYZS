@@ -54,7 +54,7 @@
 
 ## 代码待对齐清单（审计 2026-06-28）
 
-> ⚠️ 以下为**代码层问题**（非文档问题），源自 [角色驱动审计报告](../reports/2026-06-28-role-driven-audit.md)。文档保留目标态，代码修复由各 D 项跟踪。标注 💻=纯代码修复。
+> ⚠️ 以下为**代码层问题**（非文档问题），源自 2026-06-28 角色驱动审计（报告已完成使命删除，决策痕迹见 [项目总账 §九](../03-architecture/13-project-master-plan.md)）。文档保留目标态，代码修复由各 D 项跟踪。标注 💻=纯代码修复。
 
 ### P0 阻断（修复前不可动 D7）
 
@@ -78,7 +78,7 @@
 | **K9** | 💻 | **接诊 Cancel 权限三向倒置**：`Cancel` XML 注释称"仅 Receptionist 可操作"，但无操作级 `[Authorize]`，回落类级 `DoctorOrAdmin`：前台被挡、Doctor/Admin 反被放行。与本文档矩阵（Receptionist✅/Doctor❌/Admin❌）三向倒置 | `RegistrationsController.cs:216-220` | 补操作级 `[Authorize(Policy=...)]` |
 | **K3** | ✅ | **`DoctorOnly` 已落地**（2026-08-04）：`PolicyConstants.cs:6` 已有 `DoctorOnly` 常量（共 6 项），`MedicalCasesController.cs:98` 创建端点已使用。本文档「医案创建 Doctor 唯一」目标已有策略可执行 | `PolicyConstants.cs` | ~~新增 `DoctorOnly` 常量~~ → 已完成；恢复/纯 Admin 场景需新增纯 Admin 策略（见 04-permissions §2.2 注） |
 
-> 完整问题清单（含 I1-I10 重要问题、S1-S10 次要问题）见 [审计报告全文](../reports/2026-06-28-role-driven-audit.md)。
+| 完整问题清单（含 I1-I10 重要问题、S1-S10 次要问题）见 [项目总账 §九](../03-architecture/13-project-master-plan.md)（原审计报告已完成使命删除）。
 
 ### P1 文档校准发现（2026-08-02）
 

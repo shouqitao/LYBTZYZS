@@ -1,6 +1,8 @@
 # 运维文档
 
 > **用户速览**：给运维人员看的。部署、配置、监控、备份都在这里。
+>
+> **权威文档在哪**：部署 → [01-deployment.md](01-deployment.md)；配置项 → [02-configuration.md](02-configuration.md)。完整查询指南见 [docs/README.md](../README.md#ai-查询指南)。
 
 ## 部署架构
 

@@ -4,6 +4,32 @@
 
 ---
 
+## 🤖 AI 查询指南（Agent 必读）
+
+> **给 AI（Mimo Code / 编码代理 / 未来 session）的文档导航。** 任务开始前先查本表定位权威文档，再读代码。完整 SSOT 分层见 [00-governance/02-ssot-architecture.md](00-governance/02-ssot-architecture.md)。
+
+| 信息点 | 权威文档（SSOT） | 速查 |
+|--------|-----------------|------|
+| 术语定义 | [03-glossary.md](01-product/03-glossary.md) | — |
+| 权限矩阵（产品规则） | [04-permissions.md](01-product/04-permissions.md) | [12-permissions-matrix.md](03-architecture/12-permissions-matrix.md)（视图层） |
+| 业务规则 / US 需求 | [02-requirements/](02-requirements/README.md)（按模块） | [13-traceability-matrix.md](02-requirements/13-traceability-matrix.md) |
+| 数据模型（实体/字段/状态枚举） | [04-data-model.md](03-architecture/04-data-model.md) | [13a-data-model.md](03-architecture/13a-data-model.md)（视图层） |
+| API 端点契约 | [04-api-reference/](04-api-reference/README.md)（按模块） | [13b-api-endpoints.md](03-architecture/13b-api-endpoints.md)（视图层） |
+| 任务清单 / 进度 / 决策 | [13-project-master-plan.md](03-architecture/13-project-master-plan.md) | — |
+| 当前状态 / 已知问题 | [13c-current-status.md](03-architecture/13c-current-status.md) | — |
+| 架构决策 (ADR) | [03-architecture/decisions/](03-architecture/decisions/) | — |
+| 技术栈 / 架构总览 | [00-architecture-summary.md](03-architecture/00-architecture-summary.md) | — |
+| 部署 / 配置 | [06-operations/](06-operations/README.md) | — |
+| 命名规范 / 文档规则 | [01-naming-convention.md](00-governance/01-naming-convention.md) | — |
+
+**规则**：
+1. 每个信息点只有一个权威定义（SSOT），其他文档只引用不复制
+2. 文档与代码冲突时：先更新文档，再按文档改代码（「以文档为准」规则，见 AGENTS.md）
+3. 需求模块文档中业务规则以 `BR-*` 编号引用，US 以 `US-{DOMAIN}-{NNN}` 引用
+4. 活跃计划/规格在 `compose/`；历史报告完成后删除（决策留 master-plan §九）
+
+---
+
 ## 按角色找文档
 
 ### 🏥 我是前台
@@ -57,18 +83,18 @@
 
 | 目录 | 内容 | 文件数 |
 |------|------|:------:|
+| [00-governance](00-governance/) | 文档治理：命名规范、SSOT 架构 | 2 |
 | [01-product](01-product/) | 产品愿景、用户画像、术语表、权限矩阵、角色交互 | 6 |
 | [02-requirements](02-requirements/) | 需求文档（15 模块，142 US） | 19 |
-| [03-architecture](03-architecture/) | 架构文档、ADR 决策记录、权限矩阵 | 48 |
+| [03-architecture](03-architecture/) | 架构文档、ADR 决策记录、权限矩阵、总账 | 51 |
 | [04-api-reference](04-api-reference/) | API 端点文档 | 15 |
 | [05-development](05-development/) | 开发指南、编码规范、测试标准 | 27 |
 | [06-operations](06-operations/) | 部署、配置、监控、备份 | 15 |
-| [compose](compose/) | 活动 spec/plan/report | 4 |
+| [compose](compose/) | 活跃 spec/plan（3 个） | 3 |
 | [prompts](prompts/) | Prompt 模板 | 2 |
-| [reports](reports/) | 校准报告、审计报告 | 6 |
 | [training](training/) | 培训材料 | 1 |
 
-**总计：146 个文档**
+**总计：143 个文档**（历史报告已完成使命删除，2026-08-06）
 
 ---
 
@@ -94,8 +120,9 @@
 - 正文中文，技术标识符英文
 - 需求编号：`US-{DOMAIN}-{NNN}`（如 `US-MC-017`）
 - 架构决策：`ADR-NNNN`（如 `ADR-0001`）
-- 命名规范：[00-naming-convention.md](00-naming-convention.md)
+- 命名规范：[00-governance/01-naming-convention.md](00-governance/01-naming-convention.md)
+- SSOT 分层：[00-governance/02-ssot-architecture.md](00-governance/02-ssot-architecture.md)
 
 ---
 
-*文档版本: v3.0 | 最后更新: 2026-08-02*
+*文档版本: v4.0 | 最后更新: 2026-08-06*

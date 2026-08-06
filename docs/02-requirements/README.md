@@ -1,6 +1,8 @@
 # 需求文档 (02-requirements)
 
 > 版本: v3.0 | 日期: 2026-08-02 | 状态: ✅ 已更新
+>
+> **权威文档在哪**：业务规则/US 需求即本目录（按模块）；术语 → [03-glossary.md](../01-product/03-glossary.md)；权限 → [04-permissions.md](../01-product/04-permissions.md)。完整查询指南见 [docs/README.md](../README.md#ai-查询指南)。
 
 ---
 
@@ -106,7 +108,7 @@
 | 谁能做什么操作 | [权限矩阵](../03-architecture/12-permissions-matrix.md) |
 | 系统安全怎么保障 | [非功能需求-安全](12-nfr.md#安全-security) |
 | 系统性能要求 | [非功能需求-性能](12-nfr.md#性能-performance) |
-| 代码和文档是否一致 | [校准报告](../reports/documentation-calibration-report.md) |
+| 代码和文档是否一致 | [SSOT 架构方案](../00-governance/02-ssot-architecture.md) |
 | 整体规划和进度 | [项目总账](../03-architecture/13-project-master-plan.md) |
 
 ---

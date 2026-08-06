@@ -1,6 +1,8 @@
 # API 参考
 
 > **用户速览**：所有 HTTP 接口的文档。前端开发者和测试人员主要看这里。
+>
+> **权威文档在哪**：API 端点契约即本目录（04-api-reference/）；权限标注以 [01-product/04-permissions.md](../01-product/04-permissions.md) 为准。完整查询指南见 [docs/README.md](../README.md#ai-查询指南)。
 
 ## 基本信息
 

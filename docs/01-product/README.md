@@ -1,6 +1,8 @@
 # 产品文档
 
 > **用户速览**：回答「为谁做」和「为什么做」。从 01-vision 开始看。
+>
+> **权威文档在哪**：权限矩阵 → [04-permissions.md](04-permissions.md)（产品规则 SSOT）；术语 → [03-glossary.md](03-glossary.md)。完整查询指南见 [docs/README.md](../README.md#ai-查询指南)。
 
 ## 文档索引
 

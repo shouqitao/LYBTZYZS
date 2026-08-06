@@ -1,6 +1,8 @@
 # 架构文档
 
 > **用户速览**：这些文档描述系统「怎么搭的」。如果你是开发者，从 00 开始看；如果你只关心某个模块，直接跳到对应的 modules/ 子目录。
+>
+> **权威文档在哪**：数据模型 → [04-data-model.md](04-data-model.md)；任务/进度/决策 → [13-project-master-plan.md](13-project-master-plan.md)；当前状态 → [13c-current-status.md](13c-current-status.md)。完整查询指南见 [docs/README.md](../README.md#ai-查询指南)。
 
 ## 技术栈
 
