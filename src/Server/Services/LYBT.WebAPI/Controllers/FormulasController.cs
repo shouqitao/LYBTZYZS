@@ -81,8 +81,9 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), StatusCodes.Status201Created)]
         public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
         {
-            FormulaInputDto inputDto;
-        try { inputDto = System.Text.Json.JsonSerializer.Deserialize<FormulaInputDto>(System.Text.Json.JsonSerializer.Serialize(dto), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })!; } catch (System.Text.Json.JsonException) { return ValidationFail("请求参数格式无效"); }
+            if (!dto.TryDeserializeDto(out FormulaInputDto? inputDto, out var validationError))
+            return ValidationFail(validationError ?? "请求参数无效");
+        if (inputDto is null) return ValidationFail("请求参数无效");
             var (operatorId, _, _) = GetOperator();
             var result = await Sender.Send(new CreateFormulaCommand(inputDto, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
@@ -104,8 +105,9 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
         {
-            FormulaInputDto inputDto;
-        try { inputDto = System.Text.Json.JsonSerializer.Deserialize<FormulaInputDto>(System.Text.Json.JsonSerializer.Serialize(dto), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })!; } catch (System.Text.Json.JsonException) { return ValidationFail("请求参数格式无效"); }
+            if (!dto.TryDeserializeDto(out FormulaInputDto? inputDto, out var validationError))
+            return ValidationFail(validationError ?? "请求参数无效");
+        if (inputDto is null) return ValidationFail("请求参数无效");
             if (ValidateGuid(id, "验方ID") is { } error) return error;
 
             var getResult = await _formulaService.GetByIdAsync(id, ct);
