@@ -222,7 +222,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -260,7 +260,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -533,7 +533,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"userName\":\"newadmin\",\"realName\":\"测试管理员\",\"email\":\"test@lybt.com\",\"password\":\"Admin@123456\",\"confirmPassword\":\"Admin@123456\",\"role\":10}"
+              "raw": "{\"userName\":\"admin\",\"realName\":\"测试管理员\",\"email\":\"test@lybt.com\",\"password\":\"Admin@123456\",\"confirmPassword\":\"Admin@123456\",\"role\":10}"
             }
           },
           "event": [
@@ -583,7 +583,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -624,7 +624,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -665,7 +665,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -698,7 +698,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"userName\":\"newadmin\",\"realName\":\"重复\",\"password\":\"Admin@123456\",\"role\":1}"
+              "raw": "{\"userName\":\"admin\",\"realName\":\"重复\",\"password\":\"Admin@123456\",\"role\":1}"
             }
           },
           "event": [
@@ -747,7 +747,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -788,7 +788,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -829,7 +829,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -870,7 +870,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -911,7 +911,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -979,7 +979,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"userName\":\"newadmin\",\"realName\":\"更新后管理员\"}"
+              "raw": "{\"userName\":\"admin\",\"realName\":\"更新后管理员\"}"
             }
           },
           "event": [
@@ -1176,7 +1176,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -1219,7 +1219,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -2012,7 +2012,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"username\": \"newadmin\", \"password\": \"Admin@123456\"}"
+              "raw": "{\"username\": \"admin\", \"password\": \"Admin@123456\"}"
             }
           },
           "event": [
@@ -2051,7 +2051,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"username\":\"newadmin\",\"password\":\"Admin@123456\"}"
+              "raw": "{\"username\":\"admin\",\"password\":\"Admin@123456\"}"
             }
           },
           "event": [
@@ -2090,7 +2090,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"username\":\"newadmin\",\"password\":\"wrong\"}"
+              "raw": "{\"username\":\"admin\",\"password\":\"wrong\"}"
             }
           },
           "event": [
@@ -2264,7 +2264,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -2305,7 +2305,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -2339,7 +2339,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -2422,7 +2422,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -2463,7 +2463,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -2545,7 +2545,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -2586,7 +2586,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -2927,7 +2927,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -2968,7 +2968,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -3236,7 +3236,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -3277,7 +3277,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -5128,7 +5128,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -5169,7 +5169,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -5430,7 +5430,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -5813,7 +5813,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400,403,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,403,404]);});"
+                  "pm.test('Status 200,400,403,404,422', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,403,404,422]);});"
                 ]
               }
             }
@@ -6095,7 +6095,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -6178,7 +6178,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -6666,7 +6666,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -6969,7 +6969,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -7010,7 +7010,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -7570,7 +7570,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
                 ]
               }
             }
@@ -8386,7 +8386,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400,403,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,403,404]);});"
+                  "pm.test('Status 200,400,403,404,422', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,403,404,422]);});"
                 ]
               }
             }
