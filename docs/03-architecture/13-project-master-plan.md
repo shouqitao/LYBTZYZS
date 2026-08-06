@@ -75,7 +75,7 @@
 | B-07 | 初始化向导完善 | FirstRunSetupView 增强 | 无 | ⬜ | 1d |
 | B-08 | Desktop 发布包 | 打包+依赖裁剪+安装器 | 无 | ⬜ | 2d |
 | B-09 | 自动更新 | Velopack 集成 | B-08 | ⬜ | 2d |
-| B-10 | SignalR 实时通知 | Hub+客户端+协议设计 | A-03 | ⬜ | 3d |
+| B-10 | SignalR 实时通知 | Hub+客户端+协议设计 | A-03 | ✅ | 3d |
 | B-11 | 药材/验方模板 | Excel 模板下载 | B-03 | ⬜ | 0.5d |
 | B-12 | 患者导入导出 | Excel 模板+导出 | B-03 | ⬜ | 0.5d |
 | B-13 | 验方校验 UI | Desktop 对齐 API | 无 | ⬜ | 0.5d |
@@ -183,7 +183,7 @@
 |------|------|------|
 | 1 | B-08 Desktop 发布包 | 2d |
 | 2 | B-09 自动更新 | 2d |
-| 3 | B-10 SignalR | 3d |
+| 3 | B-10 SignalR | 3d | ✅ |
 | 4 | B-11/B-12 Excel 模板 | 1d |
 | 5 | B-13 验方校验 UI | 0.5d |
 | **小计** | | **~8.5d** |
@@ -239,7 +239,7 @@
 | B-07 初始化向导 | ⬜ | — | — |
 | B-08 Desktop 发布包 | ⬜ | — | — |
 | B-09 自动更新 | ⬜ | — | — |
-| B-10 SignalR | ⬜ | — | — |
+| B-10 SignalR | ✅ | 2026-08-06 | `0d8aabb90` — US-REG-008 医生工作台待诊列表实时更新：服务端新增 `RegistrationHub`（`[Authorize(DoctorOrAdmin)]`，按 doctorId 分组）+ `RegistrationConnectionManager`（ConnectionId↔DoctorId）+ `INotificationService`/`NotificationService`（`IHubContext` 推送 `NewRegistration`/`RegistrationStatusChanged` 到 `doctor-{id}` 分组，空 doctorId 跳过）；Create/StartVisit/Cancel 三个 CommandHandler 在业务成功后触发推送（推送失败仅日志，不影响主流程）；`Program.cs` 注册 `AddSignalR` + `MapHub("/hubs/registration")`；Desktop 新增 `SignalRClient`（`Microsoft.AspNetCore.SignalR.Client` 8.0.26，JWT access_token 连接、自动重连 2/10/30s、断线降级 15s 轮询复用候诊队列接口）发布 `RegistrationRefreshedEvent`，`RegistrationListViewModel` 订阅实时刷新（Doctor 角色导航时启动/停止）；新增 9 单测（NotificationService 分组过滤 + ConnectionManager 映射，EF/手写 fake 零 mock）；build --no-incremental 0 错误 0 警告，架构测试 92/92 | |
 | B-11 药材/验方模板 | ⬜ | — | — |
 | B-12 患者导入导出 | ⬜ | — | — |
 | B-13 验方校验 UI | ⬜ | — | — |
