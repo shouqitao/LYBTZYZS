@@ -383,7 +383,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生、管理员
 **优先级**: Should
-**状态**: ⚠️ **v1.0 补回**（D9 决策：实现跨医案的历史聚合查询，约 2-3 人日）
+**状态**: ✅ 已实现（BaseMedicalCasesController.GetPatientConsultations）
 
 > **边界**：本故事是**历史聚合查询**（跨医案返回 Consultation 列表）；US-MC-006 是**当前医案维度查询**（返回 MedicalCase 集合）。两者不重叠。
 
@@ -409,7 +409,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生、管理员
 **优先级**: Should
-**状态**: ⚠️ **v1.0 补回**（D9 决策：实现跨医案的历史聚合查询，约 2-3 人日）
+**状态**: ✅ 已实现（BaseMedicalCasesController.GetPatientConsultations）
 
 > **边界**：本故事是**历史聚合查询**（跨医案返回 Prescription 列表）；US-MC-006 是**当前医案维度查询**。复制处方动作见 US-MC-019。
 
@@ -633,7 +633,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 管理员
 **优先级**: Must
-**状态**: ⚠️ **v1.0 补回**（D1 决策：恢复实体 + Audit Service + 字段 diff + 端点，约 3-5 人日）
+**状态**: ✅ 已实现（BaseMedicalCasesController.GetAuditLogs）
 
 **作为** 管理员，**我想要** 查看医案的完整变更历史（含字段级 diff），**以便** 出现纠纷时可以追溯每次修改的操作人、时间、原因和具体变更内容。
 
@@ -694,7 +694,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生
 **优先级**: Should
-**状态**: 📋 已设计（🧲 v1.0 待实现，D6 决策）
+**状态**: ⚠️ 部分实现（MedicalCasePrescriptionService 有复制逻辑，需完善）
 
 **作为** 医生，**我想要** 复诊时一键复制患者最近已完成医案的处方，**以便** 在原方基础上加减药材，避免重新逐味录入。
 

@@ -343,7 +343,7 @@
 
 **角色**: 管理员（AdminOrSuperAdmin 策略）
 **优先级**: Should
-**状态**: 🔴 完全未实现（Service 无 RestoreAsync、Controller 无端点）
+**状态**: ✅ 已实现（IHerbService.RestoreAsync、HerbService.RestoreAsync）
 
 **作为** 医生或管理员，**我想要** 恢复被软删除的药材，**以便** 在误删或重新启用时还原记录。
 

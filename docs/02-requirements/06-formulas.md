@@ -379,7 +379,7 @@ stateDiagram-v2
 
 **角色**: 管理员
 **优先级**: Should
-**状态**: 🔴 完全未实现（Server 无端点，Desktop 返回 null）
+**状态**: ✅ 已实现（IFormulaService.RestoreAsync、FormulaService.RestoreAsync）
 
 **作为** 管理员，**我想要** 恢复误删除的验方，**以便** 重要的经验方不会因误操作而永久丢失。
 
