@@ -62,9 +62,9 @@ public abstract class BaseUsersController : BaseCrudController
 
     [HttpPost]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-#pragma warning disable CS0109
-    public new async Task<IActionResult> Create([FromBody] UserInputDto inputDto, CancellationToken ct)
+    public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
     {
+        var inputDto = System.Text.Json.JsonSerializer.Deserialize<UserInputDto>(System.Text.Json.JsonSerializer.Serialize(dto))!;
         var (operatorId, _, currentRole) = GetOperator();
         var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
         var result = await Sender.Send(new CreateUserCommand(inputDto, operatorId, isAdmin), ct);
@@ -76,9 +76,9 @@ public abstract class BaseUsersController : BaseCrudController
 
     [HttpPut("{id:guid}")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-#pragma warning disable CS0109
-    public new async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto inputDto, CancellationToken ct)
+    public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
     {
+        var inputDto = System.Text.Json.JsonSerializer.Deserialize<UserInputDto>(System.Text.Json.JsonSerializer.Serialize(dto))!;
         if (ValidateGuid(id, "用户ID") is { } guidError) return guidError;
 
         var (operatorId, _, _) = GetOperator();

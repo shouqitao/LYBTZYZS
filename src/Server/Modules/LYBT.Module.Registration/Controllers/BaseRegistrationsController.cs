@@ -26,17 +26,16 @@ public abstract class BaseRegistrationsController : BaseCrudController
     /// 获取挂号分页列表（保留原始 7 参数过滤）
     /// </summary>
     [HttpGet]
-#pragma warning disable CS0109 // new is required to hide base class route registration
-    public new async Task<IActionResult> GetList(
+    public override async Task<IActionResult> GetList(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? keyword = null,
-        [FromQuery] DateTime? startDate = null,
-        [FromQuery] DateTime? endDate = null,
-        [FromQuery] Guid? patientId = null,
-        [FromQuery] Guid? doctorId = null,
         CancellationToken ct = default)
     {
+        var startDate = HttpContext.Request.Query.TryGetValue("startDate", out var sd) && DateTime.TryParse(sd, out var s) ? s : (DateTime?)null;
+        var endDate = HttpContext.Request.Query.TryGetValue("endDate", out var ed) && DateTime.TryParse(ed, out var e) ? e : (DateTime?)null;
+        var patientId = HttpContext.Request.Query.TryGetValue("patientId", out var pid) && Guid.TryParse(pid, out var p) ? p : (Guid?)null;
+        var doctorId = HttpContext.Request.Query.TryGetValue("doctorId", out var did) && Guid.TryParse(did, out var d) ? d : (Guid?)null;
         if (ValidatePagination(page, pageSize) is { } error) return error;
 
         var result = await Sender.Send(new GetRegistrationsQuery(page, pageSize, keyword,

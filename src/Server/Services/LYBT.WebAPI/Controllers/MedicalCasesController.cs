@@ -96,9 +96,9 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
-#pragma warning disable CS0109
-        public new async Task<IActionResult> Create([FromBody] MedicalCaseInputDto inputDto, CancellationToken ct)
+        public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
         {
+            var inputDto = System.Text.Json.JsonSerializer.Deserialize<MedicalCaseInputDto>(System.Text.Json.JsonSerializer.Serialize(dto))!;
             var (doctorId, _, _) = GetOperator();
 
             inputDto.Id = null;
@@ -127,11 +127,11 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 403)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
-#pragma warning disable CS0109
-        public new async Task<IActionResult> Update(
+        public override async Task<IActionResult> Update(
             Guid id,
-            [FromBody] MedicalCaseInputDto request, CancellationToken ct)
+            [FromBody] object dto, CancellationToken ct)
         {
+            var request = System.Text.Json.JsonSerializer.Deserialize<MedicalCaseInputDto>(System.Text.Json.JsonSerializer.Serialize(dto))!;
             if (request.Id != id)
             {
                 return Error("请求ID与路由ID不一致");

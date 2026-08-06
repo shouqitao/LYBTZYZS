@@ -74,9 +74,9 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), StatusCodes.Status201Created)]
-#pragma warning disable CS0109
-        public new async Task<IActionResult> Create([FromBody] HerbInputDto inputDto, CancellationToken ct)
+        public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
         {
+            var inputDto = System.Text.Json.JsonSerializer.Deserialize<HerbInputDto>(System.Text.Json.JsonSerializer.Serialize(dto))!;
             var (operatorId, _, _) = GetOperator();
             var result = await Sender.Send(new CreateHerbCommand(inputDto, operatorId), ct);
             if (result.IsSuccess && result.Value != null)
@@ -98,9 +98,9 @@ namespace LYBT.WebAPI.Controllers
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-#pragma warning disable CS0109
-        public new async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto inputDto, CancellationToken ct)
+        public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
         {
+            var inputDto = System.Text.Json.JsonSerializer.Deserialize<HerbInputDto>(System.Text.Json.JsonSerializer.Serialize(dto))!;
             if (ValidateGuid(id, "药材ID") is { } error) return error;
 
             var getResult = await _herbService.GetByIdAsync(id, ct);

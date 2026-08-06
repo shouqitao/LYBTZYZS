@@ -56,9 +56,9 @@ public class RegistrationsController : BaseRegistrationsController
     [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
     [HttpPost]
     [EnableRateLimiting("ApiCalls")]
-#pragma warning disable CS0109
-    public new async Task<IActionResult> Create([FromBody] RegistrationInputDto inputDto, CancellationToken ct)
+    public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
     {
+        var inputDto = System.Text.Json.JsonSerializer.Deserialize<RegistrationInputDto>(System.Text.Json.JsonSerializer.Serialize(dto))!;
         var result = await Sender.Send(new CreateRegistrationCommand(inputDto), ct);
 
         if (!result.IsSuccess || result.Value == null)

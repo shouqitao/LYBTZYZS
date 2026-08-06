@@ -79,9 +79,9 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), StatusCodes.Status201Created)]
-#pragma warning disable CS0109
-        public new async Task<IActionResult> Create([FromBody] FormulaInputDto inputDto, CancellationToken ct)
+        public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
         {
+            var inputDto = System.Text.Json.JsonSerializer.Deserialize<FormulaInputDto>(System.Text.Json.JsonSerializer.Serialize(dto))!;
             var (operatorId, _, _) = GetOperator();
             var result = await Sender.Send(new CreateFormulaCommand(inputDto, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
@@ -101,9 +101,9 @@ namespace LYBT.WebAPI.Controllers
         [HttpPut("{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
-#pragma warning disable CS0109
-        public new async Task<IActionResult> Update(Guid id, [FromBody] FormulaInputDto inputDto, CancellationToken ct)
+        public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
         {
+            var inputDto = System.Text.Json.JsonSerializer.Deserialize<FormulaInputDto>(System.Text.Json.JsonSerializer.Serialize(dto))!;
             if (ValidateGuid(id, "验方ID") is { } error) return error;
 
             var getResult = await _formulaService.GetByIdAsync(id, ct);
