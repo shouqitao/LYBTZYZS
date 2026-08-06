@@ -16,7 +16,7 @@
            │ scp/sync         │ scp/sync
            ▼                  ▼
 ┌──────────────────┐  ┌──────────────────────────────────┐
-│ 192.168.190.248  │  │ 192.168.190.6                    │
+│ 192.168.190.7  │  │ 192.168.190.6                    │
 │ WIN-URSB5I68VL5  │  │ DESKTOP-JT5FULA                 │
 │ Windows Server   │  │ Windows 10 IoT LTSC             │
 │ ─ WebAPI 服务器  │  │ ─ WPF 桌面客户端测试             │
@@ -38,7 +38,7 @@
 | 代码路径 | `~/repos/LYBTZYZS/` |
 | Git remote | `origin → git@github.com:shouqitao/LYBTZYZS.git` |
 
-### 2.2 服务器 — 192.168.190.248
+### 2.2 服务器 — 192.168.190.7
 
 | 项目 | 值 |
 |------|-----|
@@ -72,7 +72,7 @@
 | Git | 2.48.1.windows.1 |
 | 源码路径 | `C:\LYBTZYZS\` |
 | 部署路径 | `C:\LYBTZYZS\publish\` |
-| 网络 | 可访问 `192.168.190.248:5000`，**无外网** |
+| 网络 | 可访问 `192.168.190.7:5000`，**无外网** |
 
 > ⚠️ 6 号机无外网，NuGet 包需从内网源获取或预先缓存。VS Build Tools 不需要，SDK 自带 MSBuild + WPF Targeting Pack。
 
@@ -103,7 +103,7 @@
 2. 观澜拆解 → 写 plan（复杂任务）
 3. 派 OpenCode 执行编码
 4. 观澜同步到两台机器构建
-   ├── 192.168.190.248: dotnet build → 部署 → curl /health
+   ├── 192.168.190.7: dotnet build → 部署 → curl /health
    └── 192.168.190.6:   dotnet build → 验证 exe 生成
 5. 通过 → commit + push
 ```
@@ -123,20 +123,20 @@ sshpass -p '<see credentials manager>' scp /tmp/lybtzyzs.tar.gz player@192.168.1
 sshpass -p '<see credentials manager>' ssh player@192.168.190.6 'tar -xzf C:\Temp\lybtzyzs.tar.gz -C C:\LYBTZYZS'
 ```
 
-### 4.2 服务器（192.168.190.248）— WebAPI
+### 4.2 服务器（192.168.190.7）— WebAPI
 
 ```bash
 # 构建
-ssh player@192.168.190.248 'cd C:\LYBTZYZS && dotnet build LYBTZYZS.sln'
+ssh player@192.168.190.7 'cd C:\LYBTZYZS && dotnet build LYBTZYZS.sln'
 
 # 部署 Server 项目（源码路径）
-ssh player@192.168.190.248 'cd C:\LYBTZYZS && dotnet publish src\Server\Services\LYBT.WebAPI\LYBT.WebAPI.csproj -c Release -o C:\LYBTZYZS\publish'
+ssh player@192.168.190.7 'cd C:\LYBTZYZS && dotnet publish src\Server\Services\LYBT.WebAPI\LYBT.WebAPI.csproj -c Release -o C:\LYBTZYZS\publish'
 
 # 重启（通过 scheduled task）
-ssh player@192.168.190.248 'schtasks /end /tn LYBT-API && schtasks /run /tn LYBT-API'
+ssh player@192.168.190.7 'schtasks /end /tn LYBT-API && schtasks /run /tn LYBT-API'
 
 # 健康检查
-curl http://192.168.190.248:5000/health
+curl http://192.168.190.7:5000/health
 ```
 
 ### 4.3 桌面（192.168.190.6）— WPF
@@ -197,6 +197,6 @@ Server 入口:   src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj
 Desktop 入口:  src/Client/Desktop/Shell/LYBT.Desktop.Shell.csproj
 启动脚本:      start-service.bat (Server)
 配置文件:      appsettings.Production.json (Server)
-健康端点:      http://192.168.190.248:5000/health
+健康端点:      http://192.168.190.7:5000/health
 Server 部署:   schtasks /tn LYBT-API
 ```

@@ -11,7 +11,7 @@
 |------|------|-----|------|------|
 | 开发主机 | 开发者 PC | - | Windows | 代码编写、编译、Git |
 | **生产服务器** | tonyshou | **60.190.215.86** | **Linux Ubuntu** | WebAPI 公网运行 |
-| 内网服务器 | WIN-URSB5I68VL5 | 192.168.190.248 | Windows Server 2012 R2 | WebAPI 内网开发 |
+| 内网服务器 | LYBT-WebApi | 192.168.190.7 | Windows Server 2012 R2 | WebAPI 内网开发 |
 | 数据库服务器 | - | 192.168.190.243 | SQL Server | 数据库 |
 | 桌面端 | Desktop PC | 192.168.190.6 | Windows | WPF 客户端 |
 
@@ -31,9 +31,9 @@
 | 监听地址 | `http://0.0.0.0:5000` |
 | 数据库 | SQL Server @ 192.168.190.243 |
 | 运行时 | .NET 8 (/home/player/.dotnet/) |
-| SSH | player@60.190.215.86:5555 |
+| SSH | thinker@60.190.215.86:2222 |
 
-### 开发环境 (192.168.190.248)
+### 开发环境 (192.168.190.7)
 
 | 项目 | 值 |
 |------|-----|
@@ -76,7 +76,7 @@ C:\Services\LYBT-API\          # 主部署目录
 
 ### 连接字符串
 - **生产环境**: Server=192.168.190.243;Database=LYBTDB_Dev;User ID=sa
-- **开发环境**: Server=localhost;Database=LYBTDB_Dev;Trusted_Connection=True
+- **开发环境**: Server=localhost;Database=LYBTDB_Dev;User Id=sa;Password=******
 
 ### 密码配置
 > ⚠️ **安全注意**: 以下密码为占位说明。生产环境密码必须通过环境变量注入，**禁止**提交真实密码到 git。
