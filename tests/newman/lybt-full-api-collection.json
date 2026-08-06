@@ -497,7 +497,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400, 401, 415', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 401, 415, 429]);});"
+                  "pm.test('Status 400 or 401 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,401,422, 429]);});"
                 ]
               }
             }
@@ -11081,15 +11081,23 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               }
-            ]
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userName\":\"sysadmin\",\"autoLoginToken\":\"invalid-token\"}"
+            }
           },
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404,405', function(){pm.expect(pm.response.code).to.be.oneOf([200,404,405, 429]);});"
+                  "pm.test('Status 400 or 401 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,401,422, 429]);});"
                 ]
               }
             }
