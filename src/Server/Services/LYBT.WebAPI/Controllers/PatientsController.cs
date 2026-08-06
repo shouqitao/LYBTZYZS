@@ -79,7 +79,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), StatusCodes.Status201Created)]
         public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
         {
-            var inputDto = System.Text.Json.JsonSerializer.Deserialize<PatientInputDto>(System.Text.Json.JsonSerializer.Serialize(dto))!;
+            var inputDto = System.Text.Json.JsonSerializer.Deserialize<PatientInputDto>(System.Text.Json.JsonSerializer.Serialize(dto), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
             var (operatorId, _, _) = GetOperator();
             var result = await Sender.Send(new CreatePatientCommand(inputDto, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
@@ -101,7 +101,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
         {
-            var inputDto = System.Text.Json.JsonSerializer.Deserialize<PatientInputDto>(System.Text.Json.JsonSerializer.Serialize(dto))!;
+            var inputDto = System.Text.Json.JsonSerializer.Deserialize<PatientInputDto>(System.Text.Json.JsonSerializer.Serialize(dto), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
             if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
 
             var (ownerDto, ownershipError) = await CheckOwnershipAsync(id, ct);

@@ -64,7 +64,7 @@ public abstract class BaseUsersController : BaseCrudController
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
     {
-        var inputDto = System.Text.Json.JsonSerializer.Deserialize<UserInputDto>(System.Text.Json.JsonSerializer.Serialize(dto))!;
+        var inputDto = System.Text.Json.JsonSerializer.Deserialize<UserInputDto>(System.Text.Json.JsonSerializer.Serialize(dto), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
         var (operatorId, _, currentRole) = GetOperator();
         var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
         var result = await Sender.Send(new CreateUserCommand(inputDto, operatorId, isAdmin), ct);
@@ -78,7 +78,7 @@ public abstract class BaseUsersController : BaseCrudController
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
     {
-        var inputDto = System.Text.Json.JsonSerializer.Deserialize<UserInputDto>(System.Text.Json.JsonSerializer.Serialize(dto))!;
+        var inputDto = System.Text.Json.JsonSerializer.Deserialize<UserInputDto>(System.Text.Json.JsonSerializer.Serialize(dto), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
         if (ValidateGuid(id, "用户ID") is { } guidError) return guidError;
 
         var (operatorId, _, _) = GetOperator();

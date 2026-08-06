@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": {
+    "csharp": {
+      "command": ["csharp-ls"],
+      "extensions": [".cs", ".csx"]
+    }
+  },
+  "model": "opencode-go/deepseek-v4-flash"
+}
