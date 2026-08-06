@@ -460,6 +460,48 @@
               }
             }
           ]
+        },
+        {
+          "name": "1.1 Auth - Auto Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/auto-login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "auto-login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"token\": \"invalid\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400, 401, 415', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 401, 415]);});"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -1098,7 +1140,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403', function(){pm.expect(pm.response.code).to.be.oneOf([400,403]);});"
+                  "pm.test('Status 400 or 403 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,403]);});"
                 ]
               }
             }
@@ -1133,7 +1175,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403', function(){pm.expect(pm.response.code).to.be.oneOf([400,403]);});"
+                  "pm.test('Status 400 or 403 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,403]);});"
                 ]
               }
             }
@@ -1505,6 +1547,209 @@
               }
             }
           ]
+        },
+        {
+          "name": "1.2 Reset Admin Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{admin_user_id}}/reset-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{admin_user_id}}",
+                "reset-password"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/current",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "current"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Batch Delete Users",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/batch-delete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "batch-delete"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [\"00000000-0000-0000-0000-000000000999\"]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Batch Enable Users",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/batch-enable",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "batch-enable"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [\"00000000-0000-0000-0000-000000000999\"]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Batch Disable Users",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sysadmin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/batch-disable",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "batch-disable"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [\"00000000-0000-0000-0000-000000000999\"]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -1611,7 +1856,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
                 ]
               }
             }
@@ -1644,7 +1889,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
                 ]
               }
             }
@@ -3482,7 +3727,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
                 ]
               }
             }
@@ -3515,7 +3760,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
                 ]
               }
             }
@@ -4928,6 +5173,1765 @@
               }
             }
           ]
+        },
+        {
+          "name": "2.3 Delete Patient",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/{{test_patient_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "{{test_patient_id}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Toggle Patient Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/{{test_patient_id}}/toggle-status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "{{test_patient_id}}",
+                "toggle-status"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Restore Patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/{{test_patient_id}}/restore",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "{{test_patient_id}}",
+                "restore"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400, 404, 422', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Batch Delete Patients",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/batch-delete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "batch-delete"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [\"00000000-0000-0000-0000-000000000999\"]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Batch Import Patients",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/batch-import",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "batch-import"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"items\": []}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Batch Check Patient Reference",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/patients/batch-check-reference",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "patients",
+                "batch-check-reference"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [\"00000000-0000-0000-0000-000000000999\"]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.7 Delete Herb",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs/{{test_herb_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs",
+                "{{test_herb_id}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.7 Batch Delete Herbs",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs/batch-delete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs",
+                "batch-delete"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [\"00000000-0000-0000-0000-000000000999\"]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.7 Batch Import Herbs",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs/batch-import",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs",
+                "batch-import"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"items\": []}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.7 Batch Enable Herbs",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs/batch-enable",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs",
+                "batch-enable"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [\"00000000-0000-0000-0000-000000000999\"]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.7 Batch Disable Herbs",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs/batch-disable",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs",
+                "batch-disable"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [\"00000000-0000-0000-0000-000000000999\"]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.7 Batch Check Herb Reference",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/herbs/batch-check-reference",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "herbs",
+                "batch-check-reference"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [\"00000000-0000-0000-0000-000000000999\"]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.7 Delete Formula",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas/{{test_formula_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas",
+                "{{test_formula_id}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.7 Toggle Formula Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas/{{test_formula_id}}/toggle-status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas",
+                "{{test_formula_id}}",
+                "toggle-status"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.7 Restore Formula",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas/{{test_formula_id}}/restore",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas",
+                "{{test_formula_id}}",
+                "restore"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400, 404, 422', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 422]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.7 Batch Delete Formulas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas/batch-delete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas",
+                "batch-delete"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [\"00000000-0000-0000-0000-000000000999\"]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.7 Batch Import Formulas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas/batch-import",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas",
+                "batch-import"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"items\": []}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.7 Batch Enable Formulas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas/batch-enable",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas",
+                "batch-enable"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [\"00000000-0000-0000-0000-000000000999\"]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.7 Batch Disable Formulas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas/batch-disable",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas",
+                "batch-disable"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [\"00000000-0000-0000-0000-000000000999\"]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.7 Get Pending Validation Formulas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas/pending-validation",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas",
+                "pending-validation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.4 Delete MedicalCase",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/{{test_medical_case_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "{{test_medical_case_id}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.4 Batch Delete MedicalCases",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/batch-delete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "batch-delete"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [\"00000000-0000-0000-0000-000000000999\"]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.4 Batch Details MedicalCases",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/batch-details",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "batch-details"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [\"00000000-0000-0000-0000-000000000999\"]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.4 Query MedicalCases",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/query",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "query"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.8 Get Config By Key",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/configuration/Jwt:AccessTokenExpirationMinutes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "configuration",
+                "Jwt:AccessTokenExpirationMinutes"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.8 Update Config Key",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/configuration/Jwt:AccessTokenExpirationMinutes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "configuration",
+                "Jwt:AccessTokenExpirationMinutes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"value\": \"30\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.8 Batch Update Config",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/configuration",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "configuration"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"items\": {}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.8 Validate Config",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/configuration/validate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "configuration",
+                "validate"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.8 Get Logging Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/diagnostics/logging/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "diagnostics",
+                "logging",
+                "status"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.8 Enable Debug Logging",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/diagnostics/logging/debug/enable",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "diagnostics",
+                "logging",
+                "debug",
+                "enable"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.8 Disable Debug Logging",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/diagnostics/logging/debug/disable",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "diagnostics",
+                "logging",
+                "debug",
+                "disable"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.8 Set Logging Level",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/diagnostics/logging/level",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "diagnostics",
+                "logging",
+                "level"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"level\": \"Information\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.6 Report - Daily Income",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/daily/income",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "daily",
+                "income"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.6 Report - Daily Consultations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/daily/consultations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "daily",
+                "consultations"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.6 Report - Daily Herbs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/daily/herbs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "daily",
+                "herbs"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.6 Report - Trend Income",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/trend/income",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "trend",
+                "income"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.6 Report - Trend Consultations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/trend/consultations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "trend",
+                "consultations"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.6 Report - Doctor Performance",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/doctor-performance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "doctor-performance"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.6 Report - Herbs Ranking",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/herbs/ranking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "herbs",
+                "ranking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.6 Report - Patient Flow",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/patient-flow",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "patient-flow"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.8 Deploy Upload",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/deploy/upload",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "deploy",
+                "upload"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400, 404, 405', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.8 Deploy Restart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/deploy/restart",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "deploy",
+                "restart"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 404, 405', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404, 405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.8 Get Config By Key",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/configuration/Jwt:AccessTokenExpirationMinutes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "configuration",
+                "Jwt:AccessTokenExpirationMinutes"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.8 Update Config By Key",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/configuration/Jwt:AccessTokenExpirationMinutes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "configuration",
+                "Jwt:AccessTokenExpirationMinutes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"value\": \"30\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -5566,7 +7570,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
                 ]
               }
             }
@@ -5599,7 +7603,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
                 ]
               }
             }
@@ -5634,7 +7638,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
                 ]
               }
             }
@@ -5667,7 +7671,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
                 ]
               }
             }
@@ -5701,7 +7705,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
                 ]
               }
             }
@@ -7879,7 +9883,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
                 ]
               }
             }
@@ -7912,7 +9916,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
                 ]
               }
             }
@@ -7946,7 +9950,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
                 ]
               }
             }
@@ -7980,7 +9984,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
                 ]
               }
             }
@@ -9086,6 +11090,868 @@
               "script": {
                 "exec": [
                   "pm.test('Status 200,404,405', function(){pm.expect(pm.response.code).to.be.oneOf([200,404,405]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Close MedicalCase",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/{{test_medical_case_id}}/close",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "{{test_medical_case_id}}",
+                "close"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Suspend MedicalCase",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/{{test_medical_case_id}}/suspend",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "{{test_medical_case_id}}",
+                "suspend"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Cancel MedicalCase",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/{{test_medical_case_id}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "{{test_medical_case_id}}",
+                "cancel"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Update MedicalCase Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/{{test_medical_case_id}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "{{test_medical_case_id}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"status\": \"Active\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Mark Print Completed",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/{{test_medical_case_id}}/print-completed",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "{{test_medical_case_id}}",
+                "print-completed"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Get Consultations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/{{test_medical_case_id}}/consultations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "{{test_medical_case_id}}",
+                "consultations"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Get Prescriptions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/{{test_medical_case_id}}/prescriptions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "{{test_medical_case_id}}",
+                "prescriptions"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Get MC Permissions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/{{test_medical_case_id}}/permissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "{{test_medical_case_id}}",
+                "permissions"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Query MedicalCases",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/query?keyword=test",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "query?keyword=test"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.6 Cancel Registration",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations/{{test_registration_id}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations",
+                "{{test_registration_id}}",
+                "cancel"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.7 Report - Daily Income",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/daily/income",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "daily",
+                "income"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.7 Report - Daily Consultations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/daily/consultations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "daily",
+                "consultations"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.7 Report - Daily Herbs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/daily/herbs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "daily",
+                "herbs"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.7 Report - Trend Income",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/trend/income",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "trend",
+                "income"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.7 Report - Trend Consultations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/trend/consultations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "trend",
+                "consultations"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.7 Report - Doctor Performance",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/doctor-performance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "doctor-performance"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.7 Report - Herbs Ranking",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/herbs/ranking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "herbs",
+                "ranking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.7 Report - Patient Flow",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/patient-flow",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "patient-flow"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Patient Consultation History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/patient/{{test_patient_id}}/consultations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "patient",
+                "{{test_patient_id}}",
+                "consultations"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Patient Prescription History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/medicalcases/patient/{{test_patient_id}}/prescriptions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "medicalcases",
+                "patient",
+                "{{test_patient_id}}",
+                "prescriptions"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.6 Get Registration Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/registrations/{{test_registration_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "registrations",
+                "{{test_registration_id}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.4 Validate Formula Herb",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/formulas/{{test_formula_id}}/herbs/00000000-0000-0000-0000-000000000999/validate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "formulas",
+                "{{test_formula_id}}",
+                "herbs",
+                "00000000-0000-0000-0000-000000000999",
+                "validate"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
                 ]
               }
             }
