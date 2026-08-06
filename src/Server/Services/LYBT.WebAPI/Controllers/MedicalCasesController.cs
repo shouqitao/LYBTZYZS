@@ -98,7 +98,8 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
         public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
         {
-            var inputDto = System.Text.Json.JsonSerializer.Deserialize<MedicalCaseInputDto>(System.Text.Json.JsonSerializer.Serialize(dto), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+            MedicalCaseInputDto inputDto;
+        try { inputDto = System.Text.Json.JsonSerializer.Deserialize<MedicalCaseInputDto>(System.Text.Json.JsonSerializer.Serialize(dto), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })!; } catch (System.Text.Json.JsonException) { return ValidationFail("请求参数格式无效"); }
             var (doctorId, _, _) = GetOperator();
 
             inputDto.Id = null;
@@ -131,7 +132,8 @@ namespace LYBT.WebAPI.Controllers
             Guid id,
             [FromBody] object dto, CancellationToken ct)
         {
-            var request = System.Text.Json.JsonSerializer.Deserialize<MedicalCaseInputDto>(System.Text.Json.JsonSerializer.Serialize(dto), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+            MedicalCaseInputDto request;
+            try { request = System.Text.Json.JsonSerializer.Deserialize<MedicalCaseInputDto>(System.Text.Json.JsonSerializer.Serialize(dto), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })!; } catch (System.Text.Json.JsonException) { return ValidationFail("请求参数格式无效"); }
             if (request.Id != id)
             {
                 return Error("请求ID与路由ID不一致");

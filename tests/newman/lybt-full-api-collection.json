@@ -1140,7 +1140,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,403, 429]);});"
+                  "pm.test('Status 400 or 403 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,422,429]);});"
                 ]
               }
             }
@@ -1175,7 +1175,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,403, 429]);});"
+                  "pm.test('Status 400 or 403 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,422,429]);});"
                 ]
               }
             }

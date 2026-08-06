@@ -58,7 +58,8 @@ public class RegistrationsController : BaseRegistrationsController
     [EnableRateLimiting("ApiCalls")]
     public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
     {
-        var inputDto = System.Text.Json.JsonSerializer.Deserialize<RegistrationInputDto>(System.Text.Json.JsonSerializer.Serialize(dto), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+        RegistrationInputDto inputDto;
+        try { inputDto = System.Text.Json.JsonSerializer.Deserialize<RegistrationInputDto>(System.Text.Json.JsonSerializer.Serialize(dto), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })!; } catch (System.Text.Json.JsonException) { return ValidationFail("请求参数格式无效"); }
         var result = await Sender.Send(new CreateRegistrationCommand(inputDto), ct);
 
         if (!result.IsSuccess || result.Value == null)
