@@ -390,7 +390,7 @@ public class ServerArchTests
     /// 确保 Repository 层统一的 CRUD 和软删除行为
     /// </summary>
     [Fact]
-    public void P02_AllRepositories_Must_Inherit_BaseRepository()
+    public void P02b_AllRepositories_Must_Inherit_BaseRepository()
     {
         var repositoryTypes = Types.InAssemblies(ServerAssemblies)
             .That()
@@ -589,7 +589,7 @@ public class ServerArchTests
     /// 防止非法状态变更
     /// </summary>
     [Fact]
-    public void MedicalCase_StateTransition_Rules_Should_Be_Enforced()
+    public void MC01_MedicalCase_StateTransition_Rules()
     {
         // MedicalCaseBusinessRules 在 Shared.Models 中，不在 ServerAssemblies 中
         // 验证 MedicalCase 模块引用了 Shared.Models（间接引用业务规则）
@@ -607,7 +607,7 @@ public class ServerArchTests
     /// 验证职责统一由 Shared.Models 的 MedicalCaseInputDtoValidator 承担（Module 中注册）。
     /// </summary>
     [Fact]
-    public void MedicalCase_Validators_Should_Exist()
+    public void MC02_MedicalCase_Validators_Must_Exist()
     {
         var unifiedValidator = Assembly.Load("LYBT.Shared.Models")
             .GetType("LYBT.Shared.Models.Validators.MedicalCase.MedicalCaseInputDtoValidator");
@@ -624,7 +624,7 @@ public class ServerArchTests
     /// 确保统一的响应包装、操作者上下文与授权处理
     /// </summary>
     [Fact]
-    public void Controllers_Should_Inherit_BaseApiController_Or_BaseCrudController()
+    public void A01_Controllers_Must_Inherit_BaseApiController()
     {
         var controllers = Types.InAssemblies(ServerAssemblies)
             .That()
@@ -651,7 +651,7 @@ public class ServerArchTests
     /// 确保统一的 try/catch + 日志 + 异常处理模板
     /// </summary>
     [Fact]
-    public void Desktop_Repositories_Should_Inherit_ApiClientRepositoryBase()
+    public void A02_Desktop_Repositories_Must_Inherit_ApiClientRepositoryBase()
     {
         var repositories = DesktopAssemblies
             .SelectMany(a => a.GetTypes())
@@ -672,7 +672,7 @@ public class ServerArchTests
     /// Desktop 模块通过 Prism IModule.RegisterTypes 注册，Server 模块通过静态 AddXxxModule 注册
     /// </summary>
     [Fact]
-    public void Modules_Should_Have_DI_Registration_Method()
+    public void A03_Modules_Must_Have_DI_Registration()
     {
         var moduleTypes = ServerAssemblies.Concat(DesktopAssemblies)
             .SelectMany(a => a.GetTypes())
@@ -700,7 +700,7 @@ public class ServerArchTests
     /// 例外：被其他 Options 类作为属性引用的子配置类（通过父级属性绑定，无独立 Section）
     /// </summary>
     [Fact]
-    public void Options_Classes_Should_Define_SectionName()
+    public void A04_Options_Must_Define_SectionName()
     {
         var optionsTypes = ServerAssemblies
             .Append(Assembly.Load("LYBT.Shared.Configuration"))
@@ -734,7 +734,7 @@ public class ServerArchTests
     /// 统一 API 响应包装，避免直接暴露领域对象
     /// </summary>
     [Fact]
-    public void Controller_Public_Methods_Should_Return_IActionResult()
+    public void A05_Controller_Methods_Must_Return_IActionResult()
     {
         var controllers = Types.InAssemblies(ServerAssemblies)
             .That()
@@ -778,7 +778,7 @@ public class ServerArchTests
     /// 例外：ProductionConfigurationValidator 是启动时配置检查器，非 FluentValidation 验证器
     /// </summary>
     [Fact]
-    public void Validators_Should_Inherit_AbstractValidator()
+    public void A06_Validators_Must_Inherit_AbstractValidator()
     {
         var validators = ServerAssemblies
             .Append(Assembly.Load("LYBT.Shared.Models"))
@@ -803,7 +803,7 @@ public class ServerArchTests
     /// 静态手写映射工具类不在此列（非 partial 即为手写）
     /// </summary>
     [Fact]
-    public void Mapperly_Mappers_Should_Have_Mapper_Attribute()
+    public void A07_Mapperly_Mappers_Must_Have_Mapper_Attribute()
     {
         var mapperTypes = ServerAssemblies.Concat(DesktopAssemblies)
             .SelectMany(a => a.GetTypes())

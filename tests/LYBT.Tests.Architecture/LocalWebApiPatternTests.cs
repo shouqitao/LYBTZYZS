@@ -16,7 +16,7 @@ public class LocalWebApiPatternTests
     /// Updated for unified Service layer — controllers inject I*Service instead of DbContext.
     /// </summary>
     [Fact]
-    public void P20_LocalWebAPI_Controllers_Should_Only_Inject_Allowed_Types()
+    public void P20_LocalWebAPI_Controllers_Only_Inject_Allowed_Types()
     {
         var result = Types.InAssembly(typeof(LYBT.LocalWebAPI.Controllers.HealthController).Assembly)
             .That()
@@ -55,7 +55,7 @@ public class LocalWebApiPatternTests
     /// 本测试验证引用列表与 ADR-0010 记录一致。新增 Server Module 引用需先更新 ADR。
     /// </summary>
     [Fact]
-    public void P21_LocalWebAPI_ServerModule_References_Match_ADR0010()
+    public void P21_LocalWebAPI_References_Match_ADR0010()
     {
         var localWebApiAssembly = typeof(LYBT.LocalWebAPI.Controllers.HealthController).Assembly;
         var referencedServerAssemblies = localWebApiAssembly.GetReferencedAssemblies()
@@ -88,7 +88,7 @@ public class LocalWebApiPatternTests
     /// binding source inference, and problem details responses.
     /// </summary>
     [Fact]
-    public void P22_LocalWebAPI_Controllers_Must_Have_ApiController_Attribute()
+    public void P22_LocalWebAPI_Controllers_Must_Have_ApiController()
     {
         var controllerTypes = Types.InAssembly(typeof(LYBT.LocalWebAPI.Controllers.HealthController).Assembly)
             .That()

@@ -38,7 +38,7 @@ public class CustomControlArchTests
     /// 注意：此测试需要控件已实例化，仅作为文档提醒
     /// </remarks>
     [Fact]
-    public void Custom_Controls_Should_Exist()
+    public void CC01_Custom_Controls_Must_Exist()
     {
         var controls = GetCustomControlTypes().ToList();
 
@@ -115,7 +115,7 @@ public class CustomControlArchTests
     /// 验证MasterDetailLayout控件符合规范
     /// </summary>
     [Fact]
-    public void MasterDetailLayout_Should_Have_Required_Content_Properties()
+    public void CC02_MasterDetailLayout_Must_Have_Content_Properties()
     {
         var type = GetCustomControlTypes()
             .FirstOrDefault(t => t.Name == "MasterDetailLayout");
@@ -138,7 +138,7 @@ public class CustomControlArchTests
     /// 验证DataGridToolbar控件符合规范
     /// </summary>
     [Fact]
-    public void DataGridToolbar_Should_Have_Required_Content_Properties()
+    public void CC03_DataGridToolbar_Must_Have_Content_Properties()
     {
         var type = GetCustomControlTypes()
             .FirstOrDefault(t => t.Name == "DataGridToolbar");
@@ -157,7 +157,7 @@ public class CustomControlArchTests
     /// 验证所有Controls命名空间的类都是UserControl派生类
     /// </summary>
     [Fact]
-    public void All_Controls_Should_Inherit_From_UserControl()
+    public void CC04_Controls_Must_Inherit_From_Control()
     {
         var result = Types.InAssembly(ControlsAssembly)
             .That()

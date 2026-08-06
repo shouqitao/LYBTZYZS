@@ -14,7 +14,7 @@ public sealed class AntiMockRuleTests
         typeof(Server.Infrastructure.ServerFixture).Assembly;
 
     [Fact]
-    public void ServerTestProject_ShouldNotReference_NSubstitute()
+    public void AM01_ServerTests_No_NSubstitute_Reference()
     {
         var referencedAssemblies = ServerTestAssembly.GetReferencedAssemblies();
 
@@ -25,7 +25,7 @@ public sealed class AntiMockRuleTests
     }
 
     [Fact]
-    public void ServerTestProject_ShouldNotContain_TypesDependingOnNSubstitute()
+    public void AM02_ServerTests_No_NSubstitute_Dependencies()
     {
         var types = Types.InAssembly(ServerTestAssembly)
             .That().HaveDependencyOn("NSubstitute")
@@ -37,7 +37,7 @@ public sealed class AntiMockRuleTests
     }
 
     [Fact]
-    public void ServerTestProject_ShouldNotReference_EFCoreInMemory_ForIntegrationTests()
+    public void AM03_IntegrationTests_No_EFCore_InMemory()
     {
         // Integration tests (inheriting IntegrationTestBase<T>) should use real SQL Server via Respawn,
         // not EF Core InMemory. InMemory is only allowed for pure logic tests that need a quick DbContext.

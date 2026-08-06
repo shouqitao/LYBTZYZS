@@ -16,7 +16,7 @@ public class DesktopLayerArchTests
     /// Desktop层不得依赖Server层（LYBT.Entities 已下沉到 Shared，不再受限）
     /// </summary>
     [Fact]
-    public void Desktop_Should_Not_Depend_On_Server_Layers()
+    public void DP01_Desktop_Should_Not_Depend_On_Server()
     {
         var result = Types.InAssemblies(DesktopAssemblies)
             .Should()
@@ -33,7 +33,7 @@ public class DesktopLayerArchTests
     /// 例外：打印相关DTO（用于打印服务数据传递）
     /// </summary>
     [Fact]
-    public void Desktop_Should_Not_Contain_DTO_Classes()
+    public void DP02_Desktop_Should_Not_Contain_DTO_Classes()
     {
         // 允许的打印相关DTO（用于打印服务，与服务端共享协议）
         var allowedPrintDtos = new[]
@@ -65,7 +65,7 @@ public class DesktopLayerArchTests
     /// Desktop层UI模型必须使用正确后缀
     /// </summary>
     [Fact]
-    public void Desktop_UI_Models_Should_Have_Correct_Suffix()
+    public void DP03_UI_Models_Must_Have_Correct_Suffix()
     {
         var modelTypes = Types.InAssemblies(DesktopAssemblies)
             .That()
@@ -92,7 +92,7 @@ public class DesktopLayerArchTests
     /// Desktop层ViewModels必须继承自正确基类
     /// </summary>
     [Fact]
-    public void Desktop_ViewModels_Should_Inherit_From_Base_Classes()
+    public void DP04_ViewModels_Must_Inherit_Base_Classes()
     {
         var viewModelTypes = Types.InAssemblies(DesktopAssemblies)
             .That()
@@ -138,7 +138,7 @@ public class DesktopLayerArchTests
     /// 事件定义不应重复
     /// </summary>
     [Fact]
-    public void Events_Should_Not_Have_Duplicate_Definitions()
+    public void DP05_Events_No_Duplicate_Definitions()
     {
         var eventTypes = Types.InAssemblies(DesktopAssemblies)
             .That()
@@ -171,7 +171,7 @@ public class DesktopLayerArchTests
     /// 以及LoginCoordinator（认证时需要User Entity）
     /// </summary>
     [Fact]
-    public void Desktop_Should_Not_Use_Entity_Classes()
+    public void DP06_Desktop_Should_Not_Use_Entity_Classes()
     {
         var result = Types.InAssemblies(DesktopAssemblies)
             .That()
@@ -202,7 +202,7 @@ public class DesktopLayerArchTests
     /// 服务注册应遵循命名规范
     /// </summary>
     [Fact]
-    public void Services_Should_Follow_Naming_Convention()
+    public void DP07_Services_Must_Follow_Naming_Convention()
     {
         var serviceTypes = Types.InAssemblies(DesktopAssemblies)
             .That()
@@ -232,7 +232,7 @@ public class DesktopLayerArchTests
     /// Desktop层API调用必须通过Service层
     /// </summary>
     [Fact]
-    public void ViewModels_Should_Not_Directly_Use_Api_Interfaces()
+    public void DP08_ViewModels_No_Direct_Api_Interfaces()
     {
         var viewModelTypes = Types.InAssemblies(DesktopAssemblies)
             .That()
@@ -254,7 +254,7 @@ public class DesktopLayerArchTests
     /// 确保 ViewModel 不直接依赖 IRegionManager 进行导航 (应通过 INavigationCoordinator)
     /// </summary>
     [Fact]
-    public void Should_Use_Unified_Navigation_Service()
+    public void DP09_Must_Use_Unified_Navigation_Service()
     {
         // 允许白名单: Shell 层的导航协调器本身需要 IRegionManager
         var allowedTypes = new HashSet<string>
@@ -292,7 +292,7 @@ public class DesktopLayerArchTests
     /// Issue #1213
     /// </remarks>
     [Fact]
-    public void Desktop_Modules_Should_Not_Have_Forbidden_Directories()
+    public void DM01b_Modules_No_Forbidden_Directories()
     {
         var moduleAssemblies = new[]
         {
@@ -334,7 +334,7 @@ public class DesktopLayerArchTests
     /// Issue #1113
     /// </remarks>
     [Fact]
-    public void Desktop_ViewModels_Should_Use_Standard_Base_Classes()
+    public void DM02_ViewModels_Use_Standard_Base_Classes()
     {
         var allowedBaseClasses = new[]
         {
@@ -389,7 +389,7 @@ public class DesktopLayerArchTests
     /// Remote: Modules/*/Repositories/*Repository.cs
     /// </summary>
     [Fact]
-    public void P01_AllRepositories_Must_Have_Remote_Implementation()
+    public void DM01_AllRepositories_Must_Have_Remote_Implementation()
     {
         var contractsAssembly = Assembly.Load("LYBT.Desktop.Contracts");
 
@@ -435,7 +435,7 @@ public class DesktopLayerArchTests
     /// 确保 CRUD 功能的一致性 (列表/详情/导航/搜索)
     /// </summary>
     [Fact]
-    public void P03_AllCrudViewModels_Must_Inherit_MasterDetailViewModelBase()
+    public void DM03_CrudViewModels_Must_Inherit_MasterDetailViewModelBase()
     {
         // MasterDetail 命名约定标识 CRUD ViewModel
         var crudViewModels = Types.InAssemblies(DesktopAssemblies)
@@ -480,7 +480,7 @@ public class DesktopLayerArchTests
     /// 确保 Local 模式与 Server 模式使用相同的数据库引擎，消除 SQL 方言差异
     /// </summary>
     [Fact]
-    public void P07_LocalData_Must_Not_Depend_On_SQLite()
+    public void DM07_LocalData_Must_Not_Depend_On_SQLite()
     {
         var localDataAssembly = Assembly.Load("LYBT.Desktop.Infrastructure");
 
@@ -500,7 +500,7 @@ public class DesktopLayerArchTests
     /// IgnoreRowVersion 和 ApplyDecimalConversion 是 SQLite 特有的适配代码
     /// </summary>
     [Fact]
-    public void P08_LocalDbContext_Must_Not_Have_SQLite_Adapters()
+    public void DM08_LocalDbContext_Must_Not_Have_SQLite_Adapters()
     {
         var localDataAssembly = Assembly.Load("LYBT.Desktop.Infrastructure");
         var localDbContextType = localDataAssembly.GetTypes()
@@ -524,7 +524,7 @@ public class DesktopLayerArchTests
     /// 截至 2026-07-30，全部 51 个 VM 已使用 CommunityToolkit 命令，零 DelegateCommand。
     /// </summary>
     [Fact]
-    public void ViewModels_Should_Not_Use_New_DelegateCommand()
+    public void DM04_ViewModels_No_New_DelegateCommand()
     {
         var viewModelTypes = Types.InAssemblies(DesktopAssemblies)
             .That()
@@ -580,7 +580,7 @@ public class DesktopLayerArchTests
     /// 模块程序集不应再包含 Repository 接口定义。
     /// </remarks>
     [Fact]
-    public void All_Repository_Interfaces_Should_Be_In_Contracts()
+    public void DM05_Repository_Interfaces_Must_Be_In_Contracts()
     {
         var moduleAssemblies = new[]
         {
@@ -618,7 +618,7 @@ public class DesktopLayerArchTests
     /// 防止模块耦合，确保模块隔离
     /// </summary>
     [Fact]
-    public void Business_Modules_Should_Not_Reference_Other_Business_Modules()
+    public void DM06_Business_Modules_No_Cross_References()
     {
         var moduleAssemblies = new Dictionary<string, Assembly>
         {
