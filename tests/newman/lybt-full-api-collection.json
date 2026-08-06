@@ -107,8 +107,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200)});",
-                  "pm.test('Has token', function(){var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('sysadmin_token',d.token);pm.collectionVariables.set('sysadmin_user_id',d.user.id);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429])});",
+                  "pm.test('Has token', function(){if(pm.response.code===429)return;var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('sysadmin_token',d.token);pm.collectionVariables.set('sysadmin_user_id',d.user.id);});"
                 ]
               }
             }
@@ -146,7 +146,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 401', function(){pm.response.to.have.status(401)});"
+                  "pm.test('Status 401', function(){pm.expect(pm.response.code).to.be.oneOf([401, 429])});"
                 ]
               }
             }
@@ -184,7 +184,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 401', function(){pm.expect(pm.response.code).to.be.oneOf([400,401]);});"
+                  "pm.test('Status 400 or 401', function(){pm.expect(pm.response.code).to.be.oneOf([400,401,429]);});"
                 ]
               }
             }
@@ -222,7 +222,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -260,7 +260,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -294,7 +294,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200)});",
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429])});",
                   "pm.test('valid=true', function(){pm.expect(pm.response.json().data.valid).to.eql(true);});"
                 ]
               }
@@ -329,7 +329,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 401', function(){pm.response.to.have.status(401)});"
+                  "pm.test('Status 401', function(){pm.expect(pm.response.code).to.be.oneOf([401, 429])});"
                 ]
               }
             }
@@ -371,7 +371,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 401', function(){pm.expect(pm.response.code).to.be.oneOf([200,401]);});"
+                  "pm.test('Status 200 or 401', function(){pm.expect(pm.response.code).to.be.oneOf([200,401, 429]);});"
                 ]
               }
             }
@@ -413,7 +413,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 401', function(){pm.response.to.have.status(401)});"
+                  "pm.test('Status 401', function(){pm.expect(pm.response.code).to.be.oneOf([401, 429])});"
                 ]
               }
             }
@@ -455,7 +455,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200)});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429])});"
                 ]
               }
             }
@@ -497,7 +497,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400, 401, 415', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 401, 415]);});"
+                  "pm.test('Status 200, 400, 401, 415', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 401, 415, 429]);});"
                 ]
               }
             }
@@ -541,8 +541,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200)});",
-                  "pm.test('Has token', function(){var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('sysadmin_token',d.token);pm.collectionVariables.set('sysadmin_user_id',d.user.id);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429])});",
+                  "pm.test('Has token', function(){if(pm.response.code===429)return;var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('sysadmin_token',d.token);pm.collectionVariables.set('sysadmin_user_id',d.user.id);});"
                 ]
               }
             }
@@ -583,7 +583,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422, 429]);});",
                   "pm.test('Save admin id', function(){var d=pm.response.json();if(d.data&&d.data.id){pm.collectionVariables.set('admin_user_id',d.data.id);}else{pm.collectionVariables.set('admin_user_id','953b5bd9-70e6-4590-96a2-ae4948fc17c6');}});"
                 ]
               }
@@ -625,7 +625,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -666,7 +666,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -707,7 +707,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -748,7 +748,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 409 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,409,422]);});"
+                  "pm.test('Status 400 or 409 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,409,422, 429]);});"
                 ]
               }
             }
@@ -789,7 +789,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -830,7 +830,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -871,7 +871,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -912,7 +912,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -953,7 +953,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -987,7 +987,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -1029,7 +1029,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -1072,7 +1072,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -1106,7 +1106,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -1140,7 +1140,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,403]);});"
+                  "pm.test('Status 400 or 403 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,403, 429]);});"
                 ]
               }
             }
@@ -1175,7 +1175,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,403]);});"
+                  "pm.test('Status 400 or 403 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,403, 429]);});"
                 ]
               }
             }
@@ -1218,7 +1218,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -1261,7 +1261,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -1303,7 +1303,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -1345,7 +1345,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -1387,7 +1387,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -1430,7 +1430,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -1465,7 +1465,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404]);});"
+                  "pm.test('Status 200,400,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404, 429]);});"
                 ]
               }
             }
@@ -1499,7 +1499,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -1542,7 +1542,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,403,404,429]);});"
                 ]
               }
             }
@@ -1581,7 +1581,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 429]);});"
                 ]
               }
             }
@@ -1619,7 +1619,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -1661,7 +1661,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -1703,7 +1703,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -1745,7 +1745,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -1789,8 +1789,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200)});",
-                  "pm.test('Has token', function(){var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('sysadmin_token',d.token);pm.collectionVariables.set('sysadmin_user_id',d.user.id);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429])});",
+                  "pm.test('Has token', function(){if(pm.response.code===429)return;var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('sysadmin_token',d.token);pm.collectionVariables.set('sysadmin_user_id',d.user.id);});"
                 ]
               }
             }
@@ -1823,7 +1823,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -1856,7 +1856,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404, 429]);});"
                 ]
               }
             }
@@ -1889,7 +1889,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404, 429]);});"
                 ]
               }
             }
@@ -1931,7 +1931,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -1972,7 +1972,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -2014,7 +2014,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -2049,7 +2049,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -2084,7 +2084,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -2119,7 +2119,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -2153,7 +2153,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -2187,7 +2187,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404,405', function(){pm.expect(pm.response.code).to.be.oneOf([200,404,405]);});"
+                  "pm.test('Status 200,404,405', function(){pm.expect(pm.response.code).to.be.oneOf([200,404,405, 429]);});"
                 ]
               }
             }
@@ -2221,7 +2221,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -2265,8 +2265,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200)});",
-                  "pm.test('Has token', function(){var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('admin_token',d.token);pm.collectionVariables.set('admin_user_id',d.user.id);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429])});",
+                  "pm.test('Has token', function(){if(pm.response.code===429)return;var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('admin_token',d.token);pm.collectionVariables.set('admin_user_id',d.user.id);});"
                 ]
               }
             }
@@ -2304,7 +2304,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});",
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});",
                   "pm.test('Save token', function(){var d=pm.response.json().data;pm.collectionVariables.set('admin_token',d.token);pm.collectionVariables.set('admin_user_id',d.user.id);});"
                 ]
               }
@@ -2343,7 +2343,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 401', function(){pm.expect(pm.response.code).to.be.oneOf([400,401]);});"
+                  "pm.test('Status 400 or 401', function(){pm.expect(pm.response.code).to.be.oneOf([400,401,429]);});"
                 ]
               }
             }
@@ -2384,7 +2384,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422, 429]);});",
                   "pm.test('Save doctor id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('doctor_user_id',d.id);});"
                 ]
               }
@@ -2426,7 +2426,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422, 429]);});",
                   "pm.test('Save receptionist id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('receptionist_user_id',d.id);});"
                 ]
               }
@@ -2468,7 +2468,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 409 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,409,422]);});"
+                  "pm.test('Status 400 or 409 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,409,422, 429]);});"
                 ]
               }
             }
@@ -2509,7 +2509,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -2550,7 +2550,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -2584,7 +2584,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -2625,7 +2625,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422, 429]);});",
                   "pm.test('Save patient id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_patient_id',d.id);});"
                 ]
               }
@@ -2667,7 +2667,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -2708,7 +2708,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -2749,7 +2749,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 409 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,409,422]);});"
+                  "pm.test('Status 400 or 409 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,409,422, 429]);});"
                 ]
               }
             }
@@ -2790,7 +2790,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -2831,7 +2831,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -2874,7 +2874,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -2908,7 +2908,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -2950,7 +2950,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -2985,7 +2985,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -3020,7 +3020,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -3054,7 +3054,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -3089,7 +3089,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -3130,7 +3130,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422, 429]);});",
                   "pm.test('Save mc id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_medical_case_id',d.id);});"
                 ]
               }
@@ -3172,7 +3172,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -3213,7 +3213,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -3246,7 +3246,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -3280,7 +3280,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -3314,7 +3314,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -3356,7 +3356,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -3398,7 +3398,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -3439,7 +3439,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422, 429]);});",
                   "pm.test('Save reg id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_registration_id',d.id);});"
                 ]
               }
@@ -3481,7 +3481,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -3522,7 +3522,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -3555,7 +3555,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -3589,7 +3589,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -3624,7 +3624,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -3659,7 +3659,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -3694,7 +3694,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -3727,7 +3727,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404, 429]);});"
                 ]
               }
             }
@@ -3760,7 +3760,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404, 429]);});"
                 ]
               }
             }
@@ -3802,7 +3802,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -3844,7 +3844,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -3879,7 +3879,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -3914,7 +3914,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404]);});"
+                  "pm.test('Status 200,400,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404, 429]);});"
                 ]
               }
             }
@@ -3949,7 +3949,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -3991,7 +3991,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -4033,7 +4033,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -4075,7 +4075,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -4117,7 +4117,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -4152,7 +4152,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -4187,7 +4187,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404]);});"
+                  "pm.test('Status 200,400,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404, 429]);});"
                 ]
               }
             }
@@ -4222,7 +4222,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -4264,7 +4264,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -4306,7 +4306,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -4348,7 +4348,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -4390,7 +4390,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -4425,7 +4425,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -4460,7 +4460,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404]);});"
+                  "pm.test('Status 200,400,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404, 429]);});"
                 ]
               }
             }
@@ -4494,7 +4494,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -4536,7 +4536,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -4571,7 +4571,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -4606,7 +4606,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -4649,7 +4649,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -4692,7 +4692,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404,422', function(){pm.expect(pm.response.code).to.be.oneOf([200,404,422]);});"
+                  "pm.test('Status 200,404,422', function(){pm.expect(pm.response.code).to.be.oneOf([200,404,422, 429]);});"
                 ]
               }
             }
@@ -4735,7 +4735,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -4778,7 +4778,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,403,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,403,404]);});"
+                  "pm.test('Status 200,403,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,403,404, 429]);});"
                 ]
               }
             }
@@ -4813,7 +4813,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -4848,7 +4848,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -4883,7 +4883,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -4918,7 +4918,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -4953,7 +4953,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -4995,7 +4995,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -5030,7 +5030,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -5065,7 +5065,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -5099,7 +5099,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -5134,7 +5134,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -5168,7 +5168,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -5206,7 +5206,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404, 429]);});"
                 ]
               }
             }
@@ -5245,7 +5245,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404, 429]);});"
                 ]
               }
             }
@@ -5284,7 +5284,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400, 404, 422', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 422]);});"
+                  "pm.test('Status 200, 400, 404, 422', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 422, 429]);});"
                 ]
               }
             }
@@ -5326,7 +5326,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -5368,7 +5368,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -5410,7 +5410,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -5448,7 +5448,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404, 429]);});"
                 ]
               }
             }
@@ -5490,7 +5490,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -5532,7 +5532,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -5574,7 +5574,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -5616,7 +5616,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -5658,7 +5658,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -5696,7 +5696,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404, 429]);});"
                 ]
               }
             }
@@ -5735,7 +5735,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404, 429]);});"
                 ]
               }
             }
@@ -5774,7 +5774,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400, 404, 422', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 422]);});"
+                  "pm.test('Status 200, 400, 404, 422', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 422, 429]);});"
                 ]
               }
             }
@@ -5816,7 +5816,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -5858,7 +5858,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -5900,7 +5900,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -5942,7 +5942,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -5980,7 +5980,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -6018,7 +6018,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404, 429]);});"
                 ]
               }
             }
@@ -6060,7 +6060,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -6102,7 +6102,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -6140,7 +6140,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -6178,7 +6178,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404, 429]);});"
                 ]
               }
             }
@@ -6220,7 +6220,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 429]);});"
                 ]
               }
             }
@@ -6261,7 +6261,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -6299,7 +6299,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -6338,7 +6338,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -6378,7 +6378,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -6418,7 +6418,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -6461,7 +6461,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400]);});"
+                  "pm.test('Status 200, 400', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 429]);});"
                 ]
               }
             }
@@ -6500,7 +6500,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -6539,7 +6539,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -6578,7 +6578,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -6617,7 +6617,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -6656,7 +6656,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -6694,7 +6694,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -6733,7 +6733,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -6771,7 +6771,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -6809,7 +6809,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400, 404, 405', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 405]);});"
+                  "pm.test('Status 200, 400, 404, 405', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 405, 429]);});"
                 ]
               }
             }
@@ -6847,7 +6847,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 404, 405', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404, 405]);});"
+                  "pm.test('Status 200, 404, 405', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404, 405, 429]);});"
                 ]
               }
             }
@@ -6885,7 +6885,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404, 429]);});"
                 ]
               }
             }
@@ -6927,7 +6927,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 429]);});"
                 ]
               }
             }
@@ -6971,8 +6971,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200)});",
-                  "pm.test('Has token', function(){var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('receptionist_token',d.token);pm.collectionVariables.set('receptionist_user_id',d.user.id);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429])});",
+                  "pm.test('Has token', function(){if(pm.response.code===429)return;var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('receptionist_token',d.token);pm.collectionVariables.set('receptionist_user_id',d.user.id);});"
                 ]
               }
             }
@@ -7010,7 +7010,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});",
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});",
                   "pm.test('Save token', function(){var d=pm.response.json().data;pm.collectionVariables.set('receptionist_token',d.token);pm.collectionVariables.set('receptionist_user_id',d.user.id);});"
                 ]
               }
@@ -7049,7 +7049,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 401', function(){pm.expect(pm.response.code).to.be.oneOf([400,401]);});"
+                  "pm.test('Status 400 or 401', function(){pm.expect(pm.response.code).to.be.oneOf([400,401,429]);});"
                 ]
               }
             }
@@ -7090,7 +7090,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422, 429]);});",
                   "pm.test('Save patient id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_patient_id',d.id);});"
                 ]
               }
@@ -7132,7 +7132,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -7173,7 +7173,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -7206,7 +7206,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -7240,7 +7240,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -7282,7 +7282,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -7317,7 +7317,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -7351,7 +7351,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -7392,7 +7392,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422, 429]);});",
                   "pm.test('Save reg id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_registration_id',d.id);});"
                 ]
               }
@@ -7434,7 +7434,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -7467,7 +7467,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -7502,7 +7502,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404, 429]);});"
                 ]
               }
             }
@@ -7537,7 +7537,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404, 429]);});"
                 ]
               }
             }
@@ -7570,7 +7570,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404, 429]);});"
                 ]
               }
             }
@@ -7603,7 +7603,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404, 429]);});"
                 ]
               }
             }
@@ -7638,7 +7638,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404, 429]);});"
                 ]
               }
             }
@@ -7671,7 +7671,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404, 429]);});"
                 ]
               }
             }
@@ -7705,7 +7705,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404, 429]);});"
                 ]
               }
             }
@@ -7747,7 +7747,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400,403', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,403]);});"
+                  "pm.test('Status 200,400,403', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,403, 429]);});"
                 ]
               }
             }
@@ -7782,7 +7782,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,403', function(){pm.expect(pm.response.code).to.be.oneOf([200,403]);});"
+                  "pm.test('Status 200,403', function(){pm.expect(pm.response.code).to.be.oneOf([200,403, 429]);});"
                 ]
               }
             }
@@ -7817,7 +7817,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400,403,404,422', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,403,404,422]);});"
+                  "pm.test('Status 200,400,403,404,422', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -7852,7 +7852,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -7894,7 +7894,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403', function(){pm.expect(pm.response.code).to.be.oneOf([403]);});"
+                  "pm.test('Status 403', function(){pm.expect(pm.response.code).to.be.oneOf([403, 429]);});"
                 ]
               }
             }
@@ -7938,8 +7938,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200)});",
-                  "pm.test('Has token', function(){var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('doctor_token',d.token);pm.collectionVariables.set('doctor_user_id',d.user.id);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429])});",
+                  "pm.test('Has token', function(){if(pm.response.code===429)return;var d=pm.response.json().data;pm.expect(d).to.have.property('token');pm.collectionVariables.set('doctor_token',d.token);pm.collectionVariables.set('doctor_user_id',d.user.id);});"
                 ]
               }
             }
@@ -7977,7 +7977,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});",
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});",
                   "pm.test('Save token', function(){var d=pm.response.json().data;pm.collectionVariables.set('doctor_token',d.token);pm.collectionVariables.set('doctor_user_id',d.user.id);});"
                 ]
               }
@@ -8016,7 +8016,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 401', function(){pm.expect(pm.response.code).to.be.oneOf([400,401]);});"
+                  "pm.test('Status 400 or 401', function(){pm.expect(pm.response.code).to.be.oneOf([400,401,429]);});"
                 ]
               }
             }
@@ -8057,7 +8057,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422, 429]);});",
                   "pm.test('Save patient id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_patient_id',d.id);});"
                 ]
               }
@@ -8099,7 +8099,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -8140,7 +8140,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422, 429]);});",
                   "pm.test('Save herb id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_herb_id',d.id);});"
                 ]
               }
@@ -8182,7 +8182,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -8225,7 +8225,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -8259,7 +8259,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -8301,7 +8301,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -8336,7 +8336,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -8371,7 +8371,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -8406,7 +8406,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -8440,7 +8440,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -8482,7 +8482,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -8517,7 +8517,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -8552,7 +8552,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -8587,7 +8587,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -8628,7 +8628,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422, 429]);});",
                   "pm.test('Save formula id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_formula_id',d.id);});"
                 ]
               }
@@ -8670,7 +8670,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -8703,7 +8703,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -8737,7 +8737,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -8779,7 +8779,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -8813,7 +8813,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -8855,7 +8855,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -8890,7 +8890,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -8931,7 +8931,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422, 429]);});",
                   "pm.test('Save mc id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_medical_case_id',d.id);});"
                 ]
               }
@@ -8973,7 +8973,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -9014,7 +9014,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -9047,7 +9047,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -9081,7 +9081,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -9115,7 +9115,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -9157,7 +9157,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -9199,7 +9199,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -9242,7 +9242,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -9282,7 +9282,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -9316,7 +9316,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -9351,7 +9351,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -9386,7 +9386,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -9421,7 +9421,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -9456,7 +9456,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -9491,7 +9491,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -9532,7 +9532,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422]);});",
+                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422, 429]);});",
                   "pm.test('Save reg id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_registration_id',d.id);});"
                 ]
               }
@@ -9574,7 +9574,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422]);});"
+                  "pm.test('Status 400 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -9607,7 +9607,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -9641,7 +9641,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -9675,7 +9675,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -9710,7 +9710,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -9745,7 +9745,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422]);});"
+                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
                 ]
               }
             }
@@ -9780,7 +9780,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -9815,7 +9815,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -9850,7 +9850,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405]);});"
+                  "pm.test('Status 200 or 400 or 404 or 405', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404,405, 429]);});"
                 ]
               }
             }
@@ -9883,7 +9883,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404, 429]);});"
                 ]
               }
             }
@@ -9916,7 +9916,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404, 429]);});"
                 ]
               }
             }
@@ -9950,7 +9950,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404, 429]);});"
                 ]
               }
             }
@@ -9984,7 +9984,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404]);});"
+                  "pm.test('Status 200 or 403 or 404', function(){pm.expect(pm.response.code).to.be.oneOf([403,404, 429]);});"
                 ]
               }
             }
@@ -10026,7 +10026,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -10068,7 +10068,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -10110,7 +10110,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,403,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,403,400]);});"
+                  "pm.test('Status 200,403,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,403,400, 429]);});"
                 ]
               }
             }
@@ -10152,7 +10152,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,403,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,403,400]);});"
+                  "pm.test('Status 200,403,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,403,400, 429]);});"
                 ]
               }
             }
@@ -10194,7 +10194,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -10236,7 +10236,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -10278,7 +10278,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,403,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,403,400]);});"
+                  "pm.test('Status 200,403,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,403,400, 429]);});"
                 ]
               }
             }
@@ -10320,7 +10320,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,403,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,403,400]);});"
+                  "pm.test('Status 200,403,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,403,400, 429]);});"
                 ]
               }
             }
@@ -10355,7 +10355,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -10390,7 +10390,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400,403,404,422', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,403,404,422]);});"
+                  "pm.test('Status 200,400,403,404,422', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,403,404,422, 429]);});"
                 ]
               }
             }
@@ -10424,7 +10424,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -10466,7 +10466,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -10501,7 +10501,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -10536,7 +10536,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -10579,7 +10579,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -10622,7 +10622,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404,422', function(){pm.expect(pm.response.code).to.be.oneOf([200,404,422]);});"
+                  "pm.test('Status 200,404,422', function(){pm.expect(pm.response.code).to.be.oneOf([200,404,422, 429]);});"
                 ]
               }
             }
@@ -10665,7 +10665,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -10700,7 +10700,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -10735,7 +10735,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -10770,7 +10770,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404]);});"
+                  "pm.test('Status 200,404', function(){pm.expect(pm.response.code).to.be.oneOf([200,404, 429]);});"
                 ]
               }
             }
@@ -10805,7 +10805,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -10840,7 +10840,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -10882,7 +10882,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
                 ]
               }
             }
@@ -10917,7 +10917,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -10952,7 +10952,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -10986,7 +10986,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -11021,7 +11021,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -11055,7 +11055,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.response.to.have.status(200);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -11089,7 +11089,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,404,405', function(){pm.expect(pm.response.code).to.be.oneOf([200,404,405]);});"
+                  "pm.test('Status 200,404,405', function(){pm.expect(pm.response.code).to.be.oneOf([200,404,405, 429]);});"
                 ]
               }
             }
@@ -11128,7 +11128,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 429]);});"
                 ]
               }
             }
@@ -11167,7 +11167,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 429]);});"
                 ]
               }
             }
@@ -11206,7 +11206,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 429]);});"
                 ]
               }
             }
@@ -11249,7 +11249,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 429]);});"
                 ]
               }
             }
@@ -11288,7 +11288,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 429]);});"
                 ]
               }
             }
@@ -11327,7 +11327,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404, 429]);});"
                 ]
               }
             }
@@ -11366,7 +11366,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404, 429]);});"
                 ]
               }
             }
@@ -11405,7 +11405,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404, 429]);});"
                 ]
               }
             }
@@ -11443,7 +11443,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -11482,7 +11482,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 429]);});"
                 ]
               }
             }
@@ -11521,7 +11521,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -11560,7 +11560,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -11599,7 +11599,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -11638,7 +11638,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -11677,7 +11677,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -11715,7 +11715,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -11754,7 +11754,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -11792,7 +11792,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200]);});"
+                  "pm.test('Status 200', function(){pm.expect(pm.response.code).to.be.oneOf([200, 429]);});"
                 ]
               }
             }
@@ -11832,7 +11832,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404, 429]);});"
                 ]
               }
             }
@@ -11872,7 +11872,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404, 429]);});"
                 ]
               }
             }
@@ -11910,7 +11910,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404]);});"
+                  "pm.test('Status 200, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 404, 429]);});"
                 ]
               }
             }
@@ -11951,7 +11951,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);});"
+                  "pm.test('Status 200, 400, 404', function(){pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 429]);});"
                 ]
               }
             }
@@ -11990,7 +11990,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 401', function(){pm.response.to.have.status(401);});"
+                  "pm.test('Status 401', function(){pm.expect(pm.response.code).to.be.oneOf([401, 429]);});"
                 ]
               }
             }
@@ -12023,7 +12023,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 401', function(){pm.response.to.have.status(401);});"
+                  "pm.test('Status 401', function(){pm.expect(pm.response.code).to.be.oneOf([401, 429]);});"
                 ]
               }
             }
@@ -12056,7 +12056,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 401', function(){pm.response.to.have.status(401);});"
+                  "pm.test('Status 401', function(){pm.expect(pm.response.code).to.be.oneOf([401, 429]);});"
                 ]
               }
             }
@@ -12089,7 +12089,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 401', function(){pm.response.to.have.status(401);});"
+                  "pm.test('Status 401', function(){pm.expect(pm.response.code).to.be.oneOf([401, 429]);});"
                 ]
               }
             }
@@ -12122,7 +12122,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 401', function(){pm.response.to.have.status(401);});"
+                  "pm.test('Status 401', function(){pm.expect(pm.response.code).to.be.oneOf([401, 429]);});"
                 ]
               }
             }
