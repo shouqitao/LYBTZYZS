@@ -6,7 +6,6 @@ using LYBT.Entities.Auth;
 using LYBT.Module.Auth.Application.Mappers;
 using LYBT.Module.Auth.Domain.Events;
 using LYBT.Module.Auth.Interfaces;
-using LYBT.Module.Auth.Models;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
@@ -25,6 +24,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
     private readonly ICrossModuleService _crossModuleService;
     private readonly IAuthSessionRepository _authSessionRepository;
     private readonly ISecurityAuditService _securityAuditService;
+    private readonly ISender _sender;
     private readonly IPublisher _publisher;
     private readonly ILogger<LoginCommandHandler> _logger;
     private readonly SecurityOptions _securityOptions;
@@ -35,6 +35,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
         ICrossModuleService crossModuleService,
         IAuthSessionRepository authSessionRepository,
         ISecurityAuditService securityAuditService,
+        ISender sender,
         IPublisher publisher,
         ILogger<LoginCommandHandler> logger,
         IOptions<SecurityOptions> securityOptions,
@@ -44,6 +45,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
         _crossModuleService = crossModuleService;
         _authSessionRepository = authSessionRepository;
         _securityAuditService = securityAuditService;
+        _sender = sender;
         _publisher = publisher;
         _logger = logger;
         _securityOptions = securityOptions?.Value ?? throw new ArgumentNullException(nameof(securityOptions));
@@ -169,6 +171,12 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
             response.ExpiresAt,
             input.ClientIp ?? "unknown",
             input.UserAgent);
+
+        // Token 族旋转：新登录撤销该用户全部旧会话（登录踢出）
+        await _sender.Send(
+            new RevokeAllUserTokensCommand(user.Id, "新设备登录，旧会话已撤销"),
+            cancellationToken);
+
         await _authSessionRepository.AddAsync(session, cancellationToken);
 
         await _publisher.Publish(

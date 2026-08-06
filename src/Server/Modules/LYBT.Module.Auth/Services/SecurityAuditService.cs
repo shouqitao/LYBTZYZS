@@ -1,6 +1,6 @@
 using LYBT.Entities.Auth;
 using LYBT.Module.Auth.Interfaces;
-using LYBT.Module.Auth.Models;
+using LYBT.Shared.Models.Contracts.Auth;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Auth.Services;

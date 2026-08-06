@@ -3,7 +3,6 @@ using System.Text;
 using MediatR;
 using LYBT.Entities.Auth;
 using LYBT.Module.Auth.Interfaces;
-using LYBT.Module.Auth.Models;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;

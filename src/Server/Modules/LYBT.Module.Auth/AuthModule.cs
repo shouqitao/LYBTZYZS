@@ -1,4 +1,5 @@
 using FluentValidation;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Models.Validators.Auth;
@@ -39,6 +40,9 @@ namespace LYBT.Module.Auth
             // 注册核心服务
             services.AddScoped<Interfaces.IJwtService, Services.JwtService>();
             services.AddScoped<Interfaces.ISecurityAuditService, Services.SecurityAuditService>();
+
+            // 注册跨模块服务（供 Users 等模块触发令牌撤销与安全审计）
+            services.AddScoped<IAuthCrossModuleService, Services.AuthCrossModuleService>();
 
             // 注册 MediatR（Application层）
             services.AddMediatR(cfg =>

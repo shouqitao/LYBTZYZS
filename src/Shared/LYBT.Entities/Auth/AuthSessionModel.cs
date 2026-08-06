@@ -57,6 +57,11 @@ namespace LYBT.Entities.Auth
         [DisplayName("已撤销")]
         public bool IsRevoked { get; set; } = false;
 
+        /// <summary>撤销原因</summary>
+        [StringLength(256)]
+        [DisplayName("撤销原因")]
+        public string? RevokedReason { get; set; }
+
         /// <summary>状态</summary>
         [DisplayName("状态")]
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
@@ -111,6 +116,15 @@ namespace LYBT.Entities.Auth
             IsRevoked = true;
             LogoutTime = DateTime.UtcNow;
             Status = CommonStatus.Disabled;
+        }
+
+        /// <summary>
+        /// 撤销会话并记录撤销原因（强制登出）。
+        /// </summary>
+        public void Revoke(string reason)
+        {
+            Revoke();
+            RevokedReason = reason;
         }
 
         /// <summary>

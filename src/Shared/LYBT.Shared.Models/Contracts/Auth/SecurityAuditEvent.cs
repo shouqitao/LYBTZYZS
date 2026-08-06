@@ -1,5 +1,8 @@
-namespace LYBT.Module.Auth.Models;
+namespace LYBT.Shared.Models.Contracts.Auth;
 
+/// <summary>
+/// 安全审计事件 DTO。
+/// </summary>
 public class SecurityAuditEvent
 {
     public Guid? UserId { get; set; }

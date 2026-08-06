@@ -31,6 +31,11 @@ public interface IAuthSessionRepository
     /// 获取用户的有效会话列表。
     /// </summary>
     Task<IReadOnlyList<AuthSession>> GetActiveSessionsAsync(Guid userId, CancellationToken ct);
+
+    /// <summary>
+    /// 批量撤销用户的全部有效会话（Token 族旋转）。
+    /// </summary>
+    Task RevokeAllUserSessionsAsync(Guid userId, string reason, CancellationToken ct);
 }
 
 

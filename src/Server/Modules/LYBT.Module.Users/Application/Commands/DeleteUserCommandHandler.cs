@@ -1,4 +1,6 @@
 using MediatR;
+using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Infrastructure.SharedKernel.Events;
@@ -15,13 +17,16 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Resul
 {
     private readonly IUserRepository _userRepository;
     private readonly IDomainEventDispatcher _eventDispatcher;
+    private readonly IAuthCrossModuleService _authCrossModule;
 
     public DeleteUserCommandHandler(
         IUserRepository userRepository,
-        IDomainEventDispatcher eventDispatcher)
+        IDomainEventDispatcher eventDispatcher,
+        IAuthCrossModuleService authCrossModule)
     {
         _userRepository = userRepository;
         _eventDispatcher = eventDispatcher;
+        _authCrossModule = authCrossModule;
     }
 
     public async Task<Result> Handle(
@@ -44,6 +49,16 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Resul
         await _eventDispatcher.DispatchAsync(new[]
         {
             new UserDeletedEvent(user.Id, user.UserName ?? string.Empty, user.RealName ?? string.Empty, request.CurrentUserId)
+        }, cancellationToken);
+
+        await _authCrossModule.RevokeAllUserSessionsAsync(user.Id, "用户已删除", cancellationToken);
+        await _authCrossModule.RecordSecurityAuditAsync(new SecurityAuditEvent
+        {
+            UserId = user.Id,
+            UserName = user.UserName,
+            EventType = "UserDeleted",
+            Details = $"用户 {user.RealName} 已被删除，操作人ID={request.CurrentUserId}",
+            IsSuccess = true
         }, cancellationToken);
 
         return Result.Success();

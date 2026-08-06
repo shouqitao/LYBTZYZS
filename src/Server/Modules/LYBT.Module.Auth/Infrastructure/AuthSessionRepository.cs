@@ -55,6 +55,27 @@ public class AuthSessionRepository : IAuthSessionRepository
             .OrderByDescending(s => s.LoginTime)
             .ToListAsync(cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public async Task RevokeAllUserSessionsAsync(Guid userId, string reason, CancellationToken cancellationToken = default)
+    {
+        var sessions = await _context.AuthSessions
+            .Where(s => s.UserId == userId
+                && !s.IsRevoked
+                && s.LogoutTime == null
+                && s.ExpiryTime > DateTime.UtcNow)
+            .ToListAsync(cancellationToken);
+
+        if (sessions.Count == 0)
+            return;
+
+        foreach (var session in sessions)
+        {
+            session.Revoke(reason);
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }
 
 
