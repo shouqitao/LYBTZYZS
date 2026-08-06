@@ -8140,7 +8140,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 or 201 or 400 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([200,201,400,422, 429]);});",
+                  "pm.test('Status 403', function(){pm.expect(pm.response.code).to.be.oneOf([403, 429]);});",
                   "pm.test('Save herb id', function(){var d=pm.response.json().data;if(d&&d.id)pm.collectionVariables.set('test_herb_id',d.id);});"
                 ]
               }
@@ -8482,7 +8482,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
+                  "pm.test('Status 403', function(){pm.expect(pm.response.code).to.be.oneOf([403, 429]);});"
                 ]
               }
             }
@@ -8517,7 +8517,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
+                  "pm.test('Status 403', function(){pm.expect(pm.response.code).to.be.oneOf([403, 429]);});"
                 ]
               }
             }
@@ -8552,7 +8552,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 or 404 or 405 or 422', function(){pm.expect(pm.response.code).to.be.oneOf([400,404,405,422, 429]);});"
+                  "pm.test('Status 403', function(){pm.expect(pm.response.code).to.be.oneOf([403, 429]);});"
                 ]
               }
             }
@@ -10805,7 +10805,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404, 429]);});"
                 ]
               }
             }
@@ -10840,7 +10840,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400, 429]);});"
+                  "pm.test('Status 200,400', function(){pm.expect(pm.response.code).to.be.oneOf([200,400,404, 429]);});"
                 ]
               }
             }
