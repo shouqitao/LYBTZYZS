@@ -694,7 +694,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生
 **优先级**: Should
-**状态**: ⚠️ 部分实现（MedicalCasePrescriptionService 有复制逻辑，需完善）
+**状态**: ✅ 前端实现（后端 API 已支持：GetPatientRecentMedicalCasesAsync + GetByIdWithDetailsAsync）
 
 **作为** 医生，**我想要** 复诊时一键复制患者最近已完成医案的处方，**以便** 在原方基础上加减药材，避免重新逐味录入。
 
