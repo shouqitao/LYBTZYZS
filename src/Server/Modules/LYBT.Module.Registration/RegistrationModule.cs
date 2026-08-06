@@ -1,5 +1,6 @@
 using FluentValidation;
 using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Infrastructure.Validation;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Registration.Application.Commands;
 using LYBT.Module.Registration.Application.Validators;
@@ -33,7 +34,10 @@ public static class RegistrationModule
 
         // 注册 MediatR（Application层）
         services.AddMediatR(cfg =>
-            cfg.RegisterServicesFromAssembly(typeof(CreateRegistrationCommand).Assembly));
+        {
+            cfg.RegisterServicesFromAssembly(typeof(CreateRegistrationCommand).Assembly);
+            cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+        });
 
         // 注册 Application 层验证器
         services.AddValidatorsFromAssemblyContaining<CreateRegistrationValidator>();

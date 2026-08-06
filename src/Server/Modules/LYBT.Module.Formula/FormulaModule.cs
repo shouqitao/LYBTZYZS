@@ -1,4 +1,5 @@
 using FluentValidation;
+using LYBT.Infrastructure.Validation;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Module.Formulas.Services;
 using LYBT.Shared.Models.Validators.Formula;
@@ -50,7 +51,10 @@ namespace LYBT.Module.Formulas
 
             // Application层 - MediatR
             services.AddMediatR(cfg =>
-                cfg.RegisterServicesFromAssembly(typeof(Application.Commands.CreateFormulaCommand).Assembly));
+            {
+                cfg.RegisterServicesFromAssembly(typeof(Application.Commands.CreateFormulaCommand).Assembly);
+                cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            });
 
             // Application层 - FluentValidation验证器
             services.AddValidatorsFromAssemblyContaining<Application.Validators.CreateFormulaValidator>();

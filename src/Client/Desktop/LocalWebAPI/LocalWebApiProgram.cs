@@ -9,6 +9,7 @@ using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Infrastructure.Services;
+using LYBT.Infrastructure.Validation;
 using LYBT.Module.Auth;
 using LYBT.Module.Users;
 using LYBT.Module.Patients;
@@ -67,7 +68,10 @@ public static class LocalWebApiProgram
 
         // LocalWebAPI CQRS Handlers（Auth）
         builder.Services.AddMediatR(cfg =>
-            cfg.RegisterServicesFromAssembly(typeof(LocalWebApiProgram).Assembly));
+        {
+            cfg.RegisterServicesFromAssembly(typeof(LocalWebApiProgram).Assembly);
+            cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+        });
 
         // 健康检查服务（复用 Server 基础设施层）
         builder.Services.AddScoped<IDbContextAccessor, DbContextAccessor>();

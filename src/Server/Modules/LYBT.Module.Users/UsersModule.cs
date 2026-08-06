@@ -1,5 +1,6 @@
 using FluentValidation;
 using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Infrastructure.Validation;
 using LYBT.Module.Users.Application.Commands;
 using LYBT.Module.Users.Application.Validators;
 using LYBT.Module.Users.Infrastructure;
@@ -46,7 +47,10 @@ namespace LYBT.Module.Users
 
             // 注册 MediatR（Application层）
             services.AddMediatR(cfg =>
-                cfg.RegisterServicesFromAssembly(typeof(CreateUserCommand).Assembly));
+            {
+                cfg.RegisterServicesFromAssembly(typeof(CreateUserCommand).Assembly);
+                cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            });
 
             // 注册验证器 - 自动注册所有Validator（包括Application层的验证器）
             services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();

@@ -1,5 +1,6 @@
 using FluentValidation;
 using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Infrastructure.Validation;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Models.Validators.Auth;
@@ -46,7 +47,10 @@ namespace LYBT.Module.Auth
 
             // 注册 MediatR（Application层）
             services.AddMediatR(cfg =>
-                cfg.RegisterServicesFromAssembly(typeof(Application.Commands.LoginCommand).Assembly));
+            {
+                cfg.RegisterServicesFromAssembly(typeof(Application.Commands.LoginCommand).Assembly);
+                cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            });
 
             // Mapperly映射器 - 无状态单例
             services.AddSingleton<Application.Mappers.AuthUserMapper>();
