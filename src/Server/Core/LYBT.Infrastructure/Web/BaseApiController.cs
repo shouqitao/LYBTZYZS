@@ -61,10 +61,10 @@ namespace LYBT.Infrastructure.Web
         protected string GetRequestId() => HttpContext?.TraceIdentifier ?? Guid.NewGuid().ToString();
 
         protected IActionResult Success(string message = "操作成功")
-            => this.Success(message);
+            => ControllerBaseExtensions.Success(this, message);
 
         protected IActionResult Success<T>(T data, string message = "操作成功")
-            => this.Success(data, message);
+            => ControllerBaseExtensions.Success(this, data, message);
 
         protected IActionResult SuccessPaged<T>(PagedResult<T> pagedResult, string message = "查询成功")
             => this.SuccessPaged(pagedResult, message);
@@ -72,17 +72,17 @@ namespace LYBT.Infrastructure.Web
         protected IActionResult Error(string message)
         {
             _logger?.LogWarning("API错误: {Message}", message);
-            return this.Error(message);
+            return ControllerBaseExtensions.Error(this, message);
         }
 
         protected IActionResult NotFound(string message = "资源未找到")
             => this.NotFoundResponse(message);
 
         protected IActionResult BusinessFail(string message, string? errorCode = null)
-            => this.BusinessFail(message, errorCode);
+            => ControllerBaseExtensions.BusinessFail(this, message, errorCode);
 
         protected IActionResult ValidationFail(string message = "参数验证失败")
-            => this.ValidationFail(message);
+            => ControllerBaseExtensions.ValidationFail(this, message);
 
         protected IActionResult Forbid(string message)
             => this.ForbidResponse(message);
