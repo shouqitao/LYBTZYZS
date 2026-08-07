@@ -317,7 +317,7 @@ public class JwtService : IJwtService
                 ValidIssuer = CurrentOptions.Issuer,
                 ValidateAudience = true,
                 ValidAudience = CurrentOptions.Audience,
-                ValidateLifetime = false,
+                ValidateLifetime = true,
                 ClockSkew = TimeSpan.FromSeconds(CurrentOptions.ClockSkewSeconds)
             };
 

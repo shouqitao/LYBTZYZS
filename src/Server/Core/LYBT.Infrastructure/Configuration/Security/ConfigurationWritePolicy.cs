@@ -30,6 +30,7 @@ public static class ConfigurationWritePolicy
     private static readonly HashSet<string> ForbiddenKeys = new(StringComparer.OrdinalIgnoreCase)
     {
         "ConnectionStrings:DefaultConnection",
+        "Database:ConnectionString",
         "Jwt:SecretKey",
     };
 
