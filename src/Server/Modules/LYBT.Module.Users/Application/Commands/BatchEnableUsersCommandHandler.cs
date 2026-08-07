@@ -1,11 +1,15 @@
 using MediatR;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
+using LYBT.Infrastructure.BatchOperations;
+using LYBT.Entities.Users;
 using LYBT.Module.Users.Interfaces;
 
 namespace LYBT.Module.Users.Application.Commands;
 
-public class BatchEnableUsersCommandHandler : IRequestHandler<BatchEnableUsersCommand, Result<BatchOperationResultDto>>
+public class BatchEnableUsersCommandHandler
+    : BatchOperationHandlerBase<ApplicationUser>,
+      IRequestHandler<BatchEnableUsersCommand, Result<BatchOperationResultDto>>
 {
     private readonly IUserRepository _userRepository;
 
@@ -14,45 +18,33 @@ public class BatchEnableUsersCommandHandler : IRequestHandler<BatchEnableUsersCo
         _userRepository = userRepository;
     }
 
-    public async Task<Result<BatchOperationResultDto>> Handle(
+    public Task<Result<BatchOperationResultDto>> Handle(
         BatchEnableUsersCommand request, CancellationToken cancellationToken)
+        => ExecuteBatchAsync(request.Ids, Guid.Empty, cancellationToken);
+
+    protected override Task<ApplicationUser?> GetByIdAsync(Guid id, CancellationToken ct)
+        => _userRepository.GetByIdAsync(id, ct);
+
+    protected override Task UpdateAsync(ApplicationUser user, CancellationToken ct)
+        => _userRepository.UpdateAsync(user, ct);
+
+    protected override Task ApplyOperationAsync(ApplicationUser user, Guid operatorId, CancellationToken ct)
     {
-        var result = new BatchOperationResultDto { TotalCount = request.Ids.Count };
-
-        foreach (var id in request.Ids)
-        {
-            var user = await _userRepository.GetByIdAsync(id, cancellationToken);
-            if (user == null)
-            {
-                result.FailedItems.Add(new BatchOperationFailureItem { Id = id, Reason = "用户不存在" });
-                result.FailureCount++;
-                continue;
-            }
-
-            if (user.IsSysAdmin)
-            {
-                result.FailedItems.Add(new BatchOperationFailureItem { Id = id, Name = user.UserName, Reason = "系统管理员账号不可被操作" });
-                result.FailureCount++;
-                continue;
-            }
-
-            try
-            {
-                user.Status = CommonStatus.Enabled;
-                user.LockoutEnd = null;
-                user.AccessFailedCount = 0;
-                user.UpdatedAt = DateTime.UtcNow;
-                await _userRepository.UpdateAsync(user, cancellationToken);
-                result.SuccessCount++;
-            }
-            catch (Exception ex)
-            {
-                result.FailedItems.Add(new BatchOperationFailureItem { Id = id, Name = user.UserName, Reason = ex.Message });
-                result.FailureCount++;
-            }
-        }
-
-        result.Message = $"批量启用完成: 成功{result.SuccessCount}个, 失败{result.FailureCount}个";
-        return Result<BatchOperationResultDto>.Success(result);
+        user.Status = CommonStatus.Enabled;
+        user.LockoutEnd = null;
+        user.AccessFailedCount = 0;
+        user.UpdatedAt = DateTime.UtcNow;
+        return Task.CompletedTask;
     }
+
+    protected override string EntityNotFoundMessage => "用户不存在";
+    protected override string OperationName => "启用";
+
+    protected override string? GetEntityName(ApplicationUser user) => user.UserName;
+
+    protected override Task<string?> ValidateAsync(
+        ApplicationUser user, Guid id, Guid operatorId, CancellationToken ct)
+        => user.IsSysAdmin
+            ? Task.FromResult<string?>("系统管理员账号不可被操作")
+            : Task.FromResult<string?>(null);
 }

@@ -1,13 +1,17 @@
 using MediatR;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Primitives.ErrorCodes;
+using LYBT.Infrastructure.BatchOperations;
+using LYBT.Entities.Users;
 using LYBT.Module.Users.Interfaces;
 
 namespace LYBT.Module.Users.Application.Commands;
 
-public class BatchDeleteUsersCommandHandler : IRequestHandler<BatchDeleteUsersCommand, Result<BatchOperationResultDto>>
+public class BatchDeleteUsersCommandHandler
+    : BatchOperationHandlerBase<ApplicationUser>,
+      IRequestHandler<BatchDeleteUsersCommand, Result<BatchOperationResultDto>>
 {
     private readonly IUserRepository _userRepository;
+    private bool _isAdmin;
 
     public BatchDeleteUsersCommandHandler(IUserRepository userRepository)
     {
@@ -17,55 +21,37 @@ public class BatchDeleteUsersCommandHandler : IRequestHandler<BatchDeleteUsersCo
     public async Task<Result<BatchOperationResultDto>> Handle(
         BatchDeleteUsersCommand request, CancellationToken cancellationToken)
     {
-        var result = new BatchOperationResultDto { TotalCount = request.Ids.Count };
+        _isAdmin = request.IsAdmin;
+        return await ExecuteBatchAsync(request.Ids, request.CurrentUserId, cancellationToken);
+    }
 
-        foreach (var id in request.Ids)
-        {
-            if (id == request.CurrentUserId)
-            {
-                result.FailedItems.Add(new BatchOperationFailureItem { Id = id, Reason = "不能删除自己" });
-                result.FailureCount++;
-                continue;
-            }
+    protected override Task<ApplicationUser?> GetByIdAsync(Guid id, CancellationToken ct)
+        => _userRepository.GetByIdAsync(id, ct);
 
-            var user = await _userRepository.GetByIdAsync(id, cancellationToken);
-            if (user == null)
-            {
-                result.FailedItems.Add(new BatchOperationFailureItem { Id = id, Reason = "用户不存在" });
-                result.FailureCount++;
-                continue;
-            }
+    protected override Task UpdateAsync(ApplicationUser user, CancellationToken ct)
+        => _userRepository.UpdateAsync(user, ct);
 
-            if (user.IsSysAdmin)
-            {
-                result.FailedItems.Add(new BatchOperationFailureItem { Id = id, Name = user.UserName, Reason = "系统管理员账号不可被删除" });
-                result.FailureCount++;
-                continue;
-            }
+    protected override Task ApplyOperationAsync(ApplicationUser user, Guid operatorId, CancellationToken ct)
+    {
+        user.SoftDelete(operatorId);
+        return Task.CompletedTask;
+    }
 
-            if (!request.IsAdmin)
-            {
-                result.FailedItems.Add(new BatchOperationFailureItem { Id = id, Name = user.UserName, Reason = "无权限删除" });
-                result.FailureCount++;
-                continue;
-            }
+    protected override string EntityNotFoundMessage => "用户不存在";
+    protected override string OperationName => "删除";
+    protected override Type CaughtExceptionType => typeof(InvalidOperationException);
 
-            try
-            {
-                user.SoftDelete(request.CurrentUserId);
-                await _userRepository.UpdateAsync(user, cancellationToken);
-                result.SuccessCount++;
-            }
-            catch (InvalidOperationException ex)
-            {
-                result.FailedItems.Add(new BatchOperationFailureItem { Id = id, Name = user.UserName, Reason = ex.Message });
-                result.FailureCount++;
-            }
-        }
+    protected override string? GetEntityName(ApplicationUser user) => user.UserName;
 
-        result.Message = $"批量删除完成: 成功{result.SuccessCount}个, 失败{result.FailureCount}个";
-        return Result<BatchOperationResultDto>.Success(result);
+    protected override Task<string?> ValidateAsync(
+        ApplicationUser user, Guid id, Guid operatorId, CancellationToken ct)
+    {
+        if (id == operatorId)
+            return Task.FromResult<string?>("不能删除自己");
+        if (user.IsSysAdmin)
+            return Task.FromResult<string?>("系统管理员账号不可被删除");
+        if (!_isAdmin)
+            return Task.FromResult<string?>("无权限删除");
+        return Task.FromResult<string?>(null);
     }
 }
-
-
