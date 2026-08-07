@@ -39,7 +39,6 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 
 | 策略 | 允许角色 | 用途 |
 |------|---------|------|
-| `AdminOnly` | Admin, SuperAdmin（sysadmin） | 系统设置、恢复（纯 Admin 场景需新增策略） |
 | `DoctorOnly` | Doctor | 医案创建、打印、接诊 |
 | `DoctorOrAdmin` | Doctor, Admin | 医案、报表 |
 | `AdminOrSuperAdmin` | Admin, SuperAdmin | 用户管理、系统设置、患者删除/禁用、药材写操作 |

@@ -139,15 +139,14 @@ sequenceDiagram
 
 ## 4. 授权策略
 
-系统在 `PolicyConstants`（`src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs`）中定义 **7 项**授权策略，通过 `RequireRole()` 声明式配置：
+系统在 `PolicyConstants`（`src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs`）中定义 **6 项**授权策略，通过 `RequireRole()` 声明式配置：
 
 | Policy | 常量 | 满足条件的角色 | 典型用途 |
 |--------|------|--------------|----------|
 | `DoctorOrReceptionist` | `PolicyConstants.DoctorOrReceptionist` | SuperAdmin, Admin, Doctor, Receptionist | 药材、验方（**目标态**，见 §下方 D7 待对齐注） |
 | `DoctorOrAdmin` | `PolicyConstants.DoctorOrAdmin` | SuperAdmin, Admin, Doctor | 医案列表/详情、报表 |
 | `DoctorOrAdminOrReceptionist` | `PolicyConstants.DoctorOrAdminOrReceptionist` | SuperAdmin, Admin, Doctor, Receptionist | **患者 CRUD、挂号、医案创建**（代码当前最常用策略） |
-| `AdminOnly` | `PolicyConstants.AdminOnly` | SuperAdmin, Admin | 管理员级操作 |
-| `AdminOrSuperAdmin` | `PolicyConstants.AdminOrSuperAdmin` | SuperAdmin, Admin | 用户管理、系统配置、诊断工具（名称与 AdminOnly 行为等价，命名历史并存） |
+| `AdminOrSuperAdmin` | `PolicyConstants.AdminOrSuperAdmin` | SuperAdmin, Admin | 用户管理、系统配置、诊断工具 |
 
 > ⚠️ **D7 权限对齐待办**（详见 [04-permissions.md](../01-product/04-permissions.md) P0-P2 修复项）：以下模块**代码当前为 `DoctorOrAdminOrReceptionist`/`DoctorOrReceptionist`，待按 2026-08-03 四连决策做操作级细分** —— 患者删除/禁用 → `AdminOrSuperAdmin`；药材/验方 GET 不含前台；挂号创建/取消仅前台、接诊/QuickVisit 仅 Doctor；医案创建 → `DoctorOnly`（待新增策略常量）。**代码当前不存在 `DoctorOnly` 策略**（文档历史版本曾提及，已删除；2026-08-03 决策目标态需新增）。
 
@@ -164,7 +163,6 @@ SuperAdmin → Admin → Doctor → Receptionist
 options.FallbackPolicy = 要求认证用户;  // 默认所有端点需要认证
 options.AddPolicy("DoctorOrReceptionist", RequireRole("SuperAdmin", "Admin", "Doctor", "Receptionist"));
 options.AddPolicy("DoctorOrAdmin",       RequireRole("SuperAdmin", "Admin", "Doctor"));
-options.AddPolicy("AdminOnly",           RequireRole("SuperAdmin", "Admin"));
 options.AddPolicy("AdminOrSuperAdmin",   RequireRole("SuperAdmin", "Admin"));
 ```
 

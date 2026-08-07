@@ -77,7 +77,6 @@
 
 | 策略名 | 包含角色 |
 |--------|---------|
-| `AdminOnly` | Admin, SuperAdmin（sysadmin） |
 | `DoctorOnly` | Doctor |
 | `DoctorOrAdmin` | Doctor, Admin |
 | `AdminOrSuperAdmin` | Admin, SuperAdmin |

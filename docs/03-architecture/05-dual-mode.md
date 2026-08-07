@@ -72,7 +72,7 @@
 | **实体模型** | 完全相同 — `src/Server/Core/LYBT.Entities/`，LocalWebApiDbContext 复用所有 `IEntityTypeConfiguration` |
 | **业务规则** | Validators、BusinessRules 完全共享 |
 | **认证机制** | 两端均使用 JWT Bearer Token + 相同 Claims Schema |
-| **授权策略** | 相同的 7 个 Policy（`AdminOnly` / `AdminBusinessOnly` / `DoctorOnly` / `DoctorOrAdmin` / `AdminOrSuperAdmin` / `DoctorOrReceptionist` / `DoctorOrAdminOrReceptionist`，见 `PolicyConstants`） |
+| **授权策略** | 相同的 6 个 Policy（`AdminBusinessOnly` / `DoctorOnly` / `DoctorOrAdmin` / `AdminOrSuperAdmin` / `DoctorOrReceptionist` / `DoctorOrAdminOrReceptionist`，见 `PolicyConstants`） |
 | **EF Core 过滤器** | `IsDeleted` 软删除全局过滤器两端均生效 |
 | **异常处理** | 两端均通过 middleware/handler 统一处理，返回相同 ProblemDetails 格式 |
 

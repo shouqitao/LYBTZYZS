@@ -55,11 +55,12 @@ LYBT.LocalWebAPI/
 
 | 类 | 设计依据 |
 |---|---|
-| **LocalJwtConfig** (static) — JWT 配置 | HMAC-SHA256 签名，365天过期，4 个授权策略 |
+| **LocalJwtConfig** (static) — JWT 配置 | HMAC-SHA256 签名，365天过期，5 个授权策略 |
 
 | 策略 | 角色 |
 |------|------|
-| `AdminOnly` | SuperAdmin, Admin |
+| `AdminBusinessOnly` | Admin |
+| `DoctorOnly` | Doctor |
 | `DoctorOrAdmin` | SuperAdmin, Admin, Doctor |
 | `AdminOrSuperAdmin` | Admin, SuperAdmin |
 | `DoctorOrReceptionist` | Doctor, Receptionist |

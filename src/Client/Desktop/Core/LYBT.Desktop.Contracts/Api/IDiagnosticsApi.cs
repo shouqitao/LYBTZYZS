@@ -8,7 +8,7 @@ namespace LYBT.Desktop.Contracts.Api;
 /// </summary>
 /// <remarks>
 /// 功能范围: 运行时日志级别查询、调试模式开关、日志级别手动设置
-/// 权限要求: AdminOnly 策略（仅超级管理员/系统运维可访问）
+/// 权限要求: AdminOrSuperAdmin 策略（仅管理员/超级管理员可访问）
 /// 注: 使用 LYBT.Shared.Models.Contracts.Common.ApiResponse&lt;T&gt; 作为返回类型，
 /// 与 IRegistrationApi 等其他 Refit 接口保持一致（不使用 Refit 原生 ApiResponse 包装）。
 /// </remarks>

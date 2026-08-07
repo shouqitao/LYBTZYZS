@@ -129,7 +129,7 @@ GET    /api/v1/users                   # 分页查询用户
 GET    /api/v1/users/{id}              # 按 ID 查询用户
 POST   /api/v1/users                   # 创建用户
 PUT    /api/v1/users/{id}              # 更新用户
-DELETE /api/v1/users/{id}              # 删除用户 [AdminOnly]
+DELETE /api/v1/users/{id}              # 删除用户 [AdminOrSuperAdmin]
 GET    /api/v1/users/search            # 搜索用户
 ```
 
@@ -140,7 +140,7 @@ GET    /api/v1/patients                # 分页查询患者
 GET    /api/v1/patients/{id}           # 按 ID 查询患者
 POST   /api/v1/patients                # 创建患者
 PUT    /api/v1/patients/{id}           # 更新患者
-DELETE /api/v1/patients/{id}           # 删除患者 [AdminOnly]
+DELETE /api/v1/patients/{id}           # 删除患者 [AdminOrSuperAdmin]
 GET    /api/v1/patients/search         # 搜索患者 (姓名/手机号/拼音)
 GET    /api/v1/patients/{id}/history   # 获取患者病史
 ```
@@ -239,7 +239,7 @@ GET    /health                         # 健康检查 (数据库 + 自定义检�
 // 2. DbContext (SQL Server)
 // 3. 业务模块 (AddAuthModule, AddUsersModule, ...)
 // 4. Controllers + 全局过滤器 (ValidateModelState, ApiExceptionFilter)
-// 5. JWT 认证 + 授权策略 (AdminOnly, DoctorOrAdmin)
+// 5. JWT 认证 + 授权策略 (AdminOrSuperAdmin, DoctorOrAdmin)
 // 6. Swagger (OpenAPI + JWT SecurityDefinition)
 // 7. HealthChecks (database + custom)
 ```
@@ -297,7 +297,7 @@ GET    /health                         # 健康检查 (数据库 + 自定义检�
 
 | 策略名称 | 角色要求 | 典型使用 |
 |----------|----------|----------|
-| AdminOnly | Admin | 删除用户/患者 |
+| AdminOrSuperAdmin | Admin, SuperAdmin | 删除用户/患者 |
 | DoctorOrAdmin | Doctor, Admin | 大部分业务端点 |
 | (默认 [Authorize]) | 任意已认证用户 | 查询类端点 |
 
@@ -356,20 +356,20 @@ GET    /api/v1/auth                    [Authorize] 返回405
 #### UsersController 端点
 
 ```
-GET    /api/v1/users                   [AdminOnly] 分页查询用户
+GET    /api/v1/users                   [AdminOrSuperAdmin] 分页查询用户
 GET    /api/v1/users/current           [Authorize] 获取当前登录用户信息
-GET    /api/v1/users/{id}              [AdminOnly] 获取单个用户
-POST   /api/v1/users                   [AdminOnly] 创建用户
-PUT    /api/v1/users/{id}              [AdminOnly] 更新用户
-DELETE /api/v1/users/{id}              [AdminOnly] 删除用户
-POST   /api/v1/users/{id}/reset-password [AdminOnly] 重置用户密码
+GET    /api/v1/users/{id}              [AdminOrSuperAdmin] 获取单个用户
+POST   /api/v1/users                   [AdminOrSuperAdmin] 创建用户
+PUT    /api/v1/users/{id}              [AdminOrSuperAdmin] 更新用户
+DELETE /api/v1/users/{id}              [AdminOrSuperAdmin] 删除用户
+POST   /api/v1/users/{id}/reset-password [AdminOrSuperAdmin] 重置用户密码
 PUT    /api/v1/users/{id}/profile      [Authorize] 修改个人资料
 PUT    /api/v1/users/{id}/change-password [Authorize] 修改密码
-POST   /api/v1/users/{id}/toggle-status [AdminOnly] 切换用户状态
-POST   /api/v1/users/{id}/restore     [AdminOnly] 恢复已删除用户
-POST   /api/v1/users/batch-delete     [AdminOnly] 批量删除
-POST   /api/v1/users/batch-enable     [AdminOnly] 批量启用
-POST   /api/v1/users/batch-disable    [AdminOnly] 批量禁用
+POST   /api/v1/users/{id}/toggle-status [AdminOrSuperAdmin] 切换用户状态
+POST   /api/v1/users/{id}/restore     [AdminOrSuperAdmin] 恢复已删除用户
+POST   /api/v1/users/batch-delete     [AdminOrSuperAdmin] 批量删除
+POST   /api/v1/users/batch-enable     [AdminOrSuperAdmin] 批量启用
+POST   /api/v1/users/batch-disable    [AdminOrSuperAdmin] 批量禁用
 ```
 
 #### PatientsController 端点
@@ -498,7 +498,7 @@ GET    /api/v1/health/details          [Authorize] 详细健康检查(含数据�
 #### 当前授权体系
 
 策略级授权 (Policy-based) -- 在 AuthenticationServiceCollectionExtensions 中注册:
-- `AdminOnly`: SuperAdmin + Admin
+- `AdminOrSuperAdmin`: Admin + SuperAdmin
 - `DoctorOrAdmin`: SuperAdmin + Admin + Doctor
 - `PatientAccess`: SuperAdmin + Admin + Doctor + Receptionist
 - `RequireAuthenticated`: 任意已认证用户

@@ -51,7 +51,7 @@ TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
 | [报表](13-reports.md) | 收入/问诊/药材统计 | 3 | DoctorOrAdmin |
 | [部署](14-deploy.md) | 更新包上传+服务重启 | 2 | AdminOrSuperAdmin |
 
-> **策略说明**：策略常量定义见 `PolicyConstants.cs`（6 项：`AdminOnly`、`DoctorOnly`、`DoctorOrAdmin`、`AdminOrSuperAdmin`、`DoctorOrReceptionist`、`DoctorOrAdminOrReceptionist`）。K1 待修复：`DoctorOrReceptionist` 代码注册仅含 Doctor/Receptionist，缺 SuperAdmin/Admin。
+> **策略说明**：策略常量定义见 `PolicyConstants.cs`（6 项：`AdminBusinessOnly`、`DoctorOnly`、`DoctorOrAdmin`、`AdminOrSuperAdmin`、`DoctorOrReceptionist`、`DoctorOrAdminOrReceptionist`）。K1 待修复：`DoctorOrReceptionist` 代码注册仅含 Doctor/Receptionist，缺 SuperAdmin/Admin。
 
 ## 通用 HTTP 状态码
 
