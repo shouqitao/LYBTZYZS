@@ -280,6 +280,7 @@
 | A-15 MedicalCasesController 拆分 | ❌ | 2026-08-07 | 评估后取消：状态流转仅 4 个方法（~100行），共享路由前缀，拆分后 Desktop Refit 也需改，ROI 不合理 |
 | WebApi 优化批次（安全加固+代码质量） | ✅ | 2026-08-07 | `84433560e` CORS 加公网 IP + `Database:ConnectionString` 禁写 + AutoLogin 过期验证；`8528e1efb` CORS 去内网 IP；`c094341af` HealthController 去重 + RegistrationsController 注释清理 + 3 Controller 缩进修复 + AuthController 错误处理统一 |
 | PolicyConstants.AdminOnly 删除（统一 AdminOrSuperAdmin） | ✅ | 2026-08-07 | 见 §九 — 删除冗余常量 + 2 处 AddPolicy 注册 + 注释/文档 7 处同步；Controller 零引用（从未被 [Authorize] 使用）；build --no-incremental 0 错误 0 警告 |
+| S-04 批量导入 Update 模糊匹配修复（webapi-deep-analysis-mimo 报告） | ✅ | 2026-08-07 | `e4c17d5ca` — Patients 新增 `GetExactByNameAsync`（接口+实现），BatchImportPatientsCommandHandler Update 分支弃用 `GetPagedAsync(1,1,name)` 模糊定位改精确匹配；BatchImportHerbsCommandHandler 复用已有 `GetByNameAsync`（Name 精确匹配，不新增冗余方法）；Formula 模块核实无 Update 分支（重复即报错），不涉及。build --no-incremental 0 错误 0 警告，架构测试 83/83 |
 | S-01/S-02 Auth 安全修复（Token 过期错位 + RefreshToken 500） | ✅ | 2026-08-07 | `ae52f5ef0` — S-01 LoginCommandHandler 删硬编码 60，Token 过期统一读 `JwtOptions.AccessTokenExpirationMinutes`（注入 `IOptions<JwtOptions>`）；S-02 RefreshTokenCommandHandler 对 `oldSession==null` 提前返回 `AuthTokenInvalid` + 审计，删 `?? Guid.Empty` fallback；验证 build --no-incremental 0 错误 0 警告 |
 
 ---
