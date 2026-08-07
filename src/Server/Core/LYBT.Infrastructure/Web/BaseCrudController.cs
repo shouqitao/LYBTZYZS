@@ -41,20 +41,6 @@ public abstract class BaseCrudController : BaseApiController
         => throw new NotSupportedException("此资源不支持 GetById 操作");
 
     /// <summary>
-    /// 创建资源 — 子类必须 override
-    /// </summary>
-    [HttpPost]
-    public virtual Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
-        => throw new NotSupportedException("请 override Create 方法");
-
-    /// <summary>
-    /// 更新资源 — 子类必须 override
-    /// </summary>
-    [HttpPut("{id:guid}")]
-    public virtual Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
-        => throw new NotSupportedException("请 override Update 方法");
-
-    /// <summary>
     /// 删除资源（软删除）— 子类必须 override
     /// </summary>
     [HttpDelete("{id:guid}")]

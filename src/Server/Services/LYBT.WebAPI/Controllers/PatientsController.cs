@@ -75,13 +75,10 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), StatusCodes.Status201Created)]
-        public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
+        public async Task<IActionResult> Create([FromBody] PatientInputDto input, CancellationToken ct)
         {
-            if (!dto.TryDeserializeDto(out PatientInputDto? inputDto, out var validationError))
-                return ValidationFail(validationError ?? "请求参数无效");
-            if (inputDto is null) return ValidationFail("请求参数无效");
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new CreatePatientCommand(inputDto, operatorId), ct);
+            var result = await Sender.Send(new CreatePatientCommand(input, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "创建失败");
@@ -99,18 +96,15 @@ namespace LYBT.WebAPI.Controllers
         [HttpPut("{id:guid}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
-        public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
+        public async Task<IActionResult> Update(Guid id, [FromBody] PatientInputDto input, CancellationToken ct)
         {
-            if (!dto.TryDeserializeDto(out PatientInputDto? inputDto, out var validationError))
-                return ValidationFail(validationError ?? "请求参数无效");
-            if (inputDto is null) return ValidationFail("请求参数无效");
             if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
 
             var (ownerDto, ownershipError) = await CheckOwnershipAsync(id, ct);
             if (ownershipError != null) return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await _patientService.UpdateAsync(id, inputDto, operatorId, ct);
+            var result = await _patientService.UpdateAsync(id, input, operatorId, ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 if (result.Error?.Contains("不存在") == true)

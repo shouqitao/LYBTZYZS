@@ -68,6 +68,34 @@ namespace LYBT.Module.MedicalCases.Repositories
         }
 
         /// <summary>
+        /// 分页获取患者辨证记录（DB层分页，仅含未删除的Consultation，含预加载）
+        /// </summary>
+        public async Task<PagedResult<MedicalCase>> GetPatientConsultationsPagedAsync(
+            Guid patientId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        {
+            var query = GetDetailQuery()
+                .Where(m => m.PatientId == patientId)
+                .Where(m => m.Consultation != null && !m.Consultation.IsDeleted)
+                .OrderByDescending(m => m.Consultation!.CreatedAt);
+
+            return await query.GetPagedResultAsync(pageNumber, pageSize, cancellationToken);
+        }
+
+        /// <summary>
+        /// 分页获取患者处方历史（DB层分页，仅含未删除的Prescription，含预加载）
+        /// </summary>
+        public async Task<PagedResult<MedicalCase>> GetPatientPrescriptionsPagedAsync(
+            Guid patientId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        {
+            var query = GetDetailQuery()
+                .Where(m => m.PatientId == patientId)
+                .Where(m => m.Prescription != null && !m.Prescription.IsDeleted)
+                .OrderByDescending(m => m.Prescription!.CreatedAt);
+
+            return await query.GetPagedResultAsync(pageNumber, pageSize, cancellationToken);
+        }
+
+        /// <summary>
         /// 根据患者ID获取医案（包含Consultation和Prescription关联数据）
         /// US-MC-008/009: 患者诊疗/处方历史查询
         /// </summary>

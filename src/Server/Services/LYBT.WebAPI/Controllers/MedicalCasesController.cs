@@ -94,15 +94,12 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
-        public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
+        public async Task<IActionResult> Create([FromBody] MedicalCaseInputDto input, CancellationToken ct)
         {
-            if (!dto.TryDeserializeDto(out MedicalCaseInputDto? inputDto, out var validationError))
-                return ValidationFail(validationError ?? "请求参数无效");
-            if (inputDto is null) return ValidationFail("请求参数无效");
             var (doctorId, _, _) = GetOperator();
 
-            inputDto.Id = null;
-            var result = await _medicalCaseCommandService.SaveWithDetailAsync(inputDto, doctorId, isAdmin: false, ct);
+            input.Id = null;
+            var result = await _medicalCaseCommandService.SaveWithDetailAsync(input, doctorId, isAdmin: false, ct);
 
             if (!result.IsSuccess)
                 return NotFound(result.Error ?? "患者不存在");
@@ -127,14 +124,11 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 403)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
-        public override async Task<IActionResult> Update(
+        public async Task<IActionResult> Update(
             Guid id,
-            [FromBody] object dto, CancellationToken ct)
+            [FromBody] MedicalCaseInputDto input, CancellationToken ct)
         {
-            if (!dto.TryDeserializeDto(out MedicalCaseInputDto? request, out var validationError))
-                return ValidationFail(validationError ?? "请求参数无效");
-            if (request is null) return ValidationFail("请求参数无效");
-            if (request.Id != id)
+            if (input.Id != id)
             {
                 return Error("请求ID与路由ID不一致");
             }
@@ -142,7 +136,7 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _medicalCaseCommandService.SaveWithDetailAsync(request, operatorId, isAdmin, ct);
+            var result = await _medicalCaseCommandService.SaveWithDetailAsync(input, operatorId, isAdmin, ct);
 
             if (!result.IsSuccess)
             {

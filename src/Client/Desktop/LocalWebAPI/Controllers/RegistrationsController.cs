@@ -1,5 +1,6 @@
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
+using LYBT.Module.Registration.Application.Commands;
 using LYBT.Module.Registration.Controllers;
 using LYBT.Shared.Models.Contracts.Registration;
 using MediatR;
@@ -33,8 +34,14 @@ public class RegistrationsController : BaseRegistrationsController
 
     /// <inheritdoc />
     [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
-    public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
-        => await base.Create(dto, ct);
+    public async Task<IActionResult> Create([FromBody] RegistrationInputDto input, CancellationToken ct)
+    {
+        var result = await Sender.Send(new CreateRegistrationCommand(input), ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "创建挂号失败");
+
+        return Success(result.Value, "挂号创建成功");
+    }
 
     /// <inheritdoc />
     [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]

@@ -23,6 +23,16 @@ namespace LYBT.Module.MedicalCases.Interfaces
         Task<PagedResult<MedicalCase>> GetByPatientIdPagedAsync(Guid patientId, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// 分页获取患者辨证记录（DB层分页，仅含未删除的Consultation，含预加载）
+        /// </summary>
+        Task<PagedResult<MedicalCase>> GetPatientConsultationsPagedAsync(Guid patientId, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 分页获取患者处方历史（DB层分页，仅含未删除的Prescription，含预加载）
+        /// </summary>
+        Task<PagedResult<MedicalCase>> GetPatientPrescriptionsPagedAsync(Guid patientId, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// 根据患者ID获取医案（包含Consultation和Prescription关联数据）
         /// US-MC-008/009: 患者诊疗/处方历史查询
         /// </summary>

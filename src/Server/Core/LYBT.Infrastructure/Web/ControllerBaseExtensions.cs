@@ -146,36 +146,4 @@ public static class ControllerBaseExtensions
         response.Errors = new { code = errorCode.ToFormattedString(), numericCode = (int)errorCode };
         return response;
     }
-
-    // ==================== DTO 反序列化 + 验证 ====================
-
-    /// <summary>手动反序列化 + DataAnnotations 验证（object参数绕过模型绑定，需手动验证）</summary>
-    public static bool TryDeserializeDto<T>(this object dto, out T? result, out string? error)
-    {
-        try
-        {
-            var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            result = System.Text.Json.JsonSerializer.Deserialize<T>(System.Text.Json.JsonSerializer.Serialize(dto), options);
-            if (result == null)
-            {
-                error = "请求参数不能为空";
-                return false;
-            }
-            var results = new System.Collections.Generic.List<System.ComponentModel.DataAnnotations.ValidationResult>();
-            var context = new System.ComponentModel.DataAnnotations.ValidationContext(result);
-            if (!System.ComponentModel.DataAnnotations.Validator.TryValidateObject(result, context, results, validateAllProperties: true))
-            {
-                error = string.Join("；", results.Select(r => r.ErrorMessage).Where(m => m != null));
-                return false;
-            }
-            error = null;
-            return true;
-        }
-        catch (System.Text.Json.JsonException)
-        {
-            result = default;
-            error = "请求参数格式无效";
-            return false;
-        }
-    }
 }

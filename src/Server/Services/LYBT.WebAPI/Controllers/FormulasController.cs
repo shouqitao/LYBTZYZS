@@ -77,13 +77,10 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), StatusCodes.Status201Created)]
-        public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
+        public async Task<IActionResult> Create([FromBody] FormulaInputDto input, CancellationToken ct)
         {
-            if (!dto.TryDeserializeDto(out FormulaInputDto? inputDto, out var validationError))
-                return ValidationFail(validationError ?? "请求参数无效");
-            if (inputDto is null) return ValidationFail("请求参数无效");
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new CreateFormulaCommand(inputDto, operatorId), ct);
+            var result = await Sender.Send(new CreateFormulaCommand(input, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "创建失败");
@@ -101,11 +98,8 @@ namespace LYBT.WebAPI.Controllers
         [HttpPut("{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
-        public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
+        public async Task<IActionResult> Update(Guid id, [FromBody] FormulaInputDto input, CancellationToken ct)
         {
-            if (!dto.TryDeserializeDto(out FormulaInputDto? inputDto, out var validationError))
-                return ValidationFail(validationError ?? "请求参数无效");
-            if (inputDto is null) return ValidationFail("请求参数无效");
             if (ValidateGuid(id, "验方ID") is { } error) return error;
 
             var getResult = await _formulaService.GetByIdAsync(id, ct);
@@ -115,7 +109,7 @@ namespace LYBT.WebAPI.Controllers
                 return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await _formulaService.UpdateAsync(id, inputDto, operatorId, ct);
+            var result = await _formulaService.UpdateAsync(id, input, operatorId, ct);
             if (!result.IsSuccess || result.Value == null)
                 return BusinessFail(result.Error ?? "更新失败");
 

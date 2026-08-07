@@ -72,13 +72,10 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), StatusCodes.Status201Created)]
-        public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
+        public async Task<IActionResult> Create([FromBody] HerbInputDto input, CancellationToken ct)
         {
-            if (!dto.TryDeserializeDto(out HerbInputDto? inputDto, out var validationError))
-                return ValidationFail(validationError ?? "请求参数无效");
-            if (inputDto is null) return ValidationFail("请求参数无效");
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new CreateHerbCommand(inputDto, operatorId), ct);
+            var result = await Sender.Send(new CreateHerbCommand(input, operatorId), ct);
             if (result.IsSuccess && result.Value != null)
             {
                 LogOperation("创建药材", result.Value, null);
@@ -98,11 +95,8 @@ namespace LYBT.WebAPI.Controllers
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
+        public async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto input, CancellationToken ct)
         {
-            if (!dto.TryDeserializeDto(out HerbInputDto? inputDto, out var validationError))
-                return ValidationFail(validationError ?? "请求参数无效");
-            if (inputDto is null) return ValidationFail("请求参数无效");
             if (ValidateGuid(id, "药材ID") is { } error) return error;
 
             var getResult = await _herbService.GetByIdAsync(id, ct);
@@ -113,7 +107,7 @@ namespace LYBT.WebAPI.Controllers
                 return ownerError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await _herbService.UpdateAsync(id, inputDto, operatorId, ct);
+            var result = await _herbService.UpdateAsync(id, input, operatorId, ct);
             if (!result.IsSuccess || result.Value == null)
                 return BusinessFail(result.Error ?? "更新失败");
 

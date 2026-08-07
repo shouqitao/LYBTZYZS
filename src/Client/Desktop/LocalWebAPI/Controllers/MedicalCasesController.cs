@@ -95,14 +95,11 @@ public class MedicalCasesController : BaseMedicalCasesController
     /// </summary>
     [Authorize(Policy = PolicyConstants.DoctorOnly)]
     [HttpPost]
-    public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
+    public async Task<IActionResult> Create([FromBody] MedicalCaseInputDto input, CancellationToken ct)
     {
-        if (dto is not MedicalCaseInputDto inputDto)
-            return ValidationFail("无效的请求数据");
-
         var (doctorId, _, _) = GetOperator();
-        inputDto.Id = null;
-        var result = await _medicalCaseCommandService.SaveWithDetailAsync(inputDto, doctorId, isAdmin: false, ct);
+        input.Id = null;
+        var result = await _medicalCaseCommandService.SaveWithDetailAsync(input, doctorId, isAdmin: false, ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "创建失败");
 

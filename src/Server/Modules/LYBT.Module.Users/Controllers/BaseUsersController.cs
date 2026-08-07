@@ -62,14 +62,11 @@ public abstract class BaseUsersController : BaseCrudController
 
     [HttpPost]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
+    public async Task<IActionResult> Create([FromBody] UserInputDto input, CancellationToken ct)
     {
-        if (!dto.TryDeserializeDto(out UserInputDto? inputDto, out var validationError))
-            return ValidationFail(validationError ?? "请求参数无效");
-        if (inputDto is null) return ValidationFail("请求参数无效");
         var (operatorId, _, currentRole) = GetOperator();
         var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
-        var result = await Sender.Send(new CreateUserCommand(inputDto, operatorId, isAdmin), ct);
+        var result = await Sender.Send(new CreateUserCommand(input, operatorId, isAdmin), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "创建失败");
         LogOperation("创建用户成功", result.Value, null);
@@ -78,15 +75,12 @@ public abstract class BaseUsersController : BaseCrudController
 
     [HttpPut("{id:guid}")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto input, CancellationToken ct)
     {
-        if (!dto.TryDeserializeDto(out UserInputDto? inputDto, out var validationError))
-            return ValidationFail(validationError ?? "请求参数无效");
-        if (inputDto is null) return ValidationFail("请求参数无效");
         if (ValidateGuid(id, "用户ID") is { } guidError) return guidError;
 
         var (operatorId, _, _) = GetOperator();
-        var result = await _userService.UpdateAsync(id, inputDto, operatorId, ct);
+        var result = await _userService.UpdateAsync(id, input, operatorId, ct);
         if (!result.IsSuccess || result.Value == null)
         {
             if (result.Error?.Contains("不存在") == true)

@@ -215,26 +215,17 @@ namespace LYBT.Module.MedicalCases.Services
                 "[SVC] MedicalCase.Search started - PatientName={PatientName} DiagnosisKeyword={DiagnosisKeyword} StartDate={StartDate} EndDate={EndDate} Page={Page} PageSize={PageSize}",
                 patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
 
-            // 使用Repository的QueryAsync方法获取实体（已包含Include预加载）
-            var entities = await _repository.QueryAsync(patientName, startDate, endDate, diagnosisKeyword, cancellationToken);
-
-            // 按创建时间倒序排列
-            var orderedEntities = entities.OrderByDescending(e => e.CreatedAt).ToList();
-
-            // 分页处理
-            var totalCount = orderedEntities.Count;
-            var pagedEntities = orderedEntities
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
+            // DB 层分页：QueryPagedAsync 在 DB 完成筛选 + 排序 + 分页（已包含 Include 预加载）
+            var paged = await _repository.QueryPagedAsync(
+                patientName, startDate, endDate, diagnosisKeyword, page, pageSize, cancellationToken);
 
             // 映射为DTO（包含嵌套Consultation/Prescription）
-            var dtos = _mapper.ToDetailDtos(pagedEntities);
+            var dtos = _mapper.ToDetailDtos(paged.Items);
 
             _logger.LogInformation("[SVC] MedicalCase.Search completed - TotalCount={TotalCount} ReturnedCount={ReturnedCount}",
-                totalCount, dtos.Count);
+                paged.TotalCount, dtos.Count);
 
-            return new PagedResult<MedicalCaseDetailDto>(dtos, totalCount, page, pageSize);
+            return new PagedResult<MedicalCaseDetailDto>(dtos, paged.TotalCount, page, pageSize);
         }
 
         /// <summary>
@@ -315,15 +306,12 @@ namespace LYBT.Module.MedicalCases.Services
                 return new PagedResult<MedicalCaseListDto>();
             }
 
-            var entities = await _repository.GetByPatientIdAsync(query.PatientId.Value, cancellationToken);
-            var pagedEntities = entities
-                .OrderByDescending(e => e.CreatedAt)
-                .Skip((query.PageIndex - 1) * query.PageSize)
-                .Take(query.PageSize)
-                .ToList();
+            // DB 层分页：GetByPatientIdPagedAsync 在 DB 完成排序 + 分页
+            var paged = await _repository.GetByPatientIdPagedAsync(
+                query.PatientId.Value, query.PageIndex, query.PageSize, cancellationToken);
 
-            var dtos = _mapper.ToListDtos(pagedEntities);
-            return new PagedResult<MedicalCaseListDto>(dtos, entities.Count, query.PageIndex, query.PageSize);
+            var dtos = _mapper.ToListDtos(paged.Items);
+            return new PagedResult<MedicalCaseListDto>(dtos, paged.TotalCount, query.PageIndex, query.PageSize);
         }
 
         private async Task<PagedResult<MedicalCaseListDto>> QueryPendingAsync(MedicalCaseQueryDto query, CancellationToken cancellationToken = default)
@@ -435,10 +423,10 @@ namespace LYBT.Module.MedicalCases.Services
         public async Task<PagedResult<ConsultationDetailDto>> GetPatientConsultationsAsync(
             Guid patientId, int page, int pageSize, CancellationToken cancellationToken = default)
         {
-            var medicalCases = await _repository.GetByPatientIdWithDetailsAsync(patientId, cancellationToken);
+            // DB 层分页：仅取含未删除 Consultation 的医案（含预加载），排序/分页/TotalCount 均在 DB 层完成
+            var paged = await _repository.GetPatientConsultationsPagedAsync(patientId, page, pageSize, cancellationToken);
 
-            var consultations = medicalCases
-                .Where(mc => mc.Consultation != null && !mc.Consultation.IsDeleted)
+            var consultations = paged.Items
                 .Select(mc =>
                 {
                     var dto = _mapper.ToConsultationDetailDto(mc.Consultation!);
@@ -452,16 +440,9 @@ namespace LYBT.Module.MedicalCases.Services
                     dto.CreatedBy = mc.Consultation.CreatedBy;
                     return dto;
                 })
-                .OrderByDescending(c => c.CreatedAt)
                 .ToList();
 
-            var totalCount = consultations.Count;
-            var paged = consultations
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            return new PagedResult<ConsultationDetailDto>(paged, totalCount, page, pageSize);
+            return new PagedResult<ConsultationDetailDto>(consultations, paged.TotalCount, page, pageSize);
         }
 
         /// <summary>
@@ -470,10 +451,10 @@ namespace LYBT.Module.MedicalCases.Services
         public async Task<PagedResult<PrescriptionDetailDto>> GetPatientPrescriptionsAsync(
             Guid patientId, int page, int pageSize, CancellationToken cancellationToken = default)
         {
-            var medicalCases = await _repository.GetByPatientIdWithDetailsAsync(patientId, cancellationToken);
+            // DB 层分页：仅取含未删除 Prescription 的医案（含预加载），排序/分页/TotalCount 均在 DB 层完成
+            var paged = await _repository.GetPatientPrescriptionsPagedAsync(patientId, page, pageSize, cancellationToken);
 
-            var prescriptions = medicalCases
-                .Where(mc => mc.Prescription != null && !mc.Prescription.IsDeleted)
+            var prescriptions = paged.Items
                 .Select(mc =>
                 {
                     var p = mc.Prescription!;
@@ -488,16 +469,9 @@ namespace LYBT.Module.MedicalCases.Services
                     dto.TotalWeight = p.Items?.Sum(x => x.Dosage) ?? 0;
                     return dto;
                 })
-                .OrderByDescending(p => p.CreatedAt)
                 .ToList();
 
-            var totalCount = prescriptions.Count;
-            var paged = prescriptions
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            return new PagedResult<PrescriptionDetailDto>(paged, totalCount, page, pageSize);
+            return new PagedResult<PrescriptionDetailDto>(prescriptions, paged.TotalCount, page, pageSize);
         }
 
         /// <summary>

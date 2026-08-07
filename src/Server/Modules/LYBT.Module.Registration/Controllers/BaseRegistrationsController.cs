@@ -66,7 +66,7 @@ public abstract class BaseRegistrationsController : BaseCrudController
     #region Override 不支持的操作（挂号不支持 Update/Delete/BatchDelete）
 
     [HttpPut("{id:guid}")]
-    public override Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
+    public Task<IActionResult> Update(Guid id, [FromBody] RegistrationInputDto dto, CancellationToken ct)
         => Task.FromResult<IActionResult>(NotFound("挂号不支持更新操作"));
 
     [HttpDelete("{id:guid}")]
