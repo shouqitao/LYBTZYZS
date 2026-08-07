@@ -259,6 +259,33 @@ public class ReportsController : BaseApiController
 - Controller 层零 catch 块，异常由 IExceptionHandler 统一处理
 - 使用 `[Authorize]` 控制访问权限
 
+### Controller 继承体系（A-14 文档化，2026-08-07）
+
+三种继承路径，各有设计意图：
+
+```
+BaseApiController (186行) — 独立端点基类
+├── BaseCrudController (158行) — 标准 CRUD（5个 virtual 方法 + 批量操作模板）
+│   ├── PatientsController — override CRUD + 直接注入 IPatientService
+│   ├── HerbsController — override CRUD + 直接注入 IHerbService
+│   ├── FormulasController — override CRUD + 直接注入 IFormulaService
+│   ├── BaseRegistrationsController — 挂号领域特化
+│   │   └── RegistrationsController — override CRUD + QuickVisit/StartVisit/Cancel
+│   └── BaseMedicalCasesController (254行) — 医案领域特化（12个方法）
+│       └── MedicalCasesController (356行) — override CRUD + 4个状态流转
+├── AuthController — 直接用 ISender（登录/登出/Token 刷新）
+├── HealthController — 直接用 IHealthCheckService
+├── ReportsController — 直接用 IReportService（只读聚合）
+├── ConfigurationController — 直接用 ISystemConfigurationService
+├── DiagnosticsController — 直接用 LoggingLevelManager
+└── DeployController — 直接用 IHostApplicationLifetime
+```
+
+**MediatR + Service 混合注入是有意设计**：
+- **查询**走 Service 接口（`IPatientService.GetPagedAsync`）→ 绕过 MediatR 管道，性能更优
+- **命令**走 MediatR（`Sender.Send(new CreatePatientCommand(...))`）→ 经过 ValidationBehavior 验证 + 审计日志
+- 统一为纯 MediatR 反而降低查询性能，不推荐
+
 ### RESTful API 规范
 
 ```
