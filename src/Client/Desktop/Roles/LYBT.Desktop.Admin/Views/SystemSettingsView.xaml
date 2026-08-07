@@ -290,6 +290,90 @@
                         </Grid>
                     </StackPanel>
                 </Border>
+
+                <!--  B-05: 服务器配置（对接 WebApi ConfigurationController，仅 Admin 角色可见——本视图位于 Admin 模块）  -->
+                <Border Background="{DynamicResource MaterialDesign.Brush.Paper}" BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}" BorderThickness="1" CornerRadius="8" Padding="24,16" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}" Text="服务器配置" />
+
+                        <!--  应用名称  -->
+                        <Grid Margin="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                Text="应用名称：" />
+                            <TextBox
+                                Grid.Column="1"
+                                MaxWidth="400"
+                                HorizontalAlignment="Left"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                Text="{Binding ServerAppName, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
+
+                        <!--  版本号（只读）  -->
+                        <Grid Margin="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                Text="版本号：" />
+                            <TextBox
+                                Grid.Column="1"
+                                MaxWidth="400"
+                                HorizontalAlignment="Left"
+                                IsEnabled="False"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                Text="{Binding ServerAppVersion, Mode=OneWay}" />
+                        </Grid>
+
+                        <!--  运行环境（只读）  -->
+                        <Grid Margin="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                Text="运行环境：" />
+                            <TextBox
+                                Grid.Column="1"
+                                MaxWidth="400"
+                                HorizontalAlignment="Left"
+                                IsEnabled="False"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                Text="{Binding ServerEnvironment, Mode=OneWay}" />
+                        </Grid>
+
+                        <!--  操作按钮  -->
+                        <StackPanel Margin="12,4,0,0" Orientation="Horizontal">
+                            <Button
+                                Margin="0,0,8,0"
+                                Command="{Binding SaveServerConfigCommand}"
+                                Content="保存服务器配置"
+                                Style="{StaticResource MaterialDesignRaisedButton}" Background="{DynamicResource TcmGreenBrush}" Foreground="White" BorderThickness="0" />
+                            <Button
+                                Margin="0,0,8,0"
+                                Command="{Binding ValidateConfigCommand}"
+                                Content="验证配置"
+                                Style="{StaticResource MaterialDesignOutlinedButton}" />
+                            <Button
+                                Command="{Binding LoadServerConfigCommand}"
+                                Content="刷新"
+                                Style="{StaticResource MaterialDesignOutlinedButton}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
     </Grid>

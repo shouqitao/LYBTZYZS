@@ -1,4 +1,5 @@
 using LYBT.Desktop.Admin.Services;
+using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Shared.Configuration.Options.Client;
@@ -21,6 +22,7 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         private readonly ISystemSettingsService _settingsService;
         private readonly IClinicSettingsService _clinicSettingsService;
+        private readonly IConfigurationApi _configurationApi;
 
         #endregion
 
@@ -109,16 +111,43 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         #endregion
 
+        #region 服务器配置属性
+
+        private string _serverAppName = string.Empty;
+        public string ServerAppName
+        {
+            get => _serverAppName;
+            set => SetProperty(ref _serverAppName, value);
+        }
+
+        private string _serverAppVersion = string.Empty;
+        public string ServerAppVersion
+        {
+            get => _serverAppVersion;
+            set => SetProperty(ref _serverAppVersion, value);
+        }
+
+        private string _serverEnvironment = string.Empty;
+        public string ServerEnvironment
+        {
+            get => _serverEnvironment;
+            set => SetProperty(ref _serverEnvironment, value);
+        }
+
+        #endregion
+
         #region 构造函数
 
         public SystemSettingsViewModel(
             IViewModelServices services,
             ISystemSettingsService settingsService,
-            IClinicSettingsService clinicSettingsService)
+            IClinicSettingsService clinicSettingsService,
+            IConfigurationApi configurationApi)
             : base(services)
         {
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
             _clinicSettingsService = clinicSettingsService ?? throw new ArgumentNullException(nameof(clinicSettingsService));
+            _configurationApi = configurationApi ?? throw new ArgumentNullException(nameof(configurationApi));
 
             PageTitle = "系统设置";
         }
@@ -127,7 +156,7 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         #region 初始化
 
-        protected override Task InitializeAsync(NavigationContext context)
+        protected override async Task InitializeAsync(NavigationContext context)
         {
             Logger.LogInformation("加载系统设置");
 
@@ -143,6 +172,9 @@ namespace LYBT.Desktop.Admin.ViewModels
                 // D2: 诊所配置
                 LoadClinicSettings();
 
+                // B-05: 服务器配置
+                await LoadServerConfigAsync();
+
                 Logger.LogInformation("系统设置加载成功: {SystemName}", SystemName);
             }
             catch (Exception ex)
@@ -150,8 +182,6 @@ namespace LYBT.Desktop.Admin.ViewModels
                 Logger.LogError(ex, "加载系统设置失败");
                 SetError(ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载系统设置", ex));
             }
-
-            return Task.CompletedTask;
         }
 
         private void LoadClinicSettings()
@@ -277,6 +307,106 @@ namespace LYBT.Desktop.Admin.ViewModels
             {
                 Logger.LogError(ex, "选择备份路径失败");
                 await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("选择备份路径", ex));
+            }
+        }
+
+        [RelayCommand]
+        private async Task LoadServerConfigAsync()
+        {
+            try
+            {
+                Logger.LogInformation("加载服务器配置");
+                SetBusy(true, "正在加载服务器配置...");
+
+                var resp = await _configurationApi.GetConfigurationAsync();
+                if (!resp.Success)
+                {
+                    await ShowErrorMessageAsync(resp.Message ?? "加载服务器配置失败");
+                    return;
+                }
+
+                if (resp.Data is not null)
+                {
+                    resp.Data.TryGetValue("App:Name", out var appName);
+                    resp.Data.TryGetValue("App:Version", out var appVersion);
+                    resp.Data.TryGetValue("App:Environment", out var environment);
+                    ServerAppName = appName ?? string.Empty;
+                    ServerAppVersion = appVersion ?? string.Empty;
+                    ServerEnvironment = environment ?? string.Empty;
+                }
+
+                Logger.LogInformation("服务器配置加载成功: {ServerAppName} {ServerAppVersion} ({ServerEnvironment})",
+                    ServerAppName, ServerAppVersion, ServerEnvironment);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "加载服务器配置失败");
+                await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载服务器配置", ex));
+            }
+            finally
+            {
+                SetBusy(false);
+            }
+        }
+
+        [RelayCommand]
+        private async Task SaveServerConfigAsync()
+        {
+            try
+            {
+                var settings = new Dictionary<string, string>
+                {
+                    ["App:Name"] = ServerAppName
+                };
+
+                Logger.LogInformation("保存服务器配置");
+                SetBusy(true, "正在保存服务器配置...");
+
+                var resp = await _configurationApi.UpdateConfigurationAsync(settings);
+                if (!resp.Success)
+                {
+                    await ShowErrorMessageAsync(resp.Message ?? "保存服务器配置失败");
+                    return;
+                }
+
+                await ShowSuccessMessageAsync("服务器配置保存成功");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "保存服务器配置失败");
+                await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存服务器配置", ex));
+            }
+            finally
+            {
+                SetBusy(false);
+            }
+        }
+
+        [RelayCommand]
+        private async Task ValidateConfigAsync()
+        {
+            try
+            {
+                Logger.LogInformation("验证生产环境配置");
+                SetBusy(true, "正在验证配置...");
+
+                var resp = await _configurationApi.ValidateProductionAsync();
+                if (!resp.Success)
+                {
+                    await ShowErrorMessageAsync(resp.Message ?? "配置验证失败");
+                    return;
+                }
+
+                await ShowSuccessMessageAsync("配置验证通过");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "验证配置失败");
+                await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("验证配置", ex));
+            }
+            finally
+            {
+                SetBusy(false);
             }
         }
 
