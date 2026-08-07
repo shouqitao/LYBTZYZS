@@ -1,4 +1,3 @@
-using LYBT.Entities.Registrations;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Contracts.Registration;
@@ -7,8 +6,6 @@ using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Registration.Interfaces;
 using MediatR;
-using RegistrationEntity = LYBT.Entities.Registrations.Registration;
-using RegistrationSource = LYBT.Shared.Models.Enums.RegistrationSource;
 
 namespace LYBT.Module.Registration.Application.Commands;
 
@@ -29,7 +26,7 @@ public class QuickVisitCommandHandler(
         var doctorInfo = await crossModule.GetUserBasicInfoAsync(request.DoctorId, cancellationToken);
 
         var maxQueueNumber = await repository.GetTodayMaxQueueNumberAsync(cancellationToken);
-        var registration = new RegistrationEntity
+        var registration = new LYBT.Entities.Registrations.Registration
         {
             Id = Guid.NewGuid(),
             PatientId = request.Input.PatientId,

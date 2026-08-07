@@ -1,7 +1,6 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Mvc;
-using GenericErrorCode = LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode;
 
 namespace LYBT.Infrastructure.Web;
 
@@ -139,7 +138,7 @@ public static class ControllerBaseExtensions
         return controller.BusinessFail(message);
     }
 
-    private static ApiResponse<T> CreateModuleErrorResponse<T>(ControllerBase controller, string message, GenericErrorCode errorCode)
+    private static ApiResponse<T> CreateModuleErrorResponse<T>(ControllerBase controller, string message, ErrorCode errorCode)
     {
         var response = ApiResponse<T>.CreateFail(message);
         response.RequestId = GetRequestId(controller);

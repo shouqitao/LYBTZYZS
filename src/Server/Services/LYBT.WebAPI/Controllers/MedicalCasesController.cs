@@ -13,9 +13,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
-using SetPrescriptionFlagRequest = LYBT.Shared.Models.Contracts.MedicalCase.SetPrescriptionFlagRequest;
-using RecordPrintRequest = LYBT.Shared.Models.Contracts.MedicalCase.RecordPrintRequest;
-
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>

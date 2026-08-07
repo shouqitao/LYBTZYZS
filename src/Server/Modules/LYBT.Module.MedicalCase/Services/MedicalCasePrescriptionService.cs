@@ -7,7 +7,7 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;
 using System.Threading;
-using EC = LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Module.MedicalCases.Services
 {
@@ -205,10 +205,10 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             if (medicalCase.NeedsPrescription != true)
-                throw new BusinessException(EC.McPrescriptionFlagNotSet, "未标记需要开处方，请先设置处方需求标记");
+                throw new BusinessException(ErrorCode.McPrescriptionFlagNotSet, "未标记需要开处方，请先设置处方需求标记");
 
             if (medicalCase.Prescription != null && !medicalCase.Prescription.IsDeleted)
-                throw new BusinessException(EC.McPrescriptionAlreadyExists, $"医案已存在处方（ID: {medicalCase.Prescription.Id}），请使用更新接口");
+                throw new BusinessException(ErrorCode.McPrescriptionAlreadyExists, $"医案已存在处方（ID: {medicalCase.Prescription.Id}），请使用更新接口");
 
             var prescription = _mapper.ToPrescriptionEntity(request);
             prescription.Id = Guid.NewGuid();

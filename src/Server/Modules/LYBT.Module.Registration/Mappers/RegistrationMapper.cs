@@ -1,6 +1,5 @@
 using LYBT.Shared.Models.Contracts.Registration;
 using Riok.Mapperly.Abstractions;
-using RegistrationEntity = LYBT.Entities.Registrations.Registration;
 
 namespace LYBT.Module.Registration.Mappers;
 
@@ -13,33 +12,33 @@ public partial class RegistrationMapper
     /// <summary>
     /// Registration 实体转 ListDto (队列展示)
     /// </summary>
-    public partial RegistrationListDto ToListDto(RegistrationEntity entity);
+    public partial RegistrationListDto ToListDto(LYBT.Entities.Registrations.Registration entity);
 
     /// <summary>
     /// Registration 实体列表转 ListDto 列表
     /// </summary>
-    public partial List<RegistrationListDto> ToListDtos(List<RegistrationEntity> entities);
+    public partial List<RegistrationListDto> ToListDtos(List<LYBT.Entities.Registrations.Registration> entities);
 
     /// <summary>
     /// Registration 实体转 DetailDto
     /// </summary>
-    public partial RegistrationDetailDto ToDetailDto(RegistrationEntity entity);
+    public partial RegistrationDetailDto ToDetailDto(LYBT.Entities.Registrations.Registration entity);
 
     /// <summary>
     /// InputDto 转 Registration 实体 (创建)
     /// 忽略 Id、MedicalCaseId、Status 和审计字段 (由 Service 层设置)
     /// </summary>
-    [MapperIgnoreTarget(nameof(RegistrationEntity.Id))]
-    [MapperIgnoreTarget(nameof(RegistrationEntity.MedicalCaseId))]
-    [MapperIgnoreTarget(nameof(RegistrationEntity.Status))]
-    [MapperIgnoreTarget(nameof(RegistrationEntity.QueueNumber))]
-    [MapperIgnoreTarget(nameof(RegistrationEntity.CreatedAt))]
-    [MapperIgnoreTarget(nameof(RegistrationEntity.CreatedBy))]
-    [MapperIgnoreTarget(nameof(RegistrationEntity.UpdatedAt))]
-    [MapperIgnoreTarget(nameof(RegistrationEntity.UpdatedBy))]
-    [MapperIgnoreTarget(nameof(RegistrationEntity.RowVersion))]
-    [MapperIgnoreTarget(nameof(RegistrationEntity.IsDeleted))]
-    public partial RegistrationEntity ToEntity(RegistrationInputDto dto);
+    [MapperIgnoreTarget(nameof(LYBT.Entities.Registrations.Registration.Id))]
+    [MapperIgnoreTarget(nameof(LYBT.Entities.Registrations.Registration.MedicalCaseId))]
+    [MapperIgnoreTarget(nameof(LYBT.Entities.Registrations.Registration.Status))]
+    [MapperIgnoreTarget(nameof(LYBT.Entities.Registrations.Registration.QueueNumber))]
+    [MapperIgnoreTarget(nameof(LYBT.Entities.Registrations.Registration.CreatedAt))]
+    [MapperIgnoreTarget(nameof(LYBT.Entities.Registrations.Registration.CreatedBy))]
+    [MapperIgnoreTarget(nameof(LYBT.Entities.Registrations.Registration.UpdatedAt))]
+    [MapperIgnoreTarget(nameof(LYBT.Entities.Registrations.Registration.UpdatedBy))]
+    [MapperIgnoreTarget(nameof(LYBT.Entities.Registrations.Registration.RowVersion))]
+    [MapperIgnoreTarget(nameof(LYBT.Entities.Registrations.Registration.IsDeleted))]
+    public partial LYBT.Entities.Registrations.Registration ToEntity(RegistrationInputDto dto);
 }
 
 

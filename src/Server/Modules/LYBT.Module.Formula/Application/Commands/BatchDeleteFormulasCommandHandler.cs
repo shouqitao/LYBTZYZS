@@ -4,12 +4,11 @@ using LYBT.Infrastructure.BatchOperations;
 using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.Module.Formulas.Domain.Events;
 using LYBT.Module.Formulas.Interfaces;
-using FormulaEntity = LYBT.Entities.Formulas.Formula;
 
 namespace LYBT.Module.Formulas.Application.Commands;
 
 public class BatchDeleteFormulasCommandHandler
-    : BatchOperationHandlerBase<FormulaEntity>,
+    : BatchOperationHandlerBase<LYBT.Entities.Formulas.Formula>,
       IRequestHandler<BatchDeleteFormulasCommand, Result<BatchOperationResultDto>>
 {
     private readonly IFormulaRepository _formulaRepository;
@@ -32,13 +31,13 @@ public class BatchDeleteFormulasCommandHandler
         return await ExecuteBatchAsync(request.Ids, request.OperatorId, cancellationToken);
     }
 
-    protected override Task<FormulaEntity?> GetByIdAsync(Guid id, CancellationToken ct)
+    protected override Task<LYBT.Entities.Formulas.Formula?> GetByIdAsync(Guid id, CancellationToken ct)
         => _formulaRepository.GetByIdAsync(id, ct);
 
-    protected override Task UpdateAsync(FormulaEntity formula, CancellationToken ct)
+    protected override Task UpdateAsync(LYBT.Entities.Formulas.Formula formula, CancellationToken ct)
         => _formulaRepository.UpdateAsync(formula, ct);
 
-    protected override Task ApplyOperationAsync(FormulaEntity formula, Guid operatorId, CancellationToken ct)
+    protected override Task ApplyOperationAsync(LYBT.Entities.Formulas.Formula formula, Guid operatorId, CancellationToken ct)
     {
         formula.SoftDelete(operatorId);
         _deletedNames.Add(formula.Name);

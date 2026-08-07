@@ -9,7 +9,7 @@ using LYBT.Shared.Models.Validators.BusinessRules;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;
 using System.Threading;
-using EC = LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Module.MedicalCases.Services
 {
@@ -60,7 +60,7 @@ namespace LYBT.Module.MedicalCases.Services
             if (status == MedicalCaseStatus.Completed)
             {
                 _logger.LogWarning("[SVC] MedicalCase.UpdateStatus → CompletedBlocked - 请使用 CompleteAsync");
-                throw new BusinessException(EC.McInvalidStatusTransition, "完成医案请使用专用的 Complete 接口，不允许通过状态更新直接设置为 Completed");
+                throw new BusinessException(ErrorCode.McInvalidStatusTransition, "完成医案请使用专用的 Complete 接口，不允许通过状态更新直接设置为 Completed");
             }
 
             // 获取聚合根
@@ -76,7 +76,7 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 _logger.LogWarning("[SVC] MedicalCase.UpdateStatus → InvalidTransition - OldStatus={OldStatus} NewStatus={NewStatus}",
                     medicalCase.CaseStatus, status);
-                throw new BusinessException(EC.McInvalidStatusTransition, $"不允许从{medicalCase.CaseStatus}状态转换到{status}状态");
+                throw new BusinessException(ErrorCode.McInvalidStatusTransition, $"不允许从{medicalCase.CaseStatus}状态转换到{status}状态");
             }
 
             // 更新状态（仅 Draft <-> Active）
@@ -118,7 +118,7 @@ namespace LYBT.Module.MedicalCases.Services
                 if (medicalCase.NeedsPrescription == null)
                 {
                     _logger.LogWarning("[SVC] MedicalCase.Complete → NeedsPrescriptionNotSet - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                    throw new BusinessException(EC.McPrescriptionFlagRequired, "请先标记是否需要开处方");
+                    throw new BusinessException(ErrorCode.McPrescriptionFlagRequired, "请先标记是否需要开处方");
                 }
 
                 // 如果标记需要开处方，验证处方存在
@@ -127,7 +127,7 @@ namespace LYBT.Module.MedicalCases.Services
                     if (medicalCase.Prescription == null || medicalCase.Prescription.IsDeleted)
                     {
                         _logger.LogWarning("[SVC] MedicalCase.Complete → PrescriptionRequired - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                        throw new BusinessException(EC.McPrescriptionRequired, "已标记需要开处方，但处方不存在，无法完成医案");
+                        throw new BusinessException(ErrorCode.McPrescriptionRequired, "已标记需要开处方，但处方不存在，无法完成医案");
                     }
 
                     // T5-P2-15: 验证处方明细不为空
@@ -135,7 +135,7 @@ namespace LYBT.Module.MedicalCases.Services
                     {
                         _logger.LogWarning("[SVC] MedicalCase.Complete → PrescriptionItemsEmpty - MedicalCaseId={MedicalCaseId}",
                             medicalCaseId);
-                        throw new BusinessException(EC.McPrescriptionItemsRequired, "处方必须包含至少一项药材才能完成医案");
+                        throw new BusinessException(ErrorCode.McPrescriptionItemsRequired, "处方必须包含至少一项药材才能完成医案");
                     }
                 }
             }
@@ -144,7 +144,7 @@ namespace LYBT.Module.MedicalCases.Services
             if (string.IsNullOrWhiteSpace(medicalCase.Consultation?.TcmDiagnosis))
             {
                 _logger.LogWarning("[SVC] MedicalCase.Complete -> TcmDiagnosisRequired - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw new BusinessException(EC.MedicalCaseMissingDiagnosis, "中医诊断不能为空，请先填写中医诊断");
+                throw new BusinessException(ErrorCode.MedicalCaseMissingDiagnosis, "中医诊断不能为空，请先填写中医诊断");
             }
 
             // DDD: 委托给聚合根域方法
@@ -200,14 +200,14 @@ namespace LYBT.Module.MedicalCases.Services
             if (medicalCase.CaseStatus == MedicalCaseStatus.Completed)
             {
                 _logger.LogWarning("[SVC] MedicalCase.Suspend → AlreadyCompleted - MedicalCaseId={MedicalCaseId}", id);
-                throw new BusinessException(EC.McCompletedCannotSuspend, "已完成的医案不可挂起");
+                throw new BusinessException(ErrorCode.McCompletedCannotSuspend, "已完成的医案不可挂起");
             }
 
             // 已软删除的医案不可挂起
             if (medicalCase.IsDeleted)
             {
                 _logger.LogWarning("[SVC] MedicalCase.Suspend → AlreadyDeleted - MedicalCaseId={MedicalCaseId}", id);
-                throw new BusinessException(EC.McDeletedCannotSuspend, "已删除的医案不可挂起");
+                throw new BusinessException(ErrorCode.McDeletedCannotSuspend, "已删除的医案不可挂起");
             }
 
             // DDD: 委托给聚合根域方法
@@ -260,21 +260,21 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 _logger.LogWarning("[SVC] MedicalCase.Cancel → ReasonRequired - MedicalCaseId={MedicalCaseId} IsOwner={IsOwner} IsSameDay={IsSameDay}",
                     id, isOwner, isSameDay);
-                throw new BusinessException(EC.McCancelReasonRequired, "非当天本人创建的医案取消时必须提供取消原因");
+                throw new BusinessException(ErrorCode.McCancelReasonRequired, "非当天本人创建的医案取消时必须提供取消原因");
             }
 
             // 业务规则验证：已完成医案不可取消（只可软删，Admin 清理）
             if (medicalCase.CaseStatus == MedicalCaseStatus.Completed)
             {
                 _logger.LogWarning("[SVC] MedicalCase.Cancel → AlreadyCompleted - MedicalCaseId={MedicalCaseId}", id);
-                throw new BusinessException(EC.McCompletedCannotCancel, "已完成的医案不可取消");
+                throw new BusinessException(ErrorCode.McCompletedCannotCancel, "已完成的医案不可取消");
             }
 
             // 已软删除的不重复处理
             if (medicalCase.IsDeleted)
             {
                 _logger.LogWarning("[SVC] MedicalCase.Cancel → AlreadyDeleted - MedicalCaseId={MedicalCaseId}", id);
-                throw new BusinessException(EC.McAlreadyDeleted, "医案已被删除");
+                throw new BusinessException(ErrorCode.McAlreadyDeleted, "医案已被删除");
             }
 
             // 物理删除聚合根（DB 级联清除 Consultation/Prescription/Items/PrintLogs）

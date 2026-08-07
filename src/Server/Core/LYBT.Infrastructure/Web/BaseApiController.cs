@@ -4,8 +4,6 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using GenericErrorCode = LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode;
-
 namespace LYBT.Infrastructure.Web
 {
     /// <summary>

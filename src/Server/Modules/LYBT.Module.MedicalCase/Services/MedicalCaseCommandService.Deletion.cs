@@ -5,7 +5,7 @@ using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using EC = LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Module.MedicalCases.Services
 {
@@ -40,7 +40,7 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 _logger.LogWarning("[SVC] MedicalCase.Delete → OnlyCompletedCanDelete - MedicalCaseId={MedicalCaseId} Status={Status}",
                     id, medicalCase.CaseStatus);
-                throw new BusinessException(EC.McOnlyCompletedCanDelete, "仅已完成医案可删除，未完成医案请使用「取消」（物理删除）");
+                throw new BusinessException(ErrorCode.McOnlyCompletedCanDelete, "仅已完成医案可删除，未完成医案请使用「取消」（物理删除）");
             }
 
             // D2 FIX: 删除前回滚关联的挂号记录

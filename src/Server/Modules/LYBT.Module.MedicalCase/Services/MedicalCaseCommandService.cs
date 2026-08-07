@@ -13,7 +13,7 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;
 using System.Threading;
-using EC = LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Module.MedicalCases.Services
 {
@@ -121,7 +121,7 @@ namespace LYBT.Module.MedicalCases.Services
                 if (string.IsNullOrWhiteSpace(request.Consultation.TcmDiagnosis))
                 {
                     _logger.LogInformation("[SVC] MedicalCase.Create -> TcmDiagnosisEmpty");
-                    throw new BusinessException(EC.MedicalCaseMissingDiagnosis, "中医诊断不能为空");
+                    throw new BusinessException(ErrorCode.MedicalCaseMissingDiagnosis, "中医诊断不能为空");
                 }
 
                 consultation.PresentIllness = request.Consultation.PresentIllness;
@@ -184,7 +184,7 @@ namespace LYBT.Module.MedicalCases.Services
             if (medicalCase.Consultation == null)
             {
                 _logger.LogInformation("[SVC] MedicalCase.UpdateConsultation → ConsultationNotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw new BusinessException(EC.McConsultationNotFound, "医案的辨证信息不存在");
+                throw new BusinessException(ErrorCode.McConsultationNotFound, "医案的辨证信息不存在");
             }
 
             // Issue #2231: 手动映射属性以避免EF Core共享主键冲突
@@ -352,7 +352,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             var medicalCase = await SaveAsync(request, currentUserId, isAdmin, cancellationToken);
             if (medicalCase == null)
-                return LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>.Failure(EC.NotFound, "医案不存在");
+                return LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>.Failure(ErrorCode.NotFound, "医案不存在");
 
             var dto = _mapper.MapToMedicalCaseDetailDto(medicalCase);
             return LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>.Success(dto);
@@ -370,7 +370,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             var medicalCase = await SetPrescriptionFlagAsync(medicalCaseId, needsPrescription, currentUserId, isAdmin, cancellationToken);
             if (medicalCase == null)
-                return LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>.Failure(EC.NotFound, "医案不存在");
+                return LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>.Failure(ErrorCode.NotFound, "医案不存在");
 
             var dto = _mapper.MapToMedicalCaseDetailDto(medicalCase);
             return LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>.Success(dto);
@@ -390,7 +390,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             var medicalCase = await _repository.GetByIdAsync(medicalCaseId, cancellationToken);
             if (medicalCase == null)
-                return LYBT.Shared.Models.Contracts.Common.Result<bool>.Failure(EC.NotFound, "医案不存在");
+                return LYBT.Shared.Models.Contracts.Common.Result<bool>.Failure(ErrorCode.NotFound, "医案不存在");
 
             var now = DateTime.UtcNow;
 
@@ -436,7 +436,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             var medicalCase = await _repository.GetByIdAsync(medicalCaseId, cancellationToken);
             if (medicalCase == null)
-                return LYBT.Shared.Models.Contracts.Common.Result<bool>.Failure(EC.NotFound, "医案不存在");
+                return LYBT.Shared.Models.Contracts.Common.Result<bool>.Failure(ErrorCode.NotFound, "医案不存在");
 
             var now = DateTime.UtcNow;
 

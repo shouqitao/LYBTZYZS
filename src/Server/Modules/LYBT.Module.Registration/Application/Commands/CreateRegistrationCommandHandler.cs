@@ -1,4 +1,3 @@
-using LYBT.Entities.Registrations;
 using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.Module.Registration.Mappers;
 using LYBT.Module.Registration.Domain.Events;
@@ -8,7 +7,6 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using MediatR;
-using RegistrationEntity = LYBT.Entities.Registrations.Registration;
 
 namespace LYBT.Module.Registration.Application.Commands;
 
@@ -42,7 +40,7 @@ public sealed class CreateRegistrationCommandHandler
 
         var maxQueueNumber = await _repository.GetTodayMaxQueueNumberAsync(cancellationToken);
 
-        var registration = new RegistrationEntity
+        var registration = new LYBT.Entities.Registrations.Registration
         {
             Id = Guid.NewGuid(),
             PatientId = dto.PatientId,

@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using FormulaEntity = LYBT.Entities.Formulas.Formula;
 
 namespace LYBT.Module.Formulas.Infrastructure;
 
@@ -9,7 +8,7 @@ namespace LYBT.Module.Formulas.Infrastructure;
 public class FormulaDbContext : DbContext
 {
     /// <summary>验方集</summary>
-    public DbSet<FormulaEntity> Formulas { get; set; } = null!;
+    public DbSet<LYBT.Entities.Formulas.Formula> Formulas { get; set; } = null!;
 
     // FormulaHerbItems 已在 AppDbContext 中管理，此处不再注册
 
@@ -25,7 +24,7 @@ public class FormulaDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<FormulaEntity>(entity =>
+        modelBuilder.Entity<LYBT.Entities.Formulas.Formula>(entity =>
         {
             entity.ToTable("Formulas");
             entity.HasKey(e => e.Id);
