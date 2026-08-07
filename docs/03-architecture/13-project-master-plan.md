@@ -61,7 +61,7 @@
 | A-10 | 接口下沉 Contracts | IFormulaService/IHerbService 移到 Contracts（与 IPatientService/IUserService 一致） | 无 | ✅ | 0.5d |
 | A-11 | Registration 依赖清理 | 移除对 Patients/Users 直接引用 | A-10 | ✅ 已无跨模块依赖（A-02 清理后确认） | 0 |
 | A-12 | AuthService 收敛 | RefreshToken 操作收敛到 Repository | 无 | ✅ 已完成（代码已通过 IAuthSessionRepository） | 0 |
-| A-13 | DeployController 安全加固 | restart 端点加确认机制或移到内部管理端点，防止误操作停服 | 无 | ⬜ | 0.5d |
+| A-13 | DeployController 安全加固 | restart 端点加确认机制或移到内部管理端点，防止误操作停服 | 无 | ✅ `624b438e4` | 0.5d |
 | A-14 | Controller 继承统一 + MediatR 模式统一 | 三种继承路径（BaseApiController/BaseCrudController/BaseMedicalCasesController）文档化；PatientsController/HerbsController 等混合 MediatR+Service 直注统一为 MediatR | 无 | ⬜ | 2d |
 | A-15 | MedicalCasesController 拆分 | 356 行 CRUD+状态流转+关闭/挂起/取消/打印 拆为 MedicalCasesController(CRUD) + MedicalCaseWorkflowController(状态流转) | 无 | ⬜ | 1d |
 
@@ -275,7 +275,7 @@
 | WebApi 架构修复（03-server.md 对齐 14 项 + ReportsController 服务层） | ✅ | 2026-08-05 | docs `59be25317`（03-server.md v2.3 全面对齐 14 项发现；计划文档归位 docs/compose/plans/）；code `7184f96e8`（新增 IReportService/ReportService，ReportsController 改注入 Service 接口，架构测试 ServerAssemblies 补入 Reports/Registration）—— build --no-incremental 0 错误 0 警告，架构测试 92/92 |
 | B-21 安全增强（Token 族旋转 + 安全审计，US-AUTH-006/007） | ✅ | 2026-08-06 | `e2cedf6a2` — 批量撤销会话/登录踢出/4 个用户操作 Handler 审计+撤销；详见 §九 |
 | WebApi 测试发布（60.190.215.86:5000） | ✅ | 2026-08-06 | Server 端最新版本部署至公网测试服务器；8 处 BaseApiController 递归修复 `b6097c036`/`34d5e599d`/`6cd91cb7d`；Smoke Test 全过；详见 §九 |
-| A-13 DeployController 安全加固 | ⬜ | — | — |
+| A-13 DeployController 安全加固 | ✅ | 2026-08-07 | `624b438e4` — `POST /deploy/restart` 加确认机制：新增 `RestartConfirmDto(string? Confirm)`，body 中 `confirm` 必须为 `"RESTART"` 才执行 `StopApplication()`，否则返回 ValidationFail；`[Authorize(AdminOrSuperAdmin)]` 不变 |
 | A-14 Controller 继承统一 + MediatR 模式统一 | ⬜ | — | — |
 | A-15 MedicalCasesController 拆分 | ⬜ | — | — |
 | WebApi 优化批次（安全加固+代码质量） | ✅ | 2026-08-07 | `84433560e` CORS 加公网 IP + `Database:ConnectionString` 禁写 + AutoLogin 过期验证；`8528e1efb` CORS 去内网 IP；`c094341af` HealthController 去重 + RegistrationsController 注释清理 + 3 Controller 缩进修复 + AuthController 错误处理统一 |
