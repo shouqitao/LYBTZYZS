@@ -6,6 +6,7 @@ using LYBT.Entities.Auth;
 using LYBT.Module.Auth.Application.Mappers;
 using LYBT.Module.Auth.Domain.Events;
 using LYBT.Module.Auth.Interfaces;
+using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
@@ -28,6 +29,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
     private readonly IPublisher _publisher;
     private readonly ILogger<LoginCommandHandler> _logger;
     private readonly SecurityOptions _securityOptions;
+    private readonly JwtOptions _jwtOptions;
     private readonly AuthUserMapper _userMapper;
 
     public LoginCommandHandler(
@@ -39,6 +41,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
         IPublisher publisher,
         ILogger<LoginCommandHandler> logger,
         IOptions<SecurityOptions> securityOptions,
+        IOptions<JwtOptions> jwtOptions,
         AuthUserMapper userMapper)
     {
         _jwtService = jwtService;
@@ -49,6 +52,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
         _publisher = publisher;
         _logger = logger;
         _securityOptions = securityOptions?.Value ?? throw new ArgumentNullException(nameof(securityOptions));
+        _jwtOptions = jwtOptions?.Value ?? throw new ArgumentNullException(nameof(jwtOptions));
         _userMapper = userMapper ?? throw new ArgumentNullException(nameof(userMapper));
     }
 
@@ -154,7 +158,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
             userDetail.Role,
             userType);
 
-        var tokenExpireMinutes = 60;
+        var tokenExpireMinutes = _jwtOptions.AccessTokenExpirationMinutes;
 
         var response = new LoginResponse
         {

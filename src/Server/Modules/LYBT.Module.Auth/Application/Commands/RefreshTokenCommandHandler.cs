@@ -62,6 +62,18 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
             }
         }
 
+        if (oldSession == null)
+        {
+            _logger.LogWarning("[Handler] Token refresh failed - session not found for token hash");
+            await _securityAuditService.RecordEventAsync(new SecurityAuditEvent
+            {
+                EventType = "TokenRefresh",
+                IsSuccess = false,
+                FailureReason = "Session not found"
+            }, cancellationToken);
+            return Result<LoginResponse>.Failure(ErrorCode.AuthTokenInvalid, "会话不存在，请重新登录");
+        }
+
         var result = _jwtService.RefreshToken(request.Token);
         if (!result.IsSuccess)
         {
@@ -87,7 +99,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         var newToken = result.Data!.Token;
         var newTokenHash = ComputeTokenHash(newToken);
         var newSession = AuthSession.Create(
-            oldSession?.UserId ?? Guid.Empty,
+            oldSession!.UserId,
             newTokenHash,
             result.Data.ExpiresAt,
             oldSession?.IpAddress ?? "unknown",
