@@ -1,11 +1,6 @@
-using LYBT.Module.Reports.Infrastructure;
 using LYBT.Module.Reports.Interfaces;
-using LYBT.Shared.Configuration;
-using LYBT.Shared.Configuration.Options.Server;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace LYBT.Module.Reports;
 
@@ -19,16 +14,6 @@ public static class ReportsModule
     /// </summary>
     public static IServiceCollection AddReportsModule(this IServiceCollection services, IConfiguration configuration)
     {
-        // Infrastructure层 - DbContext
-        services.AddDbContext<ReportsDbContext>((sp, options) =>
-        {
-            var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-            var connectionString = ConnectionStringResolver.GetEffectiveConnectionString(dbOptions, configuration);
-            if (string.IsNullOrWhiteSpace(connectionString))
-                throw new InvalidOperationException("未配置数据库连接字符串");
-            options.UseSqlServer(connectionString);
-        });
-
         // 仓储层
         services.AddScoped<IReportRepository, LYBT.Module.Reports.Infrastructure.ReportRepository>();
 

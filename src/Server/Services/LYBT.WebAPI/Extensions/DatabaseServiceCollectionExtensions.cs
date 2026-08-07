@@ -122,7 +122,8 @@ public static class DatabaseServiceCollectionExtensions
 
         services.AddScoped<LYBT.Infrastructure.Data.DatabaseInitializationService>();
 
-        // 跨模块服务已由各模块独立注册（PatientsModule, HerbsModule, UsersModule）
+        // 跨模块服务门面（Core 层注册，先于模块注册）
+        services.AddCrossModuleService();
 
         // Architecture Fix: 注册健康检查服务 (Task 1.1)
         services.AddScoped<IHealthCheckService, HealthCheckService>();
