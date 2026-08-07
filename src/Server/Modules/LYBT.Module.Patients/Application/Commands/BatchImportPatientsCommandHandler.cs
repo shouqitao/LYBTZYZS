@@ -69,8 +69,7 @@ public class BatchImportPatientsCommandHandler : IRequestHandler<BatchImportPati
                             continue;
 
                         case DuplicateStrategy.Update:
-                            var existingPaged = await _patientRepository.GetPagedAsync(1, 1, dto.Name, null, cancellationToken);
-                            var existing = existingPaged.Items.FirstOrDefault();
+                            var existing = await _patientRepository.GetExactByNameAsync(dto.Name, cancellationToken);
                             if (existing != null)
                             {
                                 existing.UpdateProfile(

@@ -30,6 +30,11 @@ public interface IPatientRepository
     Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default);
 
     /// <summary>
+    /// 根据姓名精确获取患者（仅 Name 精确匹配，排除已删除）。
+    /// </summary>
+    Task<Patient?> GetExactByNameAsync(string name, CancellationToken ct = default);
+
+    /// <summary>
     /// 新增患者。
     /// </summary>
     Task AddAsync(Patient patient, CancellationToken ct);

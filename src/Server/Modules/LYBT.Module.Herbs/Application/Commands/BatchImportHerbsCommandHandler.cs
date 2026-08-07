@@ -61,8 +61,7 @@ public class BatchImportHerbsCommandHandler : IRequestHandler<BatchImportHerbsCo
                             continue;
 
                         case DuplicateStrategy.Update:
-                            var existingHerbs = await _herbRepository.GetPagedAsync(1, 1, dto.Name, null, cancellationToken);
-                            var existingHerb = existingHerbs.Items.FirstOrDefault();
+                            var existingHerb = await _herbRepository.GetByNameAsync(dto.Name, cancellationToken);
                             if (existingHerb != null)
                             {
                                 existingHerb.UpdateProfile(

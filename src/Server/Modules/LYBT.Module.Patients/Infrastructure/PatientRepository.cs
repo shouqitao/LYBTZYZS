@@ -85,6 +85,13 @@ public class PatientRepository : IPatientRepository
     }
 
     /// <inheritdoc/>
+    public async Task<Patient?> GetExactByNameAsync(string name, CancellationToken cancellationToken = default)
+    {
+        return await _context.Patients
+            .FirstOrDefaultAsync(p => p.Name == name && !p.IsDeleted, cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task AddAsync(Patient patient, CancellationToken cancellationToken = default)
     {
         await _context.Patients.AddAsync(patient, cancellationToken);
