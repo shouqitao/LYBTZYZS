@@ -1,4 +1,5 @@
 using MediatR;
+using LYBT.Infrastructure.BatchOperations;
 using LYBT.Infrastructure.Caching;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Entities.Herbs;
@@ -9,7 +10,9 @@ namespace LYBT.Module.Herbs.Application.Commands;
 /// <summary>
 /// 批量删除药材命令处理器（软删除）。
 /// </summary>
-public class BatchDeleteHerbsCommandHandler : IRequestHandler<BatchDeleteHerbsCommand, Result<BatchOperationResultDto>>
+public class BatchDeleteHerbsCommandHandler
+    : BatchOperationHandlerBase<Herb>,
+      IRequestHandler<BatchDeleteHerbsCommand, Result<BatchOperationResultDto>>
 {
     private readonly IHerbRepository _herbRepository;
     private readonly ICacheInvalidationService _cacheInvalidation;
@@ -22,62 +25,35 @@ public class BatchDeleteHerbsCommandHandler : IRequestHandler<BatchDeleteHerbsCo
         _cacheInvalidation = cacheInvalidation;
     }
 
-    public async Task<Result<BatchOperationResultDto>> Handle(
+    public Task<Result<BatchOperationResultDto>> Handle(
         BatchDeleteHerbsCommand request, CancellationToken cancellationToken)
+        => ExecuteBatchAsync(request.Ids, request.CurrentUserId, cancellationToken);
+
+    protected override Task<Herb?> GetByIdAsync(Guid id, CancellationToken ct)
+        => _herbRepository.GetByIdAsync(id, ct);
+
+    protected override Task UpdateAsync(Herb herb, CancellationToken ct)
+        => _herbRepository.UpdateAsync(herb, ct);
+
+    protected override Task ApplyOperationAsync(Herb herb, Guid operatorId, CancellationToken ct)
     {
-        var result = new BatchOperationResultDto
-        {
-            TotalCount = request.Ids.Count,
-            SuccessCount = 0,
-            FailureCount = 0
-        };
-
-        foreach (var id in request.Ids)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                var herb = await _herbRepository.GetByIdAsync(id, cancellationToken);
-                if (herb == null)
-                {
-                    result.FailureCount++;
-                    result.FailedIds.Add(id);
-                    result.FailedItems.Add(new BatchOperationFailureItem
-                    {
-                        Id = id,
-                        Reason = "药材不存在"
-                    });
-                    continue;
-                }
-
-                herb.SoftDelete(request.CurrentUserId);
-                await _herbRepository.UpdateAsync(herb, cancellationToken);
-
-                result.SuccessCount++;
-                result.SuccessfulIds.Add(id);
-            }
-            catch
-            {
-                result.FailureCount++;
-                result.FailedIds.Add(id);
-                result.FailedItems.Add(new BatchOperationFailureItem
-                {
-                    Id = id,
-                    Reason = "删除操作失败"
-                });
-            }
-        }
-
-        result.IsSuccess = result.SuccessCount > 0;
-        result.Message = $"批量删除完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条";
-
-        if (result.SuccessCount > 0)
-        {
-            await _cacheInvalidation.InvalidateAsync("herbs");
-        }
-
-        return Result<BatchOperationResultDto>.Success(result);
+        herb.SoftDelete(operatorId);
+        return Task.CompletedTask;
     }
+
+    protected override string EntityNotFoundMessage => "药材不存在";
+    protected override string OperationName => "删除";
+    protected override bool TrackIds => true;
+
+    protected override async Task OnBatchCompletedAsync(BatchOperationResultDto result, CancellationToken ct)
+    {
+        if (result.SuccessCount > 0)
+            await _cacheInvalidation.InvalidateAsync("herbs");
+    }
+
+    protected override void FinalizeResult(BatchOperationResultDto result)
+        => result.IsSuccess = result.SuccessCount > 0;
+
+    protected override string BuildMessage(int successCount, int failureCount)
+        => $"批量删除完成：成功 {successCount} 条，失败 {failureCount} 条";
 }
-
-
