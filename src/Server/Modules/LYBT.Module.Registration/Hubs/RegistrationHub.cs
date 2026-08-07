@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using LYBT.Infrastructure.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Registration.Hubs;
 
@@ -14,10 +16,12 @@ public sealed class RegistrationHub : Hub
     private const string DoctorIdQueryKey = "doctorId";
 
     private readonly RegistrationConnectionManager _connections;
+    private readonly ILogger<RegistrationHub> _logger;
 
-    public RegistrationHub(RegistrationConnectionManager connections)
+    public RegistrationHub(RegistrationConnectionManager connections, ILogger<RegistrationHub> logger)
     {
         _connections = connections;
+        _logger = logger;
     }
 
     /// <inheritdoc/>
@@ -25,8 +29,18 @@ public sealed class RegistrationHub : Hub
     {
         if (TryGetDoctorId(out var doctorId))
         {
-            _connections.Add(Context.ConnectionId, doctorId);
-            await Groups.AddToGroupAsync(Context.ConnectionId, GetDoctorGroup(doctorId));
+            // 安全校验（S-03）：doctorId 必须等于当前登录用户，防止伪造他人 ID 订阅其通知
+            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId != null && Guid.TryParse(userId, out var currentUserId) && currentUserId == doctorId)
+            {
+                _connections.Add(Context.ConnectionId, doctorId);
+                await Groups.AddToGroupAsync(Context.ConnectionId, GetDoctorGroup(doctorId));
+            }
+            else
+            {
+                // doctorId 与登录用户不匹配，拒绝加入分组
+                _logger.LogWarning("SignalR connection rejected: doctorId {DoctorId} does not match authenticated user", doctorId);
+            }
         }
 
         await base.OnConnectedAsync();

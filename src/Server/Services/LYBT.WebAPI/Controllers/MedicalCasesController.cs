@@ -11,7 +11,6 @@ using LYBT.Shared.Models.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.RateLimiting;
 
 using SetPrescriptionFlagRequest = LYBT.Shared.Models.Contracts.MedicalCase.SetPrescriptionFlagRequest;
@@ -47,7 +46,6 @@ namespace LYBT.WebAPI.Controllers
         /// 查询医案列表（分页）
         /// </summary>
         [HttpGet]
-        [OutputCache(PolicyName = "MedicalCaseCache")]
         public override async Task<IActionResult> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,

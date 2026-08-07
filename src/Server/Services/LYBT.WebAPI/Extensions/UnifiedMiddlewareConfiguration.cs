@@ -166,9 +166,6 @@ public static class UnifiedMiddlewareConfiguration
         // 5.1 响应缓存
         app.UseResponseCaching();
 
-        // 5.2 输出缓存（.NET 7+）
-        app.UseOutputCache();
-
         // ===== 阶段6: 终端映射（最后） =====
         // Issue #1726 Phase 3: 健康检查端点
         // Sprint3-A3-08: FallbackPolicy 启用后，健康检查需显式 AllowAnonymous

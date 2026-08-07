@@ -10,7 +10,6 @@ using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace LYBT.WebAPI.Controllers
@@ -36,7 +35,6 @@ namespace LYBT.WebAPI.Controllers
         /// 获取患者列表 - 支持分页和查询
         /// </summary>
         [HttpGet]
-        [OutputCache(PolicyName = "PatientsCache")]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<PatientListDto>>), 200)]
         public override async Task<IActionResult> GetList(
             [FromQuery] int page = 1,

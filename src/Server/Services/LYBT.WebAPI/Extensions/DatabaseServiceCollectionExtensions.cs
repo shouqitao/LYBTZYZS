@@ -62,44 +62,12 @@ public static class DatabaseServiceCollectionExtensions
             options.UseCaseSensitivePaths = false;
         });
 
-        // 输出缓存配置（.NET 7+）
-        services.AddOutputCache(options =>
-        {
-            // 默认策略
-            options.AddBasePolicy(builder =>
-                builder.Expire(TimeSpan.FromMinutes(5)));
-
-            // 草材数据智能缓存：支持搜索参数区分，缓存30分钟
-            // 不同搜索条件(page, pageSize, keyword, category)会有独立缓存
-            options.AddPolicy("HerbsCache", builder =>
-                builder.Expire(TimeSpan.FromMinutes(30))
-                       .Tag("herbs"));
-
-            // 配方模板缓存2小时
-            options.AddPolicy("FormulasCache", builder =>
-                builder.Expire(TimeSpan.FromHours(2))
-                       .Tag("formulas"));
-
-            // 患者数据缓存策略（30分钟）
-            options.AddPolicy("PatientsCache", builder =>
-                builder.Expire(TimeSpan.FromMinutes(30))
-                       .Tag("patients"));
-
-            // 处方缓存策略（10分钟，更新频繁）
-            options.AddPolicy("PrescriptionsCache", builder =>
-                builder.Expire(TimeSpan.FromMinutes(10))
-                       .Tag("prescriptions"));
-
-            // 病例缓存策略（20分钟）
-            options.AddPolicy("MedicalCaseCache", builder =>
-                builder.Expire(TimeSpan.FromMinutes(20))
-                       .Tag("medicalcases"));
-
-            // 用户权限缓存10分钟
-            options.AddPolicy("UserPermissionsCache", builder =>
-                builder.Expire(TimeSpan.FromMinutes(10))
-                       .Tag("permissions"));
-        });
+        // 输出缓存注册（P-01）：ASP.NET Core 8 默认不缓存带 [Authorize] 的响应，
+        // 原 5 个策略（HerbsCache/FormulasCache/PatientsCache/PrescriptionsCache/MedicalCaseCache/UserPermissionsCache）
+        // 标注的端点全部带 [Authorize]，缓存从未命中，策略定义已全部删除。
+        // 保留裸 AddOutputCache() 仅使 IOutputCacheStore 可解析 —— CacheInvalidationService 依赖它按 tag 驱逐
+        // （实际生效的失效走 IMemoryCache.RemoveByPrefix，见 CacheInvalidationService）。
+        services.AddOutputCache();
 
         // 缓存失效服务
         services.AddSingleton<LYBT.Infrastructure.Caching.ICacheInvalidationService, LYBT.Infrastructure.Caching.CacheInvalidationService>();

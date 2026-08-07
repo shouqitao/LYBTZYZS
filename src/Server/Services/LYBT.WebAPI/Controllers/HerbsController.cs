@@ -10,7 +10,6 @@ using LYBT.Shared.Models.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace LYBT.WebAPI.Controllers
@@ -36,7 +35,6 @@ namespace LYBT.WebAPI.Controllers
         /// 获取药材分页列表
         /// </summary>
         [HttpGet]
-        [OutputCache(PolicyName = "HerbsCache")]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<HerbListDto>>), 200)]
         public override async Task<IActionResult> GetList(
             [FromQuery] int page = 1,
