@@ -7,6 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.WebAPI.Controllers;
 
+/// <summary>
+/// 重启操作确认请求体
+/// </summary>
+public record RestartConfirmDto(string? Confirm);
+
 [ApiController]
 [ApiVersion("1")]
 [Route("api/v{version:apiVersion}/deploy")]
@@ -46,8 +51,11 @@ public class DeployController : BaseApiController
 
     [HttpPost("restart")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-    public IActionResult Restart()
+    public IActionResult Restart([FromBody] RestartConfirmDto? request)
     {
+        if (request?.Confirm != "RESTART")
+            return ValidationFail("请确认重启操作：body 中 confirm 字段必须为 \"RESTART\"");
+
         _logger.LogWarning("收到服务重启指令，2 秒后执行重启");
         _lifetime.StopApplication();
         return Success("服务重启指令已发送");
