@@ -73,7 +73,7 @@
 | B-02 | 配置修改 API | ConfigurationController 添加 PUT | 无 | ✅ | 1d |
 || B-03 | Excel 导出/导入 | Herbs/Formula/Patients (前端 Excel ↔ WebApi JSON) | 无 | ✅ | 2-3d |
 | B-04 | 报表增强 | 图表/多维度/时间范围 | 无 | ✅ `cab959dc1` | 2d |
-| B-05 | 配置中心 UI | SystemSettingsView 增强 | B-02 | ⬜ | 1d |
+| B-05 | 配置中心 UI | SystemSettingsView 增强（服务器配置区域） | B-02 | ✅ `c518318ed` | 1d |
 | B-06 | 数据备份/恢复 | SQL Server 备份+恢复 | 无 | ⬜ | 1.5d |
 | B-07 | 初始化向导完善 | FirstRunSetupView 增强 | 无 | ⬜ | 1d |
 | B-08 | Desktop 发布包 | 打包+依赖裁剪+安装器 | 无 | ⬜ | 2d |
@@ -237,7 +237,7 @@
 | B-02 配置修改 API | ⬜ | — | — |
 || B-03 | Excel 导出/导入 | ✅ | 2026-08-05 | `4d70b487a` `0fdfde0d3` `bed75026e` `709bad616` `64c58c59a` `8968fd130` `1bc468851` — NPOI 2.7.2（中央版本钉）；ExcelService 通用三方法（ExportToExcel/GenerateTemplate/ParseExcel，XSSFWorkbook）+ 4 单测；WebApi 保留 JSON 批量导入端点（`POST /batch-import`），Excel 格式转换由前端 Desktop 负责；患者新增 BatchImportPatientsCommand（Skip/Update/Error 策略，与药材命令同构）；Herbs/Formulas Excel 导入复用现有 BatchImport 命令（拼音生成/药材名匹配/验方校验）；build --no-incremental 0 错误 0 警告，架构测试 92/92 |
 | B-04 报表增强 | ✅ | 2026-08-06 | `cab959dc1` — 新增 5 个端点：`GET /reports/trend/income`（挂号费/药费/合计折线，granularity=day/week/month）、`GET /reports/trend/consultations`、`GET /reports/doctor-performance`（问诊数/挂号费/药费/平均处方金额）、`GET /reports/herbs/ranking`（top 默认 10，复用药材使用聚合查询）、`GET /reports/patient-flow`（新患者/回头患者，按患者首次完成就诊归类）；新增 `ReportGranularity` 枚举 + 4 个趋势/绩效 DTO（药材排行复用 `HerbUsageItemDto`）；仓库按日 `GROUP BY CONVERT(date, CreatedAt)` 聚合下推 SQL，服务层 `ReportTimeBuckets` 按周（周一起）/月（1 号起）汇总；修复存量缺陷 `GetMedicineFeeTotalAsync` 的 `pi.Amount` 计算属性 EF 无法翻译（改 `UnitPrice * Dosage`，否则日收入药费运行时必炸）；`ReportRepository`/`ReportService` 由 internal 改 public（与 Herbs/Auth 等模块可测类惯例一致，供单测直构）；测试项目补引 `LYBT.Module.Reports`；新增 14 单测（EF InMemory 真实实现零 mock）全过 | |
-| B-05 配置中心 UI | ⬜ | — | — |
+| B-05 配置中心 UI | ✅ | 2026-08-07 | `c518318ed` — 新增 `IConfigurationApi` Refit 接口（GET/PUT/validate）；`SystemSettingsViewModel` 新增服务器配置属性（ServerAppName/ServerAppVersion/ServerEnvironment）+ LoadServerConfig/SaveServerConfig/ValidateConfig 三个命令；`SystemSettingsView.xaml` 新增「服务器配置」Border 区域（应用名称可编辑、版本号/环境只读、保存/验证/刷新按钮）；`UnifiedApiClientExtensions` 注册 IConfigurationApi |
 | B-06 数据备份/恢复 | ⬜ | — | — |
 | B-07 初始化向导 | ⬜ | — | — |
 | B-08 Desktop 发布包 | ⬜ | — | — |
