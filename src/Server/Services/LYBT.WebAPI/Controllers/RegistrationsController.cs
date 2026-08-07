@@ -29,7 +29,7 @@ public class RegistrationsController : BaseRegistrationsController
     }
 
     /// <summary>
-    /// 医生快速看诊 (添加 OutputCache 和 RateLimiting)
+    /// 医生快速看诊
     /// </summary>
     [HttpPost("quick-visit")]
     [EnableRateLimiting("ApiCalls")]
@@ -51,7 +51,7 @@ public class RegistrationsController : BaseRegistrationsController
     }
 
     /// <summary>
-    /// 创建挂号记录 (添加 OutputCache 和 RateLimiting)
+    /// 创建挂号记录
     /// </summary>
     [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
     [HttpPost]
@@ -73,7 +73,7 @@ public class RegistrationsController : BaseRegistrationsController
     }
 
     /// <summary>
-    /// 接诊: 从队列选中患者 (添加 OutputCache 和 RateLimiting)
+    /// 接诊: 从队列选中患者
     /// </summary>
     [HttpPut("{id:guid}/start-visit")]
     [EnableRateLimiting("ApiCalls")]
@@ -91,7 +91,7 @@ public class RegistrationsController : BaseRegistrationsController
     }
 
     /// <summary>
-    /// 取消挂号 (添加 OutputCache 和 RateLimiting)
+    /// 取消挂号
     /// </summary>
     [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
     [HttpPut("{id:guid}/cancel")]

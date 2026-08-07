@@ -77,8 +77,8 @@ namespace LYBT.WebAPI.Controllers
         public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
         {
             if (!dto.TryDeserializeDto(out HerbInputDto? inputDto, out var validationError))
-            return ValidationFail(validationError ?? "请求参数无效");
-        if (inputDto is null) return ValidationFail("请求参数无效");
+                return ValidationFail(validationError ?? "请求参数无效");
+            if (inputDto is null) return ValidationFail("请求参数无效");
             var (operatorId, _, _) = GetOperator();
             var result = await Sender.Send(new CreateHerbCommand(inputDto, operatorId), ct);
             if (result.IsSuccess && result.Value != null)
@@ -103,8 +103,8 @@ namespace LYBT.WebAPI.Controllers
         public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
         {
             if (!dto.TryDeserializeDto(out HerbInputDto? inputDto, out var validationError))
-            return ValidationFail(validationError ?? "请求参数无效");
-        if (inputDto is null) return ValidationFail("请求参数无效");
+                return ValidationFail(validationError ?? "请求参数无效");
+            if (inputDto is null) return ValidationFail("请求参数无效");
             if (ValidateGuid(id, "药材ID") is { } error) return error;
 
             var getResult = await _herbService.GetByIdAsync(id, ct);

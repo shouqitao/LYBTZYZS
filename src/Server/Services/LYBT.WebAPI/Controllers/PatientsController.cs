@@ -80,8 +80,8 @@ namespace LYBT.WebAPI.Controllers
         public override async Task<IActionResult> Create([FromBody] object dto, CancellationToken ct)
         {
             if (!dto.TryDeserializeDto(out PatientInputDto? inputDto, out var validationError))
-            return ValidationFail(validationError ?? "请求参数无效");
-        if (inputDto is null) return ValidationFail("请求参数无效");
+                return ValidationFail(validationError ?? "请求参数无效");
+            if (inputDto is null) return ValidationFail("请求参数无效");
             var (operatorId, _, _) = GetOperator();
             var result = await Sender.Send(new CreatePatientCommand(inputDto, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
@@ -104,8 +104,8 @@ namespace LYBT.WebAPI.Controllers
         public override async Task<IActionResult> Update(Guid id, [FromBody] object dto, CancellationToken ct)
         {
             if (!dto.TryDeserializeDto(out PatientInputDto? inputDto, out var validationError))
-            return ValidationFail(validationError ?? "请求参数无效");
-        if (inputDto is null) return ValidationFail("请求参数无效");
+                return ValidationFail(validationError ?? "请求参数无效");
+            if (inputDto is null) return ValidationFail("请求参数无效");
             if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
 
             var (ownerDto, ownershipError) = await CheckOwnershipAsync(id, ct);

@@ -39,12 +39,7 @@ public class HealthController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<HealthStatusDto>), StatusCodes.Status200OK)]
     public IActionResult Get()
     {
-        return Success(new HealthStatusDto
-        {
-            Status = "Healthy",
-            Timestamp = DateTime.UtcNow,
-            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)
-        });
+        return BuildHealthStatus("Healthy");
     }
 
     /// <summary>
@@ -56,9 +51,17 @@ public class HealthController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<HealthStatusDto>), StatusCodes.Status200OK)]
     public IActionResult Ping()
     {
+        return BuildHealthStatus("Pong");
+    }
+
+    /// <summary>
+    /// 构建健康状态响应
+    /// </summary>
+    private IActionResult BuildHealthStatus(string status)
+    {
         return Success(new HealthStatusDto
         {
-            Status = "Pong",
+            Status = status,
             Timestamp = DateTime.UtcNow,
             Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)
         });

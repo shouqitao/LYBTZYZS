@@ -57,11 +57,7 @@ namespace LYBT.WebAPI.Controllers
             var httpStatus = result.ErrorCode.ToHttpStatusCode();
             var response = ApiResponse<LoginResponse>.CreateFail(result.Error ?? "登录失败");
             response.RequestId = GetRequestId();
-            return httpStatus switch
-            {
-                401 => Unauthorized(response),
-                _ => StatusCode(httpStatus, response)
-            };
+            return StatusCode(httpStatus, response);
         }
 
         /// <summary>
@@ -102,11 +98,7 @@ namespace LYBT.WebAPI.Controllers
             var httpStatus = result.ErrorCode.ToHttpStatusCode();
             var response = ApiResponse<LoginResponse>.CreateFail(result.Error ?? "Token刷新失败");
             response.RequestId = GetRequestId();
-            return httpStatus switch
-            {
-                401 => Unauthorized(response),
-                _ => StatusCode(httpStatus, response)
-            };
+            return StatusCode(httpStatus, response);
         }
 
         /// <summary>
