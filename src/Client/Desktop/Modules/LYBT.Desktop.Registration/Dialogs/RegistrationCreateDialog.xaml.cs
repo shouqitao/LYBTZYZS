@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace LYBT.Desktop.Registration.Dialogs;
+namespace LYBT.Desktop.Registrations.Dialogs;
 
 /// <summary>
 /// 创建挂号弹窗 -- US-REG-001

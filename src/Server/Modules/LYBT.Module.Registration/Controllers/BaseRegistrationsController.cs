@@ -1,13 +1,13 @@
 using MediatR;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.Registration.Application.Commands;
-using LYBT.Module.Registration.Application.Queries;
+using LYBT.Module.Registrations.Application.Commands;
+using LYBT.Module.Registrations.Application.Queries;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Registration;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.Registration.Controllers;
+namespace LYBT.Module.Registrations.Controllers;
 
 /// <summary>
 /// 挂号管理 Controller 共享基类

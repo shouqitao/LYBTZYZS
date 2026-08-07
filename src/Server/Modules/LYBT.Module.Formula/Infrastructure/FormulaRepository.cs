@@ -1,3 +1,4 @@
+using LYBT.Entities.Formulas;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Formulas.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +21,7 @@ public class FormulaRepository : IFormulaRepository
     }
 
     /// <inheritdoc/>
-    public async Task<LYBT.Entities.Formulas.Formula?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Formula?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Formulas
             .Include(f => f.Herbs)
@@ -28,7 +29,7 @@ public class FormulaRepository : IFormulaRepository
     }
 
     /// <inheritdoc/>
-    public async Task<LYBT.Entities.Formulas.Formula?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Formula?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Formulas
             .Include(f => f.Herbs)
@@ -37,7 +38,7 @@ public class FormulaRepository : IFormulaRepository
     }
 
     /// <inheritdoc/>
-    public async Task<PagedResult<LYBT.Entities.Formulas.Formula>> GetPagedAsync(
+    public async Task<PagedResult<Formula>> GetPagedAsync(
         int page, int pageSize, string? keyword, string? category,
         CancellationToken cancellationToken = default)
     {
@@ -67,7 +68,7 @@ public class FormulaRepository : IFormulaRepository
             .Take(pageSize)
             .ToListAsync(cancellationToken);
 
-        return new PagedResult<LYBT.Entities.Formulas.Formula>
+        return new PagedResult<Formula>
         {
             Items = items,
             TotalCount = totalCount,
@@ -89,22 +90,22 @@ public class FormulaRepository : IFormulaRepository
     }
 
     /// <inheritdoc/>
-    public async Task AddAsync(LYBT.Entities.Formulas.Formula formula, CancellationToken cancellationToken = default)
+    public async Task AddAsync(Formula formula, CancellationToken cancellationToken = default)
     {
         await _context.Formulas.AddAsync(formula, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task UpdateAsync(LYBT.Entities.Formulas.Formula formula, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(Formula formula, CancellationToken cancellationToken = default)
     {
         _context.Formulas.Update(formula);
         await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<List<LYBT.Entities.Formulas.Formula>> FindWithHerbsAsync(
-        System.Linq.Expressions.Expression<Func<LYBT.Entities.Formulas.Formula, bool>> predicate,
+    public async Task<List<Formula>> FindWithHerbsAsync(
+        System.Linq.Expressions.Expression<Func<Formula, bool>> predicate,
         CancellationToken cancellationToken = default)
     {
         return await _context.Formulas
@@ -115,7 +116,7 @@ public class FormulaRepository : IFormulaRepository
     }
 
     /// <inheritdoc/>
-    public async Task<List<LYBT.Entities.Formulas.Formula>> GetAllWithHerbsAsync(CancellationToken cancellationToken = default)
+    public async Task<List<Formula>> GetAllWithHerbsAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Formulas
             .Include(f => f.Herbs)
@@ -125,7 +126,7 @@ public class FormulaRepository : IFormulaRepository
     }
 
     /// <inheritdoc/>
-    public async Task<List<LYBT.Entities.Formulas.Formula>> GetByCategoryWithHerbsAsync(string category, CancellationToken cancellationToken = default)
+    public async Task<List<Formula>> GetByCategoryWithHerbsAsync(string category, CancellationToken cancellationToken = default)
     {
         return await _context.Formulas
             .Include(f => f.Herbs)

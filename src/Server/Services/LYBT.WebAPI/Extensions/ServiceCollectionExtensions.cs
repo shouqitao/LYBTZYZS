@@ -9,7 +9,7 @@ using LYBT.Module.Formulas;
 using LYBT.Module.Herbs;
 using LYBT.Module.MedicalCases;
 using LYBT.Module.Patients;
-using LYBT.Module.Registration;
+using LYBT.Module.Registrations;
 using LYBT.Module.Reports;
 using LYBT.Module.Users;
 using Microsoft.AspNetCore.HttpsPolicy;

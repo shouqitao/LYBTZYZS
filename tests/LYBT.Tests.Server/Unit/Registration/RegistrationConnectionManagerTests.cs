@@ -1,4 +1,4 @@
-using LYBT.Module.Registration.Hubs;
+using LYBT.Module.Registrations.Hubs;
 
 namespace LYBT.Tests.Server;
 

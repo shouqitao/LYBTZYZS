@@ -1,12 +1,12 @@
 // SYNC-D02: IRegistrationRepository 已迁移到 LYBT.Desktop.Contracts.Repositories
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Registration.Repositories;
-using LYBT.Desktop.Registration.Services;
+using LYBT.Desktop.Registrations.Repositories;
+using LYBT.Desktop.Registrations.Services;
 using Prism.Ioc;
 using Prism.Modularity;
 
-namespace LYBT.Desktop.Registration;
+namespace LYBT.Desktop.Registrations;
 
 /// <summary>
 /// 挂号管理模块 -- Prism 模块入口

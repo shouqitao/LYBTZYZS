@@ -1,7 +1,7 @@
 using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.Registration.Domain.Events;
+namespace LYBT.Module.Registrations.Domain.Events;
 
 /// <summary>
 /// 挂号创建事件。当新挂号记录创建后发布。

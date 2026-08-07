@@ -2,16 +2,16 @@ using FluentValidation;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Infrastructure.Validation;
 using LYBT.Infrastructure.Data;
-using LYBT.Module.Registration.Application.Commands;
-using LYBT.Module.Registration.Application.Validators;
-using LYBT.Module.Registration.Hubs;
-using LYBT.Module.Registration.Infrastructure;
-using LYBT.Module.Registration.Interfaces;
-using LYBT.Module.Registration.Mappers;
-using LYBT.Module.Registration.Services;
+using LYBT.Module.Registrations.Application.Commands;
+using LYBT.Module.Registrations.Application.Validators;
+using LYBT.Module.Registrations.Hubs;
+using LYBT.Module.Registrations.Infrastructure;
+using LYBT.Module.Registrations.Interfaces;
+using LYBT.Module.Registrations.Mappers;
+using LYBT.Module.Registrations.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace LYBT.Module.Registration;
+namespace LYBT.Module.Registrations;
 
 /// <summary>
 /// 挂号模块服务注册

@@ -2,7 +2,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Registration;
 using MediatR;
 
-namespace LYBT.Module.Registration.Application.Queries;
+namespace LYBT.Module.Registrations.Application.Queries;
 
 /// <summary>
 /// 分页查询挂号记录请求。

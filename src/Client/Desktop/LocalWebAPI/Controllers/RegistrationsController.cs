@@ -1,7 +1,7 @@
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.Registration.Application.Commands;
-using LYBT.Module.Registration.Controllers;
+using LYBT.Module.Registrations.Application.Commands;
+using LYBT.Module.Registrations.Controllers;
 using LYBT.Shared.Models.Contracts.Registration;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

@@ -1,11 +1,12 @@
+using LYBT.Entities.Registrations;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
-using LYBT.Module.Registration.Interfaces;
+using LYBT.Module.Registrations.Interfaces;
 using LYBT.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace LYBT.Module.Registration.Infrastructure;
+namespace LYBT.Module.Registrations.Infrastructure;
 
 /// <summary>
 /// 挂号仓储实现。封装患者数据访问逻辑。
@@ -26,14 +27,14 @@ public class RegistrationRepository : IRegistrationRepository
     }
 
     /// <inheritdoc/>
-    public async Task<LYBT.Entities.Registrations.Registration?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Registration?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Registrations
             .FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<PagedResult<LYBT.Entities.Registrations.Registration>> GetPagedAsync(
+    public async Task<PagedResult<Registration>> GetPagedAsync(
         int page, int pageSize, string? keyword,
         DateTime? startDate, DateTime? endDate,
         Guid? patientId, Guid? doctorId,
@@ -71,7 +72,7 @@ public class RegistrationRepository : IRegistrationRepository
             .Take(pageSize)
             .ToListAsync(cancellationToken);
 
-        return new PagedResult<LYBT.Entities.Registrations.Registration>
+        return new PagedResult<Registration>
         {
             Items = items,
             TotalCount = totalCount,
@@ -81,7 +82,7 @@ public class RegistrationRepository : IRegistrationRepository
     }
 
     /// <inheritdoc/>
-    public async Task<List<LYBT.Entities.Registrations.Registration>> GetWaitingQueueAsync(
+    public async Task<List<Registration>> GetWaitingQueueAsync(
         Guid? doctorId = null, CancellationToken cancellationToken = default)
     {
         var query = _context.Registrations
@@ -107,7 +108,7 @@ public class RegistrationRepository : IRegistrationRepository
     }
 
     /// <inheritdoc/>
-    public async Task<LYBT.Entities.Registrations.Registration?> GetByMedicalCaseIdAsync(Guid medicalCaseId, CancellationToken cancellationToken = default)
+    public async Task<Registration?> GetByMedicalCaseIdAsync(Guid medicalCaseId, CancellationToken cancellationToken = default)
     {
         return await _context.Registrations.FirstOrDefaultAsync(r =>
             !r.IsDeleted &&
@@ -116,13 +117,13 @@ public class RegistrationRepository : IRegistrationRepository
     }
 
     /// <inheritdoc/>
-    public async Task AddAsync(LYBT.Entities.Registrations.Registration registration, CancellationToken cancellationToken = default)
+    public async Task AddAsync(Registration registration, CancellationToken cancellationToken = default)
     {
         await _context.Registrations.AddAsync(registration, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public Task UpdateAsync(LYBT.Entities.Registrations.Registration registration, CancellationToken cancellationToken = default)
+    public Task UpdateAsync(Registration registration, CancellationToken cancellationToken = default)
     {
         _context.Registrations.Update(registration);
         return Task.CompletedTask;

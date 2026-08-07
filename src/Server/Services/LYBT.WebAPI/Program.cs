@@ -252,7 +252,7 @@ public class Program
             app.UseDevelopmentRequestLogging();
 
             // US-REG-008: 映射挂号实时通知 Hub
-            app.MapHub<LYBT.Module.Registration.Hubs.RegistrationHub>("/hubs/registration");
+            app.MapHub<LYBT.Module.Registrations.Hubs.RegistrationHub>("/hubs/registration");
 
             Log.Information("应用配置完成，启动中...");
             await app.RunAsync();

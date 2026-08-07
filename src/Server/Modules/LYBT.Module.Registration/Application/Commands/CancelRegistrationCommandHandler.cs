@@ -1,11 +1,11 @@
 using LYBT.Infrastructure.SharedKernel.Events;
-using LYBT.Module.Registration.Domain.Events;
-using LYBT.Module.Registration.Interfaces;
+using LYBT.Module.Registrations.Domain.Events;
+using LYBT.Module.Registrations.Interfaces;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using MediatR;
 
-namespace LYBT.Module.Registration.Application.Commands;
+namespace LYBT.Module.Registrations.Application.Commands;
 
 /// <summary>
 /// 取消挂号处理器。

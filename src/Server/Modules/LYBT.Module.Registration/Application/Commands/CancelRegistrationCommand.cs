@@ -1,7 +1,7 @@
 using LYBT.Shared.Models.Contracts.Common;
 using MediatR;
 
-namespace LYBT.Module.Registration.Application.Commands;
+namespace LYBT.Module.Registrations.Application.Commands;
 
 /// <summary>
 /// 取消挂号请求。

@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace LYBT.Desktop.Registration.Views;
+namespace LYBT.Desktop.Registrations.Views;
 
 /// <summary>
 /// 挂号队列视图

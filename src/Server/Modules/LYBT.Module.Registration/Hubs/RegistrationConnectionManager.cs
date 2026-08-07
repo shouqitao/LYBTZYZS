@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace LYBT.Module.Registration.Hubs;
+namespace LYBT.Module.Registrations.Hubs;
 
 /// <summary>
 /// SignalR 连接映射管理 — ConnectionId ↔ DoctorId。

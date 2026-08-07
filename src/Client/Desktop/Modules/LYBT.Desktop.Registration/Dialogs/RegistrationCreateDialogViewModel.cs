@@ -11,7 +11,7 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Services.Dialogs;
 
-namespace LYBT.Desktop.Registration.Dialogs;
+namespace LYBT.Desktop.Registrations.Dialogs;
 
 /// <summary>
 /// 创建挂号弹窗 ViewModel -- US-REG-001

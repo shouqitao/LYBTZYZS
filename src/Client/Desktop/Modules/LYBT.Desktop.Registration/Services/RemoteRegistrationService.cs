@@ -7,7 +7,7 @@ using LYBT.Shared.Models.Contracts.Registration;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 
-namespace LYBT.Desktop.Registration.Services;
+namespace LYBT.Desktop.Registrations.Services;
 
 /// <summary>
 /// 挂号Remote Service实现

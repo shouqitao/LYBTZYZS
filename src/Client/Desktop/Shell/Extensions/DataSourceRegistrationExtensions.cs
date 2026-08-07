@@ -8,7 +8,7 @@ using LYBT.Desktop.Formula.Repositories;
 using LYBT.Desktop.Herbs.Repositories;
 using LYBT.Desktop.MedicalCase.Repositories;
 using LYBT.Desktop.Patients.Repositories;
-using LYBT.Desktop.Registration.Repositories;
+using LYBT.Desktop.Registrations.Repositories;
 using LYBT.Desktop.Shell.Services.Session;
 using LYBT.Desktop.Users.Repositories;
 using Microsoft.Extensions.Configuration;

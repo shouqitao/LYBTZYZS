@@ -1,10 +1,10 @@
-using LYBT.Module.Registration.Hubs;
-using LYBT.Module.Registration.Interfaces;
+using LYBT.Module.Registrations.Hubs;
+using LYBT.Module.Registrations.Interfaces;
 using LYBT.Shared.Models.Contracts.Registration;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.Registration.Services;
+namespace LYBT.Module.Registrations.Services;
 
 /// <summary>
 /// 挂号实时通知服务实现 — 通过 IHubContext 推送给指定医生的分组。

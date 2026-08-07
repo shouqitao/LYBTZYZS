@@ -1,7 +1,7 @@
 using FluentValidation;
-using LYBT.Module.Registration.Application.Commands;
+using LYBT.Module.Registrations.Application.Commands;
 
-namespace LYBT.Module.Registration.Application.Validators;
+namespace LYBT.Module.Registrations.Application.Validators;
 
 /// <summary>
 /// 创建挂号请求验证器。

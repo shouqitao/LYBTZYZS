@@ -1,11 +1,11 @@
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.Security;
-using LYBT.Desktop.Registration.Events;
+using LYBT.Desktop.Registrations.Events;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 
-namespace LYBT.Desktop.Registration.Services;
+namespace LYBT.Desktop.Registrations.Services;
 
 /// <summary>
 /// 挂号实时通知客户端 (US-REG-008)。

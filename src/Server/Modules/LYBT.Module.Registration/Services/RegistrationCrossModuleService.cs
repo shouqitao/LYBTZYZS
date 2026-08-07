@@ -1,8 +1,8 @@
 using LYBT.Infrastructure.Services.CrossModule;
-using LYBT.Module.Registration.Interfaces;
+using LYBT.Module.Registrations.Interfaces;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.Registration.Services;
+namespace LYBT.Module.Registrations.Services;
 
 /// <summary>
 /// 挂号域跨模块服务实现

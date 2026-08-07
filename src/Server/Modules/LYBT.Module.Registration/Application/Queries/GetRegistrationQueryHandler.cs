@@ -1,9 +1,9 @@
-using LYBT.Module.Registration.Mappers;
-using LYBT.Module.Registration.Interfaces;
+using LYBT.Module.Registrations.Mappers;
+using LYBT.Module.Registrations.Interfaces;
 using LYBT.Shared.Models.Contracts.Registration;
 using MediatR;
 
-namespace LYBT.Module.Registration.Application.Queries;
+namespace LYBT.Module.Registrations.Application.Queries;
 
 /// <summary>
 /// 获取挂号详情处理器。

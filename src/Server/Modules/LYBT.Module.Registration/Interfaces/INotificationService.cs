@@ -1,6 +1,6 @@
 using LYBT.Shared.Models.Contracts.Registration;
 
-namespace LYBT.Module.Registration.Interfaces;
+namespace LYBT.Module.Registrations.Interfaces;
 
 /// <summary>
 /// 挂号实时通知服务 (US-REG-008)。

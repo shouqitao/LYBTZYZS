@@ -7,8 +7,8 @@ using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Foundation.ExceptionHandling;
-using LYBT.Desktop.Registration.Events;
-using LYBT.Desktop.Registration.Services;
+using LYBT.Desktop.Registrations.Events;
+using LYBT.Desktop.Registrations.Services;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -16,7 +16,7 @@ using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
 
-namespace LYBT.Desktop.Registration.ViewModels;
+namespace LYBT.Desktop.Registrations.ViewModels;
 
 /// <summary>
 /// 挂号队列 ViewModel -- 展示等待队列和挂号列表

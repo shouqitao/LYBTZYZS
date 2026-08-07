@@ -1,7 +1,7 @@
 using FluentValidation;
 using LYBT.Module.Formulas.Application.Commands;
 
-namespace LYBT.Module.Formula.Application.Validators;
+namespace LYBT.Module.Formulas.Application.Validators;
 
 public class FormulaBatchImportCommandValidator : AbstractValidator<BatchImportFormulasCommand>
 {

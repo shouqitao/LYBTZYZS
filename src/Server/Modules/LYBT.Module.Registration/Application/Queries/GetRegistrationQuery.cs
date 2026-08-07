@@ -1,7 +1,7 @@
 using LYBT.Shared.Models.Contracts.Registration;
 using MediatR;
 
-namespace LYBT.Module.Registration.Application.Queries;
+namespace LYBT.Module.Registrations.Application.Queries;
 
 /// <summary>
 /// 获取挂号详情请求。

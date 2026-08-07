@@ -1,6 +1,6 @@
 using LYBT.Infrastructure.SharedKernel.Events;
 
-namespace LYBT.Module.Registration.Domain.Events;
+namespace LYBT.Module.Registrations.Domain.Events;
 
 /// <summary>
 /// 挂号取消事件。当挂号记录取消后发布。

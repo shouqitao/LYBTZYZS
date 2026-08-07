@@ -1,6 +1,6 @@
 using Prism.Events;
 
-namespace LYBT.Desktop.Registration.Events;
+namespace LYBT.Desktop.Registrations.Events;
 
 /// <summary>
 /// 挂号数据变更通知（US-REG-008）。

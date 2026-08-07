@@ -1,5 +1,5 @@
-using LYBT.Module.Registration.Hubs;
-using LYBT.Module.Registration.Services;
+using LYBT.Module.Registrations.Hubs;
+using LYBT.Module.Registrations.Services;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.SignalR;

@@ -1,14 +1,15 @@
+using LYBT.Entities.Registrations;
 using LYBT.Infrastructure.SharedKernel.Events;
-using LYBT.Module.Registration.Mappers;
-using LYBT.Module.Registration.Domain.Events;
-using LYBT.Module.Registration.Interfaces;
+using LYBT.Module.Registrations.Mappers;
+using LYBT.Module.Registrations.Domain.Events;
+using LYBT.Module.Registrations.Interfaces;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using MediatR;
 
-namespace LYBT.Module.Registration.Application.Commands;
+namespace LYBT.Module.Registrations.Application.Commands;
 
 /// <summary>
 /// 创建挂号处理器。
@@ -40,7 +41,7 @@ public sealed class CreateRegistrationCommandHandler
 
         var maxQueueNumber = await _repository.GetTodayMaxQueueNumberAsync(cancellationToken);
 
-        var registration = new LYBT.Entities.Registrations.Registration
+        var registration = new Registration
         {
             Id = Guid.NewGuid(),
             PatientId = dto.PatientId,

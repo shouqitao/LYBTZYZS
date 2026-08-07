@@ -1,11 +1,11 @@
 using LYBT.Infrastructure.Services.CrossModule;
-using LYBT.Module.Registration.Interfaces;
+using LYBT.Module.Registrations.Interfaces;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using MediatR;
 
-namespace LYBT.Module.Registration.Application.Commands;
+namespace LYBT.Module.Registrations.Application.Commands;
 
 /// <summary>
 /// 接诊处理器（接诊即建 D8 修复）。

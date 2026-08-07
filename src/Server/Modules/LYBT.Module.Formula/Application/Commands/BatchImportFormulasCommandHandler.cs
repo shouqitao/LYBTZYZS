@@ -1,3 +1,4 @@
+using LYBT.Entities.Formulas;
 using MediatR;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Models.Contracts.Common;
@@ -61,7 +62,7 @@ public class BatchImportFormulasCommandHandler(
                     continue;
                 }
 
-                var formula = LYBT.Entities.Formulas.Formula.Create(
+                var formula = Formula.Create(
                     name: item.Name,
                     effect: item.Effect,
                     usage: item.Usage,
@@ -77,7 +78,7 @@ public class BatchImportFormulasCommandHandler(
                         if (!herbByName.TryGetValue(herbDto.HerbName, out matchedHerb))
                             herbByPinyin.TryGetValue(herbDto.HerbName, out matchedHerb);
                     }
-                    var herbItem = LYBT.Entities.Formulas.FormulaHerbItem.Create(
+                    var herbItem = FormulaHerbItem.Create(
                         formulaId: formula.Id,
                         herbName: herbDto.HerbName ?? string.Empty,
                         dosage: herbDto.Dosage,

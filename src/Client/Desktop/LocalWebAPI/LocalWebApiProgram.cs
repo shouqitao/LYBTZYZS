@@ -17,7 +17,7 @@ using LYBT.Module.Patients;
 using LYBT.Module.Herbs;
 using LYBT.Module.Formulas;
 using LYBT.Module.MedicalCases;
-using LYBT.Module.Registration;
+using LYBT.Module.Registrations;
 using LYBT.Module.Reports;
 using LYBT.Module.Users.Services;
 using LYBT.Shared.Configuration.Options.Server;

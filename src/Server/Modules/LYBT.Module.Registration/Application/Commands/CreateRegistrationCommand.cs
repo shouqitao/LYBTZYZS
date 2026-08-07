@@ -2,7 +2,7 @@ using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Contracts.Common;
 using MediatR;
 
-namespace LYBT.Module.Registration.Application.Commands;
+namespace LYBT.Module.Registrations.Application.Commands;
 
 /// <summary>
 /// 创建挂号请求。

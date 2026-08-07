@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.Registration.Hubs;
+namespace LYBT.Module.Registrations.Hubs;
 
 /// <summary>
 /// 挂号实时通知 Hub — 医生工作台待诊列表实时更新 (US-REG-008)。

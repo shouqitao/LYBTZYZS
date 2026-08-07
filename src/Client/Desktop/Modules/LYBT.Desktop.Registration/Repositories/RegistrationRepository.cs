@@ -5,7 +5,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Registration;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Registration.Repositories;
+namespace LYBT.Desktop.Registrations.Repositories;
 
 /// <summary>
 /// 挂号仓储 — routes all calls through IApiClient.

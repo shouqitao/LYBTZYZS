@@ -8,7 +8,7 @@ using LYBT.Desktop.Herbs;
 using LYBT.Desktop.Infrastructure.Logging;
 using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Patients;
-using LYBT.Desktop.Registration;
+using LYBT.Desktop.Registrations;
 using LYBT.Desktop.MedicalCase.Reports;
 using LYBT.Desktop.Shell.Extensions;
 using LYBT.Desktop.Shell.Services;
