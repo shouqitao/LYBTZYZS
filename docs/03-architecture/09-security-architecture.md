@@ -148,7 +148,7 @@ sequenceDiagram
 | `DoctorOrAdminOrReceptionist` | `PolicyConstants.DoctorOrAdminOrReceptionist` | SuperAdmin, Admin, Doctor, Receptionist | **患者 CRUD、挂号、医案创建**（代码当前最常用策略） |
 | `AdminOrSuperAdmin` | `PolicyConstants.AdminOrSuperAdmin` | SuperAdmin, Admin | 用户管理、系统配置、诊断工具 |
 
-> ⚠️ **D7 权限对齐待办**（详见 [04-permissions.md](../01-product/04-permissions.md) P0-P2 修复项）：以下模块**代码当前为 `DoctorOrAdminOrReceptionist`/`DoctorOrReceptionist`，待按 2026-08-03 四连决策做操作级细分** —— 患者删除/禁用 → `AdminOrSuperAdmin`；药材/验方 GET 不含前台；挂号创建/取消仅前台、接诊/QuickVisit 仅 Doctor；医案创建 → `DoctorOnly`（待新增策略常量）。**代码当前不存在 `DoctorOnly` 策略**（文档历史版本曾提及，已删除；2026-08-03 决策目标态需新增）。
+> ⚠️ **D7 权限对齐待办**（详见 [04-permissions.md](../01-product/04-permissions.md) P0-P2 修复项）：以下模块**代码当前为 `DoctorOrAdminOrReceptionist`/`DoctorOrReceptionist`，待按 2026-08-03 四连决策做操作级细分** —— 患者删除/禁用 → `AdminOrSuperAdmin`；药材/验方 GET 不含前台；挂号创建/取消仅前台、接诊/QuickVisit 仅 Doctor；医案创建 → `DoctorOnly`（已存在于 PolicyConstants，部分端点已使用，待全面对齐）。
 
 角色层次（隐含权限继承）：
 
