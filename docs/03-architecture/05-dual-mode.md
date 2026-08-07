@@ -72,7 +72,7 @@
 | **实体模型** | 完全相同 — `src/Server/Core/LYBT.Entities/`，LocalWebApiDbContext 复用所有 `IEntityTypeConfiguration` |
 | **业务规则** | Validators、BusinessRules 完全共享 |
 | **认证机制** | 两端均使用 JWT Bearer Token + 相同 Claims Schema |
-| **授权策略** | 相同的 6 个 Policy（`AdminOnly` / `DoctorOnly` / `DoctorOrAdmin` / `AdminOrSuperAdmin` / `DoctorOrReceptionist` / `DoctorOrAdminOrReceptionist`，见 `PolicyConstants`） |
+| **授权策略** | 相同的 7 个 Policy（`AdminOnly` / `AdminBusinessOnly` / `DoctorOnly` / `DoctorOrAdmin` / `AdminOrSuperAdmin` / `DoctorOrReceptionist` / `DoctorOrAdminOrReceptionist`，见 `PolicyConstants`） |
 | **EF Core 过滤器** | `IsDeleted` 软删除全局过滤器两端均生效 |
 | **异常处理** | 两端均通过 middleware/handler 统一处理，返回相同 ProblemDetails 格式 |
 
@@ -219,12 +219,12 @@ SwitchingApiClient : IApiClient
 | Formulas | 15 | 17 | 113% | Local 多 clone, categories |
 | MedicalCases | 20 | 22 | 110% | Local 多 pending, by-status |
 | Registrations | 7 | 9 | 129% | Local 多便捷查询 |
-| Reports | 3 | 3 | 100% | 历史聚合查询（MC-008/009） |
+| Reports | 8 | 8 | 100% | 历史聚合查询 + 趋势/绩效/排行/流量（B-04 增强后） |
 | Sync | 6 | 0 | — | 🧲 v2.0（N1 决策，v1.0 两库孤立） |
 | Diagnostics | 4 | 7 | 175% | Local 多 db-info, logs/recent |
 | Configuration | 3 | 4 | 133% | — |
 | Health | 3 | 3 | 100% | — |
-| **总计** | **~108** | **112** | — | Local 多 8 个便捷端点；Sync v2.0 |
+| **总计** | **~113** | **112** | — | Local 多 8 个便捷端点；Sync v2.0 |
 
 ---
 

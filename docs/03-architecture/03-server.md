@@ -296,6 +296,45 @@ PUT    /api/{resource}/{id}      # 更新
 DELETE /api/{resource}/{id}      # 删除
 ```
 
+### 中间件管道顺序
+
+> 完整实现见 `UnifiedMiddlewareConfiguration.cs`。
+
+```
+阶段1: 错误处理和安全
+  1.1  UseExceptionHandler → IExceptionHandler 链 (Business→System)
+  1.1.1 UseStatusCodePages → RFC 7807 非异常 HTTP 错误
+  1.2  UseForwardedHeaders → 反向代理 IP 透传
+  1.3  UseCorrelationId → 端到端追踪 ID
+  1.3.1 UseHttpsRedirection + UseHsts (生产)
+  1.4  UseSecurityHeaders → X-Content-Type-Options / CSP / HSTS 等
+
+阶段2: 性能优化
+  2.1  UseResponseCompression
+  2.2  UseStaticFiles (Desktop 发布包，条件启用)
+
+阶段3: 路由和请求处理
+  3.0  Swagger (非生产环境，路由前避免 FallbackPolicy 拦截)
+  3.1  UseRouting
+  3.1.0 UseCors("AllowConfiguredOrigins") — 路由后、认证前
+  3.1.1 UseSerilogRequestLogging
+  3.2  UseRateLimiter
+
+阶段4: 认证和授权
+  4.1  UseAuthentication
+  4.2  UseClaimsNormalization — Claims 格式标准化
+  4.3  UseAuthorization
+
+阶段5: 缓存
+  5.1  UseResponseCaching
+  5.2  UseOutputCache
+
+阶段6: 终端映射
+  6.1  MapHealthChecks("/health").AllowAnonymous()
+  6.2  MapControllers()
+  6.3  MapHub<RegistrationHub>("/hubs/registration") — SignalR
+```
+
 ### API 版本策略
 
 - **方式**: URL 段版本控制 (`/api/v1/`)
@@ -423,6 +462,25 @@ Repository -> Mapper -> Logger -> Validator -> 其他依赖
 
 Create/Update 方法在业务逻辑前调用验证。Validator 架构与共享规则见 [08-shared.md](08-shared.md#lybtsharedvalidators-fluentvalidation-验证器)。
 
+**MediatR Pipeline 自动验证**（`b386e17c5`，2026-08-06）：
+
+`ValidationBehavior<TRequest, TResponse>`（`LYBT.Infrastructure.Validation`）实现 `IPipelineBehavior`，在 Handler 执行前自动运行所有 `IValidator<TRequest>` 验证器：
+
+```
+MediatR Send(Command) → ValidationBehavior → 验证器全部通过？→ Handler 执行
+                                    ↓ 失败
+                            throw ValidationException → SystemExceptionHandler → 400
+```
+
+注册于 6 个使用 MediatR 的模块（Auth/Users/Patients/Herbs/Formula/Registration）：
+
+```csharp
+// 各 Module.cs 中
+cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+```
+
+**非 MediatR 路径的验证**：MedicalCase 的 Command/Query/State Service 拆分不走 MediatR，验证在 Service 层手动调用（`Create/Update` 方法前）。Reports 只读聚合无需验证。
+
 ### 大型 Service 拆分标准
 
 超过 500 行的 Service 必须拆分为职责单一的子服务:
@@ -447,6 +505,47 @@ Create/Update 方法在业务逻辑前调用验证。Validator 架构与共享�
 - L1/L2 不需要显式事务 (EF Core SaveChanges 自带隐式事务)
 - L3 场景必须使用 `IDbContextTransaction`，确保跨实体原子性
 - MedicalCase 聚合保存属于 L2: 单次 SaveChanges 写入 4 层实体
+
+## SignalR 实时推送（US-REG-008）
+
+> commit `0d8aabb90`（2026-08-06），详见 [ADR-0013](decisions/0013-signalr-realtime-push.md)。
+
+### 架构
+
+```
+Desktop (SignalRClient) ←WebSocket→ Program.cs MapHub("/hubs/registration")
+                                        ↓
+                              RegistrationHub (分组管理)
+                                        ↓
+                              NotificationService (推送)
+                                        ↓
+                              CreateCommandHandler / StartVisitHandler / CancelHandler
+                              (业务成功后触发推送)
+```
+
+### RegistrationHub
+
+- **端点**: `/hubs/registration`，`[Authorize(DoctorOrAdmin)]`
+- **分组策略**: 医生通过 query string `?doctorId={guid}` 连接，`OnConnectedAsync` 时加入 `doctor-{id}` 分组
+- **ConnectionManager**: `RegistrationConnectionManager`（单例）维护 `ConnectionId ↔ DoctorId` 映射，支持按 DoctorId 过滤推送
+
+### NotificationService
+
+- **推送方法**: `NotifyNewRegistrationAsync` / `NotifyRegistrationStatusChangedAsync`
+- **目标**: 仅推送给指定医生的分组（`IHubContext<RegistrationHub>.Clients.Group(...)`)
+- **容错**: 推送失败仅记录 Warning 日志，不影响业务主流程（fire-and-forget）
+
+### 触发场景
+
+| CommandHandler | 推送事件 | 条件 |
+|----------------|---------|------|
+| CreateCommandHandler | `NewRegistration` | 挂号创建成功 |
+| StartVisitHandler | `RegistrationStatusChanged` | 接诊开始 |
+| CancelHandler | `RegistrationStatusChanged` | 挂号取消 |
+
+### Desktop 降级策略
+
+`SignalRClient` 连接失败时自动降级为 15s 轮询（复用候诊队列接口），断线后按 2/10/30s 间隔自动重连。
 
 ## 模块独立 DbContext
 
@@ -556,11 +655,13 @@ Server 端采用 ASP.NET Core OutputCache（标签分组）+ IMemoryCache（高�
 - [ADR-0004: 用户上下文传递模式](decisions/0004-user-context-propagation.md) — 从 HTTP 请求到 Service/Repository 层的用户信息传递方案
 - [ADR-0005: SuperAdmin 归属 Auth 模块](decisions/0005-superadmin-auth-module.md) — SuperAdmin 系统初始化账户的归属与认证流程设计
 - [ADR-0008: Token 安全防御性设计](decisions/0008-token-security-defensive-design.md) — Token Family、轮换机制和重放攻击检测策略
+- **MediatR + Service 混合注入**（2026-08-07 A-14 评估，记录于 master-plan §九）— 查询走 Service 接口绕过 MediatR 管道（性能更优），命令走 MediatR 经过 ValidationBehavior 验证+审计日志；统一为纯 MediatR 反而降低查询性能，不推荐
 
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-08-07 | v2.4 | **WebApi 文档完整性审计修复**: ① PolicyConstants 数量 5→7（09-security-architecture/05-dual-mode）；② TokenManagementService/SecurityAuditService 状态标记 🧲→✅（09-security-architecture）；③ ErrorCode 表 7xxxx→8xxxx 挂号（06-error-handling）；④ Reports 端点 3→8 + 总计 108→113（05-dual-mode）；⑤ 新增 SignalR Hub 设计文档（03-server）；⑥ 新增 FluentValidation Pipeline 自动验证文档（03-server）；⑦ 新增配置热更新实现文档（07-configuration）；⑧ 新增中间件管道顺序（03-server）；⑨ MediatR+Service 混合模式决策记录（03-server） |
 | 2026-08-05 | v2.3 | **文档与代码全面对齐（14 项）**: 架构模式总述/架构图（Entities 移入 Shared 层、模块标注实际模式）/模块目录结构三形态/模块清单跨模块通信方向/MedicalCase 服务清单（5 接口，删 Permission/Audit/Rules）/Controller 规范示例/新增模块独立 DbContext 小节/错误码表（删 7xxxx、增 8xxxx、枚举位置）/BaseService 实际状态/BaseRepository 5 方法/Entities 位置与目录/错误码枚举位置等 |
 | 2026-06-28 | v2.2 | **spec S3 批次2 提炼（707→~530 行）**：BaseRepository 21 方法表改源码链接；缓存策略段（OutputCache/IMemoryCache/失效矩阵）改链接到 nfr.md；Validator 架构改链接到 08-shared.md；US-LOG/CFG/SYS 七段（敏感数据脱敏/API请求日志/启动配置验证/安全审计日志/日志清理/审计清理/Server启动诊断）合并为概览表改链接到 11d-observability.md/11b-configuration.md。变更历史见 git log。 |
 | 2026-06-28 | v2.1 | **N1 + 模块对齐**: 模块清单补 Reports（D9 补回 v1.0）; 架构图 Sync→Reports; Sync 标 🧲 v2.0 |

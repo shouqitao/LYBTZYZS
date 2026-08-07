@@ -83,6 +83,27 @@ appsettings.json                  # 基础配置 (所有环境共享的默认值
 
 其余所有 Options 均启用 `ValidateOnStart()`，确保无效配置在启动时快速失败。
 
+### 运行时配置写入（B-02 实现，`41922a92a`）
+
+通过 `PUT /api/v1/configuration/{key}` 或 `PUT /api/v1/configuration/` 端点，Admin 可在运行时修改配置并持久化：
+
+```
+Admin 请求 → ConfigurationController → SystemConfigurationService
+    → ConfigurationWritePolicy.IsAllowed(key) 白名单校验
+    → IConfigurationStore.SaveAsync(key, value) 持久化
+    → IConfigurationRoot.Reload() 触发 IOptionsMonitor<T> 热更新
+```
+
+**三层安全**：
+
+| 层级 | 机制 | 说明 |
+|------|------|------|
+| 白名单 | `ConfigurationWritePolicy` | 仅允许已注册 Server Options 的 SectionName（11 个节） |
+| 精确禁止 | `ForbiddenKeys` | `ConnectionStrings:DefaultConnection` / `Database:ConnectionString` / `Jwt:SecretKey` 即使节在白名单内也禁止 |
+| 整节禁止 | `ForbiddenSections` | `DefaultPasswords` 整节禁止（含明文凭据） |
+
+**持久化**: `JsonFileConfigurationStore` 将修改写入 `{BaseDirectory}/config/runtime-overrides.json`（原子写入，仅持久化与 appsettings 默认值不同的项）。Program.cs 启动时以 `reloadOnChange:true` 加载覆盖文件。
+
 ## Server 端注册
 
 `AddLybtServerConfiguration(services, configuration)` 注册 8 个 Options 和 3 个验证器:

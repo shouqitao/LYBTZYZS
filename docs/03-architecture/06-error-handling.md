@@ -89,7 +89,7 @@ throw NotFoundException.Herb(herbId);         // ErrorCode = HerbNotFound (50001
 | `4xxxx` | 处方 | `PrescriptionNotFound(40001)` |
 | `5xxxx` | 药材 | `HerbNotFound(50001)`, `HerbImportFileEmpty(50301)` |
 | `6xxxx` | 验方 | `FormulaNotFound(60001)`, `FormulaHerbItemNotFound(60202)` |
-| `7xxxx` | 同步 | `UnsupportedEntityType(70101)`, `SyncDataConflict(70103)` |
+| `8xxxx` | 挂号 | `RegistrationNotFound(80001)`, `McInvalidStatusTransition(80301)` |
 
 ### 扩展方法 (ErrorCodeExtensions)
 

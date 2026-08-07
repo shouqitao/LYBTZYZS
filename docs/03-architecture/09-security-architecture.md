@@ -2,7 +2,7 @@
 
 ## 1. 概述
 
-系统采用 JWT Bearer Token 认证机制，结合基于角色的授权策略（4 种 Policy）。🧲 **Token Family 管理（RefreshToken 族旋转 + 重放检测）属 D3 B+ 方案**：族旋转、登出撤销、审计日志将在 v1.0 补回；重放检测延后至 v2.0。安全架构覆盖 Server（ASP.NET Core WebAPI）和 Client（WPF Desktop）两端，确保认证、授权、Token 生命周期管理的完整性和一致性。
+> **Token Family 管理已实现**（`e2cedf6a2`，2026-08-06）：族旋转 + 登出撤销 + 安全审计日志均已在 v1.0 补回；重放检测（FamilyId/IsUsed）延后至 v2.0。安全架构覆盖 Server（ASP.NET Core WebAPI）和 Client（WPF Desktop）两端，确保认证、授权、Token 生命周期管理的完整性和一致性。
 
 核心安全组件分布：
 
@@ -11,8 +11,8 @@
 | AuthenticationServiceCollectionExtensions | `LYBT.WebAPI/Extensions/` | JWT 认证中间件、授权策略注册 | ✅ |
 | JwtService | `LYBT.Module.Auth/Services/` | JWT Token 生成与验证 | ✅ |
 | AuthService | `LYBT.Module.Auth/Services/` | 登录/登出/凭据验证 | ✅ |
-| TokenManagementService | `LYBT.Module.Auth/Services/` | Token 刷新、轮换、Family 撤销 | 🧲 v1.0 待实现（D3 B+） |
-| SecurityAuditService | `LYBT.Module.Auth/Services/` | 安全审计日志 | 🧲 v1.0 待实现（D3 B+） |
+| TokenManagementService | `LYBT.Module.Auth/Services/` | Token 刷新、轮换、Family 撤销 | ✅ v1.0 已实现（`e2cedf6a2`） |
+| SecurityAuditService | `LYBT.Module.Auth/Services/` | 安全审计日志 | ✅ v1.0 已实现（`e2cedf6a2`） |
 | SecurityHeadersMiddleware | `LYBT.WebAPI/Middleware/` | 安全响应头 | ✅ |
 | ClaimsNormalizationMiddleware | `LYBT.WebAPI/Middleware/` | Claims 格式标准化 | ✅ |
 | AuthenticationStateMachine | `LYBT.Desktop.Foundation/Security/` | 桌面端认证状态机 | ✅ |
@@ -139,7 +139,7 @@ sequenceDiagram
 
 ## 4. 授权策略
 
-系统在 `PolicyConstants`（`src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs`）中定义 **5 项**授权策略，通过 `RequireRole()` 声明式配置：
+系统在 `PolicyConstants`（`src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs`）中定义 **7 项**授权策略，通过 `RequireRole()` 声明式配置：
 
 | Policy | 常量 | 满足条件的角色 | 典型用途 |
 |--------|------|--------------|----------|
