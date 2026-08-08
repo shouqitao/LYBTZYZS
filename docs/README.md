@@ -83,7 +83,7 @@
 
 | 目录 | 内容 | 文件数 |
 |------|------|:------:|
-| [00-governance](00-governance/) | 文档治理：命名规范、SSOT 架构 | 2 |
+| [00-governance](00-governance/) | 文档治理：命名规范、SSOT 架构、技术引入治理 | 3 |
 | [01-product](01-product/) | 产品愿景、用户画像、术语表、权限矩阵、角色交互 | 6 |
 | [02-requirements](02-requirements/) | 需求文档（15 模块，142 US） | 19 |
 | [03-architecture](03-architecture/) | 架构文档（当前值）、ADR 决策记录、权限矩阵、总账 | 52 |
