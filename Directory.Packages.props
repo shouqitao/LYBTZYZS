@@ -4,15 +4,12 @@
   </PropertyGroup>
   <ItemGroup Label="Core Framework Packages">
     <!-- .NET Core 基础框架包 -->
-    <PackageVersion Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageVersion Include="hyjiacan.pinyin4net" Version="4.1.1" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.26" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.26" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.26" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.26" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.26" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.26" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.26" />
     <!-- Microsoft Extensions 系列 - 使用 8.0.x 兼容版本 -->
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />

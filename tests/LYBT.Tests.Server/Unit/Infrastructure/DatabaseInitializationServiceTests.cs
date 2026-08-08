@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Identity;
 
 namespace LYBT.Tests.Server;
 
@@ -79,6 +80,12 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
             Options.Create(passwordOptions ?? DefaultPasswordOpts));
     }
 
+    /// <summary>
+    /// 用 Identity PasswordHasher（PBKDF2）生成测试密码哈希（与生产一致，替代已删除的 BCrypt）
+    /// </summary>
+    private static string HashPassword(string password) =>
+        new PasswordHasher<ApplicationUser>().HashPassword(null!, password);
+
     #region EnsureSystemAdminExistsAsync - 创建场景（已迁移到 IdentitySeedData）
 
     [Fact]
@@ -128,7 +135,7 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
             Email = "existing@lybt.com",
             Role = UserRole.SuperAdmin,
             Status = CommonStatus.Enabled,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("ExistingPass123@"),
+            PasswordHash = HashPassword("ExistingPass123@"),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         });
@@ -161,7 +168,7 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
             Email = "deleted@lybt.com",
             Role = UserRole.SuperAdmin,
             Status = CommonStatus.Enabled,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("DeletedPass123@"),
+            PasswordHash = HashPassword("DeletedPass123@"),
             IsDeleted = true,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -196,7 +203,7 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
             Email = DefaultAdminOptions.Email, // 占用管理员邮箱
             Role = UserRole.Doctor,
             Status = CommonStatus.Enabled,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("RegularPass123@"),
+            PasswordHash = HashPassword("RegularPass123@"),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         });
@@ -523,7 +530,7 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
             Email = "existing@lybt.com",
             Role = UserRole.SuperAdmin,
             Status = CommonStatus.Enabled,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("ExistingPass123@"),
+            PasswordHash = HashPassword("ExistingPass123@"),
             MustChangeOnNextLogin = false,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -548,7 +555,7 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
     public async Task EnsureSystemAdminExists_ExistingAdmin_DoesNotChangePassword()
     {
         // Arrange
-        var passwordHash = BCrypt.Net.BCrypt.HashPassword("ExistingPass123@");
+        var passwordHash = HashPassword("ExistingPass123@");
         _dbContext.Users.Add(new ApplicationUser
         {
             Id = Guid.NewGuid(),

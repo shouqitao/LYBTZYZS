@@ -26,7 +26,6 @@
     <!-- Authentication -->
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" />
-    <PackageReference Include="BCrypt.Net-Next" />
     <!-- Validation and Data -->
     <PackageReference Include="FluentValidation" />
     <!-- Configuration -->

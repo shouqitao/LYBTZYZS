@@ -1,6 +1,6 @@
 # LYBTZYZS 结构设计蓝图（SSOT）
 
-> 版本: v1.1 | 日期: 2026-08-08 | 维护者: 技术总监
+> 版本: v1.3 | 日期: 2026-08-08 | 维护者: 技术总监
 > **本蓝图是全项目结构的唯一权威设计文档**——每个 project 的职责、每个 class 的设计依据，都可在此追溯。
 > 依据来源：A-16 全局审计（`docs/compose/reports/structure-audit-2026-08-08.md`）+ 模块级审计（`docs/compose/reports/structure-audit-module-level-2026-08-08.md`）+ 逐 class 验证（`docs/compose/reports/structure-audit-perclass-*-2026-08-08.md`）+ 双交叉验证 + 16 份 ADR + 架构文档（00-architecture-summary / 03-server / 05-dual-mode / 08-shared / 06-error-handling / 09-security-architecture / 07-configuration）+ 86 条架构测试守卫。
 > 文档与代码冲突时以本蓝图为设计态定义，代码须按蓝图演进。
@@ -56,6 +56,71 @@
 4. **映射单一**（ADR-0011 + A-18 P1-4）：Mapperly 编译期映射，Target 策略
 5. **共享单源**：公共类型只在 Shared 定义一次（Gender 样板），禁止两端重复
 6. **拒绝屎山**（用户红线）：发现错误直接重写，不做兼容层
+
+### 0.5 技术栈合理性评估（2026-08-08）
+
+> 评估日期：2026-08-08｜维护者：技术总监｜依据：A-27 任务书（`docs/compose/specs/task-a27-stack-subtraction-2026-08-08.md`）+ 报告（`docs/compose/reports/a27-stack-subtraction.md`）
+
+#### 0.5.1 技术栈全景
+
+| 层 | 技术 | 职责 | 使用量 |
+|----|------|------|--------|
+| 运行时 | .NET 8 | 全栈运行时（LTS） | 全部 34 项目 |
+| 数据 | EF Core 8 | 唯一 ORM/数据访问（Remote SQL Server + Local LocalDB） | Server 8 模块 + Infrastructure + LocalWebAPI |
+| 数据 | SQL Server / LocalDB | Remote / Local 双模式数据库 | 生产 + 开发 |
+| 桌面 UI | WPF + Prism（DryIoc） | 桌面壳 + MVVM 模块化 | 16 项目 |
+| 桌面 UI | CommunityToolkit.Mvvm | MVVM 源生成器（ObservableProperty/RelayCommand） | 全部 ViewModel |
+| 桌面 UI | MaterialDesignThemes | 界面主题（M2） | Shell + 模块 |
+| 服务端 | ASP.NET Core 8 | WebAPI 双宿主（WebAPI + LocalWebAPI 复用 Server 模块） | 2 宿主 |
+| 服务端 | MediatR | CQRS 命令管道（验证+审计） | 7 模块（MedicalCase 例外）|
+| 服务端 | SignalR | 实时通知（挂号队列） | Registration + Desktop |
+| 契约/映射 | Mapperly | 编译期对象映射（映射单一原则） | Server + Desktop |
+| 契约/映射 | FluentValidation | 输入验证唯一管道 | 全部 DTO 验证器 |
+| 契约/映射 | Refit | IApiClient 统一契约客户端 | Desktop 全部模块 |
+| 认证 | ASP.NET Core Identity（PBKDF2）| 密码哈希/验证唯一方案（UserManager） | Auth + Users |
+| 认证 | JWT（JwtBearer） | 令牌认证授权 | WebAPI |
+| 日志 | Serilog | 结构化日志（文件/控制台/MSSqlServer） | Server + Desktop |
+| 文档 | Swashbuckle（Swagger） | OpenAPI 文档（非生产启用） | WebAPI |
+| 打印 | QuestPDF | 处方 PDF 导出 | Desktop.Printing |
+| 工具 | pinyin4net | 拼音搜索/排序 | Server 导入 + Desktop 搜索 |
+
+#### 0.5.2 评估框架（4 标准）
+
+| 标准 | 定义 |
+|------|------|
+| 必要性 | 承担不可替代的职责（无其他组件可替换） |
+| 活跃度 | 实际引用/调用数量（零引用 = 死重量候选） |
+| 替代成本 | 迁移/替换所需工作量 |
+| 复杂度预算 | 引入的认知负担与维护成本是否可控 |
+
+#### 0.5.3 核心必选 10 项（SSOT，无争议）
+
+`.NET 8`｜`EF Core`｜`WPF+Prism`｜`ASP.NET Core`｜`Identity（PBKDF2）+JWT`｜`Mapperly`｜`FluentValidation`｜`Refit`｜`Serilog`｜`SignalR`
+
+（各项均为对应层唯一实现/唯一方案，使用量见 0.5.1 全景表）
+
+#### 0.5.4 有成本但合理的 3 项
+
+| 项 | 成本 | 合理性 |
+|----|------|--------|
+| MediatR + Service 双轨 | 双执行路径认知成本 | 命令走管道（验证+审计），查询走 Service 绕过管道——CQRS 经典形态（A-03 简化后保留） |
+| Prism 模块化（16 项目） | 项目数多、编译链长 | 模块自治（ADR-0017）与角色工作台（Admin/Clinical）复用的结构代价 |
+| Dual-Mode 双轨（Remote+Local） | 双宿主维护 | 同一业务逻辑双宿主（ADR-0002/0009/0010），A-19 后由用户显式切换 |
+
+#### 0.5.5 已移除死重量（2026-08-08 A-27）
+
+| 项 | 处置 | 原因 |
+|----|------|------|
+| BCrypt（BCrypt.Net-Next） | ✅ 已移除 | 哈希/验证零调用，Identity PBKDF2（UserManager）取代；PasswordHelper 瘦身为纯工具类 |
+| Swagger（Swashbuckle） | ➡️ 评估保留 | 已完整接线（AddSwaggerGen + UseSwagger/UseSwaggerUI，非生产启用），成本≈0，B-16 待实现 |
+| Velopack | ✅ 未引入 | B-09（自动更新）未做，全仓 0 引用，无包条目 |
+| Sqlite（EFCore.Sqlite / Data.Sqlite） | ✅ 已移除 | 本地模式定 LocalDB（SQL Server），仅 Directory.Packages.props 条目残留 |
+
+#### 0.5.6 已配置未启用
+
+| 项 | 状态 |
+|----|------|
+| Asp.Versioning.Mvc | v1 生效（URL 段版本读取器），v2 预留 |
 
 ---
 
@@ -223,6 +288,7 @@ View(XAML) ← binding → ViewModel（[ObservableProperty]/[RelayCommand]）
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
+| v1.3 | 2026-08-08 | 新增 §0.5 技术栈合理性评估：全景表 / 4 标准 / 核心必选 10 项 / 有成本合理 3 项 / 已移除死重量 4 项（BCrypt 移除、Swagger 评估保留、Velopack 未引入、Sqlite 移除）/ 已配置未启用（Asp.Versioning）。对应 A-27 技术栈减法（`docs/compose/reports/a27-stack-subtraction.md`） |
 | v1.2 | 2026-08-08 | ① 记录 A-24 成果：Server 模块 22 类死方法清理（-1175 行，删方法不删类，类保留 A 级依据不变）；机制残留 9 簇清理（-1013 行：AddSharedLogging 双重载、Foundation IApiService/ApiService/RequestDeduplicator 注册孤儿、3 惰性 AuthEvents、Tests.Desktop Traits 18 类型、UserJourneyTestBaseShared、LocalWebApiProgram.RunAsync、UnfinishedCaseChoice 复证已删、LoggingHttpHandler 下沉验证完成；Registration 命名空间复数漂移不改记录 P2）。② 架构守卫 86/86 保持（DP10 验证无新增违规） |
 | v1.1 | 2026-08-08 | ① 修复文档偏差 2 处：03-server「ICrossModuleAuthService 未实现」→ 实际已落地为 IAuthCrossModuleService；WebAPI AGENTS.md「14 controllers」→ 实际 12 个（对应本蓝图 §2.3）。② 依据来源补入逐 class 验证（A-22）+ 架构守卫 85→86（DP10）。③ 记录 A-22/A-23 成果：1422 类型 93.6% 有设计依据、孤儿类 D=29 已清理、3 VM 越层已修复。④ 确认 08-shared「BaseEntity 通用字段」与 05-dual-mode「Repository 接口 6 个」为 A 级准确（无偏差） |
 | v1.0 | 2026-08-08 | 初版：整合 A-16~A-21 全部审计成果 + 16 ADR + 架构文档，34 项目全量设计依据 |

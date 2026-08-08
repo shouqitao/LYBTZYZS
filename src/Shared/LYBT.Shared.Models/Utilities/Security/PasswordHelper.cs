@@ -2,16 +2,13 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using LYBT.Shared.Models.Enums;
-using Microsoft.Extensions.Logging;
 
 namespace LYBT.Shared.Models.Utilities.Security
 {
     // OpenSpec: unify-enums-to-shared - PasswordStrength已迁移到LYBT.Shared.Models.Enums.SecurityEnums.cs
 
     /// <summary>
-    /// 统一密码帮助类 - 集成密码哈希、验证、强度检查和生成功能
-    /// 解决密码操作分散在多个文件中的问题，提供统一的密码处理接口
-    /// 使用BCrypt算法确保密码安全性，整合了PasswordLegacyHelper的密码验证功能
+    /// 纯密码工具类（生成/策略）——哈希与验证统一走 Identity UserManager（PBKDF2），本类不提供哈希方法
     /// </summary>
     // TODO: 超大类型，建议拆分（详见 docs/compose/reports/code-review-duplicates.md 🟡5）
     public static class PasswordHelper
@@ -19,29 +16,9 @@ namespace LYBT.Shared.Models.Utilities.Security
         #region 配置常量
 
         /// <summary>
-        /// 默认BCrypt工作因子
-        /// </summary>
-        private const int DefaultWorkFactor = 11;
-
-        /// <summary>
-        /// 最小工作因子
-        /// </summary>
-        private const int MinWorkFactor = 10;
-
-        /// <summary>
-        /// 最大工作因子
-        /// </summary>
-        private const int MaxWorkFactor = 15;
-
-        /// <summary>
         /// 随机字节长度
         /// </summary>
         private const int RandomByteLength = 32;
-
-        /// <summary>
-        /// 当前工作因子
-        /// </summary>
-        public static int WorkFactor { get; private set; } = DefaultWorkFactor;
 
         /// <summary>
         /// 常见弱密码列表（从PasswordLegacyHelper迁移）
@@ -58,122 +35,6 @@ namespace LYBT.Shared.Models.Utilities.Security
         #endregion
 
         #region 核心密码操作
-
-        /// <summary>
-        /// 哈希密码（统一BCrypt接口）
-        /// </summary>
-        /// <param name="password">明文密码</param>
-        /// <param name="userType">用户类型</param>
-        /// <param name="logger">日志记录器</param>
-        /// <returns>哈希后的密码</returns>
-        public static string HashPassword(string password, UserRole userType = UserRole.Doctor, ILogger? logger = null)
-        {
-            if (string.IsNullOrEmpty(password))
-            {
-                logger?.LogError("密码哈希失败: 密码为空 [用户类型: {UserType}] [时间: {Timestamp}]",
-                    userType, DateTime.UtcNow);
-                throw new ArgumentException("密码不能为空", nameof(password));
-            }
-
-            try
-            {
-                var hashedPassword = BCrypt.Net.BCrypt.HashPassword(password, WorkFactor);
-
-                logger?.LogInformation("密码哈希成功 [用户类型: {UserType}] [工作因子: {WorkFactor}] [时间: {Timestamp}]",
-                    userType, WorkFactor, DateTime.UtcNow);
-
-                return hashedPassword;
-            }
-            catch (Exception ex)
-            {
-                logger?.LogError(ex, "密码哈希失败 [用户类型: {UserType}] [时间: {Timestamp}]",
-                    userType, DateTime.UtcNow);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 验证密码（统一BCrypt接口）
-        /// </summary>
-        /// <param name="password">明文密码</param>
-        /// <param name="hashedPassword">哈希密码</param>
-        /// <param name="userType">用户类型</param>
-        /// <param name="logger">日志记录器</param>
-        /// <returns>验证结果</returns>
-        public static PasswordVerificationResult VerifyPassword(string password, string hashedPassword,
-            UserRole userType = UserRole.Doctor, ILogger? logger = null)
-        {
-            if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(hashedPassword))
-            {
-                return new PasswordVerificationResult
-                {
-                    IsSuccess = false,
-                    ErrorMessage = "密码或哈希值为空",
-                    Timestamp = DateTime.UtcNow
-                };
-            }
-
-            try
-            {
-                // 验证密码
-                bool isValid = BCrypt.Net.BCrypt.Verify(password, hashedPassword);
-
-                // 检查是否需要重新哈希（工作因子不匹配）
-                bool needsRehash = isValid && BCrypt.Net.BCrypt.PasswordNeedsRehash(hashedPassword, WorkFactor);
-                string? newHashedPassword = null;
-
-                if (needsRehash)
-                {
-                    newHashedPassword = HashPassword(password, userType, logger);
-                    logger?.LogWarning("密码重新哈希 [用户类型: {UserType}] [原因: 工作因子升级] [时间: {Timestamp}]",
-                        userType, DateTime.UtcNow);
-                }
-
-                logger?.LogInformation("密码验证结果 [用户类型: {UserType}] [成功: {Success}] [需要重新哈希: {NeedsRehash}] [时间: {Timestamp}]",
-                    userType, isValid, needsRehash, DateTime.UtcNow);
-
-                return new PasswordVerificationResult
-                {
-                    IsSuccess = isValid,
-                    NeedsRehash = needsRehash,
-                    NewHashedPassword = newHashedPassword,
-                    Timestamp = DateTime.UtcNow
-                };
-            }
-            catch (Exception ex)
-            {
-                logger?.LogError(ex, "密码验证失败 [用户类型: {UserType}] [时间: {Timestamp}]",
-                    userType, DateTime.UtcNow);
-
-                return new PasswordVerificationResult
-                {
-                    IsSuccess = false,
-                    ErrorMessage = "密码验证过程中发生错误",
-                    Timestamp = DateTime.UtcNow
-                };
-            }
-        }
-
-        /// <summary>
-        /// 验证并重新哈希密码（如果需要）
-        /// </summary>
-        /// <param name="password">明文密码</param>
-        /// <param name="hashedPassword">哈希密码</param>
-        /// <param name="userType">用户类型</param>
-        /// <param name="logger">日志记录器</param>
-        /// <returns>验证结果</returns>
-        public static PasswordVerificationResult VerifyAndRehashIfNeeded(string password, string hashedPassword,
-            UserRole userType = UserRole.Doctor, ILogger? logger = null)
-        {
-            var result = VerifyPassword(password, hashedPassword, userType, logger);
-
-            if (result.IsSuccess && result.NeedsRehash)
-            {
-                result.NewHashedPassword = HashPassword(password, userType, logger);
-            }
-
-            return result;
-        }
 
         /// <summary>
         /// 生成临时密码 (Issue #1162, #1760)
@@ -218,42 +79,6 @@ namespace LYBT.Shared.Models.Utilities.Security
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomBytes);
             return Convert.ToBase64String(randomBytes);
-        }
-
-        #endregion
-
-        #region 配置管理
-
-        /// <summary>
-        /// 更新工作因子
-        /// </summary>
-        /// <param name="newWorkFactor">新的工作因子</param>
-        /// <returns>是否更新成功</returns>
-        public static bool UpdateWorkFactor(int newWorkFactor)
-        {
-            if (newWorkFactor >= MinWorkFactor && newWorkFactor <= MaxWorkFactor)
-            {
-                WorkFactor = newWorkFactor;
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// 获取当前配置信息
-        /// </summary>
-        /// <returns>配置信息</returns>
-        public static PasswordHelperConfiguration GetConfiguration()
-        {
-            return new PasswordHelperConfiguration
-            {
-                WorkFactor = WorkFactor,
-                EnableRehashing = true,
-                PasswordHistoryCount = 5,
-                DefaultWorkFactor = DefaultWorkFactor,
-                MinWorkFactor = MinWorkFactor,
-                MaxWorkFactor = MaxWorkFactor
-            };
         }
 
         #endregion
@@ -510,73 +335,6 @@ namespace LYBT.Shared.Models.Utilities.Security
         #endregion
 
         #region 支持类型
-
-        /// <summary>
-        /// 密码验证结果（BCrypt验证）
-        /// </summary>
-        public class PasswordVerificationResult
-        {
-            /// <summary>
-            /// 是否验证成功
-            /// </summary>
-            public bool IsSuccess { get; set; }
-
-            /// <summary>
-            /// 是否需要重新哈希
-            /// </summary>
-            public bool NeedsRehash { get; set; }
-
-            /// <summary>
-            /// 新的哈希密码（如果需要重新哈希）
-            /// </summary>
-            public string? NewHashedPassword { get; set; }
-
-            /// <summary>
-            /// 错误消息
-            /// </summary>
-            public string? ErrorMessage { get; set; }
-
-            /// <summary>
-            /// 验证时间戳
-            /// </summary>
-            public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-        }
-
-        /// <summary>
-        /// 密码帮助类配置信息
-        /// </summary>
-        public class PasswordHelperConfiguration
-        {
-            /// <summary>
-            /// 当前工作因子
-            /// </summary>
-            public int WorkFactor { get; set; }
-
-            /// <summary>
-            /// 是否启用重新哈希
-            /// </summary>
-            public bool EnableRehashing { get; set; }
-
-            /// <summary>
-            /// 密码历史记录数量
-            /// </summary>
-            public int PasswordHistoryCount { get; set; }
-
-            /// <summary>
-            /// 默认工作因子
-            /// </summary>
-            public int DefaultWorkFactor { get; set; }
-
-            /// <summary>
-            /// 最小工作因子
-            /// </summary>
-            public int MinWorkFactor { get; set; }
-
-            /// <summary>
-            /// 最大工作因子
-            /// </summary>
-            public int MaxWorkFactor { get; set; }
-        }
 
         /// <summary>
         /// 密码验证结果（从PasswordLegacyHelper迁移）
