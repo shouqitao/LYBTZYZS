@@ -1,8 +1,8 @@
 # LYBTZYZS 结构设计蓝图（SSOT）
 
-> 版本: v1.0 | 日期: 2026-08-08 | 维护者: 技术总监
+> 版本: v1.1 | 日期: 2026-08-08 | 维护者: 技术总监
 > **本蓝图是全项目结构的唯一权威设计文档**——每个 project 的职责、每个 class 的设计依据，都可在此追溯。
-> 依据来源：A-16 全局审计（`structure-audit-2026-08-08.md`）+ 模块级审计（`structure-audit-module-level-2026-08-08.md`）+ 双交叉验证 + 16 份 ADR + 架构文档（00-architecture-summary / 03-server / 05-dual-mode / 08-shared / 06-error-handling / 09-security-architecture / 07-configuration）+ 85 条架构测试守卫。
+> 依据来源：A-16 全局审计（`structure-audit-2026-08-08.md`）+ 模块级审计（`structure-audit-module-level-2026-08-08.md`）+ 逐 class 验证（`structure-audit-perclass-*-2026-08-08.md`）+ 双交叉验证 + 16 份 ADR + 架构文档（00-architecture-summary / 03-server / 05-dual-mode / 08-shared / 06-error-handling / 09-security-architecture / 07-configuration）+ 86 条架构测试守卫。
 > 文档与代码冲突时以本蓝图为设计态定义，代码须按蓝图演进。
 
 ---
@@ -223,4 +223,5 @@ View(XAML) ← binding → ViewModel（[ObservableProperty]/[RelayCommand]）
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
+| v1.1 | 2026-08-08 | ① 修复文档偏差 2 处：03-server「ICrossModuleAuthService 未实现」→ 实际已落地为 IAuthCrossModuleService；WebAPI AGENTS.md「14 controllers」→ 实际 12 个（对应本蓝图 §2.3）。② 依据来源补入逐 class 验证（A-22）+ 架构守卫 85→86（DP10）。③ 记录 A-22/A-23 成果：1422 类型 93.6% 有设计依据、孤儿类 D=29 已清理、3 VM 越层已修复。④ 确认 08-shared「BaseEntity 通用字段」与 05-dual-mode「Repository 接口 6 个」为 A 级准确（无偏差） |
 | v1.0 | 2026-08-08 | 初版：整合 A-16~A-21 全部审计成果 + 16 ADR + 架构文档，34 项目全量设计依据 |

@@ -7,7 +7,7 @@
 ```
 LYBT.WebAPI/
 ├── Program.cs               # Minimal hosting, two-phase Serilog
-├── Controllers/             # 14 API controllers
+├── Controllers/             # 12 API controllers
 ├── Middleware/              # CorrelationId, ClaimsNormalization, SecurityHeaders
 ├── Extensions/              # DI, middleware, initialization extensions
 └── Filters/                 # API logging filter
@@ -18,7 +18,7 @@ LYBT.WebAPI/
 | Task | Location | Notes |
 |------|----------|-------|
 | API entry | `Program.cs` | WebApplication.CreateBuilder, .env loading, Windows service support |
-| Controllers | `Controllers/` | REST endpoints, 14 controllers |
+| Controllers | `Controllers/` | REST endpoints, 12 controllers |
 | Middleware | `Middleware/` | Request pipeline: CorrelationId → ClaimsNormalization → SecurityHeaders |
 | Middleware config | `Extensions/UnifiedMiddlewareConfiguration.cs` | Middleware ordering |
 | App init | `Extensions/UnifiedApplicationInitialization.cs` | Initialization flow |

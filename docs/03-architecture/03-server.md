@@ -610,9 +610,9 @@ Server 端采用 ASP.NET Core OutputCache（标签分组）+ IMemoryCache（高�
 
 **单会话登录** (AUTH-D06): 同一账号仅允许一台设备登录。新设备登录时，AuthService 撤销该用户所有现有 Token Family (按 FamilyId 批量标记 IsRevoked=true)。旧设备下次请求或刷新 Token 时触发 TokenRevoked → 强制登出。
 
-**角色变更即时生效** (AUTH-D07): 用户角色变更时，UserService 通过 `ICrossModuleAuthService.RevokeAllUserTokensAsync()` 撤销该用户 Token Family，强制重登录。复用单会话的 Token Family 撤销逻辑。
+**角色变更即时生效** (AUTH-D07): 用户角色变更时，UserService 通过 `IAuthCrossModuleService.RevokeAllUserTokensAsync()` 撤销该用户 Token Family，强制重登录。复用单会话的 Token Family 撤销逻辑。
 
-**跨模块 Token 撤销** (ICrossModuleAuthService): ⚠️ **已设计未实现** — 代码中不存在此接口，以下为设计说明，待后续实现。
+**跨模块 Token 撤销** (ICrossModuleAuthService): ✅ **已落地实现** — 实际接口为 `IAuthCrossModuleService`（LYBT.Infrastructure 跨模块接口，AuthModule 实现并注册），B-21 安全增强（token 族旋转 + 安全审计）中 Users 模块经其触发撤销/审计而不引用 Auth 模块。触发场景：用户删除/重置密码/修改密码/禁用时撤销全部 Token。
 
 > **安全风险**：当前用户被删除/禁用、密码变更、角色降级后，旧 Token 仍有效（最长 30 分钟）。建议优先实现此接口。
 
