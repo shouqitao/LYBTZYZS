@@ -155,26 +155,9 @@ namespace LYBT.Entities.Formulas
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public void RemoveHerb(Guid herbItemId)
-        {
-            var herb = Herbs.FirstOrDefault(h => h.Id == herbItemId);
-            if (herb != null)
-            {
-                Herbs.Remove(herb);
-                UpdatedAt = DateTime.UtcNow;
-            }
-        }
-
         public void Validate()
         {
             ValidationStatus = FormulaValidationStatus.Validated;
-            UpdatedAt = DateTime.UtcNow;
-        }
-
-        public void MarkShared(bool shared, Guid updatedBy)
-        {
-            IsShared = shared;
-            UpdatedBy = updatedBy;
             UpdatedAt = DateTime.UtcNow;
         }
 

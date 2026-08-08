@@ -1,4 +1,3 @@
-using System.Threading;
 using LYBT.Entities.Patients;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;

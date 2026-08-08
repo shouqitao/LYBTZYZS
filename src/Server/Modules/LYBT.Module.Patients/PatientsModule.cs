@@ -1,10 +1,8 @@
 using FluentValidation;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Infrastructure.Validation;
-using LYBT.Infrastructure.Data;
 using LYBT.Module.Patients.Application.Commands;
 using LYBT.Module.Patients.Application.Validators;
-using LYBT.Module.Patients.Infrastructure;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Services;
 using LYBT.Shared.Models.Validators.Patients;

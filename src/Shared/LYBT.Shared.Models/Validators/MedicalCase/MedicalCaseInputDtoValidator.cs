@@ -1,6 +1,5 @@
 using FluentValidation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Primitives.Validation;
 using LYBT.Shared.Models.Validators.Prescriptions;
 
 namespace LYBT.Shared.Models.Validators.MedicalCase

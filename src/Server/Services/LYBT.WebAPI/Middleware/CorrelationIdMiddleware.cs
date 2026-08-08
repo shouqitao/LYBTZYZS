@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using LYBT.Infrastructure.Constants;
 using Serilog.Context;
 

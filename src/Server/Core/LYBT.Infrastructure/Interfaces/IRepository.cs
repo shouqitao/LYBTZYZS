@@ -1,5 +1,3 @@
-using LYBT.Shared.Models.Contracts.Common;
-
 namespace LYBT.Infrastructure.Interfaces;
 
 /// <summary>

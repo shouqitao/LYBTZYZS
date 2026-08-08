@@ -1,6 +1,5 @@
 using LYBT.Entities.Registrations;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace LYBT.Module.Registrations.Interfaces;

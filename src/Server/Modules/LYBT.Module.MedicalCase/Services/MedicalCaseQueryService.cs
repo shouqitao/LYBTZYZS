@@ -9,7 +9,6 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Microsoft.Extensions.Logging;
-using System.Threading;
 
 namespace LYBT.Module.MedicalCases.Services
 {

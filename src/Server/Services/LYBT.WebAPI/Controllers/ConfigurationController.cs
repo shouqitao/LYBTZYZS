@@ -4,7 +4,6 @@ using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LYBT.WebAPI.Controllers;

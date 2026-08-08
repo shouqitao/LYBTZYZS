@@ -1,5 +1,3 @@
-using System;
-
 namespace LYBT.Shared.Models.Contracts.Formula
 {
     /// <summary>

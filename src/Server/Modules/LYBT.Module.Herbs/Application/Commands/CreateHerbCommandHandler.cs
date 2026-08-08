@@ -3,7 +3,6 @@ using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Infrastructure.SharedKernel.Events;
-using LYBT.Entities.Herbs;
 using LYBT.Module.Herbs.Domain.Events;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Application.Mappers;

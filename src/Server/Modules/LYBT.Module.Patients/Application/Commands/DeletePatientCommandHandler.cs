@@ -3,7 +3,6 @@ using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.Infrastructure.Services.CrossModule;
-using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Domain.Events;
 using LYBT.Module.Patients.Interfaces;
 

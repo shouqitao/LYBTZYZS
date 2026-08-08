@@ -8,7 +8,6 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Validators.BusinessRules;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;
-using System.Threading;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Module.MedicalCases.Services

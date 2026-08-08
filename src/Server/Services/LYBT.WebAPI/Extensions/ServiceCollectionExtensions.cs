@@ -12,7 +12,6 @@ using LYBT.Module.Patients;
 using LYBT.Module.Registrations;
 using LYBT.Module.Reports;
 using LYBT.Module.Users;
-using Microsoft.AspNetCore.HttpsPolicy;
 using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.WebAPI.Filters;
 using Microsoft.AspNetCore.DataProtection;

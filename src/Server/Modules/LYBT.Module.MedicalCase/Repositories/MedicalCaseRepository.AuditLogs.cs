@@ -1,4 +1,3 @@
-using System.Threading;
 using LYBT.Entities.MedicalCases;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

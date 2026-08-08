@@ -6,7 +6,6 @@ using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using LybtMemoryCacheOptions = LYBT.Shared.Configuration.Options.Server.MemoryCacheOptions;
 
 namespace LYBT.WebAPI.Extensions;

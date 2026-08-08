@@ -1,11 +1,9 @@
 using FluentValidation;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Infrastructure.Validation;
-using LYBT.Infrastructure.Data;
 using LYBT.Module.Registrations.Application.Commands;
 using LYBT.Module.Registrations.Application.Validators;
 using LYBT.Module.Registrations.Hubs;
-using LYBT.Module.Registrations.Infrastructure;
 using LYBT.Module.Registrations.Interfaces;
 using LYBT.Module.Registrations.Mappers;
 using LYBT.Module.Registrations.Services;

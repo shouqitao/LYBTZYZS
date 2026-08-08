@@ -1,6 +1,5 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
-using LYBT.Infrastructure.Web;
 using LYBT.Module.Registrations.Application.Commands;
 using LYBT.Module.Registrations.Controllers;
 using LYBT.Shared.Models.Contracts.Common;

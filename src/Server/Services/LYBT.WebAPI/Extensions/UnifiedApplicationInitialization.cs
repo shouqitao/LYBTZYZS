@@ -193,43 +193,6 @@ public static class UnifiedApplicationInitialization
         }
     }
 
-    /// <summary>
-    /// 配置优雅关闭支持
-    /// </summary>
-    public static async Task ConfigureGracefulShutdown(this WebApplication app)
-    {
-        var cancellationTokenSource = new CancellationTokenSource();
-
-        Console.CancelKeyPress += (sender, e) =>
-        {
-            e.Cancel = true; // 取消默认的强制终止
-            cancellationTokenSource.Cancel(); // 触发取消令牌
-        };
-
-        AppDomain.CurrentDomain.ProcessExit += (_, __) =>
-        {
-            cancellationTokenSource.Cancel();
-
-            // 等待应用优雅关闭并确保资源释放
-            app.StopAsync().GetAwaiter().GetResult();
-        };
-
-        // 启动应用并处理优雅关闭
-        try
-        {
-            await app.RunAsync(cancellationTokenSource.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            // 正常关闭，不需要记录错误
-        }
-        finally
-        {
-            // 确保释放资源
-            await app.DisposeAsync();
-        }
-    }
-
 }
 
 

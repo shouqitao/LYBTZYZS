@@ -4,7 +4,6 @@ using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Infrastructure.SharedKernel.Events;
-using LYBT.Entities.Users;
 using LYBT.Module.Users.Domain.Events;
 using LYBT.Module.Users.Interfaces;
 

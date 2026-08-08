@@ -6,7 +6,6 @@ using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;
-using System.Threading;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Module.MedicalCases.Services

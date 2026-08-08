@@ -1,7 +1,6 @@
 using FluentValidation;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Infrastructure.Validation;
-using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Models.Validators.Auth;
 using LYBT.Shared.Configuration;

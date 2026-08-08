@@ -1,6 +1,5 @@
 using LYBT.Infrastructure.Data;
 using LYBT.Shared.Configuration.Options.Server;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

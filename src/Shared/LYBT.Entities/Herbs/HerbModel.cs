@@ -175,20 +175,6 @@ namespace LYBT.Entities.Herbs
         }
 
         /// <summary>
-        /// 更新药材价格。
-        /// </summary>
-        public void UpdatePrice(decimal newPrice, decimal? newCostPrice, Guid updatedBy)
-        {
-            if (newPrice < 0)
-                throw new ArgumentException("单价不能为负数", nameof(newPrice));
-
-            Price = newPrice;
-            CostPrice = newCostPrice;
-            UpdatedBy = updatedBy;
-            UpdatedAt = DateTime.UtcNow;
-        }
-
-        /// <summary>
         /// 更改药材状态（启用/禁用）。
         /// </summary>
         public void ChangeStatus(CommonStatus newStatus, Guid updatedBy)

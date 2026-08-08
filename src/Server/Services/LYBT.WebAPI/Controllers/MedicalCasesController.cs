@@ -1,6 +1,5 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
-using LYBT.Infrastructure.Web;
 using LYBT.Module.MedicalCases.Controllers;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.MedicalCases.Mappers;

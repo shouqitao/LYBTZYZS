@@ -1,4 +1,3 @@
-using System.Threading;
 using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;

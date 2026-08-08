@@ -1,4 +1,3 @@
-using LYBT.WebAPI.Configuration;
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;

@@ -1,5 +1,4 @@
 using Asp.Versioning;
-using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Auth.Application.Commands;
 using LYBT.Module.Auth.Application.Queries;

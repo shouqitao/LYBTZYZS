@@ -4,7 +4,6 @@ using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
-using System.Threading;
 
 namespace LYBT.Module.MedicalCases.Services
 {

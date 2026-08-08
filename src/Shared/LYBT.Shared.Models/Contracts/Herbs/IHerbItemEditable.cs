@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Shared.Models.Contracts.Herbs
 {

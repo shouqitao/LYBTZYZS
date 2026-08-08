@@ -1,5 +1,4 @@
 using Asp.Versioning;
-using LYBT.Infrastructure.Web;
 using LYBT.Module.Users.Controllers;
 using LYBT.Module.Users.Interfaces;
 using MediatR;

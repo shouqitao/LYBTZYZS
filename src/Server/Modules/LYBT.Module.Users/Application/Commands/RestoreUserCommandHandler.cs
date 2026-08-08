@@ -5,7 +5,6 @@ using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Users.Application.Mappers;
 using LYBT.Module.Users.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Users.Application.Commands;
 

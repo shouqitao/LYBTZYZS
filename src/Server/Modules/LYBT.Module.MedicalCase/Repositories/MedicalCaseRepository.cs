@@ -1,4 +1,3 @@
-using System.Threading;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
 using LYBT.Infrastructure.Data;

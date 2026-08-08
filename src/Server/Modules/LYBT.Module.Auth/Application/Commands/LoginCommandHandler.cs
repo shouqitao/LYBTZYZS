@@ -9,7 +9,6 @@ using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Models.Contracts.Auth;
-using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.DTOs.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;

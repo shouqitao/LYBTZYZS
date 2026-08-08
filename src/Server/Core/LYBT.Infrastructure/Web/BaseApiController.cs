@@ -1,7 +1,6 @@
 using LYBT.Shared.Logging.Masking;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 namespace LYBT.Infrastructure.Web

@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.IO;
 
 namespace LYBT.Shared.Configuration.Options.Client;
 
