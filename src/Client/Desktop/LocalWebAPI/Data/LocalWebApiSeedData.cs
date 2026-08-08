@@ -23,9 +23,9 @@ public static class LocalWebApiSeedData
         {
             context.Herbs.Add(new Herb
             {
-                Name = "Ginseng",
-                Category = "Adaptogen",
-                Unit = "g",
+                Name = "人参",
+                Category = "补气药",
+                Unit = "克",
                 Price = 9.99m,
                 Status = CommonStatus.Enabled
             });
@@ -35,7 +35,7 @@ public static class LocalWebApiSeedData
         {
             context.Formulas.Add(new Formula
             {
-                Name = "Sample Formula",
+                Name = "示例验方",
                 Status = CommonStatus.Enabled,
                 FormulaType = FormulaType.Experience,
             });
@@ -45,7 +45,7 @@ public static class LocalWebApiSeedData
         {
             context.Patients.Add(new Patient
             {
-                Name = "Sample Patient",
+                Name = "示例患者",
                 BirthDate = DateTime.UtcNow.AddYears(-30),
                 Gender = LYBT.Shared.Models.Enums.Gender.Unknown,
                 Status = CommonStatus.Enabled

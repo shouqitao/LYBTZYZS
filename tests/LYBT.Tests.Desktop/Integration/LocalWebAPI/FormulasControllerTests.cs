@@ -49,7 +49,7 @@ public class FormulasControllerTests : LocalWebApiControllerTestBase
 
         var formulas = await response.Content.ReadFromJsonAsync<List<JsonElement>>(Json);
         formulas.Should().NotBeNull();
-        formulas!.Should().HaveCountGreaterThanOrEqualTo(1); // seed data includes Sample Formula
+        formulas!.Should().HaveCountGreaterThanOrEqualTo(1); // seed data includes 示例验方
     }
 
     [Fact]

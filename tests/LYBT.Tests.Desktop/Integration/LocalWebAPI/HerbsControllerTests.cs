@@ -48,7 +48,7 @@ public class HerbsControllerTests : LocalWebApiControllerTestBase
 
         var herbs = await response.Content.ReadFromJsonAsync<List<JsonElement>>(Json);
         herbs.Should().NotBeNull();
-        herbs!.Should().HaveCountGreaterThanOrEqualTo(1); // seed data includes Ginseng
+        herbs!.Should().HaveCountGreaterThanOrEqualTo(1); // seed data includes 人参
     }
 
     [Fact]

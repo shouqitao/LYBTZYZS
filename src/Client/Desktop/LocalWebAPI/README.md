@@ -74,7 +74,7 @@ LYBT.LocalWebAPI/
 
 | 类 | 设计依据 |
 |---|---|
-| **LocalWebApiSeedData** (static) — 种子数据 | 条件插入：Herb(Ginseng) + Formula(Sample) + Patient(Sample)，用户由 IdentitySeedData 创建 |
+| **LocalWebApiSeedData** (static) — 种子数据 | 条件插入：Herb(人参) + Formula(示例验方) + Patient(示例患者)，用户由 IdentitySeedData 创建 |
 
 | 控制器 | 注入服务 | 端点数 | 说明 |
 |--------|----------|--------|------|
