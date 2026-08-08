@@ -41,6 +41,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
   <!-- refactor-logging-system: Serilog日志集成 -->
@@ -72,18 +73,6 @@
 
   <!-- Core_New Dependencies -->
   <ItemGroup Label="Core_New Dependencies">
-  </ItemGroup>
-
-  <!-- LocalData Dependencies (merged from LYBT.Desktop.LocalData) -->
-  <ItemGroup Label="LocalData Dependencies">
-    <ProjectReference Include="..\..\..\..\Shared\LYBT.Entities\LYBT.Entities.csproj" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="BCrypt.Net-Next" />
-    <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
   <!-- 原生DLL文件 - CardReader P/Invoke -->

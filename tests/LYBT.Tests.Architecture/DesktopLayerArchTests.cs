@@ -185,8 +185,7 @@ public class DesktopLayerArchTests
         {
             "Repository",       // Repository层 - EF Core数据访问
             "Mapper",           // Mapper层 - Entity↔DTO映射
-            "LoginCoordinator", // 认证协调器 - 需要User Entity
-            "LocalDbContext"    // 本地数据库上下文 - EF Core需要引用Entity定义表结构
+            "LoginCoordinator"  // 认证协调器 - 需要User Entity
         };
 
         var actualViolations = result.FailingTypes?
@@ -496,27 +495,17 @@ public class DesktopLayerArchTests
     }
 
     /// <summary>
-    /// P-08: LocalData 的 LocalDbContext 不应包含 SQLite 适配方法
-    /// IgnoreRowVersion 和 ApplyDecimalConversion 是 SQLite 特有的适配代码
+    /// A-21 C1: 生产层（LYBT.Desktop.Infrastructure）不得再包含 LocalDbContext。
+    /// LocalData 已废弃（生产 0 引用），LocalDbContext 移入测试项目 LYBT.Tests.Desktop。
     /// </summary>
     [Fact]
-    public void DM08_LocalDbContext_Must_Not_Have_SQLite_Adapters()
+    public void DM08_Production_Should_Not_Contain_LocalDbContext()
     {
         var localDataAssembly = Assembly.Load("LYBT.Desktop.Infrastructure");
         var localDbContextType = localDataAssembly.GetTypes()
             .FirstOrDefault(t => t.Name == "LocalDbContext");
 
-        Assert.NotNull(localDbContextType);
-
-        var sqliteAdapterMethods = new[] { "IgnoreRowVersion", "ApplyDecimalConversion" };
-        var foundMethods = localDbContextType!
-            .GetMethods(BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
-            .Where(m => sqliteAdapterMethods.Contains(m.Name))
-            .Select(m => m.Name)
-            .ToList();
-
-        Assert.True(foundMethods.Count == 0,
-            $"LocalDbContext 不应包含 SQLite 适配方法，但发现:\n{string.Join("\n", foundMethods)}");
+        Assert.Null(localDbContextType);
     }
 
     /// <summary>

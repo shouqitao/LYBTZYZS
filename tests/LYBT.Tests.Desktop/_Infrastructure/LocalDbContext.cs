@@ -11,10 +11,11 @@ using LYBT.Entities.Registrations;
 using LYBT.Entities.Users;
 using Microsoft.EntityFrameworkCore;
 
-namespace LYBT.Desktop.Infrastructure.LocalData.Context;
+namespace LYBT.Tests.Desktop.Infrastructure;
 
 /// <summary>
-/// 本地数据库上下文 - SQL Server LocalDB 实现
+/// 测试本地数据库上下文 - SQL Server LocalDB 实现
+/// （原生产 LYBT.Desktop.Infrastructure/LocalData，A-21 C1 移入测试项目）
 /// </summary>
 public class LocalDbContext : DbContext
 {

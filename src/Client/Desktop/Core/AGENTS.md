@@ -15,7 +15,7 @@ Core infrastructure libraries for the WPF desktop client. Provides interface con
 | LYBT.Desktop.Controls/ | WPF presentation — custom controls, themes, converters, helpers |
 | LYBT.Desktop.Printing/ | Print service — QuestPDF-based document generation |
 
-> **注（2026-08-08 A-18 P1-7 修正，D4/D13）**: 原文档列出的 `LYBT.Desktop.LocalData` 与 `LYBT.Desktop.CardReader` 独立项目从未建立。本地模式数据访问实际走 HTTP（`HttpClientApiClient` → LocalWebAPI，统一 `SwitchingApiClient` 双轨）；仅存在休眠的 `LYBT.Desktop.Infrastructure/LocalData/Context/LocalDbContext.cs`（生产零引用）。CardReader 硬件集成未实现。
+> **注（2026-08-08 A-18 P1-7 修正，D4/D13；A-21 C1 更新）**: 原文档列出的 `LYBT.Desktop.LocalData` 与 `LYBT.Desktop.CardReader` 独立项目从未建立。本地模式数据访问实际走 HTTP（`HttpClientApiClient` → LocalWebAPI，统一 `SwitchingApiClient` 双轨）；休眠的 `LYBT.Desktop.Infrastructure/LocalData/Context/LocalDbContext.cs` 已于 A-21 C1 废弃并移入测试项目 `LYBT.Tests.Desktop/_Infrastructure/LocalDbContext.cs`（生产零引用）。CardReader 硬件集成未实现。
 
 ## For AI Agents
 

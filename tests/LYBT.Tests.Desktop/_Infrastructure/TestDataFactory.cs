@@ -1,4 +1,3 @@
-using LYBT.Desktop.Infrastructure.LocalData.Context;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Users;
 using LYBT.Entities.MedicalCases;

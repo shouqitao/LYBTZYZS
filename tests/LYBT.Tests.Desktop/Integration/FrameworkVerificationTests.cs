@@ -1,5 +1,4 @@
 using FluentAssertions;
-using LYBT.Desktop.Infrastructure.LocalData.Context;
 using LYBT.Desktop.Patients.ViewModels;
 using LYBT.Tests.Desktop.Infrastructure;
 using Microsoft.EntityFrameworkCore;

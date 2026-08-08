@@ -73,7 +73,6 @@ LYBT.Desktop.Infrastructure/
 | Helpers/ | 工具类 |
 | Http/ | HTTP 辅助（ApiResponseHelper, LoggingHttpHandler） |
 | Interfaces/ | 接口定义 |
-| LocalData/ | 本地数据存储 |
 | Logging/ | 日志辅助 |
 | Models/ | UI 模型 |
 | Navigation/ | 导航服务 |
@@ -86,4 +85,4 @@ LYBT.Desktop.Infrastructure/
 | Views/ | 共享 View |
 | Windows/ | 窗口 |
 
-**规则**：Infrastructure 可引用 Foundation，但 Foundation 不得引用 Infrastructure。Infrastructure 引用 Server/LYBT.Entities 是 LocalData 合并的有意设计。
+**规则**：Infrastructure 可引用 Foundation，但 Foundation 不得引用 Infrastructure。~~Infrastructure 引用 Server/LYBT.Entities 是 LocalData 合并的有意设计~~（A-21 C1：LocalData 已废弃移入测试项目，Infrastructure 不再引用 LYBT.Entities）。

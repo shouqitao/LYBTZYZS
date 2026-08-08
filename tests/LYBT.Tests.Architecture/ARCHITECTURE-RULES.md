@@ -93,7 +93,7 @@
 | DM05 | DM05_Repository_Interfaces_Must_Be_In_Contracts | DesktopLayerArchTests.cs | Repository接口必须在Contracts |
 | DM06 | DM06_Business_Modules_No_Cross_References | DesktopLayerArchTests.cs | 业务模块间不得相互引用 |
 | DM07 | DM07_LocalData_Must_Not_Depend_On_SQLite | DesktopLayerArchTests.cs | LocalData禁依赖SQLite |
-| DM08 | DM08_LocalDbContext_Must_Not_Have_SQLite_Adapters | DesktopLayerArchTests.cs | LocalDbContext禁SQLite适配 |
+| DM08 | DM08_Production_Should_Not_Contain_LocalDbContext | DesktopLayerArchTests.cs | 生产层不得含 LocalDbContext（A-21 C1 已移入测试项目） |
 | **自定义控件 (CustomControlArchTests.cs)** ||||
 | CC01 | CC01_Custom_Controls_Must_Exist | CustomControlArchTests.cs | 自定义控件必须存在 |
 | CC02 | CC02_MasterDetailLayout_Must_Have_Content_Properties | CustomControlArchTests.cs | MasterDetailLayout内容属性 |
