@@ -1,6 +1,6 @@
 # LYBTZYZS 结构设计蓝图（SSOT）
 
-> 版本: v1.3 | 日期: 2026-08-08 | 维护者: 技术总监
+> 版本: v1.5 | 日期: 2026-08-09 | 维护者: 技术总监
 > **本蓝图是全项目结构的唯一权威设计文档**——每个 project 的职责、每个 class 的设计依据，都可在此追溯。
 > 依据来源：A-16 全局审计（`docs/compose/reports/structure-audit-2026-08-08.md`）+ 模块级审计（`docs/compose/reports/structure-audit-module-level-2026-08-08.md`）+ 逐 class 验证（`docs/compose/reports/structure-audit-perclass-*-2026-08-08.md`）+ 双交叉验证 + 16 份 ADR + 架构文档（00-architecture-summary / 03-server / 05-dual-mode / 08-shared / 06-error-handling / 09-security-architecture / 07-configuration）+ 86 条架构测试守卫。
 > 文档与代码冲突时以本蓝图为设计态定义，代码须按蓝图演进。
@@ -32,7 +32,7 @@
 │  Services: WebAPI(远程宿主)                                │
 └─────────────────────────────────────────────────────────┘
                     TESTS 层 (3 项目)
-  Architecture(85 守卫) / Server / Desktop
+  Architecture(81 方法/88 用例) / Server / Desktop
 ```
 
 ### 0.3 依赖规则（架构测试强制）
@@ -56,6 +56,7 @@
 4. **映射单一**（ADR-0011 + A-18 P1-4）：Mapperly 编译期映射，Target 策略
 5. **共享单源**：公共类型只在 Shared 定义一次（Gender 样板），禁止两端重复
 6. **拒绝屎山**（用户红线）：发现错误直接重写，不做兼容层
+7. **Status vs State 语义边界**（2026-08-08 A-26 定案）：**域内持久化状态用 `Status` 枚举**（`MedicalCaseStatus`/`RegistrationStatus`/`FormulaStatus`/`CommonStatus`，存于 `Shared.Models/Enums/`）；**客户端 UI/会话状态用 `State` 枚举**（`WorkspaceEditState`/`EditState`/`AuthState`/`SessionState`/`TokenLifecycleState`）。禁止域状态用 State、会话状态用 Status 的混用
 
 ### 0.5 技术栈合理性评估（2026-08-08）
 
@@ -134,7 +135,7 @@
 | **LYBT.Shared.Models** | 120 | DTO/契约/枚举/工具/验证器（Contracts/Enums/Primitives/Utilities/Validators 八目录）| 原 8 项目坍缩为 1（A-16 发现，08-shared v1.6 文档化）；API 契约双端共享 |
 | **LYBT.Shared.Configuration** | 25 | Options 类 + ConnectionStringResolver + 配置验证器 | 07-configuration.md；Server/Client 双端消费 IOptions |
 | **LYBT.Shared.ExceptionHandling** | 7 | AppException 层次 + ProblemDetails + 异常处理器 | 06-error-handling.md；异常映射 SSOT |
-| **LYBT.Shared.Logging** | 9 | Serilog 配置 + CorrelationId（Activity 单机制，A-18 P1-3）+ 脱敏 | 08-shared §Logging + 11d-observability |
+| **LYBT.Shared.Logging** | 8 | Serilog 配置 + CorrelationId（Activity 单机制，A-18 P1-3）+ 脱敏 | 08-shared §Logging + 11d-observability |
 
 ### 1.1 Shared 关键类设计依据
 
@@ -162,6 +163,7 @@
 |---------|------|
 | `AppDbContext` | **唯一迁移链所有者**（A-20 方案 A）：物理 schema 单一管理；模块 DbContext 复用其建的表 |
 | `BaseRepository<T>` / `BaseApiController` / `BaseCrudController` | Controller 继承规范（A-14 文档化三种路径）|
+| `BaseUsersController` / `BaseRegistrationsController` / `BaseMedicalCasesController` | **模块级 Controller 基类**（A-26 补记）：继承链 `BaseApiController:ControllerBase` → `BaseCrudController` → 模块级基类（Users:BaseUsersController.cs:23 / Registration:BaseRegistrationsController.cs:16 / MedicalCase:BaseMedicalCasesController.cs:18），共 5 条终态路径（BaseApiController×6 / BaseCrudController×3 / 模块级×3）。三层继承合理，定案不合并 |
 | `BatchOperationHandlerBase<T>` | Q-01 批处理泛型化（模板方法模式）|
 | `ICrossModuleService` + 各域接口 | 模块间通信唯一通道（P07）|
 | `ValidationBehavior<TReq,TRes>` | FluentValidation 管道（2026-08-06 补）|
@@ -203,17 +205,43 @@
 | `ConfigurationController` | 配置修改 API（B-02）+ JsonFileConfigurationStore 持久化 |
 | `DeployController` | restart 确认机制（A-13）|
 
-### 2.4 Server 分层规则（每模块内部）
+### 2.4 Server 分层规则（三态模板，2026-08-08 A-26 定案）
+
+> 蓝图 v1.3 及之前以「七目录理想模板」表述，实际代码为三态并存（§2.2 表格为准）。本版改为三态模板，标注各模块实际形态，**七目录模板从未完整落地**（全模块无 `Domain/`，实体下沉 LYBT.Entities）。
+
+**状态一：CQRS 模块（Auth/Users/Patients/Herbs/Formula/Registration）**
 
 ```
 Controllers/           # HTTP 边界（继承 Base*，返回 IActionResult）
-Application/           # CQRS：Commands/Queries/Validators/Handlers（MedicalCase 例外）
-Domain/                # 实体/值对象/事件
-Infrastructure/        # Repository（注入模块 DbContext）
+Application/           # CQRS：Commands/Queries/Validators/Handlers（写走 Handler、读走 Service，§2.2 边界规则）
+Infrastructure/        # Repository（注入模块 DbContext）+ 模块 DbContext
 Interfaces/            # 服务/仓储接口
 Services/              # Service 实现
-Mappers/               # Mapperly（Target 策略）
+Application/Mappers/   # Mapperly（Target 策略）
 ```
+
+**状态二：Service 化模块（MedicalCase，A-03 定案）**
+
+```
+Controllers/           # HTTP 边界
+Services/              # Command/Query/State/Prescription/CrossModule 五 Service（无 MediatR）
+Repositories/          # Repository（MedicalCaseRepository/MedicalCaseReferenceRepository 等）
+Interfaces/            # 11 个服务接口
+Mappers/               # MedicalCaseMapper（模块根 Mappers/）
+```
+
+**状态三：只读聚合模块（Reports，B-04 定案）**
+
+```
+Controllers/           # HTTP 边界
+Services/              # ReportService（只读聚合查询）
+Infrastructure/        # ReportRepository + ReportQueryModels（复用 AppDbContext，无自有表）
+```
+
+**目录差异注记**：
+- `Domain/` 目录全模块不存在——实体统一下沉 `LYBT.Entities`（2026-08-02 决策）
+- `Mappers/` 位置两种放法：**MedicalCase/Registration 在模块根 `Mappers/`**，其余 CQRS 模块在 `Application/Mappers/`（A-28 定案并存，蓝图记录差异）
+- `Infrastructure/` vs `Repositories/` 目录名并存：**MedicalCase 用 `Repositories/`**（4 文件，`Infrastructure/` 仅放 DbContext），其他模块用 `Infrastructure/` 放 Repository + DbContext（A-28 定案并存）
 
 ---
 
@@ -225,12 +253,22 @@ Mappers/               # Mapperly（Target 策略）
 
 | 项目 | 文件数 | 职责 | 设计依据 |
 |------|--------|------|---------|
-| **LYBT.Desktop.Contracts** | 79 | **统一 API 契约**（IApiClient + 子接口，A-18 方案 A）+ Service 接口 + 导航契约（A-18 P1-5 下沉）| 契约单一（0.4-2）|
-| **LYBT.Desktop.Foundation** | 72 | Http 客户端实现（RefitApiClient/HttpClientApiClient/SwitchingApiClient/adapter）+ 基础服务 | ADR-0009（URL 驱动双轨）|
-| **LYBT.Desktop.Infrastructure** | 101 | WPF 服务（VM 基类/Dialog/Navigation/Behaviors/Roles/Security）+ IApiClient 实现细节 | Core AGENTS；职责过载已审计（C1，LocalData 已废弃）|
-| **LYBT.Desktop.Controls** | 42 | 可复用控件（HerbList/PatientCard 等）+ 事件参数 | 组件解耦（ADR-0006）|
+| **LYBT.Desktop.Contracts** | 78 | **统一 API 契约**（IApiClient + 子接口，A-18 方案 A）+ Service 接口 + 导航契约（A-18 P1-5 下沉）| 契约单一（0.4-2）|
+| **LYBT.Desktop.Foundation** | 70 | Http 客户端实现（RefitApiClient/HttpClientApiClient/SwitchingApiClient/adapter）+ 基础服务 | ADR-0009（URL 驱动双轨）|
+| **LYBT.Desktop.Infrastructure** | 92 | WPF 服务（VM 基类/Dialog/Navigation/Behaviors/Roles/Security）+ IApiClient 实现细节 | Core AGENTS；职责过载已审计（C1，LocalData 已废弃）|
+| **LYBT.Desktop.Controls** | 41 | 可复用控件（HerbList/PatientCard 等）+ 事件参数 | 组件解耦（ADR-0006）|
 | **LYBT.Desktop.Printing** | 12 | 打印（PrescriptionPrintService/DocumentBuilder/PdfExporter + XAML 模板）| 打印规则（2026-08-03 定案）|
 | **LYBT.LocalWebAPI** | 25 | **本地宿主**——薄 ASP.NET Core + 复用 Server 8 模块（ADR-0010）| 双轨设计（ADR-0002）；A-17 补 CRUD |
+
+#### 接口命名三层矩阵（2026-08-08 A-26 补记，A-18 契约单一既定结构）
+
+| 层 | 命名 | 可见性 | 位置 | 职责 |
+|----|------|--------|------|------|
+| Refit 契约 | `IXxxApi` | **internal**（A-18 后）| `Contracts/Api/` | Refit 特性接口，仅供 Foundation 消费 |
+| 唯一对外面 | `IApiClientXxx` | public | `Contracts/ApiClient/` | Desktop 模块唯一注入面（VM 不直连，走 Service）|
+| 服务接口 | `IXxxService` | public | `Contracts/Services/` | Service 层接口（Desktop 侧 API 客户端仓储接口在 `Contracts/Repositories/`）|
+
+**跨层镜像接口清单（同名字、不同程序集，设计内镜像防误改）**：`IFormulaRepository` / `IHerbRepository` / `IUserRepository` / `IRegistrationRepository` / `IMedicalCaseRepository` / `IPatientRepository` / `IFormulaService` —— Server 侧为 EF 仓储/服务接口（`src/Server/Modules/*/Interfaces/`），Desktop.Contracts 侧为 API 客户端仓储/服务接口。语义不同不可互相替换，改名须两处同步。
 
 ### 3.2 Modules（7 个业务模块）
 
@@ -238,18 +276,18 @@ Mappers/               # Mapperly（Target 策略）
 |------|--------|------|------|
 | LYBT.Desktop.Auth | 10 | ViewModels/Views/Models + LoginCoordinator | ADR-0005；FirstRunSetup/ServerConfig |
 | LYBT.Desktop.Users | 15 | 全目录（Controls/Mappers/Models/Repositories/Services/ViewModels）| 用户管理 UI |
-| LYBT.Desktop.Patients | 25 | 全目录 + Interfaces（D1 观察项）| 患者管理 UI |
+| LYBT.Desktop.Patients | 18 | 全目录 + Interfaces（D1 观察项）| 患者管理 UI |
 | LYBT.Desktop.Herbs | 13 | 全目录 | 药材管理 UI |
-| LYBT.Desktop.Formula | 16 | 全目录 | 验方管理 UI |
-| LYBT.Desktop.MedicalCase | 50 | 目录最全（6 子目录，Dialogs/Reports 等）| 医案工作台（核心）|
+| LYBT.Desktop.Formula | 14 | 全目录 | 验方管理 UI |
+| LYBT.Desktop.MedicalCase | 49 | 目录最全（6 子目录，Dialogs/Reports 等）| 医案工作台（核心）|
 | LYBT.Desktop.Registrations | 9 | 精简（Dialogs/Events/Repositories/Services/ViewModels）| 挂号 UI + SignalRClient |
 
 ### 3.3 Roles（2 个角色工作台）
 
-| 项目 | 引用模块 | 依据 |
-|------|---------|------|
-| **LYBT.Desktop.Admin** | Herbs/Formula/Patients/MedicalCase/Users | 业务管理角色（08-04 角色画像）|
-| **LYBT.Desktop.Clinical** | Herbs/Formula/Patients/MedicalCase/Registration | 临床看诊角色 |
+| 项目 | 文件数 | 引用模块 | 依据 |
+|------|--------|---------|------|
+| **LYBT.Desktop.Admin** | 17 | Herbs/Formula/Patients/MedicalCase/Users | 业务管理角色（08-04 角色画像）|
+| **LYBT.Desktop.Clinical** | 21 | Herbs/Formula/Patients/MedicalCase/Registration | 临床看诊角色 |
 
 ### 3.4 Shell（组合根）
 
@@ -270,7 +308,9 @@ View(XAML) ← binding → ViewModel（[ObservableProperty]/[RelayCommand]）
 
 | 项目 | 职责 | 依据 |
 |------|------|------|
-| **LYBT.Tests.Architecture** | 85 条架构守卫（分层/依赖/DbContext/命名/映射）| 架构测试是设计决策的强制约束（2026-08-06 规则）|
+| **LYBT.Tests.Architecture** | 架构守卫（分层/依赖/DbContext/命名/映射）| 架构测试是设计决策的强制约束（2026-08-06 规则）|
+
+> **守卫计数口径（2026-08-08 A-26 定案）**：蓝图「守卫数」= `[Fact]/[Theory]` **方法数**（单方法计 1）。2026-08-09 实测：81 方法（80 Fact + 1 Theory）；**Theory 数据展开后多于方法数**（dotnet test 实际执行 88 用例）。早期蓝图版本（v1.2 起）记 86 为口径演变前的估算值，以实测为准。
 | **LYBT.Tests.Server** | Server 集成/单元测试（含 Respawn）| ADR-0003（Integration-first）|
 | **LYBT.Tests.Desktop** | Desktop 测试（LocalDB）| 需运行中 WebAPI（C-01 已知环境项）|
 
@@ -298,6 +338,7 @@ View(XAML) ← binding → ViewModel（[ObservableProperty]/[RelayCommand]）
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
+| v1.5 | 2026-08-09 | ① A-29 蓝图维护（P2-8/9/10/16/17 + 顺带4）：§1/§3 文件数回写为实测值（Logging 8/Contracts 78/Foundation 70/Infrastructure 92/Controls 41/Patients 18/Formula 14/MedicalCase 49，§3.3 Roles 补文件数 Admin 17/Clinical 21）。② §2.1 补记 BaseUsersController/BaseRegistrationsController/BaseMedicalCasesController 三条模块级继承路径。③ §2.4 七目录模板改三态模板（CQRS/Service 化/只读聚合）+ Mappers 位置差异 + Infrastructure vs Repositories 目录差异注记。④ §3.1 补接口命名三层矩阵（IXxxApi/IApiClientXxx/IXxxService）+ 跨层镜像接口清单。⑤ §0.4 补 Status vs State 语义边界。⑥ §4 补守卫计数口径注记 |
 | v1.4 | 2026-08-08 | ① §2.2 新增「请求处理边界规则」（A-26 T2 定案）：CQRS 模块写操作走 Handler（验证管道+审计）、读操作走 Service 直查；禁止混用。② A-27 成果：§0.5 技术栈合理性评估（全景 18 项/4 标准/必选 10 项/死重量处置）。③ 蓝图 v1.3 记录 A-24 成果 |
 | v1.3 | 2026-08-08 | 新增 §0.5 技术栈合理性评估：全景表 / 4 标准 / 核心必选 10 项 / 有成本合理 3 项 / 已移除死重量 4 项（BCrypt 移除、Swagger 评估保留、Velopack 未引入、Sqlite 移除）/ 已配置未启用（Asp.Versioning）。对应 A-27 技术栈减法（`docs/compose/reports/a27-stack-subtraction.md`） |
 | v1.2 | 2026-08-08 | ① 记录 A-24 成果：Server 模块 22 类死方法清理（-1175 行，删方法不删类，类保留 A 级依据不变）；机制残留 9 簇清理（-1013 行：AddSharedLogging 双重载、Foundation IApiService/ApiService/RequestDeduplicator 注册孤儿、3 惰性 AuthEvents、Tests.Desktop Traits 18 类型、UserJourneyTestBaseShared、LocalWebApiProgram.RunAsync、UnfinishedCaseChoice 复证已删、LoggingHttpHandler 下沉验证完成；Registration 命名空间复数漂移不改记录 P2）。② 架构守卫 86/86 保持（DP10 验证无新增违规） |

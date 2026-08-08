@@ -75,6 +75,7 @@
 | MVVM | Model-View-ViewModel | WPF 桌面端架构模式 |
 | Prism | Prism 框架 | WPF MVVM 框架，负责模块注册、导航、依赖注入 |
 | QueryFilter | 全局查询过滤器 | EF Core 功能，自动过滤 `IsDeleted=true` 的记录 |
+| Status / State | 状态枚举语义边界 | **Status** = 域内持久化状态（`MedicalCaseStatus`/`RegistrationStatus`/`FormulaStatus`/`CommonStatus`）；**State** = 客户端 UI/会话状态（`WorkspaceEditState`/`EditState`/`AuthState`/`SessionState`/`TokenLifecycleState`）。禁止混用（2026-08-08 A-26 定案）|
 
 ---
 
