@@ -2,13 +2,17 @@
 
 **.NET 8** | WPF/Prism | ASP.NET Core | EF Core | SQL Server (Remote + LocalDB dual-mode)
 
-> **完整开发规范（唯一真相来源）**: `skill_view(name='lybtzys-coder-rules')`
+> **本文档被两个 agent 共同读取，各取所需**：
+> - **Hermes coder（统筹）** → 见「🤝 协作角色」「⚠️ 强制规则」
+> - **Mimo Code（编码执行）** → 见「🛠️ Mimo Code 执行守则」+ 项目级 skill `.mimocode/skills/lybtzys-coder-rules/SKILL.md`
+>
 > **项目总账（强制）**: `docs/03-architecture/13-project-master-plan.md`
 > **架构决策 (ADR)**: `docs/03-architecture/decisions/`
+> **当前状态 SSOT**: `docs/03-architecture/13c-current-status.md`
 
 ---
 
-## 🤝 协作角色（2026-08-02 确立）
+## 🤝 协作角色（Hermes 统筹 · 2026-08-02 确立）
 
 | | 总设计师（AI agent） | 产品负责人（用户） |
 |---|---|---|
@@ -21,7 +25,7 @@
 
 ---
 
-## ⚠️ 强制规则（每个 session 必读）
+## ⚠️ 强制规则（Hermes 统筹 · 每个 session 必读）
 
 1. **先加载 Skill**：`skill_view(name='lybtzys-coder-rules')` — 完整规范、Pitfalls、MCP 纪律、工程流程
 2. **项目总账维护**：session 启动读 `13-project-master-plan.md` 接上进度；任务完成后立即更新状态表 ⬜→✅ + Commit SHA；取消标 ❌ + 原因；决策变更在 §九 追加一行。**禁止做完任务不更新清单。**
@@ -30,31 +34,47 @@
 5. **修改后自动提交**：代码/文档修改验证通过（`dotnet build` 或相关测试）后自动 `git add` + `git commit`，除非用户明确说「先不要提交」。
 6. **声称完成必有证据**：`dotnet build` 通过（**0 错误 0 警告**，存量警告一并修复，验证用 `--no-incremental` 强制全量编译）。
 
+---
+
+## 🛠️ Mimo Code 执行守则（每次启动任务必读）
+
+> 详细守则（完整 Common Pitfalls、Key Patterns、命令速查、文档导航）见项目级 skill：**`.mimocode/skills/lybtzys-coder-rules/SKILL.md`**（本仓库已内置，Mimo `skill_search` 可搜到；找不到时直接读取该文件）。
+
+1. **0 错误 0 警告（硬性门禁）**：`dotnet build LYBTZYZS.sln --no-incremental` 必须 0 错误 **且 0 警告**；存量警告一并修复，不允许带警告交付。
+2. **先文档后代码**：文档是设计态（SSOT），代码是当前态。任务开始前先查 `docs/README.md#ai-查询指南` 定位权威文档；文档与代码冲突时先更新文档再改代码；禁止引入权威文档未定义的设计；禁止随意引入新包/新技术。
+3. **外科手术式修改**：只改任务要求的代码，不「顺手」改相邻代码/注释/格式；每行改动可追溯到任务需求。发现错误设计直接重写为正确版本，不做兼容层。
+4. **架构约束（不可违反）**：3-Layer（Controller→Service→Repository→DbContext）；模块间禁止直接引用（P07）；跨模块必须用接口（P08）；Service 禁注入 AppDbContext（P10）；**权限/端点变更必须同时改 Remote Server（`src/Server/Services/LYBT.WebAPI/Controllers/`）与 Desktop LocalWebAPI（`src/Client/Desktop/LocalWebAPI/Controllers/`）双控制器树**。
+5. **提交规范**：验证通过后 `git add` 具体文件 → `git commit`（英文，`feat/fix/docs/refactor/test(模块): 描述`）→ `git push origin master`。除非用户明确说先不提交/先不推送。
+6. **声称完成必有证据**：报告真实 build/测试输出，不轻信自报成功；交付前跑完整 build + 相关测试。
+
+---
+
 ## 快速入口
 
-| 内容 | 位置/命令 |
-|------|----------|
-| 完整开发规范 | `skill_view(name='lybtzys-coder-rules')` |
-| 项目总账（任务状态） | `docs/03-architecture/13-project-master-plan.md` |
-| 架构决策记录 (ADR) | `docs/03-architecture/decisions/` |
-| 需求文档 | `docs/02-requirements/` |
-| 架构文档 | `docs/03-architecture/` |
+| 内容 | Hermes | Mimo Code |
+|------|--------|-----------|
+| 完整开发规范 | `skill_view(name='lybtzys-coder-rules')` | `.mimocode/skills/lybtzys-coder-rules/SKILL.md` |
+| 项目总账（任务状态） | `docs/03-architecture/13-project-master-plan.md` | 同上（编号任务完成后更新状态） |
+| 架构决策记录 (ADR) | `docs/03-architecture/decisions/` | 同上 |
+| 文档查询指南 | `docs/README.md#ai-查询指南` | 同上 |
+| 需求文档 | `docs/02-requirements/` | 同上 |
+| 架构文档 | `docs/03-architecture/` | 同上 |
 
 ## 关键命令
 
 ```bash
-dotnet build LYBTZYZS.sln
+dotnet build LYBTZYZS.sln --no-incremental # 门禁：0 错误 0 警告（必须用 --no-incremental）
 dotnet test tests/LYBT.Tests.Server/        # Integration (real SQL Server + Respawn)
 dotnet test tests/LYBT.Tests.Desktop/       # Desktop (LocalDB)
 dotnet test tests/LYBT.Tests.Architecture/  # Architecture guards
+# Migration:
+dotnet ef migrations add <Name> --project src/Server/Core/LYBT.Infrastructure --startup-project src/Server/Services/LYBT.WebAPI
 ```
-
-## 当前状态（2026-08-04）
-
-- Build: 0 错误（详见 Skill Verification）
-- 最新迁移: `AddRowVersionToAspNetUsers`
-- Git: Remote=Gitee(`gitee.com/shouqitao/LYBTZYZS.git`)｜Branch=`master`
 
 ## 技术栈速览
 
 . NET 8 | WPF/Prism | ASP.NET Core | EF Core | SQL Server (Remote + LocalDB dual-mode)
+
+## Git
+
+Remote=Gitee(`gitee.com/shouqitao/LYBTZYZS.git`) 非 GitHub｜Branch=`master`｜Commit 英文 `feat/fix/docs/refactor/test(模块): 描述`
