@@ -31,6 +31,32 @@ public class MedicalCasesController : BaseMedicalCasesController
     }
 
     /// <summary>
+    /// 查询医案列表（分页）
+    /// </summary>
+    [HttpGet]
+    public override async Task<IActionResult> GetList(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? keyword = null,
+        CancellationToken ct = default)
+    {
+        if (ValidatePagination(page, pageSize) is { } error) return error;
+        var (operatorId, _, operatorRole) = GetOperator();
+        var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
+        var result = await _medicalCaseQueryService.GetListDtoAsync(
+            status: null,
+            patientId: null,
+            page: page,
+            pageSize: pageSize,
+            currentDoctorId: operatorId,
+            isAdmin: isAdmin,
+            keyword: keyword,
+            cancellationToken: ct);
+
+        return Success(result, "查询成功");
+    }
+
+    /// <summary>
     /// 获取医案详情
     /// </summary>
     [HttpGet("{id}")]
@@ -88,6 +114,72 @@ public class MedicalCasesController : BaseMedicalCasesController
             query.DoctorId = operatorId;
         var result = await _medicalCaseQueryService.QueryAsync(query, ct);
         return Success(result.Items, "查询成功");
+    }
+
+    /// <summary>
+    /// 保存医案聚合根
+    /// </summary>
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(
+        Guid id,
+        [FromBody] MedicalCaseInputDto input, CancellationToken ct)
+    {
+        if (input.Id != id)
+        {
+            return Error("请求ID与路由ID不一致");
+        }
+
+        var (operatorId, _, operatorRole) = GetOperator();
+        var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+
+        var result = await _medicalCaseCommandService.SaveWithDetailAsync(input, operatorId, isAdmin, ct);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Error ?? "医案不存在");
+        }
+
+        return Success(result.Value!, "保存成功");
+    }
+
+    /// <summary>
+    /// 删除医案（软删除）
+    /// </summary>
+    [HttpDelete("{id}")]
+    public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        var (operatorId, _, operatorRole) = GetOperator();
+        var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+
+        var deleted = await _medicalCaseCommandService.DeleteAsync(id, operatorId, isAdmin, ct);
+        if (!deleted)
+            return NotFound("医案不存在");
+
+        return Success(true, "医案已删除");
+    }
+
+    /// <summary>
+    /// 批量删除医案
+    /// </summary>
+    [HttpPost("batch-delete")]
+    public override async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
+    {
+        if (dto.Ids == null || dto.Ids.Count == 0)
+        {
+            return ValidationFail("请至少选择一个医案");
+        }
+
+        var (operatorId, _, operatorRole) = GetOperator();
+        var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+
+        var result = await _medicalCaseCommandService.BatchDeleteAsync(dto.Ids, operatorId, isAdmin, ct);
+        if (!result.IsSuccess || result.Value == null)
+        {
+            return BusinessFail(result.Error ?? "批量删除失败");
+        }
+
+        LogOperation("批量删除医案", new { Ids = dto.Ids, Result = result.Value.Message }, null);
+        return Success(result.Value, result.Value.Message);
     }
 
     /// <summary>

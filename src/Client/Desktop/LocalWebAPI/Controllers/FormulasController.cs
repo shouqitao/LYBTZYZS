@@ -31,6 +31,25 @@ public class FormulasController : BaseCrudController
     }
 
     /// <summary>
+    /// 获取验方分页列表
+    /// </summary>
+    [HttpGet]
+    public override async Task<IActionResult> GetList(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? keyword = null,
+        CancellationToken ct = default)
+    {
+        if (ValidatePagination(page, pageSize) is { } error) return error;
+
+        var result = await _formulaService.GetPagedAsync(page, pageSize, keyword, ct);
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "查询失败");
+
+        return SuccessPaged(result.Value!, "查询成功");
+    }
+
+    /// <summary>
     /// 获取验方详情
     /// </summary>
     [HttpGet("{id}")]
@@ -46,6 +65,108 @@ public class FormulasController : BaseCrudController
 
         return Success(result.Value, "查询成功");
     }
+
+    /// <summary>
+    /// 新增验方
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] FormulaInputDto input, CancellationToken ct)
+    {
+        var (operatorId, _, _) = GetOperator();
+        var result = await Sender.Send(new CreateFormulaCommand(input, operatorId), ct);
+        if (!result.IsSuccess || result.Value == null)
+        {
+            return BusinessFail(result.Error ?? "创建失败");
+        }
+
+        LogOperation("新增验方成功", result.Value, null);
+        return CreatedAtAction(nameof(GetById),
+            new { id = result.Value.Id },
+            ApiResponse<FormulaDetailDto>.CreateSuccess(result.Value, "验方创建成功"));
+    }
+
+    /// <summary>
+    /// 更新验方信息
+    /// </summary>
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] FormulaInputDto input, CancellationToken ct)
+    {
+        if (ValidateGuid(id, "验方ID") is { } error) return error;
+
+        var getResult = await _formulaService.GetByIdAsync(id, ct);
+        if (!getResult.IsSuccess || getResult.Value == null)
+            return NotFound("验方不存在");
+        if (ValidateOwnership(getResult.Value.CreatedBy, "验方") is { } ownershipError)
+            return ownershipError;
+
+        var (operatorId, _, _) = GetOperator();
+        var result = await _formulaService.UpdateAsync(id, input, operatorId, ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "更新失败");
+
+        LogOperation("更新验方成功", result.Value, id);
+        return Success(result.Value, "验方更新成功");
+    }
+
+    /// <summary>
+    /// 删除验方（软删除）
+    /// </summary>
+    [HttpDelete("{id}")]
+    public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        if (ValidateGuid(id, "验方ID") is { } error) return error;
+
+        var getResult = await _formulaService.GetByIdAsync(id, ct);
+        if (!getResult.IsSuccess || getResult.Value == null)
+            return NotFound("验方不存在");
+        if (ValidateOwnership(getResult.Value.CreatedBy, "验方") is { } ownershipError)
+            return ownershipError;
+
+        var (operatorId, _, _) = GetOperator();
+        var result = await Sender.Send(new DeleteFormulaCommand(id, operatorId), ct);
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Error ?? "验方不存在");
+        }
+
+        LogOperation("删除验方成功", null, id);
+        return Success(true, "删除成功");
+    }
+
+    /// <summary>
+    /// 切换验方启用/禁用状态
+    /// </summary>
+    [HttpPost("{id}/toggle-status")]
+    public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
+    {
+        if (ValidateGuid(id, "验方ID") is { } error) return error;
+
+        var getResult = await _formulaService.GetByIdAsync(id, ct);
+        if (!getResult.IsSuccess || getResult.Value == null)
+            return NotFound("验方不存在");
+        if (ValidateOwnership(getResult.Value.CreatedBy, "验方") is { } ownershipError)
+            return ownershipError;
+
+        var (operatorId, _, _) = GetOperator();
+        var result = await _formulaService.ToggleStatusAsync(id, operatorId, ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "切换状态失败");
+
+        LogOperation("切换验方状态", new { NewStatus = result.Value.Status }, id);
+        return Success(result.Value, $"验方已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
+    }
+
+    /// <summary>
+    /// 批量删除验方
+    /// </summary>
+    [HttpPost("batch-delete")]
+    public override async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
+        => await ExecuteBatchDeleteAsync(
+            dto,
+            (ids, operatorId) => new BatchDeleteFormulasCommand(ids, operatorId),
+            "请至少选择一个验方",
+            "批量删除验方",
+            ct);
 
     /// <summary>
     /// 复制验方

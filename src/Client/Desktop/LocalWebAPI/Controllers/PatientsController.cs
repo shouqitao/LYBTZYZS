@@ -5,6 +5,7 @@ using LYBT.Module.Patients.Application.Queries;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +31,27 @@ public class PatientsController : BaseCrudController
     }
 
     /// <summary>
+    /// 获取患者列表 - 支持分页和查询
+    /// </summary>
+    [HttpGet]
+    public override async Task<IActionResult> GetList(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? keyword = null,
+        CancellationToken ct = default)
+    {
+        if (ValidatePagination(page, pageSize) is { } error) return error;
+
+        var isAdmin = User?.IsInRole(RoleConstants.Admin) == true || User?.IsInRole(RoleConstants.SuperAdmin) == true;
+
+        var result = await _patientService.GetPagedAsync(page, pageSize, keyword, filterDisabled: !isAdmin, ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "查询失败");
+
+        return SuccessPaged(result.Value, "查询成功");
+    }
+
+    /// <summary>
     /// 获取患者详情
     /// </summary>
     [HttpGet("{id:guid}")]
@@ -41,6 +63,52 @@ public class PatientsController : BaseCrudController
         if (!result.IsSuccess || result.Value == null)
             return NotFound(result.Error ?? "患者不存在");
         return Success(result.Value, "查询成功");
+    }
+
+    /// <summary>
+    /// 新增患者
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] PatientInputDto input, CancellationToken ct)
+    {
+        var (operatorId, _, _) = GetOperator();
+        var result = await Sender.Send(new CreatePatientCommand(input, operatorId), ct);
+        if (!result.IsSuccess || result.Value == null)
+        {
+            return BusinessFail(result.Error ?? "创建失败");
+        }
+
+        LogOperation("新增患者成功", result.Value, null);
+        return CreatedAtAction(nameof(GetById),
+            new { id = result.Value.Id },
+            ApiResponse<PatientDetailDto>.CreateSuccess(result.Value, "患者创建成功"));
+    }
+
+    /// <summary>
+    /// 更新患者信息
+    /// </summary>
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] PatientInputDto input, CancellationToken ct)
+    {
+        if (ValidateGuid(id, "患者ID") is { } error) return error;
+
+        var getResult = await _patientService.GetByIdAsync(id, ct);
+        if (!getResult.IsSuccess || getResult.Value == null)
+            return NotFound("患者不存在");
+        if (ValidateOwnership(getResult.Value.CreatedBy, "患者") is { } ownerError)
+            return ownerError;
+
+        var (operatorId, _, _) = GetOperator();
+        var result = await _patientService.UpdateAsync(id, input, operatorId, ct);
+        if (!result.IsSuccess || result.Value == null)
+        {
+            if (result.Error?.Contains("不存在") == true)
+                return NotFound(result.Error);
+            return BusinessFail(result.Error ?? "更新失败");
+        }
+
+        LogOperation("更新患者成功", result.Value, id);
+        return Success(result.Value, "患者更新成功");
     }
 
     /// <summary>
@@ -138,4 +206,39 @@ public class PatientsController : BaseCrudController
             "批量检查最多支持100条",
             "批量检查失败",
             ct);
+
+    /// <summary>
+    /// 批量删除患者
+    /// </summary>
+    [HttpPost("batch-delete")]
+    public override async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
+        => await ExecuteBatchDeleteAsync(
+            dto,
+            (ids, operatorId) => new BatchDeletePatientsCommand(ids, operatorId),
+            "请至少选择一个患者",
+            "批量删除患者",
+            ct);
+
+    /// <summary>
+    /// 批量导入患者（JSON）
+    /// </summary>
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    [HttpPost("batch-import")]
+    public async Task<IActionResult> BatchImport([FromBody] PatientBatchImportInputDto request, CancellationToken ct)
+    {
+        if (request?.Patients == null || request.Patients.Count == 0)
+        {
+            return ValidationFail("导入列表不能为空");
+        }
+
+        var (operatorId, _, _) = GetOperator();
+        var result = await Sender.Send(new BatchImportPatientsCommand(request.Patients, request.Strategy, operatorId), ct);
+        if (!result.IsSuccess || result.Value == null)
+        {
+            return BusinessFail(result.Error ?? "导入失败");
+        }
+
+        LogOperation("批量导入患者", new { Count = request.Patients.Count, Strategy = request.Strategy }, null);
+        return Success(result.Value, $"成功导入 {result.Value.SuccessCount} 条患者");
+    }
 }

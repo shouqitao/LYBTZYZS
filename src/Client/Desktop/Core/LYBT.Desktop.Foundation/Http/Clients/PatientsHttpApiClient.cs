@@ -37,7 +37,7 @@ internal sealed class PatientsHttpApiClient : HttpApiClientBase, IApiClientPatie
         => DeleteVoidAsync($"/api/v1/patients/{id}");
 
     public Task<ApiResponse<PatientBatchImportResultDto>> BatchImportAsync(PatientBatchImportInputDto request)
-        => PostAndWrapAsync<PatientBatchImportResultDto>("/api/v1/patients/import", request);
+        => PostAndWrapAsync<PatientBatchImportResultDto>("/api/v1/patients/batch-import", request);
 
     public Task<HttpResponseMessage> ExportTemplateAsync()
         => GetResponseAsync("/api/v1/patients/import-template");
