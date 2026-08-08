@@ -181,6 +181,16 @@
 | **LYBT.Module.Registration** | 27 | CQRS + SignalR Hubs | **RegistrationDbContext**（A-20 新建）| US-REG-008（实时推送）+ D-01（接诊即建）|
 | **LYBT.Module.Reports** | 7 | 只读聚合（Service+Repository）| AppDbContext | B-04 报表增强（只读聚合查询，无自有表）|
 
+#### 请求处理边界规则（2026-08-08 A-26 定案，T2）
+
+> **统一规则（SSOT，架构测试守卫后强制执行）**：CQRS 模块（Auth/Users/Patients/Herbs/Formula/Registration）内——
+> - **写操作**（Create/Update/Delete/Status 变更/Import/Restore）→ 走 **MediatR Handler**（`ISender.Send`）——保证 `ValidationBehavior` 验证管道 + 审计事件统一生效
+> - **读操作**（Get/List/Search/Export）→ 走 **Service 直查**（`IXxxService`）——无状态查询不需要管道，省 Handler 样板
+> - **禁止**：Controller 层混用同一操作两条路径（如 Update 既走 Service 又走 Handler）；写操作绕过 Handler 直接调 Repository
+> - MedicalCase（纯 Service 化）/Reports（只读聚合）为已定案例外，不适用本规则
+>
+> 依据：A-26 收敛审查（`docs/compose/reports/structure-convergence-mimo-2026-08-08.md` §2.2）——「读走 Service + 写走 Handler」正是 CQRS 经典形态，当前代码方向正确，缺的是规则固化；技术总监判断「移除次要（Service 写操作丢验证管道）保留优秀（Handler 管道 + Service 读直查）」。
+
 ### 2.3 Services：LYBT.WebAPI（30 文件）
 
 **职责**：远程宿主——Program.cs 组合根、Controller 层、中间件管道、健康检查、配置端点、部署端点。
@@ -288,6 +298,7 @@ View(XAML) ← binding → ViewModel（[ObservableProperty]/[RelayCommand]）
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
+| v1.4 | 2026-08-08 | ① §2.2 新增「请求处理边界规则」（A-26 T2 定案）：CQRS 模块写操作走 Handler（验证管道+审计）、读操作走 Service 直查；禁止混用。② A-27 成果：§0.5 技术栈合理性评估（全景 18 项/4 标准/必选 10 项/死重量处置）。③ 蓝图 v1.3 记录 A-24 成果 |
 | v1.3 | 2026-08-08 | 新增 §0.5 技术栈合理性评估：全景表 / 4 标准 / 核心必选 10 项 / 有成本合理 3 项 / 已移除死重量 4 项（BCrypt 移除、Swagger 评估保留、Velopack 未引入、Sqlite 移除）/ 已配置未启用（Asp.Versioning）。对应 A-27 技术栈减法（`docs/compose/reports/a27-stack-subtraction.md`） |
 | v1.2 | 2026-08-08 | ① 记录 A-24 成果：Server 模块 22 类死方法清理（-1175 行，删方法不删类，类保留 A 级依据不变）；机制残留 9 簇清理（-1013 行：AddSharedLogging 双重载、Foundation IApiService/ApiService/RequestDeduplicator 注册孤儿、3 惰性 AuthEvents、Tests.Desktop Traits 18 类型、UserJourneyTestBaseShared、LocalWebApiProgram.RunAsync、UnfinishedCaseChoice 复证已删、LoggingHttpHandler 下沉验证完成；Registration 命名空间复数漂移不改记录 P2）。② 架构守卫 86/86 保持（DP10 验证无新增违规） |
 | v1.1 | 2026-08-08 | ① 修复文档偏差 2 处：03-server「ICrossModuleAuthService 未实现」→ 实际已落地为 IAuthCrossModuleService；WebAPI AGENTS.md「14 controllers」→ 实际 12 个（对应本蓝图 §2.3）。② 依据来源补入逐 class 验证（A-22）+ 架构守卫 85→86（DP10）。③ 记录 A-22/A-23 成果：1422 类型 93.6% 有设计依据、孤儿类 D=29 已清理、3 VM 越层已修复。④ 确认 08-shared「BaseEntity 通用字段」与 05-dual-mode「Repository 接口 6 个」为 A 级准确（无偏差） |
