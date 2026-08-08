@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using Microsoft.Extensions.Logging;
@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Admin.Sysadmin.ViewModels;
 /// </summary>
 public partial class DeploymentViewModel : NavigableViewModelBase
 {
-    private readonly IDeployApi _deployApi;
+    private readonly IApiClient _apiClient;
     private readonly INavigationCoordinator _navigationCoordinator;
 
     [ObservableProperty] private string _statusMessage = string.Empty;
@@ -24,10 +24,10 @@ public partial class DeploymentViewModel : NavigableViewModelBase
     [ObservableProperty] private double _uploadProgress;
     [ObservableProperty] private string? _selectedFileName;
 
-    public DeploymentViewModel(IViewModelServices services, IDeployApi deployApi, INavigationCoordinator navigationCoordinator)
+    public DeploymentViewModel(IViewModelServices services, IApiClient apiClient, INavigationCoordinator navigationCoordinator)
         : base(services)
     {
-        _deployApi = deployApi;
+        _apiClient = apiClient;
         _navigationCoordinator = navigationCoordinator;
         PageTitle = "部署管理";
     }
@@ -58,7 +58,7 @@ public partial class DeploymentViewModel : NavigableViewModelBase
             using var content = new MultipartFormDataContent();
             content.Add(new StreamContent(stream), "file", Path.GetFileName(SelectedFileName));
 
-            var response = await _deployApi.UploadAsync(content);
+            var response = await _apiClient.Deploy.UploadAsync(content);
             if (response.Success)
             {
                 StatusMessage = "上传成功！";
@@ -89,7 +89,7 @@ public partial class DeploymentViewModel : NavigableViewModelBase
         {
             IsRestarting = true;
             StatusMessage = "正在重启服务...";
-            var response = await _deployApi.RestartAsync();
+            var response = await _apiClient.Deploy.RestartAsync();
             StatusMessage = response.Success ? "重启指令已发送" : $"重启失败: {response.Message}";
         }
         catch (Exception ex)

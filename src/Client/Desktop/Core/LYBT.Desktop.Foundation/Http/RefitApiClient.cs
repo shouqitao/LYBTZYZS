@@ -45,6 +45,7 @@ public sealed class RefitApiClient : IApiClient
     private IApiClientReports? _reports;
     private IApiClientDeploy? _deploy;
     private IApiClientDiagnostics? _diagnostics;
+    private IApiClientConfiguration? _configuration;
 
     /// <summary>
     /// 初始化 <see cref="RefitApiClient"/> 的新实例。
@@ -102,4 +103,8 @@ public sealed class RefitApiClient : IApiClient
     /// <inheritdoc />
     public IApiClientDiagnostics Diagnostics => _diagnostics ??= new DiagnosticsApiClient(
         RestService.For<IDiagnosticsApi>(_httpClient, _refitSettings));
+
+    /// <inheritdoc />
+    public IApiClientConfiguration Configuration => _configuration ??= new ConfigurationApiClient(
+        RestService.For<IConfigurationApi>(_httpClient, _refitSettings));
 }

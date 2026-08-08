@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Diagnostics;
@@ -14,7 +14,7 @@ namespace LYBT.Desktop.Admin.Sysadmin.ViewModels;
 /// </summary>
 public partial class LogLevelControlViewModel : NavigableViewModelBase
 {
-    private readonly IDiagnosticsApi _diagnosticsApi;
+    private readonly IApiClient _apiClient;
 
     [ObservableProperty]
     private string _currentLevel = "加载中...";
@@ -22,10 +22,10 @@ public partial class LogLevelControlViewModel : NavigableViewModelBase
     [ObservableProperty]
     private string _statusMessage = string.Empty;
 
-    public LogLevelControlViewModel(IViewModelServices services, IDiagnosticsApi diagnosticsApi)
+    public LogLevelControlViewModel(IViewModelServices services, IApiClient apiClient)
         : base(services)
     {
-        _diagnosticsApi = diagnosticsApi;
+        _apiClient = apiClient;
         PageTitle = "日志级别控制";
     }
 
@@ -40,7 +40,7 @@ public partial class LogLevelControlViewModel : NavigableViewModelBase
         try
         {
             IsBusy = true;
-            var resp = await _diagnosticsApi.GetLoggingStatusAsync();
+            var resp = await _apiClient.Diagnostics.GetLoggingStatusAsync();
             if (resp.Success)
             {
                 var json = JsonSerializer.Serialize(resp.Data);
@@ -62,7 +62,7 @@ public partial class LogLevelControlViewModel : NavigableViewModelBase
         {
             IsBusy = true;
             var req = new SetLoggingLevelRequest { Level = level };
-            await _diagnosticsApi.SetLoggingLevelAsync(req);
+            await _apiClient.Diagnostics.SetLoggingLevelAsync(req);
             CurrentLevel = level;
             StatusMessage = $"日志级别已设置为 {level}";
         }
@@ -81,7 +81,7 @@ public partial class LogLevelControlViewModel : NavigableViewModelBase
         {
             IsBusy = true;
             var req = new EnableDebugModeRequest { Level = "Debug", DurationMinutes = 60 };
-            await _diagnosticsApi.EnableDebugModeAsync(req);
+            await _apiClient.Diagnostics.EnableDebugModeAsync(req);
             CurrentLevel = "Debug (60分钟)";
             StatusMessage = "Debug 模式已开启（60分钟后自动关闭）";
         }
@@ -99,7 +99,7 @@ public partial class LogLevelControlViewModel : NavigableViewModelBase
         try
         {
             IsBusy = true;
-            await _diagnosticsApi.DisableDebugModeAsync();
+            await _apiClient.Diagnostics.DisableDebugModeAsync();
             CurrentLevel = "Information";
             StatusMessage = "Debug 模式已关闭";
         }

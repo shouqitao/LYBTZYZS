@@ -34,6 +34,7 @@ public sealed class HttpClientApiClient : IApiClient
     private IApiClientReports? _reports;
     private IApiClientDeploy? _deploy;
     private IApiClientDiagnostics? _diagnostics;
+    private IApiClientConfiguration? _configuration;
 
     /// <summary>
     /// 初始化 <see cref="HttpClientApiClient"/> 的新实例。
@@ -74,4 +75,7 @@ public sealed class HttpClientApiClient : IApiClient
 
     /// <inheritdoc />
     public IApiClientDiagnostics Diagnostics => _diagnostics ??= new DiagnosticsHttpApiClient(_httpClientFactory);
+
+    /// <inheritdoc />
+    public IApiClientConfiguration Configuration => _configuration ??= new ConfigurationHttpApiClient(_httpClientFactory);
 }

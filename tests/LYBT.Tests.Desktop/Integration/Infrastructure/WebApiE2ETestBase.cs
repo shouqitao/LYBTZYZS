@@ -21,14 +21,14 @@ public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
     protected IConfiguration Configuration { get; }
     protected ILogger<WebApiE2ETestBase> Logger { get; }
     
-    // Refit API Clients
-    protected IAuthApi AuthApi { get; }
-    protected IUserApi UserApi { get; }
-    protected IPatientApi PatientApi { get; }
-    protected IHerbApi HerbApi { get; }
-    protected IFormulaApi FormulaApi { get; }
-    protected IMedicalCaseApi MedicalCaseApi { get; }
-    protected IRegistrationApi RegistrationApi { get; }
+    // Refit API Clients (A-18 P1-1: 接口 internal 化后仅同程序集可访问)
+    internal IAuthApi AuthApi { get; }
+    internal IUserApi UserApi { get; }
+    internal IPatientApi PatientApi { get; }
+    internal IHerbApi HerbApi { get; }
+    internal IFormulaApi FormulaApi { get; }
+    internal IMedicalCaseApi MedicalCaseApi { get; }
+    internal IRegistrationApi RegistrationApi { get; }
     
     // Token 管理
     protected TokenHolder TokenHolderInstance { get; }
@@ -253,7 +253,7 @@ public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
         return client;
     }
 
-    protected IAuthApi CreateAuthenticatedAuthApi()
+    internal IAuthApi CreateAuthenticatedAuthApi()
     {
         var timeoutSeconds = Configuration.GetValue<int>("WebAPI:TimeoutSeconds", 30);
         var skipSslValidation = Configuration.GetValue<bool>("WebAPI:SkipSslValidation", false);

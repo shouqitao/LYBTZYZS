@@ -3,7 +3,7 @@ using LYBT.Shared.Models.Contracts.Reports;
 
 namespace LYBT.Desktop.Contracts.Api;
 
-public interface IReportsApi
+internal interface IReportsApi
 {
     [Refit.Get("/api/v1/reports/daily/income")]
     Task<ApiResponse<DailyIncomeDto>> GetDailyIncomeAsync(

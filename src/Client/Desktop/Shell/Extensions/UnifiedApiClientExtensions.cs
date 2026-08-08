@@ -10,7 +10,6 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using DryIoc;
-using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
@@ -109,15 +108,6 @@ public static class UnifiedApiClientExtensions
                 connectionSettings,
                 remoteHttpClientFactory,
                 localHttpClientFactory,
-                refitSettings);
-        });
-
-        // 服务器配置 API - 供 Admin 系统设置视图直接注入（跟随当前连接 URL 创建 Refit 客户端）
-        containerRegistry.Register<IConfigurationApi>(resolver =>
-        {
-            var connectionSettings = resolver.Resolve<IConnectionSettingsService>();
-            return RestService.For<IConfigurationApi>(
-                remoteHttpClientFactory(connectionSettings.CurrentUrl),
                 refitSettings);
         });
     }

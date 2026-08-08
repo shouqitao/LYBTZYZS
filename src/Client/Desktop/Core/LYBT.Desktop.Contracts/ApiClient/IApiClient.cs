@@ -48,4 +48,7 @@ public interface IApiClient
 
     /// <summary>诊断/日志端点（状态、启用/禁用、级别）。</summary>
     IApiClientDiagnostics Diagnostics { get; }
+
+    /// <summary>系统配置端点（服务器配置，仅远程模式有意义）。</summary>
+    IApiClientConfiguration Configuration { get; }
 }

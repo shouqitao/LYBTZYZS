@@ -6,7 +6,7 @@ namespace LYBT.Desktop.Contracts.Api
     /// <summary>
     /// 草药API客户端接口 - 简化版，只包含基础CRUD
     /// </summary>
-    public interface IHerbApi
+    internal interface IHerbApi
     {
         /// <summary>
         /// 获取草药列表（分页查询）

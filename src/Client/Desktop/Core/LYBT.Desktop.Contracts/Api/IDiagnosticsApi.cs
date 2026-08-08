@@ -12,7 +12,7 @@ namespace LYBT.Desktop.Contracts.Api;
 /// 注: 使用 LYBT.Shared.Models.Contracts.Common.ApiResponse&lt;T&gt; 作为返回类型，
 /// 与 IRegistrationApi 等其他 Refit 接口保持一致（不使用 Refit 原生 ApiResponse 包装）。
 /// </remarks>
-public interface IDiagnosticsApi
+internal interface IDiagnosticsApi
 {
     /// <summary>
     /// 获取当前日志级别状态

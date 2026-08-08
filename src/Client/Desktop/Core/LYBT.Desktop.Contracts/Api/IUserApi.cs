@@ -8,7 +8,7 @@ namespace LYBT.Desktop.Contracts.Api
     /// 用户API客户端接口 - RESTful设计
     /// List返回轻量UserListDto，Detail返回完整UserDetailDto
     /// </summary>
-    public interface IUserApi
+    internal interface IUserApi
     {
         /// <summary>
         /// 获取用户列表（返回UserListDto）

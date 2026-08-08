@@ -5,6 +5,12 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <!-- A-18 P1-1: Refit Api 接口 internal 化后，仅实现层（Foundation）与测试可见 -->
+  <ItemGroup Label="Internal Visibility">
+    <InternalsVisibleTo Include="LYBT.Desktop.Foundation" />
+    <InternalsVisibleTo Include="LYBT.Tests.Desktop" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Refit" />

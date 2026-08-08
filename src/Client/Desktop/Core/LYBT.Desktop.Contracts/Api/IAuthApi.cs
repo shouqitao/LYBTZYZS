@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Contracts.Api
     /// <para>架构定位: 前端WPF客户端与后端Web API的统一接口契约</para>
     /// </remarks>
     [Description("身份认证API客户端 - JWT认证、会话管理、安全操作")]
-    public interface IAuthApi
+    internal interface IAuthApi
     {
 
         /// <summary>

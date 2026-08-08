@@ -7,7 +7,7 @@ namespace LYBT.Desktop.Contracts.Api;
 /// 挂号管理 Refit API 客户端接口
 /// PRD: registration.md US-REG-001~006
 /// </summary>
-public interface IRegistrationApi
+internal interface IRegistrationApi
 {
     /// <summary>
     /// 创建挂号 (前台模式)

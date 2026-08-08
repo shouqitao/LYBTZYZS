@@ -9,7 +9,7 @@ namespace LYBT.Desktop.Contracts.Api;
 /// 功能范围: 上传更新包、重启服务
 /// 权限要求: AdminOrSuperAdmin 策略
 /// </remarks>
-public interface IDeployApi
+internal interface IDeployApi
 {
     /// <summary>
     /// 上传更新包

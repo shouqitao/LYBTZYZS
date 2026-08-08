@@ -8,7 +8,7 @@ namespace LYBT.Desktop.Contracts.Api
     /// <summary>
     /// 医疗案例API客户端接口 - 简化版，只包含基础CRUD
     /// </summary>
-    public interface IMedicalCaseApi
+    internal interface IMedicalCaseApi
     {
         /// <summary>
         /// 获取医疗案例列表（支持分页和查询）

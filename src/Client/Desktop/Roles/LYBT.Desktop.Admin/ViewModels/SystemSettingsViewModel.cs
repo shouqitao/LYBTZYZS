@@ -1,5 +1,5 @@
 using LYBT.Desktop.Admin.Services;
-using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Shared.Configuration.Options.Client;
@@ -22,7 +22,7 @@ namespace LYBT.Desktop.Admin.ViewModels
 
         private readonly ISystemSettingsService _settingsService;
         private readonly IClinicSettingsService _clinicSettingsService;
-        private readonly IConfigurationApi _configurationApi;
+        private readonly IApiClient _apiClient;
 
         #endregion
 
@@ -142,12 +142,12 @@ namespace LYBT.Desktop.Admin.ViewModels
             IViewModelServices services,
             ISystemSettingsService settingsService,
             IClinicSettingsService clinicSettingsService,
-            IConfigurationApi configurationApi)
+            IApiClient apiClient)
             : base(services)
         {
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
             _clinicSettingsService = clinicSettingsService ?? throw new ArgumentNullException(nameof(clinicSettingsService));
-            _configurationApi = configurationApi ?? throw new ArgumentNullException(nameof(configurationApi));
+            _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
 
             PageTitle = "系统设置";
         }
@@ -318,7 +318,7 @@ namespace LYBT.Desktop.Admin.ViewModels
                 Logger.LogInformation("加载服务器配置");
                 SetBusy(true, "正在加载服务器配置...");
 
-                var resp = await _configurationApi.GetConfigurationAsync();
+                var resp = await _apiClient.Configuration.GetConfigurationAsync();
                 if (!resp.Success)
                 {
                     await ShowErrorMessageAsync(resp.Message ?? "加载服务器配置失败");
@@ -362,7 +362,7 @@ namespace LYBT.Desktop.Admin.ViewModels
                 Logger.LogInformation("保存服务器配置");
                 SetBusy(true, "正在保存服务器配置...");
 
-                var resp = await _configurationApi.UpdateConfigurationAsync(settings);
+                var resp = await _apiClient.Configuration.UpdateConfigurationAsync(settings);
                 if (!resp.Success)
                 {
                     await ShowErrorMessageAsync(resp.Message ?? "保存服务器配置失败");
@@ -390,7 +390,7 @@ namespace LYBT.Desktop.Admin.ViewModels
                 Logger.LogInformation("验证生产环境配置");
                 SetBusy(true, "正在验证配置...");
 
-                var resp = await _configurationApi.ValidateProductionAsync();
+                var resp = await _apiClient.Configuration.ValidateProductionAsync();
                 if (!resp.Success)
                 {
                     await ShowErrorMessageAsync(resp.Message ?? "配置验证失败");
