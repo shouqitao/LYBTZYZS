@@ -20,27 +20,31 @@
 
 ---
 
-## 二、项目合并方案（35 → 30，减 5 个）
+## 二、项目合并方案（35 → 30，减 5）【⚠️ 合并决策已延期，见下方注】
 
 > 方法级证据：S2/S3 合并候选分析。**所有合并均为「先文档后代码」（T2），分批次执行，每批独立验收。**
+>
+> **⚠️ 用户决策（2026-08-08）**：**合并暂缓执行**——待产品功能完善几日后，基于更完整的分析再做决定。当前仅保留合并候选分析（证据在册），不派发合并批次。
+>
+> **术语澄清（用户纠正，2026-08-08）**：**Formula = 验方（可复用模板）**，**Prescription = 处方（MedicalCase 实例，归 MedicalCase 域）**——两者是不同实体，合并对象为 **Herbs + Formula（主数据/模板域）**，**Prescription 绝不并入**（它是 MedicalCase 域实例数据）。
 
-### 2.1 Server 层（减 2）：Herbs+Formula 合并 + Auth+Users 合并
+### 2.1 Server 层（减 2，候选）：Herbs+Formula 合并 + Auth+Users 合并【⏸ 待定】
 
-**合并 1：LYBT.Module.Herbs + LYBT.Module.Formula → LYBT.Module.Catalog**（药材+验方目录域）
+**合并 1（候选，待定）：LYBT.Module.Herbs + LYBT.Module.Formula → LYBT.Module.Catalog**（药材+验方目录域）
 - 证据：Server 侧 ~43% 方法同构（S2 §8）；Desktop 侧 ~85% 同构（S3 §8）
-- 理由：药材/验方同为「目录数据」，CRUD/导入/导出/批量操作方法集高度一致；`FormulaHerbItem`（验方引用药材）已跨模块引用——合并消除跨模块耦合
+- 理由：药材/验方同为「目录/模板数据」，CRUD/导入/导出/批量操作方法集高度一致；`FormulaHerbItem`（验方引用药材）已跨模块引用——合并消除跨模块耦合
 - 收益：消除 ~45-50 重复方法；模块数 -1；跨模块引用（Formula→Herbs）内部化
+- **边界（用户确认）**：Prescription（处方）归 MedicalCase 域，**不参与**本合并
 
-**合并 2：LYBT.Module.Auth + LYBT.Module.Users → LYBT.Module.Identity**（凭证+用户域）
+**合并 2（候选，待定）：LYBT.Module.Auth + LYBT.Module.Users → LYBT.Module.Identity**（凭证+用户域）
 - 证据：S2 §8 凭证域高耦合（Auth 依赖 Users 的 ApplicationUser；Users 依赖 Auth 的令牌族）
-- 理由：两模块共享 ApplicationUser/Token/Session 实体，跨模块服务（IAuthCrossModuleService/IUserCrossModuleService）频繁互调——合并消除门面
 - 收益：跨模块服务对 -2；模块数 -1
 
-### 2.2 Desktop 层（减 3）：Herbs+Formula 合并 + Core 微调
+### 2.2 Desktop 层（减 3，候选）：Herbs+Formula 合并 + Core 微调【⏸ 待定】
 
-**合并 3：LYBT.Desktop.Herbs + LYBT.Desktop.Formula → LYBT.Desktop.Catalog**
+**合并 3（候选，待定）：LYBT.Desktop.Herbs + LYBT.Desktop.Formula → LYBT.Desktop.Catalog**
 - 证据：S3 §8 桌面侧 ~85% 同构（Editor VM 模板 90% 4 份拷贝中的 2 份；Repository 同构）
-- 与 Server 合并 1 同步执行
+- 与 Server 合并 1 同步执行（均待定）
 
 **合并 4-5（Core 微调，低优先级）**：
 - `LYBT.Desktop.Controls` 保持独立（S3 §8：不合并——控件库引用面广）
@@ -128,23 +132,23 @@ LYBT.Shared.Logging/
 | **C-0 缺陷修复** | P0-1 策略注册补齐 / P0-2 MedicalCase 验证接入 / P0-3 Reports 策略统一 | 无 | 0.5d | T1 修复 |
 | **C-1 日志集中** | 专项 A 全部迁移（M1-M10）| C-0 | 1-2d | T2 收敛 |
 | **C-2 异常统一** | 专项 B（处理器收敛 + 死类删除）| C-0 | 1d | T2 收敛 |
-| **C-3 Server 合并** | Herbs+Formula→Catalog + Auth+Users→Identity | C-1/C-2 | 2-3d | T2 收敛 |
-| **C-4 Desktop 合并** | Desktop Herbs+Formula→Catalog | C-3 | 1-2d | T2 收敛 |
+| **C-3 Server 合并** | Herbs+Formula→Catalog + Auth+Users→Identity | **⏸ 待定（用户延期决策，暂缓）** | 2-3d | T2 收敛 |
+| **C-4 Desktop 合并** | Desktop Herbs+Formula→Catalog | **⏸ 待定（随 C-3）** | 1-2d | T2 收敛 |
 | **C-5 机制收敛** | ErrorMessages / AddModuleDbContext / 仓储镜像模板 / VM 命令模板 / 映射统一 | C-2 | 1-2d | T1 收敛 |
 | **C-6 死代码清理** | S1-S3 D 级（14 可安全删 + 37 死类方法 + 29 Server 死方法 + 64 复核项）| 各批后 | 1-2d | T1 清理 |
 
-**执行后**：35 → 30 项目（Server -2 / Desktop -1），日志/异常单机制 SSOT，P0 缺陷清零。
-**B 类功能**（产品完善）冻结至 C 批次完成（用户方针）。
+**执行后**：35 → 30 项目（Server -2 / Desktop -1）【合并批次待定，若暂缓则维持 35】；日志/异常单机制 SSOT，P0 缺陷清零。
+**B 类功能**（产品完善）冻结至 C 批次完成（用户方针）；**合并决策**（C-3/C-4）待完善后重新评估。
 
 ---
 
 ## 六、决策点（待用户拍板）
 
-1. **4 整类死类**（Conflict/Api/Unauthorized/ValidationException）：删除 or 保留？（产品上是否确实不需要这些异常类型）
+1. ~~**4 整类死类**（Conflict/Api/Unauthorized/ValidationException）：删除 or 保留？~~ → **C-2 执行时定**（默认删除，用户可否决）
 2. **跨模块门面**：删 ICrossModuleService 统一门面（只留 6 域接口）or 扩门面覆盖全部 6 域？
-3. **合并顺序**：Server 合并先于 Desktop（推荐）or 同步？
+3. **~~合并顺序~~**：~~Server 先于 Desktop（推荐）or 同步？~~ → **合并已延期（2026-08-08 用户定），暂不决策**
 4. **映射统一方向**：直用 DTO（推荐，A-26 方向）or 补 Model+Mapper？
-5. **C 批次全部执行 or 分阶段**（先 C-0 缺陷修复 + C-1/C-2 机制集中，合并批次 C-3/C-4 后续再议）？
+5. **C 批次全部执行 or 分阶段**？ → **分阶段确认**：C-0 缺陷修复 + C-1/C-2 机制集中先执行；合并批次（C-3/C-4）待定；C-5/C-6 视 C-1/C-2 结果再定
 
 ---
 
@@ -154,3 +158,4 @@ LYBT.Shared.Logging/
 |------|------|------|
 | v0.1 | 2026-08-08 | 草稿框架（待 S0-S3 填充） |
 | v1.0 | 2026-08-08 | 定稿：S0-S3 全量结论 + 合并方案（35→30）+ 机制集中方案 + P0 清单 + C 批次规划 |
+| v1.1 | 2026-08-08 | **合并决策延期（用户定）**：C-3/C-4 合并批次 ⏸ 待定（完善后重评估）；术语澄清 Formula=验方/Prescription=处方（不同实体，Prescription 归 MedicalCase 域不并入）；决策点更新 |
