@@ -116,7 +116,10 @@ temp/
 graphify-out/
 .codegraph/
 .envsitter/
-.mimocode/
+.mimocode/*
+!.mimocode/skills/
+!.mimocode/skills/lybtzys-coder-rules/
+!.mimocode/skills/lybtzys-coder-rules/**
 .reasonix/
 .hermes-review-*.json
 
