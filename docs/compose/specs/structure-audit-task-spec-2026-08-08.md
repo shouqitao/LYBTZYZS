@@ -20,7 +20,7 @@ LYBTZYZS 全项目结构设计健康度审计（**只读**，禁止修改任何�
 - Shared 层职责：公共类型单源（如 Gender 枚举只在 `Shared/Models/Enums/Gender.cs` 定义一次，双端引用——这是样板，审计目标是找**反例**）。
 - Dual-Mode 是**设计意图**（非缺陷）：Remote(5000, SQL Server) + Local(5300, LocalDB) 双轨，`SwitchingApiClient` 切换。审计双轨**实现质量**，不质疑双轨存废。
 - 最近已完成：死代码清理 2 轮（Serena + codebase-memory 交叉验证，`97445a6f3`），命名空间统一复数（Q-03，`27b65e42b`），using 别名清理（Q-02，`5de43132b`）。这些可引用为「已知」，但死代码要求**独立重扫找新问题**。
-- 相关报告（可引用为已知）：`docs/03-architecture/dead-code-analysis-2026-08-08.md`、`dead-code-analysis-codebase-memory-2026-08-08.md`、`namespace-consistency-*.md`、`webapi-deep-analysis-*.md`。
+- 相关报告（可引用为已知）：`docs/compose/reports/dead-code-analysis-2026-08-08.md`、`dead-code-analysis-codebase-memory-2026-08-08.md`、`namespace-consistency-*.md`、`webapi-deep-analysis-*.md`。
 
 ## 聚焦 7 类
 
@@ -86,7 +86,7 @@ LYBTZYZS 全项目结构设计健康度审计（**只读**，禁止修改任何�
 1. **只读审计**，禁止修改任何代码文件。
 2. 每发现必须有证据：`文件:行号` + 引用链/调用方。
 3. 严重度分级：P0（红线违反/高风险）/ P1（应修）/ P2（可后议）；顺带发现单列不评级。
-4. 产出单一报告：`docs/03-architecture/structure-audit-mimo-2026-08-08.md`（独立分析者 #2 命名，与技术总监报告区分）。
+4. 产出单一报告：`docs/compose/reports/structure-audit-mimo-2026-08-08.md`（独立分析者 #2 命名，与技术总监报告区分）。
 5. **不要 commit**：审计为只读，报告文件写入 docs/ 后由技术总监统一提交。
 
 ## 明确不做（防发散）

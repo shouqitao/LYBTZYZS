@@ -8,7 +8,7 @@
 
 **Tech Stack:** .NET 8 / MediatR / 现有 IRepository 家族（各模块接口独立，不强制 IRepository<T> 统一，因为模块 Repository 接口未继承它）。
 
-**任务来源:** `docs/03-architecture/webapi-deep-analysis-mimo-2026-08-07.md` Q-01（P2）——"下沉泛型 `BatchSoftDeleteHandler<TEntity>` / `BatchStatusHandler<TEntity>`（Core/Infrastructure 层），业务 Handler 只传实体与状态规则"。
+**任务来源:** `docs/compose/reports/webapi-deep-analysis-mimo-2026-08-07.md` Q-01（P2）——"下沉泛型 `BatchSoftDeleteHandler<TEntity>` / `BatchStatusHandler<TEntity>`（Core/Infrastructure 层），业务 Handler 只传实体与状态规则"。
 
 ## Global Constraints
 
@@ -24,7 +24,7 @@
 
 ### Task 1: 创建泛型基类 BatchOperationHandlerBase<TEntity>
 
-**Covers:** Q-01（docs/03-architecture/webapi-deep-analysis-mimo-2026-08-07.md:152-157）
+**Covers:** Q-01（docs/compose/reports/webapi-deep-analysis-mimo-2026-08-07.md:152-157）
 
 **Files:**
 - Create: `src/Server/Core/LYBT.Infrastructure/BatchOperations/BatchOperationHandlerBase.cs`
@@ -658,7 +658,7 @@ git commit -m "docs: 总账记录 Q-01 批处理 Handler 泛型化完成"
 
 ## Self-Review
 
-**1. Spec coverage:** Q-01（docs/03-architecture/webapi-deep-analysis-mimo-2026-08-07.md:152-157）→ Task 1/2/3 全覆盖；任务约束"不碰 BatchImport"→ Task 3 Step 3 明确排除；"基类放 Infrastructure 不放 Shared"→ Task 1 路径明确；"0 错误 0 警告 + 架构测试 83/83"→ Task 3 Step 4/5、Task 4 Step 1。
+**1. Spec coverage:** Q-01（docs/compose/reports/webapi-deep-analysis-mimo-2026-08-07.md:152-157）→ Task 1/2/3 全覆盖；任务约束"不碰 BatchImport"→ Task 3 Step 3 明确排除；"基类放 Infrastructure 不放 Shared"→ Task 1 路径明确；"0 错误 0 警告 + 架构测试 83/83"→ Task 3 Step 4/5、Task 4 Step 1。
 
 **2. Placeholder scan:** 无 TBD/TODO；所有代码块完整。Task 2 Step 1 的 `UserCanDelete` 占位已由 Step 2 最终形态覆盖并注明。
 

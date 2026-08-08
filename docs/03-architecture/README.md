@@ -44,7 +44,7 @@
 | 13a | [数据模型](13a-data-model.md) | 核心实体 + 状态枚举 |
 | 13b | [API 端点](13b-api-endpoints.md) | 全部模块端点 |
 | 13c | [当前状态](13c-current-status.md) | Desktop 视图 + 已知问题 |
-| ~~14~~ | ~~实现任务~~ | 已归档 → `archive/14-implementation-tasks.md`（任务并入 master plan F 类） |
+| 14 | [结构设计蓝图](14-structure-design-blueprint.md) | 全项目结构唯一权威（SSOT） |
 | 15 | [Mapperly](15-mapperly.md) | 映射规范 |
 | 16 | [同步协议](16-sync-protocol.md) | v2.0 数据同步设计 |
 
@@ -55,6 +55,8 @@
 | [decisions/](decisions/) | ADR 架构决策记录（17 条，0001~0015 + 0017~0018；0016 预留跳号） |
 | [modules/](modules/) | 各模块架构规格（10 个模块） |
 | [localwebapi/](localwebapi/) | 本地模式 API 架构 |
+
+> 过程文档（审计报告、任务书、计划）不在此目录，统一归档于 [../compose/](../compose/)（plans/reports/specs）。本目录只保留反映系统当前状态的文档。
 
 ## 核心架构原则
 

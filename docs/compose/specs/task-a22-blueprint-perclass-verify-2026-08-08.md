@@ -55,7 +55,7 @@ Architecture / Server / Desktop
 
 1. 只读审计，禁改代码
 2. 每 class 判定必须可复核（依据等级 + 证据）
-3. 产出报告：`docs/03-architecture/structure-audit-perclass-2026-08-08.md`（技术总监）或 `-mimo-2026-08-08.md`（Mimo）
+3. 产出报告：`docs/compose/reports/structure-audit-perclass-2026-08-08.md`（技术总监）或 `-mimo-2026-08-08.md`（Mimo）
 4. 不 commit（技术总监统一提交）
 5. 用 serena/codebase-memory 符号级验证，grep 只做初筛
 

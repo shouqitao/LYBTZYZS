@@ -2,7 +2,7 @@
 
 > 版本: v1.1 | 日期: 2026-08-08 | 维护者: 技术总监
 > **本蓝图是全项目结构的唯一权威设计文档**——每个 project 的职责、每个 class 的设计依据，都可在此追溯。
-> 依据来源：A-16 全局审计（`structure-audit-2026-08-08.md`）+ 模块级审计（`structure-audit-module-level-2026-08-08.md`）+ 逐 class 验证（`structure-audit-perclass-*-2026-08-08.md`）+ 双交叉验证 + 16 份 ADR + 架构文档（00-architecture-summary / 03-server / 05-dual-mode / 08-shared / 06-error-handling / 09-security-architecture / 07-configuration）+ 86 条架构测试守卫。
+> 依据来源：A-16 全局审计（`docs/compose/reports/structure-audit-2026-08-08.md`）+ 模块级审计（`docs/compose/reports/structure-audit-module-level-2026-08-08.md`）+ 逐 class 验证（`docs/compose/reports/structure-audit-perclass-*-2026-08-08.md`）+ 双交叉验证 + 16 份 ADR + 架构文档（00-architecture-summary / 03-server / 05-dual-mode / 08-shared / 06-error-handling / 09-security-architecture / 07-configuration）+ 86 条架构测试守卫。
 > 文档与代码冲突时以本蓝图为设计态定义，代码须按蓝图演进。
 
 ---

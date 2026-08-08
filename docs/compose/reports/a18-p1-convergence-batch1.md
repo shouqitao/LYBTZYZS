@@ -2,8 +2,8 @@
 feature: a18-p1-convergence-batch1
 status: delivered
 specs:
-  - docs/03-architecture/task-a18-p1-convergence-2026-08-08.md
-  - docs/03-architecture/structure-audit-crosscheck-2026-08-08.md
+  - docs/compose/specs/task-a18-p1-convergence-2026-08-08.md
+  - docs/compose/reports/structure-audit-crosscheck-2026-08-08.md
 plans: []
 branch: master
 commits: 8db198b8a..af1c5b2d5
@@ -84,6 +84,6 @@ Desktop LocalWebAPI 集成测试 404 失败经 stash 基线复现确认为 C-01 
 
 | File | Role | Notes |
 |------|------|-------|
-| `docs/03-architecture/task-a18-p1-convergence-2026-08-08.md` | 任务书 | 第 2 子批次（P1-5/P1-1/P1-2）待执行，保持活跃 |
-| `docs/03-architecture/structure-audit-crosscheck-2026-08-08.md` | 依据 | §二 P1 清单 + 交叉纠错 C2 |
-| `docs/03-architecture/structure-audit-mimo-2026-08-08.md` | 依据 | §5 文档偏差清单 D1-D13 |
+| `docs/compose/specs/task-a18-p1-convergence-2026-08-08.md` | 任务书 | 第 2 子批次（P1-5/P1-1/P1-2）待执行，保持活跃 |
+| `docs/compose/reports/structure-audit-crosscheck-2026-08-08.md` | 依据 | §二 P1 清单 + 交叉纠错 C2 |
+| `docs/compose/reports/structure-audit-mimo-2026-08-08.md` | 依据 | §5 文档偏差清单 D1-D13 |

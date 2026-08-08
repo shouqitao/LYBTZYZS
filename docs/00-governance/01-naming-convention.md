@@ -43,14 +43,14 @@ modules/auth.md
 standards/STD-01-CQRS-Boundary.md
 ```
 
-### compose 目录（临时/工作文档）
+### compose 目录（过程文档归档）
 
-用于存放进行中的计划、报告、spec。完成后迁移到正式目录或删除。
+用于存放全部过程性文档：计划、报告（审计/分析/验证）、任务书（task-spec）。**正式文档（架构/需求/API）只放当前值，过程文档一律归档到 compose，不进入正式目录。**
 
 ```
-compose/plans/code-gap-fix-list.md     # 进行中
-compose/reports/calibration-report.md  # 进行中
-compose/specs/registration-redesign.md # 进行中
+compose/plans/code-gap-fix-list.md        # 计划
+compose/reports/structure-audit-*.md      # 审计/分析/验证报告
+compose/specs/task-a20-*.md               # 任务书
 ```
 
 ## 禁止事项

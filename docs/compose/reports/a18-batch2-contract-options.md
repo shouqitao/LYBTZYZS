@@ -1,7 +1,7 @@
 # A-18 批次2 契约统一方案 — P1-1 双套统一 + P1-2 adapter 收敛
 
 > 日期: 2026-08-08 | 作者: Mimo Code（勘察执行）| 状态: **待技术总监确认**
-> 任务书: `docs/03-architecture/task-a18-batch2-contract-unification-2026-08-08.md`
+> 任务书: `docs/compose/specs/task-a18-batch2-contract-unification-2026-08-08.md`
 > 本方案仅勘察结论 + 选项对比，**未改任何契约代码**（P1-5 已独立完成见 commit `812fcdd0c`）
 
 ---

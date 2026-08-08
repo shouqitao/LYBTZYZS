@@ -3,7 +3,7 @@
 > 分析日期: 2026-08-07 | 分析者: Mimo Code Agent（独立审计，非 Hermes Agent 复本）
 > 分析范围: `src/Server` 全部源码（WebAPI 入口、Controllers、8 个业务模块、Infrastructure、Middleware、Extensions）
 > 约束: 只分析不修改代码；所有结论基于实际代码（文件:行号），不基于文档描述。
-> 基线对照: `docs/03-architecture/webapi-deep-analysis-2026-08-07.md`（Hermes Agent v1.0）
+> 基线对照: `docs/compose/reports/webapi-deep-analysis-2026-08-07.md`（Hermes Agent v1.0）
 
 ---
 

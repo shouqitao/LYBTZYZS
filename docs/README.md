@@ -26,7 +26,7 @@
 1. 每个信息点只有一个权威定义（SSOT），其他文档只引用不复制
 2. 文档与代码冲突时：先更新文档，再按文档改代码（「以文档为准」规则，见 AGENTS.md）
 3. 需求模块文档中业务规则以 `BR-*` 编号引用，US 以 `US-{DOMAIN}-{NNN}` 引用
-4. 活跃计划/规格在 `compose/`；历史报告完成后删除（决策留 master-plan §九）
+4. 过程文档（计划/报告/任务书）一律归档 `compose/`；正式目录（架构/需求/API）只放当前值，历史报告不删除、不放入正式目录
 
 ---
 
@@ -86,11 +86,11 @@
 | [00-governance](00-governance/) | 文档治理：命名规范、SSOT 架构 | 2 |
 | [01-product](01-product/) | 产品愿景、用户画像、术语表、权限矩阵、角色交互 | 6 |
 | [02-requirements](02-requirements/) | 需求文档（15 模块，142 US） | 19 |
-| [03-architecture](03-architecture/) | 架构文档、ADR 决策记录、权限矩阵、总账 | 51 |
+| [03-architecture](03-architecture/) | 架构文档（当前值）、ADR 决策记录、权限矩阵、总账 | 52 |
 | [04-api-reference](04-api-reference/) | API 端点文档 | 15 |
 | [05-development](05-development/) | 开发指南、编码规范、测试标准 | 27 |
 | [06-operations](06-operations/) | 部署、配置、监控、备份 | 15 |
-| [compose](compose/) | 活跃 spec/plan（3 个） | 3 |
+| [compose](compose/) | 过程文档归档：plans/reports/specs（5/22/13） | 40 |
 | [prompts](prompts/) | Prompt 模板 | 2 |
 | [training](training/) | 培训材料 | 1 |
 

@@ -2,9 +2,9 @@
 feature: a23-layer-guard-cleanup
 status: delivered
 specs:
-  - docs/03-architecture/task-a23-layer-guard-cleanup-2026-08-08.md
+  - docs/compose/specs/task-a23-layer-guard-cleanup-2026-08-08.md
 plans:
-  - docs/03-architecture/task-a23-layer-guard-cleanup-2026-08-08.md
+  - docs/compose/specs/task-a23-layer-guard-cleanup-2026-08-08.md
 branch: master
 commits: d3290b321..9f22657ec
 ---
@@ -65,7 +65,7 @@ A-23 分三部分落地，消除 Desktop MVVM 分层中剩余的 VM→IApiClient
 
 | File | Role | Notes |
 |------|------|-------|
-| `docs/03-architecture/task-a23-layer-guard-cleanup-2026-08-08.md` | 任务书（唯一计划） | 3 项任务定义 + 验证标准 |
-| `docs/03-architecture/structure-audit-perclass-mimo-2026-08-08.md` | 孤儿类 D=29 清单来源 | §1.2 全清单 + 逐类证据 |
-| `docs/03-architecture/structure-audit-perclass-crosscheck-2026-08-08.md` | 越层 3 处技术总监复核 | §四 |
+| `docs/compose/specs/task-a23-layer-guard-cleanup-2026-08-08.md` | 任务书（唯一计划） | 3 项任务定义 + 验证标准 |
+| `docs/compose/reports/structure-audit-perclass-mimo-2026-08-08.md` | 孤儿类 D=29 清单来源 | §1.2 全清单 + 逐类证据 |
+| `docs/compose/reports/structure-audit-perclass-crosscheck-2026-08-08.md` | 越层 3 处技术总监复核 | §四 |
 | `docs/03-architecture/13-project-master-plan.md` | 项目总账 | 状态表已更新（A-23 行） |

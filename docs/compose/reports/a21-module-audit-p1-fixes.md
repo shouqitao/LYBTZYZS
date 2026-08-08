@@ -2,7 +2,7 @@
 feature: a21-module-audit-p1-fixes
 status: delivered
 specs:
-  - docs/03-architecture/task-a21-module-audit-p1-fixes-2026-08-08.md
+  - docs/compose/specs/task-a21-module-audit-p1-fixes-2026-08-08.md
 branch: master
 commits: 1b19bce13..4ddcec6ed
 ---
@@ -82,6 +82,6 @@ FeatureToggle 机制（14 开关缩至 2 且无有效消费）：删 FeatureTogg
 
 | File | Role | Notes |
 |------|------|-------|
-| `docs/03-architecture/task-a21-module-audit-p1-fixes-2026-08-08.md` | 任务书 | 6 项任务与验证标准 |
-| `docs/03-architecture/structure-audit-module-level-crosscheck-2026-08-08.md` | 审计依据 | P1 清单来源 |
+| `docs/compose/specs/task-a21-module-audit-p1-fixes-2026-08-08.md` | 任务书 | 6 项任务与验证标准 |
+| `docs/compose/reports/structure-audit-module-level-crosscheck-2026-08-08.md` | 审计依据 | P1 清单来源 |
 | `docs/03-architecture/13-project-master-plan.md` | 项目总账 | §六 A-21 ⬜→✅ + §八 完成登记（6 commit） |

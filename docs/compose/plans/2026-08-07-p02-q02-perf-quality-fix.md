@@ -20,7 +20,7 @@
 
 ## Task 1: P-02 — MedicalCase 查询 DB 层分页
 
-**Covers:** P-02（webapi-deep-analysis-mimo-2026-08-07.md:61-66）
+**Covers:** P-02（docs/compose/reports/webapi-deep-analysis-mimo-2026-08-07.md:61-66）
 
 **Files:**
 - Modify: `src/Server/Modules/LYBT.Module.MedicalCase/Interfaces/IMedicalCaseRepository.cs`（新增 2 方法）
@@ -126,7 +126,7 @@ return new PagedResult<ConsultationDetailDto>(consultations, paged.TotalCount, p
 
 ## Task 2: Q-02 — TryDeserializeDto 去重，强类型绑定
 
-**Covers:** Q-02（webapi-deep-analysis-mimo-2026-08-07.md:159-164）
+**Covers:** Q-02（docs/compose/reports/webapi-deep-analysis-mimo-2026-08-07.md:159-164）
 
 **Files:**
 - Modify: `src/Server/Core/LYBT.Infrastructure/Web/BaseCrudController.cs`（删除 `Create`/`Update` virtual）
