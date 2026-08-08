@@ -70,6 +70,7 @@
 | A-19 | 移除 Auto 模式（用户自主切换） | 删 Auto 枚举 + DetectBestModeAsync 自动降级逻辑，模式仅由用户显式选择，远程不可用不自动降级 | A-18 | ✅ `4a1393c3a` | 0.5d |
 | A-20 | DbContext 全独立（ADR-0017 落地） | 新建 Patients/MedicalCase/Registration 3 个 DbContext（复用实体配置不建迁移），5 Repository 注入切换（PatientRepository/MedicalCaseRepository/RegistrationRepository/SecurityAuditRepository/HerbReferenceRepository），迁移链保持 AppDbContext 单一（方案 A 同库单迁移），架构测试新增「Repository 注入自己模块 DbContext」守卫 | 模块级审计 M1 | ✅ `25ea3b9b7` | 2-3d |
 | A-21 | 模块级审计 P1 修复批次 | M4 Shell RoleDefinitionBase 模块名 bug（AuthModule→AuthenticationModule）/ M5 3 VM 越层（AuditLog/ReportsHome/RegistrationList 改走 Service）/ M3 领域事件空转 8 个（确认订阅或删除）/ M2 Desktop 映射统一（F-02，DTO↔Model 改 Mapperly 删 3 零引用 Mapper）/ C1 Infrastructure 职责过载（CardReader 独立 + LocalData 废弃）/ F-01 删 FeatureToggle + Tools 删 3 留 1 | 模块级审计交叉验证 | ✅ `1b19bce13`(M4) `3d692c5f5`(M5) `4ad350a39`(M3) `876581164`(M2) `2fa05ff63`(C1) `271bca70f`(F-01+Tools) | 1-2d |
+| A-26 | 蓝图对齐 + 模式收敛 + 定义收敛（全面审查） | 以 14-structure-design-blueprint.md v1.2（SSOT）为基准核对代码当前态：① 蓝图对齐（项目/职责/结构模式/依赖规则/设计原则逐项核对）② 模式收敛（Controller 继承/Service-Handler/DbContext/映射/批处理/验证/异常/响应信封）③ 定义收敛（命名空间/类型命名/DTO/枚举/接口/错误码/术语/配置）。产出收敛任务清单 P0/P1/P2。任务书：`docs/compose/specs/task-a26-blueprint-convergence-2026-08-08.md` | 文档规范收敛 `fae082ae7` | 🟡 已派发 Mimo 审查中 | 1-2d |
 
 ### B 类 — 产品功能
 
