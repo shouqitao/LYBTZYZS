@@ -1,15 +1,20 @@
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Entities.Patients;
+using Riok.Mapperly.Abstractions;
 
 namespace LYBT.Module.Patients.Application.Mappers;
 
 /// <summary>
-/// 患者数据映射器。静态类，用于 Domain 实体与 DTO 之间的转换。
+/// 患者数据映射器。Mapperly 编译时生成（A-18 P1-4 由手写静态类改造）。
+/// 纯属性复制方法（ToListDto/ToDetailDto）由 Mapperly 生成；工厂方法（ToEntity）保留手写（行为等价）。
 /// </summary>
-public static class PatientMapper
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target, AutoUserMappings = false)]
+public static partial class PatientMapper
 {
     /// <summary>
     /// PatientInputDto 转换为 Patient 实体（创建）。
+    /// 保留手写：走领域工厂 Patient.Create（校验 + Trim），Mapperly 无法表达。
+    /// 不带 [UserMapping] 标记：AutoUserMappings=false 下不被 Mapperly 发现（带额外参数签名不受支持）。
     /// </summary>
     public static Patient ToEntity(PatientInputDto dto, Guid? createdBy = null) => Patient.Create(
         dto.Name,
@@ -21,38 +26,12 @@ public static class PatientMapper
         createdBy);
 
     /// <summary>
-    /// Patient 实体转换为 PatientListDto（列表查询）。
+    /// Patient 实体转换为 PatientListDto（列表查询）。Mapperly 生成（属性全同名）。
     /// </summary>
-    public static PatientListDto ToListDto(Patient entity) => new()
-    {
-        Id = entity.Id,
-        Name = entity.Name,
-        Gender = entity.Gender,
-        Age = entity.Age,
-        PhoneNumber = entity.PhoneNumber,
-        PinYinCode = entity.PinYinCode,
-        Status = entity.Status,
-        CreatedAt = entity.CreatedAt
-    };
+    public static partial PatientListDto ToListDto(Patient entity);
 
     /// <summary>
-    /// Patient 实体转换为 PatientDetailDto（详情查询）。
+    /// Patient 实体转换为 PatientDetailDto（详情查询）。Mapperly 生成（属性全同名）。
     /// </summary>
-    public static PatientDetailDto ToDetailDto(Patient entity) => new()
-    {
-        Id = entity.Id,
-        Name = entity.Name,
-        Gender = entity.Gender,
-        BirthDate = entity.BirthDate,
-        Age = entity.Age,
-        IdNumber = entity.IdNumber,
-        PhoneNumber = entity.PhoneNumber,
-        PinYinCode = entity.PinYinCode,
-        Status = entity.Status,
-        CreatedAt = entity.CreatedAt,
-        UpdatedAt = entity.UpdatedAt,
-        CreatedBy = entity.CreatedBy
-    };
+    public static partial PatientDetailDto ToDetailDto(Patient entity);
 }
-
-

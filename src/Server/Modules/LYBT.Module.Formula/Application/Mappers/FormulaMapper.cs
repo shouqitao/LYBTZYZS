@@ -1,15 +1,20 @@
 using LYBT.Entities.Formulas;
 using LYBT.Shared.Models.Contracts.Formula;
+using Riok.Mapperly.Abstractions;
 
 namespace LYBT.Module.Formulas.Application.Mappers;
 
 /// <summary>
-/// 验方数据映射器。静态类，用于 Domain 实体与 DTO 之间的转换。
+/// 验方数据映射器。Mapperly 编译时生成（A-18 P1-4 由手写静态类改造）。
+/// 纯属性复制方法（ToListDto）由 Mapperly 生成；工厂/复杂逻辑方法保留手写（行为等价）。
 /// </summary>
-public static class FormulaDtoMapper
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target, AutoUserMappings = false)]
+public static partial class FormulaDtoMapper
 {
     /// <summary>
     /// FormulaInputDto 转换为 Formula 实体（创建）。
+    /// 保留手写：走领域工厂 Formula.Create（校验 + Trim + 审计字段），Mapperly 无法表达。
+    /// 不带 [UserMapping] 标记：AutoUserMappings=false 下不被 Mapperly 发现（带额外参数签名不受支持）。
     /// </summary>
     public static Formula ToEntity(FormulaInputDto dto, Guid? createdBy = null) => Formula.Create(
         dto.Name,
@@ -26,25 +31,17 @@ public static class FormulaDtoMapper
 
     /// <summary>
     /// Formula 实体转换为 FormulaListDto（列表查询）。
+    /// Mapperly 生成：Indication→Indications 重命名；TotalPrice 无源字段忽略（默认 0 等价）。
     /// </summary>
-    public static FormulaListDto ToListDto(Formula entity) => new()
-    {
-        Id = entity.Id,
-        Name = entity.Name,
-        Effect = entity.Effect,
-        Indications = entity.Indication,
-        Category = entity.Category,
-        IsShared = entity.IsShared,
-        ValidationStatus = entity.ValidationStatus,
-        Status = entity.Status,
-        HerbCount = entity.HerbCount,
-        TotalPrice = 0,
-        CreatedAt = entity.CreatedAt
-    };
+    [MapProperty(nameof(Formula.Indication), nameof(FormulaListDto.Indications))]
+    [MapperIgnoreTarget(nameof(FormulaListDto.TotalPrice))]
+    public static partial FormulaListDto ToListDto(Formula entity);
 
     /// <summary>
     /// Formula 实体转换为 FormulaDetailDto（详情查询）。
+    /// 保留手写：Category 空值回退"验方"（DTO getter 兜底不一致）、TotalPrice 恒 0、Herbs 嵌套映射。
     /// </summary>
+    [UserMapping(Default = false)]
     public static FormulaDetailDto ToDetailDto(Formula entity) => new()
     {
         Id = entity.Id,
@@ -68,7 +65,9 @@ public static class FormulaDtoMapper
 
     /// <summary>
     /// FormulaHerbItem 实体转换为 FormulaHerbItemDto。
+    /// 保留手写：Preparation/Processing 属性名映射 Mapperly 无法自动推断。
     /// </summary>
+    [UserMapping(Default = false)]
     public static FormulaHerbItemDto ToHerbItemDto(FormulaHerbItem entity) => new()
     {
         Id = entity.Id,
@@ -84,5 +83,3 @@ public static class FormulaDtoMapper
         IsValidated = entity.IsValidated
     };
 }
-
-
