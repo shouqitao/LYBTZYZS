@@ -34,8 +34,6 @@ LYBT.Desktop.Users/
 │   ├── UserDetailModel.cs                   # Detail 编辑模型 (ValidatableModelBase)
 │   └── Items/
 │       └── UserEditContext.cs               # 编辑上下文 (ValidateAll)
-├── Mappers/
-│   └── UserMapper.cs                        # Mapperly 编译时映射器
 ├── Repositories/
 │   └── UserRepository.cs                    # 仓储实现 (委托 IUserRepository)
 └── README.md
@@ -123,16 +121,6 @@ LYBT.Desktop.Users/
 | 密码 | `ChangePasswordAsync` / `ResetPasswordAsync` | `CommandResult<bool>` / `CommandResult<ResetPasswordResponseDto>` |
 | 状态 | `ToggleStatusAsync` | `CommandResult<UserDetailDto>` |
 
-### UserMapper — Mapperly 编译时映射
-
-**设计依据**: `[Mapper(RequiredMappingStrategy = Target)]`；零运行时开销，替代 AutoMapper
-
-| 方法 | 映射方向 | 说明 |
-|------|----------|------|
-| `ToItem` | `UserDetailDto` → `UserItem` | API → UI 模型（忽略 15+ UI 计算属性） |
-| `ToDto` | `UserItem` → `UserDetailDto` | UI → API（忽略 LastLoginTime/FailedLoginCount/Remark） |
-| `ToInputDto` | `UserItem` → `UserInputDto` | 保存调用（手动设置 Id，忽略 Password/ConfirmPassword） |
-
 ## 依赖关系
 
 ```
@@ -165,4 +153,3 @@ NuGet: `Prism.Core`, `Prism.DryIoc`, `Prism.Wpf`, `Riok.Mapperly`
 - `UserEditorViewModel.Validate()` 委托 `UserEditContext.ValidateAll()`，验证失败时 VM 层不设置 ErrorMessage，由调用方（MasterDetailVM）通过 Dialog 显示
 - `UserStatusHandler.ToggleUserStatusAsync` 捕获 `HttpRequestException` 但不重新抛出，返回 `false` 静默处理
 - `DeleteItemAsync` 禁止删除当前登录用户，通过 `SessionManager?.CurrentUser.Id` 比对实现
-- `UserMapper` 使用大量 `[MapperIgnoreTarget]`/`[MapperIgnoreSource]` 属性，新增 `UserItem` 属性时需同步更新忽略列表

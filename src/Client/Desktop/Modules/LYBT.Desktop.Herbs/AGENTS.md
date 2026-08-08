@@ -8,7 +8,6 @@
 LYBT.Desktop.Herbs/
 ├── Controls/            # HerbMasterDetailControl, HerbEditControl, HerbViewControl
 ├── Interfaces/          # IHerbRepository
-├── Mappers/             # HerbMapper (Mapperly)
 ├── Models/              # HerbDetailModel
 ├── Repositories/        # HerbRepository (DataSource abstraction)
 ├── Services/            # HerbSearchProvider

@@ -9,7 +9,7 @@ LYBT.Desktop.Formula/
 ├── CommandHandlers/     # IFormulaCommandHandler (dead code)
 ├── Controls/            # FormulaEditControl, FormulaMasterDetailControl
 ├── Interfaces/          # IFormulaRepository, IFormulaService, IFormulaSearchProvider
-├── Mappers/             # FormulaDetailModelMapper, FormulaHerbItemMapper, FormulaMapper
+├── Mappers/             # FormulaDetailModelMapper
 ├── Models/              # FormulaDetailModel, FormulaItem, FormulaHerbItem
 ├── Repositories/        # FormulaRepository (DataSource abstraction)
 ├── Services/            # FormulaService, FormulaSearchProvider, FormulaValidator
@@ -26,7 +26,7 @@ LYBT.Desktop.Formula/
 | ViewModel logic | `ViewModels/FormulaMasterDetailViewModel.cs` | MasterDetailViewModelBase derivative |
 | Repository (Local/Remote) | `Repositories/FormulaRepository.cs` | DataSource abstraction layer |
 | Cross-module search | `Services/FormulaSearchProvider.cs` | IFormulaSearchProvider for MedicalCase |
-| Mapperly mappers | `Mappers/` | FormulaDetailModelMapper, FormulaHerbItemMapper |
+| Mapperly mappers | `Mappers/` | FormulaDetailModelMapper |
 
 ## CONVENTIONS
 
@@ -34,7 +34,7 @@ LYBT.Desktop.Formula/
 - **Control reuse** — FormulaMasterDetailControl embedded in Admin + Clinical role workspaces
 - **DataSource abstraction** — Repository delegates to IFormulaDataSource (Local/Remote)
 - **Mapperly** — Compile-time mapping, zero runtime overhead
-- **IsShared/IsPersonal inversion** — FormulaMapper must manually map `IsShared = !IsPersonal`
+- **IsShared/IsPersonal** — FormulaItem.IsPersonal 由 `!IsShared` 派生；DTO 交互统一用 IsShared
 
 ## ANTI-PATTERNS
 

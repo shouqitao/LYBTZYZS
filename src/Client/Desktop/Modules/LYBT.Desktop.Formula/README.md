@@ -19,9 +19,7 @@ LYBT.Desktop.Formula/
 ├── Interfaces/
 │   └── IFormulaService.cs                     # 验方 Service 接口（9 方法，CommandResult<T>）
 ├── Mappers/
-│   ├── FormulaDetailModelMapper.cs            # Mapperly: FormulaDetailDto ↔ FormulaDetailModel（Singleton）
-│   ├── FormulaHerbItemMapper.cs               # Mapperly: FormulaHerbItemDto ↔ FormulaHerbItem
-│   └── FormulaMapper.cs                       # Mapperly: FormulaDetailDto ↔ FormulaItem（IsShared↔IsPersonal 反转）
+│   └── FormulaDetailModelMapper.cs            # Mapperly: FormulaDetailDto ↔ FormulaDetailModel（Singleton）
 ├── Models/
 │   ├── FormulaDetailModel.cs                  # Detail 编辑模型（ValidatableModelBase，DataAnnotations 验证）
 │   └── Items/
@@ -52,7 +50,6 @@ LYBT.Desktop.Formula/
 | **FormulaService** | `IFormulaService` 实现；`CommandResult<T>` 统一返回；委托 `IFormulaRepository` | GetByIdAsync、GetPagedAsync、CreateFormulaAsync、UpdateFormulaAsync、CopyFormulaAsync、DeleteFormulaAsync、ToggleStatusAsync、BatchDeleteAsync、BatchImportAsync |
 | **FormulaSearchProvider** | `IFormulaSearchProvider` 实现；跨模块接口解耦 | GetFormulasPagedAsync、GetFormulaByIdAsync（供 MedicalCase 模块使用） |
 | **FormulaDetailModelMapper** | Mapperly `[Mapper]` 编译时生成；Singleton 注册；Herbs 集合手动映射(→ObservableCollection) | ToItem(Dto→Model)、ToDto(Model→Dto)、ToInputDto(Model→InputDto，Id 空 Guid→null) |
-| **FormulaMapper** | Mapperly `[Mapper]`；IsShared↔IsPersonal 手动反转；Herbs 集合手动映射 | ToItem(FormulaDetailDto/FormulaListDto→FormulaItem)、ToDto、ToInputDto |
 | **FormulaDetailModel** | 继承 `ValidatableModelBase`；DataAnnotations 验证([Required]/[StringLength]) | XAML 绑定目标，CreateNew() 静态工厂，Clone() 深拷贝 |
 | **FormulaEditContext** | 继承 `ValidatableModelBase`；替代 FormulaDetailModel 的编辑角色 | EditControl 的 Object DP 绑定目标，所有编辑字段集中于此 |
 | **FormulaStatusHandler** | `IFormulaStatusHandler` 实现 | ToggleStatusAsync（启用/禁用切换）、RestoreAsync（软删除恢复） |
@@ -91,12 +88,12 @@ LYBT.Desktop.Formula/
 4. **Mapperly 编译时映射**: 替代 AutoMapper，零运行时开销；FormulaDetailModelMapper 注册为 Singleton
 5. **Herbs 集合手动映射**: ObservableCollection 无法由 Mapperly 自动生成，需在 ToItem/ToDto 包装方法中手动逐项转换
 6. **IFormulaSearchProvider 跨模块解耦**: 通过 Contracts 层接口实现 Formula→MedicalCase 解耦，无需 ProjectReference
-7. **FormulaMapper 的 IsShared↔IsPersonal 反转**: DTO 用 IsShared(共享=真)，UI 用 IsPersonal(个人=真)，映射时需手动 `!` 取反
+7. **FormulaItem.IsPersonal 派生自 IsShared**: 列表项 UI 模型以 IsPersonal(个人=真) 呈现，由 `!IsShared` 派生，DTO 层始终用 IsShared
 
 ## 已知陷阱
 
 1. **FormulaEditControl 的 Effect 属性命名冲突**: 使用 `FormulaEffect` 而非 `Effect`，是为避免与 `UIElement.Effect` 冲突
-2. **IsShared/IsPersonal 反转容易遗漏**: FormulaMapper 和 FormulaMasterDetailViewModel 中多处需手动映射 `IsShared = !IsPersonal`，新增字段时务必同步
+2. **IsShared/IsPersonal 口径**: FormulaItem.IsPersonal 由 `!IsShared` 派生，DTO 交互统一用 IsShared，避免混用
 3. **Herbs 集合手动映射**: FormulaDetailModelMapper 无法自动映射 ObservableCollection，新增 Herbs 子字段时必须同步更新 ToItem/ToDto/ToInputDto 的手动映射段
 4. **BatchEnable/BatchDisable 本地模式不支持**: 返回 null 而非异常，调用方需检查返回值
 5. **FormulaCommandHandler 未注册 DI**: 实现完整但从未在容器注册，属于废弃代码

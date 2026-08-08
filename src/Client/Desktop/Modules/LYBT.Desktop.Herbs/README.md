@@ -20,8 +20,6 @@ LYBT.Desktop.Herbs/
 │   ├── IHerbService.cs                            # 药材业务服务接口
 │   ├── IHerbSearchProvider.cs                     # 跨模块搜索提供者接口
 │   └── IHerbStatusHandler.cs                      # 状态处理接口
-├── Mappers/
-│   └── HerbMapper.cs                              # Mapperly 编译时映射器
 ├── Models/
 │   ├── Items/
 │   │   └── HerbEditContext.cs                     # 编辑上下文模型
@@ -51,7 +49,6 @@ LYBT.Desktop.Herbs/
 | **RemoteHerbService** : IHerbService | 统一错误处理 | 10 个方法: CreateAsync / UpdateAsync / DeleteAsync / GetByIdAsync / GetPagedAsync / SearchAsync / ToggleStatusAsync / RestoreAsync / BatchDeleteAsync / GetAllAsync |
 | **HerbSearchProvider** : IHerbSearchProvider | 跨模块解耦（D5-3），委托 IHerbRepository | SearchHerbsAsync（关键词搜索）/ GetAllHerbsAsync（分页循环加载，pageSize=100）。供 Formula 和 MedicalCase 模块使用 |
 | **HerbRepository** : IHerbRepository | Repository 抽象层，Local/Remote 切换 | 标准 CRUD + 包装方法（CreateWithResultAsync 等返回元组）。导入导出仅 Remote 模式。依赖 IHerbApi?（可选，仅 Remote 批量/导入导出） |
-| **HerbMapper** | Mapperly 编译时映射 | HerbDetailDto ↔ HerbDetailModel ↔ HerbInputDto。ToItem / ToDto / ToInputDtoCore / ToInputDto（Id 空 Guid 转 null） |
 | **HerbDetailModel** : ValidatableModelBase | Detail 区域编辑模型 | 属性: Id / IsNew（计算）/ Name（[Required]，自动生成 PinYinCode）/ PinYinCode / Category / Properties / Origin / Spec / Unit（[Required]）/ Price（[Required][Range]）/ CostPrice（[Range]）/ Effect / Usage / Remark / Status / CreatedAt / UpdatedAt。方法: CreateNew()（默认 Unit="克"）/ Clone()（直接赋值私有字段） |
 
 ## 依赖关系
