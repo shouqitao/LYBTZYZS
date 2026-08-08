@@ -52,19 +52,4 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
-
-    /// <summary>
-    /// 添加AsyncLocal的CorrelationId提供者(适用于Desktop端)
-    /// </summary>
-    /// <param name="services">服务集合</param>
-    /// <returns>服务集合</returns>
-    public static IServiceCollection AddAsyncLocalCorrelationIdProvider(
-        this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-
-        services.TryAddSingleton<ICorrelationIdProvider, AsyncLocalCorrelationIdProvider>();
-
-        return services;
-    }
 }

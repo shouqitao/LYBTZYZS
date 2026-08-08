@@ -10,8 +10,8 @@ namespace LYBT.Shared.Logging.Enrichers;
 /// </summary>
 /// <remarks>
 /// 此Enricher作为LogContext.PushProperty的补充机制:
-/// - Server端使用HttpContextCorrelationIdProvider从HttpContext获取
-/// - Desktop端使用AsyncLocalCorrelationIdProvider从AsyncLocal获取
+/// - Server端由CorrelationIdMiddleware注入 (W3C traceparent)
+/// - Desktop端使用ActivityCorrelationIdProvider从Activity.Current获取
 /// - 优先从LogContext获取(由中间件注入),其次从Provider获取
 /// </remarks>
 public class CorrelationIdEnricher : ILogEventEnricher
