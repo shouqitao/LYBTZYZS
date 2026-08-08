@@ -63,7 +63,7 @@ Controllers inherit `BaseApiController` (from `LYBT.Infrastructure.Web`) and use
 | Directory | Purpose |
 |-----------|---------|
 | `Auth/` | LocalJwtConfig (simplified JWT generation) |
-| `Controllers/` | 10 controllers — 7 use Service layer, 3 use DbContext directly |
+| `Controllers/` | 12 controllers — 与 Remote WebAPI 同构；9 use Service layer, 3 use DbContext directly（Auth/Health/Diagnostics） |
 | `Data/` | SeedData only (LocalWebApiDbContext deleted — uses AppDbContext) |
 
 ## Controllers
@@ -80,6 +80,8 @@ Controllers inherit `BaseApiController` (from `LYBT.Infrastructure.Web`) and use
 | ConfigurationController | (none — in-memory store) | Key/value config, no business logic |
 | HealthController | (none — DB connectivity) | CanConnectAsync only |
 | DiagnosticsController | (none — LoggingLevelManager) | Log level management |
+| ReportsController | IReportRepository | 只读报表查询（B-04）|
+| DeployController | (none) | restart 确认（A-13）|
 
 ## For AI Agents
 
@@ -92,7 +94,7 @@ Controllers inherit `BaseApiController` (from `LYBT.Infrastructure.Web`) and use
 
 ### Internal
 - `LYBT.Infrastructure` — AppDbContext, BaseRepository, BaseApiController
-- `LYBT.Module.*` — All 8 server modules (Auth, Users, Patients, Herbs, Formula, MedicalCase, Registration, Sync)
+- `LYBT.Module.*` — All 8 server modules (Auth, Users, Patients, Herbs, Formula, MedicalCase, Registration, Reports)
 - `LYBT.Entities` — Domain entities
 - `LYBT.Shared.Models` — DTOs and contracts
 - `LYBT.Desktop.Contracts` — Desktop interface definitions

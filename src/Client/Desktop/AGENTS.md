@@ -16,7 +16,7 @@ WPF/Prism.DryIoc desktop application for the LYBTZYZS TCM clinic management syst
 ## Subdirectories
 | Directory | Purpose |
 |-----------|---------|
-| [Core/](Core/AGENTS.md) | Core libraries — Contracts, Foundation, Infrastructure, Models, LocalData, Printing, CardReader, Utilities |
+| [Core/](Core/AGENTS.md) | Core libraries — Contracts, Foundation, Infrastructure, Controls, Printing |
 | [Modules/](Modules/AGENTS.md) | Business modules — Auth, Patients, Herbs, Formula, MedicalCase, Registration, Users |
 | [Roles/](Roles/AGENTS.md) | Role-based workspaces — Admin, Clinical, Receptionist |
 | Resources/ | XAML resources — Dictionaries and Strings |

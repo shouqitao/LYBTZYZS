@@ -16,13 +16,12 @@ Business modules for the ASP.NET Core backend. Each module is a **self-contained
 | LYBT.Module.Formula/ | Formula (empirical recipe) management — CRUD, herb composition |
 | LYBT.Module.MedicalCase/ | Medical case (DDD aggregate) — consultations, prescriptions, CQRS commands |
 | LYBT.Module.Registration/ | Patient registration and appointment scheduling |
-| LYBT.Module.Sync/ | Data synchronization — local/remote mode data exchange |
 
 ## For AI Agents
 
 ### Working In This Directory
 - Each module follows **Domain / Application / Infrastructure** structure (see module template below).
-- **Modules MUST NOT reference each other.** Use `ICrossModuleService` (SharedKernel) for synchronous cross-module queries, or domain events for async state changes.
+- **Modules MUST NOT reference each other.** Use `ICrossModuleService`（`Infrastructure/Services/CrossModule`）for synchronous cross-module queries, or domain events for async state changes.
 - Each module registers its own **DbContext** (per-module data isolation) — never share `AppDbContext`.
 - All DTOs are defined in `LYBT.Shared.Models`, not within modules.
 - MediatR is registered per-module: `services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(...))`.
@@ -69,14 +68,14 @@ services.AddMediatR(cfg =>
 - **Controller**: Minimal, dispatches to MediatR (ICommand/IQuery → Handler)
 - **Command/Query Handler**: Business logic + validation + orchestrates Repository calls
 - **Repository**: Extends `BaseRepository<T>`, adds domain-specific queries
-- **Cross-module (sync)**: `ICrossModuleService` interface in SharedKernel, implemented in providing module
+- **Cross-module (sync)**: `ICrossModuleService` interface（`Infrastructure/Services/CrossModule`）, implemented in providing module
 - **Cross-module (async)**: SignalR `INotificationService` 推送（B-10，如挂号队列实时通知）
 - **Validators**: FluentValidation, registered per-module assembly scan
 
 ## Dependencies
 
 ### Internal
-- [Core/](../Core/AGENTS.md) — `LYBT.SharedKernel`, `LYBT.Infrastructure`, `LYBT.Entities`
+- [Core/](../Core/AGENTS.md) — `LYBT.Infrastructure`, `LYBT.Entities`
 - [Shared/](../../Shared/AGENTS.md) — `LYBT.Shared.Models`, `LYBT.Shared.Validators`
 
 ### External

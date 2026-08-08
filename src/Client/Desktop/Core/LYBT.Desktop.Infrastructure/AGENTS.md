@@ -63,7 +63,6 @@ LYBT.Desktop.Infrastructure/
 | 文件夹 | 职责 |
 |--------|------|
 | Behaviors/ | XAML 行为 |
-| CardReader/ | 读卡器集成 |
 | Commands/ | MVVM 命令 |
 | Configuration/ | WPF 配置 |
 | Constants/ | 常量定义 |

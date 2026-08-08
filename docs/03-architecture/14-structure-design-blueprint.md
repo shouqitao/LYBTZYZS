@@ -164,7 +164,8 @@
 | `AppDbContext` | **唯一迁移链所有者**（A-20 方案 A）：物理 schema 单一管理；模块 DbContext 复用其建的表 |
 | `BaseRepository<T>` / `BaseApiController` / `BaseCrudController` | Controller 继承规范（A-14 文档化三种路径）|
 | `BaseUsersController` / `BaseRegistrationsController` / `BaseMedicalCasesController` | **模块级 Controller 基类**（A-26 补记）：继承链 `BaseApiController:ControllerBase` → `BaseCrudController` → 模块级基类（Users:BaseUsersController.cs:23 / Registration:BaseRegistrationsController.cs:16 / MedicalCase:BaseMedicalCasesController.cs:18），共 5 条终态路径（BaseApiController×6 / BaseCrudController×3 / 模块级×3）。三层继承合理，定案不合并 |
-| `BatchOperationHandlerBase<T>` | Q-01 批处理泛型化（模板方法模式）|
+| `BatchOperationHandlerBase<T>` | Q-01 批处理泛型化（模板方法模式）——**第一模板**：按 ID 批量操作（删除/启停）|
+| `BatchImport*CommandHandler`（Formula/Herbs/Patients ×3）| **批处理第二模板**（A-29 P2-12 定案）：批量导入独立实现，不继承 `BatchOperationHandlerBase`——因输入（List\<TRowDto\> vs List\<Guid\>）、返回形状（模块专用 ImportResultDto 含行级失败明细/DataSnapshot vs BatchOperationResultDto）根本不同，泛型化需 5+ 抽象钩子 + 结果类型泛型，成本高于 3 处共性。**新增批量导入必须走此模板或先评估收敛，禁止第三个手写导入** |
 | `ICrossModuleService` + 各域接口 | 模块间通信唯一通道（P07）|
 | `ValidationBehavior<TReq,TRes>` | FluentValidation 管道（2026-08-06 补）|
 | `SystemExceptionHandler` | 异常→HTTP 映射（403/404/409/501 已对齐，2026-08-08 批次）|
