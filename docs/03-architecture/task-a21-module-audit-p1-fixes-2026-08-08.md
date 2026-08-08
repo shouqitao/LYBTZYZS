@@ -1,5 +1,9 @@
 # 任务 A-21：模块级审计 P1 修复批次
 
+> [!NOTE]
+> 本任务书所述工作已全部完成（2026-08-08，6 独立 commit：`1b19bce13`/`3d692c5f5`/`4ad350a39`/`876581164`/`2fa05ff63`/`271bca70f`）。
+> 最终状态见 [最终报告](../compose/reports/a21-module-audit-p1-fixes.md)，进度登记见 [项目总账](13-project-master-plan.md) §八。
+
 > 依据：`structure-audit-module-level-crosscheck-2026-08-08.md` 交叉验证 §二 P1 清单
 > 产品负责人已拍板执行
 
