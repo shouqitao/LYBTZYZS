@@ -145,12 +145,4 @@ public static class LocalWebApiProgram
         await IdentitySeedData.SeedRolesAndAdminAsync(scope.ServiceProvider);
         await LocalWebApiSeedData.SeedAsync(dbContext, scope.ServiceProvider);
     }
-
-    public static async Task RunAsync(string[]? args, string connectionString)
-    {
-        var builder = CreateBuilder(args);
-        var app = CreateApplication(builder, connectionString);
-        await InitializeDatabaseAsync(app);
-        await app.RunAsync();
-    }
 }

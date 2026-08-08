@@ -100,7 +100,6 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IUsernameStorageService, UsernameStorageService>();
             containerRegistry.RegisterSingleton<ISystemSettingsService, SystemSettingsService>();
             containerRegistry.RegisterSingleton<IApiHealthCheckService, ApiHealthCheckService>();
-            containerRegistry.RegisterSingleton<IApiService, ApiService>();
             // StartupOptimizationService 已移除（空壳无实际功能）
             containerRegistry.RegisterSingleton<ITokenLifecycleService, TokenLifecycleService>();
         }

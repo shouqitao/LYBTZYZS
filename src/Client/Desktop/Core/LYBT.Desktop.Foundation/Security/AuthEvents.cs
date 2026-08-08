@@ -18,18 +18,6 @@ public static class AuthEvents
     /// </summary>
     public class LoginStartedEvent : PubSubEvent<LoginStartedPayload> { }
 
-    /// <summary>
-    /// 登录成功事件
-    /// 当用户成功登录（手动或自动登录）时触发
-    /// </summary>
-    public class LoginSucceededEvent : PubSubEvent<LoginSucceededPayload> { }
-
-    /// <summary>
-    /// 登录失败事件
-    /// 当登录尝试失败时触发
-    /// </summary>
-    public class LoginFailedEvent : PubSubEvent<LoginFailedPayload> { }
-
     #endregion
 
     #region 登出相关事件
@@ -88,12 +76,6 @@ public static class AuthEvents
     /// </summary>
     public class TokenRefreshFailedEvent : PubSubEvent<TokenRefreshFailedPayload> { }
 
-    /// <summary>
-    /// 会话已过期事件
-    /// 当Token过期需要重新登录时触发
-    /// </summary>
-    public class SessionExpiredEvent : PubSubEvent<SessionExpiredPayload> { }
-
     #endregion
 
     #region 资料更新相关事件
@@ -134,109 +116,6 @@ public record LogoutStartedPayload
 
     /// <summary>时间戳</summary>
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;
-}
-
-/// <summary>
-/// 登录成功载荷
-/// </summary>
-public record LoginSucceededPayload
-{
-    /// <summary>
-    /// 登录用户信息
-    /// </summary>
-    public required UserDetailDto User { get; init; }
-
-    /// <summary>
-    /// Token过期时间
-    /// </summary>
-    public required DateTime TokenExpiresAt { get; init; }
-
-    /// <summary>
-    /// 是否为自动登录
-    /// </summary>
-    public bool IsAutoLogin { get; init; }
-
-    /// <summary>
-    /// 登录时间戳
-    /// </summary>
-    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
-}
-
-/// <summary>
-/// 登录失败载荷
-/// </summary>
-public record LoginFailedPayload
-{
-    /// <summary>
-    /// 尝试登录的用户名
-    /// </summary>
-    public string? UserName { get; init; }
-
-    /// <summary>
-    /// 失败原因
-    /// </summary>
-    public required LoginFailureReason Reason { get; init; }
-
-    /// <summary>
-    /// 错误消息
-    /// </summary>
-    public string? ErrorMessage { get; init; }
-
-    /// <summary>
-    /// 是否为自动登录尝试
-    /// </summary>
-    public bool IsAutoLoginAttempt { get; init; }
-
-    /// <summary>
-    /// 失败时间戳
-    /// </summary>
-    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
-}
-
-/// <summary>
-/// 登录失败原因
-/// </summary>
-public enum LoginFailureReason
-{
-    /// <summary>
-    /// 未知错误
-    /// </summary>
-    Unknown,
-
-    /// <summary>
-    /// 用户名或密码错误
-    /// </summary>
-    InvalidCredentials,
-
-    /// <summary>
-    /// 账户被禁用
-    /// </summary>
-    AccountDisabled,
-
-    /// <summary>
-    /// 账户被锁定
-    /// </summary>
-    AccountLocked,
-
-    /// <summary>
-    /// 网络错误
-    /// </summary>
-    NetworkError,
-
-    /// <summary>
-    /// 服务器错误
-    /// </summary>
-    ServerError,
-
-    /// <summary>
-    /// Token无效（自动登录）
-    /// </summary>
-    TokenInvalid,
-
-    /// <summary>
-    /// Token已过期（自动登录）
-    /// </summary>
-    TokenExpired
 }
 
 /// <summary>
@@ -387,27 +266,6 @@ public record TokenRefreshFailedPayload
 }
 
 /// <summary>
-/// 会话已过期载荷
-/// </summary>
-public record SessionExpiredPayload
-{
-    /// <summary>
-    /// 过期的用户名
-    /// </summary>
-    public string? UserName { get; init; }
-
-    /// <summary>
-    /// 过期原因
-    /// </summary>
-    public SessionExpiredReason Reason { get; init; }
-
-    /// <summary>
-    /// 时间戳
-    /// </summary>
-    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
-}
-
-/// <summary>
 /// 密码修改载荷
 /// </summary>
 /// <remarks>
@@ -441,32 +299,6 @@ public record ProfileUpdatedPayload
 
     /// <summary>时间戳</summary>
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;
-}
-
-/// <summary>
-/// 会话过期原因
-/// </summary>
-public enum SessionExpiredReason
-{
-    /// <summary>
-    /// Token自然过期
-    /// </summary>
-    TokenExpired,
-
-    /// <summary>
-    /// Token刷新失败
-    /// </summary>
-    RefreshFailed,
-
-    /// <summary>
-    /// 用户被踢出
-    /// </summary>
-    ForcedLogout,
-
-    /// <summary>
-    /// 用户长时间不活动
-    /// </summary>
-    InactivityTimeout
 }
 
 #endregion
