@@ -88,7 +88,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// 取消医案请求DTO
     /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-011)
     /// </summary>
-    public class CancelMedicalCaseRequestDto
+    public class CancelMedicalCaseRequest
     {
         /// <summary>
         /// 取消原因（非当天本人操作时必填）

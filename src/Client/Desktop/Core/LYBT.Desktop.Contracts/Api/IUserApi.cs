@@ -59,7 +59,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 管理员重置用户密码 (Issue #1910)
         /// </summary>
         [Refit.Post("/api/v1/users/{id}/reset-password")]
-        Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, [Refit.Body] ResetPasswordRequestDto request);
+        Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, [Refit.Body] ResetPasswordRequest request);
 
         /// <summary>
         /// 切换用户状态（启用/禁用）

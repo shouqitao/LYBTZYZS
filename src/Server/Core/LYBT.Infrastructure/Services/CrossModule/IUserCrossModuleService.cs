@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.DTOs.Users;
+using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Infrastructure.Services.CrossModule;
 

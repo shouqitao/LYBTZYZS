@@ -183,6 +183,8 @@
 | **LYBT.Module.Registration** | 27 | CQRS + SignalR Hubs | **RegistrationDbContext**（A-20 新建）| US-REG-008（实时推送）+ D-01（接诊即建）|
 | **LYBT.Module.Reports** | 7 | 只读聚合（Service+Repository）| AppDbContext | B-04 报表增强（只读聚合查询，无自有表）|
 
+> **Reports DTO 契约约定（2026-08-08 A-26 定案，P2-18）**：`Infrastructure/ReportQueryModels.cs` 内的 record（ReportDayValueDto/ReportDayCountDto/DoctorPerformancePointDto/PatientFlowPointDto）为**仓储返回形状（模块私有）**；对外 DTO 一律在 `Shared.Models/Contracts/Reports/`（如 DoctorPerformanceDto）。禁止把仓储私有 record 直接当 API 契约返回。
+
 #### 请求处理边界规则（2026-08-08 A-26 定案，T2）
 
 > **统一规则（SSOT，架构测试守卫后强制执行）**：CQRS 模块（Auth/Users/Patients/Herbs/Formula/Registration）内——

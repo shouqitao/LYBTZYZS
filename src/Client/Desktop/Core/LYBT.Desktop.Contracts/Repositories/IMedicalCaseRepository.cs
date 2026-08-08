@@ -81,7 +81,7 @@ public interface IMedicalCaseRepository
     /// <summary>
     /// 取消医案
     /// </summary>
-    Task<MedicalCaseDetailDto?> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequestDto? request, CancellationToken ct = default);
+    Task<MedicalCaseDetailDto?> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequest? request, CancellationToken ct = default);
 
     /// <summary>
     /// 挂起医案

@@ -1,5 +1,4 @@
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Models.DTOs.Users;
 using Riok.Mapperly.Abstractions;
 
 namespace LYBT.Module.Auth.Application.Mappers;

@@ -248,7 +248,7 @@ public class UserTests : WebApiE2ETestBase
 
         var response = await UserApi.ResetPasswordAsync(
             userId,
-            new ResetPasswordRequestDto { MustChangeOnNextLogin = false });
+            new ResetPasswordRequest { MustChangeOnNextLogin = false });
 
         response.Success.Should().BeTrue(response.Message);
         response.Data.Should().NotBeNull();

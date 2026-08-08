@@ -131,7 +131,7 @@ public interface IApiClientMedicalCases
     /// <param name="request">Cancel request data (optional).</param>
     Task<ApiResponse> CancelMedicalCaseAsync(
         Guid id,
-        CancelMedicalCaseRequestDto? request = null);
+        CancelMedicalCaseRequest? request = null);
 
     /// <summary>
     /// 更新医案状态。

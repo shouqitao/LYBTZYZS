@@ -138,7 +138,7 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Put("/api/v1/medicalcases/{id}/cancel")]
         Task<Refit.IApiResponse> CancelMedicalCaseAsync(
             Guid id,
-            [Refit.Body] CancelMedicalCaseRequestDto? request = null);
+            [Refit.Body] CancelMedicalCaseRequest? request = null);
 
         /// <summary>
         /// 更新医案状态

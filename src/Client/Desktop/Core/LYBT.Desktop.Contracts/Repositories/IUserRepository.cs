@@ -64,7 +64,7 @@ public interface IUserRepository
     /// <summary>
     /// 管理员重置用户密码 (Issue #1911)
     /// </summary>
-    Task<CommandResult<ResetPasswordResponseDto>> ResetPasswordAsync(Guid userId, ResetPasswordRequestDto request, CancellationToken ct = default);
+    Task<CommandResult<ResetPasswordResponseDto>> ResetPasswordAsync(Guid userId, ResetPasswordRequest request, CancellationToken ct = default);
 
     /// <summary>
     /// 切换用户状态 (启用/禁用)

@@ -189,7 +189,7 @@ public abstract class BaseUsersController : BaseCrudController
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [ProducesResponseType(typeof(ApiResponse<ResetPasswordResponseDto>), 200)]
     [ProducesResponseType(404)]
-    public virtual async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordRequestDto request, CancellationToken ct = default)
+    public virtual async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordRequest request, CancellationToken ct = default)
     {
         if (ValidateGuid(id, "用户ID") is { } error) return error;
 

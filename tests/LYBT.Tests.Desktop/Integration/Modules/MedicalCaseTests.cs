@@ -355,7 +355,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
 
         var cancelResponse = await MedicalCaseApi.CancelMedicalCaseAsync(
             caseId,
-            new CancelMedicalCaseRequestDto { Reason = "患者取消就诊" });
+            new CancelMedicalCaseRequest { Reason = "患者取消就诊" });
 
         cancelResponse.IsSuccessStatusCode.Should().BeTrue();
         _output.WriteLine($"Cancelled case {caseId}");

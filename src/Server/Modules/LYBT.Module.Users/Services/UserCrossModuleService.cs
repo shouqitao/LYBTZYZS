@@ -2,7 +2,7 @@ using LYBT.Entities.Users;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Users.Application.Mappers;
 using LYBT.Module.Users.Infrastructure;
-using LYBT.Shared.Models.DTOs.Users;
+using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

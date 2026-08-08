@@ -210,7 +210,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
         }
     }
 
-    public async Task<MedicalCaseDetailDto?> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequestDto? request, CancellationToken ct = default)
+    public async Task<MedicalCaseDetailDto?> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequest? request, CancellationToken ct = default)
     {
         if (id == Guid.Empty)
             throw new ArgumentException("医案ID不能为空", nameof(id));

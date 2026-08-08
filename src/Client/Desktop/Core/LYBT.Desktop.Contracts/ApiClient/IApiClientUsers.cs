@@ -78,7 +78,7 @@ public interface IApiClientUsers : IEntityApiSegment<UserListDto, UserDetailDto,
     /// </summary>
     /// <param name="id">User ID.</param>
     /// <param name="request">Reset password request.</param>
-    Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequestDto request);
+    Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequest request);
 
     /// <summary>
     /// 切换用户状态（启用/禁用）。

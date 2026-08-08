@@ -91,7 +91,7 @@ internal sealed class MedicalCaseApiClient : IApiClientMedicalCases
     /// The underlying IMedicalCaseApi returns Refit.IApiResponse; this adapter converts it
     /// to the shared ApiResponse type used by IApiClientMedicalCases.
     /// </remarks>
-    public async Task<ApiResponse> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequestDto? request = null)
+    public async Task<ApiResponse> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequest? request = null)
     {
         var refitResponse = await _api.CancelMedicalCaseAsync(id, request).ConfigureAwait(false);
         if (refitResponse.IsSuccessStatusCode)

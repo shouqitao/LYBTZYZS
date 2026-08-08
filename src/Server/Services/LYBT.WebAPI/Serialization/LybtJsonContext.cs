@@ -53,7 +53,7 @@ namespace LYBT.WebAPI.Serialization;
 [JsonSerializable(typeof(UserInputDto))]
 [JsonSerializable(typeof(ChangePasswordDto))]
 [JsonSerializable(typeof(ChangeProfileDto))]
-[JsonSerializable(typeof(ResetPasswordRequestDto))]
+[JsonSerializable(typeof(ResetPasswordRequest))]
 [JsonSerializable(typeof(ResetPasswordResponseDto))]
 
 // ============================================================

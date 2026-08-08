@@ -154,7 +154,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
 
     public async Task<CommandResult<ResetPasswordResponseDto>> ResetPasswordAsync(
         Guid userId,
-        ResetPasswordRequestDto request,
+        ResetPasswordRequest request,
         CancellationToken ct = default)
     {
         // Returns CommandResult.Failed on exception instead of rethrowing — keep manual try/catch.

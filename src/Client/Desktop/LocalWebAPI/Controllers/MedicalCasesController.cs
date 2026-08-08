@@ -236,7 +236,7 @@ public class MedicalCasesController : BaseMedicalCasesController
     /// 取消医案
     /// </summary>
     [HttpPut("{id}/cancel")]
-    public async Task<IActionResult> CancelCase(Guid id, [FromBody] CancelMedicalCaseRequestDto? request = null, CancellationToken ct = default)
+    public async Task<IActionResult> CancelCase(Guid id, [FromBody] CancelMedicalCaseRequest? request = null, CancellationToken ct = default)
     {
         if (ValidateGuid(id, "医案ID") is { } error) return error;
         var (operatorId, _, operatorRole) = GetOperator();

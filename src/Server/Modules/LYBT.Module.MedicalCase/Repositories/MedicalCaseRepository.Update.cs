@@ -1,6 +1,7 @@
 using LYBT.Entities.Consultations;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
+using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -191,7 +192,7 @@ namespace LYBT.Module.MedicalCases.Repositories
                 .FirstOrDefaultAsync(m => m.Id == entity.Id, cancellationToken);
 
             if (existingEntity == null)
-                throw new KeyNotFoundException($"医案 {entity.Id} 不存在");
+                throw new NotFoundException($"医案 {entity.Id} 不存在");
 
             // 复制属性值到已跟踪的existingEntity
             _context.Entry(existingEntity).CurrentValues.SetValues(entity);

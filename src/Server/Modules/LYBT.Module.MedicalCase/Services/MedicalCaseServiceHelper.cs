@@ -3,7 +3,7 @@ using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.DTOs.Users;
+using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Validators.BusinessRules;
 using Microsoft.EntityFrameworkCore;
@@ -68,7 +68,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             var patient = await crossModule.GetPatientBasicInfoAsync(patientId, cancellationToken)
-                ?? throw new KeyNotFoundException($"患者不存在，PatientId: {patientId}");
+                ?? throw new NotFoundException($"患者不存在，PatientId: {patientId}");
 
             // T5-P2-09: 检查患者状态
             if (patient.Status != CommonStatus.Enabled)
@@ -79,7 +79,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             var doctor = await crossModule.GetUserBasicInfoAsync(doctorId, cancellationToken)
-                ?? throw new KeyNotFoundException($"医生不存在，DoctorId: {doctorId}");
+                ?? throw new NotFoundException($"医生不存在，DoctorId: {doctorId}");
 
             // BR-001: 单患者仅一条未完成医案
             var existingCases = await medicalCaseRepository.GetByPatientIdAsync(patientId, cancellationToken);

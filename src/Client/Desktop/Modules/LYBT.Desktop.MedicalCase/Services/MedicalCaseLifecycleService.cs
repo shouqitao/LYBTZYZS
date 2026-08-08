@@ -82,7 +82,7 @@ internal class MedicalCaseLifecycleService : IMedicalCaseLifecycleService
         try
         {
             _logger.LogInformation("[LC] MedicalCase.Cancel started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            var request = string.IsNullOrEmpty(reason) ? null : new CancelMedicalCaseRequestDto { Reason = reason };
+            var request = string.IsNullOrEmpty(reason) ? null : new CancelMedicalCaseRequest { Reason = reason };
             var data = await _repository.CancelMedicalCaseAsync(medicalCaseId, request);
 
             if (data != null)

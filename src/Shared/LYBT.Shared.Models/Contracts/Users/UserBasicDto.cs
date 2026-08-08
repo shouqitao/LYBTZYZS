@@ -1,6 +1,6 @@
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Models.DTOs.Users;
+namespace LYBT.Shared.Models.Contracts.Users;
 
 /// <summary>
 /// 跨模块用户基本信息 DTO (供 Auth 模块通过 IUserCrossModuleService 使用)

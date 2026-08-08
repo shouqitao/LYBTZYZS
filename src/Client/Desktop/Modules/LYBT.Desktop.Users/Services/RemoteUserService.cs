@@ -325,7 +325,7 @@ namespace LYBT.Desktop.Users.Services
             {
                 _logger.LogInformation("[SVC] User.ResetPassword started - UserId={UserId}", userId);
 
-                var request = new ResetPasswordRequestDto
+                var request = new ResetPasswordRequest
                 {
                     MustChangeOnNextLogin = true
                 };

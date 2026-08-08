@@ -59,7 +59,7 @@ internal sealed class UserApiClient : IApiClientUsers
         => _api.ChangePasswordAsync(id, request);
 
     /// <inheritdoc />
-    public Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequestDto request)
+    public Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequest request)
         => _api.ResetPasswordAsync(id, request);
 
     public Task<ApiResponse<UserDetailDto>> ToggleStatusAsync(Guid id)

@@ -325,7 +325,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 403)]
         public async Task<IActionResult> CancelMedicalCase(
             Guid id,
-            [FromBody] CancelMedicalCaseRequestDto? request = null, CancellationToken ct = default)
+            [FromBody] CancelMedicalCaseRequest? request = null, CancellationToken ct = default)
         {
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;

@@ -332,7 +332,7 @@ public class MedicalCaseService : IMedicalCaseService
         try
         {
             _logger.LogInformation("[SVC] MedicalCase.CancelViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            var request = string.IsNullOrEmpty(reason) ? null : new CancelMedicalCaseRequestDto { Reason = reason };
+            var request = string.IsNullOrEmpty(reason) ? null : new CancelMedicalCaseRequest { Reason = reason };
             var data = await _repository.CancelMedicalCaseAsync(medicalCaseId, request);
 
             if (data != null)

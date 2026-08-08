@@ -42,7 +42,7 @@ internal sealed class UsersHttpApiClient : HttpApiClientBase, IApiClientUsers
     public Task<ApiResponse> ChangePasswordAsync(Guid id, ChangePasswordRequest request)
         => PutVoidAsync($"/api/v1/users/{id}/change-password", request);
 
-    public Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequestDto request)
+    public Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequest request)
         => PostAndWrapAsync<ResetPasswordResponseDto>($"/api/v1/users/{id}/reset-password", request);
 
     public Task<ApiResponse<UserDetailDto>> ToggleStatusAsync(Guid id)

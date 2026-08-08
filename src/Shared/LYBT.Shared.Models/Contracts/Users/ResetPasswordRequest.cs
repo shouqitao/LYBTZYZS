@@ -10,7 +10,7 @@ namespace LYBT.Shared.Models.Contracts.Users
     /// 管理员重置密码请求DTO (Issue #1162)
     /// 修复:重置密码不需要传递新密码,使用配置文件中的默认密码
     /// </summary>
-    public class ResetPasswordRequestDto
+    public class ResetPasswordRequest
     {
         /// <summary>是否强制用户下次登录时修改密码</summary>
         [DisplayName("强制修改密码")]

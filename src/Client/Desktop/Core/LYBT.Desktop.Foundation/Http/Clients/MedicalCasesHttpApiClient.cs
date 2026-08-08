@@ -75,7 +75,7 @@ internal sealed class MedicalCasesHttpApiClient : HttpApiClientBase, IApiClientM
     public Task<ApiResponse<MedicalCaseDetailDto>> SuspendAsync(Guid id, ConsultationInputDto? request)
         => PutAndWrapAsync<MedicalCaseDetailDto>($"/api/v1/medicalcases/{id}/suspend", request);
 
-    public async Task<ApiResponse> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequestDto? request)
+    public async Task<ApiResponse> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequest? request)
     {
         await PutVoidAsync($"/api/v1/medicalcases/{id}/cancel", request);
         return WrapSuccess();
