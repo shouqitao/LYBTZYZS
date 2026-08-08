@@ -68,6 +68,8 @@
 | A-17 | P0 本地 CRUD 断裂修复 | 本地 Patients/Herbs/Formulas Controller 补 GetList/Create/Update override（复用 Server Service）；MedicalCases 补 GetList/search/print-completed | A-16 | ✅ `b9944d1f4` | 0.5-1d |
 | A-18 | P1 机制收敛批次 | ① 契约双套统一（以 ApiClient 为主）② 领域客户端双实现收敛 ③ CorrelationId 删 AsyncLocal 侧 ④ Server 手写 Mapper 改 Mapperly ⑤ Desktop 模块引用补架构测试 | A-16 | ✅ P1 全部完成：第 1 子批次（P1-7/P1-3/P1-4/P1-6）+ 第 2 子批次（P1-5 `812fcdd0c`、P1-1/P1-2 `a8b9d0b0f`） | 2-3d |
 | A-19 | 移除 Auto 模式（用户自主切换） | 删 Auto 枚举 + DetectBestModeAsync 自动降级逻辑，模式仅由用户显式选择，远程不可用不自动降级 | A-18 | ✅ `4a1393c3a` | 0.5d |
+| A-20 | DbContext 全独立（ADR-0017 落地） | 新建 Patients/MedicalCase/Registration 3 个 DbContext（复用实体配置不建迁移），5 Repository 注入切换（PatientRepository/MedicalCaseRepository/RegistrationRepository/SecurityAuditRepository/HerbReferenceRepository），迁移链保持 AppDbContext 单一（方案 A 同库单迁移），架构测试新增「Repository 注入自己模块 DbContext」守卫 | 模块级审计 M1 | 🔄 执行中 | 2-3d |
+| A-21 | 模块级审计 P1 修复批次 | M4 Shell RoleDefinitionBase 模块名 bug（AuthModule→AuthenticationModule）/ M5 3 VM 越层（AuditLog/ReportsHome/RegistrationList 改走 Service）/ M3 领域事件空转 8 个（确认订阅或删除）/ M2 Desktop 映射统一（F-02，DTO↔Model 改 Mapperly 删 3 零引用 Mapper）/ C1 Infrastructure 职责过载（CardReader 独立 + LocalData 废弃）/ F-01 删 FeatureToggle + Tools 删 3 留 1 | 模块级审计交叉验证 | ⬜ 待派发 | 1-2d |
 
 ### B 类 — 产品功能
 
