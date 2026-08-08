@@ -17,7 +17,7 @@ Strongly-typed configuration options and validation for both Desktop client and 
 
 | Directory | Purpose |
 |-----------|---------|
-| `Options/Client/` | Client-side options: `ApiClientOptions`, `ClientSessionOptions`, `ClinicSettingsOptions`, `FeatureToggleOptions` |
+| `Options/Client/` | Client-side options: `ApiClientOptions`, `ClientSessionOptions`, `ClinicSettingsOptions` |
 | `Options/Common/` | Shared options: `JwtOptions` (used by both client and server) |
 | `Options/Server/` | Server-side options: `DatabaseOptions`, `DefaultPasswordOptions`, `LoggingOptions`, `MemoryCacheOptions`, `SecurityOptions`, `SessionOptions`, `SwaggerOptions`, `SystemAdminOptions` |
 | `Extensions/` | DI registration: `ServerConfigurationExtensions.cs`, `ClientConfigurationExtensions.cs` |

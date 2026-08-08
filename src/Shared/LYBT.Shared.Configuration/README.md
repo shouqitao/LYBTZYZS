@@ -22,7 +22,6 @@ LYBT.Shared.Configuration/
 │   │   ├── ApiClientOptions.cs     # API 连接配置
 │   │   ├── ClientSessionOptions.cs # 客户端会话
 │   │   ├── ClinicSettingsOptions.cs # 诊所设置
-│   │   ├── FeatureToggleOptions.cs # 功能开关
 │   │   ├── PrescriptionOptions.cs  # 处方配置
 │   │   └── SyncOptions.cs         # 同步配置
 │   ├── Common/
@@ -93,7 +92,6 @@ Options/
 ├── Client/
 │   ├── ApiClientOptions.cs      # API 客户端配置
 │   ├── ClientSessionOptions.cs  # 客户端会话配置
-│   ├── FeatureToggleOptions.cs  # 功能开关配置
 │   ├── ClinicSettingsOptions.cs # 诊所设置配置
 │   ├── PrescriptionOptions.cs   # 处方配置
 │   └── SyncOptions.cs           # 数据同步配置
@@ -180,11 +178,6 @@ public class JwtOptions
 ### Options/Client/ClientSessionOptions.cs
 **ClientSessionOptions** | 客户端会话: InactivityTimeoutMinutes(15)/WarningBeforeTimeoutMinutes(2)/ActivityCheckIntervalSeconds(30)
 
-### Options/Client/FeatureToggleOptions.cs
-**FeatureToggleOptions** | 功能开关，按模块分组
-
-包含 Consultation (Create/Edit/Delete/ViewDetail/Search)、Prescription (Create/Delete/Clone/Export/ViewDetail/Search)、MedicalCase (Create/Edit/Delete/ViewDetail/Search) 模块的布尔开关，以及 CardReaderEnabled 硬件设备开关。
-
 ### Options/Client/ClinicSettingsOptions.cs
 **ClinicSettingsOptions** | 诊所设置: Name/Address/Phone/Department("中医科")
 
@@ -227,7 +220,7 @@ public class JwtOptions
 
 | 方法 | 说明 |
 |------|------|
-| AddLybtClientConfiguration(services, configuration) | 注册 7 个客户端 Options + JwtOptionsValidator 验证器单例，绑定 IConfiguration，FeatureToggles/Prescription/Sync 支持热更新 |
+| AddLybtClientConfiguration(services, configuration) | 注册 6 个客户端 Options + JwtOptionsValidator 验证器单例，绑定 IConfiguration，Prescription/Sync 支持热更新 |
 
 ## 死代码与废弃标记
 
@@ -249,6 +242,6 @@ public class JwtOptions
 | 问题 | 原因 | 解决方案 |
 |------|------|----------|
 | LoggingOptions 不使用 ValidateOnStart | 日志配置需要支持运行时热更新，启动时验证会锁定配置 | 有意设计，不要添加 ValidateOnStart |
-| FeatureToggleOptions/PrescriptionOptions/SyncOptions 不使用 ValidateOnStart | 客户端需要支持配置热更新 | 有意设计 |
+| PrescriptionOptions/SyncOptions 不使用 ValidateOnStart | 客户端需要支持配置热更新 | 有意设计 |
 | MemoryCacheOptions 与 Microsoft.Extensions.Caching.Memory.MemoryCacheOptions 同名 | 命名空间不同但可能造成引用混淆 | 使用时需注意 using 指定完整命名空间 |
 | DefaultPasswordOptions 包含敏感信息 | SysAdminPassword/NewUserPassword 存储在配置中 | 生产环境 AllowInProduction 默认为 false，应通过环境变量注入而非配置文件 |

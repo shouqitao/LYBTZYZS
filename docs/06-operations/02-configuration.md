@@ -21,7 +21,6 @@
 | `Kestrel` | Web 服务器端口和限制 | appsettings.json |
 | `SystemAdmin` | 系统管理员初始化 | appsettings.json |
 | `Serilog` | 日志级别、输出目标 | appsettings.json |
-| `FeatureToggles` | 功能开关 | appsettings.json |
 | `ClinicSettings` | 诊所业务参数 | appsettings.json |
 
 ---
@@ -74,32 +73,6 @@ $env:Jwt__SecretKey = "YourSecureSecretKeyAtLeast32CharactersLong"
 | `TrustServerCertificate` | 跳过证书验证（开发环境） |
 | `Encrypt` | 启用加密（生产环境必须 `true`） |
 | `Connection Timeout` | 连接超时秒数（默认 15） |
-
----
-
-## 功能开关
-
-```json
-{
-  "FeatureToggles": {
-    "EnableDesktopAutoUpdate": true,
-    "EnableRegistrationQueue": true,
-    "EnableOfflineMode": true,
-    "EnablePrintPrescription": true,
-    "EnableSyncService": true,
-    "EnableDebugDiagnostics": false
-  }
-}
-```
-
-| 开关 | 默认值 | 说明 |
-|------|--------|------|
-| `EnableDesktopAutoUpdate` | `true` | Desktop 客户端自动升级 |
-| `EnableRegistrationQueue` | `true` | 挂号排队号自动编号 |
-| `EnableOfflineMode` | `true` | Desktop 离线模式支持 |
-| `EnablePrintPrescription` | `true` | 处方打印功能 |
-| `EnableSyncService` | `true` | 远程同步服务 |
-| `EnableDebugDiagnostics` | `false` | 诊断端点（生产环境关闭） |
 
 ---
 
@@ -344,7 +317,7 @@ $env:Jwt__SecretKey = "YourSecureSecretKeyAtLeast32CharactersLong"
 sysadmin 远程模式通过 Configuration API 修改服务端业务参数，敏感/基础设施配置只读（403）。
 
 **PUT 白名单（业务/运维参数，可改）**：
-- `Session`、`Security.RateLimiting`、`ClinicSettings`、`FeatureToggles`
+- `Session`、`Security.RateLimiting`、`ClinicSettings`
 - `SystemAdmin.SessionTimeoutMinutes`（仅会话超时；`AutoCreateOnStartup`/`AllowAutoCreateInProduction` 不可改）
 - `MemoryCache`、`Serilog:MinimumLevel`
 

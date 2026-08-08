@@ -40,11 +40,6 @@ public static class ClientConfigurationExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        // 功能开关配置 (支持热更新，不使用 ValidateOnStart)
-        services.AddOptions<FeatureToggleOptions>()
-            .Bind(configuration.GetSection(FeatureToggleOptions.SectionName))
-            .ValidateDataAnnotations();
-
         // 诊所设置配置
         services.AddOptions<ClinicSettingsOptions>()
             .Bind(configuration.GetSection(ClinicSettingsOptions.SectionName))

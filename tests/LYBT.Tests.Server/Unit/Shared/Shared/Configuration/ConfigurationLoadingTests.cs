@@ -91,7 +91,6 @@ public class ConfigurationLoadingTests
         serviceProvider.GetService<IOptions<ApiClientOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<ClientSessionOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<ClinicSettingsOptions>>().Should().NotBeNull();
-        serviceProvider.GetService<IOptions<FeatureToggleOptions>>().Should().NotBeNull();
         serviceProvider.GetService<IOptions<OfflineModeOptions>>().Should().NotBeNull();
     }
 
@@ -115,9 +114,6 @@ public class ConfigurationLoadingTests
         var sessionOptions = serviceProvider.GetRequiredService<IOptions<ClientSessionOptions>>().Value;
         sessionOptions.InactivityTimeoutMinutes.Should().Be(20);
         sessionOptions.WarningBeforeTimeoutMinutes.Should().Be(3);
-
-        var featureOptions = serviceProvider.GetRequiredService<IOptions<FeatureToggleOptions>>().Value;
-        featureOptions.OverwriteConflicts.Should().BeFalse();
     }
 
     #endregion
@@ -496,12 +492,6 @@ public class ConfigurationLoadingTests
 
             // ClinicSettings 配置
             ["ClinicSettings:ClinicName"] = "测试诊所",
-
-            // FeatureToggle 配置
-            ["FeatureToggles:ConsultationCreate"] = "true",
-            ["FeatureToggles:PrescriptionCreate"] = "false",
-            ["FeatureToggles:DuplicateHerbMergeStrategy"] = "Max",
-            ["FeatureToggles:OverwriteConflicts"] = "false",
 
             // OfflineMode 配置
             ["OfflineMode:Enabled"] = "true",

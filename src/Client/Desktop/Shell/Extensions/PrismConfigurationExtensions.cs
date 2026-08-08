@@ -31,9 +31,6 @@ public static class PrismConfigurationExtensions
         // 客户端会话配置
         RegisterOptions<ClientSessionOptions>(containerRegistry, configuration, ClientSessionOptions.SectionName);
 
-        // 功能开关配置 (支持热更新)
-        RegisterReloadableOptions<FeatureToggleOptions>(containerRegistry, configuration, FeatureToggleOptions.SectionName);
-
         // 诊所设置配置
         RegisterOptions<ClinicSettingsOptions>(containerRegistry, configuration, ClinicSettingsOptions.SectionName);
 
@@ -65,93 +62,5 @@ public static class PrismConfigurationExtensions
 
         containerRegistry.RegisterInstance<IOptions<TOptions>>(optionsWrapper);
         containerRegistry.RegisterInstance(options);
-    }
-
-    /// <summary>
-    /// 注册支持热更新的 Options 类型到 Prism 容器
-    /// 使用 IOptionsMonitor 包装，配置文件变更时自动刷新
-    /// </summary>
-    private static void RegisterReloadableOptions<TOptions>(
-        IContainerRegistry containerRegistry,
-        IConfiguration configuration,
-        string sectionName) where TOptions : class, new()
-    {
-        var monitor = new ConfigurationOptionsMonitor<TOptions>(
-            configuration.GetSection(sectionName));
-
-        containerRegistry.RegisterInstance<IOptionsMonitor<TOptions>>(monitor);
-        containerRegistry.RegisterInstance<IOptions<TOptions>>(
-            new OptionsMonitorWrapper<TOptions>(monitor));
-    }
-
-    /// <summary>
-    /// 基于 IConfiguration 变更通知的 IOptionsMonitor 实现
-    /// </summary>
-    private sealed class ConfigurationOptionsMonitor<TOptions> : IOptionsMonitor<TOptions>, IDisposable
-        where TOptions : class, new()
-    {
-        private readonly IConfigurationSection _section;
-        private readonly IDisposable _changeListener;
-        private TOptions _current;
-        private readonly List<Action<TOptions, string?>> _listeners = [];
-
-        public ConfigurationOptionsMonitor(IConfigurationSection section)
-        {
-            _section = section;
-            _current = BindOptions();
-            _changeListener = section.GetReloadToken().RegisterChangeCallback(OnConfigurationChanged, null);
-        }
-
-        public TOptions CurrentValue => _current;
-
-        public TOptions Get(string? name) => _current;
-
-        public IDisposable OnChange(Action<TOptions, string?> listener)
-        {
-            _listeners.Add(listener);
-            return new ChangeListenerDisposable(() => _listeners.Remove(listener));
-        }
-
-        private void OnConfigurationChanged(object? state)
-        {
-            var newValue = BindOptions();
-            Interlocked.Exchange(ref _current, newValue);
-            foreach (var listener in _listeners)
-            {
-                listener(newValue, null);
-            }
-            _changeListener?.Dispose();
-            var token = _section.GetReloadToken().RegisterChangeCallback(OnConfigurationChanged, null);
-        }
-
-        private TOptions BindOptions()
-        {
-            var options = new TOptions();
-            _section.Bind(options);
-            return options;
-        }
-
-        public void Dispose()
-        {
-            _changeListener?.Dispose();
-        }
-    }
-
-    /// <summary>
-    /// 将 IOptionsMonitor 适配为 IOptions 接口（向后兼容）
-    /// </summary>
-    private sealed class OptionsMonitorWrapper<TOptions> : IOptions<TOptions>
-        where TOptions : class, new()
-    {
-        private readonly IOptionsMonitor<TOptions> _monitor;
-        public OptionsMonitorWrapper(IOptionsMonitor<TOptions> monitor) => _monitor = monitor;
-        public TOptions Value => _monitor.CurrentValue;
-    }
-
-    private sealed class ChangeListenerDisposable : IDisposable
-    {
-        private readonly Action _unsubscribe;
-        public ChangeListenerDisposable(Action unsubscribe) => _unsubscribe = unsubscribe;
-        public void Dispose() => _unsubscribe();
     }
 }

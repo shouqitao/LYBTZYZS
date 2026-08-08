@@ -236,9 +236,6 @@ LYBT.Desktop.Infrastructure/
 **ActiveConsultationService** — 活跃医案追踪
 - **设计依据**: 跟踪当前正在进行的中医诊断会话
 
-**PrescriptionSettingsService** — 处方设置服务
-- **设计依据**: 管理处方相关配置（最大/最小/总剂量策略、导入策略、保留策略）
-
 ---
 
 ### ViewModels/Base/
