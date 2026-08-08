@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,20 +25,5 @@ public static class QueryablePagingExtensions
             .ToListAsync(cancellationToken);
 
         return new PagedResult<T>(items, totalCount, pageNumber, pageSize);
-    }
-
-    /// <summary>
-    /// 投影查询 — 从 BaseRepository.SelectAsync 提取
-    /// </summary>
-    public static async Task<List<TResult>> SelectAsync<TEntity, TResult>(
-        this IQueryable<TEntity> query,
-        Expression<Func<TEntity, bool>>? predicate,
-        Expression<Func<TEntity, TResult>> selector,
-        CancellationToken cancellationToken = default)
-        where TEntity : class
-    {
-        if (predicate != null)
-            query = query.Where(predicate);
-        return await query.Select(selector).ToListAsync(cancellationToken);
     }
 }

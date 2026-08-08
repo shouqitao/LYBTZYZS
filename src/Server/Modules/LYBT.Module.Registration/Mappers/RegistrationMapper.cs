@@ -24,22 +24,6 @@ public partial class RegistrationMapper
     /// Registration 实体转 DetailDto
     /// </summary>
     public partial RegistrationDetailDto ToDetailDto(Registration entity);
-
-    /// <summary>
-    /// InputDto 转 Registration 实体 (创建)
-    /// 忽略 Id、MedicalCaseId、Status 和审计字段 (由 Service 层设置)
-    /// </summary>
-    [MapperIgnoreTarget(nameof(Registration.Id))]
-    [MapperIgnoreTarget(nameof(Registration.MedicalCaseId))]
-    [MapperIgnoreTarget(nameof(Registration.Status))]
-    [MapperIgnoreTarget(nameof(Registration.QueueNumber))]
-    [MapperIgnoreTarget(nameof(Registration.CreatedAt))]
-    [MapperIgnoreTarget(nameof(Registration.CreatedBy))]
-    [MapperIgnoreTarget(nameof(Registration.UpdatedAt))]
-    [MapperIgnoreTarget(nameof(Registration.UpdatedBy))]
-    [MapperIgnoreTarget(nameof(Registration.RowVersion))]
-    [MapperIgnoreTarget(nameof(Registration.IsDeleted))]
-    public partial Registration ToEntity(RegistrationInputDto dto);
 }
 
 

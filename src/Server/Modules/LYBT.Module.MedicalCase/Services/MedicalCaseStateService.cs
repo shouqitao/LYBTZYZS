@@ -163,15 +163,6 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 关闭医案（直接标记为Completed）
-        /// 委托给统一的 CompleteAsync(skipWorkflowValidation: true)
-        /// </summary>
-        public async Task<MedicalCase?> CloseCaseAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            return await CompleteAsync(id, Guid.Empty, isAdmin: false, skipWorkflowValidation: true, cancellationToken);
-        }
-
-        /// <summary>
         /// 挂起医案（暂停处理）
         /// 业务规则：保存当前数据，设置状态为Suspended，不触发完成验证
         /// </summary>

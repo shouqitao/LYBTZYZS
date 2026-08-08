@@ -17,13 +17,6 @@ public class AuthSessionRepository : IAuthSessionRepository
     }
 
     /// <inheritdoc/>
-    public async Task<AuthSession?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _context.AuthSessions
-            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public async Task<AuthSession?> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default)
     {
         return await _context.AuthSessions
@@ -42,18 +35,6 @@ public class AuthSessionRepository : IAuthSessionRepository
     {
         _context.AuthSessions.Update(session);
         await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task<IReadOnlyList<AuthSession>> GetActiveSessionsAsync(Guid userId, CancellationToken cancellationToken = default)
-    {
-        return await _context.AuthSessions
-            .Where(s => s.UserId == userId
-                && !s.IsRevoked
-                && s.LogoutTime == null
-                && s.ExpiryTime > DateTime.UtcNow)
-            .OrderByDescending(s => s.LoginTime)
-            .ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc/>

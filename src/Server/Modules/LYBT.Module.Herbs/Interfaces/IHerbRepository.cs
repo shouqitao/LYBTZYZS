@@ -34,11 +34,6 @@ public interface IHerbRepository
     Task<Herb?> GetByNameAsync(string name, CancellationToken ct = default);
 
     /// <summary>
-    /// 按名称或拼音码查询药材。
-    /// </summary>
-    Task<Herb?> GetByNameOrPinyinAsync(string searchTerm, CancellationToken ct = default);
-
-    /// <summary>
     /// 新增药材。
     /// </summary>
     Task AddAsync(Herb herb, CancellationToken ct);
@@ -47,16 +42,6 @@ public interface IHerbRepository
     /// 更新药材。
     /// </summary>
     Task UpdateAsync(Herb herb, CancellationToken ct);
-
-    /// <summary>
-    /// 获取所有药材。
-    /// </summary>
-    Task<List<Herb>> GetAllAsync(CancellationToken ct = default);
-
-    /// <summary>
-    /// 按分类筛选药材。
-    /// </summary>
-    Task<List<Herb>> GetByCategoryAsync(string category, CancellationToken ct = default);
 }
 
 

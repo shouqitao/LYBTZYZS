@@ -15,14 +15,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
     public interface IMedicalCaseQueryService
     {
         /// <summary>
-        /// 根据ID获取医案详情
-        /// </summary>
-        /// <param name="id">医案ID</param>
-        /// <param name="cancellationToken">取消令牌</param>
-        /// <returns>医案实体（包含完整关联数据）</returns>
-        Task<MedicalCase?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// 查询医案列表（分页）
         /// </summary>
         /// <param name="status">医案状态（可选）</param>
@@ -144,15 +136,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>分页查询结果</returns>
         Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// 批量获取医案详情
-        /// 解决N+1查询问题，一次请求获取多个医案详情（含处方）
-        /// </summary>
-        /// <param name="ids">医案ID列表（最多50个）</param>
-        /// <param name="cancellationToken">取消令牌</param>
-        /// <returns>医案实体列表</returns>
-        Task<List<MedicalCase>> GetBatchAsync(List<Guid> ids, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 根据ID获取医案详情DTO（含NotFound语义）

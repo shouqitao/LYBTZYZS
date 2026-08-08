@@ -52,20 +52,6 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 创建新医案 (委托给 CreateFromInputDtoAsync)
-        /// </summary>
-        public async Task<MedicalCase?> CreateAsync(Guid patientId, DateTime visitDate, Guid doctorId, CancellationToken cancellationToken = default)
-        {
-            var request = new MedicalCaseInputDto
-            {
-                PatientId = patientId,
-                UserId = doctorId
-            };
-
-            return await CreateFromInputDtoAsync(request, doctorId, false, cancellationToken);
-        }
-
-        /// <summary>
         /// 从InputDto创建医案（统一SaveAsync的创建分支）
         /// </summary>
         /// <param name="request">统一输入DTO</param>
@@ -153,53 +139,6 @@ namespace LYBT.Module.MedicalCases.Services
             return result;
         }
 
-        /// <summary>
-        /// 更新辨证信息（三步流程Step 1）
-        /// Epic #1612: 通过聚合根协调Consultation更新
-        /// 业务规则：AR-001（聚合根约束）、BF-002（三步流程）
-        /// </summary>
-        public async Task<MedicalCase?> UpdateConsultationAsync(
-            Guid medicalCaseId,
-            ConsultationInputDto request,
-            Guid currentUserId,
-            bool isAdmin = false,
-            string? editReason = null,
-            CancellationToken cancellationToken = default)
-        {
-            _logger.LogInformation("[SVC] MedicalCase.UpdateConsultation - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-
-            // 获取聚合根（完整加载）
-            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId, cancellationToken);
-            if (medicalCase == null)
-            {
-                _logger.LogInformation("医案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                return null;
-            }
-
-            // 权限检查
-            MedicalCaseServiceHelper.EnsureCanEdit(medicalCase, currentUserId, isAdmin, "UpdateConsultation", _logger);
-
-            // 确保Consultation存在
-            if (medicalCase.Consultation == null)
-            {
-                _logger.LogInformation("[SVC] MedicalCase.UpdateConsultation → ConsultationNotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw new BusinessException(ErrorCode.McConsultationNotFound, "医案的辨证信息不存在");
-            }
-
-            // Issue #2231: 手动映射属性以避免EF Core共享主键冲突
-            var consultation = medicalCase.Consultation;
-            consultation.PresentIllness = request.PresentIllness;
-            consultation.TongueDiagnosis = request.TongueDiagnosis;
-            consultation.PulseDiagnosis = request.PulseDiagnosis;
-            consultation.TcmDiagnosis = request.TcmDiagnosis;
-            consultation.UpdatedAt = DateTime.UtcNow;
-
-            // 通过聚合根保存（EF Core会跟踪子实体变更）
-            var result = await _repository.UpdateAsync(medicalCase, cancellationToken);
-            await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
-            return result;
-        }
-
         /// <inheritdoc />
         public Task<MedicalCase?> SetPrescriptionFlagAsync(
             Guid medicalCaseId,
@@ -208,43 +147,6 @@ namespace LYBT.Module.MedicalCases.Services
             bool isAdmin = false,
             CancellationToken cancellationToken = default)
             => _prescriptionService.SetPrescriptionFlagAsync(medicalCaseId, needsPrescription, currentUserId, isAdmin, cancellationToken);
-
-        /// <inheritdoc />
-        public Task<Prescription?> CreatePrescriptionAsync(
-            Guid medicalCaseId,
-            PrescriptionInputDto request,
-            CancellationToken cancellationToken = default)
-            => _prescriptionService.CreatePrescriptionAsync(medicalCaseId, request, cancellationToken);
-
-        /// <summary>
-        /// 复制历史处方到新医案
-        /// </summary>
-        public Task<LYBT.Shared.Models.Contracts.Common.Result<PrescriptionDetailDto>> CopyHistoricalPrescriptionAsync(
-            Guid sourceMedicalCaseId,
-            Guid targetMedicalCaseId,
-            Guid currentUserId,
-            CancellationToken cancellationToken = default)
-            => _prescriptionService.CopyHistoricalPrescriptionAsync(sourceMedicalCaseId, targetMedicalCaseId, currentUserId, cancellationToken);
-
-        /// <inheritdoc />
-        public Task<Prescription?> UpdatePrescriptionAsync(
-            Guid medicalCaseId,
-            Guid prescriptionId,
-            PrescriptionInputDto request,
-            Guid currentUserId,
-            bool isAdmin = false,
-            string? editReason = null,
-            CancellationToken cancellationToken = default)
-            => _prescriptionService.UpdatePrescriptionAsync(medicalCaseId, prescriptionId, request, currentUserId, isAdmin, editReason, cancellationToken);
-
-        /// <inheritdoc />
-        public Task<bool> DeletePrescriptionAsync(
-            Guid medicalCaseId,
-            Guid prescriptionId,
-            Guid currentUserId,
-            bool isAdmin = false,
-            CancellationToken cancellationToken = default)
-            => _prescriptionService.DeletePrescriptionAsync(medicalCaseId, prescriptionId, currentUserId, isAdmin, cancellationToken);
 
         /// <summary>
         /// 统一保存医案（支持创建和更新）

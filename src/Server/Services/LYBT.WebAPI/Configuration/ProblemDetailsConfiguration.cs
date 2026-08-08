@@ -50,45 +50,6 @@ public static class ProblemDetailsConfiguration
     }
 
     /// <summary>
-    /// 配置StatusCodePages中间件
-    /// </summary>
-    public static IApplicationBuilder UseStatusCodePagesWithProblemDetails(this IApplicationBuilder app)
-    {
-        app.UseStatusCodePages(async statusCodeContext =>
-        {
-            var httpContext = statusCodeContext.HttpContext;
-            var statusCode = httpContext.Response.StatusCode;
-
-            // 只处理4xx和5xx状态码
-            if (statusCode < 400) return;
-
-            // 如果响应已经开始写入，跳过
-            if (httpContext.Response.HasStarted) return;
-
-            var correlationId = CorrelationIdMiddlewareExtensions.GetCorrelationId(httpContext);
-
-            var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
-            {
-                Status = statusCode,
-                Title = GetStatusCodeTitle(statusCode),
-                Detail = GetStatusCodeDetail(statusCode),
-                Instance = httpContext.Request.Path,
-                Type = GetProblemTypeUri(statusCode)
-            };
-
-            problemDetails.Extensions["correlationId"] = correlationId;
-            problemDetails.Extensions["timestamp"] = DateTimeOffset.UtcNow;
-            problemDetails.Extensions[HttpHeaderConstants.TraceIdKey] = httpContext.TraceIdentifier;
-            problemDetails.Extensions["severity"] = MapStatusCodeToSeverity(statusCode);
-
-            httpContext.Response.ContentType = "application/problem+json";
-            await httpContext.Response.WriteAsJsonAsync(problemDetails);
-        });
-
-        return app;
-    }
-
-    /// <summary>
     /// 将HTTP状态码映射到ErrorSeverity枚举的小写字符串
     /// DRY: 统一使用ErrorSeverity枚举，与AppException路径一致
     /// </summary>
@@ -104,50 +65,6 @@ public static class ProblemDetailsConfiguration
     /// DRY: 委托到共享常量类 ProblemTypeUris
     /// </summary>
     private static string GetProblemTypeUri(int statusCode) => ProblemTypeUris.GetByStatusCode(statusCode);
-
-    /// <summary>
-    /// 获取状态码标题
-    /// </summary>
-    private static string GetStatusCodeTitle(int statusCode)
-    {
-        return statusCode switch
-        {
-            400 => "请求错误",
-            401 => "未授权",
-            403 => "禁止访问",
-            404 => "资源未找到",
-            405 => "方法不允许",
-            409 => "资源冲突",
-            422 => "无法处理的实体",
-            429 => "请求过于频繁",
-            500 => "服务器内部错误",
-            502 => "网关错误",
-            503 => "服务不可用",
-            _ => "请求处理失败"
-        };
-    }
-
-    /// <summary>
-    /// 获取状态码详细描述
-    /// </summary>
-    private static string GetStatusCodeDetail(int statusCode)
-    {
-        return statusCode switch
-        {
-            400 => "请求格式不正确，请检查请求参数",
-            401 => "请先登录后再访问此资源",
-            403 => "您没有权限访问此资源",
-            404 => "请求的资源不存在",
-            405 => "不支持当前请求方法",
-            409 => "请求与当前资源状态冲突",
-            422 => "请求数据验证失败",
-            429 => "请求过于频繁，请稍后再试",
-            500 => "服务器处理请求时发生错误，请稍后重试",
-            502 => "网关错误，请稍后重试",
-            503 => "服务暂时不可用，请稍后重试",
-            _ => "处理请求时发生错误"
-        };
-    }
 }
 
 

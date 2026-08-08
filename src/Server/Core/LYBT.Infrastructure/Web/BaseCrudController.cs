@@ -93,31 +93,6 @@ public abstract class BaseCrudController : BaseApiController
     }
 
     /// <summary>
-    /// 批量启用/禁用模板执行器。子类 BatchEnable/BatchDisable action 委托到此方法。
-    /// operationName/logData 传 null 表示不记录日志。
-    /// </summary>
-    protected async Task<IActionResult> ExecuteBatchStatusAsync(
-        BatchDeleteInputDto dto,
-        Func<List<Guid>, IRequest<Result<BatchOperationResultDto>>> createCommand,
-        string emptyMessage,
-        string errorMessage,
-        string? operationName,
-        object? logData,
-        CancellationToken ct)
-    {
-        if (dto?.Ids == null || dto.Ids.Count == 0)
-            return ValidationFail(emptyMessage);
-
-        var result = await Sender.Send(createCommand(dto.Ids), ct);
-        if (!result.IsSuccess || result.Value == null)
-            return BusinessFail(result.Error ?? errorMessage);
-
-        if (operationName != null)
-            LogOperation(operationName, logData, null);
-        return Success(result.Value, result.Value.Message);
-    }
-
-    /// <summary>
     /// 批量引用检查模板执行器。子类 BatchCheckReference action 委托到此方法。
     /// </summary>
     protected async Task<IActionResult> ExecuteBatchCheckReferenceAsync<T>(

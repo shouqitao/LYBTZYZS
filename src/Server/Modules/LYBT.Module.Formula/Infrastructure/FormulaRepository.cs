@@ -114,26 +114,6 @@ public class FormulaRepository : IFormulaRepository
             .Where(predicate)
             .ToListAsync(cancellationToken);
     }
-
-    /// <inheritdoc/>
-    public async Task<List<Formula>> GetAllWithHerbsAsync(CancellationToken cancellationToken = default)
-    {
-        return await _context.Formulas
-            .Include(f => f.Herbs)
-            .Where(f => !f.IsDeleted)
-            .OrderByDescending(f => f.CreatedAt)
-            .ToListAsync(cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task<List<Formula>> GetByCategoryWithHerbsAsync(string category, CancellationToken cancellationToken = default)
-    {
-        return await _context.Formulas
-            .Include(f => f.Herbs)
-            .Where(f => !f.IsDeleted && f.Category != null && f.Category.Contains(category))
-            .OrderByDescending(f => f.CreatedAt)
-            .ToListAsync(cancellationToken);
-    }
 }
 
 

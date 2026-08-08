@@ -37,57 +37,6 @@ public class PatientCrossModuleService : IPatientCrossModuleService
             })
             .FirstOrDefaultAsync(cancellationToken);
     }
-
-    public async Task<Dictionary<Guid, PatientBasicDto>> GetPatientsBasicInfoAsync(
-        IEnumerable<Guid> patientIds, CancellationToken cancellationToken = default)
-    {
-        var ids = patientIds.ToList();
-        if (ids.Count == 0)
-            return new Dictionary<Guid, PatientBasicDto>();
-
-        var result = new Dictionary<Guid, PatientBasicDto>();
-        foreach (var patientId in ids)
-        {
-            var patient = await _context.Patients
-                .AsNoTracking()
-                .Where(p => p.Id == patientId && !p.IsDeleted)
-                .Select(p => new PatientBasicDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Gender = p.Gender,
-                    Phone = p.PhoneNumber,
-                    Status = p.Status
-                })
-                .FirstOrDefaultAsync(cancellationToken);
-
-            if (patient != null)
-            {
-                result[patient.Id] = patient;
-            }
-        }
-
-        return result;
-    }
-
-    public async Task<bool> PatientExistsAsync(Guid patientId, CancellationToken cancellationToken = default)
-    {
-        return await _context.Patients
-            .AsNoTracking()
-            .AnyAsync(p => p.Id == patientId && !p.IsDeleted, cancellationToken);
-    }
-
-    public async Task<ReferenceCheckResult> CheckPatientReferenceAsync(Guid patientId, CancellationToken cancellationToken = default)
-    {
-        var count = await _context.MedicalCases
-            .AsNoTracking()
-            .CountAsync(mc => mc.PatientId == patientId && !mc.IsDeleted, cancellationToken);
-
-        return new ReferenceCheckResult(
-            HasReferences: count > 0,
-            ReferenceCount: count,
-            Message: count > 0 ? $"患者有 {count} 条医案记录" : null);
-    }
 }
 
 

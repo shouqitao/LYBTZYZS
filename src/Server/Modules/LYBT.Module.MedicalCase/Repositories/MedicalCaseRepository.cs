@@ -96,18 +96,6 @@ namespace LYBT.Module.MedicalCases.Repositories
         }
 
         /// <summary>
-        /// 根据患者ID获取医案（包含Consultation和Prescription关联数据）
-        /// US-MC-008/009: 患者诊疗/处方历史查询
-        /// </summary>
-        public async Task<List<MedicalCase>> GetByPatientIdWithDetailsAsync(Guid patientId, CancellationToken cancellationToken = default)
-        {
-            return await GetDetailQuery()
-                .Where(m => m.PatientId == patientId)
-                .OrderByDescending(m => m.CreatedAt)
-                .ToListAsync(cancellationToken);
-        }
-
-        /// <summary>
         /// 根据ID获取医案（包含关联数据）
         /// </summary>
         public async Task<MedicalCase> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
@@ -160,58 +148,6 @@ namespace LYBT.Module.MedicalCases.Repositories
             query = query.OrderByDescending(m => m.CreatedAt);
 
             return await query.GetPagedResultAsync(pageNumber, pageSize, cancellationToken);
-        }
-
-        /// <summary>
-        /// 查询医案列表（支持多条件组合查询）
-        /// Issue #1592 - Phase 3
-        /// </summary>
-        public async Task<List<MedicalCase>> QueryAsync(
-            string? patientName = null,
-            DateTime? startDate = null,
-            DateTime? endDate = null,
-            string? diagnosisKeyword = null,
-            CancellationToken cancellationToken = default)
-        {
-            // 使用GetDetailQuery()以包含Consultation数据（用于诊断关键字搜索）
-            var query = GetDetailQuery();
-
-            // 患者姓名模糊匹配
-            if (!string.IsNullOrWhiteSpace(patientName))
-            {
-                query = query.Where(m => m.PatientName.Contains(patientName));
-            }
-
-            // 日期范围过滤
-            if (startDate.HasValue)
-            {
-                query = query.Where(m => m.CreatedAt >= startDate.Value);
-            }
-            if (endDate.HasValue)
-            {
-                // 结束日期包含当天全天（到23:59:59）
-                var endOfDay = endDate.Value.Date.AddDays(1).AddSeconds(-1);
-                query = query.Where(m => m.CreatedAt <= endOfDay);
-            }
-
-            // 诊断关键字搜索（搜索Consultation.TcmDiagnosis字段）
-            if (!string.IsNullOrWhiteSpace(diagnosisKeyword))
-            {
-                query = query.Where(m =>
-                    m.Consultation != null &&
-                    m.Consultation.TcmDiagnosis != null &&
-                    m.Consultation.TcmDiagnosis.Contains(diagnosisKeyword));
-            }
-
-            // 按创建时间倒序排列
-            var result = await query
-                .OrderByDescending(m => m.CreatedAt)
-                .ToListAsync(cancellationToken);
-
-            _logger?.LogInformation("查询医案列表，共 {Count} 条记录，条件：患者={PatientName}, 日期={StartDate}~{EndDate}, 诊断={DiagnosisKeyword}",
-                result.Count, patientName ?? "无", startDate, endDate, diagnosisKeyword ?? "无");
-
-            return result;
         }
 
         /// <summary>

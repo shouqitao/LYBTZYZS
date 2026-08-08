@@ -42,16 +42,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
             CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 关闭医案（直接标记为Completed）
-        /// Epic #1676 Phase 4 Task 4.1
-        /// 业务规则：直接设置状态为Completed，不验证三步流程
-        /// </summary>
-        /// <param name="id">医案ID</param>
-        /// <param name="cancellationToken">取消令牌</param>
-        /// <returns>关闭是否成功</returns>
-        Task<MedicalCase?> CloseCaseAsync(Guid id, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// 挂起医案（暂停处理）
         /// 业务规则：保存当前数据，设置状态为Suspended，不触发完成验证
         /// </summary>

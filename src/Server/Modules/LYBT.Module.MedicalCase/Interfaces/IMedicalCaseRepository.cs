@@ -32,12 +32,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
         Task<PagedResult<MedicalCase>> GetPatientPrescriptionsPagedAsync(Guid patientId, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 根据患者ID获取医案（包含Consultation和Prescription关联数据）
-        /// US-MC-008/009: 患者诊疗/处方历史查询
-        /// </summary>
-        Task<List<MedicalCase>> GetByPatientIdWithDetailsAsync(Guid patientId, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// 根据ID获取医案（包含所有关联数据）
         /// </summary>
         Task<MedicalCase> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
@@ -74,22 +68,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// </summary>
         /// <param name="cancellationToken">取消令牌</param>
         Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync(CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// 查询医案列表（支持多条件组合查询）
-        /// Issue #1592 - Phase 3
-        /// </summary>
-        /// <param name="patientName">患者姓名关键字（模糊匹配）</param>
-        /// <param name="startDate">开始日期（过滤CreatedAt）</param>
-        /// <param name="endDate">结束日期（过滤CreatedAt）</param>
-        /// <param name="diagnosisKeyword">诊断关键字（搜索TcmDiagnosis）</param>
-        /// <param name="cancellationToken">取消令牌</param>
-        Task<List<MedicalCase>> QueryAsync(
-            string? patientName = null,
-            DateTime? startDate = null,
-            DateTime? endDate = null,
-            string? diagnosisKeyword = null,
-            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 分页查询医案列表（支持多条件组合查询，DB层分页）

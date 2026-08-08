@@ -109,22 +109,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
             }
         }
 
-        /// <summary>获取药材名称列表（带限制）</summary>
-        public string GetHerbNamesList(int maxCount = 10)
-        {
-            if (Herbs == null || !Herbs.Any())
-            {
-                return "暂无药材";
-            }
-
-            var herbNames = Herbs
-                .Take(maxCount)
-                .Where(h => h.Herb != null)
-                .Select(h => $"{h.Herb!.Name}({h.Dosage}g)")
-                .ToList();
-            return herbNames.Any() ? string.Join("、", herbNames) : "暂无药材";
-        }
-
         private string? _category;
 
         /// <summary>分类（从数据库读取，默认为"验方"）</summary>

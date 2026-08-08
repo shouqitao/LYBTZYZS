@@ -33,17 +33,6 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 根据ID获取医案详情（包含完整关联数据）
-        /// Epic #1612: 使用GetDetailQuery预加载Consultation和Prescription
-        /// </summary>
-        public async Task<MedicalCase?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
-            var result = await _repository.GetByIdWithDetailsAsync(id, cancellationToken);
-            return result;
-        }
-
-        /// <summary>
         /// 查询医案列表（分页）
         /// Epic #1612: 支持按状态、患者ID过滤
         /// Sprint3-X6: 全部筛选迁移到 Repository DB 层执行
@@ -279,26 +268,7 @@ namespace LYBT.Module.MedicalCases.Services
             };
         }
 
-        /// <summary>
-        /// 批量获取医案详情
-        /// </summary>
-        public async Task<List<MedicalCase>> GetBatchAsync(List<Guid> ids, CancellationToken cancellationToken = default)
-        {
-            _logger.LogInformation("[SVC] MedicalCase.GetBatch started - Count={Count}", ids?.Count ?? 0);
-
-            if (ids == null || !ids.Any())
-            {
-                return new List<MedicalCase>();
-            }
-
-            var result = await _repository.GetBatchWithDetailsAsync(ids, cancellationToken);
-            _logger.LogInformation("[SVC] MedicalCase.GetBatch completed - Found={Found}", result.Count);
-
-            return result;
-        }
-
-        private async Task<PagedResult<MedicalCaseListDto>> QueryByPatientAsync(MedicalCaseQueryDto query, CancellationToken cancellationToken = default)
-        {
+        private async Task<PagedResult<MedicalCaseListDto>> QueryByPatientAsync(MedicalCaseQueryDto query, CancellationToken cancellationToken = default)        {
             if (!query.PatientId.HasValue)
             {
                 _logger.LogWarning("[SVC] MedicalCase.Query → ByPatient requires PatientId");

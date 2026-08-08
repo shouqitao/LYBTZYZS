@@ -77,20 +77,6 @@ public class UserRepository : IUserRepository
     }
 
     /// <inheritdoc/>
-    public async Task<bool> ExistsByUserNameAsync(string userName, CancellationToken cancellationToken = default)
-    {
-        return await _context.Users
-            .AnyAsync(u => u.UserName == userName && !u.IsDeleted, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task AddAsync(ApplicationUser user, CancellationToken cancellationToken = default)
-    {
-        await _context.Users.AddAsync(user, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public async Task UpdateAsync(ApplicationUser user, CancellationToken cancellationToken = default)
     {
         _context.Users.Update(user);

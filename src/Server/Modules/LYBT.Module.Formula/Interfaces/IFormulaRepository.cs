@@ -44,16 +44,6 @@ public interface IFormulaRepository
     Task<List<Formula>> FindWithHerbsAsync(
         System.Linq.Expressions.Expression<Func<Formula, bool>> predicate,
         CancellationToken ct = default);
-
-    /// <summary>
-    /// 获取所有验方（含药材组成）。
-    /// </summary>
-    Task<List<Formula>> GetAllWithHerbsAsync(CancellationToken ct = default);
-
-    /// <summary>
-    /// 按分类获取验方（含药材组成）。
-    /// </summary>
-    Task<List<Formula>> GetByCategoryWithHerbsAsync(string category, CancellationToken ct = default);
 }
 
 
