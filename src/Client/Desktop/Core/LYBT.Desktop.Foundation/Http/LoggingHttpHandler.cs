@@ -3,7 +3,7 @@ using System.Net.Http;
 using LYBT.Shared.Logging.Masking;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Infrastructure.Http;
+namespace LYBT.Desktop.Foundation.Http;
 
 /// <summary>
 /// HTTP请求/响应日志处理器

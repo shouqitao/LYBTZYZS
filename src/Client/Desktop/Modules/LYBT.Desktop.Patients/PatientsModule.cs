@@ -3,7 +3,6 @@ using LYBT.Desktop.Infrastructure.CardReader.Integration;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 using LYBT.Desktop.Patients.Controls;
-using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.Models.Items;
@@ -41,16 +40,8 @@ namespace LYBT.Desktop.Patients
             // 注册FluentValidation验证器
             containerRegistry.Register<IValidator<PatientInputDto>, PatientInputDtoValidator>();
 
-            // Issue #1790: 注册患者导入服务
-
-            // Issue #1790: 注册PatientSelectionViewModel组件化服务
-            containerRegistry.Register<PatientSearchManager>();
-            containerRegistry.RegisterSingleton<IPatientSearchCache, PatientSearchCache>();
-            containerRegistry.Register<IMedicalCaseStartCoordinator, ViewModels.Components.MedicalCaseStartCoordinator>();
-
             // Epic #1773 Task 4: 注册患者模块组件化组件（Scoped生命周期）
             containerRegistry.Register<IPatientService, Services.PatientService>();
-            containerRegistry.Register<IPatientValidator, ViewModels.Components.PatientValidator>();
             containerRegistry.AddMasterDetailServices<PatientListDto, PatientDetailModel>();
 
             // Handler DI注册

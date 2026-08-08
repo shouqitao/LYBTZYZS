@@ -206,9 +206,6 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // 连接配置服务（URL持久化 + IsLocal判断）
             containerRegistry.RegisterSingleton<IConnectionSettingsService, ConnectionSettingsService>();
-
-            // API路由器（查询当前连接状态）
-            containerRegistry.RegisterSingleton<IApiRouter, ApiRouter>();
         }
     }
 }

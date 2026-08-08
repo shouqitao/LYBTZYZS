@@ -85,12 +85,5 @@ namespace LYBT.Desktop.Contracts.Services
         /// <param name="defaultFileName">默认文件名</param>
         /// <returns>保存的文件路径，null表示取消</returns>
         Task<string?> ShowSaveFileDialogAsync(string? filter = null, string? title = null, string? defaultFileName = null);
-
-        /// <summary>
-        /// 显示未完成医案四选项对话框
-        /// </summary>
-        /// <param name="patientName">患者姓名</param>
-        /// <returns>用户选择结果</returns>
-        Task<UnfinishedCaseChoice> ShowUnfinishedCaseDialogAsync(string patientName);
     }
 }

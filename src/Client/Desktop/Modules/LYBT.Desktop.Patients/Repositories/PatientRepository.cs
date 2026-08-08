@@ -5,7 +5,6 @@ using LYBT.Desktop.Foundation.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
-using Riok.Mapperly.Abstractions;
 
 namespace LYBT.Desktop.Patients.Repositories;
 
@@ -140,14 +139,4 @@ public sealed class PatientRepository
 
     #endregion
 
-}
-
-[Mapper]
-internal partial class PatientListToDetailMapper
-{
-    [MapperIgnoreTarget(nameof(PatientDetailDto.BirthDate))]
-    [MapperIgnoreTarget(nameof(PatientDetailDto.IdNumber))]
-    [MapperIgnoreTarget(nameof(PatientDetailDto.UpdatedAt))]
-    [MapperIgnoreTarget(nameof(PatientDetailDto.CreatedBy))]
-    public partial PatientDetailDto ToDetailDto(PatientListDto listDto);
 }

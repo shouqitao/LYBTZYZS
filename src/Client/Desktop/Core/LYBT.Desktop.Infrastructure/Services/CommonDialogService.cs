@@ -1,7 +1,4 @@
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Contracts.Enums;
-using LYBT.Desktop.Infrastructure.Views;
-using LYBT.Desktop.Infrastructure.ViewModels;
 using Microsoft.Win32;
 using Prism.Services.Dialogs;
 
@@ -113,36 +110,6 @@ namespace LYBT.Desktop.Infrastructure.Services
 
             var result = dialog.ShowDialog();
             return Task.FromResult(result == true ? dialog.FileName : null);
-        }
-
-        /// <summary>
-        /// 显示未完成医案四选项对话框
-        /// </summary>
-        public Task<UnfinishedCaseChoice> ShowUnfinishedCaseDialogAsync(string patientName)
-        {
-            var tcs = new TaskCompletionSource<UnfinishedCaseChoice>();
-
-            var parameters = new DialogParameters
-            {
-                { "PatientName", patientName }
-            };
-
-            _dialogService.ShowDialog(
-                nameof(UnfinishedCaseDialog),
-                parameters,
-                result =>
-                {
-                    if (result.Parameters.TryGetValue<UnfinishedCaseChoice>("Result", out var choice))
-                    {
-                        tcs.SetResult(choice);
-                    }
-                    else
-                    {
-                        tcs.SetResult(UnfinishedCaseChoice.Cancel);
-                    }
-                });
-
-            return tcs.Task;
         }
     }
 }

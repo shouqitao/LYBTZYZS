@@ -99,8 +99,6 @@ public partial class App : PrismApplication
         containerRegistry.RegisterDialog<Dialogs.Views.ConfirmationDialog, Dialogs.ViewModels.ConfirmationDialogViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.MessageDialog, Dialogs.ViewModels.MessageDialogViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.InputDialog, Dialogs.ViewModels.InputDialogViewModel>();
-        containerRegistry.RegisterDialog<LYBT.Desktop.Infrastructure.Views.UnfinishedCaseDialog,
-            LYBT.Desktop.Infrastructure.ViewModels.UnfinishedCaseDialogViewModel>();
         containerRegistry.Register<ViewModels.AccountSettingsViewModel>();
         containerRegistry.RegisterForNavigation<Views.AccountSettingsView>();
 

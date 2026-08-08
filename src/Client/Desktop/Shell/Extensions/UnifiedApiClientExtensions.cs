@@ -16,7 +16,6 @@ using LYBT.Desktop.Contracts.Services;
 using Prism.DryIoc;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Security;
-using LYBT.Desktop.Infrastructure.Http;
 using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

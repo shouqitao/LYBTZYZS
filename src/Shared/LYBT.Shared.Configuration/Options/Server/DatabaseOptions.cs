@@ -36,11 +36,6 @@ public sealed class DatabaseOptions
     public ConnectionPoolOptions ConnectionPool { get; set; } = new();
 
     /// <summary>
-    /// 监控配置
-    /// </summary>
-    public MonitoringOptions Monitoring { get; set; } = new();
-
-    /// <summary>
     /// 重试策略配置
     /// </summary>
     public RetryPolicyOptions RetryPolicy { get; set; } = new();
@@ -62,18 +57,6 @@ public sealed class ConnectionPoolOptions
 
     [Range(5, 300)]
     public int CommandTimeoutSeconds { get; set; } = 30;
-}
-
-/// <summary>
-/// 数据库监控配置
-/// </summary>
-public sealed class MonitoringOptions
-{
-    public bool Enabled { get; set; } = true;
-    public bool LogAllQueries { get; set; } = false;
-
-    [Range(100, 60000)]
-    public int SlowQueryThresholdMs { get; set; } = 1000;
 }
 
 /// <summary>

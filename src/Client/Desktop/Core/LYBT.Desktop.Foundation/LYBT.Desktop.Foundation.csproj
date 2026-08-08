@@ -64,6 +64,8 @@
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.ExceptionHandling\LYBT.Shared.ExceptionHandling.csproj" />
     <!-- unify-configuration-system: 统一配置系统 -->
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Configuration\LYBT.Shared.Configuration.csproj" />
+    <!-- http-logging: LoggingHttpHandler 下沉后依赖脱敏掩码（SensitiveDataMasker） -->
+    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Logging\LYBT.Shared.Logging.csproj" />
   </ItemGroup>
 
 </Project>

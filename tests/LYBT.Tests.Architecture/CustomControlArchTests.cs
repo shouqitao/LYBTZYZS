@@ -181,8 +181,6 @@ public class CustomControlArchTests
         {
             // Helpers/strategies
             "DuplicateDosageStrategy", "ScreenSizeCategory", "BindingProxy", "ResponsiveLayoutHelper",
-            // Enums
-            "SuggestionType",
             // Converters (all live in Controls.Converters)
             "ApiHealthStatusToColorConverter", "ApiHealthStatusToTextConverter",
             "BooleanToVisibilityConverter", "BoolToBrushConverter", "BoolToColorConverter",
