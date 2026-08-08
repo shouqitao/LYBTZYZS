@@ -38,4 +38,11 @@ public interface IMedicalCaseQueryService
         Guid doctorId,
         bool checkAllDoctors = false,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// 获取患者待看诊医案列表（Status=Suspended或Active）
+    /// </summary>
+    /// <param name="patientId">患者ID（null 时不按患者过滤）</param>
+    /// <returns>待看诊医案列表</returns>
+    Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid? patientId = null, CancellationToken ct = default);
 }

@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.Services;
 using Prism.Ioc;
 using Prism.Modularity;
 
@@ -20,6 +21,9 @@ public class SysadminModule : IModule
         containerRegistry.Register<ViewModels.SysadminHomeViewModel>();
         containerRegistry.Register<ViewModels.LogLevelControlViewModel>();
         containerRegistry.Register<ViewModels.DeploymentViewModel>();
+
+        // 注册服务
+        containerRegistry.Register<IAuthHealthService, Services.AuthHealthService>();
 
         // 注册视图用于导航
         containerRegistry.RegisterForNavigation<Views.SysadminHomeView>();

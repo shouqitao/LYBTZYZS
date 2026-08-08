@@ -38,6 +38,11 @@ public interface IMedicalCaseRepository
     Task<PagedResult<MedicalCaseListDto>> QueryAsync(MedicalCaseQueryDto query, CancellationToken ct = default);
 
     /// <summary>
+    /// 获取待看诊医案列表（Status=Suspended或Active）
+    /// </summary>
+    Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid? patientId = null, CancellationToken ct = default);
+
+    /// <summary>
     /// 创建医案 (Epic #1961: 统一 MedicalCaseInputDto)
     /// </summary>
     Task<MedicalCaseDetailDto> CreateAsync(MedicalCaseInputDto dto, CancellationToken ct = default);

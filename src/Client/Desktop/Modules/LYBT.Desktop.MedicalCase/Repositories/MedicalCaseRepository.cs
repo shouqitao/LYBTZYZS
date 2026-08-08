@@ -165,6 +165,19 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
             [query.QueryType]);
     }
 
+    public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid? patientId = null, CancellationToken ct = default)
+    {
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.MedicalCases.GetPendingCasesAsync(patientId);
+                return response.Data ?? [];
+            },
+            "GetPendingCases",
+            "[REPO] MedicalCase.GetPendingCases - PatientId={PatientId}",
+            [patientId]);
+    }
+
     #endregion
 
     #region 生命周期操作

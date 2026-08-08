@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Infrastructure.CardReader.Integration;
 using LYBT.Desktop.Infrastructure.CardReader.Services;
 using LYBT.Desktop.Clinical.ViewModels.Workspace;
-using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Enums;
 using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
@@ -29,8 +28,8 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
 {
     #region 依赖服务
 
-    private readonly IApiClientPatients _patientApi;
-    private readonly IApiClientMedicalCases _medicalCaseApi;
+    private readonly IPatientService _patientService;
+    private readonly IMedicalCaseQueryService _medicalCaseQueryService;
     private readonly IMedicalCaseService _medicalCaseService;
     private readonly IRegistrationService _registrationService;
     private readonly ICommonDialogService _dialogService;
@@ -105,8 +104,8 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
     /// </summary>
     public PatientSelectionViewModel(
         IViewModelServices services,
-        IApiClientPatients patientApi,
-        IApiClientMedicalCases medicalCaseApi,
+        IPatientService patientService,
+        IMedicalCaseQueryService medicalCaseQueryService,
         IMedicalCaseService medicalCaseService,
         IRegistrationService registrationService,
         INavigationCoordinator navigationCoordinator,
@@ -114,8 +113,8 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
         IPatientCardReaderIntegration patientIntegration)
         : base(services)
     {
-        _patientApi = patientApi ?? throw new ArgumentNullException(nameof(patientApi));
-        _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
+        _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
+        _medicalCaseQueryService = medicalCaseQueryService ?? throw new ArgumentNullException(nameof(medicalCaseQueryService));
         _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
         _registrationService = registrationService ?? throw new ArgumentNullException(nameof(registrationService));
         _dialogService = services.CommonDialogService;
@@ -196,8 +195,8 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
             IsError = false;
 
             // 检查该患者是否有进行中的医案（任何待处理状态）
-            var pendingCases = await _medicalCaseApi.GetPendingCasesAsync(SelectedPatient.Id);
-            var existingCase = pendingCases?.Data?.FirstOrDefault();
+            var pendingCases = await _medicalCaseQueryService.GetPendingCasesAsync(SelectedPatient.Id);
+            var existingCase = pendingCases?.FirstOrDefault();
 
             if (existingCase != null)
             {
@@ -255,7 +254,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
             SetBusyWithMessage(true, "正在加载患者列表...");
             IsError = false;
 
-            var response = await _patientApi.GetPatientsAsync(
+            var response = await _patientService.GetPatientsPagedAsync(
                 page: 1,
                 pageSize: 100,
                 keyword: string.IsNullOrWhiteSpace(SearchKeyword) ? null : SearchKeyword);
@@ -270,7 +269,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
             {
                 PageStatusMessage = "加载患者列表失败";
                 IsError = true;
-                Logger.LogWarning("加载患者列表失败：{Message}", response.Message);
+                Logger.LogWarning("加载患者列表失败：{Message}", response.Error);
             }
         }
         catch (Exception ex)
@@ -298,7 +297,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
 
         try
         {
-            var response = await _patientApi.GetPatientByIdAsync(SelectedPatient.Id);
+            var response = await _patientService.GetByIdAsync(SelectedPatient.Id);
             if (response.Success && response.Data != null)
             {
                 PatientDetail = response.Data;

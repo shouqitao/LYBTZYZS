@@ -55,6 +55,9 @@ public class MedicalCaseService : IMedicalCaseService
     public virtual async Task<MedicalCaseDetailDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false, CancellationToken ct = default)
         => await _queryService.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId, checkAllDoctors, ct);
 
+    public virtual async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid? patientId = null, CancellationToken ct = default)
+        => await _queryService.GetPendingCasesAsync(patientId, ct);
+
     #endregion
 
     #region IMedicalCaseCommandService 委托

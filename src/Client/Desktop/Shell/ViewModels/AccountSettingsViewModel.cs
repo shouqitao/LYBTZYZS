@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
@@ -19,7 +18,7 @@ namespace LYBT.Desktop.Shell.ViewModels;
 public partial class AccountSettingsViewModel : NavigableViewModelBase
 {
     private readonly IAuthenticationService _authService;
-    private readonly IApiClientUsers _userApi;
+    private readonly IUserService _userService;
     private readonly INavigationCoordinator _navigationCoordinator;
 
     #region Tab 选择
@@ -68,12 +67,12 @@ public partial class AccountSettingsViewModel : NavigableViewModelBase
     public AccountSettingsViewModel(
         IViewModelServices services,
         IAuthenticationService authService,
-        IApiClientUsers userApi,
+        IUserService userService,
         INavigationCoordinator navigationCoordinator)
         : base(services)
     {
         _authService = authService;
-        _userApi = userApi;
+        _userService = userService;
         _navigationCoordinator = navigationCoordinator;
     }
 
@@ -104,7 +103,7 @@ public partial class AccountSettingsViewModel : NavigableViewModelBase
                 Email = string.IsNullOrWhiteSpace(EditEmail) ? null : EditEmail
             };
 
-            var resp = await _userApi.ChangeProfileAsync(CurrentUser.Id, dto);
+            var resp = await _userService.ChangeProfileAsync(CurrentUser.Id, dto);
             if (resp.Success)
             {
                 if (resp.Data != null)
@@ -119,7 +118,7 @@ public partial class AccountSettingsViewModel : NavigableViewModelBase
             }
             else
             {
-                Services.ToastService.ShowError(resp.Message ?? "保存失败");
+                Services.ToastService.ShowError(resp.Error ?? "保存失败");
             }
         }
         catch (Exception ex)
@@ -181,13 +180,8 @@ public partial class AccountSettingsViewModel : NavigableViewModelBase
         try
         {
             IsBusy = true;
-            var request = new ChangePasswordRequest
-            {
-                OldPassword = OldPassword,
-                NewPassword = NewPassword
-            };
 
-            var resp = await _userApi.ChangePasswordAsync(CurrentUser.Id, request);
+            var resp = await _userService.ChangePasswordAsync(CurrentUser.Id, OldPassword, NewPassword);
             if (resp.Success)
             {
                 Services.ToastService.ShowSuccess("密码修改成功");
@@ -196,7 +190,7 @@ public partial class AccountSettingsViewModel : NavigableViewModelBase
             }
             else
             {
-                Services.ToastService.ShowError(resp.Message ?? "密码修改失败，请检查当前密码是否正确");
+                Services.ToastService.ShowError(resp.Error ?? "密码修改失败，请检查当前密码是否正确");
             }
         }
         catch (Exception ex)

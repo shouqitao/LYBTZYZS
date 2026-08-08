@@ -75,4 +75,16 @@ internal class MedicalCaseQueryService : IMedicalCaseQueryService
         }
         catch (Exception ex) { _logger.LogError(ex, "[Query] MedicalCase.GetUnfinishedByPatient failed - PatientId={PatientId}", patientId); throw; }
     }
+
+    public virtual async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid? patientId = null, CancellationToken ct = default)
+    {
+        try
+        {
+            _logger.LogDebug("[Query] MedicalCase.GetPendingCases started - PatientId={PatientId}", patientId);
+            var result = await _repository.GetPendingCasesAsync(patientId, ct);
+            _logger.LogDebug("[Query] MedicalCase.GetPendingCases completed - Count={Count}", result?.Count ?? 0);
+            return result ?? [];
+        }
+        catch (Exception ex) { _logger.LogError(ex, "[Query] MedicalCase.GetPendingCases failed - PatientId={PatientId}", patientId); return []; }
+    }
 }

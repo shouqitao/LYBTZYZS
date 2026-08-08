@@ -3,7 +3,6 @@ using LYBT.Desktop.Infrastructure.CardReader.Integration;
 using LYBT.Desktop.Infrastructure.CardReader.Services;
 using LYBT.Desktop.Clinical.ViewModels;
 using LYBT.Desktop.Clinical.ViewModels.Workspace;
-using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -23,8 +22,8 @@ namespace LYBT.Tests.Desktop;
 public class PatientSelectionViewModelTests
 {
     private readonly IViewModelServices _viewModelServices;
-    private readonly IApiClientPatients _patientApi;
-    private readonly IApiClientMedicalCases _medicalCaseApi;
+    private readonly IPatientService _patientService;
+    private readonly IMedicalCaseQueryService _medicalCaseQueryService;
     private readonly IMedicalCaseService _medicalCaseService;
     private readonly IRegistrationService _registrationService;
     private readonly INavigationCoordinator _navigationCoordinator;
@@ -52,8 +51,8 @@ public class PatientSelectionViewModelTests
         _viewModelServices.SessionManager.Returns(_sessionManager);
         _viewModelServices.CommonDialogService.Returns(_commonDialogService);
 
-        _patientApi = Substitute.For<IApiClientPatients>();
-        _medicalCaseApi = Substitute.For<IApiClientMedicalCases>();
+        _patientService = Substitute.For<IPatientService>();
+        _medicalCaseQueryService = Substitute.For<IMedicalCaseQueryService>();
         _medicalCaseService = Substitute.For<IMedicalCaseService>();
         _registrationService = Substitute.For<IRegistrationService>();
         _navigationCoordinator = Substitute.For<INavigationCoordinator>();
@@ -63,8 +62,8 @@ public class PatientSelectionViewModelTests
 
     private PatientSelectionViewModel CreateSut() => new(
         _viewModelServices,
-        _patientApi,
-        _medicalCaseApi,
+        _patientService,
+        _medicalCaseQueryService,
         _medicalCaseService,
         _registrationService,
         _navigationCoordinator,

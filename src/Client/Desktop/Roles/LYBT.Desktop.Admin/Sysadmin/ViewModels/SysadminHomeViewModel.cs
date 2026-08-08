@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Interfaces;
@@ -15,7 +14,7 @@ namespace LYBT.Desktop.Admin.Sysadmin.ViewModels;
 /// </summary>
 public partial class SysadminHomeViewModel : NavigableViewModelBase
 {
-    private readonly IApiClientAuth _authApi;
+    private readonly IAuthHealthService _authHealthService;
     private readonly IClinicSettingsService _clinicSettings;
     private CancellationTokenSource? _pollCts;
 
@@ -24,11 +23,11 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
 
     public SysadminHomeViewModel(
         IViewModelServices services,
-        IApiClientAuth authApi,
+        IAuthHealthService authHealthService,
         IClinicSettingsService clinicSettings)
         : base(services)
     {
-        _authApi = authApi;
+        _authHealthService = authHealthService;
         _clinicSettings = clinicSettings;
         PageTitle = "运维控制台";
     }
@@ -64,7 +63,7 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
             {
                 if (isFirstLoad) Dashboard.IsLoading = true;
 
-                var healthResp = await _authApi.HealthCheckAsync();
+                var healthResp = await _authHealthService.HealthCheckAsync();
 
                 if (healthResp.Success)
                 {
