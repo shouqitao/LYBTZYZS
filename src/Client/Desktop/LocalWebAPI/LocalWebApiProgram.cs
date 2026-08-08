@@ -10,6 +10,7 @@ using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Infrastructure.Configuration.Stores;
 using LYBT.Infrastructure.Validation;
 using LYBT.Module.Auth;
 using LYBT.Module.Users;
@@ -51,6 +52,10 @@ public static class LocalWebApiProgram
         builder.Services.AddScoped<ISystemLogRepository, SystemLogRepository>();
 
         builder.Services.AddHttpContextAccessor();
+
+        // 本地运行时配置覆盖存储 — 落盘 {BaseDirectory}/config/runtime-overrides.json，重启不丢（A-18 P1-6，复用远程 JsonFileConfigurationStore 模式）
+        var runtimeOverridesPath = Path.Combine(AppContext.BaseDirectory, "config", "runtime-overrides.json");
+        builder.Services.AddSingleton<IConfigurationStore>(new JsonFileConfigurationStore(runtimeOverridesPath));
 
         builder.Services.AddControllers()
             .AddApplicationPart(typeof(LYBT.LocalWebAPI.Controllers.HealthController).Assembly);

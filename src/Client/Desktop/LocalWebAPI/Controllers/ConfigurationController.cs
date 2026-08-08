@@ -1,8 +1,8 @@
-using System.Collections.Concurrent;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using LYBT.Infrastructure.Web;
 using LYBT.Infrastructure.Constants;
+using LYBT.Infrastructure.Configuration.Stores;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,39 +11,40 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.LocalWebAPI.Controllers;
 
 /// <summary>
-/// 配置控制器：内存键值配置存储。
+/// 配置控制器：持久化键值配置存储（JsonFileConfigurationStore，重启不丢，A-18 P1-6）。
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
 [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
 public class ConfigurationController : BaseApiController
 {
-    // In-memory configuration store (singleton lifetime via static field)
-    private static readonly ConcurrentDictionary<string, string> _store = new();
+    private readonly IConfigurationStore _store;
 
-    public ConfigurationController(ILogger<ConfigurationController> logger)
+    public ConfigurationController(IConfigurationStore store, ILogger<ConfigurationController> logger)
         : base(logger)
     {
+        _store = store;
     }
 
-    // GET /api/configuration
+    // GET /api/v1/configuration
     [HttpGet]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll(CancellationToken ct)
     {
-        var items = _store.Select(kv => new { key = kv.Key, value = kv.Value }).ToList();
+        var items = await _store.LoadAllAsync(ct);
         return Success(new { count = items.Count, items });
     }
 
-    // GET /api/configuration/{key}
+    // GET /api/v1/configuration/{key}
     [HttpGet("{key}")]
-    public IActionResult Get(string key)
+    public async Task<IActionResult> Get(string key, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
             return Error("Key must not be empty.");
         }
 
-        if (_store.TryGetValue(key, out var value))
+        var items = await _store.LoadAllAsync(ct);
+        if (items.TryGetValue(key, out var value))
         {
             return Success(new { key, value });
         }
@@ -51,9 +52,9 @@ public class ConfigurationController : BaseApiController
         return NotFound($"Key '{key}' not found.");
     }
 
-    // PUT /api/configuration/{key}
+    // PUT /api/v1/configuration/{key}
     [HttpPut("{key}")]
-    public IActionResult Set(string key, [FromBody] string value)
+    public async Task<IActionResult> Set(string key, [FromBody] string value, CancellationToken ct)
     {
         var role = User.FindFirst(ClaimTypes.Role)?.Value;
         if (role != UserRole.Admin.ToString() && role != UserRole.SuperAdmin.ToString())
@@ -69,34 +70,31 @@ public class ConfigurationController : BaseApiController
             return Error("Value must not be null.");
         }
 
-        _store[key] = value;
+        await _store.SetValueAsync(key, value, ct);
         return Success(new { key, value });
     }
 
-    // POST /api/configuration/validate
+    // POST /api/v1/configuration/validate
     [HttpPost("validate")]
-    public IActionResult Validate()
+    public async Task<IActionResult> Validate(CancellationToken ct)
     {
         var issues = new List<string>();
 
         // Basic validation for local mode essentials
-        if (!_store.ContainsKey("Database:ConnectionString"))
-        {
-            // Connection string is configured at startup, not in store — this is OK
-        }
+        var items = await _store.LoadAllAsync(ct);
 
         var warnings = new List<string>();
-        if (!_store.Any())
+        if (items.Count == 0)
         {
             warnings.Add("No custom configuration entries found. Using defaults.");
         }
 
         return Success(new
         {
-            valid = !issues.Any(),
+            valid = issues.Count == 0,
             issues,
             warnings,
-            entryCount = _store.Count,
+            entryCount = items.Count,
             timestamp = DateTime.UtcNow
         });
     }
