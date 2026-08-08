@@ -8,14 +8,14 @@
     <WarningsAsErrors />
 
     <!-- Assembly Information -->
-    <AssemblyTitle>LYBT.Desktop.Registration</AssemblyTitle>
+    <AssemblyTitle>LYBT.Desktop.Registrations</AssemblyTitle>
     <AssemblyDescription>凌隐宝堂中医诊所系统 - 挂号管理模块 | 挂号队列 | 接诊管理</AssemblyDescription>
     <AssemblyCompany>凌隐宝堂中医诊所</AssemblyCompany>
     <AssemblyProduct>LYBT诊疗管理系统</AssemblyProduct>
     <AssemblyCopyright>Copyright © 凌隐宝堂中医诊所 2025</AssemblyCopyright>
 
     <!-- Package Information -->
-    <PackageId>LYBT.Desktop.Registration</PackageId>
+    <PackageId>LYBT.Desktop.Registrations</PackageId>
     <Authors>LYBT开发团队</Authors>
     <PackageDescription>LYBT挂号管理模块 - 挂号队列、接诊管理、状态跟踪</PackageDescription>
     <PackageTags>WPF;挂号管理;队列;接诊;中医;诊所</PackageTags>
@@ -24,8 +24,8 @@
     <RepositoryType>git</RepositoryType>
 
     <!-- Naming Configuration -->
-    <AssemblyName>LYBT.Desktop.Registration</AssemblyName>
-    <RootNamespace>LYBT.Desktop.Registration</RootNamespace>
+    <AssemblyName>LYBT.Desktop.Registrations</AssemblyName>
+    <RootNamespace>LYBT.Desktop.Registrations</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

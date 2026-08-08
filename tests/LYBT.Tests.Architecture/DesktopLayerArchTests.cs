@@ -399,7 +399,7 @@ public class DesktopLayerArchTests
             Assembly.Load("LYBT.Desktop.MedicalCase"),
             Assembly.Load("LYBT.Desktop.Herbs"),
             Assembly.Load("LYBT.Desktop.Formula"),
-            Assembly.Load("LYBT.Desktop.Registration")
+            Assembly.Load("LYBT.Desktop.Registrations")
         };
 
         var repositoryInterfaces = contractsAssembly.GetTypes()
@@ -579,7 +579,7 @@ public class DesktopLayerArchTests
             Assembly.Load("LYBT.Desktop.MedicalCase"),
             Assembly.Load("LYBT.Desktop.Herbs"),
             Assembly.Load("LYBT.Desktop.Formula"),
-            Assembly.Load("LYBT.Desktop.Registration")
+            Assembly.Load("LYBT.Desktop.Registrations")
         };
 
         var misplacedInterfaces = new List<string>();
@@ -658,7 +658,7 @@ public class DesktopLayerArchTests
             ["LYBT.Desktop.MedicalCase"] = Assembly.Load("LYBT.Desktop.MedicalCase"),
             ["LYBT.Desktop.Herbs"] = Assembly.Load("LYBT.Desktop.Herbs"),
             ["LYBT.Desktop.Formula"] = Assembly.Load("LYBT.Desktop.Formula"),
-            ["LYBT.Desktop.Registration"] = Assembly.Load("LYBT.Desktop.Registration"),
+            ["LYBT.Desktop.Registrations"] = Assembly.Load("LYBT.Desktop.Registrations"),
         };
 
         var violations = new List<string>();

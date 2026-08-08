@@ -89,7 +89,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Tests.Desktop", "tests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Module.Registration", "src\Server\Modules\LYBT.Module.Registration\LYBT.Module.Registration.csproj", "{1F5A3EFB-1A37-414B-B688-ACA0C6928B4F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Registration", "src\Client\Desktop\Modules\LYBT.Desktop.Registration\LYBT.Desktop.Registration.csproj", "{EA4E9FFD-AB44-4E9A-9DD1-9CEAA073BF55}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Registrations", "src\Client\Desktop\Modules\LYBT.Desktop.Registrations\LYBT.Desktop.Registrations.csproj", "{EA4E9FFD-AB44-4E9A-9DD1-9CEAA073BF55}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.LocalWebAPI", "src\Client\Desktop\LocalWebAPI\LYBT.LocalWebAPI.csproj", "{A5B6C7D8-E9F0-4A5B-6C7D-8E9F0A1B2C3D}"
 EndProject

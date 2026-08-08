@@ -14,7 +14,7 @@ Business modules for the WPF desktop client. Each module encapsulates a domain a
 | LYBT.Desktop.Herbs/ | Herb (TCM medicine) catalog management |
 | LYBT.Desktop.Formula/ | Formula (empirical recipe) management |
 | LYBT.Desktop.MedicalCase/ | Medical case (consultation + prescription) — the primary clinical workflow |
-| LYBT.Desktop.Registration/ | Patient registration and appointment scheduling |
+| LYBT.Desktop.Registrations/ | Patient registration and appointment scheduling |
 | LYBT.Desktop.Sync/ | Data synchronization between local and remote modes |
 | LYBT.Desktop.Users/ | User account management |
 
@@ -23,7 +23,7 @@ Business modules for the WPF desktop client. Each module encapsulates a domain a
 ### Working In This Directory
 - Each module is a self-contained Prism `IModule` — registered in `{Domain}Module.cs`.
 - Modules MUST NOT reference each other. Cross-module communication goes through shared services or Prism `IEventAggregator`.
-  - **Exception — workflow modules:** a module whose core purpose is to coordinate across domains may depend on other modules' service interfaces. ~~`LYBT.Desktop.Registration` is the sanctioned case: it consumes `MedicalCase.Models` enums (visit navigation params).~~ 已于 A-18 批次2 解除：导航参数契约（WorkspaceMode/EditState/MedicalCaseNavigationParameters）下沉 `LYBT.Desktop.Contracts`，Registration 不再引用任何业务模块。`IPatientService`/`IUserService` 已下沉 `LYBT.Desktop.Contracts`，不再构成跨模块引用。
+  - **Exception — workflow modules:** a module whose core purpose is to coordinate across domains may depend on other modules' service interfaces. ~~`LYBT.Desktop.Registrations` is the sanctioned case: it consumes `MedicalCase.Models` enums (visit navigation params).~~ 已于 A-18 批次2 解除：导航参数契约（WorkspaceMode/EditState/MedicalCaseNavigationParameters）下沉 `LYBT.Desktop.Contracts`，Registration 不再引用任何业务模块。`IPatientService`/`IUserService` 已下沉 `LYBT.Desktop.Contracts`，不再构成跨模块引用。
 - All ViewModels inherit from `NavigableViewModelBase` (single entity) or `MasterDetailViewModelBase<TListDto, TDetailModel>` (list/grid).
 - Navigation uses Prism region-based navigation: `_regionManager.RequestNavigate("MainRegion", nameof(SomeView))`.
 - Data access: inject `I{Entity}Repository` for CRUD, `I{Entity}DataManager` for aggregate roots (e.g., `IMedicalCaseDataManager`).

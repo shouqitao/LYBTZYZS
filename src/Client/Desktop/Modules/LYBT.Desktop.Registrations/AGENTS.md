@@ -1,7 +1,7 @@
 <!-- Parent: ../AGENTS.md -->
 <!-- Generated: 2026-05-04 | Updated: 2026-05-04 -->
 
-# LYBT.Desktop.Registration
+# LYBT.Desktop.Registrations
 
 ## Purpose
 

@@ -88,7 +88,7 @@ LYBT.Desktop.Patients/
 ### 被依赖
 - LYBT.Desktop.Admin（PatientManagementView 嵌入 PatientMasterDetailControl）
 - LYBT.Desktop.Clinical（PatientSelectionControl 嵌入临床工作台）
-- LYBT.Desktop.Registration（通过 IPatientService 搜索患者）
+- LYBT.Desktop.Registrations（通过 IPatientService 搜索患者）
 
 ## 设计决策
 

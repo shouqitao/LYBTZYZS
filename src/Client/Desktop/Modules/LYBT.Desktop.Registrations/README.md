@@ -1,4 +1,4 @@
-# LYBT.Desktop.Registration
+# LYBT.Desktop.Registrations
 
 挂号管理模块 -- 管理患者挂号队列的完整生命周期（创建→等待→接诊/取消）。
 
@@ -9,7 +9,7 @@
 ## 目录结构
 
 ```
-LYBT.Desktop.Registration/
+LYBT.Desktop.Registrations/
 ├── RegistrationModule.cs          # Prism IModule 入口
 ├── ViewModels/
 │   └── RegistrationListViewModel.cs
