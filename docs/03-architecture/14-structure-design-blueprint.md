@@ -223,5 +223,6 @@ View(XAML) ← binding → ViewModel（[ObservableProperty]/[RelayCommand]）
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
+| v1.2 | 2026-08-08 | ① 记录 A-24 成果：Server 模块 22 类死方法清理（-1175 行，删方法不删类，类保留 A 级依据不变）；机制残留 9 簇清理（-1013 行：AddSharedLogging 双重载、Foundation IApiService/ApiService/RequestDeduplicator 注册孤儿、3 惰性 AuthEvents、Tests.Desktop Traits 18 类型、UserJourneyTestBaseShared、LocalWebApiProgram.RunAsync、UnfinishedCaseChoice 复证已删、LoggingHttpHandler 下沉验证完成；Registration 命名空间复数漂移不改记录 P2）。② 架构守卫 86/86 保持（DP10 验证无新增违规） |
 | v1.1 | 2026-08-08 | ① 修复文档偏差 2 处：03-server「ICrossModuleAuthService 未实现」→ 实际已落地为 IAuthCrossModuleService；WebAPI AGENTS.md「14 controllers」→ 实际 12 个（对应本蓝图 §2.3）。② 依据来源补入逐 class 验证（A-22）+ 架构守卫 85→86（DP10）。③ 记录 A-22/A-23 成果：1422 类型 93.6% 有设计依据、孤儿类 D=29 已清理、3 VM 越层已修复。④ 确认 08-shared「BaseEntity 通用字段」与 05-dual-mode「Repository 接口 6 个」为 A 级准确（无偏差） |
 | v1.0 | 2026-08-08 | 初版：整合 A-16~A-21 全部审计成果 + 16 ADR + 架构文档，34 项目全量设计依据 |
