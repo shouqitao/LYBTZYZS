@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using LYBT.Desktop.Contracts.Enums;
+using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.ViewModels.Composition;

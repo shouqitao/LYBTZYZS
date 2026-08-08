@@ -33,7 +33,7 @@ Patient registration (挂号) module for the TCM clinic desktop client. Manages 
 
 ### Working In This Directory
 
-- **Cross-module dependencies**: Registration 通过 `LYBT.Desktop.Contracts.Services`（IPatientService/IUserService 已下沉 Contracts）使用患者搜索与医生列表，不再直接引用 Patients/Users 模块；仅保留 MedicalCase.Models 例外（WorkspaceMode/EditState/MedicalCaseNavigationParameters）。
+- **Cross-module dependencies**: Registration 通过 `LYBT.Desktop.Contracts.Services`（IPatientService/IUserService 已下沉 Contracts）使用患者搜索与医生列表，不再直接引用 Patients/Users/MedicalCase 模块；导航参数契约（WorkspaceMode/EditState/MedicalCaseNavigationParameters）已下沉 `LYBT.Desktop.Contracts`（A-18 批次2）。
 - **Role-based behavior**: Receptionist/Admin/SuperAdmin see all queue items and can cancel. Doctor sees only their own queue and can start visits. Role is checked via `SessionManager.CurrentUser?.Role`.
 - **StartVisit flow**: Calls `_registrationService.StartVisitAsync()` which returns a MedicalCaseId, then fetches full PatientDetailDto via `IPatientApi.GetPatientByIdAsync()`, then navigates to MedicalCaseWorkspace with Clinical mode + Editing state.
 - **Cancel guard**: Only Receptionist can cancel, and only Waiting-status registrations with Source=Receptionist.
@@ -62,9 +62,9 @@ Patient registration (挂号) module for the TCM clinic desktop client. Manages 
 | Dependency | Purpose |
 |------------|---------|
 | `LYBT.Desktop.Contracts` | IRegistrationService, IRegistrationRepository, IRegistrationApi, ILocalRegistrationApi, IPatientService, IUserService, IApiRouter, INavigationCoordinator, ISessionManager |
-| `LYBT.Desktop.Infrastructure` | ViewNames constants, MedicalCaseNavigationParameters, Extensions |
+| `LYBT.Desktop.Contracts` | WorkspaceMode/EditState enums, MedicalCaseNavigationParameters (导航参数契约，A-18 批次2 下沉) |
+| `LYBT.Desktop.Infrastructure` | ViewNames constants, Extensions |
 | `LYBT.Desktop.Infrastructure` | NavigableViewModelBase, DialogViewModelBase base classes |
-| `LYBT.Desktop.MedicalCase` | WorkspaceMode enum, EditState enum (for navigation parameters) |
 | `LYBT.Shared.Models` | RegistrationListDto, RegistrationDetailDto, RegistrationInputDto, PatientListDto, UserListDto, CommandResult |
 | `LYBT.Shared.Primitives` | Shared constants and primitives |
 

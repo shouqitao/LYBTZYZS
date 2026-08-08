@@ -1,5 +1,7 @@
 using FluentAssertions;
 using LYBT.Desktop.Clinical.ViewModels;
+using LYBT.Desktop.Contracts.Enums;
+using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.MedicalCase.Models;
 
 namespace LYBT.Tests.Desktop;

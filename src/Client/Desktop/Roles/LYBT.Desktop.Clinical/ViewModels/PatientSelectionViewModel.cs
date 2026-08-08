@@ -5,6 +5,8 @@ using LYBT.Desktop.Infrastructure.CardReader.Integration;
 using LYBT.Desktop.Infrastructure.CardReader.Services;
 using LYBT.Desktop.Clinical.ViewModels.Workspace;
 using LYBT.Desktop.Contracts.ApiClient;
+using LYBT.Desktop.Contracts.Enums;
+using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.MedicalCase.Interfaces;

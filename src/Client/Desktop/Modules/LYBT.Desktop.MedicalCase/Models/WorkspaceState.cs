@@ -1,3 +1,5 @@
+using LYBT.Desktop.Contracts.Enums;
+
 namespace LYBT.Desktop.MedicalCase.Models;
 
 /// <summary>

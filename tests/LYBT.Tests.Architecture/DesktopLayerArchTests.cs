@@ -648,4 +648,46 @@ public class DesktopLayerArchTests
         Assert.True(violations.Count == 0,
             $"违反模块隔离规则: 业务模块间不得相互引用\n{string.Join("\n", violations)}");
     }
+
+    /// <summary>
+    /// DP07: Desktop 业务模块之间不得互相引用
+    /// 判定范围：Modules/LYBT.Desktop.*（Auth/Users/Patients/MedicalCase/Herbs/Formula/Registration）
+    /// 排除 Core/(Contracts/Foundation/Infrastructure/Controls/Printing)、LocalWebAPI 等基础设施层
+    /// 豁免（角色编排/组合根，注释理由）：
+    ///   - Roles(Admin/Clinical)→Modules：角色工作区是组合根，负责按角色组装业务模块视图
+    ///   - Shell→全部：Shell 是应用组合根，负责模块装配与启动
+    /// 参照 Server P07_ServerModules_Should_Not_Reference_Other_ServerModules 写法
+    /// </summary>
+    [Fact]
+    public void DP07_DesktopModules_Should_Not_Reference_Other_DesktopModules()
+    {
+        var moduleAssemblies = new Dictionary<string, Assembly>
+        {
+            ["LYBT.Desktop.Auth"] = Assembly.Load("LYBT.Desktop.Auth"),
+            ["LYBT.Desktop.Users"] = Assembly.Load("LYBT.Desktop.Users"),
+            ["LYBT.Desktop.Patients"] = Assembly.Load("LYBT.Desktop.Patients"),
+            ["LYBT.Desktop.MedicalCase"] = Assembly.Load("LYBT.Desktop.MedicalCase"),
+            ["LYBT.Desktop.Herbs"] = Assembly.Load("LYBT.Desktop.Herbs"),
+            ["LYBT.Desktop.Formula"] = Assembly.Load("LYBT.Desktop.Formula"),
+            ["LYBT.Desktop.Registration"] = Assembly.Load("LYBT.Desktop.Registration"),
+        };
+
+        var violations = new List<string>();
+
+        foreach (var (moduleName, assembly) in moduleAssemblies)
+        {
+            var referencedModules = assembly.GetReferencedAssemblies()
+                .Where(a => moduleAssemblies.ContainsKey(a.Name!) && a.Name != moduleName)
+                .Select(a => a.Name!)
+                .ToList();
+
+            if (referencedModules.Any())
+            {
+                violations.Add($"{moduleName} 引用了: {string.Join(", ", referencedModules)}");
+            }
+        }
+
+        Assert.True(violations.Count == 0,
+            $"违反 DP07 规则: Desktop 业务模块间不得相互引用\n{string.Join("\n", violations)}");
+    }
 }

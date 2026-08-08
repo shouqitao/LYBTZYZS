@@ -2,6 +2,8 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using FluentAssertions;
 using LYBT.Desktop.Clinical.ViewModels.Workspace;
+using LYBT.Desktop.Contracts.Enums;
+using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.MedicalCase.Interfaces;

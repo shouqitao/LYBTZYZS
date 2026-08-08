@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using FluentAssertions;
 using LYBT.Desktop.Contracts.ApiClient;
+using LYBT.Desktop.Contracts.Enums;
+using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;

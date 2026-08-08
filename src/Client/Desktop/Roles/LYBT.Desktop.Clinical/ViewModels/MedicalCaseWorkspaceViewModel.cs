@@ -1,6 +1,8 @@
 using LYBT.Shared.Models.Enums;
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Clinical.ViewModels.Workspace;
+using LYBT.Desktop.Contracts.Enums;
+using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;

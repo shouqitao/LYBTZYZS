@@ -6,6 +6,8 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Helpers;
 using LYBT.Desktop.Infrastructure.ViewModels.Composition;
+using LYBT.Desktop.Contracts.Enums;
+using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Shared.Models.Contracts.MedicalCase;

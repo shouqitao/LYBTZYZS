@@ -20,6 +20,8 @@
     <Compile Remove="Events\CacheEvents.cs" />
     <Compile Remove="Services\IViewModelServices.cs" />
     <Compile Remove="Services\IUiThreadDispatcher.cs" />
+    <!-- MedicalCaseNavigationParameters 继承 Prism.Regions.NavigationParameters，仅桌面目标可用 -->
+    <Compile Remove="Models\MedicalCaseNavigationParameters.cs" />
   </ItemGroup>
 
   <ItemGroup>
