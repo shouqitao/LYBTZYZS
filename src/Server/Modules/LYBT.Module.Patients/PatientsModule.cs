@@ -6,7 +6,12 @@ using LYBT.Module.Patients.Application.Validators;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Services;
 using LYBT.Shared.Models.Validators.Patients;
+using LYBT.Shared.Configuration;
+using LYBT.Shared.Configuration.Options.Server;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Module.Patients
 {
@@ -18,9 +23,19 @@ namespace LYBT.Module.Patients
         /// <summary>
         /// 注册患者模块服务
         /// </summary>
-        public static IServiceCollection AddPatientsModule(this IServiceCollection services)
+        public static IServiceCollection AddPatientsModule(this IServiceCollection services, IConfiguration configuration)
         {
-            // 注册仓储（使用AppDbContext）
+            // ADR-0017: 注册患者模块自己的 DbContext（同库，连接串与 AppDbContext 一致）
+            services.AddDbContext<Infrastructure.PatientsDbContext>((sp, options) =>
+            {
+                var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+                var connectionString = ConnectionStringResolver.GetEffectiveConnectionString(dbOptions, configuration);
+                if (string.IsNullOrWhiteSpace(connectionString))
+                    throw new InvalidOperationException("未配置数据库连接字符串");
+                options.UseSqlServer(connectionString);
+            });
+
+            // 注册仓储（使用模块级 DbContext）
             services.AddScoped<IPatientRepository, LYBT.Module.Patients.Infrastructure.PatientRepository>();
 
             // 注册跨模块服务（替代 CrossModuleService 中的患者查询逻辑）

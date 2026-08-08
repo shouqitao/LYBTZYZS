@@ -1,8 +1,8 @@
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
-using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Extensions;
 using LYBT.Infrastructure.Repositories;
+using LYBT.Module.MedicalCases.Infrastructure;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
@@ -14,10 +14,11 @@ namespace LYBT.Module.MedicalCases.Repositories
     /// <summary>
     /// 医案仓储 - 简化版，减少过度复杂的Include策略
     /// 按职责拆分为 partial 文件：PendingCases（待看诊）、AuditLogs（审计日志）、Update（更新）
+    /// ADR-0017: 注入医案模块自己的 DbContext
     /// </summary>
-    internal partial class MedicalCaseRepository : BaseRepository<MedicalCase>, IMedicalCaseRepository
+    internal partial class MedicalCaseRepository : BaseRepository<MedicalCase, MedicalCaseDbContext>, IMedicalCaseRepository
     {
-        public MedicalCaseRepository(AppDbContext context, ILogger<MedicalCaseRepository> logger)
+        public MedicalCaseRepository(MedicalCaseDbContext context, ILogger<MedicalCaseRepository> logger)
             : base(context, logger)
         {
         }

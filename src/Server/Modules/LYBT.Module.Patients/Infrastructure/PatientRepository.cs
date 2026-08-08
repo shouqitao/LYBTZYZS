@@ -2,19 +2,19 @@ using LYBT.Entities.Patients;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using LYBT.Module.Patients.Interfaces;
-using LYBT.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Patients.Infrastructure;
 
 /// <summary>
 /// 患者仓储实现。封装患者数据访问逻辑。
+/// ADR-0017: 注入患者模块自己的 DbContext
 /// </summary>
 public class PatientRepository : IPatientRepository
 {
-    private readonly AppDbContext _context;
+    private readonly PatientsDbContext _context;
 
-    public PatientRepository(AppDbContext context)
+    public PatientRepository(PatientsDbContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }

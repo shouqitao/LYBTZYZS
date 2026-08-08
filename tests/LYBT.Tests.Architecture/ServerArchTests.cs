@@ -580,6 +580,44 @@ public class ServerArchTests
         Assert.Empty(violatingServices);
     }
 
+    /// <summary>
+    /// ADR-0017: 模块 Repository 必须注入自己的 DbContext，不注入 AppDbContext
+    /// 例外：Reports 模块保持 AppDbContext（任务书 A-20 决策点 2：只读聚合，无自有表）
+    /// </summary>
+    [Fact]
+    public void P18_Module_Repositories_Must_Inject_Own_DbContext()
+    {
+        var moduleAssemblies = ServerAssemblies
+            .Where(a => a.GetName().Name?.StartsWith("LYBT.Module.") == true);
+
+        var violating = new List<string>();
+
+        foreach (var assembly in moduleAssemblies)
+        {
+            var repositoryTypes = assembly.GetTypes()
+                .Where(t => t.IsClass && !t.IsAbstract && t.Name.EndsWith("Repository"))
+                .Where(t => t.Namespace?.StartsWith("LYBT.Module.Reports") != true) // 豁免 Reports（任务书决策点2）
+                .ToList();
+
+            foreach (var repoType in repositoryTypes)
+            {
+                var hasAppDbContext = repoType.GetConstructors()
+                    .SelectMany(c => c.GetParameters())
+                    .Any(p =>
+                        p.ParameterType.Name == "AppDbContext" ||
+                        p.ParameterType.FullName?.Contains("AppDbContext") == true);
+
+                if (hasAppDbContext)
+                {
+                    violating.Add($"{repoType.FullName}");
+                }
+            }
+        }
+
+        Assert.True(violating.Count == 0,
+            $"模块 Repository 不得注入 AppDbContext（ADR-0017）: {string.Join(", ", violating)}");
+    }
+
     #endregion
 
     #region T10: MedicalCase业务规则测试

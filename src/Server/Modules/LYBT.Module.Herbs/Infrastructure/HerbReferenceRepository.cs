@@ -1,6 +1,5 @@
 using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
-using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -11,10 +10,11 @@ namespace LYBT.Module.Herbs.Infrastructure;
 
 /// <summary>
 /// 药材引用仓储实现。用于检查药材在处方和验方中的引用情况。
+/// ADR-0017: 注入药材模块自己的 DbContext（引用检查实体在同库共享）
 /// </summary>
-internal class HerbReferenceRepository : BaseRepository<Herb>, IHerbReferenceRepository
+internal class HerbReferenceRepository : BaseRepository<Herb, HerbsDbContext>, IHerbReferenceRepository
 {
-    public HerbReferenceRepository(AppDbContext dbContext, ILogger<HerbReferenceRepository> logger)
+    public HerbReferenceRepository(HerbsDbContext dbContext, ILogger<HerbReferenceRepository> logger)
         : base(dbContext, logger)
     {
     }

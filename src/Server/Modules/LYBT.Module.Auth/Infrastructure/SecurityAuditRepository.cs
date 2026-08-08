@@ -1,14 +1,13 @@
 using LYBT.Entities.Auth;
-using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth.Interfaces;
 
 namespace LYBT.Module.Auth.Infrastructure;
 
 public class SecurityAuditRepository : ISecurityAuditRepository
 {
-    private readonly AppDbContext _context;
+    private readonly AuthDbContext _context;
 
-    public SecurityAuditRepository(AppDbContext context) => _context = context;
+    public SecurityAuditRepository(AuthDbContext context) => _context = context;
 
     public async Task AddAsync(SecurityAuditLog log, CancellationToken ct = default)
     {

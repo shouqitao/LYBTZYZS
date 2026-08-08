@@ -2,7 +2,6 @@ using LYBT.Entities.Registrations;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using LYBT.Module.Registrations.Interfaces;
-using LYBT.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -10,12 +9,13 @@ namespace LYBT.Module.Registrations.Infrastructure;
 
 /// <summary>
 /// 挂号仓储实现。封装患者数据访问逻辑。
+/// ADR-0017: 注入挂号模块自己的 DbContext
 /// </summary>
 public class RegistrationRepository : IRegistrationRepository
 {
-    private readonly AppDbContext _context;
+    private readonly RegistrationDbContext _context;
 
-    public RegistrationRepository(AppDbContext context)
+    public RegistrationRepository(RegistrationDbContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }

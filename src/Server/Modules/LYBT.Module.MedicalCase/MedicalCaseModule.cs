@@ -5,7 +5,12 @@ using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Module.MedicalCases.Repositories;
 using LYBT.Module.MedicalCases.Services;
 using LYBT.Shared.Models.Validators.MedicalCase;
+using LYBT.Shared.Configuration;
+using LYBT.Shared.Configuration.Options.Server;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Module.MedicalCases
 {
@@ -21,8 +26,18 @@ namespace LYBT.Module.MedicalCases
         /// <summary>
         /// 注册医疗案例模块服务 - CQRS架构
         /// </summary>
-        public static IServiceCollection AddMedicalCaseModule(this IServiceCollection services)
+        public static IServiceCollection AddMedicalCaseModule(this IServiceCollection services, IConfiguration configuration)
         {
+            // ADR-0017: 注册医案模块自己的 DbContext（同库，连接串与 AppDbContext 一致）
+            services.AddDbContext<Infrastructure.MedicalCaseDbContext>((sp, options) =>
+            {
+                var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+                var connectionString = ConnectionStringResolver.GetEffectiveConnectionString(dbOptions, configuration);
+                if (string.IsNullOrWhiteSpace(connectionString))
+                    throw new InvalidOperationException("未配置数据库连接字符串");
+                options.UseSqlServer(connectionString);
+            });
+
             // 仓储层 - 统一实现
             services.AddScoped<IMedicalCaseRepository, MedicalCaseRepository>();
             services.AddScoped<IMedicalCaseReferenceRepository, MedicalCaseReferenceRepository>();

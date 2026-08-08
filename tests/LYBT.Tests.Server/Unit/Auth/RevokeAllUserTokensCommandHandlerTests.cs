@@ -1,6 +1,5 @@
 using FluentAssertions;
 using LYBT.Entities.Auth;
-using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth.Application.Commands;
 using LYBT.Module.Auth.Infrastructure;
 using LYBT.Module.Auth.Services;
@@ -12,11 +11,12 @@ namespace LYBT.Tests.Server;
 
 /// <summary>
 /// RevokeAllUserTokensCommandHandler 测试 — 撤销全部令牌并记录审计。
+/// ADR-0017: SecurityAuditRepository 注入 AuthDbContext
 /// </summary>
 public class RevokeAllUserTokensCommandHandlerTests : IDisposable
 {
     private readonly AuthDbContext _authContext;
-    private readonly AppDbContext _auditContext;
+    private readonly AuthDbContext _auditContext;
     private readonly RevokeAllUserTokensCommandHandler _sut;
 
     public RevokeAllUserTokensCommandHandlerTests()
@@ -26,10 +26,10 @@ public class RevokeAllUserTokensCommandHandlerTests : IDisposable
             .Options;
         _authContext = new AuthDbContext(authOptions);
 
-        var auditOptions = new DbContextOptionsBuilder<AppDbContext>()
+        var auditOptions = new DbContextOptionsBuilder<AuthDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-        _auditContext = new AppDbContext(auditOptions);
+        _auditContext = new AuthDbContext(auditOptions);
 
         _sut = new RevokeAllUserTokensCommandHandler(
             new AuthSessionRepository(_authContext),

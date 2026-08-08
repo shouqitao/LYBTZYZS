@@ -1,5 +1,4 @@
 using LYBT.Entities.Common;
-using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -10,15 +9,17 @@ namespace LYBT.Infrastructure.Repositories
     /// 仓储基类 - 精简版本
     /// 只保留核心CRUD操作（GetById/Add/Update/Delete）
     /// 复杂查询由各模块 Repository 自定义方法实现
+    /// ADR-0017: 支持模块级 DbContext（TDbContext 泛型），模块仓储注入自己的 DbContext
     /// </summary>
-    public abstract class BaseRepository<TEntity> : IRepository<TEntity>
+    public abstract class BaseRepository<TEntity, TDbContext> : IRepository<TEntity>
         where TEntity : BaseEntity
+        where TDbContext : DbContext
     {
-        protected readonly AppDbContext _context;
+        protected readonly TDbContext _context;
         protected readonly DbSet<TEntity> _dbSet;
         protected readonly ILogger _logger;
 
-        protected BaseRepository(AppDbContext context, ILogger logger)
+        protected BaseRepository(TDbContext context, ILogger logger)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));

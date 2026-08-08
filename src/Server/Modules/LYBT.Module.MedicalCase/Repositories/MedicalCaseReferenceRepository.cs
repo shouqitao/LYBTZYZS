@@ -1,6 +1,6 @@
 using LYBT.Entities.MedicalCases;
-using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
+using LYBT.Module.MedicalCases.Infrastructure;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
@@ -9,9 +9,9 @@ using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCases.Repositories
 {
-    internal class MedicalCaseReferenceRepository : BaseRepository<MedicalCase>, IMedicalCaseReferenceRepository
+    internal class MedicalCaseReferenceRepository : BaseRepository<MedicalCase, MedicalCaseDbContext>, IMedicalCaseReferenceRepository
     {
-        public MedicalCaseReferenceRepository(AppDbContext dbContext, ILogger<MedicalCaseReferenceRepository> logger)
+        public MedicalCaseReferenceRepository(MedicalCaseDbContext dbContext, ILogger<MedicalCaseReferenceRepository> logger)
             : base(dbContext, logger)
         {
         }

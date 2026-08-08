@@ -1,5 +1,5 @@
 using FluentAssertions;
-using LYBT.Infrastructure.Data;
+using LYBT.Entities.Auth;
 using LYBT.Module.Auth.Infrastructure;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Models.Contracts.Auth;
@@ -11,18 +11,19 @@ namespace LYBT.Tests.Server;
 
 /// <summary>
 /// SecurityAuditService 测试 — 安全审计日志记录。
+/// ADR-0017: SecurityAuditRepository 注入 AuthDbContext
 /// </summary>
 public class SecurityAuditServiceTests : IDisposable
 {
-    private readonly AppDbContext _context;
+    private readonly AuthDbContext _context;
     private readonly SecurityAuditService _sut;
 
     public SecurityAuditServiceTests()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
+        var options = new DbContextOptionsBuilder<AuthDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-        _context = new AppDbContext(options);
+        _context = new AuthDbContext(options);
         _sut = new SecurityAuditService(
             new SecurityAuditRepository(_context),
             NullLogger<SecurityAuditService>.Instance);
