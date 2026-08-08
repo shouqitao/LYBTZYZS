@@ -679,4 +679,48 @@ public class DesktopLayerArchTests
         Assert.True(violations.Count == 0,
             $"违反 DP07 规则: Desktop 业务模块间不得相互引用\n{string.Join("\n", violations)}");
     }
+
+    /// <summary>
+    /// DP10: Desktop ViewModel 禁止注入 IApiClient 子接口（IApiClientUsers/IApiClientPatients 等）
+    /// A-23b: 应注入 Service 接口（IUserService/IPatientService/IMedicalCaseQueryService 等）
+    /// 豁免：统一 IApiClient（A-18 过渡期允许，长期目标是 VM 全部走 Service）
+    /// </summary>
+    [Fact]
+    public void DP10_ViewModels_Must_Not_Inject_IApiClient_SubInterfaces()
+    {
+        var viewModelTypes = Types.InAssemblies(DesktopAssemblies)
+            .That()
+            .ResideInNamespaceContaining("ViewModels")
+            .And()
+            .HaveNameEndingWith("ViewModel")
+            .And()
+            .AreClasses()
+            .GetTypes()
+            .Where(t => !t.Name.Contains("Design") && !t.Name.Contains("Mock"))
+            .ToList();
+
+        var violatingTypes = new List<string>();
+
+        foreach (var vmType in viewModelTypes)
+        {
+            var ctors = vmType.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            foreach (var ctor in ctors)
+            {
+                foreach (var param in ctor.GetParameters())
+                {
+                    var paramType = param.ParameterType;
+                    // IApiClient 子接口 = 类型名以 "IApiClient" 开头且非统一 IApiClient
+                    if (paramType.IsInterface &&
+                        paramType.Name.StartsWith("IApiClient") &&
+                        paramType.Name != "IApiClient")
+                    {
+                        violatingTypes.Add($"{vmType.FullName} 注入 {paramType.Name}（参数 {param.Name}）");
+                    }
+                }
+            }
+        }
+
+        Assert.True(violatingTypes.Count == 0,
+            $"ViewModel 不应注入 IApiClient 子接口，应注入 Service 接口:\n{string.Join("\n", violatingTypes)}");
+    }
 }
