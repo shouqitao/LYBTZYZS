@@ -16,19 +16,28 @@
 - ❌ 排除：`tests/`、`docs/`（除蓝图外）、`src/Tools/PasswordHashGenerator/`（运维工具，保留 BCrypt 注释说明）
 - 仓库根：`D:\source\repos\LYBTZYZS`｜分支 `master`｜基线 `47f3d7058`（A-26 报告）
 
-## 任务 1：移除 BCrypt.Net 依赖（⚠️ 部分移除，精细操作）
+## 任务 1：统一密码处理方案（⚠️ 设计收敛，不只是删死代码）
 
-**背景**：`PasswordHelper`（Shared.Models/Utilities/Security/PasswordHelper.cs）混用 BCrypt 与 Identity PBKDF2，已确认 **BCrypt 哈希/验证方法零调用**（全仓 grep 无 `PasswordHelper.HashPassword/VerifyPassword` 调用者，PasswordHashGenerator 用 Identity `hasher.HashPassword`）。
+**背景**：密码处理当前 **3 套方案并存**，属设计不统一（用户 2026-08-08 指出）：
+- ① **Identity PBKDF2**（权威，实际在用）：`UserManager.CheckPasswordAsync`（LoginCommandHandler → UserCrossModuleService.cs:140）+ `PasswordHasher<ApplicationUser>`（Tools 生成哈希）
+- ② **BCrypt**（历史残留，零调用）：`PasswordHelper.HashPassword`（:69）/ `VerifyPassword`（:103）/ `VerifyAndRehashIfNeeded`（:165）——全仓无调用者
+- ③ **纯工具**（实际在用）：`PasswordHelper.GenerateSecurePassword`（:383-480，ResetPasswordCommandHandler.cs:32 用）/ `ValidatePassword`（:273）/ `CheckPasswordStrength`（:334）/ `IsCommonPassword`（:373）/ `GenerateTemporaryPassword`（:184）/ `GenerateSalt`（:215）/ `SecureEquals`（:493）+ `PasswordPolicyValidator`
+
+**统一设计（SSOT）**：密码处理只认 **Identity PBKDF2 一套**——
+- 哈希/验证唯一入口 = `UserManager`（`CheckPasswordAsync`/`ResetPasswordAsync`），禁止任何其他哈希方案
+- `PasswordHelper` 瘦身为**纯工具类**（只留生成/策略方法，与哈希无关）；如改名 `PasswordGenerator` 更贴切，由执行者判断（改名涉及引用同步，倾向保守不改名，仅删方法）
+- 删除全部 BCrypt 残留：方法 + 包 + 常量 + 相关注释
 
 **动作**：
 1. 从 `LYBT.Shared.Models.csproj` + `LYBT.Module.Users.csproj` 移除 `BCrypt.Net-Next` PackageReference
 2. 从 `Directory.Packages.props` 移除 `BCrypt.Net-Next` 版本条目
-3. **删除** PasswordHelper 中 BCrypt 专用方法：`HashPassword`（:69）/ `VerifyPassword`（:103）/ `VerifyAndRehashIfNeeded`（:165）/ `UpdateWorkFactor`（:232）/ `GetConfiguration`（:246）/ `WorkFactor`（:44）/ `DefaultWorkFactor` / BCrypt 相关 using 和常量
-4. **保留**（被真实调用）：`GenerateSecurePassword`（:383-480，ResetPasswordCommandHandler.cs:32 用）/ `ValidatePassword`（:273，PasswordPolicyValidator 相关）/ `CheckPasswordStrength`（:334）/ `IsCommonPassword`（:373）/ `GenerateTemporaryPassword`（:184）/ `GenerateSalt`（:215）/ `SecureEquals`（:493）
-5. `PasswordVerificationResult` 若仅被已删方法用则一并删；被保留方法用则保留
+3. **删除** PasswordHelper 中 BCrypt 专用方法：`HashPassword`（:69）/ `VerifyPassword`（:103）/ `VerifyAndRehashIfNeeded`（:165）/ `UpdateWorkFactor`（:232）/ `GetConfiguration`（:246）/ `WorkFactor`（:44）/ `DefaultWorkFactor` / BCrypt 相关 using、常量、`PasswordVerificationResult`（若仅被删方法用）
+4. **保留**（被真实调用）：`GenerateSecurePassword`（:383-480）/ `ValidatePassword`（:273）/ `CheckPasswordStrength`（:334）/ `IsCommonPassword`（:373）/ `GenerateTemporaryPassword`（:184）/ `GenerateSalt`（:215）/ `SecureEquals`（:493）/ `PasswordStrength` 枚举
+5. `PasswordPolicyValidator` 不动（独立类，策略验证实际在用）
 6. 注释同步：DatabaseInitializationService.cs:191 / IUserCrossModuleService.cs:34 / PasswordHashGenerator Program.cs:126-127 的「BCrypt/PBKDF2 冲突」注释是**历史说明**，保留不动（Tools 目录除外，见范围）
+7. **类头注释更新**：PasswordHelper 头部注释改为「纯密码工具（生成/策略），哈希验证走 Identity UserManager，不提供哈希方法」
 
-**验证**：`dotnet build LYBTZYZS.sln --no-incremental` 0 错误 0 警告；`grep -rn "BCrypt" src --include="*.cs" --include="*.csproj"` 残留 0（Tools 目录除外）。
+**验证**：`dotnet build LYBTZYZS.sln --no-incremental` 0 错误 0 警告；`grep -rn "BCrypt" src --include="*.cs" --include="*.csproj"` 残留 0（Tools 目录除外）；`grep -rn "PasswordHelper\.HashPassword\|PasswordHelper\.VerifyPassword" src` 残留 0。
 
 ## 任务 2：移除 Swashbuckle(Swagger)（⚠️ 需判断，见下）
 
