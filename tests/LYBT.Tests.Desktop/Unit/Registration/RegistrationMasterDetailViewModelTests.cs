@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using FluentAssertions;
-using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Enums;
 using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Results;
@@ -33,7 +32,6 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
     private readonly IViewModelServices _viewModelServices;
     private readonly IRegistrationService _registrationService;
     private readonly INavigationCoordinator _navigationCoordinator;
-    private readonly IApiClientPatients _patientApi;
     private readonly IDialogService _dialogService;
     private readonly ICommonDialogService _commonDialogService;
     private readonly ISessionManager _sessionManager;
@@ -46,11 +44,11 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
         IViewModelServices services,
         IRegistrationService registrationService,
         INavigationCoordinator navigationCoordinator,
-        IApiClientPatients patientApi,
+        IPatientService patientService,
         ISignalRClient signalRClient,
         IEventAggregator eventAggregator,
         IDialogService? dialogService = null)
-        : RegistrationListViewModel(services, registrationService, navigationCoordinator, patientApi, signalRClient, eventAggregator, dialogService)
+        : RegistrationListViewModel(services, registrationService, navigationCoordinator, patientService, signalRClient, eventAggregator, dialogService)
     {
         public Task InitializePublicAsync() => base.InitializeAsync(CreateTestNavigationContext());
     }
@@ -65,7 +63,6 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
         _viewModelServices.LoggerFactory.Returns(realLoggerFactory);
         _registrationService = Substitute.For<IRegistrationService>();
         _navigationCoordinator = Substitute.For<INavigationCoordinator>();
-        _patientApi = Substitute.For<IApiClientPatients>();
         _dialogService = Substitute.For<IDialogService>();
         _commonDialogService = _viewModelServices.CommonDialogService;
         _sessionManager = _viewModelServices.SessionManager;
@@ -88,7 +85,7 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
         _viewModelServices,
         _registrationService,
         _navigationCoordinator,
-        _patientApi,
+        _patientService,
         Substitute.For<ISignalRClient>(),
         _eventAggregator,
         _dialogService);
@@ -246,8 +243,8 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
             .Returns(Task.FromResult(new CommandResult<List<RegistrationListDto>>(true, [], null)));
         _registrationService.StartVisitAsync(registrationId, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new CommandResult<Guid>(true, Guid.NewGuid(), null)));
-        _patientApi.GetPatientByIdAsync(patientId)
-            .Returns(Task.FromResult(new ApiResponse<PatientDetailDto> { Success = true, Data = patientDetail }));
+        _patientService.GetByIdAsync(patientId, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new CommandResult<PatientDetailDto>(true, patientDetail, null)));
 
         await sut.InitializePublicAsync();
         sut.SelectedRegistration = CreateQueueItem(id: registrationId, patientId: patientId);
@@ -255,7 +252,7 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
         await sut.StartVisitCommand.ExecuteAsync(null);
 
         await _registrationService.Received(1).StartVisitAsync(registrationId, Arg.Any<CancellationToken>());
-        await _patientApi.Received(1).GetPatientByIdAsync(patientId);
+        await _patientService.Received(1).GetByIdAsync(patientId, Arg.Any<CancellationToken>());
         await _navigationCoordinator.Received(1).NavigateTo(
             ViewNames.MedicalCaseWorkspace,
             Arg.Is<Dictionary<string, object>>(p =>

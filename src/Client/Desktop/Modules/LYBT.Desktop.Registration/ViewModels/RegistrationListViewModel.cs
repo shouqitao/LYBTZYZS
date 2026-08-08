@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Enums;
 using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
@@ -32,7 +31,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
 {
     private readonly IRegistrationService _registrationService;
     private readonly INavigationCoordinator _navigationCoordinator;
-    private readonly IApiClientPatients _patientApi;
+    private readonly IPatientService _patientService;
     private readonly ISignalRClient _signalRClient;
     private readonly IDialogService? _dialogService;
     private readonly PeriodicTimer _refreshTimer = new(TimeSpan.FromSeconds(30));
@@ -79,7 +78,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         IViewModelServices services,
         IRegistrationService registrationService,
         INavigationCoordinator navigationCoordinator,
-        IApiClientPatients patientApi,
+        IPatientService patientService,
         ISignalRClient signalRClient,
         IEventAggregator eventAggregator,
         IDialogService? dialogService = null)
@@ -87,7 +86,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
     {
         _registrationService = registrationService;
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
-        _patientApi = patientApi ?? throw new ArgumentNullException(nameof(patientApi));
+        _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
         _signalRClient = signalRClient ?? throw new ArgumentNullException(nameof(signalRClient));
         _dialogService = dialogService;
         PageTitle = "挂号队列";
@@ -225,7 +224,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
             await LoadQueueAsync();
 
             // 获取患者详情（MedicalCaseWorkspace 需要完整 PatientDetailDto）
-            var patientResult = await _patientApi.GetPatientByIdAsync(patientId);
+            var patientResult = await _patientService.GetByIdAsync(patientId);
             if (!patientResult.Success || patientResult.Data == null)
             {
                 await ShowErrorMessageAsync("接诊成功，但无法获取患者信息，请手动打开医案");

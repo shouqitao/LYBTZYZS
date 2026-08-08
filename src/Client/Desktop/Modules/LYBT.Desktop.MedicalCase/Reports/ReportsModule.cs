@@ -1,3 +1,5 @@
+using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.MedicalCase.Reports.Services;
 using LYBT.Desktop.MedicalCase.Reports.ViewModels;
 using LYBT.Desktop.MedicalCase.Reports.Views;
 using Prism.Ioc;
@@ -18,6 +20,7 @@ public class ReportsModule : IModule
 
     public void RegisterTypes(IContainerRegistry containerRegistry)
     {
+        containerRegistry.Register<IReportService, ReportService>();
         // STUB: 注册基础视图和视图模型
         ViewModelLocationProvider.Register(typeof(ReportsHomeView).ToString(), typeof(ReportsHomeViewModel));
         containerRegistry.RegisterForNavigation<ReportsHomeView>();

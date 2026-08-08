@@ -42,6 +42,7 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.Register<IMedicalCaseCommandService, MedicalCaseCommandService>();
             containerRegistry.Register<IMedicalCaseLifecycleService, MedicalCaseLifecycleService>();
             containerRegistry.Register<IMedicalCaseService, MedicalCaseService>();
+            containerRegistry.Register<IAuditLogService, AuditLogService>();
 
             containerRegistry.RegisterSingleton<MedicalCaseDetailModelMapper>();
             containerRegistry.Register<ViewModels.MedicalCaseMasterDetailViewModel>();

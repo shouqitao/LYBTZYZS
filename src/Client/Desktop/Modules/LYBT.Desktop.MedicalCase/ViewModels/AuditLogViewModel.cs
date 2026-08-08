@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -15,7 +14,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels;
 /// </summary>
 public partial class AuditLogViewModel : NavigableViewModelBase
 {
-    private readonly IApiClientMedicalCases _medicalCaseApi;
+    private readonly IAuditLogService _auditLogService;
     private readonly INavigationCoordinator _navigationCoordinator;
 
     private Guid _medicalCaseId;
@@ -28,10 +27,10 @@ public partial class AuditLogViewModel : NavigableViewModelBase
 
     private const int PageSize = 20;
 
-    public AuditLogViewModel(IViewModelServices services, IApiClientMedicalCases medicalCaseApi, INavigationCoordinator navigationCoordinator)
+    public AuditLogViewModel(IViewModelServices services, IAuditLogService auditLogService, INavigationCoordinator navigationCoordinator)
         : base(services)
     {
-        _medicalCaseApi = medicalCaseApi;
+        _auditLogService = auditLogService;
         _navigationCoordinator = navigationCoordinator;
         PageTitle = "审计日志";
     }
@@ -54,7 +53,7 @@ public partial class AuditLogViewModel : NavigableViewModelBase
             IsLoading = true;
             Logs.Clear();
 
-            var result = await _medicalCaseApi.GetAuditLogsAsync(_medicalCaseId, CurrentPage, PageSize);
+            var result = await _auditLogService.GetAuditLogsAsync(_medicalCaseId, CurrentPage, PageSize);
             if (result.Success && result.Data != null)
             {
                 foreach (var log in result.Data.Items)

@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Reports;
@@ -11,7 +10,7 @@ namespace LYBT.Desktop.MedicalCase.Reports.ViewModels;
 
 public partial class ReportsHomeViewModel : NavigableViewModelBase
 {
-    private readonly IApiClient _apiClient;
+    private readonly IReportService _reportService;
 
     [ObservableProperty]
     private DailyIncomeDto? _dailyIncome;
@@ -33,10 +32,10 @@ public partial class ReportsHomeViewModel : NavigableViewModelBase
 
     public ReportsHomeViewModel(
         IViewModelServices services,
-        IApiClient apiClient)
+        IReportService reportService)
         : base(services)
     {
-        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+        _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
     }
 
     partial void OnSelectedDateChanged(DateTime value)
@@ -71,9 +70,9 @@ public partial class ReportsHomeViewModel : NavigableViewModelBase
             var startDate = SelectedDate.Date;
             var endDate = SelectedDate.Date.AddDays(1);
 
-            var incomeTask = _apiClient.Reports.GetDailyIncomeAsync(startDate, endDate);
-            var consultationsTask = _apiClient.Reports.GetDailyConsultationsAsync(startDate, endDate);
-            var herbsTask = _apiClient.Reports.GetDailyHerbUsageAsync(startDate, endDate);
+            var incomeTask = _reportService.GetDailyIncomeAsync(startDate, endDate);
+            var consultationsTask = _reportService.GetDailyConsultationsAsync(startDate, endDate);
+            var herbsTask = _reportService.GetDailyHerbUsageAsync(startDate, endDate);
 
             await Task.WhenAll(incomeTask, consultationsTask, herbsTask);
 
