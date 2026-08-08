@@ -23,7 +23,7 @@ public static class TestAssemblies
         Assembly.Load("LYBT.Module.Herbs"),
         Assembly.Load("LYBT.Module.Formulas"),
         Assembly.Load("LYBT.Module.Reports"),
-        Assembly.Load("LYBT.Module.Registration")
+        Assembly.Load("LYBT.Module.Registrations")
     ];
 
     /// <summary>

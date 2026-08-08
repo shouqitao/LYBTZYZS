@@ -626,7 +626,7 @@ public class ArchTests
             Assembly.Load("LYBT.Module.MedicalCases"),
             Assembly.Load("LYBT.Module.Herbs"),
             Assembly.Load("LYBT.Module.Formulas"),
-            Assembly.Load("LYBT.Module.Registration"),
+            Assembly.Load("LYBT.Module.Registrations"),
             Assembly.Load("LYBT.Module.Reports"),
         };
 

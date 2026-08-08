@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 namespace LYBT.Shared.Configuration.Validation;
 
 /// <summary>
-/// LocalJwt 配置验证器
+/// LocalJwt 配置验证器（A-28 P1-7: 配置节统一为 Jwt）
 /// </summary>
 public sealed class LocalJwtOptionsValidator : IValidateOptions<LocalJwtOptions>
 {
@@ -18,11 +18,11 @@ public sealed class LocalJwtOptionsValidator : IValidateOptions<LocalJwtOptions>
             {
                 var keyBytes = Convert.FromBase64String(options.SecretKey);
                 if (keyBytes.Length < 32)
-                    failures.Add("LocalJwt:SecretKey 解码后长度不能小于 32 字节");
+                    failures.Add("Jwt:SecretKey 解码后长度不能小于 32 字节");
             }
             catch (FormatException)
             {
-                failures.Add("LocalJwt:SecretKey 必须是有效的 Base64 字符串");
+                failures.Add("Jwt:SecretKey 必须是有效的 Base64 字符串");
             }
         }
 

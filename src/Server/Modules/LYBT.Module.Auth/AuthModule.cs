@@ -54,9 +54,8 @@ namespace LYBT.Module.Auth
             // Mapperly映射器 - 无状态单例
             services.AddSingleton<Application.Mappers.AuthUserMapper>();
 
-            // Epic #1731: 注册Auth模块Validators
+            // Epic #1731: 注册Auth模块Validators（LoginRequest 验证 SSOT 为 Shared 版，A-28 P1-5 收敛）
             services.AddValidatorsFromAssemblyContaining<LYBT.Shared.Models.Validators.Auth.LoginRequestValidator>();
-            services.AddValidatorsFromAssemblyContaining<Application.Validators.LoginRequestValidator>();
 
             return services;
         }

@@ -1,5 +1,6 @@
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Module.Users.Application.Mappers;
 using LYBT.Module.Users.Infrastructure;
 using LYBT.Shared.Models.DTOs.Users;
 using Microsoft.AspNetCore.Identity;
@@ -34,25 +35,7 @@ public class UserCrossModuleService : IUserCrossModuleService
 
         if (u == null) return null;
 
-        return new UserBasicDto
-        {
-            Id = u.Id,
-            UserName = u.UserName ?? string.Empty,
-            RealName = u.RealName,
-            Role = u.Role,
-            Status = u.Status,
-            PhoneNumber = u.PhoneNumber,
-            Email = u.Email,
-            PinYinCode = u.PinYinCode,
-            LastLoginTime = u.LastLoginAt,
-            FailedLoginCount = u.AccessFailedCount,
-            LockoutEnd = u.LockoutEnd?.UtcDateTime,
-            MustChangeOnNextLogin = u.MustChangeOnNextLogin,
-            CreatedAt = u.CreatedAt,
-            UpdatedAt = u.UpdatedAt,
-            RegistrationFee = u.RegistrationFee,
-            Remark = u.Remark
-        };
+        return UserCrossModuleMapper.ToBasicDto(u);
     }
 
     public async Task<UserCredentialDto?> GetUserByUsernameAsync(string username, CancellationToken cancellationToken = default)
@@ -64,26 +47,7 @@ public class UserCrossModuleService : IUserCrossModuleService
 
         if (u == null) return null;
 
-        return new UserCredentialDto
-        {
-            Id = u.Id,
-            UserName = u.UserName ?? string.Empty,
-            RealName = u.RealName,
-            Role = u.Role,
-            Status = u.Status,
-            PhoneNumber = u.PhoneNumber,
-            Email = u.Email,
-            PinYinCode = u.PinYinCode,
-            LastLoginTime = u.LastLoginAt,
-            FailedLoginCount = u.AccessFailedCount,
-            LockoutEnd = u.LockoutEnd?.UtcDateTime,
-            MustChangeOnNextLogin = u.MustChangeOnNextLogin,
-            CreatedAt = u.CreatedAt,
-            UpdatedAt = u.UpdatedAt,
-            RegistrationFee = u.RegistrationFee,
-            Remark = u.Remark,
-            PasswordHash = u.PasswordHash ?? string.Empty
-        };
+        return UserCrossModuleMapper.ToCredentialDto(u);
     }
 
     public async Task UpdateUserPasswordHashAsync(Guid userId, string newPasswordHash, CancellationToken cancellationToken = default)

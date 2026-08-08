@@ -74,7 +74,7 @@ public class LocalWebApiPatternTests
             "LYBT.Module.Herbs",
             "LYBT.Module.MedicalCases",
             "LYBT.Module.Patients",
-            "LYBT.Module.Registration",
+            "LYBT.Module.Registrations",
             "LYBT.Module.Reports",
             "LYBT.Module.Users"
         }.OrderBy(n => n).ToList();

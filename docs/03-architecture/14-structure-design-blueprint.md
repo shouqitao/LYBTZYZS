@@ -242,7 +242,7 @@ Mappers/               # Mapperly（Target 策略）
 | LYBT.Desktop.Herbs | 13 | 全目录 | 药材管理 UI |
 | LYBT.Desktop.Formula | 16 | 全目录 | 验方管理 UI |
 | LYBT.Desktop.MedicalCase | 50 | 目录最全（6 子目录，Dialogs/Reports 等）| 医案工作台（核心）|
-| LYBT.Desktop.Registration | 9 | 精简（Dialogs/Events/Repositories/Services/ViewModels）| 挂号 UI + SignalRClient |
+| LYBT.Desktop.Registrations | 9 | 精简（Dialogs/Events/Repositories/Services/ViewModels）| 挂号 UI + SignalRClient |
 
 ### 3.3 Roles（2 个角色工作台）
 

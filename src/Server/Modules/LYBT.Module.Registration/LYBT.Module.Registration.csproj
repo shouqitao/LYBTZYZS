@@ -5,6 +5,9 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<!-- A-28 P1-6: 程序集名/根命名空间对齐复数（与 MedicalCase/Formula 一致） -->
+		<RootNamespace>LYBT.Module.Registrations</RootNamespace>
+		<AssemblyName>LYBT.Module.Registrations</AssemblyName>
 	</PropertyGroup>
 
 	<!-- 允许测试项目访问internal类 -->
