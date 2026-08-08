@@ -65,7 +65,7 @@
 | A-14 | Controller 继承文档化 | 三种继承路径（BaseApiController/BaseCrudController/BaseMedicalCasesController）设计意图文档化；MediatR+Service 混合注入是有意设计（查询走 Service 绕过管道，命令走 MediatR 验证+审计） | 无 | 🟡 仅文档 | 0.5d |
 | A-15 | MedicalCasesController 拆分 | ~~356 行 CRUD+状态流转 拆为两个 Controller~~ → **评估后取消**：状态流转仅 4 个方法（~100行），共享路由前缀，拆分后 Desktop Refit 也需改，ROI 不合理 | 无 | ❌ 评估后取消 | — |
 | A-16 | 结构审计（全项目） | 技术总监+Mimo 双独立报告交叉验证：三层边界健康/双轨真共享；**P0 本地 CRUD 断裂**（患者/药材/验方 GetList/Create/Update 未 override→500/405）+ P1 七项收敛（契约双套/双实现/映射/CorrelationId/Desktop P07 缺口/Shared 文档） | 死代码清理 `97445a6f3` | ✅ `b7c7390d0`+`4bce47483`+`bd02ac512` | 1d |
-| A-17 | P0 本地 CRUD 断裂修复 | 本地 Patients/Herbs/Formulas Controller 补 GetList/Create/Update override（复用 Server Service）；MedicalCases 补 GetList/search/print-completed | A-16 | ⬜ 待决策 | 0.5-1d |
+| A-17 | P0 本地 CRUD 断裂修复 | 本地 Patients/Herbs/Formulas Controller 补 GetList/Create/Update override（复用 Server Service）；MedicalCases 补 GetList/search/print-completed | A-16 | ✅ `b9944d1f4` | 0.5-1d |
 | A-18 | P1 机制收敛批次 | ① 契约双套统一（以 ApiClient 为主）② 领域客户端双实现收敛 ③ CorrelationId 删 AsyncLocal 侧 ④ Server 手写 Mapper 改 Mapperly ⑤ Desktop 模块引用补架构测试 | A-16 | ⬜ 待决策 | 2-3d |
 
 ### B 类 — 产品功能
