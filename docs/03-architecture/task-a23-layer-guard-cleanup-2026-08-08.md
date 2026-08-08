@@ -1,5 +1,9 @@
 # 任务 A-23：越层修复 + 孤儿类清理 + 守卫补全
 
+> [!NOTE]
+> 此任务书已完成（2026-08-08）。实现详情见最终报告：
+> [Final Report](../compose/reports/a23-layer-guard-cleanup.md)
+
 > 依据：`structure-audit-perclass-crosscheck-2026-08-08.md` 交叉验证 §四
 > 产品负责人已确认执行
 
