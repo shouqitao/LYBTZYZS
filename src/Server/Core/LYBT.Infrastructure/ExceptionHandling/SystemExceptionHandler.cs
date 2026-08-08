@@ -101,6 +101,13 @@ public class SystemExceptionHandler : IExceptionHandler
                 "您没有权限执行此操作"
             ),
 
+            // 功能未实现 (BaseCrudController 抽象桩): HTTP 501 Not Implemented
+            NotSupportedException => (
+                501,
+                "功能未实现",
+                _environment.IsDevelopment() ? exception.Message : "该操作暂不支持"
+            ),
+
             // 操作取消
             OperationCanceledException => (
                 499, // Client Closed Request

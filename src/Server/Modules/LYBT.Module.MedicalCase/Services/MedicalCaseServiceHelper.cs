@@ -7,6 +7,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.DTOs.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Validators.BusinessRules;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 
@@ -137,7 +138,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             logger.LogError("[SVC] MedicalCase.{Operation} -> MaxRetriesExceeded", operationName);
-            throw new InvalidOperationException($"{operationName}失败，请稍后重试");
+            throw new DbUpdateConcurrencyException($"{operationName}失败：并发冲突，请刷新后重试");
         }
 
         /// <summary>
