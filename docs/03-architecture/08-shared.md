@@ -1,196 +1,261 @@
 # 共享层架构
 
+> **v1.6（2026-08-08）**：按实际 5 项目结构重写（原文档声称 8 项目，实际 5 项目，Primitives/Utilities/Components/Validators 已坍缩为 `LYBT.Shared.Models` 内文件夹）。结构审计依据：`structure-audit-2026-08-08.md` + `structure-audit-mimo-2026-08-08.md` 交叉验证（D1/D2 偏差）。
+
 ## 概述
 
-Shared 层提供 Server 和 Client 两端共享的代码，包括 DTO 定义、工具类、业务组件和日志基础设施。Shared 层不依赖任何 Server 或 Client 项目，仅引用其他 Shared 项目和第三方 NuGet 包。
+Shared 层提供 Server 和 Client 两端共享的代码，共 **5 个项目**。Shared 层不依赖任何 Server 或 Client 项目，仅引用其他 Shared 项目和第三方 NuGet 包。
+
+## 项目清单（实际 5 项目）
+
+| 项目 | 位置 | 职责 | 项目引用 |
+|------|------|------|----------|
+| **LYBT.Shared.Models** | `src/Shared/LYBT.Shared.Models/` | DTO/契约、枚举、错误码、工具类、验证器、脱敏特性（原 8 项目设计坍缩于此，见下文「内部逻辑分层」） | 零依赖（叶子节点） |
+| **LYBT.Entities** | `src/Shared/LYBT.Entities/` | 领域实体（贫血模型，MedicalCaseModel 为唯一充血聚合根） | → Shared.Models |
+| **LYBT.Shared.Configuration** | `src/Shared/LYBT.Shared.Configuration/` | Options 配置类 + 验证器 + ConnectionStringResolver | → Shared.Models |
+| **LYBT.Shared.ExceptionHandling** | `src/Shared/LYBT.Shared.ExceptionHandling/` | 异常层次（AppException 体系） | → Shared.Models |
+| **LYBT.Shared.Logging** | `src/Shared/LYBT.Shared.Logging/` | Serilog 基础设施（Enrichers/Masking/Management/CorrelationId Provider） | → Shared.Models |
 
 ## 架构图
 
 ```mermaid
 graph TB
-    Server["Server 层"] -->|"引用"| Models & Utilities & Components & Logging & ExH & Config & Validators
-    Client["Client 层"] -->|"引用"| Models & Utilities & Components & Logging & ExH & Config & Validators
+    Server["Server 层"] -->|"引用"| Shared
+    Client["Client 层"] -->|"引用"| Shared
 
-    subgraph Shared["Shared 层 (8 项目)"]
-        Primitives["Shared.Primitives<br>(ErrorCode/常量)"]
-        Models["Shared.Models<br>(DTO/Contract)"]
-        Utilities["Shared.Utilities<br>(工具类)"]
-        Components["Shared.Components<br>(业务组件)"]
-        Logging["Shared.Logging<br>(日志基础设施)"]
-        Validators["Shared.Validators<br>(FluentValidation)"]
-        ExH["Shared.ExceptionHandling<br>(异常处理)"]
-        Config["Shared.Configuration<br>(Options 配置)"]
+    subgraph Shared["Shared 层 (5 项目)"]
+        Models["LYBT.Shared.Models<br>(DTO/契约/枚举/错误码/工具/验证器)"]
+        Entities["LYBT.Entities<br>(领域实体)"]
+        Config["LYBT.Shared.Configuration<br>(Options 配置)"]
+        ExH["LYBT.Shared.ExceptionHandling<br>(异常层次)"]
+        Logging["LYBT.Shared.Logging<br>(Serilog 基础设施)"]
     end
 
-    Models --> Primitives
-    Components --> Models & Utilities
-    Validators --> Models & Primitives
-    ExH --> Primitives
-    Logging -.->|"可选依赖"| Utilities
+    Entities --> Models
+    Config --> Models
+    ExH --> Models
+    Logging --> Models
 ```
 
 **依赖规则**:
-- Shared 层项目可互相引用
-- Server/Client 可引用 Shared
-- Shared 禁止引用 Server 或 Client
+- `LYBT.Shared.Models` 为叶子节点，不引用任何其他 LYBT 项目
+- Entities/Configuration/ExceptionHandling/Logging 均可引用 Shared.Models，互相之间不引用
+- Server/Client 可引用 Shared，禁止反向引用
 
-## LYBT.Shared.Models (DTO 与 Contract)
+## 内部逻辑分层（历史 8 项目设计的坍缩）
 
-### 职责
+原设计文档声称 Primitives/Utilities/Components/Validators 为独立项目，实际实现中全部坍缩为 `LYBT.Shared.Models` 内文件夹（逻辑分层，非物理隔离）：
 
-定义所有 API 契约 DTO、共享枚举、通用类型。是 Server/Client 之间的数据传输桥梁。
+| 原独立项目设计 | 实际位置 | 说明 |
+|---------------|---------|------|
+| Primitives | `LYBT.Shared.Models/Primitives/` | 零依赖底层（ErrorCode/ValidationConstants） |
+| Utilities | `LYBT.Shared.Models/Utilities/` | 无状态工具类（实际仅 4 文件） |
+| Components | —（从未建立） | MedicalCaseBusinessRules 已实现在 `Validators/BusinessRules/` |
+| Validators | `LYBT.Shared.Models/Validators/` | FluentValidation 验证器 |
 
-### 目录结构
+> **推论**: 原「Primitives 零依赖可编译期强制」等物理隔离约束在当前 5 项目结构下**不可编译期强制**，仅能靠约定维持。如需恢复物理边界需再拆分项目（P2 候选项，本批次不动）。
+
+## LYBT.Shared.Models
+
+### 目录结构（代码实际定义）
 
 ```
 LYBT.Shared.Models/
-  Contracts/               # API 契约 DTO
-    Auth/                  # 认证相关 DTO
-    Patient/               # 患者 DTO
-    MedicalCase/           # 医案 DTO
-    Consultation/          # 诊断 DTO
-    Prescription/          # 处方 DTO
-    Herb/                  # 药材 DTO
-    Formula/               # 验方 DTO
-    User/                  # 用户 DTO
-    Common/                # 跨模块 BasicDto
-  Common/                  # 通用类型
-    BaseDto.cs             # DTO 基类
-    PagedRequest.cs        # 分页请求
-    PagedResponse.cs       # 分页响应
-    Result.cs              # 统一结果类型
-  Enums/                   # 共享枚举
-    Gender.cs
-    MedicalCaseStatus.cs
-    CommonStatus.cs
-  Constants/               # 常量
-    ErrorCodes.cs
+  Attributes/                # 脱敏特性
+    SensitiveDataAttribute.cs
+  Contracts/                 # API 契约 DTO（按领域分目录）
+    Auth/                    # 登录/Token/会话
+    Common/                  # ApiResponse/Result/PagedResult/OperationResultDto 等跨模块类型
+    Consultation/            # 辨证 DTO
+    Diagnostics/             # 日志级别/调试模式
+    Formula/                 # 验方 DTO
+    Health/                  # 健康检查
+    Herbs/                   # 药材 DTO + IHerbItem
+    MedicalCase/             # 医案 DTO
+    Patients/                # 患者 DTO
+    Prescriptions/           # 处方 DTO
+    Registration/            # 挂号 DTO
+    Reports/                 # 报表 DTO
+    Users/                   # 用户 DTO
+  DTOs/                      # 辅助 DTO
+    Users/UserBasicDto.cs
+  Enums/                     # 共享枚举（12 个文件：Gender/HerbRole/MedicalCaseEnums/RegistrationEnums 等）
+  Extensions/                # DtoConversionExtensions.cs
+  Primitives/                # 错误码 + 验证常量
+    ErrorCodes/              # ErrorCode.cs / ErrorCategory.cs / ErrorMessages.cs / ErrorCodeExtensions.cs
+    Validation/              # ValidationConstants.cs
+    UserConstants.cs
+  Utilities/                 # 无状态工具类（实际 4 文件）
+    Extensions/ServiceCollection/CacheExtensions.cs
+    Security/PasswordHelper.cs
+    Security/PasswordPolicyValidator.cs
+    Text/PinYinHelper.cs
+  Validators/                # FluentValidation 验证器
+    Auth/                    # LoginRequestValidator.cs
+    BusinessRules/           # MedicalCaseBusinessRules.cs
+    Formula/Herbs/MedicalCase/Patients/Prescriptions/
 ```
 
-### DTO 继承层次
+> **纠错（D2）**: 原文档声称 Utilities 含 `ConfigurationHelper/PasswordHasher/JwtHelper/PinYinConverter/StringExtensions/DateTimeHelper` — **全部不存在**。实际仅 4 文件：`CacheExtensions` / `PasswordHelper` / `PasswordPolicyValidator` / `PinYinHelper`。`PasswordHelper` 为 BCrypt 残留工具类（运行时密码哈希已统一 Identity PBKDF2，见 [00-architecture-summary.md](00-architecture-summary.md)）。
 
-```
-BaseDto (Id: Guid)
-  TimestampDto (CreatedAt, UpdatedAt)
-    StatusDto (IsDeleted)
-      AuditDto (CreatedBy, UpdatedBy)
-```
+### 契约类型（Contracts/Common）
 
-| 基类 | 包含字段 | 适用场景 |
-|------|----------|----------|
-| BaseDto | Id | 仅需主键 |
-| TimestampDto | + CreatedAt, UpdatedAt | 需要时间戳 |
-| StatusDto | + IsDeleted | 需要软删除状态 |
-| AuditDto | + CreatedBy, UpdatedBy | 需要审计信息 |
+实际通用类型（非原文档声称的 BaseDto/TimestampDto/StatusDto/AuditDto 继承链，该链不存在）：
+
+| 类型 | 用途 |
+|------|------|
+| `Result<T>` / `Result` | 领域操作结果（非 HTTP 响应） |
+| `ApiResponse<T>` | HTTP 统一响应包装 |
+| `PagedResult<T>` | 分页响应 |
+| `OperationResultDto` | 批量操作结果 |
+| `ImportResultDto : BatchOperationResultDto` | 导入结果（继承批量操作结果） |
+| `BatchDeleteInputDto` | 批量删除请求 |
+| `HealthCheckResponse` / `HealthStatusDto` | 健康检查 |
+| `HerbBasicDto` / `PatientBasicDto` | 跨模块轻量传输 |
+| `IAuditable` / `IEntityInputDto` | 接口契约（审计/输入提取 ID） |
 
 ### DTO 命名规范
 
 | 后缀 | 用途 | 示例 |
 |------|------|------|
-| `*Dto` | 列表/通用传输 | MedicalCaseDto |
+| `*Dto` | 列表/通用传输 | MedicalCaseListDto |
 | `*DetailDto` | 详情响应 | MedicalCaseDetailDto |
 | `*InputDto` | 创建/更新输入 | PatientInputDto |
-| `*CreateDto` | 创建请求 | PrescriptionCreateDto |
 | `*Request` | 操作请求 | UpdateMedicalCaseRequest |
 | `*BasicDto` | 跨模块轻量传输 | PatientBasicDto |
+| `{Entity}Batch{Op}InputDto` | 批量操作请求 | PatientBatchImportInputDto |
 
-### 批量操作 DTO
+**ListDto/DetailDto 字段选择标准**（约定，非强约束）：
+- **ListDto**: 主键 + 名称 + 状态 + 关键业务字段。排除大文本、非必要审计字段。
+- **DetailDto**: Entity 的全部业务字段 + 状态 + 审计字段。
+- **BasicDto**: 仅 ICrossModuleService 所需的最少字段。
 
-| 命名 | 用途 |
-|------|------|
-| `{Entity}Batch{Op}InputDto` | 批量操作请求 |
-| `{Entity}Batch{Op}ResultDto` | 批量操作响应 |
-| `{Entity}ImportItemDto` | 导入单行 |
-| `{Entity}ExportItemDto` | 导出单行 |
-| `BatchIdsDto` | 通用 ID 列表 |
-| `BatchOperationResultDto` | 通用批量结果 |
-
-### DTO 字段选择标准
-
-**ListDto**: 主键 + 名称 + 状态 + 关键业务字段。排除大文本、非必要审计字段。
-
-**DetailDto**: Entity 的全部业务字段 + 状态 + 审计字段。
-
-**BasicDto**: 仅 ICrossModuleService 所需的最少字段。
-
-## LYBT.Shared.Utilities (工具类)
+## LYBT.Entities
 
 ### 职责
 
-提供无状态的通用工具方法，Server/Client 共享。
+领域实体定义，默认贫血模型。是 Server 与 LocalWebAPI 共用的唯一实体源。
+
+> **例外**: `MedicalCaseModel` 作为唯一 DDD 聚合根，包含域方法 (`Complete()`, `Suspend()`, `SoftDelete()`, `UpdateConsultation()`)，采用充血模型；另有计算属性 `IsLocked / IsActive / IsCompleted`。其他实体保持贫血模型。
 
 ### 目录结构
 
 ```
-LYBT.Shared.Utilities/
-  Configuration/           # 配置辅助
-    ConfigurationHelper.cs
-  Security/                # 安全相关
-    PasswordHasher.cs      # BCrypt 封装
-    JwtHelper.cs           # JWT 辅助
-  Text/                    # 文本处理
-    PinYinConverter.cs     # 中文转拼音
-    StringExtensions.cs    # 字符串扩展
-  Helpers/                 # 通用辅助
-    DateTimeHelper.cs
+LYBT.Entities/
+  Auth/              # AuthSessionModel, SecurityAuditLog
+  Common/            # BaseEntity, IAuditableEntity, ISoftDeletable, SystemLog
+  Consultations/     # ConsultationModel
+  Formulas/          # FormulaModel, FormulaHerbItem
+  Herbs/             # HerbModel
+  MedicalCases/      # MedicalCaseModel, MedicalCaseAuditLog, MedicalCasePrintLog
+  Patients/          # PatientModel
+  Prescriptions/     # PrescriptionModel, PrescriptionItem
+  Registrations/     # RegistrationModel
+  Users/             # ApplicationUser
 ```
 
-**约束**: 工具类必须无状态 (纯函数)，不引用任何 LYBT 项目。
+**BaseEntity 通用字段**: Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy, RowVersion, IsDeleted。详见 [04-data-model.md](04-data-model.md) 的 BaseEntity 章节。
 
-## LYBT.Shared.Components (业务组件)
+## LYBT.Shared.Configuration
 
 ### 职责
 
-提供可被 Server 和 Client 复用的业务逻辑组件。与 Utilities 不同，Components 包含业务逻辑。
+集中管理所有 Options 类和配置绑定扩展，Server/Client 通过 `IOptions<T>` 模式消费。包含配置验证器确保启动时配置合法。
 
-### 目录结构
+### 目录结构（代码实际定义）
 
 ```
-LYBT.Shared.Components/
-  Interfaces/              # 组件接口
-    IHerbItem.cs
-  Calculators/             # 计算器
-    HerbCalculatorBase.cs
-    PrescriptionCalculator.cs
-  Validators/              # 业务验证
-    HerbValidatorBase.cs
-  BusinessRules/           # 共享业务规则
-    MedicalCaseBusinessRules.cs
+LYBT.Shared.Configuration/
+  ConnectionStringResolver.cs    # 三级回退（Database:ConnectionString → ConnectionStrings:DefaultConnection → CONNECTION_STRING 环境变量）
+  Extensions/
+    ClientConfigurationExtensions.cs
+    ServerConfigurationExtensions.cs
+  Options/
+    Common/
+      JwtOptions.cs              # JWT 配置（双端共享）
+    Server/                      # 12 个 Server Options
+      AppInfoOptions / CorsOptions / DatabaseOptions / DefaultPasswordOptions / DesktopUpdateOptions
+      LocalJwtOptions / LoggingOptions / MemoryCacheOptions / SecurityOptions / SessionOptions
+      SwaggerOptions / SystemAdminOptions
+    Client/                      # 6 个 Client Options
+      ApiClientOptions / CardReaderOptions / ClientSessionOptions / ClinicSettingsOptions
+      FeatureToggleOptions / OfflineModeOptions
+  Validation/                    # 配置验证器（IValidateOptions<T> 实现）
+    DatabaseOptionsValidator.cs / JwtOptionsValidator.cs / LocalJwtOptionsValidator.cs / SecurityOptionsValidator.cs
 ```
 
-### MedicalCaseBusinessRules (计划新增)
+> 详细的配置架构说明 (验证管道、环境分层、热更新策略) 请参见 [07-configuration.md](07-configuration.md)。
 
-> 设计文档: design-deepening-phase3 | design-issues-solutions Issue #4
+**约束**: 引用 Microsoft.Extensions.Options，禁止引用业务逻辑。
 
-提取到 Shared 层的纯函数业务规则，供 Server 端和 Local 端共享，解决 Local 模式绕过业务规则的问题:
-
-| 方法 | 用途 | 对应规则 |
-|------|------|----------|
-| `CanCreateNewCase(statuses)` | 检查患者是否可新建医案 | BR-001 (单活跃医案约束) |
-| `HasActiveCase(statuses)` | 检查患者是否存在活跃医案 | BR-001 |
-| `IsValidStatusTransition(from, to)` | 状态转换合法性验证 | US-MC-006~008 状态机矩阵 |
-
-**当前状态**: 待实施 (S5)。Server 端 `MedicalCaseRules` 将简化为 thin wrapper 委托给此类。
-
-**约束**: 可引用 Shared.Models 和 Shared.Utilities，禁止引用 Server/Client。
-
-## LYBT.Shared.Logging (日志基础设施)
+## LYBT.Shared.ExceptionHandling
 
 ### 职责
 
-提供跨前后端的统一日志能力，基于 Serilog。
+提供统一的异常层次结构。所有业务异常继承 `AppException`，携带 `ErrorCode` 用于结构化错误响应。
 
-### 目录结构
+### 目录结构（代码实际定义）
+
+```
+LYBT.Shared.ExceptionHandling/
+  Exceptions/
+    Base/
+      AppException.cs            # 基类（携带 ErrorCode）
+    Business/
+      BusinessException.cs       # 业务异常 (400)
+      ValidationException.cs     # 验证异常 (400)
+      NotFoundException.cs       # 未找到 (404)
+      ConflictException.cs       # 冲突 (409)
+    Security/
+      UnauthorizedException.cs   # 未授权 (401)
+    External/
+      ApiException.cs            # 外部 API 调用异常 (502/503)
+```
+
+### 异常继承层次
+
+```
+Exception
+  AppException (ErrorCode, HttpStatusCode)
+    BusinessException (400)
+      ValidationException (400)
+      NotFoundException (404)
+      ConflictException (409)
+    UnauthorizedException (401)
+    ApiException (502/503)
+```
+
+> **注**: 原文档声称的 Handlers/ProblemDetails/Mappers/Extensions 等目录（Server/Desktop 异常处理器、ProblemDetails 工厂、错误消息映射）**代码中不存在** — 异常处理由 [03-server.md](03-server.md) 的 `IExceptionHandler`（LYBT.Infrastructure/ExceptionHandling/）+ WebAPI 中间件统一完成。
+
+**约束**: 引用 Shared.Models (ErrorCode)，禁止引用 Server/Client 具体实现。
+
+## LYBT.Shared.Logging
+
+### 职责
+
+提供跨前后端的统一日志能力，基于 Serilog。含 CorrelationId Provider（双端各自单机制）、敏感数据脱敏、日志级别管理。
+
+### 目录结构（代码实际定义）
 
 ```
 LYBT.Shared.Logging/
-  Abstractions/            # 接口定义
-  Configuration/           # 配置类
-  Enrichers/               # Serilog Enrichers
-  Masking/                 # 敏感数据脱敏
-  Management/              # 日志管理 (级别控制)
-  Extensions/              # DI 扩展方法
+  Abstractions/
+    ICorrelationIdProvider.cs        # 接口
+    ActivityCorrelationIdProvider.cs # Desktop 使用（Activity.Current）
+  Enrichers/
+    CorrelationIdEnricher.cs         # Serilog Enricher
+  Extensions/
+    LoggerConfigurationExtensions.cs # Serilog 两阶段启动辅助
+    ServiceCollectionExtensions.cs   # DI 注册
+  Management/
+    DebugModeInfo.cs
+    LoggingLevelManager.cs           # 日志级别控制
+  Masking/
+    SensitiveDataDestructuringPolicy.cs
+    SensitiveDataMasker.cs
 ```
+
+> **注**: `AsyncLocalCorrelationIdProvider.cs` 已于 A-18 P1-3 删除（`AddAsyncLocalCorrelationIdProvider` 全仓 0 调用点，死代码）。CorrelationId 现状：Server 走 `CorrelationIdMiddleware`（W3C traceparent），Desktop 走 `ActivityCorrelationIdProvider` — 双端各自端内单机制，跨端不强制统一。
 
 ### Serilog 架构
 
@@ -198,7 +263,7 @@ LYBT.Shared.Logging/
 
 Serilog 在 Server 和 Desktop 两端均采用两阶段初始化，确保 DI 容器就绪前的启动错误也能被捕获:
 
-1. **CreateBootstrapLogger()** — 最小化配置的引导日志器，在 `Program.cs` 最早期创建，捕获 DI 容器构建前的启动异常 (配置文件缺失、程序集加载失败等)
+1. **CreateBootstrapLogger()** — 最小化配置的引导日志器，在 `Program.cs` 最早期创建，捕获 DI 容器构建前的启动异常
 2. **DI 构建日志器** — 从 `appsettings.json` 读取完整配置，通过 `logger.ReadFrom.Configuration(hostBuilderContext.Configuration)` 构建，替换引导日志器
 
 ```csharp
@@ -229,203 +294,15 @@ builder.Host.UseSerilog((context, logger) =>
 | 路径 | `logs/lybt-{Date}.log` |
 | 滚动 | 每日 (rolling) |
 | 保留 | 365 天 (可配置) |
-| 输出模板 | `{Timestamp:HH:mm:ss} [{Level:u3}] {SourceContext} | {Message:lj}{NewLine}{Exception}` |
+| 输出模板 | `{Timestamp:HH:mm:ss} [{Level:u3}] {SourceContext} \| {Message:lj}{NewLine}{Exception}` |
 
 #### 敏感数据脱敏
 
-PatientModel 属性标记 `[SensitiveData]` 特性后，Serilog 析构时通过 `SensitiveDataDestructuringPolicy` 自动脱敏:
-
-| 字段 | 脱敏示例 | MaskingMode |
-|------|----------|-------------|
-| PhoneNumber | `138****1234` | Partial |
-| IdNumber | `310***********1234` | Partial |
-| Address | `[已隐藏]` | Full |
-| AllergyHistory | `[REDACTED:A1B2C3D4]` | Hash |
-
-> 脱敏模式定义见 [SensitiveDataAttribute 设计](#sensitivedataattribute-设计) 章节。
-
-## LYBT.Shared.Primitives (错误码与基础类型)
-
-### 职责
-
-定义系统级基础类型，包括统一错误码 (ErrorCode)、错误消息映射 (ErrorMessages)、验证常量 (ValidationConstants)。是所有模块共享的最底层依赖。
-
-### 目录结构
-
-```
-LYBT.Shared.Primitives/
-  ErrorCodes/              # 统一错误码体系
-    ErrorCode.cs           # MCCEE 错误码枚举 (M=模块, CC=子类别, EE=序号)
-    ErrorMessages.cs       # 错误码到用户友好消息的映射
-    ErrorCategory.cs       # 错误分类
-    ErrorCodeExtensions.cs # 错误码扩展方法
-  Validation/              # 验证常量
-    ValidationConstants.cs # 全局验证常量 (字符串长度、数值范围等)
-```
-
-### 错误码分区
-
-| 分区 | 模块 | 示例 |
-|------|------|------|
-| 0xxxx | 通用错误 | Unknown, NotFound, ValidationFailed |
-| 1xxxx | 用户/认证 (Users/Auth) | UserNotFound, AuthInvalidCredentials |
-| 2xxxx | 患者 (Patients) | PatientNotFound, PatientPhoneDuplicate |
-| 3xxxx | 医案 (MedicalCase) | McActiveCaseExists, McInvalidStatusTransition |
-| 4xxxx | 处方 (Prescriptions) | PrescriptionNotFound |
-| 5xxxx | 药材 (Herbs) | HerbNotFound, HerbNameExists |
-| 6xxxx | 验方 (Formula) | FormulaNotFound, FormulaNoPermission |
-| 7xxxx | 同步 (Sync) | SyncDataConflict, SyncFailed |
-
-**约束**: 零依赖，不引用任何其他 LYBT 项目。
-
-## LYBT.Shared.Validators (FluentValidation 验证器)
-
-### 职责
-
-集中管理从各业务模块提取的 FluentValidation 验证器和共享业务规则验证器，Server/Client 双端复用。
-
-### 目录结构
-
-```
-LYBT.Shared.Validators/
-  Auth/                    # 认证验证器
-    LoginRequestValidator.cs
-    SuperAdminLoginRequestValidator.cs
-    ChangePasswordRequestValidator.cs
-  Consultation/            # 诊断验证器
-    ConsultationInputDtoValidator.cs
-  Prescriptions/           # 处方验证器
-    PrescriptionInputDtoValidator.cs
-  MedicalCase/             # 医案验证器
-    MedicalCaseInputDtoValidator.cs
-  Patients/                # 患者验证器
-    PatientInputDtoValidator.cs
-  Users/                   # 用户验证器
-    UserInputDtoValidator.cs
-  Herbs/                   # 药材验证器
-    HerbInputDtoValidator.cs
-  Formula/                 # 验方验证器
-    FormulaInputDtoValidator.cs
-  BusinessRules/           # 共享业务规则
-    IBusinessRuleValidator.cs
-    BaseBusinessRuleValidator.cs
-    MedicalCaseBusinessRules.cs
-    PatientBusinessRuleValidator.cs
-    UserBusinessRuleValidator.cs
-    PrescriptionBusinessRuleValidator.cs
-    ValidationContext.cs
-```
-
-**约束**: 引用 Shared.Models 和 Shared.Primitives (ValidationConstants)，禁止引用 Server/Client。
-
-## LYBT.Shared.ExceptionHandling (异常处理)
-
-### 职责
-
-提供统一的异常层次结构、ProblemDetails 工厂和双端 (Server/Desktop) 异常处理器。所有业务异常继承 `AppException`，携带 `ErrorCode` 用于结构化错误响应。
-
-### 目录结构
-
-```
-LYBT.Shared.ExceptionHandling/
-  Exceptions/              # 异常类层次
-    Base/
-      AppException.cs      # 基类 (携带 ErrorCode)
-    Business/
-      BusinessException.cs # 业务异常
-      ValidationException.cs
-      NotFoundException.cs
-      ConflictException.cs
-    Security/
-      UnauthorizedException.cs
-    External/
-      ApiException.cs      # 外部 API 调用异常
-    Factory/
-      ExceptionFactory.cs  # 异常工厂
-  Handlers/                # 异常处理器
-    Server/
-      BusinessExceptionHandler.cs
-      SystemExceptionHandler.cs
-    Desktop/
-      DesktopExceptionHandler.cs
-      IDesktopExceptionHandler.cs
-      ExceptionSeverity.cs
-  ProblemDetails/          # RFC 7807 ProblemDetails
-    ProblemDetailsFactory.cs
-    ProblemDetailsExtensions.cs
-    ClientProblemDetails.cs
-  Mappers/                 # 错误消息映射
-    IErrorMessageMapper.cs
-    ExceptionMessageMapper.cs
-    ConfigurableErrorMessageMapper.cs
-    ClientErrorMessageMapper.cs
-    ExceptionSeverityMapper.cs
-  Extensions/              # DI 扩展
-    ServiceCollectionExtensions.cs
-    ApplicationBuilderExtensions.cs
-```
-
-### 异常继承层次
-
-```
-Exception
-  AppException (ErrorCode, HttpStatusCode)
-    BusinessException (400)
-      ValidationException (400)
-      NotFoundException (404)
-      ConflictException (409)
-    UnauthorizedException (401)
-    ApiException (502/503)
-```
-
-**约束**: 引用 Shared.Primitives (ErrorCode)，禁止引用 Server/Client 具体实现。
-
-## LYBT.Shared.Configuration (配置选项)
-
-### 职责
-
-集中管理所有 Options 类和配置绑定扩展，Server/Client 通过 `IOptions<T>` 模式消费。包含配置验证器确保启动时配置合法。
-
-### 目录结构
-
-```
-LYBT.Shared.Configuration/
-  Options/
-    Common/
-      JwtOptions.cs        # JWT 配置 (双端共享)
-    Server/
-      DatabaseOptions.cs   # 数据库连接配置
-      SecurityOptions.cs   # 安全策略
-      SessionOptions.cs    # 会话管理
-      LoggingOptions.cs    # 日志配置
-      SystemAdminOptions.cs # 系统管理员初始化
-      DefaultPasswordOptions.cs # 默认密码策略
-      MemoryCacheOptions.cs # 缓存配置
-      SwaggerOptions.cs    # Swagger 配置
-      JsonOptions.cs       # JSON 序列化配置
-    Client/
-      ApiClientOptions.cs  # API 客户端配置 (BaseUrl, Timeout)
-      ClientSessionOptions.cs # 客户端会话配置
-      FeatureToggleOptions.cs # 功能开关
-      ClinicSettingsOptions.cs # 诊所设置
-      PrescriptionOptions.cs # 处方默认值
-      SyncOptions.cs       # 数据同步配置
-  Validation/              # 配置验证器 (IValidateOptions<T> 实现)
-    JwtOptionsValidator.cs
-    DatabaseOptionsValidator.cs
-    SecurityOptionsValidator.cs
-  Extensions/              # DI 绑定扩展
-    ServerConfigurationExtensions.cs
-    ClientConfigurationExtensions.cs
-```
-
-> 详细的配置架构说明 (验证管道、环境分层、热更新策略) 请参见 [configuration.md](07-configuration.md)。
-
-**约束**: 引用 Microsoft.Extensions.Options，禁止引用业务逻辑。
+`PatientModel` 属性标记 `[SensitiveData]` 特性后，Serilog 析构时通过 `SensitiveDataDestructuringPolicy` 自动脱敏（`SensitiveDataAttribute` 定义于 `LYBT.Shared.Models/Attributes/`，命名空间 `LYBT.Shared.Models.Attributes`；`SensitiveDataMasker`/`SensitiveDataDestructuringPolicy` 位于 `LYBT.Shared.Logging/Masking/`，命名空间 `LYBT.Shared.Logging.Masking`）。
 
 ## SensitiveDataAttribute 设计
 
-> 位于 `LYBT.Shared.Logging.Masking` 命名空间。本节为脱敏规范的**权威定义**，[03-server.md](03-server.md) 和 [11d-observability.md](../02-requirements/11d-observability.md) 以链接引用本文。
+> 位于 `LYBT.Shared.Models.Attributes` 命名空间（`src/Shared/LYBT.Shared.Models/Attributes/SensitiveDataAttribute.cs`）。本节为脱敏规范的**权威定义**，[03-server.md](03-server.md) 和 [11d-observability.md](../02-requirements/11d-observability.md) 以链接引用本文。
 
 `[SensitiveData]` 特性用于标记需要日志脱敏的属性。`SensitiveDataMasker` 在序列化和日志输出时自动检测该特性并应用脱敏规则。
 
@@ -493,25 +370,26 @@ Entity (DataAnnotations)
 
 ### ValidationConstants 位置
 
-`LYBT.Shared.Primitives.Validation.ValidationConstants` -- 所有验证常量的唯一来源。
+`LYBT.Shared.Models.Primitives.Validation.ValidationConstants` — 所有验证常量的唯一来源。
 
 ## Mapperly 映射规范
 
-基于 **Mapperly 4.3.1** 的编译时 source-generator 映射，零运行时反射。项目内共 23 个 Mapper 类，分布在 Server 和 Client 两端：
+基于 **Mapperly 4.3.1** 的编译时 source-generator 映射，零运行时反射。项目内共 **13 个** Mapper 类（Server 3 + Desktop 9 + 内联 1；原文档声称 23 已修正，LocalData 项目不存在故无 LocalData Mapper）：
 
 | 层 | Mapper 数量 | 位置 |
 |----|------------|------|
-| Server 模块 | 6 | `src/Server/Modules/LYBT.Module.*/Mapping/` |
-| Client LocalData | 6 | `src/Client/Desktop/Core/LYBT.Desktop.LocalData/Mappers/` |
-| Client Desktop 模块 | 10 | `src/Client/Desktop/Modules/LYBT.Desktop.*/Mappers/` |
+| Server 模块（Mapperly） | 3 | `LYBT.Module.Registration/Mappers/RegistrationMapper.cs`、`LYBT.Module.MedicalCase/Mappers/MedicalCaseMapper.cs`、`LYBT.Module.Auth/Application/Mappers/AuthUserMapper.cs` |
+| Server 模块（手写静态类，A-18 P1-4 已转 Mapperly） | 4 | `LYBT.Module.{Formula,Herbs,Patients,Users}/Application/Mappers/*Mapper.cs` |
+| Client Desktop 模块 | 9 | `src/Client/Desktop/Modules/LYBT.Desktop.*/Mappers/` |
 | Client 内联 | 1 | `PatientRepository.cs` 内 `PatientListToDetailMapper` |
 
-> **映射约定（属性配置/方法命名/特性使用）、Server/Client LocalData 映射模式、Core+Enrich 模式、DI 注册、已知陷阱（HasPrescription/Boolean 反转/Audit 字段等）的完整规范** 已外移到 [15-mapperly.md](15-mapperly.md)。本层仅保留 Mapper 数量与位置概览。
+> **映射约定（属性配置/方法命名/特性使用）、Server/Client 映射模式、Core+Enrich 模式、DI 注册、已知陷阱（HasPrescription/Boolean 反转/Audit 字段等）的完整规范** 已外移到 [15-mapperly.md](15-mapperly.md)。本层仅保留 Mapper 数量与位置概览。
 
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-08-08 | v1.6 | **按实际 5 项目结构重写（A-18 P1-7）**：8 项目声明 → 5 项目（Primitives/Utilities/Components/Validators 坍缩为 Shared.Models 内文件夹）；Utilities 清单纠错（实际 4 文件：CacheExtensions/PasswordHelper/PasswordPolicyValidator/PinYinHelper，ConfigurationHelper/PasswordHasher/JwtHelper 不存在）；删虚构 DTO 继承链（BaseDto/TimestampDto/StatusDto/AuditDto 不存在）；ExceptionHandling 目录纠正（仅 Exceptions/，无 Handlers/ProblemDetails/Mappers）；Configuration 目录按代码实际 Options 清单重写；Mapperly 数量 23→13（LocalData 项目不存在）；MedicalCaseBusinessRules「待实施」→ 已实现（Validators/BusinessRules/） |
 | 2026-06-28 | v1.5 | **spec S3 批次2 提炼（659→~470 行）**：Mapperly 映射规范整体外移至 [15-mapperly.md](15-mapperly.md)（约定/Server/Client 模式/Core+Enrich/DI/陷阱）；SensitiveDataAttribute 详细定义外移至 [03-server.md](03-server.md)（与运行时使用处合并）。本文件保留 8 个 Shared 项目结构 + Mapper 数量/位置概览 + SensitiveData 特性声明位置。变更历史见 git log。 |
 | 2026-06-13 | v1.4 | 新增 Mapperly 映射规范章节: 23 个 Mapper 类的约定、Server/Client 映射模式、Core+Enrich 模式、已知陷阱 |
 | 2026-06-13 | v1.3 | **Serilog 架构**: 扩展 Logging 章节 — 两阶段启动、Sink 配置、日志文件布局、敏感数据脱敏示例 |

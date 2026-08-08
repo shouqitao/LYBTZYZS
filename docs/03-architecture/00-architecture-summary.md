@@ -16,7 +16,7 @@
 | Desktop | .NET 8, WPF, Prism 8.1.97 (DryIoc), CommunityToolkit.Mvvm, MaterialDesignThemes.XAML |
 | Server | ASP.NET Core 8, EF Core 8, SQL Server |
 | Local | SQL Server LocalDB (嵌入式 LocalWebAPI) |
-| Auth | JWT (BCrypt 密码), 🧲 Token Family 旋转（D3 B+，v1.0 补回；重放检测 v2.0） |
+| Auth | JWT (运行时=Identity PBKDF2 哈希；BCrypt 仅残留工具类 PasswordHelper)，🧲 Token Family 旋转（D3 B+，v1.0 补回；重放检测 v2.0） |
 | 打印 | QuestPDF, WPF FixedDocument |
 | 映射 | Riok.Mapperly (编译期) |
 | HTTP | Refit (Desktop→Server) |

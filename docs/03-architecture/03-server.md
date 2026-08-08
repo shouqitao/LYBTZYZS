@@ -289,11 +289,11 @@ BaseApiController (186行) — 独立端点基类
 ### RESTful API 规范
 
 ```
-GET    /api/{resource}           # 列表 (分页)
-GET    /api/{resource}/{id}      # 详情
-POST   /api/{resource}           # 创建
-PUT    /api/{resource}/{id}      # 更新
-DELETE /api/{resource}/{id}      # 删除
+GET    /api/v1/{resource}           # 列表 (分页)
+GET    /api/v1/{resource}/{id}      # 详情
+POST   /api/v1/{resource}           # 创建
+PUT    /api/v1/{resource}/{id}      # 更新
+DELETE /api/v1/{resource}/{id}      # 删除
 ```
 
 ### 中间件管道顺序
@@ -362,7 +362,7 @@ DELETE /api/{resource}/{id}      # 删除
   "title": "验证失败",
   "status": 400,
   "detail": "患者姓名不能为空",
-  "instance": "/api/patients",
+  "instance": "/api/v1/patients",
   "correlationId": "xxx",
   "errorCode": 30001
 }
@@ -555,7 +555,8 @@ Desktop (SignalRClient) ←WebSocket→ Program.cs MapHub("/hubs/registration")
 - Users: `UsersDbContext`
 - Herbs: `HerbsDbContext`（HerbRepository 注入）
 - Formula: `FormulaDbContext`
-- Reports: `ReportsDbContext`（已注册，但 ReportRepository 实际注入 AppDbContext，待清理）
+
+> **Reports 无独立 DbContext（A-18 P1-7 修正）**：原文档声称存在 `ReportsDbContext`，实际代码不存在 — Reports 仓储直接注入 `AppDbContext`（`ReportRepository` 构造注入 AppDbContext）。
 
 均通过 `ConnectionStringResolver.GetEffectiveConnectionString()` 三级回退获取连接字符串（`Database:ConnectionString` → `ConnectionStrings:DefaultConnection` → `CONNECTION_STRING` 环境变量）。
 

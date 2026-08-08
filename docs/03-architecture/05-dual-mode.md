@@ -35,7 +35,7 @@
 | 模式切换机制 | URL 驱动（localhost 判断） | ConnectionMode 枚举 + DI 重建 | 零配置切换，用户改 URL 即可，消除运行时状态机竞态 |
 | Repository 统一层 | SwitchingApiClient 代理 | 直接注入 DbContext | HTTP 中间件管线（认证/授权/异常/日志）完整复用 |
 | 认证复用 | 两端均用 JWT Bearer Token | 本地跳过认证 | Authorization Policy/Claims/中间件完整生效 |
-| Controller 分离 | 两套独立 Controller | 共享 Controller 项目 | Server 有完整 3-layer DI，Local 精简 DI，依赖链不同 |
+| Controller 分离 | 两套独立 Controller | 共享 Controller 项目 | 双端 Controller 均复用同一 Service/Handler 层（ADR-0010 统一服务层），仅宿主/认证细节不同 |
 | 本地认证简化 | 1年长效 Token，无 Refresh | 完整 Refresh Token 流程 | 本地单用户 + Mutex 单实例，简化认证降低复杂度 |
 
 ### 设计权衡
@@ -47,7 +47,7 @@
 | 本地模式 HTTP 序列化开销 | localhost 回环延迟 <1ms，小诊所数据量（~5000 医案/年）下不可感知 |
 | 两套 Controller 代码 | Controller 仅做参数校验 + 调用 Service，核心业务规则在共享层（Entities/Validators/DTOs） |
 | 本地 JWT 固定密钥 | 本地单用户场景，Mutex 保证单实例，安全风险可控；后续可 DPAPI 外部化 |
-| 端点覆盖需手动对齐 | 当前 ~100%（106 remote vs 112 local），差异为 8 个本地独有便捷端点 |
+| 端点覆盖需手动对齐 | 当前 ~95%（104 remote vs 99 local，不含 Sync），差异集中在 MedicalCases 查询端点与 Reports 趋势端点（2026-08-08 核对） |
 
 **获得的收益**：
 
@@ -69,7 +69,7 @@
 |------|------|
 | **Repository 接口** | 完全相同 — 6 个 `IXxxRepository` 接口定义在 `Contracts/Repositories/` |
 | **DTO 契约** | 完全相同 — `src/Shared/LYBT.Shared.Models/Contracts/` |
-| **实体模型** | 完全相同 — `src/Server/Core/LYBT.Entities/`，LocalWebApiDbContext 复用所有 `IEntityTypeConfiguration` |
+| **实体模型** | 完全相同 — `src/Shared/LYBT.Entities/`，AppDbContext 复用所有 `IEntityTypeConfiguration` |
 | **业务规则** | Validators、BusinessRules 完全共享 |
 | **认证机制** | 两端均使用 JWT Bearer Token + 相同 Claims Schema |
 | **授权策略** | 相同的 6 个 Policy（`AdminBusinessOnly` / `DoctorOnly` / `DoctorOrAdmin` / `AdminOrSuperAdmin` / `DoctorOrReceptionist` / `DoctorOrAdminOrReceptionist`，见 `PolicyConstants`） |
@@ -81,37 +81,37 @@
 | 维度 | Remote WebAPI | LocalWebAPI | 设计理由 |
 |------|--------------|-------------|----------|
 | **宿主进程** | 独立 ASP.NET Core 服务 | WPF 进程内嵌 Kestrel（动态端口） | 单进程部署 |
-| **URL 前缀** | `/api/v1/`（含版本段） | `/api/`（无版本段） | 本地无版本迁移需求 |
+| **URL 前缀** | `/api/v1/`（含版本段） | `/api/v1/`（含版本段，与远程一致） | 实现已收敛（2026-08-08 修正，原文档声称本地无版本段已过时） |
 | **序列化** | camelCase（`AddControllers().AddJsonOptions`） | PascalCase（默认） | 历史 Token 兼容 |
 | **数据库连接** | 远程 SQL Server（共享） | 本地 SQL Server LocalDB（每机独立） | 数据隔离 |
 | **数据库名** | LYBTDB | LYBTDB_Local | — |
-| **数据库迁移** | EF Core 迁移 | `Database.EnsureCreated`（独立迁移） | 本地无版本管理 |
+| **数据库迁移** | EF Core 迁移 | `MigrateAsync()` + 双种子（IdentitySeedData + LocalWebApiSeedData） | 与远程同一迁移链（2026-08-08 修正，原文档声称 EnsureCreated 已过时） |
 | **AccessToken 有效期** | 配置驱动（base 480/Dev·Test 60/Prod 30 分钟） | 1 年 | 本地无 Token 泄露风险 |
 | **RefreshToken** | 支持（滑动续期 + Token Family 防重放） | 不支持 | 本地单用户，无需续期 |
 | **JWT 签名密钥** | 配置文件 (appsettings.json) | 固定常量 (`LYBT-LocalWebAPI-Secret-Key-2024`) | 本地无需运维管理 |
 | **SecurityAuditLog** | 记录（登录/登出/刷新/锁定） | 不记录 | 本地无审计合规需求 |
-| **Rate Limiting** | 5次/60s 登录 + 100次/min API | 不限制 | 本地单用户无限流必要 |
+| **Rate Limiting** | 5次/60s 登录 + 100次/min API | `LocalLogin` 5次/60s 限流（2026-08-08 修正，原文档声称本地不限制已过时） | 本地登录防爆破 |
 | **CORS** | 配置允许桌面端 origin | 不配置（同源） | localhost 无跨域 |
 | **Sync 端点** | 6 个（作为 Sync Server） | 无（本地是唯一数据源） | 本地无需与自己同步 |
 | **打印日志** | `POST /print-completed` 写入 `MedicalCasePrintLog` | 不记录 | 本地无服务端审计 |
 | **多用户并发** | 支持（乐观锁 + 事务隔离） | 单用户（Mutex 防多开） | 本地无需并发控制 |
-| **DI 架构** | 完整 3-layer（Controller→Service→Repository→DbContext） | 精简（Controller→DbContext 直连） | 本地无需抽象层 |
+| **DI 架构** | 完整 3-layer（Controller→Service→Repository→DbContext） | 同一 3-layer（Controller→ISender/I*Service 全复用 Server Service/Handler 层，ADR-0010） | 双轨真共享（2026-08-08 修正，原文档声称本地 Controller→DbContext 直连已过时） |
 | **配置来源** | appsettings.json + 环境变量 | 嵌入式配置（代码内） | 本地无运维管理 |
-| **端点数** | 106 | 112（多 8 个便捷端点） | 本地独有功能增强 |
+| **端点数** | ~104 | ~99 | 2026-08-08 A-17 修复后核对（不含 Sync；MedicalCases/Reports/Configuration 有缺口） |
 | **健康检查** | DB 连接 + 版本 + 延迟 | DB 连接 + 磁盘空间 | 本地关注磁盘 |
 
 ### LocalWebAPI 独有端点
 
 | 模块 | 端点 | 方法 | 说明 |
 |------|------|------|------|
-| Formulas | `/api/formulas/{id}/clone` | POST | 克隆验方（含药材组成） |
-| Formulas | `/api/formulas/categories` | GET | 获取验方分类列表 |
-| Patients | `/api/patients/by-id-number/{idNumber}` | GET | 按身份证号查询患者 |
-| Patients | `/api/patients/by-phone/{phone}` | GET | 按手机号查询患者 |
-| MedicalCases | `/api/medicalcases/pending` | GET | 获取待处理医案（无处方） |
-| MedicalCases | `/api/medicalcases/by-status/{status}` | GET | 按状态查询医案 |
-| Diagnostics | `/api/diagnostics/db-info` | GET | 数据库连接信息 + 磁盘空间 |
-| Diagnostics | `/api/diagnostics/logs/recent` | GET | 最近日志条目 |
+| Formulas | `/api/v1/formulas/{id}/clone` | POST | 克隆验方（含药材组成） |
+| Patients | `/api/v1/patients/by-id-number/{idNumber}` | GET | 按身份证号查询患者 |
+| MedicalCases | `/api/v1/medicalcases/pending` | GET | 获取待处理医案（无处方） |
+| MedicalCases | `/api/v1/medicalcases/by-status/{status}` | GET | 按状态查询医案 |
+| Diagnostics | `/api/v1/diagnostics/db-info` | GET | 数据库连接信息 + 磁盘空间 |
+| Diagnostics | `/api/v1/diagnostics/logs/recent` | GET | 最近日志条目 |
+
+> **纠错（D8）**: 原文档另列 `formulas/categories` 与 `patients/by-phone` 为本地独有端点 — 代码全仓不存在，属虚构条目，已移除。
 
 **设计说明**: 这些端点满足本地单用户场景的便捷需求（如快速克隆验方、身份证号查询、系统诊断），不要求远程模式实现。这些查询在远程模式由 Repository 客户端过滤完成。
 
@@ -125,7 +125,7 @@
 | SecurityAuditLog | 本地无审计合规需求 | 查询返回空结果 |
 | 自动登录令牌 | 依赖远程中心化存储 | 端点返回 501 |
 | 用户同步 | 用户数据不参与同步 | 手动维护 |
-| 打印日志 | 本地无服务端审计 | 端点返回空结果 |
+| 打印日志 | 本地未实现 print-completed 端点（2026-08-08 修正，原文档声称「端点返回空结果」过时） | 端点不存在 → 404 |
 
 ---
 
@@ -212,19 +212,20 @@ SwitchingApiClient : IApiClient
 
 | 模块 | Remote 端点 | Local 端点 | 覆盖率 | 差异说明 |
 |------|------------|-----------|-------|----------|
-| Auth | 5 | 5 | 100% | Local 无 RefreshToken 端点（用长效 Token 替代） |
-| Users | 14 | 14 | 100% | — |
-| Patients | 12 | 14 | 117% | Local 多 by-id-number, by-phone |
-| Herbs | 16 | 17 | 106% | Local 多 categories |
-| Formulas | 15 | 17 | 113% | Local 多 clone, categories |
-| MedicalCases | 20 | 22 | 110% | Local 多 pending, by-status |
+| Auth | 5 | 5 | 100% | 两端一致（13b 5 端点） |
+| Users | 14 | 14 | 100% | 均继承 BaseUsersController |
+| Patients | 12 | 12 | 100% | A-17 补全本地 CRUD override 后对齐 |
+| Herbs | 13 | 13 | 100% | — |
+| Formulas | 13 | 14 | 108% | Local 多 clone |
+| MedicalCases | 21 | 13 | 62% | Local 缺 search/print-completed/permissions/audit-logs/consultations/prescriptions 等查询端点 |
 | Registrations | 7 | 9 | 129% | Local 多便捷查询 |
-| Reports | 8 | 8 | 100% | 历史聚合查询 + 趋势/绩效/排行/流量（B-04 增强后） |
+| Reports | 8 | 3 | 38% | Local 仅 3 个 daily 聚合端点（趋势/绩效/排行/流量未实现） |
 | Sync | 6 | 0 | — | 🧲 v2.0（N1 决策，v1.0 两库孤立） |
-| Diagnostics | 4 | 7 | 175% | Local 多 db-info, logs/recent |
-| Configuration | 3 | 4 | 133% | — |
+| Diagnostics | 4 | 7 | 175% | Local 多 db-info, logs/recent, version |
+| Configuration | 5 | 4 | 80% | Local 少批量 PUT |
+| Deploy | 2 | 2 | 100% | — |
 | Health | 3 | 3 | 100% | — |
-| **总计** | **~113** | **112** | — | Local 多 8 个便捷端点；Sync v2.0 |
+| **总计** | **~104** | **~99** | — | 2026-08-08 A-17 修复后核对（不含 Sync；原表 113/112 为文档虚构，D8 修正） |
 
 ---
 
@@ -238,9 +239,9 @@ LocalWebAPI 是运行在 WPF Desktop 进程内的 ASP.NET Core Kestrel 实例，
 LYBT.Desktop.Shell.exe (WPF 主进程)
   ├── WPF UI 线程 (Dispatcher)
   ├── Kestrel 后台线程 (LocalWebApiHost)
-  │     └── http://127.0.0.1:{动态端口}/api/...
-  │           ├── Controllers (10 个)
-  │           ├── LocalWebApiDbContext (SQL Server LocalDB)
+  │     └── http://127.0.0.1:{动态端口}/api/v1/...
+  │           ├── Controllers (12 个)
+  │           ├── AppDbContext (SQL Server LocalDB，复用 Server 实体配置)
   │           └── JWT 认证中间件 (简化版)
   └── Mutex (防多开)
 ```
@@ -251,14 +252,16 @@ LYBT.Desktop.Shell.exe (WPF 主进程)
 
 ### DbContext 架构
 
-`LocalWebApiDbContext` 继承自与 Server 相同的 EF Core 配置：
+`AppDbContext`（LYBT.Infrastructure）双端共用，本地模式复用 Server 端所有 `IEntityTypeConfiguration`：
 
 ```csharp
-// LocalWebApiDbContext 复用 Server 端所有 IEntityTypeConfiguration
+// AppDbContext 复用 Server 端所有 IEntityTypeConfiguration
 modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserConfiguration).Assembly);
 ```
 
-实体配置完全相同（共享程序集）；查询过滤器（IsDeleted 全局过滤器）完全相同。差异仅在连接字符串（LocalDB `(localdb)\MSSQLLocalDB`）和数据库名（LYBTDB_Local），迁移方式（`Database.EnsureCreated`）。
+实体配置完全相同（共享程序集）；查询过滤器（IsDeleted 全局过滤器）完全相同。差异仅在连接字符串（LocalDB `(localdb)\MSSQLLocalDB`）和数据库名（LYBTDB_Local），迁移方式（`MigrateAsync()` + 双种子，与远程同一迁移链）。
+
+> **注（2026-08-08 A-18 P1-7 修正）**: 原文档声称 `LocalWebApiDbContext`（独立 DbContext + EnsureCreated）已过时 — 本地实际使用 `AppDbContext` + `MigrateAsync()`（`LocalWebApiProgram.cs:47-48,139-141`）。`LYBT.Desktop.LocalData` 项目从未建立（仅 `LYBT.Desktop.Infrastructure/LocalData/Context/LocalDbContext.cs` 存在且生产零引用，休眠状态）。
 
 > **注**: 原独立文档 `localwebapi/overview.md`、`localwebapi/authentication.md`、`localwebapi/api-endpoints.md` 的内容已合并到本文档。原文件保留作为详细参考。
 
@@ -283,5 +286,6 @@ modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserConfiguration).Assembly)
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-08-08 | v8.1 | **13 项文档偏差修正（A-18 P1-7，D5-D10）**：URL 前缀统一 `/api/v1/`；迁移方式 EnsureCreated→MigrateAsync+双种子；DI 架构「Controller→DbContext 直连」→「复用 Server Service/Handler 层（ADR-0010）」；端点覆盖表按代码实际重写（103 vs 99，删虚构 categories/by-phone 端点）；打印日志行为「返回空结果」→「404（端点不存在）」；Rate Limiting 本地 5/60s；实体位置 `src/Shared/LYBT.Entities/`；DbContext 章节 LocalWebApiDbContext→AppDbContext |
 | 2026-06-28 | v8.0 | **spec S3 批次2 提炼（712→~360 行）**：同步架构 + 同步协议规范（Checksum/元数据/序列化/依赖顺序/错误恢复/MedicalCase 聚合同步/模块级决策）整体外移至 [16-sync-protocol.md](16-sync-protocol.md)；WebAPI vs LocalWebAPI 对比矩阵 + 本地认证架构 + DbContext 架构 + 本地模式限制 4 表合 1；N1 横幅简化为链接指向 sync-protocol。变更历史见 git log。 |
 | 2026-06-28 | v7.2 | N1 决策对齐：顶部加 N1 横幅；端口统一 5300；模式切换流程图重写为 ADR-0009「URL 改即生效」语义；Policy 数量 2→4 对齐 PolicyConstants。 |

@@ -4,7 +4,7 @@
 # Core (Desktop)
 
 ## Purpose
-Core infrastructure libraries for the WPF desktop client. Provides interface contracts, HTTP/security infrastructure, WPF services and controls, client-side UI models, SQL Server LocalDB local-mode data access, printing support, hardware integration, and shared utility types. These libraries form the foundation layer that all business modules depend on.
+Core infrastructure libraries for the WPF desktop client. Provides interface contracts, HTTP/security infrastructure, WPF services and controls, client-side UI models, printing support, hardware integration, and shared utility types. These libraries form the foundation layer that all business modules depend on.
 
 ## Subdirectories
 | Directory | Purpose |
@@ -13,9 +13,9 @@ Core infrastructure libraries for the WPF desktop client. Provides interface con
 | LYBT.Desktop.Foundation/ | HTTP clients, security/auth, configuration, ExcelHelper |
 | LYBT.Desktop.Infrastructure/ | WPF services — ViewModel base classes, Dialog, Navigation (NavigationCoordinator, RegionMonitor), Behaviors, Services |
 | LYBT.Desktop.Controls/ | WPF presentation — custom controls, themes, converters, helpers |
-| LYBT.Desktop.LocalData/ | SQL Server LocalDB local-mode — `LocalDbContext`, local repositories |
 | LYBT.Desktop.Printing/ | Print service — QuestPDF-based document generation |
-| LYBT.Desktop.CardReader/ | Hardware integration — ID card reader device support |
+
+> **注（2026-08-08 A-18 P1-7 修正，D4/D13）**: 原文档列出的 `LYBT.Desktop.LocalData` 与 `LYBT.Desktop.CardReader` 独立项目从未建立。本地模式数据访问实际走 HTTP（`HttpClientApiClient` → LocalWebAPI，统一 `SwitchingApiClient` 双轨）；仅存在休眠的 `LYBT.Desktop.Infrastructure/LocalData/Context/LocalDbContext.cs`（生产零引用）。CardReader 硬件集成未实现。
 
 ## For AI Agents
 
@@ -25,25 +25,24 @@ Core infrastructure libraries for the WPF desktop client. Provides interface con
 - `Foundation` implements HTTP, auth, config; depends on `Contracts`.
 - `Infrastructure` provides ViewModel base classes, navigation, services; depends on `Foundation` + `Controls`.
 - `Controls` provides WPF presentation assets; depends on `Contracts` + `Foundation` (no Infrastructure dependency).
-- `LocalData` provides the SQL Server LocalDB alternative to the remote HTTP API path.
+- Local mode data access uses the unified HTTP path (`SwitchingApiClient` → `HttpClientApiClient` → LocalWebAPI), same Service/Repository layer as remote (ADR-0010).
 - When adding a new interface, place it in `Contracts`; implement it in `Foundation` or `Infrastructure`.
 - WPF controls and converters belong in `Controls`; ViewModel base classes belong in `Infrastructure`.
 - Shared DTOs (used across modules) belong in `Contracts`.
 
 ### Common Patterns
-- **Repository interfaces**: `I{Entity}Repository<T>` in Contracts, implemented in Foundation (HTTP) and LocalData (SQL Server LocalDB)
-- **Connection mode**: `IConnectionModeService` determines remote vs local at runtime
-- **Refit interfaces**: `IApi` in Contracts defines all HTTP endpoints
+- **Repository interfaces**: `I{Entity}Repository<T>` in Contracts, implemented in Foundation (HTTP, via `SwitchingApiClient`)
+- **Connection mode**: URL-driven dual-mode via `IConnectionSettingsService` + `SwitchingApiClient` (ADR-0009)
+- **Refit interfaces**: `IApi` in Contracts defines all HTTP endpoints (remote mode)
 
 ## Dependencies
 
 ### Internal
-- [Shared/](../../../../Shared/AGENTS.md) — `LYBT.Shared.Models`, `LYBT.Shared.Configuration`, `LYBT.Shared.Primitives`
+- [Shared/](../../../../Shared/AGENTS.md) — `LYBT.Shared.Models`, `LYBT.Shared.Configuration`
 
 ### External
 - Refit (HTTP client generation)
 - Prism.Core (MVVM, navigation)
-- Microsoft.EntityFrameworkCore.Sqlite (LocalData)
 - QuestPDF (Printing)
 
 <!-- MANUAL: -->
