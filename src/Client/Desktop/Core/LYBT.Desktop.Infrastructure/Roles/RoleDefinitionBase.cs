@@ -14,7 +14,7 @@ namespace LYBT.Desktop.Infrastructure.Roles
         /// </summary>
         private static readonly string[] SharedBaseModules = new[]
         {
-            "AuthModule",
+            "AuthenticationModule",
             "UsersModule"
         };
 

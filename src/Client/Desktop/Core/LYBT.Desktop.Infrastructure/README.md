@@ -53,7 +53,7 @@ LYBT.Desktop.Infrastructure/
 ### Roles/
 
 **RoleDefinitionBase** — 角色定义抽象基类
-- **设计依据**: 所有角色共享 AuthModule + UsersModule，各角色通过 `RequiredModules` 声明额外模块；`GetAllModules()` 合并去重
+- **设计依据**: 所有角色共享 AuthenticationModule + UsersModule，各角色通过 `RequiredModules` 声明额外模块；`GetAllModules()` 合并去重
 - **实现**: `IRoleDefinition` 接口（来自 Contracts 层）
 
 | 成员 | 说明 |
@@ -62,7 +62,7 @@ LYBT.Desktop.Infrastructure/
 | `DisplayName` / `Description` | 角色显示名称 / 描述 |
 | `HomeViewName` (abstract) | 该角色的默认主页视图名 |
 | `RequiredModules` (abstract) | 角色专属模块列表 |
-| `BaseModules` | 固定 `["AuthModule", "UsersModule"]` |
+| `BaseModules` | 固定 `["AuthenticationModule", "UsersModule"]` |
 | `GetAllModules()` | `BaseModules.Concat(RequiredModules).Distinct()` |
 
 **RoleRegistry** — 角色注册表（线程安全）
