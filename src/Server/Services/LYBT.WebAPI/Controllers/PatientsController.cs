@@ -104,7 +104,7 @@ namespace LYBT.WebAPI.Controllers
             if (ownershipError != null) return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await _patientService.UpdateAsync(id, input, operatorId, ct);
+            var result = await Sender.Send(new UpdatePatientCommand(id, input, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 if (result.Error?.Contains("不存在") == true)
@@ -179,7 +179,7 @@ namespace LYBT.WebAPI.Controllers
             if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await _patientService.RestoreAsync(id, operatorId, ct);
+            var result = await Sender.Send(new RestorePatientCommand(id, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 if (result.Error?.Contains("未被删除") == true)

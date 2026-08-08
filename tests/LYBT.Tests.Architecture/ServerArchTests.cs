@@ -536,8 +536,9 @@ public class ServerArchTests
     }
 
     /// <summary>
-    /// P-10: 服务层不得直接注入 AppDbContext，必须通过 Repository 层访问数据
+    /// P-10: 服务层不得直接注入 AppDbContext / IDbContextAccessor，必须通过 Repository 层访问数据
     /// Task 6: Repository 规范统一 - 消除服务层直接依赖 DbContext
+    /// A-28 P1-2: 扩展检查 IDbContextAccessor（跨模块服务绕过模块 DbContext 的盲区）；基础设施类豁免
     /// </summary>
     [Fact]
     public void P10_Services_Should_Not_Directly_Inject_AppDbContext()
@@ -562,13 +563,19 @@ public class ServerArchTests
             if (isRepository || isBaseClass)
                 continue;
 
+            // 基础设施类（HealthCheckService/DatabaseInitializationService 等）豁免 — 位于 LYBT.Infrastructure
+            if (serviceType.Namespace?.StartsWith("LYBT.Infrastructure") == true)
+                continue;
+
             var constructors = serviceType.GetConstructors();
             foreach (var constructor in constructors)
             {
                 var parameters = constructor.GetParameters();
                 var hasDbContext = parameters.Any(p =>
                     p.ParameterType.Name == "AppDbContext" ||
-                    p.ParameterType.FullName?.Contains("AppDbContext") == true);
+                    p.ParameterType.FullName?.Contains("AppDbContext") == true ||
+                    p.ParameterType.Name == "IDbContextAccessor" ||
+                    p.ParameterType.FullName?.Contains("IDbContextAccessor") == true);
 
                 if (hasDbContext)
                 {
@@ -878,6 +885,179 @@ public class ServerArchTests
             current = current.BaseType;
         }
         return false;
+    }
+
+    #endregion
+
+    #region A-28: 双轨规范化守卫（蓝图 §2.2）
+
+    /// <summary>
+    /// A-28 P1-1: CQRS 模块 Service 接口不得暴露写方法（Update/Restore/Status 变更等）
+    /// 写操作必须走 MediatR Handler（ISender.Send）——蓝图 §2.2 请求处理边界规则
+    /// </summary>
+    [Fact]
+    public void P19_Cqrs_Services_Must_Not_Expose_Write_Methods()
+    {
+        var writeVerbs = new[] { "Update", "Restore", "Toggle", "Enable", "Disable", "Change", "Delete", "Status", "Save", "Reset", "Import", "Batch" };
+        var cqrsReadServiceInterfaces = new[]
+        {
+            "IUserService", "IPatientService", "IHerbService", "IFormulaService"
+        };
+
+        var violations = new List<string>();
+        foreach (var asm in ServerAssemblies)
+        {
+            foreach (var type in asm.GetTypes())
+            {
+                if (!type.IsInterface || !cqrsReadServiceInterfaces.Contains(type.Name)) continue;
+                foreach (var method in type.GetMethods())
+                {
+                    if (writeVerbs.Any(v => method.Name.Contains(v)))
+                        violations.Add($"{type.Name}.{method.Name}");
+                }
+            }
+        }
+
+        Assert.True(violations.Count == 0,
+            $"CQRS 模块 Service 接口暴露写方法（写操作应走 MediatR Handler）: {string.Join(", ", violations)}");
+    }
+
+    /// <summary>
+    /// A-28 P1-1: CQRS 模块 Controller 方法体不得直调 Service 写方法（IL 扫描）
+    /// 防止新增写操作绕过 MediatR 验证管道直接走 Service
+    /// </summary>
+    [Fact]
+    public void P19b_Cqrs_Write_Endpoints_Must_Not_Call_Service_Write_Methods()
+    {
+        var cqrsControllers = new[]
+        {
+            "UsersController", "BaseUsersController",
+            "PatientsController", "HerbsController", "FormulasController",
+            "AuthController", "RegistrationsController", "BaseRegistrationsController"
+        };
+
+        var violations = new List<string>();
+        foreach (var asm in ServerAssemblies)
+        {
+            foreach (var type in asm.GetTypes().Where(t => t.IsClass && cqrsControllers.Contains(t.Name)))
+            {
+                foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+                {
+                    var body = method.GetMethodBody();
+                    var il = body?.GetILAsByteArray();
+                    if (il == null || il.Length == 0) continue;
+
+                    try
+                    {
+                        foreach (var called in DecodeServiceWriteCalls(il, type.Module))
+                        {
+                            violations.Add($"{type.Name}.{method.Name} 直调 Service 写方法 {called}");
+                        }
+                    }
+                    catch (BadImageFormatException)
+                    {
+                        // 忽略无法解析的 IL（理论上不发生）
+                    }
+                }
+            }
+        }
+
+        Assert.True(violations.Count == 0,
+            $"CQRS 模块 Controller 直调 Service 写方法（应走 ISender.Send）:\n{string.Join("\n", violations)}");
+    }
+
+    /// <summary>
+    /// 解码 IL 中的 call/callvirt 指令，返回对 Service 类型写方法的调用（格式 "TypeName.MethodName"）
+    /// </summary>
+    private static IEnumerable<string> DecodeServiceWriteCalls(byte[] il, System.Reflection.Module module)
+    {
+        var writeVerbs = new[] { "Update", "Restore", "Toggle", "Enable", "Disable", "Change", "Delete", "Status", "Save", "Reset", "Import", "Batch" };
+        var results = new List<string>();
+        int i = 0;
+
+        while (i < il.Length)
+        {
+            var opcode = il[i];
+
+            if (opcode == 0xFE)
+            {
+                // 两字节操作码（前缀 0xFE）
+                if (i + 1 >= il.Length) break;
+                var sub = il[i + 1];
+                i += 2;
+                i += sub switch
+                {
+                    0x06 or 0x07 or 0x15 or 0x16 or 0x1C => 4, // ldftn/ldvirtftn/initobj/constrained/sizeof
+                    0x09 or 0x0A or 0x0B or 0x0C or 0x0D or 0x0E or 0x19 => 2, // ldarg/ldloc/starg/stloc 等
+                    0x12 => 1, // unaligned
+                    _ => 0
+                };
+                continue;
+            }
+
+            if (opcode is 0x28 or 0x6F) // call / callvirt（4 字节元数据 token）
+            {
+                if (i + 5 > il.Length) break;
+                var token = il[i + 1] | (il[i + 2] << 8) | (il[i + 3] << 16) | (il[i + 4] << 24);
+                i += 5;
+
+                try
+                {
+                    var target = module.ResolveMethod(token);
+                    if (target == null) continue;
+                    var declaringName = target.DeclaringType?.Name ?? string.Empty;
+                    var isServiceType = declaringName.EndsWith("Service") && !declaringName.EndsWith("Repository");
+                    if (isServiceType && writeVerbs.Any(v => target.Name.Contains(v)))
+                        results.Add($"{declaringName}.{target.Name}");
+                }
+                catch (ArgumentException)
+                {
+                    // token 无法解析为方法（类型引用等），忽略
+                }
+                catch (BadImageFormatException)
+                {
+                }
+                continue;
+            }
+
+            if (opcode == 0x45) // switch（4 字节计数 + N×4 跳转表）
+            {
+                if (i + 5 > il.Length) break;
+                var count = il[i + 1] | (il[i + 2] << 8) | (il[i + 3] << 16) | (il[i + 4] << 24);
+                i += 5 + count * 4;
+                continue;
+            }
+
+            i += 1 + IlOperandSize(opcode);
+        }
+
+        return results;
+    }
+
+    /// <summary>
+    /// 单字节操作码的操作数大小（字节数）
+    /// </summary>
+    private static int IlOperandSize(byte opcode)
+    {
+        switch (opcode)
+        {
+            case 0x0E: case 0x0F: case 0x10: case 0x11: case 0x12: case 0x13: // ldloc.s 等 8 位局部/参数
+            case 0x1F: // ldc.i4.s
+            case 0x2B: case 0x2C: case 0x2D: case 0x2E: case 0x2F: // 短分支
+            case 0x30: case 0x31: case 0x32: case 0x33: case 0x34:
+            case 0x35: case 0x36: case 0x37:
+                return 1;
+            case 0x20: case 0x22: // ldc.i4 / ldc.r4
+            case 0x28: case 0x29: // call / calli
+            case 0x38: case 0x39: case 0x3A: case 0x3B: case 0x3C: case 0x3D: // 长分支
+            case 0x3E: case 0x3F: case 0x40: case 0x41: case 0x42: case 0x43: case 0x44:
+            case 0x6F: // callvirt
+                return 4;
+            case 0x21: case 0x23: // ldc.i8 / ldc.r8
+                return 8;
+            default:
+                return 0;
+        }
     }
 
     #endregion

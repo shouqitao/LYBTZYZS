@@ -7,7 +7,7 @@ using LYBT.Shared.Models.Primitives.ErrorCodes;
 namespace LYBT.Module.Users.Services;
 
 /// <summary>
-/// 用户服务实现 — 封装简单 CRUD 操作，替代 trivial MediatR Handler。
+/// 用户服务实现 — 读操作直查（写操作已收敛至 MediatR Handler，见蓝图 §2.2）。
 /// </summary>
 internal class UserService : IUserService
 {
@@ -49,50 +49,6 @@ internal class UserService : IUserService
         if (user == null)
             return Result<UserDetailDto>.Failure(ErrorCode.UserNotFound, "用户不存在");
 
-        return Result<UserDetailDto>.Success(UserMapper.ToDetailDto(user));
-    }
-
-    public async Task<Result<UserDetailDto>> UpdateAsync(Guid id, UserInputDto dto, Guid operatorId, CancellationToken ct)
-    {
-        var user = await _userRepository.GetByIdAsync(id, ct);
-        if (user == null)
-            return Result<UserDetailDto>.Failure(ErrorCode.NotFound, "用户不存在");
-
-        if (string.IsNullOrWhiteSpace(dto.RealName))
-            return Result<UserDetailDto>.Failure(ErrorCode.InvalidRequest, "真实姓名不能为空");
-
-        user.UpdateProfile(
-            dto.RealName!,
-            dto.PhoneNumber,
-            dto.Email,
-            dto.Remark,
-            operatorId,
-            dto.RegistrationFee);
-
-        await _userRepository.UpdateAsync(user, ct);
-        return Result<UserDetailDto>.Success(UserMapper.ToDetailDto(user));
-    }
-
-    public async Task<Result<UserDetailDto>> ChangeProfileAsync(Guid id, ChangeProfileDto dto, Guid currentUserId, CancellationToken ct)
-    {
-        if (id != currentUserId)
-            return Result<UserDetailDto>.Failure(ErrorCode.Forbidden, "只能修改自己的个人资料");
-
-        var user = await _userRepository.GetByIdAsync(id, ct);
-        if (user == null)
-            return Result<UserDetailDto>.Failure(ErrorCode.UserNotFound, "用户不存在");
-
-        if (string.IsNullOrWhiteSpace(dto.RealName))
-            return Result<UserDetailDto>.Failure(ErrorCode.InvalidRequest, "真实姓名不能为空");
-
-        user.UpdateProfile(
-            dto.RealName,
-            dto.PhoneNumber,
-            dto.Email,
-            user.Remark,
-            currentUserId);
-
-        await _userRepository.UpdateAsync(user, ct);
         return Result<UserDetailDto>.Success(UserMapper.ToDetailDto(user));
     }
 }

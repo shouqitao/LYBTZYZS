@@ -1,6 +1,5 @@
-using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Module.Patients.Infrastructure;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -13,12 +12,12 @@ namespace LYBT.Module.Patients.Services;
 /// </summary>
 public class PatientCrossModuleService : IPatientCrossModuleService
 {
-    private readonly AppDbContext _context;
+    private readonly PatientsDbContext _context;
     private readonly ILogger<PatientCrossModuleService> _logger;
 
-    public PatientCrossModuleService(IDbContextAccessor dbAccessor, ILogger<PatientCrossModuleService> logger)
+    public PatientCrossModuleService(PatientsDbContext context, ILogger<PatientCrossModuleService> logger)
     {
-        _context = dbAccessor.Context;
+        _context = context;
         _logger = logger;
     }
 

@@ -8,7 +8,7 @@ using LYBT.Shared.Models.Primitives.ErrorCodes;
 namespace LYBT.Module.Patients.Services;
 
 /// <summary>
-/// 患者服务实现 — 封装简单 CRUD 操作，替代 trivial MediatR Handler。
+/// 患者服务实现 — 读操作直查（写操作已收敛至 MediatR Handler，见蓝图 §2.2）。
 /// </summary>
 internal class PatientService : IPatientService
 {
@@ -47,39 +47,6 @@ internal class PatientService : IPatientService
         var patient = await _patientRepository.GetByIdNumberAsync(idNumber, ct);
         if (patient == null)
             return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotFound, "未找到匹配的患者");
-        return Result<PatientDetailDto>.Success(PatientMapper.ToDetailDto(patient));
-    }
-
-    public async Task<Result<PatientDetailDto>> UpdateAsync(Guid id, PatientInputDto dto, Guid operatorId, CancellationToken ct)
-    {
-        var patient = await _patientRepository.GetByIdAsync(id, ct);
-        if (patient == null)
-            return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotFound, "患者不存在");
-
-        patient.UpdateProfile(
-            dto.Name,
-            dto.Gender,
-            dto.BirthDate,
-            dto.PhoneNumber,
-            dto.IdNumber,
-            dto.PinYinCode,
-            operatorId);
-
-        await _patientRepository.UpdateAsync(patient, ct);
-        return Result<PatientDetailDto>.Success(PatientMapper.ToDetailDto(patient));
-    }
-
-    public async Task<Result<PatientDetailDto>> RestoreAsync(Guid id, Guid operatorId, CancellationToken ct)
-    {
-        var patient = await _patientRepository.GetByIdIncludingDeletedAsync(id, ct);
-        if (patient == null)
-            return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotFound, "患者不存在");
-
-        if (!patient.IsDeleted)
-            return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotDeleted, "该患者未被删除");
-
-        patient.Restore(operatorId);
-        await _patientRepository.UpdateAsync(patient, ct);
         return Result<PatientDetailDto>.Success(PatientMapper.ToDetailDto(patient));
     }
 }

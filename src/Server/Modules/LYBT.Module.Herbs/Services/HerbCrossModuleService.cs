@@ -1,6 +1,5 @@
-using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Module.Herbs.Infrastructure;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -14,12 +13,12 @@ namespace LYBT.Module.Herbs.Services;
 /// </summary>
 public class HerbCrossModuleService : IHerbCrossModuleService
 {
-    private readonly AppDbContext _context;
+    private readonly HerbsDbContext _context;
     private readonly ILogger<HerbCrossModuleService> _logger;
 
-    public HerbCrossModuleService(IDbContextAccessor dbAccessor, ILogger<HerbCrossModuleService> logger)
+    public HerbCrossModuleService(HerbsDbContext context, ILogger<HerbCrossModuleService> logger)
     {
-        _context = dbAccessor.Context;
+        _context = context;
         _logger = logger;
     }
 

@@ -59,6 +59,8 @@
 | P15 | P15_Configuration_Must_Be_In_Correct_Location | ServerArchTests.cs | Configuration类位置规范 |
 | P16 | P16_Modules_No_Circular_Dependencies | ServerArchTests.cs | 模块间不得循环依赖 |
 | P17 | P17_Infrastructure_Hardening_Rules | ServerArchTests.cs | 基础设施强化规则 |
+| P19 | P19_Cqrs_Services_Must_Not_Expose_Write_Methods | ServerArchTests.cs | CQRS模块Service接口禁暴露写方法（蓝图§2.2，A-28） |
+| P19b | P19b_Cqrs_Write_Endpoints_Must_Not_Call_Service_Write_Methods | ServerArchTests.cs | CQRS Controller禁直调Service写方法（IL扫描，A-28） |
 | MC01 | MC01_MedicalCase_StateTransition_Rules | ServerArchTests.cs | MedicalCase状态流转规则 |
 | MC02 | MC02_MedicalCase_Validators_Must_Exist | ServerArchTests.cs | MedicalCase验证器必须存在 |
 | A01 | A01_Controllers_Must_Inherit_BaseApiController | ServerArchTests.cs | Controller必须继承BaseApiController |

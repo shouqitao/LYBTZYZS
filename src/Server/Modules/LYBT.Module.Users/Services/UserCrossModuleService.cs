@@ -1,7 +1,6 @@
 using LYBT.Entities.Users;
-using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Module.Users.Infrastructure;
 using LYBT.Shared.Models.DTOs.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -15,13 +14,13 @@ namespace LYBT.Module.Users.Services;
 /// </summary>
 public class UserCrossModuleService : IUserCrossModuleService
 {
-    private readonly AppDbContext _context;
+    private readonly UsersDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<UserCrossModuleService> _logger;
 
-    public UserCrossModuleService(IDbContextAccessor dbAccessor, UserManager<ApplicationUser> userManager, ILogger<UserCrossModuleService> logger)
+    public UserCrossModuleService(UsersDbContext context, UserManager<ApplicationUser> userManager, ILogger<UserCrossModuleService> logger)
     {
-        _context = dbAccessor.Context;
+        _context = context;
         _userManager = userManager;
         _logger = logger;
     }

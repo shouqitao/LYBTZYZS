@@ -2,7 +2,9 @@ using LYBT.Entities.Patients;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using LYBT.Module.Patients.Interfaces;
+using LYBT.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Patients.Infrastructure;
 
@@ -10,20 +12,11 @@ namespace LYBT.Module.Patients.Infrastructure;
 /// 患者仓储实现。封装患者数据访问逻辑。
 /// ADR-0017: 注入患者模块自己的 DbContext
 /// </summary>
-public class PatientRepository : IPatientRepository
+public class PatientRepository : BaseRepository<Patient, PatientsDbContext>, IPatientRepository
 {
-    private readonly PatientsDbContext _context;
-
-    public PatientRepository(PatientsDbContext context)
+    public PatientRepository(PatientsDbContext context, ILogger<PatientRepository> logger)
+        : base(context, logger)
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-    }
-
-    /// <inheritdoc/>
-    public async Task<Patient?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _context.Patients
-            .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -92,20 +85,6 @@ public class PatientRepository : IPatientRepository
     }
 
     /// <inheritdoc/>
-    public async Task AddAsync(Patient patient, CancellationToken cancellationToken = default)
-    {
-        await _context.Patients.AddAsync(patient, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task UpdateAsync(Patient patient, CancellationToken cancellationToken = default)
-    {
-        _context.Patients.Update(patient);
-        await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public async Task<Patient?> GetByIdNumberAsync(string idNumber, CancellationToken cancellationToken = default)
     {
         return await _context.Patients
@@ -120,5 +99,3 @@ public class PatientRepository : IPatientRepository
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 }
-
-

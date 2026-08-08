@@ -2,6 +2,7 @@ using FluentAssertions;
 using LYBT.Entities.Herbs;
 using LYBT.Module.Herbs.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 using Herb = LYBT.Entities.Herbs.Herb;
 
@@ -23,7 +24,7 @@ public class HerbRepositoryTests : IDisposable
             .Options;
 
         _context = new HerbsDbContext(options);
-        _sut = new HerbRepository(_context);
+        _sut = new HerbRepository(_context, NullLogger<HerbRepository>.Instance);
     }
 
     public void Dispose()

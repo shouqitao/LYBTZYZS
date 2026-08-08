@@ -1,27 +1,20 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Entities.Herbs;
 using LYBT.Module.Herbs.Interfaces;
+using LYBT.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Herbs.Infrastructure;
 
 /// <summary>
 /// 药材仓储实现。封装药材数据访问逻辑。
 /// </summary>
-public class HerbRepository : IHerbRepository
+public class HerbRepository : BaseRepository<Herb, HerbsDbContext>, IHerbRepository
 {
-    private readonly HerbsDbContext _context;
-
-    public HerbRepository(HerbsDbContext context)
+    public HerbRepository(HerbsDbContext context, ILogger<HerbRepository> logger)
+        : base(context, logger)
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-    }
-
-    /// <inheritdoc/>
-    public async Task<Herb?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _context.Herbs
-            .FirstOrDefaultAsync(h => h.Id == id && !h.IsDeleted, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -84,25 +77,9 @@ public class HerbRepository : IHerbRepository
     }
 
     /// <inheritdoc/>
-    public async Task AddAsync(Herb herb, CancellationToken cancellationToken = default)
-    {
-        await _context.Herbs.AddAsync(herb, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task UpdateAsync(Herb herb, CancellationToken cancellationToken = default)
-    {
-        _context.Herbs.Update(herb);
-        await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public async Task<Herb?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
     {
         return await _context.Herbs
             .FirstOrDefaultAsync(h => h.Name == name && !h.IsDeleted, cancellationToken);
     }
 }
-
-

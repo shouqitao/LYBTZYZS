@@ -100,7 +100,7 @@ public class FormulasController : BaseCrudController
             return ownershipError;
 
         var (operatorId, _, _) = GetOperator();
-        var result = await _formulaService.UpdateAsync(id, input, operatorId, ct);
+        var result = await Sender.Send(new UpdateFormulaCommand(id, input, operatorId), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "更新失败");
 
@@ -148,7 +148,7 @@ public class FormulasController : BaseCrudController
             return ownershipError;
 
         var (operatorId, _, _) = GetOperator();
-        var result = await _formulaService.ToggleStatusAsync(id, operatorId, ct);
+        var result = await Sender.Send(new ToggleFormulaStatusCommand(id, operatorId), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "切换状态失败");
 
@@ -254,7 +254,7 @@ public class FormulasController : BaseCrudController
         if (ValidateGuid(id, "验方ID") is { } error) return error;
 
         var (operatorId, _, _) = GetOperator();
-        var result = await _formulaService.RestoreAsync(id, operatorId, ct);
+        var result = await Sender.Send(new RestoreFormulaCommand(id, operatorId), ct);
         if (!result.IsSuccess || result.Value == null)
         {
             if (result.Error?.Contains("未被删除") == true)
@@ -275,7 +275,7 @@ public class FormulasController : BaseCrudController
         if (dto.Ids == null || dto.Ids.Count == 0)
             return ValidationFail("验方ID列表不能为空");
 
-        var result = await _formulaService.BatchEnableAsync(dto.Ids, ct);
+        var result = await Sender.Send(new BatchEnableFormulasCommand(dto.Ids), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "批量启用失败");
 
@@ -292,7 +292,7 @@ public class FormulasController : BaseCrudController
         if (dto.Ids == null || dto.Ids.Count == 0)
             return ValidationFail("验方ID列表不能为空");
 
-        var result = await _formulaService.BatchDisableAsync(dto.Ids, ct);
+        var result = await Sender.Send(new BatchDisableFormulasCommand(dto.Ids), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "批量禁用失败");
 

@@ -99,7 +99,7 @@ public class PatientsController : BaseCrudController
             return ownerError;
 
         var (operatorId, _, _) = GetOperator();
-        var result = await _patientService.UpdateAsync(id, input, operatorId, ct);
+        var result = await Sender.Send(new UpdatePatientCommand(id, input, operatorId), ct);
         if (!result.IsSuccess || result.Value == null)
         {
             if (result.Error?.Contains("不存在") == true)
@@ -187,7 +187,7 @@ public class PatientsController : BaseCrudController
         if (ValidateGuid(id, "患者ID") is { } error) return error;
 
         var (operatorId, _, _) = GetOperator();
-        var result = await _patientService.RestoreAsync(id, operatorId, ct);
+        var result = await Sender.Send(new RestorePatientCommand(id, operatorId), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "恢复失败");
 

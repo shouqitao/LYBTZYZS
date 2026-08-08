@@ -10,9 +10,4 @@ public interface IFormulaService
 {
     Task<Result<PagedResult<FormulaListDto>>> GetPagedAsync(int page, int pageSize, string? keyword, CancellationToken ct);
     Task<Result<FormulaDetailDto>> GetByIdAsync(Guid id, CancellationToken ct);
-    Task<Result<FormulaDetailDto>> UpdateAsync(Guid id, FormulaInputDto dto, Guid operatorId, CancellationToken ct);
-    Task<Result<FormulaDetailDto>> ToggleStatusAsync(Guid id, Guid operatorId, CancellationToken ct);
-    Task<Result<FormulaDetailDto>> RestoreAsync(Guid id, Guid operatorId, CancellationToken ct);
-    Task<Result<BatchOperationResultDto>> BatchEnableAsync(List<Guid> ids, CancellationToken ct);
-    Task<Result<BatchOperationResultDto>> BatchDisableAsync(List<Guid> ids, CancellationToken ct);
 }

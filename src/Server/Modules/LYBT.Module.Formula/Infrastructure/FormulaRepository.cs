@@ -1,27 +1,27 @@
 using LYBT.Entities.Formulas;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Formulas.Interfaces;
+using LYBT.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Formulas.Infrastructure;
 
 /// <summary>
 /// 验方仓储实现。封装验方数据访问逻辑。
 /// </summary>
-public class FormulaRepository : IFormulaRepository
+public class FormulaRepository : BaseRepository<Formula, FormulaDbContext>, IFormulaRepository
 {
-    private readonly FormulaDbContext _context;
-
     /// <summary>
     /// 初始化仓储。
     /// </summary>
-    public FormulaRepository(FormulaDbContext context)
+    public FormulaRepository(FormulaDbContext context, ILogger<FormulaRepository> logger)
+        : base(context, logger)
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
     /// <inheritdoc/>
-    public async Task<Formula?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public override async Task<Formula?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Formulas
             .Include(f => f.Herbs)
@@ -90,20 +90,6 @@ public class FormulaRepository : IFormulaRepository
     }
 
     /// <inheritdoc/>
-    public async Task AddAsync(Formula formula, CancellationToken cancellationToken = default)
-    {
-        await _context.Formulas.AddAsync(formula, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task UpdateAsync(Formula formula, CancellationToken cancellationToken = default)
-    {
-        _context.Formulas.Update(formula);
-        await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public async Task<List<Formula>> FindWithHerbsAsync(
         System.Linq.Expressions.Expression<Func<Formula, bool>> predicate,
         CancellationToken cancellationToken = default)
@@ -115,5 +101,3 @@ public class FormulaRepository : IFormulaRepository
             .ToListAsync(cancellationToken);
     }
 }
-
-

@@ -107,7 +107,7 @@ namespace LYBT.WebAPI.Controllers
                 return ownerError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await _herbService.UpdateAsync(id, input, operatorId, ct);
+            var result = await Sender.Send(new UpdateHerbCommand(id, input, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
                 return BusinessFail(result.Error ?? "更新失败");
 
@@ -161,7 +161,7 @@ namespace LYBT.WebAPI.Controllers
             if (ValidateOwnership(getResult.Value.CreatedBy, "药材") is { } ownerError)
                 return ownerError;
 
-            var result = await _herbService.ToggleStatusAsync(id, operatorId, ct);
+            var result = await Sender.Send(new ToggleHerbStatusCommand(id, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
                 return BusinessFail(result.Error ?? "切换状态失败");
 
@@ -181,7 +181,7 @@ namespace LYBT.WebAPI.Controllers
             if (ValidateGuid(id, "药材ID") is { } error) return error;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await _herbService.RestoreAsync(id, operatorId, ct);
+            var result = await Sender.Send(new RestoreHerbCommand(id, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
                 return BusinessFail(result.Error ?? "恢复失败");
 
@@ -273,7 +273,7 @@ namespace LYBT.WebAPI.Controllers
             if (dto.Ids == null || dto.Ids.Count == 0)
                 return ValidationFail("药材ID列表不能为空");
 
-            var result = await _herbService.BatchEnableAsync(dto.Ids, ct);
+            var result = await Sender.Send(new BatchEnableHerbsCommand(dto.Ids), ct);
             if (!result.IsSuccess || result.Value == null)
                 return BusinessFail(result.Error ?? "批量启用失败");
 
@@ -293,7 +293,7 @@ namespace LYBT.WebAPI.Controllers
             if (dto.Ids == null || dto.Ids.Count == 0)
                 return ValidationFail("药材ID列表不能为空");
 
-            var result = await _herbService.BatchDisableAsync(dto.Ids, ct);
+            var result = await Sender.Send(new BatchDisableHerbsCommand(dto.Ids), ct);
             if (!result.IsSuccess || result.Value == null)
                 return BusinessFail(result.Error ?? "批量禁用失败");
 

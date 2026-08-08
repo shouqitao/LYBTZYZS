@@ -1,18 +1,14 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Entities.Herbs;
+using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.Herbs.Interfaces;
 
 /// <summary>
 /// 药材仓储接口。
 /// </summary>
-public interface IHerbRepository
+public interface IHerbRepository : IRepository<Herb>
 {
-    /// <summary>
-    /// 根据ID获取药材。
-    /// </summary>
-    Task<Herb?> GetByIdAsync(Guid id, CancellationToken ct);
-
     /// <summary>
     /// 根据ID获取药材（包括已软删除的）。
     /// </summary>
@@ -32,16 +28,4 @@ public interface IHerbRepository
     /// 根据名称精确获取药材。
     /// </summary>
     Task<Herb?> GetByNameAsync(string name, CancellationToken ct = default);
-
-    /// <summary>
-    /// 新增药材。
-    /// </summary>
-    Task AddAsync(Herb herb, CancellationToken ct);
-
-    /// <summary>
-    /// 更新药材。
-    /// </summary>
-    Task UpdateAsync(Herb herb, CancellationToken ct);
 }
-
-

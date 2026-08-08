@@ -1,18 +1,14 @@
 using LYBT.Entities.Formulas;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.Formulas.Interfaces;
 
 /// <summary>
 /// 验方仓储接口（DDD） - 封验方数据访问逻辑。
 /// </summary>
-public interface IFormulaRepository
+public interface IFormulaRepository : IRepository<Formula>
 {
-    /// <summary>
-    /// 根据ID获取验方（含药材组成）。
-    /// </summary>
-    Task<Formula?> GetByIdAsync(Guid id, CancellationToken ct);
-
     /// <summary>
     /// 根据ID获取验方（包括已软删除的）。
     /// </summary>
@@ -29,21 +25,9 @@ public interface IFormulaRepository
     Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default);
 
     /// <summary>
-    /// 新增验方。
-    /// </summary>
-    Task AddAsync(Formula formula, CancellationToken ct);
-
-    /// <summary>
-    /// 更新验方。
-    /// </summary>
-    Task UpdateAsync(Formula formula, CancellationToken ct);
-
-    /// <summary>
     /// 按条件查询验方（含药材组成）。
     /// </summary>
     Task<List<Formula>> FindWithHerbsAsync(
         System.Linq.Expressions.Expression<Func<Formula, bool>> predicate,
         CancellationToken ct = default);
 }
-
-

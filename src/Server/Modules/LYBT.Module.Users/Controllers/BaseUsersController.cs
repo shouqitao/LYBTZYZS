@@ -80,7 +80,7 @@ public abstract class BaseUsersController : BaseCrudController
         if (ValidateGuid(id, "用户ID") is { } guidError) return guidError;
 
         var (operatorId, _, _) = GetOperator();
-        var result = await _userService.UpdateAsync(id, input, operatorId, ct);
+        var result = await Sender.Send(new UpdateUserCommand(id, input, operatorId), ct);
         if (!result.IsSuccess || result.Value == null)
         {
             if (result.Error?.Contains("不存在") == true)
@@ -220,7 +220,7 @@ public abstract class BaseUsersController : BaseCrudController
     {
         var (currentUserId, _, _) = GetOperator();
 
-        var result = await _userService.ChangeProfileAsync(id, dto, currentUserId, ct);
+        var result = await Sender.Send(new ChangeProfileCommand(id, dto, currentUserId), ct);
 
         if (!result.IsSuccess)
         {
