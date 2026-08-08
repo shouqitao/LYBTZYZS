@@ -90,7 +90,8 @@
 
 ## 五、风险与决策点
 
-- [ ] 日志集中是否值得重构（收益 vs 破坏面）
-- [ ] 异常处理器跨端统一是否现实（Server/Desktop 差异）
+- [x] **LocalWebAPI 策略缺失（S1 发现，真实 bug）**：LocalJwtConfig 注册 5 策略但缺 `DoctorOrAdminOrReceptionist`，Patients/Registrations/Reports 3 控制器本地模式会 500（WebAPI 侧有注册 `AuthenticationServiceCollectionExtensions.cs:132`）→ 待修复批次
+- [ ] 日志集中是否值得重构（收益 vs 破坏面）——S1 已出方案，待拍板
+- [ ] 异常处理器跨端统一是否现实（Server/Desktop 差异）——S1 已出方案，待拍板
 - [ ] 项目合并 ROI（A-27 曾评估"收益有限风险中等"——本方案以方法级证据重新评估）
 - [ ] 合并后架构测试/蓝图同步成本
