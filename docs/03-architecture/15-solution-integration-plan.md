@@ -14,7 +14,7 @@
 | S0 | 全仓基线 | ✅ **1208 文件 / 1424 类型 / 6118 方法**（公开 3991 / 非公开 2127）；重复聚类 693 组（跨项目 408）；死方法候选 1095（占 17.9%，高置信 254）；Roslyn 校准漏报率 2.9% | `method-audit-baseline-*.md` 等 |
 | S1 | Shared 5 项目 | ✅ **212 方法分级**（A139/B17/D56，含 4 整类死类 37 方法：Conflict/Api/Unauthorized/ValidationException 生产零构造）+ 日志/异常集中方案（ICorrelationIdProvider 零 DI 注册双机制分叉；异常→HTTP 映射三处独立实现分叉） | `method-audit-shared-*.md` |
 | S2 | Server 10 项目 | ✅ **330 类型 / 970 方法分级**：29 死方法符号确认；跨模块门面双轨（ICrossModuleService 仅覆盖 3/6 域）；MedicalCase 验证管道丢失实锤（Validator 注册后 0 注入）；仓储镜像方法 4 仓储同构；**Herbs+Formula 合并可行（43% 方法同构）/ Auth+Users 合并可行**；日志 3 件套+异常处理器迁移点确认 | `method-audit-server-*.md` |
-| S3 | Desktop 16 项目 | ⏳ | `method-audit-desktop-*.md` |
+| S3 | Desktop 16 项目 | ✅ **2987 方法分级**：D 级 78 符号 + 2 死类（可安全删 14 / 复核 64）；VM 13 组跨模块同名命令（TestConnectionAsync 95% 同构 / Editor VM 模板 90% 4 份拷贝）；映射 5 Mapperly+13 手写并存（DtoConversionExtensions 活链确认）；**Herbs+Formula 桌面侧 85% 同构（推荐合并）**；**LocalJwtConfig 策略缺口 P0 确认**（本地 3 模块不可用）；Reports 双轨复刻+策略分歧（Local DoctorOrAdminOrReceptionist vs Remote DoctorOrAdmin）；Remote 5 死亡端点 | `method-audit-desktop-*.md` |
 
 ---
 
