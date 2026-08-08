@@ -1,6 +1,7 @@
 using LYBT.Entities.Consultations;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
+using FluentValidation;
 using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
@@ -30,6 +31,7 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly MedicalCasePrescriptionService _prescriptionService;
         private readonly PrescriptionItemService _itemService;
         private readonly MedicalCaseMapper _mapper;
+        private readonly IValidator<MedicalCaseInputDto> _inputValidator;
 
         public MedicalCaseCommandService(
             IMedicalCaseRepository repository,
@@ -39,7 +41,8 @@ namespace LYBT.Module.MedicalCases.Services
             ICacheInvalidationService cacheInvalidation,
             MedicalCasePrescriptionService prescriptionService,
             PrescriptionItemService itemService,
-            MedicalCaseMapper mapper)
+            MedicalCaseMapper mapper,
+            IValidator<MedicalCaseInputDto> inputValidator)
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -49,6 +52,7 @@ namespace LYBT.Module.MedicalCases.Services
             _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
             _itemService = itemService ?? throw new ArgumentNullException(nameof(itemService));
             _mapper = mapper;
+            _inputValidator = inputValidator ?? throw new ArgumentNullException(nameof(inputValidator));
         }
 
         /// <summary>
@@ -65,7 +69,13 @@ namespace LYBT.Module.MedicalCases.Services
             bool isAdmin = false,
             CancellationToken cancellationToken = default)
         {
-            var doctorId = request.UserId != Guid.Empty ? request.UserId : currentUserId;
+            // P0-2: 回填 UserId（客户端未传时使用当前用户），与下方 doctorId 兜底逻辑一致
+            if (request.UserId == Guid.Empty)
+                request.UserId = currentUserId;
+            var doctorId = request.UserId;
+
+            // P0-2: 统一验证（PatientId/UserId 必填 + 处方嵌套规则）
+            await _inputValidator.ValidateAndThrowAsync(request, cancellationToken);
 
             _logger.LogInformation("[SVC] MedicalCase.CreateFromInput started - PatientId={PatientId} UserId={UserId}",
                 request.PatientId, doctorId);

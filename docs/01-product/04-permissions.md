@@ -70,6 +70,7 @@
 | `RegistrationsController` | `DoctorOrAdminOrReceptionist` | GET：Doctor+Receptionist+**Admin 只读**；POST：Receptionist；quick-visit：`DoctorOnly`；start-visit：`DoctorOnly`；cancel：Receptionist | ⚠️ Admin 只读查看挂号（2026-08-03 决策）；创建/取消仅前台；接诊/QuickVisit 仅 Doctor |
 | `PatientsController` | `DoctorOrAdminOrReceptionist` | GET/POST/PUT：Doctor+Receptionist；DELETE/禁用：`AdminOrSuperAdmin` | ⚠️ 删除/禁用仅 Admin+（2026-08-03 决策）；Admin 不直接管理患者读写 |
 | `MedicalCasesController` | `DoctorOrAdmin` | 创建：`DoctorOnly`；查看/编辑按 MC 铁律 | ⚠️ 创建仅 Doctor（C4/K3 待修） |
+| `ReportsController` | `DoctorOrAdmin` | GET：Doctor+Admin+SuperAdmin（**前台不可查**） | 2026-08-08 统一双端策略（A-31-C0） |
 | `HerbsController` | `DoctorOrReceptionist` | GET：Doctor+Admin+SuperAdmin（**前台不可查**）；POST/PUT/DELETE：`AdminOrSuperAdmin` | 🔴 前台不可查看药材（2026-08-03 决策）；写操作仅 Admin |
 | `FormulasController` | `DoctorOrReceptionist` | GET：Doctor+Admin+SuperAdmin（**前台不可查**）；POST/PUT：`DoctorOrAdmin` | 🔴 前台不可查看验方（2026-08-03 决策）；写操作 Doctor(自己)+Admin |
 

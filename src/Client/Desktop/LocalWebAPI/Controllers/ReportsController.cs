@@ -10,7 +10,7 @@ namespace LYBT.LocalWebAPI.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize(Policy = PolicyConstants.DoctorOrAdminOrReceptionist)]
+[Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
 public class ReportsController : BaseApiController
 {
     private readonly IReportRepository _reportRepository;
