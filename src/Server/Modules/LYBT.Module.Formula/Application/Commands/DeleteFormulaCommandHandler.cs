@@ -1,8 +1,6 @@
 using MediatR;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Infrastructure.SharedKernel.Events;
-using LYBT.Module.Formulas.Domain.Events;
 using LYBT.Module.Formulas.Interfaces;
 
 namespace LYBT.Module.Formulas.Application.Commands;
@@ -13,17 +11,14 @@ namespace LYBT.Module.Formulas.Application.Commands;
 public class DeleteFormulaCommandHandler : IRequestHandler<DeleteFormulaCommand, Result>
 {
     private readonly IFormulaRepository _formulaRepository;
-    private readonly IDomainEventDispatcher _eventDispatcher;
 
     /// <summary>
     /// 初始化命令处理器。
     /// </summary>
     public DeleteFormulaCommandHandler(
-        IFormulaRepository formulaRepository,
-        IDomainEventDispatcher eventDispatcher)
+        IFormulaRepository formulaRepository)
     {
         _formulaRepository = formulaRepository;
-        _eventDispatcher = eventDispatcher;
     }
 
     /// <inheritdoc/>
@@ -37,11 +32,6 @@ public class DeleteFormulaCommandHandler : IRequestHandler<DeleteFormulaCommand,
         formula.SoftDelete(request.CurrentUserId);
 
         await _formulaRepository.UpdateAsync(formula, cancellationToken);
-
-        await _eventDispatcher.DispatchAsync(new[]
-        {
-            new FormulaDeletedEvent(formula.Id, formula.Name, request.CurrentUserId)
-        }, cancellationToken);
 
         return Result.Success();
     }

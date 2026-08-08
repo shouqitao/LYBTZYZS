@@ -3,8 +3,6 @@ using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Infrastructure.SharedKernel.Events;
-using LYBT.Module.Users.Domain.Events;
 using LYBT.Module.Users.Interfaces;
 
 namespace LYBT.Module.Users.Application.Commands;
@@ -15,16 +13,13 @@ namespace LYBT.Module.Users.Application.Commands;
 public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Result>
 {
     private readonly IUserRepository _userRepository;
-    private readonly IDomainEventDispatcher _eventDispatcher;
     private readonly IAuthCrossModuleService _authCrossModule;
 
     public DeleteUserCommandHandler(
         IUserRepository userRepository,
-        IDomainEventDispatcher eventDispatcher,
         IAuthCrossModuleService authCrossModule)
     {
         _userRepository = userRepository;
-        _eventDispatcher = eventDispatcher;
         _authCrossModule = authCrossModule;
     }
 
@@ -44,11 +39,6 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Resul
         user.SoftDelete(request.CurrentUserId);
 
         await _userRepository.UpdateAsync(user, cancellationToken);
-
-        await _eventDispatcher.DispatchAsync(new[]
-        {
-            new UserDeletedEvent(user.Id, user.UserName ?? string.Empty, user.RealName ?? string.Empty, request.CurrentUserId)
-        }, cancellationToken);
 
         await _authCrossModule.RevokeAllUserSessionsAsync(user.Id, "用户已删除", cancellationToken);
         await _authCrossModule.RecordSecurityAuditAsync(new SecurityAuditEvent

@@ -1,7 +1,5 @@
 using LYBT.Entities.Registrations;
-using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.Module.Registrations.Mappers;
-using LYBT.Module.Registrations.Domain.Events;
 using LYBT.Module.Registrations.Interfaces;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
@@ -17,18 +15,15 @@ public sealed class CreateRegistrationCommandHandler
     : IRequestHandler<CreateRegistrationCommand, Result<RegistrationDetailDto>>
 {
     private readonly IRegistrationRepository _repository;
-    private readonly IDomainEventDispatcher _eventDispatcher;
     private readonly RegistrationMapper _mapper;
     private readonly INotificationService _notificationService;
 
     public CreateRegistrationCommandHandler(
         IRegistrationRepository repository,
-        IDomainEventDispatcher eventDispatcher,
         RegistrationMapper mapper,
         INotificationService notificationService)
     {
         _repository = repository;
-        _eventDispatcher = eventDispatcher;
         _mapper = mapper;
         _notificationService = notificationService;
     }
@@ -58,19 +53,6 @@ public sealed class CreateRegistrationCommandHandler
 
         await _repository.AddAsync(registration, cancellationToken);
         await _repository.SaveChangesAsync(cancellationToken);
-
-        await _eventDispatcher.DispatchAsync(new[]
-        {
-            new RegistrationCreatedEvent(
-                registration.Id,
-                registration.PatientId,
-                registration.PatientName,
-                registration.DoctorId,
-                registration.DoctorName,
-                registration.Source,
-                registration.Status,
-                registration.QueueNumber)
-        }, cancellationToken);
 
         // US-REG-008: 新挂号实时推送 — 仅 Waiting 状态会进入医生待诊列表
         var detailDto = _mapper.ToDetailDto(registration);

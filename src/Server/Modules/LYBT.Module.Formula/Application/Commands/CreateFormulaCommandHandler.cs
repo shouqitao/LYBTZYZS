@@ -2,8 +2,6 @@ using MediatR;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Infrastructure.SharedKernel.Events;
-using LYBT.Module.Formulas.Domain.Events;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Module.Formulas.Application.Mappers;
 
@@ -15,17 +13,14 @@ namespace LYBT.Module.Formulas.Application.Commands;
 public class CreateFormulaCommandHandler : IRequestHandler<CreateFormulaCommand, Result<FormulaDetailDto>>
 {
     private readonly IFormulaRepository _formulaRepository;
-    private readonly IDomainEventDispatcher _eventDispatcher;
 
     /// <summary>
     /// 初始化命令处理器。
     /// </summary>
     public CreateFormulaCommandHandler(
-        IFormulaRepository formulaRepository,
-        IDomainEventDispatcher eventDispatcher)
+        IFormulaRepository formulaRepository)
     {
         _formulaRepository = formulaRepository;
-        _eventDispatcher = eventDispatcher;
     }
 
     /// <inheritdoc/>
@@ -40,11 +35,6 @@ public class CreateFormulaCommandHandler : IRequestHandler<CreateFormulaCommand,
         var formula = FormulaDtoMapper.ToEntity(dto, request.CurrentUserId);
 
         await _formulaRepository.AddAsync(formula, cancellationToken);
-
-        await _eventDispatcher.DispatchAsync(new[]
-        {
-            new FormulaCreatedEvent(formula.Id, formula.Name, request.CurrentUserId)
-        }, cancellationToken);
 
         return Result<FormulaDetailDto>.Success(FormulaDtoMapper.ToDetailDto(formula));
     }

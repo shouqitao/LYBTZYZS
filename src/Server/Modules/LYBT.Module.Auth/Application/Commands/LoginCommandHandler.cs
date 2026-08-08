@@ -4,7 +4,6 @@ using MediatR;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Entities.Auth;
 using LYBT.Module.Auth.Application.Mappers;
-using LYBT.Module.Auth.Domain.Events;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
@@ -25,7 +24,6 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
     private readonly IAuthSessionRepository _authSessionRepository;
     private readonly ISecurityAuditService _securityAuditService;
     private readonly ISender _sender;
-    private readonly IPublisher _publisher;
     private readonly ILogger<LoginCommandHandler> _logger;
     private readonly SecurityOptions _securityOptions;
     private readonly JwtOptions _jwtOptions;
@@ -37,7 +35,6 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
         IAuthSessionRepository authSessionRepository,
         ISecurityAuditService securityAuditService,
         ISender sender,
-        IPublisher publisher,
         ILogger<LoginCommandHandler> logger,
         IOptions<SecurityOptions> securityOptions,
         IOptions<JwtOptions> jwtOptions,
@@ -48,7 +45,6 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
         _authSessionRepository = authSessionRepository;
         _securityAuditService = securityAuditService;
         _sender = sender;
-        _publisher = publisher;
         _logger = logger;
         _securityOptions = securityOptions?.Value ?? throw new ArgumentNullException(nameof(securityOptions));
         _jwtOptions = jwtOptions?.Value ?? throw new ArgumentNullException(nameof(jwtOptions));
@@ -181,10 +177,6 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
             cancellationToken);
 
         await _authSessionRepository.AddAsync(session, cancellationToken);
-
-        await _publisher.Publish(
-            new SessionCreatedEvent(session.Id, user.Id, session.IpAddress),
-            cancellationToken);
 
         await _securityAuditService.RecordEventAsync(new SecurityAuditEvent
         {

@@ -1,8 +1,6 @@
 using MediatR;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Infrastructure.SharedKernel.Events;
-using LYBT.Module.Herbs.Domain.Events;
 using LYBT.Module.Herbs.Interfaces;
 
 namespace LYBT.Module.Herbs.Application.Commands;
@@ -13,14 +11,11 @@ namespace LYBT.Module.Herbs.Application.Commands;
 public class DeleteHerbCommandHandler : IRequestHandler<DeleteHerbCommand, Result>
 {
     private readonly IHerbRepository _herbRepository;
-    private readonly IDomainEventDispatcher _eventDispatcher;
 
     public DeleteHerbCommandHandler(
-        IHerbRepository herbRepository,
-        IDomainEventDispatcher eventDispatcher)
+        IHerbRepository herbRepository)
     {
         _herbRepository = herbRepository;
-        _eventDispatcher = eventDispatcher;
     }
 
     public async Task<Result> Handle(
@@ -33,11 +28,6 @@ public class DeleteHerbCommandHandler : IRequestHandler<DeleteHerbCommand, Resul
         herb.SoftDelete(request.CurrentUserId);
 
         await _herbRepository.UpdateAsync(herb, cancellationToken);
-
-        await _eventDispatcher.DispatchAsync(new[]
-        {
-            new HerbDeletedEvent(herb.Id, herb.Name, request.CurrentUserId)
-        }, cancellationToken);
 
         return Result.Success();
     }

@@ -12,7 +12,6 @@ using LYBT.Module.Patients;
 using LYBT.Module.Registrations;
 using LYBT.Module.Reports;
 using LYBT.Module.Users;
-using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.WebAPI.Filters;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
@@ -115,9 +114,6 @@ public static class ServiceCollectionExtensions
 
         // 8. 报表模块
         services.AddReportsModule(configuration);
-
-        // 9. 领域事件分发器（跨模块共享）
-        services.AddScoped<IDomainEventDispatcher, InMemoryDomainEventDispatcher>();
 
         return services;
     }

@@ -30,10 +30,8 @@ Business modules for the ASP.NET Core backend. Each module is a **self-contained
 ### Module Structure Template
 ```
 LYBT.Module.<Name>/
-├── Domain/                    # Domain entities, value objects, domain events
-│   ├── <Entity>.cs            # Rich domain model (IAggregateRoot)
-│   └── Events/                # Domain events (IDomainEvent)
-│       └── <Entity>CreatedEvent.cs
+├── Domain/                    # Domain entities, value objects
+│   └── <Entity>.cs            # Rich domain model (IAggregateRoot)
 ├── Application/               # Business logic layer (MediatR handlers)
 │   ├── Commands/              # Write operations
 │   │   ├── Create<Entity>Command.cs
@@ -63,12 +61,6 @@ services.AddMediatR(cfg =>
 - Repositories are registered in `<Name>Module.cs` via `services.AddScoped<I<Entity>Repository, <Entity>Repository>()`
 - Service layer MUST NOT inject `AppDbContext` directly — use repository interfaces
 
-### Domain Events for State Changes
-- Domain events implement `IDomainEvent : INotification` (MediatR)
-- Events are raised in domain entity methods or command handlers
-- Cross-module handlers subscribe via `INotificationHandler<TEvent>`
-- Outbox pattern ensures reliable delivery (same-transaction write + async processing)
-
 ### Testing Requirements
 - `dotnet test tests/LYBT.Tests.Server/ --filter "FullyQualifiedName~MedicalCase"` — test a specific module
 - All server tests use real SQL Server + Respawn for database reset, zero mocks.
@@ -78,7 +70,7 @@ services.AddMediatR(cfg =>
 - **Command/Query Handler**: Business logic + validation + orchestrates Repository calls
 - **Repository**: Extends `BaseRepository<T>`, adds domain-specific queries
 - **Cross-module (sync)**: `ICrossModuleService` interface in SharedKernel, implemented in providing module
-- **Cross-module (async)**: Domain events via `IDomainEvent` → `INotificationHandler`
+- **Cross-module (async)**: SignalR `INotificationService` 推送（B-10，如挂号队列实时通知）
 - **Validators**: FluentValidation, registered per-module assembly scan
 
 ## Dependencies

@@ -1,9 +1,7 @@
 using MediatR;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.Infrastructure.Services.CrossModule;
-using LYBT.Module.Patients.Domain.Events;
 using LYBT.Module.Patients.Interfaces;
 
 namespace LYBT.Module.Patients.Application.Commands;
@@ -15,16 +13,13 @@ public class DeletePatientCommandHandler : IRequestHandler<DeletePatientCommand,
 {
     private readonly IPatientRepository _patientRepository;
     private readonly IMedicalCaseCrossModuleService _medicalCaseCrossModuleService;
-    private readonly IDomainEventDispatcher _eventDispatcher;
 
     public DeletePatientCommandHandler(
         IPatientRepository patientRepository,
-        IMedicalCaseCrossModuleService medicalCaseCrossModuleService,
-        IDomainEventDispatcher eventDispatcher)
+        IMedicalCaseCrossModuleService medicalCaseCrossModuleService)
     {
         _patientRepository = patientRepository;
         _medicalCaseCrossModuleService = medicalCaseCrossModuleService;
-        _eventDispatcher = eventDispatcher;
     }
 
     public async Task<Result> Handle(
@@ -42,11 +37,6 @@ public class DeletePatientCommandHandler : IRequestHandler<DeletePatientCommand,
         patient.SoftDelete(request.CurrentUserId);
 
         await _patientRepository.UpdateAsync(patient, cancellationToken);
-
-        await _eventDispatcher.DispatchAsync(new[]
-        {
-            new PatientDeletedEvent(patient.Id, patient.Name, request.CurrentUserId)
-        }, cancellationToken);
 
         return Result.Success();
     }

@@ -23,7 +23,7 @@ ASP.NET Core WebAPI backend for the LYBTZYZS TCM clinic management system. Imple
 
 ### Working In This Directory
 - Dependency direction: `Services(WebAPI) -> Modules -> Core(SharedKernel, Infrastructure, Entities)`
-- **Modules MUST NOT reference each other**; cross-module communication via domain events (`IDomainEvent`) or `ICrossModuleService` interfaces in SharedKernel.
+- **Modules MUST NOT reference each other**; cross-module communication via `ICrossModuleService` interfaces in SharedKernel.
 - Each module has its **own DbContext** (per-module data isolation) — never use the shared `AppDbContext` for module data.
 - Service layer MUST NOT directly inject `AppDbContext` — must use Repository interface (enforced by architecture test).
 - All DTOs live in `Shared.Models`; entities live in `LYBT.Entities` or module `Domain/` folders.
@@ -33,8 +33,6 @@ ASP.NET Core WebAPI backend for the LYBTZYZS TCM clinic management system. Imple
 - **Commands**: Write operations (Create, Update, Delete) → CommandHandler
 - **Queries**: Read operations (Get, Search, List) → QueryHandler
 - Each handler implements `IRequestHandler<TCommand, TResponse>` (MediatR)
-- Domain events implement `IDomainEvent : INotification` (MediatR) for cross-module reaction
-- Outbox pattern (`IOutboxService`) ensures reliable event delivery after transaction commit
 
 ### Testing Requirements
 - `dotnet test tests/LYBT.Tests.Server/` — ~1185 tests, real SQL Server + Respawn, zero mock
@@ -44,9 +42,7 @@ ASP.NET Core WebAPI backend for the LYBTZYZS TCM clinic management system. Imple
 - **Modular Monolith**: Each module is self-contained (Domain + Application + Infrastructure)
 - **CQRS**: CommandHandler / QueryHandler via MediatR
 - **Repository**: Module-specific repositories (e.g., `PatientRepository`, `HerbRepository`) + `BaseRepository<T>`
-- **Domain Events**: `IDomainEvent` for state changes; `IDomainEventDispatcher` for dispatching
-- **Outbox**: `IOutboxService` for reliable event delivery (same-transaction write + async processing)
-- **Cross-module**: `ICrossModuleService` interfaces in SharedKernel for synchronous cross-module queries
+- **Cross-module**: `ICrossModuleService` interfaces in SharedKernel for synchronous cross-module queries；异步通知走 SignalR `INotificationService`（B-10）
 
 ## Dependencies
 

@@ -2,9 +2,7 @@ using MediatR;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.Entities.Users;
-using LYBT.Module.Users.Domain.Events;
 using LYBT.Module.Users.Application.Mappers;
 using Microsoft.AspNetCore.Identity;
 
@@ -16,14 +14,11 @@ namespace LYBT.Module.Users.Application.Commands;
 public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Result<UserDetailDto>>
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IDomainEventDispatcher _eventDispatcher;
 
     public CreateUserCommandHandler(
-        UserManager<ApplicationUser> userManager,
-        IDomainEventDispatcher eventDispatcher)
+        UserManager<ApplicationUser> userManager)
     {
         _userManager = userManager;
-        _eventDispatcher = eventDispatcher;
     }
 
     public async Task<Result<UserDetailDto>> Handle(
@@ -59,11 +54,6 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
             var errors = string.Join(", ", result.Errors.Select(e => e.Description));
             return Result<UserDetailDto>.Failure(ErrorCode.InvalidRequest, $"创建用户失败: {errors}");
         }
-
-        await _eventDispatcher.DispatchAsync(new[]
-        {
-            new UserCreatedEvent(user.Id, user.UserName ?? string.Empty, user.RealName ?? string.Empty, user.Role, request.CurrentUserId)
-        }, cancellationToken);
 
         return Result<UserDetailDto>.Success(UserMapper.ToDetailDto(user));
     }

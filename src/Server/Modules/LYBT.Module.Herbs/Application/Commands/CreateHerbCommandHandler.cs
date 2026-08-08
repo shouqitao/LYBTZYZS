@@ -2,8 +2,6 @@ using MediatR;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Infrastructure.SharedKernel.Events;
-using LYBT.Module.Herbs.Domain.Events;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Application.Mappers;
 
@@ -15,14 +13,11 @@ namespace LYBT.Module.Herbs.Application.Commands;
 public class CreateHerbCommandHandler : IRequestHandler<CreateHerbCommand, Result<HerbDetailDto>>
 {
     private readonly IHerbRepository _herbRepository;
-    private readonly IDomainEventDispatcher _eventDispatcher;
 
     public CreateHerbCommandHandler(
-        IHerbRepository herbRepository,
-        IDomainEventDispatcher eventDispatcher)
+        IHerbRepository herbRepository)
     {
         _herbRepository = herbRepository;
-        _eventDispatcher = eventDispatcher;
     }
 
     public async Task<Result<HerbDetailDto>> Handle(
@@ -36,11 +31,6 @@ public class CreateHerbCommandHandler : IRequestHandler<CreateHerbCommand, Resul
         var herb = HerbDtoMapper.ToEntity(dto, request.CurrentUserId);
 
         await _herbRepository.AddAsync(herb, cancellationToken);
-
-        await _eventDispatcher.DispatchAsync(new[]
-        {
-            new HerbCreatedEvent(herb.Id, herb.Name, herb.Price, request.CurrentUserId)
-        }, cancellationToken);
 
         return Result<HerbDetailDto>.Success(HerbDtoMapper.ToDetailDto(herb));
     }

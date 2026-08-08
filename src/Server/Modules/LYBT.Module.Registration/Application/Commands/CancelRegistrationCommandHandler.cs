@@ -1,5 +1,3 @@
-using LYBT.Infrastructure.SharedKernel.Events;
-using LYBT.Module.Registrations.Domain.Events;
 using LYBT.Module.Registrations.Interfaces;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
@@ -14,16 +12,13 @@ public sealed class CancelRegistrationCommandHandler
     : IRequestHandler<CancelRegistrationCommand, Result>
 {
     private readonly IRegistrationRepository _repository;
-    private readonly IDomainEventDispatcher _eventDispatcher;
     private readonly INotificationService _notificationService;
 
     public CancelRegistrationCommandHandler(
         IRegistrationRepository repository,
-        IDomainEventDispatcher eventDispatcher,
         INotificationService notificationService)
     {
         _repository = repository;
-        _eventDispatcher = eventDispatcher;
         _notificationService = notificationService;
     }
 
@@ -48,15 +43,6 @@ public sealed class CancelRegistrationCommandHandler
 
         await _repository.UpdateAsync(entity, cancellationToken);
         await _repository.SaveChangesAsync(cancellationToken);
-
-        await _eventDispatcher.DispatchAsync(new[]
-        {
-            new RegistrationCancelledEvent(
-                entity.Id,
-                entity.PatientId,
-                entity.PatientName,
-                entity.DoctorId)
-        }, cancellationToken);
 
         // US-REG-008: 取消状态变更实时同步到该医生待诊列表
         await _notificationService.NotifyRegistrationStatusChangedAsync(
