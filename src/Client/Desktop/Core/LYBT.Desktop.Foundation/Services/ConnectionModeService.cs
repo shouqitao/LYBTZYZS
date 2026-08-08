@@ -1,11 +1,11 @@
 // ---------------------------------------------------------------------------
-// ConnectionModeService — Remote/Local mode detection and transparent fallback
+// ConnectionModeService — Remote/Local explicit mode management
 // ---------------------------------------------------------------------------
 // Wraps IConnectionSettingsService (URL + PreferredMode + RemoteUrl) and
 // IApplicationStateService (health) to expose a mode-oriented view of the
-// connection: probe remote health, fall back to embedded LocalWebAPI when
-// the remote server is unreachable, and keep subscribers in sync via
-// ModeChanged.
+// connection: probe remote health for UI state, switch modes only on explicit
+// user request, and keep subscribers in sync via ModeChanged. No automatic
+// fallback — a selected mode stays active until the user changes it.
 // ---------------------------------------------------------------------------
 
 using System.Net.Http;
@@ -16,9 +16,8 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Foundation.Services;
 
 /// <summary>
-/// 通过探测配置的 WebAPI 健康端点检测最佳连接模式（Remote 或 Local），
-/// 当远程服务器不可达时透明地回退到
-/// 嵌入式 LocalWebAPI。
+/// 管理连接模式（Remote 或 Local）。模式仅由用户显式切换，
+/// 不自动探测或降级；远程健康探测仅用于 UI 状态显示。
 /// </summary>
 public sealed class ConnectionModeService : IConnectionModeService, IDisposable
 {
@@ -34,7 +33,6 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     private readonly IConnectionSettingsService _connectionSettings;
     private readonly IApplicationStateService _applicationState;
     private readonly ILogger<ConnectionModeService> _logger;
-    private readonly SemaphoreSlim _detectGate = new(1, 1);
 
     private ConnectionMode _currentMode;
     private bool _isRemoteAvailable;
@@ -81,46 +79,6 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
 
     /// <inheritdoc />
     public event EventHandler<ConnectionMode>? ModeChanged;
-
-    /// <inheritdoc />
-    public async Task<ConnectionMode> DetectBestModeAsync()
-    {
-        await _detectGate.WaitAsync().ConfigureAwait(false);
-        try
-        {
-            var preferred = _connectionSettings.PreferredMode;
-
-            if (preferred == "Remote" && !string.IsNullOrEmpty(_connectionSettings.RemoteUrl))
-            {
-                _isRemoteAvailable = await TestRemoteConnectionAsync(_connectionSettings.RemoteUrl).ConfigureAwait(false);
-                if (_isRemoteAvailable)
-                {
-                    _logger.LogInformation("[CONNECTION-MODE] Remote server reachable at {Url} → Remote mode", _connectionSettings.RemoteUrl);
-                    ApplyMode(ConnectionMode.Remote);
-                    return ConnectionMode.Remote;
-                }
-
-                _logger.LogWarning("[CONNECTION-MODE] Remote server unreachable at {Url}, falling back to Local mode", _connectionSettings.RemoteUrl);
-            }
-
-            // Check if remote is available (for UI button state) even when we end up in Local mode.
-            if (!string.IsNullOrEmpty(_connectionSettings.RemoteUrl))
-            {
-                _isRemoteAvailable = await TestRemoteConnectionAsync(_connectionSettings.RemoteUrl).ConfigureAwait(false);
-            }
-            else
-            {
-                _isRemoteAvailable = false;
-            }
-
-            ApplyMode(ConnectionMode.Local);
-            return ConnectionMode.Local;
-        }
-        finally
-        {
-            _detectGate.Release();
-        }
-    }
 
     /// <inheritdoc />
     public async Task<bool> CheckRemoteAvailableAsync()
@@ -201,12 +159,6 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
                 }
                 break;
 
-            case ConnectionMode.Auto:
-                // Background detection; fire-and-forget is safe because
-                // DetectBestModeAsync serializes via _detectGate.
-                _ = DetectBestModeAsync();
-                break;
-
             default:
                 throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unsupported connection mode");
         }
@@ -242,12 +194,11 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     }
 
     /// <summary>
-    /// 释放检测门并解除 URL 订阅。
+    /// 释放 URL 订阅。
     /// DI 容器在关闭时释放单例。
     /// </summary>
     public void Dispose()
     {
         _connectionSettings.UrlChanged -= OnUrlChanged;
-        _detectGate.Dispose();
     }
 }

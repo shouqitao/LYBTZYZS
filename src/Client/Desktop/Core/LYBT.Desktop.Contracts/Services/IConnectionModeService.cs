@@ -1,16 +1,16 @@
 // ---------------------------------------------------------------------------
-// IConnectionModeService — Connection mode detection and switching
+// IConnectionModeService — Connection mode management and switching
 // ---------------------------------------------------------------------------
 // Abstracts the dual-mode (Remote / Local) connection model on top of the
-// URL-driven IConnectionSettingsService. Provides health probing, automatic
-// best-mode detection, and a UI-friendly mode descriptor for the login screen.
+// URL-driven IConnectionSettingsService. Provides health probing for UI state
+// and explicit user-driven mode switching — no automatic fallback.
 // ---------------------------------------------------------------------------
 
 namespace LYBT.Desktop.Contracts.Services;
 
 /// <summary>
-/// 连接模式限定符。<see cref="Auto"/> 仅作为请求值用于检测最佳模式；实际的
-/// <see cref="IConnectionModeService.CurrentMode"/> 解析为 <see cref="Remote"/> 或 <see cref="Local"/>。
+/// 连接模式限定符。由用户在 <see cref="Remote"/> 与 <see cref="Local"/> 之间
+/// 显式选择，不自动探测或降级。
 /// </summary>
 public enum ConnectionMode
 {
@@ -18,15 +18,12 @@ public enum ConnectionMode
     Remote,
 
     /// <summary>嵌入式 LocalWebAPI（→ SQL Server LocalDB）。</summary>
-    Local,
-
-    /// <summary>优先探测远程，回退到本地（仅检测请求）。</summary>
-    Auto
+    Local
 }
 
 /// <summary>
-/// 检测并管理活动连接模式（Remote 或 Local），
-/// 当远程服务器不可达时提供透明的回退。
+/// 管理活动连接模式（Remote 或 Local）。模式由用户显式选择，
+/// 远程健康探测仅用于 UI 状态显示。
 /// </summary>
 public interface IConnectionModeService
 {
@@ -50,7 +47,6 @@ public interface IConnectionModeService
 
     /// <summary>
     /// 上次远程可用性探测的缓存结果。由
-    /// <see cref="DetectBestModeAsync"/>、<see cref="SetMode"/> 和
     /// <see cref="CheckRemoteAvailableAsync"/> 更新。UI 据此启用或禁用
     /// "切换到 Remote" 按钮。
     /// </summary>
@@ -58,13 +54,6 @@ public interface IConnectionModeService
 
     /// <summary>含模式信息的 API 状态显示文本（例如"远程 WebAPI 已连接"）。</summary>
     string ApiStatusDisplay { get; }
-
-    /// <summary>
-    /// 探测配置的远程 URL 并自动选择最佳模式。
-    /// 远程服务器不可达时回退到 Local。
-    /// </summary>
-    /// <returns>The resolved effective mode (Remote or Local).</returns>
-    Task<ConnectionMode> DetectBestModeAsync();
 
     /// <summary>
     /// 重新探测配置的远程 URL，并将结果缓存到
@@ -94,7 +83,6 @@ public interface IConnectionModeService
     /// <list type="bullet">
     ///   <item><see cref="ConnectionMode.Local"/> → 将 URL 指向 localhost。</item>
     ///   <item><see cref="ConnectionMode.Remote"/> → 保留当前远程 URL。</item>
-    ///   <item><see cref="ConnectionMode.Auto"/> → 触发后台检测。</item>
     /// </list>
     /// </summary>
     /// <param name="mode">The mode to activate.</param>

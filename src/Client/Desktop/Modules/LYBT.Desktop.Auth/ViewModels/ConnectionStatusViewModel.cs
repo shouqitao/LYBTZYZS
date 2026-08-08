@@ -87,7 +87,7 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
     }
 
     /// <summary>
-    /// 检测连接模式
+    /// 刷新连接模式显示与远程可用性（仅 UI 状态，不自动切换模式）
     /// </summary>
     public async Task DetectConnectionModeAsync()
     {
@@ -101,7 +101,6 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
                 IsRemoteMode = _connectionModeService.IsRemote;
             });
 
-            var mode = await _connectionModeService.DetectBestModeAsync();
             var remoteAvailable = await _connectionModeService.CheckRemoteAvailableAsync();
 
             await Services.UiThreadDispatcher.InvokeAsync(() =>
@@ -109,8 +108,8 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
                 IsRemoteAvailable = remoteAvailable;
                 CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
                 IsRemoteMode = _connectionModeService.IsRemote;
-                Logger.LogInformation("[VM] Login.DetectMode - 连接模式: {Mode} ({Display}), 远程可用: {RemoteAvailable}",
-                    mode, _connectionModeService.CurrentModeDisplay, remoteAvailable);
+                Logger.LogInformation("[VM] Login.DetectMode - 连接模式: {Display}, 远程可用: {RemoteAvailable}",
+                    _connectionModeService.CurrentModeDisplay, remoteAvailable);
             });
         }
         catch (Exception ex)

@@ -67,17 +67,14 @@ App.OnStartup
 |------|------|
 | ISettingsService | 通用键值配置（内存字典） |
 | IConnectionSettingsService | 远程/本地 URL 管理 |
-| IConnectionModeService | 连接模式检测（自动/远程/本地） |
+| IConnectionModeService | 连接模式管理（远程/本地，用户显式切换） |
 | IApplicationStateService | API 健康状态、连接状态 |
 | IApiRouter | 当前 URL 和模式 |
 
-**连接模式检测**:
-```
-DetectBestModeAsync()
-  → GET /api/v1/health（远程，3秒超时）
-  → 任何响应 → 远程模式
-  → 全部超时 → 本地模式
-```
+**连接模式切换**（用户显式选择，不自动降级）:
+- 启动时按已保存的 PreferredMode/URL 恢复模式，不探测
+- `SetMode(Remote)` / `SetMode(Local)` 显式切换
+- `CheckRemoteAvailableAsync()` 仅探测远程可用性，用于 UI 按钮状态（远程不可用时仍保持当前模式）
 
 ### 3. 错误处理
 
