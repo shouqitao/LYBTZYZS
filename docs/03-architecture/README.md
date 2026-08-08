@@ -48,6 +48,12 @@
 | 15 | [Mapperly](15-mapperly.md) | 映射规范 |
 | 16 | [同步协议](16-sync-protocol.md) | v2.0 数据同步设计 |
 
+### 整合方案
+
+| 文档 | 内容 |
+|------|------|
+| [15-solution-integration-plan.md](15-solution-integration-plan.md) | 整体整合方案（SSOT）：项目合并（35→30）+ 机制集中定义（日志/异常）+ P0 缺陷 + C 批次规划。**当前状态：定稿待执行（C-0 起）** |
+
 ### 子目录
 
 | 目录 | 内容 |
