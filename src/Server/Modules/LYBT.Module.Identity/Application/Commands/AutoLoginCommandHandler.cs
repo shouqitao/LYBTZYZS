@@ -1,0 +1,36 @@
+using MediatR;
+using LYBT.Module.Identity.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Auth;
+using Microsoft.Extensions.Logging;
+
+namespace LYBT.Module.Identity.Application.Commands;
+
+public class AutoLoginCommandHandler : IRequestHandler<AutoLoginCommand, Result<LoginResponse>>
+{
+    private readonly IJwtService _jwtService;
+    private readonly ILogger<AutoLoginCommandHandler> _logger;
+
+    public AutoLoginCommandHandler(
+        IJwtService jwtService,
+        ILogger<AutoLoginCommandHandler> logger)
+    {
+        _jwtService = jwtService;
+        _logger = logger;
+    }
+
+    public Task<Result<LoginResponse>> Handle(
+        AutoLoginCommand request, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("[Handler] AutoLogin - TokenLength={TokenLength} IpAddress={IpAddress}",
+            request.Token?.Length ?? 0, request.IpAddress ?? "unknown");
+
+        if (string.IsNullOrEmpty(request.Token))
+        {
+            return Task.FromResult(Result<LoginResponse>.Failure("Auto login token is required."));
+        }
+
+        var result = _jwtService.ValidateAutoLoginToken(request.Token);
+        return Task.FromResult(result);
+    }
+}

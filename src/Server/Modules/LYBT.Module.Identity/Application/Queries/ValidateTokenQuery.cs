@@ -1,0 +1,11 @@
+using MediatR;
+using LYBT.Shared.Models.Contracts.Common;
+
+namespace LYBT.Module.Identity.Application.Queries;
+
+/// <summary>
+/// 验证令牌有效性查询。
+/// </summary>
+public record ValidateTokenQuery(
+    string Token
+) : IRequest<Result<ValidateTokenResult>>;

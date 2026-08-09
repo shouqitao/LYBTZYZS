@@ -1,0 +1,11 @@
+using MediatR;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Auth;
+
+namespace LYBT.Module.Identity.Application.Commands;
+
+public record AutoLoginCommand(
+    string Token,
+    string? IpAddress = null,
+    string? UserAgent = null
+) : IRequest<Result<LoginResponse>>;
