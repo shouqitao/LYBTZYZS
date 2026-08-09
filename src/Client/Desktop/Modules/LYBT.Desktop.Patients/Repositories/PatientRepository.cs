@@ -126,6 +126,26 @@ public sealed class PatientRepository
 
     #endregion
 
+    #region Restore
+
+    public async Task<PatientDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default)
+    {
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Patients.RestoreAsync(id);
+                if (!response.Success || response.Data == null)
+                    throw new InvalidOperationException(response.Message ?? "恢复患者失败");
+
+                Logger.LogInformation("[REPO] Patient.Restore completed - Id={Id}", id);
+                return response.Data;
+            },
+            "Restore",
+            LogLevel.Information);
+    }
+
+    #endregion
+
     #region Batch operations
 
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)

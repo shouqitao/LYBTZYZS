@@ -11,7 +11,7 @@ namespace LYBT.Desktop.Users.ViewModels.Handlers;
 
 /// <summary>
 /// 用户状态处理实现
-/// RestoreAsync 复用基类统一实现，ToggleUserStatusAsync 独立实现 (走 UserService 元组模式)
+/// RestoreAsync/ToggleStatusAsync 均复用基类统一模式
 /// </summary>
 public class UserStatusHandler : BaseStatusHandler<UserListDto>, IUserStatusHandler
 {
@@ -32,33 +32,20 @@ public class UserStatusHandler : BaseStatusHandler<UserListDto>, IUserStatusHand
     protected override string EntityTypeName => "用户";
     protected override Guid GetEntityId(UserListDto e) => e.Id;
     protected override string GetEntityDisplayName(UserListDto e) => e.RealName ?? e.UserName;
+    protected override CommonStatus GetEntityStatus(UserListDto e) => e.Status;
 
     protected override async Task<object?> ExecuteRestoreAsync(Guid id)
         => await _userRepository.RestoreAsync(id);
 
+    protected override async Task<CommonStatus?> ExecuteToggleStatusAsync(Guid id)
+    {
+        var result = await _userService.ToggleStatusAsync(id);
+        return result.Success ? result.Data?.Status : null;
+    }
+
     /// <inheritdoc/>
     public async Task<bool> ToggleUserStatusAsync(UserListDto user)
-    {
-        var action = user.Status == CommonStatus.Enabled ? "禁用" : "启用";
-        try
-        {
-            var result = await _userService.ToggleStatusAsync(user.Id);
-            if (result.Success)
-            {
-                Logger.LogInformation("成功{Action}用户: {UserName}", action, user.UserName);
-                return true;
-            }
-
-            await Dialog.ShowErrorAsync(result.Error ?? "切换用户状态失败", "操作失败");
-            return false;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "切换用户状态失败");
-            await Dialog.ShowErrorAsync("切换用户状态失败", "操作失败");
-            return false;
-        }
-    }
+        => await ToggleStatusAsync(user);
 
     /// <inheritdoc/>
     public bool CanToggleUserStatus(UserListDto? user, bool isBusy) => user != null && !isBusy;

@@ -1,10 +1,10 @@
 using FluentAssertions;
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Infrastructure.Services;
-using LYBT.Desktop.MedicalCase.Mappers;
 using LYBT.Desktop.MedicalCase.ViewModels;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.MedicalCase.ViewModels.Items;
@@ -34,7 +34,6 @@ public class MedicalCaseMasterDetailViewModelTests
     private readonly IDesktopCacheManager _cacheManager;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<MedicalCaseMasterDetailViewModel> _logger;
-    private readonly MedicalCaseDetailModelMapper _mapper;
 
     // MasterDetailServices 组件
     private readonly IListViewServices<MedicalCaseListDto> _listViewServices;
@@ -99,7 +98,6 @@ public class MedicalCaseMasterDetailViewModelTests
         _medicalCaseService = Substitute.For<IMedicalCaseService>();
         _herbSearchProvider = Substitute.For<IHerbSearchProvider>();
         _cacheManager = Substitute.For<IDesktopCacheManager>();
-        _mapper = new MedicalCaseDetailModelMapper();
     }
 
     private MedicalCaseMasterDetailViewModel CreateSut()
@@ -110,7 +108,6 @@ public class MedicalCaseMasterDetailViewModelTests
             _medicalCaseService,
             _herbSearchProvider,
             _cacheManager,
-            _mapper,
             _loggerFactory);
     }
 
@@ -136,7 +133,6 @@ public class MedicalCaseMasterDetailViewModelTests
             null!,
             _herbSearchProvider,
             _cacheManager,
-            _mapper,
             _loggerFactory);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("medicalCaseService");
@@ -152,7 +148,6 @@ public class MedicalCaseMasterDetailViewModelTests
             _medicalCaseService,
             null!,
             _cacheManager,
-            _mapper,
             _loggerFactory);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("herbSearchProvider");
@@ -168,7 +163,6 @@ public class MedicalCaseMasterDetailViewModelTests
             _medicalCaseService,
             _herbSearchProvider,
             null!,
-            _mapper,
             _loggerFactory);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("cacheManager");
@@ -269,10 +263,10 @@ public class MedicalCaseMasterDetailViewModelTests
         // Arrange
         var sut = CreateSut();
         var listItem = CreateMedicalCaseListDto();
-        MedicalCaseDetailDto detailDto = CreateMedicalCaseDetailDto();
+        var detailModel = CreateMedicalCaseDetailModel();
 
         _medicalCaseService.LoadDetailsAsync(listItem.Id, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<(bool, MedicalCaseDetailDto?, string?)>((true, (MedicalCaseDetailDto?)detailDto, (string?)null)));
+            .Returns(Task.FromResult(CommandResult<MedicalCaseDetailModel>.Succeeded(detailModel)));
 
         // Act
         await sut.InvokeLoadDetailAsync(listItem);
@@ -293,7 +287,7 @@ public class MedicalCaseMasterDetailViewModelTests
         var listItem = CreateMedicalCaseListDto();
 
         _medicalCaseService.LoadDetailsAsync(listItem.Id, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<(bool, MedicalCaseDetailDto?, string?)>((true, (MedicalCaseDetailDto?)null, (string?)null)));
+            .Returns(Task.FromResult(CommandResult<MedicalCaseDetailModel>.NotFound()));
 
         // Act
         await sut.InvokeLoadDetailAsync(listItem);
@@ -311,7 +305,7 @@ public class MedicalCaseMasterDetailViewModelTests
         var exception = new Exception("Database connection failed");
 
         _medicalCaseService.LoadDetailsAsync(listItem.Id, Arg.Any<CancellationToken>())
-            .Returns(Task.FromException<(bool success, MedicalCaseDetailDto? detail, string? errorMessage)>(exception));
+            .Returns(Task.FromException<CommandResult<MedicalCaseDetailModel>>(exception));
 
         // Act
         await sut.InvokeLoadDetailAsync(listItem);
@@ -427,7 +421,7 @@ public class MedicalCaseMasterDetailViewModelTests
         var sut = CreateSut();
         var listItem = CreateMedicalCaseListDto();
 
-        _medicalCaseService.CancelMedicalCaseAsync(listItem.Id, Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<(bool, string?)>((true, (string?)null)));
+        _medicalCaseService.CancelMedicalCaseAsync(listItem.Id, Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(CommandResult<bool>.Succeeded(true)));
 
         // Act
         var result = await sut.DeleteItemAsync(listItem);
@@ -445,7 +439,7 @@ public class MedicalCaseMasterDetailViewModelTests
         var sut = CreateSut();
         var listItem = CreateMedicalCaseListDto();
 
-        _medicalCaseService.CancelMedicalCaseAsync(listItem.Id, Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult((false, "delete failed")));
+        _medicalCaseService.CancelMedicalCaseAsync(listItem.Id, Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(CommandResult<bool>.Failed("delete failed")));
 
         // Act
         var result = await sut.DeleteItemAsync(listItem);

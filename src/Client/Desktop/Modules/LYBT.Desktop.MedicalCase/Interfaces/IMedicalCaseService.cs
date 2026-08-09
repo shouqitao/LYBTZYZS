@@ -1,4 +1,6 @@
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -19,7 +21,7 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <summary>
         /// 加载医案详情并缓存
         /// </summary>
-        Task<(bool success, MedicalCaseDetailDto? detail, string? errorMessage)> LoadDetailsAsync(Guid medicalCaseId, CancellationToken ct = default);
+        Task<CommandResult<MedicalCaseDetailModel>> LoadDetailsAsync(Guid medicalCaseId, CancellationToken ct = default);
 
         /// <summary>
         /// 缓存的医案详情
@@ -59,7 +61,7 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <summary>
         /// 保存后完成医案
         /// </summary>
-        Task<(bool Success, string? Error)> SaveAndCompleteAsync(
+        Task<CommandResult<bool>> SaveAndCompleteAsync(
             Guid medicalCaseId,
             ConsultationInputDto? consultation,
             PrescriptionInputDto? prescription,
@@ -72,7 +74,7 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <summary>
         /// 保存后挂起医案
         /// </summary>
-        Task<(bool Success, string? Error)> SaveAndSuspendAsync(
+        Task<CommandResult<bool>> SaveAndSuspendAsync(
             Guid medicalCaseId,
             ConsultationInputDto? consultation,
             PrescriptionInputDto? prescription,
@@ -82,7 +84,7 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <summary>
         /// 保存后取消医案
         /// </summary>
-        Task<(bool Success, string? Error)> SaveAndCancelAsync(
+        Task<CommandResult<bool>> SaveAndCancelAsync(
             Guid medicalCaseId,
             ConsultationInputDto? consultation,
             PrescriptionInputDto? prescription,

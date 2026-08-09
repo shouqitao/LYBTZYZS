@@ -345,10 +345,10 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
             {
                 SetBusyWithMessage(true, "正在关闭旧医案...");
                 var cancelResult = await _medicalCaseService.CancelMedicalCaseAsync(suspendedCase.MedicalCaseId.Value);
-                if (!cancelResult.success)
+                if (!cancelResult.Success)
                 {
-                    Logger.LogWarning("取消挂起医案失败：{Error}", cancelResult.errorMessage);
-                    await ShowErrorDialogAsync("关闭旧医案失败：" + cancelResult.errorMessage);
+                    Logger.LogWarning("取消挂起医案失败：{Error}", cancelResult.Error);
+                    await ShowErrorDialogAsync("关闭旧医案失败：" + cancelResult.Error);
                     SetBusyWithMessage(false, null);
                     return;
                 }

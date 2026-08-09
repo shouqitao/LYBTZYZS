@@ -66,6 +66,11 @@ public interface IHerbRepository
     Task<HerbDetailDto?> ToggleStatusAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
+    /// 恢复已删除的药材
+    /// </summary>
+    Task<HerbDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>
     /// 批量删除药材
     /// </summary>
     Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default);

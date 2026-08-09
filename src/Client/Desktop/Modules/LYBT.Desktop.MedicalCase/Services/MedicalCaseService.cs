@@ -1,6 +1,9 @@
 using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Desktop.MedicalCase.Mappers;
+using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -23,6 +26,7 @@ public class MedicalCaseService : IMedicalCaseService
     private readonly IMedicalCaseCommandService _commandService;
     private readonly IMedicalCaseLifecycleService _lifecycleService;
     private readonly MedicalCaseEditContext _context;
+    private readonly MedicalCaseDetailModelMapper _mapper;
     private readonly ISessionManager? _sessionManager;
     private readonly ILogger<MedicalCaseService> _logger;
 
@@ -32,6 +36,7 @@ public class MedicalCaseService : IMedicalCaseService
         IMedicalCaseCommandService commandService,
         IMedicalCaseLifecycleService lifecycleService,
         MedicalCaseEditContext context,
+        MedicalCaseDetailModelMapper mapper,
         ILogger<MedicalCaseService> logger,
         ISessionManager? sessionManager = null)
     {
@@ -40,6 +45,7 @@ public class MedicalCaseService : IMedicalCaseService
         _commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
         _lifecycleService = lifecycleService ?? throw new ArgumentNullException(nameof(lifecycleService));
         _context = context ?? throw new ArgumentNullException(nameof(context));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _sessionManager = sessionManager;
     }
@@ -88,16 +94,16 @@ public class MedicalCaseService : IMedicalCaseService
     public virtual async Task ReloadAsync(CancellationToken ct = default)
         => await _lifecycleService.ReloadAsync(ct);
 
-    public virtual async Task<(bool success, string? errorMessage)> SuspendAsync(Guid medicalCaseId, CancellationToken ct = default)
+    public virtual async Task<CommandResult<bool>> SuspendAsync(Guid medicalCaseId, CancellationToken ct = default)
         => await _lifecycleService.SuspendAsync(medicalCaseId, ct);
 
-    public virtual async Task<(bool success, string? errorMessage)> CancelMedicalCaseAsync(Guid medicalCaseId, string? reason = null, CancellationToken ct = default)
+    public virtual async Task<CommandResult<bool>> CancelMedicalCaseAsync(Guid medicalCaseId, string? reason = null, CancellationToken ct = default)
         => await _lifecycleService.CancelMedicalCaseAsync(medicalCaseId, reason, ct);
 
-    public virtual async Task<(bool success, string? errorMessage)> CompleteMedicalCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
+    public virtual async Task<CommandResult<bool>> CompleteMedicalCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
         => await _lifecycleService.CompleteMedicalCaseAsync(medicalCaseId, ct);
 
-    public virtual async Task<(bool success, string? errorMessage)> ResumeSuspendedAsync(Guid medicalCaseId, CancellationToken ct = default)
+    public virtual async Task<CommandResult<bool>> ResumeSuspendedAsync(Guid medicalCaseId, CancellationToken ct = default)
         => await _lifecycleService.ResumeSuspendedAsync(medicalCaseId, ct);
 
     public virtual async Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
@@ -111,7 +117,7 @@ public class MedicalCaseService : IMedicalCaseService
     public ConsultationDetailDto? CachedConsultation => _context.CachedConsultation;
     public PrescriptionDetailDto? CachedPrescription => _context.CachedPrescription;
 
-    public async Task<(bool success, MedicalCaseDetailDto? detail, string? errorMessage)> LoadDetailsAsync(Guid medicalCaseId, CancellationToken ct = default)
+    public async Task<CommandResult<MedicalCaseDetailModel>> LoadDetailsAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
         try
         {
@@ -121,20 +127,22 @@ public class MedicalCaseService : IMedicalCaseService
             if (detail == null)
             {
                 _logger.LogWarning("[SVC] MedicalCase.LoadDetails → NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return (false, null, "未找到医案数据");
+                return CommandResult<MedicalCaseDetailModel>.NotFound("未找到医案数据");
             }
 
             _context.CachedMedicalCase = detail;
             _context.CachedConsultation = detail.Consultation;
             _context.CachedPrescription = detail.Prescription;
 
+            var model = _mapper.ToItem(detail);
+
             _logger.LogInformation("[SVC] MedicalCase.LoadDetails completed");
-            return (true, detail, null);
+            return CommandResult<MedicalCaseDetailModel>.Succeeded(model);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "[SVC] MedicalCase.LoadDetails failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return (false, null, ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载医案数据", ex));
+            return CommandResult<MedicalCaseDetailModel>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载医案数据", ex));
         }
     }
 
@@ -180,7 +188,7 @@ public class MedicalCaseService : IMedicalCaseService
         }
     }
 
-    public async Task<(bool Success, string? Error)> SaveAndCompleteAsync(
+    public async Task<CommandResult<bool>> SaveAndCompleteAsync(
         Guid medicalCaseId,
         ConsultationInputDto? consultation,
         PrescriptionInputDto? prescription,
@@ -191,17 +199,17 @@ public class MedicalCaseService : IMedicalCaseService
         CancellationToken ct = default)
     {
         if (consultationValidator != null && !consultationValidator.Validate())
-            return (false, consultationValidator.ValidationMessage);
+            return CommandResult<bool>.Failed(consultationValidator.ValidationMessage);
         if (isPrescriptionEnabled && prescriptionValidator != null && !prescriptionValidator.Validate())
-            return (false, prescriptionValidator.ValidationMessage);
+            return CommandResult<bool>.Failed(prescriptionValidator.ValidationMessage);
 
         var (saveOk, _, saveError) = await AggregateSaveAsync(medicalCaseId, consultation, prescription, remark);
-        if (!saveOk) return (false, saveError);
+        if (!saveOk) return CommandResult<bool>.Failed(saveError ?? "保存失败");
 
         return await CompleteMedicalCaseAsync(medicalCaseId);
     }
 
-    public async Task<(bool Success, string? Error)> SaveAndSuspendAsync(
+    public async Task<CommandResult<bool>> SaveAndSuspendAsync(
         Guid medicalCaseId,
         ConsultationInputDto? consultation,
         PrescriptionInputDto? prescription,
@@ -209,12 +217,12 @@ public class MedicalCaseService : IMedicalCaseService
         CancellationToken ct = default)
     {
         var (saveOk, _, saveError) = await AggregateSaveAsync(medicalCaseId, consultation, prescription, remark);
-        if (!saveOk) return (false, saveError);
+        if (!saveOk) return CommandResult<bool>.Failed(saveError ?? "保存失败");
 
         return await SuspendAsync(medicalCaseId);
     }
 
-    public async Task<(bool Success, string? Error)> SaveAndCancelAsync(
+    public async Task<CommandResult<bool>> SaveAndCancelAsync(
         Guid medicalCaseId,
         ConsultationInputDto? consultation,
         PrescriptionInputDto? prescription,

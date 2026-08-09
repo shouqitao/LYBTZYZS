@@ -176,9 +176,9 @@ public partial class PendingQueueViewModel : ChildViewModelBase
                 {
                     // View mode: suspend via service
                     var switchResult = await _medicalCaseService.SuspendAsync(currentMedicalCaseId);
-                    if (!switchResult.success)
+                    if (!switchResult.Success)
                     {
-                        Logger.LogWarning("切换时暂存当前医案失败：{Error}", switchResult.errorMessage);
+                        Logger.LogWarning("切换时暂存当前医案失败：{Error}", switchResult.Error);
                     }
                     Logger.LogInformation("查看模式，直接切换到患者：{PatientName}", pendingCase.PatientName);
                 }
@@ -246,10 +246,10 @@ public partial class PendingQueueViewModel : ChildViewModelBase
             if (pendingCase.MedicalCaseId.HasValue)
             {
                 var cancelResult = await _medicalCaseService.CancelMedicalCaseAsync(pendingCase.MedicalCaseId.Value);
-                if (!cancelResult.success)
+                if (!cancelResult.Success)
                 {
-                    Logger.LogWarning("取消挂起医案失败：{Error}", cancelResult.errorMessage);
-                    await Host.ShowErrorAsync("关闭旧医案失败：" + cancelResult.errorMessage);
+                    Logger.LogWarning("取消挂起医案失败：{Error}", cancelResult.Error);
+                    await Host.ShowErrorAsync("关闭旧医案失败：" + cancelResult.Error);
                     Host.SetBusy(false);
                     return;
                 }

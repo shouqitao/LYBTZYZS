@@ -1,4 +1,5 @@
 using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Shared.Models.Contracts.Common;
@@ -56,7 +57,7 @@ internal class MedicalCaseLifecycleService : IMedicalCaseLifecycleService
         }
     }
 
-    public virtual async Task<(bool success, string? errorMessage)> SuspendAsync(Guid medicalCaseId, CancellationToken ct = default)
+    public virtual async Task<CommandResult<bool>> SuspendAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
         try
         {
@@ -65,19 +66,19 @@ internal class MedicalCaseLifecycleService : IMedicalCaseLifecycleService
             if (!response.Success)
             {
                 _logger.LogWarning("[LC] MedicalCase.Suspend → Failed - Message={Message}", response.Message);
-                return (false, response.Message ?? "挂起医案失败");
+                return CommandResult<bool>.Failed(response.Message ?? "挂起医案失败");
             }
             _logger.LogInformation("[LC] MedicalCase.Suspend completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return (true, null);
+            return CommandResult<bool>.Succeeded(true);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "[LC] MedicalCase.Suspend failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("挂起", ex));
+            return CommandResult<bool>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("挂起", ex));
         }
     }
 
-    public virtual async Task<(bool success, string? errorMessage)> CancelMedicalCaseAsync(Guid medicalCaseId, string? reason = null, CancellationToken ct = default)
+    public virtual async Task<CommandResult<bool>> CancelMedicalCaseAsync(Guid medicalCaseId, string? reason = null, CancellationToken ct = default)
     {
         try
         {
@@ -88,22 +89,22 @@ internal class MedicalCaseLifecycleService : IMedicalCaseLifecycleService
             if (data != null)
             {
                 _logger.LogInformation("[LC] MedicalCase.Cancel completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return (true, null);
+                return CommandResult<bool>.Succeeded(true);
             }
             else
             {
                 _logger.LogWarning("[LC] MedicalCase.Cancel failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return (false, "取消医案失败");
+                return CommandResult<bool>.Failed("取消医案失败");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "[LC] MedicalCase.Cancel failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("取消", ex));
+            return CommandResult<bool>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("取消", ex));
         }
     }
 
-    public virtual async Task<(bool success, string? errorMessage)> CompleteMedicalCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
+    public virtual async Task<CommandResult<bool>> CompleteMedicalCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
         try
         {
@@ -118,22 +119,22 @@ internal class MedicalCaseLifecycleService : IMedicalCaseLifecycleService
             if (data != null)
             {
                 _logger.LogInformation("[LC] MedicalCase.Complete completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return (true, null);
+                return CommandResult<bool>.Succeeded(true);
             }
             else
             {
                 _logger.LogWarning("[LC] MedicalCase.Complete failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return (false, "完成医案失败");
+                return CommandResult<bool>.Failed("完成医案失败");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "[LC] MedicalCase.Complete failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("完成", ex));
+            return CommandResult<bool>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("完成", ex));
         }
     }
 
-    public virtual async Task<(bool success, string? errorMessage)> ResumeSuspendedAsync(Guid medicalCaseId, CancellationToken ct = default)
+    public virtual async Task<CommandResult<bool>> ResumeSuspendedAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
         try
         {
@@ -148,18 +149,18 @@ internal class MedicalCaseLifecycleService : IMedicalCaseLifecycleService
             if (data != null)
             {
                 _logger.LogInformation("[LC] MedicalCase.ResumeSuspended completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return (true, null);
+                return CommandResult<bool>.Succeeded(true);
             }
             else
             {
                 _logger.LogWarning("[LC] MedicalCase.ResumeSuspended failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return (false, "恢复医案失败");
+                return CommandResult<bool>.Failed("恢复医案失败");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "[LC] MedicalCase.ResumeSuspended failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return (false, ClientErrorMessageMapper.GetSafeOperationFailureMessage("恢复", ex));
+            return CommandResult<bool>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("恢复", ex));
         }
     }
 

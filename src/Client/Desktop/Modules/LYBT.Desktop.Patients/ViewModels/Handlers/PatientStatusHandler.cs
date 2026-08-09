@@ -3,6 +3,7 @@ using LYBT.Desktop.Infrastructure.ViewModels.Handlers;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Patients.ViewModels.Handlers;
@@ -26,7 +27,8 @@ public class PatientStatusHandler : BaseStatusHandler<PatientListDto>, IPatientS
     protected override string EntityTypeName => "患者";
     protected override Guid GetEntityId(PatientListDto e) => e.Id;
     protected override string GetEntityDisplayName(PatientListDto e) => e.Name;
+    protected override CommonStatus GetEntityStatus(PatientListDto e) => e.Status;
 
-    protected override Task<object?> ExecuteRestoreAsync(Guid id)
-        => Task.FromResult<object?>(null);
+    protected override async Task<object?> ExecuteRestoreAsync(Guid id)
+        => await _patientRepository.RestoreAsync(id);
 }

@@ -4,7 +4,6 @@ using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Desktop.MedicalCase.Interfaces;
-using LYBT.Desktop.MedicalCase.Mappers;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.MedicalCase.ViewModels.Workspace;
 using LYBT.Desktop.Foundation.ExceptionHandling;
@@ -26,7 +25,6 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
 {
     private readonly IMedicalCaseService _medicalCaseService;
     private readonly IHerbSearchProvider _herbSearchProvider;
-    private readonly MedicalCaseDetailModelMapper _mapper;
     private readonly IDesktopCacheManager _cacheManager;
     private readonly ILoggerFactory _loggerFactory;
 
@@ -60,14 +58,12 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         IMedicalCaseService medicalCaseService,
         IHerbSearchProvider herbSearchProvider,
         IDesktopCacheManager cacheManager,
-        MedicalCaseDetailModelMapper mapper,
         ILoggerFactory loggerFactory)
         : base(viewModelServices, masterDetailServices)
     {
         _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
         _herbSearchProvider = herbSearchProvider ?? throw new ArgumentNullException(nameof(herbSearchProvider));
         _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
-        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
 
         // Create child VMs with minimal IWorkspaceHost adapter
@@ -113,16 +109,14 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
     {
         try
         {
-            var (success, detail, errorMessage) = await _medicalCaseService.LoadDetailsAsync(item.Id);
-            if (!success || detail == null)
+            var result = await _medicalCaseService.LoadDetailsAsync(item.Id);
+            if (!result.Success || result.Data == null)
             {
                 Logger.LogWarning("医案详情不存在: {MedicalCaseId}", item.Id);
                 return;
             }
 
-            // Map to display model
-            var displayModel = _mapper.ToItem(detail);
-            MasterDetailServices.DetailEditor.LoadDetail(displayModel);
+            MasterDetailServices.DetailEditor.LoadDetail(result.Data);
 
             // Initialize child VMs from cached DTOs
             if (_medicalCaseService.CachedConsultation != null)
@@ -181,17 +175,17 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
     /// <summary>删除项</summary>
     protected override async Task<bool> DeleteItemAsync(MedicalCaseListDto item)
     {
-        var (success, errorMessage) = await _medicalCaseService.CancelMedicalCaseAsync(item.Id);
-        if (!success)
+        var result = await _medicalCaseService.CancelMedicalCaseAsync(item.Id);
+        if (!result.Success)
         {
-            MasterDetailServices.ErrorHandler.SetError("Delete", errorMessage ?? "删除医案失败");
+            MasterDetailServices.ErrorHandler.SetError("Delete", result.Error ?? "删除医案失败");
         }
         else
         {
             Logger.LogInformation("医案删除成功: {MedicalCaseId}", item.Id);
             _cacheManager.InvalidateMedicalCaseCaches();
         }
-        return success;
+        return result.Success;
     }
 
     #endregion

@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -42,30 +43,26 @@ public interface IMedicalCaseLifecycleService
     /// 挂起医案
     /// </summary>
     /// <param name="medicalCaseId">医案ID</param>
-    /// <returns>(是否成功, 错误信息)</returns>
-    Task<(bool success, string? errorMessage)> SuspendAsync(Guid medicalCaseId, CancellationToken ct = default);
+    Task<CommandResult<bool>> SuspendAsync(Guid medicalCaseId, CancellationToken ct = default);
 
     /// <summary>
     /// 取消医案
     /// </summary>
     /// <param name="medicalCaseId">医案ID</param>
     /// <param name="reason">取消原因</param>
-    /// <returns>(是否成功, 错误信息)</returns>
-    Task<(bool success, string? errorMessage)> CancelMedicalCaseAsync(Guid medicalCaseId, string? reason = null, CancellationToken ct = default);
+    Task<CommandResult<bool>> CancelMedicalCaseAsync(Guid medicalCaseId, string? reason = null, CancellationToken ct = default);
 
     /// <summary>
     /// 完成医案
     /// </summary>
     /// <param name="medicalCaseId">医案ID</param>
-    /// <returns>(是否成功, 错误信息)</returns>
-    Task<(bool success, string? errorMessage)> CompleteMedicalCaseAsync(Guid medicalCaseId, CancellationToken ct = default);
+    Task<CommandResult<bool>> CompleteMedicalCaseAsync(Guid medicalCaseId, CancellationToken ct = default);
 
     /// <summary>
     /// 恢复挂起医案为Active状态
     /// </summary>
     /// <param name="medicalCaseId">医案ID</param>
-    /// <returns>(是否成功, 错误信息)</returns>
-    Task<(bool success, string? errorMessage)> ResumeSuspendedAsync(Guid medicalCaseId, CancellationToken ct = default);
+    Task<CommandResult<bool>> ResumeSuspendedAsync(Guid medicalCaseId, CancellationToken ct = default);
 
     /// <summary>
     /// 关闭医案

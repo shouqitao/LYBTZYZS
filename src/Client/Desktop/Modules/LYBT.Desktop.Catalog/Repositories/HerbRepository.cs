@@ -141,6 +141,22 @@ public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, 
             LogLevel.Information);
     }
 
+    public async Task<HerbDetailDto?> RestoreAsync(Guid id, CancellationToken ct = default)
+    {
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.Herbs.RestoreAsync(id);
+                if (!response.Success || response.Data == null)
+                    throw new InvalidOperationException(response.Message ?? "恢复药材失败");
+
+                Logger.LogInformation("[REPO] Herb.Restore completed - Id={Id}", id);
+                return response.Data;
+            },
+            "Restore",
+            LogLevel.Information);
+    }
+
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         return await ExecuteBatchDeleteAsync(

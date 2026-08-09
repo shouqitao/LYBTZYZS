@@ -414,8 +414,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         {
             SetBusy(true, "正在加载医案数据...");
             var result = await _medicalCaseService.LoadDetailsAsync(MedicalCaseId);
-            if (!result.success) return;
-            if (result.detail?.Prescription != null) IsPrescriptionEnabled = true;
+            if (!result.Success) return;
+            if (result.Data?.PrescriptionItems?.Count > 0) IsPrescriptionEnabled = true;
             NeedsPrescription = true;
         }
         catch (Exception ex)
@@ -436,7 +436,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         {
             Logger.LogInformation("[CMD] ResumeSuspended -> MedicalCaseId={MedicalCaseId}", MedicalCaseId);
             var result = await _medicalCaseService.ResumeSuspendedAsync(MedicalCaseId);
-            if (result.success) medicalCase.CaseStatus = MedicalCaseStatus.Active;
+            if (result.Success) medicalCase.CaseStatus = MedicalCaseStatus.Active;
         }
     }
 

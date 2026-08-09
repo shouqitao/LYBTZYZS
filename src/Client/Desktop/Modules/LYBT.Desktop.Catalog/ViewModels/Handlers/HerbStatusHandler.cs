@@ -15,14 +15,17 @@ namespace LYBT.Desktop.Catalog.ViewModels.Handlers;
 public class HerbStatusHandler : BaseStatusHandler<HerbListDto>, IHerbStatusHandler
 {
     private readonly IHerbService _herbService;
+    private readonly IHerbRepository _herbRepository;
 
     public HerbStatusHandler(
         IHerbService herbService,
+        IHerbRepository herbRepository,
         IMasterDetailServices<HerbListDto, HerbDetailModel> masterDetailServices,
         ILogger<HerbStatusHandler> logger)
         : base(masterDetailServices.Dialog, logger)
     {
         _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
+        _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
     }
 
     protected override string EntityTypeName => "药材";
@@ -30,8 +33,8 @@ public class HerbStatusHandler : BaseStatusHandler<HerbListDto>, IHerbStatusHand
     protected override string GetEntityDisplayName(HerbListDto e) => e.Name;
     protected override CommonStatus GetEntityStatus(HerbListDto e) => e.Status;
 
-    protected override Task<object?> ExecuteRestoreAsync(Guid id)
-        => Task.FromResult<object?>(null);
+    protected override async Task<object?> ExecuteRestoreAsync(Guid id)
+        => await _herbRepository.RestoreAsync(id);
 
     protected override async Task<CommonStatus?> ExecuteToggleStatusAsync(Guid id)
     {
