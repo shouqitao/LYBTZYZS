@@ -18,16 +18,9 @@
 
     <!--  单列布局: 100%宽度  -->
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>    <!-- Main content -->
-            <RowDefinition Height="Auto"/> <!-- Action bar -->
-        </Grid.RowDefinitions>
-
         <!--  BaseDetailContainer (查看/编辑)  -->
         <views:BaseDetailContainer
             Title="{Binding State.HeaderTitle}"
-            Grid.Row="0"
-            Grid.Column="0"
             Margin="12,0,0,0"
             GoBackCommand="{Binding BackCommand}"
             IsEditMode="{Binding State.IsEditing, Mode=OneWay}"
@@ -280,39 +273,6 @@
                 </Grid>
             </views:BaseDetailContainer.FooterContent>
         </views:BaseDetailContainer>
-
-        <!-- Bottom Action Bar -->
-        <Border Grid.Row="1" Background="{DynamicResource MaterialDesignPaper}"
-                BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}" BorderThickness="0,1,0,0"
-                Padding="16,12">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="暂存医案"
-                        Command="{Binding Commands.SuspendCommand}"
-                        Style="{StaticResource MaterialDesignRaisedButton}" Background="{DynamicResource TcmGoldBrush}" Foreground="White" BorderThickness="0"
-                        Margin="0,0,8,0"
-                        Padding="16,8"/>
-                
-                <Button Content="打印处方笺"
-                        Command="{Binding Commands.PrintCommand}"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
-                        IsEnabled="{Binding State.CanPrint}"
-                        Margin="0,0,8,0"
-                        Padding="16,8"/>
-                
-                <Button Content="导出PDF"
-                        Command="{Binding Commands.ExportPdfCommand}"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
-                        IsEnabled="{Binding State.CanPrint}"
-                        Margin="0,0,8,0"
-                        Padding="16,8"/>
-                
-                <Button Content="完成看诊"
-                        Command="{Binding Commands.CompleteCommand}"
-                        Style="{StaticResource MaterialDesignRaisedButton}" Background="{DynamicResource TcmGreenBrush}" Foreground="White" BorderThickness="0"
-                        IsEnabled="{Binding State.CanComplete}"
-                        Padding="16,8"/>
-            </StackPanel>
-        </Border>
     </Grid>
 </UserControl>
 
