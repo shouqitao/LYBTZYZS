@@ -1,7 +1,6 @@
-using System.ComponentModel;
 using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Desktop.Formula.Models.Items;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 
@@ -13,7 +12,7 @@ namespace LYBT.Desktop.Formula.ViewModels;
 /// 封装 FormulaEditContext，提供 DTO 初始化和数据提取
 /// 管理药材编辑列表
 /// </summary>
-public partial class FormulaEditorViewModel : ObservableObject
+public partial class FormulaEditorViewModel : EditorViewModelBase<FormulaEditContext>
 {
     private FormulaEditContext _formula = FormulaEditContext.CreateNew();
     private readonly ObservableCollection<FormulaHerbItemViewModel> _editHerbItems = new();
@@ -28,11 +27,16 @@ public partial class FormulaEditorViewModel : ObservableObject
     /// <summary>编辑模式下的药材列表</summary>
     public ObservableCollection<FormulaHerbItemViewModel> EditHerbItems => _editHerbItems;
 
-    /// <summary>是否已修改 (脏数据标记)</summary>
-    public bool IsDirty { get; private set; }
-
     /// <summary>药材数量</summary>
     public int HerbCount => _editHerbItems.Count(h => h.HerbId != Guid.Empty);
+
+    protected override FormulaEditContext Context
+    {
+        get => Formula;
+        set => Formula = value;
+    }
+
+    protected override FormulaEditContext CreateNewContext() => FormulaEditContext.CreateNew();
 
     /// <summary>
     /// 从 DTO 初始化 (查看/编辑已有验方)
@@ -73,20 +77,25 @@ public partial class FormulaEditorViewModel : ObservableObject
             _editHerbItems.Add(new FormulaHerbItemViewModel { Unit = string.Empty });
         }
 
-        Formula.PropertyChanged += OnFormulaPropertyChanged;
+        SubscribeContext();
         OnPropertyChanged(nameof(HerbCount));
     }
 
-    /// <summary>
-    /// 初始化为新验方 (新建场景)
-    /// </summary>
-    public void InitializeForNewCase()
+    /// <inheritdoc/>
+    public override void InitializeForNewCase()
     {
-        Formula = FormulaEditContext.CreateNew();
+        base.InitializeForNewCase();
         _editHerbItems.Clear();
         _editHerbItems.Add(new FormulaHerbItemViewModel { Unit = string.Empty });
-        IsDirty = false;
-        Formula.PropertyChanged += OnFormulaPropertyChanged;
+        OnPropertyChanged(nameof(HerbCount));
+    }
+
+    /// <inheritdoc/>
+    public override void Reset()
+    {
+        base.Reset();
+        _editHerbItems.Clear();
+        _editHerbItems.Add(new FormulaHerbItemViewModel { Unit = string.Empty });
         OnPropertyChanged(nameof(HerbCount));
     }
 
@@ -121,12 +130,6 @@ public partial class FormulaEditorViewModel : ObservableObject
             .ToList();
     }
 
-    /// <summary>验证编辑内容</summary>
-    public bool Validate()
-    {
-        return Formula.ValidateAll();
-    }
-
     /// <summary>添加药材行</summary>
     public void AddHerb(IEnumerable<HerbListDto> allHerbs)
     {
@@ -140,21 +143,5 @@ public partial class FormulaEditorViewModel : ObservableObject
     {
         _editHerbItems.Remove(herb);
         OnPropertyChanged(nameof(HerbCount));
-    }
-
-    /// <summary>重置编辑状态</summary>
-    public void Reset()
-    {
-        Formula.PropertyChanged -= OnFormulaPropertyChanged;
-        Formula = FormulaEditContext.CreateNew();
-        _editHerbItems.Clear();
-        _editHerbItems.Add(new FormulaHerbItemViewModel { Unit = string.Empty });
-        IsDirty = false;
-        OnPropertyChanged(nameof(HerbCount));
-    }
-
-    private void OnFormulaPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        IsDirty = true;
     }
 }

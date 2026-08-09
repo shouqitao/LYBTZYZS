@@ -1,6 +1,5 @@
-using System.ComponentModel;
-using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Desktop.Herbs.Models.Items;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Desktop.Herbs.ViewModels;
@@ -11,7 +10,7 @@ namespace LYBT.Desktop.Herbs.ViewModels;
 /// 封装 HerbEditContext，提供 DTO 初始化和数据提取
 /// 替代手动字段映射和 CopyToXxx 模式
 /// </summary>
-public partial class HerbEditorViewModel : ObservableObject
+public partial class HerbEditorViewModel : EditorViewModelBase<HerbEditContext>
 {
     private HerbEditContext _herb = HerbEditContext.CreateNew();
 
@@ -22,8 +21,13 @@ public partial class HerbEditorViewModel : ObservableObject
         set => SetProperty(ref _herb, value);
     }
 
-    /// <summary>是否已修改 (脏数据标记)</summary>
-    public bool IsDirty { get; private set; }
+    protected override HerbEditContext Context
+    {
+        get => Herb;
+        set => Herb = value;
+    }
+
+    protected override HerbEditContext CreateNewContext() => HerbEditContext.CreateNew();
 
     /// <summary>
     /// 从 DTO 初始化 (查看/编辑已有药材)
@@ -50,17 +54,7 @@ public partial class HerbEditorViewModel : ObservableObject
 
         Herb = context;
         IsDirty = false;
-        Herb.PropertyChanged += OnHerbPropertyChanged;
-    }
-
-    /// <summary>
-    /// 初始化为新药材 (新建场景)
-    /// </summary>
-    public void InitializeForNewCase()
-    {
-        Herb = HerbEditContext.CreateNew();
-        IsDirty = false;
-        Herb.PropertyChanged += OnHerbPropertyChanged;
+        SubscribeContext();
     }
 
     /// <summary>
@@ -84,24 +78,5 @@ public partial class HerbEditorViewModel : ObservableObject
             Usage = Herb.Usage?.Trim(),
             Remark = Herb.Remark?.Trim()
         };
-    }
-
-    /// <summary>验证编辑内容</summary>
-    public bool Validate()
-    {
-        return Herb.ValidateAll();
-    }
-
-    /// <summary>重置编辑状态</summary>
-    public void Reset()
-    {
-        Herb.PropertyChanged -= OnHerbPropertyChanged;
-        Herb = HerbEditContext.CreateNew();
-        IsDirty = false;
-    }
-
-    private void OnHerbPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        IsDirty = true;
     }
 }

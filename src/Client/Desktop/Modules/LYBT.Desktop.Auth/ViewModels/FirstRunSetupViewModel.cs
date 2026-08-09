@@ -12,27 +12,11 @@ namespace LYBT.Desktop.Auth.ViewModels;
 /// <summary>
 /// 首次运行配置向导 ViewModel - 单屏欢迎对话框，引导用户配置远程服务器或回退到本地模式
 /// </summary>
-public partial class FirstRunSetupViewModel : DialogViewModelBase
+public partial class FirstRunSetupViewModel : ConnectionTestViewModelBase
 {
-    private readonly IConnectionModeService _connectionModeService;
-    private readonly IConnectionSettingsService _connectionSettingsService;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
-    private string _remoteUrl = string.Empty;
-
-    [ObservableProperty]
-    private ConnectionTestStatus _testStatus = ConnectionTestStatus.Idle;
-
-    [ObservableProperty]
-    private string _testStatusMessage = "尚未测试";
-
     /// <summary>远程服务器最近一次测试是否成功 - 用于驱动"将使用本地模式"提示</summary>
     [ObservableProperty]
     private bool _isRemoteAvailable;
-
-    /// <summary>测试中时禁用测试按钮</summary>
-    public bool IsNotTesting => TestStatus != ConnectionTestStatus.Testing;
 
     /// <summary>已测试且失败 - 显示回退提示</summary>
     public bool ShouldShowFallbackHint => TestStatus == ConnectionTestStatus.Failed && !IsRemoteAvailable;
@@ -41,10 +25,8 @@ public partial class FirstRunSetupViewModel : DialogViewModelBase
         IViewModelServices services,
         IConnectionModeService connectionModeService,
         IConnectionSettingsService connectionSettingsService)
-        : base(services)
+        : base(services, connectionModeService, connectionSettingsService)
     {
-        _connectionModeService = connectionModeService ?? throw new ArgumentNullException(nameof(connectionModeService));
-        _connectionSettingsService = connectionSettingsService ?? throw new ArgumentNullException(nameof(connectionSettingsService));
         Title = "首次运行配置";
     }
 
@@ -57,61 +39,22 @@ public partial class FirstRunSetupViewModel : DialogViewModelBase
         IsRemoteAvailable = false;
     }
 
-    partial void OnTestStatusChanged(ConnectionTestStatus value)
-    {
-        OnPropertyChanged(nameof(IsNotTesting));
-        OnPropertyChanged(nameof(ShouldShowFallbackHint));
-        TestConnectionCommand.NotifyCanExecuteChanged();
-    }
-
     partial void OnIsRemoteAvailableChanged(bool value)
     {
         OnPropertyChanged(nameof(ShouldShowFallbackHint));
     }
 
-    /// <summary>
-    /// 测试远程连接 - 调用 IConnectionModeService.TestRemoteConnectionAsync
-    /// </summary>
-    [RelayCommand(CanExecute = nameof(CanTestConnection))]
-    private async Task TestConnectionAsync()
+    /// <summary>TestStatus 变更后刷新回退提示</summary>
+    protected override void OnTestStatusChangedCore()
     {
-        if (string.IsNullOrWhiteSpace(RemoteUrl))
-        {
-            TestStatus = ConnectionTestStatus.Failed;
-            TestStatusMessage = "请先输入服务器地址";
-            IsRemoteAvailable = false;
-            return;
-        }
-
-        if (!_connectionSettingsService.IsValidUrl(RemoteUrl))
-        {
-            TestStatus = ConnectionTestStatus.Failed;
-            TestStatusMessage = "地址格式无效（需以 http:// 或 https:// 开头）";
-            IsRemoteAvailable = false;
-            return;
-        }
-
-        try
-        {
-            TestStatus = ConnectionTestStatus.Testing;
-            TestStatusMessage = "正在测试连接...";
-
-            var ok = await _connectionModeService.TestRemoteConnectionAsync(RemoteUrl);
-
-            IsRemoteAvailable = ok;
-            TestStatus = ok ? ConnectionTestStatus.Success : ConnectionTestStatus.Failed;
-            TestStatusMessage = ok ? "✓ 可用" : "✗ 不可用";
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "[FIRST-RUN] 测试连接异常");
-            IsRemoteAvailable = false;
-            TestStatus = ConnectionTestStatus.Failed;
-            TestStatusMessage = "✗ 不可用: 无法连接到服务器";
-        }
+        OnPropertyChanged(nameof(ShouldShowFallbackHint));
     }
 
-    private bool CanTestConnection() => TestStatus != ConnectionTestStatus.Testing;
+    /// <summary>测试完成时联动 IsRemoteAvailable</summary>
+    protected override void OnTestCompleted(bool ok)
+    {
+        IsRemoteAvailable = ok;
+    }
 
     /// <summary>
     /// "完成" - 保存远程 URL 并切换到远程模式。仅在校验通过时执行

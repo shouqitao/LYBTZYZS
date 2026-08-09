@@ -1,5 +1,4 @@
-using System.ComponentModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Patients.Models.Items;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
@@ -13,7 +12,7 @@ namespace LYBT.Desktop.Patients.ViewModels;
 /// 封装 PatientEditContext，提供 DTO 初始化和数据提取
 /// 替代手动字段映射和 CopyToXxx 模式
 /// </summary>
-public partial class PatientEditorViewModel : ObservableObject
+public partial class PatientEditorViewModel : EditorViewModelBase<PatientEditContext>
 {
     private PatientEditContext _patient = PatientEditContext.CreateNew();
 
@@ -24,11 +23,16 @@ public partial class PatientEditorViewModel : ObservableObject
         set => SetProperty(ref _patient, value);
     }
 
-    /// <summary>是否已修改 (脏数据标记)</summary>
-    public bool IsDirty { get; private set; }
-
     /// <summary>性别选项 (静态)</summary>
     public static IEnumerable<Gender> GenderOptions => Enum.GetValues<Gender>();
+
+    protected override PatientEditContext Context
+    {
+        get => Patient;
+        set => Patient = value;
+    }
+
+    protected override PatientEditContext CreateNewContext() => PatientEditContext.CreateNew();
 
     /// <summary>
     /// 从 DTO 初始化 (查看/编辑已有患者)
@@ -49,17 +53,7 @@ public partial class PatientEditorViewModel : ObservableObject
 
         Patient = context;
         IsDirty = false;
-        Patient.PropertyChanged += OnPatientPropertyChanged;
-    }
-
-    /// <summary>
-    /// 初始化为新患者 (新建场景)
-    /// </summary>
-    public void InitializeForNewCase()
-    {
-        Patient = PatientEditContext.CreateNew();
-        IsDirty = false;
-        Patient.PropertyChanged += OnPatientPropertyChanged;
+        SubscribeContext();
     }
 
     /// <summary>
@@ -77,24 +71,5 @@ public partial class PatientEditorViewModel : ObservableObject
             IdNumber = Patient.IdNumber?.Trim(),
             PhoneNumber = Patient.PhoneNumber?.Trim()
         };
-    }
-
-    /// <summary>验证编辑内容</summary>
-    public bool Validate()
-    {
-        return Patient.ValidateAll();
-    }
-
-    /// <summary>重置编辑状态</summary>
-    public void Reset()
-    {
-        Patient.PropertyChanged -= OnPatientPropertyChanged;
-        Patient = PatientEditContext.CreateNew();
-        IsDirty = false;
-    }
-
-    private void OnPatientPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        IsDirty = true;
     }
 }

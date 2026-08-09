@@ -12,34 +12,21 @@ namespace LYBT.Desktop.Auth.ViewModels;
 /// <summary>
 /// 服务器配置对话框 ViewModel - 管理远程 WebAPI 连接 URL 与连通性测试
 /// </summary>
-public partial class ServerConfigViewModel : DialogViewModelBase
+public partial class ServerConfigViewModel : ConnectionTestViewModelBase
 {
-    private readonly IConnectionModeService _connectionModeService;
-    private readonly IConnectionSettingsService _connectionSettingsService;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
-    [NotifyCanExecuteChangedFor(nameof(SaveOnlyCommand))]
-    private string _remoteUrl = string.Empty;
-
-    [ObservableProperty]
-    private ConnectionTestStatus _testStatus = ConnectionTestStatus.Idle;
-
-    [ObservableProperty]
-    private string _testStatusMessage = "尚未测试";
-
-    /// <summary>测试中时禁用测试按钮</summary>
-    public bool IsNotTesting => TestStatus != ConnectionTestStatus.Testing;
-
     public ServerConfigViewModel(
         IViewModelServices services,
         IConnectionModeService connectionModeService,
         IConnectionSettingsService connectionSettingsService)
-        : base(services)
+        : base(services, connectionModeService, connectionSettingsService)
     {
-        _connectionModeService = connectionModeService ?? throw new ArgumentNullException(nameof(connectionModeService));
-        _connectionSettingsService = connectionSettingsService ?? throw new ArgumentNullException(nameof(connectionSettingsService));
         Title = "服务器配置";
+    }
+
+    /// <summary>RemoteUrl 变更时同步刷新 SaveOnlyCommand 的 CanExecute</summary>
+    protected override void OnRemoteUrlChangedCore(string value)
+    {
+        SaveOnlyCommand.NotifyCanExecuteChanged();
     }
 
     protected override void OnDialogOpenedCore(IDialogParameters? parameters)
@@ -54,13 +41,6 @@ public partial class ServerConfigViewModel : DialogViewModelBase
         {
             Logger.LogError(ex, "[SERVER-CONFIG] 加载当前 URL 失败");
         }
-    }
-
-    partial void OnTestStatusChanged(ConnectionTestStatus value)
-    {
-        OnPropertyChanged(nameof(IsNotTesting));
-        TestConnectionCommand.NotifyCanExecuteChanged();
-        ConfirmCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>
@@ -80,46 +60,6 @@ public partial class ServerConfigViewModel : DialogViewModelBase
         base.OnIsBusyChangedCore(value);
         SaveOnlyCommand.NotifyCanExecuteChanged();
     }
-
-    /// <summary>
-    /// 测试远程连接 - 调用 IConnectionModeService.TestRemoteConnectionAsync
-    /// </summary>
-    [RelayCommand(CanExecute = nameof(CanTestConnection))]
-    private async Task TestConnectionAsync()
-    {
-        if (string.IsNullOrWhiteSpace(RemoteUrl))
-        {
-            TestStatus = ConnectionTestStatus.Failed;
-            TestStatusMessage = "请先输入服务器地址";
-            return;
-        }
-
-        if (!_connectionSettingsService.IsValidUrl(RemoteUrl))
-        {
-            TestStatus = ConnectionTestStatus.Failed;
-            TestStatusMessage = "地址格式无效（需以 http:// 或 https:// 开头）";
-            return;
-        }
-
-        try
-        {
-            TestStatus = ConnectionTestStatus.Testing;
-            TestStatusMessage = "正在测试连接...";
-
-            var ok = await _connectionModeService.TestRemoteConnectionAsync(RemoteUrl);
-
-            TestStatus = ok ? ConnectionTestStatus.Success : ConnectionTestStatus.Failed;
-            TestStatusMessage = ok ? "✓ 可用" : "✗ 不可用";
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "[SERVER-CONFIG] 测试连接异常");
-            TestStatus = ConnectionTestStatus.Failed;
-            TestStatusMessage = "✗ 不可用: 无法连接到服务器";
-        }
-    }
-
-    private bool CanTestConnection() => TestStatus != ConnectionTestStatus.Testing;
 
     /// <summary>
     /// "保存并启用" - 校验 URL 合法性 + 测试通过后，持久化 URL 并切换到远程模式
