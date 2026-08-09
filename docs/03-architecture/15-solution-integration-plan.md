@@ -43,11 +43,11 @@
 - 用户决策（2026-08-09）：**保持 ASP.NET Identity 为核心，不替换框架**；对外接口保留 `IUserService`（替代 `IUserCrossModuleService`）；Desktop 合并 `IApiClientIdentity`【后续批次】；Local 登录统一走共享流程
 - **落地**：3 阶段（骨架+实体合并 `d614283bc` / 接口迁移+Command 合并+登录统一 `1164ae0c5` / 外部引用更新+清理 `cd6b80721`），报告 `docs/compose/reports/a31-c3a-auth-users-merge.md`；**Desktop 侧合并（IApiClientAuth+IApiClientUsers→IApiClientIdentity）为后续批次，本批次未动**
 
-### 2.2 Desktop 层（减 3，候选）：Herbs+Formula 合并 + Core 微调【⏸ 待定】
+### 2.2 Desktop 层（合并 3 已完成 ✅）：Herbs+Formula 合并 + Core 微调【合并 3 已完成】
 
-**合并 3（候选，待定）：LYBT.Desktop.Herbs + LYBT.Desktop.Formula → LYBT.Desktop.Catalog**
+**合并 3（已完成 ✅，2026-08-09 A-31-C3c）：LYBT.Desktop.Herbs + LYBT.Desktop.Formula → LYBT.Desktop.Catalog**
 - 证据：S3 §8 桌面侧 ~85% 同构（Editor VM 模板 90% 4 份拷贝中的 2 份；Repository 同构）
-- 与 Server 合并 1 同步执行（均待定）
+- **落地**：命名空间改写 + CatalogModule 注册合一 + 外部引用 13 文件更新 + 删旧项目（-8 文件）+ sln/测试同步（`fa1229fee`），报告 `docs/compose/reports/a31-c3c-desktop-catalog-merge.md`
 
 **合并 4-5（Core 微调，低优先级）**：
 - `LYBT.Desktop.Controls` 保持独立（S3 §8：不合并——控件库引用面广）
@@ -137,12 +137,12 @@ LYBT.Shared.Logging/
 | **C-2 异常统一** | 专项 B（处理器收敛 + 死类删除）| C-0 | 1d | T2 收敛 |
 | **C-3a Auth+Users→Identity** | Auth+Users Server 端合并（Identity 核心 + 增强层 + Local 登录统一） | ✅ **已完成（2026-08-09 `cd6b80721`）** | 2-3d | T2 收敛 |
 | **C-3b Herbs+Formula→Catalog Server** | Herbs+Formula Server 端合并（药材+验方同域） | **✅ 已完成（2026-08-09 5b94893f5，3 阶段独立 commit+push）** | 2-3d | T2 收敛 |
-| **C-3c Herbs+Formula→Catalog Desktop** | Herbs+Formula Desktop 同步合并 | **⏸ 随 C-3b** | 1-2d | T2 收敛 |
-| **C-4 Desktop 合并** | Desktop Herbs+Formula→Catalog | **⏸ 待定（随 C-3）** | 1-2d | T2 收敛 |
+| **C-3c Herbs+Formula→Catalog Desktop** | Herbs+Formula Desktop 同步合并 | **✅ 已完成（2026-08-09 `fa1229fee`）** | 1-2d | T2 收敛 |
+| **C-4 Desktop 合并** | Desktop Herbs+Formula→Catalog | **已由 C-3c 覆盖（合并完成）** | 1-2d | T2 收敛 |
 | **C-5 机制收敛** | ErrorMessages / AddModuleDbContext / 仓储镜像模板 / VM 命令模板 / 映射统一 | C-2 | 1-2d | T1 收敛 |
 | **C-6 死代码清理** | S1-S3 D 级（14 可安全删 + 37 死类方法 + 29 Server 死方法 + 64 复核项）| 各批后 | 1-2d | T1 清理 |
 
-**执行后**：35 → 30 项目（Server -2 / Desktop -1）【合并批次待定，若暂缓则维持 35】；日志/异常单机制 SSOT，P0 缺陷清零。
+**执行后**：35 → 30 项目（Server -2 / Desktop -1）✅ 合并批次已全部落地（C-3a/C-3b/C-3c）；日志/异常单机制 SSOT，P0 缺陷清零。
 **B 类功能**（产品完善）冻结至 C 批次完成（用户方针）；**合并决策**（C-3/C-4）待完善后重新评估。
 
 ---
