@@ -37,15 +37,6 @@ public interface IAuthenticationStateMachine
     bool Fire(AuthEvent evt, string? statusMessage = null);
 
     /// <summary>
-    /// 异步触发状态转换
-    /// 用于需要等待状态变更完成的场景
-    /// </summary>
-    /// <param name="evt">触发事件</param>
-    /// <param name="statusMessage">可选的状态消息</param>
-    /// <returns>转换是否成功</returns>
-    Task<bool> FireAsync(AuthEvent evt, string? statusMessage = null);
-
-    /// <summary>
     /// 检查是否可以触发指定转换
     /// </summary>
     /// <param name="evt">触发事件</param>

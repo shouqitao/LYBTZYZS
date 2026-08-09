@@ -27,7 +27,7 @@ namespace LYBT.Desktop.Foundation.Http;
 /// and wraps it in a corresponding adapter (e.g., <see cref="AuthApiClient"/>).</para>
 /// <para>The shared <see cref="HttpClient"/> has the full handler chain:
 /// HttpClientHandler → TokenRefreshHandler → AuthorizationMessageHandler → LoggingHttpHandler.</para>
-/// <para>Local-only methods on sub-interfaces (e.g., GetCurrentUserAsync, GetCategoriesAsync)
+/// <para>Local-only methods on sub-interfaces (e.g., GetCurrentUserAsync)
 /// throw <see cref="NotSupportedException"/> in this remote-mode implementation.</para>
 /// </remarks>
 public sealed class RefitApiClient : IApiClient

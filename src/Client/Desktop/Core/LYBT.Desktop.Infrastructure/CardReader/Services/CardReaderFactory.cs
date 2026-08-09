@@ -50,16 +50,6 @@ public class CardReaderFactory : ICardReaderFactory
     }
 
     /// <summary>
-    /// 获取所有支持的读卡器类型
-    /// </summary>
-    public IReadOnlyList<CardReaderInfo> GetSupportedReaders()
-    {
-        return _supportedReaders
-            .Select(r => r with { IsAvailable = CheckDllAvailability(r.RequiredDlls) })
-            .ToList();
-    }
-
-    /// <summary>
     /// 创建指定类型的读卡器
     /// </summary>
     public ICardReader CreateReader(CardReaderType readerType, CardReaderOptions? options = null)

@@ -287,14 +287,4 @@ public class NavigationCoordinator : INavigationCoordinator
     }
 
     #endregion
-
-    #region Region 监控（委托给 IRegionMonitor）
-
-    /// <summary>订阅Region集合变化事件</summary>
-    public void SubscribeToRegionCollection() => _services.RegionMonitor.StartMonitoring();
-
-    /// <summary>取消Region集合变化事件订阅</summary>
-    public void UnsubscribeFromRegionCollection() => _services.RegionMonitor.StopMonitoring();
-
-    #endregion
 }

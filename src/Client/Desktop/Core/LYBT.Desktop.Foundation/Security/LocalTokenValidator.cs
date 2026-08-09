@@ -172,15 +172,6 @@ namespace LYBT.Desktop.Foundation.Security
         }
 
         /// <summary>
-        /// 验证Token并提取用户信息
-        /// </summary>
-        public async Task<TokenUserInfo?> ValidateAndGetUserInfoAsync(string token)
-        {
-            var result = await ValidateTokenAsync(token);
-            return result.IsValid ? result.UserInfo : null;
-        }
-
-        /// <summary>
         /// 从ClaimsPrincipal中提取用户信息
         /// </summary>
         private TokenUserInfo? ExtractUserInfo(ClaimsPrincipal principal)

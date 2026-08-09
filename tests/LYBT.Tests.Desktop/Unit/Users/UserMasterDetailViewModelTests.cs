@@ -37,7 +37,6 @@ public class UserMasterDetailViewModelTests
     private readonly ISearchService _search;
     private readonly ISelectionService<UserListDto> _selection;
     private readonly IErrorHandler _errorHandler;
-    private readonly IAsyncExecutor _asyncExecutor;
 
     public UserMasterDetailViewModelTests()
     {
@@ -55,7 +54,6 @@ public class UserMasterDetailViewModelTests
         _search = Substitute.For<ISearchService>();
         _selection = Substitute.For<ISelectionService<UserListDto>>();
         _errorHandler = Substitute.For<IErrorHandler>();
-        _asyncExecutor = Substitute.For<IAsyncExecutor>();
 
         // 设置 ListViewServices 返回子服务
         _listViewServices.Loading.Returns(_loadingState);
@@ -63,7 +61,6 @@ public class UserMasterDetailViewModelTests
         _listViewServices.Search.Returns(_search);
         _listViewServices.Selection.Returns(_selection);
         _listViewServices.ErrorHandler.Returns(_errorHandler);
-        _listViewServices.AsyncExecutor.Returns(_asyncExecutor);
 
         // 设置 ExecuteWithLoadingAsync 实际执行传入的函数
         _loadingState.ExecuteWithLoadingAsync(Arg.Any<Func<Task>>(), Arg.Any<string?>(), Arg.Any<bool>())
@@ -80,7 +77,6 @@ public class UserMasterDetailViewModelTests
         _masterDetailServices.Search.Returns(_search);
         _masterDetailServices.Selection.Returns(_selection);
         _masterDetailServices.ErrorHandler.Returns(_errorHandler);
-        _masterDetailServices.AsyncExecutor.Returns(_asyncExecutor);
 
         // 创建 ViewModelServices mock
         _viewModelServices = Substitute.For<IViewModelServices>();

@@ -51,19 +51,4 @@ internal sealed class RegistrationsHttpApiClient : HttpApiClientBase, IApiClient
         await PutVoidAsync($"/api/v1/registrations/{id}/cancel");
         return WrapSuccess();
     }
-
-    public async Task<List<RegistrationListDto>> GetRegistrationsAsync(DateTime? date)
-    {
-        var url = "/api/v1/registrations";
-        if (date.HasValue) url += $"?date={date.Value:O}";
-        return await GetRawAsync<List<RegistrationListDto>>(url);
-    }
-
-    public Task<QuickVisitResultDto> QuickVisitAsync(QuickVisitInputDto request)
-        => PostRawAsync<QuickVisitResultDto>("/api/v1/registrations/quick-visit", request);
-
-    public async Task DeleteRegistrationAsync(Guid id)
-    {
-        await SendAsync($"/api/v1/registrations/{id}", HttpMethod.Delete);
-    }
 }

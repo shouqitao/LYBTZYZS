@@ -70,26 +70,6 @@ namespace LYBT.Desktop.Foundation.Security
         /// <returns>清除是否成功</returns>
         Task<bool> ClearCredentialsAsync(string? username = null);
 
-        /// <summary>
-        /// 验证存储数据的完整性（HMAC校验）
-        /// </summary>
-        /// <param name="username">用户名</param>
-        /// <returns>true=完整，false=被篡改或损坏</returns>
-        Task<bool> VerifyIntegrityAsync(string username);
-
-        /// <summary>
-        /// 迁移旧格式凭据（一次性操作）
-        /// 将旧的credentials.dat迁移到新的vault.dat格式
-        /// </summary>
-        Task MigrateOldFormatAsync();
-
-        /// <summary>
-        /// 检查是否存在有效的AutoLoginToken
-        /// </summary>
-        /// <param name="username">用户名</param>
-        /// <returns>true=存在有效令牌</returns>
-        Task<bool> HasValidTokenAsync(string username);
-
         #endregion
     }
 }

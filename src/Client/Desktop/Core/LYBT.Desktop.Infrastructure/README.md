@@ -35,7 +35,7 @@ LYBT.Desktop.Infrastructure/
 │   └── RoleRegistry.cs
 ├── Security/               # SensitiveInfoFilter (正则脱敏)
 ├── Services/               # 20+ 服务实现（见核心组件）
-│   ├── Interfaces/         # 服务接口（IAsyncExecutor / IErrorHandler 等）
+│   ├── Interfaces/         # 服务接口（IErrorHandler 等）
 │   ├── Notifications/      # NotificationService
 │   └── Toast/              # ToastService
 ├── ViewModels/
@@ -74,7 +74,6 @@ LYBT.Desktop.Infrastructure/
 | `GetDefinition(UserRole)` | 按角色查询定义，返回 `null` 表示未注册 |
 | `GetHomeViewName(UserRole)` | 获取角色主页视图名，未注册时 fallback 到 `ClinicalHome` |
 | `GetModulesForRole(UserRole)` | 获取角色可用模块列表 |
-| `GetAllDefinitions()` | 返回所有已注册定义的只读集合 |
 
 具体角色定义: `AdminRoleDefinition` / `DoctorRoleDefinition` / `ReceptionistRoleDefinition` / `SuperAdminRoleDefinition`
 
@@ -132,7 +131,6 @@ LYBT.Desktop.Infrastructure/
 |------|------|
 | `CurrentUser` | 当前登录用户（缓存 + lock 保护） |
 | `IsAuthenticated` | 是否已认证 |
-| `SetSession(user, token)` | 设置会话 |
 | `ClearSession()` | 清除会话，触发 `SessionChanged` + `SessionExpired` |
 | `HasPermission(UserRole)` | 权限检查（枚举值比较） |
 
@@ -171,14 +169,14 @@ LYBT.Desktop.Infrastructure/
 | `ClearSearch()` / `CancelSearch()` | 清除/取消 |
 
 **SelectionService<T>** — 选择服务（单选/多选）
-- **设计依据**: 支持单选和多选模式切换；`ToggleSelection` 在多选模式下切换选中状态
+- **设计依据**: 支持单选和多选模式切换；多选模式开关由 `IsMultiSelectMode` 控制
 
 | 成员 | 说明 |
 |------|------|
 | `SelectedItem` | 当前选中项 |
 | `SelectedItems` | 多选集合 |
 | `IsMultiSelectMode` | 多选模式开关 |
-| `Select(T)` / `SelectMultiple(IEnumerable<T>)` / `ToggleSelection(T)` | 选择操作 |
+| `Select(T)` | 选择操作 |
 | `SelectionChanged` event | 选择变更事件 |
 
 **LoadingStateManager** — 加载状态管理（嵌套计数器）
@@ -202,16 +200,6 @@ LYBT.Desktop.Infrastructure/
 | `HandleException(ex, context)` | 处理异常并设置错误消息 |
 | `SetError/SetErrors/ClearError/ClearAllErrors` | 按属性管理错误 |
 | `ValidateProperty/ValidateAll` | DataAnnotations 验证 |
-
-**AsyncExecutor** — 异步执行器（重试 + 超时 + UI 线程）
-- **设计依据**: 封装安全执行、递增延迟重试、超时控制、UI 线程调度
-
-| 方法 | 说明 |
-|------|------|
-| `ExecuteSafelyAsync(...)` | 安全执行（吞异常） |
-| `ExecuteWithRetryAsync(...)` | 重试执行（默认 3 次，递增延迟） |
-| `ExecuteWithTimeoutAsync(...)` | 超时控制执行 |
-| `ExecuteOnUIThread/ExecuteOnUIThreadAsync` | UI 线程执行 |
 
 **ApplicationTickService** — 1 秒心跳服务
 - **设计依据**: 单一 `DispatcherTimer`，每秒触发 `Tick` 事件，供 `UserActivityTracker` 等订阅

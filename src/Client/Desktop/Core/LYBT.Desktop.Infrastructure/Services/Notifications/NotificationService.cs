@@ -25,11 +25,6 @@ namespace LYBT.Desktop.Infrastructure.Services.Notifications
         public event EventHandler<NotificationEventArgs>? NotificationShown;
 
         /// <summary>
-        /// 加载状态变化事件
-        /// </summary>
-        public event EventHandler<LoadingStateChangedEventArgs>? LoadingStateChanged;
-
-        /// <summary>
         /// 显示信息消息
         /// </summary>
         public void ShowInfo(string message, string? title = null)
@@ -70,14 +65,6 @@ namespace LYBT.Desktop.Infrastructure.Services.Notifications
         }
 
         /// <summary>
-        /// 显示信息消息（异步）
-        /// </summary>
-        public async Task ShowInfoAsync(string message, string? title = null)
-        {
-            await Task.Run(() => ShowInfo(message, title));
-        }
-
-        /// <summary>
         /// 显示成功消息（异步）
         /// </summary>
         public async Task ShowSuccessAsync(string message, string? title = null)
@@ -113,48 +100,6 @@ namespace LYBT.Desktop.Infrastructure.Services.Notifications
             {
                 _logger.LogError(ex, "显示确认对话框时发生异常");
                 return false;
-            }
-        }
-
-        /// <summary>
-        /// 显示加载状态
-        /// </summary>
-        public void ShowLoading(string message = "正在加载...")
-        {
-            try
-            {
-                LoadingStateChanged?.Invoke(this, new LoadingStateChangedEventArgs
-                {
-                    IsLoading = true,
-                    Message = message
-                });
-
-                _logger.LogDebug("显示加载状态: {Message}", message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "显示加载状态时发生异常");
-            }
-        }
-
-        /// <summary>
-        /// 隐藏加载状态
-        /// </summary>
-        public void HideLoading()
-        {
-            try
-            {
-                LoadingStateChanged?.Invoke(this, new LoadingStateChangedEventArgs
-                {
-                    IsLoading = false,
-                    Message = string.Empty
-                });
-
-                _logger.LogDebug("隐藏加载状态");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "隐藏加载状态时发生异常");
             }
         }
 

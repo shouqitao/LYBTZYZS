@@ -24,23 +24,18 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// <inheritdoc/>
         public IErrorHandler ErrorHandler { get; }
 
-        /// <inheritdoc/>
-        public IAsyncExecutor AsyncExecutor { get; }
-
         public ListViewServices(
             ILoadingStateManager loading,
             IPaginationService pagination,
             ISearchService search,
             ISelectionService<T> selection,
-            IErrorHandler errorHandler,
-            IAsyncExecutor asyncExecutor)
+            IErrorHandler errorHandler)
         {
             Loading = loading;
             Pagination = pagination;
             Search = search;
             Selection = selection;
             ErrorHandler = errorHandler;
-            AsyncExecutor = asyncExecutor;
         }
 
         /// <inheritdoc/>

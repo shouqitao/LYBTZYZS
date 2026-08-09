@@ -37,18 +37,6 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// <param name="item">要选择的项</param>
         void Select(T? item);
 
-        /// <summary>
-        /// 选择多个项
-        /// </summary>
-        /// <param name="items">要选择的项集合</param>
-        void SelectMultiple(IEnumerable<T> items);
-
-        /// <summary>
-        /// 切换项的选中状态
-        /// </summary>
-        /// <param name="item">目标项</param>
-        void ToggleSelection(T item);
-
         /// <summary>清空选择</summary>
         void ClearSelection();
     }

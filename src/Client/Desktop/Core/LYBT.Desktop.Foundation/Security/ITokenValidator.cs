@@ -19,13 +19,6 @@ namespace LYBT.Desktop.Foundation.Security
         /// <param name="token">待验证的JWT Token</param>
         /// <returns>验证结果</returns>
         Task<TokenValidationResult> ValidateTokenAsync(string token);
-
-        /// <summary>
-        /// 验证Token并提取用户信息
-        /// </summary>
-        /// <param name="token">待验证的JWT Token</param>
-        /// <returns>验证成功返回用户信息，失败返回null</returns>
-        Task<TokenUserInfo?> ValidateAndGetUserInfoAsync(string token);
     }
 
     /// <summary>

@@ -137,76 +137,6 @@ public class LogoutService : ILogoutService, IDisposable
         }
     }
 
-    /// <inheritdoc />
-    public async Task<int> ProcessPendingServerLogoutsAsync()
-    {
-        if (_pendingLogouts.IsEmpty)
-        {
-            return 0;
-        }
-
-        // 使用锁防止并发处理
-        if (!await _processingLock.WaitAsync(0))
-        {
-            _logger.LogDebug("已有其他任务在处理待重试队列");
-            return 0;
-        }
-
-        try
-        {
-            var processedCount = 0;
-            var remainingItems = new List<PendingServerLogout>();
-
-            while (_pendingLogouts.TryDequeue(out var pending))
-            {
-                var result = await ExecuteServerLogoutWithRetryAsync(
-                    pending.UserName,
-                    pending.RefreshToken,
-                    pending.RetryCount);
-
-                if (result.Success)
-                {
-                    processedCount++;
-                    _logger.LogInformation("待重试的服务端登出已完成 [用户: {UserName}]", pending.UserName);
-                }
-                else if (result.ShouldRetry)
-                {
-                    // 放回队列
-                    remainingItems.Add(new PendingServerLogout
-                    {
-                        UserName = pending.UserName,
-                        RefreshToken = pending.RefreshToken,
-                        RetryCount = pending.RetryCount + 1,
-                        QueuedAt = pending.QueuedAt
-                    });
-                }
-                else
-                {
-                    // 达到最大重试次数或不可恢复的错误
-                    _logger.LogWarning("服务端登出最终失败 [用户: {UserName}, 重试次数: {RetryCount}]",
-                        pending.UserName, pending.RetryCount);
-                }
-            }
-
-            // 将需要继续重试的项放回队列
-            foreach (var item in remainingItems)
-            {
-                _pendingLogouts.Enqueue(item);
-            }
-
-            if (_pendingLogouts.IsEmpty)
-            {
-                PublishPendingLogoutsClearedEvent(processedCount);
-            }
-
-            return processedCount;
-        }
-        finally
-        {
-            _processingLock.Release();
-        }
-    }
-
     /// <summary>
     /// 尝试执行服务端登出
     /// </summary>
@@ -244,28 +174,6 @@ public class LogoutService : ILogoutService, IDisposable
         }
 
         return result;
-    }
-
-    /// <summary>
-    /// 发布待处理登出已清空事件
-    /// </summary>
-    private void PublishPendingLogoutsClearedEvent(int processedCount)
-    {
-        if (_eventAggregator == null)
-            return;
-
-        try
-        {
-            var payload = new PendingLogoutsClearedPayload
-            {
-                ProcessedCount = processedCount
-            };
-            _eventAggregator.GetEvent<AuthEvents.PendingLogoutsClearedEvent>().Publish(payload);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "发布待处理登出已清空事件失败");
-        }
     }
 
     /// <summary>

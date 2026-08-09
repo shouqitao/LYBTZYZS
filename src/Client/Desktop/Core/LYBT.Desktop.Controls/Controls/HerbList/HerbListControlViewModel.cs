@@ -244,23 +244,6 @@ namespace LYBT.Desktop.Controls.Controls.HerbList
         }
 
         /// <summary>
-        /// 移动药材位置
-        /// </summary>
-        public void MoveItem(int oldIndex, int newIndex)
-        {
-            if (oldIndex < 0 || oldIndex >= Items.Count ||
-                newIndex < 0 || newIndex >= Items.Count ||
-                oldIndex == newIndex)
-                return;
-
-            var item = Items[oldIndex];
-            Items.RemoveAt(oldIndex);
-            Items.Insert(newIndex, item);
-
-            OnListChanged(HerbListChangeType.ItemMoved, item.ToDto(), newIndex);
-        }
-
-        /// <summary>
         /// 执行校验
         /// </summary>
         public bool Validate()
@@ -288,19 +271,6 @@ namespace LYBT.Desktop.Controls.Controls.HerbList
         public void RequestNewSlot()
         {
             EnsureSingleEmptySlot();
-        }
-
-        /// <summary>
-        /// 获取指定索引后的第一个空槽位索引
-        /// </summary>
-        public int GetNextEmptySlotIndex(int afterIndex)
-        {
-            for (int i = afterIndex + 1; i < Items.Count; i++)
-            {
-                if (Items[i].IsEmpty)
-                    return i;
-            }
-            return -1;
         }
 
         #endregion

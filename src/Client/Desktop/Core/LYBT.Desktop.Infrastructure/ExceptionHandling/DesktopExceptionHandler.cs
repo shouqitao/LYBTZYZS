@@ -1,5 +1,4 @@
 using System.Net.Http;
-using System.Net.Sockets;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
@@ -33,37 +32,9 @@ public class DesktopExceptionHandler : IDesktopExceptionHandler
     }
 
     /// <inheritdoc/>
-    public void LogException(Exception exception, ExceptionSeverity severity = ExceptionSeverity.Error)
-    {
-        var logLevel = severity switch
-        {
-            ExceptionSeverity.Information => LogLevel.Information,
-            ExceptionSeverity.Warning => LogLevel.Warning,
-            ExceptionSeverity.Error => LogLevel.Error,
-            ExceptionSeverity.Critical => LogLevel.Critical,
-            _ => LogLevel.Error
-        };
-
-        _logger.Log(logLevel, exception, "异常发生 - 类型: {ExceptionType}", exception.GetType().Name);
-    }
-
-    /// <inheritdoc/>
     public string GetUserFriendlyMessage(Exception exception)
     {
         return ClientErrorMessageMapper.GetUserFriendlyMessage(exception);
-    }
-
-    /// <inheritdoc/>
-    public bool CanRetry(Exception exception)
-    {
-        return exception switch
-        {
-            TimeoutException => true,
-            HttpRequestException => true,
-            TaskCanceledException => true,
-            SocketException => true,
-            _ => false
-        };
     }
 
     #region 全局异常处理
@@ -88,25 +59,6 @@ public class DesktopExceptionHandler : IDesktopExceptionHandler
         catch (Exception ex)
         {
             _logger.LogError(ex, "注册全局异常处理器失败");
-        }
-    }
-
-    /// <inheritdoc/>
-    public void UnregisterGlobalExceptionHandlers()
-    {
-        if (!_isRegistered) return;
-
-        try
-        {
-            AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
-            TaskScheduler.UnobservedTaskException -= OnUnobservedTaskException;
-
-            _isRegistered = false;
-            _logger.LogInformation("全局异常处理器已注销");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "注销全局异常处理器失败");
         }
     }
 
@@ -210,32 +162,6 @@ public class DesktopExceptionHandler : IDesktopExceptionHandler
             userMessage = $"{context}: {userMessage}";
 
         return Result.Failure(userMessage);
-    }
-
-    /// <inheritdoc/>
-    public async Task<Result<T>> SafeExecuteAsync<T>(Func<Task<Result<T>>> operation, string methodName, string? context = null)
-    {
-        try
-        {
-            return await operation();
-        }
-        catch (Exception ex)
-        {
-            return HandleException<T>(ex, methodName, context);
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task<Result> SafeExecuteAsync(Func<Task<Result>> operation, string methodName, string? context = null)
-    {
-        try
-        {
-            return await operation();
-        }
-        catch (Exception ex)
-        {
-            return HandleExceptionWithResult(ex, methodName, context);
-        }
     }
 
     #endregion

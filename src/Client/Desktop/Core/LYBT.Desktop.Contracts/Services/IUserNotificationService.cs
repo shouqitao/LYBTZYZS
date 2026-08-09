@@ -29,11 +29,6 @@ namespace LYBT.Desktop.Contracts.Services
         Task ShowWarningAsync(string message, string? title = null);
 
         /// <summary>
-        /// 显示信息消息
-        /// </summary>
-        Task ShowInfoAsync(string message, string? title = null);
-
-        /// <summary>
         /// 显示确认对话框
         /// </summary>
         Task<bool> ShowConfirmAsync(string message, string? title = null);

@@ -128,13 +128,6 @@ public interface IApiClientFormulas : IEntityApiSegment<FormulaListDto, FormulaD
         Guid herbItemId,
         ValidateFormulaHerbInputDto request);
 
-    // ========== Local-only methods ==========
-
-    /// <summary>
-    /// 获取全部验方分类（仅本地模式）。
-    /// </summary>
-    Task<List<string>> GetCategoriesAsync();
-
     // ========== 泛型段接口默认实现（转发到上方实体命名方法，实现类无需改动） ==========
 
     Task<ApiResponse<PagedResult<FormulaListDto>>> IEntityApiSegment<FormulaListDto, FormulaDetailDto, FormulaInputDto>.GetPagedAsync(

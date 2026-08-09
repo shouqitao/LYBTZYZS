@@ -106,13 +106,6 @@ public interface IApiClientHerbs : IEntityApiSegment<HerbListDto, HerbDetailDto,
     /// <param name="request">Batch operation input with IDs.</param>
     Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request);
 
-    // ========== Local-only methods ==========
-
-    /// <summary>
-    /// 获取全部药材分类（仅本地模式）。
-    /// </summary>
-    Task<List<string>> GetCategoriesAsync();
-
     // ========== 泛型段接口默认实现（转发到上方实体命名方法，实现类无需改动） ==========
 
     Task<ApiResponse<PagedResult<HerbListDto>>> IEntityApiSegment<HerbListDto, HerbDetailDto, HerbInputDto>.GetPagedAsync(

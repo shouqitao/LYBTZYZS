@@ -23,13 +23,6 @@ namespace LYBT.Desktop.Contracts.Services
     public interface ICommonDialogService
     {
         /// <summary>
-        /// 显示信息消息
-        /// </summary>
-        /// <param name="message">消息内容</param>
-        /// <param name="title">标题</param>
-        Task ShowInfoAsync(string message, string? title = null);
-
-        /// <summary>
         /// 显示警告消息
         /// </summary>
         /// <param name="message">警告内容</param>
@@ -59,31 +52,5 @@ namespace LYBT.Desktop.Contracts.Services
         /// <param name="title">标题</param>
         /// <returns>用户选择结果</returns>
         Task<TripleChoiceResult> ShowTripleChoiceAsync(string message, string? title = null);
-
-        /// <summary>
-        /// 显示输入对话框
-        /// </summary>
-        /// <param name="message">提示内容</param>
-        /// <param name="title">标题</param>
-        /// <param name="defaultValue">默认值</param>
-        /// <returns>用户输入结果，null表示取消</returns>
-        Task<string?> ShowInputAsync(string message, string? title = null, string? defaultValue = null);
-
-        /// <summary>
-        /// 显示文件选择对话框
-        /// </summary>
-        /// <param name="filter">文件过滤器</param>
-        /// <param name="title">标题</param>
-        /// <returns>选中的文件路径，null表示取消</returns>
-        Task<string?> ShowOpenFileDialogAsync(string? filter = null, string? title = null);
-
-        /// <summary>
-        /// 显示文件保存对话框
-        /// </summary>
-        /// <param name="filter">文件过滤器</param>
-        /// <param name="title">标题</param>
-        /// <param name="defaultFileName">默认文件名</param>
-        /// <returns>保存的文件路径，null表示取消</returns>
-        Task<string?> ShowSaveFileDialogAsync(string? filter = null, string? title = null, string? defaultFileName = null);
     }
 }

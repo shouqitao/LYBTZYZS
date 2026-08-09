@@ -42,9 +42,6 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// <inheritdoc/>
         public IErrorHandler ErrorHandler => List.ErrorHandler;
 
-        /// <inheritdoc/>
-        public IAsyncExecutor AsyncExecutor => List.AsyncExecutor;
-
         public MasterDetailServices(
             IListViewServices<TListItem> list,
             IDetailEditorService<TDetail> detailEditor,

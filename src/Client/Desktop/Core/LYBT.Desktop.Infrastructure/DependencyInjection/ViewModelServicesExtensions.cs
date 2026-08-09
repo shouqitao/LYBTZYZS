@@ -29,7 +29,6 @@ namespace LYBT.Desktop.Infrastructure.DependencyInjection
 
             // 共享服务 - Singleton
             containerRegistry.RegisterSingleton<IDialogManager, DialogManager>();
-            containerRegistry.RegisterSingleton<IAsyncExecutor, AsyncExecutor>();
 
             // Toast service - Singleton
             containerRegistry.RegisterSingleton<IToastService, ToastService>();

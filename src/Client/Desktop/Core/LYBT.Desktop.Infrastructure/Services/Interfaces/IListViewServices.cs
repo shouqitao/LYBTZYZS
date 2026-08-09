@@ -23,9 +23,6 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// <summary>错误处理服务</summary>
         IErrorHandler ErrorHandler { get; }
 
-        /// <summary>异步执行服务</summary>
-        IAsyncExecutor AsyncExecutor { get; }
-
         /// <summary>
         /// 释放所有服务资源
         /// </summary>

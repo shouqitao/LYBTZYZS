@@ -417,7 +417,7 @@ Modules 层中提取的可复用 UI 组件，采用独立 ViewModel + 事件驱�
 | 药材项管理 | 增删移动药材项 (ObservableCollection) |
 | 重复检测 | 检测相同药材重复添加，支持合并策略 (DuplicateDosageStrategy) |
 | 数据转换 | LoadFromDto / ToDto 与 PrescriptionItemDto 互转 |
-| 空槽管理 | 自动创建空槽 (RequestNewSlot, GetNextEmptySlotIndex) |
+| 空槽管理 | 自动创建空槽 (RequestNewSlot) |
 
 **关键接口**:
 - `ListChanged` 事件: 药材列表变更通知

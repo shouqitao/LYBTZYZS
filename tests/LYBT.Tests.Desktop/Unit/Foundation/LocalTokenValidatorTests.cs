@@ -153,40 +153,6 @@ public class LocalTokenValidatorTests
         result.ErrorMessage.Should().Contain("不能为空");
     }
 
-    /// <summary>
-    /// 测试：ValidateAndGetUserInfoAsync返回用户信息
-    /// </summary>
-    [Fact]
-    public async Task ValidateAndGetUserInfoAsync_ValidToken_ReturnsUserInfo()
-    {
-        // Arrange
-        var token = GenerateValidToken();
-
-        // Act
-        var userInfo = await _validator.ValidateAndGetUserInfoAsync(token);
-
-        // Assert
-        userInfo.Should().NotBeNull();
-        userInfo!.UserName.Should().Be("test_user");
-        userInfo.Role.Should().Be("Doctor");
-    }
-
-    /// <summary>
-    /// 测试：ValidateAndGetUserInfoAsync对于无效Token返回null
-    /// </summary>
-    [Fact]
-    public async Task ValidateAndGetUserInfoAsync_InvalidToken_ReturnsNull()
-    {
-        // Arrange
-        var token = GenerateExpiredToken();
-
-        // Act
-        var userInfo = await _validator.ValidateAndGetUserInfoAsync(token);
-
-        // Assert
-        userInfo.Should().BeNull("无效Token应返回null");
-    }
-
     #region Token Generation Helpers
 
     /// <summary>

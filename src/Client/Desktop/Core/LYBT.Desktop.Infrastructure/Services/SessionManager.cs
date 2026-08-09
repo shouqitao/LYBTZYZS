@@ -40,16 +40,6 @@ namespace LYBT.Desktop.Infrastructure.Services
         public bool IsAuthenticated => !string.IsNullOrEmpty(_authService.GetToken());
         public bool IsLoggedIn => IsAuthenticated;
 
-        public void SetSession(UserDetailDto user, string accessToken, string? refreshToken = null)
-        {
-            lock (_lock)
-            {
-                _cachedUser = user ?? throw new ArgumentNullException(nameof(user));
-            }
-            ArgumentNullException.ThrowIfNull(accessToken);
-            SessionChanged?.Invoke(this, new SessionChangedEventArgs(true, user));
-        }
-
         public void ClearSession()
         {
             var wasAuthenticated = IsAuthenticated;
@@ -70,8 +60,5 @@ namespace LYBT.Desktop.Infrastructure.Services
 
         public bool HasPermission(UserRole requiredRole) => CurrentUser != null && CurrentUser.Role >= requiredRole;
         public bool HasPermission(string permission) => IsAuthenticated && CurrentUser != null;
-        public bool HasRole(string role) => CurrentUser != null && CurrentUser.Role.ToString().Equals(role, StringComparison.OrdinalIgnoreCase);
-        public bool IsAdmin() => CurrentUser?.Role is UserRole.Admin or UserRole.SuperAdmin;
-        public string GetCurrentUserRoleDisplay() => CurrentUser == null ? "未登录" : CurrentUser.Role switch { UserRole.Admin => "管理员", UserRole.Doctor => "医生", _ => CurrentUser.Role.ToString() };
     }
 }

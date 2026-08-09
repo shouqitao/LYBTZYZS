@@ -54,18 +54,6 @@ namespace LYBT.Desktop.Infrastructure.Roles
         }
 
         /// <inheritdoc/>
-        public IReadOnlyCollection<IRoleDefinition> GetAllDefinitions()
-        {
-            return _definitions.Values.ToList().AsReadOnly();
-        }
-
-        /// <inheritdoc/>
-        public bool IsRegistered(UserRole role)
-        {
-            return _definitions.ContainsKey(role);
-        }
-
-        /// <inheritdoc/>
         public string GetHomeViewName(UserRole role)
         {
             if (_definitions.TryGetValue(role, out var definition))

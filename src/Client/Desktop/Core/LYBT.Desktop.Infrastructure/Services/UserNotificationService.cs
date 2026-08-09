@@ -63,19 +63,6 @@ namespace LYBT.Desktop.Infrastructure.Services
         }
 
         /// <summary>
-        /// 显示信息消息
-        /// </summary>
-        public Task ShowInfoAsync(string message, string? title = null)
-        {
-            MessageBox.Show(
-                message,
-                title ?? "信息",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
         /// 显示确认对话框
         /// </summary>
         public Task<bool> ShowConfirmAsync(string message, string? title = null)

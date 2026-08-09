@@ -30,13 +30,6 @@ public interface ILogoutService
     Task ExecuteLocalLogoutAsync();
 
     /// <summary>
-    /// 尝试处理待重试的服务端登出请求
-    /// 当网络恢复时应调用此方法
-    /// </summary>
-    /// <returns>成功处理的数量</returns>
-    Task<int> ProcessPendingServerLogoutsAsync();
-
-    /// <summary>
     /// 获取待处理的服务端登出请求数量
     /// </summary>
     int PendingServerLogoutCount { get; }

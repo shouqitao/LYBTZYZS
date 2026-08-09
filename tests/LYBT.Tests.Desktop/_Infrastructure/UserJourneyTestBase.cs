@@ -130,7 +130,6 @@ public abstract class UserJourneyTestBase : IClassFixture<UserJourneyFixture>, I
         var search = Substitute.For<ISearchService>();
         var selection = Substitute.For<ISelectionService<TList>>();
         var errorHandler = Substitute.For<IErrorHandler>();
-        var asyncExecutor = Substitute.For<IAsyncExecutor>();
 
         // 设置 ListViewServices 返回子服务
         listViewServices.Loading.Returns(loadingState);
@@ -138,7 +137,6 @@ public abstract class UserJourneyTestBase : IClassFixture<UserJourneyFixture>, I
         listViewServices.Search.Returns(search);
         listViewServices.Selection.Returns(selection);
         listViewServices.ErrorHandler.Returns(errorHandler);
-        listViewServices.AsyncExecutor.Returns(asyncExecutor);
 
         // 设置 ExecuteWithLoadingAsync 实际执行传入的函数
         loadingState.ExecuteWithLoadingAsync(Arg.Any<Func<Task>>(), Arg.Any<string?>(), Arg.Any<bool>())
@@ -153,7 +151,6 @@ public abstract class UserJourneyTestBase : IClassFixture<UserJourneyFixture>, I
         mock.Search.Returns(search);
         mock.Selection.Returns(selection);
         mock.ErrorHandler.Returns(errorHandler);
-        mock.AsyncExecutor.Returns(asyncExecutor);
 
         return mock;
     }

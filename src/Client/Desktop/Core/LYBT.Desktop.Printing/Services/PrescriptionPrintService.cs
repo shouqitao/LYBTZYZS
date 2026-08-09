@@ -168,40 +168,6 @@ namespace LYBT.Desktop.Printing.Services
         }
 
         /// <summary>
-        /// 批量打印
-        /// </summary>
-        public async Task<int> BatchPrintAsync(PrescriptionPrintModel[] models, PrintOptions? options = null)
-        {
-            if (models == null || models.Length == 0)
-                throw new ArgumentException("打印列表不能为空", nameof(models));
-
-            _logger.LogInformation("[PRINT] BatchPrintAsync started - Count={Count}", models.Length);
-
-            int successCount = 0;
-            options ??= new PrintOptions { ShowDialog = false };
-
-            foreach (var model in models)
-            {
-                try
-                {
-                    if (await PrintAsync(model, options))
-                    {
-                        successCount++;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "[PRINT] BatchPrintAsync item failed");
-                }
-            }
-
-            _logger.LogInformation("[PRINT] BatchPrintAsync completed - Success={Success} Total={Total}",
-                successCount, models.Length);
-
-            return successCount;
-        }
-
-        /// <summary>
         /// 获取可用打印机列表
         /// </summary>
         public string[] GetAvailablePrinters()

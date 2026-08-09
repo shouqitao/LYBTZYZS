@@ -32,14 +32,6 @@ namespace LYBT.Desktop.Printing.Interfaces
         Task<bool> ExportAsync(TModel model, string filePath, ExportFormat format = ExportFormat.Xps);
 
         /// <summary>
-        /// 批量打印
-        /// </summary>
-        /// <param name="models">打印数据模型列表</param>
-        /// <param name="options">打印选项（可选）</param>
-        /// <returns>成功打印的数量</returns>
-        Task<int> BatchPrintAsync(TModel[] models, PrintOptions? options = null);
-
-        /// <summary>
         /// 获取可用的打印机列表
         /// </summary>
         /// <returns>打印机名称列表</returns>

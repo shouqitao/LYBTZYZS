@@ -29,14 +29,13 @@ LYBT.Desktop.Printing/
 
 | 类 | 设计依据 |
 |---|---|
-| **IPrintService\<TModel\>** — 泛型打印接口 | 类型安全的打印/预览/导出/批量打印/打印机管理，约束 `where TModel : class` |
+| **IPrintService\<TModel\>** — 泛型打印接口 | 类型安全的打印/预览/导出/打印机管理，约束 `where TModel : class` |
 
 | 方法 | 说明 |
 |------|------|
 | `PrintAsync(TModel, PrintOptions?)` | 打印文档，支持对话框/直打模式 |
 | `PreviewAsync(TModel, PrintOptions?)` | 弹出预览窗口 |
 | `ExportAsync(TModel, string, ExportFormat)` | 导出为 XPS 或 PDF |
-| `BatchPrintAsync(TModel[], PrintOptions?)` | 批量打印，返回成功数 |
 | `GetAvailablePrinters()` | 返回系统打印机列表 |
 | `SetDefaultPrinter(string)` | 设置默认打印机 |
 | `GetDefaultPrinter()` | 获取当前默认打印机 |

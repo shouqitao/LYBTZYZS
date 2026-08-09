@@ -126,7 +126,6 @@ public class FrameworkVerificationTests : UserJourneyTestBase
         services.Search.Should().NotBeNull();
         services.Selection.Should().NotBeNull();
         services.ErrorHandler.Should().NotBeNull();
-        services.AsyncExecutor.Should().NotBeNull();
     }
 
     [Fact]

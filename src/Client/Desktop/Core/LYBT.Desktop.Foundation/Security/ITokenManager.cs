@@ -29,31 +29,5 @@ namespace LYBT.Desktop.Foundation.Security
         /// 获取AccessToken过期时间
         /// </summary>
         DateTime? AccessTokenExpiry { get; }
-
-        /// <summary>
-        /// 设置Token（登录成功或Token刷新后调用）
-        /// </summary>
-        /// <param name="accessToken">访问令牌</param>
-        /// <param name="refreshToken">刷新令牌</param>
-        /// <param name="expiry">AccessToken过期时间(UTC)</param>
-        void SetTokens(string accessToken, string refreshToken, DateTime expiry);
-
-        /// <summary>
-        /// 清除所有Token（登出或Token失效时调用）
-        /// </summary>
-        void ClearTokens();
-
-        /// <summary>
-        /// 检查Token是否有效（非空且未过期）
-        /// </summary>
-        /// <returns>true=Token有效，false=Token无效或已过期</returns>
-        bool IsTokenValid();
-
-        /// <summary>
-        /// 检查Token是否即将过期
-        /// </summary>
-        /// <param name="threshold">提前预警时间（默认5分钟）</param>
-        /// <returns>true=即将过期，需要刷新</returns>
-        bool IsTokenExpiringSoon(TimeSpan threshold);
     }
 }

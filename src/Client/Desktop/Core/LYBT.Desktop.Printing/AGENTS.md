@@ -50,7 +50,6 @@ Printing service module providing prescription printing, preview, and PDF export
 - Template-based rendering: XAML templates for WPF print, QuestPDF fluent API for PDF
 - `PrintOptions` DTO for printer selection, copies, paper size, orientation, duplex
 - `ExportFormat` enum (Xps, Pdf) for output format selection
-- `BatchPrintAsync` for bulk printing operations
 
 ## Dependencies
 

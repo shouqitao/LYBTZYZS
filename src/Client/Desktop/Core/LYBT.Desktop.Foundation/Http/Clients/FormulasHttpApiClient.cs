@@ -74,7 +74,4 @@ internal sealed class FormulasHttpApiClient : HttpApiClientBase, IApiClientFormu
     public Task<ApiResponse<FormulaHerbItemDto>> ValidateHerbAsync(
         Guid formulaId, Guid herbItemId, ValidateFormulaHerbInputDto request)
         => PostAndWrapAsync<FormulaHerbItemDto>($"/api/v1/formulas/{formulaId}/herbs/{herbItemId}/validate", request);
-
-    public Task<List<string>> GetCategoriesAsync()
-        => GetRawAsync<List<string>>("/api/v1/formulas/categories");
 }

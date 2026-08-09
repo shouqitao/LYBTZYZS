@@ -32,11 +32,6 @@ namespace LYBT.Desktop.Infrastructure.Services.Notifications
         Task ShowErrorAsync(string message, string? title = null);
 
         /// <summary>
-        /// 显示信息消息（异步）
-        /// </summary>
-        Task ShowInfoAsync(string message, string? title = null);
-
-        /// <summary>
         /// 显示成功消息（异步）
         /// </summary>
         Task ShowSuccessAsync(string message, string? title = null);
@@ -52,24 +47,9 @@ namespace LYBT.Desktop.Infrastructure.Services.Notifications
         Task<bool> ShowConfirmAsync(string message, string title = "确认");
 
         /// <summary>
-        /// 显示加载状态
-        /// </summary>
-        void ShowLoading(string message = "正在加载...");
-
-        /// <summary>
-        /// 隐藏加载状态
-        /// </summary>
-        void HideLoading();
-
-        /// <summary>
         /// 消息显示事件
         /// </summary>
         event EventHandler<NotificationEventArgs>? NotificationShown;
-
-        /// <summary>
-        /// 加载状态变化事件
-        /// </summary>
-        event EventHandler<LoadingStateChangedEventArgs>? LoadingStateChanged;
     }
 
     /// <summary>
@@ -91,16 +71,6 @@ namespace LYBT.Desktop.Infrastructure.Services.Notifications
         public string Message { get; set; } = string.Empty;
         public string? Title { get; set; }
         public NotificationType Type { get; set; }
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// 加载状态变化事件参数
-    /// </summary>
-    public class LoadingStateChangedEventArgs : EventArgs
-    {
-        public bool IsLoading { get; set; }
-        public string Message { get; set; } = string.Empty;
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
 }

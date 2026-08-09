@@ -72,24 +72,4 @@ public interface IApiClientRegistrations
     /// </summary>
     /// <param name="id">Registration ID.</param>
     Task<ApiResponse> CancelAsync(Guid id);
-
-    // ========== Local-only methods ==========
-
-    /// <summary>
-    /// 获取挂号列表（本地模式，无分页包装的简单列表）。
-    /// </summary>
-    /// <param name="date">Date filter (optional).</param>
-    Task<List<RegistrationListDto>> GetRegistrationsAsync(DateTime? date = null);
-
-    /// <summary>
-    /// 快速就诊——一次调用完成创建挂号并开始就诊（仅本地模式）。
-    /// </summary>
-    /// <param name="request">Quick visit input data.</param>
-    Task<QuickVisitResultDto> QuickVisitAsync(QuickVisitInputDto request);
-
-    /// <summary>
-    /// 删除挂号（仅本地模式）。
-    /// </summary>
-    /// <param name="id">Registration ID.</param>
-    Task DeleteRegistrationAsync(Guid id);
 }

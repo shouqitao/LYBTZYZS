@@ -58,19 +58,4 @@ internal sealed class RegistrationApiClient : IApiClientRegistrations
     /// <inheritdoc />
     public Task<ApiResponse> CancelAsync(Guid id)
         => _api.CancelAsync(id);
-
-    /// <inheritdoc />
-    /// <remarks>Local-only method — not available in remote Refit mode.</remarks>
-    public Task<List<RegistrationListDto>> GetRegistrationsAsync(DateTime? date = null)
-        => throw new NotSupportedException("GetRegistrationsAsync is a local-only method and is not available in remote mode.");
-
-    /// <inheritdoc />
-    /// <remarks>Local-only method — not available in remote Refit mode.</remarks>
-    public Task<QuickVisitResultDto> QuickVisitAsync(QuickVisitInputDto request)
-        => throw new NotSupportedException("QuickVisitAsync is a local-only method and is not available in remote mode.");
-
-    /// <inheritdoc />
-    /// <remarks>Local-only method — not available in remote Refit mode.</remarks>
-    public Task DeleteRegistrationAsync(Guid id)
-        => throw new NotSupportedException("DeleteRegistrationAsync is a local-only method and is not available in remote mode.");
 }

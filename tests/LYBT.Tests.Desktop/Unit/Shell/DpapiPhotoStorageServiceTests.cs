@@ -51,91 +51,6 @@ public class DpapiPhotoStorageServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task LoadPhotoAsync_AfterSave_ReturnsOriginalData()
-    {
-        // Arrange
-        var originalData = new byte[256];
-        Random.Shared.NextBytes(originalData);
-        var identifier = $"roundtrip_{Guid.NewGuid():N}";
-
-        var filePath = await _sut.SavePhotoAsync(originalData, identifier);
-        _createdFiles.Add(filePath);
-
-        // Act
-        var loadedData = await _sut.LoadPhotoAsync(filePath);
-
-        // Assert
-        Assert.NotNull(loadedData);
-        Assert.Equal(originalData, loadedData);
-    }
-
-    [Fact]
-    public async Task LoadPhotoAsync_WithNonExistentFile_ReturnsNull()
-    {
-        // Act
-        var result = await _sut.LoadPhotoAsync(@"C:\nonexistent\photo.enc");
-
-        // Assert
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public async Task LoadPhotoAsync_WithEmptyPath_ReturnsNull()
-    {
-        // Act
-        var result = await _sut.LoadPhotoAsync("");
-
-        // Assert
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public async Task DeletePhotoAsync_ExistingFile_DeletesAndReturnsTrue()
-    {
-        // Arrange
-        var photoData = new byte[] { 0x01, 0x02, 0x03 };
-        var identifier = $"delete_{Guid.NewGuid():N}";
-        var filePath = await _sut.SavePhotoAsync(photoData, identifier);
-
-        // Act
-        var result = await _sut.DeletePhotoAsync(filePath);
-
-        // Assert
-        Assert.True(result);
-        Assert.False(File.Exists(filePath));
-    }
-
-    [Fact]
-    public async Task DeletePhotoAsync_NonExistentFile_ReturnsTrue()
-    {
-        // Act
-        var result = await _sut.DeletePhotoAsync(@"C:\nonexistent\photo.enc");
-
-        // Assert
-        Assert.True(result);
-    }
-
-    [Fact]
-    public async Task PhotoExists_AfterSave_ReturnsTrue()
-    {
-        // Arrange
-        var photoData = new byte[] { 0x01, 0x02 };
-        var identifier = $"exists_{Guid.NewGuid():N}";
-        var filePath = await _sut.SavePhotoAsync(photoData, identifier);
-        _createdFiles.Add(filePath);
-
-        // Act & Assert
-        Assert.True(_sut.PhotoExists(filePath));
-    }
-
-    [Fact]
-    public void PhotoExists_WithEmptyPath_ReturnsFalse()
-    {
-        Assert.False(_sut.PhotoExists(""));
-        Assert.False(_sut.PhotoExists(null!));
-    }
-
-    [Fact]
     public async Task SavePhotoAsync_WithEmptyData_ThrowsArgumentException()
     {
         await Assert.ThrowsAsync<ArgumentException>(
@@ -164,9 +79,5 @@ public class DpapiPhotoStorageServiceTests : IDisposable
 
         // Assert - 同一标识符产生同一路径
         Assert.Equal(path1, path2);
-
-        // 读回的应该是最新数据
-        var loaded = await _sut.LoadPhotoAsync(path2);
-        Assert.Equal(data2, loaded);
     }
 }

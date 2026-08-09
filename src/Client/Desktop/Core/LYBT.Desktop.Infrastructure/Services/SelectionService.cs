@@ -57,46 +57,6 @@ namespace LYBT.Desktop.Infrastructure.Services
         }
 
         /// <inheritdoc/>
-        public void SelectMultiple(IEnumerable<T> items)
-        {
-            var oldSelection = SelectedItem;
-            SelectedItems.Clear();
-
-            foreach (var item in items)
-            {
-                SelectedItems.Add(item);
-            }
-
-            SelectedItem = SelectedItems.FirstOrDefault();
-            RaiseSelectionChanged(SelectedItem, oldSelection);
-        }
-
-        /// <inheritdoc/>
-        public void ToggleSelection(T item)
-        {
-            if (IsMultiSelectMode)
-            {
-                if (SelectedItems.Contains(item))
-                {
-                    SelectedItems.Remove(item);
-                    if (SelectedItem == item)
-                    {
-                        SelectedItem = SelectedItems.FirstOrDefault();
-                    }
-                }
-                else
-                {
-                    SelectedItems.Add(item);
-                    SelectedItem ??= item;
-                }
-            }
-            else
-            {
-                Select(SelectedItem == item ? null : item);
-            }
-        }
-
-        /// <inheritdoc/>
         public void ClearSelection()
         {
             var oldSelection = SelectedItem;

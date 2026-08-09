@@ -39,7 +39,6 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
     private readonly ISearchService _search;
     private readonly ISelectionService<FormulaListDto> _selection;
     private readonly IErrorHandler _errorHandler;
-    private readonly IAsyncExecutor _asyncExecutor;
     private readonly ILoggerFactory _loggerFactory;
     private readonly FormulaEditorViewModel _formulaEditor;
 
@@ -57,14 +56,12 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
         _search = Substitute.For<ISearchService>();
         _selection = Substitute.For<ISelectionService<FormulaListDto>>();
         _errorHandler = Substitute.For<IErrorHandler>();
-        _asyncExecutor = Substitute.For<IAsyncExecutor>();
 
         _listViewServices.Loading.Returns(_loadingState);
         _listViewServices.Pagination.Returns(_pagination);
         _listViewServices.Search.Returns(_search);
         _listViewServices.Selection.Returns(_selection);
         _listViewServices.ErrorHandler.Returns(_errorHandler);
-        _listViewServices.AsyncExecutor.Returns(_asyncExecutor);
 
         _loadingState.ExecuteWithLoadingAsync(Arg.Any<Func<Task>>(), Arg.Any<string?>(), Arg.Any<bool>())
             .Returns(ci => ci.Arg<Func<Task>>()());
@@ -102,7 +99,6 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
         _masterDetailServices.Search.Returns(_search);
         _masterDetailServices.Selection.Returns(_selection);
         _masterDetailServices.ErrorHandler.Returns(_errorHandler);
-        _masterDetailServices.AsyncExecutor.Returns(_asyncExecutor);
 
         _formulaService = Substitute.For<IFormulaService>();
         _statusHandler = Substitute.For<IFormulaStatusHandler>();

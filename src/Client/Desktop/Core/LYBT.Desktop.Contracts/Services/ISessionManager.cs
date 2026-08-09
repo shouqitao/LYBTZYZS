@@ -43,11 +43,6 @@ namespace LYBT.Desktop.Contracts.Services
         // ==================== 会话管理方法 ====================
 
         /// <summary>
-        /// 设置会话信息（支持刷新令牌）
-        /// </summary>
-        void SetSession(UserDetailDto user, string accessToken, string? refreshToken = null);
-
-        /// <summary>
         /// 清除会话
         /// </summary>
         void ClearSession();
@@ -63,21 +58,6 @@ namespace LYBT.Desktop.Contracts.Services
         /// 检查权限（基于字符串）
         /// </summary>
         bool HasPermission(string permission);
-
-        /// <summary>
-        /// 检查角色（基于字符串）
-        /// </summary>
-        bool HasRole(string role);
-
-        /// <summary>
-        /// 是否为管理员
-        /// </summary>
-        bool IsAdmin();
-
-        /// <summary>
-        /// 获取当前用户角色显示名称
-        /// </summary>
-        string GetCurrentUserRoleDisplay();
 
         // ==================== 会话事件 ====================
 

@@ -72,12 +72,6 @@ public interface IConnectionModeService
     Task<bool> TestRemoteConnectionAsync(string url);
 
     /// <summary>
-    /// 测试嵌入式 LocalWebAPI 是否在其默认端口上可达。
-    /// </summary>
-    /// <returns>True when <c>http://localhost:5000/api/health</c> responded successfully.</returns>
-    Task<bool> TestLocalConnectionAsync();
-
-    /// <summary>
     /// 显式切换生效模式。相应地更新底层
     /// <see cref="IConnectionSettingsService"/> 的 URL：
     /// <list type="bullet">

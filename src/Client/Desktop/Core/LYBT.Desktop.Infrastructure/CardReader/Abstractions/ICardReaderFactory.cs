@@ -9,11 +9,6 @@ namespace LYBT.Desktop.Infrastructure.CardReader.Abstractions;
 public interface ICardReaderFactory
 {
     /// <summary>
-    /// 获取所有支持的读卡器类型
-    /// </summary>
-    IReadOnlyList<CardReaderInfo> GetSupportedReaders();
-
-    /// <summary>
     /// 创建指定类型的读卡器
     /// </summary>
     /// <param name="readerType">读卡器类型</param>

@@ -112,20 +112,6 @@ public interface INavigationCoordinator
     void ClearContentRegion();
 
     #endregion
-
-    #region 事件订阅 (从NavigationManager整合)
-
-    /// <summary>
-    /// 订阅Region集合变化事件（用于导航监控）
-    /// </summary>
-    void SubscribeToRegionCollection();
-
-    /// <summary>
-    /// 取消Region集合变化事件订阅
-    /// </summary>
-    void UnsubscribeFromRegionCollection();
-
-    #endregion
 }
 
 /// <summary>

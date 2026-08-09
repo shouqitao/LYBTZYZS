@@ -22,17 +22,6 @@ namespace LYBT.Desktop.Contracts.Roles
         IRoleDefinition? GetDefinition(UserRole role);
 
         /// <summary>
-        /// 获取所有已注册的角色定义
-        /// </summary>
-        IReadOnlyCollection<IRoleDefinition> GetAllDefinitions();
-
-        /// <summary>
-        /// 检查角色是否已注册
-        /// </summary>
-        /// <param name="role">角色枚举</param>
-        bool IsRegistered(UserRole role);
-
-        /// <summary>
         /// 获取指定角色的主页视图名称
         /// </summary>
         /// <param name="role">角色枚举</param>

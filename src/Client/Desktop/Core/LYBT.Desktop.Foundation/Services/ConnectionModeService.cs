@@ -120,23 +120,6 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task<bool> TestLocalConnectionAsync()
-    {
-        var healthUrl = $"{_connectionSettings.LocalUrl}{LocalHealthPath}";
-        try
-        {
-            using var client = new HttpClient { Timeout = LocalProbeTimeout };
-            var response = await client.GetAsync(healthUrl).ConfigureAwait(false);
-            return response.IsSuccessStatusCode;
-        }
-        catch (Exception ex) when (ex is TaskCanceledException or HttpRequestException)
-        {
-            _logger.LogDebug(ex, "[CONNECTION-MODE] Local probe failed at {Url}", healthUrl);
-            return false;
-        }
-    }
-
-    /// <inheritdoc />
     public void SetMode(ConnectionMode mode)
     {
         switch (mode)

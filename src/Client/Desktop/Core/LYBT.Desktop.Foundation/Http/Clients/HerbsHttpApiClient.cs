@@ -64,7 +64,4 @@ internal sealed class HerbsHttpApiClient : HttpApiClientBase, IApiClientHerbs
 
     public Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request)
         => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/herbs/batch-disable", request);
-
-    public Task<List<string>> GetCategoriesAsync()
-        => GetRawAsync<List<string>>("/api/v1/herbs/categories");
 }

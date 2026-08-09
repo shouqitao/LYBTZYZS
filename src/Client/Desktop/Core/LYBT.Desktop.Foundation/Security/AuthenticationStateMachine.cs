@@ -177,12 +177,6 @@ public class AuthenticationStateMachine : IAuthenticationStateMachine
     }
 
     /// <inheritdoc />
-    public Task<bool> FireAsync(AuthEvent evt, string? statusMessage = null)
-    {
-        return Task.FromResult(Fire(evt, statusMessage));
-    }
-
-    /// <inheritdoc />
     public void Reset()
     {
         Fire(AuthEvent.Reset);

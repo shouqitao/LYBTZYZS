@@ -105,65 +105,6 @@ namespace LYBT.Desktop.Infrastructure.Performance
         }
 
         /// <inheritdoc/>
-        public long RecordMemoryBaseline(string label)
-        {
-            if (string.IsNullOrWhiteSpace(label))
-                throw new ArgumentException("标签不能为空", nameof(label));
-
-            long memory = GC.GetTotalMemory(true);
-
-            lock (_lock)
-            {
-                _memorySnapshots[label] = memory;
-            }
-
-            _logger?.LogDebug("内存快照 [{Label}]: {MemoryBytes} bytes ({MemoryMB:F2} MB)",
-                label, memory, memory / (1024.0 * 1024.0));
-
-            return memory;
-        }
-
-        /// <inheritdoc/>
-        public IReadOnlyDictionary<string, long> GetMemorySnapshots()
-        {
-            lock (_lock)
-            {
-                return new Dictionary<string, long>(_memorySnapshots);
-            }
-        }
-
-        /// <inheritdoc/>
-        public PerformanceMetric? GetMetric(string operationName)
-        {
-            lock (_lock)
-            {
-                return _completedMetrics.FirstOrDefault(m => m.OperationName == operationName);
-            }
-        }
-
-        /// <inheritdoc/>
-        public IReadOnlyCollection<PerformanceMetric> GetAllMetrics()
-        {
-            lock (_lock)
-            {
-                return _completedMetrics.ToList().AsReadOnly();
-            }
-        }
-
-        /// <inheritdoc/>
-        public PerformanceReport GenerateReport()
-        {
-            lock (_lock)
-            {
-                return new PerformanceReport
-                {
-                    GeneratedAt = DateTime.UtcNow,
-                    Metrics = _completedMetrics.ToList().AsReadOnly()
-                };
-            }
-        }
-
-        /// <inheritdoc/>
         public void Clear()
         {
             lock (_lock)

@@ -108,8 +108,6 @@ LYBT.Desktop.Contracts/
 |------|------|
 | `Register(IRoleDefinition)` | 注册角色定义 |
 | `GetDefinition(UserRole)` | 按角色查找 |
-| `GetAllDefinitions()` | 获取所有定义 |
-| `IsRegistered(UserRole)` | 检查是否已注册 |
 | `GetHomeViewName(UserRole)` | 获取主页视图名 |
 | `GetModulesForRole(UserRole)` | 获取角色所需模块 |
 
@@ -142,10 +140,8 @@ LYBT.Desktop.Contracts/
 |------|------|
 | `CurrentUser` | 当前用户 |
 | `IsAuthenticated` | 是否已认证 |
-| `SetSession(user, token, refreshToken)` | 设置会话 |
 | `ClearSession()` | 清除会话 |
 | `HasPermission(UserRole)` | 角色权限检查 |
-| `IsAdmin()` | 管理员检查 |
 
 #### `INavigationCoordinator`
 **设计依据**: 统一导航入口，整合 `NavigationManager`、`ViewNavigationService`、`RoleNavigationService`。支持面包屑导航和前进导航。
@@ -178,11 +174,9 @@ LYBT.Desktop.Contracts/
 
 | 方法 | 说明 |
 |------|------|
-| `ShowInfoAsync` / `ShowWarningAsync` / `ShowErrorAsync` | 消息对话框 |
+| `ShowWarningAsync` / `ShowErrorAsync` | 消息对话框 |
 | `ShowConfirmAsync` | 是/否确认 |
 | `ShowTripleChoiceAsync` | 是/否/取消 |
-| `ShowInputAsync` | 输入对话框 |
-| `ShowOpenFileDialogAsync` / `ShowSaveFileDialogAsync` | 文件对话框 |
 | `ShowUnfinishedCaseDialogAsync` | 未完成医案对话框 |
 
 #### `IApplicationTickService`

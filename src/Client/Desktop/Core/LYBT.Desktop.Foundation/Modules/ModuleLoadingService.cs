@@ -80,41 +80,11 @@ namespace LYBT.Desktop.Foundation.Modules
             }
         }
 
-        public IEnumerable<string> GetLoadedModules()
-        {
-            lock (_lock)
-            {
-                return _loadedModules.ToList();
-            }
-        }
-
         public bool IsModuleLoaded(string moduleName)
         {
             lock (_lock)
             {
                 return _loadedModules.Contains(moduleName);
-            }
-        }
-
-        public async Task LoadModulesAsync(IEnumerable<string>? moduleNames = null)
-        {
-            if (moduleNames == null)
-            {
-                await LoadAllModulesAsync();
-                return;
-            }
-
-            foreach (var moduleName in moduleNames)
-            {
-                try
-                {
-                    await LoadModuleAsync(moduleName);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "加载模块 {ModuleName} 失败，继续加载其他模块", moduleName);
-                    // 继续加载其他模块
-                }
             }
         }
     }

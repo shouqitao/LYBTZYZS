@@ -39,12 +39,6 @@ namespace LYBT.Desktop.Infrastructure.Services
             return ShowMessageDialogAsync("warning", message, title ?? "警告");
         }
 
-        /// <inheritdoc/>
-        public Task ShowInfoAsync(string message, string? title = null)
-        {
-            return ShowMessageDialogAsync("info", message, title ?? "提示");
-        }
-
         /// <summary>
         /// 显示统一消息对话框
         /// </summary>
@@ -84,62 +78,6 @@ namespace LYBT.Desktop.Infrastructure.Services
             _dialogService.ShowDialog("ConfirmationDialog", parameters, result =>
             {
                 tcs.SetResult(result.Result == ButtonResult.OK);
-            });
-
-            return tcs.Task;
-        }
-
-        /// <inheritdoc/>
-        public Task<string?> ShowInputAsync(string message, string? title = null, string? defaultValue = null)
-        {
-            var tcs = new TaskCompletionSource<string?>();
-
-            var parameters = new DialogParameters
-            {
-                { "message", message },
-                { "title", title ?? "输入" },
-                { "defaultValue", defaultValue ?? string.Empty }
-            };
-
-            _dialogService.ShowDialog("InputDialog", parameters, result =>
-            {
-                if (result.Result == ButtonResult.OK)
-                {
-                    tcs.SetResult(result.Parameters.GetValue<string>("input"));
-                }
-                else
-                {
-                    tcs.SetResult(null);
-                }
-            });
-
-            return tcs.Task;
-        }
-
-        /// <inheritdoc/>
-        public Task<TResult?> ShowDialogAsync<TResult>(string dialogName, IDictionary<string, object>? parameters = null)
-        {
-            var tcs = new TaskCompletionSource<TResult?>();
-
-            var dialogParams = new DialogParameters();
-            if (parameters != null)
-            {
-                foreach (var kvp in parameters)
-                {
-                    dialogParams.Add(kvp.Key, kvp.Value);
-                }
-            }
-
-            _dialogService.ShowDialog(dialogName, dialogParams, result =>
-            {
-                if (result.Result == ButtonResult.OK)
-                {
-                    tcs.SetResult(result.Parameters.GetValue<TResult>("result"));
-                }
-                else
-                {
-                    tcs.SetResult(default);
-                }
             });
 
             return tcs.Task;
