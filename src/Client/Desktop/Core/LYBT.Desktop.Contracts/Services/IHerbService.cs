@@ -8,67 +8,24 @@ namespace LYBT.Desktop.Contracts.Services
     /// <summary>
     /// 药材Service接口
     /// </summary>
-    public interface IHerbService
+    public interface IHerbService : ICrudService<HerbListDto, HerbDetailDto, HerbInputDto>
     {
-        #region 基本CRUD操作
+        #region 查询操作
 
         /// <summary>
-        /// 创建药材
+        /// 分页查询药材（支持分类过滤）
         /// </summary>
-        Task<CommandResult<HerbDetailDto>> CreateHerbAsync(HerbInputDto createDto, CancellationToken ct = default);
+        Task<CommandResult<PagedResult<HerbListDto>>> GetPagedAsync(
+            int page, int pageSize, string? searchText = null, string? category = null, CancellationToken ct = default);
 
-        /// <summary>
-        /// 更新药材
-        /// </summary>
-        Task<CommandResult<HerbDetailDto>> UpdateHerbAsync(HerbInputDto updateDto, CancellationToken ct = default);
+        #endregion
 
-        /// <summary>
-        /// 删除药材
-        /// </summary>
-        Task<CommandResult<bool>> DeleteHerbAsync(Guid herbId, CancellationToken ct = default);
+        #region 批量操作
 
         /// <summary>
         /// 批量删除药材
         /// </summary>
         Task<CommandResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> herbIds, CancellationToken ct = default);
-
-        #endregion
-
-        #region 查询操作
-
-        /// <summary>
-        /// 根据ID获取药材
-        /// </summary>
-        Task<CommandResult<HerbDetailDto>> GetByIdAsync(Guid herbId, CancellationToken ct = default);
-
-        /// <summary>
-        /// 分页查询药材
-        /// </summary>
-        Task<CommandResult<PagedResult<HerbListDto>>> GetPagedAsync(
-            int page, int pageSize, string? searchText = null, string? category = null, CancellationToken ct = default);
-
-        /// <summary>
-        /// 获取所有药材
-        /// </summary>
-        Task<CommandResult<List<HerbListDto>>> GetAllAsync(CancellationToken ct = default);
-
-        /// <summary>
-        /// 搜索药材
-        /// </summary>
-        Task<CommandResult<List<HerbListDto>>> SearchAsync(string keyword, CancellationToken ct = default);
-
-        #endregion
-
-        #region 状态管理
-
-        /// <summary>
-        /// 切换药材状态（启用/禁用）
-        /// </summary>
-        Task<CommandResult<HerbDetailDto>> ToggleStatusAsync(Guid herbId, CancellationToken ct = default);
-
-        #endregion
-
-        #region 批量操作
 
         /// <summary>
         /// 批量导入药材

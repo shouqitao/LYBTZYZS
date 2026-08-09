@@ -187,7 +187,7 @@ public partial class ClinicalWorkspaceViewModel : NavigableViewModelBase
         try
         {
             IsBusy = true;
-            var result = await _patientService.GetPatientsPagedAsync(page: 1, pageSize: 100, keyword: keyword);
+            var result = await _patientService.GetPagedAsync(page: 1, pageSize: 100, keyword: keyword);
 
             if (result.Success && result.Data != null)
             {

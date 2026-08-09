@@ -254,7 +254,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
             SetBusyWithMessage(true, "正在加载患者列表...");
             IsError = false;
 
-            var response = await _patientService.GetPatientsPagedAsync(
+            var response = await _patientService.GetPagedAsync(
                 page: 1,
                 pageSize: 100,
                 keyword: string.IsNullOrWhiteSpace(SearchKeyword) ? null : SearchKeyword);

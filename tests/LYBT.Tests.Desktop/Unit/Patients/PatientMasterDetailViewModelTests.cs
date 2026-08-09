@@ -275,7 +275,7 @@ public class PatientMasterDetailViewModelTests
             },
             Error: null);
 
-        _patientService.GetPatientsPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _patientService.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(pagedResult);
 
         _pagination.CurrentPage.Returns(1);
@@ -286,7 +286,7 @@ public class PatientMasterDetailViewModelTests
         await sut.InitializeAsync();
 
         // Assert
-        await _patientService.Received(1).GetPatientsPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        await _patientService.Received(1).GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -296,7 +296,7 @@ public class PatientMasterDetailViewModelTests
         var sut = CreateSut();
         var exception = new Exception("Database connection failed");
 
-        _patientService.GetPatientsPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _patientService.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<CommandResult<PagedResult<PatientListDto>>>(exception));
 
         // Act
@@ -320,7 +320,7 @@ public class PatientMasterDetailViewModelTests
             },
             Error: null);
 
-        _patientService.GetPatientsPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _patientService.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(pagedResult);
 
         _search.SearchText.Returns("测试关键词");
@@ -329,7 +329,7 @@ public class PatientMasterDetailViewModelTests
         await sut.InitializeAsync();
 
         // Assert
-        await _patientService.Received(1).GetPatientsPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        await _patientService.Received(1).GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
     }
 
     #endregion
@@ -443,7 +443,7 @@ public class PatientMasterDetailViewModelTests
         var createdDto = CreatePatientDetailDto(id: newId, name: "新患者");
         var result = new CommandResult<PatientDetailDto>(Success: true, Data: createdDto, Error: null);
 
-        _patientService.CreatePatientAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>())
+        _patientService.CreateAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>())
             .Returns(result);
 
         // 设置 IsNew = true
@@ -460,7 +460,7 @@ public class PatientMasterDetailViewModelTests
 
         // Assert
         saveResult.Should().BeTrue();
-        await _patientService.Received(1).CreatePatientAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>());
+        await _patientService.Received(1).CreateAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>());
         _cacheManager.Received(1).InvalidatePatientCaches();
     }
 
@@ -473,7 +473,7 @@ public class PatientMasterDetailViewModelTests
         var updatedDto = CreatePatientDetailDto(id: existingId, name: "更新患者");
         var result = new CommandResult<PatientDetailDto>(Success: true, Data: updatedDto, Error: null);
 
-        _patientService.UpdatePatientAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>())
+        _patientService.UpdateAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>())
             .Returns(result);
 
         _detailEditor.IsNew.Returns(false);
@@ -486,7 +486,7 @@ public class PatientMasterDetailViewModelTests
 
         // Assert
         saveResult.Should().BeTrue();
-        await _patientService.Received(1).UpdatePatientAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>());
+        await _patientService.Received(1).UpdateAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>());
         _cacheManager.Received(1).InvalidatePatientCaches();
     }
 
@@ -497,7 +497,7 @@ public class PatientMasterDetailViewModelTests
         var sut = CreateSut();
         var result = new CommandResult<PatientDetailDto>(Success: false, Data: null, Error: "Create failed");
 
-        _patientService.CreatePatientAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>())
+        _patientService.CreateAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>())
             .Returns(result);
 
         _detailEditor.IsNew.Returns(true);
@@ -526,14 +526,14 @@ public class PatientMasterDetailViewModelTests
         var sut = CreateSut();
         var listItem = CreatePatientListDto();
 
-        _patientService.DeletePatientAsync(listItem.Id, Arg.Any<CancellationToken>())
+        _patientService.DeleteAsync(listItem.Id, Arg.Any<CancellationToken>())
             .Returns(new CommandResult<bool>(Success: true, Data: true, Error: null));
 
         // Act
         var result = await sut.DeleteItemAsync(listItem);
 
         // Assert
-        await _patientService.Received(1).DeletePatientAsync(listItem.Id, Arg.Any<CancellationToken>());
+        await _patientService.Received(1).DeleteAsync(listItem.Id, Arg.Any<CancellationToken>());
         _cacheManager.Received(1).InvalidatePatientCaches();
         result.Should().BeTrue();
     }
@@ -545,7 +545,7 @@ public class PatientMasterDetailViewModelTests
         var sut = CreateSut();
         var listItem = CreatePatientListDto();
 
-        _patientService.DeletePatientAsync(listItem.Id, Arg.Any<CancellationToken>())
+        _patientService.DeleteAsync(listItem.Id, Arg.Any<CancellationToken>())
             .Returns(new CommandResult<bool>(Success: false, Data: false, Error: "Delete failed"));
 
         // Act

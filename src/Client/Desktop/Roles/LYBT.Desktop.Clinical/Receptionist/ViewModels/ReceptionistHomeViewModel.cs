@@ -171,7 +171,7 @@ public partial class ReceptionistHomeViewModel : NavigableViewModelBase
         try
         {
             SetBusy(true, "搜索患者中...");
-            var result = await _patientService.SearchPatientsAsync(SearchKeyword);
+            var result = await _patientService.SearchAsync(SearchKeyword);
             
             if (!result || result.Data == null)
             {

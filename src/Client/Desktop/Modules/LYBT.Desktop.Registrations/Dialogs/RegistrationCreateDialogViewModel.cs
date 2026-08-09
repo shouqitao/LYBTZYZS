@@ -146,7 +146,7 @@ public partial class RegistrationCreateDialogViewModel : DialogViewModelBase
             IsSearchingPatients = true;
             StatusMessage = "正在搜索患者...";
 
-            var result = await _patientService.SearchPatientsAsync(PatientSearchText);
+            var result = await _patientService.SearchAsync(PatientSearchText);
             if (result.Success && result.Data != null)
             {
                 PatientSearchResults = new ObservableCollection<PatientListDto>(result.Data);

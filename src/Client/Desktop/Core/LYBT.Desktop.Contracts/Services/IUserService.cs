@@ -1,4 +1,5 @@
 using LYBT.Desktop.Contracts.Results;
+using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using System.Threading;
@@ -8,49 +9,9 @@ namespace LYBT.Desktop.Contracts.Services
     /// <summary>
     /// 用户Service接口
     /// </summary>
-    public interface IUserService
+    public interface IUserService : ICrudService<UserListDto, UserDetailDto, UserInputDto>
     {
-        #region 基本CRUD操作
-
-        /// <summary>
-        /// 创建用户
-        /// </summary>
-        Task<CommandResult<UserDetailDto>> CreateUserAsync(UserInputDto createDto, CancellationToken ct = default);
-
-        /// <summary>
-        /// 更新用户
-        /// </summary>
-        Task<CommandResult<UserDetailDto>> UpdateUserAsync(UserInputDto updateDto, CancellationToken ct = default);
-
-        /// <summary>
-        /// 删除用户
-        /// </summary>
-        Task<CommandResult<bool>> DeleteUserAsync(Guid userId, CancellationToken ct = default);
-
-        /// <summary>
-        /// 批量删除用户
-        /// </summary>
-        Task<CommandResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> userIds, CancellationToken ct = default);
-
-        #endregion
-
         #region 查询操作
-
-        /// <summary>
-        /// 根据ID获取用户
-        /// </summary>
-        Task<CommandResult<UserDetailDto>> GetByIdAsync(Guid userId, CancellationToken ct = default);
-
-        /// <summary>
-        /// 分页查询用户
-        /// </summary>
-        Task<CommandResult<PagedResult<UserListDto>>> GetPagedAsync(
-            int page, int pageSize, string? searchText = null, CancellationToken ct = default);
-
-        /// <summary>
-        /// 获取所有用户
-        /// </summary>
-        Task<CommandResult<List<UserDetailDto>>> GetAllAsync(CancellationToken ct = default);
 
         /// <summary>
         /// 根据用户名获取用户
@@ -58,9 +19,9 @@ namespace LYBT.Desktop.Contracts.Services
         Task<CommandResult<UserDetailDto>> GetByUsernameAsync(string username, CancellationToken ct = default);
 
         /// <summary>
-        /// 搜索用户
+        /// 获取所有用户
         /// </summary>
-        Task<CommandResult<List<UserListDto>>> SearchAsync(string keyword, CancellationToken ct = default);
+        Task<CommandResult<List<UserDetailDto>>> GetAllAsync(CancellationToken ct = default);
 
         /// <summary>
         /// 获取医生列表
@@ -90,21 +51,9 @@ namespace LYBT.Desktop.Contracts.Services
         /// <summary>
         /// 重置用户密码（管理员操作）(Issue #1911)
         /// </summary>
-        /// <param name="userId">用户ID</param>
-        /// <param name="newPassword">新密码（明文）</param>
-        /// <returns>成功标志、错误信息、重置响应数据</returns>
         Task<CommandResult<ResetPasswordResponseDto>> ResetPasswordAsync(
             Guid userId,
             string newPassword, CancellationToken ct = default);
-
-        #endregion
-
-        #region 状态管理
-
-        /// <summary>
-        /// 切换用户状态（启用/禁用）
-        /// </summary>
-        Task<CommandResult<UserDetailDto>> ToggleStatusAsync(Guid userId, CancellationToken ct = default);
 
         #endregion
     }

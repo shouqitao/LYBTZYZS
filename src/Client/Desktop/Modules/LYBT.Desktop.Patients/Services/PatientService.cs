@@ -1,7 +1,7 @@
 using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Repositories;
-using LYBT.Desktop.Foundation.ExceptionHandling;
+using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
@@ -13,151 +13,40 @@ namespace LYBT.Desktop.Patients.Services
     /// 患者Service - 业务逻辑处理
     /// 负责处理患者相关的业务操作
     /// </summary>
-    public class PatientService : IPatientService
+    public class PatientService : CrudServiceBase<PatientListDto, PatientDetailDto, PatientInputDto>, IPatientService
     {
         private readonly IPatientRepository _patientRepository;
-        private readonly ILogger<PatientService> _logger;
 
         public PatientService(
             IPatientRepository patientRepository,
             ILogger<PatientService> logger)
+            : base(logger, "Patient")
         {
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        #region 患者CRUD操作
+        #region Core 实现
 
-        /// <summary>
-        /// 创建患者
-        /// </summary>
-        public async Task<CommandResult<PatientDetailDto>> CreatePatientAsync(PatientInputDto inputDto, CancellationToken ct = default)
-        {
-            try
-            {
-                _logger.LogInformation("[SVC] Patient.Create started - Name={PatientName}", inputDto.Name);
+        protected override async Task<PatientDetailDto> CreateCoreAsync(PatientInputDto input, CancellationToken ct)
+            => await _patientRepository.CreateAsync(input, ct);
 
-                var patient = await _patientRepository.CreateAsync(inputDto);
-                _logger.LogInformation("[SVC] Patient.Create completed - PatientId={PatientId}", patient.Id);
-                return CommandResult<PatientDetailDto>.Succeeded(patient);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Patient.Create failed - Name={PatientName}", inputDto.Name);
-                return CommandResult<PatientDetailDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建患者", ex));
-            }
-        }
+        protected override async Task<PatientDetailDto> UpdateCoreAsync(PatientInputDto input, CancellationToken ct)
+            => await _patientRepository.UpdateAsync(input, ct);
 
-        /// <summary>
-        /// 更新患者
-        /// </summary>
-        public async Task<CommandResult<PatientDetailDto>> UpdatePatientAsync(PatientInputDto inputDto, CancellationToken ct = default)
-        {
-            try
-            {
-                _logger.LogInformation("[SVC] Patient.Update started - PatientId={PatientId}", inputDto.Id);
+        protected override async Task DeleteCoreAsync(Guid id, CancellationToken ct)
+            => await _patientRepository.DeleteAsync(id, ct);
 
-                var patient = await _patientRepository.UpdateAsync(inputDto, ct);
-                _logger.LogInformation("[SVC] Patient.Update completed - PatientId={PatientId}", patient.Id);
-                return CommandResult<PatientDetailDto>.Succeeded(patient);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Patient.Update failed - PatientId={PatientId}", inputDto.Id);
-                return CommandResult<PatientDetailDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("更新患者", ex));
-            }
-        }
+        protected override async Task<PatientDetailDto?> GetByIdCoreAsync(Guid id, CancellationToken ct)
+            => await _patientRepository.GetByIdAsync(id, ct);
 
-        /// <summary>
-        /// 删除患者
-        /// </summary>
-        public async Task<CommandResult<bool>> DeletePatientAsync(Guid patientId, CancellationToken ct = default)
-        {
-            try
-            {
-                _logger.LogInformation("[SVC] Patient.Delete started - PatientId={PatientId}", patientId);
+        protected override async Task<PagedResult<PatientListDto>> GetPagedCoreAsync(int page, int pageSize, string? keyword, CancellationToken ct)
+            => await _patientRepository.GetPagedAsync(page, pageSize, keyword, ct);
 
-                await _patientRepository.DeleteAsync(patientId, ct);
-                _logger.LogInformation("[SVC] Patient.Delete completed - PatientId={PatientId}", patientId);
-                return CommandResult<bool>.Succeeded(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Patient.Delete failed - PatientId={PatientId}", patientId);
-                return CommandResult<bool>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除患者", ex));
-            }
-        }
+        protected override async Task<List<PatientListDto>> SearchCoreAsync(string keyword, CancellationToken ct)
+            => await _patientRepository.SearchAsync(keyword, ct);
 
-        #endregion
-
-        #region 查询操作
-
-        /// <summary>
-        /// 搜索患者
-        /// </summary>
-        public async Task<CommandResult<IEnumerable<PatientListDto>>> SearchPatientsAsync(string keyword, CancellationToken ct = default)
-        {
-            try
-            {
-                _logger.LogDebug("[SVC] Patient.Search started - Keyword={Keyword}", keyword);
-
-                var patients = await _patientRepository.SearchAsync(keyword, ct);
-                _logger.LogDebug("[SVC] Patient.Search completed - Count={Count}", patients.Count);
-                return CommandResult<IEnumerable<PatientListDto>>.Succeeded(patients);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Patient.Search failed - Keyword={Keyword}", keyword);
-                return CommandResult<IEnumerable<PatientListDto>>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("搜索患者", ex));
-            }
-        }
-
-        /// <summary>
-        /// 分页查询患者
-        /// </summary>
-        public async Task<CommandResult<PagedResult<PatientListDto>>> GetPatientsPagedAsync(int page, int pageSize, string? keyword = null, CancellationToken ct = default)
-        {
-            try
-            {
-                _logger.LogDebug("[SVC] Patient.GetPaged started - Page={Page} PageSize={PageSize}", page, pageSize);
-
-                var result = await _patientRepository.GetPagedAsync(page, pageSize, keyword, ct);
-                _logger.LogDebug("[SVC] Patient.GetPaged completed - Count={Count}", result.Items.Count);
-                return CommandResult<PagedResult<PatientListDto>>.Succeeded(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Patient.GetPaged failed");
-                return CommandResult<PagedResult<PatientListDto>>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("查询患者列表", ex));
-            }
-        }
-
-        /// <summary>
-        /// 根据ID获取患者（Issue #1788: 支持单个患者查询）
-        /// </summary>
-        public async Task<CommandResult<PatientDetailDto>> GetByIdAsync(Guid patientId, CancellationToken ct = default)
-        {
-            try
-            {
-                _logger.LogDebug("[SVC] Patient.GetById started - PatientId={PatientId}", patientId);
-
-                var patient = await _patientRepository.GetByIdAsync(patientId, ct);
-
-                if (patient == null)
-                {
-                    _logger.LogWarning("[SVC] Patient.GetById → NotFound - PatientId={PatientId}", patientId);
-                    return CommandResult<PatientDetailDto>.Failed("患者不存在");
-                }
-
-                _logger.LogDebug("[SVC] Patient.GetById completed - Name={PatientName}", patient.Name);
-                return CommandResult<PatientDetailDto>.Succeeded(patient);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Patient.GetById failed - PatientId={PatientId}", patientId);
-                return CommandResult<PatientDetailDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("查询患者", ex));
-            }
-        }
+        protected override Task<PatientDetailDto?> ToggleStatusCoreAsync(Guid id, CancellationToken ct)
+            => throw new NotSupportedException("患者模块不支持状态切换");
 
         #endregion
 
@@ -168,23 +57,13 @@ namespace LYBT.Desktop.Patients.Services
         /// </summary>
         public async Task<CommandResult<PatientBatchImportResultDto>> BatchImportAsync(PatientBatchImportInputDto request, CancellationToken ct = default)
         {
-            try
+            return await ExecuteAsync<PatientBatchImportResultDto>("Patient.BatchImport", async () =>
             {
-                _logger.LogInformation("[SVC] Patient.BatchImport started");
-
                 var result = await _patientRepository.BatchImportAsync(request, ct);
                 if (result == null)
                     return CommandResult<PatientBatchImportResultDto>.Failed("批量导入操作失败");
-
-                _logger.LogInformation("[SVC] Patient.BatchImport completed - Success={Success}, Failed={Failed}",
-                    result.SuccessCount, result.FailureCount);
                 return CommandResult<PatientBatchImportResultDto>.Succeeded(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Patient.BatchImport failed");
-                return CommandResult<PatientBatchImportResultDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("批量导入患者", ex));
-            }
+            });
         }
 
         /// <summary>
@@ -192,22 +71,13 @@ namespace LYBT.Desktop.Patients.Services
         /// </summary>
         public async Task<CommandResult<byte[]>> ExportTemplateAsync(CancellationToken ct = default)
         {
-            try
+            return await ExecuteAsync<byte[]>("Patient.ExportTemplate", async () =>
             {
-                _logger.LogInformation("[SVC] Patient.ExportTemplate started");
-
                 var data = await _patientRepository.ExportTemplateAsync(ct);
                 if (data == null)
                     return CommandResult<byte[]>.Failed("导出模板操作失败");
-
-                _logger.LogInformation("[SVC] Patient.ExportTemplate completed - Size={Size} bytes", data.Length);
                 return CommandResult<byte[]>.Succeeded(data);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Patient.ExportTemplate failed");
-                return CommandResult<byte[]>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导出患者模板", ex));
-            }
+            });
         }
 
         /// <summary>
@@ -215,22 +85,13 @@ namespace LYBT.Desktop.Patients.Services
         /// </summary>
         public async Task<CommandResult<byte[]>> ExportPatientsAsync(string? keyword = null, CancellationToken ct = default)
         {
-            try
+            return await ExecuteAsync<byte[]>("Patient.ExportPatients", async () =>
             {
-                _logger.LogInformation("[SVC] Patient.ExportPatients started - Keyword={Keyword}", keyword);
-
                 var data = await _patientRepository.ExportPatientsAsync(keyword, ct);
                 if (data == null)
                     return CommandResult<byte[]>.Failed("导出患者数据操作失败");
-
-                _logger.LogInformation("[SVC] Patient.ExportPatients completed - Size={Size} bytes", data.Length);
                 return CommandResult<byte[]>.Succeeded(data);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Patient.ExportPatients failed - Keyword={Keyword}", keyword);
-                return CommandResult<byte[]>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导出患者数据", ex));
-            }
+            });
         }
 
         #endregion

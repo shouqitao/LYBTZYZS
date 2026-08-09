@@ -106,7 +106,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 await MasterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
                 {
-                    var pagedResult = await _patientService.GetPatientsPagedAsync(CurrentPage, PageSize, SearchText);
+                    var pagedResult = await _patientService.GetPagedAsync(CurrentPage, PageSize, SearchText);
                     if (pagedResult.Data != null)
                     {
                         MasterDetailServices.Pagination.TotalCount = pagedResult.Data.TotalCount;
@@ -169,8 +169,8 @@ namespace LYBT.Desktop.Patients.ViewModels
                 var isEditingExisting = detail.Id != Guid.Empty;
 
                 var result = isEditingExisting
-                    ? await _patientService.UpdatePatientAsync(inputDto)
-                    : await _patientService.CreatePatientAsync(inputDto);
+                    ? await _patientService.UpdateAsync(inputDto)
+                    : await _patientService.CreateAsync(inputDto);
 
                 if (!result.Success)
                 {
@@ -207,7 +207,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>删除项</summary>
         protected override async Task<bool> DeleteItemAsync(PatientListDto item)
         {
-            var result = await _patientService.DeletePatientAsync(item.Id, CancellationToken.None);
+            var result = await _patientService.DeleteAsync(item.Id, CancellationToken.None);
             if (!result.Success)
             {
                 MasterDetailServices.ErrorHandler.SetError("Delete", result.Error ?? $"删除患者 '{item.Name}' 失败");

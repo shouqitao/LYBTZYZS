@@ -169,8 +169,8 @@ namespace LYBT.Desktop.Catalog.ViewModels
 
             var input = HerbEditor.GetHerbData();
             var result = HerbEditor.Herb.Id == Guid.Empty
-                ? await _herbService.CreateHerbAsync(input)
-                : await _herbService.UpdateHerbAsync(input);
+                ? await _herbService.CreateAsync(input)
+                : await _herbService.UpdateAsync(input);
 
             if (!result.Success)
             {
@@ -201,7 +201,7 @@ namespace LYBT.Desktop.Catalog.ViewModels
         /// <summary>删除项</summary>
         protected override async Task<bool> DeleteItemAsync(HerbListDto item)
         {
-            var result = await _herbService.DeleteHerbAsync(item.Id);
+            var result = await _herbService.DeleteAsync(item.Id);
             if (!result.Success)
             {
                 MasterDetailServices.ErrorHandler.SetError("Delete", result.Error ?? "删除药材失败");

@@ -7,46 +7,8 @@ namespace LYBT.Desktop.Contracts.Services
     /// <summary>
     /// 患者Service接口
     /// </summary>
-    public interface IPatientService
+    public interface IPatientService : ICrudService<PatientListDto, PatientDetailDto, PatientInputDto>
     {
-        #region 患者CRUD操作
-
-        /// <summary>
-        /// 创建患者
-        /// </summary>
-        Task<CommandResult<PatientDetailDto>> CreatePatientAsync(PatientInputDto inputDto, CancellationToken ct = default);
-
-        /// <summary>
-        /// 更新患者
-        /// </summary>
-        Task<CommandResult<PatientDetailDto>> UpdatePatientAsync(PatientInputDto inputDto, CancellationToken ct = default);
-
-        /// <summary>
-        /// 删除患者
-        /// </summary>
-        Task<CommandResult<bool>> DeletePatientAsync(Guid patientId, CancellationToken ct = default);
-
-        #endregion
-
-        #region 查询操作
-
-        /// <summary>
-        /// 搜索患者
-        /// </summary>
-        Task<CommandResult<IEnumerable<PatientListDto>>> SearchPatientsAsync(string keyword, CancellationToken ct = default);
-
-        /// <summary>
-        /// 分页查询患者
-        /// </summary>
-        Task<CommandResult<PagedResult<PatientListDto>>> GetPatientsPagedAsync(int page, int pageSize, string? keyword = null, CancellationToken ct = default);
-
-        /// <summary>
-        /// 根据ID获取患者（Issue #1788: 支持单个患者查询）
-        /// </summary>
-        Task<CommandResult<PatientDetailDto>> GetByIdAsync(Guid patientId, CancellationToken ct = default);
-
-        #endregion
-
         #region 批量导入/导出
 
         /// <summary>

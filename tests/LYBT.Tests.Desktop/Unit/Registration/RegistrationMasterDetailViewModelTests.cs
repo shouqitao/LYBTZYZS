@@ -203,14 +203,14 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
         var patientId = Guid.NewGuid();
         var doctorId = Guid.NewGuid();
 
-        _patientService.SearchPatientsAsync("张", Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new CommandResult<IEnumerable<PatientListDto>>(true,
+        _patientService.SearchAsync("张", Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new CommandResult<List<PatientListDto>>(true,
                 [new PatientListDto { Id = patientId, Name = "张三", Gender = Gender.Male }], null)));
 
         sut.PatientSearchText = "张";
         await sut.SearchPatientsCommand.ExecuteAsync(null);
 
-        await _patientService.Received(1).SearchPatientsAsync("张", Arg.Any<CancellationToken>());
+        await _patientService.Received(1).SearchAsync("张", Arg.Any<CancellationToken>());
         sut.PatientSearchResults.Should().HaveCount(1);
         sut.ShowPatientResults.Should().BeTrue();
         sut.StatusMessage.Should().Contain("找到 1 位患者");
