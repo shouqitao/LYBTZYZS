@@ -1,0 +1,109 @@
+using LYBT.Module.Catalog.Application.Mappers;
+using LYBT.Module.Catalog.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Utilities.Text;
+using MediatR;
+
+namespace LYBT.Module.Catalog.Application.Commands;
+
+/// <summary>
+/// 批量导入药材命令处理器。
+/// </summary>
+public class BatchImportHerbsCommandHandler : IRequestHandler<BatchImportHerbsCommand, Result<HerbBatchImportResultDto>>
+{
+    private readonly IHerbRepository _herbRepository;
+
+    public BatchImportHerbsCommandHandler(IHerbRepository herbRepository)
+    {
+        _herbRepository = herbRepository;
+    }
+
+    public async Task<Result<HerbBatchImportResultDto>> Handle(
+        BatchImportHerbsCommand request, CancellationToken cancellationToken)
+    {
+        const int MAX_IMPORT_SIZE = 10000;
+
+        var result = new HerbBatchImportResultDto
+        {
+            ImportTime = DateTime.UtcNow
+        };
+
+        if (request.Herbs.Count > MAX_IMPORT_SIZE)
+        {
+            return Result<HerbBatchImportResultDto>.Failure(ErrorCode.ValidationFailed, $"批量导入最多支持{MAX_IMPORT_SIZE}条记录");
+        }
+
+        for (int i = 0; i < request.Herbs.Count; i++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var dto = request.Herbs[i];
+            var rowNumber = i + 2;
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(dto.PinYinCode))
+                {
+                    dto.PinYinCode = PinYinHelper.GetPinYinCode(dto.Name);
+                }
+
+                var exists = await _herbRepository.ExistsByNameAsync(dto.Name, ct: cancellationToken);
+
+                if (exists)
+                {
+                    switch (request.Strategy)
+                    {
+                        case DuplicateStrategy.Skip:
+                            result.SkippedCount++;
+                            continue;
+
+                        case DuplicateStrategy.Update:
+                            var existingHerb = await _herbRepository.GetByNameAsync(dto.Name, cancellationToken);
+                            if (existingHerb != null)
+                            {
+                                existingHerb.UpdateProfile(
+                                    dto.Name, dto.Unit, dto.Price, dto.PinYinCode,
+                                    dto.Category, dto.Properties, dto.Origin, dto.Spec,
+                                    dto.CostPrice, dto.Effect, dto.Usage, dto.Remark,
+                                    request.CurrentUserId);
+                                await _herbRepository.UpdateAsync(existingHerb, cancellationToken);
+                                result.SuccessCount++;
+                            }
+                            continue;
+
+                        case DuplicateStrategy.Error:
+                            result.FailureCount++;
+                            result.Failures.Add(new HerbImportFailureDto
+                            {
+                                RowNumber = rowNumber,
+                                HerbName = dto.Name,
+                                Reason = "药材名称重复",
+                                ErrorDetails = new List<string> { "已存在同名药材，导入策略设置为报错" }
+                            });
+                            continue;
+                    }
+                }
+
+                var entity = CatalogDtoMapper.ToEntity(dto, request.CurrentUserId);
+
+                await _herbRepository.AddAsync(entity, cancellationToken);
+                result.SuccessCount++;
+            }
+            catch
+            {
+                result.FailureCount++;
+                result.Failures.Add(new HerbImportFailureDto
+                {
+                    RowNumber = rowNumber,
+                    HerbName = dto.Name,
+                    Reason = "导入失败",
+                    ErrorDetails = new List<string> { "数据处理异常" }
+                });
+            }
+        }
+
+        return Result<HerbBatchImportResultDto>.Success(result);
+    }
+}

@@ -1,0 +1,25 @@
+using LYBT.Shared.Models.Contracts.Herbs;
+
+namespace LYBT.Module.Catalog.Interfaces
+{
+    /// <summary>
+    /// 药材引用查询仓储 - 封装跨聚合的引用检查查询
+    /// </summary>
+    public interface IHerbReferenceRepository
+    {
+        /// <summary>获取处方引用计数</summary>
+        Task<int> GetPrescriptionReferenceCountAsync(Guid herbId, CancellationToken ct = default);
+
+        /// <summary>获取验方引用计数</summary>
+        Task<int> GetFormulaReferenceCountAsync(Guid herbId, CancellationToken ct = default);
+
+        /// <summary>获取最近N条处方引用记录</summary>
+        Task<List<PrescriptionReferenceDto>> GetRecentPrescriptionReferencesAsync(Guid herbId, int take, CancellationToken ct = default);
+
+        /// <summary>批量获取处方引用计数</summary>
+        Task<Dictionary<Guid, int>> GetBatchPrescriptionReferenceCountsAsync(List<Guid> herbIds, CancellationToken ct = default);
+
+        /// <summary>批量获取验方引用计数</summary>
+        Task<Dictionary<Guid, int>> GetBatchFormulaReferenceCountsAsync(List<Guid> herbIds, CancellationToken ct = default);
+    }
+}
