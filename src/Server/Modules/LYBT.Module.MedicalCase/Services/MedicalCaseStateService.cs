@@ -25,20 +25,20 @@ namespace LYBT.Module.MedicalCases.Services
         private const int AuditOperationCancel = 4;
 
         private readonly IMedicalCaseRepository _repository;
-        private readonly ICrossModuleService _crossModule;
+        private readonly IUserCrossModuleService _userCrossModule;
         private readonly ICacheInvalidationService _cacheInvalidation;
         private readonly IRegistrationCrossModuleService _registrationCrossModule;
 
         public MedicalCaseStateService(
             IMedicalCaseRepository repository,
-            ICrossModuleService crossModule,
+            IUserCrossModuleService userCrossModule,
             ILogger<MedicalCaseStateService> logger,
             ICacheInvalidationService cacheInvalidation,
             IRegistrationCrossModuleService registrationCrossModule)
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _crossModule = crossModule ?? throw new ArgumentNullException(nameof(crossModule));
+            _userCrossModule = userCrossModule ?? throw new ArgumentNullException(nameof(userCrossModule));
             _cacheInvalidation = cacheInvalidation ?? throw new ArgumentNullException(nameof(cacheInvalidation));
             _registrationCrossModule = registrationCrossModule ?? throw new ArgumentNullException(nameof(registrationCrossModule));
         }
@@ -300,7 +300,7 @@ namespace LYBT.Module.MedicalCases.Services
             try
             {
                 var (operatorName, operatorRole) = await MedicalCaseServiceHelper
-                    .GetOperatorInfoAsync(_crossModule, operatorId, isAdmin, _logger, cancellationToken);
+                    .GetOperatorInfoAsync(_userCrossModule, operatorId, isAdmin, _logger, cancellationToken);
 
                 await _repository.AddAuditLogAsync(new MedicalCaseAuditLog
                 {

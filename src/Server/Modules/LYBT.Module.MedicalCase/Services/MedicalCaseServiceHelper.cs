@@ -23,7 +23,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// D5-1: 从 IUserRepository 迁移到 IUserCrossModuleService
         /// </summary>
         public static async Task<(string Name, UserRole Role)> GetOperatorInfoAsync(
-            ICrossModuleService crossModule,
+            IUserCrossModuleService userCrossModule,
             Guid userId,
             bool isAdmin,
             ILogger? logger = null,
@@ -31,7 +31,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             try
             {
-                var user = await crossModule.GetUserBasicInfoAsync(userId, cancellationToken);
+                var user = await userCrossModule.GetUserBasicInfoAsync(userId, cancellationToken);
                 if (user != null)
                 {
                     return (user.RealName, user.Role);
@@ -56,7 +56,8 @@ namespace LYBT.Module.MedicalCases.Services
         public static async Task<(PatientBasicDto Patient, UserBasicDto Doctor)> ValidateAndFetchCreationContextAsync(
             Guid patientId,
             Guid doctorId,
-            ICrossModuleService crossModule,
+            IPatientCrossModuleService patientCrossModule,
+            IUserCrossModuleService userCrossModule,
             IMedicalCaseRepository medicalCaseRepository,
             ILogger logger,
             CancellationToken cancellationToken = default)
@@ -67,7 +68,7 @@ namespace LYBT.Module.MedicalCases.Services
                 throw new ArgumentException("DoctorId/UserId 不能为空");
             }
 
-            var patient = await crossModule.GetPatientBasicInfoAsync(patientId, cancellationToken)
+            var patient = await patientCrossModule.GetPatientBasicInfoAsync(patientId, cancellationToken)
                 ?? throw new NotFoundException($"患者不存在，PatientId: {patientId}");
 
             // T5-P2-09: 检查患者状态
@@ -78,7 +79,7 @@ namespace LYBT.Module.MedicalCases.Services
                 throw new BusinessException(ErrorCode.McPatientDisabled, ErrorMessages.Get(ErrorCode.McPatientDisabled));
             }
 
-            var doctor = await crossModule.GetUserBasicInfoAsync(doctorId, cancellationToken)
+            var doctor = await userCrossModule.GetUserBasicInfoAsync(doctorId, cancellationToken)
                 ?? throw new NotFoundException($"医生不存在，DoctorId: {doctorId}");
 
             // BR-001: 单患者仅一条未完成医案

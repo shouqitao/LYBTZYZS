@@ -4,7 +4,7 @@
 # Modules (Server)
 
 ## Purpose
-Business modules for the ASP.NET Core backend. Each module is a **self-contained vertical slice** with Domain, Application, and Infrastructure layers. Modules use **MediatR CQRS** (Commands/Queries/Handlers) for request processing and **domain events** for cross-module state propagation. Each module has its own DbContext for data isolation. Cross-module communication uses `ICrossModuleService` interfaces (synchronous queries) or domain events (async state changes).
+Business modules for the ASP.NET Core backend. Each module is a **self-contained vertical slice** with Domain, Application, and Infrastructure layers. Modules use **MediatR CQRS** (Commands/Queries/Handlers) for request processing and **domain events** for cross-module state propagation. Each module has its own DbContext for data isolation. Cross-module communication uses `IXxxCrossModuleService` domain interfaces (synchronous queries) or domain events (async state changes).
 
 ## Subdirectories
 | Directory | Purpose |
@@ -21,7 +21,7 @@ Business modules for the ASP.NET Core backend. Each module is a **self-contained
 
 ### Working In This Directory
 - Each module follows **Domain / Application / Infrastructure** structure (see module template below).
-- **Modules MUST NOT reference each other.** Use `ICrossModuleService`（`Infrastructure/Services/CrossModule`）for synchronous cross-module queries, or domain events for async state changes.
+- **Modules MUST NOT reference each other.** Use `IXxxCrossModuleService`（`Infrastructure/Services/CrossModule`）for synchronous cross-module queries, or domain events for async state changes.
 - Each module registers its own **DbContext** (per-module data isolation) — never share `AppDbContext`.
 - All DTOs are defined in `LYBT.Shared.Models`, not within modules.
 - MediatR is registered per-module: `services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(...))`.
@@ -43,7 +43,7 @@ LYBT.Module.<Name>/
 ├── Infrastructure/            # Data access layer
 │   ├── <Module>DbContext.cs   # Module-scoped DbContext
 │   └── <Entity>Repository.cs  # Repository implementation
-├── Interfaces/                # Service interfaces (ICrossModuleService, etc.)
+├── Interfaces/                # Service interfaces (IXxxCrossModuleService, etc.)
 ├── Controllers/               # Minimal API controllers (delegate to MediatR)
 └── <Name>Module.cs            # Static extension method for DI registration
 ```
@@ -68,7 +68,7 @@ services.AddMediatR(cfg =>
 - **Controller**: Minimal, dispatches to MediatR (ICommand/IQuery → Handler)
 - **Command/Query Handler**: Business logic + validation + orchestrates Repository calls
 - **Repository**: Extends `BaseRepository<T>`, adds domain-specific queries
-- **Cross-module (sync)**: `ICrossModuleService` interface（`Infrastructure/Services/CrossModule`）, implemented in providing module
+- **Cross-module (sync)**: `IXxxCrossModuleService` domain interface（`Infrastructure/Services/CrossModule`）, implemented in providing module
 - **Cross-module (async)**: SignalR `INotificationService` 推送（B-10，如挂号队列实时通知）
 - **Validators**: FluentValidation, registered per-module assembly scan
 

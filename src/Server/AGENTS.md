@@ -4,7 +4,7 @@
 # Server
 
 ## Purpose
-ASP.NET Core WebAPI backend for the LYBTZYZS TCM clinic management system. Implements a **modular monolith** architecture with MediatR CQRS pattern. Each business module (Auth, Users, Patients, Herbs, Formula, MedicalCase, Registration, Reports) is self-contained with its own Application and Infrastructure layers. Cross-module communication uses `ICrossModuleService` interfaces（`Infrastructure/Services/CrossModule`）. MedicalCase is the sole DDD aggregate root.
+ASP.NET Core WebAPI backend for the LYBTZYZS TCM clinic management system. Implements a **modular monolith** architecture with MediatR CQRS pattern. Each business module (Auth, Users, Patients, Herbs, Formula, MedicalCase, Registration, Reports) is self-contained with its own Application and Infrastructure layers. Cross-module communication uses `IXxxCrossModuleService` domain interfaces（`Infrastructure/Services/CrossModule`）. MedicalCase is the sole DDD aggregate root.
 
 ## Key Files
 | File | Description |
@@ -23,7 +23,7 @@ ASP.NET Core WebAPI backend for the LYBTZYZS TCM clinic management system. Imple
 
 ### Working In This Directory
 - Dependency direction: `Services(WebAPI) -> Modules -> Core(Infrastructure, Entities)`
-- **Modules MUST NOT reference each other**; cross-module communication via `ICrossModuleService` interfaces（`Infrastructure/Services/CrossModule`）.
+- **Modules MUST NOT reference each other**; cross-module communication via `IXxxCrossModuleService` domain interfaces（`Infrastructure/Services/CrossModule`）.
 - Each module has its **own DbContext** (per-module data isolation) — never use the shared `AppDbContext` for module data.
 - Service layer MUST NOT directly inject `AppDbContext` — must use Repository interface (enforced by architecture test).
 - All DTOs live in `Shared.Models`; entities live in `LYBT.Entities` or module `Domain/` folders.
@@ -42,7 +42,7 @@ ASP.NET Core WebAPI backend for the LYBTZYZS TCM clinic management system. Imple
 - **Modular Monolith**: Each module is self-contained (Domain + Application + Infrastructure)
 - **CQRS**: CommandHandler / QueryHandler via MediatR
 - **Repository**: Module-specific repositories (e.g., `PatientRepository`, `HerbRepository`) + `BaseRepository<T>`
-- **Cross-module**: `ICrossModuleService` interfaces（`Infrastructure/Services/CrossModule`）for synchronous cross-module queries；异步通知走 SignalR `INotificationService`（B-10）
+- **Cross-module**: `IXxxCrossModuleService` domain interfaces（`Infrastructure/Services/CrossModule`）for synchronous cross-module queries；异步通知走 SignalR `INotificationService`（B-10）
 
 ## Dependencies
 

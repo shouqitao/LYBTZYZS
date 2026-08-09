@@ -62,9 +62,6 @@ public static class LocalWebApiProgram
 
         builder.Services.AddSingleton<LoggingLevelManager>();
 
-        // 跨模块服务门面（Core 层注册，先于模块注册）
-        builder.Services.AddCrossModuleService();
-
         // 注册模块 Service（与远程 WebAPI 使用相同的 Service/Repository 层）
         builder.Services.AddAuthModule(builder.Configuration);
         builder.Services.AddUsersModule(builder.Configuration);

@@ -12,19 +12,20 @@ namespace LYBT.Module.Registrations.Application.Commands;
 
 public class QuickVisitCommandHandler(
     IRegistrationRepository repository,
-    ICrossModuleService crossModule,
+    IPatientCrossModuleService patientCrossModule,
+    IUserCrossModuleService userCrossModule,
     IMedicalCaseCrossModuleService medicalCaseCrossModule
 ) : IRequestHandler<QuickVisitCommand, Result<QuickVisitResultDto>>
 {
     public async Task<Result<QuickVisitResultDto>> Handle(
         QuickVisitCommand request, CancellationToken cancellationToken)
     {
-        var patientInfo = await crossModule.GetPatientBasicInfoAsync(request.Input.PatientId, cancellationToken);
+        var patientInfo = await patientCrossModule.GetPatientBasicInfoAsync(request.Input.PatientId, cancellationToken);
         if (patientInfo == null)
             return Result<QuickVisitResultDto>.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.PatientNotFound));
 
         // REG-BR-009: 挂号费从医生自动带出
-        var doctorInfo = await crossModule.GetUserBasicInfoAsync(request.DoctorId, cancellationToken);
+        var doctorInfo = await userCrossModule.GetUserBasicInfoAsync(request.DoctorId, cancellationToken);
 
         var maxQueueNumber = await repository.GetTodayMaxQueueNumberAsync(cancellationToken);
         var registration = new Registration

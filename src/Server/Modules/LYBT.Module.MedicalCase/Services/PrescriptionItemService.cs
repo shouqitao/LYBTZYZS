@@ -14,16 +14,16 @@ namespace LYBT.Module.MedicalCases.Services
     public class PrescriptionItemService
     {
         private readonly IMedicalCaseRepository _repository;
-        private readonly ICrossModuleService _crossModule;
+        private readonly IHerbCrossModuleService _herbCrossModule;
         private readonly ILogger<PrescriptionItemService> _logger;
 
         public PrescriptionItemService(
             IMedicalCaseRepository repository,
-            ICrossModuleService crossModule,
+            IHerbCrossModuleService herbCrossModule,
             ILogger<PrescriptionItemService> logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _crossModule = crossModule ?? throw new ArgumentNullException(nameof(crossModule));
+            _herbCrossModule = herbCrossModule ?? throw new ArgumentNullException(nameof(herbCrossModule));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -145,7 +145,7 @@ namespace LYBT.Module.MedicalCases.Services
             var allHerbIds = prescriptionDto.Items.Select(i => i.HerbId).Distinct().ToList();
 
             // AD-02: 过滤禁用药材，禁止加入处方
-            var disabledHerbIds = await _crossModule.GetDisabledHerbIdsAsync(allHerbIds, cancellationToken);
+            var disabledHerbIds = await _herbCrossModule.GetDisabledHerbIdsAsync(allHerbIds, cancellationToken);
             var validItems = prescriptionDto.Items;
             if (disabledHerbIds.Count > 0)
             {
@@ -171,7 +171,7 @@ namespace LYBT.Module.MedicalCases.Services
             Dictionary<Guid, decimal>? herbPrices = null;
             if (herbIdsNeedingPrice.Count > 0)
             {
-                herbPrices = await _crossModule.GetHerbPricesAsync(herbIdsNeedingPrice, cancellationToken);
+                herbPrices = await _herbCrossModule.GetHerbPricesAsync(herbIdsNeedingPrice, cancellationToken);
                 _logger.LogInformation("[SVC] Auto-populated UnitPrice for {Count} herbs from herb catalog",
                     herbPrices.Count);
             }

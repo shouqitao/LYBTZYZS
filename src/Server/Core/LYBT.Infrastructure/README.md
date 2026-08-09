@@ -154,7 +154,7 @@ LYBT.Infrastructure/
 | BaseEntityConfiguration 统一审计/并发/软删除配置 | DRY 原则，所有实体继承统一配置 | - | - |
 | BaseRepository 模板方法模式 | 子类通过覆盖 ApplyKeywordFilter/ApplyDefaultOrdering 自定义逻辑 | Issue #2103 | - |
 | SaveChangesAsync 全局 RowVersion 同步 | 防止同一请求内多次操作导致不必要的并发异常 | Issue #2250 | - |
-| CrossModuleService 实现 4 个 ISP 接口 | 替代原 ICrossModuleService 单一大接口，接口隔离 | D5-1 | - |
+| 跨模块通信走 `IXxxCrossModuleService` 域接口 | 模块间通信唯一通道（A-31-C8 定案，统一门面已删） | 2026-08-08 | - |
 | CacheInvalidationService 聚合双缓存失效 | 同时清理 OutputCache Tag 和 MemoryCache 前缀 | - | - |
 | BaseService 移除 IMapper 依赖 | 各 Service 注入具体 Mapper（Mapperly） | - | adopt-mapperly-unified-mapping |
 | 迁移文件从 Migrations/ 迁移到 Data/Migrations/ | 目录结构规范化 | 2025-12-29 | - |

@@ -26,7 +26,8 @@ namespace LYBT.Module.MedicalCases.Services
     {
         private readonly IMedicalCaseRepository _repository;
         private readonly IRegistrationCrossModuleService _registrationCrossModule;
-        private readonly ICrossModuleService _crossModule;
+        private readonly IPatientCrossModuleService _patientCrossModule;
+        private readonly IUserCrossModuleService _userCrossModule;
         private readonly ICacheInvalidationService _cacheInvalidation;
         private readonly MedicalCasePrescriptionService _prescriptionService;
         private readonly PrescriptionItemService _itemService;
@@ -36,7 +37,8 @@ namespace LYBT.Module.MedicalCases.Services
         public MedicalCaseCommandService(
             IMedicalCaseRepository repository,
             IRegistrationCrossModuleService registrationCrossModule,
-            ICrossModuleService crossModule,
+            IPatientCrossModuleService patientCrossModule,
+            IUserCrossModuleService userCrossModule,
             ILogger<MedicalCaseCommandService> logger,
             ICacheInvalidationService cacheInvalidation,
             MedicalCasePrescriptionService prescriptionService,
@@ -47,7 +49,8 @@ namespace LYBT.Module.MedicalCases.Services
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _registrationCrossModule = registrationCrossModule ?? throw new ArgumentNullException(nameof(registrationCrossModule));
-            _crossModule = crossModule ?? throw new ArgumentNullException(nameof(crossModule));
+            _patientCrossModule = patientCrossModule ?? throw new ArgumentNullException(nameof(patientCrossModule));
+            _userCrossModule = userCrossModule ?? throw new ArgumentNullException(nameof(userCrossModule));
             _cacheInvalidation = cacheInvalidation ?? throw new ArgumentNullException(nameof(cacheInvalidation));
             _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
             _itemService = itemService ?? throw new ArgumentNullException(nameof(itemService));
@@ -82,7 +85,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             // 统一验证: 参数、Patient、Doctor、BR-001
             var (patient, doctor) = await MedicalCaseServiceHelper.ValidateAndFetchCreationContextAsync(
-                request.PatientId, doctorId, _crossModule, _repository, _logger, cancellationToken);
+                request.PatientId, doctorId, _patientCrossModule, _userCrossModule, _repository, _logger, cancellationToken);
 
             // 创建MedicalCase实体
             var medicalCase = new MedicalCase
