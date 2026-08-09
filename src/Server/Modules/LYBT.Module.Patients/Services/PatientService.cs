@@ -38,7 +38,7 @@ internal class PatientService : IPatientService
     {
         var patient = await _patientRepository.GetByIdAsync(id, ct);
         if (patient == null)
-            return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotFound, "患者不存在");
+            return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotFound, ErrorMessages.Get(ErrorCode.PatientNotFound));
         return Result<PatientDetailDto>.Success(PatientMapper.ToDetailDto(patient));
     }
 

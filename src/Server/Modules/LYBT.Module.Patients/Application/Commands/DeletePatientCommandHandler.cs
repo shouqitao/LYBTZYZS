@@ -27,7 +27,7 @@ public class DeletePatientCommandHandler : IRequestHandler<DeletePatientCommand,
     {
         var patient = await _patientRepository.GetByIdAsync(request.Id, cancellationToken);
         if (patient == null)
-            return Result.Failure(ErrorCode.PatientNotFound, "患者不存在");
+            return Result.Failure(ErrorCode.PatientNotFound, ErrorMessages.Get(ErrorCode.PatientNotFound));
 
         // 被医案引用的患者不可删除（与批量删除逻辑一致）
         var refCount = await _medicalCaseCrossModuleService.CountMedicalCasesAsync(request.Id, cancellationToken);

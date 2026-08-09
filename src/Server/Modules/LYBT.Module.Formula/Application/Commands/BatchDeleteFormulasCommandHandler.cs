@@ -3,6 +3,7 @@ using MediatR;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Infrastructure.BatchOperations;
 using LYBT.Module.Formulas.Interfaces;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Module.Formulas.Application.Commands;
 
@@ -36,7 +37,7 @@ public class BatchDeleteFormulasCommandHandler
         return Task.CompletedTask;
     }
 
-    protected override string EntityNotFoundMessage => "方剂不存在";
+    protected override string EntityNotFoundMessage => ErrorMessages.Get(ErrorCode.FormulaNotFound);
     protected override string OperationName => "删除";
     protected override bool CatchExceptions => false;
 

@@ -46,7 +46,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
                     IsSuccess = false,
                     FailureReason = "Replay detected: token already revoked"
                 }, cancellationToken);
-                return Result<LoginResponse>.Failure(ErrorCode.AuthTokenRevoked, "令牌已被撤销，请重新登录");
+                return Result<LoginResponse>.Failure(ErrorCode.AuthTokenRevoked, ErrorMessages.Get(ErrorCode.AuthTokenRevoked));
             }
 
             if (oldSession.LogoutTime.HasValue)

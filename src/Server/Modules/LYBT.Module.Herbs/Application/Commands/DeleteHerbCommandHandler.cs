@@ -23,7 +23,7 @@ public class DeleteHerbCommandHandler : IRequestHandler<DeleteHerbCommand, Resul
     {
         var herb = await _herbRepository.GetByIdAsync(request.Id, cancellationToken);
         if (herb == null)
-            return Result.Failure(ErrorCode.HerbNotFound, "药材不存在");
+            return Result.Failure(ErrorCode.HerbNotFound, ErrorMessages.Get(ErrorCode.HerbNotFound));
 
         herb.SoftDelete(request.CurrentUserId);
 

@@ -22,7 +22,7 @@ public class CheckPatientReferenceQueryHandler(
     {
         var patient = await _patientRepository.GetByIdAsync(request.PatientId, cancellationToken);
         if (patient == null)
-            return Result<PatientReferenceCheckDto>.Failure(ErrorCode.PatientNotFound, "患者不存在");
+            return Result<PatientReferenceCheckDto>.Failure(ErrorCode.PatientNotFound, ErrorMessages.Get(ErrorCode.PatientNotFound));
 
         var refCount = await _medicalCaseCrossModuleService.CountMedicalCasesAsync(request.PatientId, cancellationToken);
         var recentCases = await _medicalCaseCrossModuleService.GetRecentMedicalCasesAsync(request.PatientId, 5, cancellationToken);

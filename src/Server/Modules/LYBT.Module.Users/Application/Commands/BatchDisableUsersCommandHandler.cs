@@ -4,6 +4,7 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Infrastructure.BatchOperations;
 using LYBT.Entities.Users;
 using LYBT.Module.Users.Interfaces;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Module.Users.Application.Commands;
 
@@ -36,7 +37,7 @@ public class BatchDisableUsersCommandHandler
         return Task.CompletedTask;
     }
 
-    protected override string EntityNotFoundMessage => "用户不存在";
+    protected override string EntityNotFoundMessage => ErrorMessages.Get(ErrorCode.UserNotFound);
     protected override string OperationName => "禁用";
 
     protected override string? GetEntityName(ApplicationUser user) => user.UserName;

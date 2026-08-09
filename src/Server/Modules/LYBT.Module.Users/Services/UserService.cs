@@ -36,7 +36,7 @@ internal class UserService : IUserService
     {
         var user = await _userRepository.GetByIdAsync(id, ct);
         if (user == null)
-            return Result<UserDetailDto>.Failure(ErrorCode.NotFound, "用户不存在");
+            return Result<UserDetailDto>.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.UserNotFound));
         return Result<UserDetailDto>.Success(UserMapper.ToDetailDto(user));
     }
 
@@ -47,7 +47,7 @@ internal class UserService : IUserService
 
         var user = await _userRepository.GetByIdAsync(userId, ct);
         if (user == null)
-            return Result<UserDetailDto>.Failure(ErrorCode.UserNotFound, "用户不存在");
+            return Result<UserDetailDto>.Failure(ErrorCode.UserNotFound, ErrorMessages.Get(ErrorCode.UserNotFound));
 
         return Result<UserDetailDto>.Success(UserMapper.ToDetailDto(user));
     }

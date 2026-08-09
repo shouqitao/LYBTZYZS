@@ -75,7 +75,7 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 logger.LogWarning("[SVC] MedicalCase.Create -> PatientDisabled - PatientId={PatientId} Status={Status}",
                     patientId, patient.Status);
-                throw new BusinessException(ErrorCode.McPatientDisabled, "该患者已被禁用，无法创建医案");
+                throw new BusinessException(ErrorCode.McPatientDisabled, ErrorMessages.Get(ErrorCode.McPatientDisabled));
             }
 
             var doctor = await crossModule.GetUserBasicInfoAsync(doctorId, cancellationToken)
@@ -91,7 +91,7 @@ namespace LYBT.Module.MedicalCases.Services
                     var activeCase = existingCases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Active);
                     logger.LogWarning("[SVC] MedicalCase -> ActiveCaseExists - PatientId={PatientId} CaseId={CaseId}",
                         patientId, activeCase?.Id);
-                    throw new BusinessException(ErrorCode.McActiveCaseExists, "该患者已有进行中的医案，请先完成或重开现有医案");
+                    throw new BusinessException(ErrorCode.McActiveCaseExists, ErrorMessages.Get(ErrorCode.McActiveCaseExists));
                 }
 
                 if (MedicalCaseBusinessRules.HasSuspendedCase(existingStatuses))
@@ -99,7 +99,7 @@ namespace LYBT.Module.MedicalCases.Services
                     var suspendedCase = existingCases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Suspended);
                     logger.LogWarning("[SVC] MedicalCase -> SuspendedCaseExists - PatientId={PatientId} CaseId={CaseId}",
                         patientId, suspendedCase?.Id);
-                    throw new BusinessException(ErrorCode.McSuspendedCaseExists, "该患者已有暂存的医案，请先处理现有医案（继续或关闭）");
+                    throw new BusinessException(ErrorCode.McSuspendedCaseExists, ErrorMessages.Get(ErrorCode.McSuspendedCaseExists));
                 }
             }
 

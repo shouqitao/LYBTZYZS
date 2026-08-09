@@ -263,7 +263,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             var medicalCase = await SaveAsync(request, currentUserId, isAdmin, cancellationToken);
             if (medicalCase == null)
-                return LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>.Failure(ErrorCode.NotFound, "医案不存在");
+                return LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.McCaseNotFound));
 
             var dto = _mapper.MapToMedicalCaseDetailDto(medicalCase);
             return LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>.Success(dto);
@@ -281,7 +281,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             var medicalCase = await SetPrescriptionFlagAsync(medicalCaseId, needsPrescription, currentUserId, isAdmin, cancellationToken);
             if (medicalCase == null)
-                return LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>.Failure(ErrorCode.NotFound, "医案不存在");
+                return LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.McCaseNotFound));
 
             var dto = _mapper.MapToMedicalCaseDetailDto(medicalCase);
             return LYBT.Shared.Models.Contracts.Common.Result<MedicalCaseDetailDto>.Success(dto);
@@ -301,7 +301,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             var medicalCase = await _repository.GetByIdAsync(medicalCaseId, cancellationToken);
             if (medicalCase == null)
-                return LYBT.Shared.Models.Contracts.Common.Result<bool>.Failure(ErrorCode.NotFound, "医案不存在");
+                return LYBT.Shared.Models.Contracts.Common.Result<bool>.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.McCaseNotFound));
 
             var now = DateTime.UtcNow;
 
@@ -347,7 +347,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             var medicalCase = await _repository.GetByIdAsync(medicalCaseId, cancellationToken);
             if (medicalCase == null)
-                return LYBT.Shared.Models.Contracts.Common.Result<bool>.Failure(ErrorCode.NotFound, "医案不存在");
+                return LYBT.Shared.Models.Contracts.Common.Result<bool>.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.McCaseNotFound));
 
             var now = DateTime.UtcNow;
 

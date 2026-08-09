@@ -30,7 +30,7 @@ public class CreateFormulaCommandHandler : IRequestHandler<CreateFormulaCommand,
         var dto = request.Input;
 
         if (await _formulaRepository.ExistsByNameAsync(dto.Name, ct: cancellationToken))
-            return Result<FormulaDetailDto>.Failure(ErrorCode.FormulaNameExists, "方剂名称已存在");
+            return Result<FormulaDetailDto>.Failure(ErrorCode.FormulaNameExists, ErrorMessages.Get(ErrorCode.FormulaNameExists));
 
         var formula = FormulaDtoMapper.ToEntity(dto, request.CurrentUserId);
 

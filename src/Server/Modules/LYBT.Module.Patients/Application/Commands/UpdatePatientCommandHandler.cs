@@ -24,7 +24,7 @@ public class UpdatePatientCommandHandler : IRequestHandler<UpdatePatientCommand,
     {
         var patient = await _patientRepository.GetByIdAsync(request.Id, cancellationToken);
         if (patient == null)
-            return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotFound, "患者不存在");
+            return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotFound, ErrorMessages.Get(ErrorCode.PatientNotFound));
 
         patient.UpdateProfile(
             request.Input.Name,

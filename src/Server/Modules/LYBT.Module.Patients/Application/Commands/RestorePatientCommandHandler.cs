@@ -24,10 +24,10 @@ public class RestorePatientCommandHandler : IRequestHandler<RestorePatientComman
     {
         var patient = await _patientRepository.GetByIdIncludingDeletedAsync(request.Id, cancellationToken);
         if (patient == null)
-            return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotFound, "患者不存在");
+            return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotFound, ErrorMessages.Get(ErrorCode.PatientNotFound));
 
         if (!patient.IsDeleted)
-            return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotDeleted, "该患者未被删除");
+            return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotDeleted, ErrorMessages.Get(ErrorCode.PatientNotDeleted));
 
         patient.Restore(request.CurrentUserId);
         await _patientRepository.UpdateAsync(patient, cancellationToken);

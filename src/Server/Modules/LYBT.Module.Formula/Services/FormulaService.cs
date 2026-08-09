@@ -36,7 +36,7 @@ internal class FormulaService : IFormulaService
     {
         var formula = await _formulaRepository.GetByIdAsync(id, ct);
         if (formula == null)
-            return Result<FormulaDetailDto>.Failure(ErrorCode.FormulaNotFound, "方剂不存在");
+            return Result<FormulaDetailDto>.Failure(ErrorCode.FormulaNotFound, ErrorMessages.Get(ErrorCode.FormulaNotFound));
         return Result<FormulaDetailDto>.Success(FormulaDtoMapper.ToDetailDto(formula));
     }
 }

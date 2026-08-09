@@ -27,7 +27,7 @@ public class DeleteFormulaCommandHandler : IRequestHandler<DeleteFormulaCommand,
     {
         var formula = await _formulaRepository.GetByIdAsync(request.Id, cancellationToken);
         if (formula == null)
-            return Result.Failure(ErrorCode.FormulaNotFound, "方剂不存在");
+            return Result.Failure(ErrorCode.FormulaNotFound, ErrorMessages.Get(ErrorCode.FormulaNotFound));
 
         formula.SoftDelete(request.CurrentUserId);
 

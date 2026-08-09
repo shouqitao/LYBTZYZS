@@ -25,7 +25,7 @@ public class ToggleHerbStatusCommandHandler : IRequestHandler<ToggleHerbStatusCo
     {
         var herb = await _herbRepository.GetByIdAsync(request.Id, cancellationToken);
         if (herb == null)
-            return Result<HerbDetailDto>.Failure(ErrorCode.HerbNotFound, "药材不存在");
+            return Result<HerbDetailDto>.Failure(ErrorCode.HerbNotFound, ErrorMessages.Get(ErrorCode.HerbNotFound));
 
         herb.ChangeStatus(
             herb.Status == CommonStatus.Enabled ? CommonStatus.Disabled : CommonStatus.Enabled,

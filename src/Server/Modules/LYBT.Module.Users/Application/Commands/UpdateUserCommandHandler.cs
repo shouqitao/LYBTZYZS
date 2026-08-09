@@ -24,7 +24,7 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Resul
     {
         var user = await _userRepository.GetByIdAsync(request.Id, cancellationToken);
         if (user == null)
-            return Result<UserDetailDto>.Failure(ErrorCode.NotFound, "用户不存在");
+            return Result<UserDetailDto>.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.UserNotFound));
 
         if (string.IsNullOrWhiteSpace(request.Input.RealName))
             return Result<UserDetailDto>.Failure(ErrorCode.InvalidRequest, "真实姓名不能为空");

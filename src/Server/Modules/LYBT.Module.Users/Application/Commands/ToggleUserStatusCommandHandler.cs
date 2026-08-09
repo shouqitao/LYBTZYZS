@@ -28,7 +28,7 @@ public class ToggleUserStatusCommandHandler : IRequestHandler<ToggleUserStatusCo
     {
         var user = await _userRepository.GetByIdAsync(request.Id, cancellationToken);
         if (user == null)
-            return Result<UserDetailDto>.Failure(ErrorCode.UserNotFound, "用户不存在");
+            return Result<UserDetailDto>.Failure(ErrorCode.UserNotFound, ErrorMessages.Get(ErrorCode.UserNotFound));
 
         if (user.IsSysAdmin)
             return Result<UserDetailDto>.Failure(ErrorCode.CannotDeleteSysAdmin, "系统管理员账号不可被禁用");

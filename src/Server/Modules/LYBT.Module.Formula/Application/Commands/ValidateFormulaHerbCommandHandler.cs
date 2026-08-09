@@ -25,10 +25,10 @@ public class ValidateFormulaHerbCommandHandler(
 
         var herbItem = formula.Herbs.FirstOrDefault(h => h.Id == request.HerbItemId);
         if (herbItem == null)
-            return Result.Failure(ErrorCode.FormulaValidationFailed, "药材项不存在");
+            return Result.Failure(ErrorCode.FormulaValidationFailed, ErrorMessages.Get(ErrorCode.FormulaHerbItemNotFound));
 
         if (herbItem.IsValidated)
-            return Result.Failure(ErrorCode.FormulaValidationFailed, "该药材已校验，无需重复操作");
+            return Result.Failure(ErrorCode.FormulaValidationFailed, ErrorMessages.Get(ErrorCode.FormulaHerbItemAlreadyValidated));
 
         var selectedHerb = await _crossModuleService.GetHerbBasicInfoAsync(request.SelectedHerbId, cancellationToken);
         if (selectedHerb == null)

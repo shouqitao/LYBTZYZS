@@ -53,7 +53,7 @@ public class ValidateTokenQueryHandler : IRequestHandler<ValidateTokenQuery, Res
         if (session.IsExpired())
         {
             _logger.LogDebug("[Handler] Token validation - Valid=False (session expired) SessionId={SessionId}", session.Id);
-            return Result<ValidateTokenResult>.Failure(ErrorCode.AuthAccessTokenExpired, "访问令牌已过期，请重新登录");
+            return Result<ValidateTokenResult>.Failure(ErrorCode.AuthAccessTokenExpired, ErrorMessages.Get(ErrorCode.AuthAccessTokenExpired));
         }
 
         var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;

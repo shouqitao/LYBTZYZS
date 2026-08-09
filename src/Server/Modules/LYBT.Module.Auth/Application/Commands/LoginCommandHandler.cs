@@ -72,7 +72,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
                 IsSuccess = false,
                 FailureReason = "用户不存在"
             }, cancellationToken);
-            return Result<LoginResponse>.Failure(ErrorCode.AuthInvalidCredentials, "用户名或密码错误");
+            return Result<LoginResponse>.Failure(ErrorCode.AuthInvalidCredentials, ErrorMessages.Get(ErrorCode.AuthInvalidCredentials));
         }
 
         if (user.Status == CommonStatus.Disabled)
@@ -88,7 +88,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
                 IsSuccess = false,
                 FailureReason = "用户已被禁用"
             }, cancellationToken);
-            return Result<LoginResponse>.Failure(ErrorCode.UserDisabled, "用户已被禁用");
+            return Result<LoginResponse>.Failure(ErrorCode.UserDisabled, ErrorMessages.Get(ErrorCode.UserDisabled));
         }
 
         if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow)
@@ -105,7 +105,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
                 IsSuccess = false,
                 FailureReason = $"账户已锁定至 {user.LockoutEnd.Value}"
             }, cancellationToken);
-            return Result<LoginResponse>.Failure(ErrorCode.UserLocked, "账号已被锁定，请稍后重试");
+            return Result<LoginResponse>.Failure(ErrorCode.UserLocked, ErrorMessages.Get(ErrorCode.UserLocked));
         }
 
         var isPasswordValid = await _crossModuleService.VerifyPasswordAsync(input.UserName, input.Password, cancellationToken);
@@ -139,7 +139,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
             }, cancellationToken);
 
             await _crossModuleService.UpdateLoginFailureAsync(user.Id, newFailedCount, lockoutEnd, cancellationToken);
-            return Result<LoginResponse>.Failure(ErrorCode.AuthInvalidCredentials, "用户名或密码错误");
+            return Result<LoginResponse>.Failure(ErrorCode.AuthInvalidCredentials, ErrorMessages.Get(ErrorCode.AuthInvalidCredentials));
         }
 
         await _crossModuleService.ResetLoginStateAsync(user.Id, cancellationToken);

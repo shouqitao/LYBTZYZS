@@ -29,7 +29,7 @@ public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordComman
 
         var user = await _userManager.FindByIdAsync(request.Id.ToString());
         if (user == null)
-            return Result.Failure(ErrorCode.UserNotFound, "用户不存在");
+            return Result.Failure(ErrorCode.UserNotFound, ErrorMessages.Get(ErrorCode.UserNotFound));
 
         var result = await _userManager.ChangePasswordAsync(user, request.OldPassword, request.NewPassword);
         if (!result.Succeeded)

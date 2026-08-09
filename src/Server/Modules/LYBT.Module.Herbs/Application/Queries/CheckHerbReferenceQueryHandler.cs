@@ -26,7 +26,7 @@ public class CheckHerbReferenceQueryHandler
     {
         var herb = await _herbRepository.GetByIdAsync(request.HerbId, cancellationToken);
         if (herb == null)
-            return Result<HerbReferenceCheckDto>.Failure(ErrorCode.HerbNotFound, "药材不存在");
+            return Result<HerbReferenceCheckDto>.Failure(ErrorCode.HerbNotFound, ErrorMessages.Get(ErrorCode.HerbNotFound));
 
         var prescriptionCount = await _referenceRepository
             .GetPrescriptionReferenceCountAsync(request.HerbId, cancellationToken);

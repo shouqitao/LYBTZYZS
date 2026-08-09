@@ -117,7 +117,7 @@ namespace LYBT.Module.MedicalCases.Services
                 if (medicalCase.NeedsPrescription == null)
                 {
                     _logger.LogWarning("[SVC] MedicalCase.Complete → NeedsPrescriptionNotSet - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                    throw new BusinessException(ErrorCode.McPrescriptionFlagRequired, "请先标记是否需要开处方");
+                    throw new BusinessException(ErrorCode.McPrescriptionFlagRequired, ErrorMessages.Get(ErrorCode.McPrescriptionFlagRequired));
                 }
 
                 // 如果标记需要开处方，验证处方存在
@@ -126,7 +126,7 @@ namespace LYBT.Module.MedicalCases.Services
                     if (medicalCase.Prescription == null || medicalCase.Prescription.IsDeleted)
                     {
                         _logger.LogWarning("[SVC] MedicalCase.Complete → PrescriptionRequired - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                        throw new BusinessException(ErrorCode.McPrescriptionRequired, "已标记需要开处方，但处方不存在，无法完成医案");
+                        throw new BusinessException(ErrorCode.McPrescriptionRequired, ErrorMessages.Get(ErrorCode.McPrescriptionRequired));
                     }
 
                     // T5-P2-15: 验证处方明细不为空
@@ -134,7 +134,7 @@ namespace LYBT.Module.MedicalCases.Services
                     {
                         _logger.LogWarning("[SVC] MedicalCase.Complete → PrescriptionItemsEmpty - MedicalCaseId={MedicalCaseId}",
                             medicalCaseId);
-                        throw new BusinessException(ErrorCode.McPrescriptionItemsRequired, "处方必须包含至少一项药材才能完成医案");
+                        throw new BusinessException(ErrorCode.McPrescriptionItemsRequired, ErrorMessages.Get(ErrorCode.McPrescriptionItemsRequired));
                     }
                 }
             }
@@ -143,7 +143,7 @@ namespace LYBT.Module.MedicalCases.Services
             if (string.IsNullOrWhiteSpace(medicalCase.Consultation?.TcmDiagnosis))
             {
                 _logger.LogWarning("[SVC] MedicalCase.Complete -> TcmDiagnosisRequired - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw new BusinessException(ErrorCode.MedicalCaseMissingDiagnosis, "中医诊断不能为空，请先填写中医诊断");
+                throw new BusinessException(ErrorCode.MedicalCaseMissingDiagnosis, ErrorMessages.Get(ErrorCode.MedicalCaseMissingDiagnosis));
             }
 
             // DDD: 委托给聚合根域方法
@@ -190,14 +190,14 @@ namespace LYBT.Module.MedicalCases.Services
             if (medicalCase.CaseStatus == MedicalCaseStatus.Completed)
             {
                 _logger.LogWarning("[SVC] MedicalCase.Suspend → AlreadyCompleted - MedicalCaseId={MedicalCaseId}", id);
-                throw new BusinessException(ErrorCode.McCompletedCannotSuspend, "已完成的医案不可挂起");
+                throw new BusinessException(ErrorCode.McCompletedCannotSuspend, ErrorMessages.Get(ErrorCode.McCompletedCannotSuspend));
             }
 
             // 已软删除的医案不可挂起
             if (medicalCase.IsDeleted)
             {
                 _logger.LogWarning("[SVC] MedicalCase.Suspend → AlreadyDeleted - MedicalCaseId={MedicalCaseId}", id);
-                throw new BusinessException(ErrorCode.McDeletedCannotSuspend, "已删除的医案不可挂起");
+                throw new BusinessException(ErrorCode.McDeletedCannotSuspend, ErrorMessages.Get(ErrorCode.McDeletedCannotSuspend));
             }
 
             // DDD: 委托给聚合根域方法
@@ -250,21 +250,21 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 _logger.LogWarning("[SVC] MedicalCase.Cancel → ReasonRequired - MedicalCaseId={MedicalCaseId} IsOwner={IsOwner} IsSameDay={IsSameDay}",
                     id, isOwner, isSameDay);
-                throw new BusinessException(ErrorCode.McCancelReasonRequired, "非当天本人创建的医案取消时必须提供取消原因");
+                throw new BusinessException(ErrorCode.McCancelReasonRequired, ErrorMessages.Get(ErrorCode.McCancelReasonRequired));
             }
 
             // 业务规则验证：已完成医案不可取消（只可软删，Admin 清理）
             if (medicalCase.CaseStatus == MedicalCaseStatus.Completed)
             {
                 _logger.LogWarning("[SVC] MedicalCase.Cancel → AlreadyCompleted - MedicalCaseId={MedicalCaseId}", id);
-                throw new BusinessException(ErrorCode.McCompletedCannotCancel, "已完成的医案不可取消");
+                throw new BusinessException(ErrorCode.McCompletedCannotCancel, ErrorMessages.Get(ErrorCode.McCompletedCannotCancel));
             }
 
             // 已软删除的不重复处理
             if (medicalCase.IsDeleted)
             {
                 _logger.LogWarning("[SVC] MedicalCase.Cancel → AlreadyDeleted - MedicalCaseId={MedicalCaseId}", id);
-                throw new BusinessException(ErrorCode.McAlreadyDeleted, "医案已被删除");
+                throw new BusinessException(ErrorCode.McAlreadyDeleted, ErrorMessages.Get(ErrorCode.McAlreadyDeleted));
             }
 
             // 物理删除聚合根（DB 级联清除 Consultation/Prescription/Items/PrintLogs）

@@ -22,7 +22,7 @@ public class RestoreUserCommandHandler : IRequestHandler<RestoreUserCommand, Res
     {
         var user = await _userRepository.GetByIdIncludingDeletedAsync(request.UserId, cancellationToken);
         if (user == null)
-            return Result<UserDetailDto>.Failure(ErrorCode.UserNotFound, "用户不存在");
+            return Result<UserDetailDto>.Failure(ErrorCode.UserNotFound, ErrorMessages.Get(ErrorCode.UserNotFound));
 
         if (!user.IsDeleted)
             return Result<UserDetailDto>.Failure(ErrorCode.InvalidRequest, "该用户未被删除，无需恢复");

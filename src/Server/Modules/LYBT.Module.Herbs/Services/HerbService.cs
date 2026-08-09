@@ -36,7 +36,7 @@ internal class HerbService : IHerbService
     {
         var herb = await _herbRepository.GetByIdAsync(id, ct);
         if (herb == null)
-            return Result<HerbDetailDto>.Failure(ErrorCode.HerbNotFound, "药材不存在");
+            return Result<HerbDetailDto>.Failure(ErrorCode.HerbNotFound, ErrorMessages.Get(ErrorCode.HerbNotFound));
         return Result<HerbDetailDto>.Success(HerbDtoMapper.ToDetailDto(herb));
     }
 }

@@ -26,7 +26,7 @@ public class CreateHerbCommandHandler : IRequestHandler<CreateHerbCommand, Resul
         var dto = request.Input;
 
         if (await _herbRepository.ExistsByNameAsync(dto.Name, ct: cancellationToken))
-            return Result<HerbDetailDto>.Failure(ErrorCode.HerbNameExists, "药材名称已存在");
+            return Result<HerbDetailDto>.Failure(ErrorCode.HerbNameExists, ErrorMessages.Get(ErrorCode.HerbNameExists));
 
         var herb = HerbDtoMapper.ToEntity(dto, request.CurrentUserId);
 

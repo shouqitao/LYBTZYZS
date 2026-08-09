@@ -370,7 +370,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             var medicalCase = await _repository.GetByIdWithDetailsAsync(id, cancellationToken);
             if (medicalCase == null)
-                return Result<MedicalCaseDetailDto>.Failure(ErrorCode.NotFound, "医案不存在");
+                return Result<MedicalCaseDetailDto>.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.McCaseNotFound));
 
             var dto = _mapper.MapToMedicalCaseDetailDto(medicalCase);
             return Result<MedicalCaseDetailDto>.Success(dto);
@@ -451,7 +451,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             var medicalCase = await _repository.GetByIdWithDetailsAsync(caseId, cancellationToken);
             if (medicalCase == null)
-                return Result<PagedResult<AuditLogDto>>.Failure(ErrorCode.NotFound, "医案不存在");
+                return Result<PagedResult<AuditLogDto>>.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.McCaseNotFound));
 
             var totalCount = await _repository.CountAuditLogsAsync(caseId, cancellationToken);
             var logs = await _repository.GetAuditLogsAsync(caseId, page, pageSize, cancellationToken);
@@ -484,7 +484,7 @@ namespace LYBT.Module.MedicalCases.Services
         {
             var medicalCase = await _repository.GetByIdWithDetailsAsync(caseId, cancellationToken);
             if (medicalCase == null)
-                return Result<MedicalCasePermissionsDto>.Failure(ErrorCode.NotFound, "医案不存在");
+                return Result<MedicalCasePermissionsDto>.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.McCaseNotFound));
 
             var isOwner = medicalCase.UserId == userId;
             var isAdmin = userRole == (int)UserRole.Admin || userRole == (int)UserRole.SuperAdmin;

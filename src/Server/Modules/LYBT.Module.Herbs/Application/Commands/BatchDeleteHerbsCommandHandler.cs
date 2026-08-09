@@ -4,6 +4,7 @@ using LYBT.Infrastructure.Caching;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Entities.Herbs;
 using LYBT.Module.Herbs.Interfaces;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Module.Herbs.Application.Commands;
 
@@ -41,7 +42,7 @@ public class BatchDeleteHerbsCommandHandler
         return Task.CompletedTask;
     }
 
-    protected override string EntityNotFoundMessage => "药材不存在";
+    protected override string EntityNotFoundMessage => ErrorMessages.Get(ErrorCode.HerbNotFound);
     protected override string OperationName => "删除";
     protected override bool TrackIds => true;
 

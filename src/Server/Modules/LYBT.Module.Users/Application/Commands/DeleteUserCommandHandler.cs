@@ -31,7 +31,7 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Resul
 
         var user = await _userRepository.GetByIdAsync(request.Id, cancellationToken);
         if (user == null)
-            return Result.Failure(ErrorCode.NotFound, "用户不存在");
+            return Result.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.UserNotFound));
 
         if (user.IsSysAdmin)
             return Result.Failure(ErrorCode.CannotDeleteSysAdmin, "系统管理员账号不可被删除");

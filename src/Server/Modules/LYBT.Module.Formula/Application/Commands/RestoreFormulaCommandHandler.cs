@@ -27,7 +27,7 @@ public class RestoreFormulaCommandHandler : IRequestHandler<RestoreFormulaComman
             return Result<FormulaDetailDto>.Failure(ErrorCode.FormulaNotFound, "验方不存在");
 
         if (!formula.IsDeleted)
-            return Result<FormulaDetailDto>.Failure(ErrorCode.FormulaNotFound, "验方未被删除，无需恢复");
+            return Result<FormulaDetailDto>.Failure(ErrorCode.FormulaNotFound, ErrorMessages.Get(ErrorCode.FormulaNotDeleted));
 
         var nameExists = await _formulaRepository.ExistsByNameAsync(formula.Name, formula.Id, cancellationToken);
         if (nameExists)

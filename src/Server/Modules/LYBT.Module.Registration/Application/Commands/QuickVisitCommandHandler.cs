@@ -21,7 +21,7 @@ public class QuickVisitCommandHandler(
     {
         var patientInfo = await crossModule.GetPatientBasicInfoAsync(request.Input.PatientId, cancellationToken);
         if (patientInfo == null)
-            return Result<QuickVisitResultDto>.Failure(ErrorCode.NotFound, "患者不存在");
+            return Result<QuickVisitResultDto>.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.PatientNotFound));
 
         // REG-BR-009: 挂号费从医生自动带出
         var doctorInfo = await crossModule.GetUserBasicInfoAsync(request.DoctorId, cancellationToken);

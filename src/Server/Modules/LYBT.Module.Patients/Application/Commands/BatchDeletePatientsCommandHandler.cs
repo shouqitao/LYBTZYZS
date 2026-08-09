@@ -4,6 +4,7 @@ using LYBT.Infrastructure.BatchOperations;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Interfaces;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Module.Patients.Application.Commands;
 
@@ -41,7 +42,7 @@ public class BatchDeletePatientsCommandHandler
         return Task.CompletedTask;
     }
 
-    protected override string EntityNotFoundMessage => "患者不存在";
+    protected override string EntityNotFoundMessage => ErrorMessages.Get(ErrorCode.PatientNotFound);
     protected override string OperationName => "删除";
     protected override bool TrackIds => true;
 

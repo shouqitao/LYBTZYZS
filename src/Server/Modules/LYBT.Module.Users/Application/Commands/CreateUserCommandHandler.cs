@@ -35,7 +35,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
             return Result<UserDetailDto>.Failure(ErrorCode.InvalidRequest, "用户名不能为空");
 
         if (await _userManager.FindByNameAsync(dto.UserName!) != null)
-            return Result<UserDetailDto>.Failure(ErrorCode.UserNameExists, "用户名已存在");
+            return Result<UserDetailDto>.Failure(ErrorCode.UserNameExists, ErrorMessages.Get(ErrorCode.UserNameExists));
 
         var user = ApplicationUser.Create(
             dto.UserName!,

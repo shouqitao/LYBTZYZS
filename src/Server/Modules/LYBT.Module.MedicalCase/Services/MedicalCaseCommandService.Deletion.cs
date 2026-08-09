@@ -39,7 +39,7 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 _logger.LogWarning("[SVC] MedicalCase.Delete → OnlyCompletedCanDelete - MedicalCaseId={MedicalCaseId} Status={Status}",
                     id, medicalCase.CaseStatus);
-                throw new BusinessException(ErrorCode.McOnlyCompletedCanDelete, "仅已完成医案可删除，未完成医案请使用「取消」（物理删除）");
+                throw new BusinessException(ErrorCode.McOnlyCompletedCanDelete, ErrorMessages.Get(ErrorCode.McOnlyCompletedCanDelete));
             }
 
             // D2 FIX: 删除前回滚关联的挂号记录
