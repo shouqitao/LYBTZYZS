@@ -51,38 +51,4 @@ public class MedicalCaseNavigationParameters : NavigationParameters
 
         return parameters;
     }
-
-    /// <summary>
-    /// 创建管理查看模式的导航参数
-    /// </summary>
-    /// <param name="medicalCaseId">医案ID</param>
-    /// <param name="patientId">患者ID</param>
-    /// <returns>导航参数</returns>
-    public static MedicalCaseNavigationParameters ForManagementView(Guid medicalCaseId, Guid patientId)
-    {
-        return new MedicalCaseNavigationParameters
-        {
-            { MedicalCaseIdKey, medicalCaseId },
-            { PatientIdKey, patientId },
-            { WorkspaceModeKey, WorkspaceMode.Management },
-            { InitialEditStateKey, EditState.ReadOnly }
-        };
-    }
-
-    /// <summary>
-    /// 创建管理编辑模式的导航参数
-    /// </summary>
-    /// <param name="medicalCaseId">医案ID</param>
-    /// <param name="patientId">患者ID</param>
-    /// <returns>导航参数</returns>
-    public static MedicalCaseNavigationParameters ForManagementEdit(Guid medicalCaseId, Guid patientId)
-    {
-        return new MedicalCaseNavigationParameters
-        {
-            { MedicalCaseIdKey, medicalCaseId },
-            { PatientIdKey, patientId },
-            { WorkspaceModeKey, WorkspaceMode.Management },
-            { InitialEditStateKey, EditState.Editing }
-        };
-    }
 }

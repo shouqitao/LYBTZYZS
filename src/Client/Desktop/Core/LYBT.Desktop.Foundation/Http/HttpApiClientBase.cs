@@ -50,12 +50,6 @@ internal abstract class HttpApiClientBase
         return new StringContent(json, Encoding.UTF8, "application/json");
     }
 
-    protected static async Task<T?> DeserializeAsync<T>(HttpResponseMessage response, CancellationToken ct = default)
-    {
-        var json = await response.Content.ReadAsStringAsync(ct);
-        return JsonSerializer.Deserialize<T>(json, JsonOptions);
-    }
-
     /// <summary>
     /// 反序列化 LocalWebAPI 响应并解包 ApiResponse&lt;T&gt; 信封（与 Remote/Refit 契约一致）。
     /// 兼容两种情况：LocalWebAPI 返回信封时取 Data；极端情况返回裸 T 时直接反序列化。
@@ -109,23 +103,6 @@ internal abstract class HttpApiClientBase
             sb.Append(key);
             sb.Append('=');
             sb.Append(Uri.EscapeDataString(value));
-        }
-        return sb.ToString();
-    }
-
-    /// <summary>构建带条件查询参数的 URL。</summary>
-    protected static string BuildQueryString(string baseUrl, params (string Key, string? Value)[] parameters)
-    {
-        var sb = new StringBuilder(baseUrl);
-        var first = !baseUrl.Contains('?');
-        foreach (var (key, value) in parameters)
-        {
-            if (string.IsNullOrWhiteSpace(value)) continue;
-            sb.Append(first ? '?' : '&');
-            sb.Append(key);
-            sb.Append('=');
-            sb.Append(Uri.EscapeDataString(value));
-            first = false;
         }
         return sb.ToString();
     }

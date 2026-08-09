@@ -55,21 +55,5 @@ namespace LYBT.Desktop.Controls.Models
                 _ => Math.Max(existingDosage, newDosage)
             };
         }
-
-        /// <summary>
-        /// 获取策略的显示名称
-        /// </summary>
-        public static string GetDisplayName(this DuplicateDosageStrategy strategy)
-        {
-            return strategy switch
-            {
-                DuplicateDosageStrategy.Max => "取较大值",
-                DuplicateDosageStrategy.Min => "取较小值",
-                DuplicateDosageStrategy.Sum => "剂量相加",
-                DuplicateDosageStrategy.Average => "取平均值",
-                DuplicateDosageStrategy.First => "保留原值",
-                _ => "取较大值"
-            };
-        }
     }
 }

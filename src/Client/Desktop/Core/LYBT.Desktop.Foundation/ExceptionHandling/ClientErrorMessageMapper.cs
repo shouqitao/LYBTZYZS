@@ -360,50 +360,12 @@ public static class ClientErrorMessageMapper
     public static Func<string>? TraceIdProvider { get; set; }
 
     /// <summary>
-    /// 获取带追踪码的安全操作失败消息
-    /// </summary>
-    public static string GetSafeMessageWithTrackingCode(string operationName, Exception exception, bool includeTrackingCode = true)
-    {
-        var baseMessage = GetSafeOperationFailureMessage(operationName, exception);
-
-        if (!includeTrackingCode)
-        {
-            return baseMessage;
-        }
-
-        var trackingCode = GetShortTrackingCode();
-        return $"{baseMessage}\n\n如需帮助，请提供追踪码: {trackingCode}";
-    }
-
-    /// <summary>
-    /// 获取带追踪码的通用错误消息
-    /// </summary>
-    public static string GetMessageWithTrackingCode(string message, bool includeTrackingCode = true)
-    {
-        if (!includeTrackingCode)
-        {
-            return message;
-        }
-
-        var trackingCode = GetShortTrackingCode();
-        return $"{message}\n\n如需帮助，请提供追踪码: {trackingCode}";
-    }
-
-    /// <summary>
     /// 获取短追踪码（TraceId的前8位）
     /// </summary>
     public static string GetShortTrackingCode()
     {
         var traceId = TraceIdProvider?.Invoke() ?? Guid.NewGuid().ToString("N");
         return traceId.Length >= 8 ? traceId[..8].ToUpperInvariant() : traceId.ToUpperInvariant();
-    }
-
-    /// <summary>
-    /// 获取完整追踪码
-    /// </summary>
-    public static string GetFullTrackingCode()
-    {
-        return TraceIdProvider?.Invoke() ?? Guid.NewGuid().ToString("N");
     }
 
     #endregion

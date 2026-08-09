@@ -35,17 +35,6 @@ public class ErrorTraceCodeTests : IDisposable
     }
 
     [Fact]
-    public void US_ERR_007_GetFullTrackingCode_WithProvider_ReturnsFullId()
-    {
-        var fullId = "abcdef1234567890abcdef1234567890";
-        ClientErrorMessageMapper.TraceIdProvider = () => fullId;
-
-        var code = ClientErrorMessageMapper.GetFullTrackingCode();
-
-        code.Should().Be(fullId);
-    }
-
-    [Fact]
     public void US_ERR_007_GetShortTrackingCode_WithoutProvider_Returns8Chars()
     {
         ClientErrorMessageMapper.TraceIdProvider = null;

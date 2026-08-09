@@ -73,9 +73,6 @@ namespace LYBT.Desktop.Formula.ViewModels
             FormulaEditor = formulaEditor ?? throw new ArgumentNullException(nameof(formulaEditor));
 
             PageTitle = "验方管理";
-
-            // 监听属性变化 - DetailTitle 已由基类自动通知
-            PropertyChanged += OnSelfPropertyChanged;
         }
 
         #region 基类抽象方法实现
@@ -351,16 +348,10 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region Disposal
 
-        private void OnSelfPropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            // 不再需要手动触发PopulateEditHerbItems，由FormulaEditor管理
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                PropertyChanged -= OnSelfPropertyChanged;
             }
             base.Dispose(disposing);
         }

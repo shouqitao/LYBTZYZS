@@ -38,20 +38,6 @@ public static class ResponsiveLayoutHelper
     }
 
     /// <summary>
-    /// 根据屏幕宽度计算最佳列数
-    /// </summary>
-    public static int GetOptimalColumnCount(double width)
-    {
-        return width switch
-        {
-            <= SmallScreenWidth => 1,
-            <= MediumScreenWidth => 2,
-            <= LargeScreenWidth => 3,
-            _ => 4
-        };
-    }
-
-    /// <summary>
     /// 获取推荐的主区域最小宽度
     /// </summary>
     public static double GetRecommendedMasterWidth(ScreenSizeCategory category)

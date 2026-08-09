@@ -81,25 +81,6 @@ namespace LYBT.Desktop.Foundation.Http
         }
 
         /// <summary>
-        /// 创建组合策略 (重试 + 超时 + 熔断)
-        /// </summary>
-        public static IAsyncPolicy<HttpResponseMessage> CreateCompositePolicy(
-            ILogger? logger = null,
-            int retryCount = 3,
-            TimeSpan? baseDelay = null,
-            TimeSpan? timeout = null,
-            int circuitBreakerThreshold = 5,
-            TimeSpan? circuitBreakerDuration = null)
-        {
-            var timeoutPolicy = CreateTimeoutPolicy(timeout ?? TimeSpan.FromSeconds(30), logger);
-            var retryPolicy = CreateHttpRetryPolicy(logger, retryCount, baseDelay);
-            var circuitBreakerPolicy = CreateCircuitBreakerPolicy(logger, circuitBreakerThreshold, circuitBreakerDuration ?? TimeSpan.FromMinutes(1));
-
-            // 执行顺序: 重试 -> 熔断器 -> 超时
-            return Policy.WrapAsync(retryPolicy, circuitBreakerPolicy, timeoutPolicy);
-        }
-
-        /// <summary>
         /// 判断是否应该重试
         /// Issue #1262: 移除对 500 InternalServerError 的重试，避免非幂等请求（POST/PUT/DELETE）被重复执行
         /// 只重试网关错误和服务不可用等临时性问题

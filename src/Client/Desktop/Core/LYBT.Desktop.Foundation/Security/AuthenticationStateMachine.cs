@@ -201,21 +201,6 @@ public class AuthenticationStateMachine : IAuthenticationStateMachine
     }
 
     /// <summary>
-    /// 强制设置状态（仅用于恢复场景，跳过转换验证）
-    /// </summary>
-    internal void ForceState(AuthState state, string? statusMessage = null)
-    {
-        lock (_stateLock)
-        {
-            var previousState = _currentState;
-            _currentState = state;
-            _statusMessage = statusMessage ?? GetDefaultStatusMessage(state);
-            _logger.LogWarning("强制状态设置 [{PreviousState}] -> [{NewState}]",
-                previousState, state);
-        }
-    }
-
-    /// <summary>
     /// 获取状态的默认显示消息
     /// </summary>
     private static string? GetDefaultStatusMessage(AuthState state)

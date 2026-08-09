@@ -14,11 +14,6 @@ namespace LYBT.Desktop.Infrastructure.Services
                 ?? throw new InvalidOperationException("WPF Application not initialized");
         }
 
-        internal WpfUiThreadDispatcher(Dispatcher dispatcher)
-        {
-            _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
-        }
-
         public void Invoke(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             if (_dispatcher.CheckAccess())
