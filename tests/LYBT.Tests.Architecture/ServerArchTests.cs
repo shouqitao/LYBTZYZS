@@ -904,6 +904,13 @@ public class ServerArchTests
             "IUserService", "IPatientService", "IHerbService", "IFormulaService"
         };
 
+        // A-31-C3a 豁免：登录流程写方法（LoginCommandHandler 专用，非 Controller 写端点）
+        var loginFlowWriteMethods = new[]
+        {
+            "IUserService.UpdateLoginFailureAsync",
+            "IUserService.ResetLoginStateAsync"
+        };
+
         var violations = new List<string>();
         foreach (var asm in ServerAssemblies)
         {
@@ -912,7 +919,8 @@ public class ServerArchTests
                 if (!type.IsInterface || !cqrsReadServiceInterfaces.Contains(type.Name)) continue;
                 foreach (var method in type.GetMethods())
                 {
-                    if (writeVerbs.Any(v => method.Name.Contains(v)))
+                    if (writeVerbs.Any(v => method.Name.Contains(v))
+                        && !loginFlowWriteMethods.Contains($"{type.Name}.{method.Name}"))
                         violations.Add($"{type.Name}.{method.Name}");
                 }
             }

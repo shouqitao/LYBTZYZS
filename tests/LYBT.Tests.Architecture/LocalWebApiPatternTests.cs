@@ -69,14 +69,13 @@ public class LocalWebApiPatternTests
         {
             "LYBT.Entities",
             "LYBT.Infrastructure",
-            "LYBT.Module.Auth",
             "LYBT.Module.Formulas",
             "LYBT.Module.Herbs",
+            "LYBT.Module.Identity",
             "LYBT.Module.MedicalCases",
             "LYBT.Module.Patients",
             "LYBT.Module.Registrations",
-            "LYBT.Module.Reports",
-            "LYBT.Module.Users"
+            "LYBT.Module.Reports"
         }.OrderBy(n => n).ToList();
 
         Assert.Equal(expectedReferences, referencedServerAssemblies);

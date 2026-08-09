@@ -1,7 +1,10 @@
 using Asp.Versioning;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.Auth.Application.Commands;
-using LYBT.Module.Auth.Application.Queries;
+using LYBT.Module.Identity.Application.Commands;
+using LYBT.Module.Identity.Application.Queries;
+using LYBT.Module.Identity.Controllers;
+using LYBT.Module.Identity.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
@@ -13,25 +16,29 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
-    /// 认证授权 API - 登录、登出、Token刷新、自动登录
+    /// 认证与用户管理 API（A-31-C3a 合并 AuthController + UsersController）。
+    /// 路由保持：/api/v1/auth/*（认证）+ /api/v1/users/*（用户管理）。
     /// </summary>
     [ApiController]
     [ApiVersion("1")]
-    [Route("api/v{version:apiVersion}/[controller]")]
+    [Route("api/v{version:apiVersion}/users")]
     [Authorize]
-    public class AuthController : BaseApiController
+    public class IdentityController : BaseUsersController
     {
         private readonly ISender _sender;
 
-        public AuthController(
+        public IdentityController(
             ISender sender,
-            ILogger<AuthController> logger)
-            : base(logger)
+            ILogger<IdentityController> logger,
+            IUserService userService)
+            : base(sender, logger, userService)
         {
             _sender = sender;
         }
 
-        [HttpPost("login")]
+        #region 认证端点（原 AuthController，路由 /api/v1/auth/*）
+
+        [HttpPost("api/v{version:apiVersion}/auth/login")]
         [AllowAnonymous]
         [EnableRateLimiting("Login")]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
@@ -62,7 +69,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 用户登出
         /// </summary>
-        [HttpPost("logout")]
+        [HttpPost("api/v{version:apiVersion}/auth/logout")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         public async Task<IActionResult> LogoutAsync([FromBody] LogoutRequest request)
@@ -82,7 +89,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 刷新访问令牌
         /// </summary>
-        [HttpPost("refresh")]
+        [HttpPost("api/v{version:apiVersion}/auth/refresh")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 401)]
@@ -103,7 +110,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 自动登录（免密登录）
         /// </summary>
-        [HttpPost("auto-login")]
+        [HttpPost("api/v{version:apiVersion}/auth/auto-login")]
         [AllowAnonymous]
         [EnableRateLimiting("Login")]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
@@ -119,7 +126,7 @@ namespace LYBT.WebAPI.Controllers
             return HandleResult(result, "自动登录成功", useAuthMapping: true);
         }
 
-        [HttpGet("validate")]
+        [HttpGet("api/v{version:apiVersion}/auth/validate")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 401)]
         public async Task<IActionResult> ValidateTokenFromHeaderAsync()
@@ -161,12 +168,6 @@ namespace LYBT.WebAPI.Controllers
             return Unauthorized(ApiResponse<object>.CreateFail("Token 无效", new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() }));
         }
 
-        [HttpGet]
-        public IActionResult Get()
-        {
-            return BusinessFail("方法不允许");
-        }
+        #endregion
     }
 }
-
-

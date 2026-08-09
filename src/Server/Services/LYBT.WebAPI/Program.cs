@@ -19,7 +19,7 @@ using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Serilog;
-using LYBT.Module.Users.Services;
+using LYBT.Module.Identity.Services;
 
 /// <summary>
 /// 凌隐宝堂中医诊所诊疗系统 WebAPI 程序入口

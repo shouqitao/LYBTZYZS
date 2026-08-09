@@ -37,4 +37,7 @@ public record UserBasicDto
 public record UserCredentialDto : UserBasicDto
 {
     public string PasswordHash { get; init; } = string.Empty;
+
+    /// <summary>是否系统管理员（独立用户标识，非角色）</summary>
+    public bool IsSysAdmin { get; init; }
 }

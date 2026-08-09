@@ -20,13 +20,13 @@ public class LocalValidateTokenQueryHandler : IRequestHandler<LocalValidateToken
     public async Task<ApiResponse<ValidateTokenResponse>> Handle(LocalValidateTokenQuery query, CancellationToken cancellationToken)
     {
         if (query.UserId == Guid.Empty)
-            return ApiResponse<ValidateTokenResponse>.CreateSuccess(
-                new ValidateTokenResponse { IsValid = false, ErrorMessage = "Token 无效" }, "Token 无效");
+            return ApiResponse<ValidateTokenResponse>.CreateFail("Token 无效",
+                new ValidateTokenResponse { IsValid = false, ErrorMessage = "Token 无效" });
 
         var user = await _userManager.FindByIdAsync(query.UserId.ToString());
         if (user == null)
-            return ApiResponse<ValidateTokenResponse>.CreateSuccess(
-                new ValidateTokenResponse { IsValid = false, ErrorMessage = "用户不存在" }, "用户不存在");
+            return ApiResponse<ValidateTokenResponse>.CreateFail("用户不存在",
+                new ValidateTokenResponse { IsValid = false, ErrorMessage = "用户不存在" });
 
         var roles = await _userManager.GetRolesAsync(user);
         var role = LocalAuthHelpers.ParseUserRole(roles);

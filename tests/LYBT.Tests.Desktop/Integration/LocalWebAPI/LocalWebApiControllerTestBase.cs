@@ -5,8 +5,14 @@ using LYBT.LocalWebAPI;
 using LYBT.Infrastructure.Data;
 using LYBT.LocalWebAPI.Auth;
 using LYBT.LocalWebAPI.Data;
+using LYBT.Shared.Configuration.Options.Common;
+using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Entities.Users;
+using LYBT.Module.Identity;
+using LYBT.Module.Identity.Services;
+using LYBT.Shared.Models.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -26,6 +32,12 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
     private readonly string _dbName = $"LYBTZYZS_CtrlTests_{Guid.NewGuid():N}";
     private string _connectionString = null!;
     private WebApplication? _app;
+
+    /// <summary>
+    /// 测试 JWT 密钥（A-31-C3a：登录统一后 token 由 JwtService/JwtOptions 签发，
+    /// 须与 LocalJwtConfig 的 JwtBearer 验证密钥一致）
+    /// </summary>
+    private const string TestJwtSecret = "LYBT-LocalWebAPI-Secret-Key-2024-DoNotUseInProduction";
 
     protected HttpClient Client { get; private set; } = null!;
 
@@ -64,6 +76,30 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(_connectionString));
 
+        // 模块 DbContext 与 AppDbContext 同库（A-31-C3a：IdentityDbContext）
+        builder.Services.AddOptions<DatabaseOptions>()
+            .Configure(o => o.ConnectionString = _connectionString);
+        builder.Services.AddOptions<JwtOptions>()
+            .Configure(o => o.SecretKey = TestJwtSecret);
+        builder.Services.AddOptions<SecurityOptions>()
+            .Bind(builder.Configuration.GetSection(SecurityOptions.SectionName));
+        builder.Services.AddOptions<LoginOptions>()
+            .Configure(o =>
+            {
+                o.IsLocal = true;
+                o.LockoutEnabled = false;
+                o.AuditLevel = SecurityAuditLevel.Full;
+            });
+
+        // A-31-C3a: Identity 模块（登录统一走 LoginCommandHandler）
+        builder.Services.AddIdentityModule(builder.Configuration);
+
+        // LocalWebAPI 本地 Handler（Refresh/AutoLogin/Validate）
+        builder.Services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(typeof(LYBT.LocalWebAPI.Commands.LocalRefreshTokenCommand).Assembly);
+        });
+
         // Add controllers with explicit assembly so CreateSlimBuilder discovers them
         builder.Services.AddControllers()
             .AddApplicationPart(typeof(LYBT.LocalWebAPI.Controllers.HealthController).Assembly)
@@ -95,7 +131,7 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
 
         var localJwtOptions = new LYBT.Shared.Configuration.Options.Server.LocalJwtOptions
         {
-            SecretKey = "LYBT-LocalWebAPI-Secret-Key-2024-DoNotUseInProduction"
+            SecretKey = TestJwtSecret
         };
         LocalJwtConfig.ConfigureServices(builder.Services, localJwtOptions);
 
@@ -124,8 +160,34 @@ public abstract class LocalWebApiControllerTestBase : IAsyncLifetime
         using var scope = _app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await db.Database.EnsureCreatedAsync();
-        await LYBT.Module.Users.Services.IdentitySeedData.SeedRolesAndAdminAsync(scope.ServiceProvider);
+        await LYBT.Module.Identity.Services.IdentitySeedData.SeedRolesAndAdminAsync(scope.ServiceProvider);
+        await EnsureAdminUserAsync(scope.ServiceProvider);
         await LocalWebApiSeedData.SeedAsync(db, scope.ServiceProvider);
+    }
+
+    /// <summary>
+    /// 测试基座补建 admin 用户（模拟 sysadmin 创建 admin 的业务流程；AuthControllerTests 依赖 admin 登录）
+    /// </summary>
+    private static async Task EnsureAdminUserAsync(IServiceProvider serviceProvider)
+    {
+        var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        if (await userManager.FindByNameAsync("admin") != null)
+            return;
+
+        var admin = new ApplicationUser
+        {
+            UserName = "admin",
+            RealName = "管理员",
+            Email = "admin@lybtzyzs.local",
+            Role = UserRole.Admin,
+            Status = CommonStatus.Enabled,
+            CreatedAt = DateTime.UtcNow
+        };
+        var result = await userManager.CreateAsync(admin, "Admin@123456");
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(admin, LYBT.Infrastructure.Constants.RoleConstants.Admin);
+        }
     }
 
     public async Task DisposeAsync()

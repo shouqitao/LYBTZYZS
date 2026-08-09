@@ -544,8 +544,7 @@ public class ArchTests
             .ResideInNamespaceStartingWith("LYBT.Shared")
             .Should()
             .NotHaveDependencyOnAny(
-                "LYBT.Module.Auth",
-                "LYBT.Module.Users",
+                "LYBT.Module.Identity",
                 "LYBT.Module.Patients",
                 "LYBT.Module.MedicalCases",
                 "LYBT.Module.Herbs",
@@ -593,12 +592,11 @@ public class ArchTests
     /// 防止分层退化，任何反向引用都会导致测试失败
     /// </summary>
     [Theory]
-    [InlineData("LYBT.Entities", new[] { "LYBT.Infrastructure", "LYBT.WebAPI", "LYBT.Module.Auth", "LYBT.Module.Users", "LYBT.Module.Patients", "LYBT.Module.MedicalCases", "LYBT.Module.Herbs", "LYBT.Module.Formulas" },
+    [InlineData("LYBT.Entities", new[] { "LYBT.Infrastructure", "LYBT.WebAPI", "LYBT.Module.Identity", "LYBT.Module.Patients", "LYBT.Module.MedicalCases", "LYBT.Module.Herbs", "LYBT.Module.Formulas" },
         "Entities 层 (最底层) 不得依赖任何上层")]
-    [InlineData("LYBT.Infrastructure", new[] { "LYBT.WebAPI", "LYBT.Module.Auth", "LYBT.Module.Users", "LYBT.Module.Patients", "LYBT.Module.MedicalCases", "LYBT.Module.Herbs", "LYBT.Module.Formulas" },
+    [InlineData("LYBT.Infrastructure", new[] { "LYBT.WebAPI", "LYBT.Module.Identity", "LYBT.Module.Patients", "LYBT.Module.MedicalCases", "LYBT.Module.Herbs", "LYBT.Module.Formulas" },
         "Infrastructure 层不得依赖 WebAPI 或 Module 层")]
-    [InlineData("LYBT.Module.Auth", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
-    [InlineData("LYBT.Module.Users", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
+    [InlineData("LYBT.Module.Identity", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
     [InlineData("LYBT.Module.Patients", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
     [InlineData("LYBT.Module.Herbs", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
     [InlineData("LYBT.Module.Formulas", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
@@ -630,8 +628,7 @@ public class ArchTests
     {
         var moduleAssemblies = new[]
         {
-            Assembly.Load("LYBT.Module.Auth"),
-            Assembly.Load("LYBT.Module.Users"),
+            Assembly.Load("LYBT.Module.Identity"),
             Assembly.Load("LYBT.Module.Patients"),
             Assembly.Load("LYBT.Module.MedicalCases"),
             Assembly.Load("LYBT.Module.Herbs"),

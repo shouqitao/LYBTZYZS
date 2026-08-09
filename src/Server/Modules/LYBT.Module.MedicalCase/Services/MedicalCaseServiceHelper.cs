@@ -20,10 +20,10 @@ namespace LYBT.Module.MedicalCases.Services
     {
         /// <summary>
         /// 获取操作者信息用于审计日志
-        /// D5-1: 从 IUserRepository 迁移到 IUserCrossModuleService
+        /// D5-1: 从 IUserRepository 迁移到 IUserService
         /// </summary>
         public static async Task<(string Name, UserRole Role)> GetOperatorInfoAsync(
-            IUserCrossModuleService userCrossModule,
+            IUserService userCrossModule,
             Guid userId,
             bool isAdmin,
             ILogger? logger = null,
@@ -57,7 +57,7 @@ namespace LYBT.Module.MedicalCases.Services
             Guid patientId,
             Guid doctorId,
             IPatientCrossModuleService patientCrossModule,
-            IUserCrossModuleService userCrossModule,
+            IUserService userCrossModule,
             IMedicalCaseRepository medicalCaseRepository,
             ILogger logger,
             CancellationToken cancellationToken = default)

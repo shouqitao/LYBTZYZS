@@ -45,8 +45,7 @@
     <ProjectReference Include="..\..\src\Shared\LYBT.Shared.ExceptionHandling\LYBT.Shared.ExceptionHandling.csproj" />
     <ProjectReference Include="..\..\src\Shared\LYBT.Shared.Configuration\LYBT.Shared.Configuration.csproj" />
     <!-- Server Modules -->
-    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj" />
-    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Users\LYBT.Module.Users.csproj" />
+    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Identity\LYBT.Module.Identity.csproj" />
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />

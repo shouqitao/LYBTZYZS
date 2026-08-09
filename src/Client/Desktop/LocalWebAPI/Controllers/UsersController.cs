@@ -1,6 +1,6 @@
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.Users.Controllers;
-using LYBT.Module.Users.Interfaces;
+using LYBT.Module.Identity.Controllers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

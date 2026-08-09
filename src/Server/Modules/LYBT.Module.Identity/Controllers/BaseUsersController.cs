@@ -1,7 +1,7 @@
 using LYBT.Infrastructure.Constants;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.Users.Application.Commands;
-using LYBT.Module.Users.Interfaces;
+using LYBT.Module.Identity.Application.Commands;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -12,10 +12,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.Users.Controllers;
+namespace LYBT.Module.Identity.Controllers;
 
 /// <summary>
-/// 用户管理 Controller 共享基类
+/// 用户管理 Controller 共享基类（A-31-C3a 自 LYBT.Module.Users 迁入）
 /// 继承 BaseCrudController 提供标准 CRUD，保留用户特化方法
 /// </summary>
 [ApiController]

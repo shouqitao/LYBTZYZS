@@ -150,11 +150,19 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
         var userDetail = IdentityMapper.ToUserDetailDto(user);
         string userType = userDetail.Role == UserRole.SuperAdmin ? "superadmin" : "user";
 
-        var token = _jwtService.GenerateToken(
-            userDetail.Id.ToString(),
-            userDetail.UserName,
-            userDetail.Role,
-            userType);
+        // 系统管理员附加 IsSysAdmin claim（sysadmin 独立用户标识，本地/远程统一）
+        var token = user.IsSysAdmin
+            ? _jwtService.GenerateToken(
+                userDetail.Id.ToString(),
+                userDetail.UserName,
+                userDetail.Role,
+                new Dictionary<string, string> { ["IsSysAdmin"] = "true" },
+                userType)
+            : _jwtService.GenerateToken(
+                userDetail.Id.ToString(),
+                userDetail.UserName,
+                userDetail.Role,
+                userType);
 
         var tokenExpireMinutes = _jwtOptions.AccessTokenExpirationMinutes;
 

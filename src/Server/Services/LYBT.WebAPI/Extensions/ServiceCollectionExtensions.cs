@@ -5,14 +5,13 @@ using System.Text.Json.Serialization;
 using LYBT.Infrastructure.Serialization;
 using LYBT.Shared.Logging.Http;
 using LYBT.WebAPI.Serialization;
-using LYBT.Module.Auth;
+using LYBT.Module.Identity;
 using LYBT.Module.Formulas;
 using LYBT.Module.Herbs;
 using LYBT.Module.MedicalCases;
 using LYBT.Module.Patients;
 using LYBT.Module.Registrations;
 using LYBT.Module.Reports;
-using LYBT.Module.Users;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -89,30 +88,27 @@ public static class ServiceCollectionExtensions
         // 使用简化的模块注册方法
         // 每个模块负责注册自己的服务、仓储、验证器等
 
-        // 1. 认证模块
-        services.AddAuthModule(configuration);
+        // 1. 认证用户模块（A-31-C3a: Auth+Users 合并）
+        services.AddIdentityModule(configuration);
 
         // 2. 挂号模块 - Sprint 2
         // 必须在 Users 和 MedicalCase 之前注册，因为 UserService 和 MedicalCaseCommandService 依赖 IRegistrationRepository
         services.AddRegistrationModule(configuration);
 
-        // 3. 用户模块
-        services.AddUsersModule(configuration);
-
-        // 4. 患者模块
+        // 3. 患者模块
         services.AddPatientsModule(configuration);
 
-        // 5. 中药模块
+        // 4. 中药模块
         services.AddHerbsModule(configuration);
 
-        // 6. 配方模块
+        // 5. 配方模块
         services.AddFormulaModule(configuration);
         // 诊断和处方功能已整合到MedicalCase聚合根
 
-        // 7. 病例模块
+        // 6. 病例模块
         services.AddMedicalCaseModule(configuration);
 
-        // 8. 报表模块
+        // 7. 报表模块
         services.AddReportsModule(configuration);
 
         return services;

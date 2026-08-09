@@ -12,15 +12,15 @@ using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Infrastructure.Configuration.Stores;
 using LYBT.Infrastructure.Validation;
-using LYBT.Module.Auth;
-using LYBT.Module.Users;
+using LYBT.Module.Identity;
 using LYBT.Module.Patients;
 using LYBT.Module.Herbs;
 using LYBT.Module.Formulas;
 using LYBT.Module.MedicalCases;
 using LYBT.Module.Registrations;
 using LYBT.Module.Reports;
-using LYBT.Module.Users.Services;
+using LYBT.Module.Identity.Services;
+using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Models.Utilities.Security;
 using LYBT.Entities.Users;
@@ -48,6 +48,25 @@ public static class LocalWebApiProgram
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(connectionString));
 
+        // 模块 DbContext（IdentityDbContext 等）与 AppDbContext 同库（ADR-0017 方案 A）
+        builder.Services.AddOptions<DatabaseOptions>()
+            .Configure(o => o.ConnectionString = connectionString);
+
+        // 登录统一所需 Options（LoginCommandHandler 注入；Jwt 配置与 LocalJwtConfig 同节）
+        builder.Services.AddOptions<JwtOptions>()
+            .Bind(builder.Configuration.GetSection(JwtOptions.SectionName));
+        builder.Services.AddOptions<SecurityOptions>()
+            .Bind(builder.Configuration.GetSection(SecurityOptions.SectionName));
+        builder.Services.AddOptions<LoginOptions>()
+            .Bind(builder.Configuration.GetSection(LoginOptions.SectionName))
+            .Configure(o =>
+            {
+                // A-31-C3a: 本地登录统一走 LoginCommandHandler，差异经 LoginOptions 控制
+                o.IsLocal = true;
+                o.LockoutEnabled = false; // 本地 Identity 已关闭锁定（int.MaxValue）
+                o.AuditLevel = SecurityAuditLevel.Full;
+            });
+
         // 系统日志仓储（只读查询，替代 DiagnosticsController 中的直接 DbContext 注入）
         builder.Services.AddScoped<ISystemLogRepository, SystemLogRepository>();
 
@@ -63,8 +82,7 @@ public static class LocalWebApiProgram
         builder.Services.AddSingleton<LoggingLevelManager>();
 
         // 注册模块 Service（与远程 WebAPI 使用相同的 Service/Repository 层）
-        builder.Services.AddAuthModule(builder.Configuration);
-        builder.Services.AddUsersModule(builder.Configuration);
+        builder.Services.AddIdentityModule(builder.Configuration);
         builder.Services.AddPatientsModule(builder.Configuration);
         builder.Services.AddHerbsModule(builder.Configuration);
         builder.Services.AddFormulaModule(builder.Configuration);

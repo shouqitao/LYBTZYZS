@@ -27,7 +27,7 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly IMedicalCaseRepository _repository;
         private readonly IRegistrationCrossModuleService _registrationCrossModule;
         private readonly IPatientCrossModuleService _patientCrossModule;
-        private readonly IUserCrossModuleService _userCrossModule;
+        private readonly IUserService _userCrossModule;
         private readonly ICacheInvalidationService _cacheInvalidation;
         private readonly MedicalCasePrescriptionService _prescriptionService;
         private readonly PrescriptionItemService _itemService;
@@ -38,7 +38,7 @@ namespace LYBT.Module.MedicalCases.Services
             IMedicalCaseRepository repository,
             IRegistrationCrossModuleService registrationCrossModule,
             IPatientCrossModuleService patientCrossModule,
-            IUserCrossModuleService userCrossModule,
+            IUserService userCrossModule,
             ILogger<MedicalCaseCommandService> logger,
             ICacheInvalidationService cacheInvalidation,
             MedicalCasePrescriptionService prescriptionService,

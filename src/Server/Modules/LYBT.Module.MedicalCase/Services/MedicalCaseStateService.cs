@@ -25,13 +25,13 @@ namespace LYBT.Module.MedicalCases.Services
         private const int AuditOperationCancel = 4;
 
         private readonly IMedicalCaseRepository _repository;
-        private readonly IUserCrossModuleService _userCrossModule;
+        private readonly IUserService _userCrossModule;
         private readonly ICacheInvalidationService _cacheInvalidation;
         private readonly IRegistrationCrossModuleService _registrationCrossModule;
 
         public MedicalCaseStateService(
             IMedicalCaseRepository repository,
-            IUserCrossModuleService userCrossModule,
+            IUserService userCrossModule,
             ILogger<MedicalCaseStateService> logger,
             ICacheInvalidationService cacheInvalidation,
             IRegistrationCrossModuleService registrationCrossModule)

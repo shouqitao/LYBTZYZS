@@ -1,6 +1,6 @@
 using FluentAssertions;
 using LYBT.Entities.Auth;
-using LYBT.Module.Auth.Infrastructure;
+using LYBT.Module.Identity.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -11,15 +11,15 @@ namespace LYBT.Tests.Server;
 /// </summary>
 public class AuthSessionRepositoryTests : IDisposable
 {
-    private readonly AuthDbContext _context;
+    private readonly IdentityDbContext _context;
     private readonly AuthSessionRepository _sut;
 
     public AuthSessionRepositoryTests()
     {
-        var options = new DbContextOptionsBuilder<AuthDbContext>()
+        var options = new DbContextOptionsBuilder<IdentityDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-        _context = new AuthDbContext(options);
+        _context = new IdentityDbContext(options);
         _sut = new AuthSessionRepository(_context);
     }
 

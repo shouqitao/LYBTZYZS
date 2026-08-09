@@ -1,7 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using FluentAssertions;
-using LYBT.Module.Auth.Services;
+using LYBT.Module.Identity.Services;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Hosting;

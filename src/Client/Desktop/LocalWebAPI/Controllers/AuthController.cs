@@ -1,8 +1,10 @@
 using System.Security.Claims;
 using LYBT.Infrastructure.Web;
 using LYBT.LocalWebAPI.Commands;
+using LYBT.Module.Identity.Application.Commands;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,10 +31,16 @@ public class AuthController : BaseApiController
     [EnableRateLimiting("LocalLogin")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
     {
-        var result = await _sender.Send(new LocalLoginCommand(request), ct);
-        if (!result.Success)
-            return BusinessFail(result.Message ?? "登录失败");
-        return Ok(result);
+        // A-31-C3a: 本地登录统一走共享 LoginCommandHandler（LoginOptions.IsLocal=true 控制差异）
+        var result = await _sender.Send(new LoginCommand(request), ct);
+        if (!result.IsSuccess)
+        {
+            var httpStatus = result.ErrorCode.ToHttpStatusCode();
+            var response = ApiResponse<LoginResponse>.CreateFail(result.Error ?? "登录失败");
+            response.RequestId = GetRequestId();
+            return StatusCode(httpStatus, response);
+        }
+        return Success(result.Value!, "登录成功");
     }
 
     [HttpPost("logout")]
