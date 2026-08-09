@@ -183,8 +183,7 @@
 |------|--------|---------|-----------|---------|
 | **LYBT.Module.Identity** | 47 | CQRS（Application/Infrastructure/Interfaces/Services/Controllers）| IdentityDbContext | ADR-0005（superadmin auth）+ B-21（token 族旋转）+ S-01/S-02 + A-31-C3a（合并 Auth+Users）|
 | **LYBT.Module.Patients** | 23 | CQRS | **PatientsDbContext**（A-20 新建）| 患者域（Excel 导入/导出 B-03）|
-| **LYBT.Module.Herbs** | 22 | CQRS | HerbsDbContext | 药材域（仅 Admin+ 管理 08-02 决策）|
-| **LYBT.Module.Formula** | 21 | CQRS | FormulaDbContext | 验方域 |
+| **LYBT.Module.Catalog** | ~38 | CQRS | CatalogDbContext | 药材+验方域（A-31-C3b 合并，原 Herbs+Formula）；Prescription（处方）不参与，属 MedicalCase 域 |
 | **LYBT.Module.MedicalCase** | 22 | **Service 化**（Command/Query/State 三 Service，无 MediatR）| **MedicalCaseDbContext**（A-20 新建）| ADR-0001（聚合根）+ A-03（MediatR 简化）+ A-14 文档化 |
 | **LYBT.Module.Registration** | 27 | CQRS + SignalR Hubs | **RegistrationDbContext**（A-20 新建）| US-REG-008（实时推送）+ D-01（接诊即建）|
 | **LYBT.Module.Reports** | 7 | 只读聚合（Service+Repository）| AppDbContext | B-04 报表增强（只读聚合查询，无自有表）|

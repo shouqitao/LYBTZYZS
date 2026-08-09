@@ -30,12 +30,12 @@
 
 ### 2.1 Server 层（减 2，候选）：Herbs+Formula 合并 + Auth+Users 合并【⏸ 待定】
 
-**合并 1（候选，待定）：LYBT.Module.Herbs + LYBT.Module.Formula → LYBT.Module.Catalog**（药材+验方目录域）
-- 证据：Server 侧 ~43% 方法同构（S2 §8）；Desktop 侧 ~85% 同构（S3 §8）
-- 理由：药材/验方同为「目录/模板数据」，CRUD/导入/导出/批量操作方法集高度一致；`FormulaHerbItem`（验方引用药材）已跨模块引用——合并消除跨模块耦合
-- 收益：消除 ~45-50 重复方法；模块数 -1；跨模块引用（Formula→Herbs）内部化
+**合并 1（启动中）：LYBT.Module.Herbs + LYBT.Module.Formula → LYBT.Module.Catalog**（药材+验方目录域）
+- 证据：Server 同构 43%（CRUD/Toggle 5 对逐字相同 + Service 42 行孪生）；Desktop 同构 85%（Editor VM 模板 90%）
+- 理由：验证方引用药材链可内部化；消除系统性重复（每次改动两处同步）
+- 收益：消除 ~45-50 重复方法；模块数 -1；跨模块引用（Formula→Herbs）内部化；维护成本减半
+- 用户决策（2026-08-09）：**从三者关系确认合并合理**——药材是基础主数据，验方是药材的模板组合（同域），处方是实例+收费（MedicalCase 域，不参与合并）；三种处方来源（直接开方/参考验方/复用历史）最终都是 PrescriptionItem 引用药材库，不影响合并
 - **边界（用户确认）**：Prescription（处方）归 MedicalCase 域，**不参与**本合并
-
 **合并 2（已完成 ✅，2026-08-09 A-31-C3a）：LYBT.Module.Auth + LYBT.Module.Users → LYBT.Module.Identity**（凭证+用户域）
 - 证据：Auth→Users 单向调用（LoginCommandHandler 5 方法）+ Users→Auth 4 个 Handler 撤销回调；编译期与运行时均无环；Identity 已深度集成（ApplicationUser : IdentityUser<Guid>）
 - 理由：凭证域高耦合，合并消除两条 CrossModule 通道；以 Identity 为核心 + AuthSession/SecurityAudit 业务增强层
@@ -135,8 +135,9 @@ LYBT.Shared.Logging/
 | **C-0 缺陷修复** | P0-1 策略注册补齐 / P0-2 MedicalCase 验证接入 / P0-3 Reports 策略统一 | 无 | 0.5d | T1 修复 |
 | **C-1 日志集中** | 专项 A 全部迁移（M1-M10）| C-0 | 1-2d | T2 收敛 |
 | **C-2 异常统一** | 专项 B（处理器收敛 + 死类删除）| C-0 | 1d | T2 收敛 |
-| **C-3a Auth+Users→Identity** | Auth+Users Server 端合并（Identity 核心 + 增强层 + Local 登录统一） | **✅ 已完成（2026-08-09，`cd6b80721`）** | 2-3d | T2 收敛 |
-| **C-3b Herbs+Formula→Catalog** | Herbs+Formula Server+Desktop 合并 | **⏸ 延期** | 3-4d | T2 收敛 |
+| **C-3a Auth+Users→Identity** | Auth+Users Server 端合并（Identity 核心 + 增强层 + Local 登录统一） | ✅ **已完成（2026-08-09 `cd6b80721`）** | 2-3d | T2 收敛 |
+| **C-3b Herbs+Formula→Catalog Server** | Herbs+Formula Server 端合并（药材+验方同域） | **✅ 已启动（2026-08-09，三者关系确认+方案定案）** | 2-3d | T2 收敛 |
+| **C-3c Herbs+Formula→Catalog Desktop** | Herbs+Formula Desktop 同步合并 | **⏸ 随 C-3b** | 1-2d | T2 收敛 |
 | **C-4 Desktop 合并** | Desktop Herbs+Formula→Catalog | **⏸ 待定（随 C-3）** | 1-2d | T2 收敛 |
 | **C-5 机制收敛** | ErrorMessages / AddModuleDbContext / 仓储镜像模板 / VM 命令模板 / 映射统一 | C-2 | 1-2d | T1 收敛 |
 | **C-6 死代码清理** | S1-S3 D 级（14 可安全删 + 37 死类方法 + 29 Server 死方法 + 64 复核项）| 各批后 | 1-2d | T1 清理 |
