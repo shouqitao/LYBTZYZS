@@ -110,7 +110,7 @@
 | D69 | `ITokenManager` 4 方法（SetTokens/ClearTokens/IsTokenValid/IsTokenExpiringSoon，:39/:44/:50/:57） | ✅ 删（AccessToken/RefreshToken/AccessTokenExpiry 属性保留——SignalRClient 用 AccessToken；字段补 `= null` 初始化避免 CS0649） |
 | D70 | `IModuleLoadingService.GetLoadedModules`/`LoadModulesAsync`（:22/:39 + ModuleLoadingService:83/:99） | ✅ 删（ModuleLazyLoader 用 IsModuleLoaded/LoadModuleAsync） |
 | D71 | `IPrintService.BatchPrintAsync`（:40 + PrescriptionPrintService:173） | ✅ 删（+ Printing README:39/AGENTS.md:53、modules/printing.md:36、09-printing.md:55 需求文档标注移除） |
-| D72 | `HuaDaNativeMethods` 13 extern | ⏸️ **保留**（硬件 SDK P/Invoke 预留，删除前须确认无外部 DLL 依赖——待用户确认） |
+| D72 | `HuaDaNativeMethods` 13 extern | ✅ **保留**（用户 2026-08-08 确认：读卡器必用，硬件 SDK P/Invoke 完整保留） |
 
 ---
 
@@ -147,7 +147,7 @@
 
 ## 保留项与待确认
 
-1. **D72 `HuaDaNativeMethods` 13 个 extern**（HD_ReadCard/GetCertNo/.../IsDllAvailable）——**保留**，硬件 SDK P/Invoke 预留（adapter 只用 HD_InitComm 等 5 个）；删除前须确认无外部 DLL 依赖，**待用户确认**。
+1. **D72 `HuaDaNativeMethods` 13 个 extern**（HD_ReadCard/GetCertNo/.../IsDllAvailable）——✅ **保留（用户 2026-08-08 确认）**：读卡器是必用硬件功能，读卡器 SDK P/Invoke 完整保留，adapter 已用 HD_InitComm 等 5 个，其余为读卡流程扩展预留。
 2. `AuthenticationIntegrationTests` 4 个失败（NSubstitute 无法代理 Refit 接口 `IAuthApi`）——**基线既有问题**（组 B/C 提交前用 git stash 验证：clean 状态同样 4 失败），非本次改动引入。
 3. `US-CARD-002`（患者匹配降级链）与批量打印需求——实现已移除，**需求状态待产品决策**（已在 11e-cardreader/09-printing/13-traceability-matrix 标注）。
 4. `AuthenticationStateMachine.CanFire/GetPermittedEvents`（Foundation）——S3 候选但**不在 C-7 清单**（D29 仅指 EditModeStateMachine），保留未动，可留待后续批次。

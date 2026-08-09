@@ -144,11 +144,12 @@ LYBT.Shared.Logging/
 
 ## 六、决策点（待用户拍板）
 
-1. ~~**4 整类死类**（Conflict/Api/Unauthorized/ValidationException）：删除 or 保留？~~ → **C-2 执行时定**（默认删除，用户可否决）
+1. ~~**4 整类死类**（Conflict/Api/Unauthorized/ValidationException）：删除 or 保留？~~ → **C-2 已删**（生产零构造，用户未否决）
 2. **跨模块门面**：删 ICrossModuleService 统一门面（只留 6 域接口）or 扩门面覆盖全部 6 域？
 3. **~~合并顺序~~**：~~Server 先于 Desktop（推荐）or 同步？~~ → **合并已延期（2026-08-08 用户定），暂不决策**
 4. **映射统一方向**：直用 DTO（推荐，A-26 方向）or 补 Model+Mapper？
-5. **C 批次全部执行 or 分阶段**？ → **分阶段确认**：C-0 缺陷修复 + C-1/C-2 机制集中先执行；合并批次（C-3/C-4）待定；C-5/C-6 视 C-1/C-2 结果再定
+5. **C 批次全部执行 or 分阶段**？ → **分阶段确认**：C-0 缺陷修复 + C-1/C-2 机制集中先执行；合并批次（C-3/C-4）待定；C-5/C-6/C-7 已完成
+6. **~~D72 读卡器 extern 删 or 留？~~** → **保留（2026-08-08 用户确认）**：读卡器是必用硬件功能，HuaDaNativeMethods 13 extern 完整保留
 
 ---
 
