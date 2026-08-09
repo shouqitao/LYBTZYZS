@@ -28,6 +28,8 @@ using LYBT.Desktop.Shell.Services.Startup;
 using LYBT.Desktop.Shell.Services.Startup.Steps;
 using LYBT.Shared.Configuration.Extensions;
 using LYBT.Shared.Configuration.Options.Client;
+using LYBT.Shared.Logging.Bootstrap;
+using LYBT.Shared.Logging.Correlation;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Desktop.Infrastructure.ExceptionHandling;
 using Microsoft.Extensions.Caching.Memory;
@@ -46,7 +48,7 @@ namespace LYBT.Desktop.Shell.Extensions
         public static void RegisterAllServices(this IContainerRegistry containerRegistry)
         {
             var configuration = RegisterConfiguration(containerRegistry);
-            containerRegistry.RegisterLogging();
+            RegisterLoggingServices(containerRegistry);
             RegisterCacheServices(containerRegistry);
 
             containerRegistry.RegisterRepositories(configuration);
@@ -74,6 +76,19 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.AddLybtClientConfiguration(configuration);
 
             return configuration;
+        }
+
+        /// <summary>
+        /// 注册日志服务（Prism 容器适配——Shared.Logging 单入口，原 LoggingRegistrationExtensions 已并入 LoggingBootstrap）
+        /// </summary>
+        private static void RegisterLoggingServices(IContainerRegistry containerRegistry)
+        {
+            // CorrelationId 提供者单例（与静态 Logger 共用同一实例）
+            containerRegistry.RegisterSingleton<ICorrelationIdProvider>(_ => LoggingBootstrap.CorrelationIdProvider);
+
+            // LoggerFactory 单例 + 开放泛型 ILogger<>（复用静态 Log.Logger，dispose:false）
+            containerRegistry.RegisterSingleton<ILoggerFactory>(LoggingBootstrap.CreateLoggerFactory);
+            containerRegistry.Register(typeof(ILogger<>), typeof(Logger<>));
         }
 
         /// <summary>注册缓存服务</summary>

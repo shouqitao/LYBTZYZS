@@ -2,7 +2,6 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using LYBT.Shared.Logging.Masking;
-using LYBT.Shared.Models.Attributes;
 
 namespace LYBT.Infrastructure.Serialization;
 
@@ -55,7 +54,7 @@ public class SensitiveDataJsonConverterFactory : JsonConverterFactory
             }
 
             var hasSensitive = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Any(p => p.GetCustomAttribute<SensitiveDataAttribute>() != null);
+                .Any(p => SensitiveDataMasker.GetSensitiveDataAttribute(p) != null);
 
             _hasSensitivePropertiesCache[type] = hasSensitive;
             return hasSensitive;
@@ -133,8 +132,8 @@ public class SensitiveDataJsonConverter<T> : JsonConverter<T> where T : class
             {
                 var propValue = property.GetValue(value);
 
-                // 检查是否为敏感数据
-                var sensitiveAttr = property.GetCustomAttribute<SensitiveDataAttribute>();
+                // 检查是否为敏感数据（A-31-C1: 经 Shared SensitiveDataMasker 单点属性检查）
+                var sensitiveAttr = SensitiveDataMasker.GetSensitiveDataAttribute(property);
                 if (sensitiveAttr != null && propValue is string strValue)
                 {
                     // 对敏感字符串进行脱敏

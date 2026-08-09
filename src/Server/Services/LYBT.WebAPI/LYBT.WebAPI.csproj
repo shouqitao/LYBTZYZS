@@ -52,13 +52,7 @@
 		<PackageReference Include="Swashbuckle.AspNetCore" />
 		<PackageReference Include="Asp.Versioning.Mvc" />
 		<PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
-		<!-- Serilog structured logging packages -->
-		<PackageReference Include="Serilog.AspNetCore" />
-		<PackageReference Include="Serilog.Sinks.File" />
-		<PackageReference Include="Serilog.Sinks.Console" />
-		<PackageReference Include="Serilog.Sinks.MSSqlServer" />
-		<PackageReference Include="Serilog.Enrichers.Environment" />
-		<PackageReference Include="Serilog.Enrichers.Thread" />
+		<!-- A-31-C1: Serilog 包收敛至 Shared.Logging 单持有者（经项目引用传递） -->
 		<!-- Windows Service支持 -->
 		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" />
 		<!-- .env文件支持 -->

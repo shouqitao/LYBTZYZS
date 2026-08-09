@@ -1,33 +1,39 @@
 using System.Diagnostics;
 using System.Net.Http;
+using LYBT.Shared.Logging.Correlation;
 using LYBT.Shared.Logging.Masking;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Foundation.Http;
+namespace LYBT.Shared.Logging.Http;
 
 /// <summary>
 /// HTTP请求/响应日志处理器
 /// LOG-012: 记录所有API调用的请求和响应信息
 /// LOG-013: 添加traceparent header用于分布式追踪
+/// A-31-C1: 收敛自 Desktop.Foundation/Http，CorrelationId 改用 ICorrelationIdProvider
 /// </summary>
 public class LoggingHttpHandler : DelegatingHandler
 {
     private readonly ILogger<LoggingHttpHandler> _logger;
+    private readonly ICorrelationIdProvider _correlationIdProvider;
 
-    public LoggingHttpHandler(ILogger<LoggingHttpHandler> logger)
+    public LoggingHttpHandler(
+        ILogger<LoggingHttpHandler> logger,
+        ICorrelationIdProvider correlationIdProvider)
     {
         _logger = logger;
+        _correlationIdProvider = correlationIdProvider;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        // 获取或创建CorrelationId
-        var activity = Activity.Current;
-        var correlationId = activity?.Id ?? Guid.NewGuid().ToString("N");
+        // 获取或创建CorrelationId（经 Provider，替代直读 Activity.Id）
+        var correlationId = _correlationIdProvider.GetCorrelationId() ?? Guid.NewGuid().ToString("N");
 
-        // LOG-013: 添加traceparent header用于分布式追踪
+        // LOG-013: 添加traceparent header用于分布式追踪（W3C 传播保持 Activity 机制）
+        var activity = Activity.Current;
         if (activity != null && !request.Headers.Contains("traceparent"))
         {
             request.Headers.TryAddWithoutValidation("traceparent", activity.Id);

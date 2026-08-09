@@ -1,12 +1,16 @@
 using System.Diagnostics;
 using LYBT.Shared.Logging.Masking;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
-namespace LYBT.WebAPI.Filters;
+namespace LYBT.Shared.Logging.Http;
 
 /// <summary>
 /// API日志过滤器
 /// LOG-014: 记录所有Controller Action的执行情况
+/// A-31-C1: 收敛自 WebAPI/Filters，CorrelationId 改用共享 GetCorrelationId 扩展
 /// </summary>
 public class ApiLoggingFilter : IAsyncActionFilter
 {
@@ -22,7 +26,7 @@ public class ApiLoggingFilter : IAsyncActionFilter
         ActionExecutionDelegate next)
     {
         var actionName = context.ActionDescriptor.DisplayName ?? "Unknown";
-        var correlationId = context.HttpContext.TraceIdentifier;
+        var correlationId = context.HttpContext.GetCorrelationId();
         var sw = Stopwatch.StartNew();
 
         // LOG-014: 记录Action开始
@@ -106,4 +110,22 @@ public class ApiLoggingFilter : IAsyncActionFilter
     }
 }
 
+/// <summary>
+/// ApiLoggingFilter 注册扩展
+/// </summary>
+public static class ApiLoggingFilterExtensions
+{
+    /// <summary>
+    /// 注册全局 ApiLoggingFilter（单点注册）
+    /// </summary>
+    /// <param name="services">服务集合</param>
+    /// <returns>服务集合</returns>
+    public static IServiceCollection AddLybtApiLoggingFilter(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
 
+        services.Configure<MvcOptions>(options => options.Filters.Add<ApiLoggingFilter>());
+
+        return services;
+    }
+}

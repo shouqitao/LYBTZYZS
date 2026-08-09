@@ -80,10 +80,12 @@
 | 契约/映射 | Refit | IApiClient 统一契约客户端 | Desktop 全部模块 |
 | 认证 | ASP.NET Core Identity（PBKDF2）| 密码哈希/验证唯一方案（UserManager） | Auth + Users |
 | 认证 | JWT（JwtBearer） | 令牌认证授权 | WebAPI |
-| 日志 | Serilog | 结构化日志（文件/控制台/MSSqlServer） | Server + Desktop |
+| 日志 | Serilog | 结构化日志（文件/控制台/MSSqlServer）——**A-31-C1 收敛后 Serilog 包仅 `LYBT.Shared.Logging` 持有** | Server + Desktop |
 | 文档 | Swashbuckle（Swagger） | OpenAPI 文档（非生产启用） | WebAPI |
 | 打印 | QuestPDF | 处方 PDF 导出 | Desktop.Printing |
 | 工具 | pinyin4net | 拼音搜索/排序 | Server 导入 + Desktop 搜索 |
+
+> **技术引入治理记录（A-31-C1，2026-08-08 审批）**：`LYBT.Shared.Logging` 升级为独立完整日志项目，获准补充 ASP.NET Core 依赖（`Microsoft.AspNetCore.Http.Abstractions` / `Mvc.Abstractions` / `Mvc.Core`，承载 CorrelationId 中间件、ApiLoggingFilter 及其注册扩展）与 `LYBT.Shared.Configuration` 项目引用（MSSQL sink 读取 DatabaseOptions 连接串）。架构测试 P05b 豁免清单同步：`LYBT.Shared.Logging` 为 Shared 层唯一 AspNetCore 依赖例外。
 
 #### 0.5.2 评估框架（4 标准）
 
@@ -135,7 +137,7 @@
 | **LYBT.Shared.Models** | 120 | DTO/契约/枚举/工具/验证器（Contracts/Enums/Primitives/Utilities/Validators 八目录）| 原 8 项目坍缩为 1（A-16 发现，08-shared v1.6 文档化）；API 契约双端共享 |
 | **LYBT.Shared.Configuration** | 25 | Options 类 + ConnectionStringResolver + 配置验证器 | 07-configuration.md；Server/Client 双端消费 IOptions |
 | **LYBT.Shared.ExceptionHandling** | 7 | AppException 层次 + ProblemDetails + 异常处理器 | 06-error-handling.md；异常映射 SSOT |
-| **LYBT.Shared.Logging** | 8 | Serilog 配置 + CorrelationId（Activity 单机制，A-18 P1-3）+ 脱敏 | 08-shared §Logging + 11d-observability |
+| **LYBT.Shared.Logging** | 15 | 独立完整日志项目：Serilog 单持有者（含 Sinks.MSSqlServer/AspNetCore）+ Bootstrap 单入口（`AddLybtLogging`/`LoggingBootstrap`）+ CorrelationId 单点（Provider/中间件/Filter/HttpHandler）+ 脱敏。**获准依赖 ASP.NET Core（Http.Abstractions/Mvc.Abstractions，承载 CorrelationIdMiddleware 与 ApiLoggingFilter）** | 08-shared §Logging + 11d-observability + A-31-C1 |
 
 ### 1.1 Shared 关键类设计依据
 

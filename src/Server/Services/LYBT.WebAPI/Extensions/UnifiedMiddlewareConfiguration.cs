@@ -1,3 +1,4 @@
+using LYBT.Shared.Logging.Http;
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
@@ -94,8 +95,8 @@ public static class UnifiedMiddlewareConfiguration
         });
 
         // 1.3 CorrelationId追踪（尽早注册，确保所有后续日志都包含追踪ID）
-        // refactor-logging-system: 实现端到端请求追踪
-        app.UseCorrelationId();
+        // refactor-logging-system: 实现端到端请求追踪（A-31-C1: UseLybtCorrelationId 单点注册）
+        app.UseLybtCorrelationId();
 
         // 1.3 HTTPS重定向和HSTS（生产环境）
         if (!app.Environment.IsDevelopment())

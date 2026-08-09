@@ -5,7 +5,6 @@ using LYBT.Desktop.Infrastructure.CardReader;
 using LYBT.Desktop.Clinical;
 using LYBT.Desktop.Formula;
 using LYBT.Desktop.Herbs;
-using LYBT.Desktop.Infrastructure.Logging;
 using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Patients;
 using LYBT.Desktop.Registrations;
@@ -18,6 +17,7 @@ using LYBT.Desktop.Shell.Views;
 using LYBT.Desktop.Admin.Sysadmin;
 using LYBT.Desktop.Users;
 using LYBT.Desktop.Printing;
+using LYBT.Shared.Logging.Bootstrap;
 using MaterialDesignThemes.Wpf;
 using Prism.DryIoc;
 using Prism.Ioc;
@@ -45,7 +45,7 @@ public partial class App : PrismApplication
         }
 
         SetConsoleEncoding();
-        DesktopSerilogConfiguration.Initialize();
+        LoggingBootstrap.Initialize();
         Log.Information("应用程序启动");
 
         base.OnStartup(e);
@@ -72,7 +72,7 @@ public partial class App : PrismApplication
         _instanceMutex?.ReleaseMutex();
         _instanceMutex?.Dispose();
         _instanceMutex = null;
-        DesktopSerilogConfiguration.CloseAndFlush();
+        LoggingBootstrap.CloseAndFlush();
         base.OnExit(e);
     }
 

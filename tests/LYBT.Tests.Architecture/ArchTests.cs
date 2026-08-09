@@ -486,13 +486,19 @@ public class ArchTests
 
     /// <summary>
     /// P2架构门禁 - 共享工具库不得依赖Microsoft.AspNetCore.*
+    /// 豁免清单（A-31-C1 技术引入治理）：LYBT.Shared.Logging 是 Shared 层唯一获准依赖
+    /// ASP.NET Core 的项目（承载 CorrelationIdMiddleware/ApiLoggingFilter 及其注册扩展，
+    /// 依赖 Microsoft.AspNetCore.Http.Abstractions/Mvc.Abstractions/Mvc.Core）。
+    /// 其余 Shared 项目（Models/Configuration/ExceptionHandling）维持零 AspNetCore 依赖。
     /// </summary>
     [Fact]
     public void P05b_SharedUtilities_Should_Not_Depend_On_AspNetCore()
     {
         var result = Types.InAssemblies(Assemblies)
             .That()
-            .ResideInNamespaceStartingWith("LYBT.Shared.Models.Utilities")
+            .ResideInNamespaceStartingWith("LYBT.Shared")
+            .And()
+            .DoNotResideInNamespaceStartingWith("LYBT.Shared.Logging")
             .Should()
             .NotHaveDependencyOnAny("Microsoft.AspNetCore")
             .GetResult();

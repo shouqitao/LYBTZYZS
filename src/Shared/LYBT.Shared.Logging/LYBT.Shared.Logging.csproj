@@ -10,14 +10,23 @@
     <Description>凌隐宝堂中医诊所系统 - 统一日志基础设施 | Serilog配置、敏感数据脱敏、CorrelationId追踪</Description>
   </PropertyGroup>
 
-  <!-- Serilog核心 -->
+  <!-- Serilog核心（A-31-C1: Serilog 包全仓仅本项目持有） -->
   <ItemGroup Label="Serilog">
     <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.AspNetCore" />
     <PackageReference Include="Serilog.Extensions.Logging" />
     <PackageReference Include="Serilog.Sinks.File" />
     <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.MSSqlServer" />
     <PackageReference Include="Serilog.Enrichers.Environment" />
     <PackageReference Include="Serilog.Enrichers.Thread" />
+  </ItemGroup>
+
+  <!-- ASP.NET Core 依赖（A-31-C1 技术引入治理：承载 CorrelationIdMiddleware/ApiLoggingFilter，P05b 豁免清单唯一例外） -->
+  <ItemGroup Label="ASP.NET Core Abstractions">
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" />
   </ItemGroup>
 
   <!-- Microsoft扩展 -->
@@ -31,6 +40,8 @@
   <!-- 项目引用 -->
   <ItemGroup Label="Project References">
     <ProjectReference Include="..\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    <!-- A-31-C1: MSSQL sink 读取 DatabaseOptions 连接串 -->
+    <ProjectReference Include="..\LYBT.Shared.Configuration\LYBT.Shared.Configuration.csproj" />
   </ItemGroup>
 
 </Project>

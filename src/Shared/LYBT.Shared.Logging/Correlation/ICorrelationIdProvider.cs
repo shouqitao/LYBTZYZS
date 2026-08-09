@@ -1,4 +1,4 @@
-namespace LYBT.Shared.Logging.Abstractions;
+namespace LYBT.Shared.Logging.Correlation;
 
 /// <summary>
 /// CorrelationId提供者接口

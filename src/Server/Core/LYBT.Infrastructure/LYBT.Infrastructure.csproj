@@ -34,7 +34,6 @@
 
 		<!-- OpenSpec: adopt-mapperly-unified-mapping - AutoMapper已移除 -->
 		<PackageReference Include="FluentValidation" />
-		<PackageReference Include="Serilog" />
 		<PackageReference Include="MediatR" />
 	</ItemGroup>
 

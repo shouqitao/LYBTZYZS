@@ -1,8 +1,8 @@
-using LYBT.Shared.Logging.Abstractions;
+using LYBT.Shared.Logging.Correlation;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace LYBT.Shared.Logging.Enrichers;
+namespace LYBT.Shared.Logging.Correlation;
 
 /// <summary>
 /// CorrelationId日志富集器

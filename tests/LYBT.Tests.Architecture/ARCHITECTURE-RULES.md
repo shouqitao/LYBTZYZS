@@ -28,7 +28,7 @@
 | P03b | P03b_No_Rules_Engine_References | ArchTests.cs | 禁用规则引擎框架 |
 | P04 | P04_UserName_Convention | ArchTests.cs | UserName字段命名规范 |
 | P05 | P05_Entities_Should_Not_Depend_On_Shared | ArchTests.cs | Entities禁依赖Shared |
-| P05b | P05b_SharedUtilities_Should_Not_Depend_On_AspNetCore | ArchTests.cs | Shared工具禁依赖AspNetCore |
+| P05b | P05b_SharedUtilities_Should_Not_Depend_On_AspNetCore | ArchTests.cs | Shared禁依赖AspNetCore（豁免：LYBT.Shared.Logging，A-31-C1） |
 | P05c | P05c_SharedUtilities_Should_Not_Depend_On_Swashbuckle | ArchTests.cs | Shared工具禁依赖Swashbuckle |
 | P05d | P05d_Shared_Should_Not_Depend_On_Server_Modules | ArchTests.cs | Shared禁依赖Server模块 |
 | P05e | P05e_Shared_Should_Not_Depend_On_Desktop | ArchTests.cs | Shared禁依赖Desktop |

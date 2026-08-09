@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
 using LYBT.Infrastructure.Serialization;
+using LYBT.Shared.Logging.Http;
 using LYBT.WebAPI.Serialization;
 using LYBT.Module.Auth;
 using LYBT.Module.Formulas;
@@ -12,7 +13,6 @@ using LYBT.Module.Patients;
 using LYBT.Module.Registrations;
 using LYBT.Module.Reports;
 using LYBT.Module.Users;
-using LYBT.WebAPI.Filters;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -146,10 +146,7 @@ public static class ServiceCollectionExtensions
             options.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(30);
         });
 
-        services.AddControllers(options =>
-            {
-                options.Filters.Add<ApiLoggingFilter>();
-            })
+        services.AddControllers()
             .AddJsonOptions(options =>
             {
                 // 使用统一配置的属性命名策略
@@ -206,6 +203,9 @@ public static class ServiceCollectionExtensions
                 return new BadRequestObjectResult(response);
             };
         });
+
+        // A-31-C1: API 日志过滤器单点注册（LOG-014，收敛自 WebAPI/Filters/ApiLoggingFilter）
+        services.AddLybtApiLoggingFilter();
 
         return services;
     }

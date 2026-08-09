@@ -9,9 +9,7 @@
 using System.Text;
 using DotNetEnv;
 using LYBT.Shared.Configuration.Extensions;
-using LYBT.Shared.Configuration.Options.Server;
-using LYBT.Shared.Logging.Extensions;
-using LYBT.Shared.Logging.Management;
+using LYBT.Shared.Logging.Bootstrap;
 using LYBT.Shared.Models.Utilities.Security;
 using LYBT.WebAPI.Extensions;
 using LYBT.Infrastructure.Configuration.Services;
@@ -20,20 +18,16 @@ using LYBT.Infrastructure.Configuration.Validation;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
 using Serilog;
-using Serilog.Events;
 using LYBT.Module.Users.Services;
 
 /// <summary>
 /// 凌隐宝堂中医诊所诊疗系统 WebAPI 程序入口
 /// Issue #1077 修复：Program类移到全局命名空间确保WebApplicationFactory兼容性
+/// A-31-C1: Serilog 两阶段初始化收敛至 LoggingBootstrap 统一入口
 /// </summary>
 public class Program
 {
-    // refactor-logging-system: 全局LoggingLevelManager实例，支持运行时动态调整
-    private static readonly LoggingLevelManager LoggingLevelManager = new(LogEventLevel.Information);
-
     public static async Task Main(string[] args)
     {
         // 修复Windows控制台中文乱码问题
@@ -64,38 +58,11 @@ public class Program
         }
 
         // Phase 1: Bootstrap Logger - 确保启动阶段异常能够被记录
-        // 在try块外初始化，捕获配置加载阶段的任何异常
         // refactor-logging-system: 测试环境使用普通Logger避免WebApplicationFactory"logger is already frozen"错误
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
         var isTestEnvironment = environment == "Test";
 
-        if (!isTestEnvironment)
-        {
-            // 生产/开发环境使用Bootstrap Logger（支持两阶段初始化）
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Information()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                .MinimumLevel.Override("System", LogEventLevel.Warning)
-                .Enrich.FromLogContext()
-                .Enrich.WithMachineName()
-                .Enrich.WithThreadId()
-                .WriteTo.Console(
-                    outputTemplate: "{Timestamp:HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
-                .WriteTo.File(
-                    path: "logs/bootstrap-.log",
-                    rollingInterval: RollingInterval.Day,
-                    retainedFileCountLimit: 7,
-                    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
-                .CreateBootstrapLogger();
-        }
-        else
-        {
-            // 测试环境使用简单Logger，避免Bootstrap Logger冻结问题
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Warning()
-                .WriteTo.Console()
-                .CreateLogger();
-        }
+        LoggingBootstrap.CreateBootstrapLogger(isTestEnvironment);
 
         try
         {
@@ -120,32 +87,16 @@ public class Program
             // 配置主机和服务
             builder.Host.ConfigureEnvironmentAwareHosting();
 
-            // Phase 2: Final Logger - 完整配置的生产级日志系统
-            // 从配置文件读取，添加所有Enrichers和敏感数据脱敏
+            // Phase 2: Final Logger - 完整配置的生产级日志系统（LoggingBootstrap 统一入口）
             // refactor-logging-system: 使用LoggingLevelSwitch支持运行时动态调整
-            builder.Host.UseSerilog((context, services, configuration) =>
+            builder.Host.AddLybtLogging(options =>
             {
-                configuration
-                    .ReadFrom.Configuration(context.Configuration)
-                    .ReadFrom.Services(services)
-                    .Enrich.FromLogContext()
-                    .Enrich.WithMachineName()
-                    .Enrich.WithThreadId()
-                    .Enrich.WithProperty("Application", "LYBT.WebAPI")
-                    .WithSensitiveDataMasking()
-                    .MinimumLevel.ControlledBy(LoggingLevelManager.LevelSwitch); // 必须在 ReadFrom.Configuration 之后
-
-                // 测试环境跳过 SQL Server Sink，避免 AutoCreateSqlTable 与 EF 迁移冲突
-                if (!context.HostingEnvironment.IsEnvironment("Test"))
-                {
-                    var dbOptions = services.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-                    configuration.AddMSSqlServerSinkWithColumnOptions(
-                        dbOptions.ConnectionString);
-                }
+                options.ApplicationName = "LYBT.WebAPI";
+                options.UseMssqlSink = true;
             });
 
-            // refactor-logging-system: 注册LoggingLevelManager为单例，供AdminController使用
-            builder.Services.AddSingleton(LoggingLevelManager);
+            // refactor-logging-system: 统一日志 DI 注册（ICorrelationIdProvider + LoggingLevelManager，供 DiagnosticsController 使用）
+            builder.Services.AddLybtLogging();
 
             Log.Information("已切换到Final Logger，配置加载完成");
 

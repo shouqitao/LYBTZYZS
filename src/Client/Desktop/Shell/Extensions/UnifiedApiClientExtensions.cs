@@ -17,6 +17,8 @@ using Prism.DryIoc;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Shared.Configuration.Options.Client;
+using LYBT.Shared.Logging.Correlation;
+using LYBT.Shared.Logging.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -83,7 +85,8 @@ public static class UnifiedApiClientExtensions
             authHandler.InnerHandler = tokenRefreshHandler;
 
             var loggingHandler = new LoggingHttpHandler(
-                container.Resolve<ILogger<LoggingHttpHandler>>());
+                container.Resolve<ILogger<LoggingHttpHandler>>(),
+                container.Resolve<ICorrelationIdProvider>());
             loggingHandler.InnerHandler = authHandler;
 
             return new HttpClient(loggingHandler)

@@ -1,7 +1,7 @@
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.ExceptionHandling;
+using LYBT.Shared.Logging.Http;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
-using LYBT.WebAPI.Middleware;
 
 namespace LYBT.WebAPI.Configuration;
 

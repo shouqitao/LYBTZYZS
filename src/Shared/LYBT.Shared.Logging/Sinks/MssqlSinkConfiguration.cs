@@ -4,52 +4,88 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.MSSqlServer;
 
-namespace LYBT.WebAPI.Extensions;
+namespace LYBT.Shared.Logging.Sinks;
 
 /// <summary>
-/// Serilog MSSqlServer sink 扩展方法
-/// 以编程方式配置列选项，替代 appsettings.json 中的 columnOptionsSection
+/// MSSqlServer sink 配置选项（代码优先，替代 appsettings.json 中的 MSSqlServer WriteTo 配置）
 /// </summary>
 /// <remarks>
 /// 背景：Serilog.Sinks.MSSqlServer 不支持混合 JSON 配置 sink + 代码配置列选项，
-/// 因此 MSSqlServer sink 完全通过代码配置，连接字符串和 sink 选项从配置文件读取。
-///
-/// appsettings.json 中的 Serilog.WriteTo[MSSqlServer].Args.sinkOptionsSection 保持不变，
-/// 作为表名/Schema/批次大小等参数的来源说明文档。
-/// 实际参数值在本方法中硬编码，与 JSON 值保持一致。
+/// 因此 MSSqlServer sink 完全通过代码配置（A-31-C1 收敛自 WebAPI/Extensions/SerilogMSSqlServerExtensions）。
+/// appsettings.Production.json 中的 MSSqlServer WriteTo 条目已移除，避免 autoCreateSqlTable 配置冲突——代码优先。
 /// </remarks>
-public static class SerilogMSSqlServerExtensions
+public sealed class MssqlSinkOptions
+{
+    /// <summary>
+    /// 日志表名
+    /// </summary>
+    public string TableName { get; set; } = "SystemLogs";
+
+    /// <summary>
+    /// 表所属 Schema
+    /// </summary>
+    public string SchemaName { get; set; } = "dbo";
+
+    /// <summary>
+    /// 是否自动建表
+    /// 代码优先：默认 false，由 EF Core 迁移管理表结构，避免冲突
+    /// </summary>
+    public bool AutoCreateSqlTable { get; set; }
+
+    /// <summary>
+    /// 批次写入条数上限
+    /// </summary>
+    public int BatchPostingLimit { get; set; } = 50;
+
+    /// <summary>
+    /// 批次写入周期
+    /// </summary>
+    public TimeSpan BatchPeriod { get; set; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>
+    /// 最低日志级别
+    /// </summary>
+    public LogEventLevel RestrictedToMinimumLevel { get; set; } = LogEventLevel.Warning;
+}
+
+/// <summary>
+/// Serilog MSSqlServer sink 配置扩展（A-31-C1 收敛自 WebAPI/Extensions/SerilogMSSqlServerExtensions）
+/// 以编程方式配置列选项，替代 appsettings.json 中的 columnOptionsSection
+/// </summary>
+public static class MssqlSinkConfiguration
 {
     /// <summary>
     /// 向 LoggerConfiguration 添加 MSSqlServer sink，包含完整的列选项配置
     /// </summary>
     /// <param name="loggerConfiguration">LoggerConfiguration 实例</param>
-    /// <param name="connectionString">数据库连接字符串（从 ConnectionStrings:DefaultConnection 读取）</param>
+    /// <param name="connectionString">数据库连接字符串（从 DatabaseOptions.ConnectionString 读取）</param>
+    /// <param name="configure">sink 选项配置</param>
     /// <returns>配置后的 LoggerConfiguration</returns>
-    public static LoggerConfiguration AddMSSqlServerSinkWithColumnOptions(
+    public static LoggerConfiguration WriteToMssqlSink(
         this LoggerConfiguration loggerConfiguration,
-        string? connectionString)
+        string? connectionString,
+        Action<MssqlSinkOptions>? configure = null)
     {
         if (string.IsNullOrWhiteSpace(connectionString))
             return loggerConfiguration;
 
-        var columnOptions = BuildColumnOptions();
+        var sinkOptions = new MssqlSinkOptions();
+        configure?.Invoke(sinkOptions);
 
-        var sinkOptions = new MSSqlServerSinkOptions
+        var mssqlOptions = new MSSqlServerSinkOptions
         {
-            // 与 appsettings.json Serilog.WriteTo[MSSqlServer].Args.sinkOptionsSection 保持一致
-            TableName = "SystemLogs",
-            SchemaName = "dbo",
-            AutoCreateSqlTable = false, // 由 EF Core 迁移管理表结构，避免冲突
-            BatchPostingLimit = 50,
-            BatchPeriod = TimeSpan.FromSeconds(5)
+            TableName = sinkOptions.TableName,
+            SchemaName = sinkOptions.SchemaName,
+            AutoCreateSqlTable = sinkOptions.AutoCreateSqlTable,
+            BatchPostingLimit = sinkOptions.BatchPostingLimit,
+            BatchPeriod = sinkOptions.BatchPeriod
         };
 
         return loggerConfiguration.WriteTo.MSSqlServer(
             connectionString: connectionString,
-            sinkOptions: sinkOptions,
-            columnOptions: columnOptions,
-            restrictedToMinimumLevel: LogEventLevel.Warning);
+            sinkOptions: mssqlOptions,
+            columnOptions: BuildColumnOptions(),
+            restrictedToMinimumLevel: sinkOptions.RestrictedToMinimumLevel);
     }
 
     /// <summary>
@@ -114,5 +150,3 @@ public static class SerilogMSSqlServerExtensions
         return options;
     }
 }
-
-

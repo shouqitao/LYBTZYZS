@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace LYBT.Shared.Logging.Abstractions;
+namespace LYBT.Shared.Logging.Correlation;
 
 /// <summary>
 /// 基于System.Diagnostics.Activity的CorrelationId提供者
