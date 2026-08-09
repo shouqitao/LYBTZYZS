@@ -66,7 +66,7 @@ LYBT.Desktop.Patients/
 | **PatientEditorViewModel** | PatientEditContext 编辑上下文 | Validate / GetPatientData 方法，编辑表单逻辑分离 |
 | **PatientCardReaderViewModel** | ICardReaderService 集成 | ReadCardAsync / FindPatientByIdNumberAsync / MaskIdNumber，身份证读卡交互 |
 | **PatientStatusHandler** : BaseStatusHandler | Handler 组件拆分，SRP | 仅实现 Restore（恢复软删除），不含 ToggleStatus |
-| **PatientService** : IPatientService | 统一 CommandResult 错误处理，[SVC] 日志前缀 | 9 个方法: CreatePatientAsync / UpdatePatientAsync / DeletePatientAsync / BatchDeletePatientsAsync / SearchPatientsAsync / GetPatientsPagedAsync / GetByIdAsync 等 |
+| **PatientService** : IPatientService | 统一 CommandResult 错误处理，[SVC] 日志前缀 | 8 个方法: CreatePatientAsync / UpdatePatientAsync / DeletePatientAsync / SearchPatientsAsync / GetPatientsPagedAsync / GetByIdAsync 等 |
 | **PatientSearchManager** | 从 ViewModel 提取（298 行），搜索+分页+缓存集成 | ExecuteSearchAsync / LoadInitialPatientsAsync / LoadCurrentPageAsync / PreviousPageAsync / NextPageAsync / InvalidateCache。事件: SearchCompleted |
 | **PatientSearchCache** : IPatientSearchCache | LRU 策略，用户隔离 | 最多 10 条，5 分钟 TTL，线程安全（lock），用户隔离（SessionManager.CurrentUserId），事件驱动失效（PatientEvents.Created/Updated + CacheEvents.Invalidated + SessionChanged） |
 | **PatientCardReaderIntegration** | PRD-15 去重链设计 | 去重链: exact → fuzzy → multiple → no match。加密照片处理。方法: FindPatientByIdNumberAsync / QuickCreatePatientAsync / FindOrCreatePatientAsync / GetPatientDetailByIdAsync |

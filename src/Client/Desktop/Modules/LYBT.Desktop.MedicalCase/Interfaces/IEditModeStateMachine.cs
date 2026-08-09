@@ -22,17 +22,11 @@ public interface IEditModeStateMachine
     /// <param name="guardPredicate">Optional guard — Fire returns false when guard returns false.</param>
     void Initialize(WorkspaceEditState initialState, Func<WorkspaceEditEvent, bool>? guardPredicate = null);
 
-    /// <summary>如果事件可从当前状态触发，则返回 true。</summary>
-    bool CanFire(WorkspaceEditEvent evt);
-
     /// <summary>
     /// 触发事件，若允许则转换状态。
     /// 非法转换或守卫失败时返回 false（从不抛出异常）。
     /// </summary>
     bool Fire(WorkspaceEditEvent evt, string? context = null);
-
-    /// <summary>返回当前允许触发的事件。</summary>
-    IEnumerable<WorkspaceEditEvent> GetPermittedEvents();
 
     /// <summary>成功状态转换后触发（在状态锁之外）。</summary>
     event EventHandler<EditStateChangedEventArgs>? StateChanged;

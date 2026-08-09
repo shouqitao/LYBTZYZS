@@ -180,52 +180,9 @@ public class LoginCoordinator : ILoginCoordinator, IDisposable
         }
     }
 
-    public async Task HandleLoginSuccessAsync(UserDetailDto user, DateTime tokenExpiresAt)
-    {
-        ArgumentNullException.ThrowIfNull(user);
-
-        // 与会话变更入口（LoginAsync/LogoutAsync）串行化，避免并发竞态
-        await _loginLock.WaitAsync(TimeSpan.FromSeconds(30));
-        try
-        {
-            _logger.LogInformation("处理登录成功 [用户: {Username}, Token过期: {ExpiresAt}]",
-                user.UserName, tokenExpiresAt);
-
-            try
-            {
-                if (_stateMachine.CurrentState == AuthState.Idle)
-                {
-                    _stateMachine.Fire(AuthEvent.StartLogin);
-                    _stateMachine.Fire(AuthEvent.CredentialsValidated, "正在启动会话...");
-                }
-
-                await StartSessionAsync(user, tokenExpiresAt);
-                _stateMachine.Fire(AuthEvent.ProfileLoaded, "正在加载模块...");
-
-                await LoadModulesForUserAsync(user);
-                _stateMachine.Fire(AuthEvent.ModulesLoaded, "正在跳转...");
-
-                await NavigateToRoleHomeAsync(user);
-                _stateMachine.Fire(AuthEvent.NavigationCompleted);
-
-                _logger.LogInformation("登录成功处理完成 [用户: {Username}]", user.UserName);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "处理登录成功时发生异常");
-                _stateMachine.Fire(AuthEvent.LoginFailure);
-                throw;
-            }
-        }
-        finally
-        {
-            _loginLock.Release();
-        }
-    }
-
     public async Task LogoutAsync()
     {
-        // 与会话变更入口（LoginAsync/HandleLoginSuccessAsync）串行化，避免与登录流程交错
+        // 与会话变更入口（LoginAsync/LogoutAsync）串行化，避免与登录流程交错
         await _loginLock.WaitAsync(TimeSpan.FromSeconds(30));
         try
         {
@@ -265,22 +222,6 @@ public class LoginCoordinator : ILoginCoordinator, IDisposable
         finally
         {
             _loginLock.Release();
-        }
-    }
-
-    public LoginFlowDiagnostics GetDiagnostics()
-    {
-        lock (_stateLock)
-        {
-            return new LoginFlowDiagnostics(
-                CurrentState: _stateMachine.CurrentState,
-                IsLoggedIn: _stateMachine.IsAuthenticated,
-                UserName: _currentUser?.UserName,
-                UserRole: _currentUser?.Role.ToString(),
-                LoginTime: _loginTime,
-                LastStateChangeTime: _lastStateChangeTime,
-                LoginAttemptCount: _loginAttemptCount
-            );
         }
     }
 

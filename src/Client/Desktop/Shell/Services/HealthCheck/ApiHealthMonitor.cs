@@ -72,40 +72,12 @@ public sealed class ApiHealthMonitor : IApiHealthMonitor
         return Task.CompletedTask;
     }
 
-    public Task StopMonitoringAsync()
-    {
-        if (_disposed) return Task.CompletedTask;
-
-        _logger.LogInformation("[HEALTH-MON] 停止 API 健康监控");
-        _checkTimer?.Dispose();
-        _checkTimer = null;
-
-        if (_cts != null)
-        {
-            _cts.Cancel();
-            _cts.Dispose();
-            _cts = null;
-        }
-
-        UpdateState(ApiMonitorHealthStatus.Unhealthy, ApiConnectionState.Disconnected, "监控已停止");
-
-        return Task.CompletedTask;
-    }
-
     public async Task<ApiMonitorHealthStatus> ForceCheckAsync()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         _logger.LogDebug("[HEALTH-MON] 强制执行健康检查");
         return await PerformCheckAsync();
-    }
-
-    public void ResetCircuitBreaker()
-    {
-        _logger.LogInformation("[HEALTH-MON] 重置断路器");
-        _circuitState = CircuitState.Closed;
-        _circuitOpenedAt = null;
-        _consecutiveFailures = 0;
     }
 
     private async Task<ApiMonitorHealthStatus> PerformCheckAsync()

@@ -215,36 +215,6 @@ public class StartupPipeline : IStartupPipeline
         }
     }
 
-    /// <inheritdoc />
-    public StartupPipelineDiagnostics GetDiagnostics()
-    {
-        var stepDiagnostics = _steps
-            .OrderBy(s => s.Order)
-            .Select(s =>
-            {
-                _stepResults.TryGetValue(s.Name, out var result);
-                return new StartupStepDiagnostics(
-                    Name: s.Name,
-                    Order: s.Order,
-                    IsRequired: s.IsRequired,
-                    Executed: result != null,
-                    Success: result?.Success ?? false,
-                    Duration: result?.Duration,
-                    ErrorMessage: result?.ErrorMessage
-                );
-            })
-            .ToList();
-
-        return new StartupPipelineDiagnostics(
-            CurrentState: _state,
-            TotalSteps: _steps.Count,
-            CompletedSteps: _completedSteps,
-            FailedSteps: _stepResults.Values.Count(r => !r.Success && !r.Skipped),
-            TotalDuration: _totalStopwatch?.Elapsed,
-            StepDiagnostics: stepDiagnostics
-        );
-    }
-
     /// <summary>
     /// 执行单个启动步骤
     /// </summary>

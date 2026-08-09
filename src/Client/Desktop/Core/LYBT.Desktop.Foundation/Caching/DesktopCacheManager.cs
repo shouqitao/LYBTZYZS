@@ -90,16 +90,4 @@ public sealed class DesktopCacheManager : IDesktopCacheManager
                 Reason = "UserCRUD"
             });
     }
-
-    public void InvalidateAll()
-    {
-        _logger.LogInformation("[Cache] Desktop invalidating ALL caches (post-sync)");
-        _memoryCache.Clear();
-        _eventAggregator.GetEvent<CacheEvents.InvalidatedEvent>().Publish(
-            new CacheInvalidatedPayload
-            {
-                Domain = CacheDomain.All,
-                Reason = "SyncCompleted"
-            });
-    }
 }

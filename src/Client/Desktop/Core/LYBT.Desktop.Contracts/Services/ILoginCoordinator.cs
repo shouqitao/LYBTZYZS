@@ -51,23 +51,10 @@ public interface ILoginCoordinator
     Task<CommandResult<UserDetailDto>> LoginAsync(string username, string password);
 
     /// <summary>
-    /// 处理登录成功后的流程
-    /// 从LoginViewModel或其他来源接收登录成功通知时调用
-    /// </summary>
-    /// <param name="user">登录用户信息</param>
-    /// <param name="tokenExpiresAt">Token过期时间</param>
-    Task HandleLoginSuccessAsync(UserDetailDto user, DateTime tokenExpiresAt);
-
-    /// <summary>
     /// 执行登出流程
     /// 包括：清理会话 → 清理Token → 导航回登录页
     /// </summary>
     Task LogoutAsync();
-
-    /// <summary>
-    /// 获取登录流程诊断信息
-    /// </summary>
-    LoginFlowDiagnostics GetDiagnostics();
 }
 
 /// <summary>
@@ -84,16 +71,3 @@ public class LoginSuccessEventArgs : EventArgs
         TokenExpiresAt = tokenExpiresAt;
     }
 }
-
-/// <summary>
-/// 登录流程诊断信息
-/// </summary>
-public record LoginFlowDiagnostics(
-    AuthState CurrentState,
-    bool IsLoggedIn,
-    string? UserName,
-    string? UserRole,
-    DateTime? LoginTime,
-    DateTime? LastStateChangeTime,
-    int LoginAttemptCount
-);

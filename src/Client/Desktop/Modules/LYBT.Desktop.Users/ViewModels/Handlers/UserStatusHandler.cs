@@ -62,7 +62,4 @@ public class UserStatusHandler : BaseStatusHandler<UserListDto>, IUserStatusHand
 
     /// <inheritdoc/>
     public bool CanToggleUserStatus(UserListDto? user, bool isBusy) => user != null && !isBusy;
-
-    /// <inheritdoc/>
-    public bool CanRestore(UserListDto? user, bool isBusy, bool isAdmin) => user != null && !isBusy && isAdmin;
 }

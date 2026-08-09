@@ -250,47 +250,6 @@ public class StartupPipelineTests
 
     #endregion
 
-    #region 诊断测试
-
-    [Fact]
-    public void GetDiagnostics_ShouldReturnCorrectInfo()
-    {
-        // Arrange
-        var step1 = CreateSubstituteStep("Step1", 10, true);
-        var step2 = CreateSubstituteStep("Step2", 20, false);
-        _sut.RegisterStep(step1);
-        _sut.RegisterStep(step2);
-
-        // Act
-        var diagnostics = _sut.GetDiagnostics();
-
-        // Assert
-        diagnostics.CurrentState.Should().Be(StartupPipelineState.NotStarted);
-        diagnostics.TotalSteps.Should().Be(2);
-        diagnostics.CompletedSteps.Should().Be(0);
-        diagnostics.StepDiagnostics.Should().HaveCount(2);
-    }
-
-    [Fact]
-    public async Task GetDiagnostics_AfterExecution_ShouldShowCompletedSteps()
-    {
-        // Arrange
-        var step1 = CreateSubstituteStep("Step1", 10, true);
-        _sut.RegisterStep(step1);
-
-        // Act
-        await _sut.ExecuteAsync();
-        var diagnostics = _sut.GetDiagnostics();
-
-        // Assert
-        diagnostics.CurrentState.Should().Be(StartupPipelineState.Completed);
-        diagnostics.CompletedSteps.Should().Be(1);
-        diagnostics.StepDiagnostics[0].Executed.Should().BeTrue();
-        diagnostics.StepDiagnostics[0].Success.Should().BeTrue();
-    }
-
-    #endregion
-
     #region 辅助方法
 
     private static IStartupStep CreateSubstituteStep(string name, int order, bool isRequired, Action? onExecute = null)

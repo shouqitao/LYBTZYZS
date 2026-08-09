@@ -29,9 +29,4 @@ public interface IDesktopCacheManager
     /// 使用户相关缓存失效
     /// </summary>
     void InvalidateUserCaches();
-
-    /// <summary>
-    /// 使所有缓存失效 (Sync 完成后调用)
-    /// </summary>
-    void InvalidateAll();
 }

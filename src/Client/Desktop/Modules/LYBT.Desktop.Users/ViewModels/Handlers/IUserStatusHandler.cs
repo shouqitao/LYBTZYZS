@@ -27,12 +27,4 @@ public interface IUserStatusHandler
     /// <param name="user">用户信息</param>
     /// <param name="isBusy">是否忙碌</param>
     bool CanToggleUserStatus(UserListDto? user, bool isBusy);
-
-    /// <summary>
-    /// 是否可以恢复
-    /// </summary>
-    /// <param name="user">用户信息</param>
-    /// <param name="isBusy">是否忙碌</param>
-    /// <param name="isAdmin">是否管理员</param>
-    bool CanRestore(UserListDto? user, bool isBusy, bool isAdmin);
 }

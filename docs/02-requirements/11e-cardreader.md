@@ -60,11 +60,10 @@
 - [ ] 新创建 → `IsNewlyCreated=true`；已有 → `false`
 
 **业务规则**:
-1. `MatchPatientAsync` 实现完整降级链：ExactMatch → FuzzyMatch → MultipleCandidates → NoMatch。
-2. `PatientMatchType` 枚举驱动 UI 分支。
-3. 读卡数据自动映射：姓名→Name、身份证号→IdNumber、出生日期→BirthDate、性别→Gender。
-4. 照片通过 `DpapiPhotoStorageService`（DPAPI LocalMachine 加密）存储于 `{AppDataLocal}/LYBT/photos/`。
-5. 在患者列表页通过 `ReadCardCommand` 触发。
+1. 读卡后按身份证号查找（`FindPatientByIdNumberAsync`）；未找到则快速创建（`QuickCreatePatientAsync`）。（A-31-C7 移除 `MatchPatientAsync` 降级链实现，生产 0 调用；需求留待产品决策）
+2. 读卡数据自动映射：姓名→Name、身份证号→IdNumber、出生日期→BirthDate、性别→Gender。
+3. 照片通过 `DpapiPhotoStorageService`（DPAPI LocalMachine 加密）存储于 `{AppDataLocal}/LYBT/photos/`。
+4. 在患者列表页通过 `ReadCardCommand` 触发。
 
 **双模式**:
 | 模式 | 行为 |
@@ -72,7 +71,7 @@
 | 远程 | 读卡后通过 API 查询/创建患者 |
 | 本地 | 读卡后通过本地数据源查询/创建患者 |
 
-**实现参考**: `IPatientCardReaderIntegration`、`MatchPatientAsync`、`PatientMatchType`、`DpapiPhotoStorageService`
+**实现参考**: `IPatientCardReaderIntegration`、`DpapiPhotoStorageService`
 
 ---
 

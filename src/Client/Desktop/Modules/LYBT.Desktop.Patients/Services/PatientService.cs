@@ -90,50 +90,6 @@ namespace LYBT.Desktop.Patients.Services
 
         #endregion
 
-        #region 批量操作
-
-        /// <summary>
-        /// 批量删除患者
-        /// </summary>
-        public async Task<CommandResult<BatchOperationResultDto>> BatchDeletePatientsAsync(IEnumerable<Guid> patientIds, CancellationToken ct = default)
-        {
-            try
-            {
-                var ids = patientIds?.ToList() ?? new List<Guid>();
-                _logger.LogInformation("[SVC] Patient.BatchDelete started - Count={Count}", ids.Count);
-
-                if (!ids.Any())
-                {
-                    return CommandResult<BatchOperationResultDto>.Failed("没有选择要删除的患者");
-                }
-                var result = await _patientRepository.BatchDeleteAsync(ids, ct);
-                if (result == null)
-                {
-                    _logger.LogWarning("[SVC] Patient.BatchDelete failed");
-                    return CommandResult<BatchOperationResultDto>.Failed("批量删除患者失败");
-                }
-
-                if (result.FailureCount == 0)
-                {
-                    _logger.LogInformation("[SVC] Patient.BatchDelete completed - Success={SuccessCount}", result.SuccessCount);
-                }
-                else
-                {
-                    _logger.LogWarning("[SVC] Patient.BatchDelete partial - Success={SuccessCount} Failure={FailureCount}",
-                        result.SuccessCount, result.FailureCount);
-                }
-
-                return CommandResult<BatchOperationResultDto>.Succeeded(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[SVC] Patient.BatchDelete failed");
-                return CommandResult<BatchOperationResultDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("批量删除患者", ex));
-            }
-        }
-
-        #endregion
-
         #region 查询操作
 
         /// <summary>

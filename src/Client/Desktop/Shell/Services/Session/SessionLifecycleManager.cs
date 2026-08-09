@@ -233,25 +233,6 @@ public class SessionLifecycleManager : ISessionLifecycleManager, IDisposable
         _userActivityTracker.ResetActivity();
     }
 
-    /// <inheritdoc />
-    public SessionDiagnostics GetDiagnostics()
-    {
-        lock (_stateLock)
-        {
-            return new SessionDiagnostics(
-                CurrentState: _currentState,
-                UserName: _currentUserName,
-                UserRole: _currentUserRole,
-                SessionStartTime: _sessionStartTime,
-                TokenExpiresAt: _tokenExpiresAt,
-                TokenRemainingTime: _tokenLifecycleService.RemainingTime,
-                LastActivityTime: _lastActivityTime,
-                TokenRefreshCount: _tokenRefreshCount,
-                LastTokenRefreshTime: _lastTokenRefreshTime
-            );
-        }
-    }
-
     /// <summary>
     /// 转换会话状态
     /// </summary>

@@ -298,13 +298,6 @@ public class AuthenticationIntegrationTests
         // Assert 2: Token已从内存清除
         var clearedToken = await tokenStorage.GetLoginResponseAsync();
         clearedToken.Should().BeNull("清理后Token应该为null");
-
-        // Act 3: 验证登出状态
-        var authService = serviceProvider.GetRequiredService<IAuthenticationService>();
-        var isLoggedIn = await authService.IsLoggedInAsync();
-
-        // Assert 3: 用户应该处于未登录状态
-        isLoggedIn.Should().BeFalse("清理后用户应该处于未登录状态，需要重新登录");
     }
 
     #region Helper Methods

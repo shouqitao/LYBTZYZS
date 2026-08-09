@@ -63,7 +63,7 @@ LYBT.Desktop.Users/
 | `ClearFiltersCommand` | `HasActiveFilters` | 清除角色/状态/关键词筛选 |
 | `ResetPasswordCommand` | `_passwordHandler.CanResetPassword` | 委托 `IUserPasswordHandler` |
 | `ToggleUserStatusCommand` | `_statusHandler.CanToggleUserStatus` | 委托 `IUserStatusHandler`，成功后刷新列表 |
-| `RestoreCommand` | `_statusHandler.CanRestore` | 恢复已删除用户（需管理员权限） |
+| `RestoreCommand` | `CanRestore()`（基类） | 恢复已删除用户（需管理员权限） |
 
 | 筛选属性 | 类型 | 说明 |
 |----------|------|------|
@@ -107,7 +107,6 @@ LYBT.Desktop.Users/
 | `ToggleUserStatusAsync(UserListDto)` | 切换启用/禁用，成功后返回 `true` 触发刷新 |
 | `RestoreAsync(UserListDto)` | 恢复已删除用户 |
 | `CanToggleUserStatus(UserListDto?, bool)` | `user != null && !isBusy` |
-| `CanRestore(UserListDto?, bool, bool)` | `user != null && !isBusy && isAdmin` |
 
 ### RemoteUserService — IUserService 实现
 

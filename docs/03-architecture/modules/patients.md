@@ -108,12 +108,9 @@ Repository → ApplyKeywordFilter
 ```
 Desktop → PatientCardReaderViewModel.ReadCardAsync()
   → 硬件读取身份证（HuaDa HD100 P/Invoke）
-  → PatientCardReaderIntegration.MatchPatientAsync()
-    → PRD-15 去重链:
-      1. IdNumber 精确匹配
-      2. Name + BirthDate 模糊匹配
-      3. 多候选提示
-      4. 无匹配→快速创建
+  → PatientCardReaderIntegration.FindOrCreatePatientAsync()
+    → 1. IdNumber 精确匹配（FindPatientByIdNumberAsync）
+    → 2. 未找到 → 快速创建（QuickCreatePatientAsync）
   → 加密存储照片（IPhotoStorageService）
 ```
 

@@ -19,17 +19,6 @@ public class WorkspaceStateTests
     }
 
     [Fact]
-    public void EnterReadOnlyMode_returns_new_instance_with_readonly()
-    {
-        var state = new WorkspaceState();
-        var readOnly = state.EnterReadOnlyMode();
-
-        Assert.True(readOnly.IsReadOnly);
-        Assert.False(readOnly.IsEditing);
-        Assert.True(state.IsEditing); // Original unchanged (immutable)
-    }
-
-    [Fact]
     public void EnterEditMode_when_CanEdit_returns_editing_state()
     {
         var state = new WorkspaceState(CanEdit: true, EditState: EditState.ReadOnly);

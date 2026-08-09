@@ -121,7 +121,7 @@ LYBT.Desktop.Contracts/
 | 接口 | 关键成员 |
 |------|----------|
 | `IStartupStep` | `Name`, `Order`, `IsRequired`, `ParallelGroup`, `ExecuteAsync()` |
-| `IStartupPipeline` | `State`, `Steps`, `RegisterStep()`, `ExecuteAsync()`, `Reset()`, `GetDiagnostics()` |
+| `IStartupPipeline` | `State`, `Steps`, `RegisterStep()`, `ExecuteAsync()`, `Reset()` |
 
 #### `IConnectionSettingsService`
 **设计依据**: URL 驱动的连接模型。`localhost`/`127.0.0.1` → 本地模式，其他 → 远程模式。持久化设置跨会话。

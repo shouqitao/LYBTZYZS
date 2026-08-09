@@ -56,14 +56,8 @@ public interface IApiHealthMonitor : IDisposable
     /// <summary>启动监控</summary>
     Task StartMonitoringAsync(CancellationToken ct = default);
 
-    /// <summary>停止监控</summary>
-    Task StopMonitoringAsync();
-
     /// <summary>立即检查（强制）</summary>
     Task<ApiMonitorHealthStatus> ForceCheckAsync();
-
-    /// <summary>重置断路器</summary>
-    void ResetCircuitBreaker();
 }
 
 /// <summary>

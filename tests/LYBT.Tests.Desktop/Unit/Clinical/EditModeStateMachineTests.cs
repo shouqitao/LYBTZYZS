@@ -341,35 +341,6 @@ public class EditModeStateMachineTests
         captured!.Context.Should().Be("test-context");
     }
 
-    // ─── E.10: GetPermittedEvents ─────────────────────────────────────────────
-
-    [Fact]
-    public void GetPermittedEvents_ReadOnly_returns_EnterEdit()
-    {
-        var sm = Create(WorkspaceEditState.ReadOnly);
-        sm.GetPermittedEvents().Should().Contain(WorkspaceEditEvent.EnterEdit);
-    }
-
-    [Fact]
-    public void GetPermittedEvents_Editing_contains_ExitEdit_MakeChange_Save_RequestLeave()
-    {
-        var sm = Create(WorkspaceEditState.Editing);
-        var events = sm.GetPermittedEvents().ToList();
-        events.Should().Contain(WorkspaceEditEvent.ExitEdit);
-        events.Should().Contain(WorkspaceEditEvent.MakeChange);
-        events.Should().Contain(WorkspaceEditEvent.Save);
-        events.Should().Contain(WorkspaceEditEvent.RequestLeave);
-    }
-
-    [Fact]
-    public void GetPermittedEvents_Saving_contains_SaveCompleted_SaveFailed()
-    {
-        var sm = Create(WorkspaceEditState.Saving);
-        var events = sm.GetPermittedEvents().ToList();
-        events.Should().Contain(WorkspaceEditEvent.SaveCompleted);
-        events.Should().Contain(WorkspaceEditEvent.SaveFailed);
-    }
-
     // ─── E.11: Full workflow paths ────────────────────────────────────────────
 
     [Fact]
@@ -459,29 +430,5 @@ public class EditModeStateMachineTests
 
         sm.Fire(WorkspaceEditEvent.SaveCompleted).Should().BeTrue();
         sm.CurrentState.Should().Be(WorkspaceEditState.ReadOnly);
-    }
-
-    // ─── E.12: CanFire ───────────────────────────────────────────────────────
-
-    [Fact]
-    public void CanFire_returns_true_for_valid_transition()
-    {
-        var sm = Create(WorkspaceEditState.ReadOnly);
-        sm.CanFire(WorkspaceEditEvent.EnterEdit).Should().BeTrue();
-    }
-
-    [Fact]
-    public void CanFire_returns_false_for_invalid_transition()
-    {
-        var sm = Create(WorkspaceEditState.ReadOnly);
-        sm.CanFire(WorkspaceEditEvent.SaveCompleted).Should().BeFalse();
-    }
-
-    [Fact]
-    public void CanFire_respects_guard_predicate()
-    {
-        var sm = Create(WorkspaceEditState.ReadOnly);
-        sm.Initialize(WorkspaceEditState.ReadOnly, evt => evt != WorkspaceEditEvent.EnterEdit);
-        sm.CanFire(WorkspaceEditEvent.EnterEdit).Should().BeFalse();
     }
 }

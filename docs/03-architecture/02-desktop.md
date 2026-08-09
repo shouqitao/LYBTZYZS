@@ -538,19 +538,15 @@ DirtyEditing ──LeaveRequest──> LeavingConfirming
 PatientMasterDetailViewModel
     |-- ReadCardCommand
         |-- IPatientCardReaderIntegration
-            |-- MatchPatientAsync(CardReadResult) -> PatientMatchResult
-            |       降级链: IdNumber精确 -> Name+BirthDate模糊 -> MultipleCandidates -> NoMatch
+            |-- FindPatientByIdNumberAsync (身份证号查找)
             |-- FindOrCreatePatientAsync (查找或创建)
+            |-- QuickCreatePatientAsync (快速创建)
             |-- GetPatientDetailByIdAsync (获取患者详情)
                 |-- ICardReader
                     |-- ConnectAsync / DisconnectAsync
                     |-- ReadCardAsync -> CardReadResult
                     |-- DetectCardAsync
 ```
-
-**PatientMatchResult**: `MatchType (PatientMatchType) + Patient? + Candidates IReadOnlyList<>`
-
-**PatientMatchType**: `ExactMatch / FuzzyMatch / MultipleCandidates / NoMatch`
 
 **CardReaderOptions**: 从 `appsettings.json ["CardReader"]` 注入，包含设备端口、超时等硬件参数。
 
@@ -559,7 +555,7 @@ PatientMasterDetailViewModel
 | 接口 | 职责 |
 |------|------|
 | ICardReader | 硬件层: 设备连接、读卡、探测，包含 Name/Vendor/Model 设备信息 |
-| IPatientCardReaderIntegration | 业务层: 患者匹配降级链 (MatchPatientAsync)、创建、数据映射 |
+| IPatientCardReaderIntegration | 业务层: 患者查找/创建、数据映射 |
 
 ### 事件
 

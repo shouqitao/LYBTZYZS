@@ -90,16 +90,6 @@ public class EditModeStateMachine : IEditModeStateMachine
     }
 
     /// <inheritdoc/>
-    public bool CanFire(WorkspaceEditEvent evt)
-    {
-        lock (_stateLock)
-        {
-            return Transitions.ContainsKey((_currentState, evt))
-                && (_guardPredicate == null || _guardPredicate(evt));
-        }
-    }
-
-    /// <inheritdoc/>
     public bool Fire(WorkspaceEditEvent evt, string? context = null)
     {
         WorkspaceEditState previousState;
@@ -164,17 +154,5 @@ public class EditModeStateMachine : IEditModeStateMachine
         }
 
         return true;
-    }
-
-    /// <inheritdoc/>
-    public IEnumerable<WorkspaceEditEvent> GetPermittedEvents()
-    {
-        lock (_stateLock)
-        {
-            return Transitions.Keys
-                .Where(k => k.Item1 == _currentState)
-                .Select(k => k.Item2)
-                .ToList();
-        }
     }
 }

@@ -85,9 +85,6 @@ public record WorkspaceState(
     public WorkspaceState EnterEditMode()
         => CanEdit ? this with { EditState = EditState.Editing } : this;
 
-    public WorkspaceState EnterReadOnlyMode()
-        => this with { EditState = EditState.ReadOnly };
-
     public WorkspaceState DetermineFromContext(
         WorkspaceMode workspaceMode, bool isCompleted, bool isOwner,
         bool isAdmin, bool preferEditing)

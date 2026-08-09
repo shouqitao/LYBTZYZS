@@ -42,15 +42,6 @@ namespace LYBT.Desktop.Foundation.Security
         }
 
         /// <summary>
-        /// 异步检查用户是否已登录
-        /// </summary>
-        public async Task<bool> IsLoggedInAsync()
-        {
-            var token = await _tokenStorage.GetTokenAsync();
-            return !string.IsNullOrEmpty(token);
-        }
-
-        /// <summary>
         /// 用户登录 - 调用HTTP API
         /// </summary>
         public async Task<CommandResult<LoginResponse>> LoginAsync(LoginRequest request)
@@ -213,30 +204,6 @@ namespace LYBT.Desktop.Foundation.Security
         public void ClearAuthInfo()
         {
             _tokenStorage.ClearAuthentication();
-        }
-
-        /// <summary>
-        /// 检查连接状态 - 调用健康检查API
-        /// </summary>
-        public async Task<bool> CheckConnectionAsync()
-        {
-            try
-            {
-                // 先检查本地Token是否过期
-                var isExpired = await _tokenStorage.IsTokenExpiredAsync();
-                if (isExpired)
-                {
-                    return false;
-                }
-
-                // 调用健康检查API验证服务可用性
-                var healthResponse = await _authApi.HealthCheckAsync();
-                return healthResponse != null && healthResponse.Success && healthResponse.Data?.Status == "Healthy";
-            }
-            catch
-            {
-                return false;
-            }
         }
 
         // Issue #2262: ChangePasswordAsync已移除

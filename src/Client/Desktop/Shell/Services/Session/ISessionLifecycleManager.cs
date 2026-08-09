@@ -98,11 +98,6 @@ public interface ISessionLifecycleManager
     /// 记录用户活动（延长会话）
     /// </summary>
     void RecordUserActivity();
-
-    /// <summary>
-    /// 获取会话诊断信息
-    /// </summary>
-    SessionDiagnostics GetDiagnostics();
 }
 
 /// <summary>
@@ -132,18 +127,3 @@ public class SessionStateChangedEventArgs : EventArgs
         Timestamp = DateTime.UtcNow;
     }
 }
-
-/// <summary>
-/// 会话诊断信息（用于调试和问题排查）
-/// </summary>
-public record SessionDiagnostics(
-    SessionState CurrentState,
-    string? UserName,
-    string? UserRole,
-    DateTime? SessionStartTime,
-    DateTime? TokenExpiresAt,
-    TimeSpan? TokenRemainingTime,
-    DateTime? LastActivityTime,
-    int TokenRefreshCount,
-    DateTime? LastTokenRefreshTime
-);

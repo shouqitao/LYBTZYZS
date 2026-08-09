@@ -63,11 +63,6 @@ public interface IStartupPipeline
     Task<StartupPipelineResult> ExecuteAsync(IProgress<string>? progress = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 获取管道诊断信息
-    /// </summary>
-    StartupPipelineDiagnostics GetDiagnostics();
-
-    /// <summary>
     /// 重置管道状态，允许重新执行
     /// enhance-shell-connection-dialog: 支持连接失败后重试
     /// </summary>
@@ -123,12 +118,6 @@ public record StartupStepResult
         ErrorMessage = errorMessage,
         Exception = exception,
         Duration = duration
-    };
-
-    public static StartupStepResult SkippedResult() => new()
-    {
-        Success = true,
-        Skipped = true
     };
 }
 
@@ -214,28 +203,3 @@ public class StartupStepCompletedEventArgs : EventArgs
         TotalCount = totalCount;
     }
 }
-
-/// <summary>
-/// 启动管道诊断信息
-/// </summary>
-public record StartupPipelineDiagnostics(
-    StartupPipelineState CurrentState,
-    int TotalSteps,
-    int CompletedSteps,
-    int FailedSteps,
-    TimeSpan? TotalDuration,
-    IReadOnlyList<StartupStepDiagnostics> StepDiagnostics
-);
-
-/// <summary>
-/// 单个启动步骤诊断信息
-/// </summary>
-public record StartupStepDiagnostics(
-    string Name,
-    int Order,
-    bool IsRequired,
-    bool Executed,
-    bool Success,
-    TimeSpan? Duration,
-    string? ErrorMessage
-);

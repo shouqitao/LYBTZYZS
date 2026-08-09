@@ -28,15 +28,6 @@ namespace LYBT.Desktop.Contracts.Services
 
         #endregion
 
-        #region 批量操作
-
-        /// <summary>
-        /// 批量删除患者
-        /// </summary>
-        Task<CommandResult<BatchOperationResultDto>> BatchDeletePatientsAsync(IEnumerable<Guid> patientIds, CancellationToken ct = default);
-
-        #endregion
-
         #region 查询操作
 
         /// <summary>

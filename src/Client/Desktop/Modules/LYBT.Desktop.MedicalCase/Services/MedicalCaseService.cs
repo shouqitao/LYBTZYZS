@@ -237,19 +237,6 @@ public class MedicalCaseService : IMedicalCaseService
 
     #region 额外业务方法（非接口成员，供 ViewModel 直接调用）
 
-    public virtual async Task<MedicalCaseDetailDto?> GetByIdSimpleAsync(Guid id)
-    {
-        try
-        {
-            _logger.LogDebug("[SVC] MedicalCase.GetByIdSimple started - MedicalCaseId={MedicalCaseId}", id);
-            var result = await _repository.GetByIdAsync(id);
-            if (result == null)
-                _logger.LogWarning("[SVC] MedicalCase.GetByIdSimple → NotFound - MedicalCaseId={MedicalCaseId}", id);
-            return result;
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.GetByIdSimple failed - MedicalCaseId={MedicalCaseId}", id); return null; }
-    }
-
     public virtual async Task<ApiResponse<MedicalCaseDetailDto>> SetPrescriptionFlagAsync(Guid medicalCaseId, SetPrescriptionFlagRequest request)
     {
         try
@@ -325,28 +312,6 @@ public class MedicalCaseService : IMedicalCaseService
             }
         }
         catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.SuspendViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
-    }
-
-    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> CancelMedicalCaseViaApiAsync(Guid medicalCaseId, string? reason = null)
-    {
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.CancelViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            var request = string.IsNullOrEmpty(reason) ? null : new CancelMedicalCaseRequest { Reason = reason };
-            var data = await _repository.CancelMedicalCaseAsync(medicalCaseId, request);
-
-            if (data != null)
-            {
-                _logger.LogInformation("[SVC] MedicalCase.CancelViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = data };
-            }
-            else
-            {
-                _logger.LogWarning("[SVC] MedicalCase.CancelViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "取消医案失败" };
-            }
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.CancelViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
 
     #endregion
