@@ -83,78 +83,6 @@ public abstract class BaseMedicalCasesController : BaseCrudController
     }
 
     /// <summary>
-    /// 查询患者辨证记录历史
-    /// </summary>
-    [HttpGet("patient/{patientId:guid}/consultations")]
-    public virtual async Task<IActionResult> GetPatientConsultations(
-        Guid patientId,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
-        CancellationToken ct = default)
-    {
-        var result = await _medicalCaseQueryService.GetPatientConsultationsAsync(patientId, page, pageSize, ct);
-
-        return Success(result, "查询成功");
-    }
-
-    /// <summary>
-    /// 查询患者处方历史
-    /// </summary>
-    [HttpGet("patient/{patientId:guid}/prescriptions")]
-    public virtual async Task<IActionResult> GetPatientPrescriptions(
-        Guid patientId,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
-        CancellationToken ct = default)
-    {
-        var result = await _medicalCaseQueryService.GetPatientPrescriptionsAsync(patientId, page, pageSize, ct);
-
-        return Success(result, "查询成功");
-    }
-
-    /// <summary>
-    /// 查询辨证记录列表
-    /// </summary>
-    [HttpGet("{medicalCaseId:guid}/consultations")]
-    public virtual async Task<IActionResult> GetConsultations(
-        Guid medicalCaseId, CancellationToken ct)
-    {
-        var result = await _medicalCaseQueryService.GetConsultationListAsync(medicalCaseId, ct);
-
-        return Success(result, "查询成功");
-    }
-
-    /// <summary>
-    /// 查询处方列表
-    /// </summary>
-    [HttpGet("{medicalCaseId:guid}/prescriptions")]
-    public virtual async Task<IActionResult> GetPrescriptions(
-        Guid medicalCaseId, CancellationToken ct)
-    {
-        var result = await _medicalCaseQueryService.GetPrescriptionListAsync(medicalCaseId, ct);
-
-        return Success(result, "查询成功");
-    }
-
-    /// <summary>
-    /// 批量查询医案详情（≤50条）
-    /// </summary>
-    [HttpPost("batch-details")]
-    public virtual async Task<IActionResult> GetBatchDetails([FromBody] List<Guid> ids, CancellationToken ct)
-    {
-        if (ids == null || ids.Count == 0)
-            return ValidationFail("IDs不能为空");
-        if (ids.Count > 50)
-            return ValidationFail("最多查询50条");
-
-        var result = await _medicalCaseQueryService.GetBatchDetailDtosAsync(ids, ct);
-        if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "未找到指定医案");
-
-        return Success(result.Value!, "查询成功");
-    }
-
-    /// <summary>
     /// 获取医案操作权限
     /// </summary>
     [HttpGet("{id:guid}/permissions")]
@@ -223,29 +151,6 @@ public abstract class BaseMedicalCasesController : BaseCrudController
 
         LogOperation("打印记录写入成功", null, id);
         return Success(true, "打印记录已写入");
-    }
-
-    /// <summary>
-    /// 记录打印日志（成功/失败）— 仅 Doctor
-    /// 打印成功时回写医案打印状态，失败时仅记录日志
-    /// </summary>
-    [Authorize(Policy = PolicyConstants.DoctorOnly)]
-    [HttpPost("{id:guid}/print-logs")]
-    public virtual async Task<IActionResult> AddPrintLog(
-        Guid id,
-        [FromBody] PrintLogRequest request, CancellationToken ct)
-    {
-        if (ValidateGuid(id, "医案ID") is { } error) return error;
-
-        var (operatorId, operatorName, _) = GetOperator();
-        var result = await _medicalCaseCommandService.AddPrintLogAsync(
-            id, request.PrintType, request.IsSuccess, request.PrinterName, operatorId, operatorName, ct);
-
-        if (!result.IsSuccess)
-            return NotFound(result.Error ?? "医案不存在");
-
-        LogOperation("打印日志记录成功", new { PrintType = request.PrintType, IsSuccess = request.IsSuccess }, id);
-        return Success(true, "打印日志已记录");
     }
 
     #endregion

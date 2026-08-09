@@ -81,18 +81,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
             CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 添加打印日志（成功回写打印状态，失败仅记录日志）
-        /// </summary>
-        Task<Result<bool>> AddPrintLogAsync(
-            Guid medicalCaseId,
-            int printType,
-            bool isSuccess,
-            string? printerName,
-            Guid operatorId,
-            string operatorName,
-            CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// 记录打印完成（回写打印状态 + 记录日志）
         /// </summary>
         Task<Result<bool>> RecordPrintAsync(

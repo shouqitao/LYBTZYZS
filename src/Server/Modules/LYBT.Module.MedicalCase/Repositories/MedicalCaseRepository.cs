@@ -68,34 +68,6 @@ namespace LYBT.Module.MedicalCases.Repositories
         }
 
         /// <summary>
-        /// 分页获取患者辨证记录（DB层分页，仅含未删除的Consultation，含预加载）
-        /// </summary>
-        public async Task<PagedResult<MedicalCase>> GetPatientConsultationsPagedAsync(
-            Guid patientId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
-        {
-            var query = GetDetailQuery()
-                .Where(m => m.PatientId == patientId)
-                .Where(m => m.Consultation != null && !m.Consultation.IsDeleted)
-                .OrderByDescending(m => m.Consultation!.CreatedAt);
-
-            return await query.GetPagedResultAsync(pageNumber, pageSize, cancellationToken);
-        }
-
-        /// <summary>
-        /// 分页获取患者处方历史（DB层分页，仅含未删除的Prescription，含预加载）
-        /// </summary>
-        public async Task<PagedResult<MedicalCase>> GetPatientPrescriptionsPagedAsync(
-            Guid patientId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
-        {
-            var query = GetDetailQuery()
-                .Where(m => m.PatientId == patientId)
-                .Where(m => m.Prescription != null && !m.Prescription.IsDeleted)
-                .OrderByDescending(m => m.Prescription!.CreatedAt);
-
-            return await query.GetPagedResultAsync(pageNumber, pageSize, cancellationToken);
-        }
-
-        /// <summary>
         /// 根据ID获取医案（包含关联数据）
         /// </summary>
         public async Task<MedicalCase> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
@@ -262,32 +234,6 @@ namespace LYBT.Module.MedicalCases.Repositories
             return await _context.Set<Prescription>()
                 .IgnoreQueryFilters()
                 .CountAsync(p => p.PrescriptionNumber != null && p.PrescriptionNumber.StartsWith(prefix), cancellationToken);
-        }
-
-        /// <summary>
-        /// 批量获取医案详情（包含所有关联数据）
-        /// 使用EF Core的Contains优化为单次数据库查询
-        /// </summary>
-        /// <param name="ids">医案ID列表</param>
-        /// <returns>医案实体列表</returns>
-        public async Task<List<MedicalCase>> GetBatchWithDetailsAsync(List<Guid> ids, CancellationToken cancellationToken = default)
-        {
-            if (ids == null || !ids.Any())
-            {
-                return new List<MedicalCase>();
-            }
-
-            _logger?.LogInformation("批量获取医案详情，ID数量: {Count}", ids.Count);
-
-            // 使用 Contains 生成单次 SQL 查询（IN 子句），替代逐个查询的 N+1 模式
-            var result = await GetDetailQuery()
-                .Where(m => ids.Contains(m.Id))
-                .OrderByDescending(m => m.CreatedAt)
-                .ToListAsync(cancellationToken);
-
-            _logger?.LogInformation("批量获取医案详情完成，返回数量: {Count}", result.Count);
-
-            return result;
         }
     }
 }

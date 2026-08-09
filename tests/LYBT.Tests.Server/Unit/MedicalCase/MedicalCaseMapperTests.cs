@@ -272,99 +272,6 @@ public class MedicalCaseMapperTests
 
     #endregion
 
-    #region ToPrescriptionEntity 测试
-
-    [Fact]
-    public void ToPrescriptionEntity_WithValidDto_ShouldMapProperties()
-    {
-        // Arrange
-        var dto = CreateTestPrescriptionInputDto();
-
-        // Act
-        var entity = _mapper.ToPrescriptionEntity(dto);
-
-        // Assert
-        entity.Should().NotBeNull();
-        entity.DosageCount.Should().Be(dto.DosageCount);
-        entity.Usage.Should().Be(dto.Usage);
-        entity.Advice.Should().Be(dto.Advice);
-        entity.ReferencedFormulas.Should().Be(dto.ReferencedFormulas);
-        entity.Discount.Should().Be(dto.Discount);
-        entity.Remark.Should().Be(dto.Remark);
-    }
-
-    [Fact]
-    public void ToPrescriptionEntity_ShouldIgnoreAuditAndSystemFields()
-    {
-        // Arrange
-        var dto = CreateTestPrescriptionInputDto();
-
-        // Act
-        var entity = _mapper.ToPrescriptionEntity(dto);
-
-        // Assert - Mapperly忽略的系统字段应保持默认值
-        entity.Id.Should().NotBe(Guid.Empty); // Constructor default = Guid.NewGuid()
-        entity.MedicalCaseId.Should().Be(Guid.Empty); // Ignored (default)
-        entity.PrescriptionNumber.Should().BeNull(); // Ignored
-        entity.Items.Should().BeEmpty(); // Ignored (ICollection default)
-        entity.CreatedAt.Should().BeAfter(DateTime.MinValue); // Constructor default = UtcNow
-        entity.CreatedBy.Should().BeNull();
-        entity.UpdatedAt.Should().BeNull();
-        entity.UpdatedBy.Should().BeNull();
-        entity.RowVersion.Should().BeNull();
-        entity.IsDeleted.Should().BeFalse();
-    }
-
-    #endregion
-
-    #region UpdatePrescriptionEntity 测试
-
-    [Fact]
-    public void UpdatePrescriptionEntity_ShouldUpdateMappedFields()
-    {
-        // Arrange
-        var existing = CreateTestPrescription();
-        var dto = new PrescriptionInputDto
-        {
-            DosageCount = 14,
-            Usage = "每日两次",
-            Advice = "饭后服用",
-            Discount = 0.8m,
-            Remark = "新备注"
-        };
-
-        // Act
-        _mapper.UpdatePrescriptionEntity(dto, existing);
-
-        // Assert
-        existing.DosageCount.Should().Be(14);
-        existing.Usage.Should().Be("每日两次");
-        existing.Advice.Should().Be("饭后服用");
-        existing.Discount.Should().Be(0.8m);
-        existing.Remark.Should().Be("新备注");
-    }
-
-    [Fact]
-    public void UpdatePrescriptionEntity_ShouldNotModifyIgnoredFields()
-    {
-        // Arrange
-        var existing = CreateTestPrescription();
-        var originalId = existing.Id;
-        var originalMedicalCaseId = existing.MedicalCaseId;
-        var originalCreatedAt = existing.CreatedAt;
-        var dto = CreateTestPrescriptionInputDto();
-
-        // Act
-        _mapper.UpdatePrescriptionEntity(dto, existing);
-
-        // Assert - 忽略的字段不应被修改
-        existing.Id.Should().Be(originalId);
-        existing.MedicalCaseId.Should().Be(originalMedicalCaseId);
-        existing.CreatedAt.Should().Be(originalCreatedAt);
-    }
-
-    #endregion
-
     #region ToPrescriptionItemDto 测试
 
     [Fact]
@@ -656,18 +563,6 @@ public class MedicalCaseMapperTests
             Remark = "测试处方",
             CreatedAt = DateTime.UtcNow.AddDays(-1),
             UpdatedAt = DateTime.UtcNow
-        };
-    }
-
-    private static PrescriptionInputDto CreateTestPrescriptionInputDto()
-    {
-        return new PrescriptionInputDto
-        {
-            DosageCount = 7,
-            Usage = "每日一剂",
-            Advice = "饭后服用",
-            Discount = 1.0m,
-            Remark = "测试输入"
         };
     }
 

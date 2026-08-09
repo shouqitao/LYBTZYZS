@@ -19,12 +19,4 @@ public sealed class RegistrationConnectionManager
     /// <summary>移除连接映射，返回关联的 DoctorId。</summary>
     public bool TryRemove(string connectionId, out Guid doctorId)
         => _connections.TryRemove(connectionId, out doctorId);
-
-    /// <summary>按连接取 DoctorId。</summary>
-    public bool TryGetDoctorId(string connectionId, out Guid doctorId)
-        => _connections.TryGetValue(connectionId, out doctorId);
-
-    /// <summary>某医生当前在线连接数。</summary>
-    public int CountConnections(Guid doctorId)
-        => _connections.Values.Count(id => id == doctorId);
 }

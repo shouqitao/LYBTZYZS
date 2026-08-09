@@ -88,37 +88,6 @@ public partial class MedicalCaseMapper
     [MapperIgnoreTarget(nameof(PrescriptionDetailDto.Items))]
     public partial PrescriptionDetailDto ToPrescriptionDetailDto(Prescription entity);
 
-    /// <summary>
-    /// PrescriptionInputDto转换为Prescription实体
-    /// </summary>
-    // T2-X8-09: PrintVersion/LastPrintedAt/PrintCount/IsPrinted/PrintLogs 已从 Prescription 移除
-    [MapperIgnoreTarget(nameof(Prescription.Id))]
-    [MapperIgnoreTarget(nameof(Prescription.MedicalCaseId))]
-    [MapperIgnoreTarget(nameof(Prescription.PrescriptionNumber))]
-    [MapperIgnoreTarget(nameof(Prescription.Items))]
-    [MapperIgnoreTarget(nameof(Prescription.CreatedAt))]
-    [MapperIgnoreTarget(nameof(Prescription.CreatedBy))]
-    [MapperIgnoreTarget(nameof(Prescription.UpdatedAt))]
-    [MapperIgnoreTarget(nameof(Prescription.UpdatedBy))]
-    [MapperIgnoreTarget(nameof(Prescription.RowVersion))]
-    [MapperIgnoreTarget(nameof(Prescription.IsDeleted))]
-    public partial Prescription ToPrescriptionEntity(PrescriptionInputDto dto);
-
-    /// <summary>
-    /// PrescriptionInputDto更新到现有Prescription实体
-    /// </summary>
-    [MapperIgnoreTarget(nameof(Prescription.Id))]
-    [MapperIgnoreTarget(nameof(Prescription.MedicalCaseId))]
-    [MapperIgnoreTarget(nameof(Prescription.PrescriptionNumber))]
-    [MapperIgnoreTarget(nameof(Prescription.Items))]
-    [MapperIgnoreTarget(nameof(Prescription.CreatedAt))]
-    [MapperIgnoreTarget(nameof(Prescription.CreatedBy))]
-    [MapperIgnoreTarget(nameof(Prescription.UpdatedAt))]
-    [MapperIgnoreTarget(nameof(Prescription.UpdatedBy))]
-    [MapperIgnoreTarget(nameof(Prescription.RowVersion))]
-    [MapperIgnoreTarget(nameof(Prescription.IsDeleted))]
-    public partial void UpdatePrescriptionEntity(PrescriptionInputDto dto, Prescription entity);
-
     // ========== PrescriptionItem映射 ==========
 
     /// <summary>

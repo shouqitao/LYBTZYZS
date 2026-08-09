@@ -11,11 +11,6 @@ namespace LYBT.Module.Patients.Interfaces;
 public interface IPatientRepository : IRepository<Patient>
 {
     /// <summary>
-    /// 分页查询患者。
-    /// </summary>
-    Task<PagedResult<Patient>> GetPagedAsync(int page, int pageSize, string? keyword, CancellationToken ct);
-
-    /// <summary>
     /// 分页查询患者（支持状态筛选）。
     /// </summary>
     Task<PagedResult<Patient>> GetPagedAsync(int page, int pageSize, string? keyword, CommonStatus? status, CancellationToken ct);

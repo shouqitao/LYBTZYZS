@@ -16,11 +16,6 @@ public partial class RegistrationMapper
     public partial RegistrationListDto ToListDto(Registration entity);
 
     /// <summary>
-    /// Registration 实体列表转 ListDto 列表
-    /// </summary>
-    public partial List<RegistrationListDto> ToListDtos(List<Registration> entities);
-
-    /// <summary>
     /// Registration 实体转 DetailDto
     /// </summary>
     public partial RegistrationDetailDto ToDetailDto(Registration entity);

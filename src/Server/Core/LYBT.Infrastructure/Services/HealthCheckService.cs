@@ -86,13 +86,6 @@ namespace LYBT.Infrastructure.Services
 
             return result;
         }
-
-        /// <inheritdoc/>
-        public async Task<HealthStatus> GetOverallStatusAsync()
-        {
-            var dbCheck = await CheckDatabaseAsync();
-            return dbCheck.Status;
-        }
     }
 }
 

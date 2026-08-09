@@ -88,42 +88,6 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 查询辨证记录列表
-        /// Epic #1612: 返回医案的所有历史辨证记录
-        /// </summary>
-        public async Task<List<ConsultationDetailDto>> GetConsultationListAsync(Guid medicalCaseId, CancellationToken cancellationToken = default)
-        {
-            // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
-            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId, cancellationToken);
-            if (medicalCase?.Consultation == null)
-            {
-                return new List<ConsultationDetailDto>();
-            }
-
-            // 当前架构下只有一条Consultation（共享主键），直接映射
-            var dto = _mapper.ToConsultationDetailDto(medicalCase.Consultation);
-            return new List<ConsultationDetailDto> { dto };
-        }
-
-        /// <summary>
-        /// 查询处方列表
-        /// Epic #1612: 返回医案的所有历史处方记录
-        /// </summary>
-        public async Task<List<PrescriptionDetailDto>> GetPrescriptionListAsync(Guid medicalCaseId, CancellationToken cancellationToken = default)
-        {
-            // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
-            var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId, cancellationToken);
-            if (medicalCase?.Prescription == null)
-            {
-                return new List<PrescriptionDetailDto>();
-            }
-
-            // 当前架构下只有一条Prescription（一诊一方），直接映射
-            var dto = _mapper.ToPrescriptionDetailDto(medicalCase.Prescription);
-            return new List<PrescriptionDetailDto> { dto };
-        }
-
-        /// <summary>
         /// 获取患者的未完成医案（Status != Completed）
         /// Epic #1676 Phase 4 Task 4.1
         /// Epic #2210 Task 3.1.2: 添加doctorId参数
@@ -374,73 +338,6 @@ namespace LYBT.Module.MedicalCases.Services
 
             var dto = _mapper.MapToMedicalCaseDetailDto(medicalCase);
             return Result<MedicalCaseDetailDto>.Success(dto);
-        }
-
-        /// <summary>
-        /// 批量获取医案详情DTO列表
-        /// </summary>
-        public async Task<Result<List<MedicalCaseDetailDto>>> GetBatchDetailDtosAsync(List<Guid> ids, CancellationToken cancellationToken = default)
-        {
-            var medicalCases = await _repository.GetBatchWithDetailsAsync(ids, cancellationToken);
-            var dtos = _mapper.ToDetailDtos(medicalCases);
-            return Result<List<MedicalCaseDetailDto>>.Success(dtos);
-        }
-
-        /// <summary>
-        /// 获取患者辨证记录历史（分页）
-        /// </summary>
-        public async Task<PagedResult<ConsultationDetailDto>> GetPatientConsultationsAsync(
-            Guid patientId, int page, int pageSize, CancellationToken cancellationToken = default)
-        {
-            // DB 层分页：仅取含未删除 Consultation 的医案（含预加载），排序/分页/TotalCount 均在 DB 层完成
-            var paged = await _repository.GetPatientConsultationsPagedAsync(patientId, page, pageSize, cancellationToken);
-
-            var consultations = paged.Items
-                .Select(mc =>
-                {
-                    var dto = _mapper.ToConsultationDetailDto(mc.Consultation!);
-                    dto.MedicalCaseId = mc.Id;
-                    dto.PatientId = mc.PatientId;
-                    dto.UserId = mc.UserId;
-                    dto.PatientName = mc.PatientName;
-                    dto.DoctorName = mc.DoctorName;
-                    dto.CreatedAt = mc.Consultation!.CreatedAt;
-                    dto.UpdatedAt = mc.Consultation.UpdatedAt;
-                    dto.CreatedBy = mc.Consultation.CreatedBy;
-                    return dto;
-                })
-                .ToList();
-
-            return new PagedResult<ConsultationDetailDto>(consultations, paged.TotalCount, page, pageSize);
-        }
-
-        /// <summary>
-        /// 获取患者处方历史（分页）
-        /// </summary>
-        public async Task<PagedResult<PrescriptionDetailDto>> GetPatientPrescriptionsAsync(
-            Guid patientId, int page, int pageSize, CancellationToken cancellationToken = default)
-        {
-            // DB 层分页：仅取含未删除 Prescription 的医案（含预加载），排序/分页/TotalCount 均在 DB 层完成
-            var paged = await _repository.GetPatientPrescriptionsPagedAsync(patientId, page, pageSize, cancellationToken);
-
-            var prescriptions = paged.Items
-                .Select(mc =>
-                {
-                    var p = mc.Prescription!;
-                    var dto = _mapper.ToPrescriptionDetailDto(p);
-                    dto.MedicalCaseId = mc.Id;
-                    dto.CreatedAt = p.CreatedAt;
-                    dto.UpdatedAt = p.UpdatedAt;
-                    dto.Items = p.Items?.Select(_mapper.ToPrescriptionItemDto).ToList()
-                        ?? new List<PrescriptionItemDto>();
-                    dto.SingleDosePrice = p.Items?.Sum(x => x.Amount) ?? 0;
-                    dto.TotalPrice = dto.SingleDosePrice * p.DosageCount * p.Discount;
-                    dto.TotalWeight = p.Items?.Sum(x => x.Dosage) ?? 0;
-                    return dto;
-                })
-                .ToList();
-
-            return new PagedResult<PrescriptionDetailDto>(prescriptions, paged.TotalCount, page, pageSize);
         }
 
         /// <summary>

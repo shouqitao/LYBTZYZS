@@ -14,12 +14,6 @@ public interface IUserCrossModuleService
     /// <summary>按用户名获取用户凭证信息 (含密码哈希)</summary>
     Task<UserCredentialDto?> GetUserByUsernameAsync(string username, CancellationToken cancellationToken = default);
 
-    /// <summary>更新用户密码哈希</summary>
-    Task UpdateUserPasswordHashAsync(Guid userId, string newPasswordHash, CancellationToken cancellationToken = default);
-
-    /// <summary>检查用户是否存在 (未删除)</summary>
-    Task<bool> UserExistsAsync(Guid userId, CancellationToken cancellationToken = default);
-
     /// <summary>
     /// T5-P2-01: 更新登录失败状态 (FailedLoginCount + LockoutEnd)
     /// </summary>

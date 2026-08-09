@@ -288,53 +288,6 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 添加打印日志（成功回写打印状态，失败仅记录日志）
-        /// </summary>
-        public async Task<LYBT.Shared.Models.Contracts.Common.Result<bool>> AddPrintLogAsync(
-            Guid medicalCaseId,
-            int printType,
-            bool isSuccess,
-            string? printerName,
-            Guid operatorId,
-            string operatorName,
-            CancellationToken cancellationToken = default)
-        {
-            var medicalCase = await _repository.GetByIdAsync(medicalCaseId, cancellationToken);
-            if (medicalCase == null)
-                return LYBT.Shared.Models.Contracts.Common.Result<bool>.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.McCaseNotFound));
-
-            var now = DateTime.UtcNow;
-
-            // 打印成功才回写医案打印状态
-            if (isSuccess)
-            {
-                medicalCase.IsPrinted = true;
-                medicalCase.PrintCount += 1;
-                medicalCase.LastPrintedAt = now;
-                medicalCase.PrintVersion += 1;
-
-                await _repository.UpdateAsync(medicalCase, cancellationToken);
-            }
-
-            var printLog = new MedicalCasePrintLog
-            {
-                Id = Guid.NewGuid(),
-                MedicalCaseId = medicalCaseId,
-                PrintType = printType,
-                PrintVersion = medicalCase.PrintVersion,
-                PrinterName = printerName,
-                PrintedBy = operatorName,
-                PrintedAt = now,
-                CreatedAt = now,
-                UpdatedAt = now
-            };
-
-            await _repository.AddPrintLogAsync(printLog, cancellationToken);
-
-            return LYBT.Shared.Models.Contracts.Common.Result<bool>.Success(true);
-        }
-
-        /// <summary>
         /// 记录打印完成（回写打印状态 + 记录日志）
         /// </summary>
         public async Task<LYBT.Shared.Models.Contracts.Common.Result<bool>> RecordPrintAsync(

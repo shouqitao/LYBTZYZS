@@ -22,14 +22,6 @@ public class PatientRepository : BaseRepository<Patient, PatientsDbContext>, IPa
 
     /// <inheritdoc/>
     public async Task<PagedResult<Patient>> GetPagedAsync(
-        int page, int pageSize, string? keyword,
-        CancellationToken cancellationToken = default)
-    {
-        return await GetPagedAsync(page, pageSize, keyword, null, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task<PagedResult<Patient>> GetPagedAsync(
         int page, int pageSize, string? keyword, CommonStatus? status,
         CancellationToken cancellationToken = default)
     {

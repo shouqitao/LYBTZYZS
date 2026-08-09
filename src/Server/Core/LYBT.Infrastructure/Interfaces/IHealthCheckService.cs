@@ -13,12 +13,6 @@ namespace LYBT.Infrastructure.Interfaces
         /// </summary>
         /// <returns>数据库健康检查结果</returns>
         Task<DatabaseHealthCheckResult> CheckDatabaseAsync();
-
-        /// <summary>
-        /// 获取整体系统健康状态
-        /// </summary>
-        /// <returns>整体健康状态</returns>
-        Task<HealthStatus> GetOverallStatusAsync();
     }
 }
 

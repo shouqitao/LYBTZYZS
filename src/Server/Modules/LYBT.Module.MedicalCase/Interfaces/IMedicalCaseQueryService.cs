@@ -58,22 +58,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
             CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 查询辨证记录列表
-        /// </summary>
-        /// <param name="medicalCaseId">医案ID</param>
-        /// <param name="cancellationToken">取消令牌</param>
-        /// <returns>辨证记录DTO列表</returns>
-        Task<List<ConsultationDetailDto>> GetConsultationListAsync(Guid medicalCaseId, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// 查询处方列表
-        /// </summary>
-        /// <param name="medicalCaseId">医案ID</param>
-        /// <param name="cancellationToken">取消令牌</param>
-        /// <returns>处方DTO列表</returns>
-        Task<List<PrescriptionDetailDto>> GetPrescriptionListAsync(Guid medicalCaseId, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// 获取患者的未完成医案（Status != Completed）
         /// </summary>
         /// <param name="patientId">患者ID</param>
@@ -141,21 +125,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// 根据ID获取医案详情DTO（含NotFound语义）
         /// </summary>
         Task<Result<MedicalCaseDetailDto>> GetDetailDtoAsync(Guid id, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// 批量获取医案详情DTO列表
-        /// </summary>
-        Task<Result<List<MedicalCaseDetailDto>>> GetBatchDetailDtosAsync(List<Guid> ids, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// 获取患者辨证记录历史（分页）
-        /// </summary>
-        Task<PagedResult<ConsultationDetailDto>> GetPatientConsultationsAsync(Guid patientId, int page, int pageSize, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// 获取患者处方历史（分页）
-        /// </summary>
-        Task<PagedResult<PrescriptionDetailDto>> GetPatientPrescriptionsAsync(Guid patientId, int page, int pageSize, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取医案审计日志（分页）

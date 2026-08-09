@@ -50,24 +50,6 @@ public class UserCrossModuleService : IUserCrossModuleService
         return UserCrossModuleMapper.ToCredentialDto(u);
     }
 
-    public async Task UpdateUserPasswordHashAsync(Guid userId, string newPasswordHash, CancellationToken cancellationToken = default)
-    {
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
-        if (user != null)
-        {
-            user.PasswordHash = newPasswordHash;
-            await _context.SaveChangesAsync(cancellationToken);
-        }
-    }
-
-    public async Task<bool> UserExistsAsync(Guid userId, CancellationToken cancellationToken = default)
-    {
-        return await _context.Users
-            .AsNoTracking()
-            .AnyAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
-    }
-
     public async Task UpdateLoginFailureAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd, CancellationToken cancellationToken = default)
     {
         var user = await _context.Users

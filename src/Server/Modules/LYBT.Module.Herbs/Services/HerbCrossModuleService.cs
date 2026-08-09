@@ -37,37 +37,6 @@ public class HerbCrossModuleService : IHerbCrossModuleService
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<HerbBasicDto?> GetHerbByNameOrPinyinAsync(string nameOrPinyin, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(nameOrPinyin))
-            return null;
-
-        return await _context.Herbs
-            .AsNoTracking()
-            .Where(h => !h.IsDeleted &&
-                (h.Name == nameOrPinyin || h.PinYinCode == nameOrPinyin))
-            .Select(h => new HerbBasicDto
-            {
-                Id = h.Id,
-                Name = h.Name,
-                Pinyin = h.PinYinCode,
-                Category = h.Category
-            })
-            .FirstOrDefaultAsync(cancellationToken);
-    }
-
-    public async Task<ReferenceCheckResult> CheckHerbReferenceAsync(Guid herbId, CancellationToken cancellationToken = default)
-    {
-        var count = await _context.PrescriptionItems
-            .AsNoTracking()
-            .CountAsync(pi => pi.HerbId == herbId, cancellationToken);
-
-        return new ReferenceCheckResult(
-            HasReferences: count > 0,
-            ReferenceCount: count,
-            Message: count > 0 ? $"药材被 {count} 个处方项引用" : null);
-    }
-
     public async Task<Dictionary<Guid, decimal>> GetHerbPricesAsync(IEnumerable<Guid> herbIds, CancellationToken cancellationToken = default)
     {
         var idList = herbIds.ToList();

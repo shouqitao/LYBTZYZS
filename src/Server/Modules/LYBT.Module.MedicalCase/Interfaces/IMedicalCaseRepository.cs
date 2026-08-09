@@ -22,16 +22,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
         Task<PagedResult<MedicalCase>> GetByPatientIdPagedAsync(Guid patientId, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 分页获取患者辨证记录（DB层分页，仅含未删除的Consultation，含预加载）
-        /// </summary>
-        Task<PagedResult<MedicalCase>> GetPatientConsultationsPagedAsync(Guid patientId, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// 分页获取患者处方历史（DB层分页，仅含未删除的Prescription，含预加载）
-        /// </summary>
-        Task<PagedResult<MedicalCase>> GetPatientPrescriptionsPagedAsync(Guid patientId, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// 根据ID获取医案（包含所有关联数据）
         /// </summary>
         Task<MedicalCase> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
@@ -91,14 +81,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>未完成的医案实体，若无则返回null</returns>
         Task<MedicalCase?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// 批量获取医案详情（包含所有关联数据）
-        /// </summary>
-        /// <param name="ids">医案ID列表</param>
-        /// <param name="cancellationToken">取消令牌</param>
-        /// <returns>医案实体列表</returns>
-        Task<List<MedicalCase>> GetBatchWithDetailsAsync(List<Guid> ids, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 按前缀统计医案编号数量（包含软删除，避免编号重复）
