@@ -4,7 +4,7 @@ namespace LYBT.Desktop.Contracts.Services.CrossModule;
 
 /// <summary>
 /// 药材搜索提供者 (D5-3)
-/// 供 MedicalCase/Formula 模块加载药材列表，解耦对 LYBT.Desktop.Herbs 的编译期依赖
+/// 供 MedicalCase/Formula 模块加载药材列表，解耦对 LYBT.Desktop.Catalog 的编译期依赖
 /// </summary>
 public interface IHerbSearchProvider
 {

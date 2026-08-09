@@ -6,7 +6,7 @@
 
 - **层级**: `src/Client/Desktop/Modules/` — Prism 模块层
 - **职责**: 医案(MedicalCase)作为 DDD 聚合根，统一管理 Consultation(四诊) + Prescription(处方) 的生命周期，提供 Master-Detail 管理视图和工作区编辑能力
-- **ModuleDependency**: `PatientsModule`（运行时需要患者数据）、`HerbsModule`（IHerbSearchProvider）、`FormulaModule`（IFormulaSearchProvider）
+- **ModuleDependency**: `PatientsModule`（运行时需要患者数据）、`CatalogModule`（IHerbSearchProvider/IFormulaSearchProvider）
 
 ## 目录结构
 
@@ -78,7 +78,7 @@ LYBT.Desktop.MedicalCase/
 
 | 类 | 设计依据 | 职责 |
 |---|---|---|
-| **MedicalCaseModule** | `[ModuleDependency("PatientsModule"/"HerbsModule"/"FormulaModule")]`；RegisterTypes 注册聚合服务 + 3 Dialog + MasterDetailServices | 模块入口：MedicalCaseEditContext、Query/Command/Lifecycle 三服务、MedicalCaseService 聚合代理、MedicalCaseDetailModelMapper(Singleton)、3 Dialog、AuditLog |
+| **MedicalCaseModule** | `[ModuleDependency("PatientsModule"/"CatalogModule")]`；RegisterTypes 注册聚合服务 + 3 Dialog + MasterDetailServices | 模块入口：MedicalCaseEditContext、Query/Command/Lifecycle 三服务、MedicalCaseService 聚合代理、MedicalCaseDetailModelMapper(Singleton)、3 Dialog、AuditLog |
 | **MedicalCaseMasterDetailViewModel** | 继承 `MasterDetailViewModelBase<MedicalCaseListDto, MedicalCaseDetailModel>`；组合模式含 ConsultationEditor + PrescriptionEditor 子 VM | 分页列表、详情加载(缓存→子 VM)、聚合保存(AggregateSaveAsync)、删除(CancelMedicalCase)、CreateNewDetail 抛 NotSupportedException |
 | **ConsultationEditorViewModel** | `ChildViewModelBase` 子 VM；ConsultationMapper 编译时映射 | InitializeFromDto(ConsultationDetailDto→ConsultationItem)、GetConsultationData(→ConsultationInputDto)、Validate |
 | **PrescriptionEditorViewModel** | `ChildViewModelBase` 子 VM；PrescriptionMapper 编译时映射；CollectionChanged 通知父 VM 状态重算 | InitializeFromDto(PrescriptionDetailDto→PrescriptionItem)、GetPrescriptionData(→PrescriptionInputDto)、Validate、HasItems |

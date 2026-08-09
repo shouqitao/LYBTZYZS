@@ -18,8 +18,7 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
         {
             "UsersModule",       // 用户管理（个人资料、修改密码）
             "PatientsModule",
-            "HerbsModule",
-            "FormulaModule",
+            "CatalogModule",
             "MedicalCaseModule",
             "RegistrationModule",
             "ReportsModule"

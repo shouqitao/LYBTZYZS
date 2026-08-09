@@ -11,7 +11,7 @@
 <UserControl x:Class="LYBT.Desktop.Clinical.Views.FormulaManagementView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:formulaControls="clr-namespace:LYBT.Desktop.Formula.Controls;assembly=LYBT.Desktop.Formula">
+             xmlns:formulaControls="clr-namespace:LYBT.Desktop.Catalog.Controls;assembly=LYBT.Desktop.Catalog">
     <Grid>
         <formulaControls:FormulaMasterDetailControl />
     </Grid>

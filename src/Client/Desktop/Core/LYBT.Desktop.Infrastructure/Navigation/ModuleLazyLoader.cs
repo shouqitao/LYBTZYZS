@@ -21,8 +21,8 @@ public class ModuleLazyLoader : IModuleLazyLoader
         { ViewNames.PatientManagement, "PatientsModule" },
         { ViewNames.PatientSelection, "PatientsModule" },
         { ViewNames.ClinicalWorkspace, "PatientsModule" },
-        { ViewNames.HerbManagement, "HerbsModule" },
-        { ViewNames.FormulaManagement, "FormulaModule" },
+        { ViewNames.HerbManagement, "CatalogModule" },
+        { ViewNames.FormulaManagement, "CatalogModule" },
         { ViewNames.UserManagement, "UsersModule" },
         { ViewNames.MedicalCaseManagement, "MedicalCaseModule" },
         { ViewNames.MedicalCaseWorkspace, "MedicalCaseModule" },
@@ -69,7 +69,7 @@ public class ModuleLazyLoader : IModuleLazyLoader
 
         var modulesToPreload = role switch
         {
-            UserRole.Doctor => new[] { "PatientsModule", "HerbsModule", "FormulaModule", "MedicalCaseModule" },
+            UserRole.Doctor => new[] { "PatientsModule", "CatalogModule", "MedicalCaseModule" },
             UserRole.Receptionist => new[] { "PatientsModule", "RegistrationModule" },
             UserRole.Admin => new[] { "UsersModule", "ReportsModule" },
             UserRole.SuperAdmin => new[] { "UsersModule", "ReportsModule", "SysadminModule" },

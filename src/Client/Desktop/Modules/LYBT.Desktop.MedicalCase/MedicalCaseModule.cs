@@ -23,8 +23,7 @@ namespace LYBT.Desktop.MedicalCase
     /// </summary>
     [Module(ModuleName = nameof(MedicalCaseModule))]
     [ModuleDependency("PatientsModule")]
-    [ModuleDependency("HerbsModule")]
-    [ModuleDependency("FormulaModule")]
+    [ModuleDependency("CatalogModule")]
     public class MedicalCaseModule : IModule
     {
         public void OnInitialized(IContainerProvider containerProvider)

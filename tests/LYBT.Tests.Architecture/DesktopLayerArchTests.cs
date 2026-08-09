@@ -299,8 +299,7 @@ public class DesktopLayerArchTests
             "LYBT.Desktop.Users",
             "LYBT.Desktop.Patients",
             "LYBT.Desktop.MedicalCase",
-            "LYBT.Desktop.Herbs",
-            "LYBT.Desktop.Formula",
+            "LYBT.Desktop.Catalog",
             "LYBT.Desktop.Admin",
             "LYBT.Desktop.Clinical"
         };
@@ -397,8 +396,7 @@ public class DesktopLayerArchTests
             Assembly.Load("LYBT.Desktop.Users"),
             Assembly.Load("LYBT.Desktop.Patients"),
             Assembly.Load("LYBT.Desktop.MedicalCase"),
-            Assembly.Load("LYBT.Desktop.Herbs"),
-            Assembly.Load("LYBT.Desktop.Formula"),
+            Assembly.Load("LYBT.Desktop.Catalog"),
             Assembly.Load("LYBT.Desktop.Registrations")
         };
 
@@ -577,8 +575,7 @@ public class DesktopLayerArchTests
             Assembly.Load("LYBT.Desktop.Users"),
             Assembly.Load("LYBT.Desktop.Patients"),
             Assembly.Load("LYBT.Desktop.MedicalCase"),
-            Assembly.Load("LYBT.Desktop.Herbs"),
-            Assembly.Load("LYBT.Desktop.Formula"),
+            Assembly.Load("LYBT.Desktop.Catalog"),
             Assembly.Load("LYBT.Desktop.Registrations")
         };
 
@@ -612,8 +609,7 @@ public class DesktopLayerArchTests
         var moduleAssemblies = new Dictionary<string, Assembly>
         {
             ["LYBT.Desktop.Patients"] = Assembly.Load("LYBT.Desktop.Patients"),
-            ["LYBT.Desktop.Herbs"] = Assembly.Load("LYBT.Desktop.Herbs"),
-            ["LYBT.Desktop.Formula"] = Assembly.Load("LYBT.Desktop.Formula"),
+            ["LYBT.Desktop.Catalog"] = Assembly.Load("LYBT.Desktop.Catalog"),
             ["LYBT.Desktop.MedicalCase"] = Assembly.Load("LYBT.Desktop.MedicalCase"),
             ["LYBT.Desktop.Users"] = Assembly.Load("LYBT.Desktop.Users"),
             ["LYBT.Desktop.Auth"] = Assembly.Load("LYBT.Desktop.Auth"),
@@ -656,8 +652,7 @@ public class DesktopLayerArchTests
             ["LYBT.Desktop.Users"] = Assembly.Load("LYBT.Desktop.Users"),
             ["LYBT.Desktop.Patients"] = Assembly.Load("LYBT.Desktop.Patients"),
             ["LYBT.Desktop.MedicalCase"] = Assembly.Load("LYBT.Desktop.MedicalCase"),
-            ["LYBT.Desktop.Herbs"] = Assembly.Load("LYBT.Desktop.Herbs"),
-            ["LYBT.Desktop.Formula"] = Assembly.Load("LYBT.Desktop.Formula"),
+            ["LYBT.Desktop.Catalog"] = Assembly.Load("LYBT.Desktop.Catalog"),
             ["LYBT.Desktop.Registrations"] = Assembly.Load("LYBT.Desktop.Registrations"),
         };
 

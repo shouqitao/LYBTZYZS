@@ -71,10 +71,11 @@ public partial class NavigationManager : ObservableObject, INavigationManager
 
         if (modules.Contains("PatientsModule"))
             items.Add(CreateNavItem("患者管理", ViewNames.PatientManagement, "AccountGroup", "业务"));
-        if (modules.Contains("HerbsModule"))
+        if (modules.Contains("CatalogModule"))
+        {
             items.Add(CreateNavItem("药材管理", ViewNames.HerbManagement, "Leaf", "业务"));
-        if (modules.Contains("FormulaModule"))
             items.Add(CreateNavItem("验方管理", ViewNames.FormulaManagement, "Notebook", "业务"));
+        }
         if (modules.Contains("MedicalCaseModule"))
             items.Add(CreateNavItem("医案管理", ViewNames.MedicalCaseManagement, "Folder", "业务"));
         if (modules.Contains("RegistrationModule"))

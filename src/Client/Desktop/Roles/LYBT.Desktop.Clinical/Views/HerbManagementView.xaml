@@ -11,7 +11,7 @@
 <UserControl x:Class="LYBT.Desktop.Clinical.Views.HerbManagementView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:herbControls="clr-namespace:LYBT.Desktop.Herbs.Controls;assembly=LYBT.Desktop.Herbs">
+             xmlns:herbControls="clr-namespace:LYBT.Desktop.Catalog.Controls;assembly=LYBT.Desktop.Catalog">
     <Grid>
         <herbControls:HerbMasterDetailControl />
     </Grid>

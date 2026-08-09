@@ -85,8 +85,7 @@
     <ProjectReference Include="..\Modules\LYBT.Desktop.MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
     <!-- LYBT.Desktop.Consultation已删除 - 功能已迁移到MedicalCase模块 -->
     <!-- LYBT.Desktop.Prescriptions已删除 - 空壳模块已移除 -->
-    <ProjectReference Include="..\Modules\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj" />
-    <ProjectReference Include="..\Modules\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />
+    <ProjectReference Include="..\Modules\LYBT.Desktop.Catalog\LYBT.Desktop.Catalog.csproj" />
     <!-- PRD: registration.md - 挂号管理模块 -->
     <ProjectReference Include="..\Modules\LYBT.Desktop.Registrations\LYBT.Desktop.Registrations.csproj" />
     <!-- 统计报表模块已合并到 MedicalCase -->

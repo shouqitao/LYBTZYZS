@@ -1,0 +1,269 @@
+<!--
+    FormulaMasterDetailControl - 验方Master-Detail控件
+    
+    可复用业务控件，供Admin和Clinical角色台使用
+    从FormulaMasterDetailView重构而来
+-->
+<controls:MasterDetailControlBase
+    x:Class="LYBT.Desktop.Catalog.Controls.FormulaMasterDetailControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:behaviors="clr-namespace:LYBT.Desktop.Infrastructure.Behaviors;assembly=LYBT.Desktop.Infrastructure"
+    xmlns:controls="clr-namespace:LYBT.Desktop.Controls.Controls;assembly=LYBT.Desktop.Controls"
+    xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
+    xmlns:formulaControls="clr-namespace:LYBT.Desktop.Catalog.Controls"
+    xmlns:formulaView="clr-namespace:LYBT.Desktop.Controls.Controls.FormulaView;assembly=LYBT.Desktop.Controls"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:prism="http://prismlibrary.com/"
+    prism:ViewModelLocator.AutoWireViewModel="True">
+
+    <!--
+        资源加载说明:
+        - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
+        - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
+        - 此控件无本地资源，所有样式来自全局
+    -->
+
+    <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}">
+        <!--
+            ========================================
+            Master区域: 验方列表
+            ========================================
+        -->
+        <controls:MasterDetailLayout.MasterContent>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />  
+                    <!--  工具栏  -->
+                    <RowDefinition Height="Auto" />  
+                    <!--  搜索  -->
+                    <RowDefinition Height="*" />     
+                    <!--  列表  -->
+                    <RowDefinition Height="Auto" />  
+                    <!--  分页  -->
+                </Grid.RowDefinitions>
+
+                <!--  工具栏  -->
+                <controls:DataGridToolbar
+                    Grid.Row="0"
+                    BatchDeleteCommand="{Binding DeleteCommand}"
+                    BatchEnableCommand="{Binding BatchEnableCommand}"
+                    BatchDisableCommand="{Binding BatchDisableCommand}"
+                    CreateCommand="{Binding CreateNewCommand}"
+                    RefreshCommand="{Binding RefreshCommand}">
+                    <controls:DataGridToolbar.AdditionalContent>
+                        <StackPanel Orientation="Horizontal">
+                            <!--  主操作  -->
+                            <Button
+                                Margin="8,0,0,0"
+                                Padding="12,6"
+                                Command="{Binding EditCommand}"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                ToolTip="编辑">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Pencil" VerticalAlignment="Center" />
+                                    <TextBlock Margin="8,0,0,0" Text="编辑" />
+                                </StackPanel>
+                            </Button>
+                            <materialDesign:PopupBox
+                                Margin="8,0,0,0"
+                                ToolTip="更多操作">
+                                <StackPanel>
+                                    <Button Command="{Binding CopyFormulaCommand}" Content="复制" Padding="16,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
+                                    <Button Command="{Binding ToggleStatusCommand}" Content="切换状态" Padding="16,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
+                                    <Button Command="{Binding RestoreCommand}" Content="恢复" Padding="16,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
+                                </StackPanel>
+                            </materialDesign:PopupBox>
+                        </StackPanel>
+                    </controls:DataGridToolbar.AdditionalContent>
+                </controls:DataGridToolbar>
+
+                <!--  搜索框  -->
+                <controls:SearchBox
+                    Grid.Row="1"
+                    Margin="12,8"
+                    Placeholder="搜索验方名称..."
+                    SearchCommand="{Binding SearchCommand}"
+                    SearchText="{Binding SearchText, Mode=TwoWay}" />
+
+                <!--  验方列表  -->
+                <DataGrid
+                    Grid.Row="2"
+                    Margin="0,0,0,8"
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    IsReadOnly="True"
+                    SelectionMode="Single"
+                    SelectionUnit="FullRow"
+                    GridLinesVisibility="None"
+                    HeadersVisibility="Column"
+                    BorderThickness="0"
+                    Background="Transparent"
+                    behaviors:DataGridSelectionBehavior.SelectedItems="{Binding SelectedItems, Mode=OneWay}"
+                    behaviors:DataGridSelectionBehavior.ShowCheckBoxColumn="True"
+                    ItemsSource="{Binding Items}"
+                    RowHeaderWidth="0"
+                    SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+                    <DataGrid.Columns>
+                        <!--  名称  -->
+                        <DataGridTextColumn
+                            Width="*" MinWidth="100"
+                            Binding="{Binding Name}"
+                            Header="名称"
+                            ElementStyle="{StaticResource DataGridEmphasisCellStyle}" />
+
+                        <!--  分类  -->
+                        <DataGridTextColumn
+                            Width="Auto"
+                            Binding="{Binding Category}"
+                            Header="分类"
+                            ElementStyle="{StaticResource DataGridSecondaryCellStyle}" />
+
+                        <!--  药味数  -->
+                        <DataGridTextColumn
+                            Width="Auto"
+                            Binding="{Binding HerbCount}"
+                            Header="药味"
+                            ElementStyle="{StaticResource DataGridSecondaryCellStyle}" />
+
+                        <DataGridTemplateColumn Width="Auto" Header="共享">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <controls:StatusBadge Status="{Binding IsShared}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Width="*" Header="状态">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <controls:StatusBadge Status="{Binding Status}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+
+                    <!--  右键菜单 - 分组优化：查看/编辑 | 验方管理 | 危险操作  -->
+                    <DataGrid.ContextMenu>
+                        <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                            <!--  查看与编辑组  -->
+                            <MenuItem Command="{Binding EditCommand}" Header="编辑">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="Pencil" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Command="{Binding CopyFormulaCommand}" Header="复制">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="ContentCopy" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator />
+                            <!--  验方管理操作组  -->
+                            <MenuItem Command="{Binding ToggleStatusCommand}" Header="切换状态">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="ToggleSwitchOutline" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Command="{Binding RestoreCommand}" Header="恢复">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="Undo" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator />
+                            <!--  危险操作组  -->
+                            <MenuItem Command="{Binding DeleteCommand}" Header="删除">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="Delete" Foreground="{DynamicResource MaterialDesign.Brush.Error}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+                </DataGrid>
+
+                <!--  分页控件  -->
+                <controls:UnifiedPaginationBar
+                    Grid.Row="3"
+                    CurrentPage="{Binding CurrentPage}"
+                    TotalPages="{Binding TotalPages}"
+                    PageSize="{Binding PageSize}"
+                    TotalCount="{Binding TotalCount}"
+                    PageSizes="{Binding PageSizes}"
+                    FirstPageCommand="{Binding GoToFirstPageCommand}"
+                    PreviousPageCommand="{Binding GoToPreviousPageCommand}"
+                    NextPageCommand="{Binding GoToNextPageCommand}"
+                    LastPageCommand="{Binding GoToLastPageCommand}" />
+
+                <!--  加载遮罩  -->
+                <controls:LoadingOverlay
+                    Grid.RowSpan="4"
+                    IsLoading="{Binding IsLoading}"
+                    LoadingText="{Binding BusyMessage}" />
+            </Grid>
+        </controls:MasterDetailLayout.MasterContent>
+
+        <!--
+            ========================================
+            Detail区域: 验方详情/编辑
+            ========================================
+        -->
+        <controls:MasterDetailLayout.DetailContent>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!--  详情工具栏  -->
+                <controls:DetailToolbar
+                    Title="{Binding DetailTitle}"
+                    Grid.Row="0"
+                    CancelCommand="{Binding CancelCommand}"
+                    DeleteCommand="{Binding DeleteCommand}"
+                    EditCommand="{Binding EditCommand}"
+                    IsEditMode="{Binding IsEditMode}"
+                    SaveCommand="{Binding SaveCommand}" />
+
+                <!--  详情内容（Transitioner 切换查看/编辑）  -->
+                <materialDesign:Transitioner
+                    Grid.Row="1"
+                    SelectedIndex="{Binding IsEditMode, Converter={x:Static converters:Cvt.BoolToInt}}">
+                    <materialDesign:TransitionerSlide>
+                        <formulaView:FormulaViewControl
+                            Margin="16"
+                            Formula="{Binding CurrentDetail}"
+                            ShowSystemInfo="True" />
+                    </materialDesign:TransitionerSlide>
+                    <materialDesign:TransitionerSlide>
+                        <formulaControls:FormulaEditControl
+                            Margin="16"
+                            Formula="{Binding FormulaEditor.Formula}"
+                            ErrorsSource="{Binding FormulaEditor.Formula.Errors}"
+                            AllHerbs="{Binding AllHerbs}"
+                            HerbItems="{Binding FormulaEditor.EditHerbItems, Mode=TwoWay}"
+                            HerbCount="{Binding FormulaEditor.HerbCount}" />
+                    </materialDesign:TransitionerSlide>
+                </materialDesign:Transitioner>
+
+                <!--  详情加载遮罩  -->
+                <controls:LoadingOverlay
+                    Grid.RowSpan="2"
+                    IsLoading="{Binding IsBusy}"
+                    LoadingText="正在处理..." />
+            </Grid>
+        </controls:MasterDetailLayout.DetailContent>
+
+        <!--
+            ========================================
+            空状态: 未选择验方时显示
+            ========================================
+        -->
+        <controls:MasterDetailLayout.EmptyContent>
+            <controls:EmptyState
+                Title="请选择验方"
+                ActionCommand="{Binding CreateNewCommand}"
+                ActionText="新增验方"
+                Subtitle="在左侧列表中选择一个验方查看详情，或点击新增按钮创建验方" />
+        </controls:MasterDetailLayout.EmptyContent>
+    </controls:MasterDetailLayout>
+</controls:MasterDetailControlBase>

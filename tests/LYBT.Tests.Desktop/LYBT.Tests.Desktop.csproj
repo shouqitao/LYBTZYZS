@@ -42,8 +42,7 @@
     <ProjectReference Include="..\..\src\Client\Desktop\Core\LYBT.Desktop.Contracts\LYBT.Desktop.Contracts.csproj" />
     <!-- Desktop Modules -->
     <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Auth\LYBT.Desktop.Auth.csproj" />
-    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />
-    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Catalog\LYBT.Desktop.Catalog.csproj" />
     <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
     <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Patients\LYBT.Desktop.Patients.csproj" />
     <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Users\LYBT.Desktop.Users.csproj" />

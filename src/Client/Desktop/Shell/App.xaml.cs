@@ -3,8 +3,7 @@ using LYBT.Desktop.Admin;
 using LYBT.Desktop.Auth;
 using LYBT.Desktop.Infrastructure.CardReader;
 using LYBT.Desktop.Clinical;
-using LYBT.Desktop.Formula;
-using LYBT.Desktop.Herbs;
+using LYBT.Desktop.Catalog;
 using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Patients;
 using LYBT.Desktop.Registrations;
@@ -143,8 +142,7 @@ public partial class App : PrismApplication
 
         // 业务模块 - 按需加载（首次导航到该模块视图时由 NavigationCoordinator 触发）
         moduleCatalog.AddModule<PatientsModule>(InitializationMode.OnDemand);
-        moduleCatalog.AddModule<HerbsModule>(InitializationMode.OnDemand);
-        moduleCatalog.AddModule<FormulaModule>(InitializationMode.OnDemand);
+        moduleCatalog.AddModule<CatalogModule>(InitializationMode.OnDemand);
         moduleCatalog.AddModule<MedicalCaseModule>(InitializationMode.OnDemand);
 
         // PRD: registration.md - 挂号管理模块

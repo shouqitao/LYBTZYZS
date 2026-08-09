@@ -36,8 +36,7 @@
     <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Users\LYBT.Desktop.Users.csproj" />
     <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Patients\LYBT.Desktop.Patients.csproj" />
     <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
-    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj" />
-    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />
+    <ProjectReference Include="..\..\src\Client\Desktop\Modules\LYBT.Desktop.Catalog\LYBT.Desktop.Catalog.csproj" />
   </ItemGroup>
 
   <!-- Desktop Role Modules -->

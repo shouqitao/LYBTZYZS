@@ -5,7 +5,7 @@ namespace LYBT.Desktop.Contracts.Services.CrossModule;
 
 /// <summary>
 /// 验方搜索提供者 (D5-3)
-/// 供 MedicalCase 模块导入验方，解耦对 LYBT.Desktop.Formula 的编译期依赖
+/// 供 MedicalCase 模块导入验方，解耦对 LYBT.Desktop.Catalog 的编译期依赖
 /// </summary>
 public interface IFormulaSearchProvider
 {
