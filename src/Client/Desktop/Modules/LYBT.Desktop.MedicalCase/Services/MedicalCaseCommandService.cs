@@ -1,8 +1,8 @@
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.ExceptionHandling;
+using LYBT.Desktop.MedicalCase.Mappers;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.MedicalCase.Services;
@@ -17,16 +17,19 @@ internal class MedicalCaseCommandService : IMedicalCaseCommandService
     private readonly ISessionManager? _sessionManager;
     private readonly ILogger<MedicalCaseCommandService> _logger;
     private readonly MedicalCaseEditContext _context;
+    private readonly MedicalCaseDetailModelMapper _mapper;
 
     public MedicalCaseCommandService(
         IMedicalCaseRepository repository,
         MedicalCaseEditContext context,
         ILogger<MedicalCaseCommandService> logger,
+        MedicalCaseDetailModelMapper mapper,
         ISessionManager? sessionManager = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _sessionManager = sessionManager;
     }
 
@@ -43,7 +46,7 @@ internal class MedicalCaseCommandService : IMedicalCaseCommandService
         try
         {
             _logger.LogInformation("[CMD] MedicalCase.Save started - MedicalCaseId={MedicalCaseId}", _context.CurrentDetail.Id);
-            var inputDto = _context.CurrentDetail.ToInputDto();
+            var inputDto = _mapper.ToInputDto(_context.CurrentDetail);
             var updated = await _repository.SaveAsync(_context.CurrentDetail.Id, inputDto);
             if (updated != null)
             {

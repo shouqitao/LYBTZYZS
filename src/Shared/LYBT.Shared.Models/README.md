@@ -253,7 +253,6 @@ Enums/
 └── SystemEnums.cs           # CommonStatus (Disabled/Enabled)
 
 Extensions/
-├── DtoConversionExtensions.cs # DetailDto → InputDto 转换: MedicalCase/Consultation/Prescription
 └── EnumExtensions.cs          # 枚举扩展: GetDescription (带缓存)/GetAllDescriptions/GetEnumByDescription/
                                # IsValidEnumValue/GetAllValues/ToKeyValueList
 ```
@@ -334,14 +333,7 @@ Extensions/
 | IsValidEnumValue<T>(T) | 检查枚举值是否有效 |
 | ToKeyValueList<T>() | 转为 int-string 键值对列表 (下拉框用) |
 
-### Extensions/DtoConversionExtensions.cs
-**DtoConversionExtensions** | DTO 转换 (静态类)
-
-| 方法 | 说明 |
-|------|------|
-| MedicalCaseDetailDto.ToInputDto() | DetailDto 转 InputDto (含嵌套 Consultation/Prescription) |
-| ConsultationDetailDto.ToInputDto() | 诊疗 DetailDto 转 InputDto |
-| PrescriptionDetailDto.ToPrescriptionInputDto() | 处方 DetailDto 转 InputDto (含 Items 映射) |
+> 映射说明（A-31-C8 定案）：DTO↔DTO 转换唯一走 Mapperly（`[Mapper]` 接口源生成），不再有手写 DTO 转换扩展。
 
 ## DTO 基类继承体系
 

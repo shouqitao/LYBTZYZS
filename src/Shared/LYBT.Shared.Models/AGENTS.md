@@ -20,7 +20,7 @@ LYBT.Shared.Models/
 │   └── Users/           # 用户相关
 ├── DTOs/                # 辅助 DTO（如 UserBasicDto）
 ├── Enums/               # 共享枚举（Gender, HerbRole, CaseStatus 等）
-├── Extensions/          # DtoConversionExtensions
+├── Extensions/          # EnumExtensions（DTO 转换唯一走 Mapperly，A-31-C8）
 ├── Primitives/          # ErrorCode, ErrorCategory, ValidationConstants
 ├── Utilities/           # 共享工具类（Server + Desktop 共用）
 │   ├── Security/        # PasswordHelper, PasswordPolicyValidator（BCrypt）

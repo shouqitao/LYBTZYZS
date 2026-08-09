@@ -163,4 +163,21 @@ public partial class MedicalCaseDetailModelMapper
 
         return dto;
     }
+
+    /// <summary>
+    /// 将MedicalCaseDetailDto转换为MedicalCaseInputDto（workspace 保存链路）。
+    /// </summary>
+    /// <param name="dto">API返回的详情DTO。</param>
+    /// <returns>InputDTO对象。</returns>
+    [MapperIgnoreTarget(nameof(MedicalCaseInputDto.RegistrationId))]
+    [MapperIgnoreTarget(nameof(MedicalCaseInputDto.EditReason))]
+    [MapperIgnoreTarget(nameof(MedicalCaseInputDto.NeedsPrescription))]
+    public partial MedicalCaseInputDto ToInputDto(MedicalCaseDetailDto dto);
+
+    /// <summary>
+    /// 将PrescriptionDetailDto转换为PrescriptionInputDto（嵌套于医案保存）。
+    /// </summary>
+    [MapperIgnoreTarget(nameof(PrescriptionInputDto.MedicalCaseId))]
+    [MapperIgnoreTarget(nameof(PrescriptionInputDto.NeedsPrescription))]
+    private partial PrescriptionInputDto MapToPrescriptionInput(PrescriptionDetailDto dto);
 }
