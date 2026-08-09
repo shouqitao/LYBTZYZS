@@ -2,6 +2,7 @@ using LYBT.Entities.Common;
 using LYBT.Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Linq.Expressions;
 
 namespace LYBT.Infrastructure.Repositories
 {
@@ -10,6 +11,7 @@ namespace LYBT.Infrastructure.Repositories
     /// 只保留核心CRUD操作（GetById/Add/Update/Delete）
     /// 复杂查询由各模块 Repository 自定义方法实现
     /// ADR-0017: 支持模块级 DbContext（TDbContext 泛型），模块仓储注入自己的 DbContext
+    /// A-31-C5-3: 镜像方法模板化（GetByIdIncludingDeleted/Exists 谓词尾）——各模块仓储同构方法上收
     /// </summary>
     public abstract class BaseRepository<TEntity, TDbContext> : IRepository<TEntity>
         where TEntity : BaseEntity
@@ -41,6 +43,17 @@ namespace LYBT.Infrastructure.Repositories
                 typeof(TEntity).Name, id, entity != null ? "Found" : "NotFound");
 
             return entity;
+        }
+
+        /// <summary>
+        /// 根据ID获取实体（包含已删除记录，恢复操作使用）
+        /// A-31-C5-3: Patient/Herb 等仓储同构方法上收；含额外 Include 的仓储（如 Formula）保留特化
+        /// </summary>
+        public virtual async Task<TEntity?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            return await _dbSet
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
         }
 
         #endregion
@@ -111,6 +124,23 @@ namespace LYBT.Infrastructure.Repositories
         #endregion
 
         #region 保护方法
+
+        /// <summary>
+        /// 按谓词判断实体是否存在（软删除过滤 + 可选排除指定 ID）
+        /// A-31-C5-3: 各模块 ExistsByNameAsync 镜像方法上收，仅传入名称匹配谓词
+        /// </summary>
+        protected virtual async Task<bool> ExistsAsync(
+            Expression<Func<TEntity, bool>> predicate,
+            Guid? excludeId = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _dbSet.Where(predicate);
+
+            if (excludeId.HasValue)
+                query = query.Where(e => e.Id != excludeId.Value);
+
+            return await query.AnyAsync(cancellationToken);
+        }
 
         /// <summary>
         /// 保存更改 — 依赖EF Core原生乐观并发检查（RowVersion）

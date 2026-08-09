@@ -2,6 +2,7 @@ using LYBT.Entities.Patients;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using LYBT.Module.Patients.Interfaces;
+using LYBT.Infrastructure.Extensions;
 using LYBT.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -66,16 +67,8 @@ public class PatientRepository : BaseRepository<Patient, PatientsDbContext>, IPa
     }
 
     /// <inheritdoc/>
-    public async Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken cancellationToken = default)
-    {
-        var query = _context.Patients
-            .Where(p => p.Name == name && !p.IsDeleted);
-
-        if (excludeId.HasValue)
-            query = query.Where(p => p.Id != excludeId.Value);
-
-        return await query.AnyAsync(cancellationToken);
-    }
+    public Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken cancellationToken = default)
+        => ExistsAsync(e => e.Name == name, excludeId, cancellationToken);
 
     /// <inheritdoc/>
     public async Task<Patient?> GetExactByNameAsync(string name, CancellationToken cancellationToken = default)
@@ -89,13 +82,5 @@ public class PatientRepository : BaseRepository<Patient, PatientsDbContext>, IPa
     {
         return await _context.Patients
             .FirstOrDefaultAsync(p => p.IdNumber == idNumber && !p.IsDeleted, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task<Patient?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _context.Patients
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 }

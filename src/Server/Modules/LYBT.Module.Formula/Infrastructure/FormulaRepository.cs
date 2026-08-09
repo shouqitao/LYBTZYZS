@@ -29,7 +29,8 @@ public class FormulaRepository : BaseRepository<Formula, FormulaDbContext>, IFor
     }
 
     /// <inheritdoc/>
-    public async Task<Formula?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default)
+    /// A-31-C5-3 例外：Formula 特化保留（需 Include Herbs 导航属性，与基类模板不同）
+    public override async Task<Formula?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Formulas
             .Include(f => f.Herbs)
@@ -78,16 +79,8 @@ public class FormulaRepository : BaseRepository<Formula, FormulaDbContext>, IFor
     }
 
     /// <inheritdoc/>
-    public async Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default)
-    {
-        var query = _context.Formulas
-            .Where(f => f.Name == name && !f.IsDeleted);
-
-        if (excludeId.HasValue)
-            query = query.Where(f => f.Id != excludeId.Value);
-
-        return await query.AnyAsync(ct);
-    }
+    public Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default)
+        => ExistsAsync(f => f.Name == name, excludeId, ct);
 
     /// <inheritdoc/>
     public async Task<List<Formula>> FindWithHerbsAsync(

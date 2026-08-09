@@ -18,14 +18,6 @@ public class HerbRepository : BaseRepository<Herb, HerbsDbContext>, IHerbReposit
     }
 
     /// <inheritdoc/>
-    public async Task<Herb?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _context.Herbs
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(h => h.Id == id, cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public async Task<PagedResult<Herb>> GetPagedAsync(
         int page, int pageSize, string? keyword, string? category,
         CancellationToken cancellationToken = default)
@@ -65,16 +57,8 @@ public class HerbRepository : BaseRepository<Herb, HerbsDbContext>, IHerbReposit
     }
 
     /// <inheritdoc/>
-    public async Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken cancellationToken = default)
-    {
-        var query = _context.Herbs
-            .Where(h => h.Name == name && !h.IsDeleted);
-
-        if (excludeId.HasValue)
-            query = query.Where(h => h.Id != excludeId.Value);
-
-        return await query.AnyAsync(cancellationToken);
-    }
+    public Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken cancellationToken = default)
+        => ExistsAsync(e => e.Name == name, excludeId, cancellationToken);
 
     /// <inheritdoc/>
     public async Task<Herb?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
