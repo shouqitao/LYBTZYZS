@@ -30,7 +30,7 @@
 
 ### 2.1 Server 层（减 2，候选）：Herbs+Formula 合并 + Auth+Users 合并【⏸ 待定】
 
-**合并 1（启动中）：LYBT.Module.Herbs + LYBT.Module.Formula → LYBT.Module.Catalog**（药材+验方目录域）
+**合并 1（已完成 ✅，2026-08-09 A-31-C3b）：LYBT.Module.Herbs + LYBT.Module.Formula → LYBT.Module.Catalog**（药材+验方目录域）
 - 证据：Server 同构 43%（CRUD/Toggle 5 对逐字相同 + Service 42 行孪生）；Desktop 同构 85%（Editor VM 模板 90%）
 - 理由：验证方引用药材链可内部化；消除系统性重复（每次改动两处同步）
 - 收益：消除 ~45-50 重复方法；模块数 -1；跨模块引用（Formula→Herbs）内部化；维护成本减半
@@ -136,7 +136,7 @@ LYBT.Shared.Logging/
 | **C-1 日志集中** | 专项 A 全部迁移（M1-M10）| C-0 | 1-2d | T2 收敛 |
 | **C-2 异常统一** | 专项 B（处理器收敛 + 死类删除）| C-0 | 1d | T2 收敛 |
 | **C-3a Auth+Users→Identity** | Auth+Users Server 端合并（Identity 核心 + 增强层 + Local 登录统一） | ✅ **已完成（2026-08-09 `cd6b80721`）** | 2-3d | T2 收敛 |
-| **C-3b Herbs+Formula→Catalog Server** | Herbs+Formula Server 端合并（药材+验方同域） | **✅ 已启动（2026-08-09，三者关系确认+方案定案）** | 2-3d | T2 收敛 |
+| **C-3b Herbs+Formula→Catalog Server** | Herbs+Formula Server 端合并（药材+验方同域） | **✅ 已完成（2026-08-09 5b94893f5，3 阶段独立 commit+push）** | 2-3d | T2 收敛 |
 | **C-3c Herbs+Formula→Catalog Desktop** | Herbs+Formula Desktop 同步合并 | **⏸ 随 C-3b** | 1-2d | T2 收敛 |
 | **C-4 Desktop 合并** | Desktop Herbs+Formula→Catalog | **⏸ 待定（随 C-3）** | 1-2d | T2 收敛 |
 | **C-5 机制收敛** | ErrorMessages / AddModuleDbContext / 仓储镜像模板 / VM 命令模板 / 映射统一 | C-2 | 1-2d | T1 收敛 |
@@ -165,3 +165,4 @@ LYBT.Shared.Logging/
 | v0.1 | 2026-08-08 | 草稿框架（待 S0-S3 填充） |
 | v1.0 | 2026-08-08 | 定稿：S0-S3 全量结论 + 合并方案（35→30）+ 机制集中方案 + P0 清单 + C 批次规划 |
 | v1.1 | 2026-08-08 | **合并决策延期（用户定）**：C-3/C-4 合并批次 ⏸ 待定（完善后重评估）；术语澄清 Formula=验方/Prescription=处方（不同实体，Prescription 归 MedicalCase 域不并入）；决策点更新 |
+
