@@ -7,62 +7,12 @@ namespace LYBT.Tests.Server.Utilities
 {
     /// <summary>
     /// PasswordHelper工具类单元测试
-    /// 覆盖保留的纯工具方法（CheckPasswordStrength/IsCommonPassword/GenerateSecurePassword）
-    /// 注：密码哈希/验证已统一走 Identity UserManager（A-27 删除 BCrypt 相关测试）
+    /// 覆盖保留的纯工具方法（GenerateSecurePassword）
+    /// 注：密码哈希/验证已统一走 Identity UserManager（A-27 删除 BCrypt 相关测试）；A-31-C7 删除 CheckPasswordStrength/IsCommonPassword/PasswordValidationResult（生产 0 消费，强度校验走 PasswordPolicyValidator）
     /// </summary>
     public class PasswordHelperTests
     {
         #region Basic API Tests
-
-        // 注意：hasSpecial检测实现有问题，特殊字符不会加分
-        // 实际评分公式：min(len*2, 20) + hasLower*10 + hasUpper*10 + hasDigit*10 + (len>=12)*10 + (len>=16)*10
-        [Theory]
-        [InlineData("", PasswordStrength.Weak)]
-        [InlineData(null, PasswordStrength.Weak)]
-        [InlineData("abc", PasswordStrength.Weak)]           // 6+10=16 → Weak
-        [InlineData("Abc1", PasswordStrength.Good)]          // 8+10+10+10=38 → Good (≥35)
-        [InlineData("Abc123!", PasswordStrength.Good)]       // 14+10+10+10=44 → Good (≥35)
-        [InlineData("SecurePassword123!", PasswordStrength.VeryStrong)]  // 20+10+10+10+10+10=70 → VeryStrong (≥60)
-        [InlineData("VerySecurePassword123!@#", PasswordStrength.VeryStrong)]  // 20+10+10+10+10+10=70 → VeryStrong
-        public void CheckPasswordStrength_WithDifferentPasswords_ShouldReturnCorrectStrength(string? password, PasswordStrength expectedStrength)
-        {
-            // Act
-            var result = PasswordHelper.CheckPasswordStrength(password!);
-
-            // Assert
-            result.Should().Be(expectedStrength);
-        }
-
-        [Fact]
-        public void CheckPasswordStrength_WithCommonPassword_ShouldHaveLowerStrength()
-        {
-            // Arrange
-            var commonPassword = "password123";
-
-            // Act
-            var result = PasswordHelper.CheckPasswordStrength(commonPassword);
-
-            // Assert
-            result.Should().BeOneOf(PasswordStrength.Weak, PasswordStrength.Fair);
-        }
-
-        [Theory]
-        [InlineData("123456", true)]
-        [InlineData("password", true)]
-        [InlineData("admin", true)]
-        [InlineData("Password", true)] // 大小写不敏感
-        [InlineData("ADMIN", true)]
-        [InlineData("SecurePassword123!", false)]
-        [InlineData("", false)]
-        [InlineData(null, false)]
-        public void IsCommonPassword_WithDifferentPasswords_ShouldReturnCorrectResult(string? password, bool expected)
-        {
-            // Act
-            var result = PasswordHelper.IsCommonPassword(password!);
-
-            // Assert
-            result.Should().Be(expected);
-        }
 
         [Fact]
         public void GenerateSecurePassword_WithDefaultParameters_ShouldGenerateValidPassword()
@@ -154,20 +104,6 @@ namespace LYBT.Tests.Server.Utilities
             password.Should().MatchRegex(@"[a-z]"); // 包含小写字母
             password.Should().MatchRegex(@"\d"); // 包含数字
             password.Should().NotMatchRegex(@"[!@#$%^&*]"); // 不包含特殊字符
-        }
-
-        [Fact]
-        public void PasswordValidationResult_DefaultConstructor_ShouldInitializeCorrectly()
-        {
-            // Act
-            var result = new PasswordHelper.PasswordValidationResult();
-
-            // Assert
-            result.IsValid.Should().BeFalse();
-            // 注意：PasswordStrength枚举从1开始（Weak=1），默认值是0（未定义）
-            result.Strength.Should().Be(default(PasswordStrength));
-            result.Errors.Should().NotBeNull().And.BeEmpty();
-            result.Suggestions.Should().Be(string.Empty);
         }
 
         [Fact]
