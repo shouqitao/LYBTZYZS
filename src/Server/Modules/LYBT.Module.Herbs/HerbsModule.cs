@@ -1,4 +1,5 @@
 using FluentValidation;
+using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Infrastructure.Validation;
 using LYBT.Module.Herbs.Application.Commands;
@@ -7,12 +8,8 @@ using LYBT.Module.Herbs.Infrastructure;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Services;
 using LYBT.Shared.Models.Validators.Herbs;
-using LYBT.Shared.Configuration;
-using LYBT.Shared.Configuration.Options.Server;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace LYBT.Module.Herbs
 {
@@ -27,14 +24,7 @@ namespace LYBT.Module.Herbs
         public static IServiceCollection AddHerbsModule(this IServiceCollection services, IConfiguration configuration)
         {
             // 注册 DbContext（模块级）
-            services.AddDbContext<HerbsDbContext>((sp, options) =>
-            {
-                var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-                var connectionString = ConnectionStringResolver.GetEffectiveConnectionString(dbOptions, configuration);
-                if (string.IsNullOrWhiteSpace(connectionString))
-                    throw new InvalidOperationException("未配置数据库连接字符串");
-                options.UseSqlServer(connectionString);
-            });
+            services.AddModuleDbContext<HerbsDbContext>(configuration);
 
             // 注册仓储
             services.AddScoped<IHerbRepository, HerbRepository>();

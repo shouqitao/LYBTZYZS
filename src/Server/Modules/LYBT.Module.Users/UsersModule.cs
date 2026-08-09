@@ -1,4 +1,5 @@
 using FluentValidation;
+using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Infrastructure.Validation;
 using LYBT.Module.Users.Application.Commands;
@@ -6,12 +7,8 @@ using LYBT.Module.Users.Application.Validators;
 using LYBT.Module.Users.Infrastructure;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Services;
-using LYBT.Shared.Configuration;
-using LYBT.Shared.Configuration.Options.Server;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace LYBT.Module.Users
 {
@@ -27,14 +24,7 @@ namespace LYBT.Module.Users
         public static IServiceCollection AddUsersModule(this IServiceCollection services, IConfiguration configuration)
         {
             // 注册 DbContext（模块级）
-            services.AddDbContext<UsersDbContext>((sp, options) =>
-            {
-                var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-                var connectionString = ConnectionStringResolver.GetEffectiveConnectionString(dbOptions, configuration);
-                if (string.IsNullOrWhiteSpace(connectionString))
-                    throw new InvalidOperationException("未配置数据库连接字符串");
-                options.UseSqlServer(connectionString);
-            });
+            services.AddModuleDbContext<UsersDbContext>(configuration);
 
             // 注册新架构：IUserRepository
             services.AddScoped<IUserRepository, UserRepository>();

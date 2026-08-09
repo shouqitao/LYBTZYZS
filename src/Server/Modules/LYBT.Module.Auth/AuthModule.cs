@@ -1,14 +1,11 @@
 using FluentValidation;
+using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Infrastructure.Validation;
 using LYBT.Module.Auth.Services;
 using LYBT.Shared.Models.Validators.Auth;
-using LYBT.Shared.Configuration;
-using LYBT.Shared.Configuration.Options.Server;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace LYBT.Module.Auth
 {
@@ -24,14 +21,7 @@ namespace LYBT.Module.Auth
         public static IServiceCollection AddAuthModule(this IServiceCollection services, IConfiguration configuration)
         {
             // 注册 DbContext（模块级）
-            services.AddDbContext<Infrastructure.AuthDbContext>((sp, options) =>
-            {
-                var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-                var connectionString = ConnectionStringResolver.GetEffectiveConnectionString(dbOptions, configuration);
-                if (string.IsNullOrWhiteSpace(connectionString))
-                    throw new InvalidOperationException("未配置数据库连接字符串");
-                options.UseSqlServer(connectionString);
-            });
+            services.AddModuleDbContext<Infrastructure.AuthDbContext>(configuration);
 
             // 注册仓储
             services.AddScoped<Interfaces.IAuthSessionRepository, Infrastructure.AuthSessionRepository>();

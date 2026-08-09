@@ -1,14 +1,11 @@
 using FluentValidation;
+using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Validation;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Module.Formulas.Services;
 using LYBT.Shared.Models.Validators.Formula;
-using LYBT.Shared.Configuration;
-using LYBT.Shared.Configuration.Options.Server;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace LYBT.Module.Formulas
 {
@@ -36,14 +33,7 @@ namespace LYBT.Module.Formulas
         private static IServiceCollection AddFormulaModuleDDD(this IServiceCollection services, IConfiguration configuration)
         {
             // Infrastructure层
-            services.AddDbContext<Infrastructure.FormulaDbContext>((sp, options) =>
-            {
-                var dbOptions = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-                var connectionString = ConnectionStringResolver.GetEffectiveConnectionString(dbOptions, configuration);
-                if (string.IsNullOrWhiteSpace(connectionString))
-                    throw new InvalidOperationException("未配置数据库连接字符串");
-                options.UseSqlServer(connectionString);
-            });
+            services.AddModuleDbContext<Infrastructure.FormulaDbContext>(configuration);
             services.AddScoped<IFormulaRepository, Infrastructure.FormulaRepository>();
 
             // 注册验方服务（替代 trivial MediatR Handler）
