@@ -234,7 +234,7 @@
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
 |-------|:---:|------|------|------|------|------|------|
 | US-CARD-001 | Should | — | Flow 1 | ICardReaderService（客户端硬件） | ICardReaderService.cs:10 | R3/R4 | ✅ 已实现 |
-| US-CARD-002 | Should | ADR-0001 | Flow 1 | — | —（A-31-C7 移除 `IPatientCardReaderIntegration.MatchPatientAsync` 实现，生产走 FindOrCreatePatientAsync） | R5 | ⚠️ 实现已移除，需求待产品决策 |
+| US-CARD-002 | Should | ADR-0001 | Flow 1 | — | —（A-31-C7 移除 `IPatientCardReaderIntegration.MatchPatientAsync` 实现，生产走 FindOrCreatePatientAsync） | R5 | ⚠️ 未完成（实现已移除；2026-08-08 用户定：读卡器必用、US-CARD-002 待完善，UI 设计时整体考虑） |
 
 ## 十五、报表管理（US-REPORT × 3）
 
