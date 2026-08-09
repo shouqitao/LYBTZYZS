@@ -175,12 +175,13 @@
 | `SystemExceptionHandler` | 异常→HTTP 映射（403/404/409/501 已对齐，2026-08-08 批次）|
 | `DatabaseInitializationService` | MigrateAsync 幂等迁移 + 重试 |
 
-### 2.2 Modules（8 个业务模块）
+### 2.2 Modules（7 个业务模块）
+
+> **A-31-C3a（2026-08-09）**：Auth+Users 合并为 Identity（认证用户模块），模块数 8→7。Identity 以 ASP.NET Identity 为核心 + AuthSession/SecurityAuditLog 增强层；对外跨模块接口 `IUserService`（原 `IUserCrossModuleService` 改名，位于 Infrastructure/Services/CrossModule，P07 通道）；`IAuthCrossModuleService` 删除（合并后内部化，Handler 直注 IAuthSessionRepository+ISecurityAuditService）；本地登录统一走 `LoginCommandHandler`+`LoginOptions`。
 
 | 模块 | 文件数 | 结构模式 | DbContext | 关键依据 |
 |------|--------|---------|-----------|---------|
-| **LYBT.Module.Auth** | 26 | CQRS（Application/Domain/Infrastructure/Interfaces/Services）| AuthDbContext | ADR-0005（superadmin auth）+ B-21（token 族旋转）+ S-01/S-02 |
-| **LYBT.Module.Users** | 29 | CQRS | UsersDbContext | 用户管理（层级恢复 08-04 决策）|
+| **LYBT.Module.Identity** | 47 | CQRS（Application/Infrastructure/Interfaces/Services/Controllers）| IdentityDbContext | ADR-0005（superadmin auth）+ B-21（token 族旋转）+ S-01/S-02 + A-31-C3a（合并 Auth+Users）|
 | **LYBT.Module.Patients** | 23 | CQRS | **PatientsDbContext**（A-20 新建）| 患者域（Excel 导入/导出 B-03）|
 | **LYBT.Module.Herbs** | 22 | CQRS | HerbsDbContext | 药材域（仅 Admin+ 管理 08-02 决策）|
 | **LYBT.Module.Formula** | 21 | CQRS | FormulaDbContext | 验方域 |
@@ -192,7 +193,7 @@
 
 #### 请求处理边界规则（2026-08-08 A-26 定案，T2）
 
-> **统一规则（SSOT，架构测试守卫后强制执行）**：CQRS 模块（Auth/Users/Patients/Herbs/Formula/Registration）内——
+> **统一规则（SSOT，架构测试守卫后强制执行）**：CQRS 模块（Identity/Patients/Herbs/Formula/Registration）内——
 > - **写操作**（Create/Update/Delete/Status 变更/Import/Restore）→ 走 **MediatR Handler**（`ISender.Send`）——保证 `ValidationBehavior` 验证管道 + 审计事件统一生效
 > - **读操作**（Get/List/Search/Export）→ 走 **Service 直查**（`IXxxService`）——无状态查询不需要管道，省 Handler 样板
 > - **禁止**：Controller 层混用同一操作两条路径（如 Update 既走 Service 又走 Handler）；写操作绕过 Handler 直接调 Repository
@@ -207,7 +208,7 @@
 | 关键类型 | 依据 |
 |---------|------|
 | `Program.cs` | 两阶段 Serilog + 中间件 6 阶段顺序 + AddMediatR/AddDbContext 注册（03-server §请求生命周期）|
-| `AuthController` / `PatientsController` 等 12 个 | API 端点契约（13b-api-endpoints.md）|
+| `IdentityController` / `PatientsController` 等 11 个 | API 端点契约（13b-api-endpoints.md）。A-31-C3a：AuthController+UsersController 合并为 IdentityController（路由 `/api/auth/*`+`/api/users/*` 保持）|
 | `CorrelationIdMiddleware` | W3C traceparent 端到端追踪（A-18 P1-3 后 Server 单机制）|
 | `ConfigurationController` | 配置修改 API（B-02）+ JsonFileConfigurationStore 持久化 |
 | `DeployController` | restart 确认机制（A-13）|
@@ -216,7 +217,7 @@
 
 > 蓝图 v1.3 及之前以「七目录理想模板」表述，实际代码为三态并存（§2.2 表格为准）。本版改为三态模板，标注各模块实际形态，**七目录模板从未完整落地**（全模块无 `Domain/`，实体下沉 LYBT.Entities）。
 
-**状态一：CQRS 模块（Auth/Users/Patients/Herbs/Formula/Registration）**
+**状态一：CQRS 模块（Identity/Patients/Herbs/Formula/Registration）**
 
 ```
 Controllers/           # HTTP 边界（继承 Base*，返回 IActionResult）
@@ -347,6 +348,7 @@ View(XAML) ← binding ← ViewModel（[ObservableProperty]/[RelayCommand]）
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
+| v1.6 | 2026-08-09 | A-31-C3a：Auth+Users 合并为 Identity（§2.2 模块表 8→7，IdentityDbContext 统一管理；对外接口 IUserService 替代 IUserCrossModuleService 且保留于 Infrastructure 跨模块通道；IAuthCrossModuleService 删除；本地登录统一 LoginCommandHandler+LoginOptions；WebAPI AuthController+UsersController→IdentityController 11 个）。报告：`docs/compose/reports/a31-c3a-auth-users-merge.md` |
 | v1.5 | 2026-08-09 | ① A-29 蓝图维护（P2-8/9/10/16/17 + 顺带4）：§1/§3 文件数回写为实测值（Logging 8/Contracts 78/Foundation 70/Infrastructure 92/Controls 41/Patients 18/Formula 14/MedicalCase 49，§3.3 Roles 补文件数 Admin 17/Clinical 21）。② §2.1 补记 BaseUsersController/BaseRegistrationsController/BaseMedicalCasesController 三条模块级继承路径。③ §2.4 七目录模板改三态模板（CQRS/Service 化/只读聚合）+ Mappers 位置差异 + Infrastructure vs Repositories 目录差异注记。④ §3.1 补接口命名三层矩阵（IXxxApi/IApiClientXxx/IXxxService）+ 跨层镜像接口清单。⑤ §0.4 补 Status vs State 语义边界。⑥ §4 补守卫计数口径注记 |
 | v1.4 | 2026-08-08 | ① §2.2 新增「请求处理边界规则」（A-26 T2 定案）：CQRS 模块写操作走 Handler（验证管道+审计）、读操作走 Service 直查；禁止混用。② A-27 成果：§0.5 技术栈合理性评估（全景 18 项/4 标准/必选 10 项/死重量处置）。③ 蓝图 v1.3 记录 A-24 成果 |
 | v1.3 | 2026-08-08 | 新增 §0.5 技术栈合理性评估：全景表 / 4 标准 / 核心必选 10 项 / 有成本合理 3 项 / 已移除死重量 4 项（BCrypt 移除、Swagger 评估保留、Velopack 未引入、Sqlite 移除）/ 已配置未启用（Asp.Versioning）。对应 A-27 技术栈减法（`docs/compose/reports/a27-stack-subtraction.md`） |
