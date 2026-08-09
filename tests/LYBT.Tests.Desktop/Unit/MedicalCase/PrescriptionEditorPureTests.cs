@@ -1,6 +1,7 @@
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models.Items;
+using LYBT.Desktop.MedicalCase.ViewModels.Items;
 using LYBT.Desktop.MedicalCase.ViewModels.Workspace;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;

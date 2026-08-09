@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using FluentAssertions;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models.Items;
+using LYBT.Desktop.MedicalCase.ViewModels.Items;
 using LYBT.Desktop.MedicalCase.ViewModels.Workspace;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Shared.Models.Contracts.Prescriptions;

@@ -6,7 +6,7 @@ using LYBT.Desktop.Infrastructure.ViewModels;
 // -----------------------------------------------------------------------
 
 using System.Collections.ObjectModel;
-using LYBT.Desktop.Modules.MedicalCase.Models;
+using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Riok.Mapperly.Abstractions;

@@ -7,7 +7,7 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.Validation;
 
-namespace LYBT.Desktop.Modules.MedicalCase.Models;
+namespace LYBT.Desktop.MedicalCase.Models;
 
 /// <summary>
 /// 医案详情模型 - Master-Detail模式使用

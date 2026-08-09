@@ -6,9 +6,10 @@ using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Mappers;
 using LYBT.Desktop.MedicalCase.Models.Items;
+using LYBT.Desktop.MedicalCase.ViewModels.Items;
 using LYBT.Desktop.MedicalCase.Repositories;
 using LYBT.Desktop.MedicalCase.Services;
-using LYBT.Desktop.Modules.MedicalCase.Models;
+using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -36,7 +37,7 @@ namespace LYBT.Desktop.MedicalCase
             ViewModelLocationProvider.Register(typeof(MedicalCaseMasterDetailControl).ToString(), typeof(ViewModels.MedicalCaseMasterDetailViewModel));
 
             // S7: MedicalCaseService 拆分
-            containerRegistry.Register<MedicalCaseEditContext>();
+            containerRegistry.Register<Services.MedicalCaseEditContext>();
             containerRegistry.Register<IMedicalCaseQueryService, MedicalCaseQueryService>();
             containerRegistry.Register<IMedicalCaseCommandService, MedicalCaseCommandService>();
             containerRegistry.Register<IMedicalCaseLifecycleService, MedicalCaseLifecycleService>();

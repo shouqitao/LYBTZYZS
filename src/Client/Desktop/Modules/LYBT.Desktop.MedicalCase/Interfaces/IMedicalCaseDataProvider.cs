@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.MedicalCase.Models.Items;
+using LYBT.Desktop.MedicalCase.ViewModels.Items;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Prescriptions;

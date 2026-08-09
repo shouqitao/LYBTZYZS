@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
+using LYBT.Desktop.Registrations.Models.Items;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Contracts.Users;
@@ -93,7 +94,7 @@ public partial class RegistrationCreateDialogViewModel : DialogViewModelBase
         {
             SetBusy(true, "正在创建挂号...");
 
-            var input = new RegistrationInputDto
+            var editContext = new RegistrationEditContext
             {
                 PatientId = SelectedPatient!.Id,
                 PatientName = SelectedPatient.Name,
@@ -104,7 +105,7 @@ public partial class RegistrationCreateDialogViewModel : DialogViewModelBase
                 Remark = Remark
             };
 
-            var result = await _registrationService.CreateAsync(input);
+            var result = await _registrationService.CreateAsync(editContext.ToInputDto());
             if (result.Success && result.Data != null)
             {
                 Logger.LogInformation("[REG-DIALOG] 挂号创建成功: RegistrationId={Id}", result.Data.Id);

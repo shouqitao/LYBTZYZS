@@ -1,6 +1,7 @@
 // SYNC-D02: IRegistrationRepository 已迁移到 LYBT.Desktop.Contracts.Repositories
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Registrations.Models.Items;
 using LYBT.Desktop.Registrations.Repositories;
 using LYBT.Desktop.Registrations.Services;
 using Prism.Ioc;
@@ -29,6 +30,7 @@ public class RegistrationModule : IModule
     {
         // IRegistrationRepository 由 Shell DI 注册 (Refit API)
         containerRegistry.Register<IRegistrationService, RemoteRegistrationService>();
+        containerRegistry.Register<RegistrationEditContext>();
 
         // US-REG-008: SignalR 实时通知客户端（单例，连接生命周期跨页面）
         containerRegistry.RegisterSingleton<Services.ISignalRClient, Services.SignalRClient>();

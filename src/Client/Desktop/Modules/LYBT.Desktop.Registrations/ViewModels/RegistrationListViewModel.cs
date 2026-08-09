@@ -8,6 +8,7 @@ using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Desktop.Registrations.Events;
+using LYBT.Desktop.Registrations.Models;
 using LYBT.Desktop.Registrations.Services;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
@@ -41,11 +42,11 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
 
     /// <summary>等待队列 (Waiting 状态，按挂号时间升序)</summary>
     [ObservableProperty]
-    private ObservableCollection<RegistrationListDto> _waitingQueue = [];
+    private ObservableCollection<RegistrationDetailModel> _waitingQueue = [];
 
     /// <summary>选中的队列项</summary>
     [ObservableProperty]
-    private RegistrationListDto? _selectedRegistration;
+    private RegistrationDetailModel? _selectedRegistration;
 
     /// <summary>队列项计数</summary>
     [ObservableProperty]
@@ -321,7 +322,21 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
                 return;
             }
 
-            WaitingQueue = new ObservableCollection<RegistrationListDto>(result.Data);
+            WaitingQueue = new ObservableCollection<RegistrationDetailModel>(
+                result.Data.Select(dto => new RegistrationDetailModel
+                {
+                    Id = dto.Id,
+                    PatientId = dto.PatientId,
+                    PatientName = dto.PatientName,
+                    DoctorId = dto.DoctorId,
+                    DoctorName = dto.DoctorName,
+                    MedicalCaseId = dto.MedicalCaseId,
+                    QueueNumber = dto.QueueNumber,
+                    RegistrationFee = dto.RegistrationFee,
+                    Source = dto.Source,
+                    Status = dto.Status,
+                    CreatedAt = dto.CreatedAt
+                }));
             QueueCount = result.Data.Count;
             SelectedRegistration = null;
 
@@ -342,7 +357,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
     }
 
     /// <summary>选中项变更时通知命令可执行状态</summary>
-    partial void OnSelectedRegistrationChanged(RegistrationListDto? value)
+    partial void OnSelectedRegistrationChanged(RegistrationDetailModel? value)
     {
         OnPropertyChanged(nameof(HasSelection));
         StartVisitCommand.NotifyCanExecuteChanged();

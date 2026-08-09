@@ -7,6 +7,7 @@ using LYBT.Desktop.Infrastructure.ViewModels;
 
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Catalog.Models;
+using LYBT.Desktop.Catalog.Models.Items;
 using LYBT.Shared.Models.Contracts.Formula;
 using Riok.Mapperly.Abstractions;
 
@@ -60,8 +61,8 @@ public partial class FormulaDetailModelMapper
         // 手动映射Herbs集合到ObservableCollection
         if (dto.Herbs != null)
         {
-            model.Herbs = new ObservableCollection<FormulaHerbItemDto>(
-                dto.Herbs.Select(h => new FormulaHerbItemDto
+            model.Herbs = new ObservableCollection<FormulaHerbItemModel>(
+                dto.Herbs.Select(h => new FormulaHerbItemModel
                 {
                     HerbId = h.HerbId,
                     HerbName = h.HerbName,
@@ -107,7 +108,15 @@ public partial class FormulaDetailModelMapper
         var dto = ToDtoCore(model);
 
         // 手动映射Herbs集合
-        dto.Herbs = model.Herbs?.ToList() ?? new List<FormulaHerbItemDto>();
+        dto.Herbs = model.Herbs?.Select(h => new FormulaHerbItemDto
+        {
+            HerbId = h.HerbId,
+            HerbName = h.HerbName,
+            Dosage = h.Dosage,
+            Unit = h.Unit,
+            ProcessingMethod = h.ProcessingMethod,
+            DecocteMethod = h.DecocteMethod
+        }).ToList() ?? new List<FormulaHerbItemDto>();
 
         return dto;
     }

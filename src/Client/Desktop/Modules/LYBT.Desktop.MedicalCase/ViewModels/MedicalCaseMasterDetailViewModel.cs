@@ -7,7 +7,6 @@ using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Mappers;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.MedicalCase.ViewModels.Workspace;
-using LYBT.Desktop.Modules.MedicalCase.Models;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.MedicalCase;

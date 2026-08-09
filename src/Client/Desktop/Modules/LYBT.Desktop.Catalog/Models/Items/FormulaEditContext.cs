@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
-using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Primitives.Validation;
 
 namespace LYBT.Desktop.Catalog.Models.Items;
@@ -22,7 +21,7 @@ public class FormulaEditContext : ValidatableModelBase
     private string? _usage;
     private string? _remark;
     private bool _isShared;
-    private ObservableCollection<FormulaHerbItemDto> _herbs = new();
+    private ObservableCollection<FormulaHerbItemModel> _herbs = new();
 
     /// <summary>验方ID (Guid.Empty 表示新建)</summary>
     public Guid Id
@@ -91,7 +90,7 @@ public class FormulaEditContext : ValidatableModelBase
     }
 
     /// <summary>药材列表</summary>
-    public ObservableCollection<FormulaHerbItemDto> Herbs
+    public ObservableCollection<FormulaHerbItemModel> Herbs
     {
         get => _herbs;
         set => SetProperty(ref _herbs, value);
@@ -107,7 +106,7 @@ public class FormulaEditContext : ValidatableModelBase
             Id = Guid.Empty,
             Name = string.Empty,
             IsShared = false,
-            Herbs = new ObservableCollection<FormulaHerbItemDto>()
+            Herbs = new ObservableCollection<FormulaHerbItemModel>()
         };
     }
 

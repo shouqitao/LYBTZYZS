@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using FluentAssertions;
 using LYBT.Desktop.MedicalCase.Models.Items;
+using LYBT.Desktop.MedicalCase.ViewModels.Items;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Tests.Desktop.Infrastructure;
 using Xunit;

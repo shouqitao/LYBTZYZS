@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
+using LYBT.Desktop.Catalog.Models.Items;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
-using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.Validation;
 
@@ -27,7 +27,7 @@ namespace LYBT.Desktop.Catalog.Models
         private DateTime? _updatedAt;
         private Guid? _createdBy;
         private string? _source;
-        private ObservableCollection<FormulaHerbItemDto> _herbs = new();
+        private ObservableCollection<FormulaHerbItemModel> _herbs = new();
 
         /// <summary>验方ID</summary>
         public Guid Id
@@ -131,7 +131,7 @@ namespace LYBT.Desktop.Catalog.Models
         }
 
         /// <summary>药材列表</summary>
-        public ObservableCollection<FormulaHerbItemDto> Herbs
+        public ObservableCollection<FormulaHerbItemModel> Herbs
         {
             get => _herbs;
             set => SetProperty(ref _herbs, value);
@@ -149,7 +149,7 @@ namespace LYBT.Desktop.Catalog.Models
                 Name = string.Empty,
                 IsShared = false,
                 Status = CommonStatus.Enabled,
-                Herbs = new ObservableCollection<FormulaHerbItemDto>()
+                Herbs = new ObservableCollection<FormulaHerbItemModel>()
             };
         }
 
@@ -175,14 +175,15 @@ namespace LYBT.Desktop.Catalog.Models
 
             foreach (var herb in Herbs)
             {
-                clone.Herbs.Add(new FormulaHerbItemDto
+                clone.Herbs.Add(new FormulaHerbItemModel
                 {
                     HerbId = herb.HerbId,
                     HerbName = herb.HerbName,
                     Dosage = herb.Dosage,
                     Unit = herb.Unit,
                     ProcessingMethod = herb.ProcessingMethod,
-                    DecocteMethod = herb.DecocteMethod
+                    DecocteMethod = herb.DecocteMethod,
+                    Remark = herb.Remark
                 });
             }
 

@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------
 
 using LYBT.Desktop.MedicalCase.Models.Items;
+using LYBT.Desktop.MedicalCase.ViewModels.Items;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Riok.Mapperly.Abstractions;
 

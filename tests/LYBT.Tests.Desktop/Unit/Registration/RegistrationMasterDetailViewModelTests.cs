@@ -9,6 +9,7 @@ using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Registrations.Dialogs;
+using LYBT.Desktop.Registrations.Models;
 using LYBT.Desktop.Registrations.Services;
 using LYBT.Desktop.Registrations.ViewModels;
 using LYBT.Shared.Models.Contracts.Common;
@@ -97,6 +98,24 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
         _registrationService);
 
     private static RegistrationListDto CreateQueueItem(
+        Guid? id = null,
+        RegistrationStatus status = RegistrationStatus.Waiting,
+        RegistrationSource source = RegistrationSource.Receptionist,
+        string patientName = "张三",
+        Guid? patientId = null)
+        => new()
+        {
+            Id = id ?? Guid.NewGuid(),
+            PatientId = patientId ?? Guid.NewGuid(),
+            PatientName = patientName,
+            DoctorId = Guid.NewGuid(),
+            DoctorName = "李医生",
+            Source = source,
+            Status = status,
+            CreatedAt = DateTime.Now
+        };
+
+    private static RegistrationDetailModel CreateQueueItemModel(
         Guid? id = null,
         RegistrationStatus status = RegistrationStatus.Waiting,
         RegistrationSource source = RegistrationSource.Receptionist,
@@ -247,7 +266,7 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
             .Returns(Task.FromResult(new CommandResult<PatientDetailDto>(true, patientDetail, null)));
 
         await sut.InitializePublicAsync();
-        sut.SelectedRegistration = CreateQueueItem(id: registrationId, patientId: patientId);
+        sut.SelectedRegistration = CreateQueueItemModel(id: registrationId, patientId: patientId);
 
         await sut.StartVisitCommand.ExecuteAsync(null);
 
@@ -275,7 +294,7 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
             .Returns(Task.FromResult(new CommandResult(true, null)));
 
         await sut.InitializePublicAsync();
-        sut.SelectedRegistration = CreateQueueItem(id: registrationId);
+        sut.SelectedRegistration = CreateQueueItemModel(id: registrationId);
 
         await sut.CancelRegistrationCommand.ExecuteAsync(null);
 

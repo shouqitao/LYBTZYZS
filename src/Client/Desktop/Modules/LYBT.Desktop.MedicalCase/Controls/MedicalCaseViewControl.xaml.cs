@@ -3,7 +3,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using LYBT.Desktop.MedicalCase.Models.Items;
-using LYBT.Desktop.Modules.MedicalCase.Models;
+using LYBT.Desktop.MedicalCase.ViewModels.Items;
+using LYBT.Desktop.MedicalCase.Models;
 
 namespace LYBT.Desktop.MedicalCase.Controls;
 

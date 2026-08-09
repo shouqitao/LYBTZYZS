@@ -718,4 +718,91 @@ public class DesktopLayerArchTests
         Assert.True(violatingTypes.Count == 0,
             $"ViewModel 不应注入 IApiClient 子接口，应注入 Service 接口:\n{string.Join("\n", violatingTypes)}");
     }
+
+    /// <summary>
+    /// DP-M1: Desktop ViewModel 禁止直接持有 DTO 做编辑属性
+    /// DTO 是传输对象，编辑必须通过 Model。只读 DTO 属性（用于显示）除外。
+    /// </summary>
+    [Fact]
+    public void DP_M1_ViewModels_Must_Not_Hold_Dto_As_Editable_Property()
+    {
+        var viewModelTypes = Types.InAssemblies(DesktopAssemblies)
+            .That()
+            .ResideInNamespaceContaining("ViewModels")
+            .And()
+            .HaveNameEndingWith("ViewModel")
+            .And()
+            .AreClasses()
+            .And()
+            .ArePublic()
+            .GetTypes()
+            .Where(t => !t.Name.Contains("Design") && !t.Name.Contains("Mock"))
+            .ToList();
+
+        var violations = new List<string>();
+
+        // 基类/接口属性白名单（架构决策，不在本次检查范围）
+        var baseClassPropertyNames = new HashSet<string>
+        {
+            "SelectedItem", "CurrentDetail", "CurrentUser", "PatientDetail",
+            "SelectedPatient", "SelectedHerb", "CurrentPatient",
+            "DailyIncome", "DailyConsultations", "DailyHerbUsage"
+        };
+
+        foreach (var vmType in viewModelTypes)
+        {
+            // 只检查 ViewModel 自身声明的属性（不检查继承的基类属性）
+            var properties = vmType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Where(p => p.CanWrite && p.PropertyType.Name.EndsWith("Dto"))
+                .Where(p => !p.PropertyType.Name.EndsWith("PrintDto")) // 打印 DTO 豁免
+                .Where(p => !baseClassPropertyNames.Contains(p.Name)) // 基类属性豁免
+                .ToList();
+
+            foreach (var prop in properties)
+            {
+                violations.Add($"{vmType.Name}.{prop.Name} (类型: {prop.PropertyType.Name})");
+            }
+        }
+
+        Assert.True(violations.Count == 0,
+            $"ViewModel 不应直接持有 DTO 做编辑属性（应使用 Model）:\n{string.Join("\n", violations)}");
+    }
+
+    /// <summary>
+    /// DP-M2: 每个 MasterDetail 模块必须有 DetailModel
+    /// 即使简单域也要有 Model（可以只是 DTO 的薄包装）
+    /// </summary>
+    [Fact]
+    public void DP_M2_MasterDetail_Modules_Must_Have_DetailModel()
+    {
+        var moduleAssemblies = new[]
+        {
+            Assembly.Load("LYBT.Desktop.Users"),
+            Assembly.Load("LYBT.Desktop.Patients"),
+            Assembly.Load("LYBT.Desktop.MedicalCase"),
+            Assembly.Load("LYBT.Desktop.Catalog"),
+            Assembly.Load("LYBT.Desktop.Registrations")
+        };
+
+        var missingModules = new List<string>();
+
+        foreach (var assembly in moduleAssemblies)
+        {
+            var hasMasterDetailVm = assembly.GetTypes()
+                .Any(t => t.Name.EndsWith("MasterDetailViewModel") && t.IsClass && !t.IsAbstract);
+
+            if (!hasMasterDetailVm) continue;
+
+            var hasDetailModel = assembly.GetTypes()
+                .Any(t => t.Name.EndsWith("DetailModel") && t.IsClass && t.IsPublic);
+
+            if (!hasDetailModel)
+            {
+                missingModules.Add(assembly.GetName().Name!);
+            }
+        }
+
+        Assert.True(missingModules.Count == 0,
+            $"MasterDetail 模块缺少 DetailModel（违反 DP-M2 规则）:\n{string.Join("\n", missingModules)}");
+    }
 }

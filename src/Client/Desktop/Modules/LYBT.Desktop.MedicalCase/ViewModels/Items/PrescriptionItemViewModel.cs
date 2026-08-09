@@ -8,7 +8,7 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.MedicalCase.Models.Items;
+namespace LYBT.Desktop.MedicalCase.ViewModels.Items;
 
 /// <summary>
 /// 处方数据视图模型 - 用于UI绑定的处方数据模型
