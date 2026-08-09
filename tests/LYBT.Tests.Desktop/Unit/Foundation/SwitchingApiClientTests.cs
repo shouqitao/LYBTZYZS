@@ -67,7 +67,7 @@ public class SwitchingApiClientTests
         var client = CreateClient(cs);
 
         // Access a property to trigger client creation
-        _ = client.Auth;
+        _ = client.Identity;
 
         _localCalls.Should().Be(1);
         _remoteCalls.Should().Be(0);
@@ -81,7 +81,7 @@ public class SwitchingApiClientTests
         cs.IsLocal.Returns(false);
         var client = CreateClient(cs);
 
-        _ = client.Auth;
+        _ = client.Identity;
 
         _remoteCalls.Should().Be(1);
         _localCalls.Should().Be(0);
@@ -119,7 +119,7 @@ public class SwitchingApiClientTests
         _remoteCalls.Should().Be(0);
 
         // Second access: URL changed, now remote
-        _ = client.Users;
+        _ = client.Identity;
         _remoteCalls.Should().Be(1);
         _localCalls.Should().Be(1);
     }
@@ -132,7 +132,7 @@ public class SwitchingApiClientTests
         cs.IsLocal.Returns(false);
         var client = CreateClient(cs);
 
-        _ = client.Auth;
+        _ = client.Identity;
         _ = client.Patients;
         _ = client.Herbs;
         _ = client.Formulas;
@@ -153,16 +153,14 @@ public class SwitchingApiClientTests
         var client = CreateClient(cs);
 
         // All property access should work without throwing
-        var auth = client.Auth;
-        var users = client.Users;
+        var identity = client.Identity;
         var patients = client.Patients;
         var herbs = client.Herbs;
         var formulas = client.Formulas;
         var medicalCases = client.MedicalCases;
         var registrations = client.Registrations;
 
-        auth.Should().NotBeNull();
-        users.Should().NotBeNull();
+        identity.Should().NotBeNull();
         patients.Should().NotBeNull();
         herbs.Should().NotBeNull();
         formulas.Should().NotBeNull();
@@ -202,7 +200,7 @@ public class SwitchingApiClientTests
         cs.CurrentUrl.Returns("http://remote:5000");
         cs.IsLocal.Returns(false);
         var client = CreateClient(cs);
-        _ = client.Auth; // trigger creation
+        _ = client.Identity; // trigger creation
 
         var act = () => client.Dispose();
         act.Should().NotThrow();

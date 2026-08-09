@@ -30,7 +30,7 @@ public class AuthEventPublishingTests
         _eventAggregator.GetEvent<AuthEvents.LoginStartedEvent>()
             .Subscribe(p => received = p);
 
-        var authApi = Substitute.For<IApiClientAuth>();
+        var authApi = Substitute.For<IApiClientIdentity>();
         authApi.LoginAsync(Arg.Any<LoginRequest>())
             .Returns(ApiResponse<LoginResponse>.CreateSuccess(new LoginResponse
             {
@@ -58,7 +58,7 @@ public class AuthEventPublishingTests
         _eventAggregator.GetEvent<AuthEvents.LoginStartedEvent>()
             .Subscribe(p => received = p);
 
-        var authApi = Substitute.For<IApiClientAuth>();
+        var authApi = Substitute.For<IApiClientIdentity>();
         authApi.LoginWithAutoTokenAsync(Arg.Any<AutoLoginRequest>())
             .Returns(ApiResponse<LoginResponse>.CreateSuccess(new LoginResponse
             {
@@ -90,7 +90,7 @@ public class AuthEventPublishingTests
         _eventAggregator.GetEvent<AuthEvents.LoginStartedEvent>()
             .Subscribe(p => received = p);
 
-        var authApi = Substitute.For<IApiClientAuth>();
+        var authApi = Substitute.For<IApiClientIdentity>();
         authApi.LoginAsync(Arg.Any<LoginRequest>())
             .Returns(ApiResponse<LoginResponse>.CreateFail("Invalid credentials"));
 
@@ -138,10 +138,10 @@ public class AuthEventPublishingTests
 
     #region Helpers
 
-    private AuthenticationService CreateAuthenticationService(IApiClientAuth? authApi = null)
+    private AuthenticationService CreateAuthenticationService(IApiClientIdentity? authApi = null)
     {
         return new AuthenticationService(
-            authApi ?? Substitute.For<IApiClientAuth>(),
+            authApi ?? Substitute.For<IApiClientIdentity>(),
             Substitute.For<ITokenStorageService>(),
             Substitute.For<ITokenValidator>(),
             Substitute.For<ICredentialVault>(),
@@ -157,7 +157,7 @@ public class AuthEventPublishingTests
         return new LogoutService(
             Substitute.For<ILogger<LogoutService>>(),
             tokenStorage ?? Substitute.For<ITokenStorageService>(),
-            Substitute.For<IApiClientAuth>(),
+            Substitute.For<IApiClientIdentity>(),
             stateMachine,
             _eventAggregator);
     }

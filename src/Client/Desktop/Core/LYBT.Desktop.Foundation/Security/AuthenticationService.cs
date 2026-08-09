@@ -11,14 +11,14 @@ namespace LYBT.Desktop.Foundation.Security
 {
     /// <summary>
     /// 认证服务实现 - ADR-002合规版本
-    /// Desktop端Infrastructure Service，直接调用HTTP API（IApiClientAuth）
+    /// Desktop端Infrastructure Service，直接调用HTTP API（IApiClientIdentity）
     /// 不依赖Server端Service接口，符合架构决策
     ///
     /// Issue #1864: Token认证安全重构 - 集成客户端JWT自验证
     /// </summary>
     public class AuthenticationService : IAuthenticationService
     {
-        private readonly IApiClientAuth _authApi;
+        private readonly IApiClientIdentity _authApi;
         private readonly ITokenStorageService _tokenStorage;
         private readonly ITokenValidator _tokenValidator;
         private readonly ICredentialVault _credentialVault;
@@ -26,7 +26,7 @@ namespace LYBT.Desktop.Foundation.Security
         private readonly IEventAggregator? _eventAggregator;
 
         public AuthenticationService(
-            IApiClientAuth authApi,
+            IApiClientIdentity authApi,
             ITokenStorageService tokenStorage,
             ITokenValidator tokenValidator,
             ICredentialVault credentialVault,

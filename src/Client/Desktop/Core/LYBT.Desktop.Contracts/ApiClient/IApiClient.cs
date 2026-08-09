@@ -19,11 +19,8 @@ namespace LYBT.Desktop.Contracts.ApiClient;
 /// </summary>
 public interface IApiClient
 {
-    /// <summary>认证端点（登录、登出、刷新、校验）。</summary>
-    IApiClientAuth Auth { get; }
-
-    /// <summary>用户管理端点（CRUD、密码、个人资料）。</summary>
-    IApiClientUsers Users { get; }
+    /// <summary>认证与用户管理端点（登录、登出、刷新、校验、CRUD、密码、个人资料）。</summary>
+    IApiClientIdentity Identity { get; }
 
     /// <summary>患者管理端点（CRUD、导入/导出、批量操作）。</summary>
     IApiClientPatients Patients { get; }

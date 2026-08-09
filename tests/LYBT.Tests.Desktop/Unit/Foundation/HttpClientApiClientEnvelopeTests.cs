@@ -47,7 +47,7 @@ public class HttpClientApiClientEnvelopeTests
     {
         var client = CreateClient(Envelope("""{"items":[{"userName":"admin"}],"totalCount":42,"currentPage":1,"pageSize":20}"""));
 
-        var result = await client.Users.GetUsersAsync(1, 20, null);
+        var result = await client.Identity.GetUsersAsync(1, 20, null);
 
         result.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
@@ -61,7 +61,7 @@ public class HttpClientApiClientEnvelopeTests
     {
         var client = CreateClient(Envelope("""{"id":"00000000-0000-0000-0000-000000000001","userName":"admin"}"""));
 
-        var result = await client.Users.GetUserByIdAsync(Guid.Parse("00000000-0000-0000-0000-000000000001"));
+        var result = await client.Identity.GetUserByIdAsync(Guid.Parse("00000000-0000-0000-0000-000000000001"));
 
         result.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
@@ -73,7 +73,7 @@ public class HttpClientApiClientEnvelopeTests
     {
         var client = CreateClient(Envelope("""{"id":"00000000-0000-0000-0000-000000000002","userName":"newuser"}"""));
 
-        var result = await client.Users.CreateUserAsync(new UserInputDto { UserName = "newuser" });
+        var result = await client.Identity.CreateUserAsync(new UserInputDto { UserName = "newuser" });
 
         result.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
@@ -87,7 +87,7 @@ public class HttpClientApiClientEnvelopeTests
         var dataJson = """{"token":"t1","expiresAt":"2026-12-31T00:00:00Z","user":{"userName":"sysadmin"}}""";
         var client = CreateClient(Envelope(dataJson));
 
-        var result = await client.Auth.LoginAsync(new LoginRequest { UserName = "sysadmin", Password = "SysAdmin@2026!" });
+        var result = await client.Identity.LoginAsync(new LoginRequest { UserName = "sysadmin", Password = "SysAdmin@2026!" });
 
         result.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();

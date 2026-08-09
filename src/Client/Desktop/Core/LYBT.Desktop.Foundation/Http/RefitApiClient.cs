@@ -6,7 +6,7 @@
 //
 // This class is registered as IApiClient in Remote mode. The adapter pattern
 // bridges the gap between Refit-attributed interfaces (IAuthApi, IUserApi, etc.)
-// and the plain sub-interfaces (IApiClientAuth, IApiClientUsers, etc.) that
+// and the plain sub-interfaces (IApiClientIdentity, IApiClientPatients, etc.) that
 // define the unified contract without Refit dependencies.
 // ---------------------------------------------------------------------------
 
@@ -24,7 +24,7 @@ namespace LYBT.Desktop.Foundation.Http;
 /// </summary>
 /// <remarks>
 /// <para>Each property lazily creates a Refit instance via <see cref="RestService.For{T}(HttpClient, RefitSettings)"/>
-/// and wraps it in a corresponding adapter (e.g., <see cref="AuthApiClient"/>).</para>
+/// and wraps it in a corresponding adapter (e.g., <see cref="IdentityApiClient"/>).</para>
 /// <para>The shared <see cref="HttpClient"/> has the full handler chain:
 /// HttpClientHandler → TokenRefreshHandler → AuthorizationMessageHandler → LoggingHttpHandler.</para>
 /// <para>Local-only methods on sub-interfaces (e.g., GetCurrentUserAsync)
@@ -35,8 +35,7 @@ public sealed class RefitApiClient : IApiClient
     private readonly HttpClient _httpClient;
     private readonly RefitSettings _refitSettings;
 
-    private IApiClientAuth? _auth;
-    private IApiClientUsers? _users;
+    private IApiClientIdentity? _identity;
     private IApiClientPatients? _patients;
     private IApiClientHerbs? _herbs;
     private IApiClientFormulas? _formulas;
@@ -65,11 +64,8 @@ public sealed class RefitApiClient : IApiClient
     }
 
     /// <inheritdoc />
-    public IApiClientAuth Auth => _auth ??= new AuthApiClient(
-        RestService.For<IAuthApi>(_httpClient, _refitSettings));
-
-    /// <inheritdoc />
-    public IApiClientUsers Users => _users ??= new UserApiClient(
+    public IApiClientIdentity Identity => _identity ??= new IdentityApiClient(
+        RestService.For<IAuthApi>(_httpClient, _refitSettings),
         RestService.For<IUserApi>(_httpClient, _refitSettings));
 
     /// <inheritdoc />

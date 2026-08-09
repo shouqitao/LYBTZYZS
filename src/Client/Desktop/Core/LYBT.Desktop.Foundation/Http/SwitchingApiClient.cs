@@ -83,10 +83,7 @@ public sealed class SwitchingApiClient : IApiClient, IDisposable
     }
 
     /// <inheritdoc />
-    public IApiClientAuth Auth => Current.Auth;
-
-    /// <inheritdoc />
-    public IApiClientUsers Users => Current.Users;
+    public IApiClientIdentity Identity => Current.Identity;
 
     /// <inheritdoc />
     public IApiClientPatients Patients => Current.Patients;

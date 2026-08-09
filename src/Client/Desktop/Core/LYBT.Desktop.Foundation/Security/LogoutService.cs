@@ -18,7 +18,7 @@ public class LogoutService : ILogoutService, IDisposable
 {
     private readonly ILogger<LogoutService> _logger;
     private readonly ITokenStorageService _tokenStorage;
-    private readonly IApiClientAuth _authApi;
+    private readonly IApiClientIdentity _authApi;
     private readonly IAuthenticationStateMachine _stateMachine;
     private readonly IEventAggregator? _eventAggregator;
     private readonly ConcurrentQueue<PendingServerLogout> _pendingLogouts = new();
@@ -37,7 +37,7 @@ public class LogoutService : ILogoutService, IDisposable
     public LogoutService(
         ILogger<LogoutService> logger,
         ITokenStorageService tokenStorage,
-        IApiClientAuth authApi,
+        IApiClientIdentity authApi,
         IAuthenticationStateMachine stateMachine,
         IEventAggregator? eventAggregator = null)
     {

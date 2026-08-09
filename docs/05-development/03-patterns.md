@@ -263,7 +263,7 @@ public sealed class SwitchingApiClient : IApiClient, IDisposable
     }
 
     // 属性委托 — Repository 层完全无感知
-    public IApiClientAuth Auth => Current.Auth;
+    public IApiClientIdentity Identity => Current.Identity;
     public IApiClientPatients Patients => Current.Patients;
     // ...
 }

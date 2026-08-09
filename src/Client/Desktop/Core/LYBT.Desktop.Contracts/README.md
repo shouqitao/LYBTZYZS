@@ -33,8 +33,7 @@ LYBT.Desktop.Contracts/
 
 | 属性 | 类型 | 说明 |
 |------|------|------|
-| `Auth` | `IApiClientAuth` | 认证端点 |
-| `Users` | `IApiClientUsers` | 用户管理 |
+| `Identity` | `IApiClientIdentity` | 认证 + 用户管理端点（A-31-C3d 合并 Auth+Users） |
 | `Patients` | `IApiClientPatients` | 患者管理 |
 | `Herbs` | `IApiClientHerbs` | 药材管理 |
 | `Formulas` | `IApiClientFormulas` | 验方管理 |
@@ -42,25 +41,19 @@ LYBT.Desktop.Contracts/
 | `Registrations` | `IApiClientRegistrations` | 挂号管理 |
 | `Reports` | `IApiClientReports` | 统计报表 |
 
-#### `IApiClientAuth`
-**设计依据**: 合并远程 `IAuthApi` 和本地 `ILocalAuthApi` 为统一契约，无 Refit 属性。
-
-| 方法 | 返回类型 | 说明 |
-|------|----------|------|
-| `LoginAsync(LoginRequest)` | `Task<ApiResponse<LoginResponse>>` | 凭证登录 |
-| `LoginWithAutoTokenAsync(AutoLoginRequest)` | `Task<ApiResponse<LoginResponse>>` | Token 自动登录 |
-| `LogoutAsync(LogoutRequest)` | `Task<ApiResponse>` | 登出 |
-| `RefreshTokenAsync(RefreshTokenRequest)` | `Task<ApiResponse<LoginResponse>>` | 刷新 Token |
-| `ValidateTokenAsync()` | `Task<ApiResponse<ValidateTokenResponse>>` | 验证 Token |
-| `HealthCheckAsync()` | `Task<ApiResponse<HealthCheckResponse>>` | 健康检查 |
-
-#### `IApiClientUsers` (14 方法)
-**设计依据**: 统一用户 CRUD + 密码管理。本地模式有额外方法（`RestoreAsync`, `BatchEnableAsync`, `GetCurrentUserAsync`）。
+#### `IApiClientIdentity` (20 方法)
+**设计依据**: A-31-C3d 合并 `IApiClientAuth`（认证 6 方法）与 `IApiClientUsers`（用户管理 14 方法）为统一契约，与 Server 端 IdentityController 双路由（`/api/v1/auth/*` + `/api/v1/users/*`）对齐。继承 `IEntityApiSegment` 提供标准 CRUD 泛型入口。
 
 | 方法 | 说明 |
 |------|------|
-| `GetUsersAsync(page, pageSize, keyword)` | 分页查询 |
-| `GetUserByIdAsync(id)` | 按 ID 查询 |
+| `LoginAsync(request)` | 凭证登录 |
+| `LoginWithAutoTokenAsync(request)` | Token 自动登录 |
+| `LogoutAsync(request)` | 登出 |
+| `RefreshTokenAsync(request)` | 刷新 Token |
+| `ValidateTokenAsync()` | 验证 Token |
+| `HealthCheckAsync()` | 健康检查 |
+| `GetUsersAsync(page, pageSize, keyword)` | 分页查询用户 |
+| `GetUserByIdAsync(id)` | 按 ID 查询用户 |
 | `CreateUserAsync(request)` | 创建用户 |
 | `UpdateUserAsync(id, request)` | 更新用户 |
 | `DeleteUserAsync(id)` | 删除用户 |
@@ -69,6 +62,10 @@ LYBT.Desktop.Contracts/
 | `ResetPasswordAsync(id, request)` | 重置密码 |
 | `ToggleStatusAsync(id)` | 启用/禁用 |
 | `BatchDeleteAsync(request)` | 批量删除 |
+| `RestoreAsync(id)` | 恢复软删除用户（local-only） |
+| `BatchEnableAsync(request)` | 批量启用（local-only） |
+| `BatchDisableAsync(request)` | 批量禁用（local-only） |
+| `GetCurrentUserAsync()` | 当前用户（local-only） |
 
 #### `IApiClientMedicalCases` (16+ 方法)
 **设计依据**: 最大的 API 接口。MedicalCase 是 DDD 聚合根，生命周期复杂（Draft → Active → Suspended/Completed/Cancelled）。`SaveAsync` 是聚合保存（诊断 + 处方一次性提交）。

@@ -5,13 +5,13 @@ using LYBT.Shared.Models.Contracts.Common;
 namespace LYBT.Desktop.Admin.Sysadmin.Services;
 
 /// <summary>
-/// 认证健康检查服务 — 封装 IApiClientAuth.HealthCheckAsync 供 VM 消费。
+/// 认证健康检查服务 — 封装 IApiClientIdentity.HealthCheckAsync 供 VM 消费。
 /// </summary>
 internal class AuthHealthService : IAuthHealthService
 {
-    private readonly IApiClientAuth _authApi;
+    private readonly IApiClientIdentity _authApi;
 
-    public AuthHealthService(IApiClientAuth authApi)
+    public AuthHealthService(IApiClientIdentity authApi)
     {
         _authApi = authApi ?? throw new ArgumentNullException(nameof(authApi));
     }

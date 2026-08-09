@@ -21,7 +21,7 @@ namespace LYBT.Desktop.Foundation.Security
     /// </remarks>
     public class TokenLifecycleService : ITokenLifecycleService
     {
-        private readonly IApiClientAuth _authApi;
+        private readonly IApiClientIdentity _authApi;
         private readonly ITokenStorageService _tokenStorage;
         private readonly IEventAggregator _eventAggregator;
         private readonly ILogger<TokenLifecycleService> _logger;
@@ -43,7 +43,7 @@ namespace LYBT.Desktop.Foundation.Security
         private readonly TimeSpan _monitorInterval = TimeSpan.FromSeconds(30);
 
         public TokenLifecycleService(
-            IApiClientAuth authApi,
+            IApiClientIdentity authApi,
             ITokenStorageService tokenStorage,
             IEventAggregator eventAggregator,
             ILogger<TokenLifecycleService> logger)

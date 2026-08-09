@@ -191,7 +191,7 @@ flowchart TD
 | IHerbRepository | IApiClient.Herbs | CRUD + 批量操作 + 分类查询 |
 | IFormulaRepository | IApiClient.Formulas | CRUD + 克隆 + 批量操作 + 分类查询 |
 | IMedicalCaseRepository | IApiClient.MedicalCases | CRUD + 状态流转 + 处方 |
-| IUserRepository | IApiClient.Users | CRUD + 密码管理 + 批量操作 |
+| IUserRepository | IApiClient.Identity | CRUD + 密码管理 + 批量操作 |
 | IRegistrationRepository | IApiClient.Registrations | CRUD + 队列管理 |
 
 DI 注册在 `UnifiedApiClientExtensions.cs` 中完成：始终注册 `SwitchingApiClient` 为 `IApiClient` Singleton。

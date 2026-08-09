@@ -41,7 +41,7 @@
 - 理由：凭证域高耦合，合并消除两条 CrossModule 通道；以 Identity 为核心 + AuthSession/SecurityAudit 业务增强层
 - 收益：跨模块服务对 -2；模块数 -1；双轨漂移消除（Local 登录统一）
 - 用户决策（2026-08-09）：**保持 ASP.NET Identity 为核心，不替换框架**；对外接口保留 `IUserService`（替代 `IUserCrossModuleService`）；Desktop 合并 `IApiClientIdentity`【后续批次】；Local 登录统一走共享流程
-- **落地**：3 阶段（骨架+实体合并 `d614283bc` / 接口迁移+Command 合并+登录统一 `1164ae0c5` / 外部引用更新+清理 `cd6b80721`），报告 `docs/compose/reports/a31-c3a-auth-users-merge.md`；**Desktop 侧合并（IApiClientAuth+IApiClientUsers→IApiClientIdentity）为后续批次，本批次未动**
+- **落地**：3 阶段（骨架+实体合并 `d614283bc` / 接口迁移+Command 合并+登录统一 `1164ae0c5` / 外部引用更新+清理 `cd6b80721`），报告 `docs/compose/reports/a31-c3a-auth-users-merge.md`；**Desktop 侧合并（IApiClientAuth+IApiClientUsers→IApiClientIdentity）已完成（A-31-C3d，路由不变），报告 `docs/compose/reports/a31-c3d-desktop-api-client-identity-merge.md`**
 
 ### 2.2 Desktop 层（合并 3 已完成 ✅）：Herbs+Formula 合并 + Core 微调【合并 3 已完成】
 

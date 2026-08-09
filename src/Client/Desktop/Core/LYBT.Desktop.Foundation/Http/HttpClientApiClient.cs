@@ -18,14 +18,13 @@ namespace LYBT.Desktop.Foundation.Http;
 /// <summary>
 /// LocalWebAPI 模式 API 客户端——使用 IHttpClientFactory 调用本地 ASP.NET Core 端点。
 /// 通过首次访问时惰性创建各领域适配器
-/// （<see cref="AuthHttpApiClient"/>、<see cref="UsersHttpApiClient"/> 等）实现 <see cref="IApiClient"/>。
+/// （<see cref="IdentityHttpApiClient"/> 等）实现 <see cref="IApiClient"/>。
 /// </summary>
 public sealed class HttpClientApiClient : IApiClient
 {
     private readonly IHttpClientFactory _httpClientFactory;
 
-    private IApiClientAuth? _auth;
-    private IApiClientUsers? _users;
+    private IApiClientIdentity? _identity;
     private IApiClientPatients? _patients;
     private IApiClientHerbs? _herbs;
     private IApiClientFormulas? _formulas;
@@ -47,10 +46,7 @@ public sealed class HttpClientApiClient : IApiClient
     }
 
     /// <inheritdoc />
-    public IApiClientAuth Auth => _auth ??= new AuthHttpApiClient(_httpClientFactory);
-
-    /// <inheritdoc />
-    public IApiClientUsers Users => _users ??= new UsersHttpApiClient(_httpClientFactory);
+    public IApiClientIdentity Identity => _identity ??= new IdentityHttpApiClient(_httpClientFactory);
 
     /// <inheritdoc />
     public IApiClientPatients Patients => _patients ??= new PatientsHttpApiClient(_httpClientFactory);

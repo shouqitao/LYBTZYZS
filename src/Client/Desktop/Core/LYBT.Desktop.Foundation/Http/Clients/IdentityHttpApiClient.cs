@@ -1,7 +1,9 @@
 // ---------------------------------------------------------------------------
-// UsersHttpApiClient — HttpClient adapter for IApiClientUsers
+// IdentityHttpApiClient — HttpClient adapter for IApiClientIdentity
 // ---------------------------------------------------------------------------
-// LocalWebAPI mode implementation of IApiClientUsers (split from HttpClientApiClient).
+// 合并 AuthHttpApiClient + UsersHttpApiClient（A-31-C3d）。
+// LocalWebAPI mode implementation of IApiClientIdentity (split from HttpClientApiClient).
+// 路由保持：认证 /api/v1/auth/* + 用户 /api/v1/users/*（Server IdentityController 双路由）。
 // Part of the IApiClient unified abstraction layer.
 // ---------------------------------------------------------------------------
 
@@ -12,10 +14,35 @@ using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Foundation.Http.Clients;
 
-/// <summary>本地模式用户 API 客户端（拆分自 HttpClientApiClient）</summary>
-internal sealed class UsersHttpApiClient : HttpApiClientBase, IApiClientUsers
+/// <summary>本地模式认证与用户 API 客户端（拆分自 HttpClientApiClient）</summary>
+internal sealed class IdentityHttpApiClient : HttpApiClientBase, IApiClientIdentity
 {
-    public UsersHttpApiClient(IHttpClientFactory httpClientFactory) : base(httpClientFactory) { }
+    public IdentityHttpApiClient(IHttpClientFactory httpClientFactory) : base(httpClientFactory) { }
+
+    // ========== 认证端点（/api/v1/auth/*） ==========
+
+    public Task<ApiResponse<LoginResponse>> LoginAsync(LoginRequest loginRequest)
+        => PostAndWrapAsync<LoginResponse>("/api/v1/auth/login", loginRequest);
+
+    public Task<ApiResponse<LoginResponse>> LoginWithAutoTokenAsync(AutoLoginRequest request)
+        => PostAndWrapAsync<LoginResponse>("/api/v1/auth/auto-login", request);
+
+    public async Task<ApiResponse> LogoutAsync(LogoutRequest logoutRequest)
+    {
+        await PostVoidAsync("/api/v1/auth/logout", logoutRequest);
+        return WrapSuccess();
+    }
+
+    public Task<ApiResponse<LoginResponse>> RefreshTokenAsync(RefreshTokenRequest request)
+        => PostAndWrapAsync<LoginResponse>("/api/v1/auth/refresh", request);
+
+    public Task<ApiResponse<ValidateTokenResponse>> ValidateTokenAsync()
+        => GetAndWrapAsync<ValidateTokenResponse>("/api/v1/auth/validate");
+
+    public Task<ApiResponse<HealthCheckResponse>> HealthCheckAsync()
+        => GetAndWrapAsync<HealthCheckResponse>("/api/v1/health");
+
+    // ========== 用户管理端点（/api/v1/users/*） ==========
 
     public async Task<ApiResponse<PagedResult<UserListDto>>> GetUsersAsync(
         int page, int pageSize, string? keyword)
