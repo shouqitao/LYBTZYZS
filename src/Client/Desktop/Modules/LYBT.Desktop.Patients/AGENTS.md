@@ -8,7 +8,7 @@
 LYBT.Desktop.Patients/
 ├── Controls/            # PatientMasterDetailControl, PatientEditControl, PatientSelectionControl, PatientViewControl
 ├── Interfaces/          # IPatientRepository, IPatientSearchCache, IPatientService
-├── Models/              # PatientDetailModel, PatientItem, PatientViewState, Display models
+├── Models/              # PatientDetailModel, PatientViewState, Display models
 ├── Repositories/        # PatientRepository
 ├── Services/            # PatientService, PatientSearchCache, PatientImportExecutor, PendingQueueManager, etc.
 ├── ViewModels/          # PatientMasterDetailViewModel, Components/ (Validator, Coordinator)
@@ -31,7 +31,6 @@ LYBT.Desktop.Patients/
 
 - **ViewModel base** — `MasterDetailViewModelBase<ListDto, DetailModel>` (V2 composition pattern)
 - **Component architecture** — ViewModel split into Components (Validator, Coordinator) and Services
-- **PatientItem.Age** — Computed from BirthDate (not stored), Mapper must ignore
 - **DataSource abstraction** — Repository delegates to IPatientDataSource (Local/Remote)
 
 ## ANTI-PATTERNS

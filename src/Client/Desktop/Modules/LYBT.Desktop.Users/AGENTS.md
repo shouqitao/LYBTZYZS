@@ -8,7 +8,7 @@
 LYBT.Desktop.Users/
 ├── Controls/            # UserMasterDetailControl, UserEditControl, UserViewControl
 ├── Interfaces/          # IUserRepository, IUserService
-├── Models/              # UserDetailModel, UserItem
+├── Models/              # UserDetailModel
 ├── Repositories/        # UserRepository
 ├── Services/            # User services
 ├── ViewModels/

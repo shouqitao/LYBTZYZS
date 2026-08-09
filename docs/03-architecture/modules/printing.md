@@ -33,7 +33,6 @@ public interface IPrintService<TModel> where TModel : class
     Task<bool> PrintAsync(TModel model, PrintOptions? options = null);
     Task PreviewAsync(TModel model, PrintOptions? options = null);
     Task<bool> ExportAsync(TModel model, string filePath, ExportFormat format = ExportFormat.Xps);
-    Task<int> BatchPrintAsync(TModel[] models, PrintOptions? options = null);
     string[] GetAvailablePrinters();
     void SetDefaultPrinter(string printerName);
     string? GetDefaultPrinter();

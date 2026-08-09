@@ -373,10 +373,10 @@ public partial class UserManagementViewModel : NavigableViewModelBase
     private async Task AddUserAsync() { /* ... */ }
 
     [RelayCommand]
-    private async Task EditUserAsync(UserItem user) { /* ... */ }
+    private async Task EditUserAsync(UserListDto user) { /* ... */ }
 
     [RelayCommand]
-    private async Task DeleteUserAsync(UserItem user) { /* ... */ }
+    private async Task DeleteUserAsync(UserListDto user) { /* ... */ }
 }
 ```
 
@@ -421,32 +421,32 @@ private async Task ExecuteActionAsync()
 
 **配置**: 在 `{模块}/Mappings/` 中定义 Mapper 类（编译期生成，无运行时反射）
 
-**示例**:
+**示例**（以验方模块实际实现为例）:
 ```csharp
 using Riok.Mapperly.Abstractions;
 
-namespace LYBT.Desktop.Users.Mappings;
+namespace LYBT.Desktop.Formula.Mappers;
 
-[Mapper]
-public partial class UserMapper
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class FormulaDetailModelMapper
 {
     // DTO → UI Model
-    [MapProperty(nameof(UserDto.FirstName), nameof(UserItem.FullName)]
-    public partial UserItem ToItem(UserDto dto);
+    [MapperIgnoreSource(nameof(FormulaDetailDto.Herbs))]
+    public partial FormulaDetailModel ToModel(FormulaDetailDto dto);
 
     // UI Model → Update DTO
-    public partial UpdateUserDto ToUpdateDto(UserItem item);
+    public partial FormulaDetailDto ToDto(FormulaDetailModel model);
 
-    // 批量映射
-    public partial List<UserItem> ToItemList(List<UserDto> dtos);
+    // UI Model → Create/Update Input DTO
+    public partial FormulaInputDto ToInputDto(FormulaDetailModel model);
 }
 ```
 
 **使用**:
 ```csharp
 // ViewModel 中使用（编译期生成，无运行时反射）
-var userItems = _mapper.ToItemList(users);
-var updateDto = _mapper.ToUpdateDto(userItem);
+var model = _mapper.ToModel(dto);
+var inputDto = _mapper.ToInputDto(model);
 ```
 
 ---
@@ -673,7 +673,7 @@ LYBT.Desktop.Patients/
 │   ├── PatientDetailModel.cs        // 可编辑UI模型
 │   ├── PatientViewState.cs          // 视图状态
 │   └── Items/
-│       └── PatientItem.cs           // 列表项模型(只读)
+│       └── PatientEditContext.cs    // 编辑上下文模型
 ├── ViewModels/
 │   └── PatientMasterDetailViewModel.cs
 └── Views/
@@ -958,8 +958,8 @@ public void RegisterTypes(IContainerRegistry containerRegistry)
 | ViewModel | `{功能}ViewModel` | `UserManagementViewModel`, `UserDetailViewModel` |
 | View | `{功能}View` | `UserManagementView`, `UserDetailView` |
 | Dialog | `{功能}Dialog` | `UserEditorDialog` |
-| UI Model | `{实体}Item`, `{实体}Info` | `UserItem`, `UserInfo` |
-| Mapperly Mapper | `{模块}Mapper` | `UserMapper` |
+| UI Model | `{实体}Item`, `{实体}Info` | `HerbItem`, `FormulaItem` |
+| Mapperly Mapper | `{模块}Mapper` | `FormulaDetailModelMapper` |
 | Event | `{实体}{动作}Event` | `UserCreatedEvent`, `UserUpdatedEvent` |
 
 ### 9.3 成员命名
@@ -1137,196 +1137,6 @@ public class UserRepository : IUserRepository
             throw;
         }
     }
-}
-```
-
-#### 10.1.3 UI Model
-
-**文件**: `LYBT.Desktop.Users/Models/UserItem.cs`
-
-```csharp
-namespace LYBT.Desktop.Users.Models;
-
-/// <summary>
-/// 用户列表项（UI 模型）
-/// </summary>
-public class UserItem
-{
-    public int Id { get; set; }
-    public string Username { get; set; } = string.Empty;
-    public string FullName { get; set; } = string.Empty;
-    public string RoleName { get; set; } = string.Empty;
-    public bool IsActive { get; set; }
-    public DateTime CreatedAt { get; set; }
-}
-```
-
-#### 10.1.4 Mapperly Mapper
-
-**文件**: `LYBT.Desktop.Users/Mappings/UserMapper.cs`
-
-```csharp
-using Riok.Mapperly.Abstractions;
-using LYBT.Desktop.Users.Models;
-using LYBT.Shared.Dtos.User;
-
-namespace LYBT.Desktop.Users.Mappings;
-
-[Mapper]
-public partial class UserMapper
-{
-    // DTO → UI Model
-    [MapProperty(nameof(UserDto.FirstName), nameof(UserItem.FullName)]
-    public partial UserItem ToItem(UserDto dto);
-
-    // UI Model → Update DTO
-    public partial UpdateUserDto ToUpdateDto(UserItem item);
-
-    // 批量映射
-    public partial List<UserItem> ToItemList(List<UserDto> dtos);
-}
-```
-
-#### 10.1.5 ViewModel
-
-**文件**: `LYBT.Desktop.Users/ViewModels/UserManagementViewModel.cs`
-
-```csharp
-using CommunityToolkit.Mvvm.Input;
-using LYBT.Desktop.Infrastructure.ViewModels;
-using LYBT.Desktop.Presentation.Interfaces;
-using LYBT.Desktop.Users.Interfaces;
-using LYBT.Desktop.Users.Mappings;
-using LYBT.Desktop.Users.Models;
-using LYBT.Shared.Dtos.User;
-using Microsoft.Extensions.Logging;
-using Prism.Services.Dialogs;
-using System.Collections.ObjectModel;
-
-namespace LYBT.Desktop.Users.ViewModels;
-
-public partial class UserManagementViewModel : MasterDetailViewModelBase<UserItem, UserDetailModel>
-{
-    private readonly IUserRepository _userRepository;
-    private readonly INotificationService _notificationService;
-    private readonly IDialogService _dialogService;
-    private readonly UserMapper _mapper;
-    private readonly ILogger<UserManagementViewModel> _logger;
-
-    public UserManagementViewModel(
-        IUserRepository userRepository,
-        INotificationService notificationService,
-        IDialogService dialogService,
-        UserMapper mapper,
-        ILogger<UserManagementViewModel> logger)
-    {
-        _userRepository = userRepository;
-        _notificationService = notificationService;
-        _dialogService = dialogService;
-        _mapper = mapper;
-        _logger = logger;
-    }
-
-    #region 重写基类方法
-
-    protected override async Task<List<UserItem>> LoadDataAsync()
-    {
-        try
-        {
-            _logger.LogInformation("正在加载用户列表...");
-            var users = await _userRepository.GetAllAsync();
-            return _mapper.ToItemList(users);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "加载用户列表失败");
-            _notificationService.ShowError($"加载用户列表失败: {ex.Message}");
-            return new List<UserItem>();
-        }
-    }
-
-    #endregion
-
-    #region 业务方法
-
-    private async Task AddUserAsync()
-    {
-        try
-        {
-            var parameters = new DialogParameters();
-            _dialogService.ShowDialog("UserEditorDialog", parameters, async result =>
-            {
-                if (result.Result == ButtonResult.OK)
-                {
-                    var createDto = result.Parameters.GetValue<CreateUserDto>("User");
-                    await _userRepository.AddAsync(createDto);
-                    _notificationService.ShowSuccess("用户添加成功");
-                    await RefreshAsync();
-                }
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "添加用户失败");
-            _notificationService.ShowError($"添加用户失败: {ex.Message}");
-        }
-    }
-
-    private async Task EditUserAsync(UserItem user)
-    {
-        try
-        {
-            var parameters = new DialogParameters
-            {
-                { "UserId", user.Id }
-            };
-
-            _dialogService.ShowDialog("UserEditorDialog", parameters, async result =>
-            {
-                if (result.Result == ButtonResult.OK)
-                {
-                    var updateDto = result.Parameters.GetValue<UpdateUserDto>("User");
-                    await _userRepository.UpdateAsync(user.Id, updateDto);
-                    _notificationService.ShowSuccess("用户更新成功");
-                    await RefreshAsync();
-                }
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "更新用户失败");
-            _notificationService.ShowError($"更新用户失败: {ex.Message}");
-        }
-    }
-
-    private async Task DeleteUserAsync(UserItem user)
-    {
-        try
-        {
-            var parameters = new DialogParameters
-            {
-                { "Title", "确认删除" },
-                { "Message", $"确定要删除用户 {user.FullName} 吗？" }
-            };
-
-            _dialogService.ShowDialog("ConfirmationDialog", parameters, async result =>
-            {
-                if (result.Result == ButtonResult.OK)
-                {
-                    await _userRepository.DeleteAsync(user.Id);
-                    _notificationService.ShowSuccess("用户删除成功");
-                    await RefreshAsync();
-                }
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "删除用户失败");
-            _notificationService.ShowError($"删除用户失败: {ex.Message}");
-        }
-    }
-
-    #endregion
 }
 ```
 

@@ -29,8 +29,7 @@ LYBT.Desktop.Patients/
 │   ├── Display/
 │   │   └── PatientDetailDisplayModel.cs           # 只读展示模型
 │   ├── Items/
-│   │   ├── PatientEditContext.cs                  # 编辑上下文模型
-│   │   └── PatientItem.cs                         # 列表项 UI 模型（BindableBase）
+│   │   └── PatientEditContext.cs                  # 编辑上下文模型
 │   ├── ImportWizardStep.cs                        # 导入向导枚举 + ImportProgressInfo
 │   └── PatientDetailModel.cs                      # Detail 编辑模型（ValidatableModelBase）
 ├── Repositories/
@@ -101,15 +100,13 @@ LYBT.Desktop.Patients/
 | MedicalCaseStartCoordinator 多医生场景 | 检测未完成医案归属医生，非本人医案需确认后才能关闭/续接 |
 | Repository 抽象层支持 Local/Remote | 批量导入/导出/模板下载仅 Remote 模式可用（_api != null），Local 返回 null |
 | Mapperly 编译时映射替代 AutoMapper | 零运行时开销，编译期类型安全 |
-| PatientItem.Age 从 BirthDate 实时计算 | 不存储在数据库，Mapper 必须 IgnoreSource Age 字段 |
 
 ## 已知陷阱
 
-1. **PatientItem.Age 只读计算属性**: 从 BirthDate 实时计算（Issue #2240），不存储在数据库，Mapper 必须 IgnoreSource Age 字段
-2. **PatientDetailModel.Name 自动生成 PinYinCode**: setter 自动触发 PinYinHelper，Clone() 方法直接赋值 _name/_pinYinCode 私有字段绕过此行为
-3. **批量操作仅 Remote 模式**: PatientRepository 的 BatchImport/Export/Template 方法仅 Remote 模式可用（_api != null），Local 模式返回 null
-4. **PatientSearchCache 线程安全**: 使用 lock 保证线程安全，GenerateKey 包含 userId 实现用户隔离
-5. **PatientImportDataMapper 兼容旧模板**: 优先读取"出生日期"列，仅在无此列时才从"年龄"反算
-6. **PatientEditControl.ErrorsSource 类型**: 是 ValidationErrorsAccessor（来自 LYBT.Desktop.Models.ViewModels.Base），非标准类型
-7. **IPatientCommandHandler 疑似死代码**: 未在 DI 容器注册，实际业务通过 PatientService 处理
-8. **PatientViewState 疑似死代码**: 仅被文档引用，无运行时消费者
+1. **PatientDetailModel.Name 自动生成 PinYinCode**: setter 自动触发 PinYinHelper，Clone() 方法直接赋值 _name/_pinYinCode 私有字段绕过此行为
+2. **批量操作仅 Remote 模式**: PatientRepository 的 BatchImport/Export/Template 方法仅 Remote 模式可用（_api != null），Local 模式返回 null
+3. **PatientSearchCache 线程安全**: 使用 lock 保证线程安全，GenerateKey 包含 userId 实现用户隔离
+4. **PatientImportDataMapper 兼容旧模板**: 优先读取"出生日期"列，仅在无此列时才从"年龄"反算
+5. **PatientEditControl.ErrorsSource 类型**: 是 ValidationErrorsAccessor（来自 LYBT.Desktop.Models.ViewModels.Base），非标准类型
+6. **IPatientCommandHandler 疑似死代码**: 未在 DI 容器注册，实际业务通过 PatientService 处理
+7. **PatientViewState 疑似死代码**: 仅被文档引用，无运行时消费者
