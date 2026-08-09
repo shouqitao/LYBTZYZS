@@ -71,9 +71,6 @@ public class Result<T>
     /// <summary>创建失败结果（多个错误信息，兼容 Shared.Models.Result）</summary>
     public static Result<T> Failure(List<string> errors) => new(false, default, string.Join("; ", errors), errors, ErrorCode.InternalError);
 
-    /// <summary>创建验证失败结果</summary>
-    public static Result<T> ValidationFailure(string error) => new(false, default, error, null, ErrorCode.ValidationFailed);
-
     /// <summary>从异常创建失败结果</summary>
     public static Result<T> FromException(Exception ex, string? operationName = null)
     {

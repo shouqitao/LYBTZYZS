@@ -19,19 +19,4 @@ public class ActivityCorrelationIdProvider : ICorrelationIdProvider
     {
         return Activity.Current?.TraceId.ToString();
     }
-
-    /// <inheritdoc/>
-    public void SetCorrelationId(string correlationId)
-    {
-        // Activity API不支持手动设置TraceId
-        // 如需新的追踪上下文，应启动新的Activity
-    }
-
-    /// <summary>
-    /// 获取当前CorrelationId，如果不存在则返回新生成的Guid
-    /// </summary>
-    public string GetCorrelationIdOrNew()
-    {
-        return Activity.Current?.TraceId.ToString() ?? Guid.NewGuid().ToString("N");
-    }
 }

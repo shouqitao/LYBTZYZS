@@ -104,20 +104,5 @@ public class BusinessExceptionTests
         exception.GetHttpStatusCode().Should().Be(404);
     }
 
-    [Fact]
-    public void NotFoundException_StaticFactory_User_CreatesCorrectException()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-
-        // Act
-        var exception = NotFoundException.User(userId);
-
-        // Assert
-        exception.TypedErrorCode.Should().Be(EC.UserNotFound);
-        exception.ResourceType.Should().Be("用户");
-        exception.ResourceId.Should().Be(userId.ToString());
-    }
-
     #endregion
 }

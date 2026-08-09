@@ -11,85 +11,6 @@ namespace LYBT.Tests.Server;
 /// </summary>
 public class ErrorCodeTests
 {
-    #region 模块分区测试
-
-    [Theory]
-    [InlineData(ErrorCode.Unknown, "General")]
-    [InlineData(ErrorCode.InternalError, "General")]
-    [InlineData(ErrorCode.ValidationFailed, "General")]
-    public void GetModuleName_GeneralErrors_ReturnsGeneral(ErrorCode errorCode, string expectedModule)
-    {
-        // Act
-        var result = errorCode.GetModuleName();
-
-        // Assert
-        result.Should().Be(expectedModule);
-    }
-
-    [Theory]
-    [InlineData(ErrorCode.UserNotFound, "Users/Auth")]
-    [InlineData(ErrorCode.UserNameExists, "Users/Auth")]
-    [InlineData(ErrorCode.InvalidPassword, "Users/Auth")]
-    public void GetModuleName_UserErrors_ReturnsUsersAuth(ErrorCode errorCode, string expectedModule)
-    {
-        // Act
-        var result = errorCode.GetModuleName();
-
-        // Assert
-        result.Should().Be(expectedModule);
-    }
-
-    [Theory]
-    [InlineData(ErrorCode.PatientNotFound, "Patients")]
-    [InlineData(ErrorCode.PatientIdCardExists, "Patients")]
-    public void GetModuleName_PatientErrors_ReturnsPatients(ErrorCode errorCode, string expectedModule)
-    {
-        // Act
-        var result = errorCode.GetModuleName();
-
-        // Assert
-        result.Should().Be(expectedModule);
-    }
-
-    [Theory]
-    [InlineData(ErrorCode.MedicalCaseNotFound, "MedicalCase")]
-    [InlineData(ErrorCode.MedicalCaseLocked, "MedicalCase")]
-    public void GetModuleName_MedicalCaseErrors_ReturnsMedicalCase(ErrorCode errorCode, string expectedModule)
-    {
-        // Act
-        var result = errorCode.GetModuleName();
-
-        // Assert
-        result.Should().Be(expectedModule);
-    }
-
-    [Theory]
-    [InlineData(ErrorCode.HerbNotFound, "Herbs")]
-    [InlineData(ErrorCode.FormulaNotFound, "Formula")]
-    public void GetModuleName_OtherModules_ReturnsCorrectModule(ErrorCode errorCode, string expectedModule)
-    {
-        // Act
-        var result = errorCode.GetModuleName();
-
-        // Assert
-        result.Should().Be(expectedModule);
-    }
-
-    [Theory]
-    [InlineData(ErrorCode.HerbNotDeleted, "Herbs")]
-    [InlineData(ErrorCode.HerbInvalidPagination, "Herbs")]
-    [InlineData(ErrorCode.HerbBatchImportExceeded, "Herbs")]
-    public void GetModuleName_HerbMcceeErrors_ReturnsHerbs(ErrorCode errorCode, string expectedModule)
-    {
-        // Act
-        var result = errorCode.GetModuleName();
-
-        // Assert
-        result.Should().Be(expectedModule);
-    }
-
-    #endregion
-
     #region HTTP状态码映射测试
 
     [Theory]
@@ -295,7 +216,6 @@ public class ErrorCodeTests
 
         foreach (var code in herbCodes)
         {
-            code.GetModuleName().Should().Be("Herbs", $"{code} 应属于 Herbs 模块");
             ErrorMessages.Get(code).Should().NotBe(code.ToString(), $"{code} 应有中文消息");
         }
     }
@@ -325,7 +245,6 @@ public class ErrorCodeTests
 
         foreach (var code in patientCodes)
         {
-            code.GetModuleName().Should().Be("Patients", $"{code} 应属于 Patients 模块");
             ErrorMessages.Get(code).Should().NotBe(code.ToString(), $"{code} 应有中文消息");
         }
     }
@@ -361,7 +280,6 @@ public class ErrorCodeTests
 
         foreach (var code in formulaCodes)
         {
-            code.GetModuleName().Should().Be("Formula", $"{code} 应属于 Formula 模块");
             ErrorMessages.Get(code).Should().NotBe(code.ToString(), $"{code} 应有中文消息");
         }
     }
@@ -418,7 +336,6 @@ public class ErrorCodeTests
 
         foreach (var code in mcCodes)
         {
-            code.GetModuleName().Should().Be("MedicalCase", $"{code} 应属于 MedicalCase 模块");
             ErrorMessages.Get(code).Should().NotBe(code.ToString(), $"{code} 应有中文消息");
         }
     }
@@ -460,7 +377,6 @@ public class ErrorCodeTests
     {
         errorCode.ToHttpStatusCode().Should().Be(expectedStatus);
         errorCode.ToCategory().Should().Be(ErrorCategory.Authentication);
-        errorCode.GetModuleName().Should().Be("Users/Auth");
         ErrorMessages.Get(errorCode).Should().NotBe(errorCode.ToString());
     }
 

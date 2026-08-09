@@ -50,20 +50,4 @@ public class NotFoundException : AppException
         ResourceType = resourceType;
         ResourceId = resourceId;
     }
-
-    // 静态工厂方法
-    public static NotFoundException User(Guid userId) =>
-        new(EC.UserNotFound, "用户不存在", "用户", userId.ToString());
-
-    public static NotFoundException Patient(Guid patientId) =>
-        new(EC.PatientNotFound, "患者不存在", "患者", patientId.ToString());
-
-    public static NotFoundException Herb(Guid herbId) =>
-        new(EC.HerbNotFound, "药材不存在", "药材", herbId.ToString());
-
-    public static NotFoundException MedicalCase(Guid caseId) =>
-        new(EC.MedicalCaseNotFound, "医案不存在", "医案", caseId.ToString());
-
-    public static NotFoundException Formula(Guid formulaId) =>
-        new(EC.FormulaNotFound, "方剂不存在", "方剂", formulaId.ToString());
 }

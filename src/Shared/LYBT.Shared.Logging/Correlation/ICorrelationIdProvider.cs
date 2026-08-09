@@ -11,10 +11,4 @@ public interface ICorrelationIdProvider
     /// </summary>
     /// <returns>当前请求/操作的CorrelationId，如果不存在返回null</returns>
     string? GetCorrelationId();
-
-    /// <summary>
-    /// 设置当前CorrelationId
-    /// </summary>
-    /// <param name="correlationId">要设置的CorrelationId</param>
-    void SetCorrelationId(string correlationId);
 }

@@ -132,49 +132,4 @@ public class SensitiveDataMaskerTests
     }
 
     #endregion
-
-    #region SanitizeException 测试
-
-    [Fact]
-    public void SanitizeException_WithNull_ShouldReturnEmpty()
-    {
-        SensitiveDataMasker.SanitizeException(null).Should().BeEmpty();
-    }
-
-    [Fact]
-    public void SanitizeException_WithException_ShouldContainTypeName()
-    {
-        var ex = new InvalidOperationException("password=secret123");
-        var result = SensitiveDataMasker.SanitizeException(ex);
-        result.Should().Contain("InvalidOperationException");
-        result.Should().NotContain("secret123");
-    }
-
-    #endregion
-
-    #region MaskObject 测试
-
-    [Fact]
-    public void MaskObject_WithSensitiveProperties_ShouldMask()
-    {
-        var obj = new TestObjectWithSensitive
-        {
-            UserName = "test_user",
-            Password = "my_secret"
-        };
-
-        var result = SensitiveDataMasker.MaskObject(obj);
-        result["UserName"].Should().Be("test_user");
-        result["Password"].Should().NotBe("my_secret");
-    }
-
-    private class TestObjectWithSensitive
-    {
-        public string UserName { get; set; } = "";
-
-        [SensitiveData(SensitiveDataType.PersonalInfo, MaskingMode = MaskingMode.Full)]
-        public string Password { get; set; } = "";
-    }
-
-    #endregion
 }

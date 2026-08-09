@@ -282,27 +282,6 @@ public static class ErrorCodeExtensions
     }
 
     /// <summary>
-    /// 获取错误码所属的模块名称
-    /// </summary>
-    public static string GetModuleName(this ErrorCode errorCode)
-    {
-        var code = (int)errorCode;
-
-        return code switch
-        {
-            < 10000 => "General",
-            < 20000 => "Users/Auth",
-            < 30000 => "Patients",
-            < 40000 => "MedicalCase",
-            < 50000 => "Prescriptions",
-            < 60000 => "Herbs",
-            < 70000 => "Formula",
-            < 80000 => "Sync",
-            _ => "Registration"
-        };
-    }
-
-    /// <summary>
     /// 格式化错误码为字符串（如 "ERR-30001"）
     /// </summary>
     public static string ToFormattedString(this ErrorCode errorCode)

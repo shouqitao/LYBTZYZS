@@ -134,34 +134,6 @@ public static partial class SensitiveDataMasker
         return property.GetCustomAttribute<SensitiveDataAttribute>();
     }
 
-    /// <summary>
-    /// 对对象的所有敏感字段进行脱敏处理
-    /// </summary>
-    /// <param name="obj">原始对象</param>
-    /// <returns>脱敏后的字典表示</returns>
-    public static Dictionary<string, object?> MaskObject(object obj)
-    {
-        var result = new Dictionary<string, object?>();
-        var type = obj.GetType();
-
-        foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
-        {
-            var value = property.GetValue(obj);
-            var sensitiveAttr = GetSensitiveDataAttribute(property);
-
-            if (sensitiveAttr != null && sensitiveAttr.RequireLogMasking && value is string strValue)
-            {
-                result[property.Name] = Mask(strValue, sensitiveAttr.MaskingMode, sensitiveAttr.DataType);
-            }
-            else
-            {
-                result[property.Name] = value;
-            }
-        }
-
-        return result;
-    }
-
     #region 文本级脱敏方法
 
     /// <summary>
@@ -264,34 +236,6 @@ public static partial class SensitiveDataMasker
         {
             return "[Serialization Error - Sanitized]";
         }
-    }
-
-    /// <summary>
-    /// 对异常信息进行脱敏处理
-    /// </summary>
-    /// <param name="exception">异常</param>
-    /// <param name="maxStackTraceLines">最大堆栈行数(默认5)</param>
-    /// <returns>脱敏后的异常信息</returns>
-    public static string SanitizeException(Exception? exception, int maxStackTraceLines = 5)
-    {
-        if (exception == null)
-            return string.Empty;
-
-        var message = SanitizeText(exception.Message);
-
-        // 限制堆栈跟踪长度
-        var stackTrace = exception.StackTrace;
-        if (!string.IsNullOrEmpty(stackTrace))
-        {
-            var lines = stackTrace.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
-            if (lines.Length > maxStackTraceLines)
-            {
-                stackTrace = string.Join(Environment.NewLine, lines.Take(maxStackTraceLines)) +
-                            Environment.NewLine + "[... truncated ...]";
-            }
-        }
-
-        return $"{exception.GetType().Name}: {message}{Environment.NewLine}{stackTrace}";
     }
 
     #endregion
