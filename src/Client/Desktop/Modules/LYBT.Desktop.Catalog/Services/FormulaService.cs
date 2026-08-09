@@ -180,7 +180,6 @@ namespace LYBT.Desktop.Catalog.Services
                         HerbName = h.HerbName,
                         Dosage = h.Dosage,
                         Unit = h.Unit,
-                        Preparation = h.Preparation,
                         ProcessingMethod = h.ProcessingMethod,
                         Usage = h.Usage,
                         SortOrder = h.SortOrder,

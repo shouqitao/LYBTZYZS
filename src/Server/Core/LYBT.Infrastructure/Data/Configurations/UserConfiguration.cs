@@ -18,7 +18,7 @@ public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
         // 业务字段（原 ApplicationUserConfiguration 已合并至此，避免对同一实体重复配置）
         // RealName 长度以 Fluent 配置 HasMaxLength(100) 为准（与 Entity [StringLength(100)] 及 Users 表 nvarchar(100) 一致）
         builder.Property(u => u.RealName).IsRequired().HasMaxLength(100);
-        builder.Property(u => u.LastLoginAt).IsRequired(false);
+        builder.Property(u => u.LastLoginTime).HasColumnName("LastLoginAt").IsRequired(false);
 
         // 其余字符串属性长度由 Entity 的 [StringLength] 约定
         // 枚举转换（Fluent API 专属功能）

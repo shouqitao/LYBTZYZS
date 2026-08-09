@@ -44,7 +44,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
 
         [StringLength(500, ErrorMessage = "主治症状不能超过500个字符")]
         [DisplayName("主治症状")]
-        public string? Indications { get; set; }
+        public string? Indication { get; set; }
 
         [StringLength(500, ErrorMessage = "禁忌症不能超过500个字符")]
         [DisplayName("禁忌症")]

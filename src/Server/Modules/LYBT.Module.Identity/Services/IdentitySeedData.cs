@@ -80,7 +80,7 @@ public static class IdentitySeedData
             return;
         }
 
-        if (user.LastLoginAt == null)
+        if (user.LastLoginTime == null)
         {
             try
             {

@@ -261,7 +261,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                 filtered = filtered.Where(f =>
                     f.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
                     (f.Effect?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                    (f.Indications?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false));
+                    (f.Indication?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false));
             }
 
             FilteredFormulas = new ObservableCollection<FormulaListDto>(filtered);

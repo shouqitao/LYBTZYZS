@@ -39,8 +39,8 @@ namespace LYBT.Desktop.Users.Models
         /// <summary>用户名</summary>
         [Required(ErrorMessage = "用户名不能为空")]
         [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "用户名只能包含字母、数字和下划线")]
-        [StringLength(ValidationConstants.UserNameMaxLength, MinimumLength = 3,
-            ErrorMessage = "用户名长度必须在3-50个字符之间")]
+        [StringLength(32, MinimumLength = 3,
+            ErrorMessage = "用户名长度必须在3-32个字符之间")]
         public string UserName
         {
             get => _userName;
@@ -125,8 +125,8 @@ namespace LYBT.Desktop.Users.Models
         }
 
         /// <summary>备注</summary>
-        [StringLength(ValidationConstants.RemarkMaxLength,
-            ErrorMessage = "备注长度不能超过1000个字符")]
+        [StringLength(500,
+            ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark
         {
             get => _remark;

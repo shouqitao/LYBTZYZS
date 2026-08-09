@@ -42,12 +42,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("单位")]
         public string Unit { get; set; } = string.Empty;
 
-        [DisplayName("炮制方法")]
-        public string? Preparation { get; set; }
-
-        [DisplayName("加工方法")]
-        public string? Processing { get => ProcessingMethod; set => ProcessingMethod = value; }
-
         [DisplayName("用法")]
         public string? Usage { get; set; }
 

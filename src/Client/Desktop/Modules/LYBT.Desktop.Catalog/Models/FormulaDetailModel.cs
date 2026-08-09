@@ -41,7 +41,7 @@ namespace LYBT.Desktop.Catalog.Models
 
         /// <summary>验方名称</summary>
         [Required(ErrorMessage = "验方名称不能为空")]
-        [StringLength(ValidationConstants.NameMaxLength, ErrorMessage = "验方名称长度不能超过100个字符")]
+        [StringLength(200, ErrorMessage = "验方名称长度不能超过200个字符")]
         public string Name
         {
             get => _name;
@@ -65,7 +65,7 @@ namespace LYBT.Desktop.Catalog.Models
         }
 
         /// <summary>性味</summary>
-        [StringLength(ValidationConstants.NameMaxLength, ErrorMessage = "性味长度不能超过100个字符")]
+        [StringLength(300, ErrorMessage = "性味长度不能超过300个字符")]
         public string? Property
         {
             get => _property;

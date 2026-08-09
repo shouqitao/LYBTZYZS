@@ -32,7 +32,7 @@ public static partial class IdentityMapper
         PhoneNumber = entity.PhoneNumber,
         Role = entity.Role,
         Status = entity.Status,
-        LastLoginTime = entity.LastLoginAt,
+        LastLoginTime = entity.LastLoginTime,
         RegistrationFee = entity.RegistrationFee,
         CreatedAt = entity.CreatedAt
     };
@@ -51,7 +51,7 @@ public static partial class IdentityMapper
         PhoneNumber = entity.PhoneNumber,
         Email = entity.Email,
         PinYinCode = entity.PinYinCode,
-        LastLoginTime = entity.LastLoginAt,
+        LastLoginTime = entity.LastLoginTime,
         RegistrationFee = entity.RegistrationFee,
         CreatedAt = entity.CreatedAt,
         UpdatedAt = entity.UpdatedAt,
@@ -63,14 +63,14 @@ public static partial class IdentityMapper
     /// <summary>
     /// ApplicationUser 转换为 UserBasicDto（跨模块用户基本信息）。
     /// </summary>
-    [MapProperty(nameof(ApplicationUser.LastLoginAt), nameof(UserBasicDto.LastLoginTime))]
+    [MapProperty(nameof(ApplicationUser.LastLoginTime), nameof(UserBasicDto.LastLoginTime))]
     [MapProperty(nameof(ApplicationUser.AccessFailedCount), nameof(UserBasicDto.FailedLoginCount))]
     public static partial UserBasicDto ToBasicDto(ApplicationUser user);
 
     /// <summary>
     /// ApplicationUser 转换为 UserCredentialDto（含 PasswordHash，仅供密码验证场景）。
     /// </summary>
-    [MapProperty(nameof(ApplicationUser.LastLoginAt), nameof(UserCredentialDto.LastLoginTime))]
+    [MapProperty(nameof(ApplicationUser.LastLoginTime), nameof(UserCredentialDto.LastLoginTime))]
     [MapProperty(nameof(ApplicationUser.AccessFailedCount), nameof(UserCredentialDto.FailedLoginCount))]
     public static partial UserCredentialDto ToCredentialDto(ApplicationUser user);
 

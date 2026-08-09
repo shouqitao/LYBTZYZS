@@ -47,7 +47,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
         public string? Effect { get; set; }
 
         [DisplayName("主治")]
-        public string? Indications { get; set; }
+        public string? Indication { get; set; }
 
         [DisplayName("验方描述")]
         [StringLength(1000, ErrorMessage = "验方描述长度不能超过1000个字符")]

@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Primitives.Validation;
 
@@ -27,9 +27,9 @@ namespace LYBT.Shared.Models.Validators.Formula
                 .MaximumLength(ValidationConstants.UsageMaxLength).WithMessage("用法长度不能超过{MaxLength}个字符")
                 .When(x => !string.IsNullOrEmpty(x.Usage));
 
-            RuleFor(x => x.Indications)
+            RuleFor(x => x.Indication)
                 .MaximumLength(ValidationConstants.UsageMaxLength).WithMessage("主治长度不能超过{MaxLength}个字符")
-                .When(x => !string.IsNullOrEmpty(x.Indications));
+                .When(x => !string.IsNullOrEmpty(x.Indication));
 
             RuleFor(x => x.Remark)
                 .MaximumLength(ValidationConstants.RemarkMaxLength).WithMessage("备注长度不能超过{MaxLength}个字符")

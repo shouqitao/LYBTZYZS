@@ -23,8 +23,8 @@ public class UpdateFormulaValidator : AbstractValidator<UpdateEntityCommand<Form
             .MaximumLength(500).WithMessage("功用长度不能超过500个字符")
             .When(x => !string.IsNullOrEmpty(x.Input.Effect));
 
-        RuleFor(x => x.Input.Indications)
+        RuleFor(x => x.Input.Indication)
             .MaximumLength(1000).WithMessage("主治长度不能超过1000个字符")
-            .When(x => !string.IsNullOrEmpty(x.Input.Indications));
+            .When(x => !string.IsNullOrEmpty(x.Input.Indication));
     }
 }

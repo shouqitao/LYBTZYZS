@@ -57,7 +57,7 @@ public class FormulaCommandHandler :
         formula.UpdateProfile(
             request.Input.Name,
             request.Input.Effect,
-            request.Input.Indications,
+            request.Input.Indication,
             request.Input.Usage,
             request.Input.Remark,
             request.Input.Property,

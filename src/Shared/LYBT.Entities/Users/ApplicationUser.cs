@@ -44,7 +44,7 @@ public class ApplicationUser : IdentityUser<Guid>, IAuditableEntity, ISoftDeleta
 
     /// <summary>最后登录时间 (UTC)</summary>
     [DisplayName("最后登录时间")]
-    public DateTime? LastLoginAt { get; set; }
+    public DateTime? LastLoginTime { get; set; }
 
     /// <summary>挂号费 (元) - REG-BR-009: 医生挂号费，前台/QuickVisit 创建挂号时自动带出</summary>
     [Column(TypeName = "decimal(10,2)")]

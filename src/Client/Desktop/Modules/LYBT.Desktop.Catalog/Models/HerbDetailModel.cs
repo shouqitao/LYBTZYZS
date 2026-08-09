@@ -80,7 +80,7 @@ namespace LYBT.Desktop.Catalog.Models
         }
 
         /// <summary>产地</summary>
-        [StringLength(ValidationConstants.AddressMaxLength, ErrorMessage = "产地长度不能超过200个字符")]
+        [StringLength(100, ErrorMessage = "产地长度不能超过100个字符")]
         public string? Origin
         {
             get => _origin;

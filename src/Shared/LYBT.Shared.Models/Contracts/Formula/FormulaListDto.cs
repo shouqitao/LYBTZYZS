@@ -23,7 +23,7 @@ public class FormulaListDto
 
     /// <summary>主治</summary>
     [DisplayName("主治")]
-    public string? Indications { get; set; }
+    public string? Indication { get; set; }
 
     /// <summary>分类</summary>
     [DisplayName("分类")]

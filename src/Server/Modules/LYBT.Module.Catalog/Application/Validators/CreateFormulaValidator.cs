@@ -20,9 +20,9 @@ public class CreateFormulaValidator : AbstractValidator<CreateEntityCommand<Form
             .MaximumLength(500).WithMessage("功用长度不能超过500个字符")
             .When(x => !string.IsNullOrEmpty(x.Input.Effect));
 
-        RuleFor(x => x.Input.Indications)
+        RuleFor(x => x.Input.Indication)
             .MaximumLength(1000).WithMessage("主治长度不能超过1000个字符")
-            .When(x => !string.IsNullOrEmpty(x.Input.Indications));
+            .When(x => !string.IsNullOrEmpty(x.Input.Indication));
 
         RuleFor(x => x.Input.Usage)
             .MaximumLength(500).WithMessage("用法长度不能超过500个字符")

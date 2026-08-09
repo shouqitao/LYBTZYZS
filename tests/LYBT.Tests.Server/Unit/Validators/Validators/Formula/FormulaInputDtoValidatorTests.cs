@@ -155,17 +155,17 @@ public class FormulaInputDtoValidatorTests
     }
 
     [Fact]
-    public void Validate_WithIndicationsTooLong_ShouldFail()
+    public void Validate_WithIndicationTooLong_ShouldFail()
     {
         // Arrange
         var dto = CreateValidFormulaInputDto();
-        dto.Indications = new string('主', 501); // > 500
+        dto.Indication = new string('主', 501); // > 500
 
         // Act
         var result = _validator.TestValidate(dto);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.Indications)
+        result.ShouldHaveValidationErrorFor(x => x.Indication)
             .WithErrorMessage("主治长度不能超过500个字符");
     }
 
@@ -419,7 +419,7 @@ public class FormulaInputDtoValidatorTests
             Effect = "补气健脾",
             Description = "补气健脾的基础方剂",
             Usage = "水煎服，日一剂",
-            Indications = "脾胃气虚",
+            Indication = "脾胃气虚",
             Remark = "经典方剂",
             Herbs = new List<FormulaHerbItemInputDto>
             {

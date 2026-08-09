@@ -119,7 +119,7 @@ public class UserService : IUserService
         {
             user.AccessFailedCount = 0;
             user.LockoutEnd = null;
-            user.LastLoginAt = DateTime.UtcNow;
+            user.LastLoginTime = DateTime.UtcNow;
             await _context.SaveChangesAsync(cancellationToken);
         }
     }

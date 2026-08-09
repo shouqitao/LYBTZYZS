@@ -54,7 +54,7 @@ public static partial class CatalogDtoMapper
     public static Formula ToEntity(FormulaInputDto dto, Guid? createdBy = null) => Formula.Create(
         dto.Name,
         dto.Effect,
-        dto.Indications,
+        dto.Indication,
         dto.Usage,
         dto.Remark,
         dto.Property,
@@ -66,9 +66,8 @@ public static partial class CatalogDtoMapper
 
     /// <summary>
     /// Formula 实体转换为 FormulaListDto（列表查询）。
-    /// Mapperly 生成：Indication→Indications 重命名；TotalPrice 无源字段忽略（默认 0 等价）。
+    /// Mapperly 生成：Indication 同名映射；TotalPrice 无源字段忽略（默认 0 等价）。
     /// </summary>
-    [MapProperty(nameof(Formula.Indication), nameof(FormulaListDto.Indications))]
     [MapperIgnoreTarget(nameof(FormulaListDto.TotalPrice))]
     public static partial FormulaListDto ToFormulaListDto(Formula entity);
 
@@ -82,7 +81,7 @@ public static partial class CatalogDtoMapper
         Id = entity.Id,
         Name = entity.Name,
         Effect = entity.Effect,
-        Indications = entity.Indication,
+        Indication = entity.Indication,
         Usage = entity.Usage,
         Remark = entity.Remark,
         Property = entity.Property,
@@ -111,7 +110,6 @@ public static partial class CatalogDtoMapper
         Dosage = entity.Dosage,
         Unit = entity.Unit,
         Usage = entity.Usage,
-        Preparation = entity.ProcessingMethod,
         ProcessingMethod = entity.ProcessingMethod,
         DecocteMethod = entity.DecocteMethod,
         OriginalHerbName = entity.OriginalHerbName,

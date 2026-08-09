@@ -38,7 +38,7 @@ public partial class FormulaDetailModelMapper
     [MapperIgnoreSource(nameof(FormulaDetailDto.IsEnabled))]
     [MapperIgnoreSource(nameof(FormulaDetailDto.ValidationStatus))]
     [MapperIgnoreSource(nameof(FormulaDetailDto.Description))]
-    [MapperIgnoreSource(nameof(FormulaDetailDto.Indications))]
+    [MapperIgnoreSource(nameof(FormulaDetailDto.Indication))]
     [MapperIgnoreSource(nameof(FormulaDetailDto.Contraindications))]
     [MapperIgnoreTarget(nameof(FormulaDetailModel.Herbs))]
     [MapperIgnoreTarget(nameof(FormulaDetailModel.IsNew))]
@@ -93,7 +93,7 @@ public partial class FormulaDetailModelMapper
     [MapperIgnoreTarget(nameof(FormulaDetailDto.IsEnabled))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.ValidationStatus))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.Description))]
-    [MapperIgnoreTarget(nameof(FormulaDetailDto.Indications))]
+    [MapperIgnoreTarget(nameof(FormulaDetailDto.Indication))]
     [MapperIgnoreTarget(nameof(FormulaDetailDto.Contraindications))]
     private partial FormulaDetailDto ToDtoCore(FormulaDetailModel model);
 
@@ -132,7 +132,7 @@ public partial class FormulaDetailModelMapper
     [MapperIgnoreTarget(nameof(FormulaInputDto.Herbs))]
     [MapperIgnoreTarget(nameof(FormulaInputDto.Description))]
     [MapperIgnoreTarget(nameof(FormulaInputDto.Instructions))]
-    [MapperIgnoreTarget(nameof(FormulaInputDto.Indications))]
+    [MapperIgnoreTarget(nameof(FormulaInputDto.Indication))]
     [MapperIgnoreTarget(nameof(FormulaInputDto.Contraindications))]
     [MapperIgnoreTarget(nameof(FormulaInputDto.Preparation))]
     private partial FormulaInputDto ToInputDtoCore(FormulaDetailModel model);

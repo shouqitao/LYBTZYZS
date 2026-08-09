@@ -17,9 +17,8 @@ public class FormulaBuilder
     private string? _category;
     private bool _isShared = false;
     private string? _instructions;
-    private string? _indications;
+    private string? _indication;
     private string? _contraindications;
-    private string? _preparation;
     private string? _remark;
     private List<FormulaHerbItemInputDto> _herbs = new();
 
@@ -79,21 +78,15 @@ public class FormulaBuilder
         return this;
     }
 
-    public FormulaBuilder WithIndications(string? indications)
+    public FormulaBuilder WithIndication(string? indication)
     {
-        _indications = indications;
+        _indication = indication;
         return this;
     }
 
     public FormulaBuilder WithContraindications(string? contraindications)
     {
         _contraindications = contraindications;
-        return this;
-    }
-
-    public FormulaBuilder WithPreparation(string? preparation)
-    {
-        _preparation = preparation;
         return this;
     }
 
@@ -141,9 +134,8 @@ public class FormulaBuilder
         Category = _category,
         IsShared = _isShared,
         Instructions = _instructions,
-        Indications = _indications,
+        Indication = _indication,
         Contraindications = _contraindications,
-        Preparation = _preparation,
         Remark = _remark,
         Herbs = _herbs
     };
@@ -167,7 +159,7 @@ public class FormulaBuilder
         .WithUsage("水煎服，每日一剂，早晚分服")
         .WithProperty("辛凉解表")
         .WithCategory("解表剂")
-        .WithIndications("风热感冒，发热头痛")
+        .WithIndication("风热感冒，发热头痛")
         .WithContraindications("风寒感冒者慎用");
 
     /// <summary>

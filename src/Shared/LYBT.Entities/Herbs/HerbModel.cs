@@ -31,7 +31,7 @@ namespace LYBT.Entities.Herbs
         public string? PinYinCode { get; set; }
 
         /// &lt;summary&gt;分类（用于分组管理，如：补血药、补气药）&lt;/summary&gt;
-        [StringLength(50)]
+        [StringLength(100)]
         [DisplayName("分类")]
         public string? Category { get; set; }
 
