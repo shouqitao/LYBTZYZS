@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Infrastructure.ExceptionHandling;
+namespace LYBT.Shared.ExceptionHandling.Handlers;
 
 /// <summary>
 /// 业务异常处理器 - 处理AppException及其子类
-/// consolidate-exception-handling: 从LYBT.WebAPI迁移
+/// A-31-C2: 从 LYBT.Infrastructure.ExceptionHandling 迁移
 /// </summary>
 public class BusinessExceptionHandler : IExceptionHandler
 {

@@ -14,8 +14,6 @@ public class BusinessException : AppException
     /// </summary>
     public string? BusinessRule { get; set; }
 
-    public override int GetHttpStatusCode() => 400;
-
     public override ErrorCategory Category => ErrorCategory.Business;
 
     public BusinessException() : base("业务规则违反")

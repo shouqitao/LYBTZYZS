@@ -1,5 +1,5 @@
 using LYBT.Shared.Configuration.Options.Server;
-using LYBT.Infrastructure.ExceptionHandling;
+using LYBT.Shared.ExceptionHandling.Handlers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.WebAPI.Configuration;
@@ -67,11 +67,8 @@ public static class ApiServiceCollectionExtensions
 
         // refactor-logging-system: RFC 7807 ProblemDetails + IExceptionHandler处理器链
         services.AddProblemDetailsConfiguration();
-        // 异常处理器按优先级注册（先注册的先处理）
-        // BusinessExceptionHandler: 处理 AppException 及其子类
-        // SystemExceptionHandler: 兜底处理所有未被处理的系统异常
-        services.AddExceptionHandler<BusinessExceptionHandler>();
-        services.AddExceptionHandler<SystemExceptionHandler>();
+        // A-31-C2: 异常处理器统一注册入口（Business 先 System 后，Shared.ExceptionHandling 提供）
+        services.AddLybtExceptionHandling();
 
         // Swagger（含 JWT）- 从配置参数获取配置
         services.AddEndpointsApiExplorer();

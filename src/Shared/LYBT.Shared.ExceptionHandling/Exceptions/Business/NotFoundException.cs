@@ -19,8 +19,6 @@ public class NotFoundException : AppException
     /// </summary>
     public string? ResourceId { get; set; }
 
-    public override int GetHttpStatusCode() => 404;
-
     public override ErrorCategory Category => ErrorCategory.Resource;
 
     public NotFoundException() : base("请求的资源不存在")

@@ -486,10 +486,12 @@ public class ArchTests
 
     /// <summary>
     /// P2架构门禁 - 共享工具库不得依赖Microsoft.AspNetCore.*
-    /// 豁免清单（A-31-C1 技术引入治理）：LYBT.Shared.Logging 是 Shared 层唯一获准依赖
-    /// ASP.NET Core 的项目（承载 CorrelationIdMiddleware/ApiLoggingFilter 及其注册扩展，
-    /// 依赖 Microsoft.AspNetCore.Http.Abstractions/Mvc.Abstractions/Mvc.Core）。
-    /// 其余 Shared 项目（Models/Configuration/ExceptionHandling）维持零 AspNetCore 依赖。
+    /// 豁免清单（A-31-C1/C2 技术引入治理）：LYBT.Shared.Logging 与 LYBT.Shared.ExceptionHandling
+    /// 是 Shared 层获准依赖 ASP.NET Core 的项目（Logging 承载 CorrelationIdMiddleware/ApiLoggingFilter
+    /// 及其注册扩展，依赖 Microsoft.AspNetCore.Http.Abstractions/Mvc.Abstractions/Mvc.Core；
+    /// ExceptionHandling 承载 IExceptionHandler 处理器 SystemExceptionHandler/BusinessExceptionHandler
+    /// 与 AddLybtExceptionHandling 注册扩展，依赖 Microsoft.AspNetCore.App FrameworkReference）。
+    /// 其余 Shared 项目（Models/Configuration）维持零 AspNetCore 依赖。
     /// </summary>
     [Fact]
     public void P05b_SharedUtilities_Should_Not_Depend_On_AspNetCore()
@@ -499,6 +501,8 @@ public class ArchTests
             .ResideInNamespaceStartingWith("LYBT.Shared")
             .And()
             .DoNotResideInNamespaceStartingWith("LYBT.Shared.Logging")
+            .And()
+            .DoNotResideInNamespaceStartingWith("LYBT.Shared.ExceptionHandling")
             .Should()
             .NotHaveDependencyOnAny("Microsoft.AspNetCore")
             .GetResult();

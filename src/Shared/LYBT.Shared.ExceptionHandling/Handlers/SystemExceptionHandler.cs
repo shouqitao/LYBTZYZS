@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Infrastructure.ExceptionHandling;
+namespace LYBT.Shared.ExceptionHandling.Handlers;
 
 /// <summary>
 /// 系统异常处理器 - 兜底处理所有未被其他处理器处理的异常
-/// consolidate-exception-handling: 从LYBT.WebAPI迁移
+/// A-31-C2: 从 LYBT.Infrastructure.ExceptionHandling 迁移
 /// </summary>
 public class SystemExceptionHandler : IExceptionHandler
 {
@@ -85,6 +85,10 @@ public class SystemExceptionHandler : IExceptionHandler
 
     private (int StatusCode, string Title, string Detail) GetExceptionInfo(Exception exception)
     {
+        // 按类型名匹配外部框架异常（EF Core），避免 Shared 层引入 EF Core 依赖——
+        // 同 ClientErrorMessageMapper 对 Refit.ApiException 的类型名匹配先例
+        var exceptionTypeName = exception.GetType().FullName;
+
         return exception switch
         {
             // FluentValidation 异常
@@ -122,14 +126,14 @@ public class SystemExceptionHandler : IExceptionHandler
                 "服务器处理请求超时，请稍后重试"
             ),
 
-            // 数据库相关
-            Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException => (
+            // 数据库相关（EF Core 按类型名匹配，DbUpdateConcurrencyException 为 DbUpdateException 子类，精确名命中各自分支）
+            _ when exceptionTypeName == "Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException" => (
                 409,
                 "并发冲突",
                 "数据已被其他用户修改，请刷新后重试"
             ),
 
-            Microsoft.EntityFrameworkCore.DbUpdateException => (
+            _ when exceptionTypeName == "Microsoft.EntityFrameworkCore.DbUpdateException" => (
                 500,
                 "数据库错误",
                 "数据保存失败，请稍后重试"

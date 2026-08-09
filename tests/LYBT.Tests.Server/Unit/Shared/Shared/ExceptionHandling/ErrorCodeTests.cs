@@ -437,6 +437,8 @@ public class ErrorCodeTests
     [InlineData(ErrorCode.McActiveCaseExists, 422)]
     [InlineData(ErrorCode.McInvalidStatusTransition, 422)]
     [InlineData(ErrorCode.McPrescriptionRequired, 422)]
+    // A-31-C2: 恢复被子类 GetHttpStatusCode 硬编码 400 吞掉的 422 语义
+    [InlineData(ErrorCode.MedicalCaseMissingDiagnosis, 422)]
     public void MedicalCaseMcceeCodes_BusinessErrors_Return422(ErrorCode errorCode, int expectedStatus)
     {
         errorCode.ToHttpStatusCode().Should().Be(expectedStatus);

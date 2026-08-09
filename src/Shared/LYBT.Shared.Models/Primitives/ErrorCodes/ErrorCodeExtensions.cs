@@ -111,6 +111,7 @@ public static class ErrorCodeExtensions
             ErrorCode.McAlreadyDeleted => 422,
             ErrorCode.McCancelReasonRequired => 422,
             ErrorCode.McPrescriptionItemsRequired => 422,
+            ErrorCode.MedicalCaseMissingDiagnosis => 422,
             ErrorCode.McOnlyCompletedCanDelete => 422,
             ErrorCode.McPrescriptionFlagNotSet => 422,
             ErrorCode.McPrescriptionAlreadyExists => 422,

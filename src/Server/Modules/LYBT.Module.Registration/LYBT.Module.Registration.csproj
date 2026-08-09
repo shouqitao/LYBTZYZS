@@ -31,6 +31,8 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Entities\LYBT.Entities.csproj" />
+		<!-- A-31-C2: 业务异常类型直接引用（此前经 Infrastructure 传递） -->
+		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.ExceptionHandling\LYBT.Shared.ExceptionHandling.csproj" />
 	</ItemGroup>
 
 </Project>

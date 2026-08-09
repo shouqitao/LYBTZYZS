@@ -1,6 +1,6 @@
 using System.Reflection;
 using FluentAssertions;
-using LYBT.Infrastructure.ExceptionHandling;
+using LYBT.Shared.ExceptionHandling.Handlers;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;

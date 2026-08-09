@@ -85,7 +85,9 @@
 | 打印 | QuestPDF | 处方 PDF 导出 | Desktop.Printing |
 | 工具 | pinyin4net | 拼音搜索/排序 | Server 导入 + Desktop 搜索 |
 
-> **技术引入治理记录（A-31-C1，2026-08-08 审批）**：`LYBT.Shared.Logging` 升级为独立完整日志项目，获准补充 ASP.NET Core 依赖（`Microsoft.AspNetCore.Http.Abstractions` / `Mvc.Abstractions` / `Mvc.Core`，承载 CorrelationId 中间件、ApiLoggingFilter 及其注册扩展）与 `LYBT.Shared.Configuration` 项目引用（MSSQL sink 读取 DatabaseOptions 连接串）。架构测试 P05b 豁免清单同步：`LYBT.Shared.Logging` 为 Shared 层唯一 AspNetCore 依赖例外。
+> **技术引入治理记录（A-31-C1，2026-08-08 审批）**：`LYBT.Shared.Logging` 升级为独立完整日志项目，获准补充 ASP.NET Core 依赖（`Microsoft.AspNetCore.Http.Abstractions` / `Mvc.Abstractions` / `Mvc.Core`，承载 CorrelationId 中间件、ApiLoggingFilter 及其注册扩展）与 `LYBT.Shared.Configuration` 项目引用（MSSQL sink 读取 DatabaseOptions 连接串）。架构测试 P05b 豁免清单同步：`LYBT.Shared.Logging` 为 Shared 层 AspNetCore 依赖例外之一。
+>
+> **技术引入治理记录（A-31-C2，2026-08-09 审批）**：`LYBT.Shared.ExceptionHandling` 升级为异常完整职责项目（异常层次 + 处理器 + 注册扩展 + 错误码映射 SSOT），获准补充 ASP.NET Core 依赖（`FrameworkReference Microsoft.AspNetCore.App`，承载 `IExceptionHandler` 处理器 `SystemExceptionHandler`/`BusinessExceptionHandler` 与 `AddLybtExceptionHandling` 注册扩展；Desktop 进程已内嵌 LocalWebAPI，无新增运行时依赖类）。异常→HTTP 映射唯一权威为 `ErrorCodeExtensions.ToHttpStatusCode`（Shared.Models），子类 `GetHttpStatusCode` 硬编码分支删除，422/429 语义恢复。**Desktop 侧评估结论（不强迁）**：`ClientErrorMessageMapper`/`DesktopExceptionHandler` 保留原地——Desktop=UI 文案层（异常/HTTP 状态→用户消息，已委托 `ErrorMessages` 共享消息源），Server=HTTP 状态层（异常→状态码），职责不同合理保留。架构测试 P05b 豁免清单同步：`LYBT.Shared.ExceptionHandling` 为 Shared 层第二个 AspNetCore 依赖例外（与 `LYBT.Shared.Logging` 并列，对应 C-1 已建立先例）。
 
 #### 0.5.2 评估框架（4 标准）
 
@@ -136,7 +138,7 @@
 | **LYBT.Entities** | 18 | 领域实体（Patient/Herb/Formula/MedicalCase/Registration/Consultation/Prescription/User/AuthSession 等）| 实体唯一源（2026-08-02 决策）；Server/Desktop 共用 |
 | **LYBT.Shared.Models** | 120 | DTO/契约/枚举/工具/验证器（Contracts/Enums/Primitives/Utilities/Validators 八目录）| 原 8 项目坍缩为 1（A-16 发现，08-shared v1.6 文档化）；API 契约双端共享 |
 | **LYBT.Shared.Configuration** | 25 | Options 类 + ConnectionStringResolver + 配置验证器 | 07-configuration.md；Server/Client 双端消费 IOptions |
-| **LYBT.Shared.ExceptionHandling** | 7 | AppException 层次 + ProblemDetails + 异常处理器 | 06-error-handling.md；异常映射 SSOT |
+| **LYBT.Shared.ExceptionHandling** | 7 | AppException 异常层次（Business/NotFound）+ 异常处理器（System/BusinessExceptionHandler）+ 注册扩展（AddLybtExceptionHandling）+ 错误码映射 SSOT（ErrorCodeExtensions 唯一异常→HTTP 映射源）。**获准依赖 ASP.NET Core（FrameworkReference Microsoft.AspNetCore.App，承载 IExceptionHandler 处理器）** | 06-error-handling.md；A-31-C2 |
 | **LYBT.Shared.Logging** | 15 | 独立完整日志项目：Serilog 单持有者（含 Sinks.MSSqlServer/AspNetCore）+ Bootstrap 单入口（`AddLybtLogging`/`LoggingBootstrap`）+ CorrelationId 单点（Provider/中间件/Filter/HttpHandler）+ 脱敏。**获准依赖 ASP.NET Core（Http.Abstractions/Mvc.Abstractions，承载 CorrelationIdMiddleware 与 ApiLoggingFilter）** | 08-shared §Logging + 11d-observability + A-31-C1 |
 
 ### 1.1 Shared 关键类设计依据
