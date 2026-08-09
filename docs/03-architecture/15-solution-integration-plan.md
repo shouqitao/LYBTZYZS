@@ -36,9 +36,11 @@
 - 收益：消除 ~45-50 重复方法；模块数 -1；跨模块引用（Formula→Herbs）内部化
 - **边界（用户确认）**：Prescription（处方）归 MedicalCase 域，**不参与**本合并
 
-**合并 2（候选，待定）：LYBT.Module.Auth + LYBT.Module.Users → LYBT.Module.Identity**（凭证+用户域）
-- 证据：S2 §8 凭证域高耦合（Auth 依赖 Users 的 ApplicationUser；Users 依赖 Auth 的令牌族）
-- 收益：跨模块服务对 -2；模块数 -1
+**合并 2（启动中）：LYBT.Module.Auth + LYBT.Module.Users → LYBT.Module.Identity**（凭证+用户域）
+- 证据：Auth→Users 单向调用（LoginCommandHandler 5 方法）+ Users→Auth 4 个 Handler 撤销回调；编译期与运行时均无环；Identity 已深度集成（ApplicationUser : IdentityUser<Guid>）
+- 理由：凭证域高耦合，合并消除两条 CrossModule 通道；以 Identity 为核心 + AuthSession/SecurityAudit 业务增强层
+- 收益：跨模块服务对 -2；模块数 -1；双轨漂移消除（Local 登录统一）
+- 用户决策（2026-08-09）：**保持 ASP.NET Identity 为核心，不替换框架**；对外接口保留 `IUserService`（替代 `IUserCrossModuleService`）；Desktop 合并 `IApiClientIdentity`；Local 登录统一走共享流程
 
 ### 2.2 Desktop 层（减 3，候选）：Herbs+Formula 合并 + Core 微调【⏸ 待定】
 
@@ -132,7 +134,8 @@ LYBT.Shared.Logging/
 | **C-0 缺陷修复** | P0-1 策略注册补齐 / P0-2 MedicalCase 验证接入 / P0-3 Reports 策略统一 | 无 | 0.5d | T1 修复 |
 | **C-1 日志集中** | 专项 A 全部迁移（M1-M10）| C-0 | 1-2d | T2 收敛 |
 | **C-2 异常统一** | 专项 B（处理器收敛 + 死类删除）| C-0 | 1d | T2 收敛 |
-| **C-3 Server 合并** | Herbs+Formula→Catalog + Auth+Users→Identity | **⏸ 待定（用户延期决策，暂缓）** | 2-3d | T2 收敛 |
+| **C-3a Auth+Users→Identity** | Auth+Users Server 端合并（Identity 核心 + 增强层 + Local 登录统一） | **✅ 已启动（2026-08-09，调研+方案定案）** | 2-3d | T2 收敛 |
+| **C-3b Herbs+Formula→Catalog** | Herbs+Formula Server+Desktop 合并 | **⏸ 延期** | 3-4d | T2 收敛 |
 | **C-4 Desktop 合并** | Desktop Herbs+Formula→Catalog | **⏸ 待定（随 C-3）** | 1-2d | T2 收敛 |
 | **C-5 机制收敛** | ErrorMessages / AddModuleDbContext / 仓储镜像模板 / VM 命令模板 / 映射统一 | C-2 | 1-2d | T1 收敛 |
 | **C-6 死代码清理** | S1-S3 D 级（14 可安全删 + 37 死类方法 + 29 Server 死方法 + 64 复核项）| 各批后 | 1-2d | T1 清理 |
