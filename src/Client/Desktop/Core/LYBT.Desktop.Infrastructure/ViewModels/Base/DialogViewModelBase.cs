@@ -115,19 +115,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
             RequestClose?.Invoke(new DialogResult(result, parameters));
         }
 
-        /// <summary>
-        /// 关闭对话框并返回数据
-        /// </summary>
-        /// <typeparam name="T">数据类型</typeparam>
-        /// <param name="key">参数键</param>
-        /// <param name="value">参数值</param>
-        /// <param name="result">按钮结果</param>
-        protected void CloseDialogWithResult<T>(string key, T value, ButtonResult result = ButtonResult.OK)
-        {
-            var parameters = new DialogParameters { { key, value } };
-            CloseDialog(parameters, result);
-        }
-
         #endregion
 
         #region 参数提取
@@ -166,14 +153,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
             }
 
             return defaultValue;
-        }
-
-        /// <summary>
-        /// 尝试获取对话框参数
-        /// </summary>
-        protected bool TryGetDialogParameter<T>(IDialogParameters parameters, string key, out T? value)
-        {
-            return parameters.TryGetValue(key, out value);
         }
 
         #endregion

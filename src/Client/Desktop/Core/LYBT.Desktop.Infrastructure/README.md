@@ -251,9 +251,6 @@ LYBT.Desktop.Infrastructure/
 | `IsBusy` / `StatusMessage` / `ErrorMessage` | 可观察状态 |
 | `SetBusy(bool, message?)` | 设置忙碌状态 |
 | `SetError(message)` / `ClearError()` | 错误管理 |
-| `ExecuteWithErrorHandlingAsync(...)` | 统一异常处理包装 |
-| `RunOnUIThread(Action)` / `RunOnUIThreadAsync(Func<Task>)` | UI 线程执行 |
-| `AddDisposable(IDisposable)` | 注册可释放资源 |
 | `OnDisposing()` | 子类清理钩子 |
 
 **NavigableViewModelBase** — 可导航 ViewModel 基类
@@ -281,9 +278,7 @@ LYBT.Desktop.Infrastructure/
 | `Cancel` command | 取消（`ButtonResult.Cancel`） |
 | `Confirm` command | 确认（`ButtonResult.OK`，可重写 `CanConfirm`） |
 | `CloseDialog(...)` | 关闭对话框（支持返回参数） |
-| `CloseDialogWithResult<T>(key, value)` | 关闭并返回数据 |
 | `GetDialogParameter<T>(params, key)` | 获取必需参数（不存在抛异常） |
-| `TryGetDialogParameter<T>(...)` | 尝试获取参数 |
 
 **ValidatableModelBase** — 可验证模型基类
 - **设计依据**: `BindableBase` + `INotifyDataErrorInfo`；DataAnnotations 验证；XAML 索引器绑定 `Errors[PropertyName]`

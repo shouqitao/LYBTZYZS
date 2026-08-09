@@ -7,7 +7,7 @@
 ## 背景
 
 系统有两棵独立的 ViewModel 继承树:
-1. **CoreViewModelBase** (Desktop.Models): IsBusy, ErrorMessage, ExecuteWithErrorHandlingAsync
+1. **CoreViewModelBase** (Desktop.Models): IsBusy, ErrorMessage
 2. **MasterDetailViewModelBase** (Desktop.Infrastructure): CRUD 主从模式, LoadListAsync, SaveDetailAsync
 
 两者都继承 CommunityToolkit.Mvvm 的 `ObservableObject`，但无法合并为单一继承链。

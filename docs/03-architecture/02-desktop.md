@@ -271,11 +271,16 @@ public class PatientsModule : IModule
 [RelayCommand(CanExecute = nameof(CanSave))]
 private async Task SaveAsync()
 {
-    await ExecuteWithErrorHandlingAsync(async () =>
+    try
     {
         await _service.SaveAsync(CurrentItem);
         HasUnsavedChanges = false;
-    }, "保存失败");
+    }
+    catch (Exception ex)
+    {
+        Logger.LogError(ex, "保存失败");
+        SetError(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex));
+    }
 }
 
 private bool CanSave() => !IsBusy && !HasErrors;

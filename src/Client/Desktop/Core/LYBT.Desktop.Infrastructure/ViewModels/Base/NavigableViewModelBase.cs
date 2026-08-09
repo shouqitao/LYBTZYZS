@@ -17,7 +17,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
     /// - 服务聚合 (IViewModelServices)
     /// - 日志、事件聚合器、UI线程调度器
     /// - 状态管理 (IsBusy, StatusMessage, ErrorMessage)
-    /// - 异步执行包装 (ExecuteWithErrorHandlingAsync)
     /// - Prism导航支持 (INavigationAware, IRegionMemberLifetime, IConfirmNavigationRequest)
     /// - 区域导航方法、导航参数提取辅助
     /// - 未保存变更追踪
@@ -26,7 +25,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
     /// 该类为partial类，按职责拆分为:
     /// - NavigableViewModelBase.cs: 服务聚合、状态管理与核心字段
     /// - NavigableViewModelBase.Navigation.cs: Prism导航支持
-    /// - NavigableViewModelBase.Async.cs: 异步执行包装与UI线程操作
     /// - NavigableViewModelBase.Editable.cs: 对话框、编辑状态与资源释放
     /// </summary>
     public abstract partial class NavigableViewModelBase
@@ -272,18 +270,6 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
         {
             ErrorMessage = message;
             Logger.LogWarning("设置错误消息: {Message}", message);
-        }
-
-        #endregion
-
-        #region Disposable管理
-
-        /// <summary>
-        /// 添加可释放对象到管理集合
-        /// </summary>
-        protected void AddDisposable(IDisposable disposable)
-        {
-            _disposables.Add(disposable);
         }
 
         #endregion
