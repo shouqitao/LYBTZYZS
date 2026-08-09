@@ -14,12 +14,12 @@ namespace LYBT.Module.MedicalCases.Services
     public class PrescriptionItemService
     {
         private readonly IMedicalCaseRepository _repository;
-        private readonly IHerbCrossModuleService _herbCrossModule;
+        private readonly ICatalogService _herbCrossModule;
         private readonly ILogger<PrescriptionItemService> _logger;
 
         public PrescriptionItemService(
             IMedicalCaseRepository repository,
-            IHerbCrossModuleService herbCrossModule,
+            ICatalogService herbCrossModule,
             ILogger<PrescriptionItemService> logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));

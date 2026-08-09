@@ -3,10 +3,10 @@ using LYBT.Shared.Models.Contracts.Common;
 namespace LYBT.Infrastructure.Services.CrossModule;
 
 /// <summary>
-/// 药材域跨模块服务 (ISP: D5-1)
-/// 供 Sync 模块使用
+/// 药材目录域跨模块服务（A-31-C3b 由 IHerbCrossModuleService 改名，ISP D5-1）
+/// 供 MedicalCase 等模块同步查询药材目录（P07 跨模块通道）
 /// </summary>
-public interface IHerbCrossModuleService
+public interface ICatalogService
 {
     /// <summary>获取药材基本信息</summary>
     Task<HerbBasicDto?> GetHerbBasicInfoAsync(Guid herbId, CancellationToken cancellationToken = default);
@@ -20,5 +20,3 @@ public interface IHerbCrossModuleService
     /// <summary>获取所有有效药材（用于批量导入时的名称/拼音匹配）</summary>
     Task<List<HerbBasicDto>> GetAllActiveHerbsAsync(CancellationToken cancellationToken = default);
 }
-
-

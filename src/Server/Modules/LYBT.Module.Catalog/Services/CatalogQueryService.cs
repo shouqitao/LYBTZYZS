@@ -8,8 +8,9 @@ namespace LYBT.Module.Catalog.Services;
 /// <summary>
 /// 目录只读查询服务实现（A-31-C3b 合并 HerbService/FormulaService 42 行孪生）。
 /// 差异点（仓储/映射/错误码）由 DI 工厂注入，同一份实现服务药材与验方两个域。
+/// 实体类型仅作为实现泛型参数，不暴露于对外接口（P01b）。
 /// </summary>
-internal sealed class CatalogQueryService<TEntity, TListDto, TDetailDto> : ICatalogQueryService<TEntity, TListDto, TDetailDto>
+internal sealed class CatalogQueryService<TEntity, TListDto, TDetailDto> : ICatalogQueryService<TListDto, TDetailDto>
     where TEntity : BaseEntity
 {
     private readonly ICatalogRepository<TEntity> _repository;

@@ -129,7 +129,7 @@ LYBT.Infrastructure/
 │   └── CrossModule/                        # 跨模块服务（ISP 拆分）
 │       ├── IPatientCrossModuleService.cs
 │       ├── IUserCrossModuleService.cs
-│       ├── IHerbCrossModuleService.cs
+│       ├── ICatalogService.cs
 │       ├── ICrossModuleAuthService.cs
 │       └── ReferenceCheckResult.cs
 ├── Caching/
@@ -190,7 +190,7 @@ LYBT.Infrastructure/
 单一实现类同时实现 4 个 ISP 接口:
 - **IPatientCrossModuleService**: 患者基本信息、存在性检查、引用计数
 - **IUserCrossModuleService**: 用户基本信息、凭证查询、密码更新、登录状态
-- **IHerbCrossModuleService**: 药材信息、引用检查、批量价格查询
+- **ICatalogService**: 药材信息、引用检查、批量价格查询
 - **ICrossModuleAuthService**: Token 撤销
 
 ### CacheInvalidationService
@@ -394,7 +394,7 @@ LYBT.Infrastructure/
   - `GetPatientsBasicInfoAsync(IEnumerable<Guid>)` -- 批量返回 Dictionary
   - `PatientExistsAsync(Guid)` -- 存在性检查
   - `CheckPatientReferenceAsync(Guid)` -- 检查 MedicalCases 引用数
-- **IHerbCrossModuleService 实现**:
+- **ICatalogService 实现**:
   - `GetHerbBasicInfoAsync(Guid)` -- 返回 HerbBasicDto
   - `GetHerbByNameOrPinyinAsync(string)` -- 按名称/拼音查找
   - `CheckHerbReferenceAsync(Guid)` -- 检查 PrescriptionItems 引用数
@@ -417,8 +417,8 @@ LYBT.Infrastructure/
 - **接口**: `IUserCrossModuleService` (6 个方法)
 - **消费者**: MedicalCase 模块, Auth 模块
 
-#### Services/CrossModule/IHerbCrossModuleService.cs
-- **接口**: `IHerbCrossModuleService` (4 个方法)
+#### Services/CrossModule/ICatalogService.cs
+- **接口**: `ICatalogService` (4 个方法)
 - **消费者**: Sync 模块, Formula 模块
 
 #### Services/CrossModule/ICrossModuleAuthService.cs

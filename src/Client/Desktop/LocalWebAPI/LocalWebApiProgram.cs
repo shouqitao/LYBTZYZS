@@ -14,8 +14,8 @@ using LYBT.Infrastructure.Configuration.Stores;
 using LYBT.Infrastructure.Validation;
 using LYBT.Module.Identity;
 using LYBT.Module.Patients;
-using LYBT.Module.Herbs;
-using LYBT.Module.Formulas;
+using LYBT.Module.Catalog;
+
 using LYBT.Module.MedicalCases;
 using LYBT.Module.Registrations;
 using LYBT.Module.Reports;
@@ -84,8 +84,8 @@ public static class LocalWebApiProgram
         // 注册模块 Service（与远程 WebAPI 使用相同的 Service/Repository 层）
         builder.Services.AddIdentityModule(builder.Configuration);
         builder.Services.AddPatientsModule(builder.Configuration);
-        builder.Services.AddHerbsModule(builder.Configuration);
-        builder.Services.AddFormulaModule(builder.Configuration);
+        builder.Services.AddCatalogModule(builder.Configuration);
+        
         builder.Services.AddMedicalCaseModule(builder.Configuration);
         builder.Services.AddRegistrationModule(builder.Configuration);
         builder.Services.AddReportsModule(builder.Configuration);
@@ -161,3 +161,4 @@ public static class LocalWebApiProgram
         await LocalWebApiSeedData.SeedAsync(dbContext, scope.ServiceProvider);
     }
 }
+

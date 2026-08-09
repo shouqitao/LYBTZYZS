@@ -457,7 +457,7 @@ public class ServerArchTests
 
         // 合并检查: batch-enable/disable 端点必须使用 AdminOrSuperAdmin 授权策略
         var batchEndpoints = new[] { "batch-enable", "batch-disable" };
-        var batchControllers = new[] { "HerbsController", "FormulasController" };
+        var batchControllers = new[] { "CatalogController" };
         var violatingEndpoints = new List<string>();
 
         var webApiAssembly = ServerAssemblies.FirstOrDefault(a => a.GetName().Name == "LYBT.WebAPI");
@@ -901,7 +901,7 @@ public class ServerArchTests
         var writeVerbs = new[] { "Update", "Restore", "Toggle", "Enable", "Disable", "Change", "Delete", "Status", "Save", "Reset", "Import", "Batch" };
         var cqrsReadServiceInterfaces = new[]
         {
-            "IUserService", "IPatientService", "IHerbService", "IFormulaService"
+            "IUserService", "IPatientService"
         };
 
         // A-31-C3a 豁免：登录流程写方法（LoginCommandHandler 专用，非 Controller 写端点）
@@ -940,7 +940,7 @@ public class ServerArchTests
         var cqrsControllers = new[]
         {
             "UsersController", "BaseUsersController",
-            "PatientsController", "HerbsController", "FormulasController",
+            "PatientsController", "CatalogController",
             "AuthController", "RegistrationsController", "BaseRegistrationsController"
         };
 

@@ -1,6 +1,6 @@
 using FluentAssertions;
 using LYBT.Entities.Herbs;
-using LYBT.Module.Herbs.Infrastructure;
+using LYBT.Module.Catalog.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -14,16 +14,16 @@ namespace LYBT.Tests.Server;
 /// </summary>
 public class HerbRepositoryTests : IDisposable
 {
-    private readonly HerbsDbContext _context;
+    private readonly CatalogDbContext _context;
     private readonly HerbRepository _sut;
 
     public HerbRepositoryTests()
     {
-        var options = new DbContextOptionsBuilder<HerbsDbContext>()
+        var options = new DbContextOptionsBuilder<CatalogDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
-        _context = new HerbsDbContext(options);
+        _context = new CatalogDbContext(options);
         _sut = new HerbRepository(_context, NullLogger<HerbRepository>.Instance);
     }
 
@@ -324,3 +324,4 @@ public class HerbRepositoryTests : IDisposable
 
     #endregion
 }
+

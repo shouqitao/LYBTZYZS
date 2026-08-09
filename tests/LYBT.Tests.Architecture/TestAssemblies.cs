@@ -19,8 +19,7 @@ public static class TestAssemblies
         Assembly.Load("LYBT.Module.Identity"),
         Assembly.Load("LYBT.Module.Patients"),
         Assembly.Load("LYBT.Module.MedicalCases"),
-        Assembly.Load("LYBT.Module.Herbs"),
-        Assembly.Load("LYBT.Module.Formulas"),
+        Assembly.Load("LYBT.Module.Catalog"),
         Assembly.Load("LYBT.Module.Reports"),
         Assembly.Load("LYBT.Module.Registrations")
     ];

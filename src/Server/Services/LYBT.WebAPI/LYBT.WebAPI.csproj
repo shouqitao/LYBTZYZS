@@ -68,9 +68,8 @@
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.ExceptionHandling\LYBT.Shared.ExceptionHandling.csproj" />
 		<!-- A-31-C3a: Auth+Users 合并为 Identity 模块 -->
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Identity\LYBT.Module.Identity.csproj" />
-		<ProjectReference Include="..\..\Modules\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
+		<ProjectReference Include="..\..\Modules\LYBT.Module.Catalog\LYBT.Module.Catalog.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
-		<ProjectReference Include="..\..\Modules\LYBT.Module.Formula\LYBT.Module.Formula.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />
 		<!-- Sprint 2: 挂号模块 -->
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Registration\LYBT.Module.Registration.csproj" />

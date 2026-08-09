@@ -69,8 +69,7 @@ public class LocalWebApiPatternTests
         {
             "LYBT.Entities",
             "LYBT.Infrastructure",
-            "LYBT.Module.Formulas",
-            "LYBT.Module.Herbs",
+            "LYBT.Module.Catalog",
             "LYBT.Module.Identity",
             "LYBT.Module.MedicalCases",
             "LYBT.Module.Patients",

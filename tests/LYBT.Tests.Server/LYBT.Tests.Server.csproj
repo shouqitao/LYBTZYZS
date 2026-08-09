@@ -46,10 +46,10 @@
     <ProjectReference Include="..\..\src\Shared\LYBT.Shared.Configuration\LYBT.Shared.Configuration.csproj" />
     <!-- Server Modules -->
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Identity\LYBT.Module.Identity.csproj" />
-    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
+    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Catalog\LYBT.Module.Catalog.csproj" />
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />
-    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Formula\LYBT.Module.Formula.csproj" />
+    
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Reports\LYBT.Module.Reports.csproj" />
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Registration\LYBT.Module.Registration.csproj" />
   </ItemGroup>
@@ -62,3 +62,4 @@
   </ItemGroup>
 
 </Project>
+

@@ -46,7 +46,8 @@ public class ArchTests
             "MedicalCasePrintController",       // 医案打印控制器
             "RegistrationsController",   // 挂号控制器（快速看诊功能）
             "AuthController",            // LocalWebAPI — UserManager<ApplicationUser>
-            "UsersController"            // LocalWebAPI — UserManager<ApplicationUser>
+            "UsersController",           // LocalWebAPI — UserManager<ApplicationUser>
+            "CatalogController"          // A-31-C3b 合并后——泛型命令的实体幻影类型参数（DeleteEntityCommand<Herb> 等），仅在方法体构造
         };
 
         var result = Types.InAssemblies(Assemblies)
@@ -547,8 +548,7 @@ public class ArchTests
                 "LYBT.Module.Identity",
                 "LYBT.Module.Patients",
                 "LYBT.Module.MedicalCases",
-                "LYBT.Module.Herbs",
-                "LYBT.Module.Formulas",
+                "LYBT.Module.Catalog",
                 "LYBT.Infrastructure",
                 "LYBT.WebAPI")
             .GetResult();
@@ -592,14 +592,13 @@ public class ArchTests
     /// 防止分层退化，任何反向引用都会导致测试失败
     /// </summary>
     [Theory]
-    [InlineData("LYBT.Entities", new[] { "LYBT.Infrastructure", "LYBT.WebAPI", "LYBT.Module.Identity", "LYBT.Module.Patients", "LYBT.Module.MedicalCases", "LYBT.Module.Herbs", "LYBT.Module.Formulas" },
+    [InlineData("LYBT.Entities", new[] { "LYBT.Infrastructure", "LYBT.WebAPI", "LYBT.Module.Identity", "LYBT.Module.Patients", "LYBT.Module.MedicalCases", "LYBT.Module.Catalog" },
         "Entities 层 (最底层) 不得依赖任何上层")]
-    [InlineData("LYBT.Infrastructure", new[] { "LYBT.WebAPI", "LYBT.Module.Identity", "LYBT.Module.Patients", "LYBT.Module.MedicalCases", "LYBT.Module.Herbs", "LYBT.Module.Formulas" },
+    [InlineData("LYBT.Infrastructure", new[] { "LYBT.WebAPI", "LYBT.Module.Identity", "LYBT.Module.Patients", "LYBT.Module.MedicalCases", "LYBT.Module.Catalog" },
         "Infrastructure 层不得依赖 WebAPI 或 Module 层")]
     [InlineData("LYBT.Module.Identity", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
     [InlineData("LYBT.Module.Patients", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
-    [InlineData("LYBT.Module.Herbs", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
-    [InlineData("LYBT.Module.Formulas", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
+    [InlineData("LYBT.Module.Catalog", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
     [InlineData("LYBT.Module.MedicalCases", new[] { "LYBT.WebAPI" }, "Module 层不得依赖 WebAPI 层")]
     public void P06_NoReverseOrCircularDependencies(string sourceAssembly, string[] forbiddenDependencies, string rule)
     {
@@ -631,8 +630,7 @@ public class ArchTests
             Assembly.Load("LYBT.Module.Identity"),
             Assembly.Load("LYBT.Module.Patients"),
             Assembly.Load("LYBT.Module.MedicalCases"),
-            Assembly.Load("LYBT.Module.Herbs"),
-            Assembly.Load("LYBT.Module.Formulas"),
+            Assembly.Load("LYBT.Module.Catalog"),
             Assembly.Load("LYBT.Module.Registrations"),
             Assembly.Load("LYBT.Module.Reports"),
         };

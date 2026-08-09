@@ -40,19 +40,21 @@ namespace LYBT.Module.Catalog
             services.AddScoped<IHerbReferenceRepository, HerbReferenceRepository>();
 
             // 注册跨模块服务（替代 CrossModuleService 中的药材查询逻辑）
-            services.AddScoped<IHerbCrossModuleService, CatalogCrossModuleService>();
+            services.AddScoped<ICatalogService, CatalogCrossModuleService>();
 
             // 注册只读查询服务（合并 HerbService/FormulaService 孪生，差异点由工厂注入）
-            services.AddScoped(sp => new CatalogQueryService<Herb, HerbListDto, HerbDetailDto>(
-                sp.GetRequiredService<IHerbRepository>(),
-                CatalogDtoMapper.ToHerbListDto,
-                CatalogDtoMapper.ToHerbDetailDto,
-                ErrorCode.HerbNotFound));
-            services.AddScoped(sp => new CatalogQueryService<Formula, FormulaListDto, FormulaDetailDto>(
-                sp.GetRequiredService<IFormulaRepository>(),
-                CatalogDtoMapper.ToFormulaListDto,
-                CatalogDtoMapper.ToFormulaDetailDto,
-                ErrorCode.FormulaNotFound));
+            services.AddScoped<ICatalogQueryService<HerbListDto, HerbDetailDto>>(sp =>
+                new CatalogQueryService<Herb, HerbListDto, HerbDetailDto>(
+                    sp.GetRequiredService<IHerbRepository>(),
+                    CatalogDtoMapper.ToHerbListDto,
+                    CatalogDtoMapper.ToHerbDetailDto,
+                    ErrorCode.HerbNotFound));
+            services.AddScoped<ICatalogQueryService<FormulaListDto, FormulaDetailDto>>(sp =>
+                new CatalogQueryService<Formula, FormulaListDto, FormulaDetailDto>(
+                    sp.GetRequiredService<IFormulaRepository>(),
+                    CatalogDtoMapper.ToFormulaListDto,
+                    CatalogDtoMapper.ToFormulaDetailDto,
+                    ErrorCode.FormulaNotFound));
 
             // 注册共享验证器（Shared.Models 层）
             services.AddValidatorsFromAssemblyContaining<HerbInputDtoValidator>();

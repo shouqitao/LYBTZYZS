@@ -6,8 +6,8 @@ using LYBT.Infrastructure.Serialization;
 using LYBT.Shared.Logging.Http;
 using LYBT.WebAPI.Serialization;
 using LYBT.Module.Identity;
-using LYBT.Module.Formulas;
-using LYBT.Module.Herbs;
+using LYBT.Module.Catalog;
+
 using LYBT.Module.MedicalCases;
 using LYBT.Module.Patients;
 using LYBT.Module.Registrations;
@@ -99,10 +99,10 @@ public static class ServiceCollectionExtensions
         services.AddPatientsModule(configuration);
 
         // 4. 中药模块
-        services.AddHerbsModule(configuration);
+        services.AddCatalogModule(configuration);
 
         // 5. 配方模块
-        services.AddFormulaModule(configuration);
+        
         // 诊断和处方功能已整合到MedicalCase聚合根
 
         // 6. 病例模块
@@ -269,5 +269,6 @@ public static class ServiceCollectionExtensions
         return services;
     }
 }
+
 
 
