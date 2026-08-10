@@ -6,6 +6,7 @@
              xmlns:prism="http://prismlibrary.com/"
              xmlns:patientControls="clr-namespace:LYBT.Desktop.Patients.Controls;assembly=LYBT.Desktop.Patients"
              xmlns:infraControls="clr-namespace:LYBT.Desktop.Controls.Controls;assembly=LYBT.Desktop.Controls"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="1200">
@@ -55,7 +56,10 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="12">
                         <!-- CardReader Status -->
-                        <TextBlock Text="📡 读卡器" FontWeight="Bold" Margin="0,0,0,8"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <materialDesign:PackIcon Kind="NfcVariant" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="读卡器" FontWeight="Bold" VerticalAlignment="Center"/>
+                        </StackPanel>
                         <Border Background="{DynamicResource MaterialDesignPaper}" CornerRadius="6" Padding="12" Margin="0,0,0,12">
                             <StackPanel>
                                 <TextBlock Text="{Binding CardReader.StatusMessage}" Margin="0,0,0,8"/>
@@ -84,7 +88,10 @@
                         </Border>
 
                         <!-- Pending Queue -->
-                        <TextBlock Text="📋 待诊队列" FontWeight="Bold" Margin="0,0,0,8"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <materialDesign:PackIcon Kind="ClipboardText" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="待诊队列" FontWeight="Bold" VerticalAlignment="Center"/>
+                        </StackPanel>
                         <Border Background="{DynamicResource MaterialDesignPaper}" CornerRadius="6" Padding="12">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
@@ -136,7 +143,10 @@
                     BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}" BorderThickness="1,0,0,0">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="12">
-                        <TextBlock Text="👤 患者信息" FontWeight="Bold" Margin="0,0,0,12"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <materialDesign:PackIcon Kind="Account" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="患者信息" FontWeight="Bold" VerticalAlignment="Center"/>
+                        </StackPanel>
                         <infraControls:PatientInfoCardControl
                             DataContext="{Binding SelectedPatient}"
                             Margin="0,0,0,12"/>
