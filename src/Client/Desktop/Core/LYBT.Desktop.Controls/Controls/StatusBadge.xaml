@@ -19,24 +19,8 @@
     <!--
         资源加载说明:
         - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
-        - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
-        - 仅保留本地定义的徽章颜色资源
+        - 徽章颜色资源已移至 App 级主题字典（Themes/Surfaces.xaml），由代码后置解析并随亮/暗主题切换
     -->
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <!--  状态徽章颜色 - 使用主题资源  -->
-            <SolidColorBrush x:Key="BadgeSuccessBackground" Color="#E8F5E9" />
-            <SolidColorBrush x:Key="BadgeSuccessForeground" Color="#228B22" />
-            <SolidColorBrush x:Key="BadgeDangerBackground" Color="#FDE7E9" />
-            <SolidColorBrush x:Key="BadgeDangerForeground" Color="#A4262C" />
-            <SolidColorBrush x:Key="BadgeWarningBackground" Color="#FFF8E1" />
-            <SolidColorBrush x:Key="BadgeWarningForeground" Color="#B8860B" />
-            <SolidColorBrush x:Key="BadgeInfoBackground" Color="#E0F7FA" />
-            <SolidColorBrush x:Key="BadgeInfoForeground" Color="#3D5A80" />
-            <SolidColorBrush x:Key="BadgeNeutralBackground" Color="{DynamicResource SecondaryRegionColor}" />
-            <SolidColorBrush x:Key="BadgeNeutralForeground" Color="#757575" />
-        </ResourceDictionary>
-    </UserControl.Resources>
 
     <Border
         x:Name="BadgeBorder"

@@ -17,25 +17,74 @@
 
     <!-- L0: 应用背景（暖灰白，让白色面板浮起） -->
     <Color x:Key="SurfaceLevel0Color">#FAF8F5</Color>
-    <SolidColorBrush x:Key="SurfaceLevel0Brush" Color="{StaticResource SurfaceLevel0Color}" />
+    <SolidColorBrush x:Key="SurfaceLevel0Brush" Color="{DynamicResource SurfaceLevel0Color}" />
 
     <!-- L1: 面板表面（纯白） -->
     <Color x:Key="SurfaceLevel1Color">#FFFFFF</Color>
-    <SolidColorBrush x:Key="SurfaceLevel1Brush" Color="{StaticResource SurfaceLevel1Color}" />
+    <SolidColorBrush x:Key="SurfaceLevel1Brush" Color="{DynamicResource SurfaceLevel1Color}" />
 
     <!-- L2: 浮起表面（纯白 + 投影，投影在使用处定义） -->
-    <SolidColorBrush x:Key="SurfaceLevel2Brush" Color="#FFFFFF" />
+    <Color x:Key="SurfaceLevel2Color">#FFFFFF</Color>
+    <SolidColorBrush x:Key="SurfaceLevel2Brush" Color="{DynamicResource SurfaceLevel2Color}" />
 
     <!-- L3: 弹窗表面（纯白 + 重投影，投影在使用处定义） -->
-    <SolidColorBrush x:Key="SurfaceLevel3Brush" Color="#FFFFFF" />
+    <Color x:Key="SurfaceLevel3Color">#FFFFFF</Color>
+    <SolidColorBrush x:Key="SurfaceLevel3Brush" Color="{DynamicResource SurfaceLevel3Color}" />
 
     <!-- ======== 覆盖 MDIX 默认背景 Brush ======== -->
     <!-- MDIX 默认 Background 为白色，覆盖为暖灰以创建层次 -->
-    <SolidColorBrush x:Key="MaterialDesign.Brush.Background" Color="{StaticResource SurfaceLevel0Color}" />
+    <SolidColorBrush x:Key="MaterialDesign.Brush.Background" Color="{DynamicResource SurfaceLevel0Color}" />
 
     <!-- ======== 分隔线 ======== -->
-    <SolidColorBrush x:Key="DividerBrush" Color="#E0DCD5" />
-    <SolidColorBrush x:Key="DividerLightBrush" Color="#EDE9E3" />
+    <Color x:Key="DividerColor">#E0DCD5</Color>
+    <Color x:Key="DividerLightColor">#EDE9E3</Color>
+    <SolidColorBrush x:Key="DividerBrush" Color="{DynamicResource DividerColor}" />
+    <SolidColorBrush x:Key="DividerLightBrush" Color="{DynamicResource DividerLightColor}" />
+
+    <!-- ======== 暗色主题色键 ======== -->
+    <!-- 暗色值 = 亮色键名 + "Dark" 后缀；由 ThemeService.ApplyCustomPalette 在主题切换时写入 Application 资源 -->
+    <Color x:Key="SurfaceLevel0ColorDark">#1E1E1E</Color>
+    <Color x:Key="SurfaceLevel1ColorDark">#2D2D30</Color>
+    <Color x:Key="SurfaceLevel2ColorDark">#2D2D30</Color>
+    <Color x:Key="SurfaceLevel3ColorDark">#3F3F46</Color>
+    <Color x:Key="DividerColorDark">#3F3F46</Color>
+    <Color x:Key="DividerLightColorDark">#333338</Color>
+
+    <!-- ======== 状态徽章色彩（StatusBadge 使用） ======== -->
+    <Color x:Key="BadgeSuccessBackgroundColor">#E8F5E9</Color>
+    <Color x:Key="BadgeSuccessForegroundColor">#228B22</Color>
+    <Color x:Key="BadgeDangerBackgroundColor">#FDE7E9</Color>
+    <Color x:Key="BadgeDangerForegroundColor">#A4262C</Color>
+    <Color x:Key="BadgeWarningBackgroundColor">#FFF8E1</Color>
+    <Color x:Key="BadgeWarningForegroundColor">#B8860B</Color>
+    <Color x:Key="BadgeInfoBackgroundColor">#E0F7FA</Color>
+    <Color x:Key="BadgeInfoForegroundColor">#3D5A80</Color>
+    <Color x:Key="BadgeNeutralBackgroundColor">#F5F5F5</Color>
+    <Color x:Key="BadgeNeutralForegroundColor">#757575</Color>
+
+    <!-- 状态徽章暗色（深色背景 + 亮色前景） -->
+    <Color x:Key="BadgeSuccessBackgroundColorDark">#1B5E20</Color>
+    <Color x:Key="BadgeSuccessForegroundColorDark">#81C784</Color>
+    <Color x:Key="BadgeDangerBackgroundColorDark">#B71C1C</Color>
+    <Color x:Key="BadgeDangerForegroundColorDark">#EF9A9A</Color>
+    <Color x:Key="BadgeWarningBackgroundColorDark">#7A5900</Color>
+    <Color x:Key="BadgeWarningForegroundColorDark">#FFD54F</Color>
+    <Color x:Key="BadgeInfoBackgroundColorDark">#0D47A1</Color>
+    <Color x:Key="BadgeInfoForegroundColorDark">#81D4FA</Color>
+    <Color x:Key="BadgeNeutralBackgroundColorDark">#3F3F46</Color>
+    <Color x:Key="BadgeNeutralForegroundColorDark">#BDBDBD</Color>
+
+    <!-- 状态徽章画刷（引用上述色键，随主题自动更新） -->
+    <SolidColorBrush x:Key="BadgeSuccessBackground" Color="{DynamicResource BadgeSuccessBackgroundColor}" />
+    <SolidColorBrush x:Key="BadgeSuccessForeground" Color="{DynamicResource BadgeSuccessForegroundColor}" />
+    <SolidColorBrush x:Key="BadgeDangerBackground" Color="{DynamicResource BadgeDangerBackgroundColor}" />
+    <SolidColorBrush x:Key="BadgeDangerForeground" Color="{DynamicResource BadgeDangerForegroundColor}" />
+    <SolidColorBrush x:Key="BadgeWarningBackground" Color="{DynamicResource BadgeWarningBackgroundColor}" />
+    <SolidColorBrush x:Key="BadgeWarningForeground" Color="{DynamicResource BadgeWarningForegroundColor}" />
+    <SolidColorBrush x:Key="BadgeInfoBackground" Color="{DynamicResource BadgeInfoBackgroundColor}" />
+    <SolidColorBrush x:Key="BadgeInfoForeground" Color="{DynamicResource BadgeInfoForegroundColor}" />
+    <SolidColorBrush x:Key="BadgeNeutralBackground" Color="{DynamicResource BadgeNeutralBackgroundColor}" />
+    <SolidColorBrush x:Key="BadgeNeutralForeground" Color="{DynamicResource BadgeNeutralForegroundColor}" />
 
     <!-- ======== 投影效果 Token ======== -->
 

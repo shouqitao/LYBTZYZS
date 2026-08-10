@@ -194,25 +194,22 @@ public partial class StatusBadge : UserControl
 
     private static (Brush background, Brush foreground) GetBadgeColors(BadgeType type)
     {
-        return type switch
+        var (bgKey, fgKey, bgFallback, fgFallback) = type switch
         {
-            BadgeType.Success => (
-                new SolidColorBrush(Color.FromRgb(0xE6, 0xF4, 0xEA)),
-                new SolidColorBrush(Color.FromRgb(0x1E, 0x7D, 0x34))),
-            BadgeType.Danger => (
-                new SolidColorBrush(Color.FromRgb(0xFC, 0xE8, 0xE8)),
-                new SolidColorBrush(Color.FromRgb(0xC4, 0x2B, 0x1C))),
-            BadgeType.Warning => (
-                new SolidColorBrush(Color.FromRgb(0xFF, 0xF4, 0xCE)),
-                new SolidColorBrush(Color.FromRgb(0x9D, 0x5D, 0x00))),
-            BadgeType.Info => (
-                new SolidColorBrush(Color.FromRgb(0xE5, 0xF6, 0xFD)),
-                new SolidColorBrush(Color.FromRgb(0x00, 0x78, 0xD4))),
-            _ => (
-                new SolidColorBrush(Color.FromRgb(0xF5, 0xF5, 0xF5)),
-                new SolidColorBrush(Color.FromRgb(0x61, 0x61, 0x61)))
+            BadgeType.Success => ("BadgeSuccessBackground", "BadgeSuccessForeground", (0xE6, 0xF4, 0xEA), (0x1E, 0x7D, 0x34)),
+            BadgeType.Danger => ("BadgeDangerBackground", "BadgeDangerForeground", (0xFC, 0xE8, 0xE8), (0xC4, 0x2B, 0x1C)),
+            BadgeType.Warning => ("BadgeWarningBackground", "BadgeWarningForeground", (0xFF, 0xF4, 0xCE), (0x9D, 0x5D, 0x00)),
+            BadgeType.Info => ("BadgeInfoBackground", "BadgeInfoForeground", (0xE5, 0xF6, 0xFD), (0x00, 0x78, 0xD4)),
+            _ => ("BadgeNeutralBackground", "BadgeNeutralForeground", (0xF5, 0xF5, 0xF5), (0x61, 0x61, 0x61))
         };
+        return (ResolveBadgeBrush(bgKey, bgFallback), ResolveBadgeBrush(fgKey, fgFallback));
     }
+
+    // 取 App 级主题画刷（色键 DynamicResource 引用，随亮/暗主题实时更新）；无 Application 时退回亮色默认值
+    private static Brush ResolveBadgeBrush(string key, (int r, int g, int b) fallback) =>
+        Application.Current?.TryFindResource(key) is Brush brush
+            ? brush
+            : new SolidColorBrush(Color.FromRgb((byte)fallback.r, (byte)fallback.g, (byte)fallback.b));
 
     #endregion
 }

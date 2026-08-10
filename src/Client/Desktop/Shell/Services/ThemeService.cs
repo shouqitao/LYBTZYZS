@@ -1,6 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using MaterialDesignThemes.Wpf;
 using Microsoft.Extensions.Configuration;
+using System.Windows;
+using System.Windows.Media;
 
 namespace LYBT.Desktop.Shell.Services;
 
@@ -32,7 +34,31 @@ public partial class ThemeService : ObservableObject, IThemeService, IDisposable
         var theme = _paletteHelper.GetTheme();
         theme.SetBaseTheme(isDark ? BaseTheme.Dark : BaseTheme.Light);
         _paletteHelper.SetTheme(theme);
+        ApplyCustomPalette(isDark);
         SaveThemePreference(isDark);
+    }
+
+    // 自定义主题色键：暗色值为同名键 + "Dark" 后缀，定义于 LYBT.Desktop.Controls/Themes/*.xaml
+    private static readonly string[] ThemeColorKeys =
+    {
+        "SurfaceLevel0Color", "SurfaceLevel1Color", "SurfaceLevel2Color", "SurfaceLevel3Color",
+        "DividerColor", "DividerLightColor",
+        "BadgeSuccessBackgroundColor", "BadgeSuccessForegroundColor",
+        "BadgeDangerBackgroundColor", "BadgeDangerForegroundColor",
+        "BadgeWarningBackgroundColor", "BadgeWarningForegroundColor",
+        "BadgeInfoBackgroundColor", "BadgeInfoForegroundColor",
+        "BadgeNeutralBackgroundColor", "BadgeNeutralForegroundColor",
+        "PrimaryFunctionGradientStartColor", "PrimaryFunctionGradientEndColor"
+    };
+
+    private void ApplyCustomPalette(bool isDark)
+    {
+        var resources = Application.Current?.Resources;
+        if (resources is null) return;
+        foreach (var key in ThemeColorKeys)
+        {
+            resources[key] = (Color)resources[isDark ? key + "Dark" : key];
+        }
     }
 
     public void InitializeThemeSync()
