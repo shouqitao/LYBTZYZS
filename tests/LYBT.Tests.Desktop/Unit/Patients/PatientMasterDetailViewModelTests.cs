@@ -2,6 +2,7 @@ using FluentAssertions;
 using LYBT.Desktop.Infrastructure.CardReader.Integration;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
+using LYBT.Desktop.Patients.Mappers;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.Services;
 using LYBT.Desktop.Patients.ViewModels;
@@ -27,6 +28,7 @@ public class PatientMasterDetailViewModelTests
     private readonly IPatientService _patientService;
     private readonly IPatientStatusHandler _statusHandler;
     private readonly IDesktopCacheManager _cacheManager;
+    private readonly PatientMapper _patientMapper;
     private readonly PatientCardReaderViewModel _cardReaderViewModel;
     private readonly PatientEditorViewModel _patientEditor;
     private readonly ILoggerFactory _loggerFactory;
@@ -101,7 +103,8 @@ public class PatientMasterDetailViewModelTests
             Substitute.For<ILogger<PatientCardReaderViewModel>>());
 
         // PatientEditorViewModel (真实实例，纯逻辑)
-        _patientEditor = new PatientEditorViewModel();
+        _patientMapper = new PatientMapper();
+        _patientEditor = new PatientEditorViewModel(_patientMapper);
     }
 
     private PatientMasterDetailViewModel CreateSut()
@@ -112,6 +115,7 @@ public class PatientMasterDetailViewModelTests
             _patientService,
             _statusHandler,
             _cacheManager,
+            _patientMapper,
             _cardReaderViewModel,
             _patientEditor);
     }
@@ -138,6 +142,7 @@ public class PatientMasterDetailViewModelTests
             null!,
             _statusHandler,
             _cacheManager,
+            _patientMapper,
             _cardReaderViewModel,
             _patientEditor);
 
@@ -154,6 +159,7 @@ public class PatientMasterDetailViewModelTests
             _patientService,
             null!,
             _cacheManager,
+            _patientMapper,
             _cardReaderViewModel,
             _patientEditor);
 
@@ -170,6 +176,7 @@ public class PatientMasterDetailViewModelTests
             _patientService,
             _statusHandler,
             null!,
+            _patientMapper,
             _cardReaderViewModel,
             _patientEditor);
 
@@ -186,6 +193,7 @@ public class PatientMasterDetailViewModelTests
             _patientService,
             _statusHandler,
             _cacheManager,
+            _patientMapper,
             null!,
             _patientEditor);
 
@@ -202,6 +210,7 @@ public class PatientMasterDetailViewModelTests
             _patientService,
             _statusHandler,
             _cacheManager,
+            _patientMapper,
             _cardReaderViewModel,
             null!);
 

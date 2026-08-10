@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
+using LYBT.Desktop.Patients.Mappers;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.ViewModels;
 using LYBT.Desktop.Patients.ViewModels.Handlers;
@@ -26,6 +27,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         private readonly IPatientService _patientService;
         private readonly IPatientStatusHandler _statusHandler;
         private readonly IDesktopCacheManager _cacheManager;
+        private readonly PatientMapper _patientMapper;
 
         // Child ViewModels
         private readonly PatientCardReaderViewModel _cardReaderViewModel;
@@ -78,6 +80,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             IPatientService patientService,
             IPatientStatusHandler statusHandler,
             IDesktopCacheManager cacheManager,
+            PatientMapper patientMapper,
             // Child ViewModels
             PatientCardReaderViewModel cardReaderViewModel,
             PatientEditorViewModel patientEditor)
@@ -86,6 +89,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
             _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
+            _patientMapper = patientMapper ?? throw new ArgumentNullException(nameof(patientMapper));
 
             // Child ViewModels
             _cardReaderViewModel = cardReaderViewModel ?? throw new ArgumentNullException(nameof(cardReaderViewModel));
@@ -178,18 +182,11 @@ namespace LYBT.Desktop.Patients.ViewModels
                     return false;
                 }
 
-                // 同步返回列表数据
-                detail.Id = result.Data!.Id;
-                detail.Name = result.Data.Name;
-                detail.PinYinCode = result.Data.PinYinCode ?? string.Empty;
-                detail.Gender = result.Data.Gender;
-                detail.BirthDate = result.Data.BirthDate;
-                detail.IdNumber = result.Data.IdNumber;
-                detail.PhoneNumber = result.Data.PhoneNumber;
-                detail.Status = result.Data.Status;
+                // 同步返回列表数据（D2: 改用 Mapperly ApplyToDetailModel 回填）
+                _patientMapper.ApplyToDetailModel(detail, result.Data!);
 
                 Logger.LogInformation("患者{Action}成功: {PatientId} - {PatientName}",
-                    isEditingExisting ? "更新" : "创建", result.Data.Id, result.Data.Name);
+                    isEditingExisting ? "更新" : "创建", result.Data!.Id, result.Data!.Name);
 
                 _cacheManager.InvalidatePatientCaches();
                 return true;

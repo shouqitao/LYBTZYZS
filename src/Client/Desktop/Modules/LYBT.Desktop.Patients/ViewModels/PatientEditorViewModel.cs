@@ -1,8 +1,8 @@
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
+using LYBT.Desktop.Patients.Mappers;
 using LYBT.Desktop.Patients.Models.Items;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Utilities.Text;
 
 namespace LYBT.Desktop.Patients.ViewModels;
 
@@ -10,11 +10,20 @@ namespace LYBT.Desktop.Patients.ViewModels;
 /// 子 VM - 患者编辑 (编辑真源)
 ///
 /// 封装 PatientEditContext，提供 DTO 初始化和数据提取
-/// 替代手动字段映射和 CopyToXxx 模式
+/// D2: 改用 Mapperly PatientMapper，消除手写字段映射
 /// </summary>
 public partial class PatientEditorViewModel : EditorViewModelBase<PatientEditContext>
 {
+    private readonly PatientMapper _mapper;
     private PatientEditContext _patient = PatientEditContext.CreateNew();
+
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    public PatientEditorViewModel(PatientMapper mapper)
+    {
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+    }
 
     /// <summary>患者编辑上下文 (XAML 绑定目标)</summary>
     public PatientEditContext Patient
@@ -36,40 +45,21 @@ public partial class PatientEditorViewModel : EditorViewModelBase<PatientEditCon
 
     /// <summary>
     /// 从 DTO 初始化 (查看/编辑已有患者)
+    /// D2: 改用 Mapperly ToEditContext（保留 PinYinCode 回退行为）
     /// </summary>
     public void InitializeFromDto(PatientDetailDto dto)
     {
-        var context = new PatientEditContext
-        {
-            Id = dto.Id,
-            Name = dto.Name,
-            PinYinCode = dto.PinYinCode ?? PinYinHelper.GetPinYinCode(dto.Name),
-            Gender = dto.Gender,
-            BirthDate = dto.BirthDate,
-            IdNumber = dto.IdNumber,
-            PhoneNumber = dto.PhoneNumber,
-            Status = dto.Status
-        };
-
-        Patient = context;
+        Patient = _mapper.ToEditContext(dto);
         IsDirty = false;
         SubscribeContext();
     }
 
     /// <summary>
     /// 提取编辑数据为 PatientInputDto (用于保存)
+    /// D2: 改用 Mapperly ToInputDto（保留 Trim 行为）
     /// </summary>
     public PatientInputDto GetPatientData()
     {
-        return new PatientInputDto
-        {
-            Id = Patient.Id,
-            Name = Patient.Name.Trim(),
-            PinYinCode = Patient.PinYinCode?.Trim(),
-            Gender = Patient.Gender,
-            BirthDate = Patient.BirthDate,
-            IdNumber = Patient.IdNumber?.Trim(),
-            PhoneNumber = Patient.PhoneNumber?.Trim()
-        };
+        return _mapper.ToInputDto(Patient);
     }
 }

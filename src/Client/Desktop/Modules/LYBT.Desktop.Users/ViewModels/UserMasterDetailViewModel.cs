@@ -5,6 +5,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.ViewModels;
+using LYBT.Desktop.Users.Mappers;
 using LYBT.Desktop.Users.Models;
 using LYBT.Desktop.Users.ViewModels.Handlers;
 using LYBT.Desktop.Foundation.ExceptionHandling;
@@ -26,6 +27,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
     private readonly IUserPasswordHandler _passwordHandler;
     private readonly IUserStatusHandler _statusHandler;
     private readonly IDesktopCacheManager _cacheManager;
+    private readonly UserMapper _userMapper;
 
     /// <summary>用户编辑子 VM</summary>
     public UserEditorViewModel UserEditor { get; }
@@ -114,6 +116,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         IUserPasswordHandler passwordHandler,
         IUserStatusHandler statusHandler,
         IDesktopCacheManager cacheManager,
+        UserMapper userMapper,
         UserEditorViewModel userEditor)
         : base(viewModelServices, masterDetailServices)
     {
@@ -121,6 +124,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         _passwordHandler = passwordHandler ?? throw new ArgumentNullException(nameof(passwordHandler));
         _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
         _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
+        _userMapper = userMapper ?? throw new ArgumentNullException(nameof(userMapper));
         UserEditor = userEditor ?? throw new ArgumentNullException(nameof(userEditor));
 
         PageTitle = "用户管理";
@@ -191,39 +195,9 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
                 return;
             }
 
-            UserEditor.InitializeFromDto(new UserDetailDto
-            {
-                Id = result.Data.Id,
-                UserName = result.Data.UserName,
-                RealName = result.Data.RealName,
-                PinYinCode = result.Data.PinYinCode ?? PinYinHelper.GetPinYinCode(result.Data.RealName),
-                PhoneNumber = result.Data.PhoneNumber,
-                Email = result.Data.Email,
-                Role = result.Data.Role,
-                Status = result.Data.Status,
-                LastLoginTime = result.Data.LastLoginTime,
-                CreatedAt = result.Data.CreatedAt,
-                UpdatedAt = result.Data.UpdatedAt,
-                Remark = result.Data.Remark,
-                RegistrationFee = result.Data.RegistrationFee
-            });
-
-            var detail = new UserDetailModel
-            {
-                Id = result.Data.Id,
-                UserName = result.Data.UserName,
-                RealName = result.Data.RealName,
-                PinYinCode = result.Data.PinYinCode ?? PinYinHelper.GetPinYinCode(result.Data.RealName),
-                PhoneNumber = result.Data.PhoneNumber,
-                Email = result.Data.Email,
-                Role = result.Data.Role,
-                Status = result.Data.Status,
-                LastLoginTime = result.Data.LastLoginTime,
-                CreatedAt = result.Data.CreatedAt,
-                UpdatedAt = result.Data.UpdatedAt,
-                Remark = result.Data.Remark,
-                RegistrationFee = result.Data.RegistrationFee
-            };
+            // D2: 改用 Mapperly UserMapper，消除 DetailModel + EditContext 双份手写映射
+            UserEditor.InitializeFromDto(result.Data);
+            var detail = _userMapper.ToDetailModel(result.Data);
 
             MasterDetailServices.DetailEditor.LoadDetail(detail);
             OnPropertyChanged(nameof(IsUserNameReadOnly));
@@ -263,19 +237,8 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
 
             if (result.Success && result.Data != null)
             {
-                // 回填服务器返回数据
-                detail.Id = result.Data.Id;
-                detail.UserName = result.Data.UserName;
-                detail.RealName = result.Data.RealName;
-                detail.PinYinCode = result.Data.PinYinCode ?? detail.PinYinCode ?? string.Empty;
-                detail.PhoneNumber = result.Data.PhoneNumber;
-                detail.Email = result.Data.Email;
-                detail.Role = result.Data.Role;
-                detail.Status = result.Data.Status;
-                detail.CreatedAt = result.Data.CreatedAt;
-                detail.UpdatedAt = result.Data.UpdatedAt;
-                detail.Remark = result.Data.Remark;
-                detail.RegistrationFee = result.Data.RegistrationFee;
+                // D2: 改用 Mapperly ApplyToDetailModel 回填（保留 PinYinCode 原值当返回为空）
+                _userMapper.ApplyToDetailModel(detail, result.Data);
 
                 Logger.LogInformation("用户{Action}成功: {UserId} - {UserName}",
                     UserEditor.User.Id == Guid.Empty ? "创建" : "更新", result.Data.Id, result.Data.UserName);

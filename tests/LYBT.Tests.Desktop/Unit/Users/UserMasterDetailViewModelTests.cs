@@ -1,6 +1,7 @@
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
+using LYBT.Desktop.Users.Mappers;
 using LYBT.Desktop.Users.Models;
 using LYBT.Desktop.Users.Services;
 using LYBT.Desktop.Users.ViewModels;
@@ -24,6 +25,7 @@ public class UserMasterDetailViewModelTests
     private readonly IUserPasswordHandler _passwordHandler;
     private readonly IUserStatusHandler _statusHandler;
     private readonly IDesktopCacheManager _cacheManager;
+    private readonly UserMapper _userMapper;
     private readonly UserEditorViewModel _userEditor;
     private readonly ILoggerFactory _loggerFactory;
 
@@ -87,7 +89,8 @@ public class UserMasterDetailViewModelTests
         _passwordHandler = Substitute.For<IUserPasswordHandler>();
         _statusHandler = Substitute.For<IUserStatusHandler>();
         _cacheManager = Substitute.For<IDesktopCacheManager>();
-        _userEditor = new UserEditorViewModel(_cacheManager);
+        _userMapper = new UserMapper();
+        _userEditor = new UserEditorViewModel(_cacheManager, _userMapper);
     }
 
     private UserMasterDetailViewModel CreateSut()
@@ -99,6 +102,7 @@ public class UserMasterDetailViewModelTests
             _passwordHandler,
             _statusHandler,
             _cacheManager,
+            _userMapper,
             _userEditor);
     }
 
@@ -125,6 +129,7 @@ public class UserMasterDetailViewModelTests
             _passwordHandler,
             _statusHandler,
             _cacheManager,
+            _userMapper,
             _userEditor);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("commandHandler");
@@ -141,6 +146,7 @@ public class UserMasterDetailViewModelTests
             null!,
             _statusHandler,
             _cacheManager,
+            _userMapper,
             _userEditor);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("passwordHandler");
@@ -157,6 +163,7 @@ public class UserMasterDetailViewModelTests
             _passwordHandler,
             null!,
             _cacheManager,
+            _userMapper,
             _userEditor);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("statusHandler");
@@ -173,6 +180,7 @@ public class UserMasterDetailViewModelTests
             _passwordHandler,
             _statusHandler,
             null!,
+            _userMapper,
             _userEditor);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("cacheManager");
@@ -189,6 +197,7 @@ public class UserMasterDetailViewModelTests
             _passwordHandler,
             _statusHandler,
             _cacheManager,
+            _userMapper,
             null!);
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("userEditor");

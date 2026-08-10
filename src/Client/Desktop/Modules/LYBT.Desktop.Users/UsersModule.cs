@@ -40,6 +40,7 @@ namespace LYBT.Desktop.Users
             containerRegistry.Register<IUserStatusHandler, UserStatusHandler>();
 
             containerRegistry.AddMasterDetailServices<UserListDto, UserDetailModel>();
+            containerRegistry.RegisterSingleton<Mappers.UserMapper>();
             containerRegistry.Register<ViewModels.UserEditorViewModel>();
             // UserMasterDetailControl供角色台View复用，ViewModel在Control内部解析
             containerRegistry.Register<ViewModels.UserMasterDetailViewModel>();
