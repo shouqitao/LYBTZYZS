@@ -33,38 +33,32 @@
             Text="{Binding PageTitle}" />
 
         <!--  工具栏  -->
-        <StackPanel
+        <controls:DataGridToolbar
             Grid.Row="1"
-            Margin="0,0,0,12"
-            Orientation="Horizontal">
-            <Button
-                Margin="0,0,8,0"
-                Padding="12,6"
-                Command="{Binding CreateRegistrationCommand}"
-                Content="新建挂号"
-                Background="{DynamicResource MaterialDesign.Brush.Primary}"
-                Foreground="White"
-                Visibility="{Binding IsReceptionist, Converter={x:Static converters:Cvt.BoolToVis}}" />
+            CreateCommand="{Binding CreateRegistrationCommand}"
+            RefreshCommand="{Binding RefreshCommand}">
+            <controls:DataGridToolbar.AdditionalContent>
+                <StackPanel Orientation="Horizontal">
+                    <!--  接诊（医生专属）  -->
+                    <Button
+                        Margin="8,0,0,0"
+                        Padding="12,6"
+                        Command="{Binding StartVisitCommand}"
+                        Content="接诊"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Visibility="{Binding IsDoctor, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
-            <Button
-                Margin="0,0,8,0"
-                Padding="12,6"
-                Command="{Binding RefreshCommand}"
-                Content="刷新队列" />
-
-            <Button
-                Margin="0,0,8,0"
-                Padding="12,6"
-                Command="{Binding StartVisitCommand}"
-                Content="接诊"
-                Visibility="{Binding IsDoctor, Converter={x:Static converters:Cvt.BoolToVis}}" />
-
-            <Button
-                Padding="12,6"
-                Command="{Binding CancelRegistrationCommand}"
-                Content="取消挂号"
-                Visibility="{Binding IsReceptionist, Converter={x:Static converters:Cvt.BoolToVis}}" />
-        </StackPanel>
+                    <!--  取消挂号（前台专属）  -->
+                    <Button
+                        Margin="8,0,0,0"
+                        Padding="12,6"
+                        Command="{Binding CancelRegistrationCommand}"
+                        Content="取消挂号"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Visibility="{Binding IsReceptionist, Converter={x:Static converters:Cvt.BoolToVis}}" />
+                </StackPanel>
+            </controls:DataGridToolbar.AdditionalContent>
+        </controls:DataGridToolbar>
 
         <!--  队列列表  -->
         <DataGrid

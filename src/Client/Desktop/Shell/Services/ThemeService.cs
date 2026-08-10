@@ -48,7 +48,8 @@ public partial class ThemeService : ObservableObject, IThemeService, IDisposable
         "BadgeWarningBackgroundColor", "BadgeWarningForegroundColor",
         "BadgeInfoBackgroundColor", "BadgeInfoForegroundColor",
         "BadgeNeutralBackgroundColor", "BadgeNeutralForegroundColor",
-        "PrimaryFunctionGradientStartColor", "PrimaryFunctionGradientEndColor"
+        "PrimaryFunctionGradientStartColor", "PrimaryFunctionGradientEndColor",
+        "TcmGreenColor", "TcmGoldColor", "TcmOrangeColor"
     };
 
     private void ApplyCustomPalette(bool isDark)

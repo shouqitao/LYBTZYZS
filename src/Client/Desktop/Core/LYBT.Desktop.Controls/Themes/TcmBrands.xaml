@@ -19,21 +19,9 @@
     <Color x:Key="TcmOrangeColor">#E65100</Color>
     <SolidColorBrush x:Key="TcmOrangeBrush" Color="{StaticResource TcmOrangeColor}" />
 
-    <!-- 暗色主题覆盖 -->
-    <Style TargetType="Application">
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding IsDarkMode, Source={x:Static Application.Current}}" Value="True">
-                <Setter Property="Resources">
-                    <Setter.Value>
-                        <ResourceDictionary>
-                            <SolidColorBrush x:Key="TcmGreenBrush" Color="#4CAF50" />
-                            <SolidColorBrush x:Key="TcmGoldBrush" Color="#FFD54F" />
-                            <SolidColorBrush x:Key="TcmOrangeBrush" Color="#FF9800" />
-                        </ResourceDictionary>
-                    </Setter.Value>
-                </Setter>
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
+    <!-- 暗色主题色键（亮色键名 + "Dark" 后缀，由 ThemeService.ApplyCustomPalette 主题切换时应用） -->
+    <Color x:Key="TcmGreenColorDark">#4CAF50</Color>
+    <Color x:Key="TcmGoldColorDark">#FFD54F</Color>
+    <Color x:Key="TcmOrangeColorDark">#FF9800</Color>
 
 </ResourceDictionary>
