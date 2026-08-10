@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -108,20 +109,21 @@ namespace LYBT.Desktop.Controls.Controls.HerbList
 
         /// <summary>
         /// 药材列表（支持TwoWay绑定）
+        /// 宽松 IEnumerable 契约：兼容 PrescriptionItemDto / IHerbItemEditable 集合（与 FormulaEditControl.HerbItems 同款）
         /// </summary>
         public static readonly DependencyProperty HerbItemsProperty =
             DependencyProperty.Register(
                 nameof(HerbItems),
-                typeof(IList<PrescriptionItemDto>),
+                typeof(IEnumerable),
                 typeof(HerbListControl),
                 new FrameworkPropertyMetadata(
                     null,
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
                     OnHerbItemsPropertyChanged));
 
-        public IList<PrescriptionItemDto>? HerbItems
+        public IEnumerable? HerbItems
         {
-            get => (IList<PrescriptionItemDto>?)GetValue(HerbItemsProperty);
+            get => (IEnumerable?)GetValue(HerbItemsProperty);
             set => SetValue(HerbItemsProperty, value);
         }
 
@@ -129,14 +131,15 @@ namespace LYBT.Desktop.Controls.Controls.HerbList
         {
             if (d is HerbListControl control)
             {
-                control.OnHerbItemsChanged(e.NewValue as IList<PrescriptionItemDto>);
+                control.OnHerbItemsChanged(e.NewValue as IEnumerable);
             }
         }
 
         /// <summary>
         /// 外部数据源变更时加载到控件
+        /// 元素可为 PrescriptionItemDto（旧契约）或 IHerbItemEditable（PrescriptionItemModel / FormulaHerbItemViewModel）
         /// </summary>
-        private void OnHerbItemsChanged(IList<PrescriptionItemDto>? items)
+        private void OnHerbItemsChanged(IEnumerable? items)
         {
             // 防止循环更新：内部变更触发的DP更新不应再次加载
             if (_isSyncingFromInternal)
@@ -145,13 +148,13 @@ namespace LYBT.Desktop.Controls.Controls.HerbList
             if (_viewModel == null)
                 return;
 
-            if (items == null || items.Count == 0)
+            if (items == null || !items.Cast<object?>().Any())
             {
                 _viewModel.Clear();
             }
             else
             {
-                _viewModel.LoadFromDto(items);
+                _viewModel.LoadFromItems(items);
             }
         }
 

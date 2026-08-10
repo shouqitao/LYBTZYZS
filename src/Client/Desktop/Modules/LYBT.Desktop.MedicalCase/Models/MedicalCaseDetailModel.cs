@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
+using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.Validation;
 
@@ -33,7 +33,7 @@ public class MedicalCaseDetailModel : ValidatableModelBase
     private int? _herbCount;
     private int? _doseCount;
     private string? _referencedFormulas;
-    private ObservableCollection<PrescriptionItemDto> _prescriptionItems = new();
+    private ObservableCollection<PrescriptionItemModel> _prescriptionItems = new();
 
     // 审计信息
     private DateTime _createdAt;
@@ -167,7 +167,7 @@ public class MedicalCaseDetailModel : ValidatableModelBase
     }
 
     /// <summary>处方药材列表（只读）</summary>
-    public ObservableCollection<PrescriptionItemDto> PrescriptionItems
+    public ObservableCollection<PrescriptionItemModel> PrescriptionItems
     {
         get => _prescriptionItems;
         set => SetProperty(ref _prescriptionItems, value);
@@ -238,7 +238,7 @@ public class MedicalCaseDetailModel : ValidatableModelBase
             CreatedAt = CreatedAt,
             UpdatedAt = UpdatedAt,
             DoctorName = DoctorName,
-            PrescriptionItems = new ObservableCollection<PrescriptionItemDto>(PrescriptionItems)
+            PrescriptionItems = new ObservableCollection<PrescriptionItemModel>(PrescriptionItems.Select(i => i.Clone()))
         };
         return clone;
     }

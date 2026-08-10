@@ -392,7 +392,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             }
 
             foreach (var item in herbItems)
-                prescription.Items.Add(item);
+                prescription.Items.Add(PrescriptionMapper.ToPrescriptionItemModel(item));
 
             // Record referenced formula name
             if (!string.IsNullOrEmpty(formula.Name))
@@ -446,7 +446,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             }
 
             foreach (var item in herbItems)
-                prescription.Items.Add(item);
+                prescription.Items.Add(PrescriptionMapper.ToPrescriptionItemModel(item));
 
             if (parameters.TryGetValue<MedicalCaseDetailDto>("SelectedCase", out var selectedCase) && selectedCase != null)
             {

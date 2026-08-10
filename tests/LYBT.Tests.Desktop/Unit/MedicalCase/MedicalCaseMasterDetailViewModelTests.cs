@@ -7,6 +7,7 @@ using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.MedicalCase.ViewModels;
 using LYBT.Desktop.MedicalCase.Models;
+using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Desktop.MedicalCase.ViewModels.Items;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -335,7 +336,7 @@ public class MedicalCaseMasterDetailViewModelTests
         sut.PrescriptionEditor.Prescription = new LYBT.Desktop.MedicalCase.ViewModels.Items.PrescriptionItemViewModel
         {
             DosageCount = 7,
-            Items = new System.Collections.ObjectModel.ObservableCollection<PrescriptionItemDto>()
+            Items = new System.Collections.ObjectModel.ObservableCollection<PrescriptionItemModel>()
         };
 
         _medicalCaseService.AggregateSaveAsync(detail.Id, Arg.Any<ConsultationInputDto?>(), Arg.Any<PrescriptionInputDto?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
@@ -387,7 +388,7 @@ public class MedicalCaseMasterDetailViewModelTests
             DosageCount = 5,
             Remark = "测试备注"
         };
-        prescriptionItem.Items.Add(new PrescriptionItemDto
+        prescriptionItem.Items.Add(new PrescriptionItemModel
         {
             HerbId = herbId,
             HerbName = "人参",

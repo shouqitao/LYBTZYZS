@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -121,6 +122,45 @@ namespace LYBT.Desktop.Controls.Controls.HerbList
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// 从外部集合加载数据（宽松契约）
+        /// 元素可为 PrescriptionItemDto 或 IHerbItemEditable（PrescriptionItemModel / FormulaHerbItemViewModel）
+        /// </summary>
+        public void LoadFromItems(IEnumerable items)
+        {
+            ClearItemsWithUnsubscribe();
+            foreach (var item in items)
+            {
+                var dto = ToPrescriptionItemDto(item);
+                if (dto == null || dto.HerbId == Guid.Empty)
+                    continue;
+
+                var vm = CreateItemViewModel();
+                vm.LoadFromDto(dto);
+                Items.Add(vm);
+            }
+
+            EnsureSingleEmptySlot();
+            OnListChanged(HerbListChangeType.Loaded);
+        }
+
+        /// <summary>
+        /// 统一转换为内部 PrescriptionItemDto 形状
+        /// </summary>
+        private static PrescriptionItemDto? ToPrescriptionItemDto(object? item) => item switch
+        {
+            PrescriptionItemDto dto => dto,
+            IHerbItemEditable editable => new PrescriptionItemDto
+            {
+                HerbId = editable.HerbId,
+                HerbName = editable.HerbName,
+                Unit = editable.Unit,
+                Dosage = editable.Dosage,
+                UnitPrice = editable.UnitPrice
+            },
+            _ => null
+        };
 
         /// <summary>
         /// 从DTO列表加载数据

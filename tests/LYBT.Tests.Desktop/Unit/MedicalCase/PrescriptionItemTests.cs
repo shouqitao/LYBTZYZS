@@ -49,9 +49,9 @@ public class PrescriptionItemTests : UserJourneyTestBase
     public void ItemCount_ReturnsCorrectCount_WhenItemsHasElements()
     {
         var sut = CreateSut();
-        sut.Items.Add(new PrescriptionItemDto { HerbId = Guid.NewGuid() });
-        sut.Items.Add(new PrescriptionItemDto { HerbId = Guid.NewGuid() });
-        sut.Items.Add(new PrescriptionItemDto { HerbId = Guid.NewGuid() });
+        sut.Items.Add(new PrescriptionItemModel { HerbId = Guid.NewGuid() });
+        sut.Items.Add(new PrescriptionItemModel { HerbId = Guid.NewGuid() });
+        sut.Items.Add(new PrescriptionItemModel { HerbId = Guid.NewGuid() });
 
         sut.ItemCount.Should().Be(3);
     }
@@ -77,7 +77,7 @@ public class PrescriptionItemTests : UserJourneyTestBase
     public void HasItems_ReturnsTrue_WhenItemsHasElements()
     {
         var sut = CreateSut();
-        sut.Items.Add(new PrescriptionItemDto { HerbId = Guid.NewGuid() });
+        sut.Items.Add(new PrescriptionItemModel { HerbId = Guid.NewGuid() });
 
         sut.HasItems.Should().BeTrue();
     }
@@ -89,7 +89,7 @@ public class PrescriptionItemTests : UserJourneyTestBase
         var propertiesChanged = new List<string?>();
         sut.PropertyChanged += (_, e) => propertiesChanged.Add(e.PropertyName);
 
-        sut.Items.Add(new PrescriptionItemDto { HerbId = Guid.NewGuid() });
+        sut.Items.Add(new PrescriptionItemModel { HerbId = Guid.NewGuid() });
 
         propertiesChanged.Should().Contain(nameof(PrescriptionItemViewModel.HasItems));
         propertiesChanged.Should().Contain(nameof(PrescriptionItemViewModel.ItemCount));
@@ -108,7 +108,7 @@ public class PrescriptionItemTests : UserJourneyTestBase
     public void IsValid_ReturnsTrue_WhenHasItemsIsTrue()
     {
         var sut = CreateSut();
-        sut.Items.Add(new PrescriptionItemDto { HerbId = Guid.NewGuid() });
+        sut.Items.Add(new PrescriptionItemModel { HerbId = Guid.NewGuid() });
 
         sut.IsValid.Should().BeTrue();
     }
@@ -129,7 +129,7 @@ public class PrescriptionItemTests : UserJourneyTestBase
         sut.DosageCount = 7;
 
         // Add herb: 10g * ¥5/g = ¥50 per dose
-        var herb1 = new PrescriptionItemDto
+        var herb1 = new PrescriptionItemModel
         {
             HerbId = Guid.NewGuid(),
             HerbName = "当归",
@@ -139,7 +139,7 @@ public class PrescriptionItemTests : UserJourneyTestBase
         sut.Items.Add(herb1);
 
         // Add herb: 15g * ¥3/g = ¥45 per dose
-        var herb2 = new PrescriptionItemDto
+        var herb2 = new PrescriptionItemModel
         {
             HerbId = Guid.NewGuid(),
             HerbName = "川芎",
@@ -158,7 +158,7 @@ public class PrescriptionItemTests : UserJourneyTestBase
     {
         var sut = CreateSut();
 
-        var herb1 = new PrescriptionItemDto
+        var herb1 = new PrescriptionItemModel
         {
             HerbId = Guid.NewGuid(),
             HerbName = "当归",
@@ -175,8 +175,8 @@ public class PrescriptionItemTests : UserJourneyTestBase
     {
         var sut = CreateSut();
         sut.PrescriptionNumber = "RX-20260418-0001";
-        sut.Items.Add(new PrescriptionItemDto { HerbId = Guid.NewGuid() });
-        sut.Items.Add(new PrescriptionItemDto { HerbId = Guid.NewGuid() });
+        sut.Items.Add(new PrescriptionItemModel { HerbId = Guid.NewGuid() });
+        sut.Items.Add(new PrescriptionItemModel { HerbId = Guid.NewGuid() });
 
         sut.DisplayText.Should().Be("处方 RX-20260418-0001 - 2味药材");
     }
@@ -185,7 +185,7 @@ public class PrescriptionItemTests : UserJourneyTestBase
     public void DisplayText_ReturnsNewText_WhenPrescriptionNumberIsNull()
     {
         var sut = CreateSut();
-        sut.Items.Add(new PrescriptionItemDto { HerbId = Guid.NewGuid() });
+        sut.Items.Add(new PrescriptionItemModel { HerbId = Guid.NewGuid() });
 
         sut.DisplayText.Should().Be("处方 新建 - 1味药材");
     }
@@ -205,7 +205,7 @@ public class PrescriptionItemTests : UserJourneyTestBase
     public void Validate_ReturnsTrue_WhenHasItems()
     {
         var sut = CreateSut();
-        sut.Items.Add(new PrescriptionItemDto { HerbId = Guid.NewGuid() });
+        sut.Items.Add(new PrescriptionItemModel { HerbId = Guid.NewGuid() });
 
         var result = sut.Validate();
 
@@ -246,7 +246,7 @@ public class PrescriptionItemTests : UserJourneyTestBase
         sut.MedicalCaseId = Guid.NewGuid();
         sut.PrescriptionNumber = "RX-20260418-0001";
         sut.DosageCount = 14;
-        sut.Items.Add(new PrescriptionItemDto { HerbId = Guid.NewGuid() });
+        sut.Items.Add(new PrescriptionItemModel { HerbId = Guid.NewGuid() });
 
         sut.Clear();
 
@@ -269,7 +269,7 @@ public class PrescriptionItemTests : UserJourneyTestBase
         sut.MedicalCaseId = medicalCaseId;
         sut.DosageCount = 14;
         sut.Usage = "特殊用法";
-        sut.Items.Add(new PrescriptionItemDto { HerbId = Guid.NewGuid() });
+        sut.Items.Add(new PrescriptionItemModel { HerbId = Guid.NewGuid() });
 
         sut.Reset();
 
@@ -325,7 +325,7 @@ public class PrescriptionItemTests : UserJourneyTestBase
         sut.MedicalCaseId = Guid.NewGuid();
         sut.DosageCount = 7;
         sut.Usage = "水煎服，一日一剂";
-        sut.Items.Add(new PrescriptionItemDto
+        sut.Items.Add(new PrescriptionItemModel
         {
             HerbId = Guid.NewGuid(),
             HerbName = "当归",

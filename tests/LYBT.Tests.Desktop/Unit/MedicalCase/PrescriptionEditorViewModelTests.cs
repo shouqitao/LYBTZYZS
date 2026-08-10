@@ -47,7 +47,7 @@ public class PrescriptionEditorViewModelTests : UserJourneyTestBase
     public void InitializeForNewCase_SetsMedicalCaseId_AndClearsItems()
     {
         var sut = CreateSut();
-        sut.Prescription.Items.Add(new PrescriptionItemDto { HerbName = "人参", Dosage = 10 });
+        sut.Prescription.Items.Add(new PrescriptionItemModel { HerbName = "人参", Dosage = 10 });
 
         sut.InitializeForNewCase();
 
@@ -105,7 +105,7 @@ public class PrescriptionEditorViewModelTests : UserJourneyTestBase
         var notifications = new List<string?>();
         sut.PropertyChanged += (_, e) => notifications.Add(e.PropertyName);
 
-        sut.Prescription.Items.Add(new PrescriptionItemDto { HerbName = "人参", Dosage = 10 });
+        sut.Prescription.Items.Add(new PrescriptionItemModel { HerbName = "人参", Dosage = 10 });
 
         sut.HasItems.Should().BeTrue();
         notifications.Should().Contain(nameof(PrescriptionEditorViewModel.HasItems));
@@ -116,7 +116,7 @@ public class PrescriptionEditorViewModelTests : UserJourneyTestBase
     public void RemoveItem_RaisesPropertyChanged_AndNotifiesHost()
     {
         var sut = CreateSut();
-        var item = new PrescriptionItemDto { HerbName = "人参", Dosage = 10 };
+        var item = new PrescriptionItemModel { HerbName = "人参", Dosage = 10 };
         sut.Prescription.Items.Add(item);
         _host.ClearReceivedCalls();
 
@@ -130,7 +130,7 @@ public class PrescriptionEditorViewModelTests : UserJourneyTestBase
     public void Reset_ClearsItems_AndRaisesHasItemsChange()
     {
         var sut = CreateSut();
-        sut.Prescription.Items.Add(new PrescriptionItemDto { HerbName = "人参", Dosage = 10 });
+        sut.Prescription.Items.Add(new PrescriptionItemModel { HerbName = "人参", Dosage = 10 });
         sut.Prescription.DosageCount = 14;
         sut.Prescription.Advice = "test";
 
@@ -163,7 +163,7 @@ public class PrescriptionEditorViewModelTests : UserJourneyTestBase
     public void Validate_ReturnsTrue_WhenHasItems()
     {
         var sut = CreateSut();
-        sut.Prescription.Items.Add(new PrescriptionItemDto { HerbName = "人参", Dosage = 10 });
+        sut.Prescription.Items.Add(new PrescriptionItemModel { HerbName = "人参", Dosage = 10 });
 
         sut.Validate().Should().BeTrue();
         sut.ValidationMessage.Should().BeEmpty();
@@ -181,7 +181,7 @@ public class PrescriptionEditorViewModelTests : UserJourneyTestBase
     public void GetPrescriptionData_ReturnsDto_WhenValidAndHasItems()
     {
         var sut = CreateSut();
-        sut.Prescription.Items.Add(new PrescriptionItemDto { HerbName = "人参", Dosage = 10 });
+        sut.Prescription.Items.Add(new PrescriptionItemModel { HerbName = "人参", Dosage = 10 });
 
         var result = sut.GetPrescriptionData();
 
@@ -196,7 +196,7 @@ public class PrescriptionEditorViewModelTests : UserJourneyTestBase
         sut.Dispose();
         _host.ClearReceivedCalls();
 
-        sut.Prescription.Items.Add(new PrescriptionItemDto { HerbName = "人参", Dosage = 10 });
+        sut.Prescription.Items.Add(new PrescriptionItemModel { HerbName = "人参", Dosage = 10 });
 
         _host.DidNotReceive().NotifyStateChanged();
     }
@@ -208,7 +208,7 @@ public class PrescriptionEditorViewModelTests : UserJourneyTestBase
         var changed = new List<string?>();
         sut.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
 
-        sut.Prescription.Items.Add(new PrescriptionItemDto { HerbName = "人参", Dosage = 10 });
+        sut.Prescription.Items.Add(new PrescriptionItemModel { HerbName = "人参", Dosage = 10 });
         sut.Prescription.Items.Clear();
 
         changed.Should().Contain(nameof(PrescriptionEditorViewModel.HasItems));

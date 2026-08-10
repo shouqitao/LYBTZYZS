@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Mappers;
+using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
@@ -161,11 +162,11 @@ public class PrescriptionItemViewModel : BindableBase, IDataProvider, IValidatab
 
     #region 药材列表
 
-    private ObservableCollection<PrescriptionItemDto> _items = new();
+    private ObservableCollection<PrescriptionItemModel> _items = new();
     /// <summary>
     /// 处方药材列表
     /// </summary>
-    public ObservableCollection<PrescriptionItemDto> Items
+    public ObservableCollection<PrescriptionItemModel> Items
     {
         get => _items;
         set

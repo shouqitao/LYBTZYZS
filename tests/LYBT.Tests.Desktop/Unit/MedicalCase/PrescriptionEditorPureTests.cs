@@ -44,7 +44,7 @@ public class PrescriptionEditorPureTests
 
         sut.HasItems.Should().BeFalse();
 
-        sut.Prescription.Items.Add(new PrescriptionItemDto { HerbName = "Herb A", Dosage = 10 });
+        sut.Prescription.Items.Add(new PrescriptionItemModel { HerbName = "Herb A", Dosage = 10 });
 
         sut.HasItems.Should().BeTrue();
     }
@@ -54,7 +54,7 @@ public class PrescriptionEditorPureTests
     {
         var sut = CreateSut();
 
-        sut.Prescription.Items.Add(new PrescriptionItemDto { HerbName = "Herb A", Dosage = 10 });
+        sut.Prescription.Items.Add(new PrescriptionItemModel { HerbName = "Herb A", Dosage = 10 });
 
         _host.Received(1).NotifyStateChanged();
     }
@@ -63,7 +63,7 @@ public class PrescriptionEditorPureTests
     public void Removing_item_notifies_host_state_changed()
     {
         var sut = CreateSut();
-        var item = new PrescriptionItemDto { HerbName = "Herb A", Dosage = 10 };
+        var item = new PrescriptionItemModel { HerbName = "Herb A", Dosage = 10 };
         sut.Prescription.Items.Add(item);
         _host.ClearReceivedCalls();
 
@@ -85,7 +85,7 @@ public class PrescriptionEditorPureTests
     public void Validate_succeeds_when_has_items()
     {
         var sut = CreateSut();
-        sut.Prescription.Items.Add(new PrescriptionItemDto { HerbName = "Herb A", Dosage = 10 });
+        sut.Prescription.Items.Add(new PrescriptionItemModel { HerbName = "Herb A", Dosage = 10 });
 
         sut.Validate().Should().BeTrue();
         sut.ValidationMessage.Should().BeEmpty();
@@ -95,7 +95,7 @@ public class PrescriptionEditorPureTests
     public void Reset_clears_items_and_resets_defaults()
     {
         var sut = CreateSut();
-        sut.Prescription.Items.Add(new PrescriptionItemDto { HerbName = "Herb A", Dosage = 10 });
+        sut.Prescription.Items.Add(new PrescriptionItemModel { HerbName = "Herb A", Dosage = 10 });
         sut.Prescription.DosageCount = 14;
         sut.Prescription.Advice = "some advice";
 
@@ -123,7 +123,7 @@ public class PrescriptionEditorPureTests
         _host.ClearReceivedCalls();
 
         // After dispose, adding items should NOT notify host
-        sut.Prescription.Items.Add(new PrescriptionItemDto { HerbName = "Herb A", Dosage = 10 });
+        sut.Prescription.Items.Add(new PrescriptionItemModel { HerbName = "Herb A", Dosage = 10 });
 
         _host.DidNotReceive().NotifyStateChanged();
     }

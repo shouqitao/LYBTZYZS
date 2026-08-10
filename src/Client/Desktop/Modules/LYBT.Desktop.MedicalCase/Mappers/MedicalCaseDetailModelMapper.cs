@@ -7,6 +7,7 @@ using LYBT.Desktop.Infrastructure.ViewModels;
 
 using System.Collections.ObjectModel;
 using LYBT.Desktop.MedicalCase.Models;
+using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Riok.Mapperly.Abstractions;
@@ -101,7 +102,8 @@ public partial class MedicalCaseDetailModelMapper
             // 填充处方药材列表
             if (dto.Prescription.Items != null)
             {
-                model.PrescriptionItems = new ObservableCollection<PrescriptionItemDto>(dto.Prescription.Items);
+                model.PrescriptionItems = new ObservableCollection<PrescriptionItemModel>(
+                    dto.Prescription.Items.Select(ToPrescriptionItemModel));
             }
         }
 
@@ -165,7 +167,55 @@ public partial class MedicalCaseDetailModelMapper
     }
 
     /// <summary>
-    /// 将MedicalCaseDetailDto转换为MedicalCaseInputDto（workspace 保存链路）。
+    /// 将 PrescriptionItemDto 映射为 PrescriptionItemModel（处方药材项）。
+    /// </summary>
+    private static PrescriptionItemModel ToPrescriptionItemModel(PrescriptionItemDto dto)
+    {
+        return new PrescriptionItemModel
+        {
+            Id = dto.Id,
+            PrescriptionId = dto.PrescriptionId,
+            HerbId = dto.HerbId,
+            HerbName = dto.HerbName,
+            Unit = dto.Unit,
+            UnitPrice = dto.UnitPrice,
+            Dosage = dto.Dosage,
+            TotalPrice = dto.TotalPrice,
+            TotalWeight = dto.TotalWeight,
+            Subtotal = dto.Subtotal,
+            Usage = dto.Usage,
+            DecocteMethod = dto.DecocteMethod,
+            Role = dto.Role,
+            Remark = dto.Remark
+        };
+    }
+
+    /// <summary>
+    /// 将 PrescriptionItemModel 映射为 PrescriptionItemDto（供打印/展示等只读输出）。
+    /// </summary>
+    private static PrescriptionItemDto ToPrescriptionItemDto(PrescriptionItemModel model)
+    {
+        return new PrescriptionItemDto
+        {
+            Id = model.Id,
+            PrescriptionId = model.PrescriptionId,
+            HerbId = model.HerbId,
+            HerbName = model.HerbName,
+            Unit = model.Unit,
+            UnitPrice = model.UnitPrice,
+            Dosage = model.Dosage,
+            TotalPrice = model.TotalPrice,
+            TotalWeight = model.TotalWeight,
+            Subtotal = model.Subtotal,
+            Usage = model.Usage,
+            DecocteMethod = model.DecocteMethod,
+            Role = model.Role,
+            Remark = model.Remark
+        };
+    }
+
+    /// <summary>
+    /// 将 MedicalCaseDetailDto 转换为 MedicalCaseInputDto（workspace 保存链路）。
     /// </summary>
     /// <param name="dto">API返回的详情DTO。</param>
     /// <returns>InputDTO对象。</returns>

@@ -67,7 +67,7 @@ public partial class PrescriptionMapper
         {
             foreach (var prescriptionItem in dto.Items)
             {
-                item.Items.Add(prescriptionItem);
+                item.Items.Add(ToPrescriptionItemModel(prescriptionItem));
             }
         }
 
@@ -104,7 +104,7 @@ public partial class PrescriptionMapper
     public PrescriptionDetailDto ToDto(PrescriptionItemViewModel item)
     {
         var dto = ToDtoCore(item);
-        dto.Items = item.Items?.ToList() ?? new();
+        dto.Items = item.Items?.Select(ToPrescriptionItemDto).ToList() ?? new();
 
         return dto;
     }
@@ -172,6 +172,58 @@ public partial class PrescriptionMapper
         }).ToList() ?? new();
 
         return dto;
+    }
+
+    #endregion
+
+    #region PrescriptionItemDto ↔ PrescriptionItemModel
+
+    /// <summary>
+    /// 将 PrescriptionItemDto 映射为 PrescriptionItemModel。
+    /// </summary>
+    public static PrescriptionItemModel ToPrescriptionItemModel(PrescriptionItemDto dto)
+    {
+        return new PrescriptionItemModel
+        {
+            Id = dto.Id,
+            PrescriptionId = dto.PrescriptionId,
+            HerbId = dto.HerbId,
+            HerbName = dto.HerbName,
+            Unit = dto.Unit,
+            UnitPrice = dto.UnitPrice,
+            Dosage = dto.Dosage,
+            TotalPrice = dto.TotalPrice,
+            TotalWeight = dto.TotalWeight,
+            Subtotal = dto.Subtotal,
+            Usage = dto.Usage,
+            DecocteMethod = dto.DecocteMethod,
+            Role = dto.Role,
+            Remark = dto.Remark
+        };
+    }
+
+    /// <summary>
+    /// 将 PrescriptionItemModel 映射为 PrescriptionItemDto。
+    /// </summary>
+    public static PrescriptionItemDto ToPrescriptionItemDto(PrescriptionItemModel model)
+    {
+        return new PrescriptionItemDto
+        {
+            Id = model.Id,
+            PrescriptionId = model.PrescriptionId,
+            HerbId = model.HerbId,
+            HerbName = model.HerbName,
+            Unit = model.Unit,
+            UnitPrice = model.UnitPrice,
+            Dosage = model.Dosage,
+            TotalPrice = model.TotalPrice,
+            TotalWeight = model.TotalWeight,
+            Subtotal = model.Subtotal,
+            Usage = model.Usage,
+            DecocteMethod = model.DecocteMethod,
+            Role = model.Role,
+            Remark = model.Remark
+        };
     }
 
     #endregion
