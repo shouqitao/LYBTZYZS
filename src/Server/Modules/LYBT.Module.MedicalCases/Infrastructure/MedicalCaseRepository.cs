@@ -9,14 +9,14 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.MedicalCases.Repositories
+namespace LYBT.Module.MedicalCases.Infrastructure
 {
     /// <summary>
     /// 医案仓储 - 简化版，减少过度复杂的Include策略
     /// 按职责拆分为 partial 文件：PendingCases（待看诊）、AuditLogs（审计日志）、Update（更新）
     /// ADR-0017: 注入医案模块自己的 DbContext
     /// </summary>
-    internal partial class MedicalCaseRepository : BaseRepository<MedicalCase, MedicalCaseDbContext>, IMedicalCaseRepository
+    public partial class MedicalCaseRepository : BaseRepository<MedicalCase, MedicalCaseDbContext>, IMedicalCaseRepository
     {
         public MedicalCaseRepository(MedicalCaseDbContext context, ILogger<MedicalCaseRepository> logger)
             : base(context, logger)

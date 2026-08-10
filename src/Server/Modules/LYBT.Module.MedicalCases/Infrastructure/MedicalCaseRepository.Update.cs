@@ -6,13 +6,13 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.MedicalCases.Repositories
+namespace LYBT.Module.MedicalCases.Infrastructure
 {
     /// <summary>
     /// 医案仓储 - 更新相关逻辑（含并发刷新与实体状态修复）
     /// ctor 与 _context/_dbSet/_logger 由主文件提供
     /// </summary>
-    internal partial class MedicalCaseRepository
+    public partial class MedicalCaseRepository
     {
         /// <summary>
         /// 根据ID获取医案（包含关联数据，强制从数据库刷新，不使用缓存）

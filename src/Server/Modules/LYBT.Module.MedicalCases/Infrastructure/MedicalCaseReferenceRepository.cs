@@ -7,9 +7,9 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.MedicalCases.Repositories
+namespace LYBT.Module.MedicalCases.Infrastructure
 {
-    internal class MedicalCaseReferenceRepository : BaseRepository<MedicalCase, MedicalCaseDbContext>, IMedicalCaseReferenceRepository
+    public class MedicalCaseReferenceRepository : BaseRepository<MedicalCase, MedicalCaseDbContext>, IMedicalCaseReferenceRepository
     {
         public MedicalCaseReferenceRepository(MedicalCaseDbContext dbContext, ILogger<MedicalCaseReferenceRepository> logger)
             : base(dbContext, logger)

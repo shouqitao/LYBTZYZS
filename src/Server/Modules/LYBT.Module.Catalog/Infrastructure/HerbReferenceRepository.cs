@@ -12,7 +12,7 @@ namespace LYBT.Module.Catalog.Infrastructure;
 /// 药材引用仓储实现。用于检查药材在处方和验方中的引用情况。
 /// ADR-0017: 注入模块自己的 DbContext（引用检查实体在同库共享）
 /// </summary>
-internal class HerbReferenceRepository : BaseRepository<Herb, CatalogDbContext>, IHerbReferenceRepository
+public class HerbReferenceRepository : BaseRepository<Herb, CatalogDbContext>, IHerbReferenceRepository
 {
     public HerbReferenceRepository(CatalogDbContext dbContext, ILogger<HerbReferenceRepository> logger)
         : base(dbContext, logger)

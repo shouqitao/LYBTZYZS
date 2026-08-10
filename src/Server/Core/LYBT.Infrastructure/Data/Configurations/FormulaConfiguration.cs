@@ -18,8 +18,6 @@ public class FormulaConfiguration : BaseEntityConfiguration<Formula>
         builder.ToTable("Formulas");
 
         // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
-        // 枚举转换（Fluent API 专属功能）
-        builder.Property(f => f.Status).HasConversion<int>();
         builder.Property(f => f.IsShared).HasDefaultValue(false);
 
         // 配置与FormulaHerbItem的一对多关系

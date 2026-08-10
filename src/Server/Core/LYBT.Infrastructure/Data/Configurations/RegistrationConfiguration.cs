@@ -17,10 +17,6 @@ public class RegistrationConfiguration : BaseEntityConfiguration<Registration>
 
         builder.ToTable("Registrations");
 
-        // 枚举转换 (Fluent API)
-        builder.Property(r => r.Source).HasConversion<int>();
-        builder.Property(r => r.Status).HasConversion<int>();
-
         // 索引: 按患者查询挂号记录
         builder.HasIndex(r => r.PatientId);
 

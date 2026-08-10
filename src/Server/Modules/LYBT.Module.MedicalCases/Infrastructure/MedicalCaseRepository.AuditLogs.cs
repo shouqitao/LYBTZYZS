@@ -2,13 +2,13 @@ using LYBT.Entities.MedicalCases;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.MedicalCases.Repositories
+namespace LYBT.Module.MedicalCases.Infrastructure
 {
     /// <summary>
     /// 医案仓储 - 审计日志与打印日志
     /// ctor 与 _context/_dbSet/_logger 由主文件提供
     /// </summary>
-    internal partial class MedicalCaseRepository
+    public partial class MedicalCaseRepository
     {
         /// <summary>
         /// 获取医案审计日志（分页）

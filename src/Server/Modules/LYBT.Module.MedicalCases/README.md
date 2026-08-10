@@ -24,12 +24,11 @@ LYBT.Module.MedicalCases/
 │   ├── MedicalCasePrescriptionService.cs # 处方生命周期（无接口）
 │   ├── MedicalCaseCrossModuleService.cs  # 跨模块门面实现
 │   └── MedicalCaseServiceHelper.cs     # 静态共享 Helper
-├── Repositories/
-│   └── MedicalCaseRepository.cs        # internal partial ×4（主/Update/PendingCases/AuditLogs）
 ├── Mappers/
 │   └── MedicalCaseMapper.cs            # Mapperly + 手动 Enrich 混合
 └── Infrastructure/
-    └── MedicalCaseDbContext.cs         # 模块级 DbContext（ADR-0017 同库逻辑隔离）
+    ├── MedicalCaseDbContext.cs         # 模块级 DbContext（ADR-0017 同库逻辑隔离）
+    └── MedicalCaseRepository.cs        # partial ×4（主/Update/PendingCases/AuditLogs，S3 移入）
 ```
 
 > ⚠️ **与标准分层模块（Catalog/Patients/Registration/Identity）的结构差异是有意设计**，详见下文「差异化理由」。
@@ -70,7 +69,7 @@ MedicalCase 是**聚合根承载模块**（MedicalCase 聚合 Consultation/Presc
 |------|------|------|------|
 | 命令/查询表达 | MediatR `IRequest` + `IRequestHandler`（record 命令+Handler 平铺） | **无 IRequest 类型**，CQRS 以 CommandService/QueryService/StateService 方法级拆分 | 与 A-14（2026-08-07 master-plan §九）「MediatR+Service 混合注入是有意设计」一致：查询走 Service 绕过管道（性能更优）、命令走 Service 方法级拆分；聚合根内多实体读写共享同一事务边界与状态机，方法级拆分比请求类更贴合聚合根内聚，避免为聚合根内部操作创建大量 trivial Handler 类（P1-04 已记录 MediatR 过度设计风险） |
 | 目录结构 | Application/ 子目录（Commands/Queries/Validators/Mappers） | Controllers/Repositories/Mappers/Interfaces 在根层，无 Application/ 层 | 聚合根模块的读写操作按职责切分（Service/Repository/Mapper）而非按请求类切分，结构更清晰 |
-| 仓储组织 | 单文件仓储 | `MedicalCaseRepository` internal partial ×4（主/Update/PendingCases/AuditLogs） | 聚合根仓储逻辑量大（EF 状态修复/待诊队列/审计），partial 按职责拆文件保持单文件 ≤240 行，同时保留一个聚合根仓储类型 |
+| 仓储组织 | 单文件仓储 | `MedicalCaseRepository` partial ×4（主/Update/PendingCases/AuditLogs），位于 Infrastructure/（S3 对齐后与其余模块同目录） | 聚合根仓储逻辑量大（EF 状态修复/待诊队列/审计），partial 按职责拆文件保持单文件 ≤240 行，同时保留一个聚合根仓储类型 |
 | 验证器 | 模块内 Application/Validators | **外置** Shared.Models（`MedicalCaseInputDtoValidator`）+ 业务规则 Shared BusinessRules | 医案业务规则需 Server/Client 共享（Desktop 复用同一验证规则），故验证器放共享程序集 |
 | 跨模块接口 | 接口在模块 Interfaces/ | `IMedicalCaseCrossModuleService` 定义于 LYBT.Infrastructure.Services.CrossModule | 跨模块通道统一收敛到 Infrastructure CrossModule（A-31-C8），本模块仅实现 |
 

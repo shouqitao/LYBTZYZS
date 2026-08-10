@@ -3,7 +3,7 @@ using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.MedicalCases.Mappers;
-using LYBT.Module.MedicalCases.Repositories;
+using LYBT.Module.MedicalCases.Infrastructure;
 using LYBT.Module.MedicalCases.Services;
 using LYBT.Shared.Models.Validators.MedicalCase;
 using Microsoft.Extensions.Configuration;

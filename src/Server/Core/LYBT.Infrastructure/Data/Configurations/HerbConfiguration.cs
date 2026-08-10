@@ -21,9 +21,6 @@ public class HerbConfiguration : BaseEntityConfiguration<Herb>
         // decimal 精度配置（Fluent API 专属功能）
         builder.Property(h => h.Price).HasPrecision(18, 2);
         builder.Property(h => h.CostPrice).HasPrecision(18, 2);
-
-        // 枚举转换（Fluent API 专属功能）
-        builder.Property(h => h.Status).HasConversion<int>();
     }
 }
 

@@ -4,13 +4,13 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.MedicalCases.Repositories
+namespace LYBT.Module.MedicalCases.Infrastructure
 {
     /// <summary>
     /// 医案仓储 - 待看诊（Pending）相关查询
     /// ctor 与 _context/_dbSet/_logger 由主文件提供
     /// </summary>
-    internal partial class MedicalCaseRepository
+    public partial class MedicalCaseRepository
     {
         /// <summary>
         /// 获取待看诊医案列表（Status=Suspended或Active）

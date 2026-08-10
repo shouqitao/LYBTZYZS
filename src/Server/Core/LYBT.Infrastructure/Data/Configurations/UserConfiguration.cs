@@ -21,9 +21,6 @@ public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
         builder.Property(u => u.LastLoginTime).HasColumnName("LastLoginAt").IsRequired(false);
 
         // 其余字符串属性长度由 Entity 的 [StringLength] 约定
-        // 枚举转换（Fluent API 专属功能）
-        builder.Property(u => u.Status).HasConversion<int>();
-        builder.Property(u => u.Role).HasConversion<int>();
 
         // 挂号费（REG-BR-009）：decimal(10,2)，默认 0
         builder.Property(u => u.RegistrationFee).HasColumnType("decimal(10,2)").HasDefaultValue(0m);
