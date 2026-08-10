@@ -171,15 +171,27 @@ LYBT.Desktop.{ModuleName}/
 2. 未来扩展时不需要大改（可扩展性）
 3. DTO 不暴露到 UI 层（分层原则）
 
-### 4.6 MedicalCase（医案）— 补 EditContext ⚠️
+### 4.6 MedicalCase（医案）— 编辑外壳重新设计 🔴
+
+**背景（2026-08-10 定案）**：现有编辑链路为「DTO 快照 + Clone 恢复」四件套（`Services/MedicalCaseEditContext` 持 `MedicalCaseDetailDto` 快照，CommandService 逐字段比较 DTO 判变更，LifecycleService Clone 深拷贝恢复），违反分层原则且笨重。产品负责人拍板：**重新设计**为真正的 Model + EditContext 体系，不做兼容层。
 
 | 项 | 现状 | 目标 |
 |----|------|------|
-| Model | MedicalCaseDetailModel ✅ | 不变 |
-| EditContext | ❌ 无 | → 新建 `MedicalCaseEditContext` |
-| Mapper | 4 个 Mapper ✅ | 不变（聚合根本身复杂） |
+| 编辑真源 | `Services/MedicalCaseEditContext`（DTO 快照） | **删除**；改为 Model 为基础 |
+| Model | `MedicalCaseDetailModel`（`PrescriptionItems` 持 `ObservableCollection<PrescriptionItemDto>`） | `PrescriptionItems` 改为 `ObservableCollection<PrescriptionItemModel>`（前后端各自实例原则） |
+| EditContext | `Models/Items/MedicalCaseEditContext`（死代码，0 引用） | **重建**为完整编辑会话：诊断字段 + 处方行集合 + 状态，支持 BeginEdit/Commit/Cancel |
+| 处方行 | `PrescriptionItemViewModel.Items = ObservableCollection<PrescriptionItemDto>` | 新建 `PrescriptionItemModel : ObservableObject, IHerbItemEditable`；`Items` 改为 Model 集合 |
+| 共享控件 | `HerbListControl.HerbItems` DP 类型 `IList<PrescriptionItemDto>` | 改为宽松 `IEnumerable`（与 FormulaEditControl 同款），内部已用 IHerbItemEditable 抽象 |
+| 变更检测 | CommandService 三方法逐字段比较 DTO | EditContext 脏标记（IsDirty） |
+| Clone 恢复 | `MedicalCaseCloneMapper`（DTO 深拷贝） | **删除**；EditContext 快照恢复 |
+| Mapper | 4 个 Mapper ✅ | 保留 + 扩展 PrescriptionItemDto↔Model 映射 |
 
-**理由**：医案编辑涉及诊断+处方，取消编辑需要恢复。当前用 Clone() 恢复，EditContext 更优雅。
+**前后端各自定义实例原则（必选，2026-08-10 产品负责人确认）**：前端（Desktop）与后端（Server/Shared）各自定义属于自己的实例——
+- Server/Shared 侧：`LYBT.Shared.Models` 定义 DTO（`PrescriptionItemDto` 等），仅作 API 传输契约，不承载 UI 编辑；
+- Desktop 侧：`Models/` 定义 Model（`MedicalCaseDetailModel`、`PrescriptionItemModel` 等），是 UI 可编辑数据副本，不持有 DTO 引用；
+- 两侧实例只在 Service/Mapper 边界转换（`InitializeFromDto` / `ToInputDto`），禁止在 UI 层直接编辑对方实例。
+
+**理由**：医案编辑涉及诊断+处方，取消编辑需要恢复。EditContext 快照（Model 级）比 DTO Clone 更优雅、更符合分层；处方行 Model 化是 DP-M1（DTO 仅传输）的最终闭合。
 
 ---
 
