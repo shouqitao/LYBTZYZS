@@ -32,6 +32,10 @@ namespace LYBT.Desktop.Auth
             // 注册视图模型
             containerRegistry.Register<LoginViewModel>();
 
+            // 子 VM（D3: 装配统一——由 DI 解析注入 LoginViewModel，对齐 Patients/Users 模式）
+            containerRegistry.Register<LoginCredentialsViewModel>();
+            containerRegistry.Register<ConnectionStatusViewModel>();
+
             // 注册视图用于导航
             containerRegistry.RegisterForNavigation<LoginView>();
 

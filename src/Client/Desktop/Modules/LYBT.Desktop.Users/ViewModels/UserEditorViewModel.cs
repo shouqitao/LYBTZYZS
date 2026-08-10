@@ -1,5 +1,5 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Users.Mappers;
 using LYBT.Desktop.Users.Models.Items;
 using LYBT.Shared.Models.Contracts.Users;
@@ -12,25 +12,36 @@ namespace LYBT.Desktop.Users.ViewModels
     /// 封装用户编辑状态，提供初始化、验证、数据提取等功能
     /// 由 UserMasterDetailViewModel 组合使用
     /// D2: 改用 Mapperly UserMapper，消除手写字段映射
+    /// D3: 基类对齐 Patients/Catalog——ObservableObject → EditorViewModelBase&lt;UserEditContext&gt;
+    ///     （IsDirty/生命周期/上下文订阅复用；保留缓存联动：Reset 后失效用户缓存）
     /// </summary>
-    public partial class UserEditorViewModel : ObservableObject
+    public partial class UserEditorViewModel : EditorViewModelBase<UserEditContext>
     {
         private readonly IDesktopCacheManager _cacheManager;
         private readonly UserMapper _mapper;
 
-        /// <summary>用户编辑上下文</summary>
-        [ObservableProperty]
         private UserEditContext _user = UserEditContext.CreateNew();
 
-        /// <summary>是否已修改</summary>
-        [ObservableProperty]
-        private bool _isDirty;
+        /// <summary>用户编辑上下文 (XAML 绑定目标)</summary>
+        public UserEditContext User
+        {
+            get => _user;
+            set => SetProperty(ref _user, value);
+        }
 
         public UserEditorViewModel(IDesktopCacheManager cacheManager, UserMapper mapper)
         {
-            _cacheManager = cacheManager;
+            _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
+
+        protected override UserEditContext Context
+        {
+            get => User;
+            set => User = value;
+        }
+
+        protected override UserEditContext CreateNewContext() => UserEditContext.CreateNew();
 
         /// <summary>
         /// 从服务器DTO初始化（编辑模式）
@@ -40,15 +51,15 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             User = _mapper.ToEditContext(dto);
             IsDirty = false;
+            SubscribeContext();
         }
 
         /// <summary>
         /// 初始化空白实例（新建模式）
         /// </summary>
-        public void InitializeForNewCase()
+        public override void InitializeForNewCase()
         {
-            User = UserEditContext.CreateNew();
-            IsDirty = false;
+            base.InitializeForNewCase();
         }
 
         /// <summary>
@@ -61,20 +72,11 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// 验证编辑数据
+        /// 重置编辑状态（保留缓存联动：重置后失效用户缓存）
         /// </summary>
-        public bool Validate()
+        public override void Reset()
         {
-            return User.ValidateAll();
-        }
-
-        /// <summary>
-        /// 重置编辑状态
-        /// </summary>
-        public void Reset()
-        {
-            User = UserEditContext.CreateNew();
-            IsDirty = false;
+            base.Reset();
             _cacheManager.InvalidateUserCaches();
         }
     }

@@ -1,4 +1,5 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
 
@@ -7,8 +8,10 @@ namespace LYBT.Desktop.Registrations.Models.Items;
 /// <summary>
 /// 挂号编辑上下文 - 创建挂号时使用
 /// 支持编辑→取消→恢复
+/// D3: 对齐 User/Patient EditContext——基类 ObservableObject → ValidatableModelBase，
+/// 获得 INotifyDataErrorInfo + ValidateAll 验证能力；PatientName/DoctorName 加必填验证。
 /// </summary>
-public class RegistrationEditContext : ObservableObject
+public class RegistrationEditContext : ValidatableModelBase
 {
     private Guid _id;
     private Guid _patientId;
@@ -34,10 +37,11 @@ public class RegistrationEditContext : ObservableObject
     }
 
     /// <summary>患者姓名</summary>
+    [Required(ErrorMessage = "患者姓名不能为空")]
     public string PatientName
     {
         get => _patientName;
-        set => SetProperty(ref _patientName, value);
+        set => SetPropertyAndValidate(ref _patientName, value);
     }
 
     /// <summary>医生ID</summary>
@@ -48,10 +52,11 @@ public class RegistrationEditContext : ObservableObject
     }
 
     /// <summary>医生姓名</summary>
+    [Required(ErrorMessage = "医生姓名不能为空")]
     public string DoctorName
     {
         get => _doctorName;
-        set => SetProperty(ref _doctorName, value);
+        set => SetPropertyAndValidate(ref _doctorName, value);
     }
 
     /// <summary>挂号来源</summary>

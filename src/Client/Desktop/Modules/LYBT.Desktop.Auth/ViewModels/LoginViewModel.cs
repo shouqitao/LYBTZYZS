@@ -151,15 +151,17 @@ namespace LYBT.Desktop.Auth.ViewModels
             ICredentialVault? credentialVault = null,
             IDialogService? dialogService = null,
             IConnectionModeService? connectionModeService = null,
-            IConnectionSettingsService? connectionSettingsService = null)
+            IConnectionSettingsService? connectionSettingsService = null,
+            LoginCredentialsViewModel? credentials = null,
+            ConnectionStatusViewModel? connectionStatus = null)
             : base(services)
         {
             _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
             _dialogService = dialogService;
 
-            // 创建子 VM
-            Credentials = new LoginCredentialsViewModel(services, usernameStorage, credentialVault);
-            ConnectionStatus = new ConnectionStatusViewModel(services, applicationStateService, connectionModeService);
+            // 创建子 VM（D3: DI 注入优先，手动 new 为测试/可选依赖回退）
+            Credentials = credentials ?? new LoginCredentialsViewModel(services, usernameStorage, credentialVault);
+            ConnectionStatus = connectionStatus ?? new ConnectionStatusViewModel(services, applicationStateService, connectionModeService);
 
             // 命令
             LoginCommand = new AsyncRelayCommand(ExecuteLoginAsync, () => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && !IsLoading);
