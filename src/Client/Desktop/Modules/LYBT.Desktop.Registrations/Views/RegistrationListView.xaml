@@ -119,6 +119,13 @@
             Subtitle="新建挂号开始工作"
             Visibility="{Binding IsQueueEmpty, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
+        <!--  加载遮罩  -->
+        <controls:LoadingOverlay
+            Grid.Row="0"
+            Grid.RowSpan="4"
+            IsLoading="{Binding IsBusy}"
+            LoadingText="{Binding StatusMessage}" />
+
         <!--  状态栏  -->
         <StackPanel
             Grid.Row="3"
@@ -132,24 +139,5 @@
                 Text="{Binding ErrorMessage}"
                 Visibility="{Binding HasError, Converter={x:Static converters:Cvt.BoolToVis}}" />
         </StackPanel>
-
-        <!--  加载遮罩  -->
-        <Grid
-            Grid.Row="0"
-            Grid.RowSpan="4"
-            Background="#20000000"
-            Visibility="{Binding IsBusy, Converter={x:Static converters:Cvt.BoolToVis}}">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <ProgressBar
-                    Width="200"
-                    Height="4"
-                    Margin="0,0,0,8"
-                    IsIndeterminate="True" />
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
-                    Text="{Binding StatusMessage}" />
-            </StackPanel>
-        </Grid>
     </Grid>
 </UserControl>
