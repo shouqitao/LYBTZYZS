@@ -15,8 +15,11 @@ LYBT.Desktop.Printing/
 ├── Models/
 │   └── PrescriptionPrintModel.cs # 处方打印数据模型（诊所/患者/诊断/药材/费用/签名）
 ├── Services/
-│   ├── PrescriptionPrintService.cs  # WPF FixedDocument + XPS 打印实现
-│   └── PrescriptionPdfExporter.cs   # QuestPDF PDF 导出器
+│   ├── PrescriptionPrintService.cs            # 打印门面（IPrintService<PrescriptionPrintModel> 实现）
+│   ├── PrescriptionPrintExecutor.cs           # WPF 打印执行（对话框/直打 + 多份数）
+│   ├── PrescriptionDocumentBuilder.cs         # FixedDocument 构建（多页分页 + 模板绑定）
+│   ├── PrescriptionPreviewWindowBuilder.cs    # 预览窗口构建
+│   └── PrescriptionPdfExporter.cs             # QuestPDF PDF 导出器
 ├── Templates/
 │   ├── PrescriptionPrintTemplate.xaml(.cs)        # A5 首页模板
 │   ├── PrescriptionPrintA4Template.xaml(.cs)      # A4 首页模板
@@ -49,8 +52,6 @@ LYBT.Desktop.Printing/
 | `PrinterName` | `null`（系统默认） | 目标打印机 |
 | `Copies` | `1` | 打印份数 |
 | `PaperSize` | `A5` | 纸张大小（A4/A5/Letter/Legal） |
-| `Orientation` | `Portrait` | 打印方向 |
-| `DuplexPrinting` | `false` | 双面打印 |
 | `ShowDialog` | `true` | 是否显示打印对话框 |
 
 | 类 | 设计依据 |

@@ -106,7 +106,6 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             containerRegistry.RegisterSingleton<IAuthenticationService, AuthenticationService>();
             containerRegistry.RegisterSingleton<ITokenStorageService, TokenStorageService>();
-            containerRegistry.RegisterSingleton<ITokenManager, TokenManager>();
             containerRegistry.RegisterSingleton<ICredentialVault, CredentialVault>();
             containerRegistry.RegisterSingleton<IPhotoStorageService, DpapiPhotoStorageService>(); // C2: 照片 DPAPI 加密存储
             containerRegistry.RegisterSingleton<IAuthenticationStateMachine, AuthenticationStateMachine>();

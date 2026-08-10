@@ -70,16 +70,6 @@ namespace LYBT.Desktop.Printing.Interfaces
         public PaperSize PaperSize { get; set; } = PaperSize.A5;
 
         /// <summary>
-        /// 打印方向（默认纵向）
-        /// </summary>
-        public PrintOrientation Orientation { get; set; } = PrintOrientation.Portrait;
-
-        /// <summary>
-        /// 是否双面打印（默认否）
-        /// </summary>
-        public bool DuplexPrinting { get; set; } = false;
-
-        /// <summary>
         /// 是否显示打印对话框（默认是）
         /// </summary>
         public bool ShowDialog { get; set; } = true;
@@ -109,22 +99,6 @@ namespace LYBT.Desktop.Printing.Interfaces
         /// Legal (8.5 x 14 in)
         /// </summary>
         Legal
-    }
-
-    /// <summary>
-    /// 打印方向
-    /// </summary>
-    public enum PrintOrientation
-    {
-        /// <summary>
-        /// 纵向
-        /// </summary>
-        Portrait,
-
-        /// <summary>
-        /// 横向
-        /// </summary>
-        Landscape
     }
 
     /// <summary>

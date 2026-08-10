@@ -76,8 +76,8 @@
 | 2026-08-10 | D4 命名统一 | **SearchProvider 保留**：I{Herb|Formula}SearchProvider 为 D5-3 跨模块门面（MedicalCase/Formula 消费，Catalog 实现委托 I{Herb|Formula}Service）——与 Service 明确分工：Service=模块内数据服务，SearchProvider=跨模块解耦（防 MedicalCase→Catalog 编译期依赖，P07 合规） | 合并会破坏模块解耦；接口注释已文档化 D5-3 意图 | ✅ 9748db4b4 |
 | 2026-08-10 | D4 命名统一 | **BreadcrumbItem 同名不改**：Contracts record（LYBT.Desktop.Contracts.UI，导航架构数据 Title/ViewName/IsCurrent）vs Controls class（LYBT.Desktop.Controls.Controls，BreadcrumbBar 渲染模型 Label/Level/IsCurrent/IsLast/NavigateCommand）——两个 namespace 封闭使用、零桥接（BreadcrumbBar 经 NavigationPath/NavigateCommand DP 绑定），无文件同时 using 两处 | 核实不冲突；重命名仅同名巧合，无实际歧义 | ✅ 9748db4b4 |
 | 2026-08-10 | D5 MedicalCase 双体系 | ~~DTO 门面缓存（Cached*）收敛到 EditContext 新路径~~ **已执行**：CachedMedicalCase/CachedConsultation/CachedPrescription/ClearCache 删除；LoadDetailsAsync 内部改走 LifecycleService.InitializeAsync（DTO 快照单一持有于 LifecycleService，门面统一为 Current/CurrentConsultation/CurrentPrescription/CurrentDetail）；AggregateSaveAsync 保存后 UpdateSnapshot 前移 EditContext 基线；消费方（MasterDetail VM/Workspace VM/PrescriptionPrintHandler/测试）全部切换 | 用户已拍板方案 A（收敛）；EditContext 新路径由死代码变为真实接线（CommandService.SaveAsync 会话可用） | ✅ 待提交 |
-| 2026-08-10 | O1 死代码 | PatientDetailDisplayModel / TokenManager 无写入路径 / PrintOptions 死选项 | 扫描报告 P2 确认零引用 | O1 |
-| 2026-08-10 | O3 卫生 | Controls 控件层 PrescriptionItemDto 交换形状（内部适配层） | B1 已解耦外部 DP 为 IEnumerable；控件内部适配非 UI 编辑路径 | O3 评估，倾向保留 |
+| 2026-08-10 | O1 死代码 | ~~PatientDetailDisplayModel / TokenManager 无写入路径 / PrintOptions 死选项~~ **已执行**：PatientDetailDisplayModel 删除（零引用+测试）；TokenManager 删除（无写入路径恒 null，真实 token 存储为 ITokenStorageService，SignalR 改匿名连接行为等价）；PrintOptions.Orientation/DuplexPrinting + PrintOrientation 枚举删除 | 扫描报告 P2 确认零引用 | ✅ 待提交 |
+| 2026-08-10 | O3 卫生 | ~~Controls 控件层 PrescriptionItemDto 交换形状~~ **保留**（内部适配层，非 UI 编辑路径）；wpftmp csproj 已删（git 忽略，报告「已追踪」过时）；obj 陈旧 UnfinishedCaseDialogViewModel 生成物已清 | B1 已解耦外部 DP 为 IEnumerable | ✅ 待提交 |
 
 ## 六、已知问题（代码实际状态）
 

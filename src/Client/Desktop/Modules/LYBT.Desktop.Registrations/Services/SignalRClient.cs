@@ -26,7 +26,6 @@ public sealed class SignalRClient : ISignalRClient
     private const string HubPath = "hubs/registration";
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(15);
 
-    private readonly ITokenManager _tokenManager;
     private readonly IApplicationStateService _applicationState;
     private readonly IEventAggregator _eventAggregator;
     private readonly ILogger<SignalRClient> _logger;
@@ -36,12 +35,10 @@ public sealed class SignalRClient : ISignalRClient
     private bool _stopping;
 
     public SignalRClient(
-        ITokenManager tokenManager,
         IApplicationStateService applicationState,
         IEventAggregator eventAggregator,
         ILogger<SignalRClient> logger)
     {
-        _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
         _applicationState = applicationState ?? throw new ArgumentNullException(nameof(applicationState));
         _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -55,10 +52,7 @@ public sealed class SignalRClient : ISignalRClient
 
         _stopping = false;
         _connection = new HubConnectionBuilder()
-            .WithUrl(BuildHubUrl(doctorId), options =>
-            {
-                options.AccessTokenProvider = () => Task.FromResult<string?>(_tokenManager.AccessToken);
-            })
+            .WithUrl(BuildHubUrl(doctorId))
             .WithAutomaticReconnect([TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(30)])
             .Build();
 

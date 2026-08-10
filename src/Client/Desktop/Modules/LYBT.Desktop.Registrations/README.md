@@ -21,7 +21,8 @@ LYBT.Desktop.Registrations/
 ├── Repositories/
 │   └── RegistrationRepository.cs   # 双模式仓库（Remote/Local）
 └── Services/
-    └── RemoteRegistrationService.cs
+    ├── RemoteRegistrationService.cs  # 挂号服务（IRegistrationService）
+    └── SignalRClient.cs              # SignalR 实时通知（新挂号/状态变更，匿名连接）
 ```
 
 ## 核心组件

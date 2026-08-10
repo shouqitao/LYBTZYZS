@@ -112,9 +112,10 @@ LYBT.Desktop.Controls/
 **设计依据**：所有主从页面 ViewModel 的抽象基类，统一列表选中 + 详情加载 + `IAsyncInitializable` 生命周期。
 
 ```csharp
-public abstract class MasterDetailControlBase : ObservableObject, IAsyncInitializable
+public abstract class MasterDetailControlBase : UserControl
 ```
 
+- 职责：设置 DataContext、Loaded 时若 DataContext 实现 `IAsyncInitializable` 则调用 `InitializeAsync`（`InitializeAsyncSupport()`）。
 - 子类只需 override 列表加载 / 详情加载方法即可。
 
 ### BaseDetailContainer

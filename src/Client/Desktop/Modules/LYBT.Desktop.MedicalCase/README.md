@@ -29,7 +29,6 @@ LYBT.Desktop.MedicalCase/
 │   └── PrescriptionImportExtensions.cs                # 处方导入扩展方法（验方→PrescriptionItemDto）
 ├── Interfaces/
 │   ├── IMedicalCaseService.cs                         # 聚合根门面接口（Query+Command+Lifecycle）
-│   ├── IMedicalCaseEditContext.cs                     # 编辑上下文接口
 │   ├── IMedicalCaseWorkspaceContext.cs                # 工作区上下文接口
 │   ├── IEditModeStateMachine.cs                       # 编辑状态机接口
 │   ├── IDataProvider.cs                               # 数据提供者接口
@@ -37,27 +36,26 @@ LYBT.Desktop.MedicalCase/
 ├── Mappers/
 │   ├── MedicalCaseDetailModelMapper.cs                # Mapperly: MedicalCaseDetailDto → MedicalCaseDetailModel
 │   ├── ConsultationMapper.cs                          # Mapperly: ConsultationDetailDto ↔ ConsultationItem ↔ ConsultationInputDto
-│   ├── PrescriptionMapper.cs                          # Mapperly: PrescriptionDetailDto ↔ PrescriptionItem ↔ PrescriptionInputDto
-│   └── MedicalCaseCloneMapper.cs                      # Mapperly: 深拷贝映射器（变更检测/回滚）
+│   └── PrescriptionMapper.cs                          # Mapperly: PrescriptionDetailDto ↔ PrescriptionItem ↔ PrescriptionInputDto
 ├── Models/
 │   ├── MedicalCaseDetailModel.cs                      # Detail 编辑模型（ValidatableModelBase）
 │   ├── MedicalCaseNavigationParameters.cs             # 导航参数封装（ForClinical/ForManagementView/ForManagementEdit）
 │   ├── WorkspaceState.cs                              # 工作区状态 immutable record
 │   ├── WorkspaceEditState.cs                          # 编辑状态枚举（6 状态）
 │   ├── WorkspaceEditEvent.cs                          # 编辑事件枚举（10 事件）
-│   ├── EditState.cs / EditType.cs / WorkspaceMode.cs  # 状态/类型/模式枚举
+│   ├── EditType.cs                                    # 编辑类型枚举
 │   └── Items/
 │       ├── ConsultationItem.cs                        # 诊断数据 Item（BindableBase, IDataProvider+IValidatable）
-│       └── PrescriptionItem.cs                        # 处方数据 Item（BindableBase, IDataProvider+IValidatable）
+│       ├── PrescriptionItemModel.cs                   # 处方行 Model（编辑会话承载）
+│       └── MedicalCaseEditContext.cs                  # 医案编辑会话（BeginEdit/Commit/Cancel/IsDirty，模块内单例）
 ├── Repositories/
 │   └── MedicalCaseRepository.cs                       # 仓储实现（Repository 抽象，Local/Remote 双模式）
 ├── Services/
 │   ├── MedicalCaseService.cs                          # 聚合代理（委托 Query/Command/Lifecycle，Coordinator 职责）
 │   ├── MedicalCaseQueryService.cs                     # 查询服务
-│   ├── MedicalCaseCommandService.cs                   # 命令服务
-│   ├── MedicalCaseLifecycleService.cs                 # 生命周期服务
-│   ├── MedicalCaseEditContext.cs                      # 共享编辑上下文（缓存 MedicalCase/Consultation/Prescription DTO）
-│   └── MedicalCaseChangeTracker.cs                    # 变更追踪
+│   ├── MedicalCaseCommandService.cs                   # 命令服务（基于 EditContext 会话，HasChanges/SaveAsync）
+│   ├── MedicalCaseLifecycleService.cs                 # 生命周期服务（InitializeAsync → DTO → EditContext.BeginEdit，唯一 DTO 快照）
+│   └── AuditLogService.cs                             # 审计日志服务
 ├── ViewModels/
 │   ├── MedicalCaseMasterDetailViewModel.cs            # 核心 VM（MasterDetailViewModelBase 组合模式）
 │   ├── AuditLogViewModel.cs                           # 审计日志 VM
@@ -79,7 +77,7 @@ LYBT.Desktop.MedicalCase/
 | 类 | 设计依据 | 职责 |
 |---|---|---|
 | **MedicalCaseModule** | `[ModuleDependency("PatientsModule"/"CatalogModule")]`；RegisterTypes 注册聚合服务 + 3 Dialog + MasterDetailServices | 模块入口：MedicalCaseEditContext、Query/Command/Lifecycle 三服务、MedicalCaseService 聚合代理、MedicalCaseDetailModelMapper(Singleton)、3 Dialog、AuditLog |
-| **MedicalCaseMasterDetailViewModel** | 继承 `MasterDetailViewModelBase<MedicalCaseListDto, MedicalCaseDetailModel>`；组合模式含 ConsultationEditor + PrescriptionEditor 子 VM | 分页列表、详情加载(缓存→子 VM)、聚合保存(AggregateSaveAsync)、删除(CancelMedicalCase)、CreateNewDetail 抛 NotSupportedException |
+| **MedicalCaseMasterDetailViewModel** | 继承 `MasterDetailViewModelBase<MedicalCaseListDto, MedicalCaseDetailModel>`；组合模式含 ConsultationEditor + PrescriptionEditor 子 VM | 分页列表、详情加载(LifecycleService 快照→子 VM)、聚合保存(AggregateSaveAsync)、删除(CancelMedicalCase)、CreateNewDetail 抛 NotSupportedException |
 | **ConsultationEditorViewModel** | `ChildViewModelBase` 子 VM；ConsultationMapper 编译时映射 | InitializeFromDto(ConsultationDetailDto→ConsultationItem)、GetConsultationData(→ConsultationInputDto)、Validate |
 | **PrescriptionEditorViewModel** | `ChildViewModelBase` 子 VM；PrescriptionMapper 编译时映射；CollectionChanged 通知父 VM 状态重算 | InitializeFromDto(PrescriptionDetailDto→PrescriptionItem)、GetPrescriptionData(→PrescriptionInputDto)、Validate、HasItems |
 | **MedicalCaseCommandsViewModel** | `ChildViewModelBase`；~555 行；9 个 CommunityToolkit 命令（AsyncRelayCommand/RelayCommand）；delegate 属性由父 VM 赋值（跨子 VM 边界用 NotifyCanExecuteChanged 手动刷新） | Save / Suspend / Complete / Print / ExportPdf / EnterEditMode / ImportFormula / CopyHistory / ClearHerbs |
@@ -87,8 +85,8 @@ LYBT.Desktop.MedicalCase/
 | **PrescriptionPrintHandler** | `IPrintService<PrescriptionPrintModel>` 委托；诊所配置 `clinic-settings.json` 热更新(IClinicSettingsService)；草稿水印(IsDraft=非 Completed) | PrintPreviewAsync、ExportPdfAsync(SaveFileDialog)、BuildPrintModel(自动绑定 DoctorName + Discount 折扣计算) |
 | **FormulaImportDialogViewModel** | `DialogViewModelBase`；跨模块 `IFormulaSearchProvider`；自动筛选 Validated + Enabled 验方 | 搜索/分类筛选/详情预览/确认导入；过滤逻辑：ValidationStatus==Validated && Status==Enabled |
 | **HistoryCopyDialogViewModel** | `DialogViewModelBase`；~549 行；左右双栏；当前患者最近 5 条 → 展开全部 → 全局查询三模式 | ShowMoreCurrentPatient / ToggleAllPatients 命令；搜索(患者名+诊断) + 时间区间筛选；复制时刷新为当前药材价格 |
-| **MedicalCaseService** | `IMedicalCaseService` 聚合代理；委托 Query/Command/Lifecycle 三独立服务；自身保留 Coordinator 职责 | LoadDetailsAsync(缓存到 EditContext)、AggregateSaveAsync(诊断+处方聚合保存)、SaveAndCompleteAsync(验证+保存+完成)、SaveAndSuspendAsync、SaveAndCancelAsync |
-| **MedicalCaseEditContext** | 共享状态缓存；Scoped 生命周期 | CachedMedicalCase / CachedConsultation / CachedPrescription / ClearCache |
+| **MedicalCaseService** | `IMedicalCaseService` 聚合代理；委托 Query/Command/Lifecycle 三独立服务；自身保留 Coordinator 职责 | LoadDetailsAsync(委托 LifecycleService.InitializeAsync)、AggregateSaveAsync(诊断+处方聚合保存，保存后 UpdateSnapshot 前移会话基线)、SaveAndCompleteAsync(验证+保存+完成)、SaveAndSuspendAsync、SaveAndCancelAsync |
+| **MedicalCaseEditContext** | 完整编辑会话（B2 重建）；模块内单例注册，Command/Lifecycle 共享 | BeginEdit(装载 Model+基线快照)/Commit(应用+前移基线)/Cancel(恢复)/IsDirty(对比基线)；承载诊断字段+处方行+状态 |
 
 ## 依赖关系
 
@@ -121,7 +119,7 @@ LYBT.Desktop.MedicalCase/
 ## 设计决策
 
 1. **聚合根模式**: MedicalCase 是唯一聚合根，统一管理 Consultation + Prescription 的生命周期；Consultation/Prescription 不作为独立模块存在（Issue #1463 移除 ConsultationModule 依赖）
-2. **Service 四拆分**: MedicalCaseService 聚合代理委托 Query/Command/Lifecycle 三独立服务 + MedicalCaseEditContext 共享缓存，SRP 职责分离
+2. **Service 四拆分**: MedicalCaseService 聚合代理委托 Query/Command/Lifecycle 三独立服务 + MedicalCaseEditContext 编辑会话（单例），SRP 职责分离；DTO 快照单一持有于 LifecycleService（D5 收敛）
 3. **子 VM + delegate 属性模式**: ConsultationEditor / PrescriptionEditor / Commands 三个 ChildViewModelBase 子 VM；CommandsVM 的数据提供者(GetConsultationData/GetPrescriptionData 等)由父 VM 通过 delegate 属性注入，因 CommunityToolkit 的 CanExecute 属性观察无法跨子 VM 边界工作，使用 NotifyCanExecuteChanged 手动刷新
 4. **转换表驱动状态机**: EditModeStateMachine 用 `Dictionary<(State,Event), State>` 静态转换表 + `lock` 线程安全 + 事件锁外触发防死锁，替代嵌套 if/switch
 5. **处方打印热更新**: PrescriptionPrintHandler 通过 IClinicSettingsService 读取 `clinic-settings.json`，支持诊所信息(名称/地址/电话)运行时更新
@@ -138,4 +136,4 @@ LYBT.Desktop.MedicalCase/
 5. **Mapperly 与 CommunityToolkit.Mvvm 源生成器冲突**: `[ObservableProperty]` 生成的属性在 Mapperly 运行时尚未生成，必须用 `[MapperIgnoreTarget("PropertyName")]` 字符串字面量 + 手动映射
 6. **FormulaImportDialog 过滤条件**: 仅显示 ValidationStatus==Validated && Status==Enabled 的验方，开发者新增验方筛选逻辑时需同步更新 FilterFormulas()
 7. **PrescriptionPrintHandler 草稿水印**: IsDraft 判断条件是 `_medicalCaseService.Current?.CaseStatus != Completed`，非 Completed 状态打印均带草稿水印
-8. **AggregateSaveAsync 缓存更新**: 保存成功后自动更新 EditContext 缓存(CachedMedicalCase/CachedConsultation/CachedPrescription)，若绕过此方法直接调用 Repository 会导致缓存不一致
+8. **AggregateSaveAsync 快照同步**: 保存成功后自动调 LifecycleService.UpdateSnapshot（DTO 快照 + EditContext 基线前移），若绕过此方法直接调用 Repository 会导致快照/会话不一致
