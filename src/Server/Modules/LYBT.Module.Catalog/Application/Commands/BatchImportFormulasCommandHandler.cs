@@ -13,7 +13,7 @@ namespace LYBT.Module.Catalog.Application.Commands;
 /// </summary>
 public class BatchImportFormulasCommandHandler(
     IFormulaRepository repository,
-    ICatalogService crossModule,
+    ICatalogCrossModuleService crossModule,
     ILogger<BatchImportFormulasCommandHandler> logger
 ) : IRequestHandler<BatchImportFormulasCommand, Result<FormulaBatchImportResultDto>>
 {

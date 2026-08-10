@@ -11,7 +11,7 @@ namespace LYBT.Module.Catalog.Services;
 /// 药材域跨模块服务实现（A-31-C3b 由 HerbCrossModuleService 迁入）。
 /// 替代 CrossModuleService 中的药材查询逻辑，供 MedicalCase 等模块同步查询。
 /// </summary>
-public class CatalogCrossModuleService : ICatalogService
+public class CatalogCrossModuleService : ICatalogCrossModuleService
 {
     private readonly CatalogDbContext _context;
     private readonly ILogger<CatalogCrossModuleService> _logger;

@@ -901,14 +901,14 @@ public class ServerArchTests
         var writeVerbs = new[] { "Update", "Restore", "Toggle", "Enable", "Disable", "Change", "Delete", "Status", "Save", "Reset", "Import", "Batch" };
         var cqrsReadServiceInterfaces = new[]
         {
-            "IUserService", "IPatientService"
+            "IUserCrossModuleService", "IPatientService"
         };
 
         // A-31-C3a 豁免：登录流程写方法（LoginCommandHandler 专用，非 Controller 写端点）
         var loginFlowWriteMethods = new[]
         {
-            "IUserService.UpdateLoginFailureAsync",
-            "IUserService.ResetLoginStateAsync"
+            "IUserCrossModuleService.UpdateLoginFailureAsync",
+            "IUserCrossModuleService.ResetLoginStateAsync"
         };
 
         var violations = new List<string>();

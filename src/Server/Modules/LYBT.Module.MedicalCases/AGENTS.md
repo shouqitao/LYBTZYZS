@@ -5,7 +5,7 @@
 ## Structure
 
 ```
-LYBT.Module.MedicalCase/
+LYBT.Module.MedicalCases/
 ├── Interfaces/          # 11 interface definitions
 ├── Services/            # 10 files: MedicalCaseCommandService, MedicalCaseQueryService, MedicalCaseStateService, MedicalCaseFacade, MedicalCaseAuditService, MedicalCasePermissionService, MedicalCasePrintService, MedicalCaseReferenceService, MedicalCaseRules, MedicalCaseServiceHelper
 ├── Repositories/        # 3 repository files

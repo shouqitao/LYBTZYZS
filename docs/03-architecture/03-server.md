@@ -145,7 +145,7 @@ LYBT.Module.{Domain}/
 
 **MedicalCase** (Command/Query/State 三 Service 拆分):
 ```
-LYBT.Module.MedicalCase/
+LYBT.Module.MedicalCases/
   Controllers/ Interfaces/ Mappers/ Repositories/ Services/
 ```
 

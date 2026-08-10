@@ -36,7 +36,7 @@ namespace LYBT.Module.Identity
             // 注册核心服务
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<ISecurityAuditService, SecurityAuditService>();
-            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IUserCrossModuleService, UserService>();
 
             // 登录流程选项（Local 登录差异控制；缺省 Remote 全量）
             services.AddOptions<LoginOptions>()

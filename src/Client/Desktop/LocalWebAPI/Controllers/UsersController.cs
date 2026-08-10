@@ -13,7 +13,7 @@ public class UsersController : BaseUsersController
     public UsersController(
         ISender sender,
         ILogger<UsersController> logger,
-        IUserService userService)
+        IUserCrossModuleService userService)
         : base(sender, logger, userService)
     {
     }

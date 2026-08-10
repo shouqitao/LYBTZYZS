@@ -14,7 +14,7 @@ Business modules for the ASP.NET Core backend. Each module is a **self-contained
 | LYBT.Module.Patients/ | Patient management — CRUD, search, medical history |
 | LYBT.Module.Herbs/ | Herb (TCM medicine) catalog — CRUD, categories, properties |
 | LYBT.Module.Formula/ | Formula (empirical recipe) management — CRUD, herb composition |
-| LYBT.Module.MedicalCase/ | Medical case (DDD aggregate) — consultations, prescriptions, CQRS commands |
+| LYBT.Module.MedicalCases/ | Medical case (DDD aggregate) — consultations, prescriptions, CQRS commands |
 | LYBT.Module.Registration/ | Patient registration and appointment scheduling |
 
 ## For AI Agents

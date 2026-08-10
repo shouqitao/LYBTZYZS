@@ -378,7 +378,7 @@ Entity (DataAnnotations)
 
 | 层 | Mapper 数量 | 位置 |
 |----|------------|------|
-| Server 模块（Mapperly） | 3 | `LYBT.Module.Registration/Mappers/RegistrationMapper.cs`、`LYBT.Module.MedicalCase/Mappers/MedicalCaseMapper.cs`、`LYBT.Module.Auth/Application/Mappers/AuthUserMapper.cs` |
+| Server 模块（Mapperly） | 3 | `LYBT.Module.Registration/Mappers/RegistrationMapper.cs`、`LYBT.Module.MedicalCases/Mappers/MedicalCaseMapper.cs`、`LYBT.Module.Auth/Application/Mappers/AuthUserMapper.cs` |
 | Server 模块（手写静态类，A-18 P1-4 已转 Mapperly） | 4 | `LYBT.Module.{Formula,Herbs,Patients,Users}/Application/Mappers/*Mapper.cs` |
 | Client Desktop 模块 | 9 | `src/Client/Desktop/Modules/LYBT.Desktop.*/Mappers/` |
 | Client 内联 | 1 | `PatientRepository.cs` 内 `PatientListToDetailMapper` |

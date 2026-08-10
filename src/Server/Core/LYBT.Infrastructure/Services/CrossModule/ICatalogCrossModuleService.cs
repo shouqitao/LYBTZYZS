@@ -6,7 +6,7 @@ namespace LYBT.Infrastructure.Services.CrossModule;
 /// 药材目录域跨模块服务（A-31-C3b 由 IHerbCrossModuleService 改名，ISP D5-1）
 /// 供 MedicalCase 等模块同步查询药材目录（P07 跨模块通道）
 /// </summary>
-public interface ICatalogService
+public interface ICatalogCrossModuleService
 {
     /// <summary>获取药材基本信息</summary>
     Task<HerbBasicDto?> GetHerbBasicInfoAsync(Guid herbId, CancellationToken cancellationToken = default);

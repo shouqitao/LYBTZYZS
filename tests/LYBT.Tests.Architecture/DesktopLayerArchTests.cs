@@ -678,7 +678,7 @@ public class DesktopLayerArchTests
 
     /// <summary>
     /// DP10: Desktop ViewModel 禁止注入 IApiClient 子接口（IApiClientIdentity/IApiClientPatients 等）
-    /// A-23b: 应注入 Service 接口（IUserService/IPatientService/IMedicalCaseQueryService 等）
+    /// A-23b: 应注入 Service 接口（IUserCrossModuleService/IPatientService/IMedicalCaseQueryService 等）
     /// 豁免：统一 IApiClient（A-18 过渡期允许，长期目标是 VM 全部走 Service）
     /// </summary>
     [Fact]

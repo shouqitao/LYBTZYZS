@@ -20,7 +20,7 @@ namespace LYBT.Module.Identity.Application.Commands;
 public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
 {
     private readonly IJwtService _jwtService;
-    private readonly IUserService _crossModuleService;
+    private readonly IUserCrossModuleService _crossModuleService;
     private readonly IAuthSessionRepository _authSessionRepository;
     private readonly ISecurityAuditService _securityAuditService;
     private readonly ISender _sender;
@@ -31,7 +31,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
 
     public LoginCommandHandler(
         IJwtService jwtService,
-        IUserService crossModuleService,
+        IUserCrossModuleService crossModuleService,
         IAuthSessionRepository authSessionRepository,
         ISecurityAuditService securityAuditService,
         ISender sender,

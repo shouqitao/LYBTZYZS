@@ -4,12 +4,12 @@ using LYBT.Shared.Models.Contracts.Users;
 namespace LYBT.Infrastructure.Services.CrossModule;
 
 /// <summary>
-/// 用户域服务 (ISP: D5-1，A-31-C3a 由 IUserCrossModuleService 改名 + IUserService 合并)
+/// 用户域服务 (ISP: D5-1，A-31-C3a 由 IUserCrossModuleService 改名 + IUserCrossModuleService 合并)
 /// 供 MedicalCase + Registration 模块跨模块使用；Identity 模块内登录/Controller 亦经其消费。
 /// </summary>
-public interface IUserService
+public interface IUserCrossModuleService
 {
-    // ── 读服务（原 Users 模块 IUserService，Controller 直查）──
+    // ── 读服务（原 Users 模块 IUserCrossModuleService，Controller 直查）──
 
     /// <summary>分页查询用户</summary>
     Task<Result<PagedResult<UserListDto>>> GetPagedAsync(int page, int pageSize, string? keyword, CancellationToken ct);

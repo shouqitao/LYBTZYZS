@@ -121,7 +121,7 @@ src/
       LYBT.Module.Auth/
       LYBT.Module.Formula/
       LYBT.Module.Herbs/
-      LYBT.Module.MedicalCase/
+      LYBT.Module.MedicalCases/
       LYBT.Module.Patients/
       LYBT.Module.Registration/      # 挂号管理
       LYBT.Module.Reports/           # 报表/历史聚合查询 (MC-008/009, D9 补回 v1.0)

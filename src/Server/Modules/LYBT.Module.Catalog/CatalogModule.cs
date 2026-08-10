@@ -40,7 +40,7 @@ namespace LYBT.Module.Catalog
             services.AddScoped<IHerbReferenceRepository, HerbReferenceRepository>();
 
             // 注册跨模块服务（替代 CrossModuleService 中的药材查询逻辑）
-            services.AddScoped<ICatalogService, CatalogCrossModuleService>();
+            services.AddScoped<ICatalogCrossModuleService, CatalogCrossModuleService>();
 
             // 注册只读查询服务（合并 HerbService/FormulaService 孪生，差异点由工厂注入）
             services.AddScoped<ICatalogQueryService<HerbListDto, HerbDetailDto>>(sp =>

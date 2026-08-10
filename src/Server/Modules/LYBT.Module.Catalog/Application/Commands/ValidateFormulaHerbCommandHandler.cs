@@ -11,10 +11,10 @@ namespace LYBT.Module.Catalog.Application.Commands;
 /// </summary>
 public class ValidateFormulaHerbCommandHandler(
     IFormulaRepository formulaRepository,
-    ICatalogService crossModuleService) : IRequestHandler<ValidateFormulaHerbCommand, Result>
+    ICatalogCrossModuleService crossModuleService) : IRequestHandler<ValidateFormulaHerbCommand, Result>
 {
     private readonly IFormulaRepository _formulaRepository = formulaRepository;
-    private readonly ICatalogService _crossModuleService = crossModuleService;
+    private readonly ICatalogCrossModuleService _crossModuleService = crossModuleService;
 
     public async Task<Result> Handle(
         ValidateFormulaHerbCommand request, CancellationToken cancellationToken)

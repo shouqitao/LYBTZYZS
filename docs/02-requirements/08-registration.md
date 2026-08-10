@@ -370,7 +370,7 @@
 | 远程 | MedicalCaseService 内部触发（CompleteAsync/CancelAsync 调用 RegistrationService） |
 | 本地 | 完全一致（通过统一 Service 层，事务内联动更新） |
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs:24`、`src/Server/Modules/LYBT.Module.MedicalCase/Interfaces/IMedicalCaseFacade.cs:15`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs:24`、`src/Server/Modules/LYBT.Module.MedicalCases/Interfaces/IMedicalCaseFacade.cs:15`
 
 ---
 

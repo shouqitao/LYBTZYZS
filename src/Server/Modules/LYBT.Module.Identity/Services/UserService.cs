@@ -16,7 +16,7 @@ namespace LYBT.Module.Identity.Services;
 /// 用户服务实现（A-31-C3a 合并 UserService + UserCrossModuleService）。
 /// 读操作直查（Controller 读走 Service，写走 MediatR Handler，见蓝图 §2.2）；登录凭证方法供 LoginCommandHandler/跨模块消费。
 /// </summary>
-public class UserService : IUserService
+public class UserService : IUserCrossModuleService
 {
     private readonly IUserRepository _userRepository;
     private readonly IdentityDbContext _context;

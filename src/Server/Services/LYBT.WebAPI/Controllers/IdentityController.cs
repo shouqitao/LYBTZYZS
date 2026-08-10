@@ -30,7 +30,7 @@ namespace LYBT.WebAPI.Controllers
         public IdentityController(
             ISender sender,
             ILogger<IdentityController> logger,
-            IUserService userService)
+            IUserCrossModuleService userService)
             : base(sender, logger, userService)
         {
             _sender = sender;

@@ -70,7 +70,7 @@
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Identity\LYBT.Module.Identity.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Catalog\LYBT.Module.Catalog.csproj" />
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
-		<ProjectReference Include="..\..\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />
+		<ProjectReference Include="..\..\Modules\LYBT.Module.MedicalCases\LYBT.Module.MedicalCases.csproj" />
 		<!-- Sprint 2: 挂号模块 -->
 		<ProjectReference Include="..\..\Modules\LYBT.Module.Registration\LYBT.Module.Registration.csproj" />
 		<!-- 报表模块 -->

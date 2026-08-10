@@ -22,9 +22,9 @@ namespace LYBT.Module.Identity.Controllers;
 [Authorize]
 public abstract class BaseUsersController : BaseCrudController
 {
-    private readonly IUserService _userService;
+    private readonly IUserCrossModuleService _userService;
 
-    protected BaseUsersController(ISender sender, ILogger logger, IUserService userService)
+    protected BaseUsersController(ISender sender, ILogger logger, IUserCrossModuleService userService)
         : base(sender, logger)
     {
         _userService = userService;

@@ -18,7 +18,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.WebAPI", "src\Server\S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Module.Patients", "src\Server\Modules\LYBT.Module.Patients\LYBT.Module.Patients.csproj", "{B8C9D0E1-F2A3-1B2C-5D6E-7F8A9B0C1D2E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Module.MedicalCase", "src\Server\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj", "{A3B4C5D6-E7F8-6A7B-0C1D-2E3F4A5B6C7D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Module.MedicalCases", "src\Server\Modules\LYBT.Module.MedicalCases\LYBT.Module.MedicalCases.csproj", "{A3B4C5D6-E7F8-6A7B-0C1D-2E3F4A5B6C7D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{E3F4A5B6-C7D8-6E7F-0A1B-2C3D4E5F6A7B}"
 EndProject

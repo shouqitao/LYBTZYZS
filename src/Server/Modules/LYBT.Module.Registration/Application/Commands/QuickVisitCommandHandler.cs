@@ -13,7 +13,7 @@ namespace LYBT.Module.Registrations.Application.Commands;
 public class QuickVisitCommandHandler(
     IRegistrationRepository repository,
     IPatientCrossModuleService patientCrossModule,
-    IUserService userCrossModule,
+    IUserCrossModuleService userCrossModule,
     IMedicalCaseCrossModuleService medicalCaseCrossModule
 ) : IRequestHandler<QuickVisitCommand, Result<QuickVisitResultDto>>
 {

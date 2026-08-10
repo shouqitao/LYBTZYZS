@@ -18,7 +18,7 @@
 | PrescriptionContinuationA4Template | `LYBT.Desktop.Printing/Templates/` | A4 续页 XAML 模板 |
 | PrescriptionPrintHandler | `LYBT.Desktop.MedicalCase/ViewModels/Components/` | ViewModel → PrintService 桥接层，数据准备 |
 | PrescriptionPrintModel | `LYBT.Desktop.Printing/Models/` | 打印数据模型，模板绑定源 |
-| MedicalCasePrintService | `LYBT.Module.MedicalCase/Services/` | 服务端打印状态回写 |
+| MedicalCasePrintService | `LYBT.Module.MedicalCases/Services/` | 服务端打印状态回写 |
 | MedicalCasePrintController | `LYBT.WebAPI/Controllers/` | 打印 API 端点（2 个） |
 | MedicalCasePrintLog | `LYBT.Entities/MedicalCases/` | 打印日志实体 |
 
