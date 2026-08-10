@@ -17,17 +17,15 @@ LocalWebAPI 是 **Client → Server 唯一的跨层引用路径**。这是有意
 
 ```
 Desktop Shell
-  → LocalWebAPI (embedded Kestrel, port 5300)
+  → LocalWebAPI (embedded Kestrel, port 5290)
     → Server/Core/LYBT.Entities        (domain entities)
     → Server/Core/LYBT.Infrastructure  (AppDbContext, BaseRepository)
-    → Server/Modules/LYBT.Module.Auth     (IAuthService)
-    → Server/Modules/LYBT.Module.Users    (IUserService)
-    → Server/Modules/LYBT.Module.Patients (IPatientService)
-    → Server/Modules/LYBT.Module.Herbs    (IHerbService)
-    → Server/Modules/LYBT.Module.Formulas (IFormulaService)
+    → Server/Modules/LYBT.Module.Identity    (IAuthService/IUserService — Auth+Users 合并)
+    → Server/Modules/LYBT.Module.Catalog     (IHerbService/IFormulaService — Herbs+Formulas 合并)
+    → Server/Modules/LYBT.Module.Patients    (IPatientService)
     → Server/Modules/LYBT.Module.MedicalCases (IMedicalCaseFacade)
-    → Server/Modules/LYBT.Module.Registration (IRegistrationService)
-    → Server/Modules/LYBT.Module.Reports   (IReportsService)
+    → Server/Modules/LYBT.Module.Registrations (IRegistrationService)
+    → Server/Modules/LYBT.Module.Reports     (IReportsService)
 ```
 
 ### 变更协议
@@ -41,8 +39,8 @@ Desktop Shell
 
 | File | Description |
 |------|-------------|
-| `LocalWebApiProgram.cs` | Entry point: AppDbContext + IHttpContextAccessor + 8 AddXxxModule() registrations + LocalJwtConfig |
-| `LYBT.LocalWebAPI.csproj` | ASP.NET Core SDK; references Server Core + 8 Server Modules |
+| `LocalWebApiProgram.cs` | Entry point: AppDbContext + IHttpContextAccessor + 6 AddXxxModule() registrations + LocalJwtConfig |
+| `LYBT.LocalWebAPI.csproj` | ASP.NET Core SDK; references Server Core + 6 Server Modules |
 | `Auth/LocalJwtConfig.cs` | Simplified JWT (1-year token, no refresh) |
 | `Data/LocalWebApiSeedData.cs` | Seed data initialization (accepts AppDbContext) |
 
@@ -63,7 +61,8 @@ Controllers inherit `BaseApiController` (from `LYBT.Infrastructure.Web`) and use
 | Directory | Purpose |
 |-----------|---------|
 | `Auth/` | LocalJwtConfig (simplified JWT generation) |
-| `Controllers/` | 12 controllers — 与 Remote WebAPI 同构；9 use Service layer, 3 use DbContext directly（Auth/Health/Diagnostics） |
+| `Commands/` | MediatR CQRS Commands（本地登录/刷新） |
+| `Controllers/` | 11 controllers — 与 Remote WebAPI 同构 |
 | `Data/` | SeedData only (LocalWebApiDbContext deleted — uses AppDbContext) |
 
 ## Controllers
@@ -73,28 +72,27 @@ Controllers inherit `BaseApiController` (from `LYBT.Infrastructure.Web`) and use
 | AuthController | IAuthService + IAutoLoginService | Hybrid: Service verification + local JWT |
 | UsersController | IUserService | Full CRUD + batch + password reset |
 | PatientsController | IPatientService + IPatientImportExportService | Full CRUD + import/export |
-| HerbsController | IHerbService | Full CRUD + batch + reference check |
-| FormulasController | IFormulaService + IFormulaImportExportService | Full CRUD + clone + validation |
-| MedicalCasesController | IMedicalCaseFacade + IPermissionService | 22 endpoints via Facade |
+| CatalogController | ICatalogQueryService | 药材+验方合并（2026-08 模块合并），CRUD + 批量 + 引用检查 + 克隆 |
+| MedicalCasesController | IMedicalCaseCommandService/QueryService/StateService | 12 endpoints via Facade |
 | RegistrationsController | IRegistrationService | CRUD + queue + quick-visit |
 | ConfigurationController | (none — in-memory store) | Key/value config, no business logic |
-| HealthController | (none — DB connectivity) | CanConnectAsync only |
+| HealthController | IHealthCheckService | CanConnectAsync only |
 | DiagnosticsController | (none — LoggingLevelManager) | Log level management |
-| ReportsController | IReportRepository | 只读报表查询（B-04）|
+| ReportsController | IReportsService | 只读报表查询（B-04）|
 | DeployController | (none) | restart 确认（A-13）|
 
 ## For AI Agents
 
 - Controllers use Service layer — same as Remote WebAPI. Do NOT inject DbContext directly (except AuthController for local JWT, HealthController for connectivity, DiagnosticsController for log queries).
 - `LocalWebApiDbContext` is DELETED — uses `AppDbContext` from `LYBT.Infrastructure`.
-- All 8 Server Module DI registrations are in `LocalWebApiProgram.CreateApplication()`.
+- All 6 Server Module DI registrations are in `LocalWebApiProgram.CreateApplication()`.
 - Architecture test `P21` (LocalWebAPI ↛ Server modules) is SKIPPED — intentionally unified.
 
 ## Dependencies
 
 ### Internal
 - `LYBT.Infrastructure` — AppDbContext, BaseRepository, BaseApiController
-- `LYBT.Module.*` — All 8 server modules (Auth, Users, Patients, Herbs, Formula, MedicalCase, Registration, Reports)
+- `LYBT.Module.*` — All 6 server modules (Identity, Catalog, Patients, MedicalCases, Registrations, Reports)
 - `LYBT.Entities` — Domain entities
 - `LYBT.Shared.Models` — DTOs and contracts
 - `LYBT.Desktop.Contracts` — Desktop interface definitions

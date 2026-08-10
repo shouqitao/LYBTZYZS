@@ -7,8 +7,10 @@ using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
+using LYBT.Desktop.MedicalCase.Mappers;
+using LYBT.Desktop.MedicalCase.Models;
+using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Services.Dialogs;
@@ -23,6 +25,9 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
     /// - 默认显示当前患者的最近5条已完成记录
     /// - 支持"显示更多"展开本患者全部记录
     /// - 支持"查看全部患者"切换到全局查询模式
+    ///
+    /// B3: 展示面全部使用 MedicalCaseDetailModel / PrescriptionItemModel（只读展示），
+    /// DTO 仅在 Repository 边界转换，遵循前后端各自定义实例原则（16-desktop-architecture-spec §4.6）。
     /// </summary>
     public partial class HistoryCopyDialogViewModel : DialogViewModelBase
     {
@@ -36,8 +41,9 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         #region 服务依赖
 
         private readonly IMedicalCaseRepository _medicalCaseRepository;
-        private List<MedicalCaseDetailDto> _allCases = new();
-        private List<MedicalCaseDetailDto> _currentPatientCases = new();
+        private readonly MedicalCaseDetailModelMapper _mapper;
+        private List<MedicalCaseDetailModel> _allCases = new();
+        private List<MedicalCaseDetailModel> _currentPatientCases = new();
         private Guid _patientId;
 
         #endregion
@@ -70,24 +76,24 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         private DateTime? _endDate;
 
         /// <summary>
-        /// 筛选后的医案列表
+        /// 筛选后的医案列表（只读展示，Model 型）
         /// </summary>
         [ObservableProperty]
-        private ObservableCollection<MedicalCaseDetailDto> _filteredCases = new();
+        private ObservableCollection<MedicalCaseDetailModel> _filteredCases = new();
 
         /// <summary>
         /// 选中的医案（左栏卡片列表）
         /// </summary>
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
-        private MedicalCaseDetailDto? _selectedCase;
+        private MedicalCaseDetailModel? _selectedCase;
 
         /// <summary>
         /// 选中医案的详情（用于右栏MedicalCaseViewControl绑定）
         /// </summary>
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
-        private MedicalCaseDetailDto? _selectedCaseDetail;
+        private MedicalCaseDetailModel? _selectedCaseDetail;
 
         /// <summary>
         /// 状态消息
@@ -117,9 +123,9 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         #region 计算属性
 
         /// <summary>
-        /// 选中医案的处方药材列表（用于复制）
+        /// 选中医案的处方药材列表（用于复制，Model 型）
         /// </summary>
-        public List<PrescriptionItemDto> SelectedPrescriptionItems { get; private set; } = new();
+        public List<PrescriptionItemModel> SelectedPrescriptionItems { get; private set; } = new();
 
         /// <summary>
         /// 当前患者是否有更多记录可显示
@@ -170,7 +176,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         /// <summary>
         /// 选中医案变更时加载详情
         /// </summary>
-        partial void OnSelectedCaseChanged(MedicalCaseDetailDto? value)
+        partial void OnSelectedCaseChanged(MedicalCaseDetailModel? value)
         {
             LoadCaseDetailAsync();
         }
@@ -209,10 +215,12 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
         /// </summary>
         public HistoryCopyDialogViewModel(
             IViewModelServices services,
-            IMedicalCaseRepository medicalCaseRepository)
+            IMedicalCaseRepository medicalCaseRepository,
+            MedicalCaseDetailModelMapper mapper)
             : base(services)
         {
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             Title = "从历史医案复制";
 
             Logger.LogInformation("HistoryCopyDialogViewModel已初始化");
@@ -320,18 +328,18 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                 // 批量获取详情并按时间排序
                 if (completedWithPrescriptionIds != null && completedWithPrescriptionIds.Count > 0)
                 {
-                    var cases = new List<MedicalCaseDetailDto>();
+                    var cases = new List<MedicalCaseDetailModel>();
                     foreach (var id in completedWithPrescriptionIds)
                     {
                         var detail = await _medicalCaseRepository.GetByIdAsync(id);
                         if (detail != null)
-                            cases.Add(detail);
+                            cases.Add(_mapper.ToItem(detail));
                     }
                     _currentPatientCases = cases.OrderByDescending(c => c.CreatedAt).ToList();
                 }
                 else
                 {
-                    _currentPatientCases = new List<MedicalCaseDetailDto>();
+                    _currentPatientCases = new List<MedicalCaseDetailModel>();
                 }
 
                 // 初始状态：当前患者模式（直接设置字段避免触发重复加载）
@@ -399,13 +407,14 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                     }
                 }
 
-                // 筛选已完成且有处方的医案
+                // 筛选已完成且有处方的医案，转为 Model（只读展示）
                 _allCases = allItems
                     .Where(c => c.CaseStatus == MedicalCaseStatus.Completed && c.PrescriptionId.HasValue)
                     .OrderByDescending(c => c.CreatedAt)
+                    .Select(_mapper.ToItem)
                     .ToList();
 
-                FilteredCases = new ObservableCollection<MedicalCaseDetailDto>(_allCases);
+                FilteredCases = new ObservableCollection<MedicalCaseDetailModel>(_allCases);
                 StatusMessage = $"全部患者共 {_allCases.Count} 条已完成历史医案";
 
                 Logger.LogInformation("加载了全部患者的 {Count} 条已完成历史医案（共{TotalPages}页）",
@@ -435,7 +444,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                 casesToShow = casesToShow.Take(DefaultDisplayCount);
             }
 
-            FilteredCases = new ObservableCollection<MedicalCaseDetailDto>(casesToShow);
+            FilteredCases = new ObservableCollection<MedicalCaseDetailModel>(casesToShow);
 
             // 更新状态消息
             if (IsShowingAllCurrentPatient)
@@ -470,7 +479,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             {
                 filtered = filtered.Where(c =>
                     (c.PatientName?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                    (c.Diagnosis?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false));
+                    (c.TcmDiagnosis?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false));
             }
 
             // 时间区间筛选 - 起始日期
@@ -491,7 +500,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                 filtered = filtered.Take(DefaultDisplayCount);
             }
 
-            FilteredCases = new ObservableCollection<MedicalCaseDetailDto>(filtered);
+            FilteredCases = new ObservableCollection<MedicalCaseDetailModel>(filtered);
 
             // 更新状态消息
             var modeText = IsShowingAllPatients ? "全部患者" : "本患者";
@@ -507,7 +516,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             if (SelectedCase == null)
             {
                 SelectedCaseDetail = null;
-                SelectedPrescriptionItems = new List<PrescriptionItemDto>();
+                SelectedPrescriptionItems = new List<PrescriptionItemModel>();
                 return;
             }
 
@@ -515,18 +524,19 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             {
                 IsLoading = true;
 
-                // 获取医案详情（包含诊疗信息和处方信息）
+                // 获取医案详情（包含诊疗信息和处方信息），转为 Model
                 var detail = await _medicalCaseRepository.GetByIdAsync(SelectedCase.Id);
-                SelectedCaseDetail = detail;
+                var model = detail == null ? null : _mapper.ToItem(detail);
+                SelectedCaseDetail = model;
 
-                // 提取处方药材列表用于复制
-                if (detail?.Prescription?.Items != null && detail.Prescription.Items.Any())
+                // 提取处方药材列表用于复制（Model 型）
+                if (model?.PrescriptionItems != null && model.PrescriptionItems.Any())
                 {
-                    SelectedPrescriptionItems = detail.Prescription.Items;
+                    SelectedPrescriptionItems = model.PrescriptionItems.ToList();
                 }
                 else
                 {
-                    SelectedPrescriptionItems = new List<PrescriptionItemDto>();
+                    SelectedPrescriptionItems = new List<PrescriptionItemModel>();
                 }
 
                 // 药材加载完成后刷新确认按钮状态
@@ -535,7 +545,7 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             catch (Exception ex)
             {
                 SelectedCaseDetail = null;
-                SelectedPrescriptionItems = new List<PrescriptionItemDto>();
+                SelectedPrescriptionItems = new List<PrescriptionItemModel>();
                 Logger.LogError(ex, "加载医案详情失败，医案ID: {CaseId}", SelectedCase.Id);
             }
             finally

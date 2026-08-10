@@ -43,7 +43,6 @@ public partial class MedicalCaseDetailModelMapper
     [MapperIgnoreSource(nameof(MedicalCaseDetailDto.PatientGender))]
     [MapperIgnoreSource(nameof(MedicalCaseDetailDto.PatientAge))]
     [MapperIgnoreSource(nameof(MedicalCaseDetailDto.UserId))]
-    [MapperIgnoreSource(nameof(MedicalCaseDetailDto.CaseNumber))]
     [MapperIgnoreSource(nameof(MedicalCaseDetailDto.ConsultationId))]
     [MapperIgnoreSource(nameof(MedicalCaseDetailDto.PrescriptionId))]
     [MapperIgnoreSource(nameof(MedicalCaseDetailDto.CompletedAt))]
@@ -54,6 +53,10 @@ public partial class MedicalCaseDetailModelMapper
     [MapperIgnoreSource(nameof(MedicalCaseDetailDto.CreatedBy))]
     [MapperIgnoreSource(nameof(MedicalCaseDetailDto.Consultation))]
     [MapperIgnoreSource(nameof(MedicalCaseDetailDto.Prescription))]
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailModel.CaseNumber))]
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailModel.Discount))]
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailModel.HasConsultation))]
+    [MapperIgnoreTarget(nameof(MedicalCaseDetailModel.HasPrescription))]
     [MapperIgnoreTarget(nameof(MedicalCaseDetailModel.PresentIllness))]
     [MapperIgnoreTarget(nameof(MedicalCaseDetailModel.TongueDiagnosis))]
     [MapperIgnoreTarget(nameof(MedicalCaseDetailModel.PulseDiagnosis))]
@@ -83,6 +86,9 @@ public partial class MedicalCaseDetailModelMapper
     {
         var model = ToItemCore(dto);
 
+        // 医案编号（只读，用于历史复制引用）
+        model.CaseNumber = dto.CaseNumber;
+
         // 从嵌套Consultation DTO提取诊断信息
         if (dto.Consultation != null)
         {
@@ -97,6 +103,7 @@ public partial class MedicalCaseDetailModelMapper
         {
             model.HerbCount = dto.Prescription.Items?.Count ?? 0;
             model.DoseCount = dto.Prescription.DosageCount;
+            model.Discount = dto.Prescription.Discount;
             model.ReferencedFormulas = dto.Prescription.ReferencedFormulas ?? "自拟方";
 
             // 填充处方药材列表

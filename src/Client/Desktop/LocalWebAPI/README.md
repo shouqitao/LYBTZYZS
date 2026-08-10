@@ -4,7 +4,7 @@
 
 ## 项目定位
 
-运行在 Desktop 客户端进程内的 Kestrel WebAPI（端口 5300），通过 `SwitchingApiClient` 路由切换实现本地模式。与远程 WebAPI 共享同一套 Service/Repository 层（ADR-0010 统一服务层架构），Controller 委托 `I*Service` 接口处理业务逻辑，零平行实现。是 Client → Server 唯一的跨层引用路径。
+运行在 Desktop 客户端进程内的 Kestrel WebAPI（端口 5290），通过 `SwitchingApiClient` 路由切换实现本地模式。与远程 WebAPI 共享同一套 Service/Repository 层（ADR-0010 统一服务层架构），Controller 委托 `I*Service` 接口处理业务逻辑，零平行实现。是 Client → Server 唯一的跨层引用路径。
 
 ## 目录结构
 
@@ -12,30 +12,22 @@
 LYBT.LocalWebAPI/
 ├── Auth/
 │   └── LocalJwtConfig.cs           # 简化 JWT 配置（HMAC-SHA256，365天过期）
+├── Commands/                       # MediatR CQRS Commands（本地登录/刷新）
 ├── Controllers/
 │   ├── AuthController.cs           # 登录/登出/刷新/自动登录/验证
 │   ├── HealthController.cs         # /ping + /details 健康检查
 │   ├── UsersController.cs          # 继承 BaseUsersController
-│   ├── PatientsController.cs       # 11 个端点（CRUD + 导入导出）
-│   ├── HerbsController.cs          # 11 个端点（CRUD + 批量 + 引用检查）
-│   ├── FormulasController.cs       # 12 个端点（CRUD + 克隆 + 验证）
-│   ├── MedicalCasesController.cs   # 22 个端点（Facade 模式）
-│   ├── RegistrationsController.cs  # 7 个端点（CRUD + 队列 + 快速就诊）
+│   ├── PatientsController.cs       # 继承 BaseCrudController（CRUD + 导入导出）
+│   ├── CatalogController.cs        # 继承 BaseCrudController（药材+验方合并，35 端点）
+│   ├── MedicalCasesController.cs   # 继承 BaseMedicalCasesController（Facade 模式）
+│   ├── RegistrationsController.cs  # 继承 BaseRegistrationsController
 │   ├── ReportsController.cs        # 3 个端点（报表统计）
-│   ├── DiagnosticsController.cs    # 7 个端点（日志级别管理）
-│   └── ConfigurationController.cs  # 键值对配置（内存存储）
+│   ├── DiagnosticsController.cs    # 日志级别管理
+│   ├── ConfigurationController.cs  # 键值对配置（内存存储）
+│   └── DeployController.cs         # 部署（上传 + 重启）
 ├── Data/
 │   └── LocalWebApiSeedData.cs      # 示例种子数据（Herb/Formula/Patient）
 ├── Handlers/                       # MediatR CQRS Handlers（Auth + Diagnostics）
-├── Mappers/
-│   └── LocalApiMapper.cs           # 手动映射器（Entity → ListDto/DetailDto）
-├── Repositories/
-│   ├── HttpHerbRepository.cs       # IApiClient 药材仓库
-│   ├── HttpFormulaRepository.cs    # IApiClient 验方仓库
-│   ├── HttpPatientRepository.cs    # IApiClient 患者仓库
-│   ├── HttpUserRepository.cs       # IApiClient 用户仓库
-│   ├── HttpMedicalCaseRepository.cs# IApiClient 医案仓库
-│   └── HttpRegistrationRepository.cs# IApiClient 挂号仓库
 ├── LocalWebApiProgram.cs           # 入口：Builder/Builder/InitDB/Run
 └── Program.cs                      # ASP.NET Core 启动入口
 ```
@@ -49,7 +41,7 @@ LYBT.LocalWebAPI/
 | 方法 | 说明 |
 |------|------|
 | `CreateBuilder(args?)` | 创建 `WebApplicationBuilder` |
-| `CreateApplication(builder, connectionString)` | 注册 DbContext + Identity + 8 个 Server Module + MediatR + RateLimiter + JWT |
+| `CreateApplication(builder, connectionString)` | 注册 DbContext + Identity + 6 个 Server Module + MediatR + RateLimiter + JWT |
 | `InitializeDatabaseAsync(app)` | `EnsureCreatedAsync` + `IdentitySeedData` + `LocalWebApiSeedData` |
 | `RunAsync(args?, connectionString)` | 串联上述三步并启动 Kestrel |
 
@@ -79,21 +71,16 @@ LYBT.LocalWebAPI/
 | 控制器 | 注入服务 | 端点数 | 说明 |
 |--------|----------|--------|------|
 | **AuthController** | IAuthService + IAutoLoginService | ~5 | 登录/登出/刷新/自动登录/Token验证 |
-| **HealthController** | 无（直接 DbContext） | 2 | `/ping` + `/details`（DB 连通性） |
+| **HealthController** | IHealthCheckService | 2 | `/ping` + `/details`（DB 连通性） |
 | **UsersController** | IUserService | 继承 | 继承 BaseUsersController |
-| **PatientsController** | IPatientService + IPatientImportExportService | 11 | CRUD + 导入导出 |
-| **HerbsController** | IHerbService | 11 | CRUD + 批量操作 + 引用检查 |
-| **FormulasController** | IFormulaService + IFormulaImportExportService | 12 | CRUD + 克隆 + 验证 |
-| **MedicalCasesController** | IMedicalCaseFacade + IPermissionService | 22 | Facade 模式，最多端点 |
-| **RegistrationsController** | IRegistrationService | 7 | CRUD + 队列管理 + 快速就诊 |
+| **PatientsController** | IPatientService + IPatientImportExportService | 继承+13 | 继承 BaseCrudController，CRUD + 导入导出 |
+| **CatalogController** | ICatalogQueryService | 35 | 药材+验方合并（2026-08 模块合并），CRUD + 批量 + 引用检查 + 克隆 |
+| **MedicalCasesController** | IMedicalCaseCommandService/QueryService/StateService | 12 | Facade 模式，最多端点 |
+| **RegistrationsController** | IRegistrationService | 继承 | 继承 BaseRegistrationsController |
 | **ReportsController** | IReportsService | 3 | 报表统计 |
-| **DiagnosticsController** | LoggingLevelManager | 7 | 日志级别运行时管理 |
-| **ConfigurationController** | 无（内存存储） | — | 键值对配置 |
-
-| 仓库 | 说明 |
-|------|------|
-| **Http\*Repository** (6个) | 实现 Desktop 端 `I*Repository` 接口，内部调用 `IApiClient` 转发到 LocalWebAPI Controller |
-| **LocalApiMapper** (static) | 手动扩展方法：Entity → ListDto/DetailDto（Patient/User/Registration/MedicalCase） |
+| **DiagnosticsController** | LoggingLevelManager | 3 | 日志级别运行时管理 |
+| **ConfigurationController** | 无（内存存储） | 2 | 键值对配置 |
+| **DeployController** | 无（进程控制） | 2 | 上传 + 重启 |
 
 ## 依赖关系
 
@@ -101,13 +88,11 @@ LYBT.LocalWebAPI/
 LYBT.LocalWebAPI
 ├── Server/Core/LYBT.Infrastructure    (AppDbContext, BaseRepository, BaseApiController)
 ├── Server/Core/LYBT.Entities          (领域实体)
-├── Server/Modules/LYBT.Module.Auth        (IAuthService)
-├── Server/Modules/LYBT.Module.Users       (IUserService, IdentitySeedData)
+├── Server/Modules/LYBT.Module.Identity    (IAuthService, IUserService, IdentitySeedData)
+├── Server/Modules/LYBT.Module.Catalog     (IHerbService, IFormulaService)
 ├── Server/Modules/LYBT.Module.Patients    (IPatientService)
-├── Server/Modules/LYBT.Module.Herbs       (IHerbService)
-├── Server/Modules/LYBT.Module.Formulas    (IFormulaService)
 ├── Server/Modules/LYBT.Module.MedicalCases(IMedicalCaseFacade)
-├── Server/Modules/LYBT.Module.Registration(IRegistrationService)
+├── Server/Modules/LYBT.Module.Registrations(IRegistrationService)
 ├── Server/Modules/LYBT.Module.Reports     (IReportsService)
 ├── LYBT.Shared.Models                 (DTOs/Contracts)
 ├── LYBT.Shared.Logging                (LoggingLevelManager)
@@ -130,5 +115,5 @@ LYBT.LocalWebAPI
 - **LocalWebApiDbContext 已删除** — 统一使用 `AppDbContext`，任何残留引用会编译失败。
 - **Architecture Test P21 已跳过** — `P21_LocalWebAPI_ServerModule_References_Match_ADR0010` 因统一架构有意跳过。
 - **密码哈希不兼容** — BCrypt（PasswordHelper）vs PBKDF2（Identity）不兼容，所有用户创建必须走 `UserManager`。
-- **端口 5300** — 本地模式固定端口，与远程 5000 区分，`SwitchingApiClient` 据此路由。
+- **端口 5290** — 本地模式固定端口，与远程 5000 区分，`SwitchingApiClient` 据此路由。
 - **AddIdentity 必在 AddAuthentication 前** — `LocalWebApiProgram.CreateApplication` 中注册顺序不可调换。

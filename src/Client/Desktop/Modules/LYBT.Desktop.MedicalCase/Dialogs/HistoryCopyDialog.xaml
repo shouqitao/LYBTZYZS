@@ -205,7 +205,7 @@
                                         </Grid>
 
                                         <!-- 诊断维度: 中医诊断（核心信息） -->
-                                        <TextBlock Text="{Binding Diagnosis, TargetNullValue=暂无诊断}"
+                                        <TextBlock Text="{Binding TcmDiagnosis, TargetNullValue=暂无诊断}"
                                                    FontSize="14"
                                                    FontWeight="Medium"
                                                    TextTrimming="CharacterEllipsis"

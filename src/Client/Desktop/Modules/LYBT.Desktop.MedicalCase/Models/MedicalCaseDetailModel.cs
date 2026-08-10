@@ -20,6 +20,7 @@ public class MedicalCaseDetailModel : ValidatableModelBase
     private Guid _id;
     private Guid _patientId;
     private string _patientName = string.Empty;
+    private string? _caseNumber;
     // ConsultationDate已删除，使用CreatedAt代替
     private MedicalCaseStatus _status = MedicalCaseStatus.Suspended;
 
@@ -60,6 +61,16 @@ public class MedicalCaseDetailModel : ValidatableModelBase
         get => _patientName;
         set => SetProperty(ref _patientName, value);
     }
+
+    /// <summary>医案编号（只读）</summary>
+    public string? CaseNumber
+    {
+        get => _caseNumber;
+        set => SetProperty(ref _caseNumber, value);
+    }
+
+    /// <summary>折扣（只读，处方级字段；历史复制时透传）</summary>
+    public decimal Discount { get; set; }
 
     // ConsultationDate属性已删除，使用CreatedAt代替
     /// <summary>就诊日期（使用CreatedAt）</summary>
@@ -173,6 +184,16 @@ public class MedicalCaseDetailModel : ValidatableModelBase
         set => SetProperty(ref _prescriptionItems, value);
     }
 
+    /// <summary>是否有诊疗记录（只读；诊断字段非空即视为有诊疗）</summary>
+    public bool HasConsultation =>
+        !string.IsNullOrWhiteSpace(PresentIllness) ||
+        !string.IsNullOrWhiteSpace(TongueDiagnosis) ||
+        !string.IsNullOrWhiteSpace(PulseDiagnosis) ||
+        !string.IsNullOrWhiteSpace(TcmDiagnosis);
+
+    /// <summary>是否有处方（只读；存在处方药材项即视为有处方）</summary>
+    public bool HasPrescription => HasPrescriptionItems;
+
     /// <summary>是否有处方药材</summary>
     public bool HasPrescriptionItems => PrescriptionItems?.Count > 0;
 
@@ -226,6 +247,7 @@ public class MedicalCaseDetailModel : ValidatableModelBase
             Id = Id,
             PatientId = PatientId,
             PatientName = PatientName,
+            CaseNumber = CaseNumber,
             // ConsultationDate已删除，使用CreatedAt代替
             Status = Status,
             PresentIllness = PresentIllness,
@@ -234,6 +256,7 @@ public class MedicalCaseDetailModel : ValidatableModelBase
             TcmDiagnosis = TcmDiagnosis,
             HerbCount = HerbCount,
             DoseCount = DoseCount,
+            Discount = Discount,
             ReferencedFormulas = ReferencedFormulas,
             CreatedAt = CreatedAt,
             UpdatedAt = UpdatedAt,

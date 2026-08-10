@@ -16,13 +16,11 @@ LYBTZYZS Desktop 客户端支持双模式运行：远程模式（连接远程 We
 LocalWebAPI 引用以下 Server 项目：
 - `LYBT.Entities`（领域实体）
 - `LYBT.Infrastructure`（AppDbContext, BaseRepository）
-- `LYBT.Module.Auth`（IAuthService）
-- `LYBT.Module.Users`（IUserService）
+- `LYBT.Module.Identity`（IAuthService/IUserService — Auth+Users 合并，2026-08 模块合并后）
+- `LYBT.Module.Catalog`（IHerbService/IFormulaService — Herbs+Formulas 合并，2026-08 模块合并后）
 - `LYBT.Module.Patients`（IPatientService）
-- `LYBT.Module.Herbs`（IHerbService）
-- `LYBT.Module.Formulas`（IFormulaService）
 - `LYBT.Module.MedicalCases`（IMedicalCaseFacade）
-- `LYBT.Module.Registration`（IRegistrationService）
+- `LYBT.Module.Registrations`（IRegistrationService）
 - `LYBT.Module.Reports`（IReportsService）
 
 ## Rationale
@@ -33,7 +31,7 @@ LocalWebAPI 引用以下 Server 项目：
 
 3. **UI 无感知**：Desktop 始终通过 HTTP/Refit 调用 API，SwitchingApiClient 透明切换 URL。UI 代码与运行模式完全解耦。
 
-4. **ROI 不足**：解耦方案（接口提取）是"假隔离"——编译时隔了一层但运行时依赖不变。真正的解耦（移除 LocalWebAPI）需要重写 8 个 Service + 16 个 Repository，工作量大且维护成本高。
+4. **ROI 不足**：解耦方案（接口提取）是"假隔离"——编译时隔了一层但运行时依赖不变。真正的解耦（移除 LocalWebAPI）需要重写 6 个 Service + 12 个 Repository，工作量大且维护成本高。
 
 ## Consequences
 
@@ -53,4 +51,4 @@ LocalWebAPI 引用以下 Server 项目：
 
 - US-AUTH-012 / US-AUTH-013（本地简化认证 1 年 JWT、本地登录限流：复用 Auth 模块 Service）
 - 全部业务模块本地模式端点（US-USER/PAT/HERB/FORM/MC/REG）——LocalWebAPI 直接复用 Server 各 Module 的 Service 层，确保双模式行为零差异
-- 详见 ADR 引用列表的 8 个 Server Module（Auth/Users/Patients/Herbs/Formulas/MedicalCases/Registration/Reports）
+- 详见 ADR 引用列表的 6 个 Server Module（Identity/Catalog/Patients/MedicalCases/Registrations/Reports）

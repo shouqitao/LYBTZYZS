@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Reflection;
 using NetArchTest.Rules;
 using Xunit;
@@ -722,6 +723,7 @@ public class DesktopLayerArchTests
     /// <summary>
     /// DP-M1: Desktop ViewModel 禁止直接持有 DTO 做编辑属性
     /// DTO 是传输对象，编辑必须通过 Model。只读 DTO 属性（用于显示）除外。
+    /// 扩展：ObservableCollection&lt;T&gt; 泛型参数名以 Dto 结尾同样判违规。
     /// </summary>
     [Fact]
     public void DP_M1_ViewModels_Must_Not_Hold_Dto_As_Editable_Property()
@@ -749,18 +751,49 @@ public class DesktopLayerArchTests
             "DailyIncome", "DailyConsultations", "DailyHerbUsage"
         };
 
+        // 只读展示/引用集合白名单（DP-M1 文档：只读 DTO 属性用于显示除外）
+        // 先例：Registration 患者/医生选择列表豁免；共享控件药材目录引用列表（HerbListDto）豁免
+        var readOnlyDisplayCollectionNames = new HashSet<string>
+        {
+            "AllHerbs",          // 药材目录引用列表（共享控件数据源，HerbListDto）
+            "FilteredHerbs",     // 药材过滤建议列表（HerbListDto，只读展示）
+            "Patients",          // 患者列表（只读展示/选择，先例豁免）
+            "Queue",             // 待诊队列（只读展示，PendingMedicalCaseDto）
+            "Logs",              // 审计日志列表（只读展示，AuditLogDto）
+            "PatientSearchResults", // 患者搜索列表（先例豁免）
+            "DoctorList"            // 医生选择列表（先例豁免）
+        };
+
         foreach (var vmType in viewModelTypes)
         {
             // 只检查 ViewModel 自身声明的属性（不检查继承的基类属性）
             var properties = vmType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-                .Where(p => p.CanWrite && p.PropertyType.Name.EndsWith("Dto"))
-                .Where(p => !p.PropertyType.Name.EndsWith("PrintDto")) // 打印 DTO 豁免
-                .Where(p => !baseClassPropertyNames.Contains(p.Name)) // 基类属性豁免
+                .Where(p => p.CanWrite)
+                .Where(p => !baseClassPropertyNames.Contains(p.Name))
                 .ToList();
 
             foreach (var prop in properties)
             {
-                violations.Add($"{vmType.Name}.{prop.Name} (类型: {prop.PropertyType.Name})");
+                var propertyType = prop.PropertyType;
+
+                // 直接声明 DTO 类型
+                if (propertyType.Name.EndsWith("Dto") && !propertyType.Name.EndsWith("PrintDto"))
+                {
+                    violations.Add($"{vmType.Name}.{prop.Name} (类型: {propertyType.Name})");
+                }
+
+                // ObservableCollection<T> 泛型参数名以 Dto 结尾（扩展检查）
+                if (propertyType.IsGenericType &&
+                    propertyType.GetGenericTypeDefinition() == typeof(ObservableCollection<>))
+                {
+                    var elementType = propertyType.GetGenericArguments()[0];
+                    if (elementType.Name.EndsWith("Dto") &&
+                        !elementType.Name.EndsWith("PrintDto") &&
+                        !readOnlyDisplayCollectionNames.Contains(prop.Name))
+                    {
+                        violations.Add($"{vmType.Name}.{prop.Name} (集合元素: {elementType.Name})");
+                    }
+                }
             }
         }
 

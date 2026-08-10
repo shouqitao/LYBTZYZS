@@ -17,6 +17,11 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
     /// <summary>
     /// 验方导入弹窗ViewModel - 重新设计版本
     /// 用于从经验方库搜索选择验方，批量导入药材到处方
+    ///
+    /// B3 决策（DP-M1 豁免）：保持 DTO 只读展示，不做 Model 化。
+    /// 理由：本弹窗对 FormulaListDto/FormulaDetailDto/FormulaHerbItemDto 全部为只读（展示+筛选+透传导入），
+    /// 无任何编辑语义；先例：Registration 患者/医生选择列表同样豁免 DP-M1（只读 DTO 展示允许）。
+    /// 若未来需要编辑验方药材，再引入 FormulaHerbItemModel。
     /// </summary>
     public partial class FormulaImportDialogViewModel : DialogViewModelBase
     {

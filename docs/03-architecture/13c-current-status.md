@@ -7,7 +7,7 @@
 | 项 | 值 |
 |----|-----|
 | Build | 0 错误 **0 警告** |
-| 架构测试 | 92/92 pass（P07/P08/P10 约束不可违反） |
+| 架构测试 | 88/88 pass（P07/P08/P10 约束不可违反） |
 | Desktop 测试 | 240 pass **104 fail**（测试主机进程崩溃） |
 | 最新迁移 | `RecreateDroppedAuditTables` |
 
@@ -82,9 +82,9 @@
 
 | ID | 问题 | 位置 | 影响 |
 |----|------|------|------|
-| P1-01 | 9 个 Build 警告 | 多处 (CA1001/CS8603/CS0168/CS4014) | 代码质量 |
+| P1-01 | 9 个 Build 警告 | 多处 (CA1001/CS8603/CS0168/CS4014) | ✅ 已修复 (2026-08-10, B1/B2/B3 后 build 0 警告门禁) |
 | P1-02 | 8 个 TODO 残留 | MedicalCase/Shell/Reports | 技术债务 |
-| P1-03 | 5 个超大类型 (>600行) | MedicalCaseCommandService/Repository/HttpClientApiClient/NavigableViewModelBase/PrescriptionPrintService | 可维护性 |
+| P1-03 | 5 个超大类型 (>600行) | MedicalCaseCommandService/Repository/HttpClientApiClient/NavigableViewModelBase/PrescriptionPrintService | ✅ 已解决 (2026-08-10: B2 重写后 5 个文件均 <600 行) |
 | P1-04 | 22 个 MediatR trivial Handler | MedicalCase Application/ | 过度设计 |
 | P1-05 | 实体双模型 | Domain/ vs Shared/ (6 对双胞胎) | 维护成本翻倍 |
 | P1-06 | Excel 导入/导出缺失 | Herbs/Formula/Patients | 无法批量操作 |

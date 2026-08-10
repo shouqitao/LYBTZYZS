@@ -424,7 +424,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         {
             Host.SetBusy(true, "正在复制历史处方...");
 
-            if (!parameters.TryGetValue<List<PrescriptionItemDto>>("SelectedItems", out var items) || items?.Any() != true)
+            if (!parameters.TryGetValue<List<PrescriptionItemModel>>("SelectedItems", out var items) || items?.Any() != true)
             {
                 _toastService.Show("历史处方无药材记录", ToastType.Error, 4000);
                 return Task.CompletedTask;
@@ -438,7 +438,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             }
 
             var herbPrices = BuildHerbPriceLookup();
-            var herbItems = FilterDisabledHerbs(items.ToPrescriptionItemDtos(herbPrices), "历史复制");
+            var itemDtos = items.Select(PrescriptionMapper.ToPrescriptionItemDto).ToList();
+            var herbItems = FilterDisabledHerbs(itemDtos.ToPrescriptionItemDtos(herbPrices), "历史复制");
             if (!herbItems.Any())
             {
                 _toastService.Show("历史处方无有效药材", ToastType.Error, 4000);
@@ -448,7 +449,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             foreach (var item in herbItems)
                 prescription.Items.Add(PrescriptionMapper.ToPrescriptionItemModel(item));
 
-            if (parameters.TryGetValue<MedicalCaseDetailDto>("SelectedCase", out var selectedCase) && selectedCase != null)
+            if (parameters.TryGetValue<MedicalCaseDetailModel>("SelectedCase", out var selectedCase) && selectedCase != null)
             {
                 var sourceRef = !string.IsNullOrEmpty(selectedCase.CaseNumber)
                     ? $"复制自{selectedCase.CaseNumber}"
@@ -459,13 +460,11 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
                 else if (!prescription.ReferencedFormulas.Contains(sourceRef))
                     prescription.ReferencedFormulas = $"{prescription.ReferencedFormulas}, {sourceRef}";
 
-                if (selectedCase.Prescription != null)
-                {
-                    if (selectedCase.Prescription.DosageCount > 0 && prescription.DosageCount == 0)
-                        prescription.DosageCount = selectedCase.Prescription.DosageCount;
-                    if (selectedCase.Prescription.Discount > 0 && prescription.Discount == 0)
-                        prescription.Discount = selectedCase.Prescription.Discount;
-                }
+                if (selectedCase.DoseCount > 0 && prescription.DosageCount == 0)
+                    prescription.DosageCount = selectedCase.DoseCount.Value;
+
+                if (selectedCase.Discount > 0 && prescription.Discount == 0)
+                    prescription.Discount = selectedCase.Discount;
             }
 
             _toastService.Show($"已复制历史处方，共{herbItems.Count}味药材", ToastType.Success, 5000);
