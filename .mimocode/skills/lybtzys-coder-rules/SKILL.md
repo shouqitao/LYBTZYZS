@@ -159,3 +159,89 @@ sqlcmd -S "(localdb)\MSSQLLocalDB" -Q "DROP DATABASE IF EXISTS LYBTDesktop"     
 4. 涉及迁移：检查无重复迁移文件
 5. 更新 `docs/03-architecture/13-project-master-plan.md` 状态（如适用）
 6. `git commit`（英文）+ `git push origin master`
+
+## Test Triage（测试失败甄别）
+
+测试失败时，先分类再决定是否修复：
+
+### 分类准则
+
+| 测试类型 | 判断依据 | 失败原因 | 处理 |
+|----------|----------|----------|------|
+| **Remote E2E** | `WebApiE2ETestBase` 系（UserTests/AuthenticationIntegrationTests/Modules+Foundation 集成） | 本地未启动远程 WebAPI（localhost:5000） | 非回归，报告注明 |
+| **LocalWebAPI 焦点** | `LocalWebApiControllerTestBase` 系（AuthControllerTests） | 基座缺 MediatR 注册→全 500 | 先查 HEAD 基线 |
+| **架构测试** | `LYBT.Tests.Architecture` | 新规则未加测试覆盖 | 必须修复 |
+| **单元测试** | `tests/LYBT.Tests.Desktop/Unit/` | 代码变更引入 | 必须修复 |
+
+### HEAD 基线验证法
+
+当怀疑测试失败是存量问题时：
+```bash
+git stash  # 暂存当前改动
+dotnet test tests/LYBT.Tests.Desktop/ --filter "AuthControllerTests|LocalWebAPI|UserTests"
+git stash pop  # 恢复改动
+```
+若 HEAD 基线同样失败 → 存量失败非本次回归 → 报告注明即可
+
+### 关键存量失败（已知，无需修复）
+
+- `AuthenticationIntegrationTests`: NSubstitute 代理 internal IAuthApi 必失败（DynamicProxyGenAssembly2 需 InternalsVisibleTo）
+- `AuthControllerTests.Admin_Can_Login`: 按用户决策「启动只创建 sysadmin」，admin 未 seed = 存量失败
+- `UserTests` 系列: localhost:5000 连接拒绝 = 远程 E2E，本地不启动必失败
+
+### dotnet test 参数陷阱
+
+- **错误**: `dotnet test tests/LYBT.Tests.Desktop/Foo.cs` → MSB4025
+- **正确**: `dotnet test tests/LYBT.Tests.Desktop/ --filter "FullyQualifiedName~Foo"`
+
+## Desktop API Client 三实现架构
+
+Desktop 侧 `IApiClient` 由三实现类落地，任何子接口合并/新增都需同步改这 3 处：
+
+### 架构图
+
+```
+IApiClient (主接口)
+├── Auth: IApiClientAuth / IApiClientIdentity
+├── Users: IApiClientUsers / IApiClientIdentity
+└── ...其他子接口
+
+IApiClient 实现:
+1. RefitApiClient (远程模式)
+   - Auth => new AuthApiClient(RestService.For<IAuthApi>)
+   - Users => new UserApiClient(RestService.For<IUserApi>)
+
+2. HttpClientApiClient (本地模式)
+   - Auth => new AuthHttpApiClient(_httpClientFactory)
+   - Users => new UsersHttpApiClient
+
+3. SwitchingApiClient (运行时代理)
+   - 按 URL 切换: localhost:5300→HttpClientApiClient, 否则→RefitApiClient
+   - Auth => Current.Auth
+```
+
+### DI 注册
+
+- 仅注册 `IApiClient` 单例（`Shell/Extensions/UnifiedApiClientExtensions.AddUnifiedApiClient`）
+- 子接口（IApiClientAuth/IApiClientUsers/IApiClientIdentity）**无独立注册**
+- 通过 `IApiClient.Auth` / `IApiClient.Users` / `IApiClient.Identity` 属性访问
+
+### 修改清单（合并/新增子接口时）
+
+1. **Contracts/ApiClient/**: 新建/修改子接口（如 IApiClientIdentity）
+2. **RefitApiClient**: 添加属性 + 惰性初始化
+3. **HttpClientApiClient**: 添加属性 + 惰性初始化
+4. **SwitchingApiClient**: 添加属性 + Current 切换逻辑
+5. **所有注入点**: 改构造函数参数类型（如 IApiClientAuth → IApiClientIdentity）
+6. **测试文件**: 同步更新 mock/注入
+
+### 段接口继承（重要）
+
+子接口可继承 `IEntityApiSegment<TListDto,TDetailDto,TInputDto>`（5 标准 CRUD）：
+```csharp
+public interface IApiClientIdentity : IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>
+{
+    // 额外方法...
+}
+```
+`EntityApiClientRepositoryBase<TListDto,TDetailDto>` 构造函数参数类型是 `IEntityApiSegment<...>`，子接口必须保留该继承否则编译错。
