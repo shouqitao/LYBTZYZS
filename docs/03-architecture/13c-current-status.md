@@ -71,8 +71,10 @@
 | 登记日期 | 来源任务 | 有意保留项 | 原因 | 计划批次 |
 |---------|---------|-----------|------|---------|
 | 2026-08-10 | D1 Catalog 双轨统一 | FormulaDetailModelMapper 若接线后发现仍零调用 → 删除；Herb 轨补 Mapperly | D1 按扫描报告统一，执行中复核 | D1 内收口 |
-| 2026-08-10 | D4 命名统一 | Service 前缀（Remote* vs 无前缀）统一方向待 D4 执行时按最小改动定 | A-08（08-05）曾报告「改名影响面大仅报告不改」 | D4 |
-| 2026-08-10 | D4 命名统一 | Manager 后缀（XxxManager vs XxxService）统一策略 | A-08 曾报告；契约层已统一 IXxxService | D4 评估 |
+| 2026-08-10 | D4 命名统一 | ~~Service 前缀统一方向待定~~ **已执行**：统一为 Remote* 前缀（RemoteUserService/RemoteRegistrationService/RemoteHerbService/RemoteFormulaService/RemotePatientService）；契约层 IXxxService 无前缀为接口惯例，实现类 Remote 标识 HTTP 数据服务 | 4:1 既定模式（D1 确立 RemoteFormulaService），仅 PatientService 需改名，改动面 1 类+Module+测试 | ✅ 9748db4b4 |
+| 2026-08-10 | D4 命名统一 | **Manager 后缀保留**：DesktopCacheManager/DialogManager/SessionManager/TokenManager/LoginStateManager/StatusBarManager/NavigationManager/MenuManager/LoadingStateManager/EventSubscriptionManager/WorkspaceStateManager/SessionLifecycleManager 共 12 个——全部为「生命周期/会话状态/UI 基础设施」管理职责，与数据业务 Service 职责明确不同；契约层 IXxxService 与 IXxxManager 各自统一 | A-08 曾报告；D4 核实 Manager 有明确职责差异（Session/Token/Cache/UI 状态管理），改名无收益 | ✅ 9748db4b4 |
+| 2026-08-10 | D4 命名统一 | **SearchProvider 保留**：I{Herb|Formula}SearchProvider 为 D5-3 跨模块门面（MedicalCase/Formula 消费，Catalog 实现委托 I{Herb|Formula}Service）——与 Service 明确分工：Service=模块内数据服务，SearchProvider=跨模块解耦（防 MedicalCase→Catalog 编译期依赖，P07 合规） | 合并会破坏模块解耦；接口注释已文档化 D5-3 意图 | ✅ 9748db4b4 |
+| 2026-08-10 | D4 命名统一 | **BreadcrumbItem 同名不改**：Contracts record（LYBT.Desktop.Contracts.UI，导航架构数据 Title/ViewName/IsCurrent）vs Controls class（LYBT.Desktop.Controls.Controls，BreadcrumbBar 渲染模型 Label/Level/IsCurrent/IsLast/NavigateCommand）——两个 namespace 封闭使用、零桥接（BreadcrumbBar 经 NavigationPath/NavigateCommand DP 绑定），无文件同时 using 两处 | 核实不冲突；重命名仅同名巧合，无实际歧义 | ✅ 9748db4b4 |
 | 2026-08-10 | D5 MedicalCase 双体系 | DTO 门面缓存（Cached*）收敛到 EditContext 新路径 | 用户已拍板方案 A（收敛），B2 设计意图 | D5 |
 | 2026-08-10 | O1 死代码 | PatientDetailDisplayModel / TokenManager 无写入路径 / PrintOptions 死选项 | 扫描报告 P2 确认零引用 | O1 |
 | 2026-08-10 | O3 卫生 | Controls 控件层 PrescriptionItemDto 交换形状（内部适配层） | B1 已解耦外部 DP 为 IEnumerable；控件内部适配非 UI 编辑路径 | O3 评估，倾向保留 |

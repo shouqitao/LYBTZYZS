@@ -41,7 +41,7 @@ namespace LYBT.Desktop.Patients
             containerRegistry.Register<IValidator<PatientInputDto>, PatientInputDtoValidator>();
 
             // Epic #1773 Task 4: 注册患者模块组件化组件（Scoped生命周期）
-            containerRegistry.Register<IPatientService, Services.PatientService>();
+            containerRegistry.Register<IPatientService, Services.RemotePatientService>();
             containerRegistry.RegisterSingleton<Mappers.PatientMapper>();
             containerRegistry.AddMasterDetailServices<PatientListDto, PatientDetailModel>();
 

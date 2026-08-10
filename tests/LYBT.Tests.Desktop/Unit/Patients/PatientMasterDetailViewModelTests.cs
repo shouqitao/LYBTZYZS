@@ -32,7 +32,7 @@ public class PatientMasterDetailViewModelTests
     private readonly PatientCardReaderViewModel _cardReaderViewModel;
     private readonly PatientEditorViewModel _patientEditor;
     private readonly ILoggerFactory _loggerFactory;
-    private readonly ILogger<PatientService> _logger;
+    private readonly ILogger<RemotePatientService> _logger;
 
     // MasterDetailServices 组件
     private readonly IListViewServices<PatientListDto> _listViewServices;
@@ -49,8 +49,8 @@ public class PatientMasterDetailViewModelTests
     {
         // Arrange - 创建所有 mock
         _loggerFactory = Substitute.For<ILoggerFactory>();
-        _logger = Substitute.For<ILogger<PatientService>>();
-        _loggerFactory.CreateLogger<PatientService>().Returns(_logger);
+        _logger = Substitute.For<ILogger<RemotePatientService>>();
+        _loggerFactory.CreateLogger<RemotePatientService>().Returns(_logger);
 
         // 创建 MasterDetailServices 组件 mocks
         _listViewServices = Substitute.For<IListViewServices<PatientListDto>>();
