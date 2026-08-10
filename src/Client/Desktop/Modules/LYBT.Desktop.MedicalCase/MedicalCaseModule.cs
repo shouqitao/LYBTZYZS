@@ -37,7 +37,8 @@ namespace LYBT.Desktop.MedicalCase
             ViewModelLocationProvider.Register(typeof(MedicalCaseMasterDetailControl).ToString(), typeof(ViewModels.MedicalCaseMasterDetailViewModel));
 
             // S7: MedicalCaseService 拆分
-            containerRegistry.Register<Services.MedicalCaseEditContext>();
+            // 编辑会话单例：CommandService/LifecycleService 共同持有，保证状态一致
+            containerRegistry.RegisterSingleton<Models.Items.MedicalCaseEditContext>();
             containerRegistry.Register<IMedicalCaseQueryService, MedicalCaseQueryService>();
             containerRegistry.Register<IMedicalCaseCommandService, MedicalCaseCommandService>();
             containerRegistry.Register<IMedicalCaseLifecycleService, MedicalCaseLifecycleService>();

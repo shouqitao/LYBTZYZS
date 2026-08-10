@@ -2,6 +2,7 @@ using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Desktop.MedicalCase.Mappers;
+using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using Microsoft.Extensions.Logging;
 
@@ -10,6 +11,8 @@ namespace LYBT.Desktop.MedicalCase.Services;
 /// <summary>
 /// 医案命令服务 - 写操作 + 变更检测
 /// 从 MedicalCaseService 拆分，实现 IMedicalCaseCommandService
+/// 基于 Model 编辑会话（MedicalCaseEditContext）工作：HasChanges 委托会话 IsDirty，
+/// SaveAsync 从会话 Commit 后的 CurrentModel 经 Mapper 生成 InputDto 提交仓库。
 /// </summary>
 internal class MedicalCaseCommandService : IMedicalCaseCommandService
 {
@@ -33,46 +36,51 @@ internal class MedicalCaseCommandService : IMedicalCaseCommandService
         _sessionManager = sessionManager;
     }
 
-    public MedicalCaseDetailDto? Current => _context.CurrentDetail;
+    /// <summary>
+    /// 当前医案数据（DTO 门面）。
+    /// 会话基于 Model 编辑，DTO 门面由聚合代理 MedicalCaseService 持有（Current/Cached*），
+    /// 命令服务不再维护 DTO 快照，返回 null。
+    /// </summary>
+    public MedicalCaseDetailDto? Current => null;
 
-    public bool HasChanges => _context.CurrentDetail != null && _context.OriginalDetail != null &&
-        (IsMedicalCaseChanged() || IsConsultationChanged() || IsPrescriptionChanged());
+    public bool HasChanges => _context.IsDirty;
 
     public virtual async Task<bool> SaveAsync(CancellationToken ct = default)
     {
-        if (_context.CurrentDetail == null) { _logger.LogWarning("[CMD] MedicalCase.Save → NoData"); return false; }
-        if (!HasChanges) { _logger.LogDebug("[CMD] MedicalCase.Save → NoChanges - MedicalCaseId={MedicalCaseId}", _context.CurrentDetail.Id); return true; }
+        var model = _context.CurrentModel;
+        if (model == null) { _logger.LogWarning("[CMD] MedicalCase.Save → NoSession"); return false; }
+        if (!HasChanges) { _logger.LogDebug("[CMD] MedicalCase.Save → NoChanges - MedicalCaseId={MedicalCaseId}", model.Id); return true; }
 
         try
         {
-            _logger.LogInformation("[CMD] MedicalCase.Save started - MedicalCaseId={MedicalCaseId}", _context.CurrentDetail.Id);
-            var inputDto = _mapper.ToInputDto(_context.CurrentDetail);
-            var updated = await _repository.SaveAsync(_context.CurrentDetail.Id, inputDto);
+            _logger.LogInformation("[CMD] MedicalCase.Save started - MedicalCaseId={MedicalCaseId}", model.Id);
+            _context.Commit();
+            var inputDto = _mapper.ToInputDto(model);
+            var updated = await _repository.SaveAsync(model.Id, inputDto);
             if (updated != null)
             {
-                UpdateMedicalCaseFields(_context.CurrentDetail, updated);
-                if (updated.Consultation != null) _context.CurrentDetail.Consultation = updated.Consultation;
-                if (updated.Prescription != null) _context.CurrentDetail.Prescription = updated.Prescription;
+                // 用服务端返回的最新详情重建编辑会话，基线前移
+                _context.BeginEdit(_mapper.ToItem(updated));
             }
-            _context.UpdateOriginal();
-            _logger.LogInformation("[CMD] MedicalCase.Save completed - MedicalCaseId={MedicalCaseId}", _context.CurrentDetail.Id);
+            _logger.LogInformation("[CMD] MedicalCase.Save completed - MedicalCaseId={MedicalCaseId}", model.Id);
             return true;
         }
-        catch (Exception ex) { _logger.LogError(ex, "[CMD] MedicalCase.Save failed - MedicalCaseId={MedicalCaseId}", _context.CurrentDetail.Id); return false; }
+        catch (Exception ex) { _logger.LogError(ex, "[CMD] MedicalCase.Save failed - MedicalCaseId={MedicalCaseId}", model.Id); return false; }
     }
 
     public virtual async Task<bool> DeleteAsync(CancellationToken ct = default)
     {
-        if (_context.CurrentDetail == null) { _logger.LogWarning("[CMD] MedicalCase.Delete → NoData"); return false; }
+        var model = _context.CurrentModel;
+        if (model == null) { _logger.LogWarning("[CMD] MedicalCase.Delete → NoSession"); return false; }
         try
         {
-            _logger.LogInformation("[CMD] MedicalCase.Delete started - MedicalCaseId={MedicalCaseId}", _context.CurrentDetail.Id);
-            await _repository.DeleteAsync(_context.CurrentDetail.Id);
-            _logger.LogInformation("[CMD] MedicalCase.Delete completed - MedicalCaseId={MedicalCaseId}", _context.CurrentDetail.Id);
+            _logger.LogInformation("[CMD] MedicalCase.Delete started - MedicalCaseId={MedicalCaseId}", model.Id);
+            await _repository.DeleteAsync(model.Id);
+            _logger.LogInformation("[CMD] MedicalCase.Delete completed - MedicalCaseId={MedicalCaseId}", model.Id);
             _context.Clear();
             return true;
         }
-        catch (Exception ex) { _logger.LogError(ex, "[CMD] MedicalCase.Delete failed - MedicalCaseId={MedicalCaseId}", _context.CurrentDetail?.Id ?? Guid.Empty); return false; }
+        catch (Exception ex) { _logger.LogError(ex, "[CMD] MedicalCase.Delete failed - MedicalCaseId={MedicalCaseId}", model.Id); return false; }
     }
 
     public virtual async Task<(bool success, Guid medicalCaseId, string? errorMessage)> CreateMedicalCaseAsync(Guid patientId, Guid? registrationId = null, CancellationToken ct = default)
@@ -115,42 +123,4 @@ internal class MedicalCaseCommandService : IMedicalCaseCommandService
             return (false, Guid.Empty, ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建医案", ex));
         }
     }
-
-    #region 变更检测
-
-    private bool IsMedicalCaseChanged() => _context.CurrentDetail != null && _context.OriginalDetail != null &&
-        (_context.CurrentDetail.CaseNumber != _context.OriginalDetail.CaseNumber ||
-         _context.CurrentDetail.PatientId != _context.OriginalDetail.PatientId ||
-         _context.CurrentDetail.UserId != _context.OriginalDetail.UserId ||
-         _context.CurrentDetail.CaseStatus != _context.OriginalDetail.CaseStatus);
-
-    private bool IsConsultationChanged()
-    {
-        if (_context.CurrentDetail?.Consultation == null || _context.OriginalDetail?.Consultation == null) return false;
-        var c = _context.CurrentDetail.Consultation; var o = _context.OriginalDetail.Consultation;
-        return c.PresentIllness != o.PresentIllness ||
-               c.TongueDiagnosis != o.TongueDiagnosis || c.PulseDiagnosis != o.PulseDiagnosis ||
-               c.TcmDiagnosis != o.TcmDiagnosis;
-    }
-
-    private bool IsPrescriptionChanged()
-    {
-        if (_context.CurrentDetail?.Prescription == null || _context.OriginalDetail?.Prescription == null) return false;
-        var c = _context.CurrentDetail.Prescription; var o = _context.OriginalDetail.Prescription;
-        return c.DosageCount != o.DosageCount || c.Usage != o.Usage ||
-               c.Discount != o.Discount || c.Advice != o.Advice || c.Remark != o.Remark;
-    }
-
-    private static void UpdateMedicalCaseFields(MedicalCaseDetailDto target, MedicalCaseDetailDto source)
-    {
-        target.CaseNumber = source.CaseNumber;
-        target.PatientId = source.PatientId; target.PatientName = source.PatientName;
-        target.PatientGender = source.PatientGender; target.PatientAge = source.PatientAge;
-        target.UserId = source.UserId; target.DoctorName = source.DoctorName;
-        target.ConsultationId = source.ConsultationId; target.PrescriptionId = source.PrescriptionId;
-        target.CaseStatus = source.CaseStatus;
-        target.UpdatedAt = source.UpdatedAt;
-    }
-
-    #endregion
 }

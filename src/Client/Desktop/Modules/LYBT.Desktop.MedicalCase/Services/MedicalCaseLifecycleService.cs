@@ -2,6 +2,8 @@ using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.ExceptionHandling;
+using LYBT.Desktop.MedicalCase.Mappers;
+using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -14,26 +16,31 @@ namespace LYBT.Desktop.MedicalCase.Services;
 /// <summary>
 /// 医案生命周期服务 - 初始化、状态流转
 /// 从 MedicalCaseService 拆分，实现 IMedicalCaseLifecycleService
+/// InitializeAsync 加载 DTO → Mapper → Model → 编辑会话 BeginEdit
 /// </summary>
 internal class MedicalCaseLifecycleService : IMedicalCaseLifecycleService
 {
     private readonly IMedicalCaseRepository _repository;
     private readonly MedicalCaseEditContext _context;
+    private readonly MedicalCaseDetailModelMapper _mapper;
     private readonly ILogger<MedicalCaseLifecycleService> _logger;
+    private MedicalCaseDetailDto? _currentDto;
 
     public MedicalCaseLifecycleService(
         IMedicalCaseRepository repository,
         MedicalCaseEditContext context,
+        MedicalCaseDetailModelMapper mapper,
         ILogger<MedicalCaseLifecycleService> logger)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _context = context ?? throw new ArgumentNullException(nameof(context));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public Guid MedicalCaseId => _context.CurrentDetail?.Id ?? Guid.Empty;
-    public ConsultationDetailDto? CurrentConsultation => _context.CurrentDetail?.Consultation;
-    public PrescriptionDetailDto? CurrentPrescription => _context.CurrentDetail?.Prescription;
+    public Guid MedicalCaseId => _context.CurrentModel?.Id ?? Guid.Empty;
+    public ConsultationDetailDto? CurrentConsultation => _currentDto?.Consultation;
+    public PrescriptionDetailDto? CurrentPrescription => _currentDto?.Prescription;
 
     public async Task InitializeAsync(Guid entityId, CancellationToken ct = default)
     {
@@ -42,7 +49,8 @@ internal class MedicalCaseLifecycleService : IMedicalCaseLifecycleService
             _logger.LogInformation("[LC] MedicalCase.Initialize started - MedicalCaseId={MedicalCaseId}", entityId);
             var detail = await _repository.GetByIdAsync(entityId);
             if (detail == null) throw new InvalidOperationException($"未找到ID为{entityId}的医案");
-            _context.SetCurrent(detail);
+            _currentDto = detail;
+            _context.BeginEdit(_mapper.ToItem(detail));
             _logger.LogInformation("[LC] MedicalCase.Initialize completed - PatientName={PatientName}", detail.PatientName);
         }
         catch (Exception ex) { _logger.LogError(ex, "[LC] MedicalCase.Initialize failed - MedicalCaseId={MedicalCaseId}", entityId); throw; }
@@ -50,10 +58,11 @@ internal class MedicalCaseLifecycleService : IMedicalCaseLifecycleService
 
     public async Task ReloadAsync(CancellationToken ct = default)
     {
-        if (_context.CurrentDetail != null)
+        var id = _context.CurrentModel?.Id;
+        if (id != null && id != Guid.Empty)
         {
-            _logger.LogDebug("[LC] MedicalCase.Reload started - MedicalCaseId={MedicalCaseId}", _context.CurrentDetail.Id);
-            await InitializeAsync(_context.CurrentDetail.Id);
+            _logger.LogDebug("[LC] MedicalCase.Reload started - MedicalCaseId={MedicalCaseId}", id);
+            await InitializeAsync(id.Value);
         }
     }
 

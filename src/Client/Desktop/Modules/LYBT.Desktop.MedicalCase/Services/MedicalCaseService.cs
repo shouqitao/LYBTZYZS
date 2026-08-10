@@ -25,17 +25,20 @@ public class MedicalCaseService : IMedicalCaseService
     private readonly IMedicalCaseQueryService _queryService;
     private readonly IMedicalCaseCommandService _commandService;
     private readonly IMedicalCaseLifecycleService _lifecycleService;
-    private readonly MedicalCaseEditContext _context;
     private readonly MedicalCaseDetailModelMapper _mapper;
     private readonly ISessionManager? _sessionManager;
     private readonly ILogger<MedicalCaseService> _logger;
+
+    // DTO 门面缓存（原 Services.MedicalCaseEditContext 职责，内移至聚合代理）
+    private MedicalCaseDetailDto? _cachedMedicalCase;
+    private ConsultationDetailDto? _cachedConsultation;
+    private PrescriptionDetailDto? _cachedPrescription;
 
     public MedicalCaseService(
         IMedicalCaseRepository repository,
         IMedicalCaseQueryService queryService,
         IMedicalCaseCommandService commandService,
         IMedicalCaseLifecycleService lifecycleService,
-        MedicalCaseEditContext context,
         MedicalCaseDetailModelMapper mapper,
         ILogger<MedicalCaseService> logger,
         ISessionManager? sessionManager = null)
@@ -44,7 +47,6 @@ public class MedicalCaseService : IMedicalCaseService
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         _commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
         _lifecycleService = lifecycleService ?? throw new ArgumentNullException(nameof(lifecycleService));
-        _context = context ?? throw new ArgumentNullException(nameof(context));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _sessionManager = sessionManager;
@@ -68,7 +70,7 @@ public class MedicalCaseService : IMedicalCaseService
 
     #region IMedicalCaseCommandService 委托
 
-    public MedicalCaseDetailDto? Current => _commandService.Current;
+    public MedicalCaseDetailDto? Current => _cachedMedicalCase;
     public bool HasChanges => _commandService.HasChanges;
 
     public virtual async Task<bool> SaveAsync(CancellationToken ct = default)
@@ -113,9 +115,9 @@ public class MedicalCaseService : IMedicalCaseService
 
     #region IMedicalCaseService 独有成员（Coordinator 职责）
 
-    public MedicalCaseDetailDto? CachedMedicalCase => _context.CachedMedicalCase;
-    public ConsultationDetailDto? CachedConsultation => _context.CachedConsultation;
-    public PrescriptionDetailDto? CachedPrescription => _context.CachedPrescription;
+    public MedicalCaseDetailDto? CachedMedicalCase => _cachedMedicalCase;
+    public ConsultationDetailDto? CachedConsultation => _cachedConsultation;
+    public PrescriptionDetailDto? CachedPrescription => _cachedPrescription;
 
     public async Task<CommandResult<MedicalCaseDetailModel>> LoadDetailsAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
@@ -130,9 +132,9 @@ public class MedicalCaseService : IMedicalCaseService
                 return CommandResult<MedicalCaseDetailModel>.NotFound("未找到医案数据");
             }
 
-            _context.CachedMedicalCase = detail;
-            _context.CachedConsultation = detail.Consultation;
-            _context.CachedPrescription = detail.Prescription;
+            _cachedMedicalCase = detail;
+            _cachedConsultation = detail.Consultation;
+            _cachedPrescription = detail.Prescription;
 
             var model = _mapper.ToItem(detail);
 
@@ -149,7 +151,9 @@ public class MedicalCaseService : IMedicalCaseService
     public void ClearCache()
     {
         _logger.LogDebug("[SVC] MedicalCase.ClearCache");
-        _context.ClearCache();
+        _cachedMedicalCase = null;
+        _cachedConsultation = null;
+        _cachedPrescription = null;
     }
 
     public async Task<(bool Success, MedicalCaseDetailDto? Data, string? Error)> AggregateSaveAsync(
@@ -174,9 +178,9 @@ public class MedicalCaseService : IMedicalCaseService
 
             var result = await _repository.SaveAsync(medicalCaseId, aggregateDto);
 
-            _context.CachedMedicalCase = result;
-            _context.CachedConsultation = result?.Consultation;
-            _context.CachedPrescription = result?.Prescription;
+            _cachedMedicalCase = result;
+            _cachedConsultation = result?.Consultation;
+            _cachedPrescription = result?.Prescription;
 
             _logger.LogInformation("[SVC] MedicalCase.AggregateSave completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             return (true, result, null);
