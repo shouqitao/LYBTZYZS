@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Catalog.Mappers;
 using LYBT.Desktop.Catalog.Models;
 using LYBT.Desktop.Catalog.ViewModels.Handlers;
 using LYBT.Desktop.Infrastructure.Services;
@@ -24,6 +25,7 @@ namespace LYBT.Desktop.Catalog.ViewModels
         private readonly IHerbService _herbService;
         private readonly IHerbStatusHandler _statusHandler;
         private readonly IDesktopCacheManager _cacheManager;
+        private readonly HerbDetailModelMapper _herbMapper;
 
         /// <summary>药材编辑子 VM</summary>
         public HerbEditorViewModel HerbEditor { get; }
@@ -53,12 +55,14 @@ namespace LYBT.Desktop.Catalog.ViewModels
             IHerbService herbService,
             IHerbStatusHandler statusHandler,
             IDesktopCacheManager cacheManager,
+            HerbDetailModelMapper herbMapper,
             HerbEditorViewModel herbEditor)
             : base(viewModelServices, masterDetailServices)
         {
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
             _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
+            _herbMapper = herbMapper ?? throw new ArgumentNullException(nameof(herbMapper));
             HerbEditor = herbEditor ?? throw new ArgumentNullException(nameof(herbEditor));
 
             PageTitle = "药材管理";
@@ -110,42 +114,10 @@ namespace LYBT.Desktop.Catalog.ViewModels
                 return;
             }
 
-            var herb = result.Data;
-            var detail = new HerbDetailModel
-            {
-                Id = herb.Id,
-                Name = herb.Name,
-                PinYinCode = herb.PinYinCode ?? PinYinHelper.GetPinYinCode(herb.Name),
-                Category = herb.Category,
-                Properties = herb.Properties,
-                Origin = herb.Origin,
-                Spec = herb.Spec,
-                Unit = herb.Unit,
-                Price = herb.Price,
-                CostPrice = herb.CostPrice,
-                Effect = herb.Effect,
-                Usage = herb.Usage,
-                Remark = herb.Remark,
-                Status = herb.Status
-            };
+            // D1: 改用 Mapperly HerbDetailModelMapper，替代手写 new HerbDetailModel + new HerbDetailDto 双重映射
+            var detail = _herbMapper.ToItem(result.Data);
 
-            HerbEditor.InitializeFromDto(new HerbDetailDto
-            {
-                Id = herb.Id,
-                Name = herb.Name,
-                PinYinCode = herb.PinYinCode ?? PinYinHelper.GetPinYinCode(herb.Name),
-                Category = herb.Category,
-                Properties = herb.Properties,
-                Origin = herb.Origin,
-                Spec = herb.Spec,
-                Unit = herb.Unit,
-                Price = herb.Price,
-                CostPrice = herb.CostPrice,
-                Effect = herb.Effect,
-                Usage = herb.Usage,
-                Remark = herb.Remark,
-                Status = herb.Status
-            });
+            HerbEditor.InitializeFromDto(result.Data);
             OnPropertyChanged(nameof(IsNameEditable));
         }
 

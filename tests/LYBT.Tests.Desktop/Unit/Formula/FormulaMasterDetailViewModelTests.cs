@@ -105,7 +105,7 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
         _herbSearchProvider = Substitute.For<IHerbSearchProvider>();
         _cacheManager = Substitute.For<IDesktopCacheManager>();
         _mapper = new FormulaDetailModelMapper();
-        _formulaEditor = new FormulaEditorViewModel();
+        _formulaEditor = new FormulaEditorViewModel(_mapper);
 
         _pagination.CurrentPage.Returns(1);
         _pagination.PageSize.Returns(20);
@@ -122,7 +122,6 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
             _statusHandler,
             _herbSearchProvider,
             _cacheManager,
-            _mapper,
             _formulaEditor);
 
     [Fact]
@@ -174,15 +173,8 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
             DecocteMethod = DecocteMethod.Default
         });
 
-        _formulaService.CreateFormulaAsync(
-                "新验方",
-                "益气健脾",
-                "每日一剂",
-                "甘平",
-                "自拟方",
-                "测试创建",
-                false,
-                Arg.Any<List<FormulaHerbItemInputDto>>(),
+        _formulaService.CreateAsync(
+                Arg.Is<FormulaInputDto>(x => x.Name == "新验方"),
                 Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new LYBT.Desktop.Contracts.Results.CommandResult<FormulaDetailDto>(true, new FormulaDetailDto { Id = savedId, Name = "新验方" }, null)));
 
@@ -191,15 +183,16 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
 
         await sut.SaveCommand.ExecuteAsync(null);
 
-        await _formulaService.Received(1).CreateFormulaAsync(
-            "新验方",
-            "益气健脾",
-            "每日一剂",
-            "甘平",
-            "自拟方",
-            "测试创建",
-            false,
-            Arg.Is<List<FormulaHerbItemInputDto>>(x => x.Count == 1 && x[0].HerbName == "党参"),
+        await _formulaService.Received(1).CreateAsync(
+            Arg.Is<FormulaInputDto>(x =>
+                x.Name == "新验方" &&
+                x.Effect == "益气健脾" &&
+                x.Usage == "每日一剂" &&
+                x.Property == "甘平" &&
+                x.Category == "自拟方" &&
+                x.Remark == "测试创建" &&
+                !x.IsShared &&
+                x.Herbs.Count == 1 && x.Herbs[0].HerbName == "党参"),
             Arg.Any<CancellationToken>());
         _cacheManager.Received(1).InvalidateFormulaCaches();
     }
@@ -229,16 +222,8 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
             DecocteMethod = DecocteMethod.Default
         });
 
-        _formulaService.UpdateFormulaAsync(
-                existingId,
-                Arg.Any<string>(),
-                Arg.Any<string>(),
-                Arg.Any<string>(),
-                Arg.Any<string>(),
-                Arg.Any<string>(),
-                Arg.Any<string>(),
-                Arg.Any<bool>(),
-                Arg.Any<List<FormulaHerbItemInputDto>>(),
+        _formulaService.UpdateAsync(
+                Arg.Is<FormulaInputDto>(x => x.Id == existingId),
                 Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new LYBT.Desktop.Contracts.Results.CommandResult<FormulaDetailDto>(true, new FormulaDetailDto { Id = existingId, Name = "旧验方" }, null)));
 
@@ -247,16 +232,15 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
 
         await sut.SaveCommand.ExecuteAsync(null);
 
-        await _formulaService.Received(1).UpdateFormulaAsync(
-            existingId,
-            "旧验方",
-            "更新功效",
-            "更新用法",
-            "温",
-            "临床方",
-            Arg.Any<string>(),
-            Arg.Any<bool>(),
-            Arg.Any<List<FormulaHerbItemInputDto>>(),
+        await _formulaService.Received(1).UpdateAsync(
+            Arg.Is<FormulaInputDto>(x =>
+                x.Id == existingId &&
+                x.Name == "旧验方" &&
+                x.Effect == "更新功效" &&
+                x.Usage == "更新用法" &&
+                x.Property == "温" &&
+                x.Category == "临床方" &&
+                x.Herbs.Count == 1 && x.Herbs[0].HerbName == "黄芪"),
             Arg.Any<CancellationToken>());
         _cacheManager.Received(1).InvalidateFormulaCaches();
     }
@@ -281,7 +265,7 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
         _selection.HasSelection.Returns(true);
         _selection.SelectedItem.Returns(item);
 
-        _formulaService.DeleteFormulaAsync(item.Id, Arg.Any<CancellationToken>())
+        _formulaService.DeleteAsync(item.Id, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new LYBT.Desktop.Contracts.Results.CommandResult<bool>(true, true, null)));
         _formulaService.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new LYBT.Desktop.Contracts.Results.CommandResult<PagedResult<FormulaListDto>>(true, new PagedResult<FormulaListDto> { Items = new List<FormulaListDto>(), TotalCount = 0 }, null)));
@@ -289,7 +273,7 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
 
         await sut.DeleteCommand.ExecuteAsync(null);
 
-        await _formulaService.Received(1).DeleteFormulaAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await _formulaService.Received(1).DeleteAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
         await _dialogManager.Received(1).ShowConfirmAsync("确认删除", "确定要删除选中的记录吗？");
     }
 

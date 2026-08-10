@@ -147,6 +147,39 @@ public partial class FormulaDetailModelMapper
     private partial FormulaInputDto ToInputDtoCore(FormulaDetailModel model);
 
     /// <summary>
+    /// 将FormulaDetailDto转换为FormulaEditContext（编辑真源）。
+    /// D1: 接线启用 Mapperly——替代 FormulaEditorViewModel 手写 DTO→EditContext 字段映射。
+    /// </summary>
+    public FormulaEditContext ToEditContext(FormulaDetailDto dto)
+    {
+        var context = new FormulaEditContext
+        {
+            Id = dto.Id,
+            Name = dto.Name,
+            Category = dto.Category,
+            Property = dto.Property,
+            Effect = dto.Effect,
+            Usage = dto.Usage,
+            Remark = dto.Remark,
+            IsShared = dto.IsShared
+        };
+
+        // 手动映射Herbs集合到ObservableCollection
+        context.Herbs = new ObservableCollection<FormulaHerbItemModel>(
+            dto.Herbs?.Select(h => new FormulaHerbItemModel
+            {
+                HerbId = h.HerbId,
+                HerbName = h.HerbName,
+                Dosage = h.Dosage,
+                Unit = h.Unit,
+                ProcessingMethod = h.ProcessingMethod,
+                DecocteMethod = h.DecocteMethod
+            }) ?? []);
+
+        return context;
+    }
+
+    /// <summary>
     /// 将FormulaDetailModel转换为FormulaInputDto（完整映射）。
     /// </summary>
     /// <param name="model">Model对象。</param>

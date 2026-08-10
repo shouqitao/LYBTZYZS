@@ -1,85 +1,25 @@
-using System.Threading;
 using LYBT.Desktop.Contracts.Results;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
+using System.Threading;
 
 namespace LYBT.Desktop.Contracts.Services
 {
     /// <summary>
     /// 配方Service接口
     /// 提供配方CRUD和业务操作的统一处理
-    /// 使用 CommandResult&lt;T&gt; 统一返回类型，遵循 IUserService/RemoteUserService 金标准模式
+    /// 使用 CommandResult&lt;T&gt; 统一返回类型，遵循 ICrudService 金标准模式
+    /// D1: 对齐 IHerbService/RemoteHerbService 模式——继承 ICrudService 泛型契约，
+    /// 特有业务操作（复制/批量/导入导出）保留在本接口。
     /// </summary>
-    public interface IFormulaService
+    public interface IFormulaService : ICrudService<FormulaListDto, FormulaDetailDto, FormulaInputDto>
     {
-        #region 查询操作
-
-        /// <summary>
-        /// 根据ID获取验方详情
-        /// </summary>
-        Task<CommandResult<FormulaDetailDto>> GetByIdAsync(Guid formulaId, CancellationToken ct = default);
-
-        /// <summary>
-        /// 分页查询验方列表
-        /// </summary>
-        Task<CommandResult<PagedResult<FormulaListDto>>> GetPagedAsync(
-            int page, int pageSize, string? keyword = null, CancellationToken ct = default);
-
-        #endregion
-
-        #region 保存操作
-
-        /// <summary>
-        /// 创建配方
-        /// </summary>
-        Task<CommandResult<FormulaDetailDto>> CreateFormulaAsync(
-            string formulaName,
-            string effect,
-            string usage,
-            string property,
-            string category,
-            string remark,
-            bool isShared,
-            List<FormulaHerbItemInputDto> herbInputDtos,
-            CancellationToken ct = default);
-
-        /// <summary>
-        /// 更新配方
-        /// </summary>
-        Task<CommandResult<FormulaDetailDto>> UpdateFormulaAsync(
-            Guid formulaId,
-            string formulaName,
-            string effect,
-            string usage,
-            string property,
-            string category,
-            string remark,
-            bool isShared,
-            List<FormulaHerbItemInputDto> herbInputDtos,
-            CancellationToken ct = default);
+        #region 复制操作
 
         /// <summary>
         /// 复制配方
         /// </summary>
         Task<CommandResult<FormulaDetailDto>> CopyFormulaAsync(FormulaDetailDto sourceFormula, CancellationToken ct = default);
-
-        #endregion
-
-        #region 删除操作
-
-        /// <summary>
-        /// 删除配方（软删除）
-        /// </summary>
-        Task<CommandResult<bool>> DeleteFormulaAsync(Guid formulaId, CancellationToken ct = default);
-
-        #endregion
-
-        #region 状态管理
-
-        /// <summary>
-        /// 切换验方状态（启用/禁用）
-        /// </summary>
-        Task<CommandResult<FormulaDetailDto>> ToggleStatusAsync(Guid formulaId, CancellationToken ct = default);
 
         #endregion
 

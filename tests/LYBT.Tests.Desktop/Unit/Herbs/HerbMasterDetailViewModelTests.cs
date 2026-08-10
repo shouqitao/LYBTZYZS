@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Catalog.Mappers;
 using LYBT.Desktop.Catalog.Models;
 using LYBT.Desktop.Catalog.ViewModels;
 using LYBT.Desktop.Catalog.ViewModels.Handlers;
@@ -36,8 +37,9 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
             IHerbService herbService,
             IHerbStatusHandler statusHandler,
             IDesktopCacheManager cacheManager,
+            HerbDetailModelMapper herbMapper,
             HerbEditorViewModel herbEditor)
-            : base(viewModelServices, masterDetailServices, herbService, statusHandler, cacheManager, herbEditor)
+            : base(viewModelServices, masterDetailServices, herbService, statusHandler, cacheManager, herbMapper, herbEditor)
         {
         }
 
@@ -53,7 +55,7 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
         _herbService = Substitute.For<IHerbService>();
         _statusHandler = Substitute.For<IHerbStatusHandler>();
         _cacheManager = Substitute.For<IDesktopCacheManager>();
-        _herbEditor = new HerbEditorViewModel();
+        _herbEditor = new HerbEditorViewModel(new HerbDetailModelMapper());
     }
 
     private TestableHerbMasterDetailViewModel CreateSut()
@@ -64,6 +66,7 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
             _herbService,
             _statusHandler,
             _cacheManager,
+            new HerbDetailModelMapper(),
             _herbEditor);
     }
 

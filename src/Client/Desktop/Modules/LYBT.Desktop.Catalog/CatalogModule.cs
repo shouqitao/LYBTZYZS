@@ -31,7 +31,7 @@ namespace LYBT.Desktop.Catalog
 
             // IHerbRepository / IFormulaRepository 由 Shell DI 注册 (Refit API)
             containerRegistry.Register<IHerbService, Services.RemoteHerbService>();
-            containerRegistry.Register<IFormulaService, Services.FormulaService>();
+            containerRegistry.Register<IFormulaService, Services.RemoteFormulaService>();
 
             // D5-3: 跨模块搜索提供者，供 MedicalCase 模块使用
             containerRegistry.Register<IHerbSearchProvider, Services.HerbSearchProvider>();
@@ -41,6 +41,7 @@ namespace LYBT.Desktop.Catalog
             containerRegistry.Register<ViewModels.Handlers.IFormulaStatusHandler, ViewModels.Handlers.FormulaStatusHandler>();
 
             containerRegistry.RegisterSingleton<Mappers.FormulaDetailModelMapper>();
+            containerRegistry.RegisterSingleton<Mappers.HerbDetailModelMapper>();
 
             containerRegistry.AddMasterDetailServices<HerbListDto, HerbDetailModel>();
             containerRegistry.AddMasterDetailServices<FormulaListDto, FormulaDetailModel>();

@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Catalog.Models;
-using LYBT.Desktop.Catalog.Mappers;
 using LYBT.Desktop.Catalog.ViewModels.Handlers;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
@@ -27,7 +26,6 @@ namespace LYBT.Desktop.Catalog.ViewModels
         private readonly IFormulaStatusHandler _statusHandler;
         private readonly IHerbSearchProvider _herbSearchProvider;
         private readonly IDesktopCacheManager _cacheManager;
-        private readonly FormulaDetailModelMapper _mapper;
 
         /// <summary>验方编辑子 VM</summary>
         public FormulaEditorViewModel FormulaEditor { get; }
@@ -61,7 +59,6 @@ namespace LYBT.Desktop.Catalog.ViewModels
             IFormulaStatusHandler statusHandler,
             IHerbSearchProvider herbSearchProvider,
             IDesktopCacheManager cacheManager,
-            FormulaDetailModelMapper mapper,
             FormulaEditorViewModel formulaEditor)
             : base(viewModelServices, masterDetailServices)
         {
@@ -69,7 +66,6 @@ namespace LYBT.Desktop.Catalog.ViewModels
             _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
             _herbSearchProvider = herbSearchProvider ?? throw new ArgumentNullException(nameof(herbSearchProvider));
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             FormulaEditor = formulaEditor ?? throw new ArgumentNullException(nameof(formulaEditor));
 
             PageTitle = "验方管理";
@@ -156,27 +152,22 @@ namespace LYBT.Desktop.Catalog.ViewModels
                 var herbInputDtos = FormulaEditor.GetHerbInputDtos();
                 var formula = FormulaEditor.Formula;
 
-                var isNew = formula.Id == Guid.Empty;
-                var result = isNew
-                    ? await _formulaService.CreateFormulaAsync(
-                        formula.Name,
-                        formula.Effect ?? string.Empty,
-                        formula.Usage ?? string.Empty,
-                        formula.Property ?? string.Empty,
-                        formula.Category ?? string.Empty,
-                        formula.Remark ?? string.Empty,
-                        formula.IsShared,
-                        herbInputDtos)
-                    : await _formulaService.UpdateFormulaAsync(
-                        formula.Id,
-                        formula.Name,
-                        formula.Effect ?? string.Empty,
-                        formula.Usage ?? string.Empty,
-                        formula.Property ?? string.Empty,
-                        formula.Category ?? string.Empty,
-                        formula.Remark ?? string.Empty,
-                        formula.IsShared,
-                        herbInputDtos);
+                var input = new FormulaInputDto
+                {
+                    Id = formula.Id == Guid.Empty ? null : formula.Id,
+                    Name = formula.Name,
+                    Effect = formula.Effect ?? string.Empty,
+                    Usage = formula.Usage ?? string.Empty,
+                    Property = formula.Property ?? string.Empty,
+                    Category = formula.Category ?? string.Empty,
+                    Remark = formula.Remark ?? string.Empty,
+                    IsShared = formula.IsShared,
+                    Herbs = herbInputDtos
+                };
+
+                var result = formula.Id == Guid.Empty
+                    ? await _formulaService.CreateAsync(input)
+                    : await _formulaService.UpdateAsync(input);
 
                 if (!result)
                 {
@@ -204,7 +195,7 @@ namespace LYBT.Desktop.Catalog.ViewModels
         /// <summary>删除项</summary>
         protected override async Task<bool> DeleteItemAsync(FormulaListDto item)
         {
-            var result = await _formulaService.DeleteFormulaAsync(item.Id);
+            var result = await _formulaService.DeleteAsync(item.Id);
             if (!result)
             {
                 MasterDetailServices.ErrorHandler.SetError("Delete", result.Error ?? $"删除验方 '{item.Name}' 失败");
