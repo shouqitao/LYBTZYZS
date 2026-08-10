@@ -11,7 +11,7 @@ namespace LYBT.Tests.Desktop;
 /// </summary>
 public class WorkflowStepIndicatorTests : UserJourneyTestBase
 {
-    public WorkflowStepIndicatorTests(UserJourneyFixture fixture) : base(fixture)
+    public WorkflowStepIndicatorTests()
     {
         // Ensure WPF environment is initialized
         WpfTestHelper.InitializeWpf();

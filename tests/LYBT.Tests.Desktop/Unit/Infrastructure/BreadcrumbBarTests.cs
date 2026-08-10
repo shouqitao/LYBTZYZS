@@ -12,7 +12,7 @@ namespace LYBT.Tests.Desktop;
 /// </summary>
 public class BreadcrumbBarTests : UserJourneyTestBase
 {
-    public BreadcrumbBarTests(UserJourneyFixture fixture) : base(fixture)
+    public BreadcrumbBarTests()
     {
         // Ensure WPF environment is initialized
         WpfTestHelper.InitializeWpf();

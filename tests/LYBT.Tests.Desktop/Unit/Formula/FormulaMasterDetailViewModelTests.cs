@@ -42,7 +42,7 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
     private readonly ILoggerFactory _loggerFactory;
     private readonly FormulaEditorViewModel _formulaEditor;
 
-    public FormulaMasterDetailViewModelTests(UserJourneyFixture fixture) : base(fixture)
+    public FormulaMasterDetailViewModelTests()
     {
         _loggerFactory = Substitute.For<ILoggerFactory>();
         _loggerFactory.CreateLogger(Arg.Any<string>()).Returns(Substitute.For<ILogger>());

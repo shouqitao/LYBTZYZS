@@ -12,7 +12,7 @@ namespace LYBT.Tests.Desktop;
 /// </summary>
 public class ConsultationItemTests : UserJourneyTestBase
 {
-    public ConsultationItemTests(UserJourneyFixture fixture) : base(fixture)
+    public ConsultationItemTests()
     {
     }
 

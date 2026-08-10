@@ -1,8 +1,6 @@
-using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -12,39 +10,28 @@ using Prism.Regions;
 namespace LYBT.Tests.Desktop.Infrastructure;
 
 /// <summary>
-/// User Journey 测试基类
-/// 提供 ViewModel 实例化、ServiceProvider 创建和测试数据管理功能
+/// Desktop 纯 VM 单元测试基类（T2-2: 解除对 LocalDB/UserJourneyFixture 的耦合）
+///
+/// 只提供纯内存能力：WPF 环境初始化 + ViewModel 装配（mock 服务）+ 常用 mock 工厂。
+/// 不再继承 IClassFixture&lt;UserJourneyFixture&gt;——12 个纯 VM 测试类（148 测试）不再被
+/// SQL LocalDB 数据库初始化污染（P0-06 根因之一）。
+///
+/// 真需要 LocalDB 的测试（如 FrameworkVerificationTests）直接使用 UserJourneyFixture。
 /// </summary>
-public abstract class UserJourneyTestBase : IClassFixture<UserJourneyFixture>, IDisposable
+public abstract class UserJourneyTestBase : IDisposable
 {
-    private readonly UserJourneyFixture _fixture;
-    private readonly IServiceScope _scope;
     private bool _disposed;
 
     /// <summary>
-    /// 构造函数
+    /// 构造函数：确保 WPF 环境已初始化（Dispatcher/Application 资源）
     /// </summary>
-    protected UserJourneyTestBase(UserJourneyFixture fixture)
+    protected UserJourneyTestBase()
     {
-        _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
-        _scope = _fixture.CreateScope();
-
-        // 确保 WPF 环境已初始化
         WpfTestHelper.InitializeWpf();
     }
 
     /// <summary>
-    /// 获取当前作用域的 ServiceProvider
-    /// </summary>
-    protected IServiceProvider ServiceProvider => _scope.ServiceProvider;
-
-    /// <summary>
-    /// 获取 LocalDbContext 实例
-    /// </summary>
-    protected LocalDbContext DbContext => ServiceProvider.GetRequiredService<LocalDbContext>();
-
-    /// <summary>
-    /// 创建 ViewModel 实例（使用真实 Repository 和 mock 服务）
+    /// 创建 ViewModel 实例（纯内存 DI：mock 服务 + 可选额外配置，无数据库）
     /// </summary>
     /// <typeparam name="TViewModel">ViewModel 类型</typeparam>
     /// <param name="additionalConfiguration">额外的服务配置</param>
@@ -68,7 +55,7 @@ public abstract class UserJourneyTestBase : IClassFixture<UserJourneyFixture>, I
     }
 
     /// <summary>
-    /// 创建 ViewModel 实例（带参数）
+    /// 创建 ViewModel 实例（带工厂）
     /// </summary>
     /// <typeparam name="TViewModel">ViewModel 类型</typeparam>
     /// <param name="factory">工厂方法</param>
@@ -112,7 +99,7 @@ public abstract class UserJourneyTestBase : IClassFixture<UserJourneyFixture>, I
     }
 
     /// <summary>
-    /// 创建 IMasterDetailServices mock
+    /// 创建 IMasterDetailServices mock（子服务全部 mock，ExecuteWithLoadingAsync 实际执行）
     /// </summary>
     protected IMasterDetailServices<TList, TDetail> CreateMasterDetailServicesMock<TList, TDetail>()
         where TList : class
@@ -156,7 +143,7 @@ public abstract class UserJourneyTestBase : IClassFixture<UserJourneyFixture>, I
     }
 
     /// <summary>
-    /// 配置基础服务
+    /// 配置基础服务（纯内存：日志 + 当前用户 Provider，无数据库）
     /// </summary>
     protected virtual void ConfigureBaseServices(IServiceCollection services)
     {
@@ -171,42 +158,12 @@ public abstract class UserJourneyTestBase : IClassFixture<UserJourneyFixture>, I
         var currentUserProvider = Substitute.For<ICurrentUserProvider>();
         currentUserProvider.CurrentUserId.Returns(Guid.NewGuid());
         services.AddSingleton(currentUserProvider);
-
-        // LocalDbContext (使用与夹具相同的连接字符串)
-        services.AddDbContext<LocalDbContext>(options =>
-        {
-            options.UseSqlServer(_fixture.ConnectionString);
-        }, ServiceLifetime.Scoped);
-
-        // 添加真实 Repository（从夹具的作用域解析）
-        services.AddScoped(_ => ServiceProvider.GetRequiredService<LocalDbContext>());
     }
 
-    /// <summary>
-    /// 异步保存更改到数据库
-    /// </summary>
-    protected async Task SaveChangesAsync()
-    {
-        await DbContext.SaveChangesAsync();
-    }
-
-    /// <summary>
-    /// 重置数据库状态
-    /// </summary>
-    protected async Task ResetDatabaseAsync()
-    {
-        await _fixture.ResetDatabaseAsync();
-    }
-
-    /// <summary>
-    /// 释放资源
-    /// </summary>
+    /// <inheritdoc/>
     public void Dispose()
     {
-        if (!_disposed)
-        {
-            _scope?.Dispose();
-            _disposed = true;
-        }
+        if (_disposed) return;
+        _disposed = true;
     }
 }

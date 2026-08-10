@@ -8,13 +8,23 @@ namespace LYBT.Tests.Desktop;
 
 /// <summary>
 /// User Journey 框架验证测试
-/// 验证测试基础设施是否正常工作
+/// 验证测试基础设施是否正常工作（真 LocalDB——T2-2 后仅本类保留 DB 耦合，属 Integration 语义）
 /// </summary>
-public class FrameworkVerificationTests : UserJourneyTestBase
+public class FrameworkVerificationTests : IClassFixture<UserJourneyFixture>
 {
-    public FrameworkVerificationTests(UserJourneyFixture fixture) : base(fixture)
+    private readonly UserJourneyFixture _fixture;
+
+    public FrameworkVerificationTests(UserJourneyFixture fixture)
     {
+        _fixture = fixture;
+        WpfTestHelper.InitializeWpf();
     }
+
+    private LocalDbContext DbContext => _fixture.DbContext;
+
+    private IServiceProvider ServiceProvider => _fixture.ServiceProvider;
+
+    private Task ResetDatabaseAsync() => _fixture.ResetDatabaseAsync();
 
     [Fact]
     public async Task Database_ShouldBeInitialized()
@@ -93,39 +103,6 @@ public class FrameworkVerificationTests : UserJourneyTestBase
         savedCase.Should().NotBeNull();
         savedCase!.Consultation.Should().NotBeNull();
         savedCase.Consultation!.TcmDiagnosis.Should().Be("风热感冒");
-    }
-
-    [Fact]
-    public void CreateViewModelServicesMock_ShouldReturnConfiguredMock()
-    {
-        // Act
-        var services = CreateViewModelServicesMock();
-
-        // Assert
-        services.Should().NotBeNull();
-        services.LoggerFactory.Should().NotBeNull();
-        services.EventAggregator.Should().NotBeNull();
-        services.RegionManager.Should().NotBeNull();
-        services.SessionManager.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void CreateMasterDetailServicesMock_ShouldReturnConfiguredMock()
-    {
-        // Act
-        var services = CreateMasterDetailServicesMock<object, object>();
-
-        // Assert
-        services.Should().NotBeNull();
-        services.List.Should().NotBeNull();
-        services.DetailEditor.Should().NotBeNull();
-        services.Dialog.Should().NotBeNull();
-        services.Navigation.Should().NotBeNull();
-        services.Loading.Should().NotBeNull();
-        services.Pagination.Should().NotBeNull();
-        services.Search.Should().NotBeNull();
-        services.Selection.Should().NotBeNull();
-        services.ErrorHandler.Should().NotBeNull();
     }
 
     [Fact]

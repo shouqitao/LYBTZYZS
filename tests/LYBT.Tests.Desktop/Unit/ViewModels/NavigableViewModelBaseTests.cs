@@ -17,7 +17,7 @@ namespace LYBT.Tests.Desktop;
 /// </summary>
 public class NavigableViewModelBaseTests : UserJourneyTestBase
 {
-    public NavigableViewModelBaseTests(UserJourneyFixture fixture) : base(fixture)
+    public NavigableViewModelBaseTests()
     {
     }
 

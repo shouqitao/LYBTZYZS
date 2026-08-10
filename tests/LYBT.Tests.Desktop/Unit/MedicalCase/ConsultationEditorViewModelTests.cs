@@ -19,7 +19,7 @@ public class ConsultationEditorViewModelTests : UserJourneyTestBase
     private readonly IWorkspaceHost _host;
     private readonly ILoggerFactory _loggerFactory;
 
-    public ConsultationEditorViewModelTests(UserJourneyFixture fixture) : base(fixture)
+    public ConsultationEditorViewModelTests()
     {
         _context = Substitute.For<IMedicalCaseWorkspaceContext>();
         _context.MedicalCaseId.Returns(Guid.NewGuid());

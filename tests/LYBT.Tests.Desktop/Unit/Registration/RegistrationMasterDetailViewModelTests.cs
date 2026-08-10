@@ -54,7 +54,7 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
         public Task InitializePublicAsync() => base.InitializeAsync(CreateTestNavigationContext());
     }
 
-    public RegistrationMasterDetailViewModelTests(UserJourneyFixture fixture) : base(fixture)
+    public RegistrationMasterDetailViewModelTests()
     {
         _viewModelServices = CreateViewModelServicesMock();
 

@@ -384,20 +384,6 @@ public class MedicalCaseTests : WebApiE2ETestBase
 
     #endregion
 
-    #region Pending Cases
-
-    [Fact(Skip = "Obsolete endpoint migrated to /query, skip for now")]
-    [Trait("Category", "E2E")]
-    [Trait("Phase", "MedicalCaseManagement")]
-    [Trait("Role", "Doctor")]
-    public async Task GetPendingCases_ReturnsListSuccessfully()
-    {
-        await LoginAsSysadminAsync();
-        // Endpoint migrated to /query, test skipped
-        _output.WriteLine("Pending cases endpoint migrated to /query, skipping");
-    }
-    #endregion
-
     #region Permissions & Audit
 
     [Fact]
@@ -413,7 +399,12 @@ public class MedicalCaseTests : WebApiE2ETestBase
         createResponse.Success.Should().BeTrue(createResponse.Message);
         var caseId = createResponse.Data!.Id;
 
-        _output.WriteLine($"Created case {caseId} for permission test");
+        // T2-3: 补真实调用——此前只建数据不调目标 API
+        var permissions = await MedicalCaseApi.GetPermissionsAsync(caseId);
+
+        permissions.Success.Should().BeTrue(permissions.Message);
+        permissions.Data.Should().NotBeNull();
+        permissions.Data!.CanEdit.Should().BeTrue(); // 创建者（sysadmin 医生）应可编辑
     }
 
     [Fact]
@@ -429,7 +420,11 @@ public class MedicalCaseTests : WebApiE2ETestBase
         createResponse.Success.Should().BeTrue(createResponse.Message);
         var caseId = createResponse.Data!.Id;
 
-        _output.WriteLine($"Created case {caseId} for audit log test");
+        // T2-3: 补真实调用——此前只建数据不调目标 API
+        var auditLogs = await MedicalCaseApi.GetAuditLogsAsync(caseId);
+
+        auditLogs.Success.Should().BeTrue(auditLogs.Message);
+        auditLogs.Data.Should().NotBeNull();
     }
 
     #endregion

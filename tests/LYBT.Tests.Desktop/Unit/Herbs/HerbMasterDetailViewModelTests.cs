@@ -48,7 +48,7 @@ public class HerbMasterDetailViewModelTests : UserJourneyTestBase
         public Task<bool> DeleteItemPublicAsync(HerbListDto item) => base.DeleteItemAsync(item);
     }
 
-    public HerbMasterDetailViewModelTests(UserJourneyFixture fixture) : base(fixture)
+    public HerbMasterDetailViewModelTests()
     {
         _viewModelServices = CreateViewModelServicesMock();
         _masterDetailServices = CreateMasterDetailServicesMock<HerbListDto, HerbDetailModel>();

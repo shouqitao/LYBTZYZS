@@ -14,7 +14,7 @@ namespace LYBT.Tests.Desktop;
 /// </summary>
 public class ToastServiceTests : UserJourneyTestBase
 {
-    public ToastServiceTests(UserJourneyFixture fixture) : base(fixture)
+    public ToastServiceTests()
     {
         // Ensure WPF environment is initialized
         WpfTestHelper.InitializeWpf();

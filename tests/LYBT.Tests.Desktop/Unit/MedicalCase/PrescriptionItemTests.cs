@@ -14,7 +14,7 @@ namespace LYBT.Tests.Desktop;
 /// </summary>
 public class PrescriptionItemTests : UserJourneyTestBase
 {
-    public PrescriptionItemTests(UserJourneyFixture fixture) : base(fixture)
+    public PrescriptionItemTests()
     {
     }
 

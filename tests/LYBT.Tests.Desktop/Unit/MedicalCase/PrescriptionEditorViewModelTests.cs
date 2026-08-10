@@ -21,7 +21,7 @@ public class PrescriptionEditorViewModelTests : UserJourneyTestBase
     private readonly IWorkspaceHost _host;
     private readonly ILoggerFactory _loggerFactory;
 
-    public PrescriptionEditorViewModelTests(UserJourneyFixture fixture) : base(fixture)
+    public PrescriptionEditorViewModelTests()
     {
         _context = Substitute.For<IMedicalCaseWorkspaceContext>();
         _context.MedicalCaseId.Returns(Guid.NewGuid());
