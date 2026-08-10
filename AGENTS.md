@@ -29,7 +29,7 @@
 
 1. **先加载 Skill**：`skill_view(name='lybtzys-coder-rules')` — 完整规范、Pitfalls、MCP 纪律、工程流程
 2. **项目总账维护**：session 启动读 `13-project-master-plan.md` 接上进度；任务完成后立即更新状态表 ⬜→✅ + Commit SHA；取消标 ❌ + 原因；决策变更在 §九 追加一行。**禁止做完任务不更新清单。**
-2b. **横截面文档同步（2026-08-10 确立，强制）**：`13-project-master-plan.md` 是时间维度决策史（纵向），其他架构文档（`00-architecture-summary`/`01-system-overview`/`02-desktop`/`03-server`/`04-data-model`/`05-dual-mode`/`08-shared`/`09-security-architecture`/`16-desktop-architecture-spec`/`14-blueprint` 等）是当前态快照（横向横截面）。每个「统一/合并/重构」批次验收时，必须同时更新受影响横截面文档——验收项含「横截面同步清单」逐一核对；**禁止只更新总账而不同步架构文档**（已发生 310 commit 间 04-data-model 零更新、09-security 滞后 Identity 合并的教训）。
+2b. **横截面文档同步（2026-08-10 确立，强制）**：总账是时间维度决策史（纵向），架构文档（00-summary/01-overview/02-desktop/03-server/04-data-model/05-dual-mode/08-shared/09-security/16-spec/14-blueprint 等）是当前态快照（横向）。每个统一/合并/重构批次验收必须同步受影响横截面文档（横截面同步清单），**禁止只更新总账而不同步架构文档**。详见 skill 规则。
 3. **以文档为准（2026-08-06 确立，强制）**：文档定义设计态（系统应该是什么），代码实现当前态（系统现在是什么）。文档与代码冲突时——先更新文档、再按文档改代码，禁止跳过文档直接改代码。文档是 SSOT：同一信息点只有一个权威定义（见 `docs/00-governance/02-ssot-architecture.md`），禁止在代码或新文档中引入权威文档未定义的设计。任务开始时先查文档查询指南 `docs/README.md#ai-查询指南`。
 4. **先文档后代码 + 技术引入治理（2026-08-08 确立，强制）**：任何技术方案变更（T1 收敛/T2 调整/T3 引入新技术）必须**先更新权威文档再改代码**（见 `docs/00-governance/03-technical-adoption-governance.md`）；新技术引入必须走「深度分析 → 有依据 → 修改方案文档 → 用户审批 → 执行」流程，禁止随意引包。**文档是字典不是过程**：正式目录只放当前态定义，过程记录（任务书/审计报告/分析）一律归档 `docs/compose/`。
 5. **修改后自动提交**：代码/文档修改验证通过（`dotnet build` 或相关测试）后自动 `git add` + `git commit`，除非用户明确说「先不要提交」。
@@ -61,6 +61,7 @@
 | 文档查询指南 | `docs/README.md#ai-查询指南` | 同上 |
 | 需求文档 | `docs/02-requirements/` | 同上 |
 | 架构文档 | `docs/03-architecture/` | 同上 |
+| **Project 文档规范** | `docs/00-governance/04-project-doc-standard.md` | 同上（新建/改 project 文档必读） |
 
 ## 关键命令
 

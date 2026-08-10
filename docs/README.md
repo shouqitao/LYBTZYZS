@@ -21,6 +21,7 @@
 | 技术栈 / 架构总览 | [00-architecture-summary.md](03-architecture/00-architecture-summary.md) | — |
 | 部署 / 配置 | [06-operations/](06-operations/README.md) | — |
 | 命名规范 / 文档规则 | [01-naming-convention.md](00-governance/01-naming-convention.md) | — |
+| Project 文档规范（README/AGENTS 双文档） | [04-project-doc-standard.md](00-governance/04-project-doc-standard.md) | — |
 
 **规则**：
 1. 每个信息点只有一个权威定义（SSOT），其他文档只引用不复制
