@@ -11,6 +11,7 @@ using LYBT.Desktop.Contracts.Results;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
+using LYBT.Tests.Desktop.Infrastructure;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
@@ -21,7 +22,7 @@ namespace LYBT.Tests.Desktop;
 /// 验证患者管理模块的Master-Detail视图模型行为
 /// OpenSpec: frontend-architecture-unification — 移除 IPatientRepository，添加 PatientEditorViewModel
 /// </summary>
-public class PatientMasterDetailViewModelTests
+public class PatientMasterDetailViewModelTests : UserJourneyTestBase
 {
     private readonly IViewModelServices _viewModelServices;
     private readonly IMasterDetailServices<PatientListDto, PatientDetailModel> _masterDetailServices;
@@ -52,39 +53,17 @@ public class PatientMasterDetailViewModelTests
         _logger = Substitute.For<ILogger<RemotePatientService>>();
         _loggerFactory.CreateLogger<RemotePatientService>().Returns(_logger);
 
-        // 创建 MasterDetailServices 组件 mocks
-        _listViewServices = Substitute.For<IListViewServices<PatientListDto>>();
-        _detailEditor = Substitute.For<IDetailEditorService<PatientDetailModel>>();
-        _dialogManager = Substitute.For<IDialogManager>();
-        _navigationCoordinator = Substitute.For<INavigationCoordinator>();
-        _loadingState = Substitute.For<ILoadingStateManager>();
-        _pagination = Substitute.For<IPaginationService>();
-        _search = Substitute.For<ISearchService>();
-        _selection = Substitute.For<ISelectionService<PatientListDto>>();
-        _errorHandler = Substitute.For<IErrorHandler>();
-
-        // 设置 ListViewServices 返回子服务
-        _listViewServices.Loading.Returns(_loadingState);
-        _listViewServices.Pagination.Returns(_pagination);
-        _listViewServices.Search.Returns(_search);
-        _listViewServices.Selection.Returns(_selection);
-        _listViewServices.ErrorHandler.Returns(_errorHandler);
-
-        // 设置 ExecuteWithLoadingAsync 实际执行传入的函数
-        _loadingState.ExecuteWithLoadingAsync(Arg.Any<Func<Task>>(), Arg.Any<string?>(), Arg.Any<bool>())
-            .Returns(callInfo => callInfo.Arg<Func<Task>>()());
-
-        // 创建 MasterDetailServices mock
-        _masterDetailServices = Substitute.For<IMasterDetailServices<PatientListDto, PatientDetailModel>>();
-        _masterDetailServices.List.Returns(_listViewServices);
-        _masterDetailServices.DetailEditor.Returns(_detailEditor);
-        _masterDetailServices.Dialog.Returns(_dialogManager);
-        _masterDetailServices.Navigation.Returns(_navigationCoordinator);
-        _masterDetailServices.Loading.Returns(_loadingState);
-        _masterDetailServices.Pagination.Returns(_pagination);
-        _masterDetailServices.Search.Returns(_search);
-        _masterDetailServices.Selection.Returns(_selection);
-        _masterDetailServices.ErrorHandler.Returns(_errorHandler);
+        // 创建 MasterDetailServices mock（T3-1: 使用基类共享装配，原 ~30 行重复装配已消除）
+        _masterDetailServices = CreateMasterDetailServicesMock<PatientListDto, PatientDetailModel>();
+        _listViewServices = _masterDetailServices.List;
+        _detailEditor = _masterDetailServices.DetailEditor;
+        _dialogManager = _masterDetailServices.Dialog;
+        _navigationCoordinator = _masterDetailServices.Navigation;
+        _loadingState = _masterDetailServices.Loading;
+        _pagination = _masterDetailServices.Pagination;
+        _search = _masterDetailServices.Search;
+        _selection = _masterDetailServices.Selection;
+        _errorHandler = _masterDetailServices.ErrorHandler;
 
         // 创建 ViewModelServices mock
         _viewModelServices = Substitute.For<IViewModelServices>();

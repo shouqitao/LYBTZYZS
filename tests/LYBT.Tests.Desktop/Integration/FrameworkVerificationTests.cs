@@ -1,3 +1,4 @@
+using System.Windows;
 using FluentAssertions;
 using LYBT.Desktop.Patients.ViewModels;
 using LYBT.Tests.Desktop.Infrastructure;
@@ -145,10 +146,12 @@ public class FrameworkVerificationTests : IClassFixture<UserJourneyFixture>
     [Fact]
     public void WpfTestHelper_ShouldInitializeWithoutError()
     {
-        // Act & Assert - 不应抛出异常
+        // Act - 不应抛出异常
         WpfTestHelper.InitializeWpf();
 
-        // 如果执行到这里，说明初始化成功
-        true.Should().BeTrue();
+        // Assert - 验证 WPF 资源确实已就绪（T3-3: 取代恒真断言 true.Should().BeTrue()）
+        Application.Current.Should().NotBeNull();
+        Application.Current!.Resources.Should().NotBeNull();
+        Application.Current.Resources.Contains("BaseDataGridStyle").Should().BeTrue();
     }
 }

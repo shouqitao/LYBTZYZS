@@ -47,24 +47,17 @@ public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
         _loggerFactory = Substitute.For<ILoggerFactory>();
         _loggerFactory.CreateLogger(Arg.Any<string>()).Returns(Substitute.For<ILogger>());
 
-        _listViewServices = Substitute.For<IListViewServices<FormulaListDto>>();
-        _detailEditor = Substitute.For<IDetailEditorService<FormulaDetailModel>>();
-        _dialogManager = Substitute.For<IDialogManager>();
-        _navigationCoordinator = Substitute.For<INavigationCoordinator>();
-        _loadingState = Substitute.For<ILoadingStateManager>();
-        _pagination = Substitute.For<IPaginationService>();
-        _search = Substitute.For<ISearchService>();
-        _selection = Substitute.For<ISelectionService<FormulaListDto>>();
-        _errorHandler = Substitute.For<IErrorHandler>();
-
-        _listViewServices.Loading.Returns(_loadingState);
-        _listViewServices.Pagination.Returns(_pagination);
-        _listViewServices.Search.Returns(_search);
-        _listViewServices.Selection.Returns(_selection);
-        _listViewServices.ErrorHandler.Returns(_errorHandler);
-
-        _loadingState.ExecuteWithLoadingAsync(Arg.Any<Func<Task>>(), Arg.Any<string?>(), Arg.Any<bool>())
-            .Returns(ci => ci.Arg<Func<Task>>()());
+        // T3-1: 使用基类共享装配（原重复装配已消除），保留 Formula 定制行为
+        _masterDetailServices = CreateMasterDetailServicesMock<FormulaListDto, FormulaDetailModel>();
+        _listViewServices = _masterDetailServices.List;
+        _detailEditor = _masterDetailServices.DetailEditor;
+        _dialogManager = _masterDetailServices.Dialog;
+        _navigationCoordinator = _masterDetailServices.Navigation;
+        _loadingState = _masterDetailServices.Loading;
+        _pagination = _masterDetailServices.Pagination;
+        _search = _masterDetailServices.Search;
+        _selection = _masterDetailServices.Selection;
+        _errorHandler = _masterDetailServices.ErrorHandler;
 
         _detailEditor.When(x => x.CreateNew(Arg.Any<Func<FormulaDetailModel>>()))
             .Do(ci =>

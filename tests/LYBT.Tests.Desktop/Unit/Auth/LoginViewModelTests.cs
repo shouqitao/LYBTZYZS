@@ -398,9 +398,15 @@ public class LoginViewModelTests
     {
         var sut = CreateSut();
 
-        sut.Dispose();
-        sut.Dispose();
-        sut.Dispose();
+        // T3-3: 补断言——三连 Dispose 不应抛异常（原测试无断言）
+        Action act = () =>
+        {
+            sut.Dispose();
+            sut.Dispose();
+            sut.Dispose();
+        };
+
+        act.Should().NotThrow();
     }
 
     [Fact]

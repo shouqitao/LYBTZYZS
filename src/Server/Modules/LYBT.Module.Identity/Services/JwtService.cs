@@ -24,12 +24,15 @@ public class JwtService : IJwtService
     private readonly IOptionsMonitor<JwtOptions> CurrentOptionsMonitor;
     private readonly IWebHostEnvironment _environment;
     private readonly JwtSecurityTokenHandler _tokenHandler;
+    private readonly TimeProvider _timeProvider;
 
-    public JwtService(IOptionsMonitor<JwtOptions> jwtOptionsMonitor, IWebHostEnvironment environment)
+    public JwtService(IOptionsMonitor<JwtOptions> jwtOptionsMonitor, IWebHostEnvironment environment, TimeProvider? timeProvider = null)
     {
         CurrentOptionsMonitor = jwtOptionsMonitor ?? throw new ArgumentNullException(nameof(jwtOptionsMonitor));
         _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         _tokenHandler = new JwtSecurityTokenHandler();
+        // T3-4: 时钟注入（默认系统时钟；测试可注入假时钟验证过期，不再 Thread.Sleep）
+        _timeProvider = timeProvider ?? TimeProvider.System;
 
         // 启动时验证 JWT 密钥强度(方案A:最小加固)
         ValidateSecretKeyStrength();
@@ -99,7 +102,7 @@ public class JwtService : IJwtService
             new Claim(ClaimTypes.Role, role.ToString()),
             new Claim("user_type", userType), // Issue #1861: 用户类型区分SuperAdmin和User
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+            new Claim(JwtRegisteredClaimNames.Iat, _timeProvider.GetUtcNow().ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
         };
 
         // 创建签名密钥
@@ -108,7 +111,7 @@ public class JwtService : IJwtService
 
         // unify-configuration-system: 从强类型配置读取Token过期时间
         var expireMinutes = CurrentOptions.AccessTokenExpirationMinutes;
-        var expires = DateTime.UtcNow.AddMinutes(expireMinutes);
+        var expires = _timeProvider.GetUtcNow().UtcDateTime.AddMinutes(expireMinutes);
 
         // 创建Token
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -150,7 +153,7 @@ public class JwtService : IJwtService
             new Claim(ClaimTypes.Role, role.ToString()),
             new Claim("user_type", userType), // Issue #1861: 用户类型区分SuperAdmin和User
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+            new Claim(JwtRegisteredClaimNames.Iat, _timeProvider.GetUtcNow().ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
         };
 
         // 添加额外的Claims
@@ -168,7 +171,7 @@ public class JwtService : IJwtService
 
         // unify-configuration-system: 从强类型配置读取Token过期时间
         var expireMinutes = CurrentOptions.AccessTokenExpirationMinutes;
-        var expires = DateTime.UtcNow.AddMinutes(expireMinutes);
+        var expires = _timeProvider.GetUtcNow().UtcDateTime.AddMinutes(expireMinutes);
 
         // 创建Token
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -194,6 +197,16 @@ public class JwtService : IJwtService
 
         try
         {
+            // T3-4: 时钟感知过期预检——JWT 库的 ValidateLifetime 使用系统时钟（无法注入），
+            // 此处用注入的 TimeProvider 先行验证 exp，语义与 ValidateLifetime+ClockSkew 等价，
+            // 且使过期验证在测试中可控制（假时钟推进）。
+            var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
+            var skew = TimeSpan.FromSeconds(CurrentOptions.ClockSkewSeconds);
+            if (jwtToken.ValidTo < _timeProvider.GetUtcNow().UtcDateTime.Subtract(skew))
+            {
+                return null;
+            }
+
             // unify-configuration-system: 使用强类型 JwtOptions
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(CurrentOptions.SecretKey));
 
@@ -206,7 +219,7 @@ public class JwtService : IJwtService
                 ValidateAudience = true,
                 ValidAudience = CurrentOptions.Audience,
                 ValidateLifetime = true,
-                ClockSkew = TimeSpan.FromSeconds(CurrentOptions.ClockSkewSeconds)
+                ClockSkew = skew
             };
 
             var principal = _tokenHandler.ValidateToken(token, validationParameters, out _);
@@ -276,9 +289,9 @@ public class JwtService : IJwtService
                     UserName = userName,
                     Role = role,
                     Status = CommonStatus.Enabled,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = _timeProvider.GetUtcNow().UtcDateTime
                 },
-                ExpiresAt = DateTime.UtcNow.AddMinutes(CurrentOptions.AccessTokenExpirationMinutes)
+                ExpiresAt = _timeProvider.GetUtcNow().UtcDateTime.AddMinutes(CurrentOptions.AccessTokenExpirationMinutes)
             };
 
             return Result<LoginResponse>.Success(response);
@@ -354,9 +367,9 @@ public class JwtService : IJwtService
                     UserName = userName,
                     Role = role,
                     Status = CommonStatus.Enabled,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = _timeProvider.GetUtcNow().UtcDateTime
                 },
-                ExpiresAt = DateTime.UtcNow.AddMinutes(CurrentOptions.AccessTokenExpirationMinutes)
+                ExpiresAt = _timeProvider.GetUtcNow().UtcDateTime.AddMinutes(CurrentOptions.AccessTokenExpirationMinutes)
             };
 
             return Result<LoginResponse>.Success(response);

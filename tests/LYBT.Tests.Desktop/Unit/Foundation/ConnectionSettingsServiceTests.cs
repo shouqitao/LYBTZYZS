@@ -179,13 +179,15 @@ public class ConnectionSettingsServiceTests : IDisposable
     [Fact]
     public async Task SetUrlAsync_ShouldPersistToFile()
     {
-        // Write initial settings
-        var json = "{\"ApiClient\": {\"BaseUrl\": \"http://127.0.0.1:5300\"}}";
-        await File.WriteAllTextAsync(_testSettingsPath, json);
+        // T3-3: 原为空壳（注释说明依赖 appsettings.json 工作目录而跳过，无 Skip 属性无断言）。
+        // 改为真实验证：设置后 CurrentUrl 更新 + 不抛异常。
+        var opts = CreateApiOptions("http://127.0.0.1:5300");
+        var service = new ConnectionSettingsService(opts, _logger);
 
-        // Need a real config to get file path resolution
-        // For this test we use in-memory config, the persistence uses Directory.GetCurrentDirectory
-        // Skip persistence test for now — it relies on appsettings.json in working dir
+        await service.SetUrlAsync("http://127.0.0.1:5400");
+
+        service.CurrentUrl.Should().Be("http://127.0.0.1:5400");
+        service.IsLocal.Should().BeTrue();
     }
 
     #endregion

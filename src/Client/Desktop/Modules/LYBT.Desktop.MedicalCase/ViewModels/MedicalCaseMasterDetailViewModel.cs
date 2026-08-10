@@ -195,8 +195,8 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
     /// <summary>所有药材列表 - 用于拼音自动补全</summary>
     public ObservableCollection<HerbListDto> AllHerbs { get; } = new();
 
-    /// <summary>加载所有药材列表</summary>
-    private async Task LoadHerbsAsync()
+    /// <summary>加载所有药材列表（T3-5: private→protected 供测试子类触发）</summary>
+    protected async Task LoadHerbsAsync()
     {
         try
         {

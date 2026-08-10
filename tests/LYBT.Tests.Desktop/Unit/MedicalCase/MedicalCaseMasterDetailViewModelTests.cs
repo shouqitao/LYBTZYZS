@@ -16,6 +16,7 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 #pragma warning disable CS8620 // Nullable reference type compatibility in NSubstitute Returns
+using LYBT.Tests.Desktop.Infrastructure;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Prism.Regions;
@@ -26,7 +27,7 @@ namespace LYBT.Tests.Desktop;
 /// MedicalCaseMasterDetailViewModel 单元测试
 /// 验证医案管理模块的Master-Detail视图模型行为
 /// </summary>
-public class MedicalCaseMasterDetailViewModelTests
+public class MedicalCaseMasterDetailViewModelTests : UserJourneyTestBase
 {
     private readonly IViewModelServices _viewModelServices;
     private readonly IMasterDetailServices<MedicalCaseListDto, MedicalCaseDetailModel> _masterDetailServices;
@@ -57,39 +58,17 @@ public class MedicalCaseMasterDetailViewModelTests
         // 必须显式设置 MedicalCaseMasterDetailViewModel 类型的 logger，因为基类使用 GetType() 获取类型
         _loggerFactory.CreateLogger(typeof(MedicalCaseMasterDetailViewModel)).Returns(_logger);
 
-        // 创建 MasterDetailServices 组件 mocks
-        _listViewServices = Substitute.For<IListViewServices<MedicalCaseListDto>>();
-        _detailEditor = Substitute.For<IDetailEditorService<MedicalCaseDetailModel>>();
-        _dialogManager = Substitute.For<IDialogManager>();
-        _navigationCoordinator = Substitute.For<INavigationCoordinator>();
-        _loadingState = Substitute.For<ILoadingStateManager>();
-        _pagination = Substitute.For<IPaginationService>();
-        _search = Substitute.For<ISearchService>();
-        _selection = Substitute.For<ISelectionService<MedicalCaseListDto>>();
-        _errorHandler = Substitute.For<IErrorHandler>();
-
-        // 设置 ListViewServices 返回子服务
-        _listViewServices.Loading.Returns(_loadingState);
-        _listViewServices.Pagination.Returns(_pagination);
-        _listViewServices.Search.Returns(_search);
-        _listViewServices.Selection.Returns(_selection);
-        _listViewServices.ErrorHandler.Returns(_errorHandler);
-
-        // 设置 ExecuteWithLoadingAsync 实际执行传入的函数
-        _loadingState.ExecuteWithLoadingAsync(Arg.Any<Func<Task>>(), Arg.Any<string?>(), Arg.Any<bool>())
-            .Returns(callInfo => callInfo.Arg<Func<Task>>()());
-
-        // 创建 MasterDetailServices mock
-        _masterDetailServices = Substitute.For<IMasterDetailServices<MedicalCaseListDto, MedicalCaseDetailModel>>();
-        _masterDetailServices.List.Returns(_listViewServices);
-        _masterDetailServices.DetailEditor.Returns(_detailEditor);
-        _masterDetailServices.Dialog.Returns(_dialogManager);
-        _masterDetailServices.Navigation.Returns(_navigationCoordinator);
-        _masterDetailServices.Loading.Returns(_loadingState);
-        _masterDetailServices.Pagination.Returns(_pagination);
-        _masterDetailServices.Search.Returns(_search);
-        _masterDetailServices.Selection.Returns(_selection);
-        _masterDetailServices.ErrorHandler.Returns(_errorHandler);
+        // 创建 MasterDetailServices mock（T3-1: 使用基类共享装配，原 ~30 行重复装配已消除）
+        _masterDetailServices = CreateMasterDetailServicesMock<MedicalCaseListDto, MedicalCaseDetailModel>();
+        _listViewServices = _masterDetailServices.List;
+        _detailEditor = _masterDetailServices.DetailEditor;
+        _dialogManager = _masterDetailServices.Dialog;
+        _navigationCoordinator = _masterDetailServices.Navigation;
+        _loadingState = _masterDetailServices.Loading;
+        _pagination = _masterDetailServices.Pagination;
+        _search = _masterDetailServices.Search;
+        _selection = _masterDetailServices.Selection;
+        _errorHandler = _masterDetailServices.ErrorHandler;
 
         // 创建 ViewModelServices mock
         _viewModelServices = Substitute.For<IViewModelServices>();
@@ -101,9 +80,9 @@ public class MedicalCaseMasterDetailViewModelTests
         _cacheManager = Substitute.For<IDesktopCacheManager>();
     }
 
-    private MedicalCaseMasterDetailViewModel CreateSut()
+    private TestableMedicalCaseMasterDetailViewModel CreateSut()
     {
-        return new MedicalCaseMasterDetailViewModel(
+        return new TestableMedicalCaseMasterDetailViewModel(
             _viewModelServices,
             _masterDetailServices,
             _medicalCaseService,
@@ -211,6 +190,10 @@ public class MedicalCaseMasterDetailViewModelTests
 
         // Assert
         await _medicalCaseService.Received(1).GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>());
+        // T3-2: 补状态断言——列表数据与总数应实际填充（原仅验交互）
+        sut.Items.Should().HaveCount(2);
+        sut.Items[0].PatientName.Should().Be("张三");
+        _pagination.TotalCount.Should().Be(2);
     }
 
     [Fact]
@@ -579,11 +562,10 @@ public class MedicalCaseMasterDetailViewModelTests
         var sut = CreateSut();
 
         // Act & Assert
-        // 使用反射调用时，异常会被包装在 TargetInvocationException 中
+        // T3-5: 子类化直接调用（原反射包装 TargetInvocationException 已去除）
         Action act = () => sut.TestCreateNewDetail();
 
-        act.Should().Throw<System.Reflection.TargetInvocationException>()
-            .WithInnerException<NotSupportedException>()
+        act.Should().Throw<NotSupportedException>()
             .WithMessage("医案管理模块不支持新建医案，请通过看诊入口创建");
     }
 
@@ -660,140 +642,31 @@ public class MedicalCaseMasterDetailViewModelTests
 }
 
 /// <summary>
-/// MedicalCaseMasterDetailViewModel 测试辅助扩展
+/// T3-5: 子类化暴露 protected 方法（取代原反射扩展——编译期安全，对齐 Herb 测试模式）。
+/// 方法名与原扩展方法一致，调用点零改动。
 /// </summary>
-public static class MedicalCaseMasterDetailViewModelTestExtensions
+public sealed class TestableMedicalCaseMasterDetailViewModel : MedicalCaseMasterDetailViewModel
 {
-    /// <summary>
-    /// 测试辅助方法：调用受保护的 CreateNewDetail 方法
-    /// </summary>
-    public static void TestCreateNewDetail(this MedicalCaseMasterDetailViewModel vm)
+    public TestableMedicalCaseMasterDetailViewModel(
+        IViewModelServices viewModelServices,
+        IMasterDetailServices<MedicalCaseListDto, MedicalCaseDetailModel> masterDetailServices,
+        IMedicalCaseService medicalCaseService,
+        IHerbSearchProvider herbSearchProvider,
+        IDesktopCacheManager cacheManager,
+        ILoggerFactory loggerFactory)
+        : base(viewModelServices, masterDetailServices, medicalCaseService, herbSearchProvider, cacheManager, loggerFactory)
     {
-        // 使用反射调用受保护的方法（在基类 MasterDetailViewModelBase 中定义）
-        // 需要在继承层次中查找方法
-        var method = typeof(MedicalCaseMasterDetailViewModel).GetMethod(
-            "CreateNewDetail",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.FlattenHierarchy,
-            null,
-            Type.EmptyTypes,
-            null);
-
-        if (method == null)
-        {
-            // 尝试从基类获取
-            var baseType = typeof(MedicalCaseMasterDetailViewModel).BaseType;
-            while (method == null && baseType != null)
-            {
-                method = baseType.GetMethod(
-                    "CreateNewDetail",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance,
-                    null,
-                    Type.EmptyTypes,
-                    null);
-                baseType = baseType.BaseType;
-            }
-        }
-
-        if (method == null)
-            throw new InvalidOperationException("CreateNewDetail method not found");
-
-        method.Invoke(vm, null);
     }
 
-    /// <summary>
-    /// 测试辅助方法：调用受保护的 SaveDetailAsync 方法
-    /// </summary>
-    public static async Task<bool> SaveDetailAsync(this MedicalCaseMasterDetailViewModel vm, MedicalCaseDetailModel detail)
-    {
-        var method = typeof(MedicalCaseMasterDetailViewModel).GetMethod(
-            "SaveDetailAsync",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+    public void TestCreateNewDetail() => base.CreateNewDetail();
 
-        if (method == null) throw new InvalidOperationException("SaveDetailAsync method not found");
+    public new Task<bool> SaveDetailAsync(MedicalCaseDetailModel detail) => base.SaveDetailAsync(detail);
 
-        var result = method.Invoke(vm, new object[] { detail });
-        if (result is Task<bool> task) return await task;
-        throw new InvalidOperationException("Unexpected return type");
-    }
+    public new Task<bool> DeleteItemAsync(MedicalCaseListDto item) => base.DeleteItemAsync(item);
 
-    /// <summary>
-    /// 测试辅助方法：调用受保护的 DeleteItemAsync 方法
-    /// </summary>
-    public static async Task<bool> DeleteItemAsync(this MedicalCaseMasterDetailViewModel vm, MedicalCaseListDto item)
-    {
-        var method = typeof(MedicalCaseMasterDetailViewModel).GetMethod(
-            "DeleteItemAsync",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+    public Task InvokeLoadDetailAsync(MedicalCaseListDto item) => base.LoadDetailAsync(item);
 
-        if (method == null) throw new InvalidOperationException("DeleteItemAsync method not found");
+    public Task InvokeLoadHerbsAsync() => base.LoadHerbsAsync();
 
-        var result = method.Invoke(vm, new object[] { item });
-        if (result is Task<bool> task) return await task;
-        throw new InvalidOperationException("Unexpected return type");
-    }
-
-    /// <summary>
-    /// 测试辅助方法：调用受保护的 LoadDetailAsync 方法
-    /// </summary>
-    public static async Task InvokeLoadDetailAsync(this MedicalCaseMasterDetailViewModel vm, MedicalCaseListDto item)
-    {
-        // 需要在继承层次中查找方法（在基类 MasterDetailViewModelBase 中定义）
-        var method = typeof(MedicalCaseMasterDetailViewModel).GetMethod(
-            "LoadDetailAsync",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.FlattenHierarchy,
-            null,
-            new[] { typeof(MedicalCaseListDto) },
-            null);
-
-        if (method == null)
-        {
-            // 尝试从基类获取
-            var baseType = typeof(MedicalCaseMasterDetailViewModel).BaseType;
-            while (method == null && baseType != null)
-            {
-                method = baseType.GetMethod(
-                    "LoadDetailAsync",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance,
-                    null,
-                    new[] { typeof(MedicalCaseListDto) },
-                    null);
-                baseType = baseType.BaseType;
-            }
-        }
-
-        if (method == null) throw new InvalidOperationException("LoadDetailAsync method not found");
-
-        var result = method.Invoke(vm, new object[] { item });
-        if (result is Task task) await task;
-    }
-
-    /// <summary>
-    /// 测试辅助方法：调用私有的 LoadHerbsAsync 方法
-    /// </summary>
-    public static async Task InvokeLoadHerbsAsync(this MedicalCaseMasterDetailViewModel vm)
-    {
-        var method = typeof(MedicalCaseMasterDetailViewModel).GetMethod(
-            "LoadHerbsAsync",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-        if (method == null) throw new InvalidOperationException("LoadHerbsAsync method not found");
-
-        var result = method.Invoke(vm, null);
-        if (result is Task task) await task;
-    }
-
-    /// <summary>
-    /// 测试辅助方法：调用 public override 的 OnNavigatedTo 方法
-    /// </summary>
-    public static void InvokeOnNavigatedTo(this MedicalCaseMasterDetailViewModel vm, NavigationContext navigationContext)
-    {
-        var method = typeof(MedicalCaseMasterDetailViewModel).GetMethod(
-            "OnNavigatedTo",
-            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-
-        if (method == null) throw new InvalidOperationException("OnNavigatedTo method not found");
-
-        method.Invoke(vm, new object[] { navigationContext });
-    }
+    public void InvokeOnNavigatedTo(Prism.Regions.NavigationContext navigationContext) => base.OnNavigatedTo(navigationContext);
 }
-#pragma warning restore CS8620

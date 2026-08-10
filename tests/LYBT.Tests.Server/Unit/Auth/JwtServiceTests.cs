@@ -223,10 +223,10 @@ public class JwtServiceTests : IDisposable
         principal.FindFirst(ClaimTypes.Role)!.Value.Should().Be(role.ToString());
     }
 
-    [Fact(Skip = "Timing-sensitive test - expired token validation depends on system clock")]
+    [Fact]
     public void ValidateToken_WithExpiredToken_ShouldReturnNull()
     {
-        // Arrange - 使用极短过期时间 (1 分钟) 并设置 ClockSkew 为 0
+        // Arrange - 使用极短过期时间 (1 分钟) 并设置 ClockSkew 为 0，注入假时钟
         var shortExpiryOptions = new JwtOptions
         {
             SecretKey = _jwtOptions.SecretKey,
@@ -236,17 +236,28 @@ public class JwtServiceTests : IDisposable
             ClockSkewSeconds = 0
         };
 
-        var shortExpiryService = new JwtService(CreateOptionsMonitor(shortExpiryOptions), _environment);
+        var fakeClock = new FakeTimeProvider();
+        var shortExpiryService = new JwtService(CreateOptionsMonitor(shortExpiryOptions), _environment, fakeClock);
         var token = shortExpiryService.GenerateToken(Guid.NewGuid().ToString(), "testuser", UserRole.Doctor);
 
-        // 等待 Token 过期 (1 分钟 + 缓冲)
-        Thread.Sleep(TimeSpan.FromSeconds(65));
+        // T3-4: 推进时钟越过过期点（取代 Thread.Sleep(65s)，瞬时完成）
+        fakeClock.Advance(TimeSpan.FromMinutes(2));
 
         // Act
-        var principal = _sut.ValidateToken(token);
+        var principal = shortExpiryService.ValidateToken(token);
 
         // Assert
         principal.Should().BeNull();
+    }
+
+    /// <summary>可推进的假时钟（T3-4: 替代 Thread.Sleep 时序等待）</summary>
+    private sealed class FakeTimeProvider : TimeProvider
+    {
+        private DateTimeOffset _now = DateTimeOffset.UtcNow;
+
+        public override DateTimeOffset GetUtcNow() => _now;
+
+        public void Advance(TimeSpan delta) => _now += delta;
     }
 
     [Fact]
