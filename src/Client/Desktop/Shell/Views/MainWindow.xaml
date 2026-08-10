@@ -61,7 +61,8 @@
                                     DockPanel.Dock="Top"
                                     IsChecked="{Binding IsSidebarExpanded}"
                                     Foreground="{DynamicResource MaterialDesign.Brush.IdealForeground}"
-                                    Margin="0,8,0,0">
+                                    Margin="0,8,0,0"
+                                    ToolTip="收起/展开侧边栏 (Ctrl+M)">
                                     <ToggleButton.Style>
                                         <Style TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignHamburgerToggleButton}">
                                             <Setter Property="HorizontalAlignment" Value="Center" />
@@ -196,7 +197,8 @@
                                     <materialDesign:PackIcon
                                         Kind="{Binding ApiStatusIcon}"
                                         Foreground="{Binding ApiStatusColor}"
-                                        Width="14" Height="14" />
+                                        Width="14" Height="14"
+                                        ToolTip="API 连接状态" />
                                     <TextBlock Margin="6,0,16,0" FontSize="12"
                                                Text="{Binding ConnectionModeDisplay}" />
                                     <materialDesign:PackIcon Kind="AccountCircle" Width="14" Height="14"

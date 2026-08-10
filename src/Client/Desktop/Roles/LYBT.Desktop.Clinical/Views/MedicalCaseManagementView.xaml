@@ -11,7 +11,12 @@
 <UserControl x:Class="LYBT.Desktop.Clinical.Views.MedicalCaseManagementView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:medicalCaseControls="clr-namespace:LYBT.Desktop.MedicalCase.Controls;assembly=LYBT.Desktop.MedicalCase">
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:medicalCaseControls="clr-namespace:LYBT.Desktop.MedicalCase.Controls;assembly=LYBT.Desktop.MedicalCase"
+             xmlns:vm="clr-namespace:LYBT.Desktop.MedicalCase.ViewModels;assembly=LYBT.Desktop.MedicalCase"
+             d:DataContext="{d:DesignInstance vm:MedicalCaseMasterDetailViewModel}"
+             mc:Ignorable="d">
     <Grid>
         <medicalCaseControls:MedicalCaseMasterDetailControl />
     </Grid>
