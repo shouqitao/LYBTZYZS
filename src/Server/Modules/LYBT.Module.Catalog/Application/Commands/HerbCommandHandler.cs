@@ -1,123 +1,64 @@
 using LYBT.Entities.Herbs;
 using LYBT.Module.Catalog.Application.Mappers;
 using LYBT.Module.Catalog.Interfaces;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
-using MediatR;
 
 namespace LYBT.Module.Catalog.Application.Commands;
 
 /// <summary>
 /// 药材命令处理器（A-31-C3b 合并 Create/Update/Delete/Restore/Toggle 五个同构 Handler）。
+/// 骨架收敛至 <see cref="CatalogEntityCommandHandlerBase{TEntity,TInput,TDetail}"/>，本类仅提供药材差异点。
 /// </summary>
-public class HerbCommandHandler :
-    IRequestHandler<CreateEntityCommand<HerbInputDto, HerbDetailDto>, Result<HerbDetailDto>>,
-    IRequestHandler<UpdateEntityCommand<HerbInputDto, HerbDetailDto>, Result<HerbDetailDto>>,
-    IRequestHandler<DeleteEntityCommand<Herb>, Result>,
-    IRequestHandler<RestoreEntityCommand<Herb, HerbDetailDto>, Result<HerbDetailDto>>,
-    IRequestHandler<ToggleEntityStatusCommand<Herb, HerbDetailDto>, Result<HerbDetailDto>>
+public class HerbCommandHandler : CatalogEntityCommandHandlerBase<Herb, HerbInputDto, HerbDetailDto>
 {
-    private readonly IHerbRepository _herbRepository;
-
     public HerbCommandHandler(IHerbRepository herbRepository)
+        : base(herbRepository)
     {
-        _herbRepository = herbRepository;
     }
 
-    public async Task<Result<HerbDetailDto>> Handle(
-        CreateEntityCommand<HerbInputDto, HerbDetailDto> request, CancellationToken cancellationToken)
+    protected override string EntityDisplayName => "药材";
+
+    protected override Herb CreateEntity(HerbInputDto input, Guid currentUserId)
+        => CatalogDtoMapper.ToEntity(input, currentUserId);
+
+    protected override void ApplyUpdate(Herb entity, HerbInputDto input, Guid currentUserId)
     {
-        var dto = request.Input;
-
-        if (await _herbRepository.ExistsByNameAsync(dto.Name, ct: cancellationToken))
-            return Result<HerbDetailDto>.Failure(ErrorCode.HerbNameExists, ErrorMessages.Get(ErrorCode.HerbNameExists));
-
-        var herb = CatalogDtoMapper.ToEntity(dto, request.CurrentUserId);
-
-        await _herbRepository.AddAsync(herb, cancellationToken);
-
-        return Result<HerbDetailDto>.Success(CatalogDtoMapper.ToHerbDetailDto(herb));
+        entity.UpdateProfile(
+            input.Name,
+            input.Unit,
+            input.Price,
+            input.PinYinCode,
+            input.Category,
+            input.Properties,
+            input.Origin,
+            input.Spec,
+            input.CostPrice,
+            input.Effect,
+            input.Usage,
+            input.Remark,
+            currentUserId);
     }
 
-    public async Task<Result<HerbDetailDto>> Handle(
-        UpdateEntityCommand<HerbInputDto, HerbDetailDto> request, CancellationToken cancellationToken)
-    {
-        var herb = await _herbRepository.GetByIdAsync(request.Id, cancellationToken);
-        if (herb == null)
-            return Result<HerbDetailDto>.Failure(ErrorCode.HerbNotFound, ErrorMessages.Get(ErrorCode.HerbNotFound));
+    protected override HerbDetailDto ToDetailDto(Herb entity)
+        => CatalogDtoMapper.ToHerbDetailDto(entity);
 
-        if (herb.Name != request.Input.Name)
-        {
-            if (await _herbRepository.ExistsByNameAsync(request.Input.Name, request.Id, cancellationToken))
-                return Result<HerbDetailDto>.Failure(ErrorCode.HerbNameExists, $"药材名称 '{request.Input.Name}' 已存在");
-        }
+    protected override void ApplySoftDelete(Herb entity, Guid operatorId)
+        => entity.SoftDelete(operatorId);
 
-        herb.UpdateProfile(
-            request.Input.Name,
-            request.Input.Unit,
-            request.Input.Price,
-            request.Input.PinYinCode,
-            request.Input.Category,
-            request.Input.Properties,
-            request.Input.Origin,
-            request.Input.Spec,
-            request.Input.CostPrice,
-            request.Input.Effect,
-            request.Input.Usage,
-            request.Input.Remark,
-            request.CurrentUserId);
+    protected override void ApplyRestore(Herb entity, Guid operatorId)
+        => entity.Restore(operatorId);
 
-        await _herbRepository.UpdateAsync(herb, cancellationToken);
-        return Result<HerbDetailDto>.Success(CatalogDtoMapper.ToHerbDetailDto(herb));
-    }
+    protected override void ApplyToggleStatus(Herb entity, Guid operatorId)
+        => entity.ChangeStatus(
+            entity.Status == CommonStatus.Enabled ? CommonStatus.Disabled : CommonStatus.Enabled,
+            operatorId);
 
-    public async Task<Result> Handle(
-        DeleteEntityCommand<Herb> request, CancellationToken cancellationToken)
-    {
-        var herb = await _herbRepository.GetByIdAsync(request.Id, cancellationToken);
-        if (herb == null)
-            return Result.Failure(ErrorCode.HerbNotFound, ErrorMessages.Get(ErrorCode.HerbNotFound));
+    protected override ErrorCode NameExistsErrorCode => ErrorCode.HerbNameExists;
+    protected override ErrorCode NotFoundErrorCode => ErrorCode.HerbNotFound;
+    protected override ErrorCode NotDeletedErrorCode => ErrorCode.HerbNotDeleted;
 
-        herb.SoftDelete(request.CurrentUserId);
-
-        await _herbRepository.UpdateAsync(herb, cancellationToken);
-
-        return Result.Success();
-    }
-
-    public async Task<Result<HerbDetailDto>> Handle(
-        RestoreEntityCommand<Herb, HerbDetailDto> request, CancellationToken cancellationToken)
-    {
-        var herb = await _herbRepository.GetByIdIncludingDeletedAsync(request.Id, cancellationToken);
-        if (herb == null)
-            return Result<HerbDetailDto>.Failure(ErrorCode.HerbNotFound, ErrorMessages.Get(ErrorCode.HerbNotFound));
-
-        if (!herb.IsDeleted)
-            return Result<HerbDetailDto>.Failure(ErrorCode.HerbNotFound, ErrorMessages.Get(ErrorCode.HerbNotDeleted));
-
-        var nameExists = await _herbRepository.ExistsByNameAsync(herb.Name, herb.Id, cancellationToken);
-        if (nameExists)
-            return Result<HerbDetailDto>.Failure(ErrorCode.HerbNameExists, $"药材名称「{herb.Name}」已存在，无法恢复");
-
-        herb.Restore(request.CurrentUserId);
-        await _herbRepository.UpdateAsync(herb, cancellationToken);
-        return Result<HerbDetailDto>.Success(CatalogDtoMapper.ToHerbDetailDto(herb));
-    }
-
-    public async Task<Result<HerbDetailDto>> Handle(
-        ToggleEntityStatusCommand<Herb, HerbDetailDto> request, CancellationToken cancellationToken)
-    {
-        var herb = await _herbRepository.GetByIdAsync(request.Id, cancellationToken);
-        if (herb == null)
-            return Result<HerbDetailDto>.Failure(ErrorCode.HerbNotFound, ErrorMessages.Get(ErrorCode.HerbNotFound));
-
-        herb.ChangeStatus(
-            herb.Status == CommonStatus.Enabled ? CommonStatus.Disabled : CommonStatus.Enabled,
-            request.CurrentUserId);
-
-        await _herbRepository.UpdateAsync(herb, cancellationToken);
-        return Result<HerbDetailDto>.Success(CatalogDtoMapper.ToHerbDetailDto(herb));
-    }
+    protected override string GetName(Herb entity) => entity.Name;
+    protected override string GetName(HerbInputDto input) => input.Name;
 }

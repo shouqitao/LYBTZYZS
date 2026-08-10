@@ -9,4 +9,4 @@ namespace LYBT.Module.Catalog.Application.Commands;
 public record BatchDeleteHerbsCommand(
     List<Guid> Ids,
     Guid CurrentUserId
-) : IRequest<Result<BatchOperationResultDto>>;
+) : IRequest<Result<BatchOperationResultDto>>, IBatchIdsCommand;

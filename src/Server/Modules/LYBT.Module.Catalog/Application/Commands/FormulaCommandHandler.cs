@@ -1,117 +1,65 @@
 using LYBT.Entities.Formulas;
 using LYBT.Module.Catalog.Application.Mappers;
 using LYBT.Module.Catalog.Interfaces;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
-using MediatR;
 
 namespace LYBT.Module.Catalog.Application.Commands;
 
 /// <summary>
 /// 验方命令处理器（A-31-C3b 合并 Create/Update/Delete/Restore/Toggle 五个同构 Handler）。
+/// 骨架收敛至 <see cref="CatalogEntityCommandHandlerBase{TEntity,TInput,TDetail}"/>，本类仅提供验方差异点。
+/// 注意：Restore 的实体不存在消息为字面量「验方不存在」（与原实现一致，区别于 ErrorMessages.Get）。
 /// </summary>
-public class FormulaCommandHandler :
-    IRequestHandler<CreateEntityCommand<FormulaInputDto, FormulaDetailDto>, Result<FormulaDetailDto>>,
-    IRequestHandler<UpdateEntityCommand<FormulaInputDto, FormulaDetailDto>, Result<FormulaDetailDto>>,
-    IRequestHandler<DeleteEntityCommand<Formula>, Result>,
-    IRequestHandler<RestoreEntityCommand<Formula, FormulaDetailDto>, Result<FormulaDetailDto>>,
-    IRequestHandler<ToggleEntityStatusCommand<Formula, FormulaDetailDto>, Result<FormulaDetailDto>>
+public class FormulaCommandHandler : CatalogEntityCommandHandlerBase<Formula, FormulaInputDto, FormulaDetailDto>
 {
-    private readonly IFormulaRepository _formulaRepository;
-
     public FormulaCommandHandler(IFormulaRepository formulaRepository)
+        : base(formulaRepository)
     {
-        _formulaRepository = formulaRepository;
     }
 
-    public async Task<Result<FormulaDetailDto>> Handle(
-        CreateEntityCommand<FormulaInputDto, FormulaDetailDto> request, CancellationToken cancellationToken)
+    protected override string EntityDisplayName => "方剂";
+
+    protected override Formula CreateEntity(FormulaInputDto input, Guid currentUserId)
+        => CatalogDtoMapper.ToEntity(input, currentUserId);
+
+    protected override void ApplyUpdate(Formula entity, FormulaInputDto input, Guid currentUserId)
     {
-        var dto = request.Input;
-
-        if (await _formulaRepository.ExistsByNameAsync(dto.Name, ct: cancellationToken))
-            return Result<FormulaDetailDto>.Failure(ErrorCode.FormulaNameExists, ErrorMessages.Get(ErrorCode.FormulaNameExists));
-
-        var formula = CatalogDtoMapper.ToEntity(dto, request.CurrentUserId);
-
-        await _formulaRepository.AddAsync(formula, cancellationToken);
-
-        return Result<FormulaDetailDto>.Success(CatalogDtoMapper.ToFormulaDetailDto(formula));
+        entity.UpdateProfile(
+            input.Name,
+            input.Effect,
+            input.Indication,
+            input.Usage,
+            input.Remark,
+            input.Property,
+            input.Category,
+            input.IsShared,
+            currentUserId);
     }
 
-    public async Task<Result<FormulaDetailDto>> Handle(
-        UpdateEntityCommand<FormulaInputDto, FormulaDetailDto> request, CancellationToken cancellationToken)
-    {
-        var formula = await _formulaRepository.GetByIdAsync(request.Id, cancellationToken);
-        if (formula == null)
-            return Result<FormulaDetailDto>.Failure(ErrorCode.FormulaNotFound, ErrorMessages.Get(ErrorCode.FormulaNotFound));
+    protected override FormulaDetailDto ToDetailDto(Formula entity)
+        => CatalogDtoMapper.ToFormulaDetailDto(entity);
 
-        if (formula.Name != request.Input.Name)
-        {
-            if (await _formulaRepository.ExistsByNameAsync(request.Input.Name, request.Id, cancellationToken))
-                return Result<FormulaDetailDto>.Failure(ErrorCode.FormulaNameExists, $"方剂名称 '{request.Input.Name}' 已存在");
-        }
+    protected override void ApplySoftDelete(Formula entity, Guid operatorId)
+        => entity.SoftDelete(operatorId);
 
-        formula.UpdateProfile(
-            request.Input.Name,
-            request.Input.Effect,
-            request.Input.Indication,
-            request.Input.Usage,
-            request.Input.Remark,
-            request.Input.Property,
-            request.Input.Category,
-            request.Input.IsShared,
-            request.CurrentUserId);
+    protected override void ApplyRestore(Formula entity, Guid operatorId)
+        => entity.Restore(operatorId);
 
-        await _formulaRepository.UpdateAsync(formula, cancellationToken);
-        return Result<FormulaDetailDto>.Success(CatalogDtoMapper.ToFormulaDetailDto(formula));
-    }
+    protected override void ApplyToggleStatus(Formula entity, Guid operatorId)
+        => entity.ChangeStatus(
+            entity.Status == CommonStatus.Enabled ? CommonStatus.Disabled : CommonStatus.Enabled,
+            operatorId);
 
-    public async Task<Result> Handle(
-        DeleteEntityCommand<Formula> request, CancellationToken cancellationToken)
-    {
-        var formula = await _formulaRepository.GetByIdAsync(request.Id, cancellationToken);
-        if (formula == null)
-            return Result.Failure(ErrorCode.FormulaNotFound, ErrorMessages.Get(ErrorCode.FormulaNotFound));
+    protected override ErrorCode NameExistsErrorCode => ErrorCode.FormulaNameExists;
+    protected override ErrorCode NotFoundErrorCode => ErrorCode.FormulaNotFound;
+    protected override ErrorCode NotDeletedErrorCode => ErrorCode.FormulaNotDeleted;
 
-        formula.SoftDelete(request.CurrentUserId);
+    protected override string RestoreNotFoundMessage => "验方不存在";
 
-        await _formulaRepository.UpdateAsync(formula, cancellationToken);
+    protected override string RestoreNameConflictMessage(string name) => $"验方名称「{name}」已存在，无法恢复";
 
-        return Result.Success();
-    }
-
-    public async Task<Result<FormulaDetailDto>> Handle(
-        RestoreEntityCommand<Formula, FormulaDetailDto> request, CancellationToken cancellationToken)
-    {
-        var formula = await _formulaRepository.GetByIdIncludingDeletedAsync(request.Id, cancellationToken);
-        if (formula == null)
-            return Result<FormulaDetailDto>.Failure(ErrorCode.FormulaNotFound, "验方不存在");
-
-        if (!formula.IsDeleted)
-            return Result<FormulaDetailDto>.Failure(ErrorCode.FormulaNotFound, ErrorMessages.Get(ErrorCode.FormulaNotDeleted));
-
-        var nameExists = await _formulaRepository.ExistsByNameAsync(formula.Name, formula.Id, cancellationToken);
-        if (nameExists)
-            return Result<FormulaDetailDto>.Failure(ErrorCode.FormulaNameExists, $"验方名称「{formula.Name}」已存在，无法恢复");
-
-        formula.Restore(request.CurrentUserId);
-        await _formulaRepository.UpdateAsync(formula, cancellationToken);
-        return Result<FormulaDetailDto>.Success(CatalogDtoMapper.ToFormulaDetailDto(formula));
-    }
-
-    public async Task<Result<FormulaDetailDto>> Handle(
-        ToggleEntityStatusCommand<Formula, FormulaDetailDto> request, CancellationToken cancellationToken)
-    {
-        var formula = await _formulaRepository.GetByIdAsync(request.Id, cancellationToken);
-        if (formula == null)
-            return Result<FormulaDetailDto>.Failure(ErrorCode.FormulaNotFound, ErrorMessages.Get(ErrorCode.FormulaNotFound));
-
-        var newStatus = formula.Status == CommonStatus.Enabled ? CommonStatus.Disabled : CommonStatus.Enabled;
-        formula.ChangeStatus(newStatus, request.CurrentUserId);
-        await _formulaRepository.UpdateAsync(formula, cancellationToken);
-        return Result<FormulaDetailDto>.Success(CatalogDtoMapper.ToFormulaDetailDto(formula));
-    }
+    protected override string GetName(Formula entity) => entity.Name;
+    protected override string GetName(FormulaInputDto input) => input.Name;
 }

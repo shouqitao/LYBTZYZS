@@ -1,36 +1,23 @@
 using LYBT.Entities.Formulas;
-using LYBT.Infrastructure.BatchOperations;
 using LYBT.Module.Catalog.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
-using MediatR;
 
 namespace LYBT.Module.Catalog.Application.Commands;
 
 /// <summary>
 /// 批量删除验方命令处理器（软删除）。
+/// 骨架收敛至 <see cref="CatalogBatchOperationHandlerBase{TEntity,TCommand}"/>，本类保留验方特有钩子
+/// （CatchExceptions=false 与原实现一致：验方批量删除不捕获异常）。
 /// </summary>
-public class BatchDeleteFormulasCommandHandler
-    : BatchOperationHandlerBase<Formula>,
-      IRequestHandler<BatchDeleteFormulasCommand, Result<BatchOperationResultDto>>
+public class BatchDeleteFormulasCommandHandler : CatalogBatchOperationHandlerBase<Formula, BatchDeleteFormulasCommand>
 {
-    private readonly IFormulaRepository _formulaRepository;
-
-    public BatchDeleteFormulasCommandHandler(
-        IFormulaRepository formulaRepository)
+    public BatchDeleteFormulasCommandHandler(IFormulaRepository formulaRepository)
+        : base(formulaRepository)
     {
-        _formulaRepository = formulaRepository;
     }
 
-    public Task<Result<BatchOperationResultDto>> Handle(
-        BatchDeleteFormulasCommand request, CancellationToken cancellationToken)
-        => ExecuteBatchAsync(request.Ids, request.OperatorId, cancellationToken);
-
-    protected override Task<Formula?> GetByIdAsync(Guid id, CancellationToken ct)
-        => _formulaRepository.GetByIdAsync(id, ct);
-
-    protected override Task UpdateAsync(Formula formula, CancellationToken ct)
-        => _formulaRepository.UpdateAsync(formula, ct);
+    protected override Guid ResolveOperatorId(BatchDeleteFormulasCommand request) => request.OperatorId;
 
     protected override Task ApplyOperationAsync(Formula formula, Guid operatorId, CancellationToken ct)
     {

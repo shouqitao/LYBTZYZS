@@ -1,40 +1,28 @@
 using LYBT.Entities.Herbs;
-using LYBT.Infrastructure.BatchOperations;
 using LYBT.Infrastructure.Caching;
 using LYBT.Module.Catalog.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
-using MediatR;
 
 namespace LYBT.Module.Catalog.Application.Commands;
 
 /// <summary>
-/// 批量删除药材命令处理器（软删除）。
+/// 批量删除药材命令处理器（软删除，含缓存失效）。
+/// 骨架收敛至 <see cref="CatalogBatchOperationHandlerBase{TEntity,TCommand}"/>，本类保留药材特有钩子。
 /// </summary>
-public class BatchDeleteHerbsCommandHandler
-    : BatchOperationHandlerBase<Herb>,
-      IRequestHandler<BatchDeleteHerbsCommand, Result<BatchOperationResultDto>>
+public class BatchDeleteHerbsCommandHandler : CatalogBatchOperationHandlerBase<Herb, BatchDeleteHerbsCommand>
 {
-    private readonly IHerbRepository _herbRepository;
     private readonly ICacheInvalidationService _cacheInvalidation;
 
     public BatchDeleteHerbsCommandHandler(
         IHerbRepository herbRepository,
         ICacheInvalidationService cacheInvalidation)
+        : base(herbRepository)
     {
-        _herbRepository = herbRepository;
         _cacheInvalidation = cacheInvalidation;
     }
 
-    public Task<Result<BatchOperationResultDto>> Handle(
-        BatchDeleteHerbsCommand request, CancellationToken cancellationToken)
-        => ExecuteBatchAsync(request.Ids, request.CurrentUserId, cancellationToken);
-
-    protected override Task<Herb?> GetByIdAsync(Guid id, CancellationToken ct)
-        => _herbRepository.GetByIdAsync(id, ct);
-
-    protected override Task UpdateAsync(Herb herb, CancellationToken ct)
-        => _herbRepository.UpdateAsync(herb, ct);
+    protected override Guid ResolveOperatorId(BatchDeleteHerbsCommand request) => request.CurrentUserId;
 
     protected override Task ApplyOperationAsync(Herb herb, Guid operatorId, CancellationToken ct)
     {

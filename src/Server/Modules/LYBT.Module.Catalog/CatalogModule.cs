@@ -70,6 +70,25 @@ namespace LYBT.Module.Catalog
             // 注册 Application 层验证器
             services.AddValidatorsFromAssemblyContaining<CreateHerbValidator>();
 
+            // 注册泛型验证器（closed generic，AssemblyScanner 跳过泛型定义类）
+            // Toggle/Restore/BatchEnable/BatchDisable 孪生已收敛为泛型验证器（S1）
+            services.AddScoped<IValidator<ToggleEntityStatusCommand<Herb, HerbDetailDto>>, ToggleEntityStatusValidator<Herb, HerbDetailDto>>(
+                _ => new ToggleEntityStatusValidator<Herb, HerbDetailDto>("药材"));
+            services.AddScoped<IValidator<ToggleEntityStatusCommand<Formula, FormulaDetailDto>>, ToggleEntityStatusValidator<Formula, FormulaDetailDto>>(
+                _ => new ToggleEntityStatusValidator<Formula, FormulaDetailDto>("验方"));
+            services.AddScoped<IValidator<RestoreEntityCommand<Herb, HerbDetailDto>>, RestoreEntityValidator<Herb, HerbDetailDto>>(
+                _ => new RestoreEntityValidator<Herb, HerbDetailDto>("药材"));
+            services.AddScoped<IValidator<RestoreEntityCommand<Formula, FormulaDetailDto>>, RestoreEntityValidator<Formula, FormulaDetailDto>>(
+                _ => new RestoreEntityValidator<Formula, FormulaDetailDto>("验方"));
+            services.AddScoped<IValidator<BatchEnableHerbsCommand>, BatchEntityIdsValidator<BatchEnableHerbsCommand>>(
+                _ => new BatchEntityIdsValidator<BatchEnableHerbsCommand>("药材"));
+            services.AddScoped<IValidator<BatchEnableFormulasCommand>, BatchEntityIdsValidator<BatchEnableFormulasCommand>>(
+                _ => new BatchEntityIdsValidator<BatchEnableFormulasCommand>("验方"));
+            services.AddScoped<IValidator<BatchDisableHerbsCommand>, BatchEntityIdsValidator<BatchDisableHerbsCommand>>(
+                _ => new BatchEntityIdsValidator<BatchDisableHerbsCommand>("药材"));
+            services.AddScoped<IValidator<BatchDisableFormulasCommand>, BatchEntityIdsValidator<BatchDisableFormulasCommand>>(
+                _ => new BatchEntityIdsValidator<BatchDisableFormulasCommand>("验方"));
+
             return services;
         }
     }
