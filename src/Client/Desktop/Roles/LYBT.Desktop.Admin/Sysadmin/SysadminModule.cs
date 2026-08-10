@@ -1,3 +1,4 @@
+using LYBT.Desktop.Admin.Services;
 using LYBT.Desktop.Contracts.Services;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -24,6 +25,9 @@ public class SysadminModule : IModule
 
         // 注册服务
         containerRegistry.Register<IAuthHealthService, Services.AuthHealthService>();
+        // D6: DP10 收口——Sysadmin VM 经服务门面访问 IApiClient 子域
+        containerRegistry.Register<IDeploymentService, DeploymentService>();
+        containerRegistry.Register<IDiagnosticsService, DiagnosticsService>();
 
         // 注册视图用于导航
         containerRegistry.RegisterForNavigation<Views.SysadminHomeView>();

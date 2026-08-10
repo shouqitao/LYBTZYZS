@@ -20,6 +20,8 @@ namespace LYBT.Desktop.Admin
             // 注册视图模型
             containerRegistry.Register<ViewModels.AdminHomeViewModel>();
             containerRegistry.Register<ViewModels.SystemSettingsViewModel>();
+            // D6: DP10 收口——SystemSettingsViewModel 经服务门面访问 IApiClient.Configuration
+            containerRegistry.Register<Services.IServerConfigurationService, Services.ServerConfigurationService>();
 
             // 注册视图用于导航
             containerRegistry.RegisterForNavigation<Views.AdminHomeView>();
