@@ -16,32 +16,13 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         IMedicalCaseCommandService,
         IMedicalCaseLifecycleService
     {
-        #region 数据加载与缓存 (原 Coordinator 职责)
+        #region 数据加载 (原 Coordinator 职责)
 
         /// <summary>
-        /// 加载医案详情并缓存
+        /// 加载医案详情（D5: 委托 LifecycleService 初始化 EditContext 会话并持有 DTO 快照；
+        /// 详情/诊疗/处方门面经 Current/CurrentConsultation/CurrentPrescription 读取）
         /// </summary>
         Task<CommandResult<MedicalCaseDetailModel>> LoadDetailsAsync(Guid medicalCaseId, CancellationToken ct = default);
-
-        /// <summary>
-        /// 缓存的医案详情
-        /// </summary>
-        MedicalCaseDetailDto? CachedMedicalCase { get; }
-
-        /// <summary>
-        /// 缓存的诊疗记录
-        /// </summary>
-        ConsultationDetailDto? CachedConsultation { get; }
-
-        /// <summary>
-        /// 缓存的处方信息
-        /// </summary>
-        PrescriptionDetailDto? CachedPrescription { get; }
-
-        /// <summary>
-        /// 清除缓存数据
-        /// </summary>
-        void ClearCache();
 
         #endregion
 

@@ -39,8 +39,21 @@ internal class MedicalCaseLifecycleService : IMedicalCaseLifecycleService
     }
 
     public Guid MedicalCaseId => _context.CurrentModel?.Id ?? Guid.Empty;
+    public MedicalCaseDetailDto? CurrentDetail => _currentDto;
     public ConsultationDetailDto? CurrentConsultation => _currentDto?.Consultation;
     public PrescriptionDetailDto? CurrentPrescription => _currentDto?.Prescription;
+
+    /// <summary>
+    /// D5: 更新 DTO 快照并前移编辑会话基线（保存后同步，取代原聚合代理 Cached* 私有缓存）。
+    /// </summary>
+    public void UpdateSnapshot(MedicalCaseDetailDto? detail)
+    {
+        _currentDto = detail;
+        if (detail != null)
+        {
+            _context.BeginEdit(_mapper.ToItem(detail));
+        }
+    }
 
     public async Task InitializeAsync(Guid entityId, CancellationToken ct = default)
     {

@@ -19,6 +19,16 @@ public interface IMedicalCaseLifecycleService
     Guid MedicalCaseId { get; }
 
     /// <summary>
+    /// 当前医案详情 DTO（D5: 会话唯一 DTO 快照，取代原 CachedMedicalCase 门面）
+    /// </summary>
+    MedicalCaseDetailDto? CurrentDetail { get; }
+
+    /// <summary>
+    /// 更新 DTO 快照并前移编辑会话基线（保存后同步）
+    /// </summary>
+    void UpdateSnapshot(MedicalCaseDetailDto? detail);
+
+    /// <summary>
     /// 当前诊疗数据（来自聚合根导航属性）
     /// </summary>
     ConsultationDetailDto? CurrentConsultation { get; }

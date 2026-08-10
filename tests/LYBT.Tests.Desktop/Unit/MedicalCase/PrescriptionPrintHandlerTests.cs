@@ -51,7 +51,7 @@ public class PrescriptionPrintHandlerTests
     public async Task PrintPreviewAsync_NoPrescription_ShouldReturnFailed()
     {
         // Arrange
-        _medicalCaseService.CachedPrescription.Returns((PrescriptionDetailDto?)null);
+        _medicalCaseService.CurrentPrescription.Returns((PrescriptionDetailDto?)null);
         var sut = CreateSut();
 
         // Act
@@ -72,7 +72,7 @@ public class PrescriptionPrintHandlerTests
             DosageCount = 7,
             Items = new List<PrescriptionItemDto>() // Empty!
         };
-        _medicalCaseService.CachedPrescription.Returns(emptyPrescription);
+        _medicalCaseService.CurrentPrescription.Returns(emptyPrescription);
         var sut = CreateSut();
 
         // Act
@@ -93,7 +93,7 @@ public class PrescriptionPrintHandlerTests
             DosageCount = 7,
             Items = null! // Null!
         };
-        _medicalCaseService.CachedPrescription.Returns(nullItemsPrescription);
+        _medicalCaseService.CurrentPrescription.Returns(nullItemsPrescription);
         var sut = CreateSut();
 
         // Act
@@ -115,7 +115,7 @@ public class PrescriptionPrintHandlerTests
             DosageCount = 7,
             Items = new List<PrescriptionItemDto> { new() { HerbName = "黄芪", Dosage = 15 } }
         };
-        _medicalCaseService.CachedPrescription.Returns(prescription);
+        _medicalCaseService.CurrentPrescription.Returns(prescription);
         var sut = CreateSut();
 
         // Act
@@ -137,7 +137,7 @@ public class PrescriptionPrintHandlerTests
             DosageCount = 7,
             Items = new List<PrescriptionItemDto> { new() { HerbName = "黄芪", Dosage = 15 } }
         };
-        _medicalCaseService.CachedPrescription.Returns(prescription);
+        _medicalCaseService.CurrentPrescription.Returns(prescription);
         var sut = CreateSut();
 
         // Act

@@ -368,7 +368,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     private void DetermineEditMode(WorkspaceMode workspaceMode, EditState initialEditState, bool isHistoricalEdit)
     {
         var (newState, canEdit, startEditing) = _stateManager.DetermineEditMode(
-            State, workspaceMode, _medicalCaseService.CachedMedicalCase,
+            State, workspaceMode, _medicalCaseService.Current,
             SessionManager?.CurrentUser?.Role, SessionManager?.CurrentUser?.Id ?? Guid.Empty,
             initialEditState, isHistoricalEdit);
 
@@ -428,7 +428,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
 
     private async Task ResumeSuspendedIfNeededAsync()
     {
-        var medicalCase = _medicalCaseService.CachedMedicalCase;
+        var medicalCase = _medicalCaseService.Current;
         if (medicalCase == null) return;
 
         if (State.Mode == WorkspaceMode.Clinical
@@ -443,8 +443,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     private void InitializeChildViewModels()
     {
         // Consultation
-        if (_medicalCaseService.CachedConsultation != null)
-            ConsultationEditor.InitializeFromDto(_medicalCaseService.CachedConsultation);
+        if (_medicalCaseService.CurrentConsultation != null)
+            ConsultationEditor.InitializeFromDto(_medicalCaseService.CurrentConsultation);
         else
             ConsultationEditor.InitializeForNewCase(
                 CurrentPatient?.Name ?? string.Empty,
@@ -452,8 +452,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
                 SessionManager?.CurrentUser?.Id ?? Guid.Empty);
 
         // Prescription
-        if (_medicalCaseService.CachedPrescription != null)
-            PrescriptionEditor.InitializeFromDto(_medicalCaseService.CachedPrescription);
+        if (_medicalCaseService.CurrentPrescription != null)
+            PrescriptionEditor.InitializeFromDto(_medicalCaseService.CurrentPrescription);
         else
             PrescriptionEditor.InitializeForNewCase();
 
@@ -462,7 +462,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         PrescriptionEditor.Prescription.PropertyChanged += OnChildPropertyChanged;
 
         // Initial print state
-        if (_medicalCaseService.CachedPrescription?.Items is { Count: > 0 })
+        if (_medicalCaseService.CurrentPrescription?.Items is { Count: > 0 })
             State = State with { CanPrint = true };
 
         UpdateState();

@@ -29,11 +29,6 @@ public class MedicalCaseService : IMedicalCaseService
     private readonly ISessionManager? _sessionManager;
     private readonly ILogger<MedicalCaseService> _logger;
 
-    // DTO 门面缓存（原 Services.MedicalCaseEditContext 职责，内移至聚合代理）
-    private MedicalCaseDetailDto? _cachedMedicalCase;
-    private ConsultationDetailDto? _cachedConsultation;
-    private PrescriptionDetailDto? _cachedPrescription;
-
     public MedicalCaseService(
         IMedicalCaseRepository repository,
         IMedicalCaseQueryService queryService,
@@ -70,7 +65,7 @@ public class MedicalCaseService : IMedicalCaseService
 
     #region IMedicalCaseCommandService 委托
 
-    public MedicalCaseDetailDto? Current => _cachedMedicalCase;
+    public MedicalCaseDetailDto? Current => _lifecycleService.CurrentDetail;
     public bool HasChanges => _commandService.HasChanges;
 
     public virtual async Task<bool> SaveAsync(CancellationToken ct = default)
@@ -87,8 +82,12 @@ public class MedicalCaseService : IMedicalCaseService
     #region IMedicalCaseLifecycleService 委托
 
     public Guid MedicalCaseId => _lifecycleService.MedicalCaseId;
+    public MedicalCaseDetailDto? CurrentDetail => _lifecycleService.CurrentDetail;
     public ConsultationDetailDto? CurrentConsultation => _lifecycleService.CurrentConsultation;
     public PrescriptionDetailDto? CurrentPrescription => _lifecycleService.CurrentPrescription;
+
+    public void UpdateSnapshot(MedicalCaseDetailDto? detail)
+        => _lifecycleService.UpdateSnapshot(detail);
 
     public async Task InitializeAsync(Guid entityId, CancellationToken ct = default)
         => await _lifecycleService.InitializeAsync(entityId, ct);
@@ -115,28 +114,19 @@ public class MedicalCaseService : IMedicalCaseService
 
     #region IMedicalCaseService 独有成员（Coordinator 职责）
 
-    public MedicalCaseDetailDto? CachedMedicalCase => _cachedMedicalCase;
-    public ConsultationDetailDto? CachedConsultation => _cachedConsultation;
-    public PrescriptionDetailDto? CachedPrescription => _cachedPrescription;
-
+    /// <summary>
+    /// 加载医案详情（D5: 收敛到 EditContext 新路径——委托 LifecycleService.InitializeAsync，
+    /// DTO 快照由 LifecycleService 单一持有，取代原 Cached* 门面缓存）。
+    /// </summary>
     public async Task<CommandResult<MedicalCaseDetailModel>> LoadDetailsAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
         try
         {
             _logger.LogInformation("[SVC] MedicalCase.LoadDetails started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
-            var detail = await _repository.GetByIdAsync(medicalCaseId);
-            if (detail == null)
-            {
-                _logger.LogWarning("[SVC] MedicalCase.LoadDetails → NotFound - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return CommandResult<MedicalCaseDetailModel>.NotFound("未找到医案数据");
-            }
+            await _lifecycleService.InitializeAsync(medicalCaseId, ct);
 
-            _cachedMedicalCase = detail;
-            _cachedConsultation = detail.Consultation;
-            _cachedPrescription = detail.Prescription;
-
-            var model = _mapper.ToItem(detail);
+            var model = _mapper.ToItem(_lifecycleService.CurrentDetail!);
 
             _logger.LogInformation("[SVC] MedicalCase.LoadDetails completed");
             return CommandResult<MedicalCaseDetailModel>.Succeeded(model);
@@ -146,14 +136,6 @@ public class MedicalCaseService : IMedicalCaseService
             _logger.LogError(ex, "[SVC] MedicalCase.LoadDetails failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             return CommandResult<MedicalCaseDetailModel>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("加载医案数据", ex));
         }
-    }
-
-    public void ClearCache()
-    {
-        _logger.LogDebug("[SVC] MedicalCase.ClearCache");
-        _cachedMedicalCase = null;
-        _cachedConsultation = null;
-        _cachedPrescription = null;
     }
 
     public async Task<(bool Success, MedicalCaseDetailDto? Data, string? Error)> AggregateSaveAsync(
@@ -178,9 +160,8 @@ public class MedicalCaseService : IMedicalCaseService
 
             var result = await _repository.SaveAsync(medicalCaseId, aggregateDto);
 
-            _cachedMedicalCase = result;
-            _cachedConsultation = result?.Consultation;
-            _cachedPrescription = result?.Prescription;
+            // D5: 保存后同步 DTO 快照 + 前移 EditContext 基线（取代原 Cached* 缓存赋值）
+            _lifecycleService.UpdateSnapshot(result);
 
             _logger.LogInformation("[SVC] MedicalCase.AggregateSave completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             return (true, result, null);

@@ -118,12 +118,12 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
 
             MasterDetailServices.DetailEditor.LoadDetail(result.Data);
 
-            // Initialize child VMs from cached DTOs
-            if (_medicalCaseService.CachedConsultation != null)
-                ConsultationEditor.InitializeFromDto(_medicalCaseService.CachedConsultation);
+            // Initialize child VMs from lifecycle DTO snapshot (D5: Cached* 门面已移除)
+            if (_medicalCaseService.CurrentConsultation != null)
+                ConsultationEditor.InitializeFromDto(_medicalCaseService.CurrentConsultation);
 
-            if (_medicalCaseService.CachedPrescription != null)
-                PrescriptionEditor.InitializeFromDto(_medicalCaseService.CachedPrescription);
+            if (_medicalCaseService.CurrentPrescription != null)
+                PrescriptionEditor.InitializeFromDto(_medicalCaseService.CurrentPrescription);
         }
         catch (Exception ex)
         {

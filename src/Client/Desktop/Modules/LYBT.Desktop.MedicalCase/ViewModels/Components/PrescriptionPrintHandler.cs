@@ -262,8 +262,8 @@ public class PrescriptionPrintHandler
         Guid medicalCaseId,
         IDataProvider? prescriptionProvider)
     {
-        // 优先使用缓存的处方数据
-        var cachedPrescription = _medicalCaseService.CachedPrescription;
+        // 优先使用当前会话的处方数据（D5: Cached* 门面已移除）
+        var cachedPrescription = _medicalCaseService.CurrentPrescription;
         if (cachedPrescription != null)
         {
             return cachedPrescription;
