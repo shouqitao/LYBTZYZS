@@ -98,6 +98,9 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         var currentRole = SessionManager.CurrentUser?.Role;
         IsReceptionist = currentRole == UserRole.Receptionist || currentRole == UserRole.Admin || currentRole == UserRole.SuperAdmin;
         IsDoctor = currentRole == UserRole.Doctor;
+
+        // IsReceptionist 在命令初始化后赋值，需手动通知命令重新评估可执行状态
+        CreateRegistrationCommand.NotifyCanExecuteChanged();
     }
 
     #region Lifecycle
@@ -176,7 +179,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
     }
 
     /// <summary>新建挂号 -- 打开挂号弹窗</summary>
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanCreateRegistration))]
     private void CreateRegistration()
     {
         if (_dialogService is null)
@@ -194,6 +197,9 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
             }
         });
     }
+
+    /// <summary>仅 Receptionist（含 Admin/SuperAdmin）且空闲时可新建挂号，Doctor 禁用</summary>
+    private bool CanCreateRegistration() => IsReceptionist && !IsBusy;
 
     /// <summary>
     /// 接诊: 从队列选中患者，创建医案
