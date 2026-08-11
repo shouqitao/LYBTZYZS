@@ -99,6 +99,9 @@ public static class ViewNames
     /// <summary>部署管理</summary>
     public const string Deployment = "DeploymentView";
 
+    /// <summary>备份恢复管理（T7-2: US-SHELL-013）</summary>
+    public const string BackupManagement = "BackupManagementView";
+
     #endregion
 
 }

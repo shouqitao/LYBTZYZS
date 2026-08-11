@@ -109,6 +109,7 @@ public partial class NavigationManager : ObservableObject, INavigationManager
             items.Add(CreateNavItem("诊所信息", ViewNames.SystemSettings, "Domain", "管理"));
             items.Add(CreateNavItem("日志控制", ViewNames.LogLevelControl, "Tune", "管理"));
             items.Add(CreateNavItem("部署管理", ViewNames.Deployment, "Upload", "管理"));
+            items.Add(CreateNavItem("备份恢复", ViewNames.BackupManagement, "DatabaseBackup", "管理"));
         }
 
         _logger.LogInformation("已为角色 {Role} 构建 {Count} 个导航项", role, items.Count);

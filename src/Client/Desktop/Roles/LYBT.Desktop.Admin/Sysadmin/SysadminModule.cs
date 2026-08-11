@@ -22,6 +22,7 @@ public class SysadminModule : IModule
         containerRegistry.Register<ViewModels.SysadminHomeViewModel>();
         containerRegistry.Register<ViewModels.LogLevelControlViewModel>();
         containerRegistry.Register<ViewModels.DeploymentViewModel>();
+        containerRegistry.Register<ViewModels.BackupManagementViewModel>();
 
         // 注册服务
         containerRegistry.Register<IAuthHealthService, Services.AuthHealthService>();
@@ -33,5 +34,6 @@ public class SysadminModule : IModule
         containerRegistry.RegisterForNavigation<Views.SysadminHomeView>();
         containerRegistry.RegisterForNavigation<Views.LogLevelControlView>();
         containerRegistry.RegisterForNavigation<Views.DeploymentView>();
+        containerRegistry.RegisterForNavigation<Views.BackupManagementView>();
     }
 }
