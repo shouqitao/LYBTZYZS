@@ -70,7 +70,7 @@
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `HerbsController.cs:37` (HttpGet list), `IHerbService`, OutputCache `HerbsCache`
+**实现参考**: `CatalogController.cs:50` (HttpGet list), `IHerbService`, OutputCache `HerbsCache`
 
 ---
 
@@ -98,7 +98,7 @@
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `HerbsController.cs:57` (HttpGet `{id}`), `IHerbService`
+**实现参考**: `CatalogController.cs:107` (HttpGet `{id}`), `IHerbService`
 
 ---
 
@@ -127,7 +127,7 @@
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `HerbsController.cs:75` (HttpPost create), `IHerbService`
+**实现参考**: `CatalogController.cs:124` (HttpPost create), `IHerbService`
 
 ---
 
@@ -156,7 +156,7 @@
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `HerbsController.cs:96` (HttpPut `{id}`), `IHerbService`
+**实现参考**: `CatalogController.cs:146` (HttpPut `{id}`), `IHerbService`
 
 ---
 
@@ -186,7 +186,7 @@
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `HerbsController.cs:121` (HttpDelete `{id}`), `IHerbService`
+**实现参考**: `CatalogController.cs:174` (HttpDelete `{id}`), `IHerbService`
 
 ---
 
@@ -222,7 +222,7 @@
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `HerbsController.cs:148` (HttpPost `batch-import`), `IHerbImportExportService.ImportFromExcelAsync` / `BatchImportAsync`
+**实现参考**: `CatalogController.cs:262` (HttpPost `batch-import`), `IHerbImportExportService.ImportFromExcelAsync` / `BatchImportAsync`
 
 ---
 
@@ -251,7 +251,7 @@
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `HerbsController.cs:186` (HttpGet `export-all`), `IHerbImportExportService`
+**实现参考**: `CatalogController.cs:82` (HttpGet `export-all`), `IHerbImportExportService`
 
 ---
 
@@ -279,7 +279,7 @@
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `HerbsController.cs:206` (HttpGet `{id}/check-reference`), `IHerbService`
+**实现参考**: `CatalogController.cs:287` (HttpGet `{id}/check-reference`), `IHerbService`
 
 ---
 
@@ -307,7 +307,7 @@
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `HerbsController.cs:226` (HttpPost `batch-check-reference`), `IHerbService`
+**实现参考**: `CatalogController.cs:302` (HttpPost `batch-check-reference`), `IHerbService`
 
 ---
 
@@ -335,7 +335,7 @@
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `HerbsController.cs:264` (HttpPost `{id}/toggle-status`), `IHerbService`
+**实现参考**: `CatalogController.cs:202` (HttpPost `{id}/toggle-status`), `IHerbService`
 
 ---
 
@@ -363,7 +363,7 @@
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `HerbsController.cs:288` (HttpPost `{id}/restore`), `IHerbService`
+**实现参考**: `CatalogController.cs:228` (HttpPost `{id}/restore`), `IHerbService`
 
 ---
 
@@ -392,7 +392,7 @@
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `HerbsController.cs:314` (batch-enable), `HerbsController.cs:338` (batch-disable), `HerbsController.cs:359` (batch-delete), `IHerbService`
+**实现参考**: `CatalogController.cs:319` (batch-enable), `CatalogController.cs:339` (batch-disable), `CatalogController.cs:247` (batch-delete), `IHerbService`
 
 ---
 
@@ -421,7 +421,7 @@
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `HerbsController.cs:386` (HttpGet `export`), `HerbsController.cs:398` (HttpGet `import-template`), `IHerbImportExportService`
+**实现参考**: `CatalogController.cs:82` (HttpGet `export`), `CatalogController.cs:70` (HttpGet `import-template`), `IHerbImportExportService`
 
 ---
 

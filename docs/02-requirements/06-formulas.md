@@ -79,7 +79,7 @@ stateDiagram-v2
 | 远程 | GET `/api/v1/Formulas?keyword=&category=&page=&pageSize=` |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs:23`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs:11`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:363`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs:11`
 
 ---
 
@@ -107,7 +107,7 @@ stateDiagram-v2
 | 远程 | GET `/api/v1/Formulas/{id}` |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs:23`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:423`
 
 ---
 
@@ -139,7 +139,7 @@ stateDiagram-v2
 | 远程 | POST `/api/v1/Formulas` |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs:23`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs:11`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:443`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs:11`
 
 ---
 
@@ -168,7 +168,7 @@ stateDiagram-v2
 | 远程 | PUT `/api/v1/Formulas/{id}` |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs:23`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs:11`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:464`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs:11`
 
 ---
 
@@ -197,7 +197,7 @@ stateDiagram-v2
 | 远程 | DELETE `/api/v1/Formulas/{id}` 或 POST `/api/v1/Formulas/batch-delete` |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs:23`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:489`
 
 ---
 
@@ -228,7 +228,7 @@ stateDiagram-v2
 | 远程 | POST `/api/v1/Formulas/batch-import`（EPPlus） |
 | 本地 | 客户端 NPOI 本地解析 Excel，直接写入 LocalDbContext |
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs:23`、`IFormulaImportExportService`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:580`、`IFormulaImportExportService`
 
 ---
 
@@ -371,7 +371,7 @@ stateDiagram-v2
 | 远程 | POST `/api/v1/Formulas/{id}/toggle-status` 或 `/batch-enable`、`/batch-disable` |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs:23`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:516`
 
 ---
 
@@ -398,7 +398,7 @@ stateDiagram-v2
 | 远程 | POST `/api/v1/Formulas/{id}/restore` |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs:23`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:542`
 
 ---
 
@@ -428,7 +428,7 @@ stateDiagram-v2
 | 远程 | POST `/api/v1/Formulas/batch-delete`、GET `/export`、GET `/import-template`（EPPlus） |
 | 本地 | 客户端 NPOI 本地解析/生成 Excel，直接操作 LocalDbContext |
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs:23`、`IFormulaImportExportService`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:565`、`IFormulaImportExportService`
 
 ---
 
