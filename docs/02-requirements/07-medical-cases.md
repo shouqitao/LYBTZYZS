@@ -750,10 +750,27 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 - [平台基础设施 审计日志](11d-observability.md)（SecurityAuditLog）
 - [术语表 MedicalCase = 医案（NOT 病历）](../01-product/03-glossary.md)
 
+---
+
+### US-MC-020: 医案批量删除（R3-补：已实现未文档化）
+
+**角色**: Admin / SuperAdmin
+**优先级**: Should
+**状态**: ✅ 已实现（未文档化补记——R1 反向脱节）
+
+**作为** 管理员，**我想要** 批量软删除已完成医案，**以便** 批量清理历史数据（仅 Completed 可删，逐项返回成功/失败计数）。
+
+**验收标准**:
+- [ ] POST `/api/v1/medicalcases/batch-delete` 批量软删除
+- [ ] 仅 Admin 可操作，仅 Completed 医案可删（其余跳过计数）
+
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:178`（batch-delete）、`MedicalCaseCommandService.Deletion.cs`（McOnlyCompletedCanDelete）
+
 ## 变更记录
 
 | 日期 | 变更 | 原因 |
 |------|------|------|
+| 2026-08-11 | US-MC-020 补记（医案批量删除——代码已实现未文档化） | R3-补 反向脱节收编 |
 | 2026-06-28 | US-MC-011 业务规则压缩（引用 BR-003）；19 个 US 双模式表改一行格式；实现参考路径精简 | spec S3 批次2 提炼 |
 | 2026-06-28 | US-MC-018 加交叉引用注；US-MC-008/009 加与 US-MC-006 边界说明 | plan Task 7 边缘 US 修正 |
 | 2026-08-03 | **BR-000 修订为「接诊即建」**：StartVisit/QuickVisit/本地模式原子创建 MedicalCase(Active)+Registration(InProgress)；状态机注释同步 | 产品决策（消除 BR-000 与 US-REG-005 矛盾） |

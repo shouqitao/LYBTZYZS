@@ -451,8 +451,26 @@ stateDiagram-v2
 - [药材管理](05-herbs.md)（跨模块查询 `ICrossModuleService.GetHerbBasicInfoAsync`）
 - [术语表 Formula = 验方/经验方（NOT 公式）](../01-product/03-glossary.md)
 
+---
+
+### US-FORM-014: 克隆验方（R3-补：已实现未文档化）
+
+**角色**: 医生
+**优先级**: Should
+**状态**: ✅ 已实现（未文档化补记；⚠️ 仅本地模式——远程 WebAPI 无 clone 端点，远程调用 404）
+
+**作为** 医生，**我想要** 基于现有验方快速克隆一份新验方（Draft 状态），**以便** 在相近处方基础上调整，提高开方效率。
+
+**验收标准**:
+- [ ] 本地模式 POST `/api/v1/formulas/{id}/clone` 生成新验方（Draft 初始）
+- [ ] 克隆副本名称/药材组成与源验方一致
+- [ ] 远程模式补端点（WebAPI 当前缺失——T 批次待补）
+
+**实现参考**: `src/Client/Desktop/LocalWebAPI/Controllers/CatalogController.cs:459`（clone）、Desktop `IFormulaApi.cs:48`/`FormulasHttpApiClient.cs:39`
+
 ## 变更记录
 
 | 日期 | 变更 | 原因 |
 |------|------|------|
+| 2026-08-11 | US-FORM-014 补记（验方克隆——代码已实现未文档化；远程待补） | R3-补 反向脱节收编 |
 | 2026-06-25 | 补充并发编辑、Draft→Validated 晋升边界条件验收标准 | 需求文档验收标准完善 |

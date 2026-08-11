@@ -431,8 +431,25 @@
 - [ ] 编辑过程中患者被其他用户禁用 → 保存成功（禁用不影响编辑权限，仅影响可见性）
 - [ ] 编辑过程中患者被软删除 → 返回 404
 
+---
+
+### US-PAT-014: 按身份证号查询患者（R3-补：已实现未文档化）
+
+**角色**: 医生 / 前台 / Admin
+**优先级**: Must
+**状态**: ✅ 已实现（未文档化补记——R1 反向脱节）
+
+**作为** 医生或前台，**我想要** 输入患者身份证号直接查询患者，**以便** 读卡建档时快速定位已有患者（US-CARD-001 读卡链路依赖）。
+
+**验收标准**:
+- [ ] GET `/api/v1/patients/by-id-number/{idNumber}` 返回匹配患者详情
+- [ ] 未找到返回 404
+
+**实现参考**: `CatalogController.cs` 无——`src/Server/Services/LYBT.WebAPI/Controllers/PatientsController.cs:296`（`by-id-number/{idNumber}`）、`PatientService.GetByIdNumberAsync`、Desktop `PatientCardReaderIntegration.FindPatientByIdNumberAsync`
+
 ## 变更记录
 
 | 日期 | 变更 | 原因 |
 |------|------|------|
+| 2026-08-11 | US-PAT-014 补记（身份证号查询——代码已实现未文档化） | R3-补 反向脱节收编 |
 | 2026-06-25 | 补充导入电话唯一性、并发编辑边界条件验收标准 | 需求文档验收标准完善 |

@@ -146,10 +146,31 @@
 | [08-registration.md](08-registration.md) | `Registration` 挂号费、就诊记录数据源 |
 | [05-herbs.md](05-herbs.md) | `Herb` 药材名称数据源 |
 
+---
+
+### US-REPORT-004: 趋势与绩效分析（R3-补：已实现未文档化）
+
+**角色**: Admin / 医生
+**优先级**: Could
+**状态**: ✅ 已实现（未文档化补记——R1 反向脱节；注意：原 10-reports.md v1.0 克制声明「不做趋势分析」已被代码超越）
+
+**作为** 管理者，**我想要** 查看收入/问诊趋势、医生绩效、热门药材与患者流量分析，**以便** 了解业务变化趋势并优化资源配置。
+
+**验收标准**:
+- [ ] GET `/api/v1/reports/trend/income`（收入趋势，默认最近 30 天）
+- [ ] GET `/api/v1/reports/trend/consultations`（问诊趋势）
+- [ ] GET `/api/v1/reports/doctor-performance`（医生绩效）
+- [ ] GET `/api/v1/reports/herbs/ranking`（热门药材排行）
+- [ ] GET `/api/v1/reports/patient-flow`（患者流量）
+- [ ] 支持 startDate/endDate 过滤
+
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/ReportsController.cs:69-158`、`ReportService.cs:52-103`；Desktop `ReportsHomeViewModel` 当前仅消费 3 个 daily 端点
+
 ## 变更记录
 
 | 日期 | 变更 | 原因 |
 |------|------|------|
+| 2026-08-11 | US-REPORT-004 补记（趋势/绩效/排行端点——代码已实现未文档化，超越 v1.0 克制声明） | R3-补 反向脱节收编 |
 | 2026-06-28 | 新建报表模块需求文档，落地 US-REPORT-001~003（A7 报表清单：3 端点 + 时间范围参数） | A7 报表清单设计落地 |
 | 2026-06-28 | US-REPORT-001/002/003 状态从 ✅已实现 降级为 🚧 v1.0 待实现 | 审计 S1：ReportsController 当前无 startDate/endDate 参数，US AC 要求时间范围未达 |
 | 2026-08-02 | US-REPORT-001/002/003 状态从 🚧 v1.0 待实现 恢复为 ✅ 已实现 | 文档校准：代码 ReportsController 已实现 startDate/endDate 参数 |

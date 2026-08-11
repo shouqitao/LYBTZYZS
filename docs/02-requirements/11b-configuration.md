@@ -124,8 +124,43 @@
 
 ---
 
+---
+
+### US-CFG-005: 服务器配置管理端点（R3-补：已实现未文档化）
+
+**角色**: Admin / SuperAdmin
+**优先级**: Should
+**状态**: ✅ 已实现（未文档化补记——R1 反向脱节）
+
+**作为** 管理员，**我想要** 通过 API 查询/修改/验证服务器配置项，**以便** 运维调整配置无需手动改文件。
+
+**验收标准**:
+- [ ] GET `/api/v1/configuration` 查询配置 + GET `/{key}` 单值（白名单 + 脱敏）
+- [ ] PUT `/{key}` 修改单值 + PUT 批量修改（白名单校验 + 持久化 + 热更新）
+- [ ] POST `/api/v1/configuration/validate` 生产环境配置验证（Critical/Important/Optional 分级）
+
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/ConfigurationController.cs`、`ConfigurationWritePolicy.cs`、`ProductionConfigurationValidator.cs`（注：11b 原文档仅覆盖 GET——PUT/validate 为代码超前实现）
+
+---
+
+### US-CFG-006: 诊所信息热更新（R3-补：已实现未文档化）
+
+**角色**: Admin
+**优先级**: Should
+**状态**: ✅ 已实现（未文档化补记——R1 反向脱节；代码实现为 clinic-settings.json + IOptions reloadOnChange）
+
+**作为** 管理员，**我想要** 修改诊所名称/地址/电话等信息并即时生效（无需重启 Desktop），**以便** 诊所信息变更即时反映到处方打印等场景。
+
+**验收标准**:
+- [ ] 诊所信息写入 clinic-settings.json（IConfiguration 自动重载）
+- [ ] 处方打印（PrescriptionPrintHandler）读取热更新后的诊所信息
+
+**实现参考**: `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Services/ClinicSettingsService.cs`、`SystemSettingsViewModel`（诊所信息管理 UI）
+
 ## 变更记录
 
 | 版本 | 日期 | 变更 | 原因 |
 |------|------|------|------|
+| 2026-08-11 | US-CFG-006 补记（诊所信息热更新——代码已实现未文档化） | R3-补 反向脱节收编 |
+| 2026-08-11 | US-CFG-005 补记（服务器配置 PUT/validate 端点——代码已实现未文档化） | R3-补 反向脱节收编 |
 | v1.0 | 2026-06-28 | Split from 11-platform.md into focused module | 文档结构优化 S4 批次 3 |

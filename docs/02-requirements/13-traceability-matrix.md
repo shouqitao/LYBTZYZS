@@ -1,6 +1,6 @@
 # 需求追溯矩阵 (Traceability Matrix)
 
-> 版本: v1.2 | 日期: 2026-08-11 | 状态: ✅ R2-补 全量重扫（R2 后 T4/T5/T7/T8/P1-P3 修复同步）
+> 版本: v1.3 | 日期: 2026-08-11 | 状态: ✅ R3-补（反向脱节补 US 6 个——代码已实现未文档化收编）
 >
 > **用途**：建立「需求 → 设计 → 实现」的双向追溯基础设施。本矩阵是 v1.0 范围冻结、变更影响分析、缺口补全追踪的权威索引。
 > **覆盖**：全部 141 个 User Story（US）+ 13 个 ADR + 5 个业务 Flow + 54 个访谈问题点。
@@ -60,9 +60,10 @@
 | US-USER-011 | Should | ADR-0005 | — | POST /users/{id}/restore | UsersController | A10 | ✅ 已实现（Restore 层级完整：sysadmin/Admin 权限+会话清理） |
 | US-USER-012 | Should | ADR-0005 | — | POST /users/batch-delete 等 | UsersController | — | ✅ 已实现（批量 100 上限） |
 
-## 三、患者管理（US-PAT × 13）
+## 三、患者管理（US-PAT × 14）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
+| US-PAT-014 | Must | — | — | GET /patients/by-id-number/{idNumber} | PatientsController.cs:296 | — | ✅ 已实现（R3-补：身份证号查询） |
 |-------|:---:|------|------|------|------|------|------|
 | US-PAT-001 | Must | ADR-0010 | Flow 2 | GET /patients | PatientsController.cs:38 | R7 | ✅ 已实现 |
 | US-PAT-002 | Must | ADR-0010 | — | GET /patients/{id} | PatientsController.cs:65 | — | ✅ 已实现 |
@@ -96,9 +97,10 @@
 | US-HERB-012 | Should | ADR-0001 | — | POST /herbs/batch-enable 等 | CatalogController.cs:319 | — | ✅ 已实现（批量删除引用检查） |
 | US-HERB-013 | Should | ADR-0010 | — | GET /herbs/export + import-template | CatalogController.cs:82 | — | ✅ 已实现（T4: export/import-template 端点双端） |
 
-## 五、验方管理（US-FORM × 13）
+## 五、验方管理（US-FORM × 14）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
+| US-FORM-014 | Should | — | — | POST /formulas/{id}/clone | LocalWebAPI CatalogController.cs:459 | — | ✅ 已实现（R3-补：克隆——仅本地，远程待补） |
 |-------|:---:|------|------|------|------|------|------|
 | US-FORM-001 | Must | ADR-0007 | — | GET /Formulas | CatalogController.cs:363 | D11 | ✅ 已实现（列表 Doctor 仅本人+共享） |
 | US-FORM-002 | Must | ADR-0007 | — | GET /Formulas/{id} | CatalogController.cs:363 | — | ✅ 已实现（Doctor 所有权检查 403） |
@@ -114,9 +116,10 @@
 | US-FORM-012 | Should | ADR-0007 | — | POST /Formulas/{id}/restore | CatalogController.cs:363 | A10 | ✅ 已实现（Restore 泛型命令） |
 | US-FORM-013 | Should | ADR-0010 | — | GET /Formulas/export + import-template | CatalogController.cs:363 | — | ⚠️ 部分实现（T4: export/import-template 已补；空列表 400 ✅） |
 
-## 六、医案管理（US-MC × 19，核心聚合根）
+## 六、医案管理（US-MC × 20，核心聚合根）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
+| US-MC-020 | Should | — | — | POST /medicalcases/batch-delete | MedicalCasesController.cs:178 | — | ✅ 已实现（R3-补：批量删除仅 Completed） |
 |-------|:---:|------|------|------|------|------|------|
 | US-MC-001 | Must | ADR-0001 | Flow 1/2 | POST /medicalcases | MedicalCasesController.cs:26 | D2 | ✅ 已实现（Create DoctorOnly + BR-001 唯一索引 + CaseNumber） |
 | US-MC-002 | Must | ADR-0001 | Flow 1/2/5 | PUT /medicalcases/{id} | MedicalCasesController.cs:26 | D7/D8 | ✅ 已实现（EditReason 校验——打印后修改/非 Admin 编辑 Completed） |
@@ -181,9 +184,11 @@
 
 > US-SHELL-015 已撤销（并入 US-SHELL-013），不计入总数。
 
-## 十、平台基础设施 — Configuration（US-CFG × 4）
+## 十、平台基础设施 — Configuration（US-CFG × 6）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
+| US-CFG-005 | Should | — | — | PUT /configuration 批量 + validate | ConfigurationController.cs | — | ✅ 已实现（R3-补：配置管理端点） |
+| US-CFG-006 | Should | — | — | clinic-settings.json 热更新 | ClinicSettingsService.cs | — | ✅ 已实现（R3-补：诊所信息热更新） |
 |-------|:---:|------|------|------|------|------|------|
 | US-CFG-001 | Must | ADR-0005 | — | GET /configuration | ConfigurationController.cs:15 | S3 | ✅ 已实现 |
 | US-CFG-002 | Must | ADR-0005 | — | GET /configuration/{section} | ConfigurationController.cs:15 | S3 | ✅ 已实现 |
@@ -236,9 +241,10 @@
 | US-CARD-001 | Should | — | Flow 1 | ICardReaderService（客户端硬件） | ICardReaderService.cs:10 | R3/R4 | ✅ 已实现 |
 | US-CARD-002 | Should | ADR-0001 | Flow 1 | — | —（A-31-C7 移除 `IPatientCardReaderIntegration.MatchPatientAsync` 实现，生产走 FindOrCreatePatientAsync） | R5 | ⚠️ 未完成（实现已移除；2026-08-08 用户定：读卡器必用、US-CARD-002 待完善，UI 设计时整体考虑） |
 
-## 十五、报表管理（US-REPORT × 3）
+## 十五、报表管理（US-REPORT × 4）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
+| US-REPORT-004 | Could | — | — | GET /reports/trend/* 等 5 端点 | ReportsController.cs:69-158 | — | ✅ 已实现（R3-补：趋势/绩效/排行/流量） |
 |-------|:---:|------|------|------|------|------|------|
 | US-REPORT-001 | Must | — | — | GET /reports/daily/income | ReportsController.cs:30 | — | ✅ 已实现（endDate 默认=startDate + 400 校验） |
 | US-REPORT-002 | Must | — | — | GET /reports/daily/consultations | ReportsController.cs:38 | — | ✅ 已实现（startDate>endDate→400） |
@@ -252,20 +258,20 @@
 |------|:---:|:---:|:---:|:---:|:---:|:---:|
 | AUTH | 13 | 12 | 1 | 0 | 0 | 0 |
 | USER | 12 | 12 | 0 | 0 | 0 | 0 |
-| PAT | 13 | 13 | 0 | 0 | 0 | 0 |
+| PAT | 14 | 14 | 0 | 0 | 0 | 0 |
 | HERB | 13 | 11 | 1 | 1 | 0 | 0 |
-| FORM | 13 | 12 | 1 | 0 | 0 | 0 |
-| MC | 19 | 16 | 0 | 3 | 0 | 0 |
+| FORM | 14 | 13 | 1 | 0 | 0 | 0 |
+| MC | 20 | 17 | 0 | 3 | 0 | 0 |
 | REG | 8 | 7 | 0 | 0 | 1 | 0 |
 | PRINT | 4 | 4 | 0 | 0 | 0 | 0 |
 | Shell | 13 | 5 | 1 | 1 | 6 | 0 |
-| CFG | 4 | 4 | 0 | 0 | 0 | 0 |
+| CFG | 6 | 6 | 0 | 0 | 0 | 0 |
 | ERR | 8 | 6 | 2 | 0 | 0 | 0 |
 | LOG | 7 | 7 | 0 | 0 | 0 | 0 |
 | SYS | 9 | 9 | 0 | 0 | 0 | 0 |
 | CARD | 2 | 1 | 1 | 0 | 0 | 0 |
-| REPORT | 3 | 3 | 0 | 0 | 0 | 0 |
-| **合计** | **141** | **122** | **7** | **5** | **7** | **0** |
+| REPORT | 4 | 4 | 0 | 0 | 0 | 0 |
+| **合计** | **147** | **128** | **7** | **5** | **7** | **0** |
 
 > R2-补 全量重扫（2026-08-11 v1.2）：状态列同步 T4/T5/T7/T8/P1-P3 修复（40 处校准）。🔴 5 项 = MC-008/009/018（历史聚合/批量详情缺失）+ HERB-005（删除无引用检查）+ SHELL-018（配置中心未实现）；⚠️ 7 项 = AUTH-002（本地锁定显式关闭）+ HERB-006（服务端 Excel 解析路径）+ SHELL-007（双模切换守卫）+ ERR-006/007（异常体系）+ CARD-002（降级链已移除）；🧲 7 项 = REG-002（QuickVisit 待接线）+ SHELL-011/012/016/019 等规划项。> R2 校准（2026-08-11）：状态列同步至代码实际（依据 R1 矩阵 + T4 修复）。🔴 10 项 = FORM-003/004/010（丢药材/降级缺失）+ MC-008/009/018（历史聚合/批量详情缺失）+ HERB-005（删除无引用检查）+ SHELL-013（备份恢复全无）+ CFG-004（FeatureToggle 消失）等；🧲 7 项 = REG-002 QuickVisit 待接线 + SHELL-011/016/018/019/012 等规划项；⚠️ 30 项为有代码但缺关键面（权限过滤/服务端守卫/AC 校验等，详见 R1 矩阵报告）。
 
