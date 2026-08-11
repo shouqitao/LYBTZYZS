@@ -204,6 +204,12 @@ namespace LYBT.Module.MedicalCases.Services
             // 权限检查
             ValidateEditPermission(medicalCase, currentUserId, isAdmin);
 
+            // T5-3 #7 (US-MC-002/016): EditReason 校验——打印后修改 / 非 Admin 编辑已完成医案需提供原因
+            ValidateEditReason(medicalCase, request, isAdmin);
+
+            // T5-3 #16 (US-MC-017): 更新前快照（审计字段 diff）
+            var before = CaptureSnapshot(medicalCase);
+
             // 更新基础字段
             UpdateMedicalCaseBasicFields(medicalCase, request);
 
@@ -225,9 +231,88 @@ namespace LYBT.Module.MedicalCases.Services
             // 保存
             var result = await _repository.UpdateAsync(medicalCase, cancellationToken);
             await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
+
+            // T5-3 #16 (US-MC-017): 更新审计（含字段 diff）——原仅取消操作写审计
+            await WriteUpdateAuditAsync(medicalCase, request, currentUserId, before, cancellationToken);
+
             _logger.LogInformation("[SVC] MedicalCase.Save completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             return result;
         }
+
+        /// <summary>
+        /// T5-3 #7: EditReason 校验——打印后修改 / 非 Admin 编辑已完成医案需提供原因（US-MC-002/016）
+        /// </summary>
+        private static void ValidateEditReason(MedicalCase medicalCase, MedicalCaseInputDto request, bool isAdmin)
+        {
+            var isPrintedEdit = medicalCase.IsPrinted && medicalCase.PrintVersion > 0;
+            var isCompletedEdit = medicalCase.CaseStatus == MedicalCaseStatus.Completed && !isAdmin;
+            if ((isPrintedEdit || isCompletedEdit) && string.IsNullOrWhiteSpace(request.EditReason))
+            {
+                throw new InvalidOperationException(
+                    isPrintedEdit
+                        ? "医案已打印，修改内容需提供编辑原因"
+                        : "已完成医案编辑需提供编辑原因");
+            }
+        }
+
+        /// <summary>
+        /// T5-3 #16: 更新前快照（审计字段 diff 对比基准）
+        /// </summary>
+        private static Dictionary<string, string?> CaptureSnapshot(MedicalCase medicalCase)
+            => new()
+            {
+                ["PresentIllness"] = medicalCase.Consultation?.PresentIllness,
+                ["TongueDiagnosis"] = medicalCase.Consultation?.TongueDiagnosis,
+                ["PulseDiagnosis"] = medicalCase.Consultation?.PulseDiagnosis,
+                ["TcmDiagnosis"] = medicalCase.Consultation?.TcmDiagnosis,
+                ["PrescriptionItems"] = medicalCase.Prescription?.Items?.Count.ToString() ?? "0"
+            };
+
+        /// <summary>
+        /// T5-3 #16: 保存后写更新审计（ChangedFields/OldValues/NewValues 填充——原 20 字段 diff 未实现）
+        /// </summary>
+        private async Task WriteUpdateAuditAsync(
+            MedicalCase medicalCase,
+            MedicalCaseInputDto request,
+            Guid currentUserId,
+            Dictionary<string, string?> before,
+            CancellationToken cancellationToken)
+        {
+            var changed = new Dictionary<string, (string? Old, string? New)>();
+            void Compare(string field, string? oldVal, string? newVal)
+            {
+                if (!string.Equals(oldVal, newVal))
+                    changed[field] = (oldVal, newVal);
+            }
+
+            Compare("PresentIllness", before["PresentIllness"], medicalCase.Consultation?.PresentIllness);
+            Compare("TongueDiagnosis", before["TongueDiagnosis"], medicalCase.Consultation?.TongueDiagnosis);
+            Compare("PulseDiagnosis", before["PulseDiagnosis"], medicalCase.Consultation?.PulseDiagnosis);
+            Compare("TcmDiagnosis", before["TcmDiagnosis"], medicalCase.Consultation?.TcmDiagnosis);
+            Compare("PrescriptionItems", before["PrescriptionItems"], medicalCase.Prescription?.Items?.Count.ToString() ?? "0");
+
+            if (changed.Count == 0)
+                return;
+
+            var operatorInfo = await _userCrossModule.GetUserBasicInfoAsync(currentUserId, cancellationToken);
+            await _repository.AddAuditLogAsync(new MedicalCaseAuditLog
+            {
+                Id = Guid.NewGuid(),
+                MedicalCaseId = medicalCase.Id,
+                OperatorId = currentUserId,
+                OperatorName = operatorInfo?.UserName ?? string.Empty,
+                OperatorRole = operatorInfo?.Role != null ? (int)operatorInfo.Role : 0,
+                OperationType = AuditOperationUpdate,
+                Reason = request.EditReason,
+                ChangedFields = string.Join(",", changed.Keys),
+                OldValues = System.Text.Json.JsonSerializer.Serialize(changed.ToDictionary(k => k.Key, v => v.Value.Old)),
+                NewValues = System.Text.Json.JsonSerializer.Serialize(changed.ToDictionary(k => k.Key, v => v.Value.New)),
+                CreatedAt = DateTime.UtcNow
+            }, cancellationToken);
+        }
+
+        /// <summary>审计操作类型：更新</summary>
+        private const int AuditOperationUpdate = 1;
 
         /// <summary>
         /// 验证编辑权限 (委托给 ServiceHelper)
