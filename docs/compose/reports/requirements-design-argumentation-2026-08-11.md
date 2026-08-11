@@ -136,11 +136,12 @@ AC-TEST 映射结论：15 域 12 强守护；P0 4 项全闭环（15 用例）；
 | 风险 | 性质 |
 |------|------|
 | CARD-002 降级链 | 用户搁置（UI 设计时整体考虑） |
-| SHELL-003 LoginCoordinator 旁路 | 代码待对齐（C1 遗留——🔴 唯一） |
 | 本地/远程数据孤立 N1 | 需求层决策（不做同步） |
 | Integration 环境依赖 | P0-06 已知（单元层守护主体） |
 | 读卡器固件接口 | 驱动未暴露（诊断如实提示） |
 
-**最终结论**：系统对需求的理解准确且深入；方案设计完整（无空白层）、合理（关键决策经质询成立）；剩余缺口为显式边界决策——当前系统状态与「需求文档所描述的系统」高度一致（traceability 139/147 ✅ 实证）。
+> **RISK-CLOSE 修正（2026-08-11）**：原「SHELL-003 LoginCoordinator 旁路（🔴 唯一）」**已清除**——C7 批次（2026-08-09）已删 LoginCoordinator 死代码（HandleLoginSuccessAsync/GetDiagnostics/LoginFlowDiagnostics——代码 0 命中实证），traceability 状态列 2026-08-11 校准 ✅，🔴 全库清零（合计 151 US：✅141/⚠️3/🔴0/🧲7）。
+
+**最终结论**：系统对需求的理解准确且深入；方案设计完整（无空白层）、合理（关键决策经质询成立）；剩余风险为显式边界决策——当前系统状态与「需求文档所描述的系统」高度一致（traceability 151 US：✅141/⚠️3/🔴0/🧲7 实证）。
 
 **关联**：requirements-coverage-matrix-2026-08-11.md | requirements-ac-test-mapping-2026-08-11.md | traceability v1.4+ | ADR-0001/0002/0010/0014
