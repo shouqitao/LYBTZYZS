@@ -59,6 +59,16 @@ public class PatientRepository : BaseRepository<Patient, PatientsDbContext>, IPa
     }
 
     /// <inheritdoc/>
+    /// <summary>手机号查重（P2 US-PAT-003/004）</summary>
+    public async Task<bool> ExistsByPhoneAsync(string phoneNumber, Guid? excludeId = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(phoneNumber))
+            return false;
+        return await _context.Patients
+            .AsNoTracking()
+            .AnyAsync(p => !p.IsDeleted && p.PhoneNumber == phoneNumber && (!excludeId.HasValue || p.Id != excludeId.Value), cancellationToken);
+    }
+
     public Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken cancellationToken = default)
         => ExistsAsync(e => e.Name == name, excludeId, cancellationToken);
 

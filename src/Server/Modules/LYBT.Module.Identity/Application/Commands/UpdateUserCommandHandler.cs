@@ -4,6 +4,7 @@ using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Module.Identity.Interfaces;
 using LYBT.Module.Identity.Application.Mappers;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Identity.Application.Commands;
 
@@ -36,6 +37,21 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Resul
             request.Input.Remark,
             request.CurrentUserId,
             request.Input.RegistrationFee);
+
+        // P2 (US-USER-005): 角色更新（原 Role 字段被忽略——需求「角色变更受层级约束」）
+        if (request.Input.Role.HasValue && request.Input.Role.Value != user.Role)
+        {
+            if (user.IsSysAdmin)
+                return Result<UserDetailDto>.Failure(ErrorCode.InvalidRequest, "系统管理员角色不可变更");
+
+            var operatorUser = await _userRepository.GetByIdAsync(request.CurrentUserId, cancellationToken);
+            var isSuperAdmin = operatorUser?.IsSysAdmin == true;
+            var newRole = request.Input.Role.Value;
+            if (!isSuperAdmin && (newRole == UserRole.Admin || newRole == UserRole.SuperAdmin))
+                return Result<UserDetailDto>.Failure(ErrorCode.Unauthorized, "无权将用户提升为管理员角色");
+
+            user.Role = newRole;
+        }
 
         await _userRepository.UpdateAsync(user, cancellationToken);
         return Result<UserDetailDto>.Success(IdentityMapper.ToDetailDto(user));

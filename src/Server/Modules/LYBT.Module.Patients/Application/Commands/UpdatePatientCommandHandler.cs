@@ -26,6 +26,11 @@ public class UpdatePatientCommandHandler : IRequestHandler<UpdatePatientCommand,
         if (patient == null)
             return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotFound, ErrorMessages.Get(ErrorCode.PatientNotFound));
 
+        // P2 (US-PAT-004): 电话唯一——更新时排除自身查重
+        if (!string.IsNullOrWhiteSpace(request.Input.PhoneNumber)
+            && await _patientRepository.ExistsByPhoneAsync(request.Input.PhoneNumber, excludeId: request.Id, ct: cancellationToken))
+            return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotFound, "该手机号已关联其他患者");
+
         patient.UpdateProfile(
             request.Input.Name,
             request.Input.Gender,

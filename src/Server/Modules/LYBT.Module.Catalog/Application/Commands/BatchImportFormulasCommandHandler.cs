@@ -2,6 +2,7 @@ using LYBT.Entities.Formulas;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Catalog.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Formula;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -20,6 +21,15 @@ public class BatchImportFormulasCommandHandler(
     public async Task<Result<FormulaBatchImportResultDto>> Handle(
         BatchImportFormulasCommand request, CancellationToken cancellationToken)
     {
+        // P2 (US-FORM-006): 单次导入上限 10000（对齐药材导入——原无上限）
+        const int MAX_IMPORT_SIZE = 10000;
+        if (request.Formulas.Count > MAX_IMPORT_SIZE)
+        {
+            return Result<FormulaBatchImportResultDto>.Failure(
+                ErrorCode.InvalidRequest,
+                $"单次导入数量不能超过 {MAX_IMPORT_SIZE} 条，当前 {request.Formulas.Count} 条");
+        }
+
         var result = new FormulaBatchImportResultDto
         {
             FileName = request.FileName,

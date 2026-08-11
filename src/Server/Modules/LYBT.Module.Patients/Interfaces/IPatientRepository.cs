@@ -20,6 +20,9 @@ public interface IPatientRepository : IRepository<Patient>
     /// </summary>
     Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default);
 
+    /// <summary>手机号是否已存在（P2 US-PAT-003/004: 需求电话唯一语义——原仅姓名查重）</summary>
+    Task<bool> ExistsByPhoneAsync(string phoneNumber, Guid? excludeId = null, CancellationToken ct = default);
+
     /// <summary>
     /// 根据姓名精确获取患者（仅 Name 精确匹配，排除已删除）。
     /// </summary>

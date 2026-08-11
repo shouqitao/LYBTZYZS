@@ -63,6 +63,7 @@ public class AuthController : BaseApiController
 
     [HttpPost("auto-login")]
     [AllowAnonymous]
+    [EnableRateLimiting("LocalLogin")]
     public async Task<IActionResult> AutoLogin([FromBody] AutoLoginRequest request, CancellationToken ct)
     {
         var result = await _sender.Send(new LocalAutoLoginCommand(request), ct);

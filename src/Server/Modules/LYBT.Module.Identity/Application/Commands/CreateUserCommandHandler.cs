@@ -1,4 +1,6 @@
 using MediatR;
+using LYBT.Shared.Configuration.Options.Server;
+using Microsoft.Extensions.Options;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Primitives;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
@@ -15,11 +17,14 @@ namespace LYBT.Module.Identity.Application.Commands;
 public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Result<UserDetailDto>>
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IOptions<DefaultPasswordOptions> _passwordOptions;
 
     public CreateUserCommandHandler(
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        IOptions<DefaultPasswordOptions> passwordOptions)
     {
         _userManager = userManager;
+        _passwordOptions = passwordOptions;
     }
 
     public async Task<Result<UserDetailDto>> Handle(
@@ -52,7 +57,11 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
             request.CurrentUserId,
             dto.RegistrationFee);
 
-        var password = dto.Password ?? Guid.NewGuid().ToString("N")[..12];
+        // P2 (US-USER-004): 未显式传密码时使用配置的新用户默认密码（原随机 GUID 不可运维）
+        var password = dto.Password
+            ?? (!string.IsNullOrWhiteSpace(_passwordOptions.Value.NewUserPassword)
+                ? _passwordOptions.Value.NewUserPassword
+                : Guid.NewGuid().ToString("N")[..12]);
         var result = await _userManager.CreateAsync(user, password);
         if (!result.Succeeded)
         {

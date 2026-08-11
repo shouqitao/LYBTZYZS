@@ -13,16 +13,29 @@ namespace LYBT.Module.Catalog.Application.Commands;
 public class BatchDeleteHerbsCommandHandler : CatalogBatchOperationHandlerBase<Herb, BatchDeleteHerbsCommand>
 {
     private readonly ICacheInvalidationService _cacheInvalidation;
+    private readonly IHerbReferenceRepository _referenceRepository;
 
     public BatchDeleteHerbsCommandHandler(
         IHerbRepository herbRepository,
-        ICacheInvalidationService cacheInvalidation)
+        ICacheInvalidationService cacheInvalidation,
+        IHerbReferenceRepository referenceRepository)
         : base(herbRepository)
     {
         _cacheInvalidation = cacheInvalidation;
+        _referenceRepository = referenceRepository;
     }
 
     protected override Guid ResolveOperatorId(BatchDeleteHerbsCommand request) => request.CurrentUserId;
+
+    // P2 (US-HERB-012): 批量删除前逐项引用检查——有处方/验方引用的药材拒绝删除
+    protected override async Task<string?> ValidateAsync(Herb entity, Guid id, Guid operatorId, CancellationToken ct)
+    {
+        var prescriptionRefs = await _referenceRepository.GetPrescriptionReferenceCountAsync(id, ct);
+        var formulaRefs = await _referenceRepository.GetFormulaReferenceCountAsync(id, ct);
+        if (prescriptionRefs > 0 || formulaRefs > 0)
+            return $"药材「{entity.Name}」已被 {(prescriptionRefs > 0 ? prescriptionRefs + " 条处方" : "")}{(prescriptionRefs > 0 && formulaRefs > 0 ? "、" : "")}{(formulaRefs > 0 ? formulaRefs + " 个验方" : "")} 引用，无法删除";
+        return null;
+    }
 
     protected override Task ApplyOperationAsync(Herb herb, Guid operatorId, CancellationToken ct)
     {
