@@ -135,15 +135,15 @@ T1 测试审查发现测试体系**自洽但不对照需求**——测试验证�
 2. ~~ExcelImportHelper 测试（P0 #4）~~ → ExcelImportHelperTests（5 用例）
 3. ~~服务端 RefreshToken 签发单测（P0 #2）~~ → RefreshTokenIssuanceTests（5 用例）
 
-**优先级 2（近批新功能闭环）**：
-4. MC-008/009/018 历史聚合 + 批量详情查询单测
-5. HERB-005 引用检查 + HERB-006 Excel 解析测试
-6. REG-002 QuickVisit VM 链测试
+**优先级 2（近批新功能闭环）——✅ 已完成（AC-TEST-P23 批次）**：
+4. ~~MC-008/009/018 历史聚合 + 批量详情查询单测~~ → MedicalCaseHistoryQueryTests（5 用例：真实仓储+EF InMemory——倒序/Take/空历史/Doctor 过滤/Admin/空 ids）
+5. ~~HERB-005 引用检查 + HERB-006 Excel 解析~~ → HerbReferenceCheckTests（5 用例：手写 fake 仓储——处方引用拒绝/验方引用拒绝/双引用消息/无引用放行软删/404）+ ExcelImportHelperTests 既有 5 用例（P0-TEST 已覆盖 HERB-006 解析核心）
+6. ~~REG-002 QuickVisit VM 链测试~~ → QuickVisitDialogViewModelTests（4 用例：CanConfirm 门控/选择患者/确认调 service+OK 参数/失败不关闭）
 
-**优先级 3（结构性补齐）**：
-7. SHELL-018 配置 API 白名单/脱敏/限频纯逻辑单测（ConfigurationWritePolicy 已有部分——补 IsSensitive 用例）
-8. SHELL-013 备份保留期/编排纯逻辑单测
-9. MC-020/FORM-014 端点测试
+**优先级 3（结构性补齐）——✅ 部分完成**：
+7. ~~SHELL-018 配置 API 白名单/脱敏纯逻辑~~ → ConfigurationWritePolicyTests（22 用例：IsAllowed 白名单 4/拒绝 6 + IsSensitive 敏感 7/业务 5）
+8. SHELL-013 备份保留期——**标注跳过**：CleanupOldBackupsAsync 依赖静态 AppData 路径（SystemConstants.FilePaths.BackupDirectory）——测试会污染真实备份目录；清理逻辑简单（cutoff 比较+Delete），由备份 UI 手动验收守护
+9. MC-020/FORM-014 端点测试——**标注跳过**：Controller 端点级（路由/HTTP 契约）——由 LocalWebAPI Integration（环境依赖）或手动验收守护；业务逻辑层（handler/service）已有守护
 
 **执行建议**：随各批实现补测（外科式——新增功能批次自带测试），不设独立「补测大批」；架构测试（AntiMockRule/ArchTests）已守护分层不变量，AC 映射表每批更新。
 
