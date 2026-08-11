@@ -30,6 +30,10 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <inheritdoc/>
+        public Task<Dictionary<Guid, int>> CountMedicalCasesBatchAsync(IEnumerable<Guid> patientIds, CancellationToken cancellationToken = default)
+            => _referenceRepository.CountAllBatchAsync(patientIds, cancellationToken);
+
+        /// <inheritdoc/>
         public async Task<int> CountMedicalCasesAsync(Guid patientId, CancellationToken cancellationToken = default)
         {
             return await _referenceRepository.CountAllAsync(patientId, cancellationToken);

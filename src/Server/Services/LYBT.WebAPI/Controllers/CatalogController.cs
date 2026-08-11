@@ -605,17 +605,20 @@ namespace LYBT.WebAPI.Controllers
         /// 获取待校验验方列表
         /// </summary>
         [HttpGet("api/v{version:apiVersion}/formulas/pending-validation")]
-        [ProducesResponseType(typeof(ApiResponse<List<FormulaDetailDto>>), 200)]
-        public async Task<IActionResult> GetPendingValidation(CancellationToken ct)
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<FormulaDetailDto>>), 200)]
+        public async Task<IActionResult> GetPendingValidation(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            CancellationToken ct = default)
         {
-            var result = await Sender.Send(new GetPendingValidationQuery(), ct);
+            var result = await Sender.Send(new GetPendingValidationQuery(page, pageSize), ct);
 
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "查询失败");
             }
 
-            return Success(result.Value, $"查询成功，共{result.Value.Count}个待校验验方");
+            return SuccessPaged(result.Value, $"查询成功，共{result.Value.TotalCount}个待校验验方");
         }
 
         /// <summary>

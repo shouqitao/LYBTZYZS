@@ -21,13 +21,16 @@ public class BatchCheckPatientReferenceQueryHandler(
     {
         var results = new List<PatientReferenceCheckDto>();
 
+        // P3 (US-PAT-010): 批量计数一次查询（原逐患者 CountMedicalCasesAsync = N+1）
+        var batchCounts = await _medicalCaseCrossModuleService.CountMedicalCasesBatchAsync(request.PatientIds, cancellationToken);
+
         foreach (var patientId in request.PatientIds)
         {
             var patient = await _patientRepository.GetByIdAsync(patientId, cancellationToken);
             if (patient == null)
                 continue;
 
-            var refCount = await _medicalCaseCrossModuleService.CountMedicalCasesAsync(patientId, cancellationToken);
+            var refCount = batchCounts.GetValueOrDefault(patientId);
             var recentCases = await _medicalCaseCrossModuleService.GetRecentMedicalCasesAsync(patientId, 5, cancellationToken);
 
             results.Add(new PatientReferenceCheckDto

@@ -15,6 +15,9 @@ public interface IMedicalCaseCrossModuleService
     /// <summary>统计患者的医案总数</summary>
     Task<int> CountMedicalCasesAsync(Guid patientId, CancellationToken cancellationToken = default);
 
+    /// <summary>批量计数（P3 US-PAT-010）</summary>
+    Task<Dictionary<Guid, int>> CountMedicalCasesBatchAsync(IEnumerable<Guid> patientIds, CancellationToken cancellationToken = default);
+
     /// <summary>获取患者最近的医案引用列表</summary>
     Task<List<MedicalCaseReferenceDto>> GetRecentMedicalCasesAsync(Guid patientId, int count, CancellationToken cancellationToken = default);
 

@@ -81,6 +81,29 @@ public static class AuthenticationServiceCollectionExtensions
                         // 严格的签名验证
                         TryAllIssuerSigningKeys = true // 启用多密钥验证支持密钥轮换
                     };
+
+                    // P3 (US-USER-010): 已禁用/已删除用户令牌拒绝（令牌有效期内的状态拦截）
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnTokenValidated = async context =>
+                        {
+                            var userIdClaim = context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                            {
+                                context.Fail("令牌缺少用户标识");
+                                return;
+                            }
+
+                            var userService = context.HttpContext.RequestServices.GetService<LYBT.Infrastructure.Services.CrossModule.IUserCrossModuleService>();
+                            var user = userService != null
+                                ? await userService.GetUserBasicInfoAsync(userId, context.HttpContext.RequestAborted)
+                                : null;
+                            if (user == null || user.Status != LYBT.Shared.Models.Enums.CommonStatus.Enabled)
+                            {
+                                context.Fail("用户已被禁用或不存在");
+                            }
+                        }
+                    };
                 });
             }
             else

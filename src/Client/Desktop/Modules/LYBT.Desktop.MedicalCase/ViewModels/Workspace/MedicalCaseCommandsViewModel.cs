@@ -504,7 +504,13 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         var filtered = items.Where(h => !disabledHerbIds.Contains(h.HerbId)).ToList();
         var skippedCount = items.Count - filtered.Count;
         if (skippedCount > 0)
-            Logger.LogInformation("{Source}跳过 {Count} 味已禁用药材", source, skippedCount);
+        {
+            // P3 (MC-D09): 跳过禁用药材时提示用户（原仅日志——需求要求可见提示）
+            var skippedNames = string.Join("、",
+                items.Where(h => disabledHerbIds.Contains(h.HerbId)).Select(h => h.HerbName).Distinct());
+            Logger.LogInformation("{Source}跳过 {Count} 味已禁用药材: {Names}", source, skippedCount, skippedNames);
+            _toastService.Show($"{source}：已停用、已跳过 {skippedCount} 味药材（{skippedNames}）", ToastType.Warning, 5000);
+        }
 
         return filtered;
     }

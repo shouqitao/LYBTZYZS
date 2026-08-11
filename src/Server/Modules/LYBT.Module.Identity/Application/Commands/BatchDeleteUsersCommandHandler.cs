@@ -22,6 +22,15 @@ public class BatchDeleteUsersCommandHandler
     public async Task<Result<BatchOperationResultDto>> Handle(
         BatchDeleteUsersCommand request, CancellationToken cancellationToken)
     {
+        // P3 (US-USER-012): 单次批量上限 100 条（需求验收——原无上限）
+        const int MaxBatchSize = 100;
+        if (request.Ids.Count > MaxBatchSize)
+        {
+            return Result<BatchOperationResultDto>.Failure(
+                ErrorCode.InvalidRequest,
+                $"单次批量操作数量不能超过 {MaxBatchSize} 条，当前 {request.Ids.Count} 条");
+        }
+
         _isAdmin = request.IsAdmin;
         return await ExecuteBatchAsync(request.Ids, request.CurrentUserId, cancellationToken);
     }

@@ -40,11 +40,15 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
             if (oldSession.IsRevoked)
             {
                 _logger.LogWarning("[Handler] Token refresh rejected - replay detected (revoked) SessionId={SessionId}", oldSession.Id);
+                // P3 (US-AUTH-006): 重放检测 → 撤销该用户全部会话（防重放持续利用）
+                await _authSessionRepository.RevokeAllUserSessionsAsync(
+                    oldSession.UserId, "重放检测：令牌已撤销，撤销全部会话", cancellationToken);
                 await _securityAuditService.RecordEventAsync(new SecurityAuditEvent
                 {
+                    UserId = oldSession.UserId,
                     EventType = "TokenRefresh",
                     IsSuccess = false,
-                    FailureReason = "Replay detected: token already revoked"
+                    FailureReason = "Replay detected: token already revoked - all sessions revoked"
                 }, cancellationToken);
                 return Result<LoginResponse>.Failure(ErrorCode.AuthTokenRevoked, ErrorMessages.Get(ErrorCode.AuthTokenRevoked));
             }

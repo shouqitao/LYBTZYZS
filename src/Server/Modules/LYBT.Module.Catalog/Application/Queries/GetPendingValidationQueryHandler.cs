@@ -11,19 +11,33 @@ namespace LYBT.Module.Catalog.Application.Queries;
 /// 获取待验证验方列表查询处理器。
 /// </summary>
 public class GetPendingValidationQueryHandler(
-    IFormulaRepository formulaRepository) : IRequestHandler<GetPendingValidationQuery, Result<List<FormulaDetailDto>>>
+    IFormulaRepository formulaRepository) : IRequestHandler<GetPendingValidationQuery, Result<PagedResult<FormulaDetailDto>>>
 {
     private readonly IFormulaRepository _formulaRepository = formulaRepository;
 
-    public async Task<Result<List<FormulaDetailDto>>> Handle(
+    public async Task<Result<PagedResult<FormulaDetailDto>>> Handle(
         GetPendingValidationQuery request, CancellationToken cancellationToken)
     {
         var pendingFormulas = await _formulaRepository.FindWithHerbsAsync(
             f => f.ValidationStatus == FormulaValidationStatus.Draft,
             cancellationToken);
 
-        var dtos = pendingFormulas.Select(CatalogDtoMapper.ToFormulaDetailDto).ToList();
+        // P3 (US-FORM-007): 待验证列表分页（原全量返回）
+        var page = Math.Max(1, request.Page);
+        var pageSize = Math.Clamp(request.PageSize, 1, 100);
+        var totalCount = pendingFormulas.Count;
+        var dtos = pendingFormulas
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(CatalogDtoMapper.ToFormulaDetailDto)
+            .ToList();
 
-        return Result<List<FormulaDetailDto>>.Success(dtos);
+        return Result<PagedResult<FormulaDetailDto>>.Success(new PagedResult<FormulaDetailDto>
+        {
+            Items = dtos,
+            TotalCount = totalCount,
+            CurrentPage = page,
+            PageSize = pageSize
+        });
     }
 }

@@ -24,7 +24,22 @@ namespace LYBT.Module.MedicalCases.Infrastructure
                 .CountAsync(ct);
         }
 
-        public async Task<int> CountAllAsync(Guid patientId, CancellationToken ct = default)
+        /// <summary>批量计数（P3 US-PAT-010）</summary>
+    public async Task<Dictionary<Guid, int>> CountAllBatchAsync(IEnumerable<Guid> patientIds, CancellationToken ct = default)
+    {
+        var ids = patientIds.Distinct().ToList();
+        if (ids.Count == 0)
+            return new Dictionary<Guid, int>();
+
+        return await _context.MedicalCases
+            .AsNoTracking()
+            .Where(m => !m.IsDeleted && ids.Contains(m.PatientId))
+            .GroupBy(m => m.PatientId)
+            .Select(g => new { PatientId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.PatientId, x => x.Count, ct);
+    }
+
+    public async Task<int> CountAllAsync(Guid patientId, CancellationToken ct = default)
         {
             return await _context.MedicalCases
                 .Where(mc => mc.PatientId == patientId && !mc.IsDeleted)
