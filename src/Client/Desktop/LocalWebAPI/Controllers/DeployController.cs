@@ -8,7 +8,7 @@ namespace LYBT.LocalWebAPI.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+[Authorize(Policy = PolicyConstants.SysAdminOnly)] // DEPLOY-PERM: 部署属运维操作——Admin 业务管理员无部署能力（US-SHELL-020 AC）
 public class DeployController : BaseApiController
 {
     public DeployController(ILogger<DeployController> logger) : base(logger) { }

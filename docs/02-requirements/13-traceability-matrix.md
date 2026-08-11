@@ -182,7 +182,7 @@
 | US-SHELL-017 | Must | ADR-0005/0008 | — | SystemAdminOptions + DefaultPasswordService | SystemAdminOptions.cs | — | ✅ 已实现 |
 | US-SHELL-018 | Must | ADR-0006/0014 | — | SysadminHomeView | SysadminHomeView.xaml + ConfigurationCenterViewModel.cs + ServerConfigSectionViewModel.cs | S3 | ✅ 10/10 AC（Phase 1-3 + 读卡器组经 US-SHELL-019 完成） |
 | US-SHELL-019 | Should | — | — | ICardReaderDiagnostics | CardReaderDiagnosticsService.cs + CardReaderDiagnosticsViewModel.cs | S3 | ✅ 已实现（8/8 AC：厂家选择/探测/读卡测试/固件（驱动未暴露→提示）/手动参数覆盖/持久化/医生无感；串口测试=USB 链路握手——HD100 无独立串口协议）——**硬件实测待办（2026-08-11 标注：华大 HD100 硬件到位后，sysadmin 配置中心→读卡器诊断→实测 9 AC；单测 4/4 已过）** |
-| US-SHELL-020 | Must | — | — | POST /api/v1/deploy/upload + restart | DeployController.cs | — | ✅ 已实现（DeployController 类级 AdminOrSuperAdmin；2026-08-11 补 US 收编——**权限建议收紧 SysAdminOnly**） |
+| US-SHELL-020 | Must | — | — | POST /api/v1/deploy/upload + restart | DeployController.cs | — | ✅ 已实现（DEPLOY-PERM：双端类级 `SysAdminOnly`——Admin 业务管理员无部署能力，AC 注闭环） |
 | US-SHELL-021 | Should | — | — | 上线数据迁移（Excel 模板/分批/回滚） | — | — | 🧲 v1.0 待实现（2026-08-11 补 US——产品盲区收编） |
 | US-SHELL-022 | Should | — | — | 上线检查清单 + 回滚方案 | — | — | 🧲 v1.0 待实现（2026-08-11 补 US——产品盲区收编） |
 | US-SHELL-023 | Could | — | — | 培训材料 + FAQ + 支持流程 | — | — | 🧲 v1.0 待实现（2026-08-11 补 US——产品盲区收编） |

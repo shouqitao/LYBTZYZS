@@ -449,7 +449,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 **角色**: sysadmin
 **优先级**: Must
-**状态**: ✅ 已实现（DeployController.cs 类级 `AdminOrSuperAdmin`——2026-08-11 补 US 收编；**权限建议收紧为 SysAdminOnly**，见 AC 注）
+**状态**: ✅ 已实现（DeployController.cs 双端类级 `SysAdminOnly`——DEPLOY-PERM 2026-08-11 收紧，AC 注闭环）
 
 **作为** 系统运维，**我想要** 通过远程上传发布包并触发服务重启，**以便** 无需物理接触服务器即可完成版本更新。
 
