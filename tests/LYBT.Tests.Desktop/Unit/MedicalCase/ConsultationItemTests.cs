@@ -124,7 +124,8 @@ public class ConsultationItemTests : UserJourneyTestBase
     public void IsPresentIllnessValid_ReturnsTrue_WhenPresentIllnessIsExactly5Characters()
     {
         var sut = CreateSut();
-        sut.PresentIllness = "头痛三";
+        // T3-6: 原赋值"头痛三"仅 3 字符（与测试名/断言矛盾），改为 5 字符
+        sut.PresentIllness = "头痛三四五";
 
         sut.IsPresentIllnessValid.Should().BeTrue();
     }

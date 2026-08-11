@@ -90,6 +90,9 @@ public class PrescriptionItemTests : UserJourneyTestBase
         sut.PropertyChanged += (_, e) => propertiesChanged.Add(e.PropertyName);
 
         sut.Items.Add(new PrescriptionItemModel { HerbId = Guid.NewGuid() });
+        // T3-6: Items.Add 仅触发 CollectionChanged；VM 属性通知由 NotifyItemsChanged 发布
+        //（编辑器 VM 的 OnItemsCollectionChanged 订阅后调用）——测试对齐该契约
+        sut.NotifyItemsChanged();
 
         propertiesChanged.Should().Contain(nameof(PrescriptionItemViewModel.HasItems));
         propertiesChanged.Should().Contain(nameof(PrescriptionItemViewModel.ItemCount));
@@ -243,7 +246,8 @@ public class PrescriptionItemTests : UserJourneyTestBase
     {
         var sut = CreateSut();
         sut.Id = Guid.NewGuid();
-        sut.MedicalCaseId = Guid.NewGuid();
+        var medicalCaseId = Guid.NewGuid();
+        sut.MedicalCaseId = medicalCaseId;
         sut.PrescriptionNumber = "RX-20260418-0001";
         sut.DosageCount = 14;
         sut.Items.Add(new PrescriptionItemModel { HerbId = Guid.NewGuid() });
@@ -251,7 +255,8 @@ public class PrescriptionItemTests : UserJourneyTestBase
         sut.Clear();
 
         sut.Id.Should().Be(Guid.Empty);
-        sut.MedicalCaseId.Should().Be(Guid.Empty);
+        // T3-6: MedicalCaseId 为医案关联标识，Clear 有意保留（同 Reset 语义；清空处方后仍属于当前医案）
+        sut.MedicalCaseId.Should().Be(medicalCaseId);
         sut.PrescriptionNumber.Should().BeNull();
         sut.DosageCount.Should().Be(7);
         sut.Items.Should().BeEmpty();

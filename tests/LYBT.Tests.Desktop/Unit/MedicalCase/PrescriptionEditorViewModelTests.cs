@@ -76,8 +76,8 @@ public class PrescriptionEditorViewModelTests : UserJourneyTestBase
             Status = CommonStatus.Enabled,
             Items = new List<PrescriptionItemDto>
             {
-                new() { HerbName = "人参", Dosage = 10 },
-                new() { HerbName = "当归", Dosage = 15 }
+                new() { HerbName = "人参", Dosage = 10, UnitPrice = 1.0m },
+                new() { HerbName = "当归", Dosage = 15, UnitPrice = 0.5m }
             }
         };
 
@@ -92,7 +92,8 @@ public class PrescriptionEditorViewModelTests : UserJourneyTestBase
         sut.Prescription.ReferencedFormulas.Should().Be("桂枝汤");
         sut.Prescription.Remark.Should().Be("测试备注");
         sut.Prescription.Discount.Should().Be(0.8m);
-        sut.Prescription.SingleDosePrice.Should().Be(12.5m);
+        // T3-6: SingleDosePrice 为计算属性（Σ剂量×单价=10×1.0+15×0.5），DTO 值不直拷——断言计算逻辑
+        sut.Prescription.SingleDosePrice.Should().Be(17.5m);
         sut.Prescription.TotalWeight.Should().Be(210m);
         sut.Prescription.Items.Should().HaveCount(2);
         sut.HasItems.Should().BeTrue();
