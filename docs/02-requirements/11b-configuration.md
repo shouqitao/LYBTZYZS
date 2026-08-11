@@ -99,7 +99,7 @@
 
 **角色**: 运维人员
 **优先级**: Should
-**状态**: 🔴 缺失（FeatureToggle 体系全库消失）
+**状态**: ✅ 已实现（2026-08-11, T8——基建 6459ad53e：FeatureToggleOptions/Service/json/DI 就位；消费点核实记录：DuplicateHerbMergeStrategy 接线待非默认策略需求、OverwriteConflicts 无同步冲突落点）
 
 **作为** 运维人员，**我想要** 通过 `FeatureToggles` 控制 Desktop 功能可见性与行为策略，**以便** 分阶段发布功能或调整处理策略。
 
