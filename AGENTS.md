@@ -58,8 +58,10 @@
 | 内容 | Hermes | Mimo Code |
 |------|--------|-----------|
 | 完整开发规范 | `skill_view(name='lybtzys-coder-rules')` | `.mimocode/skills/lybtzys-coder-rules/SKILL.md` |
-| 需求分析师角色 | `skill_view(name='lybtzys-requirements-analyst')` | 同上（需求深化/BR-US/覆盖矩阵） |
-| 系统设计师角色 | `skill_view(name='lybtzys-system-designer')` | 同上（架构设计/ADR/横截面同步） |
+| 需求分析师（通用） | `skill_view(name='requirements-analyst')` | 通用方法论（任何项目） |
+| 需求分析师（LYBTZYZS） | `skill_view(name='lybtzys-requirements-analyst')` | 项目细节（路径/编号/踩坑） |
+| 系统设计师（通用） | `skill_view(name='system-designer')` | 通用方法论（任何项目） |
+| 系统设计师（LYBTZYZS） | `skill_view(name='lybtzys-system-designer')` | 项目细节（文档清单/DP/踩坑） |
 | 项目总账（任务状态） | `docs/03-architecture/13-project-master-plan.md` | 同上（编号任务完成后更新状态） |
 | 架构决策记录 (ADR) | `docs/03-architecture/decisions/` | 同上 |
 | 文档查询指南 | `docs/README.md#ai-查询指南` | 同上 |
