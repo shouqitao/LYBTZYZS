@@ -208,18 +208,23 @@ public class NavigableViewModelBaseTests : UserJourneyTestBase
     }
 
     [Fact]
-    public void KeepAlive_DefaultIsTrue()
+    public void KeepAlive_DefaultIsFalse()
     {
         var sut = CreateSut();
 
-        sut.KeepAlive.Should().BeTrue();
+        // T3-7: 实现为 virtual bool KeepAlive => false（Prism 惯例默认不保持导航状态）
+        sut.KeepAlive.Should().BeFalse();
     }
+
+    /// <summary>创建真实 NavigationContext 实例（T3-7: NavigationContext 为无参构造不可代理的具体类，NSubstitute 无法 mock——用真实实例）</summary>
+    private static NavigationContext CreateNavigationContext()
+        => new(Substitute.For<IRegionNavigationService>(), new Uri("http://test"));
 
     [Fact]
     public void IsNavigationTarget_DefaultReturnsTrue()
     {
         var sut = CreateSut();
-        var navigationContext = Substitute.For<NavigationContext>();
+        var navigationContext = CreateNavigationContext();
 
         var result = sut.IsNavigationTarget(navigationContext);
 
@@ -231,7 +236,7 @@ public class NavigableViewModelBaseTests : UserJourneyTestBase
     {
         var services = CreateViewModelServicesMock();
         var sut = CreateSut(services);
-        var navigationContext = Substitute.For<NavigationContext>();
+        var navigationContext = CreateNavigationContext();
 
         sut.OnNavigatedTo(navigationContext);
 
@@ -243,7 +248,7 @@ public class NavigableViewModelBaseTests : UserJourneyTestBase
     {
         var services = CreateViewModelServicesMock();
         var sut = CreateSut(services);
-        var navigationContext = Substitute.For<NavigationContext>();
+        var navigationContext = CreateNavigationContext();
         sut.IsActive = true;
 
         sut.OnNavigatedFrom(navigationContext);
