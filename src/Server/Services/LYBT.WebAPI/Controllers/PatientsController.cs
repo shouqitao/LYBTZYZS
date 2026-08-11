@@ -6,6 +6,7 @@ using LYBT.Module.Patients.Application.Commands;
 using LYBT.Module.Patients.Application.Queries;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Infrastructure.Excel;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -51,6 +52,44 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.Error ?? "查询失败");
 
             return SuccessPaged(result.Value, "查询成功");
+        }
+
+        /// <summary>
+        /// 下载患者导入模板（T4 P0#4: Epic #1934 FR-002——此前端点缺失桌面调用 404）
+        /// </summary>
+        [HttpGet("import-template")]
+        [ProducesResponseType(typeof(FileResult), 200)]
+        public IActionResult ImportTemplate()
+        {
+            var headers = new[] { "姓名", "性别", "出生日期", "身份证号", "手机号", "拼音码" };
+            var sample = new[] { "张三", "Male", "1990-01-01", "110101199001010011", "13800138000", "zhangsan" };
+            var bytes = ExcelExportHelper.CreateWorkbook("患者导入模板", headers, new[] { sample });
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "患者导入模板.xlsx");
+        }
+
+        /// <summary>
+        /// 导出患者数据（T4 P0#4: Epic #1934 FR-003）
+        /// </summary>
+        [HttpGet("export")]
+        [ProducesResponseType(typeof(FileResult), 200)]
+        public async Task<IActionResult> Export([FromQuery] string? keyword = null, CancellationToken ct = default)
+        {
+            var result = await _patientService.GetPagedAsync(1, 10000, keyword, filterDisabled: false, ct);
+            if (!result.IsSuccess || result.Value == null)
+                return BusinessFail(result.Error ?? "导出失败");
+
+            var headers = new[] { "姓名", "性别", "年龄", "手机号", "拼音码", "状态" };
+            var rows = result.Value.Items.Select(p => new[]
+            {
+                p.Name,
+                p.Gender.ToString(),
+                p.Age?.ToString() ?? string.Empty,
+                p.PhoneNumber ?? string.Empty,
+                p.PinYinCode ?? string.Empty,
+                p.Status.ToString()
+            });
+            var bytes = ExcelExportHelper.CreateWorkbook("患者数据", headers, rows);
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "患者数据.xlsx");
         }
 
         /// <summary>

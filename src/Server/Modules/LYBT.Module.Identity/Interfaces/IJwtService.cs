@@ -50,4 +50,9 @@ public interface IJwtService
     /// <param name="autoLoginToken">自动登录令牌</param>
     /// <returns>新的登录响应</returns>
     Result<LoginResponse> ValidateAutoLoginToken(string autoLoginToken);
+
+    /// <summary>
+    /// 生成自动登录令牌（T4 P1#11: 长生命周期 30 天，服务端签发+轮换）
+    /// </summary>
+    string GenerateAutoLoginToken(string userId, string userName, UserRole role, string userType = "user");
 }

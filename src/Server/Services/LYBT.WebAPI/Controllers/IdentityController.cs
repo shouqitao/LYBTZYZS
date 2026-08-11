@@ -38,7 +38,7 @@ namespace LYBT.WebAPI.Controllers
 
         #region 认证端点（原 AuthController，路由 /api/v1/auth/*）
 
-        [HttpPost("api/v{version:apiVersion}/auth/login")]
+        [HttpPost("/api/v{version:apiVersion}/auth/login")]
         [AllowAnonymous]
         [EnableRateLimiting("Login")]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
@@ -69,7 +69,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 用户登出
         /// </summary>
-        [HttpPost("api/v{version:apiVersion}/auth/logout")]
+        [HttpPost("/api/v{version:apiVersion}/auth/logout")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         public async Task<IActionResult> LogoutAsync([FromBody] LogoutRequest request)
@@ -89,7 +89,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 刷新访问令牌
         /// </summary>
-        [HttpPost("api/v{version:apiVersion}/auth/refresh")]
+        [HttpPost("/api/v{version:apiVersion}/auth/refresh")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 401)]
@@ -110,7 +110,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 自动登录（免密登录）
         /// </summary>
-        [HttpPost("api/v{version:apiVersion}/auth/auto-login")]
+        [HttpPost("/api/v{version:apiVersion}/auth/auto-login")]
         [AllowAnonymous]
         [EnableRateLimiting("Login")]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
@@ -126,7 +126,7 @@ namespace LYBT.WebAPI.Controllers
             return HandleResult(result, "自动登录成功", useAuthMapping: true);
         }
 
-        [HttpGet("api/v{version:apiVersion}/auth/validate")]
+        [HttpGet("/api/v{version:apiVersion}/auth/validate")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 401)]
         public async Task<IActionResult> ValidateTokenFromHeaderAsync()

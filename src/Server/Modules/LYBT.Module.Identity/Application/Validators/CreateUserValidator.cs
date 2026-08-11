@@ -1,5 +1,6 @@
 using FluentValidation;
 using LYBT.Module.Identity.Application.Commands;
+using LYBT.Shared.Models.Primitives;
 
 namespace LYBT.Module.Identity.Application.Validators;
 
@@ -8,12 +9,15 @@ namespace LYBT.Module.Identity.Application.Validators;
 /// </summary>
 public class CreateUserValidator : AbstractValidator<CreateUserCommand>
 {
+    private static bool NotBeReserved(string? userName) => !UserReservedNameHelper.IsReserved(userName);
+
     public CreateUserValidator()
     {
         RuleFor(x => x.Input.UserName)
             .NotEmpty().WithMessage("用户名不能为空")
             .Length(3, 32).WithMessage("用户名长度必须在3-32个字符之间")
-            .Matches(@"^[a-zA-Z0-9_]+$").WithMessage("用户名只能包含字母、数字和下划线");
+            .Matches(@"^[a-zA-Z0-9_]+$").WithMessage("用户名只能包含字母、数字和下划线")
+            .Must(NotBeReserved).WithMessage("该用户名已保留，不可使用");
 
         RuleFor(x => x.Input.RealName)
             .NotEmpty().WithMessage("真实姓名不能为空")

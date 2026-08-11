@@ -37,6 +37,10 @@ public static class LocalJwtConfig
         _secret = options.SecretKey;
     }
 
+    /// <summary>获取签名密钥（T4: 供令牌验签使用——本地 refresh 原只解析不验签，任意伪造 JWT 可换令牌）</summary>
+    public static SymmetricSecurityKey GetSigningKey()
+        => new(Encoding.UTF8.GetBytes(_secret));
+
     /// <summary>
     /// 配置 JWT 认证/授权服务。
     /// </summary>

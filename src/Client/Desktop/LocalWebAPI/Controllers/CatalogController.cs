@@ -1,6 +1,7 @@
 using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Constants;
+using LYBT.Infrastructure.Excel;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Catalog.Application.Commands;
 using LYBT.Module.Catalog.Application.Queries;
@@ -293,6 +294,41 @@ public class CatalogController : BaseCrudController
 
         return SuccessPaged(result.Value!, "查询成功");
     }
+
+        /// <summary>
+        /// 下载验方导入模板（T4 P0#4: 镜像远程端点）
+        /// </summary>
+        [HttpGet("api/v1/formulas/import-template")]
+        public IActionResult FormulaImportTemplate()
+        {
+            var headers = new[] { "验方名称", "分类", "功效", "适应症", "药材" };
+            var sample = new[] { "四君子汤", "补益剂", "益气健脾", "脾胃气虚", "人参:10g,白术:10g" };
+            var bytes = ExcelExportHelper.CreateWorkbook("验方导入模板", headers, new[] { sample });
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "验方导入模板.xlsx");
+        }
+
+        /// <summary>
+        /// 导出验方（T4 P0#4）
+        /// </summary>
+        [HttpGet("api/v1/formulas/export")]
+        public async Task<IActionResult> FormulaExport([FromQuery] string? keyword = null, CancellationToken ct = default)
+        {
+            var result = await _formulaService.GetPagedAsync(1, 10000, keyword, ct);
+            if (!result.IsSuccess) return BusinessFail(result.Error ?? "导出失败");
+
+            var headers = new[] { "验方名称", "分类", "功效", "适应症", "药材数", "状态" };
+            var rows = result.Value!.Items.Select(f => new[]
+            {
+                f.Name,
+                f.Category ?? string.Empty,
+                f.Effect ?? string.Empty,
+                f.Indication ?? string.Empty,
+                f.HerbCount.ToString(),
+                f.Status.ToString()
+            });
+            var bytes = ExcelExportHelper.CreateWorkbook("验方数据", headers, rows);
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "验方数据.xlsx");
+        }
 
     /// <summary>
     /// 获取验方详情

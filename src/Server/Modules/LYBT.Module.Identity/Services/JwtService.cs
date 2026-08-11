@@ -128,6 +128,48 @@ public class JwtService : IJwtService
     }
 
     /// <summary>
+    /// 生成自动登录令牌（T4 P1#11: 长生命周期 30 天，token_type=autologin 标记，
+    /// 服务端签发+轮换——修复此前仅验证不签发的断链）
+    /// </summary>
+    public string GenerateAutoLoginToken(string userId, string userName, UserRole role, string userType = "user")
+    {
+        if (string.IsNullOrEmpty(userId))
+            throw new ArgumentException("用户ID不能为空", nameof(userId));
+        if (string.IsNullOrEmpty(userName))
+            throw new ArgumentException("用户名不能为空", nameof(userName));
+
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, userId),
+            new Claim(ClaimTypes.Name, userName),
+            new Claim(ClaimTypes.Role, role.ToString()),
+            new Claim("user_type", userType),
+            new Claim("token_type", "autologin"),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Iat, _timeProvider.GetUtcNow().ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+        };
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(CurrentOptions.SecretKey));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var expires = _timeProvider.GetUtcNow().UtcDateTime.AddDays(AutoLoginTokenExpirationDays);
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = expires,
+            Issuer = CurrentOptions.Issuer,
+            Audience = CurrentOptions.Audience,
+            SigningCredentials = credentials
+        };
+
+        var token = _tokenHandler.CreateToken(tokenDescriptor);
+        return _tokenHandler.WriteToken(token);
+    }
+
+    /// <summary>自动登录令牌有效期（天）</summary>
+    private const int AutoLoginTokenExpirationDays = 30;
+
+    /// <summary>
     /// 生成JWT访问令牌（支持额外声明）
     /// </summary>
     public string GenerateToken(string userId, string userName, UserRole role, Dictionary<string, string> additionalClaims, string userType = "user")
@@ -283,6 +325,7 @@ public class JwtService : IJwtService
             var response = new LoginResponse
             {
                 Token = newToken,
+                RefreshToken = newToken,
                 User = new UserDetailDto
                 {
                     Id = Guid.TryParse(userId, out var uid) ? uid : Guid.Empty,
@@ -361,6 +404,8 @@ public class JwtService : IJwtService
             var response = new LoginResponse
             {
                 Token = newToken,
+                RefreshToken = newToken,
+                AutoLoginToken = GenerateAutoLoginToken(userId, userName, role, userType),
                 User = new UserDetailDto
                 {
                     Id = Guid.TryParse(userId, out var uid) ? uid : Guid.Empty,

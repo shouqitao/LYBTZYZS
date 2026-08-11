@@ -1,4 +1,5 @@
 using LYBT.Infrastructure.Constants;
+using LYBT.Infrastructure.Excel;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Patients.Application.Commands;
 using LYBT.Module.Patients.Application.Queries;
@@ -122,6 +123,42 @@ public class PatientsController : BaseCrudController
             return NotFound(result.Error ?? "未找到匹配的患者");
         return Success(result.Value);
     }
+
+        /// <summary>
+        /// 下载患者导入模板（T4 P0#4: 镜像远程端点）
+        /// </summary>
+        [HttpGet("import-template")]
+        public IActionResult ImportTemplate()
+        {
+            var headers = new[] { "姓名", "性别", "出生日期", "身份证号", "手机号", "拼音码" };
+            var sample = new[] { "张三", "Male", "1990-01-01", "110101199001010011", "13800138000", "zhangsan" };
+            var bytes = ExcelExportHelper.CreateWorkbook("患者导入模板", headers, new[] { sample });
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "患者导入模板.xlsx");
+        }
+
+        /// <summary>
+        /// 导出患者数据（T4 P0#4）
+        /// </summary>
+        [HttpGet("export")]
+        public async Task<IActionResult> Export([FromQuery] string? keyword = null, CancellationToken ct = default)
+        {
+            var result = await _patientService.GetPagedAsync(1, 10000, keyword, filterDisabled: false, ct);
+            if (!result.IsSuccess || result.Value == null)
+                return BusinessFail(result.Error ?? "导出失败");
+
+            var headers = new[] { "姓名", "性别", "年龄", "手机号", "拼音码", "状态" };
+            var rows = result.Value.Items.Select(pat => new[]
+            {
+                pat.Name,
+                pat.Gender.ToString(),
+                pat.Age?.ToString() ?? string.Empty,
+                pat.PhoneNumber ?? string.Empty,
+                pat.PinYinCode ?? string.Empty,
+                pat.Status.ToString()
+            });
+            var bytes = ExcelExportHelper.CreateWorkbook("患者数据", headers, rows);
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "患者数据.xlsx");
+        }
 
     /// <summary>
     /// 检查患者引用关系

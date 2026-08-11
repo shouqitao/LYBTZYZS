@@ -169,6 +169,13 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
         var response = new LoginResponse
         {
             Token = token,
+            // T4(P0#2): 服务端签发刷新令牌——access token 即刷新凭据（服务端按会话哈希校验+旋转换新），
+            // 修复客户端 TokenRefreshHandler 拿到空 RefreshToken 导致远程会话无法续期的问题
+            RefreshToken = token,
+            // T4(P1#11): RememberMe 时签发自动登录令牌（30 天，服务端轮换）
+            AutoLoginToken = input.RememberMe
+                ? _jwtService.GenerateAutoLoginToken(userDetail.Id.ToString(), userDetail.UserName, userDetail.Role, userType)
+                : null,
             User = userDetail,
             ExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpireMinutes),
             MustChangePassword = user.MustChangeOnNextLogin

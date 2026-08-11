@@ -11,6 +11,7 @@ using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using MediatR;
+using LYBT.Infrastructure.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -59,6 +60,43 @@ namespace LYBT.WebAPI.Controllers
             var result = await _herbService.GetPagedAsync(page, pageSize, keyword, ct);
             if (!result.IsSuccess) return BusinessFail(result.Error ?? "查询失败");
             return Success(result.Value!, "查询成功");
+        }
+
+        /// <summary>
+        /// 下载药材导入模板（T4 P0#4: 此前端点缺失桌面调用 404）
+        /// </summary>
+        [HttpGet("import-template")]
+        public IActionResult HerbImportTemplate()
+        {
+            var headers = new[] { "药材名称", "拼音码", "分类", "单位", "单价", "库存", "状态" };
+            var sample = new[] { "人参", "renshen", "补益药", "g", "10.5", "100", "Enabled" };
+            var bytes = ExcelExportHelper.CreateWorkbook("药材导入模板", headers, new[] { sample });
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "药材导入模板.xlsx");
+        }
+
+        /// <summary>
+        /// 导出全部药材（T4 P0#4）
+        /// </summary>
+        [HttpGet("export-all")]
+        public async Task<IActionResult> HerbExportAll([FromQuery] string? keyword = null, CancellationToken ct = default)
+        {
+            var result = await _herbService.GetPagedAsync(1, 10000, keyword, ct);
+            if (!result.IsSuccess) return BusinessFail(result.Error ?? "导出失败");
+
+            var headers = new[] { "药材名称", "拼音码", "分类", "产地", "规格", "单位", "单价", "状态" };
+            var rows = result.Value!.Items.Select(h => new[]
+            {
+                h.Name,
+                h.PinYinCode ?? string.Empty,
+                h.Category ?? string.Empty,
+                h.Origin ?? string.Empty,
+                h.Spec ?? string.Empty,
+                h.Unit,
+                h.Price.ToString(),
+                h.Status.ToString()
+            });
+            var bytes = ExcelExportHelper.CreateWorkbook("药材数据", headers, rows);
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "药材数据.xlsx");
         }
 
         /// <summary>
@@ -335,6 +373,42 @@ namespace LYBT.WebAPI.Controllers
                 return BusinessFail(result.Error ?? "查询失败");
 
             return SuccessPaged(result.Value!, "查询成功");
+        }
+
+        /// <summary>
+        /// 下载验方导入模板（T4 P0#4: 此前端点缺失桌面调用 404）
+        /// </summary>
+        [HttpGet("api/v{version:apiVersion}/formulas/import-template")]
+        public IActionResult FormulaImportTemplate()
+        {
+            var headers = new[] { "验方名称", "分类", "功效", "用法", "药材" };
+            var sample = new[] { "四君子汤", "补益剂", "益气健脾", "水煎服", "人参:10g,白术:10g" };
+            var bytes = ExcelExportHelper.CreateWorkbook("验方导入模板", headers, new[] { sample });
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "验方导入模板.xlsx");
+        }
+
+        /// <summary>
+        /// 导出验方（T4 P0#4）
+        /// </summary>
+        [HttpGet("api/v{version:apiVersion}/formulas/export")]
+        public async Task<IActionResult> FormulaExport([FromQuery] string? keyword = null, CancellationToken ct = default)
+        {
+            var result = await _formulaService.GetPagedAsync(1, 10000, keyword, ct);
+            if (!result.IsSuccess)
+                return BusinessFail(result.Error ?? "导出失败");
+
+            var headers = new[] { "验方名称", "分类", "功效", "适应症", "药材数", "状态" };
+            var rows = result.Value!.Items.Select(f => new[]
+            {
+                f.Name,
+                f.Category ?? string.Empty,
+                f.Effect ?? string.Empty,
+                f.Indication ?? string.Empty,
+                f.HerbCount.ToString(),
+                f.Status.ToString()
+            });
+            var bytes = ExcelExportHelper.CreateWorkbook("验方数据", headers, rows);
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "验方数据.xlsx");
         }
 
         /// <summary>

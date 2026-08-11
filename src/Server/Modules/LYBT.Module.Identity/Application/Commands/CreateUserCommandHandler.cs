@@ -1,5 +1,6 @@
 using MediatR;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Primitives;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Entities.Users;
@@ -36,6 +37,10 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
 
         if (await _userManager.FindByNameAsync(dto.UserName!) != null)
             return Result<UserDetailDto>.Failure(ErrorCode.UserNameExists, ErrorMessages.Get(ErrorCode.UserNameExists));
+
+        // T4 P1#10: 保留用户名双保险（绕过 FluentValidation 的直接调用兜底）
+        if (UserReservedNameHelper.IsReserved(dto.UserName))
+            return Result<UserDetailDto>.Failure(ErrorCode.InvalidRequest, "该用户名已保留，不可使用");
 
         var user = ApplicationUser.Create(
             dto.UserName!,

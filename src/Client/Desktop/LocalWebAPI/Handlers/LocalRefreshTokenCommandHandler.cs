@@ -10,6 +10,7 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 
 namespace LYBT.LocalWebAPI.Handlers;
 
@@ -37,8 +38,18 @@ public class LocalRefreshTokenCommandHandler : IRequestHandler<LocalRefreshToken
         try
         {
             var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(request.RefreshToken);
-            var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            // T4(P0#3): 原 ReadJwtToken 只解析不验签——任意伪造含 NameIdentifier 的 JWT 即可换令牌。
+            // 改为 ValidateToken 校验签名+有效期（与 JWT Bearer 中间件同密钥同参数）。
+            var principal = handler.ValidateToken(request.RefreshToken, new TokenValidationParameters
+            {
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = LocalJwtConfig.GetSigningKey()
+            }, out _);
+
+            var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return ApiResponse<LoginResponse>.CreateFail("无效的令牌",
                     new { code = ErrorCode.AuthTokenInvalid.ToFormattedString() });
