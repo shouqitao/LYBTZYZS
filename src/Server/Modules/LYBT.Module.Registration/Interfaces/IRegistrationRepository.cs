@@ -35,7 +35,7 @@ public interface IRegistrationRepository
     /// </summary>
     /// <param name="doctorId">医生 ID (null 表示全部医生)</param>
     Task<List<Registration>> GetWaitingQueueAsync(
-        Guid? doctorId = null, CancellationToken cancellationToken = default);
+        Guid? doctorId = null, bool onlyToday = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 获取今日最大排队号

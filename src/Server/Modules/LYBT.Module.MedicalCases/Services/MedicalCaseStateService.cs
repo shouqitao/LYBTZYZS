@@ -110,6 +110,14 @@ namespace LYBT.Module.MedicalCases.Services
                 return null;
             }
 
+            // P1 (US-MC-011): Doctor 仅可完成本人医案（Admin/SuperAdmin 全量）
+            if (!isAdmin && medicalCase.CreatedBy != operatorId)
+            {
+                _logger.LogWarning("[SVC] MedicalCase.Complete → PermissionDenied - MedicalCaseId={MedicalCaseId} OperatorId={OperatorId}",
+                    medicalCaseId, operatorId);
+                throw new UnauthorizedAccessException("无权限完成此医案：仅创建医生或管理员可完成");
+            }
+
             // 工作流验证（skipWorkflowValidation=false 时执行）
             if (!skipWorkflowValidation)
             {

@@ -23,7 +23,7 @@ public sealed class GetWaitingQueueQueryHandler
     public async Task<List<RegistrationListDto>> Handle(
         GetWaitingQueueQuery request, CancellationToken cancellationToken)
     {
-        var entities = await _repository.GetWaitingQueueAsync(request.DoctorId, cancellationToken);
+        var entities = await _repository.GetWaitingQueueAsync(request.DoctorId, onlyToday: true, cancellationToken);
         return entities.Select(x => _mapper.ToListDto(x)).ToList();
     }
 }

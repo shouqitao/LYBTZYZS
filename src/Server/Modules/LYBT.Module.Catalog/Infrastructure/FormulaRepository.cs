@@ -37,12 +37,19 @@ public class FormulaRepository : CatalogRepositoryBase<Formula>, IFormulaReposit
     /// <inheritdoc/>
     public override async Task<PagedResult<Formula>> GetPagedAsync(
         int page, int pageSize, string? keyword, string? category,
+        Guid? operatorId = null, bool isAdmin = false,
         CancellationToken cancellationToken = default)
     {
         var query = _context.Formulas
             .Include(f => f.Herbs)
             .Where(f => !f.IsDeleted)
             .AsQueryable();
+
+        // P1 (US-FORM-001): Doctor 仅可见本人 + 共享验方（Admin/SuperAdmin 全量）
+        if (!isAdmin && operatorId.HasValue)
+        {
+            query = query.Where(f => f.UserId == operatorId.Value || f.IsShared);
+        }
 
         if (!string.IsNullOrWhiteSpace(keyword))
         {

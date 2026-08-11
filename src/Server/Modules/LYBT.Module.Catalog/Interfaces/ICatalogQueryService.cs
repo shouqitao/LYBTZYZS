@@ -10,7 +10,7 @@ namespace LYBT.Module.Catalog.Interfaces;
 public interface ICatalogQueryService<TListDto, TDetailDto>
 {
     /// <summary>分页查询列表（关键字筛选）。</summary>
-    Task<Result<PagedResult<TListDto>>> GetPagedAsync(int page, int pageSize, string? keyword, CancellationToken ct);
+    Task<Result<PagedResult<TListDto>>> GetPagedAsync(int page, int pageSize, string? keyword, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default);
 
     /// <summary>按ID获取详情。</summary>
     Task<Result<TDetailDto>> GetByIdAsync(Guid id, CancellationToken ct);

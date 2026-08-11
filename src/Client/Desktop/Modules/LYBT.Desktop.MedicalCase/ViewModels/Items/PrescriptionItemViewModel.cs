@@ -299,9 +299,9 @@ public class PrescriptionItemViewModel : BindableBase, IDataProvider, IValidatab
     public bool IsValid => HasItems;
 
     /// <summary>
-    /// 总价格（单帖价格 * 剂数）
+    /// 总价格（P1 打磨: 对齐服务端口径 MC-D14——单帖价格 × 剂数 × 折扣；原缺折扣）
     /// </summary>
-    public decimal TotalPrice => SingleDosePrice * DosageCount;
+    public decimal TotalPrice => SingleDosePrice * DosageCount * Discount;
 
     /// <summary>
     /// 显示文本

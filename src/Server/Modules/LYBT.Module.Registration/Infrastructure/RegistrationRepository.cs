@@ -83,11 +83,15 @@ public class RegistrationRepository : IRegistrationRepository
 
     /// <inheritdoc/>
     public async Task<List<Registration>> GetWaitingQueueAsync(
-        Guid? doctorId = null, CancellationToken cancellationToken = default)
+        Guid? doctorId = null, bool onlyToday = false, CancellationToken cancellationToken = default)
     {
         var query = _context.Registrations
             .AsNoTracking()
             .Where(r => !r.IsDeleted && r.Status == RegistrationStatus.Waiting);
+
+        // P1 (US-REG-BR-012): 医生待诊列表仅当天（历史 Waiting 不入队）
+        if (onlyToday)
+            query = query.Where(r => r.CreatedAt.Date == DateTime.Today);
 
         if (doctorId.HasValue)
             query = query.Where(r => r.DoctorId == doctorId.Value);

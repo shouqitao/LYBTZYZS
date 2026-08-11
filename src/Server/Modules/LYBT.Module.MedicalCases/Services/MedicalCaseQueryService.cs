@@ -412,7 +412,15 @@ namespace LYBT.Module.MedicalCases.Services
                 CanComplete = status == MedicalCaseStatus.Active && isOwner,
                 CanSuspend = (status == MedicalCaseStatus.Active || status == MedicalCaseStatus.Suspended) && isOwner,
                 CanCancel = status == MedicalCaseStatus.Active && isOwner,
-                CanDelete = !medicalCase.IsDeleted && (isOwner || isAdmin)
+                CanDelete = !medicalCase.IsDeleted && (isOwner || isAdmin),
+                // P1 (US-MC-016): 打印后修改 / 非 Admin 编辑已完成医案需 EditReason
+                RequiresEditReason = (medicalCase.IsPrinted && medicalCase.PrintVersion > 0)
+                    || (status == MedicalCaseStatus.Completed && !isAdmin),
+                DenialReason = !(isOwner || isAdmin)
+                    ? "仅创建医生或管理员可操作该医案"
+                    : status == MedicalCaseStatus.Completed && !isAdmin
+                        ? "已完成医案仅管理员可编辑"
+                        : null
             };
 
             return Result<MedicalCasePermissionsDto>.Success(dto);

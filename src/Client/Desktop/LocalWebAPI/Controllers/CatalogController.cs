@@ -55,7 +55,7 @@ public class CatalogController : BaseCrudController
     {
         if (ValidatePagination(page, pageSize) is { } error) return error;
 
-        var result = await _herbService.GetPagedAsync(page, pageSize, keyword, ct);
+        var result = await _herbService.GetPagedAsync(page, pageSize, keyword, null, false, ct);
         if (!result.IsSuccess) return BusinessFail(result.Error ?? "查询失败");
         return Success(result.Value!, "查询成功");
     }
@@ -290,7 +290,9 @@ public class CatalogController : BaseCrudController
     {
         if (ValidatePagination(page, pageSize) is { } error) return error;
 
-        var result = await _formulaService.GetPagedAsync(page, pageSize, keyword, ct);
+        var (operatorId, _, operatorRole) = GetOperator();
+        var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+        var result = await _formulaService.GetPagedAsync(page, pageSize, keyword, operatorId, isAdmin, ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
 
@@ -315,7 +317,7 @@ public class CatalogController : BaseCrudController
         [HttpGet("api/v1/formulas/export")]
         public async Task<IActionResult> FormulaExport([FromQuery] string? keyword = null, CancellationToken ct = default)
         {
-            var result = await _formulaService.GetPagedAsync(1, 10000, keyword, ct);
+            var result = await _formulaService.GetPagedAsync(1, 10000, keyword, null, false, ct);
             if (!result.IsSuccess) return BusinessFail(result.Error ?? "导出失败");
 
             var headers = new[] { "验方名称", "分类", "功效", "适应症", "药材数", "状态" };

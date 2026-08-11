@@ -1,4 +1,5 @@
 using LYBT.Entities.Registrations;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Registrations.Mappers;
 using LYBT.Module.Registrations.Interfaces;
 using LYBT.Shared.Models.Contracts.Registration;
@@ -18,21 +19,44 @@ public sealed class CreateRegistrationCommandHandler
     private readonly IRegistrationRepository _repository;
     private readonly RegistrationMapper _mapper;
     private readonly INotificationService _notificationService;
+    private readonly IPatientCrossModuleService _patientCrossModule;
+    private readonly IUserCrossModuleService _userCrossModule;
 
     public CreateRegistrationCommandHandler(
         IRegistrationRepository repository,
         RegistrationMapper mapper,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IPatientCrossModuleService patientCrossModule,
+        IUserCrossModuleService userCrossModule)
     {
         _repository = repository;
         _mapper = mapper;
         _notificationService = notificationService;
+        _patientCrossModule = patientCrossModule;
+        _userCrossModule = userCrossModule;
     }
 
     public async Task<Result<RegistrationDetailDto>> Handle(
         CreateRegistrationCommand request, CancellationToken cancellationToken)
     {
         var dto = request.Input;
+
+        // P1 (US-REG-001): 患者存在且启用校验（原仅 UI 层选择患者）
+        var patient = await _patientCrossModule.GetPatientBasicInfoAsync(dto.PatientId, cancellationToken);
+        if (patient == null)
+            return Result<RegistrationDetailDto>.Failure(ErrorCode.NotFound, "患者不存在");
+        if (patient.Status != CommonStatus.Enabled)
+            return Result<RegistrationDetailDto>.Failure(ErrorCode.InvalidRequest, "患者已被禁用，无法挂号");
+
+        // P1 (US-REG-BR-009): 挂号费自动带出——前台 Create 未显式传值时取医生挂号费
+        if (dto.RegistrationFee == 0)
+        {
+            var doctor = await _userCrossModule.GetUserBasicInfoAsync(dto.DoctorId, cancellationToken);
+            if (doctor != null)
+            {
+                dto.RegistrationFee = doctor.RegistrationFee;
+            }
+        }
 
         // T5-1 #9 (US-REG-BR-007): 患者当日已有待诊挂号则拒绝（同日重复挂号保护）
         var hasSameDayWaiting = await _repository.HasSameDayWaitingAsync(dto.PatientId, cancellationToken);

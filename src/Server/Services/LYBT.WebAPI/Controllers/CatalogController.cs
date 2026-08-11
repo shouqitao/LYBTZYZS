@@ -59,7 +59,7 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidatePagination(page, pageSize) is { } error) return error;
 
-            var result = await _herbService.GetPagedAsync(page, pageSize, keyword, ct);
+            var result = await _herbService.GetPagedAsync(page, pageSize, keyword, null, false, ct);
             if (!result.IsSuccess) return BusinessFail(result.Error ?? "查询失败");
             return Success(result.Value!, "查询成功");
         }
@@ -82,7 +82,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("export-all")]
         public async Task<IActionResult> HerbExportAll([FromQuery] string? keyword = null, CancellationToken ct = default)
         {
-            var result = await _herbService.GetPagedAsync(1, 10000, keyword, ct);
+            var result = await _herbService.GetPagedAsync(1, 10000, keyword, null, false, ct);
             if (!result.IsSuccess) return BusinessFail(result.Error ?? "导出失败");
 
             var headers = new[] { "药材名称", "拼音码", "分类", "产地", "规格", "单位", "单价", "状态" };
@@ -370,7 +370,9 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidatePagination(page, pageSize) is { } error) return error;
 
-            var result = await _formulaService.GetPagedAsync(page, pageSize, keyword, ct);
+            var (operatorId, _, operatorRole) = GetOperator();
+            var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+            var result = await _formulaService.GetPagedAsync(page, pageSize, keyword, operatorId, isAdmin, ct);
             if (!result.IsSuccess)
                 return BusinessFail(result.Error ?? "查询失败");
 
@@ -395,7 +397,9 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("api/v{version:apiVersion}/formulas/export")]
         public async Task<IActionResult> FormulaExport([FromQuery] string? keyword = null, CancellationToken ct = default)
         {
-            var result = await _formulaService.GetPagedAsync(1, 10000, keyword, ct);
+            var (operatorId, _, operatorRole) = GetOperator();
+            var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+            var result = await _formulaService.GetPagedAsync(1, 10000, keyword, operatorId, isAdmin, ct);
             if (!result.IsSuccess)
                 return BusinessFail(result.Error ?? "导出失败");
 

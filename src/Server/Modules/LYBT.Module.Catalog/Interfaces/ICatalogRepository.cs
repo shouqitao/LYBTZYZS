@@ -20,7 +20,7 @@ public interface ICatalogRepository<TEntity> : IRepository<TEntity>
     /// <summary>
     /// 分页查询实体（支持关键字 + 分类筛选）。
     /// </summary>
-    Task<PagedResult<TEntity>> GetPagedAsync(int page, int pageSize, string? keyword, string? category, CancellationToken ct);
+    Task<PagedResult<TEntity>> GetPagedAsync(int page, int pageSize, string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default);
 
     /// <summary>
     /// 检查实体名称是否已存在。

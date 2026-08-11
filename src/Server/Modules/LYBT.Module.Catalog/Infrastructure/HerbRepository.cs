@@ -19,6 +19,7 @@ public class HerbRepository : CatalogRepositoryBase<Herb>, IHerbRepository
     /// <inheritdoc/>
     public override async Task<PagedResult<Herb>> GetPagedAsync(
         int page, int pageSize, string? keyword, string? category,
+        Guid? operatorId = null, bool isAdmin = false,
         CancellationToken cancellationToken = default)
     {
         var query = _context.Herbs

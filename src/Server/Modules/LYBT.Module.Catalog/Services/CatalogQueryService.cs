@@ -30,9 +30,9 @@ internal sealed class CatalogQueryService<TEntity, TListDto, TDetailDto> : ICata
         _notFoundCode = notFoundCode;
     }
 
-    public async Task<Result<PagedResult<TListDto>>> GetPagedAsync(int page, int pageSize, string? keyword, CancellationToken ct)
+    public async Task<Result<PagedResult<TListDto>>> GetPagedAsync(int page, int pageSize, string? keyword, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default)
     {
-        var result = await _repository.GetPagedAsync(page, pageSize, keyword, null, ct);
+        var result = await _repository.GetPagedAsync(page, pageSize, keyword, null, operatorId, isAdmin, ct);
         var dtos = result.Items.Select(_toList).ToList();
         var pagedResult = new PagedResult<TListDto>
         {
