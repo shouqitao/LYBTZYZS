@@ -24,6 +24,11 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// </summary>
         Task<CommandResult<MedicalCaseDetailModel>> LoadDetailsAsync(Guid medicalCaseId, CancellationToken ct = default);
 
+        /// <summary>
+        /// 记录打印完成（T5-2 #18 US-PRINT-004）
+        /// </summary>
+        Task<MedicalCaseDetailDto?> RecordPrintAsync(Guid medicalCaseId, RecordPrintRequest request, CancellationToken ct = default);
+
         #endregion
 
         #region 聚合保存 (原 Coordinator 职责)

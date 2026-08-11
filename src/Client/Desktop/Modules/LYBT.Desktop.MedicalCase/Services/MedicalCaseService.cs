@@ -138,6 +138,13 @@ public class MedicalCaseService : IMedicalCaseService
         }
     }
 
+    /// <summary>
+    /// 记录打印完成（T5-2 #18 US-PRINT-004: 委托仓储回写打印状态）
+    /// </summary>
+    public virtual async Task<MedicalCaseDetailDto?> RecordPrintAsync(
+        Guid medicalCaseId, RecordPrintRequest request, CancellationToken ct = default)
+        => await _repository.RecordPrintAsync(medicalCaseId, request, ct);
+
     public async Task<(bool Success, MedicalCaseDetailDto? Data, string? Error)> AggregateSaveAsync(
         Guid medicalCaseId,
         ConsultationInputDto? consultation,

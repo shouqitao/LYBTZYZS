@@ -20,7 +20,8 @@ namespace LYBT.Desktop.Printing.Interfaces
         /// </summary>
         /// <param name="model">打印数据模型</param>
         /// <param name="options">打印选项（可选）</param>
-        Task PreviewAsync(TModel model, PrintOptions? options = null);
+        /// <param name="onPrintCompleted">打印完成回调（T5-2 #18 US-PRINT-004: 预览窗实际打印成功后触发）</param>
+        Task PreviewAsync(TModel model, PrintOptions? options = null, Action? onPrintCompleted = null);
 
         /// <summary>
         /// 导出文档

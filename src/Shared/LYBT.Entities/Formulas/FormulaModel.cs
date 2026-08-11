@@ -161,6 +161,32 @@ namespace LYBT.Entities.Formulas
             UpdatedAt = DateTime.UtcNow;
         }
 
+        /// <summary>
+        /// 替换全部药材（T5-2 #14: 单条创建/更新支持药材组成——原仅批量导入能建带药材验方）
+        /// </summary>
+        public void ReplaceHerbs(IEnumerable<FormulaHerbItem> herbs)
+        {
+            Herbs.Clear();
+            foreach (var herb in herbs)
+            {
+                Herbs.Add(herb);
+            }
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// FLAW-F1 降级（T5-2 #15 US-FORM-010）：Validated 验方更新后若任一药材未验证 → 降级 Draft
+        /// </summary>
+        public void DegradeToDraftIfAnyHerbUnvalidated()
+        {
+            if (ValidationStatus == FormulaValidationStatus.Validated
+                && Herbs.Any(h => !h.IsValidated))
+            {
+                ValidationStatus = FormulaValidationStatus.Draft;
+                UpdatedAt = DateTime.UtcNow;
+            }
+        }
+
         public void ChangeStatus(CommonStatus newStatus, Guid updatedBy)
         {
             Status = newStatus;

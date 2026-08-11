@@ -31,7 +31,7 @@ namespace LYBT.Desktop.Printing.Services
         /// <summary>
         /// 显示处方预览窗口
         /// </summary>
-        public void ShowPreviewWindow(FixedDocument document, PrescriptionPrintModel model, PrintOptions options)
+        public void ShowPreviewWindow(FixedDocument document, PrescriptionPrintModel model, PrintOptions options, Action? onPrintCompleted = null)
         {
             var previewWindow = new Window
             {
@@ -60,7 +60,7 @@ namespace LYBT.Desktop.Printing.Services
             mainGrid.Children.Add(previewBorder);
 
             // 设置面板
-            var settingsPanel = CreateSettingsPanel(document, model, options, previewWindow, docViewer);
+            var settingsPanel = CreateSettingsPanel(document, model, options, previewWindow, docViewer, onPrintCompleted);
             Grid.SetColumn(settingsPanel, 0);
             mainGrid.Children.Add(settingsPanel);
 
@@ -73,7 +73,8 @@ namespace LYBT.Desktop.Printing.Services
             PrescriptionPrintModel model,
             PrintOptions options,
             Window parentWindow,
-            DocumentViewer docViewer)
+            DocumentViewer docViewer,
+            Action? onPrintCompleted = null)
         {
             var settingsBorder = new Border
             {
@@ -186,6 +187,8 @@ namespace LYBT.Desktop.Printing.Services
                 };
 
                 _executor.ExecutePrintDirect(currentDocument, printOptions);
+                // T5-2 #18: 实际打印成功后触发回写回调（记录打印状态）
+                onPrintCompleted?.Invoke();
                 parentWindow.Close();
             };
 

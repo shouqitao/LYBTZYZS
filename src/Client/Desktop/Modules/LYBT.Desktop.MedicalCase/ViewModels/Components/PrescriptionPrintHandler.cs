@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Printing.Interfaces;
@@ -94,7 +95,15 @@ public class PrescriptionPrintHandler
                 return PrintResult.Failed("处方无药材信息，无法打印");
             }
             var printModel = BuildPrintModel(prescription, currentPatient, consultationData);
-            await _printService.PreviewAsync(printModel);
+            // T5-2 #18 (US-PRINT-004): 预览窗实际打印成功后回写打印状态（服务端 RecordPrint 完整，此前客户端零调用）
+            await _printService.PreviewAsync(printModel, onPrintCompleted: () =>
+            {
+                _medicalCaseService.RecordPrintAsync(medicalCaseId, new RecordPrintRequest
+                {
+                    PrintType = 0,
+                    PrinterName = null
+                }).SafeFireAndForget(ex => _logger.LogError(ex, "记录打印完成失败: {MedicalCaseId}", medicalCaseId));
+            });
 
             return PrintResult.Success();
         }

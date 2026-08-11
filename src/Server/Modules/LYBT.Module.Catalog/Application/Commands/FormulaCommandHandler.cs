@@ -22,7 +22,12 @@ public class FormulaCommandHandler : CatalogEntityCommandHandlerBase<Formula, Fo
     protected override string EntityDisplayName => "方剂";
 
     protected override Formula CreateEntity(FormulaInputDto input, Guid currentUserId)
-        => CatalogDtoMapper.ToEntity(input, currentUserId);
+    {
+        var formula = CatalogDtoMapper.ToEntity(input, currentUserId);
+        // T5-2 #14 (US-FORM-003): 创建时持久化药材组成（原 Mapper 丢弃 Herbs）
+        formula.ReplaceHerbs(MapHerbs(input, formula.Id));
+        return formula;
+    }
 
     protected override void ApplyUpdate(Formula entity, FormulaInputDto input, Guid currentUserId)
     {
@@ -36,7 +41,29 @@ public class FormulaCommandHandler : CatalogEntityCommandHandlerBase<Formula, Fo
             input.Category,
             input.IsShared,
             currentUserId);
+
+        // T5-2 #14 (US-FORM-004): 更新时替换药材组成（原 UpdateProfile 丢弃 Herbs）
+        entity.ReplaceHerbs(MapHerbs(input, entity.Id));
+        // T5-2 #15 (US-FORM-010 FLAW-F1): Validated 验方更新后若任一药材未验证 → 降级 Draft
+        entity.DegradeToDraftIfAnyHerbUnvalidated();
     }
+
+    /// <summary>
+    /// 将输入 DTO 药材映射为实体集合（T5-2 #14）。
+    /// </summary>
+    private static List<FormulaHerbItem> MapHerbs(FormulaInputDto input, Guid formulaId)
+        => input.Herbs.Select(h => FormulaHerbItem.Create(
+                formulaId,
+                h.HerbName,
+                h.Dosage,
+                h.Unit,
+                h.HerbId,
+                h.HerbName,
+                h.Preparation,
+                null,
+                h.ProcessingMethod,
+                h.DecocteMethod))
+            .ToList();
 
     protected override FormulaDetailDto ToDetailDto(Formula entity)
         => CatalogDtoMapper.ToFormulaDetailDto(entity);

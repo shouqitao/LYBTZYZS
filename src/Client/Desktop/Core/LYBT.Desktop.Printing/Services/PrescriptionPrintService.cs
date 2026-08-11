@@ -82,7 +82,7 @@ namespace LYBT.Desktop.Printing.Services
         /// <summary>
         /// 预览处方
         /// </summary>
-        public async Task PreviewAsync(PrescriptionPrintModel model, PrintOptions? options = null)
+        public async Task PreviewAsync(PrescriptionPrintModel model, PrintOptions? options = null, Action? onPrintCompleted = null)
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
@@ -99,7 +99,7 @@ namespace LYBT.Desktop.Printing.Services
                 var pageSize = PrescriptionDocumentBuilder.GetPageSize(options.PaperSize);
                 var document = _documentBuilder.BuildFixedDocument(model, pageSize);
 
-                _previewWindowBuilder.ShowPreviewWindow(document, model, options);
+                _previewWindowBuilder.ShowPreviewWindow(document, model, options, onPrintCompleted);
 
                 _logger.LogDebug("[PRINT] PreviewAsync completed");
                 await Task.CompletedTask;

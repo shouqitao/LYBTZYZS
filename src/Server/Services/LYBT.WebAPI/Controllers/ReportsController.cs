@@ -39,8 +39,11 @@ public class ReportsController : BaseApiController
         [FromQuery] DateTime? endDate = null,
         CancellationToken cancellationToken = default)
     {
+        // T5-2 #17 (US-REPORT-001~003): 仅传 startDate 时 endDate 默认等于 startDate；startDate>endDate → 400
         var start = startDate ?? DateTime.Today;
-        var end = endDate ?? DateTime.Today;
+        var end = endDate ?? start;
+        if (start > end)
+            return BadRequest("开始日期不能晚于结束日期");
 
         var dto = await _reportService.GetDailyIncomeAsync(start, end, cancellationToken);
 
@@ -57,8 +60,11 @@ public class ReportsController : BaseApiController
         [FromQuery] DateTime? endDate = null,
         CancellationToken cancellationToken = default)
     {
+        // T5-2 #17 (US-REPORT-001~003): 仅传 startDate 时 endDate 默认等于 startDate；startDate>endDate → 400
         var start = startDate ?? DateTime.Today;
-        var end = endDate ?? DateTime.Today;
+        var end = endDate ?? start;
+        if (start > end)
+            return BadRequest("开始日期不能晚于结束日期");
 
         var dto = await _reportService.GetDailyConsultationsAsync(start, end, cancellationToken);
 
@@ -75,8 +81,11 @@ public class ReportsController : BaseApiController
         [FromQuery] DateTime? endDate = null,
         CancellationToken cancellationToken = default)
     {
+        // T5-2 #17 (US-REPORT-001~003): 仅传 startDate 时 endDate 默认等于 startDate；startDate>endDate → 400
         var start = startDate ?? DateTime.Today;
-        var end = endDate ?? DateTime.Today;
+        var end = endDate ?? start;
+        if (start > end)
+            return BadRequest("开始日期不能晚于结束日期");
 
         var dto = await _reportService.GetDailyHerbUsageAsync(start, end, cancellationToken);
 
@@ -131,8 +140,11 @@ public class ReportsController : BaseApiController
         [FromQuery] DateTime? endDate = null,
         CancellationToken cancellationToken = default)
     {
+        // T5-2 #17 (US-REPORT-001~003): 仅传 startDate 时 endDate 默认等于 startDate；startDate>endDate → 400
         var start = startDate ?? DateTime.Today;
-        var end = endDate ?? DateTime.Today;
+        var end = endDate ?? start;
+        if (start > end)
+            return BadRequest("开始日期不能晚于结束日期");
 
         var dto = await _reportService.GetDoctorPerformanceAsync(start, end, cancellationToken);
 
@@ -150,8 +162,11 @@ public class ReportsController : BaseApiController
         [FromQuery] int top = 10,
         CancellationToken cancellationToken = default)
     {
+        // T5-2 #17 (US-REPORT-001~003): 仅传 startDate 时 endDate 默认等于 startDate；startDate>endDate → 400
         var start = startDate ?? DateTime.Today;
-        var end = endDate ?? DateTime.Today;
+        var end = endDate ?? start;
+        if (start > end)
+            return BadRequest("开始日期不能晚于结束日期");
 
         var dto = await _reportService.GetHerbRankingAsync(start, end, top, cancellationToken);
 

@@ -64,6 +64,11 @@ public interface IMedicalCaseRepository
     Task<MedicalCaseDetailDto?> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default);
 
     /// <summary>
+    /// 记录打印完成（T5-2 #18 US-PRINT-004: Desktop 打印流回写——原服务端完整但客户端零调用）
+    /// </summary>
+    Task<MedicalCaseDetailDto?> RecordPrintAsync(Guid medicalCaseId, RecordPrintRequest request, CancellationToken ct = default);
+
+    /// <summary>
     /// 聚合保存医案 (诊断+处方一次性保存)
     /// </summary>
     Task<MedicalCaseDetailDto> SaveAsync(Guid medicalCaseId, MedicalCaseInputDto dto, CancellationToken ct = default);
