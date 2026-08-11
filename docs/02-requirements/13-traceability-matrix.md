@@ -168,7 +168,7 @@
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
 |-------|:---:|------|------|------|------|------|------|
 | US-SHELL-001 | Must | ADR-0006/0007 | Flow 4 | App.xaml.cs 启动管线 | App.xaml.cs:41 | S1 | ✅ 已实现 |
-| US-SHELL-003 | Must | ADR-0006/0007 | Flow 4 | ApplicationBootstrapper | ApplicationBootstrapper.cs:35 | — | 🔴 代码待对齐（C1：LoginCoordinator 旁路待删） |
+| US-SHELL-003 | Must | ADR-0006/0007 | Flow 4 | ApplicationBootstrapper | ApplicationBootstrapper.cs:35 | — | ✅ 已实现（角色模块加载 + LoginCoordinator 死代码已清——C7 删 HandleLoginSuccessAsync/GetDiagnostics/LoginFlowDiagnostics，2026-08-09 实际已处理，状态列 2026-08-11 校准） |
 | US-SHELL-004 | Could | ADR-0007 | — | AccountSettingsControl | AccountSettingsControl | — | ✅ 已实现 |
 | US-SHELL-005 | Must | ADR-0006/0007 | — | NavigationCoordinator | NavigationCoordinator | — | ✅ 已实现 |
 | US-SHELL-007 | Must | ADR-0002/0009 | Flow 3 | SwitchingApiClient + ModeSwitchValidator | IConnectionModeProvider.SwitchModeAsync | D18/D19/S5/X1.1 | ✅ 部分实现（双模路由✅；SwitchMode 守卫 ERR-70506 无代码） |
