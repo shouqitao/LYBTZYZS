@@ -94,8 +94,8 @@
 | P0-03 | 异常时事件未发布 | Shell/ShellEventCoordinator | ✅ 已修复 (2026-08-04, B-01) |
 | P0-04 | Sync-over-Async 死锁 | Desktop 多处 `.GetAwaiter().GetResult()` | ✅ 已核实无残留 (2026-08-04, B-01) |
 | P0-05 | 明文密码泄露 | appsettings.json (SSH/SA/JWT SecretKey) | ✅ 已修复 (2026-08-04, B-01) |
-| P0-06 | 104 个 Desktop 测试失败 | tests/LYBT.Tests.Desktop | 测试主机崩溃，质量保障失效 |
-| P0-07 | 配置无法 API 修改 | ConfigurationController 无 PUT | 运维只能手动改文件 |
+| P0-06 | 104 个 Desktop 测试失败 | tests/LYBT.Tests.Desktop | ✅ 根因已修复 (2026-08-11, T2-2)——148 纯 VM 测试解耦 LocalDB、146 Integration 独立化；残留失败为存量 STA/网络环境项（见 13c §五 T2 登记） |
+| P0-07 | 配置无法 API 修改 | ConfigurationController 无 PUT | ✅ 已实现 (A-18 P1-1)——IApiClientConfiguration 含 UpdateConfiguration/ValidateProduction，API 可修改配置 |
 
 ### 🟡 P1 — 应修复
 
