@@ -77,7 +77,7 @@ v1.0 包含 **10 个功能模块、142 个 User Stories**（Must / Should / Coul
 
 ## 范围
 
-### v1.0 范围（10 模块、147 US）
+### v1.0 范围（10 模块、151 US）
 
 | # | 模块 | US 数 | 核心能力 |
 |---|------|-------|---------|
@@ -90,10 +90,10 @@ v1.0 包含 **10 个功能模块、142 个 User Stories**（Must / Should / Coul
 | 7 | 挂号管理 (Registration) | 8 | 前台排队 + 医生快速就诊，医案联动回写，SignalR 实时推送、QuickVisit |
 | 8 | 处方打印 (Printing) | 4 | A5/A4 模板、PDF 导出、打印回写服务器 |
 | 9 | 报表管理 (Reports) | 4 | 收入/就诊统计/药材使用排行/趋势分析，按时间范围查询（A7 + R3-补） |
-| 10 | 平台基础设施 (Platform) | 44 | Shell + Config + Error + Logging + Health + CardReader（含 SHELL-010~019 + 备份恢复 SHELL-013 + 配置中心 SHELL-018 + 读卡器诊断 SHELL-019） |
-| **合计** | | **147** | |
+| 10 | 平台基础设施 (Platform) | 48 | Shell + Config + Error + Logging + Health + CardReader（含 SHELL-010~023：备份恢复 SHELL-013 + 配置中心 SHELL-018 + 读卡器诊断 SHELL-019 + 部署 SHELL-020 + 迁移 SHELL-021 + Go-Live SHELL-022 + 培训 SHELL-023） |
+| **合计** | | **151** | |
 
-> **2026-08-11 校准**：US 数 141→147（R3-补 反向脱节 +6）；新增能力已实装——备份/恢复（T7）、FeatureToggle（T8）、配置中心（SHELL-018）、读卡器诊断（SHELL-019）、历史聚合/批量详情（MC-008/009/018）、QuickVisit（REG-002）、异常体系补全（ERR-006/007）。
+> **2026-08-11 校准**：US 数 141→151（R3-补 反向脱节 +6；产品盲区收编 +4——部署/迁移/Go-Live/培训）；新增能力已实装——备份/恢复（T7）、FeatureToggle（T8）、配置中心（SHELL-018）、读卡器诊断（SHELL-019）、历史聚合/批量详情（MC-008/009/018）、QuickVisit（REG-002）、异常体系补全（ERR-006/007）。
 
 ### 范围外（系统边界之外，线下流程）
 
