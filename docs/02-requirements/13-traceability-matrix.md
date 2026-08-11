@@ -146,7 +146,7 @@
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
 |-------|:---:|------|------|------|------|------|------|
 | US-REG-001 | Must | ADR-0001 | Flow 1 | POST /Registrations | RegistrationsController.cs:24 | R3/R6/R11 | ✅ 已实现（患者校验 + 挂号费带出） |
-| US-REG-002 | Must | ADR-0001 | — | POST /Registrations/quick-visit | RegistrationsController.cs:24 | R13 | ✅ 待接线（服务端 QuickVisit 已实现；Desktop 无 UI 入口） |
+| US-REG-002 | Must | ADR-0001 | — | POST /Registrations/quick-visit | RegistrationsController.cs:24 | R13 | ✅ 已实现（B2 2026-08-11——QuickVisitDialog + VM 接线 RegistrationListViewModel.cs:208） |
 | US-REG-003 | Must | ADR-0010 | — | GET /Registrations/{id} | RegistrationsController.cs:24 | — | ✅ 已实现 |
 | US-REG-004 | Must | ADR-0010 | Flow 1 | GET /Registrations/queue | RegistrationsController.cs:24 | R8/R9 | ✅ 已实现（队列当天过滤） |
 | US-REG-005 | Must | ADR-0001 | Flow 1 | PUT /Registrations/{id}/start | RegistrationsController.cs:24 | — | ✅ 已实现（StartVisit 原子建医案+回退） |
