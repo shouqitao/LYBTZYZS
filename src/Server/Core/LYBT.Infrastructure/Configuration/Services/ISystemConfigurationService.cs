@@ -25,6 +25,16 @@ public interface ISystemConfigurationService
     Task<Result> ValidateProductionConfigAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// 获取单节配置（SHELL-018 Phase 1: 敏感键掩码脱敏）
+    /// </summary>
+    Task<Result<Dictionary<string, string>>> GetSectionAsync(string section, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 批量修改单节配置（SHELL-018 Phase 1: 白名单逐键 + 持久化 + Reload）
+    /// </summary>
+    Task<Result<ConfigUpdateResultDto>> UpdateSectionAsync(string section, Dictionary<string, string> values, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// 修改单个配置项（白名单校验 + 持久化 + 热更新）
     /// </summary>
     Task<Result> SetValueAsync(string key, string value, CancellationToken cancellationToken = default);

@@ -118,6 +118,74 @@ public class SystemConfigurationService : ISystemConfigurationService
     }
 
     /// <summary>
+    /// 获取单节配置（SHELL-018 Phase 1: 敏感键掩码）
+    /// </summary>
+    public async Task<Result<Dictionary<string, string>>> GetSectionAsync(string section, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(section))
+            return await Task.FromResult(Result<Dictionary<string, string>>.Failure("配置节名称不能为空"));
+
+        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var configSection = _configuration.GetSection(section);
+        foreach (var child in configSection.GetChildren())
+            result[child.Key] = ConfigurationWritePolicy.IsSensitive($"{section}:{child.Key}")
+                ? "***"
+                : child.Value ?? string.Empty;
+
+        _logger.LogInformation("[SVC] SystemConfiguration.GetSection - Section={Section} Keys={Count}", section, result.Count);
+        return await Task.FromResult(Result<Dictionary<string, string>>.Success(result));
+    }
+
+    /// <summary>
+    /// 批量修改单节配置（SHELL-018 Phase 1: 白名单逐键 + 持久化 + Reload）
+    /// </summary>
+    public async Task<Result<ConfigUpdateResultDto>> UpdateSectionAsync(string section, Dictionary<string, string> values, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(section))
+            return await Task.FromResult(Result<ConfigUpdateResultDto>.Failure("配置节名称不能为空"));
+        if (values is null || values.Count == 0)
+            return await Task.FromResult(Result<ConfigUpdateResultDto>.Failure("配置项集合不能为空"));
+
+        var fullKeys = values.ToDictionary(
+            kv => $"{section}:{kv.Key}",
+            kv => kv.Value,
+            StringComparer.OrdinalIgnoreCase);
+
+        var invalidKeys = fullKeys.Keys
+            .Where(k => !ConfigurationWritePolicy.IsAllowed(k))
+            .ToList();
+        if (invalidKeys.Count > 0)
+            return await Task.FromResult(Result<ConfigUpdateResultDto>.Failure($"以下配置项不在允许修改的白名单内，禁止修改: {string.Join(", ", invalidKeys)}"));
+
+        try
+        {
+            foreach (var kv in fullKeys)
+                await _store.SetValueAsync(kv.Key, kv.Value, cancellationToken);
+
+            ReloadConfiguration();
+
+            // 生效语义：功能开关节热更新（FeatureToggles），其余重启
+            var isHotReload = section.Equals("FeatureToggles", StringComparison.OrdinalIgnoreCase)
+                || section.Equals("ClinicSettings", StringComparison.OrdinalIgnoreCase);
+            _logger.LogInformation("[SVC] SystemConfiguration.UpdateSection - Section={Section} Count={Count} HotReload={Hot}",
+                section, fullKeys.Count, isHotReload);
+
+            return await Task.FromResult(Result<ConfigUpdateResultDto>.Success(new ConfigUpdateResultDto
+            {
+                Applied = true,
+                RestartRequired = !isHotReload,
+                EffectiveMode = isHotReload ? "hot" : "restart",
+                UpdatedCount = fullKeys.Count
+            }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[SVC] SystemConfiguration.UpdateSection - FAILED Section={Section}", section);
+            return await Task.FromResult(Result<ConfigUpdateResultDto>.FromException(ex, "修改配置节"));
+        }
+    }
+
+    /// <summary>
     /// 重新加载配置，触发 IOptionsMonitor&lt;T&gt; 热更新
     /// </summary>
     private void ReloadConfiguration()

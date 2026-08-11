@@ -148,6 +148,10 @@ public static class AuthenticationServiceCollectionExtensions
                 policy.RequireAuthenticatedUser()
                       .RequireRole(RoleConstants.Admin, RoleConstants.SuperAdmin));
 
+            options.AddPolicy(PolicyConstants.SysAdminOnly, policy =>
+                policy.RequireAuthenticatedUser()
+                      .RequireRole(RoleConstants.SuperAdmin));
+
             options.AddPolicy(PolicyConstants.DoctorOrReceptionist, policy =>
                 policy.RequireAuthenticatedUser()
                       .RequireRole(RoleConstants.Doctor, RoleConstants.Receptionist));

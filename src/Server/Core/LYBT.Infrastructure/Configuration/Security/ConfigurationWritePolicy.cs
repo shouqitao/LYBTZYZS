@@ -55,4 +55,28 @@ public static class ConfigurationWritePolicy
             return false;
         return !ForbiddenKeys.Contains(key);
     }
+
+    /// <summary>
+    /// 判断配置键是否敏感（SHELL-018 Phase 1: GET 脱敏掩码——命中禁止节/禁止键或密钥类键返回 true）
+    /// </summary>
+    public static bool IsSensitive(string key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            return false;
+
+        var section = key.Contains(':') ? key[..key.IndexOf(':')] : key;
+        if (ForbiddenSections.Contains(section))
+            return true;
+        if (ForbiddenKeys.Contains(key))
+            return true;
+
+        // 密钥/密码类键名启发式（Key/Secret/Password/ConnectionString/Token 结尾或含）
+        var lower = key.ToLowerInvariant();
+        return lower.Contains("secret")
+            || lower.Contains("password")
+            || lower.Contains("connectionstring")
+            || lower.EndsWith("token")
+            || lower.EndsWith(":key")
+            || lower.EndsWith("signingkey");
+    }
 }

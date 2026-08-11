@@ -1,6 +1,6 @@
 # sysadmin 配置中心设计方案（T6 式需求深化，暂不实现）
 
-> 日期：2026-08-11 | 状态：设计稿（待用户审批后进入实现）
+> 日期：2026-08-11 | 状态：设计稿（已审批）→ **Phase 1 已实现（commit 待填）**：SysAdminOnly 策略 / GET+PUT sections 脱敏+白名单 / POST restart（限频+延迟 30s）/ 审计接线 / 双端同步；Phase 2-3（客户端面板/双模式布局）待实施
 > 依据：需求先行门禁——US-SHELL-018（Must，sysadmin 配置中心）为全新功能，先深化需求再设计
 > 关联：11a-shell.md US-SHELL-018/017/019；ADR-0014；11b-configuration.md US-CFG-005/006；13-traceability-matrix v1.4（SHELL-018 🔴 唯一缺失项）
 
@@ -77,8 +77,8 @@
 | 端点 | 现状 | 扩展 |
 |------|------|------|
 | `GET /configuration` | ✅ 返回 Dictionary<string,string>（**未脱敏**） | 脱敏：命中 `[SensitiveData]` 键（SecretKey/连接串/密码）→ `***`；按节分组返回 |
-| `GET /configuration/{section}` | 🔴 无 | 新增：按节返回（脱敏）；节不存在 404 |
-| `PUT /configuration/{section}` | ⚠️ 仅 PUT{key} 单键 | 新增：body 为该节字段字典 → `ConfigurationWritePolicy.IsAllowed` 逐键校验（白名单外 403）→ JsonFileConfigurationStore 原子写 → ReloadConfiguration → 返回 `{ applied, restartRequired, effectiveMode }` |
+| `GET /configuration/sections/{section}` | 🔴 无 | 新增：按节返回（脱敏）；节不存在 404（路由用 `sections/` 前缀——与既有 `{key}` 单键路由避免 ASP.NET 歧义冲突） |
+| `PUT /configuration/sections/{section}` | ⚠️ 仅 PUT{key} 单键 | 新增：body 为该节字段字典 → `ConfigurationWritePolicy.IsAllowed` 逐键校验（白名单外 403）→ JsonFileConfigurationStore 原子写 → ReloadConfiguration → 返回 `{ applied, restartRequired, effectiveMode }`（FeatureToggles/ClinicSettings → hot 即时生效，其余 restart） |
 | `POST /configuration/restart` | 🔴 无 | 新增：SysAdminOnly + 限频（每小时 ≤3）→ 二次确认由客户端承担 → `IHostApplicationLifetime.StopApplication()` 延迟 30s |
 | `POST /configuration/validate` | ✅ | 保留（生产配置校验） |
 
