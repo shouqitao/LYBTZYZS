@@ -170,6 +170,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IUserNotificationService, UserNotificationService>();
 
             containerRegistry.RegisterSingleton<IClinicSettingsService, ClinicSettingsService>();
+            containerRegistry.RegisterSingleton<IClientConfigurationStore, ClientConfigurationStore>();
             containerRegistry.RegisterSingleton<ICommonDialogService, CommonDialogService>();
 
             // refactor-auth-role-system Phase 2.1: 可扩展角色注册表

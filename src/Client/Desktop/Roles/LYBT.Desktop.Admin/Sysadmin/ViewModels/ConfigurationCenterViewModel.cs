@@ -1,0 +1,248 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Services.FeatureToggle;
+using LYBT.Desktop.Infrastructure.ViewModels.Base;
+using LYBT.Shared.Configuration.Options.Client;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+namespace LYBT.Desktop.Admin.Sysadmin.ViewModels;
+
+/// <summary>
+/// 配置中心面板 ViewModel（SHELL-018 Phase 2: 5 组可编辑 + 读卡器只读占位 + 系统信息只读）
+/// 保存：ClientConfigurationStore 节级原子写 + Reload；功能开关/诊所信息即时生效（决策 A），其余重启生效提示。
+/// </summary>
+public partial class ConfigurationCenterViewModel : NavigableViewModelBase
+{
+    private readonly IClientConfigurationStore _store;
+    private readonly IFeatureToggleService _featureToggles;
+    private readonly IConnectionModeService _connectionMode;
+    private readonly IOptions<ClinicSettingsOptions> _clinicOptions;
+    private readonly IOptions<ClientSessionOptions> _sessionOptions;
+    private readonly IOptions<ApiClientOptions> _apiOptions;
+    private readonly IOptions<CardReaderOptions> _cardReaderOptions;
+
+    // ── 组 1：诊所信息（热更新） ──
+    [ObservableProperty] private string _clinicName = string.Empty;
+    [ObservableProperty] private string _clinicAddress = string.Empty;
+    [ObservableProperty] private string _clinicPhone = string.Empty;
+    [ObservableProperty] private string _clinicDepartment = string.Empty;
+    [ObservableProperty] private string _clinicLicenseNumber = string.Empty;
+    [ObservableProperty] private string _clinicEmail = string.Empty;
+
+    // ── 组 2：会话设置（重启生效） ──
+    [ObservableProperty] private int _inactivityTimeoutMinutes = 30;
+    [ObservableProperty] private int _warningBeforeTimeoutMinutes;
+    [ObservableProperty] private int _activityCheckIntervalSeconds = 30;
+
+    // ── 组 3：连接设置（重启生效） ──
+    [ObservableProperty] private string _apiBaseUrl = string.Empty;
+    [ObservableProperty] private int _apiTimeoutSeconds = 60;
+
+    // ── 组 4：安全策略（重启生效） ──
+    [ObservableProperty] private bool _forceChangeOnFirstLogin = true;
+
+    // ── 组 5：功能开关（热更新即时生效） ──
+    [ObservableProperty] private bool _overwriteConflicts = true;
+    [ObservableProperty] private string _duplicateHerbMergeStrategy = "Max";
+
+    // ── 读卡器（只读占位，SHELL-019 诊断） ──
+    [ObservableProperty] private string _cardReaderStatus = string.Empty;
+
+    [ObservableProperty] private string _statusMessage = string.Empty;
+    [ObservableProperty] private bool _isSaving;
+
+    /// <summary>重复药材合并策略取值（功能开关组）</summary>
+    public static string[] MergeStrategies { get; } = { "Skip", "Update", "Error", "Max" };
+
+    public ConfigurationCenterViewModel(
+        IViewModelServices services,
+        IClientConfigurationStore store,
+        IFeatureToggleService featureToggles,
+        IConnectionModeService connectionMode,
+        IOptions<ClinicSettingsOptions> clinicOptions,
+        IOptions<ClientSessionOptions> sessionOptions,
+        IOptions<ApiClientOptions> apiOptions,
+        IOptions<CardReaderOptions> cardReaderOptions)
+        : base(services)
+    {
+        _store = store;
+        _featureToggles = featureToggles;
+        _connectionMode = connectionMode;
+        _clinicOptions = clinicOptions;
+        _sessionOptions = sessionOptions;
+        _apiOptions = apiOptions;
+        _cardReaderOptions = cardReaderOptions;
+        LoadFromOptions();
+    }
+
+    private void LoadFromOptions()
+    {
+        var clinic = _clinicOptions.Value ?? new ClinicSettingsOptions();
+        ClinicName = clinic.Name;
+        ClinicAddress = clinic.Address;
+        ClinicPhone = clinic.Phone;
+        ClinicDepartment = clinic.Department;
+        ClinicLicenseNumber = clinic.LicenseNumber;
+        ClinicEmail = clinic.Email;
+
+        var session = _sessionOptions.Value ?? new ClientSessionOptions();
+        InactivityTimeoutMinutes = session.InactivityTimeoutMinutes;
+        WarningBeforeTimeoutMinutes = session.WarningBeforeTimeoutMinutes;
+        ActivityCheckIntervalSeconds = session.ActivityCheckIntervalSeconds;
+
+        var api = _apiOptions.Value ?? new ApiClientOptions();
+        ApiBaseUrl = string.IsNullOrEmpty(api.RemoteUrl) ? api.BaseUrl : api.RemoteUrl;
+        ApiTimeoutSeconds = api.TimeoutSeconds;
+
+        ForceChangeOnFirstLogin = true;
+        OverwriteConflicts = _featureToggles.IsEnabled("OverwriteConflicts");
+        DuplicateHerbMergeStrategy = _featureToggles.GetValue("DuplicateHerbMergeStrategy") ?? "Max";
+
+        var card = _cardReaderOptions.Value ?? new CardReaderOptions();
+        CardReaderStatus = $"UsbPort={card.UsbPort} · ConnectTimeout={card.ConnectTimeout}ms · ReadTimeout={card.ReadTimeout}ms（完整诊断归 US-SHELL-019）";
+    }
+
+    // ── 保存命令 ──
+
+    [RelayCommand]
+    private async Task SaveClinicAsync()
+    {
+        await SaveAsync("ClinicSettings", new Dictionary<string, object>
+        {
+            ["Name"] = ClinicName,
+            ["Address"] = ClinicAddress,
+            ["Phone"] = ClinicPhone,
+            ["Department"] = ClinicDepartment,
+            ["LicenseNumber"] = ClinicLicenseNumber,
+            ["Email"] = ClinicEmail
+        }, hotReload: true);
+    }
+
+    [RelayCommand]
+    private async Task SaveSessionAsync()
+    {
+        if (InactivityTimeoutMinutes is < 1 or > 120)
+        {
+            StatusMessage = "会话超时需在 1-120 分钟之间";
+            return;
+        }
+        if (WarningBeforeTimeoutMinutes is < 0 or > 10 || WarningBeforeTimeoutMinutes > InactivityTimeoutMinutes)
+        {
+            StatusMessage = "提前提醒需在 0-10 分钟且不超过会话超时";
+            return;
+        }
+        if (ActivityCheckIntervalSeconds is < 10 or > 120)
+        {
+            StatusMessage = "活动检测间隔需在 10-120 秒之间";
+            return;
+        }
+
+        await SaveAsync("ClientSession", new Dictionary<string, object>
+        {
+            ["InactivityTimeoutMinutes"] = InactivityTimeoutMinutes,
+            ["WarningBeforeTimeoutMinutes"] = WarningBeforeTimeoutMinutes,
+            ["ActivityCheckIntervalSeconds"] = ActivityCheckIntervalSeconds
+        }, hotReload: false);
+    }
+
+    [RelayCommand]
+    private async Task SaveConnectionAsync()
+    {
+        if (!Uri.TryCreate(ApiBaseUrl, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            StatusMessage = "API 地址需为合法的 http/https URL";
+            return;
+        }
+        if (ApiTimeoutSeconds is < 5 or > 300)
+        {
+            StatusMessage = "超时时间需在 5-300 秒之间";
+            return;
+        }
+
+        await SaveAsync("ApiClient", new Dictionary<string, object>
+        {
+            ["BaseUrl"] = ApiBaseUrl,
+            ["RemoteUrl"] = ApiBaseUrl,
+            ["TimeoutSeconds"] = ApiTimeoutSeconds
+        }, hotReload: false, note: "连接设置需重启生效（决策 C：仅提示，不做模式联动）");
+    }
+
+    [RelayCommand]
+    private async Task SaveSecurityAsync(object? password)
+    {
+        var values = new Dictionary<string, object>
+        {
+            ["ForceChangeOnFirstLogin"] = ForceChangeOnFirstLogin
+        };
+
+        var pwd = password as string;
+        if (!string.IsNullOrWhiteSpace(pwd))
+        {
+            if (pwd.Length < 8)
+            {
+                StatusMessage = "新用户默认密码至少 8 位";
+                return;
+            }
+            values["NewUserPassword"] = pwd;
+        }
+
+        await SaveAsync("DefaultPasswords", values, hotReload: false);
+    }
+
+    [RelayCommand]
+    private async Task SaveFeatureTogglesAsync()
+    {
+        var validStrategies = new[] { "Skip", "Update", "Error", "Max" };
+        if (!validStrategies.Contains(DuplicateHerbMergeStrategy, StringComparer.OrdinalIgnoreCase))
+        {
+            StatusMessage = $"重复药材合并策略需为：{string.Join(" / ", validStrategies)}";
+            return;
+        }
+
+        var ok = await _store.SaveSectionAsync("FeatureToggles", new Dictionary<string, object>
+        {
+            ["OverwriteConflicts"] = OverwriteConflicts,
+            ["DuplicateHerbMergeStrategy"] = DuplicateHerbMergeStrategy
+        });
+        if (ok)
+        {
+            StatusMessage = "功能开关已保存并即时生效（热更新）";
+            // reloadOnChange 已配置——文件变更自动触发 IFeatureToggleService.TogglesChanged
+        }
+        else
+        {
+            StatusMessage = "功能开关保存失败，请检查文件权限";
+        }
+    }
+
+    [RelayCommand]
+    private async Task TestConnectionAsync()
+    {
+        StatusMessage = "正在测试远程连接...";
+        var ok = await _connectionMode.TestRemoteConnectionAsync(ApiBaseUrl);
+        StatusMessage = ok ? "远程连接测试成功" : "远程连接测试失败（无法访问健康端点）";
+    }
+
+    private async Task SaveAsync(string section, Dictionary<string, object> values, bool hotReload, string? note = null)
+    {
+        if (IsSaving) return;
+        IsSaving = true;
+        try
+        {
+            var ok = await _store.SaveSectionAsync(section, values);
+            StatusMessage = ok
+                ? (hotReload ? "已保存并即时生效（热更新）" : "已保存，重启后生效")
+                : "保存失败，请检查配置文件权限";
+            if (!string.IsNullOrEmpty(note) && ok)
+                StatusMessage = $"{StatusMessage}（{note}）";
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+}

@@ -21,14 +21,20 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
     [ObservableProperty]
     private DashboardStatus _dashboard = new();
 
+    /// <summary>配置中心面板（SHELL-018 Phase 2: 5 组可编辑 + 只读占位）</summary>
+    [ObservableProperty]
+    private ConfigurationCenterViewModel _configCenter;
+
     public SysadminHomeViewModel(
         IViewModelServices services,
         IAuthHealthService authHealthService,
-        IClinicSettingsService clinicSettings)
+        IClinicSettingsService clinicSettings,
+        ConfigurationCenterViewModel configCenter)
         : base(services)
     {
         _authHealthService = authHealthService;
         _clinicSettings = clinicSettings;
+        ConfigCenter = configCenter;
         PageTitle = "运维控制台";
     }
 

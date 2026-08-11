@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:sysadmin="clr-namespace:LYBT.Desktop.Admin.Sysadmin.ViewModels"
              prism:ViewModelLocator.AutoWireViewModel="True"
              xmlns:prism="http://prismlibrary.com/">
 
@@ -42,6 +43,158 @@
                 <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
                            Text="凌隐宝堂中医诊所 · 系统运维"
                            Opacity="0.6" Margin="0,0,0,32" />
+
+                <!-- 配置中心（SHELL-018 Phase 2: 5 组可编辑 + 读卡器占位；系统信息见下方仪表盘） -->
+                <Border Margin="0,0,0,24" Style="{StaticResource FunctionCardStyle}" MinHeight="0" Padding="24">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                   Text="配置中心" Margin="0,0,0,4" />
+                        <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                   Text="修改配置后自动保存至本机 JSON 文件；功能开关与诊所信息即时生效，其余重启后生效。"
+                                   Opacity="0.6" Margin="0,0,0,16" />
+
+                        <!-- 组 1：诊所信息 -->
+                        <TextBlock Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Text="诊所信息" Margin="0,8,0,8" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,12,8">
+                                <TextBlock Text="名称" FontSize="12" Opacity="0.7" />
+                                <TextBox Text="{Binding ConfigCenter.ClinicName, UpdateSourceTrigger=PropertyChanged}" Padding="8,6" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="12,0,0,8">
+                                <TextBlock Text="地址" FontSize="12" Opacity="0.7" />
+                                <TextBox Text="{Binding ConfigCenter.ClinicAddress, UpdateSourceTrigger=PropertyChanged}" Padding="8,6" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,12,8">
+                                <TextBlock Text="电话" FontSize="12" Opacity="0.7" />
+                                <TextBox Text="{Binding ConfigCenter.ClinicPhone, UpdateSourceTrigger=PropertyChanged}" Padding="8,6" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="12,0,0,8">
+                                <TextBlock Text="科室" FontSize="12" Opacity="0.7" />
+                                <TextBox Text="{Binding ConfigCenter.ClinicDepartment, UpdateSourceTrigger=PropertyChanged}" Padding="8,6" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,12,8">
+                                <TextBlock Text="执业许可证号" FontSize="12" Opacity="0.7" />
+                                <TextBox Text="{Binding ConfigCenter.ClinicLicenseNumber, UpdateSourceTrigger=PropertyChanged}" Padding="8,6" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="2" Grid.Column="1" Margin="12,0,0,8">
+                                <TextBlock Text="邮箱" FontSize="12" Opacity="0.7" />
+                                <TextBox Text="{Binding ConfigCenter.ClinicEmail, UpdateSourceTrigger=PropertyChanged}" Padding="8,6" />
+                            </StackPanel>
+                        </Grid>
+                        <Button Content="保存诊所信息"
+                                Command="{Binding ConfigCenter.SaveClinicCommand}"
+                                HorizontalAlignment="Right" Padding="16,6" Margin="0,0,0,12" />
+
+                        <!-- 组 2：会话设置 -->
+                        <TextBlock Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Text="会话设置（重启生效）" Margin="0,8,0,8" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,12,8">
+                                <TextBlock Text="超时（分钟，1-120）" FontSize="12" Opacity="0.7" />
+                                <TextBox Text="{Binding ConfigCenter.InactivityTimeoutMinutes, UpdateSourceTrigger=PropertyChanged}" Padding="8,6" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="12,0,12,8">
+                                <TextBlock Text="提前提醒（分钟，0-10）" FontSize="12" Opacity="0.7" />
+                                <TextBox Text="{Binding ConfigCenter.WarningBeforeTimeoutMinutes, UpdateSourceTrigger=PropertyChanged}" Padding="8,6" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Margin="12,0,0,8">
+                                <TextBlock Text="检测间隔（秒，10-120）" FontSize="12" Opacity="0.7" />
+                                <TextBox Text="{Binding ConfigCenter.ActivityCheckIntervalSeconds, UpdateSourceTrigger=PropertyChanged}" Padding="8,6" />
+                            </StackPanel>
+                        </Grid>
+                        <Button Content="保存会话设置"
+                                Command="{Binding ConfigCenter.SaveSessionCommand}"
+                                HorizontalAlignment="Right" Padding="16,6" Margin="0,0,0,12" />
+
+                        <!-- 组 3：连接设置 -->
+                        <TextBlock Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Text="连接设置（重启生效）" Margin="0,8,0,8" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="140" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,12,8">
+                                <TextBlock Text="API 地址" FontSize="12" Opacity="0.7" />
+                                <TextBox Text="{Binding ConfigCenter.ApiBaseUrl, UpdateSourceTrigger=PropertyChanged}" Padding="8,6" />
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="测试连通"
+                                    Command="{Binding ConfigCenter.TestConnectionCommand}"
+                                    Padding="12,6" Margin="0,0,12,0" VerticalAlignment="Bottom" />
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="超时（秒，5-300）" FontSize="12" Opacity="0.7" />
+                                <TextBox Text="{Binding ConfigCenter.ApiTimeoutSeconds, UpdateSourceTrigger=PropertyChanged}" Padding="8,6" />
+                            </StackPanel>
+                        </Grid>
+                        <Button Content="保存连接设置"
+                                Command="{Binding ConfigCenter.SaveConnectionCommand}"
+                                HorizontalAlignment="Right" Padding="16,6" Margin="0,0,0,12" />
+
+                        <!-- 组 4：安全策略 -->
+                        <TextBlock Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Text="安全策略（重启生效）" Margin="0,8,0,8" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <CheckBox Grid.Column="0" Content="新用户首次登录强制改密"
+                                      IsChecked="{Binding ConfigCenter.ForceChangeOnFirstLogin}"
+                                      VerticalAlignment="Center" Margin="0,0,12,8" />
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="新用户默认密码（留空不改）" FontSize="12" Opacity="0.7" />
+                                <PasswordBox x:Name="NewUserPasswordBox" Padding="8,6" />
+                            </StackPanel>
+                        </Grid>
+                        <Button Content="保存安全策略"
+                                Command="{Binding ConfigCenter.SaveSecurityCommand}"
+                                CommandParameter="{Binding Password, ElementName=NewUserPasswordBox}"
+                                HorizontalAlignment="Right" Padding="16,6" Margin="0,0,0,12" />
+
+                        <!-- 组 5：功能开关（热更新） -->
+                        <TextBlock Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Text="功能开关（即时生效）" Margin="0,8,0,8" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <CheckBox Grid.Column="0" Content="处方冲突时覆盖（OverwriteConflicts）"
+                                      IsChecked="{Binding ConfigCenter.OverwriteConflicts}"
+                                      VerticalAlignment="Center" Margin="0,0,12,8" />
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="重复药材合并策略（Skip/Update/Error/Max）" FontSize="12" Opacity="0.7" />
+                                <ComboBox SelectedItem="{Binding ConfigCenter.DuplicateHerbMergeStrategy}"
+                                          ItemsSource="{x:Static sysadmin:ConfigurationCenterViewModel.MergeStrategies}"
+                                          Padding="8,4" />
+                            </StackPanel>
+                        </Grid>
+                        <Button Content="保存功能开关"
+                                Command="{Binding ConfigCenter.SaveFeatureTogglesCommand}"
+                                HorizontalAlignment="Right" Padding="16,6" Margin="0,0,0,12" />
+
+                        <!-- 读卡器（只读占位） -->
+                        <TextBlock Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Text="读卡器（诊断归 US-SHELL-019）" Margin="0,8,0,8" />
+                        <TextBlock Text="{Binding ConfigCenter.CardReaderStatus}" FontSize="12" Opacity="0.7" Margin="0,0,0,12" />
+
+                        <!-- 状态条 -->
+                        <Border Background="#F5F5F5" CornerRadius="4" Padding="12,8" Margin="0,8,0,0">
+                            <TextBlock Text="{Binding ConfigCenter.StatusMessage}"
+                                       Foreground="{DynamicResource MaterialDesign.Brush.Primary}" FontSize="12" />
+                        </Border>
+                    </StackPanel>
+                </Border>
 
                 <!-- 状态卡片 -->
                 <UniformGrid Columns="2">
