@@ -46,4 +46,22 @@ internal interface IConfigurationApi
     /// </summary>
     [Refit.Post("/api/v1/configuration/validate")]
     Task<ApiResponse> ValidateProductionAsync();
+
+    /// <summary>
+    /// 获取单节配置（SHELL-018 Phase 1: 敏感键掩码）
+    /// </summary>
+    [Refit.Get("/api/v1/configuration/sections/{section}")]
+    Task<ApiResponse<Dictionary<string, string>>> GetSectionAsync(string section);
+
+    /// <summary>
+    /// 修改单节配置（SHELL-018 Phase 1: 白名单逐键 + 生效语义）
+    /// </summary>
+    [Refit.Put("/api/v1/configuration/sections/{section}")]
+    Task<ApiResponse<ConfigUpdateResultDto>> UpdateSectionAsync(string section, [Refit.Body] Dictionary<string, string> values);
+
+    /// <summary>
+    /// 延迟重启服务（SHELL-018 Phase 1: 30 秒后 StopApplication）
+    /// </summary>
+    [Refit.Post("/api/v1/configuration/restart")]
+    Task<ApiResponse> RestartAsync();
 }

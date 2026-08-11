@@ -30,4 +30,13 @@ internal sealed class ConfigurationApiClient : IApiClientConfiguration
 
     public Task<ApiResponse> ValidateProductionAsync()
         => _api.ValidateProductionAsync();
+
+    public Task<ApiResponse<Dictionary<string, string>>> GetSectionAsync(string section)
+        => _api.GetSectionAsync(section);
+
+    public Task<ApiResponse<ConfigUpdateResultDto>> UpdateSectionAsync(string section, Dictionary<string, string> values)
+        => _api.UpdateSectionAsync(section, values);
+
+    public Task<ApiResponse> RestartAsync()
+        => _api.RestartAsync();
 }

@@ -3,6 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:sysadmin="clr-namespace:LYBT.Desktop.Admin.Sysadmin.ViewModels"
+             xmlns:views="clr-namespace:LYBT.Desktop.Admin.Sysadmin.Views"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
              prism:ViewModelLocator.AutoWireViewModel="True"
              xmlns:prism="http://prismlibrary.com/">
 
@@ -44,16 +46,17 @@
                            Text="凌隐宝堂中医诊所 · 系统运维"
                            Opacity="0.6" Margin="0,0,0,32" />
 
-                <!-- 配置中心（SHELL-018 Phase 2: 5 组可编辑 + 读卡器占位；系统信息见下方仪表盘） -->
+                <!-- 配置中心（SHELL-018 Phase 2+3: 双模式布局——远程 2 面板 / 本地 2 面板） -->
                 <Border Margin="0,0,0,24" Style="{StaticResource FunctionCardStyle}" MinHeight="0" Padding="24">
-                    <StackPanel>
-                        <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                   Text="配置中心" Margin="0,0,0,4" />
-                        <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                   Text="修改配置后自动保存至本机 JSON 文件；功能开关与诊所信息即时生效，其余重启后生效。"
-                                   Opacity="0.6" Margin="0,0,0,16" />
+                    <TabControl>
+                        <!-- Tab 1：客户端配置（远程）/ 本地配置（本地全栈） -->
+                        <TabItem Header="配置">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                           Text="修改配置后自动保存至本机 JSON 文件；功能开关与诊所信息即时生效，其余重启后生效。"
+                                           Opacity="0.6" Margin="0,0,0,16" />
 
-                        <!-- 组 1：诊所信息 -->
+                        <!-- 组 1：诊所信息 -->'''
                         <TextBlock Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Text="诊所信息" Margin="0,8,0,8" />
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -188,12 +191,74 @@
                         <TextBlock Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Text="读卡器（诊断归 US-SHELL-019）" Margin="0,8,0,8" />
                         <TextBlock Text="{Binding ConfigCenter.CardReaderStatus}" FontSize="12" Opacity="0.7" Margin="0,0,0,12" />
 
+                        <!-- 本地模式：重启内嵌服务（决策 B——本地配置生效 = 重启 LocalWebAPI） -->
+                        <Button Content="重启本地服务（使配置生效）"
+                                Command="{Binding ConfigCenter.RestartLocalServiceCommand}"
+                                HorizontalAlignment="Right" Padding="16,6"
+                                Visibility="{Binding ConfigCenter.IsLocalMode, Converter={x:Static converters:Cvt.BoolToVis}}" />
+
                         <!-- 状态条 -->
                         <Border Background="#F5F5F5" CornerRadius="4" Padding="12,8" Margin="0,8,0,0">
                             <TextBlock Text="{Binding ConfigCenter.StatusMessage}"
                                        Foreground="{DynamicResource MaterialDesign.Brush.Primary}" FontSize="12" />
                         </Border>
-                    </StackPanel>
+                            </StackPanel>
+                        </TabItem>
+
+                        <!-- Tab 2（远程）：服务端配置 -->
+                        <TabItem Header="服务端配置" Visibility="{Binding IsRemoteMode, Converter={x:Static converters:Cvt.BoolToVis}}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                           Text="通过 Configuration API 管理远程服务器业务参数（敏感配置只读掩码；改后重启生效）。"
+                                           Opacity="0.6" Margin="0,0,0,16" />
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="260" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- 节列表 -->
+                                    <ListBox Grid.Column="0"
+                                             ItemsSource="{Binding ServerConfig.Sections}"
+                                             SelectedItem="{Binding ServerConfig.SelectedSection}"
+                                             DisplayMemberPath="DisplayName"
+                                             Margin="0,0,12,0" />
+
+                                    <!-- 节键值编辑 -->
+                                    <ItemsControl Grid.Column="1" ItemsSource="{Binding ServerConfig.SelectedSection.Values}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="220" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="{Binding Key}" FontSize="12" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Column="1" Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}" Padding="8,6" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Grid>
+
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+                                    <Button Content="保存节" Command="{Binding ServerConfig.SaveSectionCommand}" Padding="16,6" Margin="0,0,12,0" />
+                                    <Button Content="重启服务" Command="{Binding ServerConfig.RestartServerCommand}" Padding="16,6" />
+                                </StackPanel>
+
+                                <Border Background="#F5F5F5" CornerRadius="4" Padding="12,8" Margin="0,8,0,0">
+                                    <TextBlock Text="{Binding ServerConfig.StatusMessage}"
+                                               Foreground="{DynamicResource MaterialDesign.Brush.Primary}" FontSize="12" />
+                                </Border>
+                            </StackPanel>
+                        </TabItem>
+
+                        <!-- Tab 2'（本地）：备份恢复 -->
+                        <TabItem Header="备份恢复" Visibility="{Binding IsLocalMode, Converter={x:Static converters:Cvt.BoolToVis}}">
+                            <views:BackupManagementView />
+                        </TabItem>
+                    </TabControl>
                 </Border>
 
                 <!-- 状态卡片 -->

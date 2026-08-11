@@ -21,6 +21,15 @@ namespace LYBT.Desktop.Admin.Services
         public Task<ApiResponse> UpdateConfigurationAsync(Dictionary<string, string> settings)
             => _configurationApi.UpdateConfigurationAsync(settings);
 
+        public Task<ApiResponse<Dictionary<string, string>>> GetSectionAsync(string section)
+            => _configurationApi.GetSectionAsync(section);
+
+        public Task<ApiResponse<ConfigUpdateResultDto>> UpdateSectionAsync(string section, Dictionary<string, string> values)
+            => _configurationApi.UpdateSectionAsync(section, values);
+
+        public Task<ApiResponse> RestartAsync()
+            => _configurationApi.RestartAsync();
+
         public Task<ApiResponse> ValidateProductionAsync()
             => _configurationApi.ValidateProductionAsync();
     }

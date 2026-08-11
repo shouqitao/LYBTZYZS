@@ -17,5 +17,11 @@ namespace LYBT.Desktop.Admin.Services
 
         /// <summary>验证生产环境配置。</summary>
         Task<ApiResponse> ValidateProductionAsync();
+        /// <summary>获取单节配置（脱敏）——服务端配置面板。</summary>
+        Task<ApiResponse<Dictionary<string, string>>> GetSectionAsync(string section);
+        /// <summary>修改单节配置（白名单 + 生效语义）——服务端配置面板。</summary>
+        Task<ApiResponse<ConfigUpdateResultDto>> UpdateSectionAsync(string section, Dictionary<string, string> values);
+        /// <summary>延迟重启服务（限频）——服务端配置面板。</summary>
+        Task<ApiResponse> RestartAsync();
     }
 }

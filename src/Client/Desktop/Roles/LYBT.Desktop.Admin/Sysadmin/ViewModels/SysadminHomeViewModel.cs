@@ -16,6 +16,7 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
 {
     private readonly IAuthHealthService _authHealthService;
     private readonly IClinicSettingsService _clinicSettings;
+    private readonly IConnectionModeService _connectionMode;
     private CancellationTokenSource? _pollCts;
 
     [ObservableProperty]
@@ -25,17 +26,46 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
     [ObservableProperty]
     private ConfigurationCenterViewModel _configCenter;
 
+    /// <summary>服务端配置面板（SHELL-018 Phase 3: 仅远程模式）</summary>
+    [ObservableProperty]
+    private ServerConfigSectionViewModel _serverConfig;
+
+    [ObservableProperty]
+    private bool _isRemoteMode;
+
+    [ObservableProperty]
+    private bool _isLocalMode;
+
     public SysadminHomeViewModel(
         IViewModelServices services,
         IAuthHealthService authHealthService,
         IClinicSettingsService clinicSettings,
-        ConfigurationCenterViewModel configCenter)
+        IConnectionModeService connectionMode,
+        ConfigurationCenterViewModel configCenter,
+        ServerConfigSectionViewModel serverConfig)
         : base(services)
     {
         _authHealthService = authHealthService;
         _clinicSettings = clinicSettings;
+        _connectionMode = connectionMode;
         ConfigCenter = configCenter;
+        ServerConfig = serverConfig;
+        UpdateModeFlags();
+        _connectionMode.ModeChanged += OnModeChanged;
         PageTitle = "运维控制台";
+    }
+
+    private void UpdateModeFlags()
+    {
+        IsRemoteMode = _connectionMode.IsRemote;
+        IsLocalMode = _connectionMode.IsLocal;
+    }
+
+    private void OnModeChanged(object? sender, ConnectionMode mode)
+    {
+        UpdateModeFlags();
+        if (IsRemoteMode)
+            _ = ServerConfig.LoadSectionsCommand.ExecuteAsync(null);
     }
 
     public override void OnNavigatedTo(Prism.Regions.NavigationContext navigationContext)

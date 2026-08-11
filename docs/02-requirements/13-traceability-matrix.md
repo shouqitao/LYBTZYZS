@@ -179,7 +179,7 @@
 | US-SHELL-014 | Should | ADR-0008 | — | SecurityAuditLog + Service | SysadminHomeView | A12 | 🧲 v1.0 待实现（D3） |
 | US-SHELL-016 | Could | — | — | 导出/导入 JSON 按钮 | SysadminHomeView | X3.2 | 🧲 v1.0 待实现 |
 | US-SHELL-017 | Must | ADR-0005/0008 | — | SystemAdminOptions + DefaultPasswordService | SystemAdminOptions.cs | — | ✅ 已实现 |
-| US-SHELL-018 | Must | ADR-0006/0014 | — | SysadminHomeView | SysadminHomeView.xaml + ConfigurationCenterViewModel.cs | S3 | ⚠️ 部分实现（Phase 1 服务端 API ✅ + Phase 2 客户端面板 ✅：5 组可编辑保存/功能开关热更新/连接测试；读卡器组占位归 US-SHELL-019；Phase 3 双模式布局待实施） |
+| US-SHELL-018 | Must | ADR-0006/0014 | — | SysadminHomeView | SysadminHomeView.xaml + ConfigurationCenterViewModel.cs + ServerConfigSectionViewModel.cs | S3 | ⚠️ 9/10 AC ✅（Phase 1-3 全完成：服务端 API/sections/restart + 客户端 5 组面板 + 双模式 Tab 布局 + 备份恢复嵌入 + 本地重启决策 B；读卡器参数 AC 占位归 US-SHELL-019） |
 | US-SHELL-019 | Should | — | — | ICardReaderDiagnostics | ICardReader/ICardReaderFactory | S3 | 🧲 v1.0 待实现（读卡器诊断 ICardReaderDiagnostics 不存在） |
 
 > US-SHELL-015 已撤销（并入 US-SHELL-013），不计入总数。

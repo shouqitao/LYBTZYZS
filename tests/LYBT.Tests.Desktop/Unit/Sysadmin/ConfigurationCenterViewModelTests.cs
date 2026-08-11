@@ -21,6 +21,7 @@ public class ConfigurationCenterViewModelTests
     private readonly IOptions<ClientSessionOptions> _sessionOptions;
     private readonly IOptions<ApiClientOptions> _apiOptions;
     private readonly IOptions<CardReaderOptions> _cardReaderOptions;
+    private readonly IOptions<OfflineModeOptions> _offlineOptions;
 
     public ConfigurationCenterViewModelTests()
     {
@@ -40,6 +41,7 @@ public class ConfigurationCenterViewModelTests
             BaseUrl = "http://localhost:5000/", RemoteUrl = "http://192.168.1.10:5000", TimeoutSeconds = 60
         });
         _cardReaderOptions = Options.Create(new CardReaderOptions());
+        _offlineOptions = Options.Create(new OfflineModeOptions { LocalApiBaseUrl = "http://localhost:5300" });
     }
 
     private ConfigurationCenterViewModel CreateVm()
@@ -52,7 +54,7 @@ public class ConfigurationCenterViewModelTests
         return new ConfigurationCenterViewModel(
             Substitute.For<IViewModelServices>(),
             _store, _featureToggles, _connectionMode,
-            _clinicOptions, _sessionOptions, _apiOptions, _cardReaderOptions);
+            _clinicOptions, _sessionOptions, _apiOptions, _cardReaderOptions, _offlineOptions);
     }
 
     [Fact]

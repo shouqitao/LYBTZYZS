@@ -30,4 +30,13 @@ internal sealed class ConfigurationHttpApiClient : HttpApiClientBase, IApiClient
 
     public Task<ApiResponse> ValidateProductionAsync()
         => throw new NotSupportedException("ValidateProductionAsync is a remote-only method and is not available in local mode.");
+
+    public Task<ApiResponse<Dictionary<string, string>>> GetSectionAsync(string section)
+        => throw new NotSupportedException("GetSectionAsync is a remote-only method and is not available in local mode.");
+
+    public Task<ApiResponse<ConfigUpdateResultDto>> UpdateSectionAsync(string section, Dictionary<string, string> values)
+        => throw new NotSupportedException("UpdateSectionAsync is a remote-only method and is not available in local mode.");
+
+    public Task<ApiResponse> RestartAsync()
+        => throw new NotSupportedException("RestartAsync is a remote-only method and is not available in local mode.");
 }

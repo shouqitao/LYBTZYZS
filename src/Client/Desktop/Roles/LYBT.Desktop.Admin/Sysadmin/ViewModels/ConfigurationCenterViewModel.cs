@@ -1,3 +1,4 @@
+using System.Net.Http;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
@@ -23,6 +24,7 @@ public partial class ConfigurationCenterViewModel : NavigableViewModelBase
     private readonly IOptions<ClientSessionOptions> _sessionOptions;
     private readonly IOptions<ApiClientOptions> _apiOptions;
     private readonly IOptions<CardReaderOptions> _cardReaderOptions;
+    private readonly IOptions<OfflineModeOptions> _offlineOptions;
 
     // ── 组 1：诊所信息（热更新） ──
     [ObservableProperty] private string _clinicName = string.Empty;
@@ -54,6 +56,9 @@ public partial class ConfigurationCenterViewModel : NavigableViewModelBase
     [ObservableProperty] private string _statusMessage = string.Empty;
     [ObservableProperty] private bool _isSaving;
 
+    /// <summary>本地模式（决策 B: 本地配置生效 = 重启内嵌 LocalWebAPI）</summary>
+    [ObservableProperty] private bool _isLocalMode;
+
     /// <summary>重复药材合并策略取值（功能开关组）</summary>
     public static string[] MergeStrategies { get; } = { "Skip", "Update", "Error", "Max" };
 
@@ -65,7 +70,8 @@ public partial class ConfigurationCenterViewModel : NavigableViewModelBase
         IOptions<ClinicSettingsOptions> clinicOptions,
         IOptions<ClientSessionOptions> sessionOptions,
         IOptions<ApiClientOptions> apiOptions,
-        IOptions<CardReaderOptions> cardReaderOptions)
+        IOptions<CardReaderOptions> cardReaderOptions,
+        IOptions<OfflineModeOptions> offlineOptions)
         : base(services)
     {
         _store = store;
@@ -75,6 +81,7 @@ public partial class ConfigurationCenterViewModel : NavigableViewModelBase
         _sessionOptions = sessionOptions;
         _apiOptions = apiOptions;
         _cardReaderOptions = cardReaderOptions;
+        _offlineOptions = offlineOptions;
         LoadFromOptions();
     }
 
@@ -103,6 +110,39 @@ public partial class ConfigurationCenterViewModel : NavigableViewModelBase
 
         var card = _cardReaderOptions.Value ?? new CardReaderOptions();
         CardReaderStatus = $"UsbPort={card.UsbPort} · ConnectTimeout={card.ConnectTimeout}ms · ReadTimeout={card.ReadTimeout}ms（完整诊断归 US-SHELL-019）";
+
+        IsLocalMode = _connectionMode.IsLocal;
+    }
+
+    /// <summary>
+    /// 重启本地内嵌服务（SHELL-018 Phase 3 决策 B: 本地配置生效 = 重启 LocalWebAPI——Desktop 会话不丢）
+    /// </summary>
+    [RelayCommand]
+    private async Task RestartLocalServiceAsync()
+    {
+        var confirm = System.Windows.MessageBox.Show(
+            "将重启本地内嵌服务（30 秒后生效，本地模式短暂不可用）。确认继续？",
+            "确认重启本地服务",
+            System.Windows.MessageBoxButton.OKCancel,
+            System.Windows.MessageBoxImage.Warning);
+        if (confirm != System.Windows.MessageBoxResult.OK)
+            return;
+
+        try
+        {
+            // 本地 API 地址（OfflineMode:LocalApiBaseUrl——本地模式服务端面板语义）
+            var config = _offlineOptions.Value?.LocalApiBaseUrl ?? "http://localhost:5300";
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+            var response = await client.PostAsync($"{config.TrimEnd('/')}/api/v1/configuration/restart", null);
+            StatusMessage = response.IsSuccessStatusCode
+                ? "本地服务重启已调度（30 秒后生效，内嵌服务自动拉起）"
+                : $"重启请求失败（HTTP {(int)response.StatusCode}）——需系统管理员权限";
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "[CFG-CENTER] 本地服务重启失败");
+            StatusMessage = "重启请求失败，请确认本地服务运行中";
+        }
     }
 
     // ── 保存命令 ──

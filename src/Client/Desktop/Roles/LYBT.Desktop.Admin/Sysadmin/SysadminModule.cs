@@ -21,6 +21,7 @@ public class SysadminModule : IModule
         // 注册 VM（Prism ViewModelLocator 需要从容器解析）
         containerRegistry.Register<ViewModels.SysadminHomeViewModel>();
         containerRegistry.Register<ViewModels.ConfigurationCenterViewModel>();
+        containerRegistry.Register<ViewModels.ServerConfigSectionViewModel>();
         containerRegistry.Register<ViewModels.LogLevelControlViewModel>();
         containerRegistry.Register<ViewModels.DeploymentViewModel>();
         containerRegistry.Register<ViewModels.BackupManagementViewModel>();
