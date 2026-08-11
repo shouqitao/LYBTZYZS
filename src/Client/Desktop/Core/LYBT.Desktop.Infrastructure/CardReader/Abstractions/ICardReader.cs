@@ -59,6 +59,12 @@ public interface ICardReader : IDisposable
     Task<bool> DetectCardAsync();
 
     /// <summary>
+    /// 获取设备信息（SHELL-019: 诊断面板展示——默认实现返回基础信息，厂家可覆盖）
+    /// </summary>
+    CardReaderDeviceInfo GetDeviceInfo()
+        => new(Name, Vendor, Model, IsConnected, "驱动未暴露固件接口");
+
+    /// <summary>
     /// 读卡器连接状态变化事件
     /// </summary>
     event EventHandler<CardReaderConnectionEventArgs>? ConnectionStateChanged;

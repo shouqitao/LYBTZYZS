@@ -27,6 +27,7 @@ public class CardReaderModule : IModule
     {
         // 注册工厂（单例）
         containerRegistry.RegisterSingleton<ICardReaderFactory, CardReaderFactory>();
+        containerRegistry.RegisterSingleton<ICardReaderDiagnostics, CardReaderDiagnosticsService>();
 
         // 注册服务（单例，整个应用共享一个读卡器实例）
         containerRegistry.RegisterSingleton<ICardReaderService, CardReaderService>();

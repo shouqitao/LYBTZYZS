@@ -179,8 +179,8 @@
 | US-SHELL-014 | Should | ADR-0008 | — | SecurityAuditLog + Service | SysadminHomeView | A12 | 🧲 v1.0 待实现（D3） |
 | US-SHELL-016 | Could | — | — | 导出/导入 JSON 按钮 | SysadminHomeView | X3.2 | 🧲 v1.0 待实现 |
 | US-SHELL-017 | Must | ADR-0005/0008 | — | SystemAdminOptions + DefaultPasswordService | SystemAdminOptions.cs | — | ✅ 已实现 |
-| US-SHELL-018 | Must | ADR-0006/0014 | — | SysadminHomeView | SysadminHomeView.xaml + ConfigurationCenterViewModel.cs + ServerConfigSectionViewModel.cs | S3 | ⚠️ 9/10 AC ✅（Phase 1-3 全完成：服务端 API/sections/restart + 客户端 5 组面板 + 双模式 Tab 布局 + 备份恢复嵌入 + 本地重启决策 B；读卡器参数 AC 占位归 US-SHELL-019） |
-| US-SHELL-019 | Should | — | — | ICardReaderDiagnostics | ICardReader/ICardReaderFactory | S3 | 🧲 v1.0 待实现（读卡器诊断 ICardReaderDiagnostics 不存在） |
+| US-SHELL-018 | Must | ADR-0006/0014 | — | SysadminHomeView | SysadminHomeView.xaml + ConfigurationCenterViewModel.cs + ServerConfigSectionViewModel.cs | S3 | ✅ 10/10 AC（Phase 1-3 + 读卡器组经 US-SHELL-019 完成） |
+| US-SHELL-019 | Should | — | — | ICardReaderDiagnostics | CardReaderDiagnosticsService.cs + CardReaderDiagnosticsViewModel.cs | S3 | ✅ 已实现（8/8 AC：厂家选择/探测/读卡测试/固件（驱动未暴露→提示）/手动参数覆盖/持久化/医生无感；串口测试=USB 链路握手——HD100 无独立串口协议） |
 
 > US-SHELL-015 已撤销（并入 US-SHELL-013），不计入总数。
 
@@ -271,7 +271,7 @@
 | SYS | 9 | 9 | 0 | 0 | 0 | 0 |
 | CARD | 2 | 1 | 1 | 0 | 0 | 0 |
 | REPORT | 4 | 4 | 0 | 0 | 0 | 0 |
-| **合计** | **147** | **137** | **3** | **1** | **6** | **0** |
+| **合计** | **147** | **139** | **3** | **1** | **4** | **0** |
 
 > R2-补 全量重扫（2026-08-11 v1.2）：状态列同步 T4/T5/T7/T8/P1-P3 修复（40 处校准）。🔴 5 项 = MC-008/009/018（历史聚合/批量详情缺失）+ HERB-005（删除无引用检查）+ SHELL-018（配置中心未实现）；⚠️ 7 项 = AUTH-002（本地锁定显式关闭）+ HERB-006（服务端 Excel 解析路径）+ SHELL-007（双模切换守卫）+ ERR-006/007（异常体系）+ CARD-002（降级链已移除）；🧲 7 项 = REG-002（QuickVisit 待接线）+ SHELL-011/012/016/019 等规划项。> R2 校准（2026-08-11）：状态列同步至代码实际（依据 R1 矩阵 + T4 修复）。🔴 10 项 = FORM-003/004/010（丢药材/降级缺失）+ MC-008/009/018（历史聚合/批量详情缺失）+ HERB-005（删除无引用检查）+ SHELL-013（备份恢复全无）+ CFG-004（FeatureToggle 消失）等；🧲 7 项 = REG-002 QuickVisit 待接线 + SHELL-011/016/018/019/012 等规划项；⚠️ 30 项为有代码但缺关键面（权限过滤/服务端守卫/AC 校验等，详见 R1 矩阵报告）。
 

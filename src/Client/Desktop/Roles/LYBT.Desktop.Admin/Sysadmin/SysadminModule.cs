@@ -22,6 +22,7 @@ public class SysadminModule : IModule
         containerRegistry.Register<ViewModels.SysadminHomeViewModel>();
         containerRegistry.Register<ViewModels.ConfigurationCenterViewModel>();
         containerRegistry.Register<ViewModels.ServerConfigSectionViewModel>();
+        containerRegistry.Register<ViewModels.CardReaderDiagnosticsViewModel>();
         containerRegistry.Register<ViewModels.LogLevelControlViewModel>();
         containerRegistry.Register<ViewModels.DeploymentViewModel>();
         containerRegistry.Register<ViewModels.BackupManagementViewModel>();

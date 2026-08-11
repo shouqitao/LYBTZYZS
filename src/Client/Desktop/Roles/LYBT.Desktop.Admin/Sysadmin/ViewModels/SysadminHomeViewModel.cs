@@ -30,6 +30,10 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
     [ObservableProperty]
     private ServerConfigSectionViewModel _serverConfig;
 
+    /// <summary>读卡器诊断面板（SHELL-019: 测试模式——双模式同硬件）</summary>
+    [ObservableProperty]
+    private CardReaderDiagnosticsViewModel _cardReaderDiagnostics;
+
     [ObservableProperty]
     private bool _isRemoteMode;
 
@@ -42,7 +46,8 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
         IClinicSettingsService clinicSettings,
         IConnectionModeService connectionMode,
         ConfigurationCenterViewModel configCenter,
-        ServerConfigSectionViewModel serverConfig)
+        ServerConfigSectionViewModel serverConfig,
+        CardReaderDiagnosticsViewModel cardReaderDiagnostics)
         : base(services)
     {
         _authHealthService = authHealthService;
@@ -50,6 +55,7 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
         _connectionMode = connectionMode;
         ConfigCenter = configCenter;
         ServerConfig = serverConfig;
+        CardReaderDiagnostics = cardReaderDiagnostics;
         UpdateModeFlags();
         _connectionMode.ModeChanged += OnModeChanged;
         PageTitle = "运维控制台";

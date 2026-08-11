@@ -187,9 +187,61 @@
                                 Command="{Binding ConfigCenter.SaveFeatureTogglesCommand}"
                                 HorizontalAlignment="Right" Padding="16,6" Margin="0,0,0,12" />
 
-                        <!-- 读卡器（只读占位） -->
-                        <TextBlock Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Text="读卡器（诊断归 US-SHELL-019）" Margin="0,8,0,8" />
-                        <TextBlock Text="{Binding ConfigCenter.CardReaderStatus}" FontSize="12" Opacity="0.7" Margin="0,0,0,12" />
+                        <!-- 读卡器诊断（SHELL-019: 测试模式——厂家选择/探测/读卡/参数覆盖/持久化） -->
+                        <TextBlock Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Text="读卡器诊断" Margin="0,8,0,8" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,12,8">
+                                <TextBlock Text="厂家选择" FontSize="12" Opacity="0.7" />
+                                <ComboBox ItemsSource="{Binding CardReaderDiagnostics.ReaderTypes}"
+                                          SelectedItem="{Binding CardReaderDiagnostics.SelectedReaderType}"
+                                          Padding="8,4" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="12,0,12,8">
+                                <TextBlock Text="USB 端口（仅自动检测失败时覆盖）" FontSize="12" Opacity="0.7" />
+                                <TextBox Text="{Binding CardReaderDiagnostics.UsbPort, UpdateSourceTrigger=PropertyChanged}" Padding="8,6" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Margin="12,0,0,8">
+                                <TextBlock Text="连接/读取超时（毫秒）" FontSize="12" Opacity="0.7" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding CardReaderDiagnostics.ConnectTimeout, UpdateSourceTrigger=PropertyChanged}" Padding="8,6" Margin="0,0,6,0" />
+                                    <TextBox Grid.Column="1" Text="{Binding CardReaderDiagnostics.ReadTimeout, UpdateSourceTrigger=PropertyChanged}" Padding="8,6" />
+                                </Grid>
+                            </StackPanel>
+                            <Button Grid.Column="3" Content="运行诊断"
+                                    Command="{Binding CardReaderDiagnostics.RunDiagnosticsCommand}"
+                                    Padding="16,6" VerticalAlignment="Bottom" Margin="0,0,0,8" />
+                        </Grid>
+
+                        <!-- 诊断报告 -->
+                        <Border BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}" BorderThickness="1"
+                                CornerRadius="4" Padding="12,8" Margin="0,0,0,8" MaxHeight="160">
+                            <ItemsControl ItemsSource="{Binding CardReaderDiagnostics.ReportLines}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" FontSize="12" Margin="0,1" TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,12">
+                            <TextBlock Text="{Binding CardReaderDiagnostics.StatusMessage}"
+                                       Foreground="{DynamicResource MaterialDesign.Brush.Primary}" FontSize="12"
+                                       VerticalAlignment="Center" Margin="0,0,12,0" />
+                            <Button Content="保存配置（测试通过后）"
+                                    Command="{Binding CardReaderDiagnostics.SaveSettingsCommand}"
+                                    Padding="16,6" />
+                        </StackPanel>
 
                         <!-- 本地模式：重启内嵌服务（决策 B——本地配置生效 = 重启 LocalWebAPI） -->
                         <Button Content="重启本地服务（使配置生效）"
