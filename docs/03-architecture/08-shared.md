@@ -1,6 +1,6 @@
 # 共享层架构
 
-> **v1.6（2026-08-08）**：按实际 5 项目结构重写（原文档声称 8 项目，实际 5 项目，Primitives/Utilities/Components/Validators 已坍缩为 `LYBT.Shared.Models` 内文件夹）。结构审计依据：`docs/compose/reports/structure-audit-2026-08-08.md` + `docs/compose/reports/structure-audit-mimo-2026-08-08.md` 交叉验证（D1/D2 偏差）。
+> **v1.6（2026-08-08）**：按实际 5 项目结构重写（原文档声称 8 项目，实际 5 项目，Primitives/Utilities/Components/Validators 已坍缩为 `LYBT.Shared.Models` 内文件夹）。结构审计依据：A-16 结构审计报告（compose 过程报告，已归档删除）。
 
 ## 概述
 

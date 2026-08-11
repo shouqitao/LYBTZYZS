@@ -2,7 +2,7 @@
 
 > 版本: v1.5 | 日期: 2026-08-09 | 维护者: 技术总监
 > **本蓝图是全项目结构的唯一权威设计文档**——每个 project 的职责、每个 class 的设计依据，都可在此追溯。
-> 依据来源：A-16 全局审计（`docs/compose/reports/structure-audit-2026-08-08.md`）+ 模块级审计（`docs/compose/reports/structure-audit-module-level-2026-08-08.md`）+ 逐 class 验证（`docs/compose/reports/structure-audit-perclass-*-2026-08-08.md`）+ 双交叉验证 + 16 份 ADR + 架构文档（00-architecture-summary / 03-server / 05-dual-mode / 08-shared / 06-error-handling / 09-security-architecture / 07-configuration）+ 86 条架构测试守卫。
+> 依据来源：A-16 全局审计 + 模块级审计 + 逐 class 验证（compose 过程报告，已归档删除）+ 双交叉验证 + 16 份 ADR + 架构文档（00-architecture-summary / 03-server / 05-dual-mode / 08-shared / 06-error-handling / 09-security-architecture / 07-configuration）+ 86 条架构测试守卫。
 > 文档与代码冲突时以本蓝图为设计态定义，代码须按蓝图演进。
 
 ---
@@ -198,7 +198,7 @@
 > - **禁止**：Controller 层混用同一操作两条路径（如 Update 既走 Service 又走 Handler）；写操作绕过 Handler 直接调 Repository
 > - MedicalCase（纯 Service 化）/Reports（只读聚合）为已定案例外，不适用本规则
 >
-> 依据：A-26 收敛审查（`docs/compose/reports/structure-convergence-mimo-2026-08-08.md` §2.2）——「读走 Service + 写走 Handler」正是 CQRS 经典形态，当前代码方向正确，缺的是规则固化；技术总监判断「移除次要（Service 写操作丢验证管道）保留优秀（Handler 管道 + Service 读直查）」。
+> 依据：A-26 收敛审查报告（compose 过程报告，已归档删除）§2.2——「读走 Service + 写走 Handler」正是 CQRS 经典形态，当前代码方向正确，缺的是规则固化；技术总监判断「移除次要（Service 写操作丢验证管道）保留优秀（Handler 管道 + Service 读直查）」。
 
 ### 2.3 Services：LYBT.WebAPI（30 文件）
 
