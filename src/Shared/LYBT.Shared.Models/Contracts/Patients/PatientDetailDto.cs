@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Attributes;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Contracts.Patients;
@@ -32,11 +33,13 @@ public class PatientDetailDto : IAuditable
 
     /// <summary>身份证号</summary>
     [DisplayName("身份证号")]
-    public string? IdNumber { get; set; }
+        [SensitiveData]
+public string? IdNumber { get; set; }
 
     /// <summary>手机号码</summary>
     [DisplayName("手机号码")]
-    public string? PhoneNumber { get; set; }
+        [SensitiveData]
+public string? PhoneNumber { get; set; }
 
     /// <summary>拼音码</summary>
     [DisplayName("拼音码")]

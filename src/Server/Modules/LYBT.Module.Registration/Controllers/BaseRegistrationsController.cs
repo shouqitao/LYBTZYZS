@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Web;
 using LYBT.Module.Registrations.Application.Commands;
 using LYBT.Module.Registrations.Application.Queries;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Contracts.Registration;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -30,6 +31,8 @@ public abstract class BaseRegistrationsController : BaseCrudController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? keyword = null,
+        [FromQuery] UserRole? role = null,
+        [FromQuery] CommonStatus? status = null,
         CancellationToken ct = default)
     {
         var startDate = HttpContext.Request.Query.TryGetValue("startDate", out var sd) && DateTime.TryParse(sd, out var s) ? s : (DateTime?)null;

@@ -7,6 +7,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -46,6 +47,8 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,
+            [FromQuery] UserRole? role = null,
+            [FromQuery] CommonStatus? status = null,
             CancellationToken ct = default)
         {
             if (ValidatePagination(page, pageSize) is { } error) return error;
@@ -73,9 +76,13 @@ namespace LYBT.WebAPI.Controllers
         {
             if (ValidateGuid(id, "医案ID") is { } error) return error;
 
-            var result = await _medicalCaseQueryService.GetDetailDtoAsync(id, ct);
+            var (operatorId, _, operatorRole) = GetOperator();
+            var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+            var result = await _medicalCaseQueryService.GetDetailDtoAsync(id, operatorId, isAdmin, ct);
             if (!result.IsSuccess)
-                return NotFound(result.Error ?? "医案不存在");
+                return result.ModuleErrorCode == ErrorCode.Forbidden
+                    ? Forbid(result.Error ?? "无权限查看该医案")
+                    : NotFound(result.Error ?? "医案不存在");
 
             return Success(result.Value!, "查询成功");
         }
@@ -282,6 +289,10 @@ namespace LYBT.WebAPI.Controllers
         {
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+
+            // T5-1 #8 (US-MC-012): 强制关闭仅限 Admin/SuperAdmin（Doctor 无 force-close 权限）
+            if (!isAdmin)
+                return Forbid("仅管理员可强制关闭医案");
 
             // 直接调用 StateService 关闭医案
             var entity = await _medicalCaseStateService.CompleteAsync(id, operatorId, isAdmin, skipWorkflowValidation: true, cancellationToken: ct);

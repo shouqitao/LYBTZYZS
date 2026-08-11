@@ -32,6 +32,10 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand,
         if (user == null)
             return Result<ResetPasswordResult>.Failure(ErrorCode.UserNotFound, ErrorMessages.Get(ErrorCode.UserNotFound));
 
+        // T5-1 #12 (US-USER-007): sysadmin 密码不可由他人重置（管理员界面排除 sysadmin；其改密走 change-password）
+        if (user.IsSysAdmin)
+            return Result<ResetPasswordResult>.Failure(ErrorCode.InvalidRequest, "系统管理员密码不可被重置");
+
         var newPassword = PasswordHelper.GenerateSecurePassword();
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
         var result = await _userManager.ResetPasswordAsync(user, token, newPassword);

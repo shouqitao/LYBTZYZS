@@ -39,6 +39,8 @@ public class PatientsController : BaseCrudController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? keyword = null,
+        [FromQuery] UserRole? role = null,
+        [FromQuery] CommonStatus? status = null,
         CancellationToken ct = default)
     {
         if (ValidatePagination(page, pageSize) is { } error) return error;

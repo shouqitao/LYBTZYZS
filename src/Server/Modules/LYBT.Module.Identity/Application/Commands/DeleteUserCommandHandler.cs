@@ -31,6 +31,10 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Resul
         if (!request.IsAdmin)
             return Result.Failure(ErrorCode.Unauthorized, "无权删除用户");
 
+        // T5-1 #12 (US-USER-006): 不可删除自己（原仅批量路径有检查）
+        if (request.Id == request.CurrentUserId)
+            return Result.Failure(ErrorCode.InvalidRequest, "不能删除当前登录账号");
+
         var user = await _userRepository.GetByIdAsync(request.Id, cancellationToken);
         if (user == null)
             return Result.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.UserNotFound));

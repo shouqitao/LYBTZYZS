@@ -51,8 +51,10 @@ public abstract class BaseMedicalCasesController : BaseCrudController
     {
         if (ValidatePagination(page, pageSize) is { } error) return error;
 
+        var (operatorId, _, operatorRole) = GetOperator();
+        var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
         var result = await _medicalCaseQueryService.SearchMedicalCasesAsync(
-            patientName, diagnosisKeyword, startDate, endDate, page, pageSize, ct);
+            patientName, diagnosisKeyword, startDate, endDate, page, pageSize, operatorId, isAdmin, ct);
 
         return Success(result, "搜索成功");
     }
@@ -107,7 +109,9 @@ public abstract class BaseMedicalCasesController : BaseCrudController
         CancellationToken ct = default)
     {
         if (ValidatePagination(page, pageSize) is { } error) return error;
-        var result = await _medicalCaseQueryService.GetAuditLogsAsync(id, page, pageSize, ct);
+        var (operatorId, _, operatorRole) = GetOperator();
+        var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+        var result = await _medicalCaseQueryService.GetAuditLogsAsync(id, page, pageSize, operatorId, isAdmin, ct);
         if (!result.IsSuccess)
             return NotFound(result.Error ?? "医案不存在");
         return Success(result.Value!, "查询成功");

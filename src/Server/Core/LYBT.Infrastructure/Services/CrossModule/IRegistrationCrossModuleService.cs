@@ -20,6 +20,11 @@ public interface IRegistrationCrossModuleService
     /// 关联挂号到医案
     /// </summary>
     Task LinkRegistrationToMedicalCaseAsync(Guid registrationId, Guid medicalCaseId, CancellationToken ct = default);
+
+    /// <summary>
+    /// 指定医生是否有待诊（Waiting）挂号（T5-1 #12 US-REG-BR-006: 有待诊挂号禁止禁用医生）
+    /// </summary>
+    Task<bool> HasWaitingRegistrationsAsync(Guid doctorId, CancellationToken ct = default);
 }
 
 

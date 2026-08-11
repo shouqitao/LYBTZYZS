@@ -1,5 +1,6 @@
 using MediatR;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -30,6 +31,8 @@ public abstract class BaseCrudController : BaseApiController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? keyword = null,
+        [FromQuery] UserRole? role = null,
+        [FromQuery] CommonStatus? status = null,
         CancellationToken ct = default)
         => throw new NotSupportedException("请 override GetList 方法");
 

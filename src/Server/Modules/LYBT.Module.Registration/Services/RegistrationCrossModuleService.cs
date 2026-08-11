@@ -48,6 +48,15 @@ public class RegistrationCrossModuleService : IRegistrationCrossModuleService
         await _registrationRepository.SaveChangesAsync(ct);
     }
 
+    /// <summary>
+    /// 指定医生是否有待诊挂号（T5-1 #12 US-REG-BR-006）
+    /// </summary>
+    public async Task<bool> HasWaitingRegistrationsAsync(Guid doctorId, CancellationToken ct = default)
+    {
+        var waiting = await _registrationRepository.GetWaitingQueueAsync(doctorId: doctorId, cancellationToken: ct);
+        return waiting.Count > 0;
+    }
+
     public async Task LinkRegistrationToMedicalCaseAsync(Guid registrationId, Guid medicalCaseId, CancellationToken ct = default)
     {
         var registration = await _registrationRepository.GetByIdAsync(registrationId, ct);

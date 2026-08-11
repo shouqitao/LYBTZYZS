@@ -160,6 +160,8 @@ namespace LYBT.Module.MedicalCases.Services
             DateTime? endDate = null,
             int page = 1,
             int pageSize = 20,
+            Guid? operatorId = null,
+            bool isAdmin = false,
             CancellationToken cancellationToken = default)
         {
             // eliminate-service-catch-return: 移除冗余try-catch-rethrow，异常由IExceptionHandler统一处理
@@ -170,6 +172,12 @@ namespace LYBT.Module.MedicalCases.Services
             // DB 层分页：QueryPagedAsync 在 DB 完成筛选 + 排序 + 分页（已包含 Include 预加载）
             var paged = await _repository.QueryPagedAsync(
                 patientName, startDate, endDate, diagnosisKeyword, page, pageSize, cancellationToken);
+
+            // T5-1 #8 (US-MC-007): Doctor 仅搜索本人医案（Admin/SuperAdmin 全量）
+            if (!isAdmin && operatorId.HasValue)
+            {
+                paged.Items = paged.Items.Where(c => c.CreatedBy == operatorId.Value).ToList();
+            }
 
             // 映射为DTO（包含嵌套Consultation/Prescription）
             var dtos = _mapper.ToDetailDtos(paged.Items);
@@ -330,11 +338,19 @@ namespace LYBT.Module.MedicalCases.Services
         /// <summary>
         /// 根据ID获取医案详情DTO（含NotFound语义）
         /// </summary>
-        public async Task<Result<MedicalCaseDetailDto>> GetDetailDtoAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Result<MedicalCaseDetailDto>> GetDetailDtoAsync(
+            Guid id,
+            Guid? operatorId = null,
+            bool isAdmin = false,
+            CancellationToken cancellationToken = default)
         {
             var medicalCase = await _repository.GetByIdWithDetailsAsync(id, cancellationToken);
             if (medicalCase == null)
                 return Result<MedicalCaseDetailDto>.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.McCaseNotFound));
+
+            // T5-1 #8 (US-MC-004): Doctor 仅可查看本人医案（Admin/SuperAdmin 全量）
+            if (!isAdmin && operatorId.HasValue && medicalCase.CreatedBy != operatorId.Value)
+                return Result<MedicalCaseDetailDto>.Failure(ErrorCode.Forbidden, "无权限查看该医案");
 
             var dto = _mapper.MapToMedicalCaseDetailDto(medicalCase);
             return Result<MedicalCaseDetailDto>.Success(dto);
@@ -344,9 +360,12 @@ namespace LYBT.Module.MedicalCases.Services
         /// 获取医案审计日志（分页）
         /// </summary>
         public async Task<Result<PagedResult<AuditLogDto>>> GetAuditLogsAsync(
-            Guid caseId, int page, int pageSize, CancellationToken cancellationToken = default)
+            Guid caseId, int page, int pageSize, Guid? operatorId = null, bool isAdmin = false, CancellationToken cancellationToken = default)
         {
             var medicalCase = await _repository.GetByIdWithDetailsAsync(caseId, cancellationToken);
+            // T5-1 #8 (US-MC-017): Doctor 仅可查看本人医案审计（Admin/SuperAdmin 全量）
+            if (!isAdmin && operatorId.HasValue && medicalCase.CreatedBy != operatorId.Value)
+                return Result<PagedResult<AuditLogDto>>.Failure(ErrorCode.Forbidden, "无权限查看该医案审计日志");
             if (medicalCase == null)
                 return Result<PagedResult<AuditLogDto>>.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.McCaseNotFound));
 

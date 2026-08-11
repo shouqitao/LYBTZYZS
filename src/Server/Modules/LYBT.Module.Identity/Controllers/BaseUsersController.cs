@@ -38,11 +38,14 @@ public abstract class BaseUsersController : BaseCrudController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? keyword = null,
+        [FromQuery] UserRole? role = null,
+        [FromQuery] CommonStatus? status = null,
         CancellationToken ct = default)
     {
         if (ValidatePagination(page, pageSize) is { } error) return error;
 
-        var result = await _userService.GetPagedAsync(page, pageSize, keyword, ct);
+        // T5-1 #12 (US-USER-001): role/status 筛选参数接线（原 Service 层丢参）
+        var result = await _userService.GetPagedAsync(page, pageSize, keyword, role, status, ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "查询失败");
         return SuccessPaged(result.Value, "查询成功");

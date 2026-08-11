@@ -5,6 +5,7 @@ using LYBT.Module.Identity.Infrastructure;
 using LYBT.Module.Identity.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -37,9 +38,9 @@ public class UserService : IUserCrossModuleService
 
     // ── 读服务（Controller 直查）──
 
-    public async Task<Result<PagedResult<UserListDto>>> GetPagedAsync(int page, int pageSize, string? keyword, CancellationToken ct)
+    public async Task<Result<PagedResult<UserListDto>>> GetPagedAsync(int page, int pageSize, string? keyword, UserRole? role = null, CommonStatus? status = null, CancellationToken ct = default)
     {
-        var result = await _userRepository.GetPagedAsync(page, pageSize, keyword, null, null, ct);
+        var result = await _userRepository.GetPagedAsync(page, pageSize, keyword, role, status, ct);
         var dtos = result.Items.Select(IdentityMapper.ToListDto).ToList();
         var pagedResult = new PagedResult<UserListDto>
         {

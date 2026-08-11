@@ -98,6 +98,20 @@ public class RegistrationRepository : IRegistrationRepository
     }
 
     /// <inheritdoc/>
+    /// <summary>
+    /// 患者当日是否已有待诊挂号（T5-1 #9 US-REG-BR-007）
+    /// </summary>
+    public async Task<bool> HasSameDayWaitingAsync(Guid patientId, CancellationToken cancellationToken = default)
+    {
+        var today = DateTime.Today;
+        return await _context.Registrations
+            .AsNoTracking()
+            .AnyAsync(r => !r.IsDeleted
+                && r.PatientId == patientId
+                && r.Status == RegistrationStatus.Waiting
+                && r.CreatedAt.Date == today, cancellationToken);
+    }
+
     public async Task<int> GetTodayMaxQueueNumberAsync(CancellationToken cancellationToken = default)
     {
         var today = DateTime.UtcNow.Date;

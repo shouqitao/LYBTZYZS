@@ -100,10 +100,18 @@ namespace LYBT.Entities.Registrations
     }
 
     /// <summary>
-    /// 取消挂号
+    /// 取消挂号（T5-1 #9: 服务端守卫——原无条件置 Cancelled，校验全在 Desktop UI，绕过 UI 可取消任意挂号）
     /// </summary>
     public void Cancel()
     {
+        // REG-BR-008: 仅等待中的挂号可取消
+        if (Status != RegistrationStatus.Waiting)
+            throw new InvalidOperationException("只有等待中的挂号可以取消");
+
+        // REG-BR-001: 已关联医案的挂号不可取消（应通过医案取消联动）
+        if (MedicalCaseId.HasValue)
+            throw new InvalidOperationException("该挂号已关联医案，请通过医案操作取消");
+
         Status = RegistrationStatus.Cancelled;
         UpdatedAt = DateTime.UtcNow;
     }

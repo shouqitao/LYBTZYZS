@@ -4,6 +4,7 @@ using LYBT.Module.Registrations.Interfaces;
 using LYBT.Shared.Models.Contracts.Registration;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using MediatR;
 
 namespace LYBT.Module.Registrations.Application.Commands;
@@ -32,6 +33,11 @@ public sealed class CreateRegistrationCommandHandler
         CreateRegistrationCommand request, CancellationToken cancellationToken)
     {
         var dto = request.Input;
+
+        // T5-1 #9 (US-REG-BR-007): 患者当日已有待诊挂号则拒绝（同日重复挂号保护）
+        var hasSameDayWaiting = await _repository.HasSameDayWaitingAsync(dto.PatientId, cancellationToken);
+        if (hasSameDayWaiting)
+            return Result<RegistrationDetailDto>.Failure(ErrorCode.InvalidRequest, "该患者今日已有待诊挂号，请勿重复挂号");
 
         var maxQueueNumber = await _repository.GetTodayMaxQueueNumberAsync(cancellationToken);
 

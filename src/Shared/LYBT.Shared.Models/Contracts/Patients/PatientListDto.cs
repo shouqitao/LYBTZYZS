@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using LYBT.Shared.Models.Attributes;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Contracts.Patients;
@@ -27,7 +28,8 @@ public class PatientListDto
 
     /// <summary>手机号码</summary>
     [DisplayName("手机号码")]
-    public string? PhoneNumber { get; set; }
+        [SensitiveData]
+public string? PhoneNumber { get; set; }
 
     /// <summary>拼音码</summary>
     [DisplayName("拼音码")]

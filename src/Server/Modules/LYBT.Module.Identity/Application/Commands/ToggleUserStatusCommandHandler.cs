@@ -1,4 +1,5 @@
 using MediatR;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Identity.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
@@ -14,15 +15,18 @@ public class ToggleUserStatusCommandHandler : IRequestHandler<ToggleUserStatusCo
     private readonly IUserRepository _userRepository;
     private readonly IAuthSessionRepository _authSessionRepository;
     private readonly ISecurityAuditService _securityAuditService;
+    private readonly IRegistrationCrossModuleService _registrationService;
 
     public ToggleUserStatusCommandHandler(
         IUserRepository userRepository,
         IAuthSessionRepository authSessionRepository,
-        ISecurityAuditService securityAuditService)
+        ISecurityAuditService securityAuditService,
+        IRegistrationCrossModuleService registrationService)
     {
         _userRepository = userRepository;
         _authSessionRepository = authSessionRepository;
         _securityAuditService = securityAuditService;
+        _registrationService = registrationService;
     }
 
     public async Task<Result<UserDetailDto>> Handle(
@@ -41,6 +45,14 @@ public class ToggleUserStatusCommandHandler : IRequestHandler<ToggleUserStatusCo
         var newStatus = user.Status == CommonStatus.Enabled
             ? CommonStatus.Disabled
             : CommonStatus.Enabled;
+
+        // T5-1 #12 (US-REG-BR-006): 有待诊（Waiting）挂号的医生禁止禁用
+        if (newStatus == CommonStatus.Disabled && user.Role == UserRole.Doctor)
+        {
+            var hasWaiting = await _registrationService.HasWaitingRegistrationsAsync(user.Id, cancellationToken);
+            if (hasWaiting)
+                return Result<UserDetailDto>.Failure(ErrorCode.InvalidRequest, "该医生有待诊挂号，无法禁用");
+        }
 
         user.ChangeStatus(newStatus, request.CurrentUserId);
         await _userRepository.UpdateAsync(user, cancellationToken);

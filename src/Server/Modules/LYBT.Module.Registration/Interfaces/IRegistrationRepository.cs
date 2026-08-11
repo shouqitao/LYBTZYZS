@@ -51,6 +51,11 @@ public interface IRegistrationRepository
     Task<Registration?> GetByMedicalCaseIdAsync(Guid medicalCaseId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// 患者当日是否已有待诊挂号（T5-1 #9 US-REG-BR-007: 同日重复挂号阻止）
+    /// </summary>
+    Task<bool> HasSameDayWaitingAsync(Guid patientId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// 新增挂号记录
     /// </summary>
     Task AddAsync(Registration registration, CancellationToken cancellationToken = default);

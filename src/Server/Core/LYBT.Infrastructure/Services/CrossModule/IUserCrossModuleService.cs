@@ -1,5 +1,6 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Infrastructure.Services.CrossModule;
 
@@ -12,7 +13,7 @@ public interface IUserCrossModuleService
     // ── 读服务（原 Users 模块 IUserCrossModuleService，Controller 直查）──
 
     /// <summary>分页查询用户</summary>
-    Task<Result<PagedResult<UserListDto>>> GetPagedAsync(int page, int pageSize, string? keyword, CancellationToken ct);
+    Task<Result<PagedResult<UserListDto>>> GetPagedAsync(int page, int pageSize, string? keyword, UserRole? role = null, CommonStatus? status = null, CancellationToken ct = default);
 
     /// <summary>按 ID 获取用户详情</summary>
     Task<Result<UserDetailDto>> GetByIdAsync(Guid id, CancellationToken ct);

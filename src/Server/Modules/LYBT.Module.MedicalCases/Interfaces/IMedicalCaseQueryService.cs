@@ -99,7 +99,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
             DateTime? startDate = null,
             DateTime? endDate = null,
             int page = 1,
-            int pageSize = 20,
+            int pageSize = 20, Guid? operatorId = null, bool isAdmin = false,
             CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -124,12 +124,12 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <summary>
         /// 根据ID获取医案详情DTO（含NotFound语义）
         /// </summary>
-        Task<Result<MedicalCaseDetailDto>> GetDetailDtoAsync(Guid id, CancellationToken cancellationToken = default);
+        Task<Result<MedicalCaseDetailDto>> GetDetailDtoAsync(Guid id, Guid? operatorId = null, bool isAdmin = false, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取医案审计日志（分页）
         /// </summary>
-        Task<Result<PagedResult<AuditLogDto>>> GetAuditLogsAsync(Guid caseId, int page, int pageSize, CancellationToken cancellationToken = default);
+        Task<Result<PagedResult<AuditLogDto>>> GetAuditLogsAsync(Guid caseId, int page, int pageSize, Guid? operatorId = null, bool isAdmin = false, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取医案操作权限

@@ -38,6 +38,8 @@ public class MedicalCasesController : BaseMedicalCasesController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? keyword = null,
+        [FromQuery] UserRole? role = null,
+        [FromQuery] CommonStatus? status = null,
         CancellationToken ct = default)
     {
         if (ValidatePagination(page, pageSize) is { } error) return error;
@@ -62,7 +64,9 @@ public class MedicalCasesController : BaseMedicalCasesController
     [HttpGet("{id}")]
     public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
-        var result = await _medicalCaseQueryService.GetDetailDtoAsync(id, ct);
+        var (operatorId, _, operatorRole) = GetOperator();
+        var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+        var result = await _medicalCaseQueryService.GetDetailDtoAsync(id, operatorId, isAdmin, ct);
         if (!result.IsSuccess)
             return NotFound(result.Error ?? "医案不存在");
 
