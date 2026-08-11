@@ -45,7 +45,7 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 | `DoctorOrReceptionist` | Doctor, Receptionist | 患者读写（删除/禁用除外）、挂号、药材/验方查询（读） |
 | `DoctorOrAdminOrReceptionist` | Doctor, Admin, Receptionist | 挂号查看（Admin 只读）等 |
 
-> **权限决策（2026-08-03，四角色需求审查）**：目标态为操作级细分——患者删除/禁用 `AdminOrSuperAdmin`；药材/验方 GET 不含前台；打印 `DoctorOnly`；挂号创建仅前台、接诊/QuickVisit 仅 Doctor、取消仅前台、Admin 只读查看；医案创建 `DoctorOnly`（待新增策略常量）。详见 [04-permissions.md](../01-product/04-permissions.md) 与 [code-gap-fix-list.md](../compose/plans/code-gap-fix-list.md)。
+> **权限决策（2026-08-03，四角色需求审查）**：目标态为操作级细分——患者删除/禁用 `AdminOrSuperAdmin`；药材/验方 GET 不含前台；打印 `DoctorOnly`；挂号创建仅前台、接诊/QuickVisit 仅 Doctor、取消仅前台、Admin 只读查看；医案创建 `DoctorOnly`（待新增策略常量）。详见 [04-permissions.md](../01-product/04-permissions.md)。
 
 > **挂号费字段（2026-08-03 决策）**：Admin 创建/编辑医生（Role=Doctor）时设置 `RegistrationFee`（默认 0），创建挂号（前台/QuickVisit/本地）时自动带出（REG-BR-009）。详见 [08-registration.md](08-registration.md)。
 
@@ -60,7 +60,7 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 - 个人资料（profile/change-password）：仅本人（IDOR 防护：`id == currentUserId`，Admin 也无法修改他人资料）
 - 登录/登出/Token 验证：所有角色（含未登录的 login）
 
-> ⚠️ 业务端点权限目标态（2026-08-03 权限四连决策，代码部分待按操作级细分）见 [04-permissions.md](../01-product/04-permissions.md) 与 [code-gap-fix-list.md](../compose/plans/code-gap-fix-list.md)。
+> ⚠️ 业务端点权限目标态（2026-08-03 权限四连决策，代码部分待按操作级细分）见 [04-permissions.md](../01-product/04-permissions.md)。
 
 ## API 端点（11 个，Remote 和 Local 统一）
 
