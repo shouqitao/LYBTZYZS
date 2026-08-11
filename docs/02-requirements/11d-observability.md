@@ -1,7 +1,9 @@
 # Observability (可观测性: 日志与健康诊断)
 
-> 版本: v1.0 | 日期: 2026-06-28 | 状态: ✅ 已完成
+> 版本: v1.1 | 日期: 2026-06-28（v1.1 2026-08-11 校准） | 状态: ✅ 已完成
 > Split from 11-platform.md (2026-06-28)
+>
+> **2026-08-11 架构校准（C1 日志集中化）**：日志基础设施已升级为独立项目 `LYBT.Shared.Logging`（A-31-C1，2026-08-09）——Server/Desktop 统一经 `AddLybtLogging` 单入口 + `LoggingBootstrap.Initialize` 初始化，Serilog 仅由 Shared.Logging 持有；`ICorrelationIdProvider` 单例 DI 注册。下述 US 的业务语义不变，实现参考已迁移到新入口。
 
 ## 模块概述
 
