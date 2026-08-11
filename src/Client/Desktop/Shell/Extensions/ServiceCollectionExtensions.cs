@@ -13,6 +13,7 @@ using LYBT.Desktop.Infrastructure.DependencyInjection;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.Roles;
 using LYBT.Desktop.Infrastructure.Services.Backup;
+using LYBT.Desktop.Infrastructure.Services.FeatureToggle;
 using LYBT.Desktop.Infrastructure.Roles.Definitions;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.Services.Notifications;
@@ -70,6 +71,7 @@ namespace LYBT.Desktop.Shell.Extensions
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile("clinic-settings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile("feature-toggles.json", optional: true, reloadOnChange: true)
                 .Build();
             containerRegistry.RegisterInstance<IConfiguration>(configuration);
 
@@ -117,6 +119,8 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IApiHealthCheckService, ApiHealthCheckService>();
             // T7-1: 本地数据库备份服务（NFR-AVAIL-001）
             containerRegistry.RegisterSingleton<ILocalDbBackupService, LocalDbBackupService>();
+            // T8: 功能开关服务（US-CFG-004）
+            containerRegistry.RegisterSingleton<IFeatureToggleService, FeatureToggleService>();
             // StartupOptimizationService 已移除（空壳无实际功能）
             containerRegistry.RegisterSingleton<ITokenLifecycleService, TokenLifecycleService>();
         }

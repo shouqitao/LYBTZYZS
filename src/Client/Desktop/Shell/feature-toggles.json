@@ -1,0 +1,6 @@
+{
+  "FeatureToggles": {
+    "OverwriteConflicts": true,
+    "DuplicateHerbMergeStrategy": "Max"
+  }
+}

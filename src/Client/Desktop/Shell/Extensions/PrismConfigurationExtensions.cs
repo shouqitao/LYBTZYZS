@@ -2,6 +2,7 @@ using LYBT.Desktop.Infrastructure.CardReader.Abstractions;
 using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
+using LYBT.Desktop.Infrastructure.Services.FeatureToggle;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Prism.Ioc;
@@ -33,6 +34,9 @@ public static class PrismConfigurationExtensions
 
         // 诊所设置配置
         RegisterOptions<ClinicSettingsOptions>(containerRegistry, configuration, ClinicSettingsOptions.SectionName);
+
+        // 功能开关配置 (US-CFG-004)
+        RegisterOptions<FeatureToggleOptions>(containerRegistry, configuration, FeatureToggleOptions.SectionName);
 
         // 读卡器配置 (PRD-13)
         RegisterOptions<CardReaderOptions>(containerRegistry, configuration, CardReaderOptions.SectionName);
