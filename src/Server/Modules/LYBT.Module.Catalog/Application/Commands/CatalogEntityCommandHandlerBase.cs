@@ -32,6 +32,10 @@ public abstract class CatalogEntityCommandHandlerBase<TEntity, TInput, TDetail>
 
     #region 子类差异点
 
+    /// <summary>删除前引用检查（B1: 默认放行；Herb 子类查处方/验方引用）</summary>
+    protected virtual Task<string?> ValidateBeforeDeleteAsync(TEntity entity, CancellationToken ct)
+        => Task.FromResult<string?>(null);
+
     /// <summary>实体显示名（用于 Update 重名消息，如「药材」/「方剂」）。</summary>
     protected abstract string EntityDisplayName { get; }
 
@@ -116,6 +120,11 @@ public abstract class CatalogEntityCommandHandlerBase<TEntity, TInput, TDetail>
         var entity = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (entity == null)
             return Result.Failure(NotFoundErrorCode, NotFoundMessage);
+
+        // B1 (US-HERB-005): 删除前引用检查钩子（Herb 有处方/验方引用时拒绝）
+        var deleteError = await ValidateBeforeDeleteAsync(entity, cancellationToken);
+        if (deleteError != null)
+            return Result.Failure(ErrorCode.InvalidRequest, deleteError);
 
         ApplySoftDelete(entity, request.CurrentUserId);
         await _repository.UpdateAsync(entity, cancellationToken);

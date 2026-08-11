@@ -13,9 +13,24 @@ namespace LYBT.Module.Catalog.Application.Commands;
 /// </summary>
 public class HerbCommandHandler : CatalogEntityCommandHandlerBase<Herb, HerbInputDto, HerbDetailDto>
 {
-    public HerbCommandHandler(IHerbRepository herbRepository)
+    private readonly IHerbReferenceRepository _referenceRepository;
+
+    public HerbCommandHandler(
+        IHerbRepository herbRepository,
+        IHerbReferenceRepository referenceRepository)
         : base(herbRepository)
     {
+        _referenceRepository = referenceRepository;
+    }
+
+    // B1 (US-HERB-005): 单删引用检查——有处方/验方引用的药材拒绝删除
+    protected override async Task<string?> ValidateBeforeDeleteAsync(Herb entity, CancellationToken ct)
+    {
+        var prescriptionRefs = await _referenceRepository.GetPrescriptionReferenceCountAsync(entity.Id, ct);
+        var formulaRefs = await _referenceRepository.GetFormulaReferenceCountAsync(entity.Id, ct);
+        if (prescriptionRefs > 0 || formulaRefs > 0)
+            return $"药材「{entity.Name}」已被 {(prescriptionRefs > 0 ? prescriptionRefs + " 条处方" : "")}{(prescriptionRefs > 0 && formulaRefs > 0 ? "、" : "")}{(formulaRefs > 0 ? formulaRefs + " 个验方" : "")} 引用，无法删除";
+        return null;
     }
 
     protected override string EntityDisplayName => "药材";

@@ -338,6 +338,19 @@ namespace LYBT.Module.MedicalCases.Services
         /// <summary>
         /// 根据ID获取医案详情DTO（含NotFound语义）
         /// </summary>
+        /// <summary>批量详情（B1 US-MC-018）</summary>
+        public async Task<Result<List<MedicalCaseDetailDto>>> GetDetailDtosBatchAsync(
+            IEnumerable<Guid> ids, Guid? operatorId = null, bool isAdmin = false, CancellationToken cancellationToken = default)
+        {
+            var entities = await _repository.GetByIdsWithDetailsAsync(ids, cancellationToken);
+            // B1: Doctor 仅本人医案（Admin 全量）——与 GetDetailDtoAsync 一致
+            var filtered = (!isAdmin && operatorId.HasValue)
+                ? entities.Where(m => m.CreatedBy == operatorId.Value).ToList()
+                : entities;
+            var dtos = filtered.Select(_mapper.MapToMedicalCaseDetailDto).ToList();
+            return Result<List<MedicalCaseDetailDto>>.Success(dtos);
+        }
+
         public async Task<Result<MedicalCaseDetailDto>> GetDetailDtoAsync(
             Guid id,
             Guid? operatorId = null,

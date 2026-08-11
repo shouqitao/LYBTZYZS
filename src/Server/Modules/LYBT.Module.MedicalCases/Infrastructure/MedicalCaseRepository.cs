@@ -70,6 +70,18 @@ namespace LYBT.Module.MedicalCases.Infrastructure
         /// <summary>
         /// 根据ID获取医案（包含关联数据）
         /// </summary>
+        /// <summary>批量详情（B1 US-MC-018）</summary>
+        public async Task<List<MedicalCase>> GetByIdsWithDetailsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+        {
+            var idList = ids.Distinct().ToList();
+            if (idList.Count == 0)
+                return new List<MedicalCase>();
+
+            return await GetDetailQuery()
+                .Where(m => idList.Contains(m.Id))
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<MedicalCase> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return (await GetDetailQuery()

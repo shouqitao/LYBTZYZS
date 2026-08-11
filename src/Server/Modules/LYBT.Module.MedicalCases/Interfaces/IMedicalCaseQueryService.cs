@@ -126,6 +126,9 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// </summary>
         Task<Result<MedicalCaseDetailDto>> GetDetailDtoAsync(Guid id, Guid? operatorId = null, bool isAdmin = false, CancellationToken cancellationToken = default);
 
+        /// <summary>批量详情（B1 US-MC-018）</summary>
+        Task<Result<List<MedicalCaseDetailDto>>> GetDetailDtosBatchAsync(IEnumerable<Guid> ids, Guid? operatorId = null, bool isAdmin = false, CancellationToken cancellationToken = default);
+
         /// <summary>
         /// 获取医案审计日志（分页）
         /// </summary>

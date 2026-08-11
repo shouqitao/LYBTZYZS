@@ -157,5 +157,19 @@ public abstract class BaseMedicalCasesController : BaseCrudController
         return Success(true, "打印记录已写入");
     }
 
+    /// <summary>
+    /// 患者历史聚合查询（B1 US-MC-008/009: 辨证+处方历史——跨医案返回详情列表）
+    /// </summary>
+    [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
+    [HttpGet("patients/{patientId:guid}/history")]
+    public virtual async Task<IActionResult> GetPatientHistory(Guid patientId, [FromQuery] int count = 5, CancellationToken ct = default)
+    {
+        if (patientId == Guid.Empty)
+            return ValidationFail("患者ID不能为空");
+
+        var result = await _medicalCaseQueryService.GetPatientRecentMedicalCasesAsync(patientId, count, ct);
+        return Success(result, "查询成功");
+    }
+
     #endregion
 }

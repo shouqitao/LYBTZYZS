@@ -63,7 +63,7 @@ public static class LocalWebApiProgram
             {
                 // A-31-C3a: 本地登录统一走 LoginCommandHandler，差异经 LoginOptions 控制
                 o.IsLocal = true;
-                o.LockoutEnabled = false; // 本地 Identity 已关闭锁定（int.MaxValue）
+                o.LockoutEnabled = true; // B1 (US-AUTH-002): 本地锁定对齐远程（5 次/15 分钟，LoginCommandHandler 业务锁定）
                 o.AuditLevel = SecurityAuditLevel.Full;
             });
 
@@ -108,7 +108,7 @@ public static class LocalWebApiProgram
             options.Password.RequireNonAlphanumeric = PasswordPolicyValidator.Policy.RequireSpecialChar;
             options.Password.RequireUppercase = PasswordPolicyValidator.Policy.RequireUppercase;
             options.Password.RequireLowercase = PasswordPolicyValidator.Policy.RequireLowercase;
-            options.Lockout.MaxFailedAccessAttempts = int.MaxValue;
+            options.Lockout.MaxFailedAccessAttempts = 5; // B1 (US-AUTH-002): 对齐远程锁定阈值
             options.Lockout.AllowedForNewUsers = false;
         })
         .AddEntityFrameworkStores<AppDbContext>()

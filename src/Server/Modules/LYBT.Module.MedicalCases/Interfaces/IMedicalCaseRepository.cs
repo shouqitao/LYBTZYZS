@@ -26,6 +26,9 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// </summary>
         Task<MedicalCase> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
 
+        /// <summary>批量详情（B1 US-MC-018: 一次 In 查询）</summary>
+        Task<List<MedicalCase>> GetByIdsWithDetailsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
+
         /// <summary>
         /// 根据ID获取医案（包含所有关联数据）- 强制刷新版本
         /// 分离ChangeTracker中的缓存实体后重新查询，确保获取最新RowVersion
