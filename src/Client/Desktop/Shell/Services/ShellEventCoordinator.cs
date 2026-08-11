@@ -4,6 +4,7 @@ using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.Navigation;
+using LYBT.Desktop.Infrastructure.Services.Backup;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 
@@ -18,6 +19,7 @@ namespace LYBT.Desktop.Shell.Services.Login;
 public class ShellEventCoordinator : IDisposable
 {
     private readonly IShellEventServices _services;
+    private readonly ILocalDbBackupService _localDbBackupService;
     private readonly ILogger<ShellEventCoordinator> _logger;
 
     private readonly EventSubscriptionManager _eventSubscriptions;
@@ -31,9 +33,11 @@ public class ShellEventCoordinator : IDisposable
     public ShellEventCoordinator(
         IShellEventServices services,
         IEventAggregator eventAggregator,
+        ILocalDbBackupService localDbBackupService,
         ILogger<ShellEventCoordinator> logger)
     {
         _services = services ?? throw new ArgumentNullException(nameof(services));
+        _localDbBackupService = localDbBackupService ?? throw new ArgumentNullException(nameof(localDbBackupService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         _eventSubscriptions = new EventSubscriptionManager(eventAggregator);
@@ -68,6 +72,20 @@ public class ShellEventCoordinator : IDisposable
                     _ = _services.TokenLifecycle.StartMonitoringFromStorageAsync();
 
                     _services.NavigationManager.NavigationItems = _services.NavigationManager.BuildNavigationItems(args.User.Role);
+
+                    // T7-1 (NFR-AVAIL-001): 登录成功后自动备份 LocalDB（fire-and-forget 不阻塞 + 清理旧备份）
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await _localDbBackupService.BackupAsync();
+                            await _localDbBackupService.CleanupOldBackupsAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "[BACKUP] 登录后自动备份失败（不阻塞登录）");
+                        }
+                    });
 
                     // 背景预加载高频模块
                     _ = Task.Run(async () =>

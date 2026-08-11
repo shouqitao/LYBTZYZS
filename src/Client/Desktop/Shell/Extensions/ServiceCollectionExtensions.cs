@@ -12,6 +12,7 @@ using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.Roles;
+using LYBT.Desktop.Infrastructure.Services.Backup;
 using LYBT.Desktop.Infrastructure.Roles.Definitions;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.Services.Notifications;
@@ -114,6 +115,8 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IUsernameStorageService, UsernameStorageService>();
             containerRegistry.RegisterSingleton<ISystemSettingsService, SystemSettingsService>();
             containerRegistry.RegisterSingleton<IApiHealthCheckService, ApiHealthCheckService>();
+            // T7-1: 本地数据库备份服务（NFR-AVAIL-001）
+            containerRegistry.RegisterSingleton<ILocalDbBackupService, LocalDbBackupService>();
             // StartupOptimizationService 已移除（空壳无实际功能）
             containerRegistry.RegisterSingleton<ITokenLifecycleService, TokenLifecycleService>();
         }

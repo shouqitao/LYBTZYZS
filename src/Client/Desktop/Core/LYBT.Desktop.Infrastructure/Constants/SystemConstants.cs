@@ -70,9 +70,9 @@ namespace LYBT.Desktop.Infrastructure.Constants
         public const int MaxFileUploadSizeMB = 10;
 
         /// <summary>
-        /// 备份文件保留天数
+        /// 备份文件保留天数（T7-1: NFR-AVAIL-001 对齐——原 30 天遗留，需求/NFR 均为 7 天）
         /// </summary>
-        public const int BackupRetentionDays = 30;
+        public const int BackupRetentionDays = 7;
 
         /// <summary>
         /// 日志文件保留天数
