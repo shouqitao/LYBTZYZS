@@ -29,7 +29,7 @@
 
 ## 双模式工作流
 
-> 详见 [R10 挂号→接诊工作流重设计 spec](../compose/specs/2026-06-28-registration-workflow-redesign.md)（S2/S3/S4）。此处的「双模式」指**部署模式**（远程/本地）下的工作流分野，区别于上文「两源模型」——后者描述同一远程模式内按 `Source` 字段的来源区分。
+> 双模式工作流（远程/本地分野）设计见 [ADR-0013（SignalR 实时推送）](../03-architecture/decisions/0013-signalr-real-time.md) 与 [08-registration.md](08-registration.md) 正文。此处的「双模式」指**部署模式**（远程/本地）下的工作流分野，区别于上文「两源模型」——后者描述同一远程模式内按 `Source` 字段的来源区分。
 
 ### 远程模式（有前台，挂号驱动）
 

@@ -73,7 +73,7 @@
 
 | # | 类型 | 问题 | 代码位置 | 修复方向 |
 |---|------|------|---------|---------|
-| **K7** | ✅ | **接诊链断裂（D8 bug）设计已确认**：`StartVisit` 仅调 `StartVisitAsync` 不建医案 + 返回 RegistrationId 冒充 MedicalCaseId。**2026-08-03 产品决策「接诊即建」**，R10 spec S5 修复方向确认，代码待实施 | `RegistrationsController.cs:200` | StartVisit 改原子创建 MedicalCase(Active)+Registration(InProgress)+返回 MedicalCaseId（已列入 code-gap-fix-list B1） |
+| **K7** | ✅ | **接诊链断裂（D8 bug）设计已确认**：`StartVisit` 仅调 `StartVisitAsync` 不建医案 + 返回 RegistrationId 冒充 MedicalCaseId。**2026-08-03 产品决策「接诊即建」**，R10 spec S5 修复方向确认，代码待实施 | `RegistrationsController.cs:200` | **2026-08-11 已修复**（StartVisit 原子创建 MedicalCase(Active)+Registration(InProgress)+返回 MedicalCaseId，见 13c §五 B1/T5 登记） |
 | **K8** | 💻 | **LocalWebAPI 权限策略空缺**：`LocalWebAPI/Controllers/{Registrations,Patients,Herbs,MedicalCases}.cs` 仅 `[Authorize]` 无 Policy，本地 Doctor 可删患者/药材 CRUD，违本文档矩阵。R10 S3"本地全角色支持"↔Flow 3"本地无角色检查"矛盾 | `LocalWebAPI/Controllers/*.cs` | 明确本地是否启用角色策略（建议与远程一致+角色策略） |
 | **K9** | 💻 | **接诊 Cancel 权限三向倒置**：`Cancel` XML 注释称"仅 Receptionist 可操作"，但无操作级 `[Authorize]`，回落类级 `DoctorOrAdmin`：前台被挡、Doctor/Admin 反被放行。与本文档矩阵（Receptionist✅/Doctor❌/Admin❌）三向倒置 | `RegistrationsController.cs:216-220` | 补操作级 `[Authorize(Policy=...)]` |
 | **K3** | ✅ | **`DoctorOnly` 已落地**（2026-08-04）：`PolicyConstants.cs:6` 已有 `DoctorOnly` 常量（共 6 项），`MedicalCasesController.cs:98` 创建端点已使用。本文档「医案创建 Doctor 唯一」目标已有策略可执行 | `PolicyConstants.cs` | ~~新增 `DoctorOnly` 常量~~ → 已完成；恢复/纯 Admin 场景需新增纯 Admin 策略（见 04-permissions §2.2 注） |
@@ -100,7 +100,7 @@
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-08-03 | v2.2 | 权限决策四连落地（四角色需求审查）：新增「挂号查看」行（Admin 只读）、「打印记录」行（Admin 可查）；药材/验方查看 Receptionist ❌；C1-C6 待对齐清单决策标注 |
-| 2026-08-03 | v2.1 | K7 状态更新：D8 bug「接诊链断裂」设计已确认（2026-08-03 产品决策：接诊即建），代码待实施（code-gap-fix-list B1） |
+| 2026-08-03 | v2.1 | K7 状态更新：D8 bug「接诊链断裂」设计已确认（2026-08-03 产品决策：接诊即建），代码待实施（已列入 backlog，2026-08-11 修复，见 13c §五） |
 | 2026-08-02 | v2.0 | 去重：角色定义/策略表改为引用 02-personas.md 和 04-permissions.md；保留架构级 Resource×Operation 矩阵 + 代码待对齐清单 |
 | 2026-08-02 | v1.3 | 文档校准（documentation-calibration）：权限策略新增 `DoctorOrAdminOrReceptionist`；矩阵对齐代码实际策略 |
 | 2026-06-28 | v1.2 | 审计 S2/S6/K1-K9 文档标注：SuperAdmin/Sysadmin 双列语义说明；`AdminOnly`≡`AdminOrSuperAdmin` 合并建议；新增「代码待对齐清单」段（K1/K3/K4/K5/K7/K8/K9） | 角色驱动审计报告 S 类清理 + K 类代码待修项文档标注 |

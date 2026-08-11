@@ -120,7 +120,7 @@ flowchart TD
 - 登录认证走 **ASP.NET Identity PBKDF2**（`UserManager`）
 - `PasswordHelper`（工具依赖）生成的是 **BCrypt** 哈希
 - 两者**不兼容**：直接写入 BCrypt 哈希会导致该用户无法登录（`DatabaseInitializationService.cs:193` 注释明确「避免 BCrypt/PBKDF2 哈希冲突」）
-- **修复方向**：离线重置必须生成 Identity PBKDF2 兼容哈希（参考 `IdentitySeedData` 的哈希流程），或改用 `dotnet aspnet-codegenerator` / 专用重置命令。当前工具存在此缺陷，**待修复后启用**（记入 code-gap-fix-list）
+- **修复方向**：离线重置必须生成 Identity PBKDF2 兼容哈希（参考 `IdentitySeedData` 的哈希流程），或改用 `dotnet aspnet-codegenerator` / 专用重置命令。**2026-08-08 密码统一方案已落地**（删除全部 BCrypt，哈希唯一走 Identity PBKDF2，见 [05-security-password-management.md](../05-development/05-security-password-management.md)）。
 
 **操作流程（修复后）**：
 1. 运维在离线环境运行工具，输入目标用户名 + 新密码
