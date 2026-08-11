@@ -4,7 +4,7 @@
 
 **覆盖 US**: US-AUTH-001, US-CARD-001/002, US-PAT-003, US-REG-001/004/005/006/007, US-MC-001/002/003/011, US-PRINT-001/004
 
-> **双模式分野**（见 [R10 spec S2/S3/S4](../compose/specs/2026-06-28-registration-workflow-redesign.md)）：本地模式 = 远程功能完整副本（数据孤立 N1），不做角色强制过滤，差异由用户配置自然调节。默认无前台用户时本地为医生独立链（无挂号前置）；若 Admin 建前台用户则远程挂号链在本地同样可用。
+> **双模式分野**（见 [ADR-0002](decisions/0002-dual-mode-architecture.md) + [ADR-0010](decisions/0010-localwebapi-unified-service-layer.md)，R10 spec 已归档）：本地模式 = 远程功能完整副本（数据孤立 N1），不做角色强制过滤，差异由用户配置自然调节。默认无前台用户时本地为医生独立链（无挂号前置）；若 Admin 建前台用户则远程挂号链在本地同样可用。
 
 ### 远程链（有前台，挂号驱动）
 
