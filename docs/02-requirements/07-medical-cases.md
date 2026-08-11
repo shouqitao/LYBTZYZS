@@ -222,7 +222,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生、管理员
 **优先级**: Must
-**状态**: ⚠️ 部分实现（聚合保存+并发重试✅；EditReason 校验缺失）
+**状态**: ✅ 已实现（EditReason 校验——打印后修改/非 Admin 编辑 Completed）
 
 **作为** 医生，**我想要** 一次性保存医案的诊断和处方信息，**以便** 我不必分别保存各部分数据，减少操作步骤和网络请求。
 
@@ -279,7 +279,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生、管理员
 **优先级**: Must
-**状态**: ⚠️ 部分实现（详情完整✅；Doctor 查他人无 403）
+**状态**: ✅ 已实现（Doctor 仅本人医案，非本人 Forbidden）
 
 **作为** 医生，**我想要** 查看医案的完整聚合详情（含诊断和处方），**以便** 我可以了解本次诊疗的全部信息。
 
@@ -356,7 +356,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生、管理员
 **优先级**: Must
-**状态**: ⚠️ 部分实现（搜索端点✅；无角色过滤）
+**状态**: ✅ 已实现（搜索按操作者过滤）
 
 **作为** 医生，**我想要** 按患者名/诊断关键词/日期范围全文搜索医案，**以便** 我可以在复诊时快速找到患者的历史诊疗记录。
 
@@ -463,7 +463,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生、管理员
 **优先级**: Must
-**状态**: ⚠️ 部分实现（BR-003 校验✅；无 isAdmin/owner 权限检查）
+**状态**: ✅ 已实现（完成仅本人医案）
 
 **作为** 医生，**我想要** 标记医案为已完成，**以便** 本次诊疗正式归档，触发隔天自动锁定保护。
 
@@ -489,7 +489,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 管理员
 **优先级**: Should
-**状态**: ⚠️ 部分实现（force-close✅；仅 Admin 未实现）
+**状态**: ✅ 已实现（强制关闭仅 Admin）
 
 **作为** 管理员，**我想要** 强制关闭异常状态的医案（如长期挂起的孤儿医案），**以便** 维护系统数据清洁。
 
@@ -604,7 +604,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生、管理员
 **优先级**: Should
-**状态**: ⚠️ 部分实现（端点有；DTO 缺 RequiresEditReason/DenialReason）
+**状态**: ✅ 已实现（RequiresEditReason/DenialReason）
 
 **作为** 系统，**我想要** 基于角色和资源所有权实施细粒度权限检查，**以便** 医生只能操作自己的医案，管理员可以在提供理由后操作任意医案。
 
@@ -633,7 +633,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 管理员
 **优先级**: Must
-**状态**: ⚠️ 部分实现（端点+分页✅；仅取消写审计，20 字段 diff 未实现）
+**状态**: ✅ 已实现（更新审计+字段 diff——ChangedFields/OldValues/NewValues）
 
 **作为** 管理员，**我想要** 查看医案的完整变更历史（含字段级 diff），**以便** 出现纠纷时可以追溯每次修改的操作人、时间、原因和具体变更内容。
 
@@ -665,7 +665,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 管理员
 **优先级**: Should
-**状态**: 🔴 缺失（GetBatchAsync 与 batch-details 端点均不存在）
+**状态**: 🔴 缺失（GetBatchAsync 与 batch-details 端点均不存在——保持）
 
 **作为** 医生，**我想要** 批量查询多个医案的详情，**以便** 在列表场景下避免 N+1 查询问题，提升性能。
 

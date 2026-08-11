@@ -150,7 +150,7 @@ Server/Local → UsersController → IUserManagerService
 
 **角色**: Admin / SuperAdmin
 **优先级**: Must
-**状态**: ⚠️ 部分实现（TotalCount 内存筛选，D8）
+**状态**: ✅ 已实现（role/status 筛选参数接线）
 
 **作为** 管理员，**我想要** 分页查询用户列表（支持关键字/角色/状态筛选），**以便** 高效管理用户。
 
@@ -193,7 +193,7 @@ Server/Local → UsersController → IUserManagerService
 
 **角色**: Admin / SuperAdmin
 **优先级**: Must
-**状态**: ✅ 已实现
+**状态**: ✅ 已实现（默认密码配置）
 
 **作为** 管理员，**我想要** 创建新用户并指定角色，**以便** 为员工分配系统账号。
 
@@ -208,7 +208,7 @@ Server/Local → UsersController → IUserManagerService
 
 **角色**: Admin / SuperAdmin
 **优先级**: Must
-**状态**: ✅ 已实现
+**状态**: ✅ 已实现（角色更新+层级约束）
 
 **作为** 管理员，**我想要** 更新用户信息（UserName 不可改），**以便** 维护准确的人员信息。
 
@@ -223,7 +223,7 @@ Server/Local → UsersController → IUserManagerService
 
 **角色**: Admin / SuperAdmin
 **优先级**: Must
-**状态**: ✅ 已实现
+**状态**: ✅ 已实现（单删不可删自己 + sysadmin 保护）
 
 **作为** 管理员，**我想要** 软删除用户（不可删自己、不可删 sysadmin），**以便** 离职员工数据可追溯但不可登录。
 
@@ -238,7 +238,7 @@ Server/Local → UsersController → IUserManagerService
 
 **角色**: SuperAdmin / sysadmin
 **优先级**: Must
-**状态**: ✅ 已实现
+**状态**: ✅ 已实现（重置密码 sysadmin 保护）
 
 **作为** 管理员，**我想要** 重置用户密码为临时密码，**以便** 用户忘记密码时可恢复访问。
 
@@ -282,7 +282,7 @@ Server/Local → UsersController → IUserManagerService
 
 **角色**: Admin / SuperAdmin
 **优先级**: Must
-**状态**: ✅ 已实现
+**状态**: ✅ 已实现（JWT 中间件禁用拦截）
 
 **作为** 管理员，**我想要** 启用/禁用用户账号，**以便** 临时停权而不删除。
 
@@ -315,7 +315,7 @@ Server/Local → UsersController → IUserManagerService
 
 **角色**: Admin / SuperAdmin
 **优先级**: Should
-**状态**: ✅ 已实现
+**状态**: ✅ 已实现（批量 100 上限）
 
 **作为** 管理员，**我想要** 批量删除/启用/禁用用户，**以便** 高效管理多个账号。
 
