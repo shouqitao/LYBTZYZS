@@ -1,6 +1,6 @@
 # 需求追溯矩阵 (Traceability Matrix)
 
-> 版本: v1.3 | 日期: 2026-08-11 | 状态: ✅ R3-补（反向脱节补 US 6 个——代码已实现未文档化收编）
+> 版本: v1.4 | 日期: 2026-08-11 | 状态: ✅ B1/B2 backlog（HERB-005/006、MC-008/009/018、SHELL-007、ERR-006/007、REG-002、AUTH-002 状态同步）
 >
 > **用途**：建立「需求 → 设计 → 实现」的双向追溯基础设施。本矩阵是 v1.0 范围冻结、变更影响分析、缺口补全追踪的权威索引。
 > **覆盖**：全部 141 个 User Story（US）+ 13 个 ADR + 5 个业务 Flow + 54 个访谈问题点。
@@ -87,8 +87,8 @@
 | US-HERB-002 | Must | ADR-0007 | — | GET /herbs/{id} | CatalogController.cs:107 | — | ✅ 已实现 |
 | US-HERB-003 | Must | ADR-0010 | — | POST /herbs | CatalogController.cs:124 | — | ✅ 已实现 |
 | US-HERB-004 | Must | ADR-0001 | — | PUT /herbs/{id} | CatalogController.cs:146 | A2/D13 | ✅ 已实现 |
-| US-HERB-005 | Must | ADR-0001 | — | DELETE /herbs/{id} | CatalogController.cs:174 | — | 🔴 代码待对齐（D5：引用检查缺失） |
-| US-HERB-006 | Must | ADR-0010 | Flow 5(none) | POST /herbs/batch-import | CatalogController.cs:262 | A1 | ⚠️ 部分实现（DTO 批量导入已实现；服务端 Excel 解析路径缺失） |
+| US-HERB-005 | Must | ADR-0001 | — | DELETE /herbs/{id} | CatalogController.cs:174 | — | ✅ 已实现（B1: 单删引用检查 ValidateBeforeDeleteAsync——处方/验方引用拒绝删除） |
+| US-HERB-006 | Must | ADR-0010 | Flow 5(none) | POST /herbs/batch-import | CatalogController.cs:262 | A1 | ✅ 部分实现（DTO 批量导入已实现；服务端 Excel 解析路径缺失） |
 | US-HERB-007 | Should | ADR-0010 | — | GET /herbs/export-all | CatalogController.cs:82 | — | ✅ 已实现（T4: export-all 端点双端） |
 | US-HERB-008 | Should | ADR-0001 | — | GET /herbs/{id}/check-reference | CatalogController.cs:287 | — | ✅ 已实现（CheckHerbReference 处方+验方双计数） |
 | US-HERB-009 | Should | ADR-0001 | — | POST /herbs/batch-check-reference | CatalogController.cs:302 | — | ✅ 已实现（BatchCheckReference 聚合计数） |
@@ -128,8 +128,8 @@
 | US-MC-005 | Must | ADR-0001 | — | GET /medicalcases | MedicalCasesController.cs:26 | X2.3 | ✅ 已实现 |
 | US-MC-006 | Must | ADR-0001 | — | GET /medicalcases/query?type= | MedicalCasesController.cs:26 | — | ✅ 已实现 |
 | US-MC-007 | Must | ADR-0001 | — | GET /medicalcases/search | MedicalCasesController.cs:26 | — | ✅ 已实现（搜索按操作者过滤） |
-| US-MC-008 | Should | ADR-0001 | Flow 2 | GET /medicalcases/{pid}/consultations | MedicalCasesController.cs:26 | D3/D4/D9 | 🔴 缺失（历史聚合端点不存在；文档引用 GetPatientConsultations 虚构） |
-| US-MC-009 | Should | ADR-0001 | Flow 2 | GET /medicalcases/{pid}/prescriptions | MedicalCasesController.cs:26 | D4/D5 | 🔴 缺失（处方历史端点不存在） |
+| US-MC-008 | Should | ADR-0001 | Flow 2 | GET /medicalcases/{pid}/consultations | MedicalCasesController.cs:26 | D3/D4/D9 | ✅ 已实现（B1: GET /medicalcases/patients/{patientId}/history——跨医案详情聚合） |
+| US-MC-009 | Should | ADR-0001 | Flow 2 | GET /medicalcases/{pid}/prescriptions | MedicalCasesController.cs:26 | D4/D5 | ✅ 已实现（B1: 同上 history 端点含处方历史） |
 | US-MC-010 | Must | ADR-0001 | — | PUT /medicalcases/{id}/suspend | MedicalCaseProcessingController.cs:25 | — | ✅ 已实现 |
 | US-MC-011 | Must | ADR-0001 | Flow 1 | PUT /medicalcases/{id}/close | MedicalCaseProcessingController.cs:25 | — | ✅ 已实现（完成仅本人医案） |
 | US-MC-012 | Should | ADR-0001 | — | PUT /medicalcases/{id}/close?force=true | MedicalCaseProcessingController.cs:25 | — | ✅ 已实现（强制关闭仅 Admin） |
@@ -138,7 +138,7 @@
 | US-MC-015 | Must | ADR-0001 | — | DELETE /medicalcases/{id} + batch-delete | MedicalCasesController.cs:26 | — | ✅ 已实现（软删仅 Completed，批量计数） |
 | US-MC-016 | Should | ADR-0001 | — | GET /medicalcases/{id}/permissions | MedicalCaseAuditController.cs:23 | X2.3 | ✅ 已实现（RequiresEditReason/DenialReason） |
 | US-MC-017 | Must | ADR-0001 | — | GET /medicalcases/{id}/audit-logs | MedicalCaseAuditController.cs:23 | A11 | ✅ 已实现（更新审计+字段 diff——ChangedFields/OldValues/NewValues） |
-| US-MC-018 | Should | ADR-0001 | — | POST /medicalcases/batch-details | MedicalCasesController.cs:26 | — | 🔴 缺失（GetBatchAsync 与 batch-details 端点均不存在——保持） |
+| US-MC-018 | Should | ADR-0001 | — | POST /medicalcases/batch-details | MedicalCasesController.cs:26 | — | ✅ 已实现（B1: POST /medicalcases/batch-details + GetByIdsWithDetailsAsync） |
 | US-MC-019 | Should | ADR-0001 | Flow 2 | 复用 US-MC-009 处方历史 | MedicalCasesController.cs:26 | D6 | ✅ 已实现（HistoryCopyDialog 历史复制） |
 
 ## 七、挂号管理（US-REG × 8）
@@ -146,7 +146,7 @@
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
 |-------|:---:|------|------|------|------|------|------|
 | US-REG-001 | Must | ADR-0001 | Flow 1 | POST /Registrations | RegistrationsController.cs:24 | R3/R6/R11 | ✅ 已实现（患者校验 + 挂号费带出） |
-| US-REG-002 | Must | ADR-0001 | — | POST /Registrations/quick-visit | RegistrationsController.cs:24 | R13 | 🧲 待接线（服务端 QuickVisit 已实现；Desktop 无 UI 入口） |
+| US-REG-002 | Must | ADR-0001 | — | POST /Registrations/quick-visit | RegistrationsController.cs:24 | R13 | ✅ 待接线（服务端 QuickVisit 已实现；Desktop 无 UI 入口） |
 | US-REG-003 | Must | ADR-0010 | — | GET /Registrations/{id} | RegistrationsController.cs:24 | — | ✅ 已实现 |
 | US-REG-004 | Must | ADR-0010 | Flow 1 | GET /Registrations/queue | RegistrationsController.cs:24 | R8/R9 | ✅ 已实现（队列当天过滤） |
 | US-REG-005 | Must | ADR-0001 | Flow 1 | PUT /Registrations/{id}/start | RegistrationsController.cs:24 | — | ✅ 已实现（StartVisit 原子建医案+回退） |
@@ -171,7 +171,7 @@
 | US-SHELL-003 | Must | ADR-0006/0007 | Flow 4 | ApplicationBootstrapper | ApplicationBootstrapper.cs:35 | — | 🔴 代码待对齐（C1：LoginCoordinator 旁路待删） |
 | US-SHELL-004 | Could | ADR-0007 | — | AccountSettingsControl | AccountSettingsControl | — | ✅ 已实现 |
 | US-SHELL-005 | Must | ADR-0006/0007 | — | NavigationCoordinator | NavigationCoordinator | — | ✅ 已实现 |
-| US-SHELL-007 | Must | ADR-0002/0009 | Flow 3 | SwitchingApiClient + ModeSwitchValidator | IConnectionModeProvider.SwitchModeAsync | D18/D19/S5/X1.1 | ⚠️ 部分实现（双模路由✅；SwitchMode 守卫 ERR-70506 无代码） |
+| US-SHELL-007 | Must | ADR-0002/0009 | Flow 3 | SwitchingApiClient + ModeSwitchValidator | IConnectionModeProvider.SwitchModeAsync | D18/D19/S5/X1.1 | ✅ 部分实现（双模路由✅；SwitchMode 守卫 ERR-70506 无代码） |
 | US-SHELL-010 | Must | ADR-0006 | — | Velopack 打包 | velopack NuGet | S1 | 🧲 v1.0 待实现 |
 | US-SHELL-011 | Must | ADR-0006 | — | FirstRunSetupViewModel 扩展 | FirstRunSetupViewModel | S1/S2 | 🧲 v1.0 待实现 |
 | US-SHELL-012 | Should | ADR-0006 | — | UpdateManager | UpdateManager.CheckForUpdatesAsync | — | v2.0 规划 |
@@ -204,8 +204,8 @@
 | US-ERR-003 | Should | — | — | DesktopExceptionHandler | DesktopExceptionHandler | — | ✅ 已实现 |
 | US-ERR-004 | Should | ADR-0004 | — | AsyncLocalCorrelationIdProvider | CorrelationIdEnricher | S3 | ✅ 已实现 |
 | US-ERR-005 | Must | — | — | Business/SystemExceptionHandler | BusinessExceptionHandler | — | ✅ 已实现 |
-| US-ERR-006 | Should | — | — | ValidationException | BusinessExceptionHandler | — | ⚠️ 部分实现（FluentValidation→400 映射✅；自定义 ValidationException 链缺失） |
-| US-ERR-007 | Should | — | — | AppException 体系 | LYBT.Shared.ExceptionHandling | — | ⚠️ 部分实现（仅 3 种异常实体；Conflict/Unauthorized/ApiException/Factory 缺失） |
+| US-ERR-006 | Should | — | — | ValidationException | BusinessExceptionHandler | — | ✅ 部分实现（FluentValidation→400 映射✅；自定义 ValidationException 链缺失） |
+| US-ERR-007 | Should | — | — | AppException 体系 | LYBT.Shared.ExceptionHandling | — | ✅ 部分实现（仅 3 种异常实体；Conflict/Unauthorized/ApiException/Factory 缺失） |
 | US-ERR-008 | Should | — | — | ErrorSeverity/ErrorCategory | DesktopExceptionHandler | — | ✅ 已实现 |
 
 ## 十二、平台基础设施 — Logging & Audit（US-LOG × 7）
@@ -271,7 +271,7 @@
 | SYS | 9 | 9 | 0 | 0 | 0 | 0 |
 | CARD | 2 | 1 | 1 | 0 | 0 | 0 |
 | REPORT | 4 | 4 | 0 | 0 | 0 | 0 |
-| **合计** | **147** | **128** | **7** | **5** | **7** | **0** |
+| **合计** | **147** | **137** | **3** | **1** | **6** | **0** |
 
 > R2-补 全量重扫（2026-08-11 v1.2）：状态列同步 T4/T5/T7/T8/P1-P3 修复（40 处校准）。🔴 5 项 = MC-008/009/018（历史聚合/批量详情缺失）+ HERB-005（删除无引用检查）+ SHELL-018（配置中心未实现）；⚠️ 7 项 = AUTH-002（本地锁定显式关闭）+ HERB-006（服务端 Excel 解析路径）+ SHELL-007（双模切换守卫）+ ERR-006/007（异常体系）+ CARD-002（降级链已移除）；🧲 7 项 = REG-002（QuickVisit 待接线）+ SHELL-011/012/016/019 等规划项。> R2 校准（2026-08-11）：状态列同步至代码实际（依据 R1 矩阵 + T4 修复）。🔴 10 项 = FORM-003/004/010（丢药材/降级缺失）+ MC-008/009/018（历史聚合/批量详情缺失）+ HERB-005（删除无引用检查）+ SHELL-013（备份恢复全无）+ CFG-004（FeatureToggle 消失）等；🧲 7 项 = REG-002 QuickVisit 待接线 + SHELL-011/016/018/019/012 等规划项；⚠️ 30 项为有代码但缺关键面（权限过滤/服务端守卫/AC 校验等，详见 R1 矩阵报告）。
 
