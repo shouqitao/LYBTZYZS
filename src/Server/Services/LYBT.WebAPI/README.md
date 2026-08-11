@@ -414,9 +414,6 @@ GET    /api/v1/medicalcases            [DoctorOrAdmin] 分页查询(支持角色
 GET    /api/v1/medicalcases/query      [DoctorOrAdmin] 统一查询端点(All/ByPatient/Pending/Unfinished/Recent)
 GET    /api/v1/medicalcases/search     [DoctorOrAdmin] 跨医案搜索
 GET    /api/v1/medicalcases/pending    [DoctorOrAdmin] [Obsolete] 待看诊队列(迁移到/query)
-POST   /api/v1/medicalcases/batch-details [DoctorOrAdmin] 批量获取详情
-GET    /api/v1/medicalcases/{id}/consultations [DoctorOrAdmin] 辨证记录列表
-GET    /api/v1/medicalcases/{id}/prescriptions [DoctorOrAdmin] 处方列表
 ```
 
 #### HerbsController 端点

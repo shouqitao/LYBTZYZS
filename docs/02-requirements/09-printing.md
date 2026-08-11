@@ -125,7 +125,7 @@
 
 **角色**: 管理员
 **优先级**: Must
-**状态**: ✅ 已实现（BaseMedicalCasesController.RecordPrint、AddPrintLog）
+**状态**: ⚠️ 部分实现（服务端 RecordPrint 完整；Desktop 打印流未接线）
 
 **作为** 管理员，**我想要** 每次打印操作（含失败）的详细信息回写到服务端日志，**以便** 打印历史可审计、失败可排查、版本可追溯。
 

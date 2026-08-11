@@ -150,7 +150,7 @@ Server/Local → UsersController → IUserManagerService
 
 **角色**: Admin / SuperAdmin
 **优先级**: Must
-**状态**: ⚠️ 部分实现（TotalCount 内存筛选 bug）
+**状态**: ⚠️ 部分实现（TotalCount 内存筛选，D8）
 
 **作为** 管理员，**我想要** 分页查询用户列表（支持关键字/角色/状态筛选），**以便** 高效管理用户。
 
@@ -165,7 +165,7 @@ Server/Local → UsersController → IUserManagerService
 
 **角色**: Admin / SuperAdmin
 **优先级**: Must
-**状态**: ⚠️ 部分实现（CreatedAt 始终 MinValue）
+**状态**: ✅ 已实现（CreatedAt/UpdatedAt 映射已修复）
 
 **作为** 管理员，**我想要** 查看单个用户完整信息（含角色），**以便** 了解用户配置。
 
@@ -297,7 +297,7 @@ Server/Local → UsersController → IUserManagerService
 
 **角色**: sysadmin 恢复 Admin；Admin 恢复 Doctor/Receptionist（一级管一级）
 **优先级**: Should
-**状态**: ✅ 已实现
+**状态**: ✅ 已实现（Restore 层级完整：sysadmin/Admin 权限+会话清理）
 
 **作为** 管理员，**我想要** 恢复软删除的用户，**以便** 误删后可还原。
 

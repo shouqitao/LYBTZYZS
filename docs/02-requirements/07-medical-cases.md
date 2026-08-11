@@ -186,7 +186,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生
 **优先级**: Must
-**状态**: ⚠️ 策略 DoctorOrAdmin 允许 Admin 创建，PRD 要求仅 Doctor
+**状态**: ✅ 已实现（Create DoctorOnly + BR-001 唯一索引 + CaseNumber）
 
 **作为** 医生，**我想要** 为患者创建新的诊疗记录（MedicalCase 聚合根），**以便** 我可以开始记录本次诊疗的诊断和处方信息。
 
@@ -222,7 +222,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生、管理员
 **优先级**: Must
-**状态**: ✅ 已实现
+**状态**: ⚠️ 部分实现（聚合保存+并发重试✅；EditReason 校验缺失）
 
 **作为** 医生，**我想要** 一次性保存医案的诊断和处方信息，**以便** 我不必分别保存各部分数据，减少操作步骤和网络请求。
 
@@ -279,7 +279,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生、管理员
 **优先级**: Must
-**状态**: ✅ 已实现
+**状态**: ⚠️ 部分实现（详情完整✅；Doctor 查他人无 403）
 
 **作为** 医生，**我想要** 查看医案的完整聚合详情（含诊断和处方），**以便** 我可以了解本次诊疗的全部信息。
 
@@ -356,7 +356,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生、管理员
 **优先级**: Must
-**状态**: ✅ 已实现
+**状态**: ⚠️ 部分实现（搜索端点✅；无角色过滤）
 
 **作为** 医生，**我想要** 按患者名/诊断关键词/日期范围全文搜索医案，**以便** 我可以在复诊时快速找到患者的历史诊疗记录。
 
@@ -383,7 +383,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生、管理员
 **优先级**: Should
-**状态**: ✅ 已实现（BaseMedicalCasesController.GetPatientConsultations）
+**状态**: 🔴 缺失（历史聚合端点不存在；文档引用 GetPatientConsultations 虚构）
 
 > **边界**：本故事是**历史聚合查询**（跨医案返回 Consultation 列表）；US-MC-006 是**当前医案维度查询**（返回 MedicalCase 集合）。两者不重叠。
 
@@ -409,7 +409,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生、管理员
 **优先级**: Should
-**状态**: ✅ 已实现（BaseMedicalCasesController.GetPatientConsultations）
+**状态**: 🔴 缺失（处方历史端点不存在）
 
 > **边界**：本故事是**历史聚合查询**（跨医案返回 Prescription 列表）；US-MC-006 是**当前医案维度查询**。复制处方动作见 US-MC-019。
 
@@ -463,7 +463,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生、管理员
 **优先级**: Must
-**状态**: ✅ 已实现
+**状态**: ⚠️ 部分实现（BR-003 校验✅；无 isAdmin/owner 权限检查）
 
 **作为** 医生，**我想要** 标记医案为已完成，**以便** 本次诊疗正式归档，触发隔天自动锁定保护。
 
@@ -489,7 +489,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 管理员
 **优先级**: Should
-**状态**: ✅ 已实现
+**状态**: ⚠️ 部分实现（force-close✅；仅 Admin 未实现）
 
 **作为** 管理员，**我想要** 强制关闭异常状态的医案（如长期挂起的孤儿医案），**以便** 维护系统数据清洁。
 
@@ -543,7 +543,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生、管理员
 **优先级**: Must
-**状态**: ⚠️ 代码待对齐（2026-08-03 决策：取消语义改为**物理删除**，代码待重构）
+**状态**: ✅ 已实现（2026-08-03 决策：物理删除+审计+Registration 联动）
 
 **作为** 医生，**我想要** 取消本次诊疗，**以便** 错误创建、患者临时取消或接诊后发现没必要的医案彻底清除，不影响正常医案列表。
 
@@ -576,7 +576,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 管理员
 **优先级**: Must
-**状态**: ✅ 已实现（2026-08-03 决策：删除仅针对已完成医案，代码待对齐）
+**状态**: ✅ 已实现（软删仅 Completed，批量计数）
 
 **作为** 管理员，**我想要** 删除或批量删除医案，**以便** 清理无效或测试数据。
 
@@ -604,7 +604,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生、管理员
 **优先级**: Should
-**状态**: 🔴 无端点（PermissionService 不存在）
+**状态**: ⚠️ 部分实现（端点有；DTO 缺 RequiresEditReason/DenialReason）
 
 **作为** 系统，**我想要** 基于角色和资源所有权实施细粒度权限检查，**以便** 医生只能操作自己的医案，管理员可以在提供理由后操作任意医案。
 
@@ -633,7 +633,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 管理员
 **优先级**: Must
-**状态**: ✅ 已实现（BaseMedicalCasesController.GetAuditLogs）
+**状态**: ⚠️ 部分实现（端点+分页✅；仅取消写审计，20 字段 diff 未实现）
 
 **作为** 管理员，**我想要** 查看医案的完整变更历史（含字段级 diff），**以便** 出现纠纷时可以追溯每次修改的操作人、时间、原因和具体变更内容。
 
@@ -665,7 +665,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 管理员
 **优先级**: Should
-**状态**: 🔴 Service 有 GetBatchAsync 但 Controller 无端点暴露
+**状态**: 🔴 缺失（GetBatchAsync 与 batch-details 端点均不存在）
 
 **作为** 医生，**我想要** 批量查询多个医案的详情，**以便** 在列表场景下避免 N+1 查询问题，提升性能。
 
@@ -694,7 +694,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生
 **优先级**: Should
-**状态**: ✅ 前端实现（后端 API 已支持：GetPatientRecentMedicalCasesAsync + GetByIdWithDetailsAsync）
+**状态**: ✅ 已实现（HistoryCopyDialog 历史复制）
 
 **作为** 医生，**我想要** 复诊时一键复制患者最近已完成医案的处方，**以便** 在原方基础上加减药材，避免重新逐味录入。
 
