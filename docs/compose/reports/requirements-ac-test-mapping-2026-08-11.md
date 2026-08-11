@@ -12,10 +12,10 @@ T1 测试审查发现测试体系**自洽但不对照需求**——测试验证�
 
 | # | P0 bug | 发现途径 | 修复 | **测试守护现状（本次核查）** |
 |---|--------|---------|------|------------------------------|
-| 1 | 远程 auth 路由错误（`/api/v1/users/api/v1/auth/*` 双重前缀） | R1 矩阵 + 代码扫描 | T4 #1（IdentityController `/` 开头绝对路径） | 🔴 **无测试守护**——无 IdentityController 路由单测（AuthTests 为 Desktop 集成，localhost 依赖；远程路由无断言） |
-| 2 | 登录/刷新未签发 RefreshToken（access 即刷新凭据链缺失） | R1 矩阵 + 代码扫描 | T4 #2（Login/Refresh/ValidateAutoLogin 签发） | ⚠️ 部分——`TokenRefreshHandlerIntegrationTests` 守护 Desktop 侧刷新流程（用户禁用不刷新等）；**服务端签发侧无单测** |
+| 1 | 远程 auth 路由错误（`/api/v1/users/api/v1/auth/*` 双重前缀） | R1 矩阵 + 代码扫描 | T4 #1（IdentityController `/` 开头绝对路径） | ✅ **P0-TEST 已闭环**——`IdentityControllerRoutesTests`（5 端点绝对路径 + 双重前缀回归守卫） |
+| 2 | 登录/刷新未签发 RefreshToken（access 即刷新凭据链缺失） | R1 矩阵 + 代码扫描 | T4 #2（Login/Refresh/ValidateAutoLogin 签发） | ✅ **P0-TEST 已闭环**——`RefreshTokenIssuanceTests`（5 用例：签发非空 + access=refresh + 身份保留 + 旋转 + 非法拒绝）；Desktop 侧 TokenRefreshHandlerIntegrationTests 已有 |
 | 3 | 本地 /refresh 无验签（LocalJwtConfig.GetSigningKey 未接） | R1 矩阵 + 代码扫描 | T4 #3（本地 ValidateToken 验签） | ✅ `LocalTokenValidatorTests`（Desktop Unit——守护本地令牌验证） |
-| 4 | 导入导出 12 端点（NPOI ExcelExportHelper 共享） | R1 矩阵 + 代码扫描 | T4 #4（12 端点 + ExcelExportHelper） | 🔴 **无测试守护**——无 ExcelImportHelper/导出端点单测（全仓 grep 0 命中） |
+| 4 | 导入导出 12 端点（NPOI ExcelExportHelper 共享） | R1 矩阵 + 代码扫描 | T4 #4（12 端点 + ExcelExportHelper） | ✅ **P0-TEST 已闭环**——`ExcelImportHelperTests`（5 用例：表头跳过/数字格式化/行数上限/空行跳过/非法文件）；导入端点路由待随批补 |
 
 **教训落地**：测试守护缺失 ≠ 功能缺失。本次映射表的「守护状态」列如实标注，缺口进入建议清单。
 
@@ -130,10 +130,10 @@ T1 测试审查发现测试体系**自洽但不对照需求**——测试验证�
 
 ## 五、建议（新测试守护优先清单）
 
-**优先级 1（P0 逃逸闭环）**：
-1. IdentityController 远程路由单测（P0 #1）
-2. ExcelImportHelper + import-excel 端点测试（P0 #4）
-3. 服务端 RefreshToken 签发单测（P0 #2 补齐）
+**优先级 1（P0 逃逸闭环）——✅ 已完成（P0-TEST 批次，commit 待填）**：
+1. ~~IdentityController 远程路由单测（P0 #1）~~ → IdentityControllerRoutesTests（5 用例）
+2. ~~ExcelImportHelper 测试（P0 #4）~~ → ExcelImportHelperTests（5 用例）
+3. ~~服务端 RefreshToken 签发单测（P0 #2）~~ → RefreshTokenIssuanceTests（5 用例）
 
 **优先级 2（近批新功能闭环）**：
 4. MC-008/009/018 历史聚合 + 批量详情查询单测
@@ -153,7 +153,7 @@ T1 测试审查发现测试体系**自洽但不对照需求**——测试验证�
 
 - **域级守护强度高**：15 域中 12 域有完整测试类守护（VM + Controller + 服务 + 实体四层），横切安全（审计/脱敏/权限边界）有独立测试。
 - **AC 级缺口集中在近批新增**：B1/B2/R3-补 新增 US 无测试（新端点/新 UI）——功能正确但守护缺失，回归风险由人工验收承担。
-- **P0 逃逸闭环未完成**：4 个 P0 中 2 个修复后仍无测试守护（路由/导入导出）——最高优先补测。
+- **P0 逃逸闭环已完成**（P0-TEST 批次）：4 个 P0 全部有测试守护（路由 5 用例 / 刷新签发 5 用例 / 本地验签 LocalTokenValidatorTests 已有 / 导入导出 5 用例）。
 - **映射表为活文档**：每批实现后更新本表 + traceability 状态列（双文档联动）。
 
 **关联**：T1 审查报告（test-code-review-2026-08-11.md）| R1 覆盖矩阵（requirements-coverage-matrix-2026-08-11.md）| traceability v1.4+（147 US：✅139/⚠️3/🔴1/🧲4——🔴1 = SHELL-003 LoginCoordinator 旁路待删）
