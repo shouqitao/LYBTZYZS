@@ -52,6 +52,12 @@ internal interface IRegistrationApi
     Task<ApiResponse<Guid>> StartVisitAsync(Guid id);
 
     /// <summary>
+    /// 快速就诊（B2 US-REG-002: 医生直接开始就诊）
+    /// </summary>
+    [Refit.Post("/api/v1/registrations/quick-visit")]
+    Task<ApiResponse<QuickVisitResultDto>> QuickVisitAsync([Refit.Body] QuickVisitInputDto request);
+
+    /// <summary>
     /// 取消挂号
     /// US-REG-004: 仅 Waiting 状态可取消
     /// </summary>

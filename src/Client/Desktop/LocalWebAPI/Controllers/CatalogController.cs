@@ -216,6 +216,57 @@ public class CatalogController : BaseCrudController
     }
 
     /// <summary>
+    /// 服务端 Excel 解析批量导入（B2 US-HERB-006）
+    /// </summary>
+    [HttpPost("import-excel")]
+    public async Task<IActionResult> ImportExcel(IFormFile file, [FromQuery] DuplicateStrategy strategy = DuplicateStrategy.Skip, CancellationToken ct = default)
+    {
+        if (file == null || file.Length == 0)
+            return ValidationFail("未选择文件或文件为空");
+        if (!file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+            return ValidationFail("仅支持 .xlsx 格式（NPOI XSSF）");
+
+        List<string[]> rows;
+        try
+        {
+            await using var ms = new MemoryStream();
+            await file.CopyToAsync(ms, ct);
+            ms.Position = 0;
+            rows = ExcelImportHelper.ParseWorkbook(ms, maxRows: 10000);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Excel 解析失败: {FileName}", file.FileName);
+            return BusinessFail("Excel 解析失败，请检查文件格式与列结构");
+        }
+
+        // 列序：名称/拼音码/分类/药性/产地/规格/单位/单价/成本价（与导出模板一致）
+        var herbs = rows.Select(r => new HerbInputDto
+        {
+            Name = r.ElementAtOrDefault(0)?.Trim() ?? string.Empty,
+            PinYinCode = r.ElementAtOrDefault(1)?.Trim(),
+            Category = r.ElementAtOrDefault(2)?.Trim(),
+            Properties = r.ElementAtOrDefault(3)?.Trim(),
+            Origin = r.ElementAtOrDefault(4)?.Trim(),
+            Spec = r.ElementAtOrDefault(5)?.Trim(),
+            Unit = string.IsNullOrWhiteSpace(r.ElementAtOrDefault(6)) ? "克" : r[6].Trim(),
+            Price = decimal.TryParse(r.ElementAtOrDefault(7), out var p) ? p : 0m,
+            CostPrice = decimal.TryParse(r.ElementAtOrDefault(8), out var cp) ? cp : (decimal?)null
+        }).Where(h => !string.IsNullOrWhiteSpace(h.Name)).ToList();
+
+        if (herbs.Count == 0)
+            return ValidationFail("Excel 中未解析到有效数据行（表头需为：名称/拼音码/分类/药性/产地/规格/单位/单价/成本价）");
+
+        var (operatorId, _, _) = GetOperator();
+        var result = await Sender.Send(new BatchImportHerbsCommand(herbs, strategy, operatorId), ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "导入失败");
+
+        LogOperation("Excel 批量导入药材", new { Count = herbs.Count, Strategy = strategy }, null);
+        return Success(result.Value, $"成功导入 {result.Value.SuccessCount} 条药材");
+    }
+
+    /// <summary>
     /// 检查药材引用关系
     /// </summary>
     [HttpGet("{id}/check-reference")]

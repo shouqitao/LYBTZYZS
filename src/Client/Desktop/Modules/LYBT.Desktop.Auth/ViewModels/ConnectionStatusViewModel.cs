@@ -133,7 +133,7 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
         try
         {
             Logger.LogInformation("[VM] Login.SwitchToLocal → 本地模式");
-            _connectionModeService.SetMode(ConnectionMode.Local);
+            _ = _connectionModeService.SetModeAsync(ConnectionMode.Local);
 
             CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
             IsRemoteMode = _connectionModeService.IsRemote;
@@ -160,7 +160,14 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
         try
         {
             Logger.LogInformation("[VM] Login.SwitchToRemote → 远程模式");
-            _connectionModeService.SetMode(ConnectionMode.Remote);
+            var switchResult = _connectionModeService.SetModeAsync(ConnectionMode.Remote).GetAwaiter().GetResult();
+
+            if (!switchResult.Succeeded)
+            {
+                Logger.LogWarning("[VM] Login.SwitchToRemote blocked - {ErrorCode}: {Message}", switchResult.ErrorCode, switchResult.Message);
+                ShowSwitchBlockedMessage(switchResult);
+                return;
+            }
 
             CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
             IsRemoteMode = _connectionModeService.IsRemote;
@@ -170,6 +177,18 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
         {
             Logger.LogError(ex, "[VM] Login.SwitchToRemote failed");
         }
+    }
+
+    /// <summary>
+    /// 切换被守卫阻断时的用户提示（B2 US-SHELL-007: ERR-70506 等）
+    /// </summary>
+    private static void ShowSwitchBlockedMessage(ModeSwitchResult result)
+    {
+        System.Windows.MessageBox.Show(
+            result.Message ?? "切换失败",
+            "无法切换模式",
+            System.Windows.MessageBoxButton.OK,
+            System.Windows.MessageBoxImage.Warning);
     }
 
     /// <summary>

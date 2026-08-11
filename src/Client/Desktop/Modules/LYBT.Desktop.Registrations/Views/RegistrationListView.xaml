@@ -39,6 +39,15 @@
             RefreshCommand="{Binding RefreshCommand}">
             <controls:DataGridToolbar.AdditionalContent>
                 <StackPanel Orientation="Horizontal">
+                    <!--  快速就诊（B2 US-REG-002: 医生直接开始就诊——急诊/本地无前台场景）  -->
+                    <Button
+                        Margin="8,0,0,0"
+                        Padding="12,6"
+                        Command="{Binding QuickVisitCommand}"
+                        Content="快速就诊"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Visibility="{Binding IsDoctor, Converter={x:Static converters:Cvt.BoolToVis}}" />
+
                     <!--  接诊（医生专属）  -->
                     <Button
                         Margin="8,0,0,0"

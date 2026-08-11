@@ -72,15 +72,16 @@ public interface IConnectionModeService
     Task<bool> TestRemoteConnectionAsync(string url);
 
     /// <summary>
-    /// 显式切换生效模式。相应地更新底层
-    /// <see cref="IConnectionSettingsService"/> 的 URL：
+    /// 显式切换生效模式（B2 US-SHELL-007: 切换守卫——未完成医案/远程不可达时阻断）。
+    /// 相应地更新底层 <see cref="IConnectionSettingsService"/> 的 URL：
     /// <list type="bullet">
     ///   <item><see cref="ConnectionMode.Local"/> → 将 URL 指向 localhost。</item>
     ///   <item><see cref="ConnectionMode.Remote"/> → 保留当前远程 URL。</item>
     /// </list>
+    /// 切换失败（守卫阻断/不可达）时保持切换前模式（自动回退）。
     /// </summary>
     /// <param name="mode">The mode to activate.</param>
-    void SetMode(ConnectionMode mode);
+    Task<ModeSwitchResult> SetModeAsync(ConnectionMode mode);
 
     /// <summary>
     /// <see cref="CurrentMode"/> 变化时触发。载荷为新模式。

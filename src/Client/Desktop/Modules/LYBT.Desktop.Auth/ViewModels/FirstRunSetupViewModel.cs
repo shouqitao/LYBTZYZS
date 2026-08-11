@@ -86,7 +86,7 @@ public partial class FirstRunSetupViewModel : ConnectionTestViewModelBase
     {
         try
         {
-            _connectionModeService.SetMode(ConnectionMode.Local);
+            _ = _connectionModeService.SetModeAsync(ConnectionMode.Local);
             Logger.LogInformation("[FIRST-RUN] 用户选择跳过，使用本地模式");
             CloseDialog(ButtonResult.OK);
         }
@@ -104,8 +104,9 @@ public partial class FirstRunSetupViewModel : ConnectionTestViewModelBase
             SetBusy(true, "正在保存...");
             await _connectionSettingsService.SetUrlAsync(RemoteUrl);
             // URL 变更会通过 UrlChanged 事件回流到 ConnectionModeService 自动切换模式；
-            // 显式 SetMode(Remote) 保证即便 URL 仍被判为本地时也明确选择远程。
-            _connectionModeService.SetMode(ConnectionMode.Remote);
+            // 显式 SetModeAsync(Remote) 保证即便 URL 仍被判为本地时也明确选择远程。
+            // B2 (US-SHELL-007): 守卫阻断（远程不可达/未完成医案）在此静默保留当前模式——首启流程无模式切换 UI。
+            _ = _connectionModeService.SetModeAsync(ConnectionMode.Remote);
             Logger.LogInformation("[FIRST-RUN] 已保存远程服务器地址: {Url}", RemoteUrl);
             CloseDialog(ButtonResult.OK);
         }

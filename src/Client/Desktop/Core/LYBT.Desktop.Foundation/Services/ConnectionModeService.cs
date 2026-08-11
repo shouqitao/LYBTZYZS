@@ -9,6 +9,7 @@
 // ---------------------------------------------------------------------------
 
 using System.Net.Http;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
 using Microsoft.Extensions.Logging;
@@ -32,6 +33,7 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
 
     private readonly IConnectionSettingsService _connectionSettings;
     private readonly IApplicationStateService _applicationState;
+    private readonly IApiClientMedicalCases _medicalCasesApi;
     private readonly ILogger<ConnectionModeService> _logger;
 
     private ConnectionMode _currentMode;
@@ -45,10 +47,12 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     public ConnectionModeService(
         IConnectionSettingsService connectionSettings,
         IApplicationStateService applicationState,
+        IApiClientMedicalCases medicalCasesApi,
         ILogger<ConnectionModeService> logger)
     {
         _connectionSettings = connectionSettings ?? throw new ArgumentNullException(nameof(connectionSettings));
         _applicationState = applicationState ?? throw new ArgumentNullException(nameof(applicationState));
+        _medicalCasesApi = medicalCasesApi ?? throw new ArgumentNullException(nameof(medicalCasesApi));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         _currentMode = connectionSettings.IsLocal
@@ -120,30 +124,63 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     }
 
     /// <inheritdoc />
-    public void SetMode(ConnectionMode mode)
+    public async Task<ModeSwitchResult> SetModeAsync(ConnectionMode mode)
     {
         switch (mode)
         {
             case ConnectionMode.Local:
                 _ = _connectionSettings.SavePreferredModeAsync("Local");
                 ApplyMode(ConnectionMode.Local);
-                break;
+                return ModeSwitchResult.Success();
 
             case ConnectionMode.Remote:
-                if (!string.IsNullOrEmpty(_connectionSettings.RemoteUrl) && _isRemoteAvailable)
+                // B2 (US-SHELL-007): 守卫 1/2/3 —— URL 配置、远程可达、未完成医案
+                if (string.IsNullOrEmpty(_connectionSettings.RemoteUrl))
                 {
-                    _ = _connectionSettings.SavePreferredModeAsync("Remote");
-                    ApplyMode(ConnectionMode.Remote);
+                    _logger.LogWarning("[CONNECTION-MODE] Cannot switch to Remote: no remote URL configured");
+                    return ModeSwitchResult.Blocked("NO_REMOTE_URL", "未配置远程服务器地址，无法切换到远程模式");
                 }
-                else
+
+                if (!_isRemoteAvailable)
+                {
+                    _logger.LogWarning("[CONNECTION-MODE] Cannot switch to Remote: server unreachable");
+                    return ModeSwitchResult.Blocked("REMOTE_UNREACHABLE", "远程服务器不可达，无法切换到远程模式");
+                }
+
+                var pendingCount = await GetPendingCaseCountAsync().ConfigureAwait(false);
+                if (pendingCount > 0)
                 {
                     _logger.LogWarning(
-                        "[CONNECTION-MODE] Cannot switch to Remote: no remote URL configured or server unreachable");
+                        "[CONNECTION-MODE] Blocked switch to Remote: {Count} pending medical cases (ERR-70506)", pendingCount);
+                    return ModeSwitchResult.PendingCasesBlocked(pendingCount);
                 }
-                break;
+
+                _ = _connectionSettings.SavePreferredModeAsync("Remote");
+                ApplyMode(ConnectionMode.Remote);
+                return ModeSwitchResult.Success();
 
             default:
                 throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unsupported connection mode");
+        }
+    }
+
+    /// <summary>
+    /// 查询当前数据源的未完成医案数（Active/Suspended）。查询失败视为无未完成医案
+    /// （守卫仅阻断，不做强制）——保持切换可用性优先。
+    /// </summary>
+    private async Task<int> GetPendingCaseCountAsync()
+    {
+        try
+        {
+            var response = await _medicalCasesApi.GetPendingCasesAsync(null).ConfigureAwait(false);
+            if (!response.Success || response.Data == null)
+                return 0;
+            return response.Data.Count;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "[CONNECTION-MODE] Pending-case guard query failed - guard skipped");
+            return 0;
         }
     }
 

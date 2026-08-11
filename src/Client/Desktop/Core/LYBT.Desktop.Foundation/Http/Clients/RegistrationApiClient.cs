@@ -55,6 +55,10 @@ internal sealed class RegistrationApiClient : IApiClientRegistrations
     public Task<ApiResponse<Guid>> StartVisitAsync(Guid id)
         => _api.StartVisitAsync(id);
 
+    /// <inheritdoc/>
+    public Task<ApiResponse<QuickVisitResultDto>> QuickVisitAsync(QuickVisitInputDto request)
+        => _api.QuickVisitAsync(request);
+
     /// <inheritdoc />
     public Task<ApiResponse> CancelAsync(Guid id)
         => _api.CancelAsync(id);
