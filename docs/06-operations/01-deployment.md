@@ -20,10 +20,10 @@
 | 方式 | 说明 | 文档 |
 |------|------|------|
 | **Linux 直接运行** | nohup 后台进程，轻量 | 见下方 Linux 部署 |
-| Windows Service | 独立进程，开机自启 | deploy.ps1 |
+| Windows Service | 独立进程，开机自启 | — |
 | IIS | 需要 IIS 环境，图形化管理 | 备选方案 |
 
-两种方式均使用 `dotnet publish` 产出部署包，通过对应脚本部署。
+两种方式均使用 `dotnet publish` 产出部署包，通过 FlashFXP（SFTP）上传至服务器。
 
 ---
 
@@ -38,41 +38,59 @@
 | IP | 60.190.215.86 |
 | SSH 端口 | 5555 |
 | 用户名 | player |
-| 认证方式 | SSH Key（免密登录） |
+| 认证方式 | 密码认证（FlashFXP SFTP） |
 | 操作系统 | Linux (Ubuntu) |
 | dotnet 路径 | /home/player/.dotnet/dotnet |
 | 部署路径 | /home/player/lybt-api |
 | API 端口 | 5000 |
 | 数据库 | SQL Server @ 192.168.190.243 |
 
-#### 快速同步命令
+#### FlashFXP 连接配置
 
-```powershell
-# 完整构建 + 同步 + 重启
-.\sync-to-server.ps1 -Build -Restart
-
-# 仅同步配置文件
-.\sync-to-server.ps1 -ConfigOnly -Restart
-
-# 仅重启服务
-.\sync-to-server.ps1 -Restart
+```
+协议：SFTP over SSH
+主机：60.190.215.86
+端口：5555
+用户：player
+密码：（从密钥管理获取）
 ```
 
-#### 手动部署步骤
+#### 部署步骤（FlashFXP + SSH）
+
+**第一步：本地编译**
 
 ```bash
-# 1. 构建
 dotnet publish src/Server/Services/LYBT.WebAPI -c Release -o ./publish-webapi
-
-# 2. 上传文件
-scp -P 5555 ./publish-webapi/* player@60.190.215.86:/home/player/lybt-api/
-
-# 3. 重启服务
-ssh -p 5555 player@60.190.215.86 "pkill -9 -f 'dotnet.*LYBT'; sleep 2; cd /home/player/lybt-api && nohup /home/player/.dotnet/dotnet LYBT.WebAPI.dll --environment Production &"
-
-# 4. 验证
-curl http://60.190.215.86:5000/health
 ```
+
+**第二步：FlashFXP 上传**
+
+1. 打开 FlashFXP → 连接 60.190.215.86:5555（SFTP）
+2. 左侧窗格：定位到本地 `./publish-webapi/` 目录
+3. 右侧窗格：定位到远程 `/home/player/lybt-api/`
+4. 全选左侧文件 → 拖拽到右侧（覆盖旧文件）
+
+**第三步：重启服务**
+
+通过 SSH 客户端（如 PuTTY / FlashFXP 内置终端）执行：
+
+```bash
+ssh -p 5555 player@60.190.215.86
+
+# 停止旧服务
+pkill -9 -f 'dotnet.*LYBT'
+sleep 2
+
+# 启动新服务
+cd /home/player/lybt-api && nohup /home/player/.dotnet/dotnet LYBT.WebAPI.dll --environment Production &
+
+# 退出 SSH
+exit
+```
+
+**第四步：验证**
+
+浏览器打开 `http://60.190.215.86:5000/health`
 
 #### 配置注意事项
 
@@ -100,24 +118,43 @@ curl http://60.190.215.86:5000/health
 ss -tlnp | grep 5000
 ```
 
-### Desktop 自动升级
+### Desktop 客户端发布
 
 WebAPI 同时提供 Desktop 客户端发布包下载服务（**Velopack 更新源**——US-SHELL-010）。
 
+#### 服务器目录结构
+
 ```
-服务器目录结构:
-C:\Services\LYBT-API\              ← WebAPI 运行目录（deploy.ps1 产出）
-C:\Services\LYBT-releases\         ← Velopack 发布包（独立目录，不会被 publish 清空）
+/home/player/lybt-api/              ← WebAPI 运行目录
+/home/player/lybt-releases/         ← Velopack 发布包（独立目录，不被 publish 清空）
     ├── Setup.exe                     ← 安装包（免管理员权限，%LocalAppData%\LYBT）
     ├── RELEASES                      ← Velopack 更新清单
     └── lybt-desktop-*.nupkg          ← 更新包（增量/全量）
 ```
 
-打包流程（开发者/运维）：
-1. `pwsh scripts/velopack-pack.ps1 -Version 1.2.0` —— dotnet publish（win-x64 自包含单文件）→ vpk pack（生成 Setup.exe + RELEASES + nupkg）
-2. `pwsh scripts/sync-to-server.ps1 -Server <host> -RemotePath "C:\Services\LYBT-releases"` —— scp/SMB 同步更新源到服务器
+#### 打包流程（开发者）
 
-升级机制（Desktop 客户端）：
+1. **本地打包**：
+   ```bash
+   # Windows（需 vpk CLI）
+   scripts/velopack-pack.ps1 -Version <版本号>
+
+   # 或手动：
+   dotnet publish src/Client/Desktop -c Release -r win-x64 --self-contained true -o ./publish-desktop
+   vpk pack --packId lybt-desktop --packDir ./publish-desktop --version <版本>
+   ```
+
+2. **FlashFXP 上传**：
+   - 左侧：本地 `./releases/`（vpk 产出）
+   - 右侧：远程 `/home/player/lybt-releases/`
+   - 全选拖拽上传
+
+3. **验证**：
+   - 浏览器打开 `http://60.190.215.86:5000/`（下载页 → 下载 Setup.exe）
+   - 下载安装 → 启动 → 检查版本号
+
+#### 升级机制（Desktop 客户端）
+
 1. 启动时 `DesktopUpdateStartupStep` 后台检查（Velopack UpdateManager ← `DesktopUpdate:FeedUrl`）
 2. 发现新版本 → 提示用户 → 下载更新包 → 重启应用完成更新
 3. 服务端 `GET /` 提供下载主页（公开——显示 Setup.exe 下载 + 版本号）；`/releases/` 静态托管更新源

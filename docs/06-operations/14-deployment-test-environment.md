@@ -17,7 +17,7 @@
 |------|-----|
 | SSH 用户 | player |
 | SSH 端口 | 5555 |
-| SSH 认证 | 免密登录（SSH key） |
+| SSH 认证 | 密码认证（FlashFXP SFTP） |
 | WebAPI 安装路径 | /home/player/lybt-api |
 | 日志路径 | /home/player/lybt-api/logs/webapi.log |
 | dotnet 路径 | /home/player/.dotnet/dotnet |
