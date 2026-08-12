@@ -10,6 +10,7 @@ using System.Text;
 using DotNetEnv;
 using LYBT.Shared.Configuration.Extensions;
 using LYBT.Shared.Logging.Bootstrap;
+using LYBT.WebAPI.Configuration;
 using LYBT.Shared.Models.Utilities.Security;
 using LYBT.WebAPI.Extensions;
 using LYBT.Infrastructure.Configuration.Services;
@@ -105,12 +106,31 @@ public class Program
             Log.Information("已切换到Final Logger，配置加载完成");
 
             // unify-configuration-system: 注册强类型配置
-            // B-02: 运行时配置覆盖 - 追加 runtime-overrides.json（reloadOnChange 支持 IOptionsMonitor 热更新）
+            // CFG-BATCH2 优先级修正（边界决策 1）：环境变量 > runtime-overrides.json > appsettings.{env}.json > appsettings.json
+            // CreateBuilder 内置 = [appsettings.json, appsettings.{env}.json, 环境变量]——runtime-overrides 需在 env 之下：
+            // 移除内置环境变量 provider → 追加 runtime-overrides → 重建环境变量（最高优先）
             var runtimeOverridesPath = Path.Combine(AppContext.BaseDirectory, "config", "runtime-overrides.json");
             var baseline = builder.Configuration.AsEnumerable()
                 .Where(kv => kv.Value is not null)
                 .ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase);
+
+            // 1) 移除内置环境变量 provider（稍后按目标顺序重加）
+            foreach (var source in builder.Configuration.Sources
+                .OfType<Microsoft.Extensions.Configuration.EnvironmentVariables.EnvironmentVariablesConfigurationSource>()
+                .ToList())
+            {
+                builder.Configuration.Sources.Remove(source);
+            }
+
+            // 2) runtime-overrides（运行时微调——低于部署环境变量）
             builder.Configuration.AddJsonFile(runtimeOverridesPath, optional: true, reloadOnChange: true);
+
+            // 3) 环境变量（部署权威——最高优先）
+            builder.Configuration.AddEnvironmentVariables();
+
+            // CFG-BATCH2 边界决策 2/3: 占位符/空串后处理——无效值回退下一级有效值
+            if (builder.Configuration is IConfigurationRoot configRoot)
+                ConfigurationPostProcessor.Process(configRoot);
             builder.Services.AddSingleton<IConfigurationStore>(new JsonFileConfigurationStore(runtimeOverridesPath, baseline));
             builder.Services.AddLybtServerConfiguration(builder.Configuration);
             // Register system configuration service for DI

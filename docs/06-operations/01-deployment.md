@@ -249,6 +249,14 @@ dotnet publish src/Server/Services/LYBT.WebAPI -c Release
 dotnet publish src/Server/Services/LYBT.WebAPI -c Release -r win-x64 --self-contained true
 ```
 
+### 配置优先级（2026-08-12 CFG-BATCH2 修正）
+
+**环境变量 > runtime-overrides.json > appsettings.{Environment}.json > appsettings.json**
+
+- 环境变量 = 部署权威（start.sh 注入——最高优先）
+- runtime-overrides.json = 运行时微调（低于部署——SHELL-018 配置中心写回目标）
+- 占位符未展开（`${VAR}` 字面）或空串 → 视为无效 → 回退下一级有效值（ConfigurationPostProcessor——已知键清单：Jwt:SecretKey/DefaultConnection/密码/Token/FeedUrl）；全部无效时由配置校验器拦截提示
+
 ### 配置闭环（2026-08-12：环境配置文件缺失自动生成）
 
 WebAPI 启动时若 `appsettings.json` / `appsettings.{Environment}.json` 缺失，自动生成默认模板（含双下划线占位符）——启动顺利走到配置校验器提示注入，而非「配置空」隐晦错误。已存在文件**不覆盖**（自定义配置优先）。
