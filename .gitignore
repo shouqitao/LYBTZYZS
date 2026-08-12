@@ -15,8 +15,10 @@ bld/
 [Bb]uild/
 out/
 publish/
+publish-webapi/
 artifacts/
 packages/
+deploy-start-test.sh
 
 # ========================================
 # User-Specific & IDE
