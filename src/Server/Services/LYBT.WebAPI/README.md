@@ -51,13 +51,14 @@ services.AddSyncModule(configuration);
 
 | 控制器 | 路由前缀 | 说明 |
 |--------|----------|------|
-| AuthController | /api/v1/auth | 登录/登出/Token刷新 |
-| UsersController | /api/v1/users | 用户 CRUD/角色管理 |
-| PatientsController | /api/v1/patients | 患者档案/搜索 |
+| IdentityController | /api/v1/users + /api/v1/auth/* | 用户 CRUD/角色管理（BaseUsersController 继承）+ 认证（登录/登出/刷新/自动登录/验证） |
+| PatientsController | /api/v1/patients | 患者档案/搜索/导入导出 |
 | MedicalCasesController | /api/v1/medicalcases | 医案流程/状态迁移 |
-| HerbsController | /api/v1/herbs | 药材搜索/导入导出 |
-| FormulasController | /api/v1/formulas | 验方模板/克隆 |
-| SyncController | /api/v1/sync | 数据同步 |
+| CatalogController | /api/v1/herbs + /api/v1/formulas | 药材/验方管理（A-31-C3b 合并） |
+| RegistrationsController | /api/v1/registrations | 挂号/接诊/取消/QuickVisit |
+| ReportsController | /api/v1/reports | 报表（收入/接诊量/医生绩效/排行/流量） |
+| ConfigurationController | /api/v1/configuration | 系统配置（GET/节级 PUT/校验/重启——SHELL-018） |
+| DeployController | /api/v1/deploy | 部署上传/重启（SysAdminOnly） |
 | DiagnosticsController | /api/v1/diagnostics | 诊断信息 |
 | HealthController | /health | 健康检查 |
 
@@ -99,6 +100,8 @@ dotnet ef database update \
 
 ## 更新记录
 
+- **2026-08-11（WEBAPI-DOC）**：端点表/文件表/章节对齐实际 10 控制器——删已移除的 SyncController（全仓 0 命中）章节；Auth+Users→IdentityController（BaseUsersController 继承）；Herbs+Formulas→CatalogController（A-31-C3b 合并）；补 Registrations/Reports/Configuration/Deploy
+
 | 日期 | 变更 |
 |------|------|
 | 2026-03-01 | 精简 README，添加设计依据章节 |
@@ -111,20 +114,17 @@ dotnet ef database update \
 
 ## API 端点详细列表
 
-### AuthController (/api/v1/auth)
+### IdentityController (/api/v1/users + /api/v1/auth/*)
 
 ```
+# 认证端点（类路由 /api/v1/users + 绝对路径 /api/v1/auth/*——T4 P0#1 修复）
 POST   /api/v1/auth/login              # 用户登录 [AllowAnonymous] [RateLimit:Login]
 POST   /api/v1/auth/auto-login         # AutoLoginToken自动登录 [AllowAnonymous]
 POST   /api/v1/auth/logout             # 用户登出 [AllowAnonymous]
 POST   /api/v1/auth/refresh            # 刷新访问令牌 [AllowAnonymous]
 GET    /api/v1/auth/validate           # 验证Token有效性 [Authorize]
-POST   /api/v1/auth/change-password    # 修改密码
-```
 
-### UsersController (/api/v1/users)
-
-```
+# 用户 CRUD（继承 BaseUsersController——A-31-C3a Auth+Users 合并）
 GET    /api/v1/users                   # 分页查询用户
 GET    /api/v1/users/{id}              # 按 ID 查询用户
 POST   /api/v1/users                   # 创建用户
@@ -171,34 +171,28 @@ POST   /api/v1/medicalcases/{id}/suspend            # 挂起医案
 POST   /api/v1/medicalcases/{id}/save               # 统一保存
 ```
 
-### HerbsController (/api/v1/herbs)
+### CatalogController (/api/v1/herbs + /api/v1/formulas——A-31-C3b 合并)
 
 ```
+# 药材（Herbs 原端点——合并后路由不变）
 GET    /api/v1/herbs                   # 分页查询药材
 GET    /api/v1/herbs/{id}              # 按 ID 查询药材
 POST   /api/v1/herbs                   # 创建药材
 PUT    /api/v1/herbs/{id}              # 更新药材
-DELETE /api/v1/herbs/{id}              # 删除药材
+DELETE /api/v1/herbs/{id}              # 删除药材（引用检查 HERB-005）
 GET    /api/v1/herbs/search            # 搜索药材
-POST   /api/v1/herbs/import            # 批量导入药材
-GET    /api/v1/herbs/export            # 导出药材
-```
+POST   /api/v1/herbs/batch-import      # 批量导入药材
+POST   /api/v1/herbs/import-excel      # Excel 导入（HERB-006）
 
-### FormulasController (/api/v1/formulas)
-
-```
+# 验方（Formulas 原端点）
 GET    /api/v1/formulas                # 分页查询验方
 GET    /api/v1/formulas/{id}           # 按 ID 查询验方
 POST   /api/v1/formulas                # 创建验方
 PUT    /api/v1/formulas/{id}           # 更新验方
 DELETE /api/v1/formulas/{id}           # 删除验方
 GET    /api/v1/formulas/search         # 搜索验方
-POST   /api/v1/formulas/{id}/clone     # 克隆验方
+POST   /api/v1/formulas/{id}/clone     # 克隆验方（仅本地——远程待补 FORM-014）
 ```
-
-### SyncController (/api/v1/sync)
-
-数据同步相关端点。
 
 ### DiagnosticsController (/api/v1/diagnostics)
 
@@ -325,24 +319,22 @@ GET    /health                         # 健康检查 (数据库 + 自定义检�
 
 ## 代码文件结构
 
-### Controllers/ (12 文件)
+### Controllers/ (10 文件)
 
 | 文件 | 类 | 继承 | 用途 |
 |------|-----|------|------|
-| AuthController.cs | `AuthController` | BaseApiController | 认证控制器: 登录/自动登录/登出/Token刷新/Token验证 |
-| UsersController.cs | `UsersController` | BaseApiController | 用户管理: CRUD/密码管理/状态切换/批量操作 |
+| IdentityController.cs | `IdentityController` | BaseUsersController | 用户管理（CRUD/密码/状态/批量）+ 认证（登录/登出/刷新/自动登录/验证） |
 | PatientsController.cs | `PatientsController` | BaseApiController | 患者管理: CRUD/导入导出/引用检查/批量操作 |
-| MedicalCasesController.cs | `MedicalCasesController` | BaseApiController | 医案CRUD: 创建/更新/删除/查询/搜索 |
-| MedicalCaseWorkflowController.cs | `MedicalCaseWorkflowController` | BaseApiController | 医案工作流: 状态更新/关闭/挂起/取消 |
-| MedicalCasePrintController.cs | `MedicalCasePrintController` | BaseApiController | 医案打印: 打印记录/日志 |
-| MedicalCaseAuditController.cs | `MedicalCaseAuditController` | BaseApiController | 医案审计: 权限查询/审计日志 |
-| HerbsController.cs | `HerbsController` | BaseApiController | 药材管理: CRUD/导入导出/引用检查/批量操作 |
-| FormulasController.cs | `FormulasController` | BaseApiController | 验方管理: CRUD/导入导出/药材验证/批量操作 |
-| SyncController.cs | `SyncController` | BaseApiController | 数据同步: 元数据/比对/上传/下载/删除 |
+| MedicalCasesController.cs | `MedicalCasesController` | BaseApiController | 医案CRUD/工作流/打印/审计: 创建/更新/删除/状态/历史/批量详情 |
+| CatalogController.cs | `CatalogController` | BaseApiController | 药材+验方管理: CRUD/导入导出/克隆/引用检查/批量操作 |
+| RegistrationsController.cs | `RegistrationsController` | BaseApiController | 挂号: 创建/队列/接诊/取消/QuickVisit |
+| ReportsController.cs | `ReportsController` | BaseApiController | 报表: 收入/接诊量/医生绩效/药材排行/患者流量 |
+| ConfigurationController.cs | `ConfigurationController` | BaseApiController | 系统配置: GET/节级 PUT/校验/重启（SHELL-018） |
+| DeployController.cs | `DeployController` | BaseApiController | 部署: 上传/重启（SysAdminOnly——DEPLOY-PERM） |
 | HealthController.cs | `HealthController` | BaseApiController | 健康检查: 基础探活/Ping/详细健康检查(含数据库) |
 | DiagnosticsController.cs | `DiagnosticsController` | BaseApiController | 系统诊断: 日志级别查看/调试模式/运行时日志级别调整 |
 
-#### AuthController 端点
+#### IdentityController 端点（认证）
 
 ```
 POST   /api/v1/auth/login              [AllowAnonymous] [RateLimit:Login] 用户登录
@@ -353,7 +345,7 @@ GET    /api/v1/auth/validate           [Authorize] 验证Token有效性
 GET    /api/v1/auth                    [Authorize] 返回405
 ```
 
-#### UsersController 端点
+#### IdentityController 端点（用户——BaseUsersController 继承）
 
 ```
 GET    /api/v1/users                   [AdminOrSuperAdmin] 分页查询用户
@@ -416,7 +408,7 @@ GET    /api/v1/medicalcases/search     [DoctorOrAdmin] 跨医案搜索
 GET    /api/v1/medicalcases/pending    [DoctorOrAdmin] [Obsolete] 待看诊队列(迁移到/query)
 ```
 
-#### HerbsController 端点
+#### CatalogController 端点（药材）
 
 ```
 GET    /api/v1/herbs                   [DoctorOrAdmin] [OutputCache] 分页查询
@@ -438,7 +430,7 @@ POST   /api/v1/herbs/batch-disable    [DoctorOrAdmin] 批量禁用
 POST   /api/v1/herbs/batch-delete     [DoctorOrAdmin] 批量删除
 ```
 
-#### FormulasController 端点
+#### CatalogController 端点（验方）
 
 ```
 GET    /api/v1/formulas                [DoctorOrAdmin] [OutputCache] 分页查询(角色过滤)
@@ -456,17 +448,6 @@ POST   /api/v1/formulas/{id}/restore  [DoctorOrAdmin] 恢复已删除
 POST   /api/v1/formulas/batch-delete  [DoctorOrAdmin] 批量删除
 POST   /api/v1/formulas/batch-enable  [DoctorOrAdmin] 批量启用
 POST   /api/v1/formulas/batch-disable [DoctorOrAdmin] 批量禁用
-```
-
-#### SyncController 端点
-
-```
-GET    /api/v1/sync/entity-types       [DoctorOrAdmin] 获取支持的实体类型
-GET    /api/v1/sync/metadata           [DoctorOrAdmin] 获取实体元数据
-POST   /api/v1/sync/compare            [DoctorOrAdmin] 比对本地与服务器差异
-POST   /api/v1/sync/upload             [DoctorOrAdmin] 上传本地数据
-POST   /api/v1/sync/download           [DoctorOrAdmin] 下载服务器数据
-POST   /api/v1/sync/delete             [DoctorOrAdmin] 同步删除(带引用检查)
 ```
 
 #### DiagnosticsController 端点
