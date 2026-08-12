@@ -51,6 +51,10 @@ public class IdentityDbContext : IdentityDbContext<ApplicationUser, IdentityRole
         modelBuilder.ApplyConfiguration(new SecurityAuditLogConfiguration());
         modelBuilder.ApplyConfiguration(new SystemLogConfiguration());
 
+        // IDENTITY-DBCONTEXT-FIX (P0): 应用 UserConfiguration——ApplicationUser.LastLoginTime
+        // 映射到 Users 表 LastLoginAt 列；漏挂时 EF 按属性名查 LastLoginTime → SqlException → 登录 500
+        modelBuilder.ApplyConfiguration(new UserConfiguration());
+
         // 软删除全局查询过滤器（与 AppDbContext ApplyOptimizations 保持一致）
         modelBuilder.Entity<SecurityAuditLog>().HasQueryFilter(e => !e.IsDeleted);
 
