@@ -8,6 +8,7 @@ using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Foundation.Security;
+using LYBT.Desktop.Foundation.Services;
 using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.DependencyInjection;
 using LYBT.Desktop.Infrastructure.Interfaces;
@@ -170,6 +171,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IUserNotificationService, UserNotificationService>();
 
             containerRegistry.RegisterSingleton<IClinicSettingsService, ClinicSettingsService>();
+            containerRegistry.RegisterSingleton<IDesktopUpdateService, DesktopUpdateService>();
             containerRegistry.RegisterSingleton<IClientConfigurationStore, ClientConfigurationStore>();
             containerRegistry.RegisterSingleton<ICommonDialogService, CommonDialogService>();
 
@@ -217,6 +219,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IStartupPipeline, StartupPipeline>();
             containerRegistry.Register<IStartupStep, ErrorHandlingStartupStep>("ErrorHandling");
             containerRegistry.Register<IStartupStep, ModuleCoordinatorStartupStep>("ModuleCoordinator");
+            containerRegistry.Register<IStartupStep, DesktopUpdateStartupStep>("DesktopUpdate");
             containerRegistry.Register<IStartupStep, LocalWebApiStartupStep>("LocalWebApi");
             // API健康检查 - 5秒超时，后台异步执行（Transient生命周期，每次解析新实例）
             containerRegistry.Register<ApiHealthCheckStartupStep>();

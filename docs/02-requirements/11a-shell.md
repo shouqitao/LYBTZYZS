@@ -169,7 +169,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 **角色**: sysadmin
 **优先级**: Must
-**状态**: ⚠️ 部分实现（2026-08-12 决策 A 已落地——GET / 下载页（DownloadController 公开）+ /releases/ 静态服务（DesktopUpdate:ReleasesPath 条件启用，生产已配）；Setup.exe Velopack 打包/安装器 4 项属打包工程）
+**状态**: ✅ 已实现（2026-08-12：决策 A 下载页 + /releases/ 静态服务 + VELOPACK 框架——velopack-pack.ps1 打包脚本 + sync-to-server.ps1 + 客户端 UpdateManager 检查（Velopack 1.2.0）+ 部署文档更新；Setup.exe 实机打包由运维执行脚本产出）
 
 **作为** sysadmin，**我想要** 一键安装 Desktop 应用，**以便** 不需懂 .NET/SQL Server 技术也能完成部署。
 

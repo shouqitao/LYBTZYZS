@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup Label="WPF and Desktop Packages">
     <!-- Prism MVVM 框架 -->
+    <PackageVersion Include="Velopack" Version="1.2.0" />
     <PackageVersion Include="Prism.Core" Version="8.1.97" />
     <PackageVersion Include="Prism.DryIoc" Version="8.1.97" />
     <PackageVersion Include="Prism.Wpf" Version="8.1.97" />

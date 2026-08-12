@@ -43,6 +43,7 @@
 
   <!-- Prism and WPF Framework -->
   <ItemGroup Label="WPF and MVVM Framework">
+    <PackageReference Include="Velopack" />
     <PackageReference Include="Prism.Core" />
     <PackageReference Include="Prism.DryIoc" />
     <PackageReference Include="Prism.Wpf" />

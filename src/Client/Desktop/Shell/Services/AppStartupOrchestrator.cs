@@ -64,6 +64,7 @@ public class AppStartupOrchestrator
     {
         pipeline.RegisterStep(_container.Resolve<IStartupStep>("ErrorHandling"));
         pipeline.RegisterStep(_container.Resolve<IStartupStep>("ModuleCoordinator"));
+        pipeline.RegisterStep(_container.Resolve<IStartupStep>("DesktopUpdate"));
         pipeline.RegisterStep(_container.Resolve<IStartupStep>("LocalWebApi"));
         pipeline.RegisterStep(_container.Resolve<ApiHealthCheckStartupStep>());
     }

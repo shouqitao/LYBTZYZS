@@ -24,4 +24,9 @@ public sealed class DesktopUpdateOptions
     /// 下载基础 URL
     /// </summary>
     public string? DownloadBaseUrl { get; set; }
+
+    /// <summary>
+    /// Velopack 更新源绝对地址（US-SHELL-010: 如 https://server/releases——UpdateManager 消费）
+    /// </summary>
+    public string? FeedUrl { get; set; }
 }

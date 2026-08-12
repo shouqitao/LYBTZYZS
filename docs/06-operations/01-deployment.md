@@ -102,21 +102,25 @@ ss -tlnp | grep 5000
 
 ### Desktop 自动升级
 
-WebAPI 同时提供 Desktop 客户端发布包下载服务，支持客户端自动升级。
+WebAPI 同时提供 Desktop 客户端发布包下载服务（**Velopack 更新源**——US-SHELL-010）。
 
 ```
 服务器目录结构:
 C:\Services\LYBT-API\              ← WebAPI 运行目录（deploy.ps1 产出）
-C:\Services\LYBT-releases\         ← Desktop 发布包（独立目录，不会被 publish 清空）
-    ├── lybt-desktop-1.0.0.zip
-    ├── lybt-desktop-1.1.0.zip
-    └── lybt-desktop-1.2.0.zip
+C:\Services\LYBT-releases\         ← Velopack 发布包（独立目录，不会被 publish 清空）
+    ├── Setup.exe                     ← 安装包（免管理员权限，%LocalAppData%\LYBT）
+    ├── RELEASES                      ← Velopack 更新清单
+    └── lybt-desktop-*.nupkg          ← 更新包（增量/全量）
 ```
 
-升级机制：
-1. Desktop 启动时请求 `GET /api/version` 获取最新版本号
-2. 版本低于服务端 → 从 `/releases/` 下载最新 zip 包
-3. 本地解压替换 → 重启客户端
+打包流程（开发者/运维）：
+1. `pwsh scripts/velopack-pack.ps1 -Version 1.2.0` —— dotnet publish（win-x64 自包含单文件）→ vpk pack（生成 Setup.exe + RELEASES + nupkg）
+2. `pwsh scripts/sync-to-server.ps1 -Server <host> -RemotePath "C:\Services\LYBT-releases"` —— scp/SMB 同步更新源到服务器
+
+升级机制（Desktop 客户端）：
+1. 启动时 `DesktopUpdateStartupStep` 后台检查（Velopack UpdateManager ← `DesktopUpdate:FeedUrl`）
+2. 发现新版本 → 提示用户 → 下载更新包 → 重启应用完成更新
+3. 服务端 `GET /` 提供下载主页（公开——显示 Setup.exe 下载 + 版本号）；`/releases/` 静态托管更新源
 
 > **关键设计**：Releases 目录与 WebAPI 部署目录**完全独立**，确保 `dotnet publish` 不会清空历史发布包。
 
