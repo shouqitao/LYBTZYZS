@@ -208,7 +208,7 @@ if ($dbHealth.status -ne "Healthy") { throw "Database unhealthy" }
 # 4. 详细状态检查（需认证 Token）
 $token = Invoke-RestMethod -Uri "http://localhost:5000/api/v1/auth/login" `
     -Method Post -ContentType "application/json" `
-    -Body '{"username":"sysadmin","password":"SysAdmin@2026!"}' | Select-Object -ExpandProperty token
+    -Body '{"username":"sysadmin","password":"<从密钥管理获取，勿硬编码>"}' | Select-Object -ExpandProperty token
 $headers = @{ Authorization = "Bearer $token" }
 $details = Invoke-RestMethod -Uri "http://localhost:5000/api/v1/health/details" -Headers $headers
 Write-Host "DB Status: $($details.database.status), Duration: $($details.database.duration)ms"
