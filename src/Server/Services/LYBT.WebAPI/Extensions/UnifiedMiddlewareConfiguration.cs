@@ -185,8 +185,9 @@ public static class UnifiedMiddlewareConfiguration
     /// </summary>
     private static WebApplication ConfigureSwaggerMiddleware(this WebApplication app)
     {
-        // 仅在非生产环境启用 Swagger
-        if (!app.Environment.IsProduction())
+        // SWAGGER-TOGGLE: 非生产默认启用；生产默认关闭（Swagger:Enabled=true 可在线启用——测试发布调试用）
+        var swaggerEnabled = app.Configuration.GetValue<bool>("Swagger:Enabled");
+        if (!app.Environment.IsProduction() || swaggerEnabled)
         {
             app.UseSwagger();
             app.UseSwaggerUI(c =>

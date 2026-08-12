@@ -10,6 +10,12 @@ public sealed class SwaggerOptions
     public const string SectionName = "Swagger";
 
     /// <summary>
+    /// 是否启用 Swagger（SWAGGER-TOGGLE: 默认 false——生产默认关闭；
+    /// 配置 Swagger:Enabled=true 可在线启用——测试发布/调试用）
+    /// </summary>
+    public bool Enabled { get; set; }
+
+    /// <summary>
     /// API 文档标题
     /// </summary>
     [Required]

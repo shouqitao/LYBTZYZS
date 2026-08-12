@@ -34,6 +34,9 @@ public class DownloadController : BaseApiController
         var enabled = _configuration.GetValue<bool>("DesktopUpdate:Enabled");
         var baseUrl = _configuration["DesktopUpdate:DownloadBaseUrl"] ?? "/releases";
         var releasesPath = _configuration["DesktopUpdate:ReleasesPath"];
+        // SWAGGER-TOGGLE: 主页提供 API 文档入口（Swagger:Enabled=true 时显示）
+        var swaggerEnabled = _configuration.GetValue<bool>("Swagger:Enabled")
+                             || !"Production".Equals(_configuration["App:Environment"], StringComparison.OrdinalIgnoreCase);
 
         var files = new List<(string Name, long Size, DateTime Modified)>();
         string? version = null;
@@ -56,7 +59,7 @@ public class DownloadController : BaseApiController
             files = files.OrderByDescending(f => f.Modified).ToList();
         }
 
-        var html = BuildHtml(enabled, baseUrl, version, files);
+        var html = BuildHtml(enabled, baseUrl, version, files, swaggerEnabled);
         return Content(html, "text/html; charset=utf-8");
     }
 
@@ -68,7 +71,7 @@ public class DownloadController : BaseApiController
         return string.IsNullOrWhiteSpace(core) ? null : core;
     }
 
-    private static string BuildHtml(bool enabled, string baseUrl, string? version, List<(string Name, long Size, DateTime Modified)> files)
+    private static string BuildHtml(bool enabled, string baseUrl, string? version, List<(string Name, long Size, DateTime Modified)> files, bool swaggerEnabled)
     {
         var rows = files.Count == 0
             ? "<p style=\"opacity:0.6\">暂无发布包（等待管理员上传）</p>"
@@ -97,6 +100,9 @@ public class DownloadController : BaseApiController
             + "<h1>凌隐宝堂中医诊所 · 桌面客户端下载</h1>"
             + "<div class=\"sub\">下载安装包后运行 Setup.exe 即可完成安装（免管理员权限）</div>"
             + "<a class=\"btn\" href=\"" + exeUrl + "\">下载桌面客户端</a>"
+            + (swaggerEnabled
+                ? "<a class=\"btn\" href=\"/swagger\" style=\"background:#5f6b7a;margin-left:12px\">API 文档</a>"
+                : "")
             + "<div class=\"meta\"><span>版本：" + versionText + "</span><span>" + statusText + "</span></div>"
             + "<ul>" + rows + "</ul>"
             + "</div></body></html>";
