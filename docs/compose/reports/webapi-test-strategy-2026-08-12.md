@@ -198,17 +198,72 @@ L4 部署层（新建）     → Production 配置 + 占位符 + 环境变量模
 
 ---
 
-## 七、技术要点
+## 七、社区/官方最佳实践对照（2026-08-12 查询校准）
+
+> 依据：EF Core 官方文档（choosing-a-testing-strategy）+ ASP.NET Core 官方集成测试文档 + Nick Chapsas/DevLeader/NimblePros 高赞实践
+
+### 7.1 数据库选择（EF Core 官方立场）
+
+**官方明确反对 InMemory**：
+> "Avoid the in-memory provider for testing purposes - this is discouraged and only supported for legacy applications."
+
+**推荐分级**（官方 choosing-a-testing-strategy）：
+
+| 层 | 数据库 | 用途 | 依据 |
+|----|--------|------|------|
+| 逻辑测试（service 层） | InMemory（仅限简单场景）或 mock | 快 | 官方：simple, constrained query |
+| **数据访问/仓储测试** | **SQLite in-memory** | 真实 SQL 引擎 + 约束校验 | 官方：better compatibility, FK constraints |
+| **迁移/SQL Server 特性** | **真实 SQL Server** | 列映射/索引/性能 | 官方：no substitute |
+
+**修正原方案**：L2 集成层**优先 SQLite in-memory**（快 + 约束真实），真实 SQL Server 只留关键映射/迁移验证——不是全部走真实 DB。
+
+### 7.2 WebApplicationFactory 标准模式（官方 + 社区一致）
+
+```
+CustomWebApplicationFactory : WebApplicationFactory<IApiMarker>
+├── IApiMarker（空接口标记 Program，避免 public partial Program 可见性问题）
+├── ConfigureWebHost:
+│   ├── services.Remove(生产 DbContextOptions 描述符)
+│   └── services.Add(测试 DbContext 注册——SQLite/真实 SQL)
+└── IAsyncLifetime:
+    ├── InitializeAsync（迁移/种子：lookup 数据在此）
+    └── DisposeAsync
+```
+
+**数据种子规则**（社区共识）：
+- lookup/参考数据（永不变化）→ factory 里种
+- 测试专属数据 → `IAsyncLifetime.InitializeAsync` 种（贴近测试）
+
+### 7.3 Respawn 数据库清理（Nick Chapsas 力荐）
+
+- 观察 FK 关系 → 确定性 DELETE 顺序（比 TRUNCATE 快、免禁 FK）
+- **每个测试前清理**（不是测试后）——测试失败时数据库状态可查
+- 本方案已引用 Respawn 包（从未用）——正好用上
+
+### 7.4 测试金字塔分层（社区共识）
+
+```
+单元（快，多）→ 逻辑正确
+集成（中）   → 数据访问 + SQLite 约束
+系统（慢，少）→ WebApplicationFactory 启动 + 真实流程
+E2E（最少）  → 完整业务链路
+```
+
+**修正原方案**：L2-L4 分层与金字塔一致；真实 SQL 只在「迁移/映射验证」用（数量最少），不是每个测试都连真实库。
+
+---
+
+## 八、技术要点
 
 1. **WebApplicationFactory<Program>**：Program 已 public（兼容性已保证），无需改动生产代码
 2. **测试数据库**：本机 SQL Server（真实实例）——用 `Respawn` 每用例重置，不污染数据；连接串注入测试配置
 3. **配置注入**：`WithWebHostBuilder` + `UseSetting` / 环境变量——不写死测试配置到代码
 4. **隔离**：每个测试类独立数据库名（如 LYBT_Test_{ClassName}），并行安全
-5. **不需要新包**：Mvc.Testing / Respawn / SqlServer 均已引用
+5. **不需要新包**：Mvc.Testing / Respawn / SqlServer 均已引用（SQLite in-memory 需新引 `Microsoft.EntityFrameworkCore.Sqlite`）
 
 ---
 
-## 八、验收标准
+## 九、验收标准
 
 - P0 完成后：**发布前跑 L3 冒烟 = 能拦截 #1 #2 #3 #9**（上线 10 坑中 4 个进自动检查）
 - 全部完成后：10 坑中 **9 个进自动检查**（#6 环境差异部分覆盖、#8 设计决策除外）
@@ -216,7 +271,7 @@ L4 部署层（新建）     → Production 配置 + 占位符 + 环境变量模
 
 ---
 
-## 九、待确认决策
+## 十、待确认决策
 
 1. **测试数据库用哪个**：本机 SQL Server（推荐，快）/ 192.168.190.243 测试库（需网络）
 2. **P0 先做还是全做**：建议 P0（0.5-1 天）先落地验证方案，再按 ROI 推进
