@@ -196,6 +196,13 @@ public static class UnifiedMiddlewareConfiguration
                 c.RoutePrefix = "swagger";
                 c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
             });
+
+            // SWAGGER-ANON: SwaggerUI 中间件短路优先；匿名端点兜底（FallbackPolicy
+            // RequireAuthenticatedUser 对无端点的 /swagger 请求返回 401——本端点使
+            // swagger 路径有 AllowAnonymous 端点——授权豁免；SwaggerUI 正常时短路 200，
+            // 异常时 404（不暴露存在性））
+            app.MapGet("/swagger/{**path}", () => Results.NotFound())
+                .WithMetadata(new Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute());
         }
 
         return app;
