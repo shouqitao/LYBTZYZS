@@ -249,6 +249,17 @@ dotnet publish src/Server/Services/LYBT.WebAPI -c Release
 dotnet publish src/Server/Services/LYBT.WebAPI -c Release -r win-x64 --self-contained true
 ```
 
+### 配置闭环（2026-08-12：环境配置文件缺失自动生成）
+
+WebAPI 启动时若 `appsettings.json` / `appsettings.{Environment}.json` 缺失，自动生成默认模板（含双下划线占位符）——启动顺利走到配置校验器提示注入，而非「配置空」隐晦错误。已存在文件**不覆盖**（自定义配置优先）。
+
+```bash
+# 首次部署：复制模板后替换占位符（或直接注入环境变量——模板占位符即变量名）
+# 模板占位符 = 运维注入名（配置唯一化）：Jwt__SecretKey / DefaultPasswords__SysAdminPassword /
+#             DefaultPasswords__NewUserPassword / SystemAdmin__InitialSetupToken /
+#             ConnectionStrings__DefaultConnection
+```
+
 ### 发布前门禁（决策 2026-08-12：L3 冒烟第 0 步——拦截上线坑 #1 #3 #9）
 
 ```bash

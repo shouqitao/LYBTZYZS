@@ -76,6 +76,10 @@ public class Program
                 Env.Load(envPath);
                 Log.Information("已加载环境变量文件: {EnvFile}", envFile);
             }
+            // 配置闭环（2026-08-12）：环境配置文件缺失时自动生成默认模板（含占位符）——
+            // 保证启动顺利走到配置校验器（提示注入），而非「配置空」隐晦错误
+            EnsureEnvironmentConfigFiles(environment);
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Windows 服务支持 - 必须在其他 Host 配置之前
@@ -281,6 +285,104 @@ public class Program
 
         Log.Information("默认密码配置验证通过 (环境: {Environment})", environment.EnvironmentName);
     }
+
+    /// <summary>
+    /// 环境配置文件缺失时自动生成默认模板（配置闭环——尽量保证正常顺利启动）。
+    /// 生成到当前工作目录（与 CreateBuilder 的 AddJsonFile 加载路径一致）；
+    /// 占位符语义 = 运维注入名（配置唯一化——双下划线变量名）。
+    /// </summary>
+    private static void EnsureEnvironmentConfigFiles(string environment)
+    {
+        var cwd = Directory.GetCurrentDirectory();
+        var templates = new Dictionary<string, string>
+        {
+            ["appsettings.json"] = AppSettingsTemplate,
+            [$"appsettings.{environment}.json"] = environment == "Production" ? ProductionTemplate : DevelopmentTemplate
+        };
+
+        foreach (var (fileName, template) in templates)
+        {
+            var path = Path.Combine(cwd, fileName);
+            if (File.Exists(path))
+                continue;
+
+            try
+            {
+                File.WriteAllText(path, template);
+                Log.Information("配置闭环: 自动生成缺失配置文件 {File}（占位符待环境变量注入）", fileName);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "配置闭环: 自动生成 {File} 失败（文件系统只读？）——启动继续", fileName);
+            }
+        }
+    }
+
+    private static readonly string AppSettingsTemplate = """
+    {
+      "ConnectionStrings": {
+        "DefaultConnection": "Server=${ConnectionStrings__DefaultConnection};Database=LYBTDB;User Id=${DB_USER};Password=${DB_PASSWORD};Encrypt=False;TrustServerCertificate=True;"
+      },
+      "Jwt": {
+        "SecretKey": "${Jwt__SecretKey}",
+        "Issuer": "LYBT.WebAPI",
+        "Audience": "LYBT.Client",
+        "AccessTokenExpirationMinutes": 480,
+        "RefreshTokenExpirationDays": 7
+      },
+      "DefaultPasswords": {
+        "SysAdminPassword": "${DefaultPasswords__SysAdminPassword}",
+        "NewUserPassword": "${DefaultPasswords__NewUserPassword}",
+        "ForceChangeOnFirstLogin": true
+      },
+      "SystemAdmin": {
+        "AllowAutoCreateInProduction": false,
+        "InitialSetupToken": "${SystemAdmin__InitialSetupToken}"
+      },
+      "Logging": {
+        "LogLevel": {
+          "Default": "Information",
+          "Microsoft.AspNetCore": "Warning"
+        }
+      },
+      "_comment": "自动生成模板——占位符由环境变量注入（配置唯一化：DefaultPasswords__SysAdminPassword 等双下划线名）"
+    }
+    """;
+
+    private static readonly string ProductionTemplate = """
+    {
+      "Kestrel": {
+        "Endpoints": { "Http": { "Url": "http://0.0.0.0:5000" } }
+      },
+      "Jwt": {
+        "SecretKey": "${Jwt__SecretKey}"
+      },
+      "DefaultPasswords": {
+        "SysAdminPassword": "${DefaultPasswords__SysAdminPassword}",
+        "NewUserPassword": "${DefaultPasswords__NewUserPassword}"
+      },
+      "SystemAdmin": {
+        "AllowAutoCreateInProduction": false,
+        "InitialSetupToken": "${SystemAdmin__InitialSetupToken}"
+      },
+      "DesktopUpdate": {
+        "Enabled": true,
+        "ReleasesPath": "C:\\Services\\LYBT-releases",
+        "DownloadBaseUrl": "/releases",
+        "FeedUrl": "http://your-server.example.com/releases"
+      },
+      "Cors": {
+        "AllowedOrigins": ["http://your-server.example.com:5000"]
+      },
+      "_comment": "自动生成 Production 模板——按 01-deployment.md 发布清单替换占位符"
+    }
+    """;
+
+    private static readonly string DevelopmentTemplate = """
+    {
+      "_comment": "自动生成 Development 模板——本地开发按需补充（连接串/JWT 等）"
+    }
+    """;
 }
 
 
