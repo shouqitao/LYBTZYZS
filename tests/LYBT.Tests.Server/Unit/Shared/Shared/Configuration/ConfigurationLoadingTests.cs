@@ -393,7 +393,8 @@ public class ConfigurationLoadingTests
     [Fact]
     public void AllNewOptions_SectionNameConstants_AreCorrect()
     {
-        LocalJwtOptions.SectionName.Should().Be("LocalJwt");
+        // 本地 JWT 与远程同构——读共享 Jwt 节（LocalWebApiProgram 绑定 LocalJwtOptions.SectionName="Jwt"）
+        LocalJwtOptions.SectionName.Should().Be("Jwt");
         CorsOptions.SectionName.Should().Be("Cors");
         DesktopUpdateOptions.SectionName.Should().Be("DesktopUpdate");
         OfflineModeOptions.SectionName.Should().Be("OfflineMode");
