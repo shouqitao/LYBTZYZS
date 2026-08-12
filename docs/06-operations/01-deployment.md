@@ -249,6 +249,22 @@ dotnet publish src/Server/Services/LYBT.WebAPI -c Release
 dotnet publish src/Server/Services/LYBT.WebAPI -c Release -r win-x64 --self-contained true
 ```
 
+### ForceResetOnStartup 用法（2026-08-12 修复——开发/测试环境密码重置）
+
+`SystemAdmin:ForceResetOnStartup=true` 时启动重置 sysadmin 密码及锁定状态（**PBKDF2 哈希——UserManager.ResetPasswordAsync**）：
+
+- **开发环境**（ASPNETCORE_ENVIRONMENT=Development）：直接触发（宽松）
+- **非开发环境**（如测试部署 Production 名）：需 `InitialSetupToken` 验证通过（安全门控——与 AllowAutoCreateInProduction 同模式；**不要求 AllowAutoCreateInProduction=true**——ForceReset 只重置不创建，更安全）
+- 新密码来源：`DefaultPasswords:SysAdminPassword`（环境变量注入——未配置时仅重置状态并警告）
+- 生产默认 false——生产必须显式开启 + token 验证，安全语义保持
+
+```bash
+# 测试部署重置 sysadmin 密码示例
+export SystemAdmin__ForceResetOnStartup=true
+export SystemAdmin__InitialSetupToken="<token>"
+export DefaultPasswords__SysAdminPassword="<新密码>"
+```
+
 ### 配置优先级（2026-08-12 CFG-BATCH2 修正）
 
 **环境变量 > runtime-overrides.json > appsettings.{Environment}.json > appsettings.json**

@@ -35,7 +35,10 @@ public sealed class SystemAdminOptions
     public bool AutoCreateOnStartup { get; set; } = true;
 
     /// <summary>
-    /// 启动时强制重置系统管理员密码（仅开发/测试环境有效，生产环境始终忽略）
+    /// 启动时强制重置系统管理员密码及锁定状态（ForceReset 修复 2026-08-12）：
+    /// 开发环境直接生效；非开发环境（如测试部署 Production 名）需 InitialSetupToken 验证通过（安全门控）。
+    /// 重置走 UserManager.ResetPasswordAsync（PBKDF2 哈希）——真正重置密码，非仅状态。
+    /// 生产默认 false——非开发环境必须显式开启 + token 验证，安全语义保持。
     /// </summary>
     public bool ForceResetOnStartup { get; set; } = false;
 
