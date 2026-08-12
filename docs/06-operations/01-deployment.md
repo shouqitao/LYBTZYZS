@@ -236,6 +236,15 @@ dotnet publish src/Server/Services/LYBT.WebAPI -c Release
 dotnet publish src/Server/Services/LYBT.WebAPI -c Release -r win-x64 --self-contained true
 ```
 
+### 发布前门禁（决策 2026-08-12：L3 冒烟第 0 步——拦截上线坑 #1 #3 #9）
+
+```bash
+# L3 系统层冒烟（WebApplicationFactory 真实启动 Remote WebAPI）——发布前必跑
+dotnet test tests/LYBT.Tests.Server/ --filter "FullyQualifiedName~WebApiSystemTests|FullyQualifiedName~DeploymentConfigTests|FullyQualifiedName~DbContextMappingSmokeTests"
+# 通过 = 启动无崩溃 + 路由注册全 + FallbackPolicy 401 + 配置契约校验（JWT/占位符/密码）
+# 真实 SQL 验证（列映射 #2）需 TEST_DB_CONNECTION 环境变量（测试库 192.168.190.243 LYBTDB_Test）
+```
+
 ### 部署后健康检查验证
 
 部署完成后，按以下步骤验证系统状态：

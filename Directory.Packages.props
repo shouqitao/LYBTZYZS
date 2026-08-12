@@ -9,6 +9,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.26" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.26" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.26" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.26" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.26" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.26" />
     <!-- Microsoft Extensions 系列 - 使用 8.0.x 兼容版本 -->

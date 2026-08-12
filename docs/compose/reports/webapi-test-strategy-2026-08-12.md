@@ -1,6 +1,6 @@
 # WebAPI 后端测试方案设计（专家评估 + 分层方案）
 
-> 日期：2026-08-12 | 状态：设计稿（待用户确认） | 范围：**仅 WebAPI 后端**（Desktop 测试另行设计）
+> 日期：2026-08-12 | 状态：**已实施（L2-L4 全落地，commit 待填）** | 范围：**仅 WebAPI 后端**（Desktop 测试另行设计）
 > 依据：上线实战 10 坑 + 测试实证盘点 + ASP.NET Core 官方 WebApplicationFactory 模式 + Respawn 测试隔离
 
 ---
