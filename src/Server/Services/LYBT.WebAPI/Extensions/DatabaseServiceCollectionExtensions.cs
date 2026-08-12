@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.WebAPI.HealthCheck;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.EntityFrameworkCore;
@@ -35,11 +36,8 @@ public static class DatabaseServiceCollectionExtensions
         var jwtOptions = new JwtOptions();
         configuration.GetSection(JwtOptions.SectionName).Bind(jwtOptions);
 
-        // 数据库配置 - 从统一配置读取
-        var connectionString = databaseOptions.ConnectionString ??
-                              configuration.GetConnectionString("DefaultConnection") ??
-                              Environment.GetEnvironmentVariable("CONNECTION_STRING") ??
-                              string.Empty;
+        // 数据库配置 - 从统一配置读取（HEALTHCHECK-FALLBACK-FIX: 共享 resolver——与 SqlServerHealthCheck 同源）
+        var connectionString = DatabaseConnectionResolver.Resolve(configuration, databaseOptions);
 
         // 缓存配置 - 配置Microsoft内置MemoryCacheOptions
         services.Configure<Microsoft.Extensions.Caching.Memory.MemoryCacheOptions>(options =>
