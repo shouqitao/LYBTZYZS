@@ -152,7 +152,7 @@ set ASPNETCORE_ENVIRONMENT=Production
 **解决**: 将中文替换为 ASCII 字符，或使用 SCP 二进制传输（`scp` 优于 base64 管道）。
 
 ### 2. 密码策略校验失败
-**现象**: `DefaultPasswords` 含环境变量占位符 `${SYSADMIN_PASSWORD}`，未被替换。
+**现象**: `DefaultPasswords` 含环境变量占位符 `${DefaultPasswords__SysAdminPassword}`，未被替换。
 
 **解决**: 用 Python 读取 JSON → 修改值 → SCP 上传覆盖（PowerShell 的 `$` 转义太复杂）。
 

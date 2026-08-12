@@ -33,7 +33,7 @@ public static class IdentitySeedData
 
     /// <summary>
     /// 解析系统管理员初始密码（K4 安全加固）
-    /// 生产环境：必须通过环境变量提供（DefaultPasswords__SysAdminPassword，兼容 ${SYSADMIN_PASSWORD} 命名），
+    /// 生产环境：必须通过环境变量提供（DefaultPasswords__SysAdminPassword——配置唯一化，单一变量名），
     /// 缺失时抛异常，禁止使用配置默认/明文密码回退；
     /// 开发/本地环境：允许使用配置默认密码。
     /// </summary>
@@ -42,17 +42,13 @@ public static class IdentitySeedData
         if (!environment.IsProduction())
             return configuredPassword;
 
+        // 配置唯一化（2026-08-12）：单一环境变量名——DefaultPasswords__SysAdminPassword（双下划线——踩坑 #1）
         var envPassword = Environment.GetEnvironmentVariable("DefaultPasswords__SysAdminPassword");
-        if (string.IsNullOrWhiteSpace(envPassword))
-        {
-            // 兼容 appsettings.Production.json 的 ${SYSADMIN_PASSWORD} 占位符命名
-            envPassword = Environment.GetEnvironmentVariable("SYSADMIN_PASSWORD");
-        }
 
         if (string.IsNullOrWhiteSpace(envPassword))
         {
             throw new InvalidOperationException(
-                "生产环境必须通过环境变量 DefaultPasswords__SysAdminPassword（或 SYSADMIN_PASSWORD）提供系统管理员初始密码，禁止使用配置默认密码");
+                "生产环境必须通过环境变量 DefaultPasswords__SysAdminPassword 提供系统管理员初始密码，禁止使用配置默认密码");
         }
 
         return envPassword;

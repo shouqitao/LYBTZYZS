@@ -101,6 +101,19 @@ echo "LYBT WebAPI started, PID=$!"
 
 > 若服务器已有 start.sh，只需修改其中密码/密钥值后执行；`setsid` 确保进程脱离 SSH 会话不被回收。
 
+> **配置原则（2026-08-12 用户确立）：配置跟着变量走**——`appsettings.{环境}.json` + 环境变量覆盖是唯一机制，环境切了值自然切。**每个环境内部必须「唯一一致」**（一个配置项一个来源，无重复冲突键）；**跨环境各走各的值**（Dev/Test/Prod 密码本来就不同——这是分文件的意义）。
+>
+> **测试部署密码表**（权威来源，API 测试登录用）：
+>
+> | 环境 | 权威来源 | sysadmin 密码 |
+> |------|---------|--------------|
+> | 本机开发 | appsettings.Development.json | `DevPass123!` |
+> | 自动化测试 | appsettings.Test.json | `TestAdmin2025@` |
+> | **服务器测试发布** | **start.sh `DefaultPasswords__SysAdminPassword`** | **= start.sh 实际值**（唯一权威，改动时同步本表） |
+> | 正式生产 | 环境变量注入（正式发布时换强随机） | `${DefaultPasswords__SysAdminPassword}` 占位符 → env |
+>
+> ⚠️ 登录 401 时先查本表（用对应环境的权威密码），勿凭记忆猜密码。sysadmin 密码被安全设计保护（K4：生产禁默认回退 + ResetPassword 拒绝重置 sysadmin），改密只能走 ChangePassword（需旧密码）。
+
 **第四步：重启服务**
 
 ```bash
@@ -220,7 +233,7 @@ WebAPI 同时提供 Desktop 客户端发布包下载服务（**Velopack 更新�
 
 > **测试/生产密码策略（2026-08-12）**：
 > - **测试环境**：可用默认密码（或临时环境变量）验证功能——不敏感，正式发布前更换即可
-> - **正式发布**：必须通过环境变量 `SYSADMIN_PASSWORD` / `NEWUSER_PASSWORD` 注入强随机密码（≥12 位混合大小写+数字），禁止沿用测试默认值
+> - **正式发布**：必须通过环境变量 `DefaultPasswords__SysAdminPassword` / `DefaultPasswords__NewUserPassword` 注入强随机密码（≥12 位混合大小写+数字），禁止沿用测试默认值
 > - 生产门控（US-SHELL-017）：`AllowAutoCreateInProduction=false` + `InitialSetupToken` 一次性令牌——确保首次创建 sysadmin 走受控流程
 | `DOTNET_ENVIRONMENT` | — | .NET 运行环境（备选） |
 
