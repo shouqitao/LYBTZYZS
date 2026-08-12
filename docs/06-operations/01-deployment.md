@@ -274,7 +274,7 @@ netstat -ano | findstr ":5000"
 | 2 | **JWT 密钥必须 Base64 编码** | 启动报「JWT SecretKey 必须是有效的 Base64 字符串」 | `JwtOptions` 校验器要求 Base64 格式（≥32 字符） | 用 `python3 -c "import base64,os; print(base64.b64encode(os.urandom(48)).decode())"` 生成 |
 | 3 | **缺默认密码环境变量** | 启动报「新用户密码不符合安全策略」 | `DefaultPasswords__NewUserPassword` 未设置，校验器要求小写+数字 | start.sh 同时设 `SysAdminPassword` + `NewUserPassword` |
 | 4 | **DB 连接串 Encrypt 兼容** | 启动后 health Unhealthy / 登录 500，日志 `pre-login handshake error 35` | SQL Server 不支持强制加密（`Encrypt=True`），TLS 握手失败 | 内网/测试库用 `Encrypt=False;TrustServerCertificate=True` |
-| 5 | **路由模板重复 version** | 启动崩溃 `route parameter 'version' appears more than one time` | 类级路由含 `api/v{version}` 且动作级又写完整前缀（CatalogController formulas 段） | 动作级只写相对路径；已修（1f4f54a91） |
+| 5 | **路由模板重复 version** | 启动崩溃 `route parameter 'version' appears more than one time` | 类级路由含 `api/v{version}` 且动作级又写完整前缀（CatalogController formulas 段——相对模板拼接出双 version） | 动作级写**绝对路径**（`/` 开头——覆盖类级前缀，version 参数仅一次；相对路径会拼出 `/api/v1/herbs/formulas` 错误语义）；已修（1f4f54a91） |
 | 6 | **模块 DbContext 漏映射** | 登录 500，日志 `列名 'LastLoginTime' 无效` | IdentityDbContext 漏 `ApplyConfiguration(UserConfiguration)`，实体属性未映射到列 | 已修（a3ab01417）；新增模块 DbContext 必须注册实体配置 |
 | 7 | **健康检查连接串 fallback** | `/health/database` Unhealthy「连接字符串未配置」 | SqlServerHealthCheck 只读 `Database:ConnectionString`，不读 `ConnectionStrings:DefaultConnection` | 已修（8d02ed365）——DatabaseConnectionResolver fallback 链 |
 | 8 | **Swagger 空白页** | `/swagger` 跳转 index 后空白 | 生产严格 CSP（`require-trusted-types-for 'script'`）阻止 SwaggerUI 渲染 | `/swagger` 路径 CSP 豁免（保留核心防护）；已修（b1c2bf2bb） |
