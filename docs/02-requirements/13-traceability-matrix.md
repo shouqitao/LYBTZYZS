@@ -249,7 +249,7 @@
 ## 十五、报表管理（US-REPORT × 4）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
-| US-REPORT-004 | Could | — | — | GET /reports/trend/* 等 5 端点 | ReportsController.cs:69-158 | — | ✅ 已实现（R3-补：趋势/绩效/排行/流量） |
+| US-REPORT-004 | Could | — | — | GET /reports/trend/* 等 5 端点 | ReportsController.cs:69-158 | — | ✅ 已实现（R3-补：趋势/绩效/排行/流量）——**双模式 2026-08-12 决策 B：仅远程，本地裁剪** |
 |-------|:---:|------|------|------|------|------|------|
 | US-REPORT-001 | Must | — | — | GET /reports/daily/income | ReportsController.cs:30 | — | ✅ 已实现（endDate 默认=startDate + 400 校验） |
 | US-REPORT-002 | Must | — | — | GET /reports/daily/consultations | ReportsController.cs:38 | — | ✅ 已实现（startDate>endDate→400） |

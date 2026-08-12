@@ -166,10 +166,19 @@
 
 **实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/ReportsController.cs:69-158`、`ReportService.cs:52-103`；Desktop `ReportsHomeViewModel` 当前仅消费 3 个 daily 端点
 
+**双模式**（2026-08-12 决策 B：本地裁剪）:
+| 模式 | 行为 |
+|------|------|
+| 远程 | ✅ 5 端点全提供（trend/income、trend/consultations、doctor-performance、herbs/ranking、patient-flow） |
+| 本地 | ❌ 不提供（LocalWebAPI 仅 3 个 daily 端点）——**有意裁剪**：本地=单机小诊所场景，趋势分析属管理决策用途，一般连远程使用；且本地数据孤立 N1，趋势聚合意义有限；避免为低价值场景补双端代码 |
+
+> **2026-08-12 决策 B（用户确认）**：US-REPORT-004 趋势/绩效报表仅远程模式提供，本地模式不提供（裁剪合理，非缺陷）。原 10-reports.md v1.0 克制声明「不做趋势分析」已被代码超越（远程已实现），此 US 补记双模式语义。
+
 ## 变更记录
 
 | 日期 | 变更 | 原因 |
 |------|------|------|
+| 2026-08-12 | US-REPORT-004 补双模式段（决策 B：趋势/绩效仅远程，本地裁剪） | W-2 报表双轨收敛——需求定义本地语义 |
 | 2026-08-11 | US-REPORT-004 补记（趋势/绩效/排行端点——代码已实现未文档化，超越 v1.0 克制声明） | R3-补 反向脱节收编 |
 | 2026-06-28 | 新建报表模块需求文档，落地 US-REPORT-001~003（A7 报表清单：3 端点 + 时间范围参数） | A7 报表清单设计落地 |
 | 2026-06-28 | US-REPORT-001/002/003 状态从 ✅已实现 降级为 🚧 v1.0 待实现 | 审计 S1：ReportsController 当前无 startDate/endDate 参数，US AC 要求时间范围未达 |
