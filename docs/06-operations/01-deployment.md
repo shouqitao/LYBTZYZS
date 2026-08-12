@@ -175,6 +175,11 @@ WebAPI 同时提供 Desktop 客户端发布包下载服务（**Velopack 更新�
 | `Jwt__AccessTokenExpirationMinutes` | `480` | Access Token 有效期（分钟） |
 | `DefaultPasswords__SysAdminPassword` | — | sysadmin 默认密码（生产环境必须覆盖） |
 | `DefaultPasswords__NewUserPassword` | — | 新用户默认密码（生产环境必须覆盖） |
+
+> **测试/生产密码策略（2026-08-12）**：
+> - **测试环境**：可用默认密码（或临时环境变量）验证功能——不敏感，正式发布前更换即可
+> - **正式发布**：必须通过环境变量 `SYSADMIN_PASSWORD` / `NEWUSER_PASSWORD` 注入强随机密码（≥12 位混合大小写+数字），禁止沿用测试默认值
+> - 生产门控（US-SHELL-017）：`AllowAutoCreateInProduction=false` + `InitialSetupToken` 一次性令牌——确保首次创建 sysadmin 走受控流程
 | `DOTNET_ENVIRONMENT` | — | .NET 运行环境（备选） |
 
 > **双下划线约定**：ASP.NET Core 通过 `__`（双下划线）分隔层级来覆盖 JSON 配置节。例如 `ConnectionStrings__DefaultConnection` 覆盖 `ConnectionStrings:DefaultConnection`。
