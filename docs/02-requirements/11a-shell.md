@@ -178,15 +178,19 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 - [ ] 安装到 `%LocalAppData%\LYBT`（免管理员权限）
 - [ ] 安装后自动创建桌面快捷方式
 - [ ] 静默安装支持：`Setup.exe --silent`（用于批量部署）
+- [ ] **WebAPI 下载主页（2026-08-12 决策 A 补充）**：`GET /` 返回极简 HTML 下载页（公开可访问，无需认证）——显示「桌面客户端下载」+ 下载按钮（指向发布包）+ 版本号/更新时间
+- [ ] 发布包静态服务：`/releases/` 目录托管 Setup.exe + Velopack 更新源文件（`RELEASES`/`.nupkg`）
 
 **业务规则**:
 1. 使用 Velopack 打包，替代手动安装 .NET 8 Runtime。
 2. 更新源（Update Feed）挂载在 WebAPI 服务器提供。
+3. 下载页**公开可访问**（无敏感信息）；发布包经 Velopack 公钥签名验证（防篡改）。
+4. 业界模式（参考）：极简 Landing Page——`GET /` 返回 HTML（项目名 + 版本 + 下载按钮 + 简短说明），发布包静态托管于同源 `/releases/`。
 
 **双模式**:
 | 模式 | 行为 |
 |------|------|
-| 远程 | 安装后指向 WebAPI 地址 |
+| 远程 | 安装后指向 WebAPI 地址；下载页 `http://<host>:5000/` |
 | 本地 | 安装后自动切换本地模式（内嵌 LocalWebAPI） |
 
 **实现参考**: `velopack` NuGet + `VelopackApp.Build().Run()` 集成于 `App.xaml.cs`

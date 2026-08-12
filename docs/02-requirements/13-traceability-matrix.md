@@ -173,7 +173,7 @@
 | US-SHELL-004 | Could | ADR-0007 | — | AccountSettingsControl | AccountSettingsControl | — | ✅ 已实现 |
 | US-SHELL-005 | Must | ADR-0006/0007 | — | NavigationCoordinator | NavigationCoordinator | — | ✅ 已实现 |
 | US-SHELL-007 | Must | ADR-0002/0009 | Flow 3 | SwitchingApiClient + ModeSwitchValidator | IConnectionModeProvider.SwitchModeAsync | D18/D19/S5/X1.1 | ✅ 部分实现（双模路由✅；SwitchMode 守卫 ERR-70506 无代码） |
-| US-SHELL-010 | Must | ADR-0006 | — | Velopack 打包 | velopack NuGet | S1 | 🧲 v1.0 待实现 |
+| US-SHELL-010 | Must | ADR-0006 | — | Velopack 打包 + GET / 下载页 + /releases/ 静态 | velopack NuGet | S1 | 🧲 v1.0 待实现（2026-08-12 深化：补下载主页 GET / + 发布包静态服务 /releases/——决策 A 公开可访问） |
 | US-SHELL-011 | Must | ADR-0006 | — | FirstRunSetupViewModel 扩展 | FirstRunSetupViewModel | S1/S2 | 🧲 v1.0 待实现 |
 | US-SHELL-012 | Should | ADR-0006 | — | UpdateManager | UpdateManager.CheckForUpdatesAsync | — | v2.0 规划 |
 | US-SHELL-013 | Should | — | — | ILocalDbBackupService + 恢复 UI | ILocalDbBackupService | S4/X3.2 | ✅ 已实现（T7: ILocalDbBackupService + 备份管理 UI + 登录自动备份） |
