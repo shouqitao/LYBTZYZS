@@ -415,7 +415,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 获取验方分页列表
         /// </summary>
-        [HttpGet("api/v{version:apiVersion}/formulas")]
+        [HttpGet("/api/v{version:apiVersion}/formulas")]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<FormulaListDto>>), 200)]
         public async Task<IActionResult> GetFormulaList(
             [FromQuery] int page = 1,
@@ -437,7 +437,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 下载验方导入模板（T4 P0#4: 此前端点缺失桌面调用 404）
         /// </summary>
-        [HttpGet("api/v{version:apiVersion}/formulas/import-template")]
+        [HttpGet("/api/v{version:apiVersion}/formulas/import-template")]
         public IActionResult FormulaImportTemplate()
         {
             var headers = new[] { "验方名称", "分类", "功效", "用法", "药材" };
@@ -449,7 +449,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 导出验方（T4 P0#4）
         /// </summary>
-        [HttpGet("api/v{version:apiVersion}/formulas/export")]
+        [HttpGet("/api/v{version:apiVersion}/formulas/export")]
         public async Task<IActionResult> FormulaExport([FromQuery] string? keyword = null, CancellationToken ct = default)
         {
             var (operatorId, _, operatorRole) = GetOperator();
@@ -475,7 +475,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 获取验方详情
         /// </summary>
-        [HttpGet("api/v{version:apiVersion}/formulas/{id}")]
+        [HttpGet("/api/v{version:apiVersion}/formulas/{id}")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         public async Task<IActionResult> GetFormulaById(Guid id, CancellationToken ct)
         {
@@ -495,7 +495,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 新增验方
         /// </summary>
-        [HttpPost("api/v{version:apiVersion}/formulas")]
+        [HttpPost("/api/v{version:apiVersion}/formulas")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateFormula([FromBody] FormulaInputDto input, CancellationToken ct)
@@ -516,7 +516,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 更新验方信息
         /// </summary>
-        [HttpPut("api/v{version:apiVersion}/formulas/{id}")]
+        [HttpPut("/api/v{version:apiVersion}/formulas/{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         public async Task<IActionResult> UpdateFormula(Guid id, [FromBody] FormulaInputDto input, CancellationToken ct)
@@ -541,7 +541,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 删除验方（软删除）
         /// </summary>
-        [HttpDelete("api/v{version:apiVersion}/formulas/{id}")]
+        [HttpDelete("/api/v{version:apiVersion}/formulas/{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> DeleteFormula(Guid id, CancellationToken ct)
@@ -568,7 +568,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 切换验方启用/禁用状态
         /// </summary>
-        [HttpPost("api/v{version:apiVersion}/formulas/{id}/toggle-status")]
+        [HttpPost("/api/v{version:apiVersion}/formulas/{id}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> ToggleFormulaStatus(Guid id, CancellationToken ct)
@@ -594,7 +594,7 @@ namespace LYBT.WebAPI.Controllers
         /// 恢复已删除的验方 — 仅 Admin（业务管理）
         /// </summary>
         [Authorize(Policy = PolicyConstants.AdminBusinessOnly)]
-        [HttpPost("api/v{version:apiVersion}/formulas/{id}/restore")]
+        [HttpPost("/api/v{version:apiVersion}/formulas/{id}/restore")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> RestoreFormula(Guid id, CancellationToken ct)
@@ -617,7 +617,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 批量删除验方
         /// </summary>
-        [HttpPost("api/v{version:apiVersion}/formulas/batch-delete")]
+        [HttpPost("/api/v{version:apiVersion}/formulas/batch-delete")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
@@ -632,7 +632,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 批量导入验方（JSON）
         /// </summary>
-        [HttpPost("api/v{version:apiVersion}/formulas/batch-import")]
+        [HttpPost("/api/v{version:apiVersion}/formulas/batch-import")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaBatchImportResultDto>), 200)]
         public async Task<IActionResult> ImportFormulas([FromBody] FormulaBatchImportInputDto request, CancellationToken ct)
@@ -659,7 +659,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 获取待校验验方列表
         /// </summary>
-        [HttpGet("api/v{version:apiVersion}/formulas/pending-validation")]
+        [HttpGet("/api/v{version:apiVersion}/formulas/pending-validation")]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<FormulaDetailDto>>), 200)]
         public async Task<IActionResult> GetPendingValidation(
             [FromQuery] int page = 1,
@@ -679,7 +679,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 校验验方药材匹配
         /// </summary>
-        [HttpPost("api/v{version:apiVersion}/formulas/{formulaId}/herbs/{herbItemId}/validate")]
+        [HttpPost("/api/v{version:apiVersion}/formulas/{formulaId}/herbs/{herbItemId}/validate")]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> ValidateHerb(
@@ -709,7 +709,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 批量启用药方
         /// </summary>
-        [HttpPost("api/v{version:apiVersion}/formulas/batch-enable")]
+        [HttpPost("/api/v{version:apiVersion}/formulas/batch-enable")]
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchEnableFormulas(
@@ -729,7 +729,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 批量禁用药方
         /// </summary>
-        [HttpPost("api/v{version:apiVersion}/formulas/batch-disable")]
+        [HttpPost("/api/v{version:apiVersion}/formulas/batch-disable")]
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchDisableFormulas(
