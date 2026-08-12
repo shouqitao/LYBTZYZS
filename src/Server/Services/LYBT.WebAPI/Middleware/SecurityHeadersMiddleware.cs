@@ -51,7 +51,15 @@ namespace LYBT.WebAPI.Middleware
             headers.Remove("Server");
 
             // Content-Security-Policy (CSP)
-            if (_environment.IsProduction())
+            // SWAGGER-CSP-FIX: /swagger 路径豁免严格 CSP——SwaggerUI 渲染需要 eval/Trusted Types 豁免，
+            // 严格 CSP（require-trusted-types-for 'script'）会阻止其渲染（空白页）。
+            // 豁免策略：保留核心防护（nosniff/frame/XSS），去掉 script-src 限制（允许 SwaggerUI 的 bundle 执行）。
+            // 业务 API 路径保持严格 CSP 不变。
+            if (context.Request.Path.StartsWithSegments("/swagger"))
+            {
+                headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
+            }
+            else if (_environment.IsProduction())
             {
                 // 生产环境：严格的CSP策略
                 headers["Content-Security-Policy"] = GetProductionCspPolicy();
