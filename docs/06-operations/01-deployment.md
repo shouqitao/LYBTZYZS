@@ -222,6 +222,25 @@ Write-Host "DB Status: $($details.database.status), Duration: $($details.databas
 netstat -ano | findstr ":5000"
 ```
 
+### 发布踩坑清单（Pitfalls）
+
+> **2026-08-12 测试发布实战记录**——以下问题均在真实部署中发生，按「问题 → 现象 → 原因 → 规避」记录，供后续发布（含正式发布）直接参考。
+
+| # | 问题 | 现象 | 根因 | 规避方法 |
+|---|------|------|------|---------|
+| 1 | **环境变量键名必须双下划线** | `JWT_SECRET` 设置了但校验报「未配置」 | 配置读取用 `Jwt__SecretKey`（ASP.NET Core 双下划线覆盖），不是大写单层名 | start.sh 统一用双下划线键：`Jwt__SecretKey`、`ConnectionStrings__DefaultConnection`、`SystemAdmin__InitialSetupToken` |
+| 2 | **JWT 密钥必须 Base64 编码** | 启动报「JWT SecretKey 必须是有效的 Base64 字符串」 | `JwtOptions` 校验器要求 Base64 格式（≥32 字符） | 用 `python3 -c "import base64,os; print(base64.b64encode(os.urandom(48)).decode())"` 生成 |
+| 3 | **缺默认密码环境变量** | 启动报「新用户密码不符合安全策略」 | `DefaultPasswords__NewUserPassword` 未设置，校验器要求小写+数字 | start.sh 同时设 `SysAdminPassword` + `NewUserPassword` |
+| 4 | **DB 连接串 Encrypt 兼容** | 启动后 health Unhealthy / 登录 500，日志 `pre-login handshake error 35` | SQL Server 不支持强制加密（`Encrypt=True`），TLS 握手失败 | 内网/测试库用 `Encrypt=False;TrustServerCertificate=True` |
+| 5 | **路由模板重复 version** | 启动崩溃 `route parameter 'version' appears more than one time` | 类级路由含 `api/v{version}` 且动作级又写完整前缀（CatalogController formulas 段） | 动作级只写相对路径；已修（1f4f54a91） |
+| 6 | **模块 DbContext 漏映射** | 登录 500，日志 `列名 'LastLoginTime' 无效` | IdentityDbContext 漏 `ApplyConfiguration(UserConfiguration)`，实体属性未映射到列 | 已修（a3ab01417）；新增模块 DbContext 必须注册实体配置 |
+| 7 | **健康检查连接串 fallback** | `/health/database` Unhealthy「连接字符串未配置」 | SqlServerHealthCheck 只读 `Database:ConnectionString`，不读 `ConnectionStrings:DefaultConnection` | 已修（8d02ed365）——DatabaseConnectionResolver fallback 链 |
+| 8 | **Swagger 空白页** | `/swagger` 跳转 index 后空白 | 生产严格 CSP（`require-trusted-types-for 'script'`）阻止 SwaggerUI 渲染 | `/swagger` 路径 CSP 豁免（保留核心防护）；已修（b1c2bf2bb） |
+| 9 | **Swagger 生产默认关** | 测试环境看不到 API 清单 | `!IsProduction()` 才启用 Swagger，测试环境环境名是 Production | `Swagger:Enabled=true` 配置开关（测试开/正式关） |
+| 10 | **SSH 密码认证** | FlashFXP 连接失败 | 服务器 `sshd_config PasswordAuthentication no` | 服务器开启 `PasswordAuthentication yes` + `systemctl restart sshd` |
+
+> **代码-文档一致性约定（2026-08-12 确立）**：每次代码/配置变更（尤其部署相关——环境变量键名、校验规则、安全头、路由）必须同步本清单与对应文档；本清单是后续用户手册/运维手册的素材来源，不得滞后于代码。
+
 ### IIS 配置要点
 
 如使用 IIS 作为反向代理（非直接 Kestrel）：
