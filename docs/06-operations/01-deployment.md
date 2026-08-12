@@ -55,12 +55,15 @@
 密码：（从密钥管理获取）
 ```
 
-#### 部署步骤（FlashFXP + SSH）
+#### 部署步骤（FlashFXP + SSH）— 完整 Runbook
+
+> **2026-08-12 测试发布实战验证**：以下步骤是实际发布全过程（含环境变量配置），照此执行即可成功发布。
 
 **第一步：本地编译**
 
 ```bash
 dotnet publish src/Server/Services/LYBT.WebAPI -c Release -o ./publish-webapi
+# 产出：D:\source\repos\LYBTZYZS\publish-webapi\（约 43MB / 138 文件）
 ```
 
 **第二步：FlashFXP 上传**
@@ -70,27 +73,66 @@ dotnet publish src/Server/Services/LYBT.WebAPI -c Release -o ./publish-webapi
 3. 右侧窗格：定位到远程 `/home/player/lybt-api/`
 4. 全选左侧文件 → 拖拽到右侧（覆盖旧文件）
 
-**第三步：重启服务**
+**第三步：配置环境变量（start.sh）**
 
-通过 SSH 客户端（如 PuTTY / FlashFXP 内置终端）执行：
+> ⚠️ **这是发布成功的关键**——`appsettings.Production.json` 含 `${VAR}` 占位符，服务启动前必须注入实际值（否则启动校验拦截）。完整 start.sh 内容：
+
+```bash
+#!/bin/bash
+# LYBT WebAPI 测试环境启动脚本
+# 位置：/home/player/lybt-api/start.sh
+# 用法：bash start.sh
+
+export ASPNETCORE_ENVIRONMENT=Production
+export ConnectionStrings__DefaultConnection="Server=192.168.190.243;Database=LYBTDB_Dev;User ID=sa;Password=<SQL密码>;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"
+export Jwt__SecretKey="<Base64 编码密钥，见踩坑清单 #2>"
+export DefaultPasswords__SysAdminPassword="<初始 sysadmin 密码>"
+export DefaultPasswords__NewUserPassword="<新用户默认密码，含小写+数字>"
+export SystemAdmin__AllowAutoCreateInProduction="false"
+export SystemAdmin__InitialSetupToken="<一次性令牌>"
+export Security__RateLimiting__Enabled="false"
+
+cd /home/player/lybt-api
+pkill -f "dotnet.*LYBT.WebAPI.dll" 2>/dev/null
+sleep 2
+setsid nohup /home/player/.dotnet/dotnet LYBT.WebAPI.dll --environment Production > logs/webapi.log 2>&1 < /dev/null &
+echo "LYBT WebAPI started, PID=$!"
+```
+
+> 若服务器已有 start.sh，只需修改其中密码/密钥值后执行；`setsid` 确保进程脱离 SSH 会话不被回收。
+
+**第四步：重启服务**
 
 ```bash
 ssh -p 5555 player@60.190.215.86
-
-# 停止旧服务
-pkill -9 -f 'dotnet.*LYBT'
-sleep 2
-
-# 启动新服务
-cd /home/player/lybt-api && nohup /home/player/.dotnet/dotnet LYBT.WebAPI.dll --environment Production &
-
-# 退出 SSH
+cd /home/player/lybt-api && bash start.sh
 exit
 ```
 
-**第四步：验证**
+**第五步：完整验证（发布成功判定）**
 
-浏览器打开 `http://60.190.215.86:5000/health`
+```bash
+# 1. 服务进程
+pgrep -af "LYBT.WebAPI.dll"
+
+# 2. 健康检查（含数据库）
+curl http://localhost:5000/health          # 期望: Healthy
+curl http://localhost:5000/health/database # 期望: Healthy
+
+# 3. 登录冒烟（测试环境默认密码）
+curl -X POST http://localhost:5000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"sysadmin","password":"<初始密码>"}'
+# 期望: {"success":true,"data":{"token":"eyJ..."}}
+
+# 4. 下载主页
+curl -o /dev/null -w "%{http_code}" http://localhost:5000/  # 期望: 200
+
+# 5. Swagger（测试环境开）
+curl -o /dev/null -w "%{http_code}" http://localhost:5000/swagger  # 期望: 301→200
+```
+
+> **全部 5 项通过 = 发布成功**（2026-08-12 测试发布即按此验证全绿）。
 
 #### 配置注意事项
 
