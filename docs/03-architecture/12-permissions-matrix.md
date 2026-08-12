@@ -66,7 +66,7 @@
 
 | # | 类型 | 问题 | 代码位置 | 修复方向 |
 |---|------|------|---------|---------|
-| **K4** | 💻 | **生产门控失效**：`IdentitySeedData.SeedRolesAndAdminAsync` 不读 `SystemAdminOptions.AllowAutoCreateInProduction`/`InitialSetupToken`，也无 `IHostEnvironment` 判定，直接用明文 `SysAdmin@2026!` 创建 sysadmin。生产环境 sysadmin 默认密码裸奔 | `IdentitySeedData.cs` | 注入 `IDefaultPasswordService`+`IHostEnvironment`，复用 `GetOrGeneratePassword`/`ValidateSetupToken` |
+| **K4** | 💻 | **生产门控失效**：✅ 已修复（2026-08-12 K4）：`IdentitySeedData.ResolveSysAdminPassword` 生产必须环境变量 `DefaultPasswords__SysAdminPassword`（缺失抛异常禁回退），不再有明文默认密码 | `IdentitySeedData.cs` | K4 已实施（`IdentitySeedData.ResolveSysAdminPassword` + `DatabaseInitializationService.ValidateSetupToken`） |
 | **K5** | ✅ | **已修复**：`IdentitySeedData` 已移除 admin 种子，仅创建 sysadmin。admin 改由向导创建 | `IdentitySeedData.cs` | 已完成 |
 
 ### P1 严重（角色边界正确性）

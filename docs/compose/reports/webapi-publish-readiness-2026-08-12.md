@@ -20,7 +20,7 @@
 | 2 | 数据库连接串 | ⚠️ 待注入 | `ConnectionStrings:DefaultConnection` 含 `${DB_SERVER}/${DB_USER}/${DB_PASSWORD}` 环境变量占位——**发布时须设置 3 个环境变量**；注意库名 `LYBTDB_Dev`（测试环境语义——确认是否改名） |
 | 3 | JWT 密钥 | ⚠️ 待注入 | `Jwt:SecretKey = ${JWT_SECRET}`——生产必须注入 ≥32 字符强随机密钥（03-webapi-deployment-summary §101 明确） |
 | 4 | 生产门控（US-SHELL-017） | ✅ | `SystemAdmin.AllowAutoCreateInProduction=false` + `InitialSetupToken=${LYBT_INITIAL_SETUP_TOKEN}`——验证器**显式拦截未展开占位符**（`${...}` 检测——ProductionConfigurationValidator §267-278） |
-| 5 | 默认密码 | ⚠️ 待注入 | `DefaultPasswords` 占位符——生产由 DefaultPasswordService 随机生成（US-SHELL-017 设计）；`${SYSADMIN_PASSWORD}/${NEWUSER_PASSWORD}` 环境变量注入 |
+| 5 | 默认密码 | ⚠️ 待注入 | `DefaultPasswords` 占位符——生产由环境变量 `DefaultPasswords__SysAdminPassword` 注入（K4 加固——缺失抛异常禁回退，US-SHELL-017）；`${DefaultPasswords__SysAdminPassword}/${DefaultPasswords__NewUserPassword}` 占位符 |
 | 6 | Swagger 生产关闭 | ✅ | `if (!IsProduction) UseSwagger`（UnifiedMiddlewareConfiguration §189-192）——生产不暴露 |
 | 7 | CORS | ✅ | `AllowedOrigins = ["http://60.190.215.86:5000"]`——**目标地址已预配** |
 | 8 | 静态文件/更新源 | ⚠️ FeedUrl 待替换 | `DesktopUpdate.ReleasesPath=C:\Services\LYBT-releases` 已配；**`FeedUrl = https://your-server.example.com/releases` 是占位符——须替换为 `http://60.190.215.86:5000/releases`** |

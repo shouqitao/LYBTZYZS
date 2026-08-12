@@ -340,18 +340,18 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 - [x] `AutoCreateOnStartup` 控制是否启动时自动创建 sysadmin（默认 `true`）
 - [x] `AllowAutoCreateInProduction` 默认 `false`——生产环境不自动创建 sysadmin（安全默认值）
 - [x] `InitialSetupToken` —— 生产环境创建 sysadmin 需要一次性设置令牌（环境变量提供，不入库）
-- [x] `DefaultPasswordService.GetOrGeneratePassword()` —— 生产环境自动生成随机密码（替代硬编码默认密码）
-- [x] `DefaultPasswordService.ValidateSetupToken()` —— 加密常量时间比较，防时序攻击
+- [x] `IdentitySeedData.ResolveSysAdminPassword()` —— 生产环境从环境变量 `DefaultPasswords__SysAdminPassword` 读取初始密码（K4：缺失抛异常禁回退）
+- [x] `DatabaseInitializationService.ValidateSetupToken()` —— 加密常量时间比较，防时序攻击
 - [x] `ForceChangeOnFirstLogin` —— `DefaultPasswordOptions` 控制首次登录是否强制改密
 
 **业务规则**:
 1. **开发环境**：`AutoCreateOnStartup=true` + `ForceResetOnStartup` 可选（开发时强制重置密码）。
 2. **生产环境**：`AllowAutoCreateInProduction=false` + 需配置 `InitialSetupToken` 环境变量才能创建 sysadmin。
-3. 生产环境默认密码由 `DefaultPasswordService.GetOrGeneratePassword()` 随机生成，不再硬编码。
+3. 生产环境默认密码由环境变量 `DefaultPasswords__SysAdminPassword` 提供（K4 加固），不再硬编码。
 4. `SessionTimeoutMinutes` 控制会话超时（默认 240 分钟）。
 5. `SystemAdminOptions` 配置节 `appsettings.json → SystemAdmin`。
 
-**实现参考**: `SystemAdminOptions.cs`（`Shared.Configuration`）、`DefaultPasswordService.cs`（`Infrastructure/Configuration`）、`DatabaseInitializationService.cs:99-113`
+**实现参考**: `SystemAdminOptions.cs`（`Shared.Configuration`）、`IdentitySeedData.cs`（`ResolveSysAdminPassword`——K4 环境变量读取）、`DatabaseInitializationService.cs`
 
 ---
 

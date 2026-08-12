@@ -94,7 +94,7 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 2. **IDOR 防护**：/profile 和 /change-password 验证 `id == currentUserId`
 3. **不可删除自己**：删除端点校验 `id != currentUserId`
 4. **sysadmin 保护**：详见 [`../01-product/02-personas.md`](../01-product/02-personas.md) §约束
-5. **密码默认值**：新用户创建时默认密码见 `appsettings.json:DefaultPasswords`（开发环境：`admin/Admin@123456`、`sysadmin/SysAdmin@2026!`；生产环境由 `DefaultPasswordService.GetOrGeneratePassword()` 随机生成）
+5. **密码默认值**：新用户创建时默认密码见 `appsettings.json:DefaultPasswords`（开发环境：`admin/Admin@123456`、`sysadmin/SysAdmin@2026!`；生产环境由环境变量 `DefaultPasswords__SysAdminPassword`（K4 加固：缺失抛异常禁回退）提供，开发环境从 appsettings 配置读取）
 6. **角色层级**：详见 [`../01-product/02-personas.md`](../01-product/02-personas.md) §约束
 7. **保留用户名**：admin, administrator, root, system, superadmin, sysadmin
 

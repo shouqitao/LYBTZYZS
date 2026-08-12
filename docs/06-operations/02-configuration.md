@@ -12,7 +12,7 @@
 |--------|------|------|
 | `ConnectionStrings` | 数据库连接 | appsettings.json |
 | `Jwt` | Token 签名密钥、过期时间 | appsettings.json |
-| `DefaultPasswords` | 默认密码（开发占位明文，生产由 DefaultPasswordService 随机生成） | appsettings.json |
+| `DefaultPasswords` | 默认密码（开发占位明文；生产由环境变量 `DefaultPasswords__SysAdminPassword` 注入——K4 缺失抛异常） | appsettings.json |
 | `DesktopUpdate` | Desktop 客户端升级配置 | appsettings.Production.json |
 | `Session` | 会话超时、并发控制 | appsettings.json |
 | `Security.RateLimiting` | 限流策略 | appsettings.json |
@@ -132,7 +132,7 @@ $env:Jwt__SecretKey = "YourSecureSecretKeyAtLeast32CharactersLong"
 }
 ```
 
-> **说明**：`appsettings.json` 中的默认密码为**开发环境占位明文**（设计如此，便于初始化）。生产环境由 `DefaultPasswordService` 随机生成强密码（US-SHELL-017 生产环境安全门控），不沿用此占位值。环境变量覆盖优先级：`DefaultPasswords__SysAdminPassword` 等 > JSON。
+> **说明**：`appsettings.json` 中的默认密码为**开发环境占位明文**（设计如此，便于初始化）。生产环境由环境变量 `DefaultPasswords__SysAdminPassword` 注入（K4 加固——缺失抛异常禁回退，US-SHELL-017 生产环境安全门控），不沿用此占位值。环境变量覆盖优先级：`DefaultPasswords__SysAdminPassword` 等 > JSON。
 
 ---
 
