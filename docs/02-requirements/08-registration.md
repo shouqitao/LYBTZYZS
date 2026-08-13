@@ -189,7 +189,8 @@
 **验收标准**:
 - [ ] 医生可通过姓名/拼音码/身份证号查询患者
 - [ ] 患者不存在时提示是否创建新患者（REG-BR-004）
-- [ ] **第 1 步**：系统自动创建 Registration：`Source=Doctor`、`Status=Waiting`、`DoctorId=当前医生`（REG-BR-003 修订——不再跳过 Waiting）
+- [ ] **UI 双入口（2026-08-13 定案）**：医生选中患者后——「挂号」= 正常挂号单逻辑（可指定医生，UI 设计时深入）；「快速看诊」= 默认当前医生（快捷高效措施）
+- [ ] **第 1 步**：快速看诊 → 系统自动创建 Registration：`Source=Doctor`、`Status=Waiting`、`DoctorId=当前医生`（REG-BR-003 修订——不再跳过 Waiting；doctorId 强制=当前医生，不可选他人）
 - [ ] **第 2 步**：调用 StartVisit（US-REG-005）→ Registration→InProgress + 原子创建 MedicalCase(Active)，关联 RegistrationId
 - [ ] 第 1 步成功第 2 步断网 → 挂号停留 Waiting → **待诊列表可捕捉 → 医生重试接诊（自愈）**
 - [ ] 前端 VM 封装「一键快速看诊」：两步串行调用，医生无感知（REG-BR-006）
@@ -199,6 +200,7 @@
 2. 第 2 步复用 StartVisit（原子创建 MedicalCase + InProgress）——**与普通挂号流程收敛**
 3. 受 BR-001 单活跃医案约束（[07-medical-cases.md](07-medical-cases.md)）
 4. API 单一职能：建挂号（POST /Registrations）与开始就诊（PUT /start-visit）各自独立——**组合由前端 VM 编排**
+5. **旧 quick-visit 端点已删除**（2026-08-13：两步收敛后不再需要，POST /Registrations 已覆盖）
 
 **双模式**:
 | 模式 | 行为 |
