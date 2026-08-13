@@ -21,24 +21,22 @@
 - sysadmin 密码保护真实生效（T5-1 #12）
 - 测试用户创建→登录→删除闭环验证（不污染数据）
 
-## Domain 2: Catalog（⚠️ 发现 bug：PUT formula 500）
+## Domain 2: Catalog（🔴 两个 bug：PUT formula 500——PostProcessor 误判 + RowVersion 并发）
 
-| # | 测试项 | 预期 | 实际 | 结论 |
-|---|--------|------|------|:---:|
-| 1 | herb CRUD（创建/查询/更新/禁用/删除） | 全 2xx | 201/200/200/200/200 | ✅ |
-| 2 | herb 业务规则（禁用后 restore → 422） | 422 | 422「未被删除无需恢复」 | ✅ |
-| 3 | 不存在 herb ID → 404 | 404 | 404 | ✅ |
-| 4 | formula CRUD（创建含药材项/列表/详情） | 2xx | 201/200/200 | ✅ |
-| 5 | **PUT formula → 500** | 200 | **500 稳定复现** | 🔴 **BUG** |
+### Bug 1（已修）：PostProcessor-ConfigurationManager 兼容
+- 已修复（df49d7ba9 + 640da18b3）：PostProcessor 在 ConfigurationManager 下读不到新 Add 的 env provider → 误回退占位符
+- 补 3 个真实 ConfigurationManager 测试（复现原场景）
+- **但部署后 PUT formula 仍 500**——说明还有 Bug 2
 
-**Bug 详情（PUT /api/v1/formulas/{id} 稳定 500）**：
-- 触发：创建方剂（含 herbs 数组）后 PUT 更新（同 body / 改 dosage 都 500）
-- 日志证据：`server '${DB_SERVER}'`——连接串读到**占位符**，但 start.sh 环境变量值正确（进程 env 已实证）
-- **根因推断**：ConfigurationPostProcessor 在 ConfigurationManager（生产真实类型）下执行时，`root.Providers` 快照不含刚 Add 的环境变量 provider → 误判连接串无效 → 回退到 appsettings.json 模板占位符
-- **测试盲区**：PostProcessorTests 用自定义 ConfigurationRoot（非 ConfigurationManager）——测试类型 ≠ 生产类型（方案 §八 明确「生产用 ConfigurationManager」但测试没跟上）
-- **待修复**：派发 omp（PostProcessor 适配 ConfigurationManager + 补真实类型测试）
+### Bug 2（待修）：DbUpdateConcurrencyException（RowVersion 并发）
+- 日志证据：`System.InvalidOperationException: 数据已被其他用户修改` → `DbUpdateConcurrencyException: expected 1 row, affected 0`
+- 触发：PUT /api/v1/formulas/{id}（同 body / 改 dosage 都稳定复现）
+- 代码链：`CatalogEntityCommandHandlerBase.Handle(Update)` → `ApplyUpdate`（UpdateProfile + ReplaceHerbs）→ `BaseRepository.UpdateAsync`（`_dbSet.Update(entity)`）
+- 疑点：`_dbSet.Update(entity)` 对已跟踪实体标记全部 Modified（含 RowVersion 并发令牌）→ EF 用内存中的 RowVersion 作 WHERE → 与库中原值不匹配 → 0 rows
+- **待 omp 深入**：确认 _dbSet.Update 对已跟踪实体的并发令牌处理，修复通用 UpdateEntityCommandHandler（应避免 Update 已跟踪实体，或刷新 RowVersion）
 
-**沉淀**：真机测试价值再次体现——组件测试全绿（PostProcessor 单测过）但系统集成暴露类型差异 bug。这正是「层级错配」教训的第三次验证（InMemory→SQLite→ConfigurationRoot→ConfigurationManager）。
+**沉淀**：真机测试连续发现 2 个 bug——①PostProcessor 测试类型≠生产类型（ConfigurationRoot vs ConfigurationManager）②通用更新命令的并发令牌处理（RowVersion 被 Update 标记）。两个都是「测试自洽但系统不跑」的层级错配实例——单元测试用 mock/fake 永远测不到 EF 真实并发语义。
 
-## Domain 3+: 待继续（等 BUG 修复后重测 formula 更新）
+## Domain 3+: 待继续（等 Bug 2 修复后重测 formula 更新）
+
 

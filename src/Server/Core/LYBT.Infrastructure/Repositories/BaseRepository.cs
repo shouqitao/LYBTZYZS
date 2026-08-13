@@ -89,7 +89,18 @@ namespace LYBT.Infrastructure.Repositories
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            _dbSet.Update(entity);
+            // RowVersion 并发修复（2026-08-13 真机 PUT 500）:
+            // 已跟踪实体（HandlerBase.GetByIdAsync 加载后）——`_dbSet.Update()` 是反模式：
+            // 全属性标记 Modified（含子集合/RowVersion）——UPDATE WHERE RowVersion 用错值 → 0 rows → DbUpdateConcurrencyException。
+            // 已跟踪实体的修改已由 EF 变更跟踪器精确标记（ApplyUpdate 修改的属性）——只 SaveChanges 即可，
+            // EF 生成仅含实际变更列的 UPDATE（RowVersion 仅 WHERE——值正确）。
+            var entry = _context.Entry(entity);
+            if (entry.State == EntityState.Detached)
+            {
+                // 外部 Detached 实体（非 handler 加载路径）——保留 Update() 语义
+                _dbSet.Update(entity);
+            }
+
             await SaveChangesAsync(cancellationToken);
             _logger.LogDebug("[REPO] {EntityType}.Update({Id})", typeof(TEntity).Name, entity.Id);
 
