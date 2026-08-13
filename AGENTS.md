@@ -52,6 +52,20 @@
 4. **每个任务不超过 5 个子任务**（避免失控）
 5. **验收必自己跑**（不能只信子代理自报）
 
+### 技能分配（角色→skill 映射）
+
+| 角色 | 推荐 skill | 用途 |
+|------|------------|------|
+| 架构设计 | system-designer, lybtzys-system-designer | 架构方案、ADR、模块边界 |
+| 功能设计 | requirements-analyst, lybtzys-requirements-analyst | 需求深化、AC、覆盖矩阵 |
+| 代码执行 | lybtzys-coder-rules, mimo-task-pipeline, omp-code | 编码规范、任务流水线、派发模式 |
+| 测试执行 | test-scenarios, aspnetcore-system-tests | 测试用例设计、系统测试 |
+| 文档维护 | documentation-standards | 文档审计、一致性 |
+| 设计质询 | grill-with-docs, grill-me | 方案深度审查 |
+| 编码派发 | coding-agent-dispatch-patterns | psmux/delegate/通道选择 |
+| 代码审查 | lybtzys-code-review | 审计/深度分析/重构工作流 |
+| 需求治理 | requirements-first-governance | 需求先行门禁 |
+
 ---
 
 ## ⚠️ 强制规则（Hermes 统筹 · 每个 session 必读）
