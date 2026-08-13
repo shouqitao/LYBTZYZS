@@ -170,14 +170,10 @@ namespace LYBT.Module.MedicalCases.Services
                 patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
 
             // DB 层分页：QueryPagedAsync 在 DB 完成筛选 + 排序 + 分页（已包含 Include 预加载）
+            // P1-2（2026-08-14）: Doctor 所有权过滤下推 DB（原内存过滤致 TotalCount 偏大）
             var paged = await _repository.QueryPagedAsync(
-                patientName, startDate, endDate, diagnosisKeyword, page, pageSize, cancellationToken);
-
-            // T5-1 #8 (US-MC-007): Doctor 仅搜索本人医案（Admin/SuperAdmin 全量）
-            if (!isAdmin && operatorId.HasValue)
-            {
-                paged.Items = paged.Items.Where(c => c.CreatedBy == operatorId.Value).ToList();
-            }
+                patientName, startDate, endDate, diagnosisKeyword, page, pageSize,
+                operatorId, isAdmin, cancellationToken);
 
             // 映射为DTO（包含嵌套Consultation/Prescription）
             var dtos = _mapper.ToDetailDtos(paged.Items);

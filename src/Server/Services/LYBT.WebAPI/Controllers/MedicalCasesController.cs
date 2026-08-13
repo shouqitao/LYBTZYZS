@@ -70,7 +70,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 获取医案详情
         /// </summary>
-        [HttpGet("{id:guid}")]
+        [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
         public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
         {
@@ -137,7 +137,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 保存医案聚合根
         /// </summary>
-        [HttpPut("{id:guid}")]
+        [HttpPut("{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
@@ -170,7 +170,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 删除医案（软删除）
         /// </summary>
-        [HttpDelete("{id:guid}")]
+        [HttpDelete("{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
@@ -219,7 +219,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 标记是否需要开处方
         /// </summary>
-        [HttpPut("{id:guid}/prescription-flag")]
+        [HttpPut("{id}/prescription-flag")]
         [EnableRateLimiting("ApiCalls")]
         public override async Task<IActionResult> SetPrescriptionFlag(
             Guid id,
@@ -242,7 +242,7 @@ namespace LYBT.WebAPI.Controllers
         /// 记录打印完成 — 仅 Doctor（打印仅 Doctor，2026-08-03 决策）
         /// </summary>
         [Authorize(Policy = PolicyConstants.DoctorOnly)]
-        [HttpPut("{id:guid}/print-completed")]
+        [HttpPut("{id}/print-completed")]
         [EnableRateLimiting("ApiCalls")]
         public override async Task<IActionResult> RecordPrint(
             Guid id,

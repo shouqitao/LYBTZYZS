@@ -49,7 +49,7 @@ public class RegistrationsController : BaseRegistrationsController
             ApiResponse<RegistrationDetailDto>.CreateSuccess(result.Value, "挂号创建成功"));
     }
 
-    [HttpPut("{id:guid}/start-visit")]
+    [HttpPut("{id}/start-visit")]
     [EnableRateLimiting("ApiCalls")]
     [Authorize(Policy = PolicyConstants.DoctorOnly)]
     public override async Task<IActionResult> StartVisit(Guid id, CancellationToken ct)
@@ -68,7 +68,7 @@ public class RegistrationsController : BaseRegistrationsController
     /// 取消挂号
     /// </summary>
     [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
-    [HttpPut("{id:guid}/cancel")]
+    [HttpPut("{id}/cancel")]
     [EnableRateLimiting("ApiCalls")]
     public override async Task<IActionResult> Cancel(Guid id, CancellationToken ct)
     {

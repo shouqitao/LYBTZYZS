@@ -38,7 +38,7 @@ public class ConfigurationController : BaseApiController
 
     // GET /api/v1/configuration
     [HttpGet]
-    public async Task<IActionResult> GetAll(CancellationToken ct)
+    public async Task<IActionResult> GetConfiguration(CancellationToken ct)
     {
         var items = await _store.LoadAllAsync(ct);
         return Success(new { count = items.Count, items });
@@ -46,7 +46,7 @@ public class ConfigurationController : BaseApiController
 
     // GET /api/v1/configuration/{key}
     [HttpGet("{key}")]
-    public async Task<IActionResult> Get(string key, CancellationToken ct)
+    public async Task<IActionResult> GetValue(string key, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -64,7 +64,7 @@ public class ConfigurationController : BaseApiController
 
     // PUT /api/v1/configuration/{key}
     [HttpPut("{key}")]
-    public async Task<IActionResult> Set(string key, [FromBody] string value, CancellationToken ct)
+    public async Task<IActionResult> SetValue(string key, [FromBody] string value, CancellationToken ct)
     {
         var role = User.FindFirst(ClaimTypes.Role)?.Value;
         if (role != UserRole.SuperAdmin.ToString())
@@ -169,7 +169,7 @@ public class ConfigurationController : BaseApiController
 
     // POST /api/v1/configuration/validate
     [HttpPost("validate")]
-    public async Task<IActionResult> Validate(CancellationToken ct)
+    public async Task<IActionResult> ValidateProduction(CancellationToken ct)
     {
         var issues = new List<string>();
 

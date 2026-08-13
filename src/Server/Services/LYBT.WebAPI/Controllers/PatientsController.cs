@@ -161,7 +161,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 获取患者详情
         /// </summary>
-        [HttpGet("{id:guid}")]
+        [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
         {
@@ -205,7 +205,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 更新患者信息
         /// </summary>
-        [HttpPut("{id:guid}")]
+        [HttpPut("{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public async Task<IActionResult> Update(
@@ -238,7 +238,7 @@ namespace LYBT.WebAPI.Controllers
         /// 删除患者（软删除）
         /// </summary>
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-        [HttpDelete("{id:guid}")]
+        [HttpDelete("{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
@@ -267,7 +267,7 @@ namespace LYBT.WebAPI.Controllers
         /// 切换患者状态（启用/禁用）
         /// </summary>
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-        [HttpPost("{id:guid}/toggle-status")]
+        [HttpPost("{id}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
@@ -297,7 +297,7 @@ namespace LYBT.WebAPI.Controllers
         /// 恢复已删除的患者 — 仅 Admin（业务管理）
         /// </summary>
         [Authorize(Policy = PolicyConstants.AdminBusinessOnly)]
-        [HttpPost("{id:guid}/restore")]
+        [HttpPost("{id}/restore")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
         {
@@ -374,7 +374,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 检查患者是否被医案引用
         /// </summary>
-        [HttpGet("{id:guid}/check-reference")]
+        [HttpGet("{id}/check-reference")]
         [ProducesResponseType(typeof(ApiResponse<PatientReferenceCheckDto>), 200)]
         public async Task<IActionResult> CheckReference(Guid id, CancellationToken ct)
         {

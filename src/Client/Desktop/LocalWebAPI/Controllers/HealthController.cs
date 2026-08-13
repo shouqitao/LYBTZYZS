@@ -30,7 +30,7 @@ public class HealthController : BaseApiController
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetHealth()
+    public async Task<IActionResult> Get()
     {
         var dbResult = await _healthCheckService.CheckDatabaseAsync();
         var status = dbResult.Status == HealthStatus.Healthy ? "Healthy" :
@@ -58,7 +58,7 @@ public class HealthController : BaseApiController
 
     [HttpGet("details")]
     [Authorize]
-    public async Task<IActionResult> GetDetails()
+    public async Task<IActionResult> GetDetailedHealth()
     {
         var dbResult = await _healthCheckService.CheckDatabaseAsync();
         var status = dbResult.Status == HealthStatus.Healthy ? "Healthy" :

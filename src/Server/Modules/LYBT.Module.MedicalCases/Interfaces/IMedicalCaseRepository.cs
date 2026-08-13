@@ -64,6 +64,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
 
         /// <summary>
         /// 分页查询医案列表（支持多条件组合查询，DB层分页）
+        /// P1-2（2026-08-14）: 加 doctorId/isAdmin——Doctor 所有权过滤下推 DB（原 Service 内存过滤致 TotalCount 偏大）
         /// </summary>
         Task<PagedResult<MedicalCase>> QueryPagedAsync(
             string? patientName,
@@ -72,6 +73,8 @@ namespace LYBT.Module.MedicalCases.Interfaces
             string? diagnosisKeyword,
             int pageNumber,
             int pageSize,
+            Guid? doctorId = null,
+            bool isAdmin = false,
             CancellationToken cancellationToken = default);
 
         /// <summary>

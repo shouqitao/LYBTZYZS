@@ -69,7 +69,7 @@ public class PatientsController : BaseCrudController
     /// <summary>
     /// 获取患者详情
     /// </summary>
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id}")]
     public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "患者ID") is { } error)
@@ -106,7 +106,7 @@ public class PatientsController : BaseCrudController
     /// <summary>
     /// 更新患者信息
     /// </summary>
-    [HttpPut("{id:guid}")]
+    [HttpPut("{id}")]
     public async Task<IActionResult> Update(
         Guid id,
         [FromBody] PatientInputDto input,
@@ -235,7 +235,7 @@ public class PatientsController : BaseCrudController
     /// <summary>
     /// 检查患者引用关系
     /// </summary>
-    [HttpGet("{id:guid}/check-reference")]
+    [HttpGet("{id}/check-reference")]
     public async Task<IActionResult> CheckReference(Guid id, CancellationToken ct)
     {
         var result = await Sender.Send(new CheckPatientReferenceQuery(id), ct);
@@ -248,7 +248,7 @@ public class PatientsController : BaseCrudController
     /// 删除患者（软删除）— 仅 Admin+
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("{id}")]
     public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "患者ID") is { } error)
@@ -274,7 +274,7 @@ public class PatientsController : BaseCrudController
     /// 切换患者状态（启用/禁用）— 仅 Admin+
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    [HttpPost("{id:guid}/toggle-status")]
+    [HttpPost("{id}/toggle-status")]
     public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "患者ID") is { } error)
@@ -300,7 +300,7 @@ public class PatientsController : BaseCrudController
     /// 恢复已删除的患者 — 仅 Admin（业务管理）
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminBusinessOnly)]
-    [HttpPost("{id:guid}/restore")]
+    [HttpPost("{id}/restore")]
     public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "患者ID") is { } error)

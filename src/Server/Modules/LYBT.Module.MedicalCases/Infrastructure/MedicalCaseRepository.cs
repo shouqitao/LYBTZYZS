@@ -136,6 +136,7 @@ namespace LYBT.Module.MedicalCases.Infrastructure
 
         /// <summary>
         /// 分页查询医案列表（支持多条件组合查询，DB层分页）
+        /// P1-2（2026-08-14）: Doctor 所有权过滤下推 DB（原 Service 内存过滤致 TotalCount 偏大）
         /// </summary>
         public async Task<PagedResult<MedicalCase>> QueryPagedAsync(
             string? patientName,
@@ -144,6 +145,8 @@ namespace LYBT.Module.MedicalCases.Infrastructure
             string? diagnosisKeyword,
             int pageNumber,
             int pageSize,
+            Guid? doctorId = null,
+            bool isAdmin = false,
             CancellationToken cancellationToken = default)
         {
             var query = GetDetailQuery();
@@ -167,6 +170,10 @@ namespace LYBT.Module.MedicalCases.Infrastructure
                     m.Consultation.TcmDiagnosis != null &&
                     m.Consultation.TcmDiagnosis.Contains(diagnosisKeyword));
             }
+
+            // P1-2: 角色过滤下推——非管理员仅看本人医案（TotalCount 随之准确）
+            if (!isAdmin && doctorId.HasValue)
+                query = query.Where(m => m.UserId == doctorId.Value);
 
             query = query.OrderByDescending(m => m.CreatedAt);
 
