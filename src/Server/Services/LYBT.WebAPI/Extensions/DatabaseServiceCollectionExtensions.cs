@@ -102,7 +102,10 @@ public static class DatabaseServiceCollectionExtensions
                     TimeSpan.FromMilliseconds(databaseOptions.RetryPolicy.MaxDelayMs),
                     null);
                 sqlOptions.CommandTimeout(databaseOptions.ConnectionPool.CommandTimeoutSeconds);
-                sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                // 2026-08-13 真机失败真正根因（splitquery-fix）: 全局 SplitQuery → 所有含 Include 的查询
+                // 拆多条 SQL 独立连接——远程 SQL（192.168.190.243，延迟 ~0.42s）多连接 → 连接失败/超时 →
+                // 种子失败/保存异常（本地 SQLite/低延迟测不出）。改回 EF 默认 SingleQuery（JOIN 一条 SQL）——
+                // 确有需要拆分的查询（大 Include 集合笛卡尔爆炸）在查询级用 AsSplitQuery()（按需，不全局）。
             });
 
             options.EnableSensitiveDataLogging(false);
