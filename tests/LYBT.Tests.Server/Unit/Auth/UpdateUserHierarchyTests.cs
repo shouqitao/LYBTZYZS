@@ -199,5 +199,12 @@ public class UpdateUserHierarchyTests
         ) => Task.FromResult(new PagedResult<ApplicationUser>());
 
         public Task UpdateAsync(ApplicationUser user, CancellationToken ct) => Task.CompletedTask;
+
+        // P10-1（2026-08-14）: 新增 Repository 方法（本测试路径不触发——满足接口签名）
+        public Task<ApplicationUser?> GetByUsernameAsync(string username, CancellationToken ct) =>
+            Task.FromResult<ApplicationUser?>(null);
+        public Task UpdateLoginFailureAsync(Guid userId, int failedLoginCount, DateTimeOffset? lockoutEnd, CancellationToken ct) =>
+            Task.CompletedTask;
+        public Task ResetLoginStateAsync(Guid userId, CancellationToken ct) => Task.CompletedTask;
     }
 }

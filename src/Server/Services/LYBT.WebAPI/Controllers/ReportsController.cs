@@ -15,7 +15,7 @@ namespace LYBT.WebAPI.Controllers;
 /// </summary>
 [ApiController]
 [ApiVersion("1")]
-[Route("api/v{version:apiVersion}/reports")]
+[Route("api/v{version:apiVersion}/[controller]")]
 [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
 public class ReportsController : BaseApiController
 {

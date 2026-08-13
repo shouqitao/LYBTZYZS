@@ -366,6 +366,7 @@
 | 2026-08-14 | **API 单一职能剩余 P1（4 独立端点）**：① Configuration 限频（TryAcquireRestartSlot+Task.Run）移入 ISystemConfigurationService.ScheduleRestartAsync；② Deploy 上传（扩展名校验+目录+保存）移入新建 IDeployService；③ Diagnostics 校验（枚举转换+120 上限）移入 LoggingLevelManager string 重载；④ Download 生成（ExtractVersion/BuildHtml/FormatSize+扫描）移入新建 IDownloadService。每处 <30 行，双端同步 | API 单一职能收尾：剩余业务逻辑全部归 Service/Manager——Controller 仅编排 | 技术总监 |
 | 2026-08-14 | **HTTP/HTTPS 双协议（P2-09 US-SHELL-025）**：Kestrel 多端点——Http 5000 默认开 + Https 5001 默认关，配置在 `Server:Endpoints` 段（非 Kestrel:Endpoints——避开内建绑定双重监听；真机实测 bind 失败根因）。开关 Http:Enabled/Https:Enabled + 证书 Path/Password（空用 dev-cert）。顺带修复：非持锁线程 ReleaseMutex 崩溃（finally try-catch）。真机验证 health 200 + Listening 日志 | 灵活协议支持：默认 Http 不破坏部署，HTTPS 按需启用；配置段命名避开 Kestrel 内建绑定陷阱 | 技术总监 |
 | 2026-08-14 | **死代码删除误伤防护固化（P2-10）**：a99619f47 误删 POST /Registrations Create 教训固化——删前 grep 归属确认、删后 swagger 对照、编译后跑端点测试、traceability 同步。端点审计（临时测试导出 swagger vs 反射 Controller 路由）：代码 98 = swagger 98 完全一致（无未暴露/无幽灵，仅 {id:guid} 规范化差异）。traceability 补 SHELL-024/025 两行；P2-08（API 单一职能）确认完成 | 流程防误伤：删除死代码必须三重验证（归属/清单/测试），审计证明当前端点清单健康 | 技术总监 |
+| 2026-08-14 | **架构 P10 修复 + 命名 P0 统一**：① UserService 移除 IdentityDbContext 直注——凭证/登录状态 4 方法移入 IUserRepository（P10：Service 不直连 DbContext）；② IdentityController→UsersController 改名（文件+类+引用，路由不变）；③ 5 Controller 类级路由改 [controller]（路径零变化）。N-02（Formulas 硬编码改相对）评估后不做——前端 Refit 硬编码 /api/v1/formulas 大量调用，改类级前缀破坏 API，外科手术原则不牺牲功能为命名风格 | P10 合规（Service 不直连 DbContext）+ 命名对齐职责；路由声明统一消除硬编码差异 | 技术总监 |
 ## 十、维护规则（强制）
 
 ### 10.1 文档-代码一致性

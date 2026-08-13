@@ -16,20 +16,20 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
-    /// 认证与用户管理 API（A-31-C3a 合并 AuthController + UsersController）。
+    /// 用户管理 API（N-01 2026-08-14: IdentityController → UsersController——命名对齐类职责；A-31-C3a 合并 Auth+Users）。
     /// 路由保持：/api/v1/auth/*（认证）+ /api/v1/users/*（用户管理）。
     /// </summary>
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/users")]
     [Authorize]
-    public class IdentityController : BaseUsersController
+    public class UsersController : BaseUsersController
     {
         private readonly ISender _sender;
 
-        public IdentityController(
+        public UsersController(
             ISender sender,
-            ILogger<IdentityController> logger,
+            ILogger<UsersController> logger,
             IUserCrossModuleService userService)
             : base(sender, logger, userService)
         {

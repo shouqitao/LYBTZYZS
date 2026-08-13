@@ -1,14 +1,12 @@
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Identity.Application.Mappers;
-using LYBT.Module.Identity.Infrastructure;
 using LYBT.Module.Identity.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Identity.Services;
@@ -16,22 +14,20 @@ namespace LYBT.Module.Identity.Services;
 /// <summary>
 /// 用户服务实现（A-31-C3a 合并 UserService + UserCrossModuleService）。
 /// 读操作直查（Controller 读走 Service，写走 MediatR Handler，见蓝图 §2.2）；登录凭证方法供 LoginCommandHandler/跨模块消费。
+/// P10-1（2026-08-14）: 移除 IdentityDbContext 直注——凭证/登录状态方法移入 IUserRepository（Service 不直连 DbContext）
 /// </summary>
 public class UserService : IUserCrossModuleService
 {
     private readonly IUserRepository _userRepository;
-    private readonly IdentityDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<UserService> _logger;
 
     public UserService(
         IUserRepository userRepository,
-        IdentityDbContext context,
         UserManager<ApplicationUser> userManager,
         ILogger<UserService> logger)
     {
         _userRepository = userRepository;
-        _context = context;
         _userManager = userManager;
         _logger = logger;
     }
@@ -76,53 +72,34 @@ public class UserService : IUserCrossModuleService
 
     public async Task<UserBasicDto?> GetUserBasicInfoAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var u = await _context.Users
-            .AsNoTracking()
-            .Where(x => x.Id == userId && !x.IsDeleted)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (u == null) return null;
-
-        return IdentityMapper.ToBasicDto(u);
+        // P10-1: 走 Repository（GetByIdAsync 含 !IsDeleted 过滤）
+        var u = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        return u == null ? null : IdentityMapper.ToBasicDto(u);
     }
 
     public async Task<UserCredentialDto?> GetUserByUsernameAsync(string username, CancellationToken cancellationToken = default)
     {
-        var u = await _context.Users
-            .AsNoTracking()
-            .Where(x => x.UserName == username && !x.IsDeleted)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (u == null) return null;
-
-        return IdentityMapper.ToCredentialDto(u);
+        // P10-1: 走 Repository
+        var u = await _userRepository.GetByUsernameAsync(username, cancellationToken);
+        return u == null ? null : IdentityMapper.ToCredentialDto(u);
     }
 
     public async Task UpdateLoginFailureAsync(Guid userId, int failedLoginCount, DateTime? lockoutEnd, CancellationToken cancellationToken = default)
     {
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
-        if (user != null)
-        {
-            user.AccessFailedCount = failedLoginCount;
-            user.LockoutEnd = lockoutEnd.HasValue
+        // P10-1: 走 Repository（DateTime→DateTimeOffset 转换在 Repository 内处理）
+        await _userRepository.UpdateLoginFailureAsync(
+            userId,
+            failedLoginCount,
+            lockoutEnd.HasValue
                 ? new DateTimeOffset(DateTime.SpecifyKind(lockoutEnd.Value, DateTimeKind.Utc))
-                : (DateTimeOffset?)null;
-            await _context.SaveChangesAsync(cancellationToken);
-        }
+                : (DateTimeOffset?)null,
+            cancellationToken);
     }
 
     public async Task ResetLoginStateAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
-        if (user != null)
-        {
-            user.AccessFailedCount = 0;
-            user.LockoutEnd = null;
-            user.LastLoginTime = DateTime.UtcNow;
-            await _context.SaveChangesAsync(cancellationToken);
-        }
+        // P10-1: 走 Repository
+        await _userRepository.ResetLoginStateAsync(userId, cancellationToken);
     }
 
     public async Task<bool> VerifyPasswordAsync(string username, string password, CancellationToken cancellationToken = default)

@@ -6,13 +6,13 @@ using Xunit;
 namespace LYBT.Tests.Server;
 
 /// <summary>
-/// 远程 IdentityController 路由单测（AC-TEST P0#1 闭环：
+/// 远程 UsersController 路由单测（N-01: IdentityController→UsersController 改名）（AC-TEST P0#1 闭环：
 /// T4 修复「/api/v1/users/api/v1/auth/* 双重前缀」后仍无测试守护——本测试防路由回归）
 /// </summary>
 public class IdentityControllerRoutesTests
 {
     private static readonly Type ControllerType =
-        typeof(LYBT.WebAPI.Controllers.IdentityController);
+        typeof(LYBT.WebAPI.Controllers.UsersController);
 
     [Fact]
     public void ClassRoute_UsesUsersPrefix()

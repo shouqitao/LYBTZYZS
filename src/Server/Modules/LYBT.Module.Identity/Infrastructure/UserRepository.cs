@@ -82,4 +82,41 @@ public class UserRepository : IUserRepository
         _context.Users.Update(user);
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public async Task<ApplicationUser?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
+    {
+        return await _context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.UserName == username && !u.IsDeleted, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task UpdateLoginFailureAsync(
+        Guid userId, int failedLoginCount, DateTimeOffset? lockoutEnd,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
+        if (user != null)
+        {
+            user.AccessFailedCount = failedLoginCount;
+            user.LockoutEnd = lockoutEnd;
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task ResetLoginStateAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
+        if (user != null)
+        {
+            user.AccessFailedCount = 0;
+            user.LockoutEnd = null;
+            user.LastLoginTime = DateTime.UtcNow;
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+    }
 }

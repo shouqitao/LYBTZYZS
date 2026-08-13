@@ -20,7 +20,7 @@ namespace LYBT.WebAPI.Controllers
     /// </summary>
     [ApiController]
     [ApiVersion("1")]
-    [Route("api/v{version:apiVersion}/medicalcases")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [Tags("MedicalCases")]
     [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class MedicalCasesController : BaseMedicalCasesController

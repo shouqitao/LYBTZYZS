@@ -15,7 +15,7 @@ public record RestartConfirmDto(string? Confirm);
 
 [ApiController]
 [ApiVersion("1")]
-[Route("api/v{version:apiVersion}/deploy")]
+[Route("api/v{version:apiVersion}/[controller]")]
 [Authorize(Policy = PolicyConstants.SysAdminOnly)] // DEPLOY-PERM: 部署属运维操作——Admin 业务管理员无部署能力（US-SHELL-020 AC）
 public class DeployController : BaseApiController
 {

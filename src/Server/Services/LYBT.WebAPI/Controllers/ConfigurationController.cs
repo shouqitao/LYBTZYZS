@@ -18,7 +18,7 @@ namespace LYBT.WebAPI.Controllers;
 /// </summary>
 [ApiController]
 [ApiVersion("1")]
-[Route("api/v{version:apiVersion}/configuration")]
+[Route("api/v{version:apiVersion}/[controller]")]
 [Authorize(Policy = PolicyConstants.SysAdminOnly)]
 public class ConfigurationController : BaseApiController
 {
