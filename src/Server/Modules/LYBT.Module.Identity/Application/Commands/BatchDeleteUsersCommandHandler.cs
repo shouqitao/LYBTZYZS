@@ -1,18 +1,19 @@
-using MediatR;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Infrastructure.BatchOperations;
 using LYBT.Entities.Users;
+using LYBT.Infrastructure.BatchOperations;
 using LYBT.Module.Identity.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
+using MediatR;
 
 namespace LYBT.Module.Identity.Application.Commands;
 
 public class BatchDeleteUsersCommandHandler
     : BatchOperationHandlerBase<ApplicationUser>,
-      IRequestHandler<BatchDeleteUsersCommand, Result<BatchOperationResultDto>>
+        IRequestHandler<BatchDeleteUsersCommand, Result<BatchOperationResultDto>>
 {
     private readonly IUserRepository _userRepository;
-    private bool _isAdmin;
+    private UserRole _operatorRole;
 
     public BatchDeleteUsersCommandHandler(IUserRepository userRepository)
     {
@@ -20,7 +21,9 @@ public class BatchDeleteUsersCommandHandler
     }
 
     public async Task<Result<BatchOperationResultDto>> Handle(
-        BatchDeleteUsersCommand request, CancellationToken cancellationToken)
+        BatchDeleteUsersCommand request,
+        CancellationToken cancellationToken
+    )
     {
         // P3 (US-USER-012): 单次批量上限 100 条（需求验收——原无上限）
         const int MaxBatchSize = 100;
@@ -28,20 +31,25 @@ public class BatchDeleteUsersCommandHandler
         {
             return Result<BatchOperationResultDto>.Failure(
                 ErrorCode.InvalidRequest,
-                $"单次批量操作数量不能超过 {MaxBatchSize} 条，当前 {request.Ids.Count} 条");
+                $"单次批量操作数量不能超过 {MaxBatchSize} 条，当前 {request.Ids.Count} 条"
+            );
         }
 
-        _isAdmin = request.IsAdmin;
+        _operatorRole = request.OperatorRole;
         return await ExecuteBatchAsync(request.Ids, request.CurrentUserId, cancellationToken);
     }
 
-    protected override Task<ApplicationUser?> GetByIdAsync(Guid id, CancellationToken ct)
-        => _userRepository.GetByIdAsync(id, ct);
+    protected override Task<ApplicationUser?> GetByIdAsync(Guid id, CancellationToken ct) =>
+        _userRepository.GetByIdAsync(id, ct);
 
-    protected override Task UpdateAsync(ApplicationUser user, CancellationToken ct)
-        => _userRepository.UpdateAsync(user, ct);
+    protected override Task UpdateAsync(ApplicationUser user, CancellationToken ct) =>
+        _userRepository.UpdateAsync(user, ct);
 
-    protected override Task ApplyOperationAsync(ApplicationUser user, Guid operatorId, CancellationToken ct)
+    protected override Task ApplyOperationAsync(
+        ApplicationUser user,
+        Guid operatorId,
+        CancellationToken ct
+    )
     {
         user.SoftDelete(operatorId);
         return Task.CompletedTask;
@@ -54,14 +62,22 @@ public class BatchDeleteUsersCommandHandler
     protected override string? GetEntityName(ApplicationUser user) => user.UserName;
 
     protected override Task<string?> ValidateAsync(
-        ApplicationUser user, Guid id, Guid operatorId, CancellationToken ct)
+        ApplicationUser user,
+        Guid id,
+        Guid operatorId,
+        CancellationToken ct
+    )
     {
-        if (id == operatorId)
-            return Task.FromResult<string?>("不能删除自己");
-        if (user.IsSysAdmin)
-            return Task.FromResult<string?>("系统管理员账号不可被删除");
-        if (!_isAdmin)
-            return Task.FromResult<string?>("无权限删除");
+        // UPDATEUSER-HIERARCHY-FIX: 层级校验（原 IsAdmin bool 粗粒度——Admin 批量删 Admin 违反 USER-D05）
+        var guardResult = UserHierarchyGuard.Validate<object>(
+            operatorId,
+            id,
+            _operatorRole,
+            user.IsSysAdmin,
+            user.Role
+        );
+        if (guardResult != null)
+            return Task.FromResult<string?>(guardResult.ErrorMessage ?? "无权限删除");
         return Task.FromResult<string?>(null);
     }
 }

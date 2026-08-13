@@ -22,8 +22,9 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 ```
 
 **双模式差异仅在配置层：**
+
 | 配置项 | 远程 (Remote) | 本地 (Local) |
-|--------|-------------|-------------|
+| -------- | ------------- | ------------- |
 | 密码策略 | 8位+大小写+数字+特殊字符 | 同左（统一 Service 层） |
 | 锁定策略 | 可配置（默认5次失败锁定15分钟） | 同左（统一 Service 层） |
 | JWT 有效期 | Access 配置驱动（开发 480/生产 30 分钟）/ Refresh 7 天 | 365 天 |
@@ -38,7 +39,7 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 **5 条授权策略**（PolicyConstants 当前代码）：
 
 | 策略 | 允许角色 | 用途 |
-|------|---------|------|
+| ------ | --------- | ------ |
 | `DoctorOnly` | Doctor | 医案创建、打印、接诊 |
 | `DoctorOrAdmin` | Doctor, Admin | 医案、报表 |
 | `AdminOrSuperAdmin` | Admin, SuperAdmin | 用户管理、系统设置、患者删除/禁用、药材写操作 |
@@ -56,6 +57,7 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 > **权威定义**：完整权限矩阵见 [04-permissions.md](../01-product/04-permissions.md)；端点级权限见 [04-api-reference/02-users.md](../04-api-reference/02-users.md)；速查表见 [12-permissions-matrix.md](../03-architecture/12-permissions-matrix.md)。
 
 **本模块权限摘要**（详细矩阵以权威文档为准）：
+
 - 用户管理（列表/创建/编辑/删除/启停/重置密码/批量操作）：仅 Admin+（`AdminOrSuperAdmin`）
 - 个人资料（profile/change-password）：仅本人（IDOR 防护：`id == currentUserId`，Admin 也无法修改他人资料）
 - 登录/登出/Token 验证：所有角色（含未登录的 login）
@@ -65,7 +67,7 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 ## API 端点（11 个，Remote 和 Local 统一）
 
 | 方法 | 路径 | 认证 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | `GET /users` | 分页查询 | AdminOrSuperAdmin | 支持 keyword/role/status 筛选 |
 | `GET /users/current` | 当前用户 | 所有角色 | JWT Claims 提取 userId |
 | `GET /users/{id}` | 用户详情 | AdminOrSuperAdmin | 含角色信息 |
@@ -81,7 +83,7 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 ## Desktop 端 UI
 
 | 视图 | 角色 | 功能 |
-|------|------|------|
+| ------ | ------ | ------ |
 | UserMasterDetailControl | Admin | 分页列表 + 详情 + 新建/编辑/删除 |
 | UserEditControl | Admin | 表单：用户名、姓名、角色、状态、密码 |
 | UserViewControl | Admin | 只读详情展示 |
@@ -125,7 +127,7 @@ Server/Local → UsersController → IUserManagerService
 ## 文件清单
 
 | 文件 | 层 | 说明 |
-|------|---|------|
+| ------ | --- | ------ |
 | `ApplicationUser.cs` | Entities | 用户实体（IdentityUser + 业务字段） |
 | `IUserManagerService.cs` | Module.Users | 用户管理服务接口 |
 | `UserManagerService.cs` | Module.Users | UserManager 包装实现 |
@@ -138,7 +140,7 @@ Server/Local → UsersController → IUserManagerService
 ## 已知问题（2026-06-28 审计）
 
 | 问题 | 严重度 | 说明 |
-|------|:---:|------|
+| ------ | :---: | ------ |
 | **分页+筛选 TotalCount 错误** | 🟠 | `GetList` 在内存执行 role/status 筛选（L73-74），但 TotalCount 基于筛选前计数（L58），导致前端分页数量不一致 |
 | **Restore 完全缺失** | 🔴 | Desktop `ExecuteRestoreAsync` 返回 null，Server 无端点；测试类仍引用但无实现 |
 | **CreatedAt 始终 MinValue** | ⚠️ | `MapToDetailDtoAsync`（L605-606）写死 `DateTime.MinValue`，未映射实际创建时间 |
@@ -155,6 +157,7 @@ Server/Local → UsersController → IUserManagerService
 **作为** 管理员，**我想要** 分页查询用户列表（支持关键字/角色/状态筛选），**以便** 高效管理用户。
 
 **验收标准**:
+
 - [ ] 支持 keyword/role/status 筛选 + 分页
 - [ ] 返回 TotalCount 与筛选后一致
 - [ ] 策略：`AdminOrSuperAdmin`
@@ -170,6 +173,7 @@ Server/Local → UsersController → IUserManagerService
 **作为** 管理员，**我想要** 查看单个用户完整信息（含角色），**以便** 了解用户配置。
 
 **验收标准**:
+
 - [ ] 返回含角色信息的详情 DTO
 - [ ] CreatedAt/UpdatedAt 正确映射
 
@@ -184,6 +188,7 @@ Server/Local → UsersController → IUserManagerService
 **作为** 用户，**我想要** 查看自己的资料，**以便** 确认个人信息。
 
 **验收标准**:
+
 - [ ] JWT Claims 提取 userId 返回当前用户资料
 - [ ] 所有角色可访问（仅本人）
 
@@ -198,6 +203,7 @@ Server/Local → UsersController → IUserManagerService
 **作为** 管理员，**我想要** 创建新用户并指定角色，**以便** 为员工分配系统账号。
 
 **验收标准**:
+
 - [ ] 用户名唯一 + 保留用户名校验
 - [ ] 默认密码见 `appsettings:DefaultPasswords`
 - [ ] 受 USER-D04 层级规则约束（✅ 2026-08-13 createuser-hierarchy-fix——Handler 已实现 Sysadmin→Admin / Admin→Doctor/Receptionist 层级校验，`CreateUserHierarchyTests` 7 用例）
@@ -210,9 +216,12 @@ Server/Local → UsersController → IUserManagerService
 **优先级**: Must
 **状态**: ✅ 已实现（角色更新+层级约束）
 
+> **实现注（2026-08-13 UPDATEUSER-HIERARCHY-FIX）**：真机发现 testadmin（Admin）更新另一个 Admin → 200（应拒绝）——CreateUser/Restore 已有层级校验（USER-D04），但 Update/Delete/ToggleStatus/BatchDelete 用 bool IsAdmin 粗粒度漏检。修复：抽共享 `UserHierarchyGuard`（对齐 Create/Restore 规则——sysadmin→Admin 及以下；Admin→仅 Doctor/Receptionist；不可自管；不可操作 sysadmin）；Update/Delete/ToggleStatus/BatchDelete 命令 IsAdmin bool → `OperatorRole`，Handler 统一走 guard。
+
 **作为** 管理员，**我想要** 更新用户信息（UserName 不可改），**以便** 维护准确的人员信息。
 
 **验收标准**:
+
 - [ ] UserName 创建后不可修改
 - [ ] 角色变更受层级规则约束
 - [ ] sysadmin 不可修改
@@ -228,6 +237,7 @@ Server/Local → UsersController → IUserManagerService
 **作为** 管理员，**我想要** 软删除用户（不可删自己、不可删 sysadmin），**以便** 离职员工数据可追溯但不可登录。
 
 **验收标准**:
+
 - [ ] 软删除（`IsDeleted=true`）
 - [ ] 校验 `id != currentUserId`
 - [ ] sysadmin 拒绝删除
@@ -243,6 +253,7 @@ Server/Local → UsersController → IUserManagerService
 **作为** 管理员，**我想要** 重置用户密码为临时密码，**以便** 用户忘记密码时可恢复访问。
 
 **验收标准**:
+
 - [ ] 返回临时密码
 - [ ] 受层级规则约束
 - [ ] sysadmin 密码不可由他人重置
@@ -258,6 +269,7 @@ Server/Local → UsersController → IUserManagerService
 **作为** 用户，**我想要** 修改自己的个人资料（不可改他人），**以便** 保持信息准确。
 
 **验收标准**:
+
 - [ ] IDOR 防护：`id == currentUserId`
 - [ ] UserName 不可改
 
@@ -272,6 +284,7 @@ Server/Local → UsersController → IUserManagerService
 **作为** 用户，**我想要** 修改自己的密码（需验证旧密码），**以便** 安全地更换密码。
 
 **验收标准**:
+
 - [ ] 需提供旧密码验证
 - [ ] 新密码符合策略（8位+大小写+数字+特殊字符）
 - [ ] IDOR 防护：仅本人
@@ -287,6 +300,7 @@ Server/Local → UsersController → IUserManagerService
 **作为** 管理员，**我想要** 启用/禁用用户账号，**以便** 临时停权而不删除。
 
 **验收标准**:
+
 - [ ] 通过 Identity Lockout 机制
 - [ ] sysadmin 不可禁用
 - [ ] 医生有名下 Waiting 挂号时阻止禁用（REG-BR-006）
@@ -302,6 +316,7 @@ Server/Local → UsersController → IUserManagerService
 **作为** 管理员，**我想要** 恢复软删除的用户，**以便** 误删后可还原。
 
 **验收标准**:
+
 - [ ] `POST /users/{id}/restore` 端点
 - [ ] 层级管理：sysadmin 可恢复 Admin；Admin 可恢复 Doctor/Receptionist（不可自管）
 - [ ] 恢复后用户 `IsDeleted=false`，状态回 Active（LockoutEnd 清除，可登录）
@@ -322,6 +337,7 @@ Server/Local → UsersController → IUserManagerService
 **验收标准**:
 
 **批量删除**:
+
 - [ ] 逐项权限检查（受 USER-D04 层级规则约束，Admin 不可删 SuperAdmin）
 - [ ] sysadmin 账号自动跳过且不计入失败数
 - [ ] 不可删除自己（`id == currentUserId` 该项跳过）
@@ -330,6 +346,7 @@ Server/Local → UsersController → IUserManagerService
 - [ ] 每条删除写审计日志
 
 **批量启用**:
+
 - [ ] 逐项权限检查（AdminOrSuperAdmin 策略）
 - [ ] sysadmin 账号自动跳过
 - [ ] 清除 LockoutEnd、`AccessFailedCount=0` → 用户恢复可登录
@@ -337,6 +354,7 @@ Server/Local → UsersController → IUserManagerService
 - [ ] 每条启用写审计日志
 
 **批量禁用**:
+
 - [ ] 逐项权限检查（AdminOrSuperAdmin 策略）
 - [ ] sysadmin 账号自动跳过（保护系统账号）
 - [ ] 医生名下有 `Waiting` 挂号时该条目跳过并提示（REG-BR-006）
@@ -349,7 +367,7 @@ Server/Local → UsersController → IUserManagerService
 ## 变更日志
 
 | 日期 | 变更 | 原因 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 2026-08-03 | v3.3 | 权限模型更新：2 条策略 → 5 条（PolicyConstants 现状）+ 2026-08-03 操作级细分决策注 | 四角色需求审查 |
 | 2026-06-28 | v3.1 | 文档对齐：默认密码改为引用 `appsettings:DefaultPasswords`；本地密码/锁定策略与 auth/nfr 统一；补 12 个 US-USER 故事块 | 文档一致性修复 |
 | 2026-06-28 | v3.2 | US-USER-011 验收从 3 条扩展至 6 条（状态/归属/权限/硬删/审计）；US-USER-012 验收拆分删除/启用/禁用三组独立条件 | plan Task 7 边缘 US 修正 |

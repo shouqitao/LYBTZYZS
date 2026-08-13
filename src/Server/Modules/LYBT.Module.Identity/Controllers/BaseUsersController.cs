@@ -24,7 +24,11 @@ public abstract class BaseUsersController : BaseCrudController
 {
     private readonly IUserCrossModuleService _userService;
 
-    protected BaseUsersController(ISender sender, ILogger logger, IUserCrossModuleService userService)
+    protected BaseUsersController(
+        ISender sender,
+        ILogger logger,
+        IUserCrossModuleService userService
+    )
         : base(sender, logger)
     {
         _userService = userService;
@@ -40,9 +44,11 @@ public abstract class BaseUsersController : BaseCrudController
         [FromQuery] string? keyword = null,
         [FromQuery] UserRole? role = null,
         [FromQuery] CommonStatus? status = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default
+    )
     {
-        if (ValidatePagination(page, pageSize) is { } error) return error;
+        if (ValidatePagination(page, pageSize) is { } error)
+            return error;
 
         // T5-1 #12 (US-USER-001): role/status 筛选参数接线（原 Service 层丢参）
         var result = await _userService.GetPagedAsync(page, pageSize, keyword, role, status, ct);
@@ -55,7 +61,8 @@ public abstract class BaseUsersController : BaseCrudController
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
-        if (ValidateGuid(id, "用户ID") is { } error) return error;
+        if (ValidateGuid(id, "用户ID") is { } error)
+            return error;
 
         var result = await _userService.GetByIdAsync(id, ct);
         if (!result.IsSuccess || result.Value == null)
@@ -77,16 +84,26 @@ public abstract class BaseUsersController : BaseCrudController
 
     [HttpPut("{id:guid}")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UserInputDto input, CancellationToken ct)
+    public async Task<IActionResult> Update(
+        Guid id,
+        [FromBody] UserInputDto input,
+        CancellationToken ct
+    )
     {
-        if (ValidateGuid(id, "用户ID") is { } guidError) return guidError;
+        if (ValidateGuid(id, "用户ID") is { } guidError)
+            return guidError;
 
-        var (operatorId, _, _) = GetOperator();
-        var result = await Sender.Send(new UpdateUserCommand(id, input, operatorId), ct);
+        var (operatorId, _, currentRole) = GetOperator();
+        var result = await Sender.Send(
+            new UpdateUserCommand(id, input, operatorId, operatorId, currentRole),
+            ct
+        );
         if (!result.IsSuccess || result.Value == null)
         {
             if (result.Error?.Contains("不存在") == true)
                 return NotFound(result.Error);
+            if (result.ErrorCode == ErrorCode.Forbidden)
+                return Forbid(result.Error ?? "无权更新该用户");
             return BusinessFail(result.Error ?? "更新失败");
         }
         LogOperation("更新用户成功", result.Value, id);
@@ -97,15 +114,17 @@ public abstract class BaseUsersController : BaseCrudController
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
-        if (ValidateGuid(id, "用户ID") is { } error) return error;
+        if (ValidateGuid(id, "用户ID") is { } error)
+            return error;
 
         var (operatorId, _, currentRole) = GetOperator();
-        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
-        var result = await Sender.Send(new DeleteUserCommand(id, operatorId, isAdmin), ct);
+        var result = await Sender.Send(new DeleteUserCommand(id, operatorId, currentRole), ct);
         if (!result.IsSuccess)
         {
             if (result.Error?.Contains("不存在") == true)
                 return NotFound(result.Error);
+            if (result.ErrorCode == ErrorCode.Forbidden)
+                return Forbid(result.Error ?? "无权删除该用户");
             return BusinessFail(result.Error ?? "删除失败");
         }
         LogOperation("删除用户成功", null, id);
@@ -116,13 +135,20 @@ public abstract class BaseUsersController : BaseCrudController
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
     {
-        if (ValidateGuid(id, "用户ID") is { } error) return error;
+        if (ValidateGuid(id, "用户ID") is { } error)
+            return error;
 
         var (operatorId, _, operatorRole) = GetOperator();
-        var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-        var result = await Sender.Send(new ToggleUserStatusCommand(id, operatorId, isAdmin), ct);
+        var result = await Sender.Send(
+            new ToggleUserStatusCommand(id, operatorId, operatorRole),
+            ct
+        );
         if (!result.IsSuccess || result.Value == null)
+        {
+            if (result.ErrorCode == ErrorCode.Forbidden)
+                return Forbid(result.Error ?? "无权切换该用户状态");
             return BusinessFail(result.Error ?? "切换状态失败");
+        }
 
         LogOperation("切换用户状态", null, id);
         return Success(result.Value, "状态已切换");
@@ -132,7 +158,8 @@ public abstract class BaseUsersController : BaseCrudController
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
     {
-        if (ValidateGuid(id, "用户ID") is { } error) return error;
+        if (ValidateGuid(id, "用户ID") is { } error)
+            return error;
 
         var (operatorId, _, operatorRole) = GetOperator();
         var result = await Sender.Send(new RestoreUserCommand(id, operatorId, operatorRole), ct);
@@ -151,14 +178,19 @@ public abstract class BaseUsersController : BaseCrudController
 
     [HttpPost("batch-delete")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    public override async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
+    public override async Task<IActionResult> BatchDelete(
+        [FromBody] BatchDeleteInputDto dto,
+        CancellationToken ct
+    )
     {
         if (dto.Ids == null || dto.Ids.Count == 0)
             return ValidationFail("请至少选择一个用户");
 
         var (operatorId, _, currentRole) = GetOperator();
-        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
-        var result = await Sender.Send(new BatchDeleteUsersCommand(dto.Ids, operatorId, isAdmin), ct);
+        var result = await Sender.Send(
+            new BatchDeleteUsersCommand(dto.Ids, operatorId, currentRole),
+            ct
+        );
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "批量删除失败");
 
@@ -176,11 +208,14 @@ public abstract class BaseUsersController : BaseCrudController
     [HttpGet("current")]
     [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
     [ProducesResponseType(401)]
-    public virtual async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken = default)
+    public virtual async Task<IActionResult> GetCurrentUser(
+        CancellationToken cancellationToken = default
+    )
     {
         var userId = BaseClaimsHelper.GetCurrentUserId(User);
         var result = await _userService.GetCurrentUserAsync(userId, cancellationToken);
-        if (!result.IsSuccess) return NotFound(result.Error ?? "用户不存在");
+        if (!result.IsSuccess)
+            return NotFound(result.Error ?? "用户不存在");
         return Success(result.Value!);
     }
 
@@ -191,24 +226,33 @@ public abstract class BaseUsersController : BaseCrudController
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [ProducesResponseType(typeof(ApiResponse<ResetPasswordResponseDto>), 200)]
     [ProducesResponseType(404)]
-    public virtual async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordRequest request, CancellationToken ct = default)
+    public virtual async Task<IActionResult> ResetPassword(
+        Guid id,
+        [FromBody] ResetPasswordRequest request,
+        CancellationToken ct = default
+    )
     {
-        if (ValidateGuid(id, "用户ID") is { } error) return error;
+        if (ValidateGuid(id, "用户ID") is { } error)
+            return error;
 
         var result = await Sender.Send(new ResetPasswordCommand(id), ct);
 
         if (!result.IsSuccess)
         {
-            if (result.Error == "用户不存在") return NotFound(result.Error);
+            if (result.Error == "用户不存在")
+                return NotFound(result.Error);
             return BusinessFail(result.Error ?? "密码重置失败");
         }
 
         LogOperation("重置用户密码", new { AutoGenerated = true }, id);
-        return Success(new ResetPasswordResponseDto
-        {
-            Success = true,
-            TemporaryPassword = result.Value!.TemporaryPassword
-        }, "密码重置成功");
+        return Success(
+            new ResetPasswordResponseDto
+            {
+                Success = true,
+                TemporaryPassword = result.Value!.TemporaryPassword,
+            },
+            "密码重置成功"
+        );
     }
 
     /// <summary>
@@ -218,7 +262,11 @@ public abstract class BaseUsersController : BaseCrudController
     [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), 200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(404)]
-    public virtual async Task<IActionResult> ChangeProfile(Guid id, [FromBody] ChangeProfileDto dto, CancellationToken ct = default)
+    public virtual async Task<IActionResult> ChangeProfile(
+        Guid id,
+        [FromBody] ChangeProfileDto dto,
+        CancellationToken ct = default
+    )
     {
         var (currentUserId, _, _) = GetOperator();
 
@@ -226,12 +274,18 @@ public abstract class BaseUsersController : BaseCrudController
 
         if (!result.IsSuccess)
         {
-            if (result.Error?.StartsWith("只能修改") == true) return Forbid(result.Error);
-            if (result.Error == "用户不存在") return NotFound(result.Error);
+            if (result.Error?.StartsWith("只能修改") == true)
+                return Forbid(result.Error);
+            if (result.Error == "用户不存在")
+                return NotFound(result.Error);
             return BusinessFail(result.Error ?? "个人资料修改失败");
         }
 
-        LogOperation("修改个人资料", new { RealName = dto.RealName, PhoneNumber = dto.PhoneNumber }, id);
+        LogOperation(
+            "修改个人资料",
+            new { RealName = dto.RealName, PhoneNumber = dto.PhoneNumber },
+            id
+        );
         return Success(result.Value!, "个人资料修改成功");
     }
 
@@ -242,16 +296,25 @@ public abstract class BaseUsersController : BaseCrudController
     [ProducesResponseType(typeof(ApiResponse), 200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(404)]
-    public virtual async Task<IActionResult> ChangePassword(Guid id, [FromBody] LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request, CancellationToken ct = default)
+    public virtual async Task<IActionResult> ChangePassword(
+        Guid id,
+        [FromBody] LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request,
+        CancellationToken ct = default
+    )
     {
         var (currentUserId, _, _) = GetOperator();
 
-        var result = await Sender.Send(new ChangePasswordCommand(id, request.OldPassword, request.NewPassword, currentUserId), ct);
+        var result = await Sender.Send(
+            new ChangePasswordCommand(id, request.OldPassword, request.NewPassword, currentUserId),
+            ct
+        );
 
         if (!result.IsSuccess)
         {
-            if (result.Error?.StartsWith("只能修改") == true) return Forbid(result.Error);
-            if (result.Error == "用户不存在") return NotFound(result.Error);
+            if (result.Error?.StartsWith("只能修改") == true)
+                return Forbid(result.Error);
+            if (result.Error == "用户不存在")
+                return NotFound(result.Error);
             return BusinessFail(result.Error ?? "密码修改失败");
         }
 
@@ -267,7 +330,10 @@ public abstract class BaseUsersController : BaseCrudController
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
-    public virtual async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
+    public virtual async Task<IActionResult> BatchEnable(
+        [FromBody] BatchDeleteInputDto dto,
+        CancellationToken ct = default
+    )
     {
         if (dto.Ids == null || dto.Ids.Count == 0)
         {
@@ -288,7 +354,10 @@ public abstract class BaseUsersController : BaseCrudController
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse), 400)]
-    public virtual async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
+    public virtual async Task<IActionResult> BatchDisable(
+        [FromBody] BatchDeleteInputDto dto,
+        CancellationToken ct = default
+    )
     {
         if (dto.Ids == null || dto.Ids.Count == 0)
         {
