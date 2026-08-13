@@ -178,66 +178,42 @@ public class ReportRepository : IReportRepository
             && mc.CaseStatus == MedicalCaseStatus.Completed
         );
 
-        // 合并为单次查询：以医案为驱动表，挂号/药费/处方数先按 MedicalCaseId 预聚合（每医案一行），
-        // 再 LEFT JOIN 到医案，最后 GroupBy DoctorName 一次得出全部指标——
-        // 避免多表直接 JOIN 的行数放大（fan-out）导致求和/计数失真。
+        // 单次查询（P1-2 2026-08-14）: 以医案为驱动按医生分组，各指标用相关子查询聚合（挂号费/药费/处方数）——
+        // 一次 SQL 完成全部统计，避免 4 次独立查询；相关子查询无多表 fan-out 失真。
+        // 注: 不用 LEFT JOIN 预聚合子查询——EF InMemory 对子查询聚合 + LEFT JOIN 外层 Sum 翻译缺陷
+        //（Nullable must have value）；相关子查询模式 InMemory/SQL Server 均可翻译。
         var query =
             from mc in cases
-            join rg in (
-                from r in _context.Registrations
-                where !r.IsDeleted
-                group r by r.MedicalCaseId into g
-                select new
-                {
-                    MedicalCaseId = g.Key,
-                    RegistrationFeeTotal = g.Sum(x => x.RegistrationFee),
-                }
-            )
-                on mc.Id equals rg.MedicalCaseId
-                into registrationJoin
-            from rg in registrationJoin.DefaultIfEmpty()
-            join mg in (
-                from p in _context.Prescriptions
-                where !p.IsDeleted
-                join pi in _context.PrescriptionItems on p.Id equals pi.PrescriptionId
-                group pi by p.MedicalCaseId into g
-                select new
-                {
-                    MedicalCaseId = g.Key,
-                    MedicineFeeTotal = g.Sum(x => x.UnitPrice * x.Dosage),
-                }
-            )
-                on mc.Id equals mg.MedicalCaseId
-                into medicineJoin
-            from mg in medicineJoin.DefaultIfEmpty()
-            join pc in (
-                from p in _context.Prescriptions
-                where !p.IsDeleted
-                group p by p.MedicalCaseId into g
-                select new { MedicalCaseId = g.Key, PrescriptionCount = g.Count() }
-            )
-                on mc.Id equals pc.MedicalCaseId
-                into prescriptionJoin
-            from pc in prescriptionJoin.DefaultIfEmpty()
-            group new
+            group mc by mc.DoctorName into g
+            select new
             {
-                mc,
-                rg,
-                mg,
-                pc,
-            } by mc.DoctorName into g
-            select new DoctorPerformancePointDto(
-                g.Key,
-                g.Count(),
-                g.Sum(x => x.rg != null ? x.rg.RegistrationFeeTotal : 0),
-                g.Sum(x => x.mg != null ? x.mg.MedicineFeeTotal : 0),
-                g.Sum(x => x.pc != null ? x.pc.PrescriptionCount : 0)
-            );
+                DoctorName = g.Key,
+                ConsultationCount = g.Count(),
+                RegistrationFeeTotal = g
+                    .SelectMany(c => _context.Registrations.Where(r =>
+                        r.MedicalCaseId == c.Id && !r.IsDeleted))
+                    .Sum(r => (decimal?)r.RegistrationFee) ?? 0m,
+                MedicineFeeTotal = g
+                    .SelectMany(c => _context.Prescriptions.Where(p =>
+                        p.MedicalCaseId == c.Id && !p.IsDeleted))
+                    .SelectMany(p => _context.PrescriptionItems.Where(pi => pi.PrescriptionId == p.Id))
+                    .Sum(pi => (decimal?)(pi.UnitPrice * pi.Dosage)) ?? 0m,
+                PrescriptionCount = g
+                    .SelectMany(c => _context.Prescriptions.Where(p =>
+                        p.MedicalCaseId == c.Id && !p.IsDeleted))
+                    .Count(),
+            };
 
-        // 单次查询（P1-2 2026-08-14）: 预聚合子查询（每医案一行）LEFT JOIN 避免多表 fan-out 失真。
-        // 按医生分组聚合一次得出全部指标；排序在内存（分组后行数 = 医生数，量小）。
         var result = await query.ToListAsync(cancellationToken);
-        return result.OrderByDescending(d => d.ConsultationCount).ToList();
+        return result
+            .Select(x => new DoctorPerformancePointDto(
+                x.DoctorName,
+                x.ConsultationCount,
+                x.RegistrationFeeTotal,
+                x.MedicineFeeTotal,
+                x.PrescriptionCount))
+            .OrderByDescending(d => d.ConsultationCount)
+            .ToList();
     }
 
     /// <inheritdoc/>

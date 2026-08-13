@@ -368,6 +368,7 @@
 | 2026-08-14 | **死代码删除误伤防护固化（P2-10）**：a99619f47 误删 POST /Registrations Create 教训固化——删前 grep 归属确认、删后 swagger 对照、编译后跑端点测试、traceability 同步。端点审计（临时测试导出 swagger vs 反射 Controller 路由）：代码 98 = swagger 98 完全一致（无未暴露/无幽灵，仅 {id:guid} 规范化差异）。traceability 补 SHELL-024/025 两行；P2-08（API 单一职能）确认完成 | 流程防误伤：删除死代码必须三重验证（归属/清单/测试），审计证明当前端点清单健康 | 技术总监 |
 | 2026-08-14 | **架构 P10 修复 + 命名 P0 统一**：① UserService 移除 IdentityDbContext 直注——凭证/登录状态 4 方法移入 IUserRepository（P10：Service 不直连 DbContext）；② IdentityController→UsersController 改名（文件+类+引用，路由不变）；③ 5 Controller 类级路由改 [controller]（路径零变化）。N-02（Formulas 硬编码改相对）评估后不做——前端 Refit 硬编码 /api/v1/formulas 大量调用，改类级前缀破坏 API，外科手术原则不牺牲功能为命名风格 | P10 合规（Service 不直连 DbContext）+ 命名对齐职责；路由声明统一消除硬编码差异 | 技术总监 |
 | 2026-08-14 | **医案分页 TotalCount + 命名 P1**：① SearchMedicalCasesAsync 内存过滤 doctorId （CreatedBy）下推 QueryPagedAsync DB 层——TotalCount 分页总数修正；② {id:guid}→{id} 统一（4 文件 19 处——模型绑定自动验证 Guid）；③ Local Configuration/Health Controller 方法名对齐 Server（GetAll→GetConfiguration 等——Server 权威源，HTTP 路由不变） | 分页准确性（DB 下推保证 TotalCount 与页数据一致）+ 命名双端统一 | 技术总监 |
+| 2026-08-14 | **Reports 医生绩效单次查询（4→1）**：GetDoctorPerformanceAsync 4 次独立查询合并为 1 次——按医生 GROUP BY + 各指标相关子查询聚合（挂号费/药费/处方数）。初版 LEFT JOIN 预聚合在 EF InMemory 翻译缺陷（Nullable must have value）——改用 SelectMany 相关子查询（decimal?）Sum ?? 0，InMemory/SQL 均可翻译。14/14 测试含组合计数/平均处方价/零处方 | 性能：4 轮 DB 往返 → 1 轮；查询模式兼顾 InMemory 测试可验证 | 技术总监 |
 ## 十、维护规则（强制）
 
 ### 10.1 文档-代码一致性
