@@ -10,8 +10,8 @@ namespace LYBT.Infrastructure.Web;
 /// </summary>
 public static class ControllerBaseExtensions
 {
-    private static string GetRequestId(ControllerBase controller)
-        => controller.HttpContext?.TraceIdentifier ?? Guid.NewGuid().ToString();
+    private static string GetRequestId(ControllerBase controller) =>
+        controller.HttpContext?.TraceIdentifier ?? Guid.NewGuid().ToString();
 
     // ==================== 成功响应 ====================
 
@@ -22,17 +22,30 @@ public static class ControllerBaseExtensions
         return controller.Ok(response);
     }
 
-    public static IActionResult Success<T>(this ControllerBase controller, T data, string message = "操作成功")
+    public static IActionResult Success<T>(
+        this ControllerBase controller,
+        T data,
+        string message = "操作成功"
+    )
     {
         var response = ApiResponse<T>.CreateSuccess(data, message);
         response.RequestId = GetRequestId(controller);
         return controller.Ok(response);
     }
 
-    public static IActionResult SuccessPaged<T>(this ControllerBase controller, PagedResult<T> pagedResult, string message = "查询成功")
+    public static IActionResult SuccessPaged<T>(
+        this ControllerBase controller,
+        PagedResult<T> pagedResult,
+        string message = "查询成功"
+    )
     {
         var items = pagedResult.Items is List<T> list ? list : pagedResult.Items.ToList();
-        var pageResult = new PagedResult<T>(items, pagedResult.TotalCount, pagedResult.CurrentPage, pagedResult.PageSize);
+        var pageResult = new PagedResult<T>(
+            items,
+            pagedResult.TotalCount,
+            pagedResult.CurrentPage,
+            pagedResult.PageSize
+        );
         var response = ApiResponse<PagedResult<T>>.CreateSuccess(pageResult, message);
         response.RequestId = GetRequestId(controller);
         return controller.Ok(response);
@@ -47,14 +60,21 @@ public static class ControllerBaseExtensions
         return controller.BadRequest(response);
     }
 
-    public static IActionResult NotFoundResponse(this ControllerBase controller, string message = "资源未找到")
+    public static IActionResult NotFoundResponse(
+        this ControllerBase controller,
+        string message = "资源未找到"
+    )
     {
         var response = ApiResponse.CreateFail(message);
         response.RequestId = GetRequestId(controller);
         return controller.NotFound(response);
     }
 
-    public static IActionResult BusinessFail(this ControllerBase controller, string message, string? errorCode = null)
+    public static IActionResult BusinessFail(
+        this ControllerBase controller,
+        string message,
+        string? errorCode = null
+    )
     {
         var response = ApiResponse.CreateFail(message);
         response.RequestId = GetRequestId(controller);
@@ -63,10 +83,13 @@ public static class ControllerBaseExtensions
         return controller.StatusCode(422, response);
     }
 
-    public static IActionResult ValidationFail(this ControllerBase controller, string message = "参数验证失败")
+    public static IActionResult ValidationFail(
+        this ControllerBase controller,
+        string message = "参数验证失败"
+    )
     {
-        var errors = controller.ModelState.Values
-            .SelectMany(v => v.Errors)
+        var errors = controller
+            .ModelState.Values.SelectMany(v => v.Errors)
             .Select(e => e.ErrorMessage)
             .ToList();
         var response = ApiResponse.CreateFail(message, errors.Count > 0 ? errors : null);
@@ -77,10 +100,17 @@ public static class ControllerBaseExtensions
     public static IActionResult ForbidResponse(this ControllerBase controller, string message)
     {
         // P1-5（US-LOG-000 2026-08-13）: 权限拒绝（403）→ Warning（非 Error——业务语义）
-        var logger = controller.HttpContext?.RequestServices?.GetService(typeof(ILoggerFactory)) as ILoggerFactory;
-        logger?.CreateLogger("Authorization").LogWarning(
-            "权限拒绝（403）: {Message}——Path={Path}, User={User}",
-            message, controller.HttpContext?.Request.Path, controller.HttpContext?.User?.Identity?.Name);
+        var logger =
+            controller.HttpContext?.RequestServices?.GetService(typeof(ILoggerFactory))
+            as ILoggerFactory;
+        logger
+            ?.CreateLogger("Authorization")
+            .LogWarning(
+                "权限拒绝（403）: {Message}——Path={Path}, User={User}",
+                message,
+                controller.HttpContext?.Request.Path,
+                controller.HttpContext?.User?.Identity?.Name
+            );
 
         var response = ApiResponse.CreateFail(message);
         response.RequestId = GetRequestId(controller);
@@ -89,7 +119,12 @@ public static class ControllerBaseExtensions
 
     // ==================== Result 映射 ====================
 
-    public static IActionResult HandleResult<T>(this ControllerBase controller, Result<T> result, string successMessage = "操作成功", bool useAuthMapping = false)
+    public static IActionResult HandleResult<T>(
+        this ControllerBase controller,
+        Result<T> result,
+        string successMessage = "操作成功",
+        bool useAuthMapping = false
+    )
     {
         if (result.IsSuccess)
             return controller.Success(result.Data!, successMessage);
@@ -98,7 +133,9 @@ public static class ControllerBaseExtensions
 
         // PATIENT-PHONE-409-FIX: ModuleErrorCode 为空时回退 ErrorCode（原仅认 ModuleErrorCode →
         // Result.Failure(ErrorCode) 落入 BusinessFail 恒 422——电话唯一 409 等语义丢失）
-        var code = result.ModuleErrorCode ?? (result.ErrorCode == default ? (ErrorCode?)null : result.ErrorCode);
+        var code =
+            result.ModuleErrorCode
+            ?? (result.ErrorCode == default ? (ErrorCode?)null : result.ErrorCode);
 
         if (code.HasValue)
         {
@@ -116,20 +153,28 @@ public static class ControllerBaseExtensions
                     422 => controller.StatusCode(422, errorResponse),
                     503 => controller.StatusCode(503, errorResponse),
                     500 => controller.StatusCode(500, errorResponse),
-                    _ => controller.StatusCode(httpStatus, errorResponse)
+                    _ => controller.StatusCode(httpStatus, errorResponse),
                 };
             }
 
             var failResponse = ApiResponse.CreateFail(message);
             failResponse.RequestId = GetRequestId(controller);
-            failResponse.Errors = new { code = moduleCode.ToFormattedString(), numericCode = (int)moduleCode };
+            failResponse.Errors = new
+            {
+                code = moduleCode.ToFormattedString(),
+                numericCode = (int)moduleCode,
+            };
             return controller.StatusCode(httpStatus, failResponse);
         }
 
         return controller.BusinessFail(message);
     }
 
-    public static IActionResult HandleResult(this ControllerBase controller, Result result, string successMessage = "操作成功")
+    public static IActionResult HandleResult(
+        this ControllerBase controller,
+        Result result,
+        string successMessage = "操作成功"
+    )
     {
         if (result.IsSuccess)
             return controller.Success(successMessage);
@@ -142,18 +187,30 @@ public static class ControllerBaseExtensions
             var httpStatus = moduleCode.ToHttpStatusCode();
             var response = ApiResponse.CreateFail(message);
             response.RequestId = GetRequestId(controller);
-            response.Errors = new { code = moduleCode.ToFormattedString(), numericCode = (int)moduleCode };
+            response.Errors = new
+            {
+                code = moduleCode.ToFormattedString(),
+                numericCode = (int)moduleCode,
+            };
             return controller.StatusCode(httpStatus, response);
         }
 
         return controller.BusinessFail(message);
     }
 
-    private static ApiResponse<T> CreateModuleErrorResponse<T>(ControllerBase controller, string message, ErrorCode errorCode)
+    private static ApiResponse<T> CreateModuleErrorResponse<T>(
+        ControllerBase controller,
+        string message,
+        ErrorCode errorCode
+    )
     {
         var response = ApiResponse<T>.CreateFail(message);
         response.RequestId = GetRequestId(controller);
-        response.Errors = new { code = errorCode.ToFormattedString(), numericCode = (int)errorCode };
+        response.Errors = new
+        {
+            code = errorCode.ToFormattedString(),
+            numericCode = (int)errorCode,
+        };
         return response;
     }
 }
