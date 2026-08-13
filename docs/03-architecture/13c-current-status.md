@@ -190,3 +190,4 @@
 | P2-06 | 排班管理 | Registration | 业务增强 |
 | P2-07 | **多进程/端口占用防护**（2026-08-13 登记，API 测试后重点讨论） | start.sh + Program | 部署可靠性：start.sh 仅 pkill+sleep 2 无端口检查/无 PID 文件/无启动成功验证——实测旧进程 741060 未释放端口导致新进程 741734 启动失败（06:18 日志 `${DB_SERVER}` 连接失败 + 双 dotnet 进程并存）。设计需覆盖：端口释放确认、PID 文件、启动成功探测（/health）、孤儿进程清理、单实例 Mutex（US-SHELL-001 已有 Desktop 侧） |
 | P2-08 | **API 单一职能全面审查**（2026-08-13 登记，API 测试完成后执行） | 全部 Controller | QuickVisit 两步改造暴露的设计原则（用户定案）：API 单一职能、组合编排放前端 VM。API 测试完成后审查全部端点是否有类似复杂设计（一个端点做多件事/跨模块编排/隐式联动），考虑拆分。参考：StartVisit 接诊即建（已原子化保留）、quick-visit（已删）、经验方导入（前端组合） |
+| P2-09 | **HTTP/HTTPS 双协议支持**（2026-08-13 登记，待讨论） | WebAPI 宿主 | 用户提出：API 地址 http 和 https 是否可同时支持，通过配置开启/关闭某一个。需讨论：Kestrel 多端点配置（http://0.0.0.0:5000 + https://0.0.0.0:5001）、证书来源（dev 自签/prod 正式）、配置开关（Http:Enabled / Https:Enabled）、CSP/安全头影响、发布 Runbook 更新 |
