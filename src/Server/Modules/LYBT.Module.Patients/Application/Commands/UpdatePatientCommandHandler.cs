@@ -2,6 +2,7 @@ using MediatR;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Utilities.Text;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Application.Mappers;
 
@@ -26,10 +27,25 @@ public class UpdatePatientCommandHandler : IRequestHandler<UpdatePatientCommand,
         if (patient == null)
             return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotFound, ErrorMessages.Get(ErrorCode.PatientNotFound));
 
-        // P2 (US-PAT-004): 电话唯一——更新时排除自身查重
-        if (!string.IsNullOrWhiteSpace(request.Input.PhoneNumber)
-            && await _patientRepository.ExistsByPhoneAsync(request.Input.PhoneNumber, excludeId: request.Id, ct: cancellationToken))
-            return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotFound, "该手机号已关联其他患者");
+        // P2 (US-PAT-004): 电话唯一——更新时排除自身查重 409
+        if (
+            !string.IsNullOrWhiteSpace(request.Input.PhoneNumber)
+            && await _patientRepository.ExistsByPhoneAsync(
+                request.Input.PhoneNumber,
+                excludeId: request.Id,
+                ct: cancellationToken
+            )
+        )
+            return Result<PatientDetailDto>.Failure(
+                ErrorCode.PatientPhoneDuplicate,
+                "该手机号已关联其他患者"
+            );
+
+        // 拼音码兜底（对齐 B-03：更新未传 PinYinCode 时保留旧值；旧值也空则按新姓名生成）
+        if (string.IsNullOrWhiteSpace(request.Input.PinYinCode))
+            request.Input.PinYinCode = string.IsNullOrWhiteSpace(patient.PinYinCode)
+                ? PinYinHelper.GetPinYinCode(request.Input.Name)
+                : patient.PinYinCode;
 
         patient.UpdateProfile(
             request.Input.Name,

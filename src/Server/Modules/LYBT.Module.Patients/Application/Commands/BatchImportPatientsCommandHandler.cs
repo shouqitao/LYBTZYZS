@@ -5,6 +5,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
+using LYBT.Shared.Models.Utilities.Text;
 
 namespace LYBT.Module.Patients.Application.Commands;
 
@@ -34,6 +35,9 @@ public class BatchImportPatientsCommandHandler : IRequestHandler<BatchImportPati
         {
             return Result<PatientBatchImportResultDto>.Failure(ErrorCode.ValidationFailed, $"批量导入最多支持{MAX_IMPORT_SIZE}条记录");
         }
+
+        // 行内电话互查（US-PAT-导入：同批重复电话 → 该行失败，其余继续）——同名去重沿用既有 Strategy
+        var seenPhones = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         for (var i = 0; i < request.Patients.Count; i++)
         {
@@ -95,6 +99,44 @@ public class BatchImportPatientsCommandHandler : IRequestHandler<BatchImportPati
                             continue;
                     }
                 }
+
+                // US-PAT-导入：电话唯一——行内重复或与系统已有患者重复 → 失败（该行），其余行继续
+                if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
+                {
+                    if (!seenPhones.Add(dto.PhoneNumber))
+                    {
+                        result.FailureCount++;
+                        result.Failures.Add(new PatientImportFailureDto
+                        {
+                            OriginalRowNumber = rowNumber,
+                            FailureReason = "电话重复（同一批次内）",
+                            FieldName = "PhoneNumber",
+                            OriginalValue = dto.PhoneNumber,
+                            SuggestedFix = "修改电话或去除重复行",
+                            DataSnapshot = dto
+                        });
+                        continue;
+                    }
+
+                    if (await _patientRepository.ExistsByPhoneAsync(dto.PhoneNumber, ct: cancellationToken))
+                    {
+                        result.FailureCount++;
+                        result.Failures.Add(new PatientImportFailureDto
+                        {
+                            OriginalRowNumber = rowNumber,
+                            FailureReason = "电话与系统已有患者重复",
+                            FieldName = "PhoneNumber",
+                            OriginalValue = dto.PhoneNumber,
+                            SuggestedFix = "修改电话或先处理已有患者",
+                            DataSnapshot = dto
+                        });
+                        continue;
+                    }
+                }
+
+                // 拼音码兜底（对齐 B-03：未传则按姓名自动生成）
+                if (string.IsNullOrWhiteSpace(dto.PinYinCode))
+                    dto.PinYinCode = PinYinHelper.GetPinYinCode(dto.Name);
 
                 var patient = PatientMapper.ToEntity(dto, request.CurrentUserId);
                 await _patientRepository.AddAsync(patient, cancellationToken);

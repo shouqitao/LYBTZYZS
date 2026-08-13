@@ -27,7 +27,6 @@ public static class ErrorCodeExtensions
             ErrorCode.McBatchOperationEmpty => 400,
             ErrorCode.McInvalidPatientId => 400,
             ErrorCode.McInvalidCountParam => 400,
-            ErrorCode.PatientPhoneDuplicate => 400,
             ErrorCode.PatientBatchOperationEmpty => 400,
             ErrorCode.PatientBatchCheckExceeded => 400,
             ErrorCode.PatientInvalidPagination => 400,
@@ -94,6 +93,8 @@ public static class ErrorCodeExtensions
             ErrorCode.ConcurrencyConflict => 409,
             ErrorCode.MedicalCaseVersionConflict => 409,
             ErrorCode.MedicalCaseLocked => 409,
+            // 电话唯一（US-PAT-003/004：重复返回 409——2026-08-13 由 400 改 409 对齐需求）
+            ErrorCode.PatientPhoneDuplicate => 409,
 
 
             // 422 Unprocessable Entity - 业务规则违反

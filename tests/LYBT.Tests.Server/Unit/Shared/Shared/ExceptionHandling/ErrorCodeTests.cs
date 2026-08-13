@@ -71,6 +71,7 @@ public class ErrorCodeTests
     [Theory]
     [InlineData(ErrorCode.ConcurrencyConflict, 409)]
     [InlineData(ErrorCode.MedicalCaseVersionConflict, 409)]
+    [InlineData(ErrorCode.PatientPhoneDuplicate, 409)] // US-PAT-003/004: 电话唯一冲突返回 409（2026-08-13 由 400 改）
     public void ToHttpStatusCode_ConflictErrors_Returns409(ErrorCode errorCode, int expectedStatus)
     {
         // Act
