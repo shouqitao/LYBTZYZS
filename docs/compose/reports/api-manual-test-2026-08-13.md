@@ -115,6 +115,21 @@
 
 
 
+## Domain 14: 医案/用户剩余 US 补测（003/012/016/017/018/019/020 + USER-012）✅
+
+| # | US | 测试项 | 结果 |
+|---|-----|--------|:---:|
+| 1 | US-MC-003 | 处方标志（Active 医案 Doctor 本人） | ✅ 200（True/False） |
+| 2 | US-MC-012 | 强制关闭（Admin + editReason） | ✅ 200「医案已关闭」 |
+| 3 | US-MC-016 | 查询权限位（canEdit/canComplete/canSuspend/canCancel） | ✅ 200 |
+| 4 | US-MC-017 | 审计日志（20 字段 items） | ✅ 200 |
+| 5 | US-MC-018 | 批量详情（≤50） | ✅ 200（3 条） |
+| 6 | US-MC-019 | 复制上次处方（患者历史——前端组合源） | ✅ 200（空边界） |
+| 7 | US-MC-020 | 批量删除（Completed, Admin） | ✅ 200「成功 2 条」 |
+| 8 | US-USER-012 | 批量删除用户 | ✅ 200「成功1个」 |
+
+**验证结论**：Completed 医案 Doctor 编辑 → 403（权限正确——EnsureCanEdit 逻辑：非 Admin 只能编辑自己 Active 医案）
+
 ## Domain 13: 用户层级约束补测（US-USER-005）✅
 
 | # | 测试项 | 结果 |
