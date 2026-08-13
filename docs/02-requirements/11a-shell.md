@@ -615,6 +615,38 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 ---
 
+### US-SHELL-025: HTTP/HTTPS 双协议支持（2026-08-14 新增——P2-09）
+
+**角色**: 运维/部署
+**优先级**: Should
+**状态**: 🔧 设计定案（2026-08-14：Kestrel 多端点 + 配置开关）
+
+**作为** 运维人员，**我想要** WebAPI 支持 HTTP 和 HTTPS 双协议，**以便** 根据环境需求灵活启用/关闭。
+
+**验收标准**:
+- [ ] Kestrel 多端点监听：`http://0.0.0.0:5000`（默认开启）+ `https://0.0.0.0:5001`（默认关闭）
+- [ ] 配置开关：`Kestrel:Endpoints:Http:Enabled` + `Kestrel:Endpoints:Https:Enabled`
+- [ ] 证书来源：开发/测试用自签（`dotnet dev-certs https`）；生产用正式证书（按需启用）
+- [ ] CSP/安全头适配：HTTPS 端点的 SecurityHeadersMiddleware 正常工作
+- [ ] start.sh 部署：仅启动 Http 端点（生产默认不启用 HTTPS）
+- [ ] 启动日志显示监听端点（如 `[启动] Listening on http://0.0.0.0:5000`）
+
+**业务规则**:
+1. Http 端点默认开启（不破坏现有 Desktop 远程连接 http://60.190.215.86:5000）
+2. Https 端点默认关闭（证书就绪后置 true）
+3. 双端口可同时监听（Kestrel 原生支持）
+4. Desktop 侧：证书信任/连接更新由 Desktop 端配置负责（此 US 只管 Server 端）
+
+**双模式**:
+| 模式 | 行为 |
+|------|------|
+| 远程 | start.sh 启动（Http 默认开，Https 可选） |
+| 本地 | LocalWebAPI 内嵌——不需要 HTTPS（localhost 自签可选） |
+
+**实现参考**: Program.cs（WebApplication.CreateBuilder 配置 Kestrel 端点）；appsettings.json（新增 Kestrel 段）
+
+---
+
 ## 依赖
 
 | 依赖 | 说明 |
