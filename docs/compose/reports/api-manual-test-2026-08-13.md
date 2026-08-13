@@ -115,7 +115,22 @@
 
 
 
-## Domain 12: 药材删除保护 + 报表空数据边界 ✅
+## Domain 13: 用户层级约束补测（US-USER-005）✅
+
+| # | 测试项 | 结果 |
+|---|--------|:---:|
+| 1 | Admin 更新 Admin（同级）→ 403 | ✅ 63674dc40 |
+| 2 | Admin 更新 Doctor（下级）→ 200 | ✅ |
+| 3 | 医生改自己角色 → 拦截 | ✅ |
+| 4 | 自管（不能改自己）→ 403 | ✅（测试覆盖） |
+| 5 | 越级提升（Doctor→Admin）→ 401 | ✅（测试覆盖） |
+| 6 | Delete Admin by Admin → 403 | ✅（测试覆盖） |
+
+**修复**（本域测试发现）：
+- UpdateUser 层级约束缺失（Admin 更新 Admin → 200 应拒绝）→ 63674dc40（pi 交付：UserHierarchyGuard 新建 + Update/Delete/Toggle/BatchDelete 全路径 + 测试 7）
+
+**教训**：测试账号角色必须对照 UserRole 枚举（Receptionist=0/Doctor=1/Admin=10）——testadmin 原误建为 Doctor 导致权限测试误判
+
 
 | # | US | 测试项 | 结果 |
 |---|-----|--------|:---:|
