@@ -25,6 +25,39 @@
 
 ---
 
+## 配置类分布（集中管理清单，2026-08-13 扫描）
+
+**架构**（ADR-0019）：类型/契约集中到 `LYBT.Shared.Configuration`（编译期共享，Server/Desktop 各部署各自 config/）；行为/策略按端分层。
+
+**共享契约层**——`LYBT.Shared.Configuration/Options/`（19 个，被 7 项目引用）：
+
+| 分类 | 配置类 | 说明 |
+|------|--------|------|
+| Common×2 | `JwtOptions`、`LoginOptions` | 双端共享契约 |
+| Client×5 | `ApiClientOptions`、`CardReaderOptions`、`ClientSessionOptions`、`ClinicSettingsOptions`、`OfflineModeOptions` | Desktop 客户端 |
+| Server×12 | `AppInfoOptions`、`CorsOptions`、`DatabaseOptions`、`DefaultPasswordOptions`、`DesktopUpdateOptions`、`LocalJwtOptions`、`LoggingOptions`、`MemoryCacheOptions`、`SecurityOptions`、`SessionOptions`、`SwaggerOptions`、`SystemAdminOptions` | 服务端 |
+
+**模块自管**（合理，不迁移）：
+| 位置 | 配置类 | 理由 |
+|------|--------|------|
+| `Shared.Logging/Bootstrap` | `LybtLoggingOptions` | 日志模块自身配置 |
+
+**端专属**（按 ADR-0019 行为分层，留在端内）：
+| 位置 | 配置类 | 说明 |
+|------|--------|------|
+| `Desktop.Infrastructure/Services/FeatureToggle` | `FeatureToggleOptions` | Desktop 专属功能开关（US-CFG-004，独立 feature-toggles.json） |
+| `WebAPI/Configuration` | `JsonOptions` | 仅 WebAPI 的 JSON 序列化 |
+
+**非绑定类**（不属于 Options 集中范围）：
+| 位置 | 类 | 说明 |
+|------|-----|------|
+| `Desktop.Infrastructure/Constants` | `CommonOptions` | 静态常量枚举（非配置绑定） |
+| `Desktop/LocalWebAPI/Auth` | `LocalJwtConfig` | 本地 JWT 行为配置（固定密钥/1年） |
+
+**扫描结论（2026-08-13）**：无「被多项目引用的散落配置类」；共享契约全部集中在 Shared.Configuration；Shared 只依赖 Shared.Models（约束符合）。若未来 FeatureToggle 需双端共享，应提前迁 Shared。
+
+---
+
 ## 环境变量覆盖机制
 
 ASP.NET Core 支持通过环境变量覆盖 JSON 配置节，使用 `__`（双下划线）作为层级分隔符：
