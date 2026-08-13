@@ -281,10 +281,54 @@ public class Program
                 }
             }
 
-            // Kestrel 限制：最大请求体 10MB（原 appsettings.json Kestrel.Limits 迁移至此）
+            // Kestrel 多端点（P2-09 US-SHELL-025 2026-08-14）: Http 5000 默认开 + Https 5001 默认关
+            // 配置段: Server:Endpoints（非 Kestrel:Endpoints——避开 ASP.NET Core 内建 Kestrel 端点绑定，防双重监听）
+            // 开关: Server:Endpoints:Http:Enabled / Server:Endpoints:Https:Enabled
+            // 证书: Server:Endpoints:Https:Certificate:Path + Password
             builder.WebHost.ConfigureKestrel(options =>
             {
                 options.Limits.MaxRequestBodySize = 10 * 1024 * 1024;
+
+                var endpoints = builder.Configuration.GetSection("Server:Endpoints");
+
+                // Http 端点（默认开启）
+                var httpEnabled = endpoints.GetValue<bool>("Http:Enabled", true);
+                var httpUrl = endpoints["Http:Url"] ?? "http://0.0.0.0:5000";
+                if (httpEnabled)
+                {
+                    options.ListenAnyIP(GetPort(httpUrl), listenOptions =>
+                    {
+                        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
+                    });
+                    Log.Information("[启动] Listening on {HttpUrl}", httpUrl);
+                }
+
+                // Https 端点（默认关闭——按需启用）
+                var httpsEnabled = endpoints.GetValue<bool>("Https:Enabled", false);
+                var httpsUrl = endpoints["Https:Url"] ?? "https://0.0.0.0:5001";
+                if (httpsEnabled)
+                {
+                    var certPath = builder.Configuration["Server:Endpoints:Https:Certificate:Path"];
+                    var certPassword = builder.Configuration["Server:Endpoints:Https:Certificate:Password"];
+                    options.ListenAnyIP(GetPort(httpsUrl), listenOptions =>
+                    {
+                        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
+                        if (string.IsNullOrWhiteSpace(certPath))
+                        {
+                            // 无证书路径——尝试开发证书（dotnet dev-certs https）；失败则警告不阻断
+                            listenOptions.UseHttps();
+                        }
+                        else if (string.IsNullOrWhiteSpace(certPassword))
+                        {
+                            listenOptions.UseHttps(certPath);
+                        }
+                        else
+                        {
+                            listenOptions.UseHttps(certPath, certPassword);
+                        }
+                    });
+                    Log.Information("[启动] Listening on {HttpsUrl} (cert={CertPath})", httpsUrl, certPath ?? "dev-cert");
+                }
             });
 
             var app = builder.Build();
@@ -323,7 +367,16 @@ public class Program
         }
         finally
         {
-            _instanceMutex?.ReleaseMutex();
+            // 释放单实例锁（P2-09 2026-08-14: 非持锁线程 ReleaseMutex 会抛
+            // Object synchronization——进程退出自动释放，显式释放仅尽力而为）
+            try
+            {
+                _instanceMutex?.ReleaseMutex();
+            }
+            catch (ApplicationException)
+            {
+                // 非持锁线程——忽略（进程退出自动释放）
+            }
             _instanceMutex?.Dispose();
             Log.CloseAndFlush();
         }
@@ -331,6 +384,14 @@ public class Program
 
     /// <summary>获取单实例锁（US-SHELL-024——与 Desktop US-SHELL-001 同模式）</summary>
     private static bool TryAcquireSingleInstance() => TryAcquireSingleInstance(InstanceMutexName);
+
+    /// <summary>从监听 URL（如 http://0.0.0.0:5000 / https://0.0.0.0:5001）解析端口（P2-09）</summary>
+    private static int GetPort(string url)
+    {
+        if (Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.IsDefaultPort == false)
+            return uri.Port;
+        return url.StartsWith("https", StringComparison.OrdinalIgnoreCase) ? 5001 : 5000;
+    }
 
     /// <summary>
     /// 获取指定名称的单实例锁（internal 便于单测——US-SHELL-024 Mutex 语义验证）。
@@ -515,8 +576,11 @@ public class Program
 
     private static readonly string ProductionTemplate = """
         {
-          "Kestrel": {
-            "Endpoints": { "Http": { "Url": "http://0.0.0.0:5000" } }
+          "Server": {
+            "Endpoints": {
+              "Http": { "Enabled": true, "Url": "http://0.0.0.0:5000" },
+              "Https": { "Enabled": false, "Url": "https://0.0.0.0:5001", "Certificate": { "Path": "", "Password": "" } }
+            }
           },
           "Jwt": {
             "SecretKey": "${Jwt__SecretKey}"

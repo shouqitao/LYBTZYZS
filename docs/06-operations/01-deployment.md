@@ -227,7 +227,13 @@ curl -o /dev/null -w "%{http_code}" http://localhost:5000/swagger  # 期望: 301
 
 #### 配置注意事项
 
-1. **HTTPS 端点**: 已移除，仅使用 HTTP（生产环境由反向代理处理 TLS）
+1. **HTTP/HTTPS 双协议（P2-09 US-SHELL-025 2026-08-14）**: Http `0.0.0.0:5000` 默认开启 + Https `0.0.0.0:5001` 默认关闭——配置在 `config/appsettings.Production.json` 的 `Server:Endpoints` 段（非 `Kestrel:Endpoints`——避开 ASP.NET Core 内建端点绑定防双重监听）：
+   - 开关：`Server:Endpoints:Http:Enabled`（默认 true）/ `Server:Endpoints:Https:Enabled`（默认 false）
+   - 证书：`Server:Endpoints:Https:Certificate:Path` + `Password`（生产正式证书；Path 留空时用 `dotnet dev-certs https` 开发证书）
+   - 启用 HTTPS：改 `Https:Enabled=true` + 填证书路径 → 重启 start.sh（脚本无需改——Kestrel 自动监听双端口）
+   - 验证：`ss -tln | grep -E ':5000|:5001'` + `curl -k https://localhost:5001/health`
+   - 启动日志显示 `[启动] Listening on http://0.0.0.0:5000`（及启用时的 Https 行）
+   - 风险：生产 HTTPS 需正式证书 + 公网防火墙开放 5001；测试环境默认 HTTP（反向代理处理 TLS 更安全——旧注释的推荐路径）
 2. **密码策略**: 必须包含大小写字母和数字
 3. **环境变量占位符**: Production 配置中不可使用 `${VAR}` 格式，需写入实际值
 4. **dotnet 路径**: 必须使用完整路径 `/home/player/.dotnet/dotnet`
