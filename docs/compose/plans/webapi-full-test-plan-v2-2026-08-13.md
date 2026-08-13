@@ -29,16 +29,16 @@
 |----|------|--------|------|------|:---:|
 | US-AUTH-000 | 首次登录初始化 | 强制改密 | sysadmin | 首登流程 | ⏳ |
 | US-AUTH-001 | 用户名密码登录 | 成功返回 JWT；失败通用错误 | 全员 | 错密码/不存在用户 | ✅ 部分 |
-| US-AUTH-002 | 登录失败锁定 | 5 次失败→锁 15 分；锁定期拒绝；期满自动解锁 | 全员 | 阈值边界 | ⏳ |
+| US-AUTH-002 | 登录失败锁定 | 5 次失败→锁 15 分；锁定期拒绝；期满自动解锁 | 全员 | 阈值边界 | ✅ |
 | US-AUTH-003 | 登录限流 | 超阈值→429 | 匿名 | 频繁请求 | ⏳ |
-| US-AUTH-004 | 令牌刷新 | 新 token+旧失效；无效→401 | 全员 | 重放 | ⏳ |
+| US-AUTH-004 | 令牌刷新 | 新 token+旧失效；无效→401 | 全员 | 重放 | ✅ |
 | US-AUTH-005 | 令牌验证 | /validate 校验 | 全员 | 过期/伪造 | ✅ 部分 |
 | US-AUTH-006 | 重放检测 | 旧 refresh 重放→撤销全族 | 全员 | 令牌族 | ⏳ |
 | US-AUTH-007 | 安全审计日志 | 登录/刷新/锁定记录 | sysadmin | 审计查询 | ⏳ |
-| US-AUTH-008 | 登出 | 令牌失效 | 全员 | 重复登出 | ⏳ |
+| US-AUTH-008 | 登出 | 令牌失效 | 全员 | 重复登出 | ✅ |
 | US-AUTH-009 | 本地自动登录 | AutoLoginToken | Desktop | — | ⏳（Desktop） |
 | US-AUTH-010 | AutoLoginToken 轮换 | 使用后轮换 | Desktop | — | ⏳（Desktop） |
-| US-AUTH-011 | 保留用户名拦截 | 保留名不可用 | sysadmin | 保留名单 | ⏳ |
+| US-AUTH-011 | 保留用户名拦截 | 保留名不可用 | sysadmin | 保留名单 | ✅ |
 | US-AUTH-012 | 本地简化认证 | 1 年令牌 | Desktop | — | ⏳（Desktop） |
 | US-AUTH-013 | 本地登录限流 | 5 次/分 | Desktop | — | ⏳（Desktop） |
 
@@ -47,9 +47,9 @@
 |----|------|--------|------|------|:---:|
 | US-USER-001 | 分页查询用户 | 分页/关键字 | sysadmin | 分页边界 | ✅ |
 | US-USER-002 | 用户详情 | 按 ID | sysadmin | 不存在 404 | ✅ |
-| US-USER-003 | 当前用户资料 | /users/current | 全员 | 自身 | ⏳ |
+| US-USER-003 | 当前用户资料 | /users/current | 全员 | 自身 | ✅ |
 | US-USER-004 | 创建用户 | **USER-D04 层级** | sysadmin/Admin | 越级→422 | ✅ 已修 |
-| US-USER-005 | 更新用户 | 用户名不可变；层级约束 | sysadmin/Admin | 角色变更 | ⏳ |
+| US-USER-005 | 更新用户 | 用户名不可变；层级约束 | sysadmin/Admin | 角色变更 | ✅ |
 | US-USER-006 | 删除用户 | 不可删自己 | sysadmin/Admin | 删自己→422 | ✅ |
 | US-USER-007 | 重置密码 | sysadmin 不可重置 | sysadmin | 重置 sysadmin→422 | ✅ |
 | US-USER-008 | 修改个人资料 | **IDOR 防护** | 全员 | 改他人→403 | ✅ |
@@ -69,32 +69,32 @@
 | US-HERB-002 | 详情 | 按 ID | Doctor/Admin | 不存在 | ✅ |
 | US-HERB-003 | 创建 | Admin+；名称唯一 | Admin | 重复名→422 | ✅ |
 | US-HERB-004 | 更新 | Admin+ | Admin | 名称冲突 | ✅ |
-| US-HERB-005 | 删除 | **引用检查** | Admin | 被处方引用→422 | ⏳ |
-| US-HERB-006 | 批量导入 | Skip/Update/Error | Admin | Excel 双路径 | ⏳ |
-| US-HERB-007 | 导出全部 | Excel | Admin | 空库 | ⏳ |
+| US-HERB-005 | 删除 | **引用检查** | Admin | 被处方引用→422 | ✅ |
+| US-HERB-006 | 批量导入 | Skip/Update/Error | Admin | Excel 双路径 | ✅ |
+| US-HERB-007 | 导出全部 | Excel | Admin | 空库 | ✅ |
 | US-HERB-008/009 | 引用检查（单/批量） | 引用数 | Admin | 单/批 | ✅ 部分 |
 | US-HERB-010 | 启用/禁用 | 状态切换 | Admin | 禁用后不可选 | ✅ |
 | US-HERB-011 | 恢复软删除 | 仅 Admin 业务 | Admin | 未删除→422 | ✅ |
-| US-HERB-012 | 批量操作 | 启用/禁用/删除 | Admin | 混合状态 | ⏳ |
+| US-HERB-012 | 批量操作 | 启用/禁用/删除 | Admin | 混合状态 | ✅ |
 | US-HERB-013 | 导出+模板 | 下载 | Admin | 模板格式 | ✅ 部分 |
 
 ### B2. 验方（US-FORM-001~014）
 | US | 故事 | 关键 AC | 角色 | 边界 | 状态 |
 |----|------|--------|------|------|:---:|
-| US-FORM-001 | 分页查询（所有权） | Doctor 仅自己+共享 | Doctor/Admin | 他人→过滤 | ⏳ |
-| US-FORM-002 | 详情 | 含 Herbs+验证状态 | Doctor/Admin | 非本人→403 | ⏳ |
+| US-FORM-001 | 分页查询（所有权） | Doctor 仅自己+共享 | Doctor/Admin | 他人→过滤 | ✅ |
+| US-FORM-002 | 详情 | 含 Herbs+验证状态 | Doctor/Admin | 非本人→403 | ✅ |
 | US-FORM-003 | 创建 | **空药材→400**；Draft | Doctor/Admin | 引用校验 | ✅ |
 | US-FORM-004 | 更新 | **替换 Herbs**；非本人 403 | Doctor/Admin | 并发 | ✅ |
 | US-FORM-005 | 删除 | 软删除 | Doctor/Admin | 非本人→403 | ✅ |
-| US-FORM-006 | 批量导入 | 匹配机制 | Admin | 10000 上限 | ⏳ |
-| US-FORM-007 | 待验证列表 | Draft to-do | Doctor | 分页 | ⏳ |
-| US-FORM-008 | 验证单味药材 | 绑定系统药材 | Doctor | 已绑定→422 | ⏳ |
-| US-FORM-009 | 全验证晋升 | →Validated | Doctor | 全验证自动 | ⏳ |
+| US-FORM-006 | 批量导入 | 匹配机制 | Admin | 10000 上限 | ✅ |
+| US-FORM-007 | 待验证列表 | Draft to-do | Doctor | 分页 | ✅ |
+| US-FORM-008 | 验证单味药材 | 绑定系统药材 | Doctor | 已绑定→422 | ✅ |
+| US-FORM-009 | 全验证晋升 | →Validated | Doctor | 全验证自动 | ✅ |
 | US-FORM-010 | 降级 Draft | 更新含未验证→Draft | Doctor | FLAW-F1 | ✅ |
-| US-FORM-011 | 启用/禁用 | 状态 | Admin | — | ⏳ |
-| US-FORM-012 | 恢复软删除 | 层级 | Admin | 未删除→422 | ⏳ |
-| US-FORM-013 | 批量+导出+模板 | 批量操作 | Admin | 上限 | ⏳ |
-| US-FORM-014 | 克隆验方 | 复制 | Doctor | 克隆字段 | ⏳ |
+| US-FORM-011 | 启用/禁用 | 状态 | Admin | — | ✅ |
+| US-FORM-012 | 恢复软删除 | 层级 | Admin | 未删除→422 | ✅ |
+| US-FORM-013 | 批量+导出+模板 | 批量操作 | Admin | 上限 | ✅ |
+| US-FORM-014 | 克隆验方 | 复制 | Doctor | 克隆字段 | ✅ |
 
 ---
 
@@ -105,27 +105,27 @@
 | US-PAT-002 | 详情 | 按 ID | 全员 | 不存在 404 | ✅ |
 | US-PAT-003 | 创建 | 必填 | 全员 | 缺 name→400 | ✅ |
 | US-PAT-004 | 更新 | 修改 | 全员 | IDOR | ✅ |
-| US-PAT-005 | 删除 | **引用检查** | Admin+ | 被医案引用→422 | ⏳ |
+| US-PAT-005 | 删除 | **引用检查** | Admin+ | 被医案引用→422 | ✅ |
 | US-PAT-006 | 启用/禁用 | 状态 | Admin+ | 禁用后操作 | ✅ |
 | US-PAT-007 | 恢复 | **仅 Admin 业务** | Admin | sysadmin→403 | ✅ 已证 |
 | US-PAT-008 | 批量删除 | 上限 | Admin+ | 部分成功 | ✅ |
 | US-PAT-009/010 | 引用检查（单/批） | 引用数 | Admin | 单/批 | ✅ |
 | US-PAT-011 | 导入模板 | 下载 | Admin | 格式 | ✅ |
 | US-PAT-012 | 导出 | Excel | Admin | 空库 | ✅ |
-| US-PAT-013 | **敏感脱敏** | 身份证/电话 | 全员 | 传输/存储 | ⏳ |
-| US-PAT-014 | by-id-number | 身份证查询 | 全员 | 不存在 | ⏳ |
+| US-PAT-013 | **敏感脱敏** | 身份证/电话 | 全员 | 传输/存储 | ✅ |
+| US-PAT-014 | by-id-number | 身份证查询 | 全员 | 不存在 | ✅ |
 
 ---
 
 ## 四、挂号（US-REG-001~008 = 8 个故事）
 | US | 故事 | 关键 AC | 角色 | 边界 | 状态 |
 |----|------|--------|------|------|:---:|
-| US-REG-001 | 前台创建挂号 | **Receptionist only**；Waiting | Receptionist | 其他角色→403 | ⏳ |
-| US-REG-002 | 快速就诊 | **QuickVisit 原子事务** | Doctor | 事务性 | ⏳ |
-| US-REG-003 | 挂号详情 | 按 ID | Receptionist | 不存在 | ⏳ |
-| US-REG-004 | 分页+队列 | 排队查看 | Receptionist | 状态过滤 | ⏳ |
-| US-REG-005 | 开始就诊 | Waiting→InProgress | Doctor | 状态边界 | ⏳ |
-| US-REG-006 | 取消挂号 | **仅当天 Waiting** | Receptionist | 非当天/已就诊→422 | ⏳ |
+| US-REG-001 | 前台创建挂号 | **Receptionist only**；Waiting | Receptionist | 其他角色→403 | ✅ |
+| US-REG-002 | 快速就诊 | **QuickVisit 原子事务** | Doctor | 事务性 | ✅ |
+| US-REG-003 | 挂号详情 | 按 ID | Receptionist | 不存在 | ✅ |
+| US-REG-004 | 分页+队列 | 排队查看 | Receptionist | 状态过滤 | ✅ |
+| US-REG-005 | 开始就诊 | Waiting→InProgress | Doctor | 状态边界 | ✅ |
+| US-REG-006 | 取消挂号 | **仅当天 Waiting** | Receptionist | 非当天/已就诊→422 | ✅ |
 | US-REG-007 | 医案联动 | 完成/取消自动回写 | 系统 | 联动一致性 | ⏳ |
 | US-REG-008 | 工作台实时列表 | 待诊实时 | Doctor | 实时 | ⏳ |
 
@@ -135,24 +135,24 @@
 | US | 故事 | 关键 AC | 角色 | 边界 | 状态 |
 |----|------|--------|------|------|:---:|
 | US-MC-001 | 创建医案 | **Doctor only** | Doctor | 其他→403 | ✅ 已证 |
-| US-MC-002 | 保存（聚合） | 诊断+处方原子 | Doctor | 事务 | ⏳ |
-| US-MC-003 | 处方需求标志 | 3 步工作流 | Doctor | 标志切换 | ⏳ |
-| US-MC-004 | 详情 | 诊断+处方 | Doctor/Admin | 非本人 | ⏳ |
-| US-MC-005 | 分页列表 | **按角色过滤** | Doctor/Admin | 过滤边界 | ⏳ |
-| US-MC-006 | 统一查询 | ByPatient/Pending/Recent | Doctor | 各查询类型 | ⏳ |
-| US-MC-007 | 跨模块搜索 | 患者+诊断+日期 | Doctor | 组合条件 | ⏳ |
+| US-MC-002 | 保存（聚合） | 诊断+处方原子 | Doctor | 事务 | ✅ |
+| US-MC-003 | 处方需求标志 | 3 步工作流 | Doctor | 标志切换 | ✅ |
+| US-MC-004 | 详情 | 诊断+处方 | Doctor/Admin | 非本人 | ✅ |
+| US-MC-005 | 分页列表 | **按角色过滤** | Doctor/Admin | 过滤边界 | ✅ |
+| US-MC-006 | 统一查询 | ByPatient/Pending/Recent | Doctor | 各查询类型 | ✅ |
+| US-MC-007 | 跨模块搜索 | 患者+诊断+日期 | Doctor | 组合条件 | ✅ |
 | US-MC-008/009 | 诊断/处方历史 | 患者历史 | Doctor | 空历史 | ⏳ |
-| US-MC-010 | 更新状态 | Active/Suspended | Doctor | 状态机 | ⏳ |
-| US-MC-011 | 完成医案 | **工作流验证** | Doctor | 未完成处方→422 | ⏳ |
-| US-MC-012 | 强制关闭 | 管理操作 | Admin | EditReason | ⏳ |
-| US-MC-013 | 暂停 | 状态 | Doctor | — | ⏳ |
-| US-MC-014 | 取消 | 物理删除 | Doctor | 权限 | ⏳ |
-| US-MC-015 | 删除/批量 | 软删除管理 | Admin | 上限 | ⏳ |
-| US-MC-016 | 查询权限 | 操作权限位 | 全员 | 权限矩阵 | ⏳ |
-| US-MC-017 | 审计日志 | 20 字段 | Admin | 差异 | ⏳ |
-| US-MC-018 | 批量详情 | ≤50 N+1 | Doctor | 上限 | ⏳ |
-| US-MC-019 | 复制上次处方 | 微调 | Doctor | 无上次→提示 | ⏳ |
-| US-MC-020 | 批量删除 | 已实现未文档化 | Admin | 上限 | ⏳ |
+| US-MC-010 | 更新状态 | Active/Suspended | Doctor | 状态机 | ✅ |
+| US-MC-011 | 完成医案 | **工作流验证** | Doctor | 未完成处方→422 | ✅ |
+| US-MC-012 | 强制关闭 | 管理操作 | Admin | EditReason | ✅ |
+| US-MC-013 | 暂停 | 状态 | Doctor | — | ✅ |
+| US-MC-014 | 取消 | 物理删除 | Doctor | 权限 | ✅ |
+| US-MC-015 | 删除/批量 | 软删除管理 | Admin | 上限 | ✅ |
+| US-MC-016 | 查询权限 | 操作权限位 | 全员 | 权限矩阵 | ✅ |
+| US-MC-017 | 审计日志 | 20 字段 | Admin | 差异 | ✅ |
+| US-MC-018 | 批量详情 | ≤50 N+1 | Doctor | 上限 | ✅ |
+| US-MC-019 | 复制上次处方 | 微调 | Doctor | 无上次→提示 | ✅ |
+| US-MC-020 | 批量删除 | 已实现未文档化 | Admin | 上限 | ✅ |
 
 ---
 
@@ -160,9 +160,9 @@
 | US | 故事 | 关键 AC | 角色 | 边界 | 状态 |
 |----|------|--------|------|------|:---:|
 | US-REPORT-001 | 收入报表 | 时间范围/默认当日 | Admin | 空数据/跨月 | ✅ 部分 |
-| US-REPORT-002 | 就诊统计 | 时间范围 | Admin | 空数据 | ⏳ |
-| US-REPORT-003 | 药材使用排行 | 时间范围 | Admin | 空数据 | ⏳ |
-| US-REPORT-004 | 趋势与绩效 | 分析 | Admin | 无数据 | ⏳ |
+| US-REPORT-002 | 就诊统计 | 时间范围 | Admin | 空数据 | ✅ |
+| US-REPORT-003 | 药材使用排行 | 时间范围 | Admin | 空数据 | ✅ |
+| US-REPORT-004 | 趋势与绩效 | 分析 | Admin | 无数据 | ✅ |
 | — | **报表权限** | 非 Admin 访问→403 | 各角色 | 权限边界 | ⏳ |
 
 ---
@@ -171,17 +171,17 @@
 | US | 故事 | 关键 AC | 角色 | 边界 | 状态 |
 |----|------|--------|------|------|:---:|
 | US-CFG-001 | 查询所有配置 | **敏感脱敏** | sysadmin | 敏感黑名单 | ✅ |
-| US-CFG-002 | 查询单个 | 按 key | sysadmin | 不存在 | ⏳ |
-| US-CFG-003 | 验证生产配置 | ValidateOrThrow | sysadmin | 缺失→报错 | ⏳ |
-| US-CFG-004 | 功能开关 | FeatureToggles | sysadmin | 开关生效 | ⏳ |
-| US-CFG-005 | 配置管理端点 | GET/PUT | sysadmin | 白名单/黑名单 | ⏳ |
-| US-CFG-006 | 诊所信息热更新 | 热更新 | sysadmin | 无重启生效 | ⏳ |
+| US-CFG-002 | 查询单个 | 按 key | sysadmin | 不存在 | ✅ |
+| US-CFG-003 | 验证生产配置 | ValidateOrThrow | sysadmin | 缺失→报错 | ✅ |
+| US-CFG-004 | 功能开关 | FeatureToggles | sysadmin | 开关生效 | ✅ |
+| US-CFG-005 | 配置管理端点 | GET/PUT | sysadmin | 白名单/黑名单 | ✅ |
+| US-CFG-006 | 诊所信息热更新 | 热更新 | sysadmin | 无重启生效 | ✅ |
 | US-SYS-001/002 | /health /ping | 匿名探针 | 匿名 | 无认证 | ✅ |
 | US-SYS-003 | /details | 含 DB | 匿名 | DB 状态 | ✅ |
 | US-SYS-004 | 503 返回 | 不健康→503 | 匿名 | 模拟故障 | ⏳ |
 | US-SYS-005~009 | 日志级别/调试模式 | 动态调整/自动过期 | sysadmin | 定时过期 | ⏳ |
 | US-SHELL-017 | 生产门控 | AllowAutoCreate=false 等 | sysadmin | 安全 | ✅ 已证 |
-| US-SHELL-020 | 部署上传/重启 | upload/restart | sysadmin | 谨慎端点 | ⏳（慎） |
+| US-SHELL-020 | 部署上传/重启 | upload/restart | sysadmin | 谨慎端点 | ✅ |
 | — | **系统端点权限** | 非 sysadmin→403 | 各角色 | 权限 | ⏳ |
 
 ---
