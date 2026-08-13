@@ -76,7 +76,31 @@
 
 「部署只传主 dll 不传模块 dll → 修复不生效」——发布时全量上传或对比 dll 时间戳。
 
-## Domain 3+: 待继续（formula 修复已真机确认 ✅，继续其他域）
+## Domain 4: 挂号（US-REG 系列）——全链路真机通过 ✅
+
+| # | US | 测试项 | 结果 |
+|---|-----|--------|:---:|
+| 1 | US-REG-001 | 前台创建挂号（Waiting） | ✅ 201 |
+| 2 | US-REG-005 | 医生接诊 start-visit（Waiting→InProgress + 原子建医案） | ✅ 200 |
+| 3 | US-REG-004 | 查看排队/列表 | ✅ 200 |
+| 4 | US-REG-006 | 取消挂号（Waiting） | ✅ 200 |
+| 5 | US-REG-002 | QuickVisit 两步（建 Waiting + start-visit） | ✅ 201+200 |
+| 6 | 权限 | Receptionist 创建挂号 ✅ / Doctor 建号（doctorId=当前医生）✅ | ✅ |
+| 7 | BR-001 | 已有 Active 医案 → 422「已有进行中医案」 | ✅ 保护 |
+| 8 | 业务规则 | 同日重复挂号 → 422「该患者今日已有待诊挂号」 | ✅ 保护 |
+
+**修复**（本域测试发现）：
+- POST /Registrations Create 端点被 quick-visit 删除误删（405）→ b058a1124 恢复
+- Consultation.CreatedBy NULL（start-visit 500）→ 18a6f676e 修复（pi 发现 + 交付）
+
+## Domain 5: 医案（US-MC 系列）——部分通过（start-visit 建案链）
+
+| # | US | 测试项 | 结果 |
+|---|-----|--------|:---:|
+| 1 | US-MC-001 | 接诊即建医案（Active + Consultation 1:1） | ✅ 200 |
+| 2 | BR-001 | 单活跃医案约束（Active 时再建 → 422） | ✅ |
+| 3 | US-MC-014 | 取消医案（物理删除） | ✅ 200 |
+
 
 ## Domain 2.5: 用户模块（US-USER-001~012 全通过 ✅）
 
