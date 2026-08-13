@@ -229,6 +229,55 @@
 
 ---
 
+### US-LOG-008: 启动版本日志
+
+**角色**: 开发人员/运维人员
+**优先级**: Should
+**状态**: ⚠️ 待实现（2026-08-13 审计发现：启动日志无版本/Commit，无法区分「代码旧 vs 部署错」）
+
+**作为** 运维人员，**我想要** 应用启动时记录版本号、Commit 与运行环境，**以便** 部署后一眼确认服务器运行的是否最新代码（解决「旧 dll 未部署」类问题定位）。
+
+**验收标准**:
+- [ ] 启动首条日志含：版本号（AssemblyInformationalVersion）+ Commit SHA（如有）+ 环境名 + PID
+- [ ] 格式如：`[启动] LYBT.WebAPI v1.0.0 (commit abc1234) env=Production pid=12345`
+- [ ] 版本信息从 `AssemblyInformationalVersion` 读取（已含 Commit 哈希，见 DiagnosticsController 先例）
+- [ ] Server 与 Desktop 均记录
+
+**业务规则**:
+1. 位置：LoggingBootstrap 完成初始化后、Program.Main 启动时立即记录
+2. 版本含 Commit：`AssemblyInformationalVersion` 的 `+sha` 后缀（SDK 自动注入）
+3. 目的：部署验证第一步（对照服务器日志版本 vs 本地 publish 版本）
+
+**双模式**: 远程/本地一致
+
+**实现参考**: `LoggingBootstrap.cs`、`Program.cs`（启动首日志）、DiagnosticsController.GetVersion 先例
+
+---
+
+### US-LOG-009: 单实例日志文件
+
+**角色**: 开发人员/运维人员
+**优先级**: Should
+**状态**: ⚠️ 待实现（2026-08-13 审计发现：同一天多个日志文件——20260813.log + _001.log + webapi.log——多进程各写，找不到当前进程日志）
+
+**作为** 运维人员，**我想要** 同一实例的日志写入单一文件（不因多进程/轮转产生多个并存文件），**以便** 定位问题时只有一个日志文件可查。
+
+**验收标准**:
+- [ ] 一个运行实例对应一个日志文件（`lybt-webapi-{Date}.log`，无 `_001` 后缀）
+- [ ] 多进程启动时（如 start.sh 重复执行）不产生第二个日志文件（或明确命名区分）
+- [ ] 日志文件按天滚动（保留现有 US-LOG-001 行为）
+
+**业务规则**:
+1. 根因：多进程各开 Serilog File sink → 同天多文件（`20260813.log` + `20260813_001.log`）
+2. 解法：Serilog File sink 的 `rollingInterval` 由「按天」保持，但**确保单实例**（进程互斥/端口检查在 start.sh，属 P2-07）——本 US 只保证「单实例时单文件」
+3. 验收方式：同实例重启后日志仍写同一文件（不产生 _001）
+
+**双模式**: 远程/本地一致
+
+**实现参考**: `LoggingBootstrap.cs`（File sink 配置）、start.sh（进程管理——P2-07 联动）
+
+---
+
 ## Health & Diagnostics
 
 > 原 9 US，保留 **9 US**：US-SYS-001~009。
@@ -495,3 +544,4 @@
 | 版本 | 日期 | 变更 | 原因 |
 |------|------|------|------|
 | v1.0 | 2026-06-28 | Split from 11-platform.md; merged Logging & Health into Observability module | 文档结构优化 S4 批次 3 |
+| v1.1 | 2026-08-13 | 新增 US-LOG-008 启动版本日志 + US-LOG-009 单实例日志文件 | 真机测试审计：部署问题与代码问题无法区分（旧 dll 五轮误判）+ 同一天多日志文件找不到当前 |
