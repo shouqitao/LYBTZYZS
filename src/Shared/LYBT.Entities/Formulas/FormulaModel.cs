@@ -166,9 +166,17 @@ namespace LYBT.Entities.Formulas
         /// </summary>
         public void ReplaceHerbs(IEnumerable<FormulaHerbItem> herbs)
         {
-            Herbs.Clear();
+            // 方案 A（2026-08-13 第 2 层根因实证——真机 PUT formula 500: DbUpdateConcurrencyException 0 rows）:
+            // 孤儿删除模式——逐个移除旧项（EF 标记 Deleted——SaveChanges 时 DELETE 子表，不触发父行隐式 UPDATE/关系修复）
+            // + 新项显式挂接（FormulaId + Formula 导航——避免 EF relationship fixup 对父行 RowVersion 的副作用）。
+            foreach (var old in Herbs.ToList())
+                Herbs.Remove(old);
+
             foreach (var herb in herbs)
             {
+                // 只设 FormulaId（FK）——不设 Formula 导航（显式导航赋值到已跟踪父会把 Detached 子 Attach 成 Modified →
+                // SaveChanges 发 UPDATE WHERE 新 Id → 0 rows 并发异常——真机 PUT formula 500 根因）
+                herb.FormulaId = Id;
                 Herbs.Add(herb);
             }
             UpdatedAt = DateTime.UtcNow;

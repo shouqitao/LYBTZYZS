@@ -101,7 +101,21 @@ namespace LYBT.Infrastructure.Repositories
                 _dbSet.Update(entity);
             }
 
-            await SaveChangesAsync(cancellationToken);
+            try
+            {
+                await SaveChangesAsync(cancellationToken);
+            }
+            catch (InvalidOperationException ex) when (ex.InnerException is DbUpdateConcurrencyException)
+            {
+                // 并发重试（2026-08-13 第 2 层根因——ReplaceHerbs 子集合替换后 RowVersion 过期时序）:
+                // SaveChangesAsync 将 DbUpdateConcurrencyException 包装为 InvalidOperationException——
+                // 匹配包装链；重新加载最新 RowVersion 并重试一次——吸收批处理/关系操作导致的 RowVersion 过期；
+                // 真并发（另一用户真实修改）重试后仍冲突——正常抛（乐观并发语义保持）。
+                _logger.LogWarning(ex, "[REPO] {EntityType}.Update({Id}) 并发冲突——重试一次", typeof(TEntity).Name, entity.Id);
+                _context.Entry(entity).Reload();
+                await SaveChangesAsync(cancellationToken);
+            }
+
             _logger.LogDebug("[REPO] {EntityType}.Update({Id})", typeof(TEntity).Name, entity.Id);
 
             return entity;

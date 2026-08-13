@@ -17,6 +17,22 @@ public class FormulaRepository : CatalogRepositoryBase<Formula>, IFormulaReposit
     }
 
     /// <inheritdoc/>
+    public override async Task<Formula> UpdateAsync(Formula entity, CancellationToken cancellationToken = default)
+    {
+        // 2026-08-13 第 2 层根因（真机 PUT formula 500）: ReplaceHerbs 的新 FormulaHerbItem
+        // 被 EF 误标 Modified（非 Added）→ SaveChanges 发 UPDATE WHERE 新 Id → 0 rows 并发异常。
+        // ReplaceHerbs 语义 = 全换新组成（新 Guid）——强制新 item 为 Added（显式 INSERT）。
+        foreach (var herb in entity.Herbs)
+        {
+            var entry = _context.Entry(herb);
+            if (entry.State == EntityState.Detached || entry.State == EntityState.Modified)
+                entry.State = EntityState.Added;
+        }
+
+        return await base.UpdateAsync(entity, cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public override async Task<Formula?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Formulas
