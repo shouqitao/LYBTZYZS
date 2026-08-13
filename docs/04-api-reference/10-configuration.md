@@ -1,10 +1,12 @@
 # 系统配置 API
 
-> Controller: `ConfigurationController` | 路由前缀: `/api/v1/configuration` | 默认权限: `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`
+> Controller: `ConfigurationController` | 路由前缀: `/api/v1/configuration` | 默认权限: `[Authorize(Policy = PolicyConstants.SysAdminOnly)]`
 
 ## 概述
 
-提供系统配置读取与生产环境配置验证功能。仅 Admin 和 SuperAdmin 可访问。GetConfiguration 返回安全、非敏感的配置项；GetValue 按 key 查询单个配置值；ValidateProduction 验证生产环境配置是否完整合规。
+提供系统配置读取与生产环境配置验证功能。仅 SuperAdmin（sysadmin）可访问。GetConfiguration 返回安全、非敏感的配置项；GetValue 按 key 查询单个配置值；ValidateProduction 验证生产环境配置是否完整合规。
+
+> **权限隔离（2026-08-13）**：配置管理 = sysadmin 专属——业务管理员（Admin）不应访问系统配置（含 App/ConnectionStrings/Jwt 等敏感配置，US-SHELL-018「角色: sysadmin」）。
 
 > **响应信封**：所有响应为 `ApiResponse<T>`，字段定义与通用错误码见 [README](README.md)。下文成功响应示例仅展示 `data` 内容。
 
@@ -14,7 +16,7 @@
 
 获取系统配置项集合。
 
-- **权限**: Admin / SuperAdmin (`[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`)
+- **权限**: SuperAdmin / sysadmin (`[Authorize(Policy = PolicyConstants.SysAdminOnly)]`)
 
 **成功响应** (200): `ApiResponse<Dictionary<string, string?>>`
 
@@ -53,7 +55,7 @@ curl -X GET http://localhost:5000/api/v1/configuration \
 
 获取单个配置项的值。
 
-- **权限**: Admin / SuperAdmin (`[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`)
+- **权限**: SuperAdmin / sysadmin (`[Authorize(Policy = PolicyConstants.SysAdminOnly)]`)
 
 **路径参数**:
 
@@ -83,7 +85,7 @@ curl -X GET http://localhost:5000/api/v1/configuration/ConnectionStrings%3ADefau
 **错误码**:
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 422 | key 为空 |
 | 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
@@ -93,7 +95,7 @@ curl -X GET http://localhost:5000/api/v1/configuration/ConnectionStrings%3ADefau
 
 验证生产环境配置是否完整合规。检查必要的配置项是否已设置，用于部署前验证。
 
-- **权限**: Admin / SuperAdmin (`[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`)
+- **权限**: SuperAdmin / sysadmin (`[Authorize(Policy = PolicyConstants.SysAdminOnly)]`)
 
 **成功响应** (200): `ApiResponse<object>`
 
@@ -122,7 +124,7 @@ curl -X POST http://localhost:5000/api/v1/configuration/validate \
 **错误码**:
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 422 | 配置验证失败 |
 | 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
@@ -143,6 +145,7 @@ curl -X POST http://localhost:5000/api/v1/configuration/validate \
 | `section` | string | 配置节名（必须在白名单内） |
 
 **PUT 白名单（业务/运维参数，可改）**:
+
 - `Session`（TimeoutMinutes / AllowConcurrentSessions / SlidingExpiration）
 - `Security.RateLimiting`（各限额 / 窗口 / 白名单 IP）
 - `ClinicSettings`（诊所名 / 营业时间 / 挂号费 / 分页 / 药材角色序）
@@ -152,6 +155,7 @@ curl -X POST http://localhost:5000/api/v1/configuration/validate \
 - `Serilog:MinimumLevel`（复用 Diagnostics API 热更新）
 
 **PUT 黑名单（敏感/基础设施，返回 403）**:
+
 - `Jwt.SecretKey`、`Jwt.AccessTokenExpirationMinutes`（Token 策略改需重部署）
 - `ConnectionStrings`
 - `DefaultPasswords`
@@ -174,7 +178,7 @@ curl -X POST http://localhost:5000/api/v1/configuration/validate \
 **错误码**:
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 403 | 节名在黑名单（敏感/基础设施） |
 | 404 | 节名不存在 |
 | 422 | 请求体校验失败 |
@@ -192,6 +196,7 @@ curl -X POST http://localhost:5000/api/v1/configuration/validate \
 - **限频**: 每小时最多 3 次（防误操作/DoS）
 
 **流程**:
+
 1. sysadmin 改配置 → 系统提示「需重启生效」
 2. sysadmin 点「应用并重启」→ 二次确认对话框（显示将重启 + 倒计时）
 3. `POST /configuration/restart` → 服务端延迟 30 秒执行 `IHostApplicationLifetime.StopApplication()`
@@ -212,7 +217,7 @@ curl -X POST http://localhost:5000/api/v1/configuration/validate \
 **错误码**:
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 429 | 触发限频（每小时 ≤3 次） |
 | 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
@@ -225,7 +230,7 @@ curl -X POST http://localhost:5000/api/v1/configuration/validate \
 GET `/configuration` 与 `/configuration/{section}` 响应中敏感字段将掩码展示（与 PUT 黑名单对应）：
 
 | 字段 | 脱敏效果 |
-|------|---------|
+| ------ | --------- |
 | `Jwt.SecretKey` | `***` |
 | `ConnectionStrings:*` | `Server=***`（保留键名，值掩码） |
 | `DefaultPasswords:*` | `***` |
@@ -233,11 +238,13 @@ GET `/configuration` 与 `/configuration/{section}` 响应中敏感字段将掩�
 ---
 
 ## 变更记录
+
 | 日期 | 版本 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 2026-06-12 | v1.0 | 初始版本 |
 | 2026-06-12 | v1.1 | 添加 DTO 类型名到响应; 标注使用基于角色授权 (非策略授权) |
 | 2026-06-25 | v1.2 | 补充全部端点的 curl 示例、`ApiResponse<T>` 信封完整 JSON 示例、真实配置键值 |
 | 2026-06-28 | v1.1 | 文档对齐代码：权限策略 AdminOnly→AdminOrSuperAdmin（对齐 ConfigurationController.cs:14） |
+| 2026-08-13 | v1.5 | 权限收紧：全部端点 AdminOrSuperAdmin→SysAdminOnly（配置管理 sysadmin 专属——真机发现 testadmin 可读系统配置应 403，CONFIG-PERM-FIX） |
 | 2026-06-28 | v1.3 | 新增 PUT /configuration/{section}（白/黑名单）、POST /configuration/restart（延迟重启）、GET 脱敏说明（均 🧲 v1.0 待实现，ADR-0014） |
 | 2026-06-28 | v1.4 | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；删除「通用响应格式」节（README 已集中化）；curl 引用 README TOKEN |

@@ -353,6 +353,7 @@
 
 ---
 
+| 2026-08-13 | **Configuration 权限隔离定案（CONFIG-PERM-FIX）**：真机发现 testadmin（业务管理员）GET /api/v1/configuration → 200（应 403）——配置管理设计为 sysadmin 专属（US-SHELL-018「角色: sysadmin」），类级 `AdminOrSuperAdmin` 误放行 Admin（App/ConnectionStrings/Jwt 等敏感配置泄露面）。修复：双端（Server WebAPI + Desktop LocalWebAPI）ConfigurationController 类级统一 `SysAdminOnly`；本地 Set 手工检查同步收紧仅 SuperAdmin；LocalJwtConfig 补 SysAdminOnly 策略注册（本地 DeployController 已用该类级策略但未注册——潜在 InvalidOperationException 一并修复）；行为测试 WebApplicationFactory+TestAuthHandler 守护 Admin→403/SuperAdmin→200。文档同步：10-configuration v1.5、API README、14-deploy（DEPLOY-PERM 滞后）、12-permissions-matrix、04-permissions、11a-shell US-SHELL-018（🧲→✅ 滞后校准）、05-dual-mode（策略 6→7）、13c #110 | 配置管理=运维操作（sysadmin 专属）不是业务操作——Admin 业务管理员不应接触系统配置；权限收紧与既有 SHELL-018 设计（sections 已 SysAdminOnly）对齐，类级统一消除方法级冗余 | 技术总监 |
 ## 十、维护规则（强制）
 
 ### 10.1 文档-代码一致性

@@ -7,7 +7,7 @@
 ## 基本信息
 
 | 属性 | 值 |
-|------|-----|
+| ------ | ----- |
 | Base URL | `https://{host}/api/v1` |
 | 认证 | Bearer Token (JWT) |
 | 格式 | `application/json` |
@@ -35,7 +35,7 @@ TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
 ## 端点索引
 
 | 模块 | 文件 | 端点数 | 策略 |
-|------|------|:------:|------|
+| ------ | ------ | :------: | ------ |
 | [认证](01-auth.md) | 登录/登出/刷新/验证 | 5 | AllowAnonymous（validate 需认证） |
 | [用户](02-users.md) | 增删改查+批量操作 | 14 | AdminOrSuperAdmin |
 | [患者](03-patients.md) | 增删改查+引用检查+身份证查询 | 11 | GET/POST/PUT: Doctor/Receptionist；DELETE/启停: Admin+；恢复: Admin |
@@ -45,18 +45,18 @@ TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
 | [挂号](07-registrations.md) | 挂号+接诊+退号+队列 | 7 | DoctorOrAdminOrReceptionist |
 | [打印](08-printing.md) | 打印记录回写 | — | 挂在医案下 |
 | [同步](09-sync.md) | v2.0 规划 | 6 | 🔴 未实现 |
-| [配置](10-configuration.md) | 系统配置读写 | 3 | AdminOrSuperAdmin |
+| [配置](10-configuration.md) | 系统配置读写 | 3 | SysAdminOnly |
 | [健康检查](11-health.md) | 探活+详细检查 | 3 | 匿名/已认证 |
 | [诊断](12-diagnostics.md) | 日志级别调整 | 4 | AdminOrSuperAdmin |
 | [报表](13-reports.md) | 收入/问诊/药材统计 | 3 | DoctorOrAdmin |
-| [部署](14-deploy.md) | 更新包上传+服务重启 | 2 | AdminOrSuperAdmin |
+| [部署](14-deploy.md) | 更新包上传+服务重启 | 2 | SysAdminOnly |
 
-> **策略说明**：策略常量定义见 `PolicyConstants.cs`（6 项：`AdminBusinessOnly`、`DoctorOnly`、`DoctorOrAdmin`、`AdminOrSuperAdmin`、`DoctorOrReceptionist`、`DoctorOrAdminOrReceptionist`）。K1 待修复：`DoctorOrReceptionist` 代码注册仅含 Doctor/Receptionist，缺 SuperAdmin/Admin。
+> **策略说明**：策略常量定义见 `PolicyConstants.cs`（7 项：`AdminBusinessOnly`、`DoctorOnly`、`DoctorOrAdmin`、`AdminOrSuperAdmin`、`SysAdminOnly`、`DoctorOrReceptionist`、`DoctorOrAdminOrReceptionist`）。K1 待修复：`DoctorOrReceptionist` 代码注册仅含 Doctor/Receptionist，缺 SuperAdmin/Admin。
 
 ## 通用 HTTP 状态码
 
 | 码 | 含义 |
-|----|------|
+| ---- | ------ |
 | 200 | 成功 |
 | 201 | 已创建 |
 | 400 | 参数错误 |

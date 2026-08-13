@@ -22,6 +22,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 **作为** 用户，**我想要** 应用单实例启动并看到启动闪屏与进度反馈，**以便** 避免多开导致的数据竞争，并在启动失败时获得明确提示。
 
 **验收标准**:
+
 - [ ] 已有实例运行时拒绝第二次启动（`Mutex` 命名 `Global\LYBTZYZS_Shell_Instance`）
 - [ ] 启动时显示 Splash Screen（Logo + 进度条 + 当前步骤名），至少显示 1 秒避免闪烁
 - [ ] 启动步骤失败 → 错误对话框 + "重试"/"退出"
@@ -29,12 +30,14 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 - [ ] 两阶段 Serilog 引导：先 bootstrap logger 捕获早期错误，再切换最终 logger
 
 **业务规则**:
+
 1. 单实例互斥锁 `Global\LYBTZYZS_Shell_Instance`。
 2. 启动闪屏与应用启动同属一个启动管线（原 US-SHELL-002 已并入）。
 3. 两阶段 Serilog bootstrap 在 WebAPI 与 Desktop 均生效。
 4. Debug 模式运行上限 120 分钟。
 
 **双模式**:
+
 | 模式 | 行为 |
 |------|------|
 | 远程 | 启动步骤含 API 连通性检查 |
@@ -53,17 +56,20 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 **作为** 用户，**我想要** 登录后系统按我的角色自动加载对应功能模块，**以便** 我直接进入工作台而不需手动配置，且无越权菜单。
 
 **验收标准**:
+
 - [ ] Admin 登录 → 加载管理模块，导航到管理工作台
 - [ ] Doctor 登录 → 加载临床模块，导航到临床工作台
 - [ ] Receptionist 登录 → 加载患者管理 + 读卡器模块
 - [ ] 登出 → 清除会话与导航历史，返回登录页
 
 **业务规则**:
+
 1. `ApplicationBootstrapper.LoadModulesForRoleAsync` 按角色过滤 Prism 模块。
 2. 菜单可见性矩阵：系统设置仅 SuperAdmin；药材/用户管理 Admin+；医案/验方 Doctor+；患者管理全部角色。
 3. 角色层级：Receptionist=0, Doctor=1, Admin=10, SuperAdmin=100。
 
 **双模式**:
+
 | 模式 | 行为 |
 |------|------|
 | 远程 | 同下 |
@@ -82,17 +88,20 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 **作为** 用户，**我想要** 查看和修改我的个人信息与密码，**以便** 保持账户信息准确与安全。
 
 **验收标准**:
+
 - [ ] 点击账户设置 → 显示 `AccountSettingsControl`
 - [ ] 修改密码 → 弹出对话框（旧密码 + 新密码 + 确认密码）
 - [ ] 保存个人资料 → 调用 API 更新（IDOR 防护：仅本人）
 
 **业务规则**:
+
 1. 个人资料编辑：显示名称/电话/邮箱（关联 [03-users.md](03-users.md) US-USER-008）。
 2. 修改密码需旧密码（关联 US-USER-009）。
 3. 登录信息（最后登录时间/IP）只读。
 4. 入口：`MenuManager.EditProfileCommand`。
 
 **双模式**:
+
 | 模式 | 行为 |
 |------|------|
 | 远程 | 修改通过 API 提交 |
@@ -111,6 +120,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 **作为** 医生，**我想要** 在功能模块间快速切换并能回退到上一页，**以便** 高效地在患者/医案/验方间流转而不丢失上下文。
 
 **验收标准**:
+
 - [ ] `NavigateTo(viewName, params)` → ContentRegion 显示目标视图
 - [ ] `NavigateBack()` → 返回上一视图（Alt+左箭头）
 - [ ] 导航历史最多 20 条，登出时清空
@@ -118,12 +128,14 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 - [ ] 不同角色登录 → 菜单项按可见性矩阵显示/隐藏
 
 **业务规则**:
+
 1. 基于 Prism Region 导航（`NavigationCoordinator` 封装）。
 2. 全局快捷键：Ctrl+N 新建患者、Ctrl+S 保存、F5 刷新、Ctrl+P 打印。
 3. 主题切换：浅色/深色一键切换。
 4. 前进导航与面包屑已实现。
 
 **双模式**:
+
 | 模式 | 行为 |
 |------|------|
 | 远程 | 全部菜单可用 |
@@ -142,6 +154,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 **作为** 医生，**我想要** 手动切换远程/本地工作模式，**以便** 根据网络环境选择合适模式，外出看诊离线工作。
 
 **验收标准**:
+
 - [ ] 切换到本地 → Repository 使用 LocalXxxRepository（LocalDB）
 - [ ] 切换到远程 → Repository 使用 Refit HTTP API
 - [ ] 本地有未完成医案（Active/Suspended）时切换到远程 → 阻断并提示（ERR-70506）
@@ -149,6 +162,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 - [ ] 切换成功 → 状态栏显示模式标识
 
 **业务规则**:
+
 1. 切换由 `IConnectionModeProvider.SwitchModeAsync`（5 步）驱动。
 2. 本地→远程前置检查：无 Active/Suspended 医案 + 网络连通 + Token 有效（SYNC-D01）。
 3. `SwitchingApiClient` 路由 localhost → 嵌入式 `LocalWebAPI`，否则 → 远程。
@@ -156,6 +170,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 5. **强制本地策略（S5 决策）**：v1.0 仅支持用户主动切换模式；运维强制某台机器走本地（如断网降级、离线巡诊）属 **v2.0**，需扩展 `SystemAdminOptions` 增加按机器/按用户锁定模式的策略，不在 v1.0 范围。
 
 **双模式**:
+
 | 模式 | 行为 |
 |------|------|
 | 远程 | 不适用（切换操作本身） |
@@ -174,6 +189,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 **作为** sysadmin，**我想要** 一键安装 Desktop 应用，**以便** 不需懂 .NET/SQL Server 技术也能完成部署。
 
 **验收标准**:
+
 - [ ] 提供 `Setup.exe`（Velopack 打包，自包含 .NET 运行时）
 - [ ] 安装到 `%LocalAppData%\LYBT`（免管理员权限）
 - [ ] 安装后自动创建桌面快捷方式
@@ -182,12 +198,14 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 - [ ] 发布包静态服务：`/releases/` 目录托管 Setup.exe + Velopack 更新源文件（`RELEASES`/`.nupkg`）
 
 **业务规则**:
+
 1. 使用 Velopack 打包，替代手动安装 .NET 8 Runtime。
 2. 更新源（Update Feed）挂载在 WebAPI 服务器提供。
 3. 下载页**公开可访问**（无敏感信息）；发布包经 Velopack 公钥签名验证（防篡改）。
 4. 业界模式（参考）：极简 Landing Page——`GET /` 返回 HTML（项目名 + 版本 + 下载按钮 + 简短说明），发布包静态托管于同源 `/releases/`。
 
 **双模式**:
+
 | 模式 | 行为 |
 |------|------|
 | 远程 | 安装后指向 WebAPI 地址；下载页 `http://<host>:5000/` |
@@ -206,6 +224,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 **作为** sysadmin，**我想要** 首次登录后走初始化向导，**以便** 一站式完成系统配置（改密/诊所/模式/admin），不需手动改文件。
 
 **验收标准**:
+
 - [ ] sysadmin 首次登录后强制进入向导，不可跳过
 - [ ] Step 1: 强制修改默认密码（`ForceChangeOnFirstLogin=true`）
 - [ ] Step 2: 填写诊所信息（名称/科室/地址/电话），驱动处方打印标题
@@ -215,6 +234,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 - [ ] 向导未完成，sysadmin 无法进入主界面
 
 **业务规则**:
+
 1. `IdentitySeedData` 改为只种子 sysadmin（不种子 admin），admin 由 sysadmin 在向导中手动创建。
 2. 默认密码随机生成并显示一次，首登强制改。
 3. JWT 密钥首次启动生成随机密钥（替代硬编码）。
@@ -233,6 +253,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 **作为** 用户，**我想要** Desktop 自动检查更新并一键升级，**以便** 始终使用最新版本而不需手动操作。
 
 **验收标准**:
+
 - [ ] 启动时自动检查远程更新源（Velopack `CheckForUpdatesAsync`）
 - [ ] 普通更新：提示用户"发现新版本 vX.X"，用户自愿下载安装
 - [ ] 安全更新（标记为 critical）：强制倒计时升级（可被 sysadmin 延迟）
@@ -242,6 +263,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 - [ ] 展示 Release Notes（更新说明）
 
 **业务规则**:
+
 1. 更新源：WebAPI 服务器提供更新包。
 2. sysadmin 可配置：是否允许跳过更新、安全更新强制窗口。
 3. 更新采用 Velopack（替代已维护模式的 Squirrel.Windows）。
@@ -259,6 +281,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 **作为** sysadmin，**我想要** 从备份恢复 LocalDB 数据库，并查看备份状态/手动触发备份，**以便** 系统崩溃后能自助恢复数据、掌握数据保护情况。
 
 **验收标准**:
+
 - [ ] 显示本地备份文件列表（保留 7 天，含日期/大小）
 - [ ] **备份状态展示**（原 015 并入）：上次备份时间、备份文件数量、总大小
 - [ ] **手动备份按钮**（原 015 并入）：sysadmin 可手动触发备份（不限于登录时自动备份），备份进行中显示进度指示，失败时显示错误原因
@@ -267,6 +290,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 - [ ] 恢复完成后提示重启应用
 
 **业务规则**:
+
 1. LocalDB 备份路径：`%AppData%/LYBTZYZS/Backup/`（已实现）。
 2. 远程 SQL Server 备份依赖 SQL Server Agent（应用层不控制，提供运维手册）。
 3. 恢复操作仅 sysadmin 可执行。
@@ -284,6 +308,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 **作为** sysadmin，**我想要** 查看登录/登出/密码变更/权限变更等安全事件日志，**以便** 追溯安全事件、满足医疗合规要求。
 
 **验收标准**:
+
 - [ ] 提供安全事件列表（分页，按时间倒序）
 - [ ] 事件类型：登录成功/失败、登出、密码修改、用户创建/删除/禁用
 - [ ] 每条记录含：时间、用户、操作类型、IP 地址、结果（成功/失败）
@@ -292,6 +317,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 - [ ] 审计日志仅追加，不可修改/删除
 
 **业务规则**:
+
 1. `SecurityAuditService` + `SecurityAuditLog` 表（v2.0 迁移已删除，需恢复）。
 2. 覆盖：认证事件（US-LOG-004）、权限变更、操作审计。
 3. 仅 sysadmin 可查看全局审计日志。
@@ -315,11 +341,13 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 **作为** sysadmin，**我想要** 导出和导入系统配置，**以便** 重装后快速恢复配置、多机部署时统一配置。
 
 **验收标准**:
+
 - [ ] "导出配置"按钮：将 `appsettings.json` + `clinic-settings.json` 打包为 JSON 文件下载
 - [ ] "导入配置"按钮：选择 JSON 文件 → 覆盖当前配置 → 提示重启生效
 - [ ] 导入前校验文件格式，格式错误拒绝
 
 **业务规则**:
+
 1. 配置文件路径：`appsettings.json` + `clinic-settings.json`。
 2. 导入后需要重启 Desktop 才生效（部分配置不支持热更新）。
 3. 导入时保留当前 `Jwt:SecretKey`（不覆盖安全密钥）。
@@ -337,6 +365,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 **作为** 运维人员，**我想要** 生产环境的 sysadmin 创建受安全门控保护，**以便** 防止默认密码在生产环境裸奔。
 
 **验收标准**:
+
 - [x] `AutoCreateOnStartup` 控制是否启动时自动创建 sysadmin（默认 `true`）
 - [x] `AllowAutoCreateInProduction` 默认 `false`——生产环境不自动创建 sysadmin（安全默认值）
 - [x] `InitialSetupToken` —— 生产环境创建 sysadmin 需要一次性设置令牌（环境变量提供，不入库）
@@ -345,6 +374,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 - [x] `ForceChangeOnFirstLogin` —— `DefaultPasswordOptions` 控制首次登录是否强制改密
 
 **业务规则**:
+
 1. **开发环境**：`AutoCreateOnStartup=true`（空库自动创建——初始密码从配置文档读取；**无强制重置密码机制**——密码遗忘用 PasswordHashGenerator 工具恢复，2026-08-13 回归设计）。
 2. **生产环境**：`AllowAutoCreateInProduction=false` + 需配置 `InitialSetupToken` 环境变量才能创建 sysadmin。
 3. 生产环境默认密码由环境变量 `DefaultPasswords__SysAdminPassword` 提供（K4 加固），不再硬编码。
@@ -359,11 +389,14 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 **角色**: sysadmin
 **优先级**: Must
-**状态**: 🧲 v1.0 待实现（配置中心未实现，仅运维仪表盘）
+**状态**: ✅ 已实现（2026-08-11 Phase 1-3 + 读卡器组经 US-SHELL-019 完成——见 13-traceability-matrix 10/10 AC）
+
+> **权限注（2026-08-13 CONFIG-PERM-FIX）**：服务端 ConfigurationController 全部端点（GET/PUT/GET key/PUT key/sections/restart/validate）类级 `SysAdminOnly`——配置管理 sysadmin 专属，业务管理员（Admin）访问返回 403（原 AdminOrSuperAdmin 误放行，真机 testadmin 200 应 403）。双端同步（Server WebAPI + Desktop LocalWebAPI）。
 
 **作为** sysadmin，**我想要** 在统一的配置面板中管理所有基础配置，**以便** 不需手动改 JSON 文件就能完成系统调整。
 
 **验收标准**:
+
 - [ ] SysadminHomeView 展示配置中心面板，分组显示所有可配置项
 - [ ] 诊所信息（Name/Address/Phone/Department/LicenseNumber/Email）可编辑保存
 - [ ] 会话设置（InactivityTimeoutMinutes/WarningBeforeTimeoutMinutes/ActivityCheckIntervalSeconds）可编辑
@@ -377,7 +410,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 **配置项清单**（7 组 13 项，代码扫描确认无遗漏）:
 
 | 分组 | 配置项 | Options 类 | 生效方式 |
-|------|--------|-----------|---------|
+| ------ | -------- | ----------- | --------- |
 | 诊所信息 | Name/Address/Phone/Department/LicenseNumber/Email | `ClinicSettingsOptions` | 重启 |
 | 会话设置 | InactivityTimeoutMinutes(1-120)/WarningBeforeTimeoutMinutes(0-10)/ActivityCheckIntervalSeconds(10-120) | `ClientSessionOptions` | 重启 |
 | 连接设置 | BaseUrl + TimeoutSeconds(5-300) | `ApiClientOptions` | 重启 |
@@ -387,6 +420,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 | 系统信息 | 版本/DB状态/连接状态 | `DiagnosticsController` | 只读 |
 
 **业务规则**:
+
 1. 配置保存写入 `appsettings.json` + `clinic-settings.json`。
 2. `FeatureToggleOptions` 通过 `ConfigurationOptionsMonitor` 支持热更新，无需重启。
 3. 其他配置修改需重启 Desktop 生效（v1.0 限制）。
@@ -398,7 +432,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 SysadminHomeView 按连接模式区分面板布局——配置对象在双模式下本质不同（远程管「服务端 + 客户端」两层，本地管「本地全栈」一层）：
 
 | 模式 | 面板布局 | 数据源 |
-|------|---------|--------|
+| ------ | --------- | -------- |
 | **远程** | ① 客户端配置（本机 Desktop，上方 7 组配置） ② 服务端配置（调服务端 Configuration API） | ① 客户端 appsettings ② 服务端 `GET /configuration`（脱敏） |
 | **本地** | ① 本地配置（全栈：LocalWebAPI + LocalDB + Desktop） ② 备份恢复（[US-SHELL-013](#us-shell-013-数据库备份恢复含备份状态展示--手动备份)） | 客户端 appsettings（含 `OfflineMode`/`LocalApiBaseUrl`/本地 Jwt 等） |
 
@@ -417,6 +451,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 **作为** sysadmin，**我想要** 通过官方 demo 测试功能验证读卡器是否正常工作，**以便** 快速定位硬件问题而不需运行外部测试软件。
 
 **验收标准**:
+
 - [ ] sysadmin 配置中心提供读卡器诊断面板
 - [ ] 厂家选择：下拉选择已适配厂家（华大 HD100 等），测试时临时切换
 - [ ] 设备探测：发送探测指令，检测设备是否在线，显示连接状态
@@ -428,6 +463,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 - [ ] 医生端完全无感——自动检测走 `ICardReaderFactory.AutoDetectReaderAsync`，匹配到已适配厂家直接使用
 
 **业务规则**:
+
 1. 读卡器管理分**测试模式**（sysadmin）和**使用模式**（医生）两层。
 2. 测试模式：sysadmin 在配置中心操作，选择厂家、运行诊断、验证设备。
 3. 使用模式：医生端启动时 `ICardReaderFactory.AutoDetectReaderAsync()` 自动匹配厂家，匹配到则静默使用；未匹配到则降级 `MockCardReader`，不阻塞启动。
@@ -435,11 +471,13 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 5. 厂家扩展：新增读卡器型号时，在 sysadmin UI 中测试兼容性，无需改代码即可验证。
 
 **架构影响**:
+
 - 新增 `ICardReaderDiagnostics` 接口（厂家诊断能力）
 - `ICardReader` 扩展 `GetDeviceInfo()` 方法
 - sysadmin 配置中心增加读卡器诊断 tab
 
 **双模式**:
+
 | 模式 | 行为 |
 |------|------|
 | 远程 | 读卡器为本地硬件，与模式无关 |
@@ -458,11 +496,13 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 **作为** 系统运维，**我想要** 通过远程上传发布包并触发服务重启，**以便** 无需物理接触服务器即可完成版本更新。
 
 **验收标准**:
+
 - [ ] `POST /api/v1/deploy/upload` 上传发布包（zip），保存到指定目录
 - [ ] `POST /api/v1/deploy/restart` 触发服务重启（二次确认参数，延迟生效）
 - [ ] 仅 Sysadmin（SuperAdmin）可操作——**AC 注**：当前实现是 `AdminOrSuperAdmin`，Admin（业务管理员）不应有部署能力，待收紧为 `SysAdminOnly`
 
 **业务规则**:
+
 1. 部署属运维操作，业务角色（Admin/Doctor/Receptionist）不可触碰
 2. restart 需 `Confirm` 参数防误触
 3. 上传文件校验类型/大小
@@ -480,6 +520,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 **作为** 诊所管理员，**我想要** 从纸质/Excel 记录批量导入初始患者/药材/验方数据，**以便** 系统上线时无需逐条手工录入。
 
 **验收标准**:
+
 - [ ] 提供标准 Excel 模板（患者/药材/验方三类）
 - [ ] 校验模板行（必填字段/格式/重复策略），错误行报错定位
 - [ ] 分批导入（每批 ≤1000 行），进度可追踪
@@ -487,6 +528,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 - [ ] 导入完成后生成导入报告（成功/失败/跳过统计）
 
 **业务规则**:
+
 1. 迁移仅上线阶段使用，日常数据走常规 CRUD/单条导入
 2. 重复数据按 `DuplicateStrategy`（Skip/Update/Error）处理
 3. 导入前建议备份（关联 US-SHELL-013）
@@ -504,12 +546,14 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 **作为** 系统运维，**我想要** 按检查清单完成上线并具备回滚能力，**以便** 业务连续、故障可恢复。
 
 **验收标准**:
+
 - [ ] 上线检查清单（数据库备份/配置校验/连通性/角色账号就绪）
 - [ ] 试运行期支持双轨运行（新系统 + 原流程并行观察）
 - [ ] 回滚方案：备份恢复（US-SHELL-013）+ 版本回退（Velopack）
 - [ ] 上线后健康检查（HealthController /health）
 
 **业务规则**:
+
 1. 上线前置：备份（SHELL-013）+ 配置校验（ConfigurationController validate）
 2. 试运行期关注数据一致性（双写/核对）
 3. 回滚触发条件：阻断性故障（登录失败/数据错乱/性能不可用）
@@ -525,12 +569,14 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 **作为** 诊所员工（前台/医生），**我想要** 快速上手系统并遇到问题能自助解决，**以便** 不依赖外部支持完成日常诊疗。
 
 **验收标准**:
+
 - [ ] 操作培训材料（各角色快速上手指南，≤30 分钟学完）
 - [ ] 常见问题手册（FAQ：登录/打印/读卡器/数据等高频问题）
 - [ ] 系统内帮助入口（F1 帮助已有——补充内容维护）
 - [ ] 支持流程（远程协助/工单/版本回退渠道）
 
 **业务规则**:
+
 1. 培训材料随版本更新维护（05-development 文档库）
 2. 前台/医生/运维三类角色分别出材料
 
@@ -539,7 +585,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 ## 依赖
 
 | 依赖 | 说明 |
-|------|------|
+| ------ | ------ |
 | [02-auth.md](02-auth.md) | Shell 登录协调、审计日志事件来源 |
 | [03-users.md](03-users.md) | 账户设置关联修改密码/个人资料 |
 | [07-medical-cases.md](07-medical-cases.md) | MedicalCaseAuditLog 归属医案模块 |

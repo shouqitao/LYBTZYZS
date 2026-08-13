@@ -7,7 +7,7 @@
 系统通过 URL 驱动的方式自动选择连接目标，不需要手动选择"模式"。
 
 | URL 类型 | 客户端实现 | 目标服务 | 数据库 | 适用场景 |
-|----------|-----------|---------|--------|----------|
+| ---------- | ----------- | --------- | -------- | ---------- |
 | **非 localhost** | RefitApiClient | Server WebAPI | SQL Server (远程) | 多用户联网环境 |
 | **127.0.0.1 / localhost** | HttpClientApiClient | 嵌入式 Kestrel（端口 **5300**，见 `EmbeddedLocalWebApiService.cs:17` + `appsettings.json:OfflineMode:LocalApiBaseUrl`） | SQL Server (本地) | 单用户离线 |
 
@@ -29,7 +29,7 @@
 ### 核心设计选择
 
 | 决策点 | 选择 | 替代方案 | 选择理由 |
-|--------|------|----------|----------|
+| -------- | ------ | ---------- | ---------- |
 | 本地数据库 | SQL Server LocalDB | SQLite | 与远程 SQL Server 方言完全一致，消除跨数据库 LINQ 行为差异 |
 | 本地 API 宿主 | 嵌入式 Kestrel（进程内） | 独立 Windows Service | 单进程部署，无需管理外部服务，适合无 IT 运维的小诊所 |
 | 模式切换机制 | URL 驱动（localhost 判断） | ConnectionMode 枚举 + DI 重建 | 零配置切换，用户改 URL 即可，消除运行时状态机竞态 |
@@ -43,7 +43,7 @@
 **接受的代价**：
 
 | 代价 | 理由/缓解 |
-|------|----------|
+| ------ | ---------- |
 | 本地模式 HTTP 序列化开销 | localhost 回环延迟 <1ms，小诊所数据量（~5000 医案/年）下不可感知 |
 | 两套 Controller 代码 | Controller 仅做参数校验 + 调用 Service，核心业务规则在共享层（Entities/Validators/DTOs） |
 | 本地 JWT 固定密钥 | 本地单用户场景，Mutex 保证单实例，安全风险可控；后续可 DPAPI 外部化 |
@@ -52,7 +52,7 @@
 **获得的收益**：
 
 | 收益 | 说明 |
-|------|------|
+| ------ | ------ |
 | 业务代码 100% 复用 | ViewModel/Service/Repository 零改动，完全无感知当前模式 |
 | HTTP 管线完整复用 | 认证、授权、异常处理、日志、CorrelationId 两端全部生效 |
 | 数据库行为一致 | 两端均为 SQL Server，LINQ 查询/排序/日期/NULL 处理行为完全一致 |
@@ -66,20 +66,20 @@
 ### 共同点
 
 | 维度 | 说明 |
-|------|------|
+| ------ | ------ |
 | **Repository 接口** | 完全相同 — 6 个 `IXxxRepository` 接口定义在 `Contracts/Repositories/` |
 | **DTO 契约** | 完全相同 — `src/Shared/LYBT.Shared.Models/Contracts/` |
 | **实体模型** | 完全相同 — `src/Shared/LYBT.Entities/`，AppDbContext 复用所有 `IEntityTypeConfiguration` |
 | **业务规则** | Validators、BusinessRules 完全共享 |
 | **认证机制** | 两端均使用 JWT Bearer Token + 相同 Claims Schema |
-| **授权策略** | 相同的 6 个 Policy（`AdminBusinessOnly` / `DoctorOnly` / `DoctorOrAdmin` / `AdminOrSuperAdmin` / `DoctorOrReceptionist` / `DoctorOrAdminOrReceptionist`，见 `PolicyConstants`） |
+| **授权策略** | 相同的 7 个 Policy（`AdminBusinessOnly` / `DoctorOnly` / `DoctorOrAdmin` / `AdminOrSuperAdmin` / `SysAdminOnly` / `DoctorOrReceptionist` / `DoctorOrAdminOrReceptionist`，见 `PolicyConstants`） |
 | **EF Core 过滤器** | `IsDeleted` 软删除全局过滤器两端均生效 |
 | **异常处理** | 两端均通过 middleware/handler 统一处理，返回相同 ProblemDetails 格式 |
 
 ### 不同点（含认证/DbContext/功能限制合并）
 
 | 维度 | Remote WebAPI | LocalWebAPI | 设计理由 |
-|------|--------------|-------------|----------|
+| ------ | -------------- | ------------- | ---------- |
 | **宿主进程** | 独立 ASP.NET Core 服务 | WPF 进程内嵌 Kestrel（动态端口） | 单进程部署 |
 | **URL 前缀** | `/api/v1/`（含版本段） | `/api/v1/`（含版本段，与远程一致） | 实现已收敛（2026-08-08 修正，原文档声称本地无版本段已过时） |
 | **序列化** | camelCase（`AddControllers().AddJsonOptions`） | PascalCase（默认） | 历史 Token 兼容 |
@@ -103,7 +103,7 @@
 ### LocalWebAPI 独有端点
 
 | 模块 | 端点 | 方法 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | Formulas | `/api/v1/formulas/{id}/clone` | POST | 克隆验方（含药材组成） |
 | Patients | `/api/v1/patients/by-id-number/{idNumber}` | GET | 按身份证号查询患者 |
 | MedicalCases | `/api/v1/medicalcases/pending` | GET | 获取待处理医案（无处方） |
@@ -120,7 +120,7 @@
 部分对服务端有强依赖的功能在本地模式下不可用：
 
 | 功能 | 原因 | 行为 |
-|------|------|------|
+| ------ | ------ | ------ |
 | Token 刷新 | 本地使用 1 年长效 Token | RefreshToken 端点返回 501 |
 | SecurityAuditLog | 本地无审计合规需求 | 查询返回空结果 |
 | 自动登录令牌 | 依赖远程中心化存储 | 端点返回 501 |
@@ -177,6 +177,7 @@ flowchart TD
 ```
 
 **关键特性**（ADR-0009）：
+
 - **无切换动作**：用户改 URL → 下次 API 调用自动走新目标，无需重启或重新登录
 - **无运行时状态机**：`SwitchingApiClient` 是无状态代理，每次属性访问实时判断
 - **无数据迁移**：v1.0 两库孤立（N1 决策），URL 切换不触发任何数据同步
@@ -186,7 +187,7 @@ flowchart TD
 所有 Repository 依赖统一的 `IApiClient` 接口，不再区分"远程实现"和"本地实现"。`SwitchingApiClient` 代理根据当前 URL 自动路由。
 
 | 接口 | IApiClient 子接口 | 说明 |
-|------|------------------|------|
+| ------ | ------------------ | ------ |
 | IPatientRepository | IApiClient.Patients | CRUD + 批量操作 |
 | IHerbRepository | IApiClient.Herbs | CRUD + 批量操作 + 分类查询 |
 | IFormulaRepository | IApiClient.Formulas | CRUD + 克隆 + 批量操作 + 分类查询 |
@@ -211,7 +212,7 @@ SwitchingApiClient : IApiClient
 ## 端点覆盖率
 
 | 模块 | Remote 端点 | Local 端点 | 覆盖率 | 差异说明 |
-|------|------------|-----------|-------|----------|
+| ------ | ------------ | ----------- | ------- | ---------- |
 | Auth | 5 | 5 | 100% | 两端一致（13b 5 端点） |
 | Users | 14 | 14 | 100% | 均继承 BaseUsersController |
 | Patients | 12 | 12 | 100% | A-17 补全本地 CRUD override 后对齐 |
@@ -285,7 +286,7 @@ modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserConfiguration).Assembly)
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 2026-08-08 | v8.1 | **13 项文档偏差修正（A-18 P1-7，D5-D10）**：URL 前缀统一 `/api/v1/`；迁移方式 EnsureCreated→MigrateAsync+双种子；DI 架构「Controller→DbContext 直连」→「复用 Server Service/Handler 层（ADR-0010）」；端点覆盖表按代码实际重写（103 vs 99，删虚构 categories/by-phone 端点）；打印日志行为「返回空结果」→「404（端点不存在）」；Rate Limiting 本地 5/60s；实体位置 `src/Shared/LYBT.Entities/`；DbContext 章节 LocalWebApiDbContext→AppDbContext |
 | 2026-06-28 | v8.0 | **spec S3 批次2 提炼（712→~360 行）**：同步架构 + 同步协议规范（Checksum/元数据/序列化/依赖顺序/错误恢复/MedicalCase 聚合同步/模块级决策）整体外移至 [16-sync-protocol.md](16-sync-protocol.md)；WebAPI vs LocalWebAPI 对比矩阵 + 本地认证架构 + DbContext 架构 + 本地模式限制 4 表合 1；N1 横幅简化为链接指向 sync-protocol。变更历史见 git log。 |
 | 2026-06-28 | v7.2 | N1 决策对齐：顶部加 N1 横幅；端口统一 5300；模式切换流程图重写为 ADR-0009「URL 改即生效」语义；Policy 数量 2→4 对齐 PolicyConstants。 |

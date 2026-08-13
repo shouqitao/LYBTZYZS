@@ -13,11 +13,13 @@ namespace LYBT.WebAPI.Controllers;
 
 /// <summary>
 /// 系统配置 API - 配置读写、生产环境验证
+/// 权限隔离（2026-08-13 修复）：配置管理 = sysadmin 专属——业务管理员（Admin）不应访问系统配置
+/// （US-SHELL-018「角色: sysadmin」；类级统一 SysAdminOnly，覆盖全部端点）
 /// </summary>
 [ApiController]
 [ApiVersion("1")]
 [Route("api/v{version:apiVersion}/configuration")]
-[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+[Authorize(Policy = PolicyConstants.SysAdminOnly)]
 public class ConfigurationController : BaseApiController
 {
     private readonly ISystemConfigurationService _configurationService;
@@ -99,7 +101,6 @@ public class ConfigurationController : BaseApiController
     /// <summary>
     /// 获取单节配置（SHELL-018 Phase 1: 敏感键掩码脱敏；sysadmin 专属）
     /// </summary>
-    [Authorize(Policy = PolicyConstants.SysAdminOnly)]
     [HttpGet("sections/{section}")]
     [ProducesResponseType(typeof(ApiResponse<Dictionary<string, string>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetSection(string section, CancellationToken ct)
@@ -114,7 +115,6 @@ public class ConfigurationController : BaseApiController
     /// <summary>
     /// 修改单节配置（SHELL-018 Phase 1: 白名单逐键 + 持久化 + 生效语义；sysadmin 专属）
     /// </summary>
-    [Authorize(Policy = PolicyConstants.SysAdminOnly)]
     [HttpPut("sections/{section}")]
     [ProducesResponseType(typeof(ApiResponse<ConfigUpdateResultDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateSection(string section, [FromBody] Dictionary<string, string> values, CancellationToken ct)
@@ -133,7 +133,6 @@ public class ConfigurationController : BaseApiController
     /// <summary>
     /// 延迟重启（SHELL-018 Phase 1: sysadmin 专属 + 限频每小时 3 次 + 30 秒延迟）
     /// </summary>
-    [Authorize(Policy = PolicyConstants.SysAdminOnly)]
     [HttpPost("restart")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> Restart([FromServices] IHostApplicationLifetime lifetime, CancellationToken ct)

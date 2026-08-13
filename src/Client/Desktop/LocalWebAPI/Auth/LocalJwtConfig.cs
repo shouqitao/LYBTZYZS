@@ -88,6 +88,11 @@ public static class LocalJwtConfig
                 policy.RequireAuthenticatedUser()
                       .RequireRole(RoleConstants.Admin, RoleConstants.SuperAdmin));
 
+            // 仅系统运维（SuperAdmin）策略：配置/部署属运维操作——业务管理员（Admin）无访问
+            options.AddPolicy(PolicyConstants.SysAdminOnly, policy =>
+                policy.RequireAuthenticatedUser()
+                      .RequireRole(RoleConstants.SuperAdmin));
+
             options.AddPolicy(PolicyConstants.DoctorOrReceptionist, policy =>
                 policy.RequireAuthenticatedUser()
                       .RequireRole(RoleConstants.Doctor, RoleConstants.Receptionist));

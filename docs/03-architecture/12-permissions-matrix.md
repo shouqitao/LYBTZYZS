@@ -5,7 +5,7 @@
 ## Resource × Operation × Role Matrix
 
 | 资源 | 操作 | Receptionist | Doctor | Admin | SuperAdmin | Sysadmin |
-|------|------|:---:|:---:|:---:|:---:|:---:|
+| ------ | ------ | :---: | :---: | :---: | :---: | :---: |
 | 患者 | 查看 | ✅ | ✅ | ✅ | ✅ | ✅ |
 | 患者 | 创建/编辑 | ✅ | ✅ | ✅ | ✅ | ✅ |
 | 患者 | 删除(软) | ❌ | ❌ | ✅ | ✅ | ✅ |
@@ -30,7 +30,7 @@
 | 用户 | 创建/编辑 | ❌ | ❌ | ✅ | ✅ | ✅ |
 | 用户 | 删除/禁用 | ❌ | ❌ | ✅(管 Doctor/Receptionist) | ✅(管 Admin) | ✅(管 Admin) |
 | 用户 | 重置密码 | ❌ | ❌ | ✅ | ✅ | ✅ |
-| 系统设置 | 查看/修改 | ❌ | ❌ | ❌ | ✅ | ✅ |
+| 系统设置/配置 | 查看/修改 | ❌ | ❌ | ❌ | ✅ | ✅ |
 | 审计日志 | 查看 | ❌ | ❌ | ❌ | ✅ | ✅ |
 
 > **矩阵说明（2026-08-03 更新）**：本表为**目标态**（2026-08-03 权限四连决策）。药材查看 Receptionist❌、药材创建 Admin+ only、挂号创建仅 Receptionist、医案创建 Doctor only 均为产品决策目标。**代码当前仍为类级策略**（患者/挂号 `DoctorOrAdminOrReceptionist`、药材/验方 `DoctorOrReceptionist`、医案 `DoctorOrAdmin`+创建 `DoctorOrAdminOrReceptionist`），操作级细分待修（见 [04-permissions.md](../01-product/04-permissions.md) P0-P2 修复项）。K1/K7/K8/K9 待修复项仍保留在「代码待对齐清单」中。
@@ -38,7 +38,7 @@
 ## Row-Level Security
 
 | 表 | 行级安全 | 实现方式 |
-|---|:---:|------|
+| --- | :---: | ------ |
 | MedicalCases | ✅ | Doctor 仅查自己创建的（代码检查） |
 | Consultations | ✅ | 通过 MedicalCase 聚合根间接访问 |
 | Prescriptions | ✅ | 通过 MedicalCase 聚合根间接访问 |
@@ -65,14 +65,14 @@
 ### P0 信任根安全（公网部署前必修）
 
 | # | 类型 | 问题 | 代码位置 | 修复方向 |
-|---|------|------|---------|---------|
+| --- | ------ | ------ | --------- | --------- |
 | **K4** | 💻 | **生产门控失效**：✅ 已修复（2026-08-12 K4）：`IdentitySeedData.ResolveSysAdminPassword` 生产必须环境变量 `DefaultPasswords__SysAdminPassword`（缺失抛异常禁回退），不再有明文默认密码 | `IdentitySeedData.cs` | K4 已实施（`IdentitySeedData.ResolveSysAdminPassword` + `DatabaseInitializationService.ValidateSetupToken`） |
 | **K5** | ✅ | **已修复**：`IdentitySeedData` 已移除 admin 种子，仅创建 sysadmin。admin 改由向导创建 | `IdentitySeedData.cs` | 已完成 |
 
 ### P1 严重（角色边界正确性）
 
 | # | 类型 | 问题 | 代码位置 | 修复方向 |
-|---|------|------|---------|---------|
+| --- | ------ | ------ | --------- | --------- |
 | **K7** | ✅ | **接诊链断裂（D8 bug）设计已确认**：`StartVisit` 仅调 `StartVisitAsync` 不建医案 + 返回 RegistrationId 冒充 MedicalCaseId。**2026-08-03 产品决策「接诊即建」**，R10 spec S5 修复方向确认，代码待实施 | `RegistrationsController.cs:200` | **2026-08-11 已修复**（StartVisit 原子创建 MedicalCase(Active)+Registration(InProgress)+返回 MedicalCaseId，见 13c §五 B1/T5 登记） |
 | **K8** | 💻 | **LocalWebAPI 权限策略空缺**：`LocalWebAPI/Controllers/{Registrations,Patients,Herbs,MedicalCases}.cs` 仅 `[Authorize]` 无 Policy，本地 Doctor 可删患者/药材 CRUD，违本文档矩阵。R10 S3"本地全角色支持"↔Flow 3"本地无角色检查"矛盾 | `LocalWebAPI/Controllers/*.cs` | 明确本地是否启用角色策略（建议与远程一致+角色策略） |
 | **K9** | 💻 | **接诊 Cancel 权限三向倒置**：`Cancel` XML 注释称"仅 Receptionist 可操作"，但无操作级 `[Authorize]`，回落类级 `DoctorOrAdmin`：前台被挡、Doctor/Admin 反被放行。与本文档矩阵（Receptionist✅/Doctor❌/Admin❌）三向倒置 | `RegistrationsController.cs:216-220` | 补操作级 `[Authorize(Policy=...)]` |
@@ -85,7 +85,7 @@
 > 以下为文档校准（documentation-calibration）发现的**代码与矩阵不一致**项。矩阵已更新为目标态，代码待修复。
 
 | # | 类型 | 问题 | 代码位置 | 修复方向（2026-08-03 决策已确认） |
-|---|------|------|---------|---------|
+| --- | ------ | ------ | --------- | --------- |
 | **C1** | 💻 | **患者删除缺策略**：`PatientsController.Delete` 无操作级 `[Authorize]`，回退类级 `DoctorOrAdminOrReceptionist`（Doctor/Receptionist 也可删患者）。矩阵要求 Admin+ | `PatientsController.cs:129` | 补 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`；禁用同理 |
 | **C2** | 💻 | **药材创建/编辑缺策略**：`HerbsController.Create/Update` 无操作级 `[Authorize]`，回退类级 `DoctorOrReceptionist`（Doctor 也可创建/编辑药材）。矩阵要求 Admin+ | `HerbsController.cs:73,97` | Create/Update 补 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`；GET 不含 Receptionist（前台不可查药材） |
 | **C3** | 💻 | **挂号取消权限倒置**（与 K9 合并）：`RegistrationsController.Cancel` 无操作级策略，回退类级 `DoctorOrAdminOrReceptionist`。矩阵要求仅 Receptionist | `RegistrationsController.cs:95` | 补 `[Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]` + 服务层校验 Source=Receptionist |
@@ -99,7 +99,7 @@
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 2026-08-03 | v2.2 | 权限决策四连落地（四角色需求审查）：新增「挂号查看」行（Admin 只读）、「打印记录」行（Admin 可查）；药材/验方查看 Receptionist ❌；C1-C6 待对齐清单决策标注 |
 | 2026-08-03 | v2.1 | K7 状态更新：D8 bug「接诊链断裂」设计已确认（2026-08-03 产品决策：接诊即建），代码待实施（已列入 backlog，2026-08-11 修复，见 13c §五） |
 | 2026-08-02 | v2.0 | 去重：角色定义/策略表改为引用 02-personas.md 和 04-permissions.md；保留架构级 Resource×Operation 矩阵 + 代码待对齐清单 |

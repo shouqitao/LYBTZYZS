@@ -5,10 +5,10 @@
 ## 基本信息
 
 | 属性 | 值 |
-|------|-----|
+| ------ | ----- |
 | Controller | `DeployController` |
 | 路由前缀 | `/api/v1/deploy` |
-| 默认权限 | `[Authorize(Policy = AdminOrSuperAdmin)]` |
+| 默认权限 | `[Authorize(Policy = SysAdminOnly)]` |
 
 ## POST /deploy/upload — 上传更新包
 
@@ -17,6 +17,7 @@
 **请求**: `multipart/form-data`，字段名 `file`（仅支持 `.zip`）
 
 **成功响应** (200):
+
 ```json
 {
   "success": true,
@@ -26,6 +27,7 @@
 ```
 
 **失败响应**:
+
 | 场景 | 状态码 | 说明 |
 |------|--------|------|
 | 文件为空 | 422 | 未选择文件或文件为空 |
@@ -36,6 +38,7 @@
 发送服务重启指令（2 秒后由 `IHostApplicationLifetime.StopApplication()` 执行优雅停机）。
 
 **成功响应** (200):
+
 ```json
 {
   "success": true,
@@ -51,4 +54,4 @@
 | 码 | 含义 |
 |----|------|
 | 200 | 成功 |
-| 401/403 | 未认证/权限不足（需 AdminOrSuperAdmin） |
+| 401/403 | 未认证/权限不足（需 SysAdminOnly——部署属运维操作，Admin 业务管理员无部署能力） |

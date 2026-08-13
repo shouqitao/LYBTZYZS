@@ -15,10 +15,12 @@ namespace LYBT.LocalWebAPI.Controllers;
 
 /// <summary>
 /// 配置控制器：持久化键值配置存储（JsonFileConfigurationStore，重启不丢，A-18 P1-6）。
+/// 权限隔离（2026-08-13 修复）：配置管理 = sysadmin 专属——业务管理员（Admin）不应访问系统配置
+/// （与远程端 ConfigurationController 双端一致：类级统一 SysAdminOnly）
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+[Authorize(Policy = PolicyConstants.SysAdminOnly)]
 public class ConfigurationController : BaseApiController
 {
     // SHELL-018 Phase 1: 重启限频（每小时 ≤3 次）
@@ -65,8 +67,8 @@ public class ConfigurationController : BaseApiController
     public async Task<IActionResult> Set(string key, [FromBody] string value, CancellationToken ct)
     {
         var role = User.FindFirst(ClaimTypes.Role)?.Value;
-        if (role != UserRole.Admin.ToString() && role != UserRole.SuperAdmin.ToString())
-            return Forbid("仅管理员可修改配置");
+        if (role != UserRole.SuperAdmin.ToString())
+            return Forbid("仅系统管理员可修改配置");
 
         if (string.IsNullOrWhiteSpace(key))
         {

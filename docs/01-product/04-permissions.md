@@ -16,46 +16,46 @@
 ### 1.1 功能权限
 
 | 操作 | Receptionist | Doctor | Admin | SuperAdmin |
-|------|:-----------:|:------:|:-----:|:----------:|
-| **用户管理** |||||
+| ------ | :-----------: | :------: | :-----: | :----------: |
+| **用户管理** | | | | |
 | 用户 CRUD | ✗ | ✗ | ✅（仅 Doctor/Receptionist） | ✅（仅 Admin） |
 | 用户恢复 | ✗ | ✗ | ✅（sysadmin 恢复 Admin 账号） | ✅（Admin 恢复 Doctor/Receptionist，一级管一级） |
 | 重置密码 | ✗ | ✗ | ✅（仅 Doctor/Receptionist） | ✅（仅 Admin） |
 | 禁用/启用/删除 | ✗ | ✗ | ✅（仅 Doctor/Receptionist） | ✅（仅 Admin） |
 | 角色变更 | ✗ | ✗ | ✗ | ✗ |
-| **患者管理** |||||
+| **患者管理** | | | | |
 | 患者 CRUD | ✅ | ✅ | ✅ | ✅ |
 | 患者删除 | ✗ | ✗ | ✅ | ✅ |
 | 患者恢复 | ✗ | ✗ | ✅（业务管理） | ✗（仅系统运维） |
 | 患者启用/禁用 | ✗ | ✗ | ✅ | ✅ |
-| **药材管理** |||||
+| **药材管理** | | | | |
 | 药材查询 | ✗（前台不涉及药材） | ✅ | ✅ | ✅ |
 | 药材创建/编辑 | ✗ | ✗（Admin 统一管库） | ✅ | ✅ |
 | 药材删除 | ✗ | ✗ | ✅（需引用检查） | ✅ |
 | 药材启用/禁用 | ✗ | ✗ | ✅ | ✅ |
-| **验方管理** |||||
+| **验方管理** | | | | |
 | 验方查询 | ✗ | ✅（自己 + 共享） | ✅ | ✅ |
 | 验方创建/编辑 | ✗ | ✅（仅自己创建） | ✅ | ✅ |
 | 验方导出/导入 | ✗ | 📋 | 📋 | 📋 |
-| **医案管理** |||||
+| **医案管理** | | | | |
 | 医案创建 | ✗ | ✅ **唯一** | ✗ | ✗ |
 | 医案查看 | ✗ | ✅（仅自己的） | ✅（全部） | ✅ |
 | 医案完成/关闭 | ✗ | ✅（仅自己的） | ✅（仅状态变更） | ✅ |
 | 医案纠偏修改 | ✗ | ✗ | ✅（需填原因） | ✅ |
-| **挂号管理** |||||
+| **挂号管理** | | | | |
 | 挂号查看 | ✅（全部） | ✅（仅自己的） | ✅（全部只读） | ✅（全部只读） |
 | 挂号创建 | ✅ | ✅（Source=Doctor 两步建号） | ✗ | ✗ |
 | 挂号取消 | ✅ | ✗ | ✗ | ✗ |
-| **打印** |||||
+| **打印** | | | | |
 | 处方打印 | ✗ | ✅ **唯一** | ✗ | ✗ |
 | 打印记录查看 | ✗ | ✅（仅自己的） | ✅（全部） | ✅（全部） |
-| **报表** |||||
+| **报表** | | | | |
 | 报表查看 | ✗ | ✅ | ✅ | ✅ |
 
 ### 1.2 会话超时策略
 
 | 类型 | 值 | 说明 |
-|------|:---:|------|
+| ------ | :---: | ------ |
 | 不活动超时 | **30 分钟** | 无操作 30 分钟自动退出 |
 | 绝对超时 | **禁用**（v1.0） | 240 分钟绝对超时不启用，小诊所场景无此需求 |
 
@@ -66,21 +66,23 @@
 ### 2.1 Controller 级授权策略
 
 | Controller | 代码策略 | 目标策略（操作级细分） | 差异 |
-|-----------|---------|---------|------|
+| ----------- | --------- | --------- | ------ |
 | `RegistrationsController` | `DoctorOrAdminOrReceptionist` | GET：Doctor+Receptionist+**Admin 只读**；POST：Receptionist/Doctor（Source 区分——两步建号 2026-08-13）；start-visit：`DoctorOnly`；cancel：Receptionist | ⚠️ Admin 只读查看挂号（2026-08-03 决策）；创建/取消仅前台；接诊/QuickVisit 仅 Doctor |
 | `PatientsController` | `DoctorOrAdminOrReceptionist` | GET/POST/PUT：Doctor+Receptionist；DELETE/禁用：`AdminOrSuperAdmin` | ⚠️ 删除/禁用仅 Admin+（2026-08-03 决策）；Admin 不直接管理患者读写 |
 | `MedicalCasesController` | `DoctorOrAdmin` | 创建：`DoctorOnly`；查看/编辑按 MC 铁律 | ⚠️ 创建仅 Doctor（C4/K3 待修） |
 | `ReportsController` | `DoctorOrAdmin` | GET：Doctor+Admin+SuperAdmin（**前台不可查**） | 2026-08-08 统一双端策略（A-31-C0） |
+| `ConfigurationController` | `SysAdminOnly` | 配置读写/生产验证/restart/validate：**仅 SuperAdmin（sysadmin）**——业务管理员不碰系统配置（2026-08-13 权限隔离修复 CONFIG-PERM-FIX） | ✅ 2026-08-13 已对齐（原 AdminOrSuperAdmin 误放行 Admin——真机 testadmin 200 应 403） |
 | `HerbsController` | `DoctorOrReceptionist` | GET：Doctor+Admin+SuperAdmin（**前台不可查**）；POST/PUT/DELETE：`AdminOrSuperAdmin` | 🔴 前台不可查看药材（2026-08-03 决策）；写操作仅 Admin |
 | `FormulasController` | `DoctorOrReceptionist` | GET：Doctor+Admin+SuperAdmin（**前台不可查**）；POST/PUT：`DoctorOrAdmin` | 🔴 前台不可查看验方（2026-08-03 决策）；写操作 Doctor(自己)+Admin |
 
 ### 2.2 PolicyConstants 现有策略
 
 | 策略名 | 包含角色 |
-|--------|---------|
+| -------- | --------- |
 | `DoctorOnly` | Doctor |
 | `DoctorOrAdmin` | Doctor, Admin |
 | `AdminOrSuperAdmin` | Admin, SuperAdmin |
+| `SysAdminOnly` | SuperAdmin（sysadmin 专属——配置/部署等运维操作，2026-08-11 SHELL-018 引入） |
 | `DoctorOrReceptionist` | Doctor, Receptionist |
 | `DoctorOrAdminOrReceptionist` | Doctor, Admin, Receptionist |
 
@@ -89,7 +91,7 @@
 ### 2.3 前台权限细化
 
 | 操作 | 前台权限 | 说明 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | 挂号创建 | ✅ | 核心职能（当天检查防重复） |
 | 挂号取消 | ✅ | 仅当天的 `Status=Waiting` 挂号 |
 | 患者 CRUD | ✅ | 登记、查找、编辑 |
@@ -106,7 +108,7 @@
 ### 3.1 P0 必须修复（阻断核心流程）—— 目标策略均已 2026-08-03 产品确认
 
 | # | 问题 | Controller | 目标策略 | 修复方案 |
-|---|------|-----------|---------|----------|
+| --- | ------ | ----------- | --------- | ---------- |
 | P0-1 | Herbs 策略 `DoctorOrReceptionist` → Doctor/Receptionist 可写药材 | `HerbsController` | `AdminOrSuperAdmin`（写）；GET 不含前台 | GET：Doctor+Admin+SuperAdmin；POST/PUT/DELETE：`AdminOrSuperAdmin` |
 | P0-2 | MedicalCases `DoctorOrAdmin` → Admin 可创建医案 | `MedicalCasesController` | `DoctorOnly` | 新增 `DoctorOnly` 策略；Create 操作限定 Doctor |
 | P0-3 | Formulas 策略 `DoctorOrReceptionist` → Receptionist 可写验方 | `FormulasController` | 写：`DoctorOrAdmin`；读：不含前台 | GET：Doctor+Admin+SuperAdmin；POST/PUT：`DoctorOrAdmin` |
@@ -116,7 +118,7 @@
 ### 3.2 P1 重要（影响安全性/完整性）
 
 | # | 问题 | 位置 | 修复方案 |
-|---|------|------|----------|
+| --- | ------ | ------ | ---------- |
 | P1-1 | Formulas `GetDetail` 无所有权检查 → Admin 可读他人非共享验方 | `FormulasService` | 增加 `CreatedBy` 归属检查 |
 | P1-2 | 医案打印回写缺失 | 医案模块 | 恢复 PrintLog 字段/实体 |
 | P1-3 | 审计日志缺失 | SecurityAuditLog | 恢复审计日志记录 |
@@ -127,7 +129,7 @@
 ### 3.3 P2 增强（Phase②）
 
 | # | 问题 | 修复方案 |
-|---|------|----------|
+| --- | ------ | ---------- |
 | P2-1 | RBAC 权限模型统一 | 新增 ~35 项原子操作枚举，替代碎片化策略 |
 | P2-2 | 知情同意 | 医案完成时增加「患者已知情同意」勾选 |
 | P2-3 | 医案打印策略 | 新增 `DoctorOnly` 策略限定打印操作 |
@@ -164,7 +166,7 @@
 ### 5.2 适用范围
 
 | 实体类别 | 需要两字段？ | 实体 | 理由 |
-|---------|:----------:|------|------|
+| --------- | :----------: | ------ | ------ |
 | **资源类** | ✅ | User, Herb, Formula, Patient | 可以临时停用（请假/下架），也可以归档（离职/停售） |
 | **流程类** | ❌ | MedicalCase, Registration | 用业务状态枚举管理生命周期，无「启用/禁用」概念 |
 | **从属类** | ❌ | Consultation, Prescription | 跟随父实体（医案）状态，无独立生命周期 |
@@ -173,7 +175,7 @@
 ### 5.3 实体状态字段映射
 
 | 实体 | 禁用字段 | 归档字段 | 业务状态 |
-|------|---------|---------|---------|
+| ------ | --------- | --------- | --------- |
 | ApplicationUser | `CommonStatus Status` | `IsDeleted` | `UserRole` |
 | HerbModel | `CommonStatus Status` | `IsDeleted` | — |
 | FormulaModel | `CommonStatus Status` | `IsDeleted` | `FormulaValidationStatus` |
@@ -188,7 +190,7 @@
 ## 六、变更日志
 
 | 日期 | 变更 |
-|------|------|
+| ------ | ------ |
 | 2026-08-03 | v4.4 医案状态机注（§5 数据管理规则）：取消=物理删除、软删仅已完成、无 Status 字段 |
 | 2026-08-03 | v4.3 权限边界更新（四角色需求审查）：Admin 挂号只读查看 + 打印记录查看；Doctor/Receptionist 患者删除/禁用 ❌；前台不涉及药材/验方（决策确认） |
 | 2026-08-02 | §五 新增数据管理规则：两字段模式（禁用+软删除）定义、适用范围（资源类/流程类/从属类/审计类）、实体状态字段映射 |
