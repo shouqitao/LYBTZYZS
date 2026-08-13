@@ -8,19 +8,19 @@
 /// </summary>
 using System.Text;
 using DotNetEnv;
-using LYBT.Shared.Configuration.Extensions;
-using LYBT.Shared.Logging.Bootstrap;
-using LYBT.WebAPI.Configuration;
-using LYBT.Shared.Models.Utilities.Security;
-using LYBT.WebAPI.Extensions;
+using LYBT.Entities.Users;
 using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Infrastructure.Configuration.Stores;
 using LYBT.Infrastructure.Configuration.Validation;
-using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
+using LYBT.Module.Identity.Services;
+using LYBT.Shared.Configuration.Extensions;
+using LYBT.Shared.Logging.Bootstrap;
+using LYBT.Shared.Models.Utilities.Security;
+using LYBT.WebAPI.Configuration;
+using LYBT.WebAPI.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Serilog;
-using LYBT.Module.Identity.Services;
 
 /// <summary>
 /// 凌隐宝堂中医诊所诊疗系统 WebAPI 程序入口
@@ -29,6 +29,12 @@ using LYBT.Module.Identity.Services;
 /// </summary>
 public class Program
 {
+    // US-SHELL-024（2026-08-13 P2-07）: 单实例 Mutex（跨进程持有——防止双 WebAPI 并存写冲突）
+    // Linux 语义：.NET 6+ 的 named Mutex 在 Linux 映射到 /tmp 下文件锁（flock）——Global\ 前缀
+    // 在非 Windows 被忽略（Linux 无 session 概念），等价全局互斥——与 Desktop 单实例（US-SHELL-001）同模式
+    private static Mutex? _instanceMutex;
+    private const string InstanceMutexName = @"Global\LYBTZYZS_WebAPI_Instance";
+
     public static async Task Main(string[] args)
     {
         // 修复Windows控制台中文乱码问题
@@ -45,7 +51,11 @@ public class Program
                 {
                     Console.WriteLine("[UPDATE] 检测到更新包，正在应用...");
                     var currentDir = AppContext.BaseDirectory;
-                    System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, currentDir, overwriteFiles: true);
+                    System.IO.Compression.ZipFile.ExtractToDirectory(
+                        zipPath,
+                        currentDir,
+                        overwriteFiles: true
+                    );
                     File.Delete(zipPath);
                     Console.WriteLine("[UPDATE] 更新完成，重新启动...");
                 }
@@ -60,17 +70,43 @@ public class Program
 
         // Phase 1: Bootstrap Logger - 确保启动阶段异常能够被记录
         // refactor-logging-system: 测试环境使用普通Logger避免WebApplicationFactory"logger is already frozen"错误
-        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+        var environment =
+            Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
         var isTestEnvironment = environment == "Test";
 
         LoggingBootstrap.CreateBootstrapLogger(isTestEnvironment);
+
+        // US-SHELL-024（2026-08-13 P2-07）: 单实例检查——已有实例在跑则拒绝启动（防跨脚本双开）
+        // 位置：Bootstrap Logger 之后（能记日志）、任何写操作之前（尽早失败）
+        // 仅 Production 生效（真实部署场景）；测试宿主（testhost.exe——WebApplicationFactory 多 host 测试
+        // 进程内共享 Mutex 命名空间，同进程二次获取误判拒绝）与开发环境跳过
+        // 测试宿主（testhost.exe——WebApplicationFactory 多 host 测试进程内共享 Mutex 命名空间，
+        // 同进程二次获取误判拒绝——2026-08-13 P2-07 日志定位实证）与开发环境跳过
+        var isTestHost = System.Diagnostics.Process.GetCurrentProcess().ProcessName.Contains(
+            "testhost", StringComparison.OrdinalIgnoreCase);
+        if (environment == "Production" && !isTestHost && !TryAcquireSingleInstance())
+        {
+            Log.Fatal(
+                "[启动] 检测到已有 LYBT.WebAPI 实例在运行（Mutex={InstanceMutexName}）——拒绝启动（US-SHELL-024 单实例保护）",
+                InstanceMutexName
+            );
+            Console.Error.WriteLine(
+                "[启动] 已有实例在运行，拒绝启动（单实例保护——请先停止旧进程或用 start.sh 重启）"
+            );
+            Environment.Exit(1);
+        }
 
         try
         {
             // US-LOG-008（2026-08-13）: 启动首条日志含版本/commit/env/pid——部署验证第一步（对照代码新旧）
             var informationalVersion = LoggingBootstrap.GetInformationalVersion();
-            Log.Information("[启动] LYBT.WebAPI v{InformationalVersion} (commit {Commit}) env={Environment} pid={Pid}",
-                informationalVersion, LoggingBootstrap.GetCommitSha() ?? "unknown", environment, Environment.ProcessId);
+            Log.Information(
+                "[启动] LYBT.WebAPI v{InformationalVersion} (commit {Commit}) env={Environment} pid={Pid}",
+                informationalVersion,
+                LoggingBootstrap.GetCommitSha() ?? "unknown",
+                environment,
+                Environment.ProcessId
+            );
 
             // 加载 .env 文件（如果存在）
             var envFile = environment == "Development" ? ".env.development" : ".env";
@@ -111,33 +147,52 @@ public class Program
             // unify-configuration-system: 注册强类型配置
             // ADR-0019 配置集中: appsettings 移入 config/ 子目录（发布产物 = {BaseDir}/config/）
             // 移除 CreateBuilder 默认根目录 json providers → 改加载 config/ 路径
-            foreach (var source in builder.Configuration.Sources
-                .Where(src => src is Microsoft.Extensions.Configuration.Json.JsonConfigurationSource)
-                .ToList())
+            foreach (
+                var source in builder
+                    .Configuration.Sources.Where(src =>
+                        src is Microsoft.Extensions.Configuration.Json.JsonConfigurationSource
+                    )
+                    .ToList()
+            )
             {
                 builder.Configuration.Sources.Remove(source);
             }
             var configDir = Path.Combine(AppContext.BaseDirectory, "config");
-            builder.Configuration.AddJsonFile(Path.Combine(configDir, "appsettings.json"), optional: true, reloadOnChange: true);
-            builder.Configuration.AddJsonFile(Path.Combine(configDir, $"appsettings.{environment}.json"), optional: true, reloadOnChange: true);
+            builder.Configuration.AddJsonFile(
+                Path.Combine(configDir, "appsettings.json"),
+                optional: true,
+                reloadOnChange: true
+            );
+            builder.Configuration.AddJsonFile(
+                Path.Combine(configDir, $"appsettings.{environment}.json"),
+                optional: true,
+                reloadOnChange: true
+            );
 
             // CFG-BATCH2 优先级修正（边界决策 1）：环境变量 > runtime-overrides.json > appsettings.{env}.json > appsettings.json
             // 移除内置环境变量 provider → 追加 runtime-overrides → 重建环境变量（最高优先）
             var runtimeOverridesPath = Path.Combine(configDir, "runtime-overrides.json");
-            var baseline = builder.Configuration.AsEnumerable()
+            var baseline = builder
+                .Configuration.AsEnumerable()
                 .Where(kv => kv.Value is not null)
                 .ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase);
 
             // 1) 移除内置环境变量 provider（稍后按目标顺序重加）
-            foreach (var source in builder.Configuration.Sources
-                .OfType<Microsoft.Extensions.Configuration.EnvironmentVariables.EnvironmentVariablesConfigurationSource>()
-                .ToList())
+            foreach (
+                var source in builder
+                    .Configuration.Sources.OfType<Microsoft.Extensions.Configuration.EnvironmentVariables.EnvironmentVariablesConfigurationSource>()
+                    .ToList()
+            )
             {
                 builder.Configuration.Sources.Remove(source);
             }
 
             // 2) runtime-overrides（运行时微调——低于部署环境变量）
-            builder.Configuration.AddJsonFile(runtimeOverridesPath, optional: true, reloadOnChange: true);
+            builder.Configuration.AddJsonFile(
+                runtimeOverridesPath,
+                optional: true,
+                reloadOnChange: true
+            );
 
             // 3) 环境变量（部署权威——最高优先）
             builder.Configuration.AddEnvironmentVariables();
@@ -145,7 +200,9 @@ public class Program
             // CFG-BATCH2 边界决策 2/3: 占位符/空串后处理——无效值回退下一级有效值
             if (builder.Configuration is IConfigurationRoot configRoot)
                 ConfigurationPostProcessor.Process(configRoot);
-            builder.Services.AddSingleton<IConfigurationStore>(new JsonFileConfigurationStore(runtimeOverridesPath, baseline));
+            builder.Services.AddSingleton<IConfigurationStore>(
+                new JsonFileConfigurationStore(runtimeOverridesPath, baseline)
+            );
             builder.Services.AddLybtServerConfiguration(builder.Configuration);
             // Register system configuration service for DI
             builder.Services.AddScoped<ProductionConfigurationValidator>();
@@ -159,26 +216,39 @@ public class Program
             // AddIdentity sets cookie auth as default scheme; RegisterAuthenticationServices
             // (called inside RegisterAllApplicationServices) overrides it with JWT Bearer.
             // If AddIdentity runs after, it overwrites the JWT default → 302 redirects.
-            builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
-            {
-                options.Password.RequireDigit = PasswordPolicyValidator.Policy.RequireDigit;
-                options.Password.RequiredLength = PasswordPolicyValidator.Policy.MinLength;
-                options.Password.RequireNonAlphanumeric = PasswordPolicyValidator.Policy.RequireSpecialChar;
-                options.Password.RequireUppercase = PasswordPolicyValidator.Policy.RequireUppercase;
-                options.Password.RequireLowercase = PasswordPolicyValidator.Policy.RequireLowercase;
-                options.Lockout.MaxFailedAccessAttempts = 5;
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
-            })
-            .AddEntityFrameworkStores<AppDbContext>()
-            .AddDefaultTokenProviders();
+            builder
+                .Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+                {
+                    options.Password.RequireDigit = PasswordPolicyValidator.Policy.RequireDigit;
+                    options.Password.RequiredLength = PasswordPolicyValidator.Policy.MinLength;
+                    options.Password.RequireNonAlphanumeric = PasswordPolicyValidator
+                        .Policy
+                        .RequireSpecialChar;
+                    options.Password.RequireUppercase = PasswordPolicyValidator
+                        .Policy
+                        .RequireUppercase;
+                    options.Password.RequireLowercase = PasswordPolicyValidator
+                        .Policy
+                        .RequireLowercase;
+                    options.Lockout.MaxFailedAccessAttempts = 5;
+                    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+                })
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders();
 
-            builder.Services.RegisterAllApplicationServices(builder.Configuration, builder.Environment);
+            builder.Services.RegisterAllApplicationServices(
+                builder.Configuration,
+                builder.Environment
+            );
 
             // US-REG-008: SignalR 实时通知（RegistrationHub）
             builder.Services.AddSignalR();
 
             // T5-P3-01: 所有环境验证 Critical 配置项
-            var configValidator = new LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationValidator(builder.Configuration);
+            var configValidator =
+                new LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationValidator(
+                    builder.Configuration
+                );
             var criticalMissing = configValidator.ValidateCriticalItems();
             if (criticalMissing.Count > 0)
             {
@@ -253,7 +323,42 @@ public class Program
         }
         finally
         {
+            _instanceMutex?.ReleaseMutex();
+            _instanceMutex?.Dispose();
             Log.CloseAndFlush();
+        }
+    }
+
+    /// <summary>获取单实例锁（US-SHELL-024——与 Desktop US-SHELL-001 同模式）</summary>
+    private static bool TryAcquireSingleInstance() => TryAcquireSingleInstance(InstanceMutexName);
+
+    /// <summary>
+    /// 获取指定名称的单实例锁（internal 便于单测——US-SHELL-024 Mutex 语义验证）。
+    /// 返回 true = 本次获取成功（调用方持有直至进程退出）；false = 已有实例持锁。
+    /// </summary>
+    internal static bool TryAcquireSingleInstance(string mutexName)
+    {
+        try
+        {
+            _instanceMutex = new Mutex(true, mutexName, out var createdNew);
+            if (!createdNew)
+            {
+                _instanceMutex.Dispose();
+                _instanceMutex = null;
+                return false;
+            }
+            return true;
+        }
+        catch (AbandonedMutexException)
+        {
+            // 前实例崩溃未释放——Mutex 已自动接管，视为成功
+            return true;
+        }
+        catch (Exception ex)
+        {
+            // Mutex 不可用（如权限/环境）——降级为日志警告继续启动（不阻断部署）
+            Log.Warning(ex, "[启动] 单实例 Mutex 获取失败——降级继续（风险：可能双实例）");
+            return true;
         }
     }
 
@@ -265,7 +370,10 @@ public class Program
     /// <param name="configuration">应用程序配置</param>
     /// <param name="environment">主机环境</param>
     /// <exception cref="InvalidOperationException">当配置无效时抛出</exception>
-    private static void ValidateDefaultPasswordConfiguration(IConfiguration configuration, IWebHostEnvironment environment)
+    private static void ValidateDefaultPasswordConfiguration(
+        IConfiguration configuration,
+        IWebHostEnvironment environment
+    )
     {
         var sysAdminPassword = configuration["DefaultPasswords:SysAdminPassword"];
         var newUserPassword = configuration["DefaultPasswords:NewUserPassword"];
@@ -284,11 +392,16 @@ public class Program
 
         if (missingConfigurations.Any())
         {
-            var configList = string.Join(Environment.NewLine, missingConfigurations.Select(c => $"  - {c}"));
-            throw new InvalidOperationException($@"缺少必需的配置项：
+            var configList = string.Join(
+                Environment.NewLine,
+                missingConfigurations.Select(c => $"  - {c}")
+            );
+            throw new InvalidOperationException(
+                $@"缺少必需的配置项：
 {configList}
 
-请在 appsettings.Development.json 或环境变量中配置。");
+请在 appsettings.Development.json 或环境变量中配置。"
+            );
         }
 
         // 验证长度
@@ -302,16 +415,22 @@ public class Program
         if (environment.IsProduction())
         {
             if (!PasswordPolicyValidator.Validate(sysAdminPassword, out var sysAdminErrors))
-                throw new InvalidOperationException($"系统管理员密码不符合安全策略: {string.Join(", ", sysAdminErrors)}");
+                throw new InvalidOperationException(
+                    $"系统管理员密码不符合安全策略: {string.Join(", ", sysAdminErrors)}"
+                );
 
             if (!PasswordPolicyValidator.Validate(newUserPassword, out var newUserErrors))
-                throw new InvalidOperationException($"新用户密码不符合安全策略: {string.Join(", ", newUserErrors)}");
+                throw new InvalidOperationException(
+                    $"新用户密码不符合安全策略: {string.Join(", ", newUserErrors)}"
+                );
         }
         // 开发环境：只验证不是明显弱密码
         else if (environment.IsDevelopment())
         {
             if (PasswordPolicyValidator.IsCommonWeakPassword(sysAdminPassword))
-                throw new InvalidOperationException("开发环境密码也不能使用常见弱密码如 'password', '123456' 等");
+                throw new InvalidOperationException(
+                    "开发环境密码也不能使用常见弱密码如 'password', '123456' 等"
+                );
 
             if (PasswordPolicyValidator.IsCommonWeakPassword(newUserPassword))
                 throw new InvalidOperationException("新用户默认密码不能使用常见弱密码");
@@ -334,7 +453,8 @@ public class Program
         var templates = new Dictionary<string, string>
         {
             ["appsettings.json"] = AppSettingsTemplate,
-            [$"appsettings.{environment}.json"] = environment == "Production" ? ProductionTemplate : DevelopmentTemplate
+            [$"appsettings.{environment}.json"] =
+                environment == "Production" ? ProductionTemplate : DevelopmentTemplate,
         };
 
         foreach (var (fileName, template) in templates)
@@ -346,80 +466,85 @@ public class Program
             try
             {
                 File.WriteAllText(path, template);
-                Log.Information("配置闭环: 自动生成缺失配置文件 {File}（占位符待环境变量注入）", fileName);
+                Log.Information(
+                    "配置闭环: 自动生成缺失配置文件 {File}（占位符待环境变量注入）",
+                    fileName
+                );
             }
             catch (Exception ex)
             {
-                Log.Warning(ex, "配置闭环: 自动生成 {File} 失败（文件系统只读？）——启动继续", fileName);
+                Log.Warning(
+                    ex,
+                    "配置闭环: 自动生成 {File} 失败（文件系统只读？）——启动继续",
+                    fileName
+                );
             }
         }
     }
 
     private static readonly string AppSettingsTemplate = """
-    {
-      "ConnectionStrings": {
-        "DefaultConnection": "Server=${ConnectionStrings__DefaultConnection};Database=LYBTDB;User Id=${DB_USER};Password=${DB_PASSWORD};Encrypt=False;TrustServerCertificate=True;"
-      },
-      "Jwt": {
-        "SecretKey": "${Jwt__SecretKey}",
-        "Issuer": "LYBT.WebAPI",
-        "Audience": "LYBT.Client",
-        "AccessTokenExpirationMinutes": 480,
-        "RefreshTokenExpirationDays": 7
-      },
-      "DefaultPasswords": {
-        "SysAdminPassword": "${DefaultPasswords__SysAdminPassword}",
-        "NewUserPassword": "${DefaultPasswords__NewUserPassword}",
-        "ForceChangeOnFirstLogin": true
-      },
-      "SystemAdmin": {
-        "AllowAutoCreateInProduction": false,
-        "InitialSetupToken": "${SystemAdmin__InitialSetupToken}"
-      },
-      "Logging": {
-        "LogLevel": {
-          "Default": "Information",
-          "Microsoft.AspNetCore": "Warning"
+        {
+          "ConnectionStrings": {
+            "DefaultConnection": "Server=${ConnectionStrings__DefaultConnection};Database=LYBTDB;User Id=${DB_USER};Password=${DB_PASSWORD};Encrypt=False;TrustServerCertificate=True;"
+          },
+          "Jwt": {
+            "SecretKey": "${Jwt__SecretKey}",
+            "Issuer": "LYBT.WebAPI",
+            "Audience": "LYBT.Client",
+            "AccessTokenExpirationMinutes": 480,
+            "RefreshTokenExpirationDays": 7
+          },
+          "DefaultPasswords": {
+            "SysAdminPassword": "${DefaultPasswords__SysAdminPassword}",
+            "NewUserPassword": "${DefaultPasswords__NewUserPassword}",
+            "ForceChangeOnFirstLogin": true
+          },
+          "SystemAdmin": {
+            "AllowAutoCreateInProduction": false,
+            "InitialSetupToken": "${SystemAdmin__InitialSetupToken}"
+          },
+          "Logging": {
+            "LogLevel": {
+              "Default": "Information",
+              "Microsoft.AspNetCore": "Warning"
+            }
+          },
+          "_comment": "自动生成模板——占位符由环境变量注入（配置唯一化：DefaultPasswords__SysAdminPassword 等双下划线名）"
         }
-      },
-      "_comment": "自动生成模板——占位符由环境变量注入（配置唯一化：DefaultPasswords__SysAdminPassword 等双下划线名）"
-    }
-    """;
+        """;
 
     private static readonly string ProductionTemplate = """
-    {
-      "Kestrel": {
-        "Endpoints": { "Http": { "Url": "http://0.0.0.0:5000" } }
-      },
-      "Jwt": {
-        "SecretKey": "${Jwt__SecretKey}"
-      },
-      "DefaultPasswords": {
-        "SysAdminPassword": "${DefaultPasswords__SysAdminPassword}",
-        "NewUserPassword": "${DefaultPasswords__NewUserPassword}"
-      },
-      "SystemAdmin": {
-        "AllowAutoCreateInProduction": false,
-        "InitialSetupToken": "${SystemAdmin__InitialSetupToken}"
-      },
-      "DesktopUpdate": {
-        "Enabled": true,
-        "ReleasesPath": "C:\\Services\\LYBT-releases",
-        "DownloadBaseUrl": "/releases",
-        "FeedUrl": "http://your-server.example.com/releases"
-      },
-      "Cors": {
-        "AllowedOrigins": ["http://your-server.example.com:5000"]
-      },
-      "_comment": "自动生成 Production 模板——按 01-deployment.md 发布清单替换占位符"
-    }
-    """;
+        {
+          "Kestrel": {
+            "Endpoints": { "Http": { "Url": "http://0.0.0.0:5000" } }
+          },
+          "Jwt": {
+            "SecretKey": "${Jwt__SecretKey}"
+          },
+          "DefaultPasswords": {
+            "SysAdminPassword": "${DefaultPasswords__SysAdminPassword}",
+            "NewUserPassword": "${DefaultPasswords__NewUserPassword}"
+          },
+          "SystemAdmin": {
+            "AllowAutoCreateInProduction": false,
+            "InitialSetupToken": "${SystemAdmin__InitialSetupToken}"
+          },
+          "DesktopUpdate": {
+            "Enabled": true,
+            "ReleasesPath": "C:\\Services\\LYBT-releases",
+            "DownloadBaseUrl": "/releases",
+            "FeedUrl": "http://your-server.example.com/releases"
+          },
+          "Cors": {
+            "AllowedOrigins": ["http://your-server.example.com:5000"]
+          },
+          "_comment": "自动生成 Production 模板——按 01-deployment.md 发布清单替换占位符"
+        }
+        """;
 
     private static readonly string DevelopmentTemplate = """
-    {
-      "_comment": "自动生成 Development 模板——本地开发按需补充（连接串/JWT 等）"
-    }
-    """;
+        {
+          "_comment": "自动生成 Development 模板——本地开发按需补充（连接串/JWT 等）"
+        }
+        """;
 }
-
-

@@ -11,14 +11,14 @@
 ### 发布形式
 
 | 形式 | 说明 | 适用场景 |
-|------|------|---------|
+| ------ | ------ | --------- |
 | **Framework-Dependent**（推荐） | 依赖目标机器 .NET 8 Runtime，包小 (~27MB) | 有服务器管理权限的场景 |
 | Self-Contained | 自带运行时，包大 (~70MB) | 无法控制目标机器环境的场景 |
 
 ### 运行方式
 
 | 方式 | 说明 | 文档 |
-|------|------|------|
+| ------ | ------ | ------ |
 | **Linux 直接运行** | nohup 后台进程，轻量 | 见下方 Linux 部署 |
 | Windows Service | 独立进程，开机自启 | — |
 | IIS | 需要 IIS 环境，图形化管理 | 备选方案 |
@@ -34,7 +34,7 @@
 #### 服务器信息
 
 | 项目 | 值 |
-|------|-----|
+| ------ | ----- |
 | IP | 60.190.215.86 |
 | SSH 端口 | 5555 |
 | 用户名 | player |
@@ -79,7 +79,7 @@ dotnet publish src/Server/Services/LYBT.WebAPI -c Release -o ./publish-webapi
 
 ```bash
 #!/bin/bash
-# LYBT WebAPI 测试环境启动脚本
+# LYBT WebAPI 测试环境启动脚本（2026-08-13 v3——US-SHELL-024 四层防护：PID 文件 + 端口释放确认 + health 探测 + 部署日志）
 # 位置：/home/player/lybt-api/start.sh
 # 用法：bash start.sh
 
@@ -93,20 +93,76 @@ export SystemAdmin__InitialSetupToken="<一次性令牌>"
 export Security__RateLimiting__Enabled="false"
 
 cd /home/player/lybt-api
-pkill -f "dotnet.*LYBT.WebAPI.dll" 2>/dev/null
-sleep 2
+PID_FILE=lybt-api.pid
+PORT=5000
+
+echo "[部署] ====== LYBT WebAPI 部署开始: $(date '+%F %T') ======"
+
+# ── 第 1 层：停止旧进程（PID 文件优先，校验防 PID 复用；无 PID 文件回退 pkill）──
+OLD_PID=""
+if [ -f "$PID_FILE" ]; then
+    OLD_PID=$(cat "$PID_FILE")
+    if [ -n "$OLD_PID" ] && [ -d "/proc/$OLD_PID" ] && grep -q "LYBT.WebAPI.dll" "/proc/$OLD_PID/cmdline" 2>/dev/null; then
+        echo "[部署] 停止旧进程 PID=$OLD_PID（来自 $PID_FILE）"
+        kill "$OLD_PID" 2>/dev/null
+    else
+        echo "[部署] PID 文件存在但进程 $OLD_PID 非 WebAPI 或已退出（防 PID 复用——忽略，回退 pkill）"
+        OLD_PID=""
+    fi
+    rm -f "$PID_FILE"
+fi
+if [ -z "$OLD_PID" ]; then
+    pkill -f "dotnet.*LYBT.WebAPI.dll" 2>/dev/null
+    echo "[部署] 停止旧进程（pkill 回退路径）"
+fi
+
+# ── 第 2 层：端口释放确认（≤30s；超时 kill -9；仍占用 → 报错退出不启动）──
+for i in $(seq 1 30); do
+    if ! ss -tlnp 2>/dev/null | grep -q ":$PORT "; then
+        echo "[部署] 端口已释放（$PORT 空闲，等待 ${i}s）"
+        break
+    fi
+    if [ "$i" -eq 15 ]; then
+        echo "[部署] 端口 $PORT 等待 15s 仍占用——强制 kill -9 残留进程"
+        pkill -9 -f "dotnet.*LYBT.WebAPI.dll" 2>/dev/null
+    fi
+    sleep 1
+    if [ "$i" -eq 30 ]; then
+        echo "[部署] 错误：端口 $PORT 30s 内未释放——放弃启动（可能被非 WebAPI 进程占用）"
+        exit 1
+    fi
+done
+
+# ── 第 3 层：启动新进程 + PID 文件 + health 探测 ──
 setsid nohup /home/player/.dotnet/dotnet LYBT.WebAPI.dll --environment Production > logs/webapi.log 2>&1 < /dev/null &
-echo "LYBT WebAPI started, PID=$!"
+NEW_PID=$!
+echo "$NEW_PID" > "$PID_FILE"
+echo "[部署] 启动新进程 PID=$NEW_PID（已写 $PID_FILE）"
+
+for i in $(seq 1 60); do
+    if curl -s -o /dev/null -w "%{http_code}" --max-time 3 http://localhost:$PORT/health 2>/dev/null | grep -qE "200|503"; then
+        echo "[部署] 启动成功：health 探测通过（${i}s）PID=$NEW_PID"
+        echo "[部署] ====== LYBT WebAPI 部署完成: $(date '+%F %T') ======"
+        exit 0
+    fi
+    sleep 1
+done
+
+echo "[部署] 错误：health 探测 60s 未通过——打印日志尾部："
+tail -30 logs/webapi.log
+echo "[部署] ====== LYBT WebAPI 部署失败（见上方日志）======"
+exit 1
 ```
 
 > 若服务器已有 start.sh，只需修改其中密码/密钥值后执行；`setsid` 确保进程脱离 SSH 会话不被回收。
+> **单实例双保险（US-SHELL-024）**：start.sh 脚本层（PID 文件+端口释放+health 探测）+ Program.cs 程序层（Mutex `Global\LYBTZYZS_WebAPI_Instance`——Linux 下 named mutex 映射 /tmp 文件锁，等价全局；已有实例直接拒绝启动 exit 1）。
 
 > **配置原则（2026-08-12 用户确立）：配置跟着变量走**——`appsettings.{环境}.json` + 环境变量覆盖是唯一机制，环境切了值自然切。**每个环境内部必须「唯一一致」**（一个配置项一个来源，无重复冲突键）；**跨环境各走各的值**（Dev/Test/Prod 密码本来就不同——这是分文件的意义）。
 >
 > **测试部署密码表**（权威来源，API 测试登录用）：
 >
 > | 环境 | 权威来源 | sysadmin 密码 |
-> |------|---------|--------------|
+> | ------ | --------- | -------------- |
 > | 本机开发 | appsettings.Development.json | `DevPass123!` |
 > | 自动化测试 | appsettings.Test.json | `TestAdmin2025@` |
 > | **服务器测试发布** | **start.sh `DefaultPasswords__SysAdminPassword`** | **= start.sh 实际值**（唯一权威，改动时同步本表） |
@@ -115,6 +171,7 @@ echo "LYBT WebAPI started, PID=$!"
 > ⚠️ 登录 401 时先查本表（用对应环境的权威密码），勿凭记忆猜密码。sysadmin 密码被安全设计保护（K4：生产禁默认回退 + ResetPassword 拒绝重置 sysadmin），改密只能走 ChangePassword（需旧密码）。
 >
 > **环境名（模式）设置——业界标准（2026-08-13 确认）**：环境名只从**环境变量/启动参数**读取，**不能从配置文件设定**（微软官方 + 社区共识）：
+>
 > ```
 > 优先级：--environment 命令行参数（最高）
 >        > ASPNETCORE_ENVIRONMENT 环境变量（标准）
@@ -122,16 +179,18 @@ echo "LYBT WebAPI started, PID=$!"
 >        > launchSettings.json（仅开发/IDE，不随发布）
 > 默认值：Production（未设置时）
 > ```
+>
 > **为什么不能放配置文件**：环境名必须在加载配置文件**之前**确定（决定加载哪个 `appsettings.{env}.json`）——鸡生蛋问题。官方定位 `ASPNETCORE_ENVIRONMENT` 为**宿主机级配置**（host-level），不属于应用配置。
 >
 > **各部署方式设置环境名**：
+>
 > | 方式 | 做法 |
-> |------|------|
-> | 服务器 start.sh | `export ASPNETCORE_ENVIRONMENT=Production`（当前已用）|
+> | ------ | ------ |
+> | 服务器 start.sh | `export ASPNETCORE_ENVIRONMENT=Production`（当前已用） |
 > | Docker | `ENV ASPNETCORE_ENVIRONMENT=Production` 或 docker-compose `environment:` |
 > | IIS | web.config `aspNetCore environmentVariables` |
 > | Azure | App Settings `ASPNETCORE_ENVIRONMENT` |
-> | 开发本机 | launchSettings.json（IDE 自动）|
+> | 开发本机 | launchSettings.json（IDE 自动） |
 
 **第四步：重启服务**
 
@@ -209,6 +268,7 @@ WebAPI 同时提供 Desktop 客户端发布包下载服务（**Velopack 更新�
 #### 打包流程（开发者）
 
 1. **本地打包**：
+
    ```bash
    # Windows（需 vpk CLI）
    scripts/velopack-pack.ps1 -Version <版本号>
@@ -238,7 +298,7 @@ WebAPI 同时提供 Desktop 客户端发布包下载服务（**Velopack 更新�
 ### 环境变量参考
 
 | 变量名 | 默认值 | 说明 |
-|--------|--------|------|
+| -------- | -------- | ------ |
 | `ASPNETCORE_ENVIRONMENT` | `Production` | 运行环境（Development / Staging / Production） |
 | `ASPNETCORE_URLS` | `http://localhost:5000` | 监听地址和端口 |
 | `ConnectionStrings__DefaultConnection` | — | SQL Server 连接字符串（覆盖 appsettings） |
@@ -251,6 +311,7 @@ WebAPI 同时提供 Desktop 客户端发布包下载服务（**Velopack 更新�
 | `DefaultPasswords__NewUserPassword` | — | 新用户默认密码（生产环境必须覆盖） |
 
 > **测试/生产密码策略（2026-08-12）**：
+>
 > - **测试环境**：可用默认密码（或临时环境变量）验证功能——不敏感，正式发布前更换即可
 > - **正式发布**：必须通过环境变量 `DefaultPasswords__SysAdminPassword` / `DefaultPasswords__NewUserPassword` 注入强随机密码（≥12 位混合大小写+数字），禁止沿用测试默认值
 > - 生产门控（US-SHELL-017）：`AllowAutoCreateInProduction=false` + `InitialSetupToken` 一次性令牌——确保首次创建 sysadmin 走受控流程
@@ -363,7 +424,7 @@ netstat -ano | findstr ":5000"
 > **2026-08-12 测试发布实战记录**——以下问题均在真实部署中发生，按「问题 → 现象 → 原因 → 规避」记录，供后续发布（含正式发布）直接参考。
 
 | # | 问题 | 现象 | 根因 | 规避方法 |
-|---|------|------|------|---------|
+| --- | ------ | ------ | ------ | --------- |
 | 1 | **环境变量键名必须双下划线** | `JWT_SECRET` 设置了但校验报「未配置」 | 配置读取用 `Jwt__SecretKey`（ASP.NET Core 双下划线覆盖），不是大写单层名 | start.sh 统一用双下划线键：`Jwt__SecretKey`、`ConnectionStrings__DefaultConnection`、`SystemAdmin__InitialSetupToken` |
 | 2 | **JWT 密钥必须 Base64 编码** | 启动报「JWT SecretKey 必须是有效的 Base64 字符串」 | `JwtOptions` 校验器要求 Base64 格式（≥32 字符） | 用 `python3 -c "import base64,os; print(base64.b64encode(os.urandom(48)).decode())"` 生成 |
 | 3 | **缺默认密码环境变量** | 启动报「新用户密码不符合安全策略」 | `DefaultPasswords__NewUserPassword` 未设置，校验器要求小写+数字 | start.sh 同时设 `SysAdminPassword` + `NewUserPassword` |
@@ -375,6 +436,7 @@ netstat -ano | findstr ":5000"
 | 9 | **Swagger 生产默认关** | 测试环境看不到 API 清单 | `!IsProduction()` 才启用 Swagger，测试环境环境名是 Production | `Swagger:Enabled=true` 配置开关（测试开/正式关） |
 | 10 | **SSH 密码认证** | FlashFXP 连接失败 | 服务器 `sshd_config PasswordAuthentication no` | 服务器开启 `PasswordAuthentication yes` + `systemctl restart sshd` |
 | 11 | **全局 SplitQuery + 远程 SQL = 连接失败（2026-08-13 splitquery-fix）** | 种子失败（IdentitySeedData SplitQueryingEnumerable 连接错）/PUT formula 500——4 轮本地修复全过但真机全败 | 全局 `UseQuerySplittingBehavior(SplitQuery)` 把含 Include 查询拆多条 SQL 独立连接——远程 SQL（243，延迟 ~0.42s）多连接失败/超时 | 移除全局 SplitQuery（`DatabaseServiceCollectionExtensions.cs`——已修 0329bc785）改 EF 默认 SingleQuery；确有需要（大 Include 集合笛卡尔爆炸）查询级 `AsSplitQuery()`。教训：**全局配置必须与部署环境匹配**——本地低延迟测不出远程 DB 问题 |
+| 12 | **多进程/端口占用（2026-08-13 P2-07 US-SHELL-024——真机 06:18 双 dotnet 并存）** | 旧进程未释放 5000 → 新进程启动失败 → 双 dotnet 并存（写入冲突风险）；start.sh 仅 pkill+sleep 2 无端口检查/无 PID 文件/无启动验证 | 脚本层无防护 + 程序层无单实例 | start.sh 四层防护（PID 文件 + 端口释放确认 ≤30s + health 探测 ≤60s + 部署日志）＋ Program.cs Mutex（`Global\LYBTZYZS_WebAPI_Instance`——Linux 下 named mutex 映射 /tmp 文件锁，已有实例 exit 1 拒绝；**真机实测通过**：双开被拒 + 单进程 + health 200）。已修（Program.cs + start.sh v3） |
 
 > **代码-文档一致性约定（2026-08-12 确立）**：每次代码/配置变更（尤其部署相关——环境变量键名、校验规则、安全头、路由）必须同步本清单与对应文档；本清单是后续用户手册/运维手册的素材来源，不得滞后于代码。
 
@@ -452,7 +514,7 @@ dotnet ef database update -s src/Server/Services/LYBT.WebAPI
 ### 服务端启动失败
 
 | 症状 | 可能原因 | 解决方案 |
-|------|---------|---------|
+| ------ | --------- | --------- |
 | 启动即退出，无日志 | 配置文件缺失或 JSON 格式错误 | 检查 `appsettings.json` 是否存在且格式正确 |
 | "Connection refused" | SQL Server 未启动或端口被占 | 确认 SQL Server 服务运行中，检查连接字符串 |
 | "Invalid JWT SecretKey" | 密钥长度不足 | SecretKey 至少 32 字符 |
@@ -462,7 +524,7 @@ dotnet ef database update -s src/Server/Services/LYBT.WebAPI
 ### 客户端常见问题
 
 | 症状 | 可能原因 | 解决方案 |
-|------|---------|---------|
+| ------ | --------- | --------- |
 | 登录后白屏 | API 地址配置错误 | 检查 Desktop 配置中 Server URL 是否正确 |
 | 本地模式数据丢失 | LocalDB 文件被删除或损坏 | 检查 `%LOCALAPPDATA%\LYBTZYZS\data\` 目录 |
 | "Token Expired" 频繁弹出 | 客户端与服务端时钟偏差过大 | 同步系统时间，或调大 `ClockSkewSeconds` |
@@ -470,7 +532,7 @@ dotnet ef database update -s src/Server/Services/LYBT.WebAPI
 ### 数据库问题
 
 | 症状 | 可能原因 | 解决方案 |
-|------|---------|---------|
+| ------ | --------- | --------- |
 | 慢查询告警 | 缺少索引或数据量增长 | 检查 `Database.Monitoring.SlowQueryThresholdMs` 日志 |
 | 连接池耗尽 | 连接泄漏或并发过高 | 检查 `MaxConnections` 配置，排查未释放的 DbContext |
 | 迁移冲突 | 多人同时生成迁移 | 合并迁移文件后重新 `dotnet ef database update` |
@@ -478,8 +540,9 @@ dotnet ef database update -s src/Server/Services/LYBT.WebAPI
 ---
 
 ## 变更记录
+
 | 日期 | 版本 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 2026-02-10 | v1.0 | 从 README.md 拆分，初始版本 |
 | 2026-02-22 | v1.1 | 新增故障排查章节 (服务端/客户端/数据库) |
 | 2026-06-25 | v1.2 | 修正 Desktop 日志路径 %APPDATA%\LYBT → %LOCALAPPDATA%\LYBTZYZS（与代码一致） |

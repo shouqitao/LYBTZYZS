@@ -586,11 +586,12 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 **角色**: 运维（部署）
 **优先级**: Must
-**状态**: 🔧 设计定案（2026-08-13：4 层防护——PID 文件 + 端口释放确认 + health 探测 + Mutex 兜底）
+**状态**: ✅ 已实现（2026-08-13 P2-07——start.sh 四层防护 + Program.cs Mutex 双保险；真机实测通过）
 
 **作为** 运维人员，**我想要** WebAPI 部署时防止多进程/端口占用，**以便** 避免双实例写入冲突和「新进程启动失败但旧进程未杀」的僵局。
 
 **验收标准**:
+
 - [ ] **PID 文件**：启动写 `lybt-api.pid`；停止读 PID 杀旧进程（防 PID 复用——校验进程名）
 - [ ] **端口释放确认**：kill 后循环检查 5000 端口释放（≤30s）；超时强制 kill -9；仍占用则报错退出（不启动）
 - [ ] **启动成功探测**：启动后 curl `/health`（≤60s 重试）；失败打印日志尾部快速定位
@@ -598,11 +599,13 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 - [ ] 部署日志明确：`[部署] 停止旧进程 PID=x` / `[部署] 端口已释放` / `[部署] 启动成功 PID=y`
 
 **业务规则**:
+
 1. PID 文件路径：`/home/player/lybt-api/lybt-api.pid`
 2. Mutex 命名：`Global\LYBTZYZS_WebAPI_Instance`（与 Desktop 的 `Global\LYBTZYZS_Shell_Instance` 区分）
 3. 双保险：start.sh 脚本层（PID+端口+health）+ Program.cs 程序层（Mutex）
 
 **双模式**:
+
 | 模式 | 行为 |
 |------|------|
 | 远程 | start.sh 防护（Linux 部署） |
