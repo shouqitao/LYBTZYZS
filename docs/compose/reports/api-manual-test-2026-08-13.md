@@ -28,12 +28,12 @@
 - 补 3 个真实 ConfigurationManager 测试（复现原场景）
 - **但部署后 PUT formula 仍 500**——说明还有 Bug 2
 
-### Bug 2（待修）：DbUpdateConcurrencyException（RowVersion 并发）
+### Bug 2（✅ 已修复 2026-08-13——两层根因）：DbUpdateConcurrencyException（RowVersion 并发）
 - 日志证据：`System.InvalidOperationException: 数据已被其他用户修改` → `DbUpdateConcurrencyException: expected 1 row, affected 0`
 - 触发：PUT /api/v1/formulas/{id}（同 body / 改 dosage 都稳定复现）
-- 代码链：`CatalogEntityCommandHandlerBase.Handle(Update)` → `ApplyUpdate`（UpdateProfile + ReplaceHerbs）→ `BaseRepository.UpdateAsync`（`_dbSet.Update(entity)`）
-- 疑点：`_dbSet.Update(entity)` 对已跟踪实体标记全部 Modified（含 RowVersion 并发令牌）→ EF 用内存中的 RowVersion 作 WHERE → 与库中原值不匹配 → 0 rows
-- **待 omp 深入**：确认 _dbSet.Update 对已跟踪实体的并发令牌处理，修复通用 UpdateEntityCommandHandler（应避免 Update 已跟踪实体，或刷新 RowVersion）
+- **第 1 层根因**（6ecd7536d）：`BaseRepository.UpdateAsync` 的 `_dbSet.Update(entity)` 对已跟踪实体全标记 Modified（含 RowVersion）——已修复：已跟踪实体只 SaveChanges
+- **第 2 层根因**（049d0e0e2，EF SQL 日志实证）：`ReplaceHerbs` 的新 `FormulaHerbItem` 被 EF **误标 Modified**（非 Added）→ `UPDATE FormulaHerbItems WHERE Id=新Guid` → 0 rows——已修复：① ReplaceHerbs 孤儿删除模式（只设 FormulaId 不设导航）；② `FormulaRepository.UpdateAsync` override 强制新 item `EntityState.Added`；③ BaseRepository 并发重试（真并发仍抛——乐观语义保持）
+- 复现测试：`FormulaReplaceHerbsTests` 2 用例（真实 DbContext+SQLite——与真机异常一致）+ `HerbUpdateRowVersionTests` 2
 
 **沉淀**：真机测试连续发现 2 个 bug——①PostProcessor 测试类型≠生产类型（ConfigurationRoot vs ConfigurationManager）②通用更新命令的并发令牌处理（RowVersion 被 Update 标记）。两个都是「测试自洽但系统不跑」的层级错配实例——单元测试用 mock/fake 永远测不到 EF 真实并发语义。
 
