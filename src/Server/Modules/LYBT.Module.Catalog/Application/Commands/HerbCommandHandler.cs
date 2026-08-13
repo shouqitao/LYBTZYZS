@@ -71,6 +71,8 @@ public class HerbCommandHandler : CatalogEntityCommandHandlerBase<Herb, HerbInpu
             operatorId);
 
     protected override ErrorCode NameExistsErrorCode => ErrorCode.HerbNameExists;
+    protected override ErrorCode ValidationErrorCode => ErrorCode.ValidationFailed;
+
     protected override ErrorCode NotFoundErrorCode => ErrorCode.HerbNotFound;
     protected override ErrorCode NotDeletedErrorCode => ErrorCode.HerbNotDeleted;
 

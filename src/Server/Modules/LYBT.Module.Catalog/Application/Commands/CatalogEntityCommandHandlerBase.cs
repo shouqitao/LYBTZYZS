@@ -36,6 +36,10 @@ public abstract class CatalogEntityCommandHandlerBase<TEntity, TInput, TDetail>
     protected virtual Task<string?> ValidateBeforeDeleteAsync(TEntity entity, CancellationToken ct)
         => Task.FromResult<string?>(null);
 
+    /// <summary>保存前引用校验（2026-08-13 真机缺口: 默认放行；Formula 子类校验 herbs 的 HerbId 存在性/未删除）</summary>
+    protected virtual Task<string?> ValidateBeforeSaveAsync(TInput input, CancellationToken ct)
+        => Task.FromResult<string?>(null);
+
     /// <summary>实体显示名（用于 Update 重名消息，如「药材」/「方剂」）。</summary>
     protected abstract string EntityDisplayName { get; }
 
@@ -63,6 +67,9 @@ public abstract class CatalogEntityCommandHandlerBase<TEntity, TInput, TDetail>
     /// <summary>实体不存在错误码。</summary>
     protected abstract ErrorCode NotFoundErrorCode { get; }
 
+    /// <summary>保存前引用校验失败错误码（2026-08-13）</summary>
+    protected abstract ErrorCode ValidationErrorCode { get; }
+
     /// <summary>实体未删除错误码（Restore 时检查）。</summary>
     protected abstract ErrorCode NotDeletedErrorCode { get; }
 
@@ -87,6 +94,11 @@ public abstract class CatalogEntityCommandHandlerBase<TEntity, TInput, TDetail>
     {
         var dto = request.Input;
 
+        // 引用校验钩子（2026-08-13 真机缺口）: Formula 校验 herbs 的 HerbId 存在性/未删除
+        var validationError = await ValidateBeforeSaveAsync(dto, cancellationToken);
+        if (validationError != null)
+            return Result<TDetail>.Failure(ValidationErrorCode, validationError);
+
         if (await _repository.ExistsByNameAsync(GetName(dto), ct: cancellationToken))
             return Result<TDetail>.Failure(NameExistsErrorCode, ErrorMessages.Get(NameExistsErrorCode));
 
@@ -102,6 +114,11 @@ public abstract class CatalogEntityCommandHandlerBase<TEntity, TInput, TDetail>
         var entity = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (entity == null)
             return Result<TDetail>.Failure(NotFoundErrorCode, NotFoundMessage);
+
+        // 引用校验钩子（2026-08-13）: Formula 更新前校验 herbs
+        var validationError = await ValidateBeforeSaveAsync(request.Input, cancellationToken);
+        if (validationError != null)
+            return Result<TDetail>.Failure(ValidationErrorCode, validationError);
 
         if (GetName(entity) != GetName(request.Input))
         {

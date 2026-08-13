@@ -34,9 +34,22 @@
 - **第 1 层根因**（6ecd7536d）：`BaseRepository.UpdateAsync` 的 `_dbSet.Update(entity)` 对已跟踪实体全标记 Modified（含 RowVersion）——已修复：已跟踪实体只 SaveChanges
 - **第 2 层根因**（049d0e0e2，EF SQL 日志实证）：`ReplaceHerbs` 的新 `FormulaHerbItem` 被 EF **误标 Modified**（非 Added）→ `UPDATE FormulaHerbItems WHERE Id=新Guid` → 0 rows——已修复：① ReplaceHerbs 孤儿删除模式（只设 FormulaId 不设导航）；② `FormulaRepository.UpdateAsync` override 强制新 item `EntityState.Added`；③ BaseRepository 并发重试（真并发仍抛——乐观语义保持）
 - 复现测试：`FormulaReplaceHerbsTests` 2 用例（真实 DbContext+SQLite——与真机异常一致）+ `HerbUpdateRowVersionTests` 2
+- **真实 SQL Server 验证（2026-08-13 formula-realsql-fix——SQLite 通过不算数）**：`FormulaRealSqlUpdateTests` 2 用例（连接 192.168.190.243 LYBTDB_Test——TEST_DB_CONNECTION 激活）——`UpdateFormula_ReplaceHerbs_OnRealSqlServer_PersistsWithoutConcurrencyError`（764ms：EnsureCreated+建删数据）与 `UpdateFormula_DetachedReplaceHerbs_OnRealSqlServer_InsertsNewItems` **2/2 通过**——替换 herbs 无并发冲突（新 item INSERT 非 UPDATE WHERE 新 Id）+ Detached 场景正确 INSERT
+- **引用校验缺口修复（同日）**：空 herbs → Validator `NotEmpty`（400）；herbId 不存在/已删除 → `ValidateBeforeSaveAsync` 引用校验（`FormulaValidationFailed` 60004 → **422**）——`FormulaReferenceValidationTests` 3 用例
 
 **沉淀**：真机测试连续发现 2 个 bug——①PostProcessor 测试类型≠生产类型（ConfigurationRoot vs ConfigurationManager）②通用更新命令的并发令牌处理（RowVersion 被 Update 标记）。两个都是「测试自洽但系统不跑」的层级错配实例——单元测试用 mock/fake 永远测不到 EF 真实并发语义。
 
-## Domain 3+: 待继续（等 Bug 2 修复后重测 formula 更新）
+### Bug 2 修复后真机复查（2026-08-13 03:20，PID 730647 部署 049d0e0e2）：
+- PUT herb → 200 ✅（第 1 层修复生效）
+- **PUT formula → 仍 500 并发冲突** 🔴
+- 修复测试（FormulaReplaceHerbsTests 用 SQLite）通过，但**真实 SQL Server 仍失败**——SQLite vs SQL Server 的 EF 行为差异
+- **新增发现（测试矩阵 §11.2）**：
+  - #2 空 herbs → 201（预期 400）❌ AC 未拦截
+  - #3 herbId 不存在 → 500（预期 422）❌ 引用校验异常
+  - #4 herbId 已删除 → 201（预期 422）❌ 引用校验缺失
+- **待 omp**：真实 SQL Server 调试（非 SQLite）+ 修复 #2/#3/#4 校验
+
+## Domain 3+: 待继续（等 Bug 2 真机修复 + 校验修复后重测）
+
 
 

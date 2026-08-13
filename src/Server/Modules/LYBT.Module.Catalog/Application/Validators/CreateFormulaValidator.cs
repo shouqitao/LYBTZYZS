@@ -28,6 +28,11 @@ public class CreateFormulaValidator : AbstractValidator<CreateEntityCommand<Form
             .MaximumLength(500).WithMessage("用法长度不能超过500个字符")
             .When(x => !string.IsNullOrEmpty(x.Input.Usage));
 
+        RuleFor(x => x.Input.Herbs)
+            .NotEmpty().WithMessage("验方必须包含至少一味中药材")
+            .Must(herbs => herbs.All(h => h != null && !string.IsNullOrWhiteSpace(h.HerbName)))
+            .WithMessage("药材组成不能包含空的药材项");
+
         RuleFor(x => x.Input.Remark)
             .MaximumLength(500).WithMessage("备注长度不能超过500个字符")
             .When(x => !string.IsNullOrEmpty(x.Input.Remark));

@@ -1,4 +1,5 @@
 using LYBT.Entities.Formulas;
+using LYBT.Entities.Herbs;
 using LYBT.Module.Catalog.Application.Mappers;
 using LYBT.Module.Catalog.Interfaces;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -14,10 +15,17 @@ namespace LYBT.Module.Catalog.Application.Commands;
 /// </summary>
 public class FormulaCommandHandler : CatalogEntityCommandHandlerBase<Formula, FormulaInputDto, FormulaDetailDto>
 {
-    public FormulaCommandHandler(IFormulaRepository formulaRepository)
+    private readonly IHerbRepository _herbRepository;
+
+    public FormulaCommandHandler(
+        IFormulaRepository formulaRepository,
+        IHerbRepository herbRepository)
         : base(formulaRepository)
     {
+        _herbRepository = herbRepository;
     }
+
+    protected override ErrorCode ValidationErrorCode => ErrorCode.FormulaValidationFailed; // 422（herbId 引用校验失败）
 
     protected override string EntityDisplayName => "方剂";
 
@@ -27,6 +35,35 @@ public class FormulaCommandHandler : CatalogEntityCommandHandlerBase<Formula, Fo
         // T5-2 #14 (US-FORM-003): 创建时持久化药材组成（原 Mapper 丢弃 Herbs）
         formula.ReplaceHerbs(MapHerbs(input, formula.Id));
         return formula;
+    }
+
+    /// <summary>
+    /// 保存前引用校验（2026-08-13 真机缺口修复）: herbs 的 HerbId 必须存在且未删除——
+    /// 空 herbs 由 Validator 拦截（400）；HerbId 不存在/已删除 → 明确错误（422）
+    /// </summary>
+    protected override async Task<string?> ValidateBeforeSaveAsync(FormulaInputDto input, CancellationToken ct)
+    {
+        if (input.Herbs == null || input.Herbs.Count == 0)
+            return "验方必须包含至少一味中药材";
+
+        var herbIds = input.Herbs.Where(h => h.HerbId.HasValue).Select(h => h.HerbId!.Value).Distinct().ToList();
+        var existing = new List<Herb>();
+        foreach (var herbId in herbIds)
+        {
+            var herb = await _herbRepository.GetByIdAsync(herbId, ct);
+            if (herb != null)
+                existing.Add(herb);
+        }
+        var missing = herbIds.Except(existing.Select(h => h.Id)).ToList();
+        if (missing.Count > 0)
+            return $"验方包含不存在的药材（ID: {string.Join(", ", missing)}）——请检查后重试";
+
+        // 已删除药材（软删）视为不存在
+        var deleted = existing.Where(h => h.IsDeleted).Select(h => h.Id).ToList();
+        if (deleted.Count > 0)
+            return $"验方包含已删除的药材（ID: {string.Join(", ", deleted)}）——请恢复药材或移除该组成";
+
+        return null;
     }
 
     protected override void ApplyUpdate(Formula entity, FormulaInputDto input, Guid currentUserId)
