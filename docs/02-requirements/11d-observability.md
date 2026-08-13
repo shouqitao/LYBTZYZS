@@ -17,6 +17,48 @@
 
 > 原 7 US，保留 **7 US**：US-LOG-001~007。
 
+### US-LOG-000: 分层日志级别设计（业界校准，2026-08-13）
+
+**角色**: 开发人员
+**优先级**: Must（纲领性设计——所有日志代码须遵守）
+**状态**: ⚠️ 部分落地（设计已定，缺口待实施）
+
+**作为** 开发人员，**我想要** 清晰的日志级别语义与分层记录规则，**以便** 各层日志职责明确、不噪音、可高效定位。
+
+**级别语义**（Serilog 官方 + Dash0 校准）:
+| 级别 | 语义 | 何时用 |
+|------|------|--------|
+| Verbose/Trace | 最细内部细节 | 逐行追踪（生产不用） |
+| **Debug** | 内部系统事件「如何发生的」 | Repository 正常 CRUD |
+| **Information** | 可观测动作「系统做了什么」 | Controller 操作、Service 决策、请求开始/完成 |
+| **Warning** | 降级/异常但可继续 | 并发重试、缓存回退、权限拒绝(403) |
+| **Error** | 单个操作失败 | 未处理异常、SQL 失败、外部调用失败 |
+| **Fatal** | 整个应用崩溃 | 启动失败 |
+
+**分层规则**（Safran 分层案例校准）:
+| 层 | 正常路径 | 异常路径 | 记录内容 |
+|----|---------|---------|---------|
+| Controller | Information | Error | LogOperation：操作者+参数(脱敏)+目标ID+结果 |
+| Service | Information | Error | 业务决策、状态变更 |
+| Handler | Information | Error | 命令执行、权限拒绝、业务拒绝 |
+| Repository | **Debug** | **Error** | 实体Id、操作类型、异常链 |
+| Middleware/Filter | Information | Error | 请求开始/完成、耗时、CorrelationId |
+
+**关键规则**:
+1. **业务成功 → Information**；**业务拒绝(422/400) → Information**（预期行为，不是错误）；**权限拒绝(403) → Warning**；**未处理异常(500) → Error**；**启动失败 → Fatal**
+2. **Repository 异常必打**：SaveChanges/查询异常 → `LogError(ex, "[REPO] {Entity} {Operation} 失败")` 含实体 Id + CorrelationId（Enricher 自动）+ 异常链（@x 含 InnerException）
+3. **参数打通**：Controller 脱敏参数（SensitiveDataMasker）；Repository 实体 Id；Service 业务参数；异常对象作为第一参数（@x）
+4. **级别可配**：默认 Information；Debug 模式（US-SYS-006）切 Debug——Repository Debug 日志才输出
+
+**验收标准**:
+- [ ] Repository 异常日志：所有模块 Repository SaveChanges/查询异常 LogError 含实体 Id
+- [ ] Controller 操作日志：MedicalCases/Users/Auth 写操作补齐 LogOperation
+- [ ] 422 业务拒绝不产生 Error 日志（Information）
+- [ ] 403 权限拒绝产生 Warning
+
+**实现参考**: docs/compose/plans/log-level-design-2026-08-13.md（完整设计）、BaseRepository.cs（Debug 先例）
+
+---
 ### US-LOG-001: 结构化日志（Serilog）
 
 **角色**: 运维人员
