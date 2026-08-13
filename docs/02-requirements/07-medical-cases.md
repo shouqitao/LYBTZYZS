@@ -772,7 +772,9 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 | 字段 | 计算公式 |
 | ------ | --------- |
-| PrescriptionItem.Amount | UnitPrice × Dosage |
+| PrescriptionItem.Amount | UnitPrice × Dosage（单帖小计） |
+| PrescriptionItem.Subtotal（DTO） | = Amount（单帖小计快照，2026-08-13 修复） |
+| PrescriptionItem.TotalPrice（DTO） | = Amount × DosageCount（该味药帖剂总价；折扣为处方级概念不摊明细，2026-08-13 修复） |
 | SingleDosePrice | SUM(Items.Amount) |
 | TotalPrice | SingleDosePrice × DosageCount × Discount（MC-D14） |
 

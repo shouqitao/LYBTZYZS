@@ -379,6 +379,47 @@ public class MedicalCaseMapperTests
     }
 
     [Fact]
+    public void MapToMedicalCaseDetailDto_WithPrescription_ShouldComputeItemPriceSnapshot()
+    {
+        // Arrange —— 真机复现路径：保存处方 → 详情查询（价格快照 A2 决策 + US-MC-002）
+        // 柴胡 10g × 5.0 = 50.0；白芍 10g × 5.0 = 50.0；DosageCount=7、Discount=1.0
+        var entity = CreateTestMedicalCaseWithNavigations();
+
+        // Act
+        var dto = _mapper.MapToMedicalCaseDetailDto(entity);
+
+        // Assert - 明细金额快照（2026-08-13 修复：原 Mapperly 忽略 Subtotal/TotalPrice 恒 0）
+        var item1 = dto.Prescription!.Items![0];
+        item1.Subtotal.Should().Be(50.0m, "明细小计 = 单价 × 剂量（单帖，文档 §721 Amount）——柴胡 10g×5.0");
+        item1.TotalPrice.Should().Be(350.0m, "明细总价 = 单帖小计 × 剂数——50.0 × 7");
+        var item2 = dto.Prescription!.Items![1];
+        item2.Subtotal.Should().Be(50.0m, "白芍 10g×5.0");
+        item2.TotalPrice.Should().Be(350.0m);
+
+        // 处方级汇总（既有语义不变）：SingleDosePrice=100、TotalPrice=100×7×1.0=700
+        dto.Prescription.SingleDosePrice.Should().Be(100.0m);
+        dto.Prescription.TotalPrice.Should().Be(700.0m);
+    }
+
+    [Fact]
+    public void MapToMedicalCaseDetailDto_WithPrescriptionDiscount_ItemPriceExcludesDiscount()
+    {
+        // Arrange —— 折扣为处方级 MC-D14 整体概念，不摊入明细
+        var entity = CreateTestMedicalCaseWithNavigations();
+        entity.Prescription!.Discount = 0.9m;
+
+        // Act
+        var dto = _mapper.MapToMedicalCaseDetailDto(entity);
+
+        // Assert - 明细不受折扣影响；处方级总价含折扣
+        var item = dto.Prescription!.Items![0];
+        item.Subtotal.Should().Be(50.0m);
+        item.TotalPrice.Should().Be(350.0m);
+        dto.Prescription.SingleDosePrice.Should().Be(100.0m);
+        dto.Prescription.TotalPrice.Should().Be(630.0m, "100 × 7 × 0.9（MC-D14）");
+    }
+
+    [Fact]
     public void MapToMedicalCaseDetailDto_WithoutConsultation_ShouldBeNull()
     {
         // Arrange

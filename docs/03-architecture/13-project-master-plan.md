@@ -354,6 +354,7 @@
 ---
 
 | 2026-08-13 | **Configuration 权限隔离定案（CONFIG-PERM-FIX）**：真机发现 testadmin（业务管理员）GET /api/v1/configuration → 200（应 403）——配置管理设计为 sysadmin 专属（US-SHELL-018「角色: sysadmin」），类级 `AdminOrSuperAdmin` 误放行 Admin（App/ConnectionStrings/Jwt 等敏感配置泄露面）。修复：双端（Server WebAPI + Desktop LocalWebAPI）ConfigurationController 类级统一 `SysAdminOnly`；本地 Set 手工检查同步收紧仅 SuperAdmin；LocalJwtConfig 补 SysAdminOnly 策略注册（本地 DeployController 已用该类级策略但未注册——潜在 InvalidOperationException 一并修复）；行为测试 WebApplicationFactory+TestAuthHandler 守护 Admin→403/SuperAdmin→200。文档同步：10-configuration v1.5、API README、14-deploy（DEPLOY-PERM 滞后）、12-permissions-matrix、04-permissions、11a-shell US-SHELL-018（🧲→✅ 滞后校准）、05-dual-mode（策略 6→7）、13c #110 | 配置管理=运维操作（sysadmin 专属）不是业务操作——Admin 业务管理员不应接触系统配置；权限收紧与既有 SHELL-018 设计（sections 已 SysAdminOnly）对齐，类级统一消除方法级冗余 | 技术总监 |
+| 2026-08-13 | **处方明细金额快照语义定案（PRESCRIPTION-PRICE-SNAPSHOT-FIX）**：真机保存处方后明细 item.subtotal=0（应 10g×0.3=3.0）、item.totalPrice=0——`ToPrescriptionItemDto` 的`[MapperIgnoreTarget]` 忽略 Subtotal/TotalPrice 致明细金额恒 0。修复：`EnrichPrescriptionDetailDto`补算——Subtotal=Amount（UnitPrice×Dosage 单帖小计，文档 §721）；TotalPrice=Amount×DosageCount（该味药帖剂总价）；**折扣不摊入明细**（处方级 MC-D14 整体概念）。不加 DB 列：实体 Amount 为只读计算属性，A2 快照语义 = UnitPrice 持久化即可推导（与 SingleDosePrice/TotalPrice 现有 Enrich 计算模式一致）；保存路径不读客户端 Subtotal（服务端权威计算）。测试 +2（含折扣隔离断言）；07-medical-cases 补表 | 明细金额是价格快照数据完整性的一部分（US-MC-002 保存 + A2 决策）；折扣整体作用于处方级，摊入明细无业务依据 | 技术总监 |
 ## 十、维护规则（强制）
 
 ### 10.1 文档-代码一致性

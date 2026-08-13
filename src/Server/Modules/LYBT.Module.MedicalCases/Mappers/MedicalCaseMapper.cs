@@ -149,6 +149,9 @@ public partial class MedicalCaseMapper
 
     /// <summary>
     /// 丰富Prescription DTO - 使用Mapperly映射后补充计算字段和Items
+    /// 价格快照（A2 决策 + US-MC-002）：明细 Subtotal=UnitPrice×Dosage（单帖小计，文档 §721 Amount 定义）、
+    /// TotalPrice=Subtotal×DosageCount（该味药帖剂总价——折扣为处方级 MC-D14 概念不摊明细）——
+    /// 2026-08-13 修复：原 Mapperly 忽略 Subtotal/TotalPrice 致明细金额恒 0
     /// </summary>
     private PrescriptionDetailDto EnrichPrescriptionDetailDto(MedicalCase entity)
     {
@@ -156,8 +159,16 @@ public partial class MedicalCaseMapper
         var dto = ToPrescriptionDetailDto(prescription);
         dto.MedicalCaseId = entity.Id;
 
-        // Items映射（使用Mapperly）
-        dto.Items = prescription.Items?.Select(ToPrescriptionItemDto).ToList() ?? new List<PrescriptionItemDto>();
+        // Items映射（使用Mapperly）+ 明细金额快照补算（UnitPrice 已持久化——A2 快照语义）
+        dto.Items = prescription.Items?.Select(item =>
+        {
+            var itemDto = ToPrescriptionItemDto(item);
+            // 单帖小计 = 单价 × 剂量（实体 Amount 计算属性——明细金额快照）
+            itemDto.Subtotal = item.Amount;
+            // 该味药帖剂总价 = 单帖小计 × 剂数（折扣为处方级整体概念，不摊入明细）
+            itemDto.TotalPrice = item.Amount * prescription.DosageCount;
+            return itemDto;
+        }).ToList() ?? new List<PrescriptionItemDto>();
 
         // 计算字段（Service层关注点，非Mapper职责）
         dto.SingleDosePrice = prescription.Items?.Sum(x => x.Amount) ?? 0;
