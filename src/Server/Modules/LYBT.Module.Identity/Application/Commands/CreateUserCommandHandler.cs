@@ -9,6 +9,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Entities.Users;
 using LYBT.Module.Identity.Application.Mappers;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Identity.Application.Commands;
 
@@ -60,6 +61,30 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
 
         if (await _userManager.FindByNameAsync(dto.UserName!) != null)
             return Result<UserDetailDto>.Failure(ErrorCode.UserNameExists, ErrorMessages.Get(ErrorCode.UserNameExists));
+
+        // 软删同名占用唯一索引（softdelete-uniqueindex-fix 2026-08-13——真机 500 根因）:
+        // FindByNameAsync 走 QueryFilter（不含软删）→ 查不到软删 → INSERT 撞 UserNameIndex → DbUpdateException 500。
+        // 方案 B（软删不释放索引）：含软删查重 → 422 友好提示（「请先恢复」——恢复路径 UserName 不变——索引行是自己的——无冲突）
+        var normalizedName = _userManager.KeyNormalizer.NormalizeName(dto.UserName!);
+        var softDeletedByUserName = await _userManager.Users.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.NormalizedUserName == normalizedName && u.IsDeleted);
+        if (softDeletedByUserName != null)
+            return Result<UserDetailDto>.Failure(
+                ErrorCode.UserNameExists, $"用户名「{dto.UserName}」已被删除——请先恢复该用户或更换用户名");
+
+        // Email 唯一索引（EmailIndex）同样含软删占用——全查重（活体/软删均 422——原 Email 重复直接 500）
+        if (!string.IsNullOrWhiteSpace(dto.Email))
+        {
+            var normalizedEmail = _userManager.KeyNormalizer.NormalizeEmail(dto.Email);
+            var emailOccupied = await _userManager.Users.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail);
+            if (emailOccupied != null)
+                return Result<UserDetailDto>.Failure(
+                    ErrorCode.InvalidRequest,
+                    emailOccupied.IsDeleted
+                        ? $"邮箱「{dto.Email}」已被已删除用户占用——请先恢复该用户或更换邮箱"
+                        : $"邮箱「{dto.Email}」已被占用");
+        }
 
         // T4 P1#10: 保留用户名双保险（绕过 FluentValidation 的直接调用兜底）
         if (UserReservedNameHelper.IsReserved(dto.UserName))

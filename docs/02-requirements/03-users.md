@@ -357,3 +357,10 @@ Server/Local → UsersController → IUserManagerService
 | 2026-06-20 | 从 v2.0 重写为 v3.0 | 用户模块重构：统一到 Identity，删除 User 实体 |
 | 2026-06-15 | v2.0 重建 | Phase 1 简化后重建 |
 | 2026-06-08 | v1.0 初始 | 初始需求文档 |
+
+### 软删语义补充（2026-08-13 softdelete-uniqueindex-fix）
+
+- **唯一约束**：ApplicationUser.UserName（UserNameIndex）+ Email（EmailIndex）为数据库唯一索引；软删用户**仍占用**唯一键（索引不释放）
+- **创建查重含软删**：`CreateUserCommandHandler` 对 UserName/Email 做含软删查重（IgnoreQueryFilters）——软删同名/同邮箱 → **422 友好提示**（「已被删除——请先恢复该用户或更换用户名/邮箱」）——**不产生 500**（原 FindByNameAsync 走 QueryFilter 不含软删 → 认为可用 → INSERT 撞索引 → DbUpdateException 500）
+- **恢复路径**：恢复（Restore）时 UserName 不变（索引行是自己的——无冲突）；422 查重阻止新用户占用软删名 → 软删用户可恢复
+- **业务实体（Herb/Formula/Patient）**：无数据库唯一索引（业务层 NameExists/电话查重）——查重过滤软删——软删同名可创建（不 500）；恢复时业务查重友好提示——不受本修复影响
