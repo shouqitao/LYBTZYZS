@@ -2,6 +2,7 @@ using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
 using LYBT.Module.Catalog.Application.Mappers;
 using LYBT.Module.Catalog.Interfaces;
+using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
@@ -16,13 +17,16 @@ namespace LYBT.Module.Catalog.Application.Commands;
 public class FormulaCommandHandler : CatalogEntityCommandHandlerBase<Formula, FormulaInputDto, FormulaDetailDto>
 {
     private readonly IHerbRepository _herbRepository;
+    private readonly ILogger _logger;
 
     public FormulaCommandHandler(
         IFormulaRepository formulaRepository,
-        IHerbRepository herbRepository)
+        IHerbRepository herbRepository,
+        ILogger<FormulaCommandHandler> logger)
         : base(formulaRepository)
     {
         _herbRepository = herbRepository;
+        _logger = logger;
     }
 
     protected override ErrorCode ValidationErrorCode => ErrorCode.FormulaValidationFailed; // 422（herbId 引用校验失败）
@@ -82,7 +86,11 @@ public class FormulaCommandHandler : CatalogEntityCommandHandlerBase<Formula, Fo
         // T5-2 #14 (US-FORM-004): 更新时替换药材组成（原 UpdateProfile 丢弃 Herbs）
         entity.ReplaceHerbs(MapHerbs(input, entity.Id));
         // T5-2 #15 (US-FORM-010 FLAW-F1): Validated 验方更新后若任一药材未验证 → 降级 Draft
+        // P1-3（US-LOG-000 2026-08-13）: 业务决策日志——降级发生时 Warning
+        var wasValidated = entity.ValidationStatus == FormulaValidationStatus.Validated;
         entity.DegradeToDraftIfAnyHerbUnvalidated();
+        if (wasValidated && entity.ValidationStatus != FormulaValidationStatus.Validated)
+            _logger.LogWarning("[FORMULA] 验方 {Id} 更新后存在未验证药材——验证状态降级为 Draft（US-FORM-010）", entity.Id);
     }
 
     /// <summary>

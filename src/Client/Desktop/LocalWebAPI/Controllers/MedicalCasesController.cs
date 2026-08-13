@@ -233,7 +233,8 @@ public class MedicalCasesController : BaseMedicalCasesController
         var entity = await _medicalCaseStateService.SuspendAsync(id, request, operatorId, isAdmin, ct);
         if (entity == null)
             return BusinessFail("挂起失败");
-        return Success("医案已暂存");
+                LogOperation("暂存医案", request, id);
+return Success("医案已暂存");
     }
 
     /// <summary>
@@ -250,7 +251,8 @@ public class MedicalCasesController : BaseMedicalCasesController
         var entity = await _medicalCaseStateService.CancelAsync(id, operatorId, isAdmin, request?.Reason, ct);
         if (entity == null)
             return BusinessFail("取消失败");
-        return Success("医案已取消");
+                LogOperation("取消医案", null, id);
+return Success("医案已取消");
     }
 
     /// <summary>
@@ -276,6 +278,7 @@ public class MedicalCasesController : BaseMedicalCasesController
         var entity = await _medicalCaseStateService.UpdateStatusAsync(id, request.Status, ct);
         if (entity == null)
             return BusinessFail("状态更新失败");
-        return Success("状态更新成功");
+                LogOperation("更新医案状态", request, id);
+return Success("状态更新成功");
     }
 }

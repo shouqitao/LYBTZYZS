@@ -42,19 +42,37 @@ public class FormulaRepository : CatalogRepositoryBase<Formula>, IFormulaReposit
     /// <inheritdoc/>
     public override async Task<Formula?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.Formulas
-            .Include(f => f.Herbs)
-            .FirstOrDefaultAsync(f => f.Id == id && !f.IsDeleted, cancellationToken);
+        try
+        {
+            return await _context.Formulas
+                .Include(f => f.Herbs)
+                .FirstOrDefaultAsync(f => f.Id == id && !f.IsDeleted, cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // US-LOG-000 P0-1（2026-08-13）: override 查询异常记录（基类 catch 不覆盖 override）
+            _logger.LogError(ex, "[REPO] Formula.GetById({Id}) 查询失败（Include Herbs）", id);
+            throw;
+        }
     }
 
     /// <inheritdoc/>
     /// A-31-C5-3 例外：Formula 特化保留（需 Include Herbs 导航属性，与基类模板不同）
     public override async Task<Formula?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.Formulas
-            .Include(f => f.Herbs)
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(f => f.Id == id, cancellationToken);
+        try
+        {
+            return await _context.Formulas
+                .Include(f => f.Herbs)
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(f => f.Id == id, cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // US-LOG-000 P0-1（2026-08-13）: 恢复操作查询异常记录
+            _logger.LogError(ex, "[REPO] Formula.GetByIdIncludingDeleted({Id}) 查询失败（Include Herbs）", id);
+            throw;
+        }
     }
 
     /// <inheritdoc/>

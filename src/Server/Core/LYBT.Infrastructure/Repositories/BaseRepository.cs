@@ -35,14 +35,23 @@ namespace LYBT.Infrastructure.Repositories
         /// </summary>
         public virtual async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var entity = await _dbSet
-                .Where(e => e.Id == id && !e.IsDeleted)
-                .SingleOrDefaultAsync(cancellationToken);
+            try
+            {
+                var entity = await _dbSet
+                    .Where(e => e.Id == id && !e.IsDeleted)
+                    .SingleOrDefaultAsync(cancellationToken);
 
-            _logger.LogDebug("[REPO] {EntityType}.GetById({Id}) → {Result}",
-                typeof(TEntity).Name, id, entity != null ? "Found" : "NotFound");
+                _logger.LogDebug("[REPO] {EntityType}.GetById({Id}) → {Result}",
+                    typeof(TEntity).Name, id, entity != null ? "Found" : "NotFound");
 
-            return entity;
+                return entity;
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // US-LOG-000 P0-1（2026-08-13）: 查询异常记录——@x 自动含 InnerException；CorrelationId 由 Enricher 注入
+                _logger.LogError(ex, "[REPO] {EntityType}.GetById({Id}) 查询失败", typeof(TEntity).Name, id);
+                throw;
+            }
         }
 
         /// <summary>
@@ -51,9 +60,18 @@ namespace LYBT.Infrastructure.Repositories
         /// </summary>
         public virtual async Task<TEntity?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            return await _dbSet
-                .IgnoreQueryFilters()
-                .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+            try
+            {
+                return await _dbSet
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // US-LOG-000 P0-1（2026-08-13）: 查询异常记录（含已删除查询——恢复操作路径）
+                _logger.LogError(ex, "[REPO] {EntityType}.GetByIdIncludingDeleted({Id}) 查询失败", typeof(TEntity).Name, id);
+                throw;
+            }
         }
 
         #endregion
@@ -70,8 +88,18 @@ namespace LYBT.Infrastructure.Repositories
 
             entity.Id = entity.Id == Guid.Empty ? Guid.NewGuid() : entity.Id;
 
-            await _dbSet.AddAsync(entity, cancellationToken);
-            await SaveChangesAsync(cancellationToken);
+            try
+            {
+                await _dbSet.AddAsync(entity, cancellationToken);
+                await SaveChangesAsync(cancellationToken);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // US-LOG-000 P0-1（2026-08-13）: 添加异常记录（含实体 Id 定位）
+                _logger.LogError(ex, "[REPO] {EntityType}.Add({Id}) 保存失败", typeof(TEntity).Name, entity.Id);
+                throw;
+            }
+
             _logger.LogDebug("[REPO] {EntityType}.Add({Id})", typeof(TEntity).Name, entity.Id);
 
             return entity;
@@ -178,12 +206,12 @@ namespace LYBT.Infrastructure.Repositories
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                _logger.LogError(ex, "并发冲突 - 类型: {EntityType}", typeof(TEntity).Name);
+                _logger.LogError(ex, "[REPO] {EntityType}.SaveChanges 并发冲突（期望 1 行，实际 0 行）", typeof(TEntity).Name);
                 throw new InvalidOperationException("数据已被其他用户修改，请刷新后重试", ex);
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, "数据库更新失败 - 类型: {EntityType}", typeof(TEntity).Name);
+                _logger.LogError(ex, "[REPO] {EntityType}.SaveChanges 保存失败", typeof(TEntity).Name);
                 throw;
             }
         }

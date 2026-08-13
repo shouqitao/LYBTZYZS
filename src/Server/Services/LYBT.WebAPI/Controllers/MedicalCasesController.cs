@@ -127,8 +127,7 @@ namespace LYBT.WebAPI.Controllers
 
             var responseDto = result.Value!;
 
-            _logger.LogInformation("医案创建成功，ID: {Id}, Doctor: {DoctorName}, Patient: {PatientName}",
-                responseDto.Id, responseDto.DoctorName, responseDto.PatientName);
+            LogOperation("创建医案", input, responseDto.Id);
 
             return CreatedAtAction(nameof(GetById),
                 new { id = responseDto.Id, version = ApiVersionConstants.V1 },
@@ -164,7 +163,7 @@ namespace LYBT.WebAPI.Controllers
                 return NotFound(result.Error ?? "医案不存在");
             }
 
-            _logger.LogInformation("医案聚合保存成功，MedicalCaseId: {MedicalCaseId}", id);
+            LogOperation("更新医案", input, id);
             return Success(result.Value!, "保存成功");
         }
 
@@ -186,7 +185,7 @@ namespace LYBT.WebAPI.Controllers
             if (!deleted)
                 return NotFound("医案不存在");
 
-            _logger.LogInformation("医案已软删除，MedicalCaseId: {Id}, OperatorId: {OperatorId}", id, operatorId);
+            LogOperation("删除医案", null, id);
             return Success(true, "医案已删除");
         }
 
@@ -235,8 +234,7 @@ namespace LYBT.WebAPI.Controllers
             if (!result.IsSuccess)
                 return NotFound(result.Error ?? "医案不存在");
 
-            _logger.LogInformation("处方标记更新成功，MedicalCaseId: {Id}, NeedsPrescription: {Flag}",
-                id, request.NeedsPrescription);
+            LogOperation("更新处方标记", request, id);
             return Success(result.Value!, "处方标记更新成功");
         }
 
@@ -293,7 +291,7 @@ namespace LYBT.WebAPI.Controllers
                 return NotFound("医案不存在");
 
             var dto = _medicalCaseMapper.MapToMedicalCaseDetailDto(entity);
-            _logger.LogInformation("医案状态更新成功，MedicalCaseId: {Id}, NewStatus: {Status}", id, request.Status);
+            LogOperation("更新医案状态", request, id);
             return Success(dto, "状态更新成功");
         }
 
@@ -317,7 +315,7 @@ namespace LYBT.WebAPI.Controllers
             if (entity == null)
                 return NotFound("医案不存在");
 
-            _logger.LogInformation("医案关闭，MedicalCaseId: {Id}", id);
+            LogOperation("关闭医案", null, id);
             return Success("医案已关闭");
         }
 
@@ -341,7 +339,7 @@ namespace LYBT.WebAPI.Controllers
             if (entity == null)
                 return NotFound("医案不存在");
 
-            _logger.LogInformation("医案暂存成功，MedicalCaseId: {Id}", id);
+            LogOperation("暂存医案", request, id);
             return Success("医案已暂存");
         }
 
@@ -365,6 +363,7 @@ namespace LYBT.WebAPI.Controllers
                 return NotFound("医案不存在");
 
             _logger.LogInformation("医案取消成功(软删除)，MedicalCaseId: {Id}", id);
+LogOperation("取消医案", null, id);
             return Success(true, "医案已取消");
         }
 

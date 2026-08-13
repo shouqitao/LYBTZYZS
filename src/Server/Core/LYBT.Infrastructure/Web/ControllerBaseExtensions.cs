@@ -1,6 +1,7 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Infrastructure.Web;
 
@@ -75,6 +76,12 @@ public static class ControllerBaseExtensions
 
     public static IActionResult ForbidResponse(this ControllerBase controller, string message)
     {
+        // P1-5（US-LOG-000 2026-08-13）: 权限拒绝（403）→ Warning（非 Error——业务语义）
+        var logger = controller.HttpContext?.RequestServices?.GetService(typeof(ILoggerFactory)) as ILoggerFactory;
+        logger?.CreateLogger("Authorization").LogWarning(
+            "权限拒绝（403）: {Message}——Path={Path}, User={User}",
+            message, controller.HttpContext?.Request.Path, controller.HttpContext?.User?.Identity?.Name);
+
         var response = ApiResponse.CreateFail(message);
         response.RequestId = GetRequestId(controller);
         return controller.StatusCode(403, response);

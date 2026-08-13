@@ -9,6 +9,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LYBT.Tests.Server.Unit.Catalog;
 
@@ -24,7 +25,7 @@ public class FormulaReferenceValidationTests
 
     public FormulaReferenceValidationTests()
     {
-        _handler = new FormulaCommandHandler(_formulaRepository, _herbRepository);
+        _handler = new FormulaCommandHandler(_formulaRepository, _herbRepository, NullLogger<FormulaCommandHandler>.Instance);
     }
 
     [Fact]
