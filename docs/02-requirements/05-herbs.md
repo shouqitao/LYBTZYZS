@@ -225,21 +225,21 @@
 
 **角色**: 管理员（AdminOrSuperAdmin 策略）
 **优先级**: Must
-**状态**: ⚠️ 部分实现（DTO 批量导入已实现；服务端 Excel 解析路径缺失）
+**状态**: 🔧 设计修订（2026-08-13：移除服务端 Excel 解析路径——后端统一 JSON/DTO，保持通用性）
 
 **作为** 医生或管理员，**我想要** 批量导入药材并指定重复处理策略，**以便** 高效建立或扩充药材库。
 
 **验收标准**:
-- [ ] 支持两种导入路径：Excel 文件上传 或 DTO 列表提交
+- [ ] 支持 DTO 列表提交（JSON 数组——客户端可先做 Excel 解析转 JSON）
 - [ ] 接受 `DuplicateStrategy`（Skip/Update/Error）
 - [ ] 单次导入上限 10000 条
 - [ ] 返回导入结果（成功数、跳过数、失败明细）
 - [ ] 自动生成拼音
 
 **业务规则**:
-1. 两种导入路径：
-   - `ImportFromExcelAsync`：服务端用 EPPlus 解析 Excel
-   - `BatchImportAsync`：接收客户端已解析的 DTO 列表
+1. 导入路径：
+   - `BatchImportAsync`：接收客户端已解析的 DTO 列表（JSON）——**唯一路径**
+   - ~~`ImportFromExcelAsync`：服务端 EPPlus 解析 Excel~~（2026-08-13 移除——后端不涉及 Excel 格式；Excel 解析由前端负责转 DTO）
 2. `DuplicateStrategy` 处理重名药材：
    - `Skip`：跳过，保留原记录
    - `Update`：用新数据覆盖原记录

@@ -333,19 +333,19 @@
 
 **角色**: 管理员（Admin 及以上）
 **优先级**: Should
-**状态**: ✅ 已实现（T4: import-template 端点双端）
+**状态**: 🔧 设计修订（2026-08-13：Excel → JSON——后端不涉及 Excel 格式，保持通用性）
 
-**作为** 管理员，**我想要** 下载患者导入 Excel 模板，**以便** 按规范格式批量准备患者数据。
+**作为** 管理员，**我想要** 获取患者导入 JSON 模板说明，**以便** 按规范格式批量准备患者数据。
 
 **验收标准**:
-- [ ] 返回 Excel 文件（.xlsx）
-- [ ] 模板包含所有可导入字段的列头
-- [ ] 模板包含字段说明与示例
+- [ ] 返回 JSON 模板（字段说明 + 示例 + 必填标注）——`application/json`
+- [ ] 模板包含所有可导入字段
 - [ ] 标注必填字段
 
 **业务规则**:
-1. 模板由 `IPatientImportExportService` 生成
-2. 模板字段与导入端点期望的 DTO 一致
+1. 模板由 `IPatientImportExportService` 生成（JSON 结构，非 Excel）
+2. 模板字段与导入端点期望的 DTO 一致（`batch-import` 收 JSON 数组）
+3. **后端不涉及 Excel 格式**（2026-08-13 决策：保持通用性——Excel 处理由前端负责，如需）
 
 **双模式**:
 | 模式 | 行为 |
@@ -353,28 +353,29 @@
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `PatientsController.cs:296` (HttpGet `import-template`), `IPatientImportExportService`
+**实现参考**: `PatientsController.cs` (HttpGet `import-template`), `IPatientImportExportService`
 
 ---
 
-### US-PAT-012: 导出患者 Excel
+### US-PAT-012: 导出患者数据（JSON）
 
 **角色**: 管理员（Admin 及以上）
 **优先级**: Should
-**状态**: ✅ 已实现（T4: export 端点双端）
+**状态**: 🔧 设计修订（2026-08-13：Excel → JSON——后端不涉及 Excel 格式，保持通用性）
 
-**作为** 管理员，**我想要** 将患者数据导出为 Excel，**以便** 数据备份、外部审计或迁移。
+**作为** 管理员，**我想要** 将患者数据导出为 JSON，**以便** 数据备份、外部审计或迁移。
 
 **验收标准**:
 - [ ] 支持按筛选条件导出（非全量）
-- [ ] 返回 Excel 文件（.xlsx）
+- [ ] 返回 JSON 数组（`application/json`）
 - [ ] 敏感字段按脱敏规则导出
 - [ ] 大数据量导出不影响主业务性能
 
 **业务规则**:
-1. 导出由 `IPatientImportExportService` 执行（服务端 EPPlus）
+1. 导出由 `IPatientImportExportService` 执行（返回 JSON 数据，非 Excel）
 2. 敏感字段即使导出也按脱敏规则处理
 3. 端点受管理员权限保护
+4. **后端不涉及 Excel 格式**（2026-08-13 决策：保持通用性——Excel 转换由前端负责，如需）
 
 **双模式**:
 | 模式 | 行为 |
