@@ -40,7 +40,7 @@
 | 前台挂号 → 医生接诊 | StartVisit | **原子创建** MedicalCase(Active) + Registration→InProgress，返回 MedicalCaseId |
 | 前台挂号 → 患者退号 | CancelRegistration | **不建医案**，Registration→Cancelled |
 | 医生接诊 → 觉得没问题 → 退号 | StartVisit（建医案）→ 医生取消医案 | 医案已建(Active)，取消医案 → Registration 回退 Waiting（US-REG-007 Source-aware）→ 前台取消退号 |
-| QuickVisit | 医生直接操作 | **原子创建** Registration(InProgress) + MedicalCase(Active)（服务端已实现，Desktop 待激活） |
+| QuickVisit | 医生直接操作 | **两步**：①创建 Registration(Waiting, Source=Doctor) ②StartVisit→InProgress + MedicalCase(Active)（2026-08-13 修订：InProgress 后置，断网残留 Waiting 可自愈；前端 VM 封装一键） |
 | 本地模式 | 医生独立使用 | **系统自动创建** Registration(Source=Doctor, InProgress) + MedicalCase(Active)，医生无感 |
 
 **架构约束**：
@@ -774,4 +774,5 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 | 2026-06-28 | US-MC-011 业务规则压缩（引用 BR-003）；19 个 US 双模式表改一行格式；实现参考路径精简 | spec S3 批次2 提炼 |
 | 2026-06-28 | US-MC-018 加交叉引用注；US-MC-008/009 加与 US-MC-006 边界说明 | plan Task 7 边缘 US 修正 |
 | 2026-08-03 | **BR-000 修订为「接诊即建」**：StartVisit/QuickVisit/本地模式原子创建 MedicalCase(Active)+Registration(InProgress)；状态机注释同步 | 产品决策（消除 BR-000 与 US-REG-005 矛盾） |
+| 2026-08-13 | **BR-000 QuickVisit 修订为两步**：①创建 Registration(Waiting, Source=Doctor) ②StartVisit→InProgress+MedicalCase(Active)；InProgress 后置，断网残留 Waiting 可自愈；前端 VM 封装一键 | API 单一职能原则（产品决策 2026-08-13） |
 | 2026-08-03 | **医案状态机重构（医案专题）**：取消=物理删除（不判内容，无 Cancelled 状态）；已完成只可软删（Admin）；未完成不可打印；打印保护简化为 IsPrinted 标记；REG-BR-005 放弃恢复；无 Status 字段 | 产品决策（场景驱动生命周期设计） |

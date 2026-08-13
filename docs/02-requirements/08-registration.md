@@ -176,11 +176,11 @@
 
 ---
 
-### US-REG-002: 医生快速就诊（QuickVisit 原子事务）
+### US-REG-002: 医生快速就诊（QuickVisit 两步流程）
 
 **角色**: 医生
 **优先级**: Must
-**状态**: 🧲 待接线（服务端 QuickVisit 已实现；Desktop 无 UI 入口）
+**状态**: 🔧 设计修订（2026-08-13：从一步原子改为两步——InProgress 后置，断网自愈；服务端已实现，Desktop 待接线）
 
 > **定位补注**：QuickVisit 承担双重职能——(1) 远程模式下的**急诊/特殊通道**（前台不在或急症时医生直接接诊）；(2) 本地模式**无前台用户时**的常规看诊入口（医生独立「来一个看一个」本质即 QuickVisit；若 Admin 建前台用户则前台挂号→StartVisit 链同样可用）。当前为死代码，v1.0 待接线激活（QuickView UI 待实施）。
 
@@ -189,23 +189,22 @@
 **验收标准**:
 - [ ] 医生可通过姓名/拼音码/身份证号查询患者
 - [ ] 患者不存在时提示是否创建新患者（REG-BR-004）
-- [ ] 系统自动创建 Registration：`Source=Doctor`、`Status=InProgress`、`DoctorId=当前医生`（REG-BR-003）
-- [ ] 同时自动创建 MedicalCase，关联 RegistrationId
-- [ ] Registration + MedicalCase 在同一事务内（TransactionScope ReadCommitted），原子性保证
-- [ ] 医生无感知 Registration 的存在（后台静默）
+- [ ] **第 1 步**：系统自动创建 Registration：`Source=Doctor`、`Status=Waiting`、`DoctorId=当前医生`（REG-BR-003 修订——不再跳过 Waiting）
+- [ ] **第 2 步**：调用 StartVisit（US-REG-005）→ Registration→InProgress + 原子创建 MedicalCase(Active)，关联 RegistrationId
+- [ ] 第 1 步成功第 2 步断网 → 挂号停留 Waiting → **待诊列表可捕捉 → 医生重试接诊（自愈）**
+- [ ] 前端 VM 封装「一键快速看诊」：两步串行调用，医生无感知（REG-BR-006）
 
 **业务规则**:
-1. Source=Doctor，Status=InProgress（REG-BR-003，跳过 Waiting）
-2. 自动创建 MedicalCase，关联 RegistrationId
-3. **QuickVisit 原子性**：`TransactionScope(ReadCommitted)` 包裹 Registration + MedicalCase，要么同时成功要么同时回滚
-4. 医生无感知 Registration 存在（静默创建）
-5. 受 BR-001 单活跃医案约束（[07-medical-cases.md](07-medical-cases.md)）
+1. Source=Doctor，**第 1 步 Status=Waiting**（2026-08-13 修订：原一步原子 InProgress 改为两步——InProgress 后置到真正接诊时，断网残留 Waiting 可自愈）
+2. 第 2 步复用 StartVisit（原子创建 MedicalCase + InProgress）——**与普通挂号流程收敛**
+3. 受 BR-001 单活跃医案约束（[07-medical-cases.md](07-medical-cases.md)）
+4. API 单一职能：建挂号（POST /Registrations）与开始就诊（PUT /start-visit）各自独立——**组合由前端 VM 编排**
 
 **双模式**:
 | 模式 | 行为 |
 |------|------|
-| 远程 | POST `/api/v1/Registrations/quick-visit`（RegistrationService + IMedicalCaseCommandService） |
-| 本地 | 完全一致（通过统一 Service 层，事务内联动创建） |
+| 远程 | POST `/api/v1/Registrations`（Waiting）+ PUT `/api/v1/Registrations/{id}/start-visit`（InProgress+医案） |
+| 本地 | 完全一致（通过统一 Service 层） |
 
 **实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs:24`、`IRegistrationService`（注入 `IMedicalCaseCommandService`）
 
@@ -457,6 +456,7 @@
 |------|------|------|
 | 2026-06-28 | 新增「双模式工作流」段（远程挂号驱动 / 本地默认医生独立来一个看一个，建前台用户则挂号可用，全角色支持）；US-REG-002 状态改 🧲 v1.0 待激活+定位补注；US-REG-005 D8 修复方向补注 | R10 spec S8 文档更新 |
 | 2026-08-03 | **REG-BR-005 修订**：回退后恢复原医案 → 回退后重建（取消=物理删除，MedicalCaseId 清空，重新接诊时新建）；US-REG-007 取消联动同步 | 产品决策（医案专题：取消=物理删除） |
+| 2026-08-13 | **US-REG-002 QuickVisit 两步流程修订**：从一步原子（InProgress）改为 ①建 Waiting 挂号 ②StartVisit 接诊（InProgress+医案）；断网自愈；与普通挂号收敛 | API 单一职能原则（产品决策 2026-08-13） |
 | 2026-08-03 | **「接诊即建」决策落地**：模块概述/双模式工作流（远程+本地）/US-REG-005 状态（🔴→✅ 设计已确认）同步为 StartVisit/QuickVisit 原子创建 MedicalCase(Active)+Registration(InProgress) | 产品决策（与 07-medical-cases.md BR-000 修订联动） |
 | 2026-06-28 | 本地模式表述修正：「取消挂号/Registration 不激活」改为「全角色支持，差异由用户配置决定（无前台用户时医生独立，建前台用户则挂号可用）；无 SignalR」 | 2026-06-28 产品澄清（本地不做角色强制过滤） |
 | 2026-06-25 | 补充 InProgress 取消、同日重复挂号边界条件验收标准 | 需求文档验收标准完善 |
