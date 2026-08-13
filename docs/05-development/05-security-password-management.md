@@ -2,7 +2,7 @@
 
 ## 概述
 
-系统采用 BCrypt 密码哈希 + 可配置账户锁定策略，支持 DI 可测试的 `IPasswordService` 接口。本文档覆盖密码生命周期、系统管理员账户管理、开发环境配置。
+系统采用 ASP.NET Core Identity **PBKDF2** 密码哈希（UserManager 内置）+ 可配置账户锁定策略。本文档覆盖密码生命周期、系统管理员账户管理、开发环境配置。本文档覆盖密码生命周期、系统管理员账户管理、开发环境配置。
 
 ## 密码服务架构
 
@@ -12,7 +12,7 @@
 
 | 方法 | 用途 |
 |------|------|
-| `HashPassword(string)` | BCrypt 哈希 (WorkFactor=11) |
+| `HashPassword(string)` | 经 UserManager/PasswordHasher 的 PBKDF2 哈希（Identity 内置——AQAAAA 前缀） |
 | `VerifyPassword(string, string)` | 验证密码与哈希是否匹配 |
 | `VerifyAndRehashIfNeeded(string, string)` | 验证 + 若 WorkFactor 过旧则自动重新哈希 |
 | `ValidatePassword(string)` | 密码复杂度验证 (≥8 位，含大小写+数字+特殊字符) |
@@ -115,7 +115,7 @@ graph TD
     G --> E
 ```
 
-### ForceResetOnStartup 行为 (仅开发/测试环境)
+### ForceResetOnStartup 行为 (开发直接生效；非开发需 InitialSetupToken 验证——2026-08-13 审核对齐)
 
 启用后，每次启动时重置以下字段:
 
@@ -127,7 +127,7 @@ graph TD
 | `Status` | `Enabled` |
 | `IsDeleted` | `false` |
 
-**安全约束**: 生产环境中 `ForceResetOnStartup` 始终被忽略，即使配置为 `true`。
+**安全约束**: 非开发环境（如测试部署 Production 名）须 `InitialSetupToken` 验证通过才触发（安全门控——与 AllowAutoCreateInProduction 同模式）；生产默认 `ForceResetOnStartup=false`，且必须显式开启 + token 验证——安全语义保持。重置走 `UserManager.ResetPasswordAsync`（PBKDF2 真哈希——新密码来自 `DefaultPasswords:SysAdminPassword` 环境变量注入）。
 
 ### 开发环境推荐配置
 
@@ -171,10 +171,10 @@ $2a$11$0IviQQSC517yFyWB47YDh.P.mHetOQwFkvgdMtl8UFWn6v4iKKJ8e
 
 | 决策 | 理由 |
 |------|------|
-| BCrypt WorkFactor=11 | 平衡安全性与性能 (~200ms/hash) |
+| Identity PBKDF2 (UserManager 内置) | 与登录认证同算法（铁律 #3——全部走 UserManager，禁 BCrypt 落库） |
 | IPasswordService 接口 | 测试可 Mock，避免静态方法直接依赖 |
 | 可配置锁定策略 | 替代硬编码常量，便于不同环境调整 |
-| ForceResetOnStartup 仅限开发 | 防止生产环境意外重置管理员账户 |
+| ForceResetOnStartup 开发直接 + 非开发 token 门控 | 防止生产环境意外重置管理员账户（未验证 token 绝不触发） |
 | FixedTimeEquals 令牌比较 | 防止时序攻击泄漏 InitialSetupToken |
 
 ## Identity 集成约束（铁律）
@@ -217,7 +217,7 @@ await userManager.CreateAsync(user, password);
 
 ### 3. BCrypt (`PasswordHelper`) 与 PBKDF2 (Identity) 不兼容 — 全部走 `UserManager`
 
-ASP.NET Core Identity 内部使用 PBKDF2 算法哈希密码。本项目 `PasswordHelper` / `BcryptPasswordService` 使用 BCrypt（WorkFactor=11）。**两套哈希不互通**，直接调 `PasswordHelper` 创建/修改密码的用户无法通过 Identity 登录。
+ASP.NET Core Identity 内部使用 PBKDF2 算法哈希密码。本项目**已移除 BCrypt**（A-27 技术栈减法——`PasswordHelper` 哈希/验证改走 Identity）——当前唯一哈希路径 = UserManager/PasswordHasher（PBKDF2）。铁律保留作为历史教训：**两套哈希不互通**，任何场景不得引入第二套哈希算法落库。
 
 ```csharp
 // ❌ 错误 — 用 BCrypt 哈希后存库，Identity 验证失败
@@ -233,22 +233,21 @@ var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
 
 `BcryptPasswordService`（`IPasswordService`）仅用于非 Identity 路径（如 sysadmin 创建脚本的工具校验、`SecureEquals` 防时序比较等），不得作为用户密码落库入口。
 
-### 4. `IdentitySeedData` 仅在 `LastLoginAt == null` 时重置密码
+### 4. `IdentitySeedData` 不存在才创建（幂等——已登录用户不被覆盖）
 
-种子数据使用幂等策略：仅在用户**从未登录过**（`LastLoginAt` 为 null）时重置密码到 `DefaultPasswords`。**已登录过的用户密码不会被覆盖**，开发者反复测试登录后重新启动服务不会破坏已设密码。
+种子数据使用幂等策略：**用户不存在才创建**（`FindByNameAsync` 为 null 时用 `DefaultPasswords` 密码创建）——**已存在的用户（含已登录）完全跳过，密码不被覆盖**。开发者反复测试登录后重新启动服务不会破坏已设密码。
 
 ```csharp
-// IdentitySeedData 简化逻辑
+// IdentitySeedData 实际逻辑（2026-08-13 审核对齐——不存在才创建，无 LastLoginAt 条件）
 var existing = await _userManager.FindByNameAsync(userName);
-if (existing?.LastLoginAt == null)
+if (existing == null)
 {
-    await _userManager.RemovePasswordAsync(existing);
-    await _userManager.AddPasswordAsync(existing, configuredPassword);
-    _logger.LogInformation("重置密码 (首次启动): {User}", userName);
+    await _userManager.CreateAsync(new ApplicationUser { ... }, configuredPassword);
+    _logger.LogInformation("创建系统管理员 (首次启动): {User}", userName);
 }
 ```
 
-如需强制重置，使用 `appsettings.Development.json` 的 `SystemAdmin:ForceResetOnStartup: true`（仅开发环境生效，生产环境始终被忽略）。
+如需强制重置（开发/测试），使用 `SystemAdmin:ForceResetOnStartup: true`——开发环境直接生效；非开发环境需 `InitialSetupToken` 验证通过（2026-08-13 审核对齐——见上 ForceResetOnStartup 行为）。
 
 ## 相关文档
 
