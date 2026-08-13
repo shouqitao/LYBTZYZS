@@ -105,10 +105,46 @@
 | 6 | US-MC-014 | 取消医案（物理删除） | ✅ 200 |
 | 7 | 权限 | 删除已完成医案 → 403（仅 Admin，Doctor 无权限） | ✅ |
 | 8 | 权限 | close 强制关闭 → 403（仅管理员） | ✅ |
+| 9 | US-MC-013 | 挂起（Active→Suspended） | ✅ 200「医案已暂存」 |
+| 10 | US-MC-010 | 恢复编辑（Suspended→Active） | ✅ 200「状态更新成功」 |
+| 11 | A2 快照 | 处方明细金额（subtotal=10g×0.3=3.0） | ✅ 修复后正确 |
+
+**修复**（本域测试发现）：
+- 处方明细 subtotal/totalPrice=0（Mapperly 忽略映射）→ 4bfc70849 修复（pi 交付）
 
 
 
-## Domain 2.5: 用户模块（US-USER-001~012 全通过 ✅）
+
+## Domain 6: 报表（US-REPORT 系列）——8/8 全通过 ✅
+
+| # | 端点 | 测试项 | 结果 |
+|---|------|--------|:---:|
+| 1 | /reports/daily/income | 每日收入（总收入/挂号费/药费） | ✅ 200 |
+| 2 | /reports/daily/consultations | 每日就诊（总数/按医生） | ✅ 200 |
+| 3 | /reports/daily/herbs | 每日药材统计 | ✅ 200 |
+| 4 | /reports/trend/income | 收入趋势（7天） | ✅ 200 |
+| 5 | /reports/trend/consultations | 就诊趋势（7天） | ✅ 200 |
+| 6 | /reports/doctor-performance | 医生绩效 | ✅ 200 |
+| 7 | /reports/herbs/ranking | 药材排行 | ✅ 200 |
+| 8 | /reports/patient-flow | 患者流（新/复诊） | ✅ 200 |
+
+## Domain 7: 系统维护（sysadmin 专属）——通过 + 权限修复
+
+| # | 端点 | 测试项 | 结果 |
+|---|------|--------|:---:|
+| 1 | /health | 匿名存活探针 | ✅ 200 Healthy |
+| 2 | /health/database | DB 健康 | ✅ 200 |
+| 3 | /health/ping | Ping（版本/DB 耗时） | ✅ 200 |
+| 4 | /health/details | 详细健康 | ✅ 200 |
+| 5 | /diagnostics/logging/status | 日志级别状态 | ✅ 200 |
+| 6 | /configuration | 系统配置（sysadmin） | ✅ 200 |
+| 7 | /configuration/sections/Jwt | Jwt 配置节 | ✅ 200 |
+| 8 | /configuration/validate | 配置校验 | ✅ 200 |
+| 9 | 权限 | **testadmin 访问 /configuration → 403**（权限隔离） | ✅ 修复后 403 |
+
+**修复**（本域测试发现）：
+- ConfigurationController 权限 AdminOrSuperAdmin → SysAdminOnly（业务管理员越权读系统配置）→ 3fa497d3e 修复（pi 交付，双控制器 + 测试 + 真机 403/200）
+
 
 | # | US | 测试项 | 结果 |
 | --- | ----- | -------- | :---: |
