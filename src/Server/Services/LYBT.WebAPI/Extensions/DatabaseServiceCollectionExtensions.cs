@@ -125,6 +125,12 @@ public static class DatabaseServiceCollectionExtensions
         // Architecture Fix: 注册健康检查服务 (Task 1.1)
         services.AddScoped<IHealthCheckService, HealthCheckService>();
 
+        // P1-4（2026-08-14）: 部署服务（更新包上传逻辑移出 Controller）
+        services.AddScoped<IDeployService, DeployService>();
+
+        // P1-6（2026-08-14）: 下载主页服务（HTML 生成逻辑移出 DownloadController）
+        services.AddScoped<LYBT.WebAPI.Services.IDownloadService, LYBT.WebAPI.Services.DownloadService>();
+
         // Issue #1726 Phase 3: 数据库健康检查与启动诊断
         services.AddHealthChecks()
             .AddCheck<LYBT.WebAPI.HealthCheck.SqlServerHealthCheck>("database");

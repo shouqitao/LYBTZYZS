@@ -25,11 +25,6 @@ public class ConfigurationController : BaseApiController
     private readonly ISystemConfigurationService _configurationService;
     private readonly ISecurityAuditService _auditService;
 
-    // SHELL-018 Phase 1: 重启限频（每小时 ≤3 次）
-    private static readonly System.Collections.Concurrent.ConcurrentQueue<DateTime> RestartRequests = new();
-    private static readonly TimeSpan RestartWindow = TimeSpan.FromHours(1);
-    private const int RestartMaxPerHour = 3;
-
     public ConfigurationController(
         ISystemConfigurationService configurationService,
         ISecurityAuditService auditService,
@@ -132,20 +127,17 @@ public class ConfigurationController : BaseApiController
 
     /// <summary>
     /// 延迟重启（SHELL-018 Phase 1: sysadmin 专属 + 限频每小时 3 次 + 30 秒延迟）
+    /// P1-1（2026-08-14）: 限频+调度移入 ISystemConfigurationService.ScheduleRestartAsync——Controller 仅编排
     /// </summary>
     [HttpPost("restart")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> Restart([FromServices] IHostApplicationLifetime lifetime, CancellationToken ct)
     {
-        if (!TryAcquireRestartSlot())
-            return BusinessFail("重启请求过于频繁（每小时最多 3 次），请稍后再试");
+        var result = await _configurationService.ScheduleRestartAsync(lifetime, ct);
+        if (!result.IsSuccess)
+            return BusinessFail(result.ErrorMessage ?? "重启调度失败");
 
         await RecordAuditAsync("ConfigRestart", "延迟重启已调度（30 秒后停止）");
-        _ = Task.Run(async () =>
-        {
-            await Task.Delay(TimeSpan.FromSeconds(30), ct);
-            lifetime.StopApplication();
-        }, CancellationToken.None);
         return Success("重启已调度，将在 30 秒后生效");
     }
 
@@ -185,21 +177,5 @@ public class ConfigurationController : BaseApiController
         {
             _logger.LogWarning(ex, "[CFG] 配置审计记录失败: {EventType}", eventType);
         }
-    }
-
-    /// <summary>
-    /// 重启限频（滑动窗口每小时 ≤3）
-    /// </summary>
-    private static bool TryAcquireRestartSlot()
-    {
-        var now = DateTime.UtcNow;
-        while (RestartRequests.TryPeek(out var oldest) && now - oldest > RestartWindow)
-            RestartRequests.TryDequeue(out _);
-
-        if (RestartRequests.Count >= RestartMaxPerHour)
-            return false;
-
-        RestartRequests.Enqueue(now);
-        return true;
     }
 }

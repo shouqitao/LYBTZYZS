@@ -117,18 +117,8 @@ public class DiagnosticsController : BaseApiController
     {
         if (!IsAdminOrHigher()) return Forbid("仅管理员可调整日志级别");
 
-        var level = request?.Level?.ToLowerInvariant() switch
-        {
-            "verbose" => LogEventLevel.Verbose,
-            "debug" => LogEventLevel.Debug,
-            "information" => LogEventLevel.Information,
-            _ => LogEventLevel.Debug
-        };
-
-        var durationMinutes = request?.DurationMinutes ?? 30;
-        if (durationMinutes > 120) durationMinutes = 120;
-
-        var result = _loggingLevelManager.EnableDebugMode(level, durationMinutes);
+        // P1-5（2026-08-14）: 枚举转换 + durationMinutes 上限移入 LoggingLevelManager——Controller 仅编排
+        var result = _loggingLevelManager.EnableDebugMode(request?.Level, request?.DurationMinutes);
 
         return Success(new
         {

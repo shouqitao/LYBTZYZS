@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
+using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.AspNetCore.Authorization;
@@ -19,34 +20,31 @@ public record RestartConfirmDto(string? Confirm);
 public class DeployController : BaseApiController
 {
     private readonly IHostApplicationLifetime _lifetime;
+    private readonly IDeployService _deployService;
 
-    public DeployController(IHostApplicationLifetime lifetime, ILogger<DeployController> logger)
+    public DeployController(
+        IHostApplicationLifetime lifetime,
+        IDeployService deployService,
+        ILogger<DeployController> logger)
         : base(logger)
     {
         _lifetime = lifetime;
+        _deployService = deployService;
     }
 
     [HttpPost("upload")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> Upload(IFormFile file)
+    public async Task<IActionResult> Upload(IFormFile file, CancellationToken ct)
     {
-        if (file == null || file.Length == 0)
-            return BusinessFail("未选择文件或文件为空");
+        // P1-4（2026-08-14）: 上传逻辑移入 IDeployService——Controller 仅编排
+        await using var stream = file.OpenReadStream();
+        var result = await _deployService.SaveUpdatePackageAsync(stream, file.FileName, ct);
+        if (!result.IsSuccess)
+            return BusinessFail(result.ErrorMessage ?? "上传失败");
 
-        if (!file.FileName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-            return BusinessFail("仅支持 ZIP 格式的更新包");
-
-        var uploadsDir = Path.Combine(AppContext.BaseDirectory, "uploads");
-        Directory.CreateDirectory(uploadsDir);
-
-        var fileName = $"update_{DateTime.UtcNow:yyyyMMdd_HHmmss}.zip";
-        var filePath = Path.Combine(uploadsDir, fileName);
-
-        await using var stream = new FileStream(filePath, FileMode.Create);
-        await file.CopyToAsync(stream);
-
-        _logger.LogInformation("更新包已上传: {FileName}, 大小: {Size} bytes", fileName, file.Length);
-        return Success(new { fileName, size = file.Length }, "更新包上传成功");
+        return Success(
+            new { fileName = result.Data!.FileName, size = result.Data.Size },
+            "更新包上传成功");
     }
 
     [HttpPost("restart")]

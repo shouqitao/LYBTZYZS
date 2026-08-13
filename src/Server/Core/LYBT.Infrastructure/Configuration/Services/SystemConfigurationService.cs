@@ -193,6 +193,33 @@ public class SystemConfigurationService : ISystemConfigurationService
         if (_configuration is IConfigurationRoot root)
             root.Reload();
     }
+
+    // P1-1（2026-08-14）: 重启限频（滑动窗口每小时 ≤3）——原 ConfigurationController 内静态字段，移入 Service
+    private static readonly System.Collections.Concurrent.ConcurrentQueue<DateTime> RestartRequests = new();
+    private static readonly TimeSpan RestartWindow = TimeSpan.FromHours(1);
+    private const int RestartMaxPerHour = 3;
+
+    /// <summary>
+    /// 调度延迟重启（P1-1 2026-08-14: 限频 + 30s 延迟统一在 Service——Controller 仅编排）
+    /// </summary>
+    public Task<Result> ScheduleRestartAsync(Microsoft.Extensions.Hosting.IHostApplicationLifetime lifetime, CancellationToken cancellationToken = default)
+    {
+        var now = DateTime.UtcNow;
+        while (RestartRequests.TryPeek(out var oldest) && now - oldest > RestartWindow)
+            RestartRequests.TryDequeue(out _);
+
+        if (RestartRequests.Count >= RestartMaxPerHour)
+            return Task.FromResult(Result.Failure(LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode.RateLimitExceeded, "重启请求过于频繁（每小时最多 3 次），请稍后再试"));
+
+        RestartRequests.Enqueue(now);
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(TimeSpan.FromSeconds(30), CancellationToken.None);
+            lifetime.StopApplication();
+        }, CancellationToken.None);
+
+        return Task.FromResult(Result.Success());
+    }
 }
 
 

@@ -46,6 +46,28 @@ public class LoggingLevelManager : IDisposable
     }
 
     /// <summary>
+    /// 启用调试模式（P1-5 2026-08-14: 字符串重载——枚举转换 + durationMinutes 120 上限移入 Manager，
+    /// Controller 仅传原始请求值）
+    /// </summary>
+    /// <param name="level">目标日志级别字符串（verbose/debug/information，大小写不敏感；未知回退 Debug）</param>
+    /// <param name="durationMinutes">持续时间（分钟，上限 120；null 默认 30）</param>
+    public DebugModeInfo EnableDebugMode(string? level, int? durationMinutes)
+    {
+        var parsedLevel = level?.ToLowerInvariant() switch
+        {
+            "verbose" => LogEventLevel.Verbose,
+            "debug" => LogEventLevel.Debug,
+            "information" => LogEventLevel.Information,
+            _ => LogEventLevel.Debug
+        };
+
+        var minutes = durationMinutes ?? 30;
+        if (minutes > 120) minutes = 120;
+
+        return EnableDebugMode(parsedLevel, minutes);
+    }
+
+    /// <summary>
     /// 启用调试模式（降低日志级别以捕获更多信息）
     /// </summary>
     /// <param name="level">目标日志级别（默认Debug）</param>
@@ -61,8 +83,7 @@ public class LoggingLevelManager : IDisposable
 
             // 设置新级别
             var previousLevel = LevelSwitch.MinimumLevel;
-            LevelSwitch.MinimumLevel = level;
-            DebugModeStartedAt = DateTime.UtcNow;
+            LevelSwitch.MinimumLevel = level;            DebugModeStartedAt = DateTime.UtcNow;
 
             if (durationMinutes.HasValue && durationMinutes > 0)
             {
