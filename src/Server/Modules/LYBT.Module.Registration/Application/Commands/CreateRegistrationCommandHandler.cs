@@ -73,13 +73,13 @@ public sealed class CreateRegistrationCommandHandler
             DoctorId = dto.DoctorId,
             DoctorName = dto.DoctorName,
             Source = dto.Source,
-            Status = dto.Source == RegistrationSource.Doctor
-                ? RegistrationStatus.InProgress
-                : RegistrationStatus.Waiting,
+            // 2026-08-13（quickvisit-twostep）: 两步改造——POST 一律 Waiting（医生建号 Source=Doctor 也 Waiting）；
+            // InProgress 由 start-visit 后置（断网残留 Waiting 可被待诊列表捕捉 → 自愈——产品决策）
+            Status = RegistrationStatus.Waiting,
             QueueNumber = maxQueueNumber + 1,
             RegistrationFee = dto.RegistrationFee,
             Remark = dto.Remark,
-            // 2026-08-13（startvisit-createdby-fix 同类排查）: 创建者必记（语义统一——QuickVisit 已有先例）
+            // 2026-08-13（startvisit-createdby-fix 同类排查）: 创建者必记（语义统一——医生建号/前台建号均记操作者）
             CreatedBy = request.OperatorId
         };
 

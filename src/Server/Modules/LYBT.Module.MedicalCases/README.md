@@ -118,4 +118,4 @@ MedicalCase 是**聚合根承载模块**（MedicalCase 聚合 Consultation/Presc
 - LYBT.WebAPI (MedicalCasesController 继承 BaseMedicalCasesController)
 - LYBT.LocalWebAPI (MedicalCasesController 继承 BaseMedicalCasesController)
 - Patients 模块（经 IMedicalCaseCrossModuleService 做引用检查）
-- Registration 模块（StartVisit/QuickVisit 创建医案）
+- Registration 模块（StartVisit 接诊建医案——两步：POST /Registrations 建 Waiting 挂号 + PUT /start-visit 原子建医案；quick-visit 端点已删 2026-08-13）

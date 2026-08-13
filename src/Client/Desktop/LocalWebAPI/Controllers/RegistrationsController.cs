@@ -24,8 +24,6 @@ public class RegistrationsController : BaseRegistrationsController
 
     /// <inheritdoc />
     [Authorize(Policy = PolicyConstants.DoctorOnly)]
-    public override async Task<IActionResult> QuickVisit([FromBody] QuickVisitInputDto dto, CancellationToken ct)
-        => await base.QuickVisit(dto, ct);
 
     /// <inheritdoc />
     [Authorize(Policy = PolicyConstants.DoctorOnly)]

@@ -21,7 +21,7 @@
 挂号（Registration）是患者就诊流程的系统化入口，用于管理患者分流、排队顺序和就诊可追溯性。系统支持**两种来源模式**：
 
 - **前台模式（Source=Receptionist）**：前台接待员创建 `Waiting` 状态挂号，患者进入排队队列，医生从队列接诊。
-- **医生模式（Source=Doctor）**：医生通过 QuickVisit 直接创建 `InProgress` 状态挂号，跳过排队。
+- **医生模式（Source=Doctor）**（2026-08-13 两步改造）：医生 POST /Registrations 建 `Waiting` 挂号（doctorId=当前医生）→ PUT /start-visit 接诊（Waiting→InProgress + 原子建医案）——InProgress 后置（断网残留 Waiting 可被待诊列表捕捉 → 自愈）。
 
 两种模式通过 `Source` 字段区分。挂号（Registration）与医案（MedicalCase）是**独立实体**：挂号记录排队关系，医案记录诊疗内容，通过 `MedicalCaseId` 关联。挂号时不创建医案；**医案由医生接诊时原子创建**（2026-08-03 决策：接诊即建，见 [07-medical-cases.md BR-000](07-medical-cases.md)）。
 
@@ -45,12 +45,12 @@
 退号场景：患者退号（Waiting 时）→ Registration→Cancelled，无医案产生
           医生接诊后觉得没问题 → 取消医案 → Registration 回退 Waiting（US-REG-007 Source-aware）→ 前台退号
 
-急诊/特殊通道：医生 QuickVisit（US-REG-002）→ 选/建患者 → 原子创建 Registration(InProgress) + MedicalCase(Active)
+急诊/特殊通道（US-REG-002 两步）：医生 POST /Registrations（Source=Doctor 建 Waiting）→ PUT /start-visit 接诊（Waiting→InProgress + 原子建 MedicalCase(Active)）
         ↓ 跳转医案编辑
 医生看诊（医案已建）
 ```
 
-**要素**：前台挂号驱动；待诊队列；SignalR 推送（仅远程）；StartVisit 原子创建 Registration(InProgress) + MedicalCase(Active)；QuickVisit 同样原子创建；接诊即建（BR-000）。
+**要素**：前台/医生建号（POST /Registrations——Source 区分）；待诊队列；SignalR 推送（仅远程）；StartVisit 接诊（Waiting→InProgress + 原子建 MedicalCase(Active)——接诊即建 BR-000）；两步收敛（2026-08-13——quick-visit 端点已删）。
 
 ### 本地模式（仅医生使用）
 
@@ -59,7 +59,7 @@
 ```
 
 **要素**：
-- **本地模式仅医生使用**：来一个看一个，系统自动创建 Registration(Source=Doctor, InProgress) + MedicalCase(Active)（等价于 QuickVisit），Registration 由系统自动创建以保持数据模型统一（医生无感）
+- **本地模式仅医生使用**（2026-08-13 两步收敛）：来一个看一个——POST /Registrations（Source=Doctor 建 Waiting）→ start-visit 接诊（Waiting→InProgress + 原子建 MedicalCase(Active)）；Registration 由系统自动创建以保持数据模型统一（医生无感）
 - **数据模型完整但实际不创建前台账号**：本地数据库 Registration.Source=Receptionist 字段保留（模型统一），但 Admin 不在本地创建前台用户 → 本地前台挂号/退号入口自然不出现
 - **无待诊队列**：仅医生独立使用，待诊清单恒空
 - **无 SignalR**：本地无队列推送需求
@@ -103,16 +103,14 @@
 | REG-BR-006 | 患者侧大屏叫号（R9 决策） | 患者侧候诊大屏叫号属 **v2.0 / 按需**，v1.0 不实现；v1.0 候诊队列仅前台端（US-REG-004）与医生端可见 |
 | REG-BR-007 | 当天重复挂号检查 | 患者当天已有未完成挂号时，提示不能重复挂号 |
 | REG-BR-008 | 前台仅退当天挂号 | 前台只能退当天的 Status=Waiting 挂号；非当天的需管理员退款 |
-| REG-BR-009 | 挂号费跟医生相关 | 挂号费跟医生相关（`ApplicationUser.RegistrationFee`，Admin 设置），创建挂号时自动带出（前台/QuickVisit/本地），退号时按实际退；免号填 0。`Registration.RegistrationFee` 字段存储开单时的费用快照（非关联查询），退号/报表均读此字段 |
+| REG-BR-009 | 挂号费跟医生相关 | 挂号费跟医生相关（`ApplicationUser.RegistrationFee`，Admin 设置），创建挂号时自动带出（前台/医生/本地），退号时按实际退；免号填 0。`Registration.RegistrationFee` 字段存储开单时的费用快照（非关联查询），退号/报表均读此字段 |
 | REG-BR-010 | 换医生流程 | 先取消原挂号（退费），再重新挂号到新医生（收费） |
 | REG-BR-011 | 开始看诊并发保护 | 医生点"开始看诊"时检查挂号状态，防止前台退号同时医生接诊 |
 | REG-BR-012 | 医生待诊列表仅显示当天 | 医生待诊列表仅显示当天的 Waiting 挂号，非当天的不显示 |
 
-### QuickVisit 原子性
+### 接诊即建原子性（2026-08-13 两步收敛——quick-visit 端点已删）
 
-> **⚠️ 当前状态**：API 已实现（`RegistrationsController`，原子创建 Registration + MedicalCase，与 2026-08-03「接诊即建」决策一致），Desktop 端接线**待激活**。v1.0 需完成 Desktop 端 QuickVisit 入口。
-
-医生快速就诊（US-REG-002）使用 `TransactionScope(ReadCommitted)` 包裹 Registration + MedicalCase 两个实体的创建，确保原子性：要么同时成功，要么同时回滚。
+医生快速就诊（US-REG-002）两步：① POST /Registrations（Source=Doctor，建 Waiting 挂号）② PUT /Registrations/{id}/start-visit（Waiting→InProgress + **原子创建 MedicalCase(Active)**——`StartVisitCommandHandler` 事务内建医案，失败回滚挂号状态）。InProgress 后置——断网残留 Waiting 可被待诊列表捕捉 → 自愈（产品决策）。
 
 ### 并发保护
 
@@ -125,7 +123,7 @@
 | 角色 | 主要操作 |
 |------|---------|
 | Receptionist (0) | 创建挂号（Waiting）、取消挂号、查看全部队列 |
-| Doctor (1) | 查看个人队列、从队列接诊、QuickVisit 直接看诊 |
+| Doctor (1) | 查看个人队列、从队列接诊、医生两步建号看诊（POST + start-visit） |
 | Admin (10) | 查看全部队列和历史（只读统计） |
 | SuperAdmin (100) | 与 Admin 相同（只读监控） |
 
@@ -416,7 +414,7 @@
 ### 同日重复挂号
 
 - [ ] 同一患者同一天由前台创建第二条 Waiting 挂号 → 提示不能重复挂号（REG-BR-007）
-- [ ] 同一患者同一天已有 Waiting 挂号，医生 QuickVisit → 提示不能重复挂号（REG-BR-007）
+- [ ] 同一患者同一天已有 Waiting 挂号，医生两步建号 → 提示不能重复挂号（REG-BR-007）
 - [ ] 同一患者同一天已有 Cancelled 挂号，再次创建 Waiting 挂号 → 允许（Cancelled 不参与唯一约束）
 - [ ] 患者当天已有 Waiting 挂号，前台可查看但不可重复挂号
 - [ ] 患者非当天有 Waiting 挂号，前台可正常挂号（不阻塞）
@@ -439,13 +437,13 @@
 **挂号费**（2026-08-03 决策：医生实体加字段，创建时带出）：
 - `ApplicationUser.RegistrationFee` 字段，Admin 创建/编辑医生时设置（默认 0）
 - 前台创建挂号：自动带出医生挂号费（可改，用于义诊/优惠）
-- QuickVisit / 本地模式自动建挂号：自动带出医生挂号费（免号时填 0）
+- 医生两步建号 / 本地模式自动建挂号：自动带出医生挂号费（免号时填 0）
 - 退号：按实际记录的 RegistrationFee 退（REG-BR-008/009）
-- 收入报表 `RegistrationFeeTotal` 覆盖全部来源（前台 + QuickVisit + 本地），本地模式同样统计挂号收入
+- 收入报表 `RegistrationFeeTotal` 覆盖全部来源（前台 + 医生建号 +it + 本地），本地模式同样统计挂号收入
 
 ## 交叉引用
 
-- [医案管理 BR-001 单活跃医案约束](07-medical-cases.md)（QuickVisit 受此约束）
+- [医案管理 BR-001 单活跃医案约束](07-medical-cases.md)（医生建号两步sit 受此约束）
 - [医案管理 US-MC-011 完成医案](07-medical-cases.md)（完成联动触发）
 - [医案管理 US-MC-014 取消医案](07-medical-cases.md)（取消联动 Source-aware 策略）
 - [患者管理](04-patients.md)（挂号依赖患者存在）

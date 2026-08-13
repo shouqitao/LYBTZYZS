@@ -30,48 +30,6 @@ public class RegistrationsController : BaseRegistrationsController
     /// <summary>
     /// 医生快速看诊
     /// </summary>
-    [HttpPost("quick-visit")]
-    [EnableRateLimiting("ApiCalls")]
-    [Authorize(Policy = PolicyConstants.DoctorOnly)]
-    public override async Task<IActionResult> QuickVisit([FromBody] QuickVisitInputDto dto, CancellationToken ct)
-    {
-        var (doctorId, doctorName, _) = GetOperator();
-
-        var result = await Sender.Send(new QuickVisitCommand(dto, doctorId, doctorName), ct);
-        if (!result.IsSuccess || result.Value is null)
-        {
-            return BusinessFail(result.Error ?? "快速看诊失败");
-        }
-
-        LogOperation("医生快速看诊", dto, result.Value.RegistrationId);
-        return CreatedAtAction(nameof(GetById),
-            new { id = result.Value.RegistrationId, version = ApiVersionConstants.V1 },
-            ApiResponse<QuickVisitResultDto>.CreateSuccess(result.Value, "快速看诊创建成功"));
-    }
-
-    /// <summary>
-    /// 创建挂号记录
-    /// </summary>
-    [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
-    [HttpPost]
-    [EnableRateLimiting("ApiCalls")]
-    public async Task<IActionResult> Create([FromBody] RegistrationInputDto input, CancellationToken ct)
-    {
-        var (operatorId, _, _) = GetOperator();
-        var result = await Sender.Send(new CreateRegistrationCommand(input, operatorId), ct);
-
-        if (!result.IsSuccess || result.Value == null)
-            return BusinessFail(result.Error ?? "创建挂号失败");
-
-        LogOperation("创建挂号", input, result.Value.Id);
-        return CreatedAtAction(nameof(GetById),
-            new { id = result.Value.Id, version = ApiVersionConstants.V1 },
-            ApiResponse<RegistrationDetailDto>.CreateSuccess(result.Value, "挂号创建成功"));
-    }
-
-    /// <summary>
-    /// 接诊: 从队列选中患者
-    /// </summary>
     [HttpPut("{id:guid}/start-visit")]
     [EnableRateLimiting("ApiCalls")]
     [Authorize(Policy = PolicyConstants.DoctorOnly)]

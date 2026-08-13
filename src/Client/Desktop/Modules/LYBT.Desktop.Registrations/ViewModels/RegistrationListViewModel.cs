@@ -202,59 +202,6 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
     private bool CanCreateRegistration() => IsReceptionist && !IsBusy;
 
     /// <summary>
-    /// 快速就诊（B2 US-REG-002: 医生直接开始就诊——急诊通道/本地无前台场景）。
-    /// 医生/管理员可用；前端无前台用户时即常规看诊入口。
-    /// </summary>
-    [RelayCommand(CanExecute = nameof(CanQuickVisit))]
-    private void QuickVisit()
-    {
-        if (_dialogService is null)
-        {
-            Logger.LogWarning("[REG-VM] IDialogService 未注入，无法打开快速就诊弹窗");
-            return;
-        }
-
-        _dialogService.ShowDialog("QuickVisitDialog", null, async result =>
-        {
-            if (result.Result != ButtonResult.OK) return;
-
-            var quickVisitResult = result.Parameters.GetValue<QuickVisitResultDto>("QuickVisitResult");
-            if (quickVisitResult is null)
-            {
-                Logger.LogWarning("[REG-VM] 快速就诊成功但返回结果为空");
-                return;
-            }
-
-            Logger.LogInformation("[REG-VM] 快速就诊成功: RegistrationId={RegId}, MedicalCaseId={McId}",
-                quickVisitResult.RegistrationId, quickVisitResult.MedicalCaseId);
-
-            // 刷新队列（远程模式前台场景下可见）
-            _ = LoadQueueAsync();
-
-            // 获取患者详情（MedicalCaseWorkspace 需要完整 PatientDetailDto）
-            var patientResult = await _patientService.GetByIdAsync(quickVisitResult.PatientId);
-            if (!patientResult.Success || patientResult.Data == null)
-            {
-                await ShowErrorMessageAsync("快速就诊成功，但无法获取患者信息，请手动打开医案");
-                return;
-            }
-
-            // 导航到医案工作区（Clinical 模式，编辑状态）
-            var navParams = new Dictionary<string, object>
-            {
-                { MedicalCaseNavigationParameters.MedicalCaseIdKey, quickVisitResult.MedicalCaseId },
-                { "CurrentPatient", patientResult.Data },
-                { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
-                { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
-            };
-            _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, navParams);
-        });
-    }
-
-    /// <summary>医生/管理员可快速就诊（前台场景 Doctor 从挂号流程走）</summary>
-    private bool CanQuickVisit() => (IsDoctor || IsReceptionist) && !IsBusy;
-
-    /// <summary>
     /// 接诊: 从队列选中患者，创建医案
     /// US-REG-003 验收标准第4条
     /// </summary>

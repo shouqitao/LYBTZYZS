@@ -126,23 +126,6 @@ public abstract class BaseRegistrationsController : BaseCrudController
         return Success("挂号已取消");
     }
 
-    /// <summary>
-    /// 医生快速看诊
-    /// </summary>
-    [HttpPost("quick-visit")]
-    public virtual async Task<IActionResult> QuickVisit([FromBody] QuickVisitInputDto dto, CancellationToken ct)
-    {
-        var (doctorId, doctorName, _) = GetOperator();
-
-        var result = await Sender.Send(new QuickVisitCommand(dto, doctorId, doctorName), ct);
-        if (!result.IsSuccess || result.Value is null)
-        {
-            return BusinessFail(result.Error ?? "快速看诊失败");
-        }
-
-        LogOperation("医生快速看诊", dto, result.Value.RegistrationId);
-        return Success(result.Value, "快速看诊创建成功");
-    }
 
     #endregion
 }

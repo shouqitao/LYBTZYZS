@@ -44,7 +44,7 @@
 | 医案纠偏修改 | ✗ | ✗ | ✅（需填原因） | ✅ |
 | **挂号管理** |||||
 | 挂号查看 | ✅（全部） | ✅（仅自己的） | ✅（全部只读） | ✅（全部只读） |
-| 挂号创建 | ✅ | ✅ QuickVisit | ✗ | ✗ |
+| 挂号创建 | ✅ | ✅（Source=Doctor 两步建号） | ✗ | ✗ |
 | 挂号取消 | ✅ | ✗ | ✗ | ✗ |
 | **打印** |||||
 | 处方打印 | ✗ | ✅ **唯一** | ✗ | ✗ |
@@ -67,7 +67,7 @@
 
 | Controller | 代码策略 | 目标策略（操作级细分） | 差异 |
 |-----------|---------|---------|------|
-| `RegistrationsController` | `DoctorOrAdminOrReceptionist` | GET：Doctor+Receptionist+**Admin 只读**；POST：Receptionist；quick-visit：`DoctorOnly`；start-visit：`DoctorOnly`；cancel：Receptionist | ⚠️ Admin 只读查看挂号（2026-08-03 决策）；创建/取消仅前台；接诊/QuickVisit 仅 Doctor |
+| `RegistrationsController` | `DoctorOrAdminOrReceptionist` | GET：Doctor+Receptionist+**Admin 只读**；POST：Receptionist/Doctor（Source 区分——两步建号 2026-08-13）；start-visit：`DoctorOnly`；cancel：Receptionist | ⚠️ Admin 只读查看挂号（2026-08-03 决策）；创建/取消仅前台；接诊/QuickVisit 仅 Doctor |
 | `PatientsController` | `DoctorOrAdminOrReceptionist` | GET/POST/PUT：Doctor+Receptionist；DELETE/禁用：`AdminOrSuperAdmin` | ⚠️ 删除/禁用仅 Admin+（2026-08-03 决策）；Admin 不直接管理患者读写 |
 | `MedicalCasesController` | `DoctorOrAdmin` | 创建：`DoctorOnly`；查看/编辑按 MC 铁律 | ⚠️ 创建仅 Doctor（C4/K3 待修） |
 | `ReportsController` | `DoctorOrAdmin` | GET：Doctor+Admin+SuperAdmin（**前台不可查**） | 2026-08-08 统一双端策略（A-31-C0） |
@@ -120,7 +120,7 @@
 | P1-1 | Formulas `GetDetail` 无所有权检查 → Admin 可读他人非共享验方 | `FormulasService` | 增加 `CreatedBy` 归属检查 |
 | P1-2 | 医案打印回写缺失 | 医案模块 | 恢复 PrintLog 字段/实体 |
 | P1-3 | 审计日志缺失 | SecurityAuditLog | 恢复审计日志记录 |
-| P1-4 | Registrations 策略未操作级细分 | `RegistrationsController` | GET：Doctor+Receptionist+Admin 只读；POST：Receptionist；quick-visit/start-visit：`DoctorOnly`；cancel：Receptionist |
+| P1-4 | Registrations 策略未操作级细分 | `RegistrationsController` | GET：Doctor+Receptionist+Admin 只读；POST：Receptionist/Doctor；start-visit：`DoctorOnly`；cancel：Receptionist |
 | P1-5 | Patients 删除/禁用未限 Admin | `PatientsController` | DELETE/禁用：`AdminOrSuperAdmin`；读写：Doctor+Receptionist |
 | P1-6 | 打印无 `DoctorOnly` 策略 | 打印模块 | 处方打印操作限定 Doctor（2026-08-03 决策：仅 Doctor 打印，管理员可查记录） |
 

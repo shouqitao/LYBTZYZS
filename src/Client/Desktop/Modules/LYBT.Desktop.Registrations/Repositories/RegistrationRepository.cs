@@ -91,26 +91,6 @@ public sealed class RegistrationRepository : ApiClientRepositoryBase<Registratio
     }
 
     /// <inheritdoc/>
-    public async Task<QuickVisitResultDto?> QuickVisitAsync(QuickVisitInputDto request, CancellationToken ct = default)
-    {
-        return await ExecuteAsync<QuickVisitResultDto?>(
-            async () =>
-            {
-                var response = await _apiClient.Registrations.QuickVisitAsync(request);
-                if (!response.Success)
-                {
-                    Logger.LogWarning("[REPO] Registration.QuickVisit failed: {Message}", response.Message);
-                    throw new InvalidOperationException(response.Message ?? "快速就诊失败");
-                }
-
-                Logger.LogInformation("[REPO] Registration.QuickVisit completed - PatientId={PatientId}, McId={McId}",
-                    request.PatientId, response.Data?.MedicalCaseId);
-                return response.Data;
-            },
-            "QuickVisit");
-    }
-
-    /// <inheritdoc/>
     public async Task<Guid?> StartVisitAsync(Guid id, CancellationToken ct = default)
     {
         return await ExecuteAsync<Guid?>(

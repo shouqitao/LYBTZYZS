@@ -43,6 +43,5 @@ public class RegistrationModule : IModule
 
         // 对话框
         containerRegistry.RegisterDialog<Dialogs.RegistrationCreateDialog, Dialogs.RegistrationCreateDialogViewModel>();
-        containerRegistry.RegisterDialog<Dialogs.QuickVisitDialog, Dialogs.QuickVisitDialogViewModel>();
     }
 }

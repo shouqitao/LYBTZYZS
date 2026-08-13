@@ -37,8 +37,6 @@ public interface IRegistrationRepository
     /// </summary>
     Task<Guid?> StartVisitAsync(Guid id, CancellationToken ct = default);
 
-    /// <summary>快速就诊（B2 US-REG-002）</summary>
-    Task<QuickVisitResultDto?> QuickVisitAsync(QuickVisitInputDto request, CancellationToken ct = default);
 
     /// <summary>
     /// 取消挂号

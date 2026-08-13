@@ -46,9 +46,6 @@ internal sealed class RegistrationsHttpApiClient : HttpApiClientBase, IApiClient
     public async Task<ApiResponse<Guid>> StartVisitAsync(Guid id)
         => await SendAndWrapAsync<Guid>($"/api/v1/registrations/{id}/start-visit", HttpMethod.Put);
 
-    public async Task<ApiResponse<QuickVisitResultDto>> QuickVisitAsync(QuickVisitInputDto request)
-        => await PostAndWrapAsync<QuickVisitResultDto>("/api/v1/registrations/quick-visit", request);
-
     public async Task<ApiResponse> CancelAsync(Guid id)
     {
         await PutVoidAsync($"/api/v1/registrations/{id}/cancel");

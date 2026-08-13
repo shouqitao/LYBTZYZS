@@ -145,28 +145,6 @@ public class RemoteRegistrationService : IRegistrationService
     }
 
     /// <summary>
-    /// 快速就诊（B2 US-REG-002: 医生直接开始就诊——急诊通道/本地无前台）
-    /// </summary>
-    public async Task<CommandResult<QuickVisitResultDto>> QuickVisitAsync(QuickVisitInputDto request, CancellationToken ct = default)
-    {
-        try
-        {
-            _logger.LogInformation("[SVC] Registration.QuickVisit started - PatientId={PatientId}", request.PatientId);
-            var result = await _registrationRepository.QuickVisitAsync(request, ct);
-            if (result is null)
-                return CommandResult<QuickVisitResultDto>.Failed("快速就诊失败，请稍后重试");
-            _logger.LogInformation("[SVC] Registration.QuickVisit completed - RegistrationId={RegId}, MedicalCaseId={McId}",
-                result.RegistrationId, result.MedicalCaseId);
-            return CommandResult<QuickVisitResultDto>.Succeeded(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[SVC] Registration.QuickVisit failed - PatientId={PatientId}", request.PatientId);
-            return CommandResult<QuickVisitResultDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("快速就诊", ex));
-        }
-    }
-
-    /// <summary>
     /// 取消挂号
     /// US-REG-004: �?Waiting 状态可取消
     /// </summary>

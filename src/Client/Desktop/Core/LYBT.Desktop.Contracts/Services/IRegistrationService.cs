@@ -47,8 +47,6 @@ public interface IRegistrationService
 
     /// <summary>
     /// 快速就诊（B2 US-REG-002: 医生直接开始就诊——急诊/本地无前台场景）。
-    /// </summary>
-    Task<CommandResult<QuickVisitResultDto>> QuickVisitAsync(QuickVisitInputDto request, CancellationToken ct = default);
 
     /// <summary>
     /// 取消挂号
