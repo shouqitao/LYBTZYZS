@@ -5,7 +5,7 @@
 > **用户速览**：医案 = 医生的一本「诊疗记录本」。每次看病建一本，写完诊断、开完处方、打印出来，这本就合上了。一本记录一个患者一次就诊的全过程。
 >
 > | 我是… | 我能… |
-> |-------|-------|
+> | ------- | ------- |
 > | 医生 | 新建医案、写诊断、开处方、打印处方、完成/暂停/取消 |
 > | 管理员 | 查看所有医案、查看审计日志、编辑已完成的医案（需填原因） |
 > | 前台 | ❌ 不能操作医案 |
@@ -36,7 +36,7 @@
 > **决策修订（2026-08-03）**：原 BR-000（2026-08-02）主张「医案在医生写诊断时才创建，StartVisit 不建医案」，与 US-REG-005 修复方向（StartVisit 原子建医案）矛盾，且代码实际已走向「接诊即建」（临床工作台直接建医案）。产品负责人拍板：**接诊即建**。InProgress 状态天然挡住前台退号（REG-BR-001 仅 Waiting 可取消），不存在空医案残留问题。
 
 | 场景 | 触发 | 医案创建时机 |
-|------|------|------------|
+| ------ | ------ | ------------ |
 | 前台挂号 → 医生接诊 | StartVisit | **原子创建** MedicalCase(Active) + Registration→InProgress，返回 MedicalCaseId |
 | 前台挂号 → 患者退号 | CancelRegistration | **不建医案**，Registration→Cancelled |
 | 医生接诊 → 觉得没问题 → 退号 | StartVisit（建医案）→ 医生取消医案 | 医案已建(Active)，取消医案 → Registration 回退 Waiting（US-REG-007 Source-aware）→ 前台取消退号 |
@@ -44,6 +44,7 @@
 | 本地模式 | 医生独立使用 | **系统自动创建** Registration(Source=Doctor, InProgress) + MedicalCase(Active)，医生无感 |
 
 **架构约束**：
+
 - Registration ≠ MedicalCase。挂号记录排队关系，医案记录诊疗内容
 - 挂号（Registration）由前台创建（远程标准流程）或系统自动创建（远程 QuickVisit / 本地模式），医案（MedicalCase）由医生接诊时创建
 - 一个 Registration 可以没有 MedicalCase（退号/取消场景）
@@ -51,6 +52,7 @@
 - **创建时机受 BR-001 单活跃医案约束**：接诊时若患者已有 Active/Suspended 医案，提示「重开现有医案」而非新建（spec S5）
 
 **状态机**：
+
 ```
 Registration:  Waiting → InProgress → Completed/Cancelled
 MedicalCase:   （不存在）→ Active → Suspended/Completed（取消=物理删除，无 Cancelled 状态）
@@ -63,6 +65,7 @@ MedicalCase:   （不存在）→ Active → Suspended/Completed（取消=物理
 **触发时机**：创建医案（US-MC-001）。
 
 **碰撞处理**：当患者已有 `Active`/`Suspended` 医案时，系统提示用户选择：
+
 1. **重开现有医案** — 导航到已有的 Active/Suspended 医案继续编辑
 2. **关闭旧的后新建** — 将已有医案取消（物理删除），然后创建新医案
 3. **取消操作** — 放弃创建
@@ -72,6 +75,7 @@ MedicalCase:   （不存在）→ Active → Suspended/Completed（取消=物理
 ### BR-002：医案离开界面操作
 
 离开医案编辑界面时，必须选择一种处置方式：
+
 1. **挂起** — 状态设为 Suspended，保存当前数据，稍后可继续（US-MC-013）
 2. **取消** — **物理删除**（2026-08-03 决策：取消=物理删除，不判断是否有内容，前端强确认后执行；审计记录「取消」用于统计）
 3. **完成** — 状态设为 Completed，需通过完成校验（US-MC-011）
@@ -83,7 +87,7 @@ MedicalCase:   （不存在）→ Active → Suspended/Completed（取消=物理
 完成医案（US-MC-011）时必须通过以下校验：
 
 | 校验项 | 条件 | 错误消息 |
-|--------|------|----------|
+| -------- | ------ | ---------- |
 | 中医辨证 | TcmDiagnosis 非空 | 请填写中医辨证 |
 | 处方需求标记 | NeedsPrescription 非 null | 请先标记是否需要开处方 |
 | 处方存在性 | NeedsPrescription=true 时 Prescription 非 null | 已标记需要开处方，但处方不存在 |
@@ -96,7 +100,7 @@ MedicalCase:   （不存在）→ Active → Suspended/Completed（取消=物理
 **Consultation 字段必填性（D8 决策）**：
 
 | 字段 | 必填性 | 说明 |
-|------|--------|------|
+| ------ | -------- | ------ |
 | 主诉 | 必填 | 就诊主因，一句话概括 |
 | 现病史 | 必填 | 病情经过、伴随症状 |
 | 舌诊 | 必填 | 舌象描述（结构化选项 + 自由文本） |
@@ -121,6 +125,7 @@ stateDiagram-v2
 ```
 
 **关键说明**：
+
 - **取消 = 物理删除**（2026-08-03 决策）：未完成医案（Active/Suspended）取消即物理删除，不判断是否有内容，级联清除聚合；审计记录「取消」用于统计。**没有 `Cancelled` 状态**
 - **删除 = 软删除**（`IsDeleted=true`）：仅用于管理员清理**已完成**医案（Completed 不可取消，只可软删）
 - `Completed` 是业务终态，仅 Admin/SuperAdmin 提供 EditReason 后可编辑
@@ -132,6 +137,7 @@ stateDiagram-v2
 > 完整权限矩阵（资源 × 操作 × 角色）见权威文档 [04-permissions.md](../01-product/04-permissions.md)；速查见 [12-permissions-matrix.md](../03-architecture/12-permissions-matrix.md)。
 
 **MC 核心铁律**：
+
 - **创建医案**：仅 Doctor（Admin/SuperAdmin/Receptionist 均 ❌）
 - **编辑 Active/Suspended**：Doctor 仅自己；Admin/SuperAdmin 全部
 - **编辑 Completed（隔天锁定）**：仅 Admin/SuperAdmin（需 EditReason）
@@ -141,11 +147,13 @@ stateDiagram-v2
 ### 编辑锁定规则
 
 **锁定条件**（计算属性，无后台任务）：
+
 ```
 IsLocked = IsCompleted && (CompletedAt.Date < Today)
 ```
 
 **锁定后行为**：
+
 - Doctor 不可编辑
 - Admin/SuperAdmin 编辑需提供 EditReason
 - 无显式解锁接口，管理员直接编辑（需 EditReason）
@@ -153,7 +161,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 ### 编辑理由（EditReason）要求
 
 | 场景 | 需要 EditReason |
-|------|:---:|
+| ------ | :---: |
 | 当天本人修改 Active/Suspended 医案 | ❌ |
 | 修改已完成（Completed）医案 | ✅ |
 | 隔天修改任何医案 | ✅ |
@@ -170,7 +178,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 > **简化说明（2026-08-03）**：未完成医案不可打印 → 打印仅发生在 Completed → 原「打印保护」（打印后禁止取消/删除、修改需 EditReason）职责与完成保护（IsLocked）重叠，删除。`IsPrinted` 降级为**打印状态标记**（追踪打印历史与版本），不再是操作限制触发器。
 
 | 事件 | 行为 |
-|------|------|
+| ------ | ------ |
 | 打印成功（仅 Completed） | `IsPrinted=true`、`PrintCount++`、`LastPrintedAt=now`，生成 `MedicalCasePrintLog` |
 | 打印后修改 Consultation 或 Prescription（当天） | `PrintVersion++`（标记需重新打印）；隔天受 IsLocked 保护（Admin+EditReason） |
 | 修改成功后 | `IsPrinted=false`、`PrintVersion++`（提示重新打印） |
@@ -186,13 +194,15 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **角色**: 医生
 **优先级**: Must
-**状态**: ✅ 已实现（Create DoctorOnly + BR-001 唯一索引 + CaseNumber）
+**状态**: ✅ 已实现（Create DoctorOnly + BR-001 唯一索引 + CaseNumber + CreatedBy 审计字段）
 
 **作为** 医生，**我想要** 为患者创建新的诊疗记录（MedicalCase 聚合根），**以便** 我可以开始记录本次诊疗的诊断和处方信息。
 
 **验收标准**:
+
 - [ ] Admin/SuperAdmin 角色调用 POST → 返回 403（仅 Doctor 可创建）
 - [ ] 创建成功 → Consultation 实体自动创建（1:1 共享主键）
+- [ ] 创建成功 → MedicalCase/Consultation/Prescription 的 CreatedBy 自动填充（= 操作医生，DB NOT NULL）
 - [ ] 创建成功 → 自动生成医案编号（格式：MC20260210001）
 - [ ] 患者 `Status=Disabled` → 返回 422（ERR-30105）
 - [ ] 患者已有 `Active` 医案 → 返回 422（ERR-30103），提示选择处理方式（BR-001）
@@ -201,10 +211,12 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 - [ ] 同一患者并发创建医案 → 仅一条成功（BR-001 乐观检查），另一条返回 422
 
 **业务规则**:
+
 1. PatientId 必填，UserId（医生ID）必填
 2. 仅 Doctor 可创建（Admin/SuperAdmin 不可创建——关键铁律）
 3. 初始状态为 `Active`
 4. 自动创建 Consultation（1:1 共享主键）
+4b. **审计字段（2026-08-13 consultation-createdby-fix）**：MedicalCase/Consultation/Prescription 的 CreatedBy 均=操作医生（DB NOT NULL——真机 start-visit 500 根因，曾两连击：先 MedicalCase 后 Consultation）；MedicalCaseAuditLog/PrintLog 的 CreatedBy=操作者
 5. 自动生成医案编号（MC+yyyyMMdd+3位序号；CaseNumber 为展示用，Guid Id 为唯一标识）
 6. 冗余存储 PatientName 和 DoctorName（读优化，创建时快照）
 7. **患者状态检查**：Patient.Status 必须为 Enabled，禁用患者不可创建医案（ERR-30105）
@@ -227,6 +239,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 医生，**我想要** 一次性保存医案的诊断和处方信息，**以便** 我不必分别保存各部分数据，减少操作步骤和网络请求。
 
 **验收标准**:
+
 - [ ] 编辑锁定医案未提供 EditReason → 返回 422
 - [ ] 更新处方 Items → 原有 Items 全部替换为新列表
 - [ ] `IsPrinted=true` 修改成功后 → `IsPrinted=false`、`PrintVersion++`（提示重新打印；当天修改无需 EditReason，2026-08-03 简化）
@@ -235,6 +248,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 - [ ] DosageCount 超过 100 → 返回 422（ERR-30307）
 
 **业务规则**:
+
 1. **聚合根整体保存**（MedicalCase + Consultation + Prescription + Items）
 2. 权限检查：Doctor 只能保存自己的；Admin/SuperAdmin 可保存全部（需 EditReason）
 3. 编辑已完成/隔天/非本人医案需要提供 EditReason（见编辑理由表）
@@ -259,11 +273,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 医生，**我想要** 标记本次诊疗是否需要开具处方，**以便** 系统可以在完成医案时校验处方完整性（BR-003）。
 
 **验收标准**:
+
 - [ ] `NeedsPrescription=false` → 已有 Prescription 被清除
 - [ ] `NeedsPrescription=true` → 允许创建/编辑 Prescription
 - [ ] `NeedsPrescription=null` 时完成医案 → 返回 422（ERR-30302）
 
 **业务规则**:
+
 1. `NeedsPrescription`: true（需要）/ false（不需要）/ null（未决策）
 2. 设为 false 时，如已有处方则清除
 3. 设为 true 时，允许创建/编辑处方
@@ -284,11 +300,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 医生，**我想要** 查看医案的完整聚合详情（含诊断和处方），**以便** 我可以了解本次诊疗的全部信息。
 
 **验收标准**:
+
 - [ ] 有效 ID → 返回 `MedicalCaseDetailDto`（含 Consultation + Prescription + Items 嵌套数据）
 - [ ] Doctor 查询 `UserId≠自己` 的医案 → 返回 403
 - [ ] 包含计算属性：IsLocked、IsActive、IsCompleted、HasPrescription
 
 **业务规则**:
+
 1. 返回完整聚合（MedicalCase + Consultation + Prescription + Items）
 2. 权限检查：Doctor 仅自己；Admin/SuperAdmin 全部
 3. 包含计算属性
@@ -309,6 +327,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 医生或管理员，**我想要** 分页查看医案列表并按条件筛选，**以便** 我可以快速找到需要处理或回顾的医案。
 
 **验收标准**:
+
 - [ ] Doctor 查询 → 仅返回 `UserId=自己` 的医案
 - [ ] Admin 查询 → 返回全部医案
 - [ ] 支持按状态、患者、关键词筛选
@@ -316,6 +335,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 - [ ] 默认分页：page=1，pageSize=20
 
 **业务规则**:
+
 1. 支持按状态（status）、患者（patientId）、关键词（keyword）筛选
 2. Admin 查看全部，Doctor 仅查看自己的
 3. 默认排序：CreatedAt DESC（MC-D11）
@@ -336,11 +356,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 医生，**我想要** 通过统一查询端点获取不同维度的医案集合（如按患者、待诊、最近），**以便** 我可以适配不同的工作场景。
 
 **验收标准**:
+
 - [ ] 支持多种 QueryType（ByPatient/Pending/Recent 等）
 - [ ] 返回 `PagedResult<MedicalCaseDto>`
 - [ ] Doctor 仅查询自己的；Admin 查询全部
 
 **业务规则**:
+
 1. 统一查询端点支持多种 QueryType
 2. Pending 查询：返回 `Active` 或 `Suspended` 状态医案，按 CreatedAt ASC 排序（先到先看，MC-D11）
 3. ByPatient 查询：按患者 ID 过滤
@@ -361,12 +383,14 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 医生，**我想要** 按患者名/诊断关键词/日期范围全文搜索医案，**以便** 我可以在复诊时快速找到患者的历史诊疗记录。
 
 **验收标准**:
+
 - [ ] `diagnosisKeyword="风寒"` → 返回 TcmDiagnosis 含"风寒"的医案
 - [ ] 支持患者姓名搜索
 - [ ] 支持日期范围筛选（startDate/endDate）
 - [ ] 返回完整 `MedicalCaseDetailDto`（含嵌套数据）
 
 **业务规则**:
+
 1. 支持按患者姓名搜索
 2. 支持按诊断关键词搜索（TcmDiagnosis 模糊匹配）
 3. 支持日期范围筛选
@@ -390,11 +414,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 医生，**我想要** 查询某患者的所有历史诊断记录，**以便** 复诊时参考既往辨证。
 
 **验收标准**:
+
 - [ ] 按 patientId 查询 → 返回该患者所有已完成医案的 Consultation 列表
 - [ ] 按时间倒序排列
 - [ ] Doctor 仅查询自己经手的；Admin 查询全部
 
 **业务规则**:
+
 1. 返回 Consultation 摘要（含 TcmDiagnosis、四诊、医案时间）
 2. 仅返回 `Completed` 状态医案的 Consultation
 3. 按时间 DESC 排序
@@ -416,11 +442,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 医生，**我想要** 查询某患者的所有历史处方记录，**以便** 复诊时复制或参考既往处方（复制历史处方见 US-MC-019）。
 
 **验收标准**:
+
 - [ ] 按 patientId 查询 → 返回该患者所有已完成医案的 Prescription 列表
 - [ ] 按时间倒序排列
 - [ ] 含处方药材明细
 
 **业务规则**:
+
 1. 返回 Prescription 摘要（含 Items、DosageCount、TotalPrice）
 2. 仅返回 `Completed` 状态医案的 Prescription
 3. 按时间 DESC 排序
@@ -441,6 +469,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 医生，**我想要** 在 Active 和 Suspended 之间切换医案状态，**以便** 我可以暂停当前诊疗稍后继续。
 
 **验收标准**:
+
 - [ ] `Active` → `Suspended` 成功
 - [ ] `Suspended` → `Active` 成功
 - [ ] `Completed` → `Suspended` → 返回 422（ERR-30304，已完成不可挂起）
@@ -448,6 +477,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 - [ ] **禁止通过 UpdateStatusAsync 设置 Completed**（强制使用 CompleteAsync）
 
 **业务规则**:
+
 1. 状态机：`Active ↔ Suspended`（双向）
 2. 挂起（Suspend）：不验证数据完整性（TcmDiagnosis 可空）
 3. `UpdateStatusAsync` 拒绝 `Completed` 状态，强制使用 `CompleteAsync`（US-MC-011）
@@ -468,6 +498,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 医生，**我想要** 标记医案为已完成，**以便** 本次诊疗正式归档，触发隔天自动锁定保护。
 
 **验收标准**:
+
 - [ ] 完成医案 → `CaseStatus=Completed`，`CompletedAt` 记录当前时间
 - [ ] `CompletedAt.Date < Today` → `IsLocked=true`（自动锁定）
 - [ ] 校验失败场景 → 返回 422，详见 [BR-003 校验表](#br-003医案完成校验规则)
@@ -475,6 +506,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 - [ ] 完成后关联 Registration 自动 Completed（US-REG-007）
 
 **业务规则**:
+
 1. 通过 `CompleteAsync` 统一入口（含 `skipWorkflowValidation` 参数），`UpdateStatusAsync` 拒绝 `Completed`
 2. 完成校验规则见 [BR-003](#br-003医案完成校验规则)；完成后当天可编辑，隔天锁定（IsLocked 计算属性）
 3. **Registration 联动**：完成后关联 Registration 自动 Completed（US-REG-007）
@@ -494,12 +526,14 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 管理员，**我想要** 强制关闭异常状态的医案（如长期挂起的孤儿医案），**以便** 维护系统数据清洁。
 
 **验收标准**:
+
 - [ ] 仅 Admin/SuperAdmin 可操作
 - [ ] 强制关闭跳过 BR-003 完成校验（`skipWorkflowValidation=true`）
 - [ ] 状态设为 `Completed`
 - [ ] 记录审计日志（含强制关闭原因）
 
 **业务规则**:
+
 1. 仅 Admin/SuperAdmin 可操作
 2. 调用 `CompleteAsync(skipWorkflowValidation: true)` 跳过三步流程校验
 3. 用于清理异常状态医案（如长期 Suspended 的孤儿医案）
@@ -520,6 +554,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 医生，**我想要** 暂时挂起当前诊疗的医案，**以便** 我可以先处理紧急患者，稍后再回来继续本次诊疗。
 
 **验收标准**:
+
 - [ ] 挂起成功 → 状态=Suspended，可继续编辑
 - [ ] TcmDiagnosis 为空 → 挂起成功（不验证完整性）
 - [ ] 已完成医案挂起 → 返回 422（ERR-30304）
@@ -527,6 +562,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 - [ ] 保存当前诊断数据
 
 **业务规则**:
+
 1. 状态设为 `Suspended`（MC-D20）
 2. 保存当前诊断数据
 3. 不要求数据完整性（TcmDiagnosis 可空）
@@ -548,6 +584,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 医生，**我想要** 取消本次诊疗，**以便** 错误创建、患者临时取消或接诊后发现没必要的医案彻底清除，不影响正常医案列表。
 
 **验收标准**:
+
 - [ ] 取消后 → **物理删除**（医案、诊断、处方数据全部清除，数据库中无残留）
 - [ ] 不判断是否有医疗内容（空医案/有内容医案取消均物理删除）
 - [ ] 已完成医案取消 → 返回 422（ERR-30306，已完成不可取消，只可软删除）
@@ -557,6 +594,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 - [ ] 审计记录「取消」操作（OperationType=Cancel，用于统计取消次数）
 
 **业务规则**:
+
 1. **物理删除**：取消 = 物理删除（2026-08-03 决策，不判断内容），级联清除 MedicalCase + Consultation + Prescription + Items
 2. 无 `Cancelled` 状态（取消即删除，不留状态）
 3. 非当天本人取消需要审计理由（EditReason）
@@ -581,6 +619,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 管理员，**我想要** 删除或批量删除医案，**以便** 清理无效或测试数据。
 
 **验收标准**:
+
 - [ ] 单个删除 → 软删除（IsDeleted=true，数据保留可追溯）
 - [ ] 批量删除 → 单次请求，返回成功/失败计数
 - [ ] 批量删除 IDs 为空 → 返回 400（ERR-30604）
@@ -588,6 +627,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 - [ ] 未完成医案删除 → 提示改用取消（物理删除）
 
 **业务规则**:
+
 1. 删除 = 软删除（IsDeleted=true），**仅用于已完成医案**（2026-08-03 决策：未完成取消=物理删，已完成删除=软删）
 2. 权限检查：仅 Admin/SuperAdmin
 3. **删除权限 = 编辑权限**（Admin 可编辑已完成医案，删除=软删）
@@ -609,12 +649,14 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 系统，**我想要** 基于角色和资源所有权实施细粒度权限检查，**以便** 医生只能操作自己的医案，管理员可以在提供理由后操作任意医案。
 
 **验收标准**:
+
 - [ ] Doctor 编辑 `UserId≠自己` 的医案 → 返回 403
 - [ ] GET permissions → 返回 `MedicalCasePermissionDto`（CanEdit/CanDelete/RequiresEditReason/DenialReason）
 - [ ] Admin 编辑已完成医案 → 提供 EditReason 后成功
 - [ ] 权限查询不修改医案状态
 
 **业务规则**:
+
 1. Doctor：只能编辑自己创建的未完成（Active/Suspended）医案
 2. Admin/SuperAdmin：可编辑所有医案（含已完成）
 3. 编辑已完成医案：需提供修改原因
@@ -638,6 +680,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 管理员，**我想要** 查看医案的完整变更历史（含字段级 diff），**以便** 出现纠纷时可以追溯每次修改的操作人、时间、原因和具体变更内容。
 
 **验收标准**:
+
 - [ ] Create → 生成 `MedicalCaseAuditLog`，OperationType=Create，OldValues 为空
 - [ ] Update/StatusChange → ChangedFields 仅包含实际变更的字段
 - [ ] 提供 EditReason → AuditLog.Reason 字段包含该值
@@ -645,6 +688,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 - [ ] 支持分页查询
 
 **业务规则**:
+
 1. 记录操作人（ID/姓名/角色）、操作类型、变更字段、前后值
 2. 操作类型：Create/Update/StatusChange/SoftDelete/Cancel（取消=物理删除，OperationType=Cancel，见 :557）。OperationType 使用 int 枚举存储
 3. 修改原因：历史医案修改时必填
@@ -672,12 +716,14 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 > **语义澄清**：本故事仅做批量详情查询（≤50，解决 N+1），**不含复制处方**——复制上次处方微调见 US-MC-019。
 
 **验收标准**:
+
 - [ ] 单次最多查询 50 个医案（IDs.Count > 50 → 返回 400，ERR-30603）
 - [ ] IDs 为空 → 返回 400
 - [ ] 返回 `List<MedicalCaseDetailDto>`（含嵌套数据）
 - [ ] 一次查询返回所有关联的 Consultation 和 Prescription（避免 N+1）
 
 **业务规则**:
+
 1. 单次查询上限 50 个医案（ERR-30603）
 2. IDs 列表非空校验（ERR-30604）
 3. 返回完整聚合（MedicalCase + Consultation + Prescription + Items）
@@ -699,6 +745,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 医生，**我想要** 复诊时一键复制患者最近已完成医案的处方，**以便** 在原方基础上加减药材，避免重新逐味录入。
 
 **验收标准**:
+
 - [ ] 医案编辑界面提供"复制上次处方"按钮
 - [ ] 点击后拉取该患者最近一条 `Completed` 医案的 Prescription
 - [ ] 复制后处方药材列表（药名 / 剂量 / 单位 / 煎法）填入当前医案编辑区
@@ -707,6 +754,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 - [ ] 患者无已完成医案时按钮禁用并提示"无历史处方可复制"
 
 **业务规则**:
+
 1. **仅复制药材与剂量**（D6 决策）：药名 / 剂量 / 单位 / 煎法被复制；**价格按当前药材最新单价重新计算**，不复制源处方的旧价。
 2. 源处方限定为同一患者最近一条 `Completed` 医案（非取消/非挂起）。
 3. 复制是数据快照，修改新处方不影响源医案。
@@ -723,7 +771,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 处方价格由聚合根内部计算，无独立端点：
 
 | 字段 | 计算公式 |
-|------|---------|
+| ------ | --------- |
 | PrescriptionItem.Amount | UnitPrice × Dosage |
 | SingleDosePrice | SUM(Items.Amount) |
 | TotalPrice | SingleDosePrice × DosageCount × Discount（MC-D14） |
@@ -734,6 +782,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 ## 验方导入到处方
 
 验方导入到处方（原 US-MC-016）的能力由处方聚合保存接口承载，相关业务规则：
+
 - 仅展示 `ValidationStatus=Validated` 且 `Status=Enabled` 的验方（MC-D08）
 - 已禁用药材自动跳过 + 提示"以下药材已停用，已跳过: xxx"（MC-D09）
 - 导入为数据复制，修改处方中药材不影响原验方（MC-D12）
@@ -761,6 +810,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 **作为** 管理员，**我想要** 批量软删除已完成医案，**以便** 批量清理历史数据（仅 Completed 可删，逐项返回成功/失败计数）。
 
 **验收标准**:
+
 - [ ] POST `/api/v1/medicalcases/batch-delete` 批量软删除
 - [ ] 仅 Admin 可操作，仅 Completed 医案可删（其余跳过计数）
 
@@ -769,7 +819,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 ## 变更记录
 
 | 日期 | 变更 | 原因 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 2026-08-11 | US-MC-020 补记（医案批量删除——代码已实现未文档化） | R3-补 反向脱节收编 |
 | 2026-06-28 | US-MC-011 业务规则压缩（引用 BR-003）；19 个 US 双模式表改一行格式；实现参考路径精简 | spec S3 批次2 提炼 |
 | 2026-06-28 | US-MC-018 加交叉引用注；US-MC-008/009 加与 US-MC-006 边界说明 | plan Task 7 边缘 US 修正 |

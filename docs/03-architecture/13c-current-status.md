@@ -5,7 +5,7 @@
 ## 三、当前状态速览
 
 | 项 | 值 |
-|----|-----|
+| ---- | ----- |
 | Build | 0 错误 **0 警告** |
 | 架构测试 | 88/88 pass（P07/P08/P10 约束不可违反） |
 | Desktop 测试 | 240 pass **104 fail**（测试主机进程崩溃） |
@@ -16,7 +16,7 @@
 ### 4.1 Shell
 
 | 视图 | 文件 | 功能 | 问题 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | LoginView | Modules/LYBT.Desktop.Auth/Views/ | 登录界面 | — |
 | FirstRunSetupView | Modules/LYBT.Desktop.Auth/Views/ | 首次运行向导 | 功能有限 |
 | ServerConfigView | Modules/LYBT.Desktop.Auth/Views/ | 服务器地址配置 | — |
@@ -25,7 +25,7 @@
 ### 4.2 管理员角色
 
 | 视图 | 文件 | 功能 | 问题 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | AdminHomeView | Roles/LYBT.Desktop.Admin/Views/ | 管理员首页 | — |
 | UserManagementView | Roles/LYBT.Desktop.Admin/Views/ | 用户管理 | — |
 | SystemSettingsView | Roles/LYBT.Desktop.Admin/Views/ | 系统设置 | 仅读取，无编辑 |
@@ -36,7 +36,7 @@
 ### 4.3 临床角色
 
 | 视图 | 文件 | 功能 | 问题 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | ClinicalHomeView | Roles/LYBT.Desktop.Clinical/Views/ | 临床首页 | TODO: 今日统计 |
 | ClinicalWorkspaceView | Roles/LYBT.Desktop.Clinical/Views/ | 临床工作台 | — |
 | PatientManagementView | Roles/LYBT.Desktop.Clinical/Views/ | 患者管理 | — |
@@ -51,7 +51,7 @@
 ### 4.4 医疗模块
 
 | 视图 | 文件 | 功能 | 问题 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | MedicalCaseMasterDetailView | Modules/LYBT.Desktop.MedicalCase/Views/ | 医案主从详情 | — |
 | AuditLogView | Modules/LYBT.Desktop.MedicalCase/Views/ | 审计日志 | — |
 | ReportsHomeView | Modules/LYBT.Desktop.MedicalCase/Reports/Views/ | 报表首页 | TODO: 待完善 |
@@ -69,17 +69,17 @@
 > **规则**：每轮统一/合并任务完成后，把「本轮有意保留项」显式登记于此（项 + 原因 + 计划批次），作为后续扫描判断「遗留 vs 新问题」的依据。避免分阶段统一的有意决策只留在 compose 报告里、被后续轮次当作新发现反复提出。
 
 | 登记日期 | 来源任务 | 有意保留项 | 原因 | 计划批次 |
-|---------|---------|-----------|------|---------|
+| --------- | --------- | ----------- | ------ | --------- |
 | 2026-08-10 | D1 Catalog 双轨统一 | FormulaDetailModelMapper 若接线后发现仍零调用 → 删除；Herb 轨补 Mapperly | D1 按扫描报告统一，执行中复核 | D1 内收口 |
 | 2026-08-10 | D4 命名统一 | ~~Service 前缀统一方向待定~~ **已执行**：统一为 Remote* 前缀（RemoteUserService/RemoteRegistrationService/RemoteHerbService/RemoteFormulaService/RemotePatientService）；契约层 IXxxService 无前缀为接口惯例，实现类 Remote 标识 HTTP 数据服务 | 4:1 既定模式（D1 确立 RemoteFormulaService），仅 PatientService 需改名，改动面 1 类+Module+测试 | ✅ 9748db4b4 |
 | 2026-08-10 | D4 命名统一 | **Manager 后缀保留**：DesktopCacheManager/DialogManager/SessionManager/TokenManager/LoginStateManager/StatusBarManager/NavigationManager/MenuManager/LoadingStateManager/EventSubscriptionManager/WorkspaceStateManager/SessionLifecycleManager 共 12 个——全部为「生命周期/会话状态/UI 基础设施」管理职责，与数据业务 Service 职责明确不同；契约层 IXxxService 与 IXxxManager 各自统一 | A-08 曾报告；D4 核实 Manager 有明确职责差异（Session/Token/Cache/UI 状态管理），改名无收益 | ✅ 9748db4b4 |
-| 2026-08-10 | D4 命名统一 | **SearchProvider 保留**：I{Herb|Formula}SearchProvider 为 D5-3 跨模块门面（MedicalCase/Formula 消费，Catalog 实现委托 I{Herb|Formula}Service）——与 Service 明确分工：Service=模块内数据服务，SearchProvider=跨模块解耦（防 MedicalCase→Catalog 编译期依赖，P07 合规） | 合并会破坏模块解耦；接口注释已文档化 D5-3 意图 | ✅ 9748db4b4 |
+| 2026-08-10 | D4 命名统一 | **SearchProvider 保留**：I{Herb | Formula}SearchProvider 为 D5-3 跨模块门面（MedicalCase/Formula 消费，Catalog 实现委托 I{Herb | Formula}Service）——与 Service 明确分工：Service=模块内数据服务，SearchProvider=跨模块解耦（防 MedicalCase→Catalog 编译期依赖，P07 合规） | 合并会破坏模块解耦；接口注释已文档化 D5-3 意图 | ✅ 9748db4b4 |
 | 2026-08-10 | D4 命名统一 | **BreadcrumbItem 同名不改**：Contracts record（LYBT.Desktop.Contracts.UI，导航架构数据 Title/ViewName/IsCurrent）vs Controls class（LYBT.Desktop.Controls.Controls，BreadcrumbBar 渲染模型 Label/Level/IsCurrent/IsLast/NavigateCommand）——两个 namespace 封闭使用、零桥接（BreadcrumbBar 经 NavigationPath/NavigateCommand DP 绑定），无文件同时 using 两处 | 核实不冲突；重命名仅同名巧合，无实际歧义 | ✅ 9748db4b4 |
 | 2026-08-10 | D5 MedicalCase 双体系 | ~~DTO 门面缓存（Cached*）收敛到 EditContext 新路径~~ **已执行**：CachedMedicalCase/CachedConsultation/CachedPrescription/ClearCache 删除；LoadDetailsAsync 内部改走 LifecycleService.InitializeAsync（DTO 快照单一持有于 LifecycleService，门面统一为 Current/CurrentConsultation/CurrentPrescription/CurrentDetail）；AggregateSaveAsync 保存后 UpdateSnapshot 前移 EditContext 基线；消费方（MasterDetail VM/Workspace VM/PrescriptionPrintHandler/测试）全部切换 | 用户已拍板方案 A（收敛）；EditContext 新路径由死代码变为真实接线（CommandService.SaveAsync 会话可用） | ✅ 待提交 |
 | 2026-08-10 | O1 死代码 | ~~PatientDetailDisplayModel / TokenManager 无写入路径 / PrintOptions 死选项~~ **已执行**：PatientDetailDisplayModel 删除（零引用+测试）；TokenManager 删除（无写入路径恒 null，真实 token 存储为 ITokenStorageService，SignalR 改匿名连接行为等价）；PrintOptions.Orientation/DuplexPrinting + PrintOrientation 枚举删除 | 扫描报告 P2 确认零引用 | ✅ 待提交 |
 | 2026-08-10 | O3 卫生 | ~~Controls 控件层 PrescriptionItemDto 交换形状~~ **保留**（内部适配层，非 UI 编辑路径）；wpftmp csproj 已删（git 忽略，报告「已追踪」过时）；obj 陈旧 UnfinishedCaseDialogViewModel 生成物已清 | B1 已解耦外部 DP 为 IEnumerable | ✅ 待提交 |
 | 2026-08-11 | T1 测试审查（只读） | 结论：Architecture 83 规则高质量；Desktop 形式主义集中（50 纯交互断言/恒真断言/MasterDetail 模板复制/假业务 Integration）；Server 零 mock 健康但 _Infrastructure 9 文件 SQL 集成基建零消费者、AGENTS.md 宣称 1185 tests 与实际脱节。报告见 `docs/compose/reports/test-code-review-2026-08-11.md` | P0-06 根因确认（148 VM 测试挂 LocalDB + 146 Integration 挂 localhost:5000）；建议 T2 批次跟进 | ✅ 1129d6f81（报告） |
-| 2026-08-11 | T2 测试修复 | ~~T2-1 Server _Infrastructure 零消费者 / T2-2 VM 测试去 LocalDB / T2-3 假业务测试~~ **已执行**：T2-1 删 Server _Infrastructure 11 文件+TestDataBuilders（零消费者）、AntiMockRuleTests AM01/02 改引 Server 测试类型、AM03 删除（保护对象已不存在）、tests/AGENTS.md 数字校正；T2-2 UserJourneyTestBase 去 IClassFixture<UserJourneyFixture>/LocalDB（12 类纯 VM 测试不再建库，FrameworkVerificationTests 改直连 fixture）；T2-3 MedicalCaseTests GetPermissions/GetAuditLogs 补真实 API 调用+断言、GetPendingCases 死测试删除 | P0 结构性发现修复；34 个残留失败全为存量（STA/mock 具体类/断言，stash 基线实证） | ✅ 2ee9143ac |
+| 2026-08-11 | T2 测试修复 | ~~T2-1 Server _Infrastructure 零消费者 / T2-2 VM 测试去 LocalDB / T2-3 假业务测试~~ **已执行**：T2-1 删 Server_Infrastructure 11 文件+TestDataBuilders（零消费者）、AntiMockRuleTests AM01/02 改引 Server 测试类型、AM03 删除（保护对象已不存在）、tests/AGENTS.md 数字校正；T2-2 UserJourneyTestBase 去 IClassFixture<UserJourneyFixture>/LocalDB（12 类纯 VM 测试不再建库，FrameworkVerificationTests 改直连 fixture）；T2-3 MedicalCaseTests GetPermissions/GetAuditLogs 补真实 API 调用+断言、GetPendingCases 死测试删除 | P0 结构性发现修复；34 个残留失败全为存量（STA/mock 具体类/断言，stash 基线实证） | ✅ 2ee9143ac |
 | 2026-08-11 | T3 测试质量 | ~~T3-1~T3-5~~ **已执行**：T3-1 MasterDetail 3 文件（MedicalCase/Patients/Formula）装配改走基类 CreateMasterDetailServicesMock（消除 ~90 行重复，保留 Formula 定制+字段引用）；T3-2 LoadListAsync 补状态断言（Items/TotalCount），50 个交互断言甄别后多为转发方法契约（合理保留）；T3-3 恒真断言改真实验证（WPF 资源）、Dispose 测试补 NotThrow、空壳持久化测试改状态断言；T3-4 JwtService 注入 TimeProvider（8 处 UtcNow + ValidateToken 时钟预检），过期测试去 Thread.Sleep(65s) 改假时钟推进（取消 Skip，23/23 通过）；T3-5 MedicalCase 反射扩展改 Testable 子类化（对齐 Herb 模式），LoadHerbsAsync private→protected | 每项 stash/基线实证零回归 | ✅ 817d131d1 |
 | 2026-08-11 | T3-6 存量失败补丁 | ~~4 个存量失败~~ **已执行**：PrescriptionItemTests.Clear（MedicalCaseId 有意保留——断言改保留）、PrescriptionItemTests.Items_SetProperty（Items.Add 不触发 VM 通知——对齐 NotifyItemsChanged 契约）、ConsultationItemTests.IsPresentIllnessValid（测试赋值"头痛三"仅 3 字符 bug——改 5 字符）、PrescriptionEditorViewModelTests.InitializeFromDto（SingleDosePrice 为计算属性——断言改计算值 17.5m） | 4 个失败全为测试断言与实现意图不符（非实现 bug）；修复后 MedicalCase Unit 94/94 | ✅ 157d72903 |
 | 2026-08-11 | R1 需求覆盖矩阵（只读） | 136 US 对照完成：✅64/⚠️46/🔴17/🧲📦15；基线矩阵 ~34 处状态过时；P0 缺口 4 项（远程 auth 路由疑损坏、refresh 端到端断裂、本地 refresh 无验签、导入导出端点双端全缺）+ 备份恢复整体缺失 + FeatureToggle 全库消失。报告见 `docs/compose/reports/requirements-coverage-matrix-2026-08-11.md` | 为「需求先行」治理提供基准；🔴 17 项为代码 backlog 源 | ✅ 8173230a4（报告） |
@@ -157,7 +157,7 @@
 ### 🔴 P0 — 必须修复
 
 | ID | 问题 | 位置 | 影响 |
-|----|------|------|------|
+| ---- | ------ | ------ | ------ |
 | P0-01 | Shell 登出状态机错误 | Shell/LoginCoordinator | ✅ 已修复 (2026-08-04, B-01) |
 | P0-02 | 并发登录竞态 | Shell/LoginCoordinator | ✅ 已修复 (2026-08-04, B-01) |
 | P0-03 | 异常时事件未发布 | Shell/ShellEventCoordinator | ✅ 已修复 (2026-08-04, B-01) |
@@ -169,7 +169,7 @@
 ### 🟡 P1 — 应修复
 
 | ID | 问题 | 位置 | 影响 |
-|----|------|------|------|
+| ---- | ------ | ------ | ------ |
 | P1-01 | 9 个 Build 警告 | 多处 (CA1001/CS8603/CS0168/CS4014) | ✅ 已修复 (2026-08-10, B1/B2/B3 后 build 0 警告门禁) |
 | P1-02 | 8 个 TODO 残留 | MedicalCase/Shell/Reports | 技术债务 |
 | P1-03 | 5 个超大类型 (>600行) | MedicalCaseCommandService/Repository/HttpClientApiClient/NavigableViewModelBase/PrescriptionPrintService | ✅ 已解决 (2026-08-10: B2 重写后 5 个文件均 <600 行) |
@@ -178,12 +178,12 @@
 | P1-06 | Excel 导入/导出缺失 | Herbs/Formula/Patients | 无法批量操作 |
 | P1-07 | 报表功能严重不足 | ReportsController (仅 3 个日统计) | 数据分析能力弱 |
 | P1-08 | 6 个 NotSupportedException 桩 | Desktop Foundation Http/Clients | Desktop 功能不完整 |
-| P1-09 |处方价格刷新未实现 | MedicalCasePrescriptionService TODO | 价格不自动更新 |
+| P1-09 | 处方价格刷新未实现 | MedicalCasePrescriptionService TODO | 价格不自动更新 |
 
 ### 🔵 P2 — 可后续完善
 
 | ID | 问题 | 位置 | 影响 |
-|----|------|------|------|
+| ---- | ------ | ------ | ------ |
 | P2-01 | 自动更新 | Shell (Velopack) | 运维依赖 |
 | P2-02 | 数据备份/恢复 | — | 运维依赖 |
 | P2-03 | SignalR 实时通知 | — | 体验增强 |
@@ -192,5 +192,6 @@
 | P2-06 | 排班管理 | Registration | 业务增强 |
 | P2-07 | **多进程/端口占用防护**（2026-08-13 登记，API 测试后重点讨论） | start.sh + Program | 部署可靠性：start.sh 仅 pkill+sleep 2 无端口检查/无 PID 文件/无启动成功验证——实测旧进程 741060 未释放端口导致新进程 741734 启动失败（06:18 日志 `${DB_SERVER}` 连接失败 + 双 dotnet 进程并存）。设计需覆盖：端口释放确认、PID 文件、启动成功探测（/health）、孤儿进程清理、单实例 Mutex（US-SHELL-001 已有 Desktop 侧） |
 | P2-08 | **API 单一职能全面审查**（2026-08-13 登记，API 测试完成后执行） | 全部 Controller | QuickVisit 两步改造暴露的设计原则（用户定案）：API 单一职能、组合编排放前端 VM。API 测试完成后审查全部端点是否有类似复杂设计（一个端点做多件事/跨模块编排/隐式联动），考虑拆分。参考：StartVisit 接诊即建（已原子化保留）、quick-visit（已删）、经验方导入（前端组合） |
-| P2-09 | **HTTP/HTTPS 双协议支持**（2026-08-13 登记，待讨论） | WebAPI 宿主 | 用户提出：API 地址 http 和 https 是否可同时支持，通过配置开启/关闭某一个。需讨论：Kestrel 多端点配置（http://0.0.0.0:5000 + https://0.0.0.0:5001）、证书来源（dev 自签/prod 正式）、配置开关（Http:Enabled / Https:Enabled）、CSP/安全头影响、发布 Runbook 更新 |
+| P2-09 | **HTTP/HTTPS 双协议支持**（2026-08-13 登记，待讨论） | WebAPI 宿主 | 用户提出：API 地址 http 和 https 是否可同时支持，通过配置开启/关闭某一个。需讨论：Kestrel 多端点配置（<http://0.0.0.0:5000> + <https://0.0.0.0:5001）、证书来源（dev> 自签/prod 正式）、配置开关（Http:Enabled / Https:Enabled）、CSP/安全头影响、发布 Runbook 更新 |
 | P2-10 | **死代码删除误伤防护**（2026-08-13 登记） | 重构流程 | 教训：a99619f47（QuickVisit 收敛）删除 quick-visit 端点时**误删了 POST /Registrations 创建端点**（Create 方法与 quick-visit 代码相邻，被当死代码连带删除）——真机 405 才发现。防护：删除死代码前先确认方法归属（grep 端点/接口/前端调用），删除后立即验证端点清单（swagger 对照） |
+| 109 | 2026-08-13 | Consultation CreatedBy NULL 两连击完结（任务书 consultation-createdby-fix——真机 start-visit 500 复发） | **已执行**：pi 只读调查发现 + 真机验证——服务器日志直达根因：`SqlException: 不能将值 NULL 插入列 'CreatedBy'，表 'LYBTDB_Dev.dbo.Consultations'`。**修复**：`CreateFromInputDtoAsync` 创建 Consultation 补 `CreatedBy = currentUserId`（聚合根 1:1 共享主键，与 MedicalCase.CreatedBy 对称——上次 startvisit-createdby-fix 漏了级联插入的 Consultation）。**同类排查（全实体）**：① **Prescription.CreatedBy**（PrescriptionConfiguration 同样 NOT NULL——医生带处方建案同样会 500）——`CreateNewPrescriptionAsync` 补 currentUserId 参数（调用链：CreateFromInputDtoAsync 创建路径 + HandlePrescriptionUpdateAsync 保存路径）；② **MedicalCaseAuditLog**（更新审计/取消审计 2 处）补 CreatedBy=操作者；③ **MedicalCasePrintLog** 补 CreatedBy=operatorId；④ PrescriptionItem 无 CreatedBy（不继承 BaseEntity——无列）✓；⑤ PrescriptionDetailDto 补 CreatedBy（Mapperly 同名自动映射——审计可观测）。**测试**：`StartVisit_MedicalCaseAndConsultation_CreatedByPopulated` + `CreateMedicalCase_WithPrescription_CreatedByFieldsPopulated`（断言三实体 CreatedBy=操作者——Desktop E2E 基建需 localhost:5000，真机等价验证替代） | 构建 0/0；Server 696/696；架构 87/87；**真机 start-visit 200**（原 500——InProgress + 医案 Active MC20260813001 + CreatedBy 非空）；api-manual-test Bug 4；07-medical-cases US-MC-001 补审计字段规则；任务书待删 | ✅ 已提交 18a6f676e |

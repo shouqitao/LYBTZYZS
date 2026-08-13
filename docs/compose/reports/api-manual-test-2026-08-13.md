@@ -7,7 +7,7 @@
 ## Domain 1: Identity（✅ 全通过）
 
 | # | 测试项 | 预期 | 实际 | 结论 |
-|---|--------|------|------|:---:|
+| --- | -------- | ------ | ------ | :---: |
 | 1 | login（sysadmin 正确密码） | 200+JWT | 200 token=448 | ✅ |
 | 2 | validate（token 有效） | 200 | 200「Token验证成功」 | ✅ |
 | 3 | refresh（refreshToken） | 200 新 token | 200 data.token | ✅ |
@@ -17,6 +17,7 @@
 | 7 | delete test user（清理） | 200 | 200 删除成功 | ✅ |
 
 **沉淀**：
+
 - 认证流完整（login→validate→refresh→logout 待测）
 - sysadmin 密码保护真实生效（T5-1 #12）
 - 测试用户创建→登录→删除闭环验证（不污染数据）
@@ -24,11 +25,13 @@
 ## Domain 2: Catalog（🔴 两个 bug：PUT formula 500——PostProcessor 误判 + RowVersion 并发）
 
 ### Bug 1（已修）：PostProcessor-ConfigurationManager 兼容
+
 - 已修复（df49d7ba9 + 640da18b3）：PostProcessor 在 ConfigurationManager 下读不到新 Add 的 env provider → 误回退占位符
 - 补 3 个真实 ConfigurationManager 测试（复现原场景）
 - **但部署后 PUT formula 仍 500**——说明还有 Bug 2
 
 ### Bug 2（✅ 已修复 2026-08-13——两层根因）：DbUpdateConcurrencyException（RowVersion 并发）
+
 - 日志证据：`System.InvalidOperationException: 数据已被其他用户修改` → `DbUpdateConcurrencyException: expected 1 row, affected 0`
 - 触发：PUT /api/v1/formulas/{id}（同 body / 改 dosage 都稳定复现）
 - **第 1 层根因**（6ecd7536d）：`BaseRepository.UpdateAsync` 的 `_dbSet.Update(entity)` 对已跟踪实体全标记 Modified（含 RowVersion）——已修复：已跟踪实体只 SaveChanges
@@ -44,7 +47,8 @@
 
 **沉淀**：真机测试连续发现 2 个 bug——①PostProcessor 测试类型≠生产类型（ConfigurationRoot vs ConfigurationManager）②通用更新命令的并发令牌处理（RowVersion 被 Update 标记）。两个都是「测试自洽但系统不跑」的层级错配实例——单元测试用 mock/fake 永远测不到 EF 真实并发语义。
 
-### Bug 2 修复后真机复查（2026-08-13 03:20，PID 730647 部署 049d0e0e2）：
+### Bug 2 修复后真机复查（2026-08-13 03:20，PID 730647 部署 049d0e0e2）
+
 - PUT herb → 200 ✅（第 1 层修复生效）
 - **PUT formula → 仍 500 并发冲突** 🔴
 - 修复测试（FormulaReplaceHerbsTests 用 SQLite）通过，但**真实 SQL Server 仍失败**——SQLite vs SQL Server 的 EF 行为差异
@@ -54,18 +58,22 @@
   - #4 herbId 已删除 → 201（预期 422）❌ 引用校验缺失
 
 ### 🔴 真根因：部署只上传 WebAPI.dll，模块 dll 未更新（2026-08-13 05:32 确认）
+
 **5 轮修复本地测试全过但真机全败的真正原因**：
+
 - 部署命令 `scp publish-webapi/LYBT.WebAPI.dll` 只传了 WebAPI 主 dll
 - **修复代码在模块层**（LYBT.Module.Catalog.dll / LYBT.Infrastructure.dll）——服务器上仍是 01:45 旧版
 - 全部 dll 上传后（05:32）：PUT formula 200 + 引用校验 400/422 全通过 ✅
 
 **深层教训**：
+
 1. **部署必须全量传 dll**（或确认哪些 dll 变了）——不能只传主程序
 2. **真机失败时先查「服务器代码是否真的是最新」**——dll 时间戳对比是第一步
 3. 5 轮误判（PostProcessor/SQLite/SQL Server/SplitQuery）都是因为**根本没测到新代码**——真机验证的前提是部署正确
 4. SplitQuery 移除是**有效独立修复**（启动无连接错误了）但非 PUT formula 根因
 
 ### 踩坑清单 #12（01-deployment.md）
+
 「部署只传主 dll 不传模块 dll → 修复不生效」——发布时全量上传或对比 dll 时间戳。
 
 ## Domain 3+: 待继续（formula 修复已真机确认 ✅，继续其他域）
@@ -73,7 +81,7 @@
 ## Domain 2.5: 用户模块（US-USER-001~012 全通过 ✅）
 
 | # | US | 测试项 | 结果 |
-|---|-----|--------|:---:|
+| --- | ----- | -------- | :---: |
 | 1 | US-USER-001 | 分页查询用户列表（8 用户） | ✅ 200 |
 | 2 | US-USER-002 | 查看用户详情 | ✅ 200 |
 | 3 | US-USER-004 | 创建用户（Doctor） | ✅ 200 |
@@ -90,7 +98,16 @@
 ## Domain 3: Patients（进行中）
 
 ### Bug 3（✅ 已修复 2026-08-13 startvisit-createdby-fix）：StartVisit 创建医案 CreatedBy NULL
+
 - 真机：PUT /api/v1/Registrations/{id}/start-visit → 500——服务器日志直达根因：`[REPO] MedicalCase.SaveChanges 保存失败 → SqlException: 不能将值 NULL 插入列 'CreatedBy'，表 'MedicalCases'`
 - 根因：`MedicalCaseCrossModuleService.CreateMedicalCaseForRegistrationAsync` 的 input 只设 PatientId/UserId/RegistrationId；`CreateFromInputDtoAsync` 创建块缺 `CreatedBy`（BaseEntity 可空但 MedicalCaseConfiguration 强制 NOT NULL）
 - 修复：`CreateFromInputDtoAsync` 设 `CreatedBy = currentUserId`（创建者=操作医生——接诊即建 US-REG-005+US-MC-001 核心路径）
 - 同类排查：唯一 NOT NULL CreatedBy 实体 = MedicalCase（配置强制）；Registration.CreatedBy 可空但语义缺失——已补（`CreateRegistrationCommand` 加 OperatorId + Handler 设 CreatedBy——QuickVisit 已有先例）；Formula/Herb 工厂有 createdBy 参数
+
+### Bug 4（✅ 已修复 2026-08-13 consultation-createdby-fix）：StartVisit 接诊即建 Consultation.CreatedBy NULL（500 两连击完结）
+
+- 真机：PUT /api/v1/Registrations/{id}/start-visit → 500——服务器日志直达根因：`SqlException: 不能将值 NULL 插入列 'CreatedBy'，表 'LYBTDB_Dev.dbo.Consultations'；列不允许有 Null 值`
+- 根因：`CreateFromInputDtoAsync` 创建 Consultation 只初始化 Id/CreatedAt/UpdatedAt，**漏设 CreatedBy**——`ConsultationConfiguration` 同 MedicalCase 一样强制 NOT NULL。与 Bug 3（MedicalCase.CreatedBy）同源，**两连击**：上次只修了 MedicalCase，漏掉共享主键级联插入的 Consultation
+- 修复：`CreateFromInputDtoAsync` Consultation 补 `CreatedBy = currentUserId`；**同类排查**：Prescription.CreatedBy（PrescriptionConfiguration 同样 NOT NULL——医生带处方建案同样会 500）补 currentUserId；MedicalCaseAuditLog（更新/取消审计）补 CreatedBy=操作者；MedicalCasePrintLog 补 CreatedBy=operatorId；PrescriptionDetailDto 补 CreatedBy（可观测）
+- **回归测试**：`StartVisit_MedicalCaseAndConsultation_CreatedByPopulated`（接诊即建）+ `CreateMedicalCase_WithPrescription_CreatedByFieldsPopulated`（带处方建案）——断言三实体 CreatedBy = 操作者
+- **验证**：构建 0/0；Server 696/696；架构 87/87；真机修复后 PUT start-visit → **200**（原 500），挂号 InProgress + 医案 Active（MC20260813001）+ MedicalCase/Consultation CreatedBy=testdoctor2 均非空 ✅
