@@ -36,6 +36,11 @@
 - 复现测试：`FormulaReplaceHerbsTests` 2 用例（真实 DbContext+SQLite——与真机异常一致）+ `HerbUpdateRowVersionTests` 2
 - **真实 SQL Server 验证（2026-08-13 formula-realsql-fix——SQLite 通过不算数）**：`FormulaRealSqlUpdateTests` 2 用例（连接 192.168.190.243 LYBTDB_Test——TEST_DB_CONNECTION 激活）——`UpdateFormula_ReplaceHerbs_OnRealSqlServer_PersistsWithoutConcurrencyError`（764ms：EnsureCreated+建删数据）与 `UpdateFormula_DetachedReplaceHerbs_OnRealSqlServer_InsertsNewItems` **2/2 通过**——替换 herbs 无并发冲突（新 item INSERT 非 UPDATE WHERE 新 Id）+ Detached 场景正确 INSERT
 - **引用校验缺口修复（同日）**：空 herbs → Validator `NotEmpty`（400）；herbId 不存在/已删除 → `ValidateBeforeSaveAsync` 引用校验（`FormulaValidationFailed` 60004 → **422**）——`FormulaReferenceValidationTests` 3 用例
+- **深挖 3（formula-deep-fix——Dev 非空库权威）**：
+  - **Dev 真实数据复现**：`FormulaDevReproTests` 连 **LYBTDB_Dev**（26 患者/15 挂号等真实数据——.env.development 连接串）——取真实含 herbs 验方 → 同 herbs 回传 ReplaceHerbs → UpdateAsync——**REPRO-NEGATIVE（更新成功无并发异常）**——SQL 证据：`DELETE FROM FormulaHerbItems` → `UPDATE Formulas SET UpdatedAt...OUTPUT INSERTED.RowVersion` → `INSERT INTO FormulaHerbItems`——当前代码在 Dev 数据上正确
+  - **部署滞后铁证**：真机 dll 03:52 vs bca7bccf0 提交 11:49——真机 PUT 500/空 herbs 201/herbId 500FK **全是旧 dll 行为**（修复代码未部署）
+  - **重写 FormulaRepository.UpdateAsync**（用户授权大范围）：显式 DbSet 模式——旧 items 按 FormulaId `RemoveRange`（未跟踪自动 Attach+Deleted）+ 新 items 显式 `Add`（强制 Added）——**根治 EF 对 item 状态的隐式误判**（不再依赖 Detached/Modified 状态判断）；父行走 base（Attached 只 SaveChanges——RowVersion 正确；Detached 保留 Update()）——乐观并发保持
+  - **钩子未拦截根因**：本地 DI 注册测试证明 `CreateFormulaValidator` 已注册 + ValidationBehavior 拒绝空 herbs（`FormulaValidatorRegistrationTests` 2 通过）——真机 201 = 旧 dll 无此代码
 
 **沉淀**：真机测试连续发现 2 个 bug——①PostProcessor 测试类型≠生产类型（ConfigurationRoot vs ConfigurationManager）②通用更新命令的并发令牌处理（RowVersion 被 Update 标记）。两个都是「测试自洽但系统不跑」的层级错配实例——单元测试用 mock/fake 永远测不到 EF 真实并发语义。
 

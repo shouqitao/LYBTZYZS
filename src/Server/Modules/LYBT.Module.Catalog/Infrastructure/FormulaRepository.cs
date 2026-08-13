@@ -19,14 +19,21 @@ public class FormulaRepository : CatalogRepositoryBase<Formula>, IFormulaReposit
     /// <inheritdoc/>
     public override async Task<Formula> UpdateAsync(Formula entity, CancellationToken cancellationToken = default)
     {
-        // 2026-08-13 第 2 层根因（真机 PUT formula 500）: ReplaceHerbs 的新 FormulaHerbItem
-        // 被 EF 误标 Modified（非 Added）→ SaveChanges 发 UPDATE WHERE 新 Id → 0 rows 并发异常。
-        // ReplaceHerbs 语义 = 全换新组成（新 Guid）——强制新 item 为 Added（显式 INSERT）。
+        // 2026-08-13 深挖（formula-deep-fix）: 显式子集合替换——不依赖 EF 对 item 跟踪状态的隐式判断。
+        // 第 2 层根因实证（EF SQL 日志）: ReplaceHerbs 的新 item 曾被 EF 误标 Modified（非 Added）→
+        // UPDATE WHERE 新 Id → 0 rows 并发异常。显式模式根治：旧 items 按 FormulaId 从库删除（RemoveRange——
+        // EF 对未跟踪实体自动 Attach 再标 Deleted），新 items 显式 Add（强制 Added——即使 EF 误标 Modified 也无碍）。
+        // 父行走 base 语义（Attached 只 SaveChanges——RowVersion 仅 WHERE 正确值；Detached 保留 Update()）——
+        // 乐观并发保持（真并发仍抛 DbUpdateConcurrencyException）。
+        var oldItems = await _context.FormulaHerbItems
+            .Where(i => i.FormulaId == entity.Id)
+            .ToListAsync(cancellationToken);
+        _context.FormulaHerbItems.RemoveRange(oldItems);
+
         foreach (var herb in entity.Herbs)
         {
-            var entry = _context.Entry(herb);
-            if (entry.State == EntityState.Detached || entry.State == EntityState.Modified)
-                entry.State = EntityState.Added;
+            if (_context.Entry(herb).State == EntityState.Detached)
+                _context.FormulaHerbItems.Add(herb);
         }
 
         return await base.UpdateAsync(entity, cancellationToken);
