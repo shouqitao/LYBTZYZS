@@ -313,6 +313,8 @@ namespace LYBT.Module.MedicalCases.Services
                 await _repository.AddAuditLogAsync(new MedicalCaseAuditLog
                 {
                     MedicalCaseId = medicalCase.Id,
+                    // 2026-08-13（consultation-createdby-fix 同类排查）: 审计记录 CreatedBy = 操作者
+                    CreatedBy = operatorId,
                     OperatorId = operatorId,
                     OperatorName = operatorName,
                     OperatorRole = (int)operatorRole,

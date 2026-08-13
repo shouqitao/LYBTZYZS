@@ -94,6 +94,8 @@ public partial class PrescriptionMapper
     [MapperIgnoreSource(nameof(PrescriptionItemViewModel.ValidationEnabled))]
     [MapperIgnoreSource(nameof(PrescriptionItemViewModel.ValidationMessage))]
     [MapperIgnoreTarget(nameof(PrescriptionDetailDto.Items))]
+    // 2026-08-13（consultation-createdby-fix）: CreatedBy 服务端填充（DTO 新增可观测字段——Desktop 源 VM 无此成员）
+    [MapperIgnoreTarget(nameof(PrescriptionDetailDto.CreatedBy))]
     private partial PrescriptionDetailDto ToDtoCore(PrescriptionItemViewModel item);
 
     /// <summary>

@@ -69,6 +69,10 @@ public class PrescriptionDetailDto
     [DisplayName("创建时间")]
     public DateTime CreatedAt { get; set; }
 
+    /// <summary>创建者ID（2026-08-13 consultation-createdby-fix：审计可观测——Mapperly 同名映射）</summary>
+    [DisplayName("创建者")]
+    public Guid? CreatedBy { get; set; }
+
     /// <summary>更新时间</summary>
     [DisplayName("更新时间")]
     public DateTime? UpdatedAt { get; set; }

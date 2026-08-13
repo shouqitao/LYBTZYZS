@@ -34,6 +34,7 @@ namespace LYBT.Module.MedicalCases.Services
         public async Task HandlePrescriptionUpdateAsync(
             MedicalCase medicalCase,
             PrescriptionInputDto prescriptionDto,
+            Guid currentUserId,
             CancellationToken cancellationToken = default)
         {
             medicalCase.NeedsPrescription = prescriptionDto.NeedsPrescription;
@@ -46,7 +47,7 @@ namespace LYBT.Module.MedicalCases.Services
 
             if (medicalCase.Prescription == null || medicalCase.Prescription.IsDeleted)
             {
-                await CreateNewPrescriptionAsync(medicalCase, prescriptionDto, cancellationToken);
+                await CreateNewPrescriptionAsync(medicalCase, prescriptionDto, currentUserId, cancellationToken);
             }
             else
             {
@@ -76,6 +77,7 @@ namespace LYBT.Module.MedicalCases.Services
         public async Task CreateNewPrescriptionAsync(
             MedicalCase medicalCase,
             PrescriptionInputDto prescriptionDto,
+            Guid currentUserId,
             CancellationToken cancellationToken = default)
         {
             var prescription = new Prescription
@@ -83,6 +85,9 @@ namespace LYBT.Module.MedicalCases.Services
                 Id = Guid.NewGuid(),
                 PrescriptionNumber = await GeneratePrescriptionNumberAsync(cancellationToken),  // T5-P2-13: 自动生成处方编号
                 MedicalCaseId = medicalCase.Id,
+                // 2026-08-13（consultation-createdby-fix 同类排查）: CreatedBy 必填（DB NOT NULL——
+                // PrescriptionConfiguration 同样 IsRequired，原创建路径漏设 → 医生带处方建案也会 500）
+                CreatedBy = currentUserId,
                 DosageCount = prescriptionDto.DosageCount,
                 Usage = prescriptionDto.Usage,
                 Advice = prescriptionDto.Advice,

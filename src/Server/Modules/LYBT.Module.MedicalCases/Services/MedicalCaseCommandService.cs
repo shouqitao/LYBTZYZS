@@ -106,9 +106,12 @@ namespace LYBT.Module.MedicalCases.Services
             };
 
             // 创建Consultation（聚合根模式：共享主键）
+            // 2026-08-13（consultation-createdby-fix）: CreatedBy 必填（DB NOT NULL——真机 start-visit 500 根因，
+            // 与 MedicalCase.CreatedBy 同源（startvisit-createdby-fix）——CreatedBy = 当前操作医生）
             var consultation = new Consultation
             {
                 Id = medicalCase.Id,
+                CreatedBy = currentUserId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -136,7 +139,7 @@ namespace LYBT.Module.MedicalCases.Services
             // 如果DTO中提供了处方数据且需要开处方，创建Prescription
             if (request.Prescription != null && request.Prescription.NeedsPrescription)
             {
-                await _itemService.CreateNewPrescriptionAsync(medicalCase, request.Prescription, cancellationToken);
+                await _itemService.CreateNewPrescriptionAsync(medicalCase, request.Prescription, currentUserId, cancellationToken);
             }
 
             var result = await _repository.AddAsync(medicalCase, cancellationToken);
@@ -225,7 +228,7 @@ namespace LYBT.Module.MedicalCases.Services
             // 更新处方
             if (request.Prescription != null)
             {
-                await _itemService.HandlePrescriptionUpdateAsync(medicalCase, request.Prescription);
+                await _itemService.HandlePrescriptionUpdateAsync(medicalCase, request.Prescription, currentUserId);
             }
 
             // 打印保护简化（2026-08-03）：打印后修改内容 → IsPrinted=false、PrintVersion++（提示重新打印）
@@ -302,6 +305,8 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = medicalCase.Id,
+                // 2026-08-13（consultation-createdby-fix 同类排查）: 审计记录 CreatedBy = 操作者
+                CreatedBy = currentUserId,
                 OperatorId = currentUserId,
                 OperatorName = operatorInfo?.UserName ?? string.Empty,
                 OperatorRole = operatorInfo?.Role != null ? (int)operatorInfo.Role : 0,
@@ -406,6 +411,8 @@ namespace LYBT.Module.MedicalCases.Services
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = medicalCaseId,
+                // 2026-08-13（consultation-createdby-fix 同类排查）: 打印日志 CreatedBy = 操作者
+                CreatedBy = operatorId,
                 PrintType = printType,
                 PrintVersion = medicalCase.PrintVersion,
                 PrinterName = printerName,

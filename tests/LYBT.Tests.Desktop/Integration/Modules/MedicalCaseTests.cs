@@ -158,6 +158,58 @@ public class MedicalCaseTests : WebApiE2ETestBase
         _output.WriteLine($"Cases page: {response.Data.Items.Count}/{response.Data.TotalCount}");
     }
 
+    [Fact]
+    [Trait("Category", "E2E")]
+    [Trait("Phase", "MedicalCaseManagement")]
+    [Trait("Role", "Doctor")]
+    public async Task CreateMedicalCase_WithPrescription_CreatedByFieldsPopulated()
+    {
+        // consultation-createdby-fix 同类排查（2026-08-13）: Prescription.CreatedBy 同为 DB NOT NULL
+        // （PrescriptionConfiguration.IsRequired）——原创建路径漏设，医生带处方建案同样会 500
+        // 回归：CreateFromInputDtoAsync 带处方路径，三实体 CreatedBy 必须填充且 = 操作者
+        var loginResponse = await LoginAsSysadminAsync();
+        var patientId = await CreateTestPatientAsync();
+        var (herbId, herbName) = await CreateTestHerbAsync();
+
+        var input = CreateTestCaseInput(patientId, loginResponse.User.Id);
+        input.NeedsPrescription = true;
+        input.Prescription = new PrescriptionInputDto
+        {
+            MedicalCaseId = Guid.NewGuid(), // 创建路径会以实际 MedicalCase.Id 覆盖
+            DosageCount = 7,
+            Discount = 1.0m,
+            TotalPrice = 84m,
+            Items = new List<PrescriptionItemInputDto>
+            {
+                new()
+                {
+                    HerbId = herbId,
+                    HerbName = herbName,
+                    Unit = "克",
+                    Dosage = 10,
+                    UnitPrice = 12m,
+                    Subtotal = 84m
+                }
+            }
+        };
+
+        var createResponse = await MedicalCaseApi.CreateMedicalCaseAsync(input);
+        createResponse.Success.Should().BeTrue(createResponse.Message);
+
+        var detailResponse = await MedicalCaseApi.GetMedicalCaseByIdAsync(createResponse.Data!.Id);
+        detailResponse.Success.Should().BeTrue(detailResponse.Message);
+        var medicalCase = detailResponse.Data!;
+
+        medicalCase.CreatedBy.Should().Be(loginResponse.User.Id, "MedicalCase.CreatedBy 应为操作者");
+        medicalCase.Consultation.Should().NotBeNull();
+        medicalCase.Consultation!.CreatedBy.Should().Be(loginResponse.User.Id, "Consultation.CreatedBy 必须填充");
+        medicalCase.Prescription.Should().NotBeNull("带处方建案应创建 Prescription");
+        medicalCase.Prescription!.CreatedBy.Should().Be(loginResponse.User.Id,
+            "Prescription.CreatedBy DB NOT NULL——同类排查发现，必须填充");
+
+        _output.WriteLine($"带处方建案 CreatedBy 验证通过: MedicalCase={medicalCase.CreatedBy}, Consultation={medicalCase.Consultation.CreatedBy}, Prescription={medicalCase.Prescription.CreatedBy}");
+    }
+
     #endregion
 
     #region Save (Aggregate)

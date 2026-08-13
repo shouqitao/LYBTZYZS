@@ -263,6 +263,36 @@ public class RegistrationTests : WebApiE2ETestBase
     [Trait("Category", "E2E")]
     [Trait("Phase", "RegistrationManagement")]
     [Trait("Role", "Receptionist")]
+    public async Task StartVisit_MedicalCaseAndConsultation_CreatedByPopulated()
+    {
+        // consultation-createdby-fix（2026-08-13）: 真机 start-visit 500——Consultation.CreatedBy DB NOT NULL 漏设
+        // 回归：接诊即建（CreateMedicalCaseForRegistrationAsync 路径）MedicalCase + Consultation 的 CreatedBy 必须填充且 = 操作者
+        var loginResponse = await LoginAsSysadminAsync();
+        var patientId = await CreateTestPatientAsync();
+        var (doctorId, _, doctorRealName) = await CreateTestDoctorAsync();
+        var created = await CreateTestRegistrationAsync(patientId, "测试患者", doctorId, doctorRealName);
+
+        var startResponse = await RegistrationApi.StartVisitAsync(created.Id);
+
+        startResponse.Success.Should().BeTrue(startResponse.Message);
+        var medicalCaseId = startResponse.Data;
+        medicalCaseId.Should().NotBe(Guid.Empty);
+
+        var detailResponse = await MedicalCaseApi.GetMedicalCaseByIdAsync(medicalCaseId);
+        detailResponse.Success.Should().BeTrue(detailResponse.Message);
+        var medicalCase = detailResponse.Data!;
+        medicalCase.CreatedBy.Should().Be(loginResponse.User.Id, "接诊即建 MedicalCase.CreatedBy 应为操作者");
+        medicalCase.Consultation.Should().NotBeNull("接诊即建应创建 Consultation（共享主键 1:1）");
+        medicalCase.Consultation!.CreatedBy.Should().Be(loginResponse.User.Id,
+            "Consultation.CreatedBy DB NOT NULL——真机 start-visit 500 根因，必须填充");
+
+        _output.WriteLine($"接诊即建 CreatedBy 验证通过: MedicalCase={medicalCase.CreatedBy}, Consultation={medicalCase.Consultation.CreatedBy}");
+    }
+
+    [Fact]
+    [Trait("Category", "E2E")]
+    [Trait("Phase", "RegistrationManagement")]
+    [Trait("Role", "Receptionist")]
     public async Task CancelRegistration_WaitingRegistration_CancelsSuccessfully()
     {
         await LoginAsSysadminAsync();
