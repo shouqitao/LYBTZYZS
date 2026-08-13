@@ -52,9 +52,24 @@
   - #2 空 herbs → 201（预期 400）❌ AC 未拦截
   - #3 herbId 不存在 → 500（预期 422）❌ 引用校验异常
   - #4 herbId 已删除 → 201（预期 422）❌ 引用校验缺失
-- **待 omp**：真实 SQL Server 调试（非 SQLite）+ 修复 #2/#3/#4 校验
 
-## Domain 3+: 待继续（等 Bug 2 真机修复 + 校验修复后重测）
+### 🔴 真根因：部署只上传 WebAPI.dll，模块 dll 未更新（2026-08-13 05:32 确认）
+**5 轮修复本地测试全过但真机全败的真正原因**：
+- 部署命令 `scp publish-webapi/LYBT.WebAPI.dll` 只传了 WebAPI 主 dll
+- **修复代码在模块层**（LYBT.Module.Catalog.dll / LYBT.Infrastructure.dll）——服务器上仍是 01:45 旧版
+- 全部 dll 上传后（05:32）：PUT formula 200 + 引用校验 400/422 全通过 ✅
+
+**深层教训**：
+1. **部署必须全量传 dll**（或确认哪些 dll 变了）——不能只传主程序
+2. **真机失败时先查「服务器代码是否真的是最新」**——dll 时间戳对比是第一步
+3. 5 轮误判（PostProcessor/SQLite/SQL Server/SplitQuery）都是因为**根本没测到新代码**——真机验证的前提是部署正确
+4. SplitQuery 移除是**有效独立修复**（启动无连接错误了）但非 PUT formula 根因
+
+### 踩坑清单 #12（01-deployment.md）
+「部署只传主 dll 不传模块 dll → 修复不生效」——发布时全量上传或对比 dll 时间戳。
+
+## Domain 3+: 待继续（formula 修复已真机确认 ✅，继续其他域）
+
 
 
 
