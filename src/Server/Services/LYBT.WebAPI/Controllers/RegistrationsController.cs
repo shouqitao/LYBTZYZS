@@ -57,7 +57,8 @@ public class RegistrationsController : BaseRegistrationsController
     [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> Create([FromBody] RegistrationInputDto input, CancellationToken ct)
     {
-        var result = await Sender.Send(new CreateRegistrationCommand(input), ct);
+        var (operatorId, _, _) = GetOperator();
+        var result = await Sender.Send(new CreateRegistrationCommand(input, operatorId), ct);
 
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "创建挂号失败");

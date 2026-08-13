@@ -89,7 +89,8 @@
 
 ## Domain 3: Patients（进行中）
 
-
-
-
-
+### Bug 3（✅ 已修复 2026-08-13 startvisit-createdby-fix）：StartVisit 创建医案 CreatedBy NULL
+- 真机：PUT /api/v1/Registrations/{id}/start-visit → 500——服务器日志直达根因：`[REPO] MedicalCase.SaveChanges 保存失败 → SqlException: 不能将值 NULL 插入列 'CreatedBy'，表 'MedicalCases'`
+- 根因：`MedicalCaseCrossModuleService.CreateMedicalCaseForRegistrationAsync` 的 input 只设 PatientId/UserId/RegistrationId；`CreateFromInputDtoAsync` 创建块缺 `CreatedBy`（BaseEntity 可空但 MedicalCaseConfiguration 强制 NOT NULL）
+- 修复：`CreateFromInputDtoAsync` 设 `CreatedBy = currentUserId`（创建者=操作医生——接诊即建 US-REG-005+US-MC-001 核心路径）
+- 同类排查：唯一 NOT NULL CreatedBy 实体 = MedicalCase（配置强制）；Registration.CreatedBy 可空但语义缺失——已补（`CreateRegistrationCommand` 加 OperatorId + Handler 设 CreatedBy——QuickVisit 已有先例）；Formula/Herb 工厂有 createdBy 参数

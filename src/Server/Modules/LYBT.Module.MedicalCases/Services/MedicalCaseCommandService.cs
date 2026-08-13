@@ -98,6 +98,9 @@ namespace LYBT.Module.MedicalCases.Services
                 NeedsPrescription = request.Prescription?.NeedsPrescription,
                 UserId = doctorId,
                 DoctorName = doctor.RealName,
+                // 2026-08-13（startvisit-createdby-fix）: CreatedBy 必填（DB NOT NULL——真机 start-visit 500 根因）
+                // 创建者 = 当前操作医生（跨模块创建——StartVisit 接诊即建路径）
+                CreatedBy = currentUserId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };

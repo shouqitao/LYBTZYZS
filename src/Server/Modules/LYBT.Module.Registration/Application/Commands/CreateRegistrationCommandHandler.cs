@@ -78,7 +78,9 @@ public sealed class CreateRegistrationCommandHandler
                 : RegistrationStatus.Waiting,
             QueueNumber = maxQueueNumber + 1,
             RegistrationFee = dto.RegistrationFee,
-            Remark = dto.Remark
+            Remark = dto.Remark,
+            // 2026-08-13（startvisit-createdby-fix 同类排查）: 创建者必记（语义统一——QuickVisit 已有先例）
+            CreatedBy = request.OperatorId
         };
 
         await _repository.AddAsync(registration, cancellationToken);
