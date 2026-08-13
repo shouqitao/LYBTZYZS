@@ -94,4 +94,85 @@ public class ConfigurationPostProcessorTests
             builder.AddInMemoryCollection(layer);
         return builder;
     }
+
+    // ── 真实 ConfigurationManager 回归（真机 bug 2026-08-13: Add 后 Providers 快照不含新 provider）──
+
+    [Fact]
+    public void Process_ConfigurationManager_JsonPlaceholderThenEnv_KeepsEnvValue()
+    {
+        // 复现原 bug 场景: ConfigurationManager + 先 AddJsonFile(占位) + 后 AddEnvironmentVariables(有效)
+        // → Reload 修复前遍历 providers 快照找不到 env → 误回退占位符
+        var original = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+        try
+        {
+            Environment.SetEnvironmentVariable("ConnectionStrings__DefaultConnection",
+                "Server=192.168.190.243;Database=LYBTDB_Test;User Id=sa;Encrypt=False");
+
+            var manager = new ConfigurationManager();
+            manager.AddJsonStream(new MemoryStream(
+                System.Text.Encoding.UTF8.GetBytes(
+                    "{\"ConnectionStrings\":{\"DefaultConnection\":\"Server=${DB_SERVER};Database=DB;\"}}")));
+            manager.AddEnvironmentVariables();
+
+            ConfigurationPostProcessor.Process(manager);
+
+            manager["ConnectionStrings:DefaultConnection"].Should().Be(
+                "Server=192.168.190.243;Database=LYBTDB_Test;User Id=sa;Encrypt=False",
+                "env 有效值必须保留——不得回退 JSON 占位符（真机 PUT 500 根因）");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("ConnectionStrings__DefaultConnection", original);
+        }
+    }
+
+    [Fact]
+    public void Process_ConfigurationManager_EnvPlaceholder_FallsBack()
+    {
+        // 真实类型回退语义: env 占位符 → 回退 JSON 有效值
+        var original = Environment.GetEnvironmentVariable("Jwt__SecretKey");
+        try
+        {
+            Environment.SetEnvironmentVariable("Jwt__SecretKey", "${Jwt__SecretKey}");
+
+            var manager = new ConfigurationManager();
+            manager.AddJsonStream(new MemoryStream(
+                System.Text.Encoding.UTF8.GetBytes(
+                    "{\"Jwt\":{\"SecretKey\":\"config-real-value\"}}")));
+            manager.AddEnvironmentVariables();
+
+            ConfigurationPostProcessor.Process(manager);
+
+            manager["Jwt:SecretKey"].Should().Be("config-real-value");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("Jwt__SecretKey", original);
+        }
+    }
+
+    [Fact]
+    public void Process_ConfigurationManager_EnvEmpty_FallsBack()
+    {
+        // 真实类型空串回退: env 空串 → 回退 JSON 有效值
+        var original = Environment.GetEnvironmentVariable("DefaultPasswords__SysAdminPassword");
+        try
+        {
+            Environment.SetEnvironmentVariable("DefaultPasswords__SysAdminPassword", "");
+
+            var manager = new ConfigurationManager();
+            manager.AddJsonStream(new MemoryStream(
+                System.Text.Encoding.UTF8.GetBytes(
+                    "{\"DefaultPasswords\":{\"SysAdminPassword\":\"config-password\"}}")));
+            manager.AddEnvironmentVariables();
+
+            ConfigurationPostProcessor.Process(manager);
+
+            manager["DefaultPasswords:SysAdminPassword"].Should().Be("config-password");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("DefaultPasswords__SysAdminPassword", original);
+        }
+    }
 }

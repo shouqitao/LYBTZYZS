@@ -260,6 +260,7 @@ E2E（最少）  → 完整业务链路
 3. **配置注入**：`WithWebHostBuilder` + `UseSetting` / 环境变量——不写死测试配置到代码
 4. **隔离**：每个测试类独立数据库名（如 LYBT_Test_{ClassName}），并行安全
 5. **不需要新包**：Mvc.Testing / Respawn / SqlServer 均已引用（SQLite in-memory 需新引 `Microsoft.EntityFrameworkCore.Sqlite`）
+6. **测试必须用生产真实类型**（2026-08-13 真机 bug 补充）：配置类测试用**真实 ConfigurationManager**（非自定义 ConfigurationRoot）——ConfigurationManager 的 Providers 集合 Add 后延迟重建，PostProcessor 需先 Reload() 再遍历；`ConfigurationPostProcessorTests` 已补 3 个真实类型用例（env 有效保留 / env 占位回退 / env 空串回退——复现原 PUT 500 bug 场景）
 
 ---
 

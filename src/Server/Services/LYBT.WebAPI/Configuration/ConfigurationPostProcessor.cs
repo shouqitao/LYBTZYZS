@@ -37,8 +37,13 @@ public static class ConfigurationPostProcessor
     /// </summary>
     public static void Process(IConfigurationRoot root)
     {
+        // 真机 bug 修复（2026-08-13）: ConfigurationManager（.NET 8 生产类型）的 Providers 集合
+        // 在 Add* 操作后延迟重建——立即访问快照不含刚 Add 的 provider（如 AddEnvironmentVariables 后
+        // 遍历找不到 env 值 → 误回退占位符 → PUT 500）。Reload() 强制 provider 重建 + 值刷新。
+        root.Reload();
+
         var fallbacks = new Dictionary<string, string?>();
-        var providers = root.Providers.ToList(); // 从低到高顺序
+        var providers = root.Providers.ToList(); // 从低到高顺序（Reload 后含全部）
 
         foreach (var key in KnownKeys)
         {
