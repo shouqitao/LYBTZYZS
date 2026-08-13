@@ -374,6 +374,7 @@ netstat -ano | findstr ":5000"
 | 8 | **Swagger 空白页** | `/swagger` 跳转 index 后空白 | 生产严格 CSP（`require-trusted-types-for 'script'`）阻止 SwaggerUI 渲染 | `/swagger` 路径 CSP 豁免（保留核心防护）；已修（b1c2bf2bb） |
 | 9 | **Swagger 生产默认关** | 测试环境看不到 API 清单 | `!IsProduction()` 才启用 Swagger，测试环境环境名是 Production | `Swagger:Enabled=true` 配置开关（测试开/正式关） |
 | 10 | **SSH 密码认证** | FlashFXP 连接失败 | 服务器 `sshd_config PasswordAuthentication no` | 服务器开启 `PasswordAuthentication yes` + `systemctl restart sshd` |
+| 11 | **全局 SplitQuery + 远程 SQL = 连接失败（2026-08-13 splitquery-fix）** | 种子失败（IdentitySeedData SplitQueryingEnumerable 连接错）/PUT formula 500——4 轮本地修复全过但真机全败 | 全局 `UseQuerySplittingBehavior(SplitQuery)` 把含 Include 查询拆多条 SQL 独立连接——远程 SQL（243，延迟 ~0.42s）多连接失败/超时 | 移除全局 SplitQuery（`DatabaseServiceCollectionExtensions.cs`——已修 0329bc785）改 EF 默认 SingleQuery；确有需要（大 Include 集合笛卡尔爆炸）查询级 `AsSplitQuery()`。教训：**全局配置必须与部署环境匹配**——本地低延迟测不出远程 DB 问题 |
 
 > **代码-文档一致性约定（2026-08-12 确立）**：每次代码/配置变更（尤其部署相关——环境变量键名、校验规则、安全头、路由）必须同步本清单与对应文档；本清单是后续用户手册/运维手册的素材来源，不得滞后于代码。
 
