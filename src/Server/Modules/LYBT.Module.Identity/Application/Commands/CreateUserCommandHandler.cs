@@ -2,6 +2,7 @@ using MediatR;
 using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.Extensions.Options;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
@@ -32,8 +33,25 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
     {
         var dto = request.Input;
 
-        if (!request.IsAdmin)
+        // 操作级授权（USER-D04 层级规则——真机缺口 2026-08-13）: 调用者必须是 Admin/SuperAdmin
+        if (request.OperatorRole is not (UserRole.Admin or UserRole.SuperAdmin))
             return Result<UserDetailDto>.Failure(ErrorCode.Unauthorized, "无权创建用户");
+
+        // 层级校验（04-permissions.md 权限设计原则 #1）:
+        //   Sysadmin → 仅可创建 Admin；Admin → 仅可创建 Doctor/Receptionist；Doctor/Receptionist → 无用户管理权限
+        var targetRole = dto.Role ?? UserRole.Doctor;
+        if (targetRole == UserRole.SuperAdmin)
+            return Result<UserDetailDto>.Failure(ErrorCode.Forbidden, "不能创建系统管理员账号（系统唯一账号）");
+        if (request.OperatorRole == UserRole.SuperAdmin)
+        {
+            if (targetRole != UserRole.Admin)
+                return Result<UserDetailDto>.Failure(ErrorCode.Forbidden, "系统管理员仅可创建 Admin 角色");
+        }
+        else if (request.OperatorRole == UserRole.Admin)
+        {
+            if (targetRole != UserRole.Doctor && targetRole != UserRole.Receptionist)
+                return Result<UserDetailDto>.Failure(ErrorCode.Forbidden, "Admin 仅可创建 Doctor/Receptionist 角色");
+        }
 
         if (string.IsNullOrWhiteSpace(dto.RealName))
             return Result<UserDetailDto>.Failure(ErrorCode.InvalidRequest, "真实姓名不能为空");
@@ -50,7 +68,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
         var user = ApplicationUser.Create(
             dto.UserName!,
             dto.RealName!,
-            dto.Role ?? Shared.Models.Enums.UserRole.Doctor,
+            targetRole,
             dto.PhoneNumber,
             dto.Email,
             dto.Remark,

@@ -68,8 +68,7 @@ public abstract class BaseUsersController : BaseCrudController
     public async Task<IActionResult> Create([FromBody] UserInputDto input, CancellationToken ct)
     {
         var (operatorId, _, currentRole) = GetOperator();
-        var isAdmin = currentRole == UserRole.SuperAdmin || currentRole == UserRole.Admin;
-        var result = await Sender.Send(new CreateUserCommand(input, operatorId, isAdmin), ct);
+        var result = await Sender.Send(new CreateUserCommand(input, operatorId, currentRole), ct);
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "创建失败");
         LogOperation("创建用户成功", result.Value, null);

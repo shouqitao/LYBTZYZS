@@ -200,7 +200,7 @@ Server/Local → UsersController → IUserManagerService
 **验收标准**:
 - [ ] 用户名唯一 + 保留用户名校验
 - [ ] 默认密码见 `appsettings:DefaultPasswords`
-- [ ] 受 USER-D04 层级规则约束
+- [ ] 受 USER-D04 层级规则约束（✅ 2026-08-13 createuser-hierarchy-fix——Handler 已实现 Sysadmin→Admin / Admin→Doctor/Receptionist 层级校验，`CreateUserHierarchyTests` 7 用例）
 
 ---
 

@@ -92,6 +92,7 @@
 | **C4** | 💻 | **医案创建含 Receptionist**：`MedicalCasesController.Create` 策略 `DoctorOrAdminOrReceptionist`（含 Receptionist/代建）。设计决策 BR-000：医案创建仅 Doctor | `MedicalCasesController.cs:93` | 改策略为 `DoctorOnly`（需新增 PolicyConstants） |
 | **C5** | 💻 | **前台可查看药材/验方**：`HerbsController`/`FormulasController` GET 类级 `DoctorOrReceptionist`。2026-08-03 决策：前台不可查看药材/验方 | `HerbsController.cs` / `FormulasController.cs` | GET 策略改为 Doctor+Admin+SuperAdmin（不含 Receptionist），需新增策略或操作级覆盖 |
 | **C6** | 💻 | **打印无 DoctorOnly**：处方打印端点无操作级策略，2026-08-03 决策：仅 Doctor 打印（管理员可查打印记录） | 打印模块 Controller | 打印操作补 `[Authorize(Policy = PolicyConstants.DoctorOnly)]` |
+| **C7** | ✅ | **CreateUser 层级校验缺失（USER-D04）**：创建用户仅粗粒度 `IsAdmin` 检查——sysadmin 创建 Doctor 实测 200 成功（应拒绝）。2026-08-13 已修复：`CreateUserCommandHandler` 加层级校验（Sysadmin→仅 Admin；Admin→仅 Doctor/Receptionist；禁创建 SuperAdmin——403） | `CreateUserCommandHandler.cs` | ~~补层级校验~~ → 已完成（2026-08-13 createuser-hierarchy-fix；`CreateUserHierarchyTests` 7 用例） |
 
 ---
 
