@@ -1,3 +1,4 @@
+using System.Text;
 using FluentAssertions;
 using LYBT.WebAPI.Configuration;
 using Microsoft.Extensions.Configuration;
@@ -8,6 +9,12 @@ namespace LYBT.Tests.Server.Integration.Deployment;
 /// <summary>
 /// 配置后处理器单测（CFG-BATCH2 边界决策 2/3：占位符未展开/空串 → 视为无效 → 回退下一级）
 /// </summary>
+[CollectionDefinition("EnvIsolated", DisableParallelization = true)]
+public class EnvIsolatedCollection
+{
+}
+
+[Collection("EnvIsolated")]
 public class ConfigurationPostProcessorTests
 {
     [Theory]
@@ -109,9 +116,10 @@ public class ConfigurationPostProcessorTests
                 "Server=192.168.190.243;Database=LYBTDB_Test;User Id=sa;Encrypt=False");
 
             var manager = new ConfigurationManager();
-            manager.AddJsonStream(new MemoryStream(
-                System.Text.Encoding.UTF8.GetBytes(
-                    "{\"ConnectionStrings\":{\"DefaultConnection\":\"Server=${DB_SERVER};Database=DB;\"}}")));
+            manager.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:DefaultConnection"] = "Server=${DB_SERVER};Database=DB;"
+            });
             manager.AddEnvironmentVariables();
 
             ConfigurationPostProcessor.Process(manager);
@@ -136,9 +144,10 @@ public class ConfigurationPostProcessorTests
             Environment.SetEnvironmentVariable("Jwt__SecretKey", "${Jwt__SecretKey}");
 
             var manager = new ConfigurationManager();
-            manager.AddJsonStream(new MemoryStream(
-                System.Text.Encoding.UTF8.GetBytes(
-                    "{\"Jwt\":{\"SecretKey\":\"config-real-value\"}}")));
+            manager.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Jwt:SecretKey"] = "config-real-value"
+            });
             manager.AddEnvironmentVariables();
 
             ConfigurationPostProcessor.Process(manager);
@@ -161,9 +170,10 @@ public class ConfigurationPostProcessorTests
             Environment.SetEnvironmentVariable("DefaultPasswords__SysAdminPassword", "");
 
             var manager = new ConfigurationManager();
-            manager.AddJsonStream(new MemoryStream(
-                System.Text.Encoding.UTF8.GetBytes(
-                    "{\"DefaultPasswords\":{\"SysAdminPassword\":\"config-password\"}}")));
+            manager.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DefaultPasswords:SysAdminPassword"] = "config-password"
+            });
             manager.AddEnvironmentVariables();
 
             ConfigurationPostProcessor.Process(manager);

@@ -11,9 +11,9 @@ namespace LYBT.Tests.Server.Integration.Deployment;
 /// L4 部署层测试（P2 批次——方案 §五 L4）：Production 配置契约守护——
 /// Program.Main 构建前校验（密码/JWT/token）读原始配置链（含环境变量）——
 /// 测试用**环境变量注入**（真实部署方式——拦截上线坑 #4 #5 #7）
-/// 注意：进程级环境变量——本类串行（collection）避免并行污染
+/// 注意：进程级环境变量——本类串行（EnvIsolated collection）避免并行污染
 /// </summary>
-[Collection("DeploymentConfig")]
+[Collection("EnvIsolated")]
 public class DeploymentConfigTests
 {
     private const string ValidJwt = "VGVzdFNlY3JldEtleV9NaW5MZW5ndGgzMkNoYXJzX0ZvckpXVFRva2VuR2VuX0xZQlRfMTIzNDU2";
