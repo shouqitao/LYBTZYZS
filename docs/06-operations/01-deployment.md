@@ -113,6 +113,25 @@ echo "LYBT WebAPI started, PID=$!"
 > | 正式生产 | 环境变量注入（正式发布时换强随机） | `${DefaultPasswords__SysAdminPassword}` 占位符 → env |
 >
 > ⚠️ 登录 401 时先查本表（用对应环境的权威密码），勿凭记忆猜密码。sysadmin 密码被安全设计保护（K4：生产禁默认回退 + ResetPassword 拒绝重置 sysadmin），改密只能走 ChangePassword（需旧密码）。
+>
+> **环境名（模式）设置——业界标准（2026-08-13 确认）**：环境名只从**环境变量/启动参数**读取，**不能从配置文件设定**（微软官方 + 社区共识）：
+> ```
+> 优先级：--environment 命令行参数（最高）
+>        > ASPNETCORE_ENVIRONMENT 环境变量（标准）
+>        > DOTNET_ENVIRONMENT（.NET 通用 fallback）
+>        > launchSettings.json（仅开发/IDE，不随发布）
+> 默认值：Production（未设置时）
+> ```
+> **为什么不能放配置文件**：环境名必须在加载配置文件**之前**确定（决定加载哪个 `appsettings.{env}.json`）——鸡生蛋问题。官方定位 `ASPNETCORE_ENVIRONMENT` 为**宿主机级配置**（host-level），不属于应用配置。
+>
+> **各部署方式设置环境名**：
+> | 方式 | 做法 |
+> |------|------|
+> | 服务器 start.sh | `export ASPNETCORE_ENVIRONMENT=Production`（当前已用）|
+> | Docker | `ENV ASPNETCORE_ENVIRONMENT=Production` 或 docker-compose `environment:` |
+> | IIS | web.config `aspNetCore environmentVariables` |
+> | Azure | App Settings `ASPNETCORE_ENVIRONMENT` |
+> | 开发本机 | launchSettings.json（IDE 自动）|
 
 **第四步：重启服务**
 
