@@ -67,7 +67,10 @@ public class Program
 
         try
         {
-            Log.Information("应用程序启动中...(Bootstrap Logger)");
+            // US-LOG-008（2026-08-13）: 启动首条日志含版本/commit/env/pid——部署验证第一步（对照代码新旧）
+            var informationalVersion = LoggingBootstrap.GetInformationalVersion();
+            Log.Information("[启动] LYBT.WebAPI v{InformationalVersion} (commit {Commit}) env={Environment} pid={Pid}",
+                informationalVersion, LoggingBootstrap.GetCommitSha() ?? "unknown", environment, Environment.ProcessId);
 
             // 加载 .env 文件（如果存在）
             var envFile = environment == "Development" ? ".env.development" : ".env";

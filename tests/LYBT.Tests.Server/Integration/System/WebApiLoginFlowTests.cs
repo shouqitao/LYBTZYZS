@@ -10,6 +10,7 @@ namespace LYBT.Tests.Server.Integration.System;
 /// L3 系统层补充（登录链路——需真实 SQL：TEST_DB_CONNECTION 配置后激活——
 /// 拦截上线坑 #2（IdentityDbContext 映射——登录查询 Users 表列映射）+ 认证链）
 /// </summary>
+[Collection("WebApiHostTests")]
 public class WebApiLoginFlowTests
 {
     [Fact]

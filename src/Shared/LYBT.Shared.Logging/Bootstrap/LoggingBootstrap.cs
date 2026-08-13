@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Reflection;
 using Serilog;
 using Serilog.Events;
 
@@ -62,10 +63,28 @@ public static class LoggingBootstrap
                 retainedFileCountLimit: 30,
                 fileSizeLimitBytes: 10 * 1024 * 1024, // 10MB
                 rollOnFileSizeLimit: true,
+                // US-LOG-009（2026-08-13）: shared: true——多进程共享同一日志文件（防同天 _001 后缀）
+                shared: true,
                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{CorrelationId}] [{SourceContext}] {Message:lj}{NewLine}{Exception}")
             .CreateLogger();
 
         Log.Information("Serilog日志系统已初始化，日志路径: {LogPath}", options.LogBasePath);
+    }
+
+    /// <summary>US-LOG-008: 程序集信息版本（AssemblyInformationalVersion——SDK 注入含 +commit SHA 后缀）</summary>
+    public static string GetInformationalVersion()
+    {
+        var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+        var version = assembly.GetName().Version?.ToString() ?? "Unknown";
+        return assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? version;
+    }
+
+    /// <summary>US-LOG-008: 提取 + 后缀的 commit SHA（SDK SourceLink 注入）；无则 null</summary>
+    public static string? GetCommitSha()
+    {
+        var iv = GetInformationalVersion();
+        var idx = iv.IndexOf('+');
+        return idx >= 0 ? iv[(idx + 1)..] : null;
     }
 
     /// <summary>
@@ -106,6 +125,8 @@ public static class LoggingBootstrap
                     path: "logs/bootstrap-.log",
                     rollingInterval: RollingInterval.Day,
                     retainedFileCountLimit: 7,
+                    // US-LOG-009（2026-08-13）: shared: true——多进程共享同一 bootstrap 日志文件
+                    shared: true,
                     outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
                 .CreateBootstrapLogger();
         }

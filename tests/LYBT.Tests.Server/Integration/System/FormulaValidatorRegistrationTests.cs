@@ -13,6 +13,7 @@ namespace LYBT.Tests.Server.Integration.System;
 /// 疑点：CreateFormulaValidator 未被 DI 注册（ValidationBehavior 找不到 IValidator → 直接 next() → 成功创建）。
 /// 用真实宿主（Program + CatalogModule 完整注册链）验证 DI 解析。
 /// </summary>
+[Collection("WebApiHostTests")]
 public class FormulaValidatorRegistrationTests : IClassFixture<ProductionWebApiTestFactory>
 {
     private readonly ProductionWebApiTestFactory _factory;

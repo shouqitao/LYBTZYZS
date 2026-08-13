@@ -7,6 +7,7 @@ namespace LYBT.Tests.Server.Integration.System;
 /// L3 系统层测试（P0 批次——方案 §五 L3）：WebApplicationFactory 真实启动 Remote WebAPI——
 /// 守护「系统能启动 + 能响应」契约（拦截上线坑 #1 启动崩溃 / #3 健康检查 / #9 FallbackPolicy）
 /// </summary>
+[Collection("WebApiHostTests")]
 public class WebApiSystemTests : IClassFixture<WebApiTestFactory>
 {
     private readonly WebApiTestFactory _factory;

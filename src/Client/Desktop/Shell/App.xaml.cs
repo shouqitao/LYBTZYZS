@@ -45,7 +45,10 @@ public partial class App : PrismApplication
 
         SetConsoleEncoding();
         LoggingBootstrap.Initialize();
-        Log.Information("应用程序启动");
+        // US-LOG-008（2026-08-13）: 启动首条日志含版本/commit/pid（Desktop——env 由窗口标题区分）
+        var informationalVersion = LoggingBootstrap.GetInformationalVersion();
+        Log.Information("[启动] LYBT.Desktop v{InformationalVersion} (commit {Commit}) pid={Pid}",
+            informationalVersion, LoggingBootstrap.GetCommitSha() ?? "unknown", Environment.ProcessId);
 
         base.OnStartup(e);
     }
