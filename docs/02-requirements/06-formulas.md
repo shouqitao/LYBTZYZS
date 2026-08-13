@@ -133,6 +133,18 @@ stateDiagram-v2
 5. 初始 `ValidationStatus=Draft`
 6. 记录 UserId 和 CreatedBy（用于所有权判断）
 
+**前端药材选择流程（2026-08-13 补充明确）**:
+```
+新建验方编辑页：
+1. 首次进入 → 查询药材目录（GET /api/v1/herbs）→ DesktopCacheManager 缓存（US-HERB-014）
+2. 医生搜索/选择药材 → 前端组装 FormulaHerbItemInputDto：
+   { herbId（来自药材库）, herbName（快照）, dosage（医生填）, unit（医生填）, ... }
+3. 添加进 EditHerbItems 集合（至少 1 味才能提交）
+4. 提交 → POST /api/v1/formulas（请求体含完整 herbs 数组）
+```
+- **herbs 集合来源 = 药材目录查询（可缓存）**；提交时的组合 = 请求体快照（不依赖缓存）
+- 后端校验：herbId 不存在/已删除 → 422（引用校验）；空 herbs → 400（AC）
+
 **双模式**:
 | 模式 | 行为 |
 |------|------|

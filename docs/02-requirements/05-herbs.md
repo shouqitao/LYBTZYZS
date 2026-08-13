@@ -74,6 +74,37 @@
 
 ---
 
+### US-HERB-014: Desktop 前端药材缓存（开方/验方选择用）
+
+**角色**: 医生/管理员
+**优先级**: Must
+**状态**: ⚠️ 部分实现（`DesktopCacheManager.InvalidateHerbCaches` 已实现；需求文档 2026-08-13 补充定义）
+
+**作为** 医生，**我想要** 在开方/验方编辑时快速选择药材且不重复请求服务器，**以便** 编辑体验流畅、减少网络往返。
+
+**验收标准**:
+- [ ] 首次进入开方/验方编辑 → 查询药材（`GET /api/v1/herbs`）并缓存
+- [ ] 同一会话内再次进入 → 使用缓存（不重复请求）
+- [ ] 药材 CRUD 操作后 → 缓存失效（下次进入重新查询）
+- [ ] 提交验方/处方时后端引用校验兜底（缓存过期药材 → 422 提示刷新）
+
+**业务规则**:
+1. 缓存键：`GET:/api/v1/herbs`（前缀匹配，`DesktopCacheManager`）
+2. 失效事件：`CacheEvents.InvalidatedEvent`（Domain=Herbs，Reason=HerbCRUD）——药材增删改/批量操作后发布
+3. 缓存范围：**只缓存查询结果（药材目录）**；验方/处方提交时的药材组合是**请求体快照**，不依赖缓存
+4. 价格一致性：开方时 `PrescriptionItem` 价格快照取自查询结果，历史处方不受后续调价影响（A2 决策）
+5. 缓存不适用场景：验方详情/处方详情（实时数据，不缓存）
+
+**双模式**:
+| 模式 | 行为 |
+|------|------|
+| 远程 | 缓存远程 WebAPI 查询结果 |
+| 本地 | 缓存本地 LocalWebAPI 查询结果（机制一致） |
+
+**实现参考**: `DesktopCacheManager.cs`（`InvalidateHerbCaches`）、`FormulaEditorViewModel.cs`（`EditHerbItems`）、`PrescriptionEditorViewModel.cs`
+
+---
+
 ### US-HERB-002: 查看药材详情
 
 **角色**: 管理员（AdminOrSuperAdmin 策略）

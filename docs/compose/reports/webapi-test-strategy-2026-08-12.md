@@ -282,4 +282,46 @@ E2E（最少）  → 完整业务链路
 | 4 | 发布门禁 | **纳入** Runbook 第 0 步 | P0 后发布前必跑冒烟 |
 | 5 | 测试库命名 | **LYBTDB_Test** | 语义清晰，与 LYBTDB_Dev 并列 |
 
+## 十一、Formula/处方药材组合测试设计（2026-08-13 补充）
+
+**背景**：真机测试发现 formula 创建/更新涉及 herbs 集合（前端查询+缓存），需明确测试设计。相关需求：US-FORM-003（创建）/US-FORM-004（更新替换）/US-HERB-014（前端缓存）/A2（价格快照）。
+
+### 11.1 数据流（前端→后端）
+
+```
+前端（Desktop）：查询药材目录（可缓存）→ 组装 herbs 数组 → 提交
+  Formula:     herbs: [{ herbId, herbName, dosage, unit }]
+  Prescription: items: [{ HerbName, UnitPrice, Subtotal, Dosage }]（无 HerbId，价格快照）
+后端校验：herbId 存在性/未删除（引用校验）→ 持久化
+```
+
+### 11.2 测试矩阵（API 层）
+
+| # | 场景 | 请求 | 预期 | 守护需求 |
+|---|------|------|------|---------|
+| 1 | Formula 创建（合法 herbs） | POST /formulas | 201 | US-FORM-003 |
+| 2 | Formula 创建（空 herbs） | POST /formulas herbs=[] | 400 | US-FORM-003 AC |
+| 3 | Formula 创建（herbId 不存在） | POST /formulas herbId=random | 422 | 引用校验 |
+| 4 | Formula 创建（herbId 已删除） | POST /formulas herbId=deleted | 422 | 05-herbs 引用检查 |
+| 5 | Formula 更新（替换 herbs） | PUT /formulas/{id} 新 herbs | 200 + 旧 herbs 全替换 | US-FORM-004 |
+| 6 | Formula 更新（herb 未验证 → 降级） | PUT + 新未验证 herb | 200 + ValidationStatus=Draft | FLAW-F1 |
+| 7 | 处方创建（含 Prescription.Items） | POST /medicalcases | 201 + 价格快照正确 | A2 |
+| 8 | 药材调价后旧处方价格不变 | 调价 + 查旧处方 | 旧处方 UnitPrice 不变 | A2 快照隔离 |
+| 9 | 缓存语义（前端层） | 见 11.3 | — | US-HERB-014 |
+
+### 11.3 前端缓存测试（Desktop 层，非 API 测试范围）
+
+- DesktopCacheManager 单元测试：首次查询缓存 / 再次查询命中 / InvalidateHerbCaches 后失效
+- 缓存与提交分离：提交请求体是快照，不依赖缓存状态（缓存过期不影响提交，后端引用校验兜底）
+
+### 11.4 自动化 vs 真机分工
+
+| 层 | 覆盖 | 工具 |
+|----|------|------|
+| API 自动化（L2/L3） | 测试矩阵 1-8 | WebApplicationFactory + LYBTDB_Test |
+| 前端缓存 | DesktopCacheManager 单测 | xUnit（Desktop 测试） |
+| 真机冒烟 | 登录 + formula 创建/更新 + 处方创建 | 服务器手动/脚本 |
+
+---
+
 > 连通性实测：`sqlcmd -S 192.168.190.243 -U sa -C -Q "SELECT @@VERSION"` → SQL Server 2016 SP1 Enterprise，0.42s 响应，sa 认证成功。LYBTDB_Dev 现状：22 表 / 8340 行 / 8MB。
