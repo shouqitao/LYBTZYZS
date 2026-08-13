@@ -184,3 +184,4 @@
 | P2-04 | 离线同步 v2.0 | 旧分支已放弃 | 大功能 |
 | P2-05 | Swagger/OpenAPI | — | 开发体验 |
 | P2-06 | 排班管理 | Registration | 业务增强 |
+| P2-07 | **多进程/端口占用防护**（2026-08-13 登记，API 测试后重点讨论） | start.sh + Program | 部署可靠性：start.sh 仅 pkill+sleep 2 无端口检查/无 PID 文件/无启动成功验证——实测旧进程 741060 未释放端口导致新进程 741734 启动失败（06:18 日志 `${DB_SERVER}` 连接失败 + 双 dotnet 进程并存）。设计需覆盖：端口释放确认、PID 文件、启动成功探测（/health）、孤儿进程清理、单实例 Mutex（US-SHELL-001 已有 Desktop 侧） |
