@@ -92,7 +92,7 @@ graph TD
 |------|--------|------|
 | `UserName` | `"sysadmin"` | 系统管理员用户名 |
 | `AutoCreateOnStartup` | `true` | 启动时自动创建 (若不存在) |
-| `ForceResetOnStartup` | `false` | 开发环境启动时强制重置密码和状态 |
+| ~~`ForceResetOnStartup`~~ | ~~`false`~~ | **已移除（2026-08-13 回归设计）**——无强制重置密码机制；密码遗忘唯一途径 = PasswordHashGenerator 工具 |
 | `AllowAutoCreateInProduction` | `false` | 生产环境是否允许自动创建 |
 | `InitialSetupToken` | — | 生产环境创建时的安全令牌 |
 | `SessionTimeoutMinutes` | `240` | 会话超时时间 |
@@ -107,27 +107,19 @@ graph TD
     C -->|是| D{AllowAutoCreateInProduction && InitialSetupToken 有效?}
     D -->|否| Z
     D -->|是| E[创建/更新 sysadmin]
-    C -->|否| F{ForceResetOnStartup?}
-    F -->|是| G[重置: 密码 + FailedLoginCount + LockoutEnd + Status]
-    F -->|否| H{sysadmin 存在?}
+    C -->|否| H{sysadmin 存在?}
     H -->|是| Z
     H -->|否| E
-    G --> E
 ```
 
-### ForceResetOnStartup 行为 (开发直接生效；非开发需 InitialSetupToken 验证——2026-08-13 审核对齐)
+### ForceResetOnStartup 已移除（2026-08-13 生命周期回归）
 
-启用后，每次启动时重置以下字段:
+**用户权威设计**：无「强制重置密码」机制——sysadmin 生命周期 = 空库创建（初始密码从配置文档读取）/ 有数据不创建不重置 / 密码遗忘唯一途径 = `src/Tools/PasswordHashGenerator`（PBKDF2 哈希 → 人工 SQL 更新 Users.PasswordHash）。
 
-| 字段 | 重置为 |
-|------|--------|
-| `PasswordHash` | 使用配置的默认密码重新哈希 |
-| `FailedLoginCount` | `0` |
-| `LockoutEnd` | `null` |
-| `Status` | `Enabled` |
-| `IsDeleted` | `false` |
-
-**安全约束**: 非开发环境（如测试部署 Production 名）须 `InitialSetupToken` 验证通过才触发（安全门控——与 AllowAutoCreateInProduction 同模式）；生产默认 `ForceResetOnStartup=false`，且必须显式开启 + token 验证——安全语义保持。重置走 `UserManager.ResetPasswordAsync`（PBKDF2 真哈希——新密码来自 `DefaultPasswords:SysAdminPassword` 环境变量注入）。
+**边界场景（运维可观测性，启动时检测）**：
+- 软异常（sysadmin 存在但 IsDeleted/Disabled）→ `LogWarning` 不阻断启动；登录返回明确提示「系统管理员账号异常，请联系运维使用密码初始化工具恢复」
+- 硬删（系统数据存在但 SuperAdmin 缺失）→ `LogCritical` + 抛异常禁止启动（需工具恢复后重启）
+- 空库首次启动 → 正常创建（不误报）
 
 ### 开发环境推荐配置
 
@@ -137,7 +129,7 @@ graph TD
 {
   "SystemAdmin": {
     "AutoCreateOnStartup": true,
-    "ForceResetOnStartup": true
+    // ForceResetOnStartup 已移除（2026-08-13）——无强制重置机制
   },
   "DefaultPasswords": {
     "EnableInDevelopment": true
@@ -174,7 +166,7 @@ $2a$11$0IviQQSC517yFyWB47YDh.P.mHetOQwFkvgdMtl8UFWn6v4iKKJ8e
 | Identity PBKDF2 (UserManager 内置) | 与登录认证同算法（铁律 #3——全部走 UserManager，禁 BCrypt 落库） |
 | IPasswordService 接口 | 测试可 Mock，避免静态方法直接依赖 |
 | 可配置锁定策略 | 替代硬编码常量，便于不同环境调整 |
-| ForceResetOnStartup 开发直接 + 非开发 token 门控 | 防止生产环境意外重置管理员账户（未验证 token 绝不触发） |
+| ~~ForceResetOnStartup~~（已移除 2026-08-13） | 无强制重置机制——密码遗忘唯一途径 = PasswordHashGenerator 工具 |
 | FixedTimeEquals 令牌比较 | 防止时序攻击泄漏 InitialSetupToken |
 
 ## Identity 集成约束（铁律）

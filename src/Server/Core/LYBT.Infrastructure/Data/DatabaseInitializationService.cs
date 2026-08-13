@@ -1,8 +1,6 @@
-using LYBT.Entities.Users;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Models.Enums;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -22,20 +20,17 @@ public class DatabaseInitializationService
     private readonly ILogger<DatabaseInitializationService> _logger;
     private readonly SystemAdminOptions _systemAdminOptions;
     private readonly DefaultPasswordOptions _defaultPasswordOptions;
-    private readonly UserManager<ApplicationUser> _userManager;
 
     public DatabaseInitializationService(
         IDbContextAccessor dbAccessor,
         ILogger<DatabaseInitializationService> logger,
         IOptions<SystemAdminOptions> systemAdminOptions,
-        IOptions<DefaultPasswordOptions> defaultPasswordOptions,
-        UserManager<ApplicationUser> userManager)
+        IOptions<DefaultPasswordOptions> defaultPasswordOptions)
     {
         _context = dbAccessor.Context;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _systemAdminOptions = systemAdminOptions?.Value ?? throw new ArgumentNullException(nameof(systemAdminOptions));
         _defaultPasswordOptions = defaultPasswordOptions?.Value ?? throw new ArgumentNullException(nameof(defaultPasswordOptions));
-        _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
     }
 
     /// <summary>
@@ -145,19 +140,18 @@ public class DatabaseInitializationService
 
             var config = _systemAdminOptions;
 
-            // 生产环境安全门控（ForceReset 修复: 非开发环境需 token 验证——
-            // ForceReset 只重置不创建（更安全），不要求 AllowAutoCreateInProduction）
+            // 生产环境安全门控（生命周期回归 2026-08-13: 无 ForceReset——仅 AllowAutoCreate+token）
             if (!IsDevelopment())
             {
-                var tokenValid = ValidateSetupToken(config.InitialSetupToken);
-                var autoCreateAllowed = config.AllowAutoCreateInProduction && tokenValid;
-                var forceResetAllowed = config.ForceResetOnStartup && tokenValid;
-
-                if (!autoCreateAllowed && !forceResetAllowed)
+                if (!config.AllowAutoCreateInProduction)
                 {
-                    _logger.LogWarning(
-                        "非开发环境门控未通过（AllowAutoCreateInProduction={Auto} token={Tok1}; ForceResetOnStartup={Reset} token={Tok2}）——跳过系统管理员初始化",
-                        config.AllowAutoCreateInProduction, tokenValid, config.ForceResetOnStartup, tokenValid);
+                    _logger.LogWarning("非开发环境且 AllowAutoCreateInProduction=false，跳过系统管理员自动创建");
+                    return;
+                }
+
+                if (!ValidateSetupToken(config.InitialSetupToken))
+                {
+                    _logger.LogWarning("非开发环境初始设置令牌验证失败，跳过系统管理员自动创建");
                     return;
                 }
             }
@@ -169,57 +163,38 @@ public class DatabaseInitializationService
 
             if (existingSuperAdmin != null)
             {
-                // ForceReset 修复: 开发环境直接触发；非开发环境需 InitialSetupToken 验证通过（安全门控）
-                var forceResetAllowed = config.ForceResetOnStartup
-                    && (IsDevelopment() || ValidateSetupToken(config.InitialSetupToken));
-
-                if (forceResetAllowed)
+                // 生命周期回归（2026-08-13）: 存在即跳过——无任何密码重置机制
+                //（密码遗忘唯一途径 = PasswordHashGenerator 工具人工恢复）
+                if (existingSuperAdmin.IsDeleted || existingSuperAdmin.Status != CommonStatus.Enabled)
                 {
-                    existingSuperAdmin.IsSysAdmin = true;
-                    existingSuperAdmin.AccessFailedCount = 0;
-                    existingSuperAdmin.LockoutEnd = null;
-                    existingSuperAdmin.Status = CommonStatus.Enabled;
-                    existingSuperAdmin.IsDeleted = false;
-                    existingSuperAdmin.UpdatedAt = DateTime.UtcNow;
-
-                    // 真正重置密码哈希（PBKDF2——UserManager.ResetPasswordAsync）
-                    var newPassword = _defaultPasswordOptions.SysAdminPassword;
-                    if (string.IsNullOrWhiteSpace(newPassword)
-                        || (newPassword.StartsWith("${", StringComparison.Ordinal) && newPassword.EndsWith("}", StringComparison.Ordinal)))
-                    {
-                        _logger.LogWarning(
-                            "[ForceResetOnStartup] 新密码未配置（DefaultPasswords:SysAdminPassword 为空或占位符）——仅重置状态，跳过密码重置");
-                    }
-                    else
-                    {
-                        var resetToken = await _userManager.GeneratePasswordResetTokenAsync(existingSuperAdmin);
-                        var resetResult = await _userManager.ResetPasswordAsync(existingSuperAdmin, resetToken, newPassword);
-                        if (!resetResult.Succeeded)
-                        {
-                            _logger.LogError(
-                                "[ForceResetOnStartup] 密码重置失败: {Errors}——仅重置状态",
-                                string.Join("; ", resetResult.Errors.Select(e => e.Description)));
-                        }
-                    }
-
-                    await _context.SaveChangesAsync();
+                    // 软异常: 存在但被删除/禁用——不阻断启动，登录时明确提示（运维可观测性）
                     _logger.LogWarning(
-                        "[ForceResetOnStartup] 系统管理员密码及锁定状态已重置（PBKDF2 哈希）。UserName: {UserName}",
-                        existingSuperAdmin.UserName);
+                        "[SYSADMIN] 系统管理员账号异常（IsDeleted={Deleted}, Status={Status}）——登录将提示联系运维使用密码初始化工具恢复",
+                        existingSuperAdmin.IsDeleted, existingSuperAdmin.Status);
                 }
                 else
                 {
-                    _logger.LogWarning(
-                        "系统管理员已存在，跳过创建。UserName: {UserName}, Email: {Email}, IsDeleted: {IsDeleted}",
-                        existingSuperAdmin.UserName,
-                        existingSuperAdmin.Email,
-                        existingSuperAdmin.IsDeleted);
+                    _logger.LogInformation(
+                        "系统管理员已存在，跳过创建。UserName: {UserName}",
+                        existingSuperAdmin.UserName);
                 }
                 return;
             }
 
-            // Issue #2237: 用户创建已迁移到 IdentitySeedData（通过 UserManager 确保密码哈希格式正确）
-            // DatabaseInitializationService 不再直接创建用户，避免 BCrypt/PBKDF2 哈希冲突
+            // 硬删边界检测（生命周期回归 2026-08-13）:
+            // 数据存在（非 sysadmin 用户/业务已用）但 SuperAdmin 缺失 → 启动 Fatal（需工具恢复）
+            var hasData = await _context.Users.IgnoreQueryFilters()
+                .AnyAsync(u => u.Role != UserRole.SuperAdmin);
+            if (hasData)
+            {
+                _logger.LogCritical(
+                    "[SYSADMIN] 系统数据存在但 SuperAdmin 用户缺失（可能被硬删）——禁止启动，需用密码初始化工具（PasswordHashGenerator）恢复 Users 表");
+                throw new InvalidOperationException(
+                    "系统数据存在但系统管理员账号缺失（可能被物理删除）——请使用密码初始化工具（PasswordHashGenerator）恢复后重新启动");
+            }
+
+            // 空库首次启动: 正常（IdentitySeedData 将创建——Issue #2237 用户创建迁移）
+            _logger.LogInformation("空库首次启动——系统管理员将由 IdentitySeedData 创建");
         }
         catch (Exception ex)
         {

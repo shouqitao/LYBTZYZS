@@ -77,6 +77,18 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
 
         if (user.Status == CommonStatus.Disabled)
         {
+            // 生命周期回归（2026-08-13）: sysadmin 禁用 → 明确运维提示（区别于普通用户通用错误；
+            // 软删用户查询已滤（GetUserByUsernameAsync !IsDeleted）——走通用「用户不存在」路径）
+            if (user.IsSysAdmin)
+            {
+                _logger.LogWarning(
+                    "[Handler] sysadmin 登录被拒——账号禁用（Status={Status}）——需密码初始化工具恢复",
+                    user.Status);
+                return Result<LoginResponse>.Failure(
+                    ErrorCode.UserDisabled,
+                    "系统管理员账号异常，请联系运维使用密码初始化工具恢复");
+            }
+
             _logger.LogWarning("[Handler] Login failed - UserName={UserName} Reason=用户已被禁用", input.UserName);
             await RecordAuditAsync(new SecurityAuditEvent
             {

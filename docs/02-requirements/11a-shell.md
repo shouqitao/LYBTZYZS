@@ -345,7 +345,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 - [x] `ForceChangeOnFirstLogin` —— `DefaultPasswordOptions` 控制首次登录是否强制改密
 
 **业务规则**:
-1. **开发环境**：`AutoCreateOnStartup=true` + `ForceResetOnStartup` 可选（开发时强制重置密码）。
+1. **开发环境**：`AutoCreateOnStartup=true`（空库自动创建——初始密码从配置文档读取；**无强制重置密码机制**——密码遗忘用 PasswordHashGenerator 工具恢复，2026-08-13 回归设计）。
 2. **生产环境**：`AllowAutoCreateInProduction=false` + 需配置 `InitialSetupToken` 环境变量才能创建 sysadmin。
 3. 生产环境默认密码由环境变量 `DefaultPasswords__SysAdminPassword` 提供（K4 加固），不再硬编码。
 4. `SessionTimeoutMinutes` 控制会话超时（默认 240 分钟）。

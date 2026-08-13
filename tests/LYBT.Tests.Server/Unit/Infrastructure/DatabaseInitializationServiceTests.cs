@@ -76,194 +76,16 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
     private DatabaseInitializationService CreateService(
         SystemAdminOptions? adminOptions = null,
         DefaultPasswordOptions? passwordOptions = null,
-        ILogger<DatabaseInitializationService>? logger = null,
-        FakeUserManager? userManager = null)
+        ILogger<DatabaseInitializationService>? logger = null)
     {
         IDbContextAccessor dbAccessor = new TestDbContextAccessor(_dbContext);
         return new DatabaseInitializationService(
             dbAccessor,
             logger ?? _logger,
             Options.Create(adminOptions ?? DefaultAdminOptions),
-            Options.Create(passwordOptions ?? DefaultPasswordOpts),
-            userManager ?? new FakeUserManager());
+            Options.Create(passwordOptions ?? DefaultPasswordOpts));
     }
 
-    /// <summary>
-    /// 手写 UserManager 替身（Server 零 mock 约定）——仅 override 密码重置相关，
-    /// 记录 ResetPasswordAsync 调用供断言
-    /// </summary>
-    private sealed class FakeUserManager : UserManager<ApplicationUser>
-    {
-        public int ResetPasswordCallCount { get; private set; }
-        public string? LastNewPassword { get; private set; }
-        public bool ResetSucceeds { get; set; } = true;
-
-        public FakeUserManager()
-            : base(
-                new FakeUserStore(),
-                Microsoft.Extensions.Options.Options.Create(new IdentityOptions()),
-                new PasswordHasher<ApplicationUser>(),
-                Array.Empty<IUserValidator<ApplicationUser>>(),
-                Array.Empty<IPasswordValidator<ApplicationUser>>(),
-                new FakeLookupNormalizer(),
-                new IdentityErrorDescriber(),
-                null!,
-                NullLogger<UserManager<ApplicationUser>>.Instance)
-        {
-        }
-
-        private sealed class FakeUserStore : IUserStore<ApplicationUser>
-        {
-            public Task<IdentityResult> CreateAsync(ApplicationUser user, CancellationToken ct = default) => Task.FromResult(IdentityResult.Success);
-            public Task<IdentityResult> DeleteAsync(ApplicationUser user, CancellationToken ct = default) => Task.FromResult(IdentityResult.Success);
-            public Task<ApplicationUser?> FindByIdAsync(string userId, CancellationToken ct = default) => Task.FromResult<ApplicationUser?>(null);
-            public Task<ApplicationUser?> FindByNameAsync(string normalizedUserName, CancellationToken ct = default) => Task.FromResult<ApplicationUser?>(null);
-            public Task<string> GetUserIdAsync(ApplicationUser user, CancellationToken ct = default) => Task.FromResult(user.Id.ToString());
-            public Task<string?> GetUserNameAsync(ApplicationUser user, CancellationToken ct = default) => Task.FromResult<string?>(user.UserName);
-            public Task SetUserNameAsync(ApplicationUser user, string? userName, CancellationToken ct = default) { user.UserName = userName; return Task.CompletedTask; }
-            public Task<string?> GetNormalizedUserNameAsync(ApplicationUser user, CancellationToken ct = default) => Task.FromResult<string?>(user.NormalizedUserName);
-            public Task SetNormalizedUserNameAsync(ApplicationUser user, string? normalizedName, CancellationToken ct = default) { user.NormalizedUserName = normalizedName; return Task.CompletedTask; }
-            public Task<IdentityResult> UpdateAsync(ApplicationUser user, CancellationToken ct = default) => Task.FromResult(IdentityResult.Success);
-            public void Dispose() { }
-        }
-
-        private sealed class FakeLookupNormalizer : ILookupNormalizer
-        {
-            public string NormalizeName(string? name) => name?.ToUpperInvariant() ?? string.Empty;
-            public string NormalizeEmail(string? email) => email?.ToUpperInvariant() ?? string.Empty;
-        }
-
-        public override Task<string> GeneratePasswordResetTokenAsync(ApplicationUser user)
-            => Task.FromResult("fake-reset-token");
-
-        public override Task<IdentityResult> ResetPasswordAsync(ApplicationUser user, string token, string newPassword)
-        {
-            ResetPasswordCallCount++;
-            LastNewPassword = newPassword;
-            return Task.FromResult(ResetSucceeds
-                ? IdentityResult.Success
-                : IdentityResult.Failed(new IdentityError { Description = "测试失败" }));
-        }
-    }
-
-    [Fact]
-    public async Task ForceReset_Development_ResetsPasswordAndState()
-    {
-        // ForceReset 修复: 开发环境直接触发——真正重置密码（ResetPasswordAsync 调用）
-        var originalEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
-        try
-        {
-            var adminOptions = new SystemAdminOptions
-            {
-                AutoCreateOnStartup = true,
-                AllowAutoCreateInProduction = false,
-                ForceResetOnStartup = true
-            };
-            var passwordOptions = new DefaultPasswordOptions { SysAdminPassword = "NewPass@2026" };
-            var fakeUserManager = new FakeUserManager();
-            var service = CreateService(adminOptions, passwordOptions, userManager: fakeUserManager);
-
-            // 预插 sysadmin（服务不创建用户——Issue #2237 迁 IdentitySeedData）
-            _dbContext.Users.Add(new ApplicationUser
-            {
-                Id = Guid.NewGuid(),
-                UserName = "sysadmin",
-                RealName = "系统管理员",
-                Email = "sysadmin@lybt.com",
-                Role = UserRole.SuperAdmin,
-                Status = CommonStatus.Enabled,
-                PasswordHash = HashPassword("OldPass@123"),
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            });
-            await _dbContext.SaveChangesAsync();
-
-            await service.InitializeDatabaseAsync();
-
-            fakeUserManager.ResetPasswordCallCount.Should().Be(1,
-                "Development + ForceReset=true 应真正重置密码（ResetPasswordAsync 调用）");
-            fakeUserManager.LastNewPassword.Should().Be("NewPass@2026");
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", originalEnv);
-        }
-    }
-
-    [Fact]
-    public async Task ForceReset_Production_InvalidToken_DoesNotReset()
-    {
-        // ForceReset 修复: 非开发环境 + 无效 token → 安全门控拦截（不重置）
-        var originalToken = Environment.GetEnvironmentVariable("LYBT_INITIAL_SETUP_TOKEN");
-        Environment.SetEnvironmentVariable("LYBT_INITIAL_SETUP_TOKEN", "real-token");
-        try
-        {
-            var adminOptions = new SystemAdminOptions
-            {
-                AutoCreateOnStartup = true,
-                AllowAutoCreateInProduction = false,
-                ForceResetOnStartup = true,
-                InitialSetupToken = "wrong-token" // 与 env 不匹配 → 门控拦截
-            };
-            var fakeUserManager = new FakeUserManager();
-            var service = CreateService(adminOptions, userManager: fakeUserManager);
-
-            await service.InitializeDatabaseAsync();
-
-            fakeUserManager.ResetPasswordCallCount.Should().Be(0,
-                "非开发 + 无效 token → 门控拦截——不得重置");
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("LYBT_INITIAL_SETUP_TOKEN", originalToken);
-        }
-    }
-
-    [Fact]
-    public async Task ForceReset_Production_ValidToken_Resets()
-    {
-        // ForceReset 修复核心: 非开发环境（Production 名）+ 有效 token → 重置
-        //（即使 AllowAutoCreateInProduction=false——ForceReset 只重置不创建，更安全）
-        var originalToken = Environment.GetEnvironmentVariable("LYBT_INITIAL_SETUP_TOKEN");
-        Environment.SetEnvironmentVariable("LYBT_INITIAL_SETUP_TOKEN", "real-token");
-        try
-        {
-            var adminOptions = new SystemAdminOptions
-            {
-                AutoCreateOnStartup = true,
-                AllowAutoCreateInProduction = false, // 关键: ForceReset 不要求 AllowAutoCreate
-                ForceResetOnStartup = true,
-                InitialSetupToken = "real-token"
-            };
-            var fakeUserManager = new FakeUserManager();
-            var service = CreateService(adminOptions, userManager: fakeUserManager);
-
-            // 预插 sysadmin
-            _dbContext.Users.Add(new ApplicationUser
-            {
-                Id = Guid.NewGuid(),
-                UserName = "sysadmin",
-                RealName = "系统管理员",
-                Email = "sysadmin@lybt.com",
-                Role = UserRole.SuperAdmin,
-                Status = CommonStatus.Enabled,
-                PasswordHash = HashPassword("OldPass@123"),
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            });
-            await _dbContext.SaveChangesAsync();
-
-            await service.InitializeDatabaseAsync();
-
-            fakeUserManager.ResetPasswordCallCount.Should().Be(1,
-                "非开发 + 有效 token → ForceReset 触发（AllowAutoCreate=false 也允许）");
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("LYBT_INITIAL_SETUP_TOKEN", originalToken);
-        }
-    }
 
     /// <summary>
     /// 用 Identity PasswordHasher（PBKDF2）生成测试密码哈希（与生产一致，替代已删除的 BCrypt）
@@ -837,5 +659,86 @@ public class DatabaseInitializationServiceTests : IAsyncLifetime, IDisposable
         public TestDbContextAccessor(AppDbContext context) => Context = context;
     }
 
+    #region 生命周期边界（2026-08-13 回归设计——无 ForceReset，边界场景处理）
+
+    [Fact]
+    public async Task Lifecycle_EmptyDatabase_NoError_ForIdentitySeedData()
+    {
+        var service = CreateService();
+        var act = async () => await service.InitializeDatabaseAsync();
+        await act.Should().NotThrowAsync("空库首次启动正常——不误报 Fatal");
+    }
+
+    [Fact]
+    public async Task Lifecycle_ExistingAdmin_WithOtherUsers_IsSkipped()
+    {
+        _dbContext.Users.Add(new ApplicationUser
+        {
+            Id = Guid.NewGuid(), UserName = "doctor1", RealName = "医生",
+            Email = "doctor1@lybt.com", Role = UserRole.Doctor,
+            Status = CommonStatus.Enabled,
+            PasswordHash = HashPassword("Doctor@2026"),
+            CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow
+        });
+        _dbContext.Users.Add(new ApplicationUser
+        {
+            Id = Guid.NewGuid(), UserName = "sysadmin", RealName = "系统管理员",
+            Email = "sysadmin@lybt.com", Role = UserRole.SuperAdmin,
+            Status = CommonStatus.Enabled,
+            PasswordHash = HashPassword("Admin@Lybt2026"),
+            CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow
+        });
+        await _dbContext.SaveChangesAsync();
+        var service = CreateService();
+        var act = async () => await service.InitializeDatabaseAsync();
+        await act.Should().NotThrowAsync("有数据 + sysadmin 存在——正常跳过");
+    }
+
+    [Fact]
+    public async Task Lifecycle_SoftBrokenAdmin_WarnsButDoesNotBlock()
+    {
+        _dbContext.Users.Add(new ApplicationUser
+        {
+            Id = Guid.NewGuid(), UserName = "sysadmin", RealName = "系统管理员",
+            Email = "sysadmin@lybt.com", Role = UserRole.SuperAdmin,
+            Status = CommonStatus.Disabled,
+            PasswordHash = HashPassword("Admin@Lybt2026"),
+            CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow
+        });
+        await _dbContext.SaveChangesAsync();
+        var service = CreateService();
+        var act = async () => await service.InitializeDatabaseAsync();
+        await act.Should().NotThrowAsync("软异常（禁用）不阻断启动——运维可观测性");
+    }
+
+    [Fact]
+    public async Task Lifecycle_HardDeletedAdmin_WithData_ThrowsFatal()
+    {
+        // 需 Development 环境（非开发门控 AllowAutoCreate=false 会提前 return——不走 sysadmin 检查）
+        var originalEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+        try
+        {
+            _dbContext.Users.Add(new ApplicationUser
+            {
+                Id = Guid.NewGuid(), UserName = "doctor1", RealName = "医生",
+                Email = "doctor1@lybt.com", Role = UserRole.Doctor,
+                Status = CommonStatus.Enabled,
+                PasswordHash = HashPassword("Doctor@2026"),
+                CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow
+            });
+            await _dbContext.SaveChangesAsync();
+            var service = CreateService();
+            var act = async () => await service.InitializeDatabaseAsync();
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("*密码初始化工具*", "硬删 sysadmin + 有数据 → 禁止启动，提示工具恢复");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", originalEnv);
+        }
+    }
+
+    #endregion
     #endregion
 }
