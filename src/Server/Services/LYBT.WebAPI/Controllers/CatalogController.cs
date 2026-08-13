@@ -10,6 +10,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -232,20 +233,18 @@ namespace LYBT.WebAPI.Controllers
             if (ValidateGuid(id, "药材ID") is { } error)
                 return error;
 
-            var getResult = await _herbService.GetByIdAsync(id, ct);
-            if (!getResult.IsSuccess || getResult.Value == null)
-                return NotFound(getResult.Error ?? "药材不存在");
-
-            if (ValidateOwnership(getResult.Value.CreatedBy, "药材") is { } ownerError)
-                return ownerError;
-
-            var (operatorId, _, _) = GetOperator();
+            // P1-7（2026-08-14）: 存在性+所有权检查移入 CommandHandler——Controller 仅编排
+            var (operatorId, _, operatorRole) = GetOperator();
             var result = await Sender.Send(
-                new UpdateEntityCommand<HerbInputDto, HerbDetailDto>(id, input, operatorId),
+                new UpdateEntityCommand<HerbInputDto, HerbDetailDto>(id, input, operatorId, operatorRole),
                 ct
             );
             if (!result.IsSuccess || result.Value == null)
+            {
+                if (result.ErrorCode == ErrorCode.Forbidden)
+                    return Forbid(result.Error ?? "无权更新该药材");
                 return BusinessFail(result.Error ?? "更新失败");
+            }
 
             LogOperation("更新药材", result.Value, result.Value.Id);
             return Success(result.Value, "药材更新成功");
@@ -264,17 +263,18 @@ namespace LYBT.WebAPI.Controllers
             if (ValidateGuid(id, "药材ID") is { } error)
                 return error;
 
-            var getResult = await _herbService.GetByIdAsync(id, ct);
-            if (!getResult.IsSuccess || getResult.Value == null)
-                return NotFound(getResult.Error ?? "药材不存在");
-
-            if (ValidateOwnership(getResult.Value.CreatedBy, "药材") is { } ownerError)
-                return ownerError;
-
-            var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new DeleteEntityCommand<Herb>(id, operatorId), ct);
+            // P1-7（2026-08-14）: 存在性+所有权检查移入 CommandHandler
+            var (operatorId, _, operatorRole) = GetOperator();
+            var result = await Sender.Send(
+                new DeleteEntityCommand<Herb>(id, operatorId, operatorRole),
+                ct
+            );
             if (!result.IsSuccess)
+            {
+                if (result.ErrorCode == ErrorCode.Forbidden)
+                    return Forbid(result.Error ?? "无权删除该药材");
                 return BusinessFail(result.Error ?? "删除失败");
+            }
 
             LogOperation("删除药材", new { Id = id }, id);
             return Success<object?>(null, "药材删除成功");
@@ -289,21 +289,18 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
         {
-            var (operatorId, _, _) = GetOperator();
-
-            var getResult = await _herbService.GetByIdAsync(id, ct);
-            if (!getResult.IsSuccess || getResult.Value == null)
-                return NotFound(getResult.Error ?? "药材不存在");
-
-            if (ValidateOwnership(getResult.Value.CreatedBy, "药材") is { } ownerError)
-                return ownerError;
-
+            // P1-7（2026-08-14）: 存在性+所有权检查移入 CommandHandler
+            var (operatorId, _, operatorRole) = GetOperator();
             var result = await Sender.Send(
-                new ToggleEntityStatusCommand<Herb, HerbDetailDto>(id, operatorId),
+                new ToggleEntityStatusCommand<Herb, HerbDetailDto>(id, operatorId, operatorRole),
                 ct
             );
             if (!result.IsSuccess || result.Value == null)
+            {
+                if (result.ErrorCode == ErrorCode.Forbidden)
+                    return Forbid(result.Error ?? "无权切换该药材状态");
                 return BusinessFail(result.Error ?? "切换状态失败");
+            }
 
             LogOperation("切换药材状态", new { NewStatus = result.Value.Status }, id);
             return Success(
@@ -661,19 +658,18 @@ namespace LYBT.WebAPI.Controllers
             if (ValidateGuid(id, "验方ID") is { } error)
                 return error;
 
-            var getResult = await _formulaService.GetByIdAsync(id, ct);
-            if (!getResult.IsSuccess || getResult.Value == null)
-                return NotFound("验方不存在");
-            if (ValidateOwnership(getResult.Value.CreatedBy, "验方") is { } ownershipError)
-                return ownershipError;
-
-            var (operatorId, _, _) = GetOperator();
+            // P1-8（2026-08-14）: 存在性+所有权检查移入 CommandHandler——Controller 仅编排
+            var (operatorId, _, operatorRole) = GetOperator();
             var result = await Sender.Send(
-                new UpdateEntityCommand<FormulaInputDto, FormulaDetailDto>(id, input, operatorId),
+                new UpdateEntityCommand<FormulaInputDto, FormulaDetailDto>(id, input, operatorId, operatorRole),
                 ct
             );
             if (!result.IsSuccess || result.Value == null)
+            {
+                if (result.ErrorCode == ErrorCode.Forbidden)
+                    return Forbid(result.Error ?? "无权更新该验方");
                 return BusinessFail(result.Error ?? "更新失败");
+            }
 
             LogOperation("更新验方成功", result.Value, id);
             return Success(result.Value, "验方更新成功");
@@ -690,16 +686,16 @@ namespace LYBT.WebAPI.Controllers
             if (ValidateGuid(id, "验方ID") is { } error)
                 return error;
 
-            var getResult = await _formulaService.GetByIdAsync(id, ct);
-            if (!getResult.IsSuccess || getResult.Value == null)
-                return NotFound("验方不存在");
-            if (ValidateOwnership(getResult.Value.CreatedBy, "验方") is { } ownershipError)
-                return ownershipError;
-
-            var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new DeleteEntityCommand<Formula>(id, operatorId), ct);
+            // P1-8（2026-08-14）: 存在性+所有权检查移入 CommandHandler
+            var (operatorId, _, operatorRole) = GetOperator();
+            var result = await Sender.Send(
+                new DeleteEntityCommand<Formula>(id, operatorId, operatorRole),
+                ct
+            );
             if (!result.IsSuccess)
             {
+                if (result.ErrorCode == ErrorCode.Forbidden)
+                    return Forbid(result.Error ?? "无权删除该验方");
                 return NotFound(result.Error ?? "验方不存在");
             }
 
@@ -718,19 +714,18 @@ namespace LYBT.WebAPI.Controllers
             if (ValidateGuid(id, "验方ID") is { } error)
                 return error;
 
-            var getResult = await _formulaService.GetByIdAsync(id, ct);
-            if (!getResult.IsSuccess || getResult.Value == null)
-                return NotFound("验方不存在");
-            if (ValidateOwnership(getResult.Value.CreatedBy, "验方") is { } ownershipError)
-                return ownershipError;
-
-            var (operatorId, _, _) = GetOperator();
+            // P1-8（2026-08-14）: 存在性+所有权检查移入 CommandHandler
+            var (operatorId, _, operatorRole) = GetOperator();
             var result = await Sender.Send(
-                new ToggleEntityStatusCommand<Formula, FormulaDetailDto>(id, operatorId),
+                new ToggleEntityStatusCommand<Formula, FormulaDetailDto>(id, operatorId, operatorRole),
                 ct
             );
             if (!result.IsSuccess || result.Value == null)
+            {
+                if (result.ErrorCode == ErrorCode.Forbidden)
+                    return Forbid(result.Error ?? "无权切换该验方状态");
                 return BusinessFail(result.Error ?? "切换状态失败");
+            }
 
             LogOperation("切换验方状态", new { NewStatus = result.Value.Status }, id);
             return Success(

@@ -87,6 +87,26 @@ public abstract class CatalogEntityCommandHandlerBase<TEntity, TInput, TDetail>
 
     #endregion
 
+    #region 所有权检查（P1-7/8 2026-08-14——从 Controller 移入）
+
+    /// <summary>
+    /// 所有权检查：Admin/SuperAdmin 可操作所有；Doctor 仅自己创建（对齐原 Controller IsAdminOrOwner 语义）。
+    /// 返回 null = 允许；否则失败（错误码 + 消息）。
+    /// </summary>
+    private (ErrorCode Code, string Message)? ValidateOwnership(
+        TEntity entity, UserRole operatorRole, Guid operatorId)
+    {
+        if (operatorRole is UserRole.Admin or UserRole.SuperAdmin)
+            return null;
+
+        if (entity.CreatedBy.HasValue && entity.CreatedBy.Value == operatorId)
+            return null;
+
+        return (ErrorCode.Forbidden, $"您没有权限操作此{EntityDisplayName}，只能操作自己创建的数据");
+    }
+
+    #endregion
+
     #region IRequestHandler 实现
 
     public async Task<Result<TDetail>> Handle(
@@ -115,6 +135,12 @@ public abstract class CatalogEntityCommandHandlerBase<TEntity, TInput, TDetail>
         if (entity == null)
             return Result<TDetail>.Failure(NotFoundErrorCode, NotFoundMessage);
 
+        // P1-7/8（2026-08-14）: 所有权检查移入 Handler（原 Controller 内 Get+ValidateOwnership——
+        // Admin/SuperAdmin 可操作所有；Doctor 仅自己创建）
+        var ownershipError = ValidateOwnership(entity, request.OperatorRole, request.CurrentUserId);
+        if (ownershipError != null)
+            return Result<TDetail>.Failure(ownershipError.Value.Code, ownershipError.Value.Message);
+
         // 引用校验钩子（2026-08-13）: Formula 更新前校验 herbs
         var validationError = await ValidateBeforeSaveAsync(request.Input, cancellationToken);
         if (validationError != null)
@@ -137,6 +163,11 @@ public abstract class CatalogEntityCommandHandlerBase<TEntity, TInput, TDetail>
         var entity = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (entity == null)
             return Result.Failure(NotFoundErrorCode, NotFoundMessage);
+
+        // P1-7/8（2026-08-14）: 所有权检查移入 Handler
+        var ownershipError = ValidateOwnership(entity, request.OperatorRole, request.CurrentUserId);
+        if (ownershipError != null)
+            return Result.Failure(ownershipError.Value.Code, ownershipError.Value.Message);
 
         // B1 (US-HERB-005): 删除前引用检查钩子（Herb 有处方/验方引用时拒绝）
         var deleteError = await ValidateBeforeDeleteAsync(entity, cancellationToken);
@@ -174,6 +205,11 @@ public abstract class CatalogEntityCommandHandlerBase<TEntity, TInput, TDetail>
         var entity = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (entity == null)
             return Result<TDetail>.Failure(NotFoundErrorCode, NotFoundMessage);
+
+        // P1-7/8（2026-08-14）: 所有权检查移入 Handler
+        var ownershipError = ValidateOwnership(entity, request.OperatorRole, request.CurrentUserId);
+        if (ownershipError != null)
+            return Result<TDetail>.Failure(ownershipError.Value.Code, ownershipError.Value.Message);
 
         ApplyToggleStatus(entity, request.CurrentUserId);
 

@@ -32,6 +32,12 @@ public class TogglePatientStatusCommandHandler : IRequestHandler<TogglePatientSt
         if (patient == null)
             return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotFound, ErrorMessages.Get(ErrorCode.PatientNotFound));
 
+        // P1-9（2026-08-14）: 所有权检查移入 Handler（原 Controller CheckOwnershipAsync——
+        // Admin/SuperAdmin 可操作所有；Doctor/Receptionist 仅自己创建）
+        if (request.OperatorRole is not (UserRole.Admin or UserRole.SuperAdmin)
+            && patient.CreatedBy != request.CurrentUserId)
+            return Result<PatientDetailDto>.Failure(ErrorCode.Forbidden, "您没有权限操作此患者，只能操作自己创建的数据");
+
         if (patient.Status == CommonStatus.Enabled)
         {
             var unfinishedCount = await _medicalCaseCrossModuleService.CountUnfinishedMedicalCasesAsync(request.Id, cancellationToken);

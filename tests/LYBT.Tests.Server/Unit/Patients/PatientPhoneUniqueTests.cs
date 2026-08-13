@@ -64,7 +64,9 @@ public class PatientPhoneUniqueTests
                     Gender = Gender.Male,
                     PhoneNumber = "13800138000"
                 },
-                Guid.NewGuid()),
+                Guid.NewGuid(),
+                UserRole.Admin // P1-9: Admin 可通过所有权检查——测试电话唯一分支
+            ),
             CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();

@@ -1,6 +1,7 @@
 using MediatR;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Patients.Interfaces;
 
@@ -28,6 +29,11 @@ public class DeletePatientCommandHandler : IRequestHandler<DeletePatientCommand,
         var patient = await _patientRepository.GetByIdAsync(request.Id, cancellationToken);
         if (patient == null)
             return Result.Failure(ErrorCode.PatientNotFound, ErrorMessages.Get(ErrorCode.PatientNotFound));
+
+        // P1-9（2026-08-14）: 所有权检查移入 Handler（原 Controller CheckOwnershipAsync）
+        if (request.OperatorRole is not (UserRole.Admin or UserRole.SuperAdmin)
+            && patient.CreatedBy != request.CurrentUserId)
+            return Result.Failure(ErrorCode.Forbidden, "您没有权限操作此患者，只能操作自己创建的数据");
 
         // 被医案引用的患者不可删除（与批量删除逻辑一致）
         var refCount = await _medicalCaseCrossModuleService.CountMedicalCasesAsync(request.Id, cancellationToken);

@@ -3,6 +3,7 @@ using LYBT.Entities.Herbs;
 using LYBT.Module.Catalog.Application.Commands;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Enums;
 using LYBT.Module.Catalog.Interfaces;
 using Xunit;
 
@@ -37,7 +38,7 @@ public class HerbReferenceCheckTests
         _referenceRepository.FormulaCount = 0;
 
         var result = await _handler.Handle(
-            new DeleteEntityCommand<Herb>(herb.Id, Guid.NewGuid()), CancellationToken.None);
+            new DeleteEntityCommand<Herb>(herb.Id, Guid.NewGuid(), UserRole.Admin), CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Contain("3 条处方");
@@ -53,7 +54,7 @@ public class HerbReferenceCheckTests
         _referenceRepository.FormulaCount = 2;
 
         var result = await _handler.Handle(
-            new DeleteEntityCommand<Herb>(herb.Id, Guid.NewGuid()), CancellationToken.None);
+            new DeleteEntityCommand<Herb>(herb.Id, Guid.NewGuid(), UserRole.Admin), CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Contain("2 个验方");
@@ -68,7 +69,7 @@ public class HerbReferenceCheckTests
         _referenceRepository.FormulaCount = 1;
 
         var result = await _handler.Handle(
-            new DeleteEntityCommand<Herb>(herb.Id, Guid.NewGuid()), CancellationToken.None);
+            new DeleteEntityCommand<Herb>(herb.Id, Guid.NewGuid(), UserRole.Admin), CancellationToken.None);
 
         result.Error.Should().Contain("1 条处方").And.Contain("1 个验方");
     }
@@ -82,7 +83,7 @@ public class HerbReferenceCheckTests
         _referenceRepository.FormulaCount = 0;
 
         var result = await _handler.Handle(
-            new DeleteEntityCommand<Herb>(herb.Id, Guid.NewGuid()), CancellationToken.None);
+            new DeleteEntityCommand<Herb>(herb.Id, Guid.NewGuid(), UserRole.Admin), CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         _herbRepository.Updated.Should().Be(herb);
@@ -95,7 +96,7 @@ public class HerbReferenceCheckTests
         _herbRepository.ExistingHerb = null;
 
         var result = await _handler.Handle(
-            new DeleteEntityCommand<Herb>(Guid.NewGuid(), Guid.NewGuid()), CancellationToken.None);
+            new DeleteEntityCommand<Herb>(Guid.NewGuid(), Guid.NewGuid(), UserRole.Admin), CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
     }

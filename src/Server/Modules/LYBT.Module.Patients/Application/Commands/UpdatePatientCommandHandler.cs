@@ -2,6 +2,7 @@ using MediatR;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Utilities.Text;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Application.Mappers;
@@ -26,6 +27,12 @@ public class UpdatePatientCommandHandler : IRequestHandler<UpdatePatientCommand,
         var patient = await _patientRepository.GetByIdAsync(request.Id, cancellationToken);
         if (patient == null)
             return Result<PatientDetailDto>.Failure(ErrorCode.PatientNotFound, ErrorMessages.Get(ErrorCode.PatientNotFound));
+
+        // P1-9（2026-08-14）: 所有权检查移入 Handler（原 Controller CheckOwnershipAsync——
+        // Admin/SuperAdmin 可操作所有；Doctor/Receptionist 仅自己创建）
+        if (request.OperatorRole is not (UserRole.Admin or UserRole.SuperAdmin)
+            && patient.CreatedBy != request.CurrentUserId)
+            return Result<PatientDetailDto>.Failure(ErrorCode.Forbidden, "您没有权限操作此患者，只能操作自己创建的数据");
 
         // P2 (US-PAT-004): 电话唯一——更新时排除自身查重 409
         if (

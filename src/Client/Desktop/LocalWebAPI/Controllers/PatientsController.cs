@@ -6,6 +6,7 @@ using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -115,14 +116,12 @@ public class PatientsController : BaseCrudController
         if (ValidateGuid(id, "患者ID") is { } error)
             return error;
 
-        var getResult = await _patientService.GetByIdAsync(id, ct);
-        if (!getResult.IsSuccess || getResult.Value == null)
-            return NotFound("患者不存在");
-        if (ValidateOwnership(getResult.Value.CreatedBy, "患者") is { } ownerError)
-            return ownerError;
-
-        var (operatorId, _, _) = GetOperator();
-        var result = await Sender.Send(new UpdatePatientCommand(id, input, operatorId), ct);
+        // P1-9（2026-08-14）: 存在性+所有权检查移入 CommandHandler——Controller 仅编排
+        var (operatorId, _, operatorRole) = GetOperator();
+        var result = await Sender.Send(
+            new UpdatePatientCommand(id, input, operatorId, operatorRole),
+            ct
+        );
         if (!result.IsSuccess || result.Value == null)
         {
             if (result.Error?.Contains("不存在") == true)
@@ -255,14 +254,18 @@ public class PatientsController : BaseCrudController
         if (ValidateGuid(id, "患者ID") is { } error)
             return error;
 
-        var getResult = await _patientService.GetByIdAsync(id, ct);
-        if (!getResult.IsSuccess || getResult.Value == null)
-            return NotFound("患者不存在");
-
-        var (operatorId, _, _) = GetOperator();
-        var result = await Sender.Send(new DeletePatientCommand(id, operatorId), ct);
+        // P1-9（2026-08-14）: 存在性+所有权检查移入 CommandHandler
+        var (operatorId, _, operatorRole) = GetOperator();
+        var result = await Sender.Send(
+            new DeletePatientCommand(id, operatorId, operatorRole),
+            ct
+        );
         if (!result.IsSuccess)
+        {
+            if (result.ErrorCode == ErrorCode.Forbidden)
+                return Forbid(result.Error ?? "无权删除该患者");
             return BusinessFail(result.Error ?? "删除失败");
+        }
 
         return Success(true, "删除成功");
     }
@@ -277,14 +280,18 @@ public class PatientsController : BaseCrudController
         if (ValidateGuid(id, "患者ID") is { } error)
             return error;
 
-        var getResult = await _patientService.GetByIdAsync(id, ct);
-        if (!getResult.IsSuccess || getResult.Value == null)
-            return NotFound("患者不存在");
-
-        var (operatorId, _, _) = GetOperator();
-        var result = await Sender.Send(new TogglePatientStatusCommand(id, operatorId), ct);
+        // P1-9（2026-08-14）: 存在性+所有权检查移入 CommandHandler
+        var (operatorId, _, operatorRole) = GetOperator();
+        var result = await Sender.Send(
+            new TogglePatientStatusCommand(id, operatorId, operatorRole),
+            ct
+        );
         if (!result.IsSuccess || result.Value == null)
+        {
+            if (result.ErrorCode == ErrorCode.Forbidden)
+                return Forbid(result.Error ?? "无权切换该患者状态");
             return BusinessFail(result.Error ?? "切换状态失败");
+        }
 
         return Success(result.Value, "状态已切换");
     }

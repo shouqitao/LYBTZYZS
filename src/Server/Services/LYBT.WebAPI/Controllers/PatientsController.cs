@@ -217,12 +217,12 @@ namespace LYBT.WebAPI.Controllers
             if (ValidateGuid(id, "患者ID") is { } guidError)
                 return guidError;
 
-            var (ownerDto, ownershipError) = await CheckOwnershipAsync(id, ct);
-            if (ownershipError != null)
-                return ownershipError;
-
-            var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new UpdatePatientCommand(id, input, operatorId), ct);
+            // P1-9（2026-08-14）: 存在性+所有权检查移入 CommandHandler——Controller 仅编排
+            var (operatorId, _, operatorRole) = GetOperator();
+            var result = await Sender.Send(
+                new UpdatePatientCommand(id, input, operatorId, operatorRole),
+                ct
+            );
             if (!result.IsSuccess || result.Value == null)
             {
                 if (result.Error?.Contains("不存在") == true)
@@ -246,12 +246,12 @@ namespace LYBT.WebAPI.Controllers
             if (ValidateGuid(id, "患者ID") is { } guidError)
                 return guidError;
 
-            var (ownerDto, ownershipError) = await CheckOwnershipAsync(id, ct);
-            if (ownershipError != null)
-                return ownershipError;
-
-            var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new DeletePatientCommand(id, operatorId), ct);
+            // P1-9（2026-08-14）: 存在性+所有权检查移入 CommandHandler
+            var (operatorId, _, operatorRole) = GetOperator();
+            var result = await Sender.Send(
+                new DeletePatientCommand(id, operatorId, operatorRole),
+                ct
+            );
             if (!result.IsSuccess)
             {
                 if (result.Error?.Contains("医案记录") == true)
@@ -275,15 +275,15 @@ namespace LYBT.WebAPI.Controllers
             if (ValidateGuid(id, "患者ID") is { } guidError)
                 return guidError;
 
-            var (ownerDto, ownershipError) = await CheckOwnershipAsync(id, ct);
-            if (ownershipError != null)
-                return ownershipError;
-
-            var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new TogglePatientStatusCommand(id, operatorId), ct);
+            // P1-9（2026-08-14）: 存在性+所有权检查移入 CommandHandler
+            var (operatorId, _, operatorRole) = GetOperator();
+            var result = await Sender.Send(
+                new TogglePatientStatusCommand(id, operatorId, operatorRole),
+                ct
+            );
             if (!result.IsSuccess || result.Value == null)
             {
-                return BusinessFail(result.Error ?? "操作失败");
+                return HandleResult(result, useAuthMapping: true);
             }
 
             LogOperation("切换患者状态", new { NewStatus = result.Value.Status }, id);
@@ -420,23 +420,5 @@ namespace LYBT.WebAPI.Controllers
                 "批量检查失败",
                 ct
             );
-
-        /// <summary>
-        /// 通过ISender查询患者并验证所有权
-        /// </summary>
-        private async Task<(PatientDetailDto? dto, IActionResult? error)> CheckOwnershipAsync(
-            Guid id,
-            CancellationToken ct
-        )
-        {
-            var result = await _patientService.GetByIdAsync(id, ct);
-            if (!result.IsSuccess || result.Value == null)
-                return (null, NotFound("患者不存在"));
-
-            if (ValidateOwnership(result.Value.CreatedBy, "患者") is { } ownerError)
-                return (null, ownerError);
-
-            return (result.Value, null);
-        }
     }
 }
