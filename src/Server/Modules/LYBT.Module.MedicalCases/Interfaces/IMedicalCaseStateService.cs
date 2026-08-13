@@ -15,13 +15,20 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// 更新医案状态
         /// 支持 Suspended/Active/Completed 状态流转
         /// </summary>
+        /// <summary>
+        /// 更新医案状态（P1-10 2026-08-14: 统一处理 Completed——Completed 委托 CompleteAsync）
+        /// </summary>
         /// <param name="medicalCaseId">医案ID</param>
         /// <param name="status">目标状态</param>
+        /// <param name="operatorId">操作者ID（Completed 分支使用）</param>
+        /// <param name="isAdmin">是否管理员（Completed 分支使用）</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>更新后的医案实体</returns>
         Task<MedicalCase?> UpdateStatusAsync(
             Guid medicalCaseId,
             MedicalCaseStatus status,
+            Guid operatorId = default,
+            bool isAdmin = false,
             CancellationToken cancellationToken = default);
 
         /// <summary>

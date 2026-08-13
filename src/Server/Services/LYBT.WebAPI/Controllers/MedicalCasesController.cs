@@ -263,7 +263,8 @@ namespace LYBT.WebAPI.Controllers
         #region 状态流转（从 MedicalCaseProcessingController 合入）
 
         /// <summary>
-        /// 更新医案状态
+        /// 更新医案状态（P1-10 2026-08-14: Completed 分支路由移入 StateService.UpdateStatus 统一处理——
+        /// API 单一职能，Controller 仅编排）
         /// </summary>
         [HttpPut("{id}/status")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
@@ -276,17 +277,9 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            if (request.Status == MedicalCaseStatus.Completed)
-            {
-                // 直接调用 StateService 完成医案
-                var completed = await _medicalCaseStateService.CompleteAsync(id, operatorId, isAdmin, cancellationToken: ct);
-                if (completed == null)
-                    return NotFound("医案不存在");
-                return Success("医案已完成");
-            }
-
-            // T4-B9: 统一走 StateService 状态机校验（仅允许 Suspended↔Active，Completed 走 CompleteAsync）
-            var entity = await _medicalCaseStateService.UpdateStatusAsync(id, request.Status, ct);
+            // T4-B9 + P1-10: 统一走 StateService 状态机校验（含 Completed→CompleteAsync 统一分派）
+            var entity = await _medicalCaseStateService.UpdateStatusAsync(
+                id, request.Status, operatorId, isAdmin, ct);
             if (entity == null)
                 return NotFound("医案不存在");
 
@@ -296,22 +289,19 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 关闭医案（直接标记为Completed）
+        /// 关闭医案（直接标记为Completed——P1-11 2026-08-14: 权限判断改方法级 Authorize，
+        /// 强制关闭仅限 Admin/SuperAdmin——Doctor 无 force-close 权限 US-MC-012）
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpPut("{id}/close")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
         public async Task<IActionResult> CloseMedicalCase(Guid id, CancellationToken ct)
         {
-            var (operatorId, _, operatorRole) = GetOperator();
-            var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-
-            // T5-1 #8 (US-MC-012): 强制关闭仅限 Admin/SuperAdmin（Doctor 无 force-close 权限）
-            if (!isAdmin)
-                return Forbid("仅管理员可强制关闭医案");
+            var (operatorId, _, _) = GetOperator();
 
             // 直接调用 StateService 关闭医案
-            var entity = await _medicalCaseStateService.CompleteAsync(id, operatorId, isAdmin, skipWorkflowValidation: true, cancellationToken: ct);
+            var entity = await _medicalCaseStateService.CompleteAsync(id, operatorId, isAdmin: true, skipWorkflowValidation: true, cancellationToken: ct);
             if (entity == null)
                 return NotFound("医案不存在");
 

@@ -203,17 +203,17 @@ public class MedicalCasesController : BaseMedicalCasesController
     }
 
     /// <summary>
-    /// 关闭医案
+    /// 关闭医案（P1-11 2026-08-14: 权限判断改方法级 Authorize——强制关闭仅限 Admin/SuperAdmin，双端同步）
     /// </summary>
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPut("{id}/close")]
     public async Task<IActionResult> CloseCase(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "医案ID") is { } error) return error;
-        var (operatorId, _, operatorRole) = GetOperator();
-        var isAdmin = operatorRole is UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+        var (operatorId, _, _) = GetOperator();
 
         // 直接调用 StateService 关闭医案
-        var entity = await _medicalCaseStateService.CompleteAsync(id, operatorId, isAdmin, skipWorkflowValidation: true, cancellationToken: ct);
+        var entity = await _medicalCaseStateService.CompleteAsync(id, operatorId, isAdmin: true, skipWorkflowValidation: true, cancellationToken: ct);
         if (entity == null)
             return BusinessFail("完成医案失败");
         return Success("医案已完成");
@@ -256,7 +256,7 @@ return Success("医案已取消");
     }
 
     /// <summary>
-    /// 更新医案状态
+    /// 更新医案状态（P1-10 2026-08-14: Completed 分支路由移入 StateService.UpdateStatus 统一处理——双端同步）
     /// </summary>
     [HttpPut("{id}/status")]
     public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] MedicalCaseStatusInputDto request, CancellationToken ct = default)
@@ -265,20 +265,13 @@ return Success("医案已取消");
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
 
-        if (request.Status == MedicalCaseStatus.Completed)
-        {
-            // 直接调用 StateService 完成医案
-            var completed = await _medicalCaseStateService.CompleteAsync(id, operatorId, isAdmin, cancellationToken: ct);
-            if (completed == null)
-                return BusinessFail("完成医案失败");
-            return Success("医案已完成");
-        }
-
-        // 直接调用 StateService 更新状态
-        var entity = await _medicalCaseStateService.UpdateStatusAsync(id, request.Status, ct);
+        // P1-10: 统一走 StateService 状态机校验（含 Completed→CompleteAsync 统一分派）
+        var entity = await _medicalCaseStateService.UpdateStatusAsync(
+            id, request.Status, operatorId, isAdmin, ct);
         if (entity == null)
             return BusinessFail("状态更新失败");
-                LogOperation("更新医案状态", request, id);
-return Success("状态更新成功");
+
+        LogOperation("更新医案状态", request, id);
+        return Success("状态更新成功");
     }
 }

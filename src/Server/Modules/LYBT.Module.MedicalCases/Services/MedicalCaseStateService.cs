@@ -44,23 +44,28 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 更新医案状态
+        /// 更新医案状态（P1-10 2026-08-14: 统一处理 Completed——原 Controller 分支路由
+        /// 到 CompleteAsync，现由本方法统一分派——API 单一职能，Controller 仅编排）
         /// 支持 Draft/Active/Completed 状态流转（Cancelled 已移除，使用 IsDeleted 替代）
         /// </summary>
         public async Task<MedicalCase?> UpdateStatusAsync(
             Guid medicalCaseId,
             MedicalCaseStatus status,
+            Guid operatorId = default,
+            bool isAdmin = false,
             CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("[SVC] MedicalCase.UpdateStatus - MedicalCaseId={MedicalCaseId} Status={Status}",
                 medicalCaseId, status);
 
-            // Guard: 完成状态必须通过 CompleteAsync，不允许通过 UpdateStatus 直接设置
+            // 完成状态统一走 CompleteAsync（工作流验证 + 权限 + 联动挂号）
             if (status == MedicalCaseStatus.Completed)
-            {
-                _logger.LogWarning("[SVC] MedicalCase.UpdateStatus → CompletedBlocked - 请使用 CompleteAsync");
-                throw new BusinessException(ErrorCode.McInvalidStatusTransition, "完成医案请使用专用的 Complete 接口，不允许通过状态更新直接设置为 Completed");
-            }
+                return await CompleteAsync(
+                    medicalCaseId,
+                    operatorId,
+                    isAdmin,
+                    skipWorkflowValidation: false,
+                    cancellationToken: cancellationToken);
 
             // 获取聚合根
             var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId, cancellationToken);
