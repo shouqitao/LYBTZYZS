@@ -190,7 +190,8 @@ namespace LYBT.WebAPI.Controllers
             var result = await Sender.Send(new CreatePatientCommand(input, operatorId), ct);
             if (!result.IsSuccess || result.Value == null)
             {
-                return BusinessFail(result.Error ?? "创建失败");
+                // PATIENT-PHONE-409-FIX: 按 ErrorCode 映射（电话唯一 → 409）——原 BusinessFail 恒 422
+                return HandleResult(result, useAuthMapping: true);
             }
 
             LogOperation("新增患者成功", result.Value, null);
@@ -226,7 +227,7 @@ namespace LYBT.WebAPI.Controllers
             {
                 if (result.Error?.Contains("不存在") == true)
                     return NotFound(result.Error);
-                return BusinessFail(result.Error ?? "更新失败");
+                return HandleResult(result, useAuthMapping: true);
             }
 
             LogOperation("更新患者成功", result.Value, id);
@@ -359,7 +360,7 @@ namespace LYBT.WebAPI.Controllers
             );
             if (!result.IsSuccess || result.Value == null)
             {
-                return BusinessFail(result.Error ?? "导入失败");
+                return HandleResult(result, useAuthMapping: true);
             }
 
             LogOperation(

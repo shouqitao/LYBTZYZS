@@ -96,9 +96,13 @@ public static class ControllerBaseExtensions
 
         var message = result.ErrorMessage ?? "操作失败";
 
-        if (result.ModuleErrorCode.HasValue)
+        // PATIENT-PHONE-409-FIX: ModuleErrorCode 为空时回退 ErrorCode（原仅认 ModuleErrorCode →
+        // Result.Failure(ErrorCode) 落入 BusinessFail 恒 422——电话唯一 409 等语义丢失）
+        var code = result.ModuleErrorCode ?? (result.ErrorCode == default ? (ErrorCode?)null : result.ErrorCode);
+
+        if (code.HasValue)
         {
-            var moduleCode = result.ModuleErrorCode.Value;
+            var moduleCode = code.Value;
             var httpStatus = moduleCode.ToHttpStatusCode();
 
             if (useAuthMapping)

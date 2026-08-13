@@ -111,6 +111,8 @@
 
 > **实现注（2026-08-13 PATIENT-PHONE-UNIQUE-FIX）**：真机发现同电话可重复创建——查重逻辑存在但错误码用 PatientNotFound（404 语义），且失败走 BusinessFail 恒 422，需求要求 409。修复：Handler 改 `PatientPhoneDuplicate`（ErrorCodeExtensions 400→409）；BatchImport 补电话查重（行内互查 + 与系统已有患者）；拼音码服务端自动生成兜底（对齐药材 B-03 先例——API 直调未传 PinYinCode 时按姓名生成）。业务规则 1「数据库索引强制」修正为「业务级查重强制」（Patient 无 DB 唯一索引——7caa27e41 确认：软删实体不设 DB 唯一索引，业务级查重已友好）。
 
+> **409 状态码修复（2026-08-13 PATIENT-PHONE-409-FIX）**：ErrorCodeExtensions 已映射 409 但真机仍 422——根因：`HandleResult` 只认 `Result.ModuleErrorCode`，而 `Result.Failure(ErrorCode)` 不设 ModuleErrorCode → 落 BusinessFail 恒 422。修复：`HandleResult` 在 ModuleErrorCode 为空时**回退 ErrorCode 映射**（`code.ToHttpStatusCode()`）——电话唯一 → 真 409；双端 PatientsController 创建/更新/批量导入失败分支改用 `HandleResult(useAuthMapping: true)`（原 BusinessFail）。同类检查：IdentityController 已手写 `ErrorCode.ToHttpStatusCode()` 正确；409 错误码（MedicalCaseLocked 等）代码零消费无路径可测；`HandleResult` 回退使未来 403/404/409 全部按错误码正确映射。
+
 **作为** 诊所工作人员，**我想要** 创建新的患者档案，**以便** 为新就诊患者建立基础记录。
 
 **验收标准**:
