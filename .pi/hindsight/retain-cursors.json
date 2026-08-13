@@ -1,0 +1,19 @@
+{
+  "version": 3,
+  "sessions": {
+    "dda8a13c95c9cc69": {
+      "index": 1,
+      "chainHash": "dd564c5811a80637b573e16dadce4a0581831ab4c22b0f25bfcb4f76f0a5b9b8",
+      "idChainHash": "cd372fb85148700fa88095e3492d3f9f5beb43e555e5ff26d95f5a6adc36f8e6",
+      "tailStart": 0,
+      "messageIds": [
+        "",
+        ""
+      ],
+      "fingerprints": [
+        "f0930c3a47aca88c148b748707dcd1285ec9cc650a2ac6d55d5520ceb14306bf",
+        "73eb37f9cfbfe7d631734004500a2ac7ca8e76469a4484ae19d72189a58b7b1d"
+      ]
+    }
+  }
+}

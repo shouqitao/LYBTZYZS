@@ -32,6 +32,7 @@ public class RegistrationsController : BaseRegistrationsController
 
     /// <inheritdoc />
     [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
+    [HttpPost]
     public async Task<IActionResult> Create([FromBody] RegistrationInputDto input, CancellationToken ct)
     {
         var (operatorId, _, _) = GetOperator();

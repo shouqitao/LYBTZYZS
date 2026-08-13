@@ -30,6 +30,25 @@ public class RegistrationsController : BaseRegistrationsController
     /// <summary>
     /// 医生快速看诊
     /// </summary>
+    /// <summary>
+    /// 创建挂号（QuickVisit 两步第 1 步——2026-08-13 恢复：a99619f47 误删，真机 405 证实）
+    /// </summary>
+    [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
+    [HttpPost]
+    [EnableRateLimiting("ApiCalls")]
+    public async Task<IActionResult> Create([FromBody] RegistrationInputDto input, CancellationToken ct)
+    {
+        var (operatorId, _, _) = GetOperator();
+        var result = await Sender.Send(new CreateRegistrationCommand(input, operatorId), ct);
+        if (!result.IsSuccess || result.Value == null)
+            return BusinessFail(result.Error ?? "创建挂号失败");
+
+        LogOperation("创建挂号", input, result.Value.Id);
+        return CreatedAtAction(nameof(GetById),
+            new { id = result.Value.Id, version = ApiVersionConstants.V1 },
+            ApiResponse<RegistrationDetailDto>.CreateSuccess(result.Value, "挂号创建成功"));
+    }
+
     [HttpPut("{id:guid}/start-visit")]
     [EnableRateLimiting("ApiCalls")]
     [Authorize(Policy = PolicyConstants.DoctorOnly)]

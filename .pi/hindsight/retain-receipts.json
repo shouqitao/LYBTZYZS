@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "receipts": [
+    {
+      "createdAt": "2026-08-13T09:26:58.417Z",
+      "bankId": "pi-coding",
+      "documentId": "pi-session:dda8a13c95c9cc69",
+      "queueJobId": "ed00ab1b-0e8f-46d6-a34e-8a4a68c633d2",
+      "updateMode": "append",
+      "source": "queue",
+      "context": "Pi coding session for repo \"LYBTZYZS\", session 2026-08-13T09-26-44-990Z_019ffa72-07fe-7dd6-9aef-54a04535907d.jsonl",
+      "tags": [
+        "source:pi",
+        "harness:pi",
+        "project:gitee-com-shouqitao-lybtzyzs",
+        "repo:lybtzyzs-ee2ee597dc7c",
+        "session:dda8a13c95c9cc69"
+      ],
+      "outcome": {
+        "itemsCount": 1,
+        "operations": 1
+      }
+    }
+  ]
+}
