@@ -112,8 +112,6 @@
   <ItemGroup Label="Office and File Processing">
     <!-- D1: PDF 处方导出 -->
     <PackageVersion Include="QuestPDF" Version="2025.12.4" />
-    <!-- B-03: Excel 导出/导入 (NPOI, .xlsx) -->
-    <PackageVersion Include="NPOI" Version="2.7.2" />
     <!-- Security: Upgrade Fonts and ImageSharp to fix vulnerabilities (CVE-2025-27598, CVE-2025-54575) -->
     <!-- SixLabors.Fonts 2.1.3 is latest stable version -->
     <PackageVersion Include="SixLabors.Fonts" Version="2.1.3" />

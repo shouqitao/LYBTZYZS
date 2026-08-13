@@ -1,14 +1,13 @@
 using Asp.Versioning;
-using MediatR;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Patients.Application.Commands;
 using LYBT.Module.Patients.Application.Queries;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Infrastructure.Excel;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -26,7 +25,11 @@ namespace LYBT.WebAPI.Controllers
     {
         private readonly IPatientService _patientService;
 
-        public PatientsController(ISender sender, ILogger<PatientsController> logger, IPatientService patientService)
+        public PatientsController(
+            ISender sender,
+            ILogger<PatientsController> logger,
+            IPatientService patientService
+        )
             : base(sender, logger)
         {
             _patientService = patientService;
@@ -43,13 +46,23 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] string? keyword = null,
             [FromQuery] UserRole? role = null,
             [FromQuery] CommonStatus? status = null,
-            CancellationToken ct = default)
+            CancellationToken ct = default
+        )
         {
-            if (ValidatePagination(page, pageSize) is { } error) return error;
+            if (ValidatePagination(page, pageSize) is { } error)
+                return error;
 
-            var isAdmin = User?.IsInRole(RoleConstants.Admin) == true || User?.IsInRole(RoleConstants.SuperAdmin) == true;
+            var isAdmin =
+                User?.IsInRole(RoleConstants.Admin) == true
+                || User?.IsInRole(RoleConstants.SuperAdmin) == true;
 
-            var result = await _patientService.GetPagedAsync(page, pageSize, keyword, filterDisabled: !isAdmin, ct);
+            var result = await _patientService.GetPagedAsync(
+                page,
+                pageSize,
+                keyword,
+                filterDisabled: !isAdmin,
+                ct
+            );
             if (!result.IsSuccess || result.Value == null)
                 return BusinessFail(result.Error ?? "查询失败");
 
@@ -57,41 +70,92 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 下载患者导入模板（T4 P0#4: Epic #1934 FR-002——此前端点缺失桌面调用 404）
+        /// 下载患者导入 JSON 模板（2026-08-13：Excel→JSON——后端不涉及 Excel 格式，保持通用性）
         /// </summary>
         [HttpGet("import-template")]
-        [ProducesResponseType(typeof(FileResult), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public IActionResult ImportTemplate()
         {
-            var headers = new[] { "姓名", "性别", "出生日期", "身份证号", "手机号", "拼音码" };
-            var sample = new[] { "张三", "Male", "1990-01-01", "110101199001010011", "13800138000", "zhangsan" };
-            var bytes = ExcelExportHelper.CreateWorkbook("患者导入模板", headers, new[] { sample });
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "患者导入模板.xlsx");
+            var template = new
+            {
+                Description = "患者批量导入 JSON 模板（与 POST /patients/batch-import 期望的 DTO 一致）",
+                Fields = new[]
+                {
+                    new
+                    {
+                        Field = "Name",
+                        Required = true,
+                        Description = "姓名",
+                    },
+                    new
+                    {
+                        Field = "Gender",
+                        Required = true,
+                        Description = "性别（Male/Female）",
+                    },
+                    new
+                    {
+                        Field = "BirthDate",
+                        Required = false,
+                        Description = "出生日期（yyyy-MM-dd）",
+                    },
+                    new
+                    {
+                        Field = "IdNumber",
+                        Required = false,
+                        Description = "身份证号（敏感字段）",
+                    },
+                    new
+                    {
+                        Field = "PhoneNumber",
+                        Required = false,
+                        Description = "手机号（敏感字段）",
+                    },
+                    new
+                    {
+                        Field = "PinYinCode",
+                        Required = false,
+                        Description = "拼音码",
+                    },
+                },
+                Example = new[]
+                {
+                    new
+                    {
+                        Name = "张三",
+                        Gender = "Male",
+                        BirthDate = "1990-01-01",
+                        IdNumber = "110101199001010011",
+                        PhoneNumber = "13800138000",
+                        PinYinCode = "zhangsan",
+                    },
+                },
+            };
+            return Success(template, "患者导入模板（JSON）");
         }
 
         /// <summary>
-        /// 导出患者数据（T4 P0#4: Epic #1934 FR-003）
+        /// 导出患者数据为 JSON 数组（2026-08-13：Excel→JSON——保留筛选条件导出 + 敏感字段自动脱敏管道）
         /// </summary>
         [HttpGet("export")]
-        [ProducesResponseType(typeof(FileResult), 200)]
-        public async Task<IActionResult> Export([FromQuery] string? keyword = null, CancellationToken ct = default)
+        [ProducesResponseType(typeof(ApiResponse<List<PatientListDto>>), 200)]
+        public async Task<IActionResult> Export(
+            [FromQuery] string? keyword = null,
+            CancellationToken ct = default
+        )
         {
-            var result = await _patientService.GetPagedAsync(1, 10000, keyword, filterDisabled: false, ct);
+            var result = await _patientService.GetPagedAsync(
+                1,
+                10000,
+                keyword,
+                filterDisabled: false,
+                ct
+            );
             if (!result.IsSuccess || result.Value == null)
                 return BusinessFail(result.Error ?? "导出失败");
 
-            var headers = new[] { "姓名", "性别", "年龄", "手机号", "拼音码", "状态" };
-            var rows = result.Value.Items.Select(p => new[]
-            {
-                p.Name,
-                p.Gender.ToString(),
-                p.Age?.ToString() ?? string.Empty,
-                p.PhoneNumber ?? string.Empty,
-                p.PinYinCode ?? string.Empty,
-                p.Status.ToString()
-            });
-            var bytes = ExcelExportHelper.CreateWorkbook("患者数据", headers, rows);
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "患者数据.xlsx");
+            // JSON 数组（SensitiveDataJsonConverterFactory 管道自动脱敏 PhoneNumber 等敏感字段）
+            return Success(result.Value.Items, "患者导出（JSON）");
         }
 
         /// <summary>
@@ -101,7 +165,8 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
         {
-            if (ValidateGuid(id, "患者ID") is { } error) return error;
+            if (ValidateGuid(id, "患者ID") is { } error)
+                return error;
 
             var result = await _patientService.GetByIdAsync(id, ct);
             if (!result.IsSuccess || result.Value == null)
@@ -116,7 +181,10 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), StatusCodes.Status201Created)]
-        public async Task<IActionResult> Create([FromBody] PatientInputDto input, CancellationToken ct)
+        public async Task<IActionResult> Create(
+            [FromBody] PatientInputDto input,
+            CancellationToken ct
+        )
         {
             var (operatorId, _, _) = GetOperator();
             var result = await Sender.Send(new CreatePatientCommand(input, operatorId), ct);
@@ -126,9 +194,11 @@ namespace LYBT.WebAPI.Controllers
             }
 
             LogOperation("新增患者成功", result.Value, null);
-            return CreatedAtAction(nameof(GetById),
+            return CreatedAtAction(
+                nameof(GetById),
                 new { id = result.Value.Id, version = ApiVersionConstants.V1 },
-                ApiResponse<PatientDetailDto>.CreateSuccess(result.Value, "患者创建成功"));
+                ApiResponse<PatientDetailDto>.CreateSuccess(result.Value, "患者创建成功")
+            );
         }
 
         /// <summary>
@@ -137,12 +207,18 @@ namespace LYBT.WebAPI.Controllers
         [HttpPut("{id:guid}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] PatientInputDto input, CancellationToken ct)
+        public async Task<IActionResult> Update(
+            Guid id,
+            [FromBody] PatientInputDto input,
+            CancellationToken ct
+        )
         {
-            if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
+            if (ValidateGuid(id, "患者ID") is { } guidError)
+                return guidError;
 
             var (ownerDto, ownershipError) = await CheckOwnershipAsync(id, ct);
-            if (ownershipError != null) return ownershipError;
+            if (ownershipError != null)
+                return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
             var result = await Sender.Send(new UpdatePatientCommand(id, input, operatorId), ct);
@@ -166,10 +242,12 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
         {
-            if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
+            if (ValidateGuid(id, "患者ID") is { } guidError)
+                return guidError;
 
             var (ownerDto, ownershipError) = await CheckOwnershipAsync(id, ct);
-            if (ownershipError != null) return ownershipError;
+            if (ownershipError != null)
+                return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
             var result = await Sender.Send(new DeletePatientCommand(id, operatorId), ct);
@@ -193,10 +271,12 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
         {
-            if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
+            if (ValidateGuid(id, "患者ID") is { } guidError)
+                return guidError;
 
             var (ownerDto, ownershipError) = await CheckOwnershipAsync(id, ct);
-            if (ownershipError != null) return ownershipError;
+            if (ownershipError != null)
+                return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
             var result = await Sender.Send(new TogglePatientStatusCommand(id, operatorId), ct);
@@ -206,7 +286,10 @@ namespace LYBT.WebAPI.Controllers
             }
 
             LogOperation("切换患者状态", new { NewStatus = result.Value.Status }, id);
-            return Success(result.Value, $"患者已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
+            return Success(
+                result.Value,
+                $"患者已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}"
+            );
         }
 
         /// <summary>
@@ -217,7 +300,8 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
         {
-            if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
+            if (ValidateGuid(id, "患者ID") is { } guidError)
+                return guidError;
 
             var (operatorId, _, _) = GetOperator();
             var result = await Sender.Send(new RestorePatientCommand(id, operatorId), ct);
@@ -239,13 +323,17 @@ namespace LYBT.WebAPI.Controllers
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public override async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-            => await ExecuteBatchDeleteAsync(
+        public override async Task<IActionResult> BatchDelete(
+            [FromBody] BatchDeleteInputDto dto,
+            CancellationToken ct
+        ) =>
+            await ExecuteBatchDeleteAsync(
                 dto,
                 (ids, operatorId) => new BatchDeletePatientsCommand(ids, operatorId),
                 "请至少选择一个患者",
                 "批量删除患者",
-                ct);
+                ct
+            );
 
         /// <summary>
         /// 批量导入患者（JSON）
@@ -254,7 +342,10 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<PatientBatchImportResultDto>), 200)]
-        public async Task<IActionResult> BatchImport([FromBody] PatientBatchImportInputDto request, CancellationToken ct)
+        public async Task<IActionResult> BatchImport(
+            [FromBody] PatientBatchImportInputDto request,
+            CancellationToken ct
+        )
         {
             if (request?.Patients == null || request.Patients.Count == 0)
             {
@@ -262,13 +353,20 @@ namespace LYBT.WebAPI.Controllers
             }
 
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new BatchImportPatientsCommand(request.Patients, request.Strategy, operatorId), ct);
+            var result = await Sender.Send(
+                new BatchImportPatientsCommand(request.Patients, request.Strategy, operatorId),
+                ct
+            );
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "导入失败");
             }
 
-            LogOperation("批量导入患者", new { Count = request.Patients.Count, Strategy = request.Strategy }, null);
+            LogOperation(
+                "批量导入患者",
+                new { Count = request.Patients.Count, Strategy = request.Strategy },
+                null
+            );
             return Success(result.Value, $"成功导入 {result.Value.SuccessCount} 条患者");
         }
 
@@ -279,7 +377,8 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PatientReferenceCheckDto>), 200)]
         public async Task<IActionResult> CheckReference(Guid id, CancellationToken ct)
         {
-            if (ValidateGuid(id, "患者ID") is { } guidError) return guidError;
+            if (ValidateGuid(id, "患者ID") is { } guidError)
+                return guidError;
 
             var result = await Sender.Send(new CheckPatientReferenceQuery(id), ct);
             if (!result.IsSuccess || result.Value == null)
@@ -308,19 +407,26 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpPost("batch-check-reference")]
         [ProducesResponseType(typeof(ApiResponse<List<PatientReferenceCheckDto>>), 200)]
-        public async Task<IActionResult> BatchCheckReference([FromBody] PatientBatchCheckReferenceInputDto dto, CancellationToken ct)
-            => await ExecuteBatchCheckReferenceAsync(
+        public async Task<IActionResult> BatchCheckReference(
+            [FromBody] PatientBatchCheckReferenceInputDto dto,
+            CancellationToken ct
+        ) =>
+            await ExecuteBatchCheckReferenceAsync(
                 dto.PatientIds,
                 ids => new BatchCheckPatientReferenceQuery(ids),
                 "请至少选择一个患者",
                 "批量检查最多支持100条",
                 "批量检查失败",
-                ct);
+                ct
+            );
 
         /// <summary>
         /// 通过ISender查询患者并验证所有权
         /// </summary>
-        private async Task<(PatientDetailDto? dto, IActionResult? error)> CheckOwnershipAsync(Guid id, CancellationToken ct)
+        private async Task<(PatientDetailDto? dto, IActionResult? error)> CheckOwnershipAsync(
+            Guid id,
+            CancellationToken ct
+        )
         {
             var result = await _patientService.GetByIdAsync(id, ct);
             if (!result.IsSuccess || result.Value == null)

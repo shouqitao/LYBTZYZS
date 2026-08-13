@@ -9,7 +9,7 @@
 药材管理 CRUD、分类筛选、JSON 批量导入、状态切换、批量操作。启用 OutputCache (`HerbsCache`)。
 Doctor 只能编辑自己创建的药材，Admin 可操作全部。
 
-> **注意**: 药材 Excel 导入/导出在客户端 (Desktop) 完成，服务端无 `POST /herbs/import`、`GET /herbs/export`、`GET /herbs/export-all` 端点。服务端仅提供 `POST /herbs/batch-import` (JSON 批量导入)。
+> **注意**: 药材导入/导出为 **JSON 格式**（2026-08-13 决策——后端不涉及 Excel，保持通用性；Excel 处理由前端负责）。服务端提供 `POST /herbs/batch-import`（JSON 批量导入）、`GET /herbs/import-template`（JSON 模板）、`GET /herbs/export-all`（JSON 数组）。服务端 Excel 解析路径（`import-excel`）已移除。
 
 ---
 
@@ -22,7 +22,7 @@ Doctor 只能编辑自己创建的药材，Admin 可操作全部。
 **查询参数**:
 
 | 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
+| ------ | ------ | -------- | ------ |
 | `page` | int | 1 | 页码 (>0) |
 | `pageSize` | int | 20 | 每页大小 (1-100) |
 | `keyword` | string? | null | 搜索关键词 (名称/拼音码) |
@@ -96,7 +96,7 @@ curl -X GET "http://localhost:5000/api/v1/herbs?category=补气药&page=1&pageSi
 **错误码：**
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 400 | 分页参数无效 (ERR-50106) |
 | 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
@@ -177,7 +177,7 @@ curl -X GET "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123456
 ```
 
 | 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | `name` | string | 是 | 药材名称，最大 100 字符 |
 | `pinYinCode` | string | 否 | 拼音码 |
 | `category` | string | 否 | 分类 |
@@ -241,7 +241,7 @@ curl -X POST "http://localhost:5000/api/v1/herbs" \
 **错误码：**
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 400 | 验证失败 (ERR-50102) |
 | 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
@@ -303,7 +303,7 @@ curl -X PUT "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123456
 **错误码：**
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 400 | 验证失败 (ERR-50102) |
 | 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码)；403 详见 ERR-50103，404 详见 ERR-50101 |
 
@@ -438,7 +438,7 @@ curl -X POST "http://localhost:5000/api/v1/herbs/batch-delete" \
 **错误码：**
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 400 | 请至少选择一个药材 (ERR-50201) |
 | 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
@@ -548,7 +548,7 @@ curl -X POST "http://localhost:5000/api/v1/herbs/batch-import" \
 **错误码：**
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 400 | 验证失败 (ERR-50102) |
 | 400 | 批量导入最多10000条 (ERR-50202) |
 | 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
@@ -577,7 +577,7 @@ curl -X POST "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef12345
 **错误码：**
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 200 | 该药材未被删除 (ERR-50104) |
 | 404 | 药材不存在 (ERR-50101) |
 
@@ -613,6 +613,7 @@ curl -X GET "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123456
 - **权限**: `Doctor/Admin`（前台不可查）
 
 **请求体**:
+
 ```json
 {
   "herbIds": ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
@@ -632,6 +633,7 @@ curl -X GET "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123456
 - **权限**: `AdminOrSuperAdmin`
 
 **请求体**:
+
 ```json
 {
   "ids": ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
@@ -651,6 +653,7 @@ curl -X GET "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123456
 - **权限**: `AdminOrSuperAdmin`
 
 **请求体**:
+
 ```json
 {
   "ids": ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
@@ -668,7 +671,7 @@ curl -X GET "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123456
 ### 核心错误 (501xx)
 
 | 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
-|--------|--------|------|----------|----------|
+| -------- | -------- | ------ | ---------- | ---------- |
 | ERR-50101 | HerbNotFound | 404 | 药材不存在 | GET/PUT/DELETE /{id} |
 | ERR-50102 | HerbValidationFailed | 400 | 验证失败 | POST /, PUT /{id} |
 | ERR-50103 | HerbNoPermission | 403 | 无权限操作此药材 | PUT/DELETE /{id}, POST /{id}/toggle-status |
@@ -687,7 +690,7 @@ curl -X GET "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123456
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 2026-02-10 | v1.0 | 初始版本 |
 | 2026-02-18 | v1.1 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-50101~50203)，含核心/批量/导入三类 |
 | 2026-06-12 | v1.2 | 标注 POST /herbs/import 为客户端功能; 服务端仅提供 batch-import (JSON) |

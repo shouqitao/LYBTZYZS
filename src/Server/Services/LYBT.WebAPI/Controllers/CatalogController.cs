@@ -11,7 +11,6 @@ using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using MediatR;
-using LYBT.Infrastructure.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -35,7 +34,8 @@ namespace LYBT.WebAPI.Controllers
             ISender sender,
             ILogger<CatalogController> logger,
             ICatalogQueryService<HerbListDto, HerbDetailDto> herbService,
-            ICatalogQueryService<FormulaListDto, FormulaDetailDto> formulaService)
+            ICatalogQueryService<FormulaListDto, FormulaDetailDto> formulaService
+        )
             : base(sender, logger)
         {
             _herbService = herbService;
@@ -55,50 +55,120 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] string? keyword = null,
             [FromQuery] UserRole? role = null,
             [FromQuery] CommonStatus? status = null,
-            CancellationToken ct = default)
+            CancellationToken ct = default
+        )
         {
-            if (ValidatePagination(page, pageSize) is { } error) return error;
+            if (ValidatePagination(page, pageSize) is { } error)
+                return error;
 
             var result = await _herbService.GetPagedAsync(page, pageSize, keyword, null, false, ct);
-            if (!result.IsSuccess) return BusinessFail(result.Error ?? "查询失败");
+            if (!result.IsSuccess)
+                return BusinessFail(result.Error ?? "查询失败");
             return Success(result.Value!, "查询成功");
         }
 
         /// <summary>
-        /// 下载药材导入模板（T4 P0#4: 此前端点缺失桌面调用 404）
+        /// 下载药材导入 JSON 模板（2026-08-13：Excel→JSON——后端不涉及 Excel 格式，保持通用性）
         /// </summary>
         [HttpGet("import-template")]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public IActionResult HerbImportTemplate()
         {
-            var headers = new[] { "药材名称", "拼音码", "分类", "单位", "单价", "库存", "状态" };
-            var sample = new[] { "人参", "renshen", "补益药", "g", "10.5", "100", "Enabled" };
-            var bytes = ExcelExportHelper.CreateWorkbook("药材导入模板", headers, new[] { sample });
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "药材导入模板.xlsx");
+            var template = new
+            {
+                Description = "药材批量导入 JSON 模板（与 POST /herbs/batch-import 期望的 DTO 一致）",
+                Fields = new[]
+                {
+                    new
+                    {
+                        Field = "Name",
+                        Required = true,
+                        Description = "药材名称",
+                    },
+                    new
+                    {
+                        Field = "PinYinCode",
+                        Required = false,
+                        Description = "拼音码",
+                    },
+                    new
+                    {
+                        Field = "Category",
+                        Required = false,
+                        Description = "分类",
+                    },
+                    new
+                    {
+                        Field = "Properties",
+                        Required = false,
+                        Description = "性味",
+                    },
+                    new
+                    {
+                        Field = "Origin",
+                        Required = false,
+                        Description = "产地",
+                    },
+                    new
+                    {
+                        Field = "Spec",
+                        Required = false,
+                        Description = "规格",
+                    },
+                    new
+                    {
+                        Field = "Unit",
+                        Required = false,
+                        Description = "单位（默认 克）",
+                    },
+                    new
+                    {
+                        Field = "Price",
+                        Required = false,
+                        Description = "单价",
+                    },
+                    new
+                    {
+                        Field = "CostPrice",
+                        Required = false,
+                        Description = "成本价",
+                    },
+                },
+                Example = new[]
+                {
+                    new
+                    {
+                        Name = "人参",
+                        PinYinCode = "renshen",
+                        Category = "补益药",
+                        Properties = "甘微苦温",
+                        Origin = "吉林",
+                        Spec = "一等",
+                        Unit = "克",
+                        Price = 10.5m,
+                        CostPrice = 5.0m,
+                    },
+                },
+            };
+            return Success(template, "药材导入模板（JSON）");
         }
 
         /// <summary>
-        /// 导出全部药材（T4 P0#4）
+        /// 导出全部药材为 JSON 数组（2026-08-13：Excel→JSON）
         /// </summary>
         [HttpGet("export-all")]
-        public async Task<IActionResult> HerbExportAll([FromQuery] string? keyword = null, CancellationToken ct = default)
+        [ProducesResponseType(typeof(ApiResponse<List<HerbListDto>>), 200)]
+        public async Task<IActionResult> HerbExportAll(
+            [FromQuery] string? keyword = null,
+            CancellationToken ct = default
+        )
         {
             var result = await _herbService.GetPagedAsync(1, 10000, keyword, null, false, ct);
-            if (!result.IsSuccess) return BusinessFail(result.Error ?? "导出失败");
+            if (!result.IsSuccess)
+                return BusinessFail(result.Error ?? "导出失败");
 
-            var headers = new[] { "药材名称", "拼音码", "分类", "产地", "规格", "单位", "单价", "状态" };
-            var rows = result.Value!.Items.Select(h => new[]
-            {
-                h.Name,
-                h.PinYinCode ?? string.Empty,
-                h.Category ?? string.Empty,
-                h.Origin ?? string.Empty,
-                h.Spec ?? string.Empty,
-                h.Unit,
-                h.Price.ToString(),
-                h.Status.ToString()
-            });
-            var bytes = ExcelExportHelper.CreateWorkbook("药材数据", headers, rows);
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "药材数据.xlsx");
+            // JSON 数组
+            return Success(result.Value!.Items, "药材导出（JSON）");
         }
 
         /// <summary>
@@ -108,7 +178,8 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
         {
-            if (ValidateGuid(id, "药材ID") is { } error) return error;
+            if (ValidateGuid(id, "药材ID") is { } error)
+                return error;
 
             var result = await _herbService.GetByIdAsync(id, ct);
             if (!result.IsSuccess || result.Value == null)
@@ -127,13 +198,18 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> Create([FromBody] HerbInputDto input, CancellationToken ct)
         {
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new CreateEntityCommand<HerbInputDto, HerbDetailDto>(input, operatorId), ct);
+            var result = await Sender.Send(
+                new CreateEntityCommand<HerbInputDto, HerbDetailDto>(input, operatorId),
+                ct
+            );
             if (result.IsSuccess && result.Value != null)
             {
                 LogOperation("创建药材", result.Value, null);
-                return CreatedAtAction(nameof(GetById),
+                return CreatedAtAction(
+                    nameof(GetById),
                     new { id = result.Value.Id, version = ApiVersionConstants.V1 },
-                    ApiResponse<HerbDetailDto>.CreateSuccess(result.Value, "药材创建成功"));
+                    ApiResponse<HerbDetailDto>.CreateSuccess(result.Value, "药材创建成功")
+                );
             }
 
             return BusinessFail(result.Error ?? "创建失败");
@@ -147,9 +223,14 @@ namespace LYBT.WebAPI.Controllers
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto input, CancellationToken ct)
+        public async Task<IActionResult> Update(
+            Guid id,
+            [FromBody] HerbInputDto input,
+            CancellationToken ct
+        )
         {
-            if (ValidateGuid(id, "药材ID") is { } error) return error;
+            if (ValidateGuid(id, "药材ID") is { } error)
+                return error;
 
             var getResult = await _herbService.GetByIdAsync(id, ct);
             if (!getResult.IsSuccess || getResult.Value == null)
@@ -159,7 +240,10 @@ namespace LYBT.WebAPI.Controllers
                 return ownerError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new UpdateEntityCommand<HerbInputDto, HerbDetailDto>(id, input, operatorId), ct);
+            var result = await Sender.Send(
+                new UpdateEntityCommand<HerbInputDto, HerbDetailDto>(id, input, operatorId),
+                ct
+            );
             if (!result.IsSuccess || result.Value == null)
                 return BusinessFail(result.Error ?? "更新失败");
 
@@ -177,7 +261,8 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
         {
-            if (ValidateGuid(id, "药材ID") is { } error) return error;
+            if (ValidateGuid(id, "药材ID") is { } error)
+                return error;
 
             var getResult = await _herbService.GetByIdAsync(id, ct);
             if (!getResult.IsSuccess || getResult.Value == null)
@@ -213,12 +298,18 @@ namespace LYBT.WebAPI.Controllers
             if (ValidateOwnership(getResult.Value.CreatedBy, "药材") is { } ownerError)
                 return ownerError;
 
-            var result = await Sender.Send(new ToggleEntityStatusCommand<Herb, HerbDetailDto>(id, operatorId), ct);
+            var result = await Sender.Send(
+                new ToggleEntityStatusCommand<Herb, HerbDetailDto>(id, operatorId),
+                ct
+            );
             if (!result.IsSuccess || result.Value == null)
                 return BusinessFail(result.Error ?? "切换状态失败");
 
             LogOperation("切换药材状态", new { NewStatus = result.Value.Status }, id);
-            return Success(result.Value, $"药材已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
+            return Success(
+                result.Value,
+                $"药材已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}"
+            );
         }
 
         /// <summary>
@@ -230,10 +321,14 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
         {
-            if (ValidateGuid(id, "药材ID") is { } error) return error;
+            if (ValidateGuid(id, "药材ID") is { } error)
+                return error;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new RestoreEntityCommand<Herb, HerbDetailDto>(id, operatorId), ct);
+            var result = await Sender.Send(
+                new RestoreEntityCommand<Herb, HerbDetailDto>(id, operatorId),
+                ct
+            );
             if (!result.IsSuccess || result.Value == null)
                 return BusinessFail(result.Error ?? "恢复失败");
 
@@ -248,13 +343,17 @@ namespace LYBT.WebAPI.Controllers
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public override async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-            => await ExecuteBatchDeleteAsync(
+        public override async Task<IActionResult> BatchDelete(
+            [FromBody] BatchDeleteInputDto dto,
+            CancellationToken ct
+        ) =>
+            await ExecuteBatchDeleteAsync(
                 dto,
                 (ids, operatorId) => new BatchDeleteHerbsCommand(ids, operatorId),
                 "请至少选择一个药材",
                 "批量删除药材",
-                ct);
+                ct
+            );
 
         /// <summary>
         /// 批量导入药材（JSON）
@@ -263,7 +362,10 @@ namespace LYBT.WebAPI.Controllers
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbBatchImportResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchImport([FromBody] HerbBatchImportInputDto request, CancellationToken ct)
+        public async Task<IActionResult> BatchImport(
+            [FromBody] HerbBatchImportInputDto request,
+            CancellationToken ct
+        )
         {
             if (request?.Herbs == null || request.Herbs.Count == 0)
             {
@@ -271,70 +373,22 @@ namespace LYBT.WebAPI.Controllers
             }
 
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new BatchImportHerbsCommand(request.Herbs, request.Strategy, operatorId), ct);
+            var result = await Sender.Send(
+                new BatchImportHerbsCommand(request.Herbs, request.Strategy, operatorId),
+                ct
+            );
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "导入失败");
             }
 
-            LogOperation("批量导入药材", new { Count = request.Herbs.Count, Strategy = request.Strategy }, null);
+            LogOperation(
+                "批量导入药材",
+                new { Count = request.Herbs.Count, Strategy = request.Strategy },
+                null
+            );
             return Success(result.Value, $"成功导入 {result.Value.SuccessCount} 条药材");
         }
-        /// <summary>
-        /// 服务端 Excel 解析批量导入（B2 US-HERB-006: .xlsx → 行 → 同一 BatchImportHerbsCommand）
-        /// </summary>
-        [HttpPost("import-excel")]
-        [EnableRateLimiting("ApiCalls")]
-        [ProducesResponseType(typeof(ApiResponse<HerbBatchImportResultDto>), 200)]
-        [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> ImportExcel(IFormFile file, [FromQuery] DuplicateStrategy strategy = DuplicateStrategy.Skip, CancellationToken ct = default)
-        {
-            if (file == null || file.Length == 0)
-                return ValidationFail("未选择文件或文件为空");
-            if (!file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
-                return ValidationFail("仅支持 .xlsx 格式（NPOI XSSF）");
-
-            List<string[]> rows;
-            try
-            {
-                await using var ms = new MemoryStream();
-                await file.CopyToAsync(ms, ct);
-                ms.Position = 0;
-                rows = ExcelImportHelper.ParseWorkbook(ms, maxRows: 10000);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Excel 解析失败: {FileName}", file.FileName);
-                return BusinessFail("Excel 解析失败，请检查文件格式与列结构");
-            }
-
-            // 列序：名称/拼音码/分类/药性/产地/规格/单位/单价/成本价（与导出模板一致）
-            var herbs = rows.Select(r => new HerbInputDto
-            {
-                Name = r.ElementAtOrDefault(0)?.Trim() ?? string.Empty,
-                PinYinCode = r.ElementAtOrDefault(1)?.Trim(),
-                Category = r.ElementAtOrDefault(2)?.Trim(),
-                Properties = r.ElementAtOrDefault(3)?.Trim(),
-                Origin = r.ElementAtOrDefault(4)?.Trim(),
-                Spec = r.ElementAtOrDefault(5)?.Trim(),
-                Unit = string.IsNullOrWhiteSpace(r.ElementAtOrDefault(6)) ? "克" : r[6].Trim(),
-                Price = decimal.TryParse(r.ElementAtOrDefault(7), out var p) ? p : 0m,
-                CostPrice = decimal.TryParse(r.ElementAtOrDefault(8), out var cp) ? cp : (decimal?)null
-            }).Where(h => !string.IsNullOrWhiteSpace(h.Name)).ToList();
-
-            if (herbs.Count == 0)
-                return ValidationFail("Excel 中未解析到有效数据行（表头需为：名称/拼音码/分类/药性/产地/规格/单位/单价/成本价）");
-
-            var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new BatchImportHerbsCommand(herbs, strategy, operatorId), ct);
-            if (!result.IsSuccess || result.Value == null)
-                return BusinessFail(result.Error ?? "导入失败");
-
-            LogOperation("Excel 批量导入药材", new { Count = herbs.Count, Strategy = strategy }, null);
-            return Success(result.Value, $"成功导入 {result.Value.SuccessCount} 条药材");
-        }
-
-
 
         /// <summary>
         /// 检查药材引用关系
@@ -343,7 +397,8 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<HerbReferenceCheckDto>), 200)]
         public async Task<IActionResult> CheckReference(Guid id, CancellationToken ct)
         {
-            if (ValidateGuid(id, "药材ID") is { } error) return error;
+            if (ValidateGuid(id, "药材ID") is { } error)
+                return error;
 
             var result = await Sender.Send(new CheckHerbReferenceQuery(id), ct);
             if (!result.IsSuccess || result.Value == null)
@@ -359,14 +414,16 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchCheckReference(
             [FromBody] HerbBatchCheckReferenceInputDto dto,
-            CancellationToken ct)
-            => await ExecuteBatchCheckReferenceAsync(
+            CancellationToken ct
+        ) =>
+            await ExecuteBatchCheckReferenceAsync(
                 dto.HerbIds,
                 ids => new BatchCheckHerbReferenceQuery(ids),
                 "药材ID列表不能为空",
                 "单次最多检查100条药材",
                 "批量引用检查失败",
-                ct);
+                ct
+            );
 
         /// <summary>
         /// 批量启用药材
@@ -375,7 +432,9 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchEnable(
-            [FromBody] BatchDeleteInputDto dto, CancellationToken ct)
+            [FromBody] BatchDeleteInputDto dto,
+            CancellationToken ct
+        )
         {
             if (dto.Ids == null || dto.Ids.Count == 0)
                 return ValidationFail("药材ID列表不能为空");
@@ -395,7 +454,9 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchDisable(
-            [FromBody] BatchDeleteInputDto dto, CancellationToken ct)
+            [FromBody] BatchDeleteInputDto dto,
+            CancellationToken ct
+        )
         {
             if (dto.Ids == null || dto.Ids.Count == 0)
                 return ValidationFail("药材ID列表不能为空");
@@ -421,13 +482,22 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,
-            CancellationToken ct = default)
+            CancellationToken ct = default
+        )
         {
-            if (ValidatePagination(page, pageSize) is { } error) return error;
+            if (ValidatePagination(page, pageSize) is { } error)
+                return error;
 
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-            var result = await _formulaService.GetPagedAsync(page, pageSize, keyword, operatorId, isAdmin, ct);
+            var result = await _formulaService.GetPagedAsync(
+                page,
+                pageSize,
+                keyword,
+                operatorId,
+                isAdmin,
+                ct
+            );
             if (!result.IsSuccess)
                 return BusinessFail(result.Error ?? "查询失败");
 
@@ -437,39 +507,89 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 下载验方导入模板（T4 P0#4: 此前端点缺失桌面调用 404）
         /// </summary>
+        /// <summary>
+        /// 下载验方导入 JSON 模板（2026-08-13：Excel→JSON——后端不涉及 Excel 格式，保持通用性）
+        /// </summary>
         [HttpGet("/api/v{version:apiVersion}/formulas/import-template")]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public IActionResult FormulaImportTemplate()
         {
-            var headers = new[] { "验方名称", "分类", "功效", "用法", "药材" };
-            var sample = new[] { "四君子汤", "补益剂", "益气健脾", "水煎服", "人参:10g,白术:10g" };
-            var bytes = ExcelExportHelper.CreateWorkbook("验方导入模板", headers, new[] { sample });
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "验方导入模板.xlsx");
+            var template = new
+            {
+                Description = "验方批量导入 JSON 模板（与 POST /formulas/batch-import 期望的 DTO 一致）",
+                Fields = new[]
+                {
+                    new
+                    {
+                        Field = "Name",
+                        Required = true,
+                        Description = "验方名称",
+                    },
+                    new
+                    {
+                        Field = "Category",
+                        Required = false,
+                        Description = "分类",
+                    },
+                    new
+                    {
+                        Field = "Effect",
+                        Required = false,
+                        Description = "功效",
+                    },
+                    new
+                    {
+                        Field = "Usage",
+                        Required = false,
+                        Description = "用法",
+                    },
+                    new
+                    {
+                        Field = "Herbs",
+                        Required = true,
+                        Description = "药材组成（如 人参:10g,白术:10g）",
+                    },
+                },
+                Example = new[]
+                {
+                    new
+                    {
+                        Name = "四君子汤",
+                        Category = "补益剂",
+                        Effect = "益气健脾",
+                        Usage = "水煎服",
+                        Herbs = "人参:10g,白术:10g",
+                    },
+                },
+            };
+            return Success(template, "验方导入模板（JSON）");
         }
 
         /// <summary>
-        /// 导出验方（T4 P0#4）
+        /// 导出验方为 JSON 数组（2026-08-13：Excel→JSON）
         /// </summary>
         [HttpGet("/api/v{version:apiVersion}/formulas/export")]
-        public async Task<IActionResult> FormulaExport([FromQuery] string? keyword = null, CancellationToken ct = default)
+        [ProducesResponseType(typeof(ApiResponse<List<FormulaListDto>>), 200)]
+        public async Task<IActionResult> FormulaExport(
+            [FromQuery] string? keyword = null,
+            CancellationToken ct = default
+        )
         {
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-            var result = await _formulaService.GetPagedAsync(1, 10000, keyword, operatorId, isAdmin, ct);
+            var result = await _formulaService.GetPagedAsync(
+                1,
+                10000,
+                keyword,
+                operatorId,
+                isAdmin,
+                ct
+            );
             if (!result.IsSuccess)
                 return BusinessFail(result.Error ?? "导出失败");
 
-            var headers = new[] { "验方名称", "分类", "功效", "适应症", "药材数", "状态" };
-            var rows = result.Value!.Items.Select(f => new[]
-            {
-                f.Name,
-                f.Category ?? string.Empty,
-                f.Effect ?? string.Empty,
-                f.Indication ?? string.Empty,
-                f.HerbCount.ToString(),
-                f.Status.ToString()
-            });
-            var bytes = ExcelExportHelper.CreateWorkbook("验方数据", headers, rows);
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "验方数据.xlsx");
+            // JSON 数组
+            return Success(result.Value!.Items, "验方导出（JSON）");
         }
 
         /// <summary>
@@ -479,14 +599,19 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         public async Task<IActionResult> GetFormulaById(Guid id, CancellationToken ct)
         {
-            if (ValidateGuid(id, "验方ID") is { } error) return error;
+            if (ValidateGuid(id, "验方ID") is { } error)
+                return error;
 
             var result = await _formulaService.GetByIdAsync(id, ct);
             if (!result.IsSuccess || result.Value == null)
                 return NotFound(result.Error ?? "验方不存在");
 
             var (operatorId, _, operatorRole) = GetOperator();
-            if (operatorRole == UserRole.Doctor && result.Value.CreatedBy != operatorId && !result.Value.IsShared)
+            if (
+                operatorRole == UserRole.Doctor
+                && result.Value.CreatedBy != operatorId
+                && !result.Value.IsShared
+            )
                 return Forbid("无权限查看此验方");
 
             return Success(result.Value, "查询成功");
@@ -498,19 +623,27 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("/api/v{version:apiVersion}/formulas")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), StatusCodes.Status201Created)]
-        public async Task<IActionResult> CreateFormula([FromBody] FormulaInputDto input, CancellationToken ct)
+        public async Task<IActionResult> CreateFormula(
+            [FromBody] FormulaInputDto input,
+            CancellationToken ct
+        )
         {
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new CreateEntityCommand<FormulaInputDto, FormulaDetailDto>(input, operatorId), ct);
+            var result = await Sender.Send(
+                new CreateEntityCommand<FormulaInputDto, FormulaDetailDto>(input, operatorId),
+                ct
+            );
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "创建失败");
             }
 
             LogOperation("新增验方成功", result.Value, null);
-            return CreatedAtAction(nameof(GetFormulaById),
+            return CreatedAtAction(
+                nameof(GetFormulaById),
                 new { id = result.Value.Id, version = ApiVersionConstants.V1 },
-                ApiResponse<FormulaDetailDto>.CreateSuccess(result.Value, "验方创建成功"));
+                ApiResponse<FormulaDetailDto>.CreateSuccess(result.Value, "验方创建成功")
+            );
         }
 
         /// <summary>
@@ -519,9 +652,14 @@ namespace LYBT.WebAPI.Controllers
         [HttpPut("/api/v{version:apiVersion}/formulas/{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
-        public async Task<IActionResult> UpdateFormula(Guid id, [FromBody] FormulaInputDto input, CancellationToken ct)
+        public async Task<IActionResult> UpdateFormula(
+            Guid id,
+            [FromBody] FormulaInputDto input,
+            CancellationToken ct
+        )
         {
-            if (ValidateGuid(id, "验方ID") is { } error) return error;
+            if (ValidateGuid(id, "验方ID") is { } error)
+                return error;
 
             var getResult = await _formulaService.GetByIdAsync(id, ct);
             if (!getResult.IsSuccess || getResult.Value == null)
@@ -530,7 +668,10 @@ namespace LYBT.WebAPI.Controllers
                 return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new UpdateEntityCommand<FormulaInputDto, FormulaDetailDto>(id, input, operatorId), ct);
+            var result = await Sender.Send(
+                new UpdateEntityCommand<FormulaInputDto, FormulaDetailDto>(id, input, operatorId),
+                ct
+            );
             if (!result.IsSuccess || result.Value == null)
                 return BusinessFail(result.Error ?? "更新失败");
 
@@ -546,7 +687,8 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> DeleteFormula(Guid id, CancellationToken ct)
         {
-            if (ValidateGuid(id, "验方ID") is { } error) return error;
+            if (ValidateGuid(id, "验方ID") is { } error)
+                return error;
 
             var getResult = await _formulaService.GetByIdAsync(id, ct);
             if (!getResult.IsSuccess || getResult.Value == null)
@@ -573,7 +715,8 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> ToggleFormulaStatus(Guid id, CancellationToken ct)
         {
-            if (ValidateGuid(id, "验方ID") is { } error) return error;
+            if (ValidateGuid(id, "验方ID") is { } error)
+                return error;
 
             var getResult = await _formulaService.GetByIdAsync(id, ct);
             if (!getResult.IsSuccess || getResult.Value == null)
@@ -582,12 +725,18 @@ namespace LYBT.WebAPI.Controllers
                 return ownershipError;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new ToggleEntityStatusCommand<Formula, FormulaDetailDto>(id, operatorId), ct);
+            var result = await Sender.Send(
+                new ToggleEntityStatusCommand<Formula, FormulaDetailDto>(id, operatorId),
+                ct
+            );
             if (!result.IsSuccess || result.Value == null)
                 return BusinessFail(result.Error ?? "切换状态失败");
 
             LogOperation("切换验方状态", new { NewStatus = result.Value.Status }, id);
-            return Success(result.Value, $"验方已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
+            return Success(
+                result.Value,
+                $"验方已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}"
+            );
         }
 
         /// <summary>
@@ -599,10 +748,14 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public async Task<IActionResult> RestoreFormula(Guid id, CancellationToken ct)
         {
-            if (ValidateGuid(id, "验方ID") is { } error) return error;
+            if (ValidateGuid(id, "验方ID") is { } error)
+                return error;
 
             var (operatorId, _, _) = GetOperator();
-            var result = await Sender.Send(new RestoreEntityCommand<Formula, FormulaDetailDto>(id, operatorId), ct);
+            var result = await Sender.Send(
+                new RestoreEntityCommand<Formula, FormulaDetailDto>(id, operatorId),
+                ct
+            );
             if (!result.IsSuccess || result.Value == null)
             {
                 if (result.Error?.Contains("未被删除") == true)
@@ -621,13 +774,17 @@ namespace LYBT.WebAPI.Controllers
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchDeleteFormulas([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-            => await ExecuteBatchDeleteAsync(
+        public async Task<IActionResult> BatchDeleteFormulas(
+            [FromBody] BatchDeleteInputDto dto,
+            CancellationToken ct
+        ) =>
+            await ExecuteBatchDeleteAsync(
                 dto,
                 (ids, operatorId) => new BatchDeleteFormulasCommand(ids, operatorId),
                 "请至少选择一个验方",
                 "批量删除验方",
-                ct);
+                ct
+            );
 
         /// <summary>
         /// 批量导入验方（JSON）
@@ -635,23 +792,36 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost("/api/v{version:apiVersion}/formulas/batch-import")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaBatchImportResultDto>), 200)]
-        public async Task<IActionResult> ImportFormulas([FromBody] FormulaBatchImportInputDto request, CancellationToken ct)
+        public async Task<IActionResult> ImportFormulas(
+            [FromBody] FormulaBatchImportInputDto request,
+            CancellationToken ct
+        )
         {
             if (request == null || request.Formulas == null || !request.Formulas.Any())
             {
                 return ValidationFail("导入数据不能为空");
             }
 
-            var result = await Sender.Send(new BatchImportFormulasCommand(request.Formulas, request.FileName), ct);
+            var result = await Sender.Send(
+                new BatchImportFormulasCommand(request.Formulas, request.FileName),
+                ct
+            );
 
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "导入失败");
             }
 
-            LogOperation("批量导入验方",
-                new { FileName = request.FileName, TotalCount = result.Value.TotalCount, SuccessCount = result.Value.SuccessCount },
-                null);
+            LogOperation(
+                "批量导入验方",
+                new
+                {
+                    FileName = request.FileName,
+                    TotalCount = result.Value.TotalCount,
+                    SuccessCount = result.Value.SuccessCount,
+                },
+                null
+            );
 
             return Success(result.Value, result.Value.Message);
         }
@@ -664,7 +834,8 @@ namespace LYBT.WebAPI.Controllers
         public async Task<IActionResult> GetPendingValidation(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            CancellationToken ct = default)
+            CancellationToken ct = default
+        )
         {
             var result = await Sender.Send(new GetPendingValidationQuery(page, pageSize), ct);
 
@@ -686,22 +857,36 @@ namespace LYBT.WebAPI.Controllers
             Guid formulaId,
             Guid herbItemId,
             [FromBody] ValidateFormulaHerbInputDto request,
-            CancellationToken ct)
+            CancellationToken ct
+        )
         {
-            if (ValidateGuid(formulaId, "验方ID") is { } error1) return error1;
-            if (ValidateGuid(herbItemId, "药材项ID") is { } error2) return error2;
-            if (ValidateGuid(request.SelectedHerbId, "系统药材ID") is { } error3) return error3;
+            if (ValidateGuid(formulaId, "验方ID") is { } error1)
+                return error1;
+            if (ValidateGuid(herbItemId, "药材项ID") is { } error2)
+                return error2;
+            if (ValidateGuid(request.SelectedHerbId, "系统药材ID") is { } error3)
+                return error3;
 
-            var result = await Sender.Send(new ValidateFormulaHerbCommand(formulaId, herbItemId, request.SelectedHerbId), ct);
+            var result = await Sender.Send(
+                new ValidateFormulaHerbCommand(formulaId, herbItemId, request.SelectedHerbId),
+                ct
+            );
 
             if (!result.IsSuccess)
             {
                 return BusinessFail(result.Error ?? "验证失败");
             }
 
-            LogOperation("验证验方药材",
-                new { FormulaId = formulaId, HerbItemId = herbItemId, SelectedHerbId = request.SelectedHerbId },
-                formulaId);
+            LogOperation(
+                "验证验方药材",
+                new
+                {
+                    FormulaId = formulaId,
+                    HerbItemId = herbItemId,
+                    SelectedHerbId = request.SelectedHerbId,
+                },
+                formulaId
+            );
 
             return Success("药材验证成功");
         }
@@ -713,7 +898,9 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchEnableFormulas(
-            [FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
+            [FromBody] BatchDeleteInputDto dto,
+            CancellationToken ct = default
+        )
         {
             if (dto.Ids == null || dto.Ids.Count == 0)
                 return ValidationFail("验方ID列表不能为空");
@@ -733,7 +920,9 @@ namespace LYBT.WebAPI.Controllers
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchDisableFormulas(
-            [FromBody] BatchDeleteInputDto dto, CancellationToken ct = default)
+            [FromBody] BatchDeleteInputDto dto,
+            CancellationToken ct = default
+        )
         {
             if (dto.Ids == null || dto.Ids.Count == 0)
                 return ValidationFail("验方ID列表不能为空");

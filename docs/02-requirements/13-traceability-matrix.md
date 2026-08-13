@@ -10,7 +10,7 @@
 ## 图例
 
 | 列 | 含义 |
-|------|------|
+| ------ | ------ |
 | US ID | `US-{域}-{NNN}` 编号 |
 | 优先级 | Must / Should / Could |
 | 关联 ADR | 影响该 US 的架构决策（见 `03-architecture/decisions/`） |
@@ -27,7 +27,7 @@
 ## 一、认证与会话（US-AUTH × 13）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
-|-------|:---:|------|------|------|------|------|------|
+| ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ |
 | US-AUTH-001 | Must | ADR-0004/0008 | Flow 1/2/3/4 | POST /auth/login | AuthController.cs:44 | D19 | ✅ 已实现 |
 | US-AUTH-002 | Must | ADR-0008 | — | ITokenManagementService | AuthController.cs:44 | A11 | ⚠️ 部分实现（双轨锁定，D8） |
 | US-AUTH-003 | Must | ADR-0008 | — | [EnableRateLimiting("Login")] | AuthController.cs:41 | — | ✅ 已实现（本地 auto-login 限流） |
@@ -47,7 +47,7 @@
 ## 二、用户管理（US-USER × 12）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
-|-------|:---:|------|------|------|------|------|------|
+| ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ |
 | US-USER-001 | Must | ADR-0005 | — | GET /users | UsersController | A8 | ✅ 已实现（role/status 筛选参数接线） |
 | US-USER-002 | Must | ADR-0005 | — | GET /users/{id} | UsersController | — | ✅ 已实现（CreatedAt/UpdatedAt 映射已修复） |
 | US-USER-003 | Must | ADR-0004 | — | GET /users/current | UsersController | — | ✅ 已实现 |
@@ -64,8 +64,9 @@
 ## 三、患者管理（US-PAT × 14）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
+
 | US-PAT-014 | Must | — | — | GET /patients/by-id-number/{idNumber} | PatientsController.cs:296 | — | ✅ 已实现（R3-补：身份证号查询） |
-|-------|:---:|------|------|------|------|------|------|
+| ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ |
 | US-PAT-001 | Must | ADR-0010 | Flow 2 | GET /patients | PatientsController.cs:38 | R7 | ✅ 已实现 |
 | US-PAT-002 | Must | ADR-0010 | — | GET /patients/{id} | PatientsController.cs:65 | — | ✅ 已实现 |
 | US-PAT-003 | Must | ADR-0010 | Flow 1 | POST /patients | PatientsController.cs:89 | R3 | ✅ 已实现（电话唯一查重） |
@@ -76,20 +77,20 @@
 | US-PAT-008 | Should | ADR-0001 | — | POST /patients/batch-delete | PatientsController.cs:223 | — | ✅ 已实现 |
 | US-PAT-009 | Must | ADR-0001 | — | GET /patients/{id}/check-reference | PatientsController.cs:248 | — | ✅ 已实现 |
 | US-PAT-010 | Should | ADR-0001 | — | POST /patients/batch-check-reference | PatientsController.cs:267 | — | ✅ 已实现（批量计数一次查询） |
-| US-PAT-011 | Should | ADR-0010 | — | GET /patients/import-template | PatientsController.cs:296 | — | ✅ 已实现（T4: import-template 端点双端） |
-| US-PAT-012 | Should | ADR-0010 | — | GET /patients/export | PatientsController.cs:313 | — | ✅ 已实现（T4: export 端点双端） |
+| US-PAT-011 | Should | ADR-0010 | — | GET /patients/import-template | PatientsController.cs:296 | — | ✅ 已实现（T4 端点 + 2026-08-13 Excel→JSON 模板） |
+| US-PAT-012 | Should | ADR-0010 | — | GET /patients/export | PatientsController.cs:313 | — | ✅ 已实现（T4 端点 + 2026-08-13 Excel→JSON 数组） |
 | US-PAT-013 | Must | ADR-0008 | — | [SensitiveData] 序列化管道 | PatientsController.cs | X3.1 | ✅ 已实现（DTO 加 [SensitiveData]，序列化管道掩码） |
 
 ## 四、药材管理（US-HERB × 13）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
-|-------|:---:|------|------|------|------|------|------|
+| ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ |
 | US-HERB-001 | Must | ADR-0007 | Flow 2 | GET /herbs | CatalogController.cs:50 | R12/A4/D10 | ✅ 已实现 |
 | US-HERB-002 | Must | ADR-0007 | — | GET /herbs/{id} | CatalogController.cs:107 | — | ✅ 已实现 |
 | US-HERB-003 | Must | ADR-0010 | — | POST /herbs | CatalogController.cs:124 | — | ✅ 已实现 |
 | US-HERB-004 | Must | ADR-0001 | — | PUT /herbs/{id} | CatalogController.cs:146 | A2/D13 | ✅ 已实现 |
 | US-HERB-005 | Must | ADR-0001 | — | DELETE /herbs/{id} | CatalogController.cs:174 | — | ✅ 已实现（B1: 单删引用检查 ValidateBeforeDeleteAsync——处方/验方引用拒绝删除） |
-| US-HERB-006 | Must | ADR-0010 | Flow 5(none) | POST /herbs/batch-import | CatalogController.cs:262 | A1 | ✅ 部分实现（DTO 批量导入已实现；服务端 Excel 解析路径缺失） |
+| US-HERB-006 | Must | ADR-0010 | Flow 5(none) | POST /herbs/batch-import | CatalogController.cs:262 | A1 | ✅ 已实现（DTO/JSON 唯一路径——2026-08-13 移除服务端 Excel 解析 import-excel） |
 | US-HERB-007 | Should | ADR-0010 | — | GET /herbs/export-all | CatalogController.cs:82 | — | ✅ 已实现（T4: export-all 端点双端） |
 | US-HERB-008 | Should | ADR-0001 | — | GET /herbs/{id}/check-reference | CatalogController.cs:287 | — | ✅ 已实现（CheckHerbReference 处方+验方双计数） |
 | US-HERB-009 | Should | ADR-0001 | — | POST /herbs/batch-check-reference | CatalogController.cs:302 | — | ✅ 已实现（BatchCheckReference 聚合计数） |
@@ -101,8 +102,9 @@
 ## 五、验方管理（US-FORM × 14）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
+
 | US-FORM-014 | Should | — | — | POST /formulas/{id}/clone | LocalWebAPI CatalogController.cs:459 | — | ✅ 已实现（R3-补：克隆——仅本地，远程待补） |
-|-------|:---:|------|------|------|------|------|------|
+| ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ |
 | US-FORM-001 | Must | ADR-0007 | — | GET /Formulas | CatalogController.cs:363 | D11 | ✅ 已实现（列表 Doctor 仅本人+共享） |
 | US-FORM-002 | Must | ADR-0007 | — | GET /Formulas/{id} | CatalogController.cs:363 | — | ✅ 已实现（Doctor 所有权检查 403） |
 | US-FORM-003 | Must | ADR-0007 | — | POST /Formulas | CatalogController.cs:363 | D11 | ✅ 已实现（创建持久化药材组成） |
@@ -115,13 +117,14 @@
 | US-FORM-010 | Must | ADR-0007 | — | IFormulaService.UpdateAsync | IFormulaService.cs:11 | — | ✅ 已实现（FLAW-F1 降级 Draft） |
 | US-FORM-011 | Must | ADR-0007 | — | POST /Formulas/{id}/toggle-status | CatalogController.cs:363 | — | ✅ 已实现（toggle-status + batch-enable/disable） |
 | US-FORM-012 | Should | ADR-0007 | — | POST /Formulas/{id}/restore | CatalogController.cs:363 | A10 | ✅ 已实现（Restore 泛型命令） |
-| US-FORM-013 | Should | ADR-0010 | — | GET /Formulas/export + import-template | CatalogController.cs:363 | — | ⚠️ 部分实现（T4: export/import-template 已补；空列表 400 ✅） |
+| US-FORM-013 | Should | ADR-0010 | — | GET /Formulas/export + import-template | CatalogController.cs:363 | — | ✅ 已实现（T4 端点 + 2026-08-13 Excel→JSON 模板/导出） |
 
 ## 六、医案管理（US-MC × 20，核心聚合根）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
+
 | US-MC-020 | Should | — | — | POST /medicalcases/batch-delete | MedicalCasesController.cs:178 | — | ✅ 已实现（R3-补：批量删除仅 Completed） |
-|-------|:---:|------|------|------|------|------|------|
+| ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ |
 | US-MC-001 | Must | ADR-0001 | Flow 1/2 | POST /medicalcases | MedicalCasesController.cs:26 | D2 | ✅ 已实现（Create DoctorOnly + BR-001 唯一索引 + CaseNumber） |
 | US-MC-002 | Must | ADR-0001 | Flow 1/2/5 | PUT /medicalcases/{id} | MedicalCasesController.cs:26 | D7/D8 | ✅ 已实现（EditReason 校验——打印后修改/非 Admin 编辑 Completed） |
 | US-MC-003 | Must | ADR-0001 | Flow 1 | PUT /medicalcases/{id}/prescription-flag | MedicalCasesController.cs:26 | D12 | ✅ 已实现 |
@@ -145,7 +148,7 @@
 ## 七、挂号管理（US-REG × 8）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
-|-------|:---:|------|------|------|------|------|------|
+| ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ |
 | US-REG-001 | Must | ADR-0001 | Flow 1 | POST /Registrations | RegistrationsController.cs:24 | R3/R6/R11 | ✅ 已实现（患者校验 + 挂号费带出） |
 | US-REG-002 | Must | ADR-0001 | — | 两步：POST /Registrations（Source=Doctor 建 Waiting）+ PUT /Registrations/{id}/start-visit（接诊） | RegistrationsController.cs（POST /start-visit） | R13 | ✅ 已实现（B2 2026-08-11 QuickVisit；2026-08-13 quickvisit-twostep 两步收敛——quick-visit 端点已删） |
 | US-REG-003 | Must | ADR-0010 | — | GET /Registrations/{id} | RegistrationsController.cs:24 | — | ✅ 已实现 |
@@ -158,7 +161,7 @@
 ## 八、处方打印（US-PRINT × 4）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
-|-------|:---:|------|------|------|------|------|------|
+| ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ |
 | US-PRINT-001 | Must | ADR-0001 | Flow 1/5 | PrescriptionPrintService | PrescriptionPrintService.cs:23 | D14/D15/D17 | ✅ 已实现 |
 | US-PRINT-002 | Must | — | — | PrescriptionPrintService | PrescriptionPrintService.cs | — | ✅ 已实现 |
 | US-PRINT-003 | Should | — | — | PrescriptionPdfExporter | PrescriptionPdfExporter | — | ✅ 已实现 |
@@ -167,7 +170,7 @@
 ## 九、平台基础设施 — Shell（US-SHELL ×13 v1.0 + ×1 v2.0，共 14 行）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
-|-------|:---:|------|------|------|------|------|------|
+| ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ |
 | US-SHELL-001 | Must | ADR-0006/0007 | Flow 4 | App.xaml.cs 启动管线 | App.xaml.cs:41 | S1 | ✅ 已实现 |
 | US-SHELL-003 | Must | ADR-0006/0007 | Flow 4 | ApplicationBootstrapper | ApplicationBootstrapper.cs:35 | — | ✅ 已实现（角色模块加载 + LoginCoordinator 死代码已清——C7 删 HandleLoginSuccessAsync/GetDiagnostics/LoginFlowDiagnostics，2026-08-09 实际已处理，状态列 2026-08-11 校准） |
 | US-SHELL-004 | Could | ADR-0007 | — | AccountSettingsControl | AccountSettingsControl | — | ✅ 已实现 |
@@ -193,8 +196,9 @@
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
 | US-CFG-005 | Should | — | — | PUT /configuration 批量 + validate | ConfigurationController.cs | — | ✅ 已实现（R3-补：配置管理端点） |
+
 | US-CFG-006 | Should | — | — | clinic-settings.json 热更新 | ClinicSettingsService.cs | — | ✅ 已实现（R3-补：诊所信息热更新） |
-|-------|:---:|------|------|------|------|------|------|
+| ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ |
 | US-CFG-001 | Must | ADR-0005 | — | GET /configuration | ConfigurationController.cs:15 | S3 | ✅ 已实现 |
 | US-CFG-002 | Must | ADR-0005 | — | GET /configuration/{section} | ConfigurationController.cs:15 | S3 | ✅ 已实现 |
 | US-CFG-003 | Should | — | — | ProductionConfigurationValidator | ProductionConfigurationValidator | — | ✅ 已实现 |
@@ -203,7 +207,7 @@
 ## 十一、平台基础设施 — Error Handling（US-ERR × 8）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
-|-------|:---:|------|------|------|------|------|------|
+| ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ |
 | US-ERR-001 | Must | — | — | BusinessExceptionHandler + DesktopExceptionHandler | LYBT.Shared.ExceptionHandling | — | ✅ 已实现 |
 | US-ERR-002 | Must | — | — | ClientErrorMessageMapper | ClientErrorMessageMapper | — | ✅ 已实现 |
 | US-ERR-003 | Should | — | — | DesktopExceptionHandler | DesktopExceptionHandler | — | ✅ 已实现 |
@@ -216,7 +220,7 @@
 ## 十二、平台基础设施 — Logging & Audit（US-LOG × 7）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
-|-------|:---:|------|------|------|------|------|------|
+| ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ |
 | US-LOG-001 | Should | — | — | Serilog 配置 | Program.cs + SystemLog | S3 | ✅ 已实现 |
 | US-LOG-002 | Should | — | — | bootstrap logger | Program.cs + App.xaml.cs:41 | — | ✅ 已实现 |
 | US-LOG-003 | Should | ADR-0008 | — | SensitiveDataMasker | SensitiveDataAttribute | — | ✅ 已实现 |
@@ -228,7 +232,7 @@
 ## 十三、平台基础设施 — Health & Diagnostics（US-SYS × 9）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
-|-------|:---:|------|------|------|------|------|------|
+| ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ |
 | US-SYS-001 | Could | — | — | GET /api/v1/health | HealthController.cs:19 | S3 | ✅ 已实现 |
 | US-SYS-002 | Could | — | — | GET /api/v1/health/ping | HealthController.cs:19 | — | ✅ 已实现 |
 | US-SYS-003 | Should | — | — | GET /api/v1/health/details | HealthController.cs:19 | S3 | ✅ 已实现 |
@@ -242,15 +246,16 @@
 ## 十四、平台基础设施 — Card Reader（US-CARD × 2）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
-|-------|:---:|------|------|------|------|------|------|
+| ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ |
 | US-CARD-001 | Should | — | Flow 1 | ICardReaderService（客户端硬件） | ICardReaderService.cs:10 | R3/R4 | ✅ 已实现 |
 | US-CARD-002 | Should | ADR-0001 | Flow 1 | — | —（A-31-C7 移除 `IPatientCardReaderIntegration.MatchPatientAsync` 实现，生产走 FindOrCreatePatientAsync） | R5 | ⚠️ 未完成（实现已移除；2026-08-08 用户定：读卡器必用、US-CARD-002 待完善，UI 设计时整体考虑） |
 
 ## 十五、报表管理（US-REPORT × 4）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 |
+
 | US-REPORT-004 | Could | — | — | GET /reports/trend/* 等 5 端点 | ReportsController.cs:69-158 | — | ✅ 已实现（R3-补：趋势/绩效/排行/流量）——**双模式 2026-08-12 决策 B：仅远程，本地裁剪** |
-|-------|:---:|------|------|------|------|------|------|
+| ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ |
 | US-REPORT-001 | Must | — | — | GET /reports/daily/income | ReportsController.cs:30 | — | ✅ 已实现（endDate 默认=startDate + 400 校验） |
 | US-REPORT-002 | Must | — | — | GET /reports/daily/consultations | ReportsController.cs:38 | — | ✅ 已实现（startDate>endDate→400） |
 | US-REPORT-003 | Should | — | — | GET /reports/daily/herbs | ReportsController.cs:46 | — | ✅ 已实现（同 002 校验） |
@@ -260,7 +265,7 @@
 ## 统计汇总
 
 | 域 | US 数 | ✅已实现 | ⚠️部分实现 | 🔴代码待对齐 | 🧲v1.0待实现 | v2.0 |
-|------|:---:|:---:|:---:|:---:|:---:|:---:|
+| ------ | :---: | :---: | :---: | :---: | :---: | :---: |
 | AUTH | 13 | 12 | 1 | 0 | 0 | 0 |
 | USER | 12 | 12 | 0 | 0 | 0 | 0 |
 | PAT | 14 | 14 | 0 | 0 | 0 | 0 |
@@ -290,7 +295,7 @@
 ## 变更记录
 
 | 日期 | 变更 | 原因 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 2026-06-28 | 新增「十五、报表管理」（US-REPORT × 3，均 ✅ 已实现）；合计 139→142（v1.0 138→141） | A7 报表清单设计落地 |
 | 2026-06-28 | US-REG-002 ⚠️→🧲（QuickVisit 待激活：急诊+本地常规）；US-REG-005 D8 注细化；REG/合计统计同步 | R10 spec S8 文档更新 |
 | 2026-06-28 | US-SHELL-018 补「双模式面板 + 服务端 Configuration API 依赖（ADR-0014）」注；关联 ADR 列补 ADR-0014 | sysadmin 配置设计 spec S7 文档更新 |

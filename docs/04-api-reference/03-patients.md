@@ -9,7 +9,7 @@
 患者管理 CRUD、身份证号查询、软删除恢复、批量操作、引用检查。支持 OutputCache (`PatientsCache`)。
 Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 
-> **注意**: 患者 Excel 导入/导出在客户端 (Desktop) 完成，服务端**无** `POST /patients/import`、`GET /patients/import-template`、`GET /patients/export` 端点（下述两节为 v2.0 规划，代码未实现）。服务端提供 `GET /patients/by-id-number/{idNumber}` 身份证号查询。
+> **注意**: 患者导入/导出为 **JSON 格式**（2026-08-13 决策——后端不涉及 Excel，保持通用性；Excel 处理由前端负责）。服务端提供 `GET /patients/import-template`（JSON 模板）与 `GET /patients/export`（JSON 数组）。
 
 ---
 
@@ -22,7 +22,7 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。
 **查询参数**:
 
 | 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
+| ------ | ------ | -------- | ------ |
 | `page` | int | 1 | 页码 (>0) |
 | `pageSize` | int | 20 | 每页大小 (1-100) |
 | `keyword` | string? | null | 搜索关键词 (姓名/拼音码) |
@@ -74,7 +74,7 @@ curl -X GET "http://localhost:5000/api/v1/patients?keyword=张&page=1&pageSize=1
 **错误码：**
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 400 | 分页参数无效 (ERR-20705) |
 | 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
@@ -132,7 +132,7 @@ curl -X GET "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef123
 **错误码：**
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 404 | 患者不存在 (ERR-20001) |
 | 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
@@ -162,7 +162,7 @@ curl -X GET "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef123
 ```
 
 | 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | `name` | string | 是 | 患者姓名 |
 | `gender` | enum | 否 | Male/Female/Unknown，默认 Unknown |
 | `birthDate` | date | 否 | 出生日期 |
@@ -227,7 +227,7 @@ curl -X POST "http://localhost:5000/api/v1/patients" \
 **错误码：**
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 400 | 参数验证失败 (ERR-00003) |
 | 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 | 409 | 身份证号已存在 (ERR-20002) / 患者电话已存在 (ERR-20003) |
@@ -284,7 +284,7 @@ curl -X PUT "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef123
 **错误码：**
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 400 | 参数验证失败 (ERR-00003) |
 | 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码)；403 详见 Doctor 非所有者 |
 | 404 | 患者不存在 (ERR-20001) |
@@ -316,7 +316,7 @@ curl -X DELETE "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef
 **错误码：**
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码)；403 详见 Doctor 非所有者 |
 | 404 | 患者不存在 (ERR-20001) |
 | 422 | 患者有历史医案，无法删除 (ERR-20004) |
@@ -336,6 +336,7 @@ curl -X DELETE "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef
 **请求体**: 无
 
 **业务规则**:
+
 1. 仅 Admin/SuperAdmin 可执行状态切换
 2. 禁用时: 检查患者是否有 Draft/Active 医案，有则拒绝 (需先完成或取消)
 3. 禁用后: 禁止为该患者创建新医案 (见 medical-cases.md ERR-30105)
@@ -357,7 +358,7 @@ curl -X POST "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef12
 **错误码：**
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码)；403 详见 ERR-20005 |
 | 404 | 患者不存在 (ERR-20001) |
 | 422 | 患者有进行中的医案 (ERR-20005) |
@@ -413,7 +414,7 @@ curl -X POST "http://localhost:5000/api/v1/patients/batch-delete" \
 **错误码：**
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 400 | 请至少选择一个患者 (ERR-20703) |
 | 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
@@ -421,36 +422,28 @@ curl -X POST "http://localhost:5000/api/v1/patients/batch-delete" \
 
 ## GET /patients/import-template
 
-> 🚧 **v2.0 规划**（基线§1 D6：Patients 导入标 v2.0；Herbs Excel 导入属 v1.0）。
+> **2026-08-13 已实现**（Excel→JSON：后端不涉及 Excel 格式）。
 
-下载患者导入 Excel 模板。包含示例数据。
+下载患者导入 JSON 模板（字段说明 + 示例 + 必填标注，与 `POST /patients/batch-import` 期望的 DTO 一致）。
 
 - **权限**: `DoctorOrReceptionist`
 
-**查询参数**:
-
-| 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `sampleRowCount` | int | 5 | 示例数据行数 |
-
-- **响应类型**: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
-- **文件名**: `患者导入模板.xlsx`
+- **响应类型**: `application/json`（`ApiResponse<object>`——含 Fields/Example）
 
 **curl 示例：**
 
 ```bash
-curl -X GET "http://localhost:5000/api/v1/patients/import-template?sampleRowCount=5" \
-  -H "Authorization: Bearer $TOKEN" \
-  --output "患者导入模板.xlsx"
+curl -X GET "http://localhost:5000/api/v1/patients/import-template" \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
 ---
 
 ## GET /patients/export
 
-> 🚧 **v2.0 规划**（基线§1 D6：Patients 导入/导出标 v2.0）。
+> **2026-08-13 已实现**（Excel→JSON）。
 
-导出患者数据到 Excel。
+导出患者数据为 JSON 数组（按筛选条件导出；敏感字段自动脱敏——`SensitiveDataJsonConverterFactory` 管道）。
 
 - **权限**: `DoctorOrReceptionist`
 
@@ -460,15 +453,13 @@ curl -X GET "http://localhost:5000/api/v1/patients/import-template?sampleRowCoun
 |------|------|------|
 | `keyword` | string? | 筛选条件 |
 
-- **响应类型**: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
-- **文件名**: `患者数据.xlsx`
+- **响应类型**: `application/json`（`ApiResponse<List<PatientListDto>>`）
 
 **curl 示例：**
 
 ```bash
 curl -X GET "http://localhost:5000/api/v1/patients/export" \
-  -H "Authorization: Bearer $TOKEN" \
-  --output "患者数据.xlsx"
+  -H "Authorization: Bearer $TOKEN"
 ```
 
 ---
@@ -499,7 +490,7 @@ curl -X POST "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef12
 **错误码：**
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 200 | 该患者未被删除 (ERR-20702) |
 | 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 | 404 | 患者不存在 (ERR-20001) |
@@ -551,6 +542,7 @@ curl -X GET "http://localhost:5000/api/v1/patients/by-id-number/1101011990010112
 **成功响应** (200): `ApiResponse<PatientReferenceCheckDto>`
 
 **业务规则**:
+
 1. referenceCount = 该患者关联的医案总数 (含所有状态)
 2. recentCases 返回最近 5 条医案摘要
 3. 有关联医案时 canDelete=false (MC-D04)，提示使用禁用功能替代删除
@@ -565,7 +557,7 @@ curl -X GET "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef123
 **错误码：**
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 | 404 | 患者不存在 (ERR-20001) |
 
@@ -599,6 +591,7 @@ curl -X GET "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef123
 **成功响应** (200): `ApiResponse<List<PatientReferenceCheckDto>>`
 
 **业务规则**:
+
 1. 最多 100 个患者 ID (超出返回 ERR-20704)
 2. 不存在的 ID 跳过 (不返回错误)
 3. 结果顺序与请求顺序一致
@@ -621,7 +614,7 @@ curl -X POST "http://localhost:5000/api/v1/patients/batch-check-reference" \
 **错误码：**
 
 | HTTP 状态码 | 说明 |
-|------------|------|
+| ------------ | ------ |
 | 400 | 批量检查最多支持100条 (ERR-20704) |
 | 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
 
@@ -634,7 +627,7 @@ curl -X POST "http://localhost:5000/api/v1/patients/batch-check-reference" \
 ### 核心错误 (200xx)
 
 | 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
-|--------|--------|------|----------|----------|
+| -------- | -------- | ------ | ---------- | ---------- |
 | ERR-20001 | PatientNotFound | 404 | 患者不存在 | GET/PUT/DELETE /{id}, POST /{id}/restore |
 | ERR-20002 | PatientIdCardExists | 409 | 系统中已存在该身份证 | POST /, PUT /{id} |
 | ERR-20003 | PatientPhoneExists | 409 | 患者电话已存在 | POST /, PUT /{id} |
@@ -646,7 +639,7 @@ curl -X POST "http://localhost:5000/api/v1/patients/batch-check-reference" \
 ### 业务规则错误 (207xx)
 
 | 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
-|--------|--------|------|----------|----------|
+| -------- | -------- | ------ | ---------- | ---------- |
 | ERR-20701 | PhoneDuplicate | 400 | 手机号已存在 | POST /, PUT /{id} |
 | ERR-20702 | PatientNotDeleted | 200 | 该患者未被删除 | POST /{id}/restore |
 | ERR-20703 | BatchOperationEmpty | 400 | 请至少选择一个患者 | POST /batch-delete |
@@ -658,7 +651,7 @@ curl -X POST "http://localhost:5000/api/v1/patients/batch-check-reference" \
 > 以下错误码用于客户端 Excel 导入流程，非服务端端点触发。
 
 | 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
-|--------|--------|------|----------|----------|
+| -------- | -------- | ------ | ---------- | ---------- |
 | ERR-20801 | ImportFileEmpty | 400 | 文件不能为空 | 客户端导入 |
 | ERR-20802 | ImportFileFormat | 400 | 仅支持.xlsx格式 | 客户端导入 |
 | ERR-20803 | ImportFileSize | 400 | 文件大小不能超过10MB | 客户端导入 |
@@ -670,7 +663,7 @@ curl -X POST "http://localhost:5000/api/v1/patients/batch-check-reference" \
 ## 变更记录
 
 | 日期 | 版本 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 2026-02-10 | v1.0 | 初始版本，10 个端点 |
 | 2026-02-18 | v1.1 | 新增 PUT /patients/{id}/status 端点 (FR-PAT-013 患者状态管理); 补充错误码 ERR-20005/20006 |
 | 2026-02-18 | v1.2 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-20001~20805)，含核心/业务规则/导入三类 |

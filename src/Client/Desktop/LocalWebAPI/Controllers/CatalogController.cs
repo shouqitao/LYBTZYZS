@@ -1,7 +1,6 @@
 using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Constants;
-using LYBT.Infrastructure.Excel;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Catalog.Application.Commands;
 using LYBT.Module.Catalog.Application.Queries;
@@ -32,7 +31,8 @@ public class CatalogController : BaseCrudController
         ISender sender,
         ILogger<CatalogController> logger,
         ICatalogQueryService<HerbListDto, HerbDetailDto> herbService,
-        ICatalogQueryService<FormulaListDto, FormulaDetailDto> formulaService)
+        ICatalogQueryService<FormulaListDto, FormulaDetailDto> formulaService
+    )
         : base(sender, logger)
     {
         _herbService = herbService;
@@ -51,12 +51,15 @@ public class CatalogController : BaseCrudController
         [FromQuery] string? keyword = null,
         [FromQuery] UserRole? role = null,
         [FromQuery] CommonStatus? status = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default
+    )
     {
-        if (ValidatePagination(page, pageSize) is { } error) return error;
+        if (ValidatePagination(page, pageSize) is { } error)
+            return error;
 
         var result = await _herbService.GetPagedAsync(page, pageSize, keyword, null, false, ct);
-        if (!result.IsSuccess) return BusinessFail(result.Error ?? "查询失败");
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "查询失败");
         return Success(result.Value!, "查询成功");
     }
 
@@ -66,7 +69,8 @@ public class CatalogController : BaseCrudController
     [HttpGet("{id}")]
     public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
-        if (ValidateGuid(id, "药材ID") is { } error) return error;
+        if (ValidateGuid(id, "药材ID") is { } error)
+            return error;
 
         var result = await _herbService.GetByIdAsync(id, ct);
         if (!result.IsSuccess || result.Value == null)
@@ -82,13 +86,18 @@ public class CatalogController : BaseCrudController
     public async Task<IActionResult> Create([FromBody] HerbInputDto input, CancellationToken ct)
     {
         var (operatorId, _, _) = GetOperator();
-        var result = await Sender.Send(new CreateEntityCommand<HerbInputDto, HerbDetailDto>(input, operatorId), ct);
+        var result = await Sender.Send(
+            new CreateEntityCommand<HerbInputDto, HerbDetailDto>(input, operatorId),
+            ct
+        );
         if (result.IsSuccess && result.Value != null)
         {
             LogOperation("创建药材", result.Value, null);
-            return CreatedAtAction(nameof(GetById),
+            return CreatedAtAction(
+                nameof(GetById),
                 new { id = result.Value.Id },
-                ApiResponse<HerbDetailDto>.CreateSuccess(result.Value, "药材创建成功"));
+                ApiResponse<HerbDetailDto>.CreateSuccess(result.Value, "药材创建成功")
+            );
         }
 
         return BusinessFail(result.Error ?? "创建失败");
@@ -99,9 +108,14 @@ public class CatalogController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto input, CancellationToken ct)
+    public async Task<IActionResult> Update(
+        Guid id,
+        [FromBody] HerbInputDto input,
+        CancellationToken ct
+    )
     {
-        if (ValidateGuid(id, "药材ID") is { } error) return error;
+        if (ValidateGuid(id, "药材ID") is { } error)
+            return error;
 
         var getResult = await _herbService.GetByIdAsync(id, ct);
         if (!getResult.IsSuccess || getResult.Value == null)
@@ -111,7 +125,10 @@ public class CatalogController : BaseCrudController
             return ownerError;
 
         var (operatorId, _, _) = GetOperator();
-        var result = await Sender.Send(new UpdateEntityCommand<HerbInputDto, HerbDetailDto>(id, input, operatorId), ct);
+        var result = await Sender.Send(
+            new UpdateEntityCommand<HerbInputDto, HerbDetailDto>(id, input, operatorId),
+            ct
+        );
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "更新失败");
 
@@ -126,7 +143,8 @@ public class CatalogController : BaseCrudController
     [HttpDelete("{id}")]
     public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
-        if (ValidateGuid(id, "药材ID") is { } error) return error;
+        if (ValidateGuid(id, "药材ID") is { } error)
+            return error;
 
         var getResult = await _herbService.GetByIdAsync(id, ct);
         if (!getResult.IsSuccess || getResult.Value == null)
@@ -151,7 +169,8 @@ public class CatalogController : BaseCrudController
     [HttpPost("{id}/toggle-status")]
     public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
     {
-        if (ValidateGuid(id, "药材ID") is { } error) return error;
+        if (ValidateGuid(id, "药材ID") is { } error)
+            return error;
 
         var (operatorId, _, _) = GetOperator();
 
@@ -162,12 +181,18 @@ public class CatalogController : BaseCrudController
         if (ValidateOwnership(getResult.Value.CreatedBy, "药材") is { } ownerError)
             return ownerError;
 
-        var result = await Sender.Send(new ToggleEntityStatusCommand<Herb, HerbDetailDto>(id, operatorId), ct);
+        var result = await Sender.Send(
+            new ToggleEntityStatusCommand<Herb, HerbDetailDto>(id, operatorId),
+            ct
+        );
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "切换状态失败");
 
         LogOperation("切换药材状态", new { NewStatus = result.Value.Status }, id);
-        return Success(result.Value, $"药材已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
+        return Success(
+            result.Value,
+            $"药材已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}"
+        );
     }
 
     /// <summary>
@@ -177,10 +202,14 @@ public class CatalogController : BaseCrudController
     [HttpPost("{id}/restore")]
     public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
     {
-        if (ValidateGuid(id, "药材ID") is { } error) return error;
+        if (ValidateGuid(id, "药材ID") is { } error)
+            return error;
 
         var (operatorId, _, _) = GetOperator();
-        var result = await Sender.Send(new RestoreEntityCommand<Herb, HerbDetailDto>(id, operatorId), ct);
+        var result = await Sender.Send(
+            new RestoreEntityCommand<Herb, HerbDetailDto>(id, operatorId),
+            ct
+        );
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "恢复失败");
 
@@ -192,78 +221,37 @@ public class CatalogController : BaseCrudController
     /// 批量删除药材
     /// </summary>
     [HttpPost("batch-delete")]
-    public override async Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-        => await ExecuteBatchDeleteAsync(
+    public override async Task<IActionResult> BatchDelete(
+        [FromBody] BatchDeleteInputDto dto,
+        CancellationToken ct
+    ) =>
+        await ExecuteBatchDeleteAsync(
             dto,
             (ids, operatorId) => new BatchDeleteHerbsCommand(ids, operatorId),
             "请至少选择一个药材",
             "批量删除药材",
-            ct);
+            ct
+        );
 
     /// <summary>
     /// 批量导入药材
     /// </summary>
     [HttpPost("batch-import")]
-    public async Task<IActionResult> BatchImport([FromBody] HerbBatchImportInputDto request, CancellationToken ct)
+    public async Task<IActionResult> BatchImport(
+        [FromBody] HerbBatchImportInputDto request,
+        CancellationToken ct
+    )
     {
         if (request == null || request.Herbs == null || request.Herbs.Count == 0)
             return ValidationFail("导入列表不能为空");
         var (operatorId, _, _) = GetOperator();
-        var result = await Sender.Send(new BatchImportHerbsCommand(request.Herbs, request.Strategy, operatorId), ct);
+        var result = await Sender.Send(
+            new BatchImportHerbsCommand(request.Herbs, request.Strategy, operatorId),
+            ct
+        );
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "导入失败");
         return Success(result.Value, result.Value.Message);
-    }
-
-    /// <summary>
-    /// 服务端 Excel 解析批量导入（B2 US-HERB-006）
-    /// </summary>
-    [HttpPost("import-excel")]
-    public async Task<IActionResult> ImportExcel(IFormFile file, [FromQuery] DuplicateStrategy strategy = DuplicateStrategy.Skip, CancellationToken ct = default)
-    {
-        if (file == null || file.Length == 0)
-            return ValidationFail("未选择文件或文件为空");
-        if (!file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
-            return ValidationFail("仅支持 .xlsx 格式（NPOI XSSF）");
-
-        List<string[]> rows;
-        try
-        {
-            await using var ms = new MemoryStream();
-            await file.CopyToAsync(ms, ct);
-            ms.Position = 0;
-            rows = ExcelImportHelper.ParseWorkbook(ms, maxRows: 10000);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Excel 解析失败: {FileName}", file.FileName);
-            return BusinessFail("Excel 解析失败，请检查文件格式与列结构");
-        }
-
-        // 列序：名称/拼音码/分类/药性/产地/规格/单位/单价/成本价（与导出模板一致）
-        var herbs = rows.Select(r => new HerbInputDto
-        {
-            Name = r.ElementAtOrDefault(0)?.Trim() ?? string.Empty,
-            PinYinCode = r.ElementAtOrDefault(1)?.Trim(),
-            Category = r.ElementAtOrDefault(2)?.Trim(),
-            Properties = r.ElementAtOrDefault(3)?.Trim(),
-            Origin = r.ElementAtOrDefault(4)?.Trim(),
-            Spec = r.ElementAtOrDefault(5)?.Trim(),
-            Unit = string.IsNullOrWhiteSpace(r.ElementAtOrDefault(6)) ? "克" : r[6].Trim(),
-            Price = decimal.TryParse(r.ElementAtOrDefault(7), out var p) ? p : 0m,
-            CostPrice = decimal.TryParse(r.ElementAtOrDefault(8), out var cp) ? cp : (decimal?)null
-        }).Where(h => !string.IsNullOrWhiteSpace(h.Name)).ToList();
-
-        if (herbs.Count == 0)
-            return ValidationFail("Excel 中未解析到有效数据行（表头需为：名称/拼音码/分类/药性/产地/规格/单位/单价/成本价）");
-
-        var (operatorId, _, _) = GetOperator();
-        var result = await Sender.Send(new BatchImportHerbsCommand(herbs, strategy, operatorId), ct);
-        if (!result.IsSuccess || result.Value == null)
-            return BusinessFail(result.Error ?? "导入失败");
-
-        LogOperation("Excel 批量导入药材", new { Count = herbs.Count, Strategy = strategy }, null);
-        return Success(result.Value, $"成功导入 {result.Value.SuccessCount} 条药材");
     }
 
     /// <summary>
@@ -282,21 +270,28 @@ public class CatalogController : BaseCrudController
     /// 批量检查引用关系
     /// </summary>
     [HttpPost("batch-check-reference")]
-    public async Task<IActionResult> BatchCheckReference([FromBody] HerbBatchCheckReferenceInputDto dto, CancellationToken ct)
-        => await ExecuteBatchCheckReferenceAsync(
+    public async Task<IActionResult> BatchCheckReference(
+        [FromBody] HerbBatchCheckReferenceInputDto dto,
+        CancellationToken ct
+    ) =>
+        await ExecuteBatchCheckReferenceAsync(
             dto.HerbIds,
             ids => new BatchCheckHerbReferenceQuery(ids),
             "药材ID列表不能为空",
             "单次最多检查100条药材",
             "批量引用检查失败",
-            ct);
+            ct
+        );
 
     /// <summary>
     /// 批量启用药材
     /// </summary>
     [HttpPost("batch-enable")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    public async Task<IActionResult> BatchEnable([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
+    public async Task<IActionResult> BatchEnable(
+        [FromBody] BatchDeleteInputDto dto,
+        CancellationToken ct
+    )
     {
         if (dto.Ids == null || dto.Ids.Count == 0)
             return ValidationFail("药材ID列表不能为空");
@@ -313,7 +308,10 @@ public class CatalogController : BaseCrudController
     /// </summary>
     [HttpPost("batch-disable")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    public async Task<IActionResult> BatchDisable([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
+    public async Task<IActionResult> BatchDisable(
+        [FromBody] BatchDeleteInputDto dto,
+        CancellationToken ct
+    )
     {
         if (dto.Ids == null || dto.Ids.Count == 0)
             return ValidationFail("药材ID列表不能为空");
@@ -337,53 +335,101 @@ public class CatalogController : BaseCrudController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? keyword = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default
+    )
     {
-        if (ValidatePagination(page, pageSize) is { } error) return error;
+        if (ValidatePagination(page, pageSize) is { } error)
+            return error;
 
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-        var result = await _formulaService.GetPagedAsync(page, pageSize, keyword, operatorId, isAdmin, ct);
+        var result = await _formulaService.GetPagedAsync(
+            page,
+            pageSize,
+            keyword,
+            operatorId,
+            isAdmin,
+            ct
+        );
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "查询失败");
 
         return SuccessPaged(result.Value!, "查询成功");
     }
 
-        /// <summary>
-        /// 下载验方导入模板（T4 P0#4: 镜像远程端点）
-        /// </summary>
-        [HttpGet("api/v1/formulas/import-template")]
-        public IActionResult FormulaImportTemplate()
+    /// <summary>
+    /// 下载验方导入 JSON 模板（2026-08-13：Excel→JSON——后端不涉及 Excel 格式，保持通用性）
+    /// </summary>
+    [HttpGet("api/v1/formulas/import-template")]
+    public IActionResult FormulaImportTemplate()
+    {
+        var template = new
         {
-            var headers = new[] { "验方名称", "分类", "功效", "适应症", "药材" };
-            var sample = new[] { "四君子汤", "补益剂", "益气健脾", "脾胃气虚", "人参:10g,白术:10g" };
-            var bytes = ExcelExportHelper.CreateWorkbook("验方导入模板", headers, new[] { sample });
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "验方导入模板.xlsx");
-        }
-
-        /// <summary>
-        /// 导出验方（T4 P0#4）
-        /// </summary>
-        [HttpGet("api/v1/formulas/export")]
-        public async Task<IActionResult> FormulaExport([FromQuery] string? keyword = null, CancellationToken ct = default)
-        {
-            var result = await _formulaService.GetPagedAsync(1, 10000, keyword, null, false, ct);
-            if (!result.IsSuccess) return BusinessFail(result.Error ?? "导出失败");
-
-            var headers = new[] { "验方名称", "分类", "功效", "适应症", "药材数", "状态" };
-            var rows = result.Value!.Items.Select(f => new[]
+            Description = "验方批量导入 JSON 模板（与 POST /formulas/batch-import 期望的 DTO 一致）",
+            Fields = new[]
             {
-                f.Name,
-                f.Category ?? string.Empty,
-                f.Effect ?? string.Empty,
-                f.Indication ?? string.Empty,
-                f.HerbCount.ToString(),
-                f.Status.ToString()
-            });
-            var bytes = ExcelExportHelper.CreateWorkbook("验方数据", headers, rows);
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "验方数据.xlsx");
-        }
+                new
+                {
+                    Field = "Name",
+                    Required = true,
+                    Description = "验方名称",
+                },
+                new
+                {
+                    Field = "Category",
+                    Required = false,
+                    Description = "分类",
+                },
+                new
+                {
+                    Field = "Effect",
+                    Required = false,
+                    Description = "功效",
+                },
+                new
+                {
+                    Field = "Usage",
+                    Required = false,
+                    Description = "用法",
+                },
+                new
+                {
+                    Field = "Herbs",
+                    Required = true,
+                    Description = "药材组成（如 人参:10g,白术:10g）",
+                },
+            },
+            Example = new[]
+            {
+                new
+                {
+                    Name = "四君子汤",
+                    Category = "补益剂",
+                    Effect = "益气健脾",
+                    Usage = "水煎服",
+                    Herbs = "人参:10g,白术:10g",
+                },
+            },
+        };
+        return Success(template, "验方导入模板（JSON）");
+    }
+
+    /// <summary>
+    /// 导出验方为 JSON 数组（2026-08-13：Excel→JSON）
+    /// </summary>
+    [HttpGet("api/v1/formulas/export")]
+    public async Task<IActionResult> FormulaExport(
+        [FromQuery] string? keyword = null,
+        CancellationToken ct = default
+    )
+    {
+        var result = await _formulaService.GetPagedAsync(1, 10000, keyword, null, false, ct);
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "导出失败");
+
+        // JSON 数组
+        return Success(result.Value!.Items, "验方导出（JSON）");
+    }
 
     /// <summary>
     /// 获取验方详情
@@ -396,7 +442,11 @@ public class CatalogController : BaseCrudController
             return NotFound(result.Error ?? "验方不存在");
 
         var (operatorId, _, operatorRole) = GetOperator();
-        if (operatorRole == UserRole.Doctor && result.Value.CreatedBy != operatorId && !result.Value.IsShared)
+        if (
+            operatorRole == UserRole.Doctor
+            && result.Value.CreatedBy != operatorId
+            && !result.Value.IsShared
+        )
             return Forbid("您没有权限查看此验方");
 
         return Success(result.Value, "查询成功");
@@ -406,28 +456,41 @@ public class CatalogController : BaseCrudController
     /// 新增验方
     /// </summary>
     [HttpPost("api/v1/formulas")]
-    public async Task<IActionResult> CreateFormula([FromBody] FormulaInputDto input, CancellationToken ct)
+    public async Task<IActionResult> CreateFormula(
+        [FromBody] FormulaInputDto input,
+        CancellationToken ct
+    )
     {
         var (operatorId, _, _) = GetOperator();
-        var result = await Sender.Send(new CreateEntityCommand<FormulaInputDto, FormulaDetailDto>(input, operatorId), ct);
+        var result = await Sender.Send(
+            new CreateEntityCommand<FormulaInputDto, FormulaDetailDto>(input, operatorId),
+            ct
+        );
         if (!result.IsSuccess || result.Value == null)
         {
             return BusinessFail(result.Error ?? "创建失败");
         }
 
         LogOperation("新增验方成功", result.Value, null);
-        return CreatedAtAction(nameof(GetFormulaById),
+        return CreatedAtAction(
+            nameof(GetFormulaById),
             new { id = result.Value.Id },
-            ApiResponse<FormulaDetailDto>.CreateSuccess(result.Value, "验方创建成功"));
+            ApiResponse<FormulaDetailDto>.CreateSuccess(result.Value, "验方创建成功")
+        );
     }
 
     /// <summary>
     /// 更新验方信息
     /// </summary>
     [HttpPut("api/v1/formulas/{id}")]
-    public async Task<IActionResult> UpdateFormula(Guid id, [FromBody] FormulaInputDto input, CancellationToken ct)
+    public async Task<IActionResult> UpdateFormula(
+        Guid id,
+        [FromBody] FormulaInputDto input,
+        CancellationToken ct
+    )
     {
-        if (ValidateGuid(id, "验方ID") is { } error) return error;
+        if (ValidateGuid(id, "验方ID") is { } error)
+            return error;
 
         var getResult = await _formulaService.GetByIdAsync(id, ct);
         if (!getResult.IsSuccess || getResult.Value == null)
@@ -436,7 +499,10 @@ public class CatalogController : BaseCrudController
             return ownershipError;
 
         var (operatorId, _, _) = GetOperator();
-        var result = await Sender.Send(new UpdateEntityCommand<FormulaInputDto, FormulaDetailDto>(id, input, operatorId), ct);
+        var result = await Sender.Send(
+            new UpdateEntityCommand<FormulaInputDto, FormulaDetailDto>(id, input, operatorId),
+            ct
+        );
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "更新失败");
 
@@ -450,7 +516,8 @@ public class CatalogController : BaseCrudController
     [HttpDelete("api/v1/formulas/{id}")]
     public async Task<IActionResult> DeleteFormula(Guid id, CancellationToken ct)
     {
-        if (ValidateGuid(id, "验方ID") is { } error) return error;
+        if (ValidateGuid(id, "验方ID") is { } error)
+            return error;
 
         var getResult = await _formulaService.GetByIdAsync(id, ct);
         if (!getResult.IsSuccess || getResult.Value == null)
@@ -475,7 +542,8 @@ public class CatalogController : BaseCrudController
     [HttpPost("api/v1/formulas/{id}/toggle-status")]
     public async Task<IActionResult> ToggleFormulaStatus(Guid id, CancellationToken ct)
     {
-        if (ValidateGuid(id, "验方ID") is { } error) return error;
+        if (ValidateGuid(id, "验方ID") is { } error)
+            return error;
 
         var getResult = await _formulaService.GetByIdAsync(id, ct);
         if (!getResult.IsSuccess || getResult.Value == null)
@@ -484,25 +552,35 @@ public class CatalogController : BaseCrudController
             return ownershipError;
 
         var (operatorId, _, _) = GetOperator();
-        var result = await Sender.Send(new ToggleEntityStatusCommand<Formula, FormulaDetailDto>(id, operatorId), ct);
+        var result = await Sender.Send(
+            new ToggleEntityStatusCommand<Formula, FormulaDetailDto>(id, operatorId),
+            ct
+        );
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "切换状态失败");
 
         LogOperation("切换验方状态", new { NewStatus = result.Value.Status }, id);
-        return Success(result.Value, $"验方已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
+        return Success(
+            result.Value,
+            $"验方已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}"
+        );
     }
 
     /// <summary>
     /// 批量删除验方
     /// </summary>
     [HttpPost("api/v1/formulas/batch-delete")]
-    public async Task<IActionResult> BatchDeleteFormulas([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-        => await ExecuteBatchDeleteAsync(
+    public async Task<IActionResult> BatchDeleteFormulas(
+        [FromBody] BatchDeleteInputDto dto,
+        CancellationToken ct
+    ) =>
+        await ExecuteBatchDeleteAsync(
             dto,
             (ids, operatorId) => new BatchDeleteFormulasCommand(ids, operatorId),
             "请至少选择一个验方",
             "批量删除验方",
-            ct);
+            ct
+        );
 
     /// <summary>
     /// 复制验方
@@ -524,19 +602,26 @@ public class CatalogController : BaseCrudController
             Category = source.Value.Category,
             IsShared = false,
             Remark = source.Value.Remark,
-            Herbs = source.Value.Herbs?.Select(h => new FormulaHerbItemInputDto
-            {
-                HerbId = h.HerbId,
-                HerbName = h.HerbName,
-                Dosage = h.Dosage,
-                Unit = h.Unit,
-                Usage = h.Usage,
-                DecocteMethod = h.DecocteMethod
-            }).ToList() ?? new()
+            Herbs =
+                source
+                    .Value.Herbs?.Select(h => new FormulaHerbItemInputDto
+                    {
+                        HerbId = h.HerbId,
+                        HerbName = h.HerbName,
+                        Dosage = h.Dosage,
+                        Unit = h.Unit,
+                        Usage = h.Usage,
+                        DecocteMethod = h.DecocteMethod,
+                    })
+                    .ToList()
+                ?? new(),
         };
 
         var (operatorId, _, _) = GetOperator();
-        var result = await Sender.Send(new CreateEntityCommand<FormulaInputDto, FormulaDetailDto>(clone, operatorId), ct);
+        var result = await Sender.Send(
+            new CreateEntityCommand<FormulaInputDto, FormulaDetailDto>(clone, operatorId),
+            ct
+        );
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "复制失败");
         return Success(result.Value, "复制成功");
@@ -546,7 +631,10 @@ public class CatalogController : BaseCrudController
     /// 批量导入验方
     /// </summary>
     [HttpPost("api/v1/formulas/batch-import")]
-    public async Task<IActionResult> BatchImportFormulas([FromBody] List<FormulaImportItemDto> formulas, CancellationToken ct)
+    public async Task<IActionResult> BatchImportFormulas(
+        [FromBody] List<FormulaImportItemDto> formulas,
+        CancellationToken ct
+    )
     {
         if (formulas == null || formulas.Count == 0)
             return ValidationFail("导入列表不能为空");
@@ -563,7 +651,8 @@ public class CatalogController : BaseCrudController
     public async Task<IActionResult> GetPendingValidation(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
-        CancellationToken ct = default)
+        CancellationToken ct = default
+    )
     {
         var result = await Sender.Send(new GetPendingValidationQuery(page, pageSize), ct);
         if (!result.IsSuccess || result.Value == null)
@@ -575,9 +664,17 @@ public class CatalogController : BaseCrudController
     /// 校验验方药材匹配
     /// </summary>
     [HttpPost("api/v1/formulas/{formulaId}/herbs/{herbItemId}/validate")]
-    public async Task<IActionResult> ValidateHerb(Guid formulaId, Guid herbItemId, [FromBody] ValidateFormulaHerbInputDto request, CancellationToken ct)
+    public async Task<IActionResult> ValidateHerb(
+        Guid formulaId,
+        Guid herbItemId,
+        [FromBody] ValidateFormulaHerbInputDto request,
+        CancellationToken ct
+    )
     {
-        var result = await Sender.Send(new ValidateFormulaHerbCommand(formulaId, herbItemId, request.SelectedHerbId), ct);
+        var result = await Sender.Send(
+            new ValidateFormulaHerbCommand(formulaId, herbItemId, request.SelectedHerbId),
+            ct
+        );
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "药材验证失败");
         return Success("药材验证成功");
@@ -590,10 +687,14 @@ public class CatalogController : BaseCrudController
     [HttpPost("api/v1/formulas/{id}/restore")]
     public async Task<IActionResult> RestoreFormula(Guid id, CancellationToken ct)
     {
-        if (ValidateGuid(id, "验方ID") is { } error) return error;
+        if (ValidateGuid(id, "验方ID") is { } error)
+            return error;
 
         var (operatorId, _, _) = GetOperator();
-        var result = await Sender.Send(new RestoreEntityCommand<Formula, FormulaDetailDto>(id, operatorId), ct);
+        var result = await Sender.Send(
+            new RestoreEntityCommand<Formula, FormulaDetailDto>(id, operatorId),
+            ct
+        );
         if (!result.IsSuccess || result.Value == null)
         {
             if (result.Error?.Contains("未被删除") == true)
@@ -609,7 +710,10 @@ public class CatalogController : BaseCrudController
     /// </summary>
     [HttpPost("api/v1/formulas/batch-enable")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    public async Task<IActionResult> BatchEnableFormulas([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
+    public async Task<IActionResult> BatchEnableFormulas(
+        [FromBody] BatchDeleteInputDto dto,
+        CancellationToken ct
+    )
     {
         if (dto.Ids == null || dto.Ids.Count == 0)
             return ValidationFail("验方ID列表不能为空");
@@ -626,7 +730,10 @@ public class CatalogController : BaseCrudController
     /// </summary>
     [HttpPost("api/v1/formulas/batch-disable")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    public async Task<IActionResult> BatchDisableFormulas([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
+    public async Task<IActionResult> BatchDisableFormulas(
+        [FromBody] BatchDeleteInputDto dto,
+        CancellationToken ct
+    )
     {
         if (dto.Ids == null || dto.Ids.Count == 0)
             return ValidationFail("验方ID列表不能为空");
