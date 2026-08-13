@@ -49,9 +49,11 @@ public class DeploymentConfigTests
     private static LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationValidator CreateValidator(
         params (string Key, string Value)[] overrides)
     {
+        // ADR-0019: appsettings 在 config/ 子目录
+        var configDir = Path.Combine(AppContext.BaseDirectory, "config");
         var builder = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
-            .AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.json"), optional: true)
-            .AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.Production.json"), optional: true);
+            .AddJsonFile(Path.Combine(configDir, "appsettings.json"), optional: true)
+            .AddJsonFile(Path.Combine(configDir, "appsettings.Production.json"), optional: true);
         var dict = new Dictionary<string, string?>();
         foreach (var (key, value) in overrides)
             dict[key] = value;

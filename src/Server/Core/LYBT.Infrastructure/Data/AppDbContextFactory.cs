@@ -15,8 +15,10 @@ namespace LYBT.Infrastructure.Data
         /// <inheritdoc/>
         public AppDbContext CreateDbContext(string[] args)
         {
+            // ADR-0019 配置集中: config/ 子目录（与 Program 加载链一致）
+            var configDir = Path.Combine(AppContext.BaseDirectory, "config");
             var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
+                .SetBasePath(configDir)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
                 .Build();

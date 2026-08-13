@@ -106,10 +106,21 @@ public class Program
             Log.Information("已切换到Final Logger，配置加载完成");
 
             // unify-configuration-system: 注册强类型配置
+            // ADR-0019 配置集中: appsettings 移入 config/ 子目录（发布产物 = {BaseDir}/config/）
+            // 移除 CreateBuilder 默认根目录 json providers → 改加载 config/ 路径
+            foreach (var source in builder.Configuration.Sources
+                .Where(src => src is Microsoft.Extensions.Configuration.Json.JsonConfigurationSource)
+                .ToList())
+            {
+                builder.Configuration.Sources.Remove(source);
+            }
+            var configDir = Path.Combine(AppContext.BaseDirectory, "config");
+            builder.Configuration.AddJsonFile(Path.Combine(configDir, "appsettings.json"), optional: true, reloadOnChange: true);
+            builder.Configuration.AddJsonFile(Path.Combine(configDir, $"appsettings.{environment}.json"), optional: true, reloadOnChange: true);
+
             // CFG-BATCH2 优先级修正（边界决策 1）：环境变量 > runtime-overrides.json > appsettings.{env}.json > appsettings.json
-            // CreateBuilder 内置 = [appsettings.json, appsettings.{env}.json, 环境变量]——runtime-overrides 需在 env 之下：
             // 移除内置环境变量 provider → 追加 runtime-overrides → 重建环境变量（最高优先）
-            var runtimeOverridesPath = Path.Combine(AppContext.BaseDirectory, "config", "runtime-overrides.json");
+            var runtimeOverridesPath = Path.Combine(configDir, "runtime-overrides.json");
             var baseline = builder.Configuration.AsEnumerable()
                 .Where(kv => kv.Value is not null)
                 .ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase);
@@ -311,9 +322,12 @@ public class Program
     /// 生成到当前工作目录（与 CreateBuilder 的 AddJsonFile 加载路径一致）；
     /// 占位符语义 = 运维注入名（配置唯一化——双下划线变量名）。
     /// </summary>
-    private static void EnsureEnvironmentConfigFiles(string environment)
+    private static void EnsureEnvironmentConfigFiles(string environment, string? baseDir = null)
     {
-        var cwd = Directory.GetCurrentDirectory();
+        // ADR-0019: 生成到 config/ 子目录（与加载链一致——{BaseDir}/config/）
+        var configDir = Path.Combine(baseDir ?? AppContext.BaseDirectory, "config");
+        Directory.CreateDirectory(configDir);
+        var cwd = configDir;
         var templates = new Dictionary<string, string>
         {
             ["appsettings.json"] = AppSettingsTemplate,

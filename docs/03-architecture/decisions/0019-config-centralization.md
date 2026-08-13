@@ -1,6 +1,8 @@
 # ADR-0019: 配置集中管理（Shared 类型集中 + config/ 文件集中 + 双端行为分层）
 
 ## 状态
+
+**已实施（2026-08-12）**——Server 端 config/ 目录集中（WebAPI）：appsettings*.json + clinic.config.json 移入 `config/` 子目录（发布产物 = {BaseDir}/config/）；Program 加载链改 config/ 路径（保持 CFG-BATCH2 优先级 + CFGCLOSE 自动生成 + PostProcessor）；AppDbContextFactory 同路径；Desktop 第二阶段待实施
 Accepted（设计思路用户确认 2026-08-13）— 待实施（范围确认后派发）
 
 ## 上下文

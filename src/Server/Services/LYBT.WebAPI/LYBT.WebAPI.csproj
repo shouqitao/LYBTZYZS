@@ -9,6 +9,13 @@
 	  <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
+	<!-- ADR-0019 配置集中: config/ 子目录输出（发布产物 = config/appsettings*.json + clinic.config.json） -->
+	<ItemGroup>
+	  <Content Remove="config\appsettings*.json" />
+	  <Content Remove="config\clinic.config.json" />
+	  <Content Include="config\**" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
 	<ItemGroup>
 	  <Compile Remove="logs\**" />
 	  <Compile Remove="obj\**" />
