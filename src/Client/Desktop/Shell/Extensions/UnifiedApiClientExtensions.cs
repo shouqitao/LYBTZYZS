@@ -13,7 +13,6 @@ using DryIoc;
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
-using Prism.DryIoc;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Shared.Configuration.Options.Client;
@@ -22,6 +21,7 @@ using LYBT.Shared.Logging.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Prism.DryIoc;
 using Prism.Ioc;
 using Refit;
 
@@ -37,26 +37,29 @@ public static class UnifiedApiClientExtensions
     /// </summary>
     public static void AddUnifiedApiClient(
         this IContainerRegistry containerRegistry,
-        IConfiguration configuration)
+        IConfiguration configuration
+    )
     {
         ArgumentNullException.ThrowIfNull(containerRegistry);
         ArgumentNullException.ThrowIfNull(configuration);
 
         var apiOptions = new LYBT.Shared.Configuration.Options.Client.ApiClientOptions();
-        configuration.GetSection(
-            LYBT.Shared.Configuration.Options.Client.ApiClientOptions.SectionName)
+        configuration
+            .GetSection(LYBT.Shared.Configuration.Options.Client.ApiClientOptions.SectionName)
             .Bind(apiOptions);
         var ignoreSslErrors = apiOptions.IgnoreSslErrors;
         var timeoutSeconds = apiOptions.TimeoutSeconds;
 
         var refitSettings = new RefitSettings
         {
-            ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                Converters = { new JsonStringEnumConverter() }
-            })
+            ContentSerializer = new SystemTextJsonContentSerializer(
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    Converters = { new JsonStringEnumConverter() },
+                }
+            ),
         };
 
         // Get the underlying DryIoc container via Prism extension method
@@ -74,25 +77,30 @@ public static class UnifiedApiClientExtensions
 
             var apiClientOptions = Options.Create(apiOptions);
             var tokenRefreshHandler = new TokenRefreshHandler(
-                tokenStorage, credentialVault, apiClientOptions,
+                tokenStorage,
+                credentialVault,
+                apiClientOptions,
                 container.Resolve<ILogger<TokenRefreshHandler>>(),
-                userActivityState: null);
+                userActivityState: null
+            );
             tokenRefreshHandler.InnerHandler = httpHandler;
 
             var authHandler = new AuthorizationMessageHandler(
                 tokenStorage,
-                container.Resolve<ILogger<AuthorizationMessageHandler>>());
+                container.Resolve<ILogger<AuthorizationMessageHandler>>()
+            );
             authHandler.InnerHandler = tokenRefreshHandler;
 
             var loggingHandler = new LoggingHttpHandler(
                 container.Resolve<ILogger<LoggingHttpHandler>>(),
-                container.Resolve<ICorrelationIdProvider>());
+                container.Resolve<ICorrelationIdProvider>()
+            );
             loggingHandler.InnerHandler = authHandler;
 
             return new HttpClient(loggingHandler)
             {
                 BaseAddress = new Uri(baseUrl),
-                Timeout = TimeSpan.FromSeconds(timeoutSeconds)
+                Timeout = TimeSpan.FromSeconds(timeoutSeconds),
             };
         };
 
@@ -110,8 +118,34 @@ public static class UnifiedApiClientExtensions
                 connectionSettings,
                 remoteHttpClientFactory,
                 localHttpClientFactory,
-                refitSettings);
+                refitSettings
+            );
         });
+
+        // IApiClientIdentity 单例 = SwitchingApiClient.Identity（运行时按连接模式路由到
+        // Refit 远程 / HttpClient 本地——消费方（AuthenticationService/LogoutService/
+        // TokenLifecycleService/AuthHealthService）直接注入该子接口。
+        // desktop-di-fix 2026-08-14：原缺失导致 Desktop 启动 DI 解析崩溃
+        // （Unable to resolve IApiClientIdentity as parameter "authApi"）。
+        containerRegistry.RegisterSingleton<IApiClientIdentity>(resolver =>
+            resolver.Resolve<IApiClient>().Identity
+        );
+
+        // 其余直接注入子接口的服务（启动验证逐层暴露——ConnectionModeService→MedicalCases、
+        // DeploymentService→Deploy、DiagnosticsService→Diagnostics、
+        // ServerConfigurationService→Configuration）统一注册为 SwitchingApiClient 子接口转发。
+        containerRegistry.RegisterSingleton<IApiClientMedicalCases>(resolver =>
+            resolver.Resolve<IApiClient>().MedicalCases
+        );
+        containerRegistry.RegisterSingleton<IApiClientDeploy>(resolver =>
+            resolver.Resolve<IApiClient>().Deploy
+        );
+        containerRegistry.RegisterSingleton<IApiClientDiagnostics>(resolver =>
+            resolver.Resolve<IApiClient>().Diagnostics
+        );
+        containerRegistry.RegisterSingleton<IApiClientConfiguration>(resolver =>
+            resolver.Resolve<IApiClient>().Configuration
+        );
     }
 
     /// <summary>
@@ -127,7 +161,7 @@ public static class UnifiedApiClientExtensions
             _httpClient = new HttpClient
             {
                 BaseAddress = baseAddress,
-                Timeout = TimeSpan.FromSeconds(30)
+                Timeout = TimeSpan.FromSeconds(30),
             };
         }
 
@@ -135,7 +169,8 @@ public static class UnifiedApiClientExtensions
 
         public void Dispose()
         {
-            if (_disposed) return;
+            if (_disposed)
+                return;
             _disposed = true;
             _httpClient.Dispose();
         }

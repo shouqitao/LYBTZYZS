@@ -47,6 +47,9 @@ public static class PrismConfigurationExtensions
         // 默认密码配置
         RegisterOptions<DefaultPasswordOptions>(containerRegistry, configuration, DefaultPasswordOptions.SectionName);
 
+        // Desktop 自动更新配置（desktop-di-fix 2026-08-14：原缺失导致 DesktopUpdate 启动步骤 DI 崩溃）
+        RegisterOptions<DesktopUpdateOptions>(containerRegistry, configuration, DesktopUpdateOptions.SectionName);
+
         // LocalWebAPI JWT 配置
         RegisterOptions<LocalJwtOptions>(containerRegistry, configuration, LocalJwtOptions.SectionName);
     }

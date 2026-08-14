@@ -36,9 +36,16 @@ public static class LocalWebApiProgram
 {
     public static WebApplicationBuilder CreateBuilder(string[]? args = null)
     {
-        var builder = WebApplication.CreateBuilder(args ?? []);
-        // 嵌入式本地服务始终按开发环境运行（密码使用 Desktop 配置，无生产环境变量要求）
-        builder.WebHost.UseEnvironment("Development");
+        // desktop-di-fix 2026-08-14：显式指定内容根为应用基目录（WPF 进程工作目录可能是仓库根——
+        // WebApplication.CreateBuilder 默认按当前目录加载 appsettings.json 会找不到 → Jwt 节缺失 →
+        // LocalJwtOptions.SecretKey 空 → IDX10703 key length zero）；环境一并经 WebApplicationOptions 指定
+        // （替代原 WebHost.UseEnvironment——CreateBuilder 后调用会抛 NotSupportedException）。
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            Args = args ?? [],
+            ContentRootPath = AppContext.BaseDirectory,
+            EnvironmentName = "Development"
+        });
         return builder;
     }
 
@@ -89,6 +96,20 @@ public static class LocalWebApiProgram
         builder.Services.AddMedicalCaseModule(builder.Configuration);
         builder.Services.AddRegistrationModule(builder.Configuration);
         builder.Services.AddReportsModule(builder.Configuration);
+
+        // 缓存失效服务（MedicalCase 模块依赖 ICacheInvalidationService——远程 WebAPI 在
+        // DatabaseServiceCollectionExtensions 注册，LocalWebAPI 需对齐；AddOutputCache 供
+        // CacheInvalidationService 按 tag 驱逐依赖 + AddMemoryCache 供 IMemoryCache，desktop-di-fix 2026-08-14）
+        builder.Services.AddMemoryCache();
+        builder.Services.AddOutputCache();
+        builder.Services.AddSingleton<
+            LYBT.Infrastructure.Caching.ICacheInvalidationService,
+            LYBT.Infrastructure.Caching.CacheInvalidationService
+        >();
+
+        // SignalR（RegistrationModule 的 NotificationService 依赖 IHubContext<RegistrationHub>
+        // ——AddSignalR 注册 Hub 上下文；远程在 Program.cs 注册，LocalWebAPI 需对齐，desktop-di-fix 2026-08-14）
+        builder.Services.AddSignalR();
 
         // LocalWebAPI CQRS Handlers（Auth）
         builder.Services.AddMediatR(cfg =>
