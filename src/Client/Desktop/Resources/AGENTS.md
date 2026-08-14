@@ -1,31 +1,30 @@
 <!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-05-04 | Updated: 2026-05-04 -->
+<!-- Updated: 2026-08-14 -->
 
 # Resources (Desktop)
 
 ## Purpose
-XAML resource dictionaries and string resources for the WPF desktop application. Contains shared styles, themes, control templates, and localized string tables used across all modules and the shell.
 
-## Subdirectories
-| Directory | Purpose |
-|-----------|---------|
-| Dictionaries/ | XAML resource dictionaries — styles, colors, control templates, themes |
-| Strings/ | Localized string resource files (.resx) — UI text, labels, messages |
+Desktop 资源说明（desktop-dead-code-audit DC-004：移除对不存在的 `Dictionaries/` 的引用，如实反映实际位置）。
+
+## 实际资源位置
+
+| 资源 | 实际位置 |
+| ------ | --------- |
+| XAML 主题字典（styles/colors/control templates） | `Core/LYBT.Desktop.Controls/Themes/`（Surfaces.xaml、TcmBrands.xaml 等，App.xaml 经 `MergedDictionaries` 引用） |
+| 本地化字符串 (.resx) | `Shell/Resources/Strings/`（StringResources.resx + 生成的 StringResources.Designer.cs） |
+
+> 历史说明：`Resources/Strings/` 下的重复 `StringResources.resx` 与零引用 `LoginStrings.resx` 已于 2026-08-14 删除（DC-001/DC-003——重复文件保留 Shell 版本，登录字符串已并入 StringResources）。
 
 ## For AI Agents
 
 ### Working In This Directory
-- XAML resource dictionaries are merged at the `App.xaml` level or via `MergedDictionaries` in module views.
-- When adding a new shared style or template, place it in `Dictionaries/`.
-- String resources follow standard .resx localization conventions.
+
+- 本目录当前仅含本文档（无实际资源文件）。
+- 新增 XAML 主题字典：放入 `Core/LYBT.Desktop.Controls/Themes/` 并在 `Shell/App.xaml` 的 `MergedDictionaries` 注册。
+- 新增字符串资源：编辑 `Shell/Resources/Strings/StringResources.resx`（.Designer.cs 由 Visual Studio 生成器同步）。
 
 ### Common Patterns
-- Resource dictionaries use `ResourceDictionary` with `x:Key` for individual resources
-- String resources accessed via `{x:Static}` bindings or code-behind resource lookups
 
-## Dependencies
-
-### Internal
-- Referenced by Shell and all Desktop Modules via XAML `MergedDictionaries`
-
-<!-- MANUAL: -->
+- 资源字典使用 `ResourceDictionary` + `x:Key`
+- 字符串资源通过 `{x:Static}` 绑定或 `StringResources.ClassName` 静态属性访问

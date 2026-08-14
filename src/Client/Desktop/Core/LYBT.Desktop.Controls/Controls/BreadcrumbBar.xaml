@@ -51,7 +51,7 @@
             <DataTemplate>
                 <StackPanel Orientation="Horizontal">
                     <!-- Breadcrumb item (current item is disabled) -->
-                    <Button Content="{Binding Label}"
+                    <Button Content="{Binding Title}"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{Binding Level}">
                         <Button.Style>

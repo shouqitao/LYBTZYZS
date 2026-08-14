@@ -28,6 +28,9 @@
     <Compile Remove="Services\IUiThreadDispatcher.cs" />
     <!-- MedicalCaseNavigationParameters 继承 Prism.Regions.NavigationParameters，仅桌面目标可用 -->
     <Compile Remove="Models\MedicalCaseNavigationParameters.cs" />
+    <!-- BreadcrumbItem 含 ICommand（WPF 类型）；INavigationCoordinator 引用它（导航协调器为 Desktop UI 概念，实现全在 net8.0-windows 的 Infrastructure） -->
+    <Compile Remove="UI\BreadcrumbItem.cs" />
+    <Compile Remove="Services\INavigationCoordinator.cs" />
   </ItemGroup>
 
   <ItemGroup>

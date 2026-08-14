@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using LYBT.Desktop.Contracts.UI;
 
 namespace LYBT.Desktop.Controls.Controls;
 
@@ -82,26 +83,14 @@ public partial class BreadcrumbBar : UserControl
 
         for (int i = 0; i < parts.Length; i++)
         {
-            Breadcrumbs.Add(new BreadcrumbItem
-            {
-                Label = parts[i].Trim(),
-                Level = i + 1,
-                IsCurrent = i == parts.Length - 1,
-                IsLast = i == parts.Length - 1,
-                NavigateCommand = NavigateCommand
-            });
+            Breadcrumbs.Add(new BreadcrumbItem(
+                Title: parts[i].Trim(),
+                ViewName: parts[i].Trim(),
+                IsCurrent: i == parts.Length - 1,
+                Level: i + 1,
+                IsLast: i == parts.Length - 1,
+                NavigateCommand: NavigateCommand
+            ));
         }
     }
-}
-
-/// <summary>
-/// 单个面包屑项数据模型
-/// </summary>
-public class BreadcrumbItem
-{
-    public string Label { get; set; } = string.Empty;
-    public int Level { get; set; }
-    public bool IsCurrent { get; set; }
-    public bool IsLast { get; set; }
-    public ICommand? NavigateCommand { get; set; }
 }
