@@ -13,6 +13,16 @@ namespace LYBT.Shared.Models.Utilities.Text
     public static class PinYinHelper
     {
         /// <summary>
+        /// PinYinCode 回退：为 null 时从名称生成（mapper-chain-audit M2——统一 5 处 `PinYinCode ?? GetPinYinCode(name)` 模式）。
+        /// 注意：仅 null 回退（与 `??` 语义等价），空串保留原值。
+        /// </summary>
+        /// <param name="pinYin">已存储的拼音码（可空）。</param>
+        /// <param name="name">名称（中文姓名/药材名）。</param>
+        /// <returns>pinYin 非 null 时原样返回，否则按名称生成。</returns>
+        public static string EnsurePinYinCode(string? pinYin, string name)
+            => pinYin ?? GetPinYinCode(name);
+
+        /// <summary>
         /// 生成拼音码（首字母）
         /// </summary>
         /// <param name="text">输入文本（中文姓名）</param>

@@ -45,7 +45,7 @@ public partial class HerbDetailModelMapper
     {
         var model = ToItemCore(dto);
         // 原 HerbMasterDetailViewModel.LoadDetailAsync 行为：拼音码缺失时按名称生成
-        model.PinYinCode = dto.PinYinCode ?? PinYinHelper.GetPinYinCode(dto.Name);
+        model.PinYinCode = PinYinHelper.EnsurePinYinCode(dto.PinYinCode, dto.Name);
         return model;
     }
 

@@ -1,4 +1,3 @@
-using LYBT.Desktop.Infrastructure.ViewModels;
 // -----------------------------------------------------------------------
 // <copyright file="FormulaDetailModelMapper.cs" company="凌隐宝堂中医诊所">
 //     Copyright (c) 凌隐宝堂中医诊所. All rights reserved.
@@ -8,6 +7,8 @@ using LYBT.Desktop.Infrastructure.ViewModels;
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Catalog.Models;
 using LYBT.Desktop.Catalog.Models.Items;
+using LYBT.Desktop.Infrastructure.Extensions;
+using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Shared.Models.Contracts.Formula;
 using Riok.Mapperly.Abstractions;
 
@@ -58,16 +59,7 @@ public partial class FormulaDetailModelMapper
         // 手动映射Herbs集合到ObservableCollection
         if (dto.Herbs != null)
         {
-            model.Herbs = new ObservableCollection<FormulaHerbItemModel>(
-                dto.Herbs.Select(h => new FormulaHerbItemModel
-                {
-                    HerbId = h.HerbId,
-                    HerbName = h.HerbName,
-                    Dosage = h.Dosage,
-                    Unit = h.Unit,
-                    ProcessingMethod = h.ProcessingMethod,
-                    DecocteMethod = h.DecocteMethod
-                }));
+            model.Herbs = new ObservableCollection<FormulaHerbItemModel>(dto.Herbs.Select(ToHerbItemModel));
         }
 
         return model;
@@ -103,15 +95,7 @@ public partial class FormulaDetailModelMapper
         var dto = ToDtoCore(model);
 
         // 手动映射Herbs集合
-        dto.Herbs = model.Herbs?.Select(h => new FormulaHerbItemDto
-        {
-            HerbId = h.HerbId,
-            HerbName = h.HerbName,
-            Dosage = h.Dosage,
-            Unit = h.Unit,
-            ProcessingMethod = h.ProcessingMethod,
-            DecocteMethod = h.DecocteMethod
-        }).ToList() ?? new List<FormulaHerbItemDto>();
+        dto.Herbs = model.Herbs?.Select(ToHerbItemDto).ToList() ?? new List<FormulaHerbItemDto>();
 
         return dto;
     }
@@ -152,20 +136,11 @@ public partial class FormulaDetailModelMapper
             Effect = dto.Effect,
             Usage = dto.Usage,
             Remark = dto.Remark,
-            IsShared = dto.IsShared
+            IsShared = dto.IsShared,
         };
 
         // 手动映射Herbs集合到ObservableCollection
-        context.Herbs = new ObservableCollection<FormulaHerbItemModel>(
-            dto.Herbs?.Select(h => new FormulaHerbItemModel
-            {
-                HerbId = h.HerbId,
-                HerbName = h.HerbName,
-                Dosage = h.Dosage,
-                Unit = h.Unit,
-                ProcessingMethod = h.ProcessingMethod,
-                DecocteMethod = h.DecocteMethod
-            }) ?? []);
+        context.Herbs = new ObservableCollection<FormulaHerbItemModel>(dto.Herbs?.Select(ToHerbItemModel) ?? []);
 
         return context;
     }
@@ -180,18 +155,53 @@ public partial class FormulaDetailModelMapper
         var dto = ToInputDtoCore(model);
 
         // 设置Id（空Guid转为null表示创建）
-        dto.Id = model.Id == Guid.Empty ? null : model.Id;
+        dto.Id = model.Id.OrNullIfEmpty();
 
         // 手动映射Herbs集合
-        dto.Herbs = model.Herbs?.Select(h => new FormulaHerbItemInputDto
-        {
-            HerbId = h.HerbId,
-            Dosage = h.Dosage,
-            Unit = h.Unit,
-            ProcessingMethod = h.ProcessingMethod,
-            DecocteMethod = h.DecocteMethod
-        }).ToList() ?? new List<FormulaHerbItemInputDto>();
+        dto.Herbs = model.Herbs?.Select(ToHerbItemInputDto).ToList() ?? new List<FormulaHerbItemInputDto>();
 
         return dto;
     }
+
+    #region FormulaHerbItem 通用映射（mapper-chain-audit H2——原 3 处重复构造）
+
+    /// <summary>
+    /// 将 FormulaHerbItemDto 映射为 FormulaHerbItemModel。
+    /// </summary>
+    private static FormulaHerbItemModel ToHerbItemModel(FormulaHerbItemDto dto) => new()
+    {
+        HerbId = dto.HerbId,
+        HerbName = dto.HerbName,
+        Dosage = dto.Dosage,
+        Unit = dto.Unit,
+        ProcessingMethod = dto.ProcessingMethod,
+        DecocteMethod = dto.DecocteMethod,
+    };
+
+    /// <summary>
+    /// 将 FormulaHerbItemModel 映射为 FormulaHerbItemDto。
+    /// </summary>
+    private static FormulaHerbItemDto ToHerbItemDto(FormulaHerbItemModel model) => new()
+    {
+        HerbId = model.HerbId,
+        HerbName = model.HerbName,
+        Dosage = model.Dosage,
+        Unit = model.Unit,
+        ProcessingMethod = model.ProcessingMethod,
+        DecocteMethod = model.DecocteMethod,
+    };
+
+    /// <summary>
+    /// 将 FormulaHerbItemModel 映射为 FormulaHerbItemInputDto（保存路径）。
+    /// </summary>
+    private static FormulaHerbItemInputDto ToHerbItemInputDto(FormulaHerbItemModel model) => new()
+    {
+        HerbId = model.HerbId,
+        Dosage = model.Dosage,
+        Unit = model.Unit,
+        ProcessingMethod = model.ProcessingMethod,
+        DecocteMethod = model.DecocteMethod,
+    };
+
+    #endregion
 }

@@ -5,6 +5,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Catalog.Models;
 using LYBT.Desktop.Catalog.ViewModels.Handlers;
+using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -154,7 +155,7 @@ namespace LYBT.Desktop.Catalog.ViewModels
 
                 var input = new FormulaInputDto
                 {
-                    Id = formula.Id == Guid.Empty ? null : formula.Id,
+                    Id = formula.Id.OrNullIfEmpty(),
                     Name = formula.Name,
                     Effect = formula.Effect ?? string.Empty,
                     Usage = formula.Usage ?? string.Empty,

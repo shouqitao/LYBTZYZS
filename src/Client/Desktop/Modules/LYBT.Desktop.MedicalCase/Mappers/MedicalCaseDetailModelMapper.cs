@@ -6,6 +6,7 @@ using LYBT.Desktop.Infrastructure.ViewModels;
 // -----------------------------------------------------------------------
 
 using System.Collections.ObjectModel;
+using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -110,7 +111,7 @@ public partial class MedicalCaseDetailModelMapper
             if (dto.Prescription.Items != null)
             {
                 model.PrescriptionItems = new ObservableCollection<PrescriptionItemModel>(
-                    dto.Prescription.Items.Select(ToPrescriptionItemModel));
+                    dto.Prescription.Items.Select(PrescriptionItemMapper.ToModel));
             }
         }
 
@@ -168,57 +169,9 @@ public partial class MedicalCaseDetailModelMapper
         var dto = ToInputDtoCore(model);
 
         // 设置Id（空Guid转为null表示创建）
-        dto.Id = model.Id == Guid.Empty ? null : model.Id;
+        dto.Id = model.Id.OrNullIfEmpty();
 
         return dto;
-    }
-
-    /// <summary>
-    /// 将 PrescriptionItemDto 映射为 PrescriptionItemModel（处方药材项）。
-    /// </summary>
-    private static PrescriptionItemModel ToPrescriptionItemModel(PrescriptionItemDto dto)
-    {
-        return new PrescriptionItemModel
-        {
-            Id = dto.Id,
-            PrescriptionId = dto.PrescriptionId,
-            HerbId = dto.HerbId,
-            HerbName = dto.HerbName,
-            Unit = dto.Unit,
-            UnitPrice = dto.UnitPrice,
-            Dosage = dto.Dosage,
-            TotalPrice = dto.TotalPrice,
-            TotalWeight = dto.TotalWeight,
-            Subtotal = dto.Subtotal,
-            Usage = dto.Usage,
-            DecocteMethod = dto.DecocteMethod,
-            Role = dto.Role,
-            Remark = dto.Remark
-        };
-    }
-
-    /// <summary>
-    /// 将 PrescriptionItemModel 映射为 PrescriptionItemDto（供打印/展示等只读输出）。
-    /// </summary>
-    private static PrescriptionItemDto ToPrescriptionItemDto(PrescriptionItemModel model)
-    {
-        return new PrescriptionItemDto
-        {
-            Id = model.Id,
-            PrescriptionId = model.PrescriptionId,
-            HerbId = model.HerbId,
-            HerbName = model.HerbName,
-            Unit = model.Unit,
-            UnitPrice = model.UnitPrice,
-            Dosage = model.Dosage,
-            TotalPrice = model.TotalPrice,
-            TotalWeight = model.TotalWeight,
-            Subtotal = model.Subtotal,
-            Usage = model.Usage,
-            DecocteMethod = model.DecocteMethod,
-            Role = model.Role,
-            Remark = model.Remark
-        };
     }
 
     /// <summary>

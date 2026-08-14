@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Catalog.Mappers;
 using LYBT.Desktop.Catalog.Models.Items;
+using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -119,7 +120,7 @@ public partial class FormulaEditorViewModel : EditorViewModelBase<FormulaEditCon
             .Where(h => h.HerbId != Guid.Empty || !string.IsNullOrWhiteSpace(h.HerbName))
             .Select(h => new FormulaHerbItemInputDto
             {
-                HerbId = h.HerbId == Guid.Empty ? null : h.HerbId,
+                HerbId = h.HerbId.OrNullIfEmpty(),
                 HerbName = h.HerbName,
                 Dosage = h.Dosage,
                 Unit = h.Unit,

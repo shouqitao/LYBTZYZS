@@ -1,3 +1,4 @@
+using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Users.Models;
 using LYBT.Desktop.Users.Models.Items;
 using LYBT.Shared.Models.Contracts.Users;
@@ -43,7 +44,7 @@ public partial class UserMapper
     {
         var model = ToDetailModelCore(dto);
         // 原 LoadDetailAsync 行为：拼音码缺失时按姓名生成
-        model.PinYinCode = dto.PinYinCode ?? PinYinHelper.GetPinYinCode(dto.RealName);
+        model.PinYinCode = PinYinHelper.EnsurePinYinCode(dto.PinYinCode, dto.RealName);
         return model;
     }
 
@@ -60,7 +61,7 @@ public partial class UserMapper
             Id = dto.Id,
             UserName = dto.UserName,
             RealName = dto.RealName,
-            PinYinCode = dto.PinYinCode ?? PinYinHelper.GetPinYinCode(dto.RealName),
+            PinYinCode = PinYinHelper.EnsurePinYinCode(dto.PinYinCode, dto.RealName),
             PhoneNumber = dto.PhoneNumber,
             Email = dto.Email,
             Role = dto.Role,
@@ -83,7 +84,7 @@ public partial class UserMapper
     {
         return new UserInputDto
         {
-            Id = context.Id == Guid.Empty ? null : context.Id,
+            Id = context.Id.OrNullIfEmpty(),
             UserName = context.UserName.Trim(),
             RealName = context.RealName?.Trim() ?? string.Empty,
             PinYinCode = context.PinYinCode?.Trim(),

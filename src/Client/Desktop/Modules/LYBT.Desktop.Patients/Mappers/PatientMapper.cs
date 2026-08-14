@@ -32,7 +32,7 @@ public partial class PatientMapper
         {
             Id = dto.Id,
             Name = dto.Name,
-            PinYinCode = dto.PinYinCode ?? PinYinHelper.GetPinYinCode(dto.Name),
+            PinYinCode = PinYinHelper.EnsurePinYinCode(dto.PinYinCode, dto.Name),
             Gender = dto.Gender,
             BirthDate = dto.BirthDate,
             IdNumber = dto.IdNumber,

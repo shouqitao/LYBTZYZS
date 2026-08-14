@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Desktop.MedicalCase.ViewModels.Items;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -67,7 +68,7 @@ public partial class PrescriptionMapper
         {
             foreach (var prescriptionItem in dto.Items)
             {
-                item.Items.Add(ToPrescriptionItemModel(prescriptionItem));
+                item.Items.Add(PrescriptionItemMapper.ToModel(prescriptionItem));
             }
         }
 
@@ -106,7 +107,7 @@ public partial class PrescriptionMapper
     public PrescriptionDetailDto ToDto(PrescriptionItemViewModel item)
     {
         var dto = ToDtoCore(item);
-        dto.Items = item.Items?.Select(ToPrescriptionItemDto).ToList() ?? new();
+        dto.Items = item.Items?.Select(PrescriptionItemMapper.ToDto).ToList() ?? new();
 
         return dto;
     }
@@ -158,73 +159,24 @@ public partial class PrescriptionMapper
         var dto = ToInputDtoCore(item);
 
         // 手动设置需要自定义逻辑的字段
-        dto.Id = item.Id == Guid.Empty ? null : item.Id;
+        dto.Id = item.Id.OrNullIfEmpty();
         dto.NeedsPrescription = item.HasItems;
         dto.TotalPrice = item.TotalPrice;
-        dto.Items = item.Items?.Select(h => new PrescriptionItemInputDto
-        {
-            HerbId = h.HerbId,
-            HerbName = h.HerbName ?? string.Empty,
-            Dosage = h.Dosage,
-            Unit = h.Unit ?? "g",
-            UnitPrice = h.UnitPrice,
-            Subtotal = h.Dosage * h.UnitPrice,
-            DecocteMethod = h.DecocteMethod
-        }).ToList() ?? new();
+        dto.Items =
+            item.Items?.Select(h => new PrescriptionItemInputDto
+                {
+                    HerbId = h.HerbId,
+                    HerbName = h.HerbName ?? string.Empty,
+                    Dosage = h.Dosage,
+                    Unit = h.Unit ?? "g",
+                    UnitPrice = h.UnitPrice,
+                    Subtotal = h.Dosage * h.UnitPrice,
+                    DecocteMethod = h.DecocteMethod,
+                })
+                .ToList()
+            ?? new();
 
         return dto;
-    }
-
-    #endregion
-
-    #region PrescriptionItemDto ↔ PrescriptionItemModel
-
-    /// <summary>
-    /// 将 PrescriptionItemDto 映射为 PrescriptionItemModel。
-    /// </summary>
-    public static PrescriptionItemModel ToPrescriptionItemModel(PrescriptionItemDto dto)
-    {
-        return new PrescriptionItemModel
-        {
-            Id = dto.Id,
-            PrescriptionId = dto.PrescriptionId,
-            HerbId = dto.HerbId,
-            HerbName = dto.HerbName,
-            Unit = dto.Unit,
-            UnitPrice = dto.UnitPrice,
-            Dosage = dto.Dosage,
-            TotalPrice = dto.TotalPrice,
-            TotalWeight = dto.TotalWeight,
-            Subtotal = dto.Subtotal,
-            Usage = dto.Usage,
-            DecocteMethod = dto.DecocteMethod,
-            Role = dto.Role,
-            Remark = dto.Remark
-        };
-    }
-
-    /// <summary>
-    /// 将 PrescriptionItemModel 映射为 PrescriptionItemDto。
-    /// </summary>
-    public static PrescriptionItemDto ToPrescriptionItemDto(PrescriptionItemModel model)
-    {
-        return new PrescriptionItemDto
-        {
-            Id = model.Id,
-            PrescriptionId = model.PrescriptionId,
-            HerbId = model.HerbId,
-            HerbName = model.HerbName,
-            Unit = model.Unit,
-            UnitPrice = model.UnitPrice,
-            Dosage = model.Dosage,
-            TotalPrice = model.TotalPrice,
-            TotalWeight = model.TotalWeight,
-            Subtotal = model.Subtotal,
-            Usage = model.Usage,
-            DecocteMethod = model.DecocteMethod,
-            Role = model.Role,
-            Remark = model.Remark
-        };
     }
 
     #endregion

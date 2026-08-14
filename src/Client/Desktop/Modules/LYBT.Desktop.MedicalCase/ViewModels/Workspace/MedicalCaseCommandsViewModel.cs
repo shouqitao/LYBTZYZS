@@ -392,7 +392,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             }
 
             foreach (var item in herbItems)
-                prescription.Items.Add(PrescriptionMapper.ToPrescriptionItemModel(item));
+                prescription.Items.Add(PrescriptionItemMapper.ToModel(item));
 
             // Record referenced formula name
             if (!string.IsNullOrEmpty(formula.Name))
@@ -438,7 +438,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             }
 
             var herbPrices = BuildHerbPriceLookup();
-            var itemDtos = items.Select(PrescriptionMapper.ToPrescriptionItemDto).ToList();
+            var itemDtos = items.Select(PrescriptionItemMapper.ToDto).ToList();
             var herbItems = FilterDisabledHerbs(itemDtos.ToPrescriptionItemDtos(herbPrices), "历史复制");
             if (!herbItems.Any())
             {
@@ -447,7 +447,7 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
             }
 
             foreach (var item in herbItems)
-                prescription.Items.Add(PrescriptionMapper.ToPrescriptionItemModel(item));
+                prescription.Items.Add(PrescriptionItemMapper.ToModel(item));
 
             if (parameters.TryGetValue<MedicalCaseDetailModel>("SelectedCase", out var selectedCase) && selectedCase != null)
             {

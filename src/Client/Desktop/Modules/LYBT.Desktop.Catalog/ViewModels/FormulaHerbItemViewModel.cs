@@ -1,3 +1,4 @@
+using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 
 namespace LYBT.Desktop.Catalog.ViewModels
@@ -42,7 +43,7 @@ namespace LYBT.Desktop.Catalog.ViewModels
         {
             return new LYBT.Shared.Models.Contracts.Formula.FormulaHerbItemInputDto
             {
-                HerbId = HerbId == Guid.Empty ? null : HerbId,
+                HerbId = HerbId.OrNullIfEmpty(),
                 HerbName = HerbName,
                 Dosage = Dosage,
                 Unit = Unit,
