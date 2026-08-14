@@ -22,12 +22,12 @@ public partial class BreadcrumbBar : UserControl
 
     #region NavigationPath dependency property
 
-    public static readonly DependencyProperty NavigationPathProperty =
-        DependencyProperty.Register(
-            nameof(NavigationPath),
-            typeof(string),
-            typeof(BreadcrumbBar),
-            new PropertyMetadata(string.Empty, OnNavigationPathChanged));
+    public static readonly DependencyProperty NavigationPathProperty = DependencyProperty.Register(
+        nameof(NavigationPath),
+        typeof(string),
+        typeof(BreadcrumbBar),
+        new PropertyMetadata(string.Empty, OnNavigationPathChanged)
+    );
 
     public string NavigationPath
     {
@@ -35,7 +35,10 @@ public partial class BreadcrumbBar : UserControl
         set => SetValue(NavigationPathProperty, value);
     }
 
-    private static void OnNavigationPathChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private static void OnNavigationPathChanged(
+        DependencyObject d,
+        DependencyPropertyChangedEventArgs e
+    )
     {
         if (d is BreadcrumbBar bar && e.NewValue is string path)
         {
@@ -47,12 +50,12 @@ public partial class BreadcrumbBar : UserControl
 
     #region NavigateCommand dependency property
 
-    public static readonly DependencyProperty NavigateCommandProperty =
-        DependencyProperty.Register(
-            nameof(NavigateCommand),
-            typeof(ICommand),
-            typeof(BreadcrumbBar),
-            new PropertyMetadata(null));
+    public static readonly DependencyProperty NavigateCommandProperty = DependencyProperty.Register(
+        nameof(NavigateCommand),
+        typeof(ICommand),
+        typeof(BreadcrumbBar),
+        new PropertyMetadata(null)
+    );
 
     public ICommand NavigateCommand
     {
@@ -83,14 +86,16 @@ public partial class BreadcrumbBar : UserControl
 
         for (int i = 0; i < parts.Length; i++)
         {
-            Breadcrumbs.Add(new BreadcrumbItem(
-                Title: parts[i].Trim(),
-                ViewName: parts[i].Trim(),
-                IsCurrent: i == parts.Length - 1,
-                Level: i + 1,
-                IsLast: i == parts.Length - 1,
-                NavigateCommand: NavigateCommand
-            ));
+            Breadcrumbs.Add(
+                new BreadcrumbItem(
+                    Title: parts[i].Trim(),
+                    ViewName: parts[i].Trim(),
+                    IsCurrent: i == parts.Length - 1,
+                    Level: i + 1,
+                    IsLast: i == parts.Length - 1,
+                    NavigateCommand: NavigateCommand
+                )
+            );
         }
     }
 }

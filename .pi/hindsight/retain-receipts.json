@@ -2,10 +2,10 @@
   "version": 1,
   "receipts": [
     {
-      "createdAt": "2026-08-14T03:36:14.375Z",
+      "createdAt": "2026-08-14T05:12:16.858Z",
       "bankId": "pi-coding",
       "documentId": "pi-session:36b8726b5cf8d3fe",
-      "queueJobId": "6338d9b4-6e7d-49c3-b690-d6bcbb136fce",
+      "queueJobId": "408c43c9-667c-4eeb-b537-2222a7c8c9e8",
       "updateMode": "append",
       "source": "queue",
       "context": "Pi coding session for repo \"LYBTZYZS\", session 2026-08-14T00-11-11-540Z_019ffd9b-c334-7b5d-bad7-6de4c35455ca.jsonl",

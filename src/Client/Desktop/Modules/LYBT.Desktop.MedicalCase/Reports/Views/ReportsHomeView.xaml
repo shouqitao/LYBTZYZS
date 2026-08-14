@@ -67,7 +67,7 @@
             Grid.Row="1"
             HorizontalScrollBarVisibility="Disabled"
             VerticalScrollBarVisibility="Auto"
-            Visibility="{Binding IsLoading, Converter={StaticResource InvertedBooleanToVisibilityConverter}}">
+            Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <StackPanel
                 Margin="24"
                 HorizontalAlignment="Center"
