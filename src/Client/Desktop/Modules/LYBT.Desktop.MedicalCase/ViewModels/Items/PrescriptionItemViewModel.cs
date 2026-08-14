@@ -185,20 +185,6 @@ public class PrescriptionItemViewModel : BindableBase, IDataProvider, IValidatab
 
     #endregion
 
-    #region 状态字段
-
-    private CommonStatus _status = CommonStatus.Enabled;
-    /// <summary>
-    /// 状态
-    /// </summary>
-    public CommonStatus Status
-    {
-        get => _status;
-        set => SetProperty(ref _status, value);
-    }
-
-    #endregion
-
     #region 审计字段
 
     private DateTime _createdAt = DateTime.UtcNow;

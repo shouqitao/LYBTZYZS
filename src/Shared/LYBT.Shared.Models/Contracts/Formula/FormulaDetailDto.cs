@@ -49,10 +49,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("主治")]
         public string? Indication { get; set; }
 
-        [DisplayName("验方描述")]
-        [StringLength(1000, ErrorMessage = "验方描述长度不能超过1000个字符")]
-        public string? Description { get; set; }
-
         [DisplayName("用法")]
         public string? Usage { get; set; }
 
@@ -68,17 +64,9 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("验证状态")]
         public FormulaValidationStatus ValidationStatus { get; set; } = FormulaValidationStatus.Draft;
 
-        [DisplayName("来源")]
-        [StringLength(100, ErrorMessage = "来源长度不能超过100个字符")]
-        public string? Source { get; set; }
-
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }
-
-        [DisplayName("禁忌症")]
-        [StringLength(500, ErrorMessage = "禁忌症长度不能超过500个字符")]
-        public string? Contraindications { get; set; }
 
         [DisplayName("药材组成")]
         public List<FormulaHerbItemDto> Herbs { get; set; } = new();
@@ -102,8 +90,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
                 }
 
                 var herbNames = Herbs
-                    .Where(h => h.Herb != null)
-                    .Select(h => $"{h.Herb!.Name}({h.Dosage}g)")
+                    .Where(h => !string.IsNullOrEmpty(h.HerbName))
+                    .Select(h => $"{h.HerbName}({h.Dosage}g)")
                     .ToList();
                 return herbNames.Any() ? string.Join("、", herbNames) : "暂无药材";
             }

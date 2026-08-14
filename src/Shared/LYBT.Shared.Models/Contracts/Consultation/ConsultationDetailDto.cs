@@ -33,22 +33,6 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("医疗案例ID")]
         public Guid MedicalCaseId { get; set; }
 
-        /// <summary>患者ID（从MedicalCase获取）</summary>
-        [DisplayName("患者ID")]
-        public Guid PatientId { get; set; }
-
-        /// <summary>关联用户ID（医生）</summary>
-        [DisplayName("关联用户ID")]
-        public Guid UserId { get; set; }
-
-        /// <summary>患者姓名（展示用）</summary>
-        [DisplayName("患者姓名")]
-        public string? PatientName { get; set; }
-
-        /// <summary>医生姓名（展示用）</summary>
-        [DisplayName("医生姓名")]
-        public string? DoctorName { get; set; }
-
         // ========== 诊断核心字段 ==========
 
         /// <summary>现病史</summary>

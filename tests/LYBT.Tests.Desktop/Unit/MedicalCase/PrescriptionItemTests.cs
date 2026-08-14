@@ -34,7 +34,6 @@ public class PrescriptionItemTests : UserJourneyTestBase
         sut.Remark.Should().BeNull();
         sut.Discount.Should().Be(1.0m);
         sut.Items.Should().BeEmpty();
-        sut.Status.Should().Be(LYBT.Shared.Models.Enums.CommonStatus.Enabled);
     }
 
     [Fact]

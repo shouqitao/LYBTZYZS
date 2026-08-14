@@ -44,56 +44,6 @@ public class ConsultationItem : BindableBase, IDataProvider, IValidatable, INoti
         set => SetProperty(ref _medicalCaseId, value);
     }
 
-    private Guid _patientId = Guid.Empty;
-    /// <summary>
-    /// 患者ID
-    /// </summary>
-    public Guid PatientId
-    {
-        get => _patientId;
-        set => SetProperty(ref _patientId, value);
-    }
-
-    private Guid _userId = Guid.Empty;
-    /// <summary>
-    /// 医生用户ID
-    /// </summary>
-    public Guid UserId
-    {
-        get => _userId;
-        set => SetProperty(ref _userId, value);
-    }
-
-    #endregion
-
-    #region 展示字段
-
-    private string _patientName = string.Empty;
-    /// <summary>
-    /// 患者姓名（展示用）
-    /// </summary>
-    public string PatientName
-    {
-        get => _patientName;
-        set
-        {
-            if (SetProperty(ref _patientName, value))
-            {
-                RaisePropertyChanged(nameof(DisplayText));
-            }
-        }
-    }
-
-    private string _doctorName = string.Empty;
-    /// <summary>
-    /// 医生姓名（展示用）
-    /// </summary>
-    public string DoctorName
-    {
-        get => _doctorName;
-        set => SetProperty(ref _doctorName, value);
-    }
-
     #endregion
 
     #region 诊断核心字段
@@ -214,7 +164,7 @@ public class ConsultationItem : BindableBase, IDataProvider, IValidatable, INoti
     /// 显示文本
     /// </summary>
     public string DisplayText =>
-        $"{PatientName} - {TcmDiagnosis ?? "未诊断"}";
+        TcmDiagnosis ?? "未诊断";
 
     #endregion
 

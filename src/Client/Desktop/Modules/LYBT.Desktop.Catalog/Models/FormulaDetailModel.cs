@@ -26,7 +26,6 @@ namespace LYBT.Desktop.Catalog.Models
         private DateTime? _createdAt;
         private DateTime? _updatedAt;
         private Guid? _createdBy;
-        private string? _source;
         private ObservableCollection<FormulaHerbItemModel> _herbs = new();
 
         /// <summary>验方ID</summary>
@@ -123,13 +122,6 @@ namespace LYBT.Desktop.Catalog.Models
             set => SetProperty(ref _createdBy, value);
         }
 
-        /// <summary>来源</summary>
-        public string? Source
-        {
-            get => _source;
-            set => SetProperty(ref _source, value);
-        }
-
         /// <summary>药材列表</summary>
         public ObservableCollection<FormulaHerbItemModel> Herbs
         {
@@ -169,8 +161,7 @@ namespace LYBT.Desktop.Catalog.Models
                 Status = Status,
                 CreatedAt = CreatedAt,
                 UpdatedAt = UpdatedAt,
-                CreatedBy = CreatedBy,
-                Source = Source
+                CreatedBy = CreatedBy
             };
 
             foreach (var herb in Herbs)

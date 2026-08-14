@@ -128,7 +128,6 @@ public partial class PrescriptionMapper
     [MapperIgnoreSource(nameof(PrescriptionItemViewModel.PrescriptionNumber))]
     [MapperIgnoreSource(nameof(PrescriptionItemViewModel.SingleDosePrice))]
     [MapperIgnoreSource(nameof(PrescriptionItemViewModel.TotalWeight))]
-    [MapperIgnoreSource(nameof(PrescriptionItemViewModel.Status))]
     [MapperIgnoreSource(nameof(PrescriptionItemViewModel.CreatedAt))]
     [MapperIgnoreSource(nameof(PrescriptionItemViewModel.UpdatedAt))]
     [MapperIgnoreSource(nameof(PrescriptionItemViewModel.DuplicateWarning))]

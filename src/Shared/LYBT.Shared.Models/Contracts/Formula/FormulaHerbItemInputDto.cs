@@ -36,11 +36,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("单位")]
         public string Unit { get; set; } = string.Empty;
 
-        /// <summary>炮制方法（可选）</summary>
-        [StringLength(50, ErrorMessage = "炮制方法最多50个字符")]
-        [DisplayName("炮制方法")]
-        public string? Preparation { get; set; }
-
         /// <summary>加工方法（可选）⭐ Issue #2014新增</summary>
         [StringLength(100, ErrorMessage = "加工方法最多100个字符")]
         [DisplayName("加工方法")]

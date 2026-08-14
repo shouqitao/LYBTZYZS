@@ -51,16 +51,6 @@ public partial class ConsultationMapper
     {
         var item = ToItemCore(dto);
 
-        // 处理可能为null的展示字段
-        if (string.IsNullOrEmpty(item.PatientName))
-        {
-            item.PatientName = string.Empty;
-        }
-        if (string.IsNullOrEmpty(item.DoctorName))
-        {
-            item.DoctorName = string.Empty;
-        }
-
         return item;
     }
 
@@ -110,10 +100,6 @@ public partial class ConsultationMapper
     /// </remarks>
     [MapperIgnoreSource(nameof(ConsultationItem.Id))]
     [MapperIgnoreSource(nameof(ConsultationItem.MedicalCaseId))]
-    [MapperIgnoreSource(nameof(ConsultationItem.PatientId))]
-    [MapperIgnoreSource(nameof(ConsultationItem.UserId))]
-    [MapperIgnoreSource(nameof(ConsultationItem.PatientName))]
-    [MapperIgnoreSource(nameof(ConsultationItem.DoctorName))]
     [MapperIgnoreSource(nameof(ConsultationItem.CreatedAt))]
     [MapperIgnoreSource(nameof(ConsultationItem.UpdatedAt))]
     [MapperIgnoreSource(nameof(ConsultationItem.IsSelected))]

@@ -19,10 +19,6 @@ namespace LYBT.Shared.Models.Validators.Formula
                 .MaximumLength(ValidationConstants.UsageMaxLength).WithMessage("功效长度不能超过{MaxLength}个字符")
                 .When(x => !string.IsNullOrEmpty(x.Effect));
 
-            RuleFor(x => x.Description)
-                .MaximumLength(ValidationConstants.RemarkMaxLength).WithMessage("描述长度不能超过{MaxLength}个字符")
-                .When(x => !string.IsNullOrEmpty(x.Description));
-
             RuleFor(x => x.Usage)
                 .MaximumLength(ValidationConstants.UsageMaxLength).WithMessage("用法长度不能超过{MaxLength}个字符")
                 .When(x => !string.IsNullOrEmpty(x.Usage));

@@ -11,14 +11,11 @@ public class FormulaBuilder
     private Guid _id = Guid.NewGuid();
     private string _name = "测试验方";
     private string _effect = "测试功效";
-    private string? _description;
     private string _usage = "水煎服，每日一剂";
     private string? _property;
     private string? _category;
     private bool _isShared = false;
-    private string? _instructions;
     private string? _indication;
-    private string? _contraindications;
     private string? _remark;
     private List<FormulaHerbItemInputDto> _herbs = new();
 
@@ -39,12 +36,6 @@ public class FormulaBuilder
     public FormulaBuilder WithEffect(string effect)
     {
         _effect = effect;
-        return this;
-    }
-
-    public FormulaBuilder WithDescription(string? description)
-    {
-        _description = description;
         return this;
     }
 
@@ -72,21 +63,9 @@ public class FormulaBuilder
         return this;
     }
 
-    public FormulaBuilder WithInstructions(string? instructions)
-    {
-        _instructions = instructions;
-        return this;
-    }
-
     public FormulaBuilder WithIndication(string? indication)
     {
         _indication = indication;
-        return this;
-    }
-
-    public FormulaBuilder WithContraindications(string? contraindications)
-    {
-        _contraindications = contraindications;
         return this;
     }
 
@@ -128,14 +107,11 @@ public class FormulaBuilder
         Id = _id,
         Name = _name,
         Effect = _effect,
-        Description = _description,
         Usage = _usage,
         Property = _property,
         Category = _category,
         IsShared = _isShared,
-        Instructions = _instructions,
         Indication = _indication,
-        Contraindications = _contraindications,
         Remark = _remark,
         Herbs = _herbs
     };
@@ -155,12 +131,10 @@ public class FormulaBuilder
     public static FormulaBuilder ColdRemedy() => Create()
         .WithName("感冒清热方")
         .WithEffect("清热解毒，疏风散寒")
-        .WithDescription("用于风热感冒引起的发热、头痛、咳嗽等症状")
         .WithUsage("水煎服，每日一剂，早晚分服")
         .WithProperty("辛凉解表")
         .WithCategory("解表剂")
-        .WithIndication("风热感冒，发热头痛")
-        .WithContraindications("风寒感冒者慎用");
+        .WithIndication("风热感冒，发热头痛");
 
     /// <summary>
     /// 预置：共享验方

@@ -68,10 +68,6 @@ public partial class MedicalCaseMapper
     /// Consultation实体转换为ConsultationDetailDto
     /// </summary>
     [MapProperty(nameof(Consultation.Id), nameof(ConsultationDetailDto.MedicalCaseId))]
-    [MapperIgnoreTarget(nameof(ConsultationDetailDto.PatientId))]
-    [MapperIgnoreTarget(nameof(ConsultationDetailDto.UserId))]
-    [MapperIgnoreTarget(nameof(ConsultationDetailDto.PatientName))]
-    [MapperIgnoreTarget(nameof(ConsultationDetailDto.DoctorName))]
     public partial ConsultationDetailDto ToConsultationDetailDto(Consultation entity);
 
     // ========== Prescription映射（聚合内使用） ==========
@@ -84,7 +80,6 @@ public partial class MedicalCaseMapper
     [MapperIgnoreTarget(nameof(PrescriptionDetailDto.TotalWeight))]
     [MapperIgnoreTarget(nameof(PrescriptionDetailDto.DuplicateWarning))]
     [MapperIgnoreTarget(nameof(PrescriptionDetailDto.MissingDrugWarning))]
-    [MapperIgnoreTarget(nameof(PrescriptionDetailDto.Status))]
     [MapperIgnoreTarget(nameof(PrescriptionDetailDto.Items))]
     public partial PrescriptionDetailDto ToPrescriptionDetailDto(Prescription entity);
 
@@ -96,7 +91,6 @@ public partial class MedicalCaseMapper
     [MapperIgnoreTarget(nameof(PrescriptionItemDto.TotalPrice))]
     [MapperIgnoreTarget(nameof(PrescriptionItemDto.TotalWeight))]
     [MapperIgnoreTarget(nameof(PrescriptionItemDto.Subtotal))]
-    [MapperIgnoreTarget(nameof(PrescriptionItemDto.Notes))]
     [MapperIgnoreTarget(nameof(PrescriptionItemDto.Role))]
     public partial PrescriptionItemDto ToPrescriptionItemDto(PrescriptionItem entity);
 
@@ -140,10 +134,6 @@ public partial class MedicalCaseMapper
     {
         var consultationDto = ToConsultationDetailDto(entity.Consultation!);
         consultationDto.MedicalCaseId = entity.Id;
-        consultationDto.PatientId = entity.PatientId;
-        consultationDto.UserId = entity.UserId;
-        consultationDto.PatientName = entity.PatientName;
-        consultationDto.DoctorName = entity.DoctorName;
         return consultationDto;
     }
 
@@ -174,7 +164,6 @@ public partial class MedicalCaseMapper
         dto.SingleDosePrice = prescription.Items?.Sum(x => x.Amount) ?? 0;
         dto.TotalPrice = dto.SingleDosePrice * prescription.DosageCount * prescription.Discount;
         dto.TotalWeight = prescription.Items?.Sum(x => x.Dosage) ?? 0;
-        dto.Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled;
 
         return dto;
     }

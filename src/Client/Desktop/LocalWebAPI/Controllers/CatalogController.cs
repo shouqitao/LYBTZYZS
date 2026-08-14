@@ -591,7 +591,6 @@ public class CatalogController : BaseCrudController
         {
             Name = $"{source.Value.Name} (副本)",
             Effect = source.Value.Effect ?? string.Empty,
-            Description = source.Value.Description,
             Usage = source.Value.Usage ?? string.Empty,
             Property = source.Value.Property,
             Category = source.Value.Category,

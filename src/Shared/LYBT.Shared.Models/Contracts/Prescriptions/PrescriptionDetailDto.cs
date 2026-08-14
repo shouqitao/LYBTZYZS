@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Contracts.Prescriptions;
 
@@ -60,10 +59,6 @@ public class PrescriptionDetailDto
     /// <summary>折扣</summary>
     [DisplayName("折扣")]
     public decimal Discount { get; set; }
-
-    /// <summary>状态</summary>
-    [DisplayName("状态")]
-    public CommonStatus Status { get; set; }
 
     /// <summary>创建时间</summary>
     [DisplayName("创建时间")]

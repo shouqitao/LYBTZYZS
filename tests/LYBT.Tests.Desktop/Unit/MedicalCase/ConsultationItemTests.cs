@@ -25,10 +25,6 @@ public class ConsultationItemTests : UserJourneyTestBase
 
         sut.Id.Should().Be(Guid.Empty);
         sut.MedicalCaseId.Should().Be(Guid.Empty);
-        sut.PatientId.Should().Be(Guid.Empty);
-        sut.UserId.Should().Be(Guid.Empty);
-        sut.PatientName.Should().BeEmpty();
-        sut.DoctorName.Should().BeEmpty();
         sut.PresentIllness.Should().BeNull();
         sut.TongueDiagnosis.Should().BeNull();
         sut.PulseDiagnosis.Should().BeNull();
@@ -152,23 +148,21 @@ public class ConsultationItemTests : UserJourneyTestBase
     }
 
     [Fact]
-    public void DisplayText_ReturnsPatientNameAndDiagnosis()
+    public void DisplayText_ReturnsDiagnosis()
     {
         var sut = CreateSut();
-        sut.PatientName = "张三";
         sut.TcmDiagnosis = "肝阳上亢证";
 
-        sut.DisplayText.Should().Be("张三 - 肝阳上亢证");
+        sut.DisplayText.Should().Be("肝阳上亢证");
     }
 
     [Fact]
-    public void DisplayText_ReturnsPatientNameAndUndiagnosed_WhenDiagnosisIsEmpty()
+    public void DisplayText_ReturnsUndiagnosed_WhenDiagnosisIsEmpty()
     {
         var sut = CreateSut();
-        sut.PatientName = "李四";
         sut.TcmDiagnosis = null;
 
-        sut.DisplayText.Should().Be("李四 - 未诊断");
+        sut.DisplayText.Should().Be("未诊断");
     }
 
     [Fact]
@@ -215,8 +209,6 @@ public class ConsultationItemTests : UserJourneyTestBase
         var sut = CreateSut();
         sut.Id = Guid.NewGuid();
         sut.MedicalCaseId = Guid.NewGuid();
-        sut.PatientId = Guid.NewGuid();
-        sut.UserId = Guid.NewGuid();
         sut.PresentIllness = "头痛";
         sut.TongueDiagnosis = "舌红";
         sut.PulseDiagnosis = "脉弦";
@@ -230,8 +222,6 @@ public class ConsultationItemTests : UserJourneyTestBase
         sut.TcmDiagnosis.Should().BeNull();
         sut.Id.Should().NotBe(Guid.Empty);
         sut.MedicalCaseId.Should().NotBe(Guid.Empty);
-        sut.PatientId.Should().NotBe(Guid.Empty);
-        sut.UserId.Should().NotBe(Guid.Empty);
     }
 
     [Fact]
@@ -240,9 +230,6 @@ public class ConsultationItemTests : UserJourneyTestBase
         var sut = CreateSut();
         sut.Id = Guid.NewGuid();
         sut.MedicalCaseId = Guid.NewGuid();
-        sut.PatientId = Guid.NewGuid();
-        sut.UserId = Guid.NewGuid();
-        sut.PatientName = "张三";
         sut.PresentIllness = "头痛三天";
         sut.TongueDiagnosis = "舌红苔黄";
         sut.PulseDiagnosis = "脉弦数";

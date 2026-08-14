@@ -446,10 +446,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         if (_medicalCaseService.CurrentConsultation != null)
             ConsultationEditor.InitializeFromDto(_medicalCaseService.CurrentConsultation);
         else
-            ConsultationEditor.InitializeForNewCase(
-                CurrentPatient?.Name ?? string.Empty,
-                CurrentPatient?.Id ?? Guid.Empty,
-                SessionManager?.CurrentUser?.Id ?? Guid.Empty);
+            ConsultationEditor.InitializeForNewCase();
 
         // Prescription
         if (_medicalCaseService.CurrentPrescription != null)

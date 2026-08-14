@@ -208,7 +208,7 @@ public class MedicalCaseMapperTests
     }
 
     [Fact]
-    public void ToConsultationDetailDto_ShouldIgnoreContextFields()
+    public void ToConsultationDetailDto_ShouldOnlyMapOwnFields()
     {
         // Arrange
         var entity = CreateTestConsultation();
@@ -216,11 +216,10 @@ public class MedicalCaseMapperTests
         // Act
         var dto = _mapper.ToConsultationDetailDto(entity);
 
-        // Assert - 这些字段由EnrichConsultationDetailDto手动填充
-        dto.PatientId.Should().Be(Guid.Empty);
-        dto.UserId.Should().Be(Guid.Empty);
-        dto.PatientName.Should().BeNull();
-        dto.DoctorName.Should().BeNull();
+        // Assert - Consultation自身字段映射（父聚合MedicalCase的上下文字段已从DTO移除）
+        dto.MedicalCaseId.Should().Be(entity.Id);
+        dto.PresentIllness.Should().Be(entity.PresentIllness);
+        dto.TcmDiagnosis.Should().Be(entity.TcmDiagnosis);
     }
 
     #endregion
@@ -266,7 +265,6 @@ public class MedicalCaseMapperTests
         dto.TotalWeight.Should().Be(0);
         dto.DuplicateWarning.Should().BeNull();
         dto.MissingDrugWarning.Should().BeNull();
-        dto.Status.Should().Be(default(CommonStatus));
         dto.Items.Should().BeEmpty();
     }
 
@@ -309,7 +307,7 @@ public class MedicalCaseMapperTests
         dto.TotalPrice.Should().Be(0);
         dto.TotalWeight.Should().Be(0);
         dto.Subtotal.Should().Be(0);
-        dto.Notes.Should().Be(entity.Remark); // Notes maps from Remark
+        dto.Remark.Should().Be(entity.Remark);
     }
 
     #endregion
@@ -353,10 +351,6 @@ public class MedicalCaseMapperTests
         // Assert - Consultation嵌套DTO
         dto.Consultation.Should().NotBeNull();
         dto.Consultation!.MedicalCaseId.Should().Be(entity.Id);
-        dto.Consultation.PatientId.Should().Be(entity.PatientId);
-        dto.Consultation.UserId.Should().Be(entity.UserId);
-        dto.Consultation.PatientName.Should().Be(entity.PatientName);
-        dto.Consultation.DoctorName.Should().Be(entity.DoctorName);
         dto.Consultation.PresentIllness.Should().Be(entity.Consultation!.PresentIllness);
         dto.Consultation.TcmDiagnosis.Should().Be(entity.Consultation!.TcmDiagnosis);
     }
@@ -375,7 +369,6 @@ public class MedicalCaseMapperTests
         dto.Prescription!.MedicalCaseId.Should().Be(entity.Id);
         dto.Prescription.Items.Should().NotBeEmpty();
         dto.Prescription.TotalWeight.Should().BeGreaterThan(0);
-        dto.Prescription.Status.Should().Be(CommonStatus.Enabled);
     }
 
     [Fact]

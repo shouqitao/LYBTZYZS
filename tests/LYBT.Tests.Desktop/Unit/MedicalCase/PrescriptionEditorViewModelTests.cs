@@ -73,7 +73,6 @@ public class PrescriptionEditorViewModelTests : UserJourneyTestBase
             Discount = 0.8m,
             SingleDosePrice = 12.5m,
             TotalWeight = 210m,
-            Status = CommonStatus.Enabled,
             Items = new List<PrescriptionItemDto>
             {
                 new() { HerbName = "人参", Dosage = 10, UnitPrice = 1.0m },

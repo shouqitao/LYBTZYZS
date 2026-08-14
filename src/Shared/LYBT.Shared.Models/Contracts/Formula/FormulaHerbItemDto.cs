@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Contracts.Formula
@@ -45,27 +44,11 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("用法")]
         public string? Usage { get; set; }
 
-        [DisplayName("价格")]
-        public decimal Price { get; set; }
-
-        [DisplayName("单价")]
-        public decimal UnitPrice => Price;
-
         [DisplayName("加工方法")]
         public string? ProcessingMethod { get; set; }
-
-        [DisplayName("特殊说明")]
-        public string? SpecialInstructions { get; set; }
-
-        [DisplayName("排序")]
-        public int SortOrder { get; set; }
 
         /// <summary>煎法（先煎、后下等）</summary>
         [DisplayName("煎法")]
         public DecocteMethod DecocteMethod { get; set; } = DecocteMethod.Default;
-
-        /// <summary>中药材导航属性</summary>
-        [DisplayName("中药材")]
-        public HerbDetailDto? Herb { get; set; }
     }
 }

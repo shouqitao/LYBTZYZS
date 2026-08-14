@@ -13,7 +13,7 @@
 ## 一、项目概况
 
 | 项 | 值 |
-|----|-----|
+| ---- | ----- |
 | 技术栈 | .NET 8 / WPF Prism / ASP.NET Core / EF Core / SQL Server |
 | 架构 | 3-Layer (Server) + MVVM (Desktop) + Dual-Mode (Remote+Local) |
 | 代码库 | D:\source\repos\LYBTZYZS |
@@ -48,7 +48,7 @@
 ### A 类 — 架构清理
 
 | ID | 任务 | 内容 | 依赖 | 状态 | 预估 |
-|----|------|------|------|------|------|
+| ---- | ------ | ------ | ------ | ------ | ------ |
 | A-01 | 文档清理 | 归档 35 个 plan、删 17 个存根、修 27 个断链 | 无 | ⬜ | 0.5d |
 | A-02 | 死代码删除 | ~737 行零引用代码 (Server 10 + Desktop 5 + Shared 2) | 无 | ✅ | 0.5d |
 | A-03 | MediatR 简化 | 5 模块全部完成：Herbs/Formula/Patients/Users 24 Handler；MedicalCase 40 文件删除 | 无 | ✅ | 0.5d |
@@ -74,16 +74,16 @@
 | A-27 | 技术栈减法（方案 A） | 删除死重量依赖：BCrypt（PasswordHelper 哈希/验证零调用，Identity PBKDF2 取代）/ Swagger（半成品，状态待核实）/ Velopack（0 引用）/ Sqlite（LocalDB 取代）；蓝图新增「技术栈合理性评估」章节。任务书（compose 已归档） | A-26 | ✅ `846cb5411`（主体）+ `cac9784d8`（总账 SHA）——PasswordHelper 609→367 行（删 BCrypt 哈希/验证 + 包，哈希唯一走 Identity PBKDF2 SSOT）；Swagger 核实完整接线评估保留；Velopack 0 引用无需删；Sqlite props 2 条目删除；蓝图 §0.5 技术栈评估落地（全景 18 项/4 标准/必选 10 项）；测试同步 27 个 BCrypt 测试删 + 5 处哈希改 Identity。验证：build 0 错误 0 警告、架构测试 86/86 | 0.5d |
 | A-28 | A-26 P1 收敛批次（7 项） | 子批次 1（结构性）：P1-1 双轨规范化（蓝图 §2.2 定案，写走 Handler/读走 Service + 守卫）/ P1-2 P10 守卫盲区（跨模块服务绕 AppDbContext）/ P1-3 仓储收敛（BaseRepository 推广）。子批次 2（小修）：P1-4 手写映射→Mapperly / P1-5 LoginRequestValidator 双份 / P1-6 命名空间单复数 / P1-7 Jwt Section。任务书（compose 已归档） | A-26（文档先行 `c88cf342c`） | ✅ `bf2f58d52`（子批次1）+ `2988dde17`（子批次2）——P1-1：4 模块 14 处写操作迁回 MediatR（新建 14 组 Command+Handler+Validator），Service 写方法及接口声明删除，LocalWebAPI 3 控制器同步（编译依赖），新增守卫 P19（Service 接口禁写方法）+ P19b（Controller IL 扫描禁直调）；P1-2：3 个 CrossModuleService 改注入模块 DbContext，P10 扩展查 IDbContextAccessor（基础设施豁免）；P1-3：Patient/Herb/Formula 3 仓储继承 BaseRepository（接口挂 IRepository<T>），User/AuthSession（实体非 BaseEntity）/SecurityAudit/Registration（延迟保存事务）/Report/SystemLog（只读聚合）保持裸实现并注明例外；P1-4：UserCrossModuleService 手写映射改 UserCrossModuleMapper（Mapperly）；P1-5：删 Auth 版 LoginRequestValidator，Shared 版为 SSOT；P1-6：Registration.csproj 补 AssemblyName/RootNamespace=Registrations（复数对齐），测试 3 处 + 蓝图 §3.2 同步；P1-7：LocalJwt 节统一为 Jwt（SectionName/appsettings/验证器消息）。验证：两子批次 build --no-incremental 0 错误 0 警告、架构测试 88/88（原 86 + 新 2）。报告：`docs/compose/reports/a28-p1-convergence.md` | 2-3d |
 | A-29 | A-26 P2 收敛 + 顺带处置（3 组） | 组 1 蓝图维护（T0）：P2-8 文件数回写 / P2-9 Controller 路径补记 / P2-10 结构矛盾澄清（三态模板）/ P2-16 接口命名矩阵 / P2-17 Status-State 边界 / 顺带4 守卫口径。组 2 代码收敛（T1）：P2-13 KeyNotFoundException→NotFoundException ×3 / P2-14 请求后缀统一 / P2-15 UserBasicDto 迁 Contracts / P2-18 Shell Jwt 补齐 + Reports DTO 约定 / 顺带3 DTOs 死目录 / 顺带5 BaseRegistrationsController override。组 3 顺带：顺带1 图谱索引说明 / 顺带2 AGENTS.md 陈旧清理 / P2-12 BatchImport 评估（倾向记录第二模板）。任务书（compose 已归档） | A-28 | ✅ 3 独立 commit：组1 `994925641`（蓝图 v1.5：文件数回写/三态模板/接口矩阵/Status-State/守卫口径）+ 组2 `27463791b`（P2-13 异常层次统一×3、P2-14 请求契约统一 XxxRequest（10vs2 少改动方向，文件重命名+23 引用）、P2-15 UserBasicDto 迁 Contracts/Users + DTOs 死目录删、P2-18 Shell Jwt 补 2 字段（Options 实际消费）+ 蓝图 Reports 约定、顺带5 核实基类无 Update 无需 override）+ 组3 `fb5573586`（AGENTS.md 5 文件陈旧清理 Sync/SharedKernel/LocalData/CardReader、P2-12 BatchImport 保持独立 + 蓝图第二模板注记）。报告：`docs/compose/reports/a29-p2-convergence.md` `8b6024dda`。验证：组2/3 build --no-incremental 0 错误 0 警告、架构测试 88/88。例外：守卫实测 81 方法/88 用例（任务书 86 为旧估算，蓝图按实测注明）；顺带5 A-26 假设不成立（基类无 Update 方法） | 1-2d |
-| A-30 | 全 Solution 方法级深度审查（收敛专项） | 按 A-30 方法级审计计划（compose 已归档）执行 5 阶段：S0 方法级统计基线 / S1 Shared 深审（日志/异常集中定义专项）/ S2 Server 深审 / S3 Desktop 深审 / S4 整体整合方案（15-solution-integration-plan.md）。方法级 A/B/C/D/E 分级，产出每项目深化统计 + 重复/死方法/可集中清单 + 项目合并方案。**方针：先收敛再完善**（B 类冻结） | A-29 + A-22 类级基础 | ✅ 全部完成（S0-S4）——S0 基线 1208 文件/1424 类型/6118 方法；S1 Shared 212 方法（4 整类死类）；S2 Server 970 方法（29 死/Herbs+Formula 合并可行）；S3 Desktop 2987 方法（78 死/LocalJwtConfig 策略缺口 P0 确认）；S4 整合方案定稿 `15-solution-integration-plan.md`（35→30 项目 + 日志/异常集中 + P0×3 + C 批次规划）| 4.5-6.5d |
-| A-31 | C 批次执行（整合方案落地） | C-0 P0 缺陷修复（LocalWebAPI 策略/MedicalCase 验证/Reports 双轨策略）/ C-1 日志集中（Shared.Logging 升级 AddLybtLogging M1-M10）/ C-2 异常统一（处理器收敛+死类删除）/ C-3 Server 合并【⏸ 延期】/ C-4 Desktop 合并【⏸ 延期】/ C-5 机制收敛 / C-6 死代码清理 | A-30 S4 定稿 `fa18f67b3`（v1.1 `566016b05` 合并延期） | ✅ C-0 完成（2026-08-09 `d1ea38a59`）——P0-1 LocalJwtConfig 补注册 `DoctorOrAdminOrReceptionist`（患者/挂号本地模式恢复）；P0-2 `MedicalCaseCommandService` 注入 `IValidator<MedicalCaseInputDto>` 创建分支验证（更新/完成/挂起不接入：更新 DTO 契约不含 PatientId/UserId，Complete/Suspend 无对应验证器）；P0-3 Reports 双端统一 `DoctorOrAdmin`（权限矩阵 §2.1 补行，产品规则未改）。报告：`docs/compose/reports/a31-c0-p0-fixes.md`。验证：build --no-incremental 0 错误 0 警告、架构测试 88/88；✅ **C-1 完成（2026-08-09）**——日志集中：Shared.Logging 升级独立完整日志项目（`AddLybtLogging`/`LoggingBootstrap` 单入口，M1-M10 全量迁移，Serilog 包 4→1 项目收敛，CorrelationId 单点化（Provider 统一 DI 注册），MSSQL sink options 化解决 JSON/代码 autoCreateSqlTable 冲突，P05b 豁免清单同步）。报告：`docs/compose/reports/a31-c1-logging-centralization.md`。验证：build --no-incremental 0 错误 0 警告、架构测试 88/88、日志单测 Server 39 + Desktop 28；✅ **C-2 完成（2026-08-09 `64d35a17f`）**——异常统一：处理器收敛（System/BusinessExceptionHandler 自 Infrastructure 迁入 Shared.ExceptionHandling/Handlers，`AddLybtExceptionHandling` 统一注册，Infrastructure 死引用移除 + MedicalCase/Registration 补直接引用）；映射 SSOT（`ErrorCodeExtensions.ToHttpStatusCode` 唯一异常→HTTP 源，子类 GetHttpStatusCode 硬编码分支删除，14 处业务错误码恢复 422 语义，`MedicalCaseMissingDiagnosis` 补映射 422）；死类删除（Conflict/Api/Unauthorized/Validation Exception 4 类 37 方法 + 连带测试）；Desktop 侧评估保留（UI 文案层 vs HTTP 状态层，职责不同）；蓝图 §0.5 技术引入治理记录 + P05b 豁免清单同步。报告：`docs/compose/reports/a31-c2-exception-unification.md`。验证：build --no-incremental 0 错误 0 警告、架构测试 88/88、异常相关单测 96/96；✅ **C-5 完成（2026-08-09）**——机制收敛 4 项：C5-1 统一 ErrorMessages（45 文件，Handler/Service 硬编码文案改用 `ErrorMessages.Get`，SSOT 对齐实际文案；`9eb8db522`）；C5-2 提取 `AddModuleDbContext<TContext>`（7 模块 DbContext 引导收敛 Infrastructure，`0d78b56c6`）；C5-3 仓储镜像方法模板化（`GetByIdIncludingDeletedAsync`/`Exists` 谓词尾上收 BaseRepository，Formula Include 特化保留；`b637690ed`）；C5-4 VM 命令模板收敛（`ConnectionTestViewModelBase` + `EditorViewModelBase` 提取，E3 事件泄漏修复，User 例外；`9ba8540ed`）。报告：`docs/compose/reports/a31-c5-mechanism-convergence.md`。验证：build --no-incremental 0 错误 0 警告、架构测试 88/88、HerbRepo 单测 12/12、Desktop MasterDetail 87 通过；✅ **C-6 完成（2026-08-09）**——死代码清理 3 组独立 commit：C6-1 Shared 12 符号（SetCorrelationId/GetCorrelationIdOrNew/WriteToConsoleWithTemplate/WriteToFileWithTemplate/MaskObject/SanitizeException/NotFoundException 5 工厂/Result.ValidationFailure/GetModuleName/PasswordHelper 4 方法）+ 测死功能测试联动，`1c9c2545b`；C6-2 Server 29 符号（S2 §7 真死 14 + MedicalCase 死链 9（D12-D14）+ 常量 2 + CrossModule 接口 5 组成对）+ 连带 BaseMedicalCasesController 6 死端点 + ReferenceCheckResult record + 测试联动，`a9293616d`；C6-3 Desktop 可安全删 14 + 死类 PatientItem/UserItem + Formula OnSelfPropertyChanged 空体（含订阅/退订连带）+ 测死功能测试联动，`b15fc8597`。报告：`docs/compose/reports/a31-c6-dead-code-cleanup.md`。验证：三组均 build --no-incremental 0 错误 0 警告、架构测试 88/88、Shared 单测 110 + Server 22 + Desktop 13。**C-3/C-4 合并批次用户延期（2026-08-08），待完善后重评估**；✅ **C-7 完成（2026-08-09）**——复核项 64（S3 §7.2）+ 新发现死代码 + 文档同步，分 5 组独立 commit：A 基类 protected API 残留 7（D12-D18，先改 README/ADR-0007/02-desktop.md 再删代码），`b2c28d27e`；B/C DI 扩展 3（D19-D21，整文件删）+ 接口成员 14（D22-D35，成对全删，GetDiagnostics 3 处连带诊断 record 删，仅测试引用的 IsLoggedInAsync/MatchPatientAsync 删生产+测联动），`6e1f032fe`；D/E 死 Model 核实 0 残留（D36/D37/D39）+ D38 MoveItem/GetNextEmptySlotIndex + 接口契约 39（D43-D71，D60 IAsyncExecutor 7 成员集群整链删除含 DI 注册与组合属性，仅测试引用的 D65/D66/D67/D68 删生产+测联动），`4492d06b7`；S 新发现死代码（PasswordHelper RandomByteLength/PasswordValidationResult/CheckPasswordStrength/IsCommonPassword+WeakPasswords、RetryPolicyExtensions 3 工厂整文件删+测试、PerformanceReport GetLevelIndicator/FormatBytes 已由 C-6 连带删除 0 残留核实），`15656271d`；docs 文档同步（DESKTOP_ARCHITECTURE_STANDARD §4.3/§4.5/§6.3.1/§9.2/§10.1.3-5、Patients/Users README+AGENTS、modules/printing、09-printing、总账）。**D72 HuaDaNativeMethods extern 硬件 SDK 预留不删**（待用户确认外部 DLL）。报告：`docs/compose/reports/a31-c7-review-items-cleanup.md`。验证：每组 build --no-incremental 0 错误 0 警告、架构测试 88/88、受影响 Desktop 单测 227 通过 + Server PasswordHelper 10/10（存量 AuthenticationIntegrationTests 4 个 NSubstitute 代理失败为基线既有问题）；✅ **C-8 完成（2026-08-09）**——决策点 2/4 收敛 2 项独立 commit：C8-1 跨模块门面单轨化（删 `ICrossModuleService` 统一门面接口+实现+注册扩展，8 消费方按方法归属改注入域接口（Login→IUser、Formula×2→IHerb、MedicalCase×4→IPatient/IUser/IHerb 拆分、QuickVisit→IPatient/IUser），2 组合根删 `AddCrossModuleService()` 调用，AGENTS/README/csproj 注释同步），`7e84e5149`；C8-2 映射统一（workspace 保存 `MedicalCaseCommandService.cs:46` 改走 Mapperly（MedicalCaseDetailModelMapper 新增 DTO→InputDto 方法，字段对齐行为等价），删 `DtoConversionExtensions` 手写扩展+连带文档，连带消费方实测零引用无需改），`5e03819a1`。报告：`docs/compose/reports/a31-c8-decision-points-convergence.md`。验证：两项均 build --no-incremental 0 错误 0 警告、架构测试 88/88、Mapperly 单测 24/24（Desktop 集成失败为既有环境项）。；✅ **C-3a 完成（2026-08-09 cd6b80721）**——Auth+Users 合并为 Identity（3 阶段：A 骨架+实体合并 d614283bc；B 接口迁移+Command 合并+登录统一 1164ae0c5；C 外部引用更新+清理 cd6b80721）：IdentityDbContext 统一管理（AuthSessions/SecurityAuditLogs/SystemLogs/Users，表结构不变迁移链连续）；对外接口 IUserService（替代 IUserCrossModuleService，保留于 Infrastructure 跨模块通道满足 P07）；IAuthCrossModuleService/AuthCrossModuleService 删除（4 Handler 直注 IAuthSessionRepository+ISecurityAuditService）；17 Command+IdentityMapper+3 Validators+IdentityModule 注册；本地登录统一 LoginCommandHandler+LoginOptions（IsLocal/LockoutEnabled/AuditLevel，删 LocalLoginCommandHandler）；WebAPI AuthController+UsersController→IdentityController（路由不变）；MedicalCase/Registration 仅改接口名；旧项目 Auth/Users 整目录删除；架构测试 P19 豁免登录流写方法（Handler 专用非 Controller 端点）。验证：build --no-incremental 0 错误 0 警告、架构测试 87/87、Server Auth 单测 104 通过、Desktop AuthControllerTests 8/8（HEAD 基线因基座缺 MediatR 全 500 为既有环境项）。报告：docs/compose/reports/a31-c3a-auth-users-merge.md。✅ **C-3b 完成（2026-08-09 \5b94893f5\）**——Herbs+Formula 合并为 Catalog（3 阶段：A 骨架+CatalogDbContext \fc90a738\；B 接口+Command 泛型化+Service/Mapper/Validator 合并+AddCatalogModule \76bcbb38f\；C 外部引用更新+清理 \5b94893f5\）：实体不物理移动（保留 Shared/LYBT.Entities，AppDbContext 迁移链所有者+Desktop 消费，C3a 同构先例）；CatalogDbContext=HerbsDbContext 升级+Formulas DbSet（表结构不变迁移链连续）；ICatalogRepository<T> 泛型契约+CatalogRepositoryBase；5 对 CRUD/Toggle 命令泛型化（CatalogCommands 5 记录+HerbCommandHandler/FormulaCommandHandler 各 5 Handle）；Batch Enable/Disable 统一收敛 BatchOperationHandlerBase；ICatalogQueryService 合并 42 行孪生（DI 工厂注入差异点）；CatalogDtoMapper/CatalogValidator 合并；IHerbCrossModuleService→ICatalogService（保留 Infrastructure 跨模块通道 P07，MedicalCase 消费）；WebAPI/LocalWebAPI HerbsController+FormulasController→CatalogController（/api/v1/herbs/* + /api/v1/formulas/* 双路由保持，IdentityController 绝对路由先例）；删 LYBT.Module.Herbs/Formula（-81 文件）；架构测试适配（P01b 例外/P09/P19/P19b/P21/P05d/P06/P07 名单更新）；桌面 LocalWebAPI 控制器测试 12/12 失败为 HEAD 既有缺陷（/api/herbs 与 api/v1/herbs 路由不匹配，stash 基线复现一致，非本次引入）。报告：docs/compose/reports/a31-c3b-herbs-formula-merge.md。验证：build --no-incremental 0 错误 0 警告、架构测试 86/86、受影响 Server 单测 70/70。✅ **C-3c 完成（2026-08-09 `fa1229fee`）**——Desktop 侧同步合并：新建 `LYBT.Desktop.Catalog`（29 文件 git mv + 命名空间改写 Herbs/Formula→Catalog 45 处；`EditorViewModelBase`（C5-4 共享）与 `IFormulaApi`/`IHerbApi`（路由不变）保持不动，Shared 实体层零改动）；`CatalogModule` 注册合一（HerbsModule+FormulaModule，ModuleDependency 收敛 AuthenticationModule）；外部引用更新 13 文件（Shell App.xaml.cs/DataSourceRegistrationExtensions/NavigationManager + Admin/Clinical csproj + 2 XAML xmlns + MedicalCaseModule ModuleDependency + ModuleLazyLoader/Doctor/Admin 角色定义模块名 + Contracts 注释）；模块名 HerbsModule/FormulaModule→CatalogModule（ModuleCatalog 按需加载/懒加载/导航门控）；删 `LYBT.Desktop.Herbs`/`LYBT.Desktop.Formula` 整目录（-8 文件）+ sln 2→1（复用 Herbs GUID）；架构测试 5 段去重 + TestAssemblies + Desktop VM 测试 using 同步。验证：build --no-incremental 0 错误 0 警告、架构测试 86/86、受影响 Desktop VM 单测 15/15。报告：`docs/compose/reports/a31-c3c-desktop-catalog-merge.md`。✅ **C-3d 完成（2026-08-09）**——Desktop IApiClient Identity 侧合并：`IApiClientAuth`（6 方法）+`IApiClientUsers`（14 方法）→`IApiClientIdentity`（20 方法，继承 `IEntityApiSegment` 保留 DIM 转发）；`IApiClient.Auth/Users`→`Identity`（RefitApiClient/HttpClientApiClient/SwitchingApiClient 同步）；实现合并 `AuthApiClient+UserApiClient→IdentityApiClient`（Refit 包装 IAuthApi+IUserApi）、`AuthHttpApiClient+UsersHttpApiClient→IdentityHttpApiClient`（HttpClient，路由 `/api/v1/auth/*`+`/api/v1/users/*` 保持）；消费方更新（UserRepository 9 处 `_apiClient.Users.*`→`_apiClient.Identity.*` + 基类构造；AuthenticationService/LogoutService/TokenLifecycleService/AuthHealthService 注入 `IApiClientAuth`→`IApiClientIdentity`）；删旧文件 6（IApiClientAuth/IApiClientUsers/AuthApiClient/UserApiClient/AuthHttpApiClient/UsersHttpApiClient）；测试同步 4 文件（AuthEventPublishing/LogoutService/HttpClientApiClientEnvelope/SwitchingApiClient，`.Auth`/`.Users`→`.Identity`）；文档同步（Contracts README/03-patterns/05-dual-mode/15-integration-plan/DP10 注释）。验证：build --no-incremental 0 错误 0 警告、架构测试 86/86、受影响 Desktop 单测 32/32。报告：`docs/compose/reports/a31-c3d-desktop-api-client-identity-merge.md`。  | 6-10d（不含合并） |
+| A-30 | 全 Solution 方法级深度审查（收敛专项） | 按 A-30 方法级审计计划（compose 已归档）执行 5 阶段：S0 方法级统计基线 / S1 Shared 深审（日志/异常集中定义专项）/ S2 Server 深审 / S3 Desktop 深审 / S4 整体整合方案（15-solution-integration-plan.md）。方法级 A/B/C/D/E 分级，产出每项目深化统计 + 重复/死方法/可集中清单 + 项目合并方案。**方针：先收敛再完善**（B 类冻结） | A-29 + A-22 类级基础 | ✅ 全部完成（S0-S4）——S0 基线 1208 文件/1424 类型/6118 方法；S1 Shared 212 方法（4 整类死类）；S2 Server 970 方法（29 死/Herbs+Formula 合并可行）；S3 Desktop 2987 方法（78 死/LocalJwtConfig 策略缺口 P0 确认）；S4 整合方案定稿 `15-solution-integration-plan.md`（35→30 项目 + 日志/异常集中 + P0×3 + C 批次规划） | 4.5-6.5d |
+| A-31 | C 批次执行（整合方案落地） | C-0 P0 缺陷修复（LocalWebAPI 策略/MedicalCase 验证/Reports 双轨策略）/ C-1 日志集中（Shared.Logging 升级 AddLybtLogging M1-M10）/ C-2 异常统一（处理器收敛+死类删除）/ C-3 Server 合并【⏸ 延期】/ C-4 Desktop 合并【⏸ 延期】/ C-5 机制收敛 / C-6 死代码清理 | A-30 S4 定稿 `fa18f67b3`（v1.1 `566016b05` 合并延期） | ✅ C-0 完成（2026-08-09 `d1ea38a59`）——P0-1 LocalJwtConfig 补注册 `DoctorOrAdminOrReceptionist`（患者/挂号本地模式恢复）；P0-2 `MedicalCaseCommandService` 注入 `IValidator<MedicalCaseInputDto>` 创建分支验证（更新/完成/挂起不接入：更新 DTO 契约不含 PatientId/UserId，Complete/Suspend 无对应验证器）；P0-3 Reports 双端统一 `DoctorOrAdmin`（权限矩阵 §2.1 补行，产品规则未改）。报告：`docs/compose/reports/a31-c0-p0-fixes.md`。验证：build --no-incremental 0 错误 0 警告、架构测试 88/88；✅ **C-1 完成（2026-08-09）**——日志集中：Shared.Logging 升级独立完整日志项目（`AddLybtLogging`/`LoggingBootstrap` 单入口，M1-M10 全量迁移，Serilog 包 4→1 项目收敛，CorrelationId 单点化（Provider 统一 DI 注册），MSSQL sink options 化解决 JSON/代码 autoCreateSqlTable 冲突，P05b 豁免清单同步）。报告：`docs/compose/reports/a31-c1-logging-centralization.md`。验证：build --no-incremental 0 错误 0 警告、架构测试 88/88、日志单测 Server 39 + Desktop 28；✅ **C-2 完成（2026-08-09 `64d35a17f`）**——异常统一：处理器收敛（System/BusinessExceptionHandler 自 Infrastructure 迁入 Shared.ExceptionHandling/Handlers，`AddLybtExceptionHandling` 统一注册，Infrastructure 死引用移除 + MedicalCase/Registration 补直接引用）；映射 SSOT（`ErrorCodeExtensions.ToHttpStatusCode` 唯一异常→HTTP 源，子类 GetHttpStatusCode 硬编码分支删除，14 处业务错误码恢复 422 语义，`MedicalCaseMissingDiagnosis` 补映射 422）；死类删除（Conflict/Api/Unauthorized/Validation Exception 4 类 37 方法 + 连带测试）；Desktop 侧评估保留（UI 文案层 vs HTTP 状态层，职责不同）；蓝图 §0.5 技术引入治理记录 + P05b 豁免清单同步。报告：`docs/compose/reports/a31-c2-exception-unification.md`。验证：build --no-incremental 0 错误 0 警告、架构测试 88/88、异常相关单测 96/96；✅ **C-5 完成（2026-08-09）**——机制收敛 4 项：C5-1 统一 ErrorMessages（45 文件，Handler/Service 硬编码文案改用 `ErrorMessages.Get`，SSOT 对齐实际文案；`9eb8db522`）；C5-2 提取 `AddModuleDbContext<TContext>`（7 模块 DbContext 引导收敛 Infrastructure，`0d78b56c6`）；C5-3 仓储镜像方法模板化（`GetByIdIncludingDeletedAsync`/`Exists` 谓词尾上收 BaseRepository，Formula Include 特化保留；`b637690ed`）；C5-4 VM 命令模板收敛（`ConnectionTestViewModelBase` + `EditorViewModelBase` 提取，E3 事件泄漏修复，User 例外；`9ba8540ed`）。报告：`docs/compose/reports/a31-c5-mechanism-convergence.md`。验证：build --no-incremental 0 错误 0 警告、架构测试 88/88、HerbRepo 单测 12/12、Desktop MasterDetail 87 通过；✅ **C-6 完成（2026-08-09）**——死代码清理 3 组独立 commit：C6-1 Shared 12 符号（SetCorrelationId/GetCorrelationIdOrNew/WriteToConsoleWithTemplate/WriteToFileWithTemplate/MaskObject/SanitizeException/NotFoundException 5 工厂/Result.ValidationFailure/GetModuleName/PasswordHelper 4 方法）+ 测死功能测试联动，`1c9c2545b`；C6-2 Server 29 符号（S2 §7 真死 14 + MedicalCase 死链 9（D12-D14）+ 常量 2 + CrossModule 接口 5 组成对）+ 连带 BaseMedicalCasesController 6 死端点 + ReferenceCheckResult record + 测试联动，`a9293616d`；C6-3 Desktop 可安全删 14 + 死类 PatientItem/UserItem + Formula OnSelfPropertyChanged 空体（含订阅/退订连带）+ 测死功能测试联动，`b15fc8597`。报告：`docs/compose/reports/a31-c6-dead-code-cleanup.md`。验证：三组均 build --no-incremental 0 错误 0 警告、架构测试 88/88、Shared 单测 110 + Server 22 + Desktop 13。**C-3/C-4 合并批次用户延期（2026-08-08），待完善后重评估**；✅ **C-7 完成（2026-08-09）**——复核项 64（S3 §7.2）+ 新发现死代码 + 文档同步，分 5 组独立 commit：A 基类 protected API 残留 7（D12-D18，先改 README/ADR-0007/02-desktop.md 再删代码），`b2c28d27e`；B/C DI 扩展 3（D19-D21，整文件删）+ 接口成员 14（D22-D35，成对全删，GetDiagnostics 3 处连带诊断 record 删，仅测试引用的 IsLoggedInAsync/MatchPatientAsync 删生产+测联动），`6e1f032fe`；D/E 死 Model 核实 0 残留（D36/D37/D39）+ D38 MoveItem/GetNextEmptySlotIndex + 接口契约 39（D43-D71，D60 IAsyncExecutor 7 成员集群整链删除含 DI 注册与组合属性，仅测试引用的 D65/D66/D67/D68 删生产+测联动），`4492d06b7`；S 新发现死代码（PasswordHelper RandomByteLength/PasswordValidationResult/CheckPasswordStrength/IsCommonPassword+WeakPasswords、RetryPolicyExtensions 3 工厂整文件删+测试、PerformanceReport GetLevelIndicator/FormatBytes 已由 C-6 连带删除 0 残留核实），`15656271d`；docs 文档同步（DESKTOP_ARCHITECTURE_STANDARD §4.3/§4.5/§6.3.1/§9.2/§10.1.3-5、Patients/Users README+AGENTS、modules/printing、09-printing、总账）。**D72 HuaDaNativeMethods extern 硬件 SDK 预留不删**（待用户确认外部 DLL）。报告：`docs/compose/reports/a31-c7-review-items-cleanup.md`。验证：每组 build --no-incremental 0 错误 0 警告、架构测试 88/88、受影响 Desktop 单测 227 通过 + Server PasswordHelper 10/10（存量 AuthenticationIntegrationTests 4 个 NSubstitute 代理失败为基线既有问题）；✅ **C-8 完成（2026-08-09）**——决策点 2/4 收敛 2 项独立 commit：C8-1 跨模块门面单轨化（删 `ICrossModuleService` 统一门面接口+实现+注册扩展，8 消费方按方法归属改注入域接口（Login→IUser、Formula×2→IHerb、MedicalCase×4→IPatient/IUser/IHerb 拆分、QuickVisit→IPatient/IUser），2 组合根删 `AddCrossModuleService()` 调用，AGENTS/README/csproj 注释同步），`7e84e5149`；C8-2 映射统一（workspace 保存 `MedicalCaseCommandService.cs:46` 改走 Mapperly（MedicalCaseDetailModelMapper 新增 DTO→InputDto 方法，字段对齐行为等价），删 `DtoConversionExtensions` 手写扩展+连带文档，连带消费方实测零引用无需改），`5e03819a1`。报告：`docs/compose/reports/a31-c8-decision-points-convergence.md`。验证：两项均 build --no-incremental 0 错误 0 警告、架构测试 88/88、Mapperly 单测 24/24（Desktop 集成失败为既有环境项）。；✅ **C-3a 完成（2026-08-09 cd6b80721）**——Auth+Users 合并为 Identity（3 阶段：A 骨架+实体合并 d614283bc；B 接口迁移+Command 合并+登录统一 1164ae0c5；C 外部引用更新+清理 cd6b80721）：IdentityDbContext 统一管理（AuthSessions/SecurityAuditLogs/SystemLogs/Users，表结构不变迁移链连续）；对外接口 IUserService（替代 IUserCrossModuleService，保留于 Infrastructure 跨模块通道满足 P07）；IAuthCrossModuleService/AuthCrossModuleService 删除（4 Handler 直注 IAuthSessionRepository+ISecurityAuditService）；17 Command+IdentityMapper+3 Validators+IdentityModule 注册；本地登录统一 LoginCommandHandler+LoginOptions（IsLocal/LockoutEnabled/AuditLevel，删 LocalLoginCommandHandler）；WebAPI AuthController+UsersController→IdentityController（路由不变）；MedicalCase/Registration 仅改接口名；旧项目 Auth/Users 整目录删除；架构测试 P19 豁免登录流写方法（Handler 专用非 Controller 端点）。验证：build --no-incremental 0 错误 0 警告、架构测试 87/87、Server Auth 单测 104 通过、Desktop AuthControllerTests 8/8（HEAD 基线因基座缺 MediatR 全 500 为既有环境项）。报告：docs/compose/reports/a31-c3a-auth-users-merge.md。✅ **C-3b 完成（2026-08-09 \5b94893f5\）**——Herbs+Formula 合并为 Catalog（3 阶段：A 骨架+CatalogDbContext \fc90a738\；B 接口+Command 泛型化+Service/Mapper/Validator 合并+AddCatalogModule \76bcbb38f\；C 外部引用更新+清理 \5b94893f5\）：实体不物理移动（保留 Shared/LYBT.Entities，AppDbContext 迁移链所有者+Desktop 消费，C3a 同构先例）；CatalogDbContext=HerbsDbContext 升级+Formulas DbSet（表结构不变迁移链连续）；ICatalogRepository<T> 泛型契约+CatalogRepositoryBase；5 对 CRUD/Toggle 命令泛型化（CatalogCommands 5 记录+HerbCommandHandler/FormulaCommandHandler 各 5 Handle）；Batch Enable/Disable 统一收敛 BatchOperationHandlerBase；ICatalogQueryService 合并 42 行孪生（DI 工厂注入差异点）；CatalogDtoMapper/CatalogValidator 合并；IHerbCrossModuleService→ICatalogService（保留 Infrastructure 跨模块通道 P07，MedicalCase 消费）；WebAPI/LocalWebAPI HerbsController+FormulasController→CatalogController（/api/v1/herbs/*+ /api/v1/formulas/* 双路由保持，IdentityController 绝对路由先例）；删 LYBT.Module.Herbs/Formula（-81 文件）；架构测试适配（P01b 例外/P09/P19/P19b/P21/P05d/P06/P07 名单更新）；桌面 LocalWebAPI 控制器测试 12/12 失败为 HEAD 既有缺陷（/api/herbs 与 api/v1/herbs 路由不匹配，stash 基线复现一致，非本次引入）。报告：docs/compose/reports/a31-c3b-herbs-formula-merge.md。验证：build --no-incremental 0 错误 0 警告、架构测试 86/86、受影响 Server 单测 70/70。✅ **C-3c 完成（2026-08-09 `fa1229fee`）**——Desktop 侧同步合并：新建 `LYBT.Desktop.Catalog`（29 文件 git mv + 命名空间改写 Herbs/Formula→Catalog 45 处；`EditorViewModelBase`（C5-4 共享）与 `IFormulaApi`/`IHerbApi`（路由不变）保持不动，Shared 实体层零改动）；`CatalogModule` 注册合一（HerbsModule+FormulaModule，ModuleDependency 收敛 AuthenticationModule）；外部引用更新 13 文件（Shell App.xaml.cs/DataSourceRegistrationExtensions/NavigationManager + Admin/Clinical csproj + 2 XAML xmlns + MedicalCaseModule ModuleDependency + ModuleLazyLoader/Doctor/Admin 角色定义模块名 + Contracts 注释）；模块名 HerbsModule/FormulaModule→CatalogModule（ModuleCatalog 按需加载/懒加载/导航门控）；删 `LYBT.Desktop.Herbs`/`LYBT.Desktop.Formula` 整目录（-8 文件）+ sln 2→1（复用 Herbs GUID）；架构测试 5 段去重 + TestAssemblies + Desktop VM 测试 using 同步。验证：build --no-incremental 0 错误 0 警告、架构测试 86/86、受影响 Desktop VM 单测 15/15。报告：`docs/compose/reports/a31-c3c-desktop-catalog-merge.md`。✅ **C-3d 完成（2026-08-09）**——Desktop IApiClient Identity 侧合并：`IApiClientAuth`（6 方法）+`IApiClientUsers`（14 方法）→`IApiClientIdentity`（20 方法，继承 `IEntityApiSegment` 保留 DIM 转发）；`IApiClient.Auth/Users`→`Identity`（RefitApiClient/HttpClientApiClient/SwitchingApiClient 同步）；实现合并 `AuthApiClient+UserApiClient→IdentityApiClient`（Refit 包装 IAuthApi+IUserApi）、`AuthHttpApiClient+UsersHttpApiClient→IdentityHttpApiClient`（HttpClient，路由 `/api/v1/auth/*`+`/api/v1/users/*` 保持）；消费方更新（UserRepository 9 处 `_apiClient.Users.*`→`_apiClient.Identity.*` + 基类构造；AuthenticationService/LogoutService/TokenLifecycleService/AuthHealthService 注入 `IApiClientAuth`→`IApiClientIdentity`）；删旧文件 6（IApiClientAuth/IApiClientUsers/AuthApiClient/UserApiClient/AuthHttpApiClient/UsersHttpApiClient）；测试同步 4 文件（AuthEventPublishing/LogoutService/HttpClientApiClientEnvelope/SwitchingApiClient，`.Auth`/`.Users`→`.Identity`）；文档同步（Contracts README/03-patterns/05-dual-mode/15-integration-plan/DP10 注释）。验证：build --no-incremental 0 错误 0 警告、架构测试 86/86、受影响 Desktop 单测 32/32。报告：`docs/compose/reports/a31-c3d-desktop-api-client-identity-merge.md`。 | 6-10d（不含合并） |
 
 ### B 类 — 产品功能
 
 | ID | 任务 | 内容 | 依赖 | 状态 | 预估 |
-|----|------|------|------|------|------|
+| ---- | ------ | ------ | ------ | ------ | ------ |
 | B-01 | P0 安全修复 | 明文密码/Shell Bug/死锁 (7 项) | 无 | ✅ | 待定 |
 | B-02 | 配置修改 API | ConfigurationController 添加 PUT | 无 | ✅ | 1d |
-|| B-03 | Excel 导出/导入 | Herbs/Formula/Patients (前端 Excel ↔ WebApi JSON) | 无 | ✅ | 2-3d |
+| | B-03 | Excel 导出/导入 | Herbs/Formula/Patients (前端 Excel ↔ WebApi JSON) | 无 | ✅ | 2-3d |
 | B-04 | 报表增强 | 图表/多维度/时间范围 | 无 | ✅ `cab959dc1` | 2d |
 | B-05 | 配置中心 UI | SystemSettingsView 增强（服务器配置区域） | B-02 | ✅ `c518318ed` | 1d |
 | B-06 | 数据备份/恢复 | SQL Server 备份+恢复 | 无 | ⬜ | 1.5d |
@@ -101,7 +101,7 @@
 ### C 类 — 运维部署
 
 | ID | 任务 | 内容 | 依赖 | 状态 | 预估 |
-|----|------|------|------|------|------|
+| ---- | ------ | ------ | ------ | ------ | ------ |
 | C-01 | Desktop 测试修复 | ~104 个失败测试 | 需运行中 WebAPI | ⬜ | 1d |
 | C-02 | systemd 服务 | 开机自启 | 无 | ⬜ | 0.25d |
 | C-03 | 部署脚本清理 | 删除 .worktrees/ 7 个孤儿 checkout + 重复脚本 | 无 | ✅ `85b2d16c5` | 0.25d |
@@ -111,7 +111,7 @@
 ### D 类 — 医案/挂号专项（2026-08-03 批次）
 
 | ID | 任务 | 内容 | 依赖 | 状态 | 预估 |
-|----|------|------|------|------|------|
+| ---- | ------ | ------ | ------ | ------ | ------ |
 | D-01 | 接诊链修复 | StartVisit 原子建医案（D8） | 无 | ✅ | — |
 | D-02 | QuickVisit Desktop 接线 | US-REG-002 激活 | D-01 | ✅ | — |
 | D-03 | 医案状态机重构 | 取消=物理删 / 仅 Completed 打印 / 打印保护简化 / 堵绕过 | 无 | ✅ | — |
@@ -119,7 +119,7 @@
 ### E 类 — 规则体系优化（2026-08-04）
 
 | ID | 任务 | 内容 | 依赖 | 状态 | 预估 |
-|----|------|------|------|------|------|
+| ---- | ------ | ------ | ------ | ------ | ------ |
 | E-01 | coder 层 | 角色 AGENTS.md 精简 + Skill v0.6.0 SSOT | 无 | ✅ | — |
 | E-02 | 项目层 | 项目 AGENTS.md 精简为入口+引用 | E-01 | ✅ | — |
 | E-03 | 总账拆分 | 13a/13b/13c 拆分 | E-02 | ✅ | — |
@@ -128,7 +128,7 @@
 ### F 类 — 遗留任务归一（2026-08-04，来自 14-implementation-tasks 归档）
 
 | ID | 任务 | 内容（原 TASK） | 依赖 | 状态 | 预估 |
-|----|------|------|------|------|------|
+| ---- | ------ | ------ | ------ | ------ | ------ |
 | F-01 | FeatureToggle 开关接入 | TASK-03：14 个功能开关仅 1 个被检查，需在各模块 Service/ViewModel 接入 | 无 | ⬜ | 4-6h |
 | F-02 | 桌面 Mapper 统一 | TASK-05：未使用的 PatientMapper + MedicalCaseMapper DI 不一致 | 无 | ⬜ | 1-2h |
 | F-03 | LocalData Mapper Target 策略 | TASK-06：统一 RequiredMappingStrategy.Target | 无 | ⬜ | 1-2h |
@@ -143,7 +143,7 @@
 ### G 类 — 文档审阅收敛（2026-08-04，来自 LLM Wiki 审阅 207 条未解决项）
 
 | ID | 任务 | 内容 | 依赖 | 状态 | 预估 |
-|----|------|------|------|------|------|
+| ---- | ------ | ------ | ------ | ------ | ------ |
 | G-01 | 矛盾统一（27 条） | 按 §九 权限终局裁决统一 US-MC-001/药材/验方/D7/医案取消/SQLite/Prism/Token 等文档表述；6 条核实代码 | 无 | ✅ `21a93c294`+`be0f84047`+`a9dcbea56`+`b49960ac7` | 0.5d |
 | G-02 | docs 缺口补写（59 条） | 离线密码重置方案/令牌族撤销表结构/DPAPI 迁移/错误码映射/本地威胁模型等 | G-01 | ✅ `1ccf11537`+`8ca67ea39`（真实缺口 7 项已补；噪声项随 llm-wiki 取消剔除；代码待实现项移交批次 D）｜批次 D 已完成：D1 离线重置哈希改 Identity PBKDF2 `bea06505b` + D2 配置文档对齐 `4f7a9563c` | 1d |
 | G-03 | SSOT 收敛 | 权限矩阵权威引用统一（04-permissions）、跨文档对齐、wiki 同步 | G-01 | ✅ `861818236`（批次 A/B/D 完成；批次 C 技术栈/CodeStyle 评估保留，术语专项留 P2） | 0.5d |
@@ -153,8 +153,9 @@
 ## 七、执行阶段
 
 ### Phase 0: 安全/基础设施 (P0，最高优先级)
+
 | 序号 | 任务 | 预估 | 状态 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | 1 | B-01 P0 安全修复 (7项) | 待定 | ✅ |
 | 2 | B-02 配置修改 API | 1d | ✅ |
 | 3 | A-12 AuthService 收敛 | 0.5d | ✅ 已完成 |
@@ -163,8 +164,9 @@
 | **小计** | | **~2d + 安全修复** | **5/5 完成** |
 
 ### Phase 1: 基础清理 (低风险)
+
 | 序号 | 任务 | 预估 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 1 | A-01 文档清理 | 0.5d |
 | 2 | A-02 死代码删除 | 0.5d |
 | 3 | A-07 CrossModule 死方法 | 0.25d |
@@ -174,8 +176,9 @@
 | **小计** | | **~3d** |
 
 ### Phase 2: 架构优化 (为功能扫清障碍)
+
 | 序号 | 任务 | 预估 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 1 | A-03 MediatR 简化 | 1d |
 | 2 | A-04 超大类型拆分 | 2d |
 | 3 | A-06 Repository 泛型化 | 1d |
@@ -184,8 +187,9 @@
 | **小计** | | **~8d** | **5/5 完成** |
 
 ### Phase 3: 核心功能 (业务价值最高)
+
 | 序号 | 任务 | 预估 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 1 | B-03 Excel 导出/导入 | 2-3d |
 | 2 | B-04 报表增强 | 2d | ✅ |
 | 3 | B-05 配置中心 UI | 1d |
@@ -194,8 +198,9 @@
 | **小计** | | **~8d** | **5/5 完成** |
 
 ### Phase 4: 高级功能 (依赖 Phase 2/3)
+
 | 序号 | 任务 | 预估 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 1 | B-08 Desktop 发布包 | 2d |
 | 2 | B-09 自动更新 | 2d |
 | 3 | B-10 SignalR | 3d | ✅ |
@@ -204,8 +209,9 @@
 | **小计** | | **~8.5d** |
 
 ### Phase 5: 收尾
+
 | 序号 | 任务 | 预估 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 1 | C-01 Desktop 测试修复 | 1d |
 | 2 | C-02 systemd 服务 | 0.25d |
 | 3 | C-05 文档同步 | 0.5d |
@@ -215,7 +221,7 @@
 ### 总预估
 
 | 阶段 | 预估 | 累计 |
-|------|------|------|
+| ------ | ------ | ------ |
 | Phase 0 安全/基础设施 | 2d+ | 2d+ |
 | Phase 1 基础清理 | 3d | 5d+ |
 | Phase 2 架构优化 | 8d | 13d+ |
@@ -232,7 +238,7 @@
 > 每完成一项，更新: ⬜→✅ + Commit SHA
 
 | 任务 | 状态 | 完成日期 | Commit |
-|------|------|---------|--------|
+| ------ | ------ | --------- | -------- |
 | A-01 文档清理 | 🟡 | 2026-08-03 | 待提交（断链 21→0、安全脱敏、08-03 定案传播；剩归档/存根项） |
 | A-02 死代码删除 | ✅ | 2026-08-05 | `5f89e58ec` — 删除 5 文件（-896 行）+ 8 死方法；保留 PasswordHelper/SystemLog/IEditable/NotSupportedException 桩 |
 | A-03 MediatR 简化 | ✅ | 2026-08-05 | `29a4675af` `c5aca4e04` `741ca8735` `4b97bcfde` `5172ff9ca` — MedicalCase 全部 Handler/Command/Query/Validator 删除（40 文件，-1285 行）；Server/LocalWebAPI/Base controller 直连 Service；AddMediatR 移除；架构测试更新为断言统一验证器 |
@@ -247,7 +253,7 @@
 | A-12 AuthService 收敛 | ✅ | 2026-08-04 | 代码已通过 IAuthSessionRepository（RefreshTokenCommandHandler 无直接 DbContext） |
 | B-01 P0 安全修复 | ✅ | 2026-08-04 | `831702b51` `cb4d3e6b9` |
 | B-02 配置修改 API | ⬜ | — | — |
-|| B-03 | Excel 导出/导入 | ✅ | 2026-08-05 | `4d70b487a` `0fdfde0d3` `bed75026e` `709bad616` `64c58c59a` `8968fd130` `1bc468851` — NPOI 2.7.2（中央版本钉）；ExcelService 通用三方法（ExportToExcel/GenerateTemplate/ParseExcel，XSSFWorkbook）+ 4 单测；WebApi 保留 JSON 批量导入端点（`POST /batch-import`），Excel 格式转换由前端 Desktop 负责；患者新增 BatchImportPatientsCommand（Skip/Update/Error 策略，与药材命令同构）；Herbs/Formulas Excel 导入复用现有 BatchImport 命令（拼音生成/药材名匹配/验方校验）；build --no-incremental 0 错误 0 警告，架构测试 92/92 |
+| | B-03 | Excel 导出/导入 | ✅ | 2026-08-05 | `4d70b487a` `0fdfde0d3` `bed75026e` `709bad616` `64c58c59a` `8968fd130` `1bc468851` — NPOI 2.7.2（中央版本钉）；ExcelService 通用三方法（ExportToExcel/GenerateTemplate/ParseExcel，XSSFWorkbook）+ 4 单测；WebApi 保留 JSON 批量导入端点（`POST /batch-import`），Excel 格式转换由前端 Desktop 负责；患者新增 BatchImportPatientsCommand（Skip/Update/Error 策略，与药材命令同构）；Herbs/Formulas Excel 导入复用现有 BatchImport 命令（拼音生成/药材名匹配/验方校验）；build --no-incremental 0 错误 0 警告，架构测试 92/92 |
 | B-04 报表增强 | ✅ | 2026-08-06 | `cab959dc1` — 新增 5 个端点：`GET /reports/trend/income`（挂号费/药费/合计折线，granularity=day/week/month）、`GET /reports/trend/consultations`、`GET /reports/doctor-performance`（问诊数/挂号费/药费/平均处方金额）、`GET /reports/herbs/ranking`（top 默认 10，复用药材使用聚合查询）、`GET /reports/patient-flow`（新患者/回头患者，按患者首次完成就诊归类）；新增 `ReportGranularity` 枚举 + 4 个趋势/绩效 DTO（药材排行复用 `HerbUsageItemDto`）；仓库按日 `GROUP BY CONVERT(date, CreatedAt)` 聚合下推 SQL，服务层 `ReportTimeBuckets` 按周（周一起）/月（1 号起）汇总；修复存量缺陷 `GetMedicineFeeTotalAsync` 的 `pi.Amount` 计算属性 EF 无法翻译（改 `UnitPrice * Dosage`，否则日收入药费运行时必炸）；`ReportRepository`/`ReportService` 由 internal 改 public（与 Herbs/Auth 等模块可测类惯例一致，供单测直构）；测试项目补引 `LYBT.Module.Reports`；新增 14 单测（EF InMemory 真实实现零 mock）全过 | |
 | B-05 配置中心 UI | ✅ | 2026-08-07 | `c518318ed` — 新增 `IConfigurationApi` Refit 接口（GET/PUT/validate）；`SystemSettingsViewModel` 新增服务器配置属性（ServerAppName/ServerAppVersion/ServerEnvironment）+ LoadServerConfig/SaveServerConfig/ValidateConfig 三个命令；`SystemSettingsView.xaml` 新增「服务器配置」Border 区域（应用名称可编辑、版本号/环境只读、保存/验证/刷新按钮）；`UnifiedApiClientExtensions` 注册 IConfigurationApi |
 | B-06 数据备份/恢复 | ⬜ | — | — |
@@ -309,13 +315,14 @@
 | A-23 越层修复 + 守卫补全 + 孤儿类清理 | ✅ | 2026-08-08 | 3 独立 commit：A-23a `d3290b321`（3 VM 真越层修复：AccountSettingsViewModel IApiClientUsers→IUserService、PatientSelectionViewModel IApiClientPatients+IApiClientMedicalCases→IPatientService+IMedicalCaseQueryService、SysadminHomeViewModel IApiClientAuth→新建 IAuthHealthService；Desktop IMedicalCaseQueryService/IMedicalCaseRepository 链补 GetPendingCasesAsync；行为等价）/ A-23b `1198cace6`（新增架构守卫 DP10：Desktop ViewModel 禁止注入 IApiClient* 子接口，豁免统一 IApiClient 过渡，架构测试 85→86）/ A-23c `4db419c11`（孤儿类 D=29 删除：Patients 死组件链 12 类 + Infrastructure 9 + Foundation 2 + Formula 2 + Contracts/Controls/MedicalCase 各 1 + Shared.Configuration 1，-2780 行；同步清理：ShowUnfinishedCaseDialogAsync 死链、App.xaml.cs/ServiceCollectionExtensions/PatientsModule 注册孤儿、ApiRouterTests/MedicalCaseChangeTrackerTests 死测试、LoggingHttpHandler 下沉 Infrastructure→Foundation（补 Shared.Logging 引用）、CustomControlArchTests SuggestionType 白名单）。每项独立验证 build --no-incremental 0 错误 0 警告 + 架构测试 86/86 + 相关单测与基线一致（Desktop 存量失败为环境项：STA/LocalDB，stash 基线复现一致） |
 | A-24 C 级清理批次（Server 死方法 22 类 + 机制残留 9 簇） | ✅ | 2026-08-08 | 3 独立 commit：A-24-1 `ba297ff2d`（Server 死方法清理 22 类删方法不删类：FormulaDetailDto.GetHerbNamesList / BaseCrudController.ExecuteBatchStatusAsync / BaseClaimsHelper.IsAdmin·ParseUserRole / QueryablePagingExtensions.SelectAsync / ProblemDetailsConfiguration.UseStatusCodePagesWithProblemDetails / AuthSessionRepository+IAuthSessionRepository 2 死方法 / UserRepository+IUserRepository 2 死方法 / PatientCrossModuleService+IPatientCrossModuleService 3 死方法 / HerbRepository+IHerbRepository 3 死方法+测试区块连带 / FormulaRepository+IFormulaRepository 2 死方法 / MedicalCaseCommandService 6 死方法+PrescriptionService 4+2 连带孤儿+QueryService/StateService/Repository 死方法+4 接口瘦身 / RegistrationMapper.ToEntity；Formula/Herb 实体 RemoveHerb/MarkShared/UpdatePrice 复证当前代码已不存在无需操作，-1175 行）/ A-24-2 `88aca1280`（机制残留 9 簇：AddSharedLogging 双重载删扩展文件(宿主手工注册)、IApiService/ApiService/RequestDeduplicator 删类+注册+ArchTests 白名单、3 惰性 AuthEvents(LoginSucceeded/LoginFailed/SessionExpired+Payload+2 枚举)删、Tests.Desktop Traits 18 类型删 Traits.cs、UserJourneyTestBaseShared 0 子类删(保留 UserJourneyTestBase 12 消费者)、LocalWebApiProgram.RunAsync 死入口删、UnfinishedCaseChoice 复证 A-23c 已删、LoggingHttpHandler 下沉验证完成、Registration 命名空间复数漂移不改记录 P2，-1013 行）/ A-24-3（纯验证无代码 commit：DP10 专项 1/1 + 架构测试全量 86/86 无新增违规，C-2 VM 越层 6 处已处理——A-18 豁免 3 处 + A-23a 已修 3 处）。每项独立验证 build --no-incremental 0 错误 0 警告 + 架构测试 86/86 + 相关单测与基线一致（Server 228/228 + Desktop 相关测试失败与基线一致为 STA 环境项） |
 | A-25 遗留问题解决（项目名统一复数 + 本地样例中文化） | ✅ | 2026-08-08 | 2 独立 commit：A-25-1 `38499d888`（Desktop Registration 项目名统一复数：目录/csproj/AssemblyName/RootNamespace/sln L92/3 处 ProjectReference(Shell·Clinical·Tests.Desktop)/架构测试 Assembly.Load 4 处全量同步 `LYBT.Desktop.Registrations`，README/AGENTS.md 模块清单同步；纯项目名级重命名不动业务逻辑，代码命名空间已是复数无需改，对齐 Q-03 先例）/ A-25-2 `7729d5ae0`（LocalWebApiSeedData 英文样例中文化：Ginseng→人参、Adaptogen→补气药、Unit g→克、Sample Formula→示例验方、Sample Patient→示例患者，对齐代码库既有中文约定；Herbs/Formulas 测试注释 + LocalWebAPI README 同步）。每项独立验证 build --no-incremental 0 错误 0 警告 + 架构测试 86/86 + 相关单测（A-25-1: RegistrationMasterDetailViewModelTests 6/6；A-25-2: LocalWebAPI 集成测试 12/12 失败为**既有测试宿主缺口**——`LocalWebApiControllerTestBase` 缺 AddMediatR+8 模块服务注册（仅真实宿主 LocalWebApiProgram.CreateApplication 有），控制器 ISender 激活失败→登录 500，stash 基线复现一致与改动无关，记录 **P2 待派单**：测试基类应复用 CreateApplication 注册） |
+| Entity/DTO/Model 重构第一批（任务书 entity-dto-refactor-batch1——ADR adr-entity-dto-model-refactor.md） | ✅ | 2026-08-14 | **DTO 移除脱节字段 + 命名统一**：① FormulaInputDto/DetailDto 移除幻影字段（Description/Instructions/Preparation/Contraindications/Source——Entity 无，审计 P1）；② FormulaHerbItemDto 移除 Price/UnitPrice/SortOrder/SpecialInstructions + HerbDetailDto 嵌套导航（改 HerbId+HerbName 冗余；HerbNames 改用 HerbName）；FormulaHerbItemInputDto Preparation 删除（与 ProcessingMethod 重复，P5）；③ ConsultationDetailDto 移除父聚合字段（PatientId/UserId/PatientName/DoctorName——Mapper Enrich 同步删，P10）；④ PrescriptionDetailDto 移除伪字段 Status（P8）；⑤ PrescriptionItemDto Notes→Remark 统一（删别名，P9）。**Mapper 同步修复（Mapperly 编译时检查）**：MedicalCaseMapper（4 IgnoreTarget+Enrich 赋值删、Status/Notes Ignore 删）、ConsultationMapper（PatientName/DoctorName 归一化删 + 4 IgnoreSource 删）、PrescriptionMapper（VM Status 删 + IgnoreSource 删）、FormulaDetailModelMapper（8 失效 Ignore 属性删 + ToDtoCore 保留 Indication Ignore）。**Desktop 模型对齐**：FormulaDetailModel.Source / ConsultationItem 4 字段（DisplayText 改纯诊断）/ PrescriptionItemViewModel.Status 删除。**顺手修复**：MapHerbs 原把 Preparation 位置参数误当 usage 传入（改 h.Usage——隐 bug）；LocalWebAPI CloneFormula 删 Description 赋值。**验证**：构建 0/0；Server 736/736；架构 87/87；Desktop 受影响单测 71/71（存量环境失败 STA/SysAdmin 登录——stash 基线复现一致与改动无关）。**有意保留**：FormulaImportItemDto/FormulaHerbImportItemDto（老系统迁移专用 DTO 保留源字段）；FormulaHerbItemInputDto.SortOrder；PrescriptionItemDto.Role/Subtotal/TotalPrice/TotalWeight（运行时计算）；MedicalCase.UserId vs Registration.DoctorId（ADR §5） |
 
 ---
 
 ## 九、关键决策记录
 
 | 日期 | 决策 | 理由 | 决策人 |
-|------|------|------|--------|
+| ------ | ------ | ------ | -------- |
 | 2026-08-02 | MediatR 保留用于复杂业务，trivial CRUD 改直接注入 | 减少不必要的间接层 | 产品负责人 |
 | 2026-08-02 | 架构测试约束 P07/P08/P10 不可违反 | 强制分层边界 | 技术总监 |
 | 2026-08-02 | 实体源以 Shared/LYBT.Entities 为准 | 18 个项目已引用，变更成本最低 | 技术总监 |
@@ -342,7 +349,7 @@
 | 2026-08-05 | **WebApi 架构修复（03-server.md 与代码全面对齐，commit `59be25317` `7184f96e8`）**：14 项发现全部修正——P0-1 ReportsController 直连 Repository 违规 → 新增 `IReportService`/`ReportService`（internal，与 ReportRepository 一致），Controller 改注入 Service 接口，满足「Controller 注入 Service 接口，禁止注入 Repository/DbContext」规则；P0-2 架构模式总述重写（6 模块 MediatR CQRS + MedicalCase Service 拆分 + Reports 只读聚合）；其余 12 项纯文档：模块目录结构三形态/模块清单跨模块通信方向/MedicalCase 5 接口清单（删 Permission/Audit/Rules）/Controller 规范示例/新增模块独立 DbContext 小节/错误码表（删 7xxxx 数据同步、增 8xxxx 挂号 801xx~803xx、枚举指向 ErrorCode.cs）/BaseService 实际状态（仅 ILogger 注入，仅 MedicalCase 三 Service 继承）/BaseRepository 5 方法（删 21 方法清单与分页模板方法段）/Entities 移出 Core 至 Shared 层及 10 目录/跨模块服务方向（ICrossModuleService 为统一接口非 [Obsolete]）/错误码枚举位置等。架构测试 `ServerAssemblies` 补入 `LYBT.Module.Reports`/`LYBT.Module.Registration`（P0-1 漏检根因，补后 92/92 全通过）。验证：build --no-incremental 0 错误 0 警告 | 文档-代码一致性维护（§10.1 规则）；分层边界强制；计划文档归位 docs/compose/plans/（git 识别为 rename） | 技术总监 |
 | 2026-08-06 | **「以文档为准」强制规则确立 + 文档目录优化**：① 规则更新——AGENTS.md 新增强制规则 3「以文档为准」：文档定义设计态、代码实现当前态，冲突时先更新文档再改代码，文档是 SSOT，禁止引入权威文档未定义的设计；skill lybtzys-coder-rules 升级 v0.9.0（新增同规则 + 文档查询指南「信息点→权威文档」表 + WHERE TO LOOK 升级）。② 目录优化——根目录 2 个 00- 治理文件归位 `docs/00-governance/`（01-naming-convention / 02-ssot-architecture）；删除 15 个已完成使命的历史报告（reports/ 7 + compose/reports/ 4 + compose/plans/ 已完成 4：a06/b02/b03/webapi-arch-fix），决策痕迹均已在本 §九；保留活跃文档（R10 spec 被 4 处引用、code-gap-fix-list 被 03-users 引用、v1.0-completion-plan 进行中）；文档总数 158→143。③ AI 查询指南——docs/README.md v4.0 新增「🤖 AI 查询指南」章节（11 个信息点→权威文档映射），各目录 README 补「权威文档在哪」提示。死链修复 5 处（12-permissions-matrix ×2、master-plan ×2、new-session-kickoff、02-requirements README、archive 存量 1）。验证：链接检查 566 个仅 1 存量已修 | 消除规则缺失（以文档为准未成文）+ 目录零散（00- 孤悬）+ 计数失真（146 vs 158）+ AI 无查询入口；方便 AI 与 Mimo 秒查文档 | 技术总监 |
 | 2026-08-06 | **WebApi 全面集成测试完成（100% 端点覆盖 + 100% 通过）**：按 13b-api-endpoints 的 104 端点完善 newman 集合（155→312 请求，新增批量操作/状态流转/报表新端点/配置/诊断等测试；修正 reports 路径格式 daily-income→daily/income）。**修复 5 个 P0 Bug**：① `[FromBody] object dto` + `is not` 反序列化失败 → 改 `override` + JsonSerializer + `PropertyNameCaseInsensitive`（`f02decba4`/`680045593`/`2d0dadf51`）；② `BaseRegistrationsController.GetList` 缺 `override` → 路由 AmbiguousMatchException 500（`680045593`）；③ JsonSerializer 大小写敏感致 DTO 全空（`2d0dadf51`）；④ **反序列化绕过 DataAnnotations 验证**（空 body `{}` 能创建挂号）→ 新增 `TryDeserializeDto<T>` 手动验证（`59b7ff6`）；⑤ 用户创建空 RealName 抛 ArgumentException 500 → Handler 前置 Result.Failure 检查（`795ada4bb`）。**测试集合优化**：移除 Deploy Restart 测试（该端点调用 `_lifetime.StopApplication()` 真实重启服务致测试崩溃）；负面登录测试移到最后（速率限制 5 次/60s 阻塞后续阶段）。**最终结果**：8 个文件夹（Phase 1/1.2/1.3/2/3/4 + Global + Negative）共 312 请求 335 断言，**335/335 全部通过（100%）**。验证：build --no-incremental 0 错误 0 警告、架构测试 83/83 | 服务器稳定性根因：Deploy Restart 测试自杀式重启；FluentValidation 验证器注册但无 MediatR pipeline 执行（系统级验证缺口，本次以 TryDeserializeDto 手动验证兜底） | 技术总监 |
-| 2026-08-06 | **FluentValidation pipeline + RateLimiting 可配置化（遗留修复）**：① **ValidationBehavior**——创建 `LYBT.Infrastructure.Validation.ValidationBehavior<TRequest,TResponse>`（MediatR `IPipelineBehavior`），自动执行 `IValidator<TRequest>` 验证器，失败抛 `FluentValidation.ValidationException`；在 Auth/Users/Patients/Herbs/Formula/Registration 6 个模块 `AddMediatR` 注册 `AddOpenBehavior(typeof(ValidationBehavior<,>))`，LocalWebAPI 同步注册（commit `b386e17c5`）。`SystemExceptionHandler` 对 `ValidationException` 已返回 400 + 验证错误信息（`validationErrors` 字段因 `DefaultIgnoreCondition=WhenWritingNull` 匿名类型序列化问题未显示，但 message 已含具体字段错误）。② **RateLimiting 可配置化**——代码已有 `Security:RateLimiting:Enabled` 配置项（`ApiServiceCollectionExtensions.cs:172`），在测试服务器 `start.sh` 添加 `export Security__RateLimiting__Enabled=false` 禁用限流（生产环境默认开启）。验证：连续 10 次登录全部 200（无 429）、POST /users body=`{"userName":"ab"}` 返回 400 "用户名长度必须在3-32个字符之间"（非 500）、newman 全量 335/335 断言 100% 通过无回归。commit `b386e17c5`（ValidationBehavior）+ `41f5ab543`（validationErrors 详情）| 修复系统级验证缺口（FluentValidation 验证器注册但无 pipeline 执行）；RateLimiting 测试环境可禁用（避免速率限制阻塞自动化测试） | 技术总监 |
+| 2026-08-06 | **FluentValidation pipeline + RateLimiting 可配置化（遗留修复）**：① **ValidationBehavior**——创建 `LYBT.Infrastructure.Validation.ValidationBehavior<TRequest,TResponse>`（MediatR `IPipelineBehavior`），自动执行 `IValidator<TRequest>` 验证器，失败抛 `FluentValidation.ValidationException`；在 Auth/Users/Patients/Herbs/Formula/Registration 6 个模块 `AddMediatR` 注册 `AddOpenBehavior(typeof(ValidationBehavior<,>))`，LocalWebAPI 同步注册（commit `b386e17c5`）。`SystemExceptionHandler` 对 `ValidationException` 已返回 400 + 验证错误信息（`validationErrors` 字段因 `DefaultIgnoreCondition=WhenWritingNull` 匿名类型序列化问题未显示，但 message 已含具体字段错误）。② **RateLimiting 可配置化**——代码已有 `Security:RateLimiting:Enabled` 配置项（`ApiServiceCollectionExtensions.cs:172`），在测试服务器 `start.sh` 添加 `export Security__RateLimiting__Enabled=false` 禁用限流（生产环境默认开启）。验证：连续 10 次登录全部 200（无 429）、POST /users body=`{"userName":"ab"}` 返回 400 "用户名长度必须在3-32个字符之间"（非 500）、newman 全量 335/335 断言 100% 通过无回归。commit `b386e17c5`（ValidationBehavior）+ `41f5ab543`（validationErrors 详情） | 修复系统级验证缺口（FluentValidation 验证器注册但无 pipeline 执行）；RateLimiting 测试环境可禁用（避免速率限制阻塞自动化测试） | 技术总监 |
 | 2026-08-07 | **WebApi 控制器代码质量批次（commit `c094341af`）**：① HealthController `Get`/`Ping` 去重——提取私有助手 `BuildHealthStatus(status)` 统一构建 `HealthStatusDto`（Status/Timestamp/Version）；② RegistrationsController `QuickVisit`/`Create`/`StartVisit`/`Cancel` 删除误导性「添加 OutputCache 和 RateLimiting」注释（实际无 `[OutputCache]`，仅保留功能描述）；③ AuthController 登录/Token 刷新 401 分支简化（`StatusCode(httpStatus)` 等价于 `Unauthorized`）；④ Formulas/Herbs/Patients `Create`/`Update` 缩进修复。验证：`dotnet build LYBTZYZS.sln --no-incremental` 0 错误 0 警告 | 消除重复代码；注释与实现一致性（未启用的 OutputCache 不应声称已添加）；统一错误响应构造 | 技术总监 |
 | 2026-08-07 | **P-02 医案查询 DB 层分页 + Q-02 TryDeserializeDto 双轨验证去重（commit `1ee490e5c`）**：P-02——`MedicalCaseQueryService` 4 处「全量 `ToListAsync` + 内存 Skip/Take」改消费 Repository DB 层分页：`SearchMedicalCasesAsync`→`QueryPagedAsync`、`QueryByPatientAsync`→`GetByPatientIdPagedAsync`、`GetPatientConsultationsAsync`/`GetPatientPrescriptionsAsync`→新增 `GetPatientConsultationsPagedAsync`/`GetPatientPrescriptionsPagedAsync`（沿用 `GetDetailQuery` 含 Include 预加载，DB 层过滤未删除的 Consultation/Prescription 并按各自 CreatedAt 倒序，TotalCount 由 DB 返回）。Q-02——6 个 Controller 11 处 `[FromBody] object dto` + `TryDeserializeDto` 手动反序列化+验证改为强类型绑定 `[FromBody] TInputDto`，删除 `TryDeserializeDto` 扩展方法（ControllerBaseExtensions）；`BaseCrudController` 删除 `Create`/`Update` virtual 模板方法（保持非泛型，A-01/P09c 按类名匹配的架构测试不受影响），各 Controller 去 `override` 自行声明；模型验证失败由 `[ApiController]` 自动 400 处理（`InvalidModelStateResponseFactory` 已输出 ApiResponse 格式，与旧 ValidationFail 契约一致）；Desktop LocalWebAPI `MedicalCasesController.Create`/`RegistrationsController.Create` 同模式 override 一并修正（后者原委托 `base.Create` 运行期必抛 NotSupportedException，改为直接发送 `CreateRegistrationCommand`；前者原 `dto is not MedicalCaseInputDto` 对 `object` 绑定恒真致该端点恒 400，强类型后恢复正常）。Desktop 客户端 camelCase + 服务端 `PropertyNameCaseInsensitive=true` 已验证兼容。验证：`build --no-incremental` 0 错误 0 警告、架构测试 83/83、MedicalCase 单测 77/77 | 消除双重序列化开销与患者历史全量加载内存膨胀；验证规则回归框架单轨（DataAnnotations 由模型绑定执行，FluentValidation 由 ValidationBehavior 执行） | 技术总监 |
 | 2026-08-07 | **Q-01 批处理 Handler 泛型化（commit `da7e3b162` `4ced30601` `8c3cb01ce`）**：新建 `BatchOperationHandlerBase<TEntity>`（LYBT.Infrastructure/BatchOperations，模板方法模式），统一 循环→GetById→前置校验→变更→Update→累计 BatchOperationResultDto 骨架；Users BatchDelete/Enable/Disable + Patients/Herbs/Formula BatchDelete 共 6 个 Handler 继承基类（净 -147 行）；差异点经抽象/virtual 钩子保留（自删/IsSysAdmin/无权限校验、医案引用检查、缓存失效、领域事件派发、IsSuccess 语义、消息文案、异常捕获类型）；BatchImport 3 个 Handler 及 Herbs/Formula Service 版 BatchEnable/Disable（非 Handler）不在范围；已知微小差异：失败项 Name 填充（自删分支）、异常文案 ex.Message 替代固定"删除操作失败"；验证：build --no-incremental 0 错误 0 警告、架构测试 83/83 | 与 A-06 同策略：泛型化只用于形状一致的 Handler，不硬套异形实体；行为等价优先 | 技术总监 |
@@ -369,12 +376,13 @@
 | 2026-08-14 | **架构 P10 修复 + 命名 P0 统一**：① UserService 移除 IdentityDbContext 直注——凭证/登录状态 4 方法移入 IUserRepository（P10：Service 不直连 DbContext）；② IdentityController→UsersController 改名（文件+类+引用，路由不变）；③ 5 Controller 类级路由改 [controller]（路径零变化）。N-02（Formulas 硬编码改相对）评估后不做——前端 Refit 硬编码 /api/v1/formulas 大量调用，改类级前缀破坏 API，外科手术原则不牺牲功能为命名风格 | P10 合规（Service 不直连 DbContext）+ 命名对齐职责；路由声明统一消除硬编码差异 | 技术总监 |
 | 2026-08-14 | **医案分页 TotalCount + 命名 P1**：① SearchMedicalCasesAsync 内存过滤 doctorId （CreatedBy）下推 QueryPagedAsync DB 层——TotalCount 分页总数修正；② {id:guid}→{id} 统一（4 文件 19 处——模型绑定自动验证 Guid）；③ Local Configuration/Health Controller 方法名对齐 Server（GetAll→GetConfiguration 等——Server 权威源，HTTP 路由不变） | 分页准确性（DB 下推保证 TotalCount 与页数据一致）+ 命名双端统一 | 技术总监 |
 | 2026-08-14 | **Reports 医生绩效单次查询（4→1）**：GetDoctorPerformanceAsync 4 次独立查询合并为 1 次——按医生 GROUP BY + 各指标相关子查询聚合（挂号费/药费/处方数）。初版 LEFT JOIN 预聚合在 EF InMemory 翻译缺陷（Nullable must have value）——改用 SelectMany 相关子查询（decimal?）Sum ?? 0，InMemory/SQL 均可翻译。14/14 测试含组合计数/平均处方价/零处方 | 性能：4 轮 DB 往返 → 1 轮；查询模式兼顾 InMemory 测试可验证 | 技术总监 |
+
 ## 十、维护规则（强制）
 
 ### 10.1 文档-代码一致性
 
 | 时机 | 动作 |
-|------|------|
+| ------ | ------ |
 | **Session 启动** | 读本文件接上进度 |
 | **代码变更后** | 检查本文档是否需要同步更新 |
 | **功能完成** | 更新状态表 ⬜→✅ + Commit SHA |
@@ -384,7 +392,7 @@
 ### 10.2 相关文档索引
 
 | 文档 | 路径 | 用途 |
-|------|------|------|
+| ------ | ------ | ------ |
 | ~~产品功能清单~~ | `docs/02-requirements/archive/14-feature-inventory.md` | 已过时归档（2026-08-04），以各模块 US 需求文档为准 |
 | PRD | `docs/02-requirements/01-prd.md` | 产品需求文档 |
 | 数据模型 | `docs/03-architecture/13a-data-model.md` | 核心实体 + 状态枚举 |

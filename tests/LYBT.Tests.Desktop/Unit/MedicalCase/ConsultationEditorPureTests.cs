@@ -28,14 +28,9 @@ public class ConsultationEditorPureTests
     public void InitializeForNewCase_sets_patient_fields_and_resets_diagnosis()
     {
         var sut = CreateSut();
-        var patientId = Guid.NewGuid();
-        var userId = Guid.NewGuid();
 
-        sut.InitializeForNewCase("Zhang San", patientId, userId);
+        sut.InitializeForNewCase();
 
-        sut.Consultation.PatientName.Should().Be("Zhang San");
-        sut.Consultation.PatientId.Should().Be(patientId);
-        sut.Consultation.UserId.Should().Be(userId);
         sut.Consultation.MedicalCaseId.Should().Be(_context.MedicalCaseId);
         sut.Consultation.PresentIllness.Should().BeNull();
         sut.Consultation.TcmDiagnosis.Should().BeNull();
@@ -49,7 +44,6 @@ public class ConsultationEditorPureTests
         {
             Id = Guid.NewGuid(),
             MedicalCaseId = Guid.NewGuid(),
-            PatientId = Guid.NewGuid(),
             PresentIllness = "headache",
             TongueDiagnosis = "red tongue",
             PulseDiagnosis = "rapid pulse",
@@ -69,7 +63,7 @@ public class ConsultationEditorPureTests
     public void Validate_fails_when_TcmDiagnosis_empty()
     {
         var sut = CreateSut();
-        sut.InitializeForNewCase("Test", Guid.NewGuid(), Guid.NewGuid());
+        sut.InitializeForNewCase();
 
         sut.Validate().Should().BeFalse();
         sut.ValidationMessage.Should().NotBeNullOrEmpty();

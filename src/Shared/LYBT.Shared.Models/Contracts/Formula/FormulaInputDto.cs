@@ -20,9 +20,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [StringLength(200, ErrorMessage = "功效描述不能超过200个字符")]
         [DisplayName("功效")]
         public string Effect { get; set; } = string.Empty;
-        [StringLength(1000, ErrorMessage = "验方描述不能超过1000个字符")]
-        [DisplayName("验方描述")]
-        public string? Description { get; set; }
 
         [StringLength(200, ErrorMessage = "用法描述不能超过200个字符")]
         [DisplayName("用法")]
@@ -38,21 +35,9 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("是否共享")]
         public bool IsShared { get; set; } = false;
 
-        [StringLength(500, ErrorMessage = "用药指导不能超过500个字符")]
-        [DisplayName("用药指导")]
-        public string? Instructions { get; set; }
-
         [StringLength(500, ErrorMessage = "主治症状不能超过500个字符")]
         [DisplayName("主治症状")]
         public string? Indication { get; set; }
-
-        [StringLength(500, ErrorMessage = "禁忌症不能超过500个字符")]
-        [DisplayName("禁忌症")]
-        public string? Contraindications { get; set; }
-
-        [StringLength(200, ErrorMessage = "制备方法不能超过200个字符")]
-        [DisplayName("制备方法")]
-        public string? Preparation { get; set; }
 
         /// <summary>备注</summary>
         [StringLength(500, ErrorMessage = "备注不能超过500个字符")]

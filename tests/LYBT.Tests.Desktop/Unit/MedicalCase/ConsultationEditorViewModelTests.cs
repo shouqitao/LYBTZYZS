@@ -52,9 +52,6 @@ public class ConsultationEditorViewModelTests : UserJourneyTestBase
         {
             Id = Guid.NewGuid(),
             MedicalCaseId = Guid.NewGuid(),
-            PatientId = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
-            PatientName = "张三",
             PresentIllness = "头痛三天",
             TongueDiagnosis = "舌红苔黄",
             PulseDiagnosis = "脉弦数",
@@ -67,7 +64,6 @@ public class ConsultationEditorViewModelTests : UserJourneyTestBase
         sut.Consultation.TongueDiagnosis.Should().Be("舌红苔黄");
         sut.Consultation.PulseDiagnosis.Should().Be("脉弦数");
         sut.Consultation.TcmDiagnosis.Should().Be("肝阳上亢证");
-        sut.Consultation.PatientName.Should().Be("张三");
         sut.Consultation.MedicalCaseId.Should().Be(dto.MedicalCaseId);
         sut.Consultation.IsDiagnosisComplete.Should().BeTrue();
     }
@@ -76,15 +72,10 @@ public class ConsultationEditorViewModelTests : UserJourneyTestBase
     public void InitializeForNewCase_SetsPatientInfo_AndMedicalCaseId()
     {
         var sut = CreateSut();
-        var patientId = Guid.NewGuid();
-        var userId = Guid.NewGuid();
         var medicalCaseId = _context.MedicalCaseId;
 
-        sut.InitializeForNewCase("李四", patientId, userId);
+        sut.InitializeForNewCase();
 
-        sut.Consultation.PatientName.Should().Be("李四");
-        sut.Consultation.PatientId.Should().Be(patientId);
-        sut.Consultation.UserId.Should().Be(userId);
         sut.Consultation.MedicalCaseId.Should().Be(medicalCaseId);
         sut.Consultation.IsDiagnosisComplete.Should().BeFalse();
     }
@@ -136,7 +127,6 @@ public class ConsultationEditorViewModelTests : UserJourneyTestBase
         sut.Consultation.TongueDiagnosis = "舌红苔黄";
         sut.Consultation.PulseDiagnosis = "脉弦数";
         sut.Consultation.TcmDiagnosis = "肝阳上亢证";
-        sut.Consultation.PatientName = "张三";
 
         var result = sut.GetConsultationData();
 

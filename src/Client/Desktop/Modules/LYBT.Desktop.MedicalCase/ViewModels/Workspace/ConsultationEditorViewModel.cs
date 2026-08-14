@@ -44,12 +44,9 @@ public class ConsultationEditorViewModel : ChildViewModelBase
     /// <summary>
     /// 为新建医案初始化。
     /// </summary>
-    public void InitializeForNewCase(string patientName, Guid patientId, Guid userId)
+    public void InitializeForNewCase()
     {
         Consultation.Reset();
-        Consultation.PatientName = patientName;
-        Consultation.PatientId = patientId;
-        Consultation.UserId = userId;
         Consultation.MedicalCaseId = _context.MedicalCaseId;
     }
 

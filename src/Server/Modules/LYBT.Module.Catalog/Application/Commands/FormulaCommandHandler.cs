@@ -104,7 +104,7 @@ public class FormulaCommandHandler : CatalogEntityCommandHandlerBase<Formula, Fo
                 h.Unit,
                 h.HerbId,
                 h.HerbName,
-                h.Preparation,
+                h.Usage,
                 null,
                 h.ProcessingMethod,
                 h.DecocteMethod))

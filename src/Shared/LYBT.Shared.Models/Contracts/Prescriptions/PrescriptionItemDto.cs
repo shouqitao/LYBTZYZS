@@ -53,11 +53,5 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }
-
-        /// <summary>
-        /// 备注(兼容旧代码)
-        /// </summary>
-        [DisplayName("备注")]
-        public string? Notes { get => Remark; set => Remark = value; }
     }
 }

@@ -95,7 +95,6 @@ namespace LYBT.Desktop.Catalog.Services
                         Unit = h.Unit,
                         ProcessingMethod = h.ProcessingMethod,
                         Usage = h.Usage,
-                        SortOrder = h.SortOrder,
                         DecocteMethod = h.DecocteMethod
                     }).ToList() ?? new List<FormulaHerbItemInputDto>()
                 };

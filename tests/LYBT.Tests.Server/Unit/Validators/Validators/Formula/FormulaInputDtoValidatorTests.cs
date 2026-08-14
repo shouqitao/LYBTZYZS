@@ -125,21 +125,6 @@ public class FormulaInputDtoValidatorTests
     }
 
     [Fact]
-    public void Validate_WithDescriptionTooLong_ShouldFail()
-    {
-        // Arrange
-        var dto = CreateValidFormulaInputDto();
-        dto.Description = new string('描', 1001); // > 1000
-
-        // Act
-        var result = _validator.TestValidate(dto);
-
-        // Assert
-        result.ShouldHaveValidationErrorFor(x => x.Description)
-            .WithErrorMessage("描述长度不能超过1000个字符");
-    }
-
-    [Fact]
     public void Validate_WithUsageTooLong_ShouldFail()
     {
         // Arrange
@@ -417,7 +402,6 @@ public class FormulaInputDtoValidatorTests
         {
             Name = "四君子汤",
             Effect = "补气健脾",
-            Description = "补气健脾的基础方剂",
             Usage = "水煎服，日一剂",
             Indication = "脾胃气虚",
             Remark = "经典方剂",
