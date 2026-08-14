@@ -502,34 +502,6 @@ public class MedicalCaseTests : WebApiE2ETestBase
         _output.WriteLine($"Deleted case {caseId}");
     }
 
-    [Fact(Skip = "Cannot create multiple active cases for same patient — business rule")]
-    [Trait("Category", "E2E")]
-    [Trait("Phase", "MedicalCaseManagement")]
-    [Trait("Role", "Doctor")]
-    public async Task BatchDelete_MultipleCases_ReturnsOperationResult()
-    {
-        var loginResponse = await LoginAsSysadminAsync();
-        var patientId = await CreateTestPatientAsync();
-        var c1 = await MedicalCaseApi.CreateMedicalCaseAsync(
-            CreateTestCaseInput(patientId, loginResponse.User.Id));
-        var c2 = await MedicalCaseApi.CreateMedicalCaseAsync(
-            CreateTestCaseInput(patientId, loginResponse.User.Id));
-        c1.Success.Should().BeTrue(c1.Message);
-        c2.Success.Should().BeTrue(c2.Message);
-
-        var batchInput = new BatchDeleteInputDto
-        {
-            Ids = new List<Guid> { c1.Data!.Id, c2.Data!.Id }
-        };
-
-        var response = await MedicalCaseApi.BatchDeleteAsync(batchInput);
-
-        response.Success.Should().BeTrue(response.Message);
-        response.Data.Should().NotBeNull();
-        response.Data!.SuccessCount.Should().Be(2);
-        _output.WriteLine($"Batch deleted: {response.Data.SuccessCount}/{response.Data.TotalCount}");
-    }
-
     #endregion
 
     #region Full Lifecycle

@@ -547,56 +547,6 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
 
     #region RestoreAsync (removed)
 
-    [Fact(Skip = "RestoreAsync removed")]
-    public async Task RestoreAsync_CallsStatusHandlerAndRefreshes()
-    {
-        // Arrange
-        var sut = CreateSut();
-        var listItem = CreatePatientListDto();
-
-        _selection.SelectedItem.Returns(listItem);
-        _statusHandler.RestoreAsync(listItem).Returns(Task.FromResult(true));
-
-        // Act
-        await sut.RestoreAsync();
-
-        // Assert
-        await _statusHandler.Received(1).RestoreAsync(listItem);
-        _cacheManager.Received(1).InvalidatePatientCaches();
-    }
-
-    [Fact(Skip = "RestoreAsync removed")]
-    public async Task RestoreAsync_DoesNothing_WhenNoSelection()
-    {
-        // Arrange
-        var sut = CreateSut();
-        _selection.SelectedItem.Returns((PatientListDto?)null);
-
-        // Act
-        await sut.RestoreAsync();
-
-        // Assert
-        await _statusHandler.DidNotReceive().RestoreAsync(Arg.Any<PatientListDto>());
-    }
-
-    [Fact(Skip = "RestoreAsync removed")]
-    public async Task RestoreAsync_DoesNotRefresh_WhenRestoreFails()
-    {
-        // Arrange
-        var sut = CreateSut();
-        var listItem = CreatePatientListDto();
-
-        _selection.SelectedItem.Returns(listItem);
-        _statusHandler.RestoreAsync(listItem).Returns(Task.FromResult(false));
-
-        // Act
-        await sut.RestoreAsync();
-
-        // Assert
-        await _statusHandler.Received(1).RestoreAsync(listItem);
-        _cacheManager.DidNotReceive().InvalidatePatientCaches();
-    }
-
     [Fact]
     public void CanRestore_ReturnsFalse_WhenNoSelection()
     {
