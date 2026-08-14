@@ -33,7 +33,11 @@ public class ReportRepositoryTests : IDisposable
 
     public void Dispose() => _context.Dispose();
 
-    private static MedicalCase CreateCase(string doctorName, MedicalCaseStatus status = MedicalCaseStatus.Completed, bool isDeleted = false)
+    private static MedicalCase CreateCase(
+        string doctorName,
+        MedicalCaseStatus status = MedicalCaseStatus.Completed,
+        bool isDeleted = false
+    )
     {
         return new MedicalCase
         {
@@ -43,13 +47,21 @@ public class ReportRepositoryTests : IDisposable
             DoctorName = doctorName,
             CaseStatus = status,
             CreatedBy = Guid.NewGuid(),
-            IsDeleted = isDeleted
+            IsDeleted = isDeleted,
         };
     }
 
-    private static Prescription CreatePrescription(Guid medicalCaseId, params PrescriptionItem[] items)
+    private static Prescription CreatePrescription(
+        Guid medicalCaseId,
+        params PrescriptionItem[] items
+    )
     {
-        var prescription = new Prescription { Id = Guid.NewGuid(), MedicalCaseId = medicalCaseId, CreatedBy = Guid.NewGuid() };
+        var prescription = new Prescription
+        {
+            Id = Guid.NewGuid(),
+            MedicalCaseId = medicalCaseId,
+            CreatedBy = Guid.NewGuid(),
+        };
         foreach (var item in items)
             item.PrescriptionId = prescription.Id;
         prescription.Items = items.ToList();
@@ -64,11 +76,16 @@ public class ReportRepositoryTests : IDisposable
             HerbId = Guid.NewGuid(),
             HerbName = herbName,
             Dosage = dosage,
-            UnitPrice = unitPrice
+            UnitPrice = unitPrice,
         };
     }
 
-    private static Registration CreateRegistration(Guid medicalCaseId, decimal fee, string doctorName = "张医生", bool isDeleted = false)
+    private static Registration CreateRegistration(
+        Guid medicalCaseId,
+        decimal fee,
+        string doctorName = "张医生",
+        bool isDeleted = false
+    )
     {
         return new Registration
         {
@@ -81,7 +98,7 @@ public class ReportRepositoryTests : IDisposable
             Status = RegistrationStatus.Completed,
             RegistrationFee = fee,
             CreatedBy = Guid.NewGuid(),
-            IsDeleted = isDeleted
+            IsDeleted = isDeleted,
         };
     }
 
@@ -137,7 +154,11 @@ public class ReportRepositoryTests : IDisposable
         await AddCaseAsync(completed2, Day2);
         await AddCaseAsync(active, Day2);
 
-        var p1 = CreatePrescription(completed1.Id, CreateItem("黄芪", 10, 5m), CreateItem("甘草", 20, 10m)); // 50 + 200
+        var p1 = CreatePrescription(
+            completed1.Id,
+            CreateItem("黄芪", 10, 5m),
+            CreateItem("甘草", 20, 10m)
+        ); // 50 + 200
         var p2 = CreatePrescription(completed2.Id, CreateItem("当归", 10, 3m)); // 30
         var p3 = CreatePrescription(active.Id, CreateItem("人参", 10, 100m)); // 应排除
         await AddAsync(p1, p2, p3);
@@ -180,7 +201,11 @@ public class ReportRepositoryTests : IDisposable
         await AddRegistrationAsync(CreateRegistration(caseA1.Id, 50), Day1);
         await AddRegistrationAsync(CreateRegistration(caseB.Id, 20), Day1);
 
-        var pA1 = CreatePrescription(caseA1.Id, CreateItem("黄芪", 10, 10m), CreateItem("甘草", 5, 10m)); // 100 + 50
+        var pA1 = CreatePrescription(
+            caseA1.Id,
+            CreateItem("黄芪", 10, 10m),
+            CreateItem("甘草", 5, 10m)
+        ); // 100 + 50
         var pA2 = CreatePrescription(caseA2.Id, CreateItem("当归", 10, 3m)); // 30
         var pB = CreatePrescription(caseB.Id, CreateItem("人参", 5, 5m)); // 25
         await AddAsync(pA1, pA2, pB);
@@ -218,8 +243,16 @@ public class ReportRepositoryTests : IDisposable
         await AddCaseAsync(case2, Day1);
         await AddCaseAsync(case3, Day2);
 
-        var p1 = CreatePrescription(case1.Id, CreateItem("甘草", 10, 1m), CreateItem("黄芪", 10, 1m));
-        var p2 = CreatePrescription(case2.Id, CreateItem("甘草", 20, 1m), CreateItem("甘草", 30, 1m));
+        var p1 = CreatePrescription(
+            case1.Id,
+            CreateItem("甘草", 10, 1m),
+            CreateItem("黄芪", 10, 1m)
+        );
+        var p2 = CreatePrescription(
+            case2.Id,
+            CreateItem("甘草", 20, 1m),
+            CreateItem("甘草", 30, 1m)
+        );
         var p3 = CreatePrescription(case3.Id, CreateItem("黄芪", 10, 1m));
         await AddAsync(p1, p2, p3);
 

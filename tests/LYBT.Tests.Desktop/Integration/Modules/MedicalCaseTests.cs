@@ -6,7 +6,6 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
-
 using Xunit;
 using Xunit.Abstractions;
 
@@ -40,7 +39,8 @@ public class MedicalCaseTests : WebApiE2ETestBase
         int[] weights = { 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 };
         char[] checkDigits = { '1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2' };
         var sum = 0;
-        for (var i = 0; i < 17; i++) sum += (body[i] - '0') * weights[i];
+        for (var i = 0; i < 17; i++)
+            sum += (body[i] - '0') * weights[i];
         return body + checkDigits[sum % 11];
     }
 
@@ -57,7 +57,6 @@ public class MedicalCaseTests : WebApiE2ETestBase
         return $"1{secondDigit}{phoneSuffix:D9}";
     }
 
-
     private async Task<Guid> CreateTestPatientAsync()
     {
         var input = new PatientInputDto
@@ -66,7 +65,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
             PinYinCode = "YAHZ",
             IdNumber = GenerateIdNumber(),
             Gender = Gender.Male,
-            PhoneNumber = GeneratePhoneNumber()
+            PhoneNumber = GeneratePhoneNumber(),
         };
         var response = await PatientApi.CreatePatientAsync(input);
         response.Success.Should().BeTrue(response.Message);
@@ -79,25 +78,26 @@ public class MedicalCaseTests : WebApiE2ETestBase
         {
             Name = $"医案药材_{Guid.NewGuid():N}".Substring(0, 15),
             Unit = "克",
-            Price = 12m
+            Price = 12m,
         };
         var response = await HerbApi.CreateHerbAsync(input);
         response.Success.Should().BeTrue(response.Message);
         return (response.Data!.Id, response.Data.Name);
     }
 
-    private MedicalCaseInputDto CreateTestCaseInput(Guid patientId, Guid userId) => new()
-    {
-        PatientId = patientId,
-        UserId = userId,
-        Consultation = new ConsultationInputDto
+    private MedicalCaseInputDto CreateTestCaseInput(Guid patientId, Guid userId) =>
+        new()
         {
-            PresentIllness = "头痛发热三日",
-            TongueDiagnosis = "舌红苔黄",
-            PulseDiagnosis = "脉浮数",
-            TcmDiagnosis = "外感风热证"
-        }
-    };
+            PatientId = patientId,
+            UserId = userId,
+            Consultation = new ConsultationInputDto
+            {
+                PresentIllness = "头痛发热三日",
+                TongueDiagnosis = "舌红苔黄",
+                PulseDiagnosis = "脉浮数",
+                TcmDiagnosis = "外感风热证",
+            },
+        };
 
     #region CRUD
 
@@ -127,7 +127,8 @@ public class MedicalCaseTests : WebApiE2ETestBase
         var loginResponse = await LoginAsSysadminAsync();
         var patientId = await CreateTestPatientAsync();
         var createResponse = await MedicalCaseApi.CreateMedicalCaseAsync(
-            CreateTestCaseInput(patientId, loginResponse.User.Id));
+            CreateTestCaseInput(patientId, loginResponse.User.Id)
+        );
         createResponse.Success.Should().BeTrue(createResponse.Message);
         var caseId = createResponse.Data!.Id;
 
@@ -148,7 +149,8 @@ public class MedicalCaseTests : WebApiE2ETestBase
         var loginResponse = await LoginAsSysadminAsync();
         var patientId = await CreateTestPatientAsync();
         await MedicalCaseApi.CreateMedicalCaseAsync(
-            CreateTestCaseInput(patientId, loginResponse.User.Id));
+            CreateTestCaseInput(patientId, loginResponse.User.Id)
+        );
 
         var response = await MedicalCaseApi.GetMedicalCasesAsync(1, 10);
 
@@ -188,9 +190,9 @@ public class MedicalCaseTests : WebApiE2ETestBase
                     Unit = "克",
                     Dosage = 10,
                     UnitPrice = 12m,
-                    Subtotal = 84m
-                }
-            }
+                    Subtotal = 84m,
+                },
+            },
         };
 
         var createResponse = await MedicalCaseApi.CreateMedicalCaseAsync(input);
@@ -200,14 +202,24 @@ public class MedicalCaseTests : WebApiE2ETestBase
         detailResponse.Success.Should().BeTrue(detailResponse.Message);
         var medicalCase = detailResponse.Data!;
 
-        medicalCase.CreatedBy.Should().Be(loginResponse.User.Id, "MedicalCase.CreatedBy 应为操作者");
+        medicalCase
+            .CreatedBy.Should()
+            .Be(loginResponse.User.Id, "MedicalCase.CreatedBy 应为操作者");
         medicalCase.Consultation.Should().NotBeNull();
-        medicalCase.Consultation!.CreatedBy.Should().Be(loginResponse.User.Id, "Consultation.CreatedBy 必须填充");
+        medicalCase
+            .Consultation!.CreatedBy.Should()
+            .Be(loginResponse.User.Id, "Consultation.CreatedBy 必须填充");
         medicalCase.Prescription.Should().NotBeNull("带处方建案应创建 Prescription");
-        medicalCase.Prescription!.CreatedBy.Should().Be(loginResponse.User.Id,
-            "Prescription.CreatedBy DB NOT NULL——同类排查发现，必须填充");
+        medicalCase
+            .Prescription!.CreatedBy.Should()
+            .Be(
+                loginResponse.User.Id,
+                "Prescription.CreatedBy DB NOT NULL——同类排查发现，必须填充"
+            );
 
-        _output.WriteLine($"带处方建案 CreatedBy 验证通过: MedicalCase={medicalCase.CreatedBy}, Consultation={medicalCase.Consultation.CreatedBy}, Prescription={medicalCase.Prescription.CreatedBy}");
+        _output.WriteLine(
+            $"带处方建案 CreatedBy 验证通过: MedicalCase={medicalCase.CreatedBy}, Consultation={medicalCase.Consultation.CreatedBy}, Prescription={medicalCase.Prescription.CreatedBy}"
+        );
     }
 
     #endregion
@@ -223,7 +235,8 @@ public class MedicalCaseTests : WebApiE2ETestBase
         var loginResponse = await LoginAsSysadminAsync();
         var patientId = await CreateTestPatientAsync();
         var createResponse = await MedicalCaseApi.CreateMedicalCaseAsync(
-            CreateTestCaseInput(patientId, loginResponse.User.Id));
+            CreateTestCaseInput(patientId, loginResponse.User.Id)
+        );
         createResponse.Success.Should().BeTrue(createResponse.Message);
         var caseId = createResponse.Data!.Id;
 
@@ -250,11 +263,13 @@ public class MedicalCaseTests : WebApiE2ETestBase
         var loginResponse = await LoginAsSysadminAsync();
         var patientId = await CreateTestPatientAsync();
         await MedicalCaseApi.CreateMedicalCaseAsync(
-            CreateTestCaseInput(patientId, loginResponse.User.Id));
+            CreateTestCaseInput(patientId, loginResponse.User.Id)
+        );
 
         var response = await MedicalCaseApi.QueryMedicalCasesAsync(
             queryType: MedicalCaseQueryType.ByPatient,
-            patientId: patientId);
+            patientId: patientId
+        );
 
         response.Success.Should().BeTrue(response.Message);
         response.Data.Should().NotBeNull();
@@ -274,8 +289,7 @@ public class MedicalCaseTests : WebApiE2ETestBase
         input.Consultation!.TcmDiagnosis = "风热感冒测试诊断";
         await MedicalCaseApi.CreateMedicalCaseAsync(input);
 
-        var response = await MedicalCaseApi.SearchMedicalCasesAsync(
-            diagnosisKeyword: "风热感冒");
+        var response = await MedicalCaseApi.SearchMedicalCasesAsync(diagnosisKeyword: "风热感冒");
 
         response.Success.Should().BeTrue(response.Message);
         response.Data.Should().NotBeNull();
@@ -295,13 +309,15 @@ public class MedicalCaseTests : WebApiE2ETestBase
         var loginResponse = await LoginAsSysadminAsync();
         var patientId = await CreateTestPatientAsync();
         var createResponse = await MedicalCaseApi.CreateMedicalCaseAsync(
-            CreateTestCaseInput(patientId, loginResponse.User.Id));
+            CreateTestCaseInput(patientId, loginResponse.User.Id)
+        );
         createResponse.Success.Should().BeTrue(createResponse.Message);
         var caseId = createResponse.Data!.Id;
 
         var response = await MedicalCaseApi.SetPrescriptionFlagAsync(
             caseId,
-            new SetPrescriptionFlagRequest { NeedsPrescription = true });
+            new SetPrescriptionFlagRequest { NeedsPrescription = true }
+        );
 
         response.Success.Should().BeTrue(response.Message);
         _output.WriteLine($"Set prescription flag for case {caseId}");
@@ -317,7 +333,8 @@ public class MedicalCaseTests : WebApiE2ETestBase
         var patientId = await CreateTestPatientAsync();
         var (herbId, herbName) = await CreateTestHerbAsync();
         var createResponse = await MedicalCaseApi.CreateMedicalCaseAsync(
-            CreateTestCaseInput(patientId, loginResponse.User.Id));
+            CreateTestCaseInput(patientId, loginResponse.User.Id)
+        );
         createResponse.Success.Should().BeTrue(createResponse.Message);
         var caseId = createResponse.Data!.Id;
 
@@ -338,9 +355,9 @@ public class MedicalCaseTests : WebApiE2ETestBase
                     Unit = "克",
                     Dosage = 10,
                     UnitPrice = 12m,
-                    Subtotal = 84m
-                }
-            }
+                    Subtotal = 84m,
+                },
+            },
         };
         saveInput.Id = caseId;
 
@@ -363,7 +380,8 @@ public class MedicalCaseTests : WebApiE2ETestBase
         var loginResponse = await LoginAsSysadminAsync();
         var patientId = await CreateTestPatientAsync();
         var createResponse = await MedicalCaseApi.CreateMedicalCaseAsync(
-            CreateTestCaseInput(patientId, loginResponse.User.Id));
+            CreateTestCaseInput(patientId, loginResponse.User.Id)
+        );
         createResponse.Success.Should().BeTrue(createResponse.Message);
         var caseId = createResponse.Data!.Id;
 
@@ -382,7 +400,8 @@ public class MedicalCaseTests : WebApiE2ETestBase
         var loginResponse = await LoginAsSysadminAsync();
         var patientId = await CreateTestPatientAsync();
         var createResponse = await MedicalCaseApi.CreateMedicalCaseAsync(
-            CreateTestCaseInput(patientId, loginResponse.User.Id));
+            CreateTestCaseInput(patientId, loginResponse.User.Id)
+        );
         createResponse.Success.Should().BeTrue(createResponse.Message);
         var caseId = createResponse.Data!.Id;
 
@@ -401,13 +420,15 @@ public class MedicalCaseTests : WebApiE2ETestBase
         var loginResponse = await LoginAsSysadminAsync();
         var patientId = await CreateTestPatientAsync();
         var createResponse = await MedicalCaseApi.CreateMedicalCaseAsync(
-            CreateTestCaseInput(patientId, loginResponse.User.Id));
+            CreateTestCaseInput(patientId, loginResponse.User.Id)
+        );
         createResponse.Success.Should().BeTrue(createResponse.Message);
         var caseId = createResponse.Data!.Id;
 
         var cancelResponse = await MedicalCaseApi.CancelMedicalCaseAsync(
             caseId,
-            new CancelMedicalCaseRequest { Reason = "患者取消就诊" });
+            new CancelMedicalCaseRequest { Reason = "患者取消就诊" }
+        );
 
         cancelResponse.IsSuccessStatusCode.Should().BeTrue();
         _output.WriteLine($"Cancelled case {caseId}");
@@ -422,13 +443,15 @@ public class MedicalCaseTests : WebApiE2ETestBase
         var loginResponse = await LoginAsSysadminAsync();
         var patientId = await CreateTestPatientAsync();
         var createResponse = await MedicalCaseApi.CreateMedicalCaseAsync(
-            CreateTestCaseInput(patientId, loginResponse.User.Id));
+            CreateTestCaseInput(patientId, loginResponse.User.Id)
+        );
         createResponse.Success.Should().BeTrue(createResponse.Message);
         var caseId = createResponse.Data!.Id;
 
         var response = await MedicalCaseApi.UpdateStatusAsync(
             caseId,
-            new MedicalCaseStatusInputDto { Status = MedicalCaseStatus.Suspended });
+            new MedicalCaseStatusInputDto { Status = MedicalCaseStatus.Suspended }
+        );
 
         response.Success.Should().BeTrue(response.Message);
         _output.WriteLine($"Updated status for case {caseId}");
@@ -447,7 +470,8 @@ public class MedicalCaseTests : WebApiE2ETestBase
         var loginResponse = await LoginAsSysadminAsync();
         var patientId = await CreateTestPatientAsync();
         var createResponse = await MedicalCaseApi.CreateMedicalCaseAsync(
-            CreateTestCaseInput(patientId, loginResponse.User.Id));
+            CreateTestCaseInput(patientId, loginResponse.User.Id)
+        );
         createResponse.Success.Should().BeTrue(createResponse.Message);
         var caseId = createResponse.Data!.Id;
 
@@ -468,7 +492,8 @@ public class MedicalCaseTests : WebApiE2ETestBase
         var loginResponse = await LoginAsSysadminAsync();
         var patientId = await CreateTestPatientAsync();
         var createResponse = await MedicalCaseApi.CreateMedicalCaseAsync(
-            CreateTestCaseInput(patientId, loginResponse.User.Id));
+            CreateTestCaseInput(patientId, loginResponse.User.Id)
+        );
         createResponse.Success.Should().BeTrue(createResponse.Message);
         var caseId = createResponse.Data!.Id;
 
@@ -492,7 +517,8 @@ public class MedicalCaseTests : WebApiE2ETestBase
         var loginResponse = await LoginAsSysadminAsync();
         var patientId = await CreateTestPatientAsync();
         var createResponse = await MedicalCaseApi.CreateMedicalCaseAsync(
-            CreateTestCaseInput(patientId, loginResponse.User.Id));
+            CreateTestCaseInput(patientId, loginResponse.User.Id)
+        );
         createResponse.Success.Should().BeTrue(createResponse.Message);
         var caseId = createResponse.Data!.Id;
 
@@ -552,9 +578,9 @@ public class MedicalCaseTests : WebApiE2ETestBase
                     Unit = "克",
                     Dosage = 10,
                     UnitPrice = 12m,
-                    Subtotal = 84m
-                }
-            }
+                    Subtotal = 84m,
+                },
+            },
         };
         var prescriptionResponse = await MedicalCaseApi.SaveAsync(caseId, saveInput);
         prescriptionResponse.Success.Should().BeTrue(prescriptionResponse.Message);

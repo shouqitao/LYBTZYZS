@@ -1,13 +1,13 @@
 using FluentAssertions;
-using LYBT.Desktop.Infrastructure.CardReader.Integration;
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.CardReader.Integration;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Patients.Mappers;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.Services;
 using LYBT.Desktop.Patients.ViewModels;
 using LYBT.Desktop.Patients.ViewModels.Handlers;
-using LYBT.Desktop.Contracts.Results;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
@@ -25,7 +25,10 @@ namespace LYBT.Tests.Desktop;
 public class PatientMasterDetailViewModelTests : UserJourneyTestBase
 {
     private readonly IViewModelServices _viewModelServices;
-    private readonly IMasterDetailServices<PatientListDto, PatientDetailModel> _masterDetailServices;
+    private readonly IMasterDetailServices<
+        PatientListDto,
+        PatientDetailModel
+    > _masterDetailServices;
     private readonly IPatientService _patientService;
     private readonly IPatientStatusHandler _statusHandler;
     private readonly IDesktopCacheManager _cacheManager;
@@ -54,7 +57,10 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
         _loggerFactory.CreateLogger<RemotePatientService>().Returns(_logger);
 
         // 创建 MasterDetailServices mock（T3-1: 使用基类共享装配，原 ~30 行重复装配已消除）
-        _masterDetailServices = CreateMasterDetailServicesMock<PatientListDto, PatientDetailModel>();
+        _masterDetailServices = CreateMasterDetailServicesMock<
+            PatientListDto,
+            PatientDetailModel
+        >();
         _listViewServices = _masterDetailServices.List;
         _detailEditor = _masterDetailServices.DetailEditor;
         _dialogManager = _masterDetailServices.Dialog;
@@ -79,7 +85,8 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
             _viewModelServices,
             Substitute.For<LYBT.Desktop.Infrastructure.CardReader.Services.ICardReaderService>(),
             Substitute.For<IPatientCardReaderIntegration>(),
-            Substitute.For<ILogger<PatientCardReaderViewModel>>());
+            Substitute.For<ILogger<PatientCardReaderViewModel>>()
+        );
 
         // PatientEditorViewModel (真实实例，纯逻辑)
         _patientMapper = new PatientMapper();
@@ -96,7 +103,8 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
             _cacheManager,
             _patientMapper,
             _cardReaderViewModel,
-            _patientEditor);
+            _patientEditor
+        );
     }
 
     #region 构造函数和初始化
@@ -115,15 +123,17 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
     public void Constructor_ThrowsArgumentNullException_WhenPatientServiceIsNull()
     {
         // Arrange & Act & Assert
-        Action act = () => new PatientMasterDetailViewModel(
-            _viewModelServices,
-            _masterDetailServices,
-            null!,
-            _statusHandler,
-            _cacheManager,
-            _patientMapper,
-            _cardReaderViewModel,
-            _patientEditor);
+        Action act = () =>
+            new PatientMasterDetailViewModel(
+                _viewModelServices,
+                _masterDetailServices,
+                null!,
+                _statusHandler,
+                _cacheManager,
+                _patientMapper,
+                _cardReaderViewModel,
+                _patientEditor
+            );
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("patientService");
     }
@@ -132,15 +142,17 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
     public void Constructor_ThrowsArgumentNullException_WhenStatusHandlerIsNull()
     {
         // Arrange & Act & Assert
-        Action act = () => new PatientMasterDetailViewModel(
-            _viewModelServices,
-            _masterDetailServices,
-            _patientService,
-            null!,
-            _cacheManager,
-            _patientMapper,
-            _cardReaderViewModel,
-            _patientEditor);
+        Action act = () =>
+            new PatientMasterDetailViewModel(
+                _viewModelServices,
+                _masterDetailServices,
+                _patientService,
+                null!,
+                _cacheManager,
+                _patientMapper,
+                _cardReaderViewModel,
+                _patientEditor
+            );
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("statusHandler");
     }
@@ -149,15 +161,17 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
     public void Constructor_ThrowsArgumentNullException_WhenCacheManagerIsNull()
     {
         // Arrange & Act & Assert
-        Action act = () => new PatientMasterDetailViewModel(
-            _viewModelServices,
-            _masterDetailServices,
-            _patientService,
-            _statusHandler,
-            null!,
-            _patientMapper,
-            _cardReaderViewModel,
-            _patientEditor);
+        Action act = () =>
+            new PatientMasterDetailViewModel(
+                _viewModelServices,
+                _masterDetailServices,
+                _patientService,
+                _statusHandler,
+                null!,
+                _patientMapper,
+                _cardReaderViewModel,
+                _patientEditor
+            );
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("cacheManager");
     }
@@ -166,15 +180,17 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
     public void Constructor_ThrowsArgumentNullException_WhenCardReaderViewModelIsNull()
     {
         // Arrange & Act & Assert
-        Action act = () => new PatientMasterDetailViewModel(
-            _viewModelServices,
-            _masterDetailServices,
-            _patientService,
-            _statusHandler,
-            _cacheManager,
-            _patientMapper,
-            null!,
-            _patientEditor);
+        Action act = () =>
+            new PatientMasterDetailViewModel(
+                _viewModelServices,
+                _masterDetailServices,
+                _patientService,
+                _statusHandler,
+                _cacheManager,
+                _patientMapper,
+                null!,
+                _patientEditor
+            );
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("cardReaderViewModel");
     }
@@ -183,15 +199,17 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
     public void Constructor_ThrowsArgumentNullException_WhenPatientEditorIsNull()
     {
         // Arrange & Act & Assert
-        Action act = () => new PatientMasterDetailViewModel(
-            _viewModelServices,
-            _masterDetailServices,
-            _patientService,
-            _statusHandler,
-            _cacheManager,
-            _patientMapper,
-            _cardReaderViewModel,
-            null!);
+        Action act = () =>
+            new PatientMasterDetailViewModel(
+                _viewModelServices,
+                _masterDetailServices,
+                _patientService,
+                _statusHandler,
+                _cacheManager,
+                _patientMapper,
+                _cardReaderViewModel,
+                null!
+            );
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("patientEditor");
     }
@@ -257,13 +275,20 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
                 Items = new List<PatientListDto>
                 {
                     CreatePatientListDto(id: Guid.NewGuid(), name: "张三"),
-                    CreatePatientListDto(id: Guid.NewGuid(), name: "李四")
+                    CreatePatientListDto(id: Guid.NewGuid(), name: "李四"),
                 },
-                TotalCount = 2
+                TotalCount = 2,
             },
-            Error: null);
+            Error: null
+        );
 
-        _patientService.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _patientService
+            .GetPagedAsync(
+                Arg.Any<int>(),
+                Arg.Any<int>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(pagedResult);
 
         _pagination.CurrentPage.Returns(1);
@@ -274,7 +299,14 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
         await sut.InitializeAsync();
 
         // Assert
-        await _patientService.Received(1).GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        await _patientService
+            .Received(1)
+            .GetPagedAsync(
+                Arg.Any<int>(),
+                Arg.Any<int>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
+            );
     }
 
     [Fact]
@@ -284,7 +316,13 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
         var sut = CreateSut();
         var exception = new Exception("Database connection failed");
 
-        _patientService.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _patientService
+            .GetPagedAsync(
+                Arg.Any<int>(),
+                Arg.Any<int>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(Task.FromException<CommandResult<PagedResult<PatientListDto>>>(exception));
 
         // Act
@@ -304,11 +342,18 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
             Data: new PagedResult<PatientListDto>
             {
                 Items = new List<PatientListDto>(),
-                TotalCount = 0
+                TotalCount = 0,
             },
-            Error: null);
+            Error: null
+        );
 
-        _patientService.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _patientService
+            .GetPagedAsync(
+                Arg.Any<int>(),
+                Arg.Any<int>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(pagedResult);
 
         _search.SearchText.Returns("测试关键词");
@@ -317,7 +362,14 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
         await sut.InitializeAsync();
 
         // Assert
-        await _patientService.Received(1).GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        await _patientService
+            .Received(1)
+            .GetPagedAsync(
+                Arg.Any<int>(),
+                Arg.Any<int>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>()
+            );
     }
 
     #endregion
@@ -332,8 +384,11 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
         var listItem = CreatePatientListDto();
         var detailDto = CreatePatientDetailDto();
 
-        _patientService.GetByIdAsync(listItem.Id, Arg.Any<CancellationToken>())
-            .Returns(new CommandResult<PatientDetailDto>(Success: true, Data: detailDto, Error: null));
+        _patientService
+            .GetByIdAsync(listItem.Id, Arg.Any<CancellationToken>())
+            .Returns(
+                new CommandResult<PatientDetailDto>(Success: true, Data: detailDto, Error: null)
+            );
 
         // Act
         await sut.InvokeLoadDetailAsync(listItem);
@@ -350,14 +405,17 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
         var sut = CreateSut();
         var listItem = CreatePatientListDto();
 
-        _patientService.GetByIdAsync(listItem.Id, Arg.Any<CancellationToken>())
+        _patientService
+            .GetByIdAsync(listItem.Id, Arg.Any<CancellationToken>())
             .Returns(new CommandResult<PatientDetailDto>(Success: false, Data: null, Error: null));
 
         // Act
         await sut.InvokeLoadDetailAsync(listItem);
 
         // Assert
-        await _dialogManager.Received(1).ShowErrorAsync(Arg.Is<string>(s => s.Contains("不存在")), "加载失败");
+        await _dialogManager
+            .Received(1)
+            .ShowErrorAsync(Arg.Is<string>(s => s.Contains("不存在")), "加载失败");
     }
 
     [Fact]
@@ -368,7 +426,8 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
         var listItem = CreatePatientListDto();
         var exception = new Exception("Database connection failed");
 
-        _patientService.GetByIdAsync(listItem.Id, Arg.Any<CancellationToken>())
+        _patientService
+            .GetByIdAsync(listItem.Id, Arg.Any<CancellationToken>())
             .Returns(Task.FromException<CommandResult<PatientDetailDto>>(exception));
 
         // Act
@@ -410,7 +469,8 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
         var detail = new PatientDetailModel { Name = "", Id = Guid.Empty };
 
         // PatientEditor 中 Name 为空，ValidateAll 返回 false
-        _dialogManager.ShowErrorAsync(Arg.Any<string>(), Arg.Any<string>())
+        _dialogManager
+            .ShowErrorAsync(Arg.Any<string>(), Arg.Any<string>())
             .Returns(Task.CompletedTask);
 
         // Act - 注意：由于 SaveDetailAsync 是 protected，我们通过反射调用
@@ -429,9 +489,14 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
         var sut = CreateSut();
         var newId = Guid.NewGuid();
         var createdDto = CreatePatientDetailDto(id: newId, name: "新患者");
-        var result = new CommandResult<PatientDetailDto>(Success: true, Data: createdDto, Error: null);
+        var result = new CommandResult<PatientDetailDto>(
+            Success: true,
+            Data: createdDto,
+            Error: null
+        );
 
-        _patientService.CreateAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>())
+        _patientService
+            .CreateAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>())
             .Returns(result);
 
         // 设置 IsNew = true
@@ -448,7 +513,9 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
 
         // Assert
         saveResult.Should().BeTrue();
-        await _patientService.Received(1).CreateAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>());
+        await _patientService
+            .Received(1)
+            .CreateAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>());
         _cacheManager.Received(1).InvalidatePatientCaches();
     }
 
@@ -459,9 +526,14 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
         var sut = CreateSut();
         var existingId = Guid.NewGuid();
         var updatedDto = CreatePatientDetailDto(id: existingId, name: "更新患者");
-        var result = new CommandResult<PatientDetailDto>(Success: true, Data: updatedDto, Error: null);
+        var result = new CommandResult<PatientDetailDto>(
+            Success: true,
+            Data: updatedDto,
+            Error: null
+        );
 
-        _patientService.UpdateAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>())
+        _patientService
+            .UpdateAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>())
             .Returns(result);
 
         _detailEditor.IsNew.Returns(false);
@@ -474,7 +546,9 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
 
         // Assert
         saveResult.Should().BeTrue();
-        await _patientService.Received(1).UpdateAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>());
+        await _patientService
+            .Received(1)
+            .UpdateAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>());
         _cacheManager.Received(1).InvalidatePatientCaches();
     }
 
@@ -483,9 +557,14 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
     {
         // Arrange
         var sut = CreateSut();
-        var result = new CommandResult<PatientDetailDto>(Success: false, Data: null, Error: "Create failed");
+        var result = new CommandResult<PatientDetailDto>(
+            Success: false,
+            Data: null,
+            Error: "Create failed"
+        );
 
-        _patientService.CreateAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>())
+        _patientService
+            .CreateAsync(Arg.Any<PatientInputDto>(), Arg.Any<CancellationToken>())
             .Returns(result);
 
         _detailEditor.IsNew.Returns(true);
@@ -514,7 +593,8 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
         var sut = CreateSut();
         var listItem = CreatePatientListDto();
 
-        _patientService.DeleteAsync(listItem.Id, Arg.Any<CancellationToken>())
+        _patientService
+            .DeleteAsync(listItem.Id, Arg.Any<CancellationToken>())
             .Returns(new CommandResult<bool>(Success: true, Data: true, Error: null));
 
         // Act
@@ -533,7 +613,8 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
         var sut = CreateSut();
         var listItem = CreatePatientListDto();
 
-        _patientService.DeleteAsync(listItem.Id, Arg.Any<CancellationToken>())
+        _patientService
+            .DeleteAsync(listItem.Id, Arg.Any<CancellationToken>())
             .Returns(new CommandResult<bool>(Success: false, Data: false, Error: "Delete failed"));
 
         // Act
@@ -571,13 +652,22 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
         {
             IsSuccess = true,
             Name = "测试患者",
-            IdNumber = "110101199001011234"
+            IdNumber = "110101199001011234",
         };
 
-        _cardReaderViewModel.ReadCardAsync().Returns(Task.FromResult<LYBT.Desktop.Infrastructure.CardReader.Models.CardReadResult?>(cardResult));
-        _cardReaderViewModel.FindPatientByIdNumberAsync(cardResult.IdNumber)
+        _cardReaderViewModel
+            .ReadCardAsync()
+            .Returns(
+                Task.FromResult<LYBT.Desktop.Infrastructure.CardReader.Models.CardReadResult?>(
+                    cardResult
+                )
+            );
+        _cardReaderViewModel
+            .FindPatientByIdNumberAsync(cardResult.IdNumber)
             .Returns(Task.FromResult<PatientFromCardResult?>(null));
-        _dialogManager.ShowConfirmAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(Task.FromResult(false));
+        _dialogManager
+            .ShowConfirmAsync(Arg.Any<string>(), Arg.Any<string>())
+            .Returns(Task.FromResult(false));
 
         // Act
         await sut.ReadCardAsync();
@@ -595,13 +685,22 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
         {
             IsSuccess = true,
             Name = "测试患者",
-            IdNumber = "110101199001011234"
+            IdNumber = "110101199001011234",
         };
 
-        _cardReaderViewModel.ReadCardAsync().Returns(Task.FromResult<LYBT.Desktop.Infrastructure.CardReader.Models.CardReadResult?>(cardResult));
-        _cardReaderViewModel.FindPatientByIdNumberAsync(cardResult.IdNumber)
+        _cardReaderViewModel
+            .ReadCardAsync()
+            .Returns(
+                Task.FromResult<LYBT.Desktop.Infrastructure.CardReader.Models.CardReadResult?>(
+                    cardResult
+                )
+            );
+        _cardReaderViewModel
+            .FindPatientByIdNumberAsync(cardResult.IdNumber)
             .Returns(Task.FromResult<PatientFromCardResult?>(null));
-        _dialogManager.ShowConfirmAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(Task.FromResult(false));
+        _dialogManager
+            .ShowConfirmAsync(Arg.Any<string>(), Arg.Any<string>())
+            .Returns(Task.FromResult(false));
 
         // Act
         await sut.ReadCardAsync();
@@ -616,7 +715,11 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
         // Arrange
         var sut = CreateSut();
 
-        _cardReaderViewModel.ReadCardAsync().Returns(Task.FromResult<LYBT.Desktop.Infrastructure.CardReader.Models.CardReadResult?>(null));
+        _cardReaderViewModel
+            .ReadCardAsync()
+            .Returns(
+                Task.FromResult<LYBT.Desktop.Infrastructure.CardReader.Models.CardReadResult?>(null)
+            );
 
         // Act
         await sut.ReadCardAsync();
@@ -637,11 +740,15 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
             Name = name,
             Gender = Gender.Male,
             PhoneNumber = "13800138000",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
     }
 
-    private static PatientDetailDto CreatePatientDetailDto(Guid? id = null, string name = "测试患者", string? pinYinCode = "CSHZ")
+    private static PatientDetailDto CreatePatientDetailDto(
+        Guid? id = null,
+        string name = "测试患者",
+        string? pinYinCode = "CSHZ"
+    )
     {
         return new PatientDetailDto
         {
@@ -652,7 +759,7 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
             PhoneNumber = "13800138000",
             IdNumber = "110101199001011234",
             Status = CommonStatus.Enabled,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
     }
 
@@ -671,10 +778,13 @@ public static class PatientMasterDetailViewModelTestExtensions
     {
         var method = typeof(PatientMasterDetailViewModel).GetMethod(
             "CreateNewDetail",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.FlattenHierarchy,
+            System.Reflection.BindingFlags.NonPublic
+                | System.Reflection.BindingFlags.Instance
+                | System.Reflection.BindingFlags.FlattenHierarchy,
             null,
             Type.EmptyTypes,
-            null);
+            null
+        );
 
         if (method == null)
         {
@@ -683,10 +793,12 @@ public static class PatientMasterDetailViewModelTestExtensions
             {
                 method = baseType.GetMethod(
                     "CreateNewDetail",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance,
+                    System.Reflection.BindingFlags.NonPublic
+                        | System.Reflection.BindingFlags.Instance,
                     null,
                     Type.EmptyTypes,
-                    null);
+                    null
+                );
                 baseType = baseType.BaseType;
             }
         }
@@ -701,46 +813,64 @@ public static class PatientMasterDetailViewModelTestExtensions
     /// <summary>
     /// 测试辅助方法：调用受保护的 SaveDetailAsync 方法
     /// </summary>
-    public static async Task<bool> SaveDetailAsync(this PatientMasterDetailViewModel vm, PatientDetailModel detail)
+    public static async Task<bool> SaveDetailAsync(
+        this PatientMasterDetailViewModel vm,
+        PatientDetailModel detail
+    )
     {
         var method = typeof(PatientMasterDetailViewModel).GetMethod(
             "SaveDetailAsync",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
+        );
 
-        if (method == null) throw new InvalidOperationException("SaveDetailAsync method not found");
+        if (method == null)
+            throw new InvalidOperationException("SaveDetailAsync method not found");
 
         var result = method.Invoke(vm, new object[] { detail });
-        if (result is Task<bool> task) return await task;
+        if (result is Task<bool> task)
+            return await task;
         throw new InvalidOperationException("Unexpected return type");
     }
 
     /// <summary>
     /// 测试辅助方法：调用受保护的 DeleteItemAsync 方法
     /// </summary>
-    public static async Task<bool> DeleteItemAsync(this PatientMasterDetailViewModel vm, PatientListDto item)
+    public static async Task<bool> DeleteItemAsync(
+        this PatientMasterDetailViewModel vm,
+        PatientListDto item
+    )
     {
         var method = typeof(PatientMasterDetailViewModel).GetMethod(
             "DeleteItemAsync",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
+        );
 
-        if (method == null) throw new InvalidOperationException("DeleteItemAsync method not found");
+        if (method == null)
+            throw new InvalidOperationException("DeleteItemAsync method not found");
 
         var result = method.Invoke(vm, new object[] { item });
-        if (result is Task<bool> task) return await task;
+        if (result is Task<bool> task)
+            return await task;
         throw new InvalidOperationException("Unexpected return type");
     }
 
     /// <summary>
     /// 测试辅助方法：调用受保护的 LoadDetailAsync 方法
     /// </summary>
-    public static async Task InvokeLoadDetailAsync(this PatientMasterDetailViewModel vm, PatientListDto item)
+    public static async Task InvokeLoadDetailAsync(
+        this PatientMasterDetailViewModel vm,
+        PatientListDto item
+    )
     {
         var method = typeof(PatientMasterDetailViewModel).GetMethod(
             "LoadDetailAsync",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.FlattenHierarchy,
+            System.Reflection.BindingFlags.NonPublic
+                | System.Reflection.BindingFlags.Instance
+                | System.Reflection.BindingFlags.FlattenHierarchy,
             null,
             new[] { typeof(PatientListDto) },
-            null);
+            null
+        );
 
         if (method == null)
         {
@@ -749,18 +879,22 @@ public static class PatientMasterDetailViewModelTestExtensions
             {
                 method = baseType.GetMethod(
                     "LoadDetailAsync",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance,
+                    System.Reflection.BindingFlags.NonPublic
+                        | System.Reflection.BindingFlags.Instance,
                     null,
                     new[] { typeof(PatientListDto) },
-                    null);
+                    null
+                );
                 baseType = baseType.BaseType;
             }
         }
 
-        if (method == null) throw new InvalidOperationException("LoadDetailAsync method not found");
+        if (method == null)
+            throw new InvalidOperationException("LoadDetailAsync method not found");
 
         var result = method.Invoke(vm, new object[] { item });
-        if (result is Task task) await task;
+        if (result is Task task)
+            await task;
     }
 
     /// <summary>
@@ -770,12 +904,15 @@ public static class PatientMasterDetailViewModelTestExtensions
     {
         var method = typeof(PatientMasterDetailViewModel).GetMethod(
             "RestoreAsync",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
+        );
 
-        if (method == null) throw new InvalidOperationException("RestoreAsync method not found");
+        if (method == null)
+            throw new InvalidOperationException("RestoreAsync method not found");
 
         var result = method.Invoke(vm, null);
-        if (result is Task task) await task;
+        if (result is Task task)
+            await task;
     }
 
     /// <summary>
@@ -785,12 +922,15 @@ public static class PatientMasterDetailViewModelTestExtensions
     {
         var method = typeof(PatientMasterDetailViewModel).GetMethod(
             "ImportAsync",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
+        );
 
-        if (method == null) throw new InvalidOperationException("ImportAsync method not found");
+        if (method == null)
+            throw new InvalidOperationException("ImportAsync method not found");
 
         var result = method.Invoke(vm, null);
-        if (result is Task task) await task;
+        if (result is Task task)
+            await task;
     }
 
     /// <summary>
@@ -800,12 +940,15 @@ public static class PatientMasterDetailViewModelTestExtensions
     {
         var method = typeof(PatientMasterDetailViewModel).GetMethod(
             "ExportAsync",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
+        );
 
-        if (method == null) throw new InvalidOperationException("ExportAsync method not found");
+        if (method == null)
+            throw new InvalidOperationException("ExportAsync method not found");
 
         var result = method.Invoke(vm, null);
-        if (result is Task task) await task;
+        if (result is Task task)
+            await task;
     }
 
     /// <summary>
@@ -815,12 +958,15 @@ public static class PatientMasterDetailViewModelTestExtensions
     {
         var method = typeof(PatientMasterDetailViewModel).GetMethod(
             "DownloadTemplateAsync",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
+        );
 
-        if (method == null) throw new InvalidOperationException("DownloadTemplateAsync method not found");
+        if (method == null)
+            throw new InvalidOperationException("DownloadTemplateAsync method not found");
 
         var result = method.Invoke(vm, null);
-        if (result is Task task) await task;
+        if (result is Task task)
+            await task;
     }
 
     /// <summary>
@@ -830,11 +976,14 @@ public static class PatientMasterDetailViewModelTestExtensions
     {
         var method = typeof(PatientMasterDetailViewModel).GetMethod(
             "ReadCardAsync",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
+        );
 
-        if (method == null) throw new InvalidOperationException("ReadCardAsync method not found");
+        if (method == null)
+            throw new InvalidOperationException("ReadCardAsync method not found");
 
         var result = method.Invoke(vm, null);
-        if (result is Task task) await task;
+        if (result is Task task)
+            await task;
     }
 }

@@ -189,18 +189,22 @@ public class ReportRepository : IReportRepository
             {
                 DoctorName = g.Key,
                 ConsultationCount = g.Count(),
-                RegistrationFeeTotal = g
-                    .SelectMany(c => _context.Registrations.Where(r =>
-                        r.MedicalCaseId == c.Id && !r.IsDeleted))
-                    .Sum(r => (decimal?)r.RegistrationFee) ?? 0m,
-                MedicineFeeTotal = g
-                    .SelectMany(c => _context.Prescriptions.Where(p =>
-                        p.MedicalCaseId == c.Id && !p.IsDeleted))
-                    .SelectMany(p => _context.PrescriptionItems.Where(pi => pi.PrescriptionId == p.Id))
-                    .Sum(pi => (decimal?)(pi.UnitPrice * pi.Dosage)) ?? 0m,
-                PrescriptionCount = g
-                    .SelectMany(c => _context.Prescriptions.Where(p =>
-                        p.MedicalCaseId == c.Id && !p.IsDeleted))
+                RegistrationFeeTotal = g.SelectMany(c =>
+                        _context.Registrations.Where(r => r.MedicalCaseId == c.Id && !r.IsDeleted)
+                    )
+                    .Sum(r => (decimal?)r.RegistrationFee)
+                    ?? 0m,
+                MedicineFeeTotal = g.SelectMany(c =>
+                        _context.Prescriptions.Where(p => p.MedicalCaseId == c.Id && !p.IsDeleted)
+                    )
+                    .SelectMany(p =>
+                        _context.PrescriptionItems.Where(pi => pi.PrescriptionId == p.Id)
+                    )
+                    .Sum(pi => (decimal?)(pi.UnitPrice * pi.Dosage))
+                    ?? 0m,
+                PrescriptionCount = g.SelectMany(c =>
+                        _context.Prescriptions.Where(p => p.MedicalCaseId == c.Id && !p.IsDeleted)
+                    )
                     .Count(),
             };
 
@@ -211,7 +215,8 @@ public class ReportRepository : IReportRepository
                 x.ConsultationCount,
                 x.RegistrationFeeTotal,
                 x.MedicineFeeTotal,
-                x.PrescriptionCount))
+                x.PrescriptionCount
+            ))
             .OrderByDescending(d => d.ConsultationCount)
             .ToList();
     }

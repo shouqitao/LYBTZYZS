@@ -2,6 +2,190 @@
   "version": 1,
   "receipts": [
     {
+      "createdAt": "2026-08-14T03:36:14.375Z",
+      "bankId": "pi-coding",
+      "documentId": "pi-session:36b8726b5cf8d3fe",
+      "queueJobId": "6338d9b4-6e7d-49c3-b690-d6bcbb136fce",
+      "updateMode": "append",
+      "source": "queue",
+      "context": "Pi coding session for repo \"LYBTZYZS\", session 2026-08-14T00-11-11-540Z_019ffd9b-c334-7b5d-bad7-6de4c35455ca.jsonl",
+      "tags": [
+        "source:pi",
+        "harness:pi",
+        "project:gitee-com-shouqitao-lybtzyzs",
+        "repo:lybtzyzs-ee2ee597dc7c",
+        "session:36b8726b5cf8d3fe"
+      ],
+      "outcome": {
+        "itemsCount": 1,
+        "operations": 1
+      }
+    },
+    {
+      "createdAt": "2026-08-14T00:10:55.019Z",
+      "bankId": "pi-coding",
+      "documentId": "pi-session:ef7d9ad0127cab66",
+      "queueJobId": "a2a7e120-8919-4ca0-8ac0-93fff2ffcd82",
+      "updateMode": "append",
+      "source": "queue",
+      "context": "Pi coding session for repo \"LYBTZYZS\", session 2026-08-13T10-46-37-117Z_019ffabb-273d-73a5-930e-19e9fd9883e0.jsonl",
+      "tags": [
+        "source:pi",
+        "harness:pi",
+        "project:gitee-com-shouqitao-lybtzyzs",
+        "repo:lybtzyzs-ee2ee597dc7c",
+        "session:ef7d9ad0127cab66"
+      ],
+      "outcome": {
+        "itemsCount": 1,
+        "operations": 1
+      }
+    },
+    {
+      "createdAt": "2026-08-14T00:10:42.792Z",
+      "bankId": "pi-coding",
+      "documentId": "pi-session:4aa7b3e2bc699f64",
+      "queueJobId": "9294eec5-2d47-4918-a668-54389a430a1a",
+      "updateMode": "append",
+      "source": "queue",
+      "context": "Pi coding session for repo \"LYBTZYZS\", session 2026-08-14T00-10-29-574Z_019ffd9b-1f46-7aa7-9e81-295551804431.jsonl",
+      "tags": [
+        "source:pi",
+        "harness:pi",
+        "project:gitee-com-shouqitao-lybtzyzs",
+        "repo:lybtzyzs-ee2ee597dc7c",
+        "session:4aa7b3e2bc699f64"
+      ],
+      "outcome": {
+        "itemsCount": 1,
+        "operations": 1
+      }
+    },
+    {
+      "createdAt": "2026-08-13T23:03:48.552Z",
+      "bankId": "pi-coding",
+      "documentId": "pi-session:5a575c209c749b35",
+      "queueJobId": "0eb3cf69-fcc9-4636-9a6c-26c33043f6cb",
+      "updateMode": "append",
+      "source": "queue",
+      "context": "Pi coding session for repo \"LYBTZYZS\", session 2026-08-13T23-01-13-552Z_019ffd5b-b4d0-7322-bcd1-bf6b02dd5a0d.jsonl",
+      "tags": [
+        "source:pi",
+        "harness:pi",
+        "project:gitee-com-shouqitao-lybtzyzs",
+        "repo:lybtzyzs-ee2ee597dc7c",
+        "session:5a575c209c749b35"
+      ],
+      "outcome": {
+        "itemsCount": 1,
+        "operations": 1
+      }
+    },
+    {
+      "createdAt": "2026-08-13T22:59:56.009Z",
+      "bankId": "pi-coding",
+      "documentId": "pi-session:1475b58853f2171b",
+      "queueJobId": "e7833d24-b41e-45d6-88ff-18e934f720bf",
+      "updateMode": "append",
+      "source": "queue",
+      "context": "Pi coding session for repo \"LYBTZYZS\", session 2026-08-13T22-56-35-500Z_019ffd57-76ac-7958-a1a1-7725733b1828.jsonl",
+      "tags": [
+        "source:pi",
+        "harness:pi",
+        "project:gitee-com-shouqitao-lybtzyzs",
+        "repo:lybtzyzs-ee2ee597dc7c",
+        "session:1475b58853f2171b"
+      ],
+      "outcome": {
+        "itemsCount": 1,
+        "operations": 1
+      }
+    },
+    {
+      "createdAt": "2026-08-13T10:47:29.306Z",
+      "bankId": "pi-coding",
+      "documentId": "pi-session:201fcabc49131610",
+      "queueJobId": "5560b3c5-b3ba-46dd-a1f1-ceea3422bfb8",
+      "updateMode": "append",
+      "source": "queue",
+      "context": "Pi coding session for repo \"LYBTZYZS\", session 2026-08-13T10-47-12-795Z_019ffabb-b29b-7dda-a298-022945131739.jsonl",
+      "tags": [
+        "source:pi",
+        "harness:pi",
+        "project:gitee-com-shouqitao-lybtzyzs",
+        "repo:lybtzyzs-ee2ee597dc7c",
+        "session:201fcabc49131610"
+      ],
+      "outcome": {
+        "itemsCount": 1,
+        "operations": 1
+      }
+    },
+    {
+      "createdAt": "2026-08-13T10:47:00.874Z",
+      "bankId": "pi-coding",
+      "documentId": "pi-session:624f69037e5a48e5",
+      "queueJobId": "bf70c796-cd94-49f1-9573-3ca88acd3dde",
+      "updateMode": "append",
+      "source": "queue",
+      "context": "Pi coding session for repo \"LYBTZYZS\", session 2026-08-13T10-46-44-177Z_019ffabb-42d1-7496-b633-f7ab83fb6a65.jsonl",
+      "tags": [
+        "source:pi",
+        "harness:pi",
+        "project:gitee-com-shouqitao-lybtzyzs",
+        "repo:lybtzyzs-ee2ee597dc7c",
+        "session:624f69037e5a48e5"
+      ],
+      "outcome": {
+        "itemsCount": 1,
+        "operations": 1
+      }
+    },
+    {
+      "createdAt": "2026-08-13T10:42:29.985Z",
+      "bankId": "pi-coding",
+      "documentId": "pi-explicit:b611b6a9c22fc09b:634068f4872b99d5",
+      "queueJobId": "07526318-3929-4fa0-b5b0-52454d2c7392",
+      "updateMode": "replace",
+      "source": "tool",
+      "context": "LYBTZYZS 项目部署/测试操作备忘，2026-08-13 真机调查与部署中确认",
+      "tags": [
+        "source:pi",
+        "harness:pi",
+        "project:gitee-com-shouqitao-lybtzyzs",
+        "repo:lybtzyzs-ee2ee597dc7c",
+        "session:b611b6a9c22fc09b",
+        "lybtzyzs",
+        "deployment",
+        "test-accounts",
+        "ops"
+      ],
+      "outcome": {
+        "itemsCount": 1,
+        "operations": 1
+      }
+    },
+    {
+      "createdAt": "2026-08-13T10:03:07.714Z",
+      "bankId": "pi-coding",
+      "documentId": "pi-session:b611b6a9c22fc09b",
+      "queueJobId": "5f860eea-a79f-4972-9b7f-f5125f577221",
+      "updateMode": "append",
+      "source": "queue",
+      "context": "Pi coding session for repo \"LYBTZYZS\", session 2026-08-13T09-27-20-018Z_019ffa72-90d2-7954-a45e-ca267817dfd1.jsonl",
+      "tags": [
+        "source:pi",
+        "harness:pi",
+        "project:gitee-com-shouqitao-lybtzyzs",
+        "repo:lybtzyzs-ee2ee597dc7c",
+        "session:b611b6a9c22fc09b"
+      ],
+      "outcome": {
+        "itemsCount": 1,
+        "operations": 1
+      }
+    },
+    {
       "createdAt": "2026-08-13T09:26:58.417Z",
       "bankId": "pi-coding",
       "documentId": "pi-session:dda8a13c95c9cc69",

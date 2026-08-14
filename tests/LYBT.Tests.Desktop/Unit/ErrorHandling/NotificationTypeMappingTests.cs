@@ -21,8 +21,12 @@ public class NotificationTypeMappingTests
     public void US_ERR_008_ExceptionSeverity_HasExpectedMemberCount()
     {
         var values = Enum.GetValues<ExceptionSeverity>();
-        values.Length.Should().Be(4,
-            "ExceptionSeverity should have exactly 4 levels: Information, Warning, Error, Critical");
+        values
+            .Length.Should()
+            .Be(
+                4,
+                "ExceptionSeverity should have exactly 4 levels: Information, Warning, Error, Critical"
+            );
     }
 
     #endregion
