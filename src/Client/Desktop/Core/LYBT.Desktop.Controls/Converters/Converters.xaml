@@ -7,12 +7,10 @@
     <!-- Bool to Visibility -->
     <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
-    <converters:InverseBooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter" />
 
     <!-- Bool to other types -->
     <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
     <converters:BoolToBrushConverter x:Key="BoolToBrushConverter" />
-    <converters:BoolToDoubleConverter x:Key="BoolToDoubleConverter" />
     <!-- ========== Visibility Converters ========== -->
 
     <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
@@ -22,8 +20,6 @@
     <!-- ========== Enum/Status Converters ========== -->
 
     <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
-    <converters:ApiHealthStatusToColorConverter x:Key="ApiHealthStatusToColorConverter" />
-    <converters:ApiHealthStatusToTextConverter x:Key="ApiHealthStatusToTextConverter" />
 
     <!-- ========== String Converters ========== -->
 
