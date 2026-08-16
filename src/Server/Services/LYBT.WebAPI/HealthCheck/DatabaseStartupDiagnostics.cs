@@ -1,4 +1,5 @@
 using LYBT.Shared.Configuration.Options.Server;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 
@@ -12,13 +13,16 @@ public class DatabaseStartupDiagnostics : IHostedService
 {
     private readonly ILogger<DatabaseStartupDiagnostics> _logger;
     private readonly DatabaseOptions _dbOptions;
+    private readonly IConfiguration _configuration;
 
     public DatabaseStartupDiagnostics(
         ILogger<DatabaseStartupDiagnostics> logger,
-        IOptions<DatabaseOptions> dbOptions)
+        IOptions<DatabaseOptions> dbOptions,
+        IConfiguration configuration)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _dbOptions = dbOptions?.Value ?? throw new ArgumentNullException(nameof(dbOptions));
+        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -27,11 +31,11 @@ public class DatabaseStartupDiagnostics : IHostedService
 
         try
         {
-            // 1. 读取连接字符串
-            var connectionString = _dbOptions.ConnectionString;
+            // 1. 读取连接字符串（统一 fallback 链，防复制漂移）
+            var connectionString = DatabaseConnectionResolver.Resolve(_configuration, _dbOptions);
             if (string.IsNullOrEmpty(connectionString))
             {
-                _logger.LogError(" [DatabaseStartupDiagnostics] 未找到连接字符串 'ConnectionStrings:DefaultConnection'");
+                _logger.LogError("[DatabaseStartupDiagnostics] 未找到连接字符串（检查 Database:ConnectionString / ConnectionStrings:DefaultConnection / CONNECTION_STRING 环境变量）");
                 return;
             }
 
