@@ -1,0 +1,3470 @@
+{
+  "version": "2.17",
+  "children": [
+    {
+      "type": "frame",
+      "id": "YdQZX",
+      "x": 0,
+      "y": 0,
+      "name": "患者管理列表",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "$bg",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "KdaI5",
+          "name": "顶部应用栏",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "$primary",
+          "gap": 12,
+          "padding": [
+            0,
+            24
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "l0BEhC",
+              "name": "品牌标识",
+              "width": 36,
+              "height": 36,
+              "fill": "$accent",
+              "cornerRadius": 10,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n4Q3U",
+                  "name": "标识字",
+                  "fill": "$primary-dark",
+                  "content": "凌",
+                  "fontFamily": "$font-ui",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "dsUcL",
+              "name": "诊所名",
+              "fill": "$on-primary",
+              "content": "凌隐宝堂",
+              "fontFamily": "$font-ui",
+              "fontSize": 17,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "H8kD5",
+              "name": "页面名",
+              "fill": "#D9C7C1",
+              "content": "患者管理",
+              "fontFamily": "$font-ui",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "q9ZOp",
+              "name": "弹性占位",
+              "width": "fill_container",
+              "height": "fill_container"
+            },
+            {
+              "type": "icon",
+              "id": "JiMG4",
+              "name": "通知图标",
+              "width": 22,
+              "height": 22,
+              "icon": "notifications",
+              "library": "Material Symbols Rounded",
+              "fill": "#F0E4DE"
+            },
+            {
+              "type": "frame",
+              "id": "smvaf",
+              "name": "头像",
+              "width": 32,
+              "height": 32,
+              "fill": "$accent",
+              "cornerRadius": 16,
+              "justifyContent": "center",
+              "alignItems": "center"
+            },
+            {
+              "type": "text",
+              "id": "Oshxo",
+              "name": "头像字",
+              "fill": "$primary-dark",
+              "content": "陈",
+              "fontFamily": "$font-ui",
+              "fontSize": 13,
+              "fontWeight": "600"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "dWiFt",
+          "name": "工具栏",
+          "width": "fill_container",
+          "height": 76,
+          "fill": "$surface",
+          "gap": 10,
+          "padding": [
+            0,
+            24
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "PZp0W",
+              "name": "新增患者按钮",
+              "height": 40,
+              "fill": "$primary",
+              "cornerRadius": 20,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#336D4C41",
+                "offset": {
+                  "x": 0,
+                  "y": 2
+                },
+                "blur": 6
+              },
+              "gap": 8,
+              "padding": [
+                0,
+                18
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "QtEZm",
+                  "name": "加号",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "add",
+                  "library": "Material Symbols Rounded",
+                  "fill": "$on-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "uFj0H",
+                  "name": "按钮文字",
+                  "fill": "$on-primary",
+                  "content": "新增患者",
+                  "fontFamily": "$font-ui",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "j31OAk",
+              "name": "导入按钮",
+              "height": 40,
+              "fill": "$primary-soft",
+              "cornerRadius": 20,
+              "gap": 8,
+              "padding": [
+                0,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "uKMJv",
+                  "name": "上传",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "upload_file",
+                  "library": "Material Symbols Rounded",
+                  "fill": "$primary"
+                },
+                {
+                  "type": "text",
+                  "id": "EZKWJ",
+                  "name": "按钮文字",
+                  "fill": "$primary",
+                  "content": "导入",
+                  "fontFamily": "$font-ui",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "bloOI",
+              "name": "导出按钮",
+              "height": 40,
+              "fill": "$surface",
+              "cornerRadius": 20,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "gap": 8,
+              "padding": [
+                0,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "pY7id",
+                  "name": "下载",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "download",
+                  "library": "Material Symbols Rounded",
+                  "fill": "$text-secondary"
+                },
+                {
+                  "type": "text",
+                  "id": "W4cJYS",
+                  "name": "按钮文字",
+                  "fill": "$text-secondary",
+                  "content": "导出",
+                  "fontFamily": "$font-ui",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "JkayW",
+              "name": "弹性占位",
+              "width": "fill_container",
+              "height": "fill_container"
+            },
+            {
+              "type": "frame",
+              "id": "jlkw2",
+              "name": "搜索框",
+              "width": 340,
+              "height": 40,
+              "fill": "#F5EFE8",
+              "cornerRadius": 20,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "gap": 10,
+              "padding": [
+                0,
+                14
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "GcpbE",
+                  "name": "搜索",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "search",
+                  "library": "Material Symbols Rounded",
+                  "fill": "$text-secondary"
+                },
+                {
+                  "type": "text",
+                  "id": "MnO1f",
+                  "name": "占位文字",
+                  "fill": "#B49B8F",
+                  "content": "搜索姓名 / 手机号 / 身份证号",
+                  "fontFamily": "$font-ui",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "F04dKi",
+              "name": "筛选按钮",
+              "height": 40,
+              "fill": "$surface",
+              "cornerRadius": 20,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "gap": 6,
+              "padding": [
+                0,
+                14
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "RfVJV",
+                  "name": "筛选",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "tune",
+                  "library": "Material Symbols Rounded",
+                  "fill": "$primary"
+                },
+                {
+                  "type": "text",
+                  "id": "WUEWt",
+                  "name": "按钮文字",
+                  "fill": "$primary",
+                  "content": "筛选",
+                  "fontFamily": "$font-ui",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "HnZoX",
+          "name": "内容区",
+          "width": "fill_container",
+          "height": "fill_container",
+          "gap": 16,
+          "padding": [
+            0,
+            24,
+            24,
+            24
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "NqGCm",
+              "name": "患者列表卡片",
+              "clip": true,
+              "width": 880,
+              "height": "fill_container",
+              "fill": "$surface",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "hkDkP",
+                  "name": "顶部装饰条",
+                  "width": "fill_container",
+                  "height": 4,
+                  "fill": "$accent"
+                },
+                {
+                  "type": "frame",
+                  "id": "sktHg",
+                  "name": "卡片标题行",
+                  "width": "fill_container",
+                  "height": 58,
+                  "gap": 10,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "xHWy9",
+                      "name": "标题",
+                      "fill": "$text-primary",
+                      "content": "患者列表",
+                      "fontFamily": "$font-ui",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "S7lb5Y",
+                      "name": "总数徽标",
+                      "height": 24,
+                      "fill": "$primary-soft",
+                      "cornerRadius": 12,
+                      "padding": [
+                        0,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "GjC6l",
+                          "name": "徽标文字",
+                          "fill": "$primary",
+                          "content": "共 1,286 人",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "zWYhg",
+                      "name": "弹性占位",
+                      "width": "fill_container",
+                      "height": "fill_container"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WNsNd",
+                      "name": "今日新增提示",
+                      "height": 26,
+                      "fill": "#FFF3D6",
+                      "cornerRadius": 13,
+                      "gap": 6,
+                      "padding": [
+                        0,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "d5zNY",
+                          "name": "提示点",
+                          "width": 13,
+                          "height": 13,
+                          "icon": "favorite",
+                          "library": "Material Symbols Rounded",
+                          "fill": "#FF8F00"
+                        },
+                        {
+                          "type": "text",
+                          "id": "RdT13",
+                          "name": "提示文字",
+                          "fill": "#8A5A00",
+                          "content": "今日新增 3 人",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "QLgrB",
+                  "name": "表头行",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#F7F1EB",
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "f5CPit",
+                      "name": "表头单元格 患者",
+                      "width": 230,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "L4xrp",
+                          "name": "表头文字",
+                          "fill": "$text-secondary",
+                          "content": "患者",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "hb3rI",
+                      "name": "表头单元格 性别",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "LMUew",
+                          "name": "表头文字",
+                          "fill": "$text-secondary",
+                          "content": "性别",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "TIlK6",
+                      "name": "表头单元格 年龄",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "m0paab",
+                          "name": "表头文字",
+                          "fill": "$text-secondary",
+                          "content": "年龄",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "VKn4t",
+                      "name": "表头单元格 联系电话",
+                      "width": 162,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "mnjfn",
+                          "name": "表头文字",
+                          "fill": "$text-secondary",
+                          "content": "联系电话",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "kTp9n",
+                      "name": "表头单元格 最近就诊",
+                      "width": 140,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Y2KcK6",
+                          "name": "表头文字",
+                          "fill": "$text-secondary",
+                          "content": "最近就诊",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WlEJ8",
+                      "name": "表头单元格 状态",
+                      "width": 128,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "JcaPr",
+                          "name": "表头文字",
+                          "fill": "$text-secondary",
+                          "content": "状态",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "pLJXV",
+                  "name": "数据行 1",
+                  "width": "fill_container",
+                  "height": 52,
+                  "stroke": "#F0E7E0",
+                  "strokeWidth": 1,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Tm9XW",
+                      "name": "姓名单元格",
+                      "width": 230,
+                      "height": "fill_container",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "BIQnK",
+                          "name": "头像",
+                          "width": 34,
+                          "height": 34,
+                          "fill": "#F1E9E4",
+                          "cornerRadius": 17,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "oduGd",
+                              "name": "头像字",
+                              "fill": "#6D4C41",
+                              "content": "张",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "O72Sc",
+                          "name": "姓名列",
+                          "layout": "vertical",
+                          "gap": 1,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "xuGjt",
+                              "name": "姓名",
+                              "fill": "$text-primary",
+                              "content": "张桂芳",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "oq6iI",
+                              "name": "病历号",
+                              "fill": "#B49B8F",
+                              "content": "MZ-2026001",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Xuh0K",
+                      "name": "性别单元格",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "z6tnG",
+                          "name": "性别",
+                          "fill": "$text-primary",
+                          "content": "女",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ZjJ9y",
+                      "name": "年龄单元格",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "J36P7J",
+                          "name": "年龄",
+                          "fill": "$text-primary",
+                          "content": "68 岁",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "OByjV",
+                      "name": "电话单元格",
+                      "width": 162,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "iHJ3C",
+                          "name": "电话",
+                          "fill": "$text-primary",
+                          "content": "138-5821-4477",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Y3Dr3",
+                      "name": "就诊日期单元格",
+                      "width": 140,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "wExtr",
+                          "name": "日期",
+                          "fill": "$text-secondary",
+                          "content": "2026-01-12",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "SUJbQ",
+                      "name": "状态单元格",
+                      "width": 128,
+                      "height": "fill_container",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "g43ni",
+                          "name": "状态徽标",
+                          "height": 24,
+                          "fill": "#EFE3DC",
+                          "cornerRadius": 12,
+                          "gap": 6,
+                          "padding": [
+                            0,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "QTbwm",
+                              "name": "状态点",
+                              "fill": "#6D4C41",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "G5NASc",
+                              "name": "状态文字",
+                              "fill": "#6D4C41",
+                              "content": "复诊中",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "bflKm",
+                  "name": "数据行 2",
+                  "width": "fill_container",
+                  "height": 52,
+                  "stroke": "#F0E7E0",
+                  "strokeWidth": 1,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "YqnqG",
+                      "name": "姓名单元格",
+                      "width": 230,
+                      "height": "fill_container",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "N893Hg",
+                          "name": "头像",
+                          "width": 34,
+                          "height": 34,
+                          "fill": "#FFF3D6",
+                          "cornerRadius": 17,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "fdQut",
+                              "name": "头像字",
+                              "fill": "#8A5A00",
+                              "content": "王",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "zlZwS",
+                          "name": "姓名列",
+                          "layout": "vertical",
+                          "gap": 1,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "P7GrL1",
+                              "name": "姓名",
+                              "fill": "$text-primary",
+                              "content": "王建国",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "PPFAy",
+                              "name": "病历号",
+                              "fill": "#B49B8F",
+                              "content": "MZ-2026002",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "foXWF",
+                      "name": "性别单元格",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "gB69n",
+                          "name": "性别",
+                          "fill": "$text-primary",
+                          "content": "男",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "G3av7",
+                      "name": "年龄单元格",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "m1SgAR",
+                          "name": "年龄",
+                          "fill": "$text-primary",
+                          "content": "57 岁",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "vjZD9",
+                      "name": "电话单元格",
+                      "width": 162,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Rk5Np",
+                          "name": "电话",
+                          "fill": "$text-primary",
+                          "content": "139-0765-2218",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "MGgpK",
+                      "name": "就诊日期单元格",
+                      "width": 140,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "EMkbE",
+                          "name": "日期",
+                          "fill": "$text-secondary",
+                          "content": "2026-01-10",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "DOHaK",
+                      "name": "状态单元格",
+                      "width": 128,
+                      "height": "fill_container",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "QOaQH",
+                          "name": "状态徽标",
+                          "height": 24,
+                          "fill": "#FFE9C2",
+                          "cornerRadius": 12,
+                          "gap": 6,
+                          "padding": [
+                            0,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "d3ChW",
+                              "name": "状态点",
+                              "fill": "#8A5A00",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "gSLEJ",
+                              "name": "状态文字",
+                              "fill": "#8A5A00",
+                              "content": "在治",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "hmzHR",
+                  "name": "数据行 3",
+                  "width": "fill_container",
+                  "height": 52,
+                  "stroke": "#F0E7E0",
+                  "strokeWidth": 1,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "EzxLc",
+                      "name": "姓名单元格",
+                      "width": 230,
+                      "height": "fill_container",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "kXrAx",
+                          "name": "头像",
+                          "width": 34,
+                          "height": 34,
+                          "fill": "#F1E9E4",
+                          "cornerRadius": 17,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "bCp6b",
+                              "name": "头像字",
+                              "fill": "#6D4C41",
+                              "content": "李",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "u7yM7v",
+                          "name": "姓名列",
+                          "layout": "vertical",
+                          "gap": 1,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "h55MRy",
+                              "name": "姓名",
+                              "fill": "$text-primary",
+                              "content": "李秀英",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "aV3RR",
+                              "name": "病历号",
+                              "fill": "#B49B8F",
+                              "content": "MZ-2026003",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "MKibH",
+                      "name": "性别单元格",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ypqXD",
+                          "name": "性别",
+                          "fill": "$text-primary",
+                          "content": "女",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "EWCCv",
+                      "name": "年龄单元格",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "H6MCk",
+                          "name": "年龄",
+                          "fill": "$text-primary",
+                          "content": "74 岁",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "V3utQ",
+                      "name": "电话单元格",
+                      "width": 162,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "L68GN",
+                          "name": "电话",
+                          "fill": "$text-primary",
+                          "content": "136-9245-3301",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "VNtep",
+                      "name": "就诊日期单元格",
+                      "width": 140,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "aLchS",
+                          "name": "日期",
+                          "fill": "$text-secondary",
+                          "content": "2025-12-28",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Mpjtu",
+                      "name": "状态单元格",
+                      "width": 128,
+                      "height": "fill_container",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "UySRe",
+                          "name": "状态徽标",
+                          "height": 24,
+                          "fill": "#EFE3DC",
+                          "cornerRadius": 12,
+                          "gap": 6,
+                          "padding": [
+                            0,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "te5fb",
+                              "name": "状态点",
+                              "fill": "#6D4C41",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "Tmj9m",
+                              "name": "状态文字",
+                              "fill": "#6D4C41",
+                              "content": "复诊中",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "a2tFq6",
+                  "name": "数据行 4",
+                  "width": "fill_container",
+                  "height": 52,
+                  "stroke": "#F0E7E0",
+                  "strokeWidth": 1,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "FkWB3",
+                      "name": "姓名单元格",
+                      "width": 230,
+                      "height": "fill_container",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Z9wuJ",
+                          "name": "头像",
+                          "width": 34,
+                          "height": 34,
+                          "fill": "#FFF3D6",
+                          "cornerRadius": 17,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "YEBOO",
+                              "name": "头像字",
+                              "fill": "#8A5A00",
+                              "content": "陈",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "C4IGl",
+                          "name": "姓名列",
+                          "layout": "vertical",
+                          "gap": 1,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "dBYoR",
+                              "name": "姓名",
+                              "fill": "$text-primary",
+                              "content": "陈志远",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "k9Ey0i",
+                              "name": "病历号",
+                              "fill": "#B49B8F",
+                              "content": "MZ-2026004",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "VYE2n",
+                      "name": "性别单元格",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "TShO2",
+                          "name": "性别",
+                          "fill": "$text-primary",
+                          "content": "男",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KLIA0",
+                      "name": "年龄单元格",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "EUDdt",
+                          "name": "年龄",
+                          "fill": "$text-primary",
+                          "content": "45 岁",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "yFKqw",
+                      "name": "电话单元格",
+                      "width": 162,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "sLTih",
+                          "name": "电话",
+                          "fill": "$text-primary",
+                          "content": "137-5540-8892",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "kEP5x",
+                      "name": "就诊日期单元格",
+                      "width": 140,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "g3LUx6",
+                          "name": "日期",
+                          "fill": "$text-secondary",
+                          "content": "2026-01-08",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "K8Kij",
+                      "name": "状态单元格",
+                      "width": 128,
+                      "height": "fill_container",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "wOIbH",
+                          "name": "状态徽标",
+                          "height": 24,
+                          "fill": "#FDE7D6",
+                          "cornerRadius": 12,
+                          "gap": 6,
+                          "padding": [
+                            0,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "nNbd2",
+                              "name": "状态点",
+                              "fill": "#B4551F",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "b2freR",
+                              "name": "状态文字",
+                              "fill": "#B4551F",
+                              "content": "新患者",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "UcuEJ",
+                  "name": "数据行 5",
+                  "width": "fill_container",
+                  "height": 52,
+                  "stroke": "#F0E7E0",
+                  "strokeWidth": 1,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "oHBxn",
+                      "name": "姓名单元格",
+                      "width": 230,
+                      "height": "fill_container",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Kga1C",
+                          "name": "头像",
+                          "width": 34,
+                          "height": 34,
+                          "fill": "#F1E9E4",
+                          "cornerRadius": 17,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "uPNc5",
+                              "name": "头像字",
+                              "fill": "#6D4C41",
+                              "content": "刘",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "wODsU",
+                          "name": "姓名列",
+                          "layout": "vertical",
+                          "gap": 1,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "x5Qb2",
+                              "name": "姓名",
+                              "fill": "$text-primary",
+                              "content": "刘淑兰",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "IHdBe",
+                              "name": "病历号",
+                              "fill": "#B49B8F",
+                              "content": "MZ-2026005",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "S0i856",
+                      "name": "性别单元格",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "FPIdf",
+                          "name": "性别",
+                          "fill": "$text-primary",
+                          "content": "女",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "MpbrY",
+                      "name": "年龄单元格",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "QwoMx",
+                          "name": "年龄",
+                          "fill": "$text-primary",
+                          "content": "62 岁",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "fL7Nl",
+                      "name": "电话单元格",
+                      "width": 162,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "VXcTy",
+                          "name": "电话",
+                          "fill": "$text-primary",
+                          "content": "135-2087-6643",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "E0YKq",
+                      "name": "就诊日期单元格",
+                      "width": 140,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "glOO7",
+                          "name": "日期",
+                          "fill": "$text-secondary",
+                          "content": "2025-12-15",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "xj5ye",
+                      "name": "状态单元格",
+                      "width": 128,
+                      "height": "fill_container",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ZcAdd",
+                          "name": "状态徽标",
+                          "height": 24,
+                          "fill": "#E3F2E5",
+                          "cornerRadius": 12,
+                          "gap": 6,
+                          "padding": [
+                            0,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "a4F9E",
+                              "name": "状态点",
+                              "fill": "#33691E",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "p0BBd",
+                              "name": "状态文字",
+                              "fill": "#33691E",
+                              "content": "已治愈",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ntXIY",
+                  "name": "数据行 6",
+                  "width": "fill_container",
+                  "height": 52,
+                  "stroke": "#F0E7E0",
+                  "strokeWidth": 1,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "A1Hn8m",
+                      "name": "姓名单元格",
+                      "width": 230,
+                      "height": "fill_container",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "jHJwX",
+                          "name": "头像",
+                          "width": 34,
+                          "height": 34,
+                          "fill": "#FFF3D6",
+                          "cornerRadius": 17,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "vyR6T",
+                              "name": "头像字",
+                              "fill": "#8A5A00",
+                              "content": "赵",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "EKX4x",
+                          "name": "姓名列",
+                          "layout": "vertical",
+                          "gap": 1,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "E84Rz",
+                              "name": "姓名",
+                              "fill": "$text-primary",
+                              "content": "赵德明",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "qvYCt",
+                              "name": "病历号",
+                              "fill": "#B49B8F",
+                              "content": "MZ-2026006",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "uIwzy",
+                      "name": "性别单元格",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "t4TzJ",
+                          "name": "性别",
+                          "fill": "$text-primary",
+                          "content": "男",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "SpgDL",
+                      "name": "年龄单元格",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "xnU0j",
+                          "name": "年龄",
+                          "fill": "$text-primary",
+                          "content": "71 岁",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "jw8F2",
+                      "name": "电话单元格",
+                      "width": 162,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ECuuF",
+                          "name": "电话",
+                          "fill": "$text-primary",
+                          "content": "158-3312-9076",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Nmd4c",
+                      "name": "就诊日期单元格",
+                      "width": 140,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "y5nhM",
+                          "name": "日期",
+                          "fill": "$text-secondary",
+                          "content": "2026-01-05",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "mBcsg",
+                      "name": "状态单元格",
+                      "width": 128,
+                      "height": "fill_container",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "V2Oao1",
+                          "name": "状态徽标",
+                          "height": 24,
+                          "fill": "#FFE9C2",
+                          "cornerRadius": 12,
+                          "gap": 6,
+                          "padding": [
+                            0,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "VgbGc",
+                              "name": "状态点",
+                              "fill": "#8A5A00",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "cpAsJ",
+                              "name": "状态文字",
+                              "fill": "#8A5A00",
+                              "content": "在治",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "GjnPw",
+                  "name": "数据行 7",
+                  "width": "fill_container",
+                  "height": 52,
+                  "stroke": "#F0E7E0",
+                  "strokeWidth": 1,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Q1h8vD",
+                      "name": "姓名单元格",
+                      "width": 230,
+                      "height": "fill_container",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "lkgEy",
+                          "name": "头像",
+                          "width": 34,
+                          "height": 34,
+                          "fill": "#F1E9E4",
+                          "cornerRadius": 17,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "uFAXs",
+                              "name": "头像字",
+                              "fill": "#6D4C41",
+                              "content": "孙",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "FVMUl",
+                          "name": "姓名列",
+                          "layout": "vertical",
+                          "gap": 1,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "eS7dY",
+                              "name": "姓名",
+                              "fill": "$text-primary",
+                              "content": "孙慧敏",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "dKBNX",
+                              "name": "病历号",
+                              "fill": "#B49B8F",
+                              "content": "MZ-2026007",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "VHqXl",
+                      "name": "性别单元格",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "unOvi",
+                          "name": "性别",
+                          "fill": "$text-primary",
+                          "content": "女",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "mOWPy",
+                      "name": "年龄单元格",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "rOiwN",
+                          "name": "年龄",
+                          "fill": "$text-primary",
+                          "content": "39 岁",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "yvC6r",
+                      "name": "电话单元格",
+                      "width": 162,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "eaJ9m",
+                          "name": "电话",
+                          "fill": "$text-primary",
+                          "content": "159-6481-2054",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "q2X4Lv",
+                      "name": "就诊日期单元格",
+                      "width": 140,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "fiLm3",
+                          "name": "日期",
+                          "fill": "$text-secondary",
+                          "content": "2025-12-30",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "snl67",
+                      "name": "状态单元格",
+                      "width": 128,
+                      "height": "fill_container",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ZDpGc",
+                          "name": "状态徽标",
+                          "height": 24,
+                          "fill": "#EFE3DC",
+                          "cornerRadius": 12,
+                          "gap": 6,
+                          "padding": [
+                            0,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "VZw8C",
+                              "name": "状态点",
+                              "fill": "#6D4C41",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "D6BXr",
+                              "name": "状态文字",
+                              "fill": "#6D4C41",
+                              "content": "复诊中",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "k9uAz",
+                  "name": "数据行 8",
+                  "width": "fill_container",
+                  "height": 52,
+                  "stroke": "#F0E7E0",
+                  "strokeWidth": 1,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "pH9WS",
+                      "name": "姓名单元格",
+                      "width": 230,
+                      "height": "fill_container",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ka2C3",
+                          "name": "头像",
+                          "width": 34,
+                          "height": 34,
+                          "fill": "#FFF3D6",
+                          "cornerRadius": 17,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "XaW94",
+                              "name": "头像字",
+                              "fill": "#8A5A00",
+                              "content": "周",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "EW2VF",
+                          "name": "姓名列",
+                          "layout": "vertical",
+                          "gap": 1,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "PnGhY",
+                              "name": "姓名",
+                              "fill": "$text-primary",
+                              "content": "周永康",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "u4V12e",
+                              "name": "病历号",
+                              "fill": "#B49B8F",
+                              "content": "MZ-2026008",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "E4l9AC",
+                      "name": "性别单元格",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "fM4vt",
+                          "name": "性别",
+                          "fill": "$text-primary",
+                          "content": "男",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "pPBIS",
+                      "name": "年龄单元格",
+                      "width": 90,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "XBtFd",
+                          "name": "年龄",
+                          "fill": "$text-primary",
+                          "content": "52 岁",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ssCEw",
+                      "name": "电话单元格",
+                      "width": 162,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "GOCEP",
+                          "name": "电话",
+                          "fill": "$text-primary",
+                          "content": "186-0912-7735",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Vy4wx",
+                      "name": "就诊日期单元格",
+                      "width": 140,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "hvfQb",
+                          "name": "日期",
+                          "fill": "$text-secondary",
+                          "content": "2025-12-20",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "wqZn0",
+                      "name": "状态单元格",
+                      "width": 128,
+                      "height": "fill_container",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "pUyxe",
+                          "name": "状态徽标",
+                          "height": 24,
+                          "fill": "#E3F2E5",
+                          "cornerRadius": 12,
+                          "gap": 6,
+                          "padding": [
+                            0,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "LYTvs",
+                              "name": "状态点",
+                              "fill": "#33691E",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "G5ezVg",
+                              "name": "状态文字",
+                              "fill": "#33691E",
+                              "content": "已治愈",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "BFNCt",
+                  "name": "分页栏",
+                  "width": "fill_container",
+                  "height": 56,
+                  "gap": 6,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "KGV8K",
+                      "name": "总计",
+                      "fill": "$text-secondary",
+                      "content": "显示 1-8 / 共 1,286 位患者",
+                      "fontFamily": "$font-ui",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "PUxTx",
+                      "name": "弹性占位",
+                      "width": "fill_container",
+                      "height": "fill_container"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "q8ZSAZ",
+                      "name": "上一页",
+                      "width": 30,
+                      "height": 30,
+                      "fill": "$surface",
+                      "cornerRadius": 15,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "f9e8P",
+                          "name": "左箭头",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "chevron_left",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$text-secondary"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "xBhdQ",
+                      "name": "页码按钮",
+                      "width": 30,
+                      "height": 30,
+                      "fill": "$primary",
+                      "cornerRadius": 15,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "wRfoG",
+                          "name": "页码",
+                          "fill": "$on-primary",
+                          "content": "1",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "z6hTO2",
+                      "name": "页码按钮",
+                      "width": 30,
+                      "height": 30,
+                      "fill": "$surface",
+                      "cornerRadius": 15,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "nkCCS",
+                          "name": "页码",
+                          "fill": "$text-secondary",
+                          "content": "2",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 12
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "W7XgOc",
+                      "name": "页码按钮",
+                      "width": 30,
+                      "height": 30,
+                      "fill": "$surface",
+                      "cornerRadius": 15,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "aK8R1",
+                          "name": "页码",
+                          "fill": "$text-secondary",
+                          "content": "3",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 12
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "uIn5b",
+                      "name": "页码按钮",
+                      "width": 30,
+                      "height": 30,
+                      "fill": "$surface",
+                      "cornerRadius": 15,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "E7CSI",
+                          "name": "页码",
+                          "fill": "$text-secondary",
+                          "content": "…",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 12
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "eYw7v",
+                      "name": "页码按钮",
+                      "width": 30,
+                      "height": 30,
+                      "fill": "$surface",
+                      "cornerRadius": 15,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "kTeV4",
+                          "name": "页码",
+                          "fill": "$text-secondary",
+                          "content": "43",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 12
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "PQR9J",
+                      "name": "下一页",
+                      "width": 30,
+                      "height": 30,
+                      "fill": "$surface",
+                      "cornerRadius": 15,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "K3Qczb",
+                          "name": "右箭头",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "chevron_right",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$text-secondary"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "u0Y2w",
+              "name": "患者详情面板",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "UrYo9",
+                  "name": "基本信息卡片",
+                  "width": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 12,
+                  "layout": "vertical",
+                  "gap": 14,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "yaTIB",
+                      "name": "信息头部",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "y4UDs",
+                          "name": "大头像",
+                          "width": 48,
+                          "height": 48,
+                          "fill": "#FFF3D6",
+                          "cornerRadius": 24,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "eRfQt",
+                              "name": "头像字",
+                              "fill": "#8A5A00",
+                              "content": "张",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 20,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Q8AT7",
+                          "name": "姓名列",
+                          "layout": "vertical",
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "f3IAT",
+                              "name": "姓名",
+                              "fill": "$text-primary",
+                              "content": "张桂芳",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 18,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "q4dkgX",
+                              "name": "病历号",
+                              "fill": "#B49B8F",
+                              "content": "病历号 MZ-2026001 · 建档于 2024-03-18",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "e1Ug5A",
+                          "name": "弹性占位",
+                          "width": "fill_container",
+                          "height": 20
+                        },
+                        {
+                          "type": "frame",
+                          "id": "gyeFM",
+                          "name": "状态徽标",
+                          "height": 26,
+                          "fill": "#EFE3DC",
+                          "cornerRadius": 13,
+                          "gap": 6,
+                          "padding": [
+                            0,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "eAeRH",
+                              "name": "状态点",
+                              "fill": "#6D4C41",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "RtiUW",
+                              "name": "状态文字",
+                              "fill": "#6D4C41",
+                              "content": "复诊中",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "icon",
+                          "id": "w0VWx",
+                          "name": "编辑",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "edit",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$text-secondary"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "hewLo",
+                      "name": "信息行 1",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "DLtjj",
+                          "name": "信息项",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "U8Dgz3",
+                              "name": "标签",
+                              "fill": "#B49B8F",
+                              "content": "性别",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "yG0od",
+                              "name": "值",
+                              "fill": "$text-primary",
+                              "content": "女",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Hhfv5",
+                          "name": "信息项",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "QD7Aj",
+                              "name": "标签",
+                              "fill": "#B49B8F",
+                              "content": "年龄",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "wUpu8",
+                              "name": "值",
+                              "fill": "$text-primary",
+                              "content": "68 岁",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "a4qkW",
+                          "name": "信息项",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "hgoSQ",
+                              "name": "标签",
+                              "fill": "#B49B8F",
+                              "content": "联系电话",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "zoZB5",
+                              "name": "值",
+                              "fill": "$text-primary",
+                              "content": "138-5821-4477",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dwzpy",
+                      "name": "信息行 2",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "trdKP",
+                          "name": "信息项",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "p8mXHY",
+                              "name": "标签",
+                              "fill": "#B49B8F",
+                              "content": "身份证号",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Zd0Gx",
+                              "name": "值",
+                              "fill": "$text-primary",
+                              "content": "3301**********2246",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "mgr3w",
+                          "name": "信息项",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "mrbcR",
+                              "name": "标签",
+                              "fill": "#B49B8F",
+                              "content": "会员等级",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "t1u6Me",
+                              "name": "值",
+                              "fill": "$text-primary",
+                              "content": "金卡会员",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "P6Xy10",
+                          "name": "信息项",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "kIeLw",
+                              "name": "标签",
+                              "fill": "#B49B8F",
+                              "content": "过敏史",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "HWkv4",
+                              "name": "值",
+                              "fill": "$text-primary",
+                              "content": "青霉素过敏",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "jYFGC",
+                  "name": "就诊历史卡片",
+                  "width": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 12,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "TvFsd",
+                      "name": "标题行",
+                      "width": "fill_container",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ewwWY",
+                          "name": "标题",
+                          "fill": "$text-primary",
+                          "content": "就诊历史",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Tyqid",
+                          "name": "弹性占位",
+                          "width": "fill_container",
+                          "height": 20
+                        },
+                        {
+                          "type": "text",
+                          "id": "o383RZ",
+                          "name": "查看全部",
+                          "fill": "$primary",
+                          "content": "查看全部",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 12,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "oMvgQ",
+                      "name": "就诊记录 1",
+                      "width": "fill_container",
+                      "gap": 14,
+                      "padding": [
+                        10,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "j4OfrL",
+                          "name": "日期块",
+                          "width": 52,
+                          "fill": "$primary-soft",
+                          "cornerRadius": 8,
+                          "layout": "vertical",
+                          "gap": 2,
+                          "padding": [
+                            6,
+                            0
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "iIhy4",
+                              "name": "月日",
+                              "fill": "$primary",
+                              "content": "01-12",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "FXUcX",
+                              "name": "年份",
+                              "fill": "#B49B8F",
+                              "content": "2026",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 10,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "zL7Af",
+                          "name": "记录内容",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "tThxm",
+                              "name": "主诉",
+                              "fill": "$text-primary",
+                              "content": "失眠多梦 · 气血两虚",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Itotj",
+                              "name": "医师",
+                              "fill": "$text-secondary",
+                              "content": "陈志华 主任医师 · 归脾汤加减 7 剂",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "JkTg5",
+                      "name": "就诊记录 2",
+                      "width": "fill_container",
+                      "gap": 14,
+                      "padding": [
+                        10,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "pdthV",
+                          "name": "日期块",
+                          "width": 52,
+                          "fill": "$primary-soft",
+                          "cornerRadius": 8,
+                          "layout": "vertical",
+                          "gap": 2,
+                          "padding": [
+                            6,
+                            0
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "SmjwW",
+                              "name": "月日",
+                              "fill": "$primary",
+                              "content": "12-28",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "wAWk2",
+                              "name": "年份",
+                              "fill": "#B49B8F",
+                              "content": "2025",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 10,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "N7YQcf",
+                          "name": "记录内容",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "SrpQC",
+                              "name": "主诉",
+                              "fill": "$text-primary",
+                              "content": "胃脘胀满 · 肝气郁结",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "t7I4fW",
+                              "name": "医师",
+                              "fill": "$text-secondary",
+                              "content": "陈志华 主任医师 · 柴胡疏肝散 5 剂",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qg5YJ",
+                      "name": "就诊记录 3",
+                      "width": "fill_container",
+                      "gap": 14,
+                      "padding": [
+                        10,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "IUXUm",
+                          "name": "日期块",
+                          "width": 52,
+                          "fill": "$primary-soft",
+                          "cornerRadius": 8,
+                          "layout": "vertical",
+                          "gap": 2,
+                          "padding": [
+                            6,
+                            0
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "whETA",
+                              "name": "月日",
+                              "fill": "$primary",
+                              "content": "12-10",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "ByO6S",
+                              "name": "年份",
+                              "fill": "#B49B8F",
+                              "content": "2025",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 10,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "QpH3K",
+                          "name": "记录内容",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "fBkL2",
+                              "name": "主诉",
+                              "fill": "$text-primary",
+                              "content": "头晕乏力 · 脾肾亏虚",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "XlhXr",
+                              "name": "医师",
+                              "fill": "$text-secondary",
+                              "content": "林雅芝 主治医师 · 六味地黄丸 14 剂",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "X0sAw2",
+                  "name": "处方记录卡片",
+                  "width": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 12,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "sVmbw",
+                      "name": "标题行",
+                      "width": "fill_container",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BrF8Z",
+                          "name": "标题",
+                          "fill": "$text-primary",
+                          "content": "处方记录",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "B09Mjy",
+                          "name": "弹性占位",
+                          "width": "fill_container",
+                          "height": 20
+                        },
+                        {
+                          "type": "text",
+                          "id": "bicd3",
+                          "name": "查看全部",
+                          "fill": "$primary",
+                          "content": "查看全部",
+                          "fontFamily": "$font-ui",
+                          "fontSize": 12,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "bjB4p",
+                      "name": "处方记录 1",
+                      "width": "fill_container",
+                      "gap": 14,
+                      "padding": [
+                        10,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Fdrq5",
+                          "name": "处方图标块",
+                          "width": 36,
+                          "height": 36,
+                          "fill": "#FFF3D6",
+                          "cornerRadius": 10,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "I5t7gO",
+                              "name": "方剂图标",
+                              "width": 20,
+                              "height": 20,
+                              "icon": "medication",
+                              "library": "Material Symbols Rounded",
+                              "fill": "#8A5A00"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "dJM5h",
+                          "name": "处方内容",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "d0LpUQ",
+                              "name": "方名",
+                              "fill": "$text-primary",
+                              "content": "归脾汤加减",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "R8s1w",
+                              "name": "用法",
+                              "fill": "$text-secondary",
+                              "content": "7 剂 · 水煎服，日一剂 · 2026-01-12 开具",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "wrL5I",
+                          "name": "取药徽标",
+                          "height": 24,
+                          "fill": "#EFE3DC",
+                          "cornerRadius": 12,
+                          "gap": 6,
+                          "padding": [
+                            0,
+                            9
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "EDQNn",
+                              "name": "取药文字",
+                              "fill": "#6D4C41",
+                              "content": "已取药",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "kKbfA",
+                      "name": "处方记录 2",
+                      "width": "fill_container",
+                      "gap": 14,
+                      "padding": [
+                        10,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "hXxS6",
+                          "name": "处方图标块",
+                          "width": 36,
+                          "height": 36,
+                          "fill": "#FFF3D6",
+                          "cornerRadius": 10,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "jcx4X",
+                              "name": "方剂图标",
+                              "width": 20,
+                              "height": 20,
+                              "icon": "medication",
+                              "library": "Material Symbols Rounded",
+                              "fill": "#8A5A00"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "IqNIZ",
+                          "name": "处方内容",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "utJxN",
+                              "name": "方名",
+                              "fill": "$text-primary",
+                              "content": "柴胡疏肝散",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "G1Dj21",
+                              "name": "用法",
+                              "fill": "$text-secondary",
+                              "content": "5 剂 · 水煎服，日一剂 · 2025-12-28 开具",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "fjyA8",
+                          "name": "取药徽标",
+                          "height": 24,
+                          "fill": "#EFE3DC",
+                          "cornerRadius": 12,
+                          "gap": 6,
+                          "padding": [
+                            0,
+                            9
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "gYTu3",
+                              "name": "取药文字",
+                              "fill": "#6D4C41",
+                              "content": "已取药",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ofGVG",
+                      "name": "处方记录 3",
+                      "width": "fill_container",
+                      "gap": 14,
+                      "padding": [
+                        10,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "FPaIv",
+                          "name": "处方图标块",
+                          "width": 36,
+                          "height": 36,
+                          "fill": "#FFF3D6",
+                          "cornerRadius": 10,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "h27qN",
+                              "name": "方剂图标",
+                              "width": 20,
+                              "height": 20,
+                              "icon": "medication",
+                              "library": "Material Symbols Rounded",
+                              "fill": "#8A5A00"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "eZiby",
+                          "name": "处方内容",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "mmExB",
+                              "name": "方名",
+                              "fill": "$text-primary",
+                              "content": "六味地黄丸",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "DqTqx",
+                              "name": "用法",
+                              "fill": "$text-secondary",
+                              "content": "14 剂 · 浓缩丸，日三次 · 2025-12-10 开具",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "nqYG3",
+                          "name": "取药徽标",
+                          "height": 24,
+                          "fill": "#EFE3DC",
+                          "cornerRadius": 12,
+                          "gap": 6,
+                          "padding": [
+                            0,
+                            9
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "epK2S",
+                              "name": "取药文字",
+                              "fill": "#6D4C41",
+                              "content": "已取药",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "bg": {
+      "type": "color",
+      "value": "#F6F1EA"
+    },
+    "surface": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "primary": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "primary-dark": {
+      "type": "color",
+      "value": "#4E342E"
+    },
+    "primary-soft": {
+      "type": "color",
+      "value": "#F1E9E4"
+    },
+    "accent": {
+      "type": "color",
+      "value": "#FFB300"
+    },
+    "accent-dark": {
+      "type": "color",
+      "value": "#8A5A00"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#3E2723"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#8D6E63"
+    },
+    "border": {
+      "type": "color",
+      "value": "#E9DFD7"
+    },
+    "on-primary": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "font-ui": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    }
+  },
+  "fileToken": "e2bcb57e-ff37-4926-96f1-0c44d495ec7f"
+}

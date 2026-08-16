@@ -1,0 +1,788 @@
+{
+  "version": "2.17",
+  "children": [
+    {
+      "type": "frame",
+      "id": "Phae8",
+      "x": 0,
+      "y": 0,
+      "name": "登录界面-良医堂",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "b3WxD",
+          "name": "主体区域",
+          "width": "fill_container",
+          "height": "fill_container",
+          "children": [
+            {
+              "type": "frame",
+              "id": "nbKNR",
+              "name": "左侧品牌区",
+              "width": 780,
+              "height": "fill_container",
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 135,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "$primary-dark",
+                    "position": 0
+                  },
+                  {
+                    "color": "$primary-deep",
+                    "position": 1
+                  }
+                ]
+              },
+              "layout": "vertical",
+              "gap": 20,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "DoIYZ",
+                  "name": "品牌标识容器",
+                  "width": 116,
+                  "height": 116,
+                  "fill": "#FFFFFF14",
+                  "cornerRadius": 30,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "R8M0c",
+                      "name": "品牌标识",
+                      "width": 96,
+                      "height": 96,
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": 135,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "#FFC14D",
+                            "position": 0
+                          },
+                          {
+                            "color": "#F59E0B",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "cornerRadius": 48,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "Zsv5I",
+                          "x": 26,
+                          "y": 26,
+                          "name": "草药叶图标",
+                          "width": 44,
+                          "height": 44,
+                          "icon": "leaf",
+                          "library": "lucide",
+                          "fill": "#4E342E"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "g2rFDt",
+                          "x": 62,
+                          "y": 14,
+                          "name": "医疗十字图标",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "cross",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "s7ZCUm",
+                  "name": "系统名称-良医堂",
+                  "fill": "#FFFFFF",
+                  "content": "良医堂",
+                  "fontFamily": "$font-brand",
+                  "fontSize": 50,
+                  "fontWeight": "600",
+                  "letterSpacing": 10
+                },
+                {
+                  "type": "text",
+                  "id": "xovBn",
+                  "name": "系统名称-副标题",
+                  "fill": "#F0DFC8",
+                  "content": "中医诊所管理系统",
+                  "fontFamily": "$font-body",
+                  "fontSize": 19,
+                  "fontWeight": "normal",
+                  "letterSpacing": 8
+                },
+                {
+                  "type": "frame",
+                  "id": "bCIk8",
+                  "name": "琥珀分隔线",
+                  "width": 56,
+                  "height": 3,
+                  "fill": "$accent",
+                  "cornerRadius": 1.5
+                },
+                {
+                  "type": "text",
+                  "id": "wPxjb",
+                  "name": "标语",
+                  "fill": "#C9B8A6",
+                  "content": "传承国医精髓 · 守护万家健康",
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "normal",
+                  "letterSpacing": 2
+                },
+                {
+                  "type": "ellipse",
+                  "id": "eB4Hv",
+                  "layoutPosition": "absolute",
+                  "x": -140,
+                  "y": -160,
+                  "name": "装饰光环A",
+                  "fill": "#FFB30014",
+                  "width": 380,
+                  "height": 380
+                },
+                {
+                  "type": "ellipse",
+                  "id": "Q7bvsY",
+                  "layoutPosition": "absolute",
+                  "x": 580,
+                  "y": 680,
+                  "name": "装饰光环B",
+                  "fill": "#FFFFFF0A",
+                  "width": 200,
+                  "height": 200
+                },
+                {
+                  "type": "ellipse",
+                  "id": "S41b4L",
+                  "layoutPosition": "absolute",
+                  "x": 600,
+                  "y": 90,
+                  "name": "装饰圆环",
+                  "width": 170,
+                  "height": 170,
+                  "stroke": "#FFB3002E",
+                  "strokeWidth": 1.5
+                },
+                {
+                  "type": "frame",
+                  "id": "DjAsU",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 764,
+                  "name": "品牌区底部信息",
+                  "width": 780,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "el5aG",
+                      "name": "版权行",
+                      "fill": "#A8927E",
+                      "content": "凌隐宝堂中医诊所 · 数字化门诊管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "enkvO",
+                      "name": "版权行2",
+                      "fill": "#8F7A68",
+                      "content": "© 2026 LiangYinTang Clinic System",
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ejBse",
+              "name": "右侧登录区",
+              "width": "fill_container",
+              "height": "fill_container",
+              "fill": "$bg-warm",
+              "layout": "vertical",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "kuN2J",
+                  "name": "登录表单",
+                  "width": 420,
+                  "layout": "vertical",
+                  "gap": 26,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "VZzz5",
+                      "name": "欢迎标题",
+                      "fill": "$text-primary",
+                      "content": "欢迎登录",
+                      "fontFamily": "$font-body",
+                      "fontSize": 30,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "N1gsN",
+                      "name": "欢迎副标题",
+                      "fill": "$text-secondary",
+                      "content": "请使用您的账号登录良医堂中医诊所管理系统",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "welvx",
+                      "name": "用户名输入框",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Q4cKvc",
+                          "name": "用户名标签",
+                          "fill": "#4A403A",
+                          "content": "用户名",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "sEYzH",
+                          "name": "用户名输入",
+                          "width": "fill_container",
+                          "height": 48,
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 8,
+                          "stroke": "$border-soft",
+                          "strokeWidth": 1,
+                          "padding": [
+                            0,
+                            16
+                          ],
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "zotpt",
+                              "name": "用户名左侧",
+                              "gap": 12,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "zVzmC",
+                                  "name": "用户图标",
+                                  "width": 19,
+                                  "height": 19,
+                                  "icon": "user",
+                                  "library": "lucide",
+                                  "fill": "#A0938A"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "oyk0S",
+                                  "name": "用户名内容",
+                                  "fill": "$text-primary",
+                                  "content": "admin",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "r5PZB",
+                              "name": "清除图标",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "x",
+                              "library": "lucide",
+                              "fill": "#B9AFA7"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "medRf",
+                      "name": "密码输入框",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "g7hY5c",
+                          "name": "密码标签",
+                          "fill": "#4A403A",
+                          "content": "密码",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "UU4cU",
+                          "name": "密码输入",
+                          "width": "fill_container",
+                          "height": 48,
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 8,
+                          "stroke": "$border-soft",
+                          "strokeWidth": 1,
+                          "padding": [
+                            0,
+                            16
+                          ],
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "E88MDL",
+                              "name": "密码左侧",
+                              "gap": 12,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "uMikQ",
+                                  "name": "密码图标",
+                                  "width": 19,
+                                  "height": 19,
+                                  "icon": "lock",
+                                  "library": "lucide",
+                                  "fill": "#A0938A"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "mUaay",
+                                  "name": "密码内容",
+                                  "fill": "$text-primary",
+                                  "content": "••••••••",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "x2CSYt",
+                              "name": "显示密码图标",
+                              "width": 18,
+                              "height": 18,
+                              "icon": "eye",
+                              "library": "lucide",
+                              "fill": "#A0938A"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "r06io",
+                      "name": "选项行",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "hTfh8",
+                          "name": "记住密码",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "jCxVf",
+                              "name": "复选框",
+                              "width": 20,
+                              "height": 20,
+                              "fill": "$primary",
+                              "cornerRadius": 5,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "yoqiY",
+                                  "name": "对勾图标",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "check",
+                                  "library": "Material Symbols Rounded",
+                                  "weight": 500,
+                                  "fill": "#FFFFFF"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "h8FFg",
+                              "name": "记住密码文字",
+                              "fill": "#5C534D",
+                              "content": "记住密码",
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "TT7g6",
+                          "name": "忘记密码链接",
+                          "fill": "$primary",
+                          "content": "忘记密码？",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "s7Hq4",
+                      "name": "登录按钮",
+                      "width": "fill_container",
+                      "height": 48,
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": 0,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "$primary",
+                            "position": 0
+                          },
+                          {
+                            "color": "$primary-dark",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "cornerRadius": 24,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#6D4C4140",
+                        "offset": {
+                          "x": 0,
+                          "y": 4
+                        },
+                        "blur": 14
+                      },
+                      "gap": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "JUwA3",
+                          "name": "登录图标",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "log-in",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        },
+                        {
+                          "type": "text",
+                          "id": "JX7Wt",
+                          "name": "登录文字",
+                          "fill": "#FFFFFF",
+                          "content": "登 录",
+                          "fontFamily": "$font-body",
+                          "fontSize": 16,
+                          "fontWeight": "500",
+                          "letterSpacing": 6
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "MnfGW",
+                      "name": "版本信息",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "良医堂中医诊所管理系统 · V1.0.0",
+                      "textAlign": "center",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "KcJ6q",
+          "name": "底部状态栏",
+          "width": "fill_container",
+          "height": 60,
+          "fill": "$bg-warm",
+          "stroke": "#E7DFD7",
+          "strokeWidth": {
+            "top": 1
+          },
+          "padding": [
+            0,
+            28
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "JG0xZ",
+              "name": "模式切换区",
+              "gap": 14,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ZI6Sh",
+                  "name": "连接模式标签",
+                  "fill": "$text-secondary",
+                  "content": "连接模式",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "qET6g",
+                  "name": "分段切换控件",
+                  "fill": "#F1EBE3",
+                  "cornerRadius": 20,
+                  "gap": 4,
+                  "padding": 4,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "dXPJY",
+                      "name": "远程模式段",
+                      "fill": "$primary",
+                      "cornerRadius": 16,
+                      "gap": 6,
+                      "padding": [
+                        6,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "jt6hI",
+                          "name": "远程图标",
+                          "width": 15,
+                          "height": 15,
+                          "icon": "cloud",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        },
+                        {
+                          "type": "text",
+                          "id": "TaSuf",
+                          "name": "远程文字",
+                          "fill": "#FFFFFF",
+                          "content": "远程模式",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "xN5ad",
+                      "name": "本地模式段",
+                      "cornerRadius": 16,
+                      "gap": 6,
+                      "padding": [
+                        6,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "SEnrb",
+                          "name": "本地图标",
+                          "width": 15,
+                          "height": 15,
+                          "icon": "database",
+                          "library": "lucide",
+                          "fill": "$primary"
+                        },
+                        {
+                          "type": "text",
+                          "id": "YyTFw",
+                          "name": "本地文字",
+                          "fill": "$primary",
+                          "content": "本地模式",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "hCBUu",
+              "name": "连接状态区",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "A3qww",
+                  "name": "状态指示灯",
+                  "width": 9,
+                  "height": 9,
+                  "fill": "$success",
+                  "cornerRadius": 4.5
+                },
+                {
+                  "type": "text",
+                  "id": "K5yg3",
+                  "name": "状态文字",
+                  "fill": "$success",
+                  "content": "API 已连接",
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "O3G8T0",
+                  "name": "竖线分隔",
+                  "fill": "#C9C1B9",
+                  "content": "|",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "TS7F0",
+                  "name": "服务器地址",
+                  "fill": "$text-secondary",
+                  "content": "服务器 60.190.215.86:5000",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "primary": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "primary-dark": {
+      "type": "color",
+      "value": "#4E342E"
+    },
+    "primary-deep": {
+      "type": "color",
+      "value": "#3E2723"
+    },
+    "accent": {
+      "type": "color",
+      "value": "#FFB300"
+    },
+    "bg-warm": {
+      "type": "color",
+      "value": "#FBF7F3"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#2F2A26"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#8D8078"
+    },
+    "border-soft": {
+      "type": "color",
+      "value": "#C9C1B9"
+    },
+    "success": {
+      "type": "color",
+      "value": "#2E7D32"
+    },
+    "font-brand": {
+      "type": "string",
+      "value": "Noto Serif SC"
+    },
+    "font-body": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    }
+  },
+  "fileToken": "ad878b68-4250-4974-bcee-5f1493befa5e"
+}

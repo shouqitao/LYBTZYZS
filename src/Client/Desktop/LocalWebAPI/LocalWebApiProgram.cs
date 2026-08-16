@@ -1,34 +1,33 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using LYBT.LocalWebAPI.Data;
-using LYBT.LocalWebAPI.Auth;
-using LYBT.Shared.Logging.Management;
+using System.Threading.RateLimiting;
+using LYBT.Entities.Users;
+using LYBT.Infrastructure.Configuration.Stores;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
-using LYBT.Infrastructure.Configuration.Stores;
 using LYBT.Infrastructure.Validation;
-using LYBT.Module.Identity;
-using LYBT.Module.Patients;
+using LYBT.LocalWebAPI.Auth;
+using LYBT.LocalWebAPI.Data;
 using LYBT.Module.Catalog;
-
+using LYBT.Module.Identity;
+using LYBT.Module.Identity.Services;
 using LYBT.Module.MedicalCases;
+using LYBT.Module.Patients;
 using LYBT.Module.Registrations;
 using LYBT.Module.Reports;
-using LYBT.Module.Identity.Services;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
+using LYBT.Shared.Logging.Management;
 using LYBT.Shared.Models.Utilities.Security;
-using LYBT.Entities.Users;
 using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
-using System.Threading.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace LYBT.LocalWebAPI;
 
@@ -40,31 +39,41 @@ public static class LocalWebApiProgram
         // WebApplication.CreateBuilder 默认按当前目录加载 appsettings.json 会找不到 → Jwt 节缺失 →
         // LocalJwtOptions.SecretKey 空 → IDX10703 key length zero）；环境一并经 WebApplicationOptions 指定
         // （替代原 WebHost.UseEnvironment——CreateBuilder 后调用会抛 NotSupportedException）。
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-        {
-            Args = args ?? [],
-            ContentRootPath = AppContext.BaseDirectory,
-            EnvironmentName = "Development"
-        });
+        var builder = WebApplication.CreateBuilder(
+            new WebApplicationOptions
+            {
+                Args = args ?? [],
+                ContentRootPath = AppContext.BaseDirectory,
+                EnvironmentName = "Development",
+            }
+        );
         return builder;
     }
 
-    public static WebApplication CreateApplication(WebApplicationBuilder builder, string connectionString)
+    public static WebApplication CreateApplication(
+        WebApplicationBuilder builder,
+        string connectionString
+    )
     {
         // DbContext — 使用 AppDbContext（与远程 WebAPI 一致，含审计自动化）
         builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(connectionString));
+            options.UseSqlServer(connectionString)
+        );
 
         // 模块 DbContext（IdentityDbContext 等）与 AppDbContext 同库（ADR-0017 方案 A）
-        builder.Services.AddOptions<DatabaseOptions>()
+        builder
+            .Services.AddOptions<DatabaseOptions>()
             .Configure(o => o.ConnectionString = connectionString);
 
         // 登录统一所需 Options（LoginCommandHandler 注入；Jwt 配置与 LocalJwtConfig 同节）
-        builder.Services.AddOptions<JwtOptions>()
+        builder
+            .Services.AddOptions<JwtOptions>()
             .Bind(builder.Configuration.GetSection(JwtOptions.SectionName));
-        builder.Services.AddOptions<SecurityOptions>()
+        builder
+            .Services.AddOptions<SecurityOptions>()
             .Bind(builder.Configuration.GetSection(SecurityOptions.SectionName));
-        builder.Services.AddOptions<LoginOptions>()
+        builder
+            .Services.AddOptions<LoginOptions>()
             .Bind(builder.Configuration.GetSection(LoginOptions.SectionName))
             .Configure(o =>
             {
@@ -80,10 +89,17 @@ public static class LocalWebApiProgram
         builder.Services.AddHttpContextAccessor();
 
         // 本地运行时配置覆盖存储 — 落盘 {BaseDirectory}/config/runtime-overrides.json，重启不丢（A-18 P1-6，复用远程 JsonFileConfigurationStore 模式）
-        var runtimeOverridesPath = Path.Combine(AppContext.BaseDirectory, "config", "runtime-overrides.json");
-        builder.Services.AddSingleton<IConfigurationStore>(new JsonFileConfigurationStore(runtimeOverridesPath));
+        var runtimeOverridesPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "config",
+            "runtime-overrides.json"
+        );
+        builder.Services.AddSingleton<IConfigurationStore>(
+            new JsonFileConfigurationStore(runtimeOverridesPath)
+        );
 
-        builder.Services.AddControllers()
+        builder
+            .Services.AddControllers()
             .AddApplicationPart(typeof(LYBT.LocalWebAPI.Controllers.HealthController).Assembly);
 
         builder.Services.AddSingleton<LoggingLevelManager>();
@@ -92,7 +108,7 @@ public static class LocalWebApiProgram
         builder.Services.AddIdentityModule(builder.Configuration);
         builder.Services.AddPatientsModule(builder.Configuration);
         builder.Services.AddCatalogModule(builder.Configuration);
-        
+
         builder.Services.AddMedicalCaseModule(builder.Configuration);
         builder.Services.AddRegistrationModule(builder.Configuration);
         builder.Services.AddReportsModule(builder.Configuration);
@@ -122,44 +138,51 @@ public static class LocalWebApiProgram
         builder.Services.AddScoped<IDbContextAccessor, DbContextAccessor>();
         builder.Services.AddScoped<IHealthCheckService, HealthCheckService>();
 
-        builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
-        {
-            options.Password.RequireDigit = PasswordPolicyValidator.Policy.RequireDigit;
-            options.Password.RequiredLength = PasswordPolicyValidator.Policy.MinLength;
-            options.Password.RequireNonAlphanumeric = PasswordPolicyValidator.Policy.RequireSpecialChar;
-            options.Password.RequireUppercase = PasswordPolicyValidator.Policy.RequireUppercase;
-            options.Password.RequireLowercase = PasswordPolicyValidator.Policy.RequireLowercase;
-            options.Lockout.MaxFailedAccessAttempts = 5; // B1 (US-AUTH-002): 对齐远程锁定阈值
-            options.Lockout.AllowedForNewUsers = false;
-        })
-        .AddEntityFrameworkStores<AppDbContext>()
-        .AddDefaultTokenProviders();
+        builder
+            .Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+            {
+                options.Password.RequireDigit = PasswordPolicyValidator.Policy.RequireDigit;
+                options.Password.RequiredLength = PasswordPolicyValidator.Policy.MinLength;
+                options.Password.RequireNonAlphanumeric = PasswordPolicyValidator
+                    .Policy
+                    .RequireSpecialChar;
+                options.Password.RequireUppercase = PasswordPolicyValidator.Policy.RequireUppercase;
+                options.Password.RequireLowercase = PasswordPolicyValidator.Policy.RequireLowercase;
+                options.Lockout.MaxFailedAccessAttempts = 5; // B1 (US-AUTH-002): 对齐远程锁定阈值
+                options.Lockout.AllowedForNewUsers = false;
+            })
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
 
         // Register LocalJwtOptions from configuration
-        builder.Services.AddOptions<LocalJwtOptions>()
+        builder
+            .Services.AddOptions<LocalJwtOptions>()
             .Bind(builder.Configuration.GetSection(LocalJwtOptions.SectionName))
             .ValidateDataAnnotations();
 
-        var localJwtOptions = builder.Configuration
-            .GetSection(LocalJwtOptions.SectionName)
-            .Get<LocalJwtOptions>()
+        var localJwtOptions =
+            builder.Configuration.GetSection(LocalJwtOptions.SectionName).Get<LocalJwtOptions>()
             ?? new LocalJwtOptions();
         LocalJwtConfig.ConfigureServices(builder.Services, localJwtOptions);
 
         builder.Services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-            options.AddFixedWindowLimiter("LocalLogin", opt =>
-            {
-                opt.PermitLimit = 5;
-                opt.Window = TimeSpan.FromMinutes(1);
-                opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                opt.QueueLimit = 0;
-            });
+            options.AddFixedWindowLimiter(
+                "LocalLogin",
+                opt =>
+                {
+                    opt.PermitLimit = 5;
+                    opt.Window = TimeSpan.FromMinutes(1);
+                    opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    opt.QueueLimit = 0;
+                }
+            );
         });
 
         // Register DefaultPasswordOptions from configuration (required by IdentitySeedData)
-        builder.Services.AddOptions<DefaultPasswordOptions>()
+        builder
+            .Services.AddOptions<DefaultPasswordOptions>()
             .Bind(builder.Configuration.GetSection(DefaultPasswordOptions.SectionName))
             .ValidateDataAnnotations();
 
@@ -182,4 +205,3 @@ public static class LocalWebApiProgram
         await LocalWebApiSeedData.SeedAsync(dbContext, scope.ServiceProvider);
     }
 }
-

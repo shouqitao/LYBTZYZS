@@ -1,8 +1,8 @@
 using LYBT.Desktop.Infrastructure.CardReader.Abstractions;
+using LYBT.Desktop.Infrastructure.Services.FeatureToggle;
 using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
-using LYBT.Desktop.Infrastructure.Services.FeatureToggle;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Prism.Ioc;
@@ -21,37 +21,74 @@ public static class PrismConfigurationExtensions
     /// <param name="configuration">配置根</param>
     public static void AddLybtClientConfiguration(
         this IContainerRegistry containerRegistry,
-        IConfiguration configuration)
+        IConfiguration configuration
+    )
     {
         // JWT 配置
         RegisterOptions<JwtOptions>(containerRegistry, configuration, JwtOptions.SectionName);
 
         // API 客户端配置
-        RegisterOptions<ApiClientOptions>(containerRegistry, configuration, ApiClientOptions.SectionName);
+        RegisterOptions<ApiClientOptions>(
+            containerRegistry,
+            configuration,
+            ApiClientOptions.SectionName
+        );
 
         // 客户端会话配置
-        RegisterOptions<ClientSessionOptions>(containerRegistry, configuration, ClientSessionOptions.SectionName);
+        RegisterOptions<ClientSessionOptions>(
+            containerRegistry,
+            configuration,
+            ClientSessionOptions.SectionName
+        );
 
         // 诊所设置配置
-        RegisterOptions<ClinicSettingsOptions>(containerRegistry, configuration, ClinicSettingsOptions.SectionName);
+        RegisterOptions<ClinicSettingsOptions>(
+            containerRegistry,
+            configuration,
+            ClinicSettingsOptions.SectionName
+        );
 
         // 功能开关配置 (US-CFG-004)
-        RegisterOptions<FeatureToggleOptions>(containerRegistry, configuration, FeatureToggleOptions.SectionName);
+        RegisterOptions<FeatureToggleOptions>(
+            containerRegistry,
+            configuration,
+            FeatureToggleOptions.SectionName
+        );
 
         // 读卡器配置 (PRD-13)
-        RegisterOptions<CardReaderOptions>(containerRegistry, configuration, CardReaderOptions.SectionName);
+        RegisterOptions<CardReaderOptions>(
+            containerRegistry,
+            configuration,
+            CardReaderOptions.SectionName
+        );
 
         // 离线模式配置
-        RegisterOptions<OfflineModeOptions>(containerRegistry, configuration, OfflineModeOptions.SectionName);
+        RegisterOptions<OfflineModeOptions>(
+            containerRegistry,
+            configuration,
+            OfflineModeOptions.SectionName
+        );
 
         // 默认密码配置
-        RegisterOptions<DefaultPasswordOptions>(containerRegistry, configuration, DefaultPasswordOptions.SectionName);
+        RegisterOptions<DefaultPasswordOptions>(
+            containerRegistry,
+            configuration,
+            DefaultPasswordOptions.SectionName
+        );
 
         // Desktop 自动更新配置（desktop-di-fix 2026-08-14：原缺失导致 DesktopUpdate 启动步骤 DI 崩溃）
-        RegisterOptions<DesktopUpdateOptions>(containerRegistry, configuration, DesktopUpdateOptions.SectionName);
+        RegisterOptions<DesktopUpdateOptions>(
+            containerRegistry,
+            configuration,
+            DesktopUpdateOptions.SectionName
+        );
 
         // LocalWebAPI JWT 配置
-        RegisterOptions<LocalJwtOptions>(containerRegistry, configuration, LocalJwtOptions.SectionName);
+        RegisterOptions<LocalJwtOptions>(
+            containerRegistry,
+            configuration,
+            LocalJwtOptions.SectionName
+        );
     }
 
     /// <summary>
@@ -60,7 +97,9 @@ public static class PrismConfigurationExtensions
     private static void RegisterOptions<TOptions>(
         IContainerRegistry containerRegistry,
         IConfiguration configuration,
-        string sectionName) where TOptions : class, new()
+        string sectionName
+    )
+        where TOptions : class, new()
     {
         var options = new TOptions();
         configuration.GetSection(sectionName).Bind(options);

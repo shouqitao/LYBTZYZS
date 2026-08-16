@@ -1,0 +1,831 @@
+{
+  "version": "2.17",
+  "children": [
+    {
+      "type": "frame",
+      "id": "URnLe",
+      "x": 0,
+      "y": 0,
+      "name": "初始化向导窗口",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "stroke": "#E4DAD0",
+      "strokeWidth": 1,
+      "effect": {
+        "type": "shadow",
+        "shadowType": "outer",
+        "color": "#00000038",
+        "offset": {
+          "x": 0,
+          "y": 12
+        },
+        "blur": 48
+      },
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "hVx8U",
+          "name": "标题栏",
+          "width": "fill_container",
+          "height": 44,
+          "fill": "$primary",
+          "padding": [
+            0,
+            18
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "MmCCf",
+              "name": "标题左侧",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "H0W8la",
+                  "name": "应用图标",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "spa",
+                  "library": "Material Symbols Rounded",
+                  "fill": "#FFFFFF"
+                },
+                {
+                  "type": "text",
+                  "id": "kUvfg",
+                  "name": "系统名称",
+                  "fill": "#FFFFFF",
+                  "content": "中医诊所管理系统",
+                  "fontFamily": "$font",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Bf9MO",
+              "name": "窗口控制",
+              "gap": 18,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "mIza6",
+                  "name": "最小化",
+                  "width": 15,
+                  "height": 15,
+                  "icon": "minus",
+                  "library": "lucide",
+                  "fill": "#FFFFFFCC"
+                },
+                {
+                  "type": "icon",
+                  "id": "wEPw1",
+                  "name": "最大化",
+                  "width": 13,
+                  "height": 13,
+                  "icon": "square",
+                  "library": "lucide",
+                  "fill": "#FFFFFFCC"
+                },
+                {
+                  "type": "icon",
+                  "id": "q1H03w",
+                  "name": "关闭",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "x",
+                  "library": "lucide",
+                  "fill": "#FFFFFFCC"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "rectangle",
+          "id": "i5vcC7",
+          "name": "品牌强调线",
+          "fill": "$accent",
+          "width": "fill_container",
+          "height": 3
+        },
+        {
+          "type": "frame",
+          "id": "GAzsz",
+          "name": "向导主体",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "$bg",
+          "layout": "vertical",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "OgGhS",
+              "name": "顶部间距",
+              "width": 640,
+              "height": 48
+            },
+            {
+              "type": "frame",
+              "id": "UT7z2",
+              "name": "步骤指示器",
+              "width": 640,
+              "height": 64,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "pyRVO",
+                  "x": 0,
+                  "y": 0,
+                  "name": "步骤列1",
+                  "width": 128,
+                  "layout": "vertical",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "CYYN0",
+                      "name": "步骤圆点1",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "$primary",
+                      "cornerRadius": 18,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "j87Hlt",
+                          "name": "步骤编号1",
+                          "fill": "#FFFFFF",
+                          "content": "1",
+                          "fontFamily": "$font",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "P3Te0",
+                      "name": "步骤标签1",
+                      "fill": "$primary",
+                      "content": "修改密码",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "mNZl9",
+                  "x": 82,
+                  "y": 17,
+                  "name": "连接线1",
+                  "fill": "#D8CCC0",
+                  "width": 92,
+                  "height": 2
+                },
+                {
+                  "type": "frame",
+                  "id": "n19O4",
+                  "x": 128,
+                  "y": 0,
+                  "name": "步骤列2",
+                  "width": 128,
+                  "layout": "vertical",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "XvGDs",
+                      "name": "步骤圆点2",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "$surface",
+                      "cornerRadius": 18,
+                      "stroke": "$border",
+                      "strokeWidth": 1.5,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "F5aVf",
+                          "name": "步骤编号2",
+                          "fill": "$primary-light",
+                          "content": "2",
+                          "fontFamily": "$font",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "JluNS",
+                      "name": "步骤标签2",
+                      "fill": "$text-secondary",
+                      "content": "诊所信息",
+                      "fontFamily": "$font",
+                      "fontSize": 12
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "S4AjZE",
+                  "x": 210,
+                  "y": 17,
+                  "name": "连接线2",
+                  "fill": "#D8CCC0",
+                  "width": 92,
+                  "height": 2
+                },
+                {
+                  "type": "frame",
+                  "id": "AvNyn",
+                  "x": 256,
+                  "y": 0,
+                  "name": "步骤列3",
+                  "width": 128,
+                  "layout": "vertical",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "VrHdZ",
+                      "name": "步骤圆点3",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "$surface",
+                      "cornerRadius": 18,
+                      "stroke": "$border",
+                      "strokeWidth": 1.5,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "mpSGK",
+                          "name": "步骤编号3",
+                          "fill": "$primary-light",
+                          "content": "3",
+                          "fontFamily": "$font",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "kxQWB",
+                      "name": "步骤标签3",
+                      "fill": "$text-secondary",
+                      "content": "连接模式",
+                      "fontFamily": "$font",
+                      "fontSize": 12
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "sycGN",
+                  "x": 338,
+                  "y": 17,
+                  "name": "连接线3",
+                  "fill": "#D8CCC0",
+                  "width": 92,
+                  "height": 2
+                },
+                {
+                  "type": "frame",
+                  "id": "wz54i",
+                  "x": 384,
+                  "y": 0,
+                  "name": "步骤列4",
+                  "width": 128,
+                  "layout": "vertical",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "L8K2dA",
+                      "name": "步骤圆点4",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "$surface",
+                      "cornerRadius": 18,
+                      "stroke": "$border",
+                      "strokeWidth": 1.5,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "KogYa",
+                          "name": "步骤编号4",
+                          "fill": "$primary-light",
+                          "content": "4",
+                          "fontFamily": "$font",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "u45om6",
+                      "name": "步骤标签4",
+                      "fill": "$text-secondary",
+                      "content": "管理员账号",
+                      "fontFamily": "$font",
+                      "fontSize": 12
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "fA2Gg",
+                  "x": 466,
+                  "y": 17,
+                  "name": "连接线4",
+                  "fill": "#D8CCC0",
+                  "width": 92,
+                  "height": 2
+                },
+                {
+                  "type": "frame",
+                  "id": "hlYpw",
+                  "x": 512,
+                  "y": 0,
+                  "name": "步骤列5",
+                  "width": 128,
+                  "layout": "vertical",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "L4Pv4",
+                      "name": "步骤圆点5",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "$surface",
+                      "cornerRadius": 18,
+                      "stroke": "$border",
+                      "strokeWidth": 1.5,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Cz42T",
+                          "name": "步骤编号5",
+                          "fill": "$primary-light",
+                          "content": "5",
+                          "fontFamily": "$font",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "Vav1w",
+                      "name": "步骤标签5",
+                      "fill": "$text-secondary",
+                      "content": "完成",
+                      "fontFamily": "$font",
+                      "fontSize": 12
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "djuRY",
+              "name": "卡片间距",
+              "width": 640,
+              "height": 40
+            },
+            {
+              "type": "frame",
+              "id": "t7Z2eZ",
+              "name": "内容卡片",
+              "width": 680,
+              "fill": "$surface",
+              "cornerRadius": 12,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#5D40371F",
+                "offset": {
+                  "x": 0,
+                  "y": 6
+                },
+                "blur": 24
+              },
+              "layout": "vertical",
+              "gap": 24,
+              "padding": [
+                40,
+                60
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "UsxgW",
+                  "name": "分类标签",
+                  "fill": "$accent-soft",
+                  "cornerRadius": 16,
+                  "padding": [
+                    10,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "i4eGv",
+                      "name": "分类标签文本",
+                      "fill": "#8A5A00",
+                      "content": "安全设置",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "WGIx4",
+                  "name": "标题区",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "jOZZl",
+                      "name": "步骤标题",
+                      "fill": "$text-primary",
+                      "content": "修改管理员密码",
+                      "fontFamily": "$font",
+                      "fontSize": 26,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "XG3Ku",
+                      "name": "步骤说明",
+                      "fill": "$text-secondary",
+                      "content": "为保证系统安全，请先修改管理员的默认密码。",
+                      "fontFamily": "$font",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "kmeQM",
+                  "name": "表单区",
+                  "layout": "vertical",
+                  "gap": 20,
+                  "children": [
+                    {
+                      "id": "Gwr6s",
+                      "type": "ref",
+                      "ref": "ddkm8",
+                      "name": "当前密码字段",
+                      "descendants": {
+                        "r1kozL": {
+                          "content": "当前密码"
+                        },
+                        "i5KcQ": {
+                          "content": "••••••••"
+                        }
+                      }
+                    },
+                    {
+                      "id": "rG19w",
+                      "type": "ref",
+                      "ref": "ddkm8",
+                      "name": "新密码字段",
+                      "descendants": {
+                        "r1kozL": {
+                          "content": "新密码"
+                        },
+                        "i5KcQ": {
+                          "content": "请设置新密码（至少 8 位）"
+                        }
+                      }
+                    },
+                    {
+                      "id": "LJujj",
+                      "type": "ref",
+                      "ref": "ddkm8",
+                      "name": "确认密码字段",
+                      "descendants": {
+                        "r1kozL": {
+                          "content": "确认新密码"
+                        },
+                        "i5KcQ": {
+                          "content": "请再次输入新密码"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "N1SL8",
+                  "name": "提示行",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "lrMjC",
+                      "name": "提示图标",
+                      "width": 15,
+                      "height": 15,
+                      "icon": "info",
+                      "library": "lucide",
+                      "fill": "$accent"
+                    },
+                    {
+                      "type": "text",
+                      "id": "MAPZx",
+                      "name": "提示文本",
+                      "fill": "$text-secondary",
+                      "content": "密码需包含字母与数字，长度不少于 8 位。",
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "uguD9",
+              "name": "弹性间距",
+              "width": "fill_container",
+              "height": "fill_container"
+            },
+            {
+              "type": "frame",
+              "id": "M8Ab6",
+              "name": "底部导航",
+              "width": "fill_container",
+              "height": 72,
+              "fill": "$surface",
+              "stroke": "$border",
+              "strokeWidth": {
+                "top": 1
+              },
+              "padding": [
+                0,
+                32
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "EyiED",
+                  "name": "步骤计数",
+                  "fill": "$text-secondary",
+                  "content": "第 1 步，共 5 步",
+                  "fontFamily": "$font",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "ud2Lr",
+                  "name": "按钮组",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "maMLG",
+                      "name": "上一步按钮",
+                      "height": 44,
+                      "cornerRadius": 22,
+                      "padding": [
+                        0,
+                        24
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "vBwwe",
+                          "name": "上一步文本",
+                          "fill": "$text-disabled",
+                          "content": "上一步",
+                          "fontFamily": "$font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "CSwnp",
+                      "name": "下一步按钮",
+                      "height": 44,
+                      "fill": "$primary",
+                      "cornerRadius": 22,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#5D40373D",
+                        "offset": {
+                          "x": 0,
+                          "y": 2
+                        },
+                        "blur": 10
+                      },
+                      "gap": 8,
+                      "padding": [
+                        0,
+                        28
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "gpoMO",
+                          "name": "下一步文本",
+                          "fill": "#FFFFFF",
+                          "content": "下一步",
+                          "fontFamily": "$font",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "m2nh3",
+                          "name": "下一步图标",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "arrow-right",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "ddkm8",
+      "x": 0,
+      "y": -156,
+      "name": "TextField 组件",
+      "reusable": true,
+      "width": 560,
+      "layout": "vertical",
+      "gap": 8,
+      "children": [
+        {
+          "type": "text",
+          "id": "r1kozL",
+          "name": "字段标签",
+          "fill": "$text-primary",
+          "content": "字段标签",
+          "fontFamily": "$font",
+          "fontSize": 13,
+          "fontWeight": "500"
+        },
+        {
+          "type": "frame",
+          "id": "KmKHA",
+          "name": "输入框",
+          "width": "fill_container",
+          "height": 48,
+          "fill": "$surface",
+          "cornerRadius": 4,
+          "stroke": "$border",
+          "strokeWidth": 1.2,
+          "gap": 12,
+          "padding": [
+            0,
+            16
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon",
+              "id": "ZX8yT",
+              "name": "前缀图标",
+              "width": 18,
+              "height": 18,
+              "icon": "lock",
+              "library": "lucide",
+              "fill": "$primary-light"
+            },
+            {
+              "type": "text",
+              "id": "i5KcQ",
+              "name": "占位文本",
+              "fill": "$text-disabled",
+              "content": "占位文本",
+              "fontFamily": "$font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "icon",
+              "id": "kW9O7",
+              "name": "后缀图标",
+              "width": 18,
+              "height": 18,
+              "icon": "eye",
+              "library": "lucide",
+              "fill": "$primary-light"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "primary": {
+      "type": "color",
+      "value": "#5D4037"
+    },
+    "primary-dark": {
+      "type": "color",
+      "value": "#4E342E"
+    },
+    "primary-light": {
+      "type": "color",
+      "value": "#8D6E63"
+    },
+    "accent": {
+      "type": "color",
+      "value": "#FFB300"
+    },
+    "accent-soft": {
+      "type": "color",
+      "value": "#FFF3E0"
+    },
+    "bg": {
+      "type": "color",
+      "value": "#F6F1EB"
+    },
+    "surface": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#3E2723"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#795548"
+    },
+    "text-disabled": {
+      "type": "color",
+      "value": "#B9AEA4"
+    },
+    "border": {
+      "type": "color",
+      "value": "#D9CCC0"
+    },
+    "font": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    }
+  },
+  "fileToken": "9df6d4e0-61ef-4db2-9639-b5c7f5bac063"
+}
