@@ -30,7 +30,6 @@
         <PackageReference Include="Velopack" />
 <PackageReference Include="FluentValidation" />
     <PackageReference Include="Refit" />
-    <PackageReference Include="Polly" />
     <PackageReference Include="Microsoft.Extensions.Http" />
   </ItemGroup>
 
@@ -43,7 +42,6 @@
   <ItemGroup Label="Configuration">
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
   </ItemGroup>
 
