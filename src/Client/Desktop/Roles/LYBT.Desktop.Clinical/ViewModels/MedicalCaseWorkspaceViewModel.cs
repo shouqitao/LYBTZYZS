@@ -5,7 +5,6 @@ using LYBT.Desktop.Contracts.Enums;
 using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
-using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
@@ -305,10 +304,6 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         ViewPatientHistoryCommand = new RelayCommand(ExecuteViewPatientHistory, () => CurrentPatient != null);
         ViewAuditLogsCommand = new RelayCommand(ExecuteViewAuditLogs, () => MedicalCaseId != Guid.Empty);
         SaveChangesCommand = new RelayCommand(ExecuteSaveChanges, () => State.ShowSaveButton);
-
-        // Event subscriptions
-        Events.Subscribe<CaseEvents.ConsultationCompletedEvent, CaseConsultationCompletedPayload>(OnConsultationCompleted);
-        Events.Subscribe<CaseEvents.PrescriptionCompletedEvent, CasePrescriptionCompletedPayload>(OnPrescriptionCompleted);
     }
 
     #endregion
@@ -499,12 +494,6 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
 
     #region Event Handlers
 
-    private void OnConsultationCompleted(CaseConsultationCompletedPayload payload)
-        => IsPrescriptionEnabled = NeedsPrescription;
-
-    private void OnPrescriptionCompleted(CasePrescriptionCompletedPayload payload)
-        => UpdateState();
-
     private void OnChildPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         switch (e.PropertyName)
@@ -578,8 +567,6 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         {
             _editStateMachine.StateChanged -= OnEditStateChangedFsm;
             _activeConsultationService.Unregister();
-            EventAggregator.GetEvent<CaseEvents.ConsultationCompletedEvent>().Unsubscribe(OnConsultationCompleted);
-            EventAggregator.GetEvent<CaseEvents.PrescriptionCompletedEvent>().Unsubscribe(OnPrescriptionCompleted);
             ConsultationEditor.Consultation.PropertyChanged -= OnChildPropertyChanged;
             PrescriptionEditor.Prescription.PropertyChanged -= OnChildPropertyChanged;
             ConsultationEditor.Dispose();

@@ -1,5 +1,3 @@
-using Prism.Events;
-
 namespace LYBT.Desktop.Infrastructure.Events;
 
 /// <summary>
@@ -12,90 +10,6 @@ namespace LYBT.Desktop.Infrastructure.Events;
 /// </remarks>
 public static class CaseEvents
 {
-    #region 诊断事件
-
-    /// <summary>
-    /// 诊断完成事件
-    /// </summary>
-    public class ConsultationCompletedEvent : PubSubEvent<CaseConsultationCompletedPayload> { }
-
-    #endregion
-
-    #region 处方事件
-
-    /// <summary>
-    /// 处方完成事件
-    /// </summary>
-    public class PrescriptionCompletedEvent : PubSubEvent<CasePrescriptionCompletedPayload> { }
-
-    #endregion
-}
-
-/// <summary>
-/// 诊断完成事件载荷
-/// </summary>
-/// <remarks>
-/// 使用record类型符合事件Payload规范(EVENT-002)
-/// Epic #2210 Phase 4: 用于4:6统一工作区的诊断面板与处方面板通信
-/// </remarks>
-public record CaseConsultationCompletedPayload
-{
-    /// <summary>
-    /// 医案ID
-    /// </summary>
-    public required Guid MedicalCaseId { get; init; }
-
-    /// <summary>
-    /// 诊断ID（可选，如果有独立的诊断记录）
-    /// </summary>
-    public Guid? ConsultationId { get; init; }
-
-    /// <summary>
-    /// 是否需要开处方
-    /// </summary>
-    public bool NeedsPrescription { get; init; }
-
-    /// <summary>
-    /// 事件时间戳
-    /// </summary>
-    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
-}
-
-/// <summary>
-/// 处方完成事件载荷
-/// </summary>
-/// <remarks>
-/// 使用record类型符合事件Payload规范(EVENT-002)
-/// </remarks>
-public record CasePrescriptionCompletedPayload
-{
-    /// <summary>
-    /// 处方ID（后端创建后返回）
-    /// </summary>
-    public required Guid PrescriptionId { get; init; }
-
-    /// <summary>
-    /// 医案流程ID
-    /// </summary>
-    public Guid MedicalCaseFlowId { get; init; }
-
-    /// <summary>
-    /// 处方药品总数
-    /// </summary>
-    public int TotalItems { get; init; }
-
-    /// <summary>
-    /// 处方总金额
-    /// </summary>
-    public decimal TotalAmount { get; init; }
-
-    /// <summary>
-    /// 是否挂起
-    /// </summary>
-    public bool IsSuspended { get; init; }
-
-    /// <summary>
-    /// 事件时间戳
-    /// </summary>
-    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
+    // ConsultationCompletedEvent / PrescriptionCompletedEvent 及载荷已于 2026-08-14 删除
+    // （desktop-dead-code-cleanup 后续批次——工作区已改用 State 驱动，Prism 事件链无消费方）
 }

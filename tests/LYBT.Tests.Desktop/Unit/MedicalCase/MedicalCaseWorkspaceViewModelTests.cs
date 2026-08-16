@@ -2,7 +2,6 @@ using FluentAssertions;
 using LYBT.Desktop.Clinical.ViewModels;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Repositories;
-using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.ViewModels.Components;
 using LYBT.Desktop.MedicalCase.ViewModels.Workspace;
@@ -54,10 +53,8 @@ public class MedicalCaseWorkspaceViewModelTests
 
         // Mock PubSubEvent instances — real PubSubEvent.Subscribe(ThreadOption.UIThread)
         // requires SynchronizationContext which doesn't exist on xUnit thread pool threads
-        _eventAggregator.GetEvent<CaseEvents.ConsultationCompletedEvent>()
-            .Returns(Substitute.For<CaseEvents.ConsultationCompletedEvent>());
-        _eventAggregator.GetEvent<CaseEvents.PrescriptionCompletedEvent>()
-            .Returns(Substitute.For<CaseEvents.PrescriptionCompletedEvent>());
+        // （2026-08-14：CaseEvents.ConsultationCompletedEvent/PrescriptionCompletedEvent 事件链已删除——
+        // 工作区改 State 驱动，订阅移除，无需再 mock）
 
         _viewModelServices = Substitute.For<IViewModelServices>();
         _viewModelServices.LoggerFactory.Returns(_loggerFactory);

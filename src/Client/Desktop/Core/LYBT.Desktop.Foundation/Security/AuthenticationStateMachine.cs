@@ -1,7 +1,6 @@
 using LYBT.Desktop.Contracts.Security;
 using LYBT.Desktop.Contracts.Models;
 using Microsoft.Extensions.Logging;
-using Prism.Events;
 
 namespace LYBT.Desktop.Foundation.Security;
 
@@ -13,7 +12,6 @@ namespace LYBT.Desktop.Foundation.Security;
 public class AuthenticationStateMachine : IAuthenticationStateMachine
 {
     private readonly ILogger<AuthenticationStateMachine> _logger;
-    private readonly IEventAggregator? _eventAggregator;
     private readonly object _stateLock = new();
     private AuthState _currentState = AuthState.Idle;
     private string? _statusMessage;
@@ -118,11 +116,9 @@ public class AuthenticationStateMachine : IAuthenticationStateMachine
     public event EventHandler<AuthStateChangedEventArgs>? StateChanged;
 
     public AuthenticationStateMachine(
-        ILogger<AuthenticationStateMachine> logger,
-        IEventAggregator? eventAggregator = null)
+        ILogger<AuthenticationStateMachine> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _eventAggregator = eventAggregator;
     }
 
     /// <summary>
@@ -131,7 +127,7 @@ public class AuthenticationStateMachine : IAuthenticationStateMachine
     internal AuthenticationStateMachine(
         ILogger<AuthenticationStateMachine> logger,
         AuthState initialState)
-        : this(logger, null)
+        : this(logger)
     {
         _currentState = initialState;
     }
@@ -225,9 +221,6 @@ public class AuthenticationStateMachine : IAuthenticationStateMachine
         {
             // 触发本地事件
             StateChanged?.Invoke(this, args);
-
-            // 发布Prism PubSubEvent（如果EventAggregator可用）
-            _eventAggregator?.GetEvent<AuthStateChangedPubSubEvent>().Publish(args);
         }
         catch (Exception ex)
         {
@@ -235,11 +228,4 @@ public class AuthenticationStateMachine : IAuthenticationStateMachine
                 args.PreviousState, args.CurrentState);
         }
     }
-}
-
-/// <summary>
-/// Prism PubSubEvent用于跨模块状态变更通知
-/// </summary>
-public class AuthStateChangedPubSubEvent : PubSubEvent<AuthStateChangedEventArgs>
-{
 }

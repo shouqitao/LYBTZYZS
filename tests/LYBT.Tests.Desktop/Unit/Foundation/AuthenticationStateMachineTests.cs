@@ -4,7 +4,6 @@ using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Foundation.Security;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using Prism.Events;
 using Xunit;
 
 namespace LYBT.Tests.Desktop;
@@ -421,51 +420,6 @@ public class AuthenticationStateMachineTests
     /// 测试：Fire触发PubSubEvent状态变更事件
     /// OpenSpec: refactor-auth-role-system (Phase 1.1)
     /// </summary>
-    [Fact]
-    public async Task Fire_ShouldPublishAuthStateChangedEvent()
-    {
-        // Arrange
-        var eventAggregator = new EventAggregator();
-        var stateMachine = new AuthenticationStateMachine(_logger, eventAggregator);
-        AuthStateChangedEventArgs? receivedArgs = null;
-        var eventReceived = new TaskCompletionSource<bool>();
-
-        eventAggregator.GetEvent<AuthStateChangedPubSubEvent>().Subscribe(args =>
-        {
-            receivedArgs = args;
-            eventReceived.TrySetResult(true);
-        });
-
-        // Act
-        stateMachine.Fire(AuthEvent.StartLogin);
-
-        // Assert
-        var completed = await Task.WhenAny(eventReceived.Task, Task.Delay(1000));
-        completed.Should().Be(eventReceived.Task);
-        receivedArgs.Should().NotBeNull();
-        receivedArgs!.PreviousState.Should().Be(AuthState.Idle);
-        receivedArgs.CurrentState.Should().Be(AuthState.Authenticating);
-        receivedArgs.Trigger.Should().Be(AuthEvent.StartLogin);
-        receivedArgs.Timestamp.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
-    }
-
-    /// <summary>
-    /// 测试：无EventAggregator时，Fire不应抛出异常
-    /// </summary>
-    [Fact]
-    public void Fire_WithoutEventAggregator_ShouldNotThrow()
-    {
-        // Arrange
-        var stateMachine = new AuthenticationStateMachine(_logger, eventAggregator: null);
-
-        // Act
-        var action = () => stateMachine.Fire(AuthEvent.StartLogin);
-
-        // Assert
-        action.Should().NotThrow();
-        stateMachine.CurrentState.Should().Be(AuthState.Authenticating);
-    }
-
     #endregion
 
     #region 完整登录流程测试
