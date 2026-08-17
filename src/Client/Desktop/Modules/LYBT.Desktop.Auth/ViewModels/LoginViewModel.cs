@@ -131,7 +131,7 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         #region 命令
 
-        public ICommand LoginCommand { get; }
+        public IAsyncRelayCommand LoginCommand { get; }
         public ICommand CloseApplicationCommand { get; }
         public ICommand RetryApiCheckCommand { get; }
         public ICommand OpenSettingsCommand { get; }
@@ -200,6 +200,10 @@ namespace LYBT.Desktop.Auth.ViewModels
             {
                 // Expected when ViewModel is disposed during initialization
             }
+            finally
+            {
+                LoginCommand.NotifyCanExecuteChanged(); // 初始化完成（可能已加载保存的凭证）后重新评估
+            }
         }
 
         private async Task MaybeShowFirstRunSetupAsync()
@@ -244,6 +248,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             try
             {
                 IsLoading = true; ErrorMessage = string.Empty; StatusMessage = "正在登录...";
+                LoginCommand.NotifyCanExecuteChanged(); // 立即禁用登录按钮
 
                 var passwordToSave = RememberPassword ? Password : null;
                 var result = await _loginCoordinator.LoginAsync(Username, Password);
@@ -266,7 +271,11 @@ namespace LYBT.Desktop.Auth.ViewModels
                 ErrorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex);
                 Password = string.Empty;
             }
-            finally { StatusMessage = string.Empty; }
+            finally
+            {
+                StatusMessage = string.Empty;
+                LoginCommand.NotifyCanExecuteChanged(); // IsLoading 恢复后重新评估
+            }
         }
 
         private void ExecuteOpenSettings()
@@ -298,6 +307,11 @@ namespace LYBT.Desktop.Auth.ViewModels
         private void OnCredentialsPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             OnPropertyChanged(e.PropertyName);
+            // Username/Password 变化时重新评估 CanExecute（修复登录按钮灰色不可用）
+            if (e.PropertyName is nameof(Credentials.Username) or nameof(Credentials.Password))
+            {
+                LoginCommand.NotifyCanExecuteChanged();
+            }
         }
 
         private void OnConnectionStatusPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
