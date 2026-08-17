@@ -12,7 +12,7 @@ using Prism.Regions;
 namespace LYBT.Desktop.Shell.ViewModels;
 
 /// <summary>
-/// 账户设置视图模型 - 左右分栏重设计 (2026-06-21)
+/// 个人资料视图模型 - 左右分栏重设计 (2026-06-21)
 /// 个人资料 + 安全设置（修改密码）合并
 /// </summary>
 public partial class AccountSettingsViewModel : NavigableViewModelBase

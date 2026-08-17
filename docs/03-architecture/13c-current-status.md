@@ -21,7 +21,7 @@
 | LoginView | Modules/LYBT.Desktop.Auth/Views/ | 登录界面 | — |
 | FirstRunSetupView | Modules/LYBT.Desktop.Auth/Views/ | 首次运行向导 | 功能有限 |
 | ServerConfigView | Modules/LYBT.Desktop.Auth/Views/ | 服务器地址配置 | — |
-| AccountSettingsView | Shell/Views/ | 账户设置（个人资料/密码） | — |
+| AccountSettingsView | Shell/Views/ | **个人资料**（姓名/密码/头像/会话超时），所有角色可用 | — |
 
 ### 4.2 管理员角色
 
@@ -29,8 +29,8 @@
 | ------ | ------ | ------ | ------ |
 | AdminHomeView | Roles/LYBT.Desktop.Admin/Views/ | 管理员首页 | — |
 | UserManagementView | Roles/LYBT.Desktop.Admin/Views/ | 用户管理 | — |
-| SystemSettingsView | Roles/LYBT.Desktop.Admin/Views/ | 系统设置 | 仅读取，无编辑 |
-| SysadminHomeView | Roles/LYBT.Desktop.Admin/Sysadmin/Views/ | 运维首页 | — |
+| SystemSettingsView | Roles/LYBT.Desktop.Admin/Views/ | **诊所设置**（诊所名称/地址/电话等业务信息） | 仅读取，无编辑 |
+| SysadminHomeView | Roles/LYBT.Desktop.Admin/Sysadmin/Views/ | **运维设置**（系统运行配置主页） | — |
 | LogLevelControlView | Roles/LYBT.Desktop.Admin/Sysadmin/Views/ | 日志级别控制 | — |
 | DeploymentView | Roles/LYBT.Desktop.Admin/Sysadmin/Views/ | 部署视图 | 仅上传+重启 |
 

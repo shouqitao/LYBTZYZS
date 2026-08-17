@@ -41,7 +41,7 @@
 
                 <!-- 标题区 -->
                 <TextBlock Style="{StaticResource MaterialDesignHeadline5TextBlock}"
-                           Text="运维控制台" Margin="0,0,0,4" />
+                           Text="运维设置" Margin="0,0,0,4" />
                 <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
                            Text="凌隐宝堂中医诊所 · 系统运维"
                            Opacity="0.6" Margin="0,0,0,32" />
@@ -312,6 +312,54 @@
                         </TabItem>
                     </TabControl>
                 </Border>
+
+                <!-- 功能入口：运维功能卡片导航（设计决策 2026-08-17：各角色 Home View 是导航中心） -->
+                <TextBlock Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                           Text="功能入口" Margin="0,0,0,12" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+
+                    <!-- 卡片1: 用户管理 -->
+                    <Border Margin="0,0,12,0" Style="{StaticResource FunctionCardStyle}">
+                        <Button Command="{Binding NavigateToUserManagementCommand}" Style="{StaticResource MaterialDesignFlatButton}">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="AccountTie"
+                                                          Width="40" Height="40"
+                                                          HorizontalAlignment="Center"
+                                                          Margin="0,0,0,12"
+                                                          Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+                                <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}" Text="用户管理" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Border>
+
+                    <!-- 卡片2: 日志控制 -->
+                    <Border Margin="0,0,12,0" Style="{StaticResource FunctionCardStyle}">
+                        <Button Command="{Binding NavigateToLogLevelControlCommand}" Style="{StaticResource MaterialDesignFlatButton}">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Tune"
+                                                          Width="40" Height="40"
+                                                          HorizontalAlignment="Center"
+                                                          Margin="0,0,0,12"
+                                                          Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+                                <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}" Text="日志控制" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Border>
+
+                    <!-- 卡片3: 部署管理 -->
+                    <Border Margin="0,0,12,0" Style="{StaticResource FunctionCardStyle}">
+                        <Button Command="{Binding NavigateToDeploymentCommand}" Style="{StaticResource MaterialDesignFlatButton}">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Upload"
+                                                          Width="40" Height="40"
+                                                          HorizontalAlignment="Center"
+                                                          Margin="0,0,0,12"
+                                                          Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+                                <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}" Text="部署管理" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Border>
+                </StackPanel>
 
                 <!-- 状态卡片 -->
                 <UniformGrid Columns="2">

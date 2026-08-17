@@ -142,6 +142,26 @@ namespace LYBT.Desktop.Clinical.ViewModels
         }
 
         /// <summary>
+        /// 导航到统计报表
+        /// </summary>
+        [RelayCommand]
+        private void NavigateToReports()
+        {
+            Logger.LogInformation("导航到统计报表视图");
+            _ = _navigationCoordinator.NavigateTo(ViewNames.ReportsHome);
+        }
+
+        /// <summary>
+        /// 导航到医案审计日志
+        /// </summary>
+        [RelayCommand]
+        private void NavigateToAuditLog()
+        {
+            Logger.LogInformation("导航到医案审计日志视图");
+            _ = _navigationCoordinator.NavigateTo(ViewNames.AuditLog);
+        }
+
+        /// <summary>
         /// 编辑个人资料 (Issue #1887-1891)
         /// </summary>
         [RelayCommand]

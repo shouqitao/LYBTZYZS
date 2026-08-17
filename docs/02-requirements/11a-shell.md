@@ -65,7 +65,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 **业务规则**:
 
 1. `ApplicationBootstrapper.LoadModulesForRoleAsync` 按角色过滤 Prism 模块。
-2. 菜单可见性矩阵：系统设置仅 SuperAdmin；药材/用户管理 Admin+；医案/验方 Doctor+；患者管理全部角色。
+2. 菜单可见性矩阵：诊所设置仅 SuperAdmin；药材/用户管理 Admin+；医案/验方 Doctor+；患者管理全部角色。
 3. 角色层级：Receptionist=0, Doctor=1, Admin=10, SuperAdmin=100。
 
 **双模式**:
@@ -79,7 +79,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 ---
 
-### US-SHELL-004: 账户设置（个人资料+密码）
+### US-SHELL-004: 个人资料（个人资料+密码）
 
 **角色**: 所有用户
 **优先级**: Could
@@ -89,7 +89,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 **验收标准**:
 
-- [ ] 点击账户设置 → 显示 `AccountSettingsControl`
+- [ ] 点击个人资料 → 显示 `AccountSettingsControl`
 - [ ] 修改密码 → 弹出对话框（旧密码 + 新密码 + 确认密码）
 - [ ] 保存个人资料 → 调用 API 更新（IDOR 防护：仅本人）
 
@@ -385,7 +385,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 ---
 
-### US-SHELL-018: sysadmin 配置中心（SysadminHomeView）
+### US-SHELL-018: sysadmin 运维设置（SysadminHomeView）
 
 **角色**: sysadmin
 **优先级**: Must
@@ -397,7 +397,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 **验收标准**:
 
-- [ ] SysadminHomeView 展示配置中心面板，分组显示所有可配置项
+- [ ] SysadminHomeView 展示运维设置面板，分组显示所有可配置项
 - [ ] 诊所信息（Name/Address/Phone/Department/LicenseNumber/Email）可编辑保存
 - [ ] 会话设置（InactivityTimeoutMinutes/WarningBeforeTimeoutMinutes/ActivityCheckIntervalSeconds）可编辑
 - [ ] 连接设置（API BaseUrl + 测试连通按钮 + TimeoutSeconds）可编辑
@@ -452,7 +452,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 **验收标准**:
 
-- [ ] sysadmin 配置中心提供读卡器诊断面板
+- [ ] sysadmin 运维设置提供读卡器诊断面板
 - [ ] 厂家选择：下拉选择已适配厂家（华大 HD100 等），测试时临时切换
 - [ ] 设备探测：发送探测指令，检测设备是否在线，显示连接状态
 - [ ] 读卡测试：读取一张样卡，显示解析结果（姓名/身份证号/性别/出生日期/住址）
@@ -465,7 +465,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 **业务规则**:
 
 1. 读卡器管理分**测试模式**（sysadmin）和**使用模式**（医生）两层。
-2. 测试模式：sysadmin 在配置中心操作，选择厂家、运行诊断、验证设备。
+2. 测试模式：sysadmin 在运维设置操作，选择厂家、运行诊断、验证设备。
 3. 使用模式：医生端启动时 `ICardReaderFactory.AutoDetectReaderAsync()` 自动匹配厂家，匹配到则静默使用；未匹配到则降级 `MockCardReader`，不阻塞启动。
 4. 诊断测试集成各厂家的官方 demo 功能（华大 HD100 提供 USB 探测/读卡/固件查询等标准指令）。
 5. 厂家扩展：新增读卡器型号时，在 sysadmin UI 中测试兼容性，无需改代码即可验证。
@@ -474,7 +474,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 - 新增 `ICardReaderDiagnostics` 接口（厂家诊断能力）
 - `ICardReader` 扩展 `GetDeviceInfo()` 方法
-- sysadmin 配置中心增加读卡器诊断 tab
+- sysadmin 运维设置增加读卡器诊断 tab
 
 **双模式**:
 
@@ -655,7 +655,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 | 依赖 | 说明 |
 | ------ | ------ |
 | [02-auth.md](02-auth.md) | Shell 登录协调、审计日志事件来源 |
-| [03-users.md](03-users.md) | 账户设置关联修改密码/个人资料 |
+| [03-users.md](03-users.md) | 个人资料关联修改密码/个人资料 |
 | [07-medical-cases.md](07-medical-cases.md) | MedicalCaseAuditLog 归属医案模块 |
 | [09-printing.md](09-printing.md) | ClinicSettings 驱动打印标题区 |
 

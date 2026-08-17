@@ -105,10 +105,10 @@
                                             Foreground="{DynamicResource MaterialDesign.Brush.IdealForeground}"
                                             Padding="8,4"
                                             Margin="0,6,0,0"
-                                            ToolTip="账户设置">
+                                            ToolTip="个人资料">
                                         <StackPanel Orientation="Horizontal">
                                             <materialDesign:PackIcon Kind="AccountEdit" Width="18" Height="18" />
-                                            <TextBlock Margin="8,0,0,0" Text="账户"
+                                            <TextBlock Margin="8,0,0,0" Text="个人资料"
                                                        Visibility="{Binding DataContext.NavTextVisibility,
                                                                    RelativeSource={RelativeSource AncestorType=Window}}" />
                                         </StackPanel>

@@ -17,7 +17,7 @@ public static class ViewNames
     /// <summary>前台工作台主页</summary>
     public const string ReceptionistHome = "ReceptionistHomeView";
 
-    /// <summary>系统运维控制台主页</summary>
+    /// <summary>系统运维设置主页</summary>
     public const string SysadminHome = "SysadminHomeView";
 
     #endregion
@@ -69,10 +69,10 @@ public static class ViewNames
 
     #region 设置视图
 
-    /// <summary>系统设置</summary>
+    /// <summary>诊所设置</summary>
     public const string SystemSettings = "SystemSettingsView";
 
-    /// <summary>账户设置 (合并了个人资料和修改密码功能)</summary>
+    /// <summary>个人资料 (合并了个人资料和修改密码功能)</summary>
     public const string AccountSettings = "AccountSettingsView";
 
     #endregion

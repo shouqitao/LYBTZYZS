@@ -5,7 +5,7 @@ using LYBT.Desktop.Shell.ViewModels;
 namespace LYBT.Desktop.Shell.Controls
 {
     /// <summary>
-    /// 账户设置控件 - 合并个人资料和修改密码功能
+    /// 个人资料控件 - 合并个人资料和修改密码功能
     /// </summary>
     public partial class AccountSettingsControl : UserControl
     {

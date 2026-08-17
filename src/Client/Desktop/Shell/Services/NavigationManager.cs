@@ -6,8 +6,6 @@ using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Controls.Models;
-using LYBT.Desktop.Infrastructure.Constants;
-using LYBT.Desktop.Infrastructure.Navigation.NavigationArgs;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
@@ -47,6 +45,12 @@ public partial class NavigationManager : ObservableObject, INavigationManager
         }
     }
 
+    /// <summary>
+    /// 构建侧边栏导航项。
+    /// 设计决策（2026-08-17）：侧边栏仅保留「主页」入口，
+    /// 功能导航由各角色 Home View 的卡片网格承载。
+    /// 账户/主题/退出由 MainWindow.xaml 底部按钮单独处理。
+    /// </summary>
     public ObservableCollection<NavigationItem> BuildNavigationItems(UserRole role)
     {
         var definition = _roleRegistry.GetDefinition(role);
@@ -58,71 +62,17 @@ public partial class NavigationManager : ObservableObject, INavigationManager
             return items;
         }
 
-        var modules = definition.RequiredModules;
-
+        // 侧边栏仅保留主页入口，功能导航由 Home View 卡片承载
         items.Add(new NavigationItem
         {
             Title = "主页",
             ViewName = definition.HomeViewName,
             IconKind = "Home",
             Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(definition.HomeViewName)),
-            Group = "主页"
+            Group = "导航"
         });
 
-        if (modules.Contains("PatientsModule"))
-            items.Add(CreateNavItem("患者管理", ViewNames.PatientManagement, "AccountGroup", "业务"));
-        if (modules.Contains("CatalogModule"))
-        {
-            items.Add(CreateNavItem("药材管理", ViewNames.HerbManagement, "Leaf", "业务"));
-            items.Add(CreateNavItem("验方管理", ViewNames.FormulaManagement, "Notebook", "业务"));
-        }
-        if (modules.Contains("MedicalCaseModule"))
-            items.Add(CreateNavItem("医案管理", ViewNames.MedicalCaseManagement, "Folder", "业务"));
-        if (modules.Contains("RegistrationModule"))
-            items.Add(CreateNavItem("挂号管理", ViewNames.RegistrationList, "CalendarClock", "业务"));
-
-        if (modules.Contains("UsersModule") && role is UserRole.Admin or UserRole.SuperAdmin)
-        {
-            if (role == UserRole.SuperAdmin)
-            {
-                items.Add(new NavigationItem
-                {
-                    Title = "用户管理",
-                    ViewName = ViewNames.UserManagement,
-                    IconKind = "AccountTie",
-                    Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(
-                        ViewNames.UserManagement,
-                        new UserManagementNavParams(DefaultRoleFilter: UserRole.Admin))),
-                    Group = "管理"
-                });
-            }
-            else
-            {
-                items.Add(CreateNavItem("用户管理", ViewNames.UserManagement, "AccountTie", "管理"));
-            }
-        }
-        if (modules.Contains("ReportsModule"))
-            items.Add(CreateNavItem("统计报表", ViewNames.ReportsHome, "ChartBar", "管理"));
-
-        if (role == UserRole.SuperAdmin)
-        {
-            items.Add(CreateNavItem("诊所信息", ViewNames.SystemSettings, "Domain", "管理"));
-            items.Add(CreateNavItem("日志控制", ViewNames.LogLevelControl, "Tune", "管理"));
-            items.Add(CreateNavItem("部署管理", ViewNames.Deployment, "Upload", "管理"));
-            items.Add(CreateNavItem("备份恢复", ViewNames.BackupManagement, "DatabaseBackup", "管理"));
-        }
-
-        _logger.LogInformation("已为角色 {Role} 构建 {Count} 个导航项", role, items.Count);
+        _logger.LogInformation("已为角色 {Role} 构建 {Count} 个侧边栏导航项（主页入口）", role, items.Count);
         return items;
     }
-
-    private NavigationItem CreateNavItem(string title, string viewName, string iconKind, string group = "业务") =>
-        new()
-        {
-            Title = title,
-            ViewName = viewName,
-            IconKind = iconKind,
-            Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(viewName)),
-            Group = group
-        };
 }

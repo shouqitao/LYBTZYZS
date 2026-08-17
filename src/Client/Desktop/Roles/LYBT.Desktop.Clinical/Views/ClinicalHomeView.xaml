@@ -171,6 +171,25 @@
                     </Button>
                 </Border>
 
+                <!--  辅助卡片6：报表  -->
+                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
+                    <Button Command="{Binding NavigateToReportsCommand}" Style="{StaticResource MaterialDesignFlatButton}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconReports}" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="报表" />
+                        </StackPanel>
+                    </Button>
+                </Border>
+
+                <!--  辅助卡片7：审计日志  -->
+                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
+                    <Button Command="{Binding NavigateToAuditLogCommand}" Style="{StaticResource MaterialDesignFlatButton}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconAudit}" />
+                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="审计日志" />
+                        </StackPanel>
+                    </Button>
+                </Border>
 
             </StackPanel>
         </StackPanel>

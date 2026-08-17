@@ -10,13 +10,14 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Admin.Sysadmin.ViewModels;
 
 /// <summary>
-/// 系统运维控制台主页视图模型
+/// 运维设置主页视图模型
 /// </summary>
 public partial class SysadminHomeViewModel : NavigableViewModelBase
 {
     private readonly IAuthHealthService _authHealthService;
     private readonly IClinicSettingsService _clinicSettings;
     private readonly IConnectionModeService _connectionMode;
+    private readonly INavigationCoordinator _navigationCoordinator;
     private CancellationTokenSource? _pollCts;
 
     [ObservableProperty]
@@ -45,6 +46,7 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
         IAuthHealthService authHealthService,
         IClinicSettingsService clinicSettings,
         IConnectionModeService connectionMode,
+        INavigationCoordinator navigationCoordinator,
         ConfigurationCenterViewModel configCenter,
         ServerConfigSectionViewModel serverConfig,
         CardReaderDiagnosticsViewModel cardReaderDiagnostics)
@@ -53,12 +55,13 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
         _authHealthService = authHealthService;
         _clinicSettings = clinicSettings;
         _connectionMode = connectionMode;
+        _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         ConfigCenter = configCenter;
         ServerConfig = serverConfig;
         CardReaderDiagnostics = cardReaderDiagnostics;
         UpdateModeFlags();
         _connectionMode.ModeChanged += OnModeChanged;
-        PageTitle = "运维控制台";
+        PageTitle = "运维设置";
     }
 
     private void UpdateModeFlags()
@@ -72,6 +75,33 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
         UpdateModeFlags();
         if (IsRemoteMode)
             _ = ServerConfig.LoadSectionsCommand.ExecuteAsync(null);
+    }
+
+    /// <summary>
+    /// 导航到用户管理
+    /// </summary>
+    [RelayCommand]
+    private void NavigateToUserManagement() => NavigateTo(ViewNames.UserManagement);
+
+    /// <summary>
+    /// 导航到日志级别控制
+    /// </summary>
+    [RelayCommand]
+    private void NavigateToLogLevelControl() => NavigateTo(ViewNames.LogLevelControl);
+
+    /// <summary>
+    /// 导航到部署管理
+    /// </summary>
+    [RelayCommand]
+    private void NavigateToDeployment() => NavigateTo(ViewNames.Deployment);
+
+    /// <summary>
+    /// 导航到指定视图
+    /// </summary>
+    private void NavigateTo(string viewName)
+    {
+        Logger.LogInformation("导航到 {ViewName}", viewName);
+        _ = _navigationCoordinator.NavigateTo(viewName);
     }
 
     public override void OnNavigatedTo(Prism.Regions.NavigationContext navigationContext)

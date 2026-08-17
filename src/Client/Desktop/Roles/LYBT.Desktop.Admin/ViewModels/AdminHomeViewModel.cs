@@ -104,6 +104,12 @@ namespace LYBT.Desktop.Admin.ViewModels
         [RelayCommand]
         private void NavigateToReports() => NavigateTo(ViewNames.ReportsHome);
 
+        /// <summary>
+        /// 导航到医案审计日志
+        /// </summary>
+        [RelayCommand]
+        private void NavigateToAuditLog() => NavigateTo(ViewNames.AuditLog);
+
         #endregion 命令
 
         #region 辅助方法

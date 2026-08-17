@@ -148,7 +148,7 @@ namespace LYBT.Desktop.Admin.ViewModels
             _clinicSettingsService = clinicSettingsService ?? throw new ArgumentNullException(nameof(clinicSettingsService));
             _serverConfigurationService = serverConfigurationService ?? throw new ArgumentNullException(nameof(serverConfigurationService));
 
-            PageTitle = "系统设置";
+            PageTitle = "诊所设置";
         }
 
         #endregion

@@ -593,7 +593,7 @@ PatientMasterDetailViewModel
 
 ### 工作区模式 (UI-D04)
 
-Clinical (诊疗) / Management (管理) 通过菜单过滤区分。Doctor 默认 Clinical，Admin 默认 Management。切换时刷新侧边栏菜单。
+Clinical (诊疗) / Management (管理) 通过主页卡片导航区分。每个角色的 Home View 是导航中心，以功能卡片展示入口；侧边栏仅保留全局操作（个人资料/主题/退出）。
 
 **实现**: `MenuManager.SetWorkspaceMode(mode)` 控制 `MenuItems` 集合的 `Visibility`。
 
@@ -674,13 +674,13 @@ Desktop 端异常处理实现 `DesktopExceptionHandler`（注册 `AppDomain.Unha
 | 药材管理 | O | O | X | X |
 | 用户管理 | O | O | X | X |
 | 数据同步 | O | O | O | X |
-| 系统设置 | O | X | X | X |
+| 诊所设置 | O | X | X | X |
 
 **实现**: `MenuManager` 在登录后根据用户角色过滤菜单项 `Visibility`。通过 `IApplicationCommands` 接口暴露全局命令。完整权限矩阵（资源 × 操作 × 角色）见权威文档 [12-permissions-matrix.md](12-permissions-matrix.md)。
 
 ---
 
-## Desktop 启动诊断 / 账户设置
+## Desktop 启动诊断 / 个人资料
 
 > 对应 [US-SHELL-006](../02-requirements/11a-shell.md)（StartupDiagnostics：BeginStartup/EndStartup/BeginStep/EndStep/RecordMarker，慢步骤阈值 3 秒，诊断报告输出到日志）和 [US-SHELL-007](../02-requirements/11a-shell.md)（AccountSettingsControl：修改密码/修改个人资料/查看登录信息）。
 

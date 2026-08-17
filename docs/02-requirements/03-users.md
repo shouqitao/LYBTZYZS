@@ -42,7 +42,7 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 | ------ | --------- | ------ |
 | `DoctorOnly` | Doctor | 医案创建、打印、接诊 |
 | `DoctorOrAdmin` | Doctor, Admin | 医案、报表 |
-| `AdminOrSuperAdmin` | Admin, SuperAdmin | 用户管理、系统设置、患者删除/禁用、药材写操作 |
+| `AdminOrSuperAdmin` | Admin, SuperAdmin | 用户管理、诊所设置、患者删除/禁用、药材写操作 |
 | `DoctorOrReceptionist` | Doctor, Receptionist | 患者读写（删除/禁用除外）、挂号、药材/验方查询（读） |
 | `DoctorOrAdminOrReceptionist` | Doctor, Admin, Receptionist | 挂号查看（Admin 只读）等 |
 
