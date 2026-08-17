@@ -6,7 +6,7 @@ using Prism.Modularity;
 namespace LYBT.Desktop.Admin.Sysadmin;
 
 /// <summary>
-/// 系统运维控制台模块 - 为 sysadmin 用户提供独立的暗色仪表盘体验
+/// 系统运维设置模块 - 为 sysadmin 用户提供独立的配置运维体验
 /// </summary>
 [Module(ModuleName = nameof(SysadminModule))]
 public class SysadminModule : IModule
