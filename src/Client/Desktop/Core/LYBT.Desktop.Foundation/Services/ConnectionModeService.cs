@@ -33,7 +33,7 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
 
     private readonly IConnectionSettingsService _connectionSettings;
     private readonly IApplicationStateService _applicationState;
-    private readonly IApiClientMedicalCases _medicalCasesApi;
+    private readonly IApiClient _apiClient;
     private readonly ILogger<ConnectionModeService> _logger;
 
     private ConnectionMode _currentMode;
@@ -47,12 +47,12 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     public ConnectionModeService(
         IConnectionSettingsService connectionSettings,
         IApplicationStateService applicationState,
-        IApiClientMedicalCases medicalCasesApi,
+        IApiClient apiClient,
         ILogger<ConnectionModeService> logger)
     {
         _connectionSettings = connectionSettings ?? throw new ArgumentNullException(nameof(connectionSettings));
         _applicationState = applicationState ?? throw new ArgumentNullException(nameof(applicationState));
-        _medicalCasesApi = medicalCasesApi ?? throw new ArgumentNullException(nameof(medicalCasesApi));
+        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         _currentMode = connectionSettings.IsLocal
@@ -172,7 +172,7 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     {
         try
         {
-            var response = await _medicalCasesApi.GetPendingCasesAsync(null).ConfigureAwait(false);
+            var response = await _apiClient.MedicalCases.GetPendingCasesAsync(null).ConfigureAwait(false);
             if (!response.Success || response.Data == null)
                 return 0;
             return response.Data.Count;
