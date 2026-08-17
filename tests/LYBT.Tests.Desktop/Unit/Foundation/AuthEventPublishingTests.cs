@@ -140,8 +140,10 @@ public class AuthEventPublishingTests
 
     private AuthenticationService CreateAuthenticationService(IApiClientIdentity? authApi = null)
     {
+        var apiClient = Substitute.For<IApiClient>();
+        apiClient.Identity.Returns(authApi ?? Substitute.For<IApiClientIdentity>());
         return new AuthenticationService(
-            authApi ?? Substitute.For<IApiClientIdentity>(),
+            apiClient,
             Substitute.For<ITokenStorageService>(),
             Substitute.For<ITokenValidator>(),
             Substitute.For<ICredentialVault>(),
@@ -157,7 +159,7 @@ public class AuthEventPublishingTests
         return new LogoutService(
             Substitute.For<ILogger<LogoutService>>(),
             tokenStorage ?? Substitute.For<ITokenStorageService>(),
-            Substitute.For<IApiClientIdentity>(),
+            Substitute.For<IApiClient>(),
             stateMachine,
             _eventAggregator);
     }

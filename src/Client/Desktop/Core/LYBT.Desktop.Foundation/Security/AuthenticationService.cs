@@ -11,14 +11,14 @@ namespace LYBT.Desktop.Foundation.Security
 {
     /// <summary>
     /// 认证服务实现 - ADR-002合规版本
-    /// Desktop端Infrastructure Service，直接调用HTTP API（IApiClientIdentity）
+    /// Desktop端Infrastructure Service，直接调用HTTP API（IApiClient.Identity 动态获取当前模式子接口）
     /// 不依赖Server端Service接口，符合架构决策
     ///
     /// Issue #1864: Token认证安全重构 - 集成客户端JWT自验证
     /// </summary>
     public class AuthenticationService : IAuthenticationService
     {
-        private readonly IApiClientIdentity _authApi;
+        private readonly IApiClient _apiClient;
         private readonly ITokenStorageService _tokenStorage;
         private readonly ITokenValidator _tokenValidator;
         private readonly ICredentialVault _credentialVault;
@@ -26,14 +26,14 @@ namespace LYBT.Desktop.Foundation.Security
         private readonly IEventAggregator? _eventAggregator;
 
         public AuthenticationService(
-            IApiClientIdentity authApi,
+            IApiClient apiClient,
             ITokenStorageService tokenStorage,
             ITokenValidator tokenValidator,
             ICredentialVault credentialVault,
             ILogger<AuthenticationService> logger,
             IEventAggregator? eventAggregator = null)
         {
-            _authApi = authApi;
+            _apiClient = apiClient;
             _tokenStorage = tokenStorage;
             _tokenValidator = tokenValidator;
             _credentialVault = credentialVault;
@@ -51,7 +51,7 @@ namespace LYBT.Desktop.Foundation.Security
                 // US-AUTH-013: 发布登录开始事件
                 PublishLoginStartedEvent(request.UserName, isAutoLogin: false);
 
-                var apiResponse = await _authApi.LoginAsync(request);
+                var apiResponse = await _apiClient.Identity.LoginAsync(request);
 
                 if (apiResponse.Success && apiResponse.Data != null)
                 {
@@ -97,7 +97,7 @@ namespace LYBT.Desktop.Foundation.Security
                     RefreshToken = loginResponse?.RefreshToken
                 };
 
-                var apiResponse = await _authApi.LogoutAsync(logoutRequest);
+                var apiResponse = await _apiClient.Identity.LogoutAsync(logoutRequest);
 
                 // 清除本地 Token（JWT会话Token）
                 await _tokenStorage.ClearAuthenticationAsync();
@@ -222,7 +222,7 @@ namespace LYBT.Desktop.Foundation.Security
 
                 _logger.LogInformation("使用AutoLoginToken登录 - UserName: {UserName}", request.UserName);
 
-                var apiResponse = await _authApi.LoginWithAutoTokenAsync(request);
+                var apiResponse = await _apiClient.Identity.LoginWithAutoTokenAsync(request);
 
                 if (apiResponse.Success && apiResponse.Data != null)
                 {

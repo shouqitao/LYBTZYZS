@@ -18,7 +18,7 @@ public class LogoutService : ILogoutService, IDisposable
 {
     private readonly ILogger<LogoutService> _logger;
     private readonly ITokenStorageService _tokenStorage;
-    private readonly IApiClientIdentity _authApi;
+    private readonly IApiClient _apiClient;
     private readonly IAuthenticationStateMachine _stateMachine;
     private readonly IEventAggregator? _eventAggregator;
     private readonly ConcurrentQueue<PendingServerLogout> _pendingLogouts = new();
@@ -37,13 +37,13 @@ public class LogoutService : ILogoutService, IDisposable
     public LogoutService(
         ILogger<LogoutService> logger,
         ITokenStorageService tokenStorage,
-        IApiClientIdentity authApi,
+        IApiClient apiClient,
         IAuthenticationStateMachine stateMachine,
         IEventAggregator? eventAggregator = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _tokenStorage = tokenStorage ?? throw new ArgumentNullException(nameof(tokenStorage));
-        _authApi = authApi ?? throw new ArgumentNullException(nameof(authApi));
+        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _stateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
         _eventAggregator = eventAggregator;
     }
@@ -247,7 +247,7 @@ public class LogoutService : ILogoutService, IDisposable
                     RefreshToken = refreshToken
                 };
 
-                var response = await _authApi.LogoutAsync(logoutRequest);
+                var response = await _apiClient.Identity.LogoutAsync(logoutRequest);
 
                 if (response.Success)
                 {

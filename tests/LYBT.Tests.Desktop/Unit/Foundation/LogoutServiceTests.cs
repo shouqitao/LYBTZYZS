@@ -26,7 +26,8 @@ public class LogoutServiceTests : IDisposable
 {
     private readonly ILogger<LogoutService> _logger;
     private readonly ITokenStorageService _tokenStorage;
-    private readonly IApiClientIdentity _authApi;
+    private readonly IApiClient _apiClient;
+    private readonly IApiClientIdentity _identity;
     private readonly IAuthenticationStateMachine _stateMachine;
     private readonly IEventAggregator _eventAggregator;
     private readonly LogoutService _sut;
@@ -35,13 +36,15 @@ public class LogoutServiceTests : IDisposable
     {
         _logger = Substitute.For<ILogger<LogoutService>>();
         _tokenStorage = Substitute.For<ITokenStorageService>();
-        _authApi = Substitute.For<IApiClientIdentity>();
+        _apiClient = Substitute.For<IApiClient>();
+        _identity = Substitute.For<IApiClientIdentity>();
+        _apiClient.Identity.Returns(_identity);
         _stateMachine = Substitute.For<IAuthenticationStateMachine>();
         _eventAggregator = new EventAggregator();
 
         _stateMachine.Fire(Arg.Any<AuthEvent>(), Arg.Any<string?>()).Returns(true);
 
-        _sut = new LogoutService(_logger, _tokenStorage, _authApi, _stateMachine, _eventAggregator);
+        _sut = new LogoutService(_logger, _tokenStorage, _apiClient, _stateMachine, _eventAggregator);
     }
 
     public void Dispose()
@@ -57,7 +60,7 @@ public class LogoutServiceTests : IDisposable
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new LogoutService(null!, _tokenStorage, _authApi, _stateMachine));
+            new LogoutService(null!, _tokenStorage, _apiClient, _stateMachine));
     }
 
     [Fact]
@@ -65,7 +68,7 @@ public class LogoutServiceTests : IDisposable
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new LogoutService(_logger, null!, _authApi, _stateMachine));
+            new LogoutService(_logger, null!, _apiClient, _stateMachine));
     }
 
     [Fact]
@@ -81,7 +84,7 @@ public class LogoutServiceTests : IDisposable
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new LogoutService(_logger, _tokenStorage, _authApi, null!));
+            new LogoutService(_logger, _tokenStorage, _apiClient, null!));
     }
 
     #endregion
@@ -164,7 +167,7 @@ public class LogoutServiceTests : IDisposable
         // Arrange
         var loginResponse = CreateLoginResponse();
         _tokenStorage.GetLoginResponseAsync().Returns(loginResponse);
-        _authApi.LogoutAsync(Arg.Any<LogoutRequest>())
+        _identity.LogoutAsync(Arg.Any<LogoutRequest>())
             .ThrowsAsync(new HttpRequestException("Network error"));
 
         // Act
@@ -184,7 +187,7 @@ public class LogoutServiceTests : IDisposable
         // Arrange
         var loginResponse = CreateLoginResponse();
         _tokenStorage.GetLoginResponseAsync().Returns(loginResponse);
-        _authApi.LogoutAsync(Arg.Any<LogoutRequest>())
+        _identity.LogoutAsync(Arg.Any<LogoutRequest>())
             .ThrowsAsync(new HttpRequestException("Network error"));
 
         ServerLogoutFailedPayload? receivedPayload = null;
@@ -210,7 +213,7 @@ public class LogoutServiceTests : IDisposable
         // Arrange
         var loginResponse = CreateLoginResponse();
         _tokenStorage.GetLoginResponseAsync().Returns(loginResponse);
-        _authApi.LogoutAsync(Arg.Any<LogoutRequest>())
+        _identity.LogoutAsync(Arg.Any<LogoutRequest>())
             .Returns(new ApiResponse { Success = false, Message = "401 Unauthorized" });
 
         // Act
@@ -266,7 +269,7 @@ public class LogoutServiceTests : IDisposable
         // Arrange
         var loginResponse = CreateLoginResponse();
         _tokenStorage.GetLoginResponseAsync().Returns(loginResponse);
-        _authApi.LogoutAsync(Arg.Any<LogoutRequest>())
+        _identity.LogoutAsync(Arg.Any<LogoutRequest>())
             .ThrowsAsync(new HttpRequestException("Network error"));
 
         // Act
@@ -288,7 +291,7 @@ public class LogoutServiceTests : IDisposable
         _tokenStorage.GetLoginResponseAsync().Returns(loginResponse);
         var timeoutException = new TaskCanceledException("Timeout",
             new TimeoutException("The operation has timed out"));
-        _authApi.LogoutAsync(Arg.Any<LogoutRequest>())
+        _identity.LogoutAsync(Arg.Any<LogoutRequest>())
             .ThrowsAsync(timeoutException);
 
         // Act
@@ -307,7 +310,7 @@ public class LogoutServiceTests : IDisposable
     {
         var loginResponse = CreateLoginResponse();
         _tokenStorage.GetLoginResponseAsync().Returns(loginResponse);
-        _authApi.LogoutAsync(Arg.Any<LogoutRequest>())
+        _identity.LogoutAsync(Arg.Any<LogoutRequest>())
             .Returns(new ApiResponse { Success = true });
     }
 

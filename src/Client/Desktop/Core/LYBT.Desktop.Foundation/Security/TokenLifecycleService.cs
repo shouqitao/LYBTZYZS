@@ -21,7 +21,7 @@ namespace LYBT.Desktop.Foundation.Security
     /// </remarks>
     public class TokenLifecycleService : ITokenLifecycleService
     {
-        private readonly IApiClientIdentity _authApi;
+        private readonly IApiClient _apiClient;
         private readonly ITokenStorageService _tokenStorage;
         private readonly IEventAggregator _eventAggregator;
         private readonly ILogger<TokenLifecycleService> _logger;
@@ -43,12 +43,12 @@ namespace LYBT.Desktop.Foundation.Security
         private readonly TimeSpan _monitorInterval = TimeSpan.FromSeconds(30);
 
         public TokenLifecycleService(
-            IApiClientIdentity authApi,
+            IApiClient apiClient,
             ITokenStorageService tokenStorage,
             IEventAggregator eventAggregator,
             ILogger<TokenLifecycleService> logger)
         {
-            _authApi = authApi ?? throw new ArgumentNullException(nameof(authApi));
+            _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
             _tokenStorage = tokenStorage ?? throw new ArgumentNullException(nameof(tokenStorage));
             _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -175,7 +175,7 @@ namespace LYBT.Desktop.Foundation.Security
                 }
 
                 var request = new RefreshTokenRequest { RefreshToken = refreshToken };
-                var response = await _authApi.RefreshTokenAsync(request);
+                var response = await _apiClient.Identity.RefreshTokenAsync(request);
 
                 if (response.Success && response.Data != null)
                 {
