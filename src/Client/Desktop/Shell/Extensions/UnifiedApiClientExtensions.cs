@@ -122,28 +122,28 @@ public static class UnifiedApiClientExtensions
             );
         });
 
-        // IApiClientIdentity 单例 = SwitchingApiClient.Identity（运行时按连接模式路由到
-        // Refit 远程 / HttpClient 本地——消费方（AuthenticationService/LogoutService/
-        // TokenLifecycleService/AuthHealthService）直接注入该子接口。
+        // IApiClientIdentity transient = 每次解析从 SwitchingApiClient.Current 动态获取
+        // （修复双模式切换后旧 client 被 Dispose、singleton 缓存旧引用导致 ObjectDisposedException）
         // desktop-di-fix 2026-08-14：原缺失导致 Desktop 启动 DI 解析崩溃
         // （Unable to resolve IApiClientIdentity as parameter "authApi"）。
-        containerRegistry.RegisterSingleton<IApiClientIdentity>(resolver =>
+        containerRegistry.Register<IApiClientIdentity>(resolver =>
             resolver.Resolve<IApiClient>().Identity
         );
 
         // 其余直接注入子接口的服务（启动验证逐层暴露——ConnectionModeService→MedicalCases、
         // DeploymentService→Deploy、DiagnosticsService→Diagnostics、
         // ServerConfigurationService→Configuration）统一注册为 SwitchingApiClient 子接口转发。
-        containerRegistry.RegisterSingleton<IApiClientMedicalCases>(resolver =>
+        // 注：IApiClient（SwitchingApiClient）本身保持 singleton，仅子接口改为 transient。
+        containerRegistry.Register<IApiClientMedicalCases>(resolver =>
             resolver.Resolve<IApiClient>().MedicalCases
         );
-        containerRegistry.RegisterSingleton<IApiClientDeploy>(resolver =>
+        containerRegistry.Register<IApiClientDeploy>(resolver =>
             resolver.Resolve<IApiClient>().Deploy
         );
-        containerRegistry.RegisterSingleton<IApiClientDiagnostics>(resolver =>
+        containerRegistry.Register<IApiClientDiagnostics>(resolver =>
             resolver.Resolve<IApiClient>().Diagnostics
         );
-        containerRegistry.RegisterSingleton<IApiClientConfiguration>(resolver =>
+        containerRegistry.Register<IApiClientConfiguration>(resolver =>
             resolver.Resolve<IApiClient>().Configuration
         );
     }
