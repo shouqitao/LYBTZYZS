@@ -41,32 +41,32 @@ public static class DataSourceRegistrationExtensions
 
     private static void RegisterRemoteRepositories(IContainerRegistry containerRegistry)
     {
-        containerRegistry.Register<IPatientRepository>(resolver =>
+        containerRegistry.RegisterSingleton<IPatientRepository>(resolver =>
             new PatientRepository(
                 resolver.Resolve<IApiClient>(),
                 resolver.Resolve<ILogger<PatientRepository>>()));
 
-        containerRegistry.Register<IHerbRepository>(resolver =>
+        containerRegistry.RegisterSingleton<IHerbRepository>(resolver =>
             new HerbRepository(
                 resolver.Resolve<IApiClient>(),
                 resolver.Resolve<ILogger<HerbRepository>>()));
 
-        containerRegistry.Register<IFormulaRepository>(resolver =>
+        containerRegistry.RegisterSingleton<IFormulaRepository>(resolver =>
             new FormulaRepository(
                 resolver.Resolve<IApiClient>(),
                 resolver.Resolve<ILogger<FormulaRepository>>()));
 
-        containerRegistry.Register<IUserRepository>(resolver =>
+        containerRegistry.RegisterSingleton<IUserRepository>(resolver =>
             new UserRepository(
                 resolver.Resolve<IApiClient>(),
                 resolver.Resolve<ILogger<UserRepository>>()));
 
-        containerRegistry.Register<IMedicalCaseRepository>(resolver =>
+        containerRegistry.RegisterSingleton<IMedicalCaseRepository>(resolver =>
             new MedicalCaseRepository(
                 resolver.Resolve<IApiClient>(),
                 resolver.Resolve<ILogger<MedicalCaseRepository>>()));
 
-        containerRegistry.Register<IRegistrationRepository>(resolver =>
+        containerRegistry.RegisterSingleton<IRegistrationRepository>(resolver =>
             new RegistrationRepository(
                 resolver.Resolve<IApiClient>(),
                 resolver.Resolve<ILogger<RegistrationRepository>>()));
