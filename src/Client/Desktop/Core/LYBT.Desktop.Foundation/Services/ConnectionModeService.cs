@@ -28,8 +28,8 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     /// <summary>LocalWebAPI 匿名健康路径。</summary>
     private const string LocalHealthPath = "/api/v1/health";
 
-    private static readonly TimeSpan RemoteProbeTimeout = TimeSpan.FromSeconds(3);
-    private static readonly TimeSpan LocalProbeTimeout = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan RemoteProbeTimeout = TimeSpan.FromMilliseconds(1000);
+    private static readonly TimeSpan LocalProbeTimeout = TimeSpan.FromMilliseconds(1000);
 
     private readonly IConnectionSettingsService _connectionSettings;
     private readonly IApplicationStateService _applicationState;

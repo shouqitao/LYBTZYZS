@@ -183,22 +183,33 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
     }
 
     /// <summary>
-    /// 将连接模式相关 UI 属性与 <see cref="IConnectionModeService"/> 当前状态对齐
-    /// （模式显示、远程可用性、状态文案）。纯同步——状态单一事实来源在服务层
-    /// （SetModeAsync 守卫现场探测 + DetectConnectionModeAsync 启动探测维护），
-    /// ViewModel 只订阅事件渲染 UI。
+    /// 将连接模式相关 UI 属性与 <see cref="IConnectionModeService"/> 当前状态对齐。
+    /// 先同步刷新立即状态（模式显示/当前模式——按钮可见性依赖 IsRemoteMode，立即生效），
+    /// 再异步探测远程可用性（按钮可用性依赖 IsRemoteAvailable，后台刷新，不阻塞切换响应）。
+    /// 状态单一事实来源仍在服务层（探测经 CheckRemoteAvailableAsync 更新服务缓存）。
+    /// async void：被命令/事件处理器以 fire-and-forget 方式调用，探测异常必须就地捕获。
     /// </summary>
-    private void SyncModeDisplay()
+    private async void SyncModeDisplay()
     {
         if (_connectionModeService is null) return;
 
+        // 1. 立即同步状态：模式显示、当前模式（按钮可见性依赖 IsRemoteMode，立即生效）
         CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
         IsRemoteMode = _connectionModeService.IsRemote;
-        IsRemoteAvailable = _connectionModeService.IsRemoteAvailable;
         ApiStatusMessage = _connectionModeService.ApiStatusDisplay;
-
-        // 生成器不为 CanExecute 引用属性自动 Notify——手动通知命令刷新按钮可用性
         SwitchToRemoteCommand.NotifyCanExecuteChanged();
+
+        // 2. 异步探测远程可用性（按钮可用性依赖 IsRemoteAvailable，后台刷新）
+        try
+        {
+            var remoteAvailable = await _connectionModeService.CheckRemoteAvailableAsync().ConfigureAwait(true);
+            IsRemoteAvailable = remoteAvailable;
+            SwitchToRemoteCommand.NotifyCanExecuteChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "[VM] Login.SyncModeDisplay - remote availability probe failed");
+        }
     }
 
     /// <summary>
