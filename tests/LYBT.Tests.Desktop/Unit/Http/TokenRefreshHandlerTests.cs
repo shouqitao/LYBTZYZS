@@ -154,7 +154,7 @@ public class TokenRefreshHandlerTests : IAsyncLifetime
         string? refreshToken = "refresh-token-1",
         bool userActive = true)
     {
-        _tokenStorage.GetLoginResponseAsync().Returns(_ => Task.FromResult(login));
+        _tokenStorage.GetLoginResponseAsync().Returns(_ => Task.FromResult<LoginResponse?>(login));
         _tokenStorage.GetRefreshTokenAsync().Returns(Task.FromResult<string?>(refreshToken));
         _tokenStorage.SaveAuthenticationAsync(Arg.Any<LoginResponse>(), Arg.Any<bool>())
             .Returns(Task.CompletedTask);
@@ -256,7 +256,7 @@ public class TokenRefreshHandlerTests : IAsyncLifetime
     {
         // 状态化存储：刷新成功后 GetLoginResponseAsync 返回新登录（后续请求跳过刷新）
         LoginResponse? current = MakeLogin(DateTime.UtcNow.AddMinutes(2));
-        _tokenStorage.GetLoginResponseAsync().Returns(_ => Task.FromResult(current));
+        _tokenStorage.GetLoginResponseAsync().Returns(_ => Task.FromResult<LoginResponse?>(current));
         _tokenStorage.GetRefreshTokenAsync().Returns(Task.FromResult<string?>("refresh-token-1"));
         _tokenStorage.SaveAuthenticationAsync(Arg.Any<LoginResponse>(), Arg.Any<bool>())
             .Returns(Task.CompletedTask)
