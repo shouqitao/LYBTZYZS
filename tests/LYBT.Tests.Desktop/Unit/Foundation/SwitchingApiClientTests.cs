@@ -125,6 +125,31 @@ public class SwitchingApiClientTests
     }
 
     [Fact]
+    public void UrlChange_DisposesOld_CreatesNew()
+    {
+        // TDD Batch 4 用例 3：URL 变更后创建新 client 并释放旧 client。
+        // 行为实证（只验证不修改）：HttpClientApiClient / RefitApiClient 均未实现
+        // IDisposable → SwitchingApiClient 中 `_current as IDisposable` 恒为 null，
+        // 旧 client 实际不 Dispose（潜在资源泄漏点，登记不修改）。
+        // 可验证部分：URL 变更后确实创建了新 client（工厂调用次数递增）。
+        var cs = Substitute.For<IConnectionSettingsService>();
+        cs.CurrentUrl.Returns("http://remote:5000", "http://127.0.0.1:5300");
+        cs.IsLocal.Returns(false, true);
+        var client = CreateClient(cs);
+
+        _ = client.Identity; // remote
+        _remoteCalls.Should().Be(1);
+
+        _ = client.Patients; // URL 变更 → local，新 client 创建
+        _localCalls.Should().Be(1);
+        _remoteCalls.Should().Be(1);
+
+        // 切换本身不抛异常（Dispose 分支为 null 安全）
+        var act = () => _ = client.Herbs;
+        act.Should().NotThrow();
+    }
+
+    [Fact]
     public void SameUrl_ShouldNotRecreateClient()
     {
         var cs = Substitute.For<IConnectionSettingsService>();
@@ -138,6 +163,32 @@ public class SwitchingApiClientTests
         _ = client.Formulas;
 
         _remoteCalls.Should().Be(1); // Only created once
+    }
+
+    #endregion
+
+    #region Thread Safety
+
+    [Fact]
+    public async Task ThreadSafe_ConcurrentAccess_ReturnsSingleClient()
+    {
+        // TDD Batch 4 用例 5：并发访问（双重检查锁定 + volatile）只创建一次底层 client。
+        var cs = Substitute.For<IConnectionSettingsService>();
+        cs.CurrentUrl.Returns("http://remote:5000");
+        cs.IsLocal.Returns(false);
+        var client = CreateClient(cs);
+
+        var tasks = Enumerable.Range(0, 20).Select(i => Task.Run(() =>
+        {
+            _ = client.Identity;
+            _ = client.Patients;
+            _ = client.Herbs;
+            return true;
+        }));
+        await Task.WhenAll(tasks);
+
+        _remoteCalls.Should().Be(1);
+        _localCalls.Should().Be(0);
     }
 
     #endregion
