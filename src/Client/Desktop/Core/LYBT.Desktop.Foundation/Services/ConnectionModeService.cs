@@ -141,7 +141,11 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
                     return ModeSwitchResult.Blocked("NO_REMOTE_URL", "未配置远程服务器地址，无法切换到远程模式");
                 }
 
-                if (!_isRemoteAvailable)
+                // 守卫 2：远程可达性——每次切换现场探测（不读缓存）。
+                // 保证 URL 变更驱动（ServerConfig/首启向导经 UrlChanged 回流）与按钮路径行为一致，
+                // 并同步 _isRemoteAvailable 缓存（单一事实来源收敛在服务层，激活后即最新值）。
+                var isRemoteAvailable = await CheckRemoteAvailableAsync().ConfigureAwait(false);
+                if (!isRemoteAvailable)
                 {
                     _logger.LogWarning("[CONNECTION-MODE] Cannot switch to Remote: server unreachable");
                     return ModeSwitchResult.Blocked("REMOTE_UNREACHABLE", "远程服务器不可达，无法切换到远程模式");
@@ -203,14 +207,23 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     }
 
     /// <summary>
-    /// 当 URL 被外部修改时，重新推导生效模式。
+    /// 当 URL 被外部修改时，重新推导生效模式并统一走 SetModeAsync
+    /// （守卫 + 状态同步 + 事件），不再直接 ApplyMode 绕过守卫。
+    /// fire-and-forget：UrlChanged 为同步事件；SetModeAsync 异步执行，异常就地捕获。
     /// </summary>
     private void OnUrlChanged(object? sender, string newUrl)
     {
-        var derived = _connectionSettings.IsLocal
-            ? ConnectionMode.Local
-            : ConnectionMode.Remote;
-        ApplyMode(derived);
+        try
+        {
+            var derived = _connectionSettings.IsLocal
+                ? ConnectionMode.Local
+                : ConnectionMode.Remote;
+            _ = SetModeAsync(derived);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "[CONNECTION-MODE] URL-driven mode switch failed for {Url}", newUrl);
+        }
     }
 
     /// <summary>
