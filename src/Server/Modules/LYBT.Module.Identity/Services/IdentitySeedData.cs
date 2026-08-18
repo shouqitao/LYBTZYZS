@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -74,6 +75,22 @@ public static class IdentitySeedData
             await userManager.CreateAsync(user, defaultPassword);
             await userManager.AddToRoleAsync(user, role);
             return;
+        }
+
+        // 存量用户 SecurityStamp 修复（Seed 共用修复点，2026-08-17）：
+        // 历史版本曾经裸 EF Core 建用户 → SecurityStamp 为空 → 后续
+        // GeneratePasswordResetTokenAsync → GetSecurityStampAsync 抛
+        // InvalidOperationException("User security stamp cannot be null.")
+        // → LocalWebAPI 种子失败 → 嵌入式服务启动失败 → 本地模式不可用。
+        // 先补 stamp 再进入密码重置/角色校准流程（校验与令牌生成均依赖 stamp）。
+        if (string.IsNullOrEmpty(user.SecurityStamp))
+        {
+            var stampResult = await userManager.UpdateSecurityStampAsync(user);
+            if (!stampResult.Succeeded)
+            {
+                throw new InvalidOperationException(
+                    $"无法为用户 {userName} 修复 SecurityStamp: {string.Join("; ", stampResult.Errors.Select(e => e.Description))}");
+            }
         }
 
         if (user.LastLoginTime == null)

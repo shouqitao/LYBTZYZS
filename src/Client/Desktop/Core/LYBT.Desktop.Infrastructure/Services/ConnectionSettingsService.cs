@@ -12,45 +12,71 @@ using Microsoft.Extensions.Options;
 namespace LYBT.Desktop.Infrastructure.Services;
 
 /// <summary>
-/// 管理活动 API 连接 URL，持久化到 appsettings.json，
-/// 并在变化时通知订阅者。支持 PreferredMode + RemoteUrl
-/// 持久化以显式切换模式。
+/// 管理活动 API 连接 URL，持久化到用户设置文件
+/// （%LOCALAPPDATA%/LYBTZYZS/user-settings.json），并与 appsettings.json 分离——
+/// 构建 --no-incremental 会以源码 appsettings.json 覆盖 bin 目录副本导致用户配置丢失。
+/// 支持 PreferredMode + RemoteUrl 持久化以显式切换模式。
 /// </summary>
 public sealed class ConnectionSettingsService : IConnectionSettingsService
 {
     /// <summary>LocalWebAPI 固定地址（始终为 http://localhost:5300）。</summary>
     public const string LocalUrlConstant = "http://localhost:5300";
 
+    /// <summary>用户设置文件名（与 appsettings.json 分离，构建不覆盖）。</summary>
+    public const string SettingsFileName = "user-settings.json";
+
+    /// <summary>默认用户设置目录（%LOCALAPPDATA%/LYBTZYZS）。</summary>
+    public static string DefaultUserSettingsDirectory => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "LYBTZYZS");
+
+    /// <summary>默认用户设置文件路径。</summary>
+    public static string DefaultUserSettingsPath => Path.Combine(
+        DefaultUserSettingsDirectory, SettingsFileName);
+
     private readonly ILogger<ConnectionSettingsService> _logger;
     private readonly string _settingsFilePath;
 
-    private string _currentUrl;
-    private string _remoteUrl;
-    private string _preferredMode;
+    private string _currentUrl = LocalUrlConstant;
+    private string _remoteUrl = string.Empty;
+    private string _preferredMode = "Local";
 
     public ConnectionSettingsService(
         IOptions<ApiClientOptions> apiOptions,
-        ILogger<ConnectionSettingsService> logger)
+        ILogger<ConnectionSettingsService> logger,
+        string? settingsFilePath = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _settingsFilePath = settingsFilePath ?? DefaultUserSettingsPath;
 
-        var options = apiOptions.Value;
-        var baseUrl = options.BaseUrl;
-        if (string.IsNullOrWhiteSpace(baseUrl))
-        {
-            baseUrl = LocalUrlConstant;
-            _logger.LogInformation("[CONNECTION-CFG] No saved BaseUrl, defaulting to {Url}", baseUrl);
-        }
-        _currentUrl = baseUrl;
-
-        _remoteUrl = options.RemoteUrl ?? string.Empty;
-
-        var preferred = options.PreferredMode;
-        _preferredMode = string.IsNullOrWhiteSpace(preferred) ? "Local" : preferred;
-
-        _settingsFilePath = Path.Combine(
-            AppContext.BaseDirectory, "appsettings.json");
+        LoadInitialValues(apiOptions?.Value ?? new ApiClientOptions());
     }
+
+    /// <summary>
+    /// 加载初始连接配置：用户设置文件优先，缺失键回退 appsettings 配置值。
+    /// </summary>
+    private void LoadInitialValues(ApiClientOptions options)
+    {
+        var userSettings = TryLoadUserSettings();
+
+        var baseUrl = FirstNonEmpty(userSettings.BaseUrl, options.BaseUrl);
+        _currentUrl = string.IsNullOrWhiteSpace(baseUrl) ? LocalUrlConstant : baseUrl;
+        if (string.IsNullOrWhiteSpace(options.BaseUrl))
+        {
+            _logger.LogInformation("[CONNECTION-CFG] No BaseUrl configured, defaulting to {Url}", _currentUrl);
+        }
+
+        // RemoteUrl 空值（用户显式清空）优先于配置默认值：null 表示键缺失才回退。
+        _remoteUrl = userSettings.RemoteUrl is not null
+            ? userSettings.RemoteUrl.Trim()
+            : options.RemoteUrl?.Trim() ?? string.Empty;
+
+        var preferred = FirstNonEmpty(userSettings.PreferredMode, options.PreferredMode);
+        _preferredMode = string.IsNullOrWhiteSpace(preferred) ? "Local" : preferred;
+    }
+
+    private static string? FirstNonEmpty(string? a, string? b)
+        => !string.IsNullOrWhiteSpace(a) ? a : b;
 
     /// <inheritdoc />
     public string LocalUrl => LocalUrlConstant;
@@ -181,37 +207,100 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
     }
 
     /// <summary>
-    /// 在顶层节下持久化单个键，节不存在时创建。
+    /// 在用户设置文件顶层节下持久化单个键。文件/目录缺失时创建，
     /// 节中其他键保持不变。
     /// </summary>
     private async Task PersistSettingAsync(string section, string key, string value)
     {
         try
         {
-            var json = await File.ReadAllTextAsync(_settingsFilePath);
-            var root = JsonNode.Parse(json)?.AsObject();
-            if (root is null) return;
+            var root = await LoadOrCreateRootAsync();
 
-            if (root.TryGetPropertyValue(section, out var sectionNode) && sectionNode is JsonObject sectionObj)
+            if (root[section] is JsonObject sectionObj)
             {
                 sectionObj[key] = value;
             }
             else
             {
-                root[section] = JsonNode.Parse($"{{\"{key}\": \"{value}\"}}");
+                root[section] = new JsonObject { [key] = value };
             }
 
             var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
-            await File.WriteAllTextAsync(_settingsFilePath,
-                root.ToJsonString(options));
+            await File.WriteAllTextAsync(_settingsFilePath, root.ToJsonString(options));
 
-            _logger.LogDebug("[CONNECTION-CFG] Persisted {Section}:{Key} = {Value}", section, key, value);
+            _logger.LogDebug(
+                "[CONNECTION-CFG] Persisted {Section}:{Key} = {Value} to {Path}",
+                section, key, value, _settingsFilePath);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "[CONNECTION-CFG] Failed to persist {Section}:{Key}", section, key);
+            _logger.LogWarning(ex,
+                "[CONNECTION-CFG] Failed to persist {Section}:{Key} to {Path}",
+                section, key, _settingsFilePath);
         }
     }
+
+    /// <summary>
+    /// 读取用户设置文件（JSON 对象根），文件缺失/损坏时返回空根并创建目录。
+    /// </summary>
+    private async Task<JsonObject> LoadOrCreateRootAsync()
+    {
+        if (File.Exists(_settingsFilePath))
+        {
+            try
+            {
+                var text = await File.ReadAllTextAsync(_settingsFilePath);
+                var root = JsonNode.Parse(text)?.AsObject();
+                if (root is not null) return root;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "[CONNECTION-CFG] Failed to parse {Path}, starting fresh", _settingsFilePath);
+            }
+        }
+
+        var dir = Path.GetDirectoryName(_settingsFilePath);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+        return new JsonObject();
+    }
+
+    /// <summary>
+    /// 读取用户设置文件中的 ApiClient 节。键缺失返回 null，显式空字符串原样返回。
+    /// 任何读取失败仅记录日志并返回全 null（不阻塞启动）。
+    /// </summary>
+    private (string? BaseUrl, string? RemoteUrl, string? PreferredMode) TryLoadUserSettings()
+    {
+        try
+        {
+            if (!File.Exists(_settingsFilePath))
+                return (null, null, null);
+
+            var json = File.ReadAllText(_settingsFilePath);
+            var root = JsonNode.Parse(json)?.AsObject();
+            if (root is null
+                || !root.TryGetPropertyValue("ApiClient", out var sectionNode)
+                || sectionNode is not JsonObject sectionObj)
+            {
+                return (null, null, null);
+            }
+
+            return (
+                JsonValueToString(sectionObj["BaseUrl"]),
+                JsonValueToString(sectionObj["RemoteUrl"]),
+                JsonValueToString(sectionObj["PreferredMode"]));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "[CONNECTION-CFG] Failed to load user settings from {Path}", _settingsFilePath);
+            return (null, null, null);
+        }
+    }
+
+    private static string? JsonValueToString(JsonNode? node)
+        => node?.GetValue<string>();
 
     private static bool IsLocalUrl(string url)
     {

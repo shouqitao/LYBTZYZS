@@ -122,7 +122,7 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
     /// 切换到本地模式
     /// </summary>
     [RelayCommand]
-    private void SwitchToLocal()
+    private async Task SwitchToLocal()
     {
         if (_connectionModeService is null)
         {
@@ -133,11 +133,16 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
         try
         {
             Logger.LogInformation("[VM] Login.SwitchToLocal → 本地模式");
-            _ = _connectionModeService.SetModeAsync(ConnectionMode.Local);
+            var result = await _connectionModeService.SetModeAsync(ConnectionMode.Local).ConfigureAwait(true);
 
-            CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
-            IsRemoteMode = _connectionModeService.IsRemote;
-            ApiStatusMessage = _connectionModeService.ApiStatusDisplay;
+            if (!result.Succeeded)
+            {
+                Logger.LogWarning("[VM] Login.SwitchToLocal blocked - {ErrorCode}: {Message}", result.ErrorCode, result.Message);
+                ShowSwitchBlockedMessage(result);
+                return;
+            }
+
+            SyncModeDisplay();
         }
         catch (Exception ex)
         {
@@ -149,7 +154,7 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
     /// 切换到远程模式
     /// </summary>
     [RelayCommand(CanExecute = nameof(IsRemoteAvailable))]
-    private void SwitchToRemote()
+    private async Task SwitchToRemote()
     {
         if (_connectionModeService is null)
         {
@@ -160,7 +165,7 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
         try
         {
             Logger.LogInformation("[VM] Login.SwitchToRemote → 远程模式");
-            var switchResult = _connectionModeService.SetModeAsync(ConnectionMode.Remote).GetAwaiter().GetResult();
+            var switchResult = await _connectionModeService.SetModeAsync(ConnectionMode.Remote).ConfigureAwait(true);
 
             if (!switchResult.Succeeded)
             {
@@ -169,14 +174,26 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
                 return;
             }
 
-            CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
-            IsRemoteMode = _connectionModeService.IsRemote;
-            ApiStatusMessage = _connectionModeService.ApiStatusDisplay;
+            SyncModeDisplay();
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "[VM] Login.SwitchToRemote failed");
         }
+    }
+
+    /// <summary>
+    /// 将连接模式相关 UI 属性与 <see cref="IConnectionModeService"/> 当前状态对齐
+    /// （模式显示、远程可用性、状态文案）。命令在 UI 线程执行，可直接赋值。
+    /// </summary>
+    private void SyncModeDisplay()
+    {
+        if (_connectionModeService is null) return;
+
+        CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
+        IsRemoteMode = _connectionModeService.IsRemote;
+        IsRemoteAvailable = _connectionModeService.IsRemoteAvailable;
+        ApiStatusMessage = _connectionModeService.ApiStatusDisplay;
     }
 
     /// <summary>
@@ -260,9 +277,9 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
             if (_connectionModeService is null) return;
             Services.UiThreadDispatcher.InvokeAsync(() =>
             {
-                CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
-                IsRemoteMode = _connectionModeService.IsRemote;
-                IsRemoteAvailable = _connectionModeService.IsRemoteAvailable;
+                // 模式切换（含设置对话框/首次运行向导发起）后，UI 立即反映新状态——
+                // 含状态文案 ApiStatusMessage，避免与实际连接不一致
+                SyncModeDisplay();
             });
         }
         catch (Exception ex)

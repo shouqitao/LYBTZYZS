@@ -47,7 +47,7 @@ public class ConnectionSettingsServiceTests : IDisposable
     public void CurrentUrl_WithSavedUrl_ShouldReturnSavedValue()
     {
         var opts = CreateApiOptions("http://192.168.1.100:5000");
-        var service = new ConnectionSettingsService(opts, _logger);
+        var service = new ConnectionSettingsService(opts, _logger, _testSettingsPath);
 
         service.CurrentUrl.Should().Be("http://192.168.1.100:5000");
     }
@@ -56,7 +56,7 @@ public class ConnectionSettingsServiceTests : IDisposable
     public void CurrentUrl_WithNullConfig_ShouldDefaultToLocalhost()
     {
         var opts = CreateApiOptions(baseUrl: null);
-        var service = new ConnectionSettingsService(opts, _logger);
+        var service = new ConnectionSettingsService(opts, _logger, _testSettingsPath);
 
         service.CurrentUrl.Should().Be("http://127.0.0.1:5300");
     }
@@ -65,7 +65,7 @@ public class ConnectionSettingsServiceTests : IDisposable
     public void CurrentUrl_WithEmptyConfig_ShouldDefaultToLocalhost()
     {
         var opts = CreateApiOptions(baseUrl: null);
-        var service = new ConnectionSettingsService(opts, _logger);
+        var service = new ConnectionSettingsService(opts, _logger, _testSettingsPath);
 
         service.CurrentUrl.Should().Be("http://127.0.0.1:5300");
     }
@@ -84,7 +84,7 @@ public class ConnectionSettingsServiceTests : IDisposable
     public void IsLocal_ShouldDetectLocalhostCorrectly(string url, bool expected)
     {
         var opts = CreateApiOptions(url);
-        var service = new ConnectionSettingsService(opts, _logger);
+        var service = new ConnectionSettingsService(opts, _logger, _testSettingsPath);
 
         service.IsLocal.Should().Be(expected);
         service.CurrentUrl.Should().Be(url);
@@ -105,7 +105,7 @@ public class ConnectionSettingsServiceTests : IDisposable
     public void IsValidUrl_ShouldValidateCorrectly(string url, bool expected)
     {
         var opts = CreateApiOptions("http://127.0.0.1:5300");
-        var service = new ConnectionSettingsService(opts, _logger);
+        var service = new ConnectionSettingsService(opts, _logger, _testSettingsPath);
 
         service.IsValidUrl(url).Should().Be(expected);
     }
@@ -118,7 +118,7 @@ public class ConnectionSettingsServiceTests : IDisposable
     public async Task SetUrlAsync_WithValidUrl_ShouldUpdateCurrentUrl()
     {
         var opts = CreateApiOptions("http://127.0.0.1:5300");
-        var service = new ConnectionSettingsService(opts, _logger);
+        var service = new ConnectionSettingsService(opts, _logger, _testSettingsPath);
 
         await service.SetUrlAsync("http://192.168.1.100:5000");
 
@@ -130,7 +130,7 @@ public class ConnectionSettingsServiceTests : IDisposable
     public async Task SetUrlAsync_WithSameUrl_ShouldNotFireEvent()
     {
         var opts = CreateApiOptions("http://127.0.0.1:5300");
-        var service = new ConnectionSettingsService(opts, _logger);
+        var service = new ConnectionSettingsService(opts, _logger, _testSettingsPath);
         var fired = false;
         service.UrlChanged += (_, _) => fired = true;
 
@@ -143,7 +143,7 @@ public class ConnectionSettingsServiceTests : IDisposable
     public async Task SetUrlAsync_WithDifferentUrl_ShouldFireEvent()
     {
         var opts = CreateApiOptions("http://127.0.0.1:5300");
-        var service = new ConnectionSettingsService(opts, _logger);
+        var service = new ConnectionSettingsService(opts, _logger, _testSettingsPath);
         var receivedUrl = string.Empty;
         service.UrlChanged += (_, url) => receivedUrl = url;
 
@@ -156,7 +156,7 @@ public class ConnectionSettingsServiceTests : IDisposable
     public async Task SetUrlAsync_WithInvalidUrl_ShouldThrow()
     {
         var opts = CreateApiOptions("http://127.0.0.1:5300");
-        var service = new ConnectionSettingsService(opts, _logger);
+        var service = new ConnectionSettingsService(opts, _logger, _testSettingsPath);
 
         var act = () => service.SetUrlAsync("not-valid");
         await act.Should().ThrowAsync<ArgumentException>();
@@ -166,7 +166,7 @@ public class ConnectionSettingsServiceTests : IDisposable
     public async Task SetUrlAsync_WithEmptyUrl_ShouldThrow()
     {
         var opts = CreateApiOptions("http://127.0.0.1:5300");
-        var service = new ConnectionSettingsService(opts, _logger);
+        var service = new ConnectionSettingsService(opts, _logger, _testSettingsPath);
 
         var act = () => service.SetUrlAsync("");
         await act.Should().ThrowAsync<ArgumentException>();
@@ -182,12 +182,44 @@ public class ConnectionSettingsServiceTests : IDisposable
         // T3-3: 原为空壳（注释说明依赖 appsettings.json 工作目录而跳过，无 Skip 属性无断言）。
         // 改为真实验证：设置后 CurrentUrl 更新 + 不抛异常。
         var opts = CreateApiOptions("http://127.0.0.1:5300");
-        var service = new ConnectionSettingsService(opts, _logger);
+        var service = new ConnectionSettingsService(opts, _logger, _testSettingsPath);
 
         await service.SetUrlAsync("http://127.0.0.1:5400");
 
         service.CurrentUrl.Should().Be("http://127.0.0.1:5400");
         service.IsLocal.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// FLAG: 用户配置持久化到独立用户设置文件（%LOCALAPPDATA%/LYBTZYZS/user-settings.json），
+    /// 不与 bin/appsettings.json 共用（构建 --no-incremental 覆盖 bin 副本导致配置丢失）。
+    /// 验证：新实例（模拟重启）从用户设置文件恢复 RemoteUrl + PreferredMode。
+    /// </summary>
+    [Fact]
+    public async Task SaveRemoteUrl_ShouldSurviveReconstruction()
+    {
+        var opts = CreateApiOptions(baseUrl: "http://127.0.0.1:5300");
+        var first = new ConnectionSettingsService(opts, _logger, _testSettingsPath);
+
+        await first.SaveRemoteUrlAsync("http://60.190.215.86:5000");
+        await first.SavePreferredModeAsync("Remote");
+
+        // 新实例（模拟应用重启）应优先读取用户设置文件中的持久化值
+        var second = new ConnectionSettingsService(opts, _logger, _testSettingsPath);
+
+        second.RemoteUrl.Should().Be("http://60.190.215.86:5000");
+        second.PreferredMode.Should().Be("Remote");
+        second.CurrentUrl.Should().Be("http://60.190.215.86:5000");
+        second.IsLocal.Should().BeFalse();
+
+        // 用户文件中的键存在但显式清空时，不应回退到 appsettings 默认值
+        var third = new ConnectionSettingsService(opts, _logger, _testSettingsPath);
+        await third.SaveRemoteUrlAsync(string.Empty);
+        await third.SavePreferredModeAsync("Local");
+
+        var fourth = new ConnectionSettingsService(opts, _logger, _testSettingsPath);
+        fourth.RemoteUrl.Should().Be(string.Empty);
+        fourth.PreferredMode.Should().Be("Local");
     }
 
     #endregion

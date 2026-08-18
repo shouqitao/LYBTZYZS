@@ -79,15 +79,19 @@ public class AppDbContextTests : IDisposable
     }
 
     [Fact]
-    public async Task SeedData_Creates_Admin_User()
+    public async Task SeedData_Seeds_Business_Data_Without_Users()
     {
+        // 用户创建已迁移到 IdentitySeedData（经 UserManager 正确哈希 + SecurityStamp）；
+        // LocalWebApiSeedData 明确不做用户（历史版本裸 EF 建用户产生不留 stamp 的脏数据——
+        // IdentitySeedData 现已含 null-stamp 修复）。此处验证业务种子 + 不产生用户。
         await using var context = CreateContext();
 
         await LocalWebApiSeedData.SeedAsync(context);
 
-        var admin = await context.Users.FirstOrDefaultAsync(u => u.UserName == "admin");
-        admin.Should().NotBeNull();
-        admin!.Role.Should().Be(UserRole.Admin);
+        (await context.Herbs.AnyAsync()).Should().BeTrue();
+        (await context.Formulas.AnyAsync()).Should().BeTrue();
+        (await context.Patients.AnyAsync()).Should().BeTrue();
+        (await context.Users.CountAsync()).Should().Be(0);
     }
 }
 
