@@ -15,19 +15,20 @@ namespace LYBT.Tests.Desktop;
 /// </summary>
 public class EntityApiClientRepositoryBaseTests
 {
-    private sealed class TestListDto
+    // 需为 public（IEntityApiSegment<T> 位于非强命名程序集，Castle 需代理时引用 public 泛型实参）
+    public sealed class TestListDto
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
     }
 
-    private sealed class TestDetailDto
+    public sealed class TestDetailDto
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
     }
 
-    private sealed class TestInputDto : IEntityInputDto
+    public sealed class TestInputDto : IEntityInputDto
     {
         public Guid? Id { get; set; }
     }
