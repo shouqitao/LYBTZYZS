@@ -97,4 +97,34 @@ public class MedicalCaseRepositoryTests
         result.Should().Be(detail);
         await medicalCases.Received(1).SuspendAsync(id, null);
     }
+
+    [Fact]
+    public async Task CancelMedicalCaseAsync_ReturnsTrue_WhenApiSucceeds()
+    {
+        var (repo, medicalCases) = CreateSut();
+        var id = Guid.NewGuid();
+        var request = new CancelMedicalCaseRequest { Reason = "患者取消就诊" };
+        medicalCases.CancelMedicalCaseAsync(id, request)
+            .Returns(Task.FromResult(new ApiResponse { Success = true }));
+
+        var result = await repo.CancelMedicalCaseAsync(id, request);
+
+        result.Should().BeTrue();
+        await medicalCases.Received(1).CancelMedicalCaseAsync(id, request);
+    }
+
+    [Fact]
+    public async Task CancelMedicalCaseAsync_ReturnsFalse_WhenApiFails()
+    {
+        var (repo, medicalCases) = CreateSut();
+        var id = Guid.NewGuid();
+        var request = new CancelMedicalCaseRequest { Reason = "患者取消就诊" };
+        medicalCases.CancelMedicalCaseAsync(id, request)
+            .Returns(Task.FromResult(new ApiResponse { Success = false, Message = "取消失败" }));
+
+        var result = await repo.CancelMedicalCaseAsync(id, request);
+
+        result.Should().BeFalse();
+        await medicalCases.Received(1).CancelMedicalCaseAsync(id, request);
+    }
 }

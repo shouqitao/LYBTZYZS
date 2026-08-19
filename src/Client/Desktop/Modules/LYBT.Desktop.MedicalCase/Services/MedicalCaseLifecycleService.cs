@@ -106,9 +106,9 @@ internal class MedicalCaseLifecycleService : IMedicalCaseLifecycleService
         {
             _logger.LogInformation("[LC] MedicalCase.Cancel started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             var request = string.IsNullOrEmpty(reason) ? null : new CancelMedicalCaseRequest { Reason = reason };
-            var data = await _repository.CancelMedicalCaseAsync(medicalCaseId, request);
+            var cancelled = await _repository.CancelMedicalCaseAsync(medicalCaseId, request);
 
-            if (data != null)
+            if (cancelled)
             {
                 _logger.LogInformation("[LC] MedicalCase.Cancel completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
                 return CommandResult<bool>.Succeeded(true);

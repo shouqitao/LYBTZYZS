@@ -9,7 +9,6 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 
@@ -231,87 +230,6 @@ public class MedicalCaseService : IMedicalCaseService
         }
 
         return await CancelMedicalCaseAsync(medicalCaseId);
-    }
-
-    #endregion
-
-    #region 额外业务方法（非接口成员，供 ViewModel 直接调用）
-
-    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> SetPrescriptionFlagAsync(Guid medicalCaseId, SetPrescriptionFlagRequest request)
-    {
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.SetPrescriptionFlag started - MedicalCaseId={MedicalCaseId} NeedsPrescription={NeedsPrescription}",
-                medicalCaseId, request.NeedsPrescription);
-            var data = await _repository.SetPrescriptionFlagAsync(medicalCaseId, request);
-
-            if (data != null)
-            {
-                _logger.LogInformation("[SVC] MedicalCase.SetPrescriptionFlag completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = data };
-            }
-            else
-            {
-                _logger.LogWarning("[SVC] MedicalCase.SetPrescriptionFlag failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "设置处方标志失败" };
-            }
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.SetPrescriptionFlag failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
-    }
-
-    public virtual async Task<ApiResponse> DeleteMedicalCaseAsync(Guid medicalCaseId)
-    {
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.DeleteViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            await _repository.DeleteAsync(medicalCaseId);
-
-            _logger.LogInformation("[SVC] MedicalCase.DeleteViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            return new ApiResponse { Success = true, Message = "医案已取消" };
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.DeleteViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); return new ApiResponse { Success = false, Message = ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除", ex) }; }
-    }
-
-    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> UpdateStatusAsync(Guid medicalCaseId, MedicalCaseStatusInputDto request)
-    {
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.UpdateStatus started - MedicalCaseId={MedicalCaseId} Status={Status}", medicalCaseId, request.Status);
-            var data = await _repository.UpdateStatusAsync(medicalCaseId, request);
-
-            if (data != null)
-            {
-                _logger.LogInformation("[SVC] MedicalCase.UpdateStatus completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = data };
-            }
-            else
-            {
-                _logger.LogWarning("[SVC] MedicalCase.UpdateStatus failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "更新状态失败" };
-            }
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.UpdateStatus failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
-    }
-
-    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> SuspendViaApiAsync(Guid medicalCaseId, ConsultationInputDto? consultationData = null)
-    {
-        try
-        {
-            _logger.LogInformation("[SVC] MedicalCase.SuspendViaApi started - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-            var data = await _repository.SuspendAsync(medicalCaseId, consultationData);
-
-            if (data != null)
-            {
-                _logger.LogInformation("[SVC] MedicalCase.SuspendViaApi completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = data };
-            }
-            else
-            {
-                _logger.LogWarning("[SVC] MedicalCase.SuspendViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "挂起医案失败" };
-            }
-        }
-        catch (Exception ex) { _logger.LogError(ex, "[SVC] MedicalCase.SuspendViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
     }
 
     #endregion

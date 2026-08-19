@@ -89,9 +89,9 @@ public interface IMedicalCaseRepository
     Task<MedicalCaseDetailDto?> UpdateStatusAsync(Guid id, MedicalCaseStatusInputDto request, CancellationToken ct = default);
 
     /// <summary>
-    /// 取消医案
+    /// 取消医案（写操作——返回是否成功，ADR-0020 契约）
     /// </summary>
-    Task<MedicalCaseDetailDto?> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequest? request, CancellationToken ct = default);
+    Task<bool> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequest? request, CancellationToken ct = default);
 
     /// <summary>
     /// 挂起医案

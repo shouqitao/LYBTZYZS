@@ -94,25 +94,6 @@
                                         <MenuItem.Header>恢复</MenuItem.Header>
                                     </MenuItem>
                                     <Separator />
-                                    <MenuItem Command="{Binding ImportCommand}">
-                                        <MenuItem.Icon>
-                                            <materialDesign:PackIcon Kind="Import" />
-                                        </MenuItem.Icon>
-                                        <MenuItem.Header>导入</MenuItem.Header>
-                                    </MenuItem>
-                                    <MenuItem Command="{Binding ExportCommand}">
-                                        <MenuItem.Icon>
-                                            <materialDesign:PackIcon Kind="Export" />
-                                        </MenuItem.Icon>
-                                        <MenuItem.Header>导出</MenuItem.Header>
-                                    </MenuItem>
-                                    <MenuItem Command="{Binding DownloadTemplateCommand}">
-                                        <MenuItem.Icon>
-                                            <materialDesign:PackIcon Kind="FileDocumentOutline" />
-                                        </MenuItem.Icon>
-                                        <MenuItem.Header>模板</MenuItem.Header>
-                                    </MenuItem>
-                                    <Separator />
                                     <MenuItem
                                         Command="{Binding ReadCardCommand}"
                                         IsEnabled="{Binding IsCardReaderConnected}"

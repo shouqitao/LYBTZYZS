@@ -257,12 +257,12 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
         }
     }
 
-    public async Task<MedicalCaseDetailDto?> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequest? request, CancellationToken ct = default)
+    public async Task<bool> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequest? request, CancellationToken ct = default)
     {
         if (id == Guid.Empty)
             throw new ArgumentException("医案ID不能为空", nameof(id));
 
-        // Always returns null regardless of outcome — keep manual try/catch.
+        // 写操作契约（ADR-0020）：返回成功/失败，不抛异常、不吞结果。
         try
         {
             Logger.LogInformation("[REPO] MedicalCase.Cancel - Id={Id}, Reason={Reason}",
@@ -270,12 +270,14 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
 
             var response = await _medicalCases.CancelMedicalCaseAsync(id, request);
             if (response.Success)
+            {
                 Logger.LogInformation("[REPO] MedicalCase.Cancel completed - Id={Id}", id);
-            else
-                Logger.LogWarning("[REPO] MedicalCase.Cancel failed - Id={Id}, Message={Message}",
-                    id, response.Message);
+                return true;
+            }
 
-            return null;
+            Logger.LogWarning("[REPO] MedicalCase.Cancel failed - Id={Id}, Message={Message}",
+                id, response.Message);
+            return false;
         }
         catch (Exception ex)
         {

@@ -69,9 +69,6 @@
                                     <Button Command="{Binding ResetPasswordCommand}" Content="重置密码" Padding="16,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
                                     <Button Command="{Binding ToggleUserStatusCommand}" Content="切换状态" Padding="16,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
                                     <Button Command="{Binding RestoreCommand}" Content="恢复" Padding="16,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
-                                    <Separator />
-                                    <Button Command="{Binding ImportCommand}" Content="导入" Padding="16,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
-                                    <Button Command="{Binding DownloadTemplateCommand}" Content="下载模板" Padding="16,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" />
                                 </StackPanel>
                             </materialDesign:PopupBox>
                         </StackPanel>

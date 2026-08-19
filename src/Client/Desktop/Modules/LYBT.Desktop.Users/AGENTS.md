@@ -10,10 +10,9 @@ LYBT.Desktop.Users/
 ├── Interfaces/          # IUserRepository, IUserService
 ├── Models/              # UserDetailModel
 ├── Repositories/        # UserRepository
-├── Services/            # User services
+├── Services/            # UserService (CRUD + 密码/资料管理)
 ├── ViewModels/
-│   ├── Components/      # UserService (CRUD operations)
-│   ├── Handlers/        # IUserPasswordHandler, IUserStatusHandler, IUserImportExportHandler
+│   ├── Handlers/        # IUserPasswordHandler, IUserStatusHandler
 │   └── UserMasterDetailViewModel.cs
 ├── Views/               # UserMasterDetailView XAML views
 └── UsersModule.cs       # Prism IModule registration
@@ -27,18 +26,14 @@ LYBT.Desktop.Users/
 | ViewModel logic | `ViewModels/UserMasterDetailViewModel.cs` | MasterDetailViewModelBase derivative |
 | Password reset | `ViewModels/Handlers/UserPasswordHandler.cs` | Confirm dialog + UserService |
 | Status toggle | `ViewModels/Handlers/UserStatusHandler.cs` | Enable/disable/restore |
-| Import/Export | `ViewModels/Handlers/UserImportExportHandler.cs` | Excel operations |
 
 ## CONVENTIONS
 
-- **Handler pattern** — Password/Status/ImportExport split into separate handler components
+- **Handler pattern** — Password/Status split into separate handler components
 - **ViewModel base** — `MasterDetailViewModelBase<ListDto, DetailModel>` (V2 composition pattern)
-- **DataSource abstraction** — Repository delegates to IUserDataSource (Local/Remote)
+- **Service layer** — `UserService` extends `CrudServiceBase` (CommandResult 模式，ADR-0020 契约)
 - **UserDetailModel.Clone()** — Bypasses RealName setter to avoid PinYin auto-generation
 
 ## ANTI-PATTERNS
 
-- **IUserService dead code** — Desktop IUserService not registered, not referenced
-- **IUserCommandHandler dead code** — Not registered in DI, only documented
-- **UserService.ChangePasswordAsync** — Placeholder implementation (TODO)
 - **Cross-module references** — MUST NOT reference other Desktop modules directly

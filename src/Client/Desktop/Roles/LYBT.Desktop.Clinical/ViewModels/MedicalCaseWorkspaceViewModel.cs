@@ -32,7 +32,6 @@ namespace LYBT.Desktop.Clinical.ViewModels;
 /// 委托给子级 ViewModel：ConsultationEditor、PrescriptionEditor、Commands、PendingQueue、CardReader。
 /// 实现 IMedicalCaseWorkspaceContext（状态读取）和 IWorkspaceHost（子级到父级操作）。
 /// </summary>
-// TODO: 超大类型，建议拆分（详见 docs/compose/reports/code-review-duplicates.md 🟡5）
 public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     IMedicalCaseWorkspaceContext, IWorkspaceHost, IMedicalCaseDataProvider
 {
