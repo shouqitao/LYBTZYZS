@@ -1,8 +1,6 @@
 # 报表管理 (Reports)
 
-> 版本: v1.2 | 日期: 2026-08-02 | 状态: 已更新
-
-> **用户速览**：报表 = 诊所的「经营仪表盘」。看今天/这个月赚了多少、看了多少病人、哪些药用得最多。
+> 报表模块为诊所经营提供数据统计能力，基于现有业务数据（`MedicalCase` / `Registration` / `Prescription` / `Herb`）聚合计算，不引入独立数据采集链路。v1.0 范围聚焦三大主题：收入汇总（挂号费 / 药费 / 总收入）、就诊统计（总问诊数 + 按医生分组）、药材使用排行（使用次数 / 总用量）。
 >
 > **权限权威**：完整权限矩阵以 [04-permissions.md](../01-product/04-permissions.md) 为准，本模块 US 中策略名为摘要（`DoctorOrAdmin`）。
 >
@@ -12,120 +10,19 @@
 
 ---
 
-## 模块概述
-
-报表模块为诊所经营提供数据统计能力，基于现有业务数据（`MedicalCase` / `Registration` / `Prescription` / `Herb`）聚合计算，不引入独立数据采集链路。v1.0 范围聚焦三大主题：
-
-1. **收入汇总**（挂号费 / 药费 / 总收入）—— 经营对账
-2. **就诊统计**（总问诊数 + 按医生分组）—— 工作量与流量
-3. **药材使用排行**（使用次数 / 总用量）—— 药材消耗盘点
+## 模块级设计（横切）
 
 **时间维度**：每个端点接受可选 `startDate` / `endDate`（ISO 日期，默认当日），向后兼容现有调用，支持日 / 周 / 月 / 任意区间查询。复用同一聚合逻辑，不新增端点、不新增主题。
 
 **医生工作量**：由 US-REPORT-002 的 `byDoctor`（医生姓名 + 问诊数）覆盖，不单列「医生工作量报表」。
 
-**v1.0 克制范围（不做）**：趋势分析、可视化仪表盘、库存周转、跨期对比、导出报表文件。这些属后续版本演进项，v1.0 维持 3 端点 + 时间范围参数的最简形态。
+**v1.0 克制范围（不做）**：趋势分析、可视化仪表盘、库存周转、跨期对比、导出报表文件。这些属后续版本演进项，v1.0 维持 3 端点 + 时间范围参数的最简形态。（注：趋势/绩效分析已被代码超越实现——见 US-REPORT-004）
 
 > **决策来源**：现有 3 个当日端点（`daily/income`、`daily/consultations`、`daily/herbs`）已覆盖收入 / 就诊 / 药材三大主题，唯一缺口是时间维度（仅当日，无月度对账）。方案为 3 端点各加可选 `startDate` / `endDate`，不加新端点、不加新主题。
 
-## 用户故事
+**边界条件（横切）**：
 
-### US-REPORT-001: 查询收入报表（按时间范围，默认当日）
-
-**角色**: 管理员 / 医生
-**优先级**: Must
-**状态**: ✅ 已实现（endDate 默认=startDate + 400 校验）
-
-**作为** 管理员，**我想要** 按时间范围查询收入汇总（挂号费 / 药费 / 总计），**以便** 进行日 / 月经营对账。
-
-**验收标准**:
-- [ ] 支持可选查询参数 `startDate`、`endDate`（ISO 日期，如 `2026-06-01`），缺省时默认当日
-- [ ] 仅 `startDate` 传入时，`endDate` 默认等于 `startDate`（单日查询）
-- [ ] 返回 `totalIncome`、`registrationFeeTotal`、`medicineFeeTotal` 三个汇总值
-- [ ] `totalIncome = registrationFeeTotal + medicineFeeTotal`
-- [ ] `startDate > endDate` 时返回 400 参数错误
-- [ ] 权限策略 `DoctorOrAdmin`（Doctor / Admin / SuperAdmin 可查）
-- [ ] 不传任何参数时行为与历史完全一致（向后兼容）
-
-**业务规则**:
-1. 收入来源：挂号费取自 `Registration`，药费取自 `Prescription` 聚合。
-2. 区间为闭区间 `[startDate, endDate]`，按业务日期（非时间戳）对齐。
-3. 时间范围参数已实现（`ReportsController.cs` 支持可选 startDate/endDate，缺省默认当日）。
-
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/reports/daily/income?startDate=&endDate=` |
-| 本地 | 完全一致（LocalWebAPI 同端点） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/ReportsController.cs:30`（`GetDailyIncome`）
-
----
-
-### US-REPORT-002: 查询就诊统计报表（按时间范围）
-
-**角色**: 管理员 / 医生
-**优先级**: Must
-**状态**: ✅ 已实现（startDate>endDate→400）
-
-**作为** 管理员，**我想要** 按时间范围查询就诊统计（总问诊数 + 各医生问诊数），**以便** 掌握诊所流量与医生工作量。
-
-**验收标准**:
-- [ ] 支持可选查询参数 `startDate`、`endDate`（ISO 日期，缺省默认当日）
-- [ ] 返回 `totalCount`（区间内问诊总数）
-- [ ] 返回 `byDoctor` 数组：每项含 `doctorName`（医生姓名）+ `count`（问诊数）
-- [ ] `byDoctor` 按 `count` 降序排列
-- [ ] 权限策略 `DoctorOrAdmin`
-- [ ] 不传参数时行为与历史完全一致（向后兼容）
-
-**业务规则**:
-1. 问诊数来源：`Registration` / `MedicalCase` 就诊记录聚合。
-2. **医生工作量覆盖**：本 US 的 `byDoctor` 即满足医生工作量统计需求，不单列独立报表。
-3. 时间范围参数已实现（缺省默认当日）。
-
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/reports/daily/consultations?startDate=&endDate=` |
-| 本地 | 完全一致（LocalWebAPI 同端点） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/ReportsController.cs:38`（`GetDailyConsultations`）
-
----
-
-### US-REPORT-003: 查询药材使用排行（按时间范围）
-
-**角色**: 管理员 / 医生
-**优先级**: Should
-**状态**: ✅ 已实现（同 002 校验）
-
-**作为** 管理员，**我想要** 按时间范围查询药材使用排行，**以便** 盘点高频药材与消耗量，指导采购与库存。
-
-**验收标准**:
-- [ ] 支持可选查询参数 `startDate`、`endDate`（ISO 日期，缺省默认当日）
-- [ ] 返回 `items` 数组：每项含 `herbName`（药材名称）、`usageCount`（使用次数）、`totalDosage`（总用量）
-- [ ] `items` 按 `usageCount` 降序排列
-- [ ] 权限策略 `DoctorOrAdmin`
-- [ ] 不传参数时行为与历史完全一致（向后兼容）
-
-**业务规则**:
-1. 使用次数 = 出现在区间内处方中的次数；总用量 = 该药材在区间内所有处方剂量之和。
-2. 数据来源：`PrescriptionItem` 关联 `Herb`。
-3. 时间范围参数已实现（缺省默认当日）。
-
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/reports/daily/herbs?startDate=&endDate=` |
-| 本地 | 完全一致（LocalWebAPI 同端点） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/ReportsController.cs:46`（`GetDailyHerbs`）
-
----
-
-## 边界条件验收标准
-
-### 时间范围参数
+**时间范围参数**：
 
 - [ ] `startDate` / `endDate` 均为 ISO 日期格式（`YYYY-MM-DD`），非日期格式返回 400
 - [ ] `startDate > endDate` 返回 400 参数错误
@@ -134,11 +31,11 @@
 - [ ] 均不传：默认当日（向后兼容）
 - [ ] 区间跨月 / 跨年正常返回聚合结果
 
-### 空数据
+**空数据**：
 
 - [ ] 区间内无任何就诊 / 处方记录 → 收入返回全 0，就诊返回 `totalCount=0` + 空 `byDoctor`，药材返回空 `items`
 
-## 依赖
+**依赖**：
 
 | 依赖 | 说明 |
 |------|------|
@@ -148,15 +45,118 @@
 
 ---
 
-### US-REPORT-004: 趋势与绩效分析（R3-补：已实现未文档化）
+## US-REPORT-001: 查询收入报表（按时间范围，默认当日）
+
+**角色**: 管理员 / 医生
+**优先级**: Must
+**状态**: ✅ 已实现（endDate 默认=startDate + 400 校验）
+
+**作为** 管理员，**我想要** 按时间范围查询收入汇总（挂号费 / 药费 / 总计），**以便** 进行日 / 月经营对账。
+
+**验收标准**:
+
+- [ ] 支持可选查询参数 `startDate`、`endDate`（ISO 日期，如 `2026-06-01`），缺省时默认当日
+- [ ] 仅 `startDate` 传入时，`endDate` 默认等于 `startDate`（单日查询）
+- [ ] 返回 `totalIncome`、`registrationFeeTotal`、`medicineFeeTotal` 三个汇总值
+- [ ] `totalIncome = registrationFeeTotal + medicineFeeTotal`
+- [ ] `startDate > endDate` 时返回 400 参数错误
+- [ ] 权限策略 `DoctorOrAdmin`（Doctor / Admin / SuperAdmin 可查）
+- [ ] 不传任何参数时行为与历史完全一致（向后兼容）
+
+**业务规则**:
+
+1. 收入来源：挂号费取自 `Registration`，药费取自 `Prescription` 聚合。
+2. 区间为闭区间 `[startDate, endDate]`，按业务日期（非时间戳）对齐。
+3. 时间范围参数已实现（`ReportsController.cs` 支持可选 startDate/endDate，缺省默认当日）。
+
+**双模式差异**:
+
+| 模式 | 行为 |
+|------|------|
+| 远程 | GET `/reports/daily/income?startDate=&endDate=` |
+| 本地 | 完全一致（LocalWebAPI 同端点） |
+
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/ReportsController.cs:30`（`GetDailyIncome`）
+
+---
+
+## US-REPORT-002: 查询就诊统计报表（按时间范围）
+
+**角色**: 管理员 / 医生
+**优先级**: Must
+**状态**: ✅ 已实现（startDate>endDate→400）
+
+**作为** 管理员，**我想要** 按时间范围查询就诊统计（总问诊数 + 各医生问诊数），**以便** 掌握诊所流量与医生工作量。
+
+**验收标准**:
+
+- [ ] 支持可选查询参数 `startDate`、`endDate`（ISO 日期，缺省默认当日）
+- [ ] 返回 `totalCount`（区间内问诊总数）
+- [ ] 返回 `byDoctor` 数组：每项含 `doctorName`（医生姓名）+ `count`（问诊数）
+- [ ] `byDoctor` 按 `count` 降序排列
+- [ ] 权限策略 `DoctorOrAdmin`
+- [ ] 不传参数时行为与历史完全一致（向后兼容）
+
+**业务规则**:
+
+1. 问诊数来源：`Registration` / `MedicalCase` 就诊记录聚合。
+2. **医生工作量覆盖**：本 US 的 `byDoctor` 即满足医生工作量统计需求，不单列独立报表。
+3. 时间范围参数已实现（缺省默认当日）。
+
+**双模式差异**:
+
+| 模式 | 行为 |
+|------|------|
+| 远程 | GET `/reports/daily/consultations?startDate=&endDate=` |
+| 本地 | 完全一致（LocalWebAPI 同端点） |
+
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/ReportsController.cs:38`（`GetDailyConsultations`）
+
+---
+
+## US-REPORT-003: 查询药材使用排行（按时间范围）
+
+**角色**: 管理员 / 医生
+**优先级**: Should
+**状态**: ✅ 已实现（同 002 校验）
+
+**作为** 管理员，**我想要** 按时间范围查询药材使用排行，**以便** 盘点高频药材与消耗量，指导采购与库存。
+
+**验收标准**:
+
+- [ ] 支持可选查询参数 `startDate`、`endDate`（ISO 日期，缺省默认当日）
+- [ ] 返回 `items` 数组：每项含 `herbName`（药材名称）、`usageCount`（使用次数）、`totalDosage`（总用量）
+- [ ] `items` 按 `usageCount` 降序排列
+- [ ] 权限策略 `DoctorOrAdmin`
+- [ ] 不传参数时行为与历史完全一致（向后兼容）
+
+**业务规则**:
+
+1. 使用次数 = 出现在区间内处方中的次数；总用量 = 该药材在区间内所有处方剂量之和。
+2. 数据来源：`PrescriptionItem` 关联 `Herb`。
+3. 时间范围参数已实现（缺省默认当日）。
+
+**双模式差异**:
+
+| 模式 | 行为 |
+|------|------|
+| 远程 | GET `/reports/daily/herbs?startDate=&endDate=` |
+| 本地 | 完全一致（LocalWebAPI 同端点） |
+
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/ReportsController.cs:46`（`GetDailyHerbs`）
+
+---
+
+## US-REPORT-004: 趋势与绩效分析
 
 **角色**: Admin / 医生
 **优先级**: Could
-**状态**: ✅ 已实现（未文档化补记——R1 反向脱节；注意：原 10-reports.md v1.0 克制声明「不做趋势分析」已被代码超越）
+**状态**: ✅ 已实现（未文档化补记——R1 反向脱节；注意：原 v1.0 克制声明「不做趋势分析」已被代码超越）
 
 **作为** 管理者，**我想要** 查看收入/问诊趋势、医生绩效、热门药材与患者流量分析，**以便** 了解业务变化趋势并优化资源配置。
 
 **验收标准**:
+
 - [ ] GET `/api/v1/reports/trend/income`（收入趋势，默认最近 30 天）
 - [ ] GET `/api/v1/reports/trend/consultations`（问诊趋势）
 - [ ] GET `/api/v1/reports/doctor-performance`（医生绩效）
@@ -166,13 +166,16 @@
 
 **实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/ReportsController.cs:69-158`、`ReportService.cs:52-103`；Desktop `ReportsHomeViewModel` 当前仅消费 3 个 daily 端点
 
-**双模式**（2026-08-12 决策 B：本地裁剪）:
+**双模式差异**（2026-08-12 决策 B：本地裁剪）:
+
 | 模式 | 行为 |
 |------|------|
 | 远程 | ✅ 5 端点全提供（trend/income、trend/consultations、doctor-performance、herbs/ranking、patient-flow） |
 | 本地 | ❌ 不提供（LocalWebAPI 仅 3 个 daily 端点）——**有意裁剪**：本地=单机小诊所场景，趋势分析属管理决策用途，一般连远程使用；且本地数据孤立 N1，趋势聚合意义有限；避免为低价值场景补双端代码 |
 
-> **2026-08-12 决策 B（用户确认）**：US-REPORT-004 趋势/绩效报表仅远程模式提供，本地模式不提供（裁剪合理，非缺陷）。原 10-reports.md v1.0 克制声明「不做趋势分析」已被代码超越（远程已实现），此 US 补记双模式语义。
+> **2026-08-12 决策 B（用户确认）**：US-REPORT-004 趋势/绩效报表仅远程模式提供，本地模式不提供（裁剪合理，非缺陷）。原 v1.0 克制声明「不做趋势分析」已被代码超越（远程已实现），此 US 补记双模式语义。
+
+---
 
 ## 变更记录
 
