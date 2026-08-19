@@ -1,8 +1,6 @@
 # 患者管理 (Patient Management)
 
-> 版本: v2.1 | 日期: 2026-08-02 | 状态: 已更新
-
-> **用户速览**：患者管理 = 诊所的「患者通讯录」。记录每个患者的基本信息（姓名、身份证、电话），医生看病前先查一下这个患者之前看过什么。
+> 患者管理模块负责维护诊所所有患者的个人信息与医疗档案基础数据，是医案（MedicalCase）的前置依赖，也是挂号、处方、打印等业务流程的起点。模块通过 `[SensitiveData]` 特性对敏感字段实施差异化脱敏，保障医疗数据合规。
 >
 > **权限权威**：完整权限矩阵（含删除/禁用/恢复等操作级细分）以 [04-permissions.md](../01-product/04-permissions.md) 为准，本模块 US 中策略名为摘要。
 >
@@ -14,32 +12,7 @@
 
 ---
 
-## 模块概述
-
-患者管理模块负责维护诊所所有患者的个人信息与医疗档案基础数据。患者实体是医案（MedicalCase）的前置依赖，也是挂号、处方、打印等业务流程的起点。模块通过 `[SensitiveData]` 特性对身份证号、电话、地址、过敏史、病史等敏感字段实施差异化脱敏，保障医疗数据合规。
-
-模块核心包括：患者分页查询、详情查看、创建、更新、删除（软删除 + 引用检查）、启用/禁用、恢复软删除、批量删除、单个/批量引用检查、导入模板下载、Excel 导出、敏感数据脱敏。非管理员用户仅可见启用状态的患者；删除被医案引用的患者会被拒绝（返回 422）。
-
-## 业务规则
-
-1. **敏感数据脱敏（`[SensitiveData]` 特性）**：
-   - `IdCardNumber`、`PhoneNumber`：Partial 脱敏（保留首尾，中间掩码）
-   - `Address`：Default 脱敏
-   - `AllergyHistory`、`MedicalHistory`：Hash 脱敏（仅用于比对，不还原）
-2. **电话号码唯一**：`PhoneNumber` 在系统中唯一，重复返回 409。
-3. **年龄计算**：由 `BirthDate` 计算；控制器手动赋值（Mapperly 忽略此计算字段）。
-4. **拼音自动生成**：创建与更新时自动生成 `PinyinAbbreviation`，支持拼音首字母搜索。
-5. **非管理员可见性**：Doctor/Receptionist 仅可见 `IsEnabled=true` 的患者；Admin/SuperAdmin 可见全部（含禁用）。
-6. **删除引用检查**：被 MedicalCase 引用的患者不可删除，返回 422 Unprocessable Entity。
-7. **软删除**：通过 `IsDeleted` + 全局查询过滤器实现，默认隐藏已删除患者。
-
-## 双模式差异
-
-患者管理在远程与本地模式下行为完全一致，均通过统一的 `IPatientService` / `IPatientImportExportService` 服务层实现。本地 WebAPI 复用全部服务端模块。
-
-## 用户故事
-
-### US-PAT-001: 分页查询患者列表
+## US-PAT-001: 分页查询患者列表
 
 **角色**: 前台/医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
@@ -60,8 +33,9 @@
 1. 端点受 `DoctorOrReceptionist` 策略保护（Receptionist/Doctor/Admin/SuperAdmin）
 2. 拼音搜索基于 `PinyinAbbreviation`（如 "dg" 匹配 "张三" 等拼音首字母为 ZS 的患者——注：实际为姓名拼音首字母）
 3. 非管理员可见性由全局查询过滤器 + 角色判断联合实现
+4. **非管理员可见性（模块规则）**：Doctor/Receptionist 仅可见 `IsEnabled=true` 的患者；Admin/SuperAdmin 可见全部（含禁用）
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -72,7 +46,7 @@
 
 ---
 
-### US-PAT-002: 查看患者详情
+## US-PAT-002: 查看患者详情
 
 **角色**: 前台/医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
@@ -92,7 +66,7 @@
 1. 敏感字段（IdCardNumber/PhoneNumber/Address/AllergyHistory/MedicalHistory）按 `[SensitiveData]` 规则脱敏后返回
 2. 非管理员访问禁用患者视为不存在（404）
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -103,15 +77,11 @@
 
 ---
 
-### US-PAT-003: 创建患者
+## US-PAT-003: 创建患者
 
 **角色**: 前台/医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
 **状态**: ✅ 已实现（电话唯一查重 409 + 拼音自动生成兜底）
-
-> **实现注（2026-08-13 PATIENT-PHONE-UNIQUE-FIX）**：真机发现同电话可重复创建——查重逻辑存在但错误码用 PatientNotFound（404 语义），且失败走 BusinessFail 恒 422，需求要求 409。修复：Handler 改 `PatientPhoneDuplicate`（ErrorCodeExtensions 400→409）；BatchImport 补电话查重（行内互查 + 与系统已有患者）；拼音码服务端自动生成兜底（对齐药材 B-03 先例——API 直调未传 PinYinCode 时按姓名生成）。业务规则 1「数据库索引强制」修正为「业务级查重强制」（Patient 无 DB 唯一索引——7caa27e41 确认：软删实体不设 DB 唯一索引，业务级查重已友好）。
-
-> **409 状态码修复（2026-08-13 PATIENT-PHONE-409-FIX）**：ErrorCodeExtensions 已映射 409 但真机仍 422——根因：`HandleResult` 只认 `Result.ModuleErrorCode`，而 `Result.Failure(ErrorCode)` 不设 ModuleErrorCode → 落 BusinessFail 恒 422。修复：`HandleResult` 在 ModuleErrorCode 为空时**回退 ErrorCode 映射**（`code.ToHttpStatusCode()`）——电话唯一 → 真 409；双端 PatientsController 创建/更新/批量导入失败分支改用 `HandleResult(useAuthMapping: true)`（原 BusinessFail）。同类检查：IdentityController 已手写 `ErrorCode.ToHttpStatusCode()` 正确；409 错误码（MedicalCaseLocked 等）代码零消费无路径可测；`HandleResult` 回退使未来 403/404/409 全部按错误码正确映射。
 
 **作为** 诊所工作人员，**我想要** 创建新的患者档案，**以便** 为新就诊患者建立基础记录。
 
@@ -125,12 +95,22 @@
 
 **业务规则**:
 
-1. 电话唯一约束由数据库索引强制
+1. 电话唯一约束由业务级查重强制（**修正 2026-08-13**：原「数据库索引强制」不实——Patient 无 DB 唯一索引，7caa27e41 确认软删实体不设 DB 唯一索引，业务级查重已友好）
 2. 拼音由拼音服务自动生成，无需客户端提供
 3. 年龄字段为计算字段，Mapperly 忽略，由控制器手动赋值
 4. 新患者默认 `IsEnabled=true`、`IsDeleted=false`
 
-**双模式**:
+**边界条件**:
+
+- 导入行电话号码与系统已有患者重复 → 该行跳过（DuplicateStrategy=Skip），其余行继续
+- 导入行电话号码为空 → 返回 400 校验错误（PhoneNumber 为必填）
+
+**实现注**:
+
+- **2026-08-13 PATIENT-PHONE-UNIQUE-FIX**：真机发现同电话可重复创建——查重逻辑存在但错误码用 PatientNotFound（404 语义），且失败走 BusinessFail 恒 422，需求要求 409。修复：Handler 改 `PatientPhoneDuplicate`（ErrorCodeExtensions 400→409）；BatchImport 补电话查重（行内互查 + 与系统已有患者）；拼音码服务端自动生成兜底（对齐药材 B-03 先例——API 直调未传 PinYinCode 时按姓名生成）。
+- **2026-08-13 PATIENT-PHONE-409-FIX**：ErrorCodeExtensions 已映射 409 但真机仍 422——根因：`HandleResult` 只认 `Result.ModuleErrorCode`，而 `Result.Failure(ErrorCode)` 不设 ModuleErrorCode → 落 BusinessFail 恒 422。修复：`HandleResult` 在 ModuleErrorCode 为空时**回退 ErrorCode 映射**（`code.ToHttpStatusCode()`）——电话唯一 → 真 409；双端 PatientsController 创建/更新/批量导入失败分支改用 `HandleResult(useAuthMapping: true)`。同类检查：IdentityController 已手写 `ErrorCode.ToHttpStatusCode()` 正确；409 错误码（MedicalCaseLocked 等）代码零消费无路径可测；`HandleResult` 回退使未来 403/404/409 全部按错误码正确映射。
+
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -141,7 +121,7 @@
 
 ---
 
-### US-PAT-004: 更新患者
+## US-PAT-004: 更新患者
 
 **角色**: 前台/医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
@@ -163,7 +143,13 @@
 2. 更新时重新计算 Age（BirthDate 可能变更）
 3. 电话唯一约束同样适用于更新
 
-**双模式**:
+**边界条件**:
+
+- 两个管理员同时编辑同一患者 → 后提交者覆盖先提交者（Last Write Wins，乐观锁 RowVersion 检测冲突时返回 409）
+- 编辑过程中患者被其他用户禁用 → 保存成功（禁用不影响编辑权限，仅影响可见性）
+- 编辑过程中患者被软删除 → 返回 404
+
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -174,7 +160,7 @@
 
 ---
 
-### US-PAT-005: 删除患者（软删除，引用检查）
+## US-PAT-005: 删除患者（软删除，引用检查）
 
 **角色**: 管理员（Admin 及以上）
 **优先级**: Must
@@ -195,8 +181,9 @@
 1. 引用检查：查询 MedicalCase 表是否存在该患者的记录
 2. 被引用的患者不可删除（保护医案完整性），返回 422
 3. 软删除通过全局查询过滤器自动隐藏
+4. **软删除（模块规则）**：通过 `IsDeleted` + 全局查询过滤器实现，默认隐藏已删除患者
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -207,7 +194,7 @@
 
 ---
 
-### US-PAT-006: 启用/禁用患者
+## US-PAT-006: 启用/禁用患者
 
 **角色**: 管理员（Admin 及以上）
 **优先级**: Must
@@ -227,7 +214,7 @@
 1. 禁用与软删除语义不同：禁用保留记录但对非管理员隐藏；软删除则视为已移除
 2. 禁用不影响历史医案的访问（医生仍需查看已接诊患者的历史）
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -238,7 +225,7 @@
 
 ---
 
-### US-PAT-007: 恢复软删除患者
+## US-PAT-007: 恢复软删除患者
 
 **角色**: 管理员（Admin，业务管理）
 **优先级**: Should
@@ -258,7 +245,7 @@
 1. 恢复操作需 `IgnoreQueryFilters()` 绕过全局软删除过滤器定位记录
 2. 恢复仅还原患者记录本身，不还原关联医案（医案删除独立）
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -269,7 +256,7 @@
 
 ---
 
-### US-PAT-008: 批量删除患者
+## US-PAT-008: 批量删除患者
 
 **角色**: 管理员（Admin 及以上）
 **优先级**: Should
@@ -290,7 +277,7 @@
 2. 每项均执行引用检查（同 US-PAT-005 规则）
 3. 端点受管理员权限保护
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -301,7 +288,7 @@
 
 ---
 
-### US-PAT-009: 单个引用检查
+## US-PAT-009: 单个引用检查
 
 **角色**: 前台/医生/管理员（DoctorOrReceptionist 策略）
 **优先级**: Must
@@ -321,7 +308,7 @@
 1. 引用检查查询 MedicalCase 表中该患者的记录数
 2. 此端点允许所有 DoctorOrReceptionist 角色查询（前台/医生也需预判）
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -332,7 +319,7 @@
 
 ---
 
-### US-PAT-010: 批量引用检查
+## US-PAT-010: 批量引用检查
 
 **角色**: 管理员（Admin 及以上）
 **优先级**: Should
@@ -352,7 +339,7 @@
 1. 批量引用检查通过单次聚合查询实现（避免逐项 N+1）
 2. 用于批量删除前的预检，帮助管理员筛选
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -363,7 +350,7 @@
 
 ---
 
-### US-PAT-011: 下载导入模板
+## US-PAT-011: 下载导入模板
 
 **角色**: 管理员（Admin 及以上）
 **优先级**: Should
@@ -379,22 +366,22 @@
 
 **业务规则**:
 
-1. 模板由 `IPatientImportExportService` 生成（JSON 结构，非 Excel）
+1. 模板由 Service 层生成（JSON 结构，非 Excel）
 2. 模板字段与导入端点期望的 DTO 一致（`batch-import` 收 JSON 数组）
 3. **后端不涉及 Excel 格式**（2026-08-13 决策：保持通用性——Excel 处理由前端负责，如需）
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `PatientsController.cs` (HttpGet `import-template`), `IPatientImportExportService`
+**实现参考**: `PatientsController.cs` (HttpGet `import-template`), `IPatientService`
 
 ---
 
-### US-PAT-012: 导出患者数据（JSON）
+## US-PAT-012: 导出患者数据（JSON）
 
 **角色**: 管理员（Admin 及以上）
 **优先级**: Should
@@ -411,23 +398,23 @@
 
 **业务规则**:
 
-1. 导出由 `IPatientImportExportService` 执行（返回 JSON 数据，非 Excel）
+1. 导出由 Service 层执行（返回 JSON 数据，非 Excel）
 2. 敏感字段即使导出也按脱敏规则处理
 3. 端点受管理员权限保护
 4. **后端不涉及 Excel 格式**（2026-08-13 决策：保持通用性——Excel 转换由前端负责，如需）
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `PatientsController.cs:313` (HttpGet `export`), `IPatientImportExportService`
+**实现参考**: `PatientsController.cs:313` (HttpGet `export`), `IPatientService`
 
 ---
 
-### US-PAT-013: 敏感数据脱敏（存储与传输）
+## US-PAT-013: 敏感数据脱敏（存储与传输）
 
 **角色**: 系统安全
 **优先级**: Must
@@ -450,7 +437,7 @@
 3. Hash 脱敏：用于过敏史/病史比对（如确认两记录是否相同），不还原文
 4. 数据库存储原始数据，脱敏仅发生在 API 响应阶段
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -461,23 +448,7 @@
 
 ---
 
-## 边界条件验收标准
-
-### 导入时电话唯一性
-
-- [ ] Excel 导入多行包含相同电话号码 → 导入失败（Unique 约束），返回失败明细含"电话重复"
-- [ ] 导入行电话号码与系统已有患者重复 → 该行跳过（DuplicateStrategy=Skip），其余行继续
-- [ ] 导入行电话号码为空 → 返回 400 校验错误（PhoneNumber 为必填）
-
-### 并发编辑
-
-- [ ] 两个管理员同时编辑同一患者 → 后提交者覆盖先提交者（Last Write Wins，乐观锁 RowVersion 检测冲突时返回 409）
-- [ ] 编辑过程中患者被其他用户禁用 → 保存成功（禁用不影响编辑权限，仅影响可见性）
-- [ ] 编辑过程中患者被软删除 → 返回 404
-
----
-
-### US-PAT-014: 按身份证号查询患者（R3-补：已实现未文档化）
+## US-PAT-014: 按身份证号查询患者
 
 **角色**: 医生 / 前台 / Admin
 **优先级**: Must
@@ -490,7 +461,9 @@
 - [ ] GET `/api/v1/patients/by-id-number/{idNumber}` 返回匹配患者详情
 - [ ] 未找到返回 404
 
-**实现参考**: `CatalogController.cs` 无——`src/Server/Services/LYBT.WebAPI/Controllers/PatientsController.cs:296`（`by-id-number/{idNumber}`）、`PatientService.GetByIdNumberAsync`、Desktop `PatientCardReaderIntegration.FindPatientByIdNumberAsync`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/PatientsController.cs:296`（`by-id-number/{idNumber}`）、`PatientService.GetByIdNumberAsync`、Desktop `PatientCardReaderIntegration.FindPatientByIdNumberAsync`
+
+---
 
 ## 变更记录
 
