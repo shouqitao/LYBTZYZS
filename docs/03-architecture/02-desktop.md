@@ -764,6 +764,18 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 
 ---
 
+## 已知实现缺口（I-6, 2026-08-19）
+
+> **范围**：本节注记 `02-desktop` 与 `desktop-ui-requirements` 的已知 UI 缺口，避免后续误判。
+
+| 功能 | 设计态 | 代码现状 | 说明 |
+|------|--------|----------|------|
+| **FirstRun 5 步向导** | `desktop-ui-requirements §1.3` P0：改密→诊所→连接→创建 Admin→完成 | `FirstRunSetupView` 仅基础框架（`FirstRunSetupViewModel` 仅步骤 1-2 完整） | P0 待完善，已在 `desktop-ui-requirements §七-1` 标 ⚠️；不阻断登录/连接配置 |
+| **Reports 趋势/绩效** | `ReportsHomeView` P1：8 端点含趋势/绩效排行 | 仅 `daily` 3 端点；`ReportsHomeView` 仅 3/8 能力 | 已在 `05-dual-mode §端点覆盖率` 标 38% 裁剪；属 I-3 需产品决策 |
+| **安全审计/数据导入导出** | `desktop-ui-requirements §七-3/4` 🔴 缺失 | 无 Sysadmin 审计日志页/数据管理页 | 属 v1.0 待实现，蓝图不展开 |
+
+---
+
 ## 架构决策记录
 
 - [ADR-0006: ViewModel 组件化分解模式](decisions/0006-component-decomposition-pattern.md) — 大型 ViewModel 拆分为 Coordinator + Components (CommandHandler/DataManager/Validator)

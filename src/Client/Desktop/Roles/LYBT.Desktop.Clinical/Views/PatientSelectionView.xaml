@@ -70,7 +70,7 @@
                                                 <Setter Property="Fill" Value="{DynamicResource MaterialDesign.Brush.BodyLight}"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding CardReader.IsConnected}" Value="True">
-                                                        <Setter Property="Fill" Value="#2E8B57"/>
+                                                        <Setter Property="Fill" Value="{DynamicResource TcmGreenBrush}"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>

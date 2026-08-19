@@ -22,7 +22,7 @@
 
     <!--  转换器使用x:Static模式  -->
 
-    <Grid Background="#20000000" Visibility="{Binding IsOverlayVisible, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
+    <Grid Background="{DynamicResource DarkOpacityBrush}" Visibility="{Binding IsOverlayVisible, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <!--  加载动画  -->
             <ProgressBar

@@ -276,6 +276,17 @@ modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserConfiguration).Assembly)
 
 ---
 
+## 已知实现缺口（I-6, 2026-08-19）
+
+> **范围**：本节显式注记双模式文档与代码的已知差异，避免被后续轮次误判为新发现遗留。
+
+| 功能 | 设计态（文档） | 代码现状 | 说明 |
+|------|----------------|----------|------|
+| **FirstRun 向导 5 步** | `desktop-ui-requirements.md §1.3` P0：改密→诊所信息→连接模式→创建 Admin→完成 | `FirstRunSetupView.xaml` 仅基础框架（Steps 1-2 可用，3-5 待完善）；`desktop-ui-requirements §七-1` 已标 ⚠️ | **不影响双模式切换本身**（连接模式通过 `ServerConfigView` 独立配置已可用）；5 步向导属 P0 UI 完善，待产品决策 I-4 |
+| **Reports 趋势/绩效** | `desktop-ui-requirements §2.4` P1：收入/就诊/药材趋势 + 绩效排行 | `Reports` 仅 `daily/income/consultations/herbs` 3 端点（`ReportsController` 8→3）；`LocalWebAPI` 同裁剪（`05-dual-mode §端点覆盖率` 38% 已注） | 趋势/绩效/排行/流量属管理决策用途，本地单机场景价值低；属 P2 I-3 需产品决策是否扩展 |
+
+---
+
 ## 架构决策记录
 
 - [ADR-0009: URL 驱动双模式架构](decisions/0009-url-driven-dual-mode.md) — 当前决策：嵌入式 Kestrel + URL 驱动切换 + SQL Server LocalDB

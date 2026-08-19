@@ -30,16 +30,16 @@
                     VerticalAlignment="Top">
                 <Border.Style>
                     <Style TargetType="Border">
-                        <Setter Property="Background" Value="#5B8FA8"/>
+                        <Setter Property="Background" Value="{DynamicResource TcmGreenBrush}"/>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding MessageType}" Value="Success">
-                                <Setter Property="Background" Value="#2E8B57"/>
+                                <Setter Property="Background" Value="{DynamicResource TcmGreenBrush}"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding MessageType}" Value="Error">
                                 <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Error}"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding MessageType}" Value="Warning">
-                                <Setter Property="Background" Value="#DAA520"/>
+                                <Setter Property="Background" Value="{DynamicResource TcmGoldBrush}"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>

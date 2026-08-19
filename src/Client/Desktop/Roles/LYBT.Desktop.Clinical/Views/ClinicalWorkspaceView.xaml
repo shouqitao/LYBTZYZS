@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:prism="http://prismlibrary.com/"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:patientControls="clr-namespace:LYBT.Desktop.Patients.Controls;assembly=LYBT.Desktop.Patients"
              xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
              prism:ViewModelLocator.AutoWireViewModel="True"
@@ -89,11 +90,16 @@
                         Margin="0,40,0,0"
                         HorizontalAlignment="Center"
                         Visibility="{Binding SelectedPatient, Converter={x:Static converters:Cvt.InverseNullToVis}}">
-                <TextBlock FontSize="14"
-                           FontWeight="Bold"
-                           Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
-                           HorizontalAlignment="Center"
-                           Text="📋 请从左侧选择患者"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <materialDesign:PackIcon Kind="ClipboardTextOutline" Width="16" Height="16"
+                                             VerticalAlignment="Center" Margin="0,0,6,0"
+                                             Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"/>
+                    <TextBlock FontSize="14"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                               VerticalAlignment="Center"
+                               Text="请从左侧选择患者"/>
+                </StackPanel>
                 <TextBlock Margin="0,8,0,0"
                            FontSize="12"
                            Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
