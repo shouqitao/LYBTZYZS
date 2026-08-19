@@ -311,6 +311,17 @@ View(XAML) ← binding ← ViewModel（[ObservableProperty]/[RelayCommand]）
 
 **映射规则（A-31-C8 定案）**：DTO↔Model 转换唯一走 **Mapperly**（`[Mapper]` 接口源生成）；**禁止手写映射扩展**（`DtoConversionExtensions` 已删除 2026-08-08）；UI 优先直用 DTO（A-26 P2-11 最终落地）。
 
+**Service 层错误契约（ADR-0020，2026-08-19 定案）**：
+
+| 操作类型 | 错误返回方式 | 调用方处理 |
+|---------|-------------|-----------|
+| **读操作** | 返回 null 或空集合 | 检查 null/空后走正常逻辑 |
+| **写/状态变更** | 返回 `CommandResult`（Success/Failed + FailureReason） | 根据 CommandResult 决定 UI 反馈 |
+| **参数非法** | 抛 `ArgumentException` | 调用方必须修复 |
+| **基础设施彻底失效** | 抛 `InvalidOperationException`（调用方确能处理） | 仅限登录/关键路径 |
+
+禁止：Service 层内部 `try/catch → return null`（吞异常）或 `throw` 非上述两类异常。
+
 ---
 
 ## 4. TESTS 层（3 项目）
