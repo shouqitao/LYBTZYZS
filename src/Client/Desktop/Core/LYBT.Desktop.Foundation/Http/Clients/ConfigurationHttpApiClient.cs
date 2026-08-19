@@ -7,6 +7,7 @@
 // ---------------------------------------------------------------------------
 
 using LYBT.Desktop.Contracts.ApiClient;
+using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Foundation.Http.Clients;
@@ -14,7 +15,7 @@ namespace LYBT.Desktop.Foundation.Http.Clients;
 /// <summary>本地模式系统配置 API 客户端（服务器配置仅远程模式可用，本地模式不支持）</summary>
 internal sealed class ConfigurationHttpApiClient : HttpApiClientBase, IApiClientConfiguration
 {
-    public ConfigurationHttpApiClient(IHttpClientFactory httpClientFactory) : base(httpClientFactory) { }
+    public ConfigurationHttpApiClient(IHttpClientFactory httpClientFactory, ILogger logger) : base(httpClientFactory, logger) { }
 
     public Task<ApiResponse<Dictionary<string, string>>> GetConfigurationAsync()
         => throw new NotSupportedException("GetConfigurationAsync is a remote-only method and is not available in local mode.");

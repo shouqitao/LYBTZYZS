@@ -6,6 +6,7 @@
 // ---------------------------------------------------------------------------
 
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -15,7 +16,7 @@ namespace LYBT.Desktop.Foundation.Http.Clients;
 /// <summary>本地模式验方 API 客户端（拆分自 HttpClientApiClient）</summary>
 internal sealed class FormulasHttpApiClient : HttpApiClientBase, IApiClientFormulas
 {
-    public FormulasHttpApiClient(IHttpClientFactory httpClientFactory) : base(httpClientFactory) { }
+    public FormulasHttpApiClient(IHttpClientFactory httpClientFactory, ILogger logger) : base(httpClientFactory, logger) { }
 
     public async Task<ApiResponse<PagedResult<FormulaListDto>>> GetFormulasAsync(
         int page, int pageSize, string? keyword, string? category)

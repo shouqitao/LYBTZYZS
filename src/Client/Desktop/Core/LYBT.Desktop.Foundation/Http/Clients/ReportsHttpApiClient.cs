@@ -6,6 +6,7 @@
 // ---------------------------------------------------------------------------
 
 using LYBT.Desktop.Contracts.ApiClient;
+using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Reports;
 
@@ -14,7 +15,7 @@ namespace LYBT.Desktop.Foundation.Http.Clients;
 /// <summary>本地模式报表 API 客户端（拆分自 HttpClientApiClient）</summary>
 internal sealed class ReportsHttpApiClient : HttpApiClientBase, IApiClientReports
 {
-    public ReportsHttpApiClient(IHttpClientFactory httpClientFactory) : base(httpClientFactory) { }
+    public ReportsHttpApiClient(IHttpClientFactory httpClientFactory, ILogger logger) : base(httpClientFactory, logger) { }
 
     public Task<ApiResponse<DailyIncomeDto>> GetDailyIncomeAsync(DateTime? startDate, DateTime? endDate)
         => GetAndWrapAsync<DailyIncomeDto>($"/api/v1/reports/daily/income?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");

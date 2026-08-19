@@ -10,7 +10,9 @@
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using LYBT.Shared.Models.Contracts.Common;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Foundation.Http;
 
@@ -21,25 +23,33 @@ namespace LYBT.Desktop.Foundation.Http;
 internal abstract class HttpApiClientBase
 {
     /// <summary>
-    /// 与 LocalWebAPI 格式匹配的 JSON 序列化选项：
-    /// PascalCase 命名、不区分大小写的反序列化。
+    /// Local 模式 JSON 序列化选项：统一 camelCase + 枚举字符串（ADR-0022，与 Remote/Refit 对齐），
+    /// 不区分大小写反序列化。
     /// </summary>
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        PropertyNamingPolicy = null,
-        PropertyNameCaseInsensitive = true
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
     };
 
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger _logger;
+
+    /// <summary>诊断日志器（L4：DeserializeEnvelopeAsync 空信封告警用）。</summary>
+    protected ILogger Logger => _logger;
 
     /// <summary>
     /// 初始化 <see cref="HttpApiClientBase"/>。
     /// </summary>
     /// <param name="httpClientFactory">Factory for creating named HttpClient instances.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="httpClientFactory"/> is null.</exception>
-    protected HttpApiClientBase(IHttpClientFactory httpClientFactory)
+    protected HttpApiClientBase(
+        IHttpClientFactory httpClientFactory,
+        ILogger logger)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     protected HttpClient CreateClient() => _httpClientFactory.CreateClient();
@@ -54,7 +64,10 @@ internal abstract class HttpApiClientBase
     /// 反序列化 LocalWebAPI 响应并解包 ApiResponse&lt;T&gt; 信封（与 Remote/Refit 契约一致）。
     /// 兼容两种情况：LocalWebAPI 返回信封时取 Data；极端情况返回裸 T 时直接反序列化。
     /// </summary>
-    protected static async Task<ApiResponse<T>> DeserializeEnvelopeAsync<T>(HttpResponseMessage response, CancellationToken ct = default)
+    protected static async Task<ApiResponse<T>> DeserializeEnvelopeAsync<T>(
+        HttpResponseMessage response,
+        CancellationToken ct = default,
+        ILogger? logger = null)
     {
         var json = await response.Content.ReadAsStringAsync(ct);
 
@@ -62,7 +75,21 @@ internal abstract class HttpApiClientBase
         {
             var envelope = JsonSerializer.Deserialize<ApiResponse<T>>(json, JsonOptions);
             if (envelope != null)
+            {
+                // L4 诊断（ADR-0020 错误契约铺垫）：枚举/契约偏移时，JSON 对象形态会被
+                // ApiResponse<T> 无感吞掉（未知属性跳过）→ 空信封 Success=false/Data=null，
+                // 此前静默。此处记 Warning 便于排查，而非静默丢数据。
+                if (!envelope.Success
+                    && envelope.Data is null
+                    && !string.IsNullOrWhiteSpace(json))
+                {
+                    var snippet = json.Length > 256 ? json[..256] + "..." : json;
+                    logger?.LogWarning(
+                        "[HTTP] Empty envelope (Success=false, Data=null) - consider contract mismatch: {Body}",
+                        snippet);
+                }
                 return envelope;
+            }
         }
         catch (JsonException)
         {
@@ -142,14 +169,14 @@ internal abstract class HttpApiClientBase
     protected async Task<ApiResponse<T>> GetAndWrapAsync<T>(string url, CancellationToken ct = default)
     {
         var response = await SendAsync(url, HttpMethod.Get, ct: ct);
-        return await DeserializeEnvelopeAsync<T>(response, ct);
+        return await DeserializeEnvelopeAsync<T>(response, ct, Logger);
     }
 
     /// <summary>GET -> 反序列化 -> 返回裸 T（仅本地方法）。</summary>
     protected async Task<T> GetRawAsync<T>(string url, CancellationToken ct = default)
     {
         var response = await SendAsync(url, HttpMethod.Get, ct: ct);
-        var envelope = await DeserializeEnvelopeAsync<T>(response, ct);
+        var envelope = await DeserializeEnvelopeAsync<T>(response, ct, Logger);
         return envelope.Data ?? default!;
     }
 
@@ -172,7 +199,7 @@ internal abstract class HttpApiClientBase
     protected async Task<T> PostRawAsync<T>(string url, object? body = null, CancellationToken ct = default)
     {
         var response = await SendAsync(url, HttpMethod.Post, body, ct);
-        var envelope = await DeserializeEnvelopeAsync<T>(response, ct);
+        var envelope = await DeserializeEnvelopeAsync<T>(response, ct, Logger);
         return envelope.Data ?? default!;
     }
 
@@ -192,7 +219,7 @@ internal abstract class HttpApiClientBase
     protected async Task<ApiResponse<T>> SendAndWrapAsync<T>(string url, HttpMethod method, object? body = null, CancellationToken ct = default)
     {
         var response = await SendAsync(url, method, body, ct);
-        return await DeserializeEnvelopeAsync<T>(response, ct);
+        return await DeserializeEnvelopeAsync<T>(response, ct, Logger);
     }
 
     /// <summary>GET -> 服务端分页信封 -> 包装为 ApiResponse&lt;PagedResult&lt;T&gt;&gt;。</summary>

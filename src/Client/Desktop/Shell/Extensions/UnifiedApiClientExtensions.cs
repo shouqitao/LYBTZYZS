@@ -118,7 +118,8 @@ public static class UnifiedApiClientExtensions
                 connectionSettings,
                 remoteHttpClientFactory,
                 localHttpClientFactory,
-                refitSettings
+                refitSettings,
+                container.Resolve<ILogger<SwitchingApiClient>>()
             );
         });
 

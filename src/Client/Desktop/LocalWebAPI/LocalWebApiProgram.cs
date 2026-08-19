@@ -1,4 +1,5 @@
 using System.Threading.RateLimiting;
+using System.Text.Json.Serialization;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Configuration.Stores;
 using LYBT.Infrastructure.Data;
@@ -100,7 +101,13 @@ public static class LocalWebApiProgram
 
         builder
             .Services.AddControllers()
-            .AddApplicationPart(typeof(LYBT.LocalWebAPI.Controllers.HealthController).Assembly);
+            .AddApplicationPart(typeof(LYBT.LocalWebAPI.Controllers.HealthController).Assembly)
+            .AddJsonOptions(o =>
+            {
+                // ADR-0022：LocalWebAPI 枚举字符串化，与 Desktop 客户端（HttpApiClientBase）及
+                // Remote WebAPI 契约一致（ASP.NET 默认枚举为数字，此处统一为字符串）。
+                o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
         builder.Services.AddSingleton<LoggingLevelManager>();
 

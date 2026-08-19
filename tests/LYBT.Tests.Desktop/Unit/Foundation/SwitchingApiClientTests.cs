@@ -1,6 +1,7 @@
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Http;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Refit;
 using System.Net;
@@ -53,7 +54,7 @@ public class SwitchingApiClientTests
             return factory;
         };
 
-        return new SwitchingApiClient(cs, remoteFactory, localFactory, _refitSettings);
+        return new SwitchingApiClient(cs, remoteFactory, localFactory, _refitSettings, Substitute.For<ILogger<SwitchingApiClient>>());
     }
 
     #region URL to Implementation Mapping

@@ -8,6 +8,7 @@ using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace LYBT.Tests.Desktop.Unit.Foundation;
@@ -36,7 +37,7 @@ public class HttpClientApiClientEnvelopeTests
             .ConfigurePrimaryHttpMessageHandler(() => new FakeHandler(json))
             .ConfigureHttpClient(c => c.BaseAddress = new Uri("http://127.0.0.1:5300"));
         var factory = services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>();
-        return new HttpClientApiClient(factory);
+        return new HttpClientApiClient(factory, Substitute.For<ILogger>());
     }
 
     private static string Envelope(string dataJson) =>

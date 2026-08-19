@@ -8,6 +8,7 @@
 // ---------------------------------------------------------------------------
 
 using LYBT.Desktop.Contracts.ApiClient;
+using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
@@ -17,7 +18,7 @@ namespace LYBT.Desktop.Foundation.Http.Clients;
 /// <summary>本地模式认证与用户 API 客户端（拆分自 HttpClientApiClient）</summary>
 internal sealed class IdentityHttpApiClient : HttpApiClientBase, IApiClientIdentity
 {
-    public IdentityHttpApiClient(IHttpClientFactory httpClientFactory) : base(httpClientFactory) { }
+    public IdentityHttpApiClient(IHttpClientFactory httpClientFactory, ILogger logger) : base(httpClientFactory, logger) { }
 
     // ========== 认证端点（/api/v1/auth/*） ==========
 

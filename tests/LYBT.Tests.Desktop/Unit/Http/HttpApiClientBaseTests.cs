@@ -1,6 +1,7 @@
 using FluentAssertions;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Shared.Models.Contracts.Common;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using System.Net;
 using System.Net.Http;
@@ -69,13 +70,13 @@ public class HttpApiClientBaseTests
     /// <summary>暴露 HttpApiClientBase 的 protected 成员供测试。</summary>
     private sealed class TestableHttpApiClient : HttpApiClientBase
     {
-        public TestableHttpApiClient(IHttpClientFactory factory) : base(factory) { }
+        public TestableHttpApiClient(IHttpClientFactory factory, ILogger logger) : base(factory, logger) { }
 
         public new Task<HttpResponseMessage> SendAsync(string url, HttpMethod method, object? body = null, CancellationToken ct = default)
             => base.SendAsync(url, method, body, ct);
 
-        public new Task<ApiResponse<T>> DeserializeEnvelopeAsync<T>(HttpResponseMessage response, CancellationToken ct = default)
-            => HttpApiClientBase.DeserializeEnvelopeAsync<T>(response, ct);
+        public new Task<ApiResponse<T>> DeserializeEnvelopeAsync<T>(HttpResponseMessage response, CancellationToken ct = default, ILogger? logger = null)
+            => HttpApiClientBase.DeserializeEnvelopeAsync<T>(response, ct, logger);
 
         public new static string BuildPagedUrl(string baseUrl, int page, int pageSize, params (string Key, string? Value)[] filters)
             => HttpApiClientBase.BuildPagedUrl(baseUrl, page, pageSize, filters);
@@ -87,7 +88,7 @@ public class HttpApiClientBaseTests
     public async Task SendAsync_Get_ReturnsSuccess()
     {
         var (factory, _) = CreateMockFactory("{}");
-        var client = new TestableHttpApiClient(factory);
+        var client = new TestableHttpApiClient(factory, Substitute.For<ILogger>());
 
         var response = await client.SendAsync("/api/v1/patients", HttpMethod.Get);
 
@@ -100,34 +101,34 @@ public class HttpApiClientBaseTests
     public async Task SendAsync_Post_WithBody_SendsJson()
     {
         var (factory, handler) = CreateMockFactory("{}");
-        var client = new TestableHttpApiClient(factory);
+        var client = new TestableHttpApiClient(factory, Substitute.For<ILogger>());
 
         await client.SendAsync("/api/v1/patients", HttpMethod.Post, new SampleDto { Id = 7, Name = "ZhangSan" });
 
         handler.LastRequest!.Method.Should().Be(HttpMethod.Post);
         handler.LastRequest.Content!.Headers.ContentType!.MediaType.Should().Be("application/json");
         // 注意：System.Text.Json 默认转义非 ASCII（JavaScriptEncoder.Default）→ 中文名序列化为 \uXXXX
-        handler.LastRequestBody.Should().Be("{\"Id\":7,\"Name\":\"ZhangSan\"}");
+        handler.LastRequestBody.Should().Be("{\"id\":7,\"name\":\"ZhangSan\"}");
     }
 
     [Fact]
     public async Task SendAsync_Put_WorksCorrectly()
     {
         var (factory, handler) = CreateMockFactory("{}");
-        var client = new TestableHttpApiClient(factory);
+        var client = new TestableHttpApiClient(factory, Substitute.For<ILogger>());
 
         var response = await client.SendAsync("/api/v1/patients/1", HttpMethod.Put, new SampleDto { Id = 1, Name = "Updated" });
 
         response.IsSuccessStatusCode.Should().BeTrue();
         handler.LastRequest!.Method.Should().Be(HttpMethod.Put);
-        handler.LastRequestBody.Should().Be("{\"Id\":1,\"Name\":\"Updated\"}");
+        handler.LastRequestBody.Should().Be("{\"id\":1,\"name\":\"Updated\"}");
     }
 
     [Fact]
     public async Task SendAsync_Delete_WorksCorrectly()
     {
         var (factory, handler) = CreateMockFactory("{}");
-        var client = new TestableHttpApiClient(factory);
+        var client = new TestableHttpApiClient(factory, Substitute.For<ILogger>());
 
         var response = await client.SendAsync("/api/v1/patients/1", HttpMethod.Delete);
 
@@ -143,7 +144,7 @@ public class HttpApiClientBaseTests
     public async Task SendAsync_NonSuccessStatus_ThrowsHttpRequestException()
     {
         var (factory, _) = CreateMockFactory("boom", HttpStatusCode.InternalServerError);
-        var client = new TestableHttpApiClient(factory);
+        var client = new TestableHttpApiClient(factory, Substitute.For<ILogger>());
 
         var act = () => client.SendAsync("/api/v1/patients", HttpMethod.Get);
 
@@ -156,7 +157,7 @@ public class HttpApiClientBaseTests
     public async Task SendAsync_UnsupportedMethod_ThrowsArgumentException()
     {
         var (factory, _) = CreateMockFactory("{}");
-        var client = new TestableHttpApiClient(factory);
+        var client = new TestableHttpApiClient(factory, Substitute.For<ILogger>());
 
         var act = () => client.SendAsync("/api/v1/patients", HttpMethod.Options);
 
@@ -171,7 +172,7 @@ public class HttpApiClientBaseTests
     [Fact]
     public async Task DeserializeEnvelope_EnvelopeFormat_UnwrapsData()
     {
-        var client = new TestableHttpApiClient(CreateMockFactory("{}").Factory);
+        var client = new TestableHttpApiClient(CreateMockFactory("{}").Factory, Substitute.For<ILogger>());
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(
@@ -193,7 +194,7 @@ public class HttpApiClientBaseTests
         // 裸 T 回退仅在信封反序列化抛 JsonException 时触发——JSON 对象形态会被
         // ApiResponse<T> 无感吞掉（未知属性跳过 → 空信封 Success=false/Data=null，
         // 属既有行为，本任务只验证不修改）。原始值形态（字符串/数字根）走回退分支。
-        var client = new TestableHttpApiClient(CreateMockFactory("{}").Factory);
+        var client = new TestableHttpApiClient(CreateMockFactory("{}").Factory, Substitute.For<ILogger>());
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent("\"raw-value\"", Encoding.UTF8, "application/json")
@@ -210,7 +211,7 @@ public class HttpApiClientBaseTests
     {
         // "空 JSON" = {}（空对象）→ 默认空信封（Success=false, Data=null）。
         // 注：纯空串 "" 会在裸反序列化处抛 JsonException（既有行为，未修改）。
-        var client = new TestableHttpApiClient(CreateMockFactory("{}").Factory);
+        var client = new TestableHttpApiClient(CreateMockFactory("{}").Factory, Substitute.For<ILogger>());
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent("{}", Encoding.UTF8, "application/json")

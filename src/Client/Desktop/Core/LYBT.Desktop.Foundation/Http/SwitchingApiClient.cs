@@ -11,6 +11,7 @@
 // ---------------------------------------------------------------------------
 
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using Refit;
@@ -27,6 +28,7 @@ public sealed class SwitchingApiClient : IApiClient, IDisposable
     private readonly Func<string, HttpClient> _remoteHttpClientFactory;
     private readonly Func<string, IHttpClientFactory> _localHttpClientFactory;
     private readonly RefitSettings _refitSettings;
+    private readonly ILogger<SwitchingApiClient> _logger;
 
     private volatile IApiClient? _current;
     private volatile string? _currentUrl;
@@ -37,7 +39,8 @@ public sealed class SwitchingApiClient : IApiClient, IDisposable
         IConnectionSettingsService connectionSettings,
         Func<string, HttpClient> remoteHttpClientFactory,
         Func<string, IHttpClientFactory> localHttpClientFactory,
-        RefitSettings refitSettings)
+        RefitSettings refitSettings,
+        ILogger<SwitchingApiClient> logger)
     {
         _connectionSettings = connectionSettings
             ?? throw new ArgumentNullException(nameof(connectionSettings));
@@ -47,6 +50,7 @@ public sealed class SwitchingApiClient : IApiClient, IDisposable
             ?? throw new ArgumentNullException(nameof(localHttpClientFactory));
         _refitSettings = refitSettings
             ?? throw new ArgumentNullException(nameof(refitSettings));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <summary>
@@ -73,7 +77,7 @@ public sealed class SwitchingApiClient : IApiClient, IDisposable
 
                 var oldClient = _current as IDisposable;
                 _current = _connectionSettings.IsLocal
-                    ? new HttpClientApiClient(_localHttpClientFactory(url))
+                    ? new HttpClientApiClient(_localHttpClientFactory(url), _logger)
                     : new RefitApiClient(_remoteHttpClientFactory(url), _refitSettings);
                 _currentUrl = url;
                 oldClient?.Dispose();

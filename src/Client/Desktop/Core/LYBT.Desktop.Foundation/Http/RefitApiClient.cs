@@ -30,7 +30,7 @@ namespace LYBT.Desktop.Foundation.Http;
 /// <para>Local-only methods on sub-interfaces (e.g., GetCurrentUserAsync)
 /// throw <see cref="NotSupportedException"/> in this remote-mode implementation.</para>
 /// </remarks>
-public sealed class RefitApiClient : IApiClient
+public sealed class RefitApiClient : IApiClient, IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly RefitSettings _refitSettings;
@@ -103,4 +103,20 @@ public sealed class RefitApiClient : IApiClient
     /// <inheritdoc />
     public IApiClientConfiguration Configuration => _configuration ??= new ConfigurationApiClient(
         RestService.For<IConfigurationApi>(_httpClient, _refitSettings));
+    /// <summary>
+    /// 释放惰性创建的 Refit 代理（不释放共享 HttpClient——由外部 handler 链管理，ADR-0021）。
+    /// </summary>
+    public void Dispose()
+    {
+        _identity = null;
+        _patients = null;
+        _herbs = null;
+        _formulas = null;
+        _medicalCases = null;
+        _registrations = null;
+        _reports = null;
+        _deploy = null;
+        _diagnostics = null;
+        _configuration = null;
+    }
 }

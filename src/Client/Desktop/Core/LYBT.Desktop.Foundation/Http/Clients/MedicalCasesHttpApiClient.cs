@@ -6,6 +6,7 @@
 // ---------------------------------------------------------------------------
 
 using LYBT.Desktop.Contracts.ApiClient;
+using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -16,7 +17,7 @@ namespace LYBT.Desktop.Foundation.Http.Clients;
 /// <summary>本地模式医案 API 客户端（拆分自 HttpClientApiClient）</summary>
 internal sealed class MedicalCasesHttpApiClient : HttpApiClientBase, IApiClientMedicalCases
 {
-    public MedicalCasesHttpApiClient(IHttpClientFactory httpClientFactory) : base(httpClientFactory) { }
+    public MedicalCasesHttpApiClient(IHttpClientFactory httpClientFactory, ILogger logger) : base(httpClientFactory, logger) { }
 
     public async Task<ApiResponse<PagedResult<MedicalCaseListDto>>> GetMedicalCasesAsync(
         int page, int pageSize, string? keyword, bool includeAllDoctors)

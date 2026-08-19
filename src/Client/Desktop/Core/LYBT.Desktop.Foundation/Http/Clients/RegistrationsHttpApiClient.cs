@@ -6,6 +6,7 @@
 // ---------------------------------------------------------------------------
 
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Registration;
@@ -15,7 +16,7 @@ namespace LYBT.Desktop.Foundation.Http.Clients;
 /// <summary>本地模式挂号 API 客户端（拆分自 HttpClientApiClient）</summary>
 internal sealed class RegistrationsHttpApiClient : HttpApiClientBase, IApiClientRegistrations
 {
-    public RegistrationsHttpApiClient(IHttpClientFactory httpClientFactory) : base(httpClientFactory) { }
+    public RegistrationsHttpApiClient(IHttpClientFactory httpClientFactory, ILogger logger) : base(httpClientFactory, logger) { }
 
     public Task<ApiResponse<RegistrationDetailDto>> CreateAsync(RegistrationInputDto request)
         => PostAndWrapAsync<RegistrationDetailDto>("/api/v1/registrations", request);
