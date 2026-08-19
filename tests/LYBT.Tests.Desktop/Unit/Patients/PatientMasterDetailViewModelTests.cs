@@ -36,7 +36,7 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
     private readonly PatientCardReaderViewModel _cardReaderViewModel;
     private readonly PatientEditorViewModel _patientEditor;
     private readonly ILoggerFactory _loggerFactory;
-    private readonly ILogger<RemotePatientService> _logger;
+    private readonly ILogger<PatientService> _logger;
 
     // MasterDetailServices 组件
     private readonly IListViewServices<PatientListDto> _listViewServices;
@@ -53,8 +53,8 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
     {
         // Arrange - 创建所有 mock
         _loggerFactory = Substitute.For<ILoggerFactory>();
-        _logger = Substitute.For<ILogger<RemotePatientService>>();
-        _loggerFactory.CreateLogger<RemotePatientService>().Returns(_logger);
+        _logger = Substitute.For<ILogger<PatientService>>();
+        _loggerFactory.CreateLogger<PatientService>().Returns(_logger);
 
         // 创建 MasterDetailServices mock（T3-1: 使用基类共享装配，原 ~30 行重复装配已消除）
         _masterDetailServices = CreateMasterDetailServicesMock<

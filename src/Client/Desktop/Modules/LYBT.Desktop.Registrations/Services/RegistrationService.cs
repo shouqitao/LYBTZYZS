@@ -13,14 +13,14 @@ namespace LYBT.Desktop.Registrations.Services;
 /// 挂号Remote Service实现
 /// PRD: registration.md US-REG-001~006
 /// </summary>
-public class RemoteRegistrationService : IRegistrationService
+public class RegistrationService : IRegistrationService
 {
     private readonly IRegistrationRepository _registrationRepository;
-    private readonly ILogger<RemoteRegistrationService> _logger;
+    private readonly ILogger<RegistrationService> _logger;
 
-    public RemoteRegistrationService(
+    public RegistrationService(
         IRegistrationRepository registrationRepository,
-        ILogger<RemoteRegistrationService> logger)
+        ILogger<RegistrationService> logger)
     {
         _registrationRepository = registrationRepository ?? throw new ArgumentNullException(nameof(registrationRepository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));

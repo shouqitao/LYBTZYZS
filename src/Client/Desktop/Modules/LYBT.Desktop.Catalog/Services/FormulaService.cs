@@ -12,16 +12,16 @@ namespace LYBT.Desktop.Catalog.Services
     /// <summary>
     /// 验方Remote Service实现
     /// 通过 IFormulaRepository 调用远程API
-    /// D1: 对齐 RemoteHerbService 模式——继承 CrudServiceBase 泛型基类（统一 try-log-ExecuteAsync 模板），
+    /// D1: 对齐 HerbService 模式——继承 CrudServiceBase 泛型基类（统一 try-log-ExecuteAsync 模板），
     /// 特有业务操作（复制/批量/导入导出/验方非空校验）保留在本派生类。
     /// </summary>
-    public class RemoteFormulaService : CrudServiceBase<FormulaListDto, FormulaDetailDto, FormulaInputDto>, IFormulaService
+    public class FormulaService : CrudServiceBase<FormulaListDto, FormulaDetailDto, FormulaInputDto>, IFormulaService
     {
         private readonly IFormulaRepository _formulaRepository;
 
-        public RemoteFormulaService(
+        public FormulaService(
             IFormulaRepository formulaRepository,
-            ILogger<RemoteFormulaService> logger)
+            ILogger<FormulaService> logger)
             : base(logger, "Formula")
         {
             _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));

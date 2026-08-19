@@ -14,13 +14,13 @@ namespace LYBT.Desktop.Users.Services
     /// 用户Remote Service实现
     /// 通过 IUserRepository 调用远程API
     /// </summary>
-    public class RemoteUserService : CrudServiceBase<UserListDto, UserDetailDto, UserInputDto>, IUserService
+    public class UserService : CrudServiceBase<UserListDto, UserDetailDto, UserInputDto>, IUserService
     {
         private readonly IUserRepository _userRepository;
 
-        public RemoteUserService(
+        public UserService(
             IUserRepository userRepository,
-            ILogger<RemoteUserService> logger)
+            ILogger<UserService> logger)
             : base(logger, "User")
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));

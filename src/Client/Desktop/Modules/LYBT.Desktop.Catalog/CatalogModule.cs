@@ -30,8 +30,8 @@ namespace LYBT.Desktop.Catalog
             ViewModelLocationProvider.Register(typeof(FormulaMasterDetailControl).ToString(), typeof(ViewModels.FormulaMasterDetailViewModel));
 
             // IHerbRepository / IFormulaRepository 由 Shell DI 注册 (Refit API)
-            containerRegistry.Register<IHerbService, Services.RemoteHerbService>();
-            containerRegistry.Register<IFormulaService, Services.RemoteFormulaService>();
+            containerRegistry.Register<IHerbService, Services.HerbService>();
+            containerRegistry.Register<IFormulaService, Services.FormulaService>();
 
             // D5-3: 跨模块搜索提供者，供 MedicalCase 模块使用
             containerRegistry.Register<IHerbSearchProvider, Services.HerbSearchProvider>();

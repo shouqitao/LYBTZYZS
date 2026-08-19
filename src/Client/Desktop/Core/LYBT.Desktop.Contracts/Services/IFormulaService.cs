@@ -9,7 +9,7 @@ namespace LYBT.Desktop.Contracts.Services
     /// 配方Service接口
     /// 提供配方CRUD和业务操作的统一处理
     /// 使用 CommandResult&lt;T&gt; 统一返回类型，遵循 ICrudService 金标准模式
-    /// D1: 对齐 IHerbService/RemoteHerbService 模式——继承 ICrudService 泛型契约，
+    /// D1: 对齐 IHerbService/HerbService 模式——继承 ICrudService 泛型契约，
     /// 特有业务操作（复制/批量/导入导出）保留在本接口。
     /// </summary>
     public interface IFormulaService : ICrudService<FormulaListDto, FormulaDetailDto, FormulaInputDto>

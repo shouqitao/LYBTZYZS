@@ -35,7 +35,7 @@ namespace LYBT.Desktop.Users
             // IUserRepository 由 Shell DI 注册 (Refit API)
 
             // Issue #1785: 注册Users模块组件化组件（Epic #1773 Component-Based架构）
-            containerRegistry.Register<IUserService, Services.RemoteUserService>();
+            containerRegistry.Register<IUserService, Services.UserService>();
             containerRegistry.Register<IUserPasswordHandler, UserPasswordHandler>();
             containerRegistry.Register<IUserStatusHandler, UserStatusHandler>();
 

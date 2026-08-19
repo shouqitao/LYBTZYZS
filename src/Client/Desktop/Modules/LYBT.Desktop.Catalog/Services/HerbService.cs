@@ -13,13 +13,13 @@ namespace LYBT.Desktop.Catalog.Services
     /// 药材Remote Service实现
     /// 通过 IHerbRepository 调用远程API
     /// </summary>
-    public class RemoteHerbService : CrudServiceBase<HerbListDto, HerbDetailDto, HerbInputDto>, IHerbService
+    public class HerbService : CrudServiceBase<HerbListDto, HerbDetailDto, HerbInputDto>, IHerbService
     {
         private readonly IHerbRepository _herbRepository;
 
-        public RemoteHerbService(
+        public HerbService(
             IHerbRepository herbRepository,
-            ILogger<RemoteHerbService> logger)
+            ILogger<HerbService> logger)
             : base(logger, "Herb")
         {
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));

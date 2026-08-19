@@ -12,16 +12,16 @@ namespace LYBT.Desktop.Patients.Services
     /// <summary>
     /// 患者Service - 业务逻辑处理
     /// 负责处理患者相关的业务操作
-    /// D4: Remote* 前缀统一（对齐 RemoteUserService/RemoteRegistrationService/RemoteHerbService；
+    /// D4: Remote* 前缀统一（对齐 UserService/RegistrationService/HerbService；
     ///     契约层 IPatientService 无前缀为接口惯例，实现类 Remote 标识 HTTP 数据服务）
     /// </summary>
-    public class RemotePatientService : CrudServiceBase<PatientListDto, PatientDetailDto, PatientInputDto>, IPatientService
+    public class PatientService : CrudServiceBase<PatientListDto, PatientDetailDto, PatientInputDto>, IPatientService
     {
         private readonly IPatientRepository _patientRepository;
 
-        public RemotePatientService(
+        public PatientService(
             IPatientRepository patientRepository,
-            ILogger<RemotePatientService> logger)
+            ILogger<PatientService> logger)
             : base(logger, "Patient")
         {
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));

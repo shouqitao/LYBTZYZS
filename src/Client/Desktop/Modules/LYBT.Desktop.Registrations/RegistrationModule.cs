@@ -29,7 +29,7 @@ public class RegistrationModule : IModule
     public void RegisterTypes(IContainerRegistry containerRegistry)
     {
         // IRegistrationRepository 由 Shell DI 注册 (Refit API)
-        containerRegistry.Register<IRegistrationService, RemoteRegistrationService>();
+        containerRegistry.Register<IRegistrationService, RegistrationService>();
         containerRegistry.Register<RegistrationEditContext>();
 
         // US-REG-008: SignalR 实时通知客户端（单例，连接生命周期跨页面）

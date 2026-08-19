@@ -206,7 +206,7 @@ LYBT.Desktop.{ModuleName}/
 | ViewModel | `{Entity}MasterDetailViewModel.cs` | `HerbMasterDetailViewModel.cs` |
 | EditorVM | `{Entity}EditorViewModel.cs` | `HerbEditorViewModel.cs` |
 | Mapper | `{Entity}DetailModelMapper.cs` | `FormulaDetailModelMapper.cs` |
-| Service | `I{Entity}Service.cs` + `Remote{Entity}Service.cs` | `IHerbService.cs` + `RemoteHerbService.cs` |
+| Service | `I{Entity}Service.cs` + `{Entity}Service.cs` | `IHerbService.cs` + `HerbService.cs` |
 
 ### 5.2 命名空间
 
