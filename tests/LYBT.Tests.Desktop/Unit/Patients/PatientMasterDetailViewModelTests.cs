@@ -307,6 +307,9 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>()
             );
+        pagedResult.Data!.Items.Should().HaveCount(2, "应加载 2 条患者");
+        pagedResult.Data!.TotalCount.Should().Be(2);
+        pagedResult.Error.Should().BeNullOrEmpty("成功时无错误消息");
     }
 
     [Fact]
@@ -454,6 +457,8 @@ public class PatientMasterDetailViewModelTests : UserJourneyTestBase
         result.Should().NotBeNull();
         result.Id.Should().Be(Guid.Empty);
         result.IsNew.Should().BeTrue();
+        result.Name.Should().BeEmpty("新建患者初始 Name 应为空");
+        result.Gender.Should().Be(Gender.Unknown, "新建患者性别应为 Unknown");
         sut.PatientEditor.Patient.IsNew.Should().BeTrue();
     }
 
