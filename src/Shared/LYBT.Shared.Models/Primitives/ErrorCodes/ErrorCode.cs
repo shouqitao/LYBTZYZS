@@ -530,32 +530,6 @@ public enum ErrorCode
     /// </summary>
     HerbBatchItemError = 50206,
 
-    // 503xx: Excel 导入错误（已移除服务端 Excel 解析，仅兼容历史日志 F-L4-04）
-
-    /// <summary>
-    /// 导入文件为空
-    /// </summary>
-    [Obsolete("仅兼容历史日志，服务端 Excel 解析已移除（2026-08-13）")]
-    HerbImportFileEmpty = 50301,
-
-    /// <summary>
-    /// 导入文件格式不正确 (仅支持 .xlsx)
-    /// </summary>
-    [Obsolete("仅兼容历史日志，服务端 Excel 解析已移除（2026-08-13）")]
-    HerbImportFileFormat = 50302,
-
-    /// <summary>
-    /// 导入文件大小超限 (最大 10MB)
-    /// </summary>
-    [Obsolete("仅兼容历史日志，服务端 Excel 解析已移除（2026-08-13）")]
-    HerbImportFileSize = 50303,
-
-    /// <summary>
-    /// Excel 文件格式错误 (无工作表)
-    /// </summary>
-    [Obsolete("仅兼容历史日志，服务端 Excel 解析已移除（2026-08-13）")]
-    HerbImportExcelError = 50304,
-
     #endregion
 
     #region 6xxxx - 配方模块 (Formula)

@@ -1,4 +1,3 @@
-#pragma warning disable CS0618 // 503xx Excel 兼容码 Obsolete 覆盖
 using FluentAssertions;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Xunit;
@@ -209,11 +208,7 @@ public class ErrorCodeTests
             ErrorCode.HerbBatchCheckExceeded,      // 50203
             ErrorCode.HerbBatchItemNotFound,       // 50204
             ErrorCode.HerbBatchItemDeletedOrMissing, // 50205
-            ErrorCode.HerbBatchItemError,          // 50206
-            ErrorCode.HerbImportFileEmpty,         // 50301
-            ErrorCode.HerbImportFileFormat,        // 50302
-            ErrorCode.HerbImportFileSize,          // 50303
-            ErrorCode.HerbImportExcelError         // 50304
+            ErrorCode.HerbBatchItemError           // 50206
         };
 
         foreach (var code in herbCodes)
@@ -418,4 +413,3 @@ public class ErrorCodeTests
 
     #endregion
 }
-#pragma warning restore CS0618

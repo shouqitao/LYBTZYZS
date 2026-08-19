@@ -1,4 +1,3 @@
-#pragma warning disable CS0618 // 503xx Excel 兼容码已标记 Obsolete，历史映射保留
 namespace LYBT.Shared.Models.Primitives.ErrorCodes;
 
 /// <summary>
@@ -111,10 +110,6 @@ public static class ErrorMessages
         [ErrorCode.HerbBatchItemNotFound] = ("批量操作时单项药材不存在", "Herb not found"),
         [ErrorCode.HerbBatchItemDeletedOrMissing] = ("批量状态更新时药材不存在或已删除", "Herb not found or deleted"),
         [ErrorCode.HerbBatchItemError] = ("批量操作时单项数据库异常", "Database error"),
-        [ErrorCode.HerbImportFileEmpty] = ("导入文件为空", "Import file is empty"),
-        [ErrorCode.HerbImportFileFormat] = ("导入文件格式不正确（仅支持.xlsx）", "Invalid file format"),
-        [ErrorCode.HerbImportFileSize] = ("导入文件大小超限（最大10MB）", "File size limit exceeded"),
-        [ErrorCode.HerbImportExcelError] = ("Excel文件格式错误（无工作表）", "Excel format error"),
 
         // 6xxxx - 配方模块
         [ErrorCode.FormulaNotFound] = ("方剂不存在", "Formula not found"),
@@ -152,4 +147,3 @@ public static class ErrorMessages
 
     public static string GetUserMessage(ErrorCode code) => Get(code, useEnglish: false);
 }
-#pragma warning restore CS0618

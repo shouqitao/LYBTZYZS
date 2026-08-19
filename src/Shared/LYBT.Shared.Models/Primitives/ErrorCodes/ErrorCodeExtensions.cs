@@ -1,4 +1,3 @@
-#pragma warning disable CS0618 // 503xx Excel 兼容码 Obsolete
 namespace LYBT.Shared.Models.Primitives.ErrorCodes;
 
 /// <summary>
@@ -41,10 +40,6 @@ public static class ErrorCodeExtensions
             ErrorCode.HerbBatchEmpty => 400,
             ErrorCode.HerbBatchImportExceeded => 400,
             ErrorCode.HerbBatchCheckExceeded => 400,
-            ErrorCode.HerbImportFileEmpty => 400,
-            ErrorCode.HerbImportFileFormat => 400,
-            ErrorCode.HerbImportFileSize => 400,
-
 
             // 401 Unauthorized - 认证错误
             ErrorCode.Unauthorized => 401,
@@ -176,10 +171,6 @@ public static class ErrorCodeExtensions
             ErrorCode.HerbBatchEmpty => ErrorCategory.Validation,
             ErrorCode.HerbBatchImportExceeded => ErrorCategory.Validation,
             ErrorCode.HerbBatchCheckExceeded => ErrorCategory.Validation,
-            ErrorCode.HerbImportFileEmpty => ErrorCategory.Validation,
-            ErrorCode.HerbImportFileFormat => ErrorCategory.Validation,
-            ErrorCode.HerbImportFileSize => ErrorCategory.Validation,
-
 
             // 认证错误
             ErrorCode.Unauthorized => ErrorCategory.Authentication,
@@ -253,7 +244,6 @@ public static class ErrorCodeExtensions
             ErrorCode.HerbBatchItemNotFound => ErrorCategory.Business,
             ErrorCode.HerbBatchItemDeletedOrMissing => ErrorCategory.Business,
             ErrorCode.HerbBatchItemError => ErrorCategory.Business,
-            ErrorCode.HerbImportExcelError => ErrorCategory.Business,
             ErrorCode.FormulaValidationFailed => ErrorCategory.Business,
             ErrorCode.FormulaNotDeleted => ErrorCategory.Business,
             ErrorCode.FormulaCreateFailed => ErrorCategory.Business,
@@ -291,4 +281,3 @@ public static class ErrorCodeExtensions
         return $"ERR-{(int)errorCode:D5}";
     }
 }
-#pragma warning restore CS0618
