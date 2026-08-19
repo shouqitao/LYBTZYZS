@@ -17,6 +17,7 @@ using Xunit;
 
 namespace LYBT.Tests.Desktop;
 
+[Trait("US", "US-FORM-006")]
 public class FormulaImportDialogViewModelTests : DesktopTestBase
 {
     private readonly IViewModelServices _services;

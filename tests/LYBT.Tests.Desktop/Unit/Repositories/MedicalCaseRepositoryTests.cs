@@ -130,6 +130,7 @@ public class MedicalCaseRepositoryTests
     }
 
     [Fact]
+    [Trait("US", "US-MC-012")]
     public async Task RecordPrint_Success_ReturnsTrue_Should_When_ApiSucceeds()
     {
         var (repo, medicalCases) = CreateSut();
@@ -146,6 +147,7 @@ public class MedicalCaseRepositoryTests
     }
 
     [Fact]
+    [Trait("US", "US-MC-012")]
     public async Task RecordPrint_NotFound_ReturnsNull_Should_When_ApiFails()
     {
         var (repo, medicalCases) = CreateSut();
@@ -160,6 +162,7 @@ public class MedicalCaseRepositoryTests
     }
 
     [Fact]
+    [Trait("US", "US-MC-012")]
     public async Task Suspend_Success_ReturnsTrue_Should_When_ApiSucceeds()
     {
         var (repo, medicalCases) = CreateSut();
@@ -175,6 +178,7 @@ public class MedicalCaseRepositoryTests
     }
 
     [Fact]
+    [Trait("US", "US-MC-012")]
     public async Task Suspend_InProgress_ReturnsNull_Should_When_ApiFails()
     {
         var (repo, medicalCases) = CreateSut();
@@ -188,6 +192,7 @@ public class MedicalCaseRepositoryTests
     }
 
     [Fact]
+    [Trait("US", "US-MC-012")]
     public async Task UpdateStatus_Conflict_ReturnsNull_Should_When_ApiFails()
     {
         var (repo, medicalCases) = CreateSut();

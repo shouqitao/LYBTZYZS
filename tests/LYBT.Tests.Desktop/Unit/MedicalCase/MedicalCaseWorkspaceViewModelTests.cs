@@ -266,6 +266,7 @@ public class MedicalCaseWorkspaceViewModelTests : DesktopTestBase
     #region T-01.3 追加用例（B1 聚合根 12 方法补全）
 
     [Fact]
+    [Trait("US", "US-MC-001")]
     public void SaveComplete_AfterSave_CallsRefreshAsync_Should_When_SaveSucceeds()
     {
         // Arrange
@@ -280,6 +281,7 @@ public class MedicalCaseWorkspaceViewModelTests : DesktopTestBase
     }
 
     [Fact]
+    [Trait("US", "US-MC-002")]
     public void SaveFailed_WithException_ShowsError_Should_When_SaveThrows()
     {
         // Arrange
@@ -293,6 +295,7 @@ public class MedicalCaseWorkspaceViewModelTests : DesktopTestBase
     }
 
     [Fact]
+    [Trait("US", "US-MC-007")]
     public void LeaveConfirm_WithUnsavedChanges_ShowsDialog_Should_When_DirtyEditing()
     {
         // Arrange
@@ -306,6 +309,7 @@ public class MedicalCaseWorkspaceViewModelTests : DesktopTestBase
     }
 
     [Fact]
+    [Trait("US", "US-MC-012")]
     public void EditModeStateMachine_EditToView_ResetsState_Should_When_FireViewEvent()
     {
         // Arrange

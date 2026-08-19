@@ -30,6 +30,7 @@ public class PatientRepositoryTests
         };
 
     [Fact]
+    [Trait("US", "US-PAT-014")]
     public async Task SearchAsync_ReturnsResults()
     {
         var (repo, patients) = CreateSut();

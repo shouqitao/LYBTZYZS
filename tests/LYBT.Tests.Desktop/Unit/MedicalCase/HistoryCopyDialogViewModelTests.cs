@@ -16,6 +16,7 @@ using Xunit;
 
 namespace LYBT.Tests.Desktop;
 
+[Trait("US", "US-MC-008")]
 public class HistoryCopyDialogViewModelTests : DesktopTestBase
 {
     private readonly IViewModelServices _services;

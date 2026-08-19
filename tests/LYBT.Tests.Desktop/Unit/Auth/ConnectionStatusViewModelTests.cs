@@ -10,6 +10,7 @@ using Xunit;
 
 namespace LYBT.Tests.Desktop;
 
+[Trait("US", "US-SHELL-007")]
 public class ConnectionStatusViewModelTests : DesktopTestBase
 {
     private readonly IApplicationStateService _appState;
