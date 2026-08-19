@@ -1,0 +1,550 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-08-16T00:00:00.000Z" agent="Hermes" version="31.1.8" type="device">
+  <!-- ========== Page 1: 全局启动流程 ========== -->
+  <diagram id="startup-flow" name="1-全局启动流程">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Title -->
+        <mxCell id="title1" value="Desktop 全局启动流程（所有角色共享）" style="text;html=1;fontSize=20;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="500" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Start -->
+        <mxCell id="s1" value="App 启动&#xa;(双击图标)" style="shape=ellipse;whiteSpace=wrap;html=1;fontSize=13;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="575" y="80" width="160" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Single instance check -->
+        <mxCell id="s2" value="单实例互斥检查&#xa;(Mutex)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="560" y="180" width="190" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s2_to_s3" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="s1" target="s2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Already running? -->
+        <mxCell id="s3" value="已有实例运行？" style="shape=diamond;whiteSpace=wrap;html=1;fontSize=12;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="590" y="270" width="150" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="s2_to_s3e" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="s2" target="s3" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Reject -->
+        <mxCell id="s4" value="拒绝启动&#xa;提示：已有实例运行" style="shape=ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="820" y="275" width="150" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="s3_to_s4" value="是" style="edgeStyle=orthogonalEdgeStyle;fontStyle=1;fontSize=11;" edge="1" source="s3" target="s4" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Splash Screen -->
+        <mxCell id="s5" value="Splash Screen&#xa;(Logo + 进度条 ≥1s)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="560" y="400" width="190" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s3_to_s5" value="否" style="edgeStyle=orthogonalEdgeStyle;fontStyle=1;fontSize=11;" edge="1" source="s3" target="s5" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Startup steps -->
+        <mxCell id="s6" value="StartupPipeline 执行&#xa;① ErrorHandling&#xa;② CoreServices&#xa;③ ApiHealthCheck(后台)&#xa;④ Warmup(预加载)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="545" y="490" width="220" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="s5_to_s6" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="s5" target="s6" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- API reachable? -->
+        <mxCell id="s7" value="API 可达？" style="shape=diamond;whiteSpace=wrap;html=1;fontSize=12;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="590" y="620" width="150" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="s6_to_s7" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="s6" target="s7" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Switch to local -->
+        <mxCell id="s8" value="提示[切换到本地模式]&#xa;→ ServerConfigView" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="820" y="625" width="180" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="s7_to_s8" value="否" style="edgeStyle=orthogonalEdgeStyle;fontStyle=1;fontSize=11;" edge="1" source="s7" target="s8" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Login -->
+        <mxCell id="s9" value="★ LoginView&#xa;（所有角色入口）" style="shape=ellipse;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="560" y="750" width="190" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="s7_to_s9" value="是 / 本地模式" style="edgeStyle=orthogonalEdgeStyle;fontSize=11;" edge="1" source="s7" target="s9" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="leg1" value="图例：" style="text;html=1;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="80" width="60" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg2" value="圆角矩形=步骤  菱形=判断  椭圆=起止  绿色=正常  红色=异常  紫色=启动管线  蓝色=UI视图" style="text;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="30" y="100" width="400" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ========== Page 2: Sysadmin 导航流程 ========== -->
+  <diagram id="sysadmin-flow" name="2-Sysadmin导航">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title2" value="Sysadmin（SuperAdmin）导航流程" style="text;html=1;fontSize=20;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="500" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Login -->
+        <mxCell id="sy1" value="LoginView&#xa;(sysadmin 登录)" style="shape=ellipse;whiteSpace=wrap;html=1;fontSize=13;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="575" y="80" width="160" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- First login? -->
+        <mxCell id="sy2" value="首次登录？&#xa;(ForceChangeOnFirstLogin)" style="shape=diamond;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="575" y="190" width="160" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="sy1_to_sy2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="sy1" target="sy2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Init Wizard -->
+        <mxCell id="sy3" value="★ InitializationWizardView&#xa;5步强制向导" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="200" y="210" width="230" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="sy2_to_sy3" value="是" style="edgeStyle=orthogonalEdgeStyle;fontStyle=1;fontSize=11;" edge="1" source="sy2" target="sy3" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Wizard steps -->
+        <mxCell id="sy3a" value="Step1: 改密码 → Step2: 诊所信息 → Step3: 选模式 → Step4: 创建Admin → Step5: 完成注销" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="120" y="300" width="390" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="sy3_to_sy3a" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="sy3" target="sy3a" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="sy3a_to_sy1" value="注销 → 回到登录" style="edgeStyle=orthogonalEdgeStyle;dashed=1;fontSize=10;" edge="1" source="sy3a" target="sy1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="30" y="320"/>
+              <mxPoint x="30" y="110"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- SysadminHomeView -->
+        <mxCell id="sy4" value="★ SysadminHomeView&#xa;（配置中心主页）" style="rounded=1;whiteSpace=wrap;html=1;fontSize=13;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="540" y="350" width="230" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="sy2_to_sy4" value="否" style="edgeStyle=orthogonalEdgeStyle;fontStyle=1;fontSize=11;" edge="1" source="sy2" target="sy4" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Tabs -->
+        <mxCell id="sy5" value="配置面板（Tab/分组）" style="text;html=1;fontSize=11;fontStyle=3;" vertex="1" parent="1">
+          <mxGeometry x="460" y="440" width="140" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sy5a" value="诊所信息" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="410" y="470" width="80" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="sy5b" value="会话设置" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="500" y="470" width="80" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="sy5c" value="连接设置" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="590" y="470" width="80" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="sy5d" value="安全策略" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="680" y="470" width="80" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="sy5e" value="功能开关&#xa;(热更新)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="770" y="470" width="80" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="sy5f" value="系统信息&#xa;(只读)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="860" y="470" width="80" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="sy4_to_tabs" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="sy4" target="sy5" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Sub pages -->
+        <mxCell id="sy6" value="子页面导航" style="text;html=1;fontSize=11;fontStyle=3;" vertex="1" parent="1">
+          <mxGeometry x="350" y="540" width="80" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sy6a" value="BackupManagementView&#xa;备份恢复" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="120" y="570" width="160" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="sy6b" value="DeploymentView&#xa;远程部署" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="290" y="570" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="sy6c" value="LogLevelControlView&#xa;日志级别" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="440" y="570" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="sy6d" value="CardReaderDiagnostics&#xa;读卡器诊断" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="590" y="570" width="150" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="sy6e" value="SecurityAuditLog&#xa;安全审计" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="750" y="570" width="130" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="sy6f" value="ConfigExportImport&#xa;配置导入导出" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="890" y="570" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="sy4_to_sub" style="edgeStyle=orthogonalEdgeStyle;dashed=1;" edge="1" source="sy4" target="sy6" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="leg3" value="蓝色=已有  红色=待新建" style="text;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="30" y="80" width="200" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ========== Page 3: Doctor 诊疗核心流程 ========== -->
+  <diagram id="doctor-flow" name="3-Doctor诊疗流程">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title3" value="Doctor（医生）导航流程 — 核心诊疗时序" style="text;html=1;fontSize=20;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="450" y="15" width="550" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Login -->
+        <mxCell id="d1" value="LoginView" style="shape=ellipse;whiteSpace=wrap;html=1;fontSize=12;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="50" y="80" width="120" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- ClinicalHomeView -->
+        <mxCell id="d2" value="ClinicalHomeView&#xa;（临床工作台主页）" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="50" y="170" width="170" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="d1_to_d2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="d1" target="d2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- === Core Flow (vertical) === -->
+        <mxCell id="core_label" value="★ 核心诊疗流程" style="text;html=1;fontSize=13;fontStyle=5;fontColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="280" y="80" width="150" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- PendingQueueView -->
+        <mxCell id="d3" value="PendingQueueView&#xa;待诊队列&#xa;(实时推送 + QuickVisit)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="280" y="110" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="d2_to_d3" value="菜单:待诊队列" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" source="d2" target="d3" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- PatientSelectionView -->
+        <mxCell id="d4" value="PatientSelectionView&#xa;选择/搜索患者" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="280" y="210" width="200" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="d3_to_d4" value="选中患者&#xa;或 QuickVisit" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" source="d3" target="d4" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- StartVisit -->
+        <mxCell id="d5" value="StartVisit&#xa;Waiting→InProgress&#xa;+ 创建MedicalCase(Active)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="270" y="300" width="220" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="d4_to_d5" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="d4" target="d5" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ClinicalWorkspaceView (big box) -->
+        <mxCell id="d6" value="★ ClinicalWorkspaceView&#xa;（诊疗主界面 — 最核心的View）" style="rounded=1;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="490" y="80" width="350" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="d5_to_d6" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#82b366;" edge="1" source="d5" target="d6" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="665" y="328"/>
+              <mxPoint x="665" y="80"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Sub-areas inside ClinicalWorkspaceView -->
+        <mxCell id="d6a" value="患者信息（只读）" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="500" y="150" width="130" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="d6b" value="中医诊断&#xa;(望闻问切+辨证)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="500" y="200" width="130" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="d6c" value="处方编辑&#xa;(HerbListControl)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="650" y="150" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="d6d" value="操作按钮组&#xa;保存/挂起/完成/取消/打印" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="650" y="210" width="180" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="d6_to_d6a" style="edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#9673a6;" edge="1" source="d6" target="d6a" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Dialogs from workspace -->
+        <mxCell id="dd1" value="FormulaImportDialog&#xa;验方导入" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fontSize=10;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="830" y="145" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="dd2" value="HistoryCopyDialog&#xa;复制历史处方" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fontSize=10;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="830" y="200" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="dd3" value="PrintPreviewDialog&#xa;打印预览" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fontSize=10;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="830" y="255" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="d6c_to_dd1" style="edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#d6b656;" edge="1" source="d6c" target="dd1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="d6_to_dd2" style="edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#d6b656;" edge="1" source="d6d" target="dd2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="d6d_to_dd3" style="edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#d6b656;" edge="1" source="d6d" target="dd3" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Menu-driven views (right side) -->
+        <mxCell id="menu_label" value="菜单导航（日常管理）" style="text;html=1;fontSize=12;fontStyle=5;fontColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="80" width="150" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="dm1" value="MedicalCaseManagementView&#xa;医案列表(仅自己的)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="110" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="dm2" value="FormulaManagementView&#xa;验方管理(创建+验证)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="160" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="dm3" value="HerbManagementView&#xa;药材查看(只读)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="210" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="dm4" value="PatientManagementView&#xa;患者管理" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="260" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="dm5" value="RegistrationListView&#xa;我的挂号列表" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="310" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="dm6" value="ReportsHomeView&#xa;报表(收入/就诊/药材)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="360" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="dm7" value="AuditLogView&#xa;审计日志" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="410" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="dm8" value="AccountSettingsView&#xa;账户设置" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="460" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="d2_to_menu" style="edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#6c8ebf;" edge="1" source="d2" target="dm1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="leg4" value="绿色粗框=核心View  蓝色=业务View  黄色六边形=弹窗Dialog  紫色=系统步骤" style="text;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="30" y="30" width="400" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ========== Page 4: Admin + Receptionist 导航 ========== -->
+  <diagram id="admin-receptionist-flow" name="4-Admin与Receptionist导航">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title4a" value="Admin 导航流程" style="text;html=1;fontSize=18;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="50" y="15" width="300" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="title4b" value="Receptionist 导航流程" style="text;html=1;fontSize=18;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="950" y="15" width="300" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- ====== Admin (left) ====== -->
+        <mxCell id="a1" value="LoginView" style="shape=ellipse;whiteSpace=wrap;html=1;fontSize=12;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="130" y="60" width="120" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="a2" value="AdminHomeView&#xa;（管理工作台）" style="rounded=1;whiteSpace=wrap;html=1;fontSize=13;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="100" y="150" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="a1_to_a2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="a1" target="a2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Admin views -->
+        <mxCell id="av1" value="UserManagementView&#xa;用户 CRUD + 批量" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="240" width="160" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="av2" value="PatientManagementView&#xa;患者 CRUD + 导入导出" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="290" width="170" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="av3" value="HerbManagementView&#xa;药材 CRUD + 批量导入" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="340" width="170" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="av4" value="FormulaManagementView&#xa;验方 CRUD + 导入导出" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="390" width="170" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="av5" value="MedicalCaseManagementView&#xa;医案（只读查看全部）" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="440" width="180" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="av6" value="RegistrationListView&#xa;挂号（只读查看）" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="490" width="160" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="av7" value="ReportsHomeView&#xa;报表 4项" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="540" width="150" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="av8" value="AccountSettingsView" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="590" width="150" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="a2_to_av" style="edgeStyle=orthogonalEdgeStyle;dashed=1;" edge="1" source="a2" target="av1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Admin permission note -->
+        <mxCell id="a_note" value="⚠️ Admin 权限边界：&#xa;• 药材/验方/用户 → 可 CRUD&#xa;• 医案/挂号 → 只读&#xa;• 不可打印&#xa;• 不可创建/取消/接诊" style="shape=note;whiteSpace=wrap;html=1;fontSize=10;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="230" y="440" width="190" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- ====== Receptionist (right) ====== -->
+        <mxCell id="r1" value="LoginView" style="shape=ellipse;whiteSpace=wrap;html=1;fontSize=12;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="60" width="120" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="r2" value="ReceptionistHomeView&#xa;（前台工作台）" style="rounded=1;whiteSpace=wrap;html=1;fontSize=13;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="150" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="r1_to_r2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="r1" target="r2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Receptionist views -->
+        <mxCell id="rv1" value="PatientManagementView&#xa;患者 CRUD + 读卡登记" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="990" y="240" width="180" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="rv2" value="RegistrationListView&#xa;挂号创建 + 取消" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="990" y="300" width="180" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="rv3" value="AccountSettingsView" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="990" y="360" width="180" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="r2_to_rv" style="edgeStyle=orthogonalEdgeStyle;dashed=1;" edge="1" source="r2" target="rv1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Receptionist permission note -->
+        <mxCell id="r_note" value="⚠️ Receptionist 权限边界：&#xa;• 仅 2 个业务View&#xa;• 不可查看药材/验方/医案&#xa;• 不可查看用户管理&#xa;• 不可打印/报表" style="shape=note;whiteSpace=wrap;html=1;fontSize=10;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="980" y="420" width="200" height="85" as="geometry"/>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="leg5" value="蓝色=可CRUD  紫色=只读  黄色便签=权限边界" style="text;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="30" y="30" width="300" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ========== Page 5: 角色模块加载矩阵 ========== -->
+  <diagram id="role-module-matrix" name="5-角色模块加载矩阵">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title5" value="角色 → 模块加载矩阵（RoleRegistry）" style="text;html=1;fontSize=18;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="350" y="20" width="500" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Login center -->
+        <mxCell id="m1" value="LoginView&#xa;（统一入口）" style="shape=ellipse;whiteSpace=wrap;html=1;fontSize=13;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="530" y="70" width="160" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- 4 roles -->
+        <mxCell id="mr1" value="SuperAdmin&#xa;(Sysadmin)" style="shape=ellipse;whiteSpace=wrap;html=1;fontSize=12;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="50" y="200" width="130" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="mr2" value="Admin" style="shape=ellipse;whiteSpace=wrap;html=1;fontSize=12;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="350" y="200" width="110" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="mr3" value="Doctor" style="shape=ellipse;whiteSpace=wrap;html=1;fontSize=12;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="620" y="200" width="110" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="mr4" value="Receptionist" style="shape=ellipse;whiteSpace=wrap;html=1;fontSize=12;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="900" y="200" width="130" height="55" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="m1_to_r1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="m1" target="mr1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="m1_to_r2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="m1" target="mr2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="m1_to_r3" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="m1" target="mr3" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="m1_to_r4" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="m1" target="mr4" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- SuperAdmin modules -->
+        <mxCell id="sm1" value="全部模块" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="20" y="300" width="150" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="sm2" value="+ SysadminHomeView&#xa;(配置中心)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="20" y="340" width="150" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="mr1_to_sm" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="mr1" target="sm1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Admin modules -->
+        <mxCell id="am1" value="Auth + Users + Patients&#xa;+ Herbs + Formula" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="300" y="300" width="170" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="am2" value="+ AdminHomeView&#xa;(管理工作台)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="300" y="345" width="170" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="mr2_to_am" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="mr2" target="am1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Doctor modules -->
+        <mxCell id="dm1m" value="Auth + Patients + MedicalCase&#xa;+ Registration + Herbs + Formula" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="560" y="300" width="200" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="dm2m" value="+ ClinicalHomeView&#xa;(临床工作台)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="560" y="345" width="200" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="mr3_to_dm" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="mr3" target="dm1m" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Receptionist modules -->
+        <mxCell id="rm1m" value="Auth + Patients&#xa;+ Registration" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="860" y="300" width="160" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="rm2m" value="+ ReceptionistHomeView&#xa;(前台工作台)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="860" y="345" width="160" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="mr4_to_rm" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="mr4" target="rm1m" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Role level note -->
+        <mxCell id="role_note" value="角色层级：Receptionist(0) → Doctor(1) → Admin(10) → SuperAdmin(100)&#xa;一级管一级，不可自管，角色不可变更" style="text;html=1;fontSize=11;align=center;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="350" y="440" width="500" height="30" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
