@@ -47,28 +47,11 @@ public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, 
     public async Task<HerbBatchImportResultDto?> BatchImportAsync(HerbBatchImportInputDto request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-
-        // Returns null on failure instead of rethrowing — keep manual try/catch.
-        try
-        {
-            Logger.LogInformation("[REPO] Herb.BatchImport - Count={Count}", request.Herbs.Count);
-
-            var response = await _herbs.BatchImportAsync(request);
-            if (!response.Success || response.Data == null)
-            {
-                Logger.LogError("[REPO] Herb.BatchImport failed: {Message}", response.Message);
-                return null;
-            }
-
-            Logger.LogInformation("[REPO] Herb.BatchImport completed - Success={SuccessCount} Failure={FailureCount}",
-                response.Data.SuccessCount, response.Data.FailureCount);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "[REPO] Herb.BatchImport failed");
-            return null;
-        }
+        return await ExecuteImportAsync(
+            () => _herbs.BatchImportAsync(request),
+            "BatchImport",
+            request.Herbs.Count,
+            ct);
     }
 
     public async Task<byte[]?> ExportTemplateAsync(CancellationToken ct = default)

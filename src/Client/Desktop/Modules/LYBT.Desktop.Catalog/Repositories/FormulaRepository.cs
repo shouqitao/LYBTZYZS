@@ -112,27 +112,12 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
 
     public async Task<FormulaBatchImportResultDto?> BatchImportAsync(FormulaBatchImportInputDto request, CancellationToken ct = default)
     {
-        // Returns null on failure instead of rethrowing — keep manual try/catch.
-        try
-        {
-            Logger.LogInformation("[REPO] Formula.BatchImport started");
-
-            var response = await _formulas.BatchImportAsync(request);
-            if (!response.Success || response.Data == null)
-            {
-                Logger.LogWarning("[REPO] Formula.BatchImport failed: {Message}", response.Message);
-                return null;
-            }
-
-            Logger.LogInformation("[REPO] Formula.BatchImport completed - Success={Success}, Failed={Failed}",
-                response.Data.SuccessCount, response.Data.FailureCount);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "[REPO] Formula.BatchImport failed");
-            return null;
-        }
+        ArgumentNullException.ThrowIfNull(request);
+        return await ExecuteImportAsync(
+            () => _formulas.BatchImportAsync(request),
+            "BatchImport",
+            request.Formulas.Count,
+            ct);
     }
 
     public async Task<byte[]?> ExportFormulasAsync(string? category = null, CancellationToken ct = default)

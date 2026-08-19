@@ -148,4 +148,45 @@ public abstract class ApiClientRepositoryBase<TListDto, TDetailDto>
             };
         }
     }
+
+    /// <summary>
+    /// 批量导入执行模板 — 统一 try/catch + 日志；业务拒绝（Success=false，422）记 Information，基础设施异常记 Error（F-L4-01/02/05）
+    /// </summary>
+    protected async Task<TResult?> ExecuteImportAsync<TResult>(
+        Func<Task<ApiResponse<TResult>>> func,
+        string operation,
+        int count,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            Logger.LogInformation("[REPO] {LogPrefix}.{Operation} started - Count={Count}", LogPrefix, operation, count);
+
+            var response = await func();
+            if (!response.Success || response.Data == null)
+            {
+                // 422 业务拒绝（ValidationFailed/Duplicate 等）按 11d-observability 应 Information 非 Error
+                Logger.LogInformation(
+                    "[REPO] {LogPrefix}.{Operation} business rejection: {Message} - Count={Count}",
+                    LogPrefix,
+                    operation,
+                    response.Message ?? "unknown",
+                    count);
+                return default;
+            }
+
+            Logger.LogInformation(
+                "[REPO] {LogPrefix}.{Operation} completed - Count={Count}",
+                LogPrefix,
+                operation,
+                count);
+            return response.Data;
+        }
+        catch (Exception ex)
+        {
+            // 基础设施彻底失效（HttpRequestException/网络）才记 Error
+            Logger.LogError(ex, "[REPO] {LogPrefix}.{Operation} failed - Count={Count}", LogPrefix, operation, count);
+            return default;
+        }
+    }
 }

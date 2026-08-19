@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // 503xx Excel 兼容码已标记 Obsolete，历史映射保留
 namespace LYBT.Shared.Models.Primitives.ErrorCodes;
 
 /// <summary>
@@ -151,3 +152,4 @@ public static class ErrorMessages
 
     public static string GetUserMessage(ErrorCode code) => Get(code, useEnglish: false);
 }
+#pragma warning restore CS0618

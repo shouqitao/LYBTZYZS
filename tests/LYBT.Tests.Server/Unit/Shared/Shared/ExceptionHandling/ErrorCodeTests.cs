@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // 503xx Excel 兼容码 Obsolete 覆盖
 using FluentAssertions;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Xunit;
@@ -417,3 +418,4 @@ public class ErrorCodeTests
 
     #endregion
 }
+#pragma warning restore CS0618

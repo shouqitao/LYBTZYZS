@@ -83,17 +83,12 @@ public sealed class PatientRepository
 
     public async Task<PatientBatchImportResultDto?> BatchImportAsync(PatientBatchImportInputDto request, CancellationToken ct = default)
     {
-        try
-        {
-            Logger.LogInformation("[REPO] Patient.BatchImport - Count={Count}", request.Patients.Count);
-            var response = await _patients.BatchImportAsync(request);
-            return response.Data;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "[REPO] Patient.BatchImport failed");
-            return null;
-        }
+        ArgumentNullException.ThrowIfNull(request);
+        return await ExecuteImportAsync(
+            () => _patients.BatchImportAsync(request),
+            "BatchImport",
+            request.Patients.Count,
+            ct);
     }
 
     public async Task<byte[]?> ExportTemplateAsync(CancellationToken ct = default)

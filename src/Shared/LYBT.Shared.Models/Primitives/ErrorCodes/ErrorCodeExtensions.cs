@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // 503xx Excel 兼容码 Obsolete
 namespace LYBT.Shared.Models.Primitives.ErrorCodes;
 
 /// <summary>
@@ -290,3 +291,4 @@ public static class ErrorCodeExtensions
         return $"ERR-{(int)errorCode:D5}";
     }
 }
+#pragma warning restore CS0618
