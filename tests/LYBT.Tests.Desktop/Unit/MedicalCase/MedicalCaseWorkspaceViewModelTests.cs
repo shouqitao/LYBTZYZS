@@ -23,7 +23,7 @@ namespace LYBT.Tests.Desktop;
 /// MedicalCaseWorkspaceViewModel 简化单元测试
 /// 验证医案工作区 Composite ViewModel 的基本行为
 /// </summary>
-public class MedicalCaseWorkspaceViewModelTests
+public class MedicalCaseWorkspaceViewModelTests : DesktopTestBase
 {
     private readonly IViewModelServices _viewModelServices;
     private readonly IMedicalCaseService _medicalCaseService;

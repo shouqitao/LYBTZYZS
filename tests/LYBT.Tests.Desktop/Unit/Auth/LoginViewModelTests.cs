@@ -21,7 +21,7 @@ namespace LYBT.Tests.Desktop;
 /// LoginViewModel 单元测试
 /// 验证登录流程、凭证保存/加载、验证逻辑、API健康检查
 /// </summary>
-public class LoginViewModelTests
+public class LoginViewModelTests : DesktopTestBase
 {
     private readonly IViewModelServices _viewModelServices;
     private readonly ILoginCoordinator _loginCoordinator;

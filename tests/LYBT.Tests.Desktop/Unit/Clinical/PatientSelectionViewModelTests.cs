@@ -19,7 +19,7 @@ namespace LYBT.Tests.Desktop;
 /// 验证两页分离重构后患者选择页承载 CardReader/PendingQueue 子VM的预期行为
 /// TDD RED 阶段 - 这些测试在实现前必须失败
 /// </summary>
-public class PatientSelectionViewModelTests
+public class PatientSelectionViewModelTests : DesktopTestBase
 {
     private readonly IViewModelServices _viewModelServices;
     private readonly IPatientService _patientService;

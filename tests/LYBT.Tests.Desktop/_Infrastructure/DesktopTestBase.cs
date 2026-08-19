@@ -1,7 +1,10 @@
+using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using Prism.Events;
+using Prism.Regions;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -41,5 +44,30 @@ public abstract class DesktopTestBase : IAsyncLifetime
     {
         var services = Substitute.For<IMasterDetailServices<TList, TDetail>>();
         return services;
+    }
+
+    protected IViewModelServices CreateViewModelServicesMock()
+    {
+        var mock = Substitute.For<IViewModelServices>();
+        var loggerFactory = Substitute.For<ILoggerFactory>();
+        var logger = Substitute.For<ILogger>();
+        loggerFactory.CreateLogger(default!).ReturnsForAnyArgs(logger);
+        var eventAggregator = Substitute.For<Prism.Events.IEventAggregator>();
+        var regionManager = Substitute.For<Prism.Regions.IRegionManager>();
+        var sessionManager = Substitute.For<ISessionManager>();
+        var userNotificationService = Substitute.For<IUserNotificationService>();
+        var commonDialogService = Substitute.For<ICommonDialogService>();
+        var roleRegistry = Substitute.For<LYBT.Desktop.Contracts.Roles.IRoleRegistry>();
+
+        mock.LoggerFactory.Returns(loggerFactory);
+        mock.EventAggregator.Returns(eventAggregator);
+        mock.RegionManager.Returns(regionManager);
+        mock.SessionManager.Returns(sessionManager);
+        mock.UserNotificationService.Returns(userNotificationService);
+        mock.CommonDialogService.Returns(commonDialogService);
+        mock.RoleRegistry.Returns(roleRegistry);
+        mock.UiThreadDispatcher.Returns(UiDispatcher);
+
+        return mock;
     }
 }

@@ -10,11 +10,12 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Prism.Events;
 using Prism.Regions;
+using LYBT.Tests.Desktop.Infrastructure;
 using Xunit;
 
 namespace LYBT.Tests.Desktop;
 
-public class HistoryCopyDialogViewModelTests
+public class HistoryCopyDialogViewModelTests : DesktopTestBase
 {
     private readonly IViewModelServices _services;
     private readonly IMedicalCaseRepository _repo;

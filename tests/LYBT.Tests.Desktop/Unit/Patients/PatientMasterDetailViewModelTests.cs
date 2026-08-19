@@ -22,7 +22,7 @@ namespace LYBT.Tests.Desktop;
 /// 验证患者管理模块的Master-Detail视图模型行为
 /// OpenSpec: frontend-architecture-unification — 移除 IPatientRepository，添加 PatientEditorViewModel
 /// </summary>
-public class PatientMasterDetailViewModelTests : UserJourneyTestBase
+public class PatientMasterDetailViewModelTests : DesktopTestBase
 {
     private readonly IViewModelServices _viewModelServices;
     private readonly IMasterDetailServices<

@@ -22,7 +22,7 @@ namespace LYBT.Tests.Desktop;
 /// 验证待诊队列子VM在患者选择上下文（无活跃医案）下的行为
 /// TDD RED 阶段 - 定义移到 PatientSelectionViewModel 后的预期行为
 /// </summary>
-public class PendingQueueViewModelTests
+public class PendingQueueViewModelTests : DesktopTestBase
 {
     private readonly IMedicalCaseWorkspaceContext _context;
     private readonly IWorkspaceHost _host;

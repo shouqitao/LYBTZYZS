@@ -17,7 +17,7 @@ namespace LYBT.Tests.Desktop;
 /// UserMasterDetailViewModel 简化单元测试
 /// 验证用户管理模块的Master-Detail视图模型基本行为
 /// </summary>
-public class UserMasterDetailViewModelTests
+public class UserMasterDetailViewModelTests : DesktopTestBase
 {
     private readonly IViewModelServices _viewModelServices;
     private readonly IMasterDetailServices<UserListDto, UserDetailModel> _masterDetailServices;

@@ -9,7 +9,7 @@ namespace LYBT.Tests.Desktop;
 /// US-MC-011: EditModeStateMachine 状态转换全覆盖测试 (~82 tests).
 /// Follows AuthenticationStateMachineTests pattern.
 /// </summary>
-public class EditModeStateMachineTests
+public class EditModeStateMachineTests : DesktopTestBase
 {
     private readonly ILogger<EditModeStateMachine> _logger = Substitute.For<ILogger<EditModeStateMachine>>();
 

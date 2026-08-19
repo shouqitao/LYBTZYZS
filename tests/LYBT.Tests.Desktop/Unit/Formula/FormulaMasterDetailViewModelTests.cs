@@ -19,8 +19,7 @@ using Xunit;
 
 namespace LYBT.Tests.Desktop;
 
-[Collection("UserJourney")]
-public class FormulaMasterDetailViewModelTests : UserJourneyTestBase
+public class FormulaMasterDetailViewModelTests : DesktopTestBase
 {
     private readonly IViewModelServices _viewModelServices;
     private readonly IMasterDetailServices<FormulaListDto, FormulaDetailModel> _masterDetailServices;
