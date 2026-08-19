@@ -2,6 +2,7 @@ using FluentAssertions;
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.MedicalCase.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -126,5 +127,77 @@ public class MedicalCaseRepositoryTests
 
         result.Should().BeFalse();
         await medicalCases.Received(1).CancelMedicalCaseAsync(id, request);
+    }
+
+    [Fact]
+    public async Task RecordPrint_Success_ReturnsTrue_Should_When_ApiSucceeds()
+    {
+        var (repo, medicalCases) = CreateSut();
+        var id = Guid.NewGuid();
+        var request = new RecordPrintRequest { PrintType = 1 };
+        var detail = new MedicalCaseDetailDto { Id = id };
+        medicalCases.RecordPrintAsync(id, request)
+            .Returns(Task.FromResult(new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = detail }));
+
+        var result = await repo.RecordPrintAsync(id, request);
+
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(id);
+    }
+
+    [Fact]
+    public async Task RecordPrint_NotFound_ReturnsNull_Should_When_ApiFails()
+    {
+        var (repo, medicalCases) = CreateSut();
+        var id = Guid.NewGuid();
+        var request = new RecordPrintRequest { PrintType = 1 };
+        medicalCases.RecordPrintAsync(id, request)
+            .Returns(Task.FromResult(new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "未找到" }));
+
+        var result = await repo.RecordPrintAsync(id, request);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Suspend_Success_ReturnsTrue_Should_When_ApiSucceeds()
+    {
+        var (repo, medicalCases) = CreateSut();
+        var id = Guid.NewGuid();
+        var detail = new MedicalCaseDetailDto { Id = id };
+        medicalCases.SuspendAsync(id, Arg.Any<ConsultationInputDto>())
+            .Returns(Task.FromResult(new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = detail }));
+
+        var result = await repo.SuspendAsync(id, null);
+
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(id);
+    }
+
+    [Fact]
+    public async Task Suspend_InProgress_ReturnsNull_Should_When_ApiFails()
+    {
+        var (repo, medicalCases) = CreateSut();
+        var id = Guid.NewGuid();
+        medicalCases.SuspendAsync(id, Arg.Any<ConsultationInputDto>())
+            .Returns(Task.FromResult(new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "已在挂起" }));
+
+        var result = await repo.SuspendAsync(id, null);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task UpdateStatus_Conflict_ReturnsNull_Should_When_ApiFails()
+    {
+        var (repo, medicalCases) = CreateSut();
+        var id = Guid.NewGuid();
+        var request = new MedicalCaseStatusInputDto { Status = MedicalCaseStatus.Completed };
+        medicalCases.UpdateStatusAsync(id, request)
+            .Returns(Task.FromResult(new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "冲突" }));
+
+        var result = await repo.UpdateStatusAsync(id, request);
+
+        result.Should().BeNull();
     }
 }
