@@ -11,8 +11,8 @@ namespace LYBT.Tests.Desktop.Integration.RemoteApi;
 [Trait("Category", "RemoteApi")]
 public class AdminRoleTests : RemoteApiTestBase
 {
-    protected override string Username => "admin";
-    protected override string Password => "admin123";
+    protected override string Username => "sysadmin";
+    protected override string Password => "SysAdmin@2026";
 
     [Fact]
     [Trait("US", "US-PAT-001")]
