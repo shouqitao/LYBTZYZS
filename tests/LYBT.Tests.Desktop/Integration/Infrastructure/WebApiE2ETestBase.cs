@@ -12,6 +12,7 @@ using Refit;
 
 namespace LYBT.Tests.Desktop;
 
+[Obsolete("Use DesktopTestBase - P0 冻结，WebApplicationFactory 替代 localhost:5000 直连")]
 public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
 {
     // 序列化登录调用，防止并发登录导致409 Conflict

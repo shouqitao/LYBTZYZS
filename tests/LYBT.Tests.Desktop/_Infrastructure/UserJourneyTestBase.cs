@@ -18,6 +18,7 @@ namespace LYBT.Tests.Desktop.Infrastructure;
 ///
 /// 真需要 LocalDB 的测试（如 FrameworkVerificationTests）直接使用 UserJourneyFixture。
 /// </summary>
+[Obsolete("Use DesktopTestBase - P0 冻结新规范，存量 12 类待迁")]
 public abstract class UserJourneyTestBase : IDisposable
 {
     private bool _disposed;
