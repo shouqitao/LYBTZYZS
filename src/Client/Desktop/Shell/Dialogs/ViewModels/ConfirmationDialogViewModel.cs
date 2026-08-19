@@ -71,11 +71,6 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
             }
         }
 
-        /// <summary>
-        /// 是否选择了软删除（用于调用方读取）
-        /// </summary>
-        public bool IsSoftDeleteSelected => IsSoftDelete;
-
         #endregion
 
         #region 构造函数

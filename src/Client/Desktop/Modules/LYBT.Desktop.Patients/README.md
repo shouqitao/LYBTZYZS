@@ -27,7 +27,7 @@ LYBT.Desktop.Patients/
 │   └── PatientRepository.cs                       # 仓储实现（Repository 抽象层）
 ├── Services/
 │   ├── PatientCardReaderIntegration.cs            # 读卡器集成服务（PRD-15 去重链）
-│   └── RemotePatientService.cs                    # 业务服务（CrudServiceBase 泛型，统一错误处理）
+│   └── PatientService.cs                     # 业务服务（CrudServiceBase 泛型，统一错误处理）
 ├── ViewModels/
 │   ├── Handlers/
 │   │   ├── IPatientStatusHandler.cs               # 状态处理接口
@@ -47,7 +47,7 @@ LYBT.Desktop.Patients/
 | **PatientEditorViewModel** | PatientEditContext 编辑上下文 | Validate / GetPatientData 方法，编辑表单逻辑分离 |
 | **PatientCardReaderViewModel** | ICardReaderService 集成 | ReadCardAsync / FindPatientByIdNumberAsync / MaskIdNumber，身份证读卡交互 |
 | **PatientStatusHandler** : BaseStatusHandler | Handler 组件拆分，SRP | 仅实现 Restore（恢复软删除），不含 ToggleStatus |
-| **RemotePatientService** : IPatientService | 统一 CommandResult 错误处理，[SVC] 日志前缀 | 8 个方法: CreatePatientAsync / UpdatePatientAsync / DeletePatientAsync / SearchPatientsAsync / GetPatientsPagedAsync / GetByIdAsync 等 |
+| **PatientService** : IPatientService | 统一 CommandResult 错误处理，[SVC] 日志前缀 | 8 个方法: CreatePatientAsync / UpdatePatientAsync / DeletePatientAsync / SearchPatientsAsync / GetPatientsPagedAsync / GetByIdAsync 等 |
 | **PatientCardReaderIntegration** | PRD-15 去重链设计 | 去重链: exact → fuzzy → multiple → no match。加密照片处理。方法: FindPatientByIdNumberAsync / QuickCreatePatientAsync / FindOrCreatePatientAsync / GetPatientDetailByIdAsync |
 | **PatientRepository** : IPatientRepository | Repository 抽象层，Local/Remote 透明切换 | CRUD 委托 Repository，批量导入/导出/模板下载通过 IPatientApi（Remote 专有） |
 

@@ -16,7 +16,7 @@ Patient registration (挂号) module for the TCM clinic desktop client. Manages 
 | `Dialogs/RegistrationCreateDialogViewModel.cs` | Dialog ViewModel for creating a new registration. Patient search with autocomplete, doctor dropdown selection. Uses IPatientService and IUserService from LYBT.Desktop.Contracts.Services. |
 | `Dialogs/RegistrationCreateDialog.xaml` | Registration creation dialog UI. |
 | `Repositories/RegistrationRepository.cs` | Dual-mode repository (Remote via IRegistrationApi / Local via ILocalRegistrationApi). Uses IApiRouter to determine offline mode. |
-| `Services/RemoteRegistrationService.cs` | IRegistrationService implementation wrapping IRegistrationRepository with error handling and logging. |
+| `Services/RegistrationService.cs` | IRegistrationService implementation wrapping IRegistrationRepository with error handling and logging. |
 | `Views/RegistrationListView.xaml` | Registration queue list UI. |
 
 ## Subdirectories
@@ -27,7 +27,7 @@ Patient registration (挂号) module for the TCM clinic desktop client. Manages 
 | `Views/` | RegistrationListView -- the navigation target for the queue. |
 | `Dialogs/` | RegistrationCreateDialog and its ViewModel -- modal registration creation. |
 | `Repositories/` | RegistrationRepository -- dual-mode (remote/local) data access. |
-| `Services/` | RemoteRegistrationService -- service layer wrapping repository with CommandResult pattern. |
+| `Services/` | RegistrationService -- service layer wrapping repository with CommandResult pattern. |
 
 ## For AI Agents
 

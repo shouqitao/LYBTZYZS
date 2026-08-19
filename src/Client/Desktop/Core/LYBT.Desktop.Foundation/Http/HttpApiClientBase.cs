@@ -113,9 +113,6 @@ internal abstract class HttpApiClientBase
         throw new HttpRequestException(message, null, response.StatusCode);
     }
 
-    protected static ApiResponse<T> WrapSuccess<T>(T data, string message = "操作成功")
-        => ApiResponse<T>.CreateSuccess(data, message);
-
     protected static ApiResponse WrapSuccess(string message = "操作成功")
         => ApiResponse.CreateSuccess(null, message);
 
@@ -194,14 +191,6 @@ internal abstract class HttpApiClientBase
     /// <summary>POST -> 非泛型 ApiResponse（void 操作）。</summary>
     protected Task<ApiResponse> PostVoidAsync(string url, object? body = null, CancellationToken ct = default)
         => SendVoidAsync(url, HttpMethod.Post, body, ct);
-
-    /// <summary>POST -> 返回裸 T（仅本地方法）。</summary>
-    protected async Task<T> PostRawAsync<T>(string url, object? body = null, CancellationToken ct = default)
-    {
-        var response = await SendAsync(url, HttpMethod.Post, body, ct);
-        var envelope = await DeserializeEnvelopeAsync<T>(response, ct, Logger);
-        return envelope.Data ?? default!;
-    }
 
     /// <summary>带 JSON 请求体的 PUT -> 反序列化 -> 包装为 ApiResponse&lt;T&gt;。</summary>
     protected Task<ApiResponse<T>> PutAndWrapAsync<T>(string url, object? body = null, CancellationToken ct = default)

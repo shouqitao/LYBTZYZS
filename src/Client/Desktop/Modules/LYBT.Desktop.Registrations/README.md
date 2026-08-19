@@ -21,7 +21,7 @@ LYBT.Desktop.Registrations/
 ├── Repositories/
 │   └── RegistrationRepository.cs   # 双模式仓库（Remote/Local）
 └── Services/
-    ├── RemoteRegistrationService.cs  # 挂号服务（IRegistrationService）
+    ├── RegistrationService.cs  # 挂号服务（IRegistrationService）
     └── SignalRClient.cs              # SignalR 实时通知（新挂号/状态变更，匿名连接）
 ```
 
@@ -33,7 +33,7 @@ LYBT.Desktop.Registrations/
 
 | 注册项 | 类型 | 说明 |
 |--------|------|------|
-| `IRegistrationService` → `RemoteRegistrationService` | Service | 挂号服务实现 |
+| `IRegistrationService` → `RegistrationService` | Service | 挂号服务实现 |
 | `RegistrationListViewModel` | ViewModel | 队列列表 VM |
 | `RegistrationListView` | Navigation | 导航视图 |
 | `RegistrationCreateDialog` + VM | Dialog | 新建挂号弹窗 |
@@ -66,7 +66,7 @@ LYBT.Desktop.Registrations/
 | `IPatientService` | `LYBT.Desktop.Contracts.Services` | 患者搜索自动补全 |
 | `IUserService` | `LYBT.Desktop.Contracts.Services` | 医生下拉列表 |
 
-### RemoteRegistrationService
+### RegistrationService
 
 **设计依据**: IRegistrationService 实现，CommandResult 模式包装 Repository。
 

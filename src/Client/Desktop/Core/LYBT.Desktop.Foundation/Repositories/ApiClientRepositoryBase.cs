@@ -25,13 +25,9 @@ public abstract class ApiClientRepositoryBase<TListDto, TDetailDto>
     /// <summary>
     /// 统一异常处理：记录错误日志后重新抛出
     /// </summary>
-    protected void HandleException(Exception ex, string operation, params object?[] args)
+    protected void HandleException(Exception ex, string operation)
     {
-        var message = args.Length > 0
-            ? $"[REPO] {LogPrefix}.{operation} failed"
-            : $"[REPO] {LogPrefix}.{operation} failed";
-
-        Logger.LogError(ex, message, args);
+        Logger.LogError(ex, "[REPO] {LogPrefix}.{Operation} failed", LogPrefix, operation);
         throw ex;
     }
 

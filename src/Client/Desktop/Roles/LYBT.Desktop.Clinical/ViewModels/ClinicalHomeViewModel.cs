@@ -24,7 +24,6 @@ namespace LYBT.Desktop.Clinical.ViewModels
         #region 依赖服务
 
         private readonly IAuthenticationService _authService;
-        private readonly IDialogService _dialogService;
         private readonly INavigationCoordinator _navigationCoordinator;
 
         #endregion 依赖服务
@@ -59,12 +58,10 @@ namespace LYBT.Desktop.Clinical.ViewModels
         public ClinicalHomeViewModel(
             IViewModelServices services,
             IAuthenticationService authService,
-            IDialogService dialogService,
             INavigationCoordinator navigationCoordinator)
             : base(services)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
-            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
 
             // 加载当前用户信息

@@ -98,6 +98,6 @@ public partial class PatientCardReaderViewModel : NavigableViewModelBase
     }
 
     /// <summary>掩码身份证号（保护隐私）</summary>
-    public static string MaskIdNumber(string? idNumber)
+    public static string? MaskIdNumber(string? idNumber)
         => PrivacyHelper.MaskIdNumber(idNumber);
 }

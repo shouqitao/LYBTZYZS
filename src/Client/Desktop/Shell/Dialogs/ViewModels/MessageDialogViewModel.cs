@@ -42,8 +42,6 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
         /// 消息类型
         /// </summary>
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IconSource))]
-        [NotifyPropertyChangedFor(nameof(IconColor))]
         private MessageType _messageType = MessageType.Info;
 
         /// <summary>
@@ -51,34 +49,6 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
         /// </summary>
         [ObservableProperty]
         private string _okButtonText = "确定";
-
-        #endregion
-
-        #region 计算属性
-
-        /// <summary>
-        /// 图标路径（根据消息类型）
-        /// </summary>
-        public string IconSource => MessageType switch
-        {
-            MessageType.Success => "/Assets/Icons/success.png",
-            MessageType.Error => "/Assets/Icons/error.png",
-            MessageType.Warning => "/Assets/Icons/warning.png",
-            MessageType.Info => "/Assets/Icons/info.png",
-            _ => "/Assets/Icons/info.png"
-        };
-
-        /// <summary>
-        /// 图标颜色（根据消息类型）
-        /// </summary>
-        public string IconColor => MessageType switch
-        {
-            MessageType.Success => "#228B22",  // 木(青) - 成功
-            MessageType.Error => "#DC143C",    // 火(赤) - 错误
-            MessageType.Warning => "#DAA520",  // 土(黄) - 警告
-            MessageType.Info => "#4682B4",     // 水(黑) - 信息
-            _ => "#4682B4"
-        };
 
         #endregion
 

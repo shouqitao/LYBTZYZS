@@ -26,7 +26,6 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
     private readonly IMedicalCaseService _medicalCaseService;
     private readonly IHerbSearchProvider _herbSearchProvider;
     private readonly IDesktopCacheManager _cacheManager;
-    private readonly ILoggerFactory _loggerFactory;
 
     #region Child VMs
 
@@ -64,7 +63,6 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
         _herbSearchProvider = herbSearchProvider ?? throw new ArgumentNullException(nameof(herbSearchProvider));
         _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
-        _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
 
         // Create child VMs with minimal IWorkspaceHost adapter
         var host = new MasterDetailWorkspaceHost(this);

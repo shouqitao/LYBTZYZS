@@ -290,7 +290,7 @@ public partial class ReceptionistHomeViewModel : NavigableViewModelBase
     /// <summary>
     /// 掩码身份证号（保护隐私）
     /// </summary>
-    private static string MaskIdNumber(string? idNumber)
+    private static string? MaskIdNumber(string? idNumber)
         => PrivacyHelper.MaskIdNumber(idNumber);
 
     #endregion

@@ -167,10 +167,6 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
 
         /// <summary>
-        /// 批量获取医案详情（解决N+1查询问题）
-        /// </summary>
-
-        /// <summary>
         /// 获取医案审计日志（分页）
         /// </summary>
         [Refit.Get("/api/v1/medicalcases/{id}/audit-logs")]

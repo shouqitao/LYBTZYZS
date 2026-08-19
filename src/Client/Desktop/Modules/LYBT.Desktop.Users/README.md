@@ -17,7 +17,7 @@ LYBT.Desktop.Users/
 ├── Interfaces/
 │   └── IUserService.cs                      # 用户 Service 接口 (14 方法, CommandResult<T> 模式)
 ├── Services/
-│   └── RemoteUserService.cs                 # IUserService 实现，通过 IUserRepository 调用远程 API
+│   └── UserService.cs                       # IUserService 实现，通过 IUserRepository 调用远程 API
 ├── ViewModels/
 │   ├── UserMasterDetailViewModel.cs         # Master-Detail 主 VM (组合模式)
 │   ├── UserEditorViewModel.cs               # 编辑子 VM (ObservableObject, 对象 DP 模式)
@@ -47,7 +47,7 @@ LYBT.Desktop.Users/
 
 | 注册项 | 方式 | 说明 |
 |--------|------|------|
-| `IUserService` → `RemoteUserService` | `Register<TFrom, TTo>()` | 用户 Service 实现 |
+| `IUserService` → `UserService` | `Register<TFrom, TTo>()` | 用户 Service 实现 |
 | `IUserPasswordHandler` → `UserPasswordHandler` | `Register<TFrom, TTo>()` | 密码重置 Handler |
 | `IUserStatusHandler` → `UserStatusHandler` | `Register<TFrom, TTo>()` | 状态切换 Handler |
 | `IMasterDetailServices<UserListDto, UserDetailModel>` | `AddMasterDetailServices<TList, TDetail>()` | MasterDetail 基础设施 |
@@ -108,7 +108,7 @@ LYBT.Desktop.Users/
 | `RestoreAsync(UserListDto)` | 恢复已删除用户 |
 | `CanToggleUserStatus(UserListDto?, bool)` | `user != null && !isBusy` |
 
-### RemoteUserService — IUserService 实现
+### UserService — IUserService 实现
 
 **设计依据**: 14 个方法，统一 `CommandResult<T>` 返回模式；通过 `IUserRepository` 调用远程 API；`ClientErrorMessageMapper` 转换异常为用户友好消息
 
@@ -148,7 +148,7 @@ NuGet: `Prism.Core`, `Prism.DryIoc`, `Prism.Wpf`, `Riok.Mapperly`
 
 ## 已知陷阱
 
-- `RemoteUserService` 通过 `IUserRepository` 调用远程 API，若 Repository 实现抛异常，`ClientErrorMessageMapper` 会转换为用户友好消息，但某些网络异常可能绕过
+- `UserService` 通过 `IUserRepository` 调用远程 API，若 Repository 实现抛异常，`ClientErrorMessageMapper` 会转换为用户友好消息，但某些网络异常可能绕过
 - `UserEditorViewModel.Validate()` 委托 `UserEditContext.ValidateAll()`，验证失败时 VM 层不设置 ErrorMessage，由调用方（MasterDetailVM）通过 Dialog 显示
 - `UserStatusHandler.ToggleUserStatusAsync` 捕获 `HttpRequestException` 但不重新抛出，返回 `false` 静默处理
 - `DeleteItemAsync` 禁止删除当前登录用户，通过 `SessionManager?.CurrentUser.Id` 比对实现

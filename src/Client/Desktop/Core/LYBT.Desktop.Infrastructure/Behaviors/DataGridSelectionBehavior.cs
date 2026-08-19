@@ -268,7 +268,10 @@ public static class DataGridSelectionBehavior
                 }
                 dataGrid.Focus();
             }
-            catch (InvalidOperationException) { }
+            catch (InvalidOperationException)
+            {
+                // DataGrid SelectedItems 在集合变更期间访问会抛此异常（WPF 已知行为）——忽略，稍后 Dispatcher 重新入队重试
+            }
         }), System.Windows.Threading.DispatcherPriority.Input);
 
         e.Handled = true;

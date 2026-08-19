@@ -398,7 +398,7 @@ public partial class CardReaderViewModel : ChildViewModelBase
     /// <summary>
     /// Mask ID number for privacy (keep first 6 and last 4 digits).
     /// </summary>
-    public static string MaskIdNumber(string? idNumber)
+    public static string? MaskIdNumber(string? idNumber)
         => PrivacyHelper.MaskIdNumber(idNumber);
 
     #endregion
