@@ -9,7 +9,7 @@
 药材管理 CRUD、分类筛选、JSON 批量导入、状态切换、批量操作。启用 OutputCache (`HerbsCache`)。
 Doctor 只能编辑自己创建的药材，Admin 可操作全部。
 
-> **注意**: 药材导入/导出为 **JSON 格式**（2026-08-13 决策——后端不涉及 Excel，保持通用性；Excel 处理由前端负责）。服务端提供 `POST /herbs/batch-import`（JSON 批量导入）、`GET /herbs/import-template`（JSON 模板）、`GET /herbs/export-all`（JSON 数组）。服务端 Excel 解析路径（`import-excel`）已移除。
+> **注意**: 药材导入/导出为 **JSON 格式**（2026-08-13 决策——后端不涉及 Excel，保持通用性；Excel 处理由前端负责）。服务端提供 `POST /herbs/batch-import`（JSON 批量导入）、`GET /herbs/import-template`（JSON 模板）、`GET /herbs/export`（JSON 数组，筛选导出，US-HERB-013）、`GET /herbs/export-all`（JSON 数组，全量导出，US-HERB-007）。**双端一致**：Remote（LYBT.WebAPI）与 LocalWebAPI 均提供以上 4 个端点（2026-08-19 P1 修复：Local 补 export/import-template/export-all——此前缺失导致 Desktop 本地模式 404）。服务端 Excel 解析路径（`import-excel`）已移除。
 
 ---
 

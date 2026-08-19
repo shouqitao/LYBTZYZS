@@ -43,6 +43,10 @@ public class ImportExportJsonTests
             type.GetMethod("HerbExportAll")!,
             "药材导出端点必须返回 ApiResponse（JSON 数组）"
         );
+        AssertJsonResponse(
+            type.GetMethod("HerbExport")!,
+            "药材筛选导出端点（US-HERB-013，Desktop 契约 GET /herbs/export）必须返回 ApiResponse（JSON 数组）"
+        );
     }
 
     [Fact]

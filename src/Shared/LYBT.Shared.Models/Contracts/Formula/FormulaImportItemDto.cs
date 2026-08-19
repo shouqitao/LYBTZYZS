@@ -14,6 +14,10 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("验方名称")]
         public string Name { get; set; } = string.Empty;
 
+        [StringLength(50, ErrorMessage = "分类不能超过50个字符")]
+        [DisplayName("分类")]
+        public string? Category { get; set; }
+
         [StringLength(200, ErrorMessage = "功效描述不能超过200个字符")]
         [DisplayName("功效")]
         public string? Effect { get; set; }

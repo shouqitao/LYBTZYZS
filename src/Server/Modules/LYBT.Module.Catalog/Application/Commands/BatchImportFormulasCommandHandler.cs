@@ -76,6 +76,7 @@ public class BatchImportFormulasCommandHandler(
 
                 var formula = Formula.Create(
                     name: item.Name,
+                    category: item.Category,
                     effect: item.Effect,
                     usage: item.Usage,
                     property: item.Property,

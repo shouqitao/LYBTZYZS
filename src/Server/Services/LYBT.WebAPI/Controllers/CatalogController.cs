@@ -173,6 +173,24 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 导出药材为 JSON 数组（按筛选条件，US-HERB-013——Desktop 契约 GET /herbs/export，对齐患者模式）
+        /// </summary>
+        [HttpGet("export")]
+        [ProducesResponseType(typeof(ApiResponse<List<HerbListDto>>), 200)]
+        public async Task<IActionResult> HerbExport(
+            [FromQuery] string? keyword = null,
+            CancellationToken ct = default
+        )
+        {
+            var result = await _herbService.GetPagedAsync(1, 10000, keyword, null, false, ct);
+            if (!result.IsSuccess)
+                return BusinessFail(result.Error ?? "导出失败");
+
+            // JSON 数组
+            return Success(result.Value!.Items, "药材导出（JSON）");
+        }
+
+        /// <summary>
         /// 获取药材详情
         /// </summary>
         [HttpGet("{id}")]
@@ -544,7 +562,7 @@ namespace LYBT.WebAPI.Controllers
                     {
                         Field = "Herbs",
                         Required = true,
-                        Description = "药材组成（如 人参:10g,白术:10g）",
+                        Description = "药材组成（对象数组 [{HerbName, Dosage, Unit}]，如 [{\"HerbName\":\"人参\",\"Dosage\":10,\"Unit\":\"g\"}]）",
                     },
                 },
                 Example = new[]
@@ -555,7 +573,11 @@ namespace LYBT.WebAPI.Controllers
                         Category = "补益剂",
                         Effect = "益气健脾",
                         Usage = "水煎服",
-                        Herbs = "人参:10g,白术:10g",
+                        Herbs = new[]
+                        {
+                            new { HerbName = "人参", Dosage = 10, Unit = "g" },
+                            new { HerbName = "白术", Dosage = 10, Unit = "g" },
+                        },
                     },
                 },
             };

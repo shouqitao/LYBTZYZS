@@ -215,11 +215,11 @@
 **优先级**: Should
 **状态**: ✅ 已实现（T4: export-all 端点双端）
 
-**作为** 医生或管理员，**我想要** 导出全部药材数据为 Excel，**以便** 数据备份、迁移或外部审核。
+**作为** 医生或管理员，**我想要** 导出全部药材数据为 JSON，**以便** 数据备份、迁移或外部审核。
 
 **验收标准**:
 
-- [ ] 返回 Excel 文件（.xlsx）
+- [ ] 返回 JSON 数组（`application/json`，2026-08-13：Excel→JSON）
 - [ ] 导出全部启用且未删除的药材
 - [ ] 包含所有基础字段（名称、性味、归经、功效、分类、拼音）
 - [ ] 大数据量导出不影响主业务性能
@@ -237,7 +237,7 @@
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `CatalogController.cs:82` (HttpGet `export-all`), `IHerbImportExportService`
+**实现参考**: `CatalogController.cs` (HttpGet `export-all`)
 
 ---
 
@@ -402,26 +402,26 @@
 
 ---
 
-## US-HERB-013: 导出 Excel + 下载模板
+## US-HERB-013: 导出 JSON + 下载模板
 
 **角色**: 管理员（AdminOrSuperAdmin 策略）
 **优先级**: Should
-**状态**: ✅ 已实现（T4: export/import-template 端点双端）
+**状态**: ✅ 已实现（T4: export/import-template 端点双端；2026-08-19 P1 修复：Local 补 export/import-template/export-all 端点 + 模板示例与 DTO 对齐）
 
-**作为** 医生或管理员，**我想要** 按条件导出药材 Excel 与下载导入模板，**以便** 数据备份与规范批量导入。
+**作为** 医生或管理员，**我想要** 按条件导出药材 JSON 与下载导入模板，**以便** 数据备份与规范批量导入。
 
 **验收标准**:
 
 - [ ] 导出端点支持按筛选条件导出（非全量）
-- [ ] 模板端点返回标准 Excel 模板（含列头、说明、示例）
-- [ ] 返回 Excel 文件（.xlsx）
+- [ ] 模板端点返回 JSON 模板（字段说明 + 示例 + 必填标注，2026-08-13 起非 Excel）
+- [ ] 返回 JSON 数组（`application/json`）
 - [ ] 模板标注必填字段与可选字段
 
 **业务规则**:
 
 1. 与 US-HERB-007 区分：本端点支持筛选导出 + 提供模板；US-HERB-007 为全量导出
 2. 模板字段与 US-HERB-006 导入端点期望的 DTO 一致
-3. 导出与模板均由 `IHerbImportExportService` 生成
+3. 导出与模板由 `IHerbService` 生成
 
 **双模式差异**:
 
@@ -430,7 +430,7 @@
 | 远程 | 同下 |
 | 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `CatalogController.cs:82` (HttpGet `export`), `CatalogController.cs:70` (HttpGet `import-template`), `IHerbImportExportService`
+**实现参考**: `CatalogController.cs` (HttpGet `export`), `CatalogController.cs` (HttpGet `import-template`)
 
 ---
 
@@ -480,7 +480,7 @@
 
 **导入路径（2026-08-13 修订）**：`BatchImportAsync` 接收客户端已解析的 DTO 列表（JSON），适合客户端预处理后导入——**唯一路径**（服务端 Excel 解析已移除）。
 
-**双模式**：药材管理在远程与本地模式下行为完全一致，均通过统一的 `IHerbService` / `IHerbImportExportService` 服务层实现。本地 WebAPI 复用全部服务端模块。
+**双模式**：药材管理在远程与本地模式下行为完全一致，均通过统一的 `IHerbService` 服务层实现。本地 WebAPI 复用全部服务端模块。
 
 **边界条件**：验方导入处方时，已禁用药材自动跳过并提示"以下药材已停用，已跳过: xxx"（MC-D09，详见 [07-medical-cases.md](07-medical-cases.md)）。
 

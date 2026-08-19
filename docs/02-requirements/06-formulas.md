@@ -259,7 +259,7 @@ stateDiagram-v2
 | 远程 | POST `/api/v1/Formulas/batch-import`（DTO/JSON——2026-08-13：移除服务端 Excel 解析） |
 | 本地 | 同远程（DTO/JSON——客户端如需 Excel 自行解析后转 DTO） |
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:580`、`IFormulaImportExportService`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs` (HttpPost `formulas/batch-import`——DTO/JSON 唯一路径)
 
 ---
 
@@ -460,7 +460,7 @@ stateDiagram-v2
 
 **角色**: 管理员
 **优先级**: Should
-**状态**: ⚠️ 部分实现（T4: export/import-template 已补；空列表 400 ✅）
+**状态**: ⚠️ 部分实现（T4: export/import-template 已补；空列表 400 ✅；2026-08-19 P1：模板示例/DTO 对齐完成；**导出含药材组成明细 + 分类筛选参数对齐 P2 待办**）
 
 **作为** 管理员，**我想要** 批量操作验方、导出 Excel 和下载导入模板，**以便** 高效管理验方数据并备份数据。
 
@@ -476,7 +476,6 @@ stateDiagram-v2
 1. 批量操作 ID 列表为空 → 返回 400
 2. 导出支持按分类筛选
 3. 客户端负责 Excel 生成（如需）；后端只出 JSON
-4. 模板允许匿名访问（AllowAnonymous）
 
 **双模式差异**:
 
@@ -485,7 +484,7 @@ stateDiagram-v2
 | 远程 | POST `/api/v1/Formulas/batch-delete`、GET `/export`、GET `/import-template`（JSON——2026-08-13 改） |
 | 本地 | 同远程（JSON——2026-08-13 双端同步） |
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:565`、`IFormulaImportExportService`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs` (HttpGet `formulas/export`/`formulas/import-template`)、`IFormulaService`
 
 ---
 

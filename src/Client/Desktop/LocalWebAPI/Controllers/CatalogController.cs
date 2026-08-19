@@ -320,6 +320,126 @@ public class CatalogController : BaseCrudController
         return Success(result.Value, result.Value.Message);
     }
 
+    /// <summary>
+    /// 下载药材导入 JSON 模板（2026-08-13：Excel→JSON——后端不涉及 Excel 格式，保持通用性；
+    /// P1 修复：Local 补端点对齐 Remote，Desktop 本地模式「下载模板」此前 404）
+    /// </summary>
+    [HttpGet("import-template")]
+    public IActionResult HerbImportTemplate()
+    {
+        var template = new
+        {
+            Description = "药材批量导入 JSON 模板（与 POST /herbs/batch-import 期望的 DTO 一致）",
+            Fields = new[]
+            {
+                new
+                {
+                    Field = "Name",
+                    Required = true,
+                    Description = "药材名称",
+                },
+                new
+                {
+                    Field = "PinYinCode",
+                    Required = false,
+                    Description = "拼音码",
+                },
+                new
+                {
+                    Field = "Category",
+                    Required = false,
+                    Description = "分类",
+                },
+                new
+                {
+                    Field = "Properties",
+                    Required = false,
+                    Description = "性味",
+                },
+                new
+                {
+                    Field = "Origin",
+                    Required = false,
+                    Description = "产地",
+                },
+                new
+                {
+                    Field = "Spec",
+                    Required = false,
+                    Description = "规格",
+                },
+                new
+                {
+                    Field = "Unit",
+                    Required = false,
+                    Description = "单位（默认 克）",
+                },
+                new
+                {
+                    Field = "Price",
+                    Required = false,
+                    Description = "单价",
+                },
+                new
+                {
+                    Field = "CostPrice",
+                    Required = false,
+                    Description = "成本价",
+                },
+            },
+            Example = new[]
+            {
+                new
+                {
+                    Name = "人参",
+                    PinYinCode = "renshen",
+                    Category = "补益药",
+                    Properties = "甘微苦温",
+                    Origin = "吉林",
+                    Spec = "一等",
+                    Unit = "克",
+                    Price = 10.5m,
+                    CostPrice = 5.0m,
+                },
+            },
+        };
+        return Success(template, "药材导入模板（JSON）");
+    }
+
+    /// <summary>
+    /// 导出药材为 JSON 数组（按筛选条件，US-HERB-013——Desktop 契约 GET /herbs/export）
+    /// </summary>
+    [HttpGet("export")]
+    public async Task<IActionResult> HerbExport(
+        [FromQuery] string? keyword = null,
+        CancellationToken ct = default
+    )
+    {
+        var result = await _herbService.GetPagedAsync(1, 10000, keyword, null, false, ct);
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "导出失败");
+
+        // JSON 数组
+        return Success(result.Value!.Items, "药材导出（JSON）");
+    }
+
+    /// <summary>
+    /// 导出全部药材为 JSON 数组（2026-08-13：Excel→JSON；US-HERB-007 全量导出——双端对齐 Remote）
+    /// </summary>
+    [HttpGet("export-all")]
+    public async Task<IActionResult> HerbExportAll(
+        [FromQuery] string? keyword = null,
+        CancellationToken ct = default
+    )
+    {
+        var result = await _herbService.GetPagedAsync(1, 10000, keyword, null, false, ct);
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "导出失败");
+
+        // JSON 数组
+        return Success(result.Value!.Items, "药材导出（JSON）");
+    }
+
     #endregion
 
     #region 验方端点（原 FormulasController，绝对路由 /api/v1/formulas/*）
@@ -327,7 +447,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 获取验方分页列表
     /// </summary>
-    [HttpGet("api/v1/formulas")]
+    [HttpGet("/api/v1/formulas")]
     public async Task<IActionResult> GetFormulaList(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
@@ -357,7 +477,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 下载验方导入 JSON 模板（2026-08-13：Excel→JSON——后端不涉及 Excel 格式，保持通用性）
     /// </summary>
-    [HttpGet("api/v1/formulas/import-template")]
+    [HttpGet("/api/v1/formulas/import-template")]
     public IActionResult FormulaImportTemplate()
     {
         var template = new
@@ -393,7 +513,7 @@ public class CatalogController : BaseCrudController
                 {
                     Field = "Herbs",
                     Required = true,
-                    Description = "药材组成（如 人参:10g,白术:10g）",
+                    Description = "药材组成（对象数组 [{HerbName, Dosage, Unit}]，如 [{\"HerbName\":\"人参\",\"Dosage\":10,\"Unit\":\"g\"}]）",
                 },
             },
             Example = new[]
@@ -404,7 +524,11 @@ public class CatalogController : BaseCrudController
                     Category = "补益剂",
                     Effect = "益气健脾",
                     Usage = "水煎服",
-                    Herbs = "人参:10g,白术:10g",
+                    Herbs = new[]
+                    {
+                        new { HerbName = "人参", Dosage = 10, Unit = "g" },
+                        new { HerbName = "白术", Dosage = 10, Unit = "g" },
+                    },
                 },
             },
         };
@@ -414,7 +538,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 导出验方为 JSON 数组（2026-08-13：Excel→JSON）
     /// </summary>
-    [HttpGet("api/v1/formulas/export")]
+    [HttpGet("/api/v1/formulas/export")]
     public async Task<IActionResult> FormulaExport(
         [FromQuery] string? keyword = null,
         CancellationToken ct = default
@@ -431,7 +555,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 获取验方详情
     /// </summary>
-    [HttpGet("api/v1/formulas/{id}")]
+    [HttpGet("/api/v1/formulas/{id}")]
     public async Task<IActionResult> GetFormulaById(Guid id, CancellationToken ct)
     {
         var result = await _formulaService.GetByIdAsync(id, ct);
@@ -452,7 +576,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 新增验方
     /// </summary>
-    [HttpPost("api/v1/formulas")]
+    [HttpPost("/api/v1/formulas")]
     public async Task<IActionResult> CreateFormula(
         [FromBody] FormulaInputDto input,
         CancellationToken ct
@@ -479,7 +603,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 更新验方信息
     /// </summary>
-    [HttpPut("api/v1/formulas/{id}")]
+    [HttpPut("/api/v1/formulas/{id}")]
     public async Task<IActionResult> UpdateFormula(
         Guid id,
         [FromBody] FormulaInputDto input,
@@ -509,7 +633,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 删除验方（软删除）
     /// </summary>
-    [HttpDelete("api/v1/formulas/{id}")]
+    [HttpDelete("/api/v1/formulas/{id}")]
     public async Task<IActionResult> DeleteFormula(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "验方ID") is { } error)
@@ -535,7 +659,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 切换验方启用/禁用状态
     /// </summary>
-    [HttpPost("api/v1/formulas/{id}/toggle-status")]
+    [HttpPost("/api/v1/formulas/{id}/toggle-status")]
     public async Task<IActionResult> ToggleFormulaStatus(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "验方ID") is { } error)
@@ -564,7 +688,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 批量删除验方
     /// </summary>
-    [HttpPost("api/v1/formulas/batch-delete")]
+    [HttpPost("/api/v1/formulas/batch-delete")]
     public async Task<IActionResult> BatchDeleteFormulas(
         [FromBody] BatchDeleteInputDto dto,
         CancellationToken ct
@@ -580,7 +704,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 复制验方
     /// </summary>
-    [HttpPost("api/v1/formulas/{id}/clone")]
+    [HttpPost("/api/v1/formulas/{id}/clone")]
     public async Task<IActionResult> CloneFormula(Guid id, CancellationToken ct)
     {
         var source = await _formulaService.GetByIdAsync(id, ct);
@@ -624,7 +748,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 批量导入验方
     /// </summary>
-    [HttpPost("api/v1/formulas/batch-import")]
+    [HttpPost("/api/v1/formulas/batch-import")]
     public async Task<IActionResult> BatchImportFormulas(
         [FromBody] List<FormulaImportItemDto> formulas,
         CancellationToken ct
@@ -641,7 +765,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 获取待校验验方列表
     /// </summary>
-    [HttpGet("api/v1/formulas/pending-validation")]
+    [HttpGet("/api/v1/formulas/pending-validation")]
     public async Task<IActionResult> GetPendingValidation(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
@@ -657,7 +781,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 校验验方药材匹配
     /// </summary>
-    [HttpPost("api/v1/formulas/{formulaId}/herbs/{herbItemId}/validate")]
+    [HttpPost("/api/v1/formulas/{formulaId}/herbs/{herbItemId}/validate")]
     public async Task<IActionResult> ValidateHerb(
         Guid formulaId,
         Guid herbItemId,
@@ -678,7 +802,7 @@ public class CatalogController : BaseCrudController
     /// 恢复已删除的验方 — 仅 Admin（业务管理）
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminBusinessOnly)]
-    [HttpPost("api/v1/formulas/{id}/restore")]
+    [HttpPost("/api/v1/formulas/{id}/restore")]
     public async Task<IActionResult> RestoreFormula(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "验方ID") is { } error)
@@ -702,7 +826,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 批量启用药方
     /// </summary>
-    [HttpPost("api/v1/formulas/batch-enable")]
+    [HttpPost("/api/v1/formulas/batch-enable")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public async Task<IActionResult> BatchEnableFormulas(
         [FromBody] BatchDeleteInputDto dto,
@@ -722,7 +846,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 批量禁用药方
     /// </summary>
-    [HttpPost("api/v1/formulas/batch-disable")]
+    [HttpPost("/api/v1/formulas/batch-disable")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public async Task<IActionResult> BatchDisableFormulas(
         [FromBody] BatchDeleteInputDto dto,

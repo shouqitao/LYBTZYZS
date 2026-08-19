@@ -41,13 +41,6 @@ public interface IFormulaService
     Task<Result<FormulaDetailDto>> ToggleStatusAsync(Guid id);
     Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, Guid operatorId);
 }
-
-public interface IFormulaImportExportService
-{
-    Task<Result<FormulaBatchImportResultDto>> ImportFromDataAsync(List<FormulaImportItemDto> formulas, string? fileName);
-    Task<MemoryStream> ExportAsync(string? category);
-    MemoryStream GenerateImportTemplate();
-}
 ```
 
 ### API 端点映射

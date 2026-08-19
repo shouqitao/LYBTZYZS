@@ -1,6 +1,6 @@
 # 需求追溯矩阵 (Traceability Matrix)
 
-> 版本: v1.9 | 日期: 2026-08-19 | 状态: ✅ 批量导入/导出 UI 接线完成（PAT-011/012、HERB-006/007/013、FORM-006/013 → Desktop ✅）
+> 版本: v1.10 | 日期: 2026-08-19 | 状态: ✅ P1 修复——药材 export/import-template/export-all 双端补端点（Desktop 双模式 404 修复）+ 验方模板示例/DTO 对齐（HERB-007/013 Desktop ⚠️→✅；FORM-013 Desktop ✅→⚠️ 导出明细 P2 待办）
 >
 > **用途**：建立「需求 → 设计 → 实现」的双向追溯基础设施。本矩阵是 v1.0 范围冻结、变更影响分析、缺口补全追踪的权威索引。
 > **覆盖**：全部 151 个 User Story（US）+ 13 个 ADR + 5 个业务 Flow + 54 个访谈问题点。
@@ -95,13 +95,13 @@
 | US-HERB-004 | Must | ADR-0001 | — | PUT /herbs/{id} | CatalogController.cs:146 | A2/D13 | ✅ 已实现 | ✅ | ✅ |
 | US-HERB-005 | Must | ADR-0001 | — | DELETE /herbs/{id} | CatalogController.cs:174 | — | ✅ 已实现（B1: 单删引用检查 ValidateBeforeDeleteAsync——处方/验方引用拒绝删除） | ✅ | ✅ |
 | US-HERB-006 | Must | ADR-0010 | Flow 5(none) | POST /herbs/batch-import | CatalogController.cs:262 | A1 | ✅ 已实现（DTO/JSON 唯一路径——2026-08-13 移除服务端 Excel 解析 import-excel） | ✅ | ✅ |
-| US-HERB-007 | Should | ADR-0010 | — | GET /herbs/export-all | CatalogController.cs:82 | — | ✅ 已实现（T4: export-all 端点双端） | ✅ | ✅ |
+| US-HERB-007 | Should | ADR-0010 | — | GET /herbs/export-all | CatalogController.cs（export-all） | — | ✅ 已实现（T4: export-all 端点——2026-08-19 P1：Local 补 export-all/export/import-template 端点，双端成立） | ✅ | ✅ |
 | US-HERB-008 | Should | ADR-0001 | — | GET /herbs/{id}/check-reference | CatalogController.cs:287 | — | ✅ 已实现（CheckHerbReference 处方+验方双计数） | ✅ | ⚠️ |
 | US-HERB-009 | Should | ADR-0001 | — | POST /herbs/batch-check-reference | CatalogController.cs:302 | — | ✅ 已实现（BatchCheckReference 聚合计数） | ✅ | ⚠️ |
 | US-HERB-010 | Must | — | — | POST /herbs/{id}/toggle-status | CatalogController.cs:202 | A3 | ✅ 已实现 | ✅ | ✅ |
 | US-HERB-011 | Should | — | — | POST /herbs/{id}/restore | CatalogController.cs:228 | A10 | ✅ 已实现（Restore 泛型命令） | ✅ | ✅ |
 | US-HERB-012 | Should | ADR-0001 | — | POST /herbs/batch-enable 等 | CatalogController.cs:319 | — | ✅ 已实现（批量删除引用检查） | ✅ | ⚠️ |
-| US-HERB-013 | Should | ADR-0010 | — | GET /herbs/export + import-template | CatalogController.cs:82 | — | ✅ 已实现（T4: export/import-template 端点双端） | ✅ | ✅ |
+| US-HERB-013 | Should | ADR-0010 | — | GET /herbs/export + import-template | CatalogController.cs（export/import-template） | — | ✅ 已实现（T4: export/import-template 端点——2026-08-19 P1：Local 补端点 + 契约-路由对齐守卫，双端成立） | ✅ | ✅ |
 
 ## 五、验方管理（US-FORM × 14）
 
@@ -121,7 +121,7 @@
 | US-FORM-010 | Must | ADR-0007 | — | IFormulaService.UpdateAsync | IFormulaService.cs:11 | — | ✅ 已实现（FLAW-F1 降级 Draft） | ✅ | ✅ |
 | US-FORM-011 | Must | ADR-0007 | — | POST /Formulas/{id}/toggle-status | CatalogController.cs:363 | — | ✅ 已实现（toggle-status + batch-enable/disable） | ✅ | ✅ |
 | US-FORM-012 | Should | ADR-0007 | — | POST /Formulas/{id}/restore | CatalogController.cs:363 | A10 | ✅ 已实现（Restore 泛型命令） | ✅ | ✅ |
-| US-FORM-013 | Should | ADR-0010 | — | GET /Formulas/export + import-template | CatalogController.cs:363 | — | ✅ 已实现（T4 端点 + 2026-08-13 Excel→JSON 模板/导出） | ✅ | ✅ |
+| US-FORM-013 | Should | ADR-0010 | — | GET /Formulas/export + import-template | CatalogController.cs（formulas/export、import-template） | — | ⚠️ 部分实现（WebAPI 端点齐全 + 2026-08-19 模板示例/DTO 对齐；桌面导出缺药材组成明细 + 分类筛选参数对齐 P2 待办） | ✅ | ⚠️ |
 
 ## 六、医案管理（US-MC × 20，核心聚合根）
 
@@ -303,6 +303,7 @@
 
 | 日期 | 变更 | 原因 |
 | ------ | ------ | ------ |
+| 2026-08-19 | **v1.10 P1 修复（desktop-deep-review 派单）**：① 药材 export/import-template/export-all 双端补端点——Remote CatalogController 新増 `GET /herbs/export`（筛选导出，对齐患者；此前 Desktop 契约调 /export 而服务端只有 /export-all → 404）；LocalWebAPI 补 `GET /herbs/import-template`/`/export`/`/export-all`（此前缺失 → 本地模式 404）；② 验方模板 DTO 对齐——FormulaImportItemDto 补 Category（实体/Factory 已支持，导入分类不再静默丢弃）+ 模板 Example.Herbs 改对象数组 [{HerbName,Dosage,Unit}]（照抄模板此前必解析失败）；③ 同类路由修复（新发现）：LocalWebAPI 验方 16 个 action 路由模板缺前导 `/` → 属性路由与类级 herbs 前缀拼接成 /api/v1/herbs/api/v1/formulas/*（离线模式验方全操作 404）——对齐 Remote CATALOG-ROUTE-FIX 先例改绝对路径；④ 新增契约-端点路由对齐守卫测试（ImportExportRouteParityTests——Refit 路径 ↔ Remote/Local 路由表反射比对）+ ImportExportJsonTests/LocalImportExportJsonTests 补药材断言；⑤ 修正 HERB-007/013 Desktop ⚠️→✅（修复后成立）；FORM-013 Desktop ✅→⚠️（导出缺药材组成明细 + 分类筛选参数对齐 P2 待办）；⑥ 需求文档：US-PAT-011/012 状态 🔧→✅、US-HERB-007/013 验收标准去 Excel 残留、删虚构接口 IHerbImportExportService/IFormulaImportExportService、US-FORM-013 删 AllowAnonymous 矛盾规则 | 任务书 .hermes-task-p1-fixes.md（源自 desktop-deep-code-review-2026-08-19 报告 P1/P2 结论） |
 | 2026-08-19 | **v1.9 批量导入/导出 UI 接线完成**——PAT-011/012、HERB-006/007/013、FORM-006/013 Desktop ⚠️→✅（PatientMasterDetailViewModel/HerbMasterDetailViewModel/FormulaMasterDetailViewModel 加 Import/Export/DownloadTemplate 命令 + View 工具栏按钮；修复 Herb 死绑定 ImportHerbsCommand/ExportHerbsCommand；User 无导出 API 删除 ExportCommand 死绑定）；详见报告 desktop-batch-import-export-2026-08-19.md | 任务书 batch-import-export-ui：将 Service/Repository 层接线到 ViewModel/View |
 | 2026-08-19 | **v1.8 Desktop 状态列代码级复核修正（desktop-doc-check）**——批量操作 US（USER-012/PAT-008/HERB-012/FORM-005/MC-015）Desktop ⚠️（UI 批量交互但循环单条删除，未消费批量端点）；引用检查 US（PAT-009/010/HERB-008/009）Desktop ⚠️（ViewModel 零消费） | 任务书 desktop-doc-check：基于最新文档验证 Desktop 实现状态 |
 | 2026-08-19 | **v1.7 新增 WebAPI/Desktop 双端状态分列**——全部 US 填充（实际 154 行：Shell 20 含 020~025 追加，统计表 151 为既有滞后未改）；图例加两列定义 + 判定依据；批量导入/导出、引用检查、history/batch-details、权限查询等端点 Desktop 有 API 层但无 ViewModel 消费 → ⚠️；US-REG-002 两步建号 Desktop 第 1 步（Source=Doctor 建号）无 UI → ⚠️；US-FORM-014 克隆远程缺端点 → WebAPI ⚠️ | 任务书 traceability-webapi-desktop：明确每个 US 双端实现状态（依据 doc-code-audit 报告 + 代码扫描） |
