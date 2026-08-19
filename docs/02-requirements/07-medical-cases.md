@@ -1,8 +1,6 @@
 # 医案管理 (Medical Case Management)
 
-> 版本: v2.1 | 日期: 2026-08-02 | 状态: 已更新
-
-> **用户速览**：医案 = 医生的一本「诊疗记录本」。每次看病建一本，写完诊断、开完处方、打印出来，这本就合上了。一本记录一个患者一次就诊的全过程。
+> 医案（MedicalCase）是中医诊疗的完整记录，涵盖一次就诊从创建到归档的完整生命周期，是**系统唯一的聚合根**：聚合 Consultation（中医诊断）和 Prescription（处方），所有写操作通过聚合根统一入口完成。一个医案包含患者信息、主治医生、中医诊断（含四诊结果与辨证分析）和处方（含药材列表与价格计算）。
 >
 > | 我是… | 我能… |
 > | ------- | ------- |
@@ -14,20 +12,18 @@
 
 ---
 
-> **本模块是系统唯一的聚合根。** MedicalCase 聚合 Consultation（中医诊断）和 Prescription（处方），所有写操作通过聚合根统一入口完成。
+## 模块级设计（横切）
 
-## 模块概述
+### 架构与设计原则
 
-医案（MedicalCase）是中医诊疗的完整记录，涵盖一次就诊从创建到归档的完整生命周期。一个医案包含患者信息、主治医生、中医诊断（Consultation，含四诊结果与辨证分析）和处方（Prescription，含药材列表与价格计算）。
-
-医案模块采用 CQRS（Command Query Responsibility Segregation）+ 聚合根模式：5 个 CQRS 服务（Command/Query/Processing/Audit/Print）由 `IMedicalCaseFacade` 聚合门面统一调度。所有业务规则集中在 `MedicalCaseBusinessRules`。核心设计原则：
+医案模块采用 CQRS（Command Query Responsibility Segregation）+ 聚合根模式：5 个 CQRS 服务（Command/Query/Processing/Audit/Print）由 `IMedicalCaseFacade` 聚合门面统一调度。所有业务规则集中在 `MedicalCaseBusinessRules`。
 
 1. **单一聚合根**：Consultation 和 Prescription 是 MedicalCase 的内部实体，无独立 CRUD 接口；外部模块（如验方导入）通过 MedicalCase 聚合根间接操作。
 2. **状态机驱动**：状态转换由域方法统一控制（如 `CompleteAsync`），禁止通过 `UpdateStatusAsync` 直接设置 `Completed`。
 3. **权限与编辑控制**：基于角色 + 资源所有权 + 状态的综合权限模型，已完成医案当天可编辑，隔天自动锁定。
 4. **打印保护**：打印后任何内容修改需提供 EditReason，修改后 `IsPrinted=false`、`PrintVersion++`，确保纸质与电子记录一致。
 
-## 业务规则
+**双模式说明**：本模块 22 个端点全部通过 `IMedicalCaseFacade` 统一调度，双模式行为完全一致。
 
 ### BR-000：医案创建时机（架构决策 2026-08-02，2026-08-03 修订为「接诊即建」）
 
@@ -184,13 +180,35 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 | 修改成功后 | `IsPrinted=false`、`PrintVersion++`（提示重新打印） |
 | 删除处方 | 无独立「删除处方」操作；已完成医案整体删除 = 软删除（Admin 清理） |
 
-### 双模式说明
+### 处方价格计算（CQRS 内部）
 
-本模块 22 个端点全部通过 `IMedicalCaseFacade` 统一调度，双模式行为完全一致。
+处方价格由聚合根内部计算，无独立端点：
 
-## 用户故事
+| 字段 | 计算公式 |
+| ------ | --------- |
+| PrescriptionItem.Amount | UnitPrice × Dosage（单帖小计） |
+| PrescriptionItem.Subtotal（DTO） | = Amount（单帖小计快照，2026-08-13 修复） |
+| PrescriptionItem.TotalPrice（DTO） | = Amount × DosageCount（该味药帖剂总价；折扣为处方级概念不摊明细，2026-08-13 修复） |
+| SingleDosePrice | SUM(Items.Amount) |
+| TotalPrice | SingleDosePrice × DosageCount × Discount（MC-D14） |
 
-### US-MC-001: 创建医案（含诊断+处方聚合）
+- DosageCount（帖数）范围 1-100，默认 7
+- Discount（折扣）范围 0-1，默认 1.0（1.0=无折扣，0.9=九折）
+
+### 验方导入到处方
+
+验方导入到处方（原 US-MC-016）的能力由处方聚合保存接口承载，相关业务规则：
+
+- 仅展示 `ValidationStatus=Validated` 且 `Status=Enabled` 的验方（MC-D08）
+- 已禁用药材自动跳过 + 提示"以下药材已停用，已跳过: xxx"（MC-D09）
+- 导入为数据复制，修改处方中药材不影响原验方（MC-D12）
+- 重复药材剂量合并策略可通过 `FeatureToggleOptions.DuplicateHerbMergeStrategy` 配置（Max/Min/Sum/Import/Keep，MC-D17）
+
+详见 [验方管理](06-formulas.md)。
+
+---
+
+## US-MC-001: 创建医案（含诊断+处方聚合）
 
 **角色**: 医生
 **优先级**: Must
@@ -224,13 +242,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 9. **两种创建入口（MC-D19）**：模式 1 前台挂号→医生从挂号队列选中；模式 2 医生直接查询患者创建。两种模式在 BR-001 检查后完全收敛
 10. **医案号溢出处理**：当 3 位序号达到 999 时，扩展为 4 位序号（MC+yyyyMMdd+0001）
 
-**双模式**: 远程 `POST /api/v1/medicalcases`；本地一致（统一 Service 层）。
+**双模式差异**: 远程 `POST /api/v1/medicalcases`；本地一致（统一 Service 层）。
 
 **实现参考**: `MedicalCasesController.cs:26`、`MedicalCaseBusinessRules.cs:9`
 
 ---
 
-### US-MC-002: 保存医案（统一聚合保存）
+## US-MC-002: 保存医案（统一聚合保存）
 
 **角色**: 医生、管理员
 **优先级**: Must
@@ -258,13 +276,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 7. **乐观并发控制**：RowVersion + 3 次重试（MC-D10）
 8. **辨证录入（D7 决策）**：主诉 / 现病史 / 舌诊 / 脉诊 / 辨证为 Consultation 的结构化字段（见 [04-data-model](../03-architecture/04-data-model.md) Consultation 实体）；舌象 / 脉象提供常用选项选择器 + 自由文本兜底；v1.0 **不做**智能辅助诊断（如 AI 推荐、证型自动判别）。
 
-**双模式**: 远程 `PUT /api/v1/medicalcases/{id}`；本地一致（统一 Service 层）。
+**双模式差异**: 远程 `PUT /api/v1/medicalcases/{id}`；本地一致（统一 Service 层）。
 
 **实现参考**: `MedicalCasesController.cs:26`、`IMedicalCaseFacade.cs:15`
 
 ---
 
-### US-MC-003: 设置处方需求标志（3步工作流第2步）
+## US-MC-003: 设置处方需求标志（3步工作流第2步）
 
 **角色**: 医生
 **优先级**: Must
@@ -285,13 +303,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 设为 true 时，允许创建/编辑处方
 4. 完成医案时此字段不可为 null（BR-003）
 
-**双模式**: 远程 `PUT /api/v1/medicalcases/{id}/prescription-flag`；本地一致。
+**双模式差异**: 远程 `PUT /api/v1/medicalcases/{id}/prescription-flag`；本地一致。
 
 **实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
-### US-MC-004: 查询医案详情（含诊断+处方）
+## US-MC-004: 查询医案详情（含诊断+处方）
 
 **角色**: 医生、管理员
 **优先级**: Must
@@ -312,13 +330,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 包含计算属性
 4. `HasPrescription` 计算：`entity.Prescription != null && !entity.Prescription.IsDeleted`
 
-**双模式**: 远程 `GET /api/v1/medicalcases/{id}`；本地一致。
+**双模式差异**: 远程 `GET /api/v1/medicalcases/{id}`；本地一致。
 
 **实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
-### US-MC-005: 分页查询医案列表（按角色过滤）
+## US-MC-005: 分页查询医案列表（按角色过滤）
 
 **角色**: 医生、管理员
 **优先级**: Must
@@ -341,13 +359,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 默认排序：CreatedAt DESC（MC-D11）
 4. 分页参数校验：page ≥ 1，pageSize 1-100
 
-**双模式**: 远程 `GET /api/v1/medicalcases?status=&patientId=&keyword=&page=&pageSize=`；本地一致。
+**双模式差异**: 远程 `GET /api/v1/medicalcases?status=&patientId=&keyword=&page=&pageSize=`；本地一致。
 
 **实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
-### US-MC-006: 统一查询（ByPatient/Pending/Recent 等）
+## US-MC-006: 统一查询（ByPatient/Pending/Recent 等）
 
 **角色**: 医生、管理员
 **优先级**: Must
@@ -368,13 +386,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. ByPatient 查询：按患者 ID 过滤
 4. Recent 查询：返回最近 N 条（默认 20，最大 50）
 
-**双模式**: 远程 `GET /api/v1/medicalcases/query?type=&...`；本地一致。
+**双模式差异**: 远程 `GET /api/v1/medicalcases/query?type=&...`；本地一致。
 
 **实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
-### US-MC-007: 跨模块搜索（患者+诊断+日期）
+## US-MC-007: 跨模块搜索（患者+诊断+日期）
 
 **角色**: 医生、管理员
 **优先级**: Must
@@ -397,13 +415,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 4. 返回完整 MedicalCaseDetailDto（含嵌套数据）
 5. 权限过滤：Doctor 仅自己；Admin 全部
 
-**双模式**: 远程 `GET /api/v1/medicalcases/search?patientName=&diagnosisKeyword=&startDate=&endDate=`；本地一致。
+**双模式差异**: 远程 `GET /api/v1/medicalcases/search?patientName=&diagnosisKeyword=&startDate=&endDate=`；本地一致。
 
 **实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
-### US-MC-008: 查询诊断历史
+## US-MC-008: 查询诊断历史
 
 **角色**: 医生、管理员
 **优先级**: Should
@@ -425,13 +443,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 2. 仅返回 `Completed` 状态医案的 Consultation
 3. 按时间 DESC 排序
 
-**双模式**: 远程 `GET /api/v1/medicalcases/{patientId}/consultations`；本地一致。
+**双模式差异**: 远程 `GET /api/v1/medicalcases/{patientId}/consultations`；本地一致。
 
 **实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
-### US-MC-009: 查询处方历史
+## US-MC-009: 查询处方历史
 
 **角色**: 医生、管理员
 **优先级**: Should
@@ -454,13 +472,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 按时间 DESC 排序
 4. 支持复制操作（见 US-MC-019）
 
-**双模式**: 远程 `GET /api/v1/medicalcases/{patientId}/prescriptions`；本地一致。
+**双模式差异**: 远程 `GET /api/v1/medicalcases/{patientId}/prescriptions`；本地一致。
 
 **实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
-### US-MC-010: 更新医案状态（Active/Suspended）
+## US-MC-010: 更新医案状态（Active/Suspended）
 
 **角色**: 医生、管理员
 **优先级**: Must
@@ -483,13 +501,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. `UpdateStatusAsync` 拒绝 `Completed` 状态，强制使用 `CompleteAsync`（US-MC-011）
 4. Doctor 仅可操作自己的；Admin 全部
 
-**双模式**: 远程 `PUT /api/v1/medicalcases/{id}/suspend` 或 `/activate`；本地一致。
+**双模式差异**: 远程 `PUT /api/v1/medicalcases/{id}/suspend` 或 `/activate`；本地一致。
 
 **实现参考**: `MedicalCaseProcessingController.cs:25`
 
 ---
 
-### US-MC-011: 完成医案（工作流验证）
+## US-MC-011: 完成医案（工作流验证）
 
 **角色**: 医生、管理员
 **优先级**: Must
@@ -511,13 +529,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 2. 完成校验规则见 [BR-003](#br-003医案完成校验规则)；完成后当天可编辑，隔天锁定（IsLocked 计算属性）
 3. **Registration 联动**：完成后关联 Registration 自动 Completed（US-REG-007）
 
-**双模式**: 远程 `PUT /api/v1/medicalcases/{id}/close`；本地一致（统一 Service 层）。
+**双模式差异**: 远程 `PUT /api/v1/medicalcases/{id}/close`；本地一致（统一 Service 层）。
 
 **实现参考**: `MedicalCaseProcessingController.cs:25`、`MedicalCaseBusinessRules.cs:9`
 
 ---
 
-### US-MC-012: 强制关闭医案
+## US-MC-012: 强制关闭医案
 
 **角色**: 管理员
 **优先级**: Should
@@ -539,13 +557,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 用于清理异常状态医案（如长期 Suspended 的孤儿医案）
 4. 必须记录操作原因
 
-**双模式**: 远程 `PUT /api/v1/medicalcases/{id}/close?force=true`；本地一致。
+**双模式差异**: 远程 `PUT /api/v1/medicalcases/{id}/close?force=true`；本地一致。
 
 **实现参考**: `MedicalCaseProcessingController.cs:25`
 
 ---
 
-### US-MC-013: 暂停医案
+## US-MC-013: 暂停医案
 
 **角色**: 医生、管理员
 **优先级**: Must
@@ -569,13 +587,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 4. Doctor 仅可操作自己的；Admin 全部
 5. v1.0 不实现自动清理（MC-D05），BR-001 形成天然卡点提醒
 
-**双模式**: 远程 `PUT /api/v1/medicalcases/{id}/suspend`；本地一致。
+**双模式差异**: 远程 `PUT /api/v1/medicalcases/{id}/suspend`；本地一致。
 
 **实现参考**: `MedicalCaseProcessingController.cs:25`
 
 ---
 
-### US-MC-014: 取消医案（物理删除）
+## US-MC-014: 取消医案（物理删除）
 
 **角色**: 医生、管理员
 **优先级**: Must
@@ -604,13 +622,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
    - Source=Receptionist：Registration 回退为 Waiting（原医案已物理删，患者回来重新接诊时新建）
    - Source=Doctor：Registration 自动变为 Cancelled
 
-**双模式**: 远程 `PUT /api/v1/medicalcases/{id}/cancel`；本地一致。
+**双模式差异**: 远程 `PUT /api/v1/medicalcases/{id}/cancel`；本地一致。
 
 **实现参考**: `MedicalCaseProcessingController.cs:25`
 
 ---
 
-### US-MC-015: 删除/批量删除医案（软删除，管理清理）
+## US-MC-015: 删除/批量删除医案（软删除，管理清理）
 
 **角色**: 管理员
 **优先级**: Must
@@ -634,13 +652,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 4. 批量删除 IDs 列表非空校验
 5. 未完成医案不可删除（走「取消」= 物理删除）
 
-**双模式**: 远程 `DELETE /api/v1/medicalcases/{id}` 或 `POST /api/v1/medicalcases/batch-delete`；本地一致。
+**双模式差异**: 远程 `DELETE /api/v1/medicalcases/{id}` 或 `POST /api/v1/medicalcases/batch-delete`；本地一致。
 
 **实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
-### US-MC-016: 查询医案权限
+## US-MC-016: 查询医案权限
 
 **角色**: 医生、管理员
 **优先级**: Should
@@ -665,13 +683,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 6. 权限查询端点返回 CanEdit/CanDelete/RequiresEditReason/DenialReason
 7. **删除权限 = 编辑权限**
 
-**双模式**: 远程 `GET /api/v1/medicalcases/{id}/permissions`；本地一致。
+**双模式差异**: 远程 `GET /api/v1/medicalcases/{id}/permissions`；本地一致。
 
 **实现参考**: `MedicalCaseAuditController.cs:23`
 
 ---
 
-### US-MC-017: 查询审计日志（20字段差异）
+## US-MC-017: 查询审计日志（20字段差异）
 
 **角色**: 管理员
 **优先级**: Must
@@ -699,13 +717,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 8. 删除操作：记录 IsDeleted=true 变更
 9. **审计记录写入失败不影响主业务流程**（异常隔离）
 
-**双模式**: 远程 `GET /api/v1/medicalcases/{id}/audit-logs`（完整字段级审计）；本地仅实体级审计字段。
+**双模式差异**: 远程 `GET /api/v1/medicalcases/{id}/audit-logs`（完整字段级审计）；本地仅实体级审计字段。
 
 **实现参考**: `MedicalCaseAuditController.cs:23`
 
 ---
 
-### US-MC-018: 批量详情查询（≤50，解决 N+1）
+## US-MC-018: 批量详情查询（≤50，解决 N+1）
 
 **角色**: 管理员
 **优先级**: Should
@@ -730,13 +748,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 4. 权限过滤：Doctor 仅自己；Admin 全部
 5. 用于列表场景的批量预加载，避免 N+1 查询
 
-**双模式**: 远程 `POST /api/v1/medicalcases/batch-details`；本地一致。
+**双模式差异**: 远程 `POST /api/v1/medicalcases/batch-details`；本地一致。
 
 **实现参考**: `MedicalCasesController.cs:26`
 
 ---
 
-### US-MC-019: 复制上次处方微调
+## US-MC-019: 复制上次处方微调
 
 **角色**: 医生
 **优先级**: Should
@@ -760,50 +778,13 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 复制是数据快照，修改新处方不影响源医案。
 4. 与 US-MC-018 区分：US-MC-018 是「批量详情查询」（≤50，解决 N+1），复制处方独立为 MC-019。
 
-**双模式**: 复用 US-MC-009 处方历史聚合接口；本地一致。
+**双模式差异**: 复用 US-MC-009 处方历史聚合接口；本地一致。
 
 **实现参考**: `MedicalCasesController.cs:26`（处方历史见 US-MC-009）
 
 ---
 
-## 处方价格计算（CQRS 内部）
-
-处方价格由聚合根内部计算，无独立端点：
-
-| 字段 | 计算公式 |
-| ------ | --------- |
-| PrescriptionItem.Amount | UnitPrice × Dosage（单帖小计） |
-| PrescriptionItem.Subtotal（DTO） | = Amount（单帖小计快照，2026-08-13 修复） |
-| PrescriptionItem.TotalPrice（DTO） | = Amount × DosageCount（该味药帖剂总价；折扣为处方级概念不摊明细，2026-08-13 修复） |
-| SingleDosePrice | SUM(Items.Amount) |
-| TotalPrice | SingleDosePrice × DosageCount × Discount（MC-D14） |
-
-- DosageCount（帖数）范围 1-100，默认 7
-- Discount（折扣）范围 0-1，默认 1.0（1.0=无折扣，0.9=九折）
-
-## 验方导入到处方
-
-验方导入到处方（原 US-MC-016）的能力由处方聚合保存接口承载，相关业务规则：
-
-- 仅展示 `ValidationStatus=Validated` 且 `Status=Enabled` 的验方（MC-D08）
-- 已禁用药材自动跳过 + 提示"以下药材已停用，已跳过: xxx"（MC-D09）
-- 导入为数据复制，修改处方中药材不影响原验方（MC-D12）
-- 重复药材剂量合并策略可通过 `FeatureToggleOptions.DuplicateHerbMergeStrategy` 配置（Max/Min/Sum/Import/Keep，MC-D17）
-
-详见 [验方管理](06-formulas.md)。
-
-## 交叉引用
-
-- [挂号管理 US-REG-007 医案联动](08-registration.md)
-- [处方打印](09-printing.md)（打印回写 IsPrinted/PrintCount/LastPrintedAt/PrintVersion）
-- [验方管理 US-FORM-011 处方导入过滤](06-formulas.md)（MC-D08）
-- [药材管理](05-herbs.md)（禁用药材跳过 MC-D09）
-- [平台基础设施 审计日志](11d-observability.md)（SecurityAuditLog）
-- [术语表 MedicalCase = 医案（NOT 病历）](../01-product/03-glossary.md)
-
----
-
-### US-MC-020: 医案批量删除（R3-补：已实现未文档化）
+## US-MC-020: 医案批量删除
 
 **角色**: Admin / SuperAdmin
 **优先级**: Should
@@ -818,13 +799,26 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 
 **实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:178`（batch-delete）、`MedicalCaseCommandService.Deletion.cs`（McOnlyCompletedCanDelete）
 
+---
+
+## 交叉引用
+
+- [挂号管理 US-REG-007 医案联动](08-registration.md)
+- [处方打印](09-printing.md)（打印回写 IsPrinted/PrintCount/LastPrintedAt/PrintVersion）
+- [验方管理 US-FORM-011 处方导入过滤](06-formulas.md)（MC-D08）
+- [药材管理](05-herbs.md)（禁用药材跳过 MC-D09）
+- [平台基础设施 审计日志](11d-observability.md)（SecurityAuditLog）
+- [术语表 MedicalCase = 医案（NOT 病历）](../01-product/03-glossary.md)
+
+---
+
 ## 变更记录
 
-| 日期 | 变更 | 原因 |
-| ------ | ------ | ------ |
-| 2026-08-11 | US-MC-020 补记（医案批量删除——代码已实现未文档化） | R3-补 反向脱节收编 |
-| 2026-06-28 | US-MC-011 业务规则压缩（引用 BR-003）；19 个 US 双模式表改一行格式；实现参考路径精简 | spec S3 批次2 提炼 |
-| 2026-06-28 | US-MC-018 加交叉引用注；US-MC-008/009 加与 US-MC-006 边界说明 | plan Task 7 边缘 US 修正 |
-| 2026-08-03 | **BR-000 修订为「接诊即建」**：StartVisit/QuickVisit/本地模式原子创建 MedicalCase(Active)+Registration(InProgress)；状态机注释同步 | 产品决策（消除 BR-000 与 US-REG-005 矛盾） |
-| 2026-08-13 | **BR-000 QuickVisit 修订为两步**：①创建 Registration(Waiting, Source=Doctor) ②StartVisit→InProgress+MedicalCase(Active)；InProgress 后置，断网残留 Waiting 可自愈；前端 VM 封装一键 | API 单一职能原则（产品决策 2026-08-13） |
-| 2026-08-03 | **医案状态机重构（医案专题）**：取消=物理删除（不判内容，无 Cancelled 状态）；已完成只可软删（Admin）；未完成不可打印；打印保护简化为 IsPrinted 标记；REG-BR-005 放弃恢复；无 Status 字段 | 产品决策（场景驱动生命周期设计） |
+| 日期 | 变更 |
+| ------ | ------ |
+| 2026-08-11 | US-MC-020 补记（医案批量删除——代码已实现未文档化） |
+| 2026-06-28 | US-MC-011 业务规则压缩（引用 BR-003）；19 个 US 双模式表改一行格式；实现参考路径精简 |
+| 2026-06-28 | US-MC-018 加交叉引用注；US-MC-008/009 加与 US-MC-006 边界说明 |
+| 2026-08-03 | **BR-000 修订为「接诊即建」**：StartVisit/QuickVisit/本地模式原子创建 MedicalCase(Active)+Registration(InProgress)；状态机注释同步 |
+| 2026-08-13 | **BR-000 QuickVisit 修订为两步**：①创建 Registration(Waiting, Source=Doctor) ②StartVisit→InProgress+MedicalCase(Active)；InProgress 后置，断网残留 Waiting 可自愈；前端 VM 封装一键 |
+| 2026-08-03 | **医案状态机重构（医案专题）**：取消=物理删除（不判内容，无 Cancelled 状态）；已完成只可软删（Admin）；未完成不可打印；打印保护简化为 IsPrinted 标记；REG-BR-005 放弃恢复；无 Status 字段 |
