@@ -31,7 +31,7 @@ public class AuthNegativeTests : WebApiE2ETestBase
         }
         catch (ApiException ex)
         {
-            ex.StatusCode.Should().BeOneOf(HttpStatusCode.UnprocessableEntity, HttpStatusCode.Unauthorized);
+            ex.StatusCode.Should().Be(HttpStatusCode.BadRequest, "空用户名触发 ValidationFail → 400");
         }
     }
 
@@ -49,7 +49,7 @@ public class AuthNegativeTests : WebApiE2ETestBase
         }
         catch (ApiException ex)
         {
-            ex.StatusCode.Should().BeOneOf(HttpStatusCode.UnprocessableEntity, HttpStatusCode.Unauthorized);
+            ex.StatusCode.Should().Be(HttpStatusCode.BadRequest, "空密码触发 ValidationFail → 400");
         }
     }
 
@@ -89,7 +89,7 @@ public class AuthNegativeTests : WebApiE2ETestBase
         }
         catch (ApiException ex)
         {
-            ex.StatusCode.Should().BeOneOf(HttpStatusCode.UnprocessableEntity, HttpStatusCode.Unauthorized);
+            ex.StatusCode.Should().Be(HttpStatusCode.NotFound, "不存在的用户触发 UserNotFound → 404");
         }
     }
 

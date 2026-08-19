@@ -80,10 +80,7 @@ public class PermissionBoundaryTests : WebApiE2ETestBase
     [Trait("Phase", "Boundary")]
     public async Task AnonymousUser_CanAccessBasicHealthCheck()
     {
-        var client = new System.Net.Http.HttpClient
-        {
-            BaseAddress = new System.Uri(GetBaseUrl())
-        };
+        var client = CreateClient();
         
         var response = await client.GetAsync("/api/v1/health");
         
@@ -97,10 +94,7 @@ public class PermissionBoundaryTests : WebApiE2ETestBase
     [Trait("Phase", "Boundary")]
     public async Task AnonymousUser_CannotAccessUserManagement()
     {
-        var client = new System.Net.Http.HttpClient
-        {
-            BaseAddress = new System.Uri(GetBaseUrl())
-        };
+        var client = CreateClient();
         
         var response = await client.GetAsync("/api/v1/users");
         
@@ -114,10 +108,7 @@ public class PermissionBoundaryTests : WebApiE2ETestBase
     [Trait("Phase", "Boundary")]
     public async Task AnonymousUser_CannotAccessMedicalCases()
     {
-        var client = new System.Net.Http.HttpClient
-        {
-            BaseAddress = new System.Uri(GetBaseUrl())
-        };
+        var client = CreateClient();
         
         var response = await client.GetAsync("/api/v1/medicalcases");
         
@@ -131,10 +122,7 @@ public class PermissionBoundaryTests : WebApiE2ETestBase
     [Trait("Phase", "Boundary")]
     public async Task AnonymousUser_CannotAccessDiagnostics()
     {
-        var client = new System.Net.Http.HttpClient
-        {
-            BaseAddress = new System.Uri(GetBaseUrl())
-        };
+        var client = CreateClient();
         
         var response = await client.GetAsync("/api/v1/diagnostics/logging/status");
         

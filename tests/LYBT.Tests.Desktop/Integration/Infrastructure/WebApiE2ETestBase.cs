@@ -1,10 +1,15 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using LYBT.Desktop.Contracts.Api;
+using LYBT.Infrastructure.Data;
+using LYBT.Module.Identity.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -12,8 +17,11 @@ using Refit;
 
 namespace LYBT.Tests.Desktop;
 
-[Obsolete("Use DesktopTestBase - P0 冻结，WebApplicationFactory 替代 localhost:5000 直连")]
-public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
+/// <summary>
+/// WebAPI 集成测试基类（P2：WebApplicationFactory 内存 HTTP 替代 localhost:5000 直连）
+/// 数据库指向本机 LocalDB（无 Docker）。
+/// </summary>
+public abstract class WebApiE2ETestBase : WebApplicationFactory<Program>, IAsyncLifetime
 {
     // 序列化登录调用，防止并发登录导致409 Conflict
     private static readonly SemaphoreSlim _loginSemaphore = new(1, 1);
@@ -21,7 +29,7 @@ public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
     protected IServiceProvider ServiceProvider { get; }
     protected IConfiguration Configuration { get; }
     protected ILogger<WebApiE2ETestBase> Logger { get; }
-    
+
     // Refit API Clients (A-18 P1-1: 接口 internal 化后仅同程序集可访问)
     internal IAuthApi AuthApi { get; }
     internal IUserApi UserApi { get; }
@@ -30,7 +38,7 @@ public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
     internal IFormulaApi FormulaApi { get; }
     internal IMedicalCaseApi MedicalCaseApi { get; }
     internal IRegistrationApi RegistrationApi { get; }
-    
+
     // Token 管理
     protected TokenHolder TokenHolderInstance { get; }
     public string? AccessToken { get; private set; }
@@ -42,37 +50,100 @@ public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
 
     protected WebApiE2ETestBase()
     {
-        Configuration = BuildConfiguration();
-        
+        // Program.Main 直接读 ASPNETCORE_ENVIRONMENT 环境变量决定加载哪个 appsettings.{env}.json
+        // （而非 Host 的 UseEnvironment）。若未置为 Test，Main 会加载 Production 配置 → 连接串为 ${DB_SERVER}
+        // 占位符 → SQL 连接失败。此处显式置为 Test。
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
+
+        // 连接串经环境变量注入（Main 在最高优先级重加环境变量源，ConfigurationPostProcessor 不会破坏）——
+        // 覆盖 config/appsettings.Test.json 的 ConnectionStrings:DefaultConnection="InMemory"。
+        var localDb =
+            "Server=(localdb)\\mssqllocaldb;Database=LYBTDB_Test_Integration;Trusted_Connection=True;MultipleActiveResultSets=true;Encrypt=False";
+        Environment.SetEnvironmentVariable("ConnectionStrings__DefaultConnection", localDb);
+        Environment.SetEnvironmentVariable("Database__ConnectionString", localDb);
+
+        Configuration = Services.GetRequiredService<IConfiguration>();
+        Logger = Services.GetRequiredService<ILogger<WebApiE2ETestBase>>();
+
+        // 测试侧 DI：TokenHolder + 认证 handler + Refit 客户端（HTTP 走 TestServer 内存管道）
         var services = new ServiceCollection();
         services.AddSingleton(Configuration);
-        services.AddLogging(builder => 
-        {
-            builder.AddConsole();
-            builder.SetMinimumLevel(LogLevel.Information);
-        });
-        
         services.AddSingleton<TokenHolder>();
-        
-        // 配置 Refit Clients
-        ConfigureRefitClients(services);
-        
         ServiceProvider = services.BuildServiceProvider();
-        
-        // 获取 Logger
-        Logger = ServiceProvider.GetRequiredService<ILogger<WebApiE2ETestBase>>();
         TokenHolderInstance = ServiceProvider.GetRequiredService<TokenHolder>();
-        
-        // 获取 API Clients
-        AuthApi = ServiceProvider.GetRequiredService<IAuthApi>();
-        UserApi = ServiceProvider.GetRequiredService<IUserApi>();
-        PatientApi = ServiceProvider.GetRequiredService<IPatientApi>();
-        HerbApi = ServiceProvider.GetRequiredService<IHerbApi>();
-        FormulaApi = ServiceProvider.GetRequiredService<IFormulaApi>();
-        MedicalCaseApi = ServiceProvider.GetRequiredService<IMedicalCaseApi>();
-        RegistrationApi = ServiceProvider.GetRequiredService<IRegistrationApi>();
-        
+
+        var refitSettings = CreateRefitSettings();
+
+        AuthApi = RestService.For<IAuthApi>(CreateUnauthenticatedClient(), refitSettings);
+        UserApi = RestService.For<IUserApi>(CreateAuthenticatedClientCore(), refitSettings);
+        PatientApi = RestService.For<IPatientApi>(CreateAuthenticatedClientCore(), refitSettings);
+        HerbApi = RestService.For<IHerbApi>(CreateAuthenticatedClientCore(), refitSettings);
+        FormulaApi = RestService.For<IFormulaApi>(CreateAuthenticatedClientCore(), refitSettings);
+        MedicalCaseApi = RestService.For<IMedicalCaseApi>(CreateAuthenticatedClientCore(), refitSettings);
+        RegistrationApi = RestService.For<IRegistrationApi>(CreateAuthenticatedClientCore(), refitSettings);
+
+        services.AddSingleton(AuthApi);
+        services.AddSingleton(UserApi);
+        services.AddSingleton(PatientApi);
+        services.AddSingleton(HerbApi);
+        services.AddSingleton(FormulaApi);
+        services.AddSingleton(MedicalCaseApi);
+        services.AddSingleton(RegistrationApi);
+
         DataTracker = new TestDataTracker(ServiceProvider, Logger);
+    }
+
+    public async Task InitializeAsync()
+    {
+        // WebApplicationFactory 不执行 Program.Main 的数据库初始化（Test 环境跳过迁移）——
+        // 此处显式建库/迁移 + 播种角色与管理员，保证登录流程可用。
+        await EnsureDatabaseInitializedAsync();
+    }
+
+    private async Task EnsureDatabaseInitializedAsync()
+    {
+        using var scope = Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await dbContext.Database.MigrateAsync();
+        await IdentitySeedData.SeedRolesAndAdminAsync(scope.ServiceProvider);
+    }
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.UseEnvironment("Test");
+
+        builder.ConfigureAppConfiguration((context, config) =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                // 数据库指向本机 LocalDB（无 Docker），与 05-dual-mode 一致
+                // 注意：config/appsettings.Test.json 将 ConnectionStrings:DefaultConnection 覆写为 "InMemory"，
+                // 故用 Database:ConnectionString（该键无 Json 覆盖）承载真实 LocalDB 连接串（优先级最高）。
+                ["Database:ConnectionString"] = "Server=(localdb)\\mssqllocaldb;Database=LYBTDB_Test_Integration;Trusted_Connection=True;MultipleActiveResultSets=true;Encrypt=False",
+                ["ConnectionStrings:DefaultConnection"] = "Server=(localdb)\\mssqllocaldb;Database=LYBTDB_Test_Integration;Trusted_Connection=True;MultipleActiveResultSets=true;Encrypt=False",
+                ["ConnectionStrings:DefaultConnection_ForTest"] = "Server=(localdb)\\mssqllocaldb;Database=LYBTDB_Test_Integration;Trusted_Connection=True;MultipleActiveResultSets=true;Encrypt=False",
+                // 测试专用确定性 JWT 密钥（Base64，解码≥32字节），与 config/appsettings.Test.json 一致
+                ["Jwt:SecretKey"] = "VGVzdFNlY3JldEtleV9NaW5MZW5ndGgzMkNoYXJzX0ZvckpXVFRva2VuR2VuX0xZQlRfMTIzNDU2",
+                ["TestCredentials:Username"] = "sysadmin",
+                ["TestCredentials:Password"] = "TestAdmin2025@",
+                ["TestCredentials:Admin:Username"] = "admin",
+                ["TestCredentials:Admin:Password"] = "AdminPass123!",
+                ["TestCredentials:Doctor:Username"] = "doctor",
+                ["TestCredentials:Doctor:Password"] = "DoctorPass123!",
+                ["TestCredentials:Receptionist:Username"] = "receptionist",
+                ["TestCredentials:Receptionist:Password"] = "ReceptionistPass123!",
+                ["WebAPI:BaseUrl"] = "http://localhost",
+                ["WebAPI:TimeoutSeconds"] = "30",
+                ["WebAPI:SkipSslValidation"] = "false"
+            });
+        });
+    }
+
+    public new async Task DisposeAsync()
+    {
+        await DataTracker.DisposeAsync();
+        await base.DisposeAsync();
     }
 
     protected async Task<LoginResponse> LoginAsAsync(string username, string password)
@@ -81,26 +152,26 @@ public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
         try
         {
             Logger.LogInformation("Logging in as {Username}", username);
-            
+
             var response = await AuthApi.LoginAsync(new LoginRequest
             {
                 UserName = username,
                 Password = password
             });
-            
+
             if (!response.Success || response.Data == null)
             {
                 throw new InvalidOperationException($"Login failed for {username}: {response.Message}");
             }
-            
+
             AccessToken = response.Data.Token;
             RefreshToken = response.Data.RefreshToken;
             TokenExpiresAt = response.Data.ExpiresAt;
             CurrentUser = response.Data;
             TokenHolderInstance.AccessToken = AccessToken;
-            
+
             Logger.LogInformation("Login successful for {Username}, token expires at {ExpiresAt}", username, TokenExpiresAt);
-            
+
             return response.Data;
         }
         finally
@@ -116,28 +187,28 @@ public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
         {
             var username = Configuration["TestCredentials:Username"]!;
             var password = Configuration["TestCredentials:Password"]!;
-            
+
             Logger.LogInformation("Logging in as {Username}", username);
-            
+
             var response = await AuthApi.LoginAsync(new LoginRequest
             {
                 UserName = username,
                 Password = password
             });
-            
+
             if (!response.Success || response.Data == null)
             {
                 throw new InvalidOperationException($"Login failed: {response.Message}");
             }
-            
+
             AccessToken = response.Data.Token;
             RefreshToken = response.Data.RefreshToken;
             TokenExpiresAt = response.Data.ExpiresAt;
             CurrentUser = response.Data;
             TokenHolderInstance.AccessToken = AccessToken;
-            
+
             Logger.LogInformation("Login successful, token expires at {ExpiresAt}", TokenExpiresAt);
-            
+
             return response.Data;
         }
         finally
@@ -148,9 +219,6 @@ public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
 
     private readonly HashSet<string> _createdUsers = new();
 
-    /// <summary>
-    /// Login as Admin. Auto-creates the user if it doesn't exist.
-    /// </summary>
     protected async Task<LoginResponse> LoginAsAdminAsync()
     {
         return await LoginOrCreateUserAsync(
@@ -160,9 +228,6 @@ public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
             role: UserRole.Admin);
     }
 
-    /// <summary>
-    /// Login as Doctor. Auto-creates the user if it doesn't exist.
-    /// </summary>
     protected async Task<LoginResponse> LoginAsDoctorAsync()
     {
         return await LoginOrCreateUserAsync(
@@ -172,9 +237,6 @@ public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
             role: UserRole.Doctor);
     }
 
-    /// <summary>
-    /// Login as Receptionist. Auto-creates the user if it doesn't exist.
-    /// </summary>
     protected async Task<LoginResponse> LoginAsReceptionistAsync()
     {
         return await LoginOrCreateUserAsync(
@@ -184,26 +246,19 @@ public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
             role: UserRole.Receptionist);
     }
 
-    /// <summary>
-    /// Attempts login first; if user doesn't exist (401), creates it via sysadmin then retries.
-    /// </summary>
     private async Task<LoginResponse> LoginOrCreateUserAsync(string username, string password, string realName, UserRole role)
     {
-        // Try login first
         try
         {
             return await LoginAsAsync(username, password);
         }
         catch (Exception)
         {
-            // User might not exist, try to create it
             Logger.LogInformation("Login failed for {Username}, attempting to create user", username);
         }
 
-        // Login as sysadmin to create the user
         await LoginAsSysadminAsync();
 
-        // Check if user already exists (maybe password wrong)
         if (!_createdUsers.Contains(username))
         {
             try
@@ -234,7 +289,6 @@ public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
             }
         }
 
-        // Now try login again as the target user
         return await LoginAsAsync(username, password);
     }
 
@@ -244,67 +298,46 @@ public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
         {
             throw new InvalidOperationException("Not logged in. Call LoginAsSysadminAsync first.");
         }
-        
-        var client = new HttpClient
-        {
-            BaseAddress = new Uri(GetBaseUrl())
-        };
+
+        var client = CreateAuthenticatedClientCore();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
-        
+
         return client;
     }
 
     internal IAuthApi CreateAuthenticatedAuthApi()
     {
-        var timeoutSeconds = Configuration.GetValue<int>("WebAPI:TimeoutSeconds", 30);
-        var skipSslValidation = Configuration.GetValue<bool>("WebAPI:SkipSslValidation", false);
-
-        var baseHandler = CreateHttpMessageHandler(skipSslValidation);
-        var authHandler = ActivatorUtilities.CreateInstance<AuthenticationDelegatingHandler>(ServiceProvider);
-        authHandler.InnerHandler = baseHandler;
-
-        var client = new HttpClient(authHandler)
-        {
-            BaseAddress = new Uri(GetBaseUrl()),
-            Timeout = TimeSpan.FromSeconds(timeoutSeconds)
-        };
-
-        return RestService.For<IAuthApi>(client, CreateRefitSettings());
+        return RestService.For<IAuthApi>(CreateAuthenticatedClientCore(), CreateRefitSettings());
     }
 
     protected string GetBaseUrl()
     {
-        return Configuration["WebAPI:BaseUrl"]!;
+        return Server.BaseAddress.ToString();
     }
 
-    private IConfiguration BuildConfiguration()
+    /// <summary>
+    /// 未认证的 TestServer 内存 HttpClient（登录端点用）
+    /// </summary>
+    private HttpClient CreateUnauthenticatedClient()
     {
-        var basePath = AppContext.BaseDirectory;
-        
-        return new ConfigurationBuilder()
-            .SetBasePath(basePath)
-            .AddJsonFile("appsettings.Test.json", optional: false)
-            .AddEnvironmentVariables()
-            .Build();
+        return CreateClient();
     }
 
-    private void ConfigureRefitClients(IServiceCollection services)
+    /// <summary>
+    /// 带 Token 认证链的 TestServer 内存 HttpClient（基于 Server.CreateHandler 根管道）
+    /// </summary>
+    private HttpClient CreateAuthenticatedClientCore()
     {
-        var baseUrl = GetBaseUrl();
-        var timeoutSeconds = Configuration.GetValue<int>("WebAPI:TimeoutSeconds", 30);
-        var skipSslValidation = Configuration.GetValue<bool>("WebAPI:SkipSslValidation", false);
-        
-        var refitSettings = CreateRefitSettings();
+        var authHandler = new AuthenticationDelegatingHandler(TokenHolderInstance)
+        {
+            InnerHandler = Server.CreateHandler()
+        };
 
-        services.AddTransient<AuthenticationDelegatingHandler>();
-        
-        ConfigureClient<IAuthApi>(services, baseUrl, timeoutSeconds, skipSslValidation, refitSettings, false);
-        ConfigureClient<IUserApi>(services, baseUrl, timeoutSeconds, skipSslValidation, refitSettings, true);
-        ConfigureClient<IPatientApi>(services, baseUrl, timeoutSeconds, skipSslValidation, refitSettings, true);
-        ConfigureClient<IHerbApi>(services, baseUrl, timeoutSeconds, skipSslValidation, refitSettings, true);
-        ConfigureClient<IFormulaApi>(services, baseUrl, timeoutSeconds, skipSslValidation, refitSettings, true);
-        ConfigureClient<IMedicalCaseApi>(services, baseUrl, timeoutSeconds, skipSslValidation, refitSettings, true);
-        ConfigureClient<IRegistrationApi>(services, baseUrl, timeoutSeconds, skipSslValidation, refitSettings, true);
+        return new HttpClient(authHandler)
+        {
+            BaseAddress = Server.BaseAddress,
+            Timeout = TimeSpan.FromSeconds(Configuration.GetValue<int>("WebAPI:TimeoutSeconds", 30))
+        };
     }
 
     private static RefitSettings CreateRefitSettings()
@@ -318,63 +351,5 @@ public abstract class WebApiE2ETestBase : IDisposable, IAsyncDisposable
                 Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
             })
         };
-    }
-
-    private static HttpClientHandler CreateHttpMessageHandler(bool skipSslValidation)
-    {
-        return skipSslValidation 
-            ? new HttpClientHandler 
-            { 
-                ServerCertificateCustomValidationCallback = (_, _, _, _) => true 
-            } 
-            : new HttpClientHandler();
-    }
-
-    private static void ConfigureClient<T>(
-        IServiceCollection services, 
-        string baseUrl, 
-        int timeoutSeconds,
-        bool skipSslValidation,
-        RefitSettings refitSettings,
-        bool useAuth) where T : class
-    {
-        services.AddSingleton<T>(sp =>
-        {
-            var primaryHandler = CreateHttpMessageHandler(skipSslValidation);
-            HttpMessageHandler pipeline = primaryHandler;
-
-            if (useAuth)
-            {
-                var authHandler = ActivatorUtilities.CreateInstance<AuthenticationDelegatingHandler>(sp);
-                authHandler.InnerHandler = primaryHandler;
-                pipeline = authHandler;
-            }
-
-            var client = new HttpClient(pipeline)
-            {
-                BaseAddress = new Uri(baseUrl),
-                Timeout = TimeSpan.FromSeconds(timeoutSeconds)
-            };
-
-            return RestService.For<T>(client, refitSettings);
-        });
-    }
-
-    public virtual void Dispose()
-    {
-        if (ServiceProvider is IDisposable disposable)
-        {
-            disposable.Dispose();
-        }
-    }
-
-    public virtual async ValueTask DisposeAsync()
-    {
-        await DataTracker.DisposeAsync();
-        
-        if (ServiceProvider is IDisposable disposable)
-        {
-            disposable.Dispose();
-        }
     }
 }

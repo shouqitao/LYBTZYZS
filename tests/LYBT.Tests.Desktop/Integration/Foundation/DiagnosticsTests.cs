@@ -27,10 +27,7 @@ public class DiagnosticsTests : WebApiE2ETestBase
     public DiagnosticsTests(ITestOutputHelper output)
     {
         _output = output;
-        _httpClient = new HttpClient
-        {
-            BaseAddress = new Uri(Configuration["WebAPI:BaseUrl"]!)
-        };
+        _httpClient = CreateClient();
     }
 
     /// <summary>

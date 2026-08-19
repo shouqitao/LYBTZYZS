@@ -56,10 +56,7 @@ public class HealthCheckTests : WebApiE2ETestBase
     {
         Logger.LogInformation("Testing ping endpoint...");
         
-        var httpClient = new System.Net.Http.HttpClient
-        {
-            BaseAddress = new System.Uri(Configuration["WebAPI:BaseUrl"] ?? "http://localhost:5001")
-        };
+        var httpClient = CreateClient();
         
         var response = await httpClient.GetAsync("/api/v1/health/ping");
         response.EnsureSuccessStatusCode();
@@ -67,7 +64,7 @@ public class HealthCheckTests : WebApiE2ETestBase
         var content = await response.Content.ReadAsStringAsync();
         _output.WriteLine("Ping Response: {0}", content);
         
-        content.Should().Contain("pong");
+        content.Should().Contain("Pong");
         
         Logger.LogInformation("Ping check passed");
     }

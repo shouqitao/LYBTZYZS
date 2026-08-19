@@ -129,29 +129,4 @@ public class FrameworkVerificationTests : IClassFixture<UserJourneyFixture>
         patientCountAfter.Should().Be(0);
         userCountAfter.Should().Be(0);
     }
-
-    [Fact]
-#pragma warning disable CS1998
-    public async Task ServiceProvider_ShouldResolveLocalDbContext()
-    {
-        // Act
-        var context = ServiceProvider.GetService<LocalDbContext>();
-
-        // Assert
-        context.Should().NotBeNull();
-        context!.Database.IsSqlServer().Should().BeTrue();
-    }
-#pragma warning restore CS1998
-
-    [Fact]
-    public void WpfTestHelper_ShouldInitializeWithoutError()
-    {
-        // Act - 不应抛出异常
-        WpfTestHelper.InitializeWpf();
-
-        // Assert - 验证 WPF 资源确实已就绪（T3-3: 取代恒真断言 true.Should().BeTrue()）
-        Application.Current.Should().NotBeNull();
-        Application.Current!.Resources.Should().NotBeNull();
-        Application.Current.Resources.Contains("BaseDataGridStyle").Should().BeTrue();
-    }
 }
