@@ -12,6 +12,10 @@ namespace LYBT.Desktop.Controls.Controls.HerbList
     /// <summary>
     /// 药材列表控件内部ViewModel
     /// </summary>
+    /// <remarks>
+    /// P1-4 评估（2026-08-18）：轻量控件 VM，无 IsBusy/Logger/事件聚合需求，
+    /// ObservableObject 足够，无需 VM 基类（同 HerbItemControlViewModel 结论）。
+    /// </remarks>
     public partial class HerbListControlViewModel : ObservableObject
     {
         #region Fields

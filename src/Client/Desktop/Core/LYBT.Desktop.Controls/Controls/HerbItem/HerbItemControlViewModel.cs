@@ -10,6 +10,12 @@ namespace LYBT.Desktop.Controls.Controls.HerbItem
     /// <summary>
     /// 药材项控件内部ViewModel
     /// </summary>
+    /// <remarks>
+    /// P1-4 评估（2026-08-18）：轻量控件 VM，无需 IsBusy/Logger/Events（自身暴露 ItemChanged 事件，
+    /// 无异步加载/日志/事件聚合），ObservableObject 足够，无需 VM 基类。无 CoreViewModelBase；
+    /// 唯一相关基类 HerbItemViewModelBase 位于 Infrastructure，而 Controls 不能引用 Infrastructure
+    /// （Infrastructure→Controls，逆引用成循环）——维持现状。
+    /// </remarks>
     public partial class HerbItemControlViewModel : ObservableObject, IHerbItemEditable
     {
         #region Fields
