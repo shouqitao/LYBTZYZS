@@ -13,6 +13,7 @@ namespace LYBT.Tests.Desktop.Integration.RemoteApi;
 /// <summary>
 /// 远程 API E2E 基类 —— 真实 Refit 调用 http://60.190.215.86:5000
 /// 每个测试类一个角色，Collection 串行避免并发冲突
+/// 登录凭据：sysadmin / SysAdmin@2026!
 /// </summary>
 [CollectionDefinition("RemoteApi", DisableParallelization = true)]
 public class RemoteApiCollection

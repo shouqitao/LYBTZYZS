@@ -11,7 +11,7 @@ namespace LYBT.Tests.Desktop.Integration.RemoteApi;
 public class DoctorRoleTests : RemoteApiTestBase
 {
     protected override string Username => "sysadmin";
-    protected override string Password => "SysAdmin@2026";
+    protected override string Password => "SysAdmin@2026!";
 
     [Fact]
     [Trait("US", "US-MC-001")]
