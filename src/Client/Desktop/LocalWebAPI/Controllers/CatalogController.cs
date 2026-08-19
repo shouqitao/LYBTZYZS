@@ -233,6 +233,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 批量导入药材
     /// </summary>
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPost("batch-import")]
     public async Task<IActionResult> BatchImport(
         [FromBody] HerbBatchImportInputDto request,
@@ -324,6 +325,7 @@ public class CatalogController : BaseCrudController
     /// 下载药材导入 JSON 模板（2026-08-13：Excel→JSON——后端不涉及 Excel 格式，保持通用性；
     /// P1 修复：Local 补端点对齐 Remote，Desktop 本地模式「下载模板」此前 404）
     /// </summary>
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpGet("import-template")]
     public IActionResult HerbImportTemplate()
     {
@@ -409,6 +411,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 导出药材为 JSON 数组（按筛选条件，US-HERB-013——Desktop 契约 GET /herbs/export）
     /// </summary>
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpGet("export")]
     public async Task<IActionResult> HerbExport(
         [FromQuery] string? keyword = null,
@@ -426,6 +429,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 导出全部药材为 JSON 数组（2026-08-13：Excel→JSON；US-HERB-007 全量导出——双端对齐 Remote）
     /// </summary>
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpGet("export-all")]
     public async Task<IActionResult> HerbExportAll(
         [FromQuery] string? keyword = null,
@@ -477,6 +481,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 下载验方导入 JSON 模板（2026-08-13：Excel→JSON——后端不涉及 Excel 格式，保持通用性）
     /// </summary>
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpGet("/api/v1/formulas/import-template")]
     public IActionResult FormulaImportTemplate()
     {
@@ -536,20 +541,28 @@ public class CatalogController : BaseCrudController
     }
 
     /// <summary>
-    /// 导出验方为 JSON 数组（2026-08-13：Excel→JSON）
+    /// 导出验方为 JSON 数组（含药材组成明细，2026-08-13：Excel→JSON；P2：按分类筛选，对齐客户端 category）
     /// </summary>
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpGet("/api/v1/formulas/export")]
     public async Task<IActionResult> FormulaExport(
-        [FromQuery] string? keyword = null,
+        [FromQuery] string? category = null,
         CancellationToken ct = default
     )
     {
-        var result = await _formulaService.GetPagedAsync(1, 10000, keyword, null, false, ct);
+        var (operatorId, _, operatorRole) = GetOperator();
+        var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+        var result = await _formulaService.ExportDetailsAsync(
+            keyword: null,
+            category: category,
+            operatorId: operatorId,
+            isAdmin: isAdmin,
+            ct: ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "导出失败");
 
-        // JSON 数组
-        return Success(result.Value!.Items, "验方导出（JSON）");
+        // JSON 数组（含 Herbs 明细）
+        return Success(result.Value!, "验方导出（JSON）");
     }
 
     /// <summary>
@@ -748,6 +761,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 批量导入验方
     /// </summary>
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPost("/api/v1/formulas/batch-import")]
     public async Task<IActionResult> BatchImportFormulas(
         [FromBody] List<FormulaImportItemDto> formulas,

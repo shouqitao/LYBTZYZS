@@ -71,6 +71,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 下载药材导入 JSON 模板（2026-08-13：Excel→JSON——后端不涉及 Excel 格式，保持通用性）
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpGet("import-template")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public IActionResult HerbImportTemplate()
@@ -157,6 +158,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 导出全部药材为 JSON 数组（2026-08-13：Excel→JSON）
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpGet("export-all")]
         [ProducesResponseType(typeof(ApiResponse<List<HerbListDto>>), 200)]
         public async Task<IActionResult> HerbExportAll(
@@ -175,6 +177,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 导出药材为 JSON 数组（按筛选条件，US-HERB-013——Desktop 契约 GET /herbs/export，对齐患者模式）
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpGet("export")]
         [ProducesResponseType(typeof(ApiResponse<List<HerbListDto>>), 200)]
         public async Task<IActionResult> HerbExport(
@@ -373,6 +376,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 批量导入药材（JSON）
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpPost("batch-import")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbBatchImportResultDto>), 200)]
@@ -525,6 +529,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 下载验方导入 JSON 模板（2026-08-13：Excel→JSON——后端不涉及 Excel 格式，保持通用性）
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpGet("/api/v{version:apiVersion}/formulas/import-template")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public IActionResult FormulaImportTemplate()
@@ -585,30 +590,30 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 导出验方为 JSON 数组（2026-08-13：Excel→JSON）
+        /// 导出验方为 JSON 数组（含药材组成明细，2026-08-13：Excel→JSON；P2：按分类筛选，对齐客户端 category）
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpGet("/api/v{version:apiVersion}/formulas/export")]
-        [ProducesResponseType(typeof(ApiResponse<List<FormulaListDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<List<FormulaDetailDto>>), 200)]
         public async Task<IActionResult> FormulaExport(
-            [FromQuery] string? keyword = null,
+            [FromQuery] string? category = null,
             CancellationToken ct = default
         )
         {
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-            var result = await _formulaService.GetPagedAsync(
-                1,
-                10000,
-                keyword,
-                operatorId,
-                isAdmin,
-                ct
+            var result = await _formulaService.ExportDetailsAsync(
+                keyword: null,
+                category: category,
+                operatorId: operatorId,
+                isAdmin: isAdmin,
+                ct: ct
             );
             if (!result.IsSuccess)
                 return BusinessFail(result.Error ?? "导出失败");
 
-            // JSON 数组
-            return Success(result.Value!.Items, "验方导出（JSON）");
+            // JSON 数组（含 Herbs 明细，满足 US-FORM-013）
+            return Success(result.Value!, "验方导出（JSON）");
         }
 
         /// <summary>
@@ -806,6 +811,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 批量导入验方（JSON）
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpPost("/api/v{version:apiVersion}/formulas/batch-import")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaBatchImportResultDto>), 200)]

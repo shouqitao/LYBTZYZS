@@ -65,7 +65,7 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<FormulaBatchImportResultDto>> BatchImportAsync([Refit.Body] FormulaBatchImportInputDto request);
 
         /// <summary>
-        /// 导出验方数据到Excel
+        /// 导出验方数据（JSON 含 Herbs 明细，2026-08-13：Excel→JSON；P2 category 筛选）
         /// </summary>
         [Refit.Get("/api/v1/formulas/export")]
         Task<HttpResponseMessage> ExportFormulasAsync([Refit.Query] string? category = null);

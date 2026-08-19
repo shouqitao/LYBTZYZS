@@ -53,17 +53,17 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<PatientBatchImportResultDto>> BatchImportAsync([Refit.Body] PatientBatchImportInputDto request);
 
         /// <summary>
-        /// 下载患者导入模板 (Epic #1934 FR-002)
+        /// 下载患者导入模板（JSON，2026-08-13：Excel→JSON）
         /// </summary>
-        /// <returns>Excel模板文件流（包含示例数据）</returns>
+        /// <returns>JSON 模板文件流（包含示例数据）</returns>
         [Refit.Get("/api/v1/patients/import-template")]
         Task<HttpResponseMessage> ExportTemplateAsync();
 
         /// <summary>
-        /// 导出患者数据到Excel (Epic #1934 FR-003)
+        /// 导出患者数据（JSON，2026-08-13：Excel→JSON）
         /// </summary>
         /// <param name="keyword">搜索关键词（可选）</param>
-        /// <returns>包含患者数据的Excel文件流</returns>
+        /// <returns>包含患者数据的 JSON 文件流</returns>
         [Refit.Get("/api/v1/patients/export")]
         Task<HttpResponseMessage> ExportPatientsAsync([Refit.Query] string? keyword = null);
         /// <summary>

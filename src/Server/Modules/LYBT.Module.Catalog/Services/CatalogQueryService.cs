@@ -32,7 +32,12 @@ internal sealed class CatalogQueryService<TEntity, TListDto, TDetailDto> : ICata
 
     public async Task<Result<PagedResult<TListDto>>> GetPagedAsync(int page, int pageSize, string? keyword, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default)
     {
-        var result = await _repository.GetPagedAsync(page, pageSize, keyword, null, operatorId, isAdmin, ct);
+        return await GetPagedAsync(page, pageSize, keyword, null, operatorId, isAdmin, ct);
+    }
+
+    public async Task<Result<PagedResult<TListDto>>> GetPagedAsync(int page, int pageSize, string? keyword, string? category, Guid? operatorId, bool isAdmin, CancellationToken ct)
+    {
+        var result = await _repository.GetPagedAsync(page, pageSize, keyword, category, operatorId, isAdmin, ct);
         var dtos = result.Items.Select(_toList).ToList();
         var pagedResult = new PagedResult<TListDto>
         {
@@ -42,6 +47,13 @@ internal sealed class CatalogQueryService<TEntity, TListDto, TDetailDto> : ICata
             PageSize = result.PageSize
         };
         return Result<PagedResult<TListDto>>.Success(pagedResult);
+    }
+
+    public async Task<Result<List<TDetailDto>>> ExportDetailsAsync(string? keyword = null, string? category = null, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default)
+    {
+        var result = await _repository.GetPagedAsync(1, 10000, keyword, category, operatorId, isAdmin, ct);
+        var dtos = result.Items.Select(_toDetail).ToList();
+        return Result<List<TDetailDto>>.Success(dtos);
     }
 
     public async Task<Result<TDetailDto>> GetByIdAsync(Guid id, CancellationToken ct)

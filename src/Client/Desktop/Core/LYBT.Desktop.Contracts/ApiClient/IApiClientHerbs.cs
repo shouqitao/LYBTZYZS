@@ -70,10 +70,10 @@ public interface IApiClientHerbs : IEntityApiSegment<HerbListDto, HerbDetailDto,
     Task<HttpResponseMessage> ExportTemplateAsync();
 
     /// <summary>
-    /// 将药材数据导出到 Excel。
+    /// 将药材数据导出（JSON，2026-08-13：Excel→JSON）。
     /// </summary>
     /// <param name="keyword">Search keyword (optional).</param>
-    /// <returns>Excel file stream with herb data.</returns>
+    /// <returns>JSON file stream with herb data.</returns>
     Task<HttpResponseMessage> ExportHerbsAsync(string? keyword = null);
 
     /// <summary>

@@ -82,10 +82,10 @@ public interface IApiClientFormulas : IEntityApiSegment<FormulaListDto, FormulaD
     Task<ApiResponse<FormulaBatchImportResultDto>> BatchImportAsync(FormulaBatchImportInputDto request);
 
     /// <summary>
-    /// 将验方数据导出到 Excel。
+    /// 将验方数据导出（JSON 含 Herbs 明细，2026-08-13：Excel→JSON；P2 category 筛选）。
     /// </summary>
     /// <param name="category">Category filter (optional).</param>
-    /// <returns>Excel file stream with formula data.</returns>
+    /// <returns>JSON file stream with formula data.</returns>
     Task<HttpResponseMessage> ExportFormulasAsync(string? category = null);
 
     /// <summary>

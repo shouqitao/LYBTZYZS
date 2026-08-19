@@ -58,7 +58,7 @@ namespace LYBT.Desktop.Contracts.Api
         Task<HttpResponseMessage> ExportTemplateAsync();
 
         /// <summary>
-        /// 导出药材数据到Excel
+        /// 导出药材数据（JSON，2026-08-13：Excel→JSON）
         /// </summary>
         [Refit.Get("/api/v1/herbs/export")]
         Task<HttpResponseMessage> ExportHerbsAsync([Refit.Query] string? keyword = null);
