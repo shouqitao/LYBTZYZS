@@ -369,15 +369,15 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
             SetBusyWithMessage(true, "正在创建医案...");
 
             var createResult = await _medicalCaseService.CreateMedicalCaseAsync(SelectedPatient.Id);
-            if (!createResult.success)
+            if (!createResult.Success)
             {
-                Logger.LogWarning("创建医案失败：{Error}", createResult.errorMessage);
-                await ShowErrorDialogAsync("创建医案失败：" + createResult.errorMessage);
+                Logger.LogWarning("创建医案失败：{Error}", createResult.Error);
+                await ShowErrorDialogAsync("创建医案失败：" + createResult.Error);
                 return;
             }
 
-            Logger.LogInformation("创建医案成功：{MedicalCaseId}", createResult.medicalCaseId);
-            NavigateToMedicalCase(createResult.medicalCaseId);
+            Logger.LogInformation("创建医案成功：{MedicalCaseId}", createResult.Data);
+            NavigateToMedicalCase(createResult.Data);
         }
         finally
         {

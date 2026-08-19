@@ -67,13 +67,13 @@ public class MedicalCaseService : IMedicalCaseService
     public MedicalCaseDetailDto? Current => _lifecycleService.CurrentDetail;
     public bool HasChanges => _commandService.HasChanges;
 
-    public virtual async Task<bool> SaveAsync(CancellationToken ct = default)
+    public virtual async Task<CommandResult<bool>> SaveAsync(CancellationToken ct = default)
         => await _commandService.SaveAsync(ct);
 
-    public virtual async Task<bool> DeleteAsync(CancellationToken ct = default)
+    public virtual async Task<CommandResult<bool>> DeleteAsync(CancellationToken ct = default)
         => await _commandService.DeleteAsync(ct);
 
-    public virtual async Task<(bool success, Guid medicalCaseId, string? errorMessage)> CreateMedicalCaseAsync(Guid patientId, Guid? registrationId = null, CancellationToken ct = default)
+    public virtual async Task<CommandResult<Guid>> CreateMedicalCaseAsync(Guid patientId, Guid? registrationId = null, CancellationToken ct = default)
         => await _commandService.CreateMedicalCaseAsync(patientId, registrationId, ct);
 
     #endregion
@@ -106,7 +106,7 @@ public class MedicalCaseService : IMedicalCaseService
     public virtual async Task<CommandResult<bool>> ResumeSuspendedAsync(Guid medicalCaseId, CancellationToken ct = default)
         => await _lifecycleService.ResumeSuspendedAsync(medicalCaseId, ct);
 
-    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
+    public virtual async Task<CommandResult<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
         => await _lifecycleService.CloseCaseAsync(medicalCaseId, ct);
 
     #endregion

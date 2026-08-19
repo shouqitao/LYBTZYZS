@@ -269,10 +269,10 @@ public partial class PendingQueueViewModel : ChildViewModelBase
             Logger.LogInformation("为患者创建新医案：{PatientName}", pendingCase.PatientName);
 
             var createResult = await _medicalCaseService.CreateMedicalCaseAsync(pendingCase.PatientId);
-            if (!createResult.success)
+            if (!createResult.Success)
             {
-                Logger.LogWarning("创建医案失败：{Error}", createResult.errorMessage);
-                await Host.ShowErrorAsync("创建医案失败：" + createResult.errorMessage);
+                Logger.LogWarning("创建医案失败：{Error}", createResult.Error);
+                await Host.ShowErrorAsync("创建医案失败：" + createResult.Error);
                 return;
             }
 
@@ -286,14 +286,14 @@ public partial class PendingQueueViewModel : ChildViewModelBase
 
             var parameters = new Dictionary<string, object>
             {
-                { "MedicalCaseId", createResult.medicalCaseId },
+                { "MedicalCaseId", createResult.Data },
                 { "CurrentPatient", patientDetail },
                 { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
                 { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
             };
 
             _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
-            Logger.LogInformation("已导航到新医案：{MedicalCaseId}", createResult.medicalCaseId);
+            Logger.LogInformation("已导航到新医案：{MedicalCaseId}", createResult.Data);
         }
         catch (Exception ex)
         {

@@ -61,12 +61,19 @@ internal class MedicalCaseLifecycleService : IMedicalCaseLifecycleService
         {
             _logger.LogInformation("[LC] MedicalCase.Initialize started - MedicalCaseId={MedicalCaseId}", entityId);
             var detail = await _repository.GetByIdAsync(entityId);
-            if (detail == null) throw new InvalidOperationException($"未找到ID为{entityId}的医案");
+            if (detail == null)
+            {
+                _logger.LogWarning("[LC] MedicalCase.Initialize not found - MedicalCaseId={MedicalCaseId}", entityId);
+                return;
+            }
             _currentDto = detail;
             _context.BeginEdit(_mapper.ToItem(detail));
             _logger.LogInformation("[LC] MedicalCase.Initialize completed - PatientName={PatientName}", detail.PatientName);
         }
-        catch (Exception ex) { _logger.LogError(ex, "[LC] MedicalCase.Initialize failed - MedicalCaseId={MedicalCaseId}", entityId); throw; }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[LC] MedicalCase.Initialize failed - MedicalCaseId={MedicalCaseId}", entityId);
+        }
     }
 
     public async Task ReloadAsync(CancellationToken ct = default)
@@ -186,7 +193,7 @@ internal class MedicalCaseLifecycleService : IMedicalCaseLifecycleService
         }
     }
 
-    public virtual async Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
+    public virtual async Task<CommandResult<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default)
     {
         try
         {
@@ -196,15 +203,19 @@ internal class MedicalCaseLifecycleService : IMedicalCaseLifecycleService
             if (data != null)
             {
                 _logger.LogInformation("[LC] MedicalCase.CloseCase completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = data };
+                return CommandResult<MedicalCaseDetailDto>.Succeeded(data);
             }
             else
             {
                 _logger.LogWarning("[LC] MedicalCase.CloseCase failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "关闭医案失败" };
+                return CommandResult<MedicalCaseDetailDto>.Failed("关闭医案失败");
             }
         }
-        catch (Exception ex) { _logger.LogError(ex, "[LC] MedicalCase.CloseCase failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[LC] MedicalCase.CloseCase failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return CommandResult<MedicalCaseDetailDto>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("关闭", ex));
+        }
     }
 
     #region 内部 API 调用
@@ -218,7 +229,11 @@ internal class MedicalCaseLifecycleService : IMedicalCaseLifecycleService
                 return new ApiResponse<MedicalCaseDetailDto> { Success = true, Data = data };
             return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = "挂起医案失败" };
         }
-        catch (Exception ex) { _logger.LogError(ex, "[LC] MedicalCase.SuspendViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId); throw; }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[LC] MedicalCase.SuspendViaApi failed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
+            return new ApiResponse<MedicalCaseDetailDto> { Success = false, Message = ClientErrorMessageMapper.GetSafeOperationFailureMessage("挂起", ex) };
+        }
     }
 
     #endregion

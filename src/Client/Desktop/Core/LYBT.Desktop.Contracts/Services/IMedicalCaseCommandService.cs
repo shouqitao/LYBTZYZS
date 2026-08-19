@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using System.Threading;
 
@@ -20,22 +21,19 @@ public interface IMedicalCaseCommandService
     bool HasChanges { get; }
 
     /// <summary>
-    /// 保存变更
+    /// 保存变更（写操作，ADR-0020：返回 CommandResult）
     /// </summary>
-    /// <returns>是否保存成功</returns>
-    Task<bool> SaveAsync(CancellationToken ct = default);
+    Task<CommandResult<bool>> SaveAsync(CancellationToken ct = default);
 
     /// <summary>
-    /// 删除当前医案
+    /// 删除当前医案（写操作，ADR-0020）
     /// </summary>
-    /// <returns>是否删除成功</returns>
-    Task<bool> DeleteAsync(CancellationToken ct = default);
+    Task<CommandResult<bool>> DeleteAsync(CancellationToken ct = default);
 
     /// <summary>
-    /// 创建新医案
+    /// 创建新医案（写操作，ADR-0020）
     /// </summary>
     /// <param name="patientId">患者ID</param>
     /// <param name="registrationId">关联挂号ID（可选，从前台挂号创建时传入）</param>
-    /// <returns>(是否成功, 医案ID, 错误信息)</returns>
-    Task<(bool success, Guid medicalCaseId, string? errorMessage)> CreateMedicalCaseAsync(Guid patientId, Guid? registrationId = null, CancellationToken ct = default);
+    Task<CommandResult<Guid>> CreateMedicalCaseAsync(Guid patientId, Guid? registrationId = null, CancellationToken ct = default);
 }

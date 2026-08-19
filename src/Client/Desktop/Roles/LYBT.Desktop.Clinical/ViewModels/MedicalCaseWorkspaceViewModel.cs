@@ -389,8 +389,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
             {
                 SetBusy(true, "正在创建医案...");
                 var result = await _medicalCaseService.CreateMedicalCaseAsync(CurrentPatient.Id);
-                if (!result.success) { await ShowErrorMessageAsync("创建医案失败，请重试"); return; }
-                MedicalCaseId = result.medicalCaseId;
+                if (!result.Success) { await ShowErrorMessageAsync("创建医案失败，请重试"); return; }
+                MedicalCaseId = result.Data;
             }
             catch (Exception ex)
             {

@@ -75,9 +75,8 @@ public interface IMedicalCaseLifecycleService
     Task<CommandResult<bool>> ResumeSuspendedAsync(Guid medicalCaseId, CancellationToken ct = default);
 
     /// <summary>
-    /// 关闭医案
+    /// 关闭医案（写操作，ADR-0020：返回 CommandResult）
     /// </summary>
     /// <param name="medicalCaseId">医案ID</param>
-    /// <returns>API响应，包含关闭后的医案详情</returns>
-    Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default);
+    Task<CommandResult<MedicalCaseDetailDto>> CloseCaseAsync(Guid medicalCaseId, CancellationToken ct = default);
 }

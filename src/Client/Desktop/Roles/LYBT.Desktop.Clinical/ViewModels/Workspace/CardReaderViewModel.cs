@@ -355,16 +355,16 @@ public partial class CardReaderViewModel : ChildViewModelBase
             else
             {
                 var createResult = await _medicalCaseService.CreateMedicalCaseAsync(patient.PatientId);
-                if (!createResult.success)
+                if (!createResult.Success)
                 {
-                    Logger.LogWarning("[CardReader] 创建医案失败: {Error}", createResult.errorMessage);
-                    await Host.ShowErrorAsync("创建医案失败: " + createResult.errorMessage);
+                    Logger.LogWarning("[CardReader] 创建医案失败: {Error}", createResult.Error);
+                    await Host.ShowErrorAsync("创建医案失败: " + createResult.Error);
                     return;
                 }
 
-                Logger.LogInformation("[CardReader] 医案创建成功: {MedicalCaseId}", createResult.medicalCaseId);
+                Logger.LogInformation("[CardReader] 医案创建成功: {MedicalCaseId}", createResult.Data);
                 await Host.ShowSuccessAsync("医案创建成功，正在打开...");
-                NavigateToWorkspace(createResult.medicalCaseId, patientDetail);
+                NavigateToWorkspace(createResult.Data, patientDetail);
             }
         }
         catch (Exception ex)

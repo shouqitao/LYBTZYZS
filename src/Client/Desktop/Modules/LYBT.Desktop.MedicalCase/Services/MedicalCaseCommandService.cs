@@ -1,4 +1,5 @@
 using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Desktop.MedicalCase.Mappers;
@@ -45,11 +46,19 @@ internal class MedicalCaseCommandService : IMedicalCaseCommandService
 
     public bool HasChanges => _context.IsDirty;
 
-    public virtual async Task<bool> SaveAsync(CancellationToken ct = default)
+    public virtual async Task<CommandResult<bool>> SaveAsync(CancellationToken ct = default)
     {
         var model = _context.CurrentModel;
-        if (model == null) { _logger.LogWarning("[CMD] MedicalCase.Save → NoSession"); return false; }
-        if (!HasChanges) { _logger.LogDebug("[CMD] MedicalCase.Save → NoChanges - MedicalCaseId={MedicalCaseId}", model.Id); return true; }
+        if (model == null)
+        {
+            _logger.LogWarning("[CMD] MedicalCase.Save → NoSession");
+            return CommandResult<bool>.Failed("无编辑会话");
+        }
+        if (!HasChanges)
+        {
+            _logger.LogDebug("[CMD] MedicalCase.Save → NoChanges - MedicalCaseId={MedicalCaseId}", model.Id);
+            return CommandResult<bool>.Succeeded(true);
+        }
 
         try
         {
@@ -59,32 +68,46 @@ internal class MedicalCaseCommandService : IMedicalCaseCommandService
             var updated = await _repository.SaveAsync(model.Id, inputDto);
             if (updated != null)
             {
-                // 用服务端返回的最新详情重建编辑会话，基线前移
                 _context.BeginEdit(_mapper.ToItem(updated));
             }
             _logger.LogInformation("[CMD] MedicalCase.Save completed - MedicalCaseId={MedicalCaseId}", model.Id);
-            return true;
+            return CommandResult<bool>.Succeeded(true);
         }
-        catch (Exception ex) { _logger.LogError(ex, "[CMD] MedicalCase.Save failed - MedicalCaseId={MedicalCaseId}", model.Id); return false; }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CMD] MedicalCase.Save failed - MedicalCaseId={MedicalCaseId}", model.Id);
+            return CommandResult<bool>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("保存", ex));
+        }
     }
 
-    public virtual async Task<bool> DeleteAsync(CancellationToken ct = default)
+    public virtual async Task<CommandResult<bool>> DeleteAsync(CancellationToken ct = default)
     {
         var model = _context.CurrentModel;
-        if (model == null) { _logger.LogWarning("[CMD] MedicalCase.Delete → NoSession"); return false; }
+        if (model == null)
+        {
+            _logger.LogWarning("[CMD] MedicalCase.Delete → NoSession");
+            return CommandResult<bool>.Failed("无编辑会话");
+        }
         try
         {
             _logger.LogInformation("[CMD] MedicalCase.Delete started - MedicalCaseId={MedicalCaseId}", model.Id);
             await _repository.DeleteAsync(model.Id);
             _logger.LogInformation("[CMD] MedicalCase.Delete completed - MedicalCaseId={MedicalCaseId}", model.Id);
             _context.Clear();
-            return true;
+            return CommandResult<bool>.Succeeded(true);
         }
-        catch (Exception ex) { _logger.LogError(ex, "[CMD] MedicalCase.Delete failed - MedicalCaseId={MedicalCaseId}", model.Id); return false; }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CMD] MedicalCase.Delete failed - MedicalCaseId={MedicalCaseId}", model.Id);
+            return CommandResult<bool>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("删除", ex));
+        }
     }
 
-    public virtual async Task<(bool success, Guid medicalCaseId, string? errorMessage)> CreateMedicalCaseAsync(Guid patientId, Guid? registrationId = null, CancellationToken ct = default)
+    public virtual async Task<CommandResult<Guid>> CreateMedicalCaseAsync(Guid patientId, Guid? registrationId = null, CancellationToken ct = default)
     {
+        if (patientId == Guid.Empty)
+            throw new ArgumentException("患者ID不能为空", nameof(patientId));
+
         try
         {
             _logger.LogInformation("[CMD] MedicalCase.CreateNew started - PatientId={PatientId} RegistrationId={RegistrationId}", patientId, registrationId);
@@ -92,12 +115,12 @@ internal class MedicalCaseCommandService : IMedicalCaseCommandService
             if (_sessionManager == null)
             {
                 _logger.LogWarning("[CMD] MedicalCase.CreateNew → NullSessionManager");
-                return (false, Guid.Empty, "会话管理器未初始化，无法创建医案");
+                return CommandResult<Guid>.Failed("会话管理器未初始化，无法创建医案");
             }
             if (_sessionManager.CurrentUser == null)
             {
                 _logger.LogWarning("[CMD] MedicalCase.CreateNew → NullCurrentUser");
-                return (false, Guid.Empty, "用户信息丢失，无法创建医案");
+                return CommandResult<Guid>.Failed("用户信息丢失，无法创建医案");
             }
 
             var createDto = new MedicalCaseInputDto
@@ -111,16 +134,16 @@ internal class MedicalCaseCommandService : IMedicalCaseCommandService
             if (createdDto == null)
             {
                 _logger.LogWarning("[CMD] MedicalCase.CreateNew → NullResult");
-                return (false, Guid.Empty, "创建医案失败：服务返回空结果");
+                return CommandResult<Guid>.Failed("创建医案失败：服务返回空结果");
             }
 
             _logger.LogInformation("[CMD] MedicalCase.CreateNew completed - MedicalCaseId={MedicalCaseId}", createdDto.Id);
-            return (true, createdDto.Id, null);
+            return CommandResult<Guid>.Succeeded(createdDto.Id);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "[CMD] MedicalCase.CreateNew failed - PatientId={PatientId}", patientId);
-            return (false, Guid.Empty, ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建医案", ex));
+            return CommandResult<Guid>.Failed(ClientErrorMessageMapper.GetSafeOperationFailureMessage("创建医案", ex));
         }
     }
 }
