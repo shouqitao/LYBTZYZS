@@ -1,0 +1,21 @@
+# Taste
+- 使用中文进行工作沟通；任务指示为中文时，回复与分析也应使用中文。Confidence: 0.8
+- 任务通过项目根目录的 `.hermes-task-*.md` 任务书文件下发；应先读取任务书并按其要求执行，完成后删除该任务文件。Confidence: 0.9
+- 严格遵守任务书中的约束（如「只 review 不修改代码」「只审计不修改代码」），交付物以新增报告/文档形式落地，不擅自改动既有代码。Confidence: 0.8
+- 删除任何代码前必须先全仓 grep 确认零调用（含 ViewModel/测试），再经编译验证；对不确定归属的删除宁可保留并在报告中登记。Confidence: 0.8
+- 交付前必须全量构建通过（0 错误 0 警告），并运行架构守卫测试（LYBT.Tests.Architecture）；架构测试失败要追到根因（区分存量失败与本批引入）。Confidence: 0.8
+- 每批次完成后在 `docs/03-architecture/13c-current-status.md` 追加带编号条目，并在 `docs/compose/reports/` 输出报告文档（含评估保留项清单）。Confidence: 0.8
+- 提交使用英文 commit message（含 `Co-authored-by` trailer），完成后推送到 master。Confidence: 0.8
+- 对任务书中声称的数字/事实以实际代码核查为准，不盲信（如声称「28 个空 catch」「4 个 TODO」，实测分别 4 处、6 处；任务书文件名 09-users/12-permissions 与实际 03-users/04-permissions 不符、US 数量 15/15/21/9 与实际 14/14/20/8 不符时按实际为准并在报告中记录偏差）。Confidence: 0.9
+- 多步骤任务用 todo_write 建任务清单并随进度更新（开始时建清单、阶段完成后勾选、结束时全部完成）。Confidence: 0.6
+- 需求文档正文的 US 状态列以 `13-traceability-matrix.md` 为 SSOT，审计时逐 US 与代码交叉验证；正文状态滞后（如 traceability 已 ✅ 而正文仍 🔴/🧲）即作为发现项登记。Confidence: 0.6
+- 多文件文档重构任务：重构前先检查外部锚点引用与文件内锚点（grep `文件名.md#` 与 `](#`），重构后验证标题结构与 US 编号完整性（`### US-` 残留为零、编号连续、锚点目标标题存在），确保改动不破坏链接。Confidence: 0.6
+- 多文件重构按单元逐个提交（任务书要求「逐个文件重构每完成一个立即提交」），每个文件一个 commit，commit message 说明该文件的具体变更。Confidence: 0.7
+- 文档重构遵守「不删除任何内容」：过时信息（如已修复的已知问题表）保留并标注当前状态而非删除。Confidence: 0.7
+- 判定 WebAPI/Desktop 双端实现状态以代码消费链为准：WebAPI 列查 Server/LocalWebAPI Controller+Handler，Desktop 列查 ViewModel/Service 是否实际消费端点——API 层存在但 ViewModel 零调用（批量导入/导出、引用检查、history/batch-details、权限查询等）标 ⚠️ 部分实现而非 ✅；纯单端功能对另一端标 N/A。Confidence: 0.8
+- 对表格类文档做批量编辑（加列/加行）后用 grep/脚本验证完整性：无缺列残留行、无重复 US ID、实际行数与统计核对；发现的既有不一致（如统计表 151 与实际 154 行滞后）在变更记录注明而非越界修改。Confidence: 0.7
+- 验证型任务复核文档状态时，对先前批次自己填写的结论同样以代码扫描为准复核，不默认信任；发现错误即修正文档（版本号 + 变更记录注明修正项）并在验证报告中逐条列出证据。Confidence: 0.6
+- 版本/变更记录视为历史档案：追加新版本条目时不得覆盖或删除旧条目（误删 v1.7/v1.8 记录后立即恢复），新条目追加在旧条目之前并完整保留历史。Confidence: 0.8
+- 任务书条目与其自身约束冲突时以约束优先：按「不改 Service/Repository 层」「使用现有 API 接口」等约束执行，跳过无法实现项（如 IUserService 无导出 API 的用户导出接线），做最小清理（删除死绑定），并在报告/变更记录中说明偏差。Confidence: 0.8
+- 新增功能/UI 时复用项目既有模式与约定，不另起炉灶：JSON 选项对齐 HttpApiClientBase（camelCase + 枚举字符串，ADR-0022）、对话框用 MasterDetailServices.Dialog、错误消息用 ClientErrorMessageMapper 安全映射、文件对话框沿用 Microsoft.Win32、按钮沿用 Outlined + PackIcon 风格；跨模块同类功能保持同一套流程模式（确认框含条数/策略 → 结果对话框 → 缓存失效 + 刷新）。Confidence: 0.8
+- 代码改动验证流程：先构建受影响模块（快速反馈）→ 全量构建 0 错误 0 警告 → 运行覆盖改动代码的相关单元测试确认无回归。Confidence: 0.6

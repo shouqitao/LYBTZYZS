@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(git show c56ec0893 > \"%COMMANDCODE_SCRATCHPAD%\\c56ec0893.diff\" 2>&1; echo done)",
+      "Shell(git show c56ec0893 > \"C:\\Users\\player\\AppData\\Local\\Temp\\commandcode\\D--source-repos-LYBTZYZS\\9b76a52b-7677-4cae-9df4-2bb154e6037a\\scratchpad\\c56ec0893.diff\")",
+      "Shell(git show 84bd50c87 > \"C:\\Users\\player\\AppData\\Local\\Temp\\commandcode\\D--source-repos-LYBTZYZS\\9b76a52b-7677-4cae-9df4-2bb154e6037a\\scratchpad\\84bd50c87.diff\")",
+      "Shell(dotnet:*)",
+      "Shell(Select-Object:*)",
+      "Shell(del:*)",
+      "Shell(findstr:*)",
+      "Shell(git:*)",
+      "Shell(git commit -F - <<'EOF' refactor(desktop): L4-L0 dead code cleanup + review fixes (R1-R4) R1: sync Remote*Service -> *Service in 4 module README/AGENTS (11 refs) R2: 13c-current-status #126 entry for this batch R3: add AuditLogServiceTests (3) + ReportServiceTests (6) R4: fix PrivacyHelper.MaskIdNumber boundary (<=10 -> <10) + null passthrough Dead code cleanup (verified zero-call before delete): - HttpApiClientBase: WrapSuccess<T> generic overload, PostRawAsync<T> - IMedicalCaseApi/IRegistrationApi/IApiClientRegistrations: orphan XML comments - ApiClientRepositoryBase.HandleException: redundant args param + tautological ternary - MedicalCaseMasterDetailViewModel._loggerFactory, AdminHome/ClinicalHome._dialogService - ConfirmationDialogViewModel.IsSoftDeleteSelected, MessageDialogViewModel.IconSource/IconColor - DataGridSelectionBehavior empty catch: add intent comment Build 0 errors 0 warnings; 59 affected tests pass. Co-authored-by: CommandCodeBot <noreply@commandcode.ai> EOF)"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}

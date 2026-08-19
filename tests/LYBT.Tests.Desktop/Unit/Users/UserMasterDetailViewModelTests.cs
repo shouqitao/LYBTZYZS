@@ -1,3 +1,4 @@
+using LYBT.Tests.Desktop.Infrastructure;
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;

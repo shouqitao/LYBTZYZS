@@ -1,3 +1,4 @@
+using LYBT.Tests.Desktop.Infrastructure;
 using System.Collections.ObjectModel;
 using System.Threading;
 using FluentAssertions;

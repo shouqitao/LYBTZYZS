@@ -2,10 +2,123 @@
   "version": 1,
   "receipts": [
     {
-      "createdAt": "2026-08-14T10:23:56.900Z",
+      "createdAt": "2026-08-19T09:03:48.068Z",
+      "bankId": "pi-coding",
+      "documentId": "pi-session:074efc35cbfada27",
+      "queueJobId": "1dabc138-e93e-4b9e-92f7-6b379a5dec8e",
+      "updateMode": "append",
+      "source": "queue",
+      "context": "Pi coding session for repo \"LYBTZYZS\", session 2026-08-19T07-58-50-444Z_01a01907-b44c-7698-9b8c-ba59b35e7edf.jsonl",
+      "tags": [
+        "source:pi",
+        "harness:pi",
+        "project:gitee-com-shouqitao-lybtzyzs",
+        "repo:lybtzyzs-ee2ee597dc7c",
+        "session:074efc35cbfada27"
+      ],
+      "outcome": {
+        "itemsCount": 1,
+        "operations": 1
+      }
+    },
+    {
+      "createdAt": "2026-08-19T09:03:39.044Z",
+      "bankId": "pi-coding",
+      "documentId": "pi-explicit:074efc35cbfada27:a0d83a052d458224",
+      "queueJobId": "6c2e29fc-c7e6-4d0a-a56d-58f353c708d2",
+      "updateMode": "replace",
+      "source": "tool",
+      "context": "LYBTZYZS P1 导入导出修复任务（.hermes-task-p1-fixes.md）执行结果，接续 desktop-deep-review 审计发现",
+      "tags": [
+        "source:pi",
+        "harness:pi",
+        "project:gitee-com-shouqitao-lybtzyzs",
+        "repo:lybtzyzs-ee2ee597dc7c",
+        "session:074efc35cbfada27",
+        "lybtzys",
+        "desktop",
+        "fix",
+        "import-export",
+        "route-alignment",
+        "P1",
+        "dual-mode"
+      ],
+      "outcome": {
+        "itemsCount": 1,
+        "operations": 1
+      }
+    },
+    {
+      "createdAt": "2026-08-19T08:20:53.929Z",
+      "bankId": "pi-coding",
+      "documentId": "pi-explicit:074efc35cbfada27:6f59e987e0b1ca4b",
+      "queueJobId": "4c78c1a8-bb39-4ffd-ae98-60759f49d8f7",
+      "updateMode": "replace",
+      "source": "tool",
+      "context": "LYBTZYZS Desktop 深度代码审查任务（desktop-deep-review）核心结论，供后续修复任务（.hermes-task-fix-desktop-import-export-routes.md）接续",
+      "tags": [
+        "source:pi",
+        "harness:pi",
+        "project:gitee-com-shouqitao-lybtzyzs",
+        "repo:lybtzyzs-ee2ee597dc7c",
+        "session:074efc35cbfada27",
+        "lybtzys",
+        "desktop",
+        "audit",
+        "batch-import-export",
+        "route-mismatch",
+        "P1"
+      ],
+      "outcome": {
+        "itemsCount": 1,
+        "operations": 1
+      }
+    },
+    {
+      "createdAt": "2026-08-19T03:15:21.739Z",
+      "bankId": "pi-coding",
+      "documentId": "pi-session:d97ce33c6adbfd46",
+      "queueJobId": "b9af6dd3-820e-4e76-b181-f688f1987583",
+      "updateMode": "append",
+      "source": "queue",
+      "context": "Pi coding session for repo \"LYBTZYZS\", session 2026-08-17T10-08-12-497Z_01a00f31-6cd1-76a6-a8d2-7fe179910bef.jsonl",
+      "tags": [
+        "source:pi",
+        "harness:pi",
+        "project:gitee-com-shouqitao-lybtzyzs",
+        "repo:lybtzyzs-ee2ee597dc7c",
+        "session:d97ce33c6adbfd46"
+      ],
+      "outcome": {
+        "itemsCount": 1,
+        "operations": 1
+      }
+    },
+    {
+      "createdAt": "2026-08-17T10:07:08.240Z",
+      "bankId": "pi-coding",
+      "documentId": "pi-session:b61d7b92297e2b9a",
+      "queueJobId": "9f2f9f79-28d2-4760-b9e2-21b8cd3a0333",
+      "updateMode": "append",
+      "source": "queue",
+      "context": "Pi coding session for repo \"LYBTZYZS\", session 2026-08-17T07-36-03-210Z_01a00ea6-1f8a-7a1a-be49-854242eeed06.jsonl",
+      "tags": [
+        "source:pi",
+        "harness:pi",
+        "project:gitee-com-shouqitao-lybtzyzs",
+        "repo:lybtzyzs-ee2ee597dc7c",
+        "session:b61d7b92297e2b9a"
+      ],
+      "outcome": {
+        "itemsCount": 1,
+        "operations": 1
+      }
+    },
+    {
+      "createdAt": "2026-08-16T08:40:53.476Z",
       "bankId": "pi-coding",
       "documentId": "pi-session:36b8726b5cf8d3fe",
-      "queueJobId": "3724046d-b7c5-40fd-a35f-dd431b1a04bb",
+      "queueJobId": "88be147f-3696-4c7b-870c-dc232d7ace9d",
       "updateMode": "append",
       "source": "queue",
       "context": "Pi coding session for repo \"LYBTZYZS\", session 2026-08-14T00-11-11-540Z_019ffd9b-c334-7b5d-bad7-6de4c35455ca.jsonl",

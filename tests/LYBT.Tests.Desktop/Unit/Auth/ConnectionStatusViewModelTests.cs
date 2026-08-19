@@ -1,3 +1,4 @@
+using LYBT.Tests.Desktop.Infrastructure;
 using FluentAssertions;
 using LYBT.Desktop.Auth.ViewModels;
 using LYBT.Desktop.Contracts.Services;

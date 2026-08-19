@@ -1,3 +1,4 @@
+using LYBT.Tests.Desktop.Infrastructure;
 using System.Collections.ObjectModel;
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Repositories;
