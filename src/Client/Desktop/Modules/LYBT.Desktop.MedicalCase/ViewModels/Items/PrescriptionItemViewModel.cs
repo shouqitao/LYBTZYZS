@@ -20,6 +20,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Items;
 /// - Item: PrescriptionItemViewModel (Desktop层，用于XAML绑定)
 ///
 /// 属性名与PrescriptionDetailDto保持一致，确保XAML绑定兼容
+///
+/// TODO(P1-3 保留): 本类暂不迁移 BindableBase→ObservableObject+[ObservableProperty]。
+/// 实验（2026-08-18）证实 Mapperly（Riok.Mapperly）源生成器看不到 CommunityToolkit.Mvvm
+/// 源生成器产出的属性成员：PrescriptionMapper 的 [MapperIgnoreSource/Target] 报
+/// RMG004/RMG021「member not found」+ RMG066「No members are mapped」→ 生成空映射 →
+/// GetPrescriptionData()/ToInputDto 运行时产出空 DTO（丢数据）。要迁移需先让 Mapperly 识别
+/// 生成成员（显式映射或生成器顺序配置），待后续专项处理。
 /// </summary>
 public class PrescriptionItemViewModel : BindableBase, IDataProvider, IValidatable, INotifyDataErrorInfo
 {
