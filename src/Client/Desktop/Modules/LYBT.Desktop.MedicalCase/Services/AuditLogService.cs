@@ -1,4 +1,4 @@
-using LYBT.Desktop.Contracts.ApiClient;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.ExceptionHandling;
@@ -10,16 +10,16 @@ using System.Threading;
 namespace LYBT.Desktop.MedicalCase.Services;
 
 /// <summary>
-/// 医案审计日志Service实现 - 封装医案域 API 客户端（对齐 VM→Service→IApiClient 分层）
+/// 医案审计日志Service实现 - 封装医案审计日志（对齐 VM→Service→Repository→IApiClient 分层，P0-2）
 /// </summary>
 public class AuditLogService : IAuditLogService
 {
-    private readonly IApiClient _apiClient;
+    private readonly IMedicalCaseRepository _repository;
     private readonly ILogger<AuditLogService> _logger;
 
-    public AuditLogService(IApiClient apiClient, ILogger<AuditLogService> logger)
+    public AuditLogService(IMedicalCaseRepository repository, ILogger<AuditLogService> logger)
     {
-        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -28,10 +28,9 @@ public class AuditLogService : IAuditLogService
     {
         try
         {
-            var result = await _apiClient.MedicalCases.GetAuditLogsAsync(medicalCaseId, page, pageSize);
-            return result.Success && result.Data != null
-                ? CommandResult<PagedResult<AuditLogDto>>.Succeeded(result.Data)
-                : CommandResult<PagedResult<AuditLogDto>>.Failed(result.Message);
+            // Repository 已解包信封（Data==null → 空分页），与 IMedicalCaseQueryService 约定一致
+            var result = await _repository.GetAuditLogsAsync(medicalCaseId, page, pageSize, ct);
+            return CommandResult<PagedResult<AuditLogDto>>.Succeeded(result);
         }
         catch (Exception ex)
         {

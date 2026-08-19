@@ -178,6 +178,32 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
             [patientId]);
     }
 
+    /// <summary>
+    /// 获取医案审计日志（分页）——P0-2：从 Service 直连 IApiClient 收口到 Repository 层。
+    /// </summary>
+    public async Task<PagedResult<AuditLogDto>> GetAuditLogsAsync(
+        Guid medicalCaseId,
+        int page = 1,
+        int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _apiClient.MedicalCases.GetAuditLogsAsync(medicalCaseId, page, pageSize);
+                return response.Data ?? new PagedResult<AuditLogDto>
+                {
+                    Items = [],
+                    TotalCount = 0,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+            },
+            "GetAuditLogs",
+            "[REPO] MedicalCase.GetAuditLogs - MedicalCaseId={MedicalCaseId} Page={Page} PageSize={PageSize}",
+            [medicalCaseId, page, pageSize]);
+    }
+
     #endregion
 
     #region 生命周期操作

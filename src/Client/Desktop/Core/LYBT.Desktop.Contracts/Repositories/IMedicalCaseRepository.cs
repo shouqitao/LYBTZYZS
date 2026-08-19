@@ -43,6 +43,11 @@ public interface IMedicalCaseRepository
     Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid? patientId = null, CancellationToken ct = default);
 
     /// <summary>
+    /// 获取医案审计日志（分页）。
+    /// </summary>
+    Task<PagedResult<AuditLogDto>> GetAuditLogsAsync(Guid medicalCaseId, int page = 1, int pageSize = 20, CancellationToken ct = default);
+
+    /// <summary>
     /// 创建医案 (Epic #1961: 统一 MedicalCaseInputDto)
     /// </summary>
     Task<MedicalCaseDetailDto> CreateAsync(MedicalCaseInputDto dto, CancellationToken ct = default);

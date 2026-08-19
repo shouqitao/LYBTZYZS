@@ -1,4 +1,6 @@
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.MedicalCase.Reports.Repositories;
 using LYBT.Desktop.MedicalCase.Reports.Services;
 using LYBT.Desktop.MedicalCase.Reports.ViewModels;
 using LYBT.Desktop.MedicalCase.Reports.Views;
@@ -20,6 +22,8 @@ public class ReportsModule : IModule
 
     public void RegisterTypes(IContainerRegistry containerRegistry)
     {
+        // P0-2: 报表 Repository Singleton（无状态只读聚合），Service 经 Repository 访问 IApiClient.Reports
+        containerRegistry.RegisterSingleton<IReportRepository, ReportRepository>();
         containerRegistry.Register<IReportService, ReportService>();
         // STUB: 注册基础视图和视图模型
         ViewModelLocationProvider.Register(typeof(ReportsHomeView).ToString(), typeof(ReportsHomeViewModel));

@@ -1,4 +1,4 @@
-using LYBT.Desktop.Contracts.ApiClient;
+using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.ExceptionHandling;
@@ -9,16 +9,16 @@ using System.Threading;
 namespace LYBT.Desktop.MedicalCase.Reports.Services;
 
 /// <summary>
-/// 报表Service实现 - 封装报表域 API 客户端（对齐 VM→Service→IApiClient 分层）
+/// 报表Service实现 - 封装报表域（对齐 VM→Service→Repository→IApiClient 分层，P0-2）
 /// </summary>
 public class ReportService : IReportService
 {
-    private readonly IApiClient _apiClient;
+    private readonly IReportRepository _repository;
     private readonly ILogger<ReportService> _logger;
 
-    public ReportService(IApiClient apiClient, ILogger<ReportService> logger)
+    public ReportService(IReportRepository repository, ILogger<ReportService> logger)
     {
-        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -27,7 +27,7 @@ public class ReportService : IReportService
     {
         try
         {
-            var result = await _apiClient.Reports.GetDailyIncomeAsync(startDate, endDate);
+            var result = await _repository.GetDailyIncomeAsync(startDate, endDate);
             return result.Success && result.Data != null
                 ? CommandResult<DailyIncomeDto>.Succeeded(result.Data)
                 : CommandResult<DailyIncomeDto>.Failed(result.Message);
@@ -44,7 +44,7 @@ public class ReportService : IReportService
     {
         try
         {
-            var result = await _apiClient.Reports.GetDailyConsultationsAsync(startDate, endDate);
+            var result = await _repository.GetDailyConsultationsAsync(startDate, endDate);
             return result.Success && result.Data != null
                 ? CommandResult<DailyConsultationDto>.Succeeded(result.Data)
                 : CommandResult<DailyConsultationDto>.Failed(result.Message);
@@ -61,7 +61,7 @@ public class ReportService : IReportService
     {
         try
         {
-            var result = await _apiClient.Reports.GetDailyHerbUsageAsync(startDate, endDate);
+            var result = await _repository.GetDailyHerbUsageAsync(startDate, endDate);
             return result.Success && result.Data != null
                 ? CommandResult<DailyHerbUsageDto>.Succeeded(result.Data)
                 : CommandResult<DailyHerbUsageDto>.Failed(result.Message);
