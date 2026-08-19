@@ -181,7 +181,7 @@
 | US-SHELL-005 | Must | ADR-0006/0007 | — | NavigationCoordinator | NavigationCoordinator | — | ✅ 已实现 | N/A | ✅ |
 | US-SHELL-007 | Must | ADR-0002/0009 | Flow 3 | SwitchingApiClient + ModeSwitchValidator | IConnectionModeProvider.SwitchModeAsync | D18/D19/S5/X1.1 | ✅ 部分实现（双模路由✅；SwitchMode 守卫 ERR-70506 无代码） | ⚠️ | ✅ |
 | US-SHELL-010 | Must | — | — | GET / 下载页 + /releases/ + Setup.exe + 更新源 | DownloadController.cs + DesktopUpdateService.cs + scripts/velopack-pack.ps1 | — | ✅ 已实现（决策 A + VELOPACK：下载页公开/静态服务/打包脚本/sync 脚本/客户端更新检查 Velopack 1.2.0/部署文档——打包产物需实机运行 velopack-pack.ps1 验证） | ✅ | ✅ |
-| US-SHELL-011 | Must | ADR-0006 | — | FirstRunSetupViewModel 扩展 | FirstRunSetupViewModel | S1/S2 | 🧲 v1.0 待实现 | N/A | 🧲 |
+| US-SHELL-011 | Must | ADR-0006 | — | FirstRunSetupViewModel 扩展 | FirstRunSetupViewModel | S1/S2 | 🧲 v2.0 推迟（B4 决策 I-4：仅 Sysadmin 且可手动配置，v1.0 优先核心诊疗） | N/A | 🧲 v2.0 |
 | US-SHELL-012 | Should | ADR-0006 | — | UpdateManager | UpdateManager.CheckForUpdatesAsync | — | v2.0 规划 | ⚠️ | ✅ |
 | US-SHELL-013 | Should | — | — | ILocalDbBackupService + 恢复 UI | ILocalDbBackupService | S4/X3.2 | ✅ 已实现（T7: ILocalDbBackupService + 备份管理 UI + 登录自动备份） | N/A | ✅ |
 | US-SHELL-014 | Should | ADR-0008 | — | SecurityAuditLog + Service | SysadminHomeView | A12 | 🧲 v1.0 待实现（D3） | ✅ | 🧲 |
@@ -261,7 +261,7 @@
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 | WebAPI | Desktop |
 
-| US-REPORT-004 | Could | — | — | GET /reports/trend/* 等 5 端点 | ReportsController.cs:69-158 | — | ✅ 已实现（R3-补：趋势/绩效/排行/流量）——**双模式 2026-08-12 决策 B：仅远程，本地裁剪** | ✅ | ⚠️ |
+| US-REPORT-004 | Could | — | — | GET /reports/trend/* 等 5 端点 | ReportsController.cs:69-158 | — | 🧲 v2.0 推迟（B4 决策 I-3：`ReportsHomeView` 仅消费 3/8 日统计，5 趋势端点属锦上添花） | 🧲 v2.0 | 🧲 v2.0 |
 | ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ | :---: | :---: |
 | US-REPORT-001 | Must | — | — | GET /reports/daily/income | ReportsController.cs:30 | — | ✅ 已实现（endDate 默认=startDate + 400 校验） | ✅ | ✅ |
 | US-REPORT-002 | Must | — | — | GET /reports/daily/consultations | ReportsController.cs:38 | — | ✅ 已实现（startDate>endDate→400） | ✅ | ✅ |

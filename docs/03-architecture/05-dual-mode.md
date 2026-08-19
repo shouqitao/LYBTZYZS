@@ -282,8 +282,8 @@ modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserConfiguration).Assembly)
 
 | 功能 | 设计态（文档） | 代码现状 | 说明 |
 |------|----------------|----------|------|
-| **FirstRun 向导 5 步** | `desktop-ui-requirements.md §1.3` P0：改密→诊所信息→连接模式→创建 Admin→完成 | `FirstRunSetupView.xaml` 仅基础框架（Steps 1-2 可用，3-5 待完善）；`desktop-ui-requirements §七-1` 已标 ⚠️ | **不影响双模式切换本身**（连接模式通过 `ServerConfigView` 独立配置已可用）；5 步向导属 P0 UI 完善，待产品决策 I-4 |
-| **Reports 趋势/绩效** | `desktop-ui-requirements §2.4` P1：收入/就诊/药材趋势 + 绩效排行 | `Reports` 仅 `daily/income/consultations/herbs` 3 端点（`ReportsController` 8→3）；`LocalWebAPI` 同裁剪（`05-dual-mode §端点覆盖率` 38% 已注） | 趋势/绩效/排行/流量属管理决策用途，本地单机场景价值低；属 P2 I-3 需产品决策是否扩展 |
+| **FirstRun 向导 5 步** | `desktop-ui-requirements.md §1.3` P0：改密→诊所信息→连接模式→创建 Admin→完成 | `FirstRunSetupView.xaml` 仅基础框架（Steps 1-2 可用，3-5 待完善）；`desktop-ui-requirements §七-1` 已标 ⚠️ | **B4 决策 I-4：推迟到 v2.0**（仅 Sysadmin 且可手动配置，v1.0 优先核心诊疗；`13-traceability-matrix` SHELL-011 已标 `🧲 v2.0`） |
+| **Reports 趋势/绩效** | `desktop-ui-requirements §2.4` P1：收入/就诊/药材趋势 + 绩效排行 | `Reports` 仅 `daily/income/consultations/herbs` 3 端点（`ReportsController` 8→3）；`LocalWebAPI` 同裁剪（`05-dual-mode §端点覆盖率` 38% 已注） | **B4 决策 I-3：推迟到 v2.0**（`ReportsHomeView` 仅消费 3/8 日统计，5 趋势端点属锦上添花；`13-traceability-matrix` REPORT-004 已标 `🧲 v2.0`） |
 
 ---
 

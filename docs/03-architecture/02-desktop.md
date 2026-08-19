@@ -770,8 +770,8 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 
 | 功能 | 设计态 | 代码现状 | 说明 |
 |------|--------|----------|------|
-| **FirstRun 5 步向导** | `desktop-ui-requirements §1.3` P0：改密→诊所→连接→创建 Admin→完成 | `FirstRunSetupView` 仅基础框架（`FirstRunSetupViewModel` 仅步骤 1-2 完整） | P0 待完善，已在 `desktop-ui-requirements §七-1` 标 ⚠️；不阻断登录/连接配置 |
-| **Reports 趋势/绩效** | `ReportsHomeView` P1：8 端点含趋势/绩效排行 | 仅 `daily` 3 端点；`ReportsHomeView` 仅 3/8 能力 | 已在 `05-dual-mode §端点覆盖率` 标 38% 裁剪；属 I-3 需产品决策 |
+| **FirstRun 5 步向导** | `desktop-ui-requirements §1.3` P0：改密→诊所→连接→创建 Admin→完成 | `FirstRunSetupView` 仅基础框架（`FirstRunSetupViewModel` 仅步骤 1-2 完整） | **B4 决策 I-4：推迟到 v2.0**（`13-traceability-matrix` SHELL-011 `🧲 v2.0`） |
+| **Reports 趋势/绩效** | `ReportsHomeView` P1：8 端点含趋势/绩效排行 | 仅 `daily` 3 端点；`ReportsHomeView` 仅 3/8 能力 | **B4 决策 I-3：推迟到 v2.0**（`13-traceability-matrix` REPORT-004 `🧲 v2.0`） |
 | **安全审计/数据导入导出** | `desktop-ui-requirements §七-3/4` 🔴 缺失 | 无 Sysadmin 审计日志页/数据管理页 | 属 v1.0 待实现，蓝图不展开 |
 
 ---
