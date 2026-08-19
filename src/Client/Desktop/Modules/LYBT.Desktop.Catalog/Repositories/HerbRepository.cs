@@ -12,14 +12,14 @@ namespace LYBT.Desktop.Catalog.Repositories;
 /// </summary>
 public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, HerbDetailDto, HerbInputDto>, IHerbRepository
 {
-    private readonly IApiClient _apiClient;
+    private readonly IApiClientHerbs _herbs;
 
     public HerbRepository(
-        IApiClient apiClient,
+        IApiClientHerbs herbs,
         ILogger<HerbRepository> logger)
-        : base(logger, apiClient.Herbs)
+        : base(logger, herbs)
     {
-        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+        _herbs = herbs ?? throw new ArgumentNullException(nameof(herbs));
     }
 
     protected override string LogPrefix => "Herb";
@@ -31,7 +31,7 @@ public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, 
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.Herbs.GetHerbsAsync(1, 100, keyword);
+                var response = await _herbs.GetHerbsAsync(1, 100, keyword);
                 if (response.Data == null)
                     return [];
 
@@ -53,7 +53,7 @@ public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, 
         {
             Logger.LogInformation("[REPO] Herb.BatchImport - Count={Count}", request.Herbs.Count);
 
-            var response = await _apiClient.Herbs.BatchImportAsync(request);
+            var response = await _herbs.BatchImportAsync(request);
             if (!response.Success || response.Data == null)
             {
                 Logger.LogError("[REPO] Herb.BatchImport failed: {Message}", response.Message);
@@ -78,7 +78,7 @@ public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, 
         {
             Logger.LogInformation("[REPO] Herb.ExportTemplate");
 
-            var response = await _apiClient.Herbs.ExportTemplateAsync();
+            var response = await _herbs.ExportTemplateAsync();
             if (!response.IsSuccessStatusCode)
             {
                 Logger.LogError("[REPO] Herb.ExportTemplate failed: {StatusCode}", response.StatusCode);
@@ -103,7 +103,7 @@ public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, 
         {
             Logger.LogInformation("[REPO] Herb.ExportHerbs - Keyword={Keyword}", keyword ?? "全部");
 
-            var response = await _apiClient.Herbs.ExportHerbsAsync(keyword);
+            var response = await _herbs.ExportHerbsAsync(keyword);
             if (!response.IsSuccessStatusCode)
             {
                 Logger.LogError("[REPO] Herb.ExportHerbs failed: {StatusCode}", response.StatusCode);
@@ -130,7 +130,7 @@ public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, 
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.Herbs.ToggleStatusAsync(id);
+                var response = await _herbs.ToggleStatusAsync(id);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "切换药材状态失败");
 
@@ -146,7 +146,7 @@ public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, 
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.Herbs.RestoreAsync(id);
+                var response = await _herbs.RestoreAsync(id);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "恢复药材失败");
 
@@ -160,7 +160,7 @@ public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, 
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         return await ExecuteBatchDeleteAsync(
-            () => _apiClient.Herbs.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }),
+            () => _herbs.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }),
             "BatchDelete",
             "批量删除失败",
             ids.Count);

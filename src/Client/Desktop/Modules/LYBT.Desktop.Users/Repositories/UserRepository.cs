@@ -16,14 +16,14 @@ namespace LYBT.Desktop.Users.Repositories;
 /// </summary>
 public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, UserDetailDto, UserInputDto>, IUserRepository
 {
-    private readonly IApiClient _apiClient;
+    private readonly IApiClientIdentity _identity;
 
     public UserRepository(
-        IApiClient apiClient,
+        IApiClientIdentity identity,
         ILogger<UserRepository> logger)
-        : base(logger, apiClient.Identity)
+        : base(logger, identity)
     {
-        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+        _identity = identity ?? throw new ArgumentNullException(nameof(identity));
     }
 
     protected override string LogPrefix => "User";
@@ -41,7 +41,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.Identity.GetUsersAsync(1, 100, keyword);
+                var response = await _identity.GetUsersAsync(1, 100, keyword);
                 if (response.Data == null)
                     return [];
 
@@ -60,7 +60,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
             async () =>
             {
                 // 通过搜索找到匹配的用户
-                var response = await _apiClient.Identity.GetUsersAsync(1, 100, username);
+                var response = await _identity.GetUsersAsync(1, 100, username);
                 if (response.Data == null)
                     throw new InvalidOperationException($"用户 {username} 不存在");
 
@@ -85,7 +85,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
         {
             Logger.LogDebug("[REPO] User.GetDoctors started");
 
-            var response = await _apiClient.Identity.GetUsersAsync(1, 100, null);
+            var response = await _identity.GetUsersAsync(1, 100, null);
             if (response.Data?.Items == null)
             {
                 Logger.LogWarning("[REPO] User.GetDoctors -> Empty result");
@@ -112,7 +112,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.Identity.ChangeProfileAsync(userId, dto);
+                var response = await _identity.ChangeProfileAsync(userId, dto);
                 if (response.Success && response.Data != null)
                 {
                     Logger.LogInformation("[REPO] User.ChangeProfile completed - UserId={UserId}", userId);
@@ -134,7 +134,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
         {
             Logger.LogInformation("[REPO] User.ChangePassword - UserId={UserId}", userId);
 
-            var response = await _apiClient.Identity.ChangePasswordAsync(userId, request);
+            var response = await _identity.ChangePasswordAsync(userId, request);
             if (response.Success)
             {
                 Logger.LogInformation("[REPO] User.ChangePassword completed - UserId={UserId}", userId);
@@ -162,7 +162,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
         {
             Logger.LogDebug("[REPO] User.ResetPassword - UserId={UserId}", userId);
 
-            var apiResponse = await _apiClient.Identity.ResetPasswordAsync(userId, request);
+            var apiResponse = await _identity.ResetPasswordAsync(userId, request);
             if (apiResponse.Success && apiResponse.Data != null)
             {
                 Logger.LogInformation("[REPO] User.ResetPassword completed - UserId={UserId}", userId);
@@ -191,7 +191,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.Identity.ToggleStatusAsync(id);
+                var response = await _identity.ToggleStatusAsync(id);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "切换用户状态失败");
 
@@ -208,7 +208,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.Identity.RestoreAsync(id);
+                var response = await _identity.RestoreAsync(id);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "恢复用户失败");
 
@@ -222,7 +222,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         return await ExecuteBatchDeleteAsync(
-            () => _apiClient.Identity.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }),
+            () => _identity.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }),
             "BatchDelete",
             "批量删除失败",
             ids.Count);

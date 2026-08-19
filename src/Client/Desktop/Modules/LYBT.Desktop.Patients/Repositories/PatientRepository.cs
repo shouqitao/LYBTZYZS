@@ -15,16 +15,16 @@ public sealed class PatientRepository
     : EntityApiClientRepositoryBase<PatientListDto, PatientDetailDto, PatientInputDto>,
       IPatientRepository
 {
-    private readonly IApiClient _apiClient;
+    private readonly IApiClientPatients _patients;
 
     protected override string LogPrefix => "Patient";
 
     public PatientRepository(
-        IApiClient apiClient,
+        IApiClientPatients patients,
         ILogger<PatientRepository> logger)
-        : base(logger, apiClient.Patients)
+        : base(logger, patients)
     {
-        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+        _patients = patients ?? throw new ArgumentNullException(nameof(patients));
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ public sealed class PatientRepository
     {
         return await ExecuteAsync(async () =>
         {
-            var response = await _apiClient.Patients.GetPatientsAsync(1, 100, keyword);
+            var response = await _patients.GetPatientsAsync(1, 100, keyword);
             if (response.Data == null)
                 return [];
             return response.Data.Items.ToList();
@@ -58,7 +58,7 @@ public sealed class PatientRepository
         try
         {
             Logger.LogInformation("[REPO] Patient.GetByIdNumber");
-            var response = await _apiClient.Patients.GetPatientsAsync(1, 100, idNumber);
+            var response = await _patients.GetPatientsAsync(1, 100, idNumber);
             if (response.Data == null)
                 return null;
 
@@ -86,7 +86,7 @@ public sealed class PatientRepository
         try
         {
             Logger.LogInformation("[REPO] Patient.BatchImport - Count={Count}", request.Patients.Count);
-            var response = await _apiClient.Patients.BatchImportAsync(request);
+            var response = await _patients.BatchImportAsync(request);
             return response.Data;
         }
         catch (Exception ex)
@@ -100,7 +100,7 @@ public sealed class PatientRepository
     {
         try
         {
-            var response = await _apiClient.Patients.ExportTemplateAsync();
+            var response = await _patients.ExportTemplateAsync();
             return response.IsSuccessStatusCode ? await response.Content.ReadAsByteArrayAsync() : null;
         }
         catch (Exception ex)
@@ -114,7 +114,7 @@ public sealed class PatientRepository
     {
         try
         {
-            var response = await _apiClient.Patients.ExportPatientsAsync(keyword);
+            var response = await _patients.ExportPatientsAsync(keyword);
             return response.IsSuccessStatusCode ? await response.Content.ReadAsByteArrayAsync() : null;
         }
         catch (Exception ex)
@@ -133,7 +133,7 @@ public sealed class PatientRepository
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.Patients.RestoreAsync(id);
+                var response = await _patients.RestoreAsync(id);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "恢复患者失败");
 
@@ -151,7 +151,7 @@ public sealed class PatientRepository
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         return await ExecuteBatchDeleteAsync(
-            () => _apiClient.Patients.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }),
+            () => _patients.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }),
             "BatchDelete",
             "批量删除患者失败",
             ids.Count);

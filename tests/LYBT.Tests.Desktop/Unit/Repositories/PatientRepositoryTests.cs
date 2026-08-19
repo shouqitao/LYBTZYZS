@@ -15,13 +15,11 @@ namespace LYBT.Tests.Desktop;
 /// </summary>
 public class PatientRepositoryTests
 {
-    private static (PatientRepository Repo, IApiClient ApiClient, IApiClientPatients Patients) CreateSut()
+    private static (PatientRepository Repo, IApiClientPatients Patients) CreateSut()
     {
-        var apiClient = Substitute.For<IApiClient>();
         var patients = Substitute.For<IApiClientPatients>();
-        apiClient.Patients.Returns(patients);
-        var repo = new PatientRepository(apiClient, Substitute.For<ILogger<PatientRepository>>());
-        return (repo, apiClient, patients);
+        var repo = new PatientRepository(patients, Substitute.For<ILogger<PatientRepository>>());
+        return (repo, patients);
     }
 
     private static ApiResponse<PagedResult<PatientListDto>> PagedResponse(List<PatientListDto> items)
@@ -34,7 +32,7 @@ public class PatientRepositoryTests
     [Fact]
     public async Task SearchAsync_ReturnsResults()
     {
-        var (repo, _, patients) = CreateSut();
+        var (repo, patients) = CreateSut();
         var items = new List<PatientListDto> { new() { Id = Guid.NewGuid(), Name = "张三" } };
         patients.GetPatientsAsync(1, 100, "张").Returns(Task.FromResult(PagedResponse(items)));
 
@@ -48,7 +46,7 @@ public class PatientRepositoryTests
     [Fact]
     public async Task SearchAsync_EmptyKeyword_ReturnsAll()
     {
-        var (repo, _, patients) = CreateSut();
+        var (repo, patients) = CreateSut();
         var items = new List<PatientListDto>
         {
             new() { Id = Guid.NewGuid(), Name = "a" },
@@ -65,7 +63,7 @@ public class PatientRepositoryTests
     [Fact]
     public async Task GetPagedAsync_CallsBaseWithCorrectParams()
     {
-        var (repo, _, patients) = CreateSut();
+        var (repo, patients) = CreateSut();
         var items = new List<PatientListDto> { new() { Id = Guid.NewGuid(), Name = "kw-match" } };
         // repo.GetPagedAsync(2,50,"kw") → base.GetPagedAsync(2,50,"kw",null) →
         // Api(IEntityApiSegment).GetPagedAsync——该方法是 IApiClientPatients 的默认接口实现（DIM），

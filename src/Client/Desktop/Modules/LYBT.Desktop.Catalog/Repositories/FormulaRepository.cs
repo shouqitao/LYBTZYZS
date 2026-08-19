@@ -12,14 +12,14 @@ namespace LYBT.Desktop.Catalog.Repositories;
 /// </summary>
 public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaListDto, FormulaDetailDto, FormulaInputDto>, IFormulaRepository
 {
-    private readonly IApiClient _apiClient;
+    private readonly IApiClientFormulas _formulas;
 
     public FormulaRepository(
-        IApiClient apiClient,
+        IApiClientFormulas formulas,
         ILogger<FormulaRepository> logger)
-        : base(logger, apiClient.Formulas)
+        : base(logger, formulas)
     {
-        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+        _formulas = formulas ?? throw new ArgumentNullException(nameof(formulas));
     }
 
     protected override string LogPrefix => "Formula";
@@ -31,7 +31,7 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.Formulas.GetFormulasAsync(1, 100, keyword, null);
+                var response = await _formulas.GetFormulasAsync(1, 100, keyword, null);
                 if (response.Data == null)
                     return [];
 
@@ -49,7 +49,7 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.Formulas.CloneFormulaAsync(formulaId);
+                var response = await _formulas.CloneFormulaAsync(formulaId);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? $"克隆验方失败，ID: {formulaId}");
 
@@ -70,7 +70,7 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.Formulas.ToggleStatusAsync(id);
+                var response = await _formulas.ToggleStatusAsync(id);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "切换验方状态失败");
 
@@ -86,7 +86,7 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.Formulas.RestoreAsync(id);
+                var response = await _formulas.RestoreAsync(id);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "恢复验方失败");
 
@@ -100,7 +100,7 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         return await ExecuteBatchDeleteAsync(
-            () => _apiClient.Formulas.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }),
+            () => _formulas.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }),
             "BatchDelete",
             "批量删除失败",
             ids.Count);
@@ -117,7 +117,7 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
         {
             Logger.LogInformation("[REPO] Formula.BatchImport started");
 
-            var response = await _apiClient.Formulas.BatchImportAsync(request);
+            var response = await _formulas.BatchImportAsync(request);
             if (!response.Success || response.Data == null)
             {
                 Logger.LogWarning("[REPO] Formula.BatchImport failed: {Message}", response.Message);
@@ -142,7 +142,7 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
         {
             Logger.LogInformation("[REPO] Formula.ExportFormulas - Category={Category}", category);
 
-            var response = await _apiClient.Formulas.ExportFormulasAsync(category);
+            var response = await _formulas.ExportFormulasAsync(category);
             if (!response.IsSuccessStatusCode)
             {
                 Logger.LogWarning("[REPO] Formula.ExportFormulas failed: StatusCode={StatusCode}", response.StatusCode);
@@ -167,7 +167,7 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
         {
             Logger.LogInformation("[REPO] Formula.ExportTemplate started");
 
-            var response = await _apiClient.Formulas.ExportTemplateAsync();
+            var response = await _formulas.ExportTemplateAsync();
             if (!response.IsSuccessStatusCode)
             {
                 Logger.LogWarning("[REPO] Formula.ExportTemplate failed: StatusCode={StatusCode}", response.StatusCode);

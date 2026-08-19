@@ -12,14 +12,14 @@ namespace LYBT.Desktop.Registrations.Repositories;
 /// </summary>
 public sealed class RegistrationRepository : ApiClientRepositoryBase<RegistrationListDto, RegistrationDetailDto>, IRegistrationRepository
 {
-    private readonly IApiClient _apiClient;
+    private readonly IApiClientRegistrations _registrations;
 
     public RegistrationRepository(
-        IApiClient apiClient,
+        IApiClientRegistrations registrations,
         ILogger<RegistrationRepository> logger)
         : base(logger)
     {
-        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+        _registrations = registrations ?? throw new ArgumentNullException(nameof(registrations));
     }
 
     protected override string LogPrefix => "Registration";
@@ -32,7 +32,7 @@ public sealed class RegistrationRepository : ApiClientRepositoryBase<Registratio
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.Registrations.CreateAsync(input);
+                var response = await _registrations.CreateAsync(input);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "创建挂号失败");
 
@@ -49,7 +49,7 @@ public sealed class RegistrationRepository : ApiClientRepositoryBase<Registratio
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.Registrations.GetByIdAsync(id);
+                var response = await _registrations.GetByIdAsync(id);
                 return response.Data;
             },
             "GetById");
@@ -61,7 +61,7 @@ public sealed class RegistrationRepository : ApiClientRepositoryBase<Registratio
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.Registrations.GetListAsync(page, pageSize, keyword);
+                var response = await _registrations.GetListAsync(page, pageSize, keyword);
                 if (response.Data == null)
                     return new PagedResult<RegistrationListDto> { Items = [], TotalCount = 0, CurrentPage = page };
 
@@ -78,7 +78,7 @@ public sealed class RegistrationRepository : ApiClientRepositoryBase<Registratio
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.Registrations.GetQueueAsync(doctorId);
+                var response = await _registrations.GetQueueAsync(doctorId);
                 if (!response.Success || response.Data == null)
                 {
                     Logger.LogWarning("[REPO] Registration.GetWaitingQueue failed: {Message}", response.Message);
@@ -96,7 +96,7 @@ public sealed class RegistrationRepository : ApiClientRepositoryBase<Registratio
         return await ExecuteAsync<Guid?>(
             async () =>
             {
-                var response = await _apiClient.Registrations.StartVisitAsync(id);
+                var response = await _registrations.StartVisitAsync(id);
                 if (!response.Success)
                 {
                     // 抛出服务器业务消息（如 BR-001 重开现有医案），经 Service 映射后展示给用户
@@ -118,7 +118,7 @@ public sealed class RegistrationRepository : ApiClientRepositoryBase<Registratio
         await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.Registrations.CancelAsync(id);
+                var response = await _registrations.CancelAsync(id);
                 if (!response.Success)
                     throw new InvalidOperationException(response.Message ?? "取消挂号失败");
 

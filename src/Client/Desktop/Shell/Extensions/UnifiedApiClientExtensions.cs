@@ -146,6 +146,22 @@ public static class UnifiedApiClientExtensions
         containerRegistry.Register<IApiClientConfiguration>(resolver =>
             resolver.Resolve<IApiClient>().Configuration
         );
+
+        // P1-1: Repository 最小权限注入具体子接口。子接口 transient——
+        // 消费方须为 transient（每次解析取 SwitchingApiClient.Current 当前模式客户端），
+        // 与 AuthHealthService 先例一致；避免 Singleton 仓库持有模式绑定子接口跨模式切换变陈旧。
+        containerRegistry.Register<IApiClientPatients>(resolver =>
+            resolver.Resolve<IApiClient>().Patients
+        );
+        containerRegistry.Register<IApiClientHerbs>(resolver =>
+            resolver.Resolve<IApiClient>().Herbs
+        );
+        containerRegistry.Register<IApiClientFormulas>(resolver =>
+            resolver.Resolve<IApiClient>().Formulas
+        );
+        containerRegistry.Register<IApiClientRegistrations>(resolver =>
+            resolver.Resolve<IApiClient>().Registrations
+        );
     }
 
     /// <summary>

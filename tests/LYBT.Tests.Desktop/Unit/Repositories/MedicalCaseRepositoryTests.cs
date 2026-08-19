@@ -21,19 +21,17 @@ namespace LYBT.Tests.Desktop;
 /// </summary>
 public class MedicalCaseRepositoryTests
 {
-    private static (MedicalCaseRepository Repo, IApiClient ApiClient, IApiClientMedicalCases MedicalCases) CreateSut()
+    private static (MedicalCaseRepository Repo, IApiClientMedicalCases MedicalCases) CreateSut()
     {
-        var apiClient = Substitute.For<IApiClient>();
         var medicalCases = Substitute.For<IApiClientMedicalCases>();
-        apiClient.MedicalCases.Returns(medicalCases);
-        var repo = new MedicalCaseRepository(apiClient, Substitute.For<ILogger<MedicalCaseRepository>>());
-        return (repo, apiClient, medicalCases);
+        var repo = new MedicalCaseRepository(medicalCases, Substitute.For<ILogger<MedicalCaseRepository>>());
+        return (repo, medicalCases);
     }
 
     [Fact]
     public async Task GetPendingAsync_ReturnsPendingCases()
     {
-        var (repo, _, medicalCases) = CreateSut();
+        var (repo, medicalCases) = CreateSut();
         var pending = new PendingMedicalCaseDto
         {
             PatientId = Guid.NewGuid(),
@@ -57,7 +55,7 @@ public class MedicalCaseRepositoryTests
     [Fact]
     public async Task UpdateStatusAsync_RoutesStatusCorrectly()
     {
-        var (repo, _, medicalCases) = CreateSut();
+        var (repo, medicalCases) = CreateSut();
         var id = Guid.NewGuid();
         var request = new MedicalCaseStatusInputDto { Status = MedicalCaseStatus.Suspended, StatusChangeReason = "test" };
         var detail = new MedicalCaseDetailDto { Id = id, PatientName = "一人" };
@@ -73,7 +71,7 @@ public class MedicalCaseRepositoryTests
     [Fact]
     public async Task CloseCaseAsync_CallsCompleteEndpoint()
     {
-        var (repo, _, medicalCases) = CreateSut();
+        var (repo, medicalCases) = CreateSut();
         var id = Guid.NewGuid();
         var detail = new MedicalCaseDetailDto { Id = id };
         medicalCases.CloseCaseAsync(id)
@@ -88,7 +86,7 @@ public class MedicalCaseRepositoryTests
     [Fact]
     public async Task SuspendAsync_CallsCorrectEndpoint()
     {
-        var (repo, _, medicalCases) = CreateSut();
+        var (repo, medicalCases) = CreateSut();
         var id = Guid.NewGuid();
         var detail = new MedicalCaseDetailDto { Id = id };
         medicalCases.SuspendAsync(id, null)

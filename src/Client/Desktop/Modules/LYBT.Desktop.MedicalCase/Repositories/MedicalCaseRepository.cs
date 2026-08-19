@@ -13,14 +13,14 @@ namespace LYBT.Desktop.MedicalCase.Repositories;
 /// </summary>
 public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseListDto, MedicalCaseDetailDto>, IMedicalCaseRepository
 {
-    private readonly IApiClient _apiClient;
+    private readonly IApiClientMedicalCases _medicalCases;
 
     public MedicalCaseRepository(
-        IApiClient apiClient,
+        IApiClientMedicalCases medicalCases,
         ILogger<MedicalCaseRepository> logger)
         : base(logger)
     {
-        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+        _medicalCases = medicalCases ?? throw new ArgumentNullException(nameof(medicalCases));
     }
 
     protected override string LogPrefix => "MedicalCase";
@@ -32,7 +32,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.MedicalCases.GetMedicalCasesAsync(page, pageSize, keyword);
+                var response = await _medicalCases.GetMedicalCasesAsync(page, pageSize, keyword);
                 if (response.Data == null)
                     return new PagedResult<MedicalCaseListDto> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize };
 
@@ -54,7 +54,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.MedicalCases.GetMedicalCaseByIdAsync(id);
+                var response = await _medicalCases.GetMedicalCaseByIdAsync(id);
                 return response.Data;
             },
             "GetById");
@@ -67,7 +67,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.MedicalCases.CreateMedicalCaseAsync(dto);
+                var response = await _medicalCases.CreateMedicalCaseAsync(dto);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "创建医案失败");
 
@@ -87,7 +87,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.MedicalCases.SaveAsync(dto.Id.Value, dto);
+                var response = await _medicalCases.SaveAsync(dto.Id.Value, dto);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "更新医案失败");
 
@@ -103,7 +103,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
         await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.MedicalCases.DeleteMedicalCaseAsync(id);
+                var response = await _medicalCases.DeleteMedicalCaseAsync(id);
                 if (!response.Success)
                     throw new InvalidOperationException(response.Message ?? "删除医案失败");
 
@@ -129,7 +129,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.MedicalCases.SearchMedicalCasesAsync(
+                var response = await _medicalCases.SearchMedicalCasesAsync(
                     patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
                 return response.Data ?? new PagedResult<MedicalCaseDetailDto>
                 {
@@ -149,7 +149,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.MedicalCases.QueryMedicalCasesAsync(
+                var response = await _medicalCases.QueryMedicalCasesAsync(
                     queryType: query.QueryType,
                     patientId: query.PatientId,
                     doctorId: query.DoctorId,
@@ -170,7 +170,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.MedicalCases.GetPendingCasesAsync(patientId);
+                var response = await _medicalCases.GetPendingCasesAsync(patientId);
                 return response.Data ?? [];
             },
             "GetPendingCases",
@@ -190,7 +190,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.MedicalCases.GetAuditLogsAsync(medicalCaseId, page, pageSize);
+                var response = await _medicalCases.GetAuditLogsAsync(medicalCaseId, page, pageSize);
                 return response.Data ?? new PagedResult<AuditLogDto>
                 {
                     Items = [],
@@ -219,7 +219,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
 
         try
         {
-            var response = await _apiClient.MedicalCases.RecordPrintAsync(medicalCaseId, request);
+            var response = await _medicalCases.RecordPrintAsync(medicalCaseId, request);
             return response.Success ? response.Data : null;
         }
         catch (Exception ex)
@@ -239,7 +239,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
         {
             Logger.LogInformation("[REPO] MedicalCase.CloseCase - Id={Id}", medicalCaseId);
 
-            var response = await _apiClient.MedicalCases.CloseCaseAsync(medicalCaseId);
+            var response = await _medicalCases.CloseCaseAsync(medicalCaseId);
             if (response.Success)
             {
                 Logger.LogInformation("[REPO] MedicalCase.CloseCase completed - Id={Id}", medicalCaseId);
@@ -268,7 +268,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
             Logger.LogInformation("[REPO] MedicalCase.Cancel - Id={Id}, Reason={Reason}",
                 id, request?.Reason ?? "无");
 
-            var response = await _apiClient.MedicalCases.CancelMedicalCaseAsync(id, request);
+            var response = await _medicalCases.CancelMedicalCaseAsync(id, request);
             if (response.Success)
                 Logger.LogInformation("[REPO] MedicalCase.Cancel completed - Id={Id}", id);
             else
@@ -294,7 +294,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
         {
             Logger.LogInformation("[REPO] MedicalCase.Suspend - Id={Id}", id);
 
-            var response = await _apiClient.MedicalCases.SuspendAsync(id, request);
+            var response = await _medicalCases.SuspendAsync(id, request);
             if (response.Success)
             {
                 Logger.LogInformation("[REPO] MedicalCase.Suspend completed - Id={Id}", id);
@@ -324,7 +324,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
             Logger.LogInformation("[REPO] MedicalCase.UpdateStatus - Id={Id}, Status={Status}",
                 id, request.Status);
 
-            var response = await _apiClient.MedicalCases.UpdateStatusAsync(id, request);
+            var response = await _medicalCases.UpdateStatusAsync(id, request);
             if (response.Success)
             {
                 Logger.LogInformation("[REPO] MedicalCase.UpdateStatus completed - Id={Id}", id);
@@ -355,7 +355,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _apiClient.MedicalCases.SaveAsync(medicalCaseId, dto);
+                var response = await _medicalCases.SaveAsync(medicalCaseId, dto);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "聚合保存医案失败");
 
@@ -382,7 +382,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
             Logger.LogInformation("[REPO] MedicalCase.SetPrescriptionFlag - Id={Id}, NeedsPrescription={NeedsPrescription}",
                 id, request.NeedsPrescription);
 
-            var response = await _apiClient.MedicalCases.SetPrescriptionFlagAsync(id, request);
+            var response = await _medicalCases.SetPrescriptionFlagAsync(id, request);
             if (response.Success)
             {
                 Logger.LogInformation("[REPO] MedicalCase.SetPrescriptionFlag completed - Id={Id}", id);
@@ -407,7 +407,7 @@ public sealed class MedicalCaseRepository : ApiClientRepositoryBase<MedicalCaseL
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         return await ExecuteBatchDeleteAsync(
-            () => _apiClient.MedicalCases.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }),
+            () => _medicalCases.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }),
             "BatchDelete",
             "批量删除失败",
             ids.Count);

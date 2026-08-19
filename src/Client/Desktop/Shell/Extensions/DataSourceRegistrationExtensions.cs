@@ -41,34 +41,34 @@ public static class DataSourceRegistrationExtensions
 
     private static void RegisterRemoteRepositories(IContainerRegistry containerRegistry)
     {
-        containerRegistry.RegisterSingleton<IPatientRepository>(resolver =>
+        containerRegistry.Register<IPatientRepository>(resolver =>
             new PatientRepository(
-                resolver.Resolve<IApiClient>(),
+                resolver.Resolve<IApiClientPatients>(),
                 resolver.Resolve<ILogger<PatientRepository>>()));
 
-        containerRegistry.RegisterSingleton<IHerbRepository>(resolver =>
+        containerRegistry.Register<IHerbRepository>(resolver =>
             new HerbRepository(
-                resolver.Resolve<IApiClient>(),
+                resolver.Resolve<IApiClientHerbs>(),
                 resolver.Resolve<ILogger<HerbRepository>>()));
 
-        containerRegistry.RegisterSingleton<IFormulaRepository>(resolver =>
+        containerRegistry.Register<IFormulaRepository>(resolver =>
             new FormulaRepository(
-                resolver.Resolve<IApiClient>(),
+                resolver.Resolve<IApiClientFormulas>(),
                 resolver.Resolve<ILogger<FormulaRepository>>()));
 
-        containerRegistry.RegisterSingleton<IUserRepository>(resolver =>
+        containerRegistry.Register<IUserRepository>(resolver =>
             new UserRepository(
-                resolver.Resolve<IApiClient>(),
+                resolver.Resolve<IApiClientIdentity>(),
                 resolver.Resolve<ILogger<UserRepository>>()));
 
-        containerRegistry.RegisterSingleton<IMedicalCaseRepository>(resolver =>
+        containerRegistry.Register<IMedicalCaseRepository>(resolver =>
             new MedicalCaseRepository(
-                resolver.Resolve<IApiClient>(),
+                resolver.Resolve<IApiClientMedicalCases>(),
                 resolver.Resolve<ILogger<MedicalCaseRepository>>()));
 
-        containerRegistry.RegisterSingleton<IRegistrationRepository>(resolver =>
+        containerRegistry.Register<IRegistrationRepository>(resolver =>
             new RegistrationRepository(
-                resolver.Resolve<IApiClient>(),
+                resolver.Resolve<IApiClientRegistrations>(),
                 resolver.Resolve<ILogger<RegistrationRepository>>()));
     }
 }
