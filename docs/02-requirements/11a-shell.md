@@ -1,19 +1,27 @@
 # Shell (平台壳程序)
 
-> 版本: v1.0 | 日期: 2026-06-28 | 状态: ✅ 已完成
-> Split from 11-platform.md (2026-06-28)
-
-## 模块概述
-
-Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应用全生命周期：单实例互斥锁（`Global\LYBTZYZS_Shell_Instance`）、启动闪屏、两阶段 Serilog 引导、按角色动态加载模块（`ApplicationBootstrapper.LoadModulesForRoleAsync`）、页面导航与菜单系统。
-
-> 原 7 US（US-SHELL-001~007），合并去除 2 个冗余后 5 US + SHELL-010~019 补充。**v1.0 有效 = 13 US**（原 5 + 补充 8）；另有 US-SHELL-012 = v2.0（不计入 Platform 43），US-SHELL-015 = 撤销（并入 013）。完整列表：001, 003, 004, 005, 007, 010(v1.0), 011(v1.0), 012(v2.0), 013(v1.0, 含原 015), 014(v1.0), ~~015~~(撤销), 016(v1.0), 017(v1.0), 018(v1.0), 019(v1.0)。
-
-**双模式总则**：`SwitchingApiClient` 将 localhost 请求路由到嵌入式 `LocalWebAPI`，否则走 Refit 远程；`LocalWebAPI` 复用全部服务端模块的 Service 层；`LocalDbBackupService` 仅本地模式运行。
+> Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应用全生命周期：单实例互斥锁（`Global\LYBTZYZS_Shell_Instance`）、启动闪屏、两阶段 Serilog 引导、按角色动态加载模块（`ApplicationBootstrapper.LoadModulesForRoleAsync`）、页面导航与菜单系统。
 
 ---
 
-### US-SHELL-001: 应用启动（单实例）
+## 模块级设计（横切）
+
+**US 清单**：原 7 US（US-SHELL-001~007），合并去除 2 个冗余后 5 US + SHELL-010~019 补充。**v1.0 有效 = 13 US**（原 5 + 补充 8）；另有 US-SHELL-012 = v2.0（不计入 Platform 43），US-SHELL-015 = 撤销（并入 013）。完整列表：001, 003, 004, 005, 007, 010(v1.0), 011(v1.0), 012(v2.0), 013(v1.0, 含原 015), 014(v1.0), ~~015~~(撤销), 016(v1.0), 017(v1.0), 018(v1.0), 019(v1.0)。
+
+**双模式总则**：`SwitchingApiClient` 将 localhost 请求路由到嵌入式 `LocalWebAPI`，否则走 Refit 远程；`LocalWebAPI` 复用全部服务端模块的 Service 层；`LocalDbBackupService` 仅本地模式运行。
+
+**依赖**：
+
+| 依赖 | 说明 |
+| ------ | ------ |
+| [02-auth.md](02-auth.md) | Shell 登录协调、审计日志事件来源 |
+| [03-users.md](03-users.md) | 个人资料关联修改密码/个人资料 |
+| [07-medical-cases.md](07-medical-cases.md) | MedicalCaseAuditLog 归属医案模块 |
+| [09-printing.md](09-printing.md) | ClinicSettings 驱动打印标题区 |
+
+---
+
+## US-SHELL-001: 应用启动（单实例）
 
 **角色**: 所有用户
 **优先级**: Must
@@ -36,7 +44,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 3. 两阶段 Serilog bootstrap 在 WebAPI 与 Desktop 均生效。
 4. Debug 模式运行上限 120 分钟。
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -47,7 +55,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 ---
 
-### US-SHELL-003: 角色基础模块加载
+## US-SHELL-003: 角色基础模块加载
 
 **角色**: 所有用户
 **优先级**: Must
@@ -68,7 +76,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 2. 菜单可见性矩阵：诊所设置仅 SuperAdmin；药材/用户管理 Admin+；医案/验方 Doctor+；患者管理全部角色。
 3. 角色层级：Receptionist=0, Doctor=1, Admin=10, SuperAdmin=100。
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -79,7 +87,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 ---
 
-### US-SHELL-004: 个人资料（个人资料+密码）
+## US-SHELL-004: 个人资料（个人资料+密码）
 
 **角色**: 所有用户
 **优先级**: Could
@@ -100,7 +108,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 3. 登录信息（最后登录时间/IP）只读。
 4. 入口：`MenuManager.EditProfileCommand`。
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -111,7 +119,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 ---
 
-### US-SHELL-005: 菜单导航
+## US-SHELL-005: 菜单导航
 
 **角色**: 所有用户
 **优先级**: Must
@@ -134,7 +142,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 3. 主题切换：浅色/深色一键切换。
 4. 前进导航与面包屑已实现。
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -145,7 +153,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 ---
 
-### US-SHELL-007: 双模式连接切换
+## US-SHELL-007: 双模式连接切换
 
 **角色**: 医生
 **优先级**: Must
@@ -169,7 +177,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 4. 异常捕获返回 `ModeSwitchResult.Failed`，自动回退。
 5. **强制本地策略（S5 决策）**：v1.0 仅支持用户主动切换模式；运维强制某台机器走本地（如断网降级、离线巡诊）属 **v2.0**，需扩展 `SystemAdminOptions` 增加按机器/按用户锁定模式的策略，不在 v1.0 范围。
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -180,7 +188,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 ---
 
-### US-SHELL-010: Desktop 安装（Velopack 打包）
+## US-SHELL-010: Desktop 安装（Velopack 打包）
 
 **角色**: sysadmin
 **优先级**: Must
@@ -204,7 +212,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 3. 下载页**公开可访问**（无敏感信息）；发布包经 Velopack 公钥签名验证（防篡改）。
 4. 业界模式（参考）：极简 Landing Page——`GET /` 返回 HTML（项目名 + 版本 + 下载按钮 + 简短说明），发布包静态托管于同源 `/releases/`。
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -215,7 +223,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 ---
 
-### US-SHELL-011: 首次初始化向导（5 步强制）
+## US-SHELL-011: 首次初始化向导（5 步强制）
 
 **角色**: sysadmin
 **优先级**: Must
@@ -244,7 +252,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 ---
 
-### US-SHELL-012: Desktop 自动更新（Velopack）
+## US-SHELL-012: Desktop 自动更新（Velopack）
 
 **角色**: 所有用户
 **优先级**: Should
@@ -272,7 +280,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 ---
 
-### US-SHELL-013: 数据库备份恢复（含备份状态展示 + 手动备份）
+## US-SHELL-013: 数据库备份恢复（含备份状态展示 + 手动备份）
 
 **角色**: sysadmin
 **优先级**: Should
@@ -299,7 +307,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 ---
 
-### US-SHELL-014: 安全审计日志查看
+## US-SHELL-014: 安全审计日志查看
 
 **角色**: sysadmin
 **优先级**: Should
@@ -326,13 +334,13 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 ---
 
-### ~~US-SHELL-015: 备份状态与手动备份~~（已撤销，并入 US-SHELL-013）
+## ~~US-SHELL-015: 备份状态与手动备份~~（已撤销，并入 US-SHELL-013）
 
 > **撤销决策（2026-06-28）**：本 US 的「备份状态展示 + 手动备份按钮」已并入 US-SHELL-013 数据库备份恢复的验收标准。独立 US 撤销，总览计数不单列。
 
 ---
 
-### US-SHELL-016: 配置导出/导入
+## US-SHELL-016: 配置导出/导入
 
 **角色**: sysadmin
 **优先级**: Could
@@ -356,7 +364,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 ---
 
-### US-SHELL-017: 生产环境安全门控（SystemAdminOptions）
+## US-SHELL-017: 生产环境安全门控（SystemAdminOptions）
 
 **角色**: sysadmin / 运维
 **优先级**: Must
@@ -385,7 +393,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 
 ---
 
-### US-SHELL-018: sysadmin 运维设置（SysadminHomeView）
+## US-SHELL-018: sysadmin 运维设置（SysadminHomeView）
 
 **角色**: sysadmin
 **优先级**: Must
@@ -427,7 +435,7 @@ Shell 采用 Prism 9.0 模块化架构，作为 WPF 客户端宿主，负责应�
 4. 密码相关配置（SecretKey/JWT）不可在 UI 中修改。
 5. 服务器端配置：远程模式通过服务端 Configuration API 管理（业务参数可改/敏感只读，见 [ADR-0014](../03-architecture/decisions/0014-sysadmin-config-dual-mode.md)）；本地模式无独立服务端（LocalWebAPI 内嵌，配置归「本地配置」面板）。
 
-### 双模式面板（ADR-0014）
+**双模式面板（ADR-0014）**:
 
 SysadminHomeView 按连接模式区分面板布局——配置对象在双模式下本质不同（远程管「服务端 + 客户端」两层，本地管「本地全栈」一层）：
 
@@ -442,7 +450,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 ---
 
-### US-SHELL-019: 读卡器诊断测试工具（sysadmin）
+## US-SHELL-019: 读卡器诊断测试工具（sysadmin）
 
 **角色**: sysadmin
 **优先级**: Should
@@ -476,7 +484,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 - `ICardReader` 扩展 `GetDeviceInfo()` 方法
 - sysadmin 运维设置增加读卡器诊断 tab
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -487,7 +495,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 ---
 
-### US-SHELL-020: 部署上传与远程重启（sysadmin）
+## US-SHELL-020: 部署上传与远程重启（sysadmin）
 
 **角色**: sysadmin
 **优先级**: Must
@@ -507,11 +515,11 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 2. restart 需 `Confirm` 参数防误触
 3. 上传文件校验类型/大小
 
-**双模式**: 远程 WebAPI 提供；本地模式无独立部署（Desktop 安装/更新走 Velopack）
+**双模式差异**: 远程 WebAPI 提供；本地模式无独立部署（Desktop 安装/更新走 Velopack）
 
 ---
 
-### US-SHELL-021: 上线数据迁移（历史数据导入）
+## US-SHELL-021: 上线数据迁移（历史数据导入）
 
 **角色**: sysadmin / Admin
 **优先级**: Should
@@ -537,7 +545,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 ---
 
-### US-SHELL-022: 系统上线与回滚（Go-Live）
+## US-SHELL-022: 系统上线与回滚（Go-Live）
 
 **角色**: sysadmin
 **优先级**: Should
@@ -560,7 +568,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 ---
 
-### US-SHELL-023: 操作培训与用户支持
+## US-SHELL-023: 操作培训与用户支持
 
 **角色**: 所有用户
 **优先级**: Could
@@ -582,7 +590,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 ---
 
-### US-SHELL-024: Server 单实例与端口防护（2026-08-13 新增——P2-07）
+## US-SHELL-024: Server 单实例与端口防护
 
 **角色**: 运维（部署）
 **优先级**: Must
@@ -604,7 +612,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 2. Mutex 命名：`Global\LYBTZYZS_WebAPI_Instance`（与 Desktop 的 `Global\LYBTZYZS_Shell_Instance` 区分）
 3. 双保险：start.sh 脚本层（PID+端口+health）+ Program.cs 程序层（Mutex）
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -615,7 +623,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 ---
 
-### US-SHELL-025: HTTP/HTTPS 双协议支持（2026-08-14 新增——P2-09）
+## US-SHELL-025: HTTP/HTTPS 双协议支持
 
 **角色**: 运维/部署
 **优先级**: Should
@@ -639,7 +647,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 3. 双端口可同时监听（Kestrel 原生支持）
 4. Desktop 侧：证书信任/连接更新由 Desktop 端配置负责（此 US 只管 Server 端）
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -647,17 +655,6 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 | 本地 | LocalWebAPI 内嵌——不需要 HTTPS（localhost 自签可选） |
 
 **实现参考**: Program.cs（WebApplication.CreateBuilder 配置 Kestrel 端点）；appsettings.json（新增 Kestrel 段）
-
----
-
-## 依赖
-
-| 依赖 | 说明 |
-| ------ | ------ |
-| [02-auth.md](02-auth.md) | Shell 登录协调、审计日志事件来源 |
-| [03-users.md](03-users.md) | 个人资料关联修改密码/个人资料 |
-| [07-medical-cases.md](07-medical-cases.md) | MedicalCaseAuditLog 归属医案模块 |
-| [09-printing.md](09-printing.md) | ClinicSettings 驱动打印标题区 |
 
 ---
 
