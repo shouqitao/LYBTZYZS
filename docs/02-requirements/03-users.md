@@ -1,12 +1,12 @@
 # 用户管理 (User Management)
 
-> 版本: v3.3 | 日期: 2026-08-03 | 状态: 已更新
+> 用户管理模块采用标准 ASP.NET Core Identity 架构。单一用户模型 `ApplicationUser : IdentityUser<Guid>` 同时承载认证（Identity 内置）和业务字段（Role、Status、PinYinCode 等）。Remote 和 Local 两端通过同一套 `IUserManagerService` 接口操作同一数据模型，零重复实现。
 
-## 模块概述
+---
 
-用户管理模块采用标准 ASP.NET Core Identity 架构。单一用户模型 `ApplicationUser : IdentityUser<Guid>` 同时承载认证（Identity 内置）和业务字段（Role、Status、PinYinCode 等）。Remote 和 Local 两端通过同一套 `IUserManagerService` 接口操作同一数据模型，零重复实现。
+## 模块级设计（横切）
 
-## 核心架构
+### 核心架构
 
 ```
 ApplicationUser : IdentityUser<Guid>, IAuditableEntity, ISoftDeletable
@@ -32,7 +32,7 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 
 > 密码策略与锁定策略远程/本地一致（与 [02-auth.md](02-auth.md) AUTH-002、[12-nfr.md](12-nfr.md) NFR-SEC-002 统一）。
 
-## 权限模型
+### 权限模型
 
 > 角色定义、层级管理规则详见 [`../01-product/02-personas.md`](../01-product/02-personas.md)。权限矩阵详见 [`../01-product/04-permissions.md`](../01-product/04-permissions.md)。
 
@@ -52,7 +52,7 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 
 > 层级管理规则（一级管一级）、不可自管规则详见 [`../01-product/02-personas.md`](../01-product/02-personas.md) §约束。
 
-## 权限矩阵
+### 权限矩阵摘要
 
 > **权威定义**：完整权限矩阵见 [04-permissions.md](../01-product/04-permissions.md)；端点级权限见 [04-api-reference/02-users.md](../04-api-reference/02-users.md)；速查表见 [12-permissions-matrix.md](../03-architecture/12-permissions-matrix.md)。
 
@@ -62,9 +62,7 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 - 个人资料（profile/change-password）：仅本人（IDOR 防护：`id == currentUserId`，Admin 也无法修改他人资料）
 - 登录/登出/Token 验证：所有角色（含未登录的 login）
 
-> ⚠️ 业务端点权限目标态（2026-08-03 权限四连决策，代码部分待按操作级细分）见 [04-permissions.md](../01-product/04-permissions.md)。
-
-## API 端点（11 个，Remote 和 Local 统一）
+### API 端点（11 个，Remote 和 Local 统一）
 
 | 方法 | 路径 | 认证 | 说明 |
 | ------ | ------ | ------ | ------ |
@@ -80,7 +78,7 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 | `POST /users/{id}/toggle-status` | 启用/禁用 | AdminOrSuperAdmin | Lockout 机制 |
 | `POST /users/batch-delete` | 批量删除 | AdminOrSuperAdmin | 逐项检查权限 |
 
-## Desktop 端 UI
+### Desktop 端 UI
 
 | 视图 | 角色 | 功能 |
 | ------ | ------ | ------ |
@@ -90,7 +88,7 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 | AccountSettingsControl | 所有用户 | 个人资料编辑 + 密码修改 |
 | SystemSettingsView | SuperAdmin | 系统级配置 |
 
-## 关键业务规则
+### 关键业务规则
 
 1. **用户名不可变**：创建后不可修改
 2. **IDOR 防护**：/profile 和 /change-password 验证 `id == currentUserId`
@@ -100,20 +98,20 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 6. **角色层级**：详见 [`../01-product/02-personas.md`](../01-product/02-personas.md) §约束
 7. **保留用户名**：admin, administrator, root, system, superadmin, sysadmin
 
-## 边界条件验收标准
+### 边界条件（横切）
 
-### 并发会话处理
+**并发会话处理**：
 
 - [ ] 同一用户在多个终端同时登录 → 允许（多会话共存，JWT 无状态）
 - [ ] 用户被管理员禁用后 → 已登录会话的 JWT 在到期前仍有效（本地模式无 Lockout 策略，远程模式 LockoutEnd 到期后下次请求拒绝）
 
-### 禁用用户中断操作
+**禁用用户中断操作**：
 
 - [ ] 用户在操作过程中被管理员禁用 → 当前请求完成处理，后续请求返回 403/401
 - [ ] 已禁用用户调用 `PUT /users/{id}/change-password` → 返回 403（Identity Lockout 机制）
 - [ ] 已禁用用户调用 `PUT /users/{id}/profile` → 返回 403（Identity Lockout 机制）
 
-## 数据流
+### 数据流
 
 ```
 Desktop UI → IUserRepository (HTTP) → SwitchingApiClient
@@ -124,7 +122,7 @@ Server/Local → UsersController → IUserManagerService
   └→ UserManagerService → UserManager<ApplicationUser> → AppDbContext → EF Core → SQL Server/LocalDB
 ```
 
-## 文件清单
+### 文件清单
 
 | 文件 | 层 | 说明 |
 | ------ | --- | ------ |
@@ -137,18 +135,27 @@ Server/Local → UsersController → IUserManagerService
 | `US_User_MustHaveTests` | Tests | 用户管理必须功能测试 |
 | `US_User_ShouldHaveTests` | Tests | 用户管理建议功能测试 |
 
-## 已知问题（2026-06-28 审计）
+### 软删语义补充（2026-08-13 softdelete-uniqueindex-fix）
 
-| 问题 | 严重度 | 说明 |
+- **唯一约束**：ApplicationUser.UserName（UserNameIndex）+ Email（EmailIndex）为数据库唯一索引；软删用户**仍占用**唯一键（索引不释放）
+- **创建查重含软删**：`CreateUserCommandHandler` 对 UserName/Email 做含软删查重（IgnoreQueryFilters）——软删同名/同邮箱 → **422 友好提示**（「已被删除——请先恢复该用户或更换用户名/邮箱」）——**不产生 500**（原 FindByNameAsync 走 QueryFilter 不含软删 → 认为可用 → INSERT 撞索引 → DbUpdateException 500）
+- **恢复路径**：恢复（Restore）时 UserName 不变（索引行是自己的——无冲突）；422 查重阻止新用户占用软删名 → 软删用户可恢复
+- **业务实体（Herb/Formula/Patient）**：无数据库唯一索引（业务层 NameExists/电话查重）——查重过滤软删——软删同名可创建（不 500）；恢复时业务查重友好提示——不受本修复影响
+
+### 已知问题（2026-06-28 审计，均已修复）
+
+> 下列问题为历史审计记录，**均已修复**（2026-08-11 T5 批次前），保留仅供追溯：
+
+| 问题 | 严重度 | 修复状态 |
 | ------ | :---: | ------ |
-| **分页+筛选 TotalCount 错误** | 🟠 | `GetList` 在内存执行 role/status 筛选（L73-74），但 TotalCount 基于筛选前计数（L58），导致前端分页数量不一致 |
-| **Restore 完全缺失** | 🔴 | Desktop `ExecuteRestoreAsync` 返回 null，Server 无端点；测试类仍引用但无实现 |
-| **CreatedAt 始终 MinValue** | ⚠️ | `MapToDetailDtoAsync`（L605-606）写死 `DateTime.MinValue`，未映射实际创建时间 |
-| **UpdatedAt 始终 null** | ⚠️ | `ListDto.CreatedAt` 同样写死 MinValue |
+| **分页+筛选 TotalCount 错误** | 🟠 | ✅ 已修复——TotalCount 基于筛选后查询（`UserRepository` 在 keyword/role/status Where 后 `CountAsync`） |
+| **Restore 完全缺失** | 🔴 | ✅ 已修复——`POST /users/{id}/restore` 端点 + `RestoreUserCommand`（US-USER-011） |
+| **CreatedAt 始终 MinValue** | ⚠️ | ✅ 已修复——`IdentityMapper` 正确映射 `entity.CreatedAt` |
+| **UpdatedAt 始终 null** | ⚠️ | ✅ 已修复——`IdentityMapper` 正确映射 `entity.UpdatedAt` |
 
-## 用户故事
+---
 
-### US-USER-001: 分页查询用户列表
+## US-USER-001: 分页查询用户列表
 
 **角色**: Admin / SuperAdmin
 **优先级**: Must
@@ -164,7 +171,7 @@ Server/Local → UsersController → IUserManagerService
 
 ---
 
-### US-USER-002: 查看用户详情
+## US-USER-002: 查看用户详情
 
 **角色**: Admin / SuperAdmin
 **优先级**: Must
@@ -179,7 +186,7 @@ Server/Local → UsersController → IUserManagerService
 
 ---
 
-### US-USER-003: 查看当前用户资料
+## US-USER-003: 查看当前用户资料
 
 **角色**: 所有用户
 **优先级**: Must
@@ -194,7 +201,7 @@ Server/Local → UsersController → IUserManagerService
 
 ---
 
-### US-USER-004: 创建用户
+## US-USER-004: 创建用户
 
 **角色**: Admin / SuperAdmin
 **优先级**: Must
@@ -210,13 +217,11 @@ Server/Local → UsersController → IUserManagerService
 
 ---
 
-### US-USER-005: 更新用户（用户名不可变）
+## US-USER-005: 更新用户（用户名不可变）
 
 **角色**: Admin / SuperAdmin
 **优先级**: Must
 **状态**: ✅ 已实现（角色更新+层级约束）
-
-> **实现注（2026-08-13 UPDATEUSER-HIERARCHY-FIX）**：真机发现 testadmin（Admin）更新另一个 Admin → 200（应拒绝）——CreateUser/Restore 已有层级校验（USER-D04），但 Update/Delete/ToggleStatus/BatchDelete 用 bool IsAdmin 粗粒度漏检。修复：抽共享 `UserHierarchyGuard`（对齐 Create/Restore 规则——sysadmin→Admin 及以下；Admin→仅 Doctor/Receptionist；不可自管；不可操作 sysadmin）；Update/Delete/ToggleStatus/BatchDelete 命令 IsAdmin bool → `OperatorRole`，Handler 统一走 guard。
 
 **作为** 管理员，**我想要** 更新用户信息（UserName 不可改），**以便** 维护准确的人员信息。
 
@@ -226,9 +231,13 @@ Server/Local → UsersController → IUserManagerService
 - [ ] 角色变更受层级规则约束
 - [ ] sysadmin 不可修改
 
+**实现注**:
+
+- **2026-08-13 UPDATEUSER-HIERARCHY-FIX**：真机发现 testadmin（Admin）更新另一个 Admin → 200（应拒绝）——CreateUser/Restore 已有层级校验（USER-D04），但 Update/Delete/ToggleStatus/BatchDelete 用 bool IsAdmin 粗粒度漏检。修复：抽共享 `UserHierarchyGuard`（对齐 Create/Restore 规则——sysadmin→Admin 及以下；Admin→仅 Doctor/Receptionist；不可自管；不可操作 sysadmin）；Update/Delete/ToggleStatus/BatchDelete 命令 IsAdmin bool → `OperatorRole`，Handler 统一走 guard。
+
 ---
 
-### US-USER-006: 删除用户（软删除，不可删自己）
+## US-USER-006: 删除用户（软删除，不可删自己）
 
 **角色**: Admin / SuperAdmin
 **优先级**: Must
@@ -244,7 +253,7 @@ Server/Local → UsersController → IUserManagerService
 
 ---
 
-### US-USER-007: 重置用户密码（SuperAdmin）
+## US-USER-007: 重置用户密码（SuperAdmin）
 
 **角色**: SuperAdmin / sysadmin
 **优先级**: Must
@@ -260,7 +269,7 @@ Server/Local → UsersController → IUserManagerService
 
 ---
 
-### US-USER-008: 修改个人资料（IDOR 防护）
+## US-USER-008: 修改个人资料（IDOR 防护）
 
 **角色**: 所有用户
 **优先级**: Must
@@ -275,7 +284,7 @@ Server/Local → UsersController → IUserManagerService
 
 ---
 
-### US-USER-009: 修改密码（需旧密码）
+## US-USER-009: 修改密码（需旧密码）
 
 **角色**: 所有用户
 **优先级**: Must
@@ -291,7 +300,7 @@ Server/Local → UsersController → IUserManagerService
 
 ---
 
-### US-USER-010: 启用/禁用用户
+## US-USER-010: 启用/禁用用户
 
 **角色**: Admin / SuperAdmin
 **优先级**: Must
@@ -307,7 +316,7 @@ Server/Local → UsersController → IUserManagerService
 
 ---
 
-### US-USER-011: 恢复软删除用户（层级管理）
+## US-USER-011: 恢复软删除用户（层级管理）
 
 **角色**: sysadmin 恢复 Admin；Admin 恢复 Doctor/Receptionist（一级管一级）
 **优先级**: Should
@@ -326,7 +335,7 @@ Server/Local → UsersController → IUserManagerService
 
 ---
 
-### US-USER-012: 批量操作（删除/启用/禁用）
+## US-USER-012: 批量操作（删除/启用/禁用）
 
 **角色**: Admin / SuperAdmin
 **优先级**: Should
@@ -364,21 +373,14 @@ Server/Local → UsersController → IUserManagerService
 
 ---
 
-## 变更日志
+## 变更记录
 
 | 日期 | 变更 | 原因 |
 | ------ | ------ | ------ |
-| 2026-08-03 | v3.3 | 权限模型更新：2 条策略 → 5 条（PolicyConstants 现状）+ 2026-08-03 操作级细分决策注 | 四角色需求审查 |
-| 2026-06-28 | v3.1 | 文档对齐：默认密码改为引用 `appsettings:DefaultPasswords`；本地密码/锁定策略与 auth/nfr 统一；补 12 个 US-USER 故事块 | 文档一致性修复 |
-| 2026-06-28 | v3.2 | US-USER-011 验收从 3 条扩展至 6 条（状态/归属/权限/硬删/审计）；US-USER-012 验收拆分删除/启用/禁用三组独立条件 | plan Task 7 边缘 US 修正 |
+| 2026-08-03 | v3.3 | 权限模型更新：2 条策略 → 5 条（PolicyConstants 现状）+ 2026-08-03 操作级细分决策注 |
+| 2026-06-28 | v3.1 | 文档对齐：默认密码改为引用 `appsettings:DefaultPasswords`；本地密码/锁定策略与 auth/nfr 统一；补 12 个 US-USER 故事块 |
+| 2026-06-28 | v3.2 | US-USER-011 验收从 3 条扩展至 6 条（状态/归属/权限/硬删/审计）；US-USER-012 验收拆分删除/启用/禁用三组独立条件 |
 | 2026-06-25 | 补充边界条件验收标准（并发会话、禁用用户中断操作） | 需求文档验收标准完善 |
 | 2026-06-20 | 从 v2.0 重写为 v3.0 | 用户模块重构：统一到 Identity，删除 User 实体 |
 | 2026-06-15 | v2.0 重建 | Phase 1 简化后重建 |
 | 2026-06-08 | v1.0 初始 | 初始需求文档 |
-
-### 软删语义补充（2026-08-13 softdelete-uniqueindex-fix）
-
-- **唯一约束**：ApplicationUser.UserName（UserNameIndex）+ Email（EmailIndex）为数据库唯一索引；软删用户**仍占用**唯一键（索引不释放）
-- **创建查重含软删**：`CreateUserCommandHandler` 对 UserName/Email 做含软删查重（IgnoreQueryFilters）——软删同名/同邮箱 → **422 友好提示**（「已被删除——请先恢复该用户或更换用户名/邮箱」）——**不产生 500**（原 FindByNameAsync 走 QueryFilter 不含软删 → 认为可用 → INSERT 撞索引 → DbUpdateException 500）
-- **恢复路径**：恢复（Restore）时 UserName 不变（索引行是自己的——无冲突）；422 查重阻止新用户占用软删名 → 软删用户可恢复
-- **业务实体（Herb/Formula/Patient）**：无数据库唯一索引（业务层 NameExists/电话查重）——查重过滤软删——软删同名可创建（不 500）；恢复时业务查重友好提示——不受本修复影响
