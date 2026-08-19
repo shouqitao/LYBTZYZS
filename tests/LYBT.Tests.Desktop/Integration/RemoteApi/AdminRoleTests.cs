@@ -34,8 +34,8 @@ public class AdminRoleTests : RemoteApiTestBase
         {
             Name = $"E2E患者{Guid.NewGuid():N}".Substring(0, 10),
             Gender = Gender.Male,
-            PhoneNumber = "13800138000",
-            IdNumber = $"11010119900101{new Random().Next(1000, 9999)}"
+            PhoneNumber = UniquePhone(),
+            IdNumber = UniqueIdNumber()
         };
         var created = await PatientApi.CreatePatientAsync(input);
         created.Success.Should().BeTrue(created.Message);
@@ -56,7 +56,7 @@ public class AdminRoleTests : RemoteApiTestBase
         {
             Name = $"E2E患者{Guid.NewGuid():N}".Substring(0, 10),
             Gender = Gender.Female,
-            PhoneNumber = "13900139000"
+            PhoneNumber = UniquePhone()
         };
         var created = await PatientApi.CreatePatientAsync(input);
         created.Success.Should().BeTrue(created.Message);
@@ -67,7 +67,7 @@ public class AdminRoleTests : RemoteApiTestBase
         {
             Name = $"E2E患者更新{Guid.NewGuid():N}".Substring(0, 10),
             Gender = Gender.Female,
-            PhoneNumber = "13900139000"
+            PhoneNumber = UniquePhone()
         };
         var resp = await PatientApi.UpdatePatientAsync(id, updated);
         resp.Success.Should().BeTrue(resp.Message);

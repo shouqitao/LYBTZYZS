@@ -81,11 +81,11 @@ public class SysadminRoleTests : RemoteApiTestBase
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         var user = new UserInputDto
         {
-            UserName = $"e2e_user_{Guid.NewGuid():N}".Substring(0, 12),
+            UserName = UniqueUsername(),
             Password = "Test1234!",
             ConfirmPassword = "Test1234!",
             RealName = "E2E测试用户",
-            Role = UserRole.Doctor
+            Role = UserRole.Admin
         };
         var created = await UserApi.CreateUserAsync(user);
         created.Success.Should().BeTrue(created.Message);

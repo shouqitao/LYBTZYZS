@@ -39,6 +39,16 @@ public abstract class RemoteApiTestBase : DesktopTestBase
     protected abstract string Username { get; }
     protected abstract string Password { get; }
 
+    protected static string UniquePhone() => $"138{Random.Shared.Next(10000000, 99999999)}";
+    protected static string UniqueIdNumber() => $"110101{DateTime.Now:yyyyMMdd}{Random.Shared.Next(1000, 9999)}";
+    protected static string UniqueUsername() => $"e2e_{Guid.NewGuid():N}".Substring(0, 12);
+
+    // 数据隔离：跟踪创建的实体，DisposeAsync 中清理
+    protected readonly List<Guid> CreatedPatientIds = new();
+    protected readonly List<Guid> CreatedUserIds = new();
+    protected readonly List<Guid> CreatedMedicalCaseIds = new();
+    protected readonly List<Guid> CreatedRegistrationIds = new();
+
     public override async Task InitializeAsync()
     {
         await base.InitializeAsync();
@@ -87,6 +97,24 @@ public abstract class RemoteApiTestBase : DesktopTestBase
 
     public override async Task DisposeAsync()
     {
+        // 清理跟踪的测试数据（最佳努力，忽略 API 不支持或已删除的情况）
+        foreach (var id in CreatedPatientIds)
+        {
+            try { await PatientApi.DeletePatientAsync(id); } catch { }
+        }
+        foreach (var id in CreatedUserIds)
+        {
+            try { await UserApi.DeleteUserAsync(id); } catch { }
+        }
+        foreach (var id in CreatedMedicalCaseIds)
+        {
+            try { await MedicalCaseApi.DeleteMedicalCaseAsync(id); } catch { }
+        }
+        foreach (var id in CreatedRegistrationIds)
+        {
+            try { await RegistrationApi.CancelAsync(id); } catch { }
+        }
+
         HttpClient?.Dispose();
         await base.DisposeAsync();
     }
