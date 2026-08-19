@@ -1,9 +1,13 @@
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Catalog.Mappers;
 using LYBT.Desktop.Catalog.Models;
 using LYBT.Desktop.Catalog.ViewModels.Handlers;
+using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -11,6 +15,7 @@ using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Utilities.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.Win32;
 
 namespace LYBT.Desktop.Catalog.ViewModels
 {
@@ -243,6 +248,129 @@ namespace LYBT.Desktop.Catalog.ViewModels
             Logger.LogInformation("按分类搜索药材: {Category}", category);
             SearchText = $"分类:{category}";
             await RefreshAsync();
+        }
+
+        #endregion
+
+        #region 批量导入/导出命令
+
+        /// <summary>导入 JSON 文件反序列化选项（camelCase + 枚举字符串，ADR-0022 对齐）</summary>
+        private static readonly JsonSerializerOptions ImportJsonOptions = new()
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter() }
+        };
+
+        /// <summary>下载导入模板（US-HERB-013）</summary>
+        [RelayCommand]
+        private async Task DownloadImportTemplateAsync()
+        {
+            try
+            {
+                var result = await _herbService.ExportTemplateAsync();
+                if (!result.Success || result.Data == null)
+                {
+                    await MasterDetailServices.Dialog.ShowErrorAsync(result.Error ?? "下载导入模板失败", "操作失败");
+                    return;
+                }
+
+                var dialog = new SaveFileDialog
+                {
+                    Filter = "JSON 文件|*.json",
+                    FileName = "药材导入模板.json",
+                    Title = "保存导入模板"
+                };
+                if (dialog.ShowDialog() != true) return;
+
+                await File.WriteAllBytesAsync(dialog.FileName, result.Data);
+                await MasterDetailServices.Dialog.ShowSuccessAsync($"模板已保存到：{dialog.FileName}", "下载成功");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "下载药材导入模板失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("下载模板", ex), "操作失败");
+            }
+        }
+
+        /// <summary>批量导入药材（US-HERB-006）</summary>
+        [RelayCommand]
+        private async Task ImportHerbsAsync()
+        {
+            var dialog = new OpenFileDialog
+            {
+                Filter = "JSON 文件|*.json",
+                Title = "选择药材导入文件"
+            };
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                var json = await File.ReadAllTextAsync(dialog.FileName);
+                var request = JsonSerializer.Deserialize<HerbBatchImportInputDto>(json, ImportJsonOptions);
+                if (request?.Herbs == null || request.Herbs.Count == 0)
+                {
+                    await MasterDetailServices.Dialog.ShowErrorAsync("文件中没有药材数据，请检查格式", "导入失败");
+                    return;
+                }
+
+                var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync(
+                    $"将导入 {request.Herbs.Count} 条药材记录（重复策略：{request.Strategy}），是否继续？", "确认导入");
+                if (!confirmed) return;
+
+                var result = await _herbService.BatchImportAsync(request);
+                if (!result.Success || result.Data == null)
+                {
+                    await MasterDetailServices.Dialog.ShowErrorAsync(result.Error ?? "批量导入失败", "操作失败");
+                    return;
+                }
+
+                var data = result.Data;
+                var msg = $"导入完成：成功 {data.SuccessCount} 条，失败 {data.FailureCount} 条，跳过 {data.SkippedCount} 条";
+                await MasterDetailServices.Dialog.ShowSuccessAsync(msg, "导入结果");
+                _cacheManager.InvalidateHerbCaches();
+                await RefreshAsync();
+            }
+            catch (JsonException ex)
+            {
+                Logger.LogError(ex, "解析药材导入文件失败: {File}", dialog.FileName);
+                await MasterDetailServices.Dialog.ShowErrorAsync("文件格式错误，请使用下载的 JSON 模板", "导入失败");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "批量导入药材失败: {File}", dialog.FileName);
+                await MasterDetailServices.Dialog.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导入药材", ex), "操作失败");
+            }
+        }
+
+        /// <summary>导出药材数据（US-HERB-007/013）</summary>
+        [RelayCommand]
+        private async Task ExportHerbsAsync()
+        {
+            try
+            {
+                var result = await _herbService.ExportHerbsAsync(SearchText);
+                if (!result.Success || result.Data == null)
+                {
+                    await MasterDetailServices.Dialog.ShowErrorAsync(result.Error ?? "导出药材数据失败", "操作失败");
+                    return;
+                }
+
+                var dialog = new SaveFileDialog
+                {
+                    Filter = "JSON 文件|*.json",
+                    FileName = $"药材导出_{DateTime.Now:yyyyMMddHHmmss}.json",
+                    Title = "保存导出文件"
+                };
+                if (dialog.ShowDialog() != true) return;
+
+                await File.WriteAllBytesAsync(dialog.FileName, result.Data);
+                await MasterDetailServices.Dialog.ShowSuccessAsync($"已导出 {result.Data.Length} 字节到：{dialog.FileName}", "导出成功");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导出药材数据失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导出药材", ex), "操作失败");
+            }
         }
 
         #endregion

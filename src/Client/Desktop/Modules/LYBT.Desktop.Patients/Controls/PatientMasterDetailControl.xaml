@@ -63,9 +63,33 @@
                     BatchEnableCommand="{Binding BatchEnableCommand}"
                     BatchDisableCommand="{Binding BatchDisableCommand}"
                     CreateCommand="{Binding CreateNewCommand}"
+                    ExportCommand="{Binding ExportPatientsCommand}"
                     RefreshCommand="{Binding RefreshCommand}">
                     <controls:DataGridToolbar.AdditionalContent>
                         <StackPanel Orientation="Horizontal">
+                            <!--  批量导入操作（US-PAT-011/012）  -->
+                            <Button
+                                Margin="8,0,0,0"
+                                Padding="12,6"
+                                Command="{Binding DownloadImportTemplateCommand}"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                ToolTip="下载导入模板">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="FileDocumentOutline" VerticalAlignment="Center" />
+                                    <TextBlock Margin="8,0,0,0" Text="模板" />
+                                </StackPanel>
+                            </Button>
+                            <Button
+                                Margin="8,0,0,0"
+                                Padding="12,6"
+                                Command="{Binding ImportPatientsCommand}"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                ToolTip="批量导入患者">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Import" VerticalAlignment="Center" />
+                                    <TextBlock Margin="8,0,0,0" Text="导入" />
+                                </StackPanel>
+                            </Button>
                             <!--  主操作  -->
                             <Button
                                 Margin="8,0,0,0"

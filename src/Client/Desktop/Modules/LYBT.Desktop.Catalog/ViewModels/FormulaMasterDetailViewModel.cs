@@ -1,10 +1,14 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Catalog.Models;
 using LYBT.Desktop.Catalog.ViewModels.Handlers;
+using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
@@ -12,6 +16,7 @@ using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
 using Prism.Regions;
+using Microsoft.Win32;
 
 namespace LYBT.Desktop.Catalog.ViewModels
 {
@@ -307,6 +312,129 @@ namespace LYBT.Desktop.Catalog.ViewModels
             Logger.LogInformation("按分类搜索验方: {Category}", category);
             SearchText = $"分类:{category}";
             await RefreshAsync();
+        }
+
+        #endregion
+
+        #region 批量导入/导出命令
+
+        /// <summary>导入 JSON 文件反序列化选项（camelCase + 枚举字符串，ADR-0022 对齐）</summary>
+        private static readonly JsonSerializerOptions ImportJsonOptions = new()
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter() }
+        };
+
+        /// <summary>下载导入模板（US-FORM-013）</summary>
+        [RelayCommand]
+        private async Task DownloadImportTemplateAsync()
+        {
+            try
+            {
+                var result = await _formulaService.ExportTemplateAsync();
+                if (!result.Success || result.Data == null)
+                {
+                    await MasterDetailServices.Dialog.ShowErrorAsync(result.Error ?? "下载导入模板失败", "操作失败");
+                    return;
+                }
+
+                var dialog = new SaveFileDialog
+                {
+                    Filter = "JSON 文件|*.json",
+                    FileName = "验方导入模板.json",
+                    Title = "保存导入模板"
+                };
+                if (dialog.ShowDialog() != true) return;
+
+                await File.WriteAllBytesAsync(dialog.FileName, result.Data);
+                await MasterDetailServices.Dialog.ShowSuccessAsync($"模板已保存到：{dialog.FileName}", "下载成功");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "下载验方导入模板失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("下载模板", ex), "操作失败");
+            }
+        }
+
+        /// <summary>批量导入验方（US-FORM-006）</summary>
+        [RelayCommand]
+        private async Task ImportFormulasAsync()
+        {
+            var dialog = new OpenFileDialog
+            {
+                Filter = "JSON 文件|*.json",
+                Title = "选择验方导入文件"
+            };
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                var json = await File.ReadAllTextAsync(dialog.FileName);
+                var request = JsonSerializer.Deserialize<FormulaBatchImportInputDto>(json, ImportJsonOptions);
+                if (request?.Formulas == null || request.Formulas.Count == 0)
+                {
+                    await MasterDetailServices.Dialog.ShowErrorAsync("文件中没有验方数据，请检查格式", "导入失败");
+                    return;
+                }
+
+                var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync(
+                    $"将导入 {request.Formulas.Count} 条验方记录，是否继续？", "确认导入");
+                if (!confirmed) return;
+
+                var result = await _formulaService.BatchImportAsync(request);
+                if (!result.Success || result.Data == null)
+                {
+                    await MasterDetailServices.Dialog.ShowErrorAsync(result.Error ?? "批量导入失败", "操作失败");
+                    return;
+                }
+
+                var data = result.Data;
+                var msg = $"导入完成：成功 {data.SuccessCount} 条，失败 {data.FailureCount} 条，匹配药材 {data.MatchedHerbsCount} 味";
+                await MasterDetailServices.Dialog.ShowSuccessAsync(msg, "导入结果");
+                _cacheManager.InvalidateFormulaCaches();
+                await RefreshAsync();
+            }
+            catch (JsonException ex)
+            {
+                Logger.LogError(ex, "解析验方导入文件失败: {File}", dialog.FileName);
+                await MasterDetailServices.Dialog.ShowErrorAsync("文件格式错误，请使用下载的 JSON 模板", "导入失败");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "批量导入验方失败: {File}", dialog.FileName);
+                await MasterDetailServices.Dialog.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导入验方", ex), "操作失败");
+            }
+        }
+
+        /// <summary>导出验方数据（US-FORM-013）</summary>
+        [RelayCommand]
+        private async Task ExportFormulasAsync()
+        {
+            try
+            {
+                var result = await _formulaService.ExportFormulasAsync();
+                if (!result.Success || result.Data == null)
+                {
+                    await MasterDetailServices.Dialog.ShowErrorAsync(result.Error ?? "导出验方数据失败", "操作失败");
+                    return;
+                }
+
+                var dialog = new SaveFileDialog
+                {
+                    Filter = "JSON 文件|*.json",
+                    FileName = $"验方导出_{DateTime.Now:yyyyMMddHHmmss}.json",
+                    Title = "保存导出文件"
+                };
+                if (dialog.ShowDialog() != true) return;
+
+                await File.WriteAllBytesAsync(dialog.FileName, result.Data);
+                await MasterDetailServices.Dialog.ShowSuccessAsync($"已导出 {result.Data.Length} 字节到：{dialog.FileName}", "导出成功");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导出验方数据失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导出验方", ex), "操作失败");
+            }
         }
 
         #endregion

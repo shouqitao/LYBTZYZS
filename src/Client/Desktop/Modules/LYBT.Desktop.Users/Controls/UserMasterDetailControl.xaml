@@ -46,7 +46,6 @@
                     BatchEnableCommand="{Binding BatchEnableCommand}"
                     BatchDisableCommand="{Binding BatchDisableCommand}"
                     CreateCommand="{Binding CreateNewCommand}"
-                    ExportCommand="{Binding ExportCommand}"
                     RefreshCommand="{Binding RefreshCommand}">
                     <controls:DataGridToolbar.AdditionalContent>
                         <StackPanel Orientation="Horizontal">

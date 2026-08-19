@@ -53,6 +53,18 @@
                     RefreshCommand="{Binding RefreshCommand}">
                     <controls:DataGridToolbar.AdditionalContent>
                         <StackPanel Orientation="Horizontal">
+                            <!--  批量导入操作（US-HERB-006/013）  -->
+                            <Button
+                                Margin="8,0,0,0"
+                                Padding="12,6"
+                                Command="{Binding DownloadImportTemplateCommand}"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                ToolTip="下载导入模板">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="FileDocumentOutline" VerticalAlignment="Center" />
+                                    <TextBlock Margin="8,0,0,0" Text="模板" />
+                                </StackPanel>
+                            </Button>
                             <!--  导入（单一次要操作，平铺为Outlined按钮）  -->
                             <Button
                                 Margin="8,0,0,0"
