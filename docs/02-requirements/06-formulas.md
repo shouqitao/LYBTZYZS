@@ -1,8 +1,6 @@
 # 验方管理 (Formula Management)
 
-> 版本: v2.1 | 日期: 2026-08-02 | 状态: 已更新
-
-> **用户速览**：验方 = 医生的「常用方剂笔记本」。把自己常用的药方组合存起来，下次开方时一键导入，不用重新录入。
+> 验方（经验方/Formula）是中医诊所在长期临床实践中积累的固定药方模板，由若干味药材按特定剂量、煎法组成。模块负责验方模板的创建、编辑、共享、验证和批量导入导出，核心特色是**延迟绑定 + 验证工作流**——导入验方的药材名称可暂不关联系统药材库，后续通过验证端点逐个绑定；所有药材完成验证后自动晋升 `Validated`，已验证验方药材被修改则自动降级回 `Draft`（FLAW-F1）。
 >
 > | 我是… | 我能… |
 > | ------- | ------- |
@@ -12,21 +10,7 @@
 
 ---
 
-## 模块概述
-
-验方（经验方/Formula）是中医诊所在长期临床实践中积累的固定药方模板，由若干味药材按特定剂量、煎法组成。验方管理模块负责验方模板的创建、编辑、共享、验证和批量导入导出，是连接药材库与处方的关键桥梁：医生开具处方时可一键导入经验方药材组成，减少重复录入。
-
-本模块的核心特色是**延迟绑定 + 验证工作流**——从旧系统导入的验方药材名称（自由文本）可暂不关联系统药材库，后续通过验证端点逐个绑定到系统药材（Herb）。所有药材完成验证后验方自动晋升为 `Validated` 状态；若已验证验方的药材被修改，系统会自动降级回 `Draft`，确保数据一致性（FLAW-F1 修复）。
-
-## 业务规则
-
-1. **所有权模型**: Doctor 仅可见自己创建的 + `IsShared=true` 的验方；Admin 可见全部。端点策略已排前台（类级 `DoctorOrAdmin`，前台不可查，已落地）。
-2. **验证状态机**: `Draft ↔ Validated`。新建验方默认 `Draft`；当且仅当所有 `FormulaHerbItem.IsValidated=true` 时晋升 `Validated`。
-3. **药材绑定**: `OriginalHerbName`（自由文本）→ `SelectedHerbId`（系统药材）；`IsValidated` 当且仅当 `HerbId.HasValue`。
-4. **FLAW-F1 修复**: 药材增删改会触发状态重新评估；若任一药材未验证，已为 `Validated` 的验方自动降级回 `Draft`。
-5. **价格策略**: 经验方本身不含价格（FORM-D02）。处方导入验方时根据 `HerbId` 从药材库获取当前单价，价格计算在处方层完成。
-6. **批量导入**: 导入验方默认为 `Draft`；若导入时通过拼音/名称匹配到所有系统药材，则自动晋升为 `Validated`。
-7. **记录-Only 模式**: 不管理库存，仅维护药材基础信息。
+## 模块级业务规则
 
 ### 验证状态机
 
@@ -50,9 +34,19 @@ stateDiagram-v2
 
 > 完整权限矩阵见权威文档 [04-permissions.md](../01-product/04-permissions.md)。
 
-## 用户故事
+### 通用规则
 
-### US-FORM-001: 分页查询验方列表（按所有权）
+1. **所有权模型**: Doctor 仅可见自己创建的 + `IsShared=true` 的验方；Admin 可见全部。端点策略已排前台（类级 `DoctorOrAdmin`，前台不可查，已落地）。
+2. **验证状态机**: `Draft ↔ Validated`。新建验方默认 `Draft`；当且仅当所有 `FormulaHerbItem.IsValidated=true` 时晋升 `Validated`。
+3. **药材绑定**: `OriginalHerbName`（自由文本）→ `SelectedHerbId`（系统药材）；`IsValidated` 当且仅当 `HerbId.HasValue`。
+4. **FLAW-F1 修复**: 药材增删改会触发状态重新评估；若任一药材未验证，已为 `Validated` 的验方自动降级回 `Draft`。
+5. **价格策略**: 经验方本身不含价格（FORM-D02）。处方导入验方时根据 `HerbId` 从药材库获取当前单价，价格计算在处方层完成。
+6. **批量导入**: 导入验方默认为 `Draft`；若导入时通过拼音/名称匹配到所有系统药材，则自动晋升为 `Validated`。
+7. **记录-Only 模式**: 不管理库存，仅维护药材基础信息。
+
+---
+
+## US-FORM-001: 分页查询验方列表（按所有权）
 
 **角色**: 医生、管理员
 **优先级**: Must
@@ -75,7 +69,7 @@ stateDiagram-v2
 3. 列表包含药材数量，不显示价格（经验方不涉及价格）
 4. 默认按 CreatedAt DESC 排序
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -86,7 +80,7 @@ stateDiagram-v2
 
 ---
 
-### US-FORM-002: 查看验方详情
+## US-FORM-002: 查看验方详情
 
 **角色**: 医生、管理员
 **优先级**: Must
@@ -106,7 +100,7 @@ stateDiagram-v2
 2. 包含每味药材的验证状态（IsValidated）和绑定状态（HerbId 是否有值）
 3. 共享验方对 Doctor 只读
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -117,7 +111,7 @@ stateDiagram-v2
 
 ---
 
-### US-FORM-003: 创建验方（Draft 初始状态）
+## US-FORM-003: 创建验方（Draft 初始状态）
 
 **角色**: 医生、管理员
 **优先级**: Must
@@ -155,7 +149,7 @@ stateDiagram-v2
 - **herbs 集合来源 = 药材目录查询（可缓存）**；提交时的组合 = 请求体快照（不依赖缓存）
 - 后端校验：herbId 不存在/已删除 → 422（引用校验）；空 herbs → 400（AC）
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -166,7 +160,7 @@ stateDiagram-v2
 
 ---
 
-### US-FORM-004: 更新验方（触发状态重新评估）
+## US-FORM-004: 更新验方（触发状态重新评估）
 
 **角色**: 医生、管理员
 **优先级**: Must
@@ -187,7 +181,12 @@ stateDiagram-v2
 3. **FLAW-F1**：药材增删改会触发状态重新评估；若任一药材 `IsValidated=false`，已为 `Validated` 的验方自动降级回 `Draft`
 4. 药材组成至少 1 味
 
-**双模式**:
+**边界条件**:
+
+- 两个管理员同时编辑同一验方 → 后提交者覆盖先提交者（Last Write Wins），乐观锁冲突时返回 409
+- 一人正在验证药材，另一人同时更新验方药材列表 → 药材列表替换后触发状态重新评估（FLAW-F1），最终状态取决于最后一次操作
+
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -198,7 +197,7 @@ stateDiagram-v2
 
 ---
 
-### US-FORM-005: 删除验方（软删除）
+## US-FORM-005: 删除验方（软删除）
 
 **角色**: 医生、管理员
 **优先级**: Must
@@ -219,7 +218,7 @@ stateDiagram-v2
 3. 验方无被引用关系（导入处方为数据复制，无强关联），可直接删除
 4. 支持批量删除
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -230,7 +229,7 @@ stateDiagram-v2
 
 ---
 
-### US-FORM-006: 批量导入验方
+## US-FORM-006: 批量导入验方
 
 **角色**: 管理员
 **优先级**: Must
@@ -251,9 +250,9 @@ stateDiagram-v2
 2. 导入的药材默认 `IsValidated=false`
 3. 药材匹配机制：通过 `ICrossModuleService.GetHerbByNameOrPinyinAsync()` 匹配系统药材；匹配失败则 `HerbId=null`、`IsValidated=false`，保留供后续手动绑定
 4. 返回成功列表和失败详情（含匹配/未匹配药材数）
-5. 客户端 NPOI 本地解析 Excel，支持双模式
+5. 客户端本地解析 Excel（2026-08-13：后端不涉及 Excel——服务端收 JSON/DTO，Excel 解析由前端负责，如 NPOI 类库已移除）
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -264,7 +263,7 @@ stateDiagram-v2
 
 ---
 
-### US-FORM-007: 查询待验证验方（Doctor to-do）
+## US-FORM-007: 查询待验证验方（Doctor to-do）
 
 **角色**: 医生、管理员
 **优先级**: Must
@@ -284,7 +283,7 @@ stateDiagram-v2
 2. 用于 Doctor 的待办列表（to-do list）
 3. 支持分页
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -295,7 +294,7 @@ stateDiagram-v2
 
 ---
 
-### US-FORM-008: 验证单个药材（绑定系统药材）
+## US-FORM-008: 验证单个药材（绑定系统药材）
 
 **角色**: 医生、管理员
 **优先级**: Must
@@ -319,7 +318,7 @@ stateDiagram-v2
 5. 绑定后 `IsValidated=true`、`HerbId` 填充
 6. `ValidateFormulaHerbAsync`：验证单个药材；当 ALL 药材验证完成，自动晋升 `Validated`（US-FORM-009）
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -330,7 +329,7 @@ stateDiagram-v2
 
 ---
 
-### US-FORM-009: 全部药材验证后自动晋升 Validated
+## US-FORM-009: 全部药材验证后自动晋升 Validated
 
 **角色**: 系统
 **优先级**: Must
@@ -349,7 +348,7 @@ stateDiagram-v2
 2. 若全部 `IsValidated=true` → 自动晋升 `Validated`
 3. 晋升后验方满足处方导入条件（`ValidationStatus=Validated` 且 `Status=Enabled`）
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -360,7 +359,7 @@ stateDiagram-v2
 
 ---
 
-### US-FORM-010: 药材变更后降级 Draft（FLAW-F1）
+## US-FORM-010: 药材变更后降级 Draft（FLAW-F1）
 
 **角色**: 系统
 **优先级**: Must
@@ -379,7 +378,12 @@ stateDiagram-v2
 2. 若任一药材未验证，已为 `Validated` 的验方自动降级回 `Draft`
 3. 降级后处方导入对话框过滤掉此验方（仅展示 `Validated` 且 `Enabled`）
 
-**双模式**:
+**边界条件**:
+
+- 验方已为 Validated，管理员禁用其中一味药材 → 该验方不自动降级（禁用≠未验证），但导入处方时该药材被跳过
+- 验方已为 Validated，管理员删除其中一味药材 → 触发 FLAW-F1 降级回 Draft（药材数减少导致未验证）
+
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -390,7 +394,7 @@ stateDiagram-v2
 
 ---
 
-### US-FORM-011: 启用/禁用验方
+## US-FORM-011: 启用/禁用验方
 
 **角色**: 管理员
 **优先级**: Must
@@ -411,7 +415,7 @@ stateDiagram-v2
 3. 支持批量启用/禁用
 4. **处方导入对话框仅展示 `ValidationStatus=Validated` 且 `Status=Enabled` 的验方**（MC-D08，见 [07-medical-cases.md](07-medical-cases.md)）
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -422,7 +426,7 @@ stateDiagram-v2
 
 ---
 
-### US-FORM-012: 恢复软删除验方
+## US-FORM-012: 恢复软删除验方
 
 **角色**: 管理员
 **优先级**: Should
@@ -441,7 +445,7 @@ stateDiagram-v2
 2. 仅 Admin 可恢复（业务管理；sysadmin 系统运维不碰业务）
 3. 恢复后验方状态保持删除前的 ValidationStatus
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -452,7 +456,7 @@ stateDiagram-v2
 
 ---
 
-### US-FORM-013: 批量操作 + 导出 + 模板
+## US-FORM-013: 批量操作 + 导出 + 模板
 
 **角色**: 管理员
 **优先级**: Should
@@ -474,7 +478,7 @@ stateDiagram-v2
 3. 客户端负责 Excel 生成（如需）；后端只出 JSON
 4. 模板允许匿名访问（AllowAnonymous）
 
-**双模式**:
+**双模式差异**:
 
 | 模式 | 行为 |
 |------|------|
@@ -485,28 +489,7 @@ stateDiagram-v2
 
 ---
 
-## 边界条件验收标准
-
-### 并发编辑验方
-
-- [ ] 两个管理员同时编辑同一验方 → 后提交者覆盖先提交者（Last Write Wins），乐观锁冲突时返回 409
-- [ ] 一人正在验证药材，另一人同时更新验方药材列表 → 药材列表替换后触发状态重新评估（FLAW-F1），最终状态取决于最后一次操作
-
-### Draft→Validated 晋升边界
-
-- [ ] 验证最后一味药材后自动晋升为 Validated → 但若同时有药材被禁用（Status=Disabled）→ 晋升成功但导入处方时该药材被跳过（MC-D09）
-- [ ] 验方已为 Validated，管理员禁用其中一味药材 → 该验方不自动降级（禁用≠未验证），但导入处方时该药材被跳过
-- [ ] 验方已为 Validated，管理员删除其中一味药材 → 触发 FLAW-F1 降级回 Draft（药材数减少导致未验证）
-
-## 交叉引用
-
-- [医案管理 US-MC-016 验方导入到处方](07-medical-cases.md)（MC-D08 过滤条件：仅 `Validated` 且 `Enabled` 验方可导入）
-- [药材管理](05-herbs.md)（跨模块查询 `ICrossModuleService.GetHerbBasicInfoAsync`）
-- [术语表 Formula = 验方/经验方（NOT 公式）](../01-product/03-glossary.md)
-
----
-
-### US-FORM-014: 克隆验方（R3-补：已实现未文档化）
+## US-FORM-014: 克隆验方
 
 **角色**: 医生
 **优先级**: Should
@@ -521,6 +504,16 @@ stateDiagram-v2
 - [ ] 远程模式补端点（WebAPI 当前缺失——T 批次待补）
 
 **实现参考**: `src/Client/Desktop/LocalWebAPI/Controllers/CatalogController.cs:459`（clone）、Desktop `IFormulaApi.cs:48`/`FormulasHttpApiClient.cs:39`
+
+---
+
+## 交叉引用
+
+- [医案管理 US-MC-016 验方导入到处方](07-medical-cases.md)（MC-D08 过滤条件：仅 `Validated` 且 `Enabled` 验方可导入）
+- [药材管理](05-herbs.md)（跨模块查询 `ICrossModuleService.GetHerbBasicInfoAsync`）
+- [术语表 Formula = 验方/经验方（NOT 公式）](../01-product/03-glossary.md)
+
+---
 
 ## 变更记录
 
