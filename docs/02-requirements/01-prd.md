@@ -216,5 +216,5 @@ v1.0 包含 **10 个功能模块、142 个 User Stories**（Must / Should / Coul
 | 2026-08-03 | v3.1 | 角色体系同步 personas v4.x：SuperAdmin 表述更新为「Sysadmin（独立用户，角色 SuperAdmin）」；目标用户表更新 | 四角色需求审查（L1） |
 | 2026-06-15 | v2.0 | 重建：合并原独立权限矩阵文档（448 行）为本文件 §权限矩阵；模块从 15 精简为 10；US 总数 138→136；统一采用 `US-` 编号；WHO/WHY 上下文迁移至 `../01-product/` |
 | 2026-06-25 | v2.1 | 修正 US 总数 136→128（实际计数）；Platform 模块 US 数 37→35 |
-| 2026-06-28 | v2.2 | 文档对齐：US 总数统一 136；Sync 模块移出 v1.0（9 模块）；Platform 35→43（含 SHELL-010~019 中 v1.0 的 8 项）；AccessToken 统一 60 分钟 |
+| 2026-06-28 | v2.2 | 文档对齐：US 总数统一 136；Sync 模块移出 v1.0（9 模块）；Platform 35→43（含 SHELL-010~019 中 v1.0 的 8 项）；AccessToken 改为配置驱动（base 480/Dev·Test 60/Prod 30） |
 | 2026-06-28 | v2.3 | 范围修正：消除 G2 范围矛盾，US 总数统一 141（=baseline 136 + MC-019 复用处方[D6] + REG-008 SignalR 推送[R10] + REPORT×3 报表[A7]）；模块 9→10（补报表行）；MC 18→19、REG 7→8；追溯矩阵与 baseline spec 同步对齐 |
