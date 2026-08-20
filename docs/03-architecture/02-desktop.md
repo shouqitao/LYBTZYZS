@@ -17,7 +17,7 @@ graph TB
         Clinical["Desktop.Clinical<br>(临床工作台)"]
     end
 
-    subgraph Modules["Modules 层 (业务模块 x8)"]
+    subgraph Modules["Modules 层 (业务模块 x7)"]
         M_Auth["Auth"]
         M_Users["Users"]
         M_Patients["Patients"]
@@ -67,7 +67,7 @@ graph TB
 
 **跨层镜像接口清单（同名字、不同程序集，设计内镜像防误改）**：`IFormulaRepository` / `IHerbRepository` / `IUserRepository` / `IRegistrationRepository` / `IMedicalCaseRepository` / `IPatientRepository` / `IFormulaService` —— Server 侧为 EF 仓储/服务接口（`src/Server/Modules/*/Interfaces/`），Desktop.Contracts 侧为 API 客户端仓储/服务接口。语义不同不可互相替换，改名须两处同步。
 
-### Modules（7 个业务模块）
+### Modules（6 个业务模块）
 
 | 模块 | 文件数 | 结构 | 依据 |
 |------|--------|------|------|
