@@ -153,7 +153,7 @@ Desktop 通过 `Mutex`（`Global\LYBTZYZS_Shell_Instance`）强制单实例运�
 | 配置 | 远程模式 | 本地模式 |
 |------|---------|---------|
 | AccessToken 有效期 | 配置驱动（base 480/Dev·Test 60/Prod 30 分钟，`JwtService.cs:110`） | 1 年 |
-| RefreshToken 有效期 | 7 天（族旋转） | 不适用 |
+| RefreshToken 有效期 | 详见 [[02-auth]]（族旋转） | 不适用 |
 | AutoLoginToken | 服务端可撤销，成功后轮换 | 不适用 |
 | 登录限流 | 5 次/窗口（内网 20 次） | 5 次/分钟 |
 | 账户锁定 | 可配置 `MaxFailedCount` / `LockoutMinutes` | 同左 |

@@ -16,7 +16,7 @@
 
 ### 架构与设计原则
 
-医案模块采用 CQRS（Command Query Responsibility Segregation）+ 聚合根模式：5 个 CQRS 服务（Command/Query/Processing/Audit/Print）由 `IMedicalCaseFacade` 聚合门面统一调度。所有业务规则集中在 `MedicalCaseBusinessRules`。
+医案模块采用 CQRS + 聚合根模式（CQRS 定义见 [[03-server]]）：5 个服务（Command/Query/Processing/Audit/Print）由 `IMedicalCaseFacade` 聚合门面统一调度。所有业务规则集中在 `MedicalCaseBusinessRules`。
 
 1. **单一聚合根**：Consultation 和 Prescription 是 MedicalCase 的内部实体，无独立 CRUD 接口；外部模块（如验方导入）通过 MedicalCase 聚合根间接操作。
 2. **状态机驱动**：状态转换由域方法统一控制（如 `CompleteAsync`），禁止通过 `UpdateStatusAsync` 直接设置 `Completed`。

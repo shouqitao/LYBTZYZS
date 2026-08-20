@@ -47,7 +47,7 @@
 ## Auth/Session Flow
 
 1. Desktop → `POST /api/v1/auth/login` → Server 验证凭据
-2. Server 返回 JWT AccessToken (30min) + 🧲 RefreshToken (7d，族旋转；D3 B+ v1.0 补回，重放检测 v2.0)
+2. Server 返回 JWT AccessToken + RefreshToken（族旋转），详见 [[02-auth]]
 3. Desktop 存储 Token (内存，进程退出自动清除)
 4. 后续请求携带 `Authorization: Bearer <token>`
 5. Token 过期前自动刷新 (TokenRefreshHandler)

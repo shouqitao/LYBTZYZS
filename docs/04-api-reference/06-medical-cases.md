@@ -7,7 +7,7 @@
 ## 概述
 
 医案 (MedicalCase) 是系统核心聚合根，包含 Consultation (诊断) 和 Prescription (处方) 子实体。
-采用 CQRS 原则: Command/Query/State 服务分离。所有写操作通过聚合根统一保存。
+采用 CQRS 原则（见 [[03-server]]）: Command/Query/State 服务分离。所有写操作通过聚合根统一保存。
 资源级授权通过 `MedicalCaseAuthorizationHandler` 实现。
 
 **所有响应使用统一信封**: `ApiResponse<T>` (`{ "success": true, "message": "...", "data": T, "errors": null, "timestamp": ..., "requestId": "..." }`，**无 `code` 字段**，基线§6)
