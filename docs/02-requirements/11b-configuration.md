@@ -22,7 +22,7 @@
 
 **业务规则**:
 
-1. 端点受 `AdminOrSuperAdmin` 策略保护。
+1. 端点受 `SysAdminOnly` 策略保护。
 2. 配置节名称由各 Options 类内联 `SectionName` 常量统一管理（见 07-configuration.md「配置节命名约定」）。
 3. 敏感配置（SecretKey/Password）脱敏展示。
 
