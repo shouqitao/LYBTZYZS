@@ -6,6 +6,8 @@
 
 ---
 
+本文档定义 WPF Desktop 客户端的架构设计规范，涵盖 Prism MVVM 模式、数据流、模块目录结构、命名约定和架构约束。目标是统一所有业务域（Herb/Formula/Patient/User/Registration/MedicalCase）的 Desktop 层实现方式，确保 DTO 不暴露到 UI 层、EditContext 支持取消恢复。
+
 ## 一、设计原则
 
 ### 1.1 Prism MVVM 核心原则（官方）
