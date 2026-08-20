@@ -10,14 +10,14 @@
 
 ### 1.1 Prism MVVM 核心原则（官方）
 
-| 原则 | 说明 | 本项目现状 |
-|------|------|-----------|
-| View 只绑定 ViewModel | View 的 DataContext = ViewModel，不直接操作 Model/DTO | ✅ 基本遵守 |
-| ViewModel 不引用 UI 类型 | ViewModel 禁止引用 Button/ListView 等控件类型 | ✅ 遵守 |
-| Model 是可编辑的数据副本 | ViewModel 操作 Model（可修改），不是操作 DTO（传输对象） | ⚠️ Registration 违反 |
-| Service 是唯一数据通道 | ViewModel 通过 Service 获取/保存数据，不直接调用 API Client | ✅ 基本遵守 |
-| 1 View = 1 ViewModel | 每个 View 有对应 ViewModel，通过 AutoWire 绑定 | ✅ 遵守 |
-| 模块自治 | 每个模块封装自己的 Views/ViewModels/Models/Services | ⚠️ 目录结构不一致 |
+| 原则 | 说明 |
+|------|------|
+| View 只绑定 ViewModel | View 的 DataContext = ViewModel，不直接操作 Model/DTO |
+| ViewModel 不引用 UI 类型 | ViewModel 禁止引用 Button/ListView 等控件类型 |
+| Model 是可编辑的数据副本 | ViewModel 操作 Model（可修改），不是操作 DTO（传输对象） |
+| Service 是唯一数据通道 | ViewModel 通过 Service 获取/保存数据，不直接调用 API Client |
+| 1 View = 1 ViewModel | 每个 View 有对应 ViewModel，通过 AutoWire 绑定 |
+| 模块自治 | 每个模块封装自己的 Views/ViewModels/Models/Services |
 
 ### 1.2 本项目额外原则
 
