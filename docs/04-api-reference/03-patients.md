@@ -205,7 +205,7 @@ Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-pa
 
 恢复已删除的患者（绕过软删除全局过滤器）。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `AdminOrSuperAdmin`
 - **路径参数**: `id` (Guid)
 - **响应**: `ApiResponse<PatientDetailDto>`
 
