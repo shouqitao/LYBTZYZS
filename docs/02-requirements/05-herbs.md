@@ -34,14 +34,8 @@
 2. 拼音搜索基于 `PinyinAbbreviation` 字段（如 "dg" 匹配 "当归"）
 3. 结果受 OutputCache 缓存（`HerbsCache` 策略）提升查询性能
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `CatalogController.cs:50` (HttpGet list), `IHerbService`, OutputCache `HerbsCache`
+**实现参考**: `CatalogController.cs` (HttpGet list), `IHerbService`, OutputCache `HerbsCache`
 
 ---
 
@@ -65,14 +59,8 @@
 1. GET 端点受 `DoctorOrAdmin` 策略保护（前台不可查；已落地）
 2. 药材详情同样受 OutputCache 缓存
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `CatalogController.cs:107` (HttpGet `{id}`), `IHerbService`
+**实现参考**: `CatalogController.cs` (HttpGet `{id}`), `IHerbService`
 
 ---
 
@@ -97,14 +85,8 @@
 2. 新药材默认 `IsEnabled=true`、`IsDeleted=false`
 3. 端点受 `AdminOrSuperAdmin` 策略保护（写操作仅 Admin，已落地 C2）
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `CatalogController.cs:124` (HttpPost create), `IHerbService`
+**实现参考**: `CatalogController.cs` (HttpPost create), `IHerbService`
 
 ---
 
@@ -129,14 +111,8 @@
 2. 名称唯一约束同样适用于更新
 3. 端点受 `AdminOrSuperAdmin` 策略保护（写操作仅 Admin，已落地 C2）
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `CatalogController.cs:146` (HttpPut `{id}`), `IHerbService`
+**实现参考**: `CatalogController.cs` (HttpPut `{id}`), `IHerbService`
 
 ---
 
@@ -162,14 +138,8 @@
 2. 被引用的药材不可删除（保护已开处方完整性），返回 422
 3. 软删除通过全局查询过滤器自动隐藏
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `CatalogController.cs:174` (HttpDelete `{id}`), `IHerbService`
+**实现参考**: `CatalogController.cs` (HttpDelete `{id}`), `IHerbService`
 
 ---
 
@@ -198,14 +168,8 @@
 5. **重复处理策略（模块规则）**：`DuplicateStrategy` 枚举（Skip/Update/Error）
 6. **批量上限（模块规则）**：单次批量导入最多 10000 条记录
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `CatalogController.cs:262` (HttpPost `batch-import`——DTO/JSON 唯一导入路径)
+**实现参考**: `CatalogController.cs` (HttpPost `batch-import`——DTO/JSON 唯一导入路径)
 
 ---
 
@@ -230,12 +194,6 @@
 2. 端点受 `AdminOrSuperAdmin` 策略保护（写操作仅 Admin，已落地 C2）
 3. 与 US-HERB-013 的导出端点不同：本端点导出全部，US-HERB-013 支持筛选导出 + 模板下载
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
 
 **实现参考**: `CatalogController.cs` (HttpGet `export-all`)
 
@@ -261,14 +219,8 @@
 1. 引用检查查询 Prescription 表中引用该药材的处方项数量
 2. 此端点允许 Doctor 与 Admin 查询（开方者需了解药材状态）
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `CatalogController.cs:287` (HttpGet `{id}/check-reference`), `IHerbService`
+**实现参考**: `CatalogController.cs` (HttpGet `{id}/check-reference`), `IHerbService`
 
 ---
 
@@ -292,14 +244,8 @@
 1. 批量引用检查通过单次聚合查询实现（避免逐项 N+1）
 2. 用于批量删除前的预检
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `CatalogController.cs:302` (HttpPost `batch-check-reference`), `IHerbService`
+**实现参考**: `CatalogController.cs` (HttpPost `batch-check-reference`), `IHerbService`
 
 ---
 
@@ -328,14 +274,8 @@
 - 药材被禁用后，已开具的历史处方仍可正常查看和打印（药材数据快照，不随当前状态变化）
 - 禁用的药材不出现在新建处方的药材选择列表中（前台不可查药材）
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `CatalogController.cs:202` (HttpPost `{id}/toggle-status`), `IHerbService`
+**实现参考**: `CatalogController.cs` (HttpPost `{id}/toggle-status`), `IHerbService`
 
 ---
 
@@ -359,14 +299,8 @@
 1. 恢复操作需 `IgnoreQueryFilters()` 绕过全局软删除过滤器定位记录
 2. 恢复仅还原药材记录本身，不还原关联处方（处方删除独立）
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `CatalogController.cs:228` (HttpPost `{id}/restore`), `IHerbService`
+**实现参考**: `CatalogController.cs` (HttpPost `{id}/restore`), `IHerbService`
 
 ---
 
@@ -391,14 +325,8 @@
 2. 批量删除每项均执行引用检查（同 US-HERB-005 规则）
 3. 端点受 `AdminOrSuperAdmin` 策略保护（写操作仅 Admin，已落地 C2）
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `CatalogController.cs:319` (batch-enable), `CatalogController.cs:339` (batch-disable), `CatalogController.cs:247` (batch-delete), `IHerbService`
+**实现参考**: `CatalogController.cs` (batch-enable), `CatalogController.cs` (batch-disable), `CatalogController.cs` (batch-delete), `IHerbService`
 
 ---
 
@@ -423,12 +351,6 @@
 2. 模板字段与 US-HERB-006 导入端点期望的 DTO 一致
 3. 导出与模板由 `IHerbService` 生成
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
 
 **实现参考**: `CatalogController.cs` (HttpGet `export`), `CatalogController.cs` (HttpGet `import-template`)
 
@@ -457,12 +379,6 @@
 4. 价格一致性：开方时 `PrescriptionItem` 价格快照取自查询结果，历史处方不受后续调价影响（A2 决策）
 5. 缓存不适用场景：验方详情/处方详情（实时数据，不缓存）
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | 缓存远程 WebAPI 查询结果 |
-| 本地 | 缓存本地 LocalWebAPI 查询结果（机制一致） |
 
 **实现参考**: `DesktopCacheManager.cs`（`InvalidateHerbCaches`）、`FormulaEditorViewModel.cs`（`EditHerbItems`）、`PrescriptionEditorViewModel.cs`
 
